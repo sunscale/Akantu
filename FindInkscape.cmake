@@ -24,21 +24,18 @@ function(inkscape_generate_png_from_svg)
   if(NOT INKSCAPE)
     return()
   endif(NOT INKSCAPE)
-  cmake_parse_arguments(INKSCAPE "" "OUTPUT_DIR;DPI" "" ${ARGN})
-  if(NOT INKSCAPE_OUTPUT_DIR)
-    set(INKSCAPE_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
-  endif(NOT INKSCAPE_OUTPUT_DIR)
+  cmake_parse_arguments(INKSCAPE "" "DPI" "" ${ARGN})
   if(NOT INKSCAPE_DPI)
     set(INKSCAPE_DPI 90)
   endif(NOT INKSCAPE_DPI)
 
   foreach(pic ${INKSCAPE_UNPARSED_ARGUMENTS})
-    string(REGEX REPLACE "\\.[a-zA-Z]+" ".svg" input ${pic})
-    add_custom_command(OUTPUT ${pic} 
-      COMMAND ${INKSCAPE} --export-dpi=${INKSCAPE_DPI} -e ${pic} ${CMAKE_CURRENT_SOURCE_DIR}/${input}
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${input} 
-      COMMENT "Generating ${INKSCAPE_OUTPUT_DIR}/${pic} from ${CMAKE_CURRENT_SOURCE_DIR}/${input}"
-      WORKING_DIRECTORY  ${INKSCAPE_OUTPUT_DIR})
+    string(REGEX REPLACE "\\.[a-zA-Z]+" ".png" output ${pic})
+    add_custom_command(OUTPUT ${output} 
+      COMMAND ${INKSCAPE} --export-dpi=${INKSCAPE_DPI} -e ${output} -f ${pic}
+      DEPENDS ${pic} 
+      COMMENT "Generating ${output} from ${pic}"
+      )
   endforeach(pic)  
 endfunction(inkscape_generate_png_from_svg)
 
