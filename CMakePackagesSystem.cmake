@@ -137,14 +137,14 @@ macro(add_all_packages package_dir src_dir)
   endforeach()
 
   #construct list of files for unactivated packages
+    list(APPEND _tmp_${_project}_EXCLUDE_SOURCE_FILES ${${_project}_EXCLUDE_SOURCE_FILES})
   foreach(_pkg ${${_project}_PACKAGE_SYSTEM_PACKAGES_OFF})
     package_pkg_name(${_pkg} _pkg_name)
-    foreach(_file ${${_pkg_name}_FILES})
-      cmake_debug_message(PackagesSystem "add_all_packages: ${_file}")
-      list(APPEND ${_project}_EXCLUDE_SOURCE_FILE ${_file})
-    endforeach()
+    cmake_debug_message(PackagesSystem "add_all_packages: exlude ${_file}")
+    list(APPEND _tmp_${_project}_EXCLUDE_SOURCE_FILES ${${_pkg_name}_FILES})
   endforeach()
 
+  set(${_project}_EXCLUDE_SOURCE_FILES "${_tmp_${_project}_EXCLUDE_SOURCE_FILES}" CACHE INTERNAL "File to excluse in the project ${_project} package" FORCE)
   #check dependencies
   foreach(_pkg ${${_project}_PACKAGE_SYSTEM_PACKAGES_OFF})
     # differentiate the file types
