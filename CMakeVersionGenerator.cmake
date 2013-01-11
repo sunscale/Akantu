@@ -42,7 +42,7 @@ macro(define_project_version)
       subversion_wc_info(${PROJECT_SOURCE_DIR} MY)
       set(${_project}_BUILD_VERSION ${MY_WC_REVISION})
       set(${_project}_VERSION
-	"${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}.${${_project}_PATCH_VERSION}.${${_project}_BUILD_VERSION}"
+	"${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}.${${_project}_BUILD_VERSION}"
 	)
       file(WRITE VERSION "${${_project}_VERSION}\n")
     else(SUBVERSION_FOUND)
