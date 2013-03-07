@@ -111,8 +111,15 @@ macro(add_all_packages package_dir src_dir)
       list(FIND ${_project}_release_all_files ${_file} _index)
       if (_index EQUAL -1)
 	list(APPEND ${_project}_missing_files_in_packages ${_file})
-        message("The file ${_file} is not registered in any package.")
-        message("Please append the file in one of the files within directory ${PROJECT_SOURCE_DIR}/packages")
+        message(FATAL_ERROR "
+The file 
+      ${_file} 
+is not registered in any package.
+Please append the file in one of the files within directory 
+      ${PROJECT_SOURCE_DIR}/packages 
+or remove the file if useless.
+
+")
       endif()
     endif()
   endforeach()
