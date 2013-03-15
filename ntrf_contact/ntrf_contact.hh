@@ -140,7 +140,7 @@ private:
   SyncronizedArray<Real> contact_pressure;
   /// array indicating if nodes are in contact
   SyncronizedArray<bool> is_in_contact;
-  /// boundary matrix, lumped_boundary[:,0] master nodes, lumped_boundary[:,1] slave nodes
+  /// boundary matrix, lumped_boundary[:,0] slave nodes
   SyncronizedArray<Real> lumped_boundary;
 
   /// reference point for rigid flat surface

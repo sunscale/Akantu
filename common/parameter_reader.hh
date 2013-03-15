@@ -1,9 +1,9 @@
 /**
- * @file   ntrf_friction_coulomb.hh
+ * @file   parameter_reader.hh
  * @author David Kammer <david.kammer@epfl.ch>
- * @date   Thu Mar 14 14:27:26 2013
+ * @date   Fri Mar 15 13:52:45 2013
  *
- * @brief  coulomb friction with \mu_s = \mu_k (constant)
+ * @brief  for simulations to read parameters from an input file
  *
  * @section LICENSE
  *
@@ -26,65 +26,73 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTRF_FRICTION_COULOMB_HH__
-#define __AST_NTRF_FRICTION_COULOMB_HH__
+#ifndef __AST_PARAMETER_READER_HH__
+#define __AST_PARAMETER_READER_HH__
 
 /* -------------------------------------------------------------------------- */
+// std
+#include <set>
+#include <map>
+
+// akantu
+#include "aka_common.hh"
+
 // simtools
-#include "ntrf_friction.hh"
+#include "ast_common.hh"
 
 __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-class NTRFFrictionCoulomb :public NTRFFriction {
+/* -------------------------------------------------------------------------- */
+class ParameterReader {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   
-  NTRFFrictionCoulomb(NTRFContact & contact,
-		      const FrictionID & id = "friction_coulomb",
-		      const MemoryID & memory_id = 0);
-  virtual ~NTRFFrictionCoulomb() {};
+  ParameterReader();
+  virtual ~ParameterReader() {};
   
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// register syncronizedarrays for sync
-  virtual void registerSyncronizedArray(SyncronizedArrayBase & array);
+  /// read input file
+  void readInputFile(std::string file_name);
 
-  /// dump restart file
-  virtual void dumpRestart(const std::string & file_name) const;
-
-  /// read restart file
-  virtual void readRestart(const std::string & file_name);
-
+  /// write input file
+  void writeInputFile(std::string file_name) const;
+  
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-  
-protected:
-  /// compute frictional strength according to friction law
-  virtual void computeFrictionalStrength();
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  // set friction coefficient to all nodes
-  void setMu(Real mu);
-
-  // set friction coefficient only to node (global index)
-  void setMu(UInt node, Real mu);
+  /// 
+  template<typename T>
+  T get(std::string key) const;
   
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-protected:
-  // friciton coefficient
-  SyncronizedArray<Real> mu;
+private:
+  /// type of data available
+  std::set<std::string> data_types;
+
+  /// data
+  std::map<std::string,akantu::ElementType> element_type_data;
+  std::map<std::string,std::string> string_data;
+  std::map<std::string,akantu::Int> int_data;
+  std::map<std::string,akantu::UInt> uint_data;
+  std::map<std::string,akantu::Real> real_data;
+  std::map<std::string,bool> bool_data;
+
+  /// convert string to element type
+  std::map<std::string, ElementType> _input_to_akantu_element_types;
 };
 
 
@@ -92,10 +100,10 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntrf_friction_coulomb_inline_impl.cc"
+//#include "parameter_reader_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const NTRFFrictionCoulomb & _this)
+inline std::ostream & operator <<(std::ostream & stream, const ParameterReader & _this)
 {
   _this.printself(stream);
   return stream;
@@ -103,4 +111,4 @@ inline std::ostream & operator <<(std::ostream & stream, const NTRFFrictionCoulo
 
 __END_SIMTOOLS__
 
-#endif /* __AST_NTRF_FRICTION_COULOMB_HH__ */
+#endif /* __AST_PARAMETER_READER_HH__ */

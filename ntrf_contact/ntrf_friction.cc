@@ -40,13 +40,11 @@ NTRFFriction::NTRFFriction(NTRFContact & contact,
   frictional_strength(0,1,0.,id+":frictional_strength",0.,"frictional_strength"),
   friction_traction(0,contact.getModel().getSpatialDimension(),
 		    0.,id+":friction_traction",0.,"friction_traction") {
-  //mu(0,1,0.,id+":mu",0.,"mu") {
   AKANTU_DEBUG_IN();
 
   this->contact.registerSyncronizedArray(this->is_sticking);
   this->contact.registerSyncronizedArray(this->frictional_strength);
   this->contact.registerSyncronizedArray(this->friction_traction);
-  //  this->contact.registerSyncronizedArray(this->mu);
   
   AKANTU_DEBUG_OUT();
 }
@@ -213,7 +211,6 @@ void NTRFFriction::dumpRestart(const std::string & file_name) const {
   this->is_sticking.dumpRestartFile(file_name);
   this->frictional_strength.dumpRestartFile(file_name);
   this->friction_traction.dumpRestartFile(file_name);
-  //  this->mu.dumpRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
 }
@@ -225,40 +222,9 @@ void NTRFFriction::readRestart(const std::string & file_name) {
   this->is_sticking.readRestartFile(file_name);
   this->frictional_strength.readRestartFile(file_name);
   this->friction_traction.readRestartFile(file_name);
-  //  this->mu.readRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
 }
-
-/* -------------------------------------------------------------------------- */
-/*
-void NTRFFriction::setMu(Real mu) {
-  AKANTU_DEBUG_IN();
-
-  Real * mu_p = this->mu.storage();
-  Real nb_mu  = this->mu.getSize();
-  std::fill_n(mu_p, nb_mu, mu);
-  this->mu.setDefaultValue(mu);
-
-  AKANTU_DEBUG_OUT();
-}
-*/
-/* -------------------------------------------------------------------------- */
-/*
-void NTRFFriction::setMu(UInt node, Real mu) {
-  AKANTU_DEBUG_IN();
-
-  Int index = this->contact.getNodeIndex(node);
-  if (index < 0) {
-    AKANTU_DEBUG_WARNING("Node is node a contact node. Therefore, cannot set Mu!!");
-  }
-  else {
-    this->mu(index) = mu;
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-*/
 
 /* -------------------------------------------------------------------------- */
 void NTRFFriction::setInternalArray(SyncronizedArray<Real> & array, 
@@ -281,7 +247,7 @@ void NTRFFriction::setInternalArray(SyncronizedArray<Real> & array,
 
   Int index = this->contact.getNodeIndex(node);
   if (index < 0) {
-    AKANTU_DEBUG_WARNING("Node is node a contact node. Therefore, cannot set Mu!!");
+    AKANTU_DEBUG_WARNING("Node is not a contact node. Therefore, cannot set Mu!!");
   }
   else {
     array(index) = value;

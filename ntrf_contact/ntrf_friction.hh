@@ -90,15 +90,6 @@ public:
   AKANTU_GET_MACRO(FrictionalStrength, frictional_strength, const SyncronizedArray<Real> &)
   AKANTU_GET_MACRO(FrictionTraction,     friction_traction, const SyncronizedArray<Real> &)
 
-  //AKANTU_GET_MACRO(Mu,     mu, const SyncronizedArray<Real> &)
-
-
-  // set friction coefficient to all nodes
-  //void setMu(Real mu);
-
-  // set friction coefficient only to node (global index)
-  //void setMu(UInt node, Real mu);
-
 protected:
   void setInternalArray(SyncronizedArray<Real> & array, Real value);
   void setInternalArray(SyncronizedArray<Real> & array, UInt node, Real value);
@@ -117,9 +108,6 @@ protected:
   SyncronizedArray<Real> frictional_strength;
   // friction force
   SyncronizedArray<Real> friction_traction;
-
-  // friction coefficient
-  //SyncronizedArray<Real> mu;
 };
 
 

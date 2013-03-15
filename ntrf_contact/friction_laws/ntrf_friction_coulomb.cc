@@ -48,7 +48,7 @@ NTRFFrictionCoulomb::NTRFFrictionCoulomb(NTRFContact & contact,
 void NTRFFrictionCoulomb::computeFrictionalStrength() {
   AKANTU_DEBUG_IN();
   
-    SolidMechanicsModel & model = this->contact.getModel();
+  SolidMechanicsModel & model = this->contact.getModel();
   UInt dim = model.getSpatialDimension();
 
   UInt nb_contact_nodes = this->contact.getNbContactNodes();
