@@ -60,7 +60,7 @@ macro(define_project_version)
 
   # Append the library version information to the library target properties
   if(NOT ${_project}_NO_LIBRARY_VERSION)
-    message(STATUS "Akantu version: ${${_project}_VERSION}")
+    message(STATUS "${PROJECT_NAME} version: ${${_project}_VERSION}")
 
     set(${_project}_LIBRARY_PROPERTIES ${${_project}_LIBRARY_PROPERTIES}
       VERSION "${${_project}_VERSION}"
