@@ -37,32 +37,34 @@ macro(define_project_version)
   find_package(Subversion)
   string(TOUPPER ${PROJECT_NAME} _project)
 
-  if(EXISTS ${PROJECT_SOURCE_DIR}/.svn)
-    if(SUBVERSION_FOUND)
-      subversion_wc_info(${PROJECT_SOURCE_DIR} MY)
-      set(${_project}_BUILD_VERSION ${MY_WC_REVISION})
+  if(SUBVERSION_FOUND)
+    subversion_wc_info(${PROJECT_SOURCE_DIR} ${_project})
+    if(${${_project}_WC_REVISION})
+      set(${_project}_BUILD_VERSION ${${_project}_WC_REVISION})
       set(${_project}_VERSION
 	"${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}.${${_project}_BUILD_VERSION}"
 	)
       file(WRITE VERSION "${${_project}_VERSION}\n")
-    else(SUBVERSION_FOUND)
-      message("SVN control files were found but no subversion executable is present... ")
-      set(${_project}_VERSION 0)
-    endif(SUBVERSION_FOUND)
-  else(EXISTS ${PROJECT_SOURCE_DIR}/.svn)
-    if(EXISTS ${PROJECT_SOURCE_DIR}/VERSION)
-      file(STRINGS VERSION ${_project}_VERSION)
-    else(EXISTS ${PROJECT_SOURCE_DIR}/VERSION)
-      message("No SVN control file neither VERSION file could be found. How was this release made ?")
-    endif(EXISTS ${PROJECT_SOURCE_DIR}/VERSION)
-  endif(EXISTS ${PROJECT_SOURCE_DIR}/.svn)
+    else()
+      if(EXISTS ${PROJECT_SOURCE_DIR}/VERSION)
+	file(STRINGS VERSION ${_project}_VERSION)
+      endif()
+    endif()
+  endif()
 
+  if(NOT ${_project}_VERSION)
+    set(${_project}_VERSION
+      "${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}"
+      )
+  endif()
 
   # Append the library version information to the library target properties
   if(NOT ${_project}_NO_LIBRARY_VERSION)
+    message(STATUS "Akantu version: ${${_project}_VERSION}")
+
     set(${_project}_LIBRARY_PROPERTIES ${${_project}_LIBRARY_PROPERTIES}
       VERSION "${${_project}_VERSION}"
       SOVERSION "${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}"
       )
-  endif(NOT ${_project}_NO_LIBRARY_VERSION)
+  endif()
 endmacro()
