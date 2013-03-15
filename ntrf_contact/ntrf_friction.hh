@@ -1,9 +1,9 @@
 /**
- * @file   ntn_friction_linear_slip_weakening.hh
+ * @file   ntrf_friction.hh
  * @author David Kammer <david.kammer@epfl.ch>
- * @date   Tue Nov 20 14:56:20 2012
+ * @date   Mon Nov  5 10:21:11 2012
  *
- * @brief  linear slip weakening friction
+ * @brief  friction for node to rigid flat interface
  *
  * @section LICENSE
  *
@@ -26,13 +26,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_FRICTION_LINEAR_SLIP_WEAKENING_HH__
-#define __AST_NTN_FRICTION_LINEAR_SLIP_WEAKENING_HH__
+
+#ifndef __AST_NTRF_FRICTION_HH__
+#define __AST_NTRF_FRICTION_HH__
 
 /* -------------------------------------------------------------------------- */
 // simtools
-#include "ntn_contact.hh"
-#include "ntn_friction_coulomb.hh"
+#include "ntrf_contact.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -40,22 +40,30 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class NTNFrictionLinearSlipWeakening : public NTNFrictionCoulomb {
+class NTRFFriction : protected Memory {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   
-  NTNFrictionLinearSlipWeakening(NTNContact & contact,
-				 const FrictionID & id = 
-				 "friction_linear_slip_weakening",
-				 const MemoryID & memory_id = 0);
-  virtual ~NTNFrictionLinearSlipWeakening() {};
+  NTRFFriction(NTRFContact & contact,
+	       const FrictionID & id = "friction",
+	       const MemoryID & memory_id = 0);
+  virtual ~NTRFFriction() {};
   
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// compute friction traction
+  virtual void computeFrictionTraction();
+  
+  /// compute stick traction (friction traction needed to stick the nodes)
+  void computeStickTraction();
+
+  /// apply the friction force
+  void applyFrictionTraction();
+
   /// register syncronizedarrays for sync
   virtual void registerSyncronizedArray(SyncronizedArrayBase & array);
   
@@ -70,48 +78,48 @@ public:
 
 protected:
   /// compute frictional strength according to friction law
-  virtual void computeFrictionalStrength();
-
-  // computes the friction coefficient as a function of slip
-  virtual void computeFrictionCoefficient();
+  virtual void computeFrictionalStrength() = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  // set static friction coefficient to all nodes
-  void setMuS(Real mu);
+  AKANTU_GET_MACRO(Contact, contact, const NTRFContact &)
 
-  // set static friction coefficient only to node (global index)
-  void setMuS(UInt node, Real mu);
+  AKANTU_GET_MACRO(IsSticking,                 is_sticking, const SyncronizedArray<bool> &)
+  AKANTU_GET_MACRO(FrictionalStrength, frictional_strength, const SyncronizedArray<Real> &)
+  AKANTU_GET_MACRO(FrictionTraction,     friction_traction, const SyncronizedArray<Real> &)
 
-  // set kinetic friction coefficient to all nodes
-  void setMuK(Real mu);
+  //AKANTU_GET_MACRO(Mu,     mu, const SyncronizedArray<Real> &)
 
-  // set kinetic friction coefficient only to node (global index)
-  void setMuK(UInt node, Real mu);
 
-  // set weakening length to all nodes
-  void setWeakeningLength(Real length);
+  // set friction coefficient to all nodes
+  //void setMu(Real mu);
 
-  // set weakening length only to node (global index)
-  void setWeakeningLength(UInt node, Real length);
+  // set friction coefficient only to node (global index)
+  //void setMu(UInt node, Real mu);
 
+protected:
+  void setInternalArray(SyncronizedArray<Real> & array, Real value);
+  void setInternalArray(SyncronizedArray<Real> & array, UInt node, Real value);
+  
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  // Dc the length over which slip weakening happens
-  SyncronizedArray<Real> weakening_length;
+  FrictionID id;
 
-  // static coefficient of friction
-  SyncronizedArray<Real> mu_s;
+  NTRFContact & contact;
+  
+  // if node is sticking
+  SyncronizedArray<bool> is_sticking;
+  // frictional strength
+  SyncronizedArray<Real> frictional_strength;
+  // friction force
+  SyncronizedArray<Real> friction_traction;
 
-  // kinetic coefficient of friction
-  SyncronizedArray<Real> mu_k;
-
-  // internal variable = absolut value of tangential gap when last sticked
-  SyncronizedArray<Real> slip;
+  // friction coefficient
+  //SyncronizedArray<Real> mu;
 };
 
 
@@ -119,10 +127,10 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntn_friction_linear_slip_weakening_inline_impl.cc"
+//#include "ntrf_friction_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const NTNFrictionLinearSlipWeakening & _this)
+inline std::ostream & operator <<(std::ostream & stream, const NTRFFriction & _this)
 {
   _this.printself(stream);
   return stream;
@@ -130,4 +138,4 @@ inline std::ostream & operator <<(std::ostream & stream, const NTNFrictionLinear
 
 __END_SIMTOOLS__
 
-#endif /* __AST_NTN_FRICTION_LINEAR_SLIP_WEAKENING_HH__ */
+#endif /* __AST_NTRF_FRICTION_HH__ */

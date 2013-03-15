@@ -115,7 +115,7 @@ void NTNFrictionLinearSlipWeakening::registerSyncronizedArray(SyncronizedArrayBa
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFrictionLinearSlipWeakening::dumpRestart(std::string file_name) const {
+void NTNFrictionLinearSlipWeakening::dumpRestart(const std::string & file_name) const {
   AKANTU_DEBUG_IN();
   
   this->weakening_length.dumpRestartFile(file_name);
@@ -127,7 +127,7 @@ void NTNFrictionLinearSlipWeakening::dumpRestart(std::string file_name) const {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFrictionLinearSlipWeakening::readRestart(std::string file_name) {
+void NTNFrictionLinearSlipWeakening::readRestart(const std::string & file_name) {
   AKANTU_DEBUG_IN();
 
   this->weakening_length.readRestartFile(file_name);

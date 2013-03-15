@@ -293,7 +293,7 @@ void NTNContact::registerSyncronizedArray(SyncronizedArrayBase & array) {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNContact::dumpRestart(std::string file_name) const {
+void NTNContact::dumpRestart(const std::string & file_name) const {
   AKANTU_DEBUG_IN();
   
   this->slaves.dumpRestartFile(file_name);
@@ -308,7 +308,7 @@ void NTNContact::dumpRestart(std::string file_name) const {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNContact::readRestart(std::string file_name) {
+void NTNContact::readRestart(const std::string & file_name) {
   AKANTU_DEBUG_IN();
   
   this->slaves.readRestartFile(file_name);

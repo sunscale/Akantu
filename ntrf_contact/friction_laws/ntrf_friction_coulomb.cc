@@ -1,9 +1,9 @@
 /**
- * @file   ntn_friction_coulomb.cc
+ * @file   ntrf_friction_coulomb.cc
  * @author David Kammer <david.kammer@epfl.ch>
- * @date   Tue Nov 20 14:23:57 2012
+ * @date   Thu Mar 14 14:36:35 2013
  *
- * @brief  
+ * @brief  implementation of ntrf coulomb friction
  *
  * @section LICENSE
  *
@@ -27,37 +27,37 @@
 
 /* -------------------------------------------------------------------------- */
 // simtools
-#include "ntn_friction_coulomb.hh"
+#include "ntrf_friction_coulomb.hh"
 
 __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
-NTNFrictionCoulomb::NTNFrictionCoulomb(NTNContact & contact,
-				       const FrictionID & id,
-				       const MemoryID & memory_id) : 
-  NTNFriction(contact,id,memory_id),
+NTRFFrictionCoulomb::NTRFFrictionCoulomb(NTRFContact & contact,
+					 const FrictionID & id,
+					 const MemoryID & memory_id) :
+  NTRFFriction(contact,id,memory_id),
   mu(0,1,0.,id+":mu",0.,"mu") {
   AKANTU_DEBUG_IN();
 
-  NTNFriction::registerSyncronizedArray(this->mu);
+  NTRFFriction::registerSyncronizedArray(this->mu);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFrictionCoulomb::computeFrictionalStrength() {
+void NTRFFrictionCoulomb::computeFrictionalStrength() {
   AKANTU_DEBUG_IN();
-
-  SolidMechanicsModel & model = this->contact.getModel();
+  
+    SolidMechanicsModel & model = this->contact.getModel();
   UInt dim = model.getSpatialDimension();
 
-  UInt nb_ntn_pairs = this->contact.getNbContactNodes();
+  UInt nb_contact_nodes = this->contact.getNbContactNodes();
 
   // get contact arrays
   const SyncronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
   Real * contact_pressure = this->contact.getContactPressure().storage();
 
-  for (UInt n=0; n<nb_ntn_pairs; ++n) {
+  for (UInt n=0; n<nb_contact_nodes; ++n) {
     // node pair is NOT in contact
     if (!is_in_contact(n))
       this->frictional_strength(n) = 0.;
@@ -72,8 +72,9 @@ void NTNFrictionCoulomb::computeFrictionalStrength() {
   AKANTU_DEBUG_OUT();
 }
 
+
 /* -------------------------------------------------------------------------- */
-void NTNFrictionCoulomb::registerSyncronizedArray(SyncronizedArrayBase & array) {
+void NTRFFrictionCoulomb::registerSyncronizedArray(SyncronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
   
   this->mu.registerDependingArray(array);
@@ -82,7 +83,7 @@ void NTNFrictionCoulomb::registerSyncronizedArray(SyncronizedArrayBase & array) 
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFrictionCoulomb::dumpRestart(const std::string & file_name) const {
+void NTRFFrictionCoulomb::dumpRestart(const std::string & file_name) const {
   AKANTU_DEBUG_IN();
   
   this->mu.dumpRestartFile(file_name);
@@ -91,7 +92,7 @@ void NTNFrictionCoulomb::dumpRestart(const std::string & file_name) const {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFrictionCoulomb::readRestart(const std::string & file_name) {
+void NTRFFrictionCoulomb::readRestart(const std::string & file_name) {
   AKANTU_DEBUG_IN();
   
   this->mu.readRestartFile(file_name);
@@ -100,30 +101,30 @@ void NTNFrictionCoulomb::readRestart(const std::string & file_name) {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFrictionCoulomb::setMu(Real mu) {
+void NTRFFrictionCoulomb::setMu(Real mu) {
   AKANTU_DEBUG_IN();
 
-  NTNFriction::setInternalArray(this->mu, mu);
+  NTRFFriction::setInternalArray(this->mu, mu);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFrictionCoulomb::setMu(UInt node, Real mu) {
+void NTRFFrictionCoulomb::setMu(UInt node, Real mu) {
   AKANTU_DEBUG_IN();
 
-  NTNFriction::setInternalArray(this->mu, node, mu);
+  NTRFFriction::setInternalArray(this->mu, node, mu);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFrictionCoulomb::printself(std::ostream & stream, int indent) const {
+void NTRFFrictionCoulomb::printself(std::ostream & stream, int indent) const {
   AKANTU_DEBUG_IN();
   std::string space;
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
   
-  stream << space << "NTNFrictionCoulomb [" << std::endl;
+  stream << space << "NTRFFrictionCoulomb [" << std::endl;
 
   stream << space << this->mu << std::endl;
 

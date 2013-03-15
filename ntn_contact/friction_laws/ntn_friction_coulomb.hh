@@ -31,7 +31,6 @@
 
 /* -------------------------------------------------------------------------- */
 // simtools
-#include "ntn_contact.hh"
 #include "ntn_friction.hh"
 
 __BEGIN_SIMTOOLS__
@@ -59,10 +58,10 @@ public:
   virtual void registerSyncronizedArray(SyncronizedArrayBase & array);
   
   /// dump restart file
-  virtual void dumpRestart(std::string file_name) const;
+  virtual void dumpRestart(const std::string & file_name) const;
 
   /// read restart file
-  virtual void readRestart(std::string file_name);
+  virtual void readRestart(const std::string & file_name);
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;

@@ -1,9 +1,9 @@
 /**
- * @file   ntn_contact.hh
+ * @file   ntrf_contact.hh
  * @author David Kammer <david.kammer@epfl.ch>
- * @date   Mon Feb 20 15:13:23 2012
+ * @date   Fri Nov  2 17:33:49 2012
  *
- * @brief  contact for node to node discretization
+ * @brief  contact for node to rigid flat interface
  *
  * @section LICENSE
  *
@@ -27,14 +27,11 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AST_NTN_CONTACT_HH__
-#define __AST_NTN_CONTACT_HH__
+#ifndef __AST_NTRF_CONTACT_HH__
+#define __AST_NTRF_CONTACT_HH__
 
 /* -------------------------------------------------------------------------- */
-// akantu
 #include "solid_mechanics_model.hh"
-
-// simtools
 #include "syncronized_array.hh"
 
 __BEGIN_SIMTOOLS__
@@ -43,41 +40,38 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class NTNContact : protected Memory {
+class NTRFContact : protected Memory {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   
-  NTNContact(SolidMechanicsModel & model,
-	     const ContactID & id = "contact",
-	     const MemoryID & memory_id = 0);
-  virtual ~NTNContact() {};
+  NTRFContact(SolidMechanicsModel & model,
+	      const ContactID & id = "contact",
+	      const MemoryID & memory_id = 0);
+  virtual ~NTRFContact() {};
   
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// add surface pair and pair nodes according to the surface normal
-  void addSurfacePair(Surface slave, Surface master, UInt surface_normal_dir);
-  
-  /// add node pair
-  void addNodePair(UInt slave, UInt master);
+  void setReferencePoint(Real x=0., Real y=0., Real z=0.);
+  void setNormal(Real x=1., Real y=0., Real z=0.);
 
-  // add node pairs from a list with pairs(*,0)=slaves and pairs(*,1)=masters
-  void addNodePairs(Array<UInt> & pairs);
+  /// add surface and nodes according to the surface normal
+  void addSurface(Surface surf);
+  
+  /// add node
+  void addNode(UInt node);
+
+  // add nodes from a list
+  void addNodes(Array<UInt> & nodes);
 
   /// update normals, lumped boundary, and impedance
   void updateInternalData();
 
-  /// update (compute the normals on the master nodes)
-  void updateNormals();
-
   /// update the lumped boundary B matrix
   void updateLumpedBoundary();
-
-  /// update the impedance matrix
-  void updateImpedance();
 
   /// compute the normal contact force
   void computeContactPressure();
@@ -93,6 +87,9 @@ public:
 
   /// read restart file
   void readRestart(const std::string & file_name);
+
+  /// compute the normal gap 
+  void computeNormalGap(Array<Real> & gap) const;
 
   /// compute relative normal field (only value that has to be multiplied with the normal)
   /// relative to master nodes
@@ -118,11 +115,8 @@ public:
   AKANTU_GET_MACRO(Model, model, SolidMechanicsModel &)
 
   AKANTU_GET_MACRO(Slaves,                    slaves, const SyncronizedArray<UInt> &)
-  AKANTU_GET_MACRO(Masters,                  masters, const SyncronizedArray<UInt> &)
-  AKANTU_GET_MACRO(Normals,                  normals, const SyncronizedArray<Real> &)
   AKANTU_GET_MACRO(ContactPressure, contact_pressure, const SyncronizedArray<Real> &)
   AKANTU_GET_MACRO(LumpedBoundary,   lumped_boundary, const SyncronizedArray<Real> &)
-  AKANTU_GET_MACRO(Impedance,              impedance, const SyncronizedArray<Real> &)
   AKANTU_GET_MACRO(IsInContact,        is_in_contact, const SyncronizedArray<bool> &)
 
   /// get number of contact nodes
@@ -142,18 +136,17 @@ private:
 
   /// array of slave nodes
   SyncronizedArray<UInt> slaves;
-  /// array of master nodes
-  SyncronizedArray<UInt> masters;
-  /// array of normals on master nodes
-  SyncronizedArray<Real> normals;
   /// array indicating if nodes are in contact
   SyncronizedArray<Real> contact_pressure;
   /// array indicating if nodes are in contact
   SyncronizedArray<bool> is_in_contact;
   /// boundary matrix, lumped_boundary[:,0] master nodes, lumped_boundary[:,1] slave nodes
   SyncronizedArray<Real> lumped_boundary;
-  /// impedance matrix
-  SyncronizedArray<Real> impedance;
+
+  /// reference point for rigid flat surface
+  Array<Real> reference_point;
+  /// outpointing normal of rigid flat surface
+  Array<Real> normal;
 
   /// contact surface
   std::set<Surface> contact_surfaces;
@@ -164,10 +157,10 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntn_contact_inline_impl.cc"
+//#include "ntrf_contact_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const NTNContact & _this)
+inline std::ostream & operator <<(std::ostream & stream, const NTRFContact & _this)
 {
   _this.printself(stream);
   return stream;
@@ -175,4 +168,4 @@ inline std::ostream & operator <<(std::ostream & stream, const NTNContact & _thi
 
 __END_SIMTOOLS__
 
-#endif /* __AST_NTN_CONTACT_HH__ */
+#endif /* __AST_NTRF_CONTACT_HH__ */

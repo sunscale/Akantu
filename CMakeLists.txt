@@ -11,6 +11,10 @@ set(AKANTU_SIMTOOLS_SRCS
   ntn_contact/ntn_friction.cc
   ntn_contact/friction_laws/ntn_friction_coulomb.cc
   ntn_contact/friction_laws/ntn_friction_linear_slip_weakening.cc
+
+  ntrf_contact/ntrf_contact.cc
+  ntrf_contact/ntrf_friction.cc
+  ntrf_contact/friction_laws/ntrf_friction_coulomb.cc
   )
 
 set(AKANTU_SIMTOOLS_HDRS
@@ -19,10 +23,15 @@ set(AKANTU_SIMTOOLS_HDRS
 
   # headers
   common/syncronized_array.hh
+
   ntn_contact/ntn_contact.hh
   ntn_contact/ntn_friction.hh
   ntn_contact/friction_laws/ntn_friction_coulomb.hh
   ntn_contact/friction_laws/ntn_friction_linear_slip_weakening.hh
+
+  ntrf_contact/ntrf_contact.hh
+  ntrf_contact/ntrf_friction.hh
+  ntrf_contact/friction_laws/ntrf_friction_coulomb.hh
 
   # inlines
   common/syncronized_array_inline_impl.cc
@@ -39,8 +48,9 @@ add_library(akantu_simtools
 
 include_directories(common/)
 include_directories(ntn_contact/)
-include_directories(ntn_contact/friction_laws)
-
+include_directories(ntn_contact/friction_laws/)
+include_directories(ntrf_contact/)
+include_directories(ntrf_contact/friction_laws/)
 
 target_link_libraries(akantu_simtools ${AKANTU_LIBRARIES})
 set_target_properties(akantu_simtools
