@@ -45,17 +45,17 @@ macro(define_project_version)
 	"${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}.${${_project}_BUILD_VERSION}"
 	)
       file(WRITE VERSION "${${_project}_VERSION}\n")
-    else()
-      if(EXISTS ${PROJECT_SOURCE_DIR}/VERSION)
-	file(STRINGS VERSION ${_project}_VERSION)
-      endif()
     endif()
   endif()
 
   if(NOT ${_project}_VERSION)
-    set(${_project}_VERSION
-      "${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}"
-      )
+    if(EXISTS ${PROJECT_SOURCE_DIR}/VERSION)
+      file(STRINGS VERSION ${_project}_VERSION)
+    else()
+      set(${_project}_VERSION
+        "${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}"
+        )
+    endif()
   endif()
 
   # Append the library version information to the library target properties
