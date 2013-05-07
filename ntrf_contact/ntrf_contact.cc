@@ -100,21 +100,19 @@ void NTRFContact::setNormal(Real x, Real y, Real z) {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFContact::addSurface(Surface surf) {
+void NTRFContact::addSurface(const Surface & surf) {
   AKANTU_DEBUG_IN();
   
   UInt dim = this->model.getSpatialDimension();
-  this->contact_surfaces.insert(surf);
 
-  // get all nodes for all surfaces
-  CSR<UInt> all_surface_nodes;
-  MeshUtils::buildNodesPerSurface(this->model.getFEM().getMesh(), all_surface_nodes);
-
+  const Mesh & mesh_ref = this->model.getFEM().getMesh();
+  
+  const SubBoundary & boundary = mesh_ref.getSubBoundary(surf);
+  this->contact_surfaces.insert(&boundary);
+  
   // find slave nodes
-  for(CSR<UInt>::iterator snode = all_surface_nodes.begin(surf); 
-      snode != all_surface_nodes.end(surf); 
-      ++snode) {
-    this->addNode(*snode);
+  for(SubBoundary::nodes_const_iterator nodes_it(boundary.nodes_begin()); nodes_it!= boundary.nodes_end(); ++nodes_it) {
+    this->addNode(*nodes_it);
   }
   
   // synchronize with depending nodes
@@ -230,9 +228,9 @@ void NTRFContact::updateLumpedBoundary() {
     boundary_fem.integrate(shapes,area,nb_nodes_per_element,*it);
 
     // get surface id information
-    const Array<UInt> & surface_id = mesh.getSurfaceID(*it);
-    std::set<UInt>::iterator pos;
-    std::set<UInt>::iterator end = this->contact_surfaces.end();
+//    const Array<UInt> & surface_id = mesh.getSurfaceID(*it);
+//    std::set<UInt>::iterator pos;
+//    std::set<UInt>::iterator end = this->contact_surfaces.end();
 
     if (this->contact_surfaces.size() == 0)
       std::cerr << "No surfaces in ntrf contact. You have to define the lumped boundary by yourself." << std::endl;
@@ -247,9 +245,9 @@ void NTRFContact::updateLumpedBoundary() {
 	UInt e = *elem;
 
 	// if element is not at interface continue
-	pos = this->contact_surfaces.find(surface_id(e));
-	if (pos == end)
-	  continue;
+//	pos = this->contact_surfaces.find(surface_id(e));
+//	if (pos == end)
+//	  continue;
 
 	// loop over all points of this element
 	for (UInt q=0; q<nb_nodes_per_element; ++q) {

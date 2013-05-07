@@ -59,7 +59,7 @@ public:
   void setNormal(Real x=1., Real y=0., Real z=0.);
 
   /// add surface and nodes according to the surface normal
-  void addSurface(Surface surf);
+  void addSurface(const Surface & surf);
   
   /// add node
   void addNode(UInt node);
@@ -149,7 +149,7 @@ private:
   Array<Real> normal;
 
   /// contact surface
-  std::set<Surface> contact_surfaces;
+  std::set<const SubBoundary *> contact_surfaces;
 };
 
 

@@ -59,7 +59,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// add surface pair and pair nodes according to the surface normal
-  void addSurfacePair(Surface slave, Surface master, UInt surface_normal_dir);
+  void addSurfacePair(const Surface & slave, const Surface & master, UInt surface_normal_dir);
   
   /// add node pair
   void addNodePair(UInt slave, UInt master);
@@ -156,7 +156,7 @@ private:
   SyncronizedArray<Real> impedance;
 
   /// contact surface
-  std::set<Surface> contact_surfaces;
+  std::set<const SubBoundary *> contact_surfaces;
 };
 
 

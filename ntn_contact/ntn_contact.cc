@@ -33,18 +33,18 @@ __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
 NTNContact::NTNContact(SolidMechanicsModel & model,
-		       const ContactID & id,
-		       const MemoryID & memory_id) : 
+                       const ContactID & id,
+                       const MemoryID & memory_id) : 
   Memory(memory_id), id(id), model(model),
   slaves(0,1,0,id+":slaves",std::numeric_limits<UInt>::quiet_NaN(),"slaves"),
   masters(0,1,0,id+":masters",std::numeric_limits<UInt>::quiet_NaN(),"masters"),
   normals(0,model.getSpatialDimension(),0,id+":normals",
-	  std::numeric_limits<Real>::quiet_NaN(),"normals"),
+  std::numeric_limits<Real>::quiet_NaN(),"normals"),
   contact_pressure(0,model.getSpatialDimension(),0,id+":contact_pressure",
-		   std::numeric_limits<Real>::quiet_NaN(),"contact_pressure"),
+  std::numeric_limits<Real>::quiet_NaN(),"contact_pressure"),
   is_in_contact(0,1,false,id+":is_in_contact",false,"is_in_contact"),
   lumped_boundary(0,2,0,id+":lumped_boundary",
-		  std::numeric_limits<Real>::quiet_NaN(),"lumped_boundary"),
+  std::numeric_limits<Real>::quiet_NaN(),"lumped_boundary"),
   impedance(0,1,0,id+":impedance",std::numeric_limits<Real>::quiet_NaN(),"impedance"),
   contact_surfaces()
 {
@@ -57,7 +57,7 @@ NTNContact::NTNContact(SolidMechanicsModel & model,
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNContact::addSurfacePair(Surface slave, Surface master, UInt surface_normal_dir) {
+void NTNContact::addSurfacePair(const Surface & slave, const Surface & master, UInt surface_normal_dir) {
   AKANTU_DEBUG_IN();
 
   UInt dim = this->model.getSpatialDimension();
@@ -65,8 +65,13 @@ void NTNContact::addSurfacePair(Surface slave, Surface master, UInt surface_norm
 		      << " and cannot have direction " << surface_normal_dir
 		      << " for surface normal");
 
-  this->contact_surfaces.insert(slave);
-  this->contact_surfaces.insert(master);
+  const Mesh & mesh_ref = this->model.getFEM().getMesh();
+  
+  const SubBoundary & slave_boundary = mesh_ref.getSubBoundary(slave);
+  const SubBoundary & master_boundary = mesh_ref.getSubBoundary(master);
+  
+  this->contact_surfaces.insert(&slave_boundary);
+  this->contact_surfaces.insert(&master_boundary);
 
   // offset for projection computation
   UInt offset[dim-1];
@@ -77,93 +82,62 @@ void NTNContact::addSurfacePair(Surface slave, Surface master, UInt surface_norm
     }
   }
 
-  // get all nodes for all surfaces
-  CSR<UInt> all_surface_nodes;
-  MeshUtils::buildNodesPerSurface(this->model.getFEM().getMesh(), all_surface_nodes);
-
+  // find projected node coordinates
+  const Array<Real> & coordinates = mesh_ref.getNodes();
+  
   // find slave nodes
-  Array<UInt> slave_nodes(0);
-  for(CSR<UInt>::iterator snode = all_surface_nodes.begin(slave); 
-      snode != all_surface_nodes.end(slave); 
-      ++snode) {
-    UInt n = *snode;
-    slave_nodes.push_back(n);
+  Array<Real> proj_slave_coord(slave_boundary.getNbNodes(),dim-1,0.);
+  Array<UInt> slave_nodes(slave_boundary.getNbNodes());
+  UInt n(0);
+  for(SubBoundary::nodes_const_iterator nodes_it(slave_boundary.nodes_begin()); nodes_it!= slave_boundary.nodes_end(); ++nodes_it) {
+    for (UInt d=0; d<dim-1; ++d) {
+      proj_slave_coord(n,d) = coordinates(*nodes_it,offset[d]);
+      slave_nodes(n)=*nodes_it;
+    }
+    ++n;
   }
   
   // find master nodes
-  Array<UInt> master_nodes(0);
-  for (CSR<UInt>::iterator mnode = all_surface_nodes.begin(master);
-       mnode != all_surface_nodes.end(master);
-       ++mnode) {
-    UInt n = *mnode;
-    master_nodes.push_back(n);
-  }
-
-  // find projected node coordinates
-  const Array<Real> & coordinates = this->model.getFEM().getMesh().getNodes();
-
-  Array<Real> proj_slave_coord(slave_nodes.getSize(),dim-1,0.);
-  for (UInt n=0; n<slave_nodes.getSize(); ++n) {
+  Array<Real> proj_master_coord(master_boundary.getNbNodes(),dim-1,0.);
+  Array<UInt> master_nodes(master_boundary.getNbNodes());
+  n=0;
+  for(SubBoundary::nodes_const_iterator nodes_it(master_boundary.nodes_begin()); nodes_it!= master_boundary.nodes_end(); ++nodes_it) {
     for (UInt d=0; d<dim-1; ++d) {
-      proj_slave_coord(n,d) = coordinates(slave_nodes(n),offset[d]);
+      proj_master_coord(n,d) = coordinates(*nodes_it,offset[d]);
+      master_nodes(n)=*nodes_it;
     }
-  }
-
-  Array<Real> proj_master_coord(master_nodes.getSize(),dim-1,0.);
-  for (UInt n=0; n<master_nodes.getSize(); ++n) {
-    for (UInt d=0; d<dim-1; ++d) {
-      proj_master_coord(n,d) = coordinates(master_nodes(n),offset[d]);
-    }
+    ++n;
   }
 
   // find minimum distance between slave nodes to define tolerance
   Real min_dist = std::numeric_limits<Real>::max();
-  for (UInt i=0; i<slave_nodes.getSize(); ++i) {
-    for (UInt j=i+1; j<slave_nodes.getSize(); ++j) {
+  for (UInt i=0; i<proj_slave_coord.getSize(); ++i) {
+    for (UInt j=i+1; j<proj_slave_coord.getSize(); ++j) {
       Real dist = 0.;
       for (UInt d=0; d<dim-1; ++d) {
-	dist += (proj_slave_coord(i,d) - proj_slave_coord(j,d)) 
+	      dist += (proj_slave_coord(i,d) - proj_slave_coord(j,d)) 
 	      * (proj_slave_coord(i,d) - proj_slave_coord(j,d));
       }
-      if (dist < min_dist)
-	min_dist = dist;
+      if (dist < min_dist) {
+	      min_dist = dist;
+	    }
     }
   }
   min_dist = std::sqrt(min_dist);
   Real local_tol = 0.1*min_dist;
 
   // find master slave node pairs
-  for (UInt i=0; i<slave_nodes.getSize(); ++i) {
-    for (UInt j=0; j<master_nodes.getSize(); ++j) {
+  for (UInt i=0; i<proj_slave_coord.getSize(); ++i) {
+    for (UInt j=0; j<proj_master_coord.getSize(); ++j) {
       Real dist = 0.;
       for (UInt d=0; d<dim-1; ++d) {
-	dist += (proj_slave_coord(i,d) - proj_master_coord(j,d)) 
+	      dist += (proj_slave_coord(i,d) - proj_master_coord(j,d)) 
 	      * (proj_slave_coord(i,d) - proj_master_coord(j,d));
       }
       dist = std::sqrt(dist);
       if (dist < local_tol) { // it is a pair
-
-	this->addNodePair(slave_nodes(i), master_nodes(j));
-
-	/*
-	this->slaves.push_back(slave_nodes(i));
-	this->masters.push_back(master_nodes(j));
-	this->is_in_contact.push_back(false);
-	this->contact_pressure.push_back(std::numeric_limits<Real>::quiet_NaN());
-	this->impedance.push_back(std::numeric_limits<Real>::quiet_NaN());
-
-	Real nan_two[2];
-	nan_two[0] = std::numeric_limits<Real>::quiet_NaN();
-	nan_two[1] = std::numeric_limits<Real>::quiet_NaN();
-	this->lumped_boundary.push_back(nan_two);
-
-	Real nan_normal[dim];
-	for (UInt d=0; d<dim; ++d)
-	  nan_normal[d] = std::numeric_limits<Real>::quiet_NaN();
-	this->normals.push_back(nan_normal);
-	*/
-
-	continue; // found master do not need to search further for this slave
+	      this->addNodePair(slave_nodes(i), master_nodes(j));
+	      continue; // found master do not need to search further for this slave
       }
     }
   }
@@ -384,9 +358,9 @@ void NTNContact::updateLumpedBoundary() {
     boundary_fem.integrate(shapes,area,nb_nodes_per_element,*it);
 
     // get surface id information
-    const Array<UInt> & surface_id = mesh.getSurfaceID(*it);
-    std::set<UInt>::iterator pos;
-    std::set<UInt>::iterator end = this->contact_surfaces.end();
+//    const Array<UInt> & surface_id = mesh.getSurfaceID(*it);
+//    std::set<UInt>::iterator pos;
+//    std::set<UInt>::iterator end = this->contact_surfaces.end();
 
     // loop over contact nodes
     for (UInt i=0; i<2*nb_contact_nodes; ++i) {
@@ -395,32 +369,32 @@ void NTNContact::updateLumpedBoundary() {
       UInt n = 0;
       UInt index = 0;
       if (i<nb_contact_nodes) {
-	n = i;
-	node = this->masters(n);
-	index = 0;
+	      n = i;
+	      node = this->masters(n);
+	      index = 0;
       }
       else {
-	n = i-nb_contact_nodes;
-	node = this->slaves(n);
-	index = 1;
+	      n = i-nb_contact_nodes;
+	      node = this->slaves(n);
+	      index = 1;
       }
 
       CSR<UInt>::iterator elem = node_to_element.begin(node);
       // loop over all elements connected to this node
       for (; elem != node_to_element.end(node); ++elem) {
-	UInt e = *elem;
+	      UInt e = *elem;
 
-	// if element is not at interface continue
-	pos = this->contact_surfaces.find(surface_id(e));
-	if (pos == end)
-	  continue;
+	      // if element is not at interface continue
+//	      pos = this->contact_surfaces.find(surface_id(e));
+//	      if (pos == end)
+//	        continue;
 
-	// loop over all points of this element
-	for (UInt q=0; q<nb_nodes_per_element; ++q) {
-	  if (connectivity(e,q) == node) {
-	    this->lumped_boundary(n,index) += area(e,q);
-	  }
-	}
+	      // loop over all points of this element
+	      for (UInt q=0; q<nb_nodes_per_element; ++q) {
+	        if (connectivity(e,q) == node) {
+	          this->lumped_boundary(n,index) += area(e,q);
+	        }
+	      }
       }
     }
   }
