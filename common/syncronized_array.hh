@@ -147,6 +147,11 @@ public:
 
   ID getID() const { return Array<T>::getID(); };
 
+  const Array<T> & getArray() const {
+    const Array<T> & a = *(dynamic_cast<const Array<T> *>(this));
+    return a;
+  };
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

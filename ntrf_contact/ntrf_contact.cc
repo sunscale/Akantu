@@ -33,9 +33,9 @@ __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
 NTRFContact::NTRFContact(SolidMechanicsModel & model,
-		       const ContactID & id,
-		       const MemoryID & memory_id) : 
-  Memory(memory_id), id(id), model(model),
+			 const ContactID & id,
+			 const MemoryID & memory_id) : 
+  Memory(memory_id), Dumpable<DumperParaview>(id), id(id), model(model),
   slaves(0,1,0,id+":slaves",std::numeric_limits<UInt>::quiet_NaN(),"slaves"),
   contact_pressure(0,model.getSpatialDimension(),0,id+":contact_pressure",
 		   std::numeric_limits<Real>::quiet_NaN(),"contact_pressure"),
@@ -44,12 +44,32 @@ NTRFContact::NTRFContact(SolidMechanicsModel & model,
 		  std::numeric_limits<Real>::quiet_NaN(),"lumped_boundary"),
   reference_point(0,model.getSpatialDimension()),
   normal(0,model.getSpatialDimension()),
-  contact_surfaces()
+  contact_surfaces(),
+  elements("elements", id, memory_id),
+  node_to_elements()
 {
   AKANTU_DEBUG_IN();
 
   FEM & boundary_fem = this->model.getFEMBoundary();
   boundary_fem.initShapeFunctions();
+
+  Mesh & mesh = this->model.getMesh();
+  UInt spatial_dimension = this->model.getSpatialDimension();
+
+  mesh.initByElementTypeArray(this->elements,
+			      1,
+			      spatial_dimension - 1);
+
+  MeshUtils::buildNode2Elements(mesh,
+				this->node_to_elements,
+				spatial_dimension - 1);
+
+  addDumpFilteredMesh(mesh,
+		      elements,
+		      slaves.getArray(),
+		      spatial_dimension - 1,
+		      _not_ghost,
+		      _ek_regular);
 
   AKANTU_DEBUG_OUT();
 }
@@ -111,7 +131,9 @@ void NTRFContact::addSurface(const Surface & surf) {
   this->contact_surfaces.insert(&boundary);
   
   // find slave nodes
-  for(SubBoundary::nodes_const_iterator nodes_it(boundary.nodes_begin()); nodes_it!= boundary.nodes_end(); ++nodes_it) {
+  for(SubBoundary::nodes_const_iterator nodes_it(boundary.nodes_begin()); 
+      nodes_it!= boundary.nodes_end(); 
+      ++nodes_it) {
     this->addNode(*nodes_it);
   }
   
@@ -139,6 +161,31 @@ void NTRFContact::addNode(UInt node) {
   this->contact_pressure.push_back(std::numeric_limits<Real>::quiet_NaN());
   this->lumped_boundary.push_back(std::numeric_limits<Real>::quiet_NaN());
   
+  // add connected boundary elements that have all nodes on this contact
+  const ByElementTypeArray<UInt> & connectivity = this->model.getMesh().getConnectivities();
+  CSR<Element>::iterator it   = this->node_to_elements.begin(node);
+  CSR<Element>::iterator it_e = this->node_to_elements.end(node);
+  for (; it != it_e; ++it) { // loop over all elements connected to node
+    ElementType type = it->type;
+    UInt element = it->element;
+    GhostType ghost_type = it->ghost_type;
+
+    UInt nb_nodes = Mesh::getNbNodesPerElement(type);
+    UInt nb_found_nodes = 0;
+    for (UInt n=0; n<nb_nodes; ++n) {
+      UInt nn = connectivity(type,ghost_type)(element,n);
+      if (this->slaves.find(nn) >= 0) 
+	nb_found_nodes++;
+      else
+	break;
+    }
+    
+    // this is an element between all contact nodes
+    if (nb_found_nodes == nb_nodes) {
+      this->elements(type, ghost_type).push_back(element);
+    }
+  }
+
   AKANTU_DEBUG_OUT();  
 }
 
@@ -491,6 +538,49 @@ void NTRFContact::syncArrays(SyncChoice sync_choice) {
   this->contact_pressure.syncElements(sync_choice);
   this->lumped_boundary.syncElements(sync_choice);
   
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void NTRFContact::addDumpField(const std::string & field_id) {
+  AKANTU_DEBUG_IN();
+  
+#ifdef AKANTU_USE_IOHELPER
+  SyncronizedArray<UInt> * nodal_filter = &(this->slaves);
+  
+#define ADD_FIELD(field_id, field, type)				\
+  addDumpFieldToDumper(field_id,					\
+		       new DumperIOHelper::NodalField< type, true,	\
+						       Array<type>,	\
+						       SyncronizedArray<UInt> >(field, 0, 0, nodal_filter))
+				    
+  if(field_id == "displacement") { 
+    ADD_FIELD(field_id, this->model.getDisplacement(), Real);
+  }
+  else if(field_id == "mass") { 
+    ADD_FIELD(field_id, this->model.getMass(), Real);
+  }
+  else if(field_id == "velocity") { 
+    ADD_FIELD(field_id, this->model.getVelocity(), Real);
+  }
+  else if(field_id == "acceleration") { 
+    ADD_FIELD(field_id, this->model.getAcceleration(), Real);
+  }
+  else if(field_id == "force") { 
+    ADD_FIELD(field_id, this->model.getForce(), Real);
+  }
+  else if(field_id == "residual") { 
+    ADD_FIELD(field_id, this->model.getResidual(), Real);
+  }
+  else if(field_id == "boundary") { 
+    ADD_FIELD(field_id, this->model.getBoundary(), bool);
+  }
+  else if(field_id == "increment") { 
+    ADD_FIELD(field_id, this->model.getIncrement(), Real);
+  }
+#undef ADD_FIELD
+#endif
+
   AKANTU_DEBUG_OUT();
 }
 
