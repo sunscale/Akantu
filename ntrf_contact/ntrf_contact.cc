@@ -578,6 +578,12 @@ void NTRFContact::addDumpField(const std::string & field_id) {
   else if(field_id == "increment") { 
     ADD_FIELD(field_id, this->model.getIncrement(), Real);
   }
+
+  else if(field_id == "contact_pressure") {
+    addDumpFieldToDumper(field_id,
+			 new DumperIOHelper::NodalField<Real>(this->contact_pressure.getArray()));
+  }
+
 #undef ADD_FIELD
 #endif
 
