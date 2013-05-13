@@ -28,17 +28,17 @@
 #===============================================================================
 
 #===============================================================================
-find_library(MUMPS_LIBRARY_DMUMPS NAMES dmumps_seq dmumps_ptscotch dmumps
+find_library(MUMPS_LIBRARY_DMUMPS NAMES dmumps dmumps_seq dmumps_ptscotch
    PATHS ${MUMPS_DIR} /usr
    PATH_SUFFIXES lib
    )
 
-find_library(MUMPS_LIBRARY_COMMON NAMES mumps_seq mumps_common_ptscotch mumps_common
+find_library(MUMPS_LIBRARY_COMMON NAMES mumps_common mumps_seq mumps_common_ptscotch
    PATHS ${MUMPS_DIR}
    PATH_SUFFIXES lib
    )
 
-find_library(MUMPS_LIBRARY_PORD NAMES pord_seq pord_ptscotch pord
+find_library(MUMPS_LIBRARY_PORD NAMES pord pord_seq pord_ptscotch
    PATHS ${MUMPS_DIR}
    PATH_SUFFIXES lib
    )
