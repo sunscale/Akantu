@@ -134,4 +134,24 @@ void NTRFFrictionCoulomb::printself(std::ostream & stream, int indent) const {
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+void NTRFFrictionCoulomb::addDumpField(const std::string & field_id) {
+  AKANTU_DEBUG_IN();
+  
+#ifdef AKANTU_USE_IOHELPER
+  //  const SyncronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
+  
+  if(field_id == "mu") {
+    this->contact.addDumpFieldExternal(field_id,
+				       new DumperIOHelper::NodalField<Real>(this->mu.getArray()));
+  }
+  else {
+    NTRFFriction::addDumpField(field_id);
+  }
+  
+#endif
+
+  AKANTU_DEBUG_OUT();
+}
+
 __END_SIMTOOLS__

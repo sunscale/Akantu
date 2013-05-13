@@ -35,16 +35,47 @@ NTRFFriction::NTRFFriction(NTRFContact & contact,
 			   const FrictionID & id,
 			   const MemoryID & memory_id) : 
   Memory(memory_id), id(id),
+  Dumpable<DumperParaview>(id),
   contact(contact),
   is_sticking(0,1,true,id+":is_sticking",true,"is_sticking"),
   frictional_strength(0,1,0.,id+":frictional_strength",0.,"frictional_strength"),
   friction_traction(0,contact.getModel().getSpatialDimension(),
-		    0.,id+":friction_traction",0.,"friction_traction") {
+		    0.,id+":friction_traction",0.,"friction_traction"),
+  slip(0,1,0.,id+":slip",0.,"slip") {
   AKANTU_DEBUG_IN();
 
   this->contact.registerSyncronizedArray(this->is_sticking);
   this->contact.registerSyncronizedArray(this->frictional_strength);
   this->contact.registerSyncronizedArray(this->friction_traction);
+  this->contact.registerSyncronizedArray(this->slip);
+
+  contact.getModel().setIncrementFlagOn();
+  
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void NTRFFriction::updateSlip() {
+  AKANTU_DEBUG_IN();
+  
+  SolidMechanicsModel & model = this->contact.getModel();
+  UInt dim = model.getSpatialDimension();
+  UInt nb_nodes = this->contact.getNbContactNodes();
+  
+  Array<Real> rel_tan_incr(0,dim);
+  this->contact.computeRelativeTangentialField(model.getIncrement(),
+					       rel_tan_incr);
+
+  Real * rel_tan_incr_p = rel_tan_incr.storage();
+  for (UInt n=0; n<nb_nodes; ++n) {
+    if (this->is_sticking(n)) {
+      this->slip(n) = 0.;
+    }
+    else {
+      Real abs_incr = Math::norm(dim, &(rel_tan_incr_p[n*dim]));
+      this->slip(n) += abs_incr;
+    }
+  }
   
   AKANTU_DEBUG_OUT();
 }
@@ -211,6 +242,7 @@ void NTRFFriction::dumpRestart(const std::string & file_name) const {
   this->is_sticking.dumpRestartFile(file_name);
   this->frictional_strength.dumpRestartFile(file_name);
   this->friction_traction.dumpRestartFile(file_name);
+  this->slip.dumpRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
 }
@@ -222,6 +254,7 @@ void NTRFFriction::readRestart(const std::string & file_name) {
   this->is_sticking.readRestartFile(file_name);
   this->frictional_strength.readRestartFile(file_name);
   this->friction_traction.readRestartFile(file_name);
+  this->slip.readRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
 }
@@ -266,6 +299,38 @@ void NTRFFriction::printself(std::ostream & stream, int indent) const {
 
   stream << space << "]" << std::endl;
 
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void NTRFFriction::addDumpField(const std::string & field_id) {
+  AKANTU_DEBUG_IN();
+  
+#ifdef AKANTU_USE_IOHELPER
+  //  const SyncronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
+  
+  if(field_id == "is_sticking") {
+    this->contact.addDumpFieldExternal(field_id,
+				       new DumperIOHelper::NodalField<bool>(this->is_sticking.getArray()));
+  }
+  else if(field_id == "frictional_strength") {
+    this->contact.addDumpFieldExternal(field_id,
+				       new DumperIOHelper::NodalField<Real>(this->frictional_strength.getArray()));
+  }
+  else if(field_id == "friction_traction") {
+    this->contact.addDumpFieldExternal(field_id,
+				       new DumperIOHelper::NodalField<Real>(this->friction_traction.getArray()));
+  }
+  else if(field_id == "slip") {
+    this->contact.addDumpFieldExternal(field_id,
+				       new DumperIOHelper::NodalField<Real>(this->slip.getArray()));
+  }
+  else {
+    this->contact.addDumpField(field_id);
+  }
+  
+#endif
 
   AKANTU_DEBUG_OUT();
 }

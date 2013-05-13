@@ -410,6 +410,9 @@ void NTNContact::computeContactPressure() {
   Real delta_t = this->model.getTimeStep();
   UInt nb_ntn_pairs = getNbContactNodes();
 
+  AKANTU_DEBUG_ASSERT(delta_t > 0., 
+		      "Cannot compute contact pressure if no time step is set");
+
   // pre-compute the acceleration 
   // (not increment acceleration, because residual is still Kf)
   Array<Real> acceleration(this->model.getFEM().getMesh().getNbNodes(),dim);

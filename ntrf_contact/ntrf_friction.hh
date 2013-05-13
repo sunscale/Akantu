@@ -40,7 +40,7 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class NTRFFriction : protected Memory {
+class NTRFFriction : protected Memory, public Dumpable<DumperParaview> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -64,6 +64,9 @@ public:
   /// apply the friction force
   void applyFrictionTraction();
 
+  /// compute slip
+  virtual void updateSlip();
+
   /// register syncronizedarrays for sync
   virtual void registerSyncronizedArray(SyncronizedArrayBase & array);
   
@@ -81,6 +84,14 @@ protected:
   virtual void computeFrictionalStrength() = 0;
 
   /* ------------------------------------------------------------------------ */
+  /* Dumpable                                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  virtual void addDumpField(const std::string & field_id);
+  //  virtual void addDumpFieldVector(const std::string & field_id);
+  void dump() { this->contact.dump(); };
+
+  /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
@@ -89,6 +100,7 @@ public:
   AKANTU_GET_MACRO(IsSticking,                 is_sticking, const SyncronizedArray<bool> &)
   AKANTU_GET_MACRO(FrictionalStrength, frictional_strength, const SyncronizedArray<Real> &)
   AKANTU_GET_MACRO(FrictionTraction,     friction_traction, const SyncronizedArray<Real> &)
+  AKANTU_GET_MACRO(Slip,                              slip, const SyncronizedArray<Real> &)
 
 protected:
   void setInternalArray(SyncronizedArray<Real> & array, Real value);
@@ -108,6 +120,8 @@ protected:
   SyncronizedArray<Real> frictional_strength;
   // friction force
   SyncronizedArray<Real> friction_traction;
+  // slip
+  SyncronizedArray<Real> slip;
 };
 
 

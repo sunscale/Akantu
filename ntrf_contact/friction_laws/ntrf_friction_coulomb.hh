@@ -38,7 +38,7 @@ __BEGIN_SIMTOOLS__
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-class NTRFFrictionCoulomb :public NTRFFriction {
+class NTRFFrictionCoulomb : public NTRFFriction {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -68,6 +68,13 @@ public:
 protected:
   /// compute frictional strength according to friction law
   virtual void computeFrictionalStrength();
+
+  /* ------------------------------------------------------------------------ */
+  /* Dumpable                                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  virtual void addDumpField(const std::string & field_id);
+  //  virtual void addDumpFieldVector(const std::string & field_id);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

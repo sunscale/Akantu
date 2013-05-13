@@ -317,6 +317,9 @@ void NTRFContact::computeContactPressure() {
   Real delta_t = this->model.getTimeStep();
   UInt nb_contact_nodes = getNbContactNodes();
 
+  AKANTU_DEBUG_ASSERT(delta_t > 0., 
+		      "Cannot compute contact pressure if no time step is set");
+
   // pre-compute the acceleration 
   // (not increment acceleration, because residual is still Kf)
   Array<Real> acceleration(this->model.getFEM().getMesh().getNbNodes(),dim);
@@ -583,7 +586,15 @@ void NTRFContact::addDumpField(const std::string & field_id) {
     addDumpFieldToDumper(field_id,
 			 new DumperIOHelper::NodalField<Real>(this->contact_pressure.getArray()));
   }
-
+  else if(field_id == "is_in_contact") {
+    addDumpFieldToDumper(field_id,
+			 new DumperIOHelper::NodalField<bool>(this->is_in_contact.getArray()));
+  }
+  else if(field_id == "lumped_boundary") {
+    addDumpFieldToDumper(field_id,
+			 new DumperIOHelper::NodalField<Real>(this->lumped_boundary.getArray()));
+  }
+  
 #undef ADD_FIELD
 #endif
 

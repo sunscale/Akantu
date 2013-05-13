@@ -1,7 +1,7 @@
 /**
- * @file   ntn_friction_linear_slip_weakening.hh
+ * @file   ntrf_friction_linear_slip_weakening.hh
  * @author David Kammer <david.kammer@epfl.ch>
- * @date   Tue Nov 20 14:56:20 2012
+ * @date   Mon May 13 17:05:07 2013
  *
  * @brief  linear slip weakening friction
  *
@@ -26,13 +26,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_FRICTION_LINEAR_SLIP_WEAKENING_HH__
-#define __AST_NTN_FRICTION_LINEAR_SLIP_WEAKENING_HH__
+#ifndef __AST_NTRF_FRICTION_LINEAR_SLIP_WEAKENING_HH__
+#define __AST_NTRF_FRICTION_LINEAR_SLIP_WEAKENING_HH__
 
 /* -------------------------------------------------------------------------- */
 // simtools
-#include "ntn_contact.hh"
-#include "ntn_friction_coulomb.hh"
+#include "ntrf_friction_coulomb.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -40,25 +39,24 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class NTNFrictionLinearSlipWeakening : public NTNFrictionCoulomb {
+class NTRFFrictionLinearSlipWeakening : public NTRFFrictionCoulomb {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   
-  NTNFrictionLinearSlipWeakening(NTNContact & contact,
-				 const FrictionID & id = 
-				 "friction_linear_slip_weakening",
-				 const MemoryID & memory_id = 0);
-  virtual ~NTNFrictionLinearSlipWeakening() {};
+  NTRFFrictionLinearSlipWeakening(NTRFContact & contact,
+				  const FrictionID & id = "friction_linear_slip_weakening",
+				  const MemoryID & memory_id = 0);
+  virtual ~NTRFFrictionLinearSlipWeakening() {};
   
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// register syncronizedarrays for sync
+    /// register syncronizedarrays for sync
   virtual void registerSyncronizedArray(SyncronizedArrayBase & array);
-  
+
   /// dump restart file
   virtual void dumpRestart(const std::string & file_name) const;
 
@@ -69,12 +67,18 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
 protected:
+  /// computes the friction coefficient as a function of slip
+  virtual void computeFrictionCoefficient();
   /// compute frictional strength according to friction law
   virtual void computeFrictionalStrength();
 
-  // computes the friction coefficient as a function of slip
-  virtual void computeFrictionCoefficient();
-
+  /* ------------------------------------------------------------------------ */
+  /* Dumpable                                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  virtual void addDumpField(const std::string & field_id);
+  //  virtual void addDumpFieldVector(const std::string & field_id);
+  
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -96,11 +100,11 @@ public:
 
   // set weakening length only to node (global index)
   void setWeakeningLength(UInt node, Real length);
-
+  
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-protected:
+private:
   // Dc the length over which slip weakening happens
   SyncronizedArray<Real> weakening_length;
 
@@ -109,9 +113,7 @@ protected:
 
   // kinetic coefficient of friction
   SyncronizedArray<Real> mu_k;
-
-  // internal variable = absolut value of tangential gap when last sticked
-  SyncronizedArray<Real> slip;
+ 
 };
 
 
@@ -119,15 +121,18 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntn_friction_linear_slip_weakening_inline_impl.cc"
+//#include "ntrf_friction_linear_slip_weakening_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const NTNFrictionLinearSlipWeakening & _this)
+inline std::ostream & operator <<(std::ostream & stream, const NTRFFrictionLinearSlipWeakening & _this)
 {
   _this.printself(stream);
   return stream;
 }
 
+
+
+
 __END_SIMTOOLS__
 
-#endif /* __AST_NTN_FRICTION_LINEAR_SLIP_WEAKENING_HH__ */
+#endif /* __AST_NTRF_FRICTION_LINEAR_SLIP_WEAKENING_HH__ */

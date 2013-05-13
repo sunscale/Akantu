@@ -12,4 +12,6 @@
 // ntrf contact/friction
 #include "ntrf_contact.hh"
 #include "ntrf_friction.hh"
+#include "ntrf_friction_coulomb.hh"
+#include "ntrf_friction_linear_slip_weakening.hh"
 
