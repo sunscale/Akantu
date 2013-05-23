@@ -31,7 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 // simtools
-#include "ntrf_friction_coulomb.hh"
+#include "ntrf_friction_regularized_coulomb.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -39,7 +39,7 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class NTRFFrictionLinearSlipWeakening : public NTRFFrictionCoulomb {
+class NTRFFrictionLinearSlipWeakening : public NTRFFrictionRegularizedCoulomb {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

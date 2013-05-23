@@ -35,15 +35,15 @@ __BEGIN_SIMTOOLS__
 NTRFFrictionLinearSlipWeakening::NTRFFrictionLinearSlipWeakening(NTRFContact & contact,
 								 const FrictionID & id,
 								 const MemoryID & memory_id) :
-  NTRFFrictionCoulomb(contact,id,memory_id),
+  NTRFFrictionRegularizedCoulomb(contact,id,memory_id),
   weakening_length(0,1,0.,id+":weakening_lingth",0.,"weakening_length"),
   mu_s(0,1,0.,id+":mu_s",0.,"mu_s"),
   mu_k(0,1,0.,id+":mu_k",0.,"mu_k") {
   AKANTU_DEBUG_IN();
   
-  NTRFFrictionCoulomb::registerSyncronizedArray(this->weakening_length);
-  NTRFFrictionCoulomb::registerSyncronizedArray(this->mu_s);
-  NTRFFrictionCoulomb::registerSyncronizedArray(this->mu_k);
+  NTRFFrictionRegularizedCoulomb::registerSyncronizedArray(this->weakening_length);
+  NTRFFrictionRegularizedCoulomb::registerSyncronizedArray(this->mu_s);
+  NTRFFrictionRegularizedCoulomb::registerSyncronizedArray(this->mu_k);
 
   AKANTU_DEBUG_OUT();
 }
@@ -81,7 +81,7 @@ void NTRFFrictionLinearSlipWeakening::computeFrictionalStrength() {
   AKANTU_DEBUG_IN();
   
   computeFrictionCoefficient();
-  NTRFFrictionCoulomb::computeFrictionalStrength();
+  NTRFFrictionRegularizedCoulomb::computeFrictionalStrength();
 
   AKANTU_DEBUG_OUT();
 }
@@ -178,7 +178,7 @@ void NTRFFrictionLinearSlipWeakening::printself(std::ostream & stream, int inden
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
   
   stream << space << "NTRFFrictionLinearSlipWeakening [" << std::endl;
-  NTRFFrictionCoulomb::printself(stream, indent+1);
+  NTRFFrictionRegularizedCoulomb::printself(stream, indent+1);
 
   stream << space << this->weakening_length << std::endl;
   stream << space << this->mu_s << std::endl;
@@ -210,7 +210,7 @@ void NTRFFrictionLinearSlipWeakening::addDumpField(const std::string & field_id)
 				       new DumperIOHelper::NodalField<Real>(this->weakening_length.getArray()));
   }
   else {
-    NTRFFrictionCoulomb::addDumpField(field_id);
+    NTRFFrictionRegularizedCoulomb::addDumpField(field_id);
   }
   
 #endif

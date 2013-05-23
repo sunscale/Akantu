@@ -1,9 +1,9 @@
 /**
- * @file   ntrf_friction_coulomb.hh
+ * @file   ntrf_friction_regularized_coulomb.hh
  * @author David Kammer <david.kammer@epfl.ch>
- * @date   Thu Mar 14 14:27:26 2013
+ * @date   Thu May 23 15:43:40 2013
  *
- * @brief  coulomb friction with \mu_s = \mu_k (constant)
+ * @brief  regularization of contact pressure in coulomb friction
  *
  * @section LICENSE
  *
@@ -26,28 +26,28 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTRF_FRICTION_COULOMB_HH__
-#define __AST_NTRF_FRICTION_COULOMB_HH__
+#ifndef __AST_NTRF_FRICTION_REGULARIZED_COULOMB_HH__
+#define __AST_NTRF_FRICTION_REGULARIZED_COULOMB_HH__
 
 /* -------------------------------------------------------------------------- */
 // simtools
-#include "ntrf_friction.hh"
+#include "ntrf_friction_coulomb.hh"
 
 __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-class NTRFFrictionCoulomb : public NTRFFriction {
+class NTRFFrictionRegularizedCoulomb : public NTRFFrictionCoulomb {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   
-  NTRFFrictionCoulomb(NTRFContact & contact,
-		      const FrictionID & id = "friction_coulomb",
-		      const MemoryID & memory_id = 0);
-  virtual ~NTRFFrictionCoulomb() {};
+  NTRFFrictionRegularizedCoulomb(NTRFContact & contact,
+				 const FrictionID & id = "friction_regularized_coulomb",
+				 const MemoryID & memory_id = 0);
+  virtual ~NTRFFrictionRegularizedCoulomb() {};
   
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -66,8 +66,6 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
   
 protected:
-  /// compute frictional strength according to friction law
-  virtual void computeFrictionalStrength();
   /// compute the frictional contact pressure, what is used to compute friction = \mu * \fric_cont_pres
   virtual void computeFrictionalContactPressure();
 
@@ -82,21 +80,23 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  // set friction coefficient to all nodes
-  void setMu(Real mu);
+  AKANTU_SET_MACRO(RegularizationOn, regularization_on, bool);
 
-  // set friction coefficient only to node (global index)
-  void setMu(UInt node, Real mu);
+  // set t_star to all nodes
+  void setTStar(Real tstar);
+
+  // set t_star only to node (global index)
+  void setTStar(UInt node, Real tstar);
   
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  // friction coefficient
-  SyncronizedArray<Real> mu;
+  // define if regularization is applied
+  bool regularization_on;
 
-  // contact pressure (absolut value) for computation of friction
-  SyncronizedArray<Real> frictional_contact_pressure;
+  // characteristic time scale for regularisation of frict. contact pressure
+  SyncronizedArray<Real> t_star;
 };
 
 
@@ -104,10 +104,11 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntrf_friction_coulomb_inline_impl.cc"
+//#include "ntrf_friction_regularized_coulomb_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const NTRFFrictionCoulomb & _this)
+inline std::ostream & operator <<(std::ostream & stream, 
+				  const NTRFFrictionRegularizedCoulomb & _this)
 {
   _this.printself(stream);
   return stream;
@@ -115,4 +116,4 @@ inline std::ostream & operator <<(std::ostream & stream, const NTRFFrictionCoulo
 
 __END_SIMTOOLS__
 
-#endif /* __AST_NTRF_FRICTION_COULOMB_HH__ */
+#endif /* __AST_NTRF_FRICTION_REGULARIZED_COULOMB_HH__ */

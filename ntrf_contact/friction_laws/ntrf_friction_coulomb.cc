@@ -36,16 +36,19 @@ NTRFFrictionCoulomb::NTRFFrictionCoulomb(NTRFContact & contact,
 					 const FrictionID & id,
 					 const MemoryID & memory_id) :
   NTRFFriction(contact,id,memory_id),
-  mu(0,1,0.,id+":mu",0.,"mu") {
+  mu(0,1,0.,id+":mu",0.,"mu"),
+  frictional_contact_pressure(0,1,0.,id+":frictional_contact_pressure",0.,
+			      "frictionl_contact_pressure") {
   AKANTU_DEBUG_IN();
 
   NTRFFriction::registerSyncronizedArray(this->mu);
+  NTRFFriction::registerSyncronizedArray(this->frictional_contact_pressure);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFFrictionCoulomb::computeFrictionalStrength() {
+void NTRFFrictionCoulomb::computeFrictionalContactPressure() {
   AKANTU_DEBUG_IN();
   
   SolidMechanicsModel & model = this->contact.getModel();
@@ -60,12 +63,41 @@ void NTRFFrictionCoulomb::computeFrictionalStrength() {
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // node pair is NOT in contact
     if (!is_in_contact(n))
+      this->frictional_contact_pressure(n) = 0.;
+
+    // node pair is in contact
+    else {
+      // compute frictional contact pressure
+      this->frictional_contact_pressure(n) = Math::norm(dim, &(contact_pressure[n*dim]));
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void NTRFFrictionCoulomb::computeFrictionalStrength() {
+  AKANTU_DEBUG_IN();
+  
+  this->computeFrictionalContactPressure();
+
+  SolidMechanicsModel & model = this->contact.getModel();
+  UInt dim = model.getSpatialDimension();
+
+  UInt nb_contact_nodes = this->contact.getNbContactNodes();
+
+  // get contact arrays
+  const SyncronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+
+  for (UInt n=0; n<nb_contact_nodes; ++n) {
+    // node pair is NOT in contact
+    if (!is_in_contact(n))
       this->frictional_strength(n) = 0.;
 
     // node pair is in contact
     else {
       // compute frictional strength
-      this->frictional_strength(n) = this->mu(n) * Math::norm(dim, &(contact_pressure[n*dim]));
+      this->frictional_strength(n) = this->mu(n) * this->frictional_contact_pressure(n);
     }
   }
 
@@ -87,6 +119,7 @@ void NTRFFrictionCoulomb::dumpRestart(const std::string & file_name) const {
   AKANTU_DEBUG_IN();
   
   this->mu.dumpRestartFile(file_name);
+  this->frictional_contact_pressure.dumpRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
 }
@@ -96,6 +129,7 @@ void NTRFFrictionCoulomb::readRestart(const std::string & file_name) {
   AKANTU_DEBUG_IN();
   
   this->mu.readRestartFile(file_name);
+  this->frictional_contact_pressure.readRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
 }
@@ -127,6 +161,7 @@ void NTRFFrictionCoulomb::printself(std::ostream & stream, int indent) const {
   stream << space << "NTRFFrictionCoulomb [" << std::endl;
 
   stream << space << this->mu << std::endl;
+  stream << space << this->frictional_contact_pressure << std::endl;
 
   stream << space << "]" << std::endl;
 
@@ -144,6 +179,10 @@ void NTRFFrictionCoulomb::addDumpField(const std::string & field_id) {
   if(field_id == "mu") {
     this->contact.addDumpFieldExternal(field_id,
 				       new DumperIOHelper::NodalField<Real>(this->mu.getArray()));
+  }
+  else if (field_id == "frictional_contact_pressure") {
+    this->contact.addDumpFieldExternal(field_id,
+				       new DumperIOHelper::NodalField<Real>(this->frictional_contact_pressure.getArray()));
   }
   else {
     NTRFFriction::addDumpField(field_id);
