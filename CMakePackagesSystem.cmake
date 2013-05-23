@@ -58,6 +58,8 @@ macro(package_desc_name PKG DESC_NAME)
 endmacro()
 
 #===============================================================================
+option(AUTO_MOVE_OLD_FILES "give cmake permission to move the unregistered files to ${PROJECT_SOURCE_DIR}/tmp directory" FALSE)
+
 macro(add_all_packages package_dir src_dir)
   string(TOUPPER ${PROJECT_NAME} _project)
   cmake_debug_message(PackagesSystem "add_all_packages: PKG DIR : ${package_dir}")
@@ -111,18 +113,34 @@ macro(add_all_packages package_dir src_dir)
       list(FIND ${_project}_release_all_files ${_file} _index)
       if (_index EQUAL -1)
 	list(APPEND ${_project}_missing_files_in_packages ${_file})
-        message(FATAL_ERROR "
-The file 
-      ${_file} 
-is not registered in any package.
-Please append the file in one of the files within directory 
-      ${PROJECT_SOURCE_DIR}/packages 
-or remove the file if useless.
-
-")
       endif()
     endif()
   endforeach()
+  if (${_project}_missing_files_in_packages)
+    message("The files:") 
+    message("*****************") 
+    foreach(_file ${${_project}_missing_files_in_packages})
+      message("${_file}")
+    endforeach()
+    message("*****************") 
+    message("are not registered in any package.")
+    if (NOT AUTO_MOVE_OLD_FILES)
+      message("Please append these files in one of the packages within directory 
+      ${PROJECT_SOURCE_DIR}/packages 
+or remove the files if useless.
+")
+      message(FATAL_ERROR "abort")
+    else()
+      message("These files are getting displaced to directory ${PROJECT_SOURCE_DIR}/tmp/")
+      message("creating directory ${PROJECT_SOURCE_DIR}/tmp/")
+      file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/tmp/)
+      foreach(_file ${${_project}_missing_files_in_packages})
+	get_filename_component(fname ${_file} NAME)
+	message("renaming ${src_dir}/${_file} to ${PROJECT_SOURCE_DIR}/tmp/${fname}")
+	file(RENAME ${src_dir}/${_file} ${PROJECT_SOURCE_DIR}/tmp/${fname})
+      endforeach()
+    endif()
+  endif()
 
   if(${_project}_missing_files_in_packages)
     message("A complete list of files missing in the packeges description can be found here: ${PROJECT_BINARY_DIR}/missing_files_in_packages")
