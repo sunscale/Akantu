@@ -143,7 +143,7 @@ or remove the files if useless.
   endif()
 
   if(${_project}_missing_files_in_packages)
-    message("A complete list of files missing in the packeges description can be found here: ${PROJECT_BINARY_DIR}/missing_files_in_packages")
+    message("A complete list of files missing in the packages description can be found here: ${PROJECT_BINARY_DIR}/missing_files_in_packages")
     if(EXISTS ${PROJECT_BINARY_DIR}/missing_files_in_packages)
       file(REMOVE ${PROJECT_BINARY_DIR}/missing_files_in_packages)
     endif()
