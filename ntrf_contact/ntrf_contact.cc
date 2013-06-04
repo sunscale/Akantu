@@ -51,7 +51,10 @@ NTRFContact::NTRFContact(SolidMechanicsModel & model,
   AKANTU_DEBUG_IN();
 
   FEM & boundary_fem = this->model.getFEMBoundary();
-  boundary_fem.initShapeFunctions();
+
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
+    boundary_fem.initShapeFunctions(*gt);
+  }
 
   Mesh & mesh = this->model.getMesh();
   UInt spatial_dimension = this->model.getSpatialDimension();
@@ -259,49 +262,57 @@ void NTRFContact::updateLumpedBoundary() {
   const FEM & boundary_fem = this->model.getFEMBoundary();
 
   const Mesh & mesh = this->model.getFEM().getMesh();
-  Mesh::type_iterator it = mesh.firstType(dim-1);
-  Mesh::type_iterator last = mesh.lastType(dim-1);
-  for (; it != last; ++it) {
-    // get elements connected to each node
-    CSR<UInt> node_to_element;
-    MeshUtils::buildNode2ElementsByElementType(mesh, *it, node_to_element);
 
-    UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*it);
-    const Array<UInt> & connectivity = mesh.getConnectivity(*it);
+  // get elements connected to each node
+  const CSR<Element> & node_to_element = this->node_to_elements;
 
-    // get shapes and compute integral
-    const Array<Real> & shapes = boundary_fem.getShapes(*it);
-    Array<Real> area(mesh.getNbElement(*it),nb_nodes_per_element);
-    boundary_fem.integrate(shapes,area,nb_nodes_per_element,*it);
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
+    Mesh::type_iterator it = mesh.firstType(dim-1, *gt);
+    Mesh::type_iterator last = mesh.lastType(dim-1, *gt);
+    for (; it != last; ++it) {
+      UInt nb_elements = mesh.getNbElement(*it, *gt);
+      UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*it);
+      const Array<UInt> & connectivity = mesh.getConnectivity(*it, *gt);
 
-    // get surface id information
-//    const Array<UInt> & surface_id = mesh.getSurfaceID(*it);
-//    std::set<UInt>::iterator pos;
-//    std::set<UInt>::iterator end = this->contact_surfaces.end();
+      // get shapes and compute integral
+      const Array<Real> & shapes = boundary_fem.getShapes(*it, *gt);
+      Array<Real> area(nb_elements,nb_nodes_per_element);
+      boundary_fem.integrate(shapes,area,nb_nodes_per_element,*it, *gt);
+      debug::setDebugLevel(dblDump);
+      area.printself(std::cout);
+      debug::setDebugLevel(dblWarning);
+      // get surface id information
+  //    const Array<UInt> & surface_id = mesh.getSurfaceID(*it);
+  //    std::set<UInt>::iterator pos;
+  //    std::set<UInt>::iterator end = this->contact_surfaces.end();
 
-    if (this->contact_surfaces.size() == 0)
-      std::cerr << "No surfaces in ntrf contact. You have to define the lumped boundary by yourself." << std::endl;
+      if (this->contact_surfaces.size() == 0)
+        std::cerr << "No surfaces in ntrf contact. You have to define the lumped boundary by yourself." << std::endl;
 
-    // loop over contact nodes
-    for (UInt i=0; i<nb_contact_nodes; ++i) {
-      UInt node = this->slaves(i);
+      // loop over contact nodes
+      for (UInt i=0; i<nb_contact_nodes; ++i) {
+        UInt node = this->slaves(i);
 
-      CSR<UInt>::iterator elem = node_to_element.begin(node);
-      // loop over all elements connected to this node
-      for (; elem != node_to_element.end(node); ++elem) {
-	UInt e = *elem;
+        CSR<Element>::const_iterator elem = node_to_element.begin(node);
+        // loop over all elements connected to this node
+        for (; elem != node_to_element.end(node); ++elem) {
+          Element e = *elem;
+          if(e.ghost_type != *gt) {
+            continue;
+          }
+            // if element is not at interface continue
+          //	pos = this->contact_surfaces.find(surface_id(e));
+          //	if (pos == end)
+          //	  continue;
 
-	// if element is not at interface continue
-//	pos = this->contact_surfaces.find(surface_id(e));
-//	if (pos == end)
-//	  continue;
-
-	// loop over all points of this element
-	for (UInt q=0; q<nb_nodes_per_element; ++q) {
-	  if (connectivity(e,q) == node) {
-	    this->lumped_boundary(i) += area(e,q);
-	  }
-	}
+          // loop over all points of this element
+          for (UInt q=0; q<nb_nodes_per_element; ++q) {
+            if (connectivity(e.element,q) == node) {
+              Real area_to_add = area(e.element,q);
+              this->lumped_boundary(i) += area_to_add;
+            }
+          }
+        }
       }
     }
   }
@@ -581,7 +592,6 @@ void NTRFContact::addDumpField(const std::string & field_id) {
   else if(field_id == "increment") {
     ADD_FIELD(field_id, this->model.getIncrement(), Real);
   }
-
   else if(field_id == "contact_pressure") {
     addDumpFieldToDumper(field_id,
 			 new DumperIOHelper::NodalField<Real>(this->contact_pressure.getArray()));
@@ -593,6 +603,9 @@ void NTRFContact::addDumpField(const std::string & field_id) {
   else if(field_id == "lumped_boundary") {
     addDumpFieldToDumper(field_id,
 			 new DumperIOHelper::NodalField<Real>(this->lumped_boundary.getArray()));
+  }
+  else {
+    AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
 #undef ADD_FIELD
