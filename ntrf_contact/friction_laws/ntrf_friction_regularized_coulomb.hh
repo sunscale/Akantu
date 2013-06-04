@@ -43,12 +43,12 @@ class NTRFFrictionRegularizedCoulomb : public NTRFFrictionCoulomb {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  
+
   NTRFFrictionRegularizedCoulomb(NTRFContact & contact,
 				 const FrictionID & id = "friction_regularized_coulomb",
 				 const MemoryID & memory_id = 0);
   virtual ~NTRFFrictionRegularizedCoulomb() {};
-  
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -64,7 +64,9 @@ public:
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-  
+
+  virtual void setToSteadyState();
+
 protected:
   /// compute the frictional contact pressure, what is used to compute friction = \mu * \fric_cont_pres
   virtual void computeFrictionalContactPressure();
@@ -87,7 +89,7 @@ public:
 
   // set t_star only to node (global index)
   void setTStar(UInt node, Real tstar);
-  
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -107,7 +109,7 @@ protected:
 //#include "ntrf_friction_regularized_coulomb_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, 
+inline std::ostream & operator <<(std::ostream & stream,
 				  const NTRFFrictionRegularizedCoulomb & _this)
 {
   _this.printself(stream);

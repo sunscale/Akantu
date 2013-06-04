@@ -57,16 +57,16 @@ void NTRFFrictionRegularizedCoulomb::computeFrictionalContactPressure() {
     Real delta_t = model.getTimeStep();
 
     UInt nb_contact_nodes = this->contact.getNbContactNodes();
-    
+
     // get contact arrays
     const SyncronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
     Real * contact_pressure = this->contact.getContactPressure().storage();
-    
+
     for (UInt n=0; n<nb_contact_nodes; ++n) {
       // node pair is NOT in contact
       if (!is_in_contact(n))
 	this->frictional_contact_pressure(n) = 0.;
-      
+
       // if t_star is too small compute like Coulomb friction (without regularization)
       else if (Math::are_float_equal(this->t_star(n), 0.)) {
 	this->frictional_contact_pressure(n) = Math::norm(dim, &(contact_pressure[n*dim]));
@@ -75,7 +75,7 @@ void NTRFFrictionRegularizedCoulomb::computeFrictionalContactPressure() {
       else {
 	// compute frictional contact pressure
 	// backward euler method: first order implicit numerical integration method
-	// \reg_pres_n+1 = (\reg_pres_n + \delta_t / \t_star * \cur_pres) 
+	// \reg_pres_n+1 = (\reg_pres_n + \delta_t / \t_star * \cur_pres)
 	//               / (1 + \delta_t / \t_star)
 	Real current_contact_pressure = Math::norm(dim, &(contact_pressure[n*dim]));
 	Real alpha = delta_t / this->t_star(n);
@@ -91,7 +91,7 @@ void NTRFFrictionRegularizedCoulomb::computeFrictionalContactPressure() {
 /* -------------------------------------------------------------------------- */
 void NTRFFrictionRegularizedCoulomb::registerSyncronizedArray(SyncronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
-  
+
   this->t_star.registerDependingArray(array);
 
   AKANTU_DEBUG_OUT();
@@ -100,7 +100,7 @@ void NTRFFrictionRegularizedCoulomb::registerSyncronizedArray(SyncronizedArrayBa
 /* -------------------------------------------------------------------------- */
 void NTRFFrictionRegularizedCoulomb::dumpRestart(const std::string & file_name) const {
   AKANTU_DEBUG_IN();
-  
+
   this->t_star.dumpRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
@@ -109,7 +109,7 @@ void NTRFFrictionRegularizedCoulomb::dumpRestart(const std::string & file_name) 
 /* -------------------------------------------------------------------------- */
 void NTRFFrictionRegularizedCoulomb::readRestart(const std::string & file_name) {
   AKANTU_DEBUG_IN();
-  
+
   this->t_star.readRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
@@ -140,7 +140,7 @@ void NTRFFrictionRegularizedCoulomb::printself(std::ostream & stream, int indent
   AKANTU_DEBUG_IN();
   std::string space;
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
-  
+
   stream << space << "NTRFFrictionRegularizedCoulomb [" << std::endl;
 
   stream << space << "Regularization On: " << this->regularization_on << std::endl;
@@ -153,12 +153,19 @@ void NTRFFrictionRegularizedCoulomb::printself(std::ostream & stream, int indent
 }
 
 /* -------------------------------------------------------------------------- */
+void NTRFFrictionRegularizedCoulomb::setToSteadyState() {
+  AKANTU_DEBUG_IN();
+  NTRFFrictionCoulomb::computeFrictionalContactPressure();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 void NTRFFrictionRegularizedCoulomb::addDumpField(const std::string & field_id) {
   AKANTU_DEBUG_IN();
-  
+
 #ifdef AKANTU_USE_IOHELPER
   //  const SyncronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
-  
+
   if(field_id == "t_star") {
     this->contact.addDumpFieldExternal(field_id,
 				       new DumperIOHelper::NodalField<Real>(this->t_star.getArray()));
@@ -166,7 +173,7 @@ void NTRFFrictionRegularizedCoulomb::addDumpField(const std::string & field_id) 
   else {
     NTRFFrictionCoulomb::addDumpField(field_id);
   }
-  
+
 #endif
 
   AKANTU_DEBUG_OUT();
