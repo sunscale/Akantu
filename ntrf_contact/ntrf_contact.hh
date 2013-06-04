@@ -45,12 +45,12 @@ class NTRFContact : protected Memory, public Dumpable<DumperParaview> {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  
+
   NTRFContact(SolidMechanicsModel & model,
 	      const ContactID & id = "contact",
 	      const MemoryID & memory_id = 0);
   virtual ~NTRFContact() {};
-  
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -60,7 +60,7 @@ public:
 
   /// add surface and nodes according to the surface normal
   void addSurface(const Surface & surf);
-  
+
   /// add node
   void addNode(UInt node);
 
@@ -88,7 +88,7 @@ public:
   /// read restart file
   void readRestart(const std::string & file_name);
 
-  /// compute the normal gap 
+  /// compute the normal gap
   void computeNormalGap(Array<Real> & gap) const;
 
   /// compute relative normal field (only value that has to be multiplied with the normal)
@@ -100,10 +100,10 @@ public:
   /// relative to master nodes
   void computeRelativeTangentialField(const Array<Real> & field,
 				      Array<Real> & rel_tang_field) const;
-  
+
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-  
+
 protected:
   /// synchronize arrays
   void syncArrays(SyncChoice sync_choice);
@@ -137,6 +137,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+  typedef std::set<const SubBoundary *> SurfacePtrSet;
   ContactID id;
 
   SolidMechanicsModel & model;
@@ -156,7 +157,7 @@ private:
   Array<Real> normal;
 
   /// contact surface
-  std::set<const SubBoundary *> contact_surfaces;
+  SurfacePtrSet contact_surfaces;
 
   /// element list for dump
   ByElementTypeArray<UInt> elements;

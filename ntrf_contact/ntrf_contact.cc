@@ -249,7 +249,9 @@ void NTRFContact::updateInternalData() {
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ This function relies on this->elements containing all elements of all contact areas
+ */
 void NTRFContact::updateLumpedBoundary() {
   AKANTU_DEBUG_IN();
 
@@ -258,13 +260,11 @@ void NTRFContact::updateLumpedBoundary() {
 
   UInt dim = this->model.getSpatialDimension();
   UInt nb_contact_nodes = getNbContactNodes();
+  const Array<UInt> & slaves_array  = this->slaves.getArray();
 
   const FEM & boundary_fem = this->model.getFEMBoundary();
 
   const Mesh & mesh = this->model.getFEM().getMesh();
-
-  // get elements connected to each node
-  const CSR<Element> & node_to_element = this->node_to_elements;
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
     Mesh::type_iterator it = mesh.firstType(dim-1, *gt);
@@ -278,40 +278,19 @@ void NTRFContact::updateLumpedBoundary() {
       const Array<Real> & shapes = boundary_fem.getShapes(*it, *gt);
       Array<Real> area(nb_elements,nb_nodes_per_element);
       boundary_fem.integrate(shapes,area,nb_nodes_per_element,*it, *gt);
-      debug::setDebugLevel(dblDump);
-      area.printself(std::cout);
-      debug::setDebugLevel(dblWarning);
-      // get surface id information
-  //    const Array<UInt> & surface_id = mesh.getSurfaceID(*it);
-  //    std::set<UInt>::iterator pos;
-  //    std::set<UInt>::iterator end = this->contact_surfaces.end();
 
-      if (this->contact_surfaces.size() == 0)
-        std::cerr << "No surfaces in ntrf contact. You have to define the lumped boundary by yourself." << std::endl;
+      AKANTU_DEBUG_ASSERT(this->contact_surfaces.size() != 0, "No surfaces in ntrf contact. You have to define the lumped boundary by yourself.");
 
+      Array<UInt>::const_iterator<UInt> elem_it = (this->elements)(*it, *gt).begin();
+      Array<UInt>::const_iterator<UInt> elem_it_end = (this->elements)(*it, *gt).end();
       // loop over contact nodes
-      for (UInt i=0; i<nb_contact_nodes; ++i) {
-        UInt node = this->slaves(i);
-
-        CSR<Element>::const_iterator elem = node_to_element.begin(node);
-        // loop over all elements connected to this node
-        for (; elem != node_to_element.end(node); ++elem) {
-          Element e = *elem;
-          if(e.ghost_type != *gt) {
-            continue;
-          }
-            // if element is not at interface continue
-          //	pos = this->contact_surfaces.find(surface_id(e));
-          //	if (pos == end)
-          //	  continue;
-
-          // loop over all points of this element
-          for (UInt q=0; q<nb_nodes_per_element; ++q) {
-            if (connectivity(e.element,q) == node) {
-              Real area_to_add = area(e.element,q);
-              this->lumped_boundary(i) += area_to_add;
-            }
-          }
+      for (; elem_it != elem_it_end; ++elem_it) {
+        for (UInt q=0; q<nb_nodes_per_element; ++q) {
+          UInt node = connectivity(*elem_it,q);
+          UInt slave_index = slaves_array.find(node);
+          AKANTU_DEBUG_ASSERT(slave_index != -1, "Could not find node " << node << " in the contact slave array!");
+          Real area_to_add = area(*elem_it,q);
+          this->lumped_boundary(slave_index) += area_to_add;
         }
       }
     }
