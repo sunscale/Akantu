@@ -38,8 +38,8 @@ macro(define_project_version)
   string(TOUPPER ${PROJECT_NAME} _project)
 
   if(SUBVERSION_FOUND)
-    subversion_wc_info(${PROJECT_SOURCE_DIR} ${_project})
-    if(${${_project}_WC_REVISION})
+    subversion_wc_info(${PROJECT_SOURCE_DIR} ${_project} ERROR_QUIET)
+    if(${${_project}_WC_FOUND})
       set(${_project}_BUILD_VERSION ${${_project}_WC_REVISION})
       set(${_project}_VERSION
 	"${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}.${${_project}_BUILD_VERSION}"
