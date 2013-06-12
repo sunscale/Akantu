@@ -126,6 +126,8 @@ public:
   AKANTU_GET_MACRO(LumpedBoundary,   lumped_boundary, const SyncronizedArray<Real> &)
   AKANTU_GET_MACRO(IsInContact,        is_in_contact, const SyncronizedArray<bool> &)
 
+  AKANTU_GET_MACRO(Elements, elements, const ByElementTypeArray<UInt> &)
+
   /// get number of contact nodes
   UInt getNbContactNodes() const { return this->slaves.getSize(); };
 

@@ -7,6 +7,7 @@ set(AKANTU_SIMTOOLS_SRCS
 
   common/syncronized_array.cc
   common/parameter_reader.cc
+  common/manual_restart.cc
 
   ntn_contact/ntn_contact.cc
   ntn_contact/ntn_friction.cc
@@ -27,6 +28,7 @@ set(AKANTU_SIMTOOLS_HDRS
   # headers
   common/syncronized_array.hh
   common/parameter_reader.hh
+  common/manual_restart.hh
 
   ntn_contact/ntn_contact.hh
   ntn_contact/ntn_friction.hh

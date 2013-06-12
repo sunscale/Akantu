@@ -62,6 +62,8 @@ public:
   /// read restart file
   virtual void readRestart(const std::string & file_name);
 
+  virtual void setToSteadyState() {};
+
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
   

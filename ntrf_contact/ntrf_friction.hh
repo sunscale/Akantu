@@ -76,6 +76,11 @@ public:
   /// read restart file
   virtual void readRestart(const std::string & file_name);
 
+  // set to steady state 
+  virtual void setToSteadyState() {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  };
+
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 

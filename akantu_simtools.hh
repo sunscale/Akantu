@@ -2,6 +2,7 @@
 #include "ast_common.hh"
 #include "syncronized_array.hh"
 #include "parameter_reader.hh"
+#include "manual_restart.hh"
 
 // ntn contact/friction
 #include "ntn_contact.hh"
