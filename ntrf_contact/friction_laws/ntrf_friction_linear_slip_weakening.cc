@@ -191,26 +191,30 @@ void NTRFFrictionLinearSlipWeakening::printself(std::ostream & stream, int inden
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFFrictionLinearSlipWeakening::addDumpField(const std::string & field_id) {
+void NTRFFrictionLinearSlipWeakening::addDumpFieldToDumper(const std::string & dumper_name,
+							   const std::string & field_id) {
   AKANTU_DEBUG_IN();
   
 #ifdef AKANTU_USE_IOHELPER
   //  const SyncronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
   
   if(field_id == "mu_static") {
-    this->contact.addDumpFieldExternal(field_id,
+    this->internalAddDumpFieldToDumper(dumper_name,
+				       field_id,
 				       new DumperIOHelper::NodalField<Real>(this->mu_s.getArray()));
   }
   else if(field_id == "mu_kinetic") {
-    this->contact.addDumpFieldExternal(field_id,
+    this->internalAddDumpFieldToDumper(dumper_name,
+				       field_id,
 				       new DumperIOHelper::NodalField<Real>(this->mu_k.getArray()));
   }
   else if(field_id == "weakening_length") {
-    this->contact.addDumpFieldExternal(field_id,
+    this->internalAddDumpFieldToDumper(dumper_name,
+				       field_id,
 				       new DumperIOHelper::NodalField<Real>(this->weakening_length.getArray()));
   }
   else {
-    NTRFFrictionRegularizedCoulomb::addDumpField(field_id);
+    NTRFFrictionRegularizedCoulomb::addDumpFieldToDumper(dumper_name, field_id);
   }
   
 #endif

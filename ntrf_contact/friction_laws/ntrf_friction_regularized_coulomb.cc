@@ -160,18 +160,20 @@ void NTRFFrictionRegularizedCoulomb::setToSteadyState() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFFrictionRegularizedCoulomb::addDumpField(const std::string & field_id) {
+void NTRFFrictionRegularizedCoulomb::addDumpFieldToDumper(const std::string & dumper_name,
+							  const std::string & field_id) {
   AKANTU_DEBUG_IN();
 
 #ifdef AKANTU_USE_IOHELPER
   //  const SyncronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
 
   if(field_id == "t_star") {
-    this->contact.addDumpFieldExternal(field_id,
+    this->internalAddDumpFieldToDumper(dumper_name,
+				       field_id,
 				       new DumperIOHelper::NodalField<Real>(this->t_star.getArray()));
   }
   else {
-    NTRFFrictionCoulomb::addDumpField(field_id);
+    NTRFFrictionCoulomb::addDumpFieldToDumper(dumper_name, field_id);
   }
 
 #endif

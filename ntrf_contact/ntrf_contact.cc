@@ -35,7 +35,7 @@ __BEGIN_SIMTOOLS__
 NTRFContact::NTRFContact(SolidMechanicsModel & model,
 			 const ContactID & id,
 			 const MemoryID & memory_id) :
-  Memory(memory_id), Dumpable<DumperParaview>(id), id(id), model(model),
+  Memory(memory_id), Dumpable(), id(id), model(model),
   slaves(0,1,0,id+":slaves",std::numeric_limits<UInt>::quiet_NaN(),"slaves"),
   contact_pressure(0,model.getSpatialDimension(),0,id+":contact_pressure",
 		   std::numeric_limits<Real>::quiet_NaN(),"contact_pressure"),
@@ -66,13 +66,13 @@ NTRFContact::NTRFContact(SolidMechanicsModel & model,
   MeshUtils::buildNode2Elements(mesh,
 				this->node_to_elements,
 				spatial_dimension - 1);
-
-  addDumpFilteredMesh(mesh,
-		      elements,
-		      slaves.getArray(),
-		      spatial_dimension - 1,
-		      _not_ghost,
-		      _ek_regular);
+  this->registerDumper<DumperText>("text_all", id, true);
+  this->addDumpFilteredMesh(mesh, 
+			    elements, 
+			    slaves.getArray(), 
+			    spatial_dimension - 1, 
+			    _not_ghost,
+			    _ek_regular);
 
   AKANTU_DEBUG_OUT();
 }
@@ -535,17 +535,19 @@ void NTRFContact::syncArrays(SyncChoice sync_choice) {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFContact::addDumpField(const std::string & field_id) {
+void NTRFContact::addDumpFieldToDumper(const std::string & dumper_name,
+				       const std::string & field_id) {
   AKANTU_DEBUG_IN();
 
 #ifdef AKANTU_USE_IOHELPER
   const Array<UInt> & nodal_filter = this->slaves.getArray();
 
 #define ADD_FIELD(field_id, field, type)				\
-  addDumpFieldToDumper(field_id,					\
-		       new DumperIOHelper::NodalField< type, true,	\
-						       Array<type>,	\
-						       Array<UInt> >(field, 0, 0, &nodal_filter))
+  internalAddDumpFieldToDumper(dumper_name,				\
+			       field_id,				\
+			       new DumperIOHelper::NodalField< type, true, \
+							       Array<type>, \
+							       Array<UInt> >(field, 0, 0, &nodal_filter))
 
   if(field_id == "displacement") {
     ADD_FIELD(field_id, this->model.getDisplacement(), Real);
@@ -572,16 +574,19 @@ void NTRFContact::addDumpField(const std::string & field_id) {
     ADD_FIELD(field_id, this->model.getIncrement(), Real);
   }
   else if(field_id == "contact_pressure") {
-    addDumpFieldToDumper(field_id,
-			 new DumperIOHelper::NodalField<Real>(this->contact_pressure.getArray()));
+    internalAddDumpFieldToDumper(dumper_name,
+				 field_id,
+				 new DumperIOHelper::NodalField<Real>(this->contact_pressure.getArray()));
   }
   else if(field_id == "is_in_contact") {
-    addDumpFieldToDumper(field_id,
-			 new DumperIOHelper::NodalField<bool>(this->is_in_contact.getArray()));
+    internalAddDumpFieldToDumper(dumper_name,
+				 field_id,
+				 new DumperIOHelper::NodalField<bool>(this->is_in_contact.getArray()));
   }
   else if(field_id == "lumped_boundary") {
-    addDumpFieldToDumper(field_id,
-			 new DumperIOHelper::NodalField<Real>(this->lumped_boundary.getArray()));
+    internalAddDumpFieldToDumper(dumper_name,
+				 field_id,
+				 new DumperIOHelper::NodalField<Real>(this->lumped_boundary.getArray()));
   }
   else {
     AKANTU_DEBUG_TO_IMPLEMENT();

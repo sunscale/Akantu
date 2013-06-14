@@ -170,22 +170,25 @@ void NTRFFrictionCoulomb::printself(std::ostream & stream, int indent) const {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFFrictionCoulomb::addDumpField(const std::string & field_id) {
+void NTRFFrictionCoulomb::addDumpFieldToDumper(const std::string & dumper_name,
+					       const std::string & field_id) {
   AKANTU_DEBUG_IN();
   
 #ifdef AKANTU_USE_IOHELPER
   //  const SyncronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
   
   if(field_id == "mu") {
-    this->contact.addDumpFieldExternal(field_id,
+    this->internalAddDumpFieldToDumper(dumper_name,
+				       field_id,
 				       new DumperIOHelper::NodalField<Real>(this->mu.getArray()));
   }
   else if (field_id == "frictional_contact_pressure") {
-    this->contact.addDumpFieldExternal(field_id,
+    this->internalAddDumpFieldToDumper(dumper_name,
+				       field_id,
 				       new DumperIOHelper::NodalField<Real>(this->frictional_contact_pressure.getArray()));
   }
   else {
-    NTRFFriction::addDumpField(field_id);
+    NTRFFriction::addDumpFieldToDumper(dumper_name, field_id);
   }
   
 #endif

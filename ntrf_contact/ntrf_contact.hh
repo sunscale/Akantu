@@ -40,7 +40,7 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class NTRFContact : protected Memory, public Dumpable<DumperParaview> {
+class NTRFContact : protected Memory, public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -112,7 +112,8 @@ protected:
   /* Dumpable                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void addDumpField(const std::string & field_id);
+  virtual void addDumpFieldToDumper(const std::string & dumper_name,
+				    const std::string & field_id);
   //  virtual void addDumpFieldVector(const std::string & field_id);
 
   /* ------------------------------------------------------------------------ */

@@ -35,7 +35,7 @@ NTRFFriction::NTRFFriction(NTRFContact & contact,
 			   const FrictionID & id,
 			   const MemoryID & memory_id) : 
   Memory(memory_id), id(id),
-  Dumpable<DumperParaview>(id),
+  Dumpable(),
   contact(contact),
   is_sticking(0,1,true,id+":is_sticking",true,"is_sticking"),
   frictional_strength(0,1,0.,id+":frictional_strength",0.,"frictional_strength"),
@@ -50,6 +50,10 @@ NTRFFriction::NTRFFriction(NTRFContact & contact,
   this->contact.registerSyncronizedArray(this->slip);
 
   contact.getModel().setIncrementFlagOn();
+
+  this->registerExternalDumper(&(contact.getDumper()),
+			       contact.getDefaultDumperName(),
+			       true);
   
   AKANTU_DEBUG_OUT();
 }
@@ -304,30 +308,35 @@ void NTRFFriction::printself(std::ostream & stream, int indent) const {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFFriction::addDumpField(const std::string & field_id) {
+void NTRFFriction::addDumpFieldToDumper(const std::string & dumper_name,
+					const std::string & field_id) {
   AKANTU_DEBUG_IN();
   
 #ifdef AKANTU_USE_IOHELPER
   //  const SyncronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
   
   if(field_id == "is_sticking") {
-    this->contact.addDumpFieldExternal(field_id,
-				       new DumperIOHelper::NodalField<bool>(this->is_sticking.getArray()));
+    this->internalAddDumpFieldToDumper(dumper_name,
+			       field_id,
+			       new DumperIOHelper::NodalField<bool>(this->is_sticking.getArray()));
   }
   else if(field_id == "frictional_strength") {
-    this->contact.addDumpFieldExternal(field_id,
-				       new DumperIOHelper::NodalField<Real>(this->frictional_strength.getArray()));
+    this->internalAddDumpFieldToDumper(dumper_name,
+			       field_id,
+			       new DumperIOHelper::NodalField<Real>(this->frictional_strength.getArray()));
   }
   else if(field_id == "friction_traction") {
-    this->contact.addDumpFieldExternal(field_id,
-				       new DumperIOHelper::NodalField<Real>(this->friction_traction.getArray()));
+    this->internalAddDumpFieldToDumper(dumper_name,
+			       field_id,
+			       new DumperIOHelper::NodalField<Real>(this->friction_traction.getArray()));
   }
   else if(field_id == "slip") {
-    this->contact.addDumpFieldExternal(field_id,
-				       new DumperIOHelper::NodalField<Real>(this->slip.getArray()));
+    this->internalAddDumpFieldToDumper(dumper_name,
+			       field_id,
+			       new DumperIOHelper::NodalField<Real>(this->slip.getArray()));
   }
   else {
-    this->contact.addDumpField(field_id);
+    this->contact.addDumpFieldToDumper(dumper_name, field_id);
   }
   
 #endif

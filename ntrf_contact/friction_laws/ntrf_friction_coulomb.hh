@@ -77,7 +77,8 @@ protected:
   /* Dumpable                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void addDumpField(const std::string & field_id);
+  virtual void addDumpFieldToDumper(const std::string & dumper_name,
+				    const std::string & field_id);
   //  virtual void addDumpFieldVector(const std::string & field_id);
 
   /* ------------------------------------------------------------------------ */
