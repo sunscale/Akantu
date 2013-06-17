@@ -54,8 +54,8 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// register syncronizedarrays for sync
-  virtual void registerSyncronizedArray(SyncronizedArrayBase & array);
+  /// register synchronizedarrays for sync
+  virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
   
   /// dump restart file
   virtual void dumpRestart(const std::string & file_name) const;
@@ -85,7 +85,7 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
   // friction coefficient
-  SyncronizedArray<Real> mu;
+  SynchronizedArray<Real> mu;
 };
 
 

@@ -1,9 +1,9 @@
 /**
- * @file   syncronized_array_inline_impl.cc
+ * @file   synchronized_array_inline_impl.cc
  * @author David Kammer <david.kammer@epfl.ch>
  * @date   Wed Mar 13 07:22:25 2013
  *
- * @brief  inlined methods for the syncronized array
+ * @brief  inlined methods for the synchronized array
  *
  * @section LICENSE
  *
@@ -26,11 +26,11 @@
  */
 
 /* -------------------------------------------------------------------------- */
-template <typename T> inline void SyncronizedArray<T>::push_back(const_reference value) {
+template <typename T> inline void SynchronizedArray<T>::push_back(const_reference value) {
   AKANTU_DEBUG_IN();
  
   AKANTU_DEBUG_ASSERT(deleted_elements.size() == 0, 
-		      "Cannot push_back element if SyncronizedArray" << 
+		      "Cannot push_back element if SynchronizedArray" << 
 		      " is already modified without synchronization");
 
   Array<T>::push_back(value);
@@ -40,11 +40,11 @@ template <typename T> inline void SyncronizedArray<T>::push_back(const_reference
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T> inline void SyncronizedArray<T>::push_back(const value_type new_elem[]) {
+template <typename T> inline void SynchronizedArray<T>::push_back(const value_type new_elem[]) {
   AKANTU_DEBUG_IN();
  
   AKANTU_DEBUG_ASSERT(deleted_elements.size() == 0, 
-		      "Cannot push_back element if SyncronizedArray" << 
+		      "Cannot push_back element if SynchronizedArray" << 
 		      " is already modified without synchronization");
 
   Array<T>::push_back(new_elem);
@@ -54,11 +54,11 @@ template <typename T> inline void SyncronizedArray<T>::push_back(const value_typ
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T> inline void SyncronizedArray<T>::erase(UInt i) {
+template <typename T> inline void SynchronizedArray<T>::erase(UInt i) {
   AKANTU_DEBUG_IN();
   
   AKANTU_DEBUG_ASSERT(nb_added_elements == 0, 
-		      "Cannot erase element if SyncronizedArray" << 
+		      "Cannot erase element if SynchronizedArray" << 
 		      " is already modified without synchronization");
   
   for (UInt j=0; j<this->nb_component; ++j)
@@ -74,7 +74,7 @@ template <typename T> inline void SyncronizedArray<T>::erase(UInt i) {
 /*
 template<typename T>
 template<typename R>
-inline void SyncronizedArray<T>::erase(const iterator<R> & it) {
+inline void SynchronizedArray<T>::erase(const iterator<R> & it) {
   T * curr = it.getCurrentStorage();
   UInt pos = (curr - values) / nb_component;
   erase(pos);

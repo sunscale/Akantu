@@ -258,7 +258,7 @@ void NTNContact::updateNormals() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNContact::registerSyncronizedArray(SyncronizedArrayBase & array) {
+void NTNContact::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
   
   this->slaves.registerDependingArray(array);

@@ -40,7 +40,7 @@ NTRFFrictionRegularizedCoulomb::NTRFFrictionRegularizedCoulomb(NTRFContact & con
   t_star(0,1,0.,id+":t_star",0.,"t_star") {
   AKANTU_DEBUG_IN();
 
-  NTRFFrictionCoulomb::registerSyncronizedArray(this->t_star);
+  NTRFFrictionCoulomb::registerSynchronizedArray(this->t_star);
 
   AKANTU_DEBUG_OUT();
 }
@@ -59,7 +59,7 @@ void NTRFFrictionRegularizedCoulomb::computeFrictionalContactPressure() {
     UInt nb_contact_nodes = this->contact.getNbContactNodes();
 
     // get contact arrays
-    const SyncronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+    const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
     Real * contact_pressure = this->contact.getContactPressure().storage();
 
     for (UInt n=0; n<nb_contact_nodes; ++n) {
@@ -89,7 +89,7 @@ void NTRFFrictionRegularizedCoulomb::computeFrictionalContactPressure() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFFrictionRegularizedCoulomb::registerSyncronizedArray(SyncronizedArrayBase & array) {
+void NTRFFrictionRegularizedCoulomb::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
 
   this->t_star.registerDependingArray(array);
@@ -165,7 +165,7 @@ void NTRFFrictionRegularizedCoulomb::addDumpFieldToDumper(const std::string & du
   AKANTU_DEBUG_IN();
 
 #ifdef AKANTU_USE_IOHELPER
-  //  const SyncronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
+  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
 
   if(field_id == "t_star") {
     this->internalAddDumpFieldToDumper(dumper_name,

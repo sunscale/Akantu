@@ -41,10 +41,10 @@ NTNFrictionLinearSlipWeakening::NTNFrictionLinearSlipWeakening(NTNContact & cont
   slip(0,1,0.,id+":slip",0.,"slip") {
   AKANTU_DEBUG_IN();
 
-  NTNFrictionCoulomb::registerSyncronizedArray(this->weakening_length);
-  NTNFrictionCoulomb::registerSyncronizedArray(this->mu_s);
-  NTNFrictionCoulomb::registerSyncronizedArray(this->mu_k);
-  NTNFrictionCoulomb::registerSyncronizedArray(this->slip);
+  NTNFrictionCoulomb::registerSynchronizedArray(this->weakening_length);
+  NTNFrictionCoulomb::registerSynchronizedArray(this->mu_s);
+  NTNFrictionCoulomb::registerSynchronizedArray(this->mu_k);
+  NTNFrictionCoulomb::registerSynchronizedArray(this->slip);
 
   // set increment flag of solid mechanics model on
   contact.getModel().setIncrementFlagOn();
@@ -106,7 +106,7 @@ void NTNFrictionLinearSlipWeakening::computeFrictionalStrength() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFrictionLinearSlipWeakening::registerSyncronizedArray(SyncronizedArrayBase & array) {
+void NTNFrictionLinearSlipWeakening::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
   
   this->weakening_length.registerDependingArray(array);

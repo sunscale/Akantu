@@ -230,7 +230,7 @@ UInt NTRFContact::getNbNodesInContact() const {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFContact::registerSyncronizedArray(SyncronizedArrayBase & array) {
+void NTRFContact::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
 
   this->slaves.registerDependingArray(array);

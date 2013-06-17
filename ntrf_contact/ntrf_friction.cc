@@ -44,10 +44,10 @@ NTRFFriction::NTRFFriction(NTRFContact & contact,
   slip(0,1,0.,id+":slip",0.,"slip") {
   AKANTU_DEBUG_IN();
 
-  this->contact.registerSyncronizedArray(this->is_sticking);
-  this->contact.registerSyncronizedArray(this->frictional_strength);
-  this->contact.registerSyncronizedArray(this->friction_traction);
-  this->contact.registerSyncronizedArray(this->slip);
+  this->contact.registerSynchronizedArray(this->is_sticking);
+  this->contact.registerSynchronizedArray(this->frictional_strength);
+  this->contact.registerSynchronizedArray(this->friction_traction);
+  this->contact.registerSynchronizedArray(this->slip);
 
   contact.getModel().setIncrementFlagOn();
 
@@ -97,7 +97,7 @@ void NTRFFriction::computeFrictionTraction() {
   UInt nb_imp_nodes = this->contact.getNbContactNodes();
 
   // get contact arrays
-  const SyncronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
 
   // compute friction traction to stop sliding
   Real * contact_pressure = this->contact.getContactPressure().storage();
@@ -144,9 +144,9 @@ void NTRFFriction::computeStickTraction() {
   const Array<Real> & mass = model.getMass();
 
   // get contact arrays
-  const SyncronizedArray<UInt> & nodes = this->contact.getSlaves();
-  const SyncronizedArray<Real> & lumped_boundary = this->contact.getLumpedBoundary();
-  const SyncronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+  const SynchronizedArray<UInt> & nodes = this->contact.getSlaves();
+  const SynchronizedArray<Real> & lumped_boundary = this->contact.getLumpedBoundary();
+  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
 
   // pre-compute the acceleration 
   // (not increment acceleration, because residual is still Kf)
@@ -217,8 +217,8 @@ void NTRFFriction::applyFrictionTraction() {
 
   UInt nb_imp_nodes = this->contact.getNbContactNodes();
   
-  const SyncronizedArray<UInt> & nodes = this->contact.getSlaves();
-  const SyncronizedArray<Real> & lumped_boundary = this->contact.getLumpedBoundary();  
+  const SynchronizedArray<UInt> & nodes = this->contact.getSlaves();
+  const SynchronizedArray<Real> & lumped_boundary = this->contact.getLumpedBoundary();  
 
   for (UInt n=0; n<nb_imp_nodes; ++n) {
     UInt node = nodes(n);
@@ -231,7 +231,7 @@ void NTRFFriction::applyFrictionTraction() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFFriction::registerSyncronizedArray(SyncronizedArrayBase & array) {
+void NTRFFriction::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
   
   this->frictional_strength.registerDependingArray(array);
@@ -264,7 +264,7 @@ void NTRFFriction::readRestart(const std::string & file_name) {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFFriction::setInternalArray(SyncronizedArray<Real> & array, 
+void NTRFFriction::setInternalArray(SynchronizedArray<Real> & array, 
 				    Real value) {
   AKANTU_DEBUG_IN();
 
@@ -277,7 +277,7 @@ void NTRFFriction::setInternalArray(SyncronizedArray<Real> & array,
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFFriction::setInternalArray(SyncronizedArray<Real> & array, 
+void NTRFFriction::setInternalArray(SynchronizedArray<Real> & array, 
 				    UInt node, 
 				    Real value) {
   AKANTU_DEBUG_IN();
@@ -300,7 +300,7 @@ UInt NTRFFriction::getNbStickingNodes() const {
   UInt nb_stick = 0;
 
   UInt nb_nodes = this->contact.getNbContactNodes();
-  const SyncronizedArray<UInt> & nodes = this->contact.getSlaves();
+  const SynchronizedArray<UInt> & nodes = this->contact.getSlaves();
 
   const Mesh & mesh = this->contact.getModel().getMesh();
 
@@ -337,7 +337,7 @@ void NTRFFriction::addDumpFieldToDumper(const std::string & dumper_name,
   AKANTU_DEBUG_IN();
   
 #ifdef AKANTU_USE_IOHELPER
-  //  const SyncronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
+  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
   
   if(field_id == "is_sticking") {
     this->internalAddDumpFieldToDumper(dumper_name,

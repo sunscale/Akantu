@@ -53,8 +53,8 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// register syncronizedarrays for sync
-  virtual void registerSyncronizedArray(SyncronizedArrayBase & array);
+  /// register synchronizedarrays for sync
+  virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
 
   /// dump restart file
   virtual void dumpRestart(const std::string & file_name) const;
@@ -99,7 +99,7 @@ protected:
   bool regularization_on;
 
   // characteristic time scale for regularisation of frict. contact pressure
-  SyncronizedArray<Real> t_star;
+  SynchronizedArray<Real> t_star;
 };
 
 

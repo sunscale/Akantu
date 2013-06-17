@@ -41,8 +41,8 @@ NTRFFrictionCoulomb::NTRFFrictionCoulomb(NTRFContact & contact,
 			      "frictionl_contact_pressure") {
   AKANTU_DEBUG_IN();
 
-  NTRFFriction::registerSyncronizedArray(this->mu);
-  NTRFFriction::registerSyncronizedArray(this->frictional_contact_pressure);
+  NTRFFriction::registerSynchronizedArray(this->mu);
+  NTRFFriction::registerSynchronizedArray(this->frictional_contact_pressure);
 
   AKANTU_DEBUG_OUT();
 }
@@ -57,7 +57,7 @@ void NTRFFrictionCoulomb::computeFrictionalContactPressure() {
   UInt nb_contact_nodes = this->contact.getNbContactNodes();
 
   // get contact arrays
-  const SyncronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
   Real * contact_pressure = this->contact.getContactPressure().storage();
 
   for (UInt n=0; n<nb_contact_nodes; ++n) {
@@ -87,7 +87,7 @@ void NTRFFrictionCoulomb::computeFrictionalStrength() {
   UInt nb_contact_nodes = this->contact.getNbContactNodes();
 
   // get contact arrays
-  const SyncronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
 
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // node pair is NOT in contact
@@ -106,7 +106,7 @@ void NTRFFrictionCoulomb::computeFrictionalStrength() {
 
 
 /* -------------------------------------------------------------------------- */
-void NTRFFrictionCoulomb::registerSyncronizedArray(SyncronizedArrayBase & array) {
+void NTRFFrictionCoulomb::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
   
   this->mu.registerDependingArray(array);
@@ -175,7 +175,7 @@ void NTRFFrictionCoulomb::addDumpFieldToDumper(const std::string & dumper_name,
   AKANTU_DEBUG_IN();
   
 #ifdef AKANTU_USE_IOHELPER
-  //  const SyncronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
+  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
   
   if(field_id == "mu") {
     this->internalAddDumpFieldToDumper(dumper_name,

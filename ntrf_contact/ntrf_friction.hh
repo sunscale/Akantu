@@ -67,8 +67,8 @@ public:
   /// compute slip
   virtual void updateSlip();
 
-  /// register syncronizedarrays for sync
-  virtual void registerSyncronizedArray(SyncronizedArrayBase & array);
+  /// register synchronizedarrays for sync
+  virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
   
   /// dump restart file
   virtual void dumpRestart(const std::string & file_name) const;
@@ -106,14 +106,14 @@ public:
 public:
   AKANTU_GET_MACRO(Contact, contact, const NTRFContact &)
 
-  AKANTU_GET_MACRO(IsSticking,                 is_sticking, const SyncronizedArray<bool> &)
-  AKANTU_GET_MACRO(FrictionalStrength, frictional_strength, const SyncronizedArray<Real> &)
-  AKANTU_GET_MACRO(FrictionTraction,     friction_traction, const SyncronizedArray<Real> &)
-  AKANTU_GET_MACRO(Slip,                              slip, const SyncronizedArray<Real> &)
+  AKANTU_GET_MACRO(IsSticking,                 is_sticking, const SynchronizedArray<bool> &)
+  AKANTU_GET_MACRO(FrictionalStrength, frictional_strength, const SynchronizedArray<Real> &)
+  AKANTU_GET_MACRO(FrictionTraction,     friction_traction, const SynchronizedArray<Real> &)
+  AKANTU_GET_MACRO(Slip,                              slip, const SynchronizedArray<Real> &)
 
 protected:
-  void setInternalArray(SyncronizedArray<Real> & array, Real value);
-  void setInternalArray(SyncronizedArray<Real> & array, UInt node, Real value);
+  void setInternalArray(SynchronizedArray<Real> & array, Real value);
+  void setInternalArray(SynchronizedArray<Real> & array, UInt node, Real value);
   
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -124,13 +124,13 @@ protected:
   NTRFContact & contact;
   
   // if node is sticking
-  SyncronizedArray<bool> is_sticking;
+  SynchronizedArray<bool> is_sticking;
   // frictional strength
-  SyncronizedArray<Real> frictional_strength;
+  SynchronizedArray<Real> frictional_strength;
   // friction force
-  SyncronizedArray<Real> friction_traction;
+  SynchronizedArray<Real> friction_traction;
   // slip
-  SyncronizedArray<Real> slip;
+  SynchronizedArray<Real> slip;
 };
 
 

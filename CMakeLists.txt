@@ -5,7 +5,7 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries.")
 
 set(AKANTU_SIMTOOLS_SRCS
 
-  common/syncronized_array.cc
+  common/synchronized_array.cc
   common/parameter_reader.cc
   common/manual_restart.cc
 
@@ -26,7 +26,7 @@ set(AKANTU_SIMTOOLS_HDRS
   akantu_simtools.hh
 
   # headers
-  common/syncronized_array.hh
+  common/synchronized_array.hh
   common/parameter_reader.hh
   common/manual_restart.hh
 
@@ -42,7 +42,7 @@ set(AKANTU_SIMTOOLS_HDRS
   ntrf_contact/friction_laws/ntrf_friction_linear_slip_weakening.hh
 
   # inlines
-  common/syncronized_array_inline_impl.cc
+  common/synchronized_array_inline_impl.cc
   )
 
 

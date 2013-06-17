@@ -1,6 +1,6 @@
 // ast common
 #include "ast_common.hh"
-#include "syncronized_array.hh"
+#include "synchronized_array.hh"
 #include "parameter_reader.hh"
 #include "manual_restart.hh"
 

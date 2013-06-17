@@ -54,8 +54,8 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-    /// register syncronizedarrays for sync
-  virtual void registerSyncronizedArray(SyncronizedArrayBase & array);
+    /// register synchronizedarrays for sync
+  virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
 
   /// dump restart file
   virtual void dumpRestart(const std::string & file_name) const;
@@ -107,13 +107,13 @@ public:
   /* ------------------------------------------------------------------------ */
 private:
   // Dc the length over which slip weakening happens
-  SyncronizedArray<Real> weakening_length;
+  SynchronizedArray<Real> weakening_length;
 
   // static coefficient of friction
-  SyncronizedArray<Real> mu_s;
+  SynchronizedArray<Real> mu_s;
 
   // kinetic coefficient of friction
-  SyncronizedArray<Real> mu_k;
+  SynchronizedArray<Real> mu_k;
  
 };
 

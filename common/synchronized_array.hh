@@ -1,9 +1,9 @@
 /**
- * @file   syncronized_array.hh
+ * @file   synchronized_array.hh
  * @author David Kammer <david.kammer@epfl.ch>
  * @date   Wed Mar 13 07:19:27 2013
  *
- * @brief  syncronized array: a array can be registered to another (hereafter called top) array. If an element is added to or removed from the top array, the registered array removes or adds at the same position an element. The two arrays stay therefore syncronized.
+ * @brief  synchronized array: a array can be registered to another (hereafter called top) array. If an element is added to or removed from the top array, the registered array removes or adds at the same position an element. The two arrays stay therefore synchronized.
  *
  * @section LICENSE
  *
@@ -26,8 +26,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_SYNCRONIZED_ARRAY_HH__
-#define __AST_SYNCRONIZED_ARRAY_HH__
+#ifndef __AST_SYNCHRONIZED_ARRAY_HH__
+#define __AST_SYNCHRONIZED_ARRAY_HH__
 
 /* -------------------------------------------------------------------------- */
 // std
@@ -48,10 +48,10 @@ using namespace akantu;
 enum SyncChoice {_added, _deleted};
 
 /* -------------------------------------------------------------------------- */
-class SyncronizedArrayBase {
+class SynchronizedArrayBase {
 public:
-  SyncronizedArrayBase() {};
-  ~SyncronizedArrayBase() {};
+  SynchronizedArrayBase() {};
+  ~SynchronizedArrayBase() {};
 
   virtual ID getID() const { return "call should be virtual"; };
 
@@ -61,7 +61,7 @@ public:
 
 /* -------------------------------------------------------------------------- */
 template<class T>
-class SyncronizedArray : public SyncronizedArrayBase, protected Array<T> {
+class SynchronizedArray : public SynchronizedArrayBase, protected Array<T> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -71,11 +71,11 @@ public:
   typedef typename Array<T>::pointer_type    pointer_type;
   typedef typename Array<T>::const_reference const_reference;
   
-  SyncronizedArray(UInt size, UInt nb_component,
+  SynchronizedArray(UInt size, UInt nb_component,
 		   const_reference value, const ID & id,
 		   const_reference default_value, 
 		   const std::string restart_name);
-  virtual ~SyncronizedArray() {};
+  virtual ~SynchronizedArray() {};
   
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -100,7 +100,7 @@ public:
   void readRestartFile(std::string file_name);
 
   /// register depending array
-  void registerDependingArray(SyncronizedArrayBase & array);
+  void registerDependingArray(SynchronizedArrayBase & array);
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
@@ -113,7 +113,7 @@ public:
   //  inline void clear() { memset(values, 0, size*nb_component*sizeof(T)); };
 
   /// copy the content of an other array
-  void copy(const SyncronizedArray<T> & vect) { Array<T>::copy(vect); };
+  void copy(const SynchronizedArray<T> & vect) { Array<T>::copy(vect); };
   
   /// give the address of the memory allocated for this array
   T * storage() const { return Array<T>::storage(); };
@@ -169,7 +169,7 @@ private:
   UInt nb_added_elements;
 
   /// pointers to arrays to be updated
-  std::vector<SyncronizedArrayBase *> depending_arrays;
+  std::vector<SynchronizedArrayBase *> depending_arrays;
 };
 
 
@@ -177,12 +177,12 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "syncronized_array_inline_impl.cc"
+#include "synchronized_array_inline_impl.cc"
 
 /// standard output stream operator
 template <typename T>
 inline std::ostream & operator <<(std::ostream & stream, 
-				  const SyncronizedArray<T> & _this)
+				  const SynchronizedArray<T> & _this)
 {
   _this.printself(stream);
   return stream;
@@ -190,4 +190,4 @@ inline std::ostream & operator <<(std::ostream & stream,
 
 __END_SIMTOOLS__
 
-#endif /* __AST_SYNCRONIZED_ARRAY_HH__ */
+#endif /* __AST_SYNCHRONIZED_ARRAY_HH__ */

@@ -44,10 +44,10 @@ NTNFriction::NTNFriction(NTNContact & contact,
   //mu(0,1,0.,id+":mu",0.,"mu") {
   AKANTU_DEBUG_IN();
 
-  this->contact.registerSyncronizedArray(this->is_sticking);
-  this->contact.registerSyncronizedArray(this->frictional_strength);
-  this->contact.registerSyncronizedArray(this->friction_traction);
-  //  this->contact.registerSyncronizedArray(this->mu);
+  this->contact.registerSynchronizedArray(this->is_sticking);
+  this->contact.registerSynchronizedArray(this->frictional_strength);
+  this->contact.registerSynchronizedArray(this->friction_traction);
+  //  this->contact.registerSynchronizedArray(this->mu);
 
   AKANTU_DEBUG_OUT();
 }
@@ -65,7 +65,7 @@ void NTNFriction::computeFrictionTraction() {
   UInt nb_ntn_pairs = this->contact.getNbContactNodes();
   
   // get contact arrays
-  const SyncronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
   
   // compute friction traction to stop sliding
   Real * contact_pressure = this->contact.getContactPressure().storage();
@@ -109,8 +109,8 @@ void NTNFriction::computeStickTraction() {
   UInt nb_ntn_pairs = this->contact.getNbContactNodes();
 
   // get contact arrays
-  const SyncronizedArray<Real> & impedance = this->contact.getImpedance();
-  const SyncronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+  const SynchronizedArray<Real> & impedance = this->contact.getImpedance();
+  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
 
   // pre-compute the acceleration 
   // (not increment acceleration, because residual is still Kf)
@@ -180,9 +180,9 @@ void NTNFriction::applyFrictionTraction() {
 
   UInt nb_ntn_pairs = this->contact.getNbContactNodes();
   
-  const SyncronizedArray<UInt> & masters = this->contact.getMasters();
-  const SyncronizedArray<UInt> & slaves = this->contact.getSlaves();
-  const SyncronizedArray<Real> & lumped_boundary = this->contact.getLumpedBoundary();  
+  const SynchronizedArray<UInt> & masters = this->contact.getMasters();
+  const SynchronizedArray<UInt> & slaves = this->contact.getSlaves();
+  const SynchronizedArray<Real> & lumped_boundary = this->contact.getLumpedBoundary();  
 
   for (UInt n=0; n<nb_ntn_pairs; ++n) {
     UInt master = masters(n);
@@ -199,7 +199,7 @@ void NTNFriction::applyFrictionTraction() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFriction::registerSyncronizedArray(SyncronizedArrayBase & array) {
+void NTNFriction::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
   
   this->frictional_strength.registerDependingArray(array);
@@ -232,7 +232,7 @@ void NTNFriction::readRestart(const std::string & file_name) {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFriction::setInternalArray(SyncronizedArray<Real> & array, 
+void NTNFriction::setInternalArray(SynchronizedArray<Real> & array, 
 				    Real value) {
   AKANTU_DEBUG_IN();
 
@@ -245,7 +245,7 @@ void NTNFriction::setInternalArray(SyncronizedArray<Real> & array,
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFriction::setInternalArray(SyncronizedArray<Real> & array, 
+void NTNFriction::setInternalArray(SynchronizedArray<Real> & array, 
 				    UInt node, 
 				    Real value) {
   AKANTU_DEBUG_IN();

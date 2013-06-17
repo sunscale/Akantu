@@ -39,7 +39,7 @@ NTNFrictionCoulomb::NTNFrictionCoulomb(NTNContact & contact,
   mu(0,1,0.,id+":mu",0.,"mu") {
   AKANTU_DEBUG_IN();
 
-  NTNFriction::registerSyncronizedArray(this->mu);
+  NTNFriction::registerSynchronizedArray(this->mu);
 
   AKANTU_DEBUG_OUT();
 }
@@ -54,7 +54,7 @@ void NTNFrictionCoulomb::computeFrictionalStrength() {
   UInt nb_ntn_pairs = this->contact.getNbContactNodes();
 
   // get contact arrays
-  const SyncronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
   Real * contact_pressure = this->contact.getContactPressure().storage();
 
   for (UInt n=0; n<nb_ntn_pairs; ++n) {
@@ -73,7 +73,7 @@ void NTNFrictionCoulomb::computeFrictionalStrength() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFrictionCoulomb::registerSyncronizedArray(SyncronizedArrayBase & array) {
+void NTNFrictionCoulomb::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
   
   this->mu.registerDependingArray(array);

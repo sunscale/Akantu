@@ -32,7 +32,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
-#include "syncronized_array.hh"
+#include "synchronized_array.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -79,8 +79,8 @@ public:
   /// impose the normal contact force
   void applyContactPressure();
 
-  /// register syncronizedarrays for sync
-  void registerSyncronizedArray(SyncronizedArrayBase & array);
+  /// register synchronizedarrays for sync
+  void registerSynchronizedArray(SynchronizedArrayBase & array);
 
   /// dump restart file
   void dumpRestart(const std::string & file_name) const;
@@ -122,10 +122,10 @@ public:
 public:
   AKANTU_GET_MACRO(Model, model, SolidMechanicsModel &)
 
-  AKANTU_GET_MACRO(Slaves,                    slaves, const SyncronizedArray<UInt> &)
-  AKANTU_GET_MACRO(ContactPressure, contact_pressure, const SyncronizedArray<Real> &)
-  AKANTU_GET_MACRO(LumpedBoundary,   lumped_boundary, const SyncronizedArray<Real> &)
-  AKANTU_GET_MACRO(IsInContact,        is_in_contact, const SyncronizedArray<bool> &)
+  AKANTU_GET_MACRO(Slaves,                    slaves, const SynchronizedArray<UInt> &)
+  AKANTU_GET_MACRO(ContactPressure, contact_pressure, const SynchronizedArray<Real> &)
+  AKANTU_GET_MACRO(LumpedBoundary,   lumped_boundary, const SynchronizedArray<Real> &)
+  AKANTU_GET_MACRO(IsInContact,        is_in_contact, const SynchronizedArray<bool> &)
 
   AKANTU_GET_MACRO(Elements, elements, const ByElementTypeArray<UInt> &)
 
@@ -149,13 +149,13 @@ private:
   SolidMechanicsModel & model;
 
   /// array of slave nodes
-  SyncronizedArray<UInt> slaves;
+  SynchronizedArray<UInt> slaves;
   /// array indicating if nodes are in contact
-  SyncronizedArray<Real> contact_pressure;
+  SynchronizedArray<Real> contact_pressure;
   /// array indicating if nodes are in contact
-  SyncronizedArray<bool> is_in_contact;
+  SynchronizedArray<bool> is_in_contact;
   /// boundary matrix, lumped_boundary[:,0] slave nodes
-  SyncronizedArray<Real> lumped_boundary;
+  SynchronizedArray<Real> lumped_boundary;
 
   /// reference point for rigid flat surface
   Array<Real> reference_point;

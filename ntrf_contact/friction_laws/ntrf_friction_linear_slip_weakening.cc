@@ -41,9 +41,9 @@ NTRFFrictionLinearSlipWeakening::NTRFFrictionLinearSlipWeakening(NTRFContact & c
   mu_k(0,1,0.,id+":mu_k",0.,"mu_k") {
   AKANTU_DEBUG_IN();
   
-  NTRFFrictionRegularizedCoulomb::registerSyncronizedArray(this->weakening_length);
-  NTRFFrictionRegularizedCoulomb::registerSyncronizedArray(this->mu_s);
-  NTRFFrictionRegularizedCoulomb::registerSyncronizedArray(this->mu_k);
+  NTRFFrictionRegularizedCoulomb::registerSynchronizedArray(this->weakening_length);
+  NTRFFrictionRegularizedCoulomb::registerSynchronizedArray(this->mu_s);
+  NTRFFrictionRegularizedCoulomb::registerSynchronizedArray(this->mu_k);
 
   AKANTU_DEBUG_OUT();
 }
@@ -87,7 +87,7 @@ void NTRFFrictionLinearSlipWeakening::computeFrictionalStrength() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFFrictionLinearSlipWeakening::registerSyncronizedArray(SyncronizedArrayBase & array) {
+void NTRFFrictionLinearSlipWeakening::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
   
   this->weakening_length.registerDependingArray(array);
@@ -196,7 +196,7 @@ void NTRFFrictionLinearSlipWeakening::addDumpFieldToDumper(const std::string & d
   AKANTU_DEBUG_IN();
   
 #ifdef AKANTU_USE_IOHELPER
-  //  const SyncronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
+  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
   
   if(field_id == "mu_static") {
     this->internalAddDumpFieldToDumper(dumper_name,
