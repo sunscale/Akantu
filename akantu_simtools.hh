@@ -4,6 +4,9 @@
 #include "parameter_reader.hh"
 #include "manual_restart.hh"
 
+// functions
+#include "boundary_functions.hh"
+
 // ntn contact/friction
 #include "ntn_contact.hh"
 #include "ntn_friction.hh"

@@ -9,6 +9,8 @@ set(AKANTU_SIMTOOLS_SRCS
   common/parameter_reader.cc
   common/manual_restart.cc
 
+  functions/boundary_functions.cc
+
   ntn_contact/ntn_contact.cc
   ntn_contact/ntn_friction.cc
   ntn_contact/friction_laws/ntn_friction_coulomb.cc
@@ -29,6 +31,8 @@ set(AKANTU_SIMTOOLS_HDRS
   common/synchronized_array.hh
   common/parameter_reader.hh
   common/manual_restart.hh
+
+  functions/boundary_functions.hh
 
   ntn_contact/ntn_contact.hh
   ntn_contact/ntn_friction.hh
