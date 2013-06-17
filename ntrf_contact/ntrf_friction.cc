@@ -294,6 +294,30 @@ void NTRFFriction::setInternalArray(SyncronizedArray<Real> & array,
 }
 
 /* -------------------------------------------------------------------------- */
+UInt NTRFFriction::getNbStickingNodes() const {
+  AKANTU_DEBUG_IN();
+  
+  UInt nb_stick = 0;
+
+  UInt nb_nodes = this->contact.getNbContactNodes();
+  const SyncronizedArray<UInt> & nodes = this->contact.getSlaves();
+
+  const Mesh & mesh = this->contact.getModel().getMesh();
+
+  for (UInt n = 0; n < nb_nodes; ++n) {
+    bool is_local_node = mesh.isLocalOrMasterNode(nodes(n));
+    if (is_local_node && this->is_sticking(n)) {
+      nb_stick++;
+    }
+  }
+
+  StaticCommunicator::getStaticCommunicator().allReduce(&nb_stick, 1, _so_sum);
+
+  AKANTU_DEBUG_OUT();
+  return nb_stick;
+}
+
+/* -------------------------------------------------------------------------- */
 void NTRFFriction::printself(std::ostream & stream, int indent) const {
   AKANTU_DEBUG_IN();
   std::string space;

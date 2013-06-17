@@ -129,8 +129,11 @@ public:
 
   AKANTU_GET_MACRO(Elements, elements, const ByElementTypeArray<UInt> &)
 
-  /// get number of contact nodes
+  /// get number of contact nodes: nodes in the system locally (on this proc)
   UInt getNbContactNodes() const { return this->slaves.getSize(); };
+
+  /// get number of nodes that are in contact (globally, on all procs together)
+  UInt getNbNodesInContact() const;
 
   /// get index of node in either slaves or masters array
   /// if node is in neither of them, return -1

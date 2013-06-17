@@ -81,6 +81,9 @@ public:
     AKANTU_DEBUG_TO_IMPLEMENT();
   };
 
+  /// get the number of sticking nodes (in parallel)
+  virtual UInt getNbStickingNodes() const;
+
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 

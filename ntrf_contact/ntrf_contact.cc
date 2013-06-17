@@ -208,6 +208,28 @@ void NTRFContact::addNodes(Array<UInt> & nodes) {
 }
 
 /* -------------------------------------------------------------------------- */
+UInt NTRFContact::getNbNodesInContact() const {
+  AKANTU_DEBUG_IN();
+
+  UInt nb_contact = 0;
+
+  UInt nb_nodes = this->getNbContactNodes();
+  const Mesh & mesh = this->model.getMesh();
+
+  for (UInt n = 0; n < nb_nodes; ++n) {
+    bool is_local_node = mesh.isLocalOrMasterNode(this->slaves(n));
+    if (is_local_node && this->is_in_contact(n)) {
+      nb_contact++;
+    }
+  }
+
+  StaticCommunicator::getStaticCommunicator().allReduce(&nb_contact, 1, _so_sum);
+
+  AKANTU_DEBUG_OUT();
+  return nb_contact;
+}
+
+/* -------------------------------------------------------------------------- */
 void NTRFContact::registerSyncronizedArray(SyncronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
 
