@@ -130,14 +130,19 @@ void NTRFContact::addSurface(const Surface & surf) {
 
   const Mesh & mesh_ref = this->model.getFEM().getMesh();
 
-  const SubBoundary & boundary = mesh_ref.getSubBoundary(surf);
-  this->contact_surfaces.insert(&boundary);
+  try {
+    const SubBoundary & boundary = mesh_ref.getSubBoundary(surf);
+    this->contact_surfaces.insert(&boundary);
 
-  // find slave nodes
-  for(SubBoundary::nodes_const_iterator nodes_it(boundary.nodes_begin());
-      nodes_it!= boundary.nodes_end();
-      ++nodes_it) {
-    this->addNode(*nodes_it);
+    // find slave nodes
+    for(SubBoundary::nodes_const_iterator nodes_it(boundary.nodes_begin());
+	nodes_it!= boundary.nodes_end();
+	++nodes_it) {
+      this->addNode(*nodes_it);
+    }
+  } catch (debug::Exception e) {
+    AKANTU_DEBUG_INFO("NTRFContact addSurface did not found subboundary " << surf 
+		      << " and ignored it. Other procs might have it :)");
   }
 
   // synchronize with depending nodes
@@ -301,7 +306,9 @@ void NTRFContact::updateLumpedBoundary() {
       Array<Real> area(nb_elements,nb_nodes_per_element);
       boundary_fem.integrate(shapes,area,nb_nodes_per_element,*it, *gt);
 
-      AKANTU_DEBUG_ASSERT(this->contact_surfaces.size() != 0, "No surfaces in ntrf contact. You have to define the lumped boundary by yourself.");
+      if (this->contact_surfaces.size() == 0) {
+	AKANTU_DEBUG_WARNING("No surfaces in ntrf contact. You have to define the lumped boundary by yourself.");
+      }
 
       Array<UInt>::const_iterator<UInt> elem_it = (this->elements)(*it, *gt).begin();
       Array<UInt>::const_iterator<UInt> elem_it_end = (this->elements)(*it, *gt).end();
