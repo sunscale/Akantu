@@ -40,4 +40,5 @@ using namespace akantu;
 Real integrateResidual(const std::string & sub_boundary_name,
 		       const SolidMechanicsModel & model,
 		       UInt dir);
+
 __END_SIMTOOLS__

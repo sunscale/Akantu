@@ -33,6 +33,10 @@ set(AKANTU_SIMTOOLS_HDRS
   common/manual_restart.hh
 
   functions/boundary_functions.hh
+  functions/node_filter.hh
+
+  boundary_conditions/force_based_dirichlet.hh
+  boundary_conditions/spring_bc.hh
 
   ntn_contact/ntn_contact.hh
   ntn_contact/ntn_friction.hh

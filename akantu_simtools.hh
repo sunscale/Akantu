@@ -6,6 +6,11 @@
 
 // functions
 #include "boundary_functions.hh"
+#include "node_filter.hh"
+
+// boundary conditions
+#include "force_based_dirichlet.hh"
+#include "spring_bc.hh"
 
 // ntn contact/friction
 #include "ntn_contact.hh"
