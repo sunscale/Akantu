@@ -30,4 +30,22 @@ Real integrateResidual(const std::string & sub_boundary_name,
   return int_res;
 }
 
+/* -------------------------------------------------------------------------- */
+void boundaryFix(Mesh & mesh, 
+		 const std::vector<std::string> & sub_boundary_names) {
+  
+  const Array<UInt> empty_node_vector;
+  Boundary & boundary = mesh.getBoundary();
+
+  std::vector<std::string>::const_iterator it  = sub_boundary_names.begin();
+  std::vector<std::string>::const_iterator end = sub_boundary_names.end();
+
+  for (; it != end; ++it) {
+    if (boundary.find(*it) == boundary.end()) {
+      boundary.createSubBoundaryFromNodeGroup(*it, empty_node_vector);
+    }
+  }
+}
+
+
 __END_SIMTOOLS__
