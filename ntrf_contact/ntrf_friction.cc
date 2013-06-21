@@ -301,12 +301,13 @@ UInt NTRFFriction::getNbStickingNodes() const {
 
   UInt nb_nodes = this->contact.getNbContactNodes();
   const SynchronizedArray<UInt> & nodes = this->contact.getSlaves();
+  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
 
   const Mesh & mesh = this->contact.getModel().getMesh();
 
   for (UInt n = 0; n < nb_nodes; ++n) {
     bool is_local_node = mesh.isLocalOrMasterNode(nodes(n));
-    if (is_local_node && this->is_sticking(n)) {
+    if (is_local_node && is_in_contact(n) && this->is_sticking(n)) {
       nb_stick++;
     }
   }

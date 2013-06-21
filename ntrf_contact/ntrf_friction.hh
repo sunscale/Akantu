@@ -82,6 +82,7 @@ public:
   };
 
   /// get the number of sticking nodes (in parallel)
+  /// a node that is not in contact does not count as sticking
   virtual UInt getNbStickingNodes() const;
 
   /// function to print the contain of the class
