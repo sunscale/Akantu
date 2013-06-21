@@ -28,17 +28,25 @@
 #===============================================================================
 
 #===============================================================================
-find_library(MUMPS_LIBRARY_DMUMPS NAMES dmumps dmumps_seq dmumps_ptscotch
+if(NOT MUMPS_TYPE)
+  set(MUMPS_TYPE par)
+endif()
+
+if("${MUMPS_TYPE}" STREQUAL "seq")
+  set(MUMPS_PREFIX _seq)
+endif()
+
+find_library(MUMPS_LIBRARY_DMUMPS NAMES dmumps${MUMPS_PREFIX}
    PATHS ${MUMPS_DIR} /usr
    PATH_SUFFIXES lib
    )
 
-find_library(MUMPS_LIBRARY_COMMON NAMES mumps_common mumps_seq mumps_common_ptscotch
+find_library(MUMPS_LIBRARY_COMMON NAMES mumps_common${MUMPS_PREFIX}
    PATHS ${MUMPS_DIR}
    PATH_SUFFIXES lib
    )
 
-find_library(MUMPS_LIBRARY_PORD NAMES pord pord_seq pord_ptscotch
+find_library(MUMPS_LIBRARY_PORD NAMES pord${MUMPS_PREFIX}
    PATHS ${MUMPS_DIR}
    PATH_SUFFIXES lib
    )
@@ -49,46 +57,41 @@ find_path(MUMPS_INCLUDE_DIR dmumps_c.h
   PATH_SUFFIXES include
   )
 
-
-find_library(BLACS_LIBRARY_C NAME blacsC
-   PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
-find_library(BLACS_LIBRARY_F77 NAME blacsF77
-   PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
-find_library(BLACS_LIBRARY NAME blacs
-   PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
-find_library(SCALAPACK_LIBRARY NAME scalapack
-   PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
-
-#enable_language(Fortran)
-#find_package(BLAS REQUIRED)
-#find_package(LAPACK REQUIRED)
-##===============================================================================
 mark_as_advanced(MUMPS_LIBRARY_COMMON)
 mark_as_advanced(MUMPS_LIBRARY_DMUMPS)
 mark_as_advanced(MUMPS_LIBRARY_PORD)
 mark_as_advanced(MUMPS_INCLUDE_DIR)
-
-mark_as_advanced(BLACS_LIBRARY_C)
-mark_as_advanced(BLACS_LIBRARY_F77)
-mark_as_advanced(BLACS_LIBRARY)
-mark_as_advanced(SCALAPACK_LIBRARY)
-
 set(MUMPS_LIBRARIES_ALL ${MUMPS_LIBRARY_DMUMPS} ${MUMPS_LIBRARY_COMMON} ${MUMPS_LIBRARY_PORD})
 
-if(SCALAPACK_LIBRARY)
-  set(BLACS_LIBRARIES_ALL ${BLACS_LIBRARIES_ALL} ${SCALAPACK_LIBRARY})
-endif()
-if(BLACS_LIBRARY_F77)
-  set(BLACS_LIBRARIES_ALL ${BLACS_LIBRARIES_ALL} ${BLACS_LIBRARY_F77})
-endif()
-if(BLACS_LIBRARY)
-  set(BLACS_LIBRARIES_ALL ${BLACS_LIBRARIES_ALL} ${BLACS_LIBRARY})
-endif()
-if(BLACS_LIBRARY_C)
-  set(BLACS_LIBRARIES_ALL ${BLACS_LIBRARIES_ALL} ${BLACS_LIBRARY_C})
-endif()
-if(BLACS_LIBRARY_F77)
-  set(BLACS_LIBRARIES_ALL ${BLACS_LIBRARIES_ALL} ${BLACS_LIBRARY_F77})
+if("${MUMPS_TYPE}" STREQUAL "par")
+  find_library(BLACS_LIBRARY_C NAME blacsC
+    PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
+  find_library(BLACS_LIBRARY_F77 NAME blacsF77
+    PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
+  find_library(BLACS_LIBRARY NAME blacs
+    PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
+  find_library(SCALAPACK_LIBRARY NAME scalapack
+    PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
+
+  mark_as_advanced(BLACS_LIBRARY_C)
+  mark_as_advanced(BLACS_LIBRARY_F77)
+  mark_as_advanced(BLACS_LIBRARY)
+  mark_as_advanced(SCALAPACK_LIBRARY)
+  if(SCALAPACK_LIBRARY)
+    set(BLACS_LIBRARIES_ALL ${BLACS_LIBRARIES_ALL} ${SCALAPACK_LIBRARY})
+  endif()
+  if(BLACS_LIBRARY_F77)
+    set(BLACS_LIBRARIES_ALL ${BLACS_LIBRARIES_ALL} ${BLACS_LIBRARY_F77})
+  endif()
+  if(BLACS_LIBRARY)
+    set(BLACS_LIBRARIES_ALL ${BLACS_LIBRARIES_ALL} ${BLACS_LIBRARY})
+  endif()
+  if(BLACS_LIBRARY_C)
+    set(BLACS_LIBRARIES_ALL ${BLACS_LIBRARIES_ALL} ${BLACS_LIBRARY_C})
+  endif()
+  if(BLACS_LIBRARY_F77)
+    set(BLACS_LIBRARIES_ALL ${BLACS_LIBRARIES_ALL} ${BLACS_LIBRARY_F77})
+  endif()
 endif()
 
 set(MUMPS_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${BLACS_LIBRARIES_ALL} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES}  CACHE INTERNAL "Libraries for MUMPS" FORCE)
