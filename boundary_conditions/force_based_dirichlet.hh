@@ -80,7 +80,7 @@ public:
     }
   }
 
-  Real update() {
+  virtual Real update() {
     AKANTU_DEBUG_IN();
     
     this->updateTotalResidual();

@@ -60,7 +60,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  Real update() {
+  virtual Real update() {
     AKANTU_DEBUG_IN();
 
     this->target_force = - this->stiffness * this->elongation;
@@ -75,6 +75,8 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  AKANTU_GET_MACRO(Elongation, elongation, Real);
+
   inline void setToEquilibrium() {
     AKANTU_DEBUG_IN();
   
