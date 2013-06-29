@@ -84,10 +84,9 @@ void NTNFrictionLinearSlipWeakening::computeFrictionCoefficient() {
 	this->mu(n) = this->mu_k(n);
       }
       else {
-	// mu = mu_k + (1 - delta / Dc) * (mu_s - mu_k)
-	Real delta = this->slip(n) - this->weakening_length(n);
-	delta /= this->weakening_length(n);
-	this->mu(n) = this->mu_k(n) + (1 - delta) * (this->mu_s(n) - this->mu_k(n));
+	// mu = mu_k + (1 - slip / Dc) * (mu_s - mu_k)
+	this->mu(n) = this->mu_k(n) 
+	            + (1 - (this->slip(n) / this->weakening_length(n))) * (this->mu_s(n) - this->mu_k(n));
       }
     }
   }
