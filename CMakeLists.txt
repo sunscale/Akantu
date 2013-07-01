@@ -21,6 +21,8 @@ set(AKANTU_SIMTOOLS_SRCS
   ntrf_contact/friction_laws/ntrf_friction_coulomb.cc
   ntrf_contact/friction_laws/ntrf_friction_regularized_coulomb.cc
   ntrf_contact/friction_laws/ntrf_friction_linear_slip_weakening.cc
+
+  ntrf_contact/friction_laws/ntrf_friction_mathilde.cc
   )
 
 set(AKANTU_SIMTOOLS_HDRS
@@ -48,6 +50,8 @@ set(AKANTU_SIMTOOLS_HDRS
   ntrf_contact/friction_laws/ntrf_friction_coulomb.hh
   ntrf_contact/friction_laws/ntrf_friction_regularized_coulomb.hh
   ntrf_contact/friction_laws/ntrf_friction_linear_slip_weakening.hh
+
+  ntrf_contact/friction_laws/ntrf_friction_mathilde.hh
 
   # inlines
   common/synchronized_array_inline_impl.cc
