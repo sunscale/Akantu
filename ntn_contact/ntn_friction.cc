@@ -36,18 +36,53 @@ NTNFriction::NTNFriction(NTNContact & contact,
 			 const FrictionID & id,
 			 const MemoryID & memory_id) : 
   Memory(memory_id), id(id),
+  Dumpable(),
   contact(contact),
   is_sticking(0,1,true,id+":is_sticking",true,"is_sticking"),
   frictional_strength(0,1,0.,id+":frictional_strength",0.,"frictional_strength"),
   friction_traction(0,contact.getModel().getSpatialDimension(),
-		    0.,id+":friction_traction",0.,"friction_traction") {
-  //mu(0,1,0.,id+":mu",0.,"mu") {
+		    0.,id+":friction_traction",0.,"friction_traction"),
+  slip(0,1,0.,id+":slip",0.,"slip"),
+  slip_speed(0,1,0.,id+":slip_speed",0.,"slip_speed") {
   AKANTU_DEBUG_IN();
 
   this->contact.registerSynchronizedArray(this->is_sticking);
   this->contact.registerSynchronizedArray(this->frictional_strength);
   this->contact.registerSynchronizedArray(this->friction_traction);
-  //  this->contact.registerSynchronizedArray(this->mu);
+  this->contact.registerSynchronizedArray(this->slip);
+  this->contact.registerSynchronizedArray(this->slip_speed);
+
+  contact.getModel().setIncrementFlagOn();
+
+  this->registerExternalDumper(&(contact.getDumper()),
+			       contact.getDefaultDumperName(),
+			       true);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void NTNFriction::updateSlip() {
+  AKANTU_DEBUG_IN();
+  
+  SolidMechanicsModel & model = this->contact.getModel();
+  UInt dim = model.getSpatialDimension();
+  UInt nb_nodes = this->contact.getNbContactNodes();
+
+  Array<Real> rel_tan_incr(0,dim);
+  this->contact.computeRelativeTangentialField(model.getIncrement(),
+					       rel_tan_incr);
+
+  Real * rel_tan_incr_p = rel_tan_incr.storage();
+  for (UInt n=0; n<nb_nodes; ++n) {
+    if (this->is_sticking(n)) {
+      this->slip(n) = 0.;
+    }
+    else {
+      Real abs_incr = Math::norm(dim, &(rel_tan_incr_p[n*dim]));
+      this->slip(n) += abs_incr;
+    }
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -182,15 +217,16 @@ void NTNFriction::applyFrictionTraction() {
   
   const SynchronizedArray<UInt> & masters = this->contact.getMasters();
   const SynchronizedArray<UInt> & slaves = this->contact.getSlaves();
-  const SynchronizedArray<Real> & lumped_boundary = this->contact.getLumpedBoundary();  
+  const SynchronizedArray<Real> & lumped_boundary_slaves = this->contact.getLumpedBoundarySlaves();
+  const SynchronizedArray<Real> & lumped_boundary_masters = this->contact.getLumpedBoundaryMasters();
 
   for (UInt n=0; n<nb_ntn_pairs; ++n) {
     UInt master = masters(n);
     UInt slave = slaves(n);
     
     for (UInt d=0; d<dim; ++d) {
-      residual(master,d) += lumped_boundary(n,0) * this->friction_traction(n,d);
-      residual(slave, d) -= lumped_boundary(n,1) * this->friction_traction(n,d);
+      residual(master,d) += lumped_boundary_masters(n) * this->friction_traction(n,d);
+      residual(slave, d) -= lumped_boundary_slaves(n)  * this->friction_traction(n,d);
     }
   }
 
@@ -214,7 +250,8 @@ void NTNFriction::dumpRestart(const std::string & file_name) const {
   this->is_sticking.dumpRestartFile(file_name);
   this->frictional_strength.dumpRestartFile(file_name);
   this->friction_traction.dumpRestartFile(file_name);
-  //  this->mu.dumpRestartFile(file_name);
+  this->slip.dumpRestartFile(file_name);
+  //  this->slip_speed.dumpRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
 }
@@ -226,7 +263,8 @@ void NTNFriction::readRestart(const std::string & file_name) {
   this->is_sticking.readRestartFile(file_name);
   this->frictional_strength.readRestartFile(file_name);
   this->friction_traction.readRestartFile(file_name);
-  //  this->mu.readRestartFile(file_name);
+  this->slip.readRestartFile(file_name);
+  //  this->slip_speed.readRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
 }
@@ -262,6 +300,31 @@ void NTNFriction::setInternalArray(SynchronizedArray<Real> & array,
 }
 
 /* -------------------------------------------------------------------------- */
+UInt NTNFriction::getNbStickingNodes() const {
+  AKANTU_DEBUG_IN();
+  
+  UInt nb_stick = 0;
+
+  UInt nb_nodes = this->contact.getNbContactNodes();
+  const SynchronizedArray<UInt> & nodes = this->contact.getSlaves();
+  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+
+  const Mesh & mesh = this->contact.getModel().getMesh();
+
+  for (UInt n = 0; n < nb_nodes; ++n) {
+    bool is_local_node = mesh.isLocalOrMasterNode(nodes(n));
+    if (is_local_node && is_in_contact(n) && this->is_sticking(n)) {
+      nb_stick++;
+    }
+  }
+
+  StaticCommunicator::getStaticCommunicator().allReduce(&nb_stick, 1, _so_sum);
+
+  AKANTU_DEBUG_OUT();
+  return nb_stick;
+}
+
+/* -------------------------------------------------------------------------- */
 void NTNFriction::printself(std::ostream & stream, int indent) const {
   AKANTU_DEBUG_IN();
   std::string space;
@@ -274,5 +337,49 @@ void NTNFriction::printself(std::ostream & stream, int indent) const {
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+void NTNFriction::addDumpFieldToDumper(const std::string & dumper_name,
+				       const std::string & field_id) {
+  AKANTU_DEBUG_IN();
+  
+#ifdef AKANTU_USE_IOHELPER
+  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
+  
+  if(field_id == "is_sticking") {
+    this->internalAddDumpFieldToDumper(dumper_name,
+			       field_id,
+			       new DumperIOHelper::NodalField<bool>(this->is_sticking.getArray()));
+  }
+  else if(field_id == "frictional_strength") {
+    this->internalAddDumpFieldToDumper(dumper_name,
+			       field_id,
+			       new DumperIOHelper::NodalField<Real>(this->frictional_strength.getArray()));
+  }
+  else if(field_id == "friction_traction") {
+    this->internalAddDumpFieldToDumper(dumper_name,
+			       field_id,
+			       new DumperIOHelper::NodalField<Real>(this->friction_traction.getArray()));
+  }
+  else if(field_id == "slip") {
+    this->internalAddDumpFieldToDumper(dumper_name,
+			       field_id,
+			       new DumperIOHelper::NodalField<Real>(this->slip.getArray()));
+  }
+  else if(field_id == "slip_speed") {
+    this->internalAddDumpFieldToDumper(dumper_name,
+			       field_id,
+			       new DumperIOHelper::NodalField<Real>(this->slip_speed.getArray()));
+  }
+  else {
+    this->contact.addDumpFieldToDumper(dumper_name, field_id);
+  }
+  
+#endif
+
+  AKANTU_DEBUG_OUT();
+}
+
+
 
 __END_SIMTOOLS__

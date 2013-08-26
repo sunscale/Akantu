@@ -112,6 +112,10 @@ public:
   inline void clear() { Array<T>::clear(); };
   //  inline void clear() { memset(values, 0, size*nb_component*sizeof(T)); };
 
+  /// set
+  template<template<typename> class C>
+  inline void set(const C<T> & vm) { Array<T>::set(vm); };
+
   /// copy the content of an other array
   void copy(const SynchronizedArray<T> & vect) { Array<T>::copy(vect); };
   

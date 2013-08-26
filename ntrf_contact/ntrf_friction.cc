@@ -145,7 +145,7 @@ void NTRFFriction::computeStickTraction() {
 
   // get contact arrays
   const SynchronizedArray<UInt> & nodes = this->contact.getSlaves();
-  const SynchronizedArray<Real> & lumped_boundary = this->contact.getLumpedBoundary();
+  const SynchronizedArray<Real> & lumped_boundary = this->contact.getLumpedBoundarySlaves();
   const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
 
   // pre-compute the acceleration 
@@ -218,7 +218,7 @@ void NTRFFriction::applyFrictionTraction() {
   UInt nb_imp_nodes = this->contact.getNbContactNodes();
   
   const SynchronizedArray<UInt> & nodes = this->contact.getSlaves();
-  const SynchronizedArray<Real> & lumped_boundary = this->contact.getLumpedBoundary();  
+  const SynchronizedArray<Real> & lumped_boundary = this->contact.getLumpedBoundarySlaves();
 
   for (UInt n=0; n<nb_imp_nodes; ++n) {
     UInt node = nodes(n);

@@ -13,6 +13,7 @@
 #include "spring_bc.hh"
 
 // ntn contact/friction
+#include "ntn_base_contact.hh"
 #include "ntn_contact.hh"
 #include "ntn_friction.hh"
 #include "ntn_friction_coulomb.hh"

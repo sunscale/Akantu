@@ -31,8 +31,8 @@
 #define __AST_NTRF_CONTACT_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
-#include "synchronized_array.hh"
+// simtools
+#include "ntn_base_contact.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -40,7 +40,7 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class NTRFContact : protected Memory, public Dumpable {
+class NTRFContact : public NTNBaseContact {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -61,52 +61,30 @@ public:
   /// add surface and nodes according to the surface normal
   void addSurface(const Surface & surf);
 
-  /// add node
-  void addNode(UInt node);
-
   // add nodes from a list
   void addNodes(Array<UInt> & nodes);
 
-  /// update normals, lumped boundary, and impedance
-  void updateInternalData();
+  /// update (copy the normal to all normals)
+  virtual void updateNormals();
 
-  /// update the lumped boundary B matrix
-  void updateLumpedBoundary();
-
-  /// compute the normal contact force
-  void computeContactPressure();
-
-  /// impose the normal contact force
-  void applyContactPressure();
-
-  /// register synchronizedarrays for sync
-  void registerSynchronizedArray(SynchronizedArrayBase & array);
-
-  /// dump restart file
-  void dumpRestart(const std::string & file_name) const;
-
-  /// read restart file
-  void readRestart(const std::string & file_name);
+  /// update the impedance matrix
+  virtual void updateImpedance();
 
   /// compute the normal gap
-  void computeNormalGap(Array<Real> & gap) const;
+  virtual void computeNormalGap(Array<Real> & gap) const;
 
   /// compute relative normal field (only value that has to be multiplied with the normal)
   /// relative to master nodes
-  void computeRelativeNormalField(const Array<Real> & field,
-				  Array<Real> & rel_normal_field) const;
+  virtual void computeRelativeNormalField(const Array<Real> & field,
+					  Array<Real> & rel_normal_field) const;
 
   /// compute relative tangential field (complet array)
   /// relative to master nodes
-  void computeRelativeTangentialField(const Array<Real> & field,
-				      Array<Real> & rel_tang_field) const;
+  virtual void computeRelativeTangentialField(const Array<Real> & field,
+					      Array<Real> & rel_tang_field) const;
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-
-protected:
-  /// synchronize arrays
-  void syncArrays(SyncChoice sync_choice);
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
@@ -120,56 +98,15 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  AKANTU_GET_MACRO(Model, model, SolidMechanicsModel &)
-
-  AKANTU_GET_MACRO(Slaves,                    slaves, const SynchronizedArray<UInt> &)
-  AKANTU_GET_MACRO(ContactPressure, contact_pressure, const SynchronizedArray<Real> &)
-  AKANTU_GET_MACRO(LumpedBoundary,   lumped_boundary, const SynchronizedArray<Real> &)
-  AKANTU_GET_MACRO(IsInContact,        is_in_contact, const SynchronizedArray<bool> &)
-
-  AKANTU_GET_MACRO(Elements, elements, const ByElementTypeArray<UInt> &)
-
-  /// get number of nodes that are in contact (globally, on all procs together)
-  /// is_in_contact = true
-  UInt getNbNodesInContact() const;
-
-  /// get index of node in either slaves or masters array
-  /// if node is in neither of them, return -1
-  Int getNodeIndex(UInt node) const;
-
-  /// get number of contact nodes: nodes in the system locally (on this proc)
-  /// is_in_contact = true and false, because just in the system
-  UInt getNbContactNodes() const { return this->slaves.getSize(); };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef std::set<const SubBoundary *> SurfacePtrSet;
-  ContactID id;
-
-  SolidMechanicsModel & model;
-
-  /// array of slave nodes
-  SynchronizedArray<UInt> slaves;
-  /// array indicating if nodes are in contact
-  SynchronizedArray<Real> contact_pressure;
-  /// array indicating if nodes are in contact
-  SynchronizedArray<bool> is_in_contact;
-  /// boundary matrix, lumped_boundary[:,0] slave nodes
-  SynchronizedArray<Real> lumped_boundary;
-
   /// reference point for rigid flat surface
-  Array<Real> reference_point;
+  Vector<Real> reference_point;
   /// outpointing normal of rigid flat surface
-  Array<Real> normal;
-
-  /// contact surface
-  SurfacePtrSet contact_surfaces;
-
-  /// element list for dump
-  ByElementTypeArray<UInt> elements;
-  CSR<Element> node_to_elements;
+  Vector<Real> normal;
 };
 
 

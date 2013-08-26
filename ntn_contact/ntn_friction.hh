@@ -40,7 +40,7 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class NTNFriction : protected Memory {
+class NTNFriction : protected Memory, public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -64,6 +64,9 @@ public:
   /// apply the friction force
   void applyFrictionTraction();
 
+  /// compute slip
+  virtual void updateSlip();
+
   /// register Syncronizedarrays for sync
   virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
   
@@ -73,12 +76,28 @@ public:
   /// read restart file
   virtual void readRestart(const std::string & file_name);
 
+  /// set to steady state
+  virtual void setToSteadyState() {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  };
+
+  /// get the number of sticking nodes (in parallel)
+  /// a node that is not in contact does not count as sticking
+  virtual UInt getNbStickingNodes() const;
+
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
 protected:
   /// compute frictional strength according to friction law
   virtual void computeFrictionalStrength() = 0;
+
+  /* ------------------------------------------------------------------------ */
+  /* Dumpable                                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  virtual void addDumpFieldToDumper(const std::string & dumper_name,
+				    const std::string & field_id);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -89,12 +108,8 @@ public:
   AKANTU_GET_MACRO(IsSticking,                 is_sticking, const SynchronizedArray<bool> &)
   AKANTU_GET_MACRO(FrictionalStrength, frictional_strength, const SynchronizedArray<Real> &)
   AKANTU_GET_MACRO(FrictionTraction,     friction_traction, const SynchronizedArray<Real> &)
-
-  // set friction coefficient to all nodes
-  //void setMu(Real mu);
-
-  // set friction coefficient only to node (global index)
-  //void setMu(UInt node, Real mu);
+  AKANTU_GET_MACRO(Slip,                              slip, const SynchronizedArray<Real> &)
+  AKANTU_GET_MACRO(SlipSpeed,                   slip_speed, const SynchronizedArray<Real> &)
 
 protected:
   void setInternalArray(SynchronizedArray<Real> & array, Real value);
@@ -114,9 +129,10 @@ protected:
   SynchronizedArray<Real> frictional_strength;
   // friction force
   SynchronizedArray<Real> friction_traction;
-
-  // friction coefficient
-  //SynchronizedArray<Real> mu;
+  // slip
+  SynchronizedArray<Real> slip;
+  // slip speed (scalar value)
+  SynchronizedArray<Real> slip_speed;
 };
 
 

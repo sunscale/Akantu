@@ -11,6 +11,7 @@ set(AKANTU_SIMTOOLS_SRCS
 
   functions/boundary_functions.cc
 
+  ntn_contact/ntn_base_contact.cc
   ntn_contact/ntn_contact.cc
   ntn_contact/ntn_friction.cc
   ntn_contact/friction_laws/ntn_friction_coulomb.cc
@@ -40,6 +41,7 @@ set(AKANTU_SIMTOOLS_HDRS
   boundary_conditions/force_based_dirichlet.hh
   boundary_conditions/spring_bc.hh
 
+  ntn_contact/ntn_base_contact.hh
   ntn_contact/ntn_contact.hh
   ntn_contact/ntn_friction.hh
   ntn_contact/friction_laws/ntn_friction_coulomb.hh
