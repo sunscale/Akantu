@@ -39,8 +39,8 @@ NTRFFrictionMathilde::NTRFFrictionMathilde(NTRFContact & contact,
   t_star(0,1,0.,id+":t_star",0.,"t_star"),
   mu(0,1,0.,id+":mu",0.,"mu"),
   frictional_contact_pressure(0,1,0.,id+":frictional_contact_pressure",0.,
-			      "frictionl_contact_pressure"),
-  weakening_length(0,1,0.,id+":weakening_lingth",0.,"weakening_length"),
+			      "frictional_contact_pressure"),
+  weakening_length(0,1,0.,id+":weakening_length",0.,"weakening_length"),
   mu_s(0,1,0.,id+":mu_s",0.,"mu_s"),
   mu_k(0,1,0.,id+":mu_k",0.,"mu_k")
 {
@@ -60,14 +60,14 @@ NTRFFrictionMathilde::NTRFFrictionMathilde(NTRFContact & contact,
 void NTRFFrictionMathilde::computeFrictionalContactPressure() {
   AKANTU_DEBUG_IN();
   
-  SolidMechanicsModel & model = this->contact.getModel();
+  SolidMechanicsModel & model = this->contact->getModel();
   UInt dim = model.getSpatialDimension();
 
-  UInt nb_contact_nodes = this->contact.getNbContactNodes();
+  UInt nb_contact_nodes = this->contact->getNbContactNodes();
 
   // get contact arrays
-  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
-  Real * contact_pressure = this->contact.getContactPressure().storage();
+  const SynchronizedArray<bool> & is_in_contact = this->contact->getIsInContact();
+  Real * contact_pressure = this->contact->getContactPressure().storage();
 
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // node pair is NOT in contact
@@ -89,9 +89,9 @@ void NTRFFrictionMathilde::computeFrictionalContactPressure() {
 void NTRFFrictionMathilde::computeFrictionCoefficient() {
   AKANTU_DEBUG_IN();
   
-  SolidMechanicsModel & model = this->contact.getModel();
+  SolidMechanicsModel & model = this->contact->getModel();
   UInt dim = model.getSpatialDimension();
-  UInt nb_ntn_pairs = this->contact.getNbContactNodes();
+  UInt nb_ntn_pairs = this->contact->getNbContactNodes();
 
   for (UInt n=0; n<nb_ntn_pairs; ++n) {
     if (this->is_sticking(n)) {
@@ -117,14 +117,14 @@ void NTRFFrictionMathilde::computeFrictionalStrength() {
   this->computeFrictionCoefficient();
   this->computeFrictionalContactPressure();
 
-  SolidMechanicsModel & model = this->contact.getModel();
+  SolidMechanicsModel & model = this->contact->getModel();
   UInt dim = model.getSpatialDimension();
   Real delta_t = model.getTimeStep();
   
-  UInt nb_contact_nodes = this->contact.getNbContactNodes();
+  UInt nb_contact_nodes = this->contact->getNbContactNodes();
 
   // get contact arrays
-  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+  const SynchronizedArray<bool> & is_in_contact = this->contact->getIsInContact();
 
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // node pair is NOT in contact
@@ -266,14 +266,14 @@ void NTRFFrictionMathilde::setToSteadyState() {
   this->computeFrictionalContactPressure();
   this->computeFrictionCoefficient();
 
-  SolidMechanicsModel & model = this->contact.getModel();
+  SolidMechanicsModel & model = this->contact->getModel();
   UInt dim = model.getSpatialDimension();
   Real delta_t = model.getTimeStep();
   
-  UInt nb_contact_nodes = this->contact.getNbContactNodes();
+  UInt nb_contact_nodes = this->contact->getNbContactNodes();
 
   // get contact arrays
-  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+  const SynchronizedArray<bool> & is_in_contact = this->contact->getIsInContact();
 
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // node pair is NOT in contact
@@ -294,7 +294,7 @@ void NTRFFrictionMathilde::addDumpFieldToDumper(const std::string & dumper_name,
   AKANTU_DEBUG_IN();
 
 #ifdef AKANTU_USE_IOHELPER
-  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
+  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact->getSlaves());
 
   if(field_id == "t_star") {
     this->internalAddDumpFieldToDumper(dumper_name,

@@ -52,15 +52,15 @@ void NTRFFrictionRegularizedCoulomb::computeFrictionalContactPressure() {
   if (!this->regularization_on)
     NTRFFrictionCoulomb::computeFrictionalContactPressure();
   else {
-    SolidMechanicsModel & model = this->contact.getModel();
+    SolidMechanicsModel & model = this->contact->getModel();
     UInt dim = model.getSpatialDimension();
     Real delta_t = model.getTimeStep();
 
-    UInt nb_contact_nodes = this->contact.getNbContactNodes();
+    UInt nb_contact_nodes = this->contact->getNbContactNodes();
 
     // get contact arrays
-    const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
-    Real * contact_pressure = this->contact.getContactPressure().storage();
+    const SynchronizedArray<bool> & is_in_contact = this->contact->getIsInContact();
+    Real * contact_pressure = this->contact->getContactPressure().storage();
 
     for (UInt n=0; n<nb_contact_nodes; ++n) {
       // node pair is NOT in contact
@@ -165,7 +165,7 @@ void NTRFFrictionRegularizedCoulomb::addDumpFieldToDumper(const std::string & du
   AKANTU_DEBUG_IN();
 
 #ifdef AKANTU_USE_IOHELPER
-  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
+  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact->getSlaves());
 
   if(field_id == "t_star") {
     this->internalAddDumpFieldToDumper(dumper_name,

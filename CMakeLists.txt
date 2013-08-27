@@ -12,6 +12,7 @@ set(AKANTU_SIMTOOLS_SRCS
   functions/boundary_functions.cc
 
   ntn_contact/ntn_base_contact.cc
+  ntn_contact/ntn_base_friction.cc
   ntn_contact/ntn_contact.cc
   ntn_contact/ntn_friction.cc
   ntn_contact/friction_laws/ntn_friction_coulomb.cc
@@ -42,6 +43,7 @@ set(AKANTU_SIMTOOLS_HDRS
   boundary_conditions/spring_bc.hh
 
   ntn_contact/ntn_base_contact.hh
+  ntn_contact/ntn_base_friction.hh
   ntn_contact/ntn_contact.hh
   ntn_contact/ntn_friction.hh
   ntn_contact/friction_laws/ntn_friction_coulomb.hh
@@ -74,7 +76,8 @@ include_directories(ntn_contact/friction_laws/)
 include_directories(ntrf_contact/)
 include_directories(ntrf_contact/friction_laws/)
 
-target_link_libraries(akantu_simtools ${AKANTU_LIBRARIES})
+target_link_libraries(akantu_simtools akantu)
+#target_link_libraries(akantu_simtools ${AKANTU_LIBRARIES})
 set_target_properties(akantu_simtools
   PROPERTIES PUBLIC_HEADER "${AKANTU_SIMTOOLS_HDRS}")
 

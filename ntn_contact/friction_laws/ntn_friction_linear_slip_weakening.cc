@@ -56,13 +56,13 @@ NTNFrictionLinearSlipWeakening::NTNFrictionLinearSlipWeakening(NTNContact & cont
 void NTNFrictionLinearSlipWeakening::computeFrictionCoefficient() {
   AKANTU_DEBUG_IN();
   
-  SolidMechanicsModel & model = this->contact.getModel();
+  SolidMechanicsModel & model = this->contact->getModel();
   UInt dim = model.getSpatialDimension();
-  UInt nb_ntn_pairs = this->contact.getNbContactNodes();
+  UInt nb_ntn_pairs = this->contact->getNbContactNodes();
 
   // compute tangential gap
   Array<Real> rel_tan_incr(0,dim);
-  this->contact.computeRelativeTangentialField(model.getIncrement(),
+  this->contact->computeRelativeTangentialField(model.getIncrement(),
 					       rel_tan_incr);
   AKANTU_DEBUG_ASSERT(rel_tan_incr.getSize() == nb_ntn_pairs, 
 		      "computeRelativeNormalField does not give back arrays " 

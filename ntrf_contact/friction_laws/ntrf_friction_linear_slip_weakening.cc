@@ -52,9 +52,9 @@ NTRFFrictionLinearSlipWeakening::NTRFFrictionLinearSlipWeakening(NTRFContact & c
 void NTRFFrictionLinearSlipWeakening::computeFrictionCoefficient() {
   AKANTU_DEBUG_IN();
   
-  SolidMechanicsModel & model = this->contact.getModel();
+  SolidMechanicsModel & model = this->contact->getModel();
   UInt dim = model.getSpatialDimension();
-  UInt nb_ntn_pairs = this->contact.getNbContactNodes();
+  UInt nb_ntn_pairs = this->contact->getNbContactNodes();
 
   for (UInt n=0; n<nb_ntn_pairs; ++n) {
     if (this->is_sticking(n)) {
@@ -195,7 +195,7 @@ void NTRFFrictionLinearSlipWeakening::addDumpFieldToDumper(const std::string & d
   AKANTU_DEBUG_IN();
   
 #ifdef AKANTU_USE_IOHELPER
-  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
+  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact->getSlaves());
   
   if(field_id == "mu_static") {
     this->internalAddDumpFieldToDumper(dumper_name,

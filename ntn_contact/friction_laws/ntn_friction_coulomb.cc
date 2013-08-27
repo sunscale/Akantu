@@ -48,14 +48,14 @@ NTNFrictionCoulomb::NTNFrictionCoulomb(NTNContact & contact,
 void NTNFrictionCoulomb::computeFrictionalStrength() {
   AKANTU_DEBUG_IN();
 
-  SolidMechanicsModel & model = this->contact.getModel();
+  SolidMechanicsModel & model = this->contact->getModel();
   UInt dim = model.getSpatialDimension();
 
-  UInt nb_ntn_pairs = this->contact.getNbContactNodes();
+  UInt nb_ntn_pairs = this->contact->getNbContactNodes();
 
   // get contact arrays
-  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
-  Real * contact_pressure = this->contact.getContactPressure().storage();
+  const SynchronizedArray<bool> & is_in_contact = this->contact->getIsInContact();
+  Real * contact_pressure = this->contact->getContactPressure().storage();
 
   for (UInt n=0; n<nb_ntn_pairs; ++n) {
     // node pair is NOT in contact

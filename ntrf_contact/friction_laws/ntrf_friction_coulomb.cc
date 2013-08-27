@@ -51,14 +51,14 @@ NTRFFrictionCoulomb::NTRFFrictionCoulomb(NTRFContact & contact,
 void NTRFFrictionCoulomb::computeFrictionalContactPressure() {
   AKANTU_DEBUG_IN();
   
-  SolidMechanicsModel & model = this->contact.getModel();
+  SolidMechanicsModel & model = this->contact->getModel();
   UInt dim = model.getSpatialDimension();
 
-  UInt nb_contact_nodes = this->contact.getNbContactNodes();
+  UInt nb_contact_nodes = this->contact->getNbContactNodes();
 
   // get contact arrays
-  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
-  Real * contact_pressure = this->contact.getContactPressure().storage();
+  const SynchronizedArray<bool> & is_in_contact = this->contact->getIsInContact();
+  Real * contact_pressure = this->contact->getContactPressure().storage();
 
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // node pair is NOT in contact
@@ -81,13 +81,13 @@ void NTRFFrictionCoulomb::computeFrictionalStrength() {
   
   this->computeFrictionalContactPressure();
 
-  SolidMechanicsModel & model = this->contact.getModel();
+  SolidMechanicsModel & model = this->contact->getModel();
   UInt dim = model.getSpatialDimension();
 
-  UInt nb_contact_nodes = this->contact.getNbContactNodes();
+  UInt nb_contact_nodes = this->contact->getNbContactNodes();
 
   // get contact arrays
-  const SynchronizedArray<bool> & is_in_contact = this->contact.getIsInContact();
+  const SynchronizedArray<bool> & is_in_contact = this->contact->getIsInContact();
 
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // node pair is NOT in contact
@@ -175,7 +175,7 @@ void NTRFFrictionCoulomb::addDumpFieldToDumper(const std::string & dumper_name,
   AKANTU_DEBUG_IN();
   
 #ifdef AKANTU_USE_IOHELPER
-  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact.getSlaves());
+  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact->getSlaves());
   
   if(field_id == "mu") {
     this->internalAddDumpFieldToDumper(dumper_name,
