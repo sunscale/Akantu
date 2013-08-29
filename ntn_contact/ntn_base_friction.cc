@@ -80,7 +80,7 @@ void NTNBaseFriction::updateSlip() {
       this->slip(n) = 0.;
     }
     else {
-      const Vector<Real> rti = it[n];
+      const Vector<Real> & rti = it[n];
       this->slip(n) += rti.norm();
     }
   }
@@ -110,7 +110,7 @@ void NTNBaseFriction::computeFrictionTraction() {
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // node pair is in contact
     if (is_in_contact(n)) {
-      Vector<Real> fric_trac = it_fric_trac[n];
+      Vector<Real> & fric_trac = it_fric_trac[n];
       // check if it is larger than frictional strength
       Real abs_fric = fric_trac.norm();
       if (abs_fric != 0.) {
@@ -189,7 +189,7 @@ void NTNBaseFriction::computeStickTraction() {
   Array<Real>::iterator< Vector<Real> > it_fric_trac = traction.begin(dim);
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     
-    Vector<Real> fric_trac = it_fric_trac[n];
+    Vector<Real> & fric_trac = it_fric_trac[n];
     // node pair is NOT in contact
     if (!is_in_contact(n)) {
       fric_trac.clear(); // set to zero

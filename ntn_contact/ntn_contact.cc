@@ -338,19 +338,31 @@ void NTNContact::computeRelativeTangentialField(const Array<Real> & field,
   Array<Real>::const_iterator< Vector<Real> > it_field  = field.begin(dim);
   Array<Real>::const_iterator< Vector<Real> > it_normal = this->normals.getArray().begin(dim);
 
+  Vector<Real> rfv(dim);
+  Vector<Real> np_rfv(dim);
+
   UInt nb_contact_nodes = this->slaves.getSize();
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // nodes
     UInt slave  = this->slaves(n);
     UInt master = this->masters(n);
 
-    const Vector<Real> rel_field_v  = it_field[slave] - it_field[master];
-    const Vector<Real> normal_v     = it_normal[n];
+    // get field and normal vectors
+    const Vector<Real> & field_s  = it_field[slave];
+    const Vector<Real> & field_m  = it_field[master];
+    const Vector<Real> & normal_v = it_normal[n];
 
-    Real dot_prod = rel_field_v.dot(normal_v);
+    // relative field vector (slave - master)
+    rfv = field_s;
+    rfv -= field_m;
 
-    Vector<Real> rtf = rel_field_v - (dot_prod * normal_v);
-    rel_tang_field.push_back(rtf);
+    // normal projection of relative field
+    np_rfv = normal_v;
+    np_rfv *= rfv.dot(normal_v);
+
+    // subract normal projection from relative field to get the tangential projection
+    rfv -= np_rfv;
+    rel_tang_field.push_back(rfv);
   }
   
   AKANTU_DEBUG_OUT();
@@ -371,18 +383,25 @@ void NTNContact::computeRelativeNormalField(const Array<Real> & field,
   Array<Real>::const_iterator< Vector<Real> > it_field  = field.begin(dim);
   Array<Real>::const_iterator< Vector<Real> > it_normal = this->normals.getArray().begin(dim);
 
+  Vector<Real> rfv(dim);
+
   UInt nb_contact_nodes = this->getNbContactNodes();
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // nodes
     UInt slave  = this->slaves(n);
     UInt master = this->masters(n);
 
-    const Vector<Real> rel_field_v  = it_field[slave] - it_field[master];
-    const Vector<Real> normal_v     = it_normal[n];
+    // get field and normal vectors
+    const Vector<Real> & field_s  = it_field[slave];
+    const Vector<Real> & field_m  = it_field[master];
+    const Vector<Real> & normal_v = it_normal[n];
     
-    Real dot_prod = rel_field_v.dot(normal_v);
+    // relative field vector (slave - master)
+    rfv = field_s;
+    rfv -= field_m;
 
-    rel_normal_field.push_back(dot_prod);
+    // length of normal projection of relative field
+    rel_normal_field.push_back(rfv.dot(normal_v));
   }
   
   AKANTU_DEBUG_OUT();

@@ -165,29 +165,39 @@ void NTRFContact::updateImpedance() {
 
 /* -------------------------------------------------------------------------- */
 void NTRFContact::computeRelativeTangentialField(const Array<Real> & field,
-						Array<Real> & rel_tang_field) const {
+						 Array<Real> & rel_tang_field) const {
   AKANTU_DEBUG_IN();
 
   // resize arrays to zero
   rel_tang_field.resize(0);
 
   UInt dim = this->model.getSpatialDimension();
-
+  
   Array<Real>::const_iterator< Vector<Real> > it_field  = field.begin(dim);
   Array<Real>::const_iterator< Vector<Real> > it_normal = this->normals.getArray().begin(dim);
+
+  Vector<Real> rfv(dim);
+  Vector<Real> np_rfv(dim);
 
   UInt nb_contact_nodes = this->slaves.getSize();
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // nodes
     UInt node = this->slaves(n);
 
-    const Vector<Real> field_v  = it_field[node];
-    const Vector<Real> normal_v = it_normal[n];
+    // get field and normal vectors
+    const Vector<Real> & field_v  = it_field[node];
+    const Vector<Real> & normal_v = it_normal[n];
 
-    Real dot_prod = field_v.dot(normal_v);
+    // relative field vector
+    rfv = field_v;
 
-    Vector<Real> rtf = field_v - (dot_prod * normal_v);
-    rel_tang_field.push_back(rtf);
+    // normal projection of relative field
+    np_rfv = normal_v;
+    np_rfv *= rfv.dot(normal_v);
+
+    // subtract normal projection from relative field to get the tangential projection
+    rfv -= np_rfv;
+    rel_tang_field.push_back(rfv);
   }
 
   AKANTU_DEBUG_OUT();
@@ -204,18 +214,22 @@ void NTRFContact::computeNormalGap(Array<Real> & gap) const {
   Array<Real>::const_iterator< Vector<Real> > it_cur_pos = this->model.getCurrentPosition().begin(dim);
   Array<Real>::const_iterator< Vector<Real> > it_normal = this->normals.getArray().begin(dim);
 
+  Vector<Real> gap_v(dim);
+
   UInt nb_contact_nodes = this->getNbContactNodes();
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // nodes
     UInt node = this->slaves(n);
 
-    const Vector<Real> cur_pos_v = it_cur_pos[node];
-    const Vector<Real> normal_v  = it_normal[n];
+    const Vector<Real> & cur_pos_v = it_cur_pos[node];
+    const Vector<Real> & normal_v  = it_normal[n];
 
-    Vector<Real> gap_v = cur_pos_v - this->reference_point;
-    Real normal_gap = gap_v.dot(normal_v);
+    // gap vector
+    gap_v = cur_pos_v;
+    gap_v -= this->reference_point;
 
-    gap.push_back(normal_gap);
+    // length of normal projection of gap vector
+    gap.push_back(gap_v.dot(normal_v));
   }
   
   AKANTU_DEBUG_OUT();
@@ -239,12 +253,10 @@ void NTRFContact::computeRelativeNormalField(const Array<Real> & field,
     // nodes
     UInt node = this->slaves(n);
 
-    const Vector<Real> field_v  = it_field[node];
-    const Vector<Real> normal_v = it_normal[n];
+    const Vector<Real> & field_v  = it_field[node];
+    const Vector<Real> & normal_v = it_normal[n];
     
-    Real dot_prod = field_v.dot(normal_v);
-
-    rel_normal_field.push_back(dot_prod);
+    rel_normal_field.push_back(field_v.dot(normal_v));
   }
 
   AKANTU_DEBUG_OUT();
