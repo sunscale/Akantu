@@ -89,8 +89,6 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntn_friction_inline_impl.cc"
-
 /// standard output stream operator
 inline std::ostream & operator <<(std::ostream & stream, const NTNFriction & _this)
 {
@@ -99,5 +97,7 @@ inline std::ostream & operator <<(std::ostream & stream, const NTNFriction & _th
 }
 
 __END_SIMTOOLS__
+
+#include "ntn_friction_tmpl.hh"
 
 #endif /* __AST_NTN_FRICTION_HH__ */

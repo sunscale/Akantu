@@ -1,5 +1,5 @@
 /**
- * @file   ntn_friction.cc
+ * @file   ntn_friction_tmpl.hh
  * @author David Kammer <david.kammer@epfl.ch>
  * @date   Fri Feb 24 15:21:44 2012
  *
@@ -26,8 +26,6 @@
  */
 
 /* -------------------------------------------------------------------------- */
-// simtools
-#include "ntn_friction.hh"
 
 __BEGIN_SIMTOOLS__
 
