@@ -13,7 +13,7 @@ set(AKANTU_SIMTOOLS_SRCS
 
   ntn_contact/ntn_base_contact.cc
   ntn_contact/ntn_contact.cc
-  ntrf_contact/ntrf_contact.cc
+  ntn_contact/ntrf_contact.cc
 
   ntn_contact/ntn_base_friction.cc
   ntn_contact/friction_regularisations/ntn_fricreg_no_regularisation.cc
@@ -40,18 +40,20 @@ set(AKANTU_SIMTOOLS_HDRS
 
   ntn_contact/ntn_base_contact.hh
   ntn_contact/ntn_contact.hh
-  ntrf_contact/ntrf_contact.hh
-
+  ntn_contact/ntrf_contact.hh
   ntn_contact/ntn_base_friction.hh
+
   ntn_contact/friction_regularisations/ntn_fricreg_no_regularisation.hh
   ntn_contact/friction_regularisations/ntn_fricreg_rubin_ampuero.hh
+
   ntn_contact/friction_laws/ntn_friclaw_coulomb.hh
   ntn_contact/friction_laws/ntn_friclaw_coulomb_tmpl.hh
   ntn_contact/friction_laws/ntn_friclaw_linear_slip_weakening.hh
   ntn_contact/friction_laws/ntn_friclaw_linear_slip_weakening_tmpl.hh
+
   ntn_contact/ntn_friction.hh
-  ntrf_contact/ntrf_friction.hh
-  ntrf_contact/ntrf_friction_tmpl.hh
+  ntn_contact/ntrf_friction.hh
+  ntn_contact/ntrf_friction_tmpl.hh
 
   ntn_contact/ntn_initiation_function.hh
 
