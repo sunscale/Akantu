@@ -32,7 +32,7 @@
 
 /* -------------------------------------------------------------------------- */
 // simtools
-#include "ntn_base_friction.hh"
+#include "ntn_friclaw_coulomb.hh"
 #include "ntrf_contact.hh"
 
 __BEGIN_SIMTOOLS__
@@ -41,7 +41,9 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class NTRFFriction : public NTNBaseFriction {
+template <template<class> class FrictionLaw = NTNFricLawCoulomb, 
+	  class Regularisation = NTNFricRegNoRegularisation>
+class NTRFFriction : public FrictionLaw<Regularisation> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -59,16 +61,10 @@ public:
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
-protected:
-  /// compute frictional strength according to friction law
-  //virtual void computeFrictionalStrength() = 0;
-
   /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  // virtual void addDumpFieldToDumper(const std::string & dumper_name,
-  // 				    const std::string & field_id);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -82,15 +78,15 @@ protected:
 
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntrf_friction_inline_impl.cc"
-
-/// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const NTRFFriction & _this)
+/// standard output stream operato
+template <template<class> class FrictionLaw, class Regularisation>
+inline std::ostream & operator <<(std::ostream & stream, 
+				  const NTRFFriction<FrictionLaw, 
+						     Regularisation> & _this)
 {
   _this.printself(stream);
   return stream;
@@ -98,4 +94,8 @@ inline std::ostream & operator <<(std::ostream & stream, const NTRFFriction & _t
 
 __END_SIMTOOLS__
 
+#include "ntrf_friction_tmpl.hh"
+
 #endif /* __AST_NTRF_FRICTION_HH__ */
+
+

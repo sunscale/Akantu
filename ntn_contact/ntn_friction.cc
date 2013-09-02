@@ -35,7 +35,7 @@ __BEGIN_SIMTOOLS__
 NTNFriction::NTNFriction(NTNContact & contact,
 			 const FrictionID & id,
 			 const MemoryID & memory_id) : 
-  NTNBaseFriction(contact, id, memory_id) {
+  NTNBaseFriction(&contact, id, memory_id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();

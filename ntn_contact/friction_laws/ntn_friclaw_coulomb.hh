@@ -1,9 +1,9 @@
 /**
- * @file   ntrf_friction_linear_slip_weakening.hh
+ * @file   ntn_friclaw_coulomb.hh
  * @author David Kammer <david.kammer@epfl.ch>
- * @date   Mon May 13 17:05:07 2013
+ * @date   Thu Mar 14 14:27:26 2013
  *
- * @brief  linear slip weakening friction
+ * @brief  coulomb friction with \mu_s = \mu_k (constant)
  *
  * @section LICENSE
  *
@@ -26,35 +26,35 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTRF_FRICTION_LINEAR_SLIP_WEAKENING_HH__
-#define __AST_NTRF_FRICTION_LINEAR_SLIP_WEAKENING_HH__
+#ifndef __AST_NTN_FRICLAW_COULOMB_HH__
+#define __AST_NTN_FRICLAW_COULOMB_HH__
 
 /* -------------------------------------------------------------------------- */
 // simtools
-#include "ntrf_friction_regularized_coulomb.hh"
+#include "ntn_fricreg_no_regularisation.hh"
 
 __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-/* -------------------------------------------------------------------------- */
-class NTRFFrictionLinearSlipWeakening : public NTRFFrictionRegularizedCoulomb {
+template <class Regularisation = NTNFricRegNoRegularisation>
+class NTNFricLawCoulomb : public Regularisation {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   
-  NTRFFrictionLinearSlipWeakening(NTRFContact & contact,
-				  const FrictionID & id = "friction_linear_slip_weakening",
-				  const MemoryID & memory_id = 0);
-  virtual ~NTRFFrictionLinearSlipWeakening() {};
+  NTNFricLawCoulomb(NTNBaseContact * contact,
+		    const FrictionID & id = "coulomb",
+		    const MemoryID & memory_id = 0);
+  virtual ~NTNFricLawCoulomb() {};
   
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-    /// register synchronizedarrays for sync
+  /// register synchronizedarrays for sync
   virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
 
   /// dump restart file
@@ -65,10 +65,8 @@ public:
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-
+  
 protected:
-  /// computes the friction coefficient as a function of slip
-  virtual void computeFrictionCoefficient();
   /// compute frictional strength according to friction law
   virtual void computeFrictionalStrength();
 
@@ -78,8 +76,7 @@ protected:
 public:
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
 				    const std::string & field_id);
-  //  virtual void addDumpFieldVector(const std::string & field_id);
-  
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -90,34 +87,26 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
-  // Dc the length over which slip weakening happens
-  SynchronizedArray<Real> d_c;
-
-  // static coefficient of friction
-  SynchronizedArray<Real> mu_s;
-
-  // kinetic coefficient of friction
-  SynchronizedArray<Real> mu_k;
+protected:
+  // friction coefficient
+  SynchronizedArray<Real> mu;
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntrf_friction_linear_slip_weakening_inline_impl.cc"
-
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const NTRFFrictionLinearSlipWeakening & _this)
+template <class Regularisation>
+inline std::ostream & operator <<(std::ostream & stream, 
+				  const NTNFricLawCoulomb<Regularisation> & _this)
 {
   _this.printself(stream);
   return stream;
 }
 
-
-
-
 __END_SIMTOOLS__
 
-#endif /* __AST_NTRF_FRICTION_LINEAR_SLIP_WEAKENING_HH__ */
+#include "ntn_friclaw_coulomb_tmpl.hh"
+
+#endif /* __AST_NTN_FRICLAW_COULOMB_HH__ */

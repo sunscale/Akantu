@@ -32,18 +32,18 @@
 __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
-NTNBaseFriction::NTNBaseFriction(NTNBaseContact & contact,
+NTNBaseFriction::NTNBaseFriction(NTNBaseContact * contact,
 				 const FrictionID & id,
 				 const MemoryID & memory_id) : 
   Memory(memory_id), id(id),
   Dumpable(),
-  contact(&contact),
+  contact(contact),
   is_sticking(0,1,true,id+":is_sticking",true,"is_sticking"),
   frictional_strength(0,1,0.,id+":frictional_strength",0.,"frictional_strength"),
-  friction_traction(0,contact.getModel().getSpatialDimension(),
+  friction_traction(0,contact->getModel().getSpatialDimension(),
 		    0.,id+":friction_traction",0.,"friction_traction"),
   slip(0,1,0.,id+":slip",0.,"slip"),
-  slip_velocity(0,contact.getModel().getSpatialDimension(),
+  slip_velocity(0,contact->getModel().getSpatialDimension(),
 		0.,id+":slip_velocity",0.,"slip_velocity") {
   AKANTU_DEBUG_IN();
 
@@ -53,10 +53,10 @@ NTNBaseFriction::NTNBaseFriction(NTNBaseContact & contact,
   this->contact->registerSynchronizedArray(this->slip);
   this->contact->registerSynchronizedArray(this->slip_velocity);
 
-  contact.getModel().setIncrementFlagOn();
+  contact->getModel().setIncrementFlagOn();
 
-  this->registerExternalDumper(&(contact.getDumper()),
-			       contact.getDefaultDumperName(),
+  this->registerExternalDumper(&(contact->getDumper()),
+			       contact->getDefaultDumperName(),
 			       true);
   
   AKANTU_DEBUG_OUT();
@@ -267,7 +267,7 @@ void NTNBaseFriction::readRestart(const std::string & file_name) {
 
 /* -------------------------------------------------------------------------- */
 void NTNBaseFriction::setInternalArray(SynchronizedArray<Real> & array, 
-				    Real value) {
+				       Real value) {
   AKANTU_DEBUG_IN();
 
   Real * array_p = array.storage();
@@ -280,8 +280,8 @@ void NTNBaseFriction::setInternalArray(SynchronizedArray<Real> & array,
 
 /* -------------------------------------------------------------------------- */
 void NTNBaseFriction::setInternalArray(SynchronizedArray<Real> & array, 
-				    UInt node, 
-				    Real value) {
+				       UInt node, 
+				       Real value) {
   AKANTU_DEBUG_IN();
 
   Int index = this->contact->getNodeIndex(node);

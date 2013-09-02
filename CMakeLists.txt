@@ -12,19 +12,15 @@ set(AKANTU_SIMTOOLS_SRCS
   functions/boundary_functions.cc
 
   ntn_contact/ntn_base_contact.cc
-  ntn_contact/ntn_base_friction.cc
   ntn_contact/ntn_contact.cc
-  ntn_contact/ntn_friction.cc
-  ntn_contact/friction_laws/ntn_friction_coulomb.cc
-  ntn_contact/friction_laws/ntn_friction_linear_slip_weakening.cc
-
   ntrf_contact/ntrf_contact.cc
-  ntrf_contact/ntrf_friction.cc
-  ntrf_contact/friction_laws/ntrf_friction_coulomb.cc
-  ntrf_contact/friction_laws/ntrf_friction_regularized_coulomb.cc
-  ntrf_contact/friction_laws/ntrf_friction_linear_slip_weakening.cc
 
-  ntrf_contact/friction_laws/ntrf_friction_mathilde.cc
+  ntn_contact/ntn_base_friction.cc
+  ntn_contact/friction_regularisations/ntn_fricreg_no_regularisation.cc
+  ntn_contact/friction_regularisations/ntn_fricreg_rubin_ampuero.cc
+  ntn_contact/ntn_friction.cc
+
+  ntn_contact/ntn_initiation_function.cc
   )
 
 set(AKANTU_SIMTOOLS_HDRS
@@ -43,19 +39,21 @@ set(AKANTU_SIMTOOLS_HDRS
   boundary_conditions/spring_bc.hh
 
   ntn_contact/ntn_base_contact.hh
-  ntn_contact/ntn_base_friction.hh
   ntn_contact/ntn_contact.hh
-  ntn_contact/ntn_friction.hh
-  ntn_contact/friction_laws/ntn_friction_coulomb.hh
-  ntn_contact/friction_laws/ntn_friction_linear_slip_weakening.hh
-
   ntrf_contact/ntrf_contact.hh
-  ntrf_contact/ntrf_friction.hh
-  ntrf_contact/friction_laws/ntrf_friction_coulomb.hh
-  ntrf_contact/friction_laws/ntrf_friction_regularized_coulomb.hh
-  ntrf_contact/friction_laws/ntrf_friction_linear_slip_weakening.hh
 
-  ntrf_contact/friction_laws/ntrf_friction_mathilde.hh
+  ntn_contact/ntn_base_friction.hh
+  ntn_contact/friction_regularisations/ntn_fricreg_no_regularisation.hh
+  ntn_contact/friction_regularisations/ntn_fricreg_rubin_ampuero.hh
+  ntn_contact/friction_laws/ntn_friclaw_coulomb.hh
+  ntn_contact/friction_laws/ntn_friclaw_coulomb_tmpl.hh
+  ntn_contact/friction_laws/ntn_friclaw_linear_slip_weakening.hh
+  ntn_contact/friction_laws/ntn_friclaw_linear_slip_weakening_tmpl.hh
+  ntn_contact/ntn_friction.hh
+  ntrf_contact/ntrf_friction.hh
+  ntrf_contact/ntrf_friction_tmpl.hh
+
+  ntn_contact/ntn_initiation_function.hh
 
   # inlines
   common/synchronized_array_inline_impl.cc
@@ -73,6 +71,7 @@ add_library(akantu_simtools
 include_directories(common/)
 include_directories(ntn_contact/)
 include_directories(ntn_contact/friction_laws/)
+include_directories(ntn_contact/friction_regularisations/)
 include_directories(ntrf_contact/)
 include_directories(ntrf_contact/friction_laws/)
 

@@ -45,7 +45,7 @@ class NTNBaseFriction : protected Memory, public Dumpable {
   /* ------------------------------------------------------------------------ */
 public:
   
-  NTNBaseFriction(NTNBaseContact & contact,
+  NTNBaseFriction(NTNBaseContact * contact,
 		  const FrictionID & id = "friction",
 		  const MemoryID & memory_id = 0);
   virtual ~NTNBaseFriction() {};
@@ -109,6 +109,14 @@ public:
   AKANTU_GET_MACRO(FrictionTraction,     friction_traction, const SynchronizedArray<Real> &)
   AKANTU_GET_MACRO(Slip,                              slip, const SynchronizedArray<Real> &)
   AKANTU_GET_MACRO(SlipVelocity,             slip_velocity, const SynchronizedArray<Real> &)
+
+  virtual void setParam(const std::string & param, UInt node, Real value) {
+    AKANTU_DEBUG_ERROR("Friction does not know the following parameter: " << param);
+  };
+
+  virtual void setParam(const std::string & param, Real value) {
+    AKANTU_DEBUG_ERROR("Friction does not know the following parameter: " << param);
+  };
 
 protected:
   void setInternalArray(SynchronizedArray<Real> & array, Real value);

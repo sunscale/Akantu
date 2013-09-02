@@ -1,5 +1,5 @@
 /**
- * @file   ntrf_friction.cc
+ * @file   ntrf_friction_tmpl.hh
  * @author David Kammer <david.kammer@epfl.ch>
  * @date   Mon Nov  5 10:23:47 2012
  *
@@ -26,30 +26,32 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "ntrf_friction.hh"
+//#include "ntrf_friction.hh"
 
 __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
-NTRFFriction::NTRFFriction(NTRFContact & contact,
+template <template <class> class FrictionLaw, class Regularisation>
+NTRFFriction<FrictionLaw, Regularisation>::NTRFFriction(NTRFContact & contact,
 			   const FrictionID & id,
 			   const MemoryID & memory_id) : 
-  NTNBaseFriction(contact,id,memory_id) {
+  FrictionLaw<Regularisation>(&contact,id,memory_id) {
   AKANTU_DEBUG_IN();
   
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFFriction::printself(std::ostream & stream, int indent) const {
+template <template <class> class FrictionLaw, class Regularisation>
+void NTRFFriction<FrictionLaw, Regularisation>::printself(std::ostream & stream, 
+							  int indent) const {
   AKANTU_DEBUG_IN();
   std::string space;
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
   
   stream << space << "NTRFFriction [" << std::endl;
-  NTNBaseFriction::printself(stream, indent);
+  FrictionLaw<Regularisation>::printself(stream, ++indent);
   stream << space << "]" << std::endl;
-
 
   AKANTU_DEBUG_OUT();
 }
