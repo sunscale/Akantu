@@ -25,6 +25,7 @@
 // friction regularisations
 #include "ntn_fricreg_no_regularisation.hh"
 #include "ntn_fricreg_rubin_ampuero.hh"
+#include "ntn_fricreg_simplified_prakash_clifton.hh"
 
 // friction laws
 #include "ntn_friclaw_coulomb.hh"

@@ -1,9 +1,9 @@
 /**
- * @file   ntn_fricreg_no_regularisation.hh
+ * @file   ntn_fricreg_simplified_prakash_clifton.hh
  * @author David Kammer <david.kammer@epfl.ch>
- * @date   Mon Sep  2 09:37:29 2013
+ * @date   Mon Sep  2 16:25:32 2013
  *
- * @brief  regularisation that does nothing
+ * @brief  regularisation that regularizes the frictional strength with one parameter
  *
  * @section LICENSE
  *
@@ -26,29 +26,28 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-#ifndef __AST_NTN_FRICREG_NO_REGULARISATION_HH__
-#define __AST_NTN_FRICREG_NO_REGULARISATION_HH__
+#ifndef __AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH__
+#define __AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH__
 
 /* -------------------------------------------------------------------------- */
 // simtools
-#include "ntn_base_friction.hh"
+#include "ntn_fricreg_no_regularisation.hh"
 
 __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-class NTNFricRegNoRegularisation : public NTNBaseFriction {
+class NTNFricRegSimplifiedPrakashClifton : public NTNFricRegNoRegularisation {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   
-  NTNFricRegNoRegularisation(NTNBaseContact * contact,
-			     const FrictionID & id = "no_regularisation",
-			     const MemoryID & memory_id = 0);
-  virtual ~NTNFricRegNoRegularisation() {};
+  NTNFricRegSimplifiedPrakashClifton(NTNBaseContact * contact,
+			 const FrictionID & id = "simplified_prakash_clifton",
+			 const MemoryID & memory_id = 0);
+  virtual ~NTNFricRegSimplifiedPrakashClifton() {};
   
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -58,14 +57,14 @@ public:
   virtual void dumpRestart(const std::string & file_name) const;
   virtual void readRestart(const std::string & file_name);
 
+  virtual void setToSteadyState();
+
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
 protected:
-  virtual void computeFrictionalContactPressure();
-
   /// compute frictional strength according to friction law
-  virtual void computeFrictionalStrength() {};
+  virtual void computeFrictionalStrength();
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
@@ -78,37 +77,22 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
-protected:
-  /// get the is_in_contact array
-  virtual const SynchronizedArray<bool> & internalGetIsInContact() {
-    return this->contact->getIsInContact();
-  };
-
-  /// get the contact pressure (the norm: scalar value)
-  virtual const SynchronizedArray<Real> & internalGetContactPressure();
+  virtual void setParam(const std::string & param, UInt node, Real value);
+  virtual void setParam(const std::string & param, Real value);
 
   /// get the frictional strength array
   virtual SynchronizedArray<Real> & internalGetFrictionalStrength() {
-    return this->frictional_strength;
+    return this->spc_internal;
   };
-
-  /// get the is_sticking array
-  virtual SynchronizedArray<bool> & internalGetIsSticking() {
-    return this->is_sticking;
-  }
-  
-  /// get the slip array
-  virtual SynchronizedArray<Real> & internalGetSlip() {
-    return this->slip;
-  }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-protected:
-  // contact pressure (absolut value) for computation of friction
-  SynchronizedArray<Real> frictional_contact_pressure;
+private:
+  SynchronizedArray<Real> t_star;
+
+  // to get the incremental frictional strength
+  SynchronizedArray<Real> spc_internal;
 };
 
 
@@ -116,11 +100,11 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntn_fricreg_no_regularisation_inline_impl.cc"
+//#include "ntn_fricreg_simplified_prakash_clifton_inline_impl.cc"
 
 /// standard output stream operator
 inline std::ostream & operator <<(std::ostream & stream, 
-				  const NTNFricRegNoRegularisation & _this)
+				  const NTNFricRegSimplifiedPrakashClifton & _this)
 {
   _this.printself(stream);
   return stream;
@@ -128,4 +112,4 @@ inline std::ostream & operator <<(std::ostream & stream,
 
 __END_SIMTOOLS__
 
-#endif /* __AST_NTN_FRICREG_NO_REGULARISATION_HH__ */
+#endif /* __AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH__ */

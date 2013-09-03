@@ -71,6 +71,8 @@ void NTNFricLawCoulomb<Regularisation>::computeFrictionalStrength() {
     }
   }
 
+  Regularisation::computeFrictionalStrength();
+
   AKANTU_DEBUG_OUT();
 }
 

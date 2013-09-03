@@ -32,6 +32,7 @@
 
 // friction regularisations
 #include "ntn_fricreg_rubin_ampuero.hh"
+#include "ntn_fricreg_simplified_prakash_clifton.hh"
 
 // friction laws
 #include "ntn_friclaw_linear_slip_weakening.hh"
@@ -56,6 +57,12 @@ NTNBaseFriction * initializeNTRFFriction(NTRFContact & contact,
       
       friction->setParam("t_star", data.get<Real>("t_star"));
     }
+    else if (friction_reg == "simplified_prakash_clifton") {
+      friction = new NTRFFriction<NTNFricLawCoulomb, 
+				  NTNFricRegSimplifiedPrakashClifton>(contact);
+      
+      friction->setParam("t_star", data.get<Real>("t_star"));
+    }
     else {
       AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
 			 << friction_reg);
@@ -71,6 +78,12 @@ NTNBaseFriction * initializeNTRFFriction(NTRFContact & contact,
     else if (friction_reg == "rubin_ampuero") {
       friction = new NTRFFriction<NTNFricLawLinearSlipWeakening, 
 				  NTNFricRegRubinAmpuero>(contact);
+
+      friction->setParam("t_star", data.get<Real>("t_star"));
+    }
+    else if (friction_reg == "simplified_prakash_clifton") {
+      friction = new NTRFFriction<NTNFricLawLinearSlipWeakening, 
+				  NTNFricRegSimplifiedPrakashClifton>(contact);
 
       friction->setParam("t_star", data.get<Real>("t_star"));
     }
