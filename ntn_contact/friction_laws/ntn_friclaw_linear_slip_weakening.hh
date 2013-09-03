@@ -67,6 +67,8 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
   
 protected:
+  /// compute frictional strength according to friction law
+  virtual void computeFrictionalStrength();
   /// computes the friction coefficient as a function of slip
   virtual void computeFrictionCoefficient();
 

@@ -49,6 +49,17 @@ NTNFricLawLinearSlipWeakening<Regularisation>::NTNFricLawLinearSlipWeakening(NTN
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
+void NTNFricLawLinearSlipWeakening<Regularisation>::computeFrictionalStrength() {
+  AKANTU_DEBUG_IN();
+
+  computeFrictionCoefficient();
+  NTNFricLawCoulomb<Regularisation>::computeFrictionalStrength();
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Regularisation>
 void NTNFricLawLinearSlipWeakening<Regularisation>::computeFrictionCoefficient() {
   AKANTU_DEBUG_IN();
   
