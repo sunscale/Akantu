@@ -26,21 +26,25 @@
  */
 
 /* -------------------------------------------------------------------------- */
+// simtools
+#include "ntn_contact.hh"
 
 __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
-NTNFriction::NTNFriction(NTNContact & contact,
-			 const FrictionID & id,
-			 const MemoryID & memory_id) : 
-  NTNBaseFriction(&contact, id, memory_id) {
+template <template <class> class FrictionLaw, class Regularisation>
+NTNFriction<FrictionLaw, Regularisation>::NTNFriction(NTNBaseContact * contact,
+						      const FrictionID & id,
+						      const MemoryID & memory_id) : 
+  FrictionLaw<Regularisation>(contact, id, memory_id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFriction::applyFrictionTraction() {
+template <template <class> class FrictionLaw, class Regularisation>
+void NTNFriction<FrictionLaw, Regularisation>::applyFrictionTraction() {
   AKANTU_DEBUG_IN();
 
   NTNContact * ntn_contact = dynamic_cast<NTNContact * >(this->contact);
@@ -69,13 +73,15 @@ void NTNFriction::applyFrictionTraction() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFriction::printself(std::ostream & stream, int indent) const {
+template <template <class> class FrictionLaw, class Regularisation>
+void NTNFriction<FrictionLaw, Regularisation>::printself(std::ostream & stream, 
+							 int indent) const {
   AKANTU_DEBUG_IN();
   std::string space;
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
   
   stream << space << "NTNFriction [" << std::endl;
-  NTNBaseFriction::printself(stream, indent);
+  FrictionLaw<Regularisation>::printself(stream, ++indent);
   stream << space << "]" << std::endl;
 
 

@@ -33,7 +33,7 @@
 /* -------------------------------------------------------------------------- */
 // simtools
 #include "ntn_base_friction.hh"
-#include "ntn_contact.hh"
+#include "ntn_friclaw_coulomb.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -41,12 +41,14 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class NTNFriction : public NTNBaseFriction {
+template <template<class> class FrictionLaw = NTNFricLawCoulomb, 
+	  class Regularisation = NTNFricRegNoRegularisation>
+class NTNFriction : public FrictionLaw<Regularisation> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNFriction(NTNContact & contact,
+  NTNFriction(NTNBaseContact * contact,
 	      const FrictionID & id = "friction",
 	      const MemoryID & memory_id = 0);
   virtual ~NTNFriction() {};
@@ -62,8 +64,6 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
 protected:
-  /// compute frictional strength according to friction law
-  virtual void computeFrictionalStrength() = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
@@ -90,7 +90,10 @@ protected:
 /* -------------------------------------------------------------------------- */
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const NTNFriction & _this)
+template <template<class> class FrictionLaw, class Regularisation>
+inline std::ostream & operator <<(std::ostream & stream, 
+				  const NTNFriction<FrictionLaw,
+				                    Regularisation> & _this)
 {
   _this.printself(stream);
   return stream;

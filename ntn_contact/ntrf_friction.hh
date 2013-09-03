@@ -33,7 +33,6 @@
 /* -------------------------------------------------------------------------- */
 // simtools
 #include "ntn_friclaw_coulomb.hh"
-#include "ntrf_contact.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -49,7 +48,7 @@ class NTRFFriction : public FrictionLaw<Regularisation> {
   /* ------------------------------------------------------------------------ */
 public:
   
-  NTRFFriction(NTRFContact & contact,
+  NTRFFriction(NTNBaseContact * contact,
 	       const FrictionID & id = "friction",
 	       const MemoryID & memory_id = 0);
   virtual ~NTRFFriction() {};

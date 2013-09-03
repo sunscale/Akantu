@@ -35,7 +35,7 @@ __BEGIN_SIMTOOLS__
 
 using namespace akantu;
 
-NTNBaseFriction * initializeNTRFFriction(NTRFContact & contact, 
-					 ParameterReader & data);
+NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact, 
+					ParameterReader & data);
 
 __END_SIMTOOLS__

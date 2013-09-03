@@ -32,10 +32,10 @@ __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
 template <template <class> class FrictionLaw, class Regularisation>
-NTRFFriction<FrictionLaw, Regularisation>::NTRFFriction(NTRFContact & contact,
-			   const FrictionID & id,
-			   const MemoryID & memory_id) : 
-  FrictionLaw<Regularisation>(&contact,id,memory_id) {
+NTRFFriction<FrictionLaw, Regularisation>::NTRFFriction(NTNBaseContact * contact,
+							const FrictionID & id,
+							const MemoryID & memory_id) : 
+  FrictionLaw<Regularisation>(contact,id,memory_id) {
   AKANTU_DEBUG_IN();
   
   AKANTU_DEBUG_OUT();

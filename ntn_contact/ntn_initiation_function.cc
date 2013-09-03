@@ -28,6 +28,7 @@
 /* -------------------------------------------------------------------------- */
 // simtools
 #include "ntn_initiation_function.hh"
+#include "ntn_friction.hh"
 #include "ntrf_friction.hh"
 
 // friction regularisations
@@ -39,8 +40,8 @@
 
 __BEGIN_SIMTOOLS__
 
-NTNBaseFriction * initializeNTRFFriction(NTRFContact & contact, 
-					 ParameterReader & data) {
+NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact, 
+					ParameterReader & data) {
   AKANTU_DEBUG_IN();
   
   const std::string & friction_law = data.get<std::string>("friction_law");
@@ -48,18 +49,37 @@ NTNBaseFriction * initializeNTRFFriction(NTRFContact & contact,
   
   NTNBaseFriction * friction;
   
+  bool is_ntn_contact = true;
+  if (NTRFContact * cont = dynamic_cast<NTRFContact *>(contact)) {
+    is_ntn_contact = false;
+  }
+
   if (friction_law == "coulomb") {
     if (friction_reg == "no_regularisation") {
-      friction = new NTRFFriction<NTNFricLawCoulomb, NTNFricRegNoRegularisation>(contact);
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawCoulomb,
+				   NTNFricRegNoRegularisation>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawCoulomb,
+				    NTNFricRegNoRegularisation>(contact);
     }
     else if (friction_reg == "rubin_ampuero") {
-      friction = new NTRFFriction<NTNFricLawCoulomb, NTNFricRegRubinAmpuero>(contact);
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawCoulomb,
+				   NTNFricRegRubinAmpuero>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawCoulomb,
+				    NTNFricRegRubinAmpuero>(contact);
       
       friction->setParam("t_star", data.get<Real>("t_star"));
     }
     else if (friction_reg == "simplified_prakash_clifton") {
-      friction = new NTRFFriction<NTNFricLawCoulomb, 
-				  NTNFricRegSimplifiedPrakashClifton>(contact);
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawCoulomb, 
+				   NTNFricRegSimplifiedPrakashClifton>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawCoulomb, 
+				    NTNFricRegSimplifiedPrakashClifton>(contact);
       
       friction->setParam("t_star", data.get<Real>("t_star"));
     }
@@ -72,18 +92,30 @@ NTNBaseFriction * initializeNTRFFriction(NTRFContact & contact,
   }
   else if (friction_law == "linear_slip_weakening") {
     if (friction_reg == "no_regularisation") {
-      friction = new NTRFFriction<NTNFricLawLinearSlipWeakening, 
-				  NTNFricRegNoRegularisation>(contact);
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearSlipWeakening, 
+				   NTNFricRegNoRegularisation>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearSlipWeakening, 
+				    NTNFricRegNoRegularisation>(contact);
     }
     else if (friction_reg == "rubin_ampuero") {
-      friction = new NTRFFriction<NTNFricLawLinearSlipWeakening, 
-				  NTNFricRegRubinAmpuero>(contact);
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearSlipWeakening, 
+				   NTNFricRegRubinAmpuero>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearSlipWeakening, 
+				    NTNFricRegRubinAmpuero>(contact);
 
       friction->setParam("t_star", data.get<Real>("t_star"));
     }
     else if (friction_reg == "simplified_prakash_clifton") {
-      friction = new NTRFFriction<NTNFricLawLinearSlipWeakening, 
-				  NTNFricRegSimplifiedPrakashClifton>(contact);
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearSlipWeakening, 
+				   NTNFricRegSimplifiedPrakashClifton>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearSlipWeakening, 
+				    NTNFricRegSimplifiedPrakashClifton>(contact);
 
       friction->setParam("t_star", data.get<Real>("t_star"));
     }
