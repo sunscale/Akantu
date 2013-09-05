@@ -38,9 +38,17 @@ NTNContact::NTNContact(SolidMechanicsModel & model,
   NTNBaseContact(model,id,memory_id),
   masters(0,1,0,id+":masters",std::numeric_limits<UInt>::quiet_NaN(),"masters"),
   lumped_boundary_masters(0,1,0,id+":lumped_boundary_masters",
-			  std::numeric_limits<Real>::quiet_NaN(),"lumped_boundary_masters")
+			  std::numeric_limits<Real>::quiet_NaN(),"lumped_boundary_masters"),
+  master_elements("master_elements", id, memory_id)
 {
   AKANTU_DEBUG_IN();
+  
+  const Mesh & mesh = this->model.getMesh();
+  UInt spatial_dimension = this->model.getSpatialDimension();
+  
+  mesh.initByElementTypeArray(this->master_elements,
+			      1,
+			      spatial_dimension - 1);
   
   AKANTU_DEBUG_OUT();
 }
@@ -56,7 +64,7 @@ void NTNContact::addSurfacePair(const Surface & slave,
 		      << " and cannot have direction " << surface_normal_dir
 		      << " for surface normal");
 
-  const Mesh & mesh_ref = this->model.getFEM().getMesh();
+  const Mesh & mesh_ref = this->model.getMesh();
   
   const SubBoundary & slave_boundary = mesh_ref.getSubBoundary(slave);
   const SubBoundary & master_boundary = mesh_ref.getSubBoundary(master);
@@ -194,7 +202,7 @@ void NTNContact::updateNormals() {
   // set normals to zero
   this->normals.clear();
 
-  const Mesh & mesh = this->model.getFEM().getMesh();
+  const Mesh & mesh = this->model.getMesh();
   Mesh::type_iterator it = mesh.firstType(dim-1);
   Mesh::type_iterator last = mesh.lastType(dim-1);
   for (; it != last; ++it) {

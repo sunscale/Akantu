@@ -240,7 +240,7 @@ void NTNBaseContact::internalUpdateLumpedBoundary(const Array<UInt> & nodes,
   
   const FEM & boundary_fem = this->model.getFEMBoundary();
   
-  const Mesh & mesh = this->model.getFEM().getMesh();
+  const Mesh & mesh = this->model.getMesh();
   
   for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
     Mesh::type_iterator it = mesh.firstType(dim-1, *gt);
@@ -293,7 +293,7 @@ void NTNBaseContact::computeContactPressure() {
 
   // pre-compute the acceleration 
   // (not increment acceleration, because residual is still Kf)
-  Array<Real> acceleration(this->model.getFEM().getMesh().getNbNodes(),dim);
+  Array<Real> acceleration(this->model.getMesh().getNbNodes(),dim);
   this->model.solveLumped(acceleration,
 			  this->model.getMass(),
 			  this->model.getResidual(),
