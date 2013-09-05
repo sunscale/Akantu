@@ -337,7 +337,7 @@ void NTNBaseContact::computeContactPressure() {
 
   // check if gap is negative -> is in contact
   for (UInt n=0; n<nb_contact_nodes; ++n) {
-    if (gap(n) < 0.) {
+    if (gap(n) <= 0.) {
       for (UInt d=0; d<dim; ++d) {
 	this->contact_pressure(n,d) = this->impedance(n) * gap(n) / (2 * delta_t) 
 	                            * this->normals(n,d);
