@@ -115,6 +115,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   AKANTU_SET_MACRO(Mass, mass, Real);
+  AKANTU_SET_MACRO(TargetForce, target_force, Real);
 
   void insertSubBoundary(const std::string & sb_name) {
     this->subboundaries.insert(sb_name);

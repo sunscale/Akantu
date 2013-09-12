@@ -184,14 +184,11 @@ void NTRFContact::computeRelativeTangentialField(const Array<Real> & field,
     // nodes
     UInt node = this->slaves(n);
 
-    // get field and normal vectors
-    const Vector<Real> & field_v  = it_field[node];
-    const Vector<Real> & normal_v = it_normal[n];
-
     // relative field vector
-    rfv = field_v;
+    rfv = it_field[node];;
 
     // normal projection of relative field
+    const Vector<Real> & normal_v = it_normal[n];
     np_rfv = normal_v;
     np_rfv *= rfv.dot(normal_v);
 
@@ -221,14 +218,12 @@ void NTRFContact::computeNormalGap(Array<Real> & gap) const {
     // nodes
     UInt node = this->slaves(n);
 
-    const Vector<Real> & cur_pos_v = it_cur_pos[node];
-    const Vector<Real> & normal_v  = it_normal[n];
-
     // gap vector
-    gap_v = cur_pos_v;
+    gap_v = it_cur_pos[node];
     gap_v -= this->reference_point;
 
     // length of normal projection of gap vector
+    const Vector<Real> & normal_v  = it_normal[n];
     gap.push_back(gap_v.dot(normal_v));
   }
   

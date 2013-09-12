@@ -355,16 +355,12 @@ void NTNContact::computeRelativeTangentialField(const Array<Real> & field,
     UInt slave  = this->slaves(n);
     UInt master = this->masters(n);
 
-    // get field and normal vectors
-    const Vector<Real> & field_s  = it_field[slave];
-    const Vector<Real> & field_m  = it_field[master];
-    const Vector<Real> & normal_v = it_normal[n];
-
     // relative field vector (slave - master)
-    rfv = field_s;
-    rfv -= field_m;
+    rfv = it_field[slave];
+    rfv -= it_field[master];
 
     // normal projection of relative field
+    const Vector<Real> & normal_v = it_normal[n];
     np_rfv = normal_v;
     np_rfv *= rfv.dot(normal_v);
 
@@ -399,16 +395,12 @@ void NTNContact::computeRelativeNormalField(const Array<Real> & field,
     UInt slave  = this->slaves(n);
     UInt master = this->masters(n);
 
-    // get field and normal vectors
-    const Vector<Real> & field_s  = it_field[slave];
-    const Vector<Real> & field_m  = it_field[master];
-    const Vector<Real> & normal_v = it_normal[n];
-    
-    // relative field vector (slave - master)
-    rfv = field_s;
-    rfv -= field_m;
+    // relative field vector (slave - master) 
+    rfv = it_field[slave];
+    rfv -= it_field[master];
 
     // length of normal projection of relative field
+    const Vector<Real> & normal_v = it_normal[n];
     rel_normal_field.push_back(rfv.dot(normal_v));
   }
   
