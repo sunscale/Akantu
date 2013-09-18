@@ -122,6 +122,9 @@ public:
   AKANTU_GET_MACRO(Masters,                               masters, const SynchronizedArray<UInt> &)
   AKANTU_GET_MACRO(LumpedBoundaryMasters, lumped_boundary_masters, const SynchronizedArray<Real> &)
 
+  /// get interface node pairs [n,0] are masters, [n,1] are slaves
+  void getNodePairs(Array<UInt> & pairs) const;
+
   /// get index of node in either slaves or masters array
   /// if node is in neither of them, return -1
   Int getNodeIndex(UInt node) const;

@@ -61,6 +61,7 @@ set(AKANTU_SIMTOOLS_HDRS
 
   # inlines
   common/synchronized_array_inline_impl.cc
+  ntn_contact/ntn_base_contact_inline_impl.cc
   )
 
 

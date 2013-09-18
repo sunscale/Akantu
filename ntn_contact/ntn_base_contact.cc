@@ -32,6 +32,40 @@
 __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
+NTNContactSynchElementFilter::NTNContactSynchElementFilter(NTNBaseContact * contact) :
+  contact(contact),
+  connectivity(contact->getModel().getMesh().getConnectivities()) {
+  AKANTU_DEBUG_IN();
+  
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+bool NTNContactSynchElementFilter::operator()(const Element & e) {
+  AKANTU_DEBUG_IN();
+
+  ElementType type = e.type;
+  UInt element = e.element;
+  GhostType ghost_type = e.ghost_type;
+  
+  // loop over all nodes of this element
+  bool need_element = false;
+  UInt nb_nodes = Mesh::getNbNodesPerElement(type);
+  for (UInt n=0; n<nb_nodes; ++n) {
+    UInt nn = this->connectivity(type, ghost_type)(element,n);
+    
+    // if one nodes is in this contact, we need this element
+    if (this->contact->getNodeIndex(nn) >= 0) {
+      need_element = true;
+      break;
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+  return need_element;
+}
+
+/* -------------------------------------------------------------------------- */
 NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model,
 			       const ContactID & id,
 			       const MemoryID & memory_id) : 
@@ -47,7 +81,8 @@ NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model,
   impedance(0,1,0,id+":impedance",std::numeric_limits<Real>::quiet_NaN(),"impedance"),
   contact_surfaces(),
   slave_elements("slave_elements", id, memory_id),
-  node_to_elements()
+  node_to_elements(),
+  synch_registry(NULL)
 {
   AKANTU_DEBUG_IN();
 
@@ -74,6 +109,15 @@ NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model,
 			    spatial_dimension - 1, 
 			    _not_ghost,
 			    _ek_regular);
+
+  // parallelisation
+  this->synch_registry = new SynchronizerRegistry(*this);
+
+  NTNContactSynchElementFilter elem_filter(this);
+  this->synchronizer = FilteredSynchronizer::
+    createFilteredSynchronizer(this->model.getSynchronizer(),
+			       elem_filter);
+  this->synch_registry->registerSynchronizer(*(this->synchronizer), _gst_smm_uv);
 
   AKANTU_DEBUG_OUT();
 }

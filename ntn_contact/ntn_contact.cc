@@ -172,6 +172,25 @@ void NTNContact::addNodePairs(Array<UInt> & pairs) {
 }
 
 /* -------------------------------------------------------------------------- */
+void NTNContact::getNodePairs(Array<UInt> & pairs) const {
+  AKANTU_DEBUG_IN();
+  
+  pairs.resize(0);
+  AKANTU_DEBUG_ASSERT(pairs.getNbComponent() == 2,
+		      "Array of node pairs should have nb_component = 2," <<
+		      " but has nb_component = " << pairs.getNbComponent());
+  UInt nb_pairs = this->getNbContactNodes();
+  for (UInt n=0; n<nb_pairs; ++n) {
+    UInt pair[2];
+    pair[0] = this->masters(n);
+    pair[1] = this->slaves(n);
+    pairs.push_back(pair);
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 void NTNContact::addSplitNode(UInt slave, UInt master) {
   AKANTU_DEBUG_IN();
 

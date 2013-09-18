@@ -32,6 +32,7 @@
 /* -------------------------------------------------------------------------- */
 // akantu
 #include "solid_mechanics_model.hh"
+#include "filtered_synchronizer.hh"
 
 // simtools
 #include "synchronized_array.hh"
@@ -41,8 +42,28 @@ __BEGIN_SIMTOOLS__
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
+class NTNBaseContact;
+
 /* -------------------------------------------------------------------------- */
-class NTNBaseContact : protected Memory, public Dumpable {
+class NTNContactSynchElementFilter : public SynchElementFilter {
+public:
+  // constructor
+  NTNContactSynchElementFilter(NTNBaseContact * contact);
+
+  // answer to: do we need this element ?
+  virtual bool operator()(const Element & e);
+
+private:
+  const NTNBaseContact * contact;
+  const ByElementTypeArray<UInt> & connectivity;
+};
+
+
+
+/* -------------------------------------------------------------------------- */
+class NTNBaseContact : protected Memory,
+		       public DataAccessor,
+		       public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -117,6 +138,22 @@ protected:
   virtual void syncArrays(SyncChoice sync_choice);
 
   /* ------------------------------------------------------------------------ */
+  /* Constructors/Destructors                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  
+  inline virtual UInt getNbDataForElements(const Array<Element> & elements,
+                                           SynchronizationTag tag) const;
+  
+  inline virtual void packElementData(CommunicationBuffer & buffer,
+                                      const Array<Element> & elements,
+                                      SynchronizationTag tag) const;
+  
+  inline virtual void unpackElementData(CommunicationBuffer & buffer,
+                                        const Array<Element> & elements,
+                                        SynchronizationTag tag);
+  
+  /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
@@ -178,6 +215,10 @@ protected:
   /// element list for dump and lumped_boundary
   ByElementTypeArray<UInt> slave_elements;
   CSR<Element> node_to_elements;
+
+  /// parallelisation
+  SynchronizerRegistry * synch_registry;
+  FilteredSynchronizer * synchronizer;
 };
 
 
@@ -185,7 +226,7 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntn_base_contact_inline_impl.cc"
+#include "ntn_base_contact_inline_impl.cc"
 
 /// standard output stream operator
 inline std::ostream & operator <<(std::ostream & stream, const NTNBaseContact & _this)
