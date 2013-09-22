@@ -16,6 +16,7 @@ if (FFTW_VERSION EQUAL "2")
     )
 else()
   find_library(FFTW_LIBRARIES fftw3)
+  find_library(FFTW_THREAD_LIBRARY fftw3_threads)
   find_path(FFTW_INCLUDE_PATH fftw3.h)
 endif()
 
