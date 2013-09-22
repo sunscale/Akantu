@@ -1,13 +1,23 @@
+set(FFTW_VERSION "3" CACHE INTEGER "Version of FFTW required")
 
-find_library(FFTW_LIBRARIES fftw
-   PATHS ${FFTW_DIR}
-   PATH_SUFFIXES fftw/.libs/ lib
-   )
+if (FFTW_FIND_VERSION)
+  set(FFTW_VERSION ${FFTW_FIND_VERSION} CACHE INTEGER "Version of FFTW required")
+endif()
 
-find_path(FFTW_INCLUDE_PATH fftw.h
-  PATHS ${FFTW_DIR}
-  PATH_SUFFIXES include fftw
-  )
+if (FFTW_VERSION EQUAL "2")
+  find_library(FFTW_LIBRARIES fftw
+    PATHS ${FFTW_DIR}
+    PATH_SUFFIXES fftw/.libs/ lib
+    )
+
+  find_path(FFTW_INCLUDE_PATH fftw.h
+    PATHS ${FFTW_DIR}
+    PATH_SUFFIXES include fftw
+    )
+else()
+  find_library(FFTW_LIBRARIES fftw3)
+  find_path(FFTW_INCLUDE_PATH fftw3.h)
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(FFTW DEFAULT_MSG
