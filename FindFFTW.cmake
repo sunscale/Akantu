@@ -9,15 +9,21 @@ if (FFTW_VERSION EQUAL "2")
     PATHS ${FFTW_DIR}
     PATH_SUFFIXES fftw/.libs/ lib
     )
-
   find_path(FFTW_INCLUDE_PATH fftw.h
-    PATHS ${FFTW_DIR}
+    PATHS ${FFTW_DIR} $ENV{INCLUDE_PATH}
     PATH_SUFFIXES include fftw
     )
 else()
-  find_library(FFTW_LIBRARIES fftw3)
-  find_library(FFTW_THREAD_LIBRARY fftw3_threads)
-  find_path(FFTW_INCLUDE_PATH fftw3.h)
+  find_library(FFTW_LIBRARIES fftw3
+    PATHS ENV LD_LIBRARY_PATH
+  )
+  find_library(FFTW_THREAD_LIBRARY fftw3_threads
+    PATHS ENV LD_LIBRARY_PATH
+    )   
+  find_path(FFTW_INCLUDE_PATH fftw3.h
+    PATHS ENV INCLUDE_PATH
+    PATH_SUFFIXES include fftw
+    )   
 endif()
 
 include(FindPackageHandleStandardArgs)
