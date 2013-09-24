@@ -54,24 +54,23 @@ NTNContact::NTNContact(SolidMechanicsModel & model,
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNContact::addSurfacePair(const Surface & slave, 
-				const Surface & master, 
-				UInt surface_normal_dir) {
+void NTNContact::pairInterfaceNodes(const SubBoundary & slave_boundary, 
+				    const SubBoundary & master_boundary,
+				    UInt surface_normal_dir,
+				    const Mesh & mesh,
+				    Array<UInt> & pairs) {
   AKANTU_DEBUG_IN();
 
-  UInt dim = this->model.getSpatialDimension();
-  AKANTU_DEBUG_ASSERT(surface_normal_dir < dim, "Model is of " << dim << " dimensions"
+  pairs.resize(0);
+  AKANTU_DEBUG_ASSERT(pairs.getNbComponent() == 2,
+		      "Array of node pairs should have nb_component = 2," <<
+		      " but has nb_component = " << pairs.getNbComponent());
+
+  UInt dim = mesh.getSpatialDimension();
+  AKANTU_DEBUG_ASSERT(surface_normal_dir < dim, "Mesh is of " << dim << " dimensions"
 		      << " and cannot have direction " << surface_normal_dir
 		      << " for surface normal");
-
-  const Mesh & mesh_ref = this->model.getMesh();
   
-  const SubBoundary & slave_boundary = mesh_ref.getSubBoundary(slave);
-  const SubBoundary & master_boundary = mesh_ref.getSubBoundary(master);
-  
-  this->contact_surfaces.insert(&slave_boundary);
-  this->contact_surfaces.insert(&master_boundary);
-
   // offset for projection computation
   UInt offset[dim-1];
   for (UInt i=0, j=0; i<dim; ++i) {
@@ -82,7 +81,7 @@ void NTNContact::addSurfacePair(const Surface & slave,
   }
 
   // find projected node coordinates
-  const Array<Real> & coordinates = mesh_ref.getNodes();
+  const Array<Real> & coordinates = mesh.getNodes();
   
   // find slave nodes
   Array<Real> proj_slave_coord(slave_boundary.getNbNodes(),dim-1,0.);
@@ -114,12 +113,12 @@ void NTNContact::addSurfacePair(const Surface & slave,
     for (UInt j=i+1; j<proj_slave_coord.getSize(); ++j) {
       Real dist = 0.;
       for (UInt d=0; d<dim-1; ++d) {
-	      dist += (proj_slave_coord(i,d) - proj_slave_coord(j,d)) 
+	dist += (proj_slave_coord(i,d) - proj_slave_coord(j,d)) 
 	      * (proj_slave_coord(i,d) - proj_slave_coord(j,d));
       }
       if (dist < min_dist) {
-	      min_dist = dist;
-	    }
+	min_dist = dist;
+      }
     }
   }
   min_dist = std::sqrt(min_dist);
@@ -131,27 +130,50 @@ void NTNContact::addSurfacePair(const Surface & slave,
       Real dist = 0.;
       for (UInt d=0; d<dim-1; ++d) {
 	dist += (proj_slave_coord(i,d) - proj_master_coord(j,d)) 
-	  * (proj_slave_coord(i,d) - proj_master_coord(j,d));
+	      * (proj_slave_coord(i,d) - proj_master_coord(j,d));
       }
       dist = std::sqrt(dist);
       if (dist < local_tol) { // it is a pair
-	this->addSplitNode(slave_nodes(i), master_nodes(j));
+	UInt pair[2];
+	pair[0] = slave_nodes(i);
+	pair[1] = master_nodes(j);
+	pairs.push_back(pair);
 	continue; // found master do not need to search further for this slave
       }
     }
   }
-  
-  // synchronize with depending nodes
-  findBoundaryElements(this->slaves.getArray(),  this->slave_elements);
-  findBoundaryElements(this->masters.getArray(), this->master_elements);
-  updateInternalData();
-  syncArrays(_added);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNContact::addNodePairs(Array<UInt> & pairs) {
+void NTNContact::addSurfacePair(const Surface & slave, 
+				const Surface & master, 
+				UInt surface_normal_dir) {
+  AKANTU_DEBUG_IN();
+
+  const Mesh & mesh = this->model.getMesh();
+
+  const SubBoundary & slave_boundary  = mesh.getSubBoundary(slave);
+  const SubBoundary & master_boundary = mesh.getSubBoundary(master);
+  
+  this->contact_surfaces.insert(&slave_boundary);
+  this->contact_surfaces.insert(&master_boundary);
+
+  Array<UInt> pairs(0,2);
+  NTNContact::pairInterfaceNodes(slave_boundary, 
+				 master_boundary, 
+				 surface_normal_dir,
+				 this->model.getMesh(),
+				 pairs);
+  
+  this->addNodePairs(pairs);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void NTNContact::addNodePairs(const Array<UInt> & pairs) {
   AKANTU_DEBUG_IN();
   
   AKANTU_DEBUG_ASSERT(pairs.getNbComponent() == 2, 
@@ -182,8 +204,8 @@ void NTNContact::getNodePairs(Array<UInt> & pairs) const {
   UInt nb_pairs = this->getNbContactNodes();
   for (UInt n=0; n<nb_pairs; ++n) {
     UInt pair[2];
-    pair[0] = this->masters(n);
-    pair[1] = this->slaves(n);
+    pair[0] = this->slaves(n);
+    pair[1] = this->masters(n);
     pairs.push_back(pair);
   }
 
@@ -211,41 +233,49 @@ void NTNContact::addSplitNode(UInt slave, UInt master) {
 void NTNContact::updateNormals() {
   AKANTU_DEBUG_IN();
 
-  UInt dim = this->model.getSpatialDimension();
-  const Array<Real> & cur_pos = this->model.getCurrentPosition();
-  FEM & boundary_fem = this->model.getFEMBoundary();
-
-  // contact information
-  UInt nb_contact_nodes = this->getNbContactNodes();
-
   // set normals to zero
   this->normals.clear();
 
+  // contact information
+  UInt dim = this->model.getSpatialDimension();
+  UInt nb_contact_nodes = this->getNbContactNodes();
+
+  this->synch_registry->synchronize(_gst_cf_nodal); // synchronize current pos
+  const Array<Real> & cur_pos = this->model.getCurrentPosition();
+
+  FEM & boundary_fem = this->model.getFEMBoundary();
   const Mesh & mesh = this->model.getMesh();
-  Mesh::type_iterator it = mesh.firstType(dim-1);
-  Mesh::type_iterator last = mesh.lastType(dim-1);
-  for (; it != last; ++it) {
-    // get elements connected to each node
-    CSR<UInt> node_to_element;
-    MeshUtils::buildNode2ElementsByElementType(mesh, *it, node_to_element);
-    // compute the normals
-    Array<Real> quad_normals(0,dim);
-    boundary_fem.computeNormalsOnControlPoints(cur_pos, quad_normals, *it);
 
-    UInt nb_quad_points = boundary_fem.getNbQuadraturePoints(*it);
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();
+       gt != ghost_type_t::end();
+       ++gt) {
+    Mesh::type_iterator it   = mesh.firstType(dim-1, *gt);
+    Mesh::type_iterator last = mesh.lastType(dim-1, *gt);
 
-    // add up normals to all master nodes
-    for (UInt n=0; n<nb_contact_nodes; ++n) {
-      UInt master = this->masters(n);
-      CSR<UInt>::iterator elem = node_to_element.begin(master);
-      // loop over all elements connected to this master node
-      for (; elem != node_to_element.end(master); ++elem) {
-	UInt e = *elem;
-	// loop over all quad points of this element
-	for (UInt q=0; q<nb_quad_points; ++q) {
-	  // add quad normal to master normal
-	  for (UInt d=0; d<dim; ++d) {
-	    this->normals(n,d) += quad_normals(e*nb_quad_points + q, d);
+    for (; it != last; ++it) {
+      // get elements connected to each node
+      CSR<UInt> node_to_element;
+      MeshUtils::buildNode2ElementsByElementType(mesh, node_to_element, *it, *gt);
+      
+      // compute the normals
+      Array<Real> quad_normals(0,dim);
+      boundary_fem.computeNormalsOnControlPoints(cur_pos, quad_normals, *it, *gt);
+      
+      UInt nb_quad_points = boundary_fem.getNbQuadraturePoints(*it, *gt);
+      
+      // add up normals to all master nodes
+      for (UInt n=0; n<nb_contact_nodes; ++n) {
+	UInt master = this->masters(n);
+	CSR<UInt>::iterator elem = node_to_element.begin(master);
+	// loop over all elements connected to this master node
+	for (; elem != node_to_element.end(master); ++elem) {
+	  UInt e = *elem;
+	  // loop over all quad points of this element
+	  for (UInt q=0; q<nb_quad_points; ++q) {
+	    // add quad normal to master normal
+	    for (UInt d=0; d<dim; ++d) {
+	      this->normals(n,d) += quad_normals(e*nb_quad_points + q, d);
+	    }
 	  }
 	}
       }
@@ -483,20 +513,16 @@ void NTNContact::addDumpFieldToDumper(const std::string & dumper_name,
 							       Array<type>, \
 							       Array<UInt> >(field, 0, 0, &nodal_filter))
   */
-
-  /*
-  if(field_id == "displacement") {
-    ADD_FIELD(field_id, this->model.getDisplacement(), Real);
-  }
-  else if(field_id == "contact_pressure") {
+  
+  if(field_id == "lumped_boundary_master") {
     internalAddDumpFieldToDumper(dumper_name,
 				 field_id,
-				 new DumperIOHelper::NodalField<Real>(this->contact_pressure.getArray()));
+				 new DumperIOHelper::NodalField<Real>(this->lumped_boundary_masters.getArray()));
   }
-  else {*/
-  NTNBaseContact::addDumpFieldToDumper(dumper_name, field_id);
-    //}
-
+  else {
+    NTNBaseContact::addDumpFieldToDumper(dumper_name, field_id);
+  }
+  
   /*
 #undef ADD_FIELD
 #endif

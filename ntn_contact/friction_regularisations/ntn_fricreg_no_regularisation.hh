@@ -54,6 +54,9 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// set to steady state for no regularisation -> do nothing
+  virtual void setToSteadyState() {};
+
   virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
   virtual void dumpRestart(const std::string & file_name) const;
   virtual void readRestart(const std::string & file_name);

@@ -72,12 +72,15 @@ public:
   NTNBaseContact(SolidMechanicsModel & model,
 		 const ContactID & id = "contact",
 		 const MemoryID & memory_id = 0);
-  virtual ~NTNBaseContact() {};
+  virtual ~NTNBaseContact();
   
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// initializes ntn contact parallel
+  virtual void initParallel();
+
   /// add split node
   virtual void addSplitNode(UInt node);
 
@@ -177,15 +180,15 @@ public:
 
   /// get number of nodes that are in contact (globally, on all procs together)
   /// is_in_contact = true
-  UInt getNbNodesInContact() const;
+  virtual UInt getNbNodesInContact() const;
 
   /// get index of node in either slaves or masters array
   /// if node is in neither of them, return -1
-  Int getNodeIndex(UInt node) const;
+  virtual Int getNodeIndex(UInt node) const;
 
   /// get number of contact nodes: nodes in the system locally (on this proc)
   /// is_in_contact = true and false, because just in the system
-  UInt getNbContactNodes() const { return this->slaves.getSize(); };
+  virtual UInt getNbContactNodes() const { return this->slaves.getSize(); };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

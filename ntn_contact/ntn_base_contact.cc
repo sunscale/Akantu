@@ -113,11 +113,30 @@ NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model,
   // parallelisation
   this->synch_registry = new SynchronizerRegistry(*this);
 
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+NTNBaseContact::~NTNBaseContact() {
+  AKANTU_DEBUG_IN();
+
+  if(this->synch_registry) delete this->synch_registry;
+
+  if(this->synchronizer) delete this->synchronizer;
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void NTNBaseContact::initParallel() {
+  AKANTU_DEBUG_IN();
+
   NTNContactSynchElementFilter elem_filter(this);
   this->synchronizer = FilteredSynchronizer::
     createFilteredSynchronizer(this->model.getSynchronizer(),
 			       elem_filter);
-  this->synch_registry->registerSynchronizer(*(this->synchronizer), _gst_smm_uv);
+
+  this->synch_registry->registerSynchronizer(*(this->synchronizer), _gst_cf_nodal);
 
   AKANTU_DEBUG_OUT();
 }
@@ -335,6 +354,9 @@ void NTNBaseContact::computeContactPressure() {
   AKANTU_DEBUG_ASSERT(delta_t > 0., 
 		      "Cannot compute contact pressure if no time step is set");
 
+  // synchronize data
+  this->synch_registry->synchronize(_gst_cf_nodal);
+
   // pre-compute the acceleration 
   // (not increment acceleration, because residual is still Kf)
   Array<Real> acceleration(this->model.getMesh().getNbNodes(),dim);
@@ -501,7 +523,7 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
   else if(field_id == "increment") {
     ADD_FIELD(field_id, this->model.getIncrement(), Real);
   }
-  else if(field_id == "normals") {
+  else if(field_id == "normal") {
     internalAddDumpFieldToDumper(dumper_name,
 				 field_id,
 				 new DumperIOHelper::NodalField<Real>(this->normals.getArray()));
@@ -516,7 +538,7 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
 				 field_id,
 				 new DumperIOHelper::NodalField<bool>(this->is_in_contact.getArray()));
   }
-  else if(field_id == "lumped_boundary_slaves") {
+  else if(field_id == "lumped_boundary_slave") {
     internalAddDumpFieldToDumper(dumper_name,
 				 field_id,
 				 new DumperIOHelper::NodalField<Real>(this->lumped_boundary_slaves.getArray()));

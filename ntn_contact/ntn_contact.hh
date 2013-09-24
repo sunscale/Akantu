@@ -59,9 +59,16 @@ public:
   void addSurfacePair(const Surface & slave, 
 		      const Surface & master, 
 		      UInt surface_normal_dir);
-  
+
+  /// fills the pairs vector with interface node pairs (*,0)=slaves, (*,1)=masters
+  static void pairInterfaceNodes(const SubBoundary & slave_boundary, 
+				 const SubBoundary & master_boundary,
+				 UInt surface_normal_dir,
+				 const Mesh & mesh,
+				 Array<UInt> & pairs);
+
   // add node pairs from a list with pairs(*,0)=slaves and pairs(*,1)=masters
-  void addNodePairs(Array<UInt> & pairs);
+  void addNodePairs(const Array<UInt> & pairs);
 
   /// add node pair
   virtual void addSplitNode(UInt slave, UInt master);
@@ -122,7 +129,7 @@ public:
   AKANTU_GET_MACRO(Masters,                               masters, const SynchronizedArray<UInt> &)
   AKANTU_GET_MACRO(LumpedBoundaryMasters, lumped_boundary_masters, const SynchronizedArray<Real> &)
 
-  /// get interface node pairs [n,0] are masters, [n,1] are slaves
+  /// get interface node pairs (*,0) are slaves, (*,1) are masters
   void getNodePairs(Array<UInt> & pairs) const;
 
   /// get index of node in either slaves or masters array
