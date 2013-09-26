@@ -178,6 +178,8 @@ public:
 
   AKANTU_GET_MACRO(SlaveElements, slave_elements, const ByElementTypeArray<UInt> &)
 
+  AKANTU_GET_MACRO(SynchronizerRegistry, synch_registry, SynchronizerRegistry *)
+
   /// get number of nodes that are in contact (globally, on all procs together)
   /// is_in_contact = true
   virtual UInt getNbNodesInContact() const;

@@ -69,6 +69,9 @@ void NTNBaseFriction::updateSlip() {
   SolidMechanicsModel & model = this->contact->getModel();
   UInt dim = model.getSpatialDimension();
 
+  // synchronize increment
+  this->contact->getSynchronizerRegistry()->synchronize(_gst_cf_incr);
+
   Array<Real> rel_tan_incr(0,dim);
   this->contact->computeRelativeTangentialField(model.getIncrement(),
 						rel_tan_incr);

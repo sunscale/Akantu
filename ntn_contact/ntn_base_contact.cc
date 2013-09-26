@@ -137,6 +137,7 @@ void NTNBaseContact::initParallel() {
 			       elem_filter);
 
   this->synch_registry->registerSynchronizer(*(this->synchronizer), _gst_cf_nodal);
+  this->synch_registry->registerSynchronizer(*(this->synchronizer), _gst_cf_incr);
 
   AKANTU_DEBUG_OUT();
 }

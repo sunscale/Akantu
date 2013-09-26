@@ -46,6 +46,10 @@ inline UInt NTNBaseContact::getNbDataForElements(const Array<Element> & elements
     size += nb_nodes * spatial_dimension * sizeof(Real) * 3; // disp, vel and cur_pos
     break;
   }
+  case _gst_cf_incr: {
+    size += nb_nodes * spatial_dimension * sizeof(Real) * 1;
+    break;
+  }
   default: {}
   }
 
@@ -76,6 +80,13 @@ inline void NTNBaseContact::packElementData(CommunicationBuffer & buffer,
 				      this->model.getMesh());
     break;
   }
+  case _gst_cf_incr: {
+    DataAccessor::packNodalDataHelper(this->model.getIncrement(),
+				      buffer,
+				      elements,
+				      this->model.getMesh());
+    break;
+  }
   default: {
   }
   }
@@ -101,6 +112,13 @@ inline void NTNBaseContact::unpackElementData(CommunicationBuffer & buffer,
 					elements,
 					this->model.getMesh());
     DataAccessor::unpackNodalDataHelper(this->model.getVelocity(),
+					buffer,
+					elements,
+					this->model.getMesh());
+    break;
+  }
+  case _gst_cf_incr: {
+    DataAccessor::unpackNodalDataHelper(this->model.getIncrement(),
 					buffer,
 					elements,
 					this->model.getMesh());
