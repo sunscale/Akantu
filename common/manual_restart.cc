@@ -75,3 +75,37 @@ void loadRestart(akantu::SolidMechanicsModel & model,
 
 
 }
+
+/* -------------------------------------------------------------------------- */
+void loadRestart(akantu::SolidMechanicsModel & model, 
+		 const std::string & fname) {
+  const akantu::UInt spatial_dimension = model.getMesh().getSpatialDimension();
+  loadArray(model.getDisplacement(), fname);
+}
+
+/* -------------------------------------------------------------------------- */
+void dumpRestart(akantu::SolidMechanicsModel & model, 
+		 const std::string & fname,
+		 akantu::UInt prank) {
+
+  const akantu::Mesh & mesh = model.getMesh();
+  const akantu::UInt spatial_dimension = model.getMesh().getSpatialDimension();
+
+  const_cast<DOFSynchronizer &>(model.getDOFSynchronizer()).initScatterGatherCommunicationScheme();
+  
+  if(prank == 0) {
+    akantu::Array<akantu::Real> full_array(mesh.getNbGlobalNodes(), 
+					   spatial_dimension);
+    model.getDOFSynchronizer().gather(model.getDisplacement(), 0, &full_array);
+    dumpArray(full_array, fname);
+  } else {
+    model.getDOFSynchronizer().gather(model.getDisplacement(), 0);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void dumpRestart(akantu::SolidMechanicsModel & model, 
+		 const std::string & fname) {
+  const akantu::UInt spatial_dimension = model.getMesh().getSpatialDimension();
+  dumpArray(model.getDisplacement(), fname);
+}
