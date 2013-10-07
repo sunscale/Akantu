@@ -14,12 +14,16 @@ if (FFTW_VERSION EQUAL "2")
     PATH_SUFFIXES include fftw
     )
 else()
+
   find_library(FFTW_LIBRARIES fftw3
     PATHS ENV LD_LIBRARY_PATH
   )
   find_library(FFTW_THREAD_LIBRARY fftw3_threads
     PATHS ENV LD_LIBRARY_PATH
     )   
+  find_library(FFTW_OPENMP_LIBRARY fftw3_omp
+    PATHS ENV LD_LIBRARY_PATH
+    )
   find_path(FFTW_INCLUDE_PATH fftw3.h
     PATHS ENV INCLUDE_PATH
     PATH_SUFFIXES include fftw
