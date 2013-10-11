@@ -37,6 +37,7 @@ set(AKANTU_SIMTOOLS_HDRS
 
   boundary_conditions/force_based_dirichlet.hh
   boundary_conditions/spring_bc.hh
+  boundary_conditions/inclined_flat_dirichlet.hh
 
   ntn_contact/ntn_base_contact.hh
   ntn_contact/ntn_contact.hh

@@ -11,6 +11,7 @@
 // boundary conditions
 #include "force_based_dirichlet.hh"
 #include "spring_bc.hh"
+#include "inclined_flat_dirichlet.hh"
 
 // ntn/ntrf contact
 #include "ntn_base_contact.hh"
