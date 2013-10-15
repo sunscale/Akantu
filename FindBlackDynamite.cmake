@@ -25,22 +25,22 @@
 #
 #===============================================================================
 
-find_library(BlackDynamite_LIBRARIES NAME blackdynamite
-  PATHS ${BlackDynamite_DIR} 
+find_library(BLACKDYNAMITE_LIBRARIES NAME blackdynamite
+  PATHS ${BLACKDYNAMITE_DIR} 
   PATH_SUFFIXES lib
   )
 #===============================================================================
-find_path(BlackDynamite_INCLUDE_PATH pusher.hh
-  PATHS ${BlackDynamite_DIR} ENV C_INCLUDE_PATH
+find_path(BLACKDYNAMITE_INCLUDE_PATH pusher.hh
+  PATHS ${BLACKDYNAMITE_DIR} ENV C_INCLUDE_PATH
   PATH_SUFFIXES include src
   )
 #===============================================================================
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(BlackDynamite DEFAULT_MSG
-  BlackDynamite_LIBRARIES BlackDynamite_INCLUDE_PATH)
+  BLACKDYNAMITE_LIBRARIES BLACKDYNAMITE_INCLUDE_PATH)
 
 #===============================================================================
-if(NOT BlackDynamite_FOUND)
-  set(BlackDynamite_DIR "" CACHE PATH "Location of BlackDynamite library.")
-endif(NOT BlackDynamite_FOUND)
+if(NOT BLACKDYNAMITE_FOUND)
+  set(BLACKDYNAMITE_DIR "" CACHE PATH "Location of BlackDynamite library.")
+endif(NOT BLACKDYNAMITE_FOUND)
 
