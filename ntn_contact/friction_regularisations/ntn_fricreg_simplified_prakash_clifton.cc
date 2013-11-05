@@ -28,6 +28,7 @@
 /* -------------------------------------------------------------------------- */
 // simtools
 #include "ntn_fricreg_simplified_prakash_clifton.hh"
+#include "dumper_text.hh"
 
 __BEGIN_SIMTOOLS__
 

@@ -28,6 +28,7 @@
 /* -------------------------------------------------------------------------- */
 // simtools
 #include "ntn_fricreg_rubin_ampuero.hh"
+#include "dumper_text.hh"
 
 __BEGIN_SIMTOOLS__
 

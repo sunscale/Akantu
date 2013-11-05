@@ -67,7 +67,8 @@ set(AKANTU_SIMTOOLS_HDRS
 
 
 find_package(Akantu REQUIRED)
-include_directories(${AKANTU_INCLUDE_DIR})
+include_directories(${AKANTU_INCLUDE_DIR}
+  ${AKANTU_IOHELPER_INCLUDE_DIR})
 
 
 add_library(akantu_simtools

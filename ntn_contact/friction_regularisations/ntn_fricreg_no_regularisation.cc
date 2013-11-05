@@ -28,6 +28,7 @@
 /* -------------------------------------------------------------------------- */
 // simtools
 #include "ntn_fricreg_no_regularisation.hh"
+#include "dumper_text.hh"
 
 __BEGIN_SIMTOOLS__
 

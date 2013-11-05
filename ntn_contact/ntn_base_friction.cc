@@ -28,6 +28,7 @@
 /* -------------------------------------------------------------------------- */
 // simtools
 #include "ntn_base_friction.hh"
+#include "dumper_text.hh"
 
 __BEGIN_SIMTOOLS__
 

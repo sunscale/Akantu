@@ -28,6 +28,7 @@
 /* -------------------------------------------------------------------------- */
 // simtools
 #include "ntn_contact.hh"
+#include "dumper_text.hh"
 
 __BEGIN_SIMTOOLS__
 
