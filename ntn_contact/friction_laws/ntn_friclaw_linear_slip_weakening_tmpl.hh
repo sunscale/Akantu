@@ -136,13 +136,13 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::setParam(const std::string &
   AKANTU_DEBUG_IN();
 
   if (param == "mu_s") {
-    setInternalArray(this->mu_s, value);
+    this->setInternalArray(this->mu_s, value);
   }
   else if (param == "mu_k") {
-    setInternalArray(this->mu_k, value);
+    this->setInternalArray(this->mu_k, value);
   }
   else if (param == "d_c") {
-    setInternalArray(this->d_c, value);
+    this->setInternalArray(this->d_c, value);
   }
   else {
     NTNFricLawCoulomb<Regularisation>::setParam(param, value);
@@ -158,13 +158,13 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::setParam(const std::string &
   AKANTU_DEBUG_IN();
 
   if (param == "mu_s") {
-    setInternalArray(this->mu_s, node, value);
+    this->setInternalArray(this->mu_s, node, value);
   }
   else if (param == "mu_k") {
-    setInternalArray(this->mu_k, node, value);
+    this->setInternalArray(this->mu_k, node, value);
   }
   else if (param == "d_c") {
-    setInternalArray(this->d_c, node, value);
+    this->setInternalArray(this->d_c, node, value);
   }
   else {
     NTNFricLawCoulomb<Regularisation>::setParam(param, value);

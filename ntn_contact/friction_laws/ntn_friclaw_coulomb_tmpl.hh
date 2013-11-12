@@ -117,7 +117,7 @@ void NTNFricLawCoulomb<Regularisation>::setParam(const std::string & param,
   AKANTU_DEBUG_IN();
 
   if (param == "mu_s") {
-    setInternalArray(this->mu, value);
+    this->setInternalArray(this->mu, value);
   }
   else {
     Regularisation::setParam(param, value);
@@ -133,7 +133,7 @@ void NTNFricLawCoulomb<Regularisation>::setParam(const std::string & param,
   AKANTU_DEBUG_IN();
 
   if (param == "mu_s") {
-    setInternalArray(this->mu, node, value);
+    this->setInternalArray(this->mu, node, value);
   }
   else {
     Regularisation::setParam(param, value);
