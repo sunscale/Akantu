@@ -1,11 +1,11 @@
 #===============================================================================
-# @file   FindPQXX.cmake
+# @file   FindPOSTGRES.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date   Wed Sep 01 17:57:12 2010
 #
-# @brief  The find_package file for PostgreSQL C++ library
+# @brief  The find_package file for PostgreSQL C library
 #
 # @section LICENSE
 #
@@ -27,28 +27,19 @@
 #
 #===============================================================================
 
-find_package(PostgreSQL REQUIRED)
-if(POSTGRESQL_FOUND)
-  find_library(PQXX_LIBRARY NAMES pqxx
-    PATHS ${PQXX_DIR} ENV PQXX_DIR
-    DOC "Location of libpqxx library"
-    )
+find_library(POSTGRESQL_LIBRARIES NAMES pq
+  PATH_SUFFIXES pgsql postgresql
+  PATH ENV POSTGRESQL_DIR
+  )
 
-  find_path(PQXX_HEADER_DIR NAMES pqxx/pqxx
-    PATHS ${PQXX_DIR} ENV PQXX_DIR
-    DOC "Path to pqxx/pqxx header file. Do not include the 'pqxx' directory in this value."
-    )
+find_path(POSTGRESQL_INCLUDE_DIR NAMES libpq-fe.h
+  PATH_SUFFIXES pgsql postgresql
+  PATHS ENV POSTGRESQL_DIR
+  )
 
-  set(PQXX_INCLUDE_DIR "${PQXX_HEADER_DIR};${POSTGRESQL_INCLUDE_DIR}" CACHE STRING "Include directories for PostgreSQL C++ library"  FORCE)
-  set(PQXX_LIBRARIES "${PQXX_LIBRARY};${POSTGRESQL_LIBRARIES}" CACHE STRING "Link libraries for PostgreSQL C++ interface" FORCE)
-
-  mark_as_advanced(PQXX_HEADER_DIR)
-  mark_as_advanced(PQXX_INCLUDE_DIR)
-  mark_as_advanced(PQXX_LIBRARY)
-  mark_as_advanced(PQXX_LIBRARIES)
-endif()
-
-#===============================================================================
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(PQXX DEFAULT_MSG PQXX_LIBRARY PQXX_HEADER_DIR)
+find_package_handle_standard_args(POSTGRESQL DEFAULT_MSG
+  POSTGRESQL_LIBRARIES POSTGRESQL_INCLUDE_DIR)
 
+mark_as_advanced(POSTGRESQL_INCLUDE_DIR)
+mark_as_advanced(POSTGRESQL_LIBRARIES)
