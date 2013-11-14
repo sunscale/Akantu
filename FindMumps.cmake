@@ -98,9 +98,10 @@ set(MUMPS_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${BLACS_LIBRARIES_ALL} ${BLAS_LIBRARI
 
 
 #===============================================================================
-if(NOT Mumps_FOUND)
+if(NOT MUMPS_FOUND)
   set(MUMPS_DIR "" CACHE PATH "Prefix of MUMPS library.")
-endif(NOT Mumps_FOUND)
+  mark_as_advanced(MUMPS_DIR)
+endif()
 #===============================================================================
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Mumps DEFAULT_MSG

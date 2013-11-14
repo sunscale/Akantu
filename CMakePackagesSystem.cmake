@@ -65,6 +65,7 @@ endmacro()
 
 #===============================================================================
 option(AUTO_MOVE_OLD_FILES "give cmake permission to move the unregistered files to ${PROJECT_SOURCE_DIR}/tmp directory" FALSE)
+mark_as_advanced(AUTO_MOVE_OLD_FILES)
 
 macro(add_all_packages package_dir src_dir)
   string(TOUPPER ${PROJECT_NAME} _project)

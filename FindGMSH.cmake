@@ -30,6 +30,8 @@
 find_program(GMSH gmsh
   DOC "The mesh generetor gmsh")
 
+mark_as_advanced(GMSH)
+
 find_package(PackageHandleStandardArgs)
 find_package_handle_standard_args(GMSH DEFAULT_MSG GMSH)
 
