@@ -74,19 +74,33 @@ macro(add_all_packages package_dir src_dir)
 
   set(_${_project}_src_dir ${src_dir})
 
+  set(_package_files)
   foreach(_pkg ${${_project}_package_list})
     get_filename_component(_basename ${_pkg} NAME)
-    string(REGEX REPLACE "\\.cmake" "" _option_name ${_basename})
+    list(APPEND _package_files ${_basename})
+  endforeach()
+
+  if(_package_files)
+    list(SORT _package_files)
+  endif()
+
+  set(${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL)
+  foreach(_pkg ${_package_files})
+    string(REGEX REPLACE "[0-9]+_" "" _pkg_name ${_pkg})
+    string(REGEX REPLACE "\\.cmake" "" _option_name ${_pkg_name})
     string(TOUPPER "${_option_name}" _option_name)
+    set(${_project}_${_option_name}_FILE ${_pkg})
     list(APPEND ${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL ${_option_name})
   endforeach()
 
   cmake_debug_message(PackagesSystem "add_all_packages: PKG LIST : ${${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL}")
 
+  message("Packages: ${${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL}")
+
   foreach(_pkg ${${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL})
     cmake_debug_message(PackagesSystem "add_all_packages: including ${_pkg}")
     string(TOLOWER "${_pkg}" _l_pkg)
-    include(${package_dir}/${_l_pkg}.cmake)
+    include(${package_dir}/${${_project}_${_pkg}_FILE})
     package_pkg_name(${_l_pkg} _package_name)
     if (${_package_name})
       list(APPEND ${_project}_PACKAGE_SYSTEM_PACKAGES_ON ${_l_pkg})
@@ -370,9 +384,6 @@ macro(_add_package_dependencies PKG DEP _dep_name)
       list(REMOVE_AT ${_dep_name}_DEPS ${pos})
       set(${_dep_name}_DEPS ${${_dep_name}_DEPS} CACHE INTERNAL "Nb dependencies with package ${_dep_name}" FORCE)
     endif()
-
-    string(TOLOWER ${DEP} _l_dep)
-    include(${PROJECT_SOURCE_DIR}/packages/${_l_dep}.cmake)
   endif()
 endmacro()
 
