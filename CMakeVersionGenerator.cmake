@@ -44,13 +44,25 @@ macro(define_project_version)
       set(${_project}_VERSION
 	"${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}.${${_project}_BUILD_VERSION}"
 	)
-      file(WRITE VERSION "${${_project}_VERSION}\n")
+      file(WRITE ${PROJECT_SOURCE_DIR}/VERSION "${${_project}_VERSION}\n")
     endif()
   endif()
 
   if(NOT ${_project}_VERSION)
     if(EXISTS ${PROJECT_SOURCE_DIR}/VERSION)
-      file(STRINGS VERSION ${_project}_VERSION)
+      file(STRINGS ${PROJECT_SOURCE_DIR}/VERSION ${_project}_VERSION)
+      if("${${_project}_VERSION}" MATCHES "^([0-9]+)")
+	string(REGEX REPLACE "^([0-9]+).*" "\\1" _ver_major "${${_project}_VERSION}")
+	set(${_project}_MAJOR_VERSION ${_ver_major})
+	if("${${_project}_VERSION}" MATCHES "^${_ver_major}\\.([0-9]+)")
+	  string(REGEX REPLACE "^${_ver_major}\\.([0-9]+).*" "\\1" _ver_minor "${${_project}_VERSION}")
+	  set(${_project}_MINOR_VERSION ${_ver_minor})
+	  if("${${_project}_VERSION}" MATCHES "^${_ver_major}\\.${_ver_minor}\\.([0-9a-zA-Z\\-]+)")
+	    string(REGEX REPLACE "^${_ver_major}\\.${_ver_minor}\\.([0-9a-zA-Z\\-]+).*" "\\1" _ver_build "${${_project}_VERSION}")
+	    set(${_project}_BUILD_VERSION ${_ver_build})
+	  endif()
+	endif()
+      endif()
     else()
       set(${_project}_VERSION
         "${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}"

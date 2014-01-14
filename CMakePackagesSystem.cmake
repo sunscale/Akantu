@@ -89,13 +89,13 @@ macro(add_all_packages package_dir src_dir)
     string(REGEX REPLACE "[0-9]+_" "" _pkg_name ${_pkg})
     string(REGEX REPLACE "\\.cmake" "" _option_name ${_pkg_name})
     string(TOUPPER "${_option_name}" _option_name)
-    set(${_project}_${_option_name}_FILE ${_pkg})
+    set(${_project}_${_option_name}_FILE ${_pkg} CACHE INTERNAL "" FORCE)
     list(APPEND ${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL ${_option_name})
   endforeach()
 
   cmake_debug_message(PackagesSystem "add_all_packages: PKG LIST : ${${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL}")
 
-  message("Packages: ${${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL}")
+#  message("Packages: ${${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL}")
 
   foreach(_pkg ${${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL})
     cmake_debug_message(PackagesSystem "add_all_packages: including ${_pkg}")
