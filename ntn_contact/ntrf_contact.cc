@@ -90,12 +90,12 @@ void NTRFContact::addSurface(const Surface & surf) {
   const Mesh & mesh_ref = this->model.getFEM().getMesh();
 
   try {
-    const SubBoundary & boundary = mesh_ref.getSubBoundary(surf);
+    const ElementGroup & boundary = mesh_ref.getElementGroup(surf);
     this->contact_surfaces.insert(&boundary);
 
     // find slave nodes
-    for(SubBoundary::nodes_const_iterator nodes_it(boundary.nodes_begin());
-	nodes_it!= boundary.nodes_end();
+    for(ElementGroup::const_node_iterator nodes_it(boundary.node_begin());
+	nodes_it!= boundary.node_end();
 	++nodes_it) {
       this->addSplitNode(*nodes_it);
     }

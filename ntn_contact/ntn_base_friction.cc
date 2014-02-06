@@ -36,7 +36,7 @@ __BEGIN_SIMTOOLS__
 NTNBaseFriction::NTNBaseFriction(NTNBaseContact * contact,
 				 const FrictionID & id,
 				 const MemoryID & memory_id) : 
-  Memory(memory_id), id(id),
+  Memory(id,memory_id),
   Dumpable(),
   contact(contact),
   is_sticking(0,1,true,id+":is_sticking",true,"is_sticking"),
@@ -56,7 +56,7 @@ NTNBaseFriction::NTNBaseFriction(NTNBaseContact * contact,
 
   contact->getModel().setIncrementFlagOn();
 
-  this->registerExternalDumper(&(contact->getDumper()),
+  this->registerExternalDumper(contact->getDumper(),
 			       contact->getDefaultDumperName(),
 			       true);
   

@@ -61,8 +61,8 @@ public:
 		      UInt surface_normal_dir);
 
   /// fills the pairs vector with interface node pairs (*,0)=slaves, (*,1)=masters
-  static void pairInterfaceNodes(const SubBoundary & slave_boundary, 
-				 const SubBoundary & master_boundary,
+  static void pairInterfaceNodes(const ElementGroup & slave_boundary, 
+				 const ElementGroup & master_boundary,
 				 UInt surface_normal_dir,
 				 const Mesh & mesh,
 				 Array<UInt> & pairs);

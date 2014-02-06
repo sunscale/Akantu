@@ -126,8 +126,6 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  FrictionID id;
-
   NTNBaseContact * contact;
 
   // if node is sticking

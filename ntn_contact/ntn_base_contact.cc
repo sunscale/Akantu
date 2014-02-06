@@ -70,7 +70,7 @@ bool NTNContactSynchElementFilter::operator()(const Element & e) {
 NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model,
 			       const ContactID & id,
 			       const MemoryID & memory_id) : 
-  Memory(memory_id), Dumpable(), id(id), model(model),
+  Memory(id,memory_id), Dumpable(), model(model),
   slaves(0,1,0,id+":slaves",std::numeric_limits<UInt>::quiet_NaN(),"slaves"),
   normals(0,model.getSpatialDimension(),0,id+":normals",
 	  std::numeric_limits<Real>::quiet_NaN(),"normals"),

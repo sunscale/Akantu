@@ -196,8 +196,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  typedef std::set<const SubBoundary *> SurfacePtrSet;
-  ContactID id;
+  typedef std::set<const ElementGroup *> SurfacePtrSet;
 
   SolidMechanicsModel & model;
 

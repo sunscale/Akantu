@@ -13,9 +13,9 @@ Real integrateResidual(const std::string & sub_boundary_name,
 
   // do not need try catch, as all subboundaries should be everywhere. 
   //  try {
-  const SubBoundary & boundary = mesh.getSubBoundary(sub_boundary_name);
-  SubBoundary::nodes_const_iterator nit  = boundary.nodes_begin();
-  SubBoundary::nodes_const_iterator nend = boundary.nodes_end();
+  const ElementGroup & boundary = mesh.getElementGroup(sub_boundary_name);
+  ElementGroup::const_node_iterator nit  = boundary.node_begin();
+  ElementGroup::const_node_iterator nend = boundary.node_end();
   for (; nit != nend; ++nit) {
     bool is_local_node = mesh.isLocalOrMasterNode(*nit);
     if (is_local_node) {
@@ -35,15 +35,12 @@ Real integrateResidual(const std::string & sub_boundary_name,
 void boundaryFix(Mesh & mesh, 
 		 const std::vector<std::string> & sub_boundary_names) {
   
-  const Array<UInt> empty_node_vector;
-  Boundary & boundary = mesh.getBoundary();
-
-  std::vector<std::string>::const_iterator it  = sub_boundary_names.begin();
+   std::vector<std::string>::const_iterator it  = sub_boundary_names.begin();
   std::vector<std::string>::const_iterator end = sub_boundary_names.end();
 
   for (; it != end; ++it) {
-    if (boundary.find(*it) == boundary.end()) {
-      boundary.createSubBoundaryFromNodeGroup(*it, empty_node_vector);
+    if (mesh.element_group_find(*it) == mesh.element_group_end()) {
+      mesh.createElementGroup(*it,mesh.getSpatialDimension()-1); // empty element group
     }
   }
 }

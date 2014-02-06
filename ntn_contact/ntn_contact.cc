@@ -55,8 +55,8 @@ NTNContact::NTNContact(SolidMechanicsModel & model,
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNContact::pairInterfaceNodes(const SubBoundary & slave_boundary, 
-				    const SubBoundary & master_boundary,
+void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary, 
+				    const ElementGroup & master_boundary,
 				    UInt surface_normal_dir,
 				    const Mesh & mesh,
 				    Array<UInt> & pairs) {
@@ -88,7 +88,7 @@ void NTNContact::pairInterfaceNodes(const SubBoundary & slave_boundary,
   Array<Real> proj_slave_coord(slave_boundary.getNbNodes(),dim-1,0.);
   Array<UInt> slave_nodes(slave_boundary.getNbNodes());
   UInt n(0);
-  for(SubBoundary::nodes_const_iterator nodes_it(slave_boundary.nodes_begin()); nodes_it!= slave_boundary.nodes_end(); ++nodes_it) {
+  for(ElementGroup::const_node_iterator nodes_it(slave_boundary.node_begin()); nodes_it!= slave_boundary.node_end(); ++nodes_it) {
     for (UInt d=0; d<dim-1; ++d) {
       proj_slave_coord(n,d) = coordinates(*nodes_it,offset[d]);
       slave_nodes(n)=*nodes_it;
@@ -100,7 +100,7 @@ void NTNContact::pairInterfaceNodes(const SubBoundary & slave_boundary,
   Array<Real> proj_master_coord(master_boundary.getNbNodes(),dim-1,0.);
   Array<UInt> master_nodes(master_boundary.getNbNodes());
   n=0;
-  for(SubBoundary::nodes_const_iterator nodes_it(master_boundary.nodes_begin()); nodes_it!= master_boundary.nodes_end(); ++nodes_it) {
+  for(ElementGroup::const_node_iterator nodes_it(master_boundary.node_begin()); nodes_it!= master_boundary.node_end(); ++nodes_it) {
     for (UInt d=0; d<dim-1; ++d) {
       proj_master_coord(n,d) = coordinates(*nodes_it,offset[d]);
       master_nodes(n)=*nodes_it;
@@ -155,8 +155,8 @@ void NTNContact::addSurfacePair(const Surface & slave,
 
   const Mesh & mesh = this->model.getMesh();
 
-  const SubBoundary & slave_boundary  = mesh.getSubBoundary(slave);
-  const SubBoundary & master_boundary = mesh.getSubBoundary(master);
+  const ElementGroup & slave_boundary  = mesh.getElementGroup(slave);
+  const ElementGroup & master_boundary = mesh.getElementGroup(master);
   
   this->contact_surfaces.insert(&slave_boundary);
   this->contact_surfaces.insert(&master_boundary);
