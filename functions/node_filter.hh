@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 // akantu
 #include "aka_common.hh"
+#include "mesh_filter.hh"
 
 // simtools
 #include "ast_common.hh"
@@ -40,17 +41,18 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class GeometryFilter {
+class GeometryFilter : public NodeFilterFunctor {
 
 public:
   GeometryFilter(const Mesh & mesh,
 		 UInt dir,
 		 Real limit) :
+    NodeFilterFunctor(),
     mesh(mesh), dir(dir), limit(limit) { 
     this->positions = &(mesh.getNodes());
   };
   ~GeometryFilter() {};
-
+  
   bool operator() (UInt node) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   };
@@ -72,9 +74,9 @@ public:
 
   bool operator() (UInt node) {
     AKANTU_DEBUG_IN();
-    bool to_filter = false;
+    bool to_filter = true;
     if((*this->positions)(node,this->dir) > this->limit)
-      to_filter = true;
+      to_filter = false;
     AKANTU_DEBUG_OUT();
     return to_filter;
   };
@@ -90,26 +92,29 @@ public:
 
   bool operator() (UInt node) {
     AKANTU_DEBUG_IN();
-    bool to_filter = false;
+    bool to_filter = true;
     if((*this->positions)(node,this->dir) < this->limit)
-      to_filter = true;
+      to_filter = false;
     AKANTU_DEBUG_OUT();
     return to_filter;
   };
 };
 
 /* -------------------------------------------------------------------------- */
-template<class FilterType>
-void applyNodeFilter(Array<UInt> & nodes, FilterType & filter) {
+// this filter is erase because the convention of filter has changed!!
+// filter == true -> keep node
 
-  Array<UInt>::iterator<> it = nodes.begin();
+// template<class FilterType>
+// void applyNodeFilter(Array<UInt> & nodes, FilterType & filter) {
 
-  for (; it != nodes.end(); ++it) {
-    if (filter(*it)) {
-      it = nodes.erase(it);
-    }
-  }
-}; 
+//   Array<UInt>::iterator<> it = nodes.begin();
+
+//   for (; it != nodes.end(); ++it) {
+//     if (filter(*it)) {
+//       it = nodes.erase(it);
+//     }
+//   }
+// }; 
 
 __END_SIMTOOLS__
 
