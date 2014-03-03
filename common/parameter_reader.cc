@@ -403,6 +403,38 @@ bool ParameterReader::get<bool>(std::string key) const {
 }
 
 /* -------------------------------------------------------------------------- */
+template<>
+bool ParameterReader::has<bool>(std::string key) const {
+  std::map<std::string,bool>::const_iterator it;
+  it = this->bool_data.find(key);
+  return (it != this->bool_data.end());
+}
+template<>
+bool ParameterReader::has<std::string>(std::string key) const {
+  std::map<std::string,std::string>::const_iterator it;
+  it = this->string_data.find(key);
+  return (it != this->string_data.end());
+}
+template<>
+bool ParameterReader::has<akantu::Int>(std::string key) const {
+  std::map<std::string,akantu::Int>::const_iterator it;
+  it = this->int_data.find(key);
+  return (it != this->int_data.end());
+}
+template<>
+bool ParameterReader::has<akantu::UInt>(std::string key) const {
+  std::map<std::string,akantu::UInt>::const_iterator it;
+  it = this->uint_data.find(key);
+  return (it != this->uint_data.end());
+}
+template<>
+bool ParameterReader::has<akantu::Real>(std::string key) const {
+  std::map<std::string,akantu::Real>::const_iterator it;
+  it = this->real_data.find(key);
+  return (it != this->real_data.end());
+}
+
+/* -------------------------------------------------------------------------- */
 void ParameterReader::printself(std::ostream & stream, int indent) const {
   AKANTU_DEBUG_IN();
 

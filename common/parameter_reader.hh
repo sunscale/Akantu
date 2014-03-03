@@ -75,6 +75,9 @@ public:
   /// 
   template<typename T>
   T get(std::string key) const;
+
+  template<typename T>
+  bool has(std::string key) const;
   
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
