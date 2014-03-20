@@ -52,6 +52,8 @@ set(AKANTU_SIMTOOLS_HDRS
   ntn_contact/friction_laws/ntn_friclaw_coulomb_tmpl.hh
   ntn_contact/friction_laws/ntn_friclaw_linear_slip_weakening.hh
   ntn_contact/friction_laws/ntn_friclaw_linear_slip_weakening_tmpl.hh
+  ntn_contact/friction_laws/ntn_friclaw_linear_cohesive.hh
+  ntn_contact/friction_laws/ntn_friclaw_linear_cohesive_tmpl.hh
 
   ntn_contact/ntn_friction.hh
   ntn_contact/ntn_friction_tmpl.hh

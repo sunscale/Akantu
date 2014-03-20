@@ -31,6 +31,7 @@
 // friction laws
 #include "ntn_friclaw_coulomb.hh"
 #include "ntn_friclaw_linear_slip_weakening.hh"
+#include "ntn_friclaw_linear_cohesive.hh"
 
 // initiation of friction
 #include "ntn_initiation_function.hh"
