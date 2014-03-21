@@ -36,6 +36,7 @@
 #include "ntn_fricreg_simplified_prakash_clifton.hh"
 
 // friction laws
+#include "ntn_friclaw_linear_cohesive.hh"
 #include "ntn_friclaw_linear_slip_weakening.hh"
 
 __BEGIN_SIMTOOLS__
@@ -90,6 +91,8 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 
     friction->setParam("mu_s", data.get<Real>("mu_s"));
   }
+
+  // Friction Law: Linear Slip Weakening
   else if (friction_law == "linear_slip_weakening") {
     if (friction_reg == "no_regularisation") {
       if (is_ntn_contact)
@@ -127,6 +130,45 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
     friction->setParam("mu_s", data.get<Real>("mu_s"));
     friction->setParam("mu_k", data.get<Real>("mu_k"));
     friction->setParam("d_c",  data.get<Real>("d_c"));
+  }
+
+  // Friction Law: Linear Cohesive
+  else if (friction_law == "linear_cohesive") {
+    if (friction_reg == "no_regularisation") {
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearCohesive,
+				   NTNFricRegNoRegularisation>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearCohesive,
+				    NTNFricRegNoRegularisation>(contact);
+    }
+    else if (friction_reg == "rubin_ampuero") {
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearCohesive,
+				   NTNFricRegRubinAmpuero>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearCohesive,
+				    NTNFricRegRubinAmpuero>(contact);
+      
+      friction->setParam("t_star", data.get<Real>("t_star"));
+    }
+    else if (friction_reg == "simplified_prakash_clifton") {
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearCohesive, 
+				   NTNFricRegSimplifiedPrakashClifton>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearCohesive, 
+				    NTNFricRegSimplifiedPrakashClifton>(contact);
+      
+      friction->setParam("t_star", data.get<Real>("t_star"));
+    }
+    else {
+      AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
+			 << friction_reg);
+    }
+
+    friction->setParam("G_c", data.get<Real>("G_c"));
+    friction->setParam("sigma_c", data.get<Real>("sigma_c"));
   }
   else {
     AKANTU_DEBUG_ERROR("Do not know the following friction law: " 

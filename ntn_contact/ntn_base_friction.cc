@@ -290,7 +290,7 @@ void NTNBaseFriction::setInternalArray(SynchronizedArray<Real> & array,
 
   Int index = this->contact->getNodeIndex(node);
   if (index < 0) {
-    AKANTU_DEBUG_WARNING("Node is node a contact node. Therefore, cannot set Mu!!");
+    AKANTU_DEBUG_WARNING("Node is node a contact node. Therefore, cannot set interface parameter!!");
   }
   else {
     array(index) = value;

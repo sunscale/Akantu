@@ -58,6 +58,9 @@ void NTNFricLawLinearCohesive<Regularisation>::computeFrictionalStrength() {
   const SynchronizedArray<bool> & is_in_contact = this->internalGetIsInContact();
   const SynchronizedArray<Real> & slip  = this->internalGetSlip();
 
+  // array to fill
+  SynchronizedArray<Real> & strength = this->internalGetFrictionalStrength();
+
   UInt nb_contact_nodes = this->contact->getNbContactNodes();
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     // node pair is NOT in contact
@@ -66,10 +69,15 @@ void NTNFricLawLinearCohesive<Regularisation>::computeFrictionalStrength() {
 
     // node pair is in contact
     else {
-      Real slope = (this->sigma_c(n) * this->sigma_c(n)) / (2*this->G_c(n));
-      strength(n) = std::max(this->sigma_c(n) - slope * slip(n), 0.); // no negative strength
-      // if we want to keep strength loss after restick, 
-      // we need to do min between new strength and previous strength
+      if (this->G_c(n) == 0.) {
+	strength(n) = 0.;
+      }
+      else {
+	Real slope = (this->sigma_c(n) * this->sigma_c(n)) / (2*this->G_c(n));
+	strength(n) = std::max(this->sigma_c(n) - slope * slip(n), 0.); // no negative strength
+	// if we want to keep strength loss after restick, 
+	// we need to do min between new strength and previous strength
+      }
     }
   }
 
