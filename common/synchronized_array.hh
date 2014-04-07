@@ -34,7 +34,7 @@
 #include <vector>
 
 // akantu
-#include "aka_vector.hh"
+#include "aka_array.hh"
 
 // simtools
 #include "ast_common.hh"

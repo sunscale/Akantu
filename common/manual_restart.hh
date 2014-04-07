@@ -5,7 +5,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_vector.hh"
+#include "aka_array.hh"
 #include "solid_mechanics_model.hh"
 
 void dumpArray(const akantu::Array<akantu::Real> & array, const std::string & fname);
