@@ -37,11 +37,13 @@ NTNFricLawLinearCohesive<Regularisation>::NTNFricLawLinearCohesive(NTNBaseContac
 								   const MemoryID & memory_id) :
   Regularisation(contact,id,memory_id),
   G_c(0,1,0.,id+":G_c",0.,"G_c"),
-  sigma_c(0,1,0.,id+":sigma_c",0.,"sigma_c") {
+  sigma_c(0,1,0.,id+":sigma_c",0.,"sigma_c"),
+  sigma_r(0,1,0.,id+":sigma_r",0.,"sigma_r") {
   AKANTU_DEBUG_IN();
 
   Regularisation::registerSynchronizedArray(this->G_c);
   Regularisation::registerSynchronizedArray(this->sigma_c);
+  Regularisation::registerSynchronizedArray(this->sigma_r);
   
   AKANTU_DEBUG_OUT();
 }
@@ -70,11 +72,15 @@ void NTNFricLawLinearCohesive<Regularisation>::computeFrictionalStrength() {
     // node pair is in contact
     else {
       if (this->G_c(n) == 0.) {
-	strength(n) = 0.;
+	// strength(n) = 0.;
+	strength(n) = this->sigma_r(n);
       }
       else {
-	Real slope = (this->sigma_c(n) * this->sigma_c(n)) / (2*this->G_c(n));
-	strength(n) = std::max(this->sigma_c(n) - slope * slip(n), 0.); // no negative strength
+	Real slope = (this->sigma_c(n) - this->sigma_r(n)) * (this->sigma_c(n) - this->sigma_r(n)) / (2*this->G_c(n));
+	// no strength < sigma_r
+	strength(n) = std::max(this->sigma_c(n) - slope * slip(n), this->sigma_r(n)); 
+	// strength(n) = std::max(this->sigma_c(n) - slope * slip(n), 0.); // no negative strength
+
 	// if we want to keep strength loss after restick, 
 	// we need to do min between new strength and previous strength
       }
@@ -103,6 +109,7 @@ void NTNFricLawLinearCohesive<Regularisation>::dumpRestart(const std::string & f
   
   this->G_c.dumpRestartFile(file_name);
   this->sigma_c.dumpRestartFile(file_name);
+  this->sigma_r.dumpRestartFile(file_name);
 
   Regularisation::dumpRestart(file_name);
   
@@ -116,6 +123,7 @@ void NTNFricLawLinearCohesive<Regularisation>::readRestart(const std::string & f
   
   this->G_c.readRestartFile(file_name);
   this->sigma_c.readRestartFile(file_name);
+  this->sigma_r.readRestartFile(file_name);
 
   Regularisation::readRestart(file_name);
   
@@ -133,6 +141,9 @@ void NTNFricLawLinearCohesive<Regularisation>::setParam(const std::string & para
   }
   else if (param == "sigma_c") {
     this->setInternalArray(this->sigma_c, value);
+  }
+  else if (param == "sigma_r") {
+    this->setInternalArray(this->sigma_r, value);
   }
   else {
     Regularisation::setParam(param, value);
@@ -153,6 +164,9 @@ void NTNFricLawLinearCohesive<Regularisation>::setParam(const std::string & para
   else if (param == "sigma_c") {
     this->setInternalArray(this->sigma_c, node, value);
   }
+  else if (param == "sigma_r") {
+    this->setInternalArray(this->sigma_r, node, value);
+  }
   else {
     Regularisation::setParam(param, value);
   }
@@ -171,6 +185,7 @@ void NTNFricLawLinearCohesive<Regularisation>::printself(std::ostream & stream,
   stream << space << "NTNFricLawLinearCohesive [" << std::endl;
   stream << space << this->G_c << std::endl;
   stream << space << this->sigma_c << std::endl;
+  stream << space << this->sigma_r << std::endl;
   Regularisation::printself(stream, ++indent);
   stream << space << "]" << std::endl;
   
@@ -195,6 +210,11 @@ void NTNFricLawLinearCohesive<Regularisation>::addDumpFieldToDumper(const std::s
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
 				       new DumperIOHelper::NodalField<Real>(this->sigma_c.getArray()));
+  }
+  else if(field_id == "sigma_r") {
+    this->internalAddDumpFieldToDumper(dumper_name,
+				       field_id,
+				       new DumperIOHelper::NodalField<Real>(this->sigma_r.getArray()));
   }
   else {
     Regularisation::addDumpFieldToDumper(dumper_name, field_id);

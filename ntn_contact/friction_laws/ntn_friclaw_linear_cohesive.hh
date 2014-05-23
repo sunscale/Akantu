@@ -93,6 +93,9 @@ protected:
 
   // peak value of cohesive law
   SynchronizedArray<Real> sigma_c;
+
+  // residual value of cohesive law (for slip > d_c)
+  SynchronizedArray<Real> sigma_r;
 };
 
 /* -------------------------------------------------------------------------- */
