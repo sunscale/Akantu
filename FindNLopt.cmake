@@ -25,15 +25,14 @@
 #
 #===============================================================================
 
-#===============================================================================
 find_library(NLOPT_LIBRARIES NAMES nlopt_cxx
-  PATHS ${NLOPT_DIR}
-  PATH_SUFFIXES lib
+  PATHS ${NLOPT_DIR} ${NLOPT_INTERNAL_DIR}
+  PATH_SUFFIXES lib .libs
   )
 
 find_path(NLOPT_INCLUDE_DIR nlopt.hpp
-  PATHS ${NLOPT_DIR}
-  PATH_SUFFIXES include
+  PATHS ${NLOPT_DIR} ${NLOPT_INTERNAL_DIR}
+  PATH_SUFFIXES include api
   )
 
 
@@ -41,7 +40,6 @@ find_path(NLOPT_INCLUDE_DIR nlopt.hpp
 #===============================================================================
 mark_as_advanced(NLOPT_LIBRARIES)
 mark_as_advanced(NLOPT_INCLUDE_DIR)
-
 #===============================================================================
 if(NOT NLOPT_FOUND)
   set(NLOPT_DIR "" CACHE PATH "Location of NLOPT source directory.")
