@@ -355,9 +355,13 @@ macro(_add_package_dependencies PKG DEP _dep_name)
   if (NOT ${_opt_name}_dependencies)
     set(${_opt_name}_dependencies)
   endif()
-  
-  list(APPEND ${_opt_name}_dependencies ${_dep_name})
-  list(REMOVE_DUPLICATES ${_opt_name}_dependencies)
+
+  string(FIND ${_dep_name} "_USE_" _test)
+  if (${_test} EQUAL -1)
+    list(APPEND ${_opt_name}_dependencies ${_dep_name})
+    list(REMOVE_DUPLICATES ${_opt_name}_dependencies)
+  endif()
+
   set(${_opt_name}_dependencies ${${_opt_name}_dependencies} CACHE INTERNAL "List of dependencies for package ${_opt_name}" FORCE)
 
   cmake_debug_message(PackagesSystem "add_package_dependecies: add dependence between ${_opt_name} and ${_dep_name}")
