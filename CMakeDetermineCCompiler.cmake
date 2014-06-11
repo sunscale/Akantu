@@ -32,13 +32,13 @@ macro(determine_compiler_version COMPILER)
     ARGS --version
     OUTPUT_VARIABLE _temp
     )
-  
+
   set(${COMPILER}_COMPILER_VERSION "" CACHE STRING "Vesion of ${COMPILER} compiler.")
   string(REGEX MATCH "([0-9\\.]+)"
     ${COMPILER}_COMPILER_VERSION
     ${_temp}
     )
-  
+
   mark_as_advanced(${COMPILER}_COMPILER_VERSION)
 endmacro()
 
