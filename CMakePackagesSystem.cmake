@@ -351,16 +351,14 @@ endmacro()
 macro(_add_package_dependencies PKG DEP _dep_name)
   package_pkg_name (${PKG} _opt_name)
   package_desc_name(${DEP} _var_dep_desc)
+  package_pkg_name (${DEP} _dep_pkg_name)
 
   if (NOT ${_opt_name}_dependencies)
     set(${_opt_name}_dependencies)
   endif()
 
-  string(FIND ${_dep_name} "_USE_" _test)
-  if (${_test} EQUAL -1)
-    list(APPEND ${_opt_name}_dependencies ${_dep_name})
-    list(REMOVE_DUPLICATES ${_opt_name}_dependencies)
-  endif()
+  list(APPEND ${_opt_name}_dependencies ${_dep_pkg_name})
+  list(REMOVE_DUPLICATES ${_opt_name}_dependencies)
 
   set(${_opt_name}_dependencies ${${_opt_name}_dependencies} CACHE INTERNAL "List of dependencies for package ${_opt_name}" FORCE)
 
