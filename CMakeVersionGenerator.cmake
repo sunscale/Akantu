@@ -34,40 +34,42 @@ endif()
 set(__DEFINE_PROJECT_VERSION__ TRUE)
 
 macro(define_project_version)
-  find_package(Subversion)
   string(TOUPPER ${PROJECT_NAME} _project)
 
-  if(SUBVERSION_FOUND)
-    subversion_wc_info(${PROJECT_SOURCE_DIR} ${_project} ERROR_QUIET)
-    if(${${_project}_WC_FOUND})
-      set(${_project}_BUILD_VERSION ${${_project}_WC_REVISION})
-      set(${_project}_VERSION
-	"${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}.${${_project}_BUILD_VERSION}"
-	)
-      file(WRITE ${PROJECT_SOURCE_DIR}/VERSION "${${_project}_VERSION}\n")
+  if(EXISTS ${PROJECT_SOURCE_DIR}/VERSION)
+    file(STRINGS ${PROJECT_SOURCE_DIR}/VERSION ${_project}_VERSION)
+
+    if("${${_project}_VERSION}" MATCHES "^([0-9]+)")
+      string(REGEX REPLACE "^([0-9]+).*" "\\1" _ver_major "${${_project}_VERSION}")
+      set(${_project}_MAJOR_VERSION ${_ver_major})
+
+      if("${${_project}_VERSION}" MATCHES "^${_ver_major}\\.([0-9]+)")
+	string(REGEX REPLACE "^${_ver_major}\\.([0-9]+).*" "\\1" _ver_minor "${${_project}_VERSION}")
+	set(${_project}_MINOR_VERSION ${_ver_minor})
+	if("${${_project}_VERSION}" MATCHES "^${_ver_major}\\.${_ver_minor}\\.([0-9a-zA-Z\\-]+)")
+	  string(REGEX REPLACE "^${_ver_major}\\.${_ver_minor}\\.([0-9a-zA-Z\\-]+).*" "\\1" _ver_build "${${_project}_VERSION}")
+	  set(${_project}_BUILD_VERSION ${_ver_build})
+	endif()
+      endif()
+    endif()
+  else()
+    find_package(Subversion)
+
+    if(SUBVERSION_FOUND)
+      subversion_wc_info(${PROJECT_SOURCE_DIR} ${_project} ERROR_QUIET)
+      if(${${_project}_WC_FOUND})
+        set(${_project}_BUILD_VERSION ${${_project}_WC_REVISION})
+        set(${_project}_VERSION
+	  "${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}.${${_project}_BUILD_VERSION}"
+	  )
+      endif()
     endif()
   endif()
 
   if(NOT ${_project}_VERSION)
-    if(EXISTS ${PROJECT_SOURCE_DIR}/VERSION)
-      file(STRINGS ${PROJECT_SOURCE_DIR}/VERSION ${_project}_VERSION)
-      if("${${_project}_VERSION}" MATCHES "^([0-9]+)")
-	string(REGEX REPLACE "^([0-9]+).*" "\\1" _ver_major "${${_project}_VERSION}")
-	set(${_project}_MAJOR_VERSION ${_ver_major})
-	if("${${_project}_VERSION}" MATCHES "^${_ver_major}\\.([0-9]+)")
-	  string(REGEX REPLACE "^${_ver_major}\\.([0-9]+).*" "\\1" _ver_minor "${${_project}_VERSION}")
-	  set(${_project}_MINOR_VERSION ${_ver_minor})
-	  if("${${_project}_VERSION}" MATCHES "^${_ver_major}\\.${_ver_minor}\\.([0-9a-zA-Z\\-]+)")
-	    string(REGEX REPLACE "^${_ver_major}\\.${_ver_minor}\\.([0-9a-zA-Z\\-]+).*" "\\1" _ver_build "${${_project}_VERSION}")
-	    set(${_project}_BUILD_VERSION ${_ver_build})
-	  endif()
-	endif()
-      endif()
-    else()
-      set(${_project}_VERSION
-        "${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}"
-        )
-    endif()
+    set(${_project}_VERSION
+      "${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}"
+      )
   endif()
 
   # Append the library version information to the library target properties
