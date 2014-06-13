@@ -169,6 +169,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 
     friction->setParam("G_c", data.get<Real>("G_c"));
     friction->setParam("sigma_c", data.get<Real>("sigma_c"));
+    friction->setParam("sigma_r", data.get<Real>("sigma_r"));
   }
   else {
     AKANTU_DEBUG_ERROR("Do not know the following friction law: " 
