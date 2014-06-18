@@ -153,11 +153,11 @@ void NTNBaseFriction::computeStickTraction() {
 
   // pre-compute the acceleration 
   // (not increment acceleration, because residual is still Kf)
-  Array<Real> acceleration(model.getFEM().getMesh().getNbNodes(),dim);
+  Array<Real> acceleration(model.getFEEngine().getMesh().getNbNodes(),dim);
   model.solveLumped(acceleration,
 		    model.getMass(),
 		    model.getResidual(),
-		    model.getBoundary(),
+		    model.getBlockedDOFs(),
 		    model.getF_M2A());
 
   // compute relative normal fields of velocity and acceleration 

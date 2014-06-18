@@ -47,9 +47,9 @@ NTNContact::NTNContact(SolidMechanicsModel & model,
   const Mesh & mesh = this->model.getMesh();
   UInt spatial_dimension = this->model.getSpatialDimension();
   
-  mesh.initByElementTypeArray(this->master_elements,
-			      1,
-			      spatial_dimension - 1);
+  mesh.initElementTypeMapArray(this->master_elements,
+			       1,
+			       spatial_dimension - 1);
   
   AKANTU_DEBUG_OUT();
 }
@@ -244,7 +244,7 @@ void NTNContact::updateNormals() {
   this->synch_registry->synchronize(_gst_cf_nodal); // synchronize current pos
   const Array<Real> & cur_pos = this->model.getCurrentPosition();
 
-  FEM & boundary_fem = this->model.getFEMBoundary();
+  FEEngine & boundary_fem = this->model.getFEEngineBoundary();
   const Mesh & mesh = this->model.getMesh();
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
@@ -256,7 +256,7 @@ void NTNContact::updateNormals() {
     for (; it != last; ++it) {
       // get elements connected to each node
       CSR<UInt> node_to_element;
-      MeshUtils::buildNode2ElementsByElementType(mesh, node_to_element, *it, *gt);
+      MeshUtils::buildNode2ElementsElementTypeMap(mesh, node_to_element, *it, *gt);
       
       // compute the normals
       Array<Real> quad_normals(0,dim);

@@ -55,7 +55,7 @@ public:
 
 private:
   const NTNBaseContact * contact;
-  const ByElementTypeArray<UInt> & connectivity;
+  const ElementTypeMapArray<UInt> & connectivity;
 };
 
 
@@ -130,12 +130,12 @@ public:
 protected:
   /// updateLumpedBoundary
   virtual void internalUpdateLumpedBoundary(const Array<UInt> & nodes,
-					    const ByElementTypeArray<UInt> & elements,
+					    const ElementTypeMapArray<UInt> & elements,
 					    SynchronizedArray<Real> & boundary);
 
   // to find the slave_elements or master_elements
   virtual void findBoundaryElements(const Array<UInt> & interface_nodes, 
-				    ByElementTypeArray<UInt> & elements);
+				    ElementTypeMapArray<UInt> & elements);
 
   /// synchronize arrays
   virtual void syncArrays(SyncChoice sync_choice);
@@ -176,7 +176,7 @@ public:
   AKANTU_GET_MACRO(Impedance,                         impedance, const SynchronizedArray<Real> &)
   AKANTU_GET_MACRO(IsInContact,                   is_in_contact, const SynchronizedArray<bool> &)
 
-  AKANTU_GET_MACRO(SlaveElements, slave_elements, const ByElementTypeArray<UInt> &)
+  AKANTU_GET_MACRO(SlaveElements, slave_elements, const ElementTypeMapArray<UInt> &)
 
   AKANTU_GET_MACRO(SynchronizerRegistry, synch_registry, SynchronizerRegistry *)
 
@@ -217,7 +217,7 @@ protected:
   SurfacePtrSet contact_surfaces;
 
   /// element list for dump and lumped_boundary
-  ByElementTypeArray<UInt> slave_elements;
+  ElementTypeMapArray<UInt> slave_elements;
   CSR<Element> node_to_elements;
 
   /// parallelisation

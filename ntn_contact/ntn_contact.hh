@@ -146,7 +146,7 @@ private:
   SynchronizedArray<Real> lumped_boundary_masters;
 
   // element list for dump and lumped_boundary
-  ByElementTypeArray<UInt> master_elements;
+  ElementTypeMapArray<UInt> master_elements;
 };
 
 

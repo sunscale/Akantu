@@ -87,7 +87,7 @@ NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model,
 {
   AKANTU_DEBUG_IN();
 
-  FEM & boundary_fem = this->model.getFEMBoundary();
+  FEEngine & boundary_fem = this->model.getFEEngineBoundary();
   for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
     boundary_fem.initShapeFunctions(*gt);
   }
@@ -95,9 +95,9 @@ NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model,
   Mesh & mesh = this->model.getMesh();
   UInt spatial_dimension = this->model.getSpatialDimension();
 
-  mesh.initByElementTypeArray(this->slave_elements,
-			      1,
-			      spatial_dimension - 1);
+  mesh.initElementTypeMapArray(this->slave_elements,
+			       1,
+			       spatial_dimension - 1);
 
   MeshUtils::buildNode2Elements(mesh,
 				this->node_to_elements,
@@ -145,11 +145,11 @@ void NTNBaseContact::initParallel() {
 
 /* -------------------------------------------------------------------------- */
 void NTNBaseContact::findBoundaryElements(const Array<UInt> & interface_nodes, 
-					  ByElementTypeArray<UInt> & elements) {
+					  ElementTypeMapArray<UInt> & elements) {
   AKANTU_DEBUG_IN();
 
   UInt nb_interface_nodes = interface_nodes.getSize();
-  const ByElementTypeArray<UInt> & connectivity = this->model.getMesh().getConnectivities();
+  const ElementTypeMapArray<UInt> & connectivity = this->model.getMesh().getConnectivities();
   
   // add connected boundary elements that have all nodes on this contact
   for (UInt i=0; i<nb_interface_nodes; ++i) {
@@ -293,7 +293,7 @@ void NTNBaseContact::updateLumpedBoundary() {
 
 /* -------------------------------------------------------------------------- */
 void NTNBaseContact::internalUpdateLumpedBoundary(const Array<UInt> & nodes,
-						  const ByElementTypeArray<UInt> & elements,
+						  const ElementTypeMapArray<UInt> & elements,
 						  SynchronizedArray<Real> & boundary) {
   AKANTU_DEBUG_IN();
 
@@ -303,7 +303,7 @@ void NTNBaseContact::internalUpdateLumpedBoundary(const Array<UInt> & nodes,
   UInt dim = this->model.getSpatialDimension();
   UInt nb_contact_nodes = getNbContactNodes();
   
-  const FEM & boundary_fem = this->model.getFEMBoundary();
+  const FEEngine & boundary_fem = this->model.getFEEngineBoundary();
   
   const Mesh & mesh = this->model.getMesh();
   
@@ -365,7 +365,7 @@ void NTNBaseContact::computeContactPressure() {
   this->model.solveLumped(acceleration,
 			  this->model.getMass(),
 			  this->model.getResidual(),
-			  this->model.getBoundary(),
+			  this->model.getBlockedDOFs(),
 			  this->model.getF_M2A());
 
   const Array<Real> & residual = this->model.getResidual();
@@ -519,8 +519,8 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
   else if(field_id == "residual") {
     ADD_FIELD(field_id, this->model.getResidual(), Real);
   }
-  else if(field_id == "boundary") {
-    ADD_FIELD(field_id, this->model.getBoundary(), bool);
+  else if(field_id == "blocked_dofs") {
+    ADD_FIELD(field_id, this->model.getBlockedDOFs(), bool);
   }
   else if(field_id == "increment") {
     ADD_FIELD(field_id, this->model.getIncrement(), Real);

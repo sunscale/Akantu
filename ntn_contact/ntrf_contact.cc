@@ -87,7 +87,7 @@ void NTRFContact::addSurface(const Surface & surf) {
 
   UInt dim = this->model.getSpatialDimension();
 
-  const Mesh & mesh_ref = this->model.getFEM().getMesh();
+  const Mesh & mesh_ref = this->model.getFEEngine().getMesh();
 
   try {
     const ElementGroup & boundary = mesh_ref.getElementGroup(surf);
