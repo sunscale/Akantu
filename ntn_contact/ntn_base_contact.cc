@@ -258,7 +258,8 @@ UInt NTNBaseContact::getNbNodesInContact() const {
 
   for (UInt n = 0; n < nb_nodes; ++n) {
     bool is_local_node = mesh.isLocalOrMasterNode(this->slaves(n));
-    if (is_local_node && this->is_in_contact(n)) {
+    bool is_pbc_slave_node = this->model.isPBCSlaveNode(this->slaves(n));
+    if (is_local_node && !is_pbc_slave_node && this->is_in_contact(n)) {
       nb_contact++;
     }
   }

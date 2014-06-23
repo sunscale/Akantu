@@ -313,7 +313,11 @@ UInt NTNBaseFriction::getNbStickingNodes() const {
 
   for (UInt n = 0; n < nb_nodes; ++n) {
     bool is_local_node = mesh.isLocalOrMasterNode(nodes(n));
-    if (is_local_node && is_in_contact(n) && this->is_sticking(n)) {
+    bool is_pbc_slave_node = this->contact->getModel().isPBCSlaveNode(nodes(n));
+    if (is_local_node
+	&& !is_pbc_slave_node
+	&& is_in_contact(n)
+	&& this->is_sticking(n)) {
       nb_stick++;
     }
   }
