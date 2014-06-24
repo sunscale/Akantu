@@ -37,6 +37,7 @@ NTNBaseFriction::NTNBaseFriction(NTNBaseContact * contact,
 				 const FrictionID & id,
 				 const MemoryID & memory_id) : 
   Memory(id,memory_id),
+  Parsable(_st_friction, id),
   Dumpable(),
   contact(contact),
   is_sticking(0,1,true,id+":is_sticking",true,"is_sticking"),
@@ -153,7 +154,7 @@ void NTNBaseFriction::computeStickTraction() {
 
   // pre-compute the acceleration 
   // (not increment acceleration, because residual is still Kf)
-  Array<Real> acceleration(model.getFEEngine().getMesh().getNbNodes(),dim);
+  Array<Real> acceleration(model.getFEEngine().getMesh().getNbNodes(), dim, 0.);
   model.solveLumped(acceleration,
 		    model.getMass(),
 		    model.getResidual(),
@@ -190,7 +191,7 @@ void NTNBaseFriction::computeStickTraction() {
 
   // compute friction traction to stop sliding
   Array<Real> & traction = const_cast< Array<Real> & >(this->friction_traction.getArray());
-  Array<Real>::iterator< Vector<Real> > it_fric_trac = traction.begin(dim);
+  Array<Real>::vector_iterator it_fric_trac = traction.begin(dim);
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     
     Vector<Real> & fric_trac = it_fric_trac[n];
@@ -270,34 +271,21 @@ void NTNBaseFriction::readRestart(const std::string & file_name) {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNBaseFriction::setInternalArray(SynchronizedArray<Real> & array, 
-				       Real value) {
+void NTNBaseFriction::setParam(const std::string & name, UInt node, Real value) {
   AKANTU_DEBUG_IN();
 
-  Real * array_p = array.storage();
-  Real nb_array  = array.getSize();
-  std::fill_n(array_p, nb_array, value);
-  array.setDefaultValue(value);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void NTNBaseFriction::setInternalArray(SynchronizedArray<Real> & array, 
-				       UInt node, 
-				       Real value) {
-  AKANTU_DEBUG_IN();
-
+  SynchronizedArray<Real> & array = this->get< SynchronizedArray<Real> >(name);
   Int index = this->contact->getNodeIndex(node);
   if (index < 0) {
-    AKANTU_DEBUG_WARNING("Node is node a contact node. Therefore, cannot set interface parameter!!");
+    AKANTU_DEBUG_WARNING("Node is node a contact node. "
+			 << "Therefore, cannot set interface parameter!!");
   }
   else {
-    array(index) = value;
+    array(index) = value; // put value
   }
-
+  
   AKANTU_DEBUG_OUT();
-}
+};
 
 /* -------------------------------------------------------------------------- */
 UInt NTNBaseFriction::getNbStickingNodes() const {
@@ -335,7 +323,7 @@ void NTNBaseFriction::printself(std::ostream & stream, int indent) const {
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
   
   stream << space << "NTNBaseFriction [" << std::endl;
-
+  Parsable::printself(stream, indent);
   stream << space << "]" << std::endl;
 
 

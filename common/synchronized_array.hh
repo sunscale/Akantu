@@ -112,9 +112,19 @@ public:
   inline void clear() { Array<T>::clear(); };
   //  inline void clear() { memset(values, 0, size*nb_component*sizeof(T)); };
 
+  /// set all entries of the array to the value t
+  /// @param t value to fill the array with
+  inline void set(T t) { Array<T>::set(t); }
+
   /// set
   template<template<typename> class C>
   inline void set(const C<T> & vm) { Array<T>::set(vm); };
+
+  /// set all entries of the array to value t and set default value
+  inline void setAndChangeDefault(T t) { 
+    this->set(t); 
+    this->default_value = t;
+  }
 
   /// copy the content of an other array
   void copy(const SynchronizedArray<T> & vect) { Array<T>::copy(vect); };

@@ -30,8 +30,28 @@
 #define __AST_NTN_BASE_FRICTION_HH__
 
 /* -------------------------------------------------------------------------- */
+// akantu
+#include "parsable.hh"
+
 // simtools
 #include "ntn_base_contact.hh"
+
+/* -------------------------------------------------------------------------- */
+__BEGIN_AKANTU__
+template<>
+inline void ParsableParamTyped< akantu_simtools::SynchronizedArray<Real> >::parseParam(const ParserParameter & in_param) {
+  ParsableParam::parseParam(in_param);
+  Real tmp = in_param;
+  param.setAndChangeDefault(tmp);
+}
+
+/* -------------------------------------------------------------------------- */
+template<>
+template<>
+inline void ParsableParamTyped< akantu_simtools::SynchronizedArray<Real> >::setTyped<Real>(const Real & value) { 
+  param.setAndChangeDefault(value); 
+}
+__END_AKANTU__
 
 __BEGIN_SIMTOOLS__
 
@@ -39,7 +59,7 @@ __BEGIN_SIMTOOLS__
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class NTNBaseFriction : protected Memory, public Dumpable {
+class NTNBaseFriction : protected Memory, public Parsable, public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -110,17 +130,14 @@ public:
   AKANTU_GET_MACRO(Slip,                              slip, const SynchronizedArray<Real> &)
   AKANTU_GET_MACRO(SlipVelocity,             slip_velocity, const SynchronizedArray<Real> &)
 
-  virtual void setParam(const std::string & param, UInt node, Real value) {
-    AKANTU_DEBUG_ERROR("Friction does not know the following parameter: " << param);
-  };
+  /// set parameter of a given node 
+  /// (if you need to set to all: used the setMixed function of the Parsable).
+  virtual void setParam(const std::string & name, UInt node, Real value);
 
-  virtual void setParam(const std::string & param, Real value) {
-    AKANTU_DEBUG_ERROR("Friction does not know the following parameter: " << param);
-  };
-
-protected:
-  void setInternalArray(SynchronizedArray<Real> & array, Real value);
-  void setInternalArray(SynchronizedArray<Real> & array, UInt node, Real value);
+  // replaced by the setMixed of the Parsable
+  // virtual void setParam(const std::string & param, Real value) {
+  //   AKANTU_DEBUG_ERROR("Friction does not know the following parameter: " << param);
+  // };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

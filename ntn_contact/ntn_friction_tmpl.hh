@@ -88,48 +88,4 @@ void NTNFriction<FrictionLaw, Regularisation>::printself(std::ostream & stream,
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
-/*
-void NTNFriction::addDumpFieldToDumper(const std::string & dumper_name,
-				       const std::string & field_id) {
-  AKANTU_DEBUG_IN();
-  
-#ifdef AKANTU_USE_IOHELPER
-  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact->getSlaves());
-  
-  if(field_id == "is_sticking") {
-    this->internalAddDumpFieldToDumper(dumper_name,
-			       field_id,
-			       new DumperIOHelper::NodalField<bool>(this->is_sticking.getArray()));
-  }
-  else if(field_id == "frictional_strength") {
-    this->internalAddDumpFieldToDumper(dumper_name,
-			       field_id,
-			       new DumperIOHelper::NodalField<Real>(this->frictional_strength.getArray()));
-  }
-  else if(field_id == "friction_traction") {
-    this->internalAddDumpFieldToDumper(dumper_name,
-			       field_id,
-			       new DumperIOHelper::NodalField<Real>(this->friction_traction.getArray()));
-  }
-  else if(field_id == "slip") {
-    this->internalAddDumpFieldToDumper(dumper_name,
-			       field_id,
-			       new DumperIOHelper::NodalField<Real>(this->slip.getArray()));
-  }
-  else if(field_id == "slip_speed") {
-    this->internalAddDumpFieldToDumper(dumper_name,
-			       field_id,
-			       new DumperIOHelper::NodalField<Real>(this->slip_speed.getArray()));
-  }
-  else {
-    this->contact->addDumpFieldToDumper(dumper_name, field_id);
-  }
-  
-#endif
-
-  AKANTU_DEBUG_OUT();
-}
-*/
-
 __END_SIMTOOLS__

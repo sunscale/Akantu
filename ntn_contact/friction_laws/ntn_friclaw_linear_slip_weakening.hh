@@ -82,22 +82,19 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-public:
-  virtual void setParam(const std::string & param, UInt node, Real value);
-  virtual void setParam(const std::string & param, Real value);
   
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  // Dc the length over which slip weakening happens
-  SynchronizedArray<Real> d_c;
-
   // static coefficient of friction
   SynchronizedArray<Real> mu_s;
 
   // kinetic coefficient of friction
   SynchronizedArray<Real> mu_k;
+
+  // Dc the length over which slip weakening happens
+  SynchronizedArray<Real> d_c;
 };
 
 /* -------------------------------------------------------------------------- */

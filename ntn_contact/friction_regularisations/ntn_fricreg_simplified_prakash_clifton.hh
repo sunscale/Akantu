@@ -77,9 +77,8 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void setParam(const std::string & param, UInt node, Real value);
-  virtual void setParam(const std::string & param, Real value);
 
+protected:
   /// get the frictional strength array
   virtual SynchronizedArray<Real> & internalGetFrictionalStrength() {
     return this->spc_internal;

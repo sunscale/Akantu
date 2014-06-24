@@ -362,7 +362,7 @@ void NTNBaseContact::computeContactPressure() {
 
   // pre-compute the acceleration 
   // (not increment acceleration, because residual is still Kf)
-  Array<Real> acceleration(this->model.getMesh().getNbNodes(),dim);
+  Array<Real> acceleration(this->model.getMesh().getNbNodes(), dim, 0.);
   this->model.solveLumped(acceleration,
 			  this->model.getMass(),
 			  this->model.getResidual(),

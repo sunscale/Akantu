@@ -44,6 +44,9 @@ NTNFricRegSimplifiedPrakashClifton::NTNFricRegSimplifiedPrakashClifton(NTNBaseCo
   NTNFricRegNoRegularisation::registerSynchronizedArray(this->t_star);
   NTNFricRegNoRegularisation::registerSynchronizedArray(this->spc_internal);
 
+  this->registerParam("t_star", this->t_star, _pat_parsmod, "time scale of regularisation");
+  this->registerParam("spc_internal", this->spc_internal, _pat_internal, "");
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -114,36 +117,6 @@ void NTNFricRegSimplifiedPrakashClifton::readRestart(const std::string & file_na
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFricRegSimplifiedPrakashClifton::setParam(const std::string & param, 
-				      Real value) {
-  AKANTU_DEBUG_IN();
-
-  if (param == "t_star") {
-    setInternalArray(this->t_star, value);
-  }
-  else {
-    NTNFricRegNoRegularisation::setParam(param, value);
-  }
-  
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void NTNFricRegSimplifiedPrakashClifton::setParam(const std::string & param, 
-				      UInt node, Real value) {
-  AKANTU_DEBUG_IN();
-
-  if (param == "t_star") {
-    setInternalArray(this->t_star, node, value);
-  }
-  else {
-    NTNFricRegNoRegularisation::setParam(param, value);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
 void NTNFricRegSimplifiedPrakashClifton::printself(std::ostream & stream, 
 						   int indent) const {
   AKANTU_DEBUG_IN();
@@ -151,8 +124,6 @@ void NTNFricRegSimplifiedPrakashClifton::printself(std::ostream & stream,
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
   
   stream << space << "NTNFricRegSimplifiedPrakashClifton [" << std::endl;
-  stream << space << this->t_star << std::endl;
-  stream << space << this->spc_internal << std::endl;
   NTNFricRegNoRegularisation::printself(stream, ++indent);
   stream << space << "]" << std::endl;
 

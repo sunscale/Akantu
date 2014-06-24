@@ -38,4 +38,10 @@ using namespace akantu;
 NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact, 
 					ParameterReader & data);
 
+NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact);
+
+NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
+					const std::string & friction_law,
+					const std::string & friction_reg);
+
 __END_SIMTOOLS__

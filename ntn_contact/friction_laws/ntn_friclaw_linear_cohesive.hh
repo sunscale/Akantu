@@ -80,9 +80,6 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-public:
-  virtual void setParam(const std::string & param, UInt node, Real value);
-  virtual void setParam(const std::string & param, Real value);
   
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -92,10 +89,10 @@ protected:
   SynchronizedArray<Real> G_c;
 
   // peak value of cohesive law
-  SynchronizedArray<Real> sigma_c;
+  SynchronizedArray<Real> tau_c;
 
   // residual value of cohesive law (for slip > d_c)
-  SynchronizedArray<Real> sigma_r;
+  SynchronizedArray<Real> tau_r;
 };
 
 /* -------------------------------------------------------------------------- */

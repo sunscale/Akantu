@@ -36,14 +36,20 @@ NTNFricLawLinearSlipWeakening<Regularisation>::NTNFricLawLinearSlipWeakening(NTN
 									     const FrictionID & id,
 									     const MemoryID & memory_id) :
   NTNFricLawCoulomb<Regularisation>(contact,id,memory_id),
-  d_c(0,1,0.,id+":d_c",0.,"d_c"),
   mu_s(0,1,0.,id+":mu_s",0.,"mu_s"),
-  mu_k(0,1,0.,id+":mu_k",0.,"mu_k") {
+  mu_k(0,1,0.,id+":mu_k",0.,"mu_k"),
+  d_c(0,1,0.,id+":d_c",0.,"d_c") {
   AKANTU_DEBUG_IN();
 
-  NTNFricLawCoulomb<Regularisation>::registerSynchronizedArray(this->d_c);
   NTNFricLawCoulomb<Regularisation>::registerSynchronizedArray(this->mu_s);
   NTNFricLawCoulomb<Regularisation>::registerSynchronizedArray(this->mu_k);
+  NTNFricLawCoulomb<Regularisation>::registerSynchronizedArray(this->d_c);
+
+  this->registerParam("mu_s", this->mu_s, _pat_parsmod, "static friction coefficient");
+  this->registerParam("mu_k", this->mu_k, _pat_parsmod, "kinetic friction coefficient");
+  this->registerParam("d_c",  this->d_c,  _pat_parsmod, "slip weakening length");
+
+  this->setParamAccessType("mu", _pat_readable);
   
   AKANTU_DEBUG_OUT();
 }
@@ -131,59 +137,12 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::readRestart(const std::strin
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
-void NTNFricLawLinearSlipWeakening<Regularisation>::setParam(const std::string & param, 
-						 Real value) {
-  AKANTU_DEBUG_IN();
-
-  if (param == "mu_s") {
-    this->setInternalArray(this->mu_s, value);
-  }
-  else if (param == "mu_k") {
-    this->setInternalArray(this->mu_k, value);
-  }
-  else if (param == "d_c") {
-    this->setInternalArray(this->d_c, value);
-  }
-  else {
-    NTNFricLawCoulomb<Regularisation>::setParam(param, value);
-  }
-  
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <class Regularisation>
-void NTNFricLawLinearSlipWeakening<Regularisation>::setParam(const std::string & param, 
-						 UInt node, Real value) {
-  AKANTU_DEBUG_IN();
-
-  if (param == "mu_s") {
-    this->setInternalArray(this->mu_s, node, value);
-  }
-  else if (param == "mu_k") {
-    this->setInternalArray(this->mu_k, node, value);
-  }
-  else if (param == "d_c") {
-    this->setInternalArray(this->d_c, node, value);
-  }
-  else {
-    NTNFricLawCoulomb<Regularisation>::setParam(param, value);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <class Regularisation>
 void NTNFricLawLinearSlipWeakening<Regularisation>::printself(std::ostream & stream, int indent) const {
   AKANTU_DEBUG_IN();
   std::string space;
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
   
   stream << space << "NTNFricLawLinearSlipWeakening [" << std::endl;
-  stream << space << this->mu_s << std::endl;
-  stream << space << this->mu_k << std::endl;
-  stream << space << this->d_c << std::endl;
   NTNFricLawCoulomb<Regularisation>::printself(stream, ++indent);
   stream << space << "]" << std::endl;
 

@@ -393,8 +393,8 @@ void NTNContact::computeRelativeTangentialField(const Array<Real> & field,
 
   UInt dim = this->model.getSpatialDimension();
 
-  Array<Real>::const_iterator< Vector<Real> > it_field  = field.begin(dim);
-  Array<Real>::const_iterator< Vector<Real> > it_normal = this->normals.getArray().begin(dim);
+  Array<Real>::const_vector_iterator it_field  = field.begin(dim);
+  Array<Real>::const_vector_iterator it_normal = this->normals.getArray().begin(dim);
 
   Vector<Real> rfv(dim);
   Vector<Real> np_rfv(dim);

@@ -43,6 +43,9 @@ NTNFricRegNoRegularisation::NTNFricRegNoRegularisation(NTNBaseContact * contact,
   
   NTNBaseFriction::registerSynchronizedArray(this->frictional_contact_pressure);
 
+  this->registerParam("frictional_contact_pressure", this->frictional_contact_pressure,
+		      _pat_internal , "contact pressure used for friction law");
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -124,8 +127,7 @@ void NTNFricRegNoRegularisation::printself(std::ostream & stream,
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
   
   stream << space << "NTNFricRegNoRegularisation [" << std::endl;
-  stream << space << this->frictional_contact_pressure << std::endl;
-  NTNBaseFriction::printself(stream, indent++);
+  NTNBaseFriction::printself(stream, ++indent);
   stream << space << "]" << std::endl;
 
   AKANTU_DEBUG_OUT();

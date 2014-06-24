@@ -42,6 +42,8 @@ NTNFricRegRubinAmpuero::NTNFricRegRubinAmpuero(NTNBaseContact * contact,
   
   NTNFricRegNoRegularisation::registerSynchronizedArray(this->t_star);
 
+  this->registerParam("t_star", this->t_star, _pat_parsmod, "time scale of regularization");
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -125,36 +127,6 @@ void NTNFricRegRubinAmpuero::readRestart(const std::string & file_name) {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNFricRegRubinAmpuero::setParam(const std::string & param, 
-				      Real value) {
-  AKANTU_DEBUG_IN();
-
-  if (param == "t_star") {
-    setInternalArray(this->t_star, value);
-  }
-  else {
-    NTNFricRegNoRegularisation::setParam(param, value);
-  }
-  
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void NTNFricRegRubinAmpuero::setParam(const std::string & param, 
-				      UInt node, Real value) {
-  AKANTU_DEBUG_IN();
-
-  if (param == "t_star") {
-    setInternalArray(this->t_star, node, value);
-  }
-  else {
-    NTNFricRegNoRegularisation::setParam(param, value);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
 void NTNFricRegRubinAmpuero::printself(std::ostream & stream, 
 				       int indent) const {
   AKANTU_DEBUG_IN();
@@ -162,7 +134,6 @@ void NTNFricRegRubinAmpuero::printself(std::ostream & stream,
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
   
   stream << space << "NTNFricRegRubinAmpuero [" << std::endl;
-  stream << space << this->t_star << std::endl;
   NTNFricRegNoRegularisation::printself(stream, ++indent);
   stream << space << "]" << std::endl;
 

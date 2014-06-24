@@ -40,6 +40,8 @@ NTNFricLawCoulomb<Regularisation>::NTNFricLawCoulomb(NTNBaseContact * contact,
 
   Regularisation::registerSynchronizedArray(this->mu);
   
+  this->registerParam("mu", this->mu, _pat_parsmod, "friction coefficient");
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -112,45 +114,12 @@ void NTNFricLawCoulomb<Regularisation>::readRestart(const std::string & file_nam
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
-void NTNFricLawCoulomb<Regularisation>::setParam(const std::string & param, 
-						 Real value) {
-  AKANTU_DEBUG_IN();
-
-  if (param == "mu_s") {
-    this->setInternalArray(this->mu, value);
-  }
-  else {
-    Regularisation::setParam(param, value);
-  }
-  
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <class Regularisation>
-void NTNFricLawCoulomb<Regularisation>::setParam(const std::string & param, 
-						 UInt node, Real value) {
-  AKANTU_DEBUG_IN();
-
-  if (param == "mu_s") {
-    this->setInternalArray(this->mu, node, value);
-  }
-  else {
-    Regularisation::setParam(param, value);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <class Regularisation>
 void NTNFricLawCoulomb<Regularisation>::printself(std::ostream & stream, int indent) const {
   AKANTU_DEBUG_IN();
   std::string space;
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
   
   stream << space << "NTNFricLawCoulomb [" << std::endl;
-  stream << space << this->mu << std::endl;
   Regularisation::printself(stream, ++indent);
   stream << space << "]" << std::endl;
 
