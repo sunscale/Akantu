@@ -552,7 +552,8 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
 				 new DumperIOHelper::NodalField<Real>(this->impedance.getArray()));
   }
   else {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    std::cerr << "Could not add field '" << field_id 
+	      << "' to the dumper. Just ignored it." << std::endl;
   }
 
 #undef ADD_FIELD
