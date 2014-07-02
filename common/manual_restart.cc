@@ -43,6 +43,9 @@ void loadArray(Array<Real> & array, const std::string & fname) {
   inFile >> size;
   inFile >> nb_comp;
   AKANTU_DEBUG_ASSERT(array.getNbComponent() == nb_comp, "BAD NUM OF COMPONENTS");
+  AKANTU_DEBUG_ASSERT(array.getSize() == size, "loadArray: number of data points in file (" 
+		      << size << ") does not correspond to array size (" << array.getSize() 
+		      << ")!!");
   Array<Real>::iterator< Vector<Real> > tit = array.begin(nb_comp);
   Array<Real>::iterator< Vector<Real> > tend = array.end(nb_comp);
   array.resize(size);
