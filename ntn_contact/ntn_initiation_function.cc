@@ -190,9 +190,9 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact) {
   const ParserSection & section = *it;
 
   std::string friction_law = section.getName();
-  std::string friction_reg = "no_regularisation";
-  if (section.hasParameter("regularisation")) {
-    friction_reg = section.getParameterValue<std::string>("regularisation");
+  std::string friction_reg = section.getOption();
+  if (friction_reg == "") {
+    std::string friction_reg = "no_regularisation";
   }
   
   NTNBaseFriction * friction = initializeNTNFriction(contact,
