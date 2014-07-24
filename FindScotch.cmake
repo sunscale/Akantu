@@ -47,7 +47,7 @@ find_library(SCOTCH_LIBRARY_ERREXIT scotcherrexit
   PATH_SUFFIXES src/libscotch lib
   )
 
-find_library(SCOTCH_LIBRARY_ESMUMPS ptesmumps
+find_library(SCOTCH_LIBRARY_ESMUMPS esmumps
   PATHS ${SCOTCH_DIR}
   PATH_SUFFIXES src/libscotch lib
   )

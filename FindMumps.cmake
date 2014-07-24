@@ -34,6 +34,8 @@ endif()
 
 if("${MUMPS_TYPE}" STREQUAL "seq")
   set(MUMPS_PREFIX _seq)
+else()
+  unset(MUMPS_PREFIX)
 endif()
 
 find_library(MUMPS_LIBRARY_DMUMPS NAMES dmumps${MUMPS_PREFIX}
@@ -70,7 +72,7 @@ if("${MUMPS_TYPE}" STREQUAL "par")
     PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
   find_library(BLACS_LIBRARY NAME blacs
     PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
-  find_library(SCALAPACK_LIBRARY NAME scalapack
+  find_library(SCALAPACK_LIBRARIES NAME scalapack
     PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
 
   mark_as_advanced(BLACS_LIBRARY_C)

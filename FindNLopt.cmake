@@ -27,12 +27,12 @@
 
 find_library(NLOPT_LIBRARIES NAMES nlopt_cxx
   PATHS ${NLOPT_DIR} ${NLOPT_INTERNAL_DIR}
-  PATH_SUFFIXES lib .libs
+  PATH_SUFFIXES lib
   )
 
 find_path(NLOPT_INCLUDE_DIR nlopt.hpp
   PATHS ${NLOPT_DIR} ${NLOPT_INTERNAL_DIR}
-  PATH_SUFFIXES include api
+  PATH_SUFFIXES include
   )
 
 

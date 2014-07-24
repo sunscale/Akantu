@@ -79,25 +79,41 @@ find_path (PETSC_DIR include/petsc.h
 
 find_program (MAKE_EXECUTABLE NAMES make gmake)
 
-if (PETSC_DIR AND NOT PETSC_ARCH)
+if (NOT PETSC_ARCH)
+  if (NOT ENV{PETSC_ARCH})
+    set(_petsc_arches
+      linux-gnu-c-debug linux-gnu-c-opt  # Debian defaults
+      x86_64-unknown-linux-gnu i386-unknown-linux-gnu)
+  else()
+    set(_petsc_arches $ENV{PETSC_ARCH}) # If set, use environment variable first)
+  endif()
+else()
   set (_petsc_arches
-    $ENV{PETSC_ARCH}                   # If set, use environment variable first
-    linux-gnu-c-debug linux-gnu-c-opt  # Debian defaults
-    x86_64-unknown-linux-gnu i386-unknown-linux-gnu)
-  set (petscconf "NOTFOUND" CACHE FILEPATH "Cleared" FORCE)
-  foreach (arch ${_petsc_arches})
-    if (NOT PETSC_ARCH)
-      find_path (petscconf petscconf.h
-	HINTS ${PETSC_DIR}
-	PATH_SUFFIXES ${arch}/include bmake/${arch}
-	NO_DEFAULT_PATH)
-      if (petscconf)
-	set (PETSC_ARCH "${arch}" CACHE STRING "PETSc build architecture")
-      endif (petscconf)
-    endif (NOT PETSC_ARCH)
-  endforeach (arch)
+    ${PETSC_ARCH})
+endif()
+
+if (NOT PETSC_DIR)
+  if (NOT ENV{PETSC_DIR})
+    set(PETSC_DIR /usr/lib/petsc)
+  else()
+    set(PETSC_DIR $ENV{PETSC_DIR}) # If set, use environment variable first)
+  endif()
+endif()
+
+foreach (arch ${_petsc_arches})
   set (petscconf "NOTFOUND" CACHE INTERNAL "Scratch variable" FORCE)
-endif (PETSC_DIR AND NOT PETSC_ARCH)
+  find_path (petscconf petscconf.h
+    HINTS ${PETSC_DIR}
+    PATH_SUFFIXES ${arch}/include bmake/${arch}
+    NO_DEFAULT_PATH)
+
+  if(petscconf)
+    set (PETSC_ARCH "${arch}" CACHE STRING "PETSc build architecture")
+    set(_petsc_dir ${PETSC_DIR})
+    set (PETSC_DIR "${_petsc_dir}" CACHE STRING "PETSc build directory")
+    break()
+  endif()
+endforeach()
 
 set (petsc_slaves LIBRARIES_SYS LIBRARIES_VEC LIBRARIES_MAT LIBRARIES_DM LIBRARIES_KSP LIBRARIES_SNES LIBRARIES_TS
   INCLUDE_DIR INCLUDE_CONF)
