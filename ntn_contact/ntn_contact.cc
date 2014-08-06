@@ -167,8 +167,19 @@ void NTNContact::addSurfacePair(const Surface & slave,
 				 surface_normal_dir,
 				 this->model.getMesh(),
 				 pairs);
-  
-  this->addNodePairs(pairs);
+
+  // eliminate pairs which contain a pbc slave node
+  Array<UInt> pairs_no_PBC_slaves(0,2);
+  Array<UInt>::const_vector_iterator it  = pairs.begin(2);
+  Array<UInt>::const_vector_iterator end = pairs.end(2);
+  for (; it!=end; ++it) {
+    const Vector<UInt> & pair = *it;
+    if (!this->model.isPBCSlaveNode(pair(0)) && !this->model.isPBCSlaveNode(pair(1))) {
+      pairs_no_PBC_slaves.push_back(pair);
+    }
+  }
+
+  this->addNodePairs(pairs_no_PBC_slaves);
 
   AKANTU_DEBUG_OUT();
 }

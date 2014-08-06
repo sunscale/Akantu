@@ -97,7 +97,9 @@ void NTRFContact::addSurface(const Surface & surf) {
     for(ElementGroup::const_node_iterator nodes_it(boundary.node_begin());
 	nodes_it!= boundary.node_end();
 	++nodes_it) {
-      this->addSplitNode(*nodes_it);
+      if (!this->model.isPBCSlaveNode(*nodes_it)) {
+	this->addSplitNode(*nodes_it);
+      }
     }
   } catch (debug::Exception e) {
     AKANTU_DEBUG_INFO("NTRFContact addSurface did not found subboundary " << surf 
