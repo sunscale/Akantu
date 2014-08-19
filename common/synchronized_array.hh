@@ -134,7 +134,7 @@ public:
   //  T * storage() const { return this->values; };
 
   // get nb component
-  UInt getNbComponent() const { Array<T>::getNbComponent(); };
+  UInt getNbComponent() const { return Array<T>::getNbComponent(); };
 
 protected:
   UInt syncDeletedElements(std::vector<UInt> & del_elements);
