@@ -128,6 +128,7 @@ public:
   AKANTU_GET_MACRO(FrictionalStrength, frictional_strength, const SynchronizedArray<Real> &)
   AKANTU_GET_MACRO(FrictionTraction,     friction_traction, const SynchronizedArray<Real> &)
   AKANTU_GET_MACRO(Slip,                              slip, const SynchronizedArray<Real> &)
+  AKANTU_GET_MACRO(CumulativeSlip,         cumulative_slip, const SynchronizedArray<Real> &)
   AKANTU_GET_MACRO(SlipVelocity,             slip_velocity, const SynchronizedArray<Real> &)
 
   /// set parameter of a given node 
@@ -153,6 +154,7 @@ protected:
   SynchronizedArray<Real> friction_traction;
   // slip
   SynchronizedArray<Real> slip;
+  SynchronizedArray<Real> cumulative_slip;
   // slip velocity (tangential vector)
   SynchronizedArray<Real> slip_velocity;
 };

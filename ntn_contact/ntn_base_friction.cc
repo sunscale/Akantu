@@ -45,6 +45,7 @@ NTNBaseFriction::NTNBaseFriction(NTNBaseContact * contact,
   friction_traction(0,contact->getModel().getSpatialDimension(),
 		    0.,id+":friction_traction",0.,"friction_traction"),
   slip(0,1,0.,id+":slip",0.,"slip"),
+  cumulative_slip(0,1,0.,id+":cumulative_slip",0.,"cumulative_slip"),
   slip_velocity(0,contact->getModel().getSpatialDimension(),
 		0.,id+":slip_velocity",0.,"slip_velocity") {
   AKANTU_DEBUG_IN();
@@ -53,6 +54,7 @@ NTNBaseFriction::NTNBaseFriction(NTNBaseContact * contact,
   this->contact->registerSynchronizedArray(this->frictional_strength);
   this->contact->registerSynchronizedArray(this->friction_traction);
   this->contact->registerSynchronizedArray(this->slip);
+  this->contact->registerSynchronizedArray(this->cumulative_slip);
   this->contact->registerSynchronizedArray(this->slip_velocity);
 
   contact->getModel().setIncrementFlagOn();
@@ -87,6 +89,7 @@ void NTNBaseFriction::updateSlip() {
     else {
       const Vector<Real> & rti = it[n];
       this->slip(n) += rti.norm();
+      this->cumulative_slip(n) += rti.norm();
     }
   }
 
@@ -252,6 +255,7 @@ void NTNBaseFriction::dumpRestart(const std::string & file_name) const {
   this->frictional_strength.dumpRestartFile(file_name);
   this->friction_traction.dumpRestartFile(file_name);
   this->slip.dumpRestartFile(file_name);
+  this->cumulative_slip.dumpRestartFile(file_name);
   this->slip_velocity.dumpRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
@@ -264,7 +268,7 @@ void NTNBaseFriction::readRestart(const std::string & file_name) {
   this->is_sticking.readRestartFile(file_name);
   this->frictional_strength.readRestartFile(file_name);
   this->friction_traction.readRestartFile(file_name);
-  this->slip.readRestartFile(file_name);
+  this->cumulative_slip.readRestartFile(file_name);
   this->slip_velocity.readRestartFile(file_name);
 
   AKANTU_DEBUG_OUT();
@@ -277,7 +281,7 @@ void NTNBaseFriction::setParam(const std::string & name, UInt node, Real value) 
   SynchronizedArray<Real> & array = this->get< SynchronizedArray<Real> >(name);
   Int index = this->contact->getNodeIndex(node);
   if (index < 0) {
-    AKANTU_DEBUG_WARNING("Node is node a contact node. "
+    AKANTU_DEBUG_WARNING("Node " << node << " is not a contact node. "
 			 << "Therefore, cannot set interface parameter!!");
   }
   else {
@@ -357,6 +361,11 @@ void NTNBaseFriction::addDumpFieldToDumper(const std::string & dumper_name,
     this->internalAddDumpFieldToDumper(dumper_name,
 			       field_id,
 			       new DumperIOHelper::NodalField<Real>(this->slip.getArray()));
+  }
+  else if(field_id == "cumulative_slip") {
+    this->internalAddDumpFieldToDumper(dumper_name,
+			       field_id,
+			       new DumperIOHelper::NodalField<Real>(this->cumulative_slip.getArray()));
   }
   else if(field_id == "slip_velocity") {
     this->internalAddDumpFieldToDumper(dumper_name,
