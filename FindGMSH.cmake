@@ -65,12 +65,13 @@ macro(ADD_MESH MESH_TARGET GEO_FILE DIM ORDER)
 	DEPENDS ${_geo_file}
 	COMMAND ${GMSH}
 	ARGS -${DIM} -order ${ORDER} -optimize -o ${_msh_file} ${_geo_file} 2>&1 > /dev/null
+	COMMENT "Generating the ${DIM}D mesh ${_msh_file} (order ${ORDER}) form the geometry ${_geo_file}"
 	)
       add_custom_target(${MESH_TARGET}
 	DEPENDS ${_msh_file})
       set_target_properties(${MESH_TARGET} PROPERTIES RESSOURCES ${_geo_file})
-    #else(EXISTS ${_geo_file})
-    #  message("File ${_geo_file} not found")
+      #else(EXISTS ${_geo_file})
+      #  message("File ${_geo_file} not found")
     endif(EXISTS ${_geo_file})
   endif(GMSH_FOUND)
 endmacro(ADD_MESH)

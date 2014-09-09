@@ -30,12 +30,12 @@
 find_package(PostgreSQL REQUIRED)
 if(POSTGRESQL_FOUND)
   find_library(PQXX_LIBRARY NAMES pqxx
-    PATHS ${PQXX_DIR} ENV PQXX_DIR
+    HINTS ${PQXX_DIR} ENV PQXX_DIR
     DOC "Location of libpqxx library"
     )
 
   find_path(PQXX_HEADER_DIR NAMES pqxx/pqxx
-    PATHS ${PQXX_DIR} ENV PQXX_DIR
+    HINTS ${PQXX_DIR} ENV PQXX_DIR
     DOC "Path to pqxx/pqxx header file. Do not include the 'pqxx' directory in this value."
     )
 
@@ -46,6 +46,12 @@ if(POSTGRESQL_FOUND)
   mark_as_advanced(PQXX_INCLUDE_DIR)
   mark_as_advanced(PQXX_LIBRARY)
   mark_as_advanced(PQXX_LIBRARIES)
+endif()
+
+#===============================================================================
+if(NOT PQXX_FOUND)
+  set(PQXX_DIR "" CACHE PATH "Help to find the location of pqxx library.")
+  mark_as_advanced(PQXX_FOUND)
 endif()
 
 #===============================================================================

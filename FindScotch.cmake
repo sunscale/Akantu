@@ -33,27 +33,27 @@
 #endif(SCOTCH_DIR)
 
 find_library(SCOTCH_LIBRARY scotch
-  PATHS ${SCOTCH_DIR}
+  HINTS ${SCOTCH_DIR}
   PATH_SUFFIXES src/libscotch lib
   )
 
 find_library(SCOTCH_LIBRARY_ERR scotcherr
-  PATHS ${SCOTCH_DIR}
+  HINTS ${SCOTCH_DIR}
   PATH_SUFFIXES src/libscotch lib
   )
 
 find_library(SCOTCH_LIBRARY_ERREXIT scotcherrexit
-  PATHS ${SCOTCH_DIR}
+  HINTS ${SCOTCH_DIR}
   PATH_SUFFIXES src/libscotch lib
   )
 
 find_library(SCOTCH_LIBRARY_ESMUMPS esmumps
-  PATHS ${SCOTCH_DIR}
+  HINTS ${SCOTCH_DIR}
   PATH_SUFFIXES src/libscotch lib
   )
 
 find_path(SCOTCH_INCLUDE_DIR scotch.h
-  PATHS ${SCOTCH_DIR}
+  HINTS ${SCOTCH_DIR}
   PATH_SUFFIXES include scotch src/libscotch include/scotch
   )
 
@@ -73,12 +73,14 @@ endif()
 set(SCOTCH_LIBRARIES ${SCOTCH_LIBRARIES_ALL} CACHE INTERNAL "Libraries for scotch" FORCE)
 
 #===============================================================================
+if(NOT SCOTCH_FOUND)
+  set(SCOTCH_DIR "" CACHE PATH "Location of Scotch library.")
+  mark_as_advanced(SCOTCH_DIR)
+endif()
+
+#===============================================================================
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Scotch DEFAULT_MSG
   SCOTCH_LIBRARY SCOTCH_LIBRARY_ERR SCOTCH_INCLUDE_DIR)
 
 
-#===============================================================================
-if(NOT SCOTCH_FOUND)
-  set(SCOTCH_DIR "" CACHE PATH "Location of Scotch library.")
-endif()

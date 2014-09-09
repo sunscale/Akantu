@@ -39,23 +39,23 @@ else()
 endif()
 
 find_library(MUMPS_LIBRARY_DMUMPS NAMES dmumps${MUMPS_PREFIX}
-   PATHS ${MUMPS_DIR} /usr
+   HINTS ${MUMPS_DIR} /usr
    PATH_SUFFIXES lib
    )
 
 find_library(MUMPS_LIBRARY_COMMON NAMES mumps_common${MUMPS_PREFIX}
-   PATHS ${MUMPS_DIR}
+   HINTS ${MUMPS_DIR}
    PATH_SUFFIXES lib
    )
 
 find_library(MUMPS_LIBRARY_PORD NAMES pord${MUMPS_PREFIX}
-   PATHS ${MUMPS_DIR}
+   HINTS ${MUMPS_DIR}
    PATH_SUFFIXES lib
    )
 
 
 find_path(MUMPS_INCLUDE_DIR dmumps_c.h
-  PATHS ${MUMPS_DIR}
+  HINTS ${MUMPS_DIR}
   PATH_SUFFIXES include
   )
 
@@ -67,13 +67,13 @@ set(MUMPS_LIBRARIES_ALL ${MUMPS_LIBRARY_DMUMPS} ${MUMPS_LIBRARY_COMMON} ${MUMPS_
 
 if("${MUMPS_TYPE}" STREQUAL "par")
   find_library(BLACS_LIBRARY_C NAME blacsC
-    PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
+    HINTS ${MUMPS_DIR} PATH_SUFFIXES lib)
   find_library(BLACS_LIBRARY_F77 NAME blacsF77
-    PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
+    HINTS ${MUMPS_DIR} PATH_SUFFIXES lib)
   find_library(BLACS_LIBRARY NAME blacs
-    PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
+    HINTS ${MUMPS_DIR} PATH_SUFFIXES lib)
   find_library(SCALAPACK_LIBRARIES NAME scalapack
-    PATHS ${MUMPS_DIR} PATH_SUFFIXES lib)
+    HINTS ${MUMPS_DIR} PATH_SUFFIXES lib)
 
   mark_as_advanced(BLACS_LIBRARY_C)
   mark_as_advanced(BLACS_LIBRARY_F77)
