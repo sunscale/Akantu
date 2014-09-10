@@ -118,7 +118,7 @@ macro(add_all_packages package_dir src_dir)
   cmake_debug_message(PackagesSystem "add_all_packages: ALL RELEASE FILES LIST : ${_project}_release_all_files ${${_project}_release_all_files}")
 
   #check if there are some file in the release that are not registered in a package
-  file(GLOB_RECURSE ${_project}_all_files "*.cc" "*.hh" "*.c" "*.h")
+  file(GLOB_RECURSE ${_project}_all_files "*.cc" "*.hh" "*.c" "*.h" "*.hpp")
   cmake_debug_message(PackagesSystem "add_all_packages: ALL FILES LIST : ${_project}_all_files ${${_project}_all_files}")
 
   cmake_debug_message(PackagesSystem "add_all_packages: SOURCE DIR : ${_${_project}_src_dir}")
