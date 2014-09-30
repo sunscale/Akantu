@@ -2,14 +2,16 @@
 # @file   FindQVIEW.cmake
 #
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date   Mon Jun 27 17:56:45 2011
+# @date creation: Thu Mar 17 2011
+# @date last modification: Sun Jan 06 2013
 #
 # @brief  The find_package file for libQVIEW
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the

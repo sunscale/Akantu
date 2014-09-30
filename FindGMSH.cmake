@@ -3,13 +3,14 @@
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date   Fri Oct 15 09:29:57 2010
+# @date creation: Fri Oct 15 2010
+# @date last modification: Tue Sep 09 2014
 #
 # @brief  Find gmsh and delacre the add_mesh macro
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -59,13 +60,16 @@ macro(ADD_MESH MESH_TARGET GEO_FILE DIM ORDER)
       set(_msh_file ${CMAKE_CURRENT_BINARY_DIR}/${_msh_file}.msh)
     endif(ADD_MESH_OUTPUT)
 
+    string(REPLACE "${CMAKE_SOURCE_DIR}/" "" _r_geo_file "${_geo_file}")
+    string(REPLACE "${CMAKE_BINARY_DIR}/" "" _r_msh_file "${_msh_file}")
+
     if(EXISTS ${_geo_file})
       add_custom_command(
 	OUTPUT ${_msh_file}
 	DEPENDS ${_geo_file}
 	COMMAND ${GMSH}
 	ARGS -${DIM} -order ${ORDER} -optimize -o ${_msh_file} ${_geo_file} 2>&1 > /dev/null
-	COMMENT "Generating the ${DIM}D mesh ${_msh_file} (order ${ORDER}) form the geometry ${_geo_file}"
+	COMMENT "Generating the ${DIM}D mesh ${_r_msh_file} (order ${ORDER}) form the geometry ${_r_geo_file}"
 	)
       add_custom_target(${MESH_TARGET}
 	DEPENDS ${_msh_file})
