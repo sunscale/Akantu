@@ -1,0 +1,10 @@
+heat standard [
+     density = 8940
+     capacity = 385
+     conductivity = [[401,   0,   0],\
+                     [0,   401,   0],\
+		     [0,     0, 401]]
+]
+
+
+

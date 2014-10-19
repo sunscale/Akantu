@@ -1,0 +1,10 @@
+A = pi * 0.05**2 / 4
+rho_t = 7750
+E_t = 200e9
+
+material elastic [
+	 name = dummy
+	 rho = rho_t * A * 2.
+	 E   = E_t * A
+	 nu  = 0.
+]
