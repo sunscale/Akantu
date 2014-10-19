@@ -1,0 +1,4 @@
+material damage_non_local [
+	 name = non_local_test
+	 radius = 1e-1
+]
