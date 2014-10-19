@@ -28,26 +28,34 @@
 #
 #===============================================================================
 
-if(EXISTS ${PROJECT_SOURCE_DIR}/third-party/iohelper)
-  option(AKANTU_USE_IOHELPER "Add IOHelper support in akantu" ON)
-  mark_as_advanced(AKANTU_USE_IOHELPER)
+option(AKANTU_USE_THIRD_PARTY_IOHELPER "Automatic download of the IOHelper library" ON)
+option(AKANTU_USE_IOHELPER "Add IOHelper support in akantu" ON)
 
-  if(AKANTU_USE_IOHELPER)
-    set(IOHELPER_TARGETS_EXPORT ${AKANTU_TARGETS_EXPORT})
-    add_subdirectory(third-party/iohelper)
+mark_as_advanced(AKANTU_USE_IOHELPER)
+mark_as_advanced(AKANTU_USE_THIRD_PARTY_IOHELPER)
 
-    list(APPEND AKANTU_EXTERNAL_LIBRARIES iohelper)
-    list(APPEND AKANTU_EXTERNAL_LIB_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/third-party/iohelper/src)
+if (AKANTU_USE_THIRD_PARTY_IOHELPER AND AKANTU_USE_IOHELPER)
+  set(IOHELPER_VERSION "1.1")
+  set(IOHELPER_GIT     "https://git.epfl.ch/repo/iohelper.git")
 
-    set(AKANTU_IOHELPER_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/third-party/iohelper/src)
+  include(ExternalProject)
 
-    list(APPEND AKANTU_EXPORT_LIST iohelper)
-    list(APPEND AKANTU_OPTION_LIST IOHELPER)
-    mark_as_advanced(IOHELPER_TESTS)
+  ExternalProject_Add(IOHelper
+    PREFIX ${PROJECT_BINARY_DIR}/third-party
+    GIT_REPOSITORY ${IOHELPER_GIT}
+    CMAKE_ARGS <SOURCE_DIR>/
+    CMAKE_CACHE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+    BUILD_COMMAND make
+    INSTALL_COMMAND make install
+    )
+
+    set_third_party_shared_libirary_name(IOHELPER_LIBRARIES iohelper)
+    list(APPEND AKANTU_EXTERNAL_LIBRARIES ${IOHELPER_LIBRARIES})
+    list(APPEND AKANTU_EXTERNAL_LIB_INCLUDE_DIR ${PROJECT_BINARY_DIR}/third-party/include/iohelper)
+
+    list(APPEND AKANTU_EXTRA_TARGET_DEPENDENCIES IOHelper)
+    set(AKANTU_IOHELPER_INCLUDE_DIR ${PROJECT_BINARY_DIR}/third-party/include/iohelper)
     set(AKANTU_IOHELPER ON)
-  else()
-    set(AKANTU_IOHELPER OFF)
-  endif()
 else()
   add_optional_external_package(IOHelper "Add IOHelper support in akantu" ON)
 endif()

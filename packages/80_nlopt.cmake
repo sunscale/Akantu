@@ -30,7 +30,7 @@
 #===============================================================================
 
 option(AKANTU_USE_THIRD_PARTY_NLOPT "Automatic download of the NLOPT library" ON)
-option(AKANTU_USE_NLOPT "Use NLOPT library")
+option(AKANTU_USE_NLOPT "Use NLOPT library" OFF)
 mark_as_advanced(AKANTU_USE_THIRD_PARTY_NLOPT AKANTU_USE_NLOPT)
 
 set(NLOPT_VERSION "2.4.2")
