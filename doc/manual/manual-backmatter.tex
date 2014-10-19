@@ -1,0 +1,17 @@
+\ifodd\value{page} \insertblankpage \else \insertblankpage\insertblankpage \fi
+
+\printindex
+
+\ifodd\value{page} \insertblankpage \else \fi
+
+\bibliography{manual-bibliography}
+
+\insertblankpage
+
+% STOP THE DOCUMENT %
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "manual"
+%%% End: 

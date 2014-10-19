@@ -1,0 +1,113 @@
+\chapter{Parallel Computation}
+
+This section explains how to launch a parallel computation.
+The strategy adopted by \akantu uses a mesh partitioning
+where elements are mapped to processors. Mesh partitions are
+then distributed to available processors by adequate routines
+as will be described below.
+The sequence of additional operations to be performed by the user are:
+
+\begin{itemize}
+\item Initializing the parallel context
+\item Partitioning the mesh
+\item Distributing mesh partitions
+\end{itemize}
+
+After these steps, the \code{Model}
+object proceeds with the interprocess communication automatically
+without the user having to explicitly take care of them.
+In what follows we show how it works on a \code{SolidMechanics} model.
+
+\section{Initializing the Parallel Context}
+
+The user must initialize \akantu by forwarding the arguments passed to the
+program by using the function \code{initialize}, and close \akantu instances
+at the end of the program by calling the \code{finalize} function.\\
+
+\note{This step does not change from the sequential case as it was stated in
+Section \ref{sect:common:main}. It only gives a additional motivation in the parallel/MPI context.}\\
+
+The \code{initialize} function builds a \code{StaticCommunicator} object
+responsible for handling the interprocess communications later on.  The
+\code{StaticCommunicator} can, for instance, be used to ask the total number of
+declared processors available for computations as well as the process rank
+through the functions \code{getNbProc} and \code{whoAmI} respectively.
+
+An example of the initializing sequence and basic usage of the
+\code{StaticCommunicator} is:
+
+\begin{cpp}
+int main(int argc, char *argv[])
+{
+  initialize("material.dat", argc, argv);
+
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  Int psize = comm.getNbProc();
+  Int prank = comm.whoAmI();
+
+  ...
+
+  finalize();
+}
+\end{cpp}
+
+\section{Partitioning the Mesh}
+
+The mesh is partitioned after the correct initialization of the
+processes playing a role in the computation. We assume that a
+\code{Mesh} object is constructed as presented in
+Section~\ref{sect:common:mesh}.  Then a partition must be computed by
+using an appropriate mesh partitioner. At present time, the only
+partitioner available is \code{MeshPartitionScotch} which implements
+the function \code{partitionate} using the
+\textbf{Scotch}\cite{scotch} program.  This is achieved by the
+following code
+
+\begin{cpp}
+  Mesh mesh(spatial_dimension);
+  MeshPartition * partition = NULL;
+
+  if(prank == 0) {
+    mesh.read("my_mesh.msh");
+    partition = new MeshPartitionScotch(mesh, spatial_dimension);
+    partition->partitionate(psize);
+  }
+\end{cpp}
+
+\note{Only the processor of rank $0$ should load the mesh file to
+  partition it. Nevertheless, the \code{Mesh} object must by declared
+  for all processors since the mesh distribution will store mesh pieces to that object.}
+
+\section{Distributing Mesh Partitions}
+
+The distribution of the mesh is done automatically by the
+\code{SolidMechanicsModel} through the \code{initParallel} method.  Thus,
+after creating a \code{SolidMechanicsModel} with our mesh as the initial
+parameter, the \code{initParallel} method must be called receiving the partition
+as a parameter.
+
+\begin{cpp}
+  SolidMechanicsModel model(mesh);
+  model.initParallel(partition);
+\end{cpp}
+
+After that point, everything remains as in the sequential case from
+the user point of view. This allows the user to care only
+about his simulation without concern for the parallelism.
+
+An example of an explicit dynamic 2D bar in compression in a parallel
+context can be found in \shellcode{\examplesdir/parallel\_2d}.
+
+\section{Launching a Parallel Program}
+
+Using \textbf{MPI} a parallel run can be launched from a shell
+using the command
+
+\begin{cpp}
+  mpirun -np #procs program_name parameter1 parameter2 ...
+\end{cpp}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "manual"
+%%% End:

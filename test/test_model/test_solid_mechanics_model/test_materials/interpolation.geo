@@ -1,0 +1,42 @@
+h = 1.;
+
+Point(1) = { 1, 1, 1, h};
+Point(2) = {-1, 1, 1, h};
+Point(3) = {-1,-1, 1, h};
+Point(4) = { 1,-1, 1, h};
+Point(5) = { 1, 1,-1, h};
+Point(6) = {-1, 1,-1, h};
+Point(7) = {-1,-1,-1, h};
+Point(8) = { 1,-1,-1, h};
+Line(1) = {1, 2};
+Line(2) = {2, 3};
+Line(3) = {3, 4};
+Line(4) = {4, 1};
+Line(5) = {5, 6};
+Line(6) = {6, 7};
+Line(7) = {7, 8};
+Line(8) = {8, 5};
+Line(9) = {5, 1};
+Line(10) = {8, 4};
+Line(11) = {7, 3};
+Line(12) = {6, 2};
+Line Loop(13) = {10, 4, -9, -8};
+Plane Surface(14) = {13};
+Line Loop(15) = {7, 8, 5, 6};
+Plane Surface(16) = {15};
+Line Loop(17) = {11, -2, -12, 6};
+Plane Surface(18) = {17};
+Line Loop(19) = {1, -12, -5, 9};
+Plane Surface(20) = {19};
+Line Loop(21) = {3, -10, -7, 11};
+Plane Surface(22) = {21};
+Line Loop(23) = {3, 4, 1, 2};
+Plane Surface(24) = {23};
+Surface Loop(25) = {14, 22, 24, 20, 18, 16};
+Volume(26) = {25};
+
+// Transfinite Volume "*";
+
+// Transfinite Line {1, 3} = 3;
+// Transfinite Line {2, 4} = 3;
+// Transfinite Surface "*";

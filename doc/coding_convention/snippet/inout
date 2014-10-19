@@ -1,0 +1,6 @@
+# -*- mode: c++-mode -*-
+# name: AKANTU_DEBUG_IN(); ... AKANTU_DEBUG_OUT();
+# --
+AKANTU_DEBUG_IN();
+`yas/selected-text`$0
+AKANTU_DEBUG_OUT();

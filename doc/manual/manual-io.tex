@@ -1,0 +1,105 @@
+
+\chapter{Input/Output}\index{I\/O}
+
+\section{Generic data}
+In this chapter, we address ways to get the internal data in human-readable formats.
+The models in \akantu handle data associated to the
+mesh, but this data can be split into several \code{Arrays}. For example, the
+data stored per element type in a \code{ElementTypeMapArray} is composed of as
+many \code{Array}s as types in the mesh.
+
+In order to get this data in a visualization software, the models contain a
+object to dump \code{VTK} files. These files can be visualized in software such
+as \code{ParaView}\cite{paraview}, \code{ViSit}\cite{visit} or \code{Mayavi}\cite{mayavi}.
+
+The internal dumper of the model can be configured to specify which data fields
+are to be written. This is done with the
+\code{addDumpField}\index{I\/O!addDumpField} method. By default all the files
+are generated in a folder called \code{paraview/}
+
+\begin{cpp}
+  model.setBaseName("output"); // prefix for all generated files
+
+  model.addDumpField("displacement");
+  model.addDumpField("stress");
+  ...
+
+  model.dump()
+\end{cpp}
+
+The fields are dumped with the number of components of the memory. For example, in 2D, the memory has 
+\code{Vector}s of 2 components, or the $2^{nd}$ order tensors with $2\times2$ components.  
+This memory can be dealt with \code{addDumpFieldVector}\index{I\/O!addDumpFieldVector} which always dumps
+\code{Vector}s with 3 components or \code{addDumpFieldTensor}\index{I\/O!addDumpFieldTensor} which dumps $2^{nd}$
+order tensors with $3\times3$ components respectively. The routines \code{addDumpFieldVector}\index{I\/O!addDumpFieldVector} and
+\code{addDumpFieldTensor}\index{I\/O!addDumpFieldTensor} were introduced because of Paraview which mostly manipulate 3D 
+data.
+
+Those fields which are stored by quadrature point are modified to be seen in the
+\code{VTK} file as elemental data. To do this, the default is to average the
+values of all the quadrature points.
+
+The list of fields depends on the models (for
+\code{SolidMechanicsModel} see table~\ref{tab:io:smm_field_list}).
+
+\begin{table}
+  \centering
+  \begin{tabular}{llll}
+    \toprule
+    key          &    type      & support \\
+    \midrule
+    displacement & Vector<Real> & nodes  \\
+    velocity     & Vector<Real> & nodes  \\
+    acceleration & Vector<Real> & nodes  \\
+    force	       & Vector<Real> & nodes  \\
+    residual     & Vector<Real> & nodes  \\
+    boundary     & Vector<bool> & nodes  \\
+    mass         & Vector<Real> & nodes  \\
+    partitions   & Real         & elements \\
+    stress & Matrix<Real> & quadrature points  \\
+    strain & Matrix<Real> & quadrature points  \\
+    \textit{material internals} & variable  & quadrature points  \\
+    \bottomrule
+  \end{tabular}
+  \caption{List of dumpable fields for \code{SolidMechanicsModel}.}
+  \label{tab:io:smm_field_list}
+\end{table}
+
+The user can also register external fields which have the same mesh as the mesh from the model as support. To do this, an object of type \code{Field} has to be created.\index{I\/O!addDumpFieldExternal}
+
+\begin{itemize}
+\item For nodal fields :
+\begin{cpp}
+  Vector<T> vect(nb_nodes, nb_component);
+  Field field = new DumperIOHelper::NodalField<T>(vect));
+  model.addDumpFieldExternal("my_field", field);
+\end{cpp}
+
+\item For elemental fields :
+\begin{cpp}
+  ElementTypeMapArray<T> arr;
+  Field field = new DumperIOHelper::ElementalField<T>(arr, spatial_displacement));
+  model.addDumpFieldExternal("my_field", field);
+\end{cpp}
+\end{itemize}
+
+\section{Cohesive elements' data}
+Cohesive elements and their relative data can be easily dumped thanks
+to a specific dumper contained in
+\code{SolidMechanicsModelCohesive}. In order to use it, one has just
+to add the string \code{"cohesive elements"} when calling each method
+already illustrated. Here is an example on how to dump displacement
+and damage:
+\begin{cpp}
+  model.setBaseNameToDumper("cohesive elements", "cohesive_elements_output");
+  model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
+  model.addDumpFieldToDumper("cohesive elements", "damage");
+  ...
+
+  model.dump("cohesive elements");
+\end{cpp}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "manual"
+%%% End: 

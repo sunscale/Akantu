@@ -1,0 +1,13 @@
+material elastic [
+	 name = steel
+	 rho = 7800   # density
+	 E   = 2.1e11 # young's modulus
+	 nu  = 0.3    # poisson's ratio
+]
+
+material elastic [
+	 name = copper
+	 rho = 8940   # density
+	 E   = 125e9  # young's modulus
+	 nu  = 0.34   # poisson's ratio
+]

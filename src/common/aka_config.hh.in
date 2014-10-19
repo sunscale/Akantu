@@ -1,0 +1,88 @@
+/**
+ * @file   aka_config.hh.in
+ *
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ *
+ * @date   Fri Jan 13 12:34:54 2012
+ *
+ * @brief  Compilation time configuration of Akantu
+ *
+ * @section LICENSE
+ *
+ * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as  published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_AKA_CONFIG_HH__
+#define __AKANTU_AKA_CONFIG_HH__
+
+#define AKANTU_VERSION @AKANTU_VERSION@
+#define AKANTU_VERSION_MAJOR @AKANTU_MAJOR_VERSION@
+#define AKANTU_VERSION_MINOR @AKANTU_MINOR_VERSION@
+#define AKANTU_VERSION_PATCH @AKANTU_PATCH_VERSION@
+
+#cmakedefine AKANTU_USE_BLAS
+#cmakedefine AKANTU_USE_LAPACK
+
+#cmakedefine AKANTU_PARALLEL
+#cmakedefine AKANTU_USE_MPI
+
+#cmakedefine AKANTU_USE_SCOTCH
+#cmakedefine AKANTU_USE_PTSCOTCH
+#cmakedefine AKANTU_SCOTCH_NO_EXTERN
+
+#cmakedefine AKANTU_USE_MUMPS
+#cmakedefine AKANTU_USE_PETSC
+
+#cmakedefine AKANTU_USE_IOHELPER
+#cmakedefine AKANTU_USE_QVIEW
+#cmakedefine AKANTU_USE_BLACKDYNAMITE
+
+#cmakedefine AKANTU_USE_NLOPT
+#cmakedefine AKANTU_USE_CPPARRAY
+
+#cmakedefine AKANTU_USE_OBSOLETE_GETTIMEOFDAY
+
+#cmakedefine AKANTU_EXTRA_MATERIALS
+#cmakedefine AKANTU_DAMAGE_NON_LOCAL
+
+#cmakedefine AKANTU_STRUCTURAL_MECHANICS
+#cmakedefine AKANTU_HEAT_TRANSFER
+
+#cmakedefine AKANTU_COHESIVE_ELEMENT
+#cmakedefine AKANTU_PARALLEL_COHESIVE_ELEMENT
+
+#cmakedefine AKANTU_IGFEM
+
+// BOOST Section
+#cmakedefine AKANTU_BOOST_CHRONO
+#cmakedefine AKANTU_BOOST_SYSTEM
+
+// Experimental part
+#cmakedefine AKANTU_CORE_CXX11
+
+// Debug tools
+//#cmakedefine AKANTU_NDEBUG
+#cmakedefine AKANTU_DEBUG_TOOLS
+#cmakedefine READLINK_COMMAND @READLINK_COMMAND@
+#cmakedefine ADDR2LINE_COMMAND @ADDR2LINE_COMMAND@
+
+#define __aka_inline__ inline
+
+#endif /* __AKANTU_AKA_CONFIG_HH__ */

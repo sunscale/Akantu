@@ -1,0 +1,9 @@
+parser_permissive = true
+
+material elastic [
+	 name = steel
+	 rho = 7800   # density
+	 E   = 2.1e11 # young's modulus
+	 nu  = 0.3    # poisson's ratio
+         Plane_Stress = 0 # plane strain
+]

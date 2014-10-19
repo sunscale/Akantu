@@ -1,0 +1,9 @@
+material sls_deviatoric [
+	 name = anything
+	 rho = 7800     # density
+	 E   = 15      # young's modulus
+	 nu  = 0.25     # poisson's ratio
+	 Eta = 10       # viscosity
+         Ev  = 5      # viscous stiffness
+	 Plane_Stress = 0
+]

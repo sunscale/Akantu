@@ -1,0 +1,145 @@
+
+Contact object info:
+  Search type: MasterAssignator search class. Search surfaces: 
+
+  Resolution type: Augmented-Lagrangian resolution type. Parameters:
+	penalty = auto
+	alpha   = 0.4
+	utol    = 0.0001
+	ntol    = 0.0001
+	usteps  = 100
+	nsteps  = 100
+	verbose = 0
+
+    Slave nodes: 0 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 
+
+    Slave master pairs
+	slave: 0, Master: Element [_segment_2, 47, not_ghost]
+	slave: 16, Master: Element [_segment_2, 47, not_ghost]
+	slave: 17, Master: Element [_segment_2, 47, not_ghost]
+	slave: 18, Master: Element [_segment_2, 47, not_ghost]
+	slave: 19, Master: Element [_segment_2, 47, not_ghost]
+	slave: 20, Master: Element [_segment_2, 47, not_ghost]
+	slave: 21, Master: Element [_segment_2, 47, not_ghost]
+	slave: 22, Master: Element [_segment_2, 47, not_ghost]
+	slave: 23, Master: Element [_segment_2, 47, not_ghost]
+	slave: 24, Master: Element [_segment_2, 47, not_ghost]
+	slave: 25, Master: Element [_segment_2, 47, not_ghost]
+	slave: 26, Master: Element [_segment_2, 47, not_ghost]
+	slave: 27, Master: Element [_segment_2, 47, not_ghost]
+	slave: 28, Master: Element [_segment_2, 47, not_ghost]
+	slave: 29, Master: Element [_segment_2, 47, not_ghost]
+	slave: 30, Master: Element [_segment_2, 47, not_ghost]
+	slave: 31, Master: Element [_segment_2, 47, not_ghost]
+	slave: 32, Master: Element [_segment_2, 47, not_ghost]
+	slave: 33, Master: Element [_segment_2, 47, not_ghost]
+	slave: 34, Master: Element [_segment_2, 47, not_ghost]
+	slave: 35, Master: Element [_segment_2, 47, not_ghost]
+	slave: 36, Master: Element [_segment_2, 47, not_ghost]
+	slave: 37, Master: Element [_segment_2, 47, not_ghost]
+	slave: 38, Master: Element [_segment_2, 47, not_ghost]
+	slave: 39, Master: Element [_segment_2, 47, not_ghost]
+
+*** INFO *** Obtaining penalty parameters automatically. Average value: 9.17857e+10
+Summary: Uzawa [14]: Newton [24]: 4 3 2 2 2 2 2 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [21]: 3 2 2 2 2 2 1 1 1 1 1 1 1 1
+Summary: Uzawa [15]: Newton [23]: 3 2 2 2 2 2 2 1 1 1 1 1 1 1 1
+Summary: Uzawa [15]: Newton [21]: 3 2 2 2 2 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [22]: 3 2 2 2 2 2 2 1 1 1 1 1 1 1
+Summary: Uzawa [16]: Newton [23]: 3 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [15]: Newton [20]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [15]: Newton [22]: 3 2 2 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [21]: 3 2 2 2 2 2 1 1 1 1 1 1 1 1
+Summary: Uzawa [15]: Newton [21]: 3 2 2 2 2 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [19]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [20]: 3 2 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [20]: 3 2 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [20]: 3 2 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [20]: 3 2 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [20]: 3 2 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [20]: 3 2 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [20]: 3 2 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [20]: 3 2 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [16]: Newton [21]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [16]: Newton [21]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [16]: Newton [21]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [23]: Newton [27]: 3 2 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [16]: Newton [21]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [16]: Newton [21]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [16]: Newton [21]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [16]: Newton [21]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [19]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [19]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [18]: Newton [22]: 3 2 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [19]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [14]: Newton [19]: 3 2 2 2 1 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [13]: Newton [18]: 3 2 2 2 1 1 1 1 1 1 1 1 1
+Summary: Uzawa [18]: Newton [22]: 3 2 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+    
+Disp.     ForceMax pressure
+     0.001   7.3e+07   3.1e+09
+     0.002   1.6e+08   4.5e+09
+     0.003   2.5e+08   5.6e+09
+     0.004   3.5e+08   6.5e+09
+     0.005   4.5e+08   7.2e+09
+     0.006   5.5e+08     8e+09
+     0.007   6.5e+08   8.7e+09
+     0.008   7.7e+08   9.3e+09
+     0.009   8.8e+08   9.9e+09
+      0.01   9.9e+08     1e+10
+     0.011   1.1e+09   1.1e+10
+     0.012   1.2e+09   1.2e+10
+     0.013   1.3e+09   1.2e+10
+     0.014   1.5e+09   1.2e+10
+     0.015   1.6e+09   1.3e+10
+     0.016   1.7e+09   1.3e+10
+     0.017   1.8e+09   1.4e+10
+     0.018   1.9e+09   1.4e+10
+     0.019   2.1e+09   1.5e+10
+      0.02   2.2e+09   1.5e+10
+     0.021   2.3e+09   1.5e+10
+     0.022   2.4e+09   1.6e+10
+     0.023   2.6e+09   1.6e+10
+     0.024   2.7e+09   1.6e+10
+     0.025   2.8e+09   1.7e+10
+     0.026     3e+09   1.7e+10
+     0.027   3.1e+09   1.7e+10
+     0.028   3.2e+09   1.8e+10
+     0.029   3.4e+09   1.8e+10
+      0.03   3.5e+09   1.8e+10
+     0.031   3.6e+09   1.9e+10
+     0.032   3.8e+09   1.9e+10
+     0.033   3.9e+09   1.9e+10
+     0.034   4.1e+09     2e+10
+     0.035   4.2e+09     2e+10
+     0.036   4.3e+09     2e+10
+     0.037   4.5e+09     2e+10
+     0.038   4.6e+09   2.1e+10
+     0.039   4.7e+09   2.1e+10
+      0.04   4.9e+09   2.1e+10
+     0.041     5e+09   2.1e+10
+     0.042   5.1e+09   2.2e+10
+     0.043   5.3e+09   2.2e+10
+     0.044   5.4e+09   2.2e+10
+     0.045   5.6e+09   2.2e+10
+     0.046   5.7e+09   2.2e+10
+     0.047   5.9e+09   2.3e+10
+     0.048     6e+09   2.3e+10
+     0.049   6.2e+09   2.3e+10
+      0.05   6.3e+09   2.3e+10

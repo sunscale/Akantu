@@ -1,0 +1,202 @@
+diff --git a/MUMPS_4.10.0.orig/Makefile b/MUMPS_4.10.0/Makefile
+index fc1cb67..9a1dbb5 100644
+--- a/MUMPS_4.10.0.orig/Makefile
++++ b/MUMPS_4.10.0/Makefile
+@@ -8,7 +8,7 @@ default:	dexamples
+ 
+ .PHONY: default alllib all s d c z \
+ 	sexamples dexamples cexamples zexamples \
+-	mumps_lib requiredobj libseqneeded clean
++	mumps_lib requiredobj libseqneeded install clean
+ 
+ alllib:		s d c z
+ all:		sexamples dexamples cexamples zexamples
+@@ -51,29 +51,47 @@ zexamples:	z
+ 	(cd examples ; $(MAKE) z)
+ 
+ 
+-requiredobj: Makefile.inc $(LIBSEQNEEDED) $(libdir)/libpord$(PLAT)$(LIBEXT)
++requiredobj: Makefile.inc $(LIBSEQNEEDED) $(libdir)/libpord$(PLAT)$(LIBEXT) $(libdir)/libpord$(PLAT)$(SHLIBEXT)
+ 
+ # dummy MPI library (sequential version)
+ 
+ libseqneeded:
+ 	(cd libseq; $(MAKE))
++	cp libseq/lib* $(libdir)
+ 
+ # Build the libpord.a library and copy it into $(topdir)/lib
+ $(libdir)/libpord$(PLAT)$(LIBEXT):
+ 	if [ "$(LPORDDIR)" != "" ] ; then \
+ 	  cd $(LPORDDIR); \
+-	  $(MAKE) CC="$(CC)" CFLAGS="$(OPTC)" AR="$(AR)" RANLIB="$(RANLIB)" OUTC=$(OUTC) LIBEXT=$(LIBEXT); \
++	  $(MAKE) CC="$(CC)" CFLAGS="$(OPTC)" AR="$(AR)" RANLIB="$(RANLIB)" OUTC=$(OUTC) LIBEXT=$(LIBEXT) PLAT=$(PLAT) SHLIBEXT=$(SHLIBEXT); \
+ 	fi;
+ 	if [ "$(LPORDDIR)" != "" ] ; then \
+-	  cp $(LPORDDIR)/libpord$(LIBEXT) $@; \
++	  cp $(LPORDDIR)/libpord$(PLAT)$(LIBEXT) $@; \
+ 	fi;
+ 
++$(libdir)/libpord$(PLAT)$(SHLIBEXT):
++	if [ "$(LPORDDIR)" != "" ] ; then \
++	  cd $(LPORDDIR); \
++	  $(MAKE) CC="$(CC)" CFLAGS="$(OPTC)" AR="$(AR)" RANLIB="$(RANLIB)" OUTC=$(OUTC) LIBEXT=$(LIBEXT) PLAT=$(PLAT) SHLIBEXT=$(SHLIBEXT) libpord$(PLAT)$(SHLIBEXT); \
++	fi;
++	if [ "$(LPORDDIR)" != "" ] ; then \
++	  cp $(LPORDDIR)/libpord$(PLAT)$(SHLIBEXT) $@; \
++	fi;
++
++prefix		?= /usr/local
++
++install: mumps_lib
++	-$(MKDIR) $(prefix)/include/
++	-$(MKDIR) $(prefix)/lib/
++	-$(CP) include/* $(prefix)/include/
++	-$(CP) lib/*     $(prefix)/lib/
++
+ clean:
+ 	(cd src; $(MAKE) clean)
+ 	(cd examples; $(MAKE) clean)
+-	(cd $(libdir); $(RM) *$(PLAT)$(LIBEXT))
++	(cd $(libdir); $(RM) *$(PLAT)$(LIBEXT) *$(PLAT)$(SHLIBEXT))
+ 	(cd libseq; $(MAKE) clean)
+ 	if [ $(LPORDDIR) != "" ] ; then \
+-	  cd $(LPORDDIR); $(MAKE) realclean; \
++	  cd $(LPORDDIR); $(MAKE) LIBEXT=$(LIBEXT) PLAT=$(PLAT) SHLIBEXT=$(SHLIBEXT) realclean; \
+         fi;
+ 
+diff --git a/MUMPS_4.10.0.orig/PORD/lib/Makefile b/MUMPS_4.10.0/PORD/lib/Makefile
+index de56d23..f1defbf 100644
+--- a/MUMPS_4.10.0.orig/PORD/lib/Makefile
++++ b/MUMPS_4.10.0/PORD/lib/Makefile
+@@ -12,7 +12,7 @@ COPTIONS = $(INCLUDES) $(CFLAGS) $(OPTFLAGS)
+ 
+ OBJS = graph.o gbipart.o gbisect.o ddcreate.o ddbisect.o nestdiss.o \
+        multisector.o gelim.o bucket.o tree.o \
+-       symbfac.o interface.o sort.o minpriority.o 
++       symbfac.o interface.o sort.o minpriority.o
+ 
+ # Note: numfac.c read.c mapping.c triangular.c matrix.c kernel.c
+ # were not direcly used by MUMPS and have been removed from the
+@@ -21,12 +21,15 @@ OBJS = graph.o gbipart.o gbisect.o ddcreate.o ddbisect.o nestdiss.o \
+ .c.o:
+ 	$(CC) $(COPTIONS) -c $*.c $(OUTC)$*.o
+ 
+-libpord$(LIBEXT):$(OBJS)
++libpord$(PLAT)$(LIBEXT):$(OBJS)
+ 	$(AR)$@ $(OBJS)
+ 	$(RANLIB) $@
+ 
++libpord$(PLAT)$(SHLIBEXT): $(OBJS)
++	$(CC) -shared $(OBJS) -o libpord$(PLAT)$(SHLIBEXT)
++
+ clean:
+ 	rm -f *.o
+ 
+ realclean:
+-	rm -f *.o libpord.a
++	rm -f *.o libpord$(PLAT)$(SHLIBEXT) libpord$(PLAT)$(LIBEXT)
+diff --git a/MUMPS_4.10.0/PORD/lib/libpord b/MUMPS_4.10.0/PORD/lib/libpord
+new file mode 100755
+index 0000000..91cd0f2
+Binary files /dev/null and b/MUMPS_4.10.0/PORD/lib/libpord differ
+diff --git a/MUMPS_4.10.0.orig/libseq/Makefile b/MUMPS_4.10.0/libseq/Makefile
+index 73701c2..cec44d0 100644
+--- a/MUMPS_4.10.0.orig/libseq/Makefile
++++ b/MUMPS_4.10.0/libseq/Makefile
+@@ -7,11 +7,15 @@ all: libmpiseq
+ 
+ include ../Makefile.inc
+ 
+-libmpiseq: libmpiseq$(PLAT)$(LIBEXT)
++libmpiseq: libmpiseq$(PLAT)$(LIBEXT) libmpiseq$(PLAT)$(SHLIBEXT)
+ 
+ libmpiseq$(PLAT)$(LIBEXT): mpi.o mpic.o elapse.o
+ 	$(AR)$@ mpi.o mpic.o elapse.o
+ 	$(RANLIB) $@
++
++libmpiseq$(PLAT)$(SHLIBEXT): mpi.o mpic.o elapse.o
++	$(FC) -shared $^ -o libmpiseq$(PLAT)$(SHLIBEXT)
++
+ .f.o:
+ 	$(FC) $(OPTF)              -c $*.f $(OUTF)$*.o
+ .c.o:
+diff --git a/MUMPS_4.10.0/libseq/libmpiseq_seq.so b/MUMPS_4.10.0/libseq/libmpiseq_seq.so
+new file mode 100755
+index 0000000..e9c024d
+Binary files /dev/null and b/MUMPS_4.10.0/libseq/libmpiseq_seq.so differ
+diff --git a/MUMPS_4.10.0.orig/src/Makefile b/MUMPS_4.10.0/src/Makefile
+index d42a915..1505fdf 100644
+--- a/MUMPS_4.10.0.orig/src/Makefile
++++ b/MUMPS_4.10.0/src/Makefile
+@@ -20,7 +20,10 @@ z:
+ include $(topdir)/Makefile.inc
+ 
+ mumps_lib:    $(libdir)/libmumps_common$(PLAT)$(LIBEXT) \
+-              $(libdir)/lib$(ARITH)mumps$(PLAT)$(LIBEXT)
++              $(libdir)/libmumps_common$(PLAT)$(SHLIBEXT) \
++              $(libdir)/lib$(ARITH)mumps$(PLAT)$(LIBEXT) \
++              $(libdir)/lib$(ARITH)mumps$(PLAT)$(SHLIBEXT)
++
+ 
+ OBJS_COMMON = \
+         mumps_part9.o\
+@@ -34,9 +37,9 @@ OBJS_COMMON = \
+         mumps_io_err.o\
+         mumps_static_mapping.o\
+         mumps_sol_es.o\
+-	tools_common_mod.o
++        tools_common_mod.o
+ 
+-OBJS = 	$(ARITH)mumps_part1.o\
++OBJS =  $(ARITH)mumps_part1.o\
+         $(ARITH)mumps_part2.o\
+         $(ARITH)mumps_part3.o\
+         $(ARITH)mumps_part4.o\
+@@ -60,14 +63,22 @@ $(libdir)/lib$(ARITH)mumps$(PLAT)$(LIBEXT):    $(OBJS)
+ 	$(AR)$@ $?
+ 	$(RANLIB) $@
+ 
++$(libdir)/libmumps_common$(PLAT)$(SHLIBEXT):	$(OBJS_COMMON)
++	$(FC) -shared $^ -L$(libdir) $(LORDERINGS) $(LIBS) $(LIBBLAS) $(LIBOTHERS) -o $(libdir)/libmumps_common$(PLAT)$(SHLIBEXT)
++
++
++$(libdir)/lib$(ARITH)mumps$(PLAT)$(SHLIBEXT):    $(OBJS)
++	$(FC) -shared $^ -L$(libdir) -lmumps_common$(PLAT) $(LORDERINGS) $(LIBS) $(LIBBLAS) $(LIBOTHERS) -o $(libdir)/lib$(ARITH)mumps$(PLAT)$(SHLIBEXT)
++
++
+ $(ARITH)mumps_load.o:		$(ARITH)mumps_comm_buffer.o \
+-				$(ARITH)mumps_struc_def.o
++                                $(ARITH)mumps_struc_def.o
+ 
+-$(ARITH)mumps_ooc.o: 		$(ARITH)mumps_struc_def.o \
+-				$(ARITH)mumps_ooc_buffer.o \
+-				mumps_ooc_common.o
++$(ARITH)mumps_ooc.o:            $(ARITH)mumps_struc_def.o \
++                                $(ARITH)mumps_ooc_buffer.o \
++                                mumps_ooc_common.o
+ 
+-$(ARITH)mumps_ooc_buffer.o: 	mumps_ooc_common.o
++$(ARITH)mumps_ooc_buffer.o:     mumps_ooc_common.o
+ 
+ 
+ $(ARITH)mumps_part1.o \
+@@ -78,8 +89,8 @@ $(ARITH)mumps_part5.o \
+ $(ARITH)mumps_part6.o \
+ $(ARITH)mumps_part7.o \
+ $(ARITH)mumps_part8.o:	$(ARITH)mumps_comm_buffer.o \
+-			$(ARITH)mumps_load.o \
+-			$(ARITH)mumps_ooc.o
++                        $(ARITH)mumps_load.o \
++                        $(ARITH)mumps_ooc.o
+ 
+ $(ARITH)mumps_part5.o:	mumps_static_mapping.o
+ $(ARITH)mumps_part5.o:	$(ARITH)mumps_part2.o
+@@ -95,7 +106,7 @@ $(ARITH)mumps_part8.o : mumps_sol_es.o
+ 
+ $(ARITH)mumps_c.o:	mumps_c.c
+ 	$(CC) $(OPTC) $(INCS) $(CDEFS) -DMUMPS_ARITH=MUMPS_ARITH_$(ARITH) \
+-	      $(IORDERINGSC) $(ORDERINGSC) -I../include -c $? $(OUTC)$@
++              $(IORDERINGSC) $(ORDERINGSC) -I../include -c $? $(OUTC)$@
+ 
+ 
+ clean:

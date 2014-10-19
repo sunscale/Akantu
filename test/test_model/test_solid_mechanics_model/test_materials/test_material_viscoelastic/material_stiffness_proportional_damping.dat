@@ -1,0 +1,7 @@
+material elastic_caughey [
+	 name = viscous_steel
+	 rho = 7800         # density
+	 E   = 2.1e11       # young's modulus
+	 nu  = 0.3          # poisson's ratio
+	 alpha = 6.5784e-6  # viscous ratio
+]

@@ -1,0 +1,63 @@
+#===============================================================================
+# @file   AkantuConfig.cmake.in
+#
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
+#
+# @date   Thu Dec 01 18:00:05 2011
+#
+# @brief  CMake file for the library
+#
+# @section LICENSE
+#
+# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+#
+# Akantu is free  software: you can redistribute it and/or  modify it under the
+# terms  of the  GNU Lesser  General Public  License as  published by  the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+# details.
+#
+# You should  have received  a copy  of the GNU  Lesser General  Public License
+# along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+#
+#===============================================================================
+
+# Compute paths
+get_filename_component(AKANTU_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+set(AKANTU_USE_FILE "${AKANTU_CMAKE_DIR}/AkantuUse.cmake")
+include(${AKANTU_USE_FILE})
+
+if(EXISTS "${AKANTU_CMAKE_DIR}/CMakeCache.txt")
+   # In build tree
+   include("${AKANTU_CMAKE_DIR}/AkantuBuildTreeSettings.cmake")
+else()
+   set(AKANTU_INCLUDE_DIR "${AKANTU_CMAKE_DIR}/../../include/akantu")
+   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${AKANTU_CMAKE_DIR}/cmake")
+endif()
+
+include("${AKANTU_CMAKE_DIR}/AkantuLibraryDepends.cmake")
+
+# Dependencies
+include("${AKANTU_CMAKE_DIR}/AkantuConfigInclude.cmake")
+
+set(AKANTU_BUILD_TYPE @CMAKE_BUILD_TYPE@)
+
+# find_akantu_dependencies()
+set(AKANTU_LIBRARY akantu)
+if(AKANTU_HAS_CORE_CXX11)
+  add_definitions(-std=c++0x)
+endif()
+
+list(APPEND AKANTU_LIBRARIES ${AKANTU_LIBRARY} ${AKANTU_EXTRA_LIBRARIES})
+list(APPEND AKANTU_INCLUDE_DIR ${AKANTU_EXTRA_INCLUDE_DIR})
+
+# set(AKANTU_VERSION @AKANTU_VERSION@)
+# @PACKAGE_INIT@
+# set_and_check(AKANTU_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
+# check_required_components(Akantu)
