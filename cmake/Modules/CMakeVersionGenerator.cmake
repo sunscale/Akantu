@@ -53,6 +53,7 @@ macro(define_project_version)
 	endif()
       endif()
     endif()
+<<<<<<< HEAD
   else()
     find_package(Subversion)
 
@@ -65,6 +66,18 @@ macro(define_project_version)
 	  )
       endif()
     endif()
+  # else()
+  #   find_package(Subversion)
+
+  #   if(SUBVERSION_FOUND)
+  #     subversion_wc_info(${PROJECT_SOURCE_DIR} ${_project} ERROR_QUIET)
+  #     if(${${_project}_WC_FOUND})
+  #       set(${_project}_BUILD_VERSION ${${_project}_WC_REVISION})
+  #       set(${_project}_VERSION
+  #         "${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}.${${_project}_BUILD_VERSION}"
+  #         )
+  #     endif()
+  #   endif()
   endif()
 
   if(NOT ${_project}_VERSION)
