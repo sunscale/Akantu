@@ -1,0 +1,33 @@
+% Some new commands
+\newcommand{\akantu}{{\texttt{\textbf{Akantu}}}\xspace}
+
+\newcommand{\examplesdir}{\texttt{examples}}
+
+\newcommand{\mybox}[2][fill=cppbg]{%
+  \tikz[baseline=-0.5ex] \node at (0,0) [#1,inner sep=2pt]{#2};}
+
+\newcommand{\code}[1]{\mybox{\texttt{#1}}}
+\newcommand{\shellcode}[1]{\mybox[fill=shellbg]{\texttt{#1}}}
+\newcommand{\note}[2][]{\textbf{Note#1: }\textit{#2}}
+\newcommand{\todo}[1]{~({\small\color{red}\textbf{TODO: }\textbf{#1}})}
+
+\renewcommand{\vec}[1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand{\mat}[1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand{\st}[1]{{\mathrm{#1}}}
+
+\newcommand{\eg}{\emph{e.g.},\xspace}
+\newcommand{\ie}{\emph{i.e.},\xspace}
+
+\newcommand{\realnum}{\mathbb{R}} %
+\newcommand{\intnum}{\mathbb{Z}}  % Requires:
+\newcommand{\natnum}{\mathbb{N}}  %    \usepackage{pxfonts}
+\newcommand{\compnum}{\mathbb{C}} %
+\newcommand{\ratnum}{\mathbb{Q}}  %
+
+\newcommand{\half}{\ensuremath{\tfrac{1}{2}}\xspace}
+\newcommand{\quart}{\ensuremath{\tfrac{1}{4}}\xspace}
+\newcommand{\third}{\ensuremath{\tfrac{1}{3}}\xspace}
+\newcommand{\twothird}{\ensuremath{\tfrac{2}{3}}\xspace}
+\newcommand{\sixth}{\ensuremath{\tfrac{1}{6}}\xspace}
+\newcommand{\eighth}{\ensuremath{\tfrac{1}{8}}\xspace}
+\newcommand{\invsqrtthree}{\ensuremath{\tfrac{1}{\sqrt{3}}}\xspace}

@@ -1,0 +1,11 @@
+material elastic [
+	 name = steel
+	 rho = 1e3     # density
+	 E   = 1.e3   # young's modulus
+]
+
+material cohesive_linear [
+	 name = cohesive
+	 G_cI = 100
+	 sigma_c = 100
+]

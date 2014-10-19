@@ -1,0 +1,7 @@
+material elastic [
+	 name = steel
+	 rho = 7500 # kg/m^3
+	 E   = 2e11 # GPa
+	 nu  = 0.
+	 finite_deformation = 1
+]

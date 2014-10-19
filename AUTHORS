@@ -1,0 +1,47 @@
+Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+
+Akantu is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Akantu is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+
+
+Authors :
+ - Nicolas Richart <nicolas.richart@epfl.ch>
+ - Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+ - Ramin Aghababaei <ramin.aghababaei@epfl.ch>
+ - Alejandro M. Aragón <alejandro.aragon@epfl.ch>
+ - Fabian Barras <fabian.barras@epfl.ch>
+ - Marion Estelle Chambart <mchambart@stucky.ch>
+ - Dana Christen <dana.christen@gmail.com>
+ - Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ - Lucas Frerot <lucas.frerot@epfl.ch>
+ - Sébastien Hartmann <sebastien.hartmann@epfl.ch>
+ - Jean-François Jerier <jean-francois.jerier@epfl.ch>
+ - Till Junge <till.junge@epfl.ch>
+ - David Simon Kammer <david.kammer@epfl.ch>
+ - Thomas Menouillard <tmenouillard@stucky.ch>
+ - Jean-François Molinari <jean-francois.molinari@epfl.ch>
+ - Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
+ - Mathilde Radiguet <mathilde.radiguet@epfl.ch>
+ - Srinivasa Babu Ramisetti <srinivasa.ramisetti@epfl.ch>
+ - Pedro Romero <pedro.romero@epfl.ch>
+ - Alodie Schneuwly <alodie.schneuwly@epfl.ch>
+ - Leonardo Snozzi <leonardo.snozzi@epfl.ch>
+ - Damien Spielmann <damien.spielmann@epfl.ch>
+ - Peter Spijker <peter.spijker@epfl.ch>
+ - Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
+ - Marco Vocialta <marco.vocialta@epfl.ch>
+ - Rui Wang <rui.wang@epfl.ch>
+ - Cyprien Wolff <cyprien.wolff@epfl.ch>
+ - Vladislav Yastrebov <vladislav.yastrebov@epfl.ch>
+ - Okan Yilmaz <okan.yilmaz@epfl.ch>

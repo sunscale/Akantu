@@ -1,0 +1,81 @@
+#!/bin/bash
+
+
+if [ $# -ne 3 ] 
+then
+    echo "Usage: ./generate_test <type> <dim> <mesh>"
+fi
+
+type=$1
+dim=$2
+mesh=$3
+
+out_file=test_integrate$type.cc
+if [ ! -f $out_file ]
+then
+    echo "Generating $out_file"
+    cp test_integrate_XXXX.cc $out_file
+else
+    echo "Regenerating $out_file"
+fi
+
+# modify header
+sed $out_file -i -e "s/\(\s\*\s@file\s*\).*/\1$out_file/"
+
+# modify element type
+sed $out_file -i -e "s/\(\s*ElementType\s*type\s*=\s*\).*;/\1$type;/"
+
+# modify dim
+sed $out_file -i -e "s/\(\s*UInt\s*dim\s*=\s*\).*;/\1$dim;/"
+
+# modify mesh file
+sed $out_file -i -e "s/\(\s*mesh_io.read(\"\).*\.msh\"/\1$mesh\"/"
+
+
+
+
+
+out_file=test_interpolate$type.cc
+if [ ! -f $out_file ]
+then
+    echo "Generating $out_file"
+    cp test_interpolate_XXXX.cc $out_file
+else
+    echo "Regenerating $out_file"
+fi
+
+# modify header
+sed $out_file -i -e "s/\(\s\*\s@file\s*\).*/\1$out_file/"
+
+# modify element type
+sed $out_file -i -e "s/\(\s*ElementType\s*type\s*=\s*\).*;/\1$type;/"
+
+# modify dim
+sed $out_file -i -e "s/\(\s*UInt\s*dim\s*=\s*\).*;/\1$dim;/"
+
+# modify dim
+sed $out_file -i -e "s/\(\s*mesh_io.read(\"\).*\.msh\"/\1$mesh\"/"
+
+
+
+out_file=test_gradient$type.cc
+if [ ! -f $out_file ]
+then
+    echo "Generating $out_file"
+    cp test_gradient_XXXX.cc $out_file
+else
+    echo "Regenerating $out_file"
+fi
+
+# modify header
+sed $out_file -i -e "s/\(\s\*\s@file\s*\).*/\1$out_file/"
+
+# modify element type
+sed $out_file -i -e "s/\(\s*ElementType\s*type\s*=\s*\).*;/\1$type;/"
+
+# modify dim
+sed $out_file -i -e "s/\(\s*UInt\s*dim\s*=\s*\).*;/\1$dim;/"
+
+# modify dim
+sed $out_file -i -e "s/\(\s*mesh_io.read(\"\).*\.msh\"/\1$mesh\"/"
+

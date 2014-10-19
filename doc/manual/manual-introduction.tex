@@ -1,0 +1,36 @@
+\chapter{Introduction}
+
+\akantu means ``little element'' in Kinyarwanda, a Bantu
+language. From now on, it is also an open-source object-oriented
+\emph{Finite-Element} library with the ambition to be generic and
+efficient.  \akantu is developed within the LSMS (Computational Solid
+Mechanics Laboratory, \url{lsms.  epfl.ch}) at the Ecole Polytechnique
+Federale of Lausanne, Switzerland. The open-source philosophy is
+important for any scientific software project evolution. The
+collaboration permitted by shared codes enforces sanity when users
+(and not only developers) can scrutinize (and possibly criticize) the
+implementation details.
+
+\akantu was born with the vision to associate genericity, robustness
+and efficiency while benefiting from the open-source
+visibility. Genericity is necessary to allow the easy exploration of
+mathematical formulations through algorithmic ideas. Robustness and
+reliability is naturally expected from any simulation software, even
+more in the context of parallel computations.  In order to achieve
+these goals, we made noticeable choices in the architecture of
+\akantu. First we decided to use the object-oriented paradigm through
+C++. Then, in order to prevent extra cost associated to virtual
+function calls, we designed the library as a hybrid architecture with
+objects at high level layers and vectorization at low level
+layers. Thus, \akantu benefits from inheritance and polymorphism
+mechanisms without the counterpart of having virtual calls within
+critical loops.  This coding philosophy, which was demonstrated to be
+highly efficient, is innovative in the field of
+\textit{Finite-Element} software.
+
+This document is appropriate for researchers and engineers willing to
+use \akantu in order to perform a finite-element calculation for solid
+mechanics, structural mechanics, contact mechanics or heat
+transfer. The solid mechanics solver, which is the most complete and
+functional part of \akantu, is presented in details in the remainder
+of this document.

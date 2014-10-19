@@ -1,0 +1,46 @@
+#name : class ... { ... }
+# --
+class ${1:`(yas/replace-all "_" "" (capitalize 
+      			       	      (file-name-nondirectory
+                                          (file-name-sans-extension (buffer-file-name)))))`} {
+  /* ------------------------------------------------------------------------ */
+  /* Constructors/Destructors                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+
+  ${1:$(yas/substr text "[^: ]*")}($2);
+  virtual ~${1:$(yas/substr text "[^: ]*")}();
+
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
+
+  /// function to print the contain of the class
+  virtual void printself(std::ostream & stream, int indent = 0) const;
+
+  /* ------------------------------------------------------------------------ */
+  /* Accessors                                                                */
+  /* ------------------------------------------------------------------------ */
+public:
+
+  /* ------------------------------------------------------------------------ */
+  /* Class Members                                                            */
+  /* ------------------------------------------------------------------------ */
+private:
+
+};
+
+
+/* -------------------------------------------------------------------------- */
+/* inline functions                                                           */
+/* -------------------------------------------------------------------------- */
+
+#include "${3:`(file-name-nondirectory (file-name-sans-extension (buffer-file-name)))`_inline_impl.cc}"
+
+/// standard output stream operator
+inline std::ostream & operator <<(std::ostream & stream, const ${1:$(yas/substr text "[^: ]*")} & _this)
+{
+  _this.printself(stream);
+  return stream;
+}

@@ -1,0 +1,312 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                              %%
+%%  LaTeX STYLE SHEET for AKANTU DOCUMENTATION  %%
+%%                                              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Geometry
+\usepackage{a4wide}
+\usepackage{geometry}
+\geometry{
+  pdftex=true,
+  twoside=true,
+  margin=20mm,
+  bottom=20mm,
+  top=20mm,
+  bindingoffset=5.5mm
+}
+
+% Font encoding
+\usepackage[T1]{fontenc}
+\usepackage{palatino}
+
+% Line spacing
+\linespread{1.05}\selectfont
+
+% Allow spaces to be added at the end of macro
+\usepackage{xspace}
+
+% Mathematics (including correct font encoding, after amsmath)
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{pxfonts}
+\setlength\mathindent{2em}
+
+% Some unit stuff
+\usepackage{siunitx}
+
+% Easy tables
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{rotating}       % For sideways tables
+\usepackage{multirow}       % For larger cells
+
+% A special environment for element tables
+\newcommand\elemline{}%{\noalign{\smallskip}\hline\noalign{\smallskip}}
+\newcommand\elemcooroned{\ensuremath{\left(\xi\right)}}
+\newcommand\elemcoortwod{\ensuremath{\left(\xi\;,\;\eta\right)}}
+\newcommand\elemcoorthreed{\ensuremath{\left(\xi\;,\;\eta\;,\;\zeta\right)}}
+\newcommand\elemdshapeoned{\ensuremath{\left(\partial N_i/\partial\xi\right)}}
+\newcommand\elemdshapetwod{\ensuremath{\left(\partial N_i/\partial\xi\;,\;\partial N_i/\partial\eta\right)}}
+\newcommand\elemdshapethreed{\ensuremath{\left(\partial N_i/\partial\xi\;,\;\partial N_i/\partial\eta\;,\;\partial N_i/\partial\zeta\right)}}
+\newcommand\inelemone[1]{\ensuremath{#1}}
+%\newcommand\inelemtwo[2]{\ensuremath{\begin{pmatrix} {\; #1} & \!,\! & {#2 \;} \end{pmatrix}}}
+%\newcommand\inelemthree[3]{\ensuremath{\begin{pmatrix} {\; #1} & \!,\! & {#2} & \!,\! & {#3 \;} \end{pmatrix}}}
+\newcommand\inelemtwo[2]{\ensuremath{\left( {\; #1} \; , \; {#2 \;} \right)}}
+\newcommand\inelemthree[3]{\ensuremath{\left( {\; #1} \; , \; {#2} \; , \; {#3 \;} \right)}}
+\newcommand\inelemthreecolumn[3]{\ensuremath{\begin{array}{c}( {\; #1} \; ,\\{#2} \; ,\\{#3 \;} )\end{array}}}
+\newcommand\inquadone[1]{\ensuremath{#1}}
+\newcommand\inquadtwo[2]{\ensuremath{\left(\, #1 \, , \, #2 \,\right)}}
+\newcommand\inquadthree[3]{\ensuremath{\left(\, #1 \, , \, #2 \, , \, #3 \,\right)}}
+%\newcommand\quada{\tfrac{1}{20}\left(5-\sqrt{5}\right)}
+%\newcommand\quadb{\tfrac{1}{20}\left(5+3\sqrt{5}\right)}
+\newcommand\quada{\tfrac{\left(5-\sqrt{5}\right)}{20}}
+\newcommand\quadb{\tfrac{\left(5+3\sqrt{5}\right)}{20}}
+\newenvironment{Element}[1]
+  {%\begin{table*}[!htbp]
+    \footnotesize
+   \ifthenelse{\equal{#1}{1D}}{\renewcommand{\arraystretch}{1.50}}{}
+   \ifthenelse{\equal{#1}{2D}}{\renewcommand{\arraystretch}{1.60}}{}
+   \ifthenelse{\equal{#1}{3D}}{\renewcommand{\arraystretch}{1.70}}{}
+   \textbf{{\normalsize Element properties}}\\%\vspace*{0.5\baselineskip}
+   \begin{tabular}{cccc}\\[-2ex]
+     \toprule
+     % \multicolumn{4}{l}{\textbf{{\normalsize Element properties}}} \\
+     Node ($i$) & Coord.
+     \ifthenelse{\equal{#1}{1D}}{\elemcooroned}{}
+     \ifthenelse{\equal{#1}{2D}}{\elemcoortwod}{}
+     \ifthenelse{\equal{#1}{3D}}{\elemcoorthreed}{}
+     & Shape function ($N_{i}$)
+     & {Derivative
+       \ifthenelse{\equal{#1}{1D}}{\elemdshapeoned}{}
+       \ifthenelse{\equal{#1}{2D}}{\elemdshapetwod}{}
+       \ifthenelse{\equal{#1}{3D}}{\elemdshapethreed}{}
+     }\\
+     \midrule
+     \elemline
+   }
+   {\bottomrule
+   \end{tabular}%\end{table*}
+ }
+\newenvironment{QuadPoints}[1]
+  {\vspace*{\baselineskip}
+   %\begin{table*}[!htbp]
+    \footnotesize
+   \renewcommand{\arraystretch}{1.50}
+   \noindent\textbf{{\normalsize Gaussian quadrature points}}\newline%\vspace*{0.5\baselineskip}
+   \begin{tabular}{#1}\\[-2ex]
+     \toprule
+  }
+  {\bottomrule\end{tabular}}%\end{table*}}
+
+%\usepackage{xparse}
+
+\newenvironment{MaterialDesc}[2]{
+\label{#2-app}
+  Keyword: \code{#1}\par
+  \noindent Description here: \ref{#2}\par
+  \noindent Parameters:\par
+  \vspace*{-.4cm}
+  \begin{itemize}
+    \setlength{\topsep}{0ex}%
+    \setlength{\parsep}{0cm}%
+    \setlength{\itemsep}{0cm}%
+    \setlength{\parskip}{0cm}%
+  }{\end{itemize}}
+
+\newcommand{\matparam}[3]{\item \code{#1}: (\emph{#2}) #3}
+\newcommand{\matinherit}[1]{\usebox{#1}}
+\newcommand{\matlabel}[1]{\label{#1}\xspace(\ref{#1-app})}
+% Nice coloring
+\usepackage[dvipsnames,usenames,table]{xcolor}
+\definecolor{RED}{rgb}{1,0,0}
+\definecolor{cppbg}{HTML}{EBF2F2}
+\definecolor{shellbg}{HTML}{F5EDE4}
+\definecolor{commentcolor}{HTML}{101280}
+
+% Allow for the use of listings
+\usepackage{listings}
+
+% Create an index
+\usepackage{makeidx}
+
+% Figure handling
+\usepackage{graphics}
+\usepackage{epsfig}
+\usepackage[lofdepth,lotdepth]{subfig}
+\usepackage{tikz}
+\usetikzlibrary{decorations}
+\usepackage{wrapfig}
+
+\renewcommand{\floatpagefraction}{.6}   % default: .5
+\renewcommand\topfraction{0.9}          % 90% of page top can be a float (Standard 0.7)
+\renewcommand\bottomfraction{0.1}       % 10% of page bottom can be a float (Standard 0.3)
+\renewcommand\textfraction{0.1}         % only 10% of page must to be text (Standard 0.2)
+
+% Removes parenthese around subfig number
+\renewcommand*{\thesubfigure}{\alph{subfigure}}
+
+% Create a new list style for C++
+\lstdefinestyle{C++}{
+  language=C++, % the language of the code
+  basicstyle=\small\ttfamily, % Without beramono, we'd get cmtt, the teletype font.
+  commentstyle=\color{commentcolor}\itshape,
+  keywordstyle=\color{DarkOrchid}\bfseries,
+  % fontadjust,
+  % numbers=left, % where to put the line-numbers
+  % numberstyle=\tiny, % the size of the fonts that are used for the line-numbers
+  % stepnumber=2, % the step between two  line-numbers.  If it's 1, each line will
+  % be numbered
+  % numbersep=5pt, % how far the line-numbers are from the code
+  % showspaces=false, % show spaces adding particular underscores
+  showstringspaces=false, % underline spaces within strings
+  % showtabs=false, % show tabs within strings adding particular underscores
+  % frame=llines, % adds a frame around the code
+  % frame=tb,
+  tabsize=2, % sets default tabsize to 2 spaces
+  captionpos=b, % sets the caption-position to bottom
+  breaklines=true, % sets automatic line breaking
+  breakatwhitespace=false,   % sets if  automatic breaks  should only  happen at
+  % whitespace
+  % title=\lstname, % show the filename of files included with \lstinputlisting;
+  % also try caption instead of title
+  % escapeinside={\%*}{*)}, % if you want to add a comment within your code
+  xleftmargin=1cm,
+  xrightmargin=1cm,
+  mathescape=true,
+  escapechar=\%,
+  morekeywords={Real, UInt, Int},
+  columns=flexible,
+  keepspaces=true,
+  backgroundcolor=\color{cppbg}
+}
+
+% Create new list style for the shell
+\lstdefinestyle{shell}{
+  language=bash, % the language of the code
+  basicstyle=\scriptsize\ttfamily, % Without beramono, we'd get cmtt, the teletype font.
+  showstringspaces=false, % underline spaces within strings
+  tabsize=2, % sets default tabsize to 2 spaces
+  captionpos=b, % sets the caption-position to bottom
+  breaklines=true, % sets automatic line breaking
+  breakatwhitespace=false,
+  xleftmargin=1cm,
+  xrightmargin=1cm,
+  escapechar=\%,
+  morekeywords={mkdir, make, ccmake, cmake},
+  columns=flexible,
+  keepspaces=true,
+  backgroundcolor=\color{shellbg}
+}
+
+% Set some derived listing environments
+\lstnewenvironment{cpp}{\lstset{style=C++}}{}
+\lstnewenvironment{command}{\lstset{style=shell}}{}
+
+% Make sure outputspace is white
+\makeatletter
+\def\lst@outputspace{{\ifx\lst@bkgcolor\empty\color{white}\else\lst@bkgcolor\fi\lst@visiblespace}}
+\makeatother
+
+% Renow a label in the itemized lists
+\renewcommand{\labelitemi}{$\mathbf{\circ}$}
+
+% Don't care so much about overfull h-boxes
+\sloppy
+
+% Penalty adjusments
+%\widowpenalty=10000  % Single lines/word on beginning of page
+%\clubpenalty=10000   % Single lines/word at end of page
+%\hyphenpenalty=2000 % Hyphenate words
+%\tolerance=250      % To adjust the hyphenation of words, increase the tolerance to discourage hyphenation
+                    % the higher the value, the more ugly the gaps between words
+                    % default \tolerance=200
+%\hfuzz=10000pt      % threshold when an overfull hbox is reported, default \hfuzz=0.1pt
+%\vfuzz=10000pt      % threshold to report an overfull vbox, default \vfuzz=0.1pt
+%\hbadness=10000     % threshold to report an underfull \hbox
+%\vbadness=10000     % threshold to report an underfull  \vbox protokolliert wird.
+\emergencystretch=0pt  % causes a third attempt to fix bad paragraphs and defines a maximum limit to stretch them
+
+% Insert an empty or a blank page
+\newcommand{\insertemptypage}{\newpage\hbox{}\newpage}
+\newcommand{\insertblankpage}{\newpage\thispagestyle{empty}\hbox{}\newpage}
+
+% No page number on an empty page
+\let\origdoublepage\cleardoublepage
+\newcommand{\clearemptydoublepage}{%
+  \clearpage
+  {\thispagestyle{empty}\origdoublepage}%
+}
+\let\cleardoublepage\clearemptydoublepage
+
+% A new ruler for in chapters
+\newcommand\InChapterRule{\addvspace{\baselineskip}\rule{0.3\linewidth}{0.25pt}}
+
+% New footnote style
+%\def\@fnsymbol#1{\ifcase#1\or *\or \dagger\or \ddagger\or \mathchar "278\or \mathchar "27B\or \|\or **\or \dagger\dagger \or \ddagger\ddagger \else\@ctrerr\fi\relax}
+\def\@fnsymbol#1{*\xspace\relax}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}} % Symbols rather than numbers
+\def\footnoterule{\vspace*{0.5\baselineskip}\InChapterRule\vspace*{0.25\baselineskip}}
+
+% Improved look of the Table of Contents
+\usepackage[nottoc,notbib]{tocbibind}
+\usepackage[dotinlabels]{titletoc}
+\titlecontents{chapter}[1.4pc]
+  {\addvspace{0.6pc}\large\bfseries\filright}
+  {\contentslabel[\thecontentslabel.]{1.4pc}}
+  {\hspace{-1.4pc}}
+  {\hfill\contentspage}
+  [\addvspace{2pt}]
+\titlecontents{section}[3.4pc]
+  {\filright}
+  {\contentslabel[\thecontentslabel]{2pc}}
+  {\hspace{-2pc}}
+  {\titlerule*[6pt]{.}\contentspage}
+  []
+\titlecontents{subsection}[5.0pc]
+  {\filright}
+  {\contentslabel[\thecontentslabel]{2.4pc}}
+  {}
+  {\titlerule*[6pt]{.}\contentspage}
+  []
+\setcounter{tocdepth}{2}
+\newcommand\addspaceintoc{\addtocontents{toc}{\protect\addvspace{20pt}}}
+
+% Change the appearance of the bibliography
+\bibliographystyle{manual-bibliographystyle}
+\renewcommand\bibname{References}
+\usepackage{cite} % To sort citations: [2,10-14]
+\let\oldthebibliography=\thebibliography
+\let\endoldthebibliography=\endthebibliography
+\renewenvironment{thebibliography}[1]
+{ \begin{oldthebibliography}{#1}
+%    \small
+    \addcontentsline{toc}{chapter}{\bibname}
+    \setlength{\labelsep}{2mm}
+    \setlength{\parskip}{0\baselineskip}
+    \setlength{\itemsep}{0.24\baselineskip}
+}
+{ \end{oldthebibliography} }
+
+% Hyperref
+\usepackage{url}
+\usepackage[pdftex,
+  bookmarks=true,
+  bookmarksnumbered=true,
+%  linkbordercolor={1 1 1},
+%  pdfborder={0 0 0},
+  pdfpagemode=UseOutlines
+]{hyperref}
+\hypersetup{
+  pdfauthor={Computational Solid Mechanics Laboratory - EPFL},
+  pdftitle={Akantu User's Guide},
+  pdfsubject={Open Source Finite Element Code - Akantu}
+}
+
+\newenvironment{AkantuPackage}[2]{%
+  \paragraph*{#1}\label{#2}
+}{}
+\newenvironment{AkantuPackageDependencies}{\emph{Dependencies}: }{}
+
+\newcommand\AkantuPackageNameWithLabel[3]{\textit{\index{Packages!#1}\hyperref[#2]{#1}}\xspace}
+\newcommand\akantuManualAppendix[1]{}

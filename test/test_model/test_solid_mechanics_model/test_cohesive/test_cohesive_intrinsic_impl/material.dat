@@ -1,0 +1,12 @@
+material elastic [
+	 name = steel
+	 rho = 1   # density
+	 E   = 6   # young's modulus
+	 nu  = 0.0 # poisson's ratio
+]
+
+material cohesive_exponential [
+	 name = cohesive
+	 sigma_c = 1
+	 delta_c = 0.5
+]

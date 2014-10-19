@@ -1,0 +1,14 @@
+material neohookean [
+	 name = Top_body
+	 E   = 1
+	 nu  = 0.3
+	 finite_deformation = 1
+]
+
+
+material neohookean [
+	 name = Bottom_body
+	 E   = 10000
+	 nu  = 0.3
+	 finite_deformation = 1
+]

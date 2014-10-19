@@ -1,0 +1,47 @@
+\documentclass[openright,a4paper,11pt,fleqn]{manual}
+\usepackage{manual}
+\usepackage{manual-macros}
+\newcommand{\version}{}
+\graphicspath{ {./figures/} }
+%%% For references \todo check the coherency
+%% section 3.5 -> Section 3.5
+%% figure 3.5 -> Figure 3.5
+%% equation 3.5 -> Equation (3.5)
+
+% Title pages and Table of Contents (includes \begin{document})
+\input{manual-titlepages}
+
+% Introduction chapter
+\input{manual-introduction}
+
+% The planning to write the documentation
+%\input{manual-planning}
+
+% The documentation chapter (split in parts)
+\input{manual-gettingstarted}
+\input{manual-elements}
+
+%\IfFileExists{manual-lumping.tex}{}{\input{manual-lumping}}
+
+\input{manual-solidmechanicsmodel}
+
+\IfFileExists{manual-structuralmechanicsmodel.tex}{\input{manual-structuralmechanicsmodel}}{}
+
+\IfFileExists{manual-heattransfermodel.tex}{\input{manual-heattransfermodel}}{}
+
+\input{manual-io}
+
+\IfFileExists{manual-parallel.tex}{\input{manual-parallel}}{}
+
+\IfFileExists{manual-contact.tex}{\input{manual-contact}}{}
+
+
+% The appendices
+\appendix
+\input{manual-appendix-elements}
+\input{manual-appendix-materials}
+
+\input{manual-appendix-packages}
+
+% The backmatter material (index/bibliography, included \end{document})
+\input{manual-backmatter}

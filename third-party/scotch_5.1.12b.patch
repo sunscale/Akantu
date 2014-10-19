@@ -1,0 +1,193 @@
+This patch change the makefiles of scotch to build shared libraries (It is based on the on from debian):
+Index: scotch/src/Makefile
+===================================================================
+--- scotch.orig/src/Makefile
++++ scotch/src/Makefile
+@@ -102,10 +102,10 @@
+ 					(cd esmumps ;        $(MAKE)                                                                ptscotch && $(MAKE) ptinstall)
+ 
+ install				:	required	$(bindir)	$(includedir)	$(libdir)	$(mandir)/man1
+-					-$(CP) -f ../bin/[agm]*$(EXE) $(bindir)
+-					-$(CP) -f ../include/*scotch*.h $(includedir)
+-					-$(CP) -f ../lib/*scotch*$(LIB) $(libdir)
+-					-$(CP) -Rf ../man/* $(mandir)
++					-$(CP) -af  ../include/* $(includedir)
++					-$(CP) -af  ../bin/*     $(bindir)
++					-$(CP) -af  ../lib/*     $(libdir)
++					-$(CP) -af ../man/*     $(mandir)
+ 
+ clean				:	required
+ 					(cd libscotch ;      $(MAKE) clean)
+Index: scotch/src/libscotchmetis/Makefile
+===================================================================
+--- scotch.orig/src/libscotchmetis/Makefile
++++ scotch/src/libscotchmetis/Makefile
+@@ -61,15 +61,15 @@
+ 					libptscotchparmetis$(LIB)
+ 
+ install				:	scotch
+-					-$(CP) metis.h $(includedir)
+-					-$(CP) libscotchmetis$(LIB) $(libdir)
++					$(CP) -a metis.h $(includedir)
++					$(CP) -a libscotchmetis$(LIB) libscotchmetis*$(SHLIB) $(libdir)
+ 
+ ptinstall			:	ptscotch
+-					-$(CP) parmetis.h $(includedir)
+-					-$(CP) libptscotchparmetis$(LIB) $(libdir)
++					$(CP) -a parmetis.h $(includedir)
++					$(CP) -a libptscotchparmetis$(LIB) libptscotchparmetis*$(SHLIB) $(libdir)
+ 
+ clean				:
+-					-$(RM) *~ *$(OBJ) lib*$(LIB)
++					-$(RM) *~ *$(OBJ) lib*$(LIB) lib*$(SHLIB)
+ 
+ realclean			:	clean
+ 
+@@ -129,6 +129,7 @@
+ 					parmetis_dgraph_order_f$(OBJ)		\
+ 					parmetis_dgraph_part$(OBJ)		\
+ 					parmetis_dgraph_part_f$(OBJ)
++					$(CC) -shared  $^ -L../libscotch -lptscotch -lscotch -o libptscotchparmetis$(SHLIB)
+ 					$(AR) $(ARFLAGS) $(@) $(^)
+ 					-$(RANLIB) $(@)
+ 
+@@ -136,5 +138,6 @@
+ 					metis_graph_order_f$(OBJ)		\
+ 					metis_graph_part$(OBJ)			\
+ 					metis_graph_part_f$(OBJ)
++					$(CC) -shared $^ -L../libscotch -lscotch -o libscotchmetis$(SHLIB)
+ 					$(AR) $(ARFLAGS) $(@) $(^)
+ 					-$(RANLIB) $(@)
+Index: scotch/src/libscotch/Makefile
+===================================================================
+--- scotch.orig/src/libscotch/Makefile
++++ scotch/src/libscotch/Makefile
+@@ -69,16 +69,16 @@
+ 					libptscotcherrexit$(LIB)
+ 
+ install				:
+-					-$(CP) scotch.h scotchf.h $(includedir)
+-					-$(CP) libscotch$(LIB) libscotcherr*$(LIB) $(libdir)
++					$(CP) -a scotch.h scotchf.h $(includedir)
++					$(CP) -a libscotch*$(LIB) libscotch*$(SHLIB) $(libdir)
+ 
+ ptinstall			:
+-					-$(CP) scotch.h $(includedir)/ptscotch.h
+-					-$(CP) scotchf.h $(includedir)/ptscotchf.h
+-					-$(CP) libptscotch*$(LIB) $(libdir)
++					$(CP) -a scotch.h $(includedir)/ptscotch.h
++					$(CP) -a scotchf.h $(includedir)/ptscotchf.h
++					$(CP) -a libptscotch*$(LIB) libptscotch*$(SHLIB) $(libdir)
+ 
+ clean				:
+-					-$(RM) *~ *$(OBJ) lib*$(LIB) parser_yy.c parser_ly.h parser_ll.c *scotch.h *scotchf.h y.output dummysizes$(EXE)
++					-$(RM) *~ *$(OBJ) lib*.a lib*$(SHLIB) lib*$(LIB) parser_yy.c parser_ly.h parser_ll.c *scotch.h *scotchf.h y.output dummysizes$(EXE)
+ 
+ realclean			:	clean
+ 
+@@ -2553,26 +2553,32 @@
+ 					libraryf.h
+ 					./dummysizes$(EXE) libraryf.h scotchf.h
+ 
+-libptscotch$(LIB)		:	$(LIBPTSCOTCHDEPS) $(LIBSCOTCHDEPS)
+-					$(AR) $(ARFLAGS) $(@) $(?)
++libptscotch$(LIB)		:	$(LIBPTSCOTCHDEPS) $(LIBSCOTCHDEPS) libptscotcherr$(LIB)
++					$(CC) -shared $(LIBPTSCOTCHDEPS) $(LIBSCOTCHDEPS) -L. -lptscotcherr -lz -lpthread -lm -o libptscotch$(SHLIB)
++					$(AR) $(ARFLAGS) $(@) $(LIBPTSCOTCHDEPS) $(LIBSCOTCHDEPS)
+ 					-$(RANLIB) $(@)
+ 
+-libscotch$(LIB)			:	$(LIBSCOTCHDEPS)
+-					$(AR) $(ARFLAGS) $(@) $(?)
++libscotch$(LIB)			:	$(LIBSCOTCHDEPS) libscotcherr$(LIB)
++					$(CC) -shared $(LIBSCOTCHDEPS) -L. -lscotcherr -lz -lpthread -lm -o libscotch$(SHLIB)
++					$(AR) $(ARFLAGS) $(@) $(LIBSCOTCHDEPS)
+ 					-$(RANLIB) $(@)
+ 
+ libptscotcherr$(LIB)		:	library_error$(OBJ)
++					$(CC) -shared $^ -o libptscotcherr$(SHLIB)
+ 					$(AR) $(ARFLAGS) $(@) $(?)
+ 					-$(RANLIB) $(@)
+ 
+ libptscotcherrexit$(LIB)	:	library_error_exit$(OBJ)
++					$(CC) -shared $^ -o libptscotcherrexit$(SHLIB)
+ 					$(AR) $(ARFLAGS) $(@) $(?)
+ 					-$(RANLIB) $(@)
+ 
+ libscotcherr$(LIB)		:	library_error$(OBJ)
++					$(CC) -shared $^ -o libscotcherr$(SHLIB)
+ 					$(AR) $(ARFLAGS) $(@) $(?)
+ 					-$(RANLIB) $(@)
+ 
+ libscotcherrexit$(LIB)		:	library_error_exit$(OBJ)
++					$(CC) -shared $^ -o libscotcherrexit$(SHLIB)
+ 					$(AR) $(ARFLAGS) $(@) $(?)
+ 					-$(RANLIB) $(@)
+Index: scotch/src/esmumps/Makefile
+===================================================================
+--- scotch.orig/src/esmumps/Makefile
++++ scotch/src/esmumps/Makefile
+@@ -44,7 +44,7 @@
+ 				$(CC) $(CFLAGS) $(CLIBFLAGS) -I$(includedir) -c $(<) -o $(@)
+ 
+ %$(EXE)	:	%.c
+-		 		$(CC) $(CFLAGS) -I$(includedir) $(<) -o $(@) -L$(libdir) $(LDFLAGS) -L. -l$(ESMUMPSLIB) -l$(SCOTCHLIB) -l$(SCOTCHLIB)errexit
++		 		$(CC) $(CFLAGS) -I$(includedir) $(<) -o $(@) -L$(libdir) -L. -l$(ESMUMPSLIB) -l$(SCOTCHLIB) -l$(SCOTCHLIB)errexit $(LDFLAGS) -lscotch
+ 
+ ##
+ ##  Project rules.
+@@ -59,19 +59,21 @@
+ 
+ ptscotch			:	clean
+ 					$(MAKE) CFLAGS="$(CFLAGS) -DSCOTCH_PTSCOTCH" CC=$(CCP) SCOTCHLIB=ptscotch ESMUMPSLIB=ptesmumps	\
+-					libesmumps$(LIB)										\
++					libptesmumps$(LIB)										\
+ 					main_esmumps$(EXE)
+ 
+ install				:
+ 					-$(CP) esmumps.h $(includedir)
+-					-$(CP) libesmumps$(LIB) $(libdir)
++					-$(CP) -a libesmumps* $(libdir)
++					-$(CP) -a main_esmumps$(EXE) $(bindir)/scotch_esmumps
+ 
+ ptinstall			:
+ 					-$(CP) esmumps.h $(includedir)
+-					-$(CP) libptesmumps$(LIB) $(libdir)
++					-$(CP) -a libptesmumps* $(libdir)
++					-$(CP) -a main_esmumps$(EXE) $(bindir)/ptscotch_esmumps
+ 
+ clean				:
+-					-$(RM) *~ common.h *$(OBJ) lib*$(LIB) main_esmumps$(EXE)
++					-$(RM) *~ common.h *$(OBJ) lib*$(LIB) lib*$(SHLIB) main_esmumps$(EXE)
+ 
+ realclean			:	clean
+ 
+@@ -142,7 +144,7 @@
+ 					common.h				\
+ 					esmumps.h
+ 
+-libesmumps$(LIB)		:	graph_graph$(OBJ)			\
++lib$(ESMUMPSLIB)$(LIB)		: 	graph_graph$(OBJ)			\
+ 					order$(OBJ)				\
+ 					order_scotch_graph$(OBJ)		\
+ 					dof$(OBJ)				\
+@@ -151,6 +153,7 @@
+ 					esmumps$(OBJ)				\
+ 					esmumps_f$(OBJ)				\
+ 					esmumps_strats$(OBJ)
++					$(CC) -shared $^ -L../libscotch -lscotch -lscotcherr -o lib$(ESMUMPSLIB)$(SHLIB)
+ 					$(AR) $(ARFLAGS) lib$(ESMUMPSLIB)$(LIB) $(?)
+ 					-$(RANLIB) lib$(ESMUMPSLIB)$(LIB)
+ 
+Index: scotch/src/scotch/Makefile
+===================================================================
+--- scotch.orig/src/scotch/Makefile
++++ scotch/src/scotch/Makefile
+@@ -47,7 +47,7 @@
+ 				$(CC) $(CFLAGS) -I$(includedir) -I../libscotch -c $(<) -o $(@)
+ 
+ %$(EXE)	:	%.c
+-		 		$(CC) $(CFLAGS) -I$(includedir) -I../libscotch $(<) -o $(@) -L$(libdir) -l$(SCOTCHLIB) -l$(SCOTCHLIB)errexit $(LDFLAGS)
++		 		$(CC) $(CFLAGS) -I$(includedir) -I../libscotch $(<) -o $(@) -L$(libdir) -l$(SCOTCHLIB) -l$(SCOTCHLIB)errexit $(LDFLAGS) -lscotch
+ 
+ ##
+ ##  Project rules.

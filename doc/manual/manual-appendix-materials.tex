@@ -1,0 +1,110 @@
+\chapter{Material parameters}
+\label{app:material-parameters}
+
+\section{Linear elastic isotropic}
+
+\begin{MaterialDesc}{elastic}{ssect:smm:linear-elastic-isotropic}
+\matparam{rho}{Real}{Density}
+\matparam{E}{Real}{Young's modulus}
+\matparam{nu}{Real}{Poisson's ratio}
+\matparam{Plane\_Stress}{bool}{Plane stress simplification (only 2D problems)}
+\end{MaterialDesc}
+
+\section{Linear elastic anisotropic}
+\begin{MaterialDesc}{elastic\_anisotropic}{ssect:smm:linear-elastic-anisotropic}
+\matparam{rho}{Real}{Density}
+\matparam{n1}{Vector<Real>}{Direction of the main material axis}
+\matparam{n2}{Vector<Real>}{Direction of the second material axis (if
+  applicable)}
+\matparam{n3}{Vector<Real>}{Direction of the third material axis (if
+  applicable)}
+\matparam{C..}{Real}{Coefficient ij of the material tensor C (all the 36 values
+  in Voigt notation can be entered .)}
+\end{MaterialDesc}
+
+\section{Linear elastic orthotropic}
+\begin{MaterialDesc}{elastic\_orthotropic}{ssect:smm:linear-elastic-orthotropic}
+\matparam{rho}{Real}{Density}
+\matparam{n1}{Vector<Real>}{Direction of the main material axis}
+\matparam{n2}{Vector<Real>}{Direction of the second material axis (if
+  applicable)}
+\matparam{n3}{Vector<Real>}{Direction of the third material axis (if
+  applicable)}
+\matparam{E1  }{Real}{Young's modulus (n1)}
+\matparam{E2  }{Real}{Young's modulus (n2)}
+\matparam{E3  }{Real}{Young's modulus (n3)}
+\matparam{nu12}{Real}{Poisson's ratio (12)}
+\matparam{nu13}{Real}{Poisson's ratio (13)}
+\matparam{nu23}{Real}{Poisson's ratio (23)}
+\matparam{G12 }{Real}{Shear modulus (12)}
+\matparam{G13 }{Real}{Shear modulus (13)}
+\matparam{G23 }{Real}{Shear modulus (23)}
+\end{MaterialDesc}
+
+
+\section{Neohookean (finite strains)}
+
+\begin{MaterialDesc}{neohookean}{ssect:smm:cl:neohookean}
+\matparam{rho}{Real}{Density}
+\matparam{E}{Real}{Young's modulus}
+\matparam{nu}{Real}{Poisson's ratio}
+\matparam{Plane\_Stress}{bool}{Plane stress simplification (only 2D problems)}
+\end{MaterialDesc}
+
+\section{Standard linear solid}
+
+\begin{MaterialDesc}{sls\_deviatoric}{ssect:smm:cl:sls}
+\matparam{rho}{Real}{Density}
+\matparam{E}{Real}{Young's modulus}
+\matparam{nu}{Real}{Poisson's ratio}
+\matparam{Plane\_Stress}{bool}{Plane stress simplification (only 2D problems)}
+\matparam{Eta}{Real}{Viscosity}
+\matparam{Ev}{Real}{Stiffness of the viscous element}
+\end{MaterialDesc}
+
+\section{Elasto-plastic linear isotropic hardening}
+
+\begin{MaterialDesc}{plastic\_linear\_isotropic\_hardening}{ssect:smm:cl:plastic}
+\matparam{rho}{Real}{Density}
+\matparam{E}{Real}{Young's modulus}
+\matparam{nu}{Real}{Poisson's ratio}
+\matparam{h}{Real}{Hardening modulus}
+\matparam{sigma\_y}{Real}{Yielding stress}
+\end{MaterialDesc}
+
+\section{Damage: Marigo}
+
+\begin{MaterialDesc}{marigo}{ssect:smm:cl:damage-marigo}
+\matparam{rho}{Real}{Density}
+\matparam{E}{Real}{Young's modulus}
+\matparam{nu}{Real}{Poisson's ratio}
+\matparam{Plane\_Stress}{bool}{Plane stress simplification (only 2D problems)}
+\matparam{Yd}{Random}{Rupture criterion}
+\matparam{S}{Real}{Damage Energy}
+\end{MaterialDesc}
+
+
+
+\section{Damage: Mazars}
+
+\begin{MaterialDesc}{mazars}{ssect:smm:cl:damage-mazars}
+\matparam{rho}{Real}{Density}
+\matparam{E}{Real}{Young's modulus}
+\matparam{nu}{Real}{Poisson's ratio}
+\matparam{At}{Real}{Traction post-peak asymptotic value}
+\matparam{Bt}{Real}{Traction decay shape}
+\matparam{Ac}{Real}{Compression post-peak asymptotic value}
+\matparam{Bc}{Real}{Compression decay shape}
+\matparam{K0}{Real}{Damage threshold}
+\matparam{beta}{Real}{Shear parameter}
+\end{MaterialDesc}
+
+\IfFileExists{manual-appendix-materials-extra-materials.tex}{\input{manual-appendix-materials-extra-materials}}{}
+
+\IfFileExists{manual-appendix-materials-cohesive.tex}{\input{manual-appendix-materials-cohesive}}{}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "manual"
+%%% End: 

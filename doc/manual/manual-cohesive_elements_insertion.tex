@@ -1,0 +1,67 @@
+\subsection{Insertion of Cohesive Elements}
+\subsubsection{Dynamics}
+As far as dynamic simulations are concerned, cohesive elements are
+currently compatible only with the explicit time integration scheme
+(see section~\ref{ssect:smm:expl-time-integr}). They do not have to be
+inserted when the mesh is generated but during the
+simulation. Intrinsic cohesive elements can be introduced at the
+beginning of the simulation as follows:
+\begin{cpp}
+  SolidMechanicsModelCohesive model(mesh);
+  model.initFull();
+  model.limitInsertion(_x, -1, 1);
+  model.insertIntrinsicElements();
+\end{cpp}
+where the insertion is limited to the facets whose barycenter's $x$
+coordinate is in the range $[-1,1]$. Additional restrictions with
+respect to $y$ and $z$ directions can be added as well. Similarly the
+dynamic insertion of extrinsic cohesive elements can be utilized in
+the following way:
+\begin{cpp}
+  SolidMechanicsModelCohesive model(mesh);
+  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.limitInsertion(_x, -1, 1);
+  model.updateAutomaticInsertion();
+\end{cpp}
+in which this time the method \code{limitInsertion} prevents the
+cohesive elements to be inserted out of the range $[-1,1]$ in the $x$
+direction. In order to check stress and automatically insert elements,
+it is necessary to call the function \code{checkCohesiveStress} in the
+main loop where \code{solveStep} is:
+\begin{cpp}
+  model.checkCohesiveStress();
+  model.solveStep();
+\end{cpp}
+
+At any time during the simulation, it is possible to access the
+following energies with the relative function:
+\begin{cpp}
+  Real Ed = model.getEnergy("dissipated");
+  Real Er = model.getEnergy("reversible");
+  Real Ec = model.getEnergy("contact");
+\end{cpp}
+
+\subsubsection{Statics}
+The only cohesive law that is applicable in this case is the
+exponential one (see
+section~\ref{ssect:smm:cl:coh-exponential}). However
+unloading-reloading cycles are not supported yet. In this case
+cohesive elements have to be inserted before creating the
+\code{SolidMechanicsModelCohesive} model:
+\begin{cpp}
+  Mesh mesh(spatial_dimension);
+  mesh.read("implicit_mesh.msh");
+
+  CohesiveElementInserter inserter(mesh);
+  inserter.setLimit(_y, 0.9, 1.1);
+  inserter.insertIntrinsicElements();
+
+  SolidMechanicsModelCohesive model(mesh);
+  model.initFull(SolidMechanicsModelCohesiveOptions(_static));
+\end{cpp}
+Also in this case the element insertion can be limited to a given
+range thanks to the method \code{setLimit}. The first input parameter
+of this method indicates the direction while the other two indicate
+the extreme values of the range $[0.9, 1.1]$. In order to compute the
+energies, the same functions illustrated for dynamics in the last
+section can be used.

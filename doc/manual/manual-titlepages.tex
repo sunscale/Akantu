@@ -1,0 +1,29 @@
+\title{\textbf{\Huge \akantu}\\
+  \vspace{0.5cm}
+  \textbf{\huge User's Guide}\\
+  \vspace{1cm}
+  {\small \today{} --- Version \version}
+}
+
+\author{}
+\date{}
+
+\makeindex
+
+% START THE DOCUMENT %
+\begin{document}
+
+\setcounter{page}{1}
+\renewcommand{\thepage}{\roman{page}}
+
+\pdfbookmark[0]{Titlepage}{maintitlepage}
+\label{maintitlepage}
+\maketitle
+
+\tableofcontents
+
+\ifodd\value{page} \insertblankpage
+\else \insertblankpage\insertblankpage \fi
+
+\setcounter{page}{1}
+\renewcommand\thepage{\arabic{page}}

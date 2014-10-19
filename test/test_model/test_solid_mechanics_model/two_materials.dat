@@ -1,0 +1,13 @@
+material elastic [
+	 name = mat_1
+	 rho = 2.2e-9   # density
+	 E   = 12e9 # young's modulus
+	 nu  = 0.3    # poisson's ratio
+]
+
+material elastic [
+	 name = mat_2
+	 rho = 2.7e-9   # density
+	 E   = 60e9 # young's modulus
+	 nu  = 0.3    # poisson's ratio
+]

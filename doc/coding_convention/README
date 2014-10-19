@@ -1,0 +1,79 @@
+#===============================================================================
+# @file   README
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
+# @date   Thu Aug  5 10:01:52 2010
+#
+# @section LICENSE
+#
+# <insert license here>
+#
+#===============================================================================
+
+
+Coding conventions
+------------------
+
+ - Class : capitalized, no separator
+      → MyClass
+ - Method : 1st word lower case, the other capitalized, no separator
+      → myMethod()
+ - Variables : lower case, separator _, more than 3 letters except for loop counters
+      → my_variable
+ - File names : lower case, separator , extension .hh .cc, same name as the class
+      → my_class.hh
+ - Inline function : outside the class definition in headers
+     in a file called filename_inline_impl.cc and included in the header file
+ - Documentation comment : Doxygen
+
+
+Help tools for emacs
+--------------------
+
+ - to have doxygen comments you can use the doxymacs-mode
+   to add in the .emacs
+    * to auto load the mode in c/c++ files
+
+      (require 'doxymacs)
+      (add-hook 'c++-mode-hook 'doxymacs-mode)
+      (add-hook 'c-mode-hook 'doxymacs-mode)
+
+    * in the (custom-set-variables) add this lines to generate the files headers (C-c d i)
+
+      '(doxymacs-doxygen-style "JavaDoc")
+ '(doxymacs-file-comment-template (quote ("/**" > n " * " (doxymacs-doxygen-command-char) "file   " (if (buffer-file-name) (file-name-nondirectory (buffer-file-name)) "") > n " * " (doxymacs-doxygen-command-char) "author " (user-full-name) (doxymacs-user-mail-address) > n " * " (doxymacs-doxygen-command-char) "date   " (current-time-string) > n " *" > n " * " (doxymacs-doxygen-command-char) "brief  " (p "Brief description of this file: ") > n " *" > n " * " (doxymacs-doxygen-command-char) "section LICENSE" > n " *" > n " * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)" > n " * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)" > n " *" > n " * Akantu is free  software: you can redistribute it and/or  modify it under the" > n " * terms  of the  GNU Lesser  General Public  License as  published by  the Free" > n " * Software Foundation, either version 3 of the License, or (at your option) any" > n " * later version." > n " *" > n " * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY" > n " * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR" > n " * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more" > n " * details." > n " *" > n " * You should  have received  a copy  of the GNU  Lesser General  Public License" > n " * along with Akantu. If not, see <http://www.gnu.org/licenses/>." > n " *" > n " */" > n > n "/* -------------------------------------------------------------------------- */" > n)))
+
+
+ - for the snippet code you can use yasnippet
+   some specific snippet files for akantu can be found in the *snippet/* directory
+
+    (require 'yasnippet)
+    (yas/initialize)
+    (yas/load-directory "~/.emacs.d/yasnippet/snippets")
+
+    (add-hook 'c++-mode-hook 'yas/minor-mode-on)
+    (add-hook 'c-mode-hook 'yas/minor-mode-on)
+
+   You need  to copy the snippets for Akantu dev into the appropriate directory.
+
+   depending on your version of yasnippet the snippet directories are not arranged in the same way
+
+   c++-mode snippet
+    akantu (opening and closing akantu namespace)
+    inout (debug in/out for functions)
+    class (class declaration)
+   cc-mode snippet (common to c and c++)
+    once (define protection for .hh files)
+    for (for loop)
+
+
+   To know your orgnisation type have a look into /usr/share/emacs/site-lisp/yasnippet/snippets/
+   Then copy the the file provided in the doc directory either by:
+
+    cp -r /usr/share/emacs/site-lisp/yasnippet ~/.emacs.d/yasnippet
+    cp $AKANTU_DIR/doc/coding_convention/snippet/akantu ~/.emacs.d/yasnippet/snippets/text-mode/cc-mode/c++-mode/
+    cp $AKANTU_DIR/doc/coding_convention/snippet/inout ~/.emacs.d/yasnippet/snippets/text-mode/cc-mode/c++-mode/
+    cp $AKANTU_DIR/doc/coding_convention/snippet/class ~/.emacs.d/yasnippet/snippets/text-mode/cc-mode/c++-mode/
+    cp $AKANTU_DIR/doc/coding_convention/snippet/once ~/.emacs.d/yasnippet/snippets/text-mode/cc-mode/
+    cp $AKANTU_DIR/doc/coding_convention/snippet/for ~/.emacs.d/yasnippet/snippets/text-mode/cc-mode/
+
+   either by (TODO nico)
