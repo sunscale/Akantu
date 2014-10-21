@@ -36,7 +36,6 @@
 #include "aka_random_generator.hh"
 #include "parser.hh"
 #include "cppargparse.hh"
-#include "static_solver.hh"
 
 /* -------------------------------------------------------------------------- */
 #include <iostream>
@@ -91,10 +90,6 @@ template<> long int RandGenerator<bool>::_seed = 0; // useless just defined due 
 template<> long int RandGenerator<UInt>::_seed = 0;
 template<> long int RandGenerator<Int>::_seed = 0;
 template<> long int Rand48Generator<Real>::_seed = 0;
-
-/* -------------------------------------------------------------------------- */
-UInt StaticSolver::nb_references = 0;
-StaticSolver * StaticSolver::static_solver = NULL;
 
 /* -------------------------------------------------------------------------- */
 

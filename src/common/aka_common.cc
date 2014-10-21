@@ -32,7 +32,6 @@
 #include "aka_common.hh"
 #include "aka_static_memory.hh"
 #include "static_communicator.hh"
-#include "static_solver.hh"
 #include "aka_random_generator.hh"
 
 #include "parser.hh"
@@ -76,7 +75,6 @@ void initialize(const std::string & input_file, int & argc, char ** & argv) {
 
   static_argparser.parse(argc, argv, cppargparse::_remove_parsed);
 
-  
   std::string infile = static_argparser["aka_input_file"];
   if(infile == "") infile = input_file;
 
@@ -102,9 +100,6 @@ void initialize(const std::string & input_file, int & argc, char ** & argv) {
   RandGenerator<Real>::seed(seed);
   AKANTU_DEBUG_INFO("Random seed set to " << seed);
 
-  /// initialize external solvers 
-  StaticSolver::getStaticSolver().initialize(argc, argv);
-
   AKANTU_DEBUG_OUT();
 
 }
@@ -112,9 +107,6 @@ void initialize(const std::string & input_file, int & argc, char ** & argv) {
 /* -------------------------------------------------------------------------- */
 void finalize() {
   AKANTU_DEBUG_IN();
-
-  /// finalize external solvers 
-  StaticSolver::getStaticSolver().finalize();
 
   if(StaticMemory::isInstantiated()) delete &(StaticMemory::getStaticMemory());
   if(StaticCommunicator::isInstantiated()) {

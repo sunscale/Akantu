@@ -47,8 +47,3 @@ register_test(test_sparse_matrix_product
   SOURCES test_sparse_matrix_product.cc
   FILES_TO_COPY bar.msh
   )
-
-register_test(test_petsc_matrix_profile
-  SOURCES test_petsc_matrix_profile.cc
-  DEPENDENCIES test_solver_mesh
-  )

@@ -53,7 +53,6 @@ macro(define_project_version)
 	endif()
       endif()
     endif()
-<<<<<<< HEAD
   else()
     find_package(Subversion)
 
