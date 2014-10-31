@@ -34,7 +34,40 @@
 
 __BEGIN_AKANTU__
 
-class StaticSolver {
+namespace StaticSolverEvent {
+  struct BeforeStaticSolverEvent {
+    BeforeStaticSolverEvent() {}
+  };
+}
+
+class StaticSolverEventHandler {
+  /* ------------------------------------------------------------------------ */
+  /* Constructors/Destructors                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  virtual ~StaticSolverEventHandler() {};
+
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+protected:
+  inline void sendEvent(const StaticSolverEvent::BeforeStaticSolverDestroy & event) {
+    beforeStaticSolverDestroy();
+  }
+
+  template<class EventHandler> friend class EventHandlerManager;
+
+  /* ------------------------------------------------------------------------ */
+  /* Interface                                                                */
+  /* ------------------------------------------------------------------------ */
+public:
+  virtual void beforeStaticSolverDestroy() {}
+};
+
+
+
+class StaticSolver : public CommunicatorEventHandler,
+                     public EventHandlerManager<SolverEventHandler> {
   /* ------------------------------------------------------------------------ */
   /* Constructors                                                             */
   /* ------------------------------------------------------------------------ */
@@ -51,7 +84,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:  
+public:
   /// initialize what is needed for the compiled solver interfaces
   void initialize(int & argc, char ** & argv);
 

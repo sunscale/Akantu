@@ -57,7 +57,8 @@ private:
 
 extern SolverOptions _solver_no_options;
 
-class Solver : protected Memory {
+class Solver : public StaticSolverEventHandler,
+               protected Memory {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -89,6 +90,13 @@ public:
 
   /// function to print the contain of the class
   //  virtual void printself(std::ostream & stream, int indent = 0) const;
+
+protected:
+  virtual void destroyInternalData() {};
+
+public:
+  virtual void beforeStaticSolverDestroy();
+
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
