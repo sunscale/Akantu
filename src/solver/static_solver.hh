@@ -27,6 +27,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "static_communicator.hh"
 
 
 #ifndef __AKANTU_STATIC_SOLVER_HH__
@@ -35,8 +36,8 @@
 __BEGIN_AKANTU__
 
 namespace StaticSolverEvent {
-  struct BeforeStaticSolverEvent {
-    BeforeStaticSolverEvent() {}
+  struct BeforeStaticSolverDestroyEvent {
+    BeforeStaticSolverDestroyEvent() {}
   };
 }
 
@@ -51,7 +52,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 protected:
-  inline void sendEvent(const StaticSolverEvent::BeforeStaticSolverDestroy & event) {
+  inline void sendEvent(const StaticSolverEvent::BeforeStaticSolverDestroyEvent & event) {
     beforeStaticSolverDestroy();
   }
 
@@ -67,12 +68,13 @@ public:
 
 
 class StaticSolver : public CommunicatorEventHandler,
-                     public EventHandlerManager<SolverEventHandler> {
+                     public EventHandlerManager<StaticSolverEventHandler> {
+  typedef EventHandlerManager<StaticSolverEventHandler> ParentEventHandler;
   /* ------------------------------------------------------------------------ */
   /* Constructors                                                             */
   /* ------------------------------------------------------------------------ */
 private:
-  StaticSolver() : is_initialized(false) {};
+  StaticSolver();
 
 public:
   ~StaticSolver();
