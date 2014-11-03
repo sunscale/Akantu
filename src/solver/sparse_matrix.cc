@@ -48,7 +48,7 @@ SparseMatrix::SparseMatrix(UInt size,
   sparse_matrix_type(sparse_matrix_type),
   size(size),
   nb_non_zero(0),
-  irn(0,1,"irn"), jcn(0,1,"jcn"), a(0,1,"A") {
+  irn(0,1,"irn"), jcn(0,1,"jcn"), a(0,1,"A"), offset(1) {
   AKANTU_DEBUG_IN();
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
@@ -71,7 +71,7 @@ SparseMatrix::SparseMatrix(const SparseMatrix & matrix,
   nb_proc(matrix.nb_proc),
   nb_non_zero(matrix.nb_non_zero),
   irn(matrix.irn, true), jcn(matrix.jcn, true), a(matrix.getA(), true),
-  irn_jcn_k(matrix.irn_jcn_k) {
+  irn_jcn_k(matrix.irn_jcn_k), offset(1) {
   AKANTU_DEBUG_IN();
 
   size_save = 0;
@@ -421,68 +421,6 @@ void SparseMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
     }
     irn_val++; jcn_val++; a_val++;
   }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SparseMatrix::removeBoundary(const Array<bool> & boundary) {
-  AKANTU_DEBUG_IN();
-
-  if(irn_save) delete irn_save;
-  if(jcn_save) delete jcn_save;
-
-  irn_save = new Array<Int>(irn, true);
-  jcn_save = new Array<Int>(jcn, true);
-
-  UInt n = boundary.getSize()*boundary.getNbComponent();
-
-  UInt * perm = new UInt[n];
-
-  size_save = size;
-  size = 0;
-  for (UInt i = 0; i < n; ++i) {
-    if(!boundary.storage()[i]) {
-      perm[i] = size;
-      //      std::cout <<  "perm["<< i <<"] = " << size << std::endl;
-      size++;
-    }
-  }
-
-  for (UInt i = 0; i < nb_non_zero;) {
-    if(boundary.storage()[irn(i) - 1] || boundary.storage()[jcn(i) - 1]) {
-      irn.erase(i);
-      jcn.erase(i);
-      a.erase(i);
-      nb_non_zero--;
-    } else {
-      irn(i) = perm[irn(i) - 1] + 1;
-      jcn(i) = perm[jcn(i) - 1] + 1;
-      i++;
-    }
-  }
-
-  delete [] perm;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SparseMatrix::restoreProfile() {
-  AKANTU_DEBUG_IN();
-
-  irn.resize(irn_save->getSize());
-  jcn.resize(jcn_save->getSize());
-
-  nb_non_zero = irn.getSize();
-  a.resize(nb_non_zero);
-  size = size_save;
-
-  memcpy(irn.storage(), irn_save->storage(), irn.getSize()*sizeof(Int));
-  memcpy(jcn.storage(), jcn_save->storage(), jcn.getSize()*sizeof(Int));
-
-  delete irn_save; irn_save = NULL;
-  delete jcn_save; jcn_save = NULL;
 
   AKANTU_DEBUG_OUT();
 }

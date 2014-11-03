@@ -32,13 +32,14 @@
 
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix.hh"
+#include "static_communicator.hh"
 
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
 class PETScWrapper;
 
-class PETScMatrix : public SparseMatrix {
+class PETScMatrix : public SparseMatrix, public CommunicatorEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -65,6 +66,8 @@ private:
 public:
   /// resize PETSc matrix
   void resize(const DOFSynchronizer & dof_synchronizer);
+
+  void createGlobalAkantuToPETScMap(Int* local_master_eq_nbs_ptr);
 
   // /// remove the existing profile
   // inline void clearProfile();
@@ -151,6 +154,11 @@ private:
 
   /// number of nonzeros in every row of the off-diagonal part
   Array<Int> o_nnz;
+
+  /// the global index of the first local row 
+  Int first_global_index;
+
+
 };
 
 __END_AKANTU__
