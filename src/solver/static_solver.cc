@@ -37,8 +37,8 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-StaticSolver::StaticSolver() : CommunicatorEventHandler() {
-  communicator.registerEventHandler(*this);
+StaticSolver::StaticSolver() : CommunicatorEventHandler(), is_initialized(false) {
+  StaticCommunicator::getStaticCommunicator().registerEventHandler(*this);
 }
 
 
@@ -97,7 +97,7 @@ void StaticSolver::initialize(int & argc, char ** & argv) {
 
 /* -------------------------------------------------------------------------- */
 void StaticSolver::finalize() {
-  this->sendEvent(StaticSolverEvent::BeforeStaticSolverEvent());
+  ParentEventHandler::sendEvent(StaticSolverEvent::BeforeStaticSolverDestroyEvent());
 
 
   AKANTU_DEBUG_ASSERT(this->is_initialized == true, "The static solver has not been initialized");

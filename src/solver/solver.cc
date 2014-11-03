@@ -62,7 +62,7 @@ Solver::~Solver() {
 }
 
 /* -------------------------------------------------------------------------- */
-Solver::beforeStaticSolverDestroy() {
+void Solver::beforeStaticSolverDestroy() {
   AKANTU_DEBUG_IN();
 
   try{

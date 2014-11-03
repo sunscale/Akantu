@@ -40,6 +40,7 @@
 #include "sparse_matrix.hh"
 #include "mesh.hh"
 #include "static_communicator.hh"
+#include "static_solver.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -57,8 +58,8 @@ private:
 
 extern SolverOptions _solver_no_options;
 
-class Solver : public StaticSolverEventHandler,
-               protected Memory {
+class Solver : protected Memory,
+               public StaticSolverEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
