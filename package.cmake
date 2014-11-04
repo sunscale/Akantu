@@ -27,33 +27,35 @@
 #
 #===============================================================================
 
-option(AKANTU_EXTRA_MATERIALS "Add the extra list of materials in Akantu" OFF)
-add_external_package_dependencies(extra_materials lapack)
+package_declare(extra-materials
+  DESCRIPTION "Add the extra list of materials in Akantu"
+  DEPENDS lapack)
 
-set(AKANTU_EXTRA_MATERIALS_FILES
-  model/solid_mechanics/materials/material_extra_includes.hh
-  model/solid_mechanics/materials/material_damage/material_brittle.cc
-  model/solid_mechanics/materials/material_damage/material_brittle.hh
-  model/solid_mechanics/materials/material_damage/material_brittle_inline_impl.cc
+package_declare_sources(extra_materials
+  material_extra_includes.hh
 
-  model/solid_mechanics/materials/material_damage/material_damage_iterative.cc
-  model/solid_mechanics/materials/material_damage/material_damage_iterative.hh
-  model/solid_mechanics/materials/material_damage/material_damage_iterative_inline_impl.cc
+  material_damage/material_brittle.cc
+  material_damage/material_brittle.hh
+  material_damage/material_brittle_inline_impl.cc
 
-  model/solid_mechanics/materials/material_damage/material_damage_linear.cc
-  model/solid_mechanics/materials/material_damage/material_damage_linear.hh
-  model/solid_mechanics/materials/material_damage/material_damage_linear_inline_impl.cc
+  material_damage/material_damage_iterative.cc
+  material_damage/material_damage_iterative.hh
+  material_damage/material_damage_iterative_inline_impl.cc
 
-  model/solid_mechanics/materials/material_damage/material_vreepeerlings.hh
-  model/solid_mechanics/materials/material_damage/material_vreepeerlings_inline_impl.cc
-  model/solid_mechanics/materials/material_damage/material_vreepeerlings_tmpl.hh
+  material_damage/material_damage_linear.cc
+  material_damage/material_damage_linear.hh
+  material_damage/material_damage_linear_inline_impl.cc
 
-  model/solid_mechanics/materials/material_plastic/material_viscoplastic.cc
-  model/solid_mechanics/materials/material_plastic/material_viscoplastic.hh
-  model/solid_mechanics/materials/material_plastic/material_viscoplastic_inline_impl.cc
+  material_damage/material_vreepeerlings.hh
+  material_damage/material_vreepeerlings_inline_impl.cc
+  material_damage/material_vreepeerlings_tmpl.hh
 
-  model/solid_mechanics/materials/material_viscoelastic/material_stiffness_proportional.cc
-  model/solid_mechanics/materials/material_viscoelastic/material_stiffness_proportional.hh
+  material_plastic/material_viscoplastic.cc
+  material_plastic/material_viscoplastic.hh
+  material_plastic/material_viscoplastic_inline_impl.cc
+
+  material_viscoelastic/material_stiffness_proportional.cc
+  material_viscoelastic/material_stiffness_proportional.hh
 
   material_damage/material_vreepeerlings_non_local.cc
   material_damage/material_vreepeerlings_non_local.hh
