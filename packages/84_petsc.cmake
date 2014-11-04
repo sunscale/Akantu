@@ -29,10 +29,13 @@
 #
 #===============================================================================
 
-add_optional_external_package(PETSc "Add PETSc support in akantu" OFF ARGS COMPONENT ARGS CXX)
-add_internal_package_dependencies(petsc parallel)
+package_declare(PETSc EXRENAL
+  DESCRIPTION "Add PETSc support in akantu"
+  ARGS COMPONENT CXX
+  DEPENDS parallel)
 
-set(AKANTU_PETSC_FILES
+
+package_declare_sources(petsc
   solver/petsc_matrix.hh
   solver/petsc_matrix.cc
   solver/petsc_matrix_inline_impl.cc

@@ -1,0 +1,9 @@
+[submodule "extra_packages/extra-materials"]
+	path = extra_packages/extra-materials
+	url = git@lsmssrv1.epfl.ch:akantu-extra-materials.git
+[submodule "extra_packages/igfem"]
+	path = extra_packages/igfem
+	url = git@lsmssrv1.epfl.ch:akantu-igfem.git
+[submodule "extra_packages/parallel-cohesive-element"]
+	path = extra_packages/parallel-cohesive-element
+	url = git@lsmssrv1.epfl.ch:akantu-parallel-cohesive.git

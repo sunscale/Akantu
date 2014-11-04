@@ -32,8 +32,12 @@ if(AKANTU_USE_THIRD_PARTY_MUMPS)
   enable_language(Fortran)
 endif()
 
-add_optional_external_package(MPI "Add MPI support in akantu" OFF PREFIX MPI_C MPI DEPENDS SCOTCH)
-set(AKANTU_MPI_FILES
+package_declare(MPI EXTERNAL
+  DESCRIPTION "Add MPI support in akantu"
+  EXTRA_PACKAGE_OPTIONS PREFIX MPI_C MPI
+  DEPENDS scotch)
+
+package_declare_sources(MPI
   synchronizer/static_communicator_mpi.cc
   synchronizer/static_communicator_mpi_inline_impl.hh
   synchronizer/static_communicator_mpi.hh

@@ -32,26 +32,46 @@
 #===============================================================================
 # Package Management
 #===============================================================================
-generate_source_list_from_packages(${CMAKE_CURRENT_BINARY_DIR}
+package_get_source_files(
   AKANTU_LIBRARY_SRCS
-  AKANTU_LIBRARY_INLINE_HDRS
-  AKANTU_LIBRARY_HDRS
-  AKANTU_LIBRARY_INCLUDE_DIRS)
+  AKANTU_LIBRARY_PUBLIC_HDRS
+  AKANTU_LIBRARY_PRIVATE_HDRS
+  )
+
+package_get_include_directories(
+  AKANTU_LIBRARY_INCLUDE_DIRS
+  )
+
+package_get_external_informations(
+  AKANTU_EXTERNAL_LIB_INCLUDE_DIR
+  AKANTU_EXTERNAL_LIB_LIBRARIES
+)
 
 #===========================================================================
 # header for blas/lapack (any other fortran libraries)
 #===========================================================================
-if(AKANTU_LAPACK OR AKANTU_BLAS)
+package_get_name(BLAS _blas_pkg_name)
+package_get_name(LAPACK _lapack_pkg_name)
+
+package_is_activated(${_blas_pkg_name} _blas_activated)
+package_is_activated(${_lapack_pkg_name} _lapack_activated)
+
+if(_blas_activated OR _lapack_activated)
+  if(CMAKE_Fortran_COMPILER)
+    # ugly hack
+    set(CMAKE_Fortran_COMPILER_LOADED TRUE)
+  endif()
+
   include(FortranCInterface)
   FortranCInterface_HEADER(
     ${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh
     MACRO_NAMESPACE "AKA_FC_")
   mark_as_advanced(CDEFS)
-  list(APPEND AKANTU_LIBRARY_HDRS ${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh)
+  list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS ${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh)
 endif()
 
 configure_file(common/aka_config.hh.in "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
-list(APPEND AKANTU_LIBRARY_HDRS ${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh)
+list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS ${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh)
 
 #===========================================================================
 # header precompilation
@@ -135,9 +155,8 @@ if(AKANTU_EXTRA_TARGET_DEPENDENCIES)
   add_dependencies(akantu ${AKANTU_EXTRA_TARGET_DEPENDENCIES})
 endif()
 
-list(APPEND AKANTU_PUBLIC_HDRS ${AKANTU_LIBRARY_HDRS} ${AKANTU_LIBRARY_INLINE_HDRS})
 set_target_properties(akantu PROPERTIES ${AKANTU_LIBRARY_PROPERTIES})
-set_target_properties(akantu PROPERTIES PUBLIC_HEADER "${AKANTU_PUBLIC_HDRS}")
+set_target_properties(akantu PROPERTIES PUBLIC_HEADER "${AKANTU_LIBRARY_PUBLIC_HDRS}")
 
 list(APPEND AKANTU_EXPORT_LIST akantu)
 

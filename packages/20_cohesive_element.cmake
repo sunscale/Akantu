@@ -29,10 +29,11 @@
 #
 #===============================================================================
 
-option(AKANTU_COHESIVE_ELEMENT "Use cohesive_element package of Akantu" OFF)
-add_external_package_dependencies(cohesive_element lapack)
+package_declare(cohesive_element
+  DESCRIPTION "Use cohesive_element package of Akantu"
+  DEPENDS lapack)
 
-set(AKANTU_COHESIVE_ELEMENT_FILES
+package_declare_sources(cohesive_element
   model/solid_mechanics/materials/material_cohesive_includes.hh
 
   mesh_utils/cohesive_element_inserter.hh

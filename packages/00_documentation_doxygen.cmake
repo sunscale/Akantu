@@ -28,7 +28,8 @@
 #
 #===============================================================================
 
-option(AKANTU_DOCUMENTATION_DOXYGEN "Build source documentation using Doxygen." OFF)
+package_declare(documentation_doxygen
+  DESCRIPTION "Build source documentation using Doxygen.")
 
 set(AKANTU_DOCUMENTATION_DOXYGEN_DOCUMENTATION
 "

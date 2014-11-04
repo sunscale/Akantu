@@ -28,9 +28,10 @@
 #
 #===============================================================================
 
-option(AKANTU_HEAT_TRANSFER "Use Heat Transfer package of Akantu" OFF)
+package_declare(heat_transfer
+  DESCRIPTION "Use Heat Transfer package of Akantu")
 
-set(AKANTU_HEAT_TRANSFER_FILES
+package_declare_sources(heat_transfer
   model/heat_transfer/heat_transfer_model.cc
   model/heat_transfer/heat_transfer_model.hh
   model/heat_transfer/heat_transfer_model_inline_impl.cc

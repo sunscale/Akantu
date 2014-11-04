@@ -26,41 +26,45 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-option(AKANTU_USE_BLACKDYNAMITE "Use blackdynamite library" OFF)
-mark_as_advanced(AKANTU_USE_BLACKDYNAMITE)
-find_package(Subversion)
+package_declare(BLACKDYNAMITE EXTERNAL
+  DESCRIPTION "Use blackdynamite library"
+  SYSTEM OFF)
 
-if(SUBVERSION_FOUND)
-  if(AKANTU_USE_BLACKDYNAMITE)
-    set(BLACKDYNAMITE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/third-party/blackdynamite)
+package_get_name(BLACKDYNAMITE _pkg_name)
+package_use_system(${_pkg_name} _use_system)
+package_get_option_name(${_pkg_name} _option_name)
 
-    if(EXISTS ${BLACKDYNAMITE_SOURCE_DIR})
-      execute_process(
-	COMMAND ${Subversion_SVN_EXECUTABLE} up ${BLACKDYNAMITE_SOURCE_DIR}
-	OUTPUT_VARIABLE _revision)
-      string(REGEX REPLACE ".*At revision ([0-9]*)\\..*" "\\1" _rev "${_revision}")
-      message(STATUS "Updating BlackDynamite: r${_rev} dynamite! dynamite!")
+if(NOT ${_use_system})
+  if(${_option_name})
+    find_package(Subversion)
+    if(SUBVERSION_FOUND)
+      set(BLACKDYNAMITE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/third-party/blackdynamite)
+      if(EXISTS ${BLACKDYNAMITE_SOURCE_DIR})
+	execute_process(
+	  COMMAND ${Subversion_SVN_EXECUTABLE} up ${BLACKDYNAMITE_SOURCE_DIR}
+	  OUTPUT_VARIABLE _revision)
+	string(REGEX REPLACE ".*At revision ([0-9]*)\\..*" "\\1" _rev "${_revision}")
+	message(STATUS "Updating BlackDynamite: r${_rev} dynamite! dynamite!")
+      else()
+	message(STATUS "Checking out BlackDynamite: Can you digg it!")
+	execute_process(
+	  COMMAND ${Subversion_SVN_EXECUTABLE} co svn+ssh://lsmssrv1.epfl.ch/space/repositories/SimulPack/BlackDynamite ${BLACKDYNAMITE_SOURCE_DIR}
+	  OUTPUT_QUIET)
+      endif()
+
+      set(BLACKDYNAMITE_TARGETS_EXPORT ${AKANTU_TARGETS_EXPORT})
+      add_subdirectory(third-party/blackdynamite)
+
+      package_set_libraries(${_pkg_name} blackdynamite)
+      package_set_include_dir(${_pkg_name}
+	${PROJECT_SOURCE_DIR}/third-party/blackdynamite/src
+	${BLACKDYNAMITE_EXTERNAL_INCLUDE_DIR})
+
+      list(APPEND AKANTU_EXPORT_LIST blackdynamite)
+
+      package_activate(${_pkg_name})
     else()
-      message(STATUS "Checking out BlackDynamite: Can you digg it!")
-      execute_process(
-	COMMAND ${Subversion_SVN_EXECUTABLE} co svn+ssh://lsmssrv1.epfl.ch/space/repositories/SimulPack/BlackDynamite ${BLACKDYNAMITE_SOURCE_DIR}
-	OUTPUT_QUIET)
+      package_deactivate(${_pkg_name})
     endif()
-
-
-    set(BLACKDYNAMITE_TARGETS_EXPORT ${AKANTU_TARGETS_EXPORT})
-    add_subdirectory(third-party/blackdynamite)
-
-    list(APPEND AKANTU_EXTERNAL_LIBRARIES blackdynamite)
-    list(APPEND AKANTU_EXTERNAL_LIB_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/third-party/blackdynamite/src ${BLACKDYNAMITE_EXTERNAL_INCLUDE_DIR})
-
-    list(APPEND AKANTU_EXPORT_LIST blackdynamite)
-    list(APPEND AKANTU_OPTION_LIST BLACKDYNAMITE)
-
-    set(AKANTU_BLACKDYNAMITE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/third-party/blackdynamite/src ${BLACKDYNAMITE_EXTERNAL_INCLUDE_DIR})
-
-    set(AKANTU_BLACKDYNAMITE ON)
-  else()
-    set(AKANTU_BLACKDYNAMITE OFF)
   endif()
 endif()

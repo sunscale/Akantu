@@ -27,8 +27,9 @@
 #
 #===============================================================================
 
-add_optional_external_package(QVIEW "Add QView support in akantu" OFF)
-mark_as_advanced(AKANTU_USE_QVIEW)
+package_declare(QVIEW EXTERNAL
+  DESCRIPTION "Add QView support in akantu")
+
 set(AKANTU_QVIEW_DEB_DEPEND
   qview-client
   )

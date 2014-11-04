@@ -29,9 +29,12 @@
 #
 #===============================================================================
 
-option(AKANTU_CONTACT "Use Contact package of Akantu" OFF)
+package_declare(contact
+  DESCRIPTION "Use Contact package of Akantu"
+  DEPENDS cpparray implicit optimization)
 
-set(AKANTU_CONTACT_FILES
+
+package_declare_sources(contact
   #cc files
   contact/discretization.cc
   contact/element.cc
@@ -61,9 +64,6 @@ set(AKANTU_CONTACT_FILES
   model/contact_manager0.hh
   )
 
-add_external_package_dependencies(contact cpparray)
-add_internal_package_dependencies(contact implicit)
-add_internal_package_dependencies(contact optimization)
 
 if(AKANTU_CONTACT)
   list(APPEND AKANTU_BOOST_COMPONENTS
@@ -72,7 +72,6 @@ if(AKANTU_CONTACT)
     )
 endif()
 
-mark_as_advanced(AKANTU_USE_CPPARRAY)
 
 set(AKANTU_CONTACT_TESTS
   test_hertz_2D

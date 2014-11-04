@@ -28,10 +28,9 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
-option(AKANTU_USE_THIRD_PARTY_NLOPT "Automatic download of the NLOPT library" ON)
-option(AKANTU_USE_NLOPT "Use NLOPT library" OFF)
-mark_as_advanced(AKANTU_USE_THIRD_PARTY_NLOPT AKANTU_USE_NLOPT)
+package_declare(nlopt EXTERNAL
+  DESCRIPTION "Use NLOPT library"
+  SYSTEM OFF)
 
 set(NLOPT_VERSION "2.4.2")
 set(NLOPT_ARCHIVE "${PROJECT_SOURCE_DIR}/third-party/nlopt-${NLOPT_VERSION}.tar.gz")
@@ -69,8 +68,6 @@ if (AKANTU_USE_THIRD_PARTY_NLOPT AND AKANTU_USE_NLOPT)
   set(AKANTU_NLOPT ON)
 
   list(APPEND AKANTU_EXTRA_TARGET_DEPENDENCIES NLopt)
-else()
-  add_optional_external_package(NLopt "Use NLOPT library" OFF)
 endif()
 
 

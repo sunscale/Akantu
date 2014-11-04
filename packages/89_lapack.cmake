@@ -28,8 +28,9 @@
 #
 #===============================================================================
 
-add_optional_external_package(LAPACK "Use LAPACK for arithmetic operations" OFF LANGUAGE Fortran)
-mark_as_advanced(AKANTU_USE_LAPACK)
+package_declare(LAPACK EXTERNAL
+  DESCRIPTION "Use LAPACK for arithmetic operations"
+  EXTRA_PACKAGE_OPTIONS LANGUAGE Fortran)
 
 set(AKANTU_LAPACK_DOCUMENTATION "
 This package provides access to a LAPACK implementation.

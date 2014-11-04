@@ -29,9 +29,9 @@
 #
 #===============================================================================
 
-set(AKANTU_CORE ON CACHE INTERNAL "core package for Akantu" FORCE)
+package_declare(core NOT_OPTIONAL DESCRIPTION "core package for Akantu")
 
-set(AKANTU_CORE_FILES
+package_declare_sources(core
   common/aka_array.cc
   common/aka_array.hh
   common/aka_array_tmpl.hh
@@ -230,8 +230,6 @@ set(AKANTU_CORE_FILES
   model/solid_mechanics/materials/material_plastic/material_linear_isotropic_hardening_inline_impl.cc
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.cc
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.hh
-
-
 
   solver/solver.cc
   solver/solver.hh

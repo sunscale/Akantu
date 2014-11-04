@@ -28,11 +28,11 @@
 #
 #===============================================================================
 
-option(AKANTU_STRUCTURAL_MECHANICS "Use Structural mechanics model package of Akantu" OFF)
+package_declare(structural_mechanics
+  DESCRIPTION "Use Structural mechanics model package of Akantu"
+  DEPENDS implicit)
 
-add_internal_package_dependencies(STRUCTURAL_MECHANICS IMPLICIT)
-
-set(AKANTU_STRUCTURAL_MECHANICS_FILES
+package_declare_sources(structural_mechanics
   fe_engine/element_class_structural.hh
   fe_engine/element_classes/element_class_bernoulli_beam_inline_impl.cc
   fe_engine/fe_engine_template_tmpl_struct.hh
@@ -74,7 +74,7 @@ set(AKANTU_STRUCTURAL_MECHANICS_MANUAL_FILES
   figures/elements/bernoulli_2.pdf
   figures/elements/bernoulli_2.svg
   )
-  
+
 set(AKANTU_STRUCTURAL_MECHANICS_DOCUMENTATION "
 This package activates the compilation for the Structural Mechanics engine of Akantu
 ")

@@ -112,7 +112,11 @@ cmake_deactivate_debug_message(PackagesSystem)
 #===============================================================================
 set(AKANTU_BOOST_COMPONENT)
 set(AKANTU_EXTRA_TARGET_DEPENDENCIES)
-add_all_packages(${PROJECT_SOURCE_DIR}/packages ${PROJECT_SOURCE_DIR}/src)
+
+package_list_packages(${PROJECT_SOURCE_DIR}/packages
+  EXTRA_PACKAGES_FOLDER ${PROJECT_SOURCE_DIR}/extra_packages)
+
+#add_all_packages(${PROJECT_SOURCE_DIR}/packages ${PROJECT_SOURCE_DIR}/src)
 
 include_boost()
 
