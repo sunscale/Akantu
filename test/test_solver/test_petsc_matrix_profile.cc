@@ -30,10 +30,13 @@
 /* -------------------------------------------------------------------------- */
 #include "static_communicator.hh"
 #include "aka_common.hh"
+#include "aka_csr.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
-
+#include "mesh_utils.hh"
+#include "distributed_synchronizer.hh"
 #include "petsc_matrix.hh"
+#include "fe_engine.hh"
 #include "dof_synchronizer.hh"
 
 #include "mesh_partition_scotch.hh"
@@ -42,7 +45,10 @@ using namespace akantu;
 int main(int argc, char *argv[]) {
 
   initialize(argc, argv);
+  const ElementType element_type = _triangle_3;
+  const GhostType ghost_type = _not_ghost; 
   UInt spatial_dimension = 2;
+
 
   StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
@@ -50,26 +56,71 @@ int main(int argc, char *argv[]) {
 
   /// read the mesh and partition it
   Mesh mesh(spatial_dimension);
-  akantu::MeshPartition * partition = NULL;
 
+  /* ------------------------------------------------------------------------ */
+  /* Parallel initialization                                                  */
+  /* ------------------------------------------------------------------------ */
+  DistributedSynchronizer * communicator = NULL;
   if(prank == 0) {
     /// creation mesh
     mesh.read("triangle.msh");
-    partition = new MeshPartitionScotch(mesh, spatial_dimension);
+    MeshPartitionScotch * partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
+    communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
+    delete partition;
+  } else {
+    communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
-
   
+
+  FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange,_ek_regular>(mesh, spatial_dimension, "my_fem");
+
   DOFSynchronizer dof_synchronizer(mesh, spatial_dimension);
   UInt nb_global_nodes = mesh.getNbGlobalNodes();
 
-  PETScMatrix petsc_matrix(nb_global_nodes * spatial_dimension, _symmetric);
-  
   dof_synchronizer.initGlobalDOFEquationNumbers();
 
+  // fill the matrix with 
+  UInt nb_element = mesh.getNbElement(element_type);
+  UInt nb_nodes_per_element = mesh.getNbNodesPerElement(element_type);
+  UInt nb_dofs_per_element = spatial_dimension * nb_nodes_per_element;
+  SparseMatrix K(nb_global_nodes * spatial_dimension, _symmetric);
+  K.buildProfile(mesh, dof_synchronizer, spatial_dimension);
+  Matrix<Real> element_input(nb_dofs_per_element, nb_dofs_per_element, 1);
+  Array<Real> K_e = Array<Real>(nb_element, nb_dofs_per_element * nb_dofs_per_element, "K_e");
+  Array<Real>::matrix_iterator K_e_it = K_e.begin(nb_dofs_per_element, nb_dofs_per_element);
+  Array<Real>::matrix_iterator K_e_end = K_e.end(nb_dofs_per_element, nb_dofs_per_element);
+
+  for(; K_e_it != K_e_end; ++K_e_it)
+    *K_e_it = element_input;
+
+  // assemble the test matrix
+  fem->assembleMatrix(K_e, K, spatial_dimension, element_type, ghost_type);
+
+  CSR<Element> node_to_elem;
+
+  MeshUtils::buildNode2Elements(mesh, node_to_elem, spatial_dimension);
+
+  for (UInt i = 0; i < mesh.getNbNodes(); ++i) {
+    std::cout << node_to_elem.getNbCols(i) << std::endl;
+  }
+
+  PETScMatrix petsc_matrix(nb_global_nodes * spatial_dimension, _symmetric);
+  
   petsc_matrix.resize(dof_synchronizer);
   petsc_matrix.buildProfile(mesh, dof_synchronizer, spatial_dimension);
+  
+
+  petsc_matrix.add(K, 1);
+  petsc_matrix.performAssembly();
+  
 
   petsc_matrix.saveMatrix("profile.mtx");
+
+  delete communicator;
+
+  finalize();
+  
+  return EXIT_SUCCESS;
 
 }

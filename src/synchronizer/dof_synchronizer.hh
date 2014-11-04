@@ -133,6 +133,20 @@ public:
 
   AKANTU_GET_MACRO(NbDOFs, nb_dofs, UInt);
 
+  AKANTU_GET_MACRO(NbGlobalDOFs, nb_global_dofs, UInt);
+
+  /// say if a node is a pure ghost node
+  inline bool isPureGhostDOF(UInt n) const;
+
+  /// say if a node is pure local or master node
+  inline bool isLocalOrMasterDOF(UInt n) const;
+
+  inline bool isLocalDOF(UInt n) const;
+  inline bool isMasterDOF(UInt n) const;
+  inline bool isSlaveDOF(UInt n) const;
+
+
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

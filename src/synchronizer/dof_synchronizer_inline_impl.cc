@@ -287,3 +287,29 @@ template<template <class> class Op, typename T> void DOFSynchronizer::reduceSync
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFSynchronizer::isPureGhostDOF(UInt n) const {
+  return dof_types.getSize() ? (dof_types(n) == -3) : false;
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFSynchronizer::isLocalOrMasterDOF(UInt n) const {
+  return dof_types.getSize() ? (dof_types(n) == -2) || (dof_types(n) == -1) : true;
+}
+
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFSynchronizer::isLocalDOF(UInt n) const {
+  return dof_types.getSize() ? dof_types(n) == -1 : true;
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFSynchronizer::isMasterDOF(UInt n) const {
+  return dof_types.getSize() ? dof_types(n) == -2 : false;
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFSynchronizer::isSlaveDOF(UInt n) const {
+  return dof_types.getSize() ? dof_types(n) >= 0 : false;
+}

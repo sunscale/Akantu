@@ -59,7 +59,7 @@ PETScMatrix::PETScMatrix(UInt size,
   petsc_wrapper(new PETScWrapper),
  d_nnz(0,1,"dnnz"),
  o_nnz(0,1,"onnz"),
- first_global_index(0),
+  first_global_index(0),
  is_petsc_matrix_initialized(false) {
   AKANTU_DEBUG_IN();
   
@@ -71,10 +71,14 @@ PETScMatrix::PETScMatrix(UInt size,
 
 /* -------------------------------------------------------------------------- */
 PETScMatrix::PETScMatrix(const SparseMatrix & matrix,
-			   const ID & id,
-			   const MemoryID & memory_id) :
+			 const ID & id,
+			 const MemoryID & memory_id) :
   SparseMatrix(matrix, id, memory_id),
-  petsc_wrapper(new PETScWrapper), d_nnz(0,1,"dnnz"), o_nnz(0,1,"onnz"), first_global_index(0), is_petsc_matrix_initialized(false) {
+  petsc_wrapper(new PETScWrapper), 
+  d_nnz(0,1,"dnnz"), 
+  o_nnz(0,1,"onnz"), 
+  first_global_index(0),
+  is_petsc_matrix_initialized(false) {
   AKANTU_DEBUG_IN();
 
   this->offset = 0;
@@ -87,10 +91,7 @@ PETScMatrix::PETScMatrix(const SparseMatrix & matrix,
 PETScMatrix::~PETScMatrix() {
   AKANTU_DEBUG_IN();
 
-  PetscErrorCode ierr;
-
-  ierr = MatDestroy(&(this->petsc_wrapper->mat)); CHKERRXX(ierr);
-  delete petsc_wrapper;
+  this->destroyInternalData();
 
   AKANTU_DEBUG_OUT();
 }
@@ -115,12 +116,12 @@ void PETScMatrix::init() {
   ierr = MatSetType(this->petsc_wrapper->mat,  MATAIJ); CHKERRXX(ierr);
 
 
-  if (this->sparse_matrix_type==_symmetric)
+  //if (this->sparse_matrix_type==_symmetric)
     /// set flag for symmetry to enable ICC/Cholesky preconditioner
     //    ierr = MatSetOption(this->petsc_wrapper->mat, MAT_SYMMETRIC, PETSC_TRUE); CHKERRXX(ierr);
 
-
-	
+  this->is_petsc_matrix_initialized = true;
+    
 
   AKANTU_DEBUG_OUT();
 }
@@ -502,5 +503,32 @@ void PETScMatrix::performAssembly() {
   ierr = MatAssemblyEnd(this->petsc_wrapper->mat, MAT_FINAL_ASSEMBLY); CHKERRXX(ierr);
 }
 
+/* -------------------------------------------------------------------------- */
+void PETScMatrix::beforeStaticSolverDestroy() {
+  AKANTU_DEBUG_IN();
+
+  try{
+    this->destroyInternalData();
+  } catch(...) {}
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void PETScMatrix::destroyInternalData() {
+  AKANTU_DEBUG_IN();
+
+  if(this->is_petsc_matrix_initialized) {
+  
+    PetscErrorCode ierr;
+
+    ierr = MatDestroy(&(this->petsc_wrapper->mat)); CHKERRXX(ierr);
+    delete petsc_wrapper;
+
+    this->is_petsc_matrix_initialized = false;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
 
 __END_AKANTU__
