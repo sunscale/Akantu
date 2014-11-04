@@ -47,7 +47,7 @@ Solver::Solver(SparseMatrix & matrix,
   mesh(NULL),
   communicator(StaticCommunicator::getStaticCommunicator()){
   AKANTU_DEBUG_IN();
-
+  StaticSolver::getStaticSolver().registerEventHandler(*this);
 
   AKANTU_DEBUG_OUT();
 }

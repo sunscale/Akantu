@@ -62,7 +62,7 @@ PETScMatrix::PETScMatrix(UInt size,
   first_global_index(0),
  is_petsc_matrix_initialized(false) {
   AKANTU_DEBUG_IN();
-  
+  StaticSolver::getStaticSolver().registerEventHandler(*this);
   this->offset = 0;
   this->init();
 
@@ -80,7 +80,7 @@ PETScMatrix::PETScMatrix(const SparseMatrix & matrix,
   first_global_index(0),
   is_petsc_matrix_initialized(false) {
   AKANTU_DEBUG_IN();
-
+  StaticSolver::getStaticSolver().registerEventHandler(*this);
   this->offset = 0;
   this->init();
 
