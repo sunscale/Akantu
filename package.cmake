@@ -27,20 +27,21 @@
 #
 #===============================================================================
 
-option(AKANTU_PARALLEL_COHESIVE_ELEMENT "Use parallel cohesive_element package of Akantu" OFF)
-add_internal_package_dependencies(parallel_cohesive_element cohesive_element parallel)
+package_declare(parallel_cohesive_element
+  DESCRIPTION "Use parallel cohesive_element package of Akantu"
+  DEPENDS cohesive_element parallel)
 
-set(AKANTU_PARALLEL_COHESIVE_ELEMENT_FILES
-  mesh_utils/cohesive_element_inserter_parallel.cc
-  mesh_utils/cohesive_element_inserter_inline_impl.cc
-  model/solid_mechanics/solid_mechanics_model_cohesive_parallel.hh
-  model/solid_mechanics/solid_mechanics_model_cohesive_parallel.cc
-  model/solid_mechanics/solid_mechanics_model_cohesive_inline_impl.cc
-  synchronizer/facet_synchronizer.cc
-  synchronizer/facet_synchronizer.hh
-  synchronizer/facet_synchronizer_inline_impl.cc
-  synchronizer/facet_stress_synchronizer.cc
-  synchronizer/facet_stress_synchronizer.hh
+package_declare_sources(parallel_cohesive_element
+  cohesive_element_inserter_parallel.cc
+  cohesive_element_inserter_inline_impl.cc
+  solid_mechanics_model_cohesive_parallel.hh
+  solid_mechanics_model_cohesive_parallel.cc
+  solid_mechanics_model_cohesive_inline_impl.cc
+  facet_synchronizer.cc
+  facet_synchronizer.hh
+  facet_synchronizer_inline_impl.cc
+  facet_stress_synchronizer.cc
+  facet_stress_synchronizer.hh
   )
 
 set(AKANTU_PARALLEL_COHESIVE_ELEMENT_TESTS
