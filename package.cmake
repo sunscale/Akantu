@@ -28,16 +28,17 @@
 #
 #===============================================================================
 
-option(AKANTU_IGFEM "Use Interface-enriched generalized FEM" OFF)
+package_declare(IGFEM
+  DESCRIPTION "Use Interface-enriched generalized FEM")
 
-set(AKANTU_IGFEM_FILES
-  fe_engine/element_class_igfem.hh
-  fe_engine/shape_igfem.hh
-  fe_engine/shape_igfem_inline_impl.cc
-  fe_engine/element_class_igfem.cc
-  fe_engine/element_classes/element_class_igfem_triangle_3_inline_impl.cc
-  fe_engine/igfem_element.hh
-  fe_engine/igfem_element.cc
+package_declare_sources(igfem
+  element_class_igfem.hh
+  shape_igfem.hh
+  shape_igfem_inline_impl.cc
+  element_class_igfem.cc
+  element_class_igfem_triangle_3_inline_impl.cc
+  igfem_element.hh
+  igfem_element.cc
   )
 
 set(AKANTU_IGFEM_TESTS
