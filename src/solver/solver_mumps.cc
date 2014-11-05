@@ -132,24 +132,16 @@ SolverMumps::SolverMumps(SparseMatrix & matrix,
   parallel_method = SolverMumpsOptions::_not_parallel;
 #endif //AKANTU_USE_MPI
 
-  CommunicatorEventHandler & comm_event_handler = *this;
-
-  communicator.registerEventHandler(comm_event_handler);
-
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-SolverMumps::~SolverMumps() {
-  AKANTU_DEBUG_IN();
-  this->destroyMumpsData();
-  AKANTU_DEBUG_OUT();
-}
+SolverMumps::~SolverMumps() { }
 
 /* -------------------------------------------------------------------------- */
-void SolverMumps::destroyMumpsData() {
+void SolverMumps::destroyInternalData() {
   AKANTU_DEBUG_IN();
-  
+
   if(this->is_mumps_data_initialized) {
     this->mumps_data.job = _smj_destroy; // destroy
     dmumps_c(&this->mumps_data);
@@ -159,16 +151,6 @@ void SolverMumps::destroyMumpsData() {
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
-void SolverMumps::onCommunicatorFinalize(const StaticCommunicator & comm) {
-  AKANTU_DEBUG_IN();
-
-  try{
-    destroyMumpsData();
-  } catch(...) {}
-
-  AKANTU_DEBUG_OUT();
-}
 
 /* -------------------------------------------------------------------------- */
 void SolverMumps::initMumpsData() {

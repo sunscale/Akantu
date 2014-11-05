@@ -55,7 +55,7 @@ private:
   ParallelMethod parallel_method;
 };
 
-class SolverMumps : public Solver, public CommunicatorEventHandler {
+class SolverMumps : public Solver {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -91,15 +91,12 @@ public:
 
   virtual void setRHS(const Array<Real> & rhs);
 
-
-  virtual void onCommunicatorFinalize(const StaticCommunicator & communicator);
-
 private:
   /// print the error if any happened in mumps
   void printError();
 
   /// clean the mumps info
-  void destroyMumpsData();
+  void destroyInternalData();
 
   /// set internal values;
   void initMumpsData();

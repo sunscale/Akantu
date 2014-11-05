@@ -101,19 +101,13 @@ public:
   void resize(UInt size)
   { this->size = size; }
   
-  void buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_synchronizer, UInt nb_degree_of_freedom);
+  virtual void buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_synchronizer, UInt nb_degree_of_freedom);
 
   /// modify the matrix to "remove" the blocked dof
   virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
 
 //  /// modify the matrix to "remove" the blocked dof
 //  void applyBoundaryNormal(Array<bool> & boundary_normal, Array<Real> & EulerAngles, Array<Real> & rhs, const Array<Real> & matrix, Array<Real> & rhs_rotated);
-
-  /// modify the matrix to "remove" the blocked dof
-  virtual void removeBoundary(const Array<bool> & boundary);
-
-  /// restore the profile that was before removing the boundaries
-  virtual void restoreProfile();
 
   /// save the profil in a file using the MatrixMarket file format
   virtual void saveProfile(const std::string & filename) const;
@@ -164,6 +158,8 @@ public:
   AKANTU_GET_MACRO(Size, size, UInt);
 
   AKANTU_GET_MACRO(SparseMatrixType, sparse_matrix_type, const SparseMatrixType &);
+
+  AKANTU_GET_MACRO(Offset, offset, UInt);
 
   const DOFSynchronizer & getDOFSynchronizer() const {
     AKANTU_DEBUG_ASSERT(dof_synchronizer != NULL,
@@ -226,6 +222,9 @@ protected:
 
   DOFSynchronizer * dof_synchronizer;
   //  std::map<std::pair<UInt, UInt>, UInt> * irn_jcn_to_k;
+
+  /// offset to inidcate whether row and column indices start at 0 (C/C++) or 1 (Fortran)
+  UInt offset; 
 };
 
 

@@ -27,6 +27,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "static_communicator.hh"
 
 
 #ifndef __AKANTU_STATIC_SOLVER_HH__
@@ -34,12 +35,46 @@
 
 __BEGIN_AKANTU__
 
-class StaticSolver {
+namespace StaticSolverEvent {
+  struct BeforeStaticSolverDestroyEvent {
+    BeforeStaticSolverDestroyEvent() {}
+  };
+}
+
+class StaticSolverEventHandler {
+  /* ------------------------------------------------------------------------ */
+  /* Constructors/Destructors                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  virtual ~StaticSolverEventHandler() {};
+
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+protected:
+  inline void sendEvent(const StaticSolverEvent::BeforeStaticSolverDestroyEvent & event) {
+    beforeStaticSolverDestroy();
+  }
+
+  template<class EventHandler> friend class EventHandlerManager;
+
+  /* ------------------------------------------------------------------------ */
+  /* Interface                                                                */
+  /* ------------------------------------------------------------------------ */
+public:
+  virtual void beforeStaticSolverDestroy() {}
+};
+
+
+
+class StaticSolver : public CommunicatorEventHandler,
+                     public EventHandlerManager<StaticSolverEventHandler> {
+  typedef EventHandlerManager<StaticSolverEventHandler> ParentEventHandler;
   /* ------------------------------------------------------------------------ */
   /* Constructors                                                             */
   /* ------------------------------------------------------------------------ */
 private:
-  StaticSolver() : is_initialized(false) {};
+  StaticSolver();
 
 public:
   ~StaticSolver();
@@ -51,7 +86,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:  
+public:
   /// initialize what is needed for the compiled solver interfaces
   void initialize(int & argc, char ** & argv);
 

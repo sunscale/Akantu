@@ -40,6 +40,7 @@
 #include "sparse_matrix.hh"
 #include "mesh.hh"
 #include "static_communicator.hh"
+#include "static_solver.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -57,7 +58,8 @@ private:
 
 extern SolverOptions _solver_no_options;
 
-class Solver : protected Memory {
+class Solver : protected Memory,
+               public StaticSolverEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -89,6 +91,13 @@ public:
 
   /// function to print the contain of the class
   //  virtual void printself(std::ostream & stream, int indent = 0) const;
+
+protected:
+  virtual void destroyInternalData() {};
+
+public:
+  virtual void beforeStaticSolverDestroy();
+
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

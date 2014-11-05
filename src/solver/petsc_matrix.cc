@@ -56,9 +56,14 @@ PETScMatrix::PETScMatrix(UInt size,
 			 const ID & id,
 			 const MemoryID & memory_id) :
   SparseMatrix(size, sparse_matrix_type, id, memory_id), 
-  petsc_wrapper(new PETScWrapper), d_nnz(0,1,"dnnz"), o_nnz(0,1,"onnz") {
+  petsc_wrapper(new PETScWrapper),
+ d_nnz(0,1,"dnnz"),
+ o_nnz(0,1,"onnz"),
+  first_global_index(0),
+ is_petsc_matrix_initialized(false) {
   AKANTU_DEBUG_IN();
-  
+  StaticSolver::getStaticSolver().registerEventHandler(*this);
+  this->offset = 0;
   this->init();
 
   AKANTU_DEBUG_OUT();
@@ -66,12 +71,17 @@ PETScMatrix::PETScMatrix(UInt size,
 
 /* -------------------------------------------------------------------------- */
 PETScMatrix::PETScMatrix(const SparseMatrix & matrix,
-			   const ID & id,
-			   const MemoryID & memory_id) :
+			 const ID & id,
+			 const MemoryID & memory_id) :
   SparseMatrix(matrix, id, memory_id),
-  petsc_wrapper(new PETScWrapper), d_nnz(0,1,"dnnz"), o_nnz(0,1,"onnz") {
+  petsc_wrapper(new PETScWrapper), 
+  d_nnz(0,1,"dnnz"), 
+  o_nnz(0,1,"onnz"), 
+  first_global_index(0),
+  is_petsc_matrix_initialized(false) {
   AKANTU_DEBUG_IN();
-
+  StaticSolver::getStaticSolver().registerEventHandler(*this);
+  this->offset = 0;
   this->init();
 
   AKANTU_DEBUG_OUT();
@@ -81,10 +91,7 @@ PETScMatrix::PETScMatrix(const SparseMatrix & matrix,
 PETScMatrix::~PETScMatrix() {
   AKANTU_DEBUG_IN();
 
-  PetscErrorCode ierr;
-
-  ierr = MatDestroy(&(this->petsc_wrapper->mat)); CHKERRXX(ierr);
-  delete petsc_wrapper;
+  this->destroyInternalData();
 
   AKANTU_DEBUG_OUT();
 }
@@ -109,9 +116,12 @@ void PETScMatrix::init() {
   ierr = MatSetType(this->petsc_wrapper->mat,  MATAIJ); CHKERRXX(ierr);
 
 
-  if (this->sparse_matrix_type==_symmetric)
+  //if (this->sparse_matrix_type==_symmetric)
     /// set flag for symmetry to enable ICC/Cholesky preconditioner
-    ierr = MatSetOption(this->petsc_wrapper->mat, MAT_SYMMETRIC, PETSC_TRUE); CHKERRXX(ierr);
+    //    ierr = MatSetOption(this->petsc_wrapper->mat, MAT_SYMMETRIC, PETSC_TRUE); CHKERRXX(ierr);
+
+  this->is_petsc_matrix_initialized = true;
+    
 
   AKANTU_DEBUG_OUT();
 }
@@ -132,15 +142,11 @@ void PETScMatrix::resize(const DOFSynchronizer & dof_synchronizer) {
   Array<Int> local_master_eq_nbs(nb_dofs);
   Array<Int>::scalar_iterator it_eq_nb = local_master_eq_nbs.begin();
 
-  Array<Int> dof_types = dof_synchronizer.getDOFTypes();
-  Array<Int>::scalar_iterator it_dof_type = dof_types.begin();
-
   /// get the pointer to the gloabl equation number array
   Int * eq_nb_val = dof_synchronizer.getGlobalDOFEquationNumbers().storage();
-
-  for (UInt i = 0; i <nb_dofs; ++i, ++it_dof_type) {
-    if (*it_dof_type == -2 || *it_dof_type == -1 ) {
-      /// get for the local dof the global equation number
+  
+  for (UInt i = 0; i <nb_dofs; ++i) {
+    if (dof_synchronizer.isLocalOrMasterDOF(i) ) {
       *it_eq_nb = eq_nb_val[i];
       ++it_eq_nb;
       ++nb_local_master_dofs;
@@ -154,15 +160,13 @@ void PETScMatrix::resize(const DOFSynchronizer & dof_synchronizer) {
 
   /// resize PETSc matrix
 #if defined(AKANTU_USE_MPI)
-  ierr = MatSetSizes(this->petsc_wrapper->mat, this->size, this->size, this->local_size, this->local_size); CHKERRXX(ierr);
+  ierr = MatSetSizes(this->petsc_wrapper->mat, this->local_size, this->local_size, this->size, this->size); CHKERRXX(ierr);
 #else
   ierr =  MatSetSizes(this->petsc_wrapper->mat, this->local_size, this->local_size); CHKERRXX(ierr);
 #endif
-  
 
   /// create mapping from akantu global numbering to petsc global numbering
   this->createGlobalAkantuToPETScMap(local_master_eq_nbs.storage());
- 
   AKANTU_DEBUG_OUT();
 }
 
@@ -189,17 +193,16 @@ void PETScMatrix::createGlobalAkantuToPETScMap(Int* local_master_eq_nbs_ptr) {
   /// each processor creates a map for his akantu global dofs to the corresponding petsc global dofs
 
   /// determine the PETSc-index for the first dof on each processor
-  UInt petsc_start_index = 0;
-
+	
   for (UInt i = 0; i < rank; ++i) {
-    petsc_start_index +=  master_local_ndofs_per_proc(rank);
+    this->first_global_index +=  master_local_ndofs_per_proc(i);
   }
 
   /// create array for petsc ordering
   Array<Int> petsc_dofs(this->local_size);
   Array<Int>::scalar_iterator it_petsc_dofs = petsc_dofs.begin();
-
-  for (UInt i = petsc_start_index; i < petsc_start_index + this->local_size; ++i, ++it_petsc_dofs) {
+	
+  for (Int i = this->first_global_index; i < this->first_global_index + this->local_size; ++i, ++it_petsc_dofs) {
     *it_petsc_dofs = i; 
   }
 
@@ -254,100 +257,97 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
 
   this->dof_synchronizer = &const_cast<DOFSynchronizer &>(dof_synchronizer);
 
-
-  /// get the types for each local dof
-  const Array<Int> & dof_types = dof_synchronizer.getDOFTypes();
-  Int* dof_type_ptr = dof_types.storage();
   // if(irn_jcn_to_k) delete irn_jcn_to_k;
   // irn_jcn_to_k = new std::map<std::pair<UInt, UInt>, UInt>;
   
-
-  this->dof_synchronizer = &const_cast<DOFSynchronizer &>(dof_synchronizer);
-
   coordinate_list_map::iterator irn_jcn_k_it;
 
   Int * eq_nb_val = dof_synchronizer.getGlobalDOFEquationNumbers().storage();
+  UInt nb_global_dofs = dof_synchronizer.getNbGlobalDOFs();
 
   /// Loop over all the ghost types
   for (ghost_type_t::iterator gt = ghost_type_t::begin(); gt != ghost_type_t::end(); ++gt) {
     const GhostType & ghost_type = *gt;
-    /// Loop over all element types 
     Mesh::type_iterator it  = mesh.firstType(mesh.getSpatialDimension(), ghost_type, _ek_not_defined);
     Mesh::type_iterator end = mesh.lastType (mesh.getSpatialDimension(), ghost_type, _ek_not_defined);
-
     for(; it != end; ++it) {
       UInt nb_element = mesh.getNbElement(*it);
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
       UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom;
 
-      UInt * conn_val = mesh.getConnectivity(*it, _not_ghost).storage();
-      Int * global_eq_nb_val = new Int[nb_degree_of_freedom * nb_nodes_per_element];
+      UInt * conn_val = mesh.getConnectivity(*it, ghost_type).storage();
       Int * local_eq_nb_val = new Int[nb_degree_of_freedom * nb_nodes_per_element];
 
 
       for (UInt e = 0; e < nb_element; ++e) {
-	Int * tmp_global_eq_nb_val = global_eq_nb_val;
 	Int * tmp_local_eq_nb_val = local_eq_nb_val;
-
 	for (UInt i = 0; i < nb_nodes_per_element; ++i) {
 	  UInt n = conn_val[i];
 	  for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
-	    *tmp_global_eq_nb_val++ = eq_nb_val[n * nb_degree_of_freedom + d];
-	    *tmp_local_eq_nb_val++ = n * nb_degree_of_freedom + d;
+	    *tmp_local_eq_nb_val++ = eq_nb_val[n * nb_degree_of_freedom + d] - (dof_synchronizer.isPureGhostDOF(n * nb_degree_of_freedom + d) ? nb_global_dofs : 0);
+	    
 	  }
-	  // memcpy(tmp_global_eq_nb_val, eq_nb_val + n * nb_degree_of_freedom, nb_degree_of_freedom * sizeof(Int));
-	  // tmp_global_eq_nb_val += nb_degree_of_freedom;
+	  // memcpy(tmp_local_eq_nb_val, eq_nb_val + n * nb_degree_of_freedom, nb_degree_of_freedom * sizeof(Int));
+	  // tmp_local_eq_nb_val += nb_degree_of_freedom;
 	}
+	
 
 	for (UInt i = 0; i < size_mat; ++i) {
-	  if (dof_type_ptr[local_eq_nb_val[i]] == -2 || dof_type_ptr[local_eq_nb_val[i]] == -1 ) {
-	    UInt c_irn = global_eq_nb_val[i];
-	    if(c_irn < size ) {
-	      //UInt j_start = (sparse_matrix_type == _symmetric) ? i : 0;
-	      for (UInt j = 0; j < size_mat; ++j) {
-		UInt c_jcn = global_eq_nb_val[j];
-		if(c_jcn < size) {
-		  KeyCOO irn_jcn = key(c_irn, c_jcn);
-		  irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
+	  Int c_irn = local_eq_nb_val[i];
+	  UInt j_start = (sparse_matrix_type == _symmetric) ? i : 0;
+	  for (UInt j = j_start; j < size_mat; ++j) {
+	    Int c_jcn = local_eq_nb_val[j];
+	    Array<Int> index_pair(2,1);
+	    index_pair(0) = c_irn;
+	    index_pair(1) = c_jcn;
+	    AOApplicationToPetsc(this->petsc_wrapper->ao, 2, index_pair.storage());
+	    if(sparse_matrix_type == _symmetric && (index_pair(0) > index_pair(1)))
+	      std::swap(index_pair(0), index_pair(1));
+	    if (index_pair(0) >= first_global_index && index_pair(0) < first_global_index + this->local_size)  {
+	      KeyCOO irn_jcn = key(c_irn, c_jcn);
+	      irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
 
-		  if (irn_jcn_k_it == irn_jcn_k.end()) {
-		    if (dof_type_ptr[local_eq_nb_val[j]] == -2 || dof_type_ptr[local_eq_nb_val[j]] == -1 )
-		      this->d_nnz(local_eq_nb_val[i]) += 1;
-		    else
-		      this->o_nnz(local_eq_nb_val[i]) += 1;
-		  }
-		}
+	      if (irn_jcn_k_it == irn_jcn_k.end()) {
+		irn_jcn_k[irn_jcn] = nb_non_zero;
+		
+		
+		// check if node is slave node
+		if (index_pair(1) >= first_global_index && index_pair(1) < first_global_index + this->local_size)
+		  this->d_nnz(index_pair(0) - first_global_index) += 1;
+		else
+		  this->o_nnz(index_pair(0) - first_global_index) += 1;
+		nb_non_zero++;
+		
 	      }
 	    }
+	    
 	  }
+	  
 	}
 	conn_val += nb_nodes_per_element;
       }
 
-      delete [] global_eq_nb_val;
       delete [] local_eq_nb_val;
     }
-
-    // /// for pbc @todo correct it for parallel
-    // if(StaticCommunicator::getStaticCommunicator().getNbProc() == 1) {
-    //   for (UInt i = 0; i < size; ++i) {
-    // 	KeyCOO irn_jcn = key(i, i);
-    // 	irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
-    // 	if(irn_jcn_k_it == irn_jcn_k.end()) {
-    // 	  irn_jcn_k[irn_jcn] = nb_non_zero;
-    // 	  irn.push_back(i + 1);
-    // 	  jcn.push_back(i + 1);
-    // 	  nb_non_zero++;
-    // 	}
-    //   }
-    // }
   }
 
-  /// map arrays of nonzeros per row from akantu global to petsc global numbering
-  ierr = AOApplicationToPetsc(this->petsc_wrapper->ao,
-		       local_size, d_nnz.storage()); CHKERRXX(ierr);
-  ierr = AOApplicationToPetsc(this->petsc_wrapper->ao,
-		       local_size, o_nnz.storage()); CHKERRXX(ierr);
+
+
+  // /// for pbc @todo correct it for parallel
+  // if(StaticCommunicator::getStaticCommunicator().getNbProc() == 1) {
+  //   for (UInt i = 0; i < size; ++i) {
+  // 	KeyCOO irn_jcn = key(i, i);
+  // 	irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
+  // 	if(irn_jcn_k_it == irn_jcn_k.end()) {
+  // 	  irn_jcn_k[irn_jcn] = nb_non_zero;
+  // 	  irn.push_back(i + 1);
+  // 	  jcn.push_back(i + 1);
+  // 	  nb_non_zero++;
+  // 	}
+  //   }
+  // }
+  
+
 
   // std::string mat_type;
   // mat_type.resize(20, 'a');
@@ -373,9 +373,6 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
 		       << " akantu in the preallocation step");
   }
 
-  /// assemble matrix
-  MatAssemblyBegin(this->petsc_wrapper->mat, MAT_FINAL_ASSEMBLY);
-  MatAssemblyEnd(this->petsc_wrapper->mat, MAT_FINAL_ASSEMBLY);
 
   AKANTU_DEBUG_OUT();
 }
@@ -390,6 +387,9 @@ void PETScMatrix::saveMatrix(const std::string & filename) const {
   /// create Petsc viewer
   PetscViewer viewer; 
   ierr = PetscViewerASCIIOpen(this->petsc_wrapper->communicator, filename.c_str(), &viewer); CHKERRXX(ierr);
+
+  /// set the format
+  PetscViewerSetFormat(viewer, PETSC_VIEWER_DEFAULT); CHKERRXX(ierr);
   /// save the matrix
   ierr =  MatView(this->petsc_wrapper->mat, viewer); CHKERRXX(ierr);
 
@@ -476,24 +476,22 @@ void PETScMatrix::saveMatrix(const std::string & filename) const {
 /* -------------------------------------------------------------------------- */
 void PETScMatrix::add(const SparseMatrix & matrix, Real alpha) {
   PetscErrorCode ierr;
-  AKANTU_DEBUG_ASSERT(nb_non_zero == matrix.getNbNonZero(),
-		      "The two matrix don't have the same profiles");
+  //  AKANTU_DEBUG_ASSERT(nb_non_zero == matrix.getNbNonZero(),
+  //		      "The two matrix don't have the same profiles");
 
-  const Array<Real> matrix_a = matrix.getA();
-  Array<Int> matrix_irn = matrix.getIRN();
-  Array<Int> matrix_jcn = matrix.getJCN();
-  UInt matrix_nb_non_zero = matrix.getNbNonZero();
-
-  /// map global akantu to global petsc
-  ierr = AOApplicationToPetsc(this->petsc_wrapper->ao, matrix_nb_non_zero,matrix_irn.storage()); CHKERRXX(ierr);
-  ierr = AOApplicationToPetsc(this->petsc_wrapper->ao, matrix_nb_non_zero,matrix_jcn.storage()); CHKERRXX(ierr);
-
-  Real val_to_add = 0;
-
-  for (UInt n = 0; n < matrix_nb_non_zero; ++n) {
-    val_to_add = alpha * matrix_a(n);
-    ierr = MatSetValue(this->petsc_wrapper->mat, matrix_irn(n), matrix_jcn(n), val_to_add,INSERT_VALUES); CHKERRXX(ierr);
+  for (UInt n = 0; n < matrix.getNbNonZero(); ++n) {
+    Array<Int> index(2,1);
+    index(0) = matrix.getIRN()(n)-matrix.getOffset();
+    index(1) =  matrix.getJCN()(n)-matrix.getOffset();
+    AOApplicationToPetsc(this->petsc_wrapper->ao, 2, index.storage());
+    if (_symmetric && index(0) > index(1))
+      std::swap(index(0), index(1));
+    ierr = MatSetValue(this->petsc_wrapper->mat, index(0), index(1), matrix.getA()(n) * alpha, ADD_VALUES); CHKERRXX(ierr);
   }
+
+
+  
+
 
 
 }
@@ -505,5 +503,32 @@ void PETScMatrix::performAssembly() {
   ierr = MatAssemblyEnd(this->petsc_wrapper->mat, MAT_FINAL_ASSEMBLY); CHKERRXX(ierr);
 }
 
+/* -------------------------------------------------------------------------- */
+void PETScMatrix::beforeStaticSolverDestroy() {
+  AKANTU_DEBUG_IN();
+
+  try{
+    this->destroyInternalData();
+  } catch(...) {}
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void PETScMatrix::destroyInternalData() {
+  AKANTU_DEBUG_IN();
+
+  if(this->is_petsc_matrix_initialized) {
+  
+    PetscErrorCode ierr;
+
+    ierr = MatDestroy(&(this->petsc_wrapper->mat)); CHKERRXX(ierr);
+    delete petsc_wrapper;
+
+    this->is_petsc_matrix_initialized = false;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
 
 __END_AKANTU__

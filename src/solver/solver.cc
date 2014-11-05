@@ -41,10 +41,13 @@ SolverOptions _solver_no_options(true);
 Solver::Solver(SparseMatrix & matrix,
 	       const ID & id,
 	       const MemoryID & memory_id) :
-  Memory(id, memory_id), matrix(&matrix), is_matrix_allocated(false), mesh(NULL),
+  Memory(id, memory_id), StaticSolverEventHandler(),
+  matrix(&matrix),
+  is_matrix_allocated(false),
+  mesh(NULL),
   communicator(StaticCommunicator::getStaticCommunicator()){
   AKANTU_DEBUG_IN();
-
+  StaticSolver::getStaticSolver().registerEventHandler(*this);
 
   AKANTU_DEBUG_OUT();
 }
@@ -53,7 +56,21 @@ Solver::Solver(SparseMatrix & matrix,
 Solver::~Solver() {
   AKANTU_DEBUG_IN();
 
+  this->destroyInternalData();
+
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+void Solver::beforeStaticSolverDestroy() {
+  AKANTU_DEBUG_IN();
+
+  try{
+    this->destroyInternalData();
+  } catch(...) {}
+
+  AKANTU_DEBUG_OUT();
+}
+
 
 __END_AKANTU__

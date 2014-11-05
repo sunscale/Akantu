@@ -73,7 +73,7 @@ class CommunicatorEventHandler {
 public:
   virtual ~CommunicatorEventHandler() {}
   virtual void onCommunicatorFinalize(__attribute__((unused)) const StaticCommunicator & communicator) { }
-protected:
+private:
   inline void sendEvent(const FinalizeCommunicatorEvent & event) {
     onCommunicatorFinalize(event.communicator);
   }

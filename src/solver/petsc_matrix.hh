@@ -32,13 +32,15 @@
 
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix.hh"
+#include "static_communicator.hh"
+#include "static_solver.hh"
 
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
 class PETScWrapper;
 
-class PETScMatrix : public SparseMatrix {
+class PETScMatrix : public SparseMatrix, StaticSolverEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -66,6 +68,8 @@ public:
   /// resize PETSc matrix
   void resize(const DOFSynchronizer & dof_synchronizer);
 
+  void createGlobalAkantuToPETScMap(Int* local_master_eq_nbs_ptr);
+
   // /// remove the existing profile
   // inline void clearProfile();
 
@@ -83,16 +87,6 @@ public:
 
   // /// modify the matrix to "remove" the blocked dof
   // virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
-
-  /// modify the matrix to "remove" the blocked dof
-  virtual void applyBoundaryNormal(Array<bool> & boundary_normal, Array<Real> & EulerAngles, Array<Real> & rhs, const Array<Real> & matrix, Array<Real> & rhs_rotated) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
-  /// modify the matrix to "remove" the blocked dof
-  virtual void removeBoundary(const Array<bool> & boundary) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
   
   /// perform assembly so that matrix is ready for use
   void performAssembly();
@@ -121,13 +115,10 @@ public:
   // /// function to print the contain of the class
   // //virtual void printself(std::ostream & stream, int indent = 0) const;
 
+  virtual void beforeStaticSolverDestroy();
+
 private:
-  /// create a mapping from the global akantu numbering to the PETSc numbering
-  void createGlobalAkantuToPETScMap(Int* local_master_eq_nbs_ptr);
-
-  /// create a mapping from the local akantu numbering to the PETSc numbering
-  void createLocalAkantuToPETScMap(const DOFSynchronizer & dof_synchronizer);
-
+  virtual void destroyInternalData();
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -151,6 +142,15 @@ private:
 
   /// number of nonzeros in every row of the off-diagonal part
   Array<Int> o_nnz;
+
+  /// the global index of the first local row 
+  Int first_global_index;
+
+  /// bool to indicate if the matrix data has been initialized by calling MatCreate
+
+  bool is_petsc_matrix_initialized;
+
+
 };
 
 __END_AKANTU__

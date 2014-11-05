@@ -37,6 +37,12 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
+StaticSolver::StaticSolver() : CommunicatorEventHandler(), is_initialized(false) {
+  StaticCommunicator::getStaticCommunicator().registerEventHandler(*this);
+}
+
+
+/* -------------------------------------------------------------------------- */
 StaticSolver::~StaticSolver() {
   --this->nb_references;
   if(this->nb_references == 0)
@@ -54,20 +60,20 @@ StaticSolver & StaticSolver::getStaticSolver() {
 #ifdef AKANTU_USE_PETSC
 #if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5
 static PetscErrorCode PETScErrorHandler(MPI_Comm,
-					int line, const char * dir, const char *file,
-					PetscErrorCode number,
-					PetscErrorType type,
-					const char *message,
-					void *) {
+                                        int line, const char * dir, const char *file,
+                                        PetscErrorCode number,
+                                        PetscErrorType type,
+                                        const char *message,
+                                        void *) {
   AKANTU_DEBUG_ERROR("An error occured in PETSc in file \"" << file << ":" << line << "\" - PetscErrorCode "<< number << " - \""<< message << "\"");
 }
 #else
 static PetscErrorCode PETScErrorHandler(MPI_Comm,
-					int line, const char * func, const char * dir, const char *file,
-					PetscErrorCode number,
-					PetscErrorType type,
-					const char *message,
-					void *) {
+                                        int line, const char * func, const char * dir, const char *file,
+                                        PetscErrorCode number,
+                                        PetscErrorType type,
+                                        const char *message,
+                                        void *) {
   AKANTU_DEBUG_ERROR("An error occured in PETSc in file \"" << file << ":" << line << "\" - PetscErrorCode "<< number << " - \""<< message << "\"");
 }
 #endif
@@ -89,6 +95,9 @@ void StaticSolver::initialize(int & argc, char ** & argv) {
 
 /* -------------------------------------------------------------------------- */
 void StaticSolver::finalize() {
+  ParentEventHandler::sendEvent(StaticSolverEvent::BeforeStaticSolverDestroyEvent());
+
+
   AKANTU_DEBUG_ASSERT(this->is_initialized == true, "The static solver has not been initialized");
 #ifdef AKANTU_USE_PETSC
   PetscFinalize();
