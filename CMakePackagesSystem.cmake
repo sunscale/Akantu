@@ -624,18 +624,21 @@ function(package_list_packages PACKAGE_FOLDER)
     file(GLOB _extra_package_list RELATIVE
       "${_opt_pkg_EXTRA_PACKAGES_FOLDER}" "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/*")
     foreach(_pkg ${_extra_package_list})
-      package_get_name(${_pkg} _pkg_name)
+      if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
 
-      _package_set_filename(${_pkg_name}
-        "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
+	package_get_name(${_pkg} _pkg_name)
 
-      _package_set_sources_folder(${_pkg_name}
-	"${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
+	_package_set_filename(${_pkg_name}
+          "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
 
-      list(APPEND _extra_pkg_src_folders "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
+	_package_set_sources_folder(${_pkg_name}
+	  "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
 
-      list(APPEND _packages_list_all ${_pkg_name})
-      include("${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
+	list(APPEND _extra_pkg_src_folders "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
+
+	list(APPEND _packages_list_all ${_pkg_name})
+	include("${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
+      endif()
     endforeach()
   endif()
 
