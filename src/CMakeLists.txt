@@ -43,8 +43,8 @@ package_get_include_directories(
   )
 
 package_get_external_informations(
-  AKANTU_EXTERNAL_LIB_INCLUDE_DIR
-  AKANTU_EXTERNAL_LIB_LIBRARIES
+  AKANTU_EXTERNAL_INCLUDE_DIR
+  AKANTU_EXTERNAL_LIBRARIES
 )
 
 #===========================================================================
@@ -92,12 +92,12 @@ set(AKANTU_INCLUDE_DIRS
   ${CMAKE_CURRENT_BINARY_DIR} ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_PRECOMPILE_HDR_INCLUDE_DIRS}
   CACHE INTERNAL "Internal include directories to link with Akantu as a subproject")
 
-include_directories(${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_LIB_INCLUDE_DIR})
+include_directories(${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
 
 function(generate_material_list)
   message(STATUS "Determining the list of recognized materials...")
 
-  set(_include_dirs ${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_LIB_INCLUDE_DIR})
+  set(_include_dirs ${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
 
   try_run(_material_list_run _material_list_compile
     ${CMAKE_BINARY_DIR}
