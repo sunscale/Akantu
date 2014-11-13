@@ -307,7 +307,7 @@ inline void ElementClass<type, kind>::computeJacobian(const Matrix<Real> & natur
   Matrix<Real> dnds(interpolation_property::natural_space_dimension,
 		    interpolation_property::nb_nodes_per_element);
   Matrix<Real> J(natural_coords.rows(),
-			node_coords.rows());
+		 node_coords.rows());
 
   for (UInt p = 0; p < nb_points; ++p) {
     Vector<Real> ncoord_p(natural_coords(p));
