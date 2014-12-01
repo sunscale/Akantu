@@ -114,6 +114,13 @@ public:
 		     Vector<Real> & shapes,
 		     const GhostType & ghost_type) const;
 
+  /// compute the shape derivatives on a provided point
+  template <ElementType type>
+  void computeShapeDerivatives(const Matrix<Real> & real_coords,
+		     UInt elem,
+		     Tensor3<Real> & shapes,
+		     const GhostType & ghost_type) const;
+
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
@@ -122,7 +129,7 @@ protected:
   template <ElementType type>
   inline void computeShapeDerivativesOnCPointsByElement(const Matrix<Real> & node_coords,
 							const Matrix<Real> & natural_coords,
-							Tensor3<Real> & shapesd);
+							Tensor3<Real> & shapesd) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
