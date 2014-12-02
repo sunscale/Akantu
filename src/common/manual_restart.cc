@@ -1,5 +1,19 @@
 /**
  * @file   manual_restart.cc
+ *
+ *
+ *
+ * @brief  
+ *
+ * @section LICENSE
+ *
+ * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ */
+
+/**
+ * @file   manual_restart.cc
  * @author Dana Christen <dana.christen@epfl.ch>
  * @date   May 15, 2013
  */

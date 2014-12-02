@@ -1,27 +1,15 @@
 /**
  * @file   synchronized_array.hh
- * @author David Kammer <david.kammer@epfl.ch>
- * @date   Wed Mar 13 07:19:27 2013
+ *
+ * @author David Simon Kammer <david.kammer@epfl.ch>
+ *
  *
  * @brief  synchronized array: a array can be registered to another (hereafter called top) array. If an element is added to or removed from the top array, the registered array removes or adds at the same position an element. The two arrays stay therefore synchronized.
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
- *
- * Akantu is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as  published by  the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
- * details.
- *
- * You should  have received  a copy  of the GNU  Lesser General  Public License
- * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 

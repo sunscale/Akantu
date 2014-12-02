@@ -1,3 +1,17 @@
+#===============================================================================
+# @file   CMakeLists.txt
+#
+#
+#
+# @brief  
+#
+# @section LICENSE
+#
+# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+#
+#===============================================================================
+
 cmake_minimum_required(VERSION 2.6)
 project(Akantu_SimTools)
 
