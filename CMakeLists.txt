@@ -119,7 +119,7 @@ package_list_packages(${PROJECT_SOURCE_DIR}/packages
 #add_all_packages(${PROJECT_SOURCE_DIR}/packages ${PROJECT_SOURCE_DIR}/src)
 
 include_boost()
-
+message("toto: ${AKANTU_EXTRA_TARGET_DEPENDENCIES}")
 ## meta option \todo better way to do it when multiple package give enable the
 ## same feature
 if(AKANTU_SCOTCH)

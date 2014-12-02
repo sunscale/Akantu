@@ -151,7 +151,9 @@ endif()
 add_library(akantu ${AKANTU_LIBRARY_SRCS})
 target_link_libraries(akantu ${AKANTU_EXTERNAL_LIBRARIES})
 
+message("${AKANTU_EXTRA_TARGET_DEPENDENCIES}")
 if(AKANTU_EXTRA_TARGET_DEPENDENCIES)
+  message("Toto")
   add_dependencies(akantu ${AKANTU_EXTRA_TARGET_DEPENDENCIES})
 endif()
 

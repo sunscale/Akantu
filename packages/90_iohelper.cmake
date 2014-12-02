@@ -34,6 +34,7 @@ package_declare(IOHelper EXTERNAL
 
 package_get_name(IOHelper _pkg_name)
 package_use_system(${_pkg_name} _use_system)
+
 if(NOT ${_use_system})
   package_get_option_name(${_pkg_name} _option_name)
 
@@ -56,7 +57,7 @@ if(NOT ${_use_system})
     package_set_libraries(${_pkg_name} ${IOHELPER_LIBRARIES})
     package_set_include_dir(${_pkg_name} ${PROJECT_BINARY_DIR}/third-party/include/iohelper)
 
-    list(APPEND AKANTU_EXTRA_TARGET_DEPENDENCIES IOHelper)
+    package_add_extra_dependency(IOHelper IOHelper)
     package_activate(${_pkg_name})
   else()
     package_deactivate(${_pkg_name})
