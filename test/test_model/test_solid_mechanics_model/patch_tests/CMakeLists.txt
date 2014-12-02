@@ -39,6 +39,7 @@ register_test(test_weight
   DEPENDENCIES test_weight_hexa_mesh test_weight_tetra_mesh
   FILES_TO_COPY material_colone.dat
   DIRECTORIES_TO_CREATE paraview/test_weight_hexa paraview/test_weight_tetra
+  PACKAGE core
   )
 
 #===============================================================================
@@ -58,7 +59,7 @@ set(LIST_TYPES_2D
   quadrangle_8
 )
 
-add_akantu_test(explicit "Explicit patch tests" PACKAGE core)
-add_akantu_test(implicit "Implicit patch tests" PACKAGE implicit)
+add_akantu_test(explicit "Explicit patch tests")
+add_akantu_test(implicit "Implicit patch tests")
 
-add_akantu_test(lumped_mass "Test the mass lumping" PACKAGE core)
+add_akantu_test(lumped_mass "Test the mass lumping")

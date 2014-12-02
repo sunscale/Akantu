@@ -38,12 +38,14 @@ register_test(test_mesh_io_msh
   SOURCES test_mesh_io_msh.cc
   DEPENDENCIES test_msh_cube
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
-  
+
 register_test(test_mesh_io_msh_physical_names
   SOURCES test_mesh_io_msh_physical_names.cc
   DEPENDENCIES test_msh_cube_physical_names
-)
+  PACKAGE core
+  )
 
 #===============================================================================
 #register_test(test_mesh_io_diana test_mesh_io_diana.cc)

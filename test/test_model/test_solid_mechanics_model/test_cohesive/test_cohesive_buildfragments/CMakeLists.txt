@@ -35,6 +35,6 @@ register_test(test_cohesive_buildfragments
   SOURCES test_cohesive_buildfragments.cc
   DEPENDENCIES test_cohesive_buildfragments_mesh
   FILES_TO_COPY material.dat
-  DIRECTORIES_TO_CREATE paraview)
-
-add_dependencies(test_cohesive_buildfragments test_cohesive_buildfragments_mesh)
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE cohesive_element
+  )

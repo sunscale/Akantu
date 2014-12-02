@@ -56,7 +56,7 @@ function(manage_test_and_example et_name desc build_all label)
   endif()
 
   if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${et_name} AND _activated)
-#    message("Example or test ${et_name} not present")
+    #    message("Example or test ${et_name} not present")
     return()
   endif()
 
@@ -90,8 +90,8 @@ endfunction()
 # Tests
 #===============================================================================
 if(AKANTU_TESTS)
-  option(AKANTU_BUILD_ALL_TESTS "Build all tests")
-#  mark_as_advanced(AKANTU_BUILD_ALL_TESTS)
+  option(AKANTU_BUILD_ALL_TESTS "Build all tests" ON)
+  mark_as_advanced(AKANTU_BUILD_ALL_TESTS)
 endif(AKANTU_TESTS)
 
 #===============================================================================
@@ -113,7 +113,7 @@ macro(register_test_old test_name)
 endmacro()
 
 #===============================================================================
-macro(add_akantu_test test_name desc)
+macro(add_akantu_test1 test_name desc)
   manage_test_and_example(${test_name} ${desc} AKANTU_BUILD_ALL_TESTS _ ${ARGN})
 endmacro()
 
@@ -123,7 +123,7 @@ endmacro()
 #===============================================================================
 if(AKANTU_EXAMPLES)
   option(AKANTU_BUILD_ALL_EXAMPLES "Build all examples")
-#  mark_as_advanced(AKANTU_BUILD_ALL_EXAMPLES)
+  #  mark_as_advanced(AKANTU_BUILD_ALL_EXAMPLES)
 endif(AKANTU_EXAMPLES)
 
 #===============================================================================
@@ -138,7 +138,7 @@ macro(add_example example_name desc)
 endmacro()
 
 #===============================================================================
-function(register_test test_name)
+function(register_test1 test_name)
   set(multi_variables
     SOURCES FILES_TO_COPY DEPENDENCIES DIRECTORIES_TO_CREATE COMPILE_OPTIONS EXTRA_FILES
     )
@@ -253,5 +253,124 @@ function(register_test test_name)
     endforeach()
     set(AKANTU_TESTS_FILES ${_tmp} CACHE INTERNAL "")
     set(${_package_name}_TESTS_FILES ${_pkg_tmp} CACHE INTERNAL "")
-   endif()
+  endif()
+endfunction()
+
+
+
+# ==============================================================================
+function(add_test_tree dir)
+  if(AKANTU_TESTS)
+    enable_testing()
+    include(CTest)
+    mark_as_advanced(BUILD_TESTING)
+
+    set(AKANTU_TESTS_EXCLUDE_FILES "" CACHE INTERNAL "")
+
+    set(_akantu_current_parent_test ${dir} CACHE INTERNAL "Current test folder" FORCE)
+    set(_akantu_${dir}_tests_count 0 CACHE INTERNAL "" FORCE)
+
+    string(TOUPPER ${dir} _u_dir)
+    set(AKANTU_BUILD_${_u_dir} ON CACHE INTERNAL "${desc}" FORCE)
+    add_subdirectory(${dir})
+  else()
+    set(AKANTU_TESTS_EXCLUDE_FILES "${CMAKE_CURRENT_BINARY_DIR}/${dir}" CACHE INTERNAL "")
+  endif()
+endfunction()
+
+# ==============================================================================
+function(add_akantu_test dir desc)
+  set(_my_parent_dir ${_akantu_current_parent_test})
+
+  # initialize variables
+  set(_akantu_current_parent_test ${dir} CACHE INTERNAL "Current test folder" FORCE)
+  set(_akantu_${dir}_tests_count 0 CACHE INTERNAL "" FORCE)
+
+  # set the option for this directory
+  string(TOUPPER ${dir} _u_dir)
+  option(AKANTU_BUILD_${_u_dir} "${desc}")
+  mark_as_advanced(AKANTU_BUILD_${_u_dir})
+
+  # add the sub-directory
+  add_subdirectory(${dir})
+
+
+  # if no test can be activated make the option disappear
+  set(_force_deactivate_count FALSE)
+  if(${_akantu_${dir}_tests_count} EQUAL 0)
+    set(_force_deactivate_count TRUE)
+  endif()
+
+  # if parent off make the option disappear
+  set(_force_deactivate_parent FALSE)
+  string(TOUPPER ${_my_parent_dir} _u_parent_dir)
+  if(NOT AKANTU_BUILD_${_u_parent_dir})
+    set(_force_deactivate_parent TRUE)
+  endif()
+
+  if(_force_deactivate_parent OR _force_deactivate_count OR AKANTU_BUILD_ALL_TESTS)
+    if(NOT DEFINED _AKANTU_BUILD_${_u_dir}_SAVE)
+      set(_AKANTU_BUILD_${_u_dir}_SAVE ${AKANTU_BUILD_${_u_dir}} CACHE INTERNAL "" FORCE)
+    endif()
+    unset(AKANTU_BUILD_${_u_dir} CACHE)
+    if(AKANTU_BUILD_ALL_TESTS AND NOT _force_deactivate_count)
+      set(AKANTU_BUILD_${_u_dir} ON CACHE INTERNAL "${desc}" FORCE)
+    else()
+      set(AKANTU_BUILD_${_u_dir} OFF CACHE INTERNAL "${desc}" FORCE)
+    endif()
+  else()
+    if(DEFINED _AKANTU_BUILD_${_u_dir}_SAVE)
+      unset(AKANTU_BUILD_${_u_dir} CACHE)
+      set(AKANTU_BUILD_${_u_dir} ${_AKANTU_BUILD_${_u_dir}_SAVE} CACHE BOOL "${desc}")
+      unset(_AKANTU_BUILD_${_u_dir}_SAVE CACHE)
+    endif()
+  endif()
+
+  # adding up to the parent count
+  math(EXPR _tmp_parent_count "${_akantu_${dir}_tests_count} + ${_akantu_${_my_parent_dir}_tests_count}")
+  set(_akantu_${_my_parent_dir}_tests_count ${_tmp_parent_count} CACHE INTERNAL "" FORCE)
+
+  # restoring the parent current dir
+  set(_akantu_current_parent_test ${_my_parent_dir} CACHE INTERNAL "Current test folder" FORCE)
+endfunction()
+
+
+# ==============================================================================
+function(register_test test_name)
+   set(multi_variables
+    SOURCES FILES_TO_COPY DEPENDENCIES DIRECTORIES_TO_CREATE COMPILE_OPTIONS EXTRA_FILES
+    )
+
+  cmake_parse_arguments(_register_test
+    ""
+    "PACKAGE"
+    "${multi_variables}"
+    ${ARGN}
+    )
+
+  if(NOT _register_test_PACKAGE)
+    message(FATAL_ERROR "No reference package was defined for the test ${test_name} in folder ${CMAKE_CURRENT_SOURCE_DIR}")
+  endif()
+
+  package_get_name(${_register_test_PACKAGE} _pkg_name)
+  package_is_activated(${_pkg_name} _act)
+
+  if(_act)
+    math(EXPR _tmp_parent_count "${_akantu_${_akantu_current_parent_test}_tests_count} + 1")
+    set(_akantu_${_akantu_current_parent_test}_tests_count ${_tmp_parent_count} CACHE INTERNAL "" FORCE)
+
+    string(TOUPPER ${_akantu_current_parent_test} _u_parent)
+    if(AKANTU_BUILD_${_u_parent})
+      add_executable(${test_name} ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS})
+      set_property(TARGET ${test_name}  APPEND
+	PROPERTY INCLUDE_DIRECTORIES ${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_LIB_INCLUDE_DIR})
+      target_link_libraries(${test_name} akantu ${AKANTU_EXTERNAL_LIBRARIES})
+
+      if(_register_test_COMPILE_OPTIONS)
+	set_target_properties(${test_name}
+	  PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
+      endif()
+
+    endif()
+  endif()
 endfunction()

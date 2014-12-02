@@ -271,48 +271,6 @@ set(AKANTU_CORE_DEB_DEPEND
   libboost-dev
   )
 
-set(AKANTU_CORE_TESTS
-  test_csr
-  test_facet_element_mapping
-  test_facet_extraction_tetrahedron_4
-  test_facet_extraction_triangle_3
-  test_grid
-  test_interpolate_stress
-  test_local_material
-  test_material_damage_non_local
-  test_material_thermal
-  test_matrix
-  test_mesh_boundary
-  test_mesh_data
-  test_mesh_io_msh
-  test_mesh_io_msh_physical_names
-  test_mesh_partitionate_mesh_data
-  test_parser
-  test_dumper
-  test_pbc_tweak
-  test_purify_mesh
-  test_solid_mechanics_model_bar_traction2d
-  test_solid_mechanics_model_bar_traction2d_structured
-  test_solid_mechanics_model_bar_traction2d_structured_pbc
-  test_solid_mechanics_model_boundary_condition
-  test_solid_mechanics_model_circle_2
-  test_solid_mechanics_model_cube3d
-  test_solid_mechanics_model_cube3d_pbc
-  test_solid_mechanics_model_cube3d_tetra10
-  test_solid_mechanics_model_square
-  test_solid_mechanics_model_material_eigenstrain
-  test_static_memory
-  test_surface_extraction_tetrahedron_4
-  test_surface_extraction_triangle_3
-  test_vector
-  test_vector_iterator
-  test_weight
-  test_math
-  test_material_standard_linear_solid_deviatoric_relaxation
-  test_material_standard_linear_solid_deviatoric_relaxation_tension
-  test_material_plasticity
-  )
-
 set(AKANTU_CORE_MANUAL_FILES
   manual.sty
   manual.cls

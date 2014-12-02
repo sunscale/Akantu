@@ -35,7 +35,7 @@ add_mesh(test_surface_extraction_2d_mesh squares.geo 2 1)
 register_test(test_surface_extraction_triangle_3
   SOURCES test_surface_extraction_triangle_3.cc
   DEPENDENCIES test_surface_extraction_2d_mesh
-  DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
 
 #===============================================================================
@@ -43,5 +43,5 @@ add_mesh(test_surface_extraction_3d_mesh cubes.geo 3 1)
 register_test(test_surface_extraction_tetrahedron_4
   SOURCES test_surface_extraction_tetrahedron_4.cc
   DEPENDENCIES test_surface_extraction_3d_mesh
-  DIRECTORIES_TO_CREATE paraview
-)
+  PACKAGE core
+  )

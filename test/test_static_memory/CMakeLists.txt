@@ -30,4 +30,4 @@
 #
 #===============================================================================
 
-register_test(test_static_memory SOURCES test_static_memory.cc)
+register_test(test_static_memory SOURCES test_static_memory.cc PACKAGE core)
