@@ -52,6 +52,7 @@ mark_as_advanced(AUTO_MOVE_UNKNOWN_FILES)
 # ==============================================================================
 # Accessors
 # ==============================================================================
+# Package name
 function(package_get_name pkg pkg_name)
   string(TOUPPER ${PROJECT_NAME} _project)
   string(REPLACE "-" "_" _str_pkg "${pkg}")
@@ -60,6 +61,7 @@ function(package_get_name pkg pkg_name)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Real name
 function(package_get_real_name pkg_name real_name)
   set(${real_name} ${${pkg_name}} PARENT_SCOPE)
 endfunction()
@@ -69,6 +71,7 @@ function(_package_set_real_name pkg_name real_name)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Option name
 function(package_get_option_name pkg_name opt_name)
   string(TOUPPER "${PROJECT_NAME}" _project)
   package_get_real_name(${pkg_name} _real_name)
@@ -86,6 +89,7 @@ function(package_get_option_name pkg_name opt_name)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Set if system package or compile external lib
 function(_package_set_system_option pkg_name default)
   string(TOUPPER "${PROJECT_NAME}" _project)
   package_get_real_name(${pkg_name} _real_name)
@@ -108,6 +112,7 @@ function(package_use_system pkg_name use)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Nature
 function(_package_set_nature pkg_name NATURE)
   set(${pkg_name}_NATURE ${NATURE} CACHE INTERNAL "" FORCE)
 endfunction()
@@ -121,6 +126,7 @@ function(package_get_nature pkg_name NATURE)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Description
 function(_package_set_description pkg_name DESC)
   set(${pkg_name}_DESC ${DESC} CACHE INTERNAL "" FORCE)
 endfunction()
@@ -134,6 +140,7 @@ function(package_get_description pkg_name DESC)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Package file name
 function(_package_set_filename pkg_name FILE)
   set(${pkg_name}_FILE ${FILE} CACHE INTERNAL "" FORCE)
 endfunction()
@@ -147,6 +154,7 @@ function(package_get_filename pkg_name FILE)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Source folder
 function(_package_set_sources_folder pkg_name src_folder)
   set(${pkg_name}_SRCS_FOLDER ${src_folder} CACHE INTERNAL "" FORCE)
 endfunction()
@@ -156,6 +164,7 @@ function(package_get_sources_folder pkg_name src_folder)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Extra option for the find_package
 function(_package_set_extra_options pkg_name)
   set(${pkg_name}_OPTIONS ${ARGN}
     CACHE INTERNAL "Extra option for the fin_package function" FORCE)
@@ -166,6 +175,7 @@ function(package_get_extra_options pkg_name options)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Include dir
 function(package_set_include_dir pkg_name)
   package_get_real_name(${pkg_name} _real_name)
   set(${pkg_name}_INCLUDE_DIR "${ARGN}"
@@ -177,6 +187,7 @@ function(package_get_include_dir pkg_name include_dir)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Libraries
 function(package_set_libraries pkg_name)
   package_get_real_name(${pkg_name} _real_name)
   set(${pkg_name}_LIBRARIES "${ARGN}"
@@ -188,6 +199,7 @@ function(package_get_libraries pkg_name libraries)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Activate/deactivate
 function(package_activate pkg_name)
   set(${pkg_name}_STATE ON CACHE INTERNAL "" FORCE)
 endfunction()
@@ -205,6 +217,7 @@ function(package_is_activated pkg_name _act)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Direct dependencies
 function(_package_set_dependencies pkg_name)
   set(${pkg_name}_DEPENDENCIES "${ARGN}"
     CACHE INTERNAL "List of dependencies for package ${_opt_name}" FORCE)
