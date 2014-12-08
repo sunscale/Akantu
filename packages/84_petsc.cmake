@@ -29,9 +29,9 @@
 #
 #===============================================================================
 
-package_declare(PETSc EXRENAL
+package_declare(PETSc EXTERNAL
   DESCRIPTION "Add PETSc support in akantu"
-  ARGS COMPONENT CXX
+  EXTRA_PACKAGE_OPTIONS ARGS COMPONENT CXX
   DEPENDS parallel)
 
 

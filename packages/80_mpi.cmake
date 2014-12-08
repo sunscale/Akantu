@@ -35,6 +35,7 @@ endif()
 package_declare(MPI EXTERNAL
   DESCRIPTION "Add MPI support in akantu"
   EXTRA_PACKAGE_OPTIONS PREFIX MPI_C MPI
+  COMPILE_FLAGS "-DMPICH_IGNORE_CXX_SEEK"
   DEPENDS scotch)
 
 package_declare_sources(MPI
@@ -43,9 +44,11 @@ package_declare_sources(MPI
   synchronizer/static_communicator_mpi.hh
   )
 
+
+
 mark_as_advanced(MPI_EXTRA_LIBRARY MPI_LIBRARY)
 
-set(AKANTU_MPI_DOCUMENTATION 
+set(AKANTU_MPI_DOCUMENTATION
 "
 This is a meta package providing access to MPI.
 

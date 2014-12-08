@@ -36,19 +36,19 @@ add_mesh(test_solver_mesh triangle.geo 2 1)
 register_test(test_sparse_matrix_profile
   SOURCES test_sparse_matrix_profile.cc
   DEPENDENCIES test_solver_mesh
-  PACKAGE core
+  PACKAGE implicit
   )
 
 register_test(test_sparse_matrix_assemble
   SOURCES test_sparse_matrix_assemble.cc
   DEPENDENCIES test_solver_mesh
-  PACKAGE core
+  PACKAGE implicit
   )
 
 register_test(test_sparse_matrix_product
   SOURCES test_sparse_matrix_product.cc
   FILES_TO_COPY bar.msh
-  PACKAGE core
+  PACKAGE implicit
   )
 
 register_test(test_petsc_matrix_profile

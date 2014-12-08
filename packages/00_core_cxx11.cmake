@@ -50,7 +50,8 @@ package_declare_sources(core_cxx11
 
 if(HAVE_NEW_STD)
   package_declare(core_cxx11 ADVANCED
-    DESCRIPTION "C++ 11 additions for Akantu core" DEFAULT ON)
+    DESCRIPTION "C++ 11 additions for Akantu core" DEFAULT ON
+    COMPILE_FLAGS "-std=c++0x")
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.6")
@@ -67,18 +68,12 @@ if(HAVE_NEW_STD)
   package_get_name(core_cxx11 _pkg_name)
   package_get_option_name(${_pkg_name} _option_name)
 
-  if(${_option_name})
-    add_flags(cxx "-std=c++0x")
-  else()
-    remove_flags(cxx "-std=c++0x")
-  endif()
 else()
   package_declare(core_cxx11 ADVANCED
     DESCRIPTION "C++ 11 additions for Akantu core"
     DEFAULT OFF
-    NOT_OPTIONAL)
-
-  remove_flags(cxx "-std=c++0x")
+    NOT_OPTIONAL
+    COMPILE_FLAGS "-std=c++0x")
 endif()
 
 set(AKANTU_CORE_CXX11_DOCUMENTATION "

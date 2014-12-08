@@ -30,7 +30,7 @@
 
 package_declare(BLAS EXTERNAL
   DESCRIPTION "Use BLAS for arithmetic operations"
-  LANGUAGE Fortran)
+  EXTRA_PACKAGE_OPTIONS LANGUAGE Fortran)
 
 if(BLAS_mkl_core_LIBRARY)
   set(AKANTU_USE_BLAS_MKL)

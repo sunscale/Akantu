@@ -164,6 +164,17 @@ function(package_get_sources_folder pkg_name src_folder)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Test folder
+function(_package_set_tests_folder pkg_name test_folder)
+  set(${pkg_name}_TESTS_FOLDER ${test_folder} CACHE INTERNAL "" FORCE)
+endfunction()
+
+function(package_get_tests_folder pkg_name test_folder)
+  set(${test_folder} ${${pkg_name}_TESTS_FOLDER} PARENT_SCOPE)
+endfunction()
+
+
+# ------------------------------------------------------------------------------
 # Extra option for the find_package
 function(_package_set_extra_options pkg_name)
   set(${pkg_name}_OPTIONS ${ARGN}
@@ -172,6 +183,17 @@ endfunction()
 
 function(package_get_extra_options pkg_name options)
   set(${options} "${${pkg_name}_OPTIONS}" PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Compilation flags
+function(_package_set_compile_flags pkg_name)
+  set(${pkg_name}_COMPILE_FLAGS ${ARGN}
+    CACHE INTERNAL "Additional compile flags" FORCE)
+endfunction()
+
+function(package_get_compile_flags pkg_name flags)
+  set(${flags} "${${pkg_name}_COMPILE_FLAGS}" PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -196,6 +218,21 @@ endfunction()
 
 function(package_get_libraries pkg_name libraries)
   set(${libraries} ${${pkg_name}_LIBRARIES} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Extra dependencies like custom commands of ExternalProject
+function(package_add_extra_dependency PACKAGE)
+  package_get_name(${PACKAGE} _pkg_name)
+  set(_tmp_dep ${${pkg_name}_EXTRA_DEPENDS})
+  list(APPEND _tmp_dep ${ARGN})
+  list(REMOVE_DUPLICATES _tmp_dep)
+  set(${pkg_name}_EXTRA_DEPENDS ${_tmp_dep} CACHE INTERNAL "External dependencies" FORCE)
+endfunction()
+
+function(package_get_extra_dependency PACKAGE deps)
+  package_get_name(${PACKAGE} _pkg_name)
+  set(${deps} ${${pkg_name}_EXTRA_DEPENDS} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -358,6 +395,8 @@ function(_package_load_packages)
     CACHE INTERNAL "List of deactivated packages" FORCE)
 endfunction()
 
+
+
 # ------------------------------------------------------------------------------
 # This load an external package and recursively all its dependencies
 # ------------------------------------------------------------------------------
@@ -399,6 +438,9 @@ function(_package_load_dependencies_package pkg_name loading_list)
     _package_load_dependencies_package(${_dep_name} ${loading_list})
   endforeach()
 
+  # get the compile flags
+  package_get_compile_flags(${pkg_name} _pkg_comile_flags)
+
   # if package option is on add it in the list
   if(${_pkg_option_name})
     list(FIND ${loading_list} ${pkg_name} _pos)
@@ -407,8 +449,18 @@ function(_package_load_dependencies_package pkg_name loading_list)
       list(APPEND _tmp_loading_list ${pkg_name})
       set(${loading_list} "${_tmp_loading_list}" PARENT_SCOPE)
     endif()
+
+    #add the comilation flags if needed
+    if(_pkg_comile_flags)
+      add_flags(cxx ${_pkg_comile_flags})
+    endif()
   else()
     package_deactivate(${pkg_name})
+
+    #remove the comilation flags if needed
+    if(_pkg_comile_flags)
+      remove_flags(cxx ${_pkg_comile_flags})
+    endif()
   endif()
 endfunction()
 
@@ -424,6 +476,9 @@ function(_package_load_package pkg_name)
     package_get_extra_options(${pkg_name} _options)
     if(_options)
       cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "PREFIX;FOUND;ARGS" ${_options})
+      if(_opt_pkg_UNPARSED_ARGUMENTS)
+	message("You passed too many options for the find_package related to ${${pkg_name}} \"${_opt_pkg_UNPARSED_ARGUMENTS}\"")
+      endif()
     endif()
 
     if(_opt_pkg_LANGUAGE)
@@ -592,7 +647,7 @@ endfunction()
 function(package_list_packages PACKAGE_FOLDER)
   cmake_parse_arguments(_opt_pkg
     ""
-    "SOURCE_FOLDER;EXTRA_PACKAGES_FOLDER"
+    "SOURCE_FOLDER;EXTRA_PACKAGES_FOLDER;TEST_FOLDER;MANUAL_FOLDER"
     ""
     ${ARGN})
 
@@ -605,6 +660,14 @@ function(package_list_packages PACKAGE_FOLDER)
   endif()
 
   get_filename_component(_abs_src_folder ${_src_folder} ABSOLUTE)
+
+  if(_opt_pkg_TEST_FOLDER)
+    set(_test_folder "${_opt_pkg_TEST_FOLDER}")
+  else()
+    set(_test_folder "test/")
+  endif()
+
+  get_filename_component(_abs_test_folder ${_test_folder} ABSOLUTE)
 
   # check all the packages in the <package_folder>
   file(GLOB _package_list "${PACKAGE_FOLDER}/*.cmake")
@@ -628,6 +691,10 @@ function(package_list_packages PACKAGE_FOLDER)
     package_get_name(${_pkg} _pkg_name)
     _package_set_filename(${_pkg_name} "${PACKAGE_FOLDER}/${_pkg_file}")
     _package_set_sources_folder(${_pkg_name} "${_abs_src_folder}")
+
+    _package_set_tests_folder(${_pkg_name}
+      "${_abs_test_folder}")
+
     list(APPEND _packages_list_all ${_pkg_name})
     include("${PACKAGE_FOLDER}/${_pkg_file}")
   endforeach()
@@ -646,6 +713,11 @@ function(package_list_packages PACKAGE_FOLDER)
 
 	_package_set_sources_folder(${_pkg_name}
 	  "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
+
+	if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
+	  _package_set_tests_folder(${_pkg_name}
+	    "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
+	endif()
 
 	list(APPEND _extra_pkg_src_folders "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
 
@@ -672,7 +744,8 @@ endfunction()
 #                 [EXTERNAL] [META] [ADVANCED] [NOT_OPTIONAL]
 #                 [DESCRIPTION <description>] [DEFAULT <default_value>]
 #                 [DEPENDS <pkg> ...]
-#                 [EXTRA_PACKAGE_OPTIONS <opt> ...])
+#                 [EXTRA_PACKAGE_OPTIONS <opt> ...]
+#                 [COMPILE_FLAGS <flags>])
 # ------------------------------------------------------------------------------
 function(package_declare PACKAGE)
   package_get_name(${PACKAGE} _pkg_name)
@@ -681,8 +754,12 @@ function(package_declare PACKAGE)
   cmake_parse_arguments(_opt_pkg
     "EXTERNAL;NOT_OPTIONAL;META;ADVANCED"
     "DEFAULT;DESCRIPTION;SYSTEM"
-    "DEPENDS;EXTRA_PACKAGE_OPTIONS"
+    "DEPENDS;EXTRA_PACKAGE_OPTIONS;COMPILE_FLAGS"
     ${ARGN})
+
+  if(_opt_pkg_UNPARSED_ARGUMENTS)
+    message("You gave to many arguments while registering the package ${PACKAGE} \"${_opt_pkg_UNPARSED_ARGUMENTS}\"")
+  endif()
 
   # set description
   if(_opt_pkg_DESCRIPTION)
@@ -746,6 +823,12 @@ function(package_declare PACKAGE)
   if(_opt_pkg_EXTRA_PACKAGE_OPTIONS)
     _package_set_extra_options(${_pkg_name} "${_opt_pkg_EXTRA_PACKAGE_OPTIONS}")
   endif()
+
+  # register the compilation flags
+  if(_opt_pkg_COMPILE_FLAGS)
+    _package_set_compile_flags(${_pkg_name} "${_opt_pkg_COMPILE_FLAGS}")
+  endif()
+
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -863,4 +946,30 @@ function(package_get_external_informations INCLUDE_DIR LIBRARIES)
 
   set(${INCLUDE_DIR} ${tmp_INCLUDE_DIR} PARENT_SCOPE)
   set(${LIBRARIES}   ${tmp_LIBRARIES}   PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Get extra dependencies like external projects
+# ------------------------------------------------------------------------------
+function(package_get_all_extra_dependency DEPS)
+  set(_tmp_DEPS)
+  foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
+    package_get_extra_dependency(${_pkg_name} _dep)
+    list(APPEND _tmp_DEPS ${_dep})
+  endforeach()
+  list(REMOVE_DUPLICATES _tmp_DEPS)
+  set(${DEPS} ${_tmp_DEPS} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Get extra dependencies like external projects
+# ------------------------------------------------------------------------------
+function(package_get_all_test_folders TEST_DIRS)
+  set(_tmp_TEST_DIRS)
+  foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
+    package_get_tests_folder(${_pkg_name} _test_dir)
+    list(APPEND _tmp_TEST_DIRS ${_test_dir})
+  endforeach()
+  list(REMOVE_DUPLICATES _tmp_TEST_DIRS)
+  set(${TEST_DIRS} ${_tmp_TEST_DIRS} PARENT_SCOPE)
 endfunction()

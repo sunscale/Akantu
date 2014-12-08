@@ -94,47 +94,6 @@ set(AKANTU_INCLUDE_DIRS
 
 include_directories(${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
 
-function(generate_material_list)
-  message(STATUS "Determining the list of recognized materials...")
-
-  set(_include_dirs ${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
-
-  try_run(_material_list_run _material_list_compile
-    ${CMAKE_BINARY_DIR}
-    ${PROJECT_SOURCE_DIR}/cmake/material_lister.cc
-    CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
-    COMPILE_DEFINITIONS "-DAKANTU_CMAKE_LIST_MATERIALS"
-    COMPILE_OUTPUT_VARIABLE _compile_results
-    RUN_OUTPUT_VARIABLE _result_material_list)
-
-  if(_material_list_compile AND "${_material_list_run}" EQUAL 0)
-    message(STATUS "Materials included in Akantu:")
-    string(REPLACE "\n" ";" _material_list "${_result_material_list}")
-    foreach(_mat ${_material_list})
-      string(REPLACE ":" ";" _mat_key "${_mat}")
-      list(GET _mat_key 0 _key)
-      list(GET _mat_key 1 _class)
-      list(LENGTH _mat_key _l)
-
-      if("${_l}" GREATER 2)
-	list(REMOVE_AT _mat_key 0 1)
-	set(_opt " -- options: [")
-	foreach(_o ${_mat_key})
-	  set(_opt "${_opt} ${_o}")
-	endforeach()
-	set(_opt "${_opt} ]")
-      else()
-	set(_opt "")
-      endif()
-
-      message(STATUS "   ${_class} -- key: ${_key}${_opt}")
-    endforeach()
-  else()
-    message(STATUS "Could not determine the list of materials.")
-    message("${_compile_results}")
-  endif()
-endfunction()
-
 generate_material_list()
 
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -151,10 +110,10 @@ endif()
 add_library(akantu ${AKANTU_LIBRARY_SRCS})
 target_link_libraries(akantu ${AKANTU_EXTERNAL_LIBRARIES})
 
-message("${AKANTU_EXTRA_TARGET_DEPENDENCIES}")
-if(AKANTU_EXTRA_TARGET_DEPENDENCIES)
-  message("Toto")
-  add_dependencies(akantu ${AKANTU_EXTRA_TARGET_DEPENDENCIES})
+
+package_get_all_extra_dependency(_extra_target_dependencies)
+if(_extra_target_dependencies)
+  add_dependencies(akantu ${_extra_target_dependencies})
 endif()
 
 set_target_properties(akantu PROPERTIES ${AKANTU_LIBRARY_PROPERTIES})
