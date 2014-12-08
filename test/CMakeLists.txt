@@ -15,42 +15,11 @@
 #
 #===============================================================================
 
-add_mesh(test_synchronizer_communication_mesh
-  cube.geo 3 2)
-
 add_mesh(test_facet_synchronizer_mesh
   facet.geo 3 2)
-
-register_test(test_synchronizer_communication
-  SOURCES test_synchronizer_communication.cc
-  DEPENDENCIES test_synchronizer_communication_mesh
-  PACKAGE parallel
-  )
-
-if(AKANTU_DAMAGE_NON_LOCAL)
-  add_executable(test_grid_synchronizer_check_neighbors test_grid_synchronizer_check_neighbors.cc)
-  target_link_libraries(test_grid_synchronizer_check_neighbors akantu)
-endif()
-
-register_test(test_grid_synchronizer
-  SOURCES test_grid_synchronizer.cc test_data_accessor.hh
-  DEPENDENCIES test_synchronizer_communication_mesh test_grid_synchronizer_check_neighbors
-  EXTRA_FILES test_grid_synchronizer_check_neighbors.cc test_grid_tools.hh
-  PACKAGE damage_non_local
-  )
-
-register_test(test_dof_synchronizer
-  SOURCES test_dof_synchronizer.cc test_data_accessor.hh
-  FILES_TO_COPY bar.msh)
 
 register_test(test_facet_synchronizer
   SOURCES test_facet_synchronizer.cc test_data_accessor.hh
   DEPENDENCIES test_facet_synchronizer_mesh
   PACKAGE parallel_cohesive_element
-  )
-
-register_test(test_data_distribution
-  SOURCES test_data_distribution.cc
-  FILES_TO_COPY data_split.msh
-  PACKAGE parallel
   )
