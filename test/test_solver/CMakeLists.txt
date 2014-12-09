@@ -52,3 +52,13 @@ register_test(test_petsc_matrix_profile
   SOURCES test_petsc_matrix_profile.cc
   DEPENDENCIES test_solver_mesh
   )
+
+register_test(test_petsc_matrix_apply_boundary
+  SOURCES test_petsc_matrix_apply_boundary.cc
+  DEPENDENCIES test_solver_mesh
+  )
+
+register_test(test_solver_petsc
+  SOURCES test_solver_petsc.cc
+  DEPENDENCIES profile.mtx
+  )

@@ -38,8 +38,11 @@ set(AKANTU_PETSC_FILES
   solver/petsc_matrix_inline_impl.cc
   solver/solver_petsc.hh
   solver/solver_petsc.cc
+  solver/petsc_wrapper.hh
   )
 
 set(AKANTU_PETSC_TESTS
   test_petsc_matrix_profile
+  test_petsc_matrix_apply_boundary
+  test_solver_petsc
   )

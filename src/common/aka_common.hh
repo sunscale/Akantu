@@ -422,7 +422,9 @@ enum SynchronizationTag {
   _gst_for_dump,         //< everything that needs to be synch before dump
   //--- Contact & Friction ---
   _gst_cf_nodal,         //< synchronization of disp, velo, and current position
-  _gst_cf_incr           //< synchronization of increment
+  _gst_cf_incr,           //< synchronization of increment
+  ///--- Solver tags ---
+  _gst_solver_solution     //< synchronization of the solution obained with the PETSc solver
 };
 
 /// standard output stream operator for SynchronizationTag

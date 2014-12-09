@@ -33,6 +33,7 @@
 /* -------------------------------------------------------------------------- */
 #include <mpi.h>
 #include <petscmat.h>
+#include <petscvec.h> 
 #include <petscao.h>
 #include <petscis.h>
 #include <petscksp.h>

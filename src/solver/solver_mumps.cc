@@ -262,15 +262,15 @@ void SolverMumps::initialize(SolverOptions & options) {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolverMumps::setRHS(const Array<Real> & rhs) {
+void SolverMumps::setRHS(Array<Real> & rhs) {
   if(prank == 0) {
 
-    std::copy(rhs.storage(), rhs.storage() + this->rhs->getSize(), this->rhs->storage());
+    //std::copy(rhs.storage(), rhs.storage() + this->rhs->getSize(), this->rhs->storage());
 
-    //    DebugLevel dbl = debug::getDebugLevel();
-//    debug::setDebugLevel(dblError);
-//    matrix->getDOFSynchronizer().gather(rhs, 0, this->rhs);
-//    debug::setDebugLevel(dbl);
+    DebugLevel dbl = debug::getDebugLevel();
+    debug::setDebugLevel(dblError);
+    matrix->getDOFSynchronizer().gather(rhs, 0, this->rhs);
+    debug::setDebugLevel(dbl);
 
   } else {
     this->matrix->getDOFSynchronizer().gather(rhs, 0);
@@ -336,8 +336,8 @@ void SolverMumps::solve(Array<Real> & solution) {
   this->solve();
 
   if(prank == 0) {
-//    matrix->getDOFSynchronizer().scatter(solution, 0, this->rhs);
-    std::copy(this->rhs->storage(), this->rhs->storage() + this->rhs->getSize(), solution.storage());
+    matrix->getDOFSynchronizer().scatter(solution, 0, this->rhs);
+//    std::copy(this->rhs->storage(), this->rhs->storage() + this->rhs->getSize(), solution.storage());
 
   } else {
     this->matrix->getDOFSynchronizer().scatter(solution, 0);

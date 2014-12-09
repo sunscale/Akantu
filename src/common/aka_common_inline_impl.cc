@@ -143,6 +143,7 @@ inline std::ostream & operator <<(std::ostream & stream, SynchronizationTag type
     case _gst_for_dump                 : stream << "_gst_for_dump"                ; break;
     case _gst_cf_nodal                 : stream << "_gst_cf_nodal"                ; break;
     case _gst_cf_incr                  : stream << "_gst_cf_incr"                 ; break;
+    case _gst_solver_solution          : stream << "_gst_solver_solution"         ; break;
     }
   return stream;
 }

@@ -68,7 +68,7 @@ public:
 
   /// register a new synchronization
   void registerSynchronizer(Synchronizer & synchronizer,SynchronizationTag tag);
-
+  
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 

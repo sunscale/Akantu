@@ -235,6 +235,7 @@ set(AKANTU_CORE_FILES
 
   solver/solver.cc
   solver/solver.hh
+  solver/solver_inline_impl.cc
   solver/sparse_matrix.cc
   solver/sparse_matrix.hh
   solver/sparse_matrix_inline_impl.cc

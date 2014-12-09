@@ -2,6 +2,7 @@
  * @file   dof_synchronizer.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @date creation: Fri Jun 17 2011
  * @date last modification: Fri Mar 21 2014
@@ -32,6 +33,7 @@
 #include "aka_common.hh"
 #include "aka_array.hh"
 #include "static_communicator.hh"
+#include "synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -51,7 +53,7 @@ public:
 };
 
 
-class DOFSynchronizer {
+class DOFSynchronizer : public Synchronizer {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -64,6 +66,15 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+
+  /// asynchronous synchronization of ghosts
+  virtual void asynchronousSynchronize(DataAccessor & data_accessor,SynchronizationTag tag);
+
+  /// wait end of asynchronous synchronization of ghosts
+  virtual void waitEndSynchronize(DataAccessor & data_accessor,SynchronizationTag tag);
+
+  /// compute buffer size for a given tag and data accessor
+  virtual void computeBufferSize(DataAccessor & data_accessor, SynchronizationTag tag);
 
   /// init the scheme for scatter and gather operation, need extra memory
   void initScatterGatherCommunicationScheme();
@@ -175,7 +186,6 @@ private:
 
   UInt prank;
   UInt psize;
-  StaticCommunicator * communicator;
 
   struct PerProcInformations {
     /// dofs to send to the proc
@@ -200,6 +210,9 @@ private:
   UInt nb_needed_dofs;
 
   bool gather_scatter_scheme_initialized;
+
+
+  std::map<SynchronizationTag, Communication> communications; 
 };
 
 

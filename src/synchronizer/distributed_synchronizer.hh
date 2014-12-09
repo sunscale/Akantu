@@ -39,7 +39,6 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_array.hh"
-#include "static_communicator.hh"
 #include "synchronizer.hh"
 #include "mesh.hh"
 #include "mesh_partition.hh"
@@ -240,30 +239,6 @@ private:
 protected:
   /// reference to the underlying mesh
   Mesh & mesh;
-
-  /// the static memory instance
-  StaticCommunicator * static_communicator;
-
-  class Communication {
-  public:
-    void resize(UInt size) {
-      send_buffer.resize(size);
-      recv_buffer.resize(size);
-      size_to_send   .resize(size);
-      size_to_receive.resize(size);
-    }
-
-  public:
-    /// size of data to send to each processor
-    std::vector<UInt> size_to_send;
-    /// size of data to recv to each processor
-    std::vector<UInt> size_to_receive;
-    std::vector< CommunicationBuffer > send_buffer;
-    std::vector< CommunicationBuffer > recv_buffer;
-
-    std::vector<CommunicationRequest *> send_requests;
-    std::vector<CommunicationRequest *> recv_requests;
-  };
 
   std::map<SynchronizationTag, Communication> communications;
 

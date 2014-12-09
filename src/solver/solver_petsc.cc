@@ -1,44 +1,172 @@
-// /**
-//  * @file   solver_petsc.cc
-//  *
-//  * @author Nicolas Richart <nicolas.richart@epfl.ch>
-//  # @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
-//  *
-//  * @date   Mon Dec 13 10:48:06 2010
-//  *
-//  * @brief  Solver class implementation for the petsc solver
-//  *
-//  * @section LICENSE
-//  *
-//  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-//  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
-//  *
-//  * Akantu is free  software: you can redistribute it and/or  modify it under the
-//  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
-//  * Software Foundation, either version 3 of the License, or (at your option) any
-//  * later version.
-//  *
-//  * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
-//  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-//  * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
-//  * details.
-//  *
-//  * You should  have received  a copy  of the GNU  Lesser General  Public License
-//  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
-//  *
-//  */
+/**
+ * @file   solver_petsc.cc
+ *
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ # @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
+ * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ *
+ * @date   Mon Dec 13 10:48:06 2010
+ *
+ * @brief  Solver class implementation for the petsc solver
+ *
+ * @section LICENSE
+ *
+ * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as  published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
-// /* -------------------------------------------------------------------------- */
-// #ifdef AKANTU_USE_MPI
-// #include "static_communicator_mpi.hh"
-// #endif
+/* -------------------------------------------------------------------------- */
+#include <petscksp.h>
+#include "solver_petsc.hh"
+#include "petsc_wrapper.hh"
+#include "petsc_matrix.hh"
+#include "static_communicator.hh"
+#include "static_communicator_mpi.hh"
+#include "mpi_type_wrapper.hh"
+#include "dof_synchronizer.hh"
 
-// #include "solver_petsc.hh"
-// #include "dof_synchronizer.hh"
+__BEGIN_AKANTU__
 
-// __BEGIN_AKANTU__
+/* -------------------------------------------------------------------------- */
+SolverPETSc::SolverPETSc(SparseMatrix & matrix,
+                         const ID & id,
+                         const MemoryID & memory_id) :
+  Solver(matrix, id, memory_id), is_petsc_data_initialized(false), 
+  petsc_solver_wrapper(new PETScSolverWrapper) {
+}
+
+/* -------------------------------------------------------------------------- */
+SolverPETSc::~SolverPETSc() {
+  AKANTU_DEBUG_IN();
+
+  this->destroyInternalData();
+
+  AKANTU_DEBUG_OUT();
+ }
+/* -------------------------------------------------------------------------- */
+void SolverPETSc::destroyInternalData() {
+  AKANTU_DEBUG_IN();
+
+  if(this->is_petsc_data_initialized) {
+    PetscErrorCode ierr;
+    ierr = KSPDestroy(&(this->petsc_solver_wrapper->ksp)); CHKERRXX(ierr);
+    ierr = VecDestroy(&(this->petsc_solver_wrapper->rhs)); CHKERRXX(ierr);
+    ierr = VecDestroy(&(this->petsc_solver_wrapper->solution)); CHKERRXX(ierr);
+    delete petsc_solver_wrapper;
+
+    this->is_petsc_data_initialized = false;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolverPETSc::initialize(SolverOptions & options) {
+  AKANTU_DEBUG_IN();
+
+#if defined(AKANTU_USE_MPI)
+    StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+    const StaticCommunicatorMPI & mpi_st_comm =
+      dynamic_cast<const StaticCommunicatorMPI &>(comm.getRealStaticCommunicator());
+    this->petsc_solver_wrapper->communicator = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
+#else
+    this->petsc_solver_wrapper->communicator = PETSC_COMM_SELF;
+#endif
+
+  PetscErrorCode ierr;
+
+  /// create a solver context
+  ierr = KSPCreate(this->petsc_solver_wrapper->communicator, &(this->petsc_solver_wrapper->ksp)); CHKERRXX(ierr);
+ 
+ /// set the matrix that defines the linear system and the matrix for preconditioning (here they are the same)
+  PETScMatrix * petsc_matrix = static_cast<PETScMatrix*>(this->matrix);
+
+#if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5  
+  ierr = KSPSetOperators(this->petsc_solver_wrapper->ksp, petsc_matrix->getPETScMatrixWrapper()->mat, petsc_matrix->getPETScMatrixWrapper()->mat); CHKERRXX(ierr);
+#else
+  ierr = KSPSetOperators(this->petsc_solver_wrapper->ksp, petsc_matrix->getPETScMatrixWrapper()->mat, petsc_matrix->getPETScMatrixWrapper()->mat, SAME_NONZERO_PATTERN); CHKERRXX(ierr);
+#endif
+
+  ierr = VecCreate(this->petsc_solver_wrapper->communicator, &(this->petsc_solver_wrapper->rhs)); CHKERRXX(ierr);
+
+  this->is_petsc_data_initialized = true; 
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolverPETSc::setRHS(Array<Real> & rhs) {
+  PetscErrorCode ierr;
+  PETScMatrix * petsc_matrix = static_cast<PETScMatrix*>(this->matrix);
+  ierr = VecSetSizes((this->petsc_solver_wrapper->rhs), petsc_matrix->getLocalSize(), petsc_matrix->getSize()); CHKERRXX(ierr);
+  ierr = VecSetFromOptions((this->petsc_solver_wrapper->rhs)); CHKERRXX(ierr);
+
+  for (UInt i = 0; i < rhs.getSize(); ++i) {
+    if (matrix->getDOFSynchronizer().isLocalOrMasterDOF(i)) {
+      Int i_global = matrix->getDOFSynchronizer().getDOFGlobalID(i);
+      AOApplicationToPetsc(petsc_matrix->getPETScMatrixWrapper()->ao, 1, &(i_global) );
+      ierr = VecSetValue((this->petsc_solver_wrapper->rhs), i_global, rhs(i), INSERT_VALUES); CHKERRXX(ierr);
+    }
+  }
+  ierr = VecAssemblyBegin(this->petsc_solver_wrapper->rhs); CHKERRXX(ierr);
+  ierr = VecAssemblyEnd(this->petsc_solver_wrapper->rhs); CHKERRXX(ierr);
+  ierr = VecDuplicate((this->petsc_solver_wrapper->rhs), &(this->petsc_solver_wrapper->solution)); CHKERRXX(ierr);
 
 
+}
+
+/* -------------------------------------------------------------------------- */
+void SolverPETSc::solve() {
+  AKANTU_DEBUG_IN();
+
+  PetscErrorCode ierr;
+  ierr = KSPSolve(this->petsc_solver_wrapper->ksp, this->petsc_solver_wrapper->rhs, this->petsc_solver_wrapper->solution); CHKERRXX(ierr); 
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolverPETSc::solve(Array<Real> & solution) {
+  AKANTU_DEBUG_IN();
+
+  this->solution = &solution;
+  this->solve();
+
+  PetscErrorCode ierr;
+  PETScMatrix * petsc_matrix = static_cast<PETScMatrix*>(this->matrix);
+
+
+  // ierr = VecGetOwnershipRange(this->petsc_solver_wrapper->solution, solution_begin, solution_end); CHKERRXX(ierr);
+  // ierr = VecGetArray(this->petsc_solver_wrapper->solution, PetscScalar **array); CHKERRXX(ierr);
+
+  for (UInt i = 0; i < solution.getSize(); ++i) {
+    if (this->matrix->getDOFSynchronizer().isLocalOrMasterDOF(i)) {
+      Int i_global = this->matrix->getDOFSynchronizer().getDOFGlobalID(i);
+      ierr = AOApplicationToPetsc(petsc_matrix->getPETScMatrixWrapper()->ao, 1, &(i_global) ); CHKERRXX(ierr);
+      ierr = VecGetValues(this->petsc_solver_wrapper->solution, 1, &i_global, &solution(i)); CHKERRXX(ierr);
+      
+    }
+  }
+
+  synch_registry->synchronize(_gst_solver_solution);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 // void finalize_petsc() {
   
 //   static bool finalized = false;
@@ -950,5 +1078,5 @@
 // //  AKANTU_DEBUG_OUT();
 // //}
 
+__END_AKANTU__
 
-// __END_AKANTU__

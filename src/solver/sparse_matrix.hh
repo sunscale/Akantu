@@ -62,7 +62,7 @@ __BEGIN_AKANTU__
 
 class DOFSynchronizer;
 
-class SparseMatrix : private Memory {
+class SparseMatrix : protected Memory {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -167,6 +167,12 @@ public:
     return *dof_synchronizer;
   }
 
+  DOFSynchronizer & getDOFSynchronizer() {
+    AKANTU_DEBUG_ASSERT(dof_synchronizer != NULL,
+			"DOFSynchronizer not initialized in the SparseMatrix!");
+    return *dof_synchronizer;
+  }
+
 private:
   AKANTU_GET_MACRO(DOFSynchronizerPointer, dof_synchronizer, DOFSynchronizer *);
 
@@ -225,6 +231,8 @@ protected:
 
   /// offset to inidcate whether row and column indices start at 0 (C/C++) or 1 (Fortran)
   UInt offset; 
+
+
 };
 
 

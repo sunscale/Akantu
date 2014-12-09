@@ -38,7 +38,7 @@
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
-class PETScWrapper;
+class PETScMatrixWrapper;
 
 class PETScMatrix : public SparseMatrix, StaticSolverEventHandler {
   /* ------------------------------------------------------------------------ */
@@ -65,64 +65,53 @@ private:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// resize PETSc matrix
-  void resize(const DOFSynchronizer & dof_synchronizer);
 
-  void createGlobalAkantuToPETScMap(Int* local_master_eq_nbs_ptr);
-
-  // /// remove the existing profile
-  // inline void clearProfile();
-
-  // /// add a non-zero element
-  // virtual UInt addToProfile(UInt i, UInt j);
-
-  // /// set the matrix to 0
-  // inline void clear();
-
-  // /// assemble a local matrix in the sparse one
-  // inline void addToMatrix(UInt i, UInt j, Real value);
+  /// set the matrix to 0
+  virtual void clear();
 
   /// fill the profil of the matrix
   virtual void buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_synchronizer, UInt nb_degree_of_freedom);
 
-  // /// modify the matrix to "remove" the blocked dof
-  // virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
-  
-  /// perform assembly so that matrix is ready for use
-  void performAssembly();
+  /// modify the matrix to "remove" the blocked dof
+  virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
 
-  // /// restore the profile that was before removing the boundaries
-  // virtual void restoreProfile();
-
-  // /// save the profil in a file using the MatrixMarket file format
-  // virtual void saveProfile(const std::string & filename) const;
-
-  /// save the matrix in a file using the MatrixMarket file format
+  /// save the matrix in a ASCII file format
   virtual void saveMatrix(const std::string & filename) const;
 
-  // /// copy assuming the profile are the same
-  // virtual void copyContent(const SparseMatrix & matrix);
-
-  // /// copy profile
-  // //  void copyProfile(const SparseMatrix & matrix);
-
-  /// add matrix assuming the profile are the same
+  /// add a sparse matrix assuming the profile are the same
   virtual void add(const SparseMatrix & matrix, Real alpha);
+  /// add a petsc matrix assuming the profile are the same
+  virtual void add(const PETScMatrix & matrix, Real alpha);
 
-  // /// diagonal lumping
-  // virtual void lump(Array<Real> & lumped);
-
-  // /// function to print the contain of the class
-  // //virtual void printself(std::ostream & stream, int indent = 0) const;
 
   virtual void beforeStaticSolverDestroy();
+
+  Real operator()(UInt i, UInt j) const;
+
+protected:
+  inline KeyCOO keyPETSc(UInt i, UInt j) const {
+    return std::make_pair(i, j);
+  }
 
 private:
   virtual void destroyInternalData();
 
+  /// set the size of the PETSc matrix
+  void setSize();
+  void createGlobalAkantuToPETScMap(Int* local_master_eq_nbs_ptr);
+  void createLocalAkantuToPETScMap(const DOFSynchronizer & dof_synchronizer);
+  /// perform assembly so that matrix is ready for use
+  void performAssembly();
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
+public:
+  
+  AKANTU_GET_MACRO(PETScMatrixWrapper, petsc_matrix_wrapper, PETScMatrixWrapper*);
+  AKANTU_GET_MACRO(LocalSize, local_size, Int);
+  ///  AKANTU_GET_MACRO(LocalSize, local_size, Int);
+  
+
 public:
 
   /* ------------------------------------------------------------------------ */
@@ -132,7 +121,7 @@ public:
 
 private:
   /// store the PETSc structures
-  PETScWrapper * petsc_wrapper;
+  PETScMatrixWrapper * petsc_matrix_wrapper;
 
   /// size of the diagonal part of the matrix partition
   Int local_size;
@@ -150,9 +139,8 @@ private:
 
   bool is_petsc_matrix_initialized;
 
-
 };
 
 __END_AKANTU__
 
-#endif /* __AKANTU_PETSCI_MATRIX_HH__ */
+#endif /* __AKANTU_PETSC_MATRIX_HH__ */

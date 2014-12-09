@@ -69,6 +69,15 @@ public:
   }
 
   /**
+   * @brief get  the number of  data to exchange  for a given degree of freedom  and a
+   * given akantu::SynchronizationTag
+   */
+  virtual UInt getNbDataForDOFs(__attribute__((unused)) const Array<UInt> & dofs,
+				__attribute__((unused)) SynchronizationTag tag) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
+  /**
    * @brief get  the number of  data to send  for a given
    * akantu::SynchronizationTag
    */
@@ -105,6 +114,16 @@ public:
   }
 
   /**
+   * @brief   pack  the   data  for the dofs  and   a  given
+   * akantu::SynchronizationTag
+   */
+  virtual void packDOFData(__attribute__((unused)) CommunicationBuffer & buffer,
+			   __attribute__((unused)) const Array<UInt> & dofs,
+			   __attribute__((unused)) SynchronizationTag tag) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
+  /**
    * @brief   unpack  the   data  for   a  given   akantu::Element  and   a  given
    * akantu::SynchronizationTag
    */
@@ -121,6 +140,16 @@ public:
   virtual void unpackData(__attribute__((unused)) CommunicationBuffer & buffer,
                           __attribute__((unused)) const UInt index,
                           __attribute__((unused)) SynchronizationTag tag) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
+  /**
+   * @brief   unpack  the   data  for the dofs  and   a  given
+   * akantu::SynchronizationTag
+   */
+  virtual void unpackDOFData(__attribute__((unused)) CommunicationBuffer & buffer,
+			     __attribute__((unused)) const Array<UInt> & dofs,
+			     __attribute__((unused)) SynchronizationTag tag) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
@@ -159,7 +188,6 @@ public:
 						   const Array<Element> & element,
 						   bool per_quadrature_point_data,
 						   const FEEngine & fem);
-
   template<typename T>
   static inline void packElementalDataHelper(const ElementTypeMapArray<T> & data_to_pack,
 					     CommunicationBuffer & buffer,
@@ -174,7 +202,7 @@ public:
   }
   
   template<typename T>
-  inline void unpackElementalDataHelper(ElementTypeMapArray<T> & data_to_unpack,
+  static inline void unpackElementalDataHelper(ElementTypeMapArray<T> & data_to_unpack,
                                         CommunicationBuffer & buffer,
                                         const Array<Element> & elements,
                                         bool per_quadrature_point,
@@ -184,6 +212,29 @@ public:
 					    elements,
 					    per_quadrature_point,
 					    fem);
+  }
+
+  template<typename T, bool pack_helper>
+  static inline void packUnpackDOFDataHelper(Array<T> & data,
+					     CommunicationBuffer & buffer,
+					     const Array<UInt> & dofs);
+
+  template<typename T>
+  static inline void packDOFDataHelper(const Array<T> & data_to_pack,
+				       CommunicationBuffer & buffer,
+				       const Array<UInt> & dofs) {
+    packUnpackDOFDataHelper<T, true>(const_cast<Array<T> &>(data_to_pack),
+				     buffer,
+				     dofs);
+  }
+  
+  template<typename T>
+  static inline void unpackDOFDataHelper(Array<T> & data_to_unpack,
+				  CommunicationBuffer & buffer,
+				  const Array<UInt> & dofs) {
+    packUnpackDOFDataHelper<T, false>(data_to_unpack,
+				      buffer,
+				      dofs);
   }
 
   /* ------------------------------------------------------------------------ */

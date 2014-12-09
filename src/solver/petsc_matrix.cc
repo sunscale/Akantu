@@ -31,24 +31,20 @@
 #include "static_communicator_mpi.hh"
 #include "mpi_type_wrapper.hh"
 #include "dof_synchronizer.hh"
+#include "petsc_wrapper.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstring>
-#include <mpi.h>
-#include <petscmat.h>
-#include <petscao.h>
-#include <petscis.h>
 #include <petscsys.h>  
-
 
 __BEGIN_AKANTU__
 
-struct PETScWrapper {
-  Mat mat;
-  AO ao;
-  ISLocalToGlobalMapping mapping;
-  /// pointer to the MPI communicator for PETSc commands
-  MPI_Comm communicator;
-};
+// struct PETScWrapper {
+//   Mat mat;
+//   AO ao;
+//   ISLocalToGlobalMapping mapping;
+//   /// pointer to the MPI communicator for PETSc commands
+//   MPI_Comm communicator;
+// };
 
 /* -------------------------------------------------------------------------- */
 PETScMatrix::PETScMatrix(UInt size,
@@ -56,11 +52,11 @@ PETScMatrix::PETScMatrix(UInt size,
 			 const ID & id,
 			 const MemoryID & memory_id) :
   SparseMatrix(size, sparse_matrix_type, id, memory_id), 
-  petsc_wrapper(new PETScWrapper),
- d_nnz(0,1,"dnnz"),
- o_nnz(0,1,"onnz"),
+  petsc_matrix_wrapper(new PETScMatrixWrapper),
+  d_nnz(0,1,"dnnz"),
+  o_nnz(0,1,"onnz"),
   first_global_index(0),
- is_petsc_matrix_initialized(false) {
+  is_petsc_matrix_initialized(false) {
   AKANTU_DEBUG_IN();
   StaticSolver::getStaticSolver().registerEventHandler(*this);
   this->offset = 0;
@@ -74,23 +70,25 @@ PETScMatrix::PETScMatrix(const SparseMatrix & matrix,
 			 const ID & id,
 			 const MemoryID & memory_id) :
   SparseMatrix(matrix, id, memory_id),
-  petsc_wrapper(new PETScWrapper), 
+  petsc_matrix_wrapper(new PETScMatrixWrapper), 
   d_nnz(0,1,"dnnz"), 
   o_nnz(0,1,"onnz"), 
   first_global_index(0),
   is_petsc_matrix_initialized(false) {
-  AKANTU_DEBUG_IN();
-  StaticSolver::getStaticSolver().registerEventHandler(*this);
-  this->offset = 0;
-  this->init();
+  // AKANTU_DEBUG_IN();
+  // StaticSolver::getStaticSolver().registerEventHandler(*this);
+  // this->offset = 0;
+  // this->init();
 
-  AKANTU_DEBUG_OUT();
+  // AKANTU_DEBUG_OUT();
+  AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */
 PETScMatrix::~PETScMatrix() {
   AKANTU_DEBUG_IN();
 
+  /// destroy all the PETSc data structures used for this matrix
   this->destroyInternalData();
 
   AKANTU_DEBUG_OUT();
@@ -100,53 +98,66 @@ PETScMatrix::~PETScMatrix() {
 void PETScMatrix::init() {
   AKANTU_DEBUG_IN();
 
+  /// set the communicator that should be used by PETSc
 #if defined(AKANTU_USE_MPI)
     StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
     const StaticCommunicatorMPI & mpi_st_comm =
       dynamic_cast<const StaticCommunicatorMPI &>(comm.getRealStaticCommunicator());
-    this->petsc_wrapper->communicator = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
+    this->petsc_matrix_wrapper->communicator = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
 #else
-    this->petsc_wrapper->communicator = PETSC_COMM_SELF;
+    this->petsc_matrix_wrapper->communicator = PETSC_COMM_SELF;
 #endif
  
   PetscErrorCode ierr;
+  
+  /// create the PETSc matrix object
+  ierr = MatCreate(this->petsc_matrix_wrapper->communicator, &(this->petsc_matrix_wrapper->mat)); CHKERRXX(ierr);
 
-  ierr = MatCreate(this->petsc_wrapper->communicator, &(this->petsc_wrapper->mat)); CHKERRXX(ierr);
-  /// set matrix type
-  ierr = MatSetType(this->petsc_wrapper->mat,  MATAIJ); CHKERRXX(ierr);
 
+  /**
+   * Set the matrix type
+   * @todo PETSc does currently not support a straightforward way to
+   * apply Dirichlet boundary conditions for MPISBAIJ
+   * matrices. Therefore always the entire matrix is allocated. It
+   * would be possible to use MATSBAIJ for sequential matrices in case
+   * memory becomes critical. Also, block matrices would give a much
+   * better performance. Modify this in the future!
+   */
 
-  //if (this->sparse_matrix_type==_symmetric)
-    /// set flag for symmetry to enable ICC/Cholesky preconditioner
-    //    ierr = MatSetOption(this->petsc_wrapper->mat, MAT_SYMMETRIC, PETSC_TRUE); CHKERRXX(ierr);
-
+  ierr = MatSetType(this->petsc_matrix_wrapper->mat,  MATAIJ); CHKERRXX(ierr);
+ 
   this->is_petsc_matrix_initialized = true;
-    
+
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void PETScMatrix::resize(const DOFSynchronizer & dof_synchronizer) {
+/**
+ * With this method each processor computes the dimensions of the
+ * local matrix, i.e. the part of the global matrix it is storing.
+ * @param dof_synchronizer dof synchronizer that maps the local
+ * dofs to the global dofs and the equation numbers, i.e., the 
+ * position at which the dof is assembled in the matrix
+ */
+void PETScMatrix::setSize() {
   AKANTU_DEBUG_IN();
 
   PetscErrorCode ierr;
 
-  this->dof_synchronizer = &const_cast<DOFSynchronizer &>(dof_synchronizer);
-
   /// find the number of dofs corresponding to master or local nodes
-  UInt nb_dofs = dof_synchronizer.getNbDOFs();
+  UInt nb_dofs = this->dof_synchronizer->getNbDOFs();
   UInt nb_local_master_dofs = 0;
 
   /// create array to store the global equation number of all local and master dofs
   Array<Int> local_master_eq_nbs(nb_dofs);
   Array<Int>::scalar_iterator it_eq_nb = local_master_eq_nbs.begin();
 
-  /// get the pointer to the gloabl equation number array
-  Int * eq_nb_val = dof_synchronizer.getGlobalDOFEquationNumbers().storage();
+  /// get the pointer to the global equation number array
+  Int * eq_nb_val = this->dof_synchronizer->getGlobalDOFEquationNumbers().storage();
   
   for (UInt i = 0; i <nb_dofs; ++i) {
-    if (dof_synchronizer.isLocalOrMasterDOF(i) ) {
+    if (this->dof_synchronizer->isLocalOrMasterDOF(i) ) {
       *it_eq_nb = eq_nb_val[i];
       ++it_eq_nb;
       ++nb_local_master_dofs;
@@ -160,17 +171,26 @@ void PETScMatrix::resize(const DOFSynchronizer & dof_synchronizer) {
 
   /// resize PETSc matrix
 #if defined(AKANTU_USE_MPI)
-  ierr = MatSetSizes(this->petsc_wrapper->mat, this->local_size, this->local_size, this->size, this->size); CHKERRXX(ierr);
+  ierr = MatSetSizes(this->petsc_matrix_wrapper->mat, this->local_size, this->local_size, this->size, this->size); CHKERRXX(ierr);
 #else
-  ierr =  MatSetSizes(this->petsc_wrapper->mat, this->local_size, this->local_size); CHKERRXX(ierr);
+  ierr =  MatSetSizes(this->petsc_matrix_wrapper->mat, this->local_size, this->local_size); CHKERRXX(ierr);
 #endif
 
   /// create mapping from akantu global numbering to petsc global numbering
   this->createGlobalAkantuToPETScMap(local_master_eq_nbs.storage());
+
+
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
+/**
+ * This method generates a mapping from the global Akantu equation
+ * numbering to the global PETSc dof ordering 
+ * @param local_master_eq_nbs_ptr Int pointer to the array of equation
+ * numbers of all local or master dofs, i.e. the row indices of the
+ * local matrix
+ */
 void PETScMatrix::createGlobalAkantuToPETScMap(Int* local_master_eq_nbs_ptr) {
   AKANTU_DEBUG_IN();
 
@@ -206,7 +226,7 @@ void PETScMatrix::createGlobalAkantuToPETScMap(Int* local_master_eq_nbs_ptr) {
     *it_petsc_dofs = i; 
   }
 
-  ierr = AOCreateBasic(this->petsc_wrapper->communicator, this->local_size, local_master_eq_nbs_ptr, petsc_dofs.storage(), &(this->petsc_wrapper->ao)); CHKERRXX(ierr);
+  ierr = AOCreateBasic(this->petsc_matrix_wrapper->communicator, this->local_size, local_master_eq_nbs_ptr, petsc_dofs.storage(), &(this->petsc_matrix_wrapper->ao)); CHKERRXX(ierr);
 
   AKANTU_DEBUG_OUT();
 }
@@ -215,9 +235,11 @@ void PETScMatrix::createGlobalAkantuToPETScMap(Int* local_master_eq_nbs_ptr) {
 // void PETScMatrix::createLocalAkantuToPETScMap(const DOFSynchronizer & dof_synchronizer) {
 //   AKANTU_DEBUG_IN();
 
-//   AKANTU_DEBUG_ASSERT(this->petsc_wrapper->ao != NULL,
+//   AKANTU_DEBUG_ASSERT(this->petsc_matrix_wrapper->ao != NULL,
 //                       "You should first create a mapping from the global"
 // 		      << " Akantu numbering to the global PETSc numbering");
+
+//   PetscErrorCode ierr;
 
 //   this->dof_synchronizer = &const_cast<DOFSynchronizer &>(dof_synchronizer);
 
@@ -228,23 +250,38 @@ void PETScMatrix::createGlobalAkantuToPETScMap(Int* local_master_eq_nbs_ptr) {
 //   Array<Int> global_dof_equation_numbers = dof_synchronizer.getGlobalDOFEquationNumbers();
 
 //   /// map the global dof equation numbers to the corresponding PETSc ordering
-//   AOApplicationToPETSc(this->petsc_wrapper->ao, nb_dofs,
-// 		       global_dof_equation_numbers.storage());
+//   ierr =  AOApplicationToPETSc(this->petsc_matrix_wrapper->ao, nb_dofs,
+// 		       global_dof_equation_numbers.storage()); CHKERRXX(ierr);
 
 //   /// create the mapping from the local Akantu ordering to the global PETSc ordering
-//   ISLocalToGlobalMappingCreate(this->petsc_wrapper->communicator,
+//   ierr = ISLocalToGlobalMappingCreate(this->petsc_matrix_wrapper->communicator,
 // 			       1, nb_dofs, global_dof_equation_numbers.storage(),
-// 			       PETSC_COPY_VALUES, mapping);
+// 			       PETSC_COPY_VALUES, &(this->petsc_matrix_wrapper-mapping)); CHKERRXX(ierr);
 
 //   AKANTU_DEBUG_OUT();
 // }
 
 /* -------------------------------------------------------------------------- */
+/**
+ * This function creates the non-zero pattern of the PETSc matrix. In
+ * PETSc the parallel matrix is partitioned across processors such
+ * that the first m0 rows belong to process 0, the next m1 rows belong
+ * to process 1, the next m2 rows belong to process 2 etc.. where
+ * m0,m1,m2,.. are the input parameter 'm'. i.e each processor stores
+ * values corresponding to [m x N] submatrix
+ * (http://www.mcs.anl.gov/petsc/).
+ * @param mesh mesh discretizing the domain we want to analyze
+ * @param dof_synchronizer dof synchronizer that maps the local 
+ * dofs to the global dofs and the equation numbers, i.e., the 
+ * position at which the dof is assembled in the matrix
+ */
+
 void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_synchronizer, UInt nb_degree_of_freedom) {
   AKANTU_DEBUG_IN();
 
   //clearProfile();
-
+  this->dof_synchronizer = &const_cast<DOFSynchronizer &>(dof_synchronizer);
+  this->setSize();
   PetscErrorCode ierr;
 
   /// resize arrays to store the number of nonzeros in each row
@@ -255,7 +292,6 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
   this->d_nnz.set(0);
   this->o_nnz.set(0); 
 
-  this->dof_synchronizer = &const_cast<DOFSynchronizer &>(dof_synchronizer);
 
   // if(irn_jcn_to_k) delete irn_jcn_to_k;
   // irn_jcn_to_k = new std::map<std::pair<UInt, UInt>, UInt>;
@@ -271,7 +307,7 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
     Mesh::type_iterator it  = mesh.firstType(mesh.getSpatialDimension(), ghost_type, _ek_not_defined);
     Mesh::type_iterator end = mesh.lastType (mesh.getSpatialDimension(), ghost_type, _ek_not_defined);
     for(; it != end; ++it) {
-      UInt nb_element = mesh.getNbElement(*it);
+      UInt nb_element = mesh.getNbElement(*it, ghost_type);
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
       UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom;
 
@@ -284,27 +320,33 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
 	for (UInt i = 0; i < nb_nodes_per_element; ++i) {
 	  UInt n = conn_val[i];
 	  for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
+	    /**
+	     * !!!!!!Careful!!!!!! This is a ugly fix. @todo this is a
+	     * very ugly fix, because the offset for the global
+	     * equation number, where the dof will be assembled, is
+	     * hardcoded. In the future a class dof manager has to be
+	     * added to Akantu to handle the mapping between the dofs
+	     * and the equation numbers
+	     * 
+	     */
+
 	    *tmp_local_eq_nb_val++ = eq_nb_val[n * nb_degree_of_freedom + d] - (dof_synchronizer.isPureGhostDOF(n * nb_degree_of_freedom + d) ? nb_global_dofs : 0);
 	    
 	  }
-	  // memcpy(tmp_local_eq_nb_val, eq_nb_val + n * nb_degree_of_freedom, nb_degree_of_freedom * sizeof(Int));
-	  // tmp_local_eq_nb_val += nb_degree_of_freedom;
 	}
 	
 
 	for (UInt i = 0; i < size_mat; ++i) {
 	  Int c_irn = local_eq_nb_val[i];
-	  UInt j_start = (sparse_matrix_type == _symmetric) ? i : 0;
+	  UInt j_start = 0;
 	  for (UInt j = j_start; j < size_mat; ++j) {
 	    Int c_jcn = local_eq_nb_val[j];
 	    Array<Int> index_pair(2,1);
 	    index_pair(0) = c_irn;
 	    index_pair(1) = c_jcn;
-	    AOApplicationToPetsc(this->petsc_wrapper->ao, 2, index_pair.storage());
-	    if(sparse_matrix_type == _symmetric && (index_pair(0) > index_pair(1)))
-	      std::swap(index_pair(0), index_pair(1));
+	    AOApplicationToPetsc(this->petsc_matrix_wrapper->ao, 2, index_pair.storage());
 	    if (index_pair(0) >= first_global_index && index_pair(0) < first_global_index + this->local_size)  {
-	      KeyCOO irn_jcn = key(c_irn, c_jcn);
+	      KeyCOO irn_jcn = keyPETSc(c_irn, c_jcn);
 	      irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
 
 	      if (irn_jcn_k_it == irn_jcn_k.end()) {
@@ -353,45 +395,62 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
   // mat_type.resize(20, 'a');
   // std::cout << "MatType: " << mat_type << std::endl;
   // const char * mat_type_ptr = mat_type.c_str();
-
   MatType type;
-  MatGetType(this->petsc_wrapper->mat, &type);
-
-  //  PetscTypeCompare((PetscObject)(this->petsc_wrapper->mat),MATSEQAIJ,&sametype);
-  //ierr = PetscTypeCompare(pet, MATSEQAIJ, &sametype); CHKERRXX(ierr);
-
+  MatGetType(this->petsc_matrix_wrapper->mat, &type);
+  std::cout << "the matrix type is: " << type << std::endl;
+  /**
+   * PETSc will use only one of the following preallocation commands
+   * depending on the matrix type and ignore the rest. Note that for
+   * the block matrix format a block size of 1 is used. This might
+   * result in bad performance. @todo For better results implement
+   * buildProfile() with larger block size.
+   * 
+   */
   /// build profile:
   if (strcmp(type, MATSEQAIJ) == 0) {
-    ierr = MatSeqAIJSetPreallocation(this->petsc_wrapper->mat,
-				     0, d_nnz.storage()); CHKERRXX(ierr);
+    ierr = MatSeqAIJSetPreallocation(this->petsc_matrix_wrapper->mat,
+				       0, d_nnz.storage()); CHKERRXX(ierr);
   } else if ((strcmp(type, MATMPIAIJ) == 0)) {
-    ierr = MatMPIAIJSetPreallocation(this->petsc_wrapper->mat,
-				     0, d_nnz.storage(), 0,
-				     o_nnz.storage()); CHKERRXX(ierr); 
+    ierr = MatMPIAIJSetPreallocation(this->petsc_matrix_wrapper->mat,
+                                     0, d_nnz.storage(), 0,
+                                     o_nnz.storage()); CHKERRXX(ierr);
   } else {
     AKANTU_DEBUG_ERROR("The type " << type << " of PETSc matrix is not handled by"
-		       << " akantu in the preallocation step");
+                       << " akantu in the preallocation step");
   }
 
+  //ierr =  MatSeqSBAIJSetPreallocation(this->petsc_matrix_wrapper->mat, 1,
+  //				      0, d_nnz.storage()); CHKERRXX(ierr);
+
+  if (this->sparse_matrix_type==_symmetric) {
+    /// set flag for symmetry to enable ICC/Cholesky preconditioner
+    ierr = MatSetOption(this->petsc_matrix_wrapper->mat, MAT_SYMMETRIC, PETSC_TRUE); CHKERRXX(ierr);
+  }
+  /// once the profile has been build ignore any new nonzero locations
+  ierr = MatSetOption(this->petsc_matrix_wrapper->mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_TRUE); CHKERRXX(ierr);
 
   AKANTU_DEBUG_OUT();
 }
 
 
 /* -------------------------------------------------------------------------- */
-void PETScMatrix::saveMatrix(const std::string & filename) const {
+/**
+ * Method to save the nonzero pattern and the values stored at each position
+ * @param filename name of the file in which the information will be stored
+ */
+void PETScMatrix::saveMatrix(const std::string & filename) const{
   AKANTU_DEBUG_IN();
 
   PetscErrorCode ierr;
-  
+
   /// create Petsc viewer
   PetscViewer viewer; 
-  ierr = PetscViewerASCIIOpen(this->petsc_wrapper->communicator, filename.c_str(), &viewer); CHKERRXX(ierr);
+  ierr = PetscViewerASCIIOpen(this->petsc_matrix_wrapper->communicator, filename.c_str(), &viewer); CHKERRXX(ierr);
 
   /// set the format
   PetscViewerSetFormat(viewer, PETSC_VIEWER_DEFAULT); CHKERRXX(ierr);
   /// save the matrix
-  ierr =  MatView(this->petsc_wrapper->mat, viewer); CHKERRXX(ierr);
+  ierr =  MatView(this->petsc_matrix_wrapper->mat, viewer); CHKERRXX(ierr);
 
   /// destroy the viewer
   ierr =  PetscViewerDestroy(&viewer); CHKERRXX(ierr);
@@ -399,81 +458,12 @@ void PETScMatrix::saveMatrix(const std::string & filename) const {
   AKANTU_DEBUG_OUT();
 }
 
-// /* -------------------------------------------------------------------------- */
-// Array<Real> & operator*=(Array<Real> & vect, const PETScMatrix & mat) {
-//   AKANTU_DEBUG_IN();
-
-//   Array<Real> result 
-//   MatMult(this->mat, vect, )
-
-//   // AKANTU_DEBUG_ASSERT((vect.getSize()*vect.getNbComponent() == mat.getSize()) &&
-//   // 		      (vect.getNbComponent() == mat.getNbDegreOfFreedom()),
-//   // 		      "The size of the matrix and the vector do not match");
-
-//   const PETScMatrixType & sparse_matrix_type = mat.getPETScMatrixType();
-//   DOFSynchronizer * dof_synchronizer = mat.getDOFSynchronizerPointer();
-
-//   UInt nb_non_zero = mat.getNbNonZero();
-//   Real * tmp = new Real [vect.getNbComponent() * vect.getSize()];
-//   std::fill_n(tmp, vect.getNbComponent() * vect.getSize(), 0);
-
-//   Int * i_val  = mat.getIRN().storage();
-//   Int * j_val  = mat.getJCN().storage();
-//   Real * a_val = mat.getA().storage();
-
-//   Real * vect_val = vect.storage();
-
-//   for (UInt k = 0; k < nb_non_zero; ++k) {
-//     UInt i = *(i_val++);
-//     UInt j = *(j_val++);
-//     Real a = *(a_val++);
-
-//     UInt local_i = i - 1;
-//     UInt local_j = j - 1;
-//     if(dof_synchronizer) {
-//       local_i = dof_synchronizer->getDOFLocalID(local_i);
-//       local_j = dof_synchronizer->getDOFLocalID(local_j);
-//     }
-
-//     tmp[local_i] += a * vect_val[local_j];
-//     if((sparse_matrix_type == _symmetric) && (local_i != local_j))
-//       tmp[local_j] += a * vect_val[local_i];
-//   }
-
-//   memcpy(vect_val, tmp, vect.getNbComponent() * vect.getSize() * sizeof(Real));
-//   delete [] tmp;
-
-//   if(dof_synchronizer)
-//     dof_synchronizer->reduceSynchronize<AddOperation>(vect);
-
-//   AKANTU_DEBUG_OUT();
-
-//   return vect;
-// }
-
-// /* -------------------------------------------------------------------------- */
-// void PETScMatrix::copyContent(const PETScMatrix & matrix) {
-//   AKANTU_DEBUG_IN();
-//   AKANTU_DEBUG_ASSERT(nb_non_zero == matrix.getNbNonZero(),
-// 		      "The two matrices don't have the same profiles");
-
-//   MatCopy(this->mat, matrix->mat, SAME_NONZERO_PATTERN);
-
-//   AKANTU_DEBUG_OUT();
-// }
-
-// ///* -------------------------------------------------------------------------- */
-// //void PETScMatrix::copyProfile(const PETScMatrix & matrix) {
-// //  AKANTU_DEBUG_IN();
-// //  irn = matrix.irn;
-// //  jcn = matrix.jcn;
-// //  nb_non_zero = matrix.nb_non_zero;
-// //  irn_jcn_k = matrix.irn_jcn_k;
-// //  a.resize(nb_non_zero);
-// //  AKANTU_DEBUG_OUT();
-// //}
-
 /* -------------------------------------------------------------------------- */
+/**
+ * Method to add an Akantu sparse matrix to the PETSc matrix
+ * @param matrix Akantu sparse matrix to be added
+ * @param alpha the factor specifying how many times the matrix should be added
+ */
 void PETScMatrix::add(const SparseMatrix & matrix, Real alpha) {
   PetscErrorCode ierr;
   //  AKANTU_DEBUG_ASSERT(nb_non_zero == matrix.getNbNonZero(),
@@ -483,27 +473,54 @@ void PETScMatrix::add(const SparseMatrix & matrix, Real alpha) {
     Array<Int> index(2,1);
     index(0) = matrix.getIRN()(n)-matrix.getOffset();
     index(1) =  matrix.getJCN()(n)-matrix.getOffset();
-    AOApplicationToPetsc(this->petsc_wrapper->ao, 2, index.storage());
-    if (_symmetric && index(0) > index(1))
+    AOApplicationToPetsc(this->petsc_matrix_wrapper->ao, 2, index.storage());
+    if (this->sparse_matrix_type == _symmetric && index(0) > index(1))
       std::swap(index(0), index(1));
-    ierr = MatSetValue(this->petsc_wrapper->mat, index(0), index(1), matrix.getA()(n) * alpha, ADD_VALUES); CHKERRXX(ierr);
+    /// MatSetValue might be very slow for MATBAIJ, might need to use MatSetValuesBlocked
+    ierr = MatSetValue(this->petsc_matrix_wrapper->mat, index(0), index(1), matrix.getA()(n) * alpha, ADD_VALUES); CHKERRXX(ierr);
+    /// chek if sparse matrix to be added is symmetric. In this case
+    /// the value also needs to be added at the transposed location in
+    /// the matrix because PETSc is using the full profile, also for symmetric matrices
+    if (matrix.getSparseMatrixType() == _symmetric && index(0) != index(1))
+      ierr = MatSetValue(this->petsc_matrix_wrapper->mat, index(1), index(0), matrix.getA()(n) * alpha, ADD_VALUES); CHKERRXX(ierr);
   }
 
-
-  
-
-
-
+  this->performAssembly();
 }
 
 /* -------------------------------------------------------------------------- */
+/**
+ * Method to add another PETSc matrix to this PETSc matrix
+ * @param matrix PETSc matrix to be added
+ * @param alpha the factor specifying how many times the matrix should be added
+ */
+void PETScMatrix::add(const PETScMatrix & matrix, Real alpha) {
+  PetscErrorCode ierr;
+
+  ierr = MatAXPY(this->petsc_matrix_wrapper->mat, alpha, matrix.petsc_matrix_wrapper->mat, SAME_NONZERO_PATTERN); CHKERRXX(ierr);
+
+
+  this->performAssembly();
+}
+
+/* -------------------------------------------------------------------------- */
+/**
+ * MatSetValues() generally caches the values. The matrix is ready to
+ * use only after MatAssemblyBegin() and MatAssemblyEnd() have been
+ * called. (http://www.mcs.anl.gov/petsc/)
+ */
 void PETScMatrix::performAssembly() {
   PetscErrorCode ierr;
-  ierr = MatAssemblyBegin(this->petsc_wrapper->mat, MAT_FINAL_ASSEMBLY); CHKERRXX(ierr);
-  ierr = MatAssemblyEnd(this->petsc_wrapper->mat, MAT_FINAL_ASSEMBLY); CHKERRXX(ierr);
+  ierr = MatAssemblyBegin(this->petsc_matrix_wrapper->mat, MAT_FINAL_ASSEMBLY); CHKERRXX(ierr);
+  ierr = MatAssemblyEnd(this->petsc_matrix_wrapper->mat, MAT_FINAL_ASSEMBLY); CHKERRXX(ierr);
 }
 
 /* -------------------------------------------------------------------------- */
+/**
+ * Method is called when the static solver is destroyed, just before
+ * PETSc is finalized. So all PETSc objects need to be destroyed at
+ * this point.
+ */
 void PETScMatrix::beforeStaticSolverDestroy() {
   AKANTU_DEBUG_IN();
 
@@ -515,6 +532,7 @@ void PETScMatrix::beforeStaticSolverDestroy() {
 }
 
 /* -------------------------------------------------------------------------- */
+ /// destroy all the PETSc data structures used for this matrix
 void PETScMatrix::destroyInternalData() {
   AKANTU_DEBUG_IN();
 
@@ -522,13 +540,86 @@ void PETScMatrix::destroyInternalData() {
   
     PetscErrorCode ierr;
 
-    ierr = MatDestroy(&(this->petsc_wrapper->mat)); CHKERRXX(ierr);
-    delete petsc_wrapper;
+    ierr = MatDestroy(&(this->petsc_matrix_wrapper->mat)); CHKERRXX(ierr);
+    delete petsc_matrix_wrapper;
 
     this->is_petsc_matrix_initialized = false;
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+
+/* -------------------------------------------------------------------------- */
+/// access K(i, j). Works only for dofs on this processor!!!! 
+Real PETScMatrix::operator()(UInt i, UInt j) const{
+  AKANTU_DEBUG_IN();
+
+  AKANTU_DEBUG_ASSERT(this->dof_synchronizer->isLocalOrMasterDOF(i) && this->dof_synchronizer->isLocalOrMasterDOF(j), "Operator works only for dofs on this processor");
+
+  Array<Int> index(2,1);
+  index(0) = this->dof_synchronizer->getDOFGlobalID(i);
+  index(1) = this->dof_synchronizer->getDOFGlobalID(j);
+  AOApplicationToPetsc(this->petsc_matrix_wrapper->ao, 2, index.storage());
+
+  Real value = 0;
+
+  PetscErrorCode ierr;
+  /// @todo MatGetValue might be very slow for MATBAIJ, might need to use MatGetValuesBlocked
+  ierr = MatGetValues(this->petsc_matrix_wrapper->mat, 1, &index(0), 1, &index(1), &value); CHKERRXX(ierr);
+
+
+  AKANTU_DEBUG_OUT();
+
+
+  return value;
+
+}
+
+/* -------------------------------------------------------------------------- */
+/**
+ * Apply Dirichlet boundary conditions by zeroing the rows and columns which correspond to blocked dofs
+ * @param boundary array of booleans which are true if the dof at this position is blocked
+ * @param block_val the value in the diagonal entry of blocked rows
+ */
+void PETScMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
+  AKANTU_DEBUG_IN();
+
+  PetscErrorCode ierr;
+
+  /// get the global equation numbers to find the rows that need to be zeroed for the blocked dofs
+  Int * eq_nb_val = dof_synchronizer->getGlobalDOFEquationNumbers().storage();
+
+  /// every processor calls the MatSetZero() only for his local or master dofs. This assures that not two processors or more try to zero the same row
+  Int nb_blocked_local_master_eq_nb = 0;
+  Array<Int> blocked_local_master_eq_nb(this->local_size / boundary.getNbComponent(), boundary.getNbComponent());
+  Int * blocked_lm_eq_nb_ptr  = blocked_local_master_eq_nb.storage();
+  for (UInt i = 0; i < boundary.getSize(); ++i) {
+    for (UInt j = 0; j < boundary.getNbComponent(); ++j) {
+      UInt local_dof = i * boundary.getNbComponent() + j;
+      if (boundary(i, j) == true && this->dof_synchronizer->isLocalOrMasterDOF(local_dof)) {
+	Int global_eq_nb = *eq_nb_val;
+	*blocked_lm_eq_nb_ptr = global_eq_nb;
+	++ nb_blocked_local_master_eq_nb;
+	++blocked_lm_eq_nb_ptr;
+	++eq_nb_val;
+      }
+    }
+  }
+  blocked_local_master_eq_nb.resize(nb_blocked_local_master_eq_nb/boundary.getNbComponent());
+
+
+  ierr = AOApplicationToPetsc(this->petsc_matrix_wrapper->ao, nb_blocked_local_master_eq_nb, blocked_local_master_eq_nb.storage() ); CHKERRXX(ierr);
+  ierr = MatZeroRowsColumns(this->petsc_matrix_wrapper->mat, nb_blocked_local_master_eq_nb, blocked_local_master_eq_nb.storage(), block_val, 0, 0); CHKERRXX(ierr);
+
+  this->performAssembly();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+/// set all entries to zero while keeping the same nonzero pattern
+void PETScMatrix::clear() {
+  MatZeroEntries(this->petsc_matrix_wrapper->mat);
 }
 
 __END_AKANTU__

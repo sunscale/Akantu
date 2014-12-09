@@ -36,6 +36,7 @@ set(AKANTU_PARALLEL_TESTS
   test_solid_mechanics_model_pbc_parallel
   test_synchronizer_communication
   test_dof_synchronizer
+  test_dof_synchronizer_communication
   test_solid_mechanics_model_reassign_material
   )
 

@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
   UInt nb_element = mesh.getNbElement(element_type);
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(element_type);
   UInt nb_dofs_per_element = spatial_dimension * nb_nodes_per_element;
-  SparseMatrix K(nb_global_nodes * spatial_dimension, _symmetric);
+  SparseMatrix K(nb_global_nodes * spatial_dimension, _unsymmetric);
   K.buildProfile(mesh, dof_synchronizer, spatial_dimension);
   Matrix<Real> element_input(nb_dofs_per_element, nb_dofs_per_element, 1);
   Array<Real> K_e = Array<Real>(nb_element, nb_dofs_per_element * nb_dofs_per_element, "K_e");
@@ -105,17 +105,28 @@ int main(int argc, char *argv[]) {
     std::cout << node_to_elem.getNbCols(i) << std::endl;
   }
 
-  PETScMatrix petsc_matrix(nb_global_nodes * spatial_dimension, _symmetric);
-  
-  petsc_matrix.resize(dof_synchronizer);
+  PETScMatrix petsc_matrix(nb_global_nodes * spatial_dimension, _unsymmetric);
+
   petsc_matrix.buildProfile(mesh, dof_synchronizer, spatial_dimension);
   
 
   petsc_matrix.add(K, 1);
-  petsc_matrix.performAssembly();
+  
+  // for (UInt i = 0; i < mesh.getNbNodes(); ++i) { 
+  //   for (UInt j = 0; j < spatial_dimension; ++j) {
+  //     UInt dof = i * spatial_dimension + j;
+  //     if (dof_synchronizer.isLocalOrMasterDOF(dof)) {
+  // 	UInt global_dof = dof_synchronizer.getDOFGlobalID(dof);
+  // 	std::cout << "K(" << global_dof << "," << global_dof << ")=" << petsc_matrix(dof,dof) << std::endl;
+  // 	std::cout << node_to_elem.getNbCols(i) << std::endl; 
+  //     }
+  //   }
+  // }
+
   
 
-  petsc_matrix.saveMatrix("profile.mtx");
+
+  petsc_matrix.saveMatrix("profile.dat");
 
   delete communicator;
 

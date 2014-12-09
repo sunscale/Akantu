@@ -30,6 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solver.hh"
+#include "dof_synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -45,9 +46,14 @@ Solver::Solver(SparseMatrix & matrix,
   matrix(&matrix),
   is_matrix_allocated(false),
   mesh(NULL),
-  communicator(StaticCommunicator::getStaticCommunicator()){
+  communicator(StaticCommunicator::getStaticCommunicator()),
+  solution(NULL),
+  synch_registry(NULL) {
   AKANTU_DEBUG_IN();
   StaticSolver::getStaticSolver().registerEventHandler(*this);
+  //createSynchronizerRegistry();
+  this->synch_registry = new SynchronizerRegistry(*this);
+  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(), _gst_solver_solution);
 
   AKANTU_DEBUG_OUT();
 }
@@ -57,7 +63,7 @@ Solver::~Solver() {
   AKANTU_DEBUG_IN();
 
   this->destroyInternalData();
-
+  delete synch_registry;
   AKANTU_DEBUG_OUT();
 }
 
@@ -70,6 +76,11 @@ void Solver::beforeStaticSolverDestroy() {
   } catch(...) {}
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void Solver::createSynchronizerRegistry() {
+  //this->synch_registry = new SynchronizerRegistry(this);
 }
 
 

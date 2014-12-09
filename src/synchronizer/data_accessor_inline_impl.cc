@@ -105,3 +105,21 @@ inline void DataAccessor::packUnpackElementalDataHelper(ElementTypeMapArray<T> &
       buffer >> data;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+template<typename T, bool pack_helper>
+inline void DataAccessor::packUnpackDOFDataHelper(Array<T> & data,
+						  CommunicationBuffer & buffer,
+						  const Array<UInt> & dofs) {
+  Array<UInt>::const_scalar_iterator it_dof  = dofs.begin();
+  Array<UInt>::const_scalar_iterator end_dof = dofs.end();
+  T * data_ptr = data.storage();
+
+  for (; it_dof != end_dof; ++it_dof) {
+    if(pack_helper)
+      buffer << data_ptr[*it_dof];
+    else
+      buffer >> data_ptr[*it_dof];
+  }
+}
+

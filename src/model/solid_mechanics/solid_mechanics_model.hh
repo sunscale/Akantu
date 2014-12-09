@@ -284,8 +284,7 @@ public:
   /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
   template <NewmarkBeta::IntegrationSchemeCorrectorType type>
   void solve(Array<Real> &increment, Real block_val = 1.,
-             bool need_factorize = true, bool has_profile_changed = false,
-             const Array<Real> &rhs = Array<Real>());
+             bool need_factorize = true, bool has_profile_changed = false);
 
 private:
   /// re-initialize the J matrix (to use if the profile of K changed)
@@ -358,7 +357,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   inline virtual UInt getNbDataForElements(const Array <Element> & elements,
-					   SynchronizationTag      tag) const;
+					   SynchronizationTag tag) const;
 
   inline virtual void packElementData(CommunicationBuffer &   buffer,
 				      const Array <Element> & elements,

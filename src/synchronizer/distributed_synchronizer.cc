@@ -57,7 +57,6 @@ DistributedSynchronizer::DistributedSynchronizer(Mesh & mesh,
 						 MemoryID memory_id) :
   Synchronizer(id, memory_id),
   mesh(mesh),
-  static_communicator(&StaticCommunicator::getStaticCommunicator()),
   prank_to_element("prank_to_element", id)
 {
   AKANTU_DEBUG_IN();
@@ -851,7 +850,7 @@ void DistributedSynchronizer::waitEndSynchronize(DataAccessor & data_accessor,
 	  Real bary_norm = barycenter.norm();
 	  for (UInt i = 0; i < spatial_dimension; ++i) {
 	    if((std::abs((barycenter(i) - barycenter_loc(i))/bary_norm) <= tolerance) ||
-	       (std::abs(barycenter_loc(i)) <= 0 && std::abs(barycenter(i)) <= tolerance)) continue;
+	       (std::abs(barycenter_loc(i)) <= tolerance && std::abs(barycenter(i)) <= tolerance)) continue;
 	    AKANTU_DEBUG_ERROR("Unpacking an unknown value for the element: "
 			       << element
 			       << "(barycenter[" << i << "] = " << barycenter_loc(i)

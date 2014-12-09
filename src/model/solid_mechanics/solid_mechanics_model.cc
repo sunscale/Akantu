@@ -715,28 +715,38 @@ void SolidMechanicsModel::solveStep() {
  *
  */
 void SolidMechanicsModel::initSolver(__attribute__((unused)) SolverOptions & options) {
-#if !defined(AKANTU_USE_MUMPS) // or other solver in the future \todo add AKANTU_HAS_SOLVER in CMake
+#if !defined(AKANTU_USE_MUMPS) && !defined(AKANTU_USE_PETSC)// or other solver in the future \todo add AKANTU_HAS_SOLVER in CMake
   AKANTU_DEBUG_ERROR("You should at least activate one solver.");
 #else
   UInt nb_global_nodes = mesh.getNbGlobalNodes();
 
   delete jacobian_matrix;
   std::stringstream sstr; sstr << id << ":jacobian_matrix";
-  jacobian_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
 
+#ifdef AKANTU_USE_PETSC
+  jacobian_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
+#else
+  jacobian_matrix = new PETScMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
+#endif //AKANTU_USE PETSC
   jacobian_matrix->buildProfile(mesh, *dof_synchronizer, spatial_dimension);
 
   if (!isExplicit()) {
     delete stiffness_matrix;
     std::stringstream sstr_sti; sstr_sti << id << ":stiffness_matrix";
+#ifdef AKANTU_USE_PETSC
     stiffness_matrix = new SparseMatrix(*jacobian_matrix, sstr_sti.str(), memory_id);
+#else
+    stiffness_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
+    stiffness_matrix->buildProfile();
+#endif //AKANTU_USE_PETSC
   }
 
-#ifdef AKANTU_USE_MUMPS
   std::stringstream sstr_solv; sstr_solv << id << ":solver";
+#ifdef AKANTU_USE_MUMPS
   solver = new SolverMumps(*jacobian_matrix, sstr_solv.str());
-
   dof_synchronizer->initScatterGatherCommunicationScheme();
+#elif defined(AKANTU_USE_PETSC)
+  solver = new SolverPETSc(*jacobian_matrix, sstr_solv.str());
 #else
   AKANTU_DEBUG_ERROR("You should at least activate one solver.");
 #endif //AKANTU_USE_MUMPS
@@ -762,7 +772,7 @@ void SolidMechanicsModel::initJacobianMatrix() {
   if(solver)
     solver->initialize(_solver_no_options);
 #else
-  AKANTU_DEBUG_ERROR("You should at least activate one solver.");
+  AKANTU_DEBUG_ERROR("You need to activate the solver mumps.");
 #endif
 }
 

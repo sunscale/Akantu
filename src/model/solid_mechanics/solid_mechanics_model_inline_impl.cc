@@ -420,8 +420,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 template <NewmarkBeta::IntegrationSchemeCorrectorType type>
 void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
-                                bool need_factorize, bool has_profile_changed,
-                                const Array<Real> &rhs) {
+                                bool need_factorize, bool has_profile_changed) {
   
   if(has_profile_changed) {
     this->initJacobianMatrix();
@@ -471,9 +470,9 @@ void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
     solver->factorize();
   }
 
-  if (rhs.getSize() != 0)
-    solver->setRHS(rhs);
-  else
+  // if (rhs.getSize() != 0)
+  //  solver->setRHS(rhs);
+  // else
     solver->setRHS(*residual);
 
   // solve @f[ J \delta w = r @f]

@@ -3,6 +3,7 @@
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @date creation: Wed Sep 01 2010
  * @date last modification: Tue Apr 30 2013
@@ -37,6 +38,9 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_memory.hh"
 #include "data_accessor.hh"
+#include "real_static_communicator.hh"
+#include "static_communicator.hh"
+
 /* -------------------------------------------------------------------------- */
 #include <map>
 /* -------------------------------------------------------------------------- */
@@ -106,11 +110,37 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+
+  class Communication {
+  public:
+    void resize(UInt size) {
+      send_buffer.resize(size);
+      recv_buffer.resize(size);
+      size_to_send   .resize(size);
+      size_to_receive.resize(size);
+    }
+
+  public:
+    /// size of data to send to each processor
+    std::vector<UInt> size_to_send;
+    /// size of data to recv to each processor
+    std::vector<UInt> size_to_receive;
+    std::vector< CommunicationBuffer > send_buffer;
+    std::vector< CommunicationBuffer > recv_buffer;
+
+    std::vector<CommunicationRequest *> send_requests;
+    std::vector<CommunicationRequest *> recv_requests;
+  };
+
   /// id of the synchronizer
   SynchronizerID id;
 
   /// message counter per tag
   std::map<SynchronizationTag, UInt> tag_counter;
+
+
+  /// the static memory instance
+  StaticCommunicator * static_communicator;
 };
 
 

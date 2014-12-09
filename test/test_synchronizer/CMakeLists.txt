@@ -55,6 +55,12 @@ register_test(test_dof_synchronizer
   SOURCES test_dof_synchronizer.cc test_data_accessor.hh
   FILES_TO_COPY bar.msh)
 
+register_test(test_dof_synchronizer_communication
+  SOURCES test_dof_synchronizer_communication.cc test_dof_data_accessor.hh
+  DEPENDENCIES test_synchronizer_communication_mesh
+  PACKAGE parallel
+  )
+
 register_test(test_data_distribution
   SOURCES test_data_distribution.cc
   FILES_TO_COPY data_split.msh
