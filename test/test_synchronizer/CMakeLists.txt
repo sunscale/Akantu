@@ -53,7 +53,9 @@ register_test(test_grid_synchronizer
 
 register_test(test_dof_synchronizer
   SOURCES test_dof_synchronizer.cc test_data_accessor.hh
-  FILES_TO_COPY bar.msh)
+  FILES_TO_COPY bar.msh
+  PACKAGE parallel
+  )
 
 register_test(test_dof_synchronizer_communication
   SOURCES test_dof_synchronizer_communication.cc test_dof_data_accessor.hh

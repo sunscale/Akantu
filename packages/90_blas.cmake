@@ -28,8 +28,9 @@
 #
 #===============================================================================
 
-add_optional_external_package(BLAS "Use BLAS for arithmetic operations" OFF LANGUAGE Fortran)
-mark_as_advanced(AKANTU_USE_BLAS)
+package_declare(BLAS EXTERNAL
+  DESCRIPTION "Use BLAS for arithmetic operations"
+  EXTRA_PACKAGE_OPTIONS LANGUAGE Fortran)
 
 if(BLAS_mkl_core_LIBRARY)
   set(AKANTU_USE_BLAS_MKL)

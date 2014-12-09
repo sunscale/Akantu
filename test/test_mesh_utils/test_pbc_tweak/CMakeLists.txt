@@ -38,4 +38,5 @@ register_test(test_pbc_tweak
   DEPENDENCIES test_pbc_cube_mesh
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )

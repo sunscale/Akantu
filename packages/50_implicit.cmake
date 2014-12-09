@@ -28,16 +28,11 @@
 #
 #===============================================================================
 
-add_meta_package(IMPLICIT "Add support for implicit time scheme" OFF SCOTCH MUMPS)
+package_declare(implicit META
+  DESCRIPTION "Add support for implicit time scheme"
+  DEPENDS scotch mumps)
 
-set(AKANTU_IMPLICIT_TESTS
-  test_solid_mechanics_model_bar_traction2d_mass_not_lumped
-  test_solid_mechanics_model_implicit_1d
-  test_solid_mechanics_model_implicit_2d
-  test_solid_mechanics_model_implicit_dynamic_2d
-  )
-
-set(AKANTU_IMPLICIT_DOCUMENTATION 
+set(AKANTU_IMPLICIT_DOCUMENTATION
 "
 This package activates the sparse solver necessary to solve implicitely static/dynamic finite element problems.
 It depends on:

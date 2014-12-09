@@ -28,11 +28,11 @@
 #
 #===============================================================================
 
-option(AKANTU_DAMAGE_NON_LOCAL "Package for Non-local damage constitutives laws Akantu" OFF)
+package_declare(damage_non_local
+  DESCRIPTION "Package for Non-local damage constitutives laws Akantu"
+  DEPENDS lapack)
 
-add_external_package_dependencies(damage_non_local lapack)
-
-set(AKANTU_DAMAGE_NON_LOCAL_FILES
+package_declare_sources(damage_non_local
   model/solid_mechanics/materials/material_damage/material_damage_non_local.hh
   model/solid_mechanics/materials/material_damage/material_marigo_non_local.hh
   model/solid_mechanics/materials/material_damage/material_marigo_non_local_inline_impl.cc

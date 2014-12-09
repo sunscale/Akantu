@@ -28,7 +28,8 @@
 #
 #===============================================================================
 
-option(AKANTU_DOCUMENTATION_MANUAL  "Build manual." OFF)
+package_declare(documentation_manual
+  DESCRIPTION "Build the user manual.")
 
 set(AKANTU_DOCUMENTATION_MANUAL_DOCUMENTATION "
 This package alows to compile the user manual in the build folder \\shellcode{build/doc/manual/manual.pdf}.

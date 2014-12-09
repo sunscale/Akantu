@@ -39,9 +39,10 @@ add_akantu_test(test_pbc_tweak "Test pbc facilities")
 
 register_test(test_purify_mesh
   SOURCES test_purify_mesh.cc
-  FILES_TO_COPY purify_mesh.msh DESTINATION
+  FILES_TO_COPY purify_mesh.msh
+  PACKAGE core
   )
 
-add_akantu_test(test_mesh_partitionate "Test mesh partition creation" PACKAGE scotch)
+add_akantu_test(test_mesh_partitionate "Test mesh partition creation")
 
 

@@ -28,13 +28,15 @@
 #
 #===============================================================================
 
-set(AKANTU_MUMPS_FILES
+package_declare_sources(Mumps
   solver/solver_mumps.cc
   solver/solver_mumps.hh
   )
 
-option(AKANTU_USE_THIRD_PARTY_MUMPS "Use the third-party Mumps instead of the one from the system" OFF)
-option(AKANTU_USE_MUMPS "Add Mumps support in akantu")
+
+package_declare(Mumps EXTERNAL
+  DESCRIPTION "Add Mumps support in akantu"
+  SYSTEM ON)
 
 
 mark_as_advanced(AKANTU_USE_THIRD_PARTY_MUMPS)
@@ -171,9 +173,6 @@ else()
       libmumps-seq-dev
       )
   endif()
-
-  add_optional_external_package(Mumps "Add Mumps support in akantu" OFF)
-
 endif()
 
 set(AKANTU_MUMPS_TESTS

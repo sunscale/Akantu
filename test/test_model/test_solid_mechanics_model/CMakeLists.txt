@@ -32,8 +32,7 @@
 
 add_akantu_test(test_materials "test_materials")
 add_akantu_test(patch_tests "patch_tests")
-add_akantu_test(test_cohesive "cohesive_test" PACKAGE cohesive_element)
-add_akantu_test(test_contact "test_contact" PACKAGE dead_contact)
+add_akantu_test(test_cohesive "cohesive_test")
 
 #===============================================================================
 add_mesh(test_solid_mechanics_model_square_mesh square.geo 2 1)
@@ -45,6 +44,7 @@ register_test(test_solid_mechanics_model_square
   DEPENDENCIES test_solid_mechanics_model_square_mesh
   FILES_TO_COPY material.dat test_cst_energy.pl
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
 
 register_test(test_solid_mechanics_model_circle_2
@@ -52,6 +52,7 @@ register_test(test_solid_mechanics_model_circle_2
   DEPENDENCIES test_solid_mechanics_model_circle_mesh2
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
 
 #===============================================================================
@@ -64,6 +65,7 @@ register_test(test_solid_mechanics_model_bar_traction2d
   DEPENDENCIES test_bar_traction_2d_mesh1 test_bar_traction_2d_mesh2
   FILES_TO_COPY material.dat test_cst_energy.pl
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
 
 register_test(test_solid_mechanics_model_bar_traction2d_structured
@@ -71,6 +73,7 @@ register_test(test_solid_mechanics_model_bar_traction2d_structured
   DEPENDENCIES test_bar_traction_2d_mesh_structured1
   FILES_TO_COPY material.dat test_cst_energy.pl
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
 
 #===============================================================================
@@ -81,6 +84,7 @@ register_test(test_solid_mechanics_model_bar_traction2d_parallel
   DEPENDENCIES test_bar_traction_2d_mesh2
   FILES_TO_COPY material.dat test_cst_energy.pl
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE parallel
   )
 
 register_test(test_solid_mechanics_model_segment_parallel
@@ -88,6 +92,7 @@ register_test(test_solid_mechanics_model_segment_parallel
   DEPENDENCIES test_solid_mechanics_model_segment_mesh
   FILES_TO_COPY material.dat test_cst_energy.pl
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE parallel
   )
 
 
@@ -97,6 +102,7 @@ register_test(test_solid_mechanics_model_segment_parallel
 #  DEPENDENCIES test_bar_traction_2d_mesh1 test_bar_traction_2d_mesh2
 #  FILES_TO_COPY material.dat
 #  DIRECTORIES_TO_CREATE paraview
+#  PACKAGE implicit
 #  )
 
 #===============================================================================
@@ -109,6 +115,7 @@ register_test(test_solid_mechanics_model_implicit_1d
   DEPENDENCIES test_solid_mechanics_model_segment_mesh1
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE implicit
   )
 
 register_test(test_solid_mechanics_model_implicit_2d
@@ -116,6 +123,7 @@ register_test(test_solid_mechanics_model_implicit_2d
   DEPENDENCIES test_implicit_mesh1 test_implicit_mesh2
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE implicit
   )
 
 #===============================================================================
@@ -128,6 +136,7 @@ register_test(test_solid_mechanics_model_implicit_dynamic_2d
   DEPENDENCIES test_implicit_beam_2d_1 test_implicit_beam_2d_2 test_implicit_beam_3d_2 test_implicit_beam_3d_1
   FILES_TO_COPY  material_implicit_dynamic.dat
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE implicit
   )
 
 #===============================================================================
@@ -138,6 +147,7 @@ register_test(test_solid_mechanics_model_bar_traction2d_structured_pbc
   DEPENDENCIES test_bar_traction_2d_mesh_structured1
   FILES_TO_COPY material.dat test_cst_energy.pl
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
 
 #register_test(test_solid_mechanics_model_pbc_parallel
@@ -145,6 +155,7 @@ register_test(test_solid_mechanics_model_bar_traction2d_structured_pbc
 #  DEPENDENCIES test_pbc_parallel_mesh
 #  FILES_TO_COPY  material.dat
 #  DIRECTORIES_TO_CREATE paraview
+#  PACKAGE parallel
 #  )
 
 
@@ -158,6 +169,7 @@ register_test(test_solid_mechanics_model_cube3d
   DEPENDENCIES test_cube3d_mesh1
   FILES_TO_COPY  material.dat
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
 
 register_test(test_solid_mechanics_model_cube3d_tetra10
@@ -165,6 +177,7 @@ register_test(test_solid_mechanics_model_cube3d_tetra10
   DEPENDENCIES test_cube3d_mesh2
   FILES_TO_COPY  material.dat
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
 
 register_test(test_solid_mechanics_model_cube3d_pbc
@@ -172,6 +185,7 @@ register_test(test_solid_mechanics_model_cube3d_pbc
   DEPENDENCIES test_cube3d_mesh_structured
   FILES_TO_COPY  material.dat
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
 
 #add_mesh(test_solid_mechanics_model_boundary_condition_mesh cube_physical_names.geo 3 1)
@@ -179,6 +193,7 @@ register_test(test_solid_mechanics_model_cube3d_pbc
 register_test(test_solid_mechanics_model_boundary_condition
   SOURCES test_solid_mechanics_model_boundary_condition.cc
   FILES_TO_COPY material.dat cube_physical_names.msh
+  PACKAGE core
   )
 
 #===============================================================================
@@ -188,10 +203,12 @@ register_test(test_solid_mechanics_model_reassign_material
   SOURCES test_solid_mechanics_model_reassign_material.cc
   DEPENDENCIES test_cube3d_two_mat_mesh
   FILES_TO_COPY two_materials.dat
+  PACKAGE scotch
   )
 
 #===============================================================================
 register_test(test_solid_mechanics_model_material_eigenstrain
   SOURCES test_solid_mechanics_model_material_eigenstrain.cc
   FILES_TO_COPY cube_3d_tet_4.msh; material_elastic_plane_strain.dat
+  PACKAGE core
   )

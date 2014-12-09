@@ -27,9 +27,9 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-option(AKANTU_USE_CPPARRAY "Use cpp-array library" OFF)
-option(AKANTU_USE_THIRD_PARTY_CPPARRAY "Automatic download of the CPP-ARRAY library" ON)
-mark_as_advanced(AKANTU_USE_THIRD_PARTY_CPPARRAY AKANTU_USE_CPPARRAY)
+package_declare(CppArray EXTERNAL
+  DESCRIPTION "Use cpp-array library"
+  SYSTEM OFF)
 
 if(AKANTU_USE_CPPARRAY AND AKANTU_USE_THIRD_PARTY_CPPARRAY)
   find_package(Git)
@@ -73,8 +73,6 @@ if(AKANTU_USE_CPPARRAY AND AKANTU_USE_THIRD_PARTY_CPPARRAY)
   else()
     message(STATUS "Cpp-Array could not be found! Please install git and/or place cpp-array in the third-party folder of Akantu")
   endif()
-else()
-  add_optional_external_package(CppArray "Use cpp-array library" OFF)
 endif()
 
 

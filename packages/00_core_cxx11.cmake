@@ -31,7 +31,7 @@
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag (-std=c++0x HAVE_NEW_STD)
 
-set(AKANTU_CORE_CXX11_FILES
+package_declare_sources(core_cxx11
   common/aka_point.hh
   common/aka_ball.cc
   common/aka_ci_string.hh
@@ -49,7 +49,9 @@ set(AKANTU_CORE_CXX11_FILES
 
 
 if(HAVE_NEW_STD)
-  option(AKANTU_CORE_CXX11 "C++ 11 additions for Akantu core" ON)
+  package_declare(core_cxx11 ADVANCED
+    DESCRIPTION "C++ 11 additions for Akantu core" DEFAULT ON
+    COMPILE_FLAGS "-std=c++0x")
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.6")
@@ -63,17 +65,16 @@ if(HAVE_NEW_STD)
     endif()
   endif()
 
-  if(AKANTU_CORE_CXX11)
-    add_flags(cxx "-std=c++0x")
-  else()
-    remove_flags(cxx "-std=c++0x")
-  endif()
-else()
-  set(AKANTU_CORE_CXX11 OFF CACHE BOOL "core package for Akantu" FORCE)
-  remove_flags(cxx "-std=c++0x")
-endif()
+  package_get_name(core_cxx11 _pkg_name)
+  package_get_option_name(${_pkg_name} _option_name)
 
-mark_as_advanced(AKANTU_CORE_CXX11)
+else()
+  package_declare(core_cxx11 ADVANCED
+    DESCRIPTION "C++ 11 additions for Akantu core"
+    DEFAULT OFF
+    NOT_OPTIONAL
+    COMPILE_FLAGS "-std=c++0x")
+endif()
 
 set(AKANTU_CORE_CXX11_DOCUMENTATION "
 This option activates some features of the C++11 standard. This is usable with GCC>=4.7 or Intel>=13.")

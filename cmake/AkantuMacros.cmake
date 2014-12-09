@@ -72,7 +72,7 @@ macro(add_akantu_definitions)
   endforeach()
 endmacro()
 
-
+#===============================================================================
 macro(include_boost)
   set(Boost_LIBRARIES)
   find_package(Boost REQUIRED)
@@ -102,6 +102,49 @@ endmacro()
 
 function(set_third_party_shared_libirary_name _var _lib)
   set(${_var} ${PROJECT_BINARY_DIR}/third-party/lib/${CMAKE_SHARED_LIBRARY_PREFIX}${_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE FILEPATH "" FORCE)
+endfunction()
+
+#===============================================================================
+# Generate the list of currently loaded materials
+function(generate_material_list)
+  message(STATUS "Determining the list of recognized materials...")
+
+  set(_include_dirs ${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
+
+  try_run(_material_list_run _material_list_compile
+    ${CMAKE_BINARY_DIR}
+    ${PROJECT_SOURCE_DIR}/cmake/material_lister.cc
+    CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
+    COMPILE_DEFINITIONS "-DAKANTU_CMAKE_LIST_MATERIALS"
+    COMPILE_OUTPUT_VARIABLE _compile_results
+    RUN_OUTPUT_VARIABLE _result_material_list)
+
+  if(_material_list_compile AND "${_material_list_run}" EQUAL 0)
+    message(STATUS "Materials included in Akantu:")
+    string(REPLACE "\n" ";" _material_list "${_result_material_list}")
+    foreach(_mat ${_material_list})
+      string(REPLACE ":" ";" _mat_key "${_mat}")
+      list(GET _mat_key 0 _key)
+      list(GET _mat_key 1 _class)
+      list(LENGTH _mat_key _l)
+
+      if("${_l}" GREATER 2)
+	list(REMOVE_AT _mat_key 0 1)
+	set(_opt " -- options: [")
+	foreach(_o ${_mat_key})
+	  set(_opt "${_opt} ${_o}")
+	endforeach()
+	set(_opt "${_opt} ]")
+      else()
+	set(_opt "")
+      endif()
+
+      message(STATUS "   ${_class} -- key: ${_key}${_opt}")
+    endforeach()
+  else()
+    message(STATUS "Could not determine the list of materials.")
+    message("${_compile_results}")
+  endif()
 endfunction()
 
 #===============================================================================

@@ -24,9 +24,10 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-option(AKANTU_DEBUG_TOOLS "Compiles akantu with the advanced debug tools activated (/!\ can slow down the code)" OFF)
-mark_as_advanced(AKANTU_DEBUG_TOOLS)
+package_declare(debug_tools ADVANCED
+  DESCRIPTION "Compiles akantu with the advanced debug tools activated (/!\ can slow down the code)")
 
-set(AKANTU_DEBUG_TOOLS_FILES
+
+package_declare_sources(debug_tools
   common/aka_debug_tools.hh
   )

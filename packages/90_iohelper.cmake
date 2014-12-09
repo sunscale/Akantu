@@ -28,40 +28,43 @@
 #
 #===============================================================================
 
-option(AKANTU_USE_THIRD_PARTY_IOHELPER "Automatic download of the IOHelper library" ON)
-option(AKANTU_USE_IOHELPER "Add IOHelper support in akantu" ON)
+package_declare(IOHelper EXTERNAL
+  DESCRIPTION "Add IOHelper support in akantu"
+  SYSTEM OFF)
 
-mark_as_advanced(AKANTU_USE_IOHELPER)
-mark_as_advanced(AKANTU_USE_THIRD_PARTY_IOHELPER)
+package_get_name(IOHelper _pkg_name)
+package_use_system(${_pkg_name} _use_system)
 
-if (AKANTU_USE_THIRD_PARTY_IOHELPER AND AKANTU_USE_IOHELPER)
-  set(IOHELPER_VERSION "1.1")
-  set(IOHELPER_GIT     "https://git.epfl.ch/repo/iohelper.git")
+if(NOT ${_use_system})
+  package_get_option_name(${_pkg_name} _option_name)
 
-  include(ExternalProject)
+  if(${_option_name})
+    set(IOHELPER_VERSION "1.1")
+    set(IOHELPER_GIT     "https://git.epfl.ch/repo/iohelper.git")
 
-  ExternalProject_Add(IOHelper
-    PREFIX ${PROJECT_BINARY_DIR}/third-party
-    GIT_REPOSITORY ${IOHELPER_GIT}
-    CMAKE_ARGS <SOURCE_DIR>/
-    CMAKE_CACHE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
-    BUILD_COMMAND make
-    INSTALL_COMMAND make install
-    )
+    include(ExternalProject)
+
+    ExternalProject_Add(IOHelper
+      PREFIX ${PROJECT_BINARY_DIR}/third-party
+      GIT_REPOSITORY ${IOHELPER_GIT}
+      CMAKE_ARGS <SOURCE_DIR>/
+      CMAKE_CACHE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+      BUILD_COMMAND make
+      INSTALL_COMMAND make install
+      )
 
     set_third_party_shared_libirary_name(IOHELPER_LIBRARIES iohelper)
-    list(APPEND AKANTU_EXTERNAL_LIBRARIES ${IOHELPER_LIBRARIES})
-    list(APPEND AKANTU_EXTERNAL_LIB_INCLUDE_DIR ${PROJECT_BINARY_DIR}/third-party/include/iohelper)
+    package_set_libraries(${_pkg_name} ${IOHELPER_LIBRARIES})
+    package_set_include_dir(${_pkg_name} ${PROJECT_BINARY_DIR}/third-party/include/iohelper)
 
-    list(APPEND AKANTU_EXTRA_TARGET_DEPENDENCIES IOHelper)
-    set(AKANTU_IOHELPER_INCLUDE_DIR ${PROJECT_BINARY_DIR}/third-party/include/iohelper)
-    set(AKANTU_IOHELPER ON)
-else()
-  add_optional_external_package(IOHelper "Add IOHelper support in akantu" ON)
+    package_add_extra_dependency(IOHelper IOHelper)
+    package_activate(${_pkg_name})
+  else()
+    package_deactivate(${_pkg_name})
+  endif()
 endif()
 
-
-set(AKANTU_IOHELPER_FILES
+package_declare_sources(IOHelper
   io/dumper/dumper_iohelper.hh
   io/dumper/dumper_iohelper.cc
   io/dumper/dumper_paraview.hh

@@ -53,9 +53,7 @@ StaticSolver::~StaticSolver() {
 StaticSolver & StaticSolver::getStaticSolver() {
   if(nb_references == 0)
     static_solver = new StaticSolver();
-
   ++nb_references;
-
   return *static_solver;
 }
 

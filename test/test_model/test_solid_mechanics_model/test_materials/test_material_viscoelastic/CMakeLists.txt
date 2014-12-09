@@ -34,10 +34,12 @@ register_test(test_material_standard_linear_solid_deviatoric_relaxation
   SOURCES test_material_standard_linear_solid_deviatoric_relaxation.cc
   DEPENDENCIES test_material_standard_linear_solid_deviatoric_relaxation_mesh
   FILES_TO_COPY material_standard_linear_solid_deviatoric_relaxation.dat
+  PACKAGE core
   )
 
 register_test(test_material_standard_linear_solid_deviatoric_relaxation_tension
   SOURCES test_material_standard_linear_solid_deviatoric_relaxation_tension.cc
   DEPENDENCIES test_material_standard_linear_solid_deviatoric_relaxation_mesh
   FILES_TO_COPY material_standard_linear_solid_deviatoric_relaxation.dat
+  PACKAGE core
   )

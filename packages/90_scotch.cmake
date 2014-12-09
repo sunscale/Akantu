@@ -28,9 +28,14 @@
 #
 #===============================================================================
 
-set(AKANTU_SCOTCH_FILES
+package_declare(Scotch EXTERNAL
+  DESCRIPTION "Add Scotch support in akantu"
+  SYSTEM ON)
+
+package_declare_sources(Scotch
   mesh_utils/mesh_partition/mesh_partition_scotch.cc
   )
+
 
 if(AKANTU_SCOTCH_ON OR AKANTU_PTSCOTCH_ON)
   set(AKANTU_PARTITIONER_ON ON)
@@ -44,93 +49,90 @@ set(AKANTU_SCOTCH_TESTS
   )
 
 
-option(AKANTU_USE_SCOTCH "Add Scotch support in akantu" OFF)
-option(AKANTU_USE_THIRD_PARTY_SCOTCH "Use the third-party Scotch instead of the one from the system" OFF)
-mark_as_advanced(AKANTU_USE_THIRD_PARTY_SCOTCH)
+package_get_name(Scotch _pkg_name)
+package_use_system(${_pkg_name} _use_system)
+package_get_option_name(${_pkg_name} _option_name)
 
-set(SCOTCH_VERSION "5.1.12b")
-set(SCOTCH_ARCHIVE_HASH "MD5=e13b49be804755470b159d7052764dc0")
-set(SCOTCH_ARCHIVE ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}_esmumps.tar.gz)
-if(NOT EXISTS ${SCOTCH_ARCHIVE})
-  set(SCOTCH_ARCHIVE https://gforge.inria.fr/frs/download.php/28978/scotch_${SCOTCH_VERSION}_esmumps.tar.gz)
-endif()
-
-
-if(AKANTU_USE_THIRD_PARTY_SCOTCH AND AKANTU_USE_SCOTCH)
-  if(TARGET Scotch)
-    return()
+if(NOT ${_use_system})
+  set(SCOTCH_VERSION "5.1.12b")
+  set(SCOTCH_ARCHIVE_HASH "MD5=e13b49be804755470b159d7052764dc0")
+  set(SCOTCH_ARCHIVE ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}_esmumps.tar.gz)
+  if(NOT EXISTS ${SCOTCH_ARCHIVE})
+    set(SCOTCH_ARCHIVE https://gforge.inria.fr/frs/download.php/28978/scotch_${SCOTCH_VERSION}_esmumps.tar.gz)
   endif()
 
-  find_package(BISON)
-  find_package(FLEX)
-  find_package(ZLIB)
-
-  if (AKANTU_USE_OBSOLETE_GETTIMEOFDAY)
-    set (SCOTCH_TIMMING_OPTION -DCOMMON_TIMING_OLD)
-  endif()
-
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(SCOTCH_ARCHITECTURE -DIDXSIZE64)
-  else()
-    set(SCOTCH_ARCHITECTURE)
-  endif()
-
-  set(SCOTCH_DIR ${PROJECT_BINARY_DIR}/third-party)
-  configure_file(${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}_make.inc.cmake
-    ${SCOTCH_DIR}/scotch_make.inc)
-
-  include(ExternalProject)
-
-  ExternalProject_Add(Scotch
-    PREFIX ${SCOTCH_DIR}
-    URL ${SCOTCH_ARCHIVE}
-    URL_HASH ${SCOTCH_ARCHIVE_HASH}
-    TLS_VERIFY FALSE
-    PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}.patch
-    CONFIGURE_COMMAND cmake -E copy ${SCOTCH_DIR}/scotch_make.inc src/Makefile.inc
-    BUILD_IN_SOURCE 1
-    BUILD_COMMAND make -C src
-    INSTALL_COMMAND prefix=<INSTALL_DIR> make -C src install
-    )
-
-  set_third_party_shared_libirary_name(SCOTCH_LIBRARY scotch)
-  set_third_party_shared_libirary_name(SCOTCH_LIBRARY_ERR     scotcherr)
-  set_third_party_shared_libirary_name(SCOTCH_LIBRARY_ERREXIT scotcherrexit)
-  set_third_party_shared_libirary_name(SCOTCH_LIBRARY_ESMUMPS esmumps)
-
-  set(SCOTCH_INCLUDE_DIR     ${SCOTCH_DIR}/include CACHE PATH "" FORCE)
-
-  mark_as_advanced(SCOTCH_LIBRARY SCOTCH_LIBRARY_ERR SCOTCH_LIBRARY_ERREXIT SCOTCH_LIBRARY_ESMUMPS
-    SCOTCH_INCLUDE_DIR)
-
-  set(SCOTCH_LIBRARIES_ALL ${SCOTCH_LIBRARY} ${SCOTCH_LIBRARY_ERR})
-  set(SCOTCH_LIBRARIES ${SCOTCH_LIBRARIES_ALL} CACHE INTERNAL "Libraries for scotch" FORCE)
-
-  list(APPEND AKANTU_EXTERNAL_LIBRARIES ${SCOTCH_LIBRARIES})
-  list(APPEND AKANTU_EXTERNAL_LIB_INCLUDE_DIR ${SCOTCH_INCLUDE_DIR})
-
-  set(AKANTU_SCOTCH_INCLUDE_DIR ${SCOTCH_INCLUDE_DIR})
-  set(AKANTU_SCOTCH_LIBRARIES ${SCOTCH_LIBRARIES})
-
-  list(APPEND AKANTU_OPTION_LIST SCOTCH)
-  set(SCOTCH_FOUND TRUE CACHE INTERNAL "" FORCE)
-  set(AKANTU_SCOTCH ON)
-
-  list(APPEND AKANTU_EXTRA_TARGET_DEPENDENCIES Scotch)
-else()
-  add_optional_external_package(Scotch "Add Scotch support in akantu" OFF)
-
-  if(SCOTCH_INCLUDE_DIR)
-    file(STRINGS ${SCOTCH_INCLUDE_DIR}/scotch.h SCOTCH_INCLUDE_CONTENT)
-    string(REGEX MATCH "_cplusplus" _match ${SCOTCH_INCLUDE_CONTENT})
-    if(_match)
-      set(AKANTU_SCOTCH_NO_EXTERN ON)
-      list(APPEND AKANTU_DEFINITIONS AKANTU_SCOTCH_NO_EXTERN)
-    else()
-      set(AKANTU_SCOTCH_NO_EXTERN OFF)
+  if(${_option_name})
+    if(TARGET Scotch)
+      return()
     endif()
+
+    find_package(BISON)
+    find_package(FLEX)
+    find_package(ZLIB)
+
+    if (AKANTU_USE_OBSOLETE_GETTIMEOFDAY)
+      set (SCOTCH_TIMMING_OPTION -DCOMMON_TIMING_OLD)
+    endif()
+
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(SCOTCH_ARCHITECTURE -DIDXSIZE64)
+    else()
+      set(SCOTCH_ARCHITECTURE)
+    endif()
+
+    set(SCOTCH_DIR ${PROJECT_BINARY_DIR}/third-party)
+    configure_file(${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}_make.inc.cmake
+      ${SCOTCH_DIR}/scotch_make.inc)
+
+    include(ExternalProject)
+
+    ExternalProject_Add(Scotch
+      PREFIX ${SCOTCH_DIR}
+      URL ${SCOTCH_ARCHIVE}
+      URL_HASH ${SCOTCH_ARCHIVE_HASH}
+      TLS_VERIFY FALSE
+      PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}.patch
+      CONFIGURE_COMMAND cmake -E copy ${SCOTCH_DIR}/scotch_make.inc src/Makefile.inc
+      BUILD_IN_SOURCE 1
+      BUILD_COMMAND make -C src
+      INSTALL_COMMAND prefix=<INSTALL_DIR> make -C src install
+      )
+
+    set_third_party_shared_libirary_name(SCOTCH_LIBRARY scotch)
+    set_third_party_shared_libirary_name(SCOTCH_LIBRARY_ERR     scotcherr)
+    set_third_party_shared_libirary_name(SCOTCH_LIBRARY_ERREXIT scotcherrexit)
+    set_third_party_shared_libirary_name(SCOTCH_LIBRARY_ESMUMPS esmumps)
+
+    set(SCOTCH_INCLUDE_DIR ${SCOTCH_DIR}/include CACHE PATH "" FORCE)
+
+    mark_as_advanced(SCOTCH_LIBRARY SCOTCH_LIBRARY_ERR SCOTCH_LIBRARY_ERREXIT SCOTCH_LIBRARY_ESMUMPS
+      SCOTCH_INCLUDE_DIR)
+
+    set(SCOTCH_LIBRARIES_ALL ${SCOTCH_LIBRARY} ${SCOTCH_LIBRARY_ERR})
+    set(SCOTCH_LIBRARIES ${SCOTCH_LIBRARIES_ALL} CACHE INTERNAL "Libraries for scotch" FORCE)
+
+    package_set_libraries(${_pkg_name}   ${SCOTCH_LIBRARIRES})
+    package_set_include_dir(${_pkg_name} ${SCOTCH_INCLUDE_DIR})
+
+    list(APPEND AKANTU_EXTRA_TARGET_DEPENDENCIES Scotch)
+
+    package_activate(${_pkg_name})
+  else()
+    package_deactivate(${_pkg_name})
   endif()
 endif()
+
+if(SCOTCH_INCLUDE_DIR)
+  file(STRINGS ${SCOTCH_INCLUDE_DIR}/scotch.h SCOTCH_INCLUDE_CONTENT)
+  string(REGEX MATCH "_cplusplus" _match ${SCOTCH_INCLUDE_CONTENT})
+  if(_match)
+    set(AKANTU_SCOTCH_NO_EXTERN ON)
+    list(APPEND AKANTU_DEFINITIONS AKANTU_SCOTCH_NO_EXTERN)
+  else()
+    set(AKANTU_SCOTCH_NO_EXTERN OFF)
+  endif()
+endif()
+
 
 set(AKANTU_SCOTCH_DOCUMENTATION "
 This package enables the use the \\href{http://www.labri.fr/perso/pelegrin/scotch/}{Scotch} library in

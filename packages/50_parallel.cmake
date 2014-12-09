@@ -28,7 +28,9 @@
 #
 #===============================================================================
 
-add_meta_package(PARALLEL "Add parallel support in Akantu" OFF MPI SCOTCH)
+package_declare(parallel META
+  DESCRIPTION "Add parallel support in Akantu"
+  DEPENDS mpi scotch)
 
 set(AKANTU_PARALLEL_TESTS
   test_solid_mechanics_model_bar_traction2d_parallel

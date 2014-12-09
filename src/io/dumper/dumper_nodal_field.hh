@@ -31,10 +31,6 @@
 #ifndef __AKANTU_DUMPER_NODAL_FIELD_HH__
 #define __AKANTU_DUMPER_NODAL_FIELD_HH__
 
-
-
-
-
 #include "dumper_field.hh"
 #include <io_helper.hh>
 /* -------------------------------------------------------------------------- */

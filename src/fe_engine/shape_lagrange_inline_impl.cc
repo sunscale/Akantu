@@ -85,7 +85,9 @@ template <ElementType type>
 inline void ShapeLagrange<kind>::
 computeShapeDerivativesOnCPointsByElement(const Matrix<Real> & node_coords,
 					  const Matrix<Real> & natural_coords,
-					  Tensor3<Real> & shapesd) {
+					  Tensor3<Real> & shapesd) const {
+  AKANTU_DEBUG_IN();
+
   // compute dnds
   Tensor3<Real> dnds(node_coords.rows(), node_coords.cols(), natural_coords.cols());
   ElementClass<type>::computeDNDS(natural_coords, dnds);
@@ -95,6 +97,8 @@ computeShapeDerivativesOnCPointsByElement(const Matrix<Real> & node_coords,
 
   // compute shape derivatives
   ElementClass<type>::computeShapeDerivatives(J, dnds, shapesd);
+
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -104,6 +108,8 @@ void ShapeLagrange<kind>::inverseMap(const Vector<Real> & real_coords,
 				     UInt elem,
 				     Vector<Real> & natural_coords,
 				     const GhostType & ghost_type) const{
+
+  AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
   UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
@@ -120,6 +126,8 @@ void ShapeLagrange<kind>::inverseMap(const Vector<Real> & real_coords,
   ElementClass<type>::inverseMap(real_coords,
 				 nodes_coord,
 				 natural_coords);
+
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -142,13 +150,61 @@ template <ElementType type>
 void ShapeLagrange<kind>::computeShapes(const Vector<Real> & real_coords,
 				  UInt elem,
 				  Vector<Real> & shapes,
-				  const GhostType & ghost_type) const{
+				  const GhostType & ghost_type) const {
+
+  AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
   Vector<Real> natural_coords(spatial_dimension);
 
   inverseMap<type>(real_coords, elem, natural_coords, ghost_type);
   ElementClass<type>::computeShapes(natural_coords, shapes);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type>
+void ShapeLagrange<kind>::computeShapeDerivatives(const Matrix<Real> & real_coords,
+				  UInt elem,
+				  Tensor3<Real> & shapesd,
+				  const GhostType & ghost_type) const {
+
+  AKANTU_DEBUG_IN();
+
+  UInt spatial_dimension = mesh.getSpatialDimension();
+  UInt nb_points = real_coords.cols();
+  UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
+
+  AKANTU_DEBUG_ASSERT(mesh.getSpatialDimension() == shapesd.size(0) && nb_nodes_per_element == shapesd.size(1),
+      "Shape size doesn't match");
+  AKANTU_DEBUG_ASSERT(nb_points == shapesd.size(2),
+      "Number of points doesn't match shapes size");
+
+  Matrix<Real> natural_coords(spatial_dimension, nb_points);
+
+  // Creates the matrix of natural coordinates
+  for (UInt i = 0 ; i < nb_points ; i++) {
+    Vector<Real> real_point = real_coords(i);
+    Vector<Real> natural_point = natural_coords(i);
+
+    inverseMap<type>(real_point, elem, natural_point, ghost_type);
+  }
+
+
+  UInt * elem_val = mesh.getConnectivity(type, ghost_type).storage();
+  Matrix<Real> nodes_coord(spatial_dimension, nb_nodes_per_element);
+
+  mesh.extractNodalValuesFromElement(mesh.getNodes(),
+				     nodes_coord.storage(),
+				     elem_val + elem*nb_nodes_per_element,
+				     nb_nodes_per_element,
+				     spatial_dimension);
+
+  computeShapeDerivativesOnCPointsByElement<type>(nodes_coord, natural_coords, shapesd);
+
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -302,6 +358,8 @@ template <ElementType type>
 void ShapeLagrange<kind>::fieldTimesShapes(const Array<Real> & field,
 					   Array<Real> & field_times_shapes,
 					   GhostType ghost_type) const {
+  AKANTU_DEBUG_IN();
+
   field_times_shapes.resize(field.getSize());
 
   UInt size_of_shapes = ElementClass<type>::getShapeSize();
@@ -319,6 +377,8 @@ void ShapeLagrange<kind>::fieldTimesShapes(const Array<Real> & field,
   for (; it != end; ++it, ++field_it, ++shapes_it) {
     it->mul<false, false>(*field_it, *shapes_it);
   }
+
+  AKANTU_DEBUG_OUT();
 }
 
 
