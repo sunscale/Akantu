@@ -52,6 +52,10 @@
 #include "solver_mumps.hh"
 #endif
 
+#ifdef AKANTU_USE_PETSC
+#include "solver_petsc.hh"
+#endif
+
 #ifdef AKANTU_USE_IOHELPER
 #  include "dumper_field.hh"
 #  include "dumper_paraview.hh"
@@ -724,9 +728,9 @@ void SolidMechanicsModel::initSolver(__attribute__((unused)) SolverOptions & opt
   std::stringstream sstr; sstr << id << ":jacobian_matrix";
 
 #ifdef AKANTU_USE_PETSC
-  jacobian_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
-#else
   jacobian_matrix = new PETScMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
+#else
+  jacobian_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
 #endif //AKANTU_USE PETSC
   jacobian_matrix->buildProfile(mesh, *dof_synchronizer, spatial_dimension);
 
@@ -734,10 +738,10 @@ void SolidMechanicsModel::initSolver(__attribute__((unused)) SolverOptions & opt
     delete stiffness_matrix;
     std::stringstream sstr_sti; sstr_sti << id << ":stiffness_matrix";
 #ifdef AKANTU_USE_PETSC
-    stiffness_matrix = new SparseMatrix(*jacobian_matrix, sstr_sti.str(), memory_id);
-#else
     stiffness_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
     stiffness_matrix->buildProfile();
+#else
+    stiffness_matrix = new SparseMatrix(*jacobian_matrix, sstr_sti.str(), memory_id);
 #endif //AKANTU_USE_PETSC
   }
 
