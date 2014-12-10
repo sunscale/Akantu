@@ -931,6 +931,8 @@ endfunction()
 # Get external libraries informations
 # ------------------------------------------------------------------------------
 function(package_get_external_informations INCLUDE_DIR LIBRARIES)
+  string(TOUPPER ${PROJECT_NAME} _project)
+
   set(tmp_INCLUDE_DIR)
   set(tmp_LIBRARIES)
   foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
@@ -952,6 +954,7 @@ endfunction()
 # Get extra dependencies like external projects
 # ------------------------------------------------------------------------------
 function(package_get_all_extra_dependency DEPS)
+  string(TOUPPER ${PROJECT_NAME} _project)
   set(_tmp_DEPS)
   foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
     package_get_extra_dependency(${_pkg_name} _dep)
@@ -967,6 +970,7 @@ endfunction()
 # Get extra dependencies like external projects
 # ------------------------------------------------------------------------------
 function(package_get_all_test_folders TEST_DIRS)
+  string(TOUPPER ${PROJECT_NAME} _project)
   set(_tmp_TEST_DIRS)
   foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
     package_get_tests_folder(${_pkg_name} _test_dir)
@@ -976,4 +980,15 @@ function(package_get_all_test_folders TEST_DIRS)
     list(REMOVE_DUPLICATES _tmp_TEST_DIRS)
   endif()
   set(${TEST_DIRS} ${_tmp_TEST_DIRS} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+function(package_get_list_of_activated_packages activated_list)
+  string(TOUPPER ${PROJECT_NAME} _project)
+  set(${activated_list} ${${_project}_ACTIVATED_PACKAGE_LIST} PARENT_SCOPE)
+endfunction()
+
+function(package_get_list_of_all_packages packages_list)
+  string(TOUPPER ${PROJECT_NAME} _project)
+  set(${packages_list} ${${_project}_ALL_PACKAGES_LIST} PARENT_SCOPE)
 endfunction()

@@ -64,38 +64,30 @@ file(WRITE "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
 
 ")
 
-foreach(_option ${AKANTU_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL})
-  list(FIND AKANTU_OPTION_LIST ${_option_name} _index)
-  if (_index EQUAL -1)
-    if(NOT "${_option}" STREQUAL "CORE")
-      if(NOT AKANTU_${_option})
-        set(AKANTU_${_option} OFF)
-      endif()
-      file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
-set(AKANTU_HAS_${_option} ${AKANTU_${_option}})")
-    endif()
-  endif()
-endforeach()
+package_get_list_of_all_packages(_package_list)
 
-file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake"
-"
+foreach(_pkg_name ${_package_list})
+  #  package_pkg_name(${_option} _pkg_name)
 
-set(AKANTU_HAS_PARTITIONER  ${AKANTU_PARTITIONER})
-set(AKANTU_HAS_SOLVER       ${AKANTU_SOLVER})
-")
+  package_is_activated(${_pkg_name} _option)
+  package_get_option_name(${_pkg_name} _option_name)
+  package_get_real_name(${_pkg_name} _real_name)
 
-foreach(_option ${AKANTU_OPTION_LIST})
-  package_pkg_name(${_option} _pkg_name)
+  string(TOUPPER ${_real_name} _real_pkg_name)
+
   file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
-list(APPEND AKANTU_OPTION_LIST ${_option})
-set(AKANTU_USE_${_option} ${AKANTU_${_option}})")
-  if(${_pkg_name}_LIBRARIES)
+set(AKANTU_USE_${_real_pkg_name} ${_option})")
+
+  package_get_libraries(${_pkg_name} _libs)
+  if(_libs)
     file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
-set(${_pkg_name}_LIBRARIES ${${_pkg_name}_LIBRARIES})")
+set(${_real_pkg_name}_LIBRARIES ${_libs})")
   endif()
-  if(${_pkg_name}_INCLUDE_DIR)
+
+  package_get_include_dir(${_pkg_name} _incs)
+  if(_incs)
     file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
-set(${_pkg_name}_INCLUDE_DIR ${${_pkg_name}_INCLUDE_DIR})
+set(${_real_pkg_name}_INCLUDE_DIR ${_incs})
 ")
   endif()
 endforeach()

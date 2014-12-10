@@ -30,7 +30,8 @@
 
 package_declare(IOHelper EXTERNAL
   DESCRIPTION "Add IOHelper support in akantu"
-  SYSTEM OFF)
+  SYSTEM OFF
+  DEFAULT ON)
 
 package_get_name(IOHelper _pkg_name)
 package_use_system(${_pkg_name} _use_system)
