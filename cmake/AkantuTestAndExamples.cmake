@@ -375,6 +375,12 @@ function(register_test test_name)
 	AKANTU_EXTERNAL_INCLUDE_DIR
 	AKANTU_EXTERNAL_LIBRARIES
 	)
+      # set the proper includes to build most of the tests
+      include_directories(
+	${AKANTU_INCLUDE_DIRS}
+	${AKANTU_EXTERNAL_LIB_INCLUDE_DIR}
+	)
+
       # Register the executable to compile
       add_executable(${test_name} ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS})
       set_property(TARGET ${test_name}  APPEND
