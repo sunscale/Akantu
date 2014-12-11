@@ -69,14 +69,13 @@ package_get_list_of_all_packages(_package_list)
 foreach(_pkg_name ${_package_list})
   #  package_pkg_name(${_option} _pkg_name)
 
-  package_is_activated(${_pkg_name} _option)
   package_get_option_name(${_pkg_name} _option_name)
   package_get_real_name(${_pkg_name} _real_name)
 
   string(TOUPPER ${_real_name} _real_pkg_name)
 
   file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
-set(AKANTU_USE_${_real_pkg_name} ${_option})")
+set(AKANTU_HAS_${_real_pkg_name} ${${_option_name}})")
 
   package_get_libraries(${_pkg_name} _libs)
   if(_libs)
