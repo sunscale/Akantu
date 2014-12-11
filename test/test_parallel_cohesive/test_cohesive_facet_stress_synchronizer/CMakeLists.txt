@@ -17,10 +17,8 @@
 
 add_mesh(test_cohesive_facet_stress_synchronizer_mesh tetrahedron.geo 3 2)
 
-if(AKANTU_PARALLEL)
-  register_test(test_cohesive_facet_stress_synchronizer
-    SOURCES test_cohesive_facet_stress_synchronizer.cc
-    DEPENDENCIES test_cohesive_facet_stress_synchronizer_mesh
-    PACKAGE cohesive_element
-    FILES_TO_COPY material.dat)
-endif()
+register_test(test_cohesive_facet_stress_synchronizer
+  SOURCES test_cohesive_facet_stress_synchronizer.cc
+  DEPENDENCIES test_cohesive_facet_stress_synchronizer_mesh
+  PACKAGE parallel_cohesive_element
+  FILES_TO_COPY material.dat)

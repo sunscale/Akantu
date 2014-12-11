@@ -15,6 +15,8 @@
 #
 #===============================================================================
 
+add_akantu_test(test_parallel_cohesive "parallel_cohesive_test")
+
 add_mesh(test_facet_synchronizer_mesh
   facet.geo 3 2)
 

@@ -16,10 +16,8 @@
 #
 #===============================================================================
 
-if(AKANTU_PARALLEL)
 register_test(test_cohesive_parallel_extrinsic_IG_TG
   SOURCES test_cohesive_parallel_extrinsic_IG_TG.cc
-  PACKAGE cohesive_parallel_element
+  PACKAGE parallel_cohesive_element
   FILES_TO_COPY material.dat square.msh
   DIRECTORIES_TO_CREATE paraview)
-endif()
