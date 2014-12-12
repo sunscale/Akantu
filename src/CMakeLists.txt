@@ -72,7 +72,7 @@ endif()
 
 configure_file(common/aka_config.hh.in "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
 list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS ${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh)
-
+list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
 #===========================================================================
 # header precompilation
 #===========================================================================

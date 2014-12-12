@@ -246,11 +246,23 @@ function(package_deactivate pkg_name)
 endfunction()
 
 function(package_is_activated pkg_name _act)
-  if(${pkg_name}_STATE)
+  if(DEFINED ${pkg_name}_STATE AND ${pkg_name}_STATE)
     set(${_act} TRUE PARENT_SCOPE)
   else()
     set(${_act} FALSE PARENT_SCOPE)
   endif()
+endfunction()
+
+function(package_is_deactivated pkg_name _act)
+  if(DEFINED ${pkg_name}_STATE AND NOT ${pkg_name}_STATE)
+    set(${_act} TRUE PARENT_SCOPE)
+  else()
+    set(${_act} FALSE PARENT_SCOPE)
+  endif()
+endfunction()
+
+function(package_unset_activated pkg_name)
+  unset(${pkg_name}_STATE CACHE)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -361,6 +373,10 @@ endfunction()
 function(_package_load_packages)
   string(TOUPPER ${PROJECT_NAME} _project)
 
+  foreach(_pkg_name ${${_project}_ALL_PACKAGES_LIST})
+    package_unset_activated(${_pkg_name})
+  endforeach()
+
   # Activate the dependencies of activated package and generate an ordered list
   # of dependencies
   set(ordered_loading_list)
@@ -370,8 +386,10 @@ function(_package_load_packages)
 
   # Load the packages in the propoer order
   foreach(_pkg_name ${ordered_loading_list})
-    package_use_system(${_pkg_name} _use_system)
-    if(_use_system)
+    package_get_option_name(${_pkg_name} _option_name)
+    package_is_deactivated(${_pkg_name} _deactivated)
+
+    if(NOT _deactivated AND ${_option_name})
       _package_load_package(${_pkg_name})
     endif()
   endforeach()
@@ -455,6 +473,7 @@ function(_package_load_dependencies_package pkg_name loading_list)
       add_flags(cxx ${_pkg_comile_flags})
     endif()
   else()
+    # deactivate the packages than can already be deactivated
     package_deactivate(${pkg_name})
 
     #remove the comilation flags if needed
@@ -468,63 +487,80 @@ endfunction()
 # Load the package if it is an external one
 # ------------------------------------------------------------------------------
 function(_package_load_package pkg_name)
-  package_get_option_name(${pkg_name} _pkg_option_name)
-
   # load the package if it is an external
   package_get_nature(${pkg_name} _nature)
   if(${_nature} MATCHES "external")
-    package_get_extra_options(${pkg_name} _options)
-    if(_options)
-      cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "PREFIX;FOUND;ARGS" ${_options})
-      if(_opt_pkg_UNPARSED_ARGUMENTS)
-	message("You passed too many options for the find_package related to ${${pkg_name}} \"${_opt_pkg_UNPARSED_ARGUMENTS}\"")
-      endif()
+    package_use_system(${pkg_name} _use_system)
+
+    set(_activated TRUE)
+    if(_use_system)
+      _package_load_external_package(${pkg_name} _activated)
     endif()
 
-    if(_opt_pkg_LANGUAGE)
-      foreach(_language ${_opt_pkg_LANGUAGE})
-        enable_language(${_language})
-      endforeach()
+    if(_activated)
+      package_activate(${pkg_name})
+    elseif()
+      package_deactivate(${pkg_name})
     endif()
-
-    package_get_real_name(${pkg_name} _real_name)
-
-    # find the package
-    find_package(${_real_name} REQUIRED ${_opt_pkg_ARGS})
-
-    # check if the package is found
-    if(_opt_pkg_PREFIX)
-      set(_package_prefix ${_opt_pkg_PREFIX})
-    else()
-      string(TOUPPER ${${pkg_name}} _u_package)
-      set(_package_prefix ${_u_package})
-    endif()
-
-    foreach(_prefix ${_package_prefix})
-      if(${_prefix}_FOUND OR _opt_pkg_FOUND)
-	# Add the in the definition list
-        list(APPEND ${_project}_DEFINITIONS ${_option_name})
-
-	# Generate the include dir for the package
-        if(DEFINED ${_prefix}_INCLUDE_DIRS)
-          package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIRS})
-        elseif(DEFINED ${_prefix}_INCLUDE_DIR)
-	  package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIR})
-        elseif(DEFINED ${_prefix}_INCLUDE_PATH)
-	  package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_PATH})
-        endif()
-
-	# Generate the libraries for the package
-	package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
-
-        package_activate(${_pkg_name})
-      else()
-	package_deactivate(${_pkg_name})
-      endif()
-    endforeach()
-  elseif(${_nature} MATCHES "internal")
-    package_activate(${_pkg_name})
+  else(${_nature})
+    package_activate(${pkg_name})
   endif()
+endfunction()
+
+
+# ------------------------------------------------------------------------------
+# Load external packages
+# ------------------------------------------------------------------------------
+function(_package_load_external_package pkg_name activate)
+  package_get_extra_options(${pkg_name} _options)
+  if(_options)
+    cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "PREFIX;FOUND;ARGS" ${_options})
+    if(_opt_pkg_UNPARSED_ARGUMENTS)
+      message("You passed too many options for the find_package related to ${${pkg_name}} \"${_opt_pkg_UNPARSED_ARGUMENTS}\"")
+    endif()
+  endif()
+
+  if(_opt_pkg_LANGUAGE)
+    foreach(_language ${_opt_pkg_LANGUAGE})
+      enable_language(${_language})
+    endforeach()
+  endif()
+
+  package_get_real_name(${pkg_name} _real_name)
+
+  # find the package
+  find_package(${_real_name} REQUIRED ${_opt_pkg_ARGS})
+
+  # check if the package is found
+  if(_opt_pkg_PREFIX)
+    set(_package_prefix ${_opt_pkg_PREFIX})
+  else()
+    string(TOUPPER ${${pkg_name}} _u_package)
+    set(_package_prefix ${_u_package})
+  endif()
+
+  set(_acct FALSE)
+  foreach(_prefix ${_package_prefix})
+    if(${_prefix}_FOUND OR _opt_pkg_FOUND)
+      # Add the in the definition list
+      list(APPEND ${_project}_DEFINITIONS ${_option_name})
+
+      # Generate the include dir for the package
+      if(DEFINED ${_prefix}_INCLUDE_DIRS)
+        package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIRS})
+      elseif(DEFINED ${_prefix}_INCLUDE_DIR)
+	package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIR})
+      elseif(DEFINED ${_prefix}_INCLUDE_PATH)
+	package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_PATH})
+      endif()
+
+      # Generate the libraries for the package
+      package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
+
+      set(_acct TRUE)
+    endif()
+  endforeach()
+  set(${activate} ${_acct} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------

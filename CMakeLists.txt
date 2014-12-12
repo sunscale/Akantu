@@ -112,6 +112,11 @@ cmake_deactivate_debug_message(PackagesSystem)
 #===============================================================================
 set(AKANTU_BOOST_COMPONENT)
 
+option(AKANTU_PYTHON_INTERFACE "Generates the Akantu Python module" OFF)
+if(AKANTU_PYTHON_INTERFACE)
+  list(APPEND AKANTU_BOOST_COMPONENTS python)
+endif()
+
 package_list_packages(${PROJECT_SOURCE_DIR}/packages
   EXTRA_PACKAGES_FOLDER ${PROJECT_SOURCE_DIR}/extra_packages)
 
@@ -171,4 +176,12 @@ include(AkantuInstall)
 
 if(NOT AKANTU_DISABLE_CPACK)
   include(AkantuCPack)
+endif()
+
+#===============================================================================
+# Install and Packaging
+#===============================================================================
+mark_as_advanced(AKANTU_PYTHON_INTERFACE)
+if(AKANTU_PYTHON_INTERFACE)
+  add_subdirectory(python)
 endif()
