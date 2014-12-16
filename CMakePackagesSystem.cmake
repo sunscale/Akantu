@@ -224,6 +224,7 @@ endfunction()
 # Extra dependencies like custom commands of ExternalProject
 function(package_add_extra_dependency PACKAGE)
   package_get_name(${PACKAGE} _pkg_name)
+
   set(_tmp_dep ${${pkg_name}_EXTRA_DEPENDS})
   list(APPEND _tmp_dep ${ARGN})
   list(REMOVE_DUPLICATES _tmp_dep)
@@ -235,6 +236,9 @@ function(package_get_extra_dependency PACKAGE deps)
   set(${deps} ${${pkg_name}_EXTRA_DEPENDS} PARENT_SCOPE)
 endfunction()
 
+function(_package_unset_extra_dependency pkg_name)
+  unset(${pkg_name}_EXTRA_DEPENDS CACHE)
+endfunction()
 # ------------------------------------------------------------------------------
 # Activate/deactivate
 function(package_activate pkg_name)
@@ -261,7 +265,7 @@ function(package_is_deactivated pkg_name _act)
   endif()
 endfunction()
 
-function(package_unset_activated pkg_name)
+function(_package_unset_activated pkg_name)
   unset(${pkg_name}_STATE CACHE)
 endfunction()
 
@@ -374,7 +378,8 @@ function(_package_load_packages)
   string(TOUPPER ${PROJECT_NAME} _project)
 
   foreach(_pkg_name ${${_project}_ALL_PACKAGES_LIST})
-    package_unset_activated(${_pkg_name})
+    _package_unset_activated(${_pkg_name})
+    _package_unset_extra_dependency(${_pkg_name})
   endforeach()
 
   # Activate the dependencies of activated package and generate an ordered list
