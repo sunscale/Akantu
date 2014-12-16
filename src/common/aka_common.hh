@@ -258,10 +258,14 @@ inline std::ostream & operator <<(std::ostream & stream, ElementType type);
   AKANTU_STRUCTURAL_KIND			\
   AKANTU_IGFEM_KIND
 
+#ifndef SWIG
 enum ElementKind {
   BOOST_PP_SEQ_ENUM(AKANTU_ELEMENT_KIND),
   _ek_not_defined
 };
+#else
+enum ElementKind;
+#endif
 
 /// small help to use names for directions
 enum SpacialDirection {

@@ -145,7 +145,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// change the equation number for proper assembly when using PBC
-  void changeEquationNumberforPBC(std::map <UInt, UInt> & pbc_pair);
+  //  void changeEquationNumberforPBC(std::map <UInt, UInt> & pbc_pair);
 
   /// synchronize Residual for output
   void synchronizeResidual();
@@ -407,6 +407,7 @@ public:
 
   //! decide wether a field is a material internal or not
   bool isInternal(const std::string & field_name, const ElementKind & element_kind);
+#ifndef SWIG  
   //! give the amount of data per element
   ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
 					     const ElementKind & kind);
@@ -416,7 +417,7 @@ public:
 					     const ElementKind & kind);
   //! flatten all the registered material internals
   void flattenAllRegisteredInternals(const ElementKind & kind);
-
+#endif
 
   virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
 					       const std::string & group_name,
@@ -598,8 +599,6 @@ public:
 protected:
   friend class Material;
 
-  template <UInt DIM, template <UInt> class WeightFunction>
-  friend class MaterialNonLocal;
 protected:
   /// compute the stable time step
   Real getStableTimeStep(const GhostType & ghost_type);
@@ -702,7 +701,7 @@ protected:
 namespace BC {
   namespace Neumann {
     typedef FromHigherDim FromStress;
-    typedef FromSameDim FromTraction;
+    typedef FromSameDim   FromTraction;
   }
 }
 
@@ -730,7 +729,7 @@ inline std::ostream & operator << (std::ostream & stream, const SolidMechanicsMo
 
 __END_AKANTU__
 
-	#include "material_selector_tmpl.hh"
 
+#include "material_selector_tmpl.hh"
 
-	#endif /* __AKANTU_SOLID_MECHANICS_MODEL_HH__ */
+#endif /* __AKANTU_SOLID_MECHANICS_MODEL_HH__ */

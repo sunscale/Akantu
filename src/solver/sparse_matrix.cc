@@ -132,11 +132,11 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
 
       for (UInt i = 0; i < size_mat; ++i) {
 	UInt c_irn = local_eq_nb_val[i];
-	if(c_irn < size) {
+	if(c_irn < this->size) {
 	  UInt j_start = (sparse_matrix_type == _symmetric) ? i : 0;
 	  for (UInt j = j_start; j < size_mat; ++j) {
 	    UInt c_jcn = local_eq_nb_val[j];
-	    if(c_jcn < size) {
+	    if(c_jcn < this->size) {
 	      KeyCOO irn_jcn = key(c_irn, c_jcn);
 	      irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
 

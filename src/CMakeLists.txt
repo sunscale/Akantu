@@ -110,9 +110,9 @@ endif()
 add_library(akantu ${AKANTU_LIBRARY_SRCS})
 target_link_libraries(akantu ${AKANTU_EXTERNAL_LIBRARIES})
 
-
 package_get_all_extra_dependency(_extra_target_dependencies)
 if(_extra_target_dependencies)
+  # This only adding todo: find a solution for when a dependency was add the is removed...
   add_dependencies(akantu ${_extra_target_dependencies})
 endif()
 

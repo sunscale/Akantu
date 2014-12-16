@@ -61,21 +61,24 @@ static inline std::string to_upper(const std::string & str) {
 /* -------------------------------------------------------------------------- */
 /* ArgumentParser                                                             */
 /* -------------------------------------------------------------------------- */
-  ArgumentParser::ArgumentParser() : external_exit(NULL), prank(0), psize(1) {
+ArgumentParser::ArgumentParser() : external_exit(NULL), prank(0), psize(1) {
   this->addArgument("-h;--help", "show this help message and exit", 0, _boolean, false, true);
 }
 
+/* -------------------------------------------------------------------------- */
 ArgumentParser::~ArgumentParser() {
   for(_Arguments::iterator it = arguments.begin(); it != arguments.end(); ++it) {
     delete it->second;
   }
 }
 
+/* -------------------------------------------------------------------------- */
 void ArgumentParser::setParallelContext(int prank, int psize) {
   this->prank = prank;
   this->psize = psize;
 }
 
+/* -------------------------------------------------------------------------- */
 void ArgumentParser::_exit(const std::string & msg, int status) {
   if(prank == 0) {
     if(msg != "") {
@@ -93,6 +96,7 @@ void ArgumentParser::_exit(const std::string & msg, int status) {
   }
 }
 
+/* -------------------------------------------------------------------------- */
 const ArgumentParser::Argument & ArgumentParser::operator[](const std::string & name) const {
   Arguments::const_iterator it = success_parsed.find(name);
 
@@ -105,7 +109,8 @@ const ArgumentParser::Argument & ArgumentParser::operator[](const std::string & 
 			   + " or to give it a default value");
   }
 }
-  
+
+/* -------------------------------------------------------------------------- */
 bool ArgumentParser::has(const std::string & name) const
 { return (success_parsed.find(name) != success_parsed.end()); }
 
@@ -117,6 +122,8 @@ void ArgumentParser::addArgument(const std::string & name_or_flag,
   _addArgument(name_or_flag, help, nargs, type);
 }
 
+
+/* -------------------------------------------------------------------------- */
 ArgumentParser::_Argument & ArgumentParser::_addArgument(const std::string & name,
 							 const std::string & help,
 							 int nargs,
@@ -205,7 +212,7 @@ void ArgumentParser::parse(int& argc, char**& argv, int flags, bool parse_help) 
   }
 
   unsigned int current_position = 0;
-  if(this->program_name == "") {
+  if(this->program_name == "" && argc > 0) {
     std::string prog = argvs[current_position];
     const char * c_prog = prog.c_str();
     char * c_prog_tmp = strdup(c_prog);

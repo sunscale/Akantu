@@ -125,9 +125,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// build the profile of the sparse matrix corresponding to the mesh
-  void initSparseMatrixProfile(SparseMatrixType sparse_matrix_type = _unsymmetric);
-
   /// pre-compute all the shape functions, their derivatives and the jacobians
   virtual void initShapeFunctions(const GhostType & ghost_type = _not_ghost) = 0;
 
@@ -185,6 +182,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* compatibility with old FEEngine fashion */
   /* ------------------------------------------------------------------------ */
+#ifndef SWIG
   /// get the number of quadrature points
   virtual UInt getNbQuadraturePoints(const ElementType & type,
 				     const GhostType & ghost_type = _not_ghost) const = 0;
@@ -201,7 +199,7 @@ public:
   /// get quadrature points
   const virtual Matrix<Real> & getQuadraturePoints(const ElementType & type,
 						   const GhostType & ghost_type = _not_ghost) const = 0;
-
+#endif
   /* ------------------------------------------------------------------------ */
   /* Shape method bridges                                                     */
   /* ------------------------------------------------------------------------ */

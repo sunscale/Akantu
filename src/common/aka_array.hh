@@ -144,9 +144,10 @@ public:
   /// Copy constructor (deep copy if deep=true)
   Array(const Array<value_type, is_scal>& vect, bool deep = true, const ID & id = "");
 
+#ifndef SWIG
   /// Copy constructor (deep copy)
   Array(const std::vector<value_type> & vect);
-
+#endif
 
   virtual inline ~Array();
 
