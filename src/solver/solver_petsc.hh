@@ -61,6 +61,7 @@ public:
 public:
   /// create the solver context and set the matrices
   virtual void initialize(SolverOptions & options = _solver_no_options);
+  virtual void setOperators();
   virtual void setRHS(Array<Real> & rhs);
   virtual void solve();
   virtual void solve(Array<Real> & solution);

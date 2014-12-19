@@ -594,16 +594,19 @@ void PETScMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
   Int nb_blocked_local_master_eq_nb = 0;
   Array<Int> blocked_local_master_eq_nb(this->local_size / boundary.getNbComponent(), boundary.getNbComponent());
   Int * blocked_lm_eq_nb_ptr  = blocked_local_master_eq_nb.storage();
-  for (UInt i = 0; i < boundary.getSize(); ++i) {
-    for (UInt j = 0; j < boundary.getNbComponent(); ++j) {
-      UInt local_dof = i * boundary.getNbComponent() + j;
+  UInt nb_component = boundary.getNbComponent();
+  UInt size = boundary.getSize();
+
+  for (UInt i = 0; i < size; ++i) {
+    for (UInt j = 0; j < nb_component; ++j) {
+      UInt local_dof = i * nb_component + j;
       if (boundary(i, j) == true && this->dof_synchronizer->isLocalOrMasterDOF(local_dof)) {
 	Int global_eq_nb = *eq_nb_val;
 	*blocked_lm_eq_nb_ptr = global_eq_nb;
-	++ nb_blocked_local_master_eq_nb;
+	++nb_blocked_local_master_eq_nb;
 	++blocked_lm_eq_nb_ptr;
-	++eq_nb_val;
       }
+      ++eq_nb_val;
     }
   }
   blocked_local_master_eq_nb.resize(nb_blocked_local_master_eq_nb/boundary.getNbComponent());

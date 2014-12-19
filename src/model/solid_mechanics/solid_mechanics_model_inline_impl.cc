@@ -473,7 +473,10 @@ void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
   // if (rhs.getSize() != 0)
   //  solver->setRHS(rhs);
   // else
-    solver->setRHS(*residual);
+
+  solver->setOperators();
+
+  solver->setRHS(*residual);
 
   // solve @f[ J \delta w = r @f]
   solver->solve(increment);

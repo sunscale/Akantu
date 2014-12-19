@@ -54,6 +54,7 @@
 
 #ifdef AKANTU_USE_PETSC
 #include "solver_petsc.hh"
+#include "petsc_matrix.hh" 
 #endif
 
 #ifdef AKANTU_USE_IOHELPER
@@ -739,18 +740,18 @@ void SolidMechanicsModel::initSolver(__attribute__((unused)) SolverOptions & opt
     std::stringstream sstr_sti; sstr_sti << id << ":stiffness_matrix";
 #ifdef AKANTU_USE_PETSC
     stiffness_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
-    stiffness_matrix->buildProfile();
+    stiffness_matrix->buildProfile(mesh, *dof_synchronizer, spatial_dimension);
 #else
     stiffness_matrix = new SparseMatrix(*jacobian_matrix, sstr_sti.str(), memory_id);
 #endif //AKANTU_USE_PETSC
   }
 
   std::stringstream sstr_solv; sstr_solv << id << ":solver";
-#ifdef AKANTU_USE_MUMPS
+#ifdef AKANTU_USE_PETSC
+  solver = new SolverPETSc(*jacobian_matrix, sstr_solv.str());
+#elif defined(AKANTU_USE_MUMPS)
   solver = new SolverMumps(*jacobian_matrix, sstr_solv.str());
   dof_synchronizer->initScatterGatherCommunicationScheme();
-#elif defined(AKANTU_USE_PETSC)
-  solver = new SolverPETSc(*jacobian_matrix, sstr_solv.str());
 #else
   AKANTU_DEBUG_ERROR("You should at least activate one solver.");
 #endif //AKANTU_USE_MUMPS
@@ -762,7 +763,7 @@ void SolidMechanicsModel::initSolver(__attribute__((unused)) SolverOptions & opt
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initJacobianMatrix() {
-#ifdef AKANTU_USE_MUMPS
+#if defined(AKANTU_USE_MUMPS) && !defined(AKANTU_USE_PETSC)
   
   // @todo make it more flexible: this is an ugly patch to treat the case of non
   // fix profile of the K matrix

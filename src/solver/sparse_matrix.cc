@@ -599,4 +599,9 @@ void SparseMatrix::lump(Array<Real> & lumped) {
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+void SparseMatrix::clear() {
+  memset(a.storage(), 0, nb_non_zero*sizeof(Real));
+}
+
 __END_AKANTU__

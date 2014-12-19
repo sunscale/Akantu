@@ -88,21 +88,19 @@ void SolverPETSc::initialize(SolverOptions & options) {
 #endif
 
   PetscErrorCode ierr;
-
+  PETScMatrix * petsc_matrix = static_cast<PETScMatrix*>(this->matrix);
   /// create a solver context
   ierr = KSPCreate(this->petsc_solver_wrapper->communicator, &(this->petsc_solver_wrapper->ksp)); CHKERRXX(ierr);
  
- /// set the matrix that defines the linear system and the matrix for preconditioning (here they are the same)
-  PETScMatrix * petsc_matrix = static_cast<PETScMatrix*>(this->matrix);
-
-#if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5  
-  ierr = KSPSetOperators(this->petsc_solver_wrapper->ksp, petsc_matrix->getPETScMatrixWrapper()->mat, petsc_matrix->getPETScMatrixWrapper()->mat); CHKERRXX(ierr);
-#else
-  ierr = KSPSetOperators(this->petsc_solver_wrapper->ksp, petsc_matrix->getPETScMatrixWrapper()->mat, petsc_matrix->getPETScMatrixWrapper()->mat, SAME_NONZERO_PATTERN); CHKERRXX(ierr);
-#endif
-
   ierr = VecCreate(this->petsc_solver_wrapper->communicator, &(this->petsc_solver_wrapper->rhs)); CHKERRXX(ierr);
+ 
+  ierr = VecSetSizes((this->petsc_solver_wrapper->rhs),
+		     petsc_matrix->getLocalSize(), 
+		     petsc_matrix->getSize()); CHKERRXX(ierr);
+  ierr = VecSetFromOptions((this->petsc_solver_wrapper->rhs)); CHKERRXX(ierr);
 
+  ierr = VecDuplicate((this->petsc_solver_wrapper->rhs), &(this->petsc_solver_wrapper->solution)); CHKERRXX(ierr);
+  ierr = VecZeroEntries(this->petsc_solver_wrapper->solution);
   this->is_petsc_data_initialized = true; 
   AKANTU_DEBUG_OUT();
 }
@@ -111,19 +109,23 @@ void SolverPETSc::initialize(SolverOptions & options) {
 void SolverPETSc::setRHS(Array<Real> & rhs) {
   PetscErrorCode ierr;
   PETScMatrix * petsc_matrix = static_cast<PETScMatrix*>(this->matrix);
-  ierr = VecSetSizes((this->petsc_solver_wrapper->rhs), petsc_matrix->getLocalSize(), petsc_matrix->getSize()); CHKERRXX(ierr);
-  ierr = VecSetFromOptions((this->petsc_solver_wrapper->rhs)); CHKERRXX(ierr);
 
-  for (UInt i = 0; i < rhs.getSize(); ++i) {
-    if (matrix->getDOFSynchronizer().isLocalOrMasterDOF(i)) {
-      Int i_global = matrix->getDOFSynchronizer().getDOFGlobalID(i);
-      AOApplicationToPetsc(petsc_matrix->getPETScMatrixWrapper()->ao, 1, &(i_global) );
-      ierr = VecSetValue((this->petsc_solver_wrapper->rhs), i_global, rhs(i), INSERT_VALUES); CHKERRXX(ierr);
+  UInt nb_component = rhs.getNbComponent();
+  UInt size = rhs.getSize();
+  for (UInt i = 0; i < size; ++i) {
+    for (UInt j = 0; j < nb_component; ++j) {
+      UInt i_local = i * nb_component + j;
+      if (this->matrix->getDOFSynchronizer().isLocalOrMasterDOF(i_local)) {
+	Int i_global = this->matrix->getDOFSynchronizer().getDOFGlobalID(i_local);
+	AOApplicationToPetsc(petsc_matrix->getPETScMatrixWrapper()->ao, 1, &(i_global) );
+	ierr = VecSetValue((this->petsc_solver_wrapper->rhs), i_global, rhs(i,j), INSERT_VALUES); CHKERRXX(ierr);     
+      }
     }
   }
+
   ierr = VecAssemblyBegin(this->petsc_solver_wrapper->rhs); CHKERRXX(ierr);
   ierr = VecAssemblyEnd(this->petsc_solver_wrapper->rhs); CHKERRXX(ierr);
-  ierr = VecDuplicate((this->petsc_solver_wrapper->rhs), &(this->petsc_solver_wrapper->solution)); CHKERRXX(ierr);
+  ///  ierr = VecCopy((this->petsc_solver_wrapper->rhs), (this->petsc_solver_wrapper->solution)); CHKERRXX(ierr);
 
 
 }
@@ -151,21 +153,43 @@ void SolverPETSc::solve(Array<Real> & solution) {
 
   // ierr = VecGetOwnershipRange(this->petsc_solver_wrapper->solution, solution_begin, solution_end); CHKERRXX(ierr);
   // ierr = VecGetArray(this->petsc_solver_wrapper->solution, PetscScalar **array); CHKERRXX(ierr);
-
-  for (UInt i = 0; i < solution.getSize(); ++i) {
-    if (this->matrix->getDOFSynchronizer().isLocalOrMasterDOF(i)) {
-      Int i_global = this->matrix->getDOFSynchronizer().getDOFGlobalID(i);
-      ierr = AOApplicationToPetsc(petsc_matrix->getPETScMatrixWrapper()->ao, 1, &(i_global) ); CHKERRXX(ierr);
-      ierr = VecGetValues(this->petsc_solver_wrapper->solution, 1, &i_global, &solution(i)); CHKERRXX(ierr);
+  UInt nb_component = solution.getNbComponent();
+  UInt size = solution.getSize();
+  
+  for (UInt i = 0; i < size; ++i) {
+    for (UInt j = 0; j < nb_component; ++j) {
+      UInt i_local = i * nb_component + j;
+      if (this->matrix->getDOFSynchronizer().isLocalOrMasterDOF(i_local)) {
+	Int i_global = this->matrix->getDOFSynchronizer().getDOFGlobalID(i_local);
+	ierr = AOApplicationToPetsc(petsc_matrix->getPETScMatrixWrapper()->ao, 1, &(i_global) ); CHKERRXX(ierr);
+	ierr = VecGetValues(this->petsc_solver_wrapper->solution, 1, &i_global, &solution(i,j)); CHKERRXX(ierr);
       
+      }
     }
   }
-
   synch_registry->synchronize(_gst_solver_solution);
 
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+void SolverPETSc::setOperators() {
+  AKANTU_DEBUG_IN();
+  PetscErrorCode ierr;
+ /// set the matrix that defines the linear system and the matrix for preconditioning (here they are the same)
+  PETScMatrix * petsc_matrix = static_cast<PETScMatrix*>(this->matrix);
+
+#if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5  
+  ierr = KSPSetOperators(this->petsc_solver_wrapper->ksp, petsc_matrix->getPETScMatrixWrapper()->mat, petsc_matrix->getPETScMatrixWrapper()->mat); CHKERRXX(ierr);
+#else
+  ierr = KSPSetOperators(this->petsc_solver_wrapper->ksp, petsc_matrix->getPETScMatrixWrapper()->mat, petsc_matrix->getPETScMatrixWrapper()->mat, SAME_NONZERO_PATTERN); CHKERRXX(ierr);
+#endif
+  /// If this is not called the solution vector is zeroed in the call to KSPSolve().
+  ierr = KSPSetInitialGuessNonzero(this->petsc_solver_wrapper->ksp, PETSC_TRUE);
+  KSPSetFromOptions(this->petsc_solver_wrapper->ksp);
+
+  AKANTU_DEBUG_OUT();
+}
 /* -------------------------------------------------------------------------- */
 // void finalize_petsc() {
   

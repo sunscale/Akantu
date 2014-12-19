@@ -63,10 +63,6 @@ inline void SparseMatrix::clearProfile() {
   nb_non_zero = 0;
 }
 
-/* -------------------------------------------------------------------------- */
-inline void SparseMatrix::clear() {
-  memset(a.storage(), 0, nb_non_zero*sizeof(Real));
-}
 
 /* -------------------------------------------------------------------------- */
 inline void SparseMatrix::addToMatrix(UInt i, UInt j, Real value) {

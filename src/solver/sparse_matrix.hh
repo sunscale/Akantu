@@ -92,7 +92,7 @@ public:
   virtual UInt addToProfile(UInt i, UInt j);
 
   /// set the matrix to 0
-  inline void clear();
+  virtual void clear();
 
   /// assemble a local matrix in the sparse one
   inline void addToMatrix(UInt i, UInt j, Real value);

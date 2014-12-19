@@ -83,6 +83,7 @@ public:
   /// initialize the solver
   virtual void initialize(SolverOptions & options = _solver_no_options) = 0;
 
+  virtual void setOperators() {};
   virtual void analysis() {};
 
   virtual void factorize() {};
