@@ -539,15 +539,28 @@ function(_package_load_external_package pkg_name activate)
     set(_package_prefix ${_u_package})
   endif()
 
-  set(_acct FALSE)
-  foreach(_prefix ${_package_prefix})
-    if(${_prefix}_FOUND OR _opt_pkg_FOUND)
+  set(_act FALSE)
+  set(_prefix_to_consider)
+  if(_opt_pkg_FOUND)
+    set(_act TRUE)
+    set(_prefix_to_consider ${_package_prefix})
+  else()
+    foreach(_prefix ${_package_prefix})
+      if(${_prefix}_FOUND)
+	set(_act TRUE)
+	list(APPEND _prefix_to_consider ${_prefix})
+      endif()
+    endforeach()
+  endif()
+
+  if(_act)
+    foreach(_prefix ${_prefix_to_consider})
       # Add the in the definition list
       list(APPEND ${_project}_DEFINITIONS ${_option_name})
 
       # Generate the include dir for the package
       if(DEFINED ${_prefix}_INCLUDE_DIRS)
-        package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIRS})
+	package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIRS})
       elseif(DEFINED ${_prefix}_INCLUDE_DIR)
 	package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIR})
       elseif(DEFINED ${_prefix}_INCLUDE_PATH)
@@ -556,11 +569,10 @@ function(_package_load_external_package pkg_name activate)
 
       # Generate the libraries for the package
       package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
+    endforeach()
+  endif()
 
-      set(_acct TRUE)
-    endif()
-  endforeach()
-  set(${activate} ${_acct} PARENT_SCOPE)
+  set(${activate} ${_act} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
