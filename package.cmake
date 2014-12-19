@@ -13,7 +13,7 @@
 #
 #===============================================================================
 
-package_declare(extra-materials
+package_declare(extra_materials
   DESCRIPTION "Add the extra list of materials in Akantu"
   DEPENDS lapack)
 
