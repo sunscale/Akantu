@@ -346,6 +346,7 @@ Array<T, is_scal>::Array(const Array<T, is_scal> & vect,
 }
 
 /* -------------------------------------------------------------------------- */
+#ifndef SWIG
 template <class T, bool is_scal>
 Array<T, is_scal>::Array(const std::vector<T>& vect) {
   AKANTU_DEBUG_IN();
@@ -357,7 +358,7 @@ Array<T, is_scal>::Array(const std::vector<T>& vect) {
 
   AKANTU_DEBUG_OUT();
 }
-
+#endif
 
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>

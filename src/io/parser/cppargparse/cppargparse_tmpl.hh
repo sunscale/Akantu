@@ -184,6 +184,11 @@ ArgumentParser::Argument::operator T() const{
 }
 
 template<>
+inline ArgumentParser::Argument::operator const char*() const{
+  return cast_helper<std::string>::cast(*this).c_str();
+}
+
+template<>
 inline ArgumentParser::Argument::operator unsigned int() const{
   return cast_helper<int>::cast(*this);
 }

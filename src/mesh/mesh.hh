@@ -251,10 +251,10 @@ public:
                                             UInt n_nodes,
                                             UInt nb_degree_of_freedom) const;
 
-  /// extract coordinates of nodes from a reversed element
-  inline void extractNodalCoordinatesFromPBCElement(Real * local_coords,
-                                                    UInt * connectivity,
-                                                    UInt n_nodes);
+  // /// extract coordinates of nodes from a reversed element
+  // inline void extractNodalCoordinatesFromPBCElement(Real * local_coords,
+  //                                                   UInt * connectivity,
+  //                                                   UInt n_nodes);
 
   /// convert a element to a linearized element
   inline UInt elementToLinearized(const Element & elem) const;
@@ -436,10 +436,11 @@ public:
   /// defines is the mesh is distributed or not
   inline bool isDistributed() const { return this->is_distributed; }
 
+#ifndef SWIG
   /// return the dumper from a group and and a dumper name
   DumperIOHelper & getGroupDumper(const std::string & dumper_name, 
 				  const std::string & group_name);
-
+#endif
   /* ------------------------------------------------------------------------ */
   /* Wrappers on ElementClass functions                                       */
   /* ------------------------------------------------------------------------ */

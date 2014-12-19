@@ -17,6 +17,7 @@ namespace akantu {
   %ignore MeshEvent< UInt >;
   %ignore MeshEvent< Element >;
   %ignore Mesh::extractNodalCoordinatesFromPBCElement;
+  %ignore Mesh::getGroupDumer;
 }
 
 print_self(Mesh)

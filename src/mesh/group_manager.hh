@@ -89,6 +89,7 @@ public:
   typedef NodeGroups::const_iterator const_node_group_iterator;
   typedef ElementGroups::const_iterator const_element_group_iterator;
 
+#ifndef SWIG
 #define AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(group_type,       \
 						      function,         \
 						      param_in,         \
@@ -112,7 +113,8 @@ public:
   AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION_NP(element_group, end  );
   AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(element_group, find, const std::string & name, name);
   AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(node_group, find, const std::string & name, name);
-
+#endif
+  
   /* ------------------------------------------------------------------------ */
   /* Clustering filter                                                        */
   /* ------------------------------------------------------------------------ */
@@ -193,6 +195,7 @@ public:
   void synchronizeGroupNames();
 
   /// register an elemental field to the given group name (overloading for ElementalPartionField)
+#ifndef SWIG
   template <typename T, template <bool> class dump_type>
   inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field, 
 					      const std::string & group_name,
@@ -254,8 +257,7 @@ protected:
 					       UInt spatial_dimension,
 					       const ElementKind & kind,
 					       ElementTypeMap<UInt> nb_data_per_elem);
-
-
+#endif
 
   /* ------------------------------------------------------------------------ */
   /* Accessor                                                                 */

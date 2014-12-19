@@ -59,9 +59,6 @@ if(NOT ${_use_system})
     package_set_include_dir(${_pkg_name} ${PROJECT_BINARY_DIR}/third-party/include/iohelper)
 
     package_add_extra_dependency(IOHelper IOHelper)
-    package_activate(${_pkg_name})
-  else()
-    package_deactivate(${_pkg_name})
   endif()
 endif()
 
