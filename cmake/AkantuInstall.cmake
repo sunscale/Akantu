@@ -80,13 +80,13 @@ set(AKANTU_HAS_${_real_pkg_name} ${_acctivated})")
   package_get_libraries(${_pkg_name} _libs)
   if(_libs)
     file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
-set(${_real_pkg_name}_LIBRARIES ${_libs})")
+set(AKANTU_${_real_pkg_name}_LIBRARIES ${_libs})")
   endif()
 
   package_get_include_dir(${_pkg_name} _incs)
   if(_incs)
     file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
-set(${_real_pkg_name}_INCLUDE_DIR ${_incs})
+set(AKANTU_${_real_pkg_name}_INCLUDE_DIR ${_incs})
 ")
   endif()
 endforeach()
