@@ -96,7 +96,6 @@ void loadRestart(akantu::SolidMechanicsModel & model,
 /* -------------------------------------------------------------------------- */
 void loadRestart(akantu::SolidMechanicsModel & model, 
 		 const std::string & fname) {
-  const akantu::UInt spatial_dimension = model.getMesh().getSpatialDimension();
   loadArray(model.getDisplacement(), fname);
 }
 
@@ -123,6 +122,5 @@ void dumpRestart(akantu::SolidMechanicsModel & model,
 /* -------------------------------------------------------------------------- */
 void dumpRestart(akantu::SolidMechanicsModel & model, 
 		 const std::string & fname) {
-  const akantu::UInt spatial_dimension = model.getMesh().getSpatialDimension();
   dumpArray(model.getDisplacement(), fname);
 }

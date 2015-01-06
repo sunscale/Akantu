@@ -17,6 +17,7 @@
 // simtools
 #include "ntn_fricreg_no_regularisation.hh"
 #include "dumper_text.hh"
+#include "dumper_nodal_field.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -132,7 +133,7 @@ void NTNFricRegNoRegularisation::addDumpFieldToDumper(const std::string & dumper
   if (field_id == "frictional_contact_pressure") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
-				       new DumperIOHelper::NodalField<Real>(this->frictional_contact_pressure.getArray()));
+				       new dumper::NodalField<Real>(this->frictional_contact_pressure.getArray()));
   }
   else {
     NTNBaseFriction::addDumpFieldToDumper(dumper_name, field_id);

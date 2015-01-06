@@ -73,8 +73,6 @@ void NTRFContact::setNormal(Real x, Real y, Real z) {
 void NTRFContact::addSurface(const Surface & surf) {
   AKANTU_DEBUG_IN();
 
-  UInt dim = this->model.getSpatialDimension();
-
   const Mesh & mesh_ref = this->model.getFEEngine().getMesh();
 
   try {

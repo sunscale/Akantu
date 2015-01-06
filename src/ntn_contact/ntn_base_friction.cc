@@ -17,6 +17,7 @@
 // simtools
 #include "ntn_base_friction.hh"
 #include "dumper_text.hh"
+#include "dumper_nodal_field.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -333,32 +334,32 @@ void NTNBaseFriction::addDumpFieldToDumper(const std::string & dumper_name,
   if(field_id == "is_sticking") {
     this->internalAddDumpFieldToDumper(dumper_name,
 			       field_id,
-			       new DumperIOHelper::NodalField<bool>(this->is_sticking.getArray()));
+			       new dumper::NodalField<bool>(this->is_sticking.getArray()));
   }
   else if(field_id == "frictional_strength") {
     this->internalAddDumpFieldToDumper(dumper_name,
 			       field_id,
-			       new DumperIOHelper::NodalField<Real>(this->frictional_strength.getArray()));
+			       new dumper::NodalField<Real>(this->frictional_strength.getArray()));
   }
   else if(field_id == "friction_traction") {
     this->internalAddDumpFieldToDumper(dumper_name,
 			       field_id,
-			       new DumperIOHelper::NodalField<Real>(this->friction_traction.getArray()));
+			       new dumper::NodalField<Real>(this->friction_traction.getArray()));
   }
   else if(field_id == "slip") {
     this->internalAddDumpFieldToDumper(dumper_name,
 			       field_id,
-			       new DumperIOHelper::NodalField<Real>(this->slip.getArray()));
+			       new dumper::NodalField<Real>(this->slip.getArray()));
   }
   else if(field_id == "cumulative_slip") {
     this->internalAddDumpFieldToDumper(dumper_name,
 			       field_id,
-			       new DumperIOHelper::NodalField<Real>(this->cumulative_slip.getArray()));
+			       new dumper::NodalField<Real>(this->cumulative_slip.getArray()));
   }
   else if(field_id == "slip_velocity") {
     this->internalAddDumpFieldToDumper(dumper_name,
 			       field_id,
-			       new DumperIOHelper::NodalField<Real>(this->slip_velocity.getArray()));
+			       new dumper::NodalField<Real>(this->slip_velocity.getArray()));
   }
   else {
     this->contact->addDumpFieldToDumper(dumper_name, field_id);

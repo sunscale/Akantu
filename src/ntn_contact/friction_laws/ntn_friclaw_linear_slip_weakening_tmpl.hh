@@ -59,7 +59,6 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::computeFrictionCoefficient()
   AKANTU_DEBUG_IN();
   
   SolidMechanicsModel & model = this->contact->getModel();
-  UInt dim = model.getSpatialDimension();
 
   // get arrays
   const SynchronizedArray<bool> & stick = this->internalGetIsSticking();
@@ -150,17 +149,17 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::addDumpFieldToDumper(const s
   if(field_id == "mu_s") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
-				       new DumperIOHelper::NodalField<Real>(this->mu_s.getArray()));
+				       new dumper::NodalField<Real>(this->mu_s.getArray()));
   }
   else if(field_id == "mu_k") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
-				       new DumperIOHelper::NodalField<Real>(this->mu_k.getArray()));
+				       new dumper::NodalField<Real>(this->mu_k.getArray()));
   }
   else if(field_id == "d_c") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
-				       new DumperIOHelper::NodalField<Real>(this->d_c.getArray()));
+				       new dumper::NodalField<Real>(this->d_c.getArray()));
   }
   else {
     NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(dumper_name, field_id);

@@ -17,6 +17,7 @@
 // simtools
 #include "ntn_contact.hh"
 #include "dumper_text.hh"
+#include "dumper_nodal_field.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -430,8 +431,8 @@ void NTNContact::computeRelativeNormalField(const Array<Real> & field,
   rel_normal_field.resize(0);
   
   UInt dim = this->model.getSpatialDimension();
-  Real * field_p = field.storage();
-  Real * normals_p = this->normals.storage();
+  //  Real * field_p = field.storage();
+  //  Real * normals_p = this->normals.storage();
 
   Array<Real>::const_iterator< Vector<Real> > it_field  = field.begin(dim);
   Array<Real>::const_iterator< Vector<Real> > it_normal = this->normals.getArray().begin(dim);
@@ -517,7 +518,7 @@ void NTNContact::addDumpFieldToDumper(const std::string & dumper_name,
   if(field_id == "lumped_boundary_master") {
     internalAddDumpFieldToDumper(dumper_name,
 				 field_id,
-				 new DumperIOHelper::NodalField<Real>(this->lumped_boundary_masters.getArray()));
+				 new dumper::NodalField<Real>(this->lumped_boundary_masters.getArray()));
   }
   else {
     NTNBaseContact::addDumpFieldToDumper(dumper_name, field_id);

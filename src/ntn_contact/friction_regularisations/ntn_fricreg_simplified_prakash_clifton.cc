@@ -17,6 +17,7 @@
 // simtools
 #include "ntn_fricreg_simplified_prakash_clifton.hh"
 #include "dumper_text.hh"
+#include "dumper_nodal_field.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -129,7 +130,7 @@ void NTNFricRegSimplifiedPrakashClifton::addDumpFieldToDumper(const std::string 
   if (field_id == "t_star") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
-				       new DumperIOHelper::NodalField<Real>(this->t_star.getArray()));
+				       new dumper::NodalField<Real>(this->t_star.getArray()));
   }
   else {
     NTNFricRegNoRegularisation::addDumpFieldToDumper(dumper_name, field_id);

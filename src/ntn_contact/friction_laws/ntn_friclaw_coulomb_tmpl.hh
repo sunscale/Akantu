@@ -14,6 +14,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "dumper_nodal_field.hh"
+
 
 __BEGIN_SIMTOOLS__
 
@@ -39,7 +41,6 @@ void NTNFricLawCoulomb<Regularisation>::computeFrictionalStrength() {
   AKANTU_DEBUG_IN();
   
   SolidMechanicsModel & model = this->contact->getModel();
-  UInt dim = model.getSpatialDimension();
 
   // get contact arrays
   const SynchronizedArray<bool> & is_in_contact = this->internalGetIsInContact();
@@ -127,7 +128,7 @@ void NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(const std::string &
   if(field_id == "mu") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
-				       new DumperIOHelper::NodalField<Real>(this->mu.getArray()));
+				       new dumper::NodalField<Real>(this->mu.getArray()));
   }
   /*
   else if (field_id == "frictional_contact_pressure") {

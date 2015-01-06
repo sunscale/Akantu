@@ -16,7 +16,9 @@
 /* -------------------------------------------------------------------------- */
 // simtools
 #include "ntn_base_contact.hh"
+#include "dumpable_inline_impl.hh"
 #include "dumper_text.hh"
+#include "dumper_nodal_field.hh"
 
 __BEGIN_SIMTOOLS__
 
@@ -290,7 +292,7 @@ void NTNBaseContact::internalUpdateLumpedBoundary(const Array<UInt> & nodes,
   boundary.clear();
   
   UInt dim = this->model.getSpatialDimension();
-  UInt nb_contact_nodes = getNbContactNodes();
+  //  UInt nb_contact_nodes = getNbContactNodes();
   
   const FEEngine & boundary_fem = this->model.getFEEngineBoundary();
   
@@ -321,7 +323,7 @@ void NTNBaseContact::internalUpdateLumpedBoundary(const Array<UInt> & nodes,
         for (UInt q=0; q<nb_nodes_per_element; ++q) {
           UInt node = connectivity(*elem_it,q);
           UInt node_index = nodes.find(node);
-          AKANTU_DEBUG_ASSERT(node_index != -1, 
+          AKANTU_DEBUG_ASSERT(node_index != UInt(-1), 
 			      "Could not find node " << node 
 			      << " in the array!");
           Real area_to_add = area(*elem_it,q);
@@ -482,14 +484,17 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
   
 #ifdef AKANTU_USE_IOHELPER
   const Array<UInt> & nodal_filter = this->slaves.getArray();
+
+
+  
   
 #define ADD_FIELD(field_id, field, type)				\
   internalAddDumpFieldToDumper(dumper_name,				\
 			       field_id,				\
-			       new DumperIOHelper::NodalField< type, true, \
-							       Array<type>, \
-							       Array<UInt> >(field, 0, 0, &nodal_filter))
-
+			       new dumper::NodalField< type, true,	\
+			                               Array<type>,	\
+                        			       Array<UInt> >(field, 0, 0, &nodal_filter))
+  
   if(field_id == "displacement") {
     ADD_FIELD(field_id, this->model.getDisplacement(), Real);
   }
@@ -517,27 +522,27 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
   else if(field_id == "normal") {
     internalAddDumpFieldToDumper(dumper_name,
 				 field_id,
-				 new DumperIOHelper::NodalField<Real>(this->normals.getArray()));
+				 new dumper::NodalField<Real>(this->normals.getArray()));
   }
   else if(field_id == "contact_pressure") {
     internalAddDumpFieldToDumper(dumper_name,
 				 field_id,
-				 new DumperIOHelper::NodalField<Real>(this->contact_pressure.getArray()));
+				 new dumper::NodalField<Real>(this->contact_pressure.getArray()));
   }
   else if(field_id == "is_in_contact") {
     internalAddDumpFieldToDumper(dumper_name,
 				 field_id,
-				 new DumperIOHelper::NodalField<bool>(this->is_in_contact.getArray()));
+				 new dumper::NodalField<bool>(this->is_in_contact.getArray()));
   }
   else if(field_id == "lumped_boundary_slave") {
     internalAddDumpFieldToDumper(dumper_name,
 				 field_id,
-				 new DumperIOHelper::NodalField<Real>(this->lumped_boundary_slaves.getArray()));
+				 new dumper::NodalField<Real>(this->lumped_boundary_slaves.getArray()));
   }
   else if(field_id == "impedance") {
     internalAddDumpFieldToDumper(dumper_name,
 				 field_id,
-				 new DumperIOHelper::NodalField<Real>(this->impedance.getArray()));
+				 new dumper::NodalField<Real>(this->impedance.getArray()));
   }
   else {
     std::cerr << "Could not add field '" << field_id 

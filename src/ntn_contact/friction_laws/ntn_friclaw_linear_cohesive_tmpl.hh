@@ -46,7 +46,6 @@ void NTNFricLawLinearCohesive<Regularisation>::computeFrictionalStrength() {
   AKANTU_DEBUG_IN();
 
   SolidMechanicsModel & model = this->contact->getModel();
-  UInt dim = model.getSpatialDimension();
 
   // get arrays
   const SynchronizedArray<bool> & is_in_contact = this->internalGetIsInContact();
@@ -149,17 +148,17 @@ void NTNFricLawLinearCohesive<Regularisation>::addDumpFieldToDumper(const std::s
   if(field_id == "G_c") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
-				       new DumperIOHelper::NodalField<Real>(this->G_c.getArray()));
+				       new dumper::NodalField<Real>(this->G_c.getArray()));
   }
   else if(field_id == "tau_c") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
-				       new DumperIOHelper::NodalField<Real>(this->tau_c.getArray()));
+				       new dumper::NodalField<Real>(this->tau_c.getArray()));
   }
   else if(field_id == "tau_r") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
-				       new DumperIOHelper::NodalField<Real>(this->tau_r.getArray()));
+				       new dumper::NodalField<Real>(this->tau_r.getArray()));
   }
   else {
     Regularisation::addDumpFieldToDumper(dumper_name, field_id);

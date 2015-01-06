@@ -39,7 +39,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
   NTNBaseFriction * friction;
   
   bool is_ntn_contact = true;
-  if (NTRFContact * cont = dynamic_cast<NTRFContact *>(contact)) {
+  if (dynamic_cast<NTRFContact *>(contact) != NULL) {
     is_ntn_contact = false;
   }
 
@@ -209,7 +209,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
   
   // check whether is is node-to-rigid-flat contact
   bool is_ntn_contact = true;
-  if (NTRFContact * cont = dynamic_cast<NTRFContact *>(contact)) {
+  if (dynamic_cast<NTRFContact *>(contact) != NULL) {
     is_ntn_contact = false;
   }
 
