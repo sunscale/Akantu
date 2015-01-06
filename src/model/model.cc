@@ -255,7 +255,7 @@ void Model::setBaseNameToDumper(const std::string & dumper_name,
 /* -------------------------------------------------------------------------- */
 
 void Model::addDumpFieldToDumper(const std::string & dumper_name,
-                                               const std::string & field_id) {
+				 const std::string & field_id) {
 
   this->addDumpGroupFieldToDumper(dumper_name,field_id,"all",_ek_regular,false);
 
@@ -273,7 +273,7 @@ void Model::addDumpGroupField(const std::string & field_id,
 
 /* -------------------------------------------------------------------------- */
 void Model::removeDumpGroupField(const std::string & field_id,
-                                               const std::string & group_name) {
+				 const std::string & group_name) {
   ElementGroup & group = mesh.getElementGroup(group_name);
   this->removeDumpGroupFieldFromDumper(group.getDefaultDumperName(),
                                        field_id,
@@ -282,8 +282,8 @@ void Model::removeDumpGroupField(const std::string & field_id,
 
 /* -------------------------------------------------------------------------- */
 void Model::removeDumpGroupFieldFromDumper(const std::string & dumper_name,
-                                                         const std::string & field_id,
-                                                         const std::string & group_name) {
+					   const std::string & field_id,
+					   const std::string & group_name) {
   ElementGroup & group = mesh.getElementGroup(group_name);
   group.removeDumpFieldFromDumper(dumper_name, field_id);
 }

@@ -53,13 +53,21 @@ dumper::Field * GroupManager
   
   if (&field == NULL) return NULL;
   if (group_name == "all") 
-    return this->createElementalField<dump_type<false> >(field,group_name,spatial_dimension,kind,nb_data_per_elem);
-  else return this->createElementalFilteredField<dump_type<true> >(field,group_name,spatial_dimension,kind,nb_data_per_elem);
+    return this->createElementalField< dump_type<false> >(field,group_name,
+							 spatial_dimension,
+							 kind,
+							 nb_data_per_elem);
+  else
+    return this->createElementalFilteredField< dump_type<true> >(field,group_name,
+								 spatial_dimension,
+								 kind,
+								 nb_data_per_elem);
 }
 
-
 /* -------------------------------------------------------------------------- */
-template <typename T, template <class> class T2,template <class,template <class> class,bool> class dump_type>
+template <typename T,
+	  template <class> class T2,
+	  template <class, template <class> class,bool> class dump_type>
 dumper::Field * GroupManager
 ::createElementalField(const ElementTypeMapArray<T> & field, 
 		       const std::string & group_name,
@@ -69,28 +77,40 @@ dumper::Field * GroupManager
   
   if (&field == NULL) return NULL;
   if (group_name == "all") 
-    return this->createElementalField<dump_type<T,T2,false> >(field,group_name,spatial_dimension,kind,nb_data_per_elem);
+    return this->createElementalField< dump_type<T,T2,false> >(field,
+							       group_name,
+							       spatial_dimension,
+							       kind,
+							       nb_data_per_elem);
   else 
-    return this->createElementalFilteredField<dump_type<T,T2,true>  >(field,group_name,spatial_dimension,kind,nb_data_per_elem);
+    return this->createElementalFilteredField< dump_type<T,T2,true> >(field,
+								      group_name,
+								      spatial_dimension,
+								      kind,
+								      nb_data_per_elem);
 }
 
-
 /* -------------------------------------------------------------------------- */
-
 template <typename T, 
-	  /// type of InternalMaterialField
-	  template<typename T, bool filtered> class dump_type>
+	  template<typename T, bool filtered> class dump_type> ///< type of InternalMaterialField
 dumper::Field * GroupManager::createElementalField(const ElementTypeMapArray<T> & field, 
 						   const std::string & group_name,
 						   UInt spatial_dimension,
 						   const ElementKind & kind,
 						   ElementTypeMap<UInt> nb_data_per_elem){
-
   if (&field == NULL) return NULL;
   if (group_name == "all") 
-    return this->createElementalField<dump_type<T,false> >(field,group_name,spatial_dimension,kind,nb_data_per_elem);
+    return this->createElementalField< dump_type<T,false> >(field,
+							    group_name,
+							    spatial_dimension,
+							    kind,
+							    nb_data_per_elem);
   else 
-    return this->createElementalFilteredField<dump_type<T,true>  >(field,group_name,spatial_dimension,kind,nb_data_per_elem);
+    return this->createElementalFilteredField< dump_type<T,true> >(field,
+								   group_name,
+								   spatial_dimension,
+								   kind,
+								   nb_data_per_elem);
 }
 
 

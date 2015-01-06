@@ -40,7 +40,6 @@
 #include "dumper_nodal_field.hh"
 /* -------------------------------------------------------------------------- */
 
-
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
@@ -129,9 +128,6 @@ inline T & Dumpable::getDumper(const std::string & dumper_name) {
                      << debug::demangle(typeid(T).name()));
   }
 }
-
-
-
 
 __END_AKANTU__
 

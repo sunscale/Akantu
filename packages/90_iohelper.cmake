@@ -63,6 +63,7 @@ if(NOT ${_use_system})
 endif()
 
 package_declare_sources(IOHelper
+  io/dumper/dumpable_iohelper.hh
   io/dumper/dumper_iohelper.hh
   io/dumper/dumper_iohelper.cc
   io/dumper/dumper_paraview.hh

@@ -40,19 +40,17 @@ __BEGIN_AKANTU_DUMPER__
 
 // This represents a iohelper compatible field
 template<typename T, bool filtered = false,
-	 class Container = Array<T>,class Filter = Array<UInt> >
+	 class Container = Array<T>, class Filter = Array<UInt> >
 class NodalField;
 
 /* -------------------------------------------------------------------------- */
 template<typename T, class Container, class Filter>
 class NodalField<T, false, Container, Filter> : public dumper::Field {
 public:
-
-
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */  
-  
+ 
   /// associated iterator with any nodal field (non filetered)
   class iterator : public iohelper::iterator< T, iterator, Vector<T> > {
   public:

@@ -106,6 +106,7 @@ package_declare_sources(core
 
   io/dumper/dumpable.hh
   io/dumper/dumpable.cc
+  io/dumper/dumpable_dummy.hh
   io/dumper/dumpable_inline_impl.hh
   io/dumper/dumper_field.hh
   io/dumper/dumper_material_padders.hh
