@@ -576,7 +576,7 @@ function(_package_load_external_package pkg_name activate)
       package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
     endforeach()
   endif()
-
+  set(${_project}_DEFINITIONS ${${_project}_DEFINITIONS} CACHE INTERNAL  PARENT_SCOPE FORCE)
   set(${activate} ${_act} PARENT_SCOPE)
 endfunction()
 
