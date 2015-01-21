@@ -107,7 +107,7 @@ function(package_use_system pkg_name use)
   if(DEFINED ${_project}_USE_SYSTEM_${_u_package})
     set(${use} ${${_project}_USE_SYSTEM_${_u_package}} PARENT_SCOPE)
   else()
-    set(${use} TRUE)
+    set(${use} TRUE PARENT_SCOPE)
   endif()
 endfunction()
 
