@@ -517,6 +517,8 @@ endfunction()
 # Load external packages
 # ------------------------------------------------------------------------------
 function(_package_load_external_package pkg_name activate)
+  string(TOUPPER ${PROJECT_NAME} _project)
+  
   package_get_extra_options(${pkg_name} _options)
   if(_options)
     cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "PREFIX;FOUND;ARGS" ${_options})
@@ -576,7 +578,7 @@ function(_package_load_external_package pkg_name activate)
       package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
     endforeach()
   endif()
-  set(${_project}_DEFINITIONS ${${_project}_DEFINITIONS} CACHE INTERNAL  PARENT_SCOPE FORCE)
+  set(${_project}_DEFINITIONS ${${_project}_DEFINITIONS} CACHE INTERNAL "" FORCE)
   set(${activate} ${_act} PARENT_SCOPE)
 endfunction()
 
@@ -895,7 +897,7 @@ endfunction()
 function(package_declare_sources pkg)
   package_get_name(${pkg} _pkg_name)
 
-  # get 3 lists, if non of the options given try to distinguish the different lists
+  # get 3 lists, if none of the options given try to distinguish the different lists
   cmake_parse_arguments(_opt_pkg
     ""
     ""
@@ -935,6 +937,30 @@ function(package_declare_sources pkg)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# get the list of source files for a given package
+# ------------------------------------------------------------------------------
+function(single_package_get_source_files PKG SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
+  string(TOUPPER ${PROJECT_NAME} _project)
+
+  set(tmp_SRCS)
+  set(tmp_PUBLIC_HEADERS)
+  set(tmp_PRIVATE_HEADERS)
+
+  foreach(_type SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
+    foreach(_file ${${PKG}_${_type}})
+      string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" _rel_file "${_file}")
+      list(APPEND tmp_${_type} "${_rel_file}")
+    endforeach()
+  endforeach()
+  
+#  message(__tmp_SRCS ":   " ${tmp_SRCS})
+
+  set(${SRCS}            ${tmp_SRCS}            PARENT_SCOPE)
+  set(${PUBLIC_HEADERS}  ${tmp_PUBLIC_HEADERS}  PARENT_SCOPE)
+  set(${PRIVATE_HEADERS} ${tmp_PRIVATE_HEADERS} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # get the list of source files
 # ------------------------------------------------------------------------------
 function(package_get_source_files SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
@@ -945,12 +971,10 @@ function(package_get_source_files SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
   set(tmp_PRIVATE_HEADERS)
 
   foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
-    foreach(_type SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
-      foreach(_file ${${_pkg_name}_${_type}})
-	string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" _rel_file "${_file}")
-	list(APPEND tmp_${_type} "${_rel_file}")
-      endforeach()
-    endforeach()
+    single_package_get_source_files(${_pkg_name} _tmp_SRCS _tmp_PUBLIC_HEADERS _tmp_PRIVATE_HEADERS)
+    list(APPEND tmp_SRCS ${_tmp_SRCS})
+    list(APPEND tmp_PUBLIC_HEADERS ${tmp_PUBLIC_HEADERS})
+    list(APPEND tmp_PRIVATE_HEADERS ${tmp_PRIVATE_HEADERS})
   endforeach()
 
   set(${SRCS}            ${tmp_SRCS}            PARENT_SCOPE)
@@ -1001,6 +1025,15 @@ function(package_get_external_informations INCLUDE_DIR LIBRARIES)
 
   set(${INCLUDE_DIR} ${tmp_INCLUDE_DIR} PARENT_SCOPE)
   set(${LIBRARIES}   ${tmp_LIBRARIES}   PARENT_SCOPE)
+endfunction()
+
+
+# ------------------------------------------------------------------------------
+# Get definitions like external projects
+# ------------------------------------------------------------------------------
+function(package_get_all_definitions DEFS)
+  string(TOUPPER ${PROJECT_NAME} _project)
+  set(${DEFS} ${${_project}_DEFINITIONS} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
