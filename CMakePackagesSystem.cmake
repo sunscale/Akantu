@@ -562,9 +562,6 @@ function(_package_load_external_package pkg_name activate)
 
   if(_act)
     foreach(_prefix ${_prefix_to_consider})
-      # Add the in the definition list
-      list(APPEND ${_project}_DEFINITIONS ${_option_name})
-
       # Generate the include dir for the package
       if(DEFINED ${_prefix}_INCLUDE_DIRS)
 	package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIRS})
@@ -578,7 +575,6 @@ function(_package_load_external_package pkg_name activate)
       package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
     endforeach()
   endif()
-  set(${_project}_DEFINITIONS ${${_project}_DEFINITIONS} CACHE INTERNAL "" FORCE)
   set(${activate} ${_act} PARENT_SCOPE)
 endfunction()
 
@@ -1031,9 +1027,15 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Get definitions like external projects
 # ------------------------------------------------------------------------------
-function(package_get_all_definitions DEFS)
+
+function(package_get_all_definitions definitions)
+  set(_tmp)
   string(TOUPPER ${PROJECT_NAME} _project)
-  set(${DEFS} ${${_project}_DEFINITIONS} PARENT_SCOPE)
+  foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
+    package_get_option_name(${_pkg_name} _option_name)
+    list(APPEND _tmp ${_option_name})
+  endforeach()
+  set(${definitions} ${_tmp} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -1078,3 +1080,5 @@ function(package_get_list_of_all_packages packages_list)
   string(TOUPPER ${PROJECT_NAME} _project)
   set(${packages_list} ${${_project}_ALL_PACKAGES_LIST} PARENT_SCOPE)
 endfunction()
+
+
