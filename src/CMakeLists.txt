@@ -32,17 +32,17 @@
 #===============================================================================
 # Package Management
 #===============================================================================
-package_get_source_files(
+package_get_all_source_files(
   AKANTU_LIBRARY_SRCS
   AKANTU_LIBRARY_PUBLIC_HDRS
   AKANTU_LIBRARY_PRIVATE_HDRS
   )
 
-package_get_include_directories(
+package_get_all_include_directories(
   AKANTU_LIBRARY_INCLUDE_DIRS
   )
 
-package_get_external_informations(
+package_get_all_external_informations(
   AKANTU_EXTERNAL_INCLUDE_DIR
   AKANTU_EXTERNAL_LIBRARIES
 )
@@ -73,6 +73,7 @@ endif()
 configure_file(common/aka_config.hh.in "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
 list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS ${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh)
 list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
+
 #===========================================================================
 # header precompilation
 #===========================================================================

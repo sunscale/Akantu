@@ -64,7 +64,7 @@ file(WRITE "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
 
 ")
 
-package_get_list_of_all_packages(_package_list)
+package_get_all_packages(_package_list)
 
 foreach(_pkg_name ${_package_list})
   #  package_pkg_name(${_option} _pkg_name)

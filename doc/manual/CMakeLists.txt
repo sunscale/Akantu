@@ -131,7 +131,7 @@ add_custom_target(manual ALL DEPENDS ${MANUAL_OUTPUT})
 
 install(FILES ${MANUAL_OUTPUT} DESTINATION share/akantu/doc)
 
-package_get_list_of_activated_packages(_package_list)
+package_get_all_activated_packages(_package_list)
 foreach (_pkg ${_package_list})
   generate_package_tex_doc(${_pkg} ${DOC_DEPS_TEX_FILENAME})
 endforeach()

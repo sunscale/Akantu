@@ -107,7 +107,7 @@ function(package_use_system pkg_name use)
   if(DEFINED ${_project}_USE_SYSTEM_${_u_package})
     set(${use} ${${_project}_USE_SYSTEM_${_u_package}} PARENT_SCOPE)
   else()
-    set(${use} TRUE)
+    set(${use} TRUE PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -182,7 +182,6 @@ endfunction()
 function(package_get_manual_folder pkg_name manual_folder)
   set(${manual_folder} ${${pkg_name}_MANUAL_FOLDER} PARENT_SCOPE)
 endfunction()
-
 
 # ------------------------------------------------------------------------------
 # Extra option for the find_package
@@ -348,7 +347,6 @@ function(_package_remove_fdependency pkg_name fdep)
     _package_set_fdependencies(${pkg_name} ${_fdeps})
   endif()
 endfunction()
-
 
 # ------------------------------------------------------------------------------
 # Documentation related functions
@@ -570,6 +568,8 @@ endfunction()
 # Load external packages
 # ------------------------------------------------------------------------------
 function(_package_load_external_package pkg_name activate)
+  string(TOUPPER ${PROJECT_NAME} _project)
+  
   package_get_extra_options(${pkg_name} _options)
   if(_options)
     cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "PREFIX;FOUND;ARGS" ${_options})
@@ -804,8 +804,8 @@ function(package_list_packages PACKAGE_FOLDER)
 
     package_get_name(${_pkg} _pkg_name)
     _package_set_filename(${_pkg_name} "${PACKAGE_FOLDER}/${_pkg_file}")
-    _package_set_sources_folder(${_pkg_name} "${_abs_src_folder}")
 
+    _package_set_sources_folder(${_pkg_name} "${_abs_src_folder}")
     _package_set_tests_folder(${_pkg_name} "${_abs_test_folder}")
     _package_set_manual_folder(${_pkg_name} "${_abs_manual_folder}")
 
@@ -961,7 +961,7 @@ endfunction()
 function(package_declare_sources pkg)
   package_get_name(${pkg} _pkg_name)
 
-  # get 3 lists, if non of the options given try to distinguish the different lists
+  # get 3 lists, if none of the options given try to distinguish the different lists
   cmake_parse_arguments(_opt_pkg
     ""
     ""
@@ -1001,9 +1001,33 @@ function(package_declare_sources pkg)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# get the list of source files for a given package
+# ------------------------------------------------------------------------------
+function(package_get_source_files PKG SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
+  string(TOUPPER ${PROJECT_NAME} _project)
+
+  set(tmp_SRCS)
+  set(tmp_PUBLIC_HEADERS)
+  set(tmp_PRIVATE_HEADERS)
+
+  foreach(_type SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
+    foreach(_file ${${PKG}_${_type}})
+      string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" _rel_file "${_file}")
+      list(APPEND tmp_${_type} "${_rel_file}")
+    endforeach()
+  endforeach()
+  
+#  message(__tmp_SRCS ":   " ${tmp_SRCS})
+
+  set(${SRCS}            ${tmp_SRCS}            PARENT_SCOPE)
+  set(${PUBLIC_HEADERS}  ${tmp_PUBLIC_HEADERS}  PARENT_SCOPE)
+  set(${PRIVATE_HEADERS} ${tmp_PRIVATE_HEADERS} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # get the list of source files
 # ------------------------------------------------------------------------------
-function(package_get_source_files SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
+function(package_get_all_source_files SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
   string(TOUPPER ${PROJECT_NAME} _project)
 
   set(tmp_SRCS)
@@ -1011,12 +1035,10 @@ function(package_get_source_files SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
   set(tmp_PRIVATE_HEADERS)
 
   foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
-    foreach(_type SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
-      foreach(_file ${${_pkg_name}_${_type}})
-	string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" _rel_file "${_file}")
-	list(APPEND tmp_${_type} "${_rel_file}")
-      endforeach()
-    endforeach()
+    package_get_source_files(${_pkg_name} _tmp_SRCS _tmp_PUBLIC_HEADERS _tmp_PRIVATE_HEADERS)
+    list(APPEND tmp_SRCS ${_tmp_SRCS})
+    list(APPEND tmp_PUBLIC_HEADERS ${tmp_PUBLIC_HEADERS})
+    list(APPEND tmp_PRIVATE_HEADERS ${tmp_PRIVATE_HEADERS})
   endforeach()
 
   set(${SRCS}            ${tmp_SRCS}            PARENT_SCOPE)
@@ -1028,7 +1050,7 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Get include directories
 # ------------------------------------------------------------------------------
-function(package_get_include_directories inc_dirs)
+function(package_get_all_include_directories inc_dirs)
   string(TOUPPER ${PROJECT_NAME} _project)
 
   set(_tmp)
@@ -1049,7 +1071,7 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Get external libraries informations
 # ------------------------------------------------------------------------------
-function(package_get_external_informations INCLUDE_DIR LIBRARIES)
+function(package_get_all_external_informations INCLUDE_DIR LIBRARIES)
   string(TOUPPER ${PROJECT_NAME} _project)
 
   set(tmp_INCLUDE_DIR)
@@ -1067,6 +1089,19 @@ function(package_get_external_informations INCLUDE_DIR LIBRARIES)
 
   set(${INCLUDE_DIR} ${tmp_INCLUDE_DIR} PARENT_SCOPE)
   set(${LIBRARIES}   ${tmp_LIBRARIES}   PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Get definitions like external projects
+# ------------------------------------------------------------------------------
+function(package_get_all_definitions definitions)
+  set(_tmp)
+  string(TOUPPER ${PROJECT_NAME} _project)
+  foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
+    package_get_option_name(${_pkg_name} _option_name)
+    list(APPEND _tmp ${_option_name})
+  endforeach()
+  set(${definitions} ${_tmp} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -1123,12 +1158,12 @@ function(package_get_all_documentation_files doc_files)
 endfunction()
 
 # ------------------------------------------------------------------------------
-function(package_get_list_of_activated_packages activated_list)
+function(package_get_all_activated_packages activated_list)
   string(TOUPPER ${PROJECT_NAME} _project)
   set(${activated_list} ${${_project}_ACTIVATED_PACKAGE_LIST} PARENT_SCOPE)
 endfunction()
 
-function(package_get_list_of_all_packages packages_list)
+function(package_get_all_packages packages_list)
   string(TOUPPER ${PROJECT_NAME} _project)
   set(${packages_list} ${${_project}_ALL_PACKAGES_LIST} PARENT_SCOPE)
 endfunction()
