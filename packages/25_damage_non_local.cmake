@@ -51,15 +51,10 @@ package_declare_sources(damage_non_local
   synchronizer/grid_synchronizer.hh
   )
 
-set(AKANTU_DAMAGE_NON_LOCAL_TESTS
-  test_material_damage_non_local
-  test_grid_synchronizer
-  )
-
-set(AKANTU_DAMAGE_NON_LOCAL_MANUAL_FILES
+package_declare_documentation_files(damage_non_local
   manual-constitutive-laws-non_local.tex
   manual-appendix-materials-non-local.tex)
 
-set(AKANTU_DAMAGE_NON_LOCAL_DOCUMENTATION "
-This package activates the non local damage feature of AKANTU
-")
+package_declare_documentation(damage_non_local
+"This package activates the non local damage feature of AKANTU"
+"")

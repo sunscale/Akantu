@@ -42,10 +42,9 @@ set(AKANTU_PARALLEL_TESTS
   test_solid_mechanics_model_reassign_material
   )
 
-set(AKANTU_PARALLEL_MANUAL_FILES
+package_declare_documentation_files(parallel
   manual-parallel.tex
   )
 
-set(AKANTU_PARALLEL_DOCUMENTATION "
-This option activates the parallel features of AKANTU.
-" )
+package_declare_documentation(parallel
+  "This option activates the parallel features of AKANTU.")

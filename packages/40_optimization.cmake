@@ -40,7 +40,7 @@ package_declare_sources(optimization
   )
 
 
-set(AKANTU_OPTIMIZATION_DOCUMENTATION "
-This activates the optimization routines of Akantu. This is currently needed by the 
-contact detection algorithms.
-" )
+package_declare_documentation(optimization
+  "This activates the optimization routines of Akantu. This is currently needed by the"
+  "contact detection algorithms."
+  )

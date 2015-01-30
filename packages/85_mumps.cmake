@@ -175,28 +175,21 @@ else()
   endif()
 endif()
 
-set(AKANTU_MUMPS_TESTS
-  test_sparse_matrix_profile
-  test_sparse_matrix_assemble
-  test_solver_mumps
-  test_sparse_matrix_product
+package_declare_documentation(Mumps
+  "This package enables the \\href{http://mumps.enseeiht.fr/}{MUMPS} parallel direct solver for sparce matrices."
+  "This is necessary to solve static or implicit problems."
+  ""
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  ""
+  "\\begin{command}"
+  "  > sudo apt-get install libmumps-seq-dev # for sequential"
+  "  > sudo apt-get install libmumps-dev     # for parallel"
+  "\\end{command}"
+  ""
+  "Under Mac OS X the installation requires the following steps:"
+  "\\begin{command}"
+  "  > sudo port install mumps"
+  "\\end{command}"
+  ""
+  "If you activate the advanced option AKANTU\\_USE\\_THIRD\\_PARTY\\_MUMPS the make system of akantu can automatically compile MUMPS. For this you will have to download MUMPS from \\url{http://mumps.enseeiht.fr/} or \\url{http://graal.ens-lyon.fr/MUMPS} and place it in \\shellcode{<akantu source>/third-party}"
   )
-
-set(AKANTU_MUMPS_DOCUMENTATION "
-This package enables the \\href{http://mumps.enseeiht.fr/}{MUMPS} parallel direct solver for sparce matrices.
-This is necessary to solve static or implicit problems.
-
-Under Ubuntu (14.04 LTS) the installation can be performed using the commands:
-
-\\begin{command}
-  > sudo apt-get install libmumps-seq-dev # for sequential
-  > sudo apt-get install libmumps-dev     # for parallel
-\\end{command}
-
-Under Mac OS X the installation requires the following steps:
-\\begin{command}
-  > sudo port install mumps
-\\end{command}
-
-If you activate the advanced option AKANTU\\_USE\\_THIRD\\_PARTY\\_MUMPS the make system of akantu can automatically compile MUMPS. For this you will have to download MUMPS from \\url{http://mumps.enseeiht.fr/} or \\url{http://graal.ens-lyon.fr/MUMPS} and place it in \\shellcode{<akantu source>/third-party}
-")

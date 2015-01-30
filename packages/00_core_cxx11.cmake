@@ -76,6 +76,6 @@ else()
     COMPILE_FLAGS "-std=c++0x")
 endif()
 
-set(AKANTU_CORE_CXX11_DOCUMENTATION "
-This option activates some features of the C++11 standard. This is usable with GCC>=4.7 or Intel>=13.")
+package_declare_documentation(core_cxx11
+  "This option activates some features of the C++11 standard. This is usable with GCC>=4.7 or Intel>=13.")
 

@@ -83,24 +83,18 @@ define_project_version()
 # Options
 #===============================================================================
 # Debug
-#option(AKANTU_DEBUG "Compiles akantu with the debug messages" ON)
-#mark_as_advanced(AKANTU_DEBUG)
-
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DAKANTU_NDEBUG"
   CACHE STRING "Flags used by the compiler during release builds" FORCE)
 
 add_flags(cxx "-Wall")
 
-# if(NOT AKANTU_DEBUG)
-#   set(AKANTU_NDEBUG ON)
-# else()
-#   set(AKANTU_NDEBUG OFF)
-# endif()
-
 #Profiling
-set(CMAKE_CXX_FLAGS_PROFILING "-g -pg" CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg" CACHE STRING "Flags used by the linker during profiling builds")
-set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg" CACHE STRING "Flags used by the linker during profiling builds")
+set(CMAKE_CXX_FLAGS_PROFILING "-g -pg"
+  CACHE STRING "Flags used by the compiler during profiling builds")
+set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg"
+  CACHE STRING "Flags used by the linker during profiling builds")
+set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg"
+  CACHE STRING "Flags used by the linker during profiling builds")
 mark_as_advanced(CMAKE_CXX_FLAGS_PROFILING)
 mark_as_advanced(CMAKE_EXE_LINKER_FLAGS_PROFILING)
 mark_as_advanced(CMAKE_SHARED_LINKER_FLAGS_PROFILING)

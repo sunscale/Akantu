@@ -48,25 +48,8 @@ package_declare_sources(structural_mechanics
   model/structural_mechanics/structural_mechanics_model_mass.cc
   )
 
-set(AKANTU_STRUCTURAL_MECHANICS_DOC
-  manual/manual-structuralmechanicsmodel.tex
-  )
 
-set(AKANTU_STRUCTURAL_MECHANICS_TESTS
-  test_structural_mechanics_model_bernoulli_beam_2
-  test_structural_mechanics_model_boundary_bernoulli_beam_2
-  test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1
-  test_structural_mechanics_model_bernoulli_beam_2_complicated
-  test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1_y
-  test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_xy
-  test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_zy
-  test_structural_mechanics_model_bernoulli_beam_3_local_force
-  test_structural_mechanics_model_bernoulli_beam_3_exercice_12_10_13 
-  test_structural_mechanics_model_kirchhoff_shell_patch_test_4_5_5
-  test_structural_mechanics_model_bernoulli_beam_dynamics
-  )
-
-set(AKANTU_STRUCTURAL_MECHANICS_MANUAL_FILES
+package_declare_documentation_files(structural_mechanics
   manual-structuralmechanicsmodel.tex
   manual-structuralmechanicsmodel-elements.tex
 
@@ -75,6 +58,6 @@ set(AKANTU_STRUCTURAL_MECHANICS_MANUAL_FILES
   figures/elements/bernoulli_2.svg
   )
 
-set(AKANTU_STRUCTURAL_MECHANICS_DOCUMENTATION "
-This package activates the compilation for the Structural Mechanics engine of Akantu
-")
+package_declare_documentation(structural_mechanics
+  "This package activates the compilation for the Structural Mechanics engine of Akantu"
+  )

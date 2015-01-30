@@ -58,8 +58,10 @@ function(generate_package_tex_doc PKG FILENAME)
   file(APPEND ${FILENAME} "
 \\begin{AkantuPackage}{${_pkg_tex}}{${_pkg_tex_label}}")
 
-  if (${PKG}_DOCUMENTATION)
-    file(APPEND ${FILENAME} "${${PKG}_DOCUMENTATION}")
+  package_get_documentation(${${PKG}} _doc)
+
+  if (_doc)
+    file(APPEND ${FILENAME} "${_doc}")
   else()
     string(TOLOWER "${PKG}" _l_pkg)
     string(REPLACE "akantu_" "" _l_pkg_short ${_l_pkg})
@@ -103,14 +105,12 @@ if (NOT RUBBER_EXECUTABLE)
 endif()
 mark_as_advanced(RUBBER_EXECUTABLE)
 
+package_get_all_documentation_files(_manual_files)
 
 set(AKANTU_MANUAL_FILES_DEPEND)
 set(AKANTU_MANUAL_FILES_COPY_COMMAND)
-
-set(_relative_manual_files)
-foreach(_f  ${AKANTU_MANUAL_FILES})
-  file(RELATIVE_PATH _rel_f ${CMAKE_CURRENT_SOURCE_DIR} "${PROJECT_SOURCE_DIR}/${_f}")
-  list(APPEND _relative_manual_files ${_rel_f})
+foreach(_f  ${_manual_files})
+  file(RELATIVE_PATH _rel_f ${CMAKE_CURRENT_SOURCE_DIR} "${_f}")
   list(APPEND AKANTU_MANUAL_FILES_DEPEND ${_rel_f})
   list(APPEND AKANTU_MANUAL_FILES_COPY_COMMAND
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${_rel_f} ${_rel_f})
@@ -131,6 +131,7 @@ add_custom_target(manual ALL DEPENDS ${MANUAL_OUTPUT})
 
 install(FILES ${MANUAL_OUTPUT} DESTINATION share/akantu/doc)
 
-foreach (_pkg ${AKANTU_PACKAGE_LIST})
-  generate_package_tex_doc(AKANTU_${_pkg} ${DOC_DEPS_TEX_FILENAME})
+package_get_list_of_activated_packages(_package_list)
+foreach (_pkg ${_package_list})
+  generate_package_tex_doc(${_pkg} ${DOC_DEPS_TEX_FILENAME})
 endforeach()

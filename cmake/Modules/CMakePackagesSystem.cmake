@@ -173,6 +173,16 @@ function(package_get_tests_folder pkg_name test_folder)
   set(${test_folder} ${${pkg_name}_TESTS_FOLDER} PARENT_SCOPE)
 endfunction()
 
+# ------------------------------------------------------------------------------
+# Manual folder
+function(_package_set_manual_folder pkg_name manual_folder)
+  set(${pkg_name}_MANUAL_FOLDER ${manual_folder} CACHE INTERNAL "" FORCE)
+endfunction()
+
+function(package_get_manual_folder pkg_name manual_folder)
+  set(${manual_folder} ${${pkg_name}_MANUAL_FOLDER} PARENT_SCOPE)
+endfunction()
+
 
 # ------------------------------------------------------------------------------
 # Extra option for the find_package
@@ -336,6 +346,49 @@ function(_package_remove_fdependency pkg_name fdep)
   if(NOT pos EQUAL -1)
     list(REMOVE_AT _fdeps ${pos})
     _package_set_fdependencies(${pkg_name} ${_fdeps})
+  endif()
+endfunction()
+
+
+# ------------------------------------------------------------------------------
+# Documentation related functions
+# ------------------------------------------------------------------------------
+function(package_declare_documentation pkg)
+  # \n replaced by && and \\ by ££ to avoid cache problems
+  set(_doc_str "")
+  foreach(_str ${ARGN})
+    set(_doc_str "${_doc_str}&&${_str}")
+  endforeach()
+
+  string(REPLACE "\\" "££" _doc_escaped "${_doc_str}")
+  package_get_name(${pkg} _pkg_name)
+  set(${_pkg_name}_DOCUMENTATION "${_doc_escaped}" CACHE INTERNAL "Latex doc of package ${pkg}" FORCE)
+endfunction()
+
+function(package_get_documentation pkg _doc)
+  # \n replaced by && and \\ by ££ to avoid cache problems
+  package_get_name(${pkg} _pkg_name)
+  if (DEFINED ${_pkg_name}_DOCUMENTATION)
+    set(_doc_tmp ${${_pkg_name}_DOCUMENTATION})
+
+    string(REPLACE "££" "\\" _doc_escaped "${_doc_tmp}")
+    string(REPLACE "&&" "\n" _doc_newlines "${_doc_escaped}")
+    set(_doc "${_doc_newlines}" PARENT_SCOPE)
+  else()
+    set(_doc "" PARENT_SCOPE)
+  endif()
+endfunction()
+# ------------------------------------------------------------------------------
+function(package_declare_documentation_files pkg)
+  package_get_name(${pkg} _pkg_name)
+  set(${_pkg_name}_DOCUMENTATION_FILES "${ARGN}"
+    CACHE INTERNAL "Latex doc files for package ${pkg}" FORCE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+function(package_get_documentation_files pkg_name doc_files)
+  if(DEFINED ${pkg_name}_DOCUMENTATION_FILES)
+    set(${doc_files} ${${pkg_name}_DOCUMENTATION_FILES} PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -521,7 +574,8 @@ function(_package_load_external_package pkg_name activate)
   if(_options)
     cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "PREFIX;FOUND;ARGS" ${_options})
     if(_opt_pkg_UNPARSED_ARGUMENTS)
-      message("You passed too many options for the find_package related to ${${pkg_name}} \"${_opt_pkg_UNPARSED_ARGUMENTS}\"")
+      message("You passed too many options for the find_package related to "
+	"${${pkg_name}} \"${_opt_pkg_UNPARSED_ARGUMENTS}\"")
     endif()
   endif()
 
@@ -720,7 +774,14 @@ function(package_list_packages PACKAGE_FOLDER)
     set(_test_folder "test/")
   endif()
 
+  if(_opt_pkg_MANUAL_FOLDER)
+    set(_manual_folder "${_opt_pkg_MANUAL_FOLDER}")
+  else()
+    set(_manual_folder "doc/manual")
+  endif()
+
   get_filename_component(_abs_test_folder ${_test_folder} ABSOLUTE)
+  get_filename_component(_abs_manual_folder ${_manual_folder} ABSOLUTE)
 
   # check all the packages in the <package_folder>
   file(GLOB _package_list "${PACKAGE_FOLDER}/*.cmake")
@@ -745,8 +806,8 @@ function(package_list_packages PACKAGE_FOLDER)
     _package_set_filename(${_pkg_name} "${PACKAGE_FOLDER}/${_pkg_file}")
     _package_set_sources_folder(${_pkg_name} "${_abs_src_folder}")
 
-    _package_set_tests_folder(${_pkg_name}
-      "${_abs_test_folder}")
+    _package_set_tests_folder(${_pkg_name} "${_abs_test_folder}")
+    _package_set_manual_folder(${_pkg_name} "${_abs_manual_folder}")
 
     list(APPEND _packages_list_all ${_pkg_name})
     include("${PACKAGE_FOLDER}/${_pkg_file}")
@@ -770,6 +831,11 @@ function(package_list_packages PACKAGE_FOLDER)
 	if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
 	  _package_set_tests_folder(${_pkg_name}
 	    "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
+	endif()
+
+	if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual")
+	  _package_set_manual_folder(${_pkg_name}
+	    "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual")
 	endif()
 
 	list(APPEND _extra_pkg_src_folders "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
@@ -1020,7 +1086,7 @@ function(package_get_all_extra_dependency DEPS)
 endfunction()
 
 # ------------------------------------------------------------------------------
-# Get extra dependencies like external projects
+# Get extra infos
 # ------------------------------------------------------------------------------
 function(package_get_all_test_folders TEST_DIRS)
   string(TOUPPER ${PROJECT_NAME} _project)
@@ -1033,6 +1099,27 @@ function(package_get_all_test_folders TEST_DIRS)
     list(REMOVE_DUPLICATES _tmp_TEST_DIRS)
   endif()
   set(${TEST_DIRS} ${_tmp_TEST_DIRS} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+function(package_get_all_documentation_files doc_files)
+  string(TOUPPER ${PROJECT_NAME} _project)
+  set(_tmp_DOC_FILES)
+
+  foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
+    package_get_manual_folder(${_pkg_name} _doc_dir)
+    package_get_documentation_files(${_pkg_name} _doc_files)
+
+    foreach(_doc_file ${_doc_files})
+      list(APPEND _tmp_DOC_FILES ${_doc_dir}/${_doc_file})
+    endforeach()
+  endforeach()
+
+  if(_tmp_DOC_FILES)
+    list(REMOVE_DUPLICATES _tmp_DOC_FILES)
+  endif()
+
+  set(${doc_files} ${_tmp_DOC_FILES} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------

@@ -86,7 +86,7 @@ package_declare_sources(IOHelper
   io/dumper/dumper_generic_elemental_field_tmpl.hh
   )
 
-set(AKANTU_IOHELPER_DOCUMENTATION "
-This package activates the IOHelper facilities withing Akantu. This is mandatory if you want to be able to output Paraview files
-as well as any Dumper within Akantu.
-")
+package_declare_documentation(IOHelper
+  "This package activates the IOHelper facilities withing Akantu. This is mandatory if you want to be able to output Paraview files"
+  "as well as any Dumper within Akantu."
+  )

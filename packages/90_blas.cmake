@@ -33,14 +33,14 @@ package_declare(BLAS EXTERNAL
   EXTRA_PACKAGE_OPTIONS LANGUAGE Fortran)
 
 if(BLAS_mkl_core_LIBRARY)
-  set(AKANTU_USE_BLAS_MKL)
+  set(AKANTU_USE_BLAS_MKL CACHE INTERNAL "" FORCE)
 endif()
 
-set(AKANTU_BLAS_DOCUMENTATION "
-This package provides access to a BLAS implementation.
-
-Under Ubuntu (14.04 LTS), the installation can be performed using the following command:
-\\begin{command}
-  > sudo apt-get install libatlas-base-dev
-\\end{command}
-" )
+package_declare_documentation(BLAS
+  "This package provides access to a BLAS implementation."
+  ""
+  "Under Ubuntu (14.04 LTS), the installation can be performed using the following command:"
+  "\\begin{command}"
+  "  > sudo apt-get install libatlas-base-dev"
+  "\\end{command}"
+  )

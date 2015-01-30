@@ -29,49 +29,6 @@
 #
 #===============================================================================
 
-macro(check_for_isnan result)
-  include(CheckFunctionExists)
-  check_function_exists(std::isnan HAVE_STD_ISNAN)
-  if(HAVE_STD_ISNAN)
-    set(result "std::isnan(x)")
-  else()
-    check_function_exists(isnan HAVE_ISNAN)
-    if(HAVE_ISNAN)
-      set(result "(::isnan(x))")
-    else()
-      check_function_exists(_isnan HAVE_ISNAN_MATH_H)
-      if(HAVE_ISNAN_MATH_H)
-        set(result "(_isnan(x))")
-      else()
-        set(result (x == std::numeric_limits<Real>::quiet_NAN()))
-      endif()
-    endif()
-  endif()
-endmacro()
-
-#===============================================================================
-macro(copy_files target_depend)
-  foreach(_file ${ARGN})
-    set(_target ${CMAKE_CURRENT_BINARY_DIR}/${_file})
-    set(_source ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
-    add_custom_command(
-      OUTPUT ${_target}
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_source} ${_target}
-      DEPENDS ${_source}
-      )
-    set(_target_name ${target_depend}_${_file})
-    add_custom_target(${_target_name} DEPENDS ${_target})
-    add_dependencies(${target_depend} ${_target_name})
-  endforeach()
-endmacro()
-
-#===============================================================================
-macro(add_akantu_definitions)
-  foreach(_definition ${AKANTU_DEFINITIONS})
-    add_definitions(-D${_definition})
-  endforeach()
-endmacro()
-
 #===============================================================================
 macro(include_boost)
   set(Boost_LIBRARIES)
@@ -100,8 +57,11 @@ macro(include_boost)
   endforeach()
 endmacro()
 
+#===============================================================================
 function(set_third_party_shared_libirary_name _var _lib)
-  set(${_var} ${PROJECT_BINARY_DIR}/third-party/lib/${CMAKE_SHARED_LIBRARY_PREFIX}${_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE FILEPATH "" FORCE)
+  set(${_var}
+    ${PROJECT_BINARY_DIR}/third-party/lib/${CMAKE_SHARED_LIBRARY_PREFIX}${_lib}${CMAKE_SHARED_LIBRARY_SUFFIX}
+    CACHE FILEPATH "" FORCE)
 endfunction()
 
 #===============================================================================

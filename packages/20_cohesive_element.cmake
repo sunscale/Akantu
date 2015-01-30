@@ -64,30 +64,10 @@ package_declare_sources(cohesive_element
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_bilinear.hh
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear.hh
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_exponential.hh
-
-#  io/dumper/dumper_iohelper_tmpl_connectivity_field.hh
   )
 
 
-set(AKANTU_COHESIVE_ELEMENT_TESTS
-  test_cohesive_buildfacets_tetrahedron
-  test_cohesive_buildfacets_hexahedron
-  test_cohesive_intrinsic
-  test_cohesive_intrinsic_quadrangle
-  test_cohesive_extrinsic
-  test_cohesive_extrinsic_quadrangle
-  test_cohesive_buildfragments
-  test_cohesive_intrinsic_impl
-  )
-
-set(AKANTU_COHESIVE_ELEMENT_DOC
-  manual/manual-cohesive_elements.tex
-  manual/manual-cohesive_elements_insertion.tex
-  manual/manual-cohesive_laws.tex
-  manual/manual-appendix-materials-cohesive.tex
-  )
-
-set(AKANTU_COHESIVE_ELEMENT_MANUAL_FILES
+package_declare_documentation_files(cohesive_element
   manual-cohesive_elements.tex
   manual-cohesive_elements_insertion.tex
   manual-cohesive_laws.tex
@@ -99,12 +79,11 @@ set(AKANTU_COHESIVE_ELEMENT_MANUAL_FILES
   figures/bilinear_cohesive_law.pdf
   )
 
-
-set(AKANTU_COHESIVE_ELEMENT_DOCUMENTATION
-"This package activates the cohesive elements engine within Akantu.
-It depends on:
-\\begin{itemize}
-\\item A fortran compiler.
-\\item An implementation of BLAS/LAPACK.
-\\end{itemize}
-")
+package_declare_documentation(cohesive_element
+  "This package activates the cohesive elements engine within Akantu."
+  "It depends on:"
+  "\\begin{itemize}"
+  "  \\item A fortran compiler."
+  "  \\item An implementation of BLAS/LAPACK."
+  "\\end{itemize}"
+  )

@@ -273,7 +273,22 @@ set(AKANTU_CORE_DEB_DEPEND
   libboost-dev
   )
 
-set(AKANTU_CORE_MANUAL_FILES
+find_program(READLINK_COMMAND readlink)
+find_program(ADDR2LINE_COMMAND addr2line)
+mark_as_advanced(READLINK_COMMAND)
+mark_as_advanced(ADDR2LINE_COMMAND)
+
+include(CheckFunctionExists)
+
+check_function_exists(clock_gettime _clock_gettime)
+
+if(NOT _clock_gettime)
+  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY ON  CACHE INTERNAL "" FORCE)
+else()
+  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF CACHE INTERNAL "" FORCE)
+endif()
+
+package_declare_documentation_files(core
   manual.sty
   manual.cls
   manual.tex
@@ -348,45 +363,29 @@ set(AKANTU_CORE_MANUAL_FILES
   figures/elements/xtemp.pdf
   )
 
-find_program(READLINK_COMMAND readlink)
-find_program(ADDR2LINE_COMMAND addr2line)
-mark_as_advanced(READLINK_COMMAND)
-mark_as_advanced(ADDR2LINE_COMMAND)
-
-include(CheckFunctionExists)
-
-check_function_exists(clock_gettime _clock_gettime)
-
-if(NOT _clock_gettime)
-  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY ON)
-else()
-  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF)
-endif()
-
-set(AKANTU_CORE_DOCUMENTATION
-"
-This package is the core engine of \\akantu. It depends on:
-\\begin{itemize}
-\\item A C++ compiler (\\href{http://gcc.gnu.org/}{GCC} >= 4, or \\href{https://software.intel.com/en-us/intel-compilers}{Intel}).
-\\item The cross-platform, open-source \\href{http://www.cmake.org/}{CMake} build system.
-\\item The \\href{http://www.boost.org/}{Boost} C++ portable libraries.
-\\item The \\href{http://www.zlib.net/}{zlib} compression library.
-\\end{itemize}
-
-Under Ubuntu (14.04 LTS) the installation can be performed using the commands:
-\\begin{command}
-  > sudo apt-get install build-essential cmake-curses-gui libboost-dev zlib1g-dev
-\\end{command}
-
-Under Mac OS X the installation requires the following steps:
-\\begin{itemize}
-\\item Install Xcode
-\\item Install the command line tools.
-\\item Install the MacPorts project which allows to automatically 
-download and install opensource packages. 
-\\end{itemize}
-Then the following commands should be typed in a terminal:
-\\begin{command}
-  > sudo port install cmake gcc48 boost
-\\end{command}
-")
+package_declare_documentation(core
+  "This package is the core engine of \\akantu. It depends on:"
+  "\\begin{itemize}"
+  "\\item A C++ compiler (\\href{http://gcc.gnu.org/}{GCC} >= 4, or \\href{https://software.intel.com/en-us/intel-compilers}{Intel})."
+  "\\item The cross-platform, open-source \\href{http://www.cmake.org/}{CMake} build system."
+  "\\item The \\href{http://www.boost.org/}{Boost} C++ portable libraries."
+  "\\item The \\href{http://www.zlib.net/}{zlib} compression library."
+  "\\end{itemize}"
+  ""
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  "\\begin{command}"
+  "  > sudo apt-get install cmake libboost-dev zlib1g-dev g++"
+  "\\end{command}"
+  ""
+  "Under Mac OS X the installation requires the following steps:"
+  "\\begin{itemize}"
+  "\\item Install Xcode"
+  "\\item Install the command line tools."
+  "\\item Install the MacPorts project which allows to automatically"
+  "download and install opensource packages."
+  "\\end{itemize}"
+  "Then the following commands should be typed in a terminal:"
+  "\\begin{command}"
+  "  > sudo port install cmake gcc48 boost"
+  "\\end{command}"
+  )

@@ -134,17 +134,21 @@ if(SCOTCH_INCLUDE_DIR)
 endif()
 
 
-set(AKANTU_SCOTCH_DOCUMENTATION "
-This package enables the use the \\href{http://www.labri.fr/perso/pelegrin/scotch/}{Scotch} library in
-order to perform a graph partitioning leading to the domain
-decomposition used within \\akantu
-
-Under Ubuntu (14.04 LTS) the installation can be performed using the commands:
-\\begin{command}
-  > sudo apt-get install libscotch-dev
-\\end{command}
-
-If you activate the advanced option AKANTU\\_USE\\_THIRD\\_PARTY\\_SCOTCH the make system of akantu can automatically compile Scotch.
-
-If the automated download fails due to a SSL access not supported by your version of CMake please download the file \\href{https://gforge.inria.fr/frs/download.php/28978/scotch\\_${SCOTCH_VERSION}\\_esmumps.tar.gz}{scotch\\_${SCOTCH_VERSION}\\_esmumps.tar.gz}  and then place it in the directory \\shellcode{<akantu source>/third-party}
-" )
+package_declare_documentation(Scotch
+  "This package enables the use the \\href{http://www.labri.fr/perso/pelegrin/scotch/}{Scotch}"
+  "library in order to perform a graph partitioning leading to the domain"
+  "decomposition used within \\akantu"
+  ""
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  "\\begin{command}"
+  "  > sudo apt-get install libscotch-dev"
+  "\\end{command}"
+  ""
+  "If you activate the advanced option AKANTU\\_USE\\_THIRD\\_PARTY\\_SCOTCH"
+  "the make system of akantu can automatically compile Scotch."
+  ""
+  "If the automated download fails due to a SSL access not supported by your"
+  "version of CMake please download the file"
+  "\\href{https://gforge.inria.fr/frs/download.php/28978/scotch\\_${SCOTCH_VERSION}\\_esmumps.tar.gz}{scotch\\_${SCOTCH_VERSION}\\_esmumps.tar.gz}"
+  "and then place it in the directory \\shellcode{<akantu source>/third-party}"
+ )
