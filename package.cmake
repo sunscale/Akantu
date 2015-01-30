@@ -27,7 +27,3 @@ package_declare_sources(igfem
   igfem_element.cc
   )
 
-set(AKANTU_IGFEM_TESTS
-  test_igfem_integrate
-)
-
