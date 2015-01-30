@@ -574,8 +574,7 @@ function(_package_load_external_package pkg_name activate)
   if(_options)
     cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "PREFIX;FOUND;ARGS" ${_options})
     if(_opt_pkg_UNPARSED_ARGUMENTS)
-      message("You passed too many options for the find_package related to "
-	"${${pkg_name}} \"${_opt_pkg_UNPARSED_ARGUMENTS}\"")
+      message("You passed too many options for the find_package related to ${${pkg_name}} \"${_opt_pkg_UNPARSED_ARGUMENTS}\"")
     endif()
   endif()
 
@@ -614,9 +613,6 @@ function(_package_load_external_package pkg_name activate)
 
   if(_act)
     foreach(_prefix ${_prefix_to_consider})
-      # Add the in the definition list
-      list(APPEND ${_project}_DEFINITIONS ${_option_name})
-
       # Generate the include dir for the package
       if(DEFINED ${_prefix}_INCLUDE_DIRS)
 	package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIRS})
@@ -630,7 +626,6 @@ function(_package_load_external_package pkg_name activate)
       package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
     endforeach()
   endif()
-
   set(${activate} ${_act} PARENT_SCOPE)
 endfunction()
 
