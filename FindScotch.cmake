@@ -53,23 +53,43 @@ find_library(SCOTCH_LIBRARY_ESMUMPS esmumps
   PATH_SUFFIXES src/libscotch lib
   )
 
+find_library(SCOTCH_LIBRARY_METIS scotchmetis
+  PATHS ${SCOTCH_DIR}
+  PATH_SUFFIXES src/libscotch lib
+  )
+
+find_library(SCOTCH_LIBRARY_PARMETIS scotchparmetis
+  PATHS ${SCOTCH_DIR}
+  PATH_SUFFIXES src/libscotch lib
+  )
+
 find_path(SCOTCH_INCLUDE_DIR scotch.h
   HINTS ${SCOTCH_DIR}
   PATH_SUFFIXES include scotch src/libscotch include/scotch
   )
 
 #===============================================================================
-mark_as_advanced(SCOTCH_LIBRARY)
-mark_as_advanced(SCOTCH_LIBRARY_ERR)
-mark_as_advanced(SCOTCH_LIBRARY_ERREXIT)
-mark_as_advanced(SCOTCH_LIBRARY_ESMUMPS)
-mark_as_advanced(SCOTCH_INCLUDE_DIR)
+mark_as_advanced(SCOTCH_LIBRARY
+  SCOTCH_LIBRARY_ERR
+  SCOTCH_LIBRARY_ERREXIT
+  SCOTCH_LIBRARY_ESMUMPS
+  SCOTCH_LIBRARY_PARMETIS
+  SCOTCH_INCLUDE_DIR)
 
 set(SCOTCH_LIBRARIES_ALL ${SCOTCH_LIBRARY} ${SCOTCH_LIBRARY_ERR})
 
 if(SCOTCH_LIBRARY_ESMUMPS)
   set(SCOTCH_LIBRARIES_ALL ${SCOTCH_LIBRARY_ESMUMPS} ${SCOTCH_LIBRARIES_ALL})
 endif()
+
+if(SCOTCH_LIBRARY_METIS)
+  set(SCOTCH_LIBRARIES_ALL ${SCOTCH_LIBRARY_METIS} ${SCOTCH_LIBRARIES_ALL})
+endif()
+
+if(SCOTCH_LIBRARY_PARMETIS)
+  set(SCOTCH_LIBRARIES_ALL ${SCOTCH_LIBRARY_PARMETIS} ${SCOTCH_LIBRARIES_ALL})
+endif()
+
 
 set(SCOTCH_LIBRARIES ${SCOTCH_LIBRARIES_ALL} CACHE INTERNAL "Libraries for scotch" FORCE)
 
