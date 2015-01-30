@@ -55,21 +55,19 @@ package_declare_sources(extra_materials
   material_non_local_extra_includes.hh
   )
 
-set(AKANTU_EXTRA_MATERIALS_TESTS
-  )
 
-set(AKANTU_EXTRA_MATERIALS_MANUAL_FILES
+package_declare_documentation_files(extra_materials
   manual-extra_materials.tex
   manual-appendix-materials-extra-materials.tex
 
   figures/stress_strain_visco.pdf
   )
 
-set(AKANTU_EXTRA_MATERIALS_DOCUMENTATION "
-This package activates additional constitutive laws:
-\\begin{itemize}
-\\item Linear anisotropy
-\\item Linear orthotropy
-\\item Visco-plastic
-\\end{itemize}
-" )
+package_declare_documentation(extra_materials
+  "This package activates additional constitutive laws:"
+  "\\begin{itemize}"
+  "  \\item Linear anisotropy"
+  "  \\item Linear orthotropy"
+  "  \\item Visco-plastic"
+  "\\end{itemize}"
+  )
