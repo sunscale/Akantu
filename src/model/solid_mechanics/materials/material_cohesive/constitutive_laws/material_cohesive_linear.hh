@@ -117,10 +117,7 @@ protected:
   Real beta2_inv;
 
   /// mode I fracture energy
-  Real G_cI;
-
-  /// mode II fracture energy
-  Real G_cII;
+  Real G_c;
 
   /// kappa parameter
   Real kappa;
@@ -143,8 +140,9 @@ protected:
   /// critical effective stress
   RandomInternalField<Real, CohesiveInternalField> sigma_c_eff;
 
-  /// critical displacement
-  CohesiveInternalField<Real> delta_c;
+  /// effective critical displacement (each element can have a
+  /// different value)
+  CohesiveInternalField<Real> delta_c_eff;
 
   /// stress at insertion
   CohesiveInternalField<Real> insertion_stress;

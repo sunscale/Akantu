@@ -227,6 +227,9 @@ protected:
 
   /// critical stress
   RandomInternalField<Real, FacetInternalField> sigma_c;
+
+  /// critical displacement
+  Real delta_c;
 };
 
 

@@ -6,6 +6,6 @@ material elastic [
 
 material cohesive_linear [
 	 name = cohesive
-	 G_cI = 100
+	 G_c = 100
 	 sigma_c = 100
 ]
