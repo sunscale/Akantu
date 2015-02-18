@@ -89,15 +89,15 @@ The material name of the linear decreasing cohesive law  is
 respective default values are:
 \begin{itemize}
 \item \code{sigma\_c}: 0
+\item \code{delta\_c}: 0
 \item \code{beta}: 0
-\item \code{G\_cI}: 0
-\item \code{G\_cII}: 0
+\item \code{G\_c}: 0
 \item \code{kappa}: 1
 \item \code{penalty}: 0
 \end{itemize}
-A random number generator can be used to assign a random
-$\sigma_\mathrm{c}$ to each facet following a given
-distribution (see Section~\ref{sect:smm:CL}).
+where \code{G\_c} corresponds to $G_\mathrm{c, I}$. A random number
+generator can be used to assign a random $\sigma_\mathrm{c}$ to each
+facet following a given distribution (see Section~\ref{sect:smm:CL}).
 
 The bilinear constitutive law works exactly the same way as the linear
 one, except for the additional parameter \code{delta\_0} that by
