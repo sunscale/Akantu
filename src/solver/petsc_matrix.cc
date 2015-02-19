@@ -425,6 +425,8 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
   if (this->sparse_matrix_type==_symmetric) {
     /// set flag for symmetry to enable ICC/Cholesky preconditioner
     ierr = MatSetOption(this->petsc_matrix_wrapper->mat, MAT_SYMMETRIC, PETSC_TRUE); CHKERRXX(ierr);
+    /// set flag for symmetric positive definite
+    ierr = MatSetOption(this->petsc_matrix_wrapper->mat, MAT_SPD, PETSC_TRUE); CHKERRXX(ierr);
   }
   /// once the profile has been build ignore any new nonzero locations
   ierr = MatSetOption(this->petsc_matrix_wrapper->mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_TRUE); CHKERRXX(ierr);

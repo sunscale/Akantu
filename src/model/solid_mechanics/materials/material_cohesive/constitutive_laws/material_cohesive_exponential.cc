@@ -45,7 +45,6 @@ MaterialCohesiveExponential<spatial_dimension>::MaterialCohesiveExponential(Soli
   AKANTU_DEBUG_IN();
 
   this->registerParam("beta"   , beta   , 0. , _pat_parsable, "Beta parameter"         );
-  this->registerParam("delta_c", delta_c, 0. , _pat_parsable, "Critical displacement"  );
   this->registerParam("exponential_penalty", exp_penalty, true, 
 		      _pat_parsable, "Is contact penalty following the exponential law?"  );
   
