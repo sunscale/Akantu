@@ -30,12 +30,16 @@ __BEGIN_AKANTU__
  * parameters in the material files :
  */
 template<UInt spatial_dimension, template <UInt> class WeightFunction = BaseWeightFunction>
-class MaterialDamageIterativeNonLocal : public MaterialDamageNonLocal<spatial_dimension, MaterialDamageIterative<spatial_dimension>, WeightFunction> {
+class MaterialDamageIterativeNonLocal : public MaterialDamageNonLocal<spatial_dimension,
+								      MaterialDamageIterative<spatial_dimension>,
+								      WeightFunction> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialDamageNonLocal<spatial_dimension, MaterialDamageIterative<spatial_dimension>, WeightFunction> MaterialDamageIterativeNonLocalParent;
+  typedef MaterialDamageNonLocal<spatial_dimension,
+				 MaterialDamageIterative<spatial_dimension>,
+				 WeightFunction> MaterialDamageIterativeNonLocalParent;
   MaterialDamageIterativeNonLocal(SolidMechanicsModel & model, const ID & id = "");
 
   virtual ~MaterialDamageIterativeNonLocal() {};

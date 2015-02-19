@@ -30,6 +30,22 @@
 
 #endif
 
+#if defined(AKANTU_DAMAGE_NON_LOCAL)
+#ifndef AKANTU_CMAKE_LIST_MATERIALS
+#  include "material_vreepeerlings_non_local.hh"
+#  include "material_brittle_non_local.hh"
+#  include "material_damage_iterative_non_local.hh"
+#endif
+
+#define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST			\
+  ((3, (brittle_non_local       , MaterialBrittleNonLocal,		\
+	AKANTU_MATERIAL_WEIGHT_FUNCTION_TMPL_LIST)))                    \
+  ((3, (damage_iterative_non_local       , MaterialDamageIterativeNonLocal, \
+	AKANTU_MATERIAL_WEIGHT_FUNCTION_TMPL_LIST)))
+#else
+#  define AKANTU_DAMAGE_NON_LOCAL_EXTRA_MATERIAL_LIST
+#endif
+
 #define  AKANTU_EXTRA_MATERIAL_LIST                                     \
   ((2, (damage_linear      , MaterialDamageLinear                 )))   \
   ((2, (brittle            , MaterialBrittle                      )))   \
@@ -37,4 +53,3 @@
   ((2, (vreepeerlings      , MaterialVreePeerlings                )))   \
   ((2, (ve_stiffness_prop  , MaterialStiffnessProportional        )))   \
   ((2, (visco_plastic      , MaterialViscoPlastic                 )))
-
