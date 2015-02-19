@@ -104,6 +104,14 @@ package_declare_sources(core
   fe_engine/shape_linked_inline_impl.cc
   fe_engine/element.hh
 
+  geometry/geometrical_primitive.hh
+  geometry/point.hh
+  geometry/point.cc
+  geometry/segment.hh
+  geometry/segment.cc
+  geometry/triangle.hh
+  geometry/triangle.cc
+
   io/dumper/dumpable.hh
   io/dumper/dumpable.cc
   io/dumper/dumpable_dummy.hh
