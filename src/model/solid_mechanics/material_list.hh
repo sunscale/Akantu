@@ -73,6 +73,7 @@
 #  include "material_extra_includes.hh"
 #else
 #  define AKANTU_EXTRA_MATERIAL_LIST
+#  define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST
 #endif
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
