@@ -34,7 +34,6 @@
 #define __AKANTU_GEOMETRICAL_PRIMITIVE_HH__
 
 #include "aka_common.hh"
-#include <CGAL/Cartesian.h>
 
 __BEGIN_AKANTU__
 
