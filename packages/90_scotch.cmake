@@ -81,7 +81,8 @@ if(NOT ${_use_system})
     endif()
 
     set(SCOTCH_DIR ${PROJECT_BINARY_DIR}/third-party)
-    configure_file(${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}_make.inc.cmake
+    configure_file(
+      ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}_make.inc.cmake
       ${SCOTCH_DIR}/scotch_make.inc)
 
     include(ExternalProject)
@@ -105,33 +106,34 @@ if(NOT ${_use_system})
 
     set(SCOTCH_INCLUDE_DIR ${SCOTCH_DIR}/include CACHE PATH "" FORCE)
 
-    mark_as_advanced(SCOTCH_LIBRARY SCOTCH_LIBRARY_ERR SCOTCH_LIBRARY_ERREXIT SCOTCH_LIBRARY_ESMUMPS
+    mark_as_advanced(
+      SCOTCH_LIBRARY
+      SCOTCH_LIBRARY_ERR
+      SCOTCH_LIBRARY_ERREXIT
+      SCOTCH_LIBRARY_ESMUMPS
       SCOTCH_INCLUDE_DIR)
 
     set(SCOTCH_LIBRARIES_ALL ${SCOTCH_LIBRARY} ${SCOTCH_LIBRARY_ERR})
     set(SCOTCH_LIBRARIES ${SCOTCH_LIBRARIES_ALL} CACHE INTERNAL "Libraries for scotch" FORCE)
 
-    package_set_libraries(${_pkg_name}   ${SCOTCH_LIBRARIRES})
+    package_set_libraries(${_pkg_name}   ${SCOTCH_LIBRARIES})
     package_set_include_dir(${_pkg_name} ${SCOTCH_INCLUDE_DIR})
 
-    list(APPEND AKANTU_EXTRA_TARGET_DEPENDENCIES Scotch)
-
-    package_activate(${_pkg_name})
-  else()
-    package_deactivate(${_pkg_name})
+    package_add_extra_dependency(Scotch Scotch)
+  endif()
+else()
+  if(SCOTCH_INCLUDE_DIR)
+    file(STRINGS ${SCOTCH_INCLUDE_DIR}/scotch.h SCOTCH_INCLUDE_CONTENT)
+    string(REGEX MATCH "_cplusplus" _match ${SCOTCH_INCLUDE_CONTENT})
+    if(_match)
+      set(AKANTU_SCOTCH_NO_EXTERN ON)
+      list(APPEND AKANTU_DEFINITIONS AKANTU_SCOTCH_NO_EXTERN)
+    else()
+      set(AKANTU_SCOTCH_NO_EXTERN OFF)
+    endif()
   endif()
 endif()
 
-if(SCOTCH_INCLUDE_DIR)
-  file(STRINGS ${SCOTCH_INCLUDE_DIR}/scotch.h SCOTCH_INCLUDE_CONTENT)
-  string(REGEX MATCH "_cplusplus" _match ${SCOTCH_INCLUDE_CONTENT})
-  if(_match)
-    set(AKANTU_SCOTCH_NO_EXTERN ON)
-    list(APPEND AKANTU_DEFINITIONS AKANTU_SCOTCH_NO_EXTERN)
-  else()
-    set(AKANTU_SCOTCH_NO_EXTERN OFF)
-  endif()
-endif()
 
 
 package_declare_documentation(Scotch
