@@ -421,7 +421,7 @@ __BEGIN_AKANTU__
 template <NewmarkBeta::IntegrationSchemeCorrectorType type>
 void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
                                 bool need_factorize, bool has_profile_changed) {
-  
+
   if(has_profile_changed) {
     this->initJacobianMatrix();
     need_factorize = true;

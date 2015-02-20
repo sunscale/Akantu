@@ -411,7 +411,7 @@ inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id, cons
 
   if (internal_array == internal_vectors_real.end())  AKANTU_EXCEPTION("cannot find internal " << id);
   if (internal_array->second->getElementKind() != element_kind) AKANTU_EXCEPTION("cannot find internal " << id);
-  
+
   InternalField<Real> & internal = *internal_array->second;
   InternalField<Real>::type_iterator it = internal.firstType(spatial_dimension, _not_ghost,element_kind);
   InternalField<Real>::type_iterator last_type = internal.lastType(spatial_dimension, _not_ghost,element_kind);
