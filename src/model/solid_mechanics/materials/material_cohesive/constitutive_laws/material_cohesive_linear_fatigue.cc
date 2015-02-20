@@ -52,17 +52,9 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>::initMaterial() {
   MaterialCohesiveLinear<spatial_dimension>::initMaterial();
 
   // check that delta_f has a proper value or assign a defaul value
-  Real minimum_delta_f;
-
-  if (!Math::are_float_equal(this->delta_c, 0.))
-    minimum_delta_f = this->delta_c;
-  else
-    minimum_delta_f = 2 * this->G_c / this->sigma_c;
-
-  if (delta_f < 0) delta_f = minimum_delta_f;
-  else if (delta_f < minimum_delta_f) {
+  if (delta_f < 0) delta_f = this->delta_c_eff;
+  else if (delta_f < this->delta_c_eff)
     AKANTU_DEBUG_ERROR("Delta_f must be greater or equal to delta_c");
-  }
 
   delta_prec.initialize(1);
   K_plus.initialize(1);
