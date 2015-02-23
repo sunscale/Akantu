@@ -26,45 +26,34 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-package_declare(BLACKDYNAMITE EXTERNAL
-  DESCRIPTION "Use blackdynamite library"
+package_declare(BlackDynamite EXTERNAL
+  DESCRIPTION "Use BlackDynamite library"
   SYSTEM OFF)
 
-package_get_name(BLACKDYNAMITE _pkg_name)
+package_get_name(BlackDynamite _pkg_name)
 package_use_system(${_pkg_name} _use_system)
-package_get_option_name(${_pkg_name} _option_name)
 
 if(NOT ${_use_system})
+  package_get_option_name(${_pkg_name} _option_name)
+
   if(${_option_name})
-    find_package(Subversion)
-    if(SUBVERSION_FOUND)
-      set(BLACKDYNAMITE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/third-party/blackdynamite)
-      if(EXISTS ${BLACKDYNAMITE_SOURCE_DIR})
-	execute_process(
-	  COMMAND ${Subversion_SVN_EXECUTABLE} up ${BLACKDYNAMITE_SOURCE_DIR}
-	  OUTPUT_VARIABLE _revision)
-	string(REGEX REPLACE ".*At revision ([0-9]*)\\..*" "\\1" _rev "${_revision}")
-	message(STATUS "Updating BlackDynamite: r${_rev} dynamite! dynamite!")
-      else()
-	message(STATUS "Checking out BlackDynamite: Can you digg it!")
-	execute_process(
-	  COMMAND ${Subversion_SVN_EXECUTABLE} co svn+ssh://lsmssrv1.epfl.ch/space/repositories/SimulPack/BlackDynamite ${BLACKDYNAMITE_SOURCE_DIR}
-	  OUTPUT_QUIET)
-      endif()
+    set(BLACKDYNAMITE_URL "svn+ssh://lsmssrv1.epfl.ch/space/repositories/SimulPack/BlackDynamite")
 
-      set(BLACKDYNAMITE_TARGETS_EXPORT ${AKANTU_TARGETS_EXPORT})
-      add_subdirectory(third-party/blackdynamite)
+    include(ExternalProject)
 
-      package_set_libraries(${_pkg_name} blackdynamite)
-      package_set_include_dir(${_pkg_name}
-	${PROJECT_SOURCE_DIR}/third-party/blackdynamite/src
-	${BLACKDYNAMITE_EXTERNAL_INCLUDE_DIR})
+    ExternalProject_Add(Blackdynamite
+      PREFIX ${PROJECT_BINARY_DIR}/third-party
+      SVN_REPOSITORY ${BLACKDYNAMITE_URL}
+      CMAKE_ARGS <SOURCE_DIR>/
+      CMAKE_CACHE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
+      BUILD_COMMAND make
+      INSTALL_COMMAND make install
+      )
 
-      list(APPEND AKANTU_EXPORT_LIST blackdynamite)
+    set_third_party_shared_libirary_name(BLACKDYNAMITE_LIBRARIES blackdynamite)
+    package_set_libraries(${_pkg_name} ${BLACKDYNAMITE_LIBRARIES})
+    package_set_include_dir(${_pkg_name} ${PROJECT_BINARY_DIR}/third-party/include/blackdynamite)
 
-      package_activate(${_pkg_name})
-    else()
-      package_deactivate(${_pkg_name})
-    endif()
+    package_add_extra_dependency(BLACKDYNAMITE Blackdynamite)
   endif()
 endif()
