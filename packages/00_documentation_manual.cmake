@@ -31,10 +31,10 @@
 package_declare(documentation_manual
   DESCRIPTION "Build the user manual.")
 
-set(AKANTU_DOCUMENTATION_MANUAL_DOCUMENTATION "
-This package alows to compile the user manual in the build folder \\shellcode{build/doc/manual/manual.pdf}.
-
-Under Ubuntu (14.04 LTS), the installation of the dependencies can be performed using the following command:
-\\begin{command}
-  > sudo apt-get install install rubber texlive texlive-science texlive-latex-extra
-\\end{command}")
+package_declare_documentation(documentation_manual
+"This package alows to compile the user manual in the build folder \\shellcode{build/doc/manual/manual.pdf}."
+""
+"Under Ubuntu (14.04 LTS), the installation of the dependencies can be performed using the following command:"
+"\\begin{command}"
+"  > sudo apt-get install install rubber texlive texlive-science texlive-latex-extra"
+"\\end{command}")

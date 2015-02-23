@@ -28,10 +28,6 @@
 #
 #===============================================================================
 
-if(AKANTU_USE_THIRD_PARTY_MUMPS)
-  enable_language(Fortran)
-endif()
-
 package_declare(MPI EXTERNAL
   DESCRIPTION "Add MPI support in akantu"
   EXTRA_PACKAGE_OPTIONS PREFIX MPI_C MPI
@@ -44,21 +40,18 @@ package_declare_sources(MPI
   synchronizer/static_communicator_mpi.hh
   )
 
-
-
 mark_as_advanced(MPI_EXTRA_LIBRARY MPI_LIBRARY)
 
-set(AKANTU_MPI_DOCUMENTATION
-"
-This is a meta package providing access to MPI.
-
-Under Ubuntu (14.04 LTS) the installation can be performed using the commands:
-\\begin{command}
-  > sudo apt-get install libopenmpi-dev
-\\end{command}
-
-Under Mac OS X the installation requires the following steps:
-\\begin{command}
-  > sudo port install mpich-devel
-\\end{command}
-")
+package_declare_documentation(MPI
+  "This is a meta package providing access to MPI."
+  ""
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  "\\begin{command}"
+  "  > sudo apt-get install libopenmpi-dev"
+  "\\end{command}"
+  ""
+  "Under Mac OS X the installation requires the following steps:"
+  "\\begin{command}"
+  "  > sudo port install mpich-devel"
+  "\\end{command}"
+  )

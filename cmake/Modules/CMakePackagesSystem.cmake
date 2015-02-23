@@ -107,7 +107,7 @@ function(package_use_system pkg_name use)
   if(DEFINED ${_project}_USE_SYSTEM_${_u_package})
     set(${use} ${${_project}_USE_SYSTEM_${_u_package}} PARENT_SCOPE)
   else()
-    set(${use} TRUE)
+    set(${use} TRUE PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -173,6 +173,15 @@ function(package_get_tests_folder pkg_name test_folder)
   set(${test_folder} ${${pkg_name}_TESTS_FOLDER} PARENT_SCOPE)
 endfunction()
 
+# ------------------------------------------------------------------------------
+# Manual folder
+function(_package_set_manual_folder pkg_name manual_folder)
+  set(${pkg_name}_MANUAL_FOLDER ${manual_folder} CACHE INTERNAL "" FORCE)
+endfunction()
+
+function(package_get_manual_folder pkg_name manual_folder)
+  set(${manual_folder} ${${pkg_name}_MANUAL_FOLDER} PARENT_SCOPE)
+endfunction()
 
 # ------------------------------------------------------------------------------
 # Extra option for the find_package
@@ -336,6 +345,50 @@ function(_package_remove_fdependency pkg_name fdep)
   if(NOT pos EQUAL -1)
     list(REMOVE_AT _fdeps ${pos})
     _package_set_fdependencies(${pkg_name} ${_fdeps})
+  endif()
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Documentation related functions
+# ------------------------------------------------------------------------------
+function(package_declare_documentation pkg)
+  # \n replaced by && and \\ by ££ to avoid cache problems
+  set(_doc_str "")
+  foreach(_str ${ARGN})
+    set(_doc_str "${_doc_str}&&${_str}")
+  endforeach()
+
+  string(REPLACE "\\" "££" _doc_escaped "${_doc_str}")
+  package_get_name(${pkg} _pkg_name)
+  set(${_pkg_name}_DOCUMENTATION "${_doc_escaped}" CACHE INTERNAL "Latex doc of package ${pkg}" FORCE)
+endfunction()
+
+function(package_get_documentation pkg _doc)
+  # \n replaced by && and \\ by ££ to avoid cache problems
+  package_get_name(${pkg} _pkg_name)
+  if (DEFINED ${_pkg_name}_DOCUMENTATION)
+    set(_doc_tmp ${${_pkg_name}_DOCUMENTATION})
+
+    string(REPLACE "££" "\\" _doc_escaped "${_doc_tmp}")
+    string(REPLACE "&&" "\n" _doc_newlines "${_doc_escaped}")
+    set(${_doc} "${_doc_newlines}" PARENT_SCOPE)
+  else()
+    set(${_doc} "" PARENT_SCOPE)
+  endif()
+endfunction()
+# ------------------------------------------------------------------------------
+function(package_declare_documentation_files pkg)
+  package_get_name(${pkg} _pkg_name)
+  set(${_pkg_name}_DOCUMENTATION_FILES "${ARGN}"
+    CACHE INTERNAL "Latex doc files for package ${pkg}" FORCE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+function(package_get_documentation_files pkg_name doc_files)
+  if(DEFINED ${pkg_name}_DOCUMENTATION_FILES)
+    set(${doc_files} ${${pkg_name}_DOCUMENTATION_FILES} PARENT_SCOPE)
+  else()
+    set(${doc_files} "" PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -517,6 +570,8 @@ endfunction()
 # Load external packages
 # ------------------------------------------------------------------------------
 function(_package_load_external_package pkg_name activate)
+  string(TOUPPER ${PROJECT_NAME} _project)
+  
   package_get_extra_options(${pkg_name} _options)
   if(_options)
     cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "PREFIX;FOUND;ARGS" ${_options})
@@ -560,9 +615,6 @@ function(_package_load_external_package pkg_name activate)
 
   if(_act)
     foreach(_prefix ${_prefix_to_consider})
-      # Add the in the definition list
-      list(APPEND ${_project}_DEFINITIONS ${_option_name})
-
       # Generate the include dir for the package
       if(DEFINED ${_prefix}_INCLUDE_DIRS)
 	package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIRS})
@@ -576,7 +628,6 @@ function(_package_load_external_package pkg_name activate)
       package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
     endforeach()
   endif()
-
   set(${activate} ${_act} PARENT_SCOPE)
 endfunction()
 
@@ -720,7 +771,14 @@ function(package_list_packages PACKAGE_FOLDER)
     set(_test_folder "test/")
   endif()
 
+  if(_opt_pkg_MANUAL_FOLDER)
+    set(_manual_folder "${_opt_pkg_MANUAL_FOLDER}")
+  else()
+    set(_manual_folder "doc/manual")
+  endif()
+
   get_filename_component(_abs_test_folder ${_test_folder} ABSOLUTE)
+  get_filename_component(_abs_manual_folder ${_manual_folder} ABSOLUTE)
 
   # check all the packages in the <package_folder>
   file(GLOB _package_list "${PACKAGE_FOLDER}/*.cmake")
@@ -743,10 +801,10 @@ function(package_list_packages PACKAGE_FOLDER)
 
     package_get_name(${_pkg} _pkg_name)
     _package_set_filename(${_pkg_name} "${PACKAGE_FOLDER}/${_pkg_file}")
-    _package_set_sources_folder(${_pkg_name} "${_abs_src_folder}")
 
-    _package_set_tests_folder(${_pkg_name}
-      "${_abs_test_folder}")
+    _package_set_sources_folder(${_pkg_name} "${_abs_src_folder}")
+    _package_set_tests_folder(${_pkg_name} "${_abs_test_folder}")
+    _package_set_manual_folder(${_pkg_name} "${_abs_manual_folder}")
 
     list(APPEND _packages_list_all ${_pkg_name})
     include("${PACKAGE_FOLDER}/${_pkg_file}")
@@ -770,6 +828,11 @@ function(package_list_packages PACKAGE_FOLDER)
 	if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
 	  _package_set_tests_folder(${_pkg_name}
 	    "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
+	endif()
+
+	if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual")
+	  _package_set_manual_folder(${_pkg_name}
+	    "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual")
 	endif()
 
 	list(APPEND _extra_pkg_src_folders "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
@@ -902,7 +965,7 @@ endfunction()
 function(package_declare_sources pkg)
   package_get_name(${pkg} _pkg_name)
 
-  # get 3 lists, if non of the options given try to distinguish the different lists
+  # get 3 lists, if none of the options given try to distinguish the different lists
   cmake_parse_arguments(_opt_pkg
     ""
     ""
@@ -942,9 +1005,33 @@ function(package_declare_sources pkg)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# get the list of source files for a given package
+# ------------------------------------------------------------------------------
+function(package_get_source_files PKG SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
+  string(TOUPPER ${PROJECT_NAME} _project)
+
+  set(tmp_SRCS)
+  set(tmp_PUBLIC_HEADERS)
+  set(tmp_PRIVATE_HEADERS)
+
+  foreach(_type SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
+    foreach(_file ${${PKG}_${_type}})
+      string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" _rel_file "${_file}")
+      list(APPEND tmp_${_type} "${_rel_file}")
+    endforeach()
+  endforeach()
+  
+#  message(__tmp_SRCS ":   " ${tmp_SRCS})
+
+  set(${SRCS}            ${tmp_SRCS}            PARENT_SCOPE)
+  set(${PUBLIC_HEADERS}  ${tmp_PUBLIC_HEADERS}  PARENT_SCOPE)
+  set(${PRIVATE_HEADERS} ${tmp_PRIVATE_HEADERS} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # get the list of source files
 # ------------------------------------------------------------------------------
-function(package_get_source_files SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
+function(package_get_all_source_files SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
   string(TOUPPER ${PROJECT_NAME} _project)
 
   set(tmp_SRCS)
@@ -952,12 +1039,10 @@ function(package_get_source_files SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
   set(tmp_PRIVATE_HEADERS)
 
   foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
-    foreach(_type SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
-      foreach(_file ${${_pkg_name}_${_type}})
-	string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" _rel_file "${_file}")
-	list(APPEND tmp_${_type} "${_rel_file}")
-      endforeach()
-    endforeach()
+    package_get_source_files(${_pkg_name} _tmp_SRCS _tmp_PUBLIC_HEADERS _tmp_PRIVATE_HEADERS)
+    list(APPEND tmp_SRCS ${_tmp_SRCS})
+    list(APPEND tmp_PUBLIC_HEADERS ${tmp_PUBLIC_HEADERS})
+    list(APPEND tmp_PRIVATE_HEADERS ${tmp_PRIVATE_HEADERS})
   endforeach()
 
   set(${SRCS}            ${tmp_SRCS}            PARENT_SCOPE)
@@ -969,7 +1054,7 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Get include directories
 # ------------------------------------------------------------------------------
-function(package_get_include_directories inc_dirs)
+function(package_get_all_include_directories inc_dirs)
   string(TOUPPER ${PROJECT_NAME} _project)
 
   set(_tmp)
@@ -990,7 +1075,7 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Get external libraries informations
 # ------------------------------------------------------------------------------
-function(package_get_external_informations INCLUDE_DIR LIBRARIES)
+function(package_get_all_external_informations INCLUDE_DIR LIBRARIES)
   string(TOUPPER ${PROJECT_NAME} _project)
 
   set(tmp_INCLUDE_DIR)
@@ -1011,6 +1096,19 @@ function(package_get_external_informations INCLUDE_DIR LIBRARIES)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Get definitions like external projects
+# ------------------------------------------------------------------------------
+function(package_get_all_definitions definitions)
+  set(_tmp)
+  string(TOUPPER ${PROJECT_NAME} _project)
+  foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
+    package_get_option_name(${_pkg_name} _option_name)
+    list(APPEND _tmp ${_option_name})
+  endforeach()
+  set(${definitions} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # Get extra dependencies like external projects
 # ------------------------------------------------------------------------------
 function(package_get_all_extra_dependency DEPS)
@@ -1027,7 +1125,7 @@ function(package_get_all_extra_dependency DEPS)
 endfunction()
 
 # ------------------------------------------------------------------------------
-# Get extra dependencies like external projects
+# Get extra infos
 # ------------------------------------------------------------------------------
 function(package_get_all_test_folders TEST_DIRS)
   string(TOUPPER ${PROJECT_NAME} _project)
@@ -1043,12 +1141,33 @@ function(package_get_all_test_folders TEST_DIRS)
 endfunction()
 
 # ------------------------------------------------------------------------------
-function(package_get_list_of_activated_packages activated_list)
+function(package_get_all_documentation_files doc_files)
+  string(TOUPPER ${PROJECT_NAME} _project)
+  set(_tmp_DOC_FILES)
+
+  foreach(_pkg_name ${${_project}_ACTIVATED_PACKAGE_LIST})
+    package_get_manual_folder(${_pkg_name} _doc_dir)
+    package_get_documentation_files(${_pkg_name} _doc_files)
+
+    foreach(_doc_file ${_doc_files})
+      list(APPEND _tmp_DOC_FILES ${_doc_dir}/${_doc_file})
+    endforeach()
+  endforeach()
+
+  if(_tmp_DOC_FILES)
+    list(REMOVE_DUPLICATES _tmp_DOC_FILES)
+  endif()
+
+  set(${doc_files} ${_tmp_DOC_FILES} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+function(package_get_all_activated_packages activated_list)
   string(TOUPPER ${PROJECT_NAME} _project)
   set(${activated_list} ${${_project}_ACTIVATED_PACKAGE_LIST} PARENT_SCOPE)
 endfunction()
 
-function(package_get_list_of_all_packages packages_list)
+function(package_get_all_packages packages_list)
   string(TOUPPER ${PROJECT_NAME} _project)
   set(${packages_list} ${${_project}_ALL_PACKAGES_LIST} PARENT_SCOPE)
 endfunction()

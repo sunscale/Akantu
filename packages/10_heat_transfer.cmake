@@ -37,24 +37,11 @@ package_declare_sources(heat_transfer
   model/heat_transfer/heat_transfer_model_inline_impl.cc
   )
 
-set(AKANTU_HEAT_TRANSFER_DOC
-  manual/manual-heattransfermodel.tex
+package_declare_documentation_files(heat_transfer
+  manual-heattransfermodel.tex
   )
 
-set(AKANTU_HEAT_TRANSFER_TESTS
-   test_heat_transfer_model_cube3d
-   test_heat_transfer_model_cube3d_pbc
-   test_heat_transfer_model_square2d_pbc
-   test_heat_transfer_model_square2d
-   test_heat_transfer_model_cube3d_istropic_conductivity
-   )
-
-set(AKANTU_HEAT_TRANSFER_MANUAL_FILES
-  manual-heattransfermodel.tex
-)
-
-set(AKANTU_HEAT_TRANSFER_DOCUMENTATION 
-"
-This package activates the heat transfer model within Akantu. 
-It has no additional dependencies.
-")
+package_declare_documentation(heat_transfer
+  "This package activates the heat transfer model within Akantu. "
+  "It has no additional dependencies."
+  )

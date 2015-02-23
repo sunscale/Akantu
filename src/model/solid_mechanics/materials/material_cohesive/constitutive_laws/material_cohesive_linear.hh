@@ -66,7 +66,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
-  /// initialize the material computed parameter
+  /// initialize the material parameters
   virtual void initMaterial();
 
   /// check stress for cohesive elements' insertion
@@ -75,9 +75,9 @@ public:
 protected:
 
   /// constitutive law
-  void computeTraction(const Array<Real> & normal,
-		       ElementType el_type,
-		       GhostType ghost_type = _not_ghost);
+  virtual void computeTraction(const Array<Real> & normal,
+			       ElementType el_type,
+			       GhostType ghost_type = _not_ghost);
 
   /// compute stress norms on quadrature points for each facet for stress check
   virtual void computeStressNorms(const Array<Real> & facet_stress,
@@ -117,10 +117,7 @@ protected:
   Real beta2_inv;
 
   /// mode I fracture energy
-  Real G_cI;
-
-  /// mode II fracture energy
-  Real G_cII;
+  Real G_c;
 
   /// kappa parameter
   Real kappa;
@@ -143,8 +140,9 @@ protected:
   /// critical effective stress
   RandomInternalField<Real, CohesiveInternalField> sigma_c_eff;
 
-  /// critical displacement
-  CohesiveInternalField<Real> delta_c;
+  /// effective critical displacement (each element can have a
+  /// different value)
+  CohesiveInternalField<Real> delta_c_eff;
 
   /// stress at insertion
   CohesiveInternalField<Real> insertion_stress;

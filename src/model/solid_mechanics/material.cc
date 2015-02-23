@@ -978,25 +978,25 @@ void Material::computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & qu
 						  const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
-  const Mesh & mesh = model->getFEEngine().getMesh();
+  const Mesh & mesh = this->model->getFEEngine().getMesh();
 
   Array<Real> nodes_coordinates(mesh.getNodes(), true);
-  nodes_coordinates += model->getDisplacement();
+  nodes_coordinates += this->model->getDisplacement();
 
-  Mesh::type_iterator it = element_filter.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type = element_filter.lastType(spatial_dimension, ghost_type);
+  Mesh::type_iterator it = this->element_filter.firstType(spatial_dimension, ghost_type);
+  Mesh::type_iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type);
   for(; it != last_type; ++it) {
-    const Array<UInt> & elem_filter = element_filter(*it, ghost_type);
+    const Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
 
     UInt nb_element  = elem_filter.getSize();
-    UInt nb_tot_quad = model->getFEEngine().getNbQuadraturePoints(*it, ghost_type) * nb_element;
+    UInt nb_tot_quad = this->model->getFEEngine().getNbQuadraturePoints(*it, ghost_type) * nb_element;
 
     Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
     quads.resize(nb_tot_quad);
 
-    model->getFEEngine().interpolateOnQuadraturePoints(nodes_coordinates,
-						  quads, spatial_dimension,
-						  *it, ghost_type, elem_filter);
+    this->model->getFEEngine().interpolateOnQuadraturePoints(nodes_coordinates,
+							     quads, spatial_dimension,
+							     *it, ghost_type, elem_filter);
   }
 
   AKANTU_DEBUG_OUT();

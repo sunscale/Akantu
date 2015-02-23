@@ -26,3 +26,6 @@ Line Loop(101) = {101:104};
 
 // Base Cube
 Plane Surface(101) = {101};
+Transfinite Surface {101};
+Transfinite Line {103, 101} = 10 Using Progression 1;
+Transfinite Line {104, 102} = 10 Using Progression 1;

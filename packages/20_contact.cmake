@@ -72,27 +72,11 @@ if(AKANTU_CONTACT)
     )
 endif()
 
-
-set(AKANTU_CONTACT_TESTS
-  test_hertz_2D
-  test_hertz_3D
-  test_offset_1slave
-  test_offset_2slaves
-  test_acurnier_2D_1
-  test_acurnier_2D_2
-  test_acurnier_2D_3
-  test_acurnier_3D_1
-  test_acurnier_3D_2
-  test_acurnier_3D_3
+package_declare_documentation_files(contact
+  manual-contact.tex
+  figures/hertz_3D.png
   )
 
-set(AKANTU_CONTACT_MANUAL_FILES
-  manual-contact.tex
-
-  figures/hertz_3D.png
-)
-
-set(AKANTU_CONTACT_DOCUMENTATION
-"
-This package enables the contact mechanics engine for Akantu
-")
+package_declare_documentation(contact
+  "This package enables the contact mechanics engine for Akantu"
+  )

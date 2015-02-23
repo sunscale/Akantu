@@ -116,31 +116,45 @@ void SolidMechanicsModel::instantiateMaterials() {
   are_materials_instantiated = true;
 }
 
+
+
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::initMaterials() {
-  AKANTU_DEBUG_ASSERT(materials.size() != 0, "No material to initialize !");
-
-  if(!are_materials_instantiated) instantiateMaterials();
-
+void SolidMechanicsModel::assignMaterialToElements(const ElementTypeMapArray<UInt> * filter) {
   Material ** mat_val = &(materials.at(0));
 
   Element element;
   element.ghost_type = _not_ghost;
   Mesh::type_iterator it  = mesh.firstType(spatial_dimension, _not_ghost, _ek_not_defined);
   Mesh::type_iterator end = mesh.lastType(spatial_dimension, _not_ghost, _ek_not_defined);
+  if(filter != NULL) {
+     it  = filter->firstType(spatial_dimension, _not_ghost, _ek_not_defined);
+     end = filter->lastType(spatial_dimension, _not_ghost, _ek_not_defined);
+  }
 
   // Fill the element material array from the material selector
   for(; it != end; ++it) {
     UInt nb_element = mesh.getNbElement(*it, _not_ghost);
+
+    const Array<UInt> * filter_array = NULL;
+    if (filter != NULL) {
+      filter_array = &((*filter)(*it, _not_ghost));
+      nb_element = filter_array->getSize();
+    }
+
     element.type = *it;
     element.kind = mesh.getKind(element.type);
     Array<UInt> & el_id_by_mat = element_index_by_material(*it, _not_ghost);
     for (UInt el = 0; el < nb_element; ++el) {
-      element.element = el;
+      if (filter != NULL)
+	element.element = (*filter_array)(el);
+      else
+	element.element = el;
+
       UInt mat_index = (*material_selector)(element);
       AKANTU_DEBUG_ASSERT(mat_index < materials.size(),
 			  "The material selector returned an index that does not exists");
-      el_id_by_mat(el, 0) = mat_index;
+      el_id_by_mat(element.element, 0) = mat_index;
+
     }
   }
 
@@ -154,16 +168,43 @@ void SolidMechanicsModel::initMaterials() {
     it  = mesh.firstType(spatial_dimension, gt, _ek_not_defined);
     end = mesh.lastType(spatial_dimension, gt, _ek_not_defined);
 
+     if(filter != NULL) {
+       it  = filter->firstType(spatial_dimension, gt, _ek_not_defined);
+       end = filter->lastType(spatial_dimension, gt, _ek_not_defined);
+     }
+
     for(; it != end; ++it) {
       UInt nb_element = mesh.getNbElement(*it, gt);
+
+      const Array<UInt> * filter_array = NULL;
+      if (filter != NULL) {
+	filter_array = &((*filter)(*it, gt));
+	nb_element = filter_array->getSize();
+      }
+
       Array<UInt> & el_id_by_mat = element_index_by_material(*it, gt);
       for (UInt el = 0; el < nb_element; ++el) {
-	UInt mat_index = el_id_by_mat(el, 0);
-	UInt index = mat_val[mat_index]->addElement(*it, el, gt);
-	el_id_by_mat(el, 1) = index;
+	UInt element;
+
+	if (filter != NULL) element = (*filter_array)(el);
+	else element = el;
+
+	UInt mat_index = el_id_by_mat(element, 0);
+	UInt index = mat_val[mat_index]->addElement(*it, element, gt);
+	el_id_by_mat(element, 1) = index;
       }
     }
   }
+}
+
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::initMaterials() {
+  AKANTU_DEBUG_ASSERT(materials.size() != 0, "No material to initialize !");
+
+  if(!are_materials_instantiated) instantiateMaterials();
+
+  this->assignMaterialToElements();
 
   std::vector<Material *>::iterator mat_it;
   for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
@@ -215,5 +256,55 @@ Int SolidMechanicsModel::getInternalIndexFromID(const ID & id) const {
   AKANTU_DEBUG_OUT();
   return -1;
 }
+
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::reassignMaterial() {
+  AKANTU_DEBUG_IN();
+
+  std::vector< Array<Element> > element_to_add   (materials.size());
+  std::vector< Array<Element> > element_to_remove(materials.size());
+
+  Element element;
+  for (ghost_type_t::iterator gt = ghost_type_t::begin(); gt != ghost_type_t::end(); ++gt) {
+    GhostType ghost_type = *gt;
+    element.ghost_type = ghost_type;
+
+    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type, _ek_regular);
+    Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type, _ek_regular);
+    for(; it != end; ++it) {
+      ElementType type = *it;
+      element.type = type;
+      element.kind = Mesh::getKind(type);
+
+      UInt nb_element = mesh.getNbElement(type, ghost_type);
+      Array<UInt> & el_index_by_mat = element_index_by_material(type, ghost_type);
+
+      for (UInt el = 0; el < nb_element; ++el) {
+	element.element = el;
+
+	UInt old_material = el_index_by_mat(el, 0);
+	UInt new_material = (*material_selector)(element);
+
+	if(old_material != new_material) {
+	  element_to_add   [new_material].push_back(element);
+	  element_to_remove[old_material].push_back(element);
+	}
+      }
+    }
+  }
+
+  std::vector<Material *>::iterator mat_it;
+  UInt mat_index = 0;
+  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it, ++mat_index) {
+    (*mat_it)->removeElements(element_to_remove[mat_index]);
+    (*mat_it)->addElements   (element_to_add[mat_index]);
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+
 
 __END_AKANTU__

@@ -54,7 +54,7 @@
 
 #ifdef AKANTU_USE_PETSC
 #include "solver_petsc.hh"
-#include "petsc_matrix.hh" 
+#include "petsc_matrix.hh"
 #endif
 
 #ifdef AKANTU_USE_IOHELPER
@@ -85,10 +85,10 @@ const SolidMechanicsModelOptions default_solid_mechanics_model_options(_explicit
  * @param id an id to identify the model
  */
 SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh,
-                                         UInt dim,
-                                         const ID & id,
-                                         const MemoryID & memory_id) :
-  Model(mesh, dim, id, memory_id), 
+					 UInt dim,
+					 const ID & id,
+					 const MemoryID & memory_id) :
+  Model(mesh, dim, id, memory_id),
   BoundaryCondition<SolidMechanicsModel>(),
   time_step(NAN), f_m2a(1.0),
   mass_matrix(NULL),
@@ -248,7 +248,7 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initParallel(MeshPartition * partition,
-                                       DataAccessor * data_accessor) {
+				       DataAccessor * data_accessor) {
   AKANTU_DEBUG_IN();
 
   if (data_accessor == NULL) data_accessor = this;
@@ -573,13 +573,13 @@ void SolidMechanicsModel::updateResidualInternal() {
       bool * blocked_dofs_val = blocked_dofs->storage();
 
       for (UInt n = 0; n < nb_nodes * nb_degree_of_freedom; ++n) {
-        if(!(*blocked_dofs_val)) {
-          *res_val -= *accel_val * *mass_val /f_m2a;
-        }
-        blocked_dofs_val++;
-        res_val++;
-        mass_val++;
-        accel_val++;
+	if(!(*blocked_dofs_val)) {
+	  *res_val -= *accel_val * *mass_val /f_m2a;
+	}
+	blocked_dofs_val++;
+	res_val++;
+	mass_val++;
+	accel_val++;
       }
     } else {
       AKANTU_DEBUG_ERROR("No function called to assemble the mass matrix.");
@@ -607,10 +607,10 @@ void SolidMechanicsModel::updateAcceleration() {
     /* residual = residual_{n+1} - M * acceleration_n therefore
        solution = increment acceleration not acceleration */
     solveLumped(*increment_acceleration,
-                *mass,
-                *residual,
-                *blocked_dofs,
-                f_m2a);
+		*mass,
+		*residual,
+		*blocked_dofs,
+		f_m2a);
   } else if (method == _explicit_consistent_mass) {
     solve<NewmarkBeta::_acceleration_corrector>(*increment_acceleration);
   }
@@ -620,10 +620,10 @@ void SolidMechanicsModel::updateAcceleration() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::solveLumped(Array<Real> & x,
-                                      const Array<Real> & A,
-                                      const Array<Real> & b,
-                                      const Array<bool> & blocked_dofs,
-                                      Real alpha) {
+				      const Array<Real> & A,
+				      const Array<Real> & b,
+				      const Array<bool> & blocked_dofs,
+				      Real alpha) {
 
   Real * A_val = A.storage();
   Real * b_val = b.storage();
@@ -653,14 +653,14 @@ void SolidMechanicsModel::explicitPred() {
   }
 
   AKANTU_DEBUG_ASSERT(integrator,"itegrator should have been allocated: "
-                      << "have called initExplicit ? "
-                      << "or initImplicit ?");
+		      << "have called initExplicit ? "
+		      << "or initImplicit ?");
 
   integrator->integrationSchemePred(time_step,
-                                    *displacement,
-                                    *velocity,
-                                    *acceleration,
-                                    *blocked_dofs);
+				    *displacement,
+				    *velocity,
+				    *acceleration,
+				    *blocked_dofs);
 
   if(increment_flag) {
     Real * inc_val = increment->storage();
@@ -682,11 +682,11 @@ void SolidMechanicsModel::explicitCorr() {
   AKANTU_DEBUG_IN();
 
   integrator->integrationSchemeCorrAccel(time_step,
-                                         *displacement,
-                                         *velocity,
-                                         *acceleration,
-                                         *blocked_dofs,
-                                         *increment_acceleration);
+					 *displacement,
+					 *velocity,
+					 *acceleration,
+					 *blocked_dofs,
+					 *increment_acceleration);
 
   if(previous_displacement) previous_displacement->copy(*displacement);
 
@@ -764,7 +764,7 @@ void SolidMechanicsModel::initSolver(__attribute__((unused)) SolverOptions & opt
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initJacobianMatrix() {
 #if defined(AKANTU_USE_MUMPS) && !defined(AKANTU_USE_PETSC)
-  
+
   // @todo make it more flexible: this is an ugly patch to treat the case of non
   // fix profile of the K matrix
   delete jacobian_matrix;
@@ -882,8 +882,8 @@ bool SolidMechanicsModel::testConvergence<_scc_increment>(Real tolerance, Real &
     bool is_local_node = mesh.isLocalOrMasterNode(n);
     for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
       if(!(*blocked_dofs_val) && is_local_node) {
-        norm[0] += *increment_val * *increment_val;
-        norm[1] += *displacement_val * *displacement_val;
+	norm[0] += *increment_val * *increment_val;
+	norm[1] += *displacement_val * *displacement_val;
       }
       blocked_dofs_val++;
       increment_val++;
@@ -935,11 +935,11 @@ bool SolidMechanicsModel::testConvergence<_scc_residual>(Real tolerance, Real & 
     bool is_local_node = mesh.isLocalOrMasterNode(n);
     if(is_local_node) {
       for (UInt d = 0; d < spatial_dimension; ++d) {
-        if(!(*blocked_dofs_val)) {
-          norm += *residual_val * *residual_val;
-        }
-        blocked_dofs_val++;
-        residual_val++;
+	if(!(*blocked_dofs_val)) {
+	  norm += *residual_val * *residual_val;
+	}
+	blocked_dofs_val++;
+	residual_val++;
       }
     } else {
       blocked_dofs_val += spatial_dimension;
@@ -960,7 +960,7 @@ bool SolidMechanicsModel::testConvergence<_scc_residual>(Real tolerance, Real & 
 /* -------------------------------------------------------------------------- */
 template<>
 bool SolidMechanicsModel::testConvergence<_scc_residual_mass_wgh>(Real tolerance,
-                                                                  Real & norm) {
+								  Real & norm) {
   AKANTU_DEBUG_IN();
 
 
@@ -976,12 +976,12 @@ bool SolidMechanicsModel::testConvergence<_scc_residual_mass_wgh>(Real tolerance
     bool is_local_node = mesh.isLocalOrMasterNode(n);
     if(is_local_node) {
       for (UInt d = 0; d < spatial_dimension; ++d) {
-        if(!(*blocked_dofs_val)) {
-          norm += *residual_val * *residual_val/(*mass_val * *mass_val);
-        }
-        blocked_dofs_val++;
-        residual_val++;
-        mass_val++;
+	if(!(*blocked_dofs_val)) {
+	  norm += *residual_val * *residual_val/(*mass_val * *mass_val);
+	}
+	blocked_dofs_val++;
+	residual_val++;
+	mass_val++;
       }
     } else {
       blocked_dofs_val += spatial_dimension;
@@ -1049,10 +1049,10 @@ void SolidMechanicsModel::implicitPred() {
 
   if(method == _implicit_dynamic)
     integrator->integrationSchemePred(time_step,
-                                      *displacement,
-                                      *velocity,
-                                      *acceleration,
-                                      *blocked_dofs);
+				      *displacement,
+				      *velocity,
+				      *acceleration,
+				      *blocked_dofs);
 
   AKANTU_DEBUG_OUT();
 }
@@ -1063,11 +1063,11 @@ void SolidMechanicsModel::implicitCorr() {
 
   if(method == _implicit_dynamic) {
     integrator->integrationSchemeCorrDispl(time_step,
-                                           *displacement,
-                                           *velocity,
-                                           *acceleration,
-                                           *blocked_dofs,
-                                           *increment);
+					   *displacement,
+					   *velocity,
+					   *acceleration,
+					   *blocked_dofs,
+					   *increment);
   } else {
     UInt nb_nodes = displacement->getSize();
     UInt nb_degree_of_freedom = displacement->getNbComponent() * nb_nodes;
@@ -1090,7 +1090,7 @@ void SolidMechanicsModel::updateIncrement() {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(previous_displacement,"The previous displacement has to be initialized."
-                      << " Are you working with Finite or Ineslactic deformations?");
+		      << " Are you working with Finite or Ineslactic deformations?");
 
   UInt nb_nodes = displacement->getSize();
   UInt nb_degree_of_freedom = displacement->getNbComponent() * nb_nodes;
@@ -1110,7 +1110,7 @@ void SolidMechanicsModel::updatePreviousDisplacement() {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(previous_displacement,"The previous displacement has to be initialized."
-                      << " Are you working with Finite or Ineslactic deformations?");
+		      << " Are you working with Finite or Ineslactic deformations?");
 
   previous_displacement->copy(*displacement);
 
@@ -1124,7 +1124,7 @@ void SolidMechanicsModel::updatePreviousDisplacement() {
 void SolidMechanicsModel::synchronizeBoundaries() {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT(synch_registry,"Synchronizer registry was not initialized."
-                      << " Did you call initParallel?");
+		      << " Did you call initParallel?");
   synch_registry->synchronize(_gst_smm_boundary);
   AKANTU_DEBUG_OUT();
 }
@@ -1133,7 +1133,7 @@ void SolidMechanicsModel::synchronizeBoundaries() {
 void SolidMechanicsModel::synchronizeResidual() {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT(synch_registry,"Synchronizer registry was not initialized."
-                      << " Did you call initPBC?");
+		      << " Did you call initPBC?");
   synch_registry->synchronize(_gst_smm_res);
   AKANTU_DEBUG_OUT();
 }
@@ -1191,7 +1191,7 @@ Real SolidMechanicsModel::getStableTimeStep(const GhostType & ghost_type) {
 
     Array<Real> X(0, nb_nodes_per_element*spatial_dimension);
     FEEngine::extractNodalToElementField(mesh, *current_position,
-                                         X, *it, _not_ghost);
+					 X, *it, _not_ghost);
 
     Array<Real>::matrix_iterator X_el =
       X.begin(spatial_dimension, nb_nodes_per_element);
@@ -1250,7 +1250,7 @@ Real SolidMechanicsModel::getKineticEnergy() {
     bool count_node = is_local_node && is_not_pbc_slave_node;
     for (UInt i = 0; i < spatial_dimension; ++i) {
       if (count_node)
-        mv2 += *vel_val * *vel_val * *mass_val;
+	mv2 += *vel_val * *vel_val * *mass_val;
 
       vel_val++;
       mass_val++;
@@ -1274,9 +1274,9 @@ Real SolidMechanicsModel::getKineticEnergy(const ElementType & type, UInt index)
   Array<UInt> filter_element(1, 1, index);
 
   getFEEngine().interpolateOnQuadraturePoints(*velocity, vel_on_quad,
-                                              spatial_dimension,
-                                              type, _not_ghost,
-                                              filter_element);
+					      spatial_dimension,
+					      type, _not_ghost,
+					      filter_element);
 
   Array<Real>::vector_iterator vit   = vel_on_quad.begin(spatial_dimension);
   Array<Real>::vector_iterator vend  = vel_on_quad.end(spatial_dimension);
@@ -1315,10 +1315,10 @@ Real SolidMechanicsModel::getExternalWork() {
 
     for (UInt i = 0; i < spatial_dimension; ++i) {
       if (count_node) {
-        if(*boun)
-          work -= *resi * *velo * time_step;
-        else
-          work += *forc * *velo * time_step;
+	if(*boun)
+	  work -= *resi * *velo * time_step;
+	else
+	  work += *forc * *velo * time_step;
       }
 
       ++velo;
@@ -1358,8 +1358,8 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id) {
 }
 /* -------------------------------------------------------------------------- */
 Real SolidMechanicsModel::getEnergy(const std::string & energy_id,
-                                    const ElementType & type,
-                                    UInt index){
+				    const ElementType & type,
+				    UInt index){
   AKANTU_DEBUG_IN();
 
   if (energy_id == "kinetic") {
@@ -1377,7 +1377,7 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id,
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
-                                       __attribute__((unused)) const NewNodesEvent & event) {
+				       __attribute__((unused)) const NewNodesEvent & event) {
   AKANTU_DEBUG_IN();
   UInt nb_nodes = mesh.getNbNodes();
 
@@ -1406,11 +1406,7 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
   }
 
   if (method != _explicit_lumped_mass) {
-    delete stiffness_matrix;
-    delete jacobian_matrix;
-    delete solver;
-    SolverOptions  solver_options;
-    initImplicit((method == _implicit_dynamic), solver_options);
+    this->initJacobianMatrix();
   }
 
   AKANTU_DEBUG_OUT();
@@ -1418,72 +1414,70 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
-                                          const NewElementsEvent & event) {
+					  const NewElementsEvent & event) {
   AKANTU_DEBUG_IN();
 
-  getFEEngine().initShapeFunctions(_not_ghost);
-  getFEEngine().initShapeFunctions(_ghost);
+  this->getFEEngine().initShapeFunctions(_not_ghost);
+  this->getFEEngine().initShapeFunctions(_ghost);
+
+  for(UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType gt = (GhostType) g;
+    Mesh::type_iterator it  = this->mesh.firstType(spatial_dimension, gt, _ek_not_defined);
+    Mesh::type_iterator end = this->mesh.lastType(spatial_dimension, gt, _ek_not_defined);
+    for(; it != end; ++it) {
+      UInt nb_element = this->mesh.getNbElement(*it, gt);
+      if(!element_index_by_material.exists(*it, gt))
+	this->element_index_by_material.alloc(nb_element, 2, *it, gt);
+      else
+	this->element_index_by_material(*it, gt).resize(nb_element);
+    }
+  }
 
   Array<Element>::const_iterator<Element> it  = element_list.begin();
   Array<Element>::const_iterator<Element> end = element_list.end();
 
-  /// \todo have rules to choose the correct material
-  UInt mat_id = 0;
-
-  UInt * mat_id_vect = NULL;
-  try {
-    const NewMaterialElementsEvent & event_mat = dynamic_cast<const NewMaterialElementsEvent &>(event);
-    mat_id_vect = event_mat.getMaterialList().storage();
-  } catch(...) {  }
+  ElementTypeMapArray<UInt> filter("new_element_filter", this->getID());
 
   for (UInt el = 0; it != end; ++it, ++el) {
     const Element & elem = *it;
 
-    if(mat_id_vect) mat_id = mat_id_vect[el];
-    else mat_id = (*material_selector)(elem);
+    if(!filter.exists(elem.type, elem.ghost_type))
+      filter.alloc(0, 2, elem.type, elem.ghost_type);
 
-    Material & mat = *materials[mat_id];
-
-    UInt mat_index = mat.addElement(elem.type, elem.element, elem.ghost_type);
-    Vector<UInt> id(2);
-    id[0] = mat_id; id[1] = mat_index;
-    if(!element_index_by_material.exists(elem.type, elem.ghost_type))
-      element_index_by_material.alloc(0, 2, elem.type, elem.ghost_type);
-
-    element_index_by_material(elem.type, elem.ghost_type).push_back(id);
+    filter(elem.type, elem.ghost_type).push_back(elem.element);
   }
+
+  this->assignMaterialToElements(&filter);
 
   std::vector<Material *>::iterator mat_it;
   for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
     (*mat_it)->onElementsAdded(element_list, event);
   }
 
-  if(method != _explicit_lumped_mass) AKANTU_DEBUG_TO_IMPLEMENT();
-
-  assembleMassLumped();
+  if(method == _explicit_lumped_mass) this->assembleMassLumped();
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::onElementsRemoved(__attribute__((unused)) const Array<Element> & element_list,
-                                            const ElementTypeMapArray<UInt> & new_numbering,
-                                            const RemovedElementsEvent & event) {
-  //  MeshUtils::purifyMesh(mesh);
-
-  getFEEngine().initShapeFunctions(_not_ghost);
-  getFEEngine().initShapeFunctions(_ghost);
+					    const ElementTypeMapArray<UInt> & new_numbering,
+					    const RemovedElementsEvent & event) {
+  this->getFEEngine().initShapeFunctions(_not_ghost);
+  this->getFEEngine().initShapeFunctions(_ghost);
 
   std::vector<Material *>::iterator mat_it;
   for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
     (*mat_it)->onElementsRemoved(element_list, new_numbering, event);
   }
+
+  this->element_index_by_material.onElementsRemoved(new_numbering);
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::onNodesRemoved(__attribute__((unused)) const Array<UInt> & element_list,
-                                         const Array<UInt> & new_numbering,
-                                         __attribute__((unused)) const RemovedNodesEvent & event) {
+					 const Array<UInt> & new_numbering,
+					 __attribute__((unused)) const RemovedNodesEvent & event) {
   if(displacement) mesh.removeNodesFromArray(*displacement, new_numbering);
   if(mass        ) mesh.removeNodesFromArray(*mass        , new_numbering);
   if(velocity    ) mesh.removeNodesFromArray(*velocity    , new_numbering);
@@ -1502,62 +1496,16 @@ void SolidMechanicsModel::onNodesRemoved(__attribute__((unused)) const Array<UIn
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::reassignMaterial() {
-  AKANTU_DEBUG_IN();
-
-  std::vector< Array<Element> > element_to_add   (materials.size());
-  std::vector< Array<Element> > element_to_remove(materials.size());
-
-  Element element;
-  for (ghost_type_t::iterator gt = ghost_type_t::begin(); gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
-    element.ghost_type = ghost_type;
-
-    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type, _ek_regular);
-    Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type, _ek_regular);
-    for(; it != end; ++it) {
-      ElementType type = *it;
-      element.type = type;
-      element.kind = Mesh::getKind(type);
-
-      UInt nb_element = mesh.getNbElement(type, ghost_type);
-      Array<UInt> & el_index_by_mat = element_index_by_material(type, ghost_type);
-
-      for (UInt el = 0; el < nb_element; ++el) {
-        element.element = el;
-
-        UInt old_material = el_index_by_mat(el, 0);
-        UInt new_material = (*material_selector)(element);
-
-        if(old_material != new_material) {
-          element_to_add   [new_material].push_back(element);
-          element_to_remove[old_material].push_back(element);
-        }
-      }
-    }
-  }
-
-  std::vector<Material *>::iterator mat_it;
-  UInt mat_index = 0;
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it, ++mat_index) {
-    (*mat_it)->removeElements(element_to_remove[mat_index]);
-    (*mat_it)->addElements   (element_to_add[mat_index]);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
 bool SolidMechanicsModel::isInternal(const std::string & field_name,
 				     const ElementKind & element_kind){
 
   bool is_internal = false;
-  
+
   /// check if at least one material contains field_id as an internal
   for (UInt m = 0; m < materials.size() && !is_internal; ++m) {
     is_internal |= materials[m]->isInternal(field_name, element_kind);
   }
-  
+
   return is_internal;
 }
 /* -------------------------------------------------------------------------- */
@@ -1572,7 +1520,7 @@ ElementTypeMap<UInt> SolidMechanicsModel::getInternalDataPerElem(const std::stri
     if (materials[m]->isInternal(field_name, element_kind))
       return materials[m]->getInternalDataPerElem(field_name,element_kind);
   }
-  
+
   return ElementTypeMap<UInt>();
 }
 
@@ -1590,7 +1538,7 @@ ElementTypeMapArray<Real> & SolidMechanicsModel::flattenInternal(const std::stri
   ElementTypeMapArray<Real> * internal_flat = this->registered_internals[key];
   for (UInt m = 0; m < materials.size(); ++m)
     materials[m]->flattenInternal(field_name,*internal_flat,_not_ghost,kind);
-  
+
   return  *internal_flat;
 }
 
@@ -1617,16 +1565,16 @@ void SolidMechanicsModel::onDump(){
 #ifdef AKANTU_USE_IOHELPER
 
 dumper::Field * SolidMechanicsModel
-::createElementalField(const std::string & field_name, 
+::createElementalField(const std::string & field_name,
 		       const std::string & group_name,
 		       bool padding_flag,
 		       const ElementKind & kind){
-  
+
   dumper::Field * field = NULL;
 
-  if(field_name == "partitions") 
+  if(field_name == "partitions")
     field = mesh.createElementalField<UInt, dumper::ElementPartitionField>(mesh.getConnectivities(),group_name,this->spatial_dimension,kind);
-  else if(field_name == "element_index_by_material") 
+  else if(field_name == "element_index_by_material")
     field = mesh.createElementalField<UInt, Vector, dumper::ElementalField >(element_index_by_material,group_name,this->spatial_dimension,kind);
   else {
 
@@ -1639,7 +1587,7 @@ dumper::Field * SolidMechanicsModel
       field = mesh.createElementalField<Real, dumper::InternalMaterialField>(internal_flat,
 									     group_name,
 									     this->spatial_dimension,kind,nb_data_per_elem);
-      
+
       //treat the paddings
       if (padding_flag){
 	if (field_name == "stress"){
@@ -1657,12 +1605,12 @@ dumper::Field * SolidMechanicsModel
       }
 
       // homogenize the field
-      dumper::ComputeFunctorInterface * foo = 
+      dumper::ComputeFunctorInterface * foo =
 	dumper::HomogenizerProxy::createHomogenizer(*field);
 
       field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
 
-    } 
+    }
   }
   return field;
 }
@@ -1672,7 +1620,7 @@ dumper::Field * SolidMechanicsModel
 dumper::Field * SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
 							  const std::string & group_name,
 							  bool padding_flag) {
-  
+
   std::map<std::string,Array<Real>* > real_nodal_fields;
   real_nodal_fields["displacement"             ] = displacement;
   real_nodal_fields["mass"                     ] = mass;
@@ -1687,7 +1635,7 @@ dumper::Field * SolidMechanicsModel::createNodalFieldReal(const std::string & fi
     field = mesh.createNodalField(real_nodal_fields[field_name],group_name, 3);
   else
     field = mesh.createNodalField(real_nodal_fields[field_name],group_name);
-  
+
   return field;
 }
 /* -------------------------------------------------------------------------- */
@@ -1695,7 +1643,7 @@ dumper::Field * SolidMechanicsModel::createNodalFieldReal(const std::string & fi
 dumper::Field * SolidMechanicsModel::createNodalFieldBool(const std::string & field_name,
 							  const std::string & group_name,
 bool padding_flag) {
-  
+
   std::map<std::string,Array<bool>* > uint_nodal_fields;
   uint_nodal_fields["blocked_dofs"             ] = blocked_dofs;
 
@@ -1709,7 +1657,7 @@ bool padding_flag) {
 /* -------------------------------------------------------------------------- */
 
 dumper::Field * SolidMechanicsModel
-::createElementalField(const std::string & field_name, 
+::createElementalField(const std::string & field_name,
 		       const std::string & group_name,
 		       bool padding_flag,
 		       const ElementKind & kind){

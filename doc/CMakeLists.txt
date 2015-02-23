@@ -43,6 +43,7 @@ if(DOXYGEN_FOUND AND AKANTU_DOCUMENTATION_DOXYGEN)
   add_subdirectory(doxygen)
 endif()
 
+
 file(GLOB_RECURSE __all_files "*.*")
 set(_all_files)
 foreach(_file ${__all_files})

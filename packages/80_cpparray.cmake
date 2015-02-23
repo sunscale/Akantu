@@ -76,6 +76,8 @@ if(AKANTU_USE_CPPARRAY AND AKANTU_USE_THIRD_PARTY_CPPARRAY)
 endif()
 
 
-set(AKANTU_CPPARRAY_DOCUMENTATION "
-This package provides access to the \\href{https://code.google.com/p/cpp-array/}{cpp-array} open-source project. If internet is accessible when configuring the project (during cmake call) this package will be auto-downloaded.
-")
+package_declare_documentation(CppArray
+  "This package provides access to the \\href{https://code.google.com/p/cpp-array/}{cpp-array}"
+  "open-source project. If internet is accessible when configuring the project (during cmake call)"
+  "this package will be auto-downloaded."
+  )

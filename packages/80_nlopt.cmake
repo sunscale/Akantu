@@ -71,9 +71,9 @@ if (AKANTU_USE_THIRD_PARTY_NLOPT AND AKANTU_USE_NLOPT)
 endif()
 
 
-set(AKANTU_NLOPT_DOCUMENTATION "
-This package enable the use of the optimization alogorithm library \\href{http://ab-initio.mit.edu/wiki/index.php/NLopt}{NLopt}.
-Since there are no packaging for the common operating system by default \\akantu compiles it as a third-party project. This behavior can be modified with the option \\code{AKANTU\\_USE\\_THIRD\\_PARTY\\_NLOPT}.
-
-If the automated download fails please download \\href{http://ab-initio.mit.edu/nlopt/nlopt-${NLOPT_VERSION}.tar.gz}{nlopt-${NLOPT_VERSION}.tar.gz} and place it in \\shellcode{<akantu source>/third-party} download.
-")
+package_declare_documentation(nlopt
+  "This package enable the use of the optimization alogorithm library \\href{http://ab-initio.mit.edu/wiki/index.php/NLopt}{NLopt}."
+  "Since there are no packaging for the common operating system by default \\akantu compiles it as a third-party project. This behavior can be modified with the option \\code{AKANTU\\_USE\\_THIRD\\_PARTY\\_NLOPT}."
+  ""
+  "If the automated download fails please download \\href{http://ab-initio.mit.edu/nlopt/nlopt-${NLOPT_VERSION}.tar.gz}{nlopt-${NLOPT_VERSION}.tar.gz} and place it in \\shellcode{<akantu source>/third-party} download."
+  )

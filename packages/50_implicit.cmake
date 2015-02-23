@@ -32,12 +32,12 @@ package_declare(implicit META
   DESCRIPTION "Add support for implicit time scheme"
   DEPENDS scotch mumps)
 
-set(AKANTU_IMPLICIT_DOCUMENTATION
-"
-This package activates the sparse solver necessary to solve implicitely static/dynamic finite element problems.
-It depends on:
-\\begin{itemize}
-\\item \\href{http://mumps.enseeiht.fr/}{MUMPS}, a parallel sparse direct solver.
-\\item \\href{http://www.labri.fr/perso/pelegrin/scotch/}{Scotch}, a graph partitioner.
-\\end{itemize}
-")
+package_declare_documentation(implicit
+  "This package activates the sparse solver necessary to solve implicitely static/dynamic"
+  "finite element problems."
+  "It depends on:"
+  "\\begin{itemize}"
+  "  \\item \\href{http://mumps.enseeiht.fr/}{MUMPS}, a parallel sparse direct solver."
+  "  \\item \\href{http://www.labri.fr/perso/pelegrin/scotch/}{Scotch}, a graph partitioner."
+  "\\end{itemize}"
+  )
