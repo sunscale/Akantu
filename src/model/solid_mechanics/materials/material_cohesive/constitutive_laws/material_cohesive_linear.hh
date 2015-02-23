@@ -66,7 +66,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
-  /// initialize the material computed parameter
+  /// initialize the material parameters
   virtual void initMaterial();
 
   /// check stress for cohesive elements' insertion
@@ -75,9 +75,9 @@ public:
 protected:
 
   /// constitutive law
-  void computeTraction(const Array<Real> & normal,
-		       ElementType el_type,
-		       GhostType ghost_type = _not_ghost);
+  virtual void computeTraction(const Array<Real> & normal,
+			       ElementType el_type,
+			       GhostType ghost_type = _not_ghost);
 
   /// compute stress norms on quadrature points for each facet for stress check
   virtual void computeStressNorms(const Array<Real> & facet_stress,
