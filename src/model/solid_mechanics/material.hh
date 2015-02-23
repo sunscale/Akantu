@@ -310,6 +310,11 @@ public:
   template<UInt dim>
   inline void gradUToGreenStrain(const Matrix<Real> & grad_u,
                                  Matrix<Real> & epsilon) const;
+protected:
+  /// converts global quadrature point to local quadrature point
+  inline QuadraturePoint convertToLocalPoint(const QuadraturePoint & global_point);
+  /// converts local quadrature point to global quadrature point
+  inline QuadraturePoint convertToGlobalPoint(const QuadraturePoint & local_point);
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */

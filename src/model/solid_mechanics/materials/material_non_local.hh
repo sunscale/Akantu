@@ -57,8 +57,8 @@ public:
   MaterialNonLocal(SolidMechanicsModel & model, const ID & id = "");
   virtual ~MaterialNonLocal();
 
-  template<typename T>
-  class PairList : public ElementTypeMap< ElementTypeMapArray<T> > {};
+  typedef std::vector< std::pair<QuadraturePoint, QuadraturePoint> > PairList;
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -89,8 +89,8 @@ protected:
   virtual void computeNonLocalStresses(GhostType ghost_type = _not_ghost) = 0;
 
   template<typename T>
-  void weightedAvergageOnNeighbours(const ElementTypeMapArray<T> & to_accumulate,
-				    ElementTypeMapArray<T> & accumulated,
+  void weightedAvergageOnNeighbours(const InternalField<T> & to_accumulate,
+				    InternalField<T> & accumulated,
 				    UInt nb_degree_of_freedom,
 				    GhostType ghost_type2 = _not_ghost) const;
 
@@ -126,7 +126,7 @@ public:
     non_local_variable.nb_component = nb_degree_of_freedom;
   }
 
-  AKANTU_GET_MACRO(PairList, pair_list, const PairList<UInt> &)
+  AKANTU_GET_MACRO(PairList, pair_list, const PairList &)
   Real getRadius() const { return weight_func->getRadius(); }
   AKANTU_GET_MACRO(CellList, *spatial_grid, const SpatialGrid<QuadraturePoint> &)
 
@@ -139,10 +139,15 @@ protected:
   WeightFunction<dim> * weight_func;
 
 private:
-  /// the pairs of quadrature points
-  PairList<UInt> pair_list;
+  /**
+   * the pairs of quadrature points
+   * 0: not ghost to not ghost
+   * 1: not ghost to ghost
+   */
+  PairList pair_list[2];
+
   /// the weights associated to the pairs
-  PairList<Real> pair_weight;
+  Array<Real> * pair_weight[2];
 
   /// the regular grid to construct/update the pair lists
   SpatialGrid<QuadraturePoint> * spatial_grid;

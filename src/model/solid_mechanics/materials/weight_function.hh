@@ -81,8 +81,8 @@ public:
 
   /* ------------------------------------------------------------------------ */
   inline Real operator()(Real r,
-                         __attribute__((unused)) QuadraturePoint & q1,
-                         __attribute__((unused)) QuadraturePoint & q2) {
+                         const __attribute__((unused)) QuadraturePoint & q1,
+                         const __attribute__((unused)) QuadraturePoint & q2) {
     Real w = 0;
     if(r <= R) {
       Real alpha = (1. - r*r / R2);
@@ -143,7 +143,9 @@ public:
     selected_damage = &this->material.getArray("damage", type2, ghost_type2);
   }
 
-  inline Real operator()(Real r, __attribute__((unused)) QuadraturePoint & q1, QuadraturePoint & q2) {
+  inline Real operator()(Real r,
+			 const __attribute__((unused)) QuadraturePoint & q1,
+			 const QuadraturePoint & q2) {
     UInt quad = q2.global_num;
     Real D = (*selected_damage)(quad);
     Real Radius_t = 0;
@@ -198,7 +200,9 @@ public:
     selected_damage = &this->material.getArray("damage", type2, ghost_type2);
   }
 
-  inline Real operator()(Real r, __attribute__((unused)) QuadraturePoint & q1, QuadraturePoint & q2) {
+  inline Real operator()(Real r,
+			 const __attribute__((unused)) QuadraturePoint & q1,
+			 const QuadraturePoint & q2) {
     UInt quad = q2.global_num;
 
     if(q1 == q2) return 1.;
@@ -229,24 +233,6 @@ public:
       this->material.packElementDataHelper(damage,
                                            buffer,
                                            elements);
-#if defined(AKANTU_DEBUG_TOOLS)
-#if defined(AKANTU_CORE_CXX11)
-      debug::element_manager.print(debug::_dm_material,
-                                   [&elements, &mat](const Element & el)->std::string {
-                                     std::stringstream out;
-                                     UInt pos = elements.find(el);
-                                     if(pos != UInt(-1)) {
-                                       Real d = mat.getArray("damage", el.type, el.ghost_type)(el.element);
-                                       if(d > 0.3)
-                                         out << " damage sent: " << d;
-                                     }
-                                     return out.str();
-                                   });
-#else
-      debug::element_manager.printData(debug::_dm_material, "RemoveDamagedWeightFunction: packElementData",
-                                       mat.getDamage(), mat.getElementFilter());
-#endif
-#endif
     }
   }
 
@@ -258,25 +244,6 @@ public:
       this->material.unpackElementDataHelper(damage,
                                              buffer,
                                              elements);
-#if defined(AKANTU_DEBUG_TOOLS)
-#if defined(AKANTU_CORE_CXX11)
-      debug::element_manager.print(debug::_dm_material,
-                                   [&elements, &mat](const Element & el)->std::string {
-                                     std::stringstream out;
-                                     UInt pos = elements.find(el);
-                                     if(pos != UInt(-1)) {
-                                       Real d = mat.getArray("damage", el.type, el.ghost_type)(el.element);
-                                       if(d > 0.3)
-                                         out << " damage recv: " << d;
-                                     }
-                                     return out.str();
-                                   });
-#else
-      debug::element_manager.printData(debug::_dm_material, "RemoveDamagedWeightFunction: unpackElementData",
-                                       mat.getDamage(), mat.getElementFilter());
-#endif
-#endif
-
     }
   }
 
@@ -307,7 +274,9 @@ public:
     selected_damage_rate_with_damage_rate = &(this->material.getArray("damage-rate",type2, ghost_type2));
   }
 
-  inline Real operator()(Real r, __attribute__((unused)) QuadraturePoint & q1, QuadraturePoint & q2) {
+  inline Real operator()(Real r,
+			 const __attribute__((unused)) QuadraturePoint & q1,
+			 const QuadraturePoint & q2) {
     UInt quad = q2.global_num;
 
     if(q1.global_num == quad) return 1.;
@@ -357,7 +326,9 @@ public:
   inline void selectType(ElementType type1, GhostType ghost_type1,
                          ElementType type2, GhostType ghost_type2);
 
-  inline Real operator()(Real r, QuadraturePoint & q1, QuadraturePoint & q2);
+  inline Real operator()(Real r,
+			 const QuadraturePoint & q1,
+			 const QuadraturePoint & q2);
 
   inline Real computeRhoSquare(Real r,
                                Vector<Real> & eigs,

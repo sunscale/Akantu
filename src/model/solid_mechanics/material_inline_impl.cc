@@ -174,6 +174,52 @@ inline void Material::setCauchyStressMatrix(const Matrix<Real> & S_t, Matrix<Rea
 }
 
 /* -------------------------------------------------------------------------- */
+inline QuadraturePoint Material::convertToLocalPoint(const QuadraturePoint & global_point) {
+  const FEEngine & fem = this->model->getFEEngine();
+
+  UInt nb_quad = fem.getNbQuadraturePoints(global_point.type);
+
+  UInt ge = global_point.element;
+
+  Vector<UInt> & model_mat_index = this->model->getElementIndexByMaterial(global_point.type,
+									  global_point.ghost_type).begin(2)[ge];
+
+#ifndef AKANTU_NDEBUG
+  UInt mat_index = this->model->getMaterialIndex(this->name);
+  AKANTU_DEBUG_ASSERT(model_mat_index(0) == mat_index,
+		      "Conversion of a global quadrature point in a local quadrature point for the wrong material "
+		      << this->name << std::endl);
+#endif
+
+  UInt le = model_mat_index(1);
+
+  QuadraturePoint tmp_quad(le,
+			   global_point.num_point,
+			   le * nb_quad + global_point.num_point,
+			   global_point.getPosition(),
+			   global_point.type,
+			   global_point.ghost_type);
+  return tmp_quad;
+}
+
+/* -------------------------------------------------------------------------- */
+inline QuadraturePoint Material::convertToGlobalPoint(const QuadraturePoint & local_point) {
+  const FEEngine & fem = this->model->getFEEngine();
+
+  UInt nb_quad = fem.getNbQuadraturePoints(local_point.type);
+  UInt le = local_point.element;
+  UInt ge = this->element_filter(local_point.type, local_point.ghost_type)(le);
+
+  QuadraturePoint tmp_quad(ge,
+			   local_point.num_point,
+			   le * nb_quad + local_point.num_point,
+			   local_point.getPosition(),
+			   local_point.type,
+			   local_point.ghost_type);
+  return tmp_quad;
+}
+
+/* -------------------------------------------------------------------------- */
 template<ElementType type>
 inline void Material::buildElementalFieldInterpolationCoodinates(__attribute__((unused)) const Matrix<Real> & coordinates,
 								 __attribute__((unused)) Matrix<Real> & coordMatrix) {
@@ -359,7 +405,7 @@ inline void Material::packElementDataHelper(const ElementTypeMapArray<T> & data_
 					    CommunicationBuffer & buffer,
 					    const Array<Element> & elements,
 					    const ID & fem_id) const {
-  DataAccessor::packElementalDataHelper<T>(data_to_pack, buffer, elements, true, 
+  DataAccessor::packElementalDataHelper<T>(data_to_pack, buffer, elements, true,
 					   model->getFEEngine(fem_id));
 }
 
