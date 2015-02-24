@@ -89,10 +89,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
-  /// reassigns materials depending on the material selector
-  virtual void reassignMaterial();
-
   /// set the value of the time step
   void setTimeStep(Real time_step);
 

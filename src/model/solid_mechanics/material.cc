@@ -414,7 +414,7 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
   SparseMatrix & K = const_cast<SparseMatrix &>(model->getStiffnessMatrix());
 
   const Array<Real> & shapes_derivatives = model->getFEEngine().getShapesDerivatives(type,
-                                                                                ghost_type);
+										ghost_type);
 
   Array<UInt> & elem_filter = element_filter(type, ghost_type);
   Array<Real> & gradu_vect = gradu(type, ghost_type);
@@ -422,13 +422,13 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
   UInt nb_element           = elem_filter.getSize();
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   UInt nb_quadrature_points = model->getFEEngine().getNbQuadraturePoints(type,
-                                                                    ghost_type);
+								    ghost_type);
 
   gradu_vect.resize(nb_quadrature_points * nb_element);
 
   model->getFEEngine().gradientOnQuadraturePoints(model->getDisplacement(),
-                                             gradu_vect, dim, type, ghost_type,
-                                             elem_filter);
+					     gradu_vect, dim, type, ghost_type,
+					     elem_filter);
 
   UInt tangent_size = getTangentStiffnessVoigtSize(dim);
 
@@ -444,7 +444,7 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
     new Array<Real>(0, dim * nb_nodes_per_element, "filtered shapesd");
 
   FEEngine::filterElementalData(model->getFEEngine().getMesh(), shapes_derivatives,
-                           *shapesd_filtered, type, ghost_type, elem_filter);
+			   *shapesd_filtered, type, ghost_type, elem_filter);
 
 
   /// compute @f$\mathbf{B}^t * \mathbf{D} * \mathbf{B}@f$
@@ -496,7 +496,7 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
   delete bt_d_b;
 
   model->getFEEngine().assembleMatrix(*K_e, K, spatial_dimension, type, ghost_type,
-                                 elem_filter);
+				 elem_filter);
   delete K_e;
 
   AKANTU_DEBUG_OUT();
@@ -1032,9 +1032,9 @@ void Material::initElementalFieldInterpolation(const ElementTypeMapArray<Real> &
 
 #define AKANTU_INIT_INTERPOLATE_ELEMENTAL_FIELD(type)			\
       initElementalFieldInterpolation<type>(quadrature_points_coordinates(type, ghost_type), \
-                                            interp_points_coord,	\
+					    interp_points_coord,	\
 					    nb_interpolation_points_per_elem, \
-                                            ghost_type)			\
+					    ghost_type)			\
 
       AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(AKANTU_INIT_INTERPOLATE_ELEMENTAL_FIELD);
 #undef AKANTU_INIT_INTERPOLATE_ELEMENTAL_FIELD
@@ -1047,9 +1047,9 @@ void Material::initElementalFieldInterpolation(const ElementTypeMapArray<Real> &
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 void Material::initElementalFieldInterpolation(const Array<Real> & quad_coordinates,
-                                               const Array<Real> & interpolation_points_coordinates,
+					       const Array<Real> & interpolation_points_coordinates,
 					       const UInt nb_interpolation_points_per_elem,
-                                               const GhostType ghost_type) {
+					       const GhostType ghost_type) {
   AKANTU_DEBUG_IN();
   UInt size_inverse_coords =
     getSizeElementalFieldInterpolationCoodinates<type>(ghost_type);
@@ -1060,13 +1060,13 @@ void Material::initElementalFieldInterpolation(const Array<Real> & quad_coordina
 
   if(!interpolation_inverse_coordinates.exists(type, ghost_type))
     interpolation_inverse_coordinates.alloc(nb_element,
-                                            size_inverse_coords*size_inverse_coords,
-                                            type, ghost_type);
+					    size_inverse_coords*size_inverse_coords,
+					    type, ghost_type);
 
   if(!interpolation_points_matrices.exists(type, ghost_type))
     interpolation_points_matrices.alloc(nb_element,
-                                        nb_interpolation_points_per_elem * size_inverse_coords,
-                                        type, ghost_type);
+					nb_interpolation_points_per_elem * size_inverse_coords,
+					type, ghost_type);
 
   Array<Real> & interp_inv_coord = interpolation_inverse_coordinates(type, ghost_type);
   Array<Real> & interp_points_mat = interpolation_points_matrices(type, ghost_type);
@@ -1075,13 +1075,13 @@ void Material::initElementalFieldInterpolation(const Array<Real> & quad_coordina
 
   Array<Real>::const_matrix_iterator quad_coords_it =
     quad_coordinates.begin_reinterpret(spatial_dimension,
-                                       nb_quad_per_element,
-                                       nb_element);
+				       nb_quad_per_element,
+				       nb_element);
 
   Array<Real>::const_matrix_iterator points_coords_begin =
     interpolation_points_coordinates.begin_reinterpret(spatial_dimension,
-                                                       nb_interpolation_points_per_elem,
-                                                       interpolation_points_coordinates.getSize() / nb_interpolation_points_per_elem);
+						       nb_interpolation_points_per_elem,
+						       interpolation_points_coordinates.getSize() / nb_interpolation_points_per_elem);
 
   Array<Real>::matrix_iterator inv_quad_coord_it =
     interp_inv_coord.begin(size_inverse_coords, size_inverse_coords);
@@ -1113,7 +1113,7 @@ void Material::initElementalFieldInterpolation(const Array<Real> & quad_coordina
 
     /// insert the quad coordinates in a matrix compatible with the interpolation
     buildElementalFieldInterpolationCoodinates<type>(points_coords,
-                                                     inv_points_coord_matrix);
+						     inv_points_coord_matrix);
   }
 
   AKANTU_DEBUG_OUT();
@@ -1162,24 +1162,24 @@ void Material::interpolateElementalField(const Array<Real> & field,
   Matrix<Real> coefficients(nb_quad_per_element, field.getNbComponent());
 
   const Array<Real> & interp_inv_coord = interpolation_inverse_coordinates(type,
-                                                                           ghost_type);
+									   ghost_type);
   const Array<Real> & interp_points_coord = interpolation_points_matrices(type,
-                                                                          ghost_type);
+									  ghost_type);
 
   UInt nb_interpolation_points_per_elem = interp_points_coord.getNbComponent() / size_inverse_coords;
 
   Array<Real>::const_matrix_iterator field_it
     = field.begin_reinterpret(field.getNbComponent(),
-                              nb_quad_per_element,
-                              nb_element);
+			      nb_quad_per_element,
+			      nb_element);
 
   Array<Real>::const_matrix_iterator interpolation_points_coordinates_it =
     interp_points_coord.begin(nb_interpolation_points_per_elem, size_inverse_coords);
 
   Array<Real>::matrix_iterator result_begin
     = result.begin_reinterpret(field.getNbComponent(),
-                               nb_interpolation_points_per_elem,
-                               result.getSize() / nb_interpolation_points_per_elem);
+			       nb_interpolation_points_per_elem,
+			       result.getSize() / nb_interpolation_points_per_elem);
 
   Array<Real>::const_matrix_iterator inv_quad_coord_it =
     interp_inv_coord.begin(size_inverse_coords, size_inverse_coords);
@@ -1246,8 +1246,8 @@ const InternalField<Real> & Material::getInternal(const ID & int_id) const {
   std::map<ID, InternalField<Real> *>::const_iterator it = internal_vectors_real.find(getID() + ":" + int_id);
   if(it == internal_vectors_real.end()) {
     AKANTU_EXCEPTION("The material " << name << "(" << getID()
-                     << ") does not contain an internal "
-                     << int_id << " (" << (getID() + ":" + int_id) << ")");
+		     << ") does not contain an internal "
+		     << int_id << " (" << (getID() + ":" + int_id) << ")");
   }
   return *it->second;
 }
@@ -1257,8 +1257,8 @@ InternalField<Real> & Material::getInternal(const ID & int_id) {
   std::map<ID, InternalField<Real> *>::iterator it = internal_vectors_real.find(getID() + ":" + int_id);
   if(it == internal_vectors_real.end()) {
     AKANTU_EXCEPTION("The material " << name << "(" << getID()
-                     << ") does not contain an internal "
-                     << int_id << " (" << (getID() + ":" + int_id) << ")");
+		     << ") does not contain an internal "
+		     << int_id << " (" << (getID() + ":" + int_id) << ")");
   }
   return *it->second;
 }
@@ -1491,67 +1491,67 @@ void Material::printself(std::ostream & stream, int indent) const {
 }
 
 /* -------------------------------------------------------------------------- */
-
 void Material::flattenInternal(const std::string & field_id,
-			       ElementTypeMapArray<Real> & internal_flat, 
-			       const GhostType ghost_type,  
+			       ElementTypeMapArray<Real> & internal_flat,
+			       const GhostType ghost_type,
 			       ElementKind element_kind){
 
-    typedef ElementTypeMapArray<UInt>::type_iterator iterator;
-    iterator tit = this->element_filter.firstType(this->spatial_dimension, 
-						  ghost_type, element_kind);
-    iterator end = this->element_filter.lastType(this->spatial_dimension, 
-						 ghost_type, element_kind);
+  typedef ElementTypeMapArray<UInt>::type_iterator iterator;
+  iterator tit = this->element_filter.firstType(this->spatial_dimension,
+						ghost_type, element_kind);
+  iterator end = this->element_filter.lastType(this->spatial_dimension,
+					       ghost_type, element_kind);
 
 
-    for (; tit != end; ++tit) {
-      
-      ElementType type = *tit;
+  for (; tit != end; ++tit) {
 
-      try {
-	__attribute__((unused)) const Array<Real> & src_vect 
-	  = this->getArray(field_id,type,ghost_type);
+    ElementType type = *tit;
 
-      } catch(debug::Exception & e) { 
-	continue; 
-      }
+    try {
+      __attribute__((unused)) const Array<Real> & src_vect
+	= this->getArray(field_id,type,ghost_type);
 
-      const Array<Real> & src_vect = this->getArray(field_id,type,ghost_type);
-      const Array<UInt> & filter   = this->element_filter(type,ghost_type);
-
-      // total number of elements for a given type
-      UInt nb_element = this->model->mesh.getNbElement(type,ghost_type);
-      // number of filtered elements
-      UInt nb_element_src = filter.getSize();
-      // number of quadrature points per elem
-      UInt nb_quad_per_elem = 0;
-      // number of data per quadrature point
-      UInt nb_data_per_quad = src_vect.getNbComponent();
-
-      if (!internal_flat.exists(type,ghost_type)){
-	internal_flat.alloc(nb_element*nb_quad_per_elem,nb_data_per_quad,type,ghost_type);      }
-
-      if (nb_element_src == 0) continue;
-      nb_quad_per_elem = (src_vect.getSize()/nb_element_src);
-      
-      // number of data per element
-      UInt nb_data = nb_quad_per_elem * src_vect.getNbComponent();
-
-      Array<Real> & dst_vect = internal_flat(type,ghost_type);
-      dst_vect.resize(nb_element*nb_quad_per_elem);
-
-      Array<UInt>::const_scalar_iterator it  = filter.begin();
-      Array<UInt>::const_scalar_iterator end = filter.end();
-      Array<Real>::const_vector_iterator it_src = 
-	src_vect.begin_reinterpret(nb_data,nb_element_src);
-
-      Array<Real>::vector_iterator it_dst = 
-	dst_vect.begin_reinterpret(nb_data,nb_element);
-
-      for (; it != end ; ++it,++it_src) {
-	it_dst[*it] = *it_src;
-      }
+    } catch(debug::Exception & e) {
+      continue;
     }
+
+    const Array<Real> & src_vect = this->getArray(field_id,type,ghost_type);
+    const Array<UInt> & filter   = this->element_filter(type,ghost_type);
+
+    // total number of elements for a given type
+    UInt nb_element = this->model->mesh.getNbElement(type,ghost_type);
+    // number of filtered elements
+    UInt nb_element_src = filter.getSize();
+    // number of quadrature points per elem
+    UInt nb_quad_per_elem = 0;
+    // number of data per quadrature point
+    UInt nb_data_per_quad = src_vect.getNbComponent();
+
+    if (!internal_flat.exists(type,ghost_type)) {
+      internal_flat.alloc(nb_element*nb_quad_per_elem,nb_data_per_quad,type,ghost_type);
+    }
+
+    if (nb_element_src == 0) continue;
+    nb_quad_per_elem = (src_vect.getSize()/nb_element_src);
+
+    // number of data per element
+    UInt nb_data = nb_quad_per_elem * src_vect.getNbComponent();
+
+    Array<Real> & dst_vect = internal_flat(type,ghost_type);
+    dst_vect.resize(nb_element*nb_quad_per_elem);
+
+    Array<UInt>::const_scalar_iterator it  = filter.begin();
+    Array<UInt>::const_scalar_iterator end = filter.end();
+    Array<Real>::const_vector_iterator it_src =
+      src_vect.begin_reinterpret(nb_data,nb_element_src);
+
+    Array<Real>::vector_iterator it_dst =
+      dst_vect.begin_reinterpret(nb_data,nb_element);
+
+    for (; it != end ; ++it,++it_src) {
+      it_dst[*it] = *it_src;
+    }
+  }
 };
 /* -------------------------------------------------------------------------- */
 
