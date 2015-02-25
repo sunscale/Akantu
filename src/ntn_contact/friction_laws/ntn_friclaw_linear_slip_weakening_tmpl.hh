@@ -38,7 +38,7 @@ NTNFricLawLinearSlipWeakening<Regularisation>::NTNFricLawLinearSlipWeakening(NTN
   this->registerParam("d_c",  this->d_c,  _pat_parsmod, "slip weakening length");
 
   this->setParamAccessType("mu", _pat_readable);
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -57,8 +57,6 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::computeFrictionalStrength() 
 template <class Regularisation>
 void NTNFricLawLinearSlipWeakening<Regularisation>::computeFrictionCoefficient() {
   AKANTU_DEBUG_IN();
-  
-  SolidMechanicsModel & model = this->contact->getModel();
 
   // get arrays
   const SynchronizedArray<bool> & stick = this->internalGetIsSticking();
@@ -75,8 +73,8 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::computeFrictionCoefficient()
       }
       else {
 	// mu = mu_k + (1 - slip / Dc) * (mu_s - mu_k)
-	this->mu(n) = this->mu_k(n) 
-	            + (1 - (slip(n) / this->d_c(n))) * (this->mu_s(n) - this->mu_k(n));
+	this->mu(n) = this->mu_k(n)
+		    + (1 - (slip(n) / this->d_c(n))) * (this->mu_s(n) - this->mu_k(n));
       }
     }
   }
@@ -88,7 +86,7 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::computeFrictionCoefficient()
 template <class Regularisation>
 void NTNFricLawLinearSlipWeakening<Regularisation>::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
-  
+
   this->mu_s.registerDependingArray(array);
 
   AKANTU_DEBUG_OUT();
@@ -98,13 +96,13 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::registerSynchronizedArray(Sy
 template <class Regularisation>
 void NTNFricLawLinearSlipWeakening<Regularisation>::dumpRestart(const std::string & file_name) const {
   AKANTU_DEBUG_IN();
-  
+
   this->mu_s.dumpRestartFile(file_name);
   this->mu_k.dumpRestartFile(file_name);
   this->d_c.dumpRestartFile(file_name);
 
   NTNFricLawCoulomb<Regularisation>::dumpRestart(file_name);
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -112,13 +110,13 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::dumpRestart(const std::strin
 template <class Regularisation>
 void NTNFricLawLinearSlipWeakening<Regularisation>::readRestart(const std::string & file_name) {
   AKANTU_DEBUG_IN();
-  
+
   this->mu_s.readRestartFile(file_name);
   this->mu_k.readRestartFile(file_name);
   this->d_c.readRestartFile(file_name);
 
   NTNFricLawCoulomb<Regularisation>::readRestart(file_name);
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -128,7 +126,7 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::printself(std::ostream & str
   AKANTU_DEBUG_IN();
   std::string space;
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
-  
+
   stream << space << "NTNFricLawLinearSlipWeakening [" << std::endl;
   NTNFricLawCoulomb<Regularisation>::printself(stream, ++indent);
   stream << space << "]" << std::endl;
@@ -142,10 +140,10 @@ template <class Regularisation>
 void NTNFricLawLinearSlipWeakening<Regularisation>::addDumpFieldToDumper(const std::string & dumper_name,
 							     const std::string & field_id) {
   AKANTU_DEBUG_IN();
-  
+
 #ifdef AKANTU_USE_IOHELPER
   //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact->getSlaves());
-  
+
   if(field_id == "mu_s") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
@@ -164,7 +162,7 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::addDumpFieldToDumper(const s
   else {
     NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(dumper_name, field_id);
   }
-  
+
 #endif
 
   AKANTU_DEBUG_OUT();

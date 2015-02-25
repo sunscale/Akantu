@@ -359,8 +359,6 @@ void NTNBaseContact::computeContactPressure() {
 			  this->model.getBlockedDOFs(),
 			  this->model.getF_M2A());
 
-  const Array<Real> & residual = this->model.getResidual();
-
   // compute relative normal fields of displacement, velocity and acceleration 
   Array<Real> r_disp(0,1);
   Array<Real> r_velo(0,1);

@@ -29,7 +29,7 @@ NTNFricLawCoulomb<Regularisation>::NTNFricLawCoulomb(NTNBaseContact * contact,
   AKANTU_DEBUG_IN();
 
   Regularisation::registerSynchronizedArray(this->mu);
-  
+
   this->registerParam("mu", this->mu, _pat_parsmod, "friction coefficient");
 
   AKANTU_DEBUG_OUT();
@@ -39,8 +39,6 @@ NTNFricLawCoulomb<Regularisation>::NTNFricLawCoulomb(NTNBaseContact * contact,
 template <class Regularisation>
 void NTNFricLawCoulomb<Regularisation>::computeFrictionalStrength() {
   AKANTU_DEBUG_IN();
-  
-  SolidMechanicsModel & model = this->contact->getModel();
 
   // get contact arrays
   const SynchronizedArray<bool> & is_in_contact = this->internalGetIsInContact();
@@ -71,7 +69,7 @@ void NTNFricLawCoulomb<Regularisation>::computeFrictionalStrength() {
 template <class Regularisation>
 void NTNFricLawCoulomb<Regularisation>::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
-  
+
   this->mu.registerDependingArray(array);
 
   AKANTU_DEBUG_OUT();
@@ -81,11 +79,11 @@ void NTNFricLawCoulomb<Regularisation>::registerSynchronizedArray(SynchronizedAr
 template <class Regularisation>
 void NTNFricLawCoulomb<Regularisation>::dumpRestart(const std::string & file_name) const {
   AKANTU_DEBUG_IN();
-  
+
   this->mu.dumpRestartFile(file_name);
-  
+
   Regularisation::dumpRestart(file_name);
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -93,11 +91,11 @@ void NTNFricLawCoulomb<Regularisation>::dumpRestart(const std::string & file_nam
 template <class Regularisation>
 void NTNFricLawCoulomb<Regularisation>::readRestart(const std::string & file_name) {
   AKANTU_DEBUG_IN();
-  
+
   this->mu.readRestartFile(file_name);
 
   Regularisation::readRestart(file_name);
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -107,7 +105,7 @@ void NTNFricLawCoulomb<Regularisation>::printself(std::ostream & stream, int ind
   AKANTU_DEBUG_IN();
   std::string space;
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
-  
+
   stream << space << "NTNFricLawCoulomb [" << std::endl;
   Regularisation::printself(stream, ++indent);
   stream << space << "]" << std::endl;
@@ -121,10 +119,10 @@ template <class Regularisation>
 void NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(const std::string & dumper_name,
 							     const std::string & field_id) {
   AKANTU_DEBUG_IN();
-  
+
 #ifdef AKANTU_USE_IOHELPER
   //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact->getSlaves());
-  
+
   if(field_id == "mu") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
@@ -140,7 +138,7 @@ void NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(const std::string &
   else {
     Regularisation::addDumpFieldToDumper(dumper_name, field_id);
   }
-  
+
 #endif
 
   AKANTU_DEBUG_OUT();

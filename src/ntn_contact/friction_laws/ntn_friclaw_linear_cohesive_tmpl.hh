@@ -36,7 +36,7 @@ NTNFricLawLinearCohesive<Regularisation>::NTNFricLawLinearCohesive(NTNBaseContac
   this->registerParam("G_c",   this->G_c,   _pat_parsmod, "fracture energy");
   this->registerParam("tau_c", this->tau_c, _pat_parsmod, "peak shear strength");
   this->registerParam("tau_r", this->tau_r, _pat_parsmod, "residual shear strength");
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -44,8 +44,6 @@ NTNFricLawLinearCohesive<Regularisation>::NTNFricLawLinearCohesive(NTNBaseContac
 template <class Regularisation>
 void NTNFricLawLinearCohesive<Regularisation>::computeFrictionalStrength() {
   AKANTU_DEBUG_IN();
-
-  SolidMechanicsModel & model = this->contact->getModel();
 
   // get arrays
   const SynchronizedArray<bool> & is_in_contact = this->internalGetIsInContact();
@@ -69,10 +67,10 @@ void NTNFricLawLinearCohesive<Regularisation>::computeFrictionalStrength() {
       else {
 	Real slope = (this->tau_c(n) - this->tau_r(n)) * (this->tau_c(n) - this->tau_r(n)) / (2*this->G_c(n));
 	// no strength < tau_r
-	strength(n) = std::max(this->tau_c(n) - slope * slip(n), this->tau_r(n)); 
+	strength(n) = std::max(this->tau_c(n) - slope * slip(n), this->tau_r(n));
 	// strength(n) = std::max(this->tau_c(n) - slope * slip(n), 0.); // no negative strength
 
-	// if we want to keep strength loss after restick, 
+	// if we want to keep strength loss after restick,
 	// we need to do min between new strength and previous strength
       }
     }
@@ -87,7 +85,7 @@ void NTNFricLawLinearCohesive<Regularisation>::computeFrictionalStrength() {
 template <class Regularisation>
 void NTNFricLawLinearCohesive<Regularisation>::registerSynchronizedArray(SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
-  
+
   this->G_c.registerDependingArray(array);
 
   AKANTU_DEBUG_OUT();
@@ -97,13 +95,13 @@ void NTNFricLawLinearCohesive<Regularisation>::registerSynchronizedArray(Synchro
 template <class Regularisation>
 void NTNFricLawLinearCohesive<Regularisation>::dumpRestart(const std::string & file_name) const {
   AKANTU_DEBUG_IN();
-  
+
   this->G_c.dumpRestartFile(file_name);
   this->tau_c.dumpRestartFile(file_name);
   this->tau_r.dumpRestartFile(file_name);
 
   Regularisation::dumpRestart(file_name);
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -111,13 +109,13 @@ void NTNFricLawLinearCohesive<Regularisation>::dumpRestart(const std::string & f
 template <class Regularisation>
 void NTNFricLawLinearCohesive<Regularisation>::readRestart(const std::string & file_name) {
   AKANTU_DEBUG_IN();
-  
+
   this->G_c.readRestartFile(file_name);
   this->tau_c.readRestartFile(file_name);
   this->tau_r.readRestartFile(file_name);
 
   Regularisation::readRestart(file_name);
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -128,11 +126,11 @@ void NTNFricLawLinearCohesive<Regularisation>::printself(std::ostream & stream,
   AKANTU_DEBUG_IN();
   std::string space;
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
-  
+
   stream << space << "NTNFricLawLinearCohesive [" << std::endl;
   Regularisation::printself(stream, ++indent);
   stream << space << "]" << std::endl;
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -141,10 +139,10 @@ template <class Regularisation>
 void NTNFricLawLinearCohesive<Regularisation>::addDumpFieldToDumper(const std::string & dumper_name,
 							     const std::string & field_id) {
   AKANTU_DEBUG_IN();
-  
+
 #ifdef AKANTU_USE_IOHELPER
   //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact->getSlaves());
-  
+
   if(field_id == "G_c") {
     this->internalAddDumpFieldToDumper(dumper_name,
 				       field_id,
@@ -163,7 +161,7 @@ void NTNFricLawLinearCohesive<Regularisation>::addDumpFieldToDumper(const std::s
   else {
     Regularisation::addDumpFieldToDumper(dumper_name, field_id);
   }
-  
+
 #endif
 
   AKANTU_DEBUG_OUT();
