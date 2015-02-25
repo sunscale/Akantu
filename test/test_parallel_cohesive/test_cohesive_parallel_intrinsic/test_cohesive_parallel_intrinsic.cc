@@ -96,6 +96,12 @@ int main(int argc, char *argv[]) {
   model.addDumpField("force");
   model.dump();
 
+  
+  model.setBaseNameToDumper("cohesive elements",
+			    "cohesive_elements_parallel_intrinsic");
+  model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
+  model.dump("cohesive elements");
+
   /// initial conditions
   Real loading_rate = .2;
   for (UInt n = 0; n < nb_nodes; ++n) {
@@ -107,8 +113,9 @@ int main(int argc, char *argv[]) {
 
     model.solveStep();
 
-    if(s % 1 == 0) {
+    if(s % 20 == 0) {
       model.dump();
+      model.dump("cohesive elements");
       if(prank == 0) std::cout << "passing step " << s << "/" << max_steps << std::endl;
     }
 

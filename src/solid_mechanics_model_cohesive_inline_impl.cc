@@ -102,7 +102,7 @@ inline UInt SolidMechanicsModelCohesive::getNbDataForElements(const Array<Elemen
 
     switch(tag) {
     case _gst_material_id: {
-      size += elements.getSize() * 2 * sizeof(UInt);
+      size += elements.getSize() * sizeof(UInt);
       break;
     }
     case _gst_smm_boundary: {
@@ -173,7 +173,7 @@ inline void SolidMechanicsModelCohesive::packElementData(CommunicationBuffer & b
     switch(tag) {
 
     case _gst_material_id: {
-      packElementalDataHelper(element_index_by_material, buffer,
+      packElementalDataHelper(material_index, buffer,
 			      elements, false, getFEEngine("CohesiveFEEngine"));
       break;
     }
@@ -235,7 +235,7 @@ inline void SolidMechanicsModelCohesive::unpackElementData(CommunicationBuffer &
 
     switch(tag) {
     case _gst_material_id: {
-      unpackElementalDataHelper(element_index_by_material, buffer,
+      unpackElementalDataHelper(material_index, buffer,
 				elements, false, getFEEngine("CohesiveFEEngine"));
       break;
     }
