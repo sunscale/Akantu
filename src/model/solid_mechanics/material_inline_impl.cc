@@ -181,17 +181,16 @@ inline QuadraturePoint Material::convertToLocalPoint(const QuadraturePoint & glo
 
   UInt ge = global_point.element;
 
-  Vector<UInt> & model_mat_index = this->model->getElementIndexByMaterial(global_point.type,
-									  global_point.ghost_type).begin(2)[ge];
-
 #ifndef AKANTU_NDEBUG
+  UInt model_mat_index = this->model->getMaterialByElement(global_point.type,
+							   global_point.ghost_type)(ge);
   UInt mat_index = this->model->getMaterialIndex(this->name);
-  AKANTU_DEBUG_ASSERT(model_mat_index(0) == mat_index,
+  AKANTU_DEBUG_ASSERT(model_mat_index == mat_index,
 		      "Conversion of a global quadrature point in a local quadrature point for the wrong material "
 		      << this->name << std::endl);
 #endif
-
-  UInt le = model_mat_index(1);
+  UInt le = this->model->getMaterialLocalNumbering(global_point.type,
+						   global_point.ghost_type)(ge);
 
   QuadraturePoint tmp_quad(le,
 			   global_point.num_point,

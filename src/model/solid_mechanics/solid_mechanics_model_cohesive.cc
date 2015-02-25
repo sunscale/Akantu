@@ -79,7 +79,7 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(Mesh & mesh,
 #if defined(AKANTU_USE_IOHELPER)
   this->mesh.registerDumper<DumperParaview>("cohesive elements", id);
   this->mesh.addDumpMeshToDumper("cohesive elements",
-			    mesh, spatial_dimension, _not_ghost, _ek_cohesive);
+				 mesh, spatial_dimension, _not_ghost, _ek_cohesive);
 #endif
 
   AKANTU_DEBUG_OUT();
@@ -188,9 +188,10 @@ void SolidMechanicsModelCohesive::initMaterials() {
       Mesh::type_iterator last  = mesh.lastType(spatial_dimension, *gt, _ek_cohesive);
 
       for(;first != last; ++first) {
-	Array<UInt> & el_id_by_mat = element_index_by_material(*first, *gt);
-	Vector<UInt> el_mat(2); el_mat(0) = cohesive_index; el_mat(1) = 0;
-	el_id_by_mat.set(el_mat);
+	Array<UInt> & mat_indexes = this->material_index(*first, *gt);
+	Array<UInt> & mat_loc_num = this->material_local_numbering(*first, *gt);
+	mat_indexes.set(cohesive_index);
+	mat_loc_num.clear();
       }
     }
   }
@@ -700,15 +701,15 @@ void SolidMechanicsModelCohesive::onElementsAdded(const Array<Element> & element
 						  const NewElementsEvent & event) {
   AKANTU_DEBUG_IN();
 
+#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+  updateCohesiveSynchronizers();
+#endif
+
   SolidMechanicsModel::onElementsAdded(element_list, event);
 
   /// update shape functions
   getFEEngine("CohesiveFEEngine").initShapeFunctions(_not_ghost);
   getFEEngine("CohesiveFEEngine").initShapeFunctions(_ghost);
-
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  updateCohesiveSynchronizers();
-#endif
 
   if (is_extrinsic) resizeFacetStress();
 

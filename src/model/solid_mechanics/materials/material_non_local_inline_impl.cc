@@ -152,7 +152,6 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::cleanupExtraGhostEleme
       remove_elem.getNewNumbering().alloc(nb_ghost_elem, 1, *it, _ghost);
     else remove_elem.getNewNumbering(*it, _ghost).resize(nb_ghost_elem);
 
-    Array<UInt> & elem_filter = element_filter(*it, _ghost);
     Array<UInt> & new_numbering = remove_elem.getNewNumbering(*it, _ghost);
     UInt ng = 0;
     for (UInt g = 0; g < nb_ghost_elem; ++g) {
@@ -215,8 +214,6 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 template<UInt spatial_dimension, template <UInt> class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::fillCellList(const ElementTypeMapArray<Real> & quadrature_points_coordinates,
 								       const GhostType & ghost_type) {
-  Mesh & mesh = this->model->getFEEngine().getMesh();
-
   QuadraturePoint q;
   q.ghost_type = ghost_type;
 
@@ -251,8 +248,6 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::fillCellList(const Ele
 template<UInt spatial_dimension, template <UInt> class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::updatePairList(const ElementTypeMapArray<Real> & quadrature_points_coordinates) {
   AKANTU_DEBUG_IN();
-
-  Mesh & mesh = this->model->getFEEngine().getMesh();
 
   GhostType ghost_type = _not_ghost;
   QuadraturePoint q1;
@@ -439,9 +434,6 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::weightedAvergageOnNeig
 
     const QuadraturePoint & lq1 = first_pair->first;
     const QuadraturePoint & lq2 = first_pair->second;
-
-    const Array<T> & to_acc = to_accumulate(lq2.type, lq2.ghost_type);
-    Array<T> & acc = accumulated(lq1.type, lq1.ghost_type);
 
     const Vector<T> & q2_to_acc = to_accumulate(lq2.type, lq2.ghost_type).begin(nb_degree_of_freedom)[lq2.global_num];
     Vector<T> & q1_acc = accumulated(lq1.type, lq1.ghost_type).begin(nb_degree_of_freedom)[lq1.global_num];

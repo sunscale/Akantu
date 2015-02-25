@@ -48,7 +48,7 @@ class MaterialPadder : public PadderGeneric<Vector<T>, R > {
 public:
   MaterialPadder(const SolidMechanicsModel & model) :
     model(model),
-    element_index_by_material(model.getElementIndexByMaterial()) { }
+    material_index(model.getMaterialByElement()) {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -58,7 +58,7 @@ public:
   const Material & getMaterialFromGlobalIndex(Element global_index){
 
     UInt index = global_index.getIndex();
-    UInt material_id = element_index_by_material(global_index.getType())(index);
+    UInt material_id = material_index(global_index.getType())(index);
     const Material & material = model.getMaterial(material_id);
     return material;
   }
@@ -77,7 +77,8 @@ protected:
   /// all material padders probably need access to solid mechanics model
   const SolidMechanicsModel & model;
   /// they also need an access to the map from global ids to material id and local ids
-  const ElementTypeMapArray<UInt>  & element_index_by_material;
+  const ElementTypeMapArray<UInt>  & material_index;
+
   /// the number of data per element
   const ElementTypeMapArray<UInt>  nb_data_per_element;
 
@@ -96,10 +97,9 @@ public:
   }
 
   inline Matrix<Real> func(const Vector<Real> & in, Element global_element_id){
-
     UInt nrows = spatial_dimension;
     UInt ncols = in.size() / nrows;
-    UInt nb_data = in.size() / (ncols*ncols);
+    UInt nb_data = in.size() / (nrows*nrows);
 
     Matrix<Real> stress = this->pad(in, nrows,ncols, nb_data);
     const Material & material = this->getMaterialFromGlobalIndex(global_element_id);
@@ -121,7 +121,6 @@ public:
   UInt getNbComponent(UInt old_nb_comp){
     return this->getDim();
   };
-
 };
 
 /* -------------------------------------------------------------------------- */

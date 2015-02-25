@@ -249,7 +249,7 @@ private:
 class DefaultMaterialCohesiveSelector : public DefaultMaterialSelector {
 public:
   DefaultMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model) :
-    DefaultMaterialSelector(model.getElementIndexByMaterial()),
+    DefaultMaterialSelector(model.getMaterialByElement()),
     facet_material(model.getFacetMaterial()),
     mesh(model.getMesh()) { }
 

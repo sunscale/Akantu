@@ -691,7 +691,7 @@ void DistributedSynchronizer::asynchronousSynchronize(DataAccessor & data_access
 						      SynchronizationTag tag) {
   AKANTU_DEBUG_IN();
 
-  if (communications.find(tag) == communications.end())
+  //if (communications.find(tag) == communications.end())
     computeBufferSize(data_accessor, tag);
 
   Communication & communication = communications[tag];

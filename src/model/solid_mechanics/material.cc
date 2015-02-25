@@ -1271,10 +1271,12 @@ void Material::addElements(const Array<Element> & elements_to_add) {
   Array<Element>::const_iterator<Element> el_end   = elements_to_add.end();
   for(;el_begin != el_end; ++el_begin) {
     const Element & element = *el_begin;
-    Array<UInt> & element_index_material = model->getElementIndexByMaterial(element.type, element.ghost_type);
+    Array<UInt> & mat_indexes = model->getMaterialByElement     (element.type, element.ghost_type);
+    Array<UInt> & mat_loc_num = model->getMaterialLocalNumbering(element.type, element.ghost_type);
+
     UInt index = this->addElement(element.type, element.element, element.ghost_type);
-    element_index_material(element.element, 0) = mat_id;
-    element_index_material(element.element, 1) = index;
+    mat_indexes(element.element) = mat_id;
+    mat_loc_num(element.element) = index;
   }
 
   this->resizeInternals();
@@ -1307,7 +1309,7 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
       element.type = type;
 
       Array<UInt> & elem_filter = this->element_filter(type, ghost_type);
-      Array<UInt> & element_index_material = model->getElementIndexByMaterial(type, ghost_type);
+      Array<UInt> & mat_loc_num = this->model->getMaterialLocalNumbering(type, ghost_type);
 
       if(!material_local_new_numbering.exists(type, ghost_type))
 	material_local_new_numbering.alloc(elem_filter.getSize(), 1, type, ghost_type);
@@ -1325,7 +1327,7 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
 	  elem_filter_tmp.push_back(element.element);
 
 	  mat_renumbering(el) = new_id;
-	  element_index_material(element.element, 1) = new_id;
+	  mat_loc_num(element.element) = new_id;
 	  ++new_id;
 	} else {
 	  mat_renumbering(el) = UInt(-1);
@@ -1382,14 +1384,19 @@ void Material::onElementsRemoved(const Array<Element> & element_list,
     GhostType gt = *g;
 
     ElementTypeMapArray<UInt>::type_iterator it  = new_numbering.firstType(_all_dimensions, gt, _ek_not_defined);
-    ElementTypeMapArray<UInt>::type_iterator end = new_numbering.lastType(_all_dimensions, gt, _ek_not_defined);
+    ElementTypeMapArray<UInt>::type_iterator end = new_numbering.lastType (_all_dimensions, gt, _ek_not_defined);
     for (; it != end; ++it) {
       ElementType type = *it;
       if(element_filter.exists(type, gt)){
 	Array<UInt> & elem_filter = element_filter(type, gt);
 
-	Array<UInt> & element_index_material = model->getElementIndexByMaterial(type, gt);
-	element_index_material.resize(model->getFEEngine().getMesh().getNbElement(type, gt)); // all materials will resize of the same size...
+	Array<UInt> & mat_indexes = this->model->getMaterialByElement     (*it, gt);
+	Array<UInt> & mat_loc_num = this->model->getMaterialLocalNumbering(*it, gt);
+	UInt nb_element = this->model->getMesh().getNbElement(type, gt);
+
+	// all materials will resize of the same size...
+	mat_indexes.resize(nb_element);
+	mat_loc_num.resize(nb_element);
 
 	if(!material_local_new_numbering.exists(type, gt))
 	  material_local_new_numbering.alloc(elem_filter.getSize(), 1, type, gt);
@@ -1408,8 +1415,9 @@ void Material::onElementsRemoved(const Array<Element> & element_list,
 	    AKANTU_DEBUG_ASSERT(new_el != UInt(-1), "A not removed element as been badly renumbered");
 	    elem_filter_tmp.push_back(new_el);
 	    mat_renumbering(i) = ni;
-	    element_index_material(new_el, 0) = my_num;
-	    element_index_material(new_el, 1) = ni;
+
+	    mat_indexes(new_el) = my_num;
+	    mat_loc_num(new_el) = ni;
 	    ++ni;
 	  } else {
 	    mat_renumbering(i) = UInt(-1);
