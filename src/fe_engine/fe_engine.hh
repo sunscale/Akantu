@@ -53,6 +53,11 @@ class QuadraturePoint : public Element {
 public:
   typedef Vector<Real> position_type;
 public:
+  QuadraturePoint(const Element & element, UInt num_point = 0, UInt nb_quad_per_element = 0) :
+    Element(element), num_point(num_point),
+    global_num(element.element*nb_quad_per_element + num_point),
+    position((Real *)NULL, 0) { };
+
   QuadraturePoint(ElementType type = _not_defined, UInt element = 0,
 		  UInt num_point = 0, GhostType ghost_type = _not_ghost) :
     Element(type, element, ghost_type), num_point(num_point), global_num(0),

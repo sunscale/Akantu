@@ -55,6 +55,13 @@ MaterialNonLocal<DIM, WeightFunction>::MaterialNonLocal(SolidMechanicsModel & mo
   compute_stress_calls(0), is_creating_grid(false), grid_synchronizer(NULL) {
   AKANTU_DEBUG_IN();
 
+
+  for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+    GhostType ghost_type = (GhostType) gt;
+    pair_weight[ghost_type] = NULL;
+  }
+
+
   this->is_non_local = true;
   this->weight_func = new WeightFunction<DIM>(*this);
 
@@ -138,10 +145,12 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::cleanupExtraGhostEleme
 
   RemovedElementsEvent remove_elem(mesh);
 
-  Element element;
-  element.ghost_type = _ghost;
+
+  Element element_global;   // member element corresponds to global element number
+  element_global.ghost_type = _ghost;
+
   for(; it != last_type; ++it) {
-    element.type = *it;
+    element_global.type = *it;
     UInt nb_ghost_elem = mesh.getNbElement(*it, _ghost);
     UInt nb_ghost_elem_protected = 0;
     try {
@@ -155,15 +164,17 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::cleanupExtraGhostEleme
     Array<UInt> & new_numbering = remove_elem.getNewNumbering(*it, _ghost);
     UInt ng = 0;
     for (UInt g = 0; g < nb_ghost_elem; ++g) {
-      element.element = g;
-      if(element.element >= nb_ghost_elem_protected &&
-	 (std::find(relevant_ghost_element.begin(),
-		    relevant_ghost_element.end(),
-		    element) == relevant_ghost_element.end())) {
-	remove_elem.getList().push_back(element);
+      if (element_global.element >= nb_ghost_elem_protected) {
+	Element element_local = this->convertToLocalElement(element_global);
+
+	if (std::find(relevant_ghost_element.begin(),
+		      relevant_ghost_element.end(),
+		      element_local) == relevant_ghost_element.end()) {
+	remove_elem.getList().push_back(element_global);
 	new_numbering(g) = UInt(-1);
-      } else {
-	new_numbering(g) = ng;
+      }
+    } else {
+      new_numbering(g) = ng;
 	++ng;
       }
     }
@@ -202,6 +213,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 							       sstr.str());
   synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_for_average);
   synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_weight);
+  synch_registry.registerSynchronizer(*grid_synchronizer, _gst_material_id);
   is_creating_grid = false;
 
   this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _ghost);
@@ -326,7 +338,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
   for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
     GhostType ghost_type2 = (GhostType) gt;
 
-    if(!pair_weight[ghost_type2]) {
+    if(!(pair_weight[ghost_type2])) {
       std::string ghost_id = "";
       if (ghost_type2 == _ghost) ghost_id = ":ghost";
       std::stringstream sstr; sstr << getID() << ":pair_weight:" << ghost_id;
@@ -578,20 +590,20 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::neighbourhoodStatistic
 
   //   for (; first_pair_types != last_pair_types; ++first_pair_types) {
   //     const Array<UInt> & pairs =
-  // 	pair_list(first_pair_types->first, ghost_type1)(first_pair_types->second, ghost_type2);
+  //	pair_list(first_pair_types->first, ghost_type1)(first_pair_types->second, ghost_type2);
   //     if(prank == 0) {
-  // 	pout << ghost_type2 << " ";
-  // 	pout << "Types : " << first_pair_types->first << " " << first_pair_types->second << std::endl;
+  //	pout << ghost_type2 << " ";
+  //	pout << "Types : " << first_pair_types->first << " " << first_pair_types->second << std::endl;
   //     }
   //     Array<UInt>::const_iterator< Vector<UInt> > first_pair = pairs.begin(2);
   //     Array<UInt>::const_iterator< Vector<UInt> > last_pair  = pairs.end(2);
   //     Array<UInt> & nb_neigh_1 = nb_neighbors(first_pair_types->first, ghost_type1);
   //     Array<UInt> & nb_neigh_2 = nb_neighbors(first_pair_types->second, ghost_type2);
   //     for(;first_pair != last_pair; ++first_pair) {
-  // 	UInt q1 = (*first_pair)(0);
-  // 	UInt q2 = (*first_pair)(1);
-  // 	++(nb_neigh_1(q1));
-  // 	if(q1 != q2) ++(nb_neigh_2(q2));
+  //	UInt q1 = (*first_pair)(0);
+  //	UInt q2 = (*first_pair)(1);
+  //	++(nb_neigh_1(q1));
+  //	if(q1 != q2) ++(nb_neigh_2(q2));
   //     }
   //   }
 
@@ -607,10 +619,10 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::neighbourhoodStatistic
   //     Array<UInt>::iterator<UInt> end_neigh  = nb_neighor.end();
 
   //     for (; nb_neigh != end_neigh; ++nb_neigh, ++nb_quads) {
-  // 	UInt nb = *nb_neigh;
-  // 	sum_nb_neig += nb;
-  // 	max_nb_neig = std::max(max_nb_neig, nb);
-  // 	min_nb_neig = std::min(min_nb_neig, nb);
+  //	UInt nb = *nb_neigh;
+  //	sum_nb_neig += nb;
+  //	max_nb_neig = std::max(max_nb_neig, nb);
+  //	min_nb_neig = std::min(min_nb_neig, nb);
   //     }
   //   }
 
@@ -699,14 +711,12 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::unpackElementDa
 }
 
 /* -------------------------------------------------------------------------- */
-// template<UInt spatial_dimension, template <UInt> class WeightFunction>
-// inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsAdded(const Array<Element> & element_list) {
-//   AKANTU_DEBUG_IN();
-
-//   Material::onElementsAdded(element_list, event);
-
-//   AKANTU_DEBUG_OUT();
-// }
+template<UInt spatial_dimension, template <UInt> class WeightFunction>
+inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsAdded(const Array<Element> & element_list) {
+  AKANTU_DEBUG_IN();
+  AKANTU_DEBUG_ERROR("This is a case not taken into account!!!");
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, template <UInt> class WeightFunction>
@@ -722,22 +732,29 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsRemov
     PairList::iterator first_pair = pair_list[ghost_type2].begin();
     PairList::iterator last_pair  = pair_list[ghost_type2].end();
 
-    Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
+    //   Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
 
-    for(;first_pair != last_pair; ++first_pair, ++weight_it) {
+    for(;first_pair != last_pair; ++first_pair) {
       QuadraturePoint & q1 = first_pair->first;
       QuadraturePoint gq1  = this->convertToGlobalPoint(q1);
+      q1 = gq1;
 
-      UInt q1_new_el = new_numbering(q1.type, q1.ghost_type)(gq1.element);
-      AKANTU_DEBUG_ASSERT(q1_new_el != UInt(-1), "A local quadrature_point as been removed instead of just being renumbered");
-      q1 = gq1; q1.element = q1_new_el;
+      if(new_numbering.exists(q1.type, q1.ghost_type)) {
+	UInt q1_new_el = new_numbering(q1.type, q1.ghost_type)(gq1.element);
+	AKANTU_DEBUG_ASSERT(q1_new_el != UInt(-1), "A local quadrature_point as been removed instead of just being renumbered");
+	q1.element = q1_new_el;
+      }
 
-      QuadraturePoint & q2 = first_pair->first;
+
+      QuadraturePoint & q2 = first_pair->second;
       QuadraturePoint gq2  = this->convertToGlobalPoint(q2);
+      q2 = gq2;
 
-      UInt q2_new_el = new_numbering(q2.type, q2.ghost_type)(gq2.element);
-      AKANTU_DEBUG_ASSERT(q2_new_el != UInt(-1), "A local quadrature_point as been removed instead of just being renumbered");
-      q2 = gq2; q2.element = q2_new_el;
+      if(new_numbering.exists(q2.type, q2.ghost_type)) {
+	UInt q2_new_el = new_numbering(q2.type, q2.ghost_type)(gq2.element);
+	AKANTU_DEBUG_ASSERT(q2_new_el != UInt(-1), "A local quadrature_point as been removed instead of just being renumbered");
+	q2.element = q2_new_el;
+      }
     }
   }
 
@@ -751,9 +768,9 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsRemov
     PairList::iterator first_pair = pair_list[ghost_type2].begin();
     PairList::iterator last_pair  = pair_list[ghost_type2].end();
 
-    Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
+    //   Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
 
-    for(;first_pair != last_pair; ++first_pair, ++weight_it) {
+    for(;first_pair != last_pair; ++first_pair) {
       first_pair->first  = this->convertToLocalPoint(first_pair->first );
       first_pair->second = this->convertToLocalPoint(first_pair->second);
     }

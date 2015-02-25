@@ -54,6 +54,7 @@ Material::Material(SolidMechanicsModel & model, const ID & id) :
   stress("stress", *this),
   eigenstrain("eigenstrain", *this),
   gradu("grad_u", *this),
+  green_strain("green_strain",*this),
   piola_kirchhoff_2("piola_kirchhoff_2", *this),
   //  potential_energy_vector(false),
   potential_energy("potential_energy", *this),
@@ -101,6 +102,7 @@ void Material::initMaterial() {
   if(finite_deformation) {
     this->piola_kirchhoff_2.initialize(spatial_dimension * spatial_dimension);
     if(use_previous_stress) this->piola_kirchhoff_2.initializeHistory();
+    this->green_strain.initialize(spatial_dimension * spatial_dimension);
   }
 
   if(use_previous_stress) this->stress.initializeHistory();
