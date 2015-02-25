@@ -465,6 +465,9 @@ protected:
   /// grad_u arrays ordered by element types
   InternalField<Real> gradu;
 
+  /// Green Lagrange strain (Finite deformation)
+  InternalField<Real> green_strain;
+
   /// Second Piola-Kirchhoff stress tensor arrays ordered by element types (Finite deformation)
   InternalField<Real> piola_kirchhoff_2;
 
