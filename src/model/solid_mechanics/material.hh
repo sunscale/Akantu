@@ -311,10 +311,15 @@ public:
   inline void gradUToGreenStrain(const Matrix<Real> & grad_u,
                                  Matrix<Real> & epsilon) const;
 protected:
+  /// converts global element to local element
+  inline Element convertToLocalElement(const Element & global_element) const;
+  /// converts local element to global element
+  inline Element convertToGlobalElement(const Element & local_element) const;
+
   /// converts global quadrature point to local quadrature point
-  inline QuadraturePoint convertToLocalPoint(const QuadraturePoint & global_point);
+  inline QuadraturePoint convertToLocalPoint(const QuadraturePoint & global_point) const;
   /// converts local quadrature point to global quadrature point
-  inline QuadraturePoint convertToGlobalPoint(const QuadraturePoint & local_point);
+  inline QuadraturePoint convertToGlobalPoint(const QuadraturePoint & local_point) const;
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */

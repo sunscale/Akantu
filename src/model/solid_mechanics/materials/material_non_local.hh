@@ -105,7 +105,7 @@ protected:
 					const Array<Element> & elements,
 					SynchronizationTag tag);
 
-  //  virtual inline void onElementsAdded(const Array<Element> & element_list);
+  virtual inline void onElementsAdded(const Array<Element> & element_list);
   virtual inline void onElementsRemoved(const Array<Element> & element_list,
 					const ElementTypeMapArray<UInt> & new_numbering,
 					const RemovedElementsEvent & event);
