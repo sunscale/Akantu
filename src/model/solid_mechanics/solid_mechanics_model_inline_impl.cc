@@ -95,7 +95,8 @@ inline void SolidMechanicsModel::splitElementByMaterial(const Array<Element> & e
                                                        Array<Element> * elements_per_mat) const {
   ElementType current_element_type = _not_defined;
   GhostType current_ghost_type = _casper;
-  const Array<UInt> * elem_mat = NULL;
+  const Array<UInt> * mat_indexes = NULL;
+  const Array<UInt> * mat_loc_num = NULL;
 
   Array<Element>::const_iterator<Element> it  = elements.begin();
   Array<Element>::const_iterator<Element> end = elements.end();
@@ -105,12 +106,13 @@ inline void SolidMechanicsModel::splitElementByMaterial(const Array<Element> & e
     if(el.type != current_element_type || el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
       current_ghost_type   = el.ghost_type;
-      elem_mat = &element_index_by_material(el.type, el.ghost_type);
+      mat_indexes = &(this->material_index(el.type, el.ghost_type));
+      mat_loc_num = &(this->material_local_numbering(el.type, el.ghost_type));
     }
 
     UInt old_id = el.element;
-    el.element = (*elem_mat)(old_id, 1);
-    elements_per_mat[(*elem_mat)(old_id, 0)].push_back(el);
+    el.element = (*mat_loc_num)(old_id);
+    elements_per_mat[(*mat_indexes)(old_id)].push_back(el);
   }
 }
 
@@ -131,7 +133,7 @@ inline UInt SolidMechanicsModel::getNbDataForElements(const Array<Element> & ele
 
   switch(tag) {
   case _gst_material_id: {
-    size += elements.getSize() * 2 * sizeof(UInt);
+    size += elements.getSize() * sizeof(UInt);
     break;
   }
   case _gst_smm_mass: {
@@ -172,7 +174,7 @@ inline void SolidMechanicsModel::packElementData(CommunicationBuffer & buffer,
 
   switch(tag) {
   case _gst_material_id: {
-    packElementalDataHelper(element_index_by_material, buffer, elements, false, getFEEngine());
+    packElementalDataHelper(material_index, buffer, elements, false, getFEEngine());
     break;
   }
   case _gst_smm_mass: {
@@ -214,7 +216,7 @@ inline void SolidMechanicsModel::unpackElementData(CommunicationBuffer & buffer,
 
   switch(tag) {
   case _gst_material_id: {
-    unpackElementalDataHelper(element_index_by_material, buffer, elements,
+    unpackElementalDataHelper(material_index, buffer, elements,
                              false, getFEEngine());
     break;
   }
@@ -421,7 +423,7 @@ __BEGIN_AKANTU__
 template <NewmarkBeta::IntegrationSchemeCorrectorType type>
 void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
                                 bool need_factorize, bool has_profile_changed) {
-  
+
   if(has_profile_changed) {
     this->initJacobianMatrix();
     need_factorize = true;

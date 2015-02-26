@@ -4,6 +4,7 @@
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
  * @author Ramin Aghababaei <ramin.aghababaei@epfl.ch>
+ * @author Benjamin Paccaud <benjamin.paccaud@epfl.ch>
  *
  * @date creation: Thu Oct 03 2013
  * @date last modification: Fri Jun 13 2014
@@ -42,7 +43,7 @@ MaterialLinearIsotropicHardening<dim>::MaterialLinearIsotropicHardening(SolidMec
                                                                         const ID & id) :
   Material(model, id), MaterialPlastic<dim>(model, id) {
   AKANTU_DEBUG_IN();
-
+  
   AKANTU_DEBUG_OUT();
 }
 
@@ -52,7 +53,7 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeStress(ElementT
   AKANTU_DEBUG_IN();
 
   MaterialThermal<spatial_dimension>::computeStress(el_type, ghost_type);
-
+  // infinitesimal and finite deformation
   Array<Real>::iterator<> sigma_th_it =
     this->sigma_th(el_type, ghost_type).begin();
 
@@ -76,35 +77,91 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeStress(ElementT
 
   Array<Real>::iterator<> previous_iso_hardening_it =
     this->iso_hardening.previous(el_type, ghost_type).begin();
+  
 
 
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
-  Matrix<Real> & inelastic_strain_tensor = *inelastic_strain_it;
-  Matrix<Real> & previous_inelastic_strain_tensor = *previous_inelastic_strain_it;
-  Matrix<Real> & previous_grad_u = *previous_gradu_it;
-  Matrix<Real> & previous_sigma = *previous_stress_it;
+  //
+  // Finite Deformations
+  //
+  if (this->finite_deformation) {
+        Array<Real>::matrix_iterator previous_piola_kirchhoff_2_it =
+      this->piola_kirchhoff_2.previous(el_type, ghost_type).begin(spatial_dimension, spatial_dimension);
+    
+    Array<Real>::matrix_iterator green_strain_it =
+      this->green_strain(el_type, ghost_type).begin(spatial_dimension,spatial_dimension);
 
-  computeStressOnQuad(grad_u,
-                      previous_grad_u,
-                      sigma,
-                      previous_sigma,
-                      inelastic_strain_tensor,
-                      previous_inelastic_strain_tensor,
-                      *iso_hardening_it,
-                      *previous_iso_hardening_it,
-                      *sigma_th_it,
-                      *previous_sigma_th_it);
+    
+    MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+
+    Matrix<Real> & inelastic_strain_tensor = *inelastic_strain_it;
+    Matrix<Real> & previous_inelastic_strain_tensor = *previous_inelastic_strain_it;
+    Matrix<Real> & previous_grad_u = *previous_gradu_it;    
+    Matrix<Real> & previous_sigma = *previous_piola_kirchhoff_2_it;
+
+    Matrix<Real> & green_strain = *green_strain_it;
+    this->template gradUToGreenStrain<spatial_dimension>(grad_u, green_strain);
+    Matrix<Real> previous_green_strain(spatial_dimension,spatial_dimension);
+    this->template gradUToGreenStrain<spatial_dimension>(previous_grad_u, previous_green_strain);
+    Matrix<Real> F_tensor(spatial_dimension,spatial_dimension);
+    this->template gradUToF<spatial_dimension>(grad_u,F_tensor);
+  
+    computeStressOnQuad(green_strain,
+			previous_green_strain,
+			sigma,
+			previous_sigma,
+			inelastic_strain_tensor,
+			previous_inelastic_strain_tensor,
+			*iso_hardening_it,
+			*previous_iso_hardening_it,
+			*sigma_th_it,
+			*previous_sigma_th_it,
+			F_tensor);
+
   ++sigma_th_it;
   ++inelastic_strain_it;
   ++iso_hardening_it;
   ++previous_sigma_th_it;
-  ++previous_stress_it;
+  //++previous_stress_it;
   ++previous_gradu_it;
+  ++green_strain_it;
   ++previous_inelastic_strain_it;
   ++previous_iso_hardening_it;
-
+  ++previous_piola_kirchhoff_2_it;
+  
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 
+  } 
+  // Infinitesimal deformations
+  else {
+    MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+
+    Matrix<Real> & inelastic_strain_tensor = *inelastic_strain_it;
+    Matrix<Real> & previous_inelastic_strain_tensor = *previous_inelastic_strain_it;
+    Matrix<Real> & previous_grad_u = *previous_gradu_it;    
+    Matrix<Real> & previous_sigma = *previous_stress_it; 
+
+    computeStressOnQuad(grad_u,
+			previous_grad_u,
+			sigma,
+			previous_sigma,
+			inelastic_strain_tensor,
+			previous_inelastic_strain_tensor,
+			*iso_hardening_it,
+			*previous_iso_hardening_it,
+			*sigma_th_it,
+			*previous_sigma_th_it);
+    ++sigma_th_it;
+    ++inelastic_strain_it;
+    ++iso_hardening_it;
+    ++previous_sigma_th_it;
+    ++previous_stress_it;
+    ++previous_gradu_it;
+    ++previous_inelastic_strain_it;
+    ++previous_iso_hardening_it;
+
+    MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
+  }
+  
   AKANTU_DEBUG_OUT();
 }
 

@@ -50,10 +50,17 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 template<UInt DIM, template <UInt> class WeightFunction>
 MaterialNonLocal<DIM, WeightFunction>::MaterialNonLocal(SolidMechanicsModel & model,
-                                                        const ID & id)  :
+							const ID & id)  :
   Material(model, id), weight_func(NULL), spatial_grid(NULL),
   compute_stress_calls(0), is_creating_grid(false), grid_synchronizer(NULL) {
   AKANTU_DEBUG_IN();
+
+
+  for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+    GhostType ghost_type = (GhostType) gt;
+    pair_weight[ghost_type] = NULL;
+  }
+
 
   this->is_non_local = true;
   this->weight_func = new WeightFunction<DIM>(*this);
@@ -111,139 +118,6 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::initMaterial() {
 
   computeWeights(quadrature_points_coordinates);
 
-  // >>>>>> DEBUG CODE >>>>>> //
-#if defined(AKANTU_DEBUG_TOOLS) && defined(AKANTU_CORE_CXX11)
-  debug::element_manager.print
-    (debug::_dm_material_non_local,
-     [this, &quadrature_points_coordinates](const Element & el)->std::string {
-      std::stringstream out;
-      FEEngine & fem = this->model->getFEEngine();
-
-      Mesh mesh(spatial_dimension, getID() + "mesh_tmp");
-      mesh.addConnectivityType(_segment_2);
-      Array<UInt> & connectivity = const_cast<Array<UInt> &>(mesh.getConnectivity(_segment_2));
-      Array<Real> & nodes = const_cast<Array<Real> &>(mesh.getNodes());
-      Array<bool> g_notg(0,1);
-      Array<Real> dist(0,1);
-      Array<Real> weight(0,1);
-      Array<Real> damage(0,1);
-      Array<Real> jac(0,1);
-
-      UInt nb_quad_per_elem =
-        this->model->getFEEngine().getNbQuadraturePoints(el.type,
-                                                    el.ghost_type);
-
-      Array<Real>::const_vector_iterator quad_it = quadrature_points_coordinates(el.type, el.ghost_type).begin(spatial_dimension);
-      std::map<Vector<Real>, UInt> numbering;
-      UInt counter = 0;
-      const Vector<Real> quad = quad_it[el.element * nb_quad_per_elem];
-      numbering[el.element * nb_quad_per_elem] = counter++;
-      nodes.push_back(quad);
-      g_notg.push_back(el.ghost_type == _ghost);
-      dist.push_back(quad.distance(quad));
-      weight.push_back(0.);
-      damage.push_back((getArray("damage", el.type, el.ghost_type)(el.element * fem.getNbQuadraturePoints(el.type, el.ghost_type))));
-      jac.push_back(fem.getIntegratorInterface().getJacobians(el.type, el.ghost_type)(el.element * fem.getNbQuadraturePoints(el.type, el.ghost_type)));
-
-      Vector<UInt> conn(2);
-      conn(0) = 0;
-
-      bool found = false;
-      GhostType ghost_type1 = _not_ghost;
-
-      for (ghost_type_t::iterator git = ghost_type_t::begin();  git != ghost_type_t::end(); ++git) {
-        GhostType ghost_type2 = *git;
-        UInt existing_pairs_num = ghost_type2 - _not_ghost;
-        pair_type::iterator first_pair_types = existing_pairs[existing_pairs_num].begin();
-        pair_type::iterator last_pair_types = existing_pairs[existing_pairs_num].end();
-
-        // Compute the weights
-        for (; first_pair_types != last_pair_types; ++first_pair_types) {
-          ElementType type1 = first_pair_types->first;
-          ElementType type2 = first_pair_types->second;
-
-          const Array<UInt> & elem_mat_1 = element_filter(type1, ghost_type1);
-          const Array<UInt> & elem_mat_2 = element_filter(type2, ghost_type2);
-
-          const Array<UInt> & pairs = pair_list(type1, ghost_type1)(type2, ghost_type2);
-          const Array<Real> & weights = pair_weight(type1, ghost_type1)(type2, ghost_type2);
-
-          UInt nb_quad1 = fem.getNbQuadraturePoints(type1, ghost_type1);
-          UInt nb_quad2 = fem.getNbQuadraturePoints(type2, ghost_type2);
-
-          Array<UInt>::const_iterator< Vector<UInt> > first_pair = pairs.begin(2);
-          Array<UInt>::const_iterator< Vector<UInt> > last_pair  = pairs.end(2);
-          Array<Real>::const_vector_iterator pair_w = weights.begin(2);
-
-          for(;first_pair != last_pair; ++first_pair, ++pair_w) {
-            UInt _q1 = (*first_pair)(0);
-            UInt _q2 = (*first_pair)(1);
-            QuadraturePoint q1(type1, elem_mat_1(_q1 / nb_quad1), _q1 % nb_quad1, ghost_type1);
-            QuadraturePoint q2(type2, elem_mat_2(_q2 / nb_quad2), _q2 % nb_quad2, ghost_type2);
-
-            if(el == (Element) q1 || el == (Element) q2) {
-              QuadraturePoint q;
-	      Real w1;
-              UInt ele;
-              //              Real w2;
-              if(el == (Element) q1) {
-		q = q2;
-		w1 = (*pair_w)(0);
-                ele = q.element * nb_quad2;
-                //                w2 = (*pair_w)(1);
-	      } else {
-		q = q1;
-		w1 = (*pair_w)(1);
-                ele = q.element * nb_quad1;
-                //                w2 = (*pair_w)(0);
-	      }
-
-              found = true;
-
-              fem.getNbQuadraturePoints(q.type, q.ghost_type);
-              quad_it = quadrature_points_coordinates(q.type, q.ghost_type).begin(spatial_dimension);
-              const Vector<Real> & quad_coord = quad_it[q.element * nb_quad_per_elem];
-              std::map<Vector<Real>, UInt>::iterator nit = numbering.find(quad_coord);
-              if(nit != numbering.end()) {
-                conn(1) = nit->second;
-                if(conn(1) == 0) {
-                  weight(0) = w1;
-                }
-              } else {
-                conn(1) = counter++;
-                numbering[quad_coord] = conn(1);
-                nodes.push_back(quad_coord);
-                g_notg.push_back(q.ghost_type == _ghost);
-                dist.push_back(quad.distance(quad_coord));
-                weight.push_back(w1);
-                damage.push_back((getArray("damage", q.type, q.ghost_type)(q.global_num)));
-                jac.push_back(fem.getIntegratorInterface().getJacobians(q.type, q.ghost_type)(ele));
-              }
-              connectivity.push_back(conn);
-            }
-          }
-        }
-      }
-      if(found) {
-        std::stringstream sstr;
-        sstr << "neigh_mesh" << el;
-        out << "./neighbors" << sstr.str() << " dumped!";
-        DumperParaview dumper(sstr.str(), "./neighbors", false);
-        dumper.registerMesh(mesh);
-        dumper.registerField("ghost", new DumperIOHelper::NodalField<bool>(g_notg));
-        dumper.registerField("distance", new DumperIOHelper::NodalField<Real>(dist));
-        dumper.registerField("weight", new DumperIOHelper::NodalField<Real>(weight));
-        dumper.registerField("damage", new DumperIOHelper::NodalField<Real>(damage));
-        dumper.registerField("jacobian", new DumperIOHelper::NodalField<Real>(jac));
-        dumper.dump();
-      }
-
-      return out.str();
-    });
-#endif
-  // <<<<<< DEBUG CODE <<<<<< //
-
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -255,38 +129,28 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::cleanupExtraGhostEleme
   // Create list of element to keep
   std::set<Element> relevant_ghost_element;
 
-  pair_type::const_iterator first_pair_types = existing_pairs[1].begin();
-  pair_type::const_iterator last_pair_types = existing_pairs[1].end();
-  for (; first_pair_types != last_pair_types; ++first_pair_types) {
-    ElementType type2 = first_pair_types->second;
-    GhostType ghost_type2 = _ghost;
-    UInt nb_quad2 = this->model->getFEEngine().getNbQuadraturePoints(type2);
-    Array<UInt> & elem_filter = element_filter(type2, ghost_type2);
-
-    const Array<UInt> & pairs =
-      pair_list(first_pair_types->first, _not_ghost)(first_pair_types->second, ghost_type2);
-    Array<UInt>::const_iterator< Vector<UInt> > first_pair = pairs.begin(2);
-    Array<UInt>::const_iterator< Vector<UInt> > last_pair  = pairs.end(2);
-    for(;first_pair != last_pair; ++first_pair) {
-      UInt _q2 = (*first_pair)(1);
-      QuadraturePoint q2(type2, elem_filter(_q2 / nb_quad2), _q2 % nb_quad2, ghost_type2);
-      relevant_ghost_element.insert(q2);
-    }
+  PairList::const_iterator first_pair = pair_list[_ghost].begin();
+  PairList::const_iterator last_pair  = pair_list[_ghost].end();
+  for(;first_pair != last_pair; ++first_pair) {
+    const QuadraturePoint & q2 = first_pair->second;
+    relevant_ghost_element.insert(q2);
   }
 
   // Create list of element to remove and new numbering for element to keep
   Mesh & mesh = this->model->getFEEngine().getMesh();
   std::set<Element> ghost_to_erase;
 
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, _ghost);
+  Mesh::type_iterator it        = mesh.firstType(spatial_dimension, _ghost);
   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, _ghost);
 
   RemovedElementsEvent remove_elem(mesh);
 
-  Element element;
-  element.ghost_type = _ghost;
+
+  Element element_global;   // member element corresponds to global element number
+  element_global.ghost_type = _ghost;
+
   for(; it != last_type; ++it) {
-    element.type = *it;
+    element_global.type = *it;
     UInt nb_ghost_elem = mesh.getNbElement(*it, _ghost);
     UInt nb_ghost_elem_protected = 0;
     try {
@@ -297,22 +161,21 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::cleanupExtraGhostEleme
       remove_elem.getNewNumbering().alloc(nb_ghost_elem, 1, *it, _ghost);
     else remove_elem.getNewNumbering(*it, _ghost).resize(nb_ghost_elem);
 
-    Array<UInt> & elem_filter = element_filter(*it, _ghost);
     Array<UInt> & new_numbering = remove_elem.getNewNumbering(*it, _ghost);
     UInt ng = 0;
     for (UInt g = 0; g < nb_ghost_elem; ++g) {
-      element.element = elem_filter(g);
-      if(element.element >= nb_ghost_elem_protected &&
-         (std::find(relevant_ghost_element.begin(),
-                    relevant_ghost_element.end(),
-                    element) == relevant_ghost_element.end())) {
-        ghost_to_erase.insert(element);
-        remove_elem.getList().push_back(element);
+      if (element_global.element >= nb_ghost_elem_protected) {
+	Element element_local = this->convertToLocalElement(element_global);
 
-        new_numbering(g) = UInt(-1);
-      } else {
-        new_numbering(g) = ng;
-        ++ng;
+	if (std::find(relevant_ghost_element.begin(),
+		      relevant_ghost_element.end(),
+		      element_local) == relevant_ghost_element.end()) {
+	remove_elem.getList().push_back(element_global);
+	new_numbering(g) = UInt(-1);
+      }
+    } else {
+      new_numbering(g) = ng;
+	++ng;
       }
     }
   }
@@ -339,52 +202,22 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 
   spatial_grid = new SpatialGrid<QuadraturePoint>(spatial_dimension, spacing, center);
 
-  computeQuadraturePointsCoordinates(quadrature_points_coordinates, _not_ghost);
-  fillCellList(quadrature_points_coordinates, _not_ghost);
+  this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _not_ghost);
+  this->fillCellList(quadrature_points_coordinates, _not_ghost);
 
   is_creating_grid = true;
   SynchronizerRegistry & synch_registry = this->model->getSynchronizerRegistry();
   std::stringstream sstr; sstr << getID() << ":grid_synchronizer";
   grid_synchronizer = GridSynchronizer::createGridSynchronizer(mesh,
-                                                               *spatial_grid,
-                                                               sstr.str());
+							       *spatial_grid,
+							       sstr.str());
   synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_for_average);
   synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_weight);
+  synch_registry.registerSynchronizer(*grid_synchronizer, _gst_material_id);
   is_creating_grid = false;
-
-#if not defined(AKANTU_NDEBUG)
-  Mesh * mesh_tmp = NULL;
-  if(AKANTU_DEBUG_TEST(dblDump)) {
-    mesh_tmp = new Mesh(spatial_dimension, "mnl_grid");
-    spatial_grid->saveAsMesh(*mesh_tmp);
-    std::stringstream sstr_grid;
-    StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-    Int prank = comm.whoAmI();
-
-    sstr_grid << "material_non_local_grid_" << std::setfill('0') << std::setw(4) << prank << ".msh";
-    mesh_tmp->write(sstr_grid.str());
-    delete mesh_tmp;
-  }
-#endif
 
   this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _ghost);
   fillCellList(quadrature_points_coordinates, _ghost);
-
-#if not defined(AKANTU_NDEBUG)
-  if(AKANTU_DEBUG_TEST(dblDump)) {
-    mesh_tmp = new Mesh(spatial_dimension, "mnl_grid");
-    spatial_grid->saveAsMesh(*mesh_tmp);
-    std::stringstream sstr_grid;
-    StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-    Int prank = comm.whoAmI();
-
-    sstr_grid.str(std::string());
-    sstr_grid << "material_non_local_grid_ghost_" << std::setfill('0') << std::setw(4) << prank << ".msh";
-
-    mesh_tmp->write(sstr_grid.str());
-    delete mesh_tmp;
-  }
-#endif
 
   AKANTU_DEBUG_OUT();
 }
@@ -392,14 +225,12 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, template <UInt> class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::fillCellList(const ElementTypeMapArray<Real> & quadrature_points_coordinates,
-                                                                       const GhostType & ghost_type) {
-  Mesh & mesh = this->model->getFEEngine().getMesh();
-
+								       const GhostType & ghost_type) {
   QuadraturePoint q;
   q.ghost_type = ghost_type;
 
-  Mesh::type_iterator it        = mesh.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type = mesh.lastType (spatial_dimension, ghost_type);
+  Mesh::type_iterator it        = this->element_filter.firstType(spatial_dimension, ghost_type);
+  Mesh::type_iterator last_type = this->element_filter.lastType (spatial_dimension, ghost_type);
   for(; it != last_type; ++it) {
     Array<UInt> & elem_filter = element_filter(*it, ghost_type);
     UInt nb_element = elem_filter.getSize();
@@ -414,10 +245,10 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::fillCellList(const Ele
     for (UInt e = 0; e < nb_element; ++e) {
       q.element = *elem;
       for (UInt nq = 0; nq < nb_quad; ++nq) {
-        q.num_point = nq;
-        //q.setPosition(*quad);
-        spatial_grid->insert(q, *quad);
-        ++quad;
+	q.num_point = nq;
+	//q.setPosition(*quad);
+	spatial_grid->insert(q, *quad);
+	++quad;
       }
       ++elem;
     }
@@ -430,117 +261,61 @@ template<UInt spatial_dimension, template <UInt> class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::updatePairList(const ElementTypeMapArray<Real> & quadrature_points_coordinates) {
   AKANTU_DEBUG_IN();
 
-  Mesh & mesh = this->model->getFEEngine().getMesh();
-
   GhostType ghost_type = _not_ghost;
-  QuadraturePoint quad_point;
-  quad_point.ghost_type = ghost_type;
+  QuadraturePoint q1;
+  q1.ghost_type = ghost_type;
 
   // generate the pair of neighbor depending of the cell_list
-  Mesh::type_iterator it        = mesh.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
+  Mesh::type_iterator it        = this->element_filter.firstType(spatial_dimension, ghost_type);
+  Mesh::type_iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type);
   for(; it != last_type; ++it) {
     // Preparing datas
     const Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
-    Array<Real>::const_vector_iterator first_quad = quads.begin(spatial_dimension);
-    Array<Real>::const_vector_iterator last_quad  = quads.end(spatial_dimension);
+    Array<Real>::const_vector_iterator q1_coord_it = quads.begin(spatial_dimension);
+    Array<Real>::const_vector_iterator last_quad   = quads.end(spatial_dimension);
 
-    ElementTypeMapArray<UInt> & pairs = pair_list(ElementTypeMapArray<UInt>("pairs", getID(), memory_id),
-                                          *it,
-                                          ghost_type);
-
-    ElementType current_element_type = _not_defined;
-    GhostType current_ghost_type = _casper;
-    UInt existing_pairs_num = 0;
-
-    Array<UInt> * neighbors = NULL;
-    Array<UInt>::const_iterator< Vector<UInt> > element_index_material_it;
-    Array<Real>::const_vector_iterator quad_coord_it;
-
-    UInt my_num_quad = 0;
-    quad_point.type = *it;
+    q1.type = *it;
+    q1.global_num = 0;
     // loop over quad points
-    for(;first_quad != last_quad; ++first_quad, ++my_num_quad) {
-      SpatialGrid<QuadraturePoint>::CellID cell_id = spatial_grid->getCellID(*first_quad);
+    for(;q1_coord_it != last_quad; ++q1_coord_it, ++(q1.global_num)) {
+      UInt nb_quad1 =
+	this->model->getFEEngine().getNbQuadraturePoints(q1.type,
+							 q1.ghost_type);
+      q1.element = q1.global_num / nb_quad1;
+      const Vector<Real> & q1_coord = *q1_coord_it;
 
+      SpatialGrid<QuadraturePoint>::CellID cell_id = spatial_grid->getCellID(q1_coord);
       SpatialGrid<QuadraturePoint>::neighbor_cells_iterator first_neigh_cell =
-        spatial_grid->beginNeighborCells(cell_id);
+	spatial_grid->beginNeighborCells(cell_id);
       SpatialGrid<QuadraturePoint>::neighbor_cells_iterator last_neigh_cell =
-        spatial_grid->endNeighborCells(cell_id);
-
-      quad_point.element = my_num_quad / this->model->getFEEngine().getNbQuadraturePoints(*it,
-                                                                                     quad_point.ghost_type);
+	spatial_grid->endNeighborCells(cell_id);
 
       // loop over neighbors cells of the one containing the current quadrature
       // point
       for (; first_neigh_cell != last_neigh_cell; ++first_neigh_cell) {
-        SpatialGrid<QuadraturePoint>::Cell::iterator first_neigh_quad =
-          spatial_grid->beginCell(*first_neigh_cell);
-        SpatialGrid<QuadraturePoint>::Cell::iterator last_neigh_quad =
-          spatial_grid->endCell(*first_neigh_cell);
+	SpatialGrid<QuadraturePoint>::Cell::iterator first_neigh_quad =
+	  spatial_grid->beginCell(*first_neigh_cell);
+	SpatialGrid<QuadraturePoint>::Cell::iterator last_neigh_quad =
+	  spatial_grid->endCell(*first_neigh_cell);
 
-        // loop over the quadrature point in the current cell of the cell list
-        for (;first_neigh_quad != last_neigh_quad; ++first_neigh_quad){
-          QuadraturePoint quad = *first_neigh_quad;
-          UInt nb_quad_per_elem =
-            this->model->getFEEngine().getNbQuadraturePoints(quad.type,
-                                                        quad.ghost_type);
+	// loop over the quadrature point in the current cell of the cell list
+	for (;first_neigh_quad != last_neigh_quad; ++first_neigh_quad){
+	  QuadraturePoint q2 = this->convertToLocalPoint(*first_neigh_quad);
 
-          // little optimization to not search in the map at each quad points
-          if(quad.type != current_element_type ||
-             quad.ghost_type != current_ghost_type) {
+	  Array<Real>::const_vector_iterator q2_coord_it =
+	    quadrature_points_coordinates(q2.type,
+					  q2.ghost_type).begin(spatial_dimension);
 
-            current_element_type = quad.type;
-            current_ghost_type   = quad.ghost_type;
-            existing_pairs_num = quad.ghost_type == _not_ghost ? 0 : 1;
-            if(!pairs.exists(current_element_type, current_ghost_type)) {
-              neighbors = &(pairs.alloc(0, 2,
-                                        current_element_type,
-                                        current_ghost_type));
-            } else {
-              neighbors = &(pairs(current_element_type,
-                                  current_ghost_type));
-            }
-            existing_pairs[existing_pairs_num].insert(std::pair<ElementType,
-                                                      ElementType>(*it,
-                                                                   current_element_type));
-            element_index_material_it = this->model->getElementIndexByMaterial(current_element_type,
-                                                                               current_ghost_type).begin(2);
-            quad_coord_it = quadrature_points_coordinates(current_element_type, current_ghost_type).begin(spatial_dimension);
-          }
+	  const Vector<Real> & q2_coord = q2_coord_it[q2.global_num];
 
-          const Vector<UInt> & el_mat = element_index_material_it[quad.element];
-          UInt neigh_num_quad = el_mat(1) * nb_quad_per_elem + quad.num_point;
-          const Vector<Real> & neigh_quad = quad_coord_it[neigh_num_quad];
+	  Real distance = q1_coord.distance(q2_coord);
 
-          Real distance = first_quad->distance(neigh_quad);
-          if(distance <= weight_func->getRadius() &&
-             (quad.ghost_type == _ghost ||
-              (quad.ghost_type == _not_ghost && my_num_quad <= neigh_num_quad))) { // storing only half lists
-            UInt pair[2];
-            pair[0] = my_num_quad;
-            pair[1] = neigh_num_quad;
-            neighbors->push_back(pair);
-
-            // >>>>>> DEBUG CODE >>>>>> //
-#if defined(AKANTU_DEBUG_TOOLS) && defined(AKANTU_CORE_CXX11)
-            debug::element_manager.print
-              (debug::_dm_material_non_local,
-               [this, &first_quad, &neigh_quad, &distance,
-                &quad_point, &quad](const Element & el)->std::string {
-                std::stringstream out;
-                if((Element) quad_point == el) {
-                  out << " neigh1: " << quad << " -- " << *first_quad << " " << neigh_quad << " dist: " << distance;
-                }
-                if((Element) quad == el) {
-                  out << " neigh2: " << quad_point << " -- " << *first_quad << " " << neigh_quad << " dist: " << distance;
-                }
-                return out.str();
-              });
-#endif
-            // <<<<<< DEBUG CODE <<<<<< //
-          }
-        }
+	  if(distance <= weight_func->getRadius() &&
+	     (q2.ghost_type == _ghost ||
+	      (q2.ghost_type == _not_ghost && q1.global_num <= q2.global_num))) { // storing only half lists
+	    pair_list[q2.ghost_type].push_back(std::make_pair(q1, q2));
+	  }
+	}
       }
     }
   }
@@ -553,9 +328,6 @@ template<UInt spatial_dimension, template <UInt> class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const ElementTypeMapArray<Real> & quadrature_points_coordinates) {
   AKANTU_DEBUG_IN();
 
-  GhostType ghost_type1;
-  ghost_type1 = _not_ghost;
-
   InternalField<Real> quadrature_points_volumes("quadrature_points_volumes", *this);
   quadrature_points_volumes.initialize(1);
 
@@ -565,111 +337,84 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
 
   for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
     GhostType ghost_type2 = (GhostType) gt;
-    UInt existing_pairs_num = gt - _not_ghost;
-    pair_type::iterator first_pair_types = existing_pairs[existing_pairs_num].begin();
-    pair_type::iterator last_pair_types = existing_pairs[existing_pairs_num].end();
+
+    if(!(pair_weight[ghost_type2])) {
+      std::string ghost_id = "";
+      if (ghost_type2 == _ghost) ghost_id = ":ghost";
+      std::stringstream sstr; sstr << getID() << ":pair_weight:" << ghost_id;
+      pair_weight[ghost_type2] = new Array<Real>(0, 2, sstr.str());
+    }
+
+    pair_weight[ghost_type2]->resize(pair_list[ghost_type2].size());
+    pair_weight[ghost_type2]->clear();
+
+    PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
+    PairList::const_iterator last_pair  = pair_list[ghost_type2].end();
+
+    Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
 
     // Compute the weights
-    for (; first_pair_types != last_pair_types; ++first_pair_types) {
-      ElementType type1 = first_pair_types->first;
-      ElementType type2 = first_pair_types->second;
+    for(;first_pair != last_pair; ++first_pair, ++weight_it) {
+      Vector<Real> & weight = *weight_it;
 
-      const Array<UInt> & pairs = pair_list(type1, ghost_type1)(type2, ghost_type2);
+      const QuadraturePoint & lq1 = first_pair->first;
+      const QuadraturePoint & lq2 = first_pair->second;
 
-      std::string ghost_id = "";
-      if (ghost_type1 == _ghost) ghost_id = ":ghost";
+      QuadraturePoint gq1 = this->convertToGlobalPoint(lq1);
+      QuadraturePoint gq2 = this->convertToGlobalPoint(lq2);
 
-      ElementTypeMapArray<Real> & weights_type_1 = pair_weight(type1, ghost_type1);
-      std::stringstream sstr; sstr << getID() << ":pair_weight:" << type1 << ghost_id;
-      weights_type_1.setID(sstr.str());
+      const Real & q2_wJ = fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type)(gq2.global_num);
 
-      Array<Real> * tmp_weight = NULL;
-      if(!weights_type_1.exists(type2, ghost_type2)) {
-        tmp_weight = &(weights_type_1.alloc(0, 2, type2, ghost_type2));
-      } else {
-        tmp_weight = &(weights_type_1(type2, ghost_type2));
-      }
-      Array<Real> & weights = *tmp_weight;
-      weights.resize(pairs.getSize());
-      weights.clear();
+      Real & q1_volume = quadrature_points_volumes(lq1.type, lq1.ghost_type)(lq1.global_num);
 
-      const Array<Real> & jacobians_1 = fem.getIntegratorInterface().getJacobians(type1, ghost_type1);
-      const Array<Real> & jacobians_2 = fem.getIntegratorInterface().getJacobians(type2, ghost_type2);
+      const Vector<Real> & q1_coord =
+	quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq1.global_num];
+      const Vector<Real> & q2_coord =
+	quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq2.global_num];
 
-      const Array<UInt> & elem_mat_1 = element_filter(type1, ghost_type1);
-      const Array<UInt> & elem_mat_2 = element_filter(type2, ghost_type2);
-
-      UInt nb_quad1 = fem.getNbQuadraturePoints(type1);
-      UInt nb_quad2 = fem.getNbQuadraturePoints(type2);
-
-      Array<Real> & quads_volumes1 = quadrature_points_volumes(type1, ghost_type1);
-      Array<Real> & quads_volumes2 = quadrature_points_volumes(type2, ghost_type2);
-
-      Array<Real>::const_vector_iterator iquads1;
-      Array<Real>::const_vector_iterator iquads2;
-      iquads1 = quadrature_points_coordinates(type1, ghost_type1).begin(spatial_dimension);
-      iquads2 = quadrature_points_coordinates(type2, ghost_type2).begin(spatial_dimension);
-
-      Array<UInt>::const_iterator< Vector<UInt> > first_pair = pairs.begin(2);
-      Array<UInt>::const_iterator< Vector<UInt> > last_pair  = pairs.end(2);
-      Array<Real>::vector_iterator weight  = weights.begin(2);
-
-      this->weight_func->selectType(type1, ghost_type1, type2, ghost_type2);
+      this->weight_func->selectType(lq1.type, lq1.ghost_type, lq2.type, lq2.ghost_type);
 
       // Weight function
-      for(;first_pair != last_pair; ++first_pair, ++weight) {
-        UInt _q1 = (*first_pair)(0);
-        UInt _q2 = (*first_pair)(1);
-        const Vector<Real> & pos1 = iquads1[_q1];
-        const Vector<Real> & pos2 = iquads2[_q2];
-        QuadraturePoint q1(_q1 / nb_quad1, _q1 % nb_quad1, _q1, pos1, type1, ghost_type1);
-        QuadraturePoint q2(_q2 / nb_quad2, _q2 % nb_quad2, _q2, pos2, type2, ghost_type2);
+      Real r = q1_coord.distance(q2_coord);
+      Real w1 = this->weight_func->operator()(r, lq1, lq2);
+      weight(0) = q2_wJ * w1;
+      q1_volume += weight(0);
 
-        Real r = pos1.distance(pos2);
+      if(lq2.ghost_type != _ghost && lq1.global_num != lq2.global_num) {
+	const Real & q1_wJ = fem.getIntegratorInterface().getJacobians(gq1.type, gq1.ghost_type)(gq1.global_num);
+	Real & q2_volume = quadrature_points_volumes(lq2.type, lq2.ghost_type)(lq2.global_num);
 
-        Real w2J2 = jacobians_2(elem_mat_2(q2.element)*nb_quad2 + q2.num_point);
-        Real w = this->weight_func->operator()(r, q1, q2);
-        (*weight)(0) = w2J2 * w;
-        quads_volumes1(_q1) += (*weight)(0);
+	Real w2 = this->weight_func->operator()(r, lq2, lq1);
+	weight(1) = q1_wJ * w2;
 
-        if(ghost_type2 != _ghost && _q1 != _q2) {
-          Real w1J1 = jacobians_1(elem_mat_1(q1.element)*nb_quad1 + q1.num_point);
-          (*weight)(1) = w1J1 * this->weight_func->operator()(r, q2, q1);
-          quads_volumes2(_q2) += (*weight)(1);
-        } else
-          (*weight)(1) = 0;
-      }
+	q2_volume += weight(1);
+      } else
+	weight(1) = 0.;
     }
   }
 
   //normalize the weights
   for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
     GhostType ghost_type2 = (GhostType) gt;
-    UInt existing_pairs_num = gt - _not_ghost;
-    pair_type::iterator first_pair_types = existing_pairs[existing_pairs_num].begin();
-    pair_type::iterator last_pair_types = existing_pairs[existing_pairs_num].end();
 
-    first_pair_types = existing_pairs[existing_pairs_num].begin();
-    for (; first_pair_types != last_pair_types; ++first_pair_types) {
-      ElementType type1 = first_pair_types->first;
-      ElementType type2 = first_pair_types->second;
+    PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
+    PairList::const_iterator last_pair  = pair_list[ghost_type2].end();
 
-      const Array<UInt> & pairs = pair_list(type1, ghost_type1)(type2, ghost_type2);
-      Array<Real> & weights = pair_weight(type1, ghost_type1)(type2, ghost_type2);
+    Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
 
-      Array<Real> & quads_volumes1 = quadrature_points_volumes(type1, ghost_type1);
-      Array<Real> & quads_volumes2 = quadrature_points_volumes(type2, ghost_type2);
+    // Compute the weights
+    for(;first_pair != last_pair; ++first_pair, ++weight_it) {
+      Vector<Real> & weight = *weight_it;
 
-      Array<UInt>::const_iterator< Vector<UInt> > first_pair = pairs.begin(2);
-      Array<UInt>::const_iterator< Vector<UInt> > last_pair  = pairs.end(2);
-      Array<Real>::vector_iterator weight  = weights.begin(2);
+      const QuadraturePoint & lq1 = first_pair->first;
+      const QuadraturePoint & lq2 = first_pair->second;
 
-      for(;first_pair != last_pair; ++first_pair, ++weight) {
-        UInt q1 = (*first_pair)(0);
-        UInt q2 = (*first_pair)(1);
+      Real & q1_volume = quadrature_points_volumes(lq1.type, lq1.ghost_type)(lq1.global_num);
 
-        (*weight)(0) *= 1. / quads_volumes1(q1);
-        if(ghost_type2 != _ghost) (*weight)(1) *= 1. / quads_volumes2(q2);
+      weight(0) *= 1. / q1_volume;
+      if(ghost_type2 != _ghost) {
+	Real & q2_volume = quadrature_points_volumes(lq2.type, lq2.ghost_type)(lq2.global_num);
+	weight(1) *= 1. / q2_volume;
       }
     }
   }
@@ -680,42 +425,38 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, template <UInt> class WeightFunction>
 template<typename T>
-void MaterialNonLocal<spatial_dimension, WeightFunction>::weightedAvergageOnNeighbours(const ElementTypeMapArray<T> & to_accumulate,
-                                                                                       ElementTypeMapArray<T> & accumulated,
-                                                                                       UInt nb_degree_of_freedom,
-                                                                                       GhostType ghost_type2) const {
+void MaterialNonLocal<spatial_dimension, WeightFunction>::weightedAvergageOnNeighbours(const InternalField<T> & to_accumulate,
+										       InternalField<T> & accumulated,
+										       UInt nb_degree_of_freedom,
+										       GhostType ghost_type2) const {
   AKANTU_DEBUG_IN();
 
-  UInt existing_pairs_num = 0;
-  if (ghost_type2 == _ghost) existing_pairs_num = 1;
+  if(ghost_type2 == _not_ghost)  {
+    accumulated.reset();
+  }
 
-  pair_type::const_iterator first_pair_types = existing_pairs[existing_pairs_num].begin();
-  pair_type::const_iterator last_pair_types = existing_pairs[existing_pairs_num].end();
+  PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
+  PairList::const_iterator last_pair  = pair_list[ghost_type2].end();
 
-  GhostType ghost_type1 = _not_ghost; // does not make sens the ghost vs ghost so this should always by _not_ghost
+  Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
 
-  for (; first_pair_types != last_pair_types; ++first_pair_types) {
-    const Array<UInt> & pairs =
-      pair_list(first_pair_types->first, ghost_type1)(first_pair_types->second, ghost_type2);
-    const Array<Real> & weights =
-      pair_weight(first_pair_types->first, ghost_type1)(first_pair_types->second, ghost_type2);
+  // Compute the weights
+  for(;first_pair != last_pair; ++first_pair, ++weight_it) {
+    Vector<Real> & weight = *weight_it;
 
-    const Array<T> & to_acc = to_accumulate(first_pair_types->second, ghost_type2);
-    Array<T> & acc = accumulated(first_pair_types->first, ghost_type1);
+    const QuadraturePoint & lq1 = first_pair->first;
+    const QuadraturePoint & lq2 = first_pair->second;
 
-    if(ghost_type2 == _not_ghost) acc.clear();
+    const Vector<T> & q2_to_acc = to_accumulate(lq2.type, lq2.ghost_type).begin(nb_degree_of_freedom)[lq2.global_num];
+    Vector<T> & q1_acc = accumulated(lq1.type, lq1.ghost_type).begin(nb_degree_of_freedom)[lq1.global_num];
 
-    Array<UInt>::const_iterator< Vector<UInt> > first_pair = pairs.begin(2);
-    Array<UInt>::const_iterator< Vector<UInt> > last_pair  = pairs.end(2);
-    Array<Real>::const_vector_iterator pair_w = weights.begin(2);
+    q1_acc += weight(0) * q2_to_acc;
 
-    for(;first_pair != last_pair; ++first_pair, ++pair_w) {
-      UInt q1 = (*first_pair)(0);
-      UInt q2 = (*first_pair)(1);
-      for(UInt d = 0; d < nb_degree_of_freedom; ++d){
-        acc(q1, d) += (*pair_w)(0) * to_acc(q2, d);
-        if(ghost_type2 != _ghost) acc(q2, d) += (*pair_w)(1) * to_acc(q1, d);
-      }
+    if(ghost_type2 != _ghost) {
+      const Vector<T> & q1_to_acc = to_accumulate(lq1.type, lq1.ghost_type).begin(nb_degree_of_freedom)[lq1.global_num];
+      Vector<T> & q2_acc = accumulated(lq2.type, lq2.ghost_type).begin(nb_degree_of_freedom)[lq2.global_num];
+
+      q2_acc += weight(1) * q1_to_acc;
     }
   }
 
@@ -775,205 +516,21 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeAllNonLocalStre
 
       non_local_variable.non_local->resize();
       this->weightedAvergageOnNeighbours(*non_local_variable.local, *non_local_variable.non_local,
-                                         non_local_variable.nb_component, _not_ghost);
+					 non_local_variable.nb_component, _not_ghost);
     }
 
     ++this->compute_stress_calls;
   } else {
-
     typename std::map<ID, NonLocalVariable>::iterator it = non_local_variables.begin();
     typename std::map<ID, NonLocalVariable>::iterator end = non_local_variables.end();
     for(;it != end; ++it) {
       NonLocalVariable & non_local_variable = it->second;
       this->weightedAvergageOnNeighbours(*non_local_variable.local, *non_local_variable.non_local,
-                                         non_local_variable.nb_component, _ghost);
-
-      // >>>>>> DEBUG CODE >>>>>> //
-#if defined(AKANTU_DEBUG_TOOLS)
-#if defined(AKANTU_CORE_CXX11)
-      debug::element_manager.print(debug::_dm_material,
-                                   [non_local_variable, &element_filter](const Element & el)->std::string {
-                                     std::stringstream out;
-                                     if(element_filter.exists(el.type, el.ghost_type)) {
-                                       UInt pos = element_filter(el.type, el.ghost_type).find(el.element);
-                                       if(pos != UInt(-1)) {
-                                         out << (*non_local_variable.local)(el.type, el.ghost_type).getID()
-                                             << ": loc "
-                                             << (*non_local_variable.local)(el.type, el.ghost_type).begin(non_local_variable.nb_component)[pos]
-                                             << " - non loc "
-                                             << (*non_local_variable.non_local)(el.type, el.ghost_type).begin(non_local_variable.nb_component)[pos];
-                                       }
-                                     }
-                                     return out.str();
-                                   });
-#else
-      debug::element_manager.printData(debug::_dm_material, "MaterialNonLocal: computeAllNonLocalStress",
-                                       *non_local_variable.local, this->element_filter);
-      debug::element_manager.printData(debug::_dm_material, "MaterialNonLocal: computeAllNonLocalStress",
-                                       *non_local_variable.non_local, this->element_filter);
-#endif
-#endif
-      // <<<<<< DEBUG CODE <<<<<< //
+					 non_local_variable.nb_component, _ghost);
     }
 
     computeNonLocalStresses(_not_ghost);
-
-  // >>>>>> DEBUG CODE >>>>>> //
-#if defined(AKANTU_DEBUG_TOOLS) && defined(AKANTU_CORE_CXX11)
-  ElementTypeMapArray<Real> quadrature_points_coordinates("quadrature_points_coordinates", id);
-  Mesh & mesh = this->model->getFEEngine().getMesh();
-  mesh.initElementTypeMapArray(quadrature_points_coordinates, spatial_dimension, spatial_dimension);
-  computeQuadraturePointsCoordinates(quadrature_points_coordinates, _not_ghost);
-  computeQuadraturePointsCoordinates(quadrature_points_coordinates, _ghost);
-
-  debug::element_manager.print
-    (debug::_dm_material_non_local,
-     [this, &quadrature_points_coordinates](const Element & el)->std::string {
-      static UInt step = 0;
-      std::stringstream out;
-
-      GhostType ghost_type1 = _not_ghost;
-      FEEngine & fem = this->model->getFEEngine();
-      Mesh & mesh = this->model->getMesh();
-
-      std::ofstream quad_out;
-      std::stringstream sstro;
-      sstro << "neigh_vals_" << el.element << ".csv";
-      if(step == 0) {
-        quad_out.open(sstro.str());
-        quad_out << "#id,step,gt,realid,w1,w2";
-        for (UInt i = 0; i < spatial_dimension; ++i) {
-          std::stringstream sstr; sstr << ",x" << i ;
-          quad_out << sstr.str();
-        }
-        quad_out << ",dam,jac";
-
-        typename std::map<ID, NonLocalVariable>::iterator it = non_local_variables.begin();
-        typename std::map<ID, NonLocalVariable>::iterator end = non_local_variables.end();
-        for(;it != end; ++it) {
-          NonLocalVariable & non_local_variable = it->second;
-          for (UInt i = 0; i < non_local_variable.nb_component; ++i) {
-            std::stringstream sstr; sstr << "," << non_local_variable.local->getID() << i;
-            quad_out << sstr.str();
-          }
-          for (UInt i = 0; i < non_local_variable.nb_component; ++i) {
-            std::stringstream sstr; sstr << "," << non_local_variable.non_local->getID() << i;
-            quad_out << sstr.str();
-          }
-        }
-        quad_out << std::endl;
-      } else {
-        quad_out.open(sstro.str(), std::ios_base::app);
-      }
-      quad_out.precision(16);
-
-      for (ghost_type_t::iterator git = ghost_type_t::begin();  git != ghost_type_t::end(); ++git) {
-        GhostType ghost_type2 = *git;
-        UInt existing_pairs_num = ghost_type2 - _not_ghost;
-        pair_type::iterator first_pair_types = existing_pairs[existing_pairs_num].begin();
-        pair_type::iterator last_pair_types = existing_pairs[existing_pairs_num].end();
-
-        // Compute the weights
-        for (; first_pair_types != last_pair_types; ++first_pair_types) {
-          ElementType type1 = first_pair_types->first;
-          ElementType type2 = first_pair_types->second;
-
-          const Array<UInt> & elem_mat_1 = element_filter(type1, ghost_type1);
-          const Array<UInt> & elem_mat_2 = element_filter(type2, ghost_type2);
-
-          UInt nb_quad1 = fem.getNbQuadraturePoints(type1, ghost_type1);
-          UInt nb_quad2 = fem.getNbQuadraturePoints(type2, ghost_type2);
-
-          const Array<UInt> & pairs = pair_list(type1, ghost_type1)(type2, ghost_type2);
-          const Array<Real> & weights = pair_weight(type1, ghost_type1)(type2, ghost_type2);
-
-          Array<UInt>::const_iterator< Vector<UInt> > first_pair = pairs.begin(2);
-          Array<UInt>::const_iterator< Vector<UInt> > last_pair  = pairs.end(2);
-          Array<Real>::const_vector_iterator pair_w = weights.begin(2);
-
-          for(;first_pair != last_pair; ++first_pair, ++pair_w) {
-            UInt _q1 = (*first_pair)(0);
-            UInt _q2 = (*first_pair)(1);
-
-            QuadraturePoint q1(type1, elem_mat_1(_q1 / nb_quad1), _q1 % nb_quad1, ghost_type1);
-            QuadraturePoint q2(type2, elem_mat_2(_q2 / nb_quad2), _q2 % nb_quad2, ghost_type2);
-            q1.global_num = _q1;
-            q2.global_num = _q2;
-
-            if(el == (Element) q1 || el == (Element) q2) {
-              QuadraturePoint q;
-	      Real w1, w2;
-              UInt nb_quad;
-              if(el == (Element) q1) {
-		q = q2;
-                nb_quad = nb_quad2;
-		w1 = (*pair_w)(0);
-		w2 = (*pair_w)(1);
-	      } else {
-		q = q1;
-                nb_quad = nb_quad1;
-		w1 = (*pair_w)(1);
-		w2 = (*pair_w)(0);
-	      }
-
-              quad_out << ((q.ghost_type == _ghost ? mesh.getNbElement(q.type, q.ghost_type) : 0) + q.global_num)
-		       << "," << step << "," << q.ghost_type << "," << q.global_num;
-              quad_out << "," << w1 << "," << w2;
-              Array<Real>::const_vector_iterator iquads =
-                quadrature_points_coordinates(q.type, q.ghost_type).begin(spatial_dimension);
-              const Vector<Real> & coord = iquads[q.global_num];
-              for(UInt i(0); i < coord.size(); ++i) {
-                quad_out << "," << coord(i);
-              }
-
-              typename std::map<ID, NonLocalVariable>::iterator nlit = non_local_variables.begin();
-              typename std::map<ID, NonLocalVariable>::iterator nlend = non_local_variables.end();
-              for(;nlit != nlend; ++nlit) {
-                NonLocalVariable & non_local_variable = nlit->second;
-                const Array<Real> & local = (*non_local_variable.local)(q.type, q.ghost_type);
-                for(UInt i(0); i < local.getNbComponent(); ++i) {
-                  quad_out << "," << local(q.global_num, i);
-                }
-                const Array<Real> & non_local = (*non_local_variable.non_local)(q.type, q.ghost_type);
-                for(UInt i(0); i < non_local.getNbComponent(); ++i) {
-                  quad_out << "," << non_local(q.global_num, i);
-                }
-              }
-              Real d = getArray("damage", q.type, q.ghost_type)(q.global_num);
-              Real j = fem.getIntegratorInterface().getJacobians(q.type, q.ghost_type)(q.element*nb_quad + q.num_point);
-              quad_out << "," << d << "," << j;
-
-              quad_out << std::endl;
-            }
-          }
-        }
-      }
-      step++;
-      return out.str();
-    });
-#endif
-  // <<<<<< DEBUG CODE <<<<<< //
   }
-
-  // >>>>>> DEBUG CODE >>>>>> //
-#if defined(AKANTU_DEBUG_TOOLS)
-#if defined(AKANTU_CORE_CXX11)
-  debug::element_manager.print(debug::_dm_material_damage,
-                               [ghost_type, this](const Element & el)->std::string {
-                                 std::stringstream out;
-                                 if(el.ghost_type == ghost_type && element_filter.exists(el.type, ghost_type)) {
-                                   UInt pos = element_filter(el.type, el.ghost_type).find(el.element);
-                                   if(pos != UInt(-1)) {
-                                     Real d = getArray("damage", el.type, el.ghost_type)(pos);
-                                     out << " damage: " << d;
-                                   }
-                                 }
-                                 return out.str();
-                               });
-#endif
-#endif
-  // <<<<<< DEBUG CODE <<<<<< //
-
 }
 
 /* -------------------------------------------------------------------------- */
@@ -989,33 +546,20 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::savePairs(const std::s
 
   pout.open(sstr.str().c_str());
 
-  GhostType ghost_type1;
-  ghost_type1 = _not_ghost;
-
   for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
     GhostType ghost_type2 = (GhostType) gt;
-    UInt existing_pairs_num = gt - _not_ghost;
 
-    pair_type::const_iterator first_pair_types = existing_pairs[existing_pairs_num].begin();
-    pair_type::const_iterator last_pair_types = existing_pairs[existing_pairs_num].end();
+    PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
+    PairList::const_iterator last_pair  = pair_list[ghost_type2].end();
 
-    for (; first_pair_types != last_pair_types; ++first_pair_types) {
-      const Array<UInt> & pairs =
-        (*pair_list(first_pair_types->first, ghost_type1))(first_pair_types->second, ghost_type2);
-      const Array<Real> & weights =
-        (*pair_weight(first_pair_types->first, ghost_type1))(first_pair_types->second, ghost_type2);
+    Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
 
-      pout << "Types : " << first_pair_types->first << " (" << ghost_type1 << ") - " << first_pair_types->second << " (" << ghost_type2 << ")" << std::endl;
+    for(;first_pair != last_pair; ++first_pair, ++weight_it) {
+      Vector<Real> & weight = *weight_it;
 
-      Array<UInt>::const_iterator< Vector<UInt> > first_pair = pairs.begin(2);
-      Array<UInt>::const_iterator< Vector<UInt> > last_pair  = pairs.end(2);
-      Array<Real>::const_vector_iterator pair_w = weights.begin(2);
-
-      for(;first_pair != last_pair; ++first_pair, ++pair_w) {
-        UInt q1 = (*first_pair)(0);
-        UInt q2 = (*first_pair)(1);
-        pout << q1 << " " << q2 << " "<< (*pair_w)(0) << " " << (*pair_w)(1) << std::endl;
-      }
+      const QuadraturePoint & lq1 = first_pair->first;
+      const QuadraturePoint & lq2 = first_pair->second;
+      pout << lq1 << " " << lq2 << " " << weight << std::endl;
     }
   }
 }
@@ -1023,93 +567,93 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::savePairs(const std::s
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, template <UInt> class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::neighbourhoodStatistics(const std::string & filename) const {
-  std::ofstream pout;
-  pout.open(filename.c_str());
+  //   std::ofstream pout;
+  // pout.open(filename.c_str());
 
-  const Mesh & mesh = this->model->getFEEngine().getMesh();
+  // const Mesh & mesh = this->model->getFEEngine().getMesh();
 
-  GhostType ghost_type1;
-  ghost_type1 = _not_ghost;
+  // GhostType ghost_type1;
+  // ghost_type1 = _not_ghost;
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  Int prank = comm.whoAmI();
+  // StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  // Int prank = comm.whoAmI();
 
-  InternalField<UInt> nb_neighbors("nb_neighbours", *const_cast<MaterialNonLocal *>(this));
-  nb_neighbors.initialize(1);
+  // InternalField<UInt> nb_neighbors("nb_neighbours", *const_cast<MaterialNonLocal *>(this));
+  // nb_neighbors.initialize(1);
 
-  for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-    GhostType ghost_type2 = (GhostType) gt;
-    UInt existing_pairs_num = gt - _not_ghost;
+  // for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+  //   GhostType ghost_type2 = (GhostType) gt;
+  //   UInt existing_pairs_num = gt - _not_ghost;
 
-    pair_type::const_iterator first_pair_types = existing_pairs[existing_pairs_num].begin();
-    pair_type::const_iterator last_pair_types = existing_pairs[existing_pairs_num].end();
+  //   pair_type::const_iterator first_pair_types = existing_pairs[existing_pairs_num].begin();
+  //   pair_type::const_iterator last_pair_types = existing_pairs[existing_pairs_num].end();
 
-    for (; first_pair_types != last_pair_types; ++first_pair_types) {
-      const Array<UInt> & pairs =
-        pair_list(first_pair_types->first, ghost_type1)(first_pair_types->second, ghost_type2);
-      if(prank == 0) {
-        pout << ghost_type2 << " ";
-        pout << "Types : " << first_pair_types->first << " " << first_pair_types->second << std::endl;
-      }
-      Array<UInt>::const_iterator< Vector<UInt> > first_pair = pairs.begin(2);
-      Array<UInt>::const_iterator< Vector<UInt> > last_pair  = pairs.end(2);
-      Array<UInt> & nb_neigh_1 = nb_neighbors(first_pair_types->first, ghost_type1);
-      Array<UInt> & nb_neigh_2 = nb_neighbors(first_pair_types->second, ghost_type2);
-      for(;first_pair != last_pair; ++first_pair) {
-        UInt q1 = (*first_pair)(0);
-        UInt q2 = (*first_pair)(1);
-        ++(nb_neigh_1(q1));
-        if(q1 != q2) ++(nb_neigh_2(q2));
-      }
-    }
+  //   for (; first_pair_types != last_pair_types; ++first_pair_types) {
+  //     const Array<UInt> & pairs =
+  //	pair_list(first_pair_types->first, ghost_type1)(first_pair_types->second, ghost_type2);
+  //     if(prank == 0) {
+  //	pout << ghost_type2 << " ";
+  //	pout << "Types : " << first_pair_types->first << " " << first_pair_types->second << std::endl;
+  //     }
+  //     Array<UInt>::const_iterator< Vector<UInt> > first_pair = pairs.begin(2);
+  //     Array<UInt>::const_iterator< Vector<UInt> > last_pair  = pairs.end(2);
+  //     Array<UInt> & nb_neigh_1 = nb_neighbors(first_pair_types->first, ghost_type1);
+  //     Array<UInt> & nb_neigh_2 = nb_neighbors(first_pair_types->second, ghost_type2);
+  //     for(;first_pair != last_pair; ++first_pair) {
+  //	UInt q1 = (*first_pair)(0);
+  //	UInt q2 = (*first_pair)(1);
+  //	++(nb_neigh_1(q1));
+  //	if(q1 != q2) ++(nb_neigh_2(q2));
+  //     }
+  //   }
 
-    Mesh::type_iterator it        = mesh.firstType(spatial_dimension, ghost_type1);
-    Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type1);
-    UInt nb_quads = 0;
-    Real sum_nb_neig = 0;
-    UInt max_nb_neig = 0;
-    UInt min_nb_neig = std::numeric_limits<UInt>::max();
-    for(; it != last_type; ++it) {
-      Array<UInt> & nb_neighor = nb_neighbors(*it, ghost_type1);
-      Array<UInt>::iterator<UInt> nb_neigh = nb_neighor.begin();
-      Array<UInt>::iterator<UInt> end_neigh  = nb_neighor.end();
+  //   Mesh::type_iterator it        = mesh.firstType(spatial_dimension, ghost_type1);
+  //   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type1);
+  //   UInt nb_quads = 0;
+  //   Real sum_nb_neig = 0;
+  //   UInt max_nb_neig = 0;
+  //   UInt min_nb_neig = std::numeric_limits<UInt>::max();
+  //   for(; it != last_type; ++it) {
+  //     Array<UInt> & nb_neighor = nb_neighbors(*it, ghost_type1);
+  //     Array<UInt>::iterator<UInt> nb_neigh = nb_neighor.begin();
+  //     Array<UInt>::iterator<UInt> end_neigh  = nb_neighor.end();
 
-      for (; nb_neigh != end_neigh; ++nb_neigh, ++nb_quads) {
-        UInt nb = *nb_neigh;
-        sum_nb_neig += nb;
-        max_nb_neig = std::max(max_nb_neig, nb);
-        min_nb_neig = std::min(min_nb_neig, nb);
-      }
-    }
+  //     for (; nb_neigh != end_neigh; ++nb_neigh, ++nb_quads) {
+  //	UInt nb = *nb_neigh;
+  //	sum_nb_neig += nb;
+  //	max_nb_neig = std::max(max_nb_neig, nb);
+  //	min_nb_neig = std::min(min_nb_neig, nb);
+  //     }
+  //   }
 
 
-    comm.allReduce(&nb_quads,    1, _so_sum);
-    comm.allReduce(&sum_nb_neig, 1, _so_sum);
-    comm.allReduce(&max_nb_neig, 1, _so_max);
-    comm.allReduce(&min_nb_neig, 1, _so_min);
+  //   comm.allReduce(&nb_quads,    1, _so_sum);
+  //   comm.allReduce(&sum_nb_neig, 1, _so_sum);
+  //   comm.allReduce(&max_nb_neig, 1, _so_max);
+  //   comm.allReduce(&min_nb_neig, 1, _so_min);
 
-    if(prank == 0) {
-      pout << ghost_type2 << " ";
-      pout << "Nb quadrature points: " << nb_quads << std::endl;
+  //   if(prank == 0) {
+  //     pout << ghost_type2 << " ";
+  //     pout << "Nb quadrature points: " << nb_quads << std::endl;
 
-      Real mean_nb_neig = sum_nb_neig / Real(nb_quads);
-      pout << ghost_type2 << " ";
-      pout << "Average nb neighbors: " << mean_nb_neig << "(" << sum_nb_neig << ")" << std::endl;
+  //     Real mean_nb_neig = sum_nb_neig / Real(nb_quads);
+  //     pout << ghost_type2 << " ";
+  //     pout << "Average nb neighbors: " << mean_nb_neig << "(" << sum_nb_neig << ")" << std::endl;
 
-      pout << ghost_type2 << " ";
-      pout << "Max nb neighbors:     " << max_nb_neig << std::endl;
+  //     pout << ghost_type2 << " ";
+  //     pout << "Max nb neighbors:     " << max_nb_neig << std::endl;
 
-      pout << ghost_type2 << " ";
-      pout << "Min nb neighbors:     " << min_nb_neig << std::endl;
-    }
-  }
-  pout.close();
+  //     pout << ghost_type2 << " ";
+  //     pout << "Min nb neighbors:     " << min_nb_neig << std::endl;
+  //   }
+  // }
+  // pout.close();
 }
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, template <UInt> class WeightFunction>
 inline UInt MaterialNonLocal<spatial_dimension, WeightFunction>::getNbDataForElements(const Array<Element> & elements,
-                                                                                      SynchronizationTag tag) const {
+										      SynchronizationTag tag) const {
   UInt nb_quadrature_points = this->getModel().getNbQuadraturePoints(elements);
   UInt size = 0;
 
@@ -1131,8 +675,8 @@ inline UInt MaterialNonLocal<spatial_dimension, WeightFunction>::getNbDataForEle
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, template <UInt> class WeightFunction>
 inline void MaterialNonLocal<spatial_dimension, WeightFunction>::packElementData(CommunicationBuffer & buffer,
-                                                                                 const Array<Element> & elements,
-                                                                                 SynchronizationTag tag) const {
+										 const Array<Element> & elements,
+										 SynchronizationTag tag) const {
   if(tag == _gst_mnl_for_average) {
     typename std::map<ID, NonLocalVariable>::const_iterator it = non_local_variables.begin();
     typename std::map<ID, NonLocalVariable>::const_iterator end = non_local_variables.end();
@@ -1140,7 +684,7 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::packElementData
     for(;it != end; ++it) {
       const NonLocalVariable & non_local_variable = it->second;
       this->packElementDataHelper(*non_local_variable.local,
-                                  buffer, elements);
+				  buffer, elements);
     }
   }
 
@@ -1150,8 +694,8 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::packElementData
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, template <UInt> class WeightFunction>
 inline void MaterialNonLocal<spatial_dimension, WeightFunction>::unpackElementData(CommunicationBuffer & buffer,
-                                                                                   const Array<Element> & elements,
-                                                                                   SynchronizationTag tag) {
+										   const Array<Element> & elements,
+										   SynchronizationTag tag) {
   if(tag == _gst_mnl_for_average) {
     typename std::map<ID, NonLocalVariable>::iterator it = non_local_variables.begin();
     typename std::map<ID, NonLocalVariable>::iterator end = non_local_variables.end();
@@ -1159,7 +703,7 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::unpackElementDa
     for(;it != end; ++it) {
       NonLocalVariable & non_local_variable = it->second;
       this->unpackElementDataHelper(*non_local_variable.local,
-                                    buffer, elements);
+				    buffer, elements);
     }
   }
 
@@ -1167,44 +711,68 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::unpackElementDa
 }
 
 /* -------------------------------------------------------------------------- */
-// template<UInt spatial_dimension, template <UInt> class WeightFunction>
-// inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsAdded(const Array<Element> & element_list) {
-//   AKANTU_DEBUG_IN();
-
-//   Material::onElementsAdded(element_list, event);
-
-//   AKANTU_DEBUG_OUT();
-// }
+template<UInt spatial_dimension, template <UInt> class WeightFunction>
+inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsAdded(const Array<Element> & element_list) {
+  AKANTU_DEBUG_IN();
+  AKANTU_DEBUG_ERROR("This is a case not taken into account!!!");
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, template <UInt> class WeightFunction>
 inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsRemoved(const Array<Element> & element_list,
-                                                                                   const ElementTypeMapArray<UInt> & new_numbering,
-                                                                                   __attribute__((unused)) const RemovedElementsEvent & event) {
+										   const ElementTypeMapArray<UInt> & new_numbering,
+										   __attribute__((unused)) const RemovedElementsEvent & event) {
   AKANTU_DEBUG_IN();
 
+  // Change the pairs in new global numbering
+  for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+    GhostType ghost_type2 = (GhostType) gt;
+
+    PairList::iterator first_pair = pair_list[ghost_type2].begin();
+    PairList::iterator last_pair  = pair_list[ghost_type2].end();
+
+    //   Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
+
+    for(;first_pair != last_pair; ++first_pair) {
+      QuadraturePoint & q1 = first_pair->first;
+      QuadraturePoint gq1  = this->convertToGlobalPoint(q1);
+      q1 = gq1;
+
+      if(new_numbering.exists(q1.type, q1.ghost_type)) {
+	UInt q1_new_el = new_numbering(q1.type, q1.ghost_type)(gq1.element);
+	AKANTU_DEBUG_ASSERT(q1_new_el != UInt(-1), "A local quadrature_point as been removed instead of just being renumbered");
+	q1.element = q1_new_el;
+      }
+
+
+      QuadraturePoint & q2 = first_pair->second;
+      QuadraturePoint gq2  = this->convertToGlobalPoint(q2);
+      q2 = gq2;
+
+      if(new_numbering.exists(q2.type, q2.ghost_type)) {
+	UInt q2_new_el = new_numbering(q2.type, q2.ghost_type)(gq2.element);
+	AKANTU_DEBUG_ASSERT(q2_new_el != UInt(-1), "A local quadrature_point as been removed instead of just being renumbered");
+	q2.element = q2_new_el;
+      }
+    }
+  }
+
+  // Change the material numbering
   Material::onElementsRemoved(element_list, new_numbering, event);
 
-  pair_type::const_iterator first_pair_types = existing_pairs[1].begin();
-  pair_type::const_iterator last_pair_types = existing_pairs[1].end();
+  // Change back the pairs to the new material numbering
+  for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+    GhostType ghost_type2 = (GhostType) gt;
 
-  // Renumber element to keep
-  for (; first_pair_types != last_pair_types; ++first_pair_types) {
-    ElementType type2 = first_pair_types->second;
-    GhostType ghost_type2 = _ghost;
-    UInt nb_quad2 = this->model->getFEEngine().getNbQuadraturePoints(type2);
+    PairList::iterator first_pair = pair_list[ghost_type2].begin();
+    PairList::iterator last_pair  = pair_list[ghost_type2].end();
 
-    Array<UInt> & pairs =
-      pair_list(first_pair_types->first, _not_ghost)(first_pair_types->second, ghost_type2);
-    Array<UInt>::iterator< Vector<UInt> > first_pair = pairs.begin(2);
-    Array<UInt>::iterator< Vector<UInt> > last_pair  = pairs.end(2);
+    //   Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
+
     for(;first_pair != last_pair; ++first_pair) {
-      UInt _q2 = (*first_pair)(1);
-      const Array<UInt> & renumbering = new_numbering(type2, ghost_type2);
-      UInt el = _q2 / nb_quad2;
-      UInt new_el = renumbering(el);
-      AKANTU_DEBUG_ASSERT(new_el != UInt(-1), "A local quad as been removed instead f just renumbered");
-      (*first_pair)(1) = new_el * nb_quad2 + _q2 % nb_quad2;
+      first_pair->first  = this->convertToLocalPoint(first_pair->first );
+      first_pair->second = this->convertToLocalPoint(first_pair->second);
     }
   }
 

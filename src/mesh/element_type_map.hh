@@ -270,6 +270,7 @@ public:
    *         deleted entries. */
   inline void onElementsRemoved(const ElementTypeMapArray<UInt> & new_numbering);
 
+
   /// text output helper
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
@@ -283,7 +284,7 @@ public:
 				       ElementKind kind = _ek_not_defined) const{
 
     ElementTypeMap<UInt> nb_components;
-    
+
     type_iterator tit = this->firstType(dim,ghost_type,kind);
     type_iterator end = this->lastType(dim,ghost_type,kind);
 

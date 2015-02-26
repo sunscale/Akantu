@@ -939,6 +939,18 @@ void DistributedSynchronizer::computeBufferSize(DataAccessor & data_accessor,
 }
 
 /* -------------------------------------------------------------------------- */
+void DistributedSynchronizer::computeAllBufferSizes(DataAccessor & data_accessor) {
+  std::map<SynchronizationTag, Communication>::iterator it = this->communications.begin();
+  std::map<SynchronizationTag, Communication>::iterator end = this->communications.end();
+
+  for (; it != end; ++it) {
+    SynchronizationTag tag = it->first;
+    this->computeBufferSize(data_accessor, tag);
+  }
+
+}
+
+/* -------------------------------------------------------------------------- */
 void DistributedSynchronizer::printself(std::ostream & stream, int indent) const {
   std::string space;
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);

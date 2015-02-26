@@ -48,6 +48,10 @@ MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model,
 
   this->registerParam("h", h, 0., _pat_parsable | _pat_modifiable, "Hardening  modulus");
   this->registerParam("sigma_y", sigma_y, 0., _pat_parsable | _pat_modifiable, "Yield stress");
+  
+  //already registered in material
+  //  this->registerParam("finite_deformation",finite_deformation, false,  _pat_parsable | _pat_modifiable, "Flag for large deformation");
+
 
   this->iso_hardening.initialize(1);
   this->iso_hardening.initializeHistory();
@@ -55,7 +59,6 @@ MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model,
   this->plastic_energy.initialize(1);
   this->d_plastic_energy.initialize(1);
 
-  this->finite_deformation            = false;
   this->use_previous_stress           = true;
   this->use_previous_gradu            = true;
   this->use_previous_stress_thermal   = true;

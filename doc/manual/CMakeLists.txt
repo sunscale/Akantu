@@ -111,7 +111,7 @@ set(AKANTU_MANUAL_FILES_DEPEND)
 set(AKANTU_MANUAL_FILES_COPY_COMMAND)
 foreach(_f  ${_manual_files})
   file(RELATIVE_PATH _rel_f ${CMAKE_CURRENT_SOURCE_DIR} "${_f}")
-  list(APPEND AKANTU_MANUAL_FILES_DEPEND ${_rel_f})
+  list(APPEND AKANTU_MANUAL_FILES_DEPEND ${_f})
   list(APPEND AKANTU_MANUAL_FILES_COPY_COMMAND
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${_rel_f} ${_rel_f})
 endforeach()

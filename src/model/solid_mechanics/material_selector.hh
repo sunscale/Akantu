@@ -58,18 +58,18 @@ protected:
 /* -------------------------------------------------------------------------- */
 class DefaultMaterialSelector : public MaterialSelector {
 public:
-  DefaultMaterialSelector(const ElementTypeMapArray<UInt> & element_index_by_material) :
-    element_index_by_material(element_index_by_material) { }
+  DefaultMaterialSelector(const ElementTypeMapArray<UInt> & material_index) :
+    material_index(material_index) { }
 
   UInt operator()(const Element & element) {
     try {
       DebugLevel dbl = debug::getDebugLevel();
       debug::setDebugLevel(dblError);
 
-      const Array<UInt> & el_by_mat = element_index_by_material(element.type, element.ghost_type);
+      const Array<UInt> & mat_indexes = material_index(element.type, element.ghost_type);
       UInt mat = this->fallback_value;
-      if(element.element < el_by_mat.getSize())
-	 mat = el_by_mat(element.element, 0);
+      if(element.element < mat_indexes.getSize())
+	 mat = mat_indexes(element.element);
 
       debug::setDebugLevel(dbl);
       return mat;
@@ -79,7 +79,7 @@ public:
   }
 
 private:
-  const ElementTypeMapArray<UInt> & element_index_by_material;
+  const ElementTypeMapArray<UInt> & material_index;
 };
 
 /* -------------------------------------------------------------------------- */

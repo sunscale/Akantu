@@ -103,6 +103,9 @@ public:
   /// compute buffer size for a given tag and data accessor
   void computeBufferSize(DataAccessor & data_accessor, SynchronizationTag tag);
 
+  /// recalculate buffer sizes for all tags
+  void computeAllBufferSizes(DataAccessor & data_accessor);
+
 protected:
   /// fill the nodes type vector
   void fillNodesType(Mesh & mesh);

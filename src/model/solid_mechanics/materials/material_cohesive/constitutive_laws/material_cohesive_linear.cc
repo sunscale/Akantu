@@ -46,29 +46,33 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
 								  const ID & id) :
   MaterialCohesive(model,id),
   sigma_c_eff("sigma_c_eff", *this),
-  delta_c("delta_c", *this),
+  delta_c_eff("delta_c_eff", *this),
   insertion_stress("insertion_stress", *this) {
   AKANTU_DEBUG_IN();
 
   this->registerParam("beta"   , beta   , 0. ,
 		      _pat_parsable | _pat_readable,
 		      "Beta parameter"         );
-  this->registerParam("G_cI"   , G_cI   , 0. ,
+
+  this->registerParam("G_c"   , G_c   , 0. ,
 		      _pat_parsable | _pat_readable,
 		      "Mode I fracture energy" );
-  this->registerParam("G_cII"  , G_cII  , 0. ,
-		      _pat_parsable | _pat_readable,
-		      "Mode II fracture energy");
+
   this->registerParam("penalty", penalty, 0. ,
 		      _pat_parsable | _pat_readable,
 		      "Penalty coefficient"    );
+
   this->registerParam("volume_s", volume_s, 0. ,
 		      _pat_parsable | _pat_readable,
 		      "Reference volume for sigma_c scaling");
+
   this->registerParam("m_s", m_s, 1. ,
 		      _pat_parsable | _pat_readable,
 		      "Weibull exponent for sigma_c scaling");
-  this->registerParam("kappa"  , kappa  , 1. , _pat_readable, "Kappa parameter");
+
+  this->registerParam("kappa"  , kappa  , 1. ,
+		      _pat_parsable | _pat_readable,
+		      "Kappa parameter");
 
   use_previous_delta_max=true;
 
@@ -82,21 +86,23 @@ void MaterialCohesiveLinear<spatial_dimension>::initMaterial() {
 
   MaterialCohesive::initMaterial();
 
-  if (G_cII != 0)
-    kappa = G_cII / G_cI;
-
   /// compute scalars
   beta2_kappa2 = beta * beta/kappa/kappa;
   beta2_kappa  = beta * beta/kappa;
 
-  if (beta == 0)
+  if (Math::are_float_equal(beta, 0))
     beta2_inv = 0;
   else
     beta2_inv = 1./beta/beta;
 
-  sigma_c_eff     .initialize(                1);
-  delta_c         .initialize(                1);
+  sigma_c_eff.initialize(1);
+  delta_c_eff.initialize(1);
   insertion_stress.initialize(spatial_dimension);
+
+  if (!Math::are_float_equal(delta_c, 0.))
+    delta_c_eff.setDefaultValue(delta_c);
+  else
+    delta_c_eff.setDefaultValue(2 * G_c / sigma_c);
 
   if (model->getIsExtrinsic()) scaleInsertionTraction();
 
@@ -185,7 +191,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
     Array<bool> & f_insertion = inserter.getInsertionFacets(type_facet);
     Array<UInt> & f_filter = facet_filter(type_facet);
     Array<Real> & sig_c_eff = sigma_c_eff(type_cohesive);
-    Array<Real> & del_c = delta_c(type_cohesive);
+    Array<Real> & del_c = delta_c_eff(type_cohesive);
     Array<Real> & ins_stress = insertion_stress(type_cohesive);
     Array<Real> & trac_old = tractions_old(type_cohesive);
     const Array<Real> & f_stress = model->getStressOnFacets(type_facet);
@@ -224,7 +230,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
 
 	for (UInt q = 0; q < nb_quad_facet; ++q) {
 	  Real new_sigma = (*stress_check_it)(q);
-	  Real new_delta = 2 * G_cI / new_sigma;
 
 	  Vector<Real> ins_s(normal_traction_it->storage() + q * spatial_dimension,
 			     spatial_dimension);
@@ -233,9 +238,18 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
 	    ins_s *= -1.;
 
 	  sig_c_eff.push_back(new_sigma);
-	  del_c.push_back(new_delta);
 	  ins_stress.push_back(ins_s);
 	  trac_old.push_back(ins_s);
+
+	  Real new_delta;
+
+	  // set delta_c in function of G_c or a given delta_c value
+	  if (Math::are_float_equal(delta_c, 0.))
+	    new_delta = 2 * G_c / new_sigma;
+	  else
+	    new_delta = (*sigma_lim_it) / new_sigma * delta_c;
+
+	  del_c.push_back(new_delta);
 	}
 
 	#if defined (AKANTU_DEBUG_TOOLS) && defined(AKANTU_CORE_CXX11)
@@ -410,7 +424,7 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
     delta_max.previous(el_type, ghost_type).begin();
 
   Array<Real>::iterator<Real>delta_c_it =
-    delta_c(el_type, ghost_type).begin();
+    delta_c_eff(el_type, ghost_type).begin();
 
   Array<Real>::iterator<Real>damage_it =
     damage(el_type, ghost_type).begin();

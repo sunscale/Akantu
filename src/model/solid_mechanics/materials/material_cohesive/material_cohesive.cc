@@ -65,12 +65,14 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
 
   this->registerParam("sigma_c", sigma_c,
 		      _pat_parsable | _pat_readable, "Critical stress");
+  this->registerParam("delta_c", delta_c, 0.,
+		      _pat_parsable | _pat_readable, "Critical displacement");
 
   this->model->getMesh().initElementTypeMapArray(this->element_filter,
-						1,
-						spatial_dimension,
-						false,
-						_ek_cohesive);
+						 1,
+						 spatial_dimension,
+						 false,
+						 _ek_cohesive);
 
   if (this->model->getIsExtrinsic())
     this->model->getMeshFacets().initElementTypeMapArray(facet_filter, 1,
