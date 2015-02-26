@@ -92,6 +92,13 @@ protected:
 				   Vector<Real> & normal_stress,
 				   Real & effective_norm);
 
+
+  /// compute tangent stiffness matrix
+  void computeTangentTraction(const ElementType & el_type,
+                              Array<Real> & tangent_matrix,
+                              const Array<Real> & normal,
+                              GhostType ghost_type);
+
   /**
    * Scale insertion traction sigma_c according to the volume of the
    * two elements surrounding a facet

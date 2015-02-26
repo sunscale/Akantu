@@ -70,6 +70,8 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
 		      "Weibull exponent for sigma_c scaling");
   this->registerParam("kappa"  , kappa  , 1. , _pat_readable, "Kappa parameter");
 
+  use_previous_delta_max=true;
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -404,6 +406,9 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
   Array<Real>::iterator<Real>delta_max_it =
     delta_max(el_type, ghost_type).begin();
 
+  Array<Real>::iterator<Real>delta_max_prev_it =
+    delta_max.previous(el_type, ghost_type).begin();
+
   Array<Real>::iterator<Real>delta_c_it =
     delta_c(el_type, ghost_type).begin();
 
@@ -421,9 +426,9 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
 
   /// loop on each quadrature point
   for (; traction_it != traction_end;
-       ++traction_it, ++opening_it, ++normal_it, ++sigma_c_it,
-	 ++delta_max_it, ++delta_c_it, ++damage_it, ++contact_traction_it,
-	 ++insertion_stress_it, ++contact_opening_it) {
+	++traction_it, ++opening_it, ++normal_it, ++sigma_c_it,
+	  ++delta_max_it, ++delta_c_it, ++damage_it, ++contact_traction_it,
+	  ++insertion_stress_it, ++contact_opening_it) {
 
     /// compute normal and tangential opening vectors
     Real normal_opening_norm = opening_it->dot(*normal_it);
@@ -462,7 +467,7 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
     delta = std::sqrt(delta);
 
     /// update maximum displacement and damage
-    *delta_max_it = std::max(*delta_max_it, delta);
+    *delta_max_it = std::max(*delta_max_prev_it, delta);
     *damage_it = std::min(*delta_max_it / *delta_c_it, 1.);
 
     /**
@@ -497,6 +502,115 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
 }
 
 /* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const ElementType & el_type,
+                                                                            Array<Real> & tangent_matrix,
+                                                                            const Array<Real> & normal,
+                                                                            GhostType ghost_type) {
+  AKANTU_DEBUG_IN();
+
+  /// define iterators
+  Array<Real>::matrix_iterator tangent_it = 
+    tangent_matrix.begin(spatial_dimension, spatial_dimension);
+  
+  Array<Real>::matrix_iterator tangent_end = 
+    tangent_matrix.end(spatial_dimension, spatial_dimension);
+  
+  Array<Real>::const_vector_iterator normal_it = 
+    normal.begin(spatial_dimension);
+  
+  Array<Real>::vector_iterator opening_it = 
+    opening(el_type, ghost_type).begin(spatial_dimension);
+  
+  Array<Real>::vector_iterator traction_it = 
+    tractions(el_type, ghost_type).begin(spatial_dimension);
+  
+  Array<Real>::iterator<Real>delta_max_it = 
+    delta_max.previous(el_type, ghost_type).begin();
+  
+  Array<Real>::iterator<Real>sigma_c_it =
+    sigma_c_eff(el_type, ghost_type).begin();
+
+  Array<Real>::iterator<Real>delta_c_it =
+    delta_c(el_type, ghost_type).begin();
+
+  Array<Real>::iterator<Real>damage_it =
+    damage(el_type, ghost_type).begin();
+
+  
+  Vector<Real> normal_opening(spatial_dimension);
+  Vector<Real> tangential_opening(spatial_dimension);
+
+  for (; tangent_it != tangent_end; ++tangent_it, ++normal_it, ++opening_it, ++traction_it, ++ delta_max_it, ++sigma_c_it, ++delta_c_it, ++damage_it) {
+	/// compute normal and tangential opening vectors
+	Real normal_opening_norm = opening_it->dot(*normal_it);
+	normal_opening = (*normal_it);
+	normal_opening *= normal_opening_norm;
+	
+	tangential_opening = *opening_it;
+	tangential_opening -= normal_opening;
+	
+	Real tangential_opening_norm = tangential_opening.norm();
+	
+	bool penetration = normal_opening_norm < -Math::getTolerance();
+
+	Real derivative = 0;
+	Real t = 0;
+
+	Real delta = tangential_opening_norm * tangential_opening_norm * beta2_kappa2;
+	delta += normal_opening_norm * normal_opening_norm;
+	delta = std::sqrt(delta);
+
+	if (delta < Math::getTolerance())
+	  delta = 0.0000001;
+	
+	if (normal_opening_norm >= Math::getTolerance()){
+	if (delta >= *delta_max_it){
+	derivative = -*sigma_c_it/(delta * delta);
+	t = *sigma_c_it * (1 - delta / *delta_c_it);
+      }
+	else {
+	if (delta < *delta_max_it){
+	Real tmax = *sigma_c_it * (1 - *delta_max_it / *delta_c_it);
+	t = tmax / *delta_max_it * delta;
+      }
+      }
+      }
+	
+	Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
+	n_outer_n.outerProduct(*normal_it, *normal_it);
+
+	if (penetration){
+	///don't consider penetration contribution for delta
+	*opening_it = tangential_opening;
+	*tangent_it += n_outer_n;
+	*tangent_it *= penalty;
+      }
+	
+	Matrix<Real> I(spatial_dimension, spatial_dimension);
+	I.eye(beta2_kappa);
+	Matrix<Real> nn(n_outer_n);
+	nn *= (1 - beta2_kappa);
+	nn += I;
+	nn *= t/delta;
+	Vector<Real> t_tilde(normal_opening);
+	t_tilde *= (1 - beta2_kappa2);
+	Vector<Real> mm(*opening_it);
+	mm *= beta2_kappa2;
+	t_tilde += mm;
+	Vector<Real> t_hat(normal_opening);
+	t_hat += beta2_kappa * tangential_opening;
+	Matrix<Real> prov(spatial_dimension, spatial_dimension);
+	prov.outerProduct(t_hat, t_tilde);
+	prov *= derivative/delta;
+	prov += nn;
+	*tangent_it += prov;
+
+      }	
+  AKANTU_DEBUG_OUT();
+      }
+/* -------------------------------------------------------------------------- */
+
 
 INSTANSIATE_MATERIAL(MaterialCohesiveLinear);
 
