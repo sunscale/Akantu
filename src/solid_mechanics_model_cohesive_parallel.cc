@@ -106,10 +106,13 @@ void SolidMechanicsModelCohesive::synchronizeGhostFacetsConnectivity() {
 void SolidMechanicsModelCohesive::updateCohesiveSynchronizers() {
   /// update synchronizers if needed
 
-  if (facet_synchronizer != NULL)
+  if (facet_synchronizer != NULL) {
     facet_synchronizer->updateDistributedSynchronizer(*cohesive_distributed_synchronizer,
 						      *this,
                                                       mesh);
+
+    cohesive_distributed_synchronizer->computeBufferSize(*this, _gst_material_id);
+  }
 
   if (facet_stress_synchronizer != NULL) {
     const ElementTypeMapArray<UInt> & prank_to_element
