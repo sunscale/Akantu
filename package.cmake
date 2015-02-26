@@ -22,7 +22,7 @@ package_declare_sources(parallel_cohesive_element
   cohesive_element_inserter_inline_impl.cc
   solid_mechanics_model_cohesive_parallel.hh
   solid_mechanics_model_cohesive_parallel.cc
-  solid_mechanics_model_cohesive_inline_impl.cc
+  solid_mechanics_model_cohesive_parallel_inline_impl.cc
   facet_synchronizer.cc
   facet_synchronizer.hh
   facet_synchronizer_inline_impl.cc

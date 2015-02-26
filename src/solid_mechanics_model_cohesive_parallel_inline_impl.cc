@@ -1,5 +1,5 @@
 /**
- * @file   solid_mechanics_model_cohesive_inline_impl.cc
+ * @file   solid_mechanics_model_cohesive_parallel_inline_impl.cc
  *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
@@ -14,6 +14,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
+
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 inline UInt SolidMechanicsModelCohesive::getNbQuadsForFacetCheck(const Array<Element> & elements) const {
@@ -330,3 +332,5 @@ inline void SolidMechanicsModelCohesive::packUnpackFacetStressDataHelper(Element
     }
   }
 }
+
+__END_AKANTU__
