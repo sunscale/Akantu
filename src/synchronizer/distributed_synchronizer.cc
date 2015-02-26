@@ -691,7 +691,7 @@ void DistributedSynchronizer::asynchronousSynchronize(DataAccessor & data_access
 						      SynchronizationTag tag) {
   AKANTU_DEBUG_IN();
 
-  //if (communications.find(tag) == communications.end())
+  if (communications.find(tag) == communications.end())
     computeBufferSize(data_accessor, tag);
 
   Communication & communication = communications[tag];
@@ -936,6 +936,18 @@ void DistributedSynchronizer::computeBufferSize(DataAccessor & data_accessor,
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void DistributedSynchronizer::computeAllBufferSizes(DataAccessor & data_accessor) {
+  std::map<SynchronizationTag, Communication>::iterator it = this->communications.begin();
+  std::map<SynchronizationTag, Communication>::iterator end = this->communications.end();
+
+  for (; it != end; ++it) {
+    SynchronizationTag tag = it->first;
+    this->computeBufferSize(data_accessor, tag);
+  }
+
 }
 
 /* -------------------------------------------------------------------------- */

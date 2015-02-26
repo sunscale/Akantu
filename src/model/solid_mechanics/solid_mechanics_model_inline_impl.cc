@@ -95,8 +95,8 @@ inline void SolidMechanicsModel::splitElementByMaterial(const Array<Element> & e
                                                        Array<Element> * elements_per_mat) const {
   ElementType current_element_type = _not_defined;
   GhostType current_ghost_type = _casper;
-  Array<UInt>::const_scalar_iterator mat_indexes_it;
-  Array<UInt>::const_scalar_iterator mat_loc_num_it;
+  const Array<UInt> * mat_indexes;
+  const Array<UInt> * mat_loc_num;
 
   Array<Element>::const_iterator<Element> it  = elements.begin();
   Array<Element>::const_iterator<Element> end = elements.end();
@@ -106,13 +106,13 @@ inline void SolidMechanicsModel::splitElementByMaterial(const Array<Element> & e
     if(el.type != current_element_type || el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
       current_ghost_type   = el.ghost_type;
-      mat_indexes_it = this->material_index(el.type, el.ghost_type).begin();
-      mat_loc_num_it = this->material_local_numbering(el.type, el.ghost_type).begin();
+      mat_indexes = &(this->material_index(el.type, el.ghost_type));
+      mat_loc_num = &(this->material_local_numbering(el.type, el.ghost_type));
     }
 
     UInt old_id = el.element;
-    el.element = mat_loc_num_it[old_id];
-    elements_per_mat[mat_indexes_it[old_id]].push_back(el);
+    el.element = (*mat_loc_num)(old_id);
+    elements_per_mat[(*mat_indexes)(old_id)].push_back(el);
   }
 }
 

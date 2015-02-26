@@ -707,6 +707,11 @@ void SolidMechanicsModelCohesive::onElementsAdded(const Array<Element> & element
 
   SolidMechanicsModel::onElementsAdded(element_list, event);
 
+#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+  if (cohesive_distributed_synchronizer != NULL)
+    cohesive_distributed_synchronizer->computeAllBufferSizes(*this);
+#endif
+
   /// update shape functions
   getFEEngine("CohesiveFEEngine").initShapeFunctions(_not_ghost);
   getFEEngine("CohesiveFEEngine").initShapeFunctions(_ghost);

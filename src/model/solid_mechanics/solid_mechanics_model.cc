@@ -1431,7 +1431,7 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
       UInt nb_element = this->mesh.getNbElement(*it, gt);
       if(!material_index.exists(*it, gt)) {
 	this->material_index          .alloc(nb_element, 1, *it, gt);
-      	this->material_local_numbering.alloc(nb_element, 1, *it, gt);
+	this->material_local_numbering.alloc(nb_element, 1, *it, gt);
       } else {
 	this->material_index          (*it, gt).resize(nb_element);
 	this->material_local_numbering(*it, gt).resize(nb_element);
