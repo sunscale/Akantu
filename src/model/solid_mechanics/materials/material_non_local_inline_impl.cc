@@ -204,17 +204,18 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 
   this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _not_ghost);
   this->fillCellList(quadrature_points_coordinates, _not_ghost);
-
+ 
   is_creating_grid = true;
   SynchronizerRegistry & synch_registry = this->model->getSynchronizerRegistry();
   std::stringstream sstr; sstr << getID() << ":grid_synchronizer";
   grid_synchronizer = GridSynchronizer::createGridSynchronizer(mesh,
 							       *spatial_grid,
+							       synch_registry,
 							       sstr.str());
   synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_for_average);
   synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_weight);
   is_creating_grid = false;
-
+ 
   this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _ghost);
   fillCellList(quadrature_points_coordinates, _ghost);
 
@@ -757,9 +758,6 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsRemov
     }
   }
 
-
-  SynchronizerRegistry & synch_registry = this->model->getSynchronizerRegistry();
-  synch_registry.registerSynchronizer(*(this->grid_synchronizer), _gst_material_id);
 
   // Change the material numbering
   Material::onElementsRemoved(element_list, new_numbering, event);

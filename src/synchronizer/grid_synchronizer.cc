@@ -56,6 +56,7 @@ GridSynchronizer::GridSynchronizer(Mesh & mesh,
 template <class E>
 GridSynchronizer * GridSynchronizer::createGridSynchronizer(Mesh & mesh,
                                                             const SpatialGrid<E> & grid,
+							    SynchronizerRegistry & synch_registry,
                                                             SynchronizerID id,
                                                             MemoryID memory_id) {
   AKANTU_DEBUG_IN();
@@ -485,6 +486,8 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(Mesh & mesh,
   comm.freeCommunicationRequest(isend_coordinates_requests);
   delete [] nodes_to_send_per_proc;
 
+  synch_registry.registerSynchronizer(communicator, _gst_material_id);
+
   mesh.sendEvent(new_nodes);
   mesh.sendEvent(new_elements);
 
@@ -498,11 +501,13 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(Mesh & mesh,
 template GridSynchronizer *
 GridSynchronizer::createGridSynchronizer<QuadraturePoint>(Mesh & mesh,
                                                           const SpatialGrid<QuadraturePoint> & grid,
+							  SynchronizerRegistry & synch_registry,
                                                           SynchronizerID id,
                                                           MemoryID memory_id);
 template GridSynchronizer *
 GridSynchronizer::createGridSynchronizer<Element>(Mesh & mesh,
                                                   const SpatialGrid<Element> & grid,
+						  SynchronizerRegistry & synch_registry,
                                                   SynchronizerID id,
                                                   MemoryID memory_id);
 

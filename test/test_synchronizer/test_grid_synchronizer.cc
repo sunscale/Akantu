@@ -203,7 +203,11 @@ int main(int argc, char *argv[]) {
 
   std::cout << "Pouet 1" << std::endl;
 
-  GridSynchronizer * grid_communicator = GridSynchronizer::createGridSynchronizer(mesh, grid);
+  AKANTU_DEBUG_INFO("Creating TestAccessor");
+  TestAccessor test_accessor(mesh, barycenters);
+  SynchronizerRegistry synch_registry(test_accessor);
+
+  GridSynchronizer * grid_communicator = GridSynchronizer::createGridSynchronizer(mesh, grid, synch_registry);
 
   std::cout << "Pouet 2" << std::endl;
 
@@ -274,9 +278,6 @@ int main(int argc, char *argv[]) {
 
   fout.close();
 
-  AKANTU_DEBUG_INFO("Creating TestAccessor");
-  TestAccessor test_accessor(mesh, barycenters);
-  SynchronizerRegistry synch_registry(test_accessor);
 
   synch_registry.registerSynchronizer(*dist, _gst_smm_mass);
 
