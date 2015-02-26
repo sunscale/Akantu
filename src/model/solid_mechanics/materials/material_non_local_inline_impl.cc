@@ -213,7 +213,6 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 							       sstr.str());
   synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_for_average);
   synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_weight);
-  synch_registry.registerSynchronizer(*grid_synchronizer, _gst_material_id);
   is_creating_grid = false;
 
   this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _ghost);
@@ -757,6 +756,10 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsRemov
       }
     }
   }
+
+
+  SynchronizerRegistry & synch_registry = this->model->getSynchronizerRegistry();
+  synch_registry.registerSynchronizer(*(this->grid_synchronizer), _gst_material_id);
 
   // Change the material numbering
   Material::onElementsRemoved(element_list, new_numbering, event);
