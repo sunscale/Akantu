@@ -95,8 +95,8 @@ inline void SolidMechanicsModel::splitElementByMaterial(const Array<Element> & e
                                                        Array<Element> * elements_per_mat) const {
   ElementType current_element_type = _not_defined;
   GhostType current_ghost_type = _casper;
-  const Array<UInt> * mat_indexes;
-  const Array<UInt> * mat_loc_num;
+  const Array<UInt> * mat_indexes = NULL;
+  const Array<UInt> * mat_loc_num = NULL;
 
   Array<Element>::const_iterator<Element> it  = elements.begin();
   Array<Element>::const_iterator<Element> end = elements.end();
