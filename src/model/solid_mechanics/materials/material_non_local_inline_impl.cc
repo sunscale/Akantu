@@ -58,7 +58,7 @@ MaterialNonLocal<DIM, WeightFunction>::MaterialNonLocal(SolidMechanicsModel & mo
 
   for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
     GhostType ghost_type = (GhostType) gt;
-    pair_weight[ghost_type] = NULL; 
+    pair_weight[ghost_type] = NULL;
   }
 
 
@@ -161,10 +161,9 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::cleanupExtraGhostEleme
       remove_elem.getNewNumbering().alloc(nb_ghost_elem, 1, *it, _ghost);
     else remove_elem.getNewNumbering(*it, _ghost).resize(nb_ghost_elem);
 
-    //   Array<UInt> & elem_filter = element_filter(*it, _ghost);
     Array<UInt> & new_numbering = remove_elem.getNewNumbering(*it, _ghost);
     UInt ng = 0;
-    for (UInt g = 0; g < nb_ghost_elem; ++g) { 
+    for (UInt g = 0; g < nb_ghost_elem; ++g) {
       if (element_global.element >= nb_ghost_elem_protected) {
 	Element element_local = this->convertToLocalElement(element_global);
 
@@ -591,20 +590,20 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::neighbourhoodStatistic
 
   //   for (; first_pair_types != last_pair_types; ++first_pair_types) {
   //     const Array<UInt> & pairs =
-  // 	pair_list(first_pair_types->first, ghost_type1)(first_pair_types->second, ghost_type2);
+  //	pair_list(first_pair_types->first, ghost_type1)(first_pair_types->second, ghost_type2);
   //     if(prank == 0) {
-  // 	pout << ghost_type2 << " ";
-  // 	pout << "Types : " << first_pair_types->first << " " << first_pair_types->second << std::endl;
+  //	pout << ghost_type2 << " ";
+  //	pout << "Types : " << first_pair_types->first << " " << first_pair_types->second << std::endl;
   //     }
   //     Array<UInt>::const_iterator< Vector<UInt> > first_pair = pairs.begin(2);
   //     Array<UInt>::const_iterator< Vector<UInt> > last_pair  = pairs.end(2);
   //     Array<UInt> & nb_neigh_1 = nb_neighbors(first_pair_types->first, ghost_type1);
   //     Array<UInt> & nb_neigh_2 = nb_neighbors(first_pair_types->second, ghost_type2);
   //     for(;first_pair != last_pair; ++first_pair) {
-  // 	UInt q1 = (*first_pair)(0);
-  // 	UInt q2 = (*first_pair)(1);
-  // 	++(nb_neigh_1(q1));
-  // 	if(q1 != q2) ++(nb_neigh_2(q2));
+  //	UInt q1 = (*first_pair)(0);
+  //	UInt q2 = (*first_pair)(1);
+  //	++(nb_neigh_1(q1));
+  //	if(q1 != q2) ++(nb_neigh_2(q2));
   //     }
   //   }
 
@@ -620,10 +619,10 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::neighbourhoodStatistic
   //     Array<UInt>::iterator<UInt> end_neigh  = nb_neighor.end();
 
   //     for (; nb_neigh != end_neigh; ++nb_neigh, ++nb_quads) {
-  // 	UInt nb = *nb_neigh;
-  // 	sum_nb_neig += nb;
-  // 	max_nb_neig = std::max(max_nb_neig, nb);
-  // 	min_nb_neig = std::min(min_nb_neig, nb);
+  //	UInt nb = *nb_neigh;
+  //	sum_nb_neig += nb;
+  //	max_nb_neig = std::max(max_nb_neig, nb);
+  //	min_nb_neig = std::min(min_nb_neig, nb);
   //     }
   //   }
 

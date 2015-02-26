@@ -31,47 +31,30 @@ package_declare(CppArray EXTERNAL
   DESCRIPTION "Use cpp-array library"
   SYSTEM OFF)
 
-if(AKANTU_USE_CPPARRAY AND AKANTU_USE_THIRD_PARTY_CPPARRAY)
-  find_package(Git)
+package_get_name(CppArray _pkg_name)
+package_use_system(${_pkg_name} _use_system)
+package_get_option_name(${_pkg_name} _option_name)
 
-  if(GIT_FOUND)
-    if(EXISTS ${PROJECT_SOURCE_DIR}/third-party/cpp-array)
-      execute_process(
-	COMMAND ${GIT_EXECUTABLE} pull
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/third-party/cpp-array
-	OUTPUT_VARIABLE _revision)
-      message(STATUS "Updating Cpp-Array")
-    else()
-      message(STATUS "Cloning Cpp-Array")
-      execute_process(
-	COMMAND ${GIT_EXECUTABLE} clone https://code.google.com/p/cpp-array.git ${PROJECT_SOURCE_DIR}/third-party/cpp-array
-	OUTPUT_QUIET)
+if(NOT ${_use_system})
+  if(${_option_name})
+    if(TARGET cpparray)
+      return()
     endif()
-  endif()
 
-  if(EXISTS ${PROJECT_SOURCE_DIR}/third-party/cpp-array/)
-    set(cpp-array_TESTS OFF CACHE BOOL "cpparray tests" FORCE)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/third-party/cpp-array/)
-    set(cpp-array_TESTS OFF CACHE BOOL "cpparray tests" FORCE)
+    set(CPPARRAY_DIR ${PROJECT_BINARY_DIR}/third-party)
 
-    mark_as_advanced(cpp-array_DEV)
-    mark_as_advanced(cpp-array_DOCUMENTATION)
-    mark_as_advanced(cpp-array_TESTS)
-    mark_as_advanced(CUDA)
-    mark_as_advanced(ARRAY_USER_LIB_PATH)
+    include(ExternalProject)
+    ExternalProject_Add(cpparray
+      PREFIX ${CPPARRAY_DIR}
+      GIT_REPOSITORY https://code.google.com/p/cpp-array.git
+      CMAKE_ARGS <SOURCE_DIR>/cpp-array
+      CMAKE_CACHE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -Dcpp-array_TESTS:BOOL=OFF -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER} -DCMAKE_Fortran_COMPILER:PATH=${CMAKE_Fortran_COMPILER}
+      )
 
-    list(APPEND AKANTU_EXTERNAL_LIB_INCLUDE_DIR ${cpp-array_INCLUDE_DIRS} ${CPP-ARRAY_INCLUDE_DIRS})
-    list(APPEND AKANTU_EXTERNAL_LIBRARIES ${CPP-ARRAY_LIBRARIES})
-    list(APPEND AKANTU_EXTERNAL_LIB_INCLUDE_DIR ${CPP-ARRAY_INCLUDE_DIRS})
-    list(APPEND CPACK_SOURCE_IGNORE_FILES ${PROJECT_SOURCE_DIR}/third-party/cpp-array/)
-    set(AKANTU_CPPARRAY_INCLUDE_DIR ${cpp-array_INCLUDE_DIRS} ${CPP-ARRAY_INCLUDE_DIRS})
+    set(CPPARRAY_INCLUDE_DIR ${CPPARRAY_DIR}/include CACHE PATH "" FORCE)
 
-
-    set(AKANTU_CPPARRAY ON)
-    list(APPEND AKANTU_OPTION_LIST CPPARRAY)
-    set(AKANTU_CPPARRAY ${AKANTU_CPPARRAY} CACHE INTERNAL "Use cpp-array library" FORCE)
-  else()
-    message(STATUS "Cpp-Array could not be found! Please install git and/or place cpp-array in the third-party folder of Akantu")
+    package_set_include_dir(${_pkg_name} ${CPPARRAY_INCLUDE_DIR})
+    package_add_extra_dependency(CppArray cpparray)
   endif()
 endif()
 

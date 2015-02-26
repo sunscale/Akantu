@@ -176,18 +176,17 @@ inline void Material::setCauchyStressMatrix(const Matrix<Real> & S_t, Matrix<Rea
 /* -------------------------------------------------------------------------- */
 inline Element Material::convertToLocalElement(const Element & global_element) const {
   UInt ge = global_element.element;
-  Vector<UInt> model_mat_index = this->model->getElementIndexByMaterial(global_element.type,
-									global_element.ghost_type).begin(2)[ge];
-
 #ifndef AKANTU_NDEBUG
-  
+  UInt model_mat_index = this->model->getMaterialByElement(global_point.type,
+							   global_point.ghost_type)(ge);
+
   UInt mat_index = this->model->getMaterialIndex(this->name);
-  AKANTU_DEBUG_ASSERT(model_mat_index[0] == mat_index,
+  AKANTU_DEBUG_ASSERT(model_mat_index == mat_index,
 		      "Conversion of a global  element in a local element for the wrong material "
 		      << this->name << std::endl);
 #endif
-
-  UInt le = model_mat_index(1);
+  UInt le = this->model->getMaterialLocalNumbering(global_point.type,
+						   global_point.ghost_type)(ge);
 
   Element tmp_quad(global_element.type,
 		   le,

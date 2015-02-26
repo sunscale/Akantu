@@ -32,44 +32,47 @@ package_declare(nlopt EXTERNAL
   DESCRIPTION "Use NLOPT library"
   SYSTEM OFF)
 
-set(NLOPT_VERSION "2.4.2")
-set(NLOPT_ARCHIVE "${PROJECT_SOURCE_DIR}/third-party/nlopt-${NLOPT_VERSION}.tar.gz")
-set(NLOPT_ARCHIVE_HASH "MD5=d0b8f139a4acf29b76dbae69ade8ac54")
-if(NOT EXISTS ${NLOPT_ARCHIVE})
-  set(NLOPT_ARCHIVE "http://ab-initio.mit.edu/nlopt/nlopt-${NLOPT_VERSION}.tar.gz")
-endif()
+package_get_name(nlopt _pkg_name)
+package_use_system(${_pkg_name} _use_system)
 
-if (AKANTU_USE_THIRD_PARTY_NLOPT AND AKANTU_USE_NLOPT)
-  set(NLOPT_CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-shared --with-cxx)
+if(NOT ${_use_system})
+  package_get_option_name(${_pkg_name} _option_name)
+
+  if(${_option_name})
+    set(NLOPT_VERSION "2.4.2")
+    set(NLOPT_ARCHIVE "${PROJECT_SOURCE_DIR}/third-party/nlopt-${NLOPT_VERSION}.tar.gz")
+    set(NLOPT_ARCHIVE_HASH "MD5=d0b8f139a4acf29b76dbae69ade8ac54")
+    if(NOT EXISTS ${NLOPT_ARCHIVE})
+      set(NLOPT_ARCHIVE "http://ab-initio.mit.edu/nlopt/nlopt-${NLOPT_VERSION}.tar.gz")
+    endif()
+
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" _u_build_type)
+    set(NLOPT_CONFIGURE_COMMAND CXX=${CMAKE_CXX_COMPILER} CXX_FLAGS=${CMAKE_CXX_FLAGS_${_u_build_type}} <SOURCE_DIR>/configure
+      --prefix=<INSTALL_DIR> --enable-shared --with-cxx --without-threadlocal
+      --without-guile --without-python --without-octave --without-matlab)
   set(NLOPT_DIR ${PROJECT_BINARY_DIR}/third-party)
 
-  include(ExternalProject)
+    include(ExternalProject)
 
-  ExternalProject_Add(NLopt
-    PREFIX ${NLOPT_DIR}
-    URL ${NLOPT_ARCHIVE}
-    URL_HASH ${NLOPT_ARCHIVE_HASH}
-    CONFIGURE_COMMAND ${NLOPT_CONFIGURE_COMMAND}
-    BUILD_COMMAND make
-    INSTALL_COMMAND make install
-    )
+    ExternalProject_Add(NLopt
+      PREFIX ${NLOPT_DIR}
+      URL ${NLOPT_ARCHIVE}
+      URL_HASH ${NLOPT_ARCHIVE_HASH}
+      CONFIGURE_COMMAND ${NLOPT_CONFIGURE_COMMAND}
+      BUILD_COMMAND make
+      INSTALL_COMMAND make install
+      )
 
-  set(NLOPT_LIBRARIES   ${NLOPT_DIR}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}nlopt_cxx${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE PATH "Libraries for NLopt" FORCE)
-  set(NLOPT_INCLUDE_DIR ${NLOPT_DIR}/include CACHE PATH "Include directories for NLopt" FORCE)
+    set_third_party_shared_libirary_name(NLOPT_LIBRARIES nlopt_cxx)
+    set(NLOPT_INCLUDE_DIR ${NLOPT_DIR}/include CACHE PATH "Include directories for NLopt" FORCE)
+    mark_as_advanced(NLOPT_INCLUDE_DIR)
 
-  mark_as_advanced(NLOPT_INCLUDE_DIR NLOPT_LIBRARIES)
+    package_set_libraries(${_pkg_name} ${NLOPT_LIBRARIES})
+    package_set_include_dir(${_pkg_name} ${NLOPT_INCLUDE_DIR})
 
-  list(APPEND AKANTU_EXTERNAL_LIBRARIES ${NLOPT_LIBRARIES})
-  list(APPEND AKANTU_EXTERNAL_LIB_INCLUDE_DIR ${NLOPT_INCLUDE_DIR})
-  set(AKANTU_NLOPT_INCLUDE_DIR ${NLOPT_INCLUDE_DIR})
-  set(AKANTU_NLOPT_LIBRARIES ${NLOPT_LIBRARIES})
-  list(APPEND AKANTU_OPTION_LIST NLOPT)
-  set(NLOPT_FOUND TRUE CACHE INTERNAL "" FORCE)
-  set(AKANTU_NLOPT ON)
-
-  list(APPEND AKANTU_EXTRA_TARGET_DEPENDENCIES NLopt)
+    package_add_extra_dependency(nlopt NLopt)
+  endif()
 endif()
-
 
 package_declare_documentation(nlopt
   "This package enable the use of the optimization alogorithm library \\href{http://ab-initio.mit.edu/wiki/index.php/NLopt}{NLopt}."

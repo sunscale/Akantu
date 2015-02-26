@@ -69,10 +69,10 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
 		      _pat_parsable | _pat_readable, "Critical displacement");
 
   this->model->getMesh().initElementTypeMapArray(this->element_filter,
-						1,
-						spatial_dimension,
-						false,
-						_ek_cohesive);
+						 1,
+						 spatial_dimension,
+						 false,
+						 _ek_cohesive);
 
   if (this->model->getIsExtrinsic())
     this->model->getMeshFacets().initElementTypeMapArray(facet_filter, 1,

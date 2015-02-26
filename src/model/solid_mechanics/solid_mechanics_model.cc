@@ -95,8 +95,9 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh,
   velocity_damping_matrix(NULL),
   stiffness_matrix(NULL),
   jacobian_matrix(NULL),
-  element_index_by_material("element index by material", id),
-  material_selector(new DefaultMaterialSelector(element_index_by_material)),
+  material_index("material index", id),
+  material_local_numbering("material local numbering", id),
+  material_selector(new DefaultMaterialSelector(material_index)),
   is_default_material_selector(true),
   integrator(NULL),
   increment_flag(false), solver(NULL),
@@ -340,7 +341,8 @@ void SolidMechanicsModel::initArrays() {
     Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, _ek_not_defined);
     for(; it != end; ++it) {
       UInt nb_element = mesh.getNbElement(*it, gt);
-      element_index_by_material.alloc(nb_element, 2, *it, gt);
+      material_index.alloc(nb_element, 1, *it, gt);
+      material_local_numbering.alloc(nb_element, 1, *it, gt);
     }
   }
 
@@ -1186,8 +1188,8 @@ Real SolidMechanicsModel::getStableTimeStep(const GhostType & ghost_type) {
     UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*it);
     UInt nb_element           = mesh.getNbElement(*it);
 
-    Array<UInt>::iterator< Vector<UInt> > eibm =
-      element_index_by_material(*it, ghost_type).begin(2);
+    Array<UInt>::const_scalar_iterator mat_indexes = material_index(*it, ghost_type).begin();
+    Array<UInt>::const_scalar_iterator mat_loc_num = material_local_numbering(*it, ghost_type).begin();
 
     Array<Real> X(0, nb_nodes_per_element*spatial_dimension);
     FEEngine::extractNodalToElementField(mesh, *current_position,
@@ -1196,10 +1198,10 @@ Real SolidMechanicsModel::getStableTimeStep(const GhostType & ghost_type) {
     Array<Real>::matrix_iterator X_el =
       X.begin(spatial_dimension, nb_nodes_per_element);
 
-    for (UInt el = 0; el < nb_element; ++el, ++X_el, ++eibm) {
-      elem.element = (*eibm)(1);
+    for (UInt el = 0; el < nb_element; ++el, ++X_el, ++mat_indexes, ++mat_loc_num) {
+      elem.element = *mat_loc_num;
       Real el_h  = getFEEngine().getElementInradius(*X_el, *it);
-      Real el_c  = mat_val[(*eibm)(0)]->getCelerity(elem);
+      Real el_c  = mat_val[*mat_indexes]->getCelerity(elem);
       Real el_dt = el_h / el_c;
 
       min_dt = std::min(min_dt, el_dt);
@@ -1283,7 +1285,7 @@ Real SolidMechanicsModel::getKineticEnergy(const ElementType & type, UInt index)
 
   Vector<Real> rho_v2(nb_quadrature_points);
 
-  Real rho = materials[element_index_by_material(type)(index, 0)]->getRho();
+  Real rho = materials[material_index(type)(index)]->getRho();
 
   for (UInt q = 0; vit != vend; ++vit, ++q) {
     rho_v2(q) = rho * vit->dot(*vit);
@@ -1367,8 +1369,9 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id,
   }
 
   std::vector<Material *>::iterator mat_it;
-  Vector<UInt> mat = element_index_by_material(type, _not_ghost).begin(2)[index];
-  Real energy = materials[mat(0)]->getEnergy(energy_id, type, mat(1));
+  UInt mat_index   = this->material_index(type, _not_ghost)(index);
+  UInt mat_loc_num = this->material_local_numbering(type, _not_ghost)(index);
+  Real energy = this->materials[mat_index]->getEnergy(energy_id, type, mat_loc_num);
 
   AKANTU_DEBUG_OUT();
   return energy;
@@ -1426,10 +1429,13 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
     Mesh::type_iterator end = this->mesh.lastType(spatial_dimension, gt, _ek_not_defined);
     for(; it != end; ++it) {
       UInt nb_element = this->mesh.getNbElement(*it, gt);
-      if(!element_index_by_material.exists(*it, gt))
-	this->element_index_by_material.alloc(nb_element, 2, *it, gt);
-      else
-	this->element_index_by_material(*it, gt).resize(nb_element);
+      if(!material_index.exists(*it, gt)) {
+	this->material_index          .alloc(nb_element, 1, *it, gt);
+      	this->material_local_numbering.alloc(nb_element, 1, *it, gt);
+      } else {
+	this->material_index          (*it, gt).resize(nb_element);
+	this->material_local_numbering(*it, gt).resize(nb_element);
+      }
     }
   }
 
@@ -1442,7 +1448,7 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
     const Element & elem = *it;
 
     if(!filter.exists(elem.type, elem.ghost_type))
-      filter.alloc(0, 2, elem.type, elem.ghost_type);
+      filter.alloc(0, 1, elem.type, elem.ghost_type);
 
     filter(elem.type, elem.ghost_type).push_back(elem.element);
   }
@@ -1470,8 +1476,6 @@ void SolidMechanicsModel::onElementsRemoved(__attribute__((unused)) const Array<
   for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
     (*mat_it)->onElementsRemoved(element_list, new_numbering, event);
   }
-
-  this->element_index_by_material.onElementsRemoved(new_numbering);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1574,14 +1578,13 @@ dumper::Field * SolidMechanicsModel
 
   if(field_name == "partitions")
     field = mesh.createElementalField<UInt, dumper::ElementPartitionField>(mesh.getConnectivities(),group_name,this->spatial_dimension,kind);
-  else if(field_name == "element_index_by_material")
-    field = mesh.createElementalField<UInt, Vector, dumper::ElementalField >(element_index_by_material,group_name,this->spatial_dimension,kind);
+  else if(field_name == "material_index")
+    field = mesh.createElementalField<UInt, Vector, dumper::ElementalField >(material_index,group_name,this->spatial_dimension,kind);
   else {
 
     bool is_internal = this->isInternal(field_name,kind);
 
     if (is_internal) {
-
       ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name,kind);
       ElementTypeMapArray<Real> & internal_flat = this->flattenInternal(field_name,kind);
       field = mesh.createElementalField<Real, dumper::InternalMaterialField>(internal_flat,
@@ -1773,8 +1776,8 @@ void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
   blocked_dofs->printself(stream, indent + 2);
   stream << space << AKANTU_INDENT << "]" << std::endl;
 
-  stream << space << " + connectivity type information [" << std::endl;
-  element_index_by_material.printself(stream, indent + 2);
+  stream << space << " + material information [" << std::endl;
+  material_index.printself(stream, indent + 2);
   stream << space << AKANTU_INDENT << "]" << std::endl;
 
   stream << space << " + materials [" << std::endl;
