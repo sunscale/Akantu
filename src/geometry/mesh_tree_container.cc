@@ -1,12 +1,12 @@
 /**
- * @file   point.cc
+ * @file   mesh_tree_container.cc
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Feb 19 2015
- * @date last modification: Thu Feb 19 2015
+ * @date creation: Fri Feb 27 2015
+ * @date last modification: Fri Feb 27 2015
  *
- * @brief  Point primitive
+ * @brief  Contains the CGAL representation of a mesh
  *
  * @section LICENSE
  *
@@ -29,39 +29,3 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-#include "point.hh"
-
-__BEGIN_AKANTU__
-
-template<UInt d, typename T>
-Point<d, T>::Point() {
-  AKANTU_DEBUG_TO_IMPLEMENT();
-}
-
-template<UInt d, typename T>
-Point<d, T>::Point(const Vector<T> & vector) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
-}
-
-template<UInt d, typename T>
-Point<d, T>::Point(const Point<d, T> & other) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
-}
-
-template<UInt d, typename T>
-bool Point<d, T>::operator==(const Point<d, T> & other) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
-}
-
-template<UInt d, typename T>
-bool Point<d, T>::operator!=(const Point<d, T> & other) const {
-  return !(*this == other);
-}
-
-template<UInt d, typename T>
-T Point<d, T>::operator[](UInt i) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
-}
-
-__END_AKANTU__

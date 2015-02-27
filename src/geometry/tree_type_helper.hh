@@ -1,12 +1,12 @@
 /**
- * @file   point.hh
+ * @file   tree_type_helper.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Feb 19 2015
- * @date last modification: Thu Feb 19 2015
+ * @date creation: Fri Feb 27 2015
+ * @date last modification: Fri Feb 27 2015
  *
- * @brief  Point primitive
+ * @brief  Converts element types of a mesh to CGAL primitive types
  *
  * @section LICENSE
  *
@@ -30,38 +30,35 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_POINT_HH__
-#define __AKANTU_POINT_HH__
+#ifndef __AKANTU_TREE_TYPE_HELPER_HH__
+#define __AKANTU_TREE_TYPE_HELPER_HH__
 
 #include "aka_common.hh"
-#include "geometrical_primitive.hh"
+
+#include <CGAL/Cartesian.h>
+#include <CGAL/AABB_triangle_primitive.h>
+#include <CGAL/AABB_traits.h>
+#include <CGAL/AABB_tree.h>
 
 __BEGIN_AKANTU__
+  
+typedef CGAL::Cartesian<Real> Kernel;
 
-template<UInt d, typename T = Real>
-class Point : public GeometricalPrimitive {
+template<UInt d, ElementType el_type>
+struct TreeTypeHelper;
 
-public:
-  /// Default constructor
-  Point();
+template<>
+struct TreeTypeHelper<2, _triangle_3> {
+    typedef Kernel::Triangle_3 primitive_type;
+    typedef Kernel::Point_3 point_type;
 
-  /// Construct from akantu vector
-  explicit Point(const Vector<T> & vec);
-
-  /// Copy constructor
-  explicit Point(const Point<d, T> & other);
-
-public:
-  /// Equality operator
-  virtual bool operator==(const Point<d, T> & other) const;
-
-  /// Inequality operator
-  virtual bool operator!=(const Point<d, T> & other) const;
-
-  /// Returns the i-th componenent
-  virtual T operator[](UInt i) const;
+    typedef std::list<primitive_type> container_type;
+    typedef container_type::iterator iterator;
+    typedef CGAL::AABB_triangle_primitive<Kernel, iterator> aabb_primitive_type;
+    typedef CGAL::AABB_traits<Kernel, aabb_primitive_type> aabb_traits_type;
+    typedef CGAL::AABB_tree<aabb_traits_type> tree;
 };
 
 __END_AKANTU__
 
-#endif // __AKANTU_POINT_HH__
+#endif // __AKANTU_TREE_TYPE_HELPER_HH__
