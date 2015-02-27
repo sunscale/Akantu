@@ -143,7 +143,7 @@ void SolidMechanicsModel::assignMaterialToElements(const ElementTypeMapArray<UIn
 
     element.type = *it;
     element.kind = mesh.getKind(element.type);
-    Array<UInt> & el_id_by_mat = element_index_by_material(*it, _not_ghost);
+    Array<UInt> & mat_indexes = material_index(*it, _not_ghost);
     for (UInt el = 0; el < nb_element; ++el) {
       if (filter != NULL)
 	element.element = (*filter_array)(el);
@@ -153,7 +153,7 @@ void SolidMechanicsModel::assignMaterialToElements(const ElementTypeMapArray<UIn
       UInt mat_index = (*material_selector)(element);
       AKANTU_DEBUG_ASSERT(mat_index < materials.size(),
 			  "The material selector returned an index that does not exists");
-      el_id_by_mat(element.element, 0) = mat_index;
+      mat_indexes(element.element) = mat_index;
 
     }
   }
@@ -182,16 +182,17 @@ void SolidMechanicsModel::assignMaterialToElements(const ElementTypeMapArray<UIn
 	nb_element = filter_array->getSize();
       }
 
-      Array<UInt> & el_id_by_mat = element_index_by_material(*it, gt);
+      Array<UInt> & mat_indexes   = material_index(*it, gt);
+      Array<UInt> & mat_local_num = material_local_numbering(*it, gt);
       for (UInt el = 0; el < nb_element; ++el) {
 	UInt element;
 
 	if (filter != NULL) element = (*filter_array)(el);
 	else element = el;
 
-	UInt mat_index = el_id_by_mat(element, 0);
+	UInt mat_index = mat_indexes(element);
 	UInt index = mat_val[mat_index]->addElement(*it, element, gt);
-	el_id_by_mat(element, 1) = index;
+	mat_local_num(element) = index;
       }
     }
   }
@@ -270,20 +271,20 @@ void SolidMechanicsModel::reassignMaterial() {
     GhostType ghost_type = *gt;
     element.ghost_type = ghost_type;
 
-    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type, _ek_regular);
-    Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type, _ek_regular);
+    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type, _ek_not_defined);
+    Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type, _ek_not_defined);
     for(; it != end; ++it) {
       ElementType type = *it;
       element.type = type;
       element.kind = Mesh::getKind(type);
 
       UInt nb_element = mesh.getNbElement(type, ghost_type);
-      Array<UInt> & el_index_by_mat = element_index_by_material(type, ghost_type);
+      Array<UInt> & mat_indexes = material_index(type, ghost_type);
 
       for (UInt el = 0; el < nb_element; ++el) {
 	element.element = el;
 
-	UInt old_material = el_index_by_mat(el, 0);
+	UInt old_material = mat_indexes(el);
 	UInt new_material = (*material_selector)(element);
 
 	if(old_material != new_material) {

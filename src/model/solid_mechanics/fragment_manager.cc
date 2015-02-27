@@ -89,14 +89,16 @@ public:
     if (el.kind == _ek_regular)
       return true;
 
-    const Array<UInt> & el_id_by_mat = model.getElementIndexByMaterial(el.type,
-								       el.ghost_type);
+    const Array<UInt> & mat_indexes = model.getMaterialByElement(el.type,
+								 el.ghost_type);
+    const Array<UInt> & mat_loc_num = model.getMaterialLocalNumbering(el.type,
+								      el.ghost_type);
 
     const MaterialCohesive & mat
       = static_cast<const MaterialCohesive &>
-      (model.getMaterial(el_id_by_mat(el.element, 0)));
+      (model.getMaterial(mat_indexes(el.element)));
 
-    UInt el_index = el_id_by_mat(el.element, 1);
+    UInt el_index = mat_loc_num(el.element);
     UInt nb_quad_per_element
       = model.getFEEngine("CohesiveFEEngine").getNbQuadraturePoints(el.type, el.ghost_type);
 
@@ -433,13 +435,13 @@ void FragmentManager::storeMassDensityPerQuadraturePoint() {
     UInt nb_quad_per_element = model.getFEEngine().getNbQuadraturePoints(type);
     mass_density_array.resize(nb_element * nb_quad_per_element);
 
-    Array<UInt> & el_index_by_mat = model.getElementIndexByMaterial(type);
+    const Array<UInt> & mat_indexes = model.getMaterialByElement(type);
 
     Real * mass_density_it = mass_density_array.storage();
 
     /// store mass_density for each element and quadrature point
     for (UInt el = 0; el < nb_element; ++el) {
-      Material & mat = model.getMaterial(el_index_by_mat(el, 0));
+      Material & mat = model.getMaterial(mat_indexes(el));
 
       for (UInt q = 0; q < nb_quad_per_element; ++q, ++mass_density_it)
 	*mass_density_it = mat.getRho();

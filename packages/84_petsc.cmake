@@ -44,8 +44,3 @@ package_declare_sources(petsc
   solver/petsc_wrapper.hh
   )
 
-set(AKANTU_PETSC_TESTS
-  test_petsc_matrix_profile
-  test_petsc_matrix_apply_boundary
-  test_solver_petsc
-  )

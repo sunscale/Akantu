@@ -203,7 +203,7 @@ register_test(test_solid_mechanics_model_reassign_material
   SOURCES test_solid_mechanics_model_reassign_material.cc
   DEPENDENCIES test_cube3d_two_mat_mesh
   FILES_TO_COPY two_materials.dat
-  PACKAGE scotch
+  PACKAGE implicit
   )
 
 #===============================================================================

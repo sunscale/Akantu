@@ -582,22 +582,22 @@ public:
   /// get synchronizer
   AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const DistributedSynchronizer &);
 
-  AKANTU_GET_MACRO(ElementIndexByMaterial, element_index_by_material, const ElementTypeMapArray <UInt> &);
+  AKANTU_GET_MACRO(MaterialByElement, material_index, const ElementTypeMapArray<UInt> &);
 
   /// vectors containing local material element index for each global element index
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(ElementIndexByMaterial, element_index_by_material, UInt);
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(ElementIndexByMaterial, element_index_by_material, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialByElement, material_index, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialByElement, material_index, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialLocalNumbering, material_local_numbering, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering, material_local_numbering, UInt);
 
   /// Get the type of analysis method used
   AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
-
 
   template <int dim, class model_type>
   friend struct ContactData;
 
   template <int Dim, AnalysisMethod s, ContactResolutionMethod r>
   friend class ContactResolution;
-            
 
 protected:
   friend class Material;
@@ -659,8 +659,11 @@ protected:
   /// t^2}, d = \frac{\gamma}{\beta \Delta t} @f]
   SparseMatrix *jacobian_matrix;
 
-  /// vectors containing local material element index for each global element index
-  ElementTypeMapArray<UInt> element_index_by_material;
+  /// Arrays containing the material index for each element
+  ElementTypeMapArray<UInt> material_index;
+
+  /// Arrays containing the position in the element filter of the material (material's local numbering)
+  ElementTypeMapArray<UInt> material_local_numbering;
 
   /// list of used materials
   std::vector <Material *> materials;

@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "distributed_synchronizer.hh"
+#include "synchronizer_registry.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -62,6 +63,7 @@ public:
   static GridSynchronizer *
   createGridSynchronizer(Mesh & mesh,
 			 const SpatialGrid<E> & grid,
+			 SynchronizerRegistry & synch_registry,
 			 SynchronizerID id = "grid_synchronizer",
 			 MemoryID memory_id = 0);
 

@@ -174,6 +174,56 @@ inline void Material::setCauchyStressMatrix(const Matrix<Real> & S_t, Matrix<Rea
 }
 
 /* -------------------------------------------------------------------------- */
+inline Element Material::convertToLocalElement(const Element & global_element) const {
+  UInt ge = global_element.element;
+#ifndef AKANTU_NDEBUG
+  UInt model_mat_index = this->model->getMaterialByElement(global_element.type,
+							   global_element.ghost_type)(ge);
+
+  UInt mat_index = this->model->getMaterialIndex(this->name);
+  AKANTU_DEBUG_ASSERT(model_mat_index == mat_index,
+		      "Conversion of a global  element in a local element for the wrong material "
+		      << this->name << std::endl);
+#endif
+  UInt le = this->model->getMaterialLocalNumbering(global_element.type,
+						   global_element.ghost_type)(ge);
+
+  Element tmp_quad(global_element.type,
+		   le,
+		   global_element.ghost_type);
+  return tmp_quad;
+}
+
+/* -------------------------------------------------------------------------- */
+inline Element Material::convertToGlobalElement(const Element & local_element) const {
+  UInt le = local_element.element;
+  UInt ge = this->element_filter(local_element.type, local_element.ghost_type)(le);
+
+  Element tmp_quad(local_element.type,
+		   ge,
+		   local_element.ghost_type);
+  return tmp_quad;
+}
+
+/* -------------------------------------------------------------------------- */
+inline QuadraturePoint Material::convertToLocalPoint(const QuadraturePoint & global_point) const {
+  const FEEngine & fem = this->model->getFEEngine();
+  UInt nb_quad = fem.getNbQuadraturePoints(global_point.type);
+  Element el = this->convertToLocalElement(static_cast<const Element &>(global_point));
+  QuadraturePoint tmp_quad(el, global_point.num_point, nb_quad);
+  return tmp_quad;
+}
+
+/* -------------------------------------------------------------------------- */
+inline QuadraturePoint Material::convertToGlobalPoint(const QuadraturePoint & local_point) const {
+  const FEEngine & fem = this->model->getFEEngine();
+  UInt nb_quad = fem.getNbQuadraturePoints(local_point.type);
+  Element el = this->convertToGlobalElement(static_cast<const Element &>(local_point));
+  QuadraturePoint tmp_quad(el, local_point.num_point, nb_quad);
+  return tmp_quad;
+}
+
+/* -------------------------------------------------------------------------- */
 template<ElementType type>
 inline void Material::buildElementalFieldInterpolationCoodinates(__attribute__((unused)) const Matrix<Real> & coordinates,
 								 __attribute__((unused)) Matrix<Real> & coordMatrix) {
@@ -359,7 +409,7 @@ inline void Material::packElementDataHelper(const ElementTypeMapArray<T> & data_
 					    CommunicationBuffer & buffer,
 					    const Array<Element> & elements,
 					    const ID & fem_id) const {
-  DataAccessor::packElementalDataHelper<T>(data_to_pack, buffer, elements, true, 
+  DataAccessor::packElementalDataHelper<T>(data_to_pack, buffer, elements, true,
 					   model->getFEEngine(fem_id));
 }
 

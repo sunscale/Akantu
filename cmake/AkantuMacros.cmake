@@ -41,11 +41,11 @@ endfunction()
 function(generate_material_list)
   message(STATUS "Determining the list of recognized materials...")
 
-  package_get_include_directories(
+  package_get_all_include_directories(
     AKANTU_LIBRARY_INCLUDE_DIRS
     )
 
-  package_get_external_informations(
+  package_get_all_external_informations(
     AKANTU_EXTERNAL_INCLUDE_DIR
     AKANTU_EXTERNAL_LIBRARIES
     )

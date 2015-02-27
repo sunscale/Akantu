@@ -66,6 +66,7 @@ public:
                             GhostType ghost_type = _not_ghost);
 
 protected:
+  /// Infinitesimal deformations
   inline void computeStressOnQuad(const Matrix<Real> & grad_u,
                                   const Matrix<Real> & previous_grad_u,
                                   Matrix<Real> & sigma,
@@ -76,6 +77,18 @@ protected:
                                   const Real & previous_iso_hardening,
                                   const Real & sigma_th,
                                   const Real & previous_sigma_th);
+  /// Finite deformations
+  inline void computeStressOnQuad(const Matrix<Real> & grad_u,
+                                  const Matrix<Real> & previous_grad_u,
+                                  Matrix<Real> & sigma,
+                                  const Matrix<Real> & previous_sigma,
+                                  Matrix<Real> & inelas_strain,
+                                  const Matrix<Real> & previous_inelas_strain,
+                                  Real & iso_hardening,
+                                  const Real & previous_iso_hardening,
+                                  const Real & sigma_th,
+                                  const Real & previous_sigma_th,
+				  const Matrix<Real> & F_tensor);
 
   inline void computeTangentModuliOnQuad(Matrix<Real> & tangent,
                                          const Matrix<Real> & grad_u,

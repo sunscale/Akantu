@@ -625,7 +625,11 @@ function(_package_load_external_package pkg_name activate)
       endif()
 
       # Generate the libraries for the package
-      package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
+      if(DEFINED ${_prefix}_LIBRARIES)
+	package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
+      elseif(DEFINED ${_prefix}_LIBRARY)
+	package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARY})
+      endif()
     endforeach()
   endif()
   set(${activate} ${_act} PARENT_SCOPE)

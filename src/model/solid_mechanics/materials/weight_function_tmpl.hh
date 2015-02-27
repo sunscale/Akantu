@@ -129,8 +129,8 @@ inline void StressBasedWeightFunction<spatial_dimension>::selectType(ElementType
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 inline Real StressBasedWeightFunction<spatial_dimension>::operator()(Real r,
-								     QuadraturePoint & q1,
-								     QuadraturePoint & q2) {
+								     const QuadraturePoint & q1,
+								     const QuadraturePoint & q2) {
   Real zero = std::numeric_limits<Real>::epsilon();
 
   if(r < zero) return 1.; // means x and s are the same points

@@ -310,6 +310,16 @@ public:
   template<UInt dim>
   inline void gradUToGreenStrain(const Matrix<Real> & grad_u,
                                  Matrix<Real> & epsilon) const;
+protected:
+  /// converts global element to local element
+  inline Element convertToLocalElement(const Element & global_element) const;
+  /// converts local element to global element
+  inline Element convertToGlobalElement(const Element & local_element) const;
+
+  /// converts global quadrature point to local quadrature point
+  inline QuadraturePoint convertToLocalPoint(const QuadraturePoint & global_point) const;
+  /// converts local quadrature point to global quadrature point
+  inline QuadraturePoint convertToGlobalPoint(const QuadraturePoint & local_point) const;
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
@@ -459,6 +469,9 @@ protected:
 
   /// grad_u arrays ordered by element types
   InternalField<Real> gradu;
+
+  /// Green Lagrange strain (Finite deformation)
+  InternalField<Real> green_strain;
 
   /// Second Piola-Kirchhoff stress tensor arrays ordered by element types (Finite deformation)
   InternalField<Real> piola_kirchhoff_2;

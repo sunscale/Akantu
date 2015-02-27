@@ -89,10 +89,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
-  /// reassigns materials depending on the material selector
-  virtual void reassignMaterial();
-
   /// set the value of the time step
   void setTimeStep(Real time_step);
 
@@ -253,7 +249,7 @@ private:
 class DefaultMaterialCohesiveSelector : public DefaultMaterialSelector {
 public:
   DefaultMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model) :
-    DefaultMaterialSelector(model.getElementIndexByMaterial()),
+    DefaultMaterialSelector(model.getMaterialByElement()),
     facet_material(model.getFacetMaterial()),
     mesh(model.getMesh()) { }
 
