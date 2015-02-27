@@ -63,8 +63,9 @@ public:
   static GridSynchronizer *
   createGridSynchronizer(Mesh & mesh,
 			 const SpatialGrid<E> & grid,
-			 SynchronizerRegistry & synch_registry,
 			 SynchronizerID id = "grid_synchronizer",
+			 SynchronizerRegistry * synch_registry = NULL,
+			 const std::set<SynchronizationTag> & tags_to_register = std::set<SynchronizationTag>(),
 			 MemoryID memory_id = 0);
 
 

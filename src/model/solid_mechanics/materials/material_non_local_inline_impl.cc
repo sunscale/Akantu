@@ -75,6 +75,11 @@ template<UInt spatial_dimension, template <UInt> class WeightFunction>
 MaterialNonLocal<spatial_dimension, WeightFunction>::~MaterialNonLocal() {
   AKANTU_DEBUG_IN();
 
+  for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+    GhostType ghost_type = (GhostType) gt;
+    delete pair_weight[ghost_type];
+  }
+
   delete spatial_grid;
   delete weight_func;
   delete grid_synchronizer;
@@ -204,18 +209,22 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 
   this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _not_ghost);
   this->fillCellList(quadrature_points_coordinates, _not_ghost);
- 
+
   is_creating_grid = true;
+  std::set<SynchronizationTag> tags;
+  tags.insert(_gst_mnl_for_average);
+  tags.insert(_gst_mnl_weight);
+  tags.insert(_gst_material_id);
+
   SynchronizerRegistry & synch_registry = this->model->getSynchronizerRegistry();
   std::stringstream sstr; sstr << getID() << ":grid_synchronizer";
   grid_synchronizer = GridSynchronizer::createGridSynchronizer(mesh,
 							       *spatial_grid,
-							       synch_registry,
-							       sstr.str());
-  synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_for_average);
-  synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_weight);
+							       sstr.str(),
+							       &synch_registry,
+							       tags);
   is_creating_grid = false;
- 
+
   this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _ghost);
   fillCellList(quadrature_points_coordinates, _ghost);
 
@@ -365,11 +374,11 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
 
       const Real & q2_wJ = fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type)(gq2.global_num);
 
-      Real & q1_volume = quadrature_points_volumes(lq1.type, lq1.ghost_type)(lq1.global_num);
+      Real q1_volume = quadrature_points_volumes(lq1.type, lq1.ghost_type)(lq1.global_num);
 
-      const Vector<Real> & q1_coord =
+      Vector<Real> q1_coord =
 	quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq1.global_num];
-      const Vector<Real> & q2_coord =
+      Vector<Real> q2_coord =
 	quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq2.global_num];
 
       this->weight_func->selectType(lq1.type, lq1.ghost_type, lq2.type, lq2.ghost_type);
@@ -382,7 +391,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
 
       if(lq2.ghost_type != _ghost && lq1.global_num != lq2.global_num) {
 	const Real & q1_wJ = fem.getIntegratorInterface().getJacobians(gq1.type, gq1.ghost_type)(gq1.global_num);
-	Real & q2_volume = quadrature_points_volumes(lq2.type, lq2.ghost_type)(lq2.global_num);
+	Real q2_volume = quadrature_points_volumes(lq2.type, lq2.ghost_type)(lq2.global_num);
 
 	Real w2 = this->weight_func->operator()(r, lq2, lq1);
 	weight(1) = q1_wJ * w2;
@@ -757,7 +766,6 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsRemov
       }
     }
   }
-
 
   // Change the material numbering
   Material::onElementsRemoved(element_list, new_numbering, event);
