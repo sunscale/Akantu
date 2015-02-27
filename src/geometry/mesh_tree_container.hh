@@ -1,12 +1,12 @@
 /**
- * @file   segment.cc
+ * @file   mesh_tree_container.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Feb 19 2015
- * @date last modification: Thu Feb 19 2015
+ * @date creation: Fri Feb 27 2015
+ * @date last modification: Fri Feb 27 2015
  *
- * @brief  CGALSegment primitive
+ * @brief  Contains the CGAL representation of a mesh
  *
  * @section LICENSE
  *
@@ -30,37 +30,17 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include "cgal_segment.hh"
+#ifndef __AKANTU_MESH_TREE_CONTAINER__
+#define __AKANTU_MESH_TREE_CONTAINER__
+
+#include "aka_common.hh"
 
 __BEGIN_AKANTU__
 
-template<UInt d, typename T>
-CGALSegment<d, T>::CGALSegment() :
-  segment(),
-  source(),
-  target()
-{}
+class MeshTreeContainer {
 
-template<UInt d, typename T>
-CGALSegment<d, T>::CGALSegment(const Point<d, T> & a, const Point<d, T> & b) :
-  segment(a.getCGALPointInstance(), b.getCGALPointInstance()),
-  source(a),
-  target(b)
-{}
-
-template<UInt d, typename T>
-T CGALSegment<d, T>::squaredLength() const {
-  return segment.squared_length();
-}
-
-template<UInt d, typename T>
-Segment<d, T> CGALSegment<d, T>::opposite() const {
-  return CGALSegment<d, T>(segment.opposite());
-}
-
-template<UInt d, typename T>
-bool CGALSegment<d, T>::operator==(const CGALSegment<d, T> & other) const {
-  return this->segment == other.segment;
 }
 
 __END_AKANTU__
+
+#endif // __AKANTU_MESH_TREE_CONTAINER__
