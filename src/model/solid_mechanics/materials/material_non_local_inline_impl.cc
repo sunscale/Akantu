@@ -537,9 +537,8 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeAllNonLocalStre
       this->weightedAvergageOnNeighbours(*non_local_variable.local, *non_local_variable.non_local,
 					 non_local_variable.nb_component, _ghost);
     }
-
-    computeNonLocalStresses(_not_ghost);
   }
+  computeNonLocalStresses(_not_ghost);
 }
 
 /* -------------------------------------------------------------------------- */
