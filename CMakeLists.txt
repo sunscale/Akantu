@@ -114,6 +114,7 @@ set(AKANTU_BOOST_COMPONENT)
 set(AKANTU_EXTRA_TARGET_DEPENDENCIES)
 add_all_packages(${PROJECT_SOURCE_DIR}/packages ${PROJECT_SOURCE_DIR}/src)
 
+set(Boost_NO_BOOST_CMAKE ON)
 include_boost()
 
 ## meta option \todo better way to do it when multiple package give enable the
