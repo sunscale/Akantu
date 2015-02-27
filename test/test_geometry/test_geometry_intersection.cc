@@ -38,13 +38,25 @@
 
 #include <iostream>
 
+/* -------------------------------------------------------------------------- */
+
 using namespace akantu;
 
 typedef CGAL::Cartesian<Real> K;
+typedef boost::optional < TreeTypeHelper<2, _triangle_3>::tree::Intersection_and_primitive_id<K::Line_3>::Type > Line_intersection;
+
+/* -------------------------------------------------------------------------- */
+
+bool comparePoints(const K::Point_3 & a, const K::Point_3 & b);
+bool compareSegments(const K::Segment_3 & a, const K::Segment_3 & b);
+
+/* -------------------------------------------------------------------------- */
 
 int main (int argc, char * argv[]) {
   debug::setDebugLevel(dblWarning);
   initialize("", argc, argv);
+
+  Math::setTolerance(1e-10);
 
   Mesh mesh(2);
   mesh.read("mesh.msh");
@@ -57,17 +69,46 @@ int main (int argc, char * argv[]) {
   K::Point_3 a(0., 0.25, 0.), b(1., 0.25, 0.);
   K::Line_3 line(a, b);
 
-  std::cout << line << std::endl;
-  std::cout << tree.number_of_intersected_primitives(line) << std::endl;
+  if (tree.number_of_intersected_primitives(line) != 2)
+    return EXIT_FAILURE;
 
-  boost::optional < TreeTypeHelper<2, _triangle_3>::tree::Intersection_and_primitive_id<K::Line_3>::Type > segment_intersection = tree.any_intersection(line);
+  K::Point_3 begin(a), intermediate(0.25, 0.25, 0.), end(0.75, 0.25, 0.);
+  K::Segment_3 result_0(begin, intermediate), result_1(intermediate, end);
 
-  if (segment_intersection) {
-    if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&(segment_intersection->first))) {
-      std::cout << *segment << std::endl;
+  std::list<Line_intersection> list_of_intersections;
+  tree.all_intersections(line, std::back_inserter(list_of_intersections));
+
+  const Line_intersection & intersection_0 = list_of_intersections.front();
+  const Line_intersection & intersection_1 = list_of_intersections.back();
+
+  if (!intersection_0 || !intersection_1)
+    return EXIT_FAILURE;
+
+  if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&(intersection_0->first))) {
+    if (!compareSegments(*segment, result_0)) {
+      return EXIT_FAILURE;
+    }
+  }
+
+  if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&(intersection_1->first))) {
+    if (!compareSegments(*segment, result_1)) {
+      return EXIT_FAILURE;
     }
   }
 
   finalize();
-  return 0;
+  return EXIT_SUCCESS;
 }
+
+/* -------------------------------------------------------------------------- */
+
+
+bool comparePoints(const K::Point_3 & a, const K::Point_3 & b) {
+  return Math::are_float_equal(a.x(), b.x()) && Math::are_float_equal(a.y(), b.y());
+}
+
+bool compareSegments(const K::Segment_3 & a, const K::Segment_3 & b) {
+  return (comparePoints(a.source(), b.source()) && comparePoints(a.target(), b.target())) ||
+         (comparePoints(a.source(), b.target()) && comparePoints(a.target(), b.source()));
+}
+
