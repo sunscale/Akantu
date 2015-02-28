@@ -372,14 +372,24 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
       QuadraturePoint gq1 = this->convertToGlobalPoint(lq1);
       QuadraturePoint gq2 = this->convertToGlobalPoint(lq2);
 
-      const Real & q2_wJ = fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type)(gq2.global_num);
+      //   const Real q2_wJ = fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type)(gq2.global_num);
 
-      Real q1_volume = quadrature_points_volumes(lq1.type, lq1.ghost_type)(lq1.global_num);
+      Array<Real>::const_vector_iterator quad_coords_1;
+      Array<Real>::const_vector_iterator quad_coords_2;
+      Array<Real> & quad_volumes_1 = quadrature_points_volumes(lq1.type, lq1.ghost_type);
+      quad_coords_1 = quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension);
+      Array<Real> & quad_volumes_2 = quadrature_points_volumes(lq2.type, lq2.ghost_type);
+      quad_coords_2 = quadrature_points_coordinates(lq2.type, lq2.ghost_type).begin(spatial_dimension);
 
-      Vector<Real> q1_coord =
-	quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq1.global_num];
-      Vector<Real> q2_coord =
-	quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq2.global_num];
+      const Array<Real> & jacobians_1 = fem.getIntegratorInterface().getJacobians(gq1.type, gq1.ghost_type);
+      const Array<Real> & jacobians_2 = fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type);
+      const Real q2_wJ = jacobians_2(gq2.global_num);
+      // Real & q1_volume = quad_volumes(lq1.global_num);
+
+      const Vector<Real> & q1_coord = quad_coords_1[lq1.global_num];
+      // quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq1.global_num];
+      const Vector<Real> & q2_coord = quad_coords_2[lq2.global_num];
+      // quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq2.global_num];
 
       this->weight_func->selectType(lq1.type, lq1.ghost_type, lq2.type, lq2.ghost_type);
 
@@ -387,16 +397,18 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
       Real r = q1_coord.distance(q2_coord);
       Real w1 = this->weight_func->operator()(r, lq1, lq2);
       weight(0) = q2_wJ * w1;
-      q1_volume += weight(0);
+      //     q1_volume += weight(0);
+      quad_volumes_1(lq1.global_num) += weight(0);
 
       if(lq2.ghost_type != _ghost && lq1.global_num != lq2.global_num) {
-	const Real & q1_wJ = fem.getIntegratorInterface().getJacobians(gq1.type, gq1.ghost_type)(gq1.global_num);
-	Real q2_volume = quadrature_points_volumes(lq2.type, lq2.ghost_type)(lq2.global_num);
+	const Real q1_wJ = jacobians_1(gq1.global_num);
+	//Real & q2_volume = quad_volumes_2(lq2.global_num);
 
 	Real w2 = this->weight_func->operator()(r, lq2, lq1);
 	weight(1) = q1_wJ * w2;
 
-	q2_volume += weight(1);
+	quad_volumes_2(lq2.global_num) += weight(1);
+	//q2_volume += weight(1);
       } else
 	weight(1) = 0.;
     }
@@ -418,11 +430,14 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
       const QuadraturePoint & lq1 = first_pair->first;
       const QuadraturePoint & lq2 = first_pair->second;
 
-      Real & q1_volume = quadrature_points_volumes(lq1.type, lq1.ghost_type)(lq1.global_num);
+      Array<Real> & quad_volumes_1 = quadrature_points_volumes(lq1.type, lq1.ghost_type);
+      Array<Real> & quad_volumes_2 = quadrature_points_volumes(lq2.type, lq2.ghost_type);
+
+      Real q1_volume = quad_volumes_1(lq1.global_num);
 
       weight(0) *= 1. / q1_volume;
       if(ghost_type2 != _ghost) {
-	Real & q2_volume = quadrature_points_volumes(lq2.type, lq2.ghost_type)(lq2.global_num);
+	Real q2_volume = quad_volumes_2(lq2.global_num);
 	weight(1) *= 1. / q2_volume;
       }
     }
@@ -456,17 +471,28 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::weightedAvergageOnNeig
     const QuadraturePoint & lq1 = first_pair->first;
     const QuadraturePoint & lq2 = first_pair->second;
 
-    const Vector<T> & q2_to_acc = to_accumulate(lq2.type, lq2.ghost_type).begin(nb_degree_of_freedom)[lq2.global_num];
-    Vector<T> & q1_acc = accumulated(lq1.type, lq1.ghost_type).begin(nb_degree_of_freedom)[lq1.global_num];
+    const Array<T> & to_acc_1 = to_accumulate(lq1.type, lq1.ghost_type);
+    Array<T> & acc_1 = accumulated(lq1.type, lq1.ghost_type);
+    const Array<T> & to_acc_2 = to_accumulate(lq2.type, lq2.ghost_type);
+    Array<T> & acc_2 = accumulated(lq2.type, lq2.ghost_type);
 
-    q1_acc += weight(0) * q2_to_acc;
+    // const Vector<T> & q2_to_acc = to_acc_2[lq2.global_num];
+    // Vector<T> & q1_acc = acc_1[lq1.global_num];
 
-    if(ghost_type2 != _ghost) {
-      const Vector<T> & q1_to_acc = to_accumulate(lq1.type, lq1.ghost_type).begin(nb_degree_of_freedom)[lq1.global_num];
-      Vector<T> & q2_acc = accumulated(lq2.type, lq2.ghost_type).begin(nb_degree_of_freedom)[lq2.global_num];
+    //q1_acc += weight(0) * q2_to_acc;
 
-      q2_acc += weight(1) * q1_to_acc;
+    for(UInt d = 0; d < nb_degree_of_freedom; ++d){
+      acc_1(lq1.global_num, d) += weight(0) * to_acc_2(lq2.global_num, d);
+      if(ghost_type2 != _ghost) 
+	acc_2(lq2.global_num, d) += weight(1) * to_acc_1(lq1.global_num, d);
     }
+
+    // if(ghost_type2 != _ghost) {
+    //   const Vector<T> & q1_to_acc = to_acc_1[lq1.global_num];
+    //   Vector<T> & q2_acc = acc_2[lq2.global_num];
+
+    //   q2_acc += weight(1) * q1_to_acc;
+    // }
   }
 
   AKANTU_DEBUG_OUT();
