@@ -30,7 +30,8 @@
 #
 #===============================================================================
 
-add_mesh(test_material_non_local_mesh mesh.geo 2 2 OUTPUT mesh.msh)
+add_mesh(test_material_non_local_mesh_2 mesh.geo 2 2 OUTPUT mesh_2.msh)
+add_mesh(test_material_non_local_mesh mesh.geo 2 1 OUTPUT mesh.msh)
 add_mesh(test_two_materials_mesh two_materials.geo 2 1 OUTPUT two_materials.msh)
 
 register_test(test_material_damage_non_local
@@ -49,3 +50,9 @@ register_test(test_material_damage_non_local_two_materials
   PACKAGE damage_non_local
   )
 
+register_test(test_material_non_local
+  SOURCES test_material_non_local.cc custom_non_local_test_material.cc
+  DEPENDENCIES test_material_non_local_mesh
+  FILES_TO_COPY material.dat
+  PACKAGE damage_non_local
+  )

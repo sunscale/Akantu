@@ -255,6 +255,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::fillCellList(const Ele
       q.element = *elem;
       for (UInt nq = 0; nq < nb_quad; ++nq) {
 	q.num_point = nq;
+	q.global_num = q.element * nb_quad + nq;
 	//q.setPosition(*quad);
 	spatial_grid->insert(q, *quad);
 	++quad;
@@ -290,7 +291,8 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::updatePairList(const E
       UInt nb_quad1 =
 	this->model->getFEEngine().getNbQuadraturePoints(q1.type,
 							 q1.ghost_type);
-      q1.element = q1.global_num / nb_quad1;
+      q1.element   = q1.global_num / nb_quad1;
+      q1.num_point = q1.global_num % nb_quad1;
       const Vector<Real> & q1_coord = *q1_coord_it;
 
       SpatialGrid<QuadraturePoint>::CellID cell_id = spatial_grid->getCellID(q1_coord);
@@ -374,16 +376,15 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
 
       //   const Real q2_wJ = fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type)(gq2.global_num);
 
-      Array<Real>::const_vector_iterator quad_coords_1;
-      Array<Real>::const_vector_iterator quad_coords_2;
-      Array<Real> & quad_volumes_1 = quadrature_points_volumes(lq1.type, lq1.ghost_type);
-      quad_coords_1 = quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension);
-      Array<Real> & quad_volumes_2 = quadrature_points_volumes(lq2.type, lq2.ghost_type);
-      quad_coords_2 = quadrature_points_coordinates(lq2.type, lq2.ghost_type).begin(spatial_dimension);
+      Array<Real>::const_vector_iterator quad_coords_1 =
+	quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension);
+      Array<Real>::const_vector_iterator quad_coords_2 =
+	quadrature_points_coordinates(lq2.type, lq2.ghost_type).begin(spatial_dimension);
 
-      const Array<Real> & jacobians_1 = fem.getIntegratorInterface().getJacobians(gq1.type, gq1.ghost_type);
-      const Array<Real> & jacobians_2 = fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type);
-      const Real q2_wJ = jacobians_2(gq2.global_num);
+      Array<Real> & quad_volumes_1 = quadrature_points_volumes(lq1.type, lq1.ghost_type);
+      const Array<Real> & jacobians_2 =
+	fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type);
+      const Real & q2_wJ = jacobians_2(gq2.global_num);
       // Real & q1_volume = quad_volumes(lq1.global_num);
 
       const Vector<Real> & q1_coord = quad_coords_1[lq1.global_num];
@@ -401,7 +402,12 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
       quad_volumes_1(lq1.global_num) += weight(0);
 
       if(lq2.ghost_type != _ghost && lq1.global_num != lq2.global_num) {
-	const Real q1_wJ = jacobians_1(gq1.global_num);
+	const Array<Real> & jacobians_1 =
+	  fem.getIntegratorInterface().getJacobians(gq1.type, gq1.ghost_type);
+	Array<Real> & quad_volumes_2 =
+	  quadrature_points_volumes(lq2.type, lq2.ghost_type);
+
+	const Real & q1_wJ = jacobians_1(gq1.global_num);
 	//Real & q2_volume = quad_volumes_2(lq2.global_num);
 
 	Real w2 = this->weight_func->operator()(r, lq2, lq1);
@@ -480,11 +486,14 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::weightedAvergageOnNeig
     // Vector<T> & q1_acc = acc_1[lq1.global_num];
 
     //q1_acc += weight(0) * q2_to_acc;
-
-    for(UInt d = 0; d < nb_degree_of_freedom; ++d){
+    for(UInt d = 0; d < nb_degree_of_freedom; ++d) {
       acc_1(lq1.global_num, d) += weight(0) * to_acc_2(lq2.global_num, d);
-      if(ghost_type2 != _ghost) 
-	acc_2(lq2.global_num, d) += weight(1) * to_acc_1(lq1.global_num, d);
+    }
+
+    if(ghost_type2 != _ghost) {
+      for(UInt d = 0; d < nb_degree_of_freedom; ++d) {
+      	acc_2(lq2.global_num, d) += weight(1) * to_acc_1(lq1.global_num, d);
+      }
     }
 
     // if(ghost_type2 != _ghost) {
@@ -563,8 +572,8 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeAllNonLocalStre
       this->weightedAvergageOnNeighbours(*non_local_variable.local, *non_local_variable.non_local,
 					 non_local_variable.nb_component, _ghost);
     }
+    computeNonLocalStresses(_not_ghost);
   }
-  computeNonLocalStresses(_not_ghost);
 }
 
 /* -------------------------------------------------------------------------- */

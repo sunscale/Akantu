@@ -748,6 +748,7 @@ void SolidMechanicsModel::initSolver(__attribute__((unused)) SolverOptions & opt
 #endif //AKANTU_USE_PETSC
   }
 
+  delete solver;
   std::stringstream sstr_solv; sstr_solv << id << ":solver";
 #ifdef AKANTU_USE_PETSC
   solver = new SolverPETSc(*jacobian_matrix, sstr_solv.str());
@@ -1377,44 +1378,6 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id,
   return energy;
 }
 
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
-				       __attribute__((unused)) const NewNodesEvent & event) {
-  AKANTU_DEBUG_IN();
-  UInt nb_nodes = mesh.getNbNodes();
-
-  if(displacement) displacement->resize(nb_nodes);
-  if(mass        ) mass        ->resize(nb_nodes);
-  if(velocity    ) velocity    ->resize(nb_nodes);
-  if(acceleration) acceleration->resize(nb_nodes);
-  if(force       ) force       ->resize(nb_nodes);
-  if(residual    ) residual    ->resize(nb_nodes);
-  if(blocked_dofs) blocked_dofs->resize(nb_nodes);
-
-  if(previous_displacement) previous_displacement->resize(nb_nodes);
-  if(increment_acceleration) increment_acceleration->resize(nb_nodes);
-  if(increment) increment->resize(nb_nodes);
-
-  if(current_position) current_position->resize(nb_nodes);
-
-  delete dof_synchronizer;
-  dof_synchronizer = new DOFSynchronizer(mesh, spatial_dimension);
-  dof_synchronizer->initLocalDOFEquationNumbers();
-  dof_synchronizer->initGlobalDOFEquationNumbers();
-
-  std::vector<Material *>::iterator mat_it;
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    (*mat_it)->onNodesAdded(nodes_list, event);
-  }
-
-  if (method != _explicit_lumped_mass) {
-    this->initJacobianMatrix();
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
 					  const NewElementsEvent & event) {
@@ -1479,6 +1442,43 @@ void SolidMechanicsModel::onElementsRemoved(__attribute__((unused)) const Array<
 }
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
+				       __attribute__((unused)) const NewNodesEvent & event) {
+  AKANTU_DEBUG_IN();
+  UInt nb_nodes = mesh.getNbNodes();
+
+  if(displacement) displacement->resize(nb_nodes);
+  if(mass        ) mass        ->resize(nb_nodes);
+  if(velocity    ) velocity    ->resize(nb_nodes);
+  if(acceleration) acceleration->resize(nb_nodes);
+  if(force       ) force       ->resize(nb_nodes);
+  if(residual    ) residual    ->resize(nb_nodes);
+  if(blocked_dofs) blocked_dofs->resize(nb_nodes);
+
+  if(previous_displacement) previous_displacement->resize(nb_nodes);
+  if(increment_acceleration) increment_acceleration->resize(nb_nodes);
+  if(increment) increment->resize(nb_nodes);
+
+  if(current_position) current_position->resize(nb_nodes);
+
+  delete dof_synchronizer;
+  dof_synchronizer = new DOFSynchronizer(mesh, spatial_dimension);
+  dof_synchronizer->initLocalDOFEquationNumbers();
+  dof_synchronizer->initGlobalDOFEquationNumbers();
+
+  std::vector<Material *>::iterator mat_it;
+  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+    (*mat_it)->onNodesAdded(nodes_list, event);
+  }
+
+  if (method != _explicit_lumped_mass) {
+    this->initSolver();
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::onNodesRemoved(__attribute__((unused)) const Array<UInt> & element_list,
 					 const Array<UInt> & new_numbering,
 					 __attribute__((unused)) const RemovedNodesEvent & event) {
@@ -1497,6 +1497,11 @@ void SolidMechanicsModel::onNodesRemoved(__attribute__((unused)) const Array<UIn
   dof_synchronizer = new DOFSynchronizer(mesh, spatial_dimension);
   dof_synchronizer->initLocalDOFEquationNumbers();
   dof_synchronizer->initGlobalDOFEquationNumbers();
+
+  if (method != _explicit_lumped_mass) {
+    this->initSolver();
+  }
+
 }
 
 /* -------------------------------------------------------------------------- */
