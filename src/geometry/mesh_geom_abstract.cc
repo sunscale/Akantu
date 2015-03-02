@@ -1,10 +1,10 @@
 /**
- * @file   mesh_tree_constructor.hh
+ * @file   mesh_geom_abstract.cc
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Thu Feb 26 2015
- * @date last modification: Thu Feb 26 2015
+ * @date last modification: Mon Mar 2 2015
  *
  * @brief  Class for constructing the CGAL primitives of a mesh
  *
@@ -30,41 +30,18 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_TREE_CONSTRUCTOR_HH__
-#define __AKANTU_MESH_TREE_CONSTRUCTOR_HH__
-
 #include "aka_common.hh"
-#include "mesh.hh"
-#include "mesh_abstract_constructor.hh"
-#include "tree_type_helper.hh"
+#include "mesh_geom_abstract.hh"
 
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-template<UInt d, ElementType el_type>
-class MeshTreeConstructor : public MeshAbstractConstructor {
+MeshGeomAbstract::MeshGeomAbstract(const Mesh & mesh) :
+  mesh(mesh)
+{}
 
-public:
-  /// Construct from mesh
-  MeshTreeConstructor(const Mesh & mesh) : MeshAbstractConstructor(mesh), data_tree(NULL), primitive_list() {}
-
-  /// Desctructor
-  ~MeshTreeConstructor();
-
-public:
-  /// Construct AABB tree for fast intersection computing
-  virtual void constructData();
-
-  const typename TreeTypeHelper<d, el_type>::tree & getTree() const { return *data_tree; }
-
-protected:
-  typename TreeTypeHelper<d, el_type>::tree * data_tree;
-  typename TreeTypeHelper<d, el_type>::container_type primitive_list;
-};
+MeshGeomAbstract::~MeshGeomAbstract() 
+{}
 
 __END_AKANTU__
-
-#include "mesh_tree_constructor_tmpl.hh"
-
-#endif // __AKANTU_MESH_TREE_CONSTRUCTOR_HH__

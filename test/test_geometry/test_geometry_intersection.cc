@@ -31,7 +31,8 @@
 /* -------------------------------------------------------------------------- */
 
 #include "aka_common.hh"
-#include "mesh_tree_constructor.hh"
+#include "mesh_geom_container.hh"
+#include "mesh_geom_factory.hh"
 #include "tree_type_helper.hh"
 
 #include <CGAL/Cartesian.h>
@@ -61,10 +62,11 @@ int main (int argc, char * argv[]) {
   Mesh mesh(2);
   mesh.read("mesh.msh");
 
-  MeshTreeConstructor<2, _triangle_3> tree_constructor(mesh);
-  tree_constructor.constructData();
+  MeshGeomContainer container(mesh);
+  container.constructData();
 
-  const TreeTypeHelper<2, _triangle_3>::tree & tree = tree_constructor.getTree();
+  const MeshGeomFactory<2, _triangle_3> * factory = dynamic_cast<const MeshGeomFactory<2, _triangle_3> *>(container.getFactoryForElementType(_triangle_3));
+  const TreeTypeHelper<2, _triangle_3>::tree & tree = factory->getTree();
 
   K::Point_3 a(0., 0.25, 0.), b(1., 0.25, 0.);
   K::Line_3 line(a, b);

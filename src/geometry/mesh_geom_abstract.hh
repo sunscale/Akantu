@@ -1,12 +1,12 @@
 /**
- * @file   mesh_tree_container.cc
+ * @file   mesh_geom_abstract.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Fri Feb 27 2015
- * @date last modification: Fri Feb 27 2015
+ * @date creation: Thu Feb 26 2015
+ * @date last modification: Thu Feb 26 2015
  *
- * @brief  Contains the CGAL representation of a mesh
+ * @brief  Class for constructing the CGAL primitives of a mesh
  *
  * @section LICENSE
  *
@@ -29,3 +29,35 @@
  */
 
 /* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_MESH_GEOM_ABSTRACT_HH__
+#define __AKANTU_MESH_GEOM_ABSTRACT_HH__
+
+#include "aka_common.hh"
+#include "mesh.hh"
+
+/* -------------------------------------------------------------------------- */
+
+__BEGIN_AKANTU__
+
+class MeshGeomAbstract {
+
+public:
+  /// Construct from mesh
+  explicit MeshGeomAbstract(const Mesh & mesh);
+
+  /// Destructor
+  virtual ~MeshGeomAbstract();
+
+public:
+  /// Construct geometric data for computational geometry algorithms
+  virtual void constructData() = 0;
+
+protected:
+  /// Mesh used to construct the primitives
+  const Mesh & mesh;
+};
+
+__END_AKANTU__
+
+#endif // __AKANTU_MESH_GEOM_ABSTRACT_HH__

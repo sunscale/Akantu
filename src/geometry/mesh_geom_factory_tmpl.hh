@@ -1,10 +1,10 @@
 /**
- * @file   mesh_tree_constructor_tmpl.hh
+ * @file   mesh_geom_factory_tmpl.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Thu Feb 26 2015
- * @date last modification: Thu Feb 26 2015
+ * @date last modification: Mon Mar 2 2015
  *
  * @brief  Class for constructing the CGAL primitives of a mesh
  *
@@ -30,11 +30,12 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef _AKANTU_MESH_TREE_CONSTRUCTOR_TMPL_HH__
-#define _AKANTU_MESH_TREE_CONSTRUCTOR_TMPL_HH__
+#ifndef _AKANTU_MESH_GEOM_FACTORY_TMPL_HH__
+#define _AKANTU_MESH_GEOM_FACTORY_TMPL_HH__
+
+#include "mesh_geom_factory.hh"
 
 #include "aka_common.hh"
-#include "mesh_tree_constructor.hh"
 #include "tree_type_helper.hh"
 
 /* -------------------------------------------------------------------------- */
@@ -42,12 +43,19 @@
 __BEGIN_AKANTU__
 
 template<UInt d, ElementType type>
-MeshTreeConstructor<d, type>::~MeshTreeConstructor() {
+MeshGeomFactory<d, type>::MeshGeomFactory(const Mesh & mesh) :
+  MeshGeomAbstract(mesh),
+  data_tree(NULL),
+  primitive_list()
+{}
+
+template<UInt d, ElementType type>
+MeshGeomFactory<d, type>::~MeshGeomFactory() {
   delete data_tree;
 }
 
 template<>
-void MeshTreeConstructor<2, _triangle_3>::constructData() {
+void MeshGeomFactory<2, _triangle_3>::constructData() {
   /// Variable declaration instead of template arguments
   const UInt d = 2;
   const ElementType type = _triangle_3;
@@ -96,4 +104,4 @@ void MeshTreeConstructor<2, _triangle_3>::constructData() {
 
 __END_AKANTU__
 
-#endif // _AKANTU_MESH_TREE_CONSTRUCTOR_TMPL_HH__
+#endif // _AKANTU_MESH_GEOM_FACTORY_TMPL_HH__

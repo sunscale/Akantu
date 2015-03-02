@@ -1,10 +1,10 @@
 #===============================================================================
-# @file   80_cgal.cmake
+# @file   cgal.cmake
 #
 # @author Lucas Frérot <lucas.frerot@epfl.ch>
 #
 # @date creation: Thu Feb 19 2015
-# @date last modification: Tue Feb 24 2015
+# @date last modification: Mon Mar 2 2015
 #
 # @brief  package description for CGAL
 #
@@ -34,12 +34,12 @@ package_declare(CGAL EXTERNAL
   )
 
 package_declare_sources(CGAL
-  geometry/mesh_abstract_constructor.hh
-  geometry/mesh_abstract_constructor.cc
-  geometry/mesh_tree_constructor.hh
-  geometry/mesh_tree_constructor_tmpl.hh
-  geometry/mesh_tree_container.hh
-  geometry/mesh_tree_container.cc
+  geometry/mesh_geom_abstract.hh
+  geometry/mesh_geom_abstract.cc
+  geometry/mesh_geom_factory.hh
+  geometry/mesh_geom_factory_tmpl.hh
+  geometry/mesh_geom_container.hh
+  geometry/mesh_geom_container.cc
   geometry/tree_type_helper.hh
   )
 
