@@ -38,7 +38,8 @@ MaterialCohesiveLinearFatigue<spatial_dimension>
   MaterialCohesiveLinear<spatial_dimension>(model, id),
   delta_prec("delta_prec", *this),
   K_plus("K_plus", *this),
-  T_prec("T_prec", *this) {
+  K_minus("K_minus", *this),
+  T_1d("T_1d", *this) {
 
   this->registerParam("delta_f", delta_f, -1. ,
 		      _pat_parsable | _pat_readable,
@@ -58,7 +59,8 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>::initMaterial() {
 
   delta_prec.initialize(1);
   K_plus.initialize(1);
-  T_prec.initialize(1);
+  K_minus.initialize(1);
+  T_1d.initialize(1);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -70,47 +72,41 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
   AKANTU_DEBUG_IN();
 
   /// define iterators
-  Array<Real>::iterator< Vector<Real> > traction_it =
+  Array<Real>::vector_iterator traction_it =
     this->tractions(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::iterator< Vector<Real> > opening_it =
+  Array<Real>::vector_iterator opening_it =
     this->opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::iterator< Vector<Real> > contact_traction_it =
+  Array<Real>::vector_iterator contact_traction_it =
     this->contact_tractions(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::iterator< Vector<Real> > contact_opening_it =
+  Array<Real>::vector_iterator contact_opening_it =
     this->contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::const_iterator< Vector<Real> > normal_it =
-    normal.begin(spatial_dimension);
+  Array<Real>::const_vector_iterator normal_it = normal.begin(spatial_dimension);
 
-  Array<Real>::iterator< Vector<Real> >traction_end =
+  Array<Real>::vector_iterator traction_end =
     this->tractions(el_type, ghost_type).end(spatial_dimension);
 
-  Array<Real>::iterator<Real>sigma_c_it =
+  Array<Real>::scalar_iterator sigma_c_it =
     this->sigma_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>delta_max_it =
+  Array<Real>::scalar_iterator delta_max_it =
     this->delta_max(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>delta_c_it =
+  Array<Real>::scalar_iterator delta_c_it =
     this->delta_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>damage_it =
-    this->damage(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator damage_it = this->damage(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Vector<Real> > insertion_stress_it =
+  Array<Real>::vector_iterator insertion_stress_it =
     this->insertion_stress(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::scalar_iterator delta_prec_it =
-    delta_prec(el_type, ghost_type).begin();
-
-  Array<Real>::scalar_iterator K_plus_it =
-    K_plus(el_type, ghost_type).begin();
-
-  Array<Real>::scalar_iterator T_prec_it =
-    T_prec(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator delta_prec_it = delta_prec(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator K_plus_it = K_plus(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator K_minus_it = K_minus(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator T_1d_it = T_1d(el_type, ghost_type).begin();
 
   Real * memory_space = new Real[2*spatial_dimension];
   Vector<Real> normal_opening(memory_space, spatial_dimension);
@@ -124,7 +120,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
        ++traction_it, ++opening_it, ++normal_it, ++sigma_c_it,
 	 ++delta_max_it, ++delta_c_it, ++damage_it, ++contact_traction_it,
 	 ++insertion_stress_it, ++contact_opening_it, ++delta_prec_it,
-	 ++K_plus_it) {
+	 ++K_plus_it, ++K_minus_it, ++T_1d_it) {
 
     /// compute normal and tangential opening vectors
     Real normal_opening_norm = opening_it->dot(*normal_it);
@@ -169,67 +165,71 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
      * \frac{\delta}{\delta_c} \right)@f$
      */
 
-    if (delta - *delta_c_it > -tolerance)
+
+    // update maximum displacement and damage
+    *delta_max_it = std::max(delta, *delta_max_it);
+    *damage_it = std::min(*delta_max_it / *delta_c_it, 1.);
+
+    // broken element case
+    if (Math::are_float_equal(*damage_it, 1.))
       traction_it->clear();
-    else if (Math::are_float_equal(delta, 0) &&
-	     Math::are_float_equal(*delta_max_it, 0)) {
+    // just inserted element case
+    else if (Math::are_float_equal(*damage_it, 0.)) {
       if (penetration)
 	traction_it->clear();
       else
 	*traction_it = *insertion_stress_it;
+      // initialize the 1d traction to sigma_c
+      *T_1d_it = *sigma_c_it;
     }
+    // normal case
     else {
-      *traction_it  = tangential_opening;
-      *traction_it *= this->beta2_kappa;
-      *traction_it += normal_opening;
-
       Real delta_dot = delta - *delta_prec_it;
 
-      // loading case
-      if (delta_dot > -tolerance) {
-	// equation (4) of the article
-	Real new_stiffness = *K_plus_it * (1 - delta_dot / delta_f);
-	// equation (2) of the article
-	Real new_traction = *T_prec_it + new_stiffness * delta_dot;
+      // if element is closed then there are zero tractions
+      if (delta <= tolerance)
+	traction_it->clear();
+      // otherwise compute new tractions if the new delta is different
+      // than the previous one
+      else if (std::abs(delta_dot) > tolerance) {
+	// loading case
+	if (delta_dot > 0.) {
+	  // equation (4) of the article
+	  *K_plus_it *= 1. - delta_dot / delta_f;
+	  // equivalent to equation (2) of the article
+	  *T_1d_it += *K_plus_it * delta_dot;
 
-	// in case of reloading, traction must not exceed that of the
-	// envelop of the cohesive law
-	Real max_traction = *sigma_c_it * (1 - delta / *delta_c_it);
+	  // in case of reloading, traction must not exceed that of the
+	  // envelop of the cohesive law
+	  Real max_traction = *sigma_c_it * (1 - delta / *delta_c_it);
+	  bool max_traction_exceeded = *T_1d_it > max_traction;
+	  if (max_traction_exceeded) *T_1d_it = max_traction;
 
-	// if the traction exceeds that of the envelop or this is the
-	// very first step, then compute tractions normally
-	if (new_traction - max_traction > -tolerance ||
-	    *delta_max_it < tolerance) {
-	  *K_plus_it = max_traction / delta;
-	  *traction_it *= *K_plus_it;
-	  *T_prec_it = max_traction;
+	  // equation (3) of the article
+	  *K_minus_it = *T_1d_it / delta;
+
+	  // if the traction is following the cohesive envelop, then
+	  // K_plus has to be reset
+	  if (max_traction_exceeded) *K_plus_it = *K_minus_it;
 	}
-	// if this is a reloading phase, use the decreased stiffness
+	// unloading case
 	else {
-	  *K_plus_it = new_stiffness;
-	  *traction_it *= new_traction / delta;
-	  *T_prec_it = new_traction;
+	  // equation (4) of the article
+	  *K_plus_it += (*K_plus_it - *K_minus_it) * delta_dot / delta_f;
+	  // equivalent to equation (2) of the article
+	  *T_1d_it = *K_minus_it * delta;
 	}
-      }
-      // unloading case
-      else {
-	// equation (3) of the article
-	Real K_minus = *T_prec_it / *delta_prec_it;
-	// equation (4) of the article
-	*K_plus_it += (*K_plus_it - K_minus) * delta_dot / delta_f;
-	// equation (2) of the article
-	*T_prec_it += K_minus * delta_dot;
-	// applying the new stiffness
-	*traction_it *= *T_prec_it / delta;
+
+	// applying the actual stiffness
+	*traction_it  = tangential_opening;
+	*traction_it *= this->beta2_kappa;
+	*traction_it += normal_opening;
+	*traction_it *= *K_minus_it;
       }
     }
 
     // update precendent delta
     *delta_prec_it = delta;
-
-    // update maximum displacement and damage
-    *delta_max_it = std::max(*delta_max_it, delta);
-    *damage_it = std::min(*delta_max_it / *delta_c_it, 1.);
   }
 
   delete [] memory_space;

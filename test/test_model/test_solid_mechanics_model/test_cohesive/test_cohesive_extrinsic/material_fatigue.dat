@@ -8,6 +8,7 @@ material elastic [
 material cohesive_linear_fatigue [
 	 name = cohesive
 	 sigma_c = 1
+	 beta = 1
 	 delta_c = 1
 	 delta_f = 1
 ]
