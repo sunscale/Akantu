@@ -486,16 +486,11 @@ void MaterialCohesive::computeEnergies() {
     Array<Real>::vector_iterator traction_end =
       tractions(*it, _not_ghost).end(spatial_dimension);
 
-    // /// loop on each quadrature point
-    // for (; traction_it != traction_end;
-    // 	 ++traction_it, ++traction_old_it,
-    // 	   ++opening_it, ++opening_old_it,
-    // 	   ++erev, ++etot) {
-
-    for (UInt q = 0; traction_it != traction_end;
-	 ++traction_it, ++traction_old_it,
-	   ++opening_it, ++opening_old_it,
-	   ++erev, ++etot, ++q) {
+    /// loop on each quadrature point
+    for (; traction_it != traction_end;
+    	 ++traction_it, ++traction_old_it,
+    	   ++opening_it, ++opening_old_it,
+    	   ++erev, ++etot) {
 
       /// trapezoidal integration
       b  = *opening_it;
