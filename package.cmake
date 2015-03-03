@@ -30,11 +30,5 @@ package_declare_sources(parallel_cohesive_element
   facet_stress_synchronizer.hh
   )
 
-set(AKANTU_PARALLEL_COHESIVE_ELEMENT_TESTS
-  test_cohesive_parallel_intrinsic
-  test_cohesive_parallel_extrinsic
-  test_cohesive_parallel_extrinsic_IG_TG
-  test_cohesive_ghost_element_insertion
-  test_facet_synchronizer
-  test_cohesive_parallel_buildfragments
-  )
+package_declare_documentation(parallel_cohesive_element
+  "This option activates the parallel cohesive elements' features of AKANTU.")

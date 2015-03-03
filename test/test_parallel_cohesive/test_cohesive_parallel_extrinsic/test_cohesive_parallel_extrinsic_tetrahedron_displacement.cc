@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
   model.addDumpFieldVector("acceleration");
   model.addDumpFieldVector("residual"    );
   model.addDumpFieldTensor("stress");
-  model.addDumpFieldTensor("strain");
+  model.addDumpFieldTensor("grad_u");
   model.addDumpField("partitions");
   //  model.getDumper().getDumper().setMode(iohelper::BASE64);
   model.dump();

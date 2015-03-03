@@ -59,17 +59,6 @@ void FacetSynchronizer::updateDistributedSynchronizer(DistributedSynchronizer & 
   updateElementList(distrib_send_element, send_element, mesh_cohesive);
   updateElementList(distrib_recv_element, recv_element, mesh_cohesive);
 
-  std::map<SynchronizationTag, Communication>::iterator it
-    = distributed_synchronizer.communications.begin();
-
-  std::map<SynchronizationTag, Communication>::iterator end
-    = distributed_synchronizer.communications.end();
-
-  for (; it != end; ++it) {
-    SynchronizationTag tag = it->first;
-    distributed_synchronizer.computeBufferSize(data_accessor, tag);
-  }
-
   AKANTU_DEBUG_OUT();
 }
 

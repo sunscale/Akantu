@@ -102,6 +102,7 @@ UInt CohesiveElementInserter::updateGlobalIDs(NewNodesEvent & node_event) {
   distributed_synchronizer->reset();
   facet_synchronizer->updateDistributedSynchronizer(*distributed_synchronizer,
 						    *this, mesh);
+  distributed_synchronizer->computeAllBufferSizes(*this);
 
   /// communicate global ids
   distributed_synchronizer->asynchronousSynchronize(*this, _gst_ce_inserter);

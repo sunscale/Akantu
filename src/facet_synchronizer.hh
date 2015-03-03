@@ -1,4 +1,4 @@
-/**
+ /**
  * @file   facet_synchronizer.hh
  *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
