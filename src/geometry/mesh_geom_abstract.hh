@@ -1,12 +1,12 @@
 /**
- * @file   segment.hh
+ * @file   mesh_geom_abstract.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Feb 19 2015
- * @date last modification: Thu Feb 19 2015
+ * @date creation: Thu Feb 26 2015
+ * @date last modification: Thu Feb 26 2015
  *
- * @brief  Segment primitive
+ * @brief  Class for constructing the CGAL primitives of a mesh
  *
  * @section LICENSE
  *
@@ -30,46 +30,34 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SEGMENT_HH__
-#define __AKANTU_SEGMENT_HH__
+#ifndef __AKANTU_MESH_GEOM_ABSTRACT_HH__
+#define __AKANTU_MESH_GEOM_ABSTRACT_HH__
 
 #include "aka_common.hh"
-#include "geometrical_primitive.hh"
-#include "point.hh"
+#include "mesh.hh"
+
+/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-template<UInt d, typename T>
-class Segment : public GeometricalPrimitive {
+class MeshGeomAbstract {
 
 public:
-  /// Default constructor
-  Segment();
+  /// Construct from mesh
+  explicit MeshGeomAbstract(const Mesh & mesh);
 
-  /// Construct segment from two points
-  Segment(const Point<d, T> & a, const Point<d, T> & b);
-
-public:
-  /// Returns first point of segment
-  virtual const Point<d, T> & getSource() const;
-
-  /// Returns last point of segment
-  virtual const Point<d, T> & getTarget() const;
-
-  /// Returns the squared length of the segment
-  virtual T squaredLength() const;
-
-  /// Returns the opposite segment
-  virtual Segment<d, T> opposite() const;
+  /// Destructor
+  virtual ~MeshGeomAbstract();
 
 public:
-  /// Equality operator
-  virtual bool operator==(const Segment<d, T> & other) const;
+  /// Construct geometric data for computational geometry algorithms
+  virtual void constructData() = 0;
 
-  /// Inequality operator
-  virtual bool operator!=(const Segment<d, T> & other) const;
+protected:
+  /// Mesh used to construct the primitives
+  const Mesh & mesh;
 };
 
 __END_AKANTU__
 
-#endif // __AKANTU_SEGMENT_HH__
+#endif // __AKANTU_MESH_GEOM_ABSTRACT_HH__

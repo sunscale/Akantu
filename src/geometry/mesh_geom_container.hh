@@ -1,12 +1,12 @@
 /**
- * @file   triangle.hh
+ * @file   mesh_geom_container.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Feb 19 2015
- * @date last modification: Thu Feb 19 2015
+ * @date creation: Fri Feb 27 2015
+ * @date last modification: Mon Mar 2 2015
  *
- * @brief  Triangle primitive
+ * @brief  Contains the CGAL representation of a mesh
  *
  * @section LICENSE
  *
@@ -30,44 +30,35 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TRIANGLE_HH__
-#define __AKANTU_TRIANGLE_HH__
+#ifndef __AKANTU_MESH_GEOM_CONTAINER__
+#define __AKANTU_MESH_GEOM_CONTAINER__
 
 #include "aka_common.hh"
-#include "geometrical_primitive.hh"
-#include "point.hh"
+#include "mesh.hh"
+#include "mesh_geom_abstract.hh"
 
 __BEGIN_AKANTU__
 
-template<UInt d, typename T>
-class Triangle : public GeometricalPrimitive {
+class MeshGeomContainer : MeshGeomAbstract {
 
 public:
-  /// Default constructor
-  Triangle();
+  /// Construct from mesh
+  explicit MeshGeomContainer(const Mesh & mesh);
 
-  /// Construct triangle from 3 points
-  Triangle(const Point<d, T> & a, const Point<d, T> & b, const Point<d, T> & c);
-
-public:
-  /// Check if a point is on the triangle boundary
-  virtual bool hasOnBoundary(const Point<d, T> & point) const;
-
-  /// Check if the point is inside the triangle
-  virtual bool hasOnBoundedSide(const Point<d, T> & point) const;
-
-  /// Check if the point is outside the triangle
-  virtual bool hasOnUnboundedSide(const Point<d, T> & point) const;
+  /// Destructor
+  virtual ~MeshGeomContainer();
 
 public:
-  /// Equality operator
-  virtual bool operator==(const Triangle<d, T> & other) const;
+  /// Constructs the geometric data from the mesh
+  virtual void constructData();
 
-  /// Inequality operator
-  virtual bool operator!=(const Triangle<d, T> & other) const;
+  /// Get the factory object for an element type
+  const MeshGeomAbstract * getFactoryForElementType(ElementType el_type) const;
 
+protected:
+  ElementTypeMap<MeshGeomAbstract *> constructor_map;
 };
 
 __END_AKANTU__
 
-#endif // __AKANTU_TRIANGLE_HH__
+#endif // __AKANTU_MESH_GEOM_CONTAINER__

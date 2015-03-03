@@ -114,8 +114,6 @@ endif()
 package_list_packages(${PROJECT_SOURCE_DIR}/packages
   EXTRA_PACKAGES_FOLDER ${PROJECT_SOURCE_DIR}/extra_packages)
 
-include_boost()
-
 ## meta option \todo better way to do it when multiple package give enable the
 ## same feature
 if(AKANTU_SCOTCH)

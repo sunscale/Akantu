@@ -488,9 +488,9 @@ void MaterialCohesive::computeEnergies() {
 
     /// loop on each quadrature point
     for (; traction_it != traction_end;
-	 ++traction_it, ++traction_old_it,
-	   ++opening_it, ++opening_old_it,
-	   ++erev, ++etot) {
+    	 ++traction_it, ++traction_old_it,
+    	   ++opening_it, ++opening_old_it,
+    	   ++erev, ++etot) {
 
       /// trapezoidal integration
       b  = *opening_it;

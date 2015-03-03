@@ -129,16 +129,16 @@ unloading-reloading cycle, the traction increment is computed as
 where $\dot{\delta}$ and $\dot{T}$ are respectively the effective
 opening displacement and the cohesive traction increments with respect
 to time, while $K^-$ and $K^+$ are respectively the unloading and
-reloading stuffiness. The unloading path is linear and results in an
-unloading stiffness
+reloading incremental stiffness. The unloading path is linear and
+results in an unloading stiffness
 \begin{equation}
-  K^- = \frac{T_\mathrm{prec}}{\delta_\mathrm{prec}}
+  K^- = \frac{T_\mathrm{max}}{\delta_\mathrm{max}}
 \end{equation}
-where $T_\mathrm{prec}$ and $\delta_\mathrm{prec}$ are the cohesive
-traction and the effective opening displacement of the previous time
-step. The unloading stiffness remains constant during the unloading
-phase. On the other hand the reloading stiffness increment $\dot{K}^+$
-is calculated as
+where $T_\mathrm{max}$ and $\delta_\mathrm{max}$ are the maximum
+cohesive traction and the effective opening displacement reached
+during the precedent loading phase. The unloading stiffness remains
+constant during the unloading phase. On the other hand the reloading
+stiffness increment $\dot{K}^+$ is calculated as
 \begin{equation}
   \dot{K}^+ =
   \begin{cases}

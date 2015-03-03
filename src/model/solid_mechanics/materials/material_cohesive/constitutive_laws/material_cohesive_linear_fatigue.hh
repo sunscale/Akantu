@@ -94,8 +94,11 @@ private:
   /// stiffness for reloading
   CohesiveInternalField<Real> K_plus;
 
-  /// traction in the cohesive law from the previous step
-  CohesiveInternalField<Real> T_prec;
+  /// stiffness for unloading
+  CohesiveInternalField<Real> K_minus;
+
+  /// 1D traction in the cohesive law
+  CohesiveInternalField<Real> T_1d;
 };
 
 __END_AKANTU__

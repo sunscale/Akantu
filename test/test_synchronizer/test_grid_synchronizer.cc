@@ -132,7 +132,7 @@ static void updatePairList(const ElementTypeMapArray<Real> & barycenter,
 int main(int argc, char *argv[]) {
   akantu::initialize(argc, argv);
 
-  Real radius = 0.2;
+  Real radius = 0.001;
 
   Mesh mesh(spatial_dimension);
 
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
   DistributedSynchronizer * dist = NULL;
 
   if(prank == 0) {
-    mesh.read("bar3d.msh");
+    mesh.read("bar.msh");
     MeshPartition * partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
     dist = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
@@ -202,6 +202,10 @@ int main(int argc, char *argv[]) {
 
 
   std::cout << "Pouet 1" << std::endl;
+
+  AKANTU_DEBUG_INFO("Creating TestAccessor");
+  TestAccessor test_accessor(mesh, barycenters);
+  SynchronizerRegistry synch_registry(test_accessor);
 
   GridSynchronizer * grid_communicator = GridSynchronizer::createGridSynchronizer(mesh, grid);
 
@@ -274,9 +278,6 @@ int main(int argc, char *argv[]) {
 
   fout.close();
 
-  AKANTU_DEBUG_INFO("Creating TestAccessor");
-  TestAccessor test_accessor(mesh, barycenters);
-  SynchronizerRegistry synch_registry(test_accessor);
 
   synch_registry.registerSynchronizer(*dist, _gst_smm_mass);
 

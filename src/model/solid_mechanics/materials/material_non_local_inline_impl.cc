@@ -75,6 +75,11 @@ template<UInt spatial_dimension, template <UInt> class WeightFunction>
 MaterialNonLocal<spatial_dimension, WeightFunction>::~MaterialNonLocal() {
   AKANTU_DEBUG_IN();
 
+  for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+    GhostType ghost_type = (GhostType) gt;
+    delete pair_weight[ghost_type];
+  }
+
   delete spatial_grid;
   delete weight_func;
   delete grid_synchronizer;
@@ -206,14 +211,18 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
   this->fillCellList(quadrature_points_coordinates, _not_ghost);
 
   is_creating_grid = true;
+  std::set<SynchronizationTag> tags;
+  tags.insert(_gst_mnl_for_average);
+  tags.insert(_gst_mnl_weight);
+  tags.insert(_gst_material_id);
+
   SynchronizerRegistry & synch_registry = this->model->getSynchronizerRegistry();
   std::stringstream sstr; sstr << getID() << ":grid_synchronizer";
   grid_synchronizer = GridSynchronizer::createGridSynchronizer(mesh,
 							       *spatial_grid,
-							       sstr.str());
-  synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_for_average);
-  synch_registry.registerSynchronizer(*grid_synchronizer, _gst_mnl_weight);
-  synch_registry.registerSynchronizer(*grid_synchronizer, _gst_material_id);
+							       sstr.str(),
+							       &synch_registry,
+							       tags);
   is_creating_grid = false;
 
   this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _ghost);
@@ -246,6 +255,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::fillCellList(const Ele
       q.element = *elem;
       for (UInt nq = 0; nq < nb_quad; ++nq) {
 	q.num_point = nq;
+	q.global_num = q.element * nb_quad + nq;
 	//q.setPosition(*quad);
 	spatial_grid->insert(q, *quad);
 	++quad;
@@ -281,7 +291,8 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::updatePairList(const E
       UInt nb_quad1 =
 	this->model->getFEEngine().getNbQuadraturePoints(q1.type,
 							 q1.ghost_type);
-      q1.element = q1.global_num / nb_quad1;
+      q1.element   = q1.global_num / nb_quad1;
+      q1.num_point = q1.global_num % nb_quad1;
       const Vector<Real> & q1_coord = *q1_coord_it;
 
       SpatialGrid<QuadraturePoint>::CellID cell_id = spatial_grid->getCellID(q1_coord);
@@ -363,14 +374,23 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
       QuadraturePoint gq1 = this->convertToGlobalPoint(lq1);
       QuadraturePoint gq2 = this->convertToGlobalPoint(lq2);
 
-      const Real & q2_wJ = fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type)(gq2.global_num);
+      //   const Real q2_wJ = fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type)(gq2.global_num);
 
-      Real & q1_volume = quadrature_points_volumes(lq1.type, lq1.ghost_type)(lq1.global_num);
+      Array<Real>::const_vector_iterator quad_coords_1 =
+	quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension);
+      Array<Real>::const_vector_iterator quad_coords_2 =
+	quadrature_points_coordinates(lq2.type, lq2.ghost_type).begin(spatial_dimension);
 
-      const Vector<Real> & q1_coord =
-	quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq1.global_num];
-      const Vector<Real> & q2_coord =
-	quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq2.global_num];
+      Array<Real> & quad_volumes_1 = quadrature_points_volumes(lq1.type, lq1.ghost_type);
+      const Array<Real> & jacobians_2 =
+	fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type);
+      const Real & q2_wJ = jacobians_2(gq2.global_num);
+      // Real & q1_volume = quad_volumes(lq1.global_num);
+
+      const Vector<Real> & q1_coord = quad_coords_1[lq1.global_num];
+      // quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq1.global_num];
+      const Vector<Real> & q2_coord = quad_coords_2[lq2.global_num];
+      // quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq2.global_num];
 
       this->weight_func->selectType(lq1.type, lq1.ghost_type, lq2.type, lq2.ghost_type);
 
@@ -378,16 +398,23 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
       Real r = q1_coord.distance(q2_coord);
       Real w1 = this->weight_func->operator()(r, lq1, lq2);
       weight(0) = q2_wJ * w1;
-      q1_volume += weight(0);
+      //     q1_volume += weight(0);
+      quad_volumes_1(lq1.global_num) += weight(0);
 
       if(lq2.ghost_type != _ghost && lq1.global_num != lq2.global_num) {
-	const Real & q1_wJ = fem.getIntegratorInterface().getJacobians(gq1.type, gq1.ghost_type)(gq1.global_num);
-	Real & q2_volume = quadrature_points_volumes(lq2.type, lq2.ghost_type)(lq2.global_num);
+	const Array<Real> & jacobians_1 =
+	  fem.getIntegratorInterface().getJacobians(gq1.type, gq1.ghost_type);
+	Array<Real> & quad_volumes_2 =
+	  quadrature_points_volumes(lq2.type, lq2.ghost_type);
+
+	const Real & q1_wJ = jacobians_1(gq1.global_num);
+	//Real & q2_volume = quad_volumes_2(lq2.global_num);
 
 	Real w2 = this->weight_func->operator()(r, lq2, lq1);
 	weight(1) = q1_wJ * w2;
 
-	q2_volume += weight(1);
+	quad_volumes_2(lq2.global_num) += weight(1);
+	//q2_volume += weight(1);
       } else
 	weight(1) = 0.;
     }
@@ -409,11 +436,14 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
       const QuadraturePoint & lq1 = first_pair->first;
       const QuadraturePoint & lq2 = first_pair->second;
 
-      Real & q1_volume = quadrature_points_volumes(lq1.type, lq1.ghost_type)(lq1.global_num);
+      Array<Real> & quad_volumes_1 = quadrature_points_volumes(lq1.type, lq1.ghost_type);
+      Array<Real> & quad_volumes_2 = quadrature_points_volumes(lq2.type, lq2.ghost_type);
+
+      Real q1_volume = quad_volumes_1(lq1.global_num);
 
       weight(0) *= 1. / q1_volume;
       if(ghost_type2 != _ghost) {
-	Real & q2_volume = quadrature_points_volumes(lq2.type, lq2.ghost_type)(lq2.global_num);
+	Real q2_volume = quad_volumes_2(lq2.global_num);
 	weight(1) *= 1. / q2_volume;
       }
     }
@@ -447,17 +477,31 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::weightedAvergageOnNeig
     const QuadraturePoint & lq1 = first_pair->first;
     const QuadraturePoint & lq2 = first_pair->second;
 
-    const Vector<T> & q2_to_acc = to_accumulate(lq2.type, lq2.ghost_type).begin(nb_degree_of_freedom)[lq2.global_num];
-    Vector<T> & q1_acc = accumulated(lq1.type, lq1.ghost_type).begin(nb_degree_of_freedom)[lq1.global_num];
+    const Array<T> & to_acc_1 = to_accumulate(lq1.type, lq1.ghost_type);
+    Array<T> & acc_1 = accumulated(lq1.type, lq1.ghost_type);
+    const Array<T> & to_acc_2 = to_accumulate(lq2.type, lq2.ghost_type);
+    Array<T> & acc_2 = accumulated(lq2.type, lq2.ghost_type);
 
-    q1_acc += weight(0) * q2_to_acc;
+    // const Vector<T> & q2_to_acc = to_acc_2[lq2.global_num];
+    // Vector<T> & q1_acc = acc_1[lq1.global_num];
+
+    //q1_acc += weight(0) * q2_to_acc;
+    for(UInt d = 0; d < nb_degree_of_freedom; ++d) {
+      acc_1(lq1.global_num, d) += weight(0) * to_acc_2(lq2.global_num, d);
+    }
 
     if(ghost_type2 != _ghost) {
-      const Vector<T> & q1_to_acc = to_accumulate(lq1.type, lq1.ghost_type).begin(nb_degree_of_freedom)[lq1.global_num];
-      Vector<T> & q2_acc = accumulated(lq2.type, lq2.ghost_type).begin(nb_degree_of_freedom)[lq2.global_num];
-
-      q2_acc += weight(1) * q1_to_acc;
+      for(UInt d = 0; d < nb_degree_of_freedom; ++d) {
+      	acc_2(lq2.global_num, d) += weight(1) * to_acc_1(lq1.global_num, d);
+      }
     }
+
+    // if(ghost_type2 != _ghost) {
+    //   const Vector<T> & q1_to_acc = to_acc_1[lq1.global_num];
+    //   Vector<T> & q2_acc = acc_2[lq2.global_num];
+
+    //   q2_acc += weight(1) * q1_to_acc;
+    // }
   }
 
   AKANTU_DEBUG_OUT();
@@ -528,7 +572,6 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeAllNonLocalStre
       this->weightedAvergageOnNeighbours(*non_local_variable.local, *non_local_variable.non_local,
 					 non_local_variable.nb_component, _ghost);
     }
-
     computeNonLocalStresses(_not_ghost);
   }
 }

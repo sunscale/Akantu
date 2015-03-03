@@ -1,12 +1,12 @@
 /**
- * @file   geometrical_primitive.hh
+ * @file   mesh_geom_abstract.cc
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Wed Feb 18 2015
- * @date last modification: Wed Feb 18 2015
+ * @date creation: Thu Feb 26 2015
+ * @date last modification: Mon Mar 2 2015
  *
- * @brief  Root class for geometric primitives
+ * @brief  Class for constructing the CGAL primitives of a mesh
  *
  * @section LICENSE
  *
@@ -30,17 +30,18 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_GEOMETRICAL_PRIMITIVE_HH__
-#define __AKANTU_GEOMETRICAL_PRIMITIVE_HH__
-
 #include "aka_common.hh"
+#include "mesh_geom_abstract.hh"
+
+/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-class GeometricalPrimitive {
+MeshGeomAbstract::MeshGeomAbstract(const Mesh & mesh) :
+  mesh(mesh)
+{}
 
-};
+MeshGeomAbstract::~MeshGeomAbstract() 
+{}
 
 __END_AKANTU__
-
-#endif // __AKANTU_GEOMETRICAL_PRIMITIVE_HH__

@@ -5,3 +5,4 @@ third-party/blackdynamite/
 third-party/cpp-array/
 *~
 release
+.*.swp

@@ -57,6 +57,8 @@ template <class E>
 GridSynchronizer * GridSynchronizer::createGridSynchronizer(Mesh & mesh,
                                                             const SpatialGrid<E> & grid,
                                                             SynchronizerID id,
+							    SynchronizerRegistry * synchronizer_registry,
+							    const std::set<SynchronizationTag> & tags_to_register,
                                                             MemoryID memory_id) {
   AKANTU_DEBUG_IN();
 
@@ -485,6 +487,15 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(Mesh & mesh,
   comm.freeCommunicationRequest(isend_coordinates_requests);
   delete [] nodes_to_send_per_proc;
 
+  // Register the tags if any
+  if(synchronizer_registry) {
+    std::set<SynchronizationTag>::const_iterator it  = tags_to_register.begin();
+    std::set<SynchronizationTag>::const_iterator end = tags_to_register.end();
+    for (; it != end; ++it) {
+      synchronizer_registry->registerSynchronizer(communicator, *it);
+    }
+  }
+
   mesh.sendEvent(new_nodes);
   mesh.sendEvent(new_elements);
 
@@ -499,11 +510,15 @@ template GridSynchronizer *
 GridSynchronizer::createGridSynchronizer<QuadraturePoint>(Mesh & mesh,
                                                           const SpatialGrid<QuadraturePoint> & grid,
                                                           SynchronizerID id,
+							  SynchronizerRegistry * synchronizer_registry,
+							  const std::set<SynchronizationTag> & tags_to_register,
                                                           MemoryID memory_id);
 template GridSynchronizer *
 GridSynchronizer::createGridSynchronizer<Element>(Mesh & mesh,
                                                   const SpatialGrid<Element> & grid,
                                                   SynchronizerID id,
+						  SynchronizerRegistry * synchronizer_registry,
+						  const std::set<SynchronizationTag> & tags_to_register,
                                                   MemoryID memory_id);
 
 __END_AKANTU__

@@ -101,7 +101,7 @@ public:
     for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
     stream << space << "QuadraturePoint [";
     Element::printself(stream, 0);
-    stream << ", " << num_point << "]";
+    stream << ", " << num_point << "(" << global_num << ")" << "]";
   }
 
 public:

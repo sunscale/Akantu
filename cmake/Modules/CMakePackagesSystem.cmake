@@ -625,7 +625,11 @@ function(_package_load_external_package pkg_name activate)
       endif()
 
       # Generate the libraries for the package
-      package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
+      if(DEFINED ${_prefix}_LIBRARIES)
+	package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
+      elseif(DEFINED ${_prefix}_LIBRARY)
+	package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARY})
+      endif()
     endforeach()
   endif()
   set(${activate} ${_act} PARENT_SCOPE)
@@ -852,6 +856,13 @@ function(package_list_packages PACKAGE_FOLDER)
   _package_load_packages()
   _package_check_files_exists()
   _package_check_files_registered(${_abs_src_folder} ${_extra_pkg_src_folders})
+
+  # Load boost components if boost was loaded
+  package_get_name(Boost _boost_pkg)
+  package_is_activated(${_boost_pkg} _ret)
+  if(_ret)
+    package_load_boost_components()
+  endif()
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -1163,4 +1174,40 @@ endfunction()
 function(package_get_all_packages packages_list)
   string(TOUPPER ${PROJECT_NAME} _project)
   set(${packages_list} ${${_project}_ALL_PACKAGES_LIST} PARENT_SCOPE)
+endfunction()
+
+
+# ------------------------------------------------------------------------------
+# Special boost thingy
+# ------------------------------------------------------------------------------
+function(package_boost_component_needed)
+  string(TOUPPER ${PROJECT_NAME} _project)
+
+  set(_tmp ${${_project}_BOOST_COMPONENTS_NEEDED})
+  list(APPEND _tmp ${ARGN})
+  list(REMOVE_DUPLICATES _tmp)
+  set(${_project}_BOOST_COMPONENTS_NEEDED ${_tmp}
+      CACHE INTERNAL "List of Boost component needed by ${PROJECT_NAME}" FORCE)
+endfunction()
+
+function(package_load_boost_components)
+  string(TOUPPER ${PROJECT_NAME} _project)
+  package_get_name(Boost _pkg_name)
+
+  if(${_project}_BOOST_COMPONENTS_NEEDED)
+    message(STATUS "Looking for Boost liraries")
+    foreach(_comp ${${_project}_BOOST_COMPONENTS_NEEDED})
+      find_package(Boost COMPONENTS ${_comp} QUIET)
+      string(TOUPPER ${_comp} _u_comp)
+      if(Boost_${_u_comp}_FOUND)
+      	message(STATUS "   ${_comp}: FOUND")
+      	set(${_project}_BOOST_${_u_comp} TRUE CACHE INTERNAL "" FORCE)
+
+	# Generate the libraries for the package
+        package_set_libraries(${_pkg_name} ${Boost_${_u_comp}_LIBRARY})
+      else()
+      	message(STATUS "   ${_comp}: NOT FOUND")
+      endif()
+    endforeach()
+  endif()
 endfunction()

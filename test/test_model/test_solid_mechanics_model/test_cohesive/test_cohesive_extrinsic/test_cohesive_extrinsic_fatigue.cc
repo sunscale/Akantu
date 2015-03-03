@@ -50,16 +50,13 @@ public:
       Real delta_dot = delta - delta_prec;
 
       if (delta_dot > -tolerance) {
-	Real new_stiffness = stiff_plus * (1 - delta_dot / delta_f);
-	Real new_traction = traction + new_stiffness * delta_dot;
+	stiff_plus *= 1 - delta_dot / delta_f;
+	traction += stiff_plus * delta_dot;
 	Real max_traction = sigma_c * (1 - delta / delta_c);
 
-	if (new_traction - max_traction > -tolerance || delta_max < tolerance) {
-	  stiff_plus = max_traction / delta;
-	  traction = stiff_plus * delta;
-	} else {
-	  stiff_plus = new_stiffness;
-	  traction = new_traction;
+	if (traction - max_traction > -tolerance || delta_max < tolerance) {
+	  traction = max_traction;
+	  stiff_plus = traction / delta;
 	}
       } else {
 	Real stiff_minus = traction / delta_prec;
@@ -129,7 +126,7 @@ int main(int argc, char *argv[]) {
     displacement(n, 0) = position(n, 0) * strain;
 
   model.updateResidual();
-  //  model.dump();
+  // model.dump();
 
   // insert cohesive elements
   model.checkCohesiveStress();
@@ -148,12 +145,15 @@ int main(int argc, char *argv[]) {
   arange(openings, 0.3, 0.7, increment);
   arange(openings, 0.7, 1.3, increment);
 
+  // std::ofstream edis("fatigue_edis.txt");
+
   // impose openings
   for (UInt i = 0; i < openings.getSize(); ++i) {
 
     // compute numerical traction
     imposeOpening(model, openings(i));
     model.updateResidual();
+    // model.dump();
     Real numerical_traction = traction_array(0, 0);
 
     // compute theoretical traction
@@ -162,8 +162,10 @@ int main(int argc, char *argv[]) {
     // test traction
     if (std::abs(numerical_traction - theoretical_traction) > 1e-13)
       AKANTU_DEBUG_ERROR("The numerical traction " << numerical_traction
-			 << " and theoretical traction " << theoretical_traction
-			 << " are not coincident");
+    			 << " and theoretical traction " << theoretical_traction
+    			 << " are not coincident");
+
+    // edis << model.getEnergy("dissipated") << std::endl;
   }
 
   std::cout << "OK: the test_cohesive_extrinsic_fatigue passed." << std::endl;
@@ -212,10 +214,10 @@ void imposeOpening(SolidMechanicsModelCohesive & model, Real opening) {
 /* -------------------------------------------------------------------------- */
 void arange(Array<Real> & openings, Real begin, Real end, Real increment) {
   if (begin < end) {
-    for (Real opening = begin; opening < end - 1e-13; opening += increment)
+    for (Real opening = begin; opening < end - increment / 2.; opening += increment)
       openings.push_back(opening);
   } else {
-    for (Real opening = begin; opening > end + 1e-13; opening -= increment)
+    for (Real opening = begin; opening > end + increment / 2.; opening -= increment)
       openings.push_back(opening);
   }
 }
