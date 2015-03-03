@@ -1,12 +1,12 @@
 /**
- * @file   tree_type_helper.hh
+ * @file   triangle_primitive.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Fri Feb 27 2015
- * @date last modification: Fri Feb 27 2015
+ * @date creation: Tue Mar 3 2015
+ * @date last modification: Tue Mar 3 2015
  *
- * @brief  Converts element types of a mesh to CGAL primitive types
+ * @brief  Triangle classe (primitive) for AABB CGAL algos
  *
  * @section LICENSE
  *
@@ -30,16 +30,13 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TREE_TYPE_HELPER_HH__
-#define __AKANTU_TREE_TYPE_HELPER_HH__
+#ifndef __AKANTU_TRIANGLE_PRIMITIVE_HH__
+#define __AKANTU_TRIANGLE_PRIMITIVE_HH__
 
 #include "aka_common.hh"
 #include "triangle.hh"
-#include "triangle_primitive.hh"
 
 #include <CGAL/Cartesian.h>
-#include <CGAL/AABB_traits.h>
-#include <CGAL/AABB_tree.h>
 
 __BEGIN_AKANTU__
   
@@ -47,21 +44,34 @@ typedef CGAL::Cartesian<Real> Kernel;
 
 /* -------------------------------------------------------------------------- */
 
-template<UInt d, ElementType el_type>
-struct TreeTypeHelper;
+class Triangle_primitive {
+  /// Type of storage::iterator
+  typedef std::list< Triangle<Kernel> >::iterator Iterator;
 
-template<>
-struct TreeTypeHelper<2, _triangle_3> {
-  typedef Triangle<Kernel> primitive_type;
-  typedef Kernel::Point_3 point_type;
+/// Typedefs needed by CGAL
+public:
+  typedef UInt Id;
+  typedef Kernel::Point_3 Point;
+  typedef Kernel::Triangle_3 Datum;
 
-  typedef std::list<primitive_type> container_type;
-  typedef container_type::iterator iterator;
-  typedef Triangle_primitive aabb_primitive_type;
-  typedef CGAL::AABB_traits<Kernel, aabb_primitive_type> aabb_traits_type;
-  typedef CGAL::AABB_tree<aabb_traits_type> tree;
+public:
+  /// Default constructor needed
+  Triangle_primitive();
+
+  /// Construct from iterator (*it is a Triangle<K>)
+  Triangle_primitive(Iterator it);
+
+/// Functions needed by CGAL
+public:
+  const Datum & datum() const;
+  const Point & reference_point() const;
+  const Id & id() const;
+
+protected:
+  Id meshId;
+  Triangle<Kernel> triangle;
 };
 
 __END_AKANTU__
 
-#endif // __AKANTU_TREE_TYPE_HELPER_HH__
+#endif // __AKANTU_TRIANGLE_PRIMITIVE_HH__

@@ -44,7 +44,8 @@
 using namespace akantu;
 
 typedef CGAL::Cartesian<Real> K;
-typedef boost::optional < TreeTypeHelper<2, _triangle_3>::tree::Intersection_and_primitive_id<K::Line_3>::Type > Line_intersection;
+typedef boost::optional < TreeTypeHelper<2, _triangle_3>::tree::Intersection_and_primitive_id<K::Segment_3>::Type > Line_intersection;
+typedef TreeTypeHelper<2, _triangle_3>::tree::Primitive_id Primitive_id;
 
 /* -------------------------------------------------------------------------- */
 
@@ -69,9 +70,9 @@ int main (int argc, char * argv[]) {
   const TreeTypeHelper<2, _triangle_3>::tree & tree = factory->getTree();
 
   K::Point_3 a(0., 0.25, 0.), b(1., 0.25, 0.);
-  K::Line_3 line(a, b);
+  K::Segment_3 line(a, b);
 
-  if (tree.number_of_intersected_primitives(line) != 2)
+  if (container.numberOfIntersectionsWithInterface(line) != 2)
     return EXIT_FAILURE;
 
   K::Point_3 begin(a), intermediate(0.25, 0.25, 0.), end(0.75, 0.25, 0.);
@@ -86,6 +87,7 @@ int main (int argc, char * argv[]) {
   if (!intersection_0 || !intersection_1)
     return EXIT_FAILURE;
 
+  /// *-> first is the intersection ; *->second is the primitive id
   if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&(intersection_0->first))) {
     if (!compareSegments(*segment, result_0)) {
       return EXIT_FAILURE;
@@ -97,6 +99,19 @@ int main (int argc, char * argv[]) {
       return EXIT_FAILURE;
     }
   }
+
+#if 0
+  std::list<Primitive_id> intersected_primitives;
+  tree.all_intersected_primitives(line, std::back_inserter(intersected_primitives));
+
+  std::list<Primitive_id>::iterator it, it_end;
+  it = intersected_primitives.begin();
+  it_end = intersected_primitives.end();
+
+  for (; it != it_end ; ++it) {
+    std::cout << *it << std::endl;
+  }
+#endif
 
   finalize();
   return EXIT_SUCCESS;

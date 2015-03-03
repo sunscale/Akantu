@@ -41,6 +41,10 @@ package_declare_sources(CGAL
   geometry/mesh_geom_container.hh
   geometry/mesh_geom_container.cc
   geometry/tree_type_helper.hh
+  geometry/aabb_primitives/triangle.hh
+  geometry/aabb_primitives/triangle_tmpl.hh
+  geometry/aabb_primitives/triangle_primitive.hh
+  geometry/aabb_primitives/triangle_primitive.cc
   )
 
 package_boost_component_needed(system)

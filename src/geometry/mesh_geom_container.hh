@@ -37,9 +37,16 @@
 #include "mesh.hh"
 #include "mesh_geom_abstract.hh"
 
+#include <CGAL/Cartesian.h>
+
+/* -------------------------------------------------------------------------- */
+
 __BEGIN_AKANTU__
 
+typedef CGAL::Cartesian<Real> K;
+
 class MeshGeomContainer : MeshGeomAbstract {
+  typedef ElementTypeMap<MeshGeomAbstract *> GeomMap;
 
 public:
   /// Construct from mesh
@@ -52,11 +59,14 @@ public:
   /// Constructs the geometric data from the mesh
   virtual void constructData();
 
+  /// Compute the number of intersections with geometric interface
+  virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
+
   /// Get the factory object for an element type
   const MeshGeomAbstract * getFactoryForElementType(ElementType el_type) const;
 
 protected:
-  ElementTypeMap<MeshGeomAbstract *> constructor_map;
+  GeomMap constructor_map;
 };
 
 __END_AKANTU__

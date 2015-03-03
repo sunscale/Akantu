@@ -34,14 +34,18 @@
 #include "mesh_geom_factory.hh"
 #include "mesh.hh"
 
+#include <CGAL/Cartesian.h>
+
 __BEGIN_AKANTU__
+
+typedef CGAL::Cartesian<Real> K;
 
 MeshGeomContainer::MeshGeomContainer(const Mesh & mesh):
   MeshGeomAbstract(mesh)
 {}
 
 MeshGeomContainer::~MeshGeomContainer() {
-  ElementTypeMap<MeshGeomAbstract *>::type_iterator it, end;
+  GeomMap::type_iterator it, end;
 
   it  = constructor_map.firstType();
   end = constructor_map.lastType();
@@ -61,6 +65,7 @@ void MeshGeomContainer::constructData() {
   Mesh::type_iterator it = mesh.firstType(spatial_dim, _not_ghost);
   Mesh::type_iterator end = mesh.lastType(spatial_dim, _not_ghost);
 
+  /// Loop over the element types of the mesh and construct the primitive trees
   for (; it != end ; ++it) {
     switch(spatial_dim) {
       case 1:
@@ -81,12 +86,12 @@ void MeshGeomContainer::constructData() {
           case _point_1:
           case _segment_2:
           case _segment_3:
-          case _triangle_6:
-          case _tetrahedron_4:
+          case _triangle_6: // 2nd order element : harder to implement (cf Gomes & Awruch 2001)
+          case _tetrahedron_4: // needs implementing
           case _tetrahedron_10:
-          case _quadrangle_4:
-          case _quadrangle_8:
-          case _hexahedron_8:
+          case _quadrangle_4: // may need implementing
+          case _quadrangle_8: // 2nd order element : harder to implement (cf Gomes & Awruch 2001)
+          case _hexahedron_8: // may need implementing
           case _pentahedron_6:
           case _max_element_type:
             break;
@@ -97,6 +102,19 @@ void MeshGeomContainer::constructData() {
         break;
     }
   }
+}
+
+UInt MeshGeomContainer::numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const {
+  UInt total = 0;
+
+  GeomMap::type_iterator it = constructor_map.firstType();
+  GeomMap::type_iterator end = constructor_map.lastType();
+
+  for (; it != end ; ++it) {
+    total += constructor_map(*it)->numberOfIntersectionsWithInterface(interface);
+  }
+
+  return total;
 }
 
 const MeshGeomAbstract * MeshGeomContainer::getFactoryForElementType(ElementType el_type) const {

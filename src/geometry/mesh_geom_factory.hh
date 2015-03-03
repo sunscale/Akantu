@@ -38,9 +38,13 @@
 #include "mesh_geom_abstract.hh"
 #include "tree_type_helper.hh"
 
+#include <CGAL/Cartesian.h>
+
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
+
+typedef CGAL::Cartesian<Real> K;
 
 template<UInt d, ElementType el_type>
 class MeshGeomFactory : public MeshGeomAbstract {
@@ -55,6 +59,9 @@ public:
 public:
   /// Construct AABB tree for fast intersection computing
   virtual void constructData();
+
+  /// Compute the number of intersections with primitive
+  virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
 
   const typename TreeTypeHelper<d, el_type>::tree & getTree() const { return *data_tree; }
 

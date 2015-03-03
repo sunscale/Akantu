@@ -1,12 +1,12 @@
 /**
- * @file   tree_type_helper.hh
+ * @file   triangle.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Fri Feb 27 2015
- * @date last modification: Fri Feb 27 2015
+ * @date creation: Tue Mar 3 2015
+ * @date last modification: Tue Mar 3 2015
  *
- * @brief  Converts element types of a mesh to CGAL primitive types
+ * @brief  Triangle classe (geometry) for AABB CGAL algos
  *
  * @section LICENSE
  *
@@ -30,38 +30,39 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TREE_TYPE_HELPER_HH__
-#define __AKANTU_TREE_TYPE_HELPER_HH__
+#ifndef __AKANTU_TRIANGLE_HH__
+#define __AKANTU_TRIANGLE_HH__
 
 #include "aka_common.hh"
-#include "triangle.hh"
-#include "triangle_primitive.hh"
 
 #include <CGAL/Cartesian.h>
-#include <CGAL/AABB_traits.h>
-#include <CGAL/AABB_tree.h>
 
 __BEGIN_AKANTU__
   
-typedef CGAL::Cartesian<Real> Kernel;
-
 /* -------------------------------------------------------------------------- */
 
-template<UInt d, ElementType el_type>
-struct TreeTypeHelper;
+template<typename K>
+class Triangle : public CGAL::Triangle_3<K> {
+public:
+  /// Default constructor
+  Triangle();
 
-template<>
-struct TreeTypeHelper<2, _triangle_3> {
-  typedef Triangle<Kernel> primitive_type;
-  typedef Kernel::Point_3 point_type;
+  /// Copy constructor
+  Triangle(const Triangle & other);
 
-  typedef std::list<primitive_type> container_type;
-  typedef container_type::iterator iterator;
-  typedef Triangle_primitive aabb_primitive_type;
-  typedef CGAL::AABB_traits<Kernel, aabb_primitive_type> aabb_traits_type;
-  typedef CGAL::AABB_tree<aabb_traits_type> tree;
+  /// Construct from 3 points
+  Triangle(const CGAL::Point_3<K> & a, const CGAL::Point_3<K> & b, const CGAL::Point_3<K> & c);
+
+public:
+  UInt id() const;
+  void setId(UInt newId);
+
+protected:
+  UInt meshId;
 };
 
 __END_AKANTU__
 
-#endif // __AKANTU_TREE_TYPE_HELPER_HH__
+#include "triangle_tmpl.hh"
+
+#endif // __AKANTU_TRIANGLE_HH__

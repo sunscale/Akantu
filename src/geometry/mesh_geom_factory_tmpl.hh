@@ -37,10 +37,15 @@
 
 #include "aka_common.hh"
 #include "tree_type_helper.hh"
+#include "triangle.hh"
+
+#include <CGAL/Cartesian.h>
 
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
+
+typedef CGAL::Cartesian<Real> K;
 
 template<UInt d, ElementType type>
 MeshGeomFactory<d, type>::MeshGeomFactory(const Mesh & mesh) :
@@ -67,8 +72,9 @@ void MeshGeomFactory<2, _triangle_3>::constructData() {
   const Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
   const Array<Real> & nodes = mesh.getNodes();
 
-  Array<UInt>::const_vector_iterator it =  connectivity.begin(nb_nodes_per_element);
-  Array<UInt>::const_vector_iterator end = connectivity.end(nb_nodes_per_element);
+  Array<UInt>::const_vector_iterator begin = connectivity.begin(nb_nodes_per_element);
+  Array<UInt>::const_vector_iterator it    = connectivity.begin(nb_nodes_per_element);
+  Array<UInt>::const_vector_iterator end   = connectivity.end(nb_nodes_per_element);
 
   /// This loop builds the list of triangle primitives
   for (; it != end ; ++it) {
@@ -89,7 +95,10 @@ void MeshGeomFactory<2, _triangle_3>::constructData() {
 
     /// Number of arguments here should not be a problem with polygon/polyhedra
     /// Also it is possible to create tree or lists from polyhedric surfaces
-    TreeTypeHelper<d, type>::primitive_type t(a, b, c);
+    Triangle<K> t(a, b, c);
+    //TreeTypeHelper<d, type>::primitive_type t(a, b, c);
+    UInt id = it - begin;
+    t.setId(id);
     primitive_list.push_back(t);
   }
 
@@ -100,6 +109,11 @@ void MeshGeomFactory<2, _triangle_3>::constructData() {
   }
 
   data_tree = new TreeTypeHelper<d, type>::tree(primitive_list.begin(), primitive_list.end());
+}
+
+template<UInt d, ElementType el_type>
+UInt MeshGeomFactory<d, el_type>::numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const {
+  return data_tree->number_of_intersected_primitives(interface);
 }
 
 __END_AKANTU__
