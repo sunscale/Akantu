@@ -73,14 +73,13 @@ if("${MUMPS_TYPE}" STREQUAL "par")
     HINTS ${MUMPS_DIR} PATH_SUFFIXES lib)
   find_library(BLACS_LIBRARY NAME blacs
     HINTS ${MUMPS_DIR} PATH_SUFFIXES lib)
-  find_library(SCALAPACK_LIBRARIES NAME scalapack
+  find_library(SCALAPACK_LIBRARY NAME scalapack
     HINTS ${MUMPS_DIR} PATH_SUFFIXES lib)
 
   mark_as_advanced(BLACS_LIBRARY_C)
   mark_as_advanced(BLACS_LIBRARY_F77)
   mark_as_advanced(BLACS_LIBRARY)
   mark_as_advanced(SCALAPACK_LIBRARY)
-  mark_as_advanced(SCALAPACK_LIBRARIES)
   if(SCALAPACK_LIBRARY)
     set(BLACS_LIBRARIES_ALL ${BLACS_LIBRARIES_ALL} ${SCALAPACK_LIBRARY})
   endif()
