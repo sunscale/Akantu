@@ -88,6 +88,10 @@ private:
   /// delta_f parameter
   Real delta_f;
 
+  /// variable saying if there should be penalty contact also after
+  /// breaking the cohesive elements
+  bool contact_after_breaking;
+
   /// delta of the previous step
   CohesiveInternalField<Real> delta_prec;
 

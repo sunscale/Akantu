@@ -95,6 +95,11 @@ protected:
   /**
    * Scale insertion traction sigma_c according to the volume of the
    * two elements surrounding a facet
+   *
+   * see the article: F. Zhou and J. F. Molinari "Dynamic crack
+   * propagation with cohesive elements: a methodology to address mesh
+   * dependency" International Journal for Numerical Methods in
+   * Engineering (2004)
    */
   void scaleInsertionTraction();
 
