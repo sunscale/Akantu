@@ -4,7 +4,7 @@
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Fri Feb 27 2015
- * @date last modification: Fri Feb 27 2015
+ * @date last modification: Thu Mar 5 2015
  *
  * @brief  Converts element types of a mesh to CGAL primitive types
  *
@@ -60,6 +60,8 @@ struct TreeTypeHelper<2, _triangle_3> {
   typedef Triangle_primitive aabb_primitive_type;
   typedef CGAL::AABB_traits<Kernel, aabb_primitive_type> aabb_traits_type;
   typedef CGAL::AABB_tree<aabb_traits_type> tree;
+
+  typedef boost::optional < tree::Intersection_and_primitive_id< CGAL::Segment_3<K> >::Type > linear_intersection;
 };
 
 __END_AKANTU__

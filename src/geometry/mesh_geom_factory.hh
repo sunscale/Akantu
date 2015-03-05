@@ -4,7 +4,7 @@
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Thu Feb 26 2015
- * @date last modification: Mon Mar 2 2015
+ * @date last modification: Thu Mar 5 2015
  *
  * @brief  Class for constructing the CGAL primitives of a mesh
  *
@@ -63,11 +63,22 @@ public:
   /// Compute the number of intersections with primitive
   virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
 
+  /// Create a mesh of the intersection with a linear interface
+  virtual Mesh * computeIntersectionWithLinearInterface(const K::Segment_3 & interface);
+
+  /// Construct segment list from intersections and remove duplicates
+  void constructSegments(const std::list<typename TreeTypeHelper<d, el_type>::linear_intersection> & intersections,
+                         std::list< std::pair<K::Segment_3, UInt> > & segments);
+
   const typename TreeTypeHelper<d, el_type>::tree & getTree() const { return *data_tree; }
 
 protected:
   typename TreeTypeHelper<d, el_type>::tree * data_tree;
   typename TreeTypeHelper<d, el_type>::container_type primitive_list;
+
+  Array<Real> * nodes;
+  Array<UInt> * associated_id;
+  Array<Element> * associated_type;
 };
 
 __END_AKANTU__

@@ -45,6 +45,7 @@ package_declare_sources(CGAL
   geometry/aabb_primitives/triangle_tmpl.hh
   geometry/aabb_primitives/triangle_primitive.hh
   geometry/aabb_primitives/triangle_primitive.cc
+  geometry/geom_helper_functions.hh
   )
 
 package_boost_component_needed(system)

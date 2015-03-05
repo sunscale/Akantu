@@ -4,7 +4,7 @@
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Fri Feb 27 2015
- * @date last modification: Mon Mar 2 2015
+ * @date last modification: Thu Mar 5 2015
  *
  * @brief  Contains the CGAL representation of a mesh
  *
@@ -115,6 +115,10 @@ UInt MeshGeomContainer::numberOfIntersectionsWithInterface(const K::Segment_3 & 
   }
 
   return total;
+}
+
+Mesh * MeshGeomContainer::computeIntersectionWithLinearInterface(const K::Segment_3 & interface) {
+  return NULL;
 }
 
 const MeshGeomAbstract * MeshGeomContainer::getFactoryForElementType(ElementType el_type) const {

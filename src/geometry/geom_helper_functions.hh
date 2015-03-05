@@ -1,12 +1,12 @@
 /**
- * @file   mesh_geom_container.hh
+ * @file   geom_helper_functions.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Fri Feb 27 2015
+ * @date creation: Wed Mar 4 2015
  * @date last modification: Thu Mar 5 2015
  *
- * @brief  Contains the CGAL representation of a mesh
+ * @brief  Helper functions for the computational geometry algorithms
  *
  * @section LICENSE
  *
@@ -30,47 +30,36 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_GEOM_CONTAINER__
-#define __AKANTU_MESH_GEOM_CONTAINER__
+#ifndef _AKANTU_GEOM_HELPER_FUNCTIONS_HH__
+#define _AKANTU_GEOM_HELPER_FUNCTIONS_HH__
 
 #include "aka_common.hh"
-#include "mesh.hh"
-#include "mesh_geom_abstract.hh"
 
 #include <CGAL/Cartesian.h>
-
-/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 typedef CGAL::Cartesian<Real> K;
 
-class MeshGeomContainer : MeshGeomAbstract {
-  typedef ElementTypeMap<MeshGeomAbstract *> GeomMap;
+#define EPS 1e-10
 
-public:
-  /// Construct from mesh
-  explicit MeshGeomContainer(const Mesh & mesh);
+inline bool comparePoints(const K::Point_3 & a, const K::Point_3 & b) {
+  Math::setTolerance(EPS);
+  return Math::are_float_equal(a.x(), b.x()) && Math::are_float_equal(a.y(), b.y());
+}
 
-  /// Destructor
-  virtual ~MeshGeomContainer();
+inline bool compareSegments(const K::Segment_3 & a, const K::Segment_3 & b) {
+  Math::setTolerance(EPS);
+  return (comparePoints(a.source(), b.source()) && comparePoints(a.target(), b.target())) ||
+         (comparePoints(a.source(), b.target()) && comparePoints(a.target(), b.source()));
+}
 
-public:
-  /// Constructs the geometric data from the mesh
-  virtual void constructData();
-
-  /// Compute the number of intersections with geometric interface
-  virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
-
-  virtual Mesh * computeIntersectionWithLinearInterface(const K::Segment_3 & interface);
-
-  /// Get the factory object for an element type
-  const MeshGeomAbstract * getFactoryForElementType(ElementType el_type) const;
-
-protected:
-  GeomMap constructor_map;
+struct CompareSegmentPairs {
+  bool operator()(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
+    return compareSegments(a.first, b.first);
+  }
 };
-
 __END_AKANTU__
 
-#endif // __AKANTU_MESH_GEOM_CONTAINER__
+#endif // _AKANTU_GEOM_HELPER_FUNCTIONS_HH__
+

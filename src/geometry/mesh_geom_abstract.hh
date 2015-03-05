@@ -4,7 +4,7 @@
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Thu Feb 26 2015
- * @date last modification: Thu Feb 26 2015
+ * @date last modification: Thu Mar 5 2015
  *
  * @brief  Class for constructing the CGAL primitives of a mesh
  *
@@ -59,6 +59,9 @@ public:
 
   /// Compute number of intersections with geometric interface
   virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const = 0;
+
+  /// Compute the mesh created by a linear interface
+  virtual Mesh * computeIntersectionWithLinearInterface(const K::Segment_3 & interface) = 0;
 
 protected:
   /// Mesh used to construct the primitives
