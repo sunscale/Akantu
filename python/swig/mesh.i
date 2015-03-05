@@ -93,7 +93,3 @@ print_self(Mesh)
 %include "mesh.hh"
 
 
-namespace akantu {
-  %template(MeshEventUInt) MeshEvent<UInt>;
-  %template(MeshEventElement) MeshEvent<Element>;
-}
