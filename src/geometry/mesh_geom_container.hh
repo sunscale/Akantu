@@ -4,7 +4,7 @@
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Fri Feb 27 2015
- * @date last modification: Thu Mar 5 2015
+ * @date last modification: Fri Mar 6 2015
  *
  * @brief  Contains the CGAL representation of a mesh
  *
@@ -62,13 +62,22 @@ public:
   /// Compute the number of intersections with geometric interface
   virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
 
-  virtual Mesh * computeIntersectionWithLinearInterface(const K::Segment_3 & interface);
+  /// Compute the intersection mesh with linear interface
+  virtual Mesh * meshOfLinearInterface(const std::pair<K::Segment_3, std::string> & pair);
+
+  /// Compute the merged mesh from a list of meshes
+  Mesh * mergeMeshes(const std::list<Mesh *> & meshes);
+
+  ///
+  Mesh & meshOfLinearInterfaces(const std::list< std::pair<K::Segment_3, std::string> > & interfaces);
 
   /// Get the factory object for an element type
   const MeshGeomAbstract * getFactoryForElementType(ElementType el_type) const;
 
 protected:
-  GeomMap constructor_map;
+  GeomMap factory_map;
+
+  Mesh * interface_mesh;
 };
 
 __END_AKANTU__
