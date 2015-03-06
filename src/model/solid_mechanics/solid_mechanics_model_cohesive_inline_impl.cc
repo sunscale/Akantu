@@ -35,10 +35,25 @@
 
 __BEGIN_AKANTU__
 
+
+/* -------------------------------------------------------------------------- */
+//template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
+//bool SolidMechanicsModel::solveStepCohesive(Real tolerance,
+//                                    UInt max_iteration) {
+//  Real error = 0.;
+//  return this->template solveStep<cmethod,criteria>(tolerance,
+//                                                    error,
+//                                                    max_iteration);
+//}
+
+
+
 /* -------------------------------------------------------------------------- */
 template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
-bool SolidMechanicsModel::solveStepCohesive(Real tolerance, Real & error, UInt max_iteration,
-                                            bool do_not_factorize) {
+bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
+                                                    Real & error,
+                                                    UInt max_iteration,
+                                                    bool do_not_factorize) {
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeSolveStepEvent(method));
   this->implicitPred();
 
@@ -48,18 +63,20 @@ bool SolidMechanicsModel::solveStepCohesive(Real tolerance, Real & error, UInt m
   Array<Real> * velocity_tmp = NULL;
   Array<Real> * acceleration_tmp = NULL;
 
-  while(something_converged) {
-    if(extrinsic) {
+  while(!something_converged) {
+    if(is_extrinsic) {
       // If in extrinsic saves the current displacements, velocities and accelerations
       Array<Real> * tmp_swap;
 
       if(!displacement_tmp) {
         displacement_tmp = new Array<Real>(*(this->displacement));
       } else {
-        displacement_tmp->resize(this->displacement->getSize());
-        displacement_tmp->copy(*(this->displacement));
+        (*displacement_tmp).resize(this->displacement->getSize());
+        //        displacement_tmp->resize(this->displacement->getSize());
+        (*displacement_tmp).copy(*(this->displacement));
+        //displacement_tmp->copy(*(this->displacement));
       }
-      tmp_swap = *displacement_tmp;
+      tmp_swap = displacement_tmp;
       displacement_tmp = this->displacement;
       this->displacement = tmp_swap;
 
@@ -69,7 +86,7 @@ bool SolidMechanicsModel::solveStepCohesive(Real tolerance, Real & error, UInt m
         velocity_tmp->resize(this->velocity->getSize());
         velocity_tmp->copy(*(this->velocity));
       }
-      tmp_swap = *velocity_tmp;
+      tmp_swap = velocity_tmp;
       velocity_tmp = this->velocity;
       this->velocity = tmp_swap;
 
@@ -79,7 +96,7 @@ bool SolidMechanicsModel::solveStepCohesive(Real tolerance, Real & error, UInt m
         acceleration_tmp->resize(this->acceleration->getSize());
         acceleration_tmp->copy(*(this->acceleration));
       }
-      tmp_swap = *acceleration_tmp;
+      tmp_swap = acceleration_tmp;
       acceleration_tmp = this->acceleration;
       this->acceleration = tmp_swap;
     }
@@ -92,7 +109,7 @@ bool SolidMechanicsModel::solveStepCohesive(Real tolerance, Real & error, UInt m
 
     bool need_factorize = !do_not_factorize;
 
-    if (method==_implicit_dynamic) {
+    if (method ==_implicit_dynamic) {
       AKANTU_DEBUG_ASSERT(mass_matrix != NULL,
                           "You should first initialize the implicit solver and assemble the mass matrix");
     }
@@ -157,35 +174,38 @@ bool SolidMechanicsModel::solveStepCohesive(Real tolerance, Real & error, UInt m
                            " iteration" << (iter == 1 ? "" : "s") << "!" << std::endl);
     }
 
-    if(extrinsic) {
+    if(is_extrinsic) {
       Array<Real> * tmp_swap;
 
-      tmp_swap = *displacement_tmp;
+      tmp_swap = displacement_tmp;
       displacement_tmp = this->displacement;
       this->displacement = tmp_swap;
 
-      tmp_swap = *velocity_tmp;
+      tmp_swap = velocity_tmp;
       velocity_tmp = this->velocity;
       this->velocity = tmp_swap;
 
-      tmp_swap = *acceleration_tmp;
+      tmp_swap = acceleration_tmp;
       acceleration_tmp = this->acceleration;
       this->acceleration = tmp_swap;
 
-      UInt nb_cohesive_elements = this->mesh.getNbElements(this->spatial_dimension, _not_ghost, _ek_cohesive) +
-        this->mesh.getNbElements(this->spatial_dimension, _ghost, _ek_cohesive);
+      UInt nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive) +
+        this->mesh.getNbElement(this->spatial_dimension, _ghost, _ek_cohesive);
+
       this->checkCohesiveStress();
 
-      UInt new_nb_cohesive_elements = this->mesh.getNbElements(this->spatial_dimension, _not_ghost, _ek_cohesive) +
-        this->mesh.getNbElements(this->spatial_dimension, _ghost, _ek_cohesive);
+      UInt new_nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive) +
+        this->mesh.getNbElement(this->spatial_dimension, _ghost, _ek_cohesive);
 
-      if (new_nb_cohesive_elements != nb_cohesive_elements) something_converged = false;
-    } else {
-      something_converged = true;
+      if(new_nb_cohesive_elements == nb_cohesive_elements) {
+        something_converged = true;
+      } else {
+        something_converged = false;
+      }
     }
-  }
+  }//end while something_converged
 
-  if(extrinsic) {
+  if(is_extrinsic) {
     this->displacement->copy(*displacement_tmp);
     this->velocity    ->copy(*velocity_tmp);
     this->acceleration->copy(*acceleration_tmp);
