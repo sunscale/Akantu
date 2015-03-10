@@ -113,16 +113,13 @@ UInt MeshGeomFactory<d, el_type>::numberOfIntersectionsWithInterface(const K::Se
 }
 
 template<UInt d, ElementType el_type>
-Mesh * MeshGeomFactory<d, el_type>::meshOfLinearInterface(const std::pair<K::Segment_3, std::string> & pair) {
+void MeshGeomFactory<d, el_type>::meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh) {
   AKANTU_DEBUG_IN();
-
-  const K::Segment_3 & interface = pair.first;
-  const std::string & id_str = pair.second;
 
   UInt number_of_intersections = this->numberOfIntersectionsWithInterface(interface);
 
   if (!number_of_intersections) {
-    return NULL;
+    return;
   }
 
   std::list<typename TreeTypeHelper<d, el_type>::linear_intersection> list_of_intersections;
@@ -132,70 +129,43 @@ Mesh * MeshGeomFactory<d, el_type>::meshOfLinearInterface(const std::pair<K::Seg
   data_tree->all_intersections(interface, std::back_inserter(list_of_intersections));
   this->constructSegments(list_of_intersections, list_of_segments);
 
-  UInt nb_elements = list_of_segments.size();
+  /// Arrays for storing nodes and connectivity
+  Array<Real> & nodes = interface_mesh.getNodes();
+  Array<UInt> & connectivity = interface_mesh.getConnectivity(_segment_2);
 
-  /// Temporary arrays for storing nodes and connectivity
-  Array<Real> nodes(2 * nb_elements, d, "factory_nodes");
-  Array<UInt> connectivity(nb_elements, 2, "factory_connectivity");
+  /// Arrays for storing associated element id and type
+  Array<Element> & associated_element = interface_mesh.getData<Element>("associated_element", _segment_2);
 
-  /// Temporary arrays for storing associated element id and type
-  Array<UInt> associated_id(nb_elements, 1, (UInt) 0, "factory_associated_id");
-  Array<Element> associated_type(nb_elements, "factory_associated_type");
-
-  std::list< std::pair<K::Segment_3, UInt> >::iterator it  = list_of_segments.begin();
-  std::list< std::pair<K::Segment_3, UInt> >::iterator end = list_of_segments.end();
-
-  Array<Real>::vector_iterator nodes_it = nodes.begin(d);
-  Array<UInt>::vector_iterator connectivity_it = connectivity.begin(2);
-
-  Array<UInt>::scalar_iterator associated_id_it = associated_id.begin();
-  Array<Element>::scalar_iterator associated_type_it = associated_type.begin();
+  std::list<std::pair<K::Segment_3, UInt> >::iterator it  = list_of_segments.begin();
+  std::list<std::pair<K::Segment_3, UInt> >::iterator end = list_of_segments.end();
 
   /// Loop over the intersections pairs (segment, id)
-  for (; it != end ; ++it,
-                     nodes_it += 2,
-                     ++connectivity_it,
-                     ++associated_id_it,
-                     ++associated_type_it) {
-    UInt node_id = nodes_it - nodes.begin(d);
-
-    /// Build element connectivity
-    (*connectivity_it)(0) = node_id;
-    (*connectivity_it)(1) = node_id + 1;
+  for (; it != end ; ++it) {
+    Vector<UInt> segment_connectivity(2);
+    segment_connectivity(0) = interface_mesh.getNbNodes();
+    segment_connectivity(1) = interface_mesh.getNbNodes() + 1;
+    connectivity.push_back(segment_connectivity);
 
     /// Copy nodes
+    Vector<Real> source(d), target(d);
     for (UInt j = 0 ; j < d ; j++) {
-      (*nodes_it)(j) = it->first.source()[j];
-      (*(nodes_it + 1))(j) = it->first.target()[j];
+      source(j) = it->first.source()[j];
+      target(j) = it->first.target()[j];
     }
 
+    nodes.push_back(source);
+    nodes.push_back(target);
+
     /// Copy associated element info
-    *associated_id_it = it->second;
-    associated_type_it->type = el_type;
+    associated_element.push_back(Element(el_type, it->second));
   }
 
-  Mesh * interface_mesh = new Mesh(d, "factory_interface_mesh" + id_str);
-  interface_mesh->getNodes().copy(nodes);
-
-  interface_mesh->addConnectivityType(_segment_2);
-  interface_mesh->getConnectivity(_segment_2).copy(connectivity);
-
-  /// Register associated element info in interface_mesh
-  interface_mesh->registerData<UInt>("associated_id").alloc(nb_elements, 1, _segment_2, _not_ghost);
-  interface_mesh->registerData<Element>("associated_type").alloc(nb_elements, 1, _segment_2, _not_ghost);
-
-  /// Copy associated element info
-  interface_mesh->getData<UInt>("associated_id")(_segment_2, _not_ghost).copy(associated_id);
-  interface_mesh->getData<Element>("associated_type")(_segment_2, _not_ghost).copy(associated_type);
-
   AKANTU_DEBUG_OUT();
-
-  return interface_mesh;
 }
 
 template<UInt d, ElementType el_type>
 void MeshGeomFactory<d, el_type>::constructSegments(const std::list< typename TreeTypeHelper<d, el_type>::linear_intersection > & intersections,
-                                                    std::list< std::pair<K::Segment_3, UInt> > & segments) {
+                                                    std::list<std::pair<K::Segment_3, UInt> > & segments) {
   AKANTU_DEBUG_IN();
 
   typename std::list<typename TreeTypeHelper<d, el_type>::linear_intersection>::const_iterator int_it = intersections.begin(),
@@ -203,8 +173,7 @@ void MeshGeomFactory<d, el_type>::constructSegments(const std::list< typename Tr
 
   for (; int_it != int_end ; ++int_it) {
     if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&((*int_it)->first))) {
-      std::pair<K::Segment_3, UInt> segment_id(*segment, (*int_it)->second);
-      segments.push_back(segment_id);
+      segments.push_back(std::make_pair(*segment, (*int_it)->second));
     }
   }
 

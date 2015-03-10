@@ -63,13 +63,10 @@ public:
   virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
 
   /// Compute the intersection mesh with linear interface
-  virtual Mesh * meshOfLinearInterface(const std::pair<K::Segment_3, std::string> & pair);
-
-  /// Compute the merged mesh from a list of meshes
-  Mesh * mergeMeshes(const std::list<Mesh *> & meshes);
+  virtual void meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh);
 
   ///
-  Mesh & meshOfLinearInterfaces(const std::list< std::pair<K::Segment_3, std::string> > & interfaces);
+  Mesh & meshOfLinearInterfaces(const std::list<K::Segment_3> & interfaces);
 
   /// Get the factory object for an element type
   const MeshGeomAbstract * getFactoryForElementType(ElementType el_type) const;
@@ -77,7 +74,7 @@ public:
 protected:
   GeomMap factory_map;
 
-  Mesh * interface_mesh;
+  Mesh interface_mesh;
 };
 
 __END_AKANTU__

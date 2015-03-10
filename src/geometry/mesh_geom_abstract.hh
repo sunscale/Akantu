@@ -61,7 +61,7 @@ public:
   virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const = 0;
 
   /// Compute the mesh created by a linear interface
-  virtual Mesh * meshOfLinearInterface(const std::pair<K::Segment_3, std::string> & interface) = 0;
+  virtual void meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh) = 0;
 
 protected:
   /// Mesh used to construct the primitives
