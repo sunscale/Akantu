@@ -1177,6 +1177,50 @@ inline void FEEngineTemplate<I, S, kind>::computeShapes(const Vector<Real> & rea
  * Helper class to be able to write a partial specialization on the element kind
  */
 template<ElementKind kind>
+struct ComputeShapeDerivativesHelper {};
+
+#define COMPUTE_SHAPE_DERIVATIVES(type)     \
+  shape_functions.template computeShapeDerivatives<type>(real_coords,element,shape_derivatives,ghost_type);  \
+
+#define AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER(kind)    \
+  template<>                                                  \
+  struct ComputeShapeDerivativesHelper<kind> {                \
+    template <class S>                                        \
+    static void call(const S & shape_functions,               \
+                     const Vector<Real> & real_coords,        \
+                     UInt element,                            \
+                     const ElementType type,                  \
+                     Matrix<Real> & shape_derivatives,        \
+                     const GhostType & ghost_type) {          \
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_SHAPE_DERIVATIVES, kind); \
+    } \
+  };
+
+AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER);
+
+#undef AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER
+#undef COMPUTE_SHAPE_DERIVATIVES
+
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::computeShapeDerivatives(const Vector<Real> & real_coords,
+                                                                  UInt element,
+                                                                  const ElementType & type,
+                                                                  Matrix<Real> & shape_derivatives,
+                                                                  const GhostType & ghost_type) const {
+  AKANTU_DEBUG_IN();
+
+  ComputeShapesHelper<kind>::call(shape_functions, real_coords, element, type, shape_derivatives, ghost_type);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+/**
+ * Helper class to be able to write a partial specialization on the element kind
+ */
+template<ElementKind kind>
 struct GetNbQuadraturePointsHelper { };
 
 #define GET_NB_QUAD(type)						\
