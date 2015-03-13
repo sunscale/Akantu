@@ -195,8 +195,8 @@ void MaterialReinforcement<d>::computeBackgroundShapeDerivatives(const ElementTy
     Array<Real>::vector_iterator quad_pos_it = quad_pos.begin(d);
 
     for (; filter_it != filter_end ; ++filter_it) {
-      for (UInt i = 0 ; i < nb_quad_per_element ; i++, ++shapesd_it, ++quad_pos_it);
-        //engine.computeShapeDerivatives(*quad_pos_it, *filter_it, type, *shapesd_it, ghost_type);
+      for (UInt i = 0 ; i < nb_quad_per_element ; i++, ++shapesd_it, ++quad_pos_it)
+        engine.computeShapeDerivatives(*quad_pos_it, *filter_it, type, *shapesd_it, ghost_type);
     }
   }
 

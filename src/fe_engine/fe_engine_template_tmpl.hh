@@ -1159,7 +1159,7 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER)
 template<template <ElementKind> class I,
 	 template <ElementKind> class S,
 	 ElementKind kind>
-inline void FEEngineTemplate<I, S, kind>::computeShapes(const Vector<Real> & real_coords,
+void FEEngineTemplate<I, S, kind>::computeShapes(const Vector<Real> & real_coords,
 							UInt element,
 							const ElementType & type,
 							Vector<Real> & shapes,
@@ -1180,7 +1180,9 @@ template<ElementKind kind>
 struct ComputeShapeDerivativesHelper {};
 
 #define COMPUTE_SHAPE_DERIVATIVES(type)     \
-  shape_functions.template computeShapeDerivatives<type>(real_coords,element,shape_derivatives,ghost_type);  \
+  Matrix<Real> coords_mat(real_coords.storage(), shape_derivatives.rows(), 1); \
+  Tensor3<Real> shapesd_tensor(shape_derivatives.storage(), shape_derivatives.rows(), shape_derivatives.cols(), 1); \
+  shape_functions.template computeShapeDerivatives<type>(coords_mat,element,shapesd_tensor,ghost_type);  \
 
 #define AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER(kind)    \
   template<>                                                  \
@@ -1204,14 +1206,14 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER);
 template<template <ElementKind> class I,
          template <ElementKind> class S,
          ElementKind kind>
-inline void FEEngineTemplate<I, S, kind>::computeShapeDerivatives(const Vector<Real> & real_coords,
+void FEEngineTemplate<I, S, kind>::computeShapeDerivatives(const Vector<Real> & real_coords,
                                                                   UInt element,
                                                                   const ElementType & type,
                                                                   Matrix<Real> & shape_derivatives,
                                                                   const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
-  ComputeShapesHelper<kind>::call(shape_functions, real_coords, element, type, shape_derivatives, ghost_type);
+  ComputeShapeDerivativesHelper<kind>::call(shape_functions, real_coords, element, type, shape_derivatives, ghost_type);
 
   AKANTU_DEBUG_OUT();
 }
