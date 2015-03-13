@@ -1,12 +1,12 @@
 /**
- * @file   triangle_primitive.cc
+ * @file   tetrahedron_tmpl.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Tue Mar 3 2015
- * @date last modification: Tue Mar 3 2015
+ * @date creation: Tue Mar 10 2015
+ * @date last modification: Tue Mar 10 2015
  *
- * @brief  Triangle classe (primitive) for AABB CGAL algos
+ * @brief  Tetrahedron class (geometry) for AABB CGAL algos, template impl
  *
  * @section LICENSE
  *
@@ -30,31 +30,45 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include "triangle_primitive.hh"
+#ifndef __AKANTU_TETRAHEDRON_TMPL_HH__
+#define __AKANTU_TETRAHEDRON_TMPL_HH__
+
+#include "tetrahedron.hh"
+#include <CGAL/Cartesian.h>
 
 __BEGIN_AKANTU__
 
-
-Triangle_primitive::Triangle_primitive() :
-  meshId(0),
-  triangle()
+template<typename K>
+Tetrahedron<K>::Tetrahedron() :
+  CGAL::Tetrahedron_3<K>(),
+  meshId(0)
 {}
 
-Triangle_primitive::Triangle_primitive(Iterator it) :
-  meshId(it->id()),
-  triangle(*it)
+template<typename K>
+Tetrahedron<K>::Tetrahedron(const CGAL::Point_3<K> & a,
+                            const CGAL::Point_3<K> & b,
+                            const CGAL::Point_3<K> & c,
+                            const CGAL::Point_3<K> & d) :
+  CGAL::Tetrahedron_3<K>(a, b, c, d),
+  meshId(0)
 {}
 
-const Triangle_primitive::Datum & Triangle_primitive::datum() const {
-  return triangle;
-}
+template<typename K>
+Tetrahedron<K>::Tetrahedron(const Tetrahedron & other) :
+  CGAL::Tetrahedron_3<K>(other),
+  meshId(other.meshId)
+{}
 
-const Triangle_primitive::Point & Triangle_primitive::reference_point() const {
-  return triangle.vertex(0);
-}
-
-const Triangle_primitive::Id & Triangle_primitive::id() const {
+template<typename K>
+UInt Tetrahedron<K>::id() const {
   return meshId;
 }
 
+template<typename K>
+void Tetrahedron<K>::setId(UInt newId) {
+  meshId = newId;
+}
+
 __END_AKANTU__
+
+#endif

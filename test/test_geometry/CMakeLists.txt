@@ -36,3 +36,9 @@ register_test(test_geometry_intersection
   DEPENDENCIES test_geometry_intersection_mesh
   PACKAGE CGAL
   )
+
+register_test(test_geometry_mesh
+  SOURCES test_geometry_mesh.cc
+  DEPENDENCIES test_geometry_intersection_mesh
+  PACKAGE CGAL
+  )

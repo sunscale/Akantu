@@ -65,7 +65,7 @@ public:
   /// Compute the intersection mesh with linear interface
   virtual void meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh);
 
-  ///
+  /// Construct the interface mesh from several segments
   Mesh & meshOfLinearInterfaces(const std::list<K::Segment_3> & interfaces);
 
   /// Get the factory object for an element type

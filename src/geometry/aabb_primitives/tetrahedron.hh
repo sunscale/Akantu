@@ -1,12 +1,12 @@
 /**
- * @file   triangle_primitive.hh
+ * @file   tetrahedron.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Tue Mar 3 2015
- * @date last modification: Tue Mar 3 2015
+ * @date creation: Tue Mar 10 2015
+ * @date last modification: Tue Mar 10 2015
  *
- * @brief  Triangle classe (primitive) for AABB CGAL algos
+ * @brief  Tetrahedron classe (geometry) for AABB CGAL algos
  *
  * @section LICENSE
  *
@@ -30,48 +30,42 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TRIANGLE_PRIMITIVE_HH__
-#define __AKANTU_TRIANGLE_PRIMITIVE_HH__
+#ifndef __AKANTU_TETRAHEDRON_HH__
+#define __AKANTU_TETRAHEDRON_HH__
 
 #include "aka_common.hh"
-#include "triangle.hh"
 
 #include <CGAL/Cartesian.h>
 
 __BEGIN_AKANTU__
   
-typedef CGAL::Cartesian<Real> Kernel;
-
 /* -------------------------------------------------------------------------- */
 
-class Triangle_primitive {
-  /// Type of storage::iterator
-  typedef std::list< Triangle<Kernel> >::iterator Iterator;
-
-/// Typedefs needed by CGAL
+template<typename K>
+class Tetrahedron : public CGAL::Tetrahedron_3<K> {
 public:
-  typedef UInt Id;
-  typedef Kernel::Point_3 Point;
-  typedef Kernel::Triangle_3 Datum;
+  /// Default constructor
+  Tetrahedron();
+
+  /// Copy constructor
+  Tetrahedron(const Tetrahedron & other);
+
+  /// Construct from 4 points
+  Tetrahedron(const CGAL::Point_3<K> & a,
+              const CGAL::Point_3<K> & b,
+              const CGAL::Point_3<K> & c,
+              const CGAL::Point_3<K> & d);
 
 public:
-  /// Default constructor needed
-  Triangle_primitive();
-
-  /// Construct from iterator (*it is a Triangle<K>)
-  Triangle_primitive(Iterator it);
-
-/// Functions needed by CGAL
-public:
-  const Datum & datum() const;
-  const Point & reference_point() const;
-  const Id & id() const;
+  UInt id() const;
+  void setId(UInt newId);
 
 protected:
-  Id meshId;
-  Triangle<Kernel> triangle;
+  UInt meshId;
 };
 
 __END_AKANTU__
 
-#endif // __AKANTU_TRIANGLE_PRIMITIVE_HH__
+#include "tetrahedron_tmpl.hh"
+
+#endif

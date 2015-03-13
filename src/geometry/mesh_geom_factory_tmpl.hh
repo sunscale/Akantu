@@ -95,7 +95,7 @@ void MeshGeomFactory<d, type>::constructData() {
   AKANTU_DEBUG_OUT();
 }
 
-// Need to implement this method for every case needed
+// 2D and _triangle_3 implementation
 template<>
 void MeshGeomFactory<2, _triangle_3>::addPrimitive(const Matrix<Real> & node_coordinates, UInt id) {
   TreeTypeHelper<2, _triangle_3>::point_type a(node_coordinates(0, 0), node_coordinates(1, 0), 0.);
@@ -106,6 +106,29 @@ void MeshGeomFactory<2, _triangle_3>::addPrimitive(const Matrix<Real> & node_coo
   t.setId(id);
   primitive_list.push_back(t);
 }
+
+// 3D and _tetrahedron_4 implementation
+/*
+template<>
+void MeshGeomFactory<3, _tetrahedron_4>::addPrimitive(const Matrix<Real> & node_coordinates, UInt id) {
+  TreeTypeHelper<3, _tetrahedron_4>::point_type a(node_coordinates(0, 0),
+                                                  node_coordinates(1, 0),
+                                                  node_coordinates(2, 0));
+  TreeTypeHelper<3, _tetrahedron_4>::point_type b(node_coordinates(0, 1),
+                                                  node_coordinates(1, 1),
+                                                  node_coordinates(2, 1));
+  TreeTypeHelper<3, _tetrahedron_4>::point_type c(node_coordinates(0, 2),
+                                                  node_coordinates(1, 2),
+                                                  node_coordinates(2, 2));
+  TreeTypeHelper<3, _tetrahedron_4>::point_type d(node_coordinates(0, 3),
+                                                  node_coordinates(1, 3),
+                                                  node_coordinates(2, 3));
+
+  Tetrahedron<K> t(a, b, c, d);
+  t.setId(id);
+  primitive_list.push_back(t);
+}
+*/
 
 template<UInt d, ElementType el_type>
 UInt MeshGeomFactory<d, el_type>::numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const {
