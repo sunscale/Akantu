@@ -243,7 +243,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(Mesh & mesh,
         UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 
         // /!\ this part must be slow due to the access in the ElementTypeMapArray<UInt>
-        if(!elempproc.exists(type))
+        if(!elempproc.exists(type, _not_ghost))
           elempproc.alloc(0, nb_nodes_per_element, type, _not_ghost);
 
         UInt global_connect[nb_nodes_per_element];
