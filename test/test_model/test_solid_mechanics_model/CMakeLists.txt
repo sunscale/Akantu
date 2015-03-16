@@ -212,3 +212,12 @@ register_test(test_solid_mechanics_model_material_eigenstrain
   FILES_TO_COPY cube_3d_tet_4.msh; material_elastic_plane_strain.dat
   PACKAGE core
   )
+
+#===============================================================================
+register_test(test_solid_mechanics_model_orthotropic
+  SOURCES test_solid_mechanics_model_orthotropic.cc
+  DEPENDENCIES test_solid_mechanics_model_square_mesh
+  FILES_TO_COPY orthotropic.dat
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
+  )
