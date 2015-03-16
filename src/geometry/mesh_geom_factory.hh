@@ -64,14 +64,14 @@ public:
   virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
 
   /// Create a mesh of the intersection with a linear interface
-  virtual Mesh * meshOfLinearInterface(const std::pair<K::Segment_3, std::string> & pair);
+  virtual void meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh);
 
   /// Construct a primitive and add it to the list
   void addPrimitive(const Matrix<Real> & node_coordinates, UInt id);
 
   /// Construct segment list from intersections and remove duplicates
   void constructSegments(const std::list<typename TreeTypeHelper<d, el_type>::linear_intersection> & intersections,
-                         std::list< std::pair<K::Segment_3, UInt> > & segments);
+                         std::list<std::pair<K::Segment_3, UInt> > & segments);
 
   const typename TreeTypeHelper<d, el_type>::tree & getTree() const { return *data_tree; }
 

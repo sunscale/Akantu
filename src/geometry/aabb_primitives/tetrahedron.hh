@@ -1,12 +1,12 @@
 /**
- * @file   mesh_geom_abstract.hh
+ * @file   tetrahedron.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Feb 26 2015
- * @date last modification: Fri Mar 6 2015
+ * @date creation: Tue Mar 10 2015
+ * @date last modification: Tue Mar 10 2015
  *
- * @brief  Class for constructing the CGAL primitives of a mesh
+ * @brief  Tetrahedron classe (geometry) for AABB CGAL algos
  *
  * @section LICENSE
  *
@@ -30,44 +30,42 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_GEOM_ABSTRACT_HH__
-#define __AKANTU_MESH_GEOM_ABSTRACT_HH__
+#ifndef __AKANTU_TETRAHEDRON_HH__
+#define __AKANTU_TETRAHEDRON_HH__
 
 #include "aka_common.hh"
-#include "mesh.hh"
 
 #include <CGAL/Cartesian.h>
 
+__BEGIN_AKANTU__
+  
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+template<typename K>
+class Tetrahedron : public CGAL::Tetrahedron_3<K> {
+public:
+  /// Default constructor
+  Tetrahedron();
 
-typedef CGAL::Cartesian<Real> K;
+  /// Copy constructor
+  Tetrahedron(const Tetrahedron & other);
 
-class MeshGeomAbstract {
+  /// Construct from 4 points
+  Tetrahedron(const CGAL::Point_3<K> & a,
+              const CGAL::Point_3<K> & b,
+              const CGAL::Point_3<K> & c,
+              const CGAL::Point_3<K> & d);
 
 public:
-  /// Construct from mesh
-  explicit MeshGeomAbstract(const Mesh & mesh);
-
-  /// Destructor
-  virtual ~MeshGeomAbstract();
-
-public:
-  /// Construct geometric data for computational geometry algorithms
-  virtual void constructData() = 0;
-
-  /// Compute number of intersections with geometric interface
-  virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const = 0;
-
-  /// Compute the mesh created by a linear interface
-  virtual void meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh) = 0;
+  UInt id() const;
+  void setId(UInt newId);
 
 protected:
-  /// Mesh used to construct the primitives
-  const Mesh & mesh;
+  UInt meshId;
 };
 
 __END_AKANTU__
 
-#endif // __AKANTU_MESH_GEOM_ABSTRACT_HH__
+#include "tetrahedron_tmpl.hh"
+
+#endif

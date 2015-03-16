@@ -1,16 +1,16 @@
 #===============================================================================
-# @file   CMakeLists.txt
+# @file   embedded.cmake
 #
-# @author Lucas Frerot <lucas.frerot@epfl.ch>
+# @author Lucas Frérot <lucas.frerot@epfl.ch>
 #
-# @date creation: Fri Feb 27 2015
-# @date last modification: Fri Feb 27 2015
+# @date creation: Tue Oct 16 2012
+# @date last modification: Thu Jun 12 2014
 #
-# @brief  configuration for solver tests
+# @brief  package descrition for embedded model use
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -26,19 +26,19 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
-# @section DESCRIPTION
-#
 #===============================================================================
 
-add_mesh(test_geometry_intersection_mesh mesh.geo 2 1)
-register_test(test_geometry_intersection
-  SOURCES test_geometry_intersection.cc
-  DEPENDENCIES test_geometry_intersection_mesh
-  PACKAGE CGAL
-  )
+package_declare(embedded 
+  DESCRIPTION "Add support for the embedded solid mechanics model"
+  DEPENDS CGAL)
 
-register_test(test_geometry_mesh
-  SOURCES test_geometry_mesh.cc
-  DEPENDENCIES test_geometry_intersection_mesh
-  PACKAGE CGAL
+package_declare_sources(embedded
+  model/solid_mechanics/materials/material_embedded_includes.hh
+
+  model/solid_mechanics/embedded_interface_model.hh
+  model/solid_mechanics/embedded_interface_model.cc
+
+  model/solid_mechanics/materials/material_reinforcement.hh
+  model/solid_mechanics/materials/material_reinforcement.cc
+  model/solid_mechanics/materials/material_reinforcement_inline_impl.cc
   )

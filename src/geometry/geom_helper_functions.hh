@@ -54,6 +54,12 @@ inline bool compareSegments(const K::Segment_3 & a, const K::Segment_3 & b) {
          (comparePoints(a.source(), b.target()) && comparePoints(a.target(), b.source()));
 }
 
+struct CompareSegments {
+  bool operator()(const K::Segment_3 & a, const K::Segment_3 & b) {
+    return compareSegments(a, b);
+  }
+};
+
 struct CompareSegmentPairs {
   bool operator()(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
     return compareSegments(a.first, b.first);
