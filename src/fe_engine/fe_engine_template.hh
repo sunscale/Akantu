@@ -158,14 +158,14 @@ public:
 		       const GhostType & ghost_type = _not_ghost) const;
 
   /// compute the shape on a provided point
-  void computeShapes(const Vector<Real> & real_coords,
+  inline void computeShapes(const Vector<Real> & real_coords,
 			    UInt element,
 			    const ElementType & type,
 			    Vector<Real> & shapes,
 			    const GhostType & ghost_type = _not_ghost) const;
 
   /// compute the shape derivatives on a provided point
-  void computeShapeDerivatives(const Vector<Real> & real__coords,
+  inline void computeShapeDerivatives(const Vector<Real> & real__coords,
                                       UInt element,
                                       const ElementType & type,
                                       Matrix<Real> & shape_derivatives,
