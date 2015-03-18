@@ -59,7 +59,9 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(Mesh & mesh,
   tangents("tangents", id),
   stress_on_facet("stress_on_facet", id),
   facet_stress("facet_stress", id),
-  facet_material("facet_material", id) {
+  facet_material("facet_material", id),
+  cohesive_fe_engine(NULL),
+  facet_fe_engine(NULL) {
   AKANTU_DEBUG_IN();
 
   inserter = NULL;
@@ -213,6 +215,7 @@ void SolidMechanicsModelCohesive::initModel() {
   SolidMechanicsModel::initModel();
 
   registerFEEngineObject<MyFEEngineCohesiveType>("CohesiveFEEngine", mesh, spatial_dimension);
+  cohesive_fe_engine = &getFEEngine("CohesiveFEEngine");
 
   /// add cohesive type connectivity
   ElementType type = _not_defined;
@@ -238,16 +241,18 @@ void SolidMechanicsModelCohesive::initModel() {
 
   AKANTU_DEBUG_ASSERT(type != _not_defined, "No elements in the mesh");
 
-  getFEEngine("CohesiveFEEngine").initShapeFunctions(_not_ghost);
-  getFEEngine("CohesiveFEEngine").initShapeFunctions(_ghost);
+  cohesive_fe_engine->initShapeFunctions(_not_ghost);
+  cohesive_fe_engine->initShapeFunctions(_ghost);
 
   registerFEEngineObject<MyFEEngineType>("FacetsFEEngine",
 					 mesh.getMeshFacets(),
 					 spatial_dimension - 1);
 
+  facet_fe_engine = &getFEEngine("FacetsFEEngine");
+
   if (is_extrinsic) {
-    getFEEngine("FacetsFEEngine").initShapeFunctions(_not_ghost);
-    getFEEngine("FacetsFEEngine").initShapeFunctions(_ghost);
+    facet_fe_engine->initShapeFunctions(_not_ghost);
+    facet_fe_engine->initShapeFunctions(_ghost);
   }
 
   AKANTU_DEBUG_OUT();
@@ -307,7 +312,7 @@ void SolidMechanicsModelCohesive::initAutomaticInsertion() {
 
     UInt nb_facet_per_elem = Mesh::getNbFacetsPerElement(type);
     ElementType type_facet = Mesh::getFacetType(type);
-    UInt nb_quad_per_facet = getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
+    UInt nb_quad_per_facet = facet_fe_engine->getNbQuadraturePoints(type_facet);
 
     stress_on_facet(type).resize(nb_quad_per_facet * nb_facet_per_elem * nb_element);
   }
@@ -347,7 +352,7 @@ void SolidMechanicsModelCohesive::initStressInterpolation() {
   mesh_facets.initElementTypeMapArray(quad_facets,
 				     spatial_dimension, spatial_dimension - 1);
 
-  getFEEngine("FacetsFEEngine").interpolateOnQuadraturePoints(position, quad_facets);
+  facet_fe_engine->interpolateOnQuadraturePoints(position, quad_facets);
 
   /// compute elements quadrature point positions and build
   /// element-facet quadrature points data structure
@@ -381,7 +386,7 @@ void SolidMechanicsModelCohesive::initStressInterpolation() {
       ElementType facet_type = Mesh::getFacetType(type);
 
       UInt nb_quad_per_facet =
-	getFEEngine("FacetsFEEngine").getNbQuadraturePoints(facet_type);
+	facet_fe_engine->getNbQuadraturePoints(facet_type);
 
       el_q_facet.resize(nb_element * nb_facet_per_elem * nb_quad_per_facet);
 
@@ -451,7 +456,7 @@ void SolidMechanicsModelCohesive::computeNormals() {
   AKANTU_DEBUG_IN();
 
   Mesh & mesh_facets = inserter->getMeshFacets();
-  getFEEngine("FacetsFEEngine").computeNormalsOnControlPoints(_not_ghost);
+  facet_fe_engine->computeNormalsOnControlPoints(_not_ghost);
 
   /**
    *  @todo store tangents while computing normals instead of
@@ -471,7 +476,7 @@ void SolidMechanicsModelCohesive::computeNormals() {
     ElementType facet_type = *it;
 
     const Array<Real> & normals =
-      getFEEngine("FacetsFEEngine").getNormalsOnQuadPoints(facet_type);
+      facet_fe_engine->getNormalsOnQuadPoints(facet_type);
 
     UInt nb_quad = normals.getSize();
 
@@ -527,7 +532,7 @@ void SolidMechanicsModelCohesive::averageStressOnFacets(UInt material_index) {
 
     UInt nb_facet_per_elem = Mesh::getNbFacetsPerElement(type);
     ElementType type_facet = Mesh::getFacetType(type);
-    UInt nb_quad_per_facet = getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
+    UInt nb_quad_per_facet = facet_fe_engine->getNbQuadraturePoints(type_facet);
     UInt nb_facet_quad_per_elem = nb_quad_per_facet * nb_facet_per_elem;
 
     Array<Real>::const_iterator<Matrix<Real> > stress_it
@@ -571,10 +576,11 @@ void SolidMechanicsModelCohesive::fillStressOnFacet() {
 	dynamic_cast<MaterialCohesive &>(*materials[m]);
     } catch(std::bad_cast&) {
 
-      if (stress_interpolation)
+      if (stress_interpolation) {
 	/// interpolate stress on facet quadrature points positions
-	materials[m]->interpolateStress(stress_on_facet);
-      else
+	materials[m]->interpolateStressOnFacets(facet_stress);
+	return;
+      } else
 	averageStressOnFacets(m);
 
       GhostType ghost_type = _not_ghost;
@@ -628,7 +634,7 @@ void SolidMechanicsModelCohesive::fillStressOnFacet() {
 	      f_stress = &( facet_stress(facet_type, facet_gt) );
 
 	      nb_quad_per_facet =
-		getFEEngine("FacetsFEEngine").getNbQuadraturePoints(facet_type, facet_gt);
+		facet_fe_engine->getNbQuadraturePoints(facet_type, facet_gt);
 
 	      f_check = &( inserter->getCheckFacets(facet_type, facet_gt) );
 	    }
@@ -713,8 +719,8 @@ void SolidMechanicsModelCohesive::onElementsAdded(const Array<Element> & element
 #endif
 
   /// update shape functions
-  getFEEngine("CohesiveFEEngine").initShapeFunctions(_not_ghost);
-  getFEEngine("CohesiveFEEngine").initShapeFunctions(_ghost);
+  cohesive_fe_engine->initShapeFunctions(_not_ghost);
+  cohesive_fe_engine->initShapeFunctions(_ghost);
 
   if (is_extrinsic) resizeFacetStress();
 
@@ -816,7 +822,7 @@ void SolidMechanicsModelCohesive::resizeFacetStress() {
       UInt nb_facet = mesh_facets.getNbElement(type, ghost_type);
 
       UInt nb_quadrature_points =
-	getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type, ghost_type);
+	facet_fe_engine->getNbQuadraturePoints(type, ghost_type);
 
       UInt new_size = nb_facet * nb_quadrature_points;
 

@@ -476,6 +476,14 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
+  inline Real mean() const {
+    Real mean = 0;
+    T * a = this->storage();
+    for (UInt i = 0; i < this->_size; ++i) mean = *(a++);
+    return mean / this->_size;
+  }
+
+  /* ------------------------------------------------------------------------ */
   inline Vector & crossProduct(const Vector<T> & v1,
 			       const Vector<T> & v2) {
     AKANTU_DEBUG_ASSERT(this->size() == 3,

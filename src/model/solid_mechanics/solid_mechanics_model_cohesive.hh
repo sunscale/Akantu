@@ -205,6 +205,9 @@ public:
   /// get is_extrinsic boolean
   AKANTU_GET_MACRO(IsExtrinsic, is_extrinsic, bool);
 
+  /// get reference to FacetFEEngine
+  AKANTU_GET_MACRO(FacetFEEngine, *facet_fe_engine, FEEngine &);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -229,6 +232,12 @@ private:
 
   /// cohesive element inserter
   CohesiveElementInserter * inserter;
+
+  /// pointer to the cohesive fe_engine
+  FEEngine * cohesive_fe_engine;
+
+  /// pointer to the facet fe_engine
+  FEEngine * facet_fe_engine;
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
 #include "solid_mechanics_model_cohesive_parallel.hh"
