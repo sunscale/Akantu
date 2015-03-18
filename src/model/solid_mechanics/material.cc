@@ -1247,6 +1247,9 @@ void Material::interpolateElementalFieldOnFacets(const ElementTypeMapArray<Real>
     UInt nb_facet_per_elem = facet_to_element.getNbComponent();
     UInt nb_quad_per_facet = nb_interpolation_points_per_elem / nb_facet_per_elem;
     Element element_for_comparison(type, 0, ghost_type);
+    const Array< std::vector<Element> > * element_to_facet = NULL;
+    GhostType current_ghost_type = _casper;
+    Array<Real> * result_vec = NULL;
 
     /// loop over the elements of the current material and element type
     for (UInt el = 0; el < nb_element;
@@ -1274,15 +1277,18 @@ void Material::interpolateElementalFieldOnFacets(const ElementTypeMapArray<Real>
       for (UInt f = 0; f < nb_facet_per_elem; ++f) {
 	Element facet_elem = facet_to_element(global_el, f);
 	UInt global_facet = facet_elem.element;
-	const Array< std::vector<Element> > & element_to_facet
-	  = mesh_facets.getElementToSubelement(type_facet, facet_elem.ghost_type);
-	Array<Real> & result_vec = result(type_facet, facet_elem.ghost_type);
+	if (facet_elem.ghost_type != current_ghost_type) {
+	  current_ghost_type = facet_elem.ghost_type;
+	  element_to_facet = &mesh_facets.getElementToSubelement(type_facet,
+								 current_ghost_type);
+	  result_vec = &result(type_facet, current_ghost_type);
+	}
 
-	bool is_second_element = element_to_facet(global_facet)[0] != element_for_comparison;
+	bool is_second_element = (*element_to_facet)(global_facet)[0] != element_for_comparison;
 
 	for (UInt q = 0; q < nb_quad_per_facet; ++q) {
-	  Vector<Real> result_local(result_vec.storage()
-				    + (global_facet * nb_quad_per_facet + q) * result_vec.getNbComponent()
+	  Vector<Real> result_local(result_vec->storage()
+				    + (global_facet * nb_quad_per_facet + q) * result_vec->getNbComponent()
 				    + is_second_element * sp2,
 				    sp2);
 

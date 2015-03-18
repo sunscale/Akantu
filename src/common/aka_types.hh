@@ -479,7 +479,7 @@ public:
   inline Real mean() const {
     Real mean = 0;
     T * a = this->storage();
-    for (UInt i = 0; i < this->_size; ++i) mean = *(a++);
+    for (UInt i = 0; i < this->_size; ++i) mean += *(a++);
     return mean / this->_size;
   }
 

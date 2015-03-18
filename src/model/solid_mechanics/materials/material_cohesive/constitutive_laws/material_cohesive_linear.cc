@@ -195,7 +195,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
     const Array<Real> & f_stress = model->getStressOnFacets(type_facet);
     const Array<Real> & sigma_lim = sigma_c(type_facet);
 
-    UInt nb_quad_facet = model->getFacetFEEngine().getNbQuadraturePoints(type_facet);
+    UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
     UInt nb_facet = f_filter.getSize();
     if (nb_facet == 0) continue;
 
@@ -208,7 +208,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
 
     const Array<Real> & tangents = model->getTangents(type_facet);
     const Array<Real> & normals
-      = model->getFacetFEEngine().getNormalsOnQuadPoints(type_facet);
+      = model->getFEEngine("FacetsFEEngine").getNormalsOnQuadPoints(type_facet);
     Array<Real>::const_vector_iterator normal_begin = normals.begin(spatial_dimension);
     Array<Real>::const_vector_iterator tangent_begin = tangents.begin(tangents.getNbComponent());
     Array<Real>::const_matrix_iterator facet_stress_begin =
@@ -226,7 +226,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
 
       // compute the effective norm on each quadrature point of the facet
       for (UInt q = 0; q < nb_quad_facet; ++q) {
-	UInt current_quad = f * nb_quad_facet + q;
+	UInt current_quad = facet * nb_quad_facet + q;
 	const Vector<Real> & normal = normal_begin[current_quad];
 	const Vector<Real> & tangent = tangent_begin[current_quad];
 	const Matrix<Real> & facet_stress_it = facet_stress_begin[current_quad];
