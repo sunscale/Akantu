@@ -476,6 +476,14 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
+  inline Real mean() const {
+    Real mean = 0;
+    T * a = this->storage();
+    for (UInt i = 0; i < this->_size; ++i) mean += *(a++);
+    return mean / this->_size;
+  }
+
+  /* ------------------------------------------------------------------------ */
   inline Vector & crossProduct(const Vector<T> & v1,
 			       const Vector<T> & v2) {
     AKANTU_DEBUG_ASSERT(this->size() == 3,
@@ -663,12 +671,22 @@ public:
 
   /* ---------------------------------------------------------------------- */
   inline T& operator()(UInt i, UInt j) {
+    return this->at(i,j);
+  }
+
+  inline T& at(UInt i, UInt j) {
     return *(this->values + i + j*this->n[0]);
   }
+  
   inline const T& operator()(UInt i, UInt j) const {
+    return this->at(i,j);
+  }
+
+  inline T& at(UInt i, UInt j) const {
     return *(this->values + i + j*this->n[0]);
   }
 
+  
   /// give a line vector wrapped on the column i
   inline VectorProxy<T> operator()(UInt j) {
     return VectorProxy<T>(this->values + j*this->n[0], this->n[0]);

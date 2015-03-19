@@ -199,45 +199,72 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
     UInt nb_facet = f_filter.getSize();
     if (nb_facet == 0) continue;
 
-    UInt tot_nb_quad = nb_facet * nb_quad_facet;
-
-    Array<Real> stress_check (tot_nb_quad);
-    Array<Real> normal_traction(tot_nb_quad, spatial_dimension);
-
-    computeStressNorms(f_stress, stress_check, normal_traction, type_facet);
-
-    Array<Real>::iterator<Vector<Real> > stress_check_it =
-      stress_check.begin_reinterpret(nb_quad_facet, nb_facet);
-    Array<Real>::iterator<Matrix<Real> > normal_traction_it =
-      normal_traction.begin_reinterpret(nb_quad_facet, spatial_dimension, nb_facet);
-
     Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
 
-    for (UInt f = 0; f < nb_facet; ++f, ++sigma_lim_it, ++stress_check_it,
-	   ++normal_traction_it) {
+    Matrix<Real> stress_tmp(spatial_dimension, spatial_dimension);
+    Matrix<Real> normal_traction(spatial_dimension, nb_quad_facet);
+    Vector<Real> stress_check(nb_quad_facet);
+    UInt sp2 = spatial_dimension * spatial_dimension;
+
+    const Array<Real> & tangents = model->getTangents(type_facet);
+    const Array<Real> & normals
+      = model->getFEEngine("FacetsFEEngine").getNormalsOnQuadPoints(type_facet);
+    Array<Real>::const_vector_iterator normal_begin = normals.begin(spatial_dimension);
+    Array<Real>::const_vector_iterator tangent_begin = tangents.begin(tangents.getNbComponent());
+    Array<Real>::const_matrix_iterator facet_stress_begin =
+      f_stress.begin(spatial_dimension, spatial_dimension * 2);
+
+    std::list<Real> new_sigmas;
+    std::list< Vector<Real> > new_normal_traction;
+    std::list<Real> new_delta_c;
+
+    // loop over each facet belonging to this material
+    for (UInt f = 0; f < nb_facet; ++f, ++sigma_lim_it) {
       UInt facet = f_filter(f);
+      // skip facets where check shouldn't be realized
       if (!facets_check(facet)) continue;
 
-      Real mean_stress = std::accumulate(stress_check_it->storage(),
-      					 stress_check_it->storage() + nb_quad_facet,
-      					 0.);
-      mean_stress /= nb_quad_facet;
+      // compute the effective norm on each quadrature point of the facet
+      for (UInt q = 0; q < nb_quad_facet; ++q) {
+	UInt current_quad = facet * nb_quad_facet + q;
+	const Vector<Real> & normal = normal_begin[current_quad];
+	const Vector<Real> & tangent = tangent_begin[current_quad];
+	const Matrix<Real> & facet_stress_it = facet_stress_begin[current_quad];
 
-      if (mean_stress > (*sigma_lim_it - tolerance)) {
+	// compute average stress on the current quadrature point
+	Matrix<Real> stress_1(facet_stress_it.storage(),
+			      spatial_dimension,
+			      spatial_dimension);
+
+	Matrix<Real> stress_2(facet_stress_it.storage() + sp2,
+			      spatial_dimension,
+			      spatial_dimension);
+
+	stress_tmp.copy(stress_1);
+	stress_tmp += stress_2;
+	stress_tmp /= 2.;
+
+	Vector<Real> normal_traction_vec(normal_traction(q));
+
+	// compute normal and effective stress
+	stress_check(q) = computeEffectiveNorm(stress_tmp, normal, tangent,
+					       normal_traction_vec);
+      }
+
+      // verify if the effective stress overcomes the threshold
+      if (stress_check.mean() > (*sigma_lim_it - tolerance)) {
 	f_insertion(facet) = true;
 
+	// store the new cohesive material parameters for each quadrature point
 	for (UInt q = 0; q < nb_quad_facet; ++q) {
-	  Real new_sigma = (*stress_check_it)(q);
-
-	  Vector<Real> ins_s(normal_traction_it->storage() + q * spatial_dimension,
-			     spatial_dimension);
+	  Real new_sigma = stress_check(q);
+	  Vector<Real> normal_traction_vec(normal_traction(q));
 
 	  if (spatial_dimension != 3)
-	    ins_s *= -1.;
+	    normal_traction_vec *= -1.;
 
-	  sig_c_eff.push_back(new_sigma);
-	  ins_stress.push_back(ins_s);
-	  trac_old.push_back(ins_s);
+	  new_sigmas.push_back(new_sigma);
+	  new_normal_traction.push_back(normal_traction_vec);
 
 	  Real new_delta;
 
@@ -247,24 +274,29 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
 	  else
 	    new_delta = (*sigma_lim_it) / new_sigma * delta_c;
 
-	  del_c.push_back(new_delta);
+	  new_delta_c.push_back(new_delta);
 	}
+      }
+    }
 
-	#if defined (AKANTU_DEBUG_TOOLS) && defined(AKANTU_CORE_CXX11)
-		    debug::element_manager.print(debug::_dm_material_cohesive,
-						 [facet, type_facet, nb_quad_facet, &f_stress](const Element & el)->std::string {
-						   std::stringstream sout;
-						   Element facet_el(type_facet, facet, _not_ghost);
-						   if(facet_el == el) {
-						     Array<Real>::const_iterator< Vector<Real> > stress = f_stress.begin(f_stress.getNbComponent());
-						     stress += nb_quad_facet * facet;
-						     for (UInt qs = 0; qs < nb_quad_facet; ++qs, ++stress) {
-						       sout << *stress;
-						     }
-						   }
-						   return sout.str();
-						 });
-	#endif
+    // update material data for the new elements
+    UInt old_nb_quad_points = sig_c_eff.getSize();
+    UInt new_nb_quad_points = new_sigmas.size();
+    sig_c_eff.resize(old_nb_quad_points + new_nb_quad_points);
+    ins_stress.resize(old_nb_quad_points + new_nb_quad_points);
+    trac_old.resize(old_nb_quad_points + new_nb_quad_points);
+    del_c.resize(old_nb_quad_points + new_nb_quad_points);
+
+    std::list<Real>::iterator new_sig_it = new_sigmas.begin();
+    std::list<Real>::iterator new_del_it = new_delta_c.begin();
+    std::list< Vector<Real> >::iterator new_normal_trac_it = new_normal_traction.begin();
+
+    for (UInt q = 0; q < new_nb_quad_points; ++q, ++new_sig_it, ++new_del_it, ++new_normal_trac_it) {
+      sig_c_eff(old_nb_quad_points + q) = *new_sig_it;
+      del_c(old_nb_quad_points + q) = *new_del_it;
+      for (UInt dim = 0; dim < spatial_dimension; ++dim) {
+	ins_stress(old_nb_quad_points + q, dim) = (*new_normal_trac_it)(dim);
+	trac_old(old_nb_quad_points + q, dim) = (*new_normal_trac_it)(dim);
       }
     }
   }
@@ -274,13 +306,10 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-inline void MaterialCohesiveLinear<spatial_dimension>::computeEffectiveNorm(const Matrix<Real> & stress,
+inline Real MaterialCohesiveLinear<spatial_dimension>::computeEffectiveNorm(const Matrix<Real> & stress,
 									    const Vector<Real> & normal,
 									    const Vector<Real> & tangent,
-									    Vector<Real> & normal_traction,
-									    Real & effective_norm) {
-  AKANTU_DEBUG_IN();
-
+									    Vector<Real> & normal_traction) {
   normal_traction.mul<false>(stress, normal);
 
   Real normal_contrib = normal_traction.dot(normal);
@@ -302,88 +331,9 @@ inline void MaterialCohesiveLinear<spatial_dimension>::computeEffectiveNorm(cons
   }
 
   tangent_contrib = std::sqrt(tangent_contrib);
-
   normal_contrib = std::max(0., normal_contrib);
 
-  effective_norm = std::sqrt(normal_contrib * normal_contrib
-			     + tangent_contrib * tangent_contrib * beta2_inv);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialCohesiveLinear<spatial_dimension>::computeStressNorms(const Array<Real> & facet_stress,
-								   Array<Real> & stress_check,
-								   Array<Real> & normal_traction,
-								   ElementType type_facet) {
-  AKANTU_DEBUG_IN();
-
-  Array<bool> & facets_check = model->getElementInserter().getCheckFacets(type_facet);
-  Array<UInt> & f_filter = facet_filter(type_facet);
-
-  UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
-
-  const Array<Real> & tangents = model->getTangents(type_facet);
-  const Array<Real> & normals
-    = model->getFEEngine("FacetsFEEngine").getNormalsOnQuadPoints(type_facet);
-
-  Real * stress_check_it = stress_check.storage();
-
-  Array<Real>::const_iterator< Vector<Real> > normal_begin =
-    normals.begin(spatial_dimension);
-
-  Array<Real>::const_iterator< Vector<Real> > tangent_begin =
-    tangents.begin(tangents.getNbComponent());
-
-  Array<Real>::const_iterator< Matrix<Real> > facet_stress_begin =
-    facet_stress.begin(spatial_dimension, spatial_dimension * 2);
-
-  Array<Real>::iterator<Vector<Real> > normal_traction_it =
-    normal_traction.begin(spatial_dimension);
-
-  Matrix<Real> stress_tmp(spatial_dimension, spatial_dimension);
-  UInt nb_facet = f_filter.getSize();
-  UInt sp2 = spatial_dimension * spatial_dimension;
-  UInt * current_facet = f_filter.storage();
-
-  for (UInt f = 0; f < nb_facet; ++f, ++current_facet) {
-
-    if (!facets_check(*current_facet)) {
-      stress_check_it += nb_quad_facet;
-      normal_traction_it += nb_quad_facet;
-      continue;
-    }
-
-    UInt current_quad = *current_facet * nb_quad_facet;
-
-    for (UInt q = 0; q < nb_quad_facet; ++q, ++stress_check_it,
-	   ++normal_traction_it, ++current_quad) {
-
-      const Vector<Real> & normal = normal_begin[current_quad];
-      const Vector<Real> & tangent = tangent_begin[current_quad];
-      const Matrix<Real> & facet_stress_it = facet_stress_begin[current_quad];
-
-      /// compute average stress
-      Matrix<Real> stress_1(facet_stress_it.storage(),
-			    spatial_dimension,
-			    spatial_dimension);
-
-      Matrix<Real> stress_2(facet_stress_it.storage() + sp2,
-			    spatial_dimension,
-			    spatial_dimension);
-
-      stress_tmp.copy(stress_1);
-      stress_tmp += stress_2;
-      stress_tmp /= 2.;
-
-      /// compute normal, tangential and effective stress
-      computeEffectiveNorm(stress_tmp, normal, tangent,
-			   *normal_traction_it, *stress_check_it);
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
+  return std::sqrt(normal_contrib * normal_contrib + tangent_contrib * tangent_contrib * beta2_inv);
 }
 
 /* -------------------------------------------------------------------------- */

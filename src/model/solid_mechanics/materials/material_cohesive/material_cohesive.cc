@@ -57,7 +57,8 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
   delta_max("delta max", *this),
   use_previous_delta_max(false),
   damage("damage", *this),
-  sigma_c("sigma_c", *this) {
+  sigma_c("sigma_c", *this),
+  normal(0, spatial_dimension, "normal") {
 
   AKANTU_DEBUG_IN();
 
@@ -286,9 +287,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
 		      "tangent_stiffness_matrix");
 
     //    Array<Real> * normal = new Array<Real>(nb_element * nb_quadrature_points, spatial_dimension, "normal");
-    Array<Real> normal(nb_quadrature_points, spatial_dimension, "normal");
-
-
+    normal.resize(nb_quadrature_points);
     computeNormal(model->getCurrentPosition(), normal, *it, ghost_type);
 
     tangent_stiffness_matrix->clear();
@@ -390,7 +389,7 @@ void MaterialCohesive::computeTraction(GhostType ghost_type) {
     UInt nb_quadrature_points =
       nb_element*fem_cohesive->getNbQuadraturePoints(*it, ghost_type);
 
-    Array<Real> normal(nb_quadrature_points, spatial_dimension, "normal");
+    normal.resize(nb_quadrature_points);
 
     /// compute normals @f$\mathbf{n}@f$
     computeNormal(model->getCurrentPosition(), normal, *it, ghost_type);

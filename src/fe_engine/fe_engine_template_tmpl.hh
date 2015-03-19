@@ -57,7 +57,7 @@ FEEngineTemplate<I, S, kind>::~FEEngineTemplate() { }
 template<ElementKind kind>
 struct GradientOnQuadraturePointsHelper {
   template <class S>
-  static void call(const S & shape_functions,	
+  static void call(const S & shape_functions,
 		   Mesh & mesh,
 		   const Array<Real> & u,
 		   Array<Real> & nablauq,
@@ -134,8 +134,8 @@ void FEEngineTemplate<I, S, kind>::gradientOnQuadraturePoints(const Array<Real> 
 		      << ") has not the good number of component.");
 
   // AKANTU_DEBUG_ASSERT(nablauq.getSize() == nb_element * nb_points,
-  //	   	      "The vector nablauq(" << nablauq.getID()
-  //	   	      << ") has not the good size.");
+  //		      "The vector nablauq(" << nablauq.getID()
+  //		      << ") has not the good size.");
 #endif
 
   nablauq.resize(nb_element * nb_points);
@@ -1081,7 +1081,7 @@ inline void FEEngineTemplate<I, S, kind>::inverseMap(const Vector<Real> & real_c
 template<ElementKind kind>
 struct ContainsHelper {
   template <class S>
-  static void call(const S & shape_functions,	
+  static void call(const S & shape_functions,
 		   const Vector<Real> & real_coords,
 		   UInt element,
 		   const ElementType & type,
@@ -1132,10 +1132,23 @@ inline bool FEEngineTemplate<I, S, kind>::contains(const Vector<Real> & real_coo
  * Helper class to be able to write a partial specialization on the element kind
  */
 template<ElementKind kind>
-struct ComputeShapesHelper { };
+struct ComputeShapesHelper {
+  template <class S>
+  static void call(const S & shape_functions,
+		   const Vector<Real> & real_coords,
+		   UInt element,
+		   const ElementType type,
+		   Vector<Real> & shapes,
+		   const GhostType & ghost_type) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+};
 
 #define COMPUTE_SHAPES(type)						\
-  shape_functions.template computeShapes<type>(real_coords,element,shapes,ghost_type); \
+  shape_functions.template computeShapes<type>(real_coords,		\
+					       element,			\
+					       shapes,			\
+					       ghost_type);
 
 #define AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER(kind)		\
   template<>							\
@@ -1151,22 +1164,26 @@ struct ComputeShapesHelper { };
     }								\
   };
 
-AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER)
 
-#undef AKANTU_SPECIALIZE_ASSEMBLE_COMPUTE_SHAPES_HELPER
+#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND)
+AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER, \
+			   INTEREST_LIST)
+
+#undef AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER
 #undef COMPUTE_SHAPES
+#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
 	 template <ElementKind> class S,
 	 ElementKind kind>
-void FEEngineTemplate<I, S, kind>::computeShapes(const Vector<Real> & real_coords,
+inline void FEEngineTemplate<I, S, kind>::computeShapes(const Vector<Real> & real_coords,
 							UInt element,
 							const ElementType & type,
 							Vector<Real> & shapes,
 							const GhostType & ghost_type) const{
 
   AKANTU_DEBUG_IN();
-  
+
   ComputeShapesHelper<kind>::call(shape_functions, real_coords, element, type, shapes, ghost_type);
 
   AKANTU_DEBUG_OUT();
@@ -1177,40 +1194,58 @@ void FEEngineTemplate<I, S, kind>::computeShapes(const Vector<Real> & real_coord
  * Helper class to be able to write a partial specialization on the element kind
  */
 template<ElementKind kind>
-struct ComputeShapeDerivativesHelper {};
+struct ComputeShapeDerivativesHelper {
+  template <class S>
+  static void call(const S & shape_functions,
+		   const Vector<Real> & real_coords,
+		   UInt element,
+		   const ElementType type,
+		   Matrix<Real> & shape_derivatives,
+		   const GhostType & ghost_type) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+};
 
-#define COMPUTE_SHAPE_DERIVATIVES(type)     \
+#define COMPUTE_SHAPE_DERIVATIVES(type)					\
   Matrix<Real> coords_mat(real_coords.storage(), shape_derivatives.rows(), 1); \
-  Tensor3<Real> shapesd_tensor(shape_derivatives.storage(), shape_derivatives.rows(), shape_derivatives.cols(), 1); \
-  shape_functions.template computeShapeDerivatives<type>(coords_mat,element,shapesd_tensor,ghost_type);  \
-
-#define AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER(kind)    \
-  template<>                                                  \
-  struct ComputeShapeDerivativesHelper<kind> {                \
-    template <class S>                                        \
-    static void call(const S & shape_functions,               \
-                     const Vector<Real> & real_coords,        \
-                     UInt element,                            \
-                     const ElementType type,                  \
-                     Matrix<Real> & shape_derivatives,        \
-                     const GhostType & ghost_type) {          \
+  Tensor3<Real> shapesd_tensor(shape_derivatives.storage(),		\
+			       shape_derivatives.rows(),		\
+			       shape_derivatives.cols(), 1);		\
+  shape_functions.template computeShapeDerivatives<type>(coords_mat,	\
+							 element,	\
+							 shapesd_tensor, \
+							 ghost_type);
+  
+#define AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER(kind)	\
+  template<>								\
+  struct ComputeShapeDerivativesHelper<kind> {				\
+    template <class S>							\
+    static void call(const S & shape_functions,				\
+		     const Vector<Real> & real_coords,			\
+		     UInt element,					\
+		     const ElementType type,				\
+		     Matrix<Real> & shape_derivatives,			\
+		     const GhostType & ghost_type) {			\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_SHAPE_DERIVATIVES, kind); \
-    } \
+    }									\
   };
 
-AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER);
+#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND)
+AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER, \
+			   INTEREST_LIST)
 
 #undef AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER
 #undef COMPUTE_SHAPE_DERIVATIVES
+#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
-         template <ElementKind> class S,
-         ElementKind kind>
-void FEEngineTemplate<I, S, kind>::computeShapeDerivatives(const Vector<Real> & real_coords,
-                                                                  UInt element,
-                                                                  const ElementType & type,
-                                                                  Matrix<Real> & shape_derivatives,
-                                                                  const GhostType & ghost_type) const {
+	 template <ElementKind> class S,
+	 ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::computeShapeDerivatives(const Vector<Real> & real_coords,
+								  UInt element,
+								  const ElementType & type,
+								  Matrix<Real> & shape_derivatives,
+								  const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
   ComputeShapeDerivativesHelper<kind>::call(shape_functions, real_coords, element, type, shape_derivatives, ghost_type);

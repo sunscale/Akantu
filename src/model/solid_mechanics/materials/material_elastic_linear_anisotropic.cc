@@ -245,7 +245,8 @@ void MaterialElasticLinearAnisotropic<spatial_dimension>::computeStress(ElementT
 
 
   // compute the strain rate proportional part if needed
-  bool viscous = this->alpha == 0.; // only works id default value
+  //bool viscous = this->alpha == 0.; // only works if default value
+  bool viscous = false;
   if(viscous) {
     Array<Real> strain_rate(0, spatial_dimension * spatial_dimension,
 			    "strain_rate");
