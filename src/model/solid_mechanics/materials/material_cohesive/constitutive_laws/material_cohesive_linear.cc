@@ -214,9 +214,9 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
     Array<Real>::const_matrix_iterator facet_stress_begin =
       f_stress.begin(spatial_dimension, spatial_dimension * 2);
 
-    std::list<Real> new_sigmas;
-    std::list< Vector<Real> > new_normal_traction;
-    std::list<Real> new_delta_c;
+    std::vector<Real> new_sigmas;
+    std::vector< Vector<Real> > new_normal_traction;
+    std::vector<Real> new_delta_c;
 
     // loop over each facet belonging to this material
     for (UInt f = 0; f < nb_facet; ++f, ++sigma_lim_it) {
@@ -287,16 +287,12 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
     trac_old.resize(old_nb_quad_points + new_nb_quad_points);
     del_c.resize(old_nb_quad_points + new_nb_quad_points);
 
-    std::list<Real>::iterator new_sig_it = new_sigmas.begin();
-    std::list<Real>::iterator new_del_it = new_delta_c.begin();
-    std::list< Vector<Real> >::iterator new_normal_trac_it = new_normal_traction.begin();
-
-    for (UInt q = 0; q < new_nb_quad_points; ++q, ++new_sig_it, ++new_del_it, ++new_normal_trac_it) {
-      sig_c_eff(old_nb_quad_points + q) = *new_sig_it;
-      del_c(old_nb_quad_points + q) = *new_del_it;
+    for (UInt q = 0; q < new_nb_quad_points; ++q) {
+      sig_c_eff(old_nb_quad_points + q) = new_sigmas[q];
+      del_c(old_nb_quad_points + q) = new_delta_c[q];
       for (UInt dim = 0; dim < spatial_dimension; ++dim) {
-	ins_stress(old_nb_quad_points + q, dim) = (*new_normal_trac_it)(dim);
-	trac_old(old_nb_quad_points + q, dim) = (*new_normal_trac_it)(dim);
+	ins_stress(old_nb_quad_points + q, dim) = new_normal_traction[q](dim);
+	trac_old(old_nb_quad_points + q, dim) = new_normal_traction[q](dim);
       }
     }
   }

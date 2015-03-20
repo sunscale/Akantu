@@ -38,18 +38,14 @@ inline bool MeshUtils::hasElement(const Array<UInt> & connectivity,
   const Vector<UInt> el_nodes(connectivity.storage()
 			      + el.element * nb_nodes_per_element,
 			      nb_nodes_per_element);
+  UInt * el_nodes_end = el_nodes.storage() + nb_nodes_per_element;
 
-  UInt matched_nodes = 0;
+  UInt n = 0;
 
-  for (UInt n = 0; n < nodes.size(); ++n) {
-    if (std::find(el_nodes.storage(),
-		  el_nodes.storage() + nb_nodes_per_element,
-		  nodes[n])
-	!= (el_nodes.storage() + nb_nodes_per_element))
-      ++matched_nodes;
-  }
+  while (n < nodes.size() &&
+	 std::find(el_nodes.storage(), el_nodes_end, nodes[n]) != el_nodes_end) ++n;
 
-  return (matched_nodes == nodes.size());
+  return (n == nodes.size());
 }
 
 /* -------------------------------------------------------------------------- */

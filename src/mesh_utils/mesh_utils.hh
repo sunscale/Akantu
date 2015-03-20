@@ -214,7 +214,7 @@ private:
 
   /// double a node
   static void doubleNodes(Mesh & mesh,
-			  const Array<UInt> & old_nodes,
+			  const std::vector<UInt> & old_nodes,
 			  Array<UInt> & doubled_nodes);
 
   /// fill facet_to_double array in the mesh
