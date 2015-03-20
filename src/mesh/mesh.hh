@@ -163,6 +163,16 @@ public:
                               ElementKind element_kind = _ek_regular,
                               bool size_to_nb_element = false) const; /// @todo: think about nicer way to do it
 
+  template<typename T>
+  void initElementTypeMapArray(ElementTypeMapArray<T> & v,
+			       UInt nb_component,
+			       UInt spatial_dimension,
+			       GhostType ghost_type,
+			       const T & default_value,
+			       const bool & flag_nb_node_per_elem_multiply = false,
+			       ElementKind element_kind = _ek_regular,
+			       bool size_to_nb_element = false) const; /// @todo: think about nicer way to do it
+
   /// extract coordinates of nodes from an element
   template<typename T>
   inline void extractNodalValuesFromElement(const Array<T> & nodal_values,
