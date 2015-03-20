@@ -164,6 +164,13 @@ public:
 			    Vector<Real> & shapes,
 			    const GhostType & ghost_type = _not_ghost) const;
 
+  /// compute the shape derivatives on a provided point
+  inline void computeShapeDerivatives(const Vector<Real> & real__coords,
+                                      UInt element,
+                                      const ElementType & type,
+                                      Matrix<Real> & shape_derivatives,
+                                      const GhostType & ghost_type = _not_ghost) const;
+
 
 
   /* ------------------------------------------------------------------------ */

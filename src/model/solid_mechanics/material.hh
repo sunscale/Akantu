@@ -200,6 +200,14 @@ public:
                          const GhostType ghost_type = _not_ghost);
 
   /**
+   * interpolate stress on given positions for each element by means
+   * of a geometrical interpolation on quadrature points and store the
+   * results per facet
+   */
+  void interpolateStressOnFacets(ElementTypeMapArray<Real> & result,
+				 const GhostType ghost_type = _not_ghost);
+
+  /**
    * function to initialize the elemental field interpolation
    * function by inverting the quadrature points' coordinates
    */
@@ -267,10 +275,14 @@ public:
 
 protected:
   /// interpolate an elemental field on given points for each element
-  template <ElementType type>
-  void interpolateElementalField(const Array<Real> & field,
-                                 Array<Real> & result,
+  void interpolateElementalField(const ElementTypeMapArray<Real> & field,
+                                 ElementTypeMapArray<Real> & result,
                                  const GhostType ghost_type);
+
+  /// interpolate an elemental field and store the results per facet
+  void interpolateElementalFieldOnFacets(const ElementTypeMapArray<Real> & field,
+					 ElementTypeMapArray<Real> & result,
+					 const GhostType ghost_type);
 
   /// template function to initialize the elemental field interpolation
   template <ElementType type>
@@ -291,10 +303,6 @@ protected:
   /// build interpolation coordinates for basic quadratic elements
   inline void buildElementalFieldInterpolationCoodinatesQuadratic(const Matrix<Real> & coordinates,
                                                                   Matrix<Real> & coordMatrix);
-
-  /// get the size of the coordiante matrix used in the interpolation
-  template <ElementType type>
-  inline UInt getSizeElementalFieldInterpolationCoodinates(GhostType ghost_type = _not_ghost);
 
 public:
   /* ------------------------------------------------------------------------ */

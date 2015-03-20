@@ -417,7 +417,8 @@ public:
 
   //! flatten a given material internal field 
   ElementTypeMapArray<Real> & flattenInternal(const std::string & field_name,
-					     const ElementKind & kind);
+					      const ElementKind & kind,
+					      const GhostType ghost_type = _not_ghost);
   //! flatten all the registered material internals
   void flattenAllRegisteredInternals(const ElementKind & kind);
 #endif

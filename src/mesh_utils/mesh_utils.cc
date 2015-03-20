@@ -326,6 +326,19 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
   buildNode2Elements(mesh, node_to_elem, dimension);
 
   Array<UInt> counter;
+  std::vector<Element> connected_elements;
+
+  // init the SubelementToElement data to improve performance
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
+    GhostType ghost_type = *gt;
+    Mesh::type_iterator first = mesh.firstType(dimension, ghost_type);
+    Mesh::type_iterator last  = mesh.lastType(dimension, ghost_type);
+
+    for(; first != last; ++first) {
+      ElementType type = *first;
+      mesh_facets.getSubelementToElementPointer(type, ghost_type);
+    }
+  }
 
 
   Element current_element;
@@ -348,17 +361,20 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
 	mesh_facets.getElementToSubelementPointer(facet_type, ghost_type);
       Array<UInt> * connectivity_facets =
 	mesh_facets.getConnectivityPointer(facet_type, ghost_type);
+      UInt nb_facet_per_element = mesh.getNbFacetsPerElement(type);
+      const Array<UInt> & element_connectivity = mesh.getConnectivity(type, ghost_type);
+      const Matrix<UInt> facet_local_connectivity = mesh.getFacetLocalConnectivity(type);
+      UInt nb_nodes_per_facet = connectivity_facets->getNbComponent();
+      Vector<UInt> facet(nb_nodes_per_facet);
 
       for (UInt el = 0; el < nb_element; ++el) {
 	current_element.element = el;
-	Matrix<UInt> facets = mesh.getFacetConnectivity(el, type, ghost_type);
-	UInt nb_nodes_per_facet = facets.cols();
 
-	for (UInt f = 0; f < facets.rows(); ++f) {
-	  Vector<UInt> facet(nb_nodes_per_facet);
-	  for (UInt n = 0; n < nb_nodes_per_facet; ++n) facet(n) = facets(f, n);
+	for (UInt f = 0; f < nb_facet_per_element; ++f) {
+	  for (UInt n = 0; n < nb_nodes_per_facet; ++n)
+	    facet(n) = element_connectivity(el, facet_local_connectivity(f, n));
 
-	  UInt first_node_nb_elements = node_to_elem.getNbCols(facets(f, 0));
+	  UInt first_node_nb_elements = node_to_elem.getNbCols(facet(0));
 	  counter.resize(first_node_nb_elements);
 	  counter.clear();
 
@@ -384,7 +400,7 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
 	  // be inserted just once
 	  UInt nb_element_connected_to_facet = 0;
 	  Element minimum_el = ElementNull;
-	  Array<Element> connected_elements;
+	  connected_elements.resize(0);
 	  for (UInt el_f = 0; el_f < first_node_nb_elements; el_f++) {
 	    Element real_el = node_to_elem(facet(0), el_f);
 	    if (counter(el_f) == nb_nodes_per_facet - 1) {
@@ -416,7 +432,7 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
 		  elements.push_back(ElementNull);
 		/// internal facet
 		else if (nb_element_connected_to_facet == 2) {
-		  elements.push_back(connected_elements(1));
+		  elements.push_back(connected_elements[1]);
 
 		  /// check if facet is in between ghost and normal
 		  /// elements: if it's the case, the facet is either
@@ -427,16 +443,16 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
 		  /// the normal one, the facet is not ghost, otherwise
 		  /// it's ghost
 		  GhostType gt[2] = { _not_ghost, _not_ghost };
-		  for (UInt el = 0; el < connected_elements.getSize(); ++el)
-		    gt[el] = connected_elements(el).ghost_type;
+		  for (UInt el = 0; el < connected_elements.size(); ++el)
+		    gt[el] = connected_elements[el].ghost_type;
 
 		  if (gt[0] + gt[1] == 1) {
 		    if (prank_to_element) {
 		      UInt prank[2];
 		      for (UInt el = 0; el < 2; ++el) {
-			UInt current_el = connected_elements(el).element;
-			ElementType current_type = connected_elements(el).type;
-			GhostType current_gt = connected_elements(el).ghost_type;
+			UInt current_el = connected_elements[el].element;
+			ElementType current_type = connected_elements[el].type;
+			GhostType current_gt = connected_elements[el].ghost_type;
 
 			const Array<UInt> & prank_to_el
 			  = (*prank_to_element)(current_type, current_gt);
@@ -459,7 +475,7 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
 		/// facet of facet
 		else {
 		  for (UInt i = 1; i < nb_element_connected_to_facet; ++i) {
-		    elements.push_back(connected_elements(i));
+		    elements.push_back(connected_elements[i]);
 		  }
 		}
 
@@ -478,9 +494,9 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
 		  if (loc_el.type != _not_defined) {
 
 		    Array<Element> & subelement_to_element =
-		      *mesh_facets.getSubelementToElementPointer(type, loc_el.ghost_type);
+		      mesh_facets.getSubelementToElement(type, loc_el.ghost_type);
 
-		    for (UInt f_in = 0; f_in < facets.rows(); ++f_in) {
+		    for (UInt f_in = 0; f_in < nb_facet_per_element; ++f_in) {
 		      if (subelement_to_element(loc_el.element, f_in).type == _not_defined) {
 			subelement_to_element(loc_el.element, f_in).type = facet_type;
 			subelement_to_element(loc_el.element, f_in).element = current_facet;

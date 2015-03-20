@@ -984,7 +984,7 @@ void Material::computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & qu
 						  const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
-  const Mesh & mesh = this->model->getFEEngine().getMesh();
+  const Mesh & mesh = this->model->getMesh();
 
   Array<Real> nodes_coordinates(mesh.getNodes(), true);
   nodes_coordinates += this->model->getDisplacement();
@@ -1057,27 +1057,24 @@ void Material::initElementalFieldInterpolation(const Array<Real> & quad_coordina
 					       const UInt nb_interpolation_points_per_elem,
 					       const GhostType ghost_type) {
   AKANTU_DEBUG_IN();
-  UInt size_inverse_coords =
-    getSizeElementalFieldInterpolationCoodinates<type>(ghost_type);
-
   Array<UInt> & elem_fil = element_filter(type, ghost_type);
   UInt nb_element = elem_fil.getSize();
   UInt nb_quad_per_element = model->getFEEngine().getNbQuadraturePoints(type, ghost_type);
 
   if(!interpolation_inverse_coordinates.exists(type, ghost_type))
     interpolation_inverse_coordinates.alloc(nb_element,
-					    size_inverse_coords*size_inverse_coords,
+					    nb_quad_per_element*nb_quad_per_element,
 					    type, ghost_type);
 
   if(!interpolation_points_matrices.exists(type, ghost_type))
     interpolation_points_matrices.alloc(nb_element,
-					nb_interpolation_points_per_elem * size_inverse_coords,
+					nb_interpolation_points_per_elem * nb_quad_per_element,
 					type, ghost_type);
 
   Array<Real> & interp_inv_coord = interpolation_inverse_coordinates(type, ghost_type);
   Array<Real> & interp_points_mat = interpolation_points_matrices(type, ghost_type);
 
-  Matrix<Real> quad_coord_matrix(size_inverse_coords, size_inverse_coords);
+  Matrix<Real> quad_coord_matrix(nb_quad_per_element, nb_quad_per_element);
 
   Array<Real>::const_matrix_iterator quad_coords_it =
     quad_coordinates.begin_reinterpret(spatial_dimension,
@@ -1090,10 +1087,10 @@ void Material::initElementalFieldInterpolation(const Array<Real> & quad_coordina
 						       interpolation_points_coordinates.getSize() / nb_interpolation_points_per_elem);
 
   Array<Real>::matrix_iterator inv_quad_coord_it =
-    interp_inv_coord.begin(size_inverse_coords, size_inverse_coords);
+    interp_inv_coord.begin(nb_quad_per_element, nb_quad_per_element);
 
   Array<Real>::matrix_iterator inv_points_mat_it =
-    interp_points_mat.begin(nb_interpolation_points_per_elem, size_inverse_coords);
+    interp_points_mat.begin(nb_interpolation_points_per_elem, nb_quad_per_element);
 
   /// loop over the elements of the current material and element type
   for (UInt el = 0; el < nb_element; ++el, ++inv_quad_coord_it,
@@ -1128,90 +1125,182 @@ void Material::initElementalFieldInterpolation(const Array<Real> & quad_coordina
 /* -------------------------------------------------------------------------- */
 void Material::interpolateStress(ElementTypeMapArray<Real> & result,
 				 const GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
+  interpolateElementalField(stress, result, ghost_type);
+}
 
-  const Mesh & mesh = model->getFEEngine().getMesh();
+/* -------------------------------------------------------------------------- */
+void Material::interpolateElementalField(const ElementTypeMapArray<Real> & field,
+					 ElementTypeMapArray<Real> & result,
+					 const GhostType ghost_type) {
+  AKANTU_DEBUG_IN();
 
   Mesh::type_iterator it   = element_filter.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator last = element_filter.lastType(spatial_dimension, ghost_type);
   for (; it != last; ++it) {
     ElementType type = *it;
-    UInt nb_element = mesh.getNbElement(type, ghost_type);
-    if (nb_element == 0) continue;
 
-    Array<Real> & res = result(type, ghost_type);
+    Array<UInt> & elem_fil = element_filter(type, ghost_type);
+    UInt nb_element = elem_fil.getSize();
+    UInt nb_quad_per_element = model->getFEEngine().getNbQuadraturePoints(type, ghost_type);
 
-#define INTERPOLATE_ELEMENTAL_FIELD(type)			\
-    interpolateElementalField<type>(stress(type, ghost_type),	\
-				    res,			\
-				    ghost_type)
+    const Array<Real> & field_vec = field(type, ghost_type);
+    Array<Real> & result_vec = result(type, ghost_type);
 
-    AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(INTERPOLATE_ELEMENTAL_FIELD);
-#undef INTERPOLATE_ELEMENTAL_FIELD
+    Matrix<Real> coefficients(nb_quad_per_element, field_vec.getNbComponent());
+
+    const Array<Real> & interp_inv_coord = interpolation_inverse_coordinates(type, ghost_type);
+    const Array<Real> & interp_points_coord = interpolation_points_matrices(type, ghost_type);
+
+    UInt nb_interpolation_points_per_elem
+      = interp_points_coord.getNbComponent() / nb_quad_per_element;
+
+    Array<Real>::const_matrix_iterator field_it
+      = field_vec.begin_reinterpret(field_vec.getNbComponent(),
+				    nb_quad_per_element,
+				    nb_element);
+
+    Array<Real>::const_matrix_iterator interpolation_points_coordinates_it =
+      interp_points_coord.begin(nb_interpolation_points_per_elem, nb_quad_per_element);
+
+    Array<Real>::matrix_iterator result_begin
+      = result_vec.begin_reinterpret(field_vec.getNbComponent(),
+				     nb_interpolation_points_per_elem,
+				     result_vec.getSize() / nb_interpolation_points_per_elem);
+
+    Array<Real>::const_matrix_iterator inv_quad_coord_it =
+      interp_inv_coord.begin(nb_quad_per_element, nb_quad_per_element);
+
+    /// loop over the elements of the current material and element type
+    for (UInt el = 0; el < nb_element;
+	 ++el, ++field_it, ++inv_quad_coord_it, ++interpolation_points_coordinates_it) {
+      /**
+       * matrix containing the inversion of the quadrature points'
+       * coordinates
+       */
+      const Matrix<Real> & inv_quad_coord_matrix = *inv_quad_coord_it;
+
+      /**
+       * multiply it by the field values over quadrature points to get
+       * the interpolation coefficients
+       */
+      coefficients.mul<false, true>(inv_quad_coord_matrix, *field_it);
+
+      /// matrix containing the points' coordinates
+      const Matrix<Real> & coord = *interpolation_points_coordinates_it;
+
+      /// multiply the coordinates matrix by the coefficients matrix and store the result
+      result_begin[elem_fil(el)].mul<true, true>(coefficients, coord);
+    }
   }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template <ElementType type>
-void Material::interpolateElementalField(const Array<Real> & field,
-					 Array<Real> & result,
+void Material::interpolateStressOnFacets(ElementTypeMapArray<Real> & result,
 					 const GhostType ghost_type) {
+  interpolateElementalFieldOnFacets(stress, result, ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
+void Material::interpolateElementalFieldOnFacets(const ElementTypeMapArray<Real> & field,
+						 ElementTypeMapArray<Real> & result,
+						 const GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Array<UInt> & elem_fil = element_filter(type, ghost_type);
-  UInt nb_element = elem_fil.getSize();
-  UInt nb_quad_per_element = model->getFEEngine().getNbQuadraturePoints(type, ghost_type);
-  UInt size_inverse_coords = getSizeElementalFieldInterpolationCoodinates<type>(ghost_type);
+  UInt sp2 = spatial_dimension * spatial_dimension;
 
-  Matrix<Real> coefficients(nb_quad_per_element, field.getNbComponent());
+  const Mesh & mesh = this->model->getMesh();
+  const Mesh & mesh_facets = mesh.getMeshFacets();
 
-  const Array<Real> & interp_inv_coord = interpolation_inverse_coordinates(type,
-									   ghost_type);
-  const Array<Real> & interp_points_coord = interpolation_points_matrices(type,
-									  ghost_type);
+  Mesh::type_iterator it   = element_filter.firstType(spatial_dimension, ghost_type);
+  Mesh::type_iterator last = element_filter.lastType(spatial_dimension, ghost_type);
+  for (; it != last; ++it) {
+    ElementType type = *it;
 
-  UInt nb_interpolation_points_per_elem = interp_points_coord.getNbComponent() / size_inverse_coords;
+    Array<UInt> & elem_fil = element_filter(type, ghost_type);
+    UInt nb_element = elem_fil.getSize();
+    UInt nb_quad_per_element = model->getFEEngine().getNbQuadraturePoints(type, ghost_type);
 
-  Array<Real>::const_matrix_iterator field_it
-    = field.begin_reinterpret(field.getNbComponent(),
-			      nb_quad_per_element,
-			      nb_element);
+    const Array<Real> & field_vec = field(type, ghost_type);
 
-  Array<Real>::const_matrix_iterator interpolation_points_coordinates_it =
-    interp_points_coord.begin(nb_interpolation_points_per_elem, size_inverse_coords);
+    Matrix<Real> coefficients(nb_quad_per_element, field_vec.getNbComponent());
 
-  Array<Real>::matrix_iterator result_begin
-    = result.begin_reinterpret(field.getNbComponent(),
-			       nb_interpolation_points_per_elem,
-			       result.getSize() / nb_interpolation_points_per_elem);
+    const Array<Real> & interp_inv_coord = interpolation_inverse_coordinates(type, ghost_type);
+    const Array<Real> & interp_points_coord = interpolation_points_matrices(type, ghost_type);
 
-  Array<Real>::const_matrix_iterator inv_quad_coord_it =
-    interp_inv_coord.begin(size_inverse_coords, size_inverse_coords);
+    UInt nb_interpolation_points_per_elem
+      = interp_points_coord.getNbComponent() / nb_quad_per_element;
 
-  /// loop over the elements of the current material and element type
-  for (UInt el = 0; el < nb_element;
-       ++el, ++field_it, ++inv_quad_coord_it, ++interpolation_points_coordinates_it) {
-    /**
-     * matrix containing the inversion of the quadrature points'
-     * coordinates
-     */
-    const Matrix<Real> & inv_quad_coord_matrix = *inv_quad_coord_it;
+    Array<Real>::const_matrix_iterator field_it
+      = field_vec.begin_reinterpret(field_vec.getNbComponent(),
+				    nb_quad_per_element,
+				    nb_element);
 
-    /**
-     * multiply it by the field values over quadrature points to get
-     * the interpolation coefficients
-     */
-    coefficients.mul<false, true>(inv_quad_coord_matrix, *field_it);
+    Array<Real>::const_matrix_iterator interpolation_points_coordinates_it =
+      interp_points_coord.begin(nb_interpolation_points_per_elem, nb_quad_per_element);
 
-    /// matrix containing the points' coordinates
-    const Matrix<Real> & coord = *interpolation_points_coordinates_it;
+    Array<Real>::const_matrix_iterator inv_quad_coord_it =
+      interp_inv_coord.begin(nb_quad_per_element, nb_quad_per_element);
 
-    /// multiply the coordinates matrix by the coefficients matrix and store the result
-    result_begin[elem_fil(el)].mul<true, true>(coefficients, coord);
+    Matrix<Real> result_tmp(sp2, nb_interpolation_points_per_elem);
+
+    const Array<Element> & facet_to_element =
+      mesh_facets.getSubelementToElement(type, ghost_type);
+    ElementType type_facet = Mesh::getFacetType(type);
+    UInt nb_facet_per_elem = facet_to_element.getNbComponent();
+    UInt nb_quad_per_facet = nb_interpolation_points_per_elem / nb_facet_per_elem;
+    Element element_for_comparison(type, 0, ghost_type);
+    const Array< std::vector<Element> > * element_to_facet = NULL;
+    GhostType current_ghost_type = _casper;
+    Array<Real> * result_vec = NULL;
+
+    /// loop over the elements of the current material and element type
+    for (UInt el = 0; el < nb_element;
+	 ++el, ++field_it, ++inv_quad_coord_it, ++interpolation_points_coordinates_it) {
+      /**
+       * matrix containing the inversion of the quadrature points'
+       * coordinates
+       */
+      const Matrix<Real> & inv_quad_coord_matrix = *inv_quad_coord_it;
+
+      /**
+       * multiply it by the field values over quadrature points to get
+       * the interpolation coefficients
+       */
+      coefficients.mul<false, true>(inv_quad_coord_matrix, *field_it);
+
+      /// matrix containing the points' coordinates
+      const Matrix<Real> & coord = *interpolation_points_coordinates_it;
+
+      /// multiply the coordinates matrix by the coefficients matrix and store the result
+      result_tmp.mul<true, true>(coefficients, coord);
+
+      UInt global_el = elem_fil(el);
+      element_for_comparison.element = global_el;
+      for (UInt f = 0; f < nb_facet_per_elem; ++f) {
+	Element facet_elem = facet_to_element(global_el, f);
+	UInt global_facet = facet_elem.element;
+	if (facet_elem.ghost_type != current_ghost_type) {
+	  current_ghost_type = facet_elem.ghost_type;
+	  element_to_facet = &mesh_facets.getElementToSubelement(type_facet,
+								 current_ghost_type);
+	  result_vec = &result(type_facet, current_ghost_type);
+	}
+
+	bool is_second_element = (*element_to_facet)(global_facet)[0] != element_for_comparison;
+
+	for (UInt q = 0; q < nb_quad_per_facet; ++q) {
+	  Vector<Real> result_local(result_vec->storage()
+				    + (global_facet * nb_quad_per_facet + q) * result_vec->getNbComponent()
+				    + is_second_element * sp2,
+				    sp2);
+
+	  result_local = result_tmp(f * nb_quad_per_facet + q);
+	}
+      }
+    }
   }
-
 
   AKANTU_DEBUG_OUT();
 }

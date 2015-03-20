@@ -1,12 +1,12 @@
 /**
- * @file   triangle_primitive.hh
+ * @file   tetrahedron_tmpl.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Tue Mar 3 2015
- * @date last modification: Tue Mar 3 2015
+ * @date creation: Tue Mar 10 2015
+ * @date last modification: Tue Mar 10 2015
  *
- * @brief  Triangle classe (primitive) for AABB CGAL algos
+ * @brief  Tetrahedron class (geometry) for AABB CGAL algos, template impl
  *
  * @section LICENSE
  *
@@ -30,48 +30,45 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TRIANGLE_PRIMITIVE_HH__
-#define __AKANTU_TRIANGLE_PRIMITIVE_HH__
+#ifndef __AKANTU_TETRAHEDRON_TMPL_HH__
+#define __AKANTU_TETRAHEDRON_TMPL_HH__
 
-#include "aka_common.hh"
-#include "triangle.hh"
-
+#include "tetrahedron.hh"
 #include <CGAL/Cartesian.h>
 
 __BEGIN_AKANTU__
-  
-typedef CGAL::Cartesian<Real> Kernel;
 
-/* -------------------------------------------------------------------------- */
+template<typename K>
+Tetrahedron<K>::Tetrahedron() :
+  CGAL::Tetrahedron_3<K>(),
+  meshId(0)
+{}
 
-class Triangle_primitive {
-  /// Type of storage::iterator
-  typedef std::list< Triangle<Kernel> >::iterator Iterator;
+template<typename K>
+Tetrahedron<K>::Tetrahedron(const CGAL::Point_3<K> & a,
+                            const CGAL::Point_3<K> & b,
+                            const CGAL::Point_3<K> & c,
+                            const CGAL::Point_3<K> & d) :
+  CGAL::Tetrahedron_3<K>(a, b, c, d),
+  meshId(0)
+{}
 
-/// Typedefs needed by CGAL
-public:
-  typedef UInt Id;
-  typedef Kernel::Point_3 Point;
-  typedef Kernel::Triangle_3 Datum;
+template<typename K>
+Tetrahedron<K>::Tetrahedron(const Tetrahedron & other) :
+  CGAL::Tetrahedron_3<K>(other),
+  meshId(other.meshId)
+{}
 
-public:
-  /// Default constructor needed
-  Triangle_primitive();
+template<typename K>
+UInt Tetrahedron<K>::id() const {
+  return meshId;
+}
 
-  /// Construct from iterator (*it is a Triangle<K>)
-  Triangle_primitive(Iterator it);
-
-/// Functions needed by CGAL
-public:
-  const Datum & datum() const;
-  const Point & reference_point() const;
-  const Id & id() const;
-
-protected:
-  Id meshId;
-  Triangle<Kernel> triangle;
-};
+template<typename K>
+void Tetrahedron<K>::setId(UInt newId) {
+  meshId = newId;
+}
 
 __END_AKANTU__
 
-#endif // __AKANTU_TRIANGLE_PRIMITIVE_HH__
+#endif

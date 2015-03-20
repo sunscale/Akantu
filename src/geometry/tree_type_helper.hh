@@ -34,8 +34,11 @@
 #define __AKANTU_TREE_TYPE_HELPER_HH__
 
 #include "aka_common.hh"
+
 #include "triangle.hh"
-#include "triangle_primitive.hh"
+#include "tetrahedron.hh"
+
+#include "aabb_primitive.hh"
 
 #include <CGAL/Cartesian.h>
 #include <CGAL/AABB_traits.h>
@@ -50,6 +53,7 @@ typedef CGAL::Cartesian<Real> Kernel;
 template<UInt d, ElementType el_type>
 struct TreeTypeHelper;
 
+/// 2D and _triangle_3 implementation
 template<>
 struct TreeTypeHelper<2, _triangle_3> {
   typedef Triangle<Kernel> primitive_type;
@@ -61,8 +65,25 @@ struct TreeTypeHelper<2, _triangle_3> {
   typedef CGAL::AABB_traits<Kernel, aabb_primitive_type> aabb_traits_type;
   typedef CGAL::AABB_tree<aabb_traits_type> tree;
 
-  typedef boost::optional < tree::Intersection_and_primitive_id< CGAL::Segment_3<K> >::Type > linear_intersection;
+  typedef boost::optional < tree::Intersection_and_primitive_id< CGAL::Segment_3<Kernel> >::Type > linear_intersection;
 };
+
+/// 3D and _tetrahedron_4 implementation
+/*
+template<>
+struct TreeTypeHelper<3, _tetrahedron_4> {
+  typedef Tetrahedron<Kernel> primitive_type;
+  typedef Kernel::Point_3 point_type;
+
+  typedef std::list<primitive_type> container_type;
+  typedef container_type::iterator iterator;
+  typedef Tetrahedron_primitive aabb_primitive_type;
+  typedef CGAL::AABB_traits<Kernel, aabb_primitive_type> aabb_traits_type;
+  typedef CGAL::AABB_tree<aabb_traits_type> tree;
+
+  typedef boost::optional < tree::Intersection_and_primitive_id< CGAL::Segment_3<Kernel> >::Type > linear_intersection;
+};
+*/
 
 __END_AKANTU__
 

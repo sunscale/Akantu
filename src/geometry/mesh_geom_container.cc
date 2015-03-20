@@ -30,36 +30,42 @@
 
 /* -------------------------------------------------------------------------- */
 
+#include "aka_common.hh"
+
 #include "mesh_geom_container.hh"
 #include "mesh_geom_factory.hh"
 #include "mesh.hh"
 
 #include <CGAL/Cartesian.h>
 
+/* -------------------------------------------------------------------------- */
+
+#define MESH_GEOM_CASE(d, type)     \
+  MeshGeomFactory<d, type> * factory = new MeshGeomFactory<d, type>(mesh);      \
+  factory_map(factory, type);     \
+  factory->constructData();
+
+#define MESH_GEOM_CASE_2D(type) MESH_GEOM_CASE(2, type)
+#define MESH_GEOM_CASE_3D(type) MESH_GEOM_CASE(3, type)
+
+/* -------------------------------------------------------------------------- */
+
 __BEGIN_AKANTU__
 
 typedef CGAL::Cartesian<Real> K;
 
+
 MeshGeomContainer::MeshGeomContainer(const Mesh & mesh):
   MeshGeomAbstract(mesh),
   factory_map(),
-  interface_mesh()
-{}
-
-MeshGeomContainer::~MeshGeomContainer() {
-  /*GeomMap::type_iterator it, end;
-
-  it  = factory_map.firstType();
-  end = factory_map.lastType();
-
-  for (; it != end ; it++) {
-    MeshGeomAbstract * p = factory_map(*it);
-    delete p;
-    p = NULL;
-  }*/
-
-  delete interface_mesh;
+  interface_mesh(mesh.getSpatialDimension(), "mesh_geom")
+{
+  interface_mesh.addConnectivityType(_segment_2);
+  interface_mesh.registerData<Element>("associated_element").alloc(0, 1, _segment_2);
 }
+
+MeshGeomContainer::~MeshGeomContainer()
+{}
 
 void MeshGeomContainer::constructData() {
   AKANTU_DEBUG_IN();
@@ -71,38 +77,19 @@ void MeshGeomContainer::constructData() {
 
   /// Loop over the element types of the mesh and construct the primitive trees
   for (; it != end ; ++it) {
+    ElementType type = *it; // for AKANTU_BOOST_ELEMENT_SWITCH macro
     switch(spatial_dim) {
       case 1:
         AKANTU_DEBUG_WARNING("Geometry in 1D is undefined");
         break;
 
       case 2:
-        switch(*it) {
-          case _triangle_3: {
-            MeshGeomFactory<2, _triangle_3> * factory = new MeshGeomFactory<2, _triangle_3>(mesh);
-            factory_map(factory, _triangle_3);
-            factory->constructData();
-            break;
-          }
-
-          /// Need to implement these cases when needed
-          case _not_defined:
-          case _point_1:
-          case _segment_2:
-          case _segment_3:
-          case _triangle_6: // 2nd order element : harder to implement (cf Gomes & Awruch 2001)
-          case _tetrahedron_4: // needs implementing
-          case _tetrahedron_10:
-          case _quadrangle_4: // may need implementing
-          case _quadrangle_8: // 2nd order element : harder to implement (cf Gomes & Awruch 2001)
-          case _hexahedron_8: // may need implementing
-          case _pentahedron_6:
-          case _max_element_type:
-            break;
-        }
+        // Expand the list of elements when they are implemented
+        AKANTU_BOOST_ELEMENT_SWITCH(MESH_GEOM_CASE_2D, (_triangle_3));
         break;
       
       case 3:
+        //AKANTU_BOOST_ELEMENT_SWITCH(MESH_GEOM_CASE_3D, ());
         break;
     }
   }
@@ -127,157 +114,33 @@ UInt MeshGeomContainer::numberOfIntersectionsWithInterface(const K::Segment_3 & 
   return total;
 }
 
-Mesh * MeshGeomContainer::meshOfLinearInterface(const std::pair<K::Segment_3, std::string> & pair) {
+void MeshGeomContainer::meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh) {
   AKANTU_DEBUG_IN();
-
-  std::list<Mesh *> meshes;
 
   GeomMap::type_iterator it = factory_map.firstType();
   GeomMap::type_iterator end = factory_map.lastType();
 
   for (; it != end ; ++it) {
-    meshes.push_back(factory_map(*it)->meshOfLinearInterface(pair));
+    factory_map(*it)->meshOfLinearInterface(interface, interface_mesh);
   }
 
   AKANTU_DEBUG_OUT();
-
-  if (meshes.size() == 1) {
-    return meshes.front();
-  } else {
-    return mergeMeshes(meshes);
-  }
 }
 
-Mesh * MeshGeomContainer::mergeMeshes(const std::list<Mesh *> & meshes) {
-  AKANTU_DEBUG_IN();
-
-  UInt d = mesh.getSpatialDimension();
-
-  // XXX there's gonna be a problem here with several element types in meshes (ID)
-  Mesh * mergedMesh = new Mesh(d, "mergedMesh");
-
-  Array<Real>                  mergedNodes(0, d, "mergedNodes");
-  ElementTypeMapArray<UInt>    mergedConnectivities("mergedConnectivities");
-  ElementTypeMapArray<UInt>    mergedAssociatedIds("mergedAssociatedIds");
-  ElementTypeMapArray<Element> mergedAssociatedTypes("mergedAssociatedTypes");
-
-  std::list<Mesh *>::const_iterator mesh_it = meshes.begin();
-  std::list<Mesh *>::const_iterator mesh_end = meshes.end();
-
-  for (; mesh_it != mesh_end ; ++mesh_it) {
-    const Mesh * currentMesh = *mesh_it;
-
-    Mesh::type_iterator type_it = currentMesh->firstType();
-    Mesh::type_iterator type_end = currentMesh->lastType();
-
-    for (; type_it != type_end ; ++type_it) {
-      mergedMesh->addConnectivityType(*type_it);
-
-      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*type_it);
-
-      // XXX very repetitive code ahead, especially for associated data
-
-      if (!mergedConnectivities.exists(*type_it)) {
-        mergedConnectivities.alloc(0, nb_nodes_per_element, *type_it, _not_ghost);
-      }
-
-      const Array<UInt> & currentConnectivity = currentMesh->getConnectivity(*type_it);
-      Array<UInt>::const_vector_iterator currentConn_it = currentConnectivity.begin(nb_nodes_per_element);
-      Array<UInt>::const_vector_iterator currentConn_end = currentConnectivity.end(nb_nodes_per_element);
-
-      /// Offset for node id
-      Vector<UInt> offset(nb_nodes_per_element, mergedNodes.getSize());
-
-      /// Append connectivity
-      for (; currentConn_it != currentConn_end ; ++currentConn_it) {
-        mergedConnectivities(*type_it).push_back(*currentConn_it + offset);
-      }
-
-      // ------------------
-
-      if (!mergedAssociatedIds.exists(*type_it)) {
-        mergedAssociatedIds.alloc(0, 1, *type_it, _not_ghost);
-      }
-
-      const Array<UInt> & currentAssociatedIds = currentMesh->getData<UInt>("associated_id", *type_it);
-      Array<UInt>::const_scalar_iterator currentAssoId_it = currentAssociatedIds.begin();
-      Array<UInt>::const_scalar_iterator currentAssoId_end = currentAssociatedIds.end();
-
-      /// Append associated ids
-      for (; currentAssoId_it != currentAssoId_end ; ++currentAssoId_it) {
-        mergedAssociatedIds(*type_it).push_back(*currentAssoId_it);
-      }
-
-      // ------------------
-
-      if (!mergedAssociatedTypes.exists(*type_it)) {
-        mergedAssociatedTypes.alloc(0, 1, *type_it, _not_ghost);
-      }
-
-      const Array<Element> & currentAssociatedTypes = currentMesh->getData<Element>("associated_type", *type_it);
-      Array<Element>::const_scalar_iterator currentAssoType_it = currentAssociatedTypes.begin();
-      Array<Element>::const_scalar_iterator currentAssoType_end = currentAssociatedTypes.end();
-
-      /// Append associated types
-      for (; currentAssoType_it != currentAssoType_end ; ++currentAssoType_it) {
-        mergedAssociatedTypes(*type_it).push_back(*currentAssoType_it);
-      }
-    }
-
-    Array<Real>::const_vector_iterator currentNodes_it = currentMesh->getNodes().begin(d);
-    Array<Real>::const_vector_iterator currentNodes_end = currentMesh->getNodes().end(d);
-
-    /// Append nodes
-    for (; currentNodes_it != currentNodes_end ; ++currentNodes_it) {
-      mergedNodes.push_back(*currentNodes_it);
-    }
-  }
-
-  mergedMesh->getNodes().copy(mergedNodes);
-
-  ElementTypeMapArray<UInt>::type_iterator type_it = mergedConnectivities.firstType();
-  ElementTypeMapArray<UInt>::type_iterator type_end = mergedConnectivities.lastType();
-
-  for (; type_it != type_end ; ++type_it) {
-    mergedMesh->getConnectivity(*type_it).copy(mergedConnectivities(*type_it));
-
-    mergedMesh->registerData<UInt>("associated_id").alloc(0, 1, *type_it, _not_ghost);
-    mergedMesh->registerData<Element>("associated_type").alloc(0, 1, *type_it, _not_ghost);
-
-    mergedMesh->getData<UInt>("associated_id", *type_it).copy(mergedAssociatedIds(*type_it));
-    mergedMesh->getData<Element>("associated_type", *type_it).copy(mergedAssociatedTypes(*type_it));
-  }
-
-  AKANTU_DEBUG_OUT();
-
-  return mergedMesh;
-}
-
-Mesh & MeshGeomContainer::meshOfLinearInterfaces(const std::list<std::pair<K::Segment_3, std::string> > & interfaces) {
+Mesh & MeshGeomContainer::meshOfLinearInterfaces(const std::list<K::Segment_3> & interfaces) {
   if (interfaces.size() == 1) {
-    interface_mesh = meshOfLinearInterface(interfaces.front());
-    return *interface_mesh;
+    meshOfLinearInterface(interfaces.front(), interface_mesh);
+    return interface_mesh;
   }
 
-  std::list<std::pair<K::Segment_3, std::string> >::const_iterator interfaces_it = interfaces.begin();
-  std::list<std::pair<K::Segment_3, std::string> >::const_iterator interfaces_end = interfaces.end();
-
-  std::list<Mesh *> meshes;
+  std::list<K::Segment_3>::const_iterator interfaces_it = interfaces.begin();
+  std::list<K::Segment_3>::const_iterator interfaces_end = interfaces.end();
 
   for (; interfaces_it != interfaces_end ; ++interfaces_it) {
-    meshes.push_back(meshOfLinearInterface(*interfaces_it));
+    meshOfLinearInterface(*interfaces_it, interface_mesh);
   }
 
-  interface_mesh = mergeMeshes(meshes);
-
-  std::list<Mesh *>::iterator meshes_it = meshes.begin();
-  std::list<Mesh *>::iterator meshes_end = meshes.end();
-
-  for (; meshes_it != meshes_end ; ++meshes_it) {
-    delete *meshes_it;
-  }
-
-  return *interface_mesh;
+  return interface_mesh;
 }
 
 const MeshGeomAbstract * MeshGeomContainer::getFactoryForElementType(ElementType el_type) const {

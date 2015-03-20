@@ -1,16 +1,16 @@
 /**
- * @file   triangle_primitive.cc
+ * @file   material_reinforcement_inline_impl.cc
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Tue Mar 3 2015
- * @date last modification: Tue Mar 3 2015
+ * @date creation: Thu Mar 12 2015
+ * @date last modification: Thu Mar 12 2015
  *
- * @brief  Triangle classe (primitive) for AABB CGAL algos
+ * @brief  Reinforcement material
  *
  * @section LICENSE
  *
- * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -30,31 +30,27 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include "triangle_primitive.hh"
+template<UInt d>
+inline void MaterialReinforcement<d>::computeDirectingCosinesOnQuad(const Matrix<Real> & nodes,
+                                                                 Matrix<Real> & cosines) {
+  AKANTU_DEBUG_IN();
 
-__BEGIN_AKANTU__
+  AKANTU_DEBUG_ASSERT(nodes.cols() == 2, "Higher order reinforcement elements not implemented");
 
+  const Vector<Real> & a = nodes(0), b = nodes(1);
 
-Triangle_primitive::Triangle_primitive() :
-  meshId(0),
-  triangle()
-{}
+  cosines.clear();
 
-Triangle_primitive::Triangle_primitive(Iterator it) :
-  meshId(it->id()),
-  triangle(*it)
-{}
+  Real sq_length = 0.;
+  for (UInt i = 0 ; i < d ; i++) {
+    sq_length += Math::pow<2, Real>(b(i) - a(i));
+  }
 
-const Triangle_primitive::Datum & Triangle_primitive::datum() const {
-  return triangle;
+  // Fill the first row of cosine matrix
+  for (UInt i = 0 ; i < d ; i++) {
+    cosines(0, i) = Math::pow<2, Real>(b(i) - a(i)) / sq_length;
+  }
+
+  AKANTU_DEBUG_OUT();
 }
 
-const Triangle_primitive::Point & Triangle_primitive::reference_point() const {
-  return triangle.vertex(0);
-}
-
-const Triangle_primitive::Id & Triangle_primitive::id() const {
-  return meshId;
-}
-
-__END_AKANTU__

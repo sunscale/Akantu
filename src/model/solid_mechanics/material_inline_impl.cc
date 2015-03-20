@@ -341,12 +341,6 @@ inline void Material::buildElementalFieldInterpolationCoodinates<_quadrangle_8>(
 }
 
 /* -------------------------------------------------------------------------- */
-template<ElementType type>
-inline UInt Material::getSizeElementalFieldInterpolationCoodinates(GhostType ghost_type) {
-  return model->getFEEngine().getNbQuadraturePoints(type, ghost_type);
-}
-
-/* -------------------------------------------------------------------------- */
 inline UInt Material::getNbDataForElements(const Array<Element> & elements,
 					   SynchronizationTag tag) const {
   if(tag == _gst_smm_stress) {
