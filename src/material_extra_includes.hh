@@ -24,6 +24,7 @@
 #include "material_damage_iterative.hh"
 #include "material_damage_linear.hh"
 #include "material_vreepeerlings.hh"
+#include "material_orthotropic_damage_iterative.hh"
 
 // plasticity
 #include "material_viscoplastic.hh"
@@ -47,9 +48,10 @@
 #endif
 
 #define  AKANTU_EXTRA_MATERIAL_LIST                                     \
-  ((2, (damage_linear      , MaterialDamageLinear                 )))   \
-  ((2, (brittle            , MaterialBrittle                      )))   \
-  ((2, (damage_iterative   , MaterialDamageIterative              )))   \
-  ((2, (vreepeerlings      , MaterialVreePeerlings                )))   \
-  ((2, (ve_stiffness_prop  , MaterialStiffnessProportional        )))   \
-  ((2, (visco_plastic      , MaterialViscoPlastic                 )))
+  ((2, (damage_linear           , MaterialDamageLinear                 ))) \
+  ((2, (brittle                 , MaterialBrittle                      ))) \
+  ((2, (damage_iterative        , MaterialDamageIterative              ))) \
+  ((2, (vreepeerlings           , MaterialVreePeerlings                ))) \
+  ((2, (ve_stiffness_prop       , MaterialStiffnessProportional        ))) \
+  ((2, (visco_plastic                     , MaterialViscoPlastic                 ))) \
+  ((2, (orthotropic_damage_iterative      , MaterialOrthotropicDamageIterative            )))

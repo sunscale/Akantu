@@ -1,12 +1,14 @@
 /**
- * @file   material_damage_iterative.hh
+ * @file   material_orthtropic_damage_iterative.hh
  *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
+ * @date   Sun Mar  8 12:54:30 2015
  *
- * @brief  Specialization of the class material damage to damage only one gauss
- * point at a time and propagate damage in a linear way. Max principal stress
- * criterion is used as a failure criterion.
+ * @brief Specialization of the class material orthotropic damage to
+ * damage only one gauss point at a time and propagate damage in a
+ * linear way. Max principal stress criterion is used as a failure
+ * criterion.
  *
  * @section LICENSE
  *
@@ -17,12 +19,12 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "material_damage.hh"
+#include "material_orthotropic_damage.hh"
 #include "material.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__
-#define __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__
+#ifndef __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_HH__
+#define __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_HH__
 
 __BEGIN_AKANTU__
 
@@ -33,15 +35,15 @@ __BEGIN_AKANTU__
  *   - Sc  
  */
 template<UInt spatial_dimension>
-class MaterialDamageIterative : public MaterialDamage<spatial_dimension> {
+class MaterialOrthotropicDamageIterative : public MaterialOrthotropicDamage<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
 
-  MaterialDamageIterative(SolidMechanicsModel & model, const ID & id = "");
+  MaterialOrthotropicDamageIterative(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialDamageIterative() {};
+  virtual ~MaterialOrthotropicDamageIterative() {};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -55,8 +57,6 @@ public:
   /// update internal field damage
   UInt updateDamage();
 
-  UInt updateDamage(UInt quad_index, const Real eq_stress, const ElementType & el_type, const GhostType & ghost_type);
-
   /// update energies after damage has been updated
   virtual void updateEnergiesAfterDamage(ElementType el_type, GhostType ghost_typ);
   
@@ -68,16 +68,12 @@ protected:
   virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   ///compute the equivalent stress on each Gauss point (i.e. the max prinicpal stress) and normalize it by the tensile strength
-  void computeNormalizedEquivalentStress(const Array<Real> & grad_u,
-                                         ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computeNormalizedEquivalentStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   /// find max normalized equivalent stress
   void findMaxNormalizedEquivalentStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
-
-  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma,
-                                           Real & dam);
-
+  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma, Matrix<Real> & one_minus_D, Matrix<Real> & root_one_minus_D, Matrix<Real> & damage, Matrix<Real> & first_term, Matrix<Real> & third_term);
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
@@ -99,6 +95,9 @@ protected:
   /// internal field to store equivalent stress on each Gauss point
   InternalField<Real> equivalent_stress;
 
+  /// internal field to store the direction of the equivalent stress
+  InternalField<UInt> equiv_stress_dir;
+
   /// damage increment
   Real prescribed_dam;
 
@@ -119,8 +118,8 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "material_damage_iterative_inline_impl.cc"
+#include "material_orthotropic_damage_iterative_inline_impl.cc"
 
 __END_AKANTU__
 
-#endif /* __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__ */
+#endif /* __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_HH__ */

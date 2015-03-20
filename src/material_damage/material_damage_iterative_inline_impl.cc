@@ -21,3 +21,24 @@ MaterialDamageIterative<spatial_dimension>::computeDamageAndStressOnQuad(Matrix<
 }
 
 /* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+UInt MaterialDamageIterative<spatial_dimension>::updateDamage(UInt quad_index, const Real eq_stress, const ElementType & el_type, const GhostType & ghost_type) {
+  AKANTU_DEBUG_ASSERT(prescribed_dam > 0.,
+		      "Your prescribed damage must be greater than zero");
+
+
+  Array<Real> & dam = this->damage(el_type, ghost_type);
+  Real & dam_on_quad   = dam(quad_index);
+
+  /// check if damage occurs
+  if (equivalent_stress(el_type, ghost_type)(quad_index) >= (1-dam_tolerance) * norm_max_equivalent_stress) {
+    if (dam_on_quad < dam_threshold)
+      dam_on_quad +=prescribed_dam;
+    else dam_on_quad = max_damage;
+    return 1;
+  }
+
+  return 0;
+}
+
+/* -------------------------------------------------------------------------- */
