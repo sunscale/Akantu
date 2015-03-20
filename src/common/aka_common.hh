@@ -422,6 +422,8 @@ enum SynchronizationTag {
   _gst_mnl_weight,       //< synchronization of data for the weight computations
   //--- General tags ---
   _gst_test,             //< Test tag
+  _gst_user_1,           //< tag for user simulations
+  _gst_user_2,           //< tag for user simulations
   _gst_material_id,      //< synchronization of the material ids
   _gst_for_dump,         //< everything that needs to be synch before dump
   //--- Contact & Friction ---

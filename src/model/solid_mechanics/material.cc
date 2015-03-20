@@ -112,6 +112,10 @@ void Material::initMaterial() {
        it != internal_vectors_real.end();
        ++it) it->second->resize();
 
+  for (std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.begin();
+       it != internal_vectors_uint.end();
+       ++it) it->second->resize();
+
   is_init = true;
 
   AKANTU_DEBUG_OUT();

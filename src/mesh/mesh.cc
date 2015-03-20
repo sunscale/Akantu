@@ -303,12 +303,36 @@ void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
 /* -------------------------------------------------------------------------- */
 template<typename T>
 void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
-                                  UInt nb_component,
-                                  UInt dim,
-                                  GhostType gt,
-                                  const bool & flag_nb_node_per_elem_multiply,
-                                  ElementKind element_kind,
-                                  bool size_to_nb_element) const {
+				   UInt nb_component,
+				   UInt dim,
+				   GhostType gt,
+				   const bool & flag_nb_node_per_elem_multiply,
+				   ElementKind element_kind,
+				   bool size_to_nb_element) const {
+  AKANTU_DEBUG_IN();
+
+  this->initElementTypeMapArray(vect,
+				nb_component,
+				dim,
+				gt,
+				T(),
+				flag_nb_node_per_elem_multiply,
+				element_kind,
+				size_to_nb_element);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<typename T>
+void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
+				   UInt nb_component,
+				   UInt dim,
+				   GhostType gt,
+				   const T & default_value,
+				   const bool & flag_nb_node_per_elem_multiply,
+				   ElementKind element_kind,
+				   bool size_to_nb_element) const {
   AKANTU_DEBUG_IN();
 
   Mesh::type_iterator it  = firstType(dim, gt, element_kind);
@@ -318,14 +342,14 @@ void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
     if (flag_nb_node_per_elem_multiply) nb_component *= Mesh::getNbNodesPerElement(*it);
     UInt size = 0;
     if (size_to_nb_element) size = this->getNbElement(type, gt);
-    vect.alloc(size, nb_component, type, gt);
+    vect.alloc(size, nb_component, type, gt, default_value);
   }
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void Mesh::initNormals() {
-  initElementTypeMapArray(normals, spatial_dimension, spatial_dimension, false, _ek_not_defined);
+  this->initElementTypeMapArray(normals, spatial_dimension, spatial_dimension, false, _ek_not_defined);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -373,19 +397,27 @@ DumperIOHelper & Mesh::getGroupDumper(const std::string & dumper_name,
 /* -------------------------------------------------------------------------- */
 #define AKANTU_INSTANTIATE_INIT(type)					\
 template void Mesh::initElementTypeMapArray<type>(ElementTypeMapArray<type> & vect, \
-                                                 UInt nb_component,	\
-                                                 UInt dim,		\
-                                                 const bool & flag_nb_elem_multiply, \
-                                                 ElementKind element_kind, \
-                                                 bool size_to_nb_element) const; \
+						  UInt nb_component,	\
+						  UInt dim,		\
+						  const bool & flag_nb_elem_multiply, \
+						  ElementKind element_kind, \
+						  bool size_to_nb_element) const; \
 template void Mesh::initElementTypeMapArray<type>(ElementTypeMapArray<type> & vect, \
-                                                 UInt nb_component,	\
-                                                 UInt dim,		\
-						 GhostType gt,		\
-                                                 const bool & flag_nb_elem_multiply, \
-                                                 ElementKind element_kind, \
-                                                 bool size_to_nb_element) const
-
+						  UInt nb_component,	\
+						  UInt dim,		\
+						  GhostType gt,		\
+						  const bool & flag_nb_elem_multiply, \
+						  ElementKind element_kind, \
+						  bool size_to_nb_element) const; \
+template void Mesh::initElementTypeMapArray<type>(ElementTypeMapArray<type> & vect, \
+						  UInt nb_component,	\
+						  UInt dim,		\
+						  GhostType gt,		\
+						  const type & default_value, \
+						  const bool & flag_nb_elem_multiply, \
+						  ElementKind element_kind, \
+						  bool size_to_nb_element) const;
+    
 AKANTU_INSTANTIATE_INIT(Real);
 AKANTU_INSTANTIATE_INIT(UInt);
 AKANTU_INSTANTIATE_INIT(Int);
