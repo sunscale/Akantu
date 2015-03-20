@@ -517,7 +517,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
 			      distributed_synchronizer);
   }
 
-  std::list<Element> unseen_elements;
+  std::set<Element> unseen_elements;
   Element el;
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
@@ -538,7 +538,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
       for (UInt e = 0; e < nb_element; ++e) {
 	el.element = e;
 	if (filter(el))
-	  unseen_elements.push_back(el);
+	  unseen_elements.insert(el);
       }
     }
   }
@@ -558,7 +558,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
     ++nb_cluster;
 
     /// initialize the queue of elements to check in the current cluster
-    std::list<Element>::iterator uns_it = unseen_elements.begin();
+    std::set<Element>::iterator uns_it = unseen_elements.begin();
     Element uns_el = *uns_it;
     unseen_elements.erase(uns_it);
 
@@ -617,9 +617,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
 
 	  if (check_el == ElementNull || check_el == el) continue;
 
-	  std::list<Element>::iterator it_clus = std::find(unseen_elements.begin(),
-							   unseen_elements.end(),
-							   check_el);
+	  std::set<Element>::iterator it_clus = unseen_elements.find(check_el);
 
 	  /// if neighbor not seen yet, add it to check list and
 	  /// remove it from unseen elements
