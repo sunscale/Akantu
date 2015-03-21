@@ -80,7 +80,7 @@ protected:
 					 const Matrix<Real> & damage_directions,	 Matrix<Real> & rotation_tmp);
 
   /// rotate a Matrix of size dim*dim into the coordinate system of the damage
-  inline void rotateIntoDamageFrame(const Matrix<Real> & to_rotate,
+  inline void rotateIntoNewFrame(const Matrix<Real> & to_rotate,
 				    Matrix<Real> & rotated,
 				    const Matrix<Real> & damage_directions,
 				    Matrix<Real> & rotation_tmp);
@@ -129,6 +129,9 @@ protected:
   InternalField<Real>  damage_dir_vecs;
 
   Real eta;
+
+  /// maximum damage value
+  Real max_damage;
 
 
 };

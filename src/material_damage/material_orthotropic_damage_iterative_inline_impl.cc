@@ -57,7 +57,9 @@ inline void MaterialOrthotropicDamageIterative<spatial_dimension>
   // }
   one_minus_D *= second_term;
 
-  third_term.eye(1./this->spatial_dimension * sigma.trace() * (1 - eta_effective/(this->spatial_dimension) * damage.trace()));
+  third_term.eye( 1. / this->spatial_dimension * sigma.trace() *
+		  (1 - std::min(eta_effective/(this->spatial_dimension) 
+				* damage.trace(), this->max_damage) ) );
 
   sigma.copy(first_term);
   sigma -= one_minus_D;

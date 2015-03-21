@@ -95,8 +95,8 @@ protected:
   /// internal field to store equivalent stress on each Gauss point
   InternalField<Real> equivalent_stress;
 
-  /// internal field to store the direction of the equivalent stress
-  InternalField<UInt> equiv_stress_dir;
+  /// internal field to store the direction of the current damage frame
+  InternalField<Real> stress_dir;
 
   /// damage increment
   Real prescribed_dam;
@@ -104,14 +104,12 @@ protected:
   /// maximum equivalent stress
   Real norm_max_equivalent_stress;
 
-  /// deviation from max stress at which Gauss point will still get damaged 
-  Real dam_tolerance;
-
   /// define damage threshold at which damage will be set to 1 
   Real dam_threshold; 
 
-  /// maximum damage value
-  Real max_damage;
+  /// quadrature point with highest equivalent Stress
+  QuadraturePoint q_max;
+
 };
 
 /* -------------------------------------------------------------------------- */

@@ -40,11 +40,12 @@ MaterialOrthotropicDamage<spatial_dimension, Parent>::MaterialOrthotropicDamage(
   damage("damage", *this),
   dissipated_energy("damage dissipated energy", *this),
   int_sigma("integral of sigma", *this),
-  damage_dir_vecs("damage_principal_directions", *this),
-  eta(3.) {
+  damage_dir_vecs("damage_principal_directions", *this) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("eta"      , eta      , 3.  , _pat_parsable | _pat_modifiable, "Damage sensitivity parameter"        );
+  this->registerParam("eta"      , eta      , 2.  , _pat_parsable | _pat_modifiable, "Damage sensitivity parameter"        );
+  this->registerParam("max_damage",       max_damage,  0.99999,  _pat_parsable | _pat_modifiable, "maximum damage value" );
+
 
   this->is_non_local = false;
   this->use_previous_stress = true;
@@ -186,77 +187,20 @@ void MaterialOrthotropicDamage<spatial_dimension, Parent>
     tangent *= (1-dam(0, 0));
 
   if (spatial_dimension == 2) {
-
-    // Real dmax = *(std::max_element(dam.storage(), dam.storage() + spatial_dimension*spatial_dimension) );
-    Real eta_effective = 0; 
-
-    // if ( (1 - dmax*dmax)  < (1 - this->eta / spatial_dimension * trace_D) ) {
-
-    //   eta_effective = this->spatial_dimension * dmax * dmax / trace_D;
-      
-    // }   
-    // else
-    eta_effective = this->eta;
-    //    Real eta = 3.;
-   ///first row 
-    // tangent(0, 0) = (C(0,0)*S(0,0)^2 - ((3*trace_D)/4 - 0.5)*(C(0,0) + C(1,0)) + (O(0,0)*(C(0,0)*O(0,0) + C(1,0)*O(1,1)))/(trace_D - 2));
-    // tangent(0, 1) = (C(0,1)*S(0,0)^2 - ((3*trace_D)/4 - 0.5)*(C(0,1) + C(1,1)) + (O(0,0)*(C(0,1)*O(0,0) + C(1,1)*O(1,1)))/(trace_D - 2));   
-    // tangent(0, 2) = (C(0,2)*S(0,0)^2 - ((3*trace_D)/4 - 0.5)*(C(0,2) + C(1,2)) + (O(0,0)*(C(0,2)*O(0,0) + C(1,2)*O(1,1)))/(trace_D - 2));
-    
-    // ///second row
-    // tangent(1, 0) = (C(1,0)*S(1,1)^2 - ((3*trace_D)/4 - 0.5)*(C(0,0) + C(1,0)) + (O(1,1)*(C(0,0)*O(0,0) + C(1,0)*O(1,1)))/(trace_D - 2));
-    // tangent(1, 1) = (C(1,1)*S(1,1)^2 - ((3*trace_D)/4 - 0.5)*(C(0,1) + C(1,1)) + (O(1,1)*(C(0,1)*O(0,0) + C(1,1)*O(1,1)))/(trace_D - 2));
-    // tangent(1, 2) = (C(1,2)*S(1,1)^2 - ((3*trace_D)/4 - 0.5)*(C(0,2) + C(1,2)) + (O(1,1)*(C(0,2)*O(0,0) + C(1,2)*O(1,1)))/(trace_D - 2));
-
-    // ///third row
-    // tangent(2, 0) = (C(2,0)*S(0,0)*S(1,1));
-    // tangent(2, 1) = (C(2,1)*S(0,0)*S(1,1));
-    // tangent(2, 2) = (C(2,2)*S(0,0)*S(1,1));
+    Real min_val = std::min( (this->eta / spatial_dimension * trace_D),
+			     this->max_damage );
 
     /// first row
-    // tangent(0, 0) = (S(0,0)*(C(0,0)*S(0,0) + C(2,0)*S(0,1)) - ((3.*trace_D)/4 - 0.5)*(C(0,0) + C(1,0)) + S(0,1)*(C(1,0)*S(0,1) + C(2,0)*S(0,0)) 
-    // 		    + (O(0,0)*(C(0,0)*O(0,0) + C(1,0)*O(1,1) + 2*C(2,0)*O(0,1)))/(trace_D - 2));
+    tangent(0, 0) = (C(0,0)*S(0,0)*S(0,0) + C(1,0)*S(0,1)*S(0,1) - (min_val/2. - 1./2)*(C(0,0) + C(1,0)) + (O(0,0)*(C(0,0)*O(0,0) + C(1,0)*O(1,1)))/(trace_D - 2.));
 
-    // tangent(0, 1) = (S(0,0)*(C(0,1)*S(0,0) + C(2,1)*S(0,1)) - ((3.*trace_D)/4 - 0.5)*(C(0,1) + C(1,1)) + S(0,1)*(C(1,1)*S(0,1) + C(2,1)*S(0,0)) 
-    // 		     + (O(0,0)*(C(0,1)*O(0,0) + C(1,1)*O(1,1) + 2*C(2,1)*O(0,1)))/(trace_D - 2));
-
-    // tangent(0, 2) = (S(0,0)*(C(0,2)*S(0,0) + C(2,2)*S(0,1)) - ((3.*trace_D)/4 - 0.5)*(C(0,2) + C(1,2)) + S(0,1)*(C(1,2)*S(0,1) + C(2,2)*S(0,0)) 
-    // 		     + (O(0,0)*(C(0,2)*O(0,0) + C(1,2)*O(1,1) + 2*C(2,2)*O(0,1)))/(trace_D - 2));
-
-    // /// second row 
-    // tangent(1, 0) = (S(0,1)*(C(0,0)*S(0,1) + C(2,0)*S(1,1)) - ((3.*trace_D)/4 - 0.5)*(C(0,0) + C(1,0)) + S(1,1)*(C(1,0)*S(1,1) + C(2,0)*S(0,1)) 
-    // 		     + (O(1,1)*(C(0,0)*O(0,0) + C(1,0)*O(1,1) + 2*C(2,0)*O(0,1)))/(trace_D - 2));
-
-    // tangent(1, 1) = (S(0,1)*(C(0,1)*S(0,1) + C(2,1)*S(1,1)) - ((3.*trace_D)/4 - 0.5)*(C(0,1) + C(1,1)) + S(1,1)*(C(1,1)*S(1,1) + C(2,1)*S(0,1)) 
-    // 		     + (O(1,1)*(C(0,1)*O(0,0) + C(1,1)*O(1,1) + 2*C(2,1)*O(0,1)))/(trace_D - 2));
-
-    // tangent(1, 2) =  (S(0,1)*(C(0,2)*S(0,1) + C(2,2)*S(1,1)) - ((3.*trace_D)/4 - 0.5)*(C(0,2) + C(1,2)) + S(1,1)*(C(1,2)*S(1,1) + C(2,2)*S(0,1)) 
-    // 		      + (O(1,1)*(C(0,2)*O(0,0) + C(1,2)*O(1,1) + 2*C(2,2)*O(0,1)))/(trace_D - 2));
-
-    // /// third row
-    // tangent(2, 0) = (S(0,1)*(C(0,0)*S(0,0) + C(2,0)*S(0,1)) + S(1,1)*(C(1,0)*S(0,1) + C(2,0)*S(0,0)) + (O(0,1)*(C(0,0)*O(0,0) + C(1,0)*O(1,1) + 2*C(2,0)*O(0,1)))
-    // 		     /(trace_D - 2));
- 
-    // tangent(2, 1) = (S(0,1)*(C(0,1)*S(0,0) + C(2,1)*S(0,1)) + S(1,1)*(C(1,1)*S(0,1) + C(2,1)*S(0,0)) + (O(0,1)*(C(0,1)*O(0,0) + C(1,1)*O(1,1) + 2*C(2,1)*O(0,1)))
-    // 		     /(trace_D - 2));
-
-    // tangent(2, 2)= (S(0,1)*(C(0,2)*S(0,0) + C(2,2)*S(0,1)) + S(1,1)*(C(1,2)*S(0,1) + C(2,2)*S(0,0)) + (O(0,1)*(C(0,2)*O(0,0) + C(1,2)*O(1,1) + 2*C(2,2)*O(0,1)))
-    // 		    /(trace_D - 2));
- 
-
- 
-
-    /// first row
-    tangent(0, 0) = (C(0,0)*S(0,0)*S(0,0) + C(1,0)*S(0,1)*S(0,1) - ((eta_effective*trace_D)/4. - 1./2)*(C(0,0) + C(1,0)) + (O(0,0)*(C(0,0)*O(0,0) + C(1,0)*O(1,1)))/(trace_D - 2.));
- 
-    tangent(0, 1) = (C(0,1)*S(0,0)*S(0,0) + C(1,1)*S(0,1)*S(0,1) - ((eta_effective*trace_D)/4. - 1./2)*(C(0,1) + C(1,1)) + (O(0,0)*(C(0,1)*O(0,0) + C(1,1)*O(1,1)))/(trace_D - 2.));
+    tangent(0, 1) = (C(0,1)*S(0,0)*S(0,0) + C(1,1)*S(0,1)*S(0,1) - (min_val/2. - 1./2)*(C(0,1) + C(1,1)) + (O(0,0)*(C(0,1)*O(0,0) + C(1,1)*O(1,1)))/(trace_D - 2.));
     
     tangent(0, 2) = (2.*C(2,2)*S(0,0)*S(0,1) + (2.*C(2,2)*O(0,0)*O(0,1))/(trace_D - 2.));
 
     /// second row 
-    tangent(1, 0) = (C(0,0)*S(0,1)*S(0,1) + C(1,0)*S(1,1)*S(1,1) - ((eta_effective*trace_D)/4. - 1./2)*(C(0,0) + C(1,0)) + (O(1,1)*(C(0,0)*O(0,0) + C(1,0)*O(1,1)))/(trace_D - 2.));
+    tangent(1, 0) = (C(0,0)*S(0,1)*S(0,1) + C(1,0)*S(1,1)*S(1,1) - (min_val/2. - 1./2)*(C(0,0) + C(1,0)) + (O(1,1)*(C(0,0)*O(0,0) + C(1,0)*O(1,1)))/(trace_D - 2.));
 
-    tangent(1, 1) = (C(0,1)*S(0,1)*S(0,1) + C(1,1)*S(1,1)*S(1,1) - ((eta_effective*trace_D)/4. - 1./2)*(C(0,1) + C(1,1)) + (O(1,1)*(C(0,1)*O(0,0) + C(1,1)*O(1,1)))/(trace_D - 2.));
+    tangent(1, 1) = (C(0,1)*S(0,1)*S(0,1) + C(1,1)*S(1,1)*S(1,1) - (min_val/2. - 1./2)*(C(0,1) + C(1,1)) + (O(1,1)*(C(0,1)*O(0,0) + C(1,1)*O(1,1)))/(trace_D - 2.));
 
     tangent(1, 2) =  (2.*C(2,2)*S(0,1)*S(1,1) + (2.*C(2,2)*O(0,1)*O(1,1))/(trace_D - 2.));
 
@@ -265,6 +209,34 @@ void MaterialOrthotropicDamage<spatial_dimension, Parent>
     
     tangent(2,1) = ((O(0,1)*(C(0,1)*O(0,0) + C(1,1)*O(1,1)))/(trace_D - 2.) + C(0,1)*S(0,0)*S(0,1) + C(1,1)*S(0,1)*S(1,1));
     tangent(2,2) = ((2.*C(2,2)*O(0,1)*O(0,1))/(trace_D - 2.) + C(2,2)*S(0,1)*S(0,1) + C(2,2)*S(0,0)*S(1,1));
+
+
+
+
+//     /// first row
+//     tangent(0, 0) = (C(0,0)*S(0,0)*S(0,0) + C(1,0)*S(0,1)*S(0,1) - ((eta_effective*trace_D)/4. - 1./2)*(C(0,0) + C(1,0)) + (O(0,0)*(C(0,0)*O(0,0) + C(1,0)*O(1,1)))/(trace_D - 2.));
+
+//     tangent(0, 1) = (C(0,1)*S(0,0)*S(0,0) + C(1,1)*S(0,1)*S(0,1) - ((eta_effective*trace_D)/4. - 1./2)*(C(0,1) + C(1,1)) + (O(0,0)*(C(0,1)*O(0,0) + C(1,1)*O(1,1)))/(trace_D - 2.));
+    
+//     tangent(0, 2) = (2.*C(2,2)*S(0,0)*S(0,1) + (2.*C(2,2)*O(0,0)*O(0,1))/(trace_D - 2.));
+
+//     /// second row 
+//     tangent(1, 0) = (C(0,0)*S(0,1)*S(0,1) + C(1,0)*S(1,1)*S(1,1) - ((eta_effective*trace_D)/4. - 1./2)*(C(0,0) + C(1,0)) + (O(1,1)*(C(0,0)*O(0,0) + C(1,0)*O(1,1)))/(trace_D - 2.));
+
+//     tangent(1, 1) = (C(0,1)*S(0,1)*S(0,1) + C(1,1)*S(1,1)*S(1,1) - ((eta_effective*trace_D)/4. - 1./2)*(C(0,1) + C(1,1)) + (O(1,1)*(C(0,1)*O(0,0) + C(1,1)*O(1,1)))/(trace_D - 2.));
+
+//     tangent(1, 2) =  (2.*C(2,2)*S(0,1)*S(1,1) + (2.*C(2,2)*O(0,1)*O(1,1))/(trace_D - 2.));
+
+//     /// third row
+//     tangent(2, 0) = ((O(0,1)*(C(0,0)*O(0,0) + C(1,0)*O(1,1)))/(trace_D - 2.) + C(0,0)*S(0,0)*S(0,1) + C(1,0)*S(0,1)*S(1,1));
+    
+//     tangent(2,1) = ((O(0,1)*(C(0,1)*O(0,0) + C(1,1)*O(1,1)))/(trace_D - 2.) + C(0,1)*S(0,0)*S(0,1) + C(1,1)*S(0,1)*S(1,1));
+//     tangent(2,2) = ((2.*C(2,2)*O(0,1)*O(0,1))/(trace_D - 2.) + C(2,2)*S(0,1)*S(0,1) + C(2,2)*S(0,0)*S(1,1));
+
+
+
+
+
 
 
  
@@ -364,7 +336,7 @@ inline void MaterialOrthotropicDamage<spatial_dimension, Parent>
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, template<UInt> class Parent>
 inline void MaterialOrthotropicDamage<spatial_dimension, Parent>
-::rotateIntoDamageFrame(const Matrix<Real> & to_rotate,
+::rotateIntoNewFrame(const Matrix<Real> & to_rotate,
 			Matrix<Real> & rotated,
 			const Matrix<Real> & damage_directions,
 			Matrix<Real> & rotation_tmp) {
