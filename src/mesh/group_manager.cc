@@ -660,7 +660,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
 	    /// add element's nodes to the cluster
 	    UInt node = connect[n];
 	    if (!checked_node(node)) {
-	      cluster.addNode(node);
+	      cluster.addNode(node, false);
 	      checked_node(node) = true;
 	    }
 	  }
