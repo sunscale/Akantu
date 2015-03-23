@@ -1536,7 +1536,7 @@ ElementTypeMap<UInt> SolidMechanicsModel::getInternalDataPerElem(const std::stri
 
 /* -------------------------------------------------------------------------- */
 ElementTypeMapArray<Real> & SolidMechanicsModel::flattenInternal(const std::string & field_name,
-								const ElementKind & kind){
+								 const ElementKind & kind, const GhostType ghost_type){
 
   std::pair<std::string,ElementKind> key(field_name,kind);
   if (this->registered_internals.count(key) == 0){
@@ -1546,7 +1546,7 @@ ElementTypeMapArray<Real> & SolidMechanicsModel::flattenInternal(const std::stri
 
   ElementTypeMapArray<Real> * internal_flat = this->registered_internals[key];
   for (UInt m = 0; m < materials.size(); ++m)
-    materials[m]->flattenInternal(field_name,*internal_flat,_not_ghost,kind);
+    materials[m]->flattenInternal(field_name,*internal_flat,ghost_type,kind);
 
   return  *internal_flat;
 }

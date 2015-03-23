@@ -92,6 +92,10 @@ private:
   /// breaking the cohesive elements
   bool contact_after_breaking;
 
+  /// variable saying if delta_f is equal to delta_max for each
+  /// element when the traction is computed
+  bool progressive_delta_f;
+
   /// delta of the previous step
   CohesiveInternalField<Real> delta_prec;
 

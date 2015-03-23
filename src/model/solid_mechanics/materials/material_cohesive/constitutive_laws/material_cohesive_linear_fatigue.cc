@@ -49,6 +49,9 @@ MaterialCohesiveLinearFatigue<spatial_dimension>
 		      _pat_parsable | _pat_readable,
 		      "Activation of contact when the elements are fully damaged");
 
+  this->registerParam("progressive_delta_f", progressive_delta_f, false,
+		      _pat_parsable | _pat_readable,
+		      "Whether or not delta_f is equal to delta_max");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -175,6 +178,9 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
     // update maximum displacement and damage
     *delta_max_it = std::max(delta, *delta_max_it);
     *damage_it = std::min(*delta_max_it / *delta_c_it, 1.);
+
+    // set delta_f equal to delta_max if desired
+    if (progressive_delta_f) delta_f = *delta_max_it;
 
     // broken element case
     if (Math::are_float_equal(*damage_it, 1.))

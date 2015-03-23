@@ -317,8 +317,6 @@ public:
     comm.allGatherV(total_pairs.storage(), nb_pairs.storage());
 
     /// renumber clusters
-    Array<UInt>::iterator<Vector<UInt> > pairs_it = total_pairs.begin(2);
-    Array<UInt>::iterator<Vector<UInt> > pairs_end = total_pairs.end(2);
 
     /// generate fragment list
     std::vector< std::set<UInt> > global_clusters;
@@ -517,13 +515,15 @@ UInt GroupManager::createClusters(UInt element_dimension,
 			      distributed_synchronizer);
   }
 
-  std::list<Element> unseen_elements;
-  Element el;
+  ElementTypeMapArray<bool> seen_elements("seen_elements");
+  mesh.initElementTypeMapArray(seen_elements, 1, element_dimension,
+			       false, _ek_not_defined, true);
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {
 
     GhostType ghost_type = *gt;
+    Element el;
     el.ghost_type = ghost_type;
 
     Mesh::type_iterator type_it  = mesh.firstType(element_dimension,
@@ -535,10 +535,12 @@ UInt GroupManager::createClusters(UInt element_dimension,
       el.type = *type_it;
       el.kind = Mesh::getKind(*type_it);
       UInt nb_element = mesh.getNbElement(*type_it, ghost_type);
+      Array<bool> & seen_elements_array = seen_elements(el.type, ghost_type);
+
       for (UInt e = 0; e < nb_element; ++e) {
 	el.element = e;
-	if (filter(el))
-	  unseen_elements.push_back(el);
+	if (!filter(el))
+	  seen_elements_array(e) = true;
       }
     }
   }
@@ -548,98 +550,118 @@ UInt GroupManager::createClusters(UInt element_dimension,
   UInt nb_cluster = 0;
 
   /// keep looping until all elements are seen
-  while(!unseen_elements.empty()) {
-    /// create a new cluster
-    std::stringstream sstr;
-    sstr << tmp_cluster_name_prefix << "_" << nb_cluster;
-    ElementGroup & cluster = createElementGroup(sstr.str(),
-						element_dimension,
-						true);
-    ++nb_cluster;
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();
+       gt != ghost_type_t::end(); ++gt) {
 
-    /// initialize the queue of elements to check in the current cluster
-    std::list<Element>::iterator uns_it = unseen_elements.begin();
-    Element uns_el = *uns_it;
-    unseen_elements.erase(uns_it);
+    GhostType ghost_type = *gt;
+    Element uns_el;
+    uns_el.ghost_type = ghost_type;
 
-    // point element are cluster by themself
-    if(element_dimension == 0) {
-      cluster.add(uns_el);
+    Mesh::type_iterator type_it = mesh.firstType(element_dimension,
+						 ghost_type,
+						 _ek_not_defined);
+    Mesh::type_iterator type_end = mesh.lastType(element_dimension,
+						 ghost_type,
+						 _ek_not_defined);
 
-      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(el.type);
-      Vector<UInt> connect =
-	mesh.getConnectivity(uns_el.type, uns_el.ghost_type).begin(nb_nodes_per_element)[uns_el.element];
-      for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-	/// add element's nodes to the cluster
-	UInt node = connect[n];
-	if (!checked_node(node)) {
-	  cluster.addNode(node);
-	  checked_node(node) = true;
-	}
-      }
+    for (; type_it != type_end; ++type_it) {
+      uns_el.type = *type_it;
+      Array<bool> & seen_elements_vec = seen_elements(uns_el.type, uns_el.ghost_type);
 
-      continue;
-    }
+      for (UInt e = 0; e < seen_elements_vec.getSize(); ++e) {
+	// skip elements that have been already seen
+	if (seen_elements_vec(e) == true) continue;
 
-    std::queue<Element> element_to_add;
-    element_to_add.push(uns_el);
+	// set current element
+	uns_el.element = e;
+	seen_elements_vec(e) = true;
 
-    /// keep looping until current cluster is complete (no more
-    /// connected elements)
-    while(!element_to_add.empty()) {
+	/// create a new cluster
+	std::stringstream sstr;
+	sstr << tmp_cluster_name_prefix << "_" << nb_cluster;
+	ElementGroup & cluster = createElementGroup(sstr.str(),
+						    element_dimension,
+						    true);
+	++nb_cluster;
 
-      /// take first element and erase it in the queue
-      Element el = element_to_add.front();
-      element_to_add.pop();
+	// point element are cluster by themself
+	if(element_dimension == 0) {
+	  cluster.add(uns_el);
 
-      /// if parallel, store cluster index per element
-      if (nb_proc > 1 && distributed_synchronizer)
-	(*element_to_fragment)(el.type, el.ghost_type)(el.element) = nb_cluster - 1;
-
-      /// add current element to the cluster
-      cluster.add(el);
-
-      const Array<Element> & element_to_facet
-	= mesh_facets->getSubelementToElement(el.type, el.ghost_type);
-
-      UInt nb_facet_per_element = element_to_facet.getNbComponent();
-
-      for (UInt f = 0; f < nb_facet_per_element; ++f) {
-	const Element & facet = element_to_facet(el.element, f);
-
-	if (facet == ElementNull) continue;
-
-	const std::vector<Element> & connected_elements
-	  = mesh_facets->getElementToSubelement(facet.type, facet.ghost_type)(facet.element);
-
-	for (UInt elem = 0; elem < connected_elements.size(); ++elem) {
-	  const Element & check_el = connected_elements[elem];
-
-	  if (check_el == ElementNull || check_el == el) continue;
-
-	  std::list<Element>::iterator it_clus = std::find(unseen_elements.begin(),
-							   unseen_elements.end(),
-							   check_el);
-
-	  /// if neighbor not seen yet, add it to check list and
-	  /// remove it from unseen elements
-	  if(it_clus != unseen_elements.end()) {
-	    unseen_elements.erase(it_clus);
-	    element_to_add.push(check_el);
+	  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(uns_el.type);
+	  Vector<UInt> connect =
+	    mesh.getConnectivity(uns_el.type, uns_el.ghost_type).begin(nb_nodes_per_element)[uns_el.element];
+	  for (UInt n = 0; n < nb_nodes_per_element; ++n) {
+	    /// add element's nodes to the cluster
+	    UInt node = connect[n];
+	    if (!checked_node(node)) {
+	      cluster.addNode(node);
+	      checked_node(node) = true;
+	    }
 	  }
+
+	  continue;
 	}
-      }
+
+	std::queue<Element> element_to_add;
+	element_to_add.push(uns_el);
+
+	/// keep looping until current cluster is complete (no more
+	/// connected elements)
+	while(!element_to_add.empty()) {
+
+	  /// take first element and erase it in the queue
+	  Element el = element_to_add.front();
+	  element_to_add.pop();
+
+	  /// if parallel, store cluster index per element
+	  if (nb_proc > 1 && distributed_synchronizer)
+	    (*element_to_fragment)(el.type, el.ghost_type)(el.element) = nb_cluster - 1;
+
+	  /// add current element to the cluster
+	  cluster.add(el);
+
+	  const Array<Element> & element_to_facet
+	    = mesh_facets->getSubelementToElement(el.type, el.ghost_type);
+
+	  UInt nb_facet_per_element = element_to_facet.getNbComponent();
+
+	  for (UInt f = 0; f < nb_facet_per_element; ++f) {
+	    const Element & facet = element_to_facet(el.element, f);
+
+	    if (facet == ElementNull) continue;
+
+	    const std::vector<Element> & connected_elements
+	      = mesh_facets->getElementToSubelement(facet.type, facet.ghost_type)(facet.element);
+
+	    for (UInt elem = 0; elem < connected_elements.size(); ++elem) {
+	      const Element & check_el = connected_elements[elem];
+
+	      // check if this element has to be skipped
+	      if (check_el == ElementNull || check_el == el) continue;
+
+	      Array<bool> & seen_elements_vec_current
+		= seen_elements(check_el.type, check_el.ghost_type);
+
+	      if (seen_elements_vec_current(check_el.element) == false) {
+		seen_elements_vec_current(check_el.element) = true;
+		element_to_add.push(check_el);
+	      }
+	    }
+	  }
 
 
-      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(el.type);
-      Vector<UInt> connect =
-	mesh.getConnectivity(el.type, el.ghost_type).begin(nb_nodes_per_element)[el.element];
-      for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-	/// add element's nodes to the cluster
-	UInt node = connect[n];
-	if (!checked_node(node)) {
-	  cluster.addNode(node);
-	  checked_node(node) = true;
+	  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(el.type);
+	  Vector<UInt> connect =
+	    mesh.getConnectivity(el.type, el.ghost_type).begin(nb_nodes_per_element)[el.element];
+	  for (UInt n = 0; n < nb_nodes_per_element; ++n) {
+	    /// add element's nodes to the cluster
+	    UInt node = connect[n];
+	    if (!checked_node(node)) {
+	      cluster.addNode(node, false);
+	      checked_node(node) = true;
+	    }
+	  }
 	}
       }
     }
