@@ -404,7 +404,7 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
 	  // be inserted just once
 	  UInt nb_element_connected_to_facet = 0;
 	  Element minimum_el = ElementNull;
-	  connected_elements.resize(0);
+	  connected_elements.clear();
 	  for (UInt el_f = 0; el_f < first_node_nb_elements; el_f++) {
 	    Element real_el = node_to_elem(facet(0), el_f);
 	    if (counter(el_f) == nb_nodes_per_facet - 1) {
