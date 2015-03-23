@@ -317,8 +317,6 @@ public:
     comm.allGatherV(total_pairs.storage(), nb_pairs.storage());
 
     /// renumber clusters
-    Array<UInt>::iterator<Vector<UInt> > pairs_it = total_pairs.begin(2);
-    Array<UInt>::iterator<Vector<UInt> > pairs_end = total_pairs.end(2);
 
     /// generate fragment list
     std::vector< std::set<UInt> > global_clusters;
