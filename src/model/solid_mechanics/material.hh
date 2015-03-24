@@ -309,15 +309,19 @@ public:
   /* Conversion functions                                                     */
   /* ------------------------------------------------------------------------ */
   template<UInt dim>
-  inline void gradUToF   (const Matrix<Real> & grad_u, Matrix<Real> & F) const;
-  inline void rightCauchy(const Matrix<Real> & F,      Matrix<Real> & C) const;
-  inline void leftCauchy (const Matrix<Real> & F,      Matrix<Real> & B) const;
+  static inline void gradUToF   (const Matrix<Real> & grad_u, Matrix<Real> & F);
+  static inline void rightCauchy(const Matrix<Real> & F,      Matrix<Real> & C);
+  static inline void leftCauchy (const Matrix<Real> & F,      Matrix<Real> & B);
 
   template<UInt dim>
-  inline void gradUToEpsilon(const Matrix<Real> & grad_u, Matrix<Real> & epsilon) const;
+  static inline void gradUToEpsilon(const Matrix<Real> & grad_u,
+				    Matrix<Real> & epsilon);
   template<UInt dim>
-  inline void gradUToGreenStrain(const Matrix<Real> & grad_u,
-                                 Matrix<Real> & epsilon) const;
+  static inline void gradUToGreenStrain(const Matrix<Real> & grad_u,
+					Matrix<Real> & epsilon);
+
+  static inline Real stressToVonMises(const Matrix<Real> & stress);
+
 protected:
   /// converts global element to local element
   inline Element convertToLocalElement(const Element & global_element) const;
