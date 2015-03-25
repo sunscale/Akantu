@@ -64,7 +64,7 @@ public:
   virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
 
   /// Create a mesh of the intersection with a linear interface
-  virtual void meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh);
+  virtual void meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh);
 
   /// Construct a primitive and add it to the list
   void addPrimitive(const Matrix<Real> & node_coordinates, UInt id);

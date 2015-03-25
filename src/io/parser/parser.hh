@@ -49,6 +49,7 @@ __BEGIN_AKANTU__
   (heat)					\
   (contact)                                     \
   (friction)					\
+  (embedded_interface) \
   (rules)					\
   (non_local)					\
   (user)					\

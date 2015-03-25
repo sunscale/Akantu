@@ -46,6 +46,9 @@ typedef CGAL::Cartesian<Real> K;
 
 class MeshGeomAbstract {
 
+protected:
+  typedef std::pair<K::Segment_3, std::string> Interface;
+
 public:
   /// Construct from mesh
   explicit MeshGeomAbstract(const Mesh & mesh);
@@ -61,7 +64,7 @@ public:
   virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const = 0;
 
   /// Compute the mesh created by a linear interface
-  virtual void meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh) = 0;
+  virtual void meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh) = 0;
 
 protected:
   /// Mesh used to construct the primitives

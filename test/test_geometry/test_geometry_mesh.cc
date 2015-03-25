@@ -67,9 +67,9 @@ int main (int argc, char * argv[]) {
   K::Segment_3 h_interface(a, b),
                v_interface(c, d);
 
-  std::list<K::Segment_3> interface_list;
-  interface_list.push_back(h_interface);
-  interface_list.push_back(v_interface);
+  std::list<std::pair<K::Segment_3, std::string> > interface_list;
+  interface_list.push_back(std::make_pair(h_interface, "mat"));
+  interface_list.push_back(std::make_pair(v_interface, "mat"));
 
   Mesh & interface_mesh = container.meshOfLinearInterfaces(interface_list);
 

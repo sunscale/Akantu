@@ -54,3 +54,46 @@ inline void MaterialReinforcement<d>::computeDirectingCosinesOnQuad(const Matrix
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+
+template<UInt dim>
+inline void MaterialReinforcement<dim>::stressTensorToVoigtVector(const Matrix<Real> & tensor,
+                                                                  Vector<Real> & vector) {
+  AKANTU_DEBUG_IN();
+  
+  for (UInt i = 0; i < dim; i++) {
+    vector(i) = tensor(i, i);
+  }
+
+  if (dim == 2) {
+    vector(2) = tensor(0, 1);
+  } else if (dim == 3) {
+    vector(3) = tensor(0, 1);
+    vector(4) = tensor(0, 2);
+    vector(5) = tensor(1, 2);
+  }
+  
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<UInt dim>
+inline void MaterialReinforcement<dim>::strainTensorToVoigtVector(const Matrix<Real> & tensor,
+                                                                  Vector<Real> & vector) {
+  AKANTU_DEBUG_IN();
+  
+  for (UInt i = 0; i < dim; i++) {
+    vector(i) = tensor(i, i);
+  }
+
+  if (dim == 2) {
+    vector(2) = 2 * tensor(0, 1);
+  } else if (dim == 3) {
+    vector(3) = 2 * tensor(0, 1);
+    vector(4) = 2 * tensor(0, 2);
+    vector(5) = 2 * tensor(1, 2);
+  }
+  
+  AKANTU_DEBUG_OUT();
+}

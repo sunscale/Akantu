@@ -136,8 +136,10 @@ UInt MeshGeomFactory<d, el_type>::numberOfIntersectionsWithInterface(const K::Se
 }
 
 template<UInt d, ElementType el_type>
-void MeshGeomFactory<d, el_type>::meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh) {
+void MeshGeomFactory<d, el_type>::meshOfLinearInterface(const Interface & interface_pair, Mesh & interface_mesh) {
   AKANTU_DEBUG_IN();
+
+  const K::Segment_3 & interface = interface_pair.first;
 
   UInt number_of_intersections = this->numberOfIntersectionsWithInterface(interface);
 
@@ -158,6 +160,7 @@ void MeshGeomFactory<d, el_type>::meshOfLinearInterface(const K::Segment_3 & int
 
   /// Arrays for storing associated element id and type
   Array<Element> & associated_element = interface_mesh.getData<Element>("associated_element", _segment_2);
+  Array<std::string> & associated_material = interface_mesh.getData<std::string>("material", _segment_2);
 
   std::list<std::pair<K::Segment_3, UInt> >::iterator it  = list_of_segments.begin();
   std::list<std::pair<K::Segment_3, UInt> >::iterator end = list_of_segments.end();
@@ -181,6 +184,7 @@ void MeshGeomFactory<d, el_type>::meshOfLinearInterface(const K::Segment_3 & int
 
     /// Copy associated element info
     associated_element.push_back(Element(el_type, it->second));
+    associated_material.push_back(interface_pair.second);
   }
 
   AKANTU_DEBUG_OUT();

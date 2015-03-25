@@ -63,10 +63,10 @@ public:
   virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
 
   /// Compute the intersection mesh with linear interface
-  virtual void meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh);
+  virtual void meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh);
 
   /// Construct the interface mesh from several segments
-  Mesh & meshOfLinearInterfaces(const std::list<K::Segment_3> & interfaces);
+  Mesh & meshOfLinearInterfaces(const std::list<Interface> & interfaces);
 
   /// Get the factory object for an element type
   const MeshGeomAbstract * getFactoryForElementType(ElementType el_type) const;

@@ -33,6 +33,7 @@
 add_akantu_test(test_materials "test_materials")
 add_akantu_test(patch_tests "patch_tests")
 add_akantu_test(test_cohesive "cohesive_test")
+add_akantu_test(test_embedded_interface "test_embedded_interface")
 
 #===============================================================================
 add_mesh(test_solid_mechanics_model_square_mesh square.geo 2 1)

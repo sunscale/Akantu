@@ -60,8 +60,10 @@ MeshGeomContainer::MeshGeomContainer(const Mesh & mesh):
   factory_map(),
   interface_mesh(mesh.getSpatialDimension(), "mesh_geom")
 {
-  interface_mesh.addConnectivityType(_segment_2);
+  interface_mesh.addConnectivityType(_segment_2, _not_ghost);
+  interface_mesh.addConnectivityType(_segment_2, _ghost);
   interface_mesh.registerData<Element>("associated_element").alloc(0, 1, _segment_2);
+  interface_mesh.registerData<std::string>("material").alloc(0, 1, _segment_2);
 }
 
 MeshGeomContainer::~MeshGeomContainer()
@@ -89,7 +91,7 @@ void MeshGeomContainer::constructData() {
         break;
       
       case 3:
-        //AKANTU_BOOST_ELEMENT_SWITCH(MESH_GEOM_CASE_3D, ());
+        //AKANTU_BOOST_ELEMENT_SWITCH(MESH_GEOM_CASE_3D, (_tetrahedron_4));
         break;
     }
   }
@@ -114,7 +116,7 @@ UInt MeshGeomContainer::numberOfIntersectionsWithInterface(const K::Segment_3 & 
   return total;
 }
 
-void MeshGeomContainer::meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh) {
+void MeshGeomContainer::meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh) {
   AKANTU_DEBUG_IN();
 
   GeomMap::type_iterator it = factory_map.firstType();
@@ -127,14 +129,9 @@ void MeshGeomContainer::meshOfLinearInterface(const K::Segment_3 & interface, Me
   AKANTU_DEBUG_OUT();
 }
 
-Mesh & MeshGeomContainer::meshOfLinearInterfaces(const std::list<K::Segment_3> & interfaces) {
-  if (interfaces.size() == 1) {
-    meshOfLinearInterface(interfaces.front(), interface_mesh);
-    return interface_mesh;
-  }
-
-  std::list<K::Segment_3>::const_iterator interfaces_it = interfaces.begin();
-  std::list<K::Segment_3>::const_iterator interfaces_end = interfaces.end();
+Mesh & MeshGeomContainer::meshOfLinearInterfaces(const std::list<Interface> & interfaces) {
+  std::list<Interface>::const_iterator interfaces_it = interfaces.begin();
+  std::list<Interface>::const_iterator interfaces_end = interfaces.end();
 
   for (; interfaces_it != interfaces_end ; ++interfaces_it) {
     meshOfLinearInterface(*interfaces_it, interface_mesh);
@@ -146,5 +143,11 @@ Mesh & MeshGeomContainer::meshOfLinearInterfaces(const std::list<K::Segment_3> &
 const MeshGeomAbstract * MeshGeomContainer::getFactoryForElementType(ElementType el_type) const {
   return factory_map(el_type);
 }
+
+/* -------------------------------------------------------------------------- */
+
+#undef MESH_GEOM_CASE_2D
+#undef MESH_GEOM_CASE_3D
+#undef MESH_GEOM_CASE
 
 __END_AKANTU__
