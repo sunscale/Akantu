@@ -277,7 +277,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
     }
 
     /// compute traction
-    computeTraction(ghost_type);
+        computeTraction(ghost_type);
 
     /// get the tangent matrix @f$\frac{\partial{(t/\delta)}}{\partial{\delta}} @f$
     Array<Real> * tangent_stiffness_matrix =
@@ -290,6 +290,9 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
 
 
     computeNormal(model->getCurrentPosition(), normal, *it, ghost_type);
+
+    /// compute openings @f$\mathbf{\delta}@f$
+    //computeOpening(model->getDisplacement(), opening(*it, ghost_type), *it, ghost_type);
 
     tangent_stiffness_matrix->clear();
 

@@ -74,8 +74,8 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
                       _pat_parsable | _pat_readable,
                       "Kappa parameter");
 
-  //  if (model->isExplicit())
-    use_previous_delta_max=true;
+  //  if (!model->isExplicit())
+    use_previous_delta_max = true;
 
   AKANTU_DEBUG_OUT();
 }
@@ -198,9 +198,11 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
     const Array<Real> & f_stress = model->getStressOnFacets(type_facet);
     const Array<Real> & sigma_lim = sigma_c(type_facet);
     Real max_ratio = 0.;
-    UInt index = 0;
+    UInt index_f = 0;
+    UInt index_filter = 0;
     UInt nn = 0;
-    Real sigma_c_tmp = 0.0;
+    //Real sigma_c_tmp = 0.0;
+
 
     UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
     UInt nb_facet = f_filter.getSize();
@@ -279,18 +281,46 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
           if (ratio > max_ratio){
             ++nn;
             max_ratio = ratio;
-            index = f_filter(f);
-            sigma_c_tmp = *sigma_lim_it;
+            index_f = f;
+            index_filter = f_filter(f);
+            //            sigma_c_tmp = *sigma_lim_it;
+            //            sigma_ins_tmp = ins_s_;
           }
         }
       }
     }
+
+    StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+    Array<Real> abs_max(comm.getNbProc());
+    abs_max(comm.whoAmI()) = max_ratio;
+    comm.allGather(abs_max.storage(), 1);
+
+    Array<Real>::scalar_iterator it = std::max_element(abs_max.begin(), abs_max.end());
+    UInt pos = it - abs_max.begin();
+
+    if (pos != comm.whoAmI()) {
+      AKANTU_DEBUG_OUT();
+      return;
+    }
+
     /// insertion of only 1 cohesive element in case of implicit approach. The one subjected to the highest stress.
     if (!model->isExplicit() && nn){
-      f_insertion(index) = true;
+      f_insertion(index_filter) = true;
+
+      //    Array<Real>::iterator<Matrix<Real> > normal_traction_it =
+      //      normal_traction.begin_reinterpret(nb_quad_facet, spatial_dimension, nb_facet);
+      Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
+
       for (UInt q = 0; q < nb_quad_facet; ++q) {
 
-        sig_c_eff.push_back(sigma_c_tmp);
+        //        Vector<Real> ins_s(normal_traction_it[index_f].storage() + q * spatial_dimension,
+        //                   spatial_dimension);
+
+        Real new_sigma = (sigma_lim_it[index_f]);
+
+        sig_c_eff.push_back(new_sigma);
+        //        ins_stress.push_back(ins_s);
+        //        trac_old.push_back(ins_s);
         ins_stress.push_back(0.0);
         trac_old.push_back(0.0);
 
@@ -300,7 +330,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
         if (!Math::are_float_equal(delta_c, 0.))
           new_delta = delta_c;
         else
-          new_delta = 2 * G_c / (sigma_c_tmp);
+          new_delta = 2 * G_c / (new_sigma);
 
         del_c.push_back(new_delta);
       }
@@ -478,12 +508,10 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
   for (; traction_it != traction_end;
        ++traction_it, ++opening_it, ++normal_it, ++sigma_c_it,
          ++delta_max_it, ++delta_c_it, ++damage_it, ++contact_traction_it,
-         ++insertion_stress_it, ++contact_opening_it) {
-
+         ++insertion_stress_it, ++contact_opening_it, ++delta_max_prev_it) {
 
     if (!model->isExplicit())
       *delta_max_it = *delta_max_prev_it;
-
 
     /// compute normal and tangential opening vectors
     Real normal_opening_norm = opening_it->dot(*normal_it);
@@ -524,11 +552,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
     /// update maximum displacement and damage
     *delta_max_it = std::max(*delta_max_it, delta);
     *damage_it = std::min(*delta_max_it / *delta_c_it, 1.);
-
-    Real prov1 = *delta_max_it;
-    Real prov2 = *damage_it;
-    Real prov3 = *delta_max_prev_it;
-    Real prov4 = *delta_c_it;
 
     /**
      * Compute traction @f$ \mathbf{T} = \left(
@@ -583,9 +606,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
   Array<Real>::vector_iterator opening_it =
     opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator traction_it =
-    tractions(el_type, ghost_type).begin(spatial_dimension);
-
   Array<Real>::iterator<Real>delta_max_it =
     delta_max.previous(el_type, ghost_type).begin();
 
@@ -598,12 +618,19 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
   Array<Real>::iterator<Real>damage_it =
     damage(el_type, ghost_type).begin();
 
+  Array<Real>::iterator< Vector<Real> > contact_opening_it =
+    contact_opening(el_type, ghost_type).begin(spatial_dimension);
+
 
   Vector<Real> normal_opening(spatial_dimension);
   Vector<Real> tangential_opening(spatial_dimension);
 
-  for (; tangent_it != tangent_end; ++tangent_it, ++normal_it, ++opening_it, ++traction_it, ++ delta_max_it, ++sigma_c_it, ++delta_c_it, ++damage_it) {
+  for (; tangent_it != tangent_end;
+       ++tangent_it, ++normal_it, ++opening_it, ++ delta_max_it,
+         ++sigma_c_it, ++delta_c_it, ++damage_it, ++contact_opening_it) {
+
     /// compute normal and tangential opening vectors
+    *opening_it += *contact_opening_it;
     Real normal_opening_norm = opening_it->dot(*normal_it);
     normal_opening = (*normal_it);
     normal_opening *= normal_opening_norm;
@@ -623,7 +650,7 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
     delta = std::sqrt(delta);
 
     if (delta < Math::getTolerance())
-      delta = 0.0000001;
+      delta = (*delta_c_it)/1000.;  //0.0000001;
 
     if (normal_opening_norm >= 0.0){
       if (delta >= *delta_max_it){

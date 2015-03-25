@@ -54,158 +54,188 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
                                                     Real & error,
                                                     UInt max_iteration,
                                                     bool do_not_factorize) {
+
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeSolveStepEvent(method));
   this->implicitPred();
 
-  bool something_converged = false;
-
+  bool something_converged;
+  bool converged;
   Array<Real> * displacement_tmp = NULL;
   Array<Real> * velocity_tmp = NULL;
   Array<Real> * acceleration_tmp = NULL;
 
-  while(!something_converged) {
-    if(is_extrinsic) {
-      // If in extrinsic saves the current displacements, velocities and accelerations
-      Array<Real> * tmp_swap;
+  //  for (UInt h = 0; h < 2; ++h){
+    something_converged = false;
+    converged = false;
+    //    tolerance /= (1 + 99 * h);
+    //    max_iteration *= (1 + h);
 
-      if(!displacement_tmp) {
-        displacement_tmp = new Array<Real>(*(this->displacement));
-      } else {
-        (*displacement_tmp).resize(this->displacement->getSize());
-        //        displacement_tmp->resize(this->displacement->getSize());
-        (*displacement_tmp).copy(*(this->displacement));
-        //displacement_tmp->copy(*(this->displacement));
+    while(!something_converged) {
+      if(is_extrinsic) {
+        // If in extrinsic saves the current displacements, velocities and accelerations
+        Array<Real> * tmp_swap;
+
+        if(!displacement_tmp) {
+          displacement_tmp = new Array<Real>(*(this->displacement));
+        } else {
+          (*displacement_tmp).resize(this->displacement->getSize());
+          //        displacement_tmp->resize(this->displacement->getSize());
+          (*displacement_tmp).copy(*(this->displacement));
+          //displacement_tmp->copy(*(this->displacement));
+        }
+        tmp_swap = displacement_tmp;
+        displacement_tmp = this->displacement;
+        this->displacement = tmp_swap;
+
+        if(!velocity_tmp) {
+          velocity_tmp = new Array<Real>(*(this->velocity));
+        } else {
+          velocity_tmp->resize(this->velocity->getSize());
+          velocity_tmp->copy(*(this->velocity));
+        }
+        tmp_swap = velocity_tmp;
+        velocity_tmp = this->velocity;
+        this->velocity = tmp_swap;
+
+        if(!acceleration_tmp) {
+          acceleration_tmp = new Array<Real>(*(this->acceleration));
+        } else {
+          acceleration_tmp->resize(this->acceleration->getSize());
+          acceleration_tmp->copy(*(this->acceleration));
+        }
+        tmp_swap = acceleration_tmp;
+        acceleration_tmp = this->acceleration;
+        this->acceleration = tmp_swap;
       }
-      tmp_swap = displacement_tmp;
-      displacement_tmp = this->displacement;
-      this->displacement = tmp_swap;
-
-      if(!velocity_tmp) {
-        velocity_tmp = new Array<Real>(*(this->velocity));
-      } else {
-        velocity_tmp->resize(this->velocity->getSize());
-        velocity_tmp->copy(*(this->velocity));
-      }
-      tmp_swap = velocity_tmp;
-      velocity_tmp = this->velocity;
-      this->velocity = tmp_swap;
-
-      if(!acceleration_tmp) {
-        acceleration_tmp = new Array<Real>(*(this->acceleration));
-      } else {
-        acceleration_tmp->resize(this->acceleration->getSize());
-        acceleration_tmp->copy(*(this->acceleration));
-      }
-      tmp_swap = acceleration_tmp;
-      acceleration_tmp = this->acceleration;
-      this->acceleration = tmp_swap;
-    }
-
-
-    this->updateResidual();
-
-    AKANTU_DEBUG_ASSERT(stiffness_matrix != NULL,
-                        "You should first initialize the implicit solver and assemble the stiffness matrix");
-
-    bool need_factorize = !do_not_factorize;
-
-    if (method ==_implicit_dynamic) {
-      AKANTU_DEBUG_ASSERT(mass_matrix != NULL,
-                          "You should first initialize the implicit solver and assemble the mass matrix");
-    }
-
-    switch (cmethod) {
-    case _scm_newton_raphson_tangent:
-    case _scm_newton_raphson_tangent_not_computed:
-      break;
-    case _scm_newton_raphson_tangent_modified:
-      this->assembleStiffnessMatrix();
-      break;
-    default:
-      AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been implemented!");
-    }
-
-    UInt iter = 0;
-    bool converged = false;
-    error = 0.;
-    if(criteria == _scc_residual) {
-      converged = this->testConvergence<criteria> (tolerance, error);
-      if(converged) return converged;
-    }
-
-    do {
-      if (cmethod == _scm_newton_raphson_tangent)
-        this->assembleStiffnessMatrix();
-
-      solve<NewmarkBeta::_displacement_corrector> (*increment, 1., need_factorize);
-
-      this->implicitCorr();
 
       this->updateResidual();
 
-      converged = this->testConvergence<criteria> (tolerance, error);
+      AKANTU_DEBUG_ASSERT(stiffness_matrix != NULL,
+                          "You should first initialize the implicit solver and assemble the stiffness matrix");
 
-      iter++;
-      AKANTU_DEBUG_INFO("[" << criteria << "] Convergence iteration "
-                        << std::setw(std::log10(max_iteration)) << iter
-                        << ": error " << error << (converged ? " < " : " > ") << tolerance);
+      bool need_factorize = !do_not_factorize;
+
+      if (method ==_implicit_dynamic) {
+        AKANTU_DEBUG_ASSERT(mass_matrix != NULL,
+                            "You should first initialize the implicit solver and assemble the mass matrix");
+      }
 
       switch (cmethod) {
       case _scm_newton_raphson_tangent:
-        need_factorize = true;
-        break;
       case _scm_newton_raphson_tangent_not_computed:
+        break;
       case _scm_newton_raphson_tangent_modified:
-        need_factorize = false;
+        this->assembleStiffnessMatrix();
         break;
       default:
         AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been implemented!");
       }
 
-
-    } while (!converged && iter < max_iteration);
-
-
-    if (converged) {
-      EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
-    } else if(iter == max_iteration) {
-      AKANTU_DEBUG_WARNING("[" << criteria << "] Convergence not reached after "
-                           << std::setw(std::log10(max_iteration)) << iter <<
-                           " iteration" << (iter == 1 ? "" : "s") << "!" << std::endl);
-    }
-
-    if(is_extrinsic) {
-      Array<Real> * tmp_swap;
-
-      tmp_swap = displacement_tmp;
-      displacement_tmp = this->displacement;
-      this->displacement = tmp_swap;
-
-      tmp_swap = velocity_tmp;
-      velocity_tmp = this->velocity;
-      this->velocity = tmp_swap;
-
-      tmp_swap = acceleration_tmp;
-      acceleration_tmp = this->acceleration;
-      this->acceleration = tmp_swap;
-
-      UInt nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive) +
-        this->mesh.getNbElement(this->spatial_dimension, _ghost, _ek_cohesive);
-
-      this->checkCohesiveStress();
-
-      UInt new_nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive) +
-        this->mesh.getNbElement(this->spatial_dimension, _ghost, _ek_cohesive);
-
-      if(new_nb_cohesive_elements == nb_cohesive_elements) {
-        something_converged = true;
-      } else {
-        something_converged = false;
+      UInt iter = 0;
+      converged = false;
+      error = 0.;
+      if(criteria == _scc_residual) {
+        converged = this->testConvergence<criteria> (tolerance, error);
+        if(converged) return converged;
       }
-    }
-  }//end while something_converged
 
-  if(is_extrinsic) {
+      do {
+        if (cmethod == _scm_newton_raphson_tangent)
+          this->assembleStiffnessMatrix();
+
+        solve<NewmarkBeta::_displacement_corrector> (*increment, 1., need_factorize);
+
+        this->implicitCorr();
+
+        this->updateResidual();
+
+        converged = this->testConvergence<criteria> (tolerance, error);
+
+        //      dump();
+        //      dump("cohesive elements");
+        //std::cout << "Error after loop: " << error << std::endl;
+
+        iter++;
+        AKANTU_DEBUG_INFO("[" << criteria << "] Convergence iteration "
+                          << std::setw(std::log10(max_iteration)) << iter
+                          << ": error " << error << (converged ? " < " : " > ") << tolerance);
+
+        switch (cmethod) {
+        case _scm_newton_raphson_tangent:
+          need_factorize = true;
+          break;
+        case _scm_newton_raphson_tangent_not_computed:
+        case _scm_newton_raphson_tangent_modified:
+          need_factorize = false;
+          break;
+        default:
+          AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been implemented!");
+        }
+
+        //      if (iter == max_iteration && iter < 250)
+        //        if (error/tolerance < 50)
+        //          max_iteration += 200;
+
+      } while (!converged && iter < max_iteration);
+
+
+      if (converged) {
+        ////      EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
+        std::cout << "Error after convergence: " << error << std::endl;
+        std::cout << "no. of iterations: " << iter << std::endl;
+      } else if(iter == max_iteration) {
+        AKANTU_DEBUG_WARNING("[" << criteria << "] Convergence not reached after "
+                             << std::setw(std::log10(max_iteration)) << iter <<
+                             " iteration" << (iter == 1 ? "" : "s") << "!" << std::endl);
+            std::cout << "Error after NON convergence: " << error << std::endl;
+      }
+
+      if (is_extrinsic) {
+        Array<Real> * tmp_swap;
+
+        tmp_swap = displacement_tmp;
+        displacement_tmp = this->displacement;
+        this->displacement = tmp_swap;
+
+        tmp_swap = velocity_tmp;
+        velocity_tmp = this->velocity;
+        this->velocity = tmp_swap;
+
+        tmp_swap = acceleration_tmp;
+        acceleration_tmp = this->acceleration;
+        this->acceleration = tmp_swap;
+
+        if (converged){
+          UInt nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive) +
+            this->mesh.getNbElement(this->spatial_dimension, _ghost, _ek_cohesive);
+
+          this->checkCohesiveStress();
+
+          UInt new_nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive) +
+            this->mesh.getNbElement(this->spatial_dimension, _ghost, _ek_cohesive);
+
+          if(new_nb_cohesive_elements == nb_cohesive_elements) {
+            something_converged = true;
+          } else {
+            something_converged = false;
+            std::cout << "1 cohesive element has been inserted" << std::endl;
+          }
+        }
+      }
+
+      if (!converged){
+        something_converged = true;
+        //        ++h;
+      }
+
+    } //end while something_converged
+
+    //  } //end for
+
+  if(is_extrinsic && converged) {
+
+    EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
+
     this->displacement->copy(*displacement_tmp);
     this->velocity    ->copy(*velocity_tmp);
     this->acceleration->copy(*acceleration_tmp);
@@ -216,6 +246,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
   }
 
   return something_converged;
+
 }
 
 __END_AKANTU__
