@@ -91,7 +91,7 @@ void MeshGeomContainer::constructData() {
         break;
       
       case 3:
-        //AKANTU_BOOST_ELEMENT_SWITCH(MESH_GEOM_CASE_3D, (_tetrahedron_4));
+        AKANTU_BOOST_ELEMENT_SWITCH(MESH_GEOM_CASE_3D, (_tetrahedron_4));
         break;
     }
   }

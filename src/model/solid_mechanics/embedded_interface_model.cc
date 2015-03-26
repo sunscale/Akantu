@@ -135,5 +135,10 @@ void EmbeddedInterfaceModel::assembleStiffnessMatrix() {
   SolidMechanicsModel::assembleStiffnessMatrix();
 }
 
+void EmbeddedInterfaceModel::dump() {
+  SolidMechanicsModel::dump();
+  //interface_mesh->dump();
+}
+
 __END_AKANTU__
 
