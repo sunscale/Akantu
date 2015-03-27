@@ -33,6 +33,7 @@
 add_akantu_test(test_materials "test_materials")
 add_akantu_test(patch_tests "patch_tests")
 add_akantu_test(test_cohesive "cohesive_test")
+add_akantu_test(test_embedded_interface "test_embedded_interface")
 
 #===============================================================================
 add_mesh(test_solid_mechanics_model_square_mesh square.geo 2 1)
@@ -210,5 +211,14 @@ register_test(test_solid_mechanics_model_reassign_material
 register_test(test_solid_mechanics_model_material_eigenstrain
   SOURCES test_solid_mechanics_model_material_eigenstrain.cc
   FILES_TO_COPY cube_3d_tet_4.msh; material_elastic_plane_strain.dat
+  PACKAGE core
+  )
+
+#===============================================================================
+register_test(test_solid_mechanics_model_orthotropic
+  SOURCES test_solid_mechanics_model_orthotropic.cc
+  DEPENDENCIES test_solid_mechanics_model_square_mesh
+  FILES_TO_COPY orthotropic.dat
+  DIRECTORIES_TO_CREATE paraview
   PACKAGE core
   )

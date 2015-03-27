@@ -4,7 +4,7 @@
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Fri Feb 27 2015
- * @date last modification: Mon Mar 2 2015
+ * @date last modification: Fri Mar 6 2015
  *
  * @brief  Contains the CGAL representation of a mesh
  *
@@ -30,77 +30,124 @@
 
 /* -------------------------------------------------------------------------- */
 
+#include "aka_common.hh"
+
 #include "mesh_geom_container.hh"
 #include "mesh_geom_factory.hh"
 #include "mesh.hh"
 
+#include <CGAL/Cartesian.h>
+
+/* -------------------------------------------------------------------------- */
+
+#define MESH_GEOM_CASE(d, type)     \
+  MeshGeomFactory<d, type> * factory = new MeshGeomFactory<d, type>(mesh);      \
+  factory_map(factory, type);     \
+  factory->constructData();
+
+#define MESH_GEOM_CASE_2D(type) MESH_GEOM_CASE(2, type)
+#define MESH_GEOM_CASE_3D(type) MESH_GEOM_CASE(3, type)
+
+/* -------------------------------------------------------------------------- */
+
 __BEGIN_AKANTU__
 
+typedef CGAL::Cartesian<Real> K;
+
+
 MeshGeomContainer::MeshGeomContainer(const Mesh & mesh):
-  MeshGeomAbstract(mesh)
-{}
-
-MeshGeomContainer::~MeshGeomContainer() {
-  ElementTypeMap<MeshGeomAbstract *>::type_iterator it, end;
-
-  it  = constructor_map.firstType();
-  end = constructor_map.lastType();
-
-  for (; it != end ; it++) {
-    MeshGeomAbstract * p = constructor_map(*it);
-
-    if (p) {
-      delete p;
-    }
-  }
+  MeshGeomAbstract(mesh),
+  factory_map(),
+  interface_mesh(mesh.getSpatialDimension(), "mesh_geom")
+{
+  interface_mesh.addConnectivityType(_segment_2, _not_ghost);
+  interface_mesh.addConnectivityType(_segment_2, _ghost);
+  interface_mesh.registerData<Element>("associated_element").alloc(0, 1, _segment_2);
+  interface_mesh.registerData<std::string>("material").alloc(0, 1, _segment_2);
 }
 
+MeshGeomContainer::~MeshGeomContainer()
+{}
+
 void MeshGeomContainer::constructData() {
+  AKANTU_DEBUG_IN();
+
   const UInt spatial_dim = mesh.getSpatialDimension();
 
   Mesh::type_iterator it = mesh.firstType(spatial_dim, _not_ghost);
   Mesh::type_iterator end = mesh.lastType(spatial_dim, _not_ghost);
 
+  /// Loop over the element types of the mesh and construct the primitive trees
   for (; it != end ; ++it) {
+    ElementType type = *it; // for AKANTU_BOOST_ELEMENT_SWITCH macro
     switch(spatial_dim) {
       case 1:
         AKANTU_DEBUG_WARNING("Geometry in 1D is undefined");
         break;
 
       case 2:
-        switch(*it) {
-          case _triangle_3: {
-            MeshGeomFactory<2, _triangle_3> * factory = new MeshGeomFactory<2, _triangle_3>(mesh);
-            constructor_map(factory, _triangle_3);
-            factory->constructData();
-            break;
-          }
-
-          /// Need to implement these cases when needed
-          case _not_defined:
-          case _point_1:
-          case _segment_2:
-          case _segment_3:
-          case _triangle_6:
-          case _tetrahedron_4:
-          case _tetrahedron_10:
-          case _quadrangle_4:
-          case _quadrangle_8:
-          case _hexahedron_8:
-          case _pentahedron_6:
-          case _max_element_type:
-            break;
-        }
+        // Expand the list of elements when they are implemented
+        AKANTU_BOOST_ELEMENT_SWITCH(MESH_GEOM_CASE_2D, (_triangle_3));
         break;
       
       case 3:
+        //AKANTU_BOOST_ELEMENT_SWITCH(MESH_GEOM_CASE_3D, (_tetrahedron_4));
         break;
     }
   }
+
+  AKANTU_DEBUG_OUT();
+}
+
+UInt MeshGeomContainer::numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const {
+  AKANTU_DEBUG_IN();
+
+  UInt total = 0;
+
+  GeomMap::type_iterator it = factory_map.firstType();
+  GeomMap::type_iterator end = factory_map.lastType();
+
+  for (; it != end ; ++it) {
+    total += factory_map(*it)->numberOfIntersectionsWithInterface(interface);
+  }
+
+  AKANTU_DEBUG_OUT();
+
+  return total;
+}
+
+void MeshGeomContainer::meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh) {
+  AKANTU_DEBUG_IN();
+
+  GeomMap::type_iterator it = factory_map.firstType();
+  GeomMap::type_iterator end = factory_map.lastType();
+
+  for (; it != end ; ++it) {
+    factory_map(*it)->meshOfLinearInterface(interface, interface_mesh);
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+Mesh & MeshGeomContainer::meshOfLinearInterfaces(const std::list<Interface> & interfaces) {
+  std::list<Interface>::const_iterator interfaces_it = interfaces.begin();
+  std::list<Interface>::const_iterator interfaces_end = interfaces.end();
+
+  for (; interfaces_it != interfaces_end ; ++interfaces_it) {
+    meshOfLinearInterface(*interfaces_it, interface_mesh);
+  }
+
+  return interface_mesh;
 }
 
 const MeshGeomAbstract * MeshGeomContainer::getFactoryForElementType(ElementType el_type) const {
-  return constructor_map(el_type);
+  return factory_map(el_type);
 }
+
+/* -------------------------------------------------------------------------- */
+
+#undef MESH_GEOM_CASE_2D
+#undef MESH_GEOM_CASE_3D
+#undef MESH_GEOM_CASE
 
 __END_AKANTU__

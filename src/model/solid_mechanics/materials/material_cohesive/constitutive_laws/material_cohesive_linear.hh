@@ -79,18 +79,11 @@ protected:
 			       ElementType el_type,
 			       GhostType ghost_type = _not_ghost);
 
-  /// compute stress norms on quadrature points for each facet for stress check
-  virtual void computeStressNorms(const Array<Real> & facet_stress,
-				  Array<Real> & stress_check,
-				  Array<Real> & normal_stress,
-				  ElementType type_facet);
-
   /// compute effective stress norm for insertion check
-  inline void computeEffectiveNorm(const Matrix<Real> & stress,
+  inline Real computeEffectiveNorm(const Matrix<Real> & stress,
 				   const Vector<Real> & normal,
 				   const Vector<Real> & tangent,
-				   Vector<Real> & normal_stress,
-				   Real & effective_norm);
+				   Vector<Real> & normal_stress);
 
 
   /// compute tangent stiffness matrix
@@ -102,6 +95,11 @@ protected:
   /**
    * Scale insertion traction sigma_c according to the volume of the
    * two elements surrounding a facet
+   *
+   * see the article: F. Zhou and J. F. Molinari "Dynamic crack
+   * propagation with cohesive elements: a methodology to address mesh
+   * dependency" International Journal for Numerical Methods in
+   * Engineering (2004)
    */
   void scaleInsertionTraction();
 

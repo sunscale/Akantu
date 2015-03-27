@@ -71,6 +71,7 @@
 #cmakedefine AKANTU_IGFEM
 
 #cmakedefine AKANTU_USE_CGAL
+#cmakedefine AKANTU_EMBEDDED
 
 // BOOST Section
 #cmakedefine AKANTU_BOOST_CHRONO

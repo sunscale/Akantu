@@ -36,27 +36,21 @@
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
-
-
-template<class T, class R>
-class MaterialPadder : public PadderGeneric<Vector<T>, R > {
-
+class MaterialFunctor {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
-  MaterialPadder(const SolidMechanicsModel & model) :
+  MaterialFunctor(const SolidMechanicsModel & model) :
     model(model),
-    material_index(model.getMaterialByElement()) {}
+    material_index(model.getMaterialByElement()),
+    spatial_dimension(model.getSpatialDimension()){}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-
   /// return the material from the global element index
   const Material & getMaterialFromGlobalIndex(Element global_index){
-
     UInt index = global_index.getIndex();
     UInt material_id = material_index(global_index.getType())(index);
     const Material & material = model.getMaterial(material_id);
@@ -69,26 +63,34 @@ public:
   }
 
 protected:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 
   /// all material padders probably need access to solid mechanics model
   const SolidMechanicsModel & model;
+
   /// they also need an access to the map from global ids to material id and local ids
   const ElementTypeMapArray<UInt>  & material_index;
 
   /// the number of data per element
   const ElementTypeMapArray<UInt>  nb_data_per_element;
 
+  UInt spatial_dimension;
+};
+
+/* -------------------------------------------------------------------------- */
+template<class T, class R>
+class MaterialPadder : public MaterialFunctor, public PadderGeneric<Vector<T>, R > {
+public:
+  MaterialPadder(const SolidMechanicsModel & model) :
+    MaterialFunctor(model) {}
 };
 
 /* -------------------------------------------------------------------------- */
 
 template <UInt spatial_dimension>
-class StressPadder :
-  public MaterialPadder<Real,Matrix<Real> > {
+class StressPadder : public MaterialPadder<Real, Matrix<Real> > {
 
 public:
   StressPadder(const SolidMechanicsModel & model) :
@@ -101,7 +103,7 @@ public:
     UInt ncols = in.size() / nrows;
     UInt nb_data = in.size() / (nrows*nrows);
 
-    Matrix<Real> stress = this->pad(in, nrows,ncols, nb_data);
+    Matrix<Real> stress = this->pad(in, nrows, ncols, nb_data);
     const Material & material = this->getMaterialFromGlobalIndex(global_element_id);
     bool plane_strain = true;
     if(spatial_dimension == 2)
@@ -125,28 +127,28 @@ public:
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-class StrainPadder : public MaterialPadder<Real, Matrix<Real> > {
+class StrainPadder : public MaterialFunctor, public PadderGeneric< Matrix<Real>, Matrix<Real> > {
 public:
   StrainPadder(const SolidMechanicsModel & model) :
-    MaterialPadder<Real, Matrix<Real> >(model) {
+  MaterialFunctor(model) {
     this->setPadding(3,3);
   }
 
-  inline Matrix<Real> func(const Vector<Real> & in, Element global_element_id){
-
+  inline Matrix<Real> func(const Matrix<Real> & in, Element global_element_id){
     UInt nrows = spatial_dimension;
-    UInt ncols = in.size() / nrows;
-    UInt nb_data = in.size() / ncols;
+    UInt nb_data = in.size() / (nrows*nrows);
 
-    Matrix<Real> strain = this->pad(in, nrows,ncols, nb_data);
+    Matrix<Real> strain = this->pad(in, nb_data);
     const Material & material = this->getMaterialFromGlobalIndex(global_element_id);
     bool plane_stress = material.getParam<bool>("Plane_Stress");
+
     if(plane_stress) {
       Real nu = material.getParam<Real>("nu");
       for (UInt d = 0; d < nb_data; ++d) {
 	strain(2, 2 + 3*d) = nu / (nu - 1) * (strain(0, 0 + 3*d) + strain(1, 1 + 3*d));
       }
     }
+
     return strain;
   }
 
@@ -157,6 +159,74 @@ public:
   };
 
 };
+
+/* -------------------------------------------------------------------------- */
+class ComputeStrain : public MaterialFunctor, public ComputeFunctor<Vector<Real>, Matrix<Real> > {
+public:
+  ComputeStrain(const SolidMechanicsModel & model) : MaterialFunctor(model) { }
+
+  inline Matrix<Real> func(const Vector<Real> & in, Element global_element_id){
+    UInt nrows = spatial_dimension;
+    UInt ncols = in.size() / nrows;
+    UInt nb_data = in.size() / (nrows*nrows);
+
+    Matrix<Real> ret_all_strain(nrows, ncols);
+    Tensor3<Real> all_grad_u(in.storage(), nrows, nrows, nb_data);
+    Tensor3<Real> all_strain(ret_all_strain.storage(), nrows, nrows, nb_data);
+
+    for (UInt d = 0; d < nb_data; ++d) {
+      Matrix<Real> grad_u = all_grad_u(d);
+      Matrix<Real> strain = all_strain(d);
+
+      if (spatial_dimension == 2)
+	Material::gradUToEpsilon<2>(grad_u, strain);
+      else if (spatial_dimension == 3)
+	Material::gradUToEpsilon<3>(grad_u, strain);
+    }
+
+    return ret_all_strain;
+  }
+
+  UInt getDim() { return spatial_dimension*spatial_dimension; };
+
+  UInt getNbComponent(UInt old_nb_comp){
+    return this->getDim();
+  };
+
+};
+
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+class ComputeVonMisesStress : public MaterialFunctor,
+			      public ComputeFunctor<Vector<Real>, Vector<Real> > {
+public:
+  ComputeVonMisesStress(const SolidMechanicsModel & model) : MaterialFunctor(model) { }
+
+  inline Vector<Real> func(const Vector<Real> & in, Element global_element_id){
+    UInt nrows = spatial_dimension;
+    UInt nb_data = in.size() / (nrows*nrows);
+
+    Vector<Real> von_mises_stress(nb_data);
+    Matrix<Real> deviatoric_stress(3, 3);
+
+    for (UInt d = 0; d < nb_data; ++d) {
+      Matrix<Real> cauchy_stress(in.storage() + d * nrows*nrows, nrows, nrows);
+      von_mises_stress(d) = Material::stressToVonMises(cauchy_stress);
+    }
+
+    return von_mises_stress;
+  }
+
+  UInt getDim() { return 1; };
+
+  UInt getNbComponent(UInt old_nb_comp){
+    return this->getDim();
+  };
+
+};
+
+
 
 /* -------------------------------------------------------------------------- */
 

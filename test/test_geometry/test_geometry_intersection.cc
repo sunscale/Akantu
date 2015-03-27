@@ -4,7 +4,7 @@
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Fri Feb 27 2015
- * @date last modification: Fri Feb 27 2015
+ * @date last modification: Thu Mar 5 2015
  *
  * @brief  Tests the intersection module
  *
@@ -34,6 +34,7 @@
 #include "mesh_geom_container.hh"
 #include "mesh_geom_factory.hh"
 #include "tree_type_helper.hh"
+#include "geom_helper_functions.hh"
 
 #include <CGAL/Cartesian.h>
 
@@ -44,12 +45,8 @@
 using namespace akantu;
 
 typedef CGAL::Cartesian<Real> K;
-typedef boost::optional < TreeTypeHelper<2, _triangle_3>::tree::Intersection_and_primitive_id<K::Line_3>::Type > Line_intersection;
-
-/* -------------------------------------------------------------------------- */
-
-bool comparePoints(const K::Point_3 & a, const K::Point_3 & b);
-bool compareSegments(const K::Segment_3 & a, const K::Segment_3 & b);
+typedef TreeTypeHelper<2, _triangle_3>::linear_intersection Line_intersection;
+typedef TreeTypeHelper<2, _triangle_3>::tree::Primitive_id Primitive_id;
 
 /* -------------------------------------------------------------------------- */
 
@@ -69,9 +66,9 @@ int main (int argc, char * argv[]) {
   const TreeTypeHelper<2, _triangle_3>::tree & tree = factory->getTree();
 
   K::Point_3 a(0., 0.25, 0.), b(1., 0.25, 0.);
-  K::Line_3 line(a, b);
+  K::Segment_3 line(a, b);
 
-  if (tree.number_of_intersected_primitives(line) != 2)
+  if (container.numberOfIntersectionsWithInterface(line) != 2)
     return EXIT_FAILURE;
 
   K::Point_3 begin(a), intermediate(0.25, 0.25, 0.), end(0.75, 0.25, 0.);
@@ -86,6 +83,7 @@ int main (int argc, char * argv[]) {
   if (!intersection_0 || !intersection_1)
     return EXIT_FAILURE;
 
+  /// *-> first is the intersection ; *->second is the primitive id
   if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&(intersection_0->first))) {
     if (!compareSegments(*segment, result_0)) {
       return EXIT_FAILURE;
@@ -100,17 +98,5 @@ int main (int argc, char * argv[]) {
 
   finalize();
   return EXIT_SUCCESS;
-}
-
-/* -------------------------------------------------------------------------- */
-
-
-bool comparePoints(const K::Point_3 & a, const K::Point_3 & b) {
-  return Math::are_float_equal(a.x(), b.x()) && Math::are_float_equal(a.y(), b.y());
-}
-
-bool compareSegments(const K::Segment_3 & a, const K::Segment_3 & b) {
-  return (comparePoints(a.source(), b.source()) && comparePoints(a.target(), b.target())) ||
-         (comparePoints(a.source(), b.target()) && comparePoints(a.target(), b.source()));
 }
 

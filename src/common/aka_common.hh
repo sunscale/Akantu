@@ -1,3 +1,8 @@
+/// A Checker par la teub = Damien FAIT
+
+
+
+
 /**
  * @file   aka_common.hh
  *
@@ -109,7 +114,9 @@ extern const UInt _all_dimensions;
   (_tetrahedron_4)				\
   (_tetrahedron_10)				\
   (_pentahedron_6)				\
-  (_hexahedron_8)
+  (_pentahedron_15)				\
+  (_hexahedron_8)				\
+  (_hexahedron_20)				\
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 #define AKANTU_ek_structural_ELEMENT_TYPE	\
@@ -122,11 +129,11 @@ extern const UInt _all_dimensions;
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
 #  define AKANTU_ek_cohesive_ELEMENT_TYPE	\
-   (_cohesive_2d_4)				\
-   (_cohesive_2d_6)				\
-   (_cohesive_1d_2)				\
-   (_cohesive_3d_6)				\
-   (_cohesive_3d_12)
+  (_cohesive_2d_4)				\
+  (_cohesive_2d_6)				\
+  (_cohesive_1d_2)				\
+  (_cohesive_3d_6)				\
+  (_cohesive_3d_12)
 #else
 #  define AKANTU_ek_cohesive_ELEMENT_TYPE
 #endif
@@ -162,7 +169,10 @@ enum ElementType {
   _quadrangle_4,      ///< first order quadrangle
   _quadrangle_8,      ///< second order quadrangle
   _hexahedron_8,      ///< first order hexahedron
+  _hexahedron_20,     ///< second order hexahedron
   _pentahedron_6,     ///< first order pentahedron
+  _pentahedron_15,    ///< second order pentahedron
+
 #if defined (AKANTU_STRUCTURAL_MECHANICS)
   _bernoulli_beam_2,  ///< Bernoulli beam 2D
   _bernoulli_beam_3,  ///< Bernoulli beam 3D
@@ -194,13 +204,15 @@ enum GeometricalType {
   _gt_tetrahedron_4,     ///< 4 nodes tetrahedron
   _gt_tetrahedron_10,    ///< 10 nodes tetrahedron
   _gt_hexahedron_8,      ///< 8 nodes hexahedron
+  _gt_hexahedron_20,     ///< 20 nodes hexahedron
   _gt_pentahedron_6,     ///< 6 nodes pentahedron
+  _gt_pentahedron_15,    ///< 15 nodes pentahedron
 #if defined(AKANTU_COHESIVE_ELEMENT)
   _gt_cohesive_2d_4,     ///< 4 nodes 2D cohesive
   _gt_cohesive_2d_6,     ///< 6 nodes 2D cohesive
   _gt_cohesive_1d_2,     ///< 2 nodes 1D cohesive
   _gt_cohesive_3d_6,     ///< 6 nodes 3D cohesive
-  _gt_cohesive_3d_12,     ///< 12 nodes 3D cohesive
+  _gt_cohesive_3d_12,    ///< 12 nodes 3D cohesive
 #endif
   _gt_not_defined
 };
@@ -219,7 +231,9 @@ enum InterpolationType {
   _itp_lagrange_tetrahedron_4,     ///< first order lagrangian tetrahedron
   _itp_lagrange_tetrahedron_10,    ///< second order lagrangian tetrahedron
   _itp_lagrange_hexahedron_8,      ///< first order lagrangian hexahedron
-  _itp_lagrange_pentahedron_6,      ///< first order lagrangian pentahedron
+  _itp_lagrange_hexahedron_20,     ///< second order lagrangian hexahedron
+  _itp_lagrange_pentahedron_6,     ///< first order lagrangian pentahedron
+  _itp_lagrange_pentahedron_15,    ///< second order lagrangian pentahedron
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
   _itp_bernoulli_beam,             ///< Bernoulli beam
   _itp_kirchhoff_shell,            ///< Kirchhoff shell
@@ -422,6 +436,8 @@ enum SynchronizationTag {
   _gst_mnl_weight,       //< synchronization of data for the weight computations
   //--- General tags ---
   _gst_test,             //< Test tag
+  _gst_user_1,           //< tag for user simulations
+  _gst_user_2,           //< tag for user simulations
   _gst_material_id,      //< synchronization of the material ids
   _gst_for_dump,         //< everything that needs to be synch before dump
   //--- Contact & Friction ---

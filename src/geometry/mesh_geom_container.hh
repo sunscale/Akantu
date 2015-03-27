@@ -4,7 +4,7 @@
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Fri Feb 27 2015
- * @date last modification: Mon Mar 2 2015
+ * @date last modification: Fri Mar 6 2015
  *
  * @brief  Contains the CGAL representation of a mesh
  *
@@ -37,9 +37,16 @@
 #include "mesh.hh"
 #include "mesh_geom_abstract.hh"
 
+#include <CGAL/Cartesian.h>
+
+/* -------------------------------------------------------------------------- */
+
 __BEGIN_AKANTU__
 
+typedef CGAL::Cartesian<Real> K;
+
 class MeshGeomContainer : MeshGeomAbstract {
+  typedef ElementTypeMap<MeshGeomAbstract *> GeomMap;
 
 public:
   /// Construct from mesh
@@ -52,11 +59,22 @@ public:
   /// Constructs the geometric data from the mesh
   virtual void constructData();
 
+  /// Compute the number of intersections with geometric interface
+  virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
+
+  /// Compute the intersection mesh with linear interface
+  virtual void meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh);
+
+  /// Construct the interface mesh from several segments
+  Mesh & meshOfLinearInterfaces(const std::list<Interface> & interfaces);
+
   /// Get the factory object for an element type
   const MeshGeomAbstract * getFactoryForElementType(ElementType el_type) const;
 
 protected:
-  ElementTypeMap<MeshGeomAbstract *> constructor_map;
+  GeomMap factory_map;
+
+  Mesh interface_mesh;
 };
 
 __END_AKANTU__

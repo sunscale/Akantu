@@ -4,7 +4,7 @@
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Thu Feb 26 2015
- * @date last modification: Thu Feb 26 2015
+ * @date last modification: Fri Mar 6 2015
  *
  * @brief  Class for constructing the CGAL primitives of a mesh
  *
@@ -36,11 +36,18 @@
 #include "aka_common.hh"
 #include "mesh.hh"
 
+#include <CGAL/Cartesian.h>
+
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
+typedef CGAL::Cartesian<Real> K;
+
 class MeshGeomAbstract {
+
+protected:
+  typedef std::pair<K::Segment_3, std::string> Interface;
 
 public:
   /// Construct from mesh
@@ -52,6 +59,12 @@ public:
 public:
   /// Construct geometric data for computational geometry algorithms
   virtual void constructData() = 0;
+
+  /// Compute number of intersections with geometric interface
+  virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const = 0;
+
+  /// Compute the mesh created by a linear interface
+  virtual void meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh) = 0;
 
 protected:
   /// Mesh used to construct the primitives

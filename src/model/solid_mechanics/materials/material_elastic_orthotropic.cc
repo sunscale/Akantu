@@ -153,6 +153,8 @@ void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergy(Eleme
                                                                            GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
+  Material::computePotentialEnergy(el_type, ghost_type);
+  
   AKANTU_DEBUG_ASSERT(!this->finite_deformation,"finite deformation not possible in material orthotropic (TO BE IMPLEMENTED)");
 
 

@@ -4,7 +4,7 @@
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Thu Feb 26 2015
- * @date last modification: Mon Mar 2 2015
+ * @date last modification: Fri Mar 6 2015
  *
  * @brief  Class for constructing the CGAL primitives of a mesh
  *
@@ -38,9 +38,13 @@
 #include "mesh_geom_abstract.hh"
 #include "tree_type_helper.hh"
 
+#include <CGAL/Cartesian.h>
+
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
+
+typedef CGAL::Cartesian<Real> K;
 
 template<UInt d, ElementType el_type>
 class MeshGeomFactory : public MeshGeomAbstract {
@@ -55,6 +59,19 @@ public:
 public:
   /// Construct AABB tree for fast intersection computing
   virtual void constructData();
+
+  /// Compute the number of intersections with primitive
+  virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
+
+  /// Create a mesh of the intersection with a linear interface
+  virtual void meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh);
+
+  /// Construct a primitive and add it to the list
+  void addPrimitive(const Matrix<Real> & node_coordinates, UInt id);
+
+  /// Construct segment list from intersections and remove duplicates
+  void constructSegments(const std::list<typename TreeTypeHelper<d, el_type>::linear_intersection> & intersections,
+                         std::list<std::pair<K::Segment_3, UInt> > & segments);
 
   const typename TreeTypeHelper<d, el_type>::tree & getTree() const { return *data_tree; }
 

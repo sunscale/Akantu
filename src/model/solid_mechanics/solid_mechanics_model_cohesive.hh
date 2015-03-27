@@ -47,13 +47,10 @@ __BEGIN_AKANTU__
 struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
   SolidMechanicsModelCohesiveOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
 				     bool extrinsic = false,
-				     bool no_init_materials = false,
-				     bool stress_interpolation = true) :
+				     bool no_init_materials = false) :
     SolidMechanicsModelOptions(analysis_method, no_init_materials),
-    extrinsic(extrinsic),
-    stress_interpolation(stress_interpolation) {}
+    extrinsic(extrinsic) {}
   bool extrinsic;
-  bool stress_interpolation;
 };
 
 extern const SolidMechanicsModelCohesiveOptions default_solid_mechanics_model_cohesive_options;
@@ -151,12 +148,6 @@ private:
   /// init facets_check array
   void initFacetsCheck();
 
-  /// fill stress_on_facet
-  void fillStressOnFacet();
-
-  /// compute average stress on elements
-  void averageStressOnFacets(UInt material_index);
-
   /* ------------------------------------------------------------------------ */
   /* Mesh Event Handler inherited members                                     */
   /* ------------------------------------------------------------------------ */
@@ -224,17 +215,11 @@ private:
   /// @todo store tangents when normals are computed:
   ElementTypeMapArray<Real> tangents;
 
-  /// list of stresses on facet quadrature points for every element
-  ElementTypeMapArray<Real> stress_on_facet;
-
   /// stress on facets on the two sides by quadrature point
   ElementTypeMapArray<Real> facet_stress;
 
   /// material to use if a cohesive element is created on a facet
   ElementTypeMapArray<UInt> facet_material;
-
-  /// stress interpolation flag
-  bool stress_interpolation;
 
   bool is_extrinsic;
 

@@ -46,8 +46,7 @@ __BEGIN_AKANTU__
 
 const SolidMechanicsModelCohesiveOptions default_solid_mechanics_model_cohesive_options(_explicit_lumped_mass,
 											false,
-											false,
-											true);
+											false);
 
 /* -------------------------------------------------------------------------- */
 
@@ -57,7 +56,6 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(Mesh & mesh,
 							 const MemoryID & memory_id) :
   SolidMechanicsModel(mesh, dim, id, memory_id),
   tangents("tangents", id),
-  stress_on_facet("stress_on_facet", id),
   facet_stress("facet_stress", id),
   facet_material("facet_material", id) {
   AKANTU_DEBUG_IN();
@@ -117,7 +115,6 @@ void SolidMechanicsModelCohesive::initFull(const ModelOptions & options) {
   const SolidMechanicsModelCohesiveOptions & smmc_options =
     dynamic_cast<const SolidMechanicsModelCohesiveOptions &>(options);
 
-  this->stress_interpolation = smmc_options.stress_interpolation;
   this->is_extrinsic = smmc_options.extrinsic;
 
   if (!inserter)
@@ -293,27 +290,7 @@ void SolidMechanicsModelCohesive::initAutomaticInsertion() {
   /// compute normals on facets
   computeNormals();
 
-  /// allocate stress_on_facet to store element stress on facets
-  mesh.initElementTypeMapArray(stress_on_facet,
-			      spatial_dimension * spatial_dimension,
-			      spatial_dimension);
-
-  Mesh::type_iterator it   = mesh.firstType(spatial_dimension);
-  Mesh::type_iterator last = mesh.lastType(spatial_dimension);
-
-  for (; it != last; ++it) {
-    ElementType type = *it;
-    UInt nb_element = mesh.getNbElement(type);
-
-    UInt nb_facet_per_elem = Mesh::getNbFacetsPerElement(type);
-    ElementType type_facet = Mesh::getFacetType(type);
-    UInt nb_quad_per_facet = getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
-
-    stress_on_facet(type).resize(nb_quad_per_facet * nb_facet_per_elem * nb_element);
-  }
-
-  if (stress_interpolation)
-    initStressInterpolation();
+  initStressInterpolation();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -511,159 +488,18 @@ void SolidMechanicsModelCohesive::computeNormals() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::averageStressOnFacets(UInt material_index) {
+void SolidMechanicsModelCohesive::checkCohesiveStress() {
   AKANTU_DEBUG_IN();
 
-  Mesh::type_iterator it   = mesh.firstType(spatial_dimension);
-  Mesh::type_iterator last = mesh.lastType(spatial_dimension);
-
-  /// loop over element type
-  for (; it != last; ++it) {
-    ElementType type = *it;
-    UInt nb_element = mesh.getNbElement(type);
-    UInt nb_quad_per_element = getFEEngine().getNbQuadraturePoints(type);
-    const Array<Real> & stress = materials[material_index]->getStress(type);
-    Array<Real> & s_on_facet = stress_on_facet(type);
-
-    UInt nb_facet_per_elem = Mesh::getNbFacetsPerElement(type);
-    ElementType type_facet = Mesh::getFacetType(type);
-    UInt nb_quad_per_facet = getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
-    UInt nb_facet_quad_per_elem = nb_quad_per_facet * nb_facet_per_elem;
-
-    Array<Real>::const_iterator<Matrix<Real> > stress_it
-      = stress.begin(spatial_dimension, spatial_dimension);
-    Array<Real>::iterator<Matrix<Real> > s_on_facet_it
-      = s_on_facet.begin(spatial_dimension, spatial_dimension);
-
-    Matrix<Real> average_stress(spatial_dimension, spatial_dimension);
-
-    for (UInt el = 0; el < nb_element; ++el) {
-
-      /// compute average stress
-      average_stress.clear();
-
-      for (UInt q = 0; q < nb_quad_per_element; ++q, ++stress_it)
-	average_stress += *stress_it;
-
-      average_stress /= nb_quad_per_element;
-
-      /// store average stress
-      for (UInt q = 0; q < nb_facet_quad_per_elem; ++q, ++s_on_facet_it)
-	*s_on_facet_it = average_stress;
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::fillStressOnFacet() {
-  AKANTU_DEBUG_IN();
-
-  Mesh & mesh_facets = inserter->getMeshFacets();
-  UInt sp2 = spatial_dimension * spatial_dimension;
-  UInt sp4 = sp2 * 2;
-
-  /// loop over materials
   for (UInt m = 0; m < materials.size(); ++m) {
     try {
       MaterialCohesive & mat __attribute__((unused)) =
 	dynamic_cast<MaterialCohesive &>(*materials[m]);
     } catch(std::bad_cast&) {
-
-      if (stress_interpolation)
-	/// interpolate stress on facet quadrature points positions
-	materials[m]->interpolateStress(stress_on_facet);
-      else
-	averageStressOnFacets(m);
-
-      GhostType ghost_type = _not_ghost;
-
-      Mesh::type_iterator it   = mesh.firstType(spatial_dimension, ghost_type);
-      Mesh::type_iterator last = mesh.lastType(spatial_dimension, ghost_type);
-
-      /// loop over element type
-      for (; it != last; ++it) {
-	ElementType type = *it;
-	UInt nb_element = mesh.getNbElement(type, ghost_type);
-	if (nb_element == 0) continue;
-
-	Array<Real> & stress_on_f = stress_on_facet(type, ghost_type);
-
-	/// store the interpolated stresses on the facet_stress vector
-	Array<Element> & facet_to_element =
-	  mesh_facets.getSubelementToElement(type, ghost_type);
-
-	UInt nb_facet_per_elem = facet_to_element.getNbComponent();
-
-	Array<Element>::iterator<Vector<Element> > facet_to_el_it =
-	  facet_to_element.begin(nb_facet_per_elem);
-
-	Array<Real>::iterator< Matrix<Real> > stress_on_f_it =
-	  stress_on_f.begin(spatial_dimension, spatial_dimension);
-
-	ElementType facet_type = _not_defined;
-	GhostType facet_gt = _casper;
-	Array<std::vector<Element> > * element_to_facet = NULL;
-	Array<Real> * f_stress = NULL;
-	Array<bool> * f_check = NULL;
-	UInt nb_quad_per_facet = 0;
-	UInt element_rank = 0;
-
-	Element current_el(type, 0, ghost_type);
-
-	for (UInt el = 0; el < nb_element; ++el, ++facet_to_el_it) {
-	  current_el.element = el;
-	  for (UInt f = 0; f < nb_facet_per_elem; ++f) {
-	    Element global_facet_elem = (*facet_to_el_it)(f);
-	    UInt global_facet = global_facet_elem.element;
-
-	    if (facet_type != global_facet_elem.type ||
-		facet_gt != global_facet_elem.ghost_type) {
-	      facet_type = global_facet_elem.type;
-	      facet_gt = global_facet_elem.ghost_type;
-
-	      element_to_facet =
-		&( mesh_facets.getElementToSubelement(facet_type, facet_gt) );
-	      f_stress = &( facet_stress(facet_type, facet_gt) );
-
-	      nb_quad_per_facet =
-		getFEEngine("FacetsFEEngine").getNbQuadraturePoints(facet_type, facet_gt);
-
-	      f_check = &( inserter->getCheckFacets(facet_type, facet_gt) );
-	    }
-
-	    if (!(*f_check)(global_facet)) {
-	      stress_on_f_it += nb_quad_per_facet;
-	      continue;
-	    }
-
-	    for (UInt q = 0; q < nb_quad_per_facet; ++q, ++stress_on_f_it) {
-
-	      element_rank = (*element_to_facet)(global_facet)[0] != current_el;
-
-	      Matrix<Real> facet_stress_local(f_stress->storage()
-					      + (global_facet * nb_quad_per_facet + q) * sp4
-					      + element_rank * sp2,
-					      spatial_dimension,
-					      spatial_dimension);
-
-	      facet_stress_local = *stress_on_f_it;
-	    }
-	  }
-	}
-      }
+      /// interpolate stress on facet quadrature points positions
+      materials[m]->interpolateStressOnFacets(facet_stress);
     }
   }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::checkCohesiveStress() {
-  AKANTU_DEBUG_IN();
-
-  fillStressOnFacet();
 
 #if defined(AKANTU_DEBUG_TOOLS)
   debug::element_manager.printData(debug::_dm_model_cohesive,

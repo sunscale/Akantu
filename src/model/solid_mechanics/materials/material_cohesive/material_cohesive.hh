@@ -230,6 +230,9 @@ protected:
 
   /// critical displacement
   Real delta_c;
+
+  /// array to temporarily store the normals
+  Array<Real> normal;
 };
 
 

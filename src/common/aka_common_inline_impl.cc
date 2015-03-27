@@ -90,6 +90,8 @@ inline std::ostream & operator <<(std::ostream & stream, InterpolationType type)
     case _itp_lagrange_tetrahedron_10 : stream << "_itp_lagrange_tetrahedron_10"; break;
     case _itp_lagrange_hexahedron_8   : stream << "_itp_lagrange_hexahedron_8"  ; break;
     case _itp_lagrange_pentahedron_6  : stream << "_itp_lagrange_pentahedron_6" ; break;
+    case _itp_lagrange_hexahedron_20  : stream << "_itp_lagrange_hexahedron_20" ; break;
+    case _itp_lagrange_pentahedron_15 : stream << "_itp_lagrange_pentahedron_15"; break;
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
     case _itp_bernoulli_beam          : stream << "_itp_bernoulli_beam"         ; break;
     case _itp_kirchhoff_shell         : stream << "_itp_kirchhoff_shell"        ; break;
@@ -139,6 +141,8 @@ inline std::ostream & operator <<(std::ostream & stream, SynchronizationTag type
     case _gst_mnl_for_average          : stream << "_gst_mnl_for_average"         ; break;
     case _gst_mnl_weight               : stream << "_gst_mnl_weight"              ; break;
     case _gst_test                     : stream << "_gst_test"                    ; break;
+    case _gst_user_1                   : stream << "_gst_user_1"                    ; break;
+    case _gst_user_2                   : stream << "_gst_user_2"                    ; break;
     case _gst_material_id              : stream << "_gst_material_id"             ; break;
     case _gst_for_dump                 : stream << "_gst_for_dump"                ; break;
     case _gst_cf_nodal                 : stream << "_gst_cf_nodal"                ; break;
