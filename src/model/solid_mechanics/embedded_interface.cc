@@ -52,6 +52,8 @@ EmbeddedInterface::~EmbeddedInterface()
 {}
 
 K::Segment_3 EmbeddedInterface::getPrimitive() const {
+  AKANTU_DEBUG_INFO("Creating interface " << points);
+
   if (points.cols() == 2) {
     K::Point_3 a(points(0, 0), points(0, 1), 0.);
     K::Point_3 b(points(1, 0), points(1, 1), 0.);

@@ -84,10 +84,11 @@ public:
   /// Initialise the interface mesh
   void initInterface(const std::list<std::pair<K::Segment_3, std::string> > & interface_list);
 
-public:
   /// Assemble the stiffness matrix of the model
   virtual void assembleStiffnessMatrix();
 
+  /// Dump
+  virtual void dump();
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */

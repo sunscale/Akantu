@@ -1,12 +1,12 @@
 /**
- * @file   test_geometry_intersection.cc
+ * @file   test_geometry_mesh.cc
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Fri Feb 27 2015
- * @date last modification: Thu Mar 5 2015
+ * @date creation: Fri Mar 13 2015
+ * @date last modification: Fri Mar 13 2015
  *
- * @brief  Tests the intersection module
+ * @brief  Tests the interface mesh generation
  *
  * @section LICENSE
  *
@@ -31,9 +31,8 @@
 /* -------------------------------------------------------------------------- */
 
 #include "aka_common.hh"
+
 #include "mesh_geom_container.hh"
-#include "mesh_geom_factory.hh"
-#include "tree_type_helper.hh"
 #include "geom_helper_functions.hh"
 
 #include <CGAL/Cartesian.h>
@@ -45,8 +44,6 @@
 using namespace akantu;
 
 typedef CGAL::Cartesian<Real> K;
-typedef TreeTypeHelper<2, _triangle_3>::linear_intersection Line_intersection;
-typedef TreeTypeHelper<2, _triangle_3>::tree::Primitive_id Primitive_id;
 
 /* -------------------------------------------------------------------------- */
 
@@ -62,41 +59,35 @@ int main (int argc, char * argv[]) {
   MeshGeomContainer container(mesh);
   container.constructData();
 
-  const MeshGeomFactory<2, _triangle_3> * factory = dynamic_cast<const MeshGeomFactory<2, _triangle_3> *>(container.getFactoryForElementType(_triangle_3));
-  const TreeTypeHelper<2, _triangle_3>::tree & tree = factory->getTree();
+  K::Point_3 a(0, 0.25, 0),
+             b(1, 0.25, 0),
+             c(0.25, 0, 0),
+             d(0.25, 1, 0);
 
-  K::Point_3 a(0., 0.25, 0.), b(1., 0.25, 0.);
-  K::Segment_3 line(a, b);
+  K::Segment_3 h_interface(a, b),
+               v_interface(c, d);
 
-  if (container.numberOfIntersectionsWithInterface(line) != 2)
+  std::list<std::pair<K::Segment_3, std::string> > interface_list;
+  interface_list.push_back(std::make_pair(h_interface, "mat"));
+  interface_list.push_back(std::make_pair(v_interface, "mat"));
+
+  Mesh & interface_mesh = container.meshOfLinearInterfaces(interface_list);
+
+  if (interface_mesh.getNbElement(_segment_2) != 4)
     return EXIT_FAILURE;
 
-  K::Point_3 begin(a), intermediate(0.25, 0.25, 0.), end(0.75, 0.25, 0.);
-  K::Segment_3 result_0(begin, intermediate), result_1(intermediate, end);
+  Vector<Real> bary(2);
+  Element test;
+  test.element = 1;
+  test.type = _segment_2;
+  
+  interface_mesh.getBarycenter(test, bary);
 
-  std::list<Line_intersection> list_of_intersections;
-  tree.all_intersections(line, std::back_inserter(list_of_intersections));
-
-  const Line_intersection & intersection_0 = list_of_intersections.front();
-  const Line_intersection & intersection_1 = list_of_intersections.back();
-
-  if (!intersection_0 || !intersection_1)
+  if (!Math::are_float_equal(bary(0), 0.5) || !Math::are_float_equal(bary(1), 0.25))
     return EXIT_FAILURE;
-
-  /// *-> first is the intersection ; *->second is the primitive id
-  if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&(intersection_0->first))) {
-    if (!compareSegments(*segment, result_0)) {
-      return EXIT_FAILURE;
-    }
-  }
-
-  if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&(intersection_1->first))) {
-    if (!compareSegments(*segment, result_1)) {
-      return EXIT_FAILURE;
-    }
-  }
 
   finalize();
   return EXIT_SUCCESS;
 }
+
 
