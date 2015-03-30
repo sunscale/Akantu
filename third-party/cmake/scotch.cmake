@@ -36,8 +36,8 @@ ExternalProject_Add(Scotch
   PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}.patch
   CONFIGURE_COMMAND cmake -E copy ${SCOTCH_DIR}/scotch_make.inc src/Makefile.inc
   BUILD_IN_SOURCE 1
-  BUILD_COMMAND MPICH_CC=${CMAKE_C_COMPILER} make -C src
-  INSTALL_COMMAND prefix=<INSTALL_DIR> make -C src install
+  BUILD_COMMAND MPICH_CC=${CMAKE_C_COMPILER} ${CMAKE_MAKE_PROGRAM} -C src
+  INSTALL_COMMAND prefix=<INSTALL_DIR> ${CMAKE_MAKE_PROGRAM} -C src install
   )
 
 set_third_party_shared_libirary_name(SCOTCH_LIBRARY scotch)

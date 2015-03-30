@@ -202,8 +202,6 @@ template<> UInt * GeometricalElement<_gt_hexahedron_8>::facet_connectivity[]   =
 template<> UInt * GeometricalElement<_gt_hexahedron_20>::facet_connectivity[]  = { &facet_connectivity_vect[0] };
 template<> UInt * GeometricalElement<_gt_pentahedron_6>::facet_connectivity[]  = { &facet_connectivity_vect[0],
 										   &facet_connectivity_vect[2*3] };
-template<> UInt * GeometricalElement<_gt_pentahedron_6> ::facet_connectivity[] = { &facet_connectivity_vect[0],
-										   &facet_connectivity_vect[2*3] };
 template<> UInt * GeometricalElement<_gt_pentahedron_15>::facet_connectivity[] = { &facet_connectivity_vect[0],
 										   &facet_connectivity_vect[2*6] };
 

@@ -100,8 +100,8 @@ ExternalProject_Add(MUMPS
   BUILD_IN_SOURCE 1
   PATCH_COMMAND patch -p2 < ${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}.patch
   CONFIGURE_COMMAND cmake -E copy ${PROJECT_BINARY_DIR}/third-party/MUMPSmake.inc Makefile.inc
-  BUILD_COMMAND make d
-  INSTALL_COMMAND prefix=<INSTALL_DIR> make install
+  BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} d
+  INSTALL_COMMAND prefix=<INSTALL_DIR> ${CMAKE_MAKE_PROGRAM} install
   )
 
 set_third_party_shared_libirary_name(MUMPS_LIBRARY_DMUMPS dmumps${MUMPS_PREFIX})

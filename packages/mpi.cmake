@@ -40,7 +40,14 @@ package_declare_sources(MPI
   synchronizer/static_communicator_mpi.hh
   )
 
-mark_as_advanced(MPI_EXTRA_LIBRARY MPI_LIBRARY)
+
+get_cmake_property(_all_vars VARIABLES)
+foreach(_var ${_all_vars})
+  if(_var MATCHES "^MPI_.*")
+    mark_as_advanced(${_var})
+  endif()
+endforeach()
+
 
 package_declare_documentation(MPI
   "This is a meta package providing access to MPI."

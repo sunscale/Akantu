@@ -99,9 +99,13 @@ set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg"
   CACHE STRING "Flags used by the linker during profiling builds")
 set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg"
   CACHE STRING "Flags used by the linker during profiling builds")
-mark_as_advanced(CMAKE_CXX_FLAGS_PROFILING)
-mark_as_advanced(CMAKE_EXE_LINKER_FLAGS_PROFILING)
-mark_as_advanced(CMAKE_SHARED_LINKER_FLAGS_PROFILING)
+mark_as_advanced(
+  CMAKE_CXX_FLAGS_PROFILING
+  CMAKE_C_FLAGS_PROFILING
+  CMAKE_Fortran_FLAGS_PROFILING
+  CMAKE_EXE_LINKER_FLAGS_PROFILING
+  CMAKE_SHARED_LINKER_FLAGS_PROFILING
+  )
 
 include(CMakeDetermineCCompiler)
 cmake_deactivate_debug_message(PackagesSystem)

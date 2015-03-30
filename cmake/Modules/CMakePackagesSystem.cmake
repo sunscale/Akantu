@@ -301,7 +301,8 @@ function(package_add_extra_dependency pkg)
   set(_tmp_dep ${${_pkg_name}_EXTRA_DEPENDS})
   list(APPEND _tmp_dep ${ARGN})
   list(REMOVE_DUPLICATES _tmp_dep)
-  set(${_pkg_name}_EXTRA_DEPENDENCY "${_tmp_dep}" CACHE INTERNAL "External dependencies")
+  set(${_pkg_name}_EXTRA_DEPENDENCY "${_tmp_dep}"
+    CACHE INTERNAL "External dependencies")
 endfunction()
 
 function(package_rm_extra_dependency pkg DEP)
@@ -309,7 +310,8 @@ function(package_rm_extra_dependency pkg DEP)
   if(${_pkg_name}_EXTRA_DEPENDENCY)
     set(_tmp_dep ${${_pkg_name}_EXTRA_DEPENDENCY})
     list(REMOVE_ITEM _tmp_dep ${DEP})
-    set(${_pkg_name}_EXTRA_DEPENDENCY "${_tmp_dep}" CACHE INTERNAL "External dependencies" FORCE)
+    set(${_pkg_name}_EXTRA_DEPENDENCY "${_tmp_dep}"
+      CACHE INTERNAL "External dependencies" FORCE)
   endif()
 endfunction()
 
@@ -391,7 +393,11 @@ function(package_get_all_source_files SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
 
   package_get_all_activated_packages(_activated_list)
   foreach(_pkg_name ${_activated_list})
-    _package_get_source_files(${_pkg_name} _tmp_SRCS _tmp_PUBLIC_HEADERS _tmp_PRIVATE_HEADERS)
+    _package_get_source_files(${_pkg_name}
+      _tmp_SRCS
+      _tmp_PUBLIC_HEADERS
+      _tmp_PRIVATE_HEADERS
+      )
     list(APPEND tmp_SRCS ${_tmp_SRCS})
     list(APPEND tmp_PUBLIC_HEADERS ${tmp_PUBLIC_HEADERS})
     list(APPEND tmp_PRIVATE_HEADERS ${tmp_PRIVATE_HEADERS})
