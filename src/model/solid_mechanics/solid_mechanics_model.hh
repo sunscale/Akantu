@@ -140,6 +140,9 @@ public:
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
+  /// re-initialize model to set fields to 0
+  void reInitialize();
+
   /* ------------------------------------------------------------------------ */
   /* PBC                                                                      */
   /* ------------------------------------------------------------------------ */
