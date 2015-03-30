@@ -32,6 +32,32 @@ package_declare(BLAS EXTERNAL
   DESCRIPTION "Use BLAS for arithmetic operations"
   EXTRA_PACKAGE_OPTIONS LANGUAGE Fortran)
 
+set(AKANTU_USE_BLAS_VENDOR "Generic" CACHE STRING "Version of blas to use")
+mark_as_advanced(AKANTU_USE_BLAS_VENDOR)
+set_property(CACHE AKANTU_USE_BLAS_VENDOR PROPERTY STRINGS
+  Goto
+  ATLAS
+  PhiPACK
+  CXML
+  DXML
+  SunPerf
+  SCSL
+  SGIMATH
+  IBMESSL
+  Intel10_32
+  Intel10_64lp
+  Intel10_64lp_seq
+  Intel
+  ACML
+  ACML_MP
+  ACML_GPU
+  Apple
+  NAS
+  Generic
+  )
+
+set(ENV{BLA_VENDOR} ${AKANTU_USE_BLAS_VENDOR})
+
 if(BLAS_mkl_core_LIBRARY)
   set(AKANTU_USE_BLAS_MKL CACHE INTERNAL "" FORCE)
 endif()

@@ -1,11 +1,12 @@
 #===============================================================================
-# @file   boost.cmake
+# @file   scalapack.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Wed Jan 14 2015
+# @date creation: Mon Nov 21 2011
+# @date last modification: Mon Sep 15 2014
 #
-# @brief  package handling the dependencies to boost
+# @brief  package description for mumps support
 #
 # @section LICENSE
 #
@@ -26,11 +27,16 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
-package_declare(Boost EXTERNAL
-  NOT_OPTIONAL
-  DESCRIPTION "Package handling boost components"
-  EXTRA_PACKAGE_OPTIONS PREFIX Boost
+package_declare(ScaLAPACK EXTERNAL
+  DESCRIPTION "Add ScaLAPACK support in akantu"
+  SYSTEM OFF third-party/cmake/scalapack.cmake
+  DEPENDS MPI
   )
 
-mark_as_advanced(Boost_DIR)
+
+package_add_third_party_script_variable(ScaLAPACK
+  SCALAPACK_VERSION "2.0.2")
+package_add_third_party_script_variable(ScaLAPACK
+  SCALAPACK_ARCHIVE "http://www.netlib.org/scalapack/scalapack-${SCALAPACK_VERSION}.tgz")
+package_add_third_party_script_variable(ScaLAPACK
+  SCALAPACK_ARCHIVE_HASH_2.0.2 "MD5=2f75e600a2ba155ed9ce974a1c4b536f")

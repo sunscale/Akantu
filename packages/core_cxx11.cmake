@@ -64,10 +64,6 @@ if(HAVE_NEW_STD)
       endif()
     endif()
   endif()
-
-  package_get_name(core_cxx11 _pkg_name)
-  package_get_option_name(${_pkg_name} _option_name)
-
 else()
   package_declare(core_cxx11 ADVANCED
     DESCRIPTION "C++ 11 additions for Akantu core"
