@@ -105,7 +105,7 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeGradU(const ElementTyp
     this->directing_cosines(el_type, ghost_type).begin(voigt_size, voigt_size);
 
 
-  for (; full_gradu_it != full_gradu_it ; ++full_gradu_it,
+  for (; full_gradu_it != full_gradu_end ; ++full_gradu_it,
                                           ++gradu_it,
                                           ++cosines_it) {
     Matrix<Real> & full_gradu = *full_gradu_it;
@@ -130,7 +130,7 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeInterfaceGradUOnQuad(c
   Vector<Real> e_voigt(voigt_size);
   Vector<Real> e_interface_voigt(voigt_size);
 
-  epsilon = full_gradu + full_gradu.transpose();
+  epsilon = 0.5 * (full_gradu + full_gradu.transpose());
   MaterialReinforcement<dim>::strainTensorToVoigtVector(epsilon, e_voigt);
   e_interface_voigt.mul<false>(C, e_voigt);
 
@@ -154,7 +154,7 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeTangentModuli(const El
 /* -------------------------------------------------------------------------- */
 
 template<UInt dim, class ConstLaw>
-void MaterialReinforcementTemplate<dim, ConstLaw>::computeStress(const ElementType & type,
+void MaterialReinforcementTemplate<dim, ConstLaw>::computeStress(ElementType type,
                                                                  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
   

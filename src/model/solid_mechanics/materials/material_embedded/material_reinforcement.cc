@@ -234,12 +234,7 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
   UInt nb_element = elem_filter.getSize();
   UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(type);
 
-  Array<Real> * gradu_filtered = new Array<Real>(nb_element * nb_quad_points, dim * dim, "gradu_filtered");
-
-  FEEngine::filterElementalData(model->getMesh(),
-      gradu(type, ghost_type),
-      *gradu_filtered,
-      type, ghost_type, elem_filter);
+  Array<Real> & gradu_vec = gradu(type, ghost_type);
 
   Mesh::type_iterator back_it = model->getMesh().firstType(dim, ghost_type);
   Mesh::type_iterator back_end = model->getMesh().lastType(dim, ghost_type);
@@ -247,7 +242,7 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
   for (; back_it != back_end ; ++back_it) {
     UInt nodes_per_background_e = Mesh::getNbNodesPerElement(*back_it);
 
-    Array<Real> * shapesd_filtered = new Array<Real>(0, dim * nodes_per_background_e, "shapesd_filtered");
+    Array<Real> * shapesd_filtered = new Array<Real>(nb_element, dim * nodes_per_background_e, "shapesd_filtered");
 
     FEEngine::filterElementalData(model->getInterfaceMesh(),
         shape_derivatives(type, ghost_type)->operator()(*back_it, ghost_type),
@@ -267,7 +262,7 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
     Array<Real>::matrix_iterator disp_end = disp_per_element->end(dim, nodes_per_background_e);
 
     Array<Real>::matrix_iterator shapes_it = shapesd_filtered->begin(dim, nodes_per_background_e);
-    Array<Real>::matrix_iterator grad_u_it = gradu_filtered->begin(dim, dim);
+    Array<Real>::matrix_iterator grad_u_it = gradu_vec.begin(dim, dim);
 
     for (; disp_it != disp_end ; ++disp_it) {
       for (UInt i = 0; i < nb_quad_points; i++, ++shapes_it, ++grad_u_it) {
@@ -275,7 +270,7 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
         Matrix<Real> & du = *grad_u_it;
         Matrix<Real> & u = *disp_it;
 
-        du.mul<false, true>(B, u);
+        du.mul<false, true>(u, B);
       }
     }
 
@@ -283,8 +278,6 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
     delete background_filter;
     delete disp_per_element;
   }
-
-  delete gradu_filtered;
 
   AKANTU_DEBUG_OUT();
 }
@@ -424,24 +417,26 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
 
 template<UInt dim>
 void MaterialReinforcement<dim>::filterInterfaceBackgroundElements(Array<UInt> & filter,
-                                                              const ElementType & type,
-                                                              const ElementType & interface_type,
-                                                              GhostType ghost_type,
-                                                              GhostType interface_ghost_type) {
+                                                                   const ElementType & type,
+                                                                   const ElementType & interface_type,
+                                                                   GhostType ghost_type,
+                                                                   GhostType interface_ghost_type) {
   AKANTU_DEBUG_IN();
 
   filter.resize(0);
   filter.clear();
 
   Array<Element> & elements = model->getInterfaceAssociatedElements(interface_type, interface_ghost_type);
+  Array<UInt> & elem_filter = element_filter(interface_type, interface_ghost_type);
 
-  for (Array<Element>::scalar_iterator it = elements.begin() ;
-      it != elements.end() ;
-      ++it) {
-    if (it->type == type) filter.push_back(it->element);
+  Array<UInt>::scalar_iterator
+    filter_it = elem_filter.begin(),
+    filter_end = elem_filter.end();
+
+  for (; filter_it != filter_end ; ++filter_it) {
+    Element & elem = elements(*filter_it);
+    if (elem.type == type) filter.push_back(elem.element);
   }
-
-  // TODO apply the element filter to filter
 
   AKANTU_DEBUG_OUT();
 }
@@ -508,9 +503,9 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & typ
 
 template<UInt dim>
 void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & interface_type,
-                                                       const ElementType & background_type,
-                                                       GhostType interface_ghost,
-                                                       GhostType background_ghost) {
+                                                         const ElementType & background_type,
+                                                         GhostType interface_ghost,
+                                                         GhostType background_ghost) {
   AKANTU_DEBUG_IN();
 
   UInt voigt_size = getTangentStiffnessVoigtSize(dim);
@@ -644,20 +639,26 @@ void MaterialReinforcement<dim>::computeBackgroundShapeDerivatives(const Element
 
 
     Array<Real> & background_shapesd = shape_derivatives(*interface_type, ghost_type)->operator()(type, ghost_type);
+    background_shapesd.clear();
 
-    Array<UInt>::scalar_iterator filter_it = filter.begin();
-    Array<UInt>::scalar_iterator filter_end = filter.end();
+    Array<UInt> * background_elements = new Array<UInt>(nb_elements, 1, "computeBackgroundShapeDerivatives:background_filter");
+    filterInterfaceBackgroundElements(*background_elements, type, *interface_type, ghost_type, ghost_type);
+
+    Array<UInt>::scalar_iterator
+      back_it = background_elements->begin(),
+      back_end = background_elements->end();
 
     Array<Real>::matrix_iterator shapesd_it = background_shapesd.begin(dim, nb_nodes);
 
     Array<Real>::vector_iterator quad_pos_it = quad_pos.begin(dim);
 
-    Array<Element> & background_elements = interface_mesh.getData<Element>("associated_element", *interface_type);
 
-    for (; filter_it != filter_end ; ++filter_it) {
+    for (; back_it != back_end ; ++back_it) {
       for (UInt i = 0 ; i < nb_quad_per_element ; i++, ++shapesd_it, ++quad_pos_it)
-        engine.computeShapeDerivatives(*quad_pos_it, background_elements(*filter_it).element, type, *shapesd_it, ghost_type);
+        engine.computeShapeDerivatives(*quad_pos_it, *back_it, type, *shapesd_it, ghost_type);
     }
+
+    delete background_elements;
   }
 
   AKANTU_DEBUG_OUT();

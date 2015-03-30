@@ -35,6 +35,11 @@
 #include "embedded_interface_model.hh"
 #include "material_reinforcement.hh"
 
+#ifdef AKANTU_USE_IOHELPER
+#  include "dumper_paraview.hh"
+#  include "dumpable_inline_impl.hh"
+#endif
+
 #include <CGAL/Cartesian.h>
 
 /* -------------------------------------------------------------------------- */
@@ -60,6 +65,12 @@ EmbeddedInterfaceModel::~EmbeddedInterfaceModel() {
 void EmbeddedInterfaceModel::initModel() {
   interface_container.constructData();
   instanciateInterfaces();
+
+#if defined(AKANTU_USE_IOHELPER)
+  this->mesh.registerDumper<DumperParaview>("reinforcement", id);
+  this->mesh.addDumpMeshToDumper("reinforcement", *interface_mesh,
+                                 spatial_dimension, _not_ghost, _ek_regular);
+#endif
 
   SolidMechanicsModel::initModel();
 }
@@ -133,11 +144,6 @@ void EmbeddedInterfaceModel::initInterface(const std::list<std::pair<K::Segment_
 
 void EmbeddedInterfaceModel::assembleStiffnessMatrix() {
   SolidMechanicsModel::assembleStiffnessMatrix();
-}
-
-void EmbeddedInterfaceModel::dump() {
-  SolidMechanicsModel::dump();
-  //interface_mesh->dump();
 }
 
 __END_AKANTU__
