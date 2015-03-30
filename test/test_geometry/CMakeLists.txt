@@ -30,15 +30,28 @@
 #
 #===============================================================================
 
-add_mesh(test_geometry_intersection_mesh mesh.geo 2 1)
-register_test(test_geometry_intersection
-  SOURCES test_geometry_intersection.cc
-  DEPENDENCIES test_geometry_intersection_mesh
+add_mesh(test_geometry_intersection_triangle_3_mesh triangle_3.geo 2 1)
+add_mesh(test_geometry_intersection_tetrahedron_4_mesh tetrahedron_4.geo 3 1)
+
+register_test(test_geometry_predicates
+  SOURCES test_geometry_predicates.cc
   PACKAGE CGAL
   )
 
-register_test(test_geometry_mesh
-  SOURCES test_geometry_mesh.cc
-  DEPENDENCIES test_geometry_intersection_mesh
+register_test(test_geometry_intersection
+  SOURCES test_geometry_intersection.cc
+  DEPENDENCIES test_geometry_intersection_triangle_3_mesh
+  PACKAGE CGAL
+  )
+
+register_test(test_geometry_intersection_triangle_3
+  SOURCES test_geometry_intersection_triangle_3.cc
+  DEPENDENCIES test_geometry_intersection_triangle_3_mesh
+  PACKAGE CGAL
+  )
+
+register_test(test_geometry_intersection_tetrahedron_4
+  SOURCES test_geometry_intersection_tetrahedron_4.cc
+  DEPENDENCIES test_geometry_intersection_tetrahedron_4_mesh
   PACKAGE CGAL
   )

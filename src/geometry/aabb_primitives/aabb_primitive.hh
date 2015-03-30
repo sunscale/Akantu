@@ -65,6 +65,8 @@ typedef CGAL::Cartesian<Real> Kernel;
                                                                           \
   }
 
+// If the primitive is supported by CGAL::intersection() then the 
+// implementation process is really easy with this macro
 AKANTU_AABB_CLASS(Triangle);
 AKANTU_AABB_CLASS(Tetrahedron);
 

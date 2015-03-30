@@ -50,40 +50,31 @@ typedef CGAL::Cartesian<Real> Kernel;
 
 /* -------------------------------------------------------------------------- */
 
-template<UInt d, ElementType el_type>
+template<UInt dim, ElementType el_type>
 struct TreeTypeHelper;
 
-/// 2D and _triangle_3 implementation
-template<>
-struct TreeTypeHelper<2, _triangle_3> {
-  typedef Triangle<Kernel> primitive_type;
-  typedef Kernel::Point_3 point_type;
+#define TREE_TYPE_HELPER_MACRO(dim, el_type, my_primitive)  \
+  template<>                                                \
+  struct TreeTypeHelper<dim, el_type> {                     \
+    typedef my_primitive<Kernel> primitive_type;            \
+    typedef my_primitive##_primitive aabb_primitive_type;   \
+    typedef Kernel::Point_3 point_type;                     \
+                                                            \
+    typedef std::list<primitive_type> container_type;       \
+    typedef container_type::iterator iterator;              \
+    typedef CGAL::AABB_traits<Kernel, aabb_primitive_type> aabb_traits_type; \
+    typedef CGAL::AABB_tree<aabb_traits_type> tree;                          \
+                                                                             \
+    typedef boost::optional<                                                 \
+      tree::Intersection_and_primitive_id<                                   \
+      CGAL::Segment_3<Kernel>                                                \
+      >::Type > linear_intersection;                                         \
+  }
 
-  typedef std::list<primitive_type> container_type;
-  typedef container_type::iterator iterator;
-  typedef Triangle_primitive aabb_primitive_type;
-  typedef CGAL::AABB_traits<Kernel, aabb_primitive_type> aabb_traits_type;
-  typedef CGAL::AABB_tree<aabb_traits_type> tree;
+TREE_TYPE_HELPER_MACRO(2, _triangle_3, Triangle);
+TREE_TYPE_HELPER_MACRO(3, _tetrahedron_4, Triangle);
 
-  typedef boost::optional < tree::Intersection_and_primitive_id< CGAL::Segment_3<Kernel> >::Type > linear_intersection;
-};
-
-/// 3D and _tetrahedron_4 implementation
-/*
-template<>
-struct TreeTypeHelper<3, _tetrahedron_4> {
-  typedef Tetrahedron<Kernel> primitive_type;
-  typedef Kernel::Point_3 point_type;
-
-  typedef std::list<primitive_type> container_type;
-  typedef container_type::iterator iterator;
-  typedef Tetrahedron_primitive aabb_primitive_type;
-  typedef CGAL::AABB_traits<Kernel, aabb_primitive_type> aabb_traits_type;
-  typedef CGAL::AABB_tree<aabb_traits_type> tree;
-
-  typedef boost::optional < tree::Intersection_and_primitive_id< CGAL::Segment_3<Kernel> >::Type > linear_intersection;
-};
-*/
+#undef TREE_TYPE_HELPER_MACRO
 
 __END_AKANTU__
 

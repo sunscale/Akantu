@@ -1,12 +1,12 @@
 /**
- * @file   test_geometry_mesh.cc
+ * @file   test_geometry_intersection_tetrahedron_4.cc
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Fri Mar 13 2015
- * @date last modification: Fri Mar 13 2015
+ * @date creation: Thu Mar 26 2015
+ * @date last modification: Thu Mar 26 2015
  *
- * @brief  Tests the interface mesh generation
+ * @brief  Tests the intersection module with _tetrahedron_4 elements
  *
  * @section LICENSE
  *
@@ -31,8 +31,9 @@
 /* -------------------------------------------------------------------------- */
 
 #include "aka_common.hh"
-
 #include "mesh_geom_container.hh"
+#include "mesh_geom_factory.hh"
+#include "tree_type_helper.hh"
 #include "geom_helper_functions.hh"
 
 #include <CGAL/Cartesian.h>
@@ -44,6 +45,8 @@
 using namespace akantu;
 
 typedef CGAL::Cartesian<Real> K;
+typedef K::Point_3 Point;
+typedef K::Segment_3 Segment;
 
 /* -------------------------------------------------------------------------- */
 
@@ -51,43 +54,22 @@ int main (int argc, char * argv[]) {
   debug::setDebugLevel(dblWarning);
   initialize("", argc, argv);
 
-  Math::setTolerance(1e-10);
-
-  Mesh mesh(2);
-  mesh.read("mesh.msh");
+  Mesh mesh(3);
+  mesh.read("tetrahedron_4.msh");
 
   MeshGeomContainer container(mesh);
   container.constructData();
 
-  K::Point_3 a(0, 0.25, 0),
-             b(1, 0.25, 0),
-             c(0.25, 0, 0),
-             d(0.25, 1, 0);
+  Point point(1., 1., 1.);
+  Segment segment(CGAL::ORIGIN, point);
 
-  K::Segment_3 h_interface(a, b),
-               v_interface(c, d);
+  std::list<std::pair<Segment, std::string> > interfaces;
+  interfaces.push_back(std::make_pair(segment, "mat"));
 
-  std::list<K::Segment_3> interface_list;
-  interface_list.push_back(h_interface);
-  interface_list.push_back(v_interface);
-
-  Mesh & interface_mesh = container.meshOfLinearInterfaces(interface_list);
+  Mesh & interface_mesh = container.meshOfLinearInterfaces(interfaces);
 
   if (interface_mesh.getNbElement(_segment_2) != 4)
     return EXIT_FAILURE;
 
-  Vector<Real> bary(2);
-  Element test;
-  test.element = 1;
-  test.type = _segment_2;
-  
-  interface_mesh.getBarycenter(test, bary);
-
-  if (!Math::are_float_equal(bary(0), 0.5) || !Math::are_float_equal(bary(1), 0.25))
-    return EXIT_FAILURE;
-
-  finalize();
   return EXIT_SUCCESS;
 }
-
-

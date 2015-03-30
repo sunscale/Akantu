@@ -428,6 +428,12 @@ void SolidMechanicsModel::initializeUpdateResidualData() {
   AKANTU_DEBUG_OUT();
 }
 
+/*----------------------------------------------------------------------------*/
+void SolidMechanicsModel::reInitialize()
+{
+
+}
+
 
 /* -------------------------------------------------------------------------- */
 /* Explicit scheme                                                            */
@@ -1586,15 +1592,42 @@ dumper::Field * SolidMechanicsModel
   else if(field_name == "material_index")
     field = mesh.createElementalField<UInt, Vector, dumper::ElementalField >(material_index,group_name,this->spatial_dimension,kind);
   else {
+    // this copy of field_name is used to compute derivated data such as
+    // strain and von mises stress that are based on grad_u and stress
+    std::string field_name_copy(field_name);
 
-    bool is_internal = this->isInternal(field_name,kind);
+    if (field_name == "strain"
+	|| field_name == "Green strain"
+	|| field_name == "principal strain"
+	|| field_name == "principal Green strain")
+      field_name_copy = "grad_u";
+    else if (field_name == "Von Mises stress")
+      field_name_copy = "stress";
+
+    bool is_internal = this->isInternal(field_name_copy,kind);
 
     if (is_internal) {
-      ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name,kind);
-      ElementTypeMapArray<Real> & internal_flat = this->flattenInternal(field_name,kind);
+      ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name_copy,kind);
+      ElementTypeMapArray<Real> & internal_flat = this->flattenInternal(field_name_copy,kind);
       field = mesh.createElementalField<Real, dumper::InternalMaterialField>(internal_flat,
 									     group_name,
 									     this->spatial_dimension,kind,nb_data_per_elem);
+      if (field_name == "strain"){
+	dumper::ComputeStrain<false> * foo = new dumper::ComputeStrain<false>(*this);
+	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+      } else if (field_name == "Von Mises stress") {
+	dumper::ComputeVonMisesStress * foo = new dumper::ComputeVonMisesStress(*this);
+	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+      } else if (field_name == "Green strain") {
+	dumper::ComputeStrain<true> * foo = new dumper::ComputeStrain<true>(*this);
+	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+      } else if (field_name == "principal strain") {
+	dumper::ComputePrincipalStrain<false> * foo = new dumper::ComputePrincipalStrain<false>(*this);
+	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+      } else if (field_name == "principal Green strain") {
+	dumper::ComputePrincipalStrain<true> * foo = new dumper::ComputePrincipalStrain<true>(*this);
+	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+      }
 
       //treat the paddings
       if (padding_flag){
@@ -1603,13 +1636,12 @@ dumper::Field * SolidMechanicsModel
 	    dumper::StressPadder<2> * foo = new dumper::StressPadder<2>(*this);
 	    field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
 	  }
+	} else if (field_name == "strain" || field_name == "Green strain"){
+	  if (this->spatial_dimension == 2) {
+	    dumper::StrainPadder<2> * foo = new dumper::StrainPadder<2>(*this);
+	    field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+	  }
 	}
-	// else if (field_name == "strain"){
-	//   if (this->spatial_dimension == 2) {
-	//     dumper::StrainPadder<2> * foo = new dumper::StrainPadder<2>(*this);
-	//     field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
-	//   }
-	// }
       }
 
       // homogenize the field

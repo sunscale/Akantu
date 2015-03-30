@@ -40,6 +40,8 @@
 #include "triangle.hh"
 #include "geom_helper_functions.hh"
 
+#include <algorithm>
+
 #include <CGAL/Cartesian.h>
 
 /* -------------------------------------------------------------------------- */
@@ -48,20 +50,20 @@ __BEGIN_AKANTU__
 
 typedef CGAL::Cartesian<Real> K;
 
-template<UInt d, ElementType type>
-MeshGeomFactory<d, type>::MeshGeomFactory(const Mesh & mesh) :
+template<UInt dim, ElementType type>
+MeshGeomFactory<dim, type>::MeshGeomFactory(const Mesh & mesh) :
   MeshGeomAbstract(mesh),
   data_tree(NULL),
   primitive_list()
 {}
 
-template<UInt d, ElementType type>
-MeshGeomFactory<d, type>::~MeshGeomFactory() {
+template<UInt dim, ElementType type>
+MeshGeomFactory<dim, type>::~MeshGeomFactory() {
   delete data_tree;
 }
 
-template<UInt d, ElementType type>
-void MeshGeomFactory<d, type>::constructData() {
+template<UInt dim, ElementType type>
+void MeshGeomFactory<dim, type>::constructData() {
   AKANTU_DEBUG_IN();
 
   const GhostType ghost_type = _not_ghost;
@@ -79,10 +81,10 @@ void MeshGeomFactory<d, type>::constructData() {
   /// This loop builds the list of primitives
   for (; it != end ; ++it) {
     const Vector<UInt> & el_connectivity = *it;
-    Matrix<Real> node_coordinates(d, nb_nodes_per_element);
+    Matrix<Real> node_coordinates(dim, nb_nodes_per_element);
 
     for (UInt i = 0 ; i < nb_nodes_per_element ; i++)
-      for (UInt j = 0 ; j < d ; j++)
+      for (UInt j = 0 ; j < dim ; j++)
         node_coordinates(j, i) = nodes(el_connectivity(i), j);
 
     addPrimitive(node_coordinates, it - begin);
@@ -90,7 +92,7 @@ void MeshGeomFactory<d, type>::constructData() {
 
   delete data_tree;
 
-  data_tree = new typename TreeTypeHelper<d, type>::tree(primitive_list.begin(), primitive_list.end());
+  data_tree = new typename TreeTypeHelper<dim, type>::tree(primitive_list.begin(), primitive_list.end());
 
   AKANTU_DEBUG_OUT();
 }
@@ -108,49 +110,56 @@ void MeshGeomFactory<2, _triangle_3>::addPrimitive(const Matrix<Real> & node_coo
 }
 
 // 3D and _tetrahedron_4 implementation
-/*
 template<>
 void MeshGeomFactory<3, _tetrahedron_4>::addPrimitive(const Matrix<Real> & node_coordinates, UInt id) {
-  TreeTypeHelper<3, _tetrahedron_4>::point_type a(node_coordinates(0, 0),
-                                                  node_coordinates(1, 0),
-                                                  node_coordinates(2, 0));
-  TreeTypeHelper<3, _tetrahedron_4>::point_type b(node_coordinates(0, 1),
-                                                  node_coordinates(1, 1),
-                                                  node_coordinates(2, 1));
-  TreeTypeHelper<3, _tetrahedron_4>::point_type c(node_coordinates(0, 2),
-                                                  node_coordinates(1, 2),
-                                                  node_coordinates(2, 2));
-  TreeTypeHelper<3, _tetrahedron_4>::point_type d(node_coordinates(0, 3),
-                                                  node_coordinates(1, 3),
-                                                  node_coordinates(2, 3));
+  TreeTypeHelper<3, _tetrahedron_4>::point_type
+    a(node_coordinates(0, 0), node_coordinates(1, 0), node_coordinates(2, 0)),
+    b(node_coordinates(0, 1), node_coordinates(1, 1), node_coordinates(2, 1)),
+    c(node_coordinates(0, 2), node_coordinates(1, 2), node_coordinates(2, 2)),
+    d(node_coordinates(0, 3), node_coordinates(1, 3), node_coordinates(2, 3));
 
-  Tetrahedron<K> t(a, b, c, d);
-  t.setId(id);
-  primitive_list.push_back(t);
+  Triangle<K>
+    t1(a, b, c),
+    t2(b, c, d),
+    t3(c, d, a),
+    t4(d, a, b);
+
+  t1.setId(id);
+  t2.setId(id);
+  t3.setId(id);
+  t4.setId(id);
+
+  primitive_list.push_back(t1);
+  primitive_list.push_back(t2);
+  primitive_list.push_back(t3);
+  primitive_list.push_back(t4);
 }
-*/
 
-template<UInt d, ElementType el_type>
-UInt MeshGeomFactory<d, el_type>::numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const {
+template<UInt dim, ElementType el_type>
+UInt MeshGeomFactory<dim, el_type>::numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const {
   return data_tree->number_of_intersected_primitives(interface);
 }
 
-template<UInt d, ElementType el_type>
-void MeshGeomFactory<d, el_type>::meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh) {
+template<UInt dim, ElementType el_type>
+void MeshGeomFactory<dim, el_type>::meshOfLinearInterface(const Interface & interface_pair, Mesh & interface_mesh) {
   AKANTU_DEBUG_IN();
+
+  const K::Segment_3 & interface = interface_pair.first;
 
   UInt number_of_intersections = this->numberOfIntersectionsWithInterface(interface);
 
   if (!number_of_intersections) {
+    AKANTU_DEBUG_WARNING("No intersection with interface");
     return;
   }
 
-  std::list<typename TreeTypeHelper<d, el_type>::linear_intersection> list_of_intersections;
+  std::list<typename TreeTypeHelper<dim, el_type>::linear_intersection> list_of_intersections;
+  /// TODO change this list to a set using lessSegmentPair for optimization
   std::list< std::pair<K::Segment_3, UInt> > list_of_segments; // Contains no duplicate elements
 
   /// Compute all the intersection pairs (segment + element id) and remove duplicates
   data_tree->all_intersections(interface, std::back_inserter(list_of_intersections));
-  this->constructSegments(list_of_intersections, list_of_segments);
+  this->constructSegments(list_of_intersections, list_of_segments, interface);
 
   /// Arrays for storing nodes and connectivity
   Array<Real> & nodes = interface_mesh.getNodes();
@@ -158,6 +167,7 @@ void MeshGeomFactory<d, el_type>::meshOfLinearInterface(const K::Segment_3 & int
 
   /// Arrays for storing associated element id and type
   Array<Element> & associated_element = interface_mesh.getData<Element>("associated_element", _segment_2);
+  Array<std::string> & associated_material = interface_mesh.getData<std::string>("material", _segment_2);
 
   std::list<std::pair<K::Segment_3, UInt> >::iterator it  = list_of_segments.begin();
   std::list<std::pair<K::Segment_3, UInt> >::iterator end = list_of_segments.end();
@@ -170,8 +180,8 @@ void MeshGeomFactory<d, el_type>::meshOfLinearInterface(const K::Segment_3 & int
     connectivity.push_back(segment_connectivity);
 
     /// Copy nodes
-    Vector<Real> source(d), target(d);
-    for (UInt j = 0 ; j < d ; j++) {
+    Vector<Real> source(dim), target(dim);
+    for (UInt j = 0 ; j < dim ; j++) {
       source(j) = it->first.source()[j];
       target(j) = it->first.target()[j];
     }
@@ -181,26 +191,75 @@ void MeshGeomFactory<d, el_type>::meshOfLinearInterface(const K::Segment_3 & int
 
     /// Copy associated element info
     associated_element.push_back(Element(el_type, it->second));
+    associated_material.push_back(interface_pair.second);
   }
 
   AKANTU_DEBUG_OUT();
 }
 
-template<UInt d, ElementType el_type>
-void MeshGeomFactory<d, el_type>::constructSegments(const std::list< typename TreeTypeHelper<d, el_type>::linear_intersection > & intersections,
-                                                    std::list<std::pair<K::Segment_3, UInt> > & segments) {
+template<UInt dim, ElementType el_type>
+void MeshGeomFactory<dim, el_type>::constructSegments(
+    const std::list< typename TreeTypeHelper<dim, el_type>::linear_intersection > & intersections,
+    std::list<std::pair<K::Segment_3, UInt> > & segments,
+    const K::Segment_3 & interface)
+{
   AKANTU_DEBUG_IN();
 
-  typename std::list<typename TreeTypeHelper<d, el_type>::linear_intersection>::const_iterator int_it = intersections.begin(),
-                                                                                               int_end = intersections.end();
+  typename std::list<typename TreeTypeHelper<dim, el_type>::linear_intersection>::const_iterator
+    int_it = intersections.begin(),
+    int_end = intersections.end();
 
   for (; int_it != int_end ; ++int_it) {
+    UInt el = (*int_it)->second;
+
     if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&((*int_it)->first))) {
-      segments.push_back(std::make_pair(*segment, (*int_it)->second));
+      if (std::find_if(segments.begin(), segments.end(), IsSameSegment(*segment)) == segments.end()) {
+        // Use min() and max() for ordering
+        K::Segment_3 seg_ord(segment->min(), segment->max());
+        segments.push_back(std::make_pair(seg_ord, (*int_it)->second));
+      }
+    }
+
+    else if (const K::Point_3 * point = boost::get<K::Point_3>(&((*int_it)->first))) {
+      // We only want to treat points differently if we're in 3D with Tetra4 elements
+      // This should be optimized by compilator
+      if (dim == 3 && el_type == _tetrahedron_4) {
+        UInt nb_facets = Mesh::getNbFacetsPerElement(el_type);
+        typename TreeTypeHelper<dim, el_type>::container_type facets(nb_facets);
+
+        // TODO Use mesh facets instead of this (should make O(n²) go to O(n))
+        std::remove_copy_if(primitive_list.begin(),
+                            primitive_list.end(),
+                            facets.begin(),
+                            BelongsNotToElement<dim, el_type>(el));
+
+        typename TreeTypeHelper<dim, el_type>::tree * local_tree = 
+          new typename TreeTypeHelper<dim, el_type>::tree(facets.begin(), facets.end());
+
+        std::list< typename TreeTypeHelper<dim, el_type>::linear_intersection>
+          local_intersections;
+
+        local_tree->all_intersections(interface, std::back_inserter(local_intersections));
+
+        typename std::list<typename TreeTypeHelper<dim, el_type>::linear_intersection>::const_iterator
+          local_it = local_intersections.begin(),
+          local_end = local_intersections.end();
+
+        for (; local_it != local_end ; ++local_it) {
+          if (const K::Point_3 * local_point = boost::get<K::Point_3>(&((*local_it)->first))) {
+            if (!comparePoints(*point, *local_point)) {
+              K::Segment_3 seg(*point, *local_point);
+              K::Segment_3 seg_ord(seg.min(), seg.max());
+              if (std::find_if(segments.begin(), segments.end(), IsSameSegment(seg_ord)) == segments.end())
+                segments.push_back(std::make_pair(seg_ord, el));
+            }
+          }
+        }
+
+        delete local_tree;
+      }
     }
   }
-
-  segments.unique(CompareSegmentPairs());
 
   AKANTU_DEBUG_OUT();
 }

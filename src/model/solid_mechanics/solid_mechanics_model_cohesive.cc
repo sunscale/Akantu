@@ -523,6 +523,12 @@ void SolidMechanicsModelCohesive::checkCohesiveStress() {
     } catch(std::bad_cast&) { }
   }
 
+  /*  if(static and extrinsic) {
+      check max mean stresses
+      and change inserter.getInsertionFacets(type_facet);
+      }
+  */
+
   /// communicate data among processors
   synch_registry->synchronize(_gst_smmc_facets);
 

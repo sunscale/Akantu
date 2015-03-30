@@ -46,7 +46,7 @@ __BEGIN_AKANTU__
 
 typedef CGAL::Cartesian<Real> K;
 
-template<UInt d, ElementType el_type>
+template<UInt dim, ElementType el_type>
 class MeshGeomFactory : public MeshGeomAbstract {
 
 public:
@@ -64,21 +64,24 @@ public:
   virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
 
   /// Create a mesh of the intersection with a linear interface
-  virtual void meshOfLinearInterface(const K::Segment_3 & interface, Mesh & interface_mesh);
+  virtual void meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh);
 
   /// Construct a primitive and add it to the list
   void addPrimitive(const Matrix<Real> & node_coordinates, UInt id);
 
   /// Construct segment list from intersections and remove duplicates
-  void constructSegments(const std::list<typename TreeTypeHelper<d, el_type>::linear_intersection> & intersections,
-                         std::list<std::pair<K::Segment_3, UInt> > & segments);
+  void constructSegments(
+      const std::list<typename TreeTypeHelper<dim, el_type>::linear_intersection> & intersections,
+      std::list<std::pair<K::Segment_3, UInt> > & segments,
+      const K::Segment_3 & interface);
 
-  const typename TreeTypeHelper<d, el_type>::tree & getTree() const { return *data_tree; }
+  const typename TreeTypeHelper<dim, el_type>::tree & getTree() const { return *data_tree; }
 
 protected:
-  typename TreeTypeHelper<d, el_type>::tree * data_tree;
-  typename TreeTypeHelper<d, el_type>::container_type primitive_list;
+  typename TreeTypeHelper<dim, el_type>::tree * data_tree;
+  typename TreeTypeHelper<dim, el_type>::container_type primitive_list;
 };
+
 
 __END_AKANTU__
 

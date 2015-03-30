@@ -37,7 +37,9 @@
 
 #include "solid_mechanics_model.hh"
 #include "mesh.hh"
+#include "parsable.hh"
 
+#include "embedded_interface.hh"
 #include "mesh_geom_container.hh"
 
 #include <CGAL/Cartesian.h>
@@ -50,8 +52,8 @@ typedef CGAL::Cartesian<Real> K;
 
 class EmbeddedInterfaceModel : public SolidMechanicsModel {
 
-  typedef CGAL::Segment_3<K> Interface;
   typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular> MyFEEngineType;
+
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -76,12 +78,18 @@ public:
   /// Initialise the materials
   virtual void initMaterials();
 
-  /// Initialise the interface mesh
-  void initInterface(const std::list<Interface> & interface_list);
+  /// Instanciate the interfaces
+  virtual void instanciateInterfaces();
 
-public:
+  /// Initialise the interface mesh
+  void initInterface(const std::list<std::pair<K::Segment_3, std::string> > & interface_list);
+
   /// Assemble the stiffness matrix of the model
   virtual void assembleStiffnessMatrix();
+
+  /// Dump
+  /*virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
+                                                      const ElementKind & ek_kind);*/
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -102,9 +110,47 @@ protected:
   /// Interface mesh (weak reference)
   Mesh * interface_mesh;
 
+  /// Material selector for interface
+  MaterialSelector * interface_material_selector;
+  
   /// Geom object to build the interface mesh
   MeshGeomContainer interface_container;
 
+};
+
+/// Material selector for EmbeddedInterfaceModel
+template <typename T> class EmbeddedInterfaceMaterialSelector : public DefaultMaterialSelector {};
+
+/// Material selector based on associated material name
+template<>
+class EmbeddedInterfaceMaterialSelector<std::string> : public DefaultMaterialSelector {
+
+public:
+  EmbeddedInterfaceMaterialSelector(const std::string & name, const EmbeddedInterfaceModel & model):
+    DefaultMaterialSelector(model.getMaterialByElement()),
+    names(model.getInterfaceMesh().getData<std::string>(name)),
+    model(model)
+  {}
+
+  UInt operator() (const Element & element) {
+    try {
+      DebugLevel dbl = debug::getDebugLevel();
+      debug::setDebugLevel(dblError);
+
+      std::string material_name = names(element.type, element.ghost_type)(element.element);
+
+      debug::setDebugLevel(dbl);
+
+      return model.getMaterialIndex(material_name);
+    } catch (debug::Exception& e) {
+      /// TODO this returns the last material, which should be a bulk material. Try to find cleaner way
+      return model.getNbMaterials() - 1;
+    }
+  }
+
+protected:
+  const ElementTypeMapArray<std::string> & names;
+  const EmbeddedInterfaceModel & model;
 };
 
 __END_AKANTU__

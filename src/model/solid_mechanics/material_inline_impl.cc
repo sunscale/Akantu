@@ -58,7 +58,7 @@ inline UInt Material::getCauchyStressMatrixSize(UInt dim) const {
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 inline void Material::gradUToF(const Matrix<Real> & grad_u,
-			       Matrix<Real> & F) const {
+			       Matrix<Real> & F) {
   AKANTU_DEBUG_ASSERT(F.size() >= grad_u.size() && grad_u.size() == dim*dim,
             "The dimension of the tensor F should be greater or equal to the dimension of the tensor grad_u.");
 
@@ -86,20 +86,20 @@ inline void Material::computeCauchyStressOnQuad(const Matrix<Real> & F,
 
 /* -------------------------------------------------------------------------- */
 inline void Material::rightCauchy(const Matrix<Real> & F,
-				  Matrix<Real> & C) const {
+				  Matrix<Real> & C) {
   C.mul<true, false>(F, F);
 }
 
 /* -------------------------------------------------------------------------- */
 inline void Material::leftCauchy(const Matrix<Real> & F,
-				 Matrix<Real> & B) const {
+				 Matrix<Real> & B) {
   B.mul<false, true>(F, F);
 }
 
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 inline void Material::gradUToEpsilon(const Matrix<Real> & grad_u,
-				     Matrix<Real> & epsilon) const {
+				     Matrix<Real> & epsilon) {
   for (UInt i = 0; i < dim; ++i)
     for (UInt j = 0; j < dim; ++j)
       epsilon(i, j) = 0.5*(grad_u(i, j) + grad_u(j, i));
@@ -108,12 +108,26 @@ inline void Material::gradUToEpsilon(const Matrix<Real> & grad_u,
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 inline void Material::gradUToGreenStrain(const Matrix<Real> & grad_u,
-					 Matrix<Real> & epsilon) const {
+					 Matrix<Real> & epsilon) {
   epsilon.mul<true, false>(grad_u, grad_u, .5);
 
   for (UInt i = 0; i < dim; ++i)
     for (UInt j = 0; j < dim; ++j)
       epsilon(i, j) += 0.5 * (grad_u(i, j) + grad_u(j, i));
+}
+
+/* -------------------------------------------------------------------------- */
+inline Real Material::stressToVonMises(const Matrix<Real> & stress) {
+  // compute deviatoric stress
+  UInt dim = stress.cols();
+  Matrix<Real> deviatoric_stress = Matrix<Real>::eye(dim, -1. * stress.trace() / 3.);
+
+  for (UInt i = 0; i < dim; ++i)
+    for (UInt j = 0; j < dim; ++j)
+      deviatoric_stress(i,j) += stress(i,j);
+
+  // return Von Mises stress
+  return std::sqrt(3. * deviatoric_stress.doubleDot(deviatoric_stress) / 2.);
 }
 
 /* ---------------------------------------------------------------------------*/

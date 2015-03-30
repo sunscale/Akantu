@@ -1,12 +1,12 @@
 /**
- * @file   mesh_geom_abstract.hh
+ * @file   test_geometry_predicates.cc
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Feb 26 2015
- * @date last modification: Fri Mar 6 2015
+ * @date creation: Thu Mar 26 2015
+ * @date last modification: Thu Mar 26 2015
  *
- * @brief  Class for constructing the CGAL primitives of a mesh
+ * @brief  Tests the geometry predicates
  *
  * @section LICENSE
  *
@@ -30,47 +30,34 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_GEOM_ABSTRACT_HH__
-#define __AKANTU_MESH_GEOM_ABSTRACT_HH__
-
 #include "aka_common.hh"
-#include "mesh.hh"
+#include "geom_helper_functions.hh"
 
 #include <CGAL/Cartesian.h>
 
+#include <iostream>
+
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+using namespace akantu;
 
 typedef CGAL::Cartesian<Real> K;
+typedef K::Point_3 Point;
+typedef K::Segment_3 Segment;
 
-class MeshGeomAbstract {
+int main(int argc, char * argv[]) {
+  debug::setDebugLevel(dblWarning);
+  initialize("", argc, argv);
 
-protected:
-  typedef std::pair<K::Segment_3, std::string> Interface;
+  Point a(0, 1, 0);
+  Point b(0, 1, 1);
 
-public:
-  /// Construct from mesh
-  explicit MeshGeomAbstract(const Mesh & mesh);
+  Segment seg1(a, b);
+  Segment seg2(b, a);
 
-  /// Destructor
-  virtual ~MeshGeomAbstract();
+  if (!compareSegments(seg1, seg2))
+    return EXIT_FAILURE;
 
-public:
-  /// Construct geometric data for computational geometry algorithms
-  virtual void constructData() = 0;
-
-  /// Compute number of intersections with geometric interface
-  virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const = 0;
-
-  /// Compute the mesh created by a linear interface
-  virtual void meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh) = 0;
-
-protected:
-  /// Mesh used to construct the primitives
-  const Mesh & mesh;
-};
-
-__END_AKANTU__
-
-#endif // __AKANTU_MESH_GEOM_ABSTRACT_HH__
+  finalize();
+  return EXIT_SUCCESS;
+}

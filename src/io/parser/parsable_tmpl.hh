@@ -124,8 +124,8 @@ template<>
 inline void ParsableParamTyped< Matrix<Real> >::parseParam(const ParserParameter & in_param) {
   ParsableParam::parseParam(in_param);
   Matrix<Real> tmp = in_param;
-  for (UInt i = 0; i < param.cols(); ++i) {
-    for (UInt j = 0; j < param.rows(); ++j) {
+  for (UInt i = 0; i < param.rows(); ++i) {
+    for (UInt j = 0; j < param.cols(); ++j) {
       param(i, j) = tmp(i, j);
     }
   }
