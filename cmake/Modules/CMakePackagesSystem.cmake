@@ -1338,12 +1338,6 @@ function(_package_load_packages)
     _package_load_dependencies_package(${_pkg_name} ordered_loading_list)
   endforeach()
 
-  set(id 1)
-  foreach(_pkg_name ${ordered_loading_list})
-    message("${id}\t -> ${${_pkg_name}}")
-    math(EXPR id "${id} + 1")
-  endforeach()
-
   # Load the packages in the propoer order
   foreach(_pkg_name ${ordered_loading_list})
     _package_get_option_name(${_pkg_name} _option_name)

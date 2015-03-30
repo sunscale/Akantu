@@ -112,8 +112,6 @@ cmake_deactivate_debug_message(PackagesSystem)
 #===============================================================================
 # Dependencies
 #===============================================================================
-set(AKANTU_BOOST_COMPONENT)
-
 option(AKANTU_PYTHON_INTERFACE "Generates the Akantu Python module" OFF)
 if(AKANTU_PYTHON_INTERFACE)
   list(APPEND AKANTU_BOOST_COMPONENTS python)
