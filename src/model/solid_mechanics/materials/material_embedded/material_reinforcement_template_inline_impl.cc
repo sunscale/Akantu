@@ -166,11 +166,13 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeStress(ElementType typ
     this->MaterialReinforcement<dim>::stress(type, ghost_type).end(dim, dim);
   Array<Real>::scalar_iterator sigma_it =
     this->ConstLaw::stress(type, ghost_type).begin();
+  Array<Real>::scalar_iterator pre_stress_it =
+    this->MaterialReinforcement<dim>::pre_stress(type, ghost_type).begin();
 
-  for (; full_sigma_it != full_sigma_end ; ++full_sigma_it, ++sigma_it) {
+  for (; full_sigma_it != full_sigma_end ; ++full_sigma_it, ++sigma_it, ++pre_stress_it) {
     Matrix<Real> & sigma = *full_sigma_it;
 
-    sigma(0, 0) = *sigma_it;
+    sigma(0, 0) = *sigma_it + *pre_stress_it;
   }
   
   AKANTU_DEBUG_OUT();
