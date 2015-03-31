@@ -50,11 +50,8 @@ package_get_all_external_informations(
 #===========================================================================
 # header for blas/lapack (any other fortran libraries)
 #===========================================================================
-package_get_name(BLAS _blas_pkg_name)
-package_get_name(LAPACK _lapack_pkg_name)
-
-package_is_activated(${_blas_pkg_name} _blas_activated)
-package_is_activated(${_lapack_pkg_name} _lapack_activated)
+package_is_activated(BLAS _blas_activated)
+package_is_activated(LAPACK _lapack_activated)
 
 if(_blas_activated OR _lapack_activated)
   if(CMAKE_Fortran_COMPILER)
@@ -111,7 +108,7 @@ endif()
 add_library(akantu ${AKANTU_LIBRARY_SRCS})
 target_link_libraries(akantu ${AKANTU_EXTERNAL_LIBRARIES})
 
-package_get_all_extra_dependency(_extra_target_dependencies)
+package_get_all_extra_dependencies(_extra_target_dependencies)
 if(_extra_target_dependencies)
   # This only adding todo: find a solution for when a dependency was add the is removed...
   add_dependencies(akantu ${_extra_target_dependencies})

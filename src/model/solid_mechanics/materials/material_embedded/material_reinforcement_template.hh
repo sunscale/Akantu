@@ -68,7 +68,7 @@ public:
                                     GhostType ghost_type);
 
   /// Computes stress used by constitutive law
-  virtual void computeStress(const ElementType & type, GhostType ghost_type);
+  virtual void computeStress(ElementType type, GhostType ghost_type);
 
   /// Computes gradu to be used by the constitutive law
   virtual void computeGradU(const ElementType & type, GhostType ghost_type);

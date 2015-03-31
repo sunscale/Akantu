@@ -302,57 +302,58 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
       }
     }
 
-    StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-    Array<Real> abs_max(comm.getNbProc());
-    abs_max(comm.whoAmI()) = max_ratio;
-    comm.allGather(abs_max.storage(), 1);
-
-    Array<Real>::scalar_iterator it = std::max_element(abs_max.begin(), abs_max.end());
-    UInt pos = it - abs_max.begin();
-
-    if (pos != comm.whoAmI()) {
-      AKANTU_DEBUG_OUT();
-      return;
-    }
-
     /// insertion of only 1 cohesive element in case of implicit approach. The one subjected to the highest stress.
-    if (!model->isExplicit() && nn){
-      f_insertion(index_filter) = true;
+    if (!model->isExplicit()){
+      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+      Array<Real> abs_max(comm.getNbProc());
+      abs_max(comm.whoAmI()) = max_ratio;
+      comm.allGather(abs_max.storage(), 1);
 
-      //  Array<Real>::iterator<Matrix<Real> > normal_traction_it =
-      //  normal_traction.begin_reinterpret(nb_quad_facet, spatial_dimension, nb_facet);
-      Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
+      Array<Real>::scalar_iterator it = std::max_element(abs_max.begin(), abs_max.end());
+      UInt pos = it - abs_max.begin();
 
-      for (UInt q = 0; q < nb_quad_facet; ++q) {
+      if (pos != comm.whoAmI()) {
+	AKANTU_DEBUG_OUT();
+	return;
+      }
 
-        //  Vector<Real> ins_s(normal_traction_it[index_f].storage() + q * spatial_dimension,
-        //            spatial_dimension);
+      if (nn) {
+	f_insertion(index_filter) = true;
 
-        Real new_sigma = (sigma_lim_it[index_f]);
+	//  Array<Real>::iterator<Matrix<Real> > normal_traction_it =
+	//  normal_traction.begin_reinterpret(nb_quad_facet, spatial_dimension, nb_facet);
+	Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
 
-        new_sigmas.push_back(new_sigma);
-        new_normal_traction.push_back(0.0);
+	for (UInt q = 0; q < nb_quad_facet; ++q) {
 
-        ////    sig_c_eff.push_back(new_sigma);
-        //        ins_stress.push_back(ins_s);
-        //        trac_old.push_back(ins_s);
-        ////    ins_stress.push_back(0.0);
-        ////    trac_old.push_back(0.0);
+	  //  Vector<Real> ins_s(normal_traction_it[index_f].storage() + q * spatial_dimension,
+	  //            spatial_dimension);
 
-        Real new_delta;
+	  Real new_sigma = (sigma_lim_it[index_f]);
 
-        //set delta_c in function of G_c or a given delta_c value
-        if (!Math::are_float_equal(delta_c, 0.))
-          new_delta = delta_c;
-        else
-          new_delta = 2 * G_c / (new_sigma);
+	  new_sigmas.push_back(new_sigma);
+	  new_normal_traction.push_back(0.0);
 
-        new_delta_c.push_back(new_delta);
-        ////del_c.push_back(new_delta);
+	  ////    sig_c_eff.push_back(new_sigma);
+	  //        ins_stress.push_back(ins_s);
+	  //        trac_old.push_back(ins_s);
+	  ////    ins_stress.push_back(0.0);
+	  ////    trac_old.push_back(0.0);
 
+	  Real new_delta;
+
+	  //set delta_c in function of G_c or a given delta_c value
+	  if (!Math::are_float_equal(delta_c, 0.))
+	    new_delta = delta_c;
+	  else
+	    new_delta = 2 * G_c / (new_sigma);
+
+	  new_delta_c.push_back(new_delta);
+	  ////del_c.push_back(new_delta);
+
+	}
       }
     }
-
 
     // update material data for the new elements
     UInt old_nb_quad_points = sig_c_eff.getSize();

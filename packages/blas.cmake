@@ -1,12 +1,12 @@
 #===============================================================================
-# @file   80_mpi.cmake
+# @file   90_blas.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Mon Nov 21 2011
-# @date last modification: Sat Jun 14 2014
+# @date creation: Fri Oct 19 2012
+# @date last modification: Tue Jun 24 2014
 #
-# @brief  package description for mpi
+# @brief  package description for blas support
 #
 # @section LICENSE
 #
@@ -28,30 +28,45 @@
 #
 #===============================================================================
 
-package_declare(MPI EXTERNAL
-  DESCRIPTION "Add MPI support in akantu"
-  EXTRA_PACKAGE_OPTIONS PREFIX MPI_C MPI
-  COMPILE_FLAGS "-DMPICH_IGNORE_CXX_SEEK"
-  DEPENDS scotch)
+package_declare(BLAS EXTERNAL
+  DESCRIPTION "Use BLAS for arithmetic operations"
+  EXTRA_PACKAGE_OPTIONS LANGUAGE Fortran)
 
-package_declare_sources(MPI
-  synchronizer/static_communicator_mpi.cc
-  synchronizer/static_communicator_mpi_inline_impl.hh
-  synchronizer/static_communicator_mpi.hh
+set(AKANTU_USE_BLAS_VENDOR "Generic" CACHE STRING "Version of blas to use")
+mark_as_advanced(AKANTU_USE_BLAS_VENDOR)
+set_property(CACHE AKANTU_USE_BLAS_VENDOR PROPERTY STRINGS
+  Goto
+  ATLAS
+  PhiPACK
+  CXML
+  DXML
+  SunPerf
+  SCSL
+  SGIMATH
+  IBMESSL
+  Intel10_32
+  Intel10_64lp
+  Intel10_64lp_seq
+  Intel
+  ACML
+  ACML_MP
+  ACML_GPU
+  Apple
+  NAS
+  Generic
   )
 
-mark_as_advanced(MPI_EXTRA_LIBRARY MPI_LIBRARY)
+set(ENV{BLA_VENDOR} ${AKANTU_USE_BLAS_VENDOR})
 
-package_declare_documentation(MPI
-  "This is a meta package providing access to MPI."
+if(BLAS_mkl_core_LIBRARY)
+  set(AKANTU_USE_BLAS_MKL CACHE INTERNAL "" FORCE)
+endif()
+
+package_declare_documentation(BLAS
+  "This package provides access to a BLAS implementation."
   ""
-  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  "Under Ubuntu (14.04 LTS), the installation can be performed using the following command:"
   "\\begin{command}"
-  "  > sudo apt-get install libopenmpi-dev"
-  "\\end{command}"
-  ""
-  "Under Mac OS X the installation requires the following steps:"
-  "\\begin{command}"
-  "  > sudo port install mpich-devel"
+  "  > sudo apt-get install libatlas-base-dev"
   "\\end{command}"
   )

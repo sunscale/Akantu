@@ -58,13 +58,13 @@ template<> UInt GeometricalElement<_gt_triangle_6>::spatial_dimension          =
 template<> UInt GeometricalElement<_gt_triangle_6>::nb_nodes_per_element       = 6;
 template<> UInt GeometricalElement<_gt_triangle_6>::nb_facets[]                = { 3 };
 /* -------------------------------------------------------------------------- */
-template<> UInt GeometricalElement<_gt_tetrahedron_4>::spatial_dimension          = 3;
-template<> UInt GeometricalElement<_gt_tetrahedron_4>::nb_nodes_per_element       = 4;
-template<> UInt GeometricalElement<_gt_tetrahedron_4>::nb_facets[]                = { 4 };
+template<> UInt GeometricalElement<_gt_tetrahedron_4>::spatial_dimension         = 3;
+template<> UInt GeometricalElement<_gt_tetrahedron_4>::nb_nodes_per_element      = 4;
+template<> UInt GeometricalElement<_gt_tetrahedron_4>::nb_facets[]               = { 4 };
 /* -------------------------------------------------------------------------- */
-template<> UInt GeometricalElement<_gt_tetrahedron_10>::spatial_dimension          = 3;
-template<> UInt GeometricalElement<_gt_tetrahedron_10>::nb_nodes_per_element       = 10;
-template<> UInt GeometricalElement<_gt_tetrahedron_10>::nb_facets[]                = { 4 };
+template<> UInt GeometricalElement<_gt_tetrahedron_10>::spatial_dimension        = 3;
+template<> UInt GeometricalElement<_gt_tetrahedron_10>::nb_nodes_per_element     = 10;
+template<> UInt GeometricalElement<_gt_tetrahedron_10>::nb_facets[]              = { 4 };
 /* -------------------------------------------------------------------------- */
 template<> UInt GeometricalElement<_gt_quadrangle_4>::spatial_dimension          = 2;
 template<> UInt GeometricalElement<_gt_quadrangle_4>::nb_nodes_per_element       = 4;
@@ -78,17 +78,17 @@ template<> UInt GeometricalElement<_gt_hexahedron_8>::spatial_dimension         
 template<> UInt GeometricalElement<_gt_hexahedron_8>::nb_nodes_per_element       = 8;
 template<> UInt GeometricalElement<_gt_hexahedron_8>::nb_facets[]                = { 6 };
 /* -------------------------------------------------------------------------- */
-template<> UInt GeometricalElement<_gt_hexahedron_20>::spatial_dimension          = 3;
-template<> UInt GeometricalElement<_gt_hexahedron_20>::nb_nodes_per_element       = 20;
-template<> UInt GeometricalElement<_gt_hexahedron_20>::nb_facets[]                = { 6 };
+template<> UInt GeometricalElement<_gt_hexahedron_20>::spatial_dimension         = 3;
+template<> UInt GeometricalElement<_gt_hexahedron_20>::nb_nodes_per_element      = 20;
+template<> UInt GeometricalElement<_gt_hexahedron_20>::nb_facets[]               = { 6 };
 /* -------------------------------------------------------------------------- */
-template<> UInt GeometricalElement<_gt_pentahedron_6>::spatial_dimension          = 3;
-template<> UInt GeometricalElement<_gt_pentahedron_6>::nb_nodes_per_element       = 6;
-template<> UInt GeometricalElement<_gt_pentahedron_6>::nb_facets[]                = { 2, 3 };
+template<> UInt GeometricalElement<_gt_pentahedron_6>::spatial_dimension         = 3;
+template<> UInt GeometricalElement<_gt_pentahedron_6>::nb_nodes_per_element      = 6;
+template<> UInt GeometricalElement<_gt_pentahedron_6>::nb_facets[]               = { 2, 3 };
 /* -------------------------------------------------------------------------- */
-template<> UInt GeometricalElement<_gt_pentahedron_15>::spatial_dimension          = 3;
-template<> UInt GeometricalElement<_gt_pentahedron_15>::nb_nodes_per_element       = 15;
-template<> UInt GeometricalElement<_gt_pentahedron_15>::nb_facets[]                = { 2, 3 };
+template<> UInt GeometricalElement<_gt_pentahedron_15>::spatial_dimension        = 3;
+template<> UInt GeometricalElement<_gt_pentahedron_15>::nb_nodes_per_element     = 15;
+template<> UInt GeometricalElement<_gt_pentahedron_15>::nb_facets[]              = { 2, 3 };
 /* -------------------------------------------------------------------------- */
 template<> UInt GeometricalElement<_gt_not_defined>::nb_nodes_per_facet[]    = { 0 };
 template<> UInt GeometricalElement<_gt_point>::nb_nodes_per_facet[]          = { 1 };
@@ -148,37 +148,42 @@ template<> UInt GeometricalElement<_gt_quadrangle_8>::facet_connectivity_vect[] 
 template<> UInt GeometricalElement<_gt_hexahedron_8>::facet_connectivity_vect[]   = {0, 0, 1, 2, 3, 4,
 										     1, 1, 2, 3, 0, 5,
 										     2, 5, 6, 7, 4, 6,
-										     3, 4, 5, 6, 7, 7};
-template<> UInt GeometricalElement<_gt_hexahedron_20>::facet_connectivity_vect[]   = {0, 1, 2, 3, 0, 4,
-                                                                                      1, 3, 3, 0, 1, 5,
-                                                                                      5, 6, 7,  4, 2, 6,
-                                                                                      4, 5, 6, 7, 3, 7,
-                                                                                      8, 9, 10, 11, 8, 16,
-                                                                                      13, 14, 15, 12, 9, 17,
-                                                                                      16, 17, 18, 19, 10, 18,
-                                                                                      12, 13, 14, 15, 11, 19};
-template<> UInt GeometricalElement<_gt_pentahedron_6>::facet_connectivity_vect[]   = {0, 3,
-                                                                                      1, 4,
-										      2, 5,
-										      0, 0, 1,
-										      3, 2, 4,
-										      4, 5, 5,
-										      1, 3, 2};
+										     3, 4, 5, 6,  7, 7};
+template<> UInt GeometricalElement<_gt_hexahedron_20>::facet_connectivity_vect[]  = {0,   1,  2,  3,  0,  4,
+                                                                                     1,   3,  3,  0,  1,  5,
+                                                                                     5,   6,  7,  4,  2,  6,
+                                                                                     4,   5,  6,  7,  3,  7,
+                                                                                     8,   9, 10, 11,  8, 16,
+                                                                                     13, 14, 15, 12,  9, 17,
+                                                                                     16, 17, 18, 19, 10, 18,
+                                                                                     12, 13, 14, 15, 11, 19};
 
-template<> UInt GeometricalElement<_gt_pentahedron_15>::facet_connectivity_vect[]   = {0, 3,
-                                                                                       8, 12,
-                                                                                       2, 4,
-                                                                                       7, 13,
-                                                                                       1, 5,
-                                                                                       6, 14,
-                                                                                       0, 0, 1,
-                                                                                       6, 9, 7,
-                                                                                       1, 3, 2,
-                                                                                       10, 14, 11,
-                                                                                       4, 5, 5,
-                                                                                       12, 11, 13,
-                                                                                       3, 2, 4,
-                                                                                       9, 8, 10};
+template<> UInt GeometricalElement<_gt_pentahedron_6>::facet_connectivity_vect[]  = {// first type
+                                                                                     0, 3,
+                                                                                     1, 4,
+                                                                                     2, 5,
+                                                                                     // second type
+                                                                                     0, 0, 1,
+                                                                                     3, 2, 4,
+                                                                                     4, 5, 5,
+                                                                                     1, 3, 2};
+// \bug same comment as for _hexahedron_20
+template<> UInt GeometricalElement<_gt_pentahedron_15>::facet_connectivity_vect[] = {// first type
+                                                                                     0,  3,
+                                                                                     8,  12,
+                                                                                     2,  4,
+                                                                                     7,  13,
+                                                                                     1,  5,
+                                                                                     6,  14,
+                                                                                     // second type
+                                                                                     0,  0,  1,
+                                                                                     6,  9,  7,
+                                                                                     1,  3,  2,
+                                                                                     10, 14, 11,
+                                                                                     4,  5,  5,
+                                                                                     12, 11, 13,
+                                                                                     3,  2,  4,
+                                                                                     9,  8,  10};
 
 template<> UInt * GeometricalElement<_gt_not_defined>::facet_connectivity[]    = { &facet_connectivity_vect[0] };
 template<> UInt * GeometricalElement<_gt_point>::facet_connectivity[]          = { &facet_connectivity_vect[0] };
@@ -192,10 +197,17 @@ template<> UInt * GeometricalElement<_gt_quadrangle_4>::facet_connectivity[]   =
 template<> UInt * GeometricalElement<_gt_quadrangle_8>::facet_connectivity[]   = { &facet_connectivity_vect[0] };
 template<> UInt * GeometricalElement<_gt_hexahedron_8>::facet_connectivity[]   = { &facet_connectivity_vect[0] };
 template<> UInt * GeometricalElement<_gt_hexahedron_20>::facet_connectivity[]  = { &facet_connectivity_vect[0] };
+<<<<<<< HEAD
 template<> UInt * GeometricalElement<_gt_pentahedron_6>::facet_connectivity[]  = { &facet_connectivity_vect[0], &facet_connectivity_vect[2*3] };
 template<> UInt * GeometricalElement<_gt_pentahedron_15>::facet_connectivity[] = { &facet_connectivity_vect[0], &facet_connectivity_vect[2*6] };
+=======
+template<> UInt * GeometricalElement<_gt_pentahedron_6>::facet_connectivity[]  = { &facet_connectivity_vect[0],
+										   &facet_connectivity_vect[2*3] };
+template<> UInt * GeometricalElement<_gt_pentahedron_15>::facet_connectivity[] = { &facet_connectivity_vect[0],
+										   &facet_connectivity_vect[2*6] };
+
+>>>>>>> edab3a8977ab01612bfbea903148e220e60269ee
 
 /* -------------------------------------------------------------------------- */
-
 
 __END_AKANTU__

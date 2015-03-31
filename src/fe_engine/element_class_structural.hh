@@ -223,7 +223,7 @@ public:
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, _ek_structural, ElementKind);
-  static AKANTU_GET_MACRO_NOT_CONST(P1ElementType, _not_defined, const ElementType);
-  static AKANTU_GET_MACRO_NOT_CONST(FacetType,     _not_defined, const ElementType);
+  static AKANTU_GET_MACRO_NOT_CONST(P1ElementType, _not_defined, ElementType);
+  static AKANTU_GET_MACRO_NOT_CONST(FacetType,     _not_defined, ElementType);
   static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension, ElementClassProperty<element_type>::spatial_dimension, UInt);
 };

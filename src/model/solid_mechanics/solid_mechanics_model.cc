@@ -428,6 +428,12 @@ void SolidMechanicsModel::initializeUpdateResidualData() {
   AKANTU_DEBUG_OUT();
 }
 
+/*----------------------------------------------------------------------------*/
+void SolidMechanicsModel::reInitialize()
+{
+
+}
+
 
 /* -------------------------------------------------------------------------- */
 /* Explicit scheme                                                            */

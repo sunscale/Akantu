@@ -31,9 +31,8 @@ package_declare(CppArray EXTERNAL
   DESCRIPTION "Use cpp-array library"
   SYSTEM OFF)
 
-package_get_name(CppArray _pkg_name)
-package_use_system(${_pkg_name} _use_system)
-package_get_option_name(${_pkg_name} _option_name)
+package_use_system(CppArray _use_system)
+package_get_option_name(CppArray _option_name)
 
 if(NOT ${_use_system})
   if(${_option_name})
@@ -53,11 +52,10 @@ if(NOT ${_use_system})
 
     set(CPPARRAY_INCLUDE_DIR ${CPPARRAY_DIR}/include CACHE PATH "" FORCE)
 
-    package_set_include_dir(${_pkg_name} ${CPPARRAY_INCLUDE_DIR})
+    package_set_include_dir(CppArray ${CPPARRAY_INCLUDE_DIR})
     package_add_extra_dependency(CppArray cpparray)
   endif()
 endif()
-
 
 package_declare_documentation(CppArray
   "This package provides access to the \\href{https://code.google.com/p/cpp-array/}{cpp-array}"

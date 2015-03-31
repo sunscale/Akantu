@@ -63,12 +63,16 @@ inline bool comparePairElement(const std::pair<K::Segment_3, UInt> & a, const st
   return a.second < b.second;
 }
 
+inline bool lessSegmentPair(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
+  return CGAL::compare_lexicographically(a.first.min(), b.first.min()) || CGAL::compare_lexicographically(a.first.max(), b.first.max());
+}
+
 /* -------------------------------------------------------------------------- */
 /* Predicates                                                                 */
 /* -------------------------------------------------------------------------- */
 
 // Predicate used to eliminate faces of mesh not belonging to a specific element
-template <UInt d, ElementType el_type>
+template <UInt dim, ElementType el_type>
 class BelongsNotToElement {
 
 public:
@@ -76,7 +80,7 @@ public:
     el(el)
   {}
 
-  bool operator()(const typename TreeTypeHelper<d, el_type>::primitive_type & primitive) {
+  bool operator()(const typename TreeTypeHelper<dim, el_type>::primitive_type & primitive) {
     return primitive.id() != el;
   }
 
@@ -85,7 +89,7 @@ protected:
 };
 
 // Predicate used to determine if point is on edge of faces of mesh
-template <UInt d, ElementType el_type>
+template <UInt dim, ElementType el_type>
 class HasOnEdge {
 
 public:
@@ -93,7 +97,7 @@ public:
     point(point)
   {}
 
-  bool operator()(const typename TreeTypeHelper<d, el_type>::primitive_type & primitive) {
+  bool operator()(const typename TreeTypeHelper<dim, el_type>::primitive_type & primitive) {
     return primitive.has_on(point);
   }
 

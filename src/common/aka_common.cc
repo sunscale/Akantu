@@ -76,7 +76,7 @@ void initialize(const std::string & input_file, int & argc, char ** & argv) {
 
   static_argparser.parse(argc, argv, cppargparse::_remove_parsed);
 
-  
+
   std::string infile = static_argparser["aka_input_file"];
   if(infile == "") infile = input_file;
 
@@ -102,7 +102,7 @@ void initialize(const std::string & input_file, int & argc, char ** & argv) {
   RandGenerator<Real>::seed(seed);
   AKANTU_DEBUG_INFO("Random seed set to " << seed);
 
-  /// initialize external solvers 
+  /// initialize external solvers
   StaticSolver::getStaticSolver().initialize(argc, argv);
 
   AKANTU_DEBUG_OUT();
@@ -113,7 +113,7 @@ void initialize(const std::string & input_file, int & argc, char ** & argv) {
 void finalize() {
   AKANTU_DEBUG_IN();
 
-  /// finalize external solvers 
+  /// finalize external solvers
   StaticSolver::getStaticSolver().finalize();
 
   if(StaticMemory::isInstantiated()) delete &(StaticMemory::getStaticMemory());

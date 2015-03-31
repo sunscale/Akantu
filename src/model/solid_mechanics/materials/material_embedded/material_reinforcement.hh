@@ -151,6 +151,9 @@ protected:
   /// C matrix on quad
   EmbeddedInternalField<Real> directing_cosines;
 
+  /// Prestress on quad
+  EmbeddedInternalField<Real> pre_stress;
+
   /// Cross-sectional area
   Real area;
 

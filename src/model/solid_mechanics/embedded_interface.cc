@@ -43,9 +43,9 @@ EmbeddedInterface::EmbeddedInterface(UInt dim, const ID & id) :
   Parsable(_st_embedded_interface, id),
   points(2, dim)
 {
-  registerParam<std::string>("name", name, _pat_parsable | _pat_readable, "ID");
-  registerParam<std::string>("material", mat_name, _pat_parsable | _pat_readable, "Material Name");
-  registerParam< Matrix<Real> >("points", points, _pat_parsable | _pat_readable, "Interface Points");
+  registerParam<std::string>("name",      name,     _pat_parsable | _pat_readable, "ID");
+  registerParam<std::string>("material",  mat_name, _pat_parsable | _pat_readable, "Material Name");
+  registerParam< Matrix<Real> >("points", points,   _pat_parsable | _pat_readable, "Interface Points");
 }
 
 EmbeddedInterface::~EmbeddedInterface()

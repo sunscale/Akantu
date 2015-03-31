@@ -31,6 +31,7 @@
 package_declare(CGAL EXTERNAL
   DESCRIPTION "Add CGAL support in akantu"
   COMPILE_FLAGS "-frounding-math"
+  BOOST_COMPONENTS system
   )
 
 package_declare_sources(CGAL
@@ -52,10 +53,10 @@ package_declare_sources(CGAL
   geometry/aabb_primitives/aabb_primitive.hh
   )
 
-package_boost_component_needed(system)
+
 ## Adding CGAL library
 #find_package(CGAL COMPONENTS Core)
 #if (NOT CGAL_FOUND)
 #message(STATUS "This project requires the CGAL library, and will not be compiled.")
-#return()  
+#return()
 #endif()
