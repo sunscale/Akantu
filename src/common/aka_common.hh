@@ -1,8 +1,3 @@
-/// A Checker par la teub = Damien FAIT
-
-
-
-
 /**
  * @file   aka_common.hh
  *

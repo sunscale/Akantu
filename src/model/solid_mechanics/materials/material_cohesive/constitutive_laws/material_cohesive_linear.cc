@@ -574,7 +574,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
   Array<Real>::iterator< Vector<Real> > contact_opening_it =
     contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
-
   Vector<Real> normal_opening(spatial_dimension);
   Vector<Real> tangential_opening(spatial_dimension);
 

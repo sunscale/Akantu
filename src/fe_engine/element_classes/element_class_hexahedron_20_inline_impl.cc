@@ -1,4 +1,3 @@
-//schema of hexaedron_20 rotated DOUBLE CHECKED FINISH
 /**
  * @file   element_class_hexahedron_20_inline_impl.cc
  *
@@ -125,8 +124,8 @@ InterpolationElement<_itp_lagrange_hexahedron_20>::computeDNDS(const vector_type
 
 
 	//ddx
-	dnds(0,0) =   .25 * (c(0) + 0.5 * (c(1) + c(2) + 1)) * (c(1) - 1) * (c(2) - 1);;
-	dnds(0,1) =   .25 * (c(0) - 0.5 * (c(1) + c(2) + 1)) * (c(1) - 1) * (c(2) - 1);;
+	dnds(0,0) =  0.25 * (c(0) + 0.5 * (c(1) + c(2) + 1)) * (c(1) - 1) * (c(2) - 1);;
+	dnds(0,1) =  0.25 * (c(0) - 0.5 * (c(1) + c(2) + 1)) * (c(1) - 1) * (c(2) - 1);;
 	dnds(0,2) = -0.25 * (c(0) + 0.5 * (c(1) - c(2) - 1)) * (c(1) + 1) * (c(2) - 1);;
 	dnds(0,3) = -0.25 * (c(0) - 0.5 * (c(1) - c(2) - 1)) * (c(1) + 1) * (c(2) - 1);;
 	dnds(0,4) = -0.25 * (c(0) + 0.5 * (c(1) - c(2) + 1)) * (c(1) - 1) * (c(2) + 1);;

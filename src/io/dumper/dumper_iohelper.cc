@@ -260,8 +260,14 @@ iohelper::ElemType getIOHelperType<_tetrahedron_10>() { return iohelper::TETRA2;
 template <>
 iohelper::ElemType getIOHelperType<_hexahedron_8>() { return iohelper::HEX1; }
 
+//template <>
+//iohelper::ElemType getIOHelperType<_hexahedron_20>() { return iohelper::HEX2; }
+
 template <>
 iohelper::ElemType getIOHelperType<_pentahedron_6>() { return iohelper::PRISM1; }
+
+//template <>
+//iohelper::ElemType getIOHelperType<_pentahedron_15>() { return iohelper::PRISM2; }
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
 template <>
