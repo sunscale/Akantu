@@ -559,7 +559,7 @@ void StructuralMechanicsModel::implicitCorr() {
     Real * disp_val = displacement_rotation->storage();
     incr_val = increment->storage();
 
-    for (UInt j = 0; j < nb_nodes *nb_degree_of_freedom; ++j, ++disp_val){
+    for (UInt j = 0; j < nb_nodes *nb_degree_of_freedom; ++j, ++disp_val, ++incr_val){
       *disp_val += *incr_val;
     }
   }
@@ -731,7 +731,7 @@ bool StructuralMechanicsModel::testConvergence<_scc_residual>(Real tolerance, Re
   for (UInt n = 0; n < nb_nodes; ++n) {
     bool is_local_node = mesh.isLocalOrMasterNode(n);
     if(is_local_node) {
-      for (UInt d = 0; d < spatial_dimension; ++d) {
+      for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
         if(!(*blocked_dofs_val)) {
           norm += *residual_val * *residual_val;
         }
