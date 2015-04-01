@@ -70,7 +70,9 @@ package_declare_sources(core
   fe_engine/element_class.hh
   fe_engine/element_class_tmpl.hh
   fe_engine/element_classes/element_class_hexahedron_8_inline_impl.cc
+  fe_engine/element_classes/element_class_hexahedron_20_inline_impl.cc
   fe_engine/element_classes/element_class_pentahedron_6_inline_impl.cc
+  fe_engine/element_classes/element_class_pentahedron_15_inline_impl.cc
   fe_engine/element_classes/element_class_point_1_inline_impl.cc
   fe_engine/element_classes/element_class_quadrangle_4_inline_impl.cc
   fe_engine/element_classes/element_class_quadrangle_8_inline_impl.cc

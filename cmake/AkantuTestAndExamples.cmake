@@ -213,8 +213,7 @@ function(register_test test_name)
     message(FATAL_ERROR "No reference package was defined for the test ${test_name} in folder ${CMAKE_CURRENT_SOURCE_DIR}")
   endif()
 
-  package_get_name(${_register_test_PACKAGE} _pkg_name)
-  package_is_activated(${_pkg_name} _act)
+  package_is_activated(${_register_test_PACKAGE} _act)
 
   if(_act)
     math(EXPR _tmp_parent_count "${_akantu_${_akantu_current_parent_test}_tests_count} + 1")

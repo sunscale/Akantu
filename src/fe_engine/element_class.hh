@@ -1,3 +1,5 @@
+// A CHECKER PAR DAMIEN => FAIT
+
 /**
  * @file   element_class.hh
  *
@@ -354,7 +356,9 @@ protected:
 #include "element_classes/element_class_quadrangle_4_inline_impl.cc"
 #include "element_classes/element_class_quadrangle_8_inline_impl.cc"
 #include "element_classes/element_class_hexahedron_8_inline_impl.cc"
+	#include "element_classes/element_class_hexahedron_20_inline_impl.cc"
 #include "element_classes/element_class_pentahedron_6_inline_impl.cc"
+	#include "element_classes/element_class_pentahedron_15_inline_impl.cc"
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 #  include "element_class_structural.hh"

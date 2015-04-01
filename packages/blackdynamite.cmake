@@ -30,18 +30,17 @@ package_declare(BlackDynamite EXTERNAL
   DESCRIPTION "Use BlackDynamite library"
   SYSTEM OFF)
 
-package_get_name(BlackDynamite _pkg_name)
-package_use_system(${_pkg_name} _use_system)
+package_use_system(BlackDynamite _use_system)
 
 if(NOT ${_use_system})
-  package_get_option_name(${_pkg_name} _option_name)
+  package_get_option_name(BlackDynamite _option_name)
 
   if(${_option_name})
     set(BLACKDYNAMITE_URL "svn+ssh://lsmssrv1.epfl.ch/space/repositories/SimulPack/BlackDynamite")
 
     include(ExternalProject)
 
-    ExternalProject_Add(Blackdynamite
+    ExternalProject_Add(blackdynamite
       PREFIX ${PROJECT_BINARY_DIR}/third-party
       SVN_REPOSITORY ${BLACKDYNAMITE_URL}
       CMAKE_ARGS <SOURCE_DIR>/
@@ -51,9 +50,9 @@ if(NOT ${_use_system})
       )
 
     set_third_party_shared_libirary_name(BLACKDYNAMITE_LIBRARIES blackdynamite)
-    package_set_libraries(${_pkg_name} ${BLACKDYNAMITE_LIBRARIES})
-    package_set_include_dir(${_pkg_name} ${PROJECT_BINARY_DIR}/third-party/include/blackdynamite)
+    package_set_libraries(BlackDynamite ${BLACKDYNAMITE_LIBRARIES})
+    package_set_include_dir(BlackDynamite ${PROJECT_BINARY_DIR}/third-party/include/blackdynamite)
 
-    package_add_extra_dependency(BLACKDYNAMITE Blackdynamite)
+    package_add_extra_dependency(BlackDynamite blackdynamite)
   endif()
 endif()

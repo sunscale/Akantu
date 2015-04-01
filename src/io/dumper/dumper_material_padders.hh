@@ -161,6 +161,7 @@ public:
 };
 
 /* -------------------------------------------------------------------------- */
+template <bool green_strain>
 class ComputeStrain : public MaterialFunctor, public ComputeFunctor<Vector<Real>, Matrix<Real> > {
 public:
   ComputeStrain(const SolidMechanicsModel & model) : MaterialFunctor(model) { }
@@ -178,10 +179,18 @@ public:
       Matrix<Real> grad_u = all_grad_u(d);
       Matrix<Real> strain = all_strain(d);
 
-      if (spatial_dimension == 2)
-	Material::gradUToEpsilon<2>(grad_u, strain);
-      else if (spatial_dimension == 3)
-	Material::gradUToEpsilon<3>(grad_u, strain);
+      if (spatial_dimension == 2) {
+	if (green_strain)
+	  Material::gradUToGreenStrain<2>(grad_u, strain);
+	else
+	  Material::gradUToEpsilon<2>(grad_u, strain);
+      }
+      else if (spatial_dimension == 3) {
+	if (green_strain)
+	  Material::gradUToGreenStrain<3>(grad_u, strain);
+	else
+	  Material::gradUToEpsilon<3>(grad_u, strain);
+      }
     }
 
     return ret_all_strain;
@@ -196,6 +205,50 @@ public:
 };
 
 /* -------------------------------------------------------------------------- */
+template <bool green_strain>
+class ComputePrincipalStrain : public MaterialFunctor, public ComputeFunctor<Vector<Real>,
+									     Matrix<Real> > {
+public:
+  ComputePrincipalStrain(const SolidMechanicsModel & model) : MaterialFunctor(model) { }
+
+  inline Matrix<Real> func(const Vector<Real> & in, Element global_element_id){
+    UInt nrows = spatial_dimension;
+    UInt nb_data = in.size() / (nrows*nrows);
+
+    Matrix<Real> ret_all_strain(nrows, nb_data);
+    Tensor3<Real> all_grad_u(in.storage(), nrows, nrows, nb_data);
+    Matrix<Real> strain(nrows, nrows);
+
+    for (UInt d = 0; d < nb_data; ++d) {
+      Matrix<Real> grad_u = all_grad_u(d);
+
+      if (spatial_dimension == 2) {
+	if (green_strain)
+	  Material::gradUToGreenStrain<2>(grad_u, strain);
+	else
+	  Material::gradUToEpsilon<2>(grad_u, strain);
+      }
+      else if (spatial_dimension == 3) {
+	if (green_strain)
+	  Material::gradUToGreenStrain<3>(grad_u, strain);
+	else
+	  Material::gradUToEpsilon<3>(grad_u, strain);
+      }
+
+      Vector<Real> principal_strain(ret_all_strain(d));
+      strain.eig(principal_strain);
+    }
+
+    return ret_all_strain;
+  }
+
+  UInt getDim() { return spatial_dimension; };
+
+  UInt getNbComponent(UInt old_nb_comp){
+    return this->getDim();
+  };
+
+};
 
 /* -------------------------------------------------------------------------- */
 class ComputeVonMisesStress : public MaterialFunctor,

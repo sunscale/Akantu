@@ -170,7 +170,9 @@ MeshIOMSH::MeshIOMSH() {
   _msh_nodes_per_elem[_msh_quadrangle_9  ] = 9;
   _msh_nodes_per_elem[_msh_tetrahedron_10] = 10;
   _msh_nodes_per_elem[_msh_hexahedron_27 ] = 27;
+  _msh_nodes_per_elem[_msh_hexahedron_20 ] = 20;
   _msh_nodes_per_elem[_msh_prism_18      ] = 18;
+  _msh_nodes_per_elem[_msh_prism_15      ] = 15;
   _msh_nodes_per_elem[_msh_pyramid_14    ] = 14;
   _msh_nodes_per_elem[_msh_point         ] = 1;
   _msh_nodes_per_elem[_msh_quadrangle_8  ] = 8;
@@ -189,6 +191,8 @@ MeshIOMSH::MeshIOMSH() {
   _msh_to_akantu_element_types[_msh_tetrahedron_10] = _tetrahedron_10;
   _msh_to_akantu_element_types[_msh_hexahedron_27 ] = _not_defined;
   _msh_to_akantu_element_types[_msh_prism_18      ] = _not_defined;
+  _msh_to_akantu_element_types[_msh_hexahedron_20 ] = _hexahedron_20;
+  _msh_to_akantu_element_types[_msh_prism_15      ] = _pentahedron_15;
   _msh_to_akantu_element_types[_msh_pyramid_14    ] = _not_defined;
   _msh_to_akantu_element_types[_msh_point         ] = _point_1;
   _msh_to_akantu_element_types[_msh_quadrangle_8  ] = _quadrangle_8;
@@ -203,7 +207,9 @@ MeshIOMSH::MeshIOMSH() {
   _akantu_to_msh_element_types[_quadrangle_4    ] = _msh_quadrangle_4;
   _akantu_to_msh_element_types[_quadrangle_8    ] = _msh_quadrangle_8;
   _akantu_to_msh_element_types[_hexahedron_8    ] = _msh_hexahedron_8;
+  _akantu_to_msh_element_types[_hexahedron_20   ] = _msh_hexahedron_20;
   _akantu_to_msh_element_types[_pentahedron_6   ] = _msh_prism_1;
+  _akantu_to_msh_element_types[_pentahedron_15  ] = _msh_prism_15;
   _akantu_to_msh_element_types[_point_1         ] = _msh_point;
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
   _akantu_to_msh_element_types[_bernoulli_beam_2] = _msh_segment_2;

@@ -69,6 +69,13 @@ public:
 
 };
 
+template<>
+inline void ParsableParamTyped< EmbeddedInternalField<Real> >::parseParam(const ParserParameter & in_param) {
+  ParsableParam::parseParam(in_param);
+  Real r = in_param;
+  param.setDefaultValue(r);
+}
+
 __END_AKANTU__
 
 #endif // __AKANTU_EMBEDDED_INTERNAL_FIELD_HH__

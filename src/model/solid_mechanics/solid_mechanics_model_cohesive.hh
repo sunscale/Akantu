@@ -120,6 +120,17 @@ public:
   /// insert intrinsic cohesive elements
   void insertIntrinsicElements();
 
+
+  //  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
+  //  bool solveStepCohesive(Real tolerance, UInt max_iteration = 100);
+
+  template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
+  bool solveStepCohesive(Real tolerance,
+                         Real & error,
+                         UInt max_iteration = 100,
+                         bool do_not_factorize = false);
+
+
 private:
 
   /// initialize completely the model for extrinsic elements
@@ -226,10 +237,6 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#if defined (AKANTU_PARALLEL_COHESIVE_ELEMENT)
-#  include "solid_mechanics_model_cohesive_inline_impl.cc"
-#endif
-
 /* -------------------------------------------------------------------------- */
 class DefaultMaterialCohesiveSelector : public DefaultMaterialSelector {
 public:
@@ -276,5 +283,8 @@ inline std::ostream & operator <<(std::ostream & stream, const SolidMechanicsMod
 
 __END_AKANTU__
 
+#if defined (AKANTU_INCLUDE_INLINE_IMPL)
+#  include "solid_mechanics_model_cohesive_inline_impl.cc"
+#endif
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__ */

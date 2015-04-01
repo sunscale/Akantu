@@ -32,11 +32,10 @@ package_declare(nlopt EXTERNAL
   DESCRIPTION "Use NLOPT library"
   SYSTEM OFF)
 
-package_get_name(nlopt _pkg_name)
-package_use_system(${_pkg_name} _use_system)
+package_use_system(nlopt _use_system)
 
 if(NOT ${_use_system})
-  package_get_option_name(${_pkg_name} _option_name)
+  package_get_option_name(nlopt _option_name)
 
   if(${_option_name})
     set(NLOPT_VERSION "2.4.2")
@@ -67,11 +66,13 @@ if(NOT ${_use_system})
     set(NLOPT_INCLUDE_DIR ${NLOPT_DIR}/include CACHE PATH "Include directories for NLopt" FORCE)
     mark_as_advanced(NLOPT_INCLUDE_DIR)
 
-    package_set_libraries(${_pkg_name} ${NLOPT_LIBRARIES})
-    package_set_include_dir(${_pkg_name} ${NLOPT_INCLUDE_DIR})
+    package_set_libraries(nlopt ${NLOPT_LIBRARIES})
+    package_set_include_dir(nlopt ${NLOPT_INCLUDE_DIR})
 
     package_add_extra_dependency(nlopt NLopt)
   endif()
+else()
+  package_rm_extra_dependency(nlopt NLopt)
 endif()
 
 package_declare_documentation(nlopt

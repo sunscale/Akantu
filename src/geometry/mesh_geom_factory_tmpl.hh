@@ -149,10 +149,12 @@ void MeshGeomFactory<dim, el_type>::meshOfLinearInterface(const Interface & inte
   UInt number_of_intersections = this->numberOfIntersectionsWithInterface(interface);
 
   if (!number_of_intersections) {
+    AKANTU_DEBUG_WARNING("No intersection with interface");
     return;
   }
 
   std::list<typename TreeTypeHelper<dim, el_type>::linear_intersection> list_of_intersections;
+  /// TODO change this list to a set using lessSegmentPair for optimization
   std::list< std::pair<K::Segment_3, UInt> > list_of_segments; // Contains no duplicate elements
 
   /// Compute all the intersection pairs (segment + element id) and remove duplicates
@@ -211,8 +213,11 @@ void MeshGeomFactory<dim, el_type>::constructSegments(
     UInt el = (*int_it)->second;
 
     if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&((*int_it)->first))) {
-      if (std::find_if(segments.begin(), segments.end(), IsSameSegment(*segment)) == segments.end())
-        segments.push_back(std::make_pair(*segment, (*int_it)->second));
+      if (std::find_if(segments.begin(), segments.end(), IsSameSegment(*segment)) == segments.end()) {
+        // Use min() and max() for ordering
+        K::Segment_3 seg_ord(segment->min(), segment->max());
+        segments.push_back(std::make_pair(seg_ord, (*int_it)->second));
+      }
     }
 
     else if (const K::Point_3 * point = boost::get<K::Point_3>(&((*int_it)->first))) {
@@ -222,7 +227,7 @@ void MeshGeomFactory<dim, el_type>::constructSegments(
         UInt nb_facets = Mesh::getNbFacetsPerElement(el_type);
         typename TreeTypeHelper<dim, el_type>::container_type facets(nb_facets);
 
-        // TODO Use mesh facets instead of this
+        // TODO Use mesh facets instead of this (should make O(n²) go to O(n))
         std::remove_copy_if(primitive_list.begin(),
                             primitive_list.end(),
                             facets.begin(),
@@ -244,8 +249,9 @@ void MeshGeomFactory<dim, el_type>::constructSegments(
           if (const K::Point_3 * local_point = boost::get<K::Point_3>(&((*local_it)->first))) {
             if (!comparePoints(*point, *local_point)) {
               K::Segment_3 seg(*point, *local_point);
-              if (std::find_if(segments.begin(), segments.end(), IsSameSegment(seg)) == segments.end())
-                segments.push_back(std::make_pair(seg, el));
+              K::Segment_3 seg_ord(seg.min(), seg.max());
+              if (std::find_if(segments.begin(), segments.end(), IsSameSegment(seg_ord)) == segments.end())
+                segments.push_back(std::make_pair(seg_ord, el));
             }
           }
         }

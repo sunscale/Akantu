@@ -1,12 +1,12 @@
 #===============================================================================
-# @file   90_blas.cmake
+# @file   80_mpi.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Fri Oct 19 2012
-# @date last modification: Tue Jun 24 2014
+# @date creation: Mon Nov 21 2011
+# @date last modification: Sat Jun 14 2014
 #
-# @brief  package description for blas support
+# @brief  package description for mpi
 #
 # @section LICENSE
 #
@@ -28,19 +28,37 @@
 #
 #===============================================================================
 
-package_declare(BLAS EXTERNAL
-  DESCRIPTION "Use BLAS for arithmetic operations"
-  EXTRA_PACKAGE_OPTIONS LANGUAGE Fortran)
+package_declare(MPI EXTERNAL
+  DESCRIPTION "Add MPI support in akantu"
+  EXTRA_PACKAGE_OPTIONS PREFIX MPI_C MPI
+  COMPILE_FLAGS "-DMPICH_IGNORE_CXX_SEEK"
+  DEPENDS scotch)
 
-if(BLAS_mkl_core_LIBRARY)
-  set(AKANTU_USE_BLAS_MKL CACHE INTERNAL "" FORCE)
-endif()
+package_declare_sources(MPI
+  synchronizer/static_communicator_mpi.cc
+  synchronizer/static_communicator_mpi_inline_impl.hh
+  synchronizer/static_communicator_mpi.hh
+  )
 
-package_declare_documentation(BLAS
-  "This package provides access to a BLAS implementation."
+
+get_cmake_property(_all_vars VARIABLES)
+foreach(_var ${_all_vars})
+  if(_var MATCHES "^MPI_.*")
+    mark_as_advanced(${_var})
+  endif()
+endforeach()
+
+
+package_declare_documentation(MPI
+  "This is a meta package providing access to MPI."
   ""
-  "Under Ubuntu (14.04 LTS), the installation can be performed using the following command:"
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
   "\\begin{command}"
-  "  > sudo apt-get install libatlas-base-dev"
+  "  > sudo apt-get install libopenmpi-dev"
+  "\\end{command}"
+  ""
+  "Under Mac OS X the installation requires the following steps:"
+  "\\begin{command}"
+  "  > sudo port install mpich-devel"
   "\\end{command}"
   )

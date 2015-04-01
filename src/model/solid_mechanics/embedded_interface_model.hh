@@ -88,7 +88,9 @@ public:
   virtual void assembleStiffnessMatrix();
 
   /// Dump
-  virtual void dump();
+  /*virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
+                                                      const ElementKind & ek_kind);*/
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -140,7 +142,7 @@ public:
       debug::setDebugLevel(dbl);
 
       return model.getMaterialIndex(material_name);
-    } catch (...) {
+    } catch (debug::Exception& e) {
       /// TODO this returns the last material, which should be a bulk material. Try to find cleaner way
       return model.getNbMaterials() - 1;
     }

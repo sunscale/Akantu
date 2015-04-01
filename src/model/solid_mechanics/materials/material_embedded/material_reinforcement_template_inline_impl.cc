@@ -105,7 +105,7 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeGradU(const ElementTyp
     this->directing_cosines(el_type, ghost_type).begin(voigt_size, voigt_size);
 
 
-  for (; full_gradu_it != full_gradu_it ; ++full_gradu_it,
+  for (; full_gradu_it != full_gradu_end ; ++full_gradu_it,
                                           ++gradu_it,
                                           ++cosines_it) {
     Matrix<Real> & full_gradu = *full_gradu_it;
@@ -130,7 +130,7 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeInterfaceGradUOnQuad(c
   Vector<Real> e_voigt(voigt_size);
   Vector<Real> e_interface_voigt(voigt_size);
 
-  epsilon = full_gradu + full_gradu.transpose();
+  epsilon = 0.5 * (full_gradu + full_gradu.transpose());
   MaterialReinforcement<dim>::strainTensorToVoigtVector(epsilon, e_voigt);
   e_interface_voigt.mul<false>(C, e_voigt);
 
@@ -154,7 +154,7 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeTangentModuli(const El
 /* -------------------------------------------------------------------------- */
 
 template<UInt dim, class ConstLaw>
-void MaterialReinforcementTemplate<dim, ConstLaw>::computeStress(const ElementType & type,
+void MaterialReinforcementTemplate<dim, ConstLaw>::computeStress(ElementType type,
                                                                  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
   
@@ -166,11 +166,13 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeStress(const ElementTy
     this->MaterialReinforcement<dim>::stress(type, ghost_type).end(dim, dim);
   Array<Real>::scalar_iterator sigma_it =
     this->ConstLaw::stress(type, ghost_type).begin();
+  Array<Real>::scalar_iterator pre_stress_it =
+    this->MaterialReinforcement<dim>::pre_stress(type, ghost_type).begin();
 
-  for (; full_sigma_it != full_sigma_end ; ++full_sigma_it, ++sigma_it) {
+  for (; full_sigma_it != full_sigma_end ; ++full_sigma_it, ++sigma_it, ++pre_stress_it) {
     Matrix<Real> & sigma = *full_sigma_it;
 
-    sigma(0, 0) = *sigma_it;
+    sigma(0, 0) = *sigma_it + *pre_stress_it;
   }
   
   AKANTU_DEBUG_OUT();
