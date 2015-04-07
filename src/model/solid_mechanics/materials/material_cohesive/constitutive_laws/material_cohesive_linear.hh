@@ -72,6 +72,9 @@ public:
   /// check stress for cohesive elements' insertion
   virtual void checkInsertion();
 
+  /// check delta_max for cohesive elements
+  virtual void checkDeltaMax();
+
 protected:
 
   /// constitutive law

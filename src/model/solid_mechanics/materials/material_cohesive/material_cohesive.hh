@@ -85,6 +85,11 @@ public:
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
+  /// check delta_max for cohesive elements
+  virtual void checkDeltaMax() {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
   /// interpolate   stress  on   given   positions  for   each  element   (empty
   /// implemantation to avoid the generic call to be done on cohesive elements)
   virtual void interpolateStress(__attribute__((unused)) const ElementType type,

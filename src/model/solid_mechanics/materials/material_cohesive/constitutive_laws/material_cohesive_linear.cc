@@ -201,7 +201,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
     UInt index_f = 0;
     UInt index_filter = 0;
     UInt nn = 0;
-    //Real sigma_c_tmp = 0.0;
 
 
     UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
@@ -295,8 +294,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
             max_ratio = ratio;
             index_f = f;
             index_filter = f_filter(f);
-            //sigma_c_tmp = *sigma_lim_it;
-            //sigma_ins_tmp = ins_s_;
           }
         }
       }
@@ -304,18 +301,18 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
 
     /// insertion of only 1 cohesive element in case of implicit approach. The one subjected to the highest stress.
     if (!model->isExplicit()){
-      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-      Array<Real> abs_max(comm.getNbProc());
-      abs_max(comm.whoAmI()) = max_ratio;
-      comm.allGather(abs_max.storage(), 1);
+      //      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+      //      Array<Real> abs_max(comm.getNbProc());
+      //      abs_max(comm.whoAmI()) = max_ratio;
+      //      comm.allGather(abs_max.storage(), 1);
 
-      Array<Real>::scalar_iterator it = std::max_element(abs_max.begin(), abs_max.end());
-      UInt pos = it - abs_max.begin();
+      //      Array<Real>::scalar_iterator it = std::max_element(abs_max.begin(), abs_max.end());
+      //      UInt pos = it - abs_max.begin();
 
-      if (pos != comm.whoAmI()) {
-	AKANTU_DEBUG_OUT();
-	return;
-      }
+      //      if (pos != comm.whoAmI()) {
+      //	AKANTU_DEBUG_OUT();
+      //	return;
+      //      }
 
       if (nn) {
 	f_insertion(index_filter) = true;
@@ -334,12 +331,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
 	  new_sigmas.push_back(new_sigma);
 	  new_normal_traction.push_back(0.0);
 
-	  ////    sig_c_eff.push_back(new_sigma);
-	  //        ins_stress.push_back(ins_s);
-	  //        trac_old.push_back(ins_s);
-	  ////    ins_stress.push_back(0.0);
-	  ////    trac_old.push_back(0.0);
-
 	  Real new_delta;
 
 	  //set delta_c in function of G_c or a given delta_c value
@@ -349,7 +340,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
 	    new_delta = 2 * G_c / (new_sigma);
 
 	  new_delta_c.push_back(new_delta);
-	  ////del_c.push_back(new_delta);
 
 	}
       }
@@ -359,19 +349,19 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
     UInt old_nb_quad_points = sig_c_eff.getSize();
     UInt new_nb_quad_points = new_sigmas.size();
     sig_c_eff.resize(old_nb_quad_points + new_nb_quad_points);
-     ins_stress.resize(old_nb_quad_points + new_nb_quad_points);
-     trac_old.resize(old_nb_quad_points + new_nb_quad_points);
-     del_c.resize(old_nb_quad_points + new_nb_quad_points);
+    ins_stress.resize(old_nb_quad_points + new_nb_quad_points);
+    trac_old.resize(old_nb_quad_points + new_nb_quad_points);
+    del_c.resize(old_nb_quad_points + new_nb_quad_points);
 
-     for (UInt q = 0; q < new_nb_quad_points; ++q) {
-       sig_c_eff(old_nb_quad_points + q) = new_sigmas[q];
-       del_c(old_nb_quad_points + q) = new_delta_c[q];
-       for (UInt dim = 0; dim < spatial_dimension; ++dim) {
+    for (UInt q = 0; q < new_nb_quad_points; ++q) {
+      sig_c_eff(old_nb_quad_points + q) = new_sigmas[q];
+      del_c(old_nb_quad_points + q) = new_delta_c[q];
+      for (UInt dim = 0; dim < spatial_dimension; ++dim) {
  	ins_stress(old_nb_quad_points + q, dim) = new_normal_traction[q](dim);
  	trac_old(old_nb_quad_points + q, dim) = new_normal_traction[q](dim);
-       }
-     }
-   }
+      }
+    }
+  }
 
    AKANTU_DEBUG_OUT();
  }
@@ -538,6 +528,38 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
   delete [] memory_space;
   AKANTU_DEBUG_OUT();
 }
+
+
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax() {
+
+  /// define iterators
+  //  Array<Real>::iterator<Real>delta_max_it =
+  //    delta_max(el_type, ghost_type).begin();
+
+  //  Array<Real>::iterator<Real>delta_max_end =
+  //    delta_max(el_type, ghost_type).end();
+
+  //  Array<Real>::iterator<Real>delta_max_prev_it =
+  //    delta_max.previous(el_type, ghost_type).begin();
+
+
+  /// loop on each quadrature point
+  //  for (; delta_max_it != delta_max_end;
+  //       ++delta_max_it, ++delta_max_prev_it) {
+
+  //    if (*delta_max_prev_it == 0)
+  //      *delta_max_it = 1e-6;
+  //    else
+  //      *delta_max_it = *delta_max_prev_it;
+
+  //  }
+
+  //  delete [] memory_space;
+}
+
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>

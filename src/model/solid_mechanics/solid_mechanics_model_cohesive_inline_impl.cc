@@ -30,22 +30,16 @@
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
+#include <algorithm>
+#include "shape_cohesive.hh"
+#include "solid_mechanics_model_cohesive.hh"
+#include "dumpable_inline_impl.hh"
+#include "material_cohesive.hh"
+
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_CC__
 #define __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_CC__
 
 __BEGIN_AKANTU__
-
-
-/* -------------------------------------------------------------------------- */
-//template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
-//bool SolidMechanicsModel::solveStepCohesive(Real tolerance,
-//                                    UInt max_iteration) {
-//  Real error = 0.;
-//  return this->template solveStep<cmethod,criteria>(tolerance,
-//                                                    error,
-//                                                    max_iteration);
-//}
-
 
 
 /* -------------------------------------------------------------------------- */
@@ -64,14 +58,11 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
   Array<Real> * velocity_tmp = NULL;
   Array<Real> * acceleration_tmp = NULL;
 
-  //  for (UInt h = 0; h < 2; ++h){
     something_converged = false;
     converged = false;
-    //    tolerance /= (1 + 99 * h);
-    //    max_iteration *= (1 + h);
 
-    while(!something_converged) {
-      if(is_extrinsic) {
+    while (!something_converged) {  //loop for insertion of new cohesive elements
+      if (is_extrinsic) {
         // If in extrinsic saves the current displacements, velocities and accelerations
         Array<Real> * tmp_swap;
 
@@ -214,7 +205,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
           UInt new_nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive) +
             this->mesh.getNbElement(this->spatial_dimension, _ghost, _ek_cohesive);
 
-          if(new_nb_cohesive_elements == nb_cohesive_elements) {
+          if (new_nb_cohesive_elements == nb_cohesive_elements) {
             something_converged = true;
           } else {
             something_converged = false;
@@ -225,12 +216,18 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
       if (!converged){
         something_converged = true;
-        //        ++h;
+
+        for (UInt m = 0; m < materials.size(); ++m) {
+          try {
+            MaterialCohesive & mat_cohesive = dynamic_cast<MaterialCohesive &>(*materials[m]);
+            mat_cohesive.checkDeltaMax();
+          } catch(std::bad_cast&) { }
+        }
+
       }
 
     } //end while something_converged
 
-    //  } //end for
 
   if(is_extrinsic && converged) {
 
