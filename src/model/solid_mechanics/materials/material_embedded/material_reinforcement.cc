@@ -43,6 +43,7 @@ MaterialReinforcement<dim>::MaterialReinforcement(SolidMechanicsModel & model, c
   gradu("gradu_embedded", *this),
   stress("stress_embedded", *this),
   directing_cosines("directing_cosines", *this),
+  pre_stress("pre_stress", *this),
   area(1.0),
   shape_derivatives()
 {
@@ -53,6 +54,7 @@ MaterialReinforcement<dim>::MaterialReinforcement(SolidMechanicsModel & model, c
                                                           false, _ek_regular);
 
   this->registerParam("area", area, _pat_parsable | _pat_modifiable, "Reinforcement cross-sectional area");
+  this->registerParam("pre_stress", pre_stress, _pat_parsable | _pat_modifiable, "Uniform pre-stress");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -80,6 +82,7 @@ void MaterialReinforcement<dim>::initMaterial() {
 
   gradu.initialize(dim * dim);
   stress.initialize(dim * dim);
+  pre_stress.initialize(1);
 
 
   /// We initialise the stuff that is not going to change during the simulation
