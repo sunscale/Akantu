@@ -134,13 +134,15 @@ protected:
 template<UInt spatial_dimension>
 class DamagedWeightFunction : public BaseWeightFunction<spatial_dimension> {
 public:
-  DamagedWeightFunction(Material & material) : BaseWeightFunction<spatial_dimension>(material, "damaged") {}
+  DamagedWeightFunction(Material & material) : BaseWeightFunction<spatial_dimension>(material, "damaged") {
+    AKANTU_DEBUG_ASSERT(dynamic_cast<MaterialDamage<spatial_dimension> *>(&material) != NULL, "This weight function works only with damage materials!");
+  }
 
   inline void selectType(__attribute__((unused)) ElementType type1,
                          __attribute__((unused)) GhostType ghost_type1,
                          ElementType type2,
                          GhostType ghost_type2) {
-    selected_damage = &this->material.getArray("damage", type2, ghost_type2);
+    selected_damage = &dynamic_cast<MaterialDamage<spatial_dimension> &>(this->material).getDamage(type2, ghost_type2);
   }
 
   inline Real operator()(Real r,
@@ -190,6 +192,7 @@ template<UInt spatial_dimension>
 class RemoveDamagedWeightFunction : public BaseWeightFunction<spatial_dimension> {
 public:
   RemoveDamagedWeightFunction(Material & material) : BaseWeightFunction<spatial_dimension>(material, "remove_damaged") {
+    AKANTU_DEBUG_ASSERT(dynamic_cast<MaterialDamage<spatial_dimension> *>(&material) != NULL, "This weight function works only with damage materials!");
     this->registerParam("damage_limit", this->damage_limit, 1., _pat_parsable, "Damage Threshold");
   }
 
@@ -197,7 +200,8 @@ public:
                          __attribute__((unused)) GhostType ghost_type1,
                          ElementType type2,
                          GhostType ghost_type2) {
-    selected_damage = &this->material.getArray("damage", type2, ghost_type2);
+    MaterialDamage<spatial_dimension> & mat = dynamic_cast<MaterialDamage<spatial_dimension> &>(this->material);
+    selected_damage = &mat.getDamage(type2, ghost_type2);
   }
 
   inline Real operator()(Real r,

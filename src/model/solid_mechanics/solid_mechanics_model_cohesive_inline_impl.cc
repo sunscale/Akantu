@@ -194,15 +194,19 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
         this->acceleration = tmp_swap;
 
         if (converged){
-          UInt nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive) +
-            this->mesh.getNbElement(this->spatial_dimension, _ghost, _ek_cohesive);
+          UInt nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive);
 
           this->checkCohesiveStress();
 
-          UInt new_nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive) +
-            this->mesh.getNbElement(this->spatial_dimension, _ghost, _ek_cohesive);
+          UInt new_nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive);
 
-          if (new_nb_cohesive_elements == nb_cohesive_elements) {
+	  UInt nb_cohe[2];
+	  nb_cohe[0] = nb_cohesive_elements;
+	  nb_cohe[1] = new_nb_cohesive_elements;
+
+	  StaticCommunicator::getStaticCommunicator().allReduce(nb_cohe, 2, _so_sum);
+
+          if(nb_cohe[0] == nb_cohe[1]) {
             something_converged = true;
           } else {
             something_converged = false;
