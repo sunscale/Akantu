@@ -232,6 +232,21 @@ MeshIOMSH::MeshIOMSH() {
       tmp[8] = 9;
       tmp[9] = 8;
       break;
+    case _pentahedron_15:
+      tmp[ 0] =  2;
+      tmp[ 1] =  0;
+      tmp[ 2] =  1;
+      tmp[ 3] =  5;
+      tmp[ 4] =  3;
+      tmp[ 5] =  4;
+      tmp[ 6] =  8;
+      tmp[ 8] = 11;
+      tmp[ 9] =  6;
+      tmp[10] =  9;
+      tmp[11] = 10;
+      tmp[12] = 14;
+      tmp[14] = 12;
+      break;
     case _hexahedron_20:
       tmp[ 9] = 11;
       tmp[10] = 12;
@@ -241,6 +256,7 @@ MeshIOMSH::MeshIOMSH() {
       tmp[17] = 19;
       tmp[18] = 17;
       tmp[19] = 18;
+      break;
     default:
       //nothing to change
       break;

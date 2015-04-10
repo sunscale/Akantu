@@ -42,6 +42,7 @@
 __BEGIN_AKANTU__
 
 
+
 /* -------------------------------------------------------------------------- */
 template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
 bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
@@ -163,10 +164,6 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
           AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been implemented!");
         }
 
-        //      if (iter == max_iteration && iter < 250)
-        //        if (error/tolerance < 50)
-        //          max_iteration += 200;
-
       } while (!converged && iter < max_iteration);
 
 
@@ -219,8 +216,8 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
         for (UInt m = 0; m < materials.size(); ++m) {
           try {
-            MaterialCohesive & mat_cohesive = dynamic_cast<MaterialCohesive &>(*materials[m]);
-            mat_cohesive.checkDeltaMax();
+            MaterialCohesive & mat = dynamic_cast<MaterialCohesive &>(*materials[m]);
+            mat.checkDeltaMax(_not_ghost);
           } catch(std::bad_cast&) { }
         }
 

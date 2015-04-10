@@ -301,18 +301,18 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
 
     /// insertion of only 1 cohesive element in case of implicit approach. The one subjected to the highest stress.
     if (!model->isExplicit()){
-      //      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-      //      Array<Real> abs_max(comm.getNbProc());
-      //      abs_max(comm.whoAmI()) = max_ratio;
-      //      comm.allGather(abs_max.storage(), 1);
+      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+      Array<Real> abs_max(comm.getNbProc());
+      abs_max(comm.whoAmI()) = max_ratio;
+      comm.allGather(abs_max.storage(), 1);
 
-      //      Array<Real>::scalar_iterator it = std::max_element(abs_max.begin(), abs_max.end());
-      //      UInt pos = it - abs_max.begin();
+      Array<Real>::scalar_iterator it = std::max_element(abs_max.begin(), abs_max.end());
+      UInt pos = it - abs_max.begin();
 
-      //      if (pos != comm.whoAmI()) {
-      //	AKANTU_DEBUG_OUT();
-      //	return;
-      //      }
+      if (pos != comm.whoAmI()) {
+      	AKANTU_DEBUG_OUT();
+      	return;
+      }
 
       if (nn) {
 	f_insertion(index_filter) = true;
@@ -529,33 +529,50 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
   AKANTU_DEBUG_OUT();
 }
 
-
-
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax() {
+void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_type) {
+  AKANTU_DEBUG_IN();
 
-  /// define iterators
-  //  Array<Real>::iterator<Real>delta_max_it =
-  //    delta_max(el_type, ghost_type).begin();
+  Mesh & mesh = fem_cohesive->getMesh();
+  Mesh::type_iterator it = mesh.firstType(spatial_dimension,
+					  ghost_type, _ek_cohesive);
+  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension,
+						ghost_type, _ek_cohesive);
 
-  //  Array<Real>::iterator<Real>delta_max_end =
-  //    delta_max(el_type, ghost_type).end();
+  for(; it != last_type; ++it) {
+    Array<UInt> & elem_filter = element_filter(*it, ghost_type);
 
-  //  Array<Real>::iterator<Real>delta_max_prev_it =
-  //    delta_max.previous(el_type, ghost_type).begin();
+    UInt nb_element = elem_filter.getSize();
+    if (nb_element == 0) continue;
+
+    ElementType el_type = *it;
+
+    /// define iterators
+    Array<Real>::iterator<Real>delta_max_it =
+      delta_max(el_type, ghost_type).begin();
+
+    Array<Real>::iterator<Real>delta_max_end =
+      delta_max(el_type, ghost_type).end();
+
+    Array<Real>::iterator<Real>delta_max_prev_it =
+      delta_max.previous(el_type, ghost_type).begin();
+
+    Array<Real>::iterator<Real>delta_c_it =
+      delta_c_eff(el_type, ghost_type).begin();
 
 
-  /// loop on each quadrature point
-  //  for (; delta_max_it != delta_max_end;
-  //       ++delta_max_it, ++delta_max_prev_it) {
+    /// loop on each quadrature point
+    for (; delta_max_it != delta_max_end;
+         ++delta_max_it, ++delta_max_prev_it, ++delta_c_it) {
 
-  //    if (*delta_max_prev_it == 0)
-  //      *delta_max_it = 1e-6;
-  //    else
-  //      *delta_max_it = *delta_max_prev_it;
+      if (*delta_max_prev_it == 0)
+        *delta_max_it = *delta_c_it / 1000;
+      else
+        *delta_max_it = *delta_max_prev_it;
 
-  //  }
+    }
+  }
 
   //  delete [] memory_space;
 }

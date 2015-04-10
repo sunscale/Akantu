@@ -85,8 +85,9 @@ public:
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
-  /// check delta_max for cohesive elements
-  virtual void checkDeltaMax() {
+  /// check delta_max for cohesive elements in case of no convergence
+  /// in the solveStep (only for extrinsic-implicit)
+  virtual void checkDeltaMax(GhostType ghost_type = _not_ghost) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 

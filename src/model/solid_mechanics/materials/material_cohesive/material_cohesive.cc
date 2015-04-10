@@ -457,6 +457,7 @@ void MaterialCohesive::computeOpening(const Array<Real> & displacement,
   AKANTU_DEBUG_OUT();
 }
 
+
 /* -------------------------------------------------------------------------- */
 void MaterialCohesive::computeEnergies() {
   AKANTU_DEBUG_IN();
