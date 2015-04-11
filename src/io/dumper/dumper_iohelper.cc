@@ -33,11 +33,12 @@
 
 /* -------------------------------------------------------------------------- */
 #include <io_helper.hh>
+
 #include "dumper_iohelper.hh"
 #include "dumper_elemental_field.hh"
 #include "dumper_nodal_field.hh"
 #include "dumper_filtered_connectivity.hh"
-#include "dumper_connectivity_field.hh"
+//#include "dumper_connectivity_field.hh"
 #include "dumper_element_type.hh"
 #include "dumper_variable.hh"
 #include "mesh.hh"
@@ -114,27 +115,27 @@ void DumperIOHelper::registerMesh(const Mesh & mesh,
 				  UInt spatial_dimension,
 				  const GhostType & ghost_type,
 				  const ElementKind & element_kind) {
-#if defined(AKANTU_COHESIVE_ELEMENT)
-  if (element_kind == _ek_cohesive) {
+// #if defined(AKANTU_COHESIVE_ELEMENT)
+//   if (element_kind == _ek_cohesive) {
+//     registerField("connectivities",
+//		  new dumper::CohesiveConnectivityField(mesh.getConnectivities(),
+//							spatial_dimension,
+//							ghost_type));
+//   } else
+// #endif
     registerField("connectivities",
-    		  new dumper::CohesiveConnectivityField(mesh.getConnectivities(),
-							spatial_dimension,
-							ghost_type));
-  } else
-#endif
-    registerField("connectivities",
-  		  new dumper::ElementalField<UInt>(mesh.getConnectivities(),
-  						   spatial_dimension,
-  						   ghost_type,
-  						   element_kind));
+		  new dumper::ElementalField<UInt>(mesh.getConnectivities(),
+						   spatial_dimension,
+						   ghost_type,
+						   element_kind));
 
-  registerField("element_type",
-  		new dumper::ElementTypeField<>(mesh.getConnectivities(),
-					       spatial_dimension,
-					       ghost_type,
-					       element_kind));
+  // registerField("element_type",
+  //		new dumper::ElementTypeField<>(mesh.getConnectivities(),
+  //					       spatial_dimension,
+  //					       ghost_type,
+  //					       element_kind));
   registerField("positions",
-  		new dumper::NodalField<Real>(mesh.getNodes()));
+		new dumper::NodalField<Real>(mesh.getNodes()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -145,8 +146,8 @@ void DumperIOHelper::registerFilteredMesh(const Mesh & mesh,
 					  const GhostType & ghost_type,
 					  const ElementKind & element_kind) {
 
-  
-  ElementTypeMapArrayFilter<UInt> * f_connectivities = 
+
+  ElementTypeMapArrayFilter<UInt> * f_connectivities =
     new ElementTypeMapArrayFilter<UInt>(mesh.getConnectivities(),elements_filter);
 
   this->registerField("connectivities",
@@ -156,12 +157,12 @@ void DumperIOHelper::registerFilteredMesh(const Mesh & mesh,
 							    ghost_type,
 							    element_kind));
 
-  this->registerField("element_type",
-		      new dumper::ElementTypeField<true>(*f_connectivities,
-							 spatial_dimension,
-							 ghost_type,
-							 element_kind));
-  
+  // this->registerField("element_type",
+  //		      new dumper::ElementTypeField<true>(*f_connectivities,
+  //							 spatial_dimension,
+  //							 ghost_type,
+  //							 element_kind));
+
   this->registerField("positions",new dumper::NodalField<Real,true>(
 								    mesh.getNodes(),
 								    0,
@@ -174,7 +175,7 @@ void DumperIOHelper::registerField(const std::string & field_id,
 				   dumper::Field * field) {
   Fields::iterator it = fields.find(field_id);
   if(it != fields.end()) {
-    AKANTU_DEBUG_WARNING("The field " << field_id 
+    AKANTU_DEBUG_WARNING("The field " << field_id
 			 << " is already registered in this Dumper. Field ignored.");
     return;
   }
@@ -187,7 +188,7 @@ void DumperIOHelper::registerField(const std::string & field_id,
 void DumperIOHelper::unRegisterField(const std::string & field_id) {
   Fields::iterator it = fields.find(field_id);
   if(it == fields.end()) {
-    AKANTU_DEBUG_WARNING("The field " << field_id 
+    AKANTU_DEBUG_WARNING("The field " << field_id
 			 << " is not registered in this Dumper. Nothing to do.");
     return;
   }
@@ -203,7 +204,7 @@ void DumperIOHelper::registerVariable(const std::string & variable_id,
   Variables::iterator it = variables.find(variable_id);
 
   if(it != variables.end()) {
-    AKANTU_DEBUG_WARNING("The Variable " << variable_id 
+    AKANTU_DEBUG_WARNING("The Variable " << variable_id
 			 << " is already registered in this Dumper. Variable ignored.");
     return;
   }
@@ -217,7 +218,7 @@ void DumperIOHelper::unRegisterVariable(const std::string & variable_id) {
   Variables::iterator it = variables.find(variable_id);
 
   if(it == variables.end()) {
-    AKANTU_DEBUG_WARNING("The variable " << variable_id 
+    AKANTU_DEBUG_WARNING("The variable " << variable_id
 			 << " is not registered in this Dumper. Nothing to do.");
     return;
   }

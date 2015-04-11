@@ -106,6 +106,8 @@ public:
 
   ElementType getType() { return *tit; }
 
+  iohelper::ElemType element_type() { return getIOHelperType(*tit); }
+
   Element getCurrentElement(){
     return Element(*tit,array_it.getCurrentIndex());
   }

@@ -33,59 +33,54 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dumper_elemental_field.hh"
-/* -------------------------------------------------------------------------- */
-
 
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
 
-
 /* -------------------------------------------------------------------------- */
-
 template<typename types>
-class quadrature_point_iterator 
-   : public element_iterator<types,quadrature_point_iterator> {
+class quadrature_point_iterator
+   : public element_iterator<types, quadrature_point_iterator> {
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
-  /* ------------------------------------------------------------------------ */  
+  /* ------------------------------------------------------------------------ */
 public:
 
   typedef element_iterator<types, dumper::quadrature_point_iterator> parent;
-   typedef typename types::data_type   data_type;
-   typedef typename types::return_type return_type;
-   typedef typename types::field_type  field_type;
-   typedef typename types::array_iterator array_iterator;
+  typedef typename types::data_type   data_type;
+  typedef typename types::return_type return_type;
+  typedef typename types::field_type  field_type;
+  typedef typename types::array_iterator array_iterator;
 
-   /* ------------------------------------------------------------------------ */
-   /* Constructors/Destructors                                                 */
-   /* ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------ */
+  /* Constructors/Destructors                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  quadrature_point_iterator(const field_type & field,
+			    const typename field_type::type_iterator & t_it,
+			    const typename field_type::type_iterator & t_it_end,
+			    const array_iterator & array_it,
+			    const array_iterator & array_it_end,
+			    const GhostType ghost_type = _not_ghost) :
+    parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type) { }
 
- public:
-   quadrature_point_iterator(const field_type & field,
- 			    const typename field_type::type_iterator & t_it,
- 			    const typename field_type::type_iterator & t_it_end,
- 			    const array_iterator & array_it,
- 			    const array_iterator & array_it_end,
- 			    const GhostType ghost_type = _not_ghost) :
-     parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type) { }
-
-   return_type operator*() {
-     return *this->array_it;
-   }
- };
+  return_type operator*() {
+    return *this->array_it;
+  }
+};
 
  /* -------------------------------------------------------------------------- */
  /* Fields type description                                                    */
  /* -------------------------------------------------------------------------- */
  template<class types, template <class> class iterator_type>
- class GenericQuadraturePointsField : 
+ class GenericQuadraturePointsField :
    public GenericElementalField<types,iterator_type> {
 
  public:
 
    /* ------------------------------------------------------------------------ */
    /* Typedefs                                                                 */
-   /* ------------------------------------------------------------------------ */  
+   /* ------------------------------------------------------------------------ */
 
 
    typedef iterator_type<types> iterator;
@@ -98,9 +93,9 @@ public:
    /* ------------------------------------------------------------------------ */
 
    GenericQuadraturePointsField(const field_type & field,
- 			       UInt spatial_dimension = _all_dimensions,
- 			       GhostType ghost_type = _not_ghost,
- 			       ElementKind element_kind = _ek_not_defined) :
+			       UInt spatial_dimension = _all_dimensions,
+			       GhostType ghost_type = _not_ghost,
+			       ElementKind element_kind = _ek_not_defined) :
      parent(field, spatial_dimension, ghost_type, element_kind) { }
 
    /* ------------------------------------------------------------------------ */
