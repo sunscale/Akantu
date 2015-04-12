@@ -79,12 +79,15 @@ protected:
 			       ElementType el_type,
 			       GhostType ghost_type = _not_ghost);
 
+  /// check delta_max for cohesive elements in case of no convergence
+  /// in the solveStep (only for extrinsic-implicit)
+  void checkDeltaMax(GhostType ghost_type = _not_ghost);
+
   /// compute effective stress norm for insertion check
   inline Real computeEffectiveNorm(const Matrix<Real> & stress,
 				   const Vector<Real> & normal,
 				   const Vector<Real> & tangent,
 				   Vector<Real> & normal_stress);
-
 
   /// compute tangent stiffness matrix
   void computeTangentTraction(const ElementType & el_type,

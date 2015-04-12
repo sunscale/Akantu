@@ -30,9 +30,11 @@
  */
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
+
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
+
 /* -------------------------------------------------------------------------- */
 template <class types>
 class cohesive_connectivity_field_iterator :
@@ -52,11 +54,11 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   cohesive_connectivity_field_iterator(const field_type & field,
-				       const typename field_type::type_iterator & t_it,
-				       const typename field_type::type_iterator & t_it_end,
-				       const array_iterator & array_it,
-				       const array_iterator & array_it_end,
-				       const GhostType ghost_type = _not_ghost) :
+                                       const typename field_type::type_iterator & t_it,
+                                       const typename field_type::type_iterator & t_it_end,
+                                       const array_iterator & array_it,
+                                       const array_iterator & array_it_end,
+                                       const GhostType ghost_type = _not_ghost) :
     parent(field, t_it, t_it_end, array_it, array_it_end,ghost_type) {
 
     write_order[_cohesive_3d_12].push_back(0);
@@ -132,8 +134,8 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   CohesiveConnectivityField(const field_type & field,
-			    UInt spatial_dimension = _all_dimensions,
-			    GhostType ghost_type = _not_ghost) :
+                            UInt spatial_dimension = _all_dimensions,
+                            GhostType ghost_type = _not_ghost) :
     parent(field, spatial_dimension, ghost_type, _ek_cohesive) { }
 };
 
