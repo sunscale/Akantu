@@ -667,6 +667,33 @@ void MaterialReinforcement<dim>::computeBackgroundShapeDerivatives(const Element
   AKANTU_DEBUG_OUT();
 }
 
+template<UInt dim>
+Real MaterialReinforcement<dim>::getEnergy(std::string id) {
+  AKANTU_DEBUG_IN();
+  if (id == "potential") {
+    Real epot = 0.;
+
+    computePotentialEnergyByElements();
+
+    Mesh::type_iterator
+      it = element_filter.firstType(spatial_dimension),
+      end = element_filter.lastType(spatial_dimension);
+
+    for (; it != end ; ++it) {
+      FEEngine & interface_engine = model->getFEEngine("EmbeddedInterfaceFEEngine");
+      epot += interface_engine.integrate(potential_energy(*it, _not_ghost),
+                                                          *it, _not_ghost,
+                                                          element_filter(*it, _not_ghost));
+      epot *= area;
+    }
+
+    return epot;
+  }
+
+  AKANTU_DEBUG_OUT();
+  return 0;
+}
+
 /* -------------------------------------------------------------------------- */
 
 INSTANSIATE_MATERIAL(MaterialReinforcement);
