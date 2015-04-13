@@ -932,9 +932,8 @@ template<>
 bool SolidMechanicsModel::testConvergence<_scc_residual>(Real tolerance, Real & norm) {
   AKANTU_DEBUG_IN();
 
-
-
   UInt nb_nodes = residual->getSize();
+  UInt nb_degree_of_freedom = displacement->getNbComponent();
 
   norm = 0;
   Real * residual_val = residual->storage();
@@ -943,7 +942,7 @@ bool SolidMechanicsModel::testConvergence<_scc_residual>(Real tolerance, Real & 
   for (UInt n = 0; n < nb_nodes; ++n) {
     bool is_local_node = mesh.isLocalOrMasterNode(n);
     if(is_local_node) {
-      for (UInt d = 0; d < spatial_dimension; ++d) {
+      for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
 	if(!(*blocked_dofs_val)) {
 	  norm += *residual_val * *residual_val;
 	}

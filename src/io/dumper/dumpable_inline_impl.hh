@@ -63,7 +63,6 @@ inline void Dumpable::registerDumper(const std::string & dumper_name,
 }
 
 /* -------------------------------------------------------------------------- */
-
 template<typename T>
 inline void Dumpable::addDumpFieldExternal(const std::string & field_id,
                                            const Array<T> & field) {
