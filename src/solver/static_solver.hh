@@ -53,7 +53,7 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
   inline void sendEvent(const StaticSolverEvent::BeforeStaticSolverDestroyEvent & event) {
-    beforeStaticSolverDestroy();
+    this->beforeStaticSolverDestroy();
   }
 
   template<class EventHandler> friend class EventHandlerManager;
