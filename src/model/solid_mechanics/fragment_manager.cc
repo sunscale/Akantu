@@ -361,7 +361,7 @@ void FragmentManager::computeInertiaMoments() {
 	/// loop over quadrature points
 	for (UInt q = 0; q < nb_quad_per_element; ++q) {
 	  UInt global_q = global_el * nb_quad_per_element + q;
-	  Matrix<Real> & moments_matrix = moments_begin[global_q];
+	  Matrix<Real> moments_matrix = moments_begin[global_q];
 	  const Vector<Real> & quad_coord_vector = quad_coordinates_begin[global_q];
 
 	  /// to understand this read the documentation written just
@@ -532,10 +532,10 @@ void FragmentManager::integrateFieldOnFragments(ElementTypeMapArray<Real> & fiel
 				    elements);
 
       /// sum over all elements and store the result
-      output_begin[*fragment_index_it]
-	+= std::accumulate(integrated_array.begin(nb_component),
-			   integrated_array.end(nb_component),
-			   Vector<Real>(nb_component));
+      Vector<Real> output_tmp(output_begin[*fragment_index_it]);
+      output_tmp += std::accumulate(integrated_array.begin(nb_component),
+				    integrated_array.end(nb_component),
+				    Vector<Real>(nb_component));
     }
   }
 
@@ -597,7 +597,7 @@ void FragmentManager::createDumpDataArray(Array<T> & data,
 
   if (data.getSize() == 0) return;
 
-  typedef typename Array<T>::template iterator< Vector<T> > data_iterator;
+  typedef typename Array<T>::vector_iterator data_iterator;
   Mesh & mesh_not_const = const_cast<Mesh &>(mesh);
 
   UInt spatial_dimension = mesh.getSpatialDimension();
@@ -630,11 +630,15 @@ void FragmentManager::createDumpDataArray(Array<T> & data,
 
       /// fill mesh data
       if (fragment_index_output) {
-	for (; el_it != el_end; ++el_it)
-	  mesh_data_begin[*el_it](0) = *fragment_index_it;
+	for (; el_it != el_end; ++el_it) {
+	  Vector<T> md_tmp(mesh_data_begin[*el_it]);
+	  md_tmp(0) = *fragment_index_it;
+	}
       } else {
-	for (; el_it != el_end; ++el_it)
-	  mesh_data_begin[*el_it] = data_begin[*fragment_index_it];
+	for (; el_it != el_end; ++el_it) {
+	  Vector<T> md_tmp(mesh_data_begin[*el_it]);
+	  md_tmp = data_begin[*fragment_index_it];
+	}
       }
     }
   }

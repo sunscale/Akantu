@@ -79,7 +79,10 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<FunctorType, BC::Fu
         nodes_it!= group.node_end();
         ++nodes_it) {
       UInt n = *nodes_it;
-      func(n, flags_iter[n], primal_iter[n], coords_iter[n]);
+      Vector<bool> flag(flags_iter[n]);
+      Vector<Real> primal(primal_iter[n]);
+      Vector<Real> coords(coords_iter[n]);
+      func(n, flag, primal, coords);
     }
   }
 };

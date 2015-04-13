@@ -91,11 +91,11 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(const Array<El
 
     Array<Real>::vector_iterator sigma_c_begin
       = this->sigma_c_eff(type).begin_reinterpret(nb_quad_per_element, nb_element);
-    Vector<Real> & sigma_c_vec = sigma_c_begin[index];
+    Vector<Real> sigma_c_vec = sigma_c_begin[index];
 
     Array<Real>::vector_iterator delta_c_begin
       = this->delta_c_eff(type).begin_reinterpret(nb_quad_per_element, nb_element);
-    Vector<Real> & delta_c_vec = delta_c_begin[index];
+    Vector<Real> delta_c_vec = delta_c_begin[index];
 
     if (scale_traction) scaleTraction(*el_it, sigma_c_vec);
 

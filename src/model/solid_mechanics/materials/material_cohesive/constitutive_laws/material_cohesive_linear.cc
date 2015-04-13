@@ -307,7 +307,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
       comm.allGather(abs_max.storage(), 1);
 
       Array<Real>::scalar_iterator it = std::max_element(abs_max.begin(), abs_max.end());
-      UInt pos = it - abs_max.begin();
+      Int pos = it - abs_max.begin();
 
       if (pos != comm.whoAmI()) {
       	AKANTU_DEBUG_OUT();
