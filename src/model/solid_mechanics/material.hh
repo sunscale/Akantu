@@ -420,7 +420,7 @@ public:
   InternalField<Real> & getInternal(const ID & id);
 
   inline bool isInternal(const ID & id, const ElementKind & element_kind) const;
-  inline ElementTypeMap<UInt> getInternalDataPerElem(const ID & id, const ElementKind & element_kind) const;
+  inline ElementTypeMap<UInt> getInternalDataPerElem(const ID & id, const ElementKind & element_kind, const ID & fe_engine_id = "") const;
 
   bool isFiniteDeformation() const { return finite_deformation; }
   bool isInelasticDeformation() const { return inelastic_deformation; }
