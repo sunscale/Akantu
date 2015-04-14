@@ -93,7 +93,7 @@ inline void CohesiveElementInserter::packUnpackGlobalConnectivity(CommunicationB
     }
 
     /// get element connectivity
-    Vector<UInt> & current_conn = conn_begin[el.element];
+    Vector<UInt> current_conn = conn_begin[el.element];
 
     /// loop on all connectivity nodes
     for (UInt n = 0; n < nb_nodes_per_elem; ++n) {
