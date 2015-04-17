@@ -99,6 +99,9 @@ public:
   /// cohesive elements if needed
   void checkCohesiveStress();
 
+  /// interpolate stress on facets
+  void interpolateStress();
+
   /// initialize the cohesive model
   void initFull(const ModelOptions & options = default_solid_mechanics_model_cohesive_options);
 

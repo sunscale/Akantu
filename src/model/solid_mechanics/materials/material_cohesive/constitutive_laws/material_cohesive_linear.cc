@@ -367,11 +367,11 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
  }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline Real MaterialCohesiveLinear<spatial_dimension>::computeEffectiveNorm(const Matrix<Real> & stress,
-									    const Vector<Real> & normal,
-									    const Vector<Real> & tangent,
-									    Vector<Real> & normal_traction) {
+template<UInt dim>
+inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(const Matrix<Real> & stress,
+							      const Vector<Real> & normal,
+							      const Vector<Real> & tangent,
+							      Vector<Real> & normal_traction) {
   normal_traction.mul<false>(stress, normal);
 
   Real normal_contrib = normal_traction.dot(normal);
@@ -379,14 +379,13 @@ inline Real MaterialCohesiveLinear<spatial_dimension>::computeEffectiveNorm(cons
   /// in 3D tangential components must be summed
   Real tangent_contrib = 0;
 
-  if (spatial_dimension == 2) {
+  if (dim == 2) {
     Real tangent_contrib_tmp = normal_traction.dot(tangent);
     tangent_contrib += tangent_contrib_tmp * tangent_contrib_tmp;
   }
-  else if (spatial_dimension == 3) {
-    for (UInt s = 0; s < spatial_dimension - 1; ++s) {
-      const Vector<Real> tangent_v(tangent.storage() + s * spatial_dimension,
-                                   spatial_dimension);
+  else if (dim == 3) {
+    for (UInt s = 0; s < dim - 1; ++s) {
+      const Vector<Real> tangent_v(tangent.storage() + s * dim, dim);
       Real tangent_contrib_tmp = normal_traction.dot(tangent_v);
       tangent_contrib += tangent_contrib_tmp * tangent_contrib_tmp;
     }
