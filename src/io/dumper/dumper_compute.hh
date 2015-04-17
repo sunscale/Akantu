@@ -35,7 +35,8 @@
 #include "dumper_iohelper.hh"
 #include "dumper_type_traits.hh"
 #include "dumper_field.hh"
-#include "io_helper.hh"
+#include <io_helper.hh>
+
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -105,7 +106,7 @@ public:
       return this->it.getCurrentElement();
     }
 
-    iohelper::ElemType element_type() { return this->it.element_type(); }
+    UInt element_type() { return this->it.element_type(); }
 
   protected:
     sub_iterator it;

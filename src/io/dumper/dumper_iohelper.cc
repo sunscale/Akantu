@@ -284,8 +284,8 @@ iohelper::ElemType getIOHelperType<_bernoulli_beam_3>() { return iohelper::BEAM3
 #endif
 
 /* -------------------------------------------------------------------------- */
-iohelper::ElemType getIOHelperType(ElementType type) {
-  iohelper::ElemType ioh_type = iohelper::MAX_ELEM_TYPE;
+UInt getIOHelperType(ElementType type) {
+  UInt ioh_type = iohelper::MAX_ELEM_TYPE;
 #define GET_IOHELPER_TYPE(type)			\
   ioh_type = getIOHelperType<type>();
 

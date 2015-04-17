@@ -46,12 +46,11 @@
 
 namespace iohelper {
   class Dumper;
-  enum ElemType : unsigned int;
 }
 
 __BEGIN_AKANTU__
 
-iohelper::ElemType getIOHelperType(ElementType type);
+UInt getIOHelperType(ElementType type);
 
 namespace dumper {
   class Field;
