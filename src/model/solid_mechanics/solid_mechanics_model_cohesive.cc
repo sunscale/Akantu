@@ -488,9 +488,7 @@ void SolidMechanicsModelCohesive::computeNormals() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::checkCohesiveStress() {
-  AKANTU_DEBUG_IN();
-
+void SolidMechanicsModelCohesive::interpolateStress() {
   for (UInt m = 0; m < materials.size(); ++m) {
     try {
       MaterialCohesive & mat __attribute__((unused)) =
@@ -514,6 +512,13 @@ void SolidMechanicsModelCohesive::checkCohesiveStress() {
 				   "Interpolated stresses",
 				   facet_stress);
 #endif
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModelCohesive::checkCohesiveStress() {
+  AKANTU_DEBUG_IN();
+
+  interpolateStress();
 
   for (UInt m = 0; m < materials.size(); ++m) {
     try {
