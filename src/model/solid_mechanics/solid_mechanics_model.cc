@@ -1584,7 +1584,7 @@ dumper::Field * SolidMechanicsModel
 		       const std::string & group_name,
 		       bool padding_flag,
 		       const ElementKind & kind,
-           const std::string & fe_engine_id){
+		       const std::string & fe_engine_id){
 
   dumper::Field * field = NULL;
 
@@ -1701,7 +1701,8 @@ dumper::Field * SolidMechanicsModel
 ::createElementalField(const std::string & field_name,
 		       const std::string & group_name,
 		       bool padding_flag,
-		       const ElementKind & kind){
+		       const ElementKind & kind,
+		       const std::string & fe_engine_id){
   return NULL;
 }
 
