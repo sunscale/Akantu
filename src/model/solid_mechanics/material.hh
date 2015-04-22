@@ -266,7 +266,7 @@ protected:
   void computePotentialEnergyByElements();
 
   /// resize the intenals arrays
-  void resizeInternals();
+  virtual void resizeInternals();
 
 public:
   /// compute the coordinates of the quadrature points

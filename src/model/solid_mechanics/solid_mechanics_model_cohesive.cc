@@ -123,14 +123,6 @@ void SolidMechanicsModelCohesive::initFull(const ModelOptions & options) {
 
   SolidMechanicsModel::initFull(options);
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_synchronizer != NULL)
-    inserter->initParallel(facet_synchronizer);
-#endif
-
-  if (is_extrinsic)
-    initAutomaticInsertion();
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -194,6 +186,15 @@ void SolidMechanicsModelCohesive::initMaterials() {
   }
 
   SolidMechanicsModel::initMaterials();
+
+#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+  if (facet_synchronizer != NULL)
+    inserter->initParallel(facet_synchronizer);
+#endif
+
+  if (is_extrinsic)
+    initAutomaticInsertion();
+
 
   AKANTU_DEBUG_OUT();
 }

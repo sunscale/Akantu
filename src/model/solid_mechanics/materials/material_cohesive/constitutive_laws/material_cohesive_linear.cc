@@ -363,8 +363,40 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
     }
   }
 
-   AKANTU_DEBUG_OUT();
- }
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+inline Real MaterialCohesiveLinear<spatial_dimension>::computeEffectiveNorm(const Matrix<Real> & stress,
+									    const Vector<Real> & normal,
+									    const Vector<Real> & tangent,
+									    Vector<Real> & normal_traction) {
+  normal_traction.mul<false>(stress, normal);
+
+  Real normal_contrib = normal_traction.dot(normal);
+
+  /// in 3D tangential components must be summed
+  Real tangent_contrib = 0;
+
+  if (spatial_dimension == 2) {
+    Real tangent_contrib_tmp = normal_traction.dot(tangent);
+    tangent_contrib += tangent_contrib_tmp * tangent_contrib_tmp;
+  }
+  else if (spatial_dimension == 3) {
+    for (UInt s = 0; s < spatial_dimension - 1; ++s) {
+      const Vector<Real> tangent_v(tangent.storage() + s * spatial_dimension,
+                                   spatial_dimension);
+      Real tangent_contrib_tmp = normal_traction.dot(tangent_v);
+      tangent_contrib += tangent_contrib_tmp * tangent_contrib_tmp;
+    }
+  }
+
+  tangent_contrib = std::sqrt(tangent_contrib);
+  normal_contrib = std::max(0., normal_contrib);
+
+  return std::sqrt(normal_contrib * normal_contrib + tangent_contrib * tangent_contrib * beta2_inv);
+}
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
