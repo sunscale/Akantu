@@ -1653,9 +1653,7 @@ void Material::flattenInternal(const std::string & field_id,
       dst_vect.begin_reinterpret(nb_data,nb_element);
 
     for (; it != end ; ++it,++it_src) {
-      Vector<Real> tmp(it_dst[*it]);
-      tmp = *it_src;
-      // it_dst[*it] = *it_src;
+      it_dst[*it] = *it_src;
     }
   }
 };
