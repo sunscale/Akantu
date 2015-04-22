@@ -33,7 +33,6 @@
 #include <algorithm>
 #include "shape_cohesive.hh"
 #include "solid_mechanics_model_cohesive.hh"
-#include "dumpable_inline_impl.hh"
 #include "material_cohesive.hh"
 
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_CC__

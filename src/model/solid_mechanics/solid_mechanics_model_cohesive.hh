@@ -96,8 +96,9 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
   /// function to perform a stress check on each facet and insert
-  /// cohesive elements if needed
-  void checkCohesiveStress();
+  /// cohesive elements if needed (returns true if some elements are
+  /// inserted)
+  bool checkCohesiveStress();
 
   /// interpolate stress on facets
   void interpolateStress();

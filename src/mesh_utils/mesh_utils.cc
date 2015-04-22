@@ -650,16 +650,15 @@ void MeshUtils::purifyMesh(Mesh & mesh) {
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
 /* -------------------------------------------------------------------------- */
-void MeshUtils::insertCohesiveElements(Mesh & mesh,
+bool MeshUtils::insertCohesiveElements(Mesh & mesh,
 				       Mesh & mesh_facets,
 				       const ElementTypeMapArray<bool> & facet_insertion,
 				       Array<UInt> & doubled_nodes,
 				       Array<Element> & new_elements) {
-  AKANTU_DEBUG_IN();
-
   UInt spatial_dimension = mesh.getSpatialDimension();
+  bool elements_inserted = updateFacetToDouble(mesh_facets, facet_insertion);
 
-  if (updateFacetToDouble(mesh_facets, facet_insertion)) {
+  if (elements_inserted) {
 
     if (spatial_dimension == 1) {
       doublePointFacet(mesh, mesh_facets, doubled_nodes);
@@ -682,7 +681,7 @@ void MeshUtils::insertCohesiveElements(Mesh & mesh,
     updateCohesiveData(mesh, mesh_facets, new_elements);
   }
 
-  AKANTU_DEBUG_OUT();
+  return elements_inserted;
 }
 #endif
 

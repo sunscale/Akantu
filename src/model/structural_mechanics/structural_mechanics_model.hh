@@ -207,7 +207,8 @@ public:
   virtual dumper::Field * createElementalField(const std::string & field_name, 
 					       const std::string & group_name,
 					       bool padding_flag,
-					       const ElementKind & kind);
+					       const ElementKind & kind,
+					       const std::string & fe_engine_id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

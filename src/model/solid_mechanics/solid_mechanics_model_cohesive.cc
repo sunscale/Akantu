@@ -515,9 +515,7 @@ void SolidMechanicsModelCohesive::interpolateStress() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::checkCohesiveStress() {
-  AKANTU_DEBUG_IN();
-
+bool SolidMechanicsModelCohesive::checkCohesiveStress() {
   interpolateStress();
 
   for (UInt m = 0; m < materials.size(); ++m) {
@@ -538,9 +536,7 @@ void SolidMechanicsModelCohesive::checkCohesiveStress() {
   synch_registry->synchronize(_gst_smmc_facets);
 
   /// insert cohesive elements
-  inserter->insertElements();
-
-  AKANTU_DEBUG_OUT();
+  return inserter->insertElements();
 }
 
 /* -------------------------------------------------------------------------- */
