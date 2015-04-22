@@ -23,8 +23,8 @@ __BEGIN_SIMTOOLS__
 
 /* -------------------------------------------------------------------------- */
 NTNContact::NTNContact(SolidMechanicsModel & model,
-                       const ContactID & id,
-                       const MemoryID & memory_id) : 
+		       const ContactID & id,
+		       const MemoryID & memory_id) :
   NTNBaseContact(model,id,memory_id),
   masters(0,1,0,id+":masters",std::numeric_limits<UInt>::quiet_NaN(),"masters"),
   lumped_boundary_masters(0,1,0,id+":lumped_boundary_masters",
@@ -32,19 +32,19 @@ NTNContact::NTNContact(SolidMechanicsModel & model,
   master_elements("master_elements", id, memory_id)
 {
   AKANTU_DEBUG_IN();
-  
+
   const Mesh & mesh = this->model.getMesh();
   UInt spatial_dimension = this->model.getSpatialDimension();
-  
+
   mesh.initElementTypeMapArray(this->master_elements,
 			       1,
 			       spatial_dimension - 1);
-  
+
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary, 
+void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
 				    const ElementGroup & master_boundary,
 				    UInt surface_normal_dir,
 				    const Mesh & mesh,
@@ -60,7 +60,7 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
   AKANTU_DEBUG_ASSERT(surface_normal_dir < dim, "Mesh is of " << dim << " dimensions"
 		      << " and cannot have direction " << surface_normal_dir
 		      << " for surface normal");
-  
+
   // offset for projection computation
   UInt offset[dim-1];
   for (UInt i=0, j=0; i<dim; ++i) {
@@ -72,7 +72,7 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
 
   // find projected node coordinates
   const Array<Real> & coordinates = mesh.getNodes();
-  
+
   // find slave nodes
   Array<Real> proj_slave_coord(slave_boundary.getNbNodes(),dim-1,0.);
   Array<UInt> slave_nodes(slave_boundary.getNbNodes());
@@ -84,7 +84,7 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
     }
     ++n;
   }
-  
+
   // find master nodes
   Array<Real> proj_master_coord(master_boundary.getNbNodes(),dim-1,0.);
   Array<UInt> master_nodes(master_boundary.getNbNodes());
@@ -103,7 +103,7 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
     for (UInt j=i+1; j<proj_slave_coord.getSize(); ++j) {
       Real dist = 0.;
       for (UInt d=0; d<dim-1; ++d) {
-	dist += (proj_slave_coord(i,d) - proj_slave_coord(j,d)) 
+	dist += (proj_slave_coord(i,d) - proj_slave_coord(j,d))
 	      * (proj_slave_coord(i,d) - proj_slave_coord(j,d));
       }
       if (dist < min_dist) {
@@ -119,7 +119,7 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
     for (UInt j=0; j<proj_master_coord.getSize(); ++j) {
       Real dist = 0.;
       for (UInt d=0; d<dim-1; ++d) {
-	dist += (proj_slave_coord(i,d) - proj_master_coord(j,d)) 
+	dist += (proj_slave_coord(i,d) - proj_master_coord(j,d))
 	      * (proj_slave_coord(i,d) - proj_master_coord(j,d));
       }
       dist = std::sqrt(dist);
@@ -137,8 +137,8 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNContact::addSurfacePair(const Surface & slave, 
-				const Surface & master, 
+void NTNContact::addSurfacePair(const Surface & slave,
+				const Surface & master,
 				UInt surface_normal_dir) {
   AKANTU_DEBUG_IN();
 
@@ -146,13 +146,13 @@ void NTNContact::addSurfacePair(const Surface & slave,
 
   const ElementGroup & slave_boundary  = mesh.getElementGroup(slave);
   const ElementGroup & master_boundary = mesh.getElementGroup(master);
-  
+
   this->contact_surfaces.insert(&slave_boundary);
   this->contact_surfaces.insert(&master_boundary);
 
   Array<UInt> pairs(0,2);
-  NTNContact::pairInterfaceNodes(slave_boundary, 
-				 master_boundary, 
+  NTNContact::pairInterfaceNodes(slave_boundary,
+				 master_boundary,
 				 surface_normal_dir,
 				 this->model.getMesh(),
 				 pairs);
@@ -176,15 +176,15 @@ void NTNContact::addSurfacePair(const Surface & slave,
 /* -------------------------------------------------------------------------- */
 void NTNContact::addNodePairs(const Array<UInt> & pairs) {
   AKANTU_DEBUG_IN();
-  
-  AKANTU_DEBUG_ASSERT(pairs.getNbComponent() == 2, 
-		      "Array of node pairs should have nb_component = 2," << 
+
+  AKANTU_DEBUG_ASSERT(pairs.getNbComponent() == 2,
+		      "Array of node pairs should have nb_component = 2," <<
 		      " but has nb_component = " << pairs.getNbComponent());
   UInt nb_pairs = pairs.getSize();
   for (UInt n=0; n<nb_pairs; ++n) {
     this->addSplitNode(pairs(n,0), pairs(n,1));
   }
-  
+
   // synchronize with depending nodes
   findBoundaryElements(this->slaves.getArray(),  this->slave_elements);
   findBoundaryElements(this->masters.getArray(), this->master_elements);
@@ -197,7 +197,7 @@ void NTNContact::addNodePairs(const Array<UInt> & pairs) {
 /* -------------------------------------------------------------------------- */
 void NTNContact::getNodePairs(Array<UInt> & pairs) const {
   AKANTU_DEBUG_IN();
-  
+
   pairs.resize(0);
   AKANTU_DEBUG_ASSERT(pairs.getNbComponent() == 2,
 		      "Array of node pairs should have nb_component = 2," <<
@@ -218,17 +218,17 @@ void NTNContact::addSplitNode(UInt slave, UInt master) {
   AKANTU_DEBUG_IN();
 
   NTNBaseContact::addSplitNode(slave);
-  
+
   this->masters.push_back(master);
   this->lumped_boundary_masters.push_back(std::numeric_limits<Real>::quiet_NaN());
-  
-  AKANTU_DEBUG_OUT();  
+
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 /*
-  This function only works for surface elements with one quad point. For 
-  surface elements with more quad points, it computes still, but the result 
+  This function only works for surface elements with one quad point. For
+  surface elements with more quad points, it computes still, but the result
   might not be what you are looking for.
  */
 void NTNContact::updateNormals() {
@@ -257,13 +257,13 @@ void NTNContact::updateNormals() {
       // get elements connected to each node
       CSR<UInt> node_to_element;
       MeshUtils::buildNode2ElementsElementTypeMap(mesh, node_to_element, *it, *gt);
-      
+
       // compute the normals
       Array<Real> quad_normals(0,dim);
       boundary_fem.computeNormalsOnControlPoints(cur_pos, quad_normals, *it, *gt);
-      
+
       UInt nb_quad_points = boundary_fem.getNbQuadraturePoints(*it, *gt);
-      
+
       // add up normals to all master nodes
       for (UInt n=0; n<nb_contact_nodes; ++n) {
 	UInt master = this->masters(n);
@@ -285,7 +285,7 @@ void NTNContact::updateNormals() {
 
   Real * master_normals = this->normals.storage();
   for (UInt n=0; n<nb_contact_nodes; ++n) {
-    if (dim==2) 
+    if (dim==2)
       Math::normalize2(&(master_normals[n*dim]));
     else if (dim==3)
       Math::normalize3(&(master_normals[n*dim]));
@@ -297,7 +297,7 @@ void NTNContact::updateNormals() {
   // for (; nit != nend; ++nit) {
   //   nit->normalize();
   // }
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -315,7 +315,7 @@ void NTNContact::dumpRestart(const std::string & file_name) const {
 /* -------------------------------------------------------------------------- */
 void NTNContact::readRestart(const std::string & file_name) {
   AKANTU_DEBUG_IN();
-  
+
   NTNBaseContact::readRestart(file_name);
   this->masters.readRestartFile(file_name);
   this->lumped_boundary_masters.readRestartFile(file_name);
@@ -333,16 +333,16 @@ void NTNContact::updateImpedance() {
 
   const Array<Real> & mass = this->model.getMass();
 
-  for (UInt n=0; n<nb_contact_nodes; ++n) {  
+  for (UInt n=0; n<nb_contact_nodes; ++n) {
     UInt master = this->masters(n);
     UInt slave = this->slaves(n);
 
-    Real imp = (this->lumped_boundary_masters(n) / mass(master)) 
-             + (this->lumped_boundary_slaves(n) / mass(slave));
+    Real imp = (this->lumped_boundary_masters(n) / mass(master))
+	     + (this->lumped_boundary_slaves(n) / mass(slave));
     imp = 2 / delta_t / imp;
     this->impedance(n) = imp;
   }
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -353,7 +353,7 @@ void NTNContact::updateLumpedBoundary() {
   internalUpdateLumpedBoundary(this->slaves.getArray(),
 			       this->slave_elements,
 			       this->lumped_boundary_slaves);
-  
+
   internalUpdateLumpedBoundary(this->masters.getArray(),
 			       this->master_elements,
 			       this->lumped_boundary_masters);
@@ -373,7 +373,7 @@ void NTNContact::applyContactPressure() {
   for (UInt n=0; n<nb_ntn_pairs; ++n) {
     UInt master = this->masters(n);
     UInt slave = this->slaves(n);
-    
+
     for (UInt d=0; d<dim; ++d) {
       residual(master,d) += this->lumped_boundary_masters(n) * this->contact_pressure(n,d);
       residual(slave, d) -= this->lumped_boundary_slaves(n)  * this->contact_pressure(n,d);
@@ -387,7 +387,7 @@ void NTNContact::applyContactPressure() {
 void NTNContact::computeRelativeTangentialField(const Array<Real> & field,
 						Array<Real> & rel_tang_field) const {
   AKANTU_DEBUG_IN();
-  
+
   // resize arrays to zero
   rel_tang_field.resize(0);
 
@@ -406,11 +406,11 @@ void NTNContact::computeRelativeTangentialField(const Array<Real> & field,
     UInt master = this->masters(n);
 
     // relative field vector (slave - master)
-    rfv = it_field[slave];
-    rfv -= it_field[master];
+    rfv = Vector<Real>(it_field[slave]);
+    rfv -= Vector<Real>(it_field[master]);
 
     // normal projection of relative field
-    const Vector<Real> & normal_v = it_normal[n];
+    const Vector<Real> normal_v = it_normal[n];
     np_rfv = normal_v;
     np_rfv *= rfv.dot(normal_v);
 
@@ -418,7 +418,7 @@ void NTNContact::computeRelativeTangentialField(const Array<Real> & field,
     rfv -= np_rfv;
     rel_tang_field.push_back(rfv);
   }
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -426,10 +426,10 @@ void NTNContact::computeRelativeTangentialField(const Array<Real> & field,
 void NTNContact::computeRelativeNormalField(const Array<Real> & field,
 					    Array<Real> & rel_normal_field) const {
   AKANTU_DEBUG_IN();
-  
+
   // resize arrays to zero
   rel_normal_field.resize(0);
-  
+
   UInt dim = this->model.getSpatialDimension();
   //  Real * field_p = field.storage();
   //  Real * normals_p = this->normals.storage();
@@ -445,15 +445,15 @@ void NTNContact::computeRelativeNormalField(const Array<Real> & field,
     UInt slave  = this->slaves(n);
     UInt master = this->masters(n);
 
-    // relative field vector (slave - master) 
-    rfv = it_field[slave];
-    rfv -= it_field[master];
+    // relative field vector (slave - master)
+    rfv = Vector<Real>(it_field[slave]);
+    rfv -= Vector<Real>(it_field[master]);
 
     // length of normal projection of relative field
-    const Vector<Real> & normal_v = it_normal[n];
+    const Vector<Real> normal_v = it_normal[n];
     rel_normal_field.push_back(rfv.dot(normal_v));
   }
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -473,7 +473,7 @@ void NTNContact::printself(std::ostream & stream, int indent) const {
   AKANTU_DEBUG_IN();
   std::string space;
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
-  
+
   stream << space << "NTNContact [" << std::endl;
   NTNBaseContact::printself(stream, indent);
   stream << space << " + masters       : " << std::endl;
@@ -489,12 +489,12 @@ void NTNContact::printself(std::ostream & stream, int indent) const {
 /* -------------------------------------------------------------------------- */
 void NTNContact::syncArrays(SyncChoice sync_choice) {
   AKANTU_DEBUG_IN();
-  
+
   NTNBaseContact::syncArrays(sync_choice);
-  
+
   this->masters.syncElements(sync_choice);
   this->lumped_boundary_masters.syncElements(sync_choice);
-    
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -514,7 +514,7 @@ void NTNContact::addDumpFieldToDumper(const std::string & dumper_name,
 							       Array<type>, \
 							       Array<UInt> >(field, 0, 0, &nodal_filter))
   */
-  
+
   if(field_id == "lumped_boundary_master") {
     internalAddDumpFieldToDumper(dumper_name,
 				 field_id,
@@ -523,7 +523,7 @@ void NTNContact::addDumpFieldToDumper(const std::string & dumper_name,
   else {
     NTNBaseContact::addDumpFieldToDumper(dumper_name, field_id);
   }
-  
+
   /*
 #undef ADD_FIELD
 #endif
