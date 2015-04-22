@@ -40,6 +40,8 @@
 #include <string>
 #endif
 
+#include "material_list.hh"
+
 /* -------------------------------------------------------------------------- */
 #include <vector>
 
