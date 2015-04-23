@@ -459,6 +459,9 @@ public:
   /// set the value of the time step
   void setTimeStep(Real time_step);
 
+  /// return the of iterations done in the last solveStep
+  AKANTU_GET_MACRO(NumberIter, n_iter, UInt);
+
   /// get the value of the conversion from forces/ mass to acceleration
   AKANTU_GET_MACRO(F_M2A, f_m2a, Real);
 
@@ -607,6 +610,9 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  /// number of iterations
+  UInt n_iter;
+
   /// time step
   Real time_step;
 
