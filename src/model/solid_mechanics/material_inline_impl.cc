@@ -58,7 +58,7 @@ inline UInt Material::getCauchyStressMatrixSize(UInt dim) const {
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 inline void Material::gradUToF(const Matrix<Real> & grad_u,
-			       Matrix<Real> & F) const {
+			       Matrix<Real> & F) {
   AKANTU_DEBUG_ASSERT(F.size() >= grad_u.size() && grad_u.size() == dim*dim,
             "The dimension of the tensor F should be greater or equal to the dimension of the tensor grad_u.");
 
@@ -86,20 +86,20 @@ inline void Material::computeCauchyStressOnQuad(const Matrix<Real> & F,
 
 /* -------------------------------------------------------------------------- */
 inline void Material::rightCauchy(const Matrix<Real> & F,
-				  Matrix<Real> & C) const {
+				  Matrix<Real> & C) {
   C.mul<true, false>(F, F);
 }
 
 /* -------------------------------------------------------------------------- */
 inline void Material::leftCauchy(const Matrix<Real> & F,
-				 Matrix<Real> & B) const {
+				 Matrix<Real> & B) {
   B.mul<false, true>(F, F);
 }
 
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 inline void Material::gradUToEpsilon(const Matrix<Real> & grad_u,
-				     Matrix<Real> & epsilon) const {
+				     Matrix<Real> & epsilon) {
   for (UInt i = 0; i < dim; ++i)
     for (UInt j = 0; j < dim; ++j)
       epsilon(i, j) = 0.5*(grad_u(i, j) + grad_u(j, i));
@@ -108,12 +108,26 @@ inline void Material::gradUToEpsilon(const Matrix<Real> & grad_u,
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 inline void Material::gradUToGreenStrain(const Matrix<Real> & grad_u,
-					 Matrix<Real> & epsilon) const {
+					 Matrix<Real> & epsilon) {
   epsilon.mul<true, false>(grad_u, grad_u, .5);
 
   for (UInt i = 0; i < dim; ++i)
     for (UInt j = 0; j < dim; ++j)
       epsilon(i, j) += 0.5 * (grad_u(i, j) + grad_u(j, i));
+}
+
+/* -------------------------------------------------------------------------- */
+inline Real Material::stressToVonMises(const Matrix<Real> & stress) {
+  // compute deviatoric stress
+  UInt dim = stress.cols();
+  Matrix<Real> deviatoric_stress = Matrix<Real>::eye(dim, -1. * stress.trace() / 3.);
+
+  for (UInt i = 0; i < dim; ++i)
+    for (UInt j = 0; j < dim; ++j)
+      deviatoric_stress(i,j) += stress(i,j);
+
+  // return Von Mises stress
+  return std::sqrt(3. * deviatoric_stress.doubleDot(deviatoric_stress) / 2.);
 }
 
 /* ---------------------------------------------------------------------------*/
@@ -171,6 +185,56 @@ inline void Material::setCauchyStressMatrix(const Matrix<Real> & S_t, Matrix<Rea
 
 
     AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+inline Element Material::convertToLocalElement(const Element & global_element) const {
+  UInt ge = global_element.element;
+#ifndef AKANTU_NDEBUG
+  UInt model_mat_index = this->model->getMaterialByElement(global_element.type,
+							   global_element.ghost_type)(ge);
+
+  UInt mat_index = this->model->getMaterialIndex(this->name);
+  AKANTU_DEBUG_ASSERT(model_mat_index == mat_index,
+		      "Conversion of a global  element in a local element for the wrong material "
+		      << this->name << std::endl);
+#endif
+  UInt le = this->model->getMaterialLocalNumbering(global_element.type,
+						   global_element.ghost_type)(ge);
+
+  Element tmp_quad(global_element.type,
+		   le,
+		   global_element.ghost_type);
+  return tmp_quad;
+}
+
+/* -------------------------------------------------------------------------- */
+inline Element Material::convertToGlobalElement(const Element & local_element) const {
+  UInt le = local_element.element;
+  UInt ge = this->element_filter(local_element.type, local_element.ghost_type)(le);
+
+  Element tmp_quad(local_element.type,
+		   ge,
+		   local_element.ghost_type);
+  return tmp_quad;
+}
+
+/* -------------------------------------------------------------------------- */
+inline QuadraturePoint Material::convertToLocalPoint(const QuadraturePoint & global_point) const {
+  const FEEngine & fem = this->model->getFEEngine();
+  UInt nb_quad = fem.getNbQuadraturePoints(global_point.type);
+  Element el = this->convertToLocalElement(static_cast<const Element &>(global_point));
+  QuadraturePoint tmp_quad(el, global_point.num_point, nb_quad);
+  return tmp_quad;
+}
+
+/* -------------------------------------------------------------------------- */
+inline QuadraturePoint Material::convertToGlobalPoint(const QuadraturePoint & local_point) const {
+  const FEEngine & fem = this->model->getFEEngine();
+  UInt nb_quad = fem.getNbQuadraturePoints(local_point.type);
+  Element el = this->convertToGlobalElement(static_cast<const Element &>(local_point));
+  QuadraturePoint tmp_quad(el, local_point.num_point, nb_quad);
+  return tmp_quad;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -291,12 +355,6 @@ inline void Material::buildElementalFieldInterpolationCoodinates<_quadrangle_8>(
 }
 
 /* -------------------------------------------------------------------------- */
-template<ElementType type>
-inline UInt Material::getSizeElementalFieldInterpolationCoodinates(GhostType ghost_type) {
-  return model->getFEEngine().getNbQuadraturePoints(type, ghost_type);
-}
-
-/* -------------------------------------------------------------------------- */
 inline UInt Material::getNbDataForElements(const Array<Element> & elements,
 					   SynchronizationTag tag) const {
   if(tag == _gst_smm_stress) {
@@ -359,7 +417,7 @@ inline void Material::packElementDataHelper(const ElementTypeMapArray<T> & data_
 					    CommunicationBuffer & buffer,
 					    const Array<Element> & elements,
 					    const ID & fem_id) const {
-  DataAccessor::packElementalDataHelper<T>(data_to_pack, buffer, elements, true, 
+  DataAccessor::packElementalDataHelper<T>(data_to_pack, buffer, elements, true,
 					   model->getFEEngine(fem_id));
 }
 
@@ -404,14 +462,15 @@ inline bool Material::isInternal(const ID & id, const ElementKind & element_kind
 
 /* -------------------------------------------------------------------------- */
 
-inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id, const ElementKind & element_kind) const {
+inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id, const ElementKind & element_kind,
+                                                             const ID & fe_engine_id) const {
 
   std::map<ID, InternalField<Real> *>::const_iterator internal_array =
     internal_vectors_real.find(this->getID()+":"+id);
 
   if (internal_array == internal_vectors_real.end())  AKANTU_EXCEPTION("cannot find internal " << id);
   if (internal_array->second->getElementKind() != element_kind) AKANTU_EXCEPTION("cannot find internal " << id);
-  
+
   InternalField<Real> & internal = *internal_array->second;
   InternalField<Real>::type_iterator it = internal.firstType(spatial_dimension, _not_ghost,element_kind);
   InternalField<Real>::type_iterator last_type = internal.lastType(spatial_dimension, _not_ghost,element_kind);
@@ -421,7 +480,7 @@ inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id, cons
   for(; it != last_type; ++it) {
     UInt nb_quadrature_points = 0;
     if (element_kind == _ek_regular)
-      nb_quadrature_points = model->getFEEngine().getNbQuadraturePoints(*it);
+      nb_quadrature_points = model->getFEEngine(fe_engine_id).getNbQuadraturePoints(*it);
 #if defined(AKANTU_COHESIVE_ELEMENT)
     else if (element_kind == _ek_cohesive)
       nb_quadrature_points = model->getFEEngine("CohesiveFEEngine").getNbQuadraturePoints(*it);

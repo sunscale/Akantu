@@ -107,7 +107,11 @@ struct DimHelper<3> {
 
 
 /* -------------------------------------------------------------------------- */
-template<typename T, UInt ndim>
+template<typename T, UInt ndim, class RetType>
+class TensorStorage;
+
+/* -------------------------------------------------------------------------- */
+template<typename T, UInt ndim, class RetType>
 class TensorProxy {
 protected:
   TensorProxy(T * data, UInt m, UInt n, UInt p) {
@@ -120,6 +124,8 @@ protected:
     for (UInt i = 0; i < ndim; ++i)
       this->n[i] = other.n[i];
   }
+
+  inline TensorProxy(const TensorStorage<T, ndim, RetType> & other);
 
 public:
   UInt size(UInt i) const {
@@ -137,15 +143,11 @@ public:
 
   T * storage() const { return values; }
 
-//   TensorProxy operator=(const TensorProxy & other) {
-//     UInt _size = this->size();
-// #ifndef AKANTU_NDEBUG
-//     UInt _size_other = other.size();
-//     AKANTU_DEBUG_ASSERT(_size == _size_other, "The two tensor are not compatible in size");
-// #endif
-//     memcpy(this->values, other.storage(), _size * sizeof(T));
-//     return *this;
-//   }
+  void copyExternalMemory(T * data, UInt nb_values) {
+    AKANTU_DEBUG_ASSERT(nb_values == this->size(),
+			"You are trying to copy two tensors with differents sizes");
+    memcpy(this->values, data, nb_values * sizeof(T));
+  }
 
 protected:
   T * values;
@@ -155,41 +157,46 @@ protected:
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
-class VectorProxy : public TensorProxy<T, 1> {
-  typedef TensorProxy<T, 1> parent;
+class VectorProxy : public TensorProxy<T, 1, Vector<T> > {
+  typedef TensorProxy<T, 1, Vector<T> > parent;
 public:
   VectorProxy(T * data = NULL, UInt n = 0) : parent(data, n, 0, 0) { }
   VectorProxy(const VectorProxy & src) : parent(src) {  }
-  // VectorProxy & operator=(const VectorProxy & other) {
-  //   parent::operator=(other);
-  //   return *this;
-  // }
+  VectorProxy(const Vector<T> & src) : parent(src) { }
+
+  VectorProxy & operator=(const Vector<T> & src) {
+    this->copyExternalMemory(src.storage(), src.size());
+    return *this;
+  }
 };
 
 template<typename T>
-class MatrixProxy : public TensorProxy<T, 2> {
-  typedef TensorProxy<T, 2> parent;
+class MatrixProxy : public TensorProxy<T, 2, Matrix<T> > {
+  typedef TensorProxy<T, 2, Matrix<T> > parent;
 public:
   MatrixProxy(T * data = NULL, UInt m = 0, UInt n = 0) : parent(data, m, n, 0) { }
   MatrixProxy(const MatrixProxy & src) : parent(src) {  }
-  // MatrixProxy & operator=(const MatrixProxy & other) {
-  //   parent::operator=(other);
-  //   return *this;
-  // }
+  MatrixProxy(const Matrix<T> & src) : parent(src) { }
 
+  MatrixProxy & operator=(const Matrix<T> & src) {
+    this->copyExternalMemory(src.storage(), src.size());
+    return *this;
+  }
 };
 
 template<typename T>
-class Tensor3Proxy : public TensorProxy<T, 3> {
-  typedef TensorProxy<T, 3> parent;
+class Tensor3Proxy : public TensorProxy<T, 3, Tensor3<T> > {
+  typedef TensorProxy<T, 3, Tensor3<T> > parent;
 public:
   Tensor3Proxy(T * data = NULL, UInt m = 0, UInt n = 0, UInt k = 0) :
     parent(data, m, n, k) { }
   Tensor3Proxy(const Tensor3Proxy & src) : parent(src) {  }
-  // Tensor3Proxy & operator=(const Tensor3Proxy & other) {
-  //   parent::operator=(other);
-  //   return *this;
-  // }
+  Tensor3Proxy(const Tensor3<T> & src) : parent(src) { }
+
+  Tensor3Proxy & operator=(const Tensor3<T> & src) {
+    this->copyExternalMemory(src.storage(), src.size());
+    return *this;
+  }
 };
 
 /* -------------------------------------------------------------------------- */
@@ -212,7 +219,7 @@ protected:
     _size = 0;
   }
 
-  TensorStorage(const TensorProxy<T, ndim> & proxy) {
+  TensorStorage(const TensorProxy<T, ndim, RetType> & proxy) {
     this->copySize(proxy);
     this->values = proxy.storage();
     this->wrapped = true;
@@ -429,6 +436,13 @@ protected:
 };
 
 
+template<typename T, UInt ndim, class RetType>
+inline TensorProxy<T, ndim, RetType>::TensorProxy(const TensorStorage<T, ndim, RetType> & other) {
+  this->values = other.storage();
+  for (UInt i = 0; i < ndim; ++i)
+    this->n[i] = other.size(i);
+}
+
 /* -------------------------------------------------------------------------- */
 /* Vector                                                                     */
 /* -------------------------------------------------------------------------- */
@@ -437,6 +451,7 @@ class Vector : public TensorStorage< T, 1, Vector<T> > {
   typedef TensorStorage< T, 1, Vector<T> > parent;
 public:
   typedef typename parent::value_type value_type;
+  typedef VectorProxy<T> proxy;
 public:
   Vector() : parent() {}
   Vector(UInt n, const T & def = T()) : parent(n, 0, 0, def) { }
@@ -473,6 +488,14 @@ public:
   /* ------------------------------------------------------------------------ */
   inline Real dot(const Vector<T> & vect) const {
     return Math::vectorDot(this->values, vect.storage(), this->_size);
+  }
+
+  /* ------------------------------------------------------------------------ */
+  inline Real mean() const {
+    Real mean = 0;
+    T * a = this->storage();
+    for (UInt i = 0; i < this->_size; ++i) mean += *(a++);
+    return mean / this->_size;
   }
 
   /* ------------------------------------------------------------------------ */
@@ -642,6 +665,7 @@ class Matrix : public TensorStorage< T, 2, Matrix<T> > {
   typedef TensorStorage< T, 2, Matrix<T> > parent;
 public:
   typedef typename parent::value_type value_type;
+  typedef MatrixProxy<T> proxy;
 public:
   Matrix() : parent() {}
   Matrix(UInt m, UInt n, const T & def = T()) : parent(m, n, 0, def) { }
@@ -663,12 +687,22 @@ public:
 
   /* ---------------------------------------------------------------------- */
   inline T& operator()(UInt i, UInt j) {
+    return this->at(i,j);
+  }
+
+  inline T& at(UInt i, UInt j) {
     return *(this->values + i + j*this->n[0]);
   }
+  
   inline const T& operator()(UInt i, UInt j) const {
+    return this->at(i,j);
+  }
+
+  inline T& at(UInt i, UInt j) const {
     return *(this->values + i + j*this->n[0]);
   }
 
+  
   /// give a line vector wrapped on the column i
   inline VectorProxy<T> operator()(UInt j) {
     return VectorProxy<T>(this->values + j*this->n[0], this->n[0]);
@@ -939,6 +973,7 @@ class Tensor3 : public TensorStorage< T, 3, Tensor3<T> > {
   typedef TensorStorage< T, 3, Tensor3<T> > parent;
 public:
   typedef typename parent::value_type value_type;
+  typedef Tensor3Proxy<T> proxy;
 public:
   Tensor3() : parent() { };
 

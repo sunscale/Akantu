@@ -85,6 +85,12 @@ public:
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
+  /// check delta_max for cohesive elements in case of no convergence
+  /// in the solveStep (only for extrinsic-implicit)
+  virtual void checkDeltaMax(GhostType ghost_type = _not_ghost) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
   /// interpolate   stress  on   given   positions  for   each  element   (empty
   /// implemantation to avoid the generic call to be done on cohesive elements)
   virtual void interpolateStress(__attribute__((unused)) const ElementType type,
@@ -227,6 +233,12 @@ protected:
 
   /// critical stress
   RandomInternalField<Real, FacetInternalField> sigma_c;
+
+  /// critical displacement
+  Real delta_c;
+
+  /// array to temporarily store the normals
+  Array<Real> normal;
 };
 
 

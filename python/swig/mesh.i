@@ -28,6 +28,24 @@ namespace akantu {
 
 print_self(Mesh)
 
+
+%extend akantu::Mesh {
+
+  void resizeMesh(UInt nb_nodes, UInt nb_element, const ElementType & type) {
+
+    Array<Real> & nodes = const_cast<Array<Real> &>($self->getNodes());
+    nodes.resize(nb_nodes);
+
+    $self->addConnectivityType(type);
+    Array<UInt> & connectivity = const_cast<Array<UInt> &>($self->getConnectivity(type));
+    connectivity.resize(nb_element);
+    
+
+
+  }
+
+}
+
 %extend akantu::GroupManager {
   void createGroupsFromStringMeshData(const std::string & dataset_name) {
     $self->createGroupsFromMeshData<std::string>(dataset_name);
@@ -93,7 +111,3 @@ print_self(Mesh)
 %include "mesh.hh"
 
 
-namespace akantu {
-  %template(MeshEventUInt) MeshEvent<UInt>;
-  %template(MeshEventElement) MeshEvent<Element>;
-}

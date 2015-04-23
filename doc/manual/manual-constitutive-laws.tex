@@ -58,15 +58,26 @@ that follows the chosen distribution.
 
 The
 \href{http://en.wikipedia.org/wiki/Uniform\_distribution\_(continuous)}{\emph{Uniform}}
-distribution is gives a random values between in $[min, max)$
-
-The \href{http://en.wikipedia.org/wiki/Weibull\_distribution}{\emph{Weibull}}
-distribution is characterized by the following cumulative distribution function:
+distribution is gives a random values between in $[min, max)$. The
+\href{http://en.wikipedia.org/wiki/Weibull\_distribution}{\emph{Weibull}}
+distribution is characterized by the following cumulative distribution
+function:
 \begin{equation}
   F(x) = 1- e^{-\left({x/\lambda}\right)^m}
 \end{equation}
 which depends on  $m$ and $\lambda$, which are the shape parameter and the scale
-parameter.
+parameter. These random distributions are different each time the code
+is executed. In order to obtain always the same one, it possible to
+manually set the \emph{seed} that is the number from which these
+pseudo-random distributions are created. This can be done by adding
+the following line to the input file \emph{outside} the material
+parameters environments:
+\begin{cpp}
+  seed = 1.0
+\end{cpp}
+where the value 1 can be substituted with any number. Currently
+\akantu is can reproduce always the same distribution when the seed is
+specified \emph{only} in serial.
 
 The following sections describe the constitutive models implemented in
 \akantu. In Appendix~\ref{app:material-parameters} a summary of the

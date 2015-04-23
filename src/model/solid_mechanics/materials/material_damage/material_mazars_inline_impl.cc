@@ -142,3 +142,12 @@ MaterialMazars<spatial_dimension>::computeDamageOnQuad(const Real & epsilon_equ,
     dam = std::min(dam,1.);
   }
 }
+
+
+/* -------------------------------------------------------------------------- */
+// template<UInt spatial_dimension>
+// inline void MaterialMazars<spatial_dimension>::computeTangentModuliOnQuad(Matrix<Real> & tangent) {
+//   MaterialElastic<spatial_dimension>::computeTangentModuliOnQuad(tangent);
+
+//   tangent *= (1-dam);
+// }

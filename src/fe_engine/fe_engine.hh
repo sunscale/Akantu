@@ -53,6 +53,11 @@ class QuadraturePoint : public Element {
 public:
   typedef Vector<Real> position_type;
 public:
+  QuadraturePoint(const Element & element, UInt num_point = 0, UInt nb_quad_per_element = 0) :
+    Element(element), num_point(num_point),
+    global_num(element.element*nb_quad_per_element + num_point),
+    position((Real *)NULL, 0) { };
+
   QuadraturePoint(ElementType type = _not_defined, UInt element = 0,
 		  UInt num_point = 0, GhostType ghost_type = _not_ghost) :
     Element(type, element, ghost_type), num_point(num_point), global_num(0),
@@ -96,7 +101,7 @@ public:
     for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
     stream << space << "QuadraturePoint [";
     Element::printself(stream, 0);
-    stream << ", " << num_point << "]";
+    stream << ", " << num_point << "(" << global_num << ")" << "]";
   }
 
 public:
@@ -223,6 +228,20 @@ public:
   void interpolateOnQuadraturePoints(const Array<Real> & u,
 				     ElementTypeMapArray<Real> & uq,
                                      const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+
+  virtual
+  void computeShapes(const Vector<Real> & real_coords,
+                     UInt elem,
+                     const ElementType & type,
+                     Vector<Real> & shapes,
+                     const GhostType & ghost_type = _not_ghost) const = 0;
+
+  virtual
+  void computeShapeDerivatives(const Vector<Real> & real__coords,
+                               UInt element,
+                               const ElementType & type,
+                               Matrix<Real> & shape_derivatives,
+                               const GhostType & ghost_type = _not_ghost) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Other methods                                                            */

@@ -293,6 +293,13 @@ inline void ParsableParamTyped< InternalField<Real> >::parseParam(const ParserPa
   param.setDefaultValue(r);
 }
 
+/* -------------------------------------------------------------------------- */
+template<typename T>
+inline InternalField<T>::operator T() const {
+  return default_value;
+}
+
+
 __END_AKANTU__
 
 #endif /* __AKANTU_INTERNAL_FIELD_TMPL_HH__ */

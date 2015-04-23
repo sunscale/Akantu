@@ -49,13 +49,15 @@ MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model,
   this->registerParam("h", h, 0., _pat_parsable | _pat_modifiable, "Hardening  modulus");
   this->registerParam("sigma_y", sigma_y, 0., _pat_parsable | _pat_modifiable, "Yield stress");
 
+  //already registered in material
+  //  this->registerParam("finite_deformation",finite_deformation, false,  _pat_parsable | _pat_modifiable, "Flag for large deformation");
+
   this->iso_hardening.initialize(1);
   this->iso_hardening.initializeHistory();
 
   this->plastic_energy.initialize(1);
   this->d_plastic_energy.initialize(1);
 
-  this->finite_deformation            = false;
   this->use_previous_stress           = true;
   this->use_previous_gradu            = true;
   this->use_previous_stress_thermal   = true;
@@ -70,12 +72,10 @@ MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model,
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 Real MaterialPlastic<spatial_dimension>::getEnergy(std::string type) {
-  AKANTU_DEBUG_IN();
-
   if (type == "plastic") return getPlasticEnergy();
   else return MaterialElastic<spatial_dimension>::getEnergy(type);
 
-  AKANTU_DEBUG_OUT();
+  return 0.;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -92,8 +92,8 @@ Real MaterialPlastic<spatial_dimension>::getPlasticEnergy() {
 
   for(; it != end; ++it) {
     penergy += this->model->getFEEngine().integrate(plastic_energy(*it, _not_ghost),
-                                               *it, _not_ghost,
-                                               this->element_filter(*it, _not_ghost));
+					       *it, _not_ghost,
+					       this->element_filter(*it, _not_ghost));
   }
 
   AKANTU_DEBUG_OUT();
@@ -132,7 +132,7 @@ void MaterialPlastic<spatial_dimension>::computePotentialEnergy(ElementType el_t
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialPlastic<spatial_dimension>::updateEnergies(ElementType el_type,
-                                                        GhostType ghost_type) {
+							GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   MaterialElastic<spatial_dimension>::updateEnergies(el_type, ghost_type);

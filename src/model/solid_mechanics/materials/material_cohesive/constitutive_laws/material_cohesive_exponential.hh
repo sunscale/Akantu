@@ -106,9 +106,6 @@ protected:
   /// beta parameter
   Real beta;
 
-  /// critical displacement
-  Real delta_c;
-
   /// contact penalty = initial slope ?
   bool exp_penalty;
 

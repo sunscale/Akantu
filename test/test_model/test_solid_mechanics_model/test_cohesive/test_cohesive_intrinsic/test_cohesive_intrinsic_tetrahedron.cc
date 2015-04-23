@@ -270,11 +270,10 @@ bool checkTractions(SolidMechanicsModelCohesive & model,
 
   Real sigma_c = mat_cohesive.getParam< RandomInternalField<Real, FacetInternalField> >("sigma_c");
   const Real beta = mat_cohesive.getParam<Real>("beta");
-  const Real G_cI = mat_cohesive.getParam<Real>("G_cI");
-  //  Real G_cII = mat_cohesive.getParam<Real>("G_cII");
+  const Real G_c = mat_cohesive.getParam<Real>("G_c");
   const Real delta_0 = mat_cohesive.getParam<Real>("delta_0");
   const Real kappa = mat_cohesive.getParam<Real>("kappa");
-  Real delta_c = 2 * G_cI / sigma_c;
+  Real delta_c = 2 * G_c / sigma_c;
   sigma_c *= delta_c / (delta_c - delta_0);
 
   ElementType type_facet = Mesh::getFacetType(type);

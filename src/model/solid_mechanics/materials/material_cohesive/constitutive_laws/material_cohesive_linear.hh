@@ -66,35 +66,43 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
-  /// initialize the material computed parameter
+  /// initialize the material parameters
   virtual void initMaterial();
 
   /// check stress for cohesive elements' insertion
   virtual void checkInsertion();
 
+  /// compute effective stress norm for insertion check
+  inline Real computeEffectiveNorm(const Matrix<Real> & stress,
+				   const Vector<Real> & normal,
+				   const Vector<Real> & tangent,
+				   Vector<Real> & normal_stress) const;
+
 protected:
 
   /// constitutive law
-  void computeTraction(const Array<Real> & normal,
-		       ElementType el_type,
-		       GhostType ghost_type = _not_ghost);
+  virtual void computeTraction(const Array<Real> & normal,
+			       ElementType el_type,
+			       GhostType ghost_type = _not_ghost);
 
-  /// compute stress norms on quadrature points for each facet for stress check
-  virtual void computeStressNorms(const Array<Real> & facet_stress,
-				  Array<Real> & stress_check,
-				  Array<Real> & normal_stress,
-				  ElementType type_facet);
+  /// check delta_max for cohesive elements in case of no convergence
+  /// in the solveStep (only for extrinsic-implicit)
+  void checkDeltaMax(GhostType ghost_type = _not_ghost);
 
-  /// compute effective stress norm for insertion check
-  inline void computeEffectiveNorm(const Matrix<Real> & stress,
-				   const Vector<Real> & normal,
-				   const Vector<Real> & tangent,
-				   Vector<Real> & normal_stress,
-				   Real & effective_norm);
+  /// compute tangent stiffness matrix
+  void computeTangentTraction(const ElementType & el_type,
+                              Array<Real> & tangent_matrix,
+                              const Array<Real> & normal,
+                              GhostType ghost_type);
 
   /**
    * Scale insertion traction sigma_c according to the volume of the
    * two elements surrounding a facet
+   *
+   * see the article: F. Zhou and J. F. Molinari "Dynamic crack
+   * propagation with cohesive elements: a methodology to address mesh
+   * dependency" International Journal for Numerical Methods in
+   * Engineering (2004)
    */
   void scaleInsertionTraction();
 
@@ -117,10 +125,7 @@ protected:
   Real beta2_inv;
 
   /// mode I fracture energy
-  Real G_cI;
-
-  /// mode II fracture energy
-  Real G_cII;
+  Real G_c;
 
   /// kappa parameter
   Real kappa;
@@ -143,8 +148,9 @@ protected:
   /// critical effective stress
   RandomInternalField<Real, CohesiveInternalField> sigma_c_eff;
 
-  /// critical displacement
-  CohesiveInternalField<Real> delta_c;
+  /// effective critical displacement (each element can have a
+  /// different value)
+  CohesiveInternalField<Real> delta_c_eff;
 
   /// stress at insertion
   CohesiveInternalField<Real> insertion_stress;
@@ -155,7 +161,7 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "material_cohesive_linear_inline_impl.cc"
+#include "material_cohesive_linear_inline_impl.cc"
 
 __END_AKANTU__
 

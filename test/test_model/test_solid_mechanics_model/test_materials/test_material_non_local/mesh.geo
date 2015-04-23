@@ -1,5 +1,5 @@
 // Mesh size
-h  = 0.1;    // Top cube
+h  = 0.05;    // Top cube
 
 // Dimensions of top cube
 Lx = 1;
@@ -30,3 +30,6 @@ Plane Surface(101) = {101};
 Physical Line("Fixed") = {101, 103, 104};
 Physical Line("Traction") = {102};
 Physical Surface("Interior") = {101};
+
+//Transfinite Surface "*";
+//Recombine Surface "*";

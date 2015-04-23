@@ -140,6 +140,9 @@ public:
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
+  /// re-initialize model to set fields to 0
+  void reInitialize();
+
   /* ------------------------------------------------------------------------ */
   /* PBC                                                                      */
   /* ------------------------------------------------------------------------ */
@@ -328,6 +331,9 @@ protected:
   /// read the material files to instantiate all the materials
   void instantiateMaterials();
 
+  /// set the element_id_by_material and add the elements to the good materials
+  void assignMaterialToElements(const ElementTypeMapArray<UInt> * filter = NULL);
+
   /* ------------------------------------------------------------------------ */
   /* Mass (solid_mechanics_model_mass.cc)                                     */
   /* ------------------------------------------------------------------------ */
@@ -410,11 +416,13 @@ public:
 #ifndef SWIG  
   //! give the amount of data per element
   ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-					     const ElementKind & kind);
+					     const ElementKind & kind,
+               const std::string & fe_engine_id = "");
 
   //! flatten a given material internal field 
   ElementTypeMapArray<Real> & flattenInternal(const std::string & field_name,
-					     const ElementKind & kind);
+					      const ElementKind & kind,
+					      const GhostType ghost_type = _not_ghost);
   //! flatten all the registered material internals
   void flattenAllRegisteredInternals(const ElementKind & kind);
 #endif
@@ -431,7 +439,8 @@ public:
   virtual dumper::Field * createElementalField(const std::string & field_name, 
 					       const std::string & group_name,
 					       bool padding_flag,
-					       const ElementKind & kind);
+					       const ElementKind & kind,
+					       const std::string & fe_engine_id = "");
 
 
 
@@ -582,22 +591,22 @@ public:
   /// get synchronizer
   AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const DistributedSynchronizer &);
 
-  AKANTU_GET_MACRO(ElementIndexByMaterial, element_index_by_material, const ElementTypeMapArray <UInt> &);
+  AKANTU_GET_MACRO(MaterialByElement, material_index, const ElementTypeMapArray<UInt> &);
 
   /// vectors containing local material element index for each global element index
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(ElementIndexByMaterial, element_index_by_material, UInt);
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(ElementIndexByMaterial, element_index_by_material, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialByElement, material_index, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialByElement, material_index, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialLocalNumbering, material_local_numbering, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering, material_local_numbering, UInt);
 
   /// Get the type of analysis method used
   AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
-
 
   template <int dim, class model_type>
   friend struct ContactData;
 
   template <int Dim, AnalysisMethod s, ContactResolutionMethod r>
   friend class ContactResolution;
-            
 
 protected:
   friend class Material;
@@ -662,8 +671,11 @@ protected:
   /// t^2}, d = \frac{\gamma}{\beta \Delta t} @f]
   SparseMatrix *jacobian_matrix;
 
-  /// vectors containing local material element index for each global element index
-  ElementTypeMapArray<UInt> element_index_by_material;
+  /// Arrays containing the material index for each element
+  ElementTypeMapArray<UInt> material_index;
+
+  /// Arrays containing the position in the element filter of the material (material's local numbering)
+  ElementTypeMapArray<UInt> material_local_numbering;
 
   /// list of used materials
   std::vector <Material *> materials;

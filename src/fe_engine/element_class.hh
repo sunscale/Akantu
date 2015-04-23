@@ -6,7 +6,7 @@
  * @date creation: Fri Jun 18 2010
  * @date last modification: Fri Jul 04 2014
  *
- * @brief  Declaration of the ElementClass main class and the 
+ * @brief  Declaration of the ElementClass main class and the
  * Integration and Interpolation elements
  *
  * @section LICENSE
@@ -354,7 +354,9 @@ protected:
 #include "element_classes/element_class_quadrangle_4_inline_impl.cc"
 #include "element_classes/element_class_quadrangle_8_inline_impl.cc"
 #include "element_classes/element_class_hexahedron_8_inline_impl.cc"
+#include "element_classes/element_class_hexahedron_20_inline_impl.cc"
 #include "element_classes/element_class_pentahedron_6_inline_impl.cc"
+#include "element_classes/element_class_pentahedron_15_inline_impl.cc"
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 #  include "element_class_structural.hh"

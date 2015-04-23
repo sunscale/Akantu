@@ -32,17 +32,17 @@
 #===============================================================================
 # Package Management
 #===============================================================================
-package_get_source_files(
+package_get_all_source_files(
   AKANTU_LIBRARY_SRCS
   AKANTU_LIBRARY_PUBLIC_HDRS
   AKANTU_LIBRARY_PRIVATE_HDRS
   )
 
-package_get_include_directories(
+package_get_all_include_directories(
   AKANTU_LIBRARY_INCLUDE_DIRS
   )
 
-package_get_external_informations(
+package_get_all_external_informations(
   AKANTU_EXTERNAL_INCLUDE_DIR
   AKANTU_EXTERNAL_LIBRARIES
 )
@@ -50,11 +50,8 @@ package_get_external_informations(
 #===========================================================================
 # header for blas/lapack (any other fortran libraries)
 #===========================================================================
-package_get_name(BLAS _blas_pkg_name)
-package_get_name(LAPACK _lapack_pkg_name)
-
-package_is_activated(${_blas_pkg_name} _blas_activated)
-package_is_activated(${_lapack_pkg_name} _lapack_activated)
+package_is_activated(BLAS _blas_activated)
+package_is_activated(LAPACK _lapack_activated)
 
 if(_blas_activated OR _lapack_activated)
   if(CMAKE_Fortran_COMPILER)
@@ -73,6 +70,7 @@ endif()
 configure_file(common/aka_config.hh.in "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
 list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS ${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh)
 list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
+
 #===========================================================================
 # header precompilation
 #===========================================================================
@@ -110,7 +108,7 @@ endif()
 add_library(akantu ${AKANTU_LIBRARY_SRCS})
 target_link_libraries(akantu ${AKANTU_EXTERNAL_LIBRARIES})
 
-package_get_all_extra_dependency(_extra_target_dependencies)
+package_get_all_extra_dependencies(_extra_target_dependencies)
 if(_extra_target_dependencies)
   # This only adding todo: find a solution for when a dependency was add the is removed...
   add_dependencies(akantu ${_extra_target_dependencies})

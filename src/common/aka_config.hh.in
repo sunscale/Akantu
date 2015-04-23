@@ -59,7 +59,9 @@
 
 #cmakedefine AKANTU_USE_OBSOLETE_GETTIMEOFDAY
 
+
 #cmakedefine AKANTU_EXTRA_MATERIALS
+#cmakedefine AKANTU_STUDENTS_EXTRA_PACKAGE
 #cmakedefine AKANTU_DAMAGE_NON_LOCAL
 
 #cmakedefine AKANTU_STRUCTURAL_MECHANICS
@@ -69,6 +71,9 @@
 #cmakedefine AKANTU_PARALLEL_COHESIVE_ELEMENT
 
 #cmakedefine AKANTU_IGFEM
+
+#cmakedefine AKANTU_USE_CGAL
+#cmakedefine AKANTU_EMBEDDED
 
 // BOOST Section
 #cmakedefine AKANTU_BOOST_CHRONO

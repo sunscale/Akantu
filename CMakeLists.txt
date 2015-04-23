@@ -43,7 +43,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 # add this options before PROJECT keyword
-#set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 project(Akantu)
@@ -83,35 +83,35 @@ define_project_version()
 # Options
 #===============================================================================
 # Debug
-#option(AKANTU_DEBUG "Compiles akantu with the debug messages" ON)
-#mark_as_advanced(AKANTU_DEBUG)
-
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DAKANTU_NDEBUG"
   CACHE STRING "Flags used by the compiler during release builds" FORCE)
 
 add_flags(cxx "-Wall")
 
-# if(NOT AKANTU_DEBUG)
-#   set(AKANTU_NDEBUG ON)
-# else()
-#   set(AKANTU_NDEBUG OFF)
-# endif()
-
 #Profiling
-set(CMAKE_CXX_FLAGS_PROFILING "-g -pg" CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg" CACHE STRING "Flags used by the linker during profiling builds")
-set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg" CACHE STRING "Flags used by the linker during profiling builds")
-mark_as_advanced(CMAKE_CXX_FLAGS_PROFILING)
-mark_as_advanced(CMAKE_EXE_LINKER_FLAGS_PROFILING)
-mark_as_advanced(CMAKE_SHARED_LINKER_FLAGS_PROFILING)
+set(CMAKE_CXX_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+  CACHE STRING "Flags used by the compiler during profiling builds")
+set(CMAKE_C_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+  CACHE STRING "Flags used by the compiler during profiling builds")
+set(CMAKE_Fortran_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+  CACHE STRING "Flags used by the compiler during profiling builds")
+set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg"
+  CACHE STRING "Flags used by the linker during profiling builds")
+set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg"
+  CACHE STRING "Flags used by the linker during profiling builds")
+mark_as_advanced(
+  CMAKE_CXX_FLAGS_PROFILING
+  CMAKE_C_FLAGS_PROFILING
+  CMAKE_Fortran_FLAGS_PROFILING
+  CMAKE_EXE_LINKER_FLAGS_PROFILING
+  CMAKE_SHARED_LINKER_FLAGS_PROFILING
+  )
 
 include(CMakeDetermineCCompiler)
 cmake_deactivate_debug_message(PackagesSystem)
 #===============================================================================
 # Dependencies
 #===============================================================================
-set(AKANTU_BOOST_COMPONENT)
-
 option(AKANTU_PYTHON_INTERFACE "Generates the Akantu Python module" OFF)
 if(AKANTU_PYTHON_INTERFACE)
   list(APPEND AKANTU_BOOST_COMPONENTS python)
@@ -119,8 +119,6 @@ endif()
 
 package_list_packages(${PROJECT_SOURCE_DIR}/packages
   EXTRA_PACKAGES_FOLDER ${PROJECT_SOURCE_DIR}/extra_packages)
-
-include_boost()
 
 ## meta option \todo better way to do it when multiple package give enable the
 ## same feature
@@ -184,4 +182,5 @@ endif()
 mark_as_advanced(AKANTU_PYTHON_INTERFACE)
 if(AKANTU_PYTHON_INTERFACE)
   add_subdirectory(python)
+#  add_subdirectory(akantu4py)
 endif()

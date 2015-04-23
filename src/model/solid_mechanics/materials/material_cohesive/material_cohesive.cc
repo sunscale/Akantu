@@ -57,7 +57,8 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
   delta_max("delta max", *this),
   use_previous_delta_max(false),
   damage("damage", *this),
-  sigma_c("sigma_c", *this) {
+  sigma_c("sigma_c", *this),
+  normal(0, spatial_dimension, "normal") {
 
   AKANTU_DEBUG_IN();
 
@@ -65,12 +66,14 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
 
   this->registerParam("sigma_c", sigma_c,
 		      _pat_parsable | _pat_readable, "Critical stress");
+  this->registerParam("delta_c", delta_c, 0.,
+		      _pat_parsable | _pat_readable, "Critical displacement");
 
   this->model->getMesh().initElementTypeMapArray(this->element_filter,
-						1,
-						spatial_dimension,
-						false,
-						_ek_cohesive);
+						 1,
+						 spatial_dimension,
+						 false,
+						 _ek_cohesive);
 
   if (this->model->getIsExtrinsic())
     this->model->getMeshFacets().initElementTypeMapArray(facet_filter, 1,
@@ -275,7 +278,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
     }
 
     /// compute traction
-    computeTraction(ghost_type);
+        computeTraction(ghost_type);
 
     /// get the tangent matrix @f$\frac{\partial{(t/\delta)}}{\partial{\delta}} @f$
     Array<Real> * tangent_stiffness_matrix =
@@ -284,10 +287,11 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
 		      "tangent_stiffness_matrix");
 
     //    Array<Real> * normal = new Array<Real>(nb_element * nb_quadrature_points, spatial_dimension, "normal");
-    Array<Real> normal(nb_quadrature_points, spatial_dimension, "normal");
-
-
+    normal.resize(nb_quadrature_points);
     computeNormal(model->getCurrentPosition(), normal, *it, ghost_type);
+
+    /// compute openings @f$\mathbf{\delta}@f$
+    //computeOpening(model->getDisplacement(), opening(*it, ghost_type), *it, ghost_type);
 
     tangent_stiffness_matrix->clear();
 
@@ -388,7 +392,7 @@ void MaterialCohesive::computeTraction(GhostType ghost_type) {
     UInt nb_quadrature_points =
       nb_element*fem_cohesive->getNbQuadraturePoints(*it, ghost_type);
 
-    Array<Real> normal(nb_quadrature_points, spatial_dimension, "normal");
+    normal.resize(nb_quadrature_points);
 
     /// compute normals @f$\mathbf{n}@f$
     computeNormal(model->getCurrentPosition(), normal, *it, ghost_type);
@@ -453,6 +457,7 @@ void MaterialCohesive::computeOpening(const Array<Real> & displacement,
   AKANTU_DEBUG_OUT();
 }
 
+
 /* -------------------------------------------------------------------------- */
 void MaterialCohesive::computeEnergies() {
   AKANTU_DEBUG_IN();
@@ -486,9 +491,9 @@ void MaterialCohesive::computeEnergies() {
 
     /// loop on each quadrature point
     for (; traction_it != traction_end;
-	 ++traction_it, ++traction_old_it,
-	   ++opening_it, ++opening_old_it,
-	   ++erev, ++etot) {
+    	 ++traction_it, ++traction_old_it,
+    	   ++opening_it, ++opening_old_it,
+    	   ++erev, ++etot) {
 
       /// trapezoidal integration
       b  = *opening_it;
@@ -611,6 +616,5 @@ Real MaterialCohesive::getEnergy(std::string type) {
 }
 
 /* -------------------------------------------------------------------------- */
-
 
 __END_AKANTU__

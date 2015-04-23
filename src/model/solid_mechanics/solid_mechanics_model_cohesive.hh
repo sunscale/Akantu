@@ -47,13 +47,10 @@ __BEGIN_AKANTU__
 struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
   SolidMechanicsModelCohesiveOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
 				     bool extrinsic = false,
-				     bool no_init_materials = false,
-				     bool stress_interpolation = true) :
+				     bool no_init_materials = false) :
     SolidMechanicsModelOptions(analysis_method, no_init_materials),
-    extrinsic(extrinsic),
-    stress_interpolation(stress_interpolation) {}
+    extrinsic(extrinsic) {}
   bool extrinsic;
-  bool stress_interpolation;
 };
 
 extern const SolidMechanicsModelCohesiveOptions default_solid_mechanics_model_cohesive_options;
@@ -89,10 +86,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
-  /// reassigns materials depending on the material selector
-  virtual void reassignMaterial();
-
   /// set the value of the time step
   void setTimeStep(Real time_step);
 
@@ -103,8 +96,12 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
   /// function to perform a stress check on each facet and insert
-  /// cohesive elements if needed
-  void checkCohesiveStress();
+  /// cohesive elements if needed (returns true if some elements are
+  /// inserted)
+  bool checkCohesiveStress();
+
+  /// interpolate stress on facets
+  void interpolateStress();
 
   /// initialize the cohesive model
   void initFull(const ModelOptions & options = default_solid_mechanics_model_cohesive_options);
@@ -127,6 +124,17 @@ public:
   /// insert intrinsic cohesive elements
   void insertIntrinsicElements();
 
+
+  //  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
+  //  bool solveStepCohesive(Real tolerance, UInt max_iteration = 100);
+
+  template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
+  bool solveStepCohesive(Real tolerance,
+                         Real & error,
+                         UInt max_iteration = 100,
+                         bool do_not_factorize = false);
+
+
 private:
 
   /// initialize completely the model for extrinsic elements
@@ -143,12 +151,6 @@ private:
 
   /// init facets_check array
   void initFacetsCheck();
-
-  /// fill stress_on_facet
-  void fillStressOnFacet();
-
-  /// compute average stress on elements
-  void averageStressOnFacets(UInt material_index);
 
   /* ------------------------------------------------------------------------ */
   /* Mesh Event Handler inherited members                                     */
@@ -217,17 +219,11 @@ private:
   /// @todo store tangents when normals are computed:
   ElementTypeMapArray<Real> tangents;
 
-  /// list of stresses on facet quadrature points for every element
-  ElementTypeMapArray<Real> stress_on_facet;
-
   /// stress on facets on the two sides by quadrature point
   ElementTypeMapArray<Real> facet_stress;
 
   /// material to use if a cohesive element is created on a facet
   ElementTypeMapArray<UInt> facet_material;
-
-  /// stress interpolation flag
-  bool stress_interpolation;
 
   bool is_extrinsic;
 
@@ -245,15 +241,11 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#if defined (AKANTU_PARALLEL_COHESIVE_ELEMENT)
-#  include "solid_mechanics_model_cohesive_inline_impl.cc"
-#endif
-
 /* -------------------------------------------------------------------------- */
 class DefaultMaterialCohesiveSelector : public DefaultMaterialSelector {
 public:
   DefaultMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model) :
-    DefaultMaterialSelector(model.getElementIndexByMaterial()),
+    DefaultMaterialSelector(model.getMaterialByElement()),
     facet_material(model.getFacetMaterial()),
     mesh(model.getMesh()) { }
 
@@ -295,5 +287,8 @@ inline std::ostream & operator <<(std::ostream & stream, const SolidMechanicsMod
 
 __END_AKANTU__
 
+#if defined (AKANTU_INCLUDE_INLINE_IMPL)
+#  include "solid_mechanics_model_cohesive_inline_impl.cc"
+#endif
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__ */

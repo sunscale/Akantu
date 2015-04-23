@@ -1,5 +1,8 @@
-build
+build*
 .dir-locals.el
 TAGS
 third-party/blackdynamite/
 third-party/cpp-array/
+*~
+release
+.*.swp

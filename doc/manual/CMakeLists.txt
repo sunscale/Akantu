@@ -30,64 +30,65 @@
 #===============================================================================
 
 #------------------------------------------------------------------------------#
-function(get_doc_label PKG LABEL)
-  string(REPLACE "_" "-" _pkg_tex_label_dash ${PKG})
+function(get_doc_label pkg_name label)
+  string(REPLACE "_" "-" _pkg_tex_label_dash ${pkg_name})
   string(TOLOWER "${_pkg_tex_label_dash}" _pkg_tex_label)
   set(TOLOWER "${_pkg_tex_label_dash}" _pkg_tex_label)
-  set(${LABEL} "pkg:${_pkg_tex_label}" PARENT_SCOPE)
+  set(${label} "pkg:${_pkg_tex_label}" PARENT_SCOPE)
+endfunction()
+
+function(get_doc_package_name pkg_name pkg_tex)
+  _package_get_option_name(${pkg_name} _opt_name)
+  string(REPLACE "_" "\\_" _pkg_tex "${_opt_name}")
+  set(${pkg_tex} ${_pkg_tex} PARENT_SCOPE)
 endfunction()
 
 #------------------------------------------------------------------------------#
-function(generate_package_dependency_tex_doc PKG FILENAME LEVEL)
-  string(REPLACE "_" "\\_" _pkg_tex "${PKG}")
-  get_doc_label(${PKG} _pkg_tex_label)
+function(generate_package_dependency_tex_doc pkg_name FILENAME LEVEL)
+  _package_get_option_name(${pkg_name} _opt_name)
+  string(REPLACE "_" "\\_" _pkg_tex "${_opt_name}")
+  get_doc_label(${pkg_name} _pkg_tex_label)
 
-  file(APPEND ${FILENAME} "\\AkantuPackageNameWithLabel{${_pkg_tex}}{${_pkg_tex_label}}{${LEVEL}}")
+  file(APPEND ${FILENAME} "\\AkantuPackageNameWithLabel{${_pkg_tex}}{${_pkg_tex_label}}{${LEVEL}}\\xspace")
 
   math(EXPR _sub_level "${LEVEL}+1")
-  foreach(_pkg ${${PKG}_dependencies})
-    generate_package_dependency_tex_doc(${_pkg} ${FILENAME} ${_sub_level})
+  _package_get_dependencies(${pkg_name} _dependencies)
+  foreach(_dep_pkg_name ${_dependencies})
+    generate_package_dependency_tex_doc(${_dep_pkg_name} ${FILENAME} ${_sub_level})
   endforeach()
 endfunction()
 
 #------------------------------------------------------------------------------#
-function(generate_package_tex_doc PKG FILENAME)
-  string(REPLACE "_" "\\_" _pkg_tex "${PKG}")
-  get_doc_label(${PKG} _pkg_tex_label)
+function(generate_package_tex_doc pkg_name FILENAME)
+  get_doc_package_name(${pkg_name} _pkg_tex)
+  get_doc_label(${pkg_name} _pkg_tex_label)
 
-  file(APPEND ${FILENAME} "
-\\begin{AkantuPackage}{${_pkg_tex}}{${_pkg_tex_label}}")
+  file(APPEND ${FILENAME} "\n\\begin{AkantuPackage}{${_pkg_tex}}{${_pkg_tex_label}}")
 
-  if (${PKG}_DOCUMENTATION)
-    file(APPEND ${FILENAME} "${${PKG}_DOCUMENTATION}")
+  _package_get_documentation(${pkg_name} _doc)
+
+  if (_doc)
+    file(APPEND ${FILENAME} "${_doc}")
   else()
-    string(TOLOWER "${PKG}" _l_pkg)
-    string(REPLACE "akantu_" "" _l_pkg_short ${_l_pkg})
-    string(REPLACE "_" "\\_" _l_pkg_tex ${_l_pkg_short})
-
-    file(GLOB _file_path "${PROJECT_SOURCE_DIR}/packages/*_${_l_pkg_short}.cmake")
-    file(APPEND ${FILENAME} "{\\color{red} TODO}: No Documentation in {\\color{blue} \\href{${_file_path}}{${_l_pkg_tex}.cmake}}\\\\")
-    file(APPEND ${FILENAME} "looking for the sequence: \\\\set(${_pkg_tex}\\_DOCUMENTATION \" documentation text \" )\\\\" )
+    _package_get_filename(${pkg_name} _file_path)
+    _package_get_real_name(${pkg_name} _pkg)
+    get_filename_component(_file ${_file_path} NAME)
+    string(REPLACE "_" "\\_" _escaped_pkg "${_pkg}")
+    file(APPEND ${FILENAME} "{\\color{red} TODO}: No Documentation in {\\color{blue} \\href{${_file_path}}{${_file}}}\\\\")
+    file(APPEND ${FILENAME} "looking for the sequence: \\code{\\\\package\\_declare\\_documentation(${_escaped_pkg} \" documentation text \" )}" )
   endif()
 
-  set(_n_dependencies 0)
-  if (${PKG}_dependencies)
-    list(LENGTH ${PKG}_dependencies _n_dependencies)
-  endif()
+  _package_get_dependencies(${pkg_name} _dependencies)
 
-  if(_n_dependencies GREATER 0)
-    file(APPEND ${FILENAME} "
-\\begin{AkantuPackageDependencies}")
-    foreach(_pkg ${${PKG}_dependencies})
-      generate_package_dependency_tex_doc(${_pkg} ${FILENAME} 1)
+  if(_dependencies)
+    file(APPEND ${FILENAME} "\n\\begin{AkantuPackageDependencies}")
+    foreach(_dep_pkg_name ${_dependencies})
+      generate_package_dependency_tex_doc(${_dep_pkg_name} ${FILENAME} 1)
     endforeach()
-
-    file(APPEND ${FILENAME} "
-\\end{AkantuPackageDependencies}")
+    file(APPEND ${FILENAME} "\n\\end{AkantuPackageDependencies}")
   endif()
 
-  file(APPEND ${FILENAME} "
-\\end{AkantuPackage}
+  file(APPEND ${FILENAME} "\n\\end{AkantuPackage}
 ")
 
 endfunction()
@@ -103,15 +104,13 @@ if (NOT RUBBER_EXECUTABLE)
 endif()
 mark_as_advanced(RUBBER_EXECUTABLE)
 
+package_get_all_documentation_files(_manual_files)
 
 set(AKANTU_MANUAL_FILES_DEPEND)
 set(AKANTU_MANUAL_FILES_COPY_COMMAND)
-
-set(_relative_manual_files)
-foreach(_f  ${AKANTU_MANUAL_FILES})
-  file(RELATIVE_PATH _rel_f ${CMAKE_CURRENT_SOURCE_DIR} "${PROJECT_SOURCE_DIR}/${_f}")
-  list(APPEND _relative_manual_files ${_rel_f})
-  list(APPEND AKANTU_MANUAL_FILES_DEPEND ${_rel_f})
+foreach(_f  ${_manual_files})
+  file(RELATIVE_PATH _rel_f ${CMAKE_CURRENT_SOURCE_DIR} "${_f}")
+  list(APPEND AKANTU_MANUAL_FILES_DEPEND ${_f})
   list(APPEND AKANTU_MANUAL_FILES_COPY_COMMAND
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${_rel_f} ${_rel_f})
 endforeach()
@@ -131,6 +130,7 @@ add_custom_target(manual ALL DEPENDS ${MANUAL_OUTPUT})
 
 install(FILES ${MANUAL_OUTPUT} DESTINATION share/akantu/doc)
 
-foreach (_pkg ${AKANTU_PACKAGE_LIST})
-  generate_package_tex_doc(AKANTU_${_pkg} ${DOC_DEPS_TEX_FILENAME})
+package_get_all_activated_packages(_package_list)
+foreach (_pkg_name ${_package_list})
+  generate_package_tex_doc(${_pkg_name} ${DOC_DEPS_TEX_FILENAME})
 endforeach()

@@ -88,7 +88,9 @@ protected:
     _msh_prism_18       = 13,  // 18-node second order prism
     _msh_pyramid_14     = 14,  // 14-node second order pyramid
     _msh_point          = 15,  // 1-node point.
-    _msh_quadrangle_8   = 16   // 8-node second order quadrangle
+    _msh_quadrangle_8   = 16,   // 8-node second order quadrangle
+    _msh_hexahedron_20  = 17,   // 20-node second order hexahedron
+    _msh_prism_15       = 18   // 15-node second order prism
   };
 
 #define MAX_NUMBER_OF_NODE_PER_ELEMENT 10 // tetrahedron of second order

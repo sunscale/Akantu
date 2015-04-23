@@ -200,6 +200,14 @@ public:
                          const GhostType ghost_type = _not_ghost);
 
   /**
+   * interpolate stress on given positions for each element by means
+   * of a geometrical interpolation on quadrature points and store the
+   * results per facet
+   */
+  void interpolateStressOnFacets(ElementTypeMapArray<Real> & result,
+				 const GhostType ghost_type = _not_ghost);
+
+  /**
    * function to initialize the elemental field interpolation
    * function by inverting the quadrature points' coordinates
    */
@@ -267,10 +275,14 @@ public:
 
 protected:
   /// interpolate an elemental field on given points for each element
-  template <ElementType type>
-  void interpolateElementalField(const Array<Real> & field,
-                                 Array<Real> & result,
+  void interpolateElementalField(const ElementTypeMapArray<Real> & field,
+                                 ElementTypeMapArray<Real> & result,
                                  const GhostType ghost_type);
+
+  /// interpolate an elemental field and store the results per facet
+  void interpolateElementalFieldOnFacets(const ElementTypeMapArray<Real> & field,
+					 ElementTypeMapArray<Real> & result,
+					 const GhostType ghost_type);
 
   /// template function to initialize the elemental field interpolation
   template <ElementType type>
@@ -292,24 +304,34 @@ protected:
   inline void buildElementalFieldInterpolationCoodinatesQuadratic(const Matrix<Real> & coordinates,
                                                                   Matrix<Real> & coordMatrix);
 
-  /// get the size of the coordiante matrix used in the interpolation
-  template <ElementType type>
-  inline UInt getSizeElementalFieldInterpolationCoodinates(GhostType ghost_type = _not_ghost);
-
 public:
   /* ------------------------------------------------------------------------ */
   /* Conversion functions                                                     */
   /* ------------------------------------------------------------------------ */
   template<UInt dim>
-  inline void gradUToF   (const Matrix<Real> & grad_u, Matrix<Real> & F) const;
-  inline void rightCauchy(const Matrix<Real> & F,      Matrix<Real> & C) const;
-  inline void leftCauchy (const Matrix<Real> & F,      Matrix<Real> & B) const;
+  static inline void gradUToF   (const Matrix<Real> & grad_u, Matrix<Real> & F);
+  static inline void rightCauchy(const Matrix<Real> & F,      Matrix<Real> & C);
+  static inline void leftCauchy (const Matrix<Real> & F,      Matrix<Real> & B);
 
   template<UInt dim>
-  inline void gradUToEpsilon(const Matrix<Real> & grad_u, Matrix<Real> & epsilon) const;
+  static inline void gradUToEpsilon(const Matrix<Real> & grad_u,
+				    Matrix<Real> & epsilon);
   template<UInt dim>
-  inline void gradUToGreenStrain(const Matrix<Real> & grad_u,
-                                 Matrix<Real> & epsilon) const;
+  static inline void gradUToGreenStrain(const Matrix<Real> & grad_u,
+					Matrix<Real> & epsilon);
+
+  static inline Real stressToVonMises(const Matrix<Real> & stress);
+
+protected:
+  /// converts global element to local element
+  inline Element convertToLocalElement(const Element & global_element) const;
+  /// converts local element to global element
+  inline Element convertToGlobalElement(const Element & local_element) const;
+
+  /// converts global quadrature point to local quadrature point
+  inline QuadraturePoint convertToLocalPoint(const QuadraturePoint & global_point) const;
+  /// converts local quadrature point to global quadrature point
+  inline QuadraturePoint convertToGlobalPoint(const QuadraturePoint & local_point) const;
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
@@ -398,7 +420,7 @@ public:
   InternalField<Real> & getInternal(const ID & id);
 
   inline bool isInternal(const ID & id, const ElementKind & element_kind) const;
-  inline ElementTypeMap<UInt> getInternalDataPerElem(const ID & id, const ElementKind & element_kind) const;
+  inline ElementTypeMap<UInt> getInternalDataPerElem(const ID & id, const ElementKind & element_kind, const ID & fe_engine_id = "") const;
 
   bool isFiniteDeformation() const { return finite_deformation; }
   bool isInelasticDeformation() const { return inelastic_deformation; }
@@ -459,6 +481,9 @@ protected:
 
   /// grad_u arrays ordered by element types
   InternalField<Real> gradu;
+
+  /// Green Lagrange strain (Finite deformation)
+  InternalField<Real> green_strain;
 
   /// Second Piola-Kirchhoff stress tensor arrays ordered by element types (Finite deformation)
   InternalField<Real> piola_kirchhoff_2;

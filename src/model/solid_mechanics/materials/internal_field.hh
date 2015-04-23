@@ -87,6 +87,9 @@ public:
   /// print the content
   virtual void printself(std::ostream & stream, UInt indent = 0) const;
 
+  /// get the default value
+  inline operator T() const;
+
 protected:
   /// initialize the arrays in the ElementTypeMapArray<T>
   void internalInitialize(UInt nb_component);

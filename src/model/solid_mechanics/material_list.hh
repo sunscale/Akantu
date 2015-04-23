@@ -73,6 +73,7 @@
 #  include "material_extra_includes.hh"
 #else
 #  define AKANTU_EXTRA_MATERIAL_LIST
+#  define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST
 #endif
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
@@ -87,17 +88,27 @@
 #  define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_LIST
 #endif
 
-#if defined(AKANTU_DAMAGE_NON_LOCAL_EXTRA)
-#  include "material_non_local_extra_includes.hh"
+#if defined(AKANTU_EMBEDDED)
+#  include "material_embedded_includes.hh"
 #else
-#  define AKANTU_DAMAGE_NON_LOCAL_EXTRA_MATERIAL_LIST
+#  define AKANTU_EMBEDDED_MATERIAL_LIST
 #endif
+
+#if defined(AKANTU_STUDENTS_EXTRA_PACKAGE)
+#  include "material_students_include.hh"
+#else
+#  define AKANTU_STUDENTS_MATERIAL_LIST
+#endif
+
+
 
 #define AKANTU_MATERIAL_LIST			\
   AKANTU_CORE_MATERIAL_LIST			\
-  AKANTU_EXTRA_MATERIAL_LIST			\
   AKANTU_COHESIVE_MATERIAL_LIST			\
   AKANTU_DAMAGE_NON_LOCAL_MATERIAL_LIST		\
-  AKANTU_DAMAGE_NON_LOCAL_EXTRA_MATERIAL_LIST
+  AKANTU_EXTRA_MATERIAL_LIST			\
+  AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST \
+  AKANTU_EMBEDDED_MATERIAL_LIST		      \
+  AKANTU_STUDENTS_MATERIAL_LIST
 
 #endif /* __AKANTU_MATERIAL_LIST_HH__ */

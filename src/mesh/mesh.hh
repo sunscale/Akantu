@@ -58,88 +58,8 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /* Mesh modifications events                                                  */
 /* -------------------------------------------------------------------------- */
-template<class Entity>
-class MeshEvent {
-public:
-  virtual ~MeshEvent() {}
-  const Array<Entity> & getList() const { return list; }
-  Array<Entity> & getList() { return list; }
-protected:
-  Array<Entity> list;
-};
+#include "mesh_events.hh"
 
-class Mesh;
-
-class NewNodesEvent : public MeshEvent<UInt> {
-public:
-  virtual ~NewNodesEvent() {};
-};
-class RemovedNodesEvent : public MeshEvent<UInt> {
-public:
-  virtual ~RemovedNodesEvent() {};
-  inline RemovedNodesEvent(const Mesh & mesh);
-  AKANTU_GET_MACRO_NOT_CONST(NewNumbering, new_numbering, Array<UInt> &);
-  AKANTU_GET_MACRO(NewNumbering, new_numbering, const Array<UInt> &);
-private:
-  Array<UInt> new_numbering;
-};
-
-class NewElementsEvent : public MeshEvent<Element> {
-public:
-  virtual ~NewElementsEvent() {};
-};
-class RemovedElementsEvent : public MeshEvent<Element> {
-public:
-  virtual ~RemovedElementsEvent() {};
-  inline RemovedElementsEvent(const Mesh & mesh);
-  AKANTU_GET_MACRO(NewNumbering, new_numbering, const ElementTypeMapArray<UInt> &);
-  AKANTU_GET_MACRO_NOT_CONST(NewNumbering, new_numbering, ElementTypeMapArray<UInt> &);
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(NewNumbering, new_numbering, UInt);
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(NewNumbering, new_numbering, UInt);
-protected:
-  ElementTypeMapArray<UInt> new_numbering;
-};
-
-/* -------------------------------------------------------------------------- */
-
-class MeshEventHandler {
-public:
-  virtual ~MeshEventHandler() {};
-  /* ------------------------------------------------------------------------ */
-  /* Internal code                                                            */
-  /* ------------------------------------------------------------------------ */
-private:
-  inline void sendEvent(const NewNodesEvent & event)     { onNodesAdded  (event.getList(),
-                                                                          event); }
-  inline void sendEvent(const RemovedNodesEvent & event) { onNodesRemoved(event.getList(),
-                                                                          event.getNewNumbering(),
-                                                                          event); }
-
-  inline void sendEvent(const NewElementsEvent & event)     { onElementsAdded  (event.getList(),
-                                                                                event); }
-  inline void sendEvent(const RemovedElementsEvent & event) { onElementsRemoved(event.getList(),
-                                                                                event.getNewNumbering(),
-                                                                                event); }
-
-  template<class EventHandler>
-  friend class EventHandlerManager;
-
-  /* ------------------------------------------------------------------------ */
-  /* Interface                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  virtual void onNodesAdded  (__attribute__((unused)) const Array<UInt> & nodes_list,
-                              __attribute__((unused)) const NewNodesEvent & event) {  }
-  virtual void onNodesRemoved(__attribute__((unused)) const Array<UInt> & nodes_list,
-                              __attribute__((unused)) const Array<UInt> & new_numbering,
-                              __attribute__((unused)) const RemovedNodesEvent & event) {  }
-
-  virtual void onElementsAdded  (__attribute__((unused)) const Array<Element> & elements_list,
-                                 __attribute__((unused)) const NewElementsEvent & event) { }
-  virtual void onElementsRemoved(__attribute__((unused)) const Array<Element> & elements_list,
-                                 __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-                                 __attribute__((unused)) const RemovedElementsEvent & event) { }
-};
 
 /* -------------------------------------------------------------------------- */
 /* Mesh                                                                       */
@@ -242,6 +162,16 @@ public:
                               const bool & flag_nb_node_per_elem_multiply = false,
                               ElementKind element_kind = _ek_regular,
                               bool size_to_nb_element = false) const; /// @todo: think about nicer way to do it
+
+  template<typename T>
+  void initElementTypeMapArray(ElementTypeMapArray<T> & v,
+			       UInt nb_component,
+			       UInt spatial_dimension,
+			       GhostType ghost_type,
+			       const T & default_value,
+			       const bool & flag_nb_node_per_elem_multiply = false,
+			       ElementKind element_kind = _ek_regular,
+			       bool size_to_nb_element = false) const; /// @todo: think about nicer way to do it
 
   /// extract coordinates of nodes from an element
   template<typename T>

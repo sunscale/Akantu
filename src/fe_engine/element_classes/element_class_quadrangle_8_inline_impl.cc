@@ -175,3 +175,14 @@ GeometricalElement<_gt_quadrangle_8>::getInradius(const Matrix<Real> & coord) {
 
   return h;
 }
+
+/* -------------------------------------------------------------------------- */
+template <>
+inline void
+InterpolationElement<_itp_serendip_quadrangle_8>::computeSpecialJacobian(const Matrix<Real> & J,
+                                                                         Real & jac){
+  Vector<Real> vprod(J.cols());
+  Matrix<Real> Jt(J.transpose(), true);
+  vprod.crossProduct(Jt(0), Jt(1));
+  jac = vprod.norm();
+}

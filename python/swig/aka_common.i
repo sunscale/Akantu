@@ -18,6 +18,11 @@ namespace akantu {
       char ** argv = NULL;
       initialize(input_file, argc, argv);
     }
+    void initialize() {
+      int argc = 0;
+      char ** argv = NULL;
+      initialize(argc, argv);
+    }  
   }
   %}
 

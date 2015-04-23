@@ -228,7 +228,8 @@ public:
   inline Array<T> & alloc(UInt size,
 			  UInt nb_component,
 			  const SupportType & type,
-			  const GhostType & ghost_type);
+			  const GhostType & ghost_type,
+			  const T & default_value = T());
 
   /*! allocate memory for a new array in both the data and the ghost_data map
    *  @param size number of tuples of the new array
@@ -236,7 +237,8 @@ public:
    *  @param type the type under which the array is indexed in the map*/
   inline void alloc(UInt size,
 		    UInt nb_component,
-		    const SupportType & type);
+		    const SupportType & type,
+		    const T & default_value = T());
 
   /* get a reference to the array of certain type
    * @param type data filed under type is returned
@@ -270,6 +272,7 @@ public:
    *         deleted entries. */
   inline void onElementsRemoved(const ElementTypeMapArray<UInt> & new_numbering);
 
+
   /// text output helper
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
@@ -283,7 +286,7 @@ public:
 				       ElementKind kind = _ek_not_defined) const{
 
     ElementTypeMap<UInt> nb_components;
-    
+
     type_iterator tit = this->firstType(dim,ghost_type,kind);
     type_iterator end = this->lastType(dim,ghost_type,kind);
 

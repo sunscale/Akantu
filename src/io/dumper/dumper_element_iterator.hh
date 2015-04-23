@@ -33,17 +33,13 @@
 #define __AKANTU_DUMPER_ELEMENT_ITERATOR_HH__
 /* -------------------------------------------------------------------------- */
 #include "element.hh"
-#include <io_helper.hh>
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
 template<class types, template <class> class final_iterator>
-class element_iterator :
-  public iohelper::iterator<typename types::data_type,
-                            final_iterator<types>,
-                            typename types::return_type> {
+class element_iterator {
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
@@ -105,6 +101,8 @@ public:
   };
 
   ElementType getType() { return *tit; }
+
+  UInt element_type() { return getIOHelperType(*tit); }
 
   Element getCurrentElement(){
     return Element(*tit,array_it.getCurrentIndex());

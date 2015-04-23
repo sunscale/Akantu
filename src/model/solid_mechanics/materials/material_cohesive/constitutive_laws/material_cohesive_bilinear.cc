@@ -91,11 +91,11 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(const Array<El
 
     Array<Real>::vector_iterator sigma_c_begin
       = this->sigma_c_eff(type).begin_reinterpret(nb_quad_per_element, nb_element);
-    Vector<Real> & sigma_c_vec = sigma_c_begin[index];
+    Vector<Real> sigma_c_vec = sigma_c_begin[index];
 
     Array<Real>::vector_iterator delta_c_begin
-      = this->delta_c(type).begin_reinterpret(nb_quad_per_element, nb_element);
-    Vector<Real> & delta_c_vec = delta_c_begin[index];
+      = this->delta_c_eff(type).begin_reinterpret(nb_quad_per_element, nb_element);
+    Vector<Real> delta_c_vec = delta_c_begin[index];
 
     if (scale_traction) scaleTraction(*el_it, sigma_c_vec);
 
@@ -106,7 +106,7 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(const Array<El
      */
 
     for (UInt q = 0; q < nb_quad_per_element; ++q) {
-      delta_c_vec(q) = 2 * this->G_cI / sigma_c_vec(q);
+      delta_c_vec(q) = 2 * this->G_c / sigma_c_vec(q);
 
       if (delta_c_vec(q) - delta_0 < Math::getTolerance())
 	AKANTU_DEBUG_ERROR("delta_0 = " << delta_0 <<
@@ -185,7 +185,7 @@ void MaterialCohesiveBilinear<spatial_dimension>::computeTraction(const Array<Re
 
   // adjust damage
   Array<Real>::scalar_iterator delta_c_it
-    = this->delta_c(el_type, ghost_type).begin();
+    = this->delta_c_eff(el_type, ghost_type).begin();
 
   Array<Real>::scalar_iterator delta_max_it
     = this->delta_max(el_type, ghost_type).begin();
