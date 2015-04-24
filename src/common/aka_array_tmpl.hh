@@ -671,6 +671,8 @@ public:
   typedef R                               value_type;
   typedef R*                              pointer;
   typedef R&                              reference;
+  typedef typename R::proxy               proxy;
+  typedef const typename R::proxy         const_proxy;
   typedef const R&                        const_reference;
   typedef IR                              internal_value_type;
   typedef IR*                             internal_pointer;
@@ -727,8 +729,8 @@ public:
   inline iterator_internal & operator+=(const UInt n) { ret_ptr += _offset * n; return *this; }
   inline iterator_internal & operator-=(const UInt n) { ret_ptr -= _offset * n; return *this; }
 
-  inline reference operator[](const UInt n) { ret->values = ret_ptr + n*_offset; return *ret; }
-  inline const_reference operator[](const UInt n) const { ret->values = ret_ptr + n*_offset; return *ret; }
+  inline proxy       operator[](const UInt n) { ret->values = ret_ptr + n*_offset; return proxy(*ret); }
+  inline const_proxy operator[](const UInt n) const { ret->values = ret_ptr + n*_offset; return const_proxy(*ret); }
 
   inline bool operator==(const iterator_internal & other) const { return this->ret_ptr == other.ret_ptr; }
   inline bool operator!=(const iterator_internal & other) const { return this->ret_ptr != other.ret_ptr; }

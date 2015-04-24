@@ -348,14 +348,20 @@ void SolverMumps::solve(Array<Real> & solution) {
 
 /* -------------------------------------------------------------------------- */
 void SolverMumps::printError() {
-  if(info(1) != 0) {
-    communicator.allReduce(&info(1), 1, _so_min);
-    switch(info(1)) {     
+  UInt _info_v[2];
+  _info_v[0] =  info(1); // to get errors
+  _info_v[1] = -info(1); // to get warnings
+  communicator.allReduce(_info_v, 2, _so_min);
+  _info_v[1] = -_info_v[1];
+
+  if(_info_v[0] < 0) { // < 0 is an error
+    switch(_info_v[0]) {
     case -10: AKANTU_DEBUG_ERROR("The matrix is singular"); break;
     case  -9: {
       icntl(14) += 10;
       if(icntl(14) != 90) {
 	//std::cout << "Dynamic memory increase of 10%" << std::endl;
+	AKANTU_DEBUG_WARNING("MUMPS dynamic memory is insufficient it will be increased of 10%");
       	this->analysis();
       	this->factorize();
       	this->solve();
@@ -364,9 +370,12 @@ void SolverMumps::printError() {
       }
     }
     default:
-      AKANTU_DEBUG_ERROR("Error in mumps during solve process, check mumps user guide INFO(1) ="
-                         << info(1));
+      AKANTU_DEBUG_ERROR("Error in mumps during solve process, check mumps user guide INFO(1) = "
+                         << _info_v[1]);
     }
+  } else if (_info_v[1] > 0) {
+    AKANTU_DEBUG_WARNING("Warning in mumps during solve process, check mumps user guide INFO(1) = "
+			 << _info_v[1]);
   }
 }
 

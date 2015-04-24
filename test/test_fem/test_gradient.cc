@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
   mesh_io.read(meshfilename.str(), my_mesh);
   FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange>(my_mesh, dim, "my_fem");
 
-  std::stringstream outfilename; outfilename << "out_" << type << ".txt";
+  std::stringstream outfilename; outfilename << "out_grad" << type << ".txt";
   std::ofstream my_file(outfilename.str().c_str());
 
   fem->initShapeFunctions();

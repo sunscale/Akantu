@@ -86,6 +86,8 @@ public:
                                     Array<Real> & tangent,
                                     GhostType ghost_type) = 0;
 
+  virtual Real getEnergy(std::string id);
+
   /* ------------------------------------------------------------------------ */
   /* Protected methods                                                        */
   /* ------------------------------------------------------------------------ */

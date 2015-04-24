@@ -1,8 +1,3 @@
-/// A Checker par la teub = Damien FAIT
-
-
-
-
 /**
  * @file   aka_common.hh
  *
@@ -231,14 +226,13 @@ enum InterpolationType {
   _itp_lagrange_tetrahedron_4,     ///< first order lagrangian tetrahedron
   _itp_lagrange_tetrahedron_10,    ///< second order lagrangian tetrahedron
   _itp_lagrange_hexahedron_8,      ///< first order lagrangian hexahedron
-  _itp_lagrange_hexahedron_20,     ///< second order lagrangian hexahedron
+  _itp_serendip_hexahedron_20,     ///< second order serendipian hexahedron
   _itp_lagrange_pentahedron_6,     ///< first order lagrangian pentahedron
   _itp_lagrange_pentahedron_15,    ///< second order lagrangian pentahedron
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
   _itp_bernoulli_beam,             ///< Bernoulli beam
   _itp_kirchhoff_shell,            ///< Kirchhoff shell
 #endif
-
   _itp_not_defined
 };
 

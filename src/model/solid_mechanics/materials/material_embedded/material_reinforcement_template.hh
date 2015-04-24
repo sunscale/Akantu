@@ -73,8 +73,9 @@ public:
   /// Computes gradu to be used by the constitutive law
   virtual void computeGradU(const ElementType & type, GhostType ghost_type);
 
-  /// TODO determine the significance and how to compute the energies
-  virtual Real getEnergy(std::string id) { return 0.; }
+  virtual void computePotentialEnergy(ElementType type, GhostType ghost_type = _not_ghost);
+
+  virtual Real getEnergy(std::string id);
 
 protected:
   /// Compute interface gradu from bulk gradu

@@ -44,12 +44,18 @@
 /* -------------------------------------------------------------------------- */
 
 
-namespace iohelper { class Dumper; }
-
+namespace iohelper {
+  class Dumper;
+}
 
 __BEGIN_AKANTU__
 
-namespace dumper { class Field; class VariableBase;}
+UInt getIOHelperType(ElementType type);
+
+namespace dumper {
+  class Field;
+  class VariableBase;
+}
 
 class Mesh;
 
@@ -65,7 +71,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  
   /// register a given Mesh for the current dumper
   virtual void registerMesh(const Mesh & mesh, UInt spatial_dimension = _all_dimensions,
 			    const GhostType & ghost_type = _not_ghost,

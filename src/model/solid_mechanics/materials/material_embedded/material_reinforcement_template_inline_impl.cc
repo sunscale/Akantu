@@ -178,3 +178,18 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeStress(ElementType typ
   AKANTU_DEBUG_OUT();
 }
 
+
+/* -------------------------------------------------------------------------- */
+
+template<UInt dim, class ConstLaw>
+Real MaterialReinforcementTemplate<dim, ConstLaw>::getEnergy(std::string id) {
+  return MaterialReinforcement<dim>::getEnergy(id);
+}
+
+/* -------------------------------------------------------------------------- */
+
+template <UInt dim, class ConstLaw>
+void MaterialReinforcementTemplate<dim, ConstLaw>::computePotentialEnergy(ElementType type,
+                                                                          GhostType ghost_type) {
+  ConstLaw::computePotentialEnergy(type, ghost_type);
+}
