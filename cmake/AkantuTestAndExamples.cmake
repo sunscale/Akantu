@@ -221,14 +221,17 @@ function(register_test test_name)
 
     string(TOUPPER ${_akantu_current_parent_test} _u_parent)
     if(AKANTU_BUILD_${_u_parent})
+      # get the include directories for sources in activated directories
       package_get_all_include_directories(
 	AKANTU_LIBRARY_INCLUDE_DIRS
 	)
 
+      # get the external packages compilation and linking informations
       package_get_all_external_informations(
 	AKANTU_EXTERNAL_INCLUDE_DIR
 	AKANTU_EXTERNAL_LIBRARIES
 	)
+
       # set the proper includes to build most of the tests
       include_directories(
 	${AKANTU_INCLUDE_DIRS}
