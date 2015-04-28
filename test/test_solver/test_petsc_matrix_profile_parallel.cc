@@ -1,9 +1,9 @@
 /**
- * @file   test_solver_petsc.cc
+ * @file   test_petsc_matrix_profile.cc
  * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Tue Dec  2 17:17:34 2014
+ * @date   Wed Jul 30 12:34:08 2014
  *
- * @brief  test the PETSc solver interface
+ * @brief  test the profile generation of the PETScMatrix class in parallel
  *
  * @section LICENSE
  *
@@ -26,8 +26,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
 #include <cstdlib>
+#include <fstream>
 /* -------------------------------------------------------------------------- */
 #include "static_communicator.hh"
 #include "aka_common.hh"
@@ -37,19 +37,18 @@
 #include "mesh_utils.hh"
 #include "distributed_synchronizer.hh"
 #include "petsc_matrix.hh"
-#include "solver_petsc.hh"
 #include "fe_engine.hh"
 #include "dof_synchronizer.hh"
-
+/// #include "dumper_paraview.hh"
 #include "mesh_partition_scotch.hh"
 
 using namespace akantu;
 int main(int argc, char *argv[]) {
 
   initialize(argc, argv);
-  const ElementType element_type = _segment_2;
+  const ElementType element_type = _triangle_3;
   const GhostType ghost_type = _not_ghost; 
-  UInt spatial_dimension = 1;
+  UInt spatial_dimension = 2;
 
 
   StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
@@ -65,7 +64,7 @@ int main(int argc, char *argv[]) {
   DistributedSynchronizer * communicator = NULL;
   if(prank == 0) {
     /// creation mesh
-    mesh.read("1D_bar.msh");
+    mesh.read("square.msh");
     MeshPartitionScotch * partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
     communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
@@ -73,8 +72,13 @@ int main(int argc, char *argv[]) {
   } else {
     communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
-  
 
+  // dump mesh in paraview
+  // DumperParaview mesh_dumper("mesh_dumper");
+  // mesh_dumper.registerMesh(mesh, spatial_dimension, _not_ghost);
+  // mesh_dumper.dump();
+
+  /// initialize the FEEngine and the dof_synchronizer
   FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange,_ek_regular>(mesh, spatial_dimension, "my_fem");
 
   DOFSynchronizer dof_synchronizer(mesh, spatial_dimension);
@@ -82,18 +86,14 @@ int main(int argc, char *argv[]) {
 
   dof_synchronizer.initGlobalDOFEquationNumbers();
 
-  // fill the matrix with 
+  // construct an Akantu sparse matrix, build the profile and fill the matrix for the given mesh 
   UInt nb_element = mesh.getNbElement(element_type);
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(element_type);
   UInt nb_dofs_per_element = spatial_dimension * nb_nodes_per_element;
-  SparseMatrix K(nb_global_nodes * spatial_dimension, _symmetric);
-  K.buildProfile(mesh, dof_synchronizer, spatial_dimension);
-  Matrix<Real> element_input(nb_dofs_per_element, nb_dofs_per_element, 0);
-  for (UInt i = 0; i < nb_dofs_per_element; ++i) {
-    for (UInt j = 0; j < nb_dofs_per_element; ++j) {
-      element_input(i, j) = ((i == j) ? 1 : -1); 
-    }
-  }
+  SparseMatrix K_akantu(nb_global_nodes * spatial_dimension, _unsymmetric);
+  K_akantu.buildProfile(mesh, dof_synchronizer, spatial_dimension);
+  /// use as elemental matrices a matrix with values equal to 1 every where
+  Matrix<Real> element_input(nb_dofs_per_element, nb_dofs_per_element, 1.);
   Array<Real> K_e = Array<Real>(nb_element, nb_dofs_per_element * nb_dofs_per_element, "K_e");
   Array<Real>::matrix_iterator K_e_it = K_e.begin(nb_dofs_per_element, nb_dofs_per_element);
   Array<Real>::matrix_iterator K_e_end = K_e.end(nb_dofs_per_element, nb_dofs_per_element);
@@ -102,55 +102,24 @@ int main(int argc, char *argv[]) {
     *K_e_it = element_input;
 
   // assemble the test matrix
-  fem->assembleMatrix(K_e, K, spatial_dimension, element_type, ghost_type);
-
-  // apply boundary: block first node
-  const Array<Real> & position = mesh.getNodes();
-  UInt nb_nodes = mesh.getNbNodes();
-  Array<bool> boundary = Array<bool>(nb_nodes, spatial_dimension, false);
-  for (UInt i = 0; i < nb_nodes; ++i) {
-    if (std::abs(position(i, 0)) < Math::getTolerance() )
-      boundary(i, 0) = true;
-  }
-
-  K.applyBoundary(boundary);
-
-  /// create the PETSc matrix for the solve step
-  PETScMatrix petsc_matrix(nb_global_nodes * spatial_dimension, _symmetric);
-  petsc_matrix.buildProfile(mesh, dof_synchronizer, spatial_dimension);
+  fem->assembleMatrix(K_e, K_akantu, spatial_dimension, element_type, ghost_type);
   
-  /// copy the stiffness matrix into the petsc matrix
-  petsc_matrix.add(K, 1);
+  /// construct a PETSc matrix
+  PETScMatrix K_petsc(nb_global_nodes * spatial_dimension, _unsymmetric);
+  /// build the profile of the PETSc matrix for the mesh of this example
+  K_petsc.buildProfile(mesh, dof_synchronizer, spatial_dimension);
+  /// add an Akantu sparse matrix to a PETSc sparse matrix
+  K_petsc.add(K_akantu, 1);
 
-  // initialize internal forces: they are zero because imposed displacement is zero
-  Array<Real> internal_forces(nb_nodes, spatial_dimension, 0.);
-
-  // compute residual: apply nodal force on last node
-  Array<Real> residual(nb_nodes, spatial_dimension, 0.);
-  
-  for (UInt i = 0; i < nb_nodes; ++i) {
-    if (std::abs(position(i, 0) - 10) < Math::getTolerance() )
-      residual(i, 0) += 2;
-  }
-
-  residual -= internal_forces;
-  
-  /// initialize solver and solution
-  Array<Real> solution(nb_nodes, spatial_dimension, 0.);
-  SolverPETSc solver(petsc_matrix);
-  solver.initialize();
-  solver.setOperators();
-  solver.setRHS(residual);
-  solver.solve(solution);
-
-  /// verify solution
-  Math::setTolerance(1e-11);
-  for (UInt i = 0; i < nb_nodes; ++i) {
-    if (!dof_synchronizer.isPureGhostDOF(i) && !Math::are_float_equal(2 * position(i, 0), solution(i, 0))) {
-      std::cout << "The solution is not correct!!!!" << std::endl;
-      return EXIT_FAILURE;
-    }
-  }
+  /// save the profile
+  K_petsc.saveMatrix("profile_parallel.txt");
+  /// print the matrix to screen
+  std::ifstream profile;
+  profile.open("profile_parallel.txt");
+  std::string current_line;
+  while(getline(profile, current_line))
+    std::cout << current_line << std::endl;
+  profile.close();
 
   delete communicator;
 

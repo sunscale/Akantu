@@ -90,6 +90,7 @@ PETScMatrix::~PETScMatrix() {
 
   /// destroy all the PETSc data structures used for this matrix
   this->destroyInternalData();
+  StaticSolver::getStaticSolver().unregisterEventHandler(*this);
 
   AKANTU_DEBUG_OUT();
 }
@@ -397,7 +398,7 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
   // const char * mat_type_ptr = mat_type.c_str();
   MatType type;
   MatGetType(this->petsc_matrix_wrapper->mat, &type);
-  std::cout << "the matrix type is: " << type << std::endl;
+  /// std::cout << "the matrix type is: " << type << std::endl;
   /**
    * PETSc will use only one of the following preallocation commands
    * depending on the matrix type and ignore the rest. Note that for
@@ -452,6 +453,7 @@ void PETScMatrix::saveMatrix(const std::string & filename) const{
   /// set the format
   PetscViewerSetFormat(viewer, PETSC_VIEWER_DEFAULT); CHKERRXX(ierr);
   /// save the matrix
+  /// @todo Write should be done in serial -> might cause problems
   ierr =  MatView(this->petsc_matrix_wrapper->mat, viewer); CHKERRXX(ierr);
 
   /// destroy the viewer
@@ -471,20 +473,24 @@ void PETScMatrix::add(const SparseMatrix & matrix, Real alpha) {
   //  AKANTU_DEBUG_ASSERT(nb_non_zero == matrix.getNbNonZero(),
   //		      "The two matrix don't have the same profiles");
 
+  Real val_to_add = 0;
   for (UInt n = 0; n < matrix.getNbNonZero(); ++n) {
     Array<Int> index(2,1);
-    index(0) = matrix.getIRN()(n)-matrix.getOffset();
-    index(1) =  matrix.getJCN()(n)-matrix.getOffset();
+    UInt mat_to_add_offset = matrix.getOffset(); 
+    index(0) = matrix.getIRN()(n)-mat_to_add_offset;
+    index(1) =  matrix.getJCN()(n)-mat_to_add_offset;
     AOApplicationToPetsc(this->petsc_matrix_wrapper->ao, 2, index.storage());
     if (this->sparse_matrix_type == _symmetric && index(0) > index(1))
       std::swap(index(0), index(1));
+    
+    val_to_add = matrix.getA()(n) * alpha;
     /// MatSetValue might be very slow for MATBAIJ, might need to use MatSetValuesBlocked
-    ierr = MatSetValue(this->petsc_matrix_wrapper->mat, index(0), index(1), matrix.getA()(n) * alpha, ADD_VALUES); CHKERRXX(ierr);
+    ierr = MatSetValue(this->petsc_matrix_wrapper->mat, index(0), index(1), val_to_add, ADD_VALUES); CHKERRXX(ierr);
     /// chek if sparse matrix to be added is symmetric. In this case
     /// the value also needs to be added at the transposed location in
     /// the matrix because PETSc is using the full profile, also for symmetric matrices
     if (matrix.getSparseMatrixType() == _symmetric && index(0) != index(1))
-      ierr = MatSetValue(this->petsc_matrix_wrapper->mat, index(1), index(0), matrix.getA()(n) * alpha, ADD_VALUES); CHKERRXX(ierr);
+      ierr = MatSetValue(this->petsc_matrix_wrapper->mat, index(1), index(0), val_to_add, ADD_VALUES); CHKERRXX(ierr);
   }
 
   this->performAssembly();
@@ -593,11 +599,11 @@ void PETScMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
   Int * eq_nb_val = dof_synchronizer->getGlobalDOFEquationNumbers().storage();
 
   /// every processor calls the MatSetZero() only for his local or master dofs. This assures that not two processors or more try to zero the same row
-  Int nb_blocked_local_master_eq_nb = 0;
-  Array<Int> blocked_local_master_eq_nb(this->local_size / boundary.getNbComponent(), boundary.getNbComponent());
-  Int * blocked_lm_eq_nb_ptr  = blocked_local_master_eq_nb.storage();
   UInt nb_component = boundary.getNbComponent();
   UInt size = boundary.getSize();
+  Int nb_blocked_local_master_eq_nb = 0;
+  Array<Int> blocked_local_master_eq_nb(this->local_size / nb_component, nb_component);
+  Int * blocked_lm_eq_nb_ptr  = blocked_local_master_eq_nb.storage();
 
   for (UInt i = 0; i < size; ++i) {
     for (UInt j = 0; j < nb_component; ++j) {
@@ -611,7 +617,7 @@ void PETScMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
       ++eq_nb_val;
     }
   }
-  blocked_local_master_eq_nb.resize(nb_blocked_local_master_eq_nb/boundary.getNbComponent());
+  blocked_local_master_eq_nb.resize(nb_blocked_local_master_eq_nb/nb_component);
 
 
   ierr = AOApplicationToPetsc(this->petsc_matrix_wrapper->ao, nb_blocked_local_master_eq_nb, blocked_local_master_eq_nb.storage() ); CHKERRXX(ierr);

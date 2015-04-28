@@ -85,6 +85,8 @@ public:
   AKANTU_GET_MACRO(NbComponent, nb_component, UInt);
   /// Get the name of th array
   AKANTU_GET_MACRO(ID, id, const ID &);
+  /// Set the name of th array
+  AKANTU_SET_MACRO(ID, id, const ID &);
 
   // AKANTU_GET_MACRO(Tag, tag, const std::string &);
   // AKANTU_SET_MACRO(Tag, tag, const std::string &);

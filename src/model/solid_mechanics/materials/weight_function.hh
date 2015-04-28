@@ -42,7 +42,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include <vector>
-
+#include "material_damage.hh"
 
 #ifndef __AKANTU_WEIGHT_FUNCTION_HH__
 #define __AKANTU_WEIGHT_FUNCTION_HH__
@@ -135,7 +135,7 @@ template<UInt spatial_dimension>
 class DamagedWeightFunction : public BaseWeightFunction<spatial_dimension> {
 public:
   DamagedWeightFunction(Material & material) : BaseWeightFunction<spatial_dimension>(material, "damaged") {
-    AKANTU_DEBUG_ASSERT(dynamic_cast<MaterialDamage<spatial_dimension> *>(&material) != NULL, "This weight function works only with damage materials!");
+    //AKANTU_DEBUG_ASSERT(dynamic_cast<MaterialDamage<spatial_dimension> *>(&material) != NULL, "This weight function works only with damage materials!");
   }
 
   inline void selectType(__attribute__((unused)) ElementType type1,
