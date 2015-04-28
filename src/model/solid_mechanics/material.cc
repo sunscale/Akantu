@@ -1189,7 +1189,8 @@ void Material::interpolateElementalField(const ElementTypeMapArray<Real> & field
       const Matrix<Real> & coord = *interpolation_points_coordinates_it;
 
       /// multiply the coordinates matrix by the coefficients matrix and store the result
-      result_begin[elem_fil(el)].mul<true, true>(coefficients, coord);
+      Matrix<Real> res(result_begin[elem_fil(el)]);
+      res.mul<true, true>(coefficients, coord);
     }
   }
 

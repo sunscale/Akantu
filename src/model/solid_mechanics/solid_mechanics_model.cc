@@ -1525,14 +1525,15 @@ bool SolidMechanicsModel::isInternal(const std::string & field_name,
 /* -------------------------------------------------------------------------- */
 
 ElementTypeMap<UInt> SolidMechanicsModel::getInternalDataPerElem(const std::string & field_name,
-								const ElementKind & element_kind){
+								const ElementKind & element_kind,
+                const std::string & fe_engine_id){
 
 
   if (!(this->isInternal(field_name,element_kind))) AKANTU_EXCEPTION("unknown internal " << field_name);
 
   for (UInt m = 0; m < materials.size() ; ++m) {
     if (materials[m]->isInternal(field_name, element_kind))
-      return materials[m]->getInternalDataPerElem(field_name,element_kind);
+      return materials[m]->getInternalDataPerElem(field_name,element_kind,fe_engine_id);
   }
 
   return ElementTypeMap<UInt>();
@@ -1582,7 +1583,8 @@ dumper::Field * SolidMechanicsModel
 ::createElementalField(const std::string & field_name,
 		       const std::string & group_name,
 		       bool padding_flag,
-		       const ElementKind & kind){
+		       const ElementKind & kind,
+		       const std::string & fe_engine_id){
 
   dumper::Field * field = NULL;
 
@@ -1606,7 +1608,7 @@ dumper::Field * SolidMechanicsModel
     bool is_internal = this->isInternal(field_name_copy,kind);
 
     if (is_internal) {
-      ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name_copy,kind);
+      ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name_copy,kind,fe_engine_id);
       ElementTypeMapArray<Real> & internal_flat = this->flattenInternal(field_name_copy,kind);
       field = mesh.createElementalField<Real, dumper::InternalMaterialField>(internal_flat,
 									     group_name,
@@ -1699,7 +1701,8 @@ dumper::Field * SolidMechanicsModel
 ::createElementalField(const std::string & field_name,
 		       const std::string & group_name,
 		       bool padding_flag,
-		       const ElementKind & kind){
+		       const ElementKind & kind,
+		       const std::string & fe_engine_id){
   return NULL;
 }
 

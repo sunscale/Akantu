@@ -1,5 +1,4 @@
-// A CHECKER PAR DAMIEN => FAIT
-/** 
+/**
  * @file   interpolation_element_tmpl.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
@@ -45,9 +44,9 @@ AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_tetrahedron_10, _itk_lag
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_quadrangle_4,   _itk_lagrangian,  4, 2);
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_serendip_quadrangle_8,   _itk_lagrangian,  8, 2);
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_hexahedron_8,   _itk_lagrangian,  8, 3);
-	AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_hexahedron_20,   _itk_lagrangian,  20, 3);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_serendip_hexahedron_20,  _itk_lagrangian,  20, 3);
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_6,  _itk_lagrangian,  6, 3);
-	AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_15,  _itk_lagrangian,  15, 3);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_15, _itk_lagrangian,  15, 3);
 
 /* -------------------------------------------------------------------------- */
 /* Structural elements                                                        */

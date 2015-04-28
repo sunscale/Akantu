@@ -375,19 +375,19 @@ inline void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
   case _gst_smm_uv: {
     Array<Real>::vector_iterator it_disp = displacement->begin(spatial_dimension);
     Array<Real>::vector_iterator it_velo = velocity->begin(spatial_dimension);
-    buffer >> it_disp[index];
-    buffer >> it_velo[index];
+    Vector<Real> disp(it_disp[index]); buffer >> disp;
+    Vector<Real> velo(it_velo[index]); buffer >> velo;
     break;
   }
   case _gst_smm_res: {
     Array<Real>::vector_iterator it_res = residual->begin(spatial_dimension);
-    buffer >> it_res[index];
+    Vector<Real> res(it_res[index]); buffer >> res;
     break;
   }
   case _gst_smm_mass: {
     AKANTU_DEBUG_INFO("mass of node " << index << " was " << (*mass)(index,0));
     Array<Real>::vector_iterator it_mass = mass->begin(spatial_dimension);
-    buffer >> it_mass[index];
+    Vector<Real> mass_v(it_mass[index]); buffer >> mass_v;
     AKANTU_DEBUG_INFO("mass of node " << index << " is now " << (*mass)(index,0));
     break;
   }
@@ -397,11 +397,11 @@ inline void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     Array<Real>::vector_iterator it_acce = acceleration->begin(spatial_dimension);
     Array<Real>::vector_iterator it_resi = residual->begin(spatial_dimension);
     Array<Real>::vector_iterator it_forc = force->begin(spatial_dimension);
-    buffer >> it_disp[index];
-    buffer >> it_velo[index];
-    buffer >> it_acce[index];
-    buffer >> it_resi[index];
-    buffer >> it_forc[index];
+    Vector<Real> disp(it_disp[index]); buffer >> disp;
+    Vector<Real> velo(it_velo[index]); buffer >> velo;
+    Vector<Real> acce(it_acce[index]); buffer >> acce;
+    Vector<Real> resi(it_resi[index]); buffer >> resi;
+    Vector<Real> forc(it_forc[index]); buffer >> forc;
     break;
   }
   default: {

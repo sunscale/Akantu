@@ -146,5 +146,26 @@ void EmbeddedInterfaceModel::assembleStiffnessMatrix() {
   SolidMechanicsModel::assembleStiffnessMatrix();
 }
 
+dumper::Field * EmbeddedInterfaceModel::createElementalField(const std::string & field_name,
+    const std::string & group_name,
+    bool padding_flag,
+    const ElementKind & kind,
+    const std::string & fe_engine_id) {
+
+  if (field_name == "stress_embedded") {
+    return SolidMechanicsModel::createElementalField(field_name,
+                                                     group_name,
+                                                     padding_flag,
+                                                     kind,
+                                                     "EmbeddedInterfaceFEEngine");
+  } else {
+    return SolidMechanicsModel::createElementalField(field_name,
+                                                     group_name,
+                                                     padding_flag,
+                                                     kind,
+                                                     fe_engine_id);
+  }
+}
+
 __END_AKANTU__
 

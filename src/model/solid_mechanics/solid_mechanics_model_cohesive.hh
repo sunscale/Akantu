@@ -96,8 +96,12 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
   /// function to perform a stress check on each facet and insert
-  /// cohesive elements if needed
-  void checkCohesiveStress();
+  /// cohesive elements if needed (returns true if some elements are
+  /// inserted)
+  bool checkCohesiveStress();
+
+  /// interpolate stress on facets
+  void interpolateStress();
 
   /// initialize the cohesive model
   void initFull(const ModelOptions & options = default_solid_mechanics_model_cohesive_options);

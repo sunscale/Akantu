@@ -72,6 +72,12 @@ public:
   /// check stress for cohesive elements' insertion
   virtual void checkInsertion();
 
+  /// compute effective stress norm for insertion check
+  inline Real computeEffectiveNorm(const Matrix<Real> & stress,
+				   const Vector<Real> & normal,
+				   const Vector<Real> & tangent,
+				   Vector<Real> & normal_stress) const;
+
 protected:
 
   /// constitutive law
@@ -79,12 +85,9 @@ protected:
 			       ElementType el_type,
 			       GhostType ghost_type = _not_ghost);
 
-  /// compute effective stress norm for insertion check
-  inline Real computeEffectiveNorm(const Matrix<Real> & stress,
-				   const Vector<Real> & normal,
-				   const Vector<Real> & tangent,
-				   Vector<Real> & normal_stress);
-
+  /// check delta_max for cohesive elements in case of no convergence
+  /// in the solveStep (only for extrinsic-implicit)
+  void checkDeltaMax(GhostType ghost_type = _not_ghost);
 
   /// compute tangent stiffness matrix
   void computeTangentTraction(const ElementType & el_type,
@@ -158,7 +161,7 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "material_cohesive_linear_inline_impl.cc"
+#include "material_cohesive_linear_inline_impl.cc"
 
 __END_AKANTU__
 

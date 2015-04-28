@@ -88,8 +88,12 @@ public:
   virtual void assembleStiffnessMatrix();
 
   /// Dump
-  /*virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-                                                      const ElementKind & ek_kind);*/
+  virtual dumper::Field * createElementalField(const std::string & field_name,
+					       const std::string & group_name,
+					       bool padding_flag,
+					       const ElementKind & kind,
+                 const std::string & fe_engine_id = "");
+
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
