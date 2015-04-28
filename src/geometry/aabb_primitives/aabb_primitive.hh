@@ -41,6 +41,16 @@ __BEGIN_AKANTU__
 
 typedef CGAL::Cartesian<Real> Kernel;
 
+/**
+ * This macro defines a class that is used in the CGAL AABB tree algorithm.
+ * All the `typedef`s and methods are required by the AABB module.
+ *
+ * The member variables are
+ *  - the id of the element associated to the primitive
+ *  - the geometric primitive of the element
+ *
+ *  @param name the name of the primitive type
+ */
 #define AKANTU_AABB_CLASS(name) \
   class name##_primitive {      \
     typedef std::list< name<Kernel> >::iterator Iterator; \
