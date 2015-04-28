@@ -50,14 +50,18 @@ package_declare_sources(extra_materials
   material_damage/material_orthotropic_damage_iterative.hh
   material_damage/material_orthotropic_damage_iterative_inline_impl.cc
 
+  material_damage/material_orthotropic_damage_non_local.hh
+
   material_damage/material_vreepeerlings_non_local.cc
   material_damage/material_vreepeerlings_non_local.hh
   material_damage/material_brittle_non_local.hh
   material_damage/material_damage_iterative_non_local.hh
+  material_damage/material_orthotropic_damage_iterative_non_local.hh
 
   material_damage/material_vreepeerlings_non_local_inline_impl.cc
   material_damage/material_brittle_non_local_inline_impl.cc
   material_damage/material_damage_iterative_non_local_inline_impl.cc
+  material_damage/material_orthotropic_damage_iterative_non_local_inline_impl.cc
 
   material_non_local_extra_includes.hh
   )

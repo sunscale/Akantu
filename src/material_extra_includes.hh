@@ -36,12 +36,16 @@
 #  include "material_vreepeerlings_non_local.hh"
 #  include "material_brittle_non_local.hh"
 #  include "material_damage_iterative_non_local.hh"
+#  include "material_orthotropic_damage_iterative_non_local.hh"
+#  include "material_orthotropic_damage_non_local.hh"
 #endif
 
 #define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST			\
   ((3, (brittle_non_local       , MaterialBrittleNonLocal,		\
 	AKANTU_MATERIAL_WEIGHT_FUNCTION_TMPL_LIST)))                    \
   ((3, (damage_iterative_non_local       , MaterialDamageIterativeNonLocal, \
+	AKANTU_MATERIAL_WEIGHT_FUNCTION_TMPL_LIST)))			\
+  ((3, (damage_orthotropoic_iterative_non_local       , MaterialOrthotropicDamageIterativeNonLocal, \
 	AKANTU_MATERIAL_WEIGHT_FUNCTION_TMPL_LIST)))
 #else
 #  define AKANTU_DAMAGE_NON_LOCAL_EXTRA_MATERIAL_LIST

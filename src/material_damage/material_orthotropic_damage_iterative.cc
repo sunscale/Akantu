@@ -53,7 +53,7 @@ MaterialOrthotropicDamageIterative(SolidMechanicsModel & model,
 }
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-void MaterialOrthotropicDamageIterative<spatial_dimension>::computeNormalizedEquivalentStress(
+void MaterialOrthotropicDamageIterative<spatial_dimension>::computeNormalizedEquivalentStress(const Array<Real> & grad_u,
 											      ElementType el_type,
 											      GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -64,23 +64,84 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::computeNormalizedEqu
   Array<Real>::iterator<Real> equivalent_stress_it
     = equivalent_stress(el_type).begin();
 
+  Array<Real>::const_matrix_iterator grad_u_it = grad_u.begin(spatial_dimension,
+                                                              spatial_dimension);
+  Array<Real>::const_matrix_iterator grad_u_end = grad_u.end(spatial_dimension,
+                                                             spatial_dimension);
+
   Array<Real>::matrix_iterator stress_dir_it
     = this->stress_dir(el_type).begin(spatial_dimension, spatial_dimension);
 
-  Array<Real>::const_matrix_iterator sigma_it
-    = this->stress(el_type, ghost_type).begin(spatial_dimension,
-					      spatial_dimension);
+  /// initialize matrix to store the stress for the criterion (only different in non-local) 
+  Matrix<Real> sigma(spatial_dimension, spatial_dimension);
 
-  Array<Real>::const_matrix_iterator sigma_end
-    = this->stress(el_type, ghost_type).end(spatial_dimension,
-					    spatial_dimension);
+  Array<Real>::matrix_iterator damage_iterator = this->damage(el_type, ghost_type).begin(this->spatial_dimension, this->spatial_dimension);
+  Array<Real>::matrix_iterator damage_dir_it = this->damage_dir_vecs(el_type, ghost_type).begin(this->spatial_dimension, this->spatial_dimension);
 
-  for(;sigma_it != sigma_end; ++sigma_it,
-	++Sc_it, ++equivalent_stress_it, ++stress_dir_it) {
+  /// for the computation of the Cauchy stress the matrices (1-D) and
+  /// (1-D)^(1/2) are needed. For the formulation see Engineering
+  /// Damage Mechanics by Lemaitre and Desmorat.
+
+  Matrix<Real> one_minus_D(this->spatial_dimension, this->spatial_dimension);
+  Matrix<Real> sqrt_one_minus_D(this->spatial_dimension, this->spatial_dimension);
+  Matrix<Real> one_minus_D_rotated(this->spatial_dimension, this->spatial_dimension);
+  Matrix<Real> sqrt_one_minus_D_rotated(this->spatial_dimension, this->spatial_dimension);
+  Matrix<Real> rotation_tmp(this->spatial_dimension, this->spatial_dimension);
+
+  /// create matrix to store the first term of the computation of the
+  /// Cauchy stress
+  Matrix<Real> first_term(this->spatial_dimension, this->spatial_dimension);
+  Matrix<Real> third_term(this->spatial_dimension, this->spatial_dimension);
+
+  for(;grad_u_it != grad_u_end; ++Sc_it, ++equivalent_stress_it,
+	++stress_dir_it, ++grad_u_it) {
+    sigma.clear();
+    MaterialOrthotropicDamage<spatial_dimension>::computeStressOnQuad(*grad_u_it, sigma, 0.);
+
+    /// rotate the tensors from the damage principal coordinate system to the CS of the computation
+    if ( !(Math::are_float_equal((*damage_iterator).trace(), 0)) ) {
+      /// compute (1-D) and (1-D)^1/2
+      this->computeOneMinusD(one_minus_D, *damage_iterator);
+      this->computeSqrtOneMinusD(one_minus_D, sqrt_one_minus_D);
+
+      this->rotateIntoComputationFrame(one_minus_D,
+				       one_minus_D_rotated,
+				       *damage_dir_it,
+				       rotation_tmp);
+
+      this->rotateIntoComputationFrame(sqrt_one_minus_D,
+				       sqrt_one_minus_D_rotated,
+				       *damage_dir_it,
+				       rotation_tmp);
+    } else {
+      this->computeOneMinusD(one_minus_D_rotated, *damage_iterator);
+      this->computeSqrtOneMinusD(one_minus_D_rotated, sqrt_one_minus_D_rotated);
+    }
+
+    computeDamageAndStressOnQuad(sigma,
+				 one_minus_D_rotated,
+				 sqrt_one_minus_D_rotated,
+				 *damage_iterator,
+				 first_term,
+				 third_term);
+
+
     /// compute the maximum principal stresses and their directions
-    (*sigma_it).eig(eigenvalues, *stress_dir_it);
+    sigma.eig(eigenvalues, *stress_dir_it);
     *equivalent_stress_it = eigenvalues(0) / *(Sc_it);
+    ++damage_dir_it;
+    ++damage_iterator;
+
   }
+
+
+
+  // for(;sigma_it != sigma_end; ++sigma_it,
+  // 	++Sc_it, ++equivalent_stress_it, ++stress_dir_it) {
+  //   /// compute the maximum principal stresses and their directions
+  //   (*sigma_it).eig(eigenvalues, *stress_dir_it);
+  //   *equivalent_stress_it = eigenvalues(0) / *(Sc_it);
+  // }
 
 
   AKANTU_DEBUG_OUT();
@@ -228,7 +289,7 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::computeStress(Elemen
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 
-  computeNormalizedEquivalentStress(el_type, ghost_type);
+  computeNormalizedEquivalentStress(this->gradu(el_type, ghost_type), el_type, ghost_type);
   norm_max_equivalent_stress = 0;
   findMaxNormalizedEquivalentStress(el_type, ghost_type);
 
