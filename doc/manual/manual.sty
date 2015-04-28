@@ -3,7 +3,6 @@
 %%  LaTeX STYLE SHEET for AKANTU DOCUMENTATION  %%
 %%                                              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % Geometry
 \usepackage{a4wide}
 \usepackage{geometry}
@@ -122,6 +121,7 @@
 \definecolor{RED}{rgb}{1,0,0}
 \definecolor{cppbg}{HTML}{EBF2F2}
 \definecolor{shellbg}{HTML}{F5EDE4}
+\definecolor{cmakebg}{HTML}{F5EDE4}
 \definecolor{commentcolor}{HTML}{101280}
 
 % Allow for the use of listings
@@ -146,12 +146,21 @@
 % Removes parenthese around subfig number
 \renewcommand*{\thesubfigure}{\alph{subfigure}}
 
-% Create a new list style for C++
-\lstdefinestyle{C++}{
-  language=C++, % the language of the code
+% Create new list style for cmake files
+\lstdefinelanguage{cmake}{
+  morekeywords={project, cmake\_minimum\_required, enable\_language, message,
+    add\_executable, add\_library, target\_link\_libraries, include\_directories,
+    find\_package, find\_path, find\_library, include, mark\_as\_advanced,
+    find\_package\_handle\_standard\_args,
+    package\_declare, package\_declare\_documentation},
+  morecomment=[l]{\#},
+  sensitive=false,
+  morestring=[b]",
+}
+
+\lstdefinestyle{lstDefaultStyle} {
   basicstyle=\small\ttfamily, % Without beramono, we'd get cmtt, the teletype font.
   commentstyle=\color{commentcolor}\itshape,
-  keywordstyle=\color{DarkOrchid}\bfseries,
   % fontadjust,
   % numbers=left, % where to put the line-numbers
   % numberstyle=\tiny, % the size of the fonts that are used for the line-numbers
@@ -173,35 +182,42 @@
   % escapeinside={\%*}{*)}, % if you want to add a comment within your code
   xleftmargin=1cm,
   xrightmargin=1cm,
-  mathescape=true,
   escapechar=\%,
-  morekeywords={Real, UInt, Int},
   columns=flexible,
   keepspaces=true,
+  mathescape=false
+}
+
+% Create a new list style for C++
+\lstdefinestyle{C++}{
+  language=C++, % the language of the code
+  style=lstDefaultStyle,
+  keywordstyle=\color{DarkOrchid}\bfseries,
+  mathescape=true,
+  morekeywords={Real, UInt, Int},
   backgroundcolor=\color{cppbg}
 }
 
 % Create new list style for the shell
 \lstdefinestyle{shell}{
   language=bash, % the language of the code
-  basicstyle=\scriptsize\ttfamily, % Without beramono, we'd get cmtt, the teletype font.
-  showstringspaces=false, % underline spaces within strings
-  tabsize=2, % sets default tabsize to 2 spaces
-  captionpos=b, % sets the caption-position to bottom
-  breaklines=true, % sets automatic line breaking
-  breakatwhitespace=false,
-  xleftmargin=1cm,
-  xrightmargin=1cm,
-  escapechar=\%,
+  style=lstDefaultStyle,
   morekeywords={mkdir, make, ccmake, cmake},
-  columns=flexible,
-  keepspaces=true,
   backgroundcolor=\color{shellbg}
+}
+
+\lstdefinestyle{mycmake}{
+  language=cmake, % the language of the code
+  style=lstDefaultStyle,
+  keywordstyle=\color{RoyalBlue}\bfseries,
+  stringstyle=\color{Bittersweet}, %
+  backgroundcolor=\color{cmakebg}
 }
 
 % Set some derived listing environments
 \lstnewenvironment{cpp}{\lstset{style=C++}}{}
 \lstnewenvironment{command}{\lstset{style=shell}}{}
+\lstnewenvironment{cmake}{\lstset{style=mycmake}}{}
 
 % Make sure outputspace is white
 \makeatletter
