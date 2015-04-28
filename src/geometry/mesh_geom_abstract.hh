@@ -44,6 +44,7 @@ __BEGIN_AKANTU__
 
 typedef CGAL::Cartesian<Real> K;
 
+/// Abstract class for mesh geometry operations
 class MeshGeomAbstract {
 
 protected:

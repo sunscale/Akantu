@@ -32,6 +32,8 @@
 #===============================================================================
 
 add_mesh(test_solver_mesh triangle.geo 2 1)
+add_mesh(test_matrix_mesh square.geo 2 1)
+add_mesh(test_solver_petsc_mesh 1D_bar.geo 1 1)
 
 register_test(test_sparse_matrix_profile
   SOURCES test_sparse_matrix_profile.cc
@@ -53,6 +55,18 @@ register_test(test_sparse_matrix_product
 
 register_test(test_petsc_matrix_profile
   SOURCES test_petsc_matrix_profile.cc
+  DEPENDENCIES test_matrix_mesh
+  PACKAGE petsc
+  )
+
+register_test(test_petsc_matrix_profile_parallel
+  SOURCES test_petsc_matrix_profile_parallel.cc
+  DEPENDENCIES test_matrix_mesh
+  PACKAGE petsc
+  )
+
+register_test(test_petsc_matrix_diagonal
+  SOURCES test_petsc_matrix_diagonal.cc
   DEPENDENCIES test_solver_mesh
   PACKAGE petsc
   )
@@ -65,6 +79,6 @@ register_test(test_petsc_matrix_apply_boundary
 
 register_test(test_solver_petsc
   SOURCES test_solver_petsc.cc
-  DEPENDENCIES profile.mtx
+  DEPENDENCIES test_solver_petsc_mesh
   PACKAGE petsc
   )

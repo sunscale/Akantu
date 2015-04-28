@@ -69,7 +69,7 @@ void EmbeddedInterfaceModel::initModel() {
 #if defined(AKANTU_USE_IOHELPER)
   this->mesh.registerDumper<DumperParaview>("reinforcement", id);
   this->mesh.addDumpMeshToDumper("reinforcement", *interface_mesh,
-                                 spatial_dimension, _not_ghost, _ek_regular);
+                                 1, _not_ghost, _ek_regular);
 #endif
 
   SolidMechanicsModel::initModel();
@@ -165,6 +165,39 @@ dumper::Field * EmbeddedInterfaceModel::createElementalField(const std::string &
                                                      kind,
                                                      fe_engine_id);
   }
+}
+
+ElementTypeMap<UInt> EmbeddedInterfaceModel::getInternalDataPerElem(const std::string & field_name,
+                                                                    const ElementKind & kind,
+                                                                    const std::string & fe_engine_id) {
+  if (!(this->isInternal(field_name,kind))) AKANTU_EXCEPTION("unknown internal " << field_name);
+
+  for (UInt m = 0; m < materials.size() ; ++m) {
+    if (materials[m]->isInternal(field_name, kind)) {
+      Material * mat = NULL;
+
+      switch(this->spatial_dimension) {
+        case 1:
+          mat = dynamic_cast<MaterialReinforcement<1> *>(materials[m]);
+          break;
+
+        case 2:
+          mat = dynamic_cast<MaterialReinforcement<2> *>(materials[m]);
+          break;
+
+        case 3:
+          mat = dynamic_cast<MaterialReinforcement<3> *>(materials[m]);
+          break;
+      }
+
+      if (mat == NULL && field_name != "stress_embedded")
+        return materials[m]->getInternalDataPerElem(field_name,kind,fe_engine_id);
+      else if (mat != NULL && field_name == "stress_embedded")
+        return mat->getInternalDataPerElem(field_name, kind, fe_engine_id);
+    }
+  }
+
+  return ElementTypeMap<UInt>();
 }
 
 __END_AKANTU__

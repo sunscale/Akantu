@@ -75,6 +75,7 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::initMaterial() {
 
     this->ConstLaw::gradu.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
     this->ConstLaw::stress.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+    this->ConstLaw::stress.initialize(1);
     this->ConstLaw::delta_T.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
     this->ConstLaw::sigma_th.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
     this->ConstLaw::potential_energy.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);

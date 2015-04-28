@@ -50,9 +50,16 @@ typedef CGAL::Cartesian<Real> Kernel;
 
 /* -------------------------------------------------------------------------- */
 
+/// Helper class used ease the use of CGAL AABB tree algorithm
 template<UInt dim, ElementType el_type>
 struct TreeTypeHelper;
 
+/**
+ * Macro used to specialize TreeTypeHelper
+ * @param dim imension
+ * @param el_type element type
+ * @param my_primitive associated primitive type
+ */
 #define TREE_TYPE_HELPER_MACRO(dim, el_type, my_primitive)  \
   template<>                                                \
   struct TreeTypeHelper<dim, el_type> {                     \

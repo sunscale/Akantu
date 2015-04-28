@@ -415,7 +415,7 @@ public:
   bool isInternal(const std::string & field_name, const ElementKind & element_kind);
 #ifndef SWIG  
   //! give the amount of data per element
-  ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
+  virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
 					     const ElementKind & kind,
                const std::string & fe_engine_id = "");
 
