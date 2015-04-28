@@ -135,8 +135,7 @@ public:
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
   /// function to insert cohesive elements on the selected facets
-  /// (returns true if some elements are inserted)
-  static bool insertCohesiveElements(Mesh & mesh,
+  static void insertCohesiveElements(Mesh & mesh,
 				     Mesh & mesh_facets,
 				     const ElementTypeMapArray<bool> & facet_insertion,
 				     Array<UInt> & doubled_nodes,
@@ -219,7 +218,8 @@ private:
 			  Array<UInt> & doubled_nodes);
 
   /// fill facet_to_double array in the mesh
-  static bool updateFacetToDouble(Mesh & mesh_facets,
+  /// returns the number of facets to be doubled
+  static UInt updateFacetToDouble(Mesh & mesh_facets,
 				  const ElementTypeMapArray<bool> & facet_insertion);
 
   /// find subfacets to be doubled
