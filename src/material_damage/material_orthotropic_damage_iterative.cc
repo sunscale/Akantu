@@ -153,7 +153,7 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::computeAllStresses(G
   /// reset normalized maximum equivalent stress
   if(ghost_type==_not_ghost)
     norm_max_equivalent_stress = 0;
- 
+
   MaterialOrthotropicDamage<spatial_dimension>::computeAllStresses(ghost_type);
 
   /// find global Gauss point with highest stress
@@ -175,11 +175,11 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::findMaxNormalizedEqu
     Array<Real>::const_iterator<Real> equivalent_stress_end = e_stress.end();
     Array<Real> & dam = this->damage(el_type);
     Array<Real>::const_matrix_iterator dam_it = dam.begin(this->spatial_dimension, this->spatial_dimension);
-    Array<Real>::matrix_iterator damage_directions_it = 
+    Array<Real>::matrix_iterator damage_directions_it =
       this->damage_dir_vecs(el_type, _not_ghost).begin(this->spatial_dimension,
 						       this->spatial_dimension);
-    Array<Real>::matrix_iterator stress_dir_it = 
-      this->stress_dir(el_type, _not_ghost).begin(spatial_dimension, 
+    Array<Real>::matrix_iterator stress_dir_it =
+      this->stress_dir(el_type, _not_ghost).begin(spatial_dimension,
 						  spatial_dimension);
 
 
@@ -189,8 +189,8 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::findMaxNormalizedEqu
     Matrix<Real> dam_in_stress_frame(spatial_dimension, spatial_dimension);
 
     for (; equivalent_stress_it != equivalent_stress_end; ++equivalent_stress_it, ++dam_it, ++damage_directions_it, ++stress_dir_it ) {
-      /// check if max equivalent stress for this element type is greater than the current norm_max_eq_stress 
-      if (*equivalent_stress_it > norm_max_equivalent_stress && 
+      /// check if max equivalent stress for this element type is greater than the current norm_max_eq_stress
+      if (*equivalent_stress_it > norm_max_equivalent_stress &&
 	  (spatial_dimension * this->max_damage - (*dam_it).trace()
 	   > Math::getTolerance()) ) {
 
@@ -202,12 +202,12 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::findMaxNormalizedEqu
 	}
 
 	else {
-	  /// find the damage increment on this Gauss point  
+	  /// find the damage increment on this Gauss point
 	  /// rotate damage into stress frame
 	  this->rotateIntoComputationFrame(*dam_it, dam_in_computation_frame, *damage_directions_it, tmp);
 	  this->rotateIntoNewFrame(dam_in_computation_frame, dam_in_stress_frame, *stress_dir_it, tmp);
-	  
-	  /// add damage increment 
+
+	  /// add damage increment
 	  dam_in_stress_frame(0, 0) += prescribed_dam;
 	  /// find new principal directions of damage
 	  Vector<Real> dam_eigenvalues(spatial_dimension);
@@ -222,7 +222,7 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::findMaxNormalizedEqu
 	    q_max.type = el_type;
 	    q_max.global_num = equivalent_stress_it - e_stress.begin();
 	  }
-	}	
+	}
       } /// end if equiv_stress > max_equiv_stress
     } /// end loop over all gauss points of this element type
   } // end if(_not_ghost)
@@ -254,7 +254,7 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::computeStress(Elemen
   /// Cauchy stress
   Matrix<Real> first_term(this->spatial_dimension, this->spatial_dimension);
   Matrix<Real> third_term(this->spatial_dimension, this->spatial_dimension);
-  
+
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
   /// rotate the tensors from the damage principal coordinate system to the CS of the computation
@@ -309,13 +309,13 @@ UInt MaterialOrthotropicDamageIterative<spatial_dimension>::updateDamage() {
     ElementType el_type = q_max.type;
     UInt q_global_num = q_max.global_num;
     Array<Real> & dam = this->damage(el_type, _not_ghost);
-    Array<Real>::matrix_iterator dam_it = dam.begin(this->spatial_dimension, 
+    Array<Real>::matrix_iterator dam_it = dam.begin(this->spatial_dimension,
 						    this->spatial_dimension);
-    Array<Real>::matrix_iterator damage_directions_it = 
+    Array<Real>::matrix_iterator damage_directions_it =
       this->damage_dir_vecs(el_type, _not_ghost).begin(this->spatial_dimension,
 						       this->spatial_dimension);
-    Array<Real>::matrix_iterator stress_dir_it = 
-      this->stress_dir(el_type, _not_ghost).begin(spatial_dimension, 
+    Array<Real>::matrix_iterator stress_dir_it =
+      this->stress_dir(el_type, _not_ghost).begin(spatial_dimension,
 						  spatial_dimension);
 
     /// initialize the matrices for damage rotation results
@@ -324,17 +324,17 @@ UInt MaterialOrthotropicDamageIterative<spatial_dimension>::updateDamage() {
     Matrix<Real> dam_in_stress_frame(spatial_dimension, spatial_dimension);
 
     /// references to damage and directions of highest Gauss point
-    Matrix<Real> & q_dam = dam_it[q_global_num];
-    Matrix<Real> & q_dam_dir = damage_directions_it[q_global_num];
-    Matrix<Real> & q_stress_dir = stress_dir_it[q_global_num];
+    Matrix<Real> q_dam = dam_it[q_global_num];
+    Matrix<Real> q_dam_dir = damage_directions_it[q_global_num];
+    Matrix<Real> q_stress_dir = stress_dir_it[q_global_num];
 
     /// increment damage
-    /// find the damage increment on this Gauss point  
+    /// find the damage increment on this Gauss point
     /// rotate damage into stress frame
     this->rotateIntoComputationFrame(q_dam, dam_in_computation_frame, q_dam_dir, tmp);
     this->rotateIntoNewFrame(dam_in_computation_frame, dam_in_stress_frame, q_stress_dir, tmp);
-	  
-    /// add damage increment 
+
+    /// add damage increment
     dam_in_stress_frame(0, 0) += prescribed_dam;
     /// find new principal directions of damage
     Vector<Real> dam_eigenvalues(spatial_dimension);
