@@ -46,6 +46,15 @@ __BEGIN_AKANTU__
 
 typedef CGAL::Cartesian<Real> K;
 
+/**
+ * @brief Class used to construct AABB tree for intersection computations
+ *
+ * This class constructs a CGAL AABB tree of one type of element in a mesh
+ * for fast intersection computations.
+ *
+ * It also responds to queries on this tree (intersection of the tree with primitives)
+ * and construct the resulting mesh.
+ */
 template<UInt dim, ElementType el_type>
 class MeshGeomFactory : public MeshGeomAbstract {
 
@@ -67,6 +76,12 @@ public:
   virtual void meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh);
 
   /// Construct a primitive and add it to the list
+  /**
+   * This function needs to be specialized for every type that is wished to be supported.
+   * @param node_coordinates coordinates of the nodes making up the element
+   * @param id element number
+   * @see MeshGeomContainer
+   */
   void addPrimitive(const Matrix<Real> & node_coordinates, UInt id);
 
   /// Construct segment list from intersections and remove duplicates
@@ -75,10 +90,14 @@ public:
       std::list<std::pair<K::Segment_3, UInt> > & segments,
       const K::Segment_3 & interface);
 
+  /// Getter for the AABB tree
   const typename TreeTypeHelper<dim, el_type>::tree & getTree() const { return *data_tree; }
 
 protected:
+  /// AABB data tree
   typename TreeTypeHelper<dim, el_type>::tree * data_tree;
+
+  /// Primitive list
   typename TreeTypeHelper<dim, el_type>::container_type primitive_list;
 };
 

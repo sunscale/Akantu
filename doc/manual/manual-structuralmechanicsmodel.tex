@@ -1,9 +1,8 @@
 \chapter{Structural  Mechanics   Model}
 Static structural mechanics problems can be handled using the
-\code{StructuralMechanicsModel}.  So far, \akantu\ provides 2D and 3D
-Bernoulli beam elements \cite{frey2009}.  Just as for the
-\code{SolidMechanicsModel}, this model is created for a given
-\code{Mesh}.  The model will create its own \code{FEEngine} object to
+class \code{StructuralMechanicsModel}.  So far, \akantu provides 2D and 3D
+Bernoulli beam elements \cite{frey2009}.  This model is instantiated for a given
+\code{Mesh}, as for the \code{SolidMechanicsModel}.  The model will create its own \code{FEEngine} object to
 compute the interpolation, gradient, integration and assembly
 operations.  The \code{StructuralMechanicsModel} constructor is called
 in the following way:
@@ -94,8 +93,8 @@ for instance, look like
     \code{GJ}  & Polar  moment of inertia  of beam  cross section (for 3D elements)\\
     \bottomrule
   \end{tabular}
-  \caption{Material properties  for structural elements  as defined by
-the structure \code{StructuralMaterial}.}
+  \caption{Material properties  for structural elements  defined in
+the class \code{StructuralMaterial}.}
   \label{tab:structMechMod:strucMaterial}
 \end{table}
 Materials can be added to the model's \code{element\_material} vector using
@@ -112,17 +111,16 @@ for (UInt i = 0; i < nb_element_mat_1; ++i) {
 
 
 \subsection{Setting Boundary Conditions}\label{sect:structMechMod:boundary}
-As explained before, the Dirichlet boundary conditions are applied
-through the array \textbf{blocked\_dofs}. Two options exist to define
-Neumann conditions.  If a nodal force is applied, it has to be
-directly set in the array \textbf{force\_momentum}. For loads
-distributed along the beam length, the method
-\code{computeForcesFromFunction} integrates them into nodal forces.
-The method takes as input a function describing the distribution of
-loads along the beam and a \code{BoundaryFunctionType} specifing if
-the function is expressed in the local coordinates
-(\code{\_bft\_traction\_local}) or in the global system of coordinates
-(\code{\_bft\_traction}).
+
+As explained before, the Dirichlet boundary conditions are applied through the
+array \textbf{blocked\_dofs}. Two options exist to define Neumann conditions.
+If a nodal force is applied, it has to be directly set in the array
+\textbf{force\_momentum}. For loads distributed along the beam length, the
+method \code{computeForcesFromFunction} integrates them into nodal forces.  The
+method takes as input a function describing the distribution of loads along the
+beam and a functor \code{BoundaryFunctionType} specifing if the function is
+expressed in the local coordinates (\code{\_bft\_traction\_local}) or in the
+global system of coordinates (\code{\_bft\_traction}).
 \begin{cpp}
  static void lin_load(double * position, double * load,
 		      Real * normal, UInt surface_id){

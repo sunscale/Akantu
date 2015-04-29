@@ -46,17 +46,7 @@ package_declare_sources(CGAL
   geometry/geom_helper_functions.hh
 
   geometry/aabb_primitives/triangle.hh
-  geometry/aabb_primitives/triangle_tmpl.hh
   geometry/aabb_primitives/tetrahedron.hh
-  geometry/aabb_primitives/tetrahedron_tmpl.hh
 
   geometry/aabb_primitives/aabb_primitive.hh
   )
-
-
-## Adding CGAL library
-#find_package(CGAL COMPONENTS Core)
-#if (NOT CGAL_FOUND)
-#message(STATUS "This project requires the CGAL library, and will not be compiled.")
-#return()
-#endif()

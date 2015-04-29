@@ -69,6 +69,14 @@ MeshGeomContainer::MeshGeomContainer(const Mesh & mesh):
 MeshGeomContainer::~MeshGeomContainer()
 {}
 
+/**
+ * Allocate the map of MeshGeomFactory according to different types of elements
+ * present in the mesh.
+ *
+ * Currently supported elements are :
+ *  - `_triangle_3`
+ *  - `_tetrahedron_4`
+ */
 void MeshGeomContainer::constructData() {
   AKANTU_DEBUG_IN();
 
@@ -77,7 +85,7 @@ void MeshGeomContainer::constructData() {
   Mesh::type_iterator it = mesh.firstType(spatial_dim, _not_ghost);
   Mesh::type_iterator end = mesh.lastType(spatial_dim, _not_ghost);
 
-  /// Loop over the element types of the mesh and construct the primitive trees
+  // Loop over the element types of the mesh and construct the primitive trees
   for (; it != end ; ++it) {
     ElementType type = *it; // for AKANTU_BOOST_ELEMENT_SWITCH macro
     switch(spatial_dim) {
@@ -116,6 +124,11 @@ UInt MeshGeomContainer::numberOfIntersectionsWithInterface(const K::Segment_3 & 
   return total;
 }
 
+/**
+ * Adds to `interface_mesh` the intersetion mesh of the `interface` provided with the main mesh.
+ * The interface is a pair of `K::Segment_3` and `std::string`, the latter containing the name of the
+ * material associated to `interface`.
+ */
 void MeshGeomContainer::meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh) {
   AKANTU_DEBUG_IN();
 
@@ -129,6 +142,9 @@ void MeshGeomContainer::meshOfLinearInterface(const Interface & interface, Mesh 
   AKANTU_DEBUG_OUT();
 }
 
+/**
+ * Meshes a list of `Interface`s
+ */
 Mesh & MeshGeomContainer::meshOfLinearInterfaces(const std::list<Interface> & interfaces) {
   std::list<Interface>::const_iterator interfaces_it = interfaces.begin();
   std::list<Interface>::const_iterator interfaces_end = interfaces.end();

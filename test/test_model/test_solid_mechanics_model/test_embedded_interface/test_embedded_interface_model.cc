@@ -1,11 +1,11 @@
 /**
- * @file   reinforced_concrete
+ * @file  test_embedded_interface_model.cc
  *
- * @author Lucas Frerot
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
  * @date   lun. 09 29 16:03:10 2014
  *
- * @brief  Reinforced concrete simulation
+ * @brief Embedded model test based on potential energy
  *
  * @section LICENSE
  *

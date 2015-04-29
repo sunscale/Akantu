@@ -22,10 +22,10 @@ In what follows we show how it works on a \code{SolidMechanics} model.
 
 The user must initialize \akantu by forwarding the arguments passed to the
 program by using the function \code{initialize}, and close \akantu instances
-at the end of the program by calling the \code{finalize} function.\\
+at the end of the program by calling the \code{finalize} function.
 
 \note{This step does not change from the sequential case as it was stated in
-Section \ref{sect:common:main}. It only gives a additional motivation in the parallel/MPI context.}\\
+Section \ref{sect:common:main}. It only gives a additional motivation in the parallel/MPI context.}
 
 The \code{initialize} function builds a \code{StaticCommunicator} object
 responsible for handling the interprocess communications later on.  The

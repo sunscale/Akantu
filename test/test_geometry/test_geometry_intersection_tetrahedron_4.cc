@@ -55,7 +55,7 @@ int main (int argc, char * argv[]) {
   initialize("", argc, argv);
 
   Mesh mesh(3);
-  mesh.read("tetrahedron_4.msh");
+  mesh.read("test_geometry_tetrahedron.msh");
 
   MeshGeomContainer container(mesh);
   container.constructData();

@@ -62,6 +62,10 @@ MeshGeomFactory<dim, type>::~MeshGeomFactory() {
   delete data_tree;
 }
 
+/**
+ * This function loops over the elements of `type` in the mesh and creates the
+ * AABB tree of geometrical primitves (`data_tree`).
+ */
 template<UInt dim, ElementType type>
 void MeshGeomFactory<dim, type>::constructData() {
   AKANTU_DEBUG_IN();
@@ -78,7 +82,7 @@ void MeshGeomFactory<dim, type>::constructData() {
   Array<UInt>::const_vector_iterator it    = connectivity.begin(nb_nodes_per_element);
   Array<UInt>::const_vector_iterator end   = connectivity.end(nb_nodes_per_element);
 
-  /// This loop builds the list of primitives
+  // This loop builds the list of primitives
   for (; it != end ; ++it) {
     const Vector<UInt> & el_connectivity = *it;
     Matrix<Real> node_coordinates(dim, nb_nodes_per_element);
@@ -140,6 +144,13 @@ UInt MeshGeomFactory<dim, el_type>::numberOfIntersectionsWithInterface(const K::
   return data_tree->number_of_intersected_primitives(interface);
 }
 
+/**
+ * Adds to `interface_mesh` the mesh created by the intersection of `interface_pair` and the main mesh.
+ * It computes the intersecion objects, creates a list of segments, and from this list creates the nodes and the
+ * connectivity of the mesh. It also creates elemental data for two things :
+ *  - ID of the background element
+ *  - Material name associated to the interface
+ */
 template<UInt dim, ElementType el_type>
 void MeshGeomFactory<dim, el_type>::meshOfLinearInterface(const Interface & interface_pair, Mesh & interface_mesh) {
   AKANTU_DEBUG_IN();
@@ -154,32 +165,32 @@ void MeshGeomFactory<dim, el_type>::meshOfLinearInterface(const Interface & inte
   }
 
   std::list<typename TreeTypeHelper<dim, el_type>::linear_intersection> list_of_intersections;
-  /// TODO change this list to a set using lessSegmentPair for optimization
+  // TODO change this list to a set using lessSegmentPair for optimization
   std::list< std::pair<K::Segment_3, UInt> > list_of_segments; // Contains no duplicate elements
 
-  /// Compute all the intersection pairs (segment + element id) and remove duplicates
+  // Compute all the intersection pairs (segment + element id) and remove duplicates
   data_tree->all_intersections(interface, std::back_inserter(list_of_intersections));
   this->constructSegments(list_of_intersections, list_of_segments, interface);
 
-  /// Arrays for storing nodes and connectivity
+  // Arrays for storing nodes and connectivity
   Array<Real> & nodes = interface_mesh.getNodes();
   Array<UInt> & connectivity = interface_mesh.getConnectivity(_segment_2);
 
-  /// Arrays for storing associated element id and type
+  // Arrays for storing associated element id and type
   Array<Element> & associated_element = interface_mesh.getData<Element>("associated_element", _segment_2);
   Array<std::string> & associated_material = interface_mesh.getData<std::string>("material", _segment_2);
 
   std::list<std::pair<K::Segment_3, UInt> >::iterator it  = list_of_segments.begin();
   std::list<std::pair<K::Segment_3, UInt> >::iterator end = list_of_segments.end();
 
-  /// Loop over the intersections pairs (segment, id)
+  // Loop over the intersections pairs (segment, id)
   for (; it != end ; ++it) {
     Vector<UInt> segment_connectivity(2);
     segment_connectivity(0) = interface_mesh.getNbNodes();
     segment_connectivity(1) = interface_mesh.getNbNodes() + 1;
     connectivity.push_back(segment_connectivity);
 
-    /// Copy nodes
+    // Copy nodes
     Vector<Real> source(dim), target(dim);
     for (UInt j = 0 ; j < dim ; j++) {
       source(j) = it->first.source()[j];
@@ -189,7 +200,7 @@ void MeshGeomFactory<dim, el_type>::meshOfLinearInterface(const Interface & inte
     nodes.push_back(source);
     nodes.push_back(target);
 
-    /// Copy associated element info
+    // Copy associated element info
     associated_element.push_back(Element(el_type, it->second));
     associated_material.push_back(interface_pair.second);
   }
@@ -197,6 +208,10 @@ void MeshGeomFactory<dim, el_type>::meshOfLinearInterface(const Interface & inte
   AKANTU_DEBUG_OUT();
 }
 
+/**
+ * This function constructs the segment of the linear interface from the intersection
+ * result of the CGAL AABB intersection aglorithm.
+ */
 template<UInt dim, ElementType el_type>
 void MeshGeomFactory<dim, el_type>::constructSegments(
     const std::list< typename TreeTypeHelper<dim, el_type>::linear_intersection > & intersections,
@@ -216,7 +231,7 @@ void MeshGeomFactory<dim, el_type>::constructSegments(
       if (std::find_if(segments.begin(), segments.end(), IsSameSegment(*segment)) == segments.end()) {
         // Use min() and max() for ordering
         K::Segment_3 seg_ord(segment->min(), segment->max());
-        segments.push_back(std::make_pair(seg_ord, (*int_it)->second));
+        segments.push_back(std::make_pair(seg_ord, el));
       }
     }
 
