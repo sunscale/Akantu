@@ -41,28 +41,31 @@ __BEGIN_AKANTU__
   
 /* -------------------------------------------------------------------------- */
 
+/// Class used for substitution of CGAL::Triangle_3 primitive
 template<typename K>
 class Triangle : public CGAL::Triangle_3<K> {
 public:
   /// Default constructor
-  Triangle();
+  Triangle() :
+    CGAL::Triangle_3<K>(), meshId(0) {}
 
   /// Copy constructor
-  Triangle(const Triangle & other);
+  Triangle(const Triangle & other) :
+    CGAL::Triangle_3<K>(other), meshId(other.meshId) {}
 
   /// Construct from 3 points
-  Triangle(const CGAL::Point_3<K> & a, const CGAL::Point_3<K> & b, const CGAL::Point_3<K> & c);
+  Triangle(const CGAL::Point_3<K> & a, const CGAL::Point_3<K> & b, const CGAL::Point_3<K> & c):
+    CGAL::Triangle_3<K>(a, b, c), meshId(0) {}
 
 public:
-  UInt id() const;
-  void setId(UInt newId);
+  UInt id() const { return meshId; }
+  void setId(UInt newId) { meshId = newId; }
 
 protected:
+  /// Id of the element represented by the primitive
   UInt meshId;
 };
 
 __END_AKANTU__
-
-#include "triangle_tmpl.hh"
 
 #endif // __AKANTU_TRIANGLE_HH__

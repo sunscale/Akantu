@@ -515,7 +515,7 @@ void SolidMechanicsModelCohesive::interpolateStress() {
 }
 
 /* -------------------------------------------------------------------------- */
-bool SolidMechanicsModelCohesive::checkCohesiveStress() {
+UInt SolidMechanicsModelCohesive::checkCohesiveStress() {
   interpolateStress();
 
   for (UInt m = 0; m < materials.size(); ++m) {

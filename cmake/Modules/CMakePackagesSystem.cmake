@@ -446,10 +446,10 @@ function(package_get_all_external_informations INCLUDE_DIR LIBRARIES)
     _package_get_nature(${_pkg_name} _nature)
     if(${_nature} MATCHES "external")
       _package_get_include_dir(${_pkg_name} _inc)
-      _package_get_libraries  (${_pkg_name} _lib)
+      _package_get_libraries  (${_pkg_name} _libraries)
 
       list(APPEND tmp_INCLUDE_DIR ${_inc})
-      list(APPEND tmp_LIBRARIES   ${_lib})
+      list(APPEND tmp_LIBRARIES   ${_libraries})
     endif()
   endforeach()
 
@@ -1065,7 +1065,11 @@ function(_package_set_libraries pkg_name)
 endfunction()
 
 function(_package_get_libraries pkg_name libraries)
-  set(${libraries} ${${pkg_name}_LIBRARIES} PARENT_SCOPE)
+  if(${pkg_name}_LIBRARIES)
+    set(${libraries} ${${pkg_name}_LIBRARIES} PARENT_SCOPE)
+  else()
+    set(${libraries} "" PARENT_SCOPE)
+  endif()
 endfunction()
 
 # ------------------------------------------------------------------------------

@@ -45,24 +45,29 @@ typedef CGAL::Cartesian<Real> K;
 
 #define EPS 1e-10
 
+/// Fuzzy compare of two points
 inline bool comparePoints(const K::Point_3 & a, const K::Point_3 & b) {
   Math::setTolerance(EPS);
   return Math::are_float_equal(a.x(), b.x()) && Math::are_float_equal(a.y(), b.y());
 }
 
+/// Fuzzy compare of two segments
 inline bool compareSegments(const K::Segment_3 & a, const K::Segment_3 & b) {
   return (comparePoints(a.source(), b.source()) && comparePoints(a.target(), b.target())) ||
          (comparePoints(a.source(), b.target()) && comparePoints(a.target(), b.source()));
 }
 
+/// Compare segment pairs
 inline bool compareSegmentPairs(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
   return compareSegments(a.first, b.first);
 }
 
+/// Pair ordering operator based on second member
 inline bool comparePairElement(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
   return a.second < b.second;
 }
 
+/// Pair ordering operator based on first member
 inline bool lessSegmentPair(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
   return CGAL::compare_lexicographically(a.first.min(), b.first.min()) || CGAL::compare_lexicographically(a.first.max(), b.first.max());
 }
@@ -71,7 +76,7 @@ inline bool lessSegmentPair(const std::pair<K::Segment_3, UInt> & a, const std::
 /* Predicates                                                                 */
 /* -------------------------------------------------------------------------- */
 
-// Predicate used to eliminate faces of mesh not belonging to a specific element
+/// Predicate used to eliminate faces of mesh not belonging to a specific element
 template <UInt dim, ElementType el_type>
 class BelongsNotToElement {
 
@@ -88,7 +93,7 @@ protected:
   const UInt el;
 };
 
-// Predicate used to determine if point is on edge of faces of mesh
+/// Predicate used to determine if point is on edge of faces of mesh
 template <UInt dim, ElementType el_type>
 class HasOnEdge {
 
@@ -105,6 +110,7 @@ protected:
   const K::Point_3 & point;
 };
 
+/// Predicate used to determine if two segments are equal
 class IsSameSegment {
 
 public:

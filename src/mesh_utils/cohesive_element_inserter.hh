@@ -71,9 +71,9 @@ public:
   /// insert intrinsic cohesive elements in a predefined range
   void insertIntrinsicElements();
 
-  /// insert extrinsic cohesive elements (returns true if some
-  /// elements are inserted)
-  bool insertElements();
+  /// insert extrinsic cohesive elements (returns the number of new
+  /// cohesive elements)
+  UInt insertElements();
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;

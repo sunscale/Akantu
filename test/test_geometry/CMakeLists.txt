@@ -40,18 +40,18 @@ register_test(test_geometry_predicates
 
 register_test(test_geometry_intersection
   SOURCES test_geometry_intersection.cc
-  DEPENDENCIES test_geometry_intersection_triangle_3_mesh
+  FILES_TO_COPY test_geometry_triangle.msh
   PACKAGE CGAL
   )
 
 register_test(test_geometry_intersection_triangle_3
   SOURCES test_geometry_intersection_triangle_3.cc
-  DEPENDENCIES test_geometry_intersection_triangle_3_mesh
+  FILES_TO_COPY test_geometry_triangle.msh
   PACKAGE CGAL
   )
 
 register_test(test_geometry_intersection_tetrahedron_4
   SOURCES test_geometry_intersection_tetrahedron_4.cc
-  DEPENDENCIES test_geometry_intersection_tetrahedron_4_mesh
+  FILES_TO_COPY test_geometry_tetrahedron.msh
   PACKAGE CGAL
   )
