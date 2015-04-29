@@ -216,9 +216,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 
   this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _not_ghost);
   this->fillCellList(quadrature_points_coordinates, _not_ghost);
-  DumperParaview dumper_ghost("ghosts");
-  dumper_ghost.registerMesh(mesh, spatial_dimension, _ghost);
-  dumper_ghost.dump();
+
   is_creating_grid = true;
   std::set<SynchronizationTag> tags;
   tags.insert(_gst_mnl_for_average);
@@ -236,7 +234,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 
   this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _ghost);
   fillCellList(quadrature_points_coordinates, _ghost);
-  dumper_ghost.dump();
+
   AKANTU_DEBUG_OUT();
 }
 
