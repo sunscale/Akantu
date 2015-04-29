@@ -31,10 +31,7 @@
 /* -------------------------------------------------------------------------- */
 
 #include "aka_common.hh"
-#include "mesh_geom_container.hh"
-#include "mesh_geom_factory.hh"
-#include "tree_type_helper.hh"
-#include "geom_helper_functions.hh"
+#include "mesh_segment_intersector.hh"
 
 #include <CGAL/Cartesian.h>
 
@@ -54,19 +51,16 @@ int main (int argc, char * argv[]) {
   debug::setDebugLevel(dblWarning);
   initialize("", argc, argv);
 
-  Mesh mesh(3);
+  Mesh mesh(3), interface_mesh(3, "interface_mesh");
   mesh.read("test_geometry_tetrahedron.msh");
 
-  MeshGeomContainer container(mesh);
-  container.constructData();
+  MeshSegmentIntersector<3, _tetrahedron_4> intersector(mesh, interface_mesh);
+  intersector.constructData();
 
   Point point(1., 1., 1.);
   Segment segment(CGAL::ORIGIN, point);
 
-  std::list<std::pair<Segment, std::string> > interfaces;
-  interfaces.push_back(std::make_pair(segment, "mat"));
-
-  Mesh & interface_mesh = container.meshOfLinearInterfaces(interfaces);
+  intersector.computeIntersectionQuery(segment);
 
   if (interface_mesh.getNbElement(_segment_2) != 4)
     return EXIT_FAILURE;

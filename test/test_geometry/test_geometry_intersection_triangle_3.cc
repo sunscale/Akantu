@@ -32,7 +32,7 @@
 
 #include "aka_common.hh"
 
-#include "mesh_geom_container.hh"
+#include "mesh_segment_intersector.hh"
 #include "geom_helper_functions.hh"
 
 #include <CGAL/Cartesian.h>
@@ -48,16 +48,16 @@ typedef CGAL::Cartesian<Real> K;
 /* -------------------------------------------------------------------------- */
 
 int main (int argc, char * argv[]) {
-  debug::setDebugLevel(dblWarning);
+  debug::setDebugLevel(dblError);
   initialize("", argc, argv);
 
   Math::setTolerance(1e-10);
 
-  Mesh mesh(2);
+  Mesh mesh(2), interface_mesh(2, "interface_mesh");
   mesh.read("test_geometry_triangle.msh");
 
-  MeshGeomContainer container(mesh);
-  container.constructData();
+  MeshSegmentIntersector<2, _triangle_3> intersector(mesh, interface_mesh);
+  intersector.constructData();
 
   K::Point_3 a(0, 0.25, 0),
              b(1, 0.25, 0),
@@ -67,11 +67,11 @@ int main (int argc, char * argv[]) {
   K::Segment_3 h_interface(a, b),
                v_interface(c, d);
 
-  std::list<std::pair<K::Segment_3, std::string> > interface_list;
-  interface_list.push_back(std::make_pair(h_interface, "mat"));
-  interface_list.push_back(std::make_pair(v_interface, "mat"));
+  std::list<K::Segment_3> interface_list;
+  interface_list.push_back(h_interface);
+  interface_list.push_back(v_interface);
 
-  Mesh & interface_mesh = container.meshOfLinearInterfaces(interface_list);
+  intersector.computeIntersectionQueryList(interface_list);
 
   if (interface_mesh.getNbElement(_segment_2) != 4)
     return EXIT_FAILURE;
