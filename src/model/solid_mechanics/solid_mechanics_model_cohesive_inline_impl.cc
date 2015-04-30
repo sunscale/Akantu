@@ -141,10 +141,6 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
       converged = this->testConvergence<criteria> (tolerance, error);
 
-      //      dump();
-      //      dump("cohesive elements");
-      //std::cout << "Error after loop: " << error << std::endl;
-
       iter++;
       AKANTU_DEBUG_INFO("[" << criteria << "] Convergence iteration "
                         << std::setw(std::log10(max_iteration)) << iter
