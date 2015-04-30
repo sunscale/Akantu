@@ -201,6 +201,8 @@ void FEEngine::assembleMatrix(const Array<Real> & elementary_mat,
     /// (i.e. elements in correspondence of the crack tips) has to be done
     /// without considering symmetry
 
+
+#if defined(AKANTU_COHESIVE_ELEMENT)
     if (mesh.getKind(type) == _ek_cohesive){
 
       /// matrix assembling procedure for cohesive elements
@@ -224,7 +226,7 @@ void FEEngine::assembleMatrix(const Array<Real> & elementary_mat,
       elementary_mat_val += offset_elementary_mat;
 
     }else{
-
+#endif
       /// matrix assembling procedure for all the elements except cohesive ones
       for (UInt i = 0; i < size_mat; ++i) {
         UInt c_irn = local_eq_nb_val[i];
@@ -240,7 +242,9 @@ void FEEngine::assembleMatrix(const Array<Real> & elementary_mat,
       }
       elementary_mat_val += offset_elementary_mat;
     }
+#if defined(AKANTU_COHESIVE_ELEMENT)
   }
+#endif
 
   delete [] local_eq_nb_val;
 
