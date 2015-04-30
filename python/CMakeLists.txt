@@ -153,14 +153,16 @@ function(swig_generate_wrappers project _wrappers)
     set(_extra_wrapper "${_output_dir}/${_module_we}.py")
     set(_extra_wrapper_bin "${CMAKE_CURRENT_BINARY_DIR}/${_module_we}.py")
 
+
     if(SWIG_FOUND)
       set_source_files_properties("${_wrapper}" PROPERTIES GENERATED 1)
       set_source_files_properties("${_extra_wrapper}" PROPERTIES GENERATED 1)
 
       set(_dependencies_file ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/_swig_${_module_we}_depends.cmake)
 
+      set(_ouput "${_wrapper}" "${_extra_wrapper}" "${_extra_wrapper_bin}")
       add_custom_command(
-	OUTPUT "${_wrapper}" "${_extra_wrapper}" "${_extra_wrapper_bin}"
+	OUTPUT ${_ouput}
 	COMMAND "${SWIG_EXECUTABLE}"
 	ARGS -python -c++
 	${_swig_opt_EXTRA_FLAGS}
@@ -192,7 +194,6 @@ endfunction()
 
 swig_generate_wrappers(akantu AKANTU_SWIG_WRAPPERS
   ${AKANTU_SWIG_MODULES}
-  OUTPUT_DIR ${AKANTU_SWIG_OUTDIR}
   EXTRA_FLAGS ${AKANTU_SWIG_FLAGS})
 
 if(AKANTU_SWIG_WRAPPERS)

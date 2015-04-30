@@ -69,13 +69,13 @@ FEEngine::~FEEngine() {
 
 /* -------------------------------------------------------------------------- */
 void FEEngine::assembleArray(const Array<Real> & elementary_vect,
-			     Array<Real> & nodal_values,
-			     const Array<Int> & equation_number,
-			     UInt nb_degree_of_freedom,
-			     const ElementType & type,
-			     const GhostType & ghost_type,
-			     const Array<UInt> & filter_elements,
-			     Real scale_factor) const {
+                             Array<Real> & nodal_values,
+                             const Array<Int> & equation_number,
+                             UInt nb_degree_of_freedom,
+                             const ElementType & type,
+                             const GhostType & ghost_type,
+                             const Array<UInt> & filter_elements,
+                             Real scale_factor) const {
   AKANTU_DEBUG_IN();
 
   UInt nb_element;
@@ -88,10 +88,10 @@ void FEEngine::assembleArray(const Array<Real> & elementary_vect,
     nb_element = filter_elements.getSize();
     filtered_connectivity = new Array<UInt>(0, nb_nodes_per_element);
     FEEngine::filterElementalData(mesh,
-				  mesh.getConnectivity(type, ghost_type),
-				  *filtered_connectivity,
-				  type, ghost_type,
-				  filter_elements);
+                                  mesh.getConnectivity(type, ghost_type),
+                                  *filtered_connectivity,
+                                  type, ghost_type,
+                                  filter_elements);
     const Array<UInt> & cfiltered = *filtered_connectivity; // \todo temporary patch
     conn_it = cfiltered.begin(nb_nodes_per_element);
   } else {
@@ -100,27 +100,27 @@ void FEEngine::assembleArray(const Array<Real> & elementary_vect,
   }
 
   AKANTU_DEBUG_ASSERT(elementary_vect.getSize() == nb_element,
-		      "The vector elementary_vect(" << elementary_vect.getID()
-		      << ") has not the good size.");
+                      "The vector elementary_vect(" << elementary_vect.getID()
+                      << ") has not the good size.");
 
   AKANTU_DEBUG_ASSERT(elementary_vect.getNbComponent()
-		      == nb_degree_of_freedom*nb_nodes_per_element,
-		      "The vector elementary_vect(" << elementary_vect.getID()
-		      << ") has not the good number of component."
-		      << "(" << elementary_vect.getNbComponent()
-		      << " != " << nb_degree_of_freedom*nb_nodes_per_element << ")");
+                      == nb_degree_of_freedom*nb_nodes_per_element,
+                      "The vector elementary_vect(" << elementary_vect.getID()
+                      << ") has not the good number of component."
+                      << "(" << elementary_vect.getNbComponent()
+                      << " != " << nb_degree_of_freedom*nb_nodes_per_element << ")");
 
   AKANTU_DEBUG_ASSERT(nodal_values.getNbComponent() == nb_degree_of_freedom,
-		      "The vector nodal_values(" << nodal_values.getID()
-		      << ") has not the good number of component."
-		      << "(" << nodal_values.getNbComponent()
-		      << " != " << nb_degree_of_freedom << ")");
+                      "The vector nodal_values(" << nodal_values.getID()
+                      << ") has not the good number of component."
+                      << "(" << nodal_values.getNbComponent()
+                      << " != " << nb_degree_of_freedom << ")");
 
 
   nodal_values.resize(mesh.getNbNodes());
   Real * nodal_it  = nodal_values.storage();
   Array<Real>::const_matrix_iterator elem_it  = elementary_vect.begin(nb_degree_of_freedom,
-								      nb_nodes_per_element);
+                                                                      nb_nodes_per_element);
 
   for (UInt el = 0; el < nb_element; ++el, ++elem_it, ++conn_it) {
     for (UInt n = 0; n < nb_nodes_per_element; ++n) {
@@ -142,11 +142,11 @@ void FEEngine::assembleArray(const Array<Real> & elementary_vect,
 
 /* -------------------------------------------------------------------------- */
 void FEEngine::assembleMatrix(const Array<Real> & elementary_mat,
-			      SparseMatrix & matrix,
-			      UInt nb_degree_of_freedom,
-			      const ElementType & type,
-			      const GhostType & ghost_type,
-			      const Array<UInt> & filter_elements) const {
+                              SparseMatrix & matrix,
+                              UInt nb_degree_of_freedom,
+                              const ElementType & type,
+                              const GhostType & ghost_type,
+                              const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
 
@@ -164,13 +164,13 @@ void FEEngine::assembleMatrix(const Array<Real> & elementary_mat,
   }
 
   AKANTU_DEBUG_ASSERT(elementary_mat.getSize() == nb_element,
-		      "The vector elementary_mat(" << elementary_mat.getID()
-		      << ") has not the good size.");
+                      "The vector elementary_mat(" << elementary_mat.getID()
+                      << ") has not the good size.");
 
   AKANTU_DEBUG_ASSERT(elementary_mat.getNbComponent()
-		      == nb_degree_of_freedom * nb_nodes_per_element * nb_degree_of_freedom * nb_nodes_per_element,
-		      "The vector elementary_mat(" << elementary_mat.getID()
-		      << ") has not the good number of component.");
+                      == nb_degree_of_freedom * nb_nodes_per_element * nb_degree_of_freedom * nb_nodes_per_element,
+                      "The vector elementary_mat(" << elementary_mat.getID()
+                      << ") has not the good number of component.");
 
   Real * elementary_mat_val = elementary_mat.storage();
   UInt offset_elementary_mat = elementary_mat.getNbComponent();
@@ -197,19 +197,49 @@ void FEEngine::assembleMatrix(const Array<Real> & elementary_mat,
       // tmp_local_eq_nb_val += nb_degree_of_freedom;
     }
 
-    for (UInt i = 0; i < size_mat; ++i) {
-      UInt c_irn = local_eq_nb_val[i];
-      if(c_irn < size) {
-        UInt j_start = (matrix.getSparseMatrixType() == _symmetric) ? i : 0;
-        for (UInt j = j_start; j < size_mat; ++j) {
-          UInt c_jcn = local_eq_nb_val[j];
-          if(c_jcn < size) {
-            matrix(c_irn, c_jcn) += elementary_mat_val[j * size_mat + i];
+    /// The matrix assembling for cohesive elements with degenerated nodes
+    /// (i.e. elements in correspondence of the crack tips) has to be done
+    /// without considering symmetry
+
+    if (mesh.getKind(type) == _ek_cohesive){
+
+      /// matrix assembling procedure for cohesive elements
+      for (UInt i = 0; i < size_mat; ++i) {
+        UInt c_irn = local_eq_nb_val[i];
+        if(c_irn < size) {
+          for (UInt j = 0; j < size_mat; ++j) {
+            UInt c_jcn = local_eq_nb_val[j];
+            if(c_jcn < size) {
+              if (matrix.getSparseMatrixType() == _symmetric){
+                if (c_jcn >= c_irn){
+                  matrix(c_irn, c_jcn) += elementary_mat_val[j * size_mat + i];
+                }
+              }else{
+                matrix(c_irn, c_jcn) += elementary_mat_val[j * size_mat + i];
+              }
+            }
           }
         }
       }
+      elementary_mat_val += offset_elementary_mat;
+
+    }else{
+
+      /// matrix assembling procedure for all the elements except cohesive ones
+      for (UInt i = 0; i < size_mat; ++i) {
+        UInt c_irn = local_eq_nb_val[i];
+        if(c_irn < size) {
+          UInt j_start = (matrix.getSparseMatrixType() == _symmetric) ? i : 0;
+          for (UInt j = j_start; j < size_mat; ++j) {
+            UInt c_jcn = local_eq_nb_val[j];
+            if(c_jcn < size) {
+              matrix(c_irn, c_jcn) += elementary_mat_val[j * size_mat + i];
+            }
+          }
+        }
+      }
+      elementary_mat_val += offset_elementary_mat;
     }
-    elementary_mat_val += offset_elementary_mat;
   }
 
   delete [] local_eq_nb_val;
