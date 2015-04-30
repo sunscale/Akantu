@@ -602,7 +602,7 @@ void PETScMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
   UInt nb_component = boundary.getNbComponent();
   UInt size = boundary.getSize();
   Int nb_blocked_local_master_eq_nb = 0;
-  Array<Int> blocked_local_master_eq_nb(this->local_size / nb_component, nb_component);
+  Array<Int> blocked_local_master_eq_nb(this->local_size);
   Int * blocked_lm_eq_nb_ptr  = blocked_local_master_eq_nb.storage();
 
   for (UInt i = 0; i < size; ++i) {
@@ -617,7 +617,7 @@ void PETScMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
       ++eq_nb_val;
     }
   }
-  blocked_local_master_eq_nb.resize(nb_blocked_local_master_eq_nb/nb_component);
+  blocked_local_master_eq_nb.resize(nb_blocked_local_master_eq_nb);
 
 
   ierr = AOApplicationToPetsc(this->petsc_matrix_wrapper->ao, nb_blocked_local_master_eq_nb, blocked_local_master_eq_nb.storage() ); CHKERRXX(ierr);
