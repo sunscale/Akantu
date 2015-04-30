@@ -41,6 +41,14 @@
 
 __BEGIN_AKANTU__
 
+/**
+ * @brief Implementation of MaterialReinforcement with 1D constitutive law
+ * @see MaterialReinforcement, MaterialElastic
+ *
+ * This class is a reinforcement featuring a constitutive law.
+ * <strong>Be careful !</strong> Because of multiple inheritance, this class
+ * forms a diamond.
+ */
 template<UInt dim, class ConstLaw = MaterialElastic<1> >
 class MaterialReinforcementTemplate : public MaterialReinforcement<dim>,
                                       public ConstLaw {
@@ -73,12 +81,19 @@ public:
   /// Computes gradu to be used by the constitutive law
   virtual void computeGradU(const ElementType & type, GhostType ghost_type);
 
+  /// Compute the potential energy of the reinforcement
   virtual void computePotentialEnergy(ElementType type, GhostType ghost_type = _not_ghost);
 
+  /// Get energy in reinforcement (currently limited to potential)
   virtual Real getEnergy(std::string id);
 
 protected:
-  /// Compute interface gradu from bulk gradu
+  /**
+   * @brief Compute interface gradu from bulk gradu
+   * \f[
+   *  \varepsilon_s = C \varepsilon_c
+   * \f]
+   */
   inline void computeInterfaceGradUOnQuad(const Matrix<Real> & full_gradu,
                                           Real & gradu,
                                           const Matrix<Real> & C);

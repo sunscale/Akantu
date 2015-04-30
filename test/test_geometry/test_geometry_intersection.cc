@@ -57,7 +57,7 @@ int main (int argc, char * argv[]) {
   Math::setTolerance(1e-10);
 
   Mesh mesh(2);
-  mesh.read("triangle_3.msh");
+  mesh.read("test_geometry_triangle.msh");
 
   MeshGeomContainer container(mesh);
   container.constructData();

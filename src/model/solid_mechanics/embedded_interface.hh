@@ -42,6 +42,9 @@
 
 __BEGIN_AKANTU__
 
+/**
+ * @brief Parsable class for the embedded interfaces
+ */
 class EmbeddedInterface : public Parsable {
 
   typedef CGAL::Cartesian<Real> K;
@@ -58,6 +61,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// Constructs the CGAL primitive segment
   K::Segment_3 getPrimitive() const;
 
   /* ------------------------------------------------------------------------ */
@@ -71,10 +75,14 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  /// Intetrface name
   std::string name;
+
+  /// Material name
   std::string mat_name;
+
+  /// Start and end points of interface
   Matrix<Real> points;
-  
 
 };
 

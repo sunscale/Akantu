@@ -1065,11 +1065,15 @@ void Material::initElementalFieldInterpolation(const Array<Real> & quad_coordina
     interpolation_inverse_coordinates.alloc(nb_element,
 					    nb_quad_per_element*nb_quad_per_element,
 					    type, ghost_type);
+  else
+    interpolation_inverse_coordinates(type, ghost_type).resize(nb_element);
 
   if(!interpolation_points_matrices.exists(type, ghost_type))
     interpolation_points_matrices.alloc(nb_element,
 					nb_interpolation_points_per_elem * nb_quad_per_element,
 					type, ghost_type);
+  else
+    interpolation_points_matrices(type, ghost_type).resize(nb_element);
 
   Array<Real> & interp_inv_coord = interpolation_inverse_coordinates(type, ghost_type);
   Array<Real> & interp_points_mat = interpolation_points_matrices(type, ghost_type);

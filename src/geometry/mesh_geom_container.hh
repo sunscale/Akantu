@@ -45,6 +45,14 @@ __BEGIN_AKANTU__
 
 typedef CGAL::Cartesian<Real> K;
 
+/**
+ * @brief Class used to store mesh geometries for CGAL algorithms
+ *
+ * This class provides an interface for dialog with the MeshGeomFactory classes
+ * that correspond to element types of the mesh.
+ *
+ * It contains a mesh object used in the intersection of a mesh with linear interfaces
+ */
 class MeshGeomContainer : MeshGeomAbstract {
   typedef ElementTypeMap<MeshGeomAbstract *> GeomMap;
 

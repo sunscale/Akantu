@@ -108,13 +108,6 @@ int main(int argc, char *argv[]) {
   // create boundary array: block all dofs
   UInt nb_nodes = mesh.getNbNodes();
   Array<bool> boundary = Array<bool>(nb_nodes, spatial_dimension, true);
-  //boundary(2,1) = true;
- 
-
-  std::cout << dof_synchronizer.getDOFGlobalID(2*2+1) <<std::endl;
- 
-
-
 
   // apply boundary
   petsc_matrix.applyBoundary(boundary);
@@ -130,22 +123,18 @@ int main(int argc, char *argv[]) {
 	    test_passed += petsc_matrix(i, j) - 1;
 	  else
 	    test_passed += petsc_matrix(i, j) - 0;
-	  UInt global_i = dof_synchronizer.getDOFGlobalID(i);
-	  UInt global_j = dof_synchronizer.getDOFGlobalID(j);
-	  std::cout << "K(" << global_i << "," << global_j << ")=" << petsc_matrix(i, j) << std::endl;
 	}
       }
     }
   }
-  petsc_matrix.saveMatrix("profile_after_boundary.mtx"); 
+
+  if (std::abs(test_passed) > Math::getTolerance())
+    return EXIT_FAILURE;
+
   delete communicator;
 
   finalize();
 
-  //  if (std::abs(test_passed) > Math::getTolerance())
-  //    return EXIT_FAILURE;
-  
-  std::cout << " Test passed!!!" << std::endl;
   return EXIT_SUCCESS;
 
 }

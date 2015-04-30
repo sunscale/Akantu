@@ -50,6 +50,18 @@ __BEGIN_AKANTU__
 
 typedef CGAL::Cartesian<Real> K;
 
+/**
+ * @brief Solid mechanics model using the embedded model.
+ *
+ * This SolidMechanicsModel subclass implements the embedded model,
+ * a method used to represent 1D elements in a finite elements model
+ * (eg. reinforcements in concrete).
+ *
+ * In addition to the SolidMechanicsModel properties, this model has
+ * a mesh of the 1D elements embedded in the model, and an instance of the
+ * MeshGeomContainer class for the computation of the intersections of the
+ * 1D elements with the background (bulk) mesh.
+ */
 class EmbeddedInterfaceModel : public SolidMechanicsModel {
 
   typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular> MyFEEngineType;
@@ -93,6 +105,13 @@ public:
 					       bool padding_flag,
 					       const ElementKind & kind,
                  const std::string & fe_engine_id = "");
+
+#ifndef SWIG
+  /// give the amount of data per element
+  ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
+					     const ElementKind & kind,
+               const std::string & fe_engine_id = "");
+#endif
 
 
   /* ------------------------------------------------------------------------ */
