@@ -1,0 +1,14 @@
+material elastic [
+  name = chocolate
+  E = 2
+]
+
+material elastic [
+  name = chewing-gum
+  E = 1
+]
+
+material elastic [
+  name = candy
+  E = 3
+]
