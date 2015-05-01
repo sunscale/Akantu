@@ -46,10 +46,10 @@ __BEGIN_AKANTU__
 typedef CGAL::Cartesian<Real> K;
 
 /**
- * @brief Computes the intersections of the reinforcements defined in the mesh
+ * @brief Computes the intersections of the reinforcements defined in the primitive mesh
  *
- * The purpose of this class is to look for reinforcements in the main mesh, which
- * are defined by physical groups with the same names as the reinforcement materials
+ * The purpose of this class is to look for reinforcements in the primitive mesh, which
+ * should be defined by physical groups with the same names as the reinforcement materials
  * in the model.
  *
  * It then constructs the CGAL primitives from the elements of those reinforcements
@@ -62,7 +62,7 @@ typedef CGAL::Cartesian<Real> K;
 class EmbeddedInterfaceIntersector : public MeshGeomAbstract {
 
 public:
-  /// Construct from mesh
+  /// Construct from mesh and a reinforcement mesh
   explicit EmbeddedInterfaceIntersector(const Mesh & mesh, const Mesh & primitive_mesh);
 
   /// Destructor
