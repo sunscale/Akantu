@@ -47,7 +47,9 @@ MeshSegmentIntersector<dim, type>::MeshSegmentIntersector(const Mesh & mesh, Mes
   parent_type(mesh),
   result_mesh(result_mesh),
   current_physical_name()
-{}
+{
+  this->constructData();
+}
 
 template<UInt dim, ElementType type>
 MeshSegmentIntersector<dim, type>::~MeshSegmentIntersector()
@@ -77,7 +79,7 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(const K::Segmen
 
   try {
     associated_element = &result_mesh.getData<Element>("associated_element", _segment_2);
-    associated_physical_name = &result_mesh.getData<std::string>("physical_name", _segment_2);
+    associated_physical_name = &result_mesh.getData<std::string>("physical_names", _segment_2);
   } catch (debug::Exception & e) {
     valid_elemental_data = false;
   }
@@ -109,7 +111,7 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(const K::Segmen
       associated_physical_name->push_back(current_physical_name);
     }
   }
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -139,7 +141,7 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
                                                         const K::Segment_3 & query) {
   AKANTU_DEBUG_IN();
   
-  std::list<result_type>::const_iterator
+  typename std::list<result_type>::const_iterator
     it = intersections.begin(),
     end = intersections.end();
 
@@ -177,7 +179,7 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
         std::list<result_type> local_intersections;
         local_tree->all_intersections(query, std::back_inserter(local_intersections));
 
-        std::list<result_type>::const_iterator
+        typename std::list<result_type>::const_iterator
           local_it = local_intersections.begin(),
           local_end = local_intersections.end();
 
@@ -190,6 +192,8 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
             }
           }
         }
+
+        delete local_tree;
       }
     }
   }

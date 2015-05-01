@@ -50,8 +50,8 @@ class MeshSegmentIntersector : public MeshGeomIntersector<dim, type, Triangle<K>
   /// Parent class type
   typedef MeshGeomIntersector<dim, type, Triangle<K>, K::Segment_3, K> parent_type;
 
-  /// Result of intersection function type
-  typedef IntersectionTypeHelper<TreeTypeHelper<Triangle<K>, K>, K::Segment_3>::intersection_type result_type;
+  /// Result of intersection type
+  typedef typename parent_type::result_type result_type;
 
   /// Pair of segments and element id
   typedef std::pair<K::Segment_3, UInt> pair_type;

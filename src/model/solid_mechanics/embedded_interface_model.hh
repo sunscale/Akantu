@@ -37,10 +37,8 @@
 
 #include "solid_mechanics_model.hh"
 #include "mesh.hh"
-#include "parsable.hh"
 
-#include "embedded_interface.hh"
-#include "mesh_geom_container.hh"
+#include "embedded_interface_intersector.hh"
 
 #include <CGAL/Cartesian.h>
 
@@ -73,6 +71,7 @@ class EmbeddedInterfaceModel : public SolidMechanicsModel {
 public:
   /// Constructor
   EmbeddedInterfaceModel(Mesh & mesh,
+                         Mesh & primitive_mesh,
                          UInt spatial_dimension = _all_dimensions,
                          const ID & id = "embedded_interface_model",
                          const MemoryID & memory_id = 0);
@@ -85,19 +84,10 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// Initialise the model
-  virtual void initModel();
+  virtual void initFull(const ModelOptions & options = default_solid_mechanics_model_options);
 
   /// Initialise the materials
   virtual void initMaterials();
-
-  /// Instanciate the interfaces
-  virtual void instanciateInterfaces();
-
-  /// Initialise the interface mesh
-  void initInterface(const std::list<std::pair<K::Segment_3, std::string> > & interface_list);
-
-  /// Assemble the stiffness matrix of the model
-  virtual void assembleStiffnessMatrix();
 
   /// Dump
   virtual dumper::Field * createElementalField(const std::string & field_name,
@@ -133,48 +123,45 @@ protected:
   /// Interface mesh (weak reference)
   Mesh * interface_mesh;
 
+  /// Mesh used to create the CGAL primitives for intersections
+  Mesh & primitive_mesh;
+
   /// Material selector for interface
   MaterialSelector * interface_material_selector;
   
-  /// Geom object to build the interface mesh
-  MeshGeomContainer interface_container;
+  /// Intersector object to build the interface mesh
+  EmbeddedInterfaceIntersector intersector;
 
 };
 
-/// Material selector for EmbeddedInterfaceModel
-template <typename T> class EmbeddedInterfaceMaterialSelector : public DefaultMaterialSelector {};
+template<typename T>
+class InterfaceMeshDataMaterialSelector : public MaterialSelector {};
 
-/// Material selector based on associated material name
 template<>
-class EmbeddedInterfaceMaterialSelector<std::string> : public DefaultMaterialSelector {
-
+class InterfaceMeshDataMaterialSelector<std::string> : public MaterialSelector {
 public:
-  EmbeddedInterfaceMaterialSelector(const std::string & name, const EmbeddedInterfaceModel & model):
-    DefaultMaterialSelector(model.getMaterialByElement()),
-    names(model.getInterfaceMesh().getData<std::string>(name)),
-    model(model)
-  {}
+  InterfaceMeshDataMaterialSelector(const std::string & name, const EmbeddedInterfaceModel & model) :
+    names(model.getInterfaceMesh().getData<std::string>(name)), model(model) {}
 
   UInt operator() (const Element & element) {
     try {
       DebugLevel dbl = debug::getDebugLevel();
       debug::setDebugLevel(dblError);
-
       std::string material_name = names(element.type, element.ghost_type)(element.element);
-
       debug::setDebugLevel(dbl);
 
       return model.getMaterialIndex(material_name);
-    } catch (debug::Exception& e) {
-      /// TODO this returns the last material, which should be a bulk material. Try to find cleaner way
-      return model.getNbMaterials() - 1;
+    } catch (...) {
+      return MaterialSelector::operator()(element);
     }
   }
 
-protected:
+private:
   const ElementTypeMapArray<std::string> & names;
+protected:
   const EmbeddedInterfaceModel & model;
 };
+
 
 __END_AKANTU__
 

@@ -30,24 +30,6 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef _AKANTU_MESH_GEOM_FACTORY_TMPL_HH__
-#define _AKANTU_MESH_GEOM_FACTORY_TMPL_HH__
-
-#include "mesh_geom_factory.hh"
-
-#include "aka_common.hh"
-#include "tree_type_helper.hh"
-#include "triangle.hh"
-#include "geom_helper_functions.hh"
-
-#include <algorithm>
-
-#include <CGAL/Cartesian.h>
-
-/* -------------------------------------------------------------------------- */
-
-__BEGIN_AKANTU__
-
 typedef CGAL::Cartesian<Real> Cartesian;
 
 template<UInt dim, ElementType type, class Primitive, class Kernel>
@@ -101,48 +83,3 @@ void MeshGeomFactory<dim, type, Primitive, Kernel>::constructData() {
   AKANTU_DEBUG_OUT();
 }
 
-// 2D and _triangle_3 implementation
-template<>
-void MeshGeomFactory<2, _triangle_3, Triangle<Cartesian>, Cartesian>::addPrimitive(
-    const Matrix<Real> & node_coordinates,
-    UInt id) {
-  TreeTypeHelper<Triangle<Cartesian>, Cartesian>::point_type a(node_coordinates(0, 0), node_coordinates(1, 0), 0.);
-  TreeTypeHelper<Triangle<Cartesian>, Cartesian>::point_type b(node_coordinates(0, 1), node_coordinates(1, 1), 0.);
-  TreeTypeHelper<Triangle<Cartesian>, Cartesian>::point_type c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
-
-  Triangle<Cartesian> t(a, b, c);
-  t.setId(id);
-  primitive_list.push_back(t);
-}
-
-// 3D and _tetrahedron_4 with triangles implementation
-template<>
-void MeshGeomFactory<3, _tetrahedron_4, Triangle<Cartesian>, Cartesian>::addPrimitive(
-    const Matrix<Real> & node_coordinates,
-    UInt id) {
-  TreeTypeHelper<Triangle<Cartesian>, Cartesian>::point_type
-    a(node_coordinates(0, 0), node_coordinates(1, 0), node_coordinates(2, 0)),
-    b(node_coordinates(0, 1), node_coordinates(1, 1), node_coordinates(2, 1)),
-    c(node_coordinates(0, 2), node_coordinates(1, 2), node_coordinates(2, 2)),
-    d(node_coordinates(0, 3), node_coordinates(1, 3), node_coordinates(2, 3));
-
-  Triangle<Cartesian>
-    t1(a, b, c),
-    t2(b, c, d),
-    t3(c, d, a),
-    t4(d, a, b);
-
-  t1.setId(id);
-  t2.setId(id);
-  t3.setId(id);
-  t4.setId(id);
-
-  primitive_list.push_back(t1);
-  primitive_list.push_back(t2);
-  primitive_list.push_back(t3);
-  primitive_list.push_back(t4);
-}
-
-__END_AKANTU__
-
-#endif // _AKANTU_MESH_GEOM_FACTORY_TMPL_HH__

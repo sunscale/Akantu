@@ -37,6 +37,11 @@
 #include "mesh.hh"
 #include "mesh_geom_abstract.hh"
 #include "tree_type_helper.hh"
+#include "geom_helper_functions.hh"
+
+#include <algorithm>
+
+#include <CGAL/Cartesian.h>
 
 /* -------------------------------------------------------------------------- */
 
@@ -69,7 +74,7 @@ public:
    * @param node_coordinates coordinates of the nodes making up the element
    * @param id element number
    */
-  void addPrimitive(const Matrix<Real> & node_coordinates, UInt id);
+  inline void addPrimitive(const Matrix<Real> & node_coordinates, UInt id);
 
   /// Getter for the AABB tree
   const typename TreeTypeHelper<Primitive, Kernel>::tree & getTree() const { return *data_tree; }
@@ -86,9 +91,10 @@ protected:
   typename TreeTypeHelper<Primitive, Kernel>::container_type primitive_list;
 };
 
+#include "mesh_geom_factory_tmpl.hh"
+#include "mesh_geom_factory_inline_impl.cc"
 
 __END_AKANTU__
 
-#include "mesh_geom_factory_tmpl.hh"
 
 #endif // __AKANTU_MESH_GEOM_FACTORY_HH__
