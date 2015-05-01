@@ -46,42 +46,47 @@
 
 __BEGIN_AKANTU__
   
-typedef CGAL::Cartesian<Real> Kernel;
-
 /* -------------------------------------------------------------------------- */
 
-/// Helper class used ease the use of CGAL AABB tree algorithm
-template<UInt dim, ElementType el_type>
+typedef CGAL::Cartesian<Real> CartKern;
+
+/// Helper class used to ease the use of CGAL AABB tree algorithm
+template<class Primitive, class Kernel>
 struct TreeTypeHelper;
+
 
 /**
  * Macro used to specialize TreeTypeHelper
- * @param dim imension
- * @param el_type element type
  * @param my_primitive associated primitive type
+ * @param my_kernel kernel type
  */
-#define TREE_TYPE_HELPER_MACRO(dim, el_type, my_primitive)  \
-  template<>                                                \
-  struct TreeTypeHelper<dim, el_type> {                     \
-    typedef my_primitive<Kernel> primitive_type;            \
-    typedef my_primitive##_primitive aabb_primitive_type;   \
-    typedef Kernel::Point_3 point_type;                     \
-                                                            \
-    typedef std::list<primitive_type> container_type;       \
-    typedef container_type::iterator iterator;              \
-    typedef CGAL::AABB_traits<Kernel, aabb_primitive_type> aabb_traits_type; \
-    typedef CGAL::AABB_tree<aabb_traits_type> tree;                          \
+#define TREE_TYPE_HELPER_MACRO(my_primitive, my_kernel)                \
+  template<>                                                            \
+  struct TreeTypeHelper<my_primitive<my_kernel>, my_kernel> {            \
+    typedef my_primitive<my_kernel> primitive_type;                       \
+    typedef my_primitive##_primitive aabb_primitive_type;                  \
+    typedef CGAL::Point_3<my_kernel> point_type;                            \
                                                                              \
-    typedef boost::optional<                                                 \
-      tree::Intersection_and_primitive_id<                                   \
-      CGAL::Segment_3<Kernel>                                                \
-      >::Type > linear_intersection;                                         \
+    typedef std::list<primitive_type> container_type;                         \
+    typedef container_type::iterator iterator;                                 \
+    typedef CGAL::AABB_traits<my_kernel, aabb_primitive_type> aabb_traits_type; \
+    typedef CGAL::AABB_tree<aabb_traits_type> tree;                              \
   }
 
-TREE_TYPE_HELPER_MACRO(2, _triangle_3, Triangle);
-TREE_TYPE_HELPER_MACRO(3, _tetrahedron_4, Triangle);
+TREE_TYPE_HELPER_MACRO(Triangle, CartKern);
 
 #undef TREE_TYPE_HELPER_MACRO
+
+/// Helper class used to ease the use of intersections
+template<class TTHelper, class Query>
+struct IntersectionTypeHelper;
+
+template<>
+struct IntersectionTypeHelper<TreeTypeHelper<Triangle<CartKern>, CartKern>, CartKern::Segment_3> {
+  typedef boost::optional<
+    TreeTypeHelper<Triangle<CartKern>, CartKern>::tree::Intersection_and_primitive_id<CartKern::Segment_3>::Type
+  > intersection_type;
+};
 
 __END_AKANTU__
 

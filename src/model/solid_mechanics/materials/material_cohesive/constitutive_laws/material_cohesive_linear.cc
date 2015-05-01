@@ -585,6 +585,8 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
   Vector<Real> normal_opening(spatial_dimension);
   Vector<Real> tangential_opening(spatial_dimension);
 
+  Array<Real> tang_output(spatial_dimension,spatial_dimension);
+
   for (; tangent_it != tangent_end;
        ++tangent_it, ++normal_it, ++opening_it, ++ delta_max_it,
          ++sigma_c_it, ++delta_c_it, ++damage_it, ++contact_opening_it) {
@@ -651,6 +653,20 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
     prov += nn;
     *tangent_it += prov;
 
+    ///to check if the tangential stiffness matrix is symmetric
+    for (UInt h = 0; h < spatial_dimension; ++h){
+      for (UInt l = h; l < spatial_dimension; ++l){
+        if (l > h){
+          if (std::abs((*tangent_it)[spatial_dimension*h+l] - (*tangent_it)[spatial_dimension*l+h]) > 1e-11){
+            std::cout << "non symmetric cohesive matrix" << std::endl;
+            std::cout << "matrix components " << std::endl;
+            for (UInt g = 0; g < spatial_dimension*spatial_dimension; ++g){
+              std::cout << (*tangent_it)[g] << std::endl;
+            }
+          }
+        }
+      }
+    }
   }
   AKANTU_DEBUG_OUT();
 }

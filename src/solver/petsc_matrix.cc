@@ -301,6 +301,7 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
 
   Int * eq_nb_val = dof_synchronizer.getGlobalDOFEquationNumbers().storage();
   UInt nb_global_dofs = dof_synchronizer.getNbGlobalDOFs();
+  Array<Int> index_pair(2);
 
   /// Loop over all the ghost types
   for (ghost_type_t::iterator gt = ghost_type_t::begin(); gt != ghost_type_t::end(); ++gt) {
@@ -342,7 +343,6 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
 	  UInt j_start = 0;
 	  for (UInt j = j_start; j < size_mat; ++j) {
 	    Int c_jcn = local_eq_nb_val[j];
-	    Array<Int> index_pair(2,1);
 	    index_pair(0) = c_irn;
 	    index_pair(1) = c_jcn;
 	    AOApplicationToPetsc(this->petsc_matrix_wrapper->ao, 2, index_pair.storage());
@@ -474,8 +474,8 @@ void PETScMatrix::add(const SparseMatrix & matrix, Real alpha) {
   //		      "The two matrix don't have the same profiles");
 
   Real val_to_add = 0;
+  Array<Int> index(2);
   for (UInt n = 0; n < matrix.getNbNonZero(); ++n) {
-    Array<Int> index(2,1);
     UInt mat_to_add_offset = matrix.getOffset(); 
     index(0) = matrix.getIRN()(n)-mat_to_add_offset;
     index(1) =  matrix.getJCN()(n)-mat_to_add_offset;
@@ -602,7 +602,7 @@ void PETScMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
   UInt nb_component = boundary.getNbComponent();
   UInt size = boundary.getSize();
   Int nb_blocked_local_master_eq_nb = 0;
-  Array<Int> blocked_local_master_eq_nb(this->local_size / nb_component, nb_component);
+  Array<Int> blocked_local_master_eq_nb(this->local_size);
   Int * blocked_lm_eq_nb_ptr  = blocked_local_master_eq_nb.storage();
 
   for (UInt i = 0; i < size; ++i) {
@@ -617,7 +617,7 @@ void PETScMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
       ++eq_nb_val;
     }
   }
-  blocked_local_master_eq_nb.resize(nb_blocked_local_master_eq_nb/nb_component);
+  blocked_local_master_eq_nb.resize(nb_blocked_local_master_eq_nb);
 
 
   ierr = AOApplicationToPetsc(this->petsc_matrix_wrapper->ao, nb_blocked_local_master_eq_nb, blocked_local_master_eq_nb.storage() ); CHKERRXX(ierr);

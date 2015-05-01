@@ -77,7 +77,7 @@ inline bool lessSegmentPair(const std::pair<K::Segment_3, UInt> & a, const std::
 /* -------------------------------------------------------------------------- */
 
 /// Predicate used to eliminate faces of mesh not belonging to a specific element
-template <UInt dim, ElementType el_type>
+template <class Primitive, class Kernel>
 class BelongsNotToElement {
 
 public:
@@ -85,29 +85,12 @@ public:
     el(el)
   {}
 
-  bool operator()(const typename TreeTypeHelper<dim, el_type>::primitive_type & primitive) {
+  bool operator()(const typename TreeTypeHelper<Primitive, Kernel>::primitive_type & primitive) {
     return primitive.id() != el;
   }
 
 protected:
   const UInt el;
-};
-
-/// Predicate used to determine if point is on edge of faces of mesh
-template <UInt dim, ElementType el_type>
-class HasOnEdge {
-
-public:
-  HasOnEdge(const K::Point_3 & point):
-    point(point)
-  {}
-
-  bool operator()(const typename TreeTypeHelper<dim, el_type>::primitive_type & primitive) {
-    return primitive.has_on(point);
-  }
-
-protected:
-  const K::Point_3 & point;
 };
 
 /// Predicate used to determine if two segments are equal

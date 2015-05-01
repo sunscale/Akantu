@@ -1,11 +1,5 @@
-embedded_interface truc [
-  name = reinforcement
-  material = elastic_r
-  points = [[0, 0.25, 0.75], [10, 0.25, 0.75]]
-]
-
 material reinforcement elastic [
-  name = elastic_r
+  name = reinforcement
   E = 210e9
   area = 1e-2
   pre_stress = 1e6
