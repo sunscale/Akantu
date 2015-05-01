@@ -42,6 +42,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include <vector>
+#include "material_damage.hh"
 
 
 #ifndef __AKANTU_WEIGHT_FUNCTION_HH__
