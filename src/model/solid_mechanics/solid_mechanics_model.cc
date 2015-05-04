@@ -1525,15 +1525,14 @@ bool SolidMechanicsModel::isInternal(const std::string & field_name,
 /* -------------------------------------------------------------------------- */
 
 ElementTypeMap<UInt> SolidMechanicsModel::getInternalDataPerElem(const std::string & field_name,
-								const ElementKind & element_kind,
-                const std::string & fe_engine_id){
+								const ElementKind & element_kind){
 
 
   if (!(this->isInternal(field_name,element_kind))) AKANTU_EXCEPTION("unknown internal " << field_name);
 
   for (UInt m = 0; m < materials.size() ; ++m) {
     if (materials[m]->isInternal(field_name, element_kind))
-      return materials[m]->getInternalDataPerElem(field_name,element_kind,fe_engine_id);
+      return materials[m]->getInternalDataPerElem(field_name,element_kind);
   }
 
   return ElementTypeMap<UInt>();
@@ -1583,15 +1582,15 @@ dumper::Field * SolidMechanicsModel
 ::createElementalField(const std::string & field_name,
 		       const std::string & group_name,
 		       bool padding_flag,
-		       const ElementKind & kind,
-		       const std::string & fe_engine_id){
+           const UInt & spatial_dimension,
+		       const ElementKind & kind) {
 
   dumper::Field * field = NULL;
 
   if(field_name == "partitions")
-    field = mesh.createElementalField<UInt, dumper::ElementPartitionField>(mesh.getConnectivities(),group_name,this->spatial_dimension,kind);
+    field = mesh.createElementalField<UInt, dumper::ElementPartitionField>(mesh.getConnectivities(),group_name,spatial_dimension,kind);
   else if(field_name == "material_index")
-    field = mesh.createElementalField<UInt, Vector, dumper::ElementalField >(material_index,group_name,this->spatial_dimension,kind);
+    field = mesh.createElementalField<UInt, Vector, dumper::ElementalField >(material_index,group_name,spatial_dimension,kind);
   else {
     // this copy of field_name is used to compute derivated data such as
     // strain and von mises stress that are based on grad_u and stress
@@ -1608,11 +1607,11 @@ dumper::Field * SolidMechanicsModel
     bool is_internal = this->isInternal(field_name_copy,kind);
 
     if (is_internal) {
-      ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name_copy,kind,fe_engine_id);
+      ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name_copy,kind);
       ElementTypeMapArray<Real> & internal_flat = this->flattenInternal(field_name_copy,kind);
       field = mesh.createElementalField<Real, dumper::InternalMaterialField>(internal_flat,
 									     group_name,
-									     this->spatial_dimension,kind,nb_data_per_elem);
+									     spatial_dimension,kind,nb_data_per_elem);
       if (field_name == "strain"){
 	dumper::ComputeStrain<false> * foo = new dumper::ComputeStrain<false>(*this);
 	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
@@ -1633,12 +1632,12 @@ dumper::Field * SolidMechanicsModel
       //treat the paddings
       if (padding_flag){
 	if (field_name == "stress"){
-	  if (this->spatial_dimension == 2) {
+	  if (spatial_dimension == 2) {
 	    dumper::StressPadder<2> * foo = new dumper::StressPadder<2>(*this);
 	    field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
 	  }
 	} else if (field_name == "strain" || field_name == "Green strain"){
-	  if (this->spatial_dimension == 2) {
+	  if (spatial_dimension == 2) {
 	    dumper::StrainPadder<2> * foo = new dumper::StrainPadder<2>(*this);
 	    field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
 	  }

@@ -77,8 +77,8 @@ struct StressSolution : public BC::Neumann::FromHigherDim {
 /* -------------------------------------------------------------------------- */
 
 int main (int argc, char * argv[]) {
-  debug::setDebugLevel(dblWarning);
   initialize("prestress.dat", argc, argv);
+  debug::setDebugLevel(dblError);
 
   Math::setTolerance(1e-6);
 
@@ -90,7 +90,14 @@ int main (int argc, char * argv[]) {
   mesh.read("embedded_mesh_prestress.msh");
   mesh.createGroupsFromMeshData<std::string>("physical_names");
 
-  EmbeddedInterfaceModel model(mesh, dim);
+  Mesh reinforcement_mesh(dim, "reinforcement_mesh");
+  try {
+    reinforcement_mesh.read("embedded_mesh_prestress_reinforcement.msh");
+  } catch(debug::Exception & e) {}
+
+  reinforcement_mesh.createGroupsFromMeshData<std::string>("physical_names");
+
+  EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
   model.initFull(SolidMechanicsModelOptions(_static));
 
 /* -------------------------------------------------------------------------- */
@@ -103,7 +110,7 @@ int main (int argc, char * argv[]) {
    * a = 1 m
    */
 
-  Real steel_area = model.getMaterial("elastic_r").getParam<Real>("area");
+  Real steel_area = model.getMaterial("reinforcement").getParam<Real>("area");
   Real pre_stress = 1e6;
   Real stress_norm = 0.;
 
@@ -206,7 +213,9 @@ int main (int argc, char * argv[]) {
     res_sum += std::abs(steel_residual(i));
   }
 
-  if (std::abs(res_sum - stress_norm) / stress_norm > 1e-3)
+  Real relative_error = std::abs(res_sum - stress_norm) / stress_norm;
+
+  if (relative_error > 1e-3)
     return EXIT_FAILURE;
 
   finalize();

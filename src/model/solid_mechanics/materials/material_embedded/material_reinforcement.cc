@@ -694,6 +694,70 @@ Real MaterialReinforcement<dim>::getEnergy(std::string id) {
   return 0;
 }
 
+// Author is Nicolas Richart, see material.cc
+template<UInt dim>
+void MaterialReinforcement<dim>::flattenInternal(const std::string & field_id,
+                                                 ElementTypeMapArray<Real> & internal_flat,
+                                                 const GhostType ghost_type,
+                                                 ElementKind element_kind) {
+  AKANTU_DEBUG_IN();
+
+  typedef ElementTypeMapArray<UInt>::type_iterator iterator;
+  iterator tit = this->element_filter.firstType(1, ghost_type, element_kind);
+  iterator end = this->element_filter.lastType(1, ghost_type, element_kind);
+
+  for (; tit != end; ++tit) {
+    ElementType type = *tit;
+
+    try {
+      __attribute__((unused)) const Array<Real> & src_vect
+        = this->getArray(field_id,type,ghost_type);
+
+    } catch(debug::Exception & e) {
+      continue;
+    }
+
+    const Array<Real> & src_vect = this->getArray(field_id,type,ghost_type);
+    const Array<UInt> & filter   = this->element_filter(type,ghost_type);
+
+    // total number of elements for a given type
+    UInt nb_element = this->model->getInterfaceMesh().getNbElement(type,ghost_type);
+    // number of filtered elements
+    UInt nb_element_src = filter.getSize();
+    // number of quadrature points per elem
+    UInt nb_quad_per_elem = 0;
+    // number of data per quadrature point
+    UInt nb_data_per_quad = src_vect.getNbComponent();
+
+    if (!internal_flat.exists(type,ghost_type)) {
+      internal_flat.alloc(nb_element*nb_quad_per_elem,nb_data_per_quad,type,ghost_type);
+    }
+
+    if (nb_element_src == 0) continue;
+    nb_quad_per_elem = (src_vect.getSize()/nb_element_src);
+
+    // number of data per element
+    UInt nb_data = nb_quad_per_elem * src_vect.getNbComponent();
+
+    Array<Real> & dst_vect = internal_flat(type,ghost_type);
+    dst_vect.resize(nb_element*nb_quad_per_elem);
+
+    Array<UInt>::const_scalar_iterator it  = filter.begin();
+    Array<UInt>::const_scalar_iterator end = filter.end();
+    Array<Real>::const_vector_iterator it_src =
+      src_vect.begin_reinterpret(nb_data,nb_element_src);
+
+    Array<Real>::vector_iterator it_dst =
+      dst_vect.begin_reinterpret(nb_data,nb_element);
+
+    for (; it != end ; ++it,++it_src) {
+      it_dst[*it] = *it_src;
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
 /* -------------------------------------------------------------------------- */
 
 INSTANSIATE_MATERIAL(MaterialReinforcement);

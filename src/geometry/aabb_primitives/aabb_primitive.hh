@@ -39,8 +39,6 @@
 
 __BEGIN_AKANTU__
 
-typedef CGAL::Cartesian<Real> Kernel;
-
 /**
  * This macro defines a class that is used in the CGAL AABB tree algorithm.
  * All the `typedef`s and methods are required by the AABB module.
@@ -50,15 +48,16 @@ typedef CGAL::Cartesian<Real> Kernel;
  *  - the geometric primitive of the element
  *
  *  @param name the name of the primitive type
+ *  @param kernel the name of the kernel used
  */
-#define AKANTU_AABB_CLASS(name) \
+#define AKANTU_AABB_CLASS(name, kernel) \
   class name##_primitive {      \
-    typedef std::list< name<Kernel> >::iterator Iterator; \
+    typedef std::list< name<kernel> >::iterator Iterator; \
                                                           \
   public:                                                 \
     typedef UInt Id;                                      \
-    typedef Kernel::Point_3 Point;                        \
-    typedef Kernel::name##_3 Datum;                       \
+    typedef kernel::Point_3 Point;                        \
+    typedef kernel::name##_3 Datum;                       \
                                                           \
   public:                                                 \
     name##_primitive() : meshId(0), primitive() {}        \
@@ -71,14 +70,13 @@ typedef CGAL::Cartesian<Real> Kernel;
                                                                           \
   protected:                                                              \
     Id meshId;                                                            \
-    name<Kernel> primitive;                                               \
+    name<kernel> primitive;                                               \
                                                                           \
   }
 
 // If the primitive is supported by CGAL::intersection() then the 
 // implementation process is really easy with this macro
-AKANTU_AABB_CLASS(Triangle);
-AKANTU_AABB_CLASS(Tetrahedron);
+AKANTU_AABB_CLASS(Triangle, CGAL::Cartesian<Real>);
 
 #undef AKANTU_AABB_CLASS
 

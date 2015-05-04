@@ -1,11 +1,5 @@
-embedded_interface truc [
-  name = reinforcement
-  material = elastic_r
-  points = [[0, 0.5], [1, 0.5]]
-]
-
 material reinforcement elastic [
-  name = elastic_r
+  name = reinforcement
   E = 210e9
   area = 0.1
 ]

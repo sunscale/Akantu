@@ -37,10 +37,16 @@ package_declare(CGAL EXTERNAL
 package_declare_sources(CGAL
   geometry/mesh_geom_abstract.hh
   geometry/mesh_geom_abstract.cc
+
   geometry/mesh_geom_factory.hh
   geometry/mesh_geom_factory_tmpl.hh
-  geometry/mesh_geom_container.hh
-  geometry/mesh_geom_container.cc
+  geometry/mesh_geom_factory_inline_impl.cc
+
+  geometry/mesh_geom_intersector.hh
+  geometry/mesh_geom_intersector_tmpl.hh
+
+  geometry/mesh_segment_intersector.hh
+  geometry/mesh_segment_intersector_tmpl.hh
 
   geometry/tree_type_helper.hh
   geometry/geom_helper_functions.hh

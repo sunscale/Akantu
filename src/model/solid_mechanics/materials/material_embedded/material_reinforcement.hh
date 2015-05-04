@@ -95,6 +95,11 @@ public:
 
   virtual Real getEnergy(std::string id);
 
+  virtual void flattenInternal(const std::string & field_id,
+		                           ElementTypeMapArray<Real> & internal_flat,
+                               const GhostType ghost_type = _not_ghost,
+                               ElementKind element_kind = _ek_not_defined);
+
   /* ------------------------------------------------------------------------ */
   /* Protected methods                                                        */
   /* ------------------------------------------------------------------------ */
