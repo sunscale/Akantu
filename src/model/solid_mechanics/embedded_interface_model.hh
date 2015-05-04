@@ -57,7 +57,7 @@ typedef CGAL::Cartesian<Real> K;
  *
  * In addition to the SolidMechanicsModel properties, this model has
  * a mesh of the 1D elements embedded in the model, and an instance of the
- * MeshGeomContainer class for the computation of the intersections of the
+ * EmbeddedInterfaceIntersector class for the computation of the intersections of the
  * 1D elements with the background (bulk) mesh.
  */
 class EmbeddedInterfaceModel : public SolidMechanicsModel {
@@ -69,7 +69,12 @@ class EmbeddedInterfaceModel : public SolidMechanicsModel {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  /// Constructor
+  /**
+   * @brief Constructor
+   *
+   * @param mesh main mesh (concrete)
+   * @param primitive_mesh mesh of the embedded reinforcement
+   */
   EmbeddedInterfaceModel(Mesh & mesh,
                          Mesh & primitive_mesh,
                          UInt spatial_dimension = _all_dimensions,
@@ -89,21 +94,17 @@ public:
   /// Initialise the materials
   virtual void initMaterials();
 
-  /// Dump
-  virtual dumper::Field * createElementalField(const std::string & field_name,
-					       const std::string & group_name,
-					       bool padding_flag,
-					       const ElementKind & kind,
-                 const std::string & fe_engine_id = "");
-
 #ifndef SWIG
   /// give the amount of data per element
   ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-					     const ElementKind & kind,
-               const std::string & fe_engine_id = "");
+                                              const ElementKind & kind);
 #endif
 
-
+  virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
+                                         const std::string & field_id,
+                                         const std::string & group_name,
+                                         const ElementKind & element_kind,
+                                         bool padding_flag);
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -135,33 +136,12 @@ protected:
 };
 
 template<typename T>
-class InterfaceMeshDataMaterialSelector : public MaterialSelector {};
-
-template<>
-class InterfaceMeshDataMaterialSelector<std::string> : public MaterialSelector {
+class InterfaceMeshDataMaterialSelector : public ElementDataMaterialSelector<T> {
 public:
-  InterfaceMeshDataMaterialSelector(const std::string & name, const EmbeddedInterfaceModel & model) :
-    names(model.getInterfaceMesh().getData<std::string>(name)), model(model) {}
-
-  UInt operator() (const Element & element) {
-    try {
-      DebugLevel dbl = debug::getDebugLevel();
-      debug::setDebugLevel(dblError);
-      std::string material_name = names(element.type, element.ghost_type)(element.element);
-      debug::setDebugLevel(dbl);
-
-      return model.getMaterialIndex(material_name);
-    } catch (...) {
-      return MaterialSelector::operator()(element);
-    }
-  }
-
-private:
-  const ElementTypeMapArray<std::string> & names;
-protected:
-  const EmbeddedInterfaceModel & model;
+  InterfaceMeshDataMaterialSelector(const std::string & name, const EmbeddedInterfaceModel & model, UInt first_index = 1) :
+    ElementDataMaterialSelector<T>(model.getInterfaceMesh().getData<T>(name), model, first_index)
+  {}
 };
-
 
 __END_AKANTU__
 

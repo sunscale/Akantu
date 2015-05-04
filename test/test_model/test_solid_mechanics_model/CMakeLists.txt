@@ -222,3 +222,10 @@ register_test(test_solid_mechanics_model_orthotropic
   DIRECTORIES_TO_CREATE paraview
   PACKAGE core
   )
+
+#===============================================================================
+register_test(test_material_selector
+  SOURCES test_material_selector.cc
+  FILES_TO_COPY material_selector.dat material_selector.msh
+  PACKAGE core
+  )
