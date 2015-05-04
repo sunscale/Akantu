@@ -69,7 +69,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
         displacement_tmp = new Array<Real>(*(this->displacement));
       } else {
         (*displacement_tmp).resize(this->displacement->getSize());
-        //        displacement_tmp->resize(this->displacement->getSize());
+        //displacement_tmp->resize(this->displacement->getSize());
         (*displacement_tmp).copy(*(this->displacement));
         //displacement_tmp->copy(*(this->displacement));
       }
