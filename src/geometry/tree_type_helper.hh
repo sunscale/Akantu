@@ -54,13 +54,18 @@ typedef CGAL::Cartesian<Real> CartKern;
 template<class Primitive, class Kernel>
 struct TreeTypeHelper;
 
+/// Helper class used to ease the use of intersections
+template<class TTHelper, class Query>
+struct IntersectionTypeHelper;
+
 
 /**
  * Macro used to specialize TreeTypeHelper
  * @param my_primitive associated primitive type
+ * @param my_query query_type
  * @param my_kernel kernel type
  */
-#define TREE_TYPE_HELPER_MACRO(my_primitive, my_kernel)                \
+#define TREE_TYPE_HELPER_MACRO(my_primitive, my_query, my_kernel)      \
   template<>                                                            \
   struct TreeTypeHelper<my_primitive<my_kernel>, my_kernel> {            \
     typedef my_primitive<my_kernel> primitive_type;                       \
@@ -71,22 +76,18 @@ struct TreeTypeHelper;
     typedef container_type::iterator iterator;                                 \
     typedef CGAL::AABB_traits<my_kernel, aabb_primitive_type> aabb_traits_type; \
     typedef CGAL::AABB_tree<aabb_traits_type> tree;                              \
+  };                                                                              \
+                                                                                   \
+  template<>                                                                        \
+  struct IntersectionTypeHelper<TreeTypeHelper<my_primitive<my_kernel>, my_kernel>, my_query> {             \
+    typedef boost::optional<                                                                                 \
+      TreeTypeHelper<my_primitive<my_kernel>, my_kernel>::tree::Intersection_and_primitive_id<my_query>::Type \
+    > intersection_type;                                                                                       \
   }
 
-TREE_TYPE_HELPER_MACRO(Triangle, CartKern);
+TREE_TYPE_HELPER_MACRO(Triangle, CartKern::Segment_3, CartKern);
 
 #undef TREE_TYPE_HELPER_MACRO
-
-/// Helper class used to ease the use of intersections
-template<class TTHelper, class Query>
-struct IntersectionTypeHelper;
-
-template<>
-struct IntersectionTypeHelper<TreeTypeHelper<Triangle<CartKern>, CartKern>, CartKern::Segment_3> {
-  typedef boost::optional<
-    TreeTypeHelper<Triangle<CartKern>, CartKern>::tree::Intersection_and_primitive_id<CartKern::Segment_3>::Type
-  > intersection_type;
-};
 
 __END_AKANTU__
 
