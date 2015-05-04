@@ -129,30 +129,8 @@ void EmbeddedInterfaceModel::initMaterials() {
   SolidMechanicsModel::initMaterials();
 }
 
-dumper::Field * EmbeddedInterfaceModel::createElementalField(const std::string & field_name,
-    const std::string & group_name,
-    bool padding_flag,
-    const ElementKind & kind,
-    const std::string & fe_engine_id) {
-
-  if (field_name == "stress_embedded") {
-    return SolidMechanicsModel::createElementalField(field_name,
-                                                     group_name,
-                                                     padding_flag,
-                                                     kind,
-                                                     "EmbeddedInterfaceFEEngine");
-  } else {
-    return SolidMechanicsModel::createElementalField(field_name,
-                                                     group_name,
-                                                     padding_flag,
-                                                     kind,
-                                                     fe_engine_id);
-  }
-}
-
 ElementTypeMap<UInt> EmbeddedInterfaceModel::getInternalDataPerElem(const std::string & field_name,
-                                                                    const ElementKind & kind,
-                                                                    const std::string & fe_engine_id) {
+                                                                    const ElementKind & kind) {
   if (!(this->isInternal(field_name,kind))) AKANTU_EXCEPTION("unknown internal " << field_name);
 
   for (UInt m = 0; m < materials.size() ; ++m) {
@@ -174,13 +152,34 @@ ElementTypeMap<UInt> EmbeddedInterfaceModel::getInternalDataPerElem(const std::s
       }
 
       if (mat == NULL && field_name != "stress_embedded")
-        return materials[m]->getInternalDataPerElem(field_name,kind,fe_engine_id);
+        return materials[m]->getInternalDataPerElem(field_name,kind);
       else if (mat != NULL && field_name == "stress_embedded")
-        return mat->getInternalDataPerElem(field_name, kind, fe_engine_id);
+        return mat->getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
     }
   }
 
   return ElementTypeMap<UInt>();
+}
+
+void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumper_name,
+                                                       const std::string & field_id,
+                                                       const std::string & group_name,
+                                                       const ElementKind & element_kind,
+                                                       bool padding_flag) {
+#ifdef AKANTU_USE_IOHELPER
+  dumper::Field * field = NULL;
+
+  if (field_id == "stress_embedded")
+    field = this->createElementalField(field_id, group_name, padding_flag, 1, element_kind);
+  else
+    SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, field_id, group_name, element_kind, padding_flag);
+
+  if (field) {
+    DumperIOHelper & dumper = mesh.getGroupDumper(dumper_name,group_name);
+    Model::addDumpGroupFieldToDumper(field_id,field,dumper);
+  }
+
+#endif
 }
 
 __END_AKANTU__
