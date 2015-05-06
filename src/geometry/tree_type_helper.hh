@@ -76,9 +76,10 @@ struct IntersectionTypeHelper;
     typedef container_type::iterator iterator;                                 \
     typedef CGAL::AABB_traits<my_kernel, aabb_primitive_type> aabb_traits_type; \
     typedef CGAL::AABB_tree<aabb_traits_type> tree;                              \
-  };                                                                              \
-                                                                                   \
-  template<>                                                                        \
+    typedef tree::Primitive_id id_type;                                           \
+  };                                                                               \
+                                                                                    \
+  template<>                                                                         \
   struct IntersectionTypeHelper<TreeTypeHelper<my_primitive<my_kernel>, my_kernel>, my_query> {             \
     typedef boost::optional<                                                                                 \
       TreeTypeHelper<my_primitive<my_kernel>, my_kernel>::tree::Intersection_and_primitive_id<my_query>::Type \

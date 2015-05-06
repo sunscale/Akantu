@@ -28,7 +28,19 @@
  *
  */
 
+#ifndef __AKANTU_MESH_GEOM_FACTORY_TMPL_HH__
+#define __AKANTU_MESH_GEOM_FACTORY_TMPL_HH__
+
 /* -------------------------------------------------------------------------- */
+
+#include "aka_common.hh"
+#include "mesh_geom_factory.hh"
+
+#include <CGAL/Cartesian.h>
+
+/* -------------------------------------------------------------------------- */
+
+__BEGIN_AKANTU__
 
 typedef CGAL::Cartesian<Real> Cartesian;
 
@@ -83,3 +95,59 @@ void MeshGeomFactory<dim, type, Primitive, Kernel>::constructData() {
   AKANTU_DEBUG_OUT();
 }
 
+template<UInt dim, ElementType type, class Primitive, class Kernel>
+void MeshGeomFactory<dim, type, Primitive, Kernel>::addPrimitive(const Matrix<Real> & node_coordinates,
+                                                                 UInt id) {
+  this->addPrimitive(node_coordinates, id, this->primitive_list);
+}
+
+// 2D and _triangle_3 implementation
+template<>
+inline void MeshGeomFactory<2, _triangle_3, Triangle<Cartesian>, Cartesian>::addPrimitive(
+    const Matrix<Real> & node_coordinates,
+    UInt id,
+    TreeTypeHelper<Triangle<Cartesian>, Cartesian>::container_type & list) {
+
+  TreeTypeHelper<Triangle<Cartesian>, Cartesian>::point_type
+    a(node_coordinates(0, 0), node_coordinates(1, 0), 0.),
+    b(node_coordinates(0, 1), node_coordinates(1, 1), 0.),
+    c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
+
+  Triangle<Cartesian> t(a, b, c);
+  t.setId(id);
+  list.push_back(t);
+}
+
+// 3D and _tetrahedron_4 with triangles implementation
+template<>
+inline void MeshGeomFactory<3, _tetrahedron_4, Triangle<Cartesian>, Cartesian>::addPrimitive(
+    const Matrix<Real> & node_coordinates,
+    UInt id,
+    TreeTypeHelper<Triangle<Cartesian>, Cartesian>::container_type & list) {
+
+  TreeTypeHelper<Triangle<Cartesian>, Cartesian>::point_type
+    a(node_coordinates(0, 0), node_coordinates(1, 0), node_coordinates(2, 0)),
+    b(node_coordinates(0, 1), node_coordinates(1, 1), node_coordinates(2, 1)),
+    c(node_coordinates(0, 2), node_coordinates(1, 2), node_coordinates(2, 2)),
+    d(node_coordinates(0, 3), node_coordinates(1, 3), node_coordinates(2, 3));
+
+  Triangle<Cartesian>
+    t1(a, b, c),
+    t2(b, c, d),
+    t3(c, d, a),
+    t4(d, a, b);
+
+  t1.setId(id);
+  t2.setId(id);
+  t3.setId(id);
+  t4.setId(id);
+
+  list.push_back(t1);
+  list.push_back(t2);
+  list.push_back(t3);
+  list.push_back(t4);
+}
+
+__END_AKANTU__
+
+#endif // __AKANTU_MESH_GEOM_FACTORY_TMPL_HH__
