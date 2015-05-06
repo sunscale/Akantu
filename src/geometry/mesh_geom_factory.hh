@@ -68,13 +68,23 @@ public:
   virtual void constructData();
 
   /**
-   * @brief Construct a primitive and add it to the list
+   * @brief Construct a primitive and add it to a list of primitives
    *
    * This function needs to be specialized for every type that is wished to be supported.
    * @param node_coordinates coordinates of the nodes making up the element
    * @param id element number
+   * @param list the primitive list (not used inside MeshGeomFactory)
    */
-  inline void addPrimitive(const Matrix<Real> & node_coordinates, UInt id);
+  inline void addPrimitive(
+      const Matrix<Real> & node_coordinates,
+      UInt id,
+      typename TreeTypeHelper<Primitive, Kernel>::container_type & list
+  );
+
+  inline void addPrimitive(
+      const Matrix<Real> & node_coordinates,
+      UInt id
+  );
 
   /// Getter for the AABB tree
   const typename TreeTypeHelper<Primitive, Kernel>::tree & getTree() const { return *data_tree; }
@@ -91,10 +101,9 @@ protected:
   typename TreeTypeHelper<Primitive, Kernel>::container_type primitive_list;
 };
 
-#include "mesh_geom_factory_tmpl.hh"
-#include "mesh_geom_factory_inline_impl.cc"
-
 __END_AKANTU__
+
+#include "mesh_geom_factory_tmpl.hh"
 
 
 #endif // __AKANTU_MESH_GEOM_FACTORY_HH__

@@ -141,63 +141,132 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
                                                         const K::Segment_3 & query) {
   AKANTU_DEBUG_IN();
   
-  typename std::list<result_type>::const_iterator
-    it = intersections.begin(),
-    end = intersections.end();
+  /*
+   * Number of intersections = 0 means
+   *
+   * - query is completely outside mesh
+   * - query is completely inside primitive
+   *
+   * We try to determine the case and still construct the segment list
+   */
+  if (intersections.size() == 0) {
+    // We look at all the primitives intersected by two rays
+    // If there is one primitive in common, then query is inside
+    // that primitive
+    K::Ray_3 ray1(query.source(), query.target());
+    K::Ray_3 ray2(query.target(), query.source());
 
-  for(; it != end ; ++it) {
-    UInt el = (*it)->second;
+    std::list<UInt> ray1_results, ray2_results;
 
-    // Result of intersection is a segment
-    if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&((*it)->first))) {
-      // Check if the segment was alread created
-      if (std::find_if(segments.begin(), segments.end(), IsSameSegment(*segment)) == segments.end()) {
-        segments.push_back(std::make_pair(*segment, el));
+    this->factory.getTree().all_intersected_primitives(ray1, std::back_inserter(ray1_results));
+    this->factory.getTree().all_intersected_primitives(ray2, std::back_inserter(ray2_results));
+
+    std::set<UInt> id_set;
+    bool inside_primitive = false;
+    UInt primitive_id = 0;
+
+    std::list<UInt>::iterator
+      ray1_it  = ray1_results.begin(),
+      ray2_it  = ray2_results.begin(),
+      ray1_end = ray1_results.end(),
+      ray2_end = ray2_results.end();
+
+    // Populate the set with elements of first list
+    for (; ray1_it != ray1_end ; ++ray1_it)
+      id_set.insert(id_set.begin(), *ray1_it);
+
+    // Test if first list contains an element of second list
+    for (; ray2_it != ray2_end && !inside_primitive ; ++ray2_it) {
+      if (id_set.find(*ray2_it) != id_set.end()) {
+        inside_primitive = true;
+        primitive_id = *ray2_it;
       }
     }
 
-    // Result of intersection is a point
-    else if (const K::Point_3 * point = boost::get<K::Point_3>(&((*it)->first))) {
-      // We only want to treat points differently if we're in 3D with Tetra4 elements
-      // This should be optimized by compilator
-      if (dim == 3 && type == _tetrahedron_4) {
-        UInt nb_facets = Mesh::getNbFacetsPerElement(type);
-        TreeTypeHelper<Triangle<K>, K>::container_type facets(nb_facets);
+    if (inside_primitive) {
+      segments.push_back(std::make_pair(query, primitive_id));
+    }
+  }
 
-        // TODO Use mesh facets instead of this (should make O(n²) go to O(n))
-        // Filtering facets of current element
-        std::remove_copy_if(this->factory.getPrimitiveList().begin(),
-                            this->factory.getPrimitiveList().end(),
-                            facets.begin(),
-                            BelongsNotToElement<Triangle<K>, K>(el));
+  else {
+    typename std::list<result_type>::const_iterator
+      it = intersections.begin(),
+         end = intersections.end();
 
-        // Local tree
-        TreeTypeHelper<Triangle<K>, K>::tree * local_tree =
-          new TreeTypeHelper<Triangle<K>, K>::tree(facets.begin(), facets.end());
+    for(; it != end ; ++it) {
+      UInt el = (*it)->second;
 
-        // Compute local intersections (with current element)
-        std::list<result_type> local_intersections;
-        local_tree->all_intersections(query, std::back_inserter(local_intersections));
+      // Result of intersection is a segment
+      if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&((*it)->first))) {
+        // Check if the segment was alread created
+        if (std::find_if(segments.begin(), segments.end(), IsSameSegment(*segment)) == segments.end()) {
+          segments.push_back(std::make_pair(*segment, el));
+        }
+      }
 
-        typename std::list<result_type>::const_iterator
-          local_it = local_intersections.begin(),
-          local_end = local_intersections.end();
+      // Result of intersection is a point
+      else if (const K::Point_3 * point = boost::get<K::Point_3>(&((*it)->first))) {
+        // We only want to treat points differently if we're in 3D with Tetra4 elements
+        // This should be optimized by compilator
+        if (dim == 3 && type == _tetrahedron_4) {
+          UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+          TreeTypeHelper<Triangle<K>, K>::container_type facets;
 
-        for (; local_it != local_end ; ++local_it) {
-          if (const K::Point_3 * local_point = boost::get<K::Point_3>(&((*local_it)->first))) {
-            if (!comparePoints(*point, *local_point)) {
-              K::Segment_3 seg(*point, *local_point);
-              if(std::find_if(segments.begin(), segments.end(), IsSameSegment(seg)) == segments.end())
-                segments.push_back(std::make_pair(seg, el));
+          const Array<Real> & nodes = this->mesh.getNodes();
+          Array<UInt>::const_vector_iterator
+            connectivity_vec = this->mesh.getConnectivity(type).begin(nb_nodes_per_element);
+
+          const Vector<UInt> & el_connectivity = connectivity_vec[el];
+
+          Matrix<Real> node_coordinates(dim, nb_nodes_per_element);
+          for (UInt i = 0 ; i < nb_nodes_per_element ; i++)
+            for (UInt j = 0 ; j < dim ; j++)
+              node_coordinates(j, i) = nodes(el_connectivity(i), j);
+
+          this->factory.addPrimitive(node_coordinates, el, facets);
+
+          // Local tree
+          TreeTypeHelper<Triangle<K>, K>::tree * local_tree =
+            new TreeTypeHelper<Triangle<K>, K>::tree(facets.begin(), facets.end());
+
+          // Compute local intersections (with current element)
+          std::list<result_type> local_intersections;
+          local_tree->all_intersections(query, std::back_inserter(local_intersections));
+
+          if (local_intersections.size() == 1) {
+            TreeTypeHelper<Triangle<K>, K>::point_type
+              a(node_coordinates(0, 0), node_coordinates(1, 0), node_coordinates(2, 0)),
+              b(node_coordinates(0, 1), node_coordinates(1, 1), node_coordinates(2, 1)),
+              c(node_coordinates(0, 2), node_coordinates(1, 2), node_coordinates(2, 2)),
+              d(node_coordinates(0, 3), node_coordinates(1, 3), node_coordinates(2, 3));
+            K::Tetrahedron_3 tetra(a, b, c, d);
+            K::Point_3 inside_point =
+              (tetra.has_on_bounded_side(query.source())) ? query.source() : query.target();
+            K::Segment_3 seg(inside_point, *point);
+            segments.push_back(std::make_pair(seg, el));
+          }
+
+          else {
+            typename std::list<result_type>::const_iterator
+              local_it = local_intersections.begin(),
+                       local_end = local_intersections.end();
+
+            for (; local_it != local_end ; ++local_it) {
+              if (const K::Point_3 * local_point = boost::get<K::Point_3>(&((*local_it)->first))) {
+                if (!comparePoints(*point, *local_point)) {
+                  K::Segment_3 seg(*point, *local_point);
+                  if(std::find_if(segments.begin(), segments.end(), IsSameSegment(seg)) == segments.end())
+                    segments.push_back(std::make_pair(seg, el));
+                }
+              }
             }
           }
-        }
 
-        delete local_tree;
+          delete local_tree;
+        }
       }
     }
   }
-  
   AKANTU_DEBUG_OUT();
 }
 

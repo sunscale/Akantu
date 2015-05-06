@@ -52,6 +52,8 @@ struct StressSolution : public BC::Neumann::FromHigherDim {
     M(M), I(I), yg(yg), pre_stress(pre_stress)
   {}
 
+  virtual ~StressSolution() {}
+
   void operator()(const QuadraturePoint & quad_point,
                           Vector<Real> & dual,
                           const Vector<Real> & coord,
