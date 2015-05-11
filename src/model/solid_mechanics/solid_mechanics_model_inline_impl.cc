@@ -555,7 +555,7 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
     AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been implemented!");
   }
 
-  UInt iter = 0;
+  this->n_iter = 0;
   bool converged = false;
   error = 0.;
   if(criteria == _scc_residual) {
@@ -578,9 +578,9 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
     if(criteria == _scc_increment && !converged) this->updateResidual();
     //this->dump();
 
-    iter++;
+    this->n_iter++;
     AKANTU_DEBUG_INFO("[" << criteria << "] Convergence iteration "
-                      << std::setw(std::log10(max_iteration)) << iter
+                      << std::setw(std::log10(max_iteration)) << this->n_iter
                       << ": error " << error << (converged ? " < " : " > ") << tolerance);
 
     switch (cmethod) {
@@ -596,18 +596,19 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
     }
 
 
-  } while (!converged && iter < max_iteration);
+  } while (!converged && this->n_iter < max_iteration);
 
   // this makes sure that you have correct strains and stresses after the solveStep function (e.g., for dumping)
   if(criteria == _scc_increment) this->updateResidual();
 
   if (converged) {
     EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
-  } else if(iter == max_iteration) {
+  } else if(this->n_iter == max_iteration) {
     AKANTU_DEBUG_WARNING("[" << criteria << "] Convergence not reached after "
-                         << std::setw(std::log10(max_iteration)) << iter <<
-                         " iteration" << (iter == 1 ? "" : "s") << "!" << std::endl);
+                         << std::setw(std::log10(max_iteration)) << this->n_iter <<
+                         " iteration" << (this->n_iter == 1 ? "" : "s") << "!" << std::endl);
   }
 
   return converged;
 }
+

@@ -46,8 +46,8 @@ typedef K::Point_3 Point;
 typedef K::Segment_3 Segment;
 
 int main(int argc, char * argv[]) {
-  debug::setDebugLevel(dblWarning);
   initialize("", argc, argv);
+  debug::setDebugLevel(dblWarning);
 
   Point a(0, 1, 0);
   Point b(0, 1, 1);

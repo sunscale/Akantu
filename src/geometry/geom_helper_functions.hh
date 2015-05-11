@@ -43,12 +43,11 @@ __BEGIN_AKANTU__
 
 typedef CGAL::Cartesian<Real> K;
 
-#define EPS 1e-10
-
 /// Fuzzy compare of two points
 inline bool comparePoints(const K::Point_3 & a, const K::Point_3 & b) {
-  Math::setTolerance(EPS);
-  return Math::are_float_equal(a.x(), b.x()) && Math::are_float_equal(a.y(), b.y());
+  return Math::are_float_equal(a.x(), b.x()) &&
+         Math::are_float_equal(a.y(), b.y()) &&
+         Math::are_float_equal(a.z(), b.z());
 }
 
 /// Fuzzy compare of two segments
