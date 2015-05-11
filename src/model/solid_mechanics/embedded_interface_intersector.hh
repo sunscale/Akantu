@@ -56,7 +56,7 @@ typedef CGAL::Cartesian<Real> K;
  * and computes the intersections with the background mesh, to create an `interface_mesh`,
  * which is in turn used by the EmbeddedInterfaceModel.
  *
- * @see MeshSegementIntersector, MeshGeomAbstract
+ * @see MeshSegmentIntersector, MeshGeomAbstract
  * @see EmbeddedInterfaceModel
  */
 class EmbeddedInterfaceIntersector : public MeshGeomAbstract {

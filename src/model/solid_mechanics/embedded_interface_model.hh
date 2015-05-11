@@ -59,6 +59,8 @@ typedef CGAL::Cartesian<Real> K;
  * a mesh of the 1D elements embedded in the model, and an instance of the
  * EmbeddedInterfaceIntersector class for the computation of the intersections of the
  * 1D elements with the background (bulk) mesh.
+ *
+ * @see MaterialReinforcement
  */
 class EmbeddedInterfaceModel : public SolidMechanicsModel {
 
