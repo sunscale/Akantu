@@ -367,37 +367,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
  }
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(const Matrix<Real> & stress,
-							      const Vector<Real> & normal,
-							      const Vector<Real> & tangent,
-							      Vector<Real> & normal_traction) {
-  normal_traction.mul<false>(stress, normal);
-
-  Real normal_contrib = normal_traction.dot(normal);
-
-  /// in 3D tangential components must be summed
-  Real tangent_contrib = 0;
-
-  if (dim == 2) {
-    Real tangent_contrib_tmp = normal_traction.dot(tangent);
-    tangent_contrib += tangent_contrib_tmp * tangent_contrib_tmp;
-  }
-  else if (dim == 3) {
-    for (UInt s = 0; s < dim - 1; ++s) {
-      const Vector<Real> tangent_v(tangent.storage() + s * dim, dim);
-      Real tangent_contrib_tmp = normal_traction.dot(tangent_v);
-      tangent_contrib += tangent_contrib_tmp * tangent_contrib_tmp;
-    }
-  }
-
-  tangent_contrib = std::sqrt(tangent_contrib);
-  normal_contrib = std::max(0., normal_contrib);
-
-  return std::sqrt(normal_contrib * normal_contrib + tangent_contrib * tangent_contrib * beta2_inv);
-}
-
-/* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real> & normal,
                                                                 ElementType el_type,
@@ -533,6 +502,12 @@ template<UInt spatial_dimension>
 void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
+  /// This function set a predefined value to the parameter delta_max_prev of the
+  /// elements that have been inserted in the last loading step for which convergence
+  /// has not been reached. This is done before reducing the loading and re-doing the step.
+  /// Otherwise, the updating of delta_max_prev would be done with reference to the
+  /// non-convergent solution.
+
   Mesh & mesh = fem_cohesive->getMesh();
   Mesh::type_iterator it = mesh.firstType(spatial_dimension,
 					  ghost_type, _ek_cohesive);
@@ -566,14 +541,15 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_ty
          ++delta_max_it, ++delta_max_prev_it, ++delta_c_it) {
 
       if (*delta_max_prev_it == 0)
+        /// elements inserted in the last step, that has not converged
         *delta_max_it = *delta_c_it / 1000;
       else
+        /// elements introduced in previous steps, for which a correct
+        /// value of delta_max_prev already exists
         *delta_max_it = *delta_max_prev_it;
 
     }
   }
-
-  //  delete [] memory_space;
 }
 
 
@@ -616,6 +592,8 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
   Vector<Real> normal_opening(spatial_dimension);
   Vector<Real> tangential_opening(spatial_dimension);
 
+  Array<Real> tang_output(spatial_dimension,spatial_dimension);
+
   for (; tangent_it != tangent_end;
        ++tangent_it, ++normal_it, ++opening_it, ++ delta_max_it,
          ++sigma_c_it, ++delta_c_it, ++damage_it, ++contact_opening_it) {
@@ -630,9 +608,7 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
     tangential_opening -= normal_opening;
 
     Real tangential_opening_norm = tangential_opening.norm();
-
     bool penetration = normal_opening_norm < -Math::getTolerance();
-
     Real derivative = 0;
     Real t = 0;
 
@@ -640,8 +616,11 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
     delta += normal_opening_norm * normal_opening_norm;
     delta = std::sqrt(delta);
 
+    /// Delta has to be different from 0 to have finite values of tangential stiffness.
+    /// At the element insertion, delta = 0. Therefore, a fictictious value is defined,
+    /// for the evaluation of the first value of K.
     if (delta < Math::getTolerance())
-      delta = (*delta_c_it)/1000.;  //0.0000001;
+      delta = (*delta_c_it)/1000.;
 
     if (normal_opening_norm >= 0.0){
       if (delta >= *delta_max_it){
@@ -657,12 +636,14 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
     n_outer_n.outerProduct(*normal_it, *normal_it);
 
     if (penetration){
-      ///don't consider penetration contribution for delta
+      /// don't consider penetration contribution for delta
       *opening_it = tangential_opening;
+      /// stiffness in compression given by the penalty parameter
       *tangent_it += n_outer_n;
       *tangent_it *= penalty;
     }
 
+    /// computation of the derivative of the constitutive law (dT/ddelta)
     Matrix<Real> I(spatial_dimension, spatial_dimension);
     I.eye(beta2_kappa);
     Matrix<Real> nn(n_outer_n);
@@ -682,6 +663,24 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
     prov += nn;
     *tangent_it += prov;
 
+    /// check if the tangential stiffness matrix is symmetric
+    for (UInt h = 0; h < spatial_dimension; ++h){
+      for (UInt l = h; l < spatial_dimension; ++l){
+        if (l > h){
+          Real k_ls = (*tangent_it)[spatial_dimension*h+l];
+          Real k_us =  (*tangent_it)[spatial_dimension*l+h];
+          //          std::cout << "k_ls = " << k_ls << std::endl;
+          //          std::cout << "k_us = " << k_us << std::endl;
+          if (std::abs(k_ls) > 1e-13 && std::abs(k_us) > 1e-13){
+            Real error = std::abs((k_ls - k_us) / k_us);
+            if (error > 1e-13){
+              std::cout << "non symmetric cohesive matrix" << std::endl;
+              std::cout << "error " << error << std::endl;
+            }
+          }
+        }
+      }
+    }
   }
   AKANTU_DEBUG_OUT();
 }

@@ -143,6 +143,12 @@ public:
 
   T * storage() const { return values; }
 
+  void copyExternalMemory(T * data, UInt nb_values) {
+    AKANTU_DEBUG_ASSERT(nb_values == this->size(),
+			"You are trying to copy two tensors with differents sizes");
+    memcpy(this->values, data, nb_values * sizeof(T));
+  }
+
 protected:
   T * values;
   UInt n[ndim];
@@ -157,6 +163,11 @@ public:
   VectorProxy(T * data = NULL, UInt n = 0) : parent(data, n, 0, 0) { }
   VectorProxy(const VectorProxy & src) : parent(src) {  }
   VectorProxy(const Vector<T> & src) : parent(src) { }
+
+  VectorProxy & operator=(const Vector<T> & src) {
+    this->copyExternalMemory(src.storage(), src.size());
+    return *this;
+  }
 };
 
 template<typename T>
@@ -166,6 +177,11 @@ public:
   MatrixProxy(T * data = NULL, UInt m = 0, UInt n = 0) : parent(data, m, n, 0) { }
   MatrixProxy(const MatrixProxy & src) : parent(src) {  }
   MatrixProxy(const Matrix<T> & src) : parent(src) { }
+
+  MatrixProxy & operator=(const Matrix<T> & src) {
+    this->copyExternalMemory(src.storage(), src.size());
+    return *this;
+  }
 };
 
 template<typename T>
@@ -176,6 +192,11 @@ public:
     parent(data, m, n, k) { }
   Tensor3Proxy(const Tensor3Proxy & src) : parent(src) {  }
   Tensor3Proxy(const Tensor3<T> & src) : parent(src) { }
+
+  Tensor3Proxy & operator=(const Tensor3<T> & src) {
+    this->copyExternalMemory(src.storage(), src.size());
+    return *this;
+  }
 };
 
 /* -------------------------------------------------------------------------- */

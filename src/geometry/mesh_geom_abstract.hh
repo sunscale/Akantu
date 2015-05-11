@@ -36,18 +36,12 @@
 #include "aka_common.hh"
 #include "mesh.hh"
 
-#include <CGAL/Cartesian.h>
-
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-typedef CGAL::Cartesian<Real> K;
-
+/// Abstract class for mesh geometry operations
 class MeshGeomAbstract {
-
-protected:
-  typedef std::pair<K::Segment_3, std::string> Interface;
 
 public:
   /// Construct from mesh
@@ -59,12 +53,6 @@ public:
 public:
   /// Construct geometric data for computational geometry algorithms
   virtual void constructData() = 0;
-
-  /// Compute number of intersections with geometric interface
-  virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const = 0;
-
-  /// Compute the mesh created by a linear interface
-  virtual void meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh) = 0;
 
 protected:
   /// Mesh used to construct the primitives

@@ -43,6 +43,13 @@
 
 __BEGIN_AKANTU__
 
+/**
+ * @brief Material used to represent embedded reinforcements
+ *
+ * This class is used for computing the reinforcement stiffness matrix
+ * along with the reinforcement residual. Room is made for constitutive law,
+ * but actual use of contitutive laws is made in MaterialReinforcementTemplate.
+ */
 template<UInt dim>
 class MaterialReinforcement : virtual public Material {
 
@@ -88,6 +95,12 @@ public:
 
   virtual Real getEnergy(std::string id);
 
+  /// Reimplementation of Material's function to accomodate for interface mesh
+  virtual void flattenInternal(const std::string & field_id,
+		                           ElementTypeMapArray<Real> & internal_flat,
+                               const GhostType ghost_type = _not_ghost,
+                               ElementKind element_kind = _ek_not_defined);
+
   /* ------------------------------------------------------------------------ */
   /* Protected methods                                                        */
   /* ------------------------------------------------------------------------ */
@@ -98,20 +111,41 @@ protected:
   /// Compute the directing cosines matrix for one element type
   void computeDirectingCosines(const ElementType & type, GhostType ghost_type);
 
-  /// Compute the directing cosines matrix on quadrature points
+  /**
+   * @brief Compute the directing cosines matrix on quadrature points.
+   *
+   * The structure of the directing cosines matrix is :
+   * \f{eqnarray*}{
+   *  C_{1,\cdot} & = & (l^2, m^2, n^2, lm, mn, ln) \\
+   *  C_{i,j} & = & 0
+   * \f}
+   *
+   * with :
+   * \f[
+   * (l, m, n) = \frac{1}{\|\frac{\mathrm{d}\vec{r}(s)}{\mathrm{d}s}\|} \cdot \frac{\mathrm{d}\vec{r}(s)}{\mathrm{d}s}
+   * \f]
+   */
   inline void computeDirectingCosinesOnQuad(const Matrix<Real> & nodes,
                                             Matrix<Real> & cosines);
 
   /// Assemble the stiffness matrix for an element type (typically _segment_2)
   void assembleStiffnessMatrix(const ElementType & type, GhostType ghost_type);
 
-  /// Assemble the stiffness matrix for background & interface types
+  /**
+   * @brief Assemble the stiffness matrix for background & interface types
+   *
+   * Computes the reinforcement stiffness matrix (Gomes & Awruch, 2001)
+   * \f[
+   * \mathbf{K}_e = \sum_{i=1}^R{A_i\int_{S_i}{\mathbf{B}^T
+   * \mathbf{C}_i^T \mathbf{D}_{s, i} \mathbf{C}_i \mathbf{B}\,\mathrm{d}s}}
+   * \f]
+   */
   void assembleStiffnessMatrix(const ElementType & interface_type,
                                const ElementType & background_type,
                                GhostType interface_ghost,
                                GhostType background_ghost);
 
-  /// Compute the background shape derivatives for a type (typically _triangle_3 / _tetrahedron_4)
+  /// Compute the background shape derivatives for a type
   void computeBackgroundShapeDerivatives(const ElementType & type, GhostType ghost_type);
 
   /// Filter elements crossed by interface of a type
@@ -124,13 +158,20 @@ protected:
   /// Assemble the residual of one type of element (typically _segment_2)
   void assembleResidual(const ElementType & type, GhostType ghost_type);
 
-  /// Assemble the residual for a pair of elements
+  /**
+   * @brief Assemble the residual for a pair of elements
+   *
+   * Computes and assemble the residual. Residual in reinforcement is computed as :
+   * \f[
+   * \vec{r} = A_s \int_S{\mathbf{B}^T\mathbf{C}^T \vec{\sigma_s}\,\mathrm{d}s}
+   * \f]
+   */
   void assembleResidual(const ElementType & interface_type,
                         const ElementType & background_type,
                         GhostType interface_ghost,
                         GhostType background_ghost);
 
-  /// TODO figure out why voigt size is 4 in 2D
+  // TODO figure out why voigt size is 4 in 2D
   inline void stressTensorToVoigtVector(const Matrix<Real> & tensor, Vector<Real> & vector);
   inline void strainTensorToVoigtVector(const Matrix<Real> & tensor, Vector<Real> & vector);
 

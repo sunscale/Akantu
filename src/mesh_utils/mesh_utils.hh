@@ -218,7 +218,8 @@ private:
 			  Array<UInt> & doubled_nodes);
 
   /// fill facet_to_double array in the mesh
-  static bool updateFacetToDouble(Mesh & mesh_facets,
+  /// returns the number of facets to be doubled
+  static UInt updateFacetToDouble(Mesh & mesh_facets,
 				  const ElementTypeMapArray<bool> & facet_insertion);
 
   /// find subfacets to be doubled

@@ -73,8 +73,25 @@ function(generate_package_tex_doc pkg_name FILENAME)
     _package_get_filename(${pkg_name} _file_path)
     _package_get_real_name(${pkg_name} _pkg)
     get_filename_component(_file ${_file_path} NAME)
-    file(APPEND ${FILENAME} "{\\color{red} TODO}: No Documentation in {\\color{blue} \\href{${_file_path}}{${_file}}}\\\\")
-    file(APPEND ${FILENAME} "looking for the sequence: \\code{\\\\package\\_declare\\_documentation(${_pkg} \" documentation text \" )}" )
+    string(REPLACE "_" "\\_" _escaped_pkg "${_pkg}")
+
+    set(_missing_doc
+      "{\\color{red} TODO}: No Documentation in {\\color{blue} \\href{${_file_path}}{${_file}}}"
+      ""
+      "looking for the sequence: "
+      "\\begin{cmake}"
+      "\\package_declare_documentation("
+      "  ${_escaped_pkg}"
+      "  \"documentation text\""
+      "  )"
+      "\\end{cmake}")
+
+    set(_missing_doc_str "")
+    foreach(_str ${_missing_doc})
+      set(_missing_doc_str "${_missing_doc_str}\n${_str}")
+    endforeach()
+
+    file(APPEND ${FILENAME} "${_missing_doc_str}")
   endif()
 
   _package_get_dependencies(${pkg_name} _dependencies)

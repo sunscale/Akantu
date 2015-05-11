@@ -234,9 +234,7 @@ void CohesiveElementInserter::insertIntrinsicElements() {
 }
 
 /* -------------------------------------------------------------------------- */
-void CohesiveElementInserter::insertElements() {
-  AKANTU_DEBUG_IN();
-
+UInt CohesiveElementInserter::insertElements() {
   NewNodesEvent node_event;
   node_event.getList().extendComponentsInterlaced(2, 1);
   NewElementsEvent element_event;
@@ -279,7 +277,7 @@ void CohesiveElementInserter::insertElements() {
     MeshUtils::resetFacetToDouble(mesh_facets);
   }
 
-  AKANTU_DEBUG_OUT();
+  return nb_new_elements;
 }
 
 /* -------------------------------------------------------------------------- */

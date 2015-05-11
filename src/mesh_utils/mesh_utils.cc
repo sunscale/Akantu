@@ -655,11 +655,10 @@ void MeshUtils::insertCohesiveElements(Mesh & mesh,
 				       const ElementTypeMapArray<bool> & facet_insertion,
 				       Array<UInt> & doubled_nodes,
 				       Array<Element> & new_elements) {
-  AKANTU_DEBUG_IN();
-
   UInt spatial_dimension = mesh.getSpatialDimension();
+  UInt elements_to_insert = updateFacetToDouble(mesh_facets, facet_insertion);
 
-  if (updateFacetToDouble(mesh_facets, facet_insertion)) {
+  if (elements_to_insert > 0) {
 
     if (spatial_dimension == 1) {
       doublePointFacet(mesh, mesh_facets, doubled_nodes);
@@ -681,8 +680,6 @@ void MeshUtils::insertCohesiveElements(Mesh & mesh,
 
     updateCohesiveData(mesh, mesh_facets, new_elements);
   }
-
-  AKANTU_DEBUG_OUT();
 }
 #endif
 
@@ -826,12 +823,12 @@ void MeshUtils::doubleFacet(Mesh & mesh,
 }
 
 /* -------------------------------------------------------------------------- */
-bool MeshUtils::updateFacetToDouble(Mesh & mesh_facets,
+UInt MeshUtils::updateFacetToDouble(Mesh & mesh_facets,
 				    const ElementTypeMapArray<bool> & facet_insertion) {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh_facets.getSpatialDimension();
-  bool facets_to_double = false;
+  UInt nb_facets_to_double = 0.;
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {
@@ -864,7 +861,7 @@ bool MeshUtils::updateFacetToDouble(Mesh & mesh_facets,
 
 	if (f_insertion(f) == false) continue;
 
-	facets_to_double = true;
+	++nb_facets_to_double;
 
 	if (element_to_facet(f)[1].type == _not_defined
 #if defined(AKANTU_COHESIVE_ELEMENT)
@@ -919,7 +916,7 @@ bool MeshUtils::updateFacetToDouble(Mesh & mesh_facets,
   }
 
   AKANTU_DEBUG_OUT();
-  return facets_to_double;
+  return nb_facets_to_double;
 }
 
 /* -------------------------------------------------------------------------- */

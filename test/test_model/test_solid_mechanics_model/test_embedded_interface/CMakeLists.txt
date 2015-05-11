@@ -41,3 +41,9 @@ register_test(test_embedded_interface_model
   FILES_TO_COPY embedded_mesh.msh material.dat matrix
   PACKAGE embedded
   )
+
+register_test(test_embedded_interface_model_prestress
+  SOURCES test_embedded_interface_model_prestress.cc
+  FILES_TO_COPY embedded_mesh_prestress.msh embedded_mesh_prestress_reinforcement.msh prestress.dat
+  PACKAGE embedded
+  )

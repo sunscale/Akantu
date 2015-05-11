@@ -144,13 +144,10 @@ namespace BC {
     protected:
       NeumannFunctor() {}
     public:
-      void operator()(UInt node,
-		      Vector<bool> & flags,
-		      Vector<Real> & primal,
-		      const Vector<Real> & coord) const {
-	AKANTU_DEBUG_TO_IMPLEMENT();
-      }
-
+      virtual void operator()(const QuadraturePoint & quad_point,
+			     Vector<Real> & dual,
+			     const Vector<Real> & coord,
+			     const Vector<Real> & normals) const = 0;
     public:
       static const Type type = _neumann;
     };

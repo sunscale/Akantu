@@ -27,6 +27,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include <cstdlib>
+#include <fstream>
 /* -------------------------------------------------------------------------- */
 #include "static_communicator.hh"
 #include "aka_common.hh"
@@ -38,7 +39,7 @@
 #include "petsc_matrix.hh"
 #include "fe_engine.hh"
 #include "dof_synchronizer.hh"
-
+/// #include "dumper_paraview.hh"
 #include "mesh_partition_scotch.hh"
 
 using namespace akantu;
@@ -63,7 +64,7 @@ int main(int argc, char *argv[]) {
   DistributedSynchronizer * communicator = NULL;
   if(prank == 0) {
     /// creation mesh
-    mesh.read("triangle.msh");
+    mesh.read("square.msh");
     MeshPartitionScotch * partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
     communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
@@ -71,8 +72,13 @@ int main(int argc, char *argv[]) {
   } else {
     communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
-  
 
+  // dump mesh in paraview
+  // DumperParaview mesh_dumper("mesh_dumper");
+  // mesh_dumper.registerMesh(mesh, spatial_dimension, _not_ghost);
+  // mesh_dumper.dump();
+
+  /// initialize the FEEngine and the dof_synchronizer
   FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange,_ek_regular>(mesh, spatial_dimension, "my_fem");
 
   DOFSynchronizer dof_synchronizer(mesh, spatial_dimension);
@@ -80,13 +86,14 @@ int main(int argc, char *argv[]) {
 
   dof_synchronizer.initGlobalDOFEquationNumbers();
 
-  // fill the matrix with 
+  // construct an Akantu sparse matrix, build the profile and fill the matrix for the given mesh 
   UInt nb_element = mesh.getNbElement(element_type);
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(element_type);
   UInt nb_dofs_per_element = spatial_dimension * nb_nodes_per_element;
-  SparseMatrix K(nb_global_nodes * spatial_dimension, _unsymmetric);
-  K.buildProfile(mesh, dof_synchronizer, spatial_dimension);
-  Matrix<Real> element_input(nb_dofs_per_element, nb_dofs_per_element, 1);
+  SparseMatrix K_akantu(nb_global_nodes * spatial_dimension, _unsymmetric);
+  K_akantu.buildProfile(mesh, dof_synchronizer, spatial_dimension);
+  /// use as elemental matrices a matrix with values equal to 1 every where
+  Matrix<Real> element_input(nb_dofs_per_element, nb_dofs_per_element, 1.);
   Array<Real> K_e = Array<Real>(nb_element, nb_dofs_per_element * nb_dofs_per_element, "K_e");
   Array<Real>::matrix_iterator K_e_it = K_e.begin(nb_dofs_per_element, nb_dofs_per_element);
   Array<Real>::matrix_iterator K_e_end = K_e.end(nb_dofs_per_element, nb_dofs_per_element);
@@ -95,38 +102,25 @@ int main(int argc, char *argv[]) {
     *K_e_it = element_input;
 
   // assemble the test matrix
-  fem->assembleMatrix(K_e, K, spatial_dimension, element_type, ghost_type);
-
-  CSR<Element> node_to_elem;
-
-  MeshUtils::buildNode2Elements(mesh, node_to_elem, spatial_dimension);
-
-  for (UInt i = 0; i < mesh.getNbNodes(); ++i) {
-    std::cout << node_to_elem.getNbCols(i) << std::endl;
-  }
-
-  PETScMatrix petsc_matrix(nb_global_nodes * spatial_dimension, _unsymmetric);
-
-  petsc_matrix.buildProfile(mesh, dof_synchronizer, spatial_dimension);
+  fem->assembleMatrix(K_e, K_akantu, spatial_dimension, element_type, ghost_type);
   
+  /// construct a PETSc matrix
+  PETScMatrix K_petsc(nb_global_nodes * spatial_dimension, _unsymmetric);
+  /// build the profile of the PETSc matrix for the mesh of this example
+  K_petsc.buildProfile(mesh, dof_synchronizer, spatial_dimension);
+  /// add an Akantu sparse matrix to a PETSc sparse matrix
+  K_petsc.add(K_akantu, 1);
 
-  petsc_matrix.add(K, 1);
-  
-  // for (UInt i = 0; i < mesh.getNbNodes(); ++i) { 
-  //   for (UInt j = 0; j < spatial_dimension; ++j) {
-  //     UInt dof = i * spatial_dimension + j;
-  //     if (dof_synchronizer.isLocalOrMasterDOF(dof)) {
-  // 	UInt global_dof = dof_synchronizer.getDOFGlobalID(dof);
-  // 	std::cout << "K(" << global_dof << "," << global_dof << ")=" << petsc_matrix(dof,dof) << std::endl;
-  // 	std::cout << node_to_elem.getNbCols(i) << std::endl; 
-  //     }
-  //   }
-  // }
+  /// save the profile
+  K_petsc.saveMatrix("profile.txt");
 
-  
-
-
-  petsc_matrix.saveMatrix("profile.dat");
+  /// print the matrix to screen
+  std::ifstream profile;
+  profile.open("profile.txt");
+  std::string current_line;
+  while(getline(profile, current_line))
+    std::cout << current_line << std::endl;
+  profile.close();
 
   delete communicator;
 

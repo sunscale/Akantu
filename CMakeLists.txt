@@ -181,6 +181,6 @@ endif()
 #===============================================================================
 mark_as_advanced(AKANTU_PYTHON_INTERFACE)
 if(AKANTU_PYTHON_INTERFACE)
-#  add_subdirectory(python)
-  add_subdirectory(akantu4py)
+  add_subdirectory(python)
+#  add_subdirectory(akantu4py)
 endif()

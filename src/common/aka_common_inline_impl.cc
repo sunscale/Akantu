@@ -141,8 +141,8 @@ inline std::ostream & operator <<(std::ostream & stream, SynchronizationTag type
     case _gst_mnl_for_average          : stream << "_gst_mnl_for_average"         ; break;
     case _gst_mnl_weight               : stream << "_gst_mnl_weight"              ; break;
     case _gst_test                     : stream << "_gst_test"                    ; break;
-    case _gst_user_1                   : stream << "_gst_user_1"                    ; break;
-    case _gst_user_2                   : stream << "_gst_user_2"                    ; break;
+    case _gst_user_1                   : stream << "_gst_user_1"                  ; break;
+    case _gst_user_2                   : stream << "_gst_user_2"                  ; break;
     case _gst_material_id              : stream << "_gst_material_id"             ; break;
     case _gst_for_dump                 : stream << "_gst_for_dump"                ; break;
     case _gst_cf_nodal                 : stream << "_gst_cf_nodal"                ; break;

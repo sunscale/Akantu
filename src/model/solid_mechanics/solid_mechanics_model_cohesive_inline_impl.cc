@@ -33,7 +33,6 @@
 #include <algorithm>
 #include "shape_cohesive.hh"
 #include "solid_mechanics_model_cohesive.hh"
-#include "dumpable_inline_impl.hh"
 #include "material_cohesive.hh"
 
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_CC__
@@ -48,6 +47,7 @@ template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
 bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
                                                     Real & error,
                                                     UInt max_iteration,
+                                                    UInt cont,
                                                     bool do_not_factorize) {
 
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeSolveStepEvent(method));
@@ -70,7 +70,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
         displacement_tmp = new Array<Real>(*(this->displacement));
       } else {
         (*displacement_tmp).resize(this->displacement->getSize());
-        //        displacement_tmp->resize(this->displacement->getSize());
+        //displacement_tmp->resize(this->displacement->getSize());
         (*displacement_tmp).copy(*(this->displacement));
         //displacement_tmp->copy(*(this->displacement));
       }
@@ -142,10 +142,6 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
       converged = this->testConvergence<criteria> (tolerance, error);
 
-      //      dump();
-      //      dump("cohesive elements");
-      //std::cout << "Error after loop: " << error << std::endl;
-
       iter++;
       AKANTU_DEBUG_INFO("[" << criteria << "] Convergence iteration "
                         << std::setw(std::log10(max_iteration)) << iter
@@ -197,7 +193,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       acceleration_tmp = this->acceleration;
       this->acceleration = tmp_swap;
 
-      if (converged){
+      if (converged || cont == 2){
         UInt nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive);
 
         this->checkCohesiveStress();
@@ -220,7 +216,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       }
     }
 
-    if (!converged){
+    if (!converged && cont != 2){
       insertion_new_element = false;
 
       for (UInt m = 0; m < materials.size(); ++m) {
@@ -235,7 +231,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
   } //end while insertion_new_element
 
 
-  if(is_extrinsic && converged) {
+  if ((is_extrinsic && converged) || (is_extrinsic && cont == 2))  {
 
     EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
 
