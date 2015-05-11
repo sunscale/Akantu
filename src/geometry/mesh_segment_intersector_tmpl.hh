@@ -156,28 +156,21 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
     K::Ray_3 ray1(query.source(), query.target());
     K::Ray_3 ray2(query.target(), query.source());
 
-    std::list<UInt> ray1_results, ray2_results;
+    std::set<UInt> ray1_results, ray2_results;
 
-    this->factory.getTree().all_intersected_primitives(ray1, std::back_inserter(ray1_results));
-    this->factory.getTree().all_intersected_primitives(ray2, std::back_inserter(ray2_results));
+    this->factory.getTree().all_intersected_primitives(ray1, std::inserter(ray1_results, ray1_results.begin()));
+    this->factory.getTree().all_intersected_primitives(ray2, std::inserter(ray2_results, ray2_results.begin()));
 
-    std::set<UInt> id_set;
     bool inside_primitive = false;
     UInt primitive_id = 0;
 
-    std::list<UInt>::iterator
-      ray1_it  = ray1_results.begin(),
+    std::set<UInt>::iterator
       ray2_it  = ray2_results.begin(),
-      ray1_end = ray1_results.end(),
       ray2_end = ray2_results.end();
-
-    // Populate the set with elements of first list
-    for (; ray1_it != ray1_end ; ++ray1_it)
-      id_set.insert(id_set.begin(), *ray1_it);
 
     // Test if first list contains an element of second list
     for (; ray2_it != ray2_end && !inside_primitive ; ++ray2_it) {
-      if (id_set.find(*ray2_it) != id_set.end()) {
+      if (ray1_results.find(*ray2_it) != ray1_results.end()) {
         inside_primitive = true;
         primitive_id = *ray2_it;
       }
@@ -191,7 +184,7 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
   else {
     typename std::list<result_type>::const_iterator
       it = intersections.begin(),
-         end = intersections.end();
+      end = intersections.end();
 
     for(; it != end ; ++it) {
       UInt el = (*it)->second;
@@ -233,32 +226,39 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
           std::list<result_type> local_intersections;
           local_tree->all_intersections(query, std::back_inserter(local_intersections));
 
-          if (local_intersections.size() == 1) {
+          bool out_point_found = false;
+          typename std::list<result_type>::const_iterator
+            local_it = local_intersections.begin(),
+                     local_end = local_intersections.end();
+
+          for (; local_it != local_end ; ++local_it) {
+            if (const K::Point_3 * local_point = boost::get<K::Point_3>(&((*local_it)->first))) {
+              if (!comparePoints(*point, *local_point)) {
+                K::Segment_3 seg(*point, *local_point);
+                if(std::find_if(segments.begin(), segments.end(), IsSameSegment(seg)) == segments.end()) {
+                  segments.push_back(std::make_pair(seg, el));
+                  out_point_found = true;
+                }
+              }
+            }
+          }
+
+          if (!out_point_found) {
             TreeTypeHelper<Triangle<K>, K>::point_type
               a(node_coordinates(0, 0), node_coordinates(1, 0), node_coordinates(2, 0)),
               b(node_coordinates(0, 1), node_coordinates(1, 1), node_coordinates(2, 1)),
               c(node_coordinates(0, 2), node_coordinates(1, 2), node_coordinates(2, 2)),
               d(node_coordinates(0, 3), node_coordinates(1, 3), node_coordinates(2, 3));
             K::Tetrahedron_3 tetra(a, b, c, d);
-            K::Point_3 inside_point =
-              (tetra.has_on_bounded_side(query.source())) ? query.source() : query.target();
-            K::Segment_3 seg(inside_point, *point);
-            segments.push_back(std::make_pair(seg, el));
-          }
+            const K::Point_3 * inside_point = NULL;
+            if (tetra.has_on_bounded_side(query.source()) && !tetra.has_on_boundary(query.source()))
+              inside_point = &query.source();
+            else if (tetra.has_on_bounded_side(query.target()) && !tetra.has_on_boundary(query.target()))
+              inside_point = &query.target();
 
-          else {
-            typename std::list<result_type>::const_iterator
-              local_it = local_intersections.begin(),
-                       local_end = local_intersections.end();
-
-            for (; local_it != local_end ; ++local_it) {
-              if (const K::Point_3 * local_point = boost::get<K::Point_3>(&((*local_it)->first))) {
-                if (!comparePoints(*point, *local_point)) {
-                  K::Segment_3 seg(*point, *local_point);
-                  if(std::find_if(segments.begin(), segments.end(), IsSameSegment(seg)) == segments.end())
-                    segments.push_back(std::make_pair(seg, el));
-                }
-              }
+            if (inside_point) {
+              K::Segment_3 seg(*inside_point, *point);
+              segments.push_back(std::make_pair(seg, el));
             }
           }
 
@@ -267,6 +267,7 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
       }
     }
   }
+
   AKANTU_DEBUG_OUT();
 }
 
