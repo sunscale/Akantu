@@ -68,7 +68,7 @@ protected:
   virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   ///compute the equivalent stress on each Gauss point (i.e. the max prinicpal stress) and normalize it by the tensile strength
-  void computeNormalizedEquivalentStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computeNormalizedEquivalentStress(const Array<Real> & grad_u, ElementType el_type, GhostType ghost_type = _not_ghost);
 
   /// find max normalized equivalent stress
   void findMaxNormalizedEquivalentStress(ElementType el_type, GhostType ghost_type = _not_ghost);
