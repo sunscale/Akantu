@@ -48,9 +48,9 @@ inline void Dumpable::registerDumper(const std::string & dumper_name,
                                      const std::string & file_name,
                                      const bool is_default) {
 
-  AKANTU_DEBUG_ASSERT(this->dumpers.find(dumper_name) ==
-                      this->dumpers.end(),
-                      "Dumper " + dumper_name + "is already registered.");
+  if (this->dumpers.find(dumper_name) != this->dumpers.end()){
+    AKANTU_DEBUG_INFO("Dumper " + dumper_name + "is already registered.");
+  }
 
   std::string name = file_name;
   if (name == "")
