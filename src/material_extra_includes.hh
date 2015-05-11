@@ -44,7 +44,7 @@
   ((3, (damage_iterative_non_local       , MaterialDamageIterativeNonLocal, \
 	AKANTU_MATERIAL_WEIGHT_FUNCTION_TMPL_LIST)))
 #else
-#  define AKANTU_DAMAGE_NON_LOCAL_EXTRA_MATERIAL_LIST
+#  define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST
 #endif
 
 #define  AKANTU_EXTRA_MATERIAL_LIST                                     \
