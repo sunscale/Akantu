@@ -124,14 +124,11 @@ public:
   /// insert intrinsic cohesive elements
   void insertIntrinsicElements();
 
-
-  //  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
-  //  bool solveStepCohesive(Real tolerance, UInt max_iteration = 100);
-
   template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
   bool solveStepCohesive(Real tolerance,
                          Real & error,
                          UInt max_iteration = 100,
+                         UInt cont = 1,
                          bool do_not_factorize = false);
 
   /// initialize stress interpolation
