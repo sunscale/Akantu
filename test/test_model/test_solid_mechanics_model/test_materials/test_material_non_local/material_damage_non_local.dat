@@ -9,7 +9,7 @@ material marigo_non_local remove_wf [
          Sd  = 2.748e6
          non_local weight_function [
                  update_rate  = 10
-                 radius       = 1e-3
+                 radius       = 0.15
                  damage_limit = 0.99
          ]
 ]
