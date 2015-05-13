@@ -34,13 +34,10 @@
 #define __AKANTU_MESH_SEGMENT_INTERSECTOR_TMPL_HH__
 
 #include "aka_common.hh"
+#include "mesh_geom_common.hh"
 #include "tree_type_helper.hh"
 
-#include <CGAL/Cartesian.h>
-
 __BEGIN_AKANTU__
-
-typedef CGAL::Cartesian<Real> K;
 
 template<UInt dim, ElementType type>
 MeshSegmentIntersector<dim, type>::MeshSegmentIntersector(const Mesh & mesh, Mesh & result_mesh):
@@ -63,10 +60,10 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(const K::Segmen
   result_mesh.addConnectivityType(_segment_2, _ghost);
 
   std::list<result_type> result_list;
-  std::list<std::pair<K::Segment_3, UInt> > segment_list;
+  std::set<std::pair<K::Segment_3, UInt>, segmentPairsLess> segment_set;
 
   this->factory.getTree().all_intersections(query, std::back_inserter(result_list));
-  this->computeSegments(result_list, segment_list, query);
+  this->computeSegments(result_list, segment_set, query);
 
   // Arrays for storing nodes and connectivity
   Array<Real> & nodes = result_mesh.getNodes();
@@ -84,9 +81,9 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(const K::Segmen
     valid_elemental_data = false;
   }
 
-  std::list<pair_type>::iterator
-    it = segment_list.begin(),
-    end = segment_list.end();
+  std::set<pair_type, segmentPairsLess>::iterator
+    it = segment_set.begin(),
+    end = segment_set.end();
 
   // Loop over the segment pairs
   for (; it != end ; ++it) {
@@ -137,7 +134,7 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQueryList(const std::
 
 template<UInt dim, ElementType type>
 void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_type> & intersections,
-                                                        std::list<pair_type> & segments,
+                                                        std::set<pair_type, segmentPairsLess> & segments,
                                                         const K::Segment_3 & query) {
   AKANTU_DEBUG_IN();
   
@@ -177,7 +174,7 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
     }
 
     if (inside_primitive) {
-      segments.push_back(std::make_pair(query, primitive_id));
+      segments.insert(std::make_pair(query, primitive_id));
     }
   }
 
@@ -192,9 +189,7 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
       // Result of intersection is a segment
       if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&((*it)->first))) {
         // Check if the segment was alread created
-        if (std::find_if(segments.begin(), segments.end(), IsSameSegment(*segment)) == segments.end()) {
-          segments.push_back(std::make_pair(*segment, el));
-        }
+        segments.insert(std::make_pair(*segment, el));
       }
 
       // Result of intersection is a point
@@ -229,16 +224,14 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
           bool out_point_found = false;
           typename std::list<result_type>::const_iterator
             local_it = local_intersections.begin(),
-                     local_end = local_intersections.end();
+            local_end = local_intersections.end();
 
           for (; local_it != local_end ; ++local_it) {
             if (const K::Point_3 * local_point = boost::get<K::Point_3>(&((*local_it)->first))) {
               if (!comparePoints(*point, *local_point)) {
                 K::Segment_3 seg(*point, *local_point);
-                if(std::find_if(segments.begin(), segments.end(), IsSameSegment(seg)) == segments.end()) {
-                  segments.push_back(std::make_pair(seg, el));
-                  out_point_found = true;
-                }
+                segments.insert(std::make_pair(seg, el));
+                out_point_found = true;
               }
             }
           }
@@ -258,7 +251,7 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
 
             if (inside_point) {
               K::Segment_3 seg(*inside_point, *point);
-              segments.push_back(std::make_pair(seg, el));
+              segments.insert(std::make_pair(seg, el));
             }
           }
 

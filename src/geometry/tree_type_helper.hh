@@ -40,15 +40,13 @@
 
 #include "aabb_primitive.hh"
 
-#include <CGAL/Cartesian.h>
+#include "mesh_geom_common.hh"
 #include <CGAL/AABB_traits.h>
 #include <CGAL/AABB_tree.h>
 
 __BEGIN_AKANTU__
   
 /* -------------------------------------------------------------------------- */
-
-typedef CGAL::Cartesian<Real> CartKern;
 
 /// Helper class used to ease the use of CGAL AABB tree algorithm
 template<class Primitive, class Kernel>
@@ -86,7 +84,7 @@ struct IntersectionTypeHelper;
     > intersection_type;                                                                                       \
   }
 
-TREE_TYPE_HELPER_MACRO(Triangle, CartKern::Segment_3, CartKern);
+TREE_TYPE_HELPER_MACRO(Triangle, Cartesian::Segment_3, Cartesian);
 
 #undef TREE_TYPE_HELPER_MACRO
 

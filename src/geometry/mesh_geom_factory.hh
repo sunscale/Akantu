@@ -41,8 +41,6 @@
 
 #include <algorithm>
 
-#include <CGAL/Cartesian.h>
-
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
