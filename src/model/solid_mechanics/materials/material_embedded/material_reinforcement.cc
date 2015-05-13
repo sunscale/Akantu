@@ -245,12 +245,7 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
   for (; back_it != back_end ; ++back_it) {
     UInt nodes_per_background_e = Mesh::getNbNodesPerElement(*back_it);
 
-    Array<Real> * shapesd_filtered = new Array<Real>(nb_element, dim * nodes_per_background_e, "shapesd_filtered");
-
-    FEEngine::filterElementalData(model->getInterfaceMesh(),
-        shape_derivatives(type, ghost_type)->operator()(*back_it, ghost_type),
-        *shapesd_filtered,
-        type, ghost_type, elem_filter);
+    Array<Real> & shapesd = shape_derivatives(type, ghost_type)->operator()(*back_it, ghost_type);
 
     Array<UInt> * background_filter = new Array<UInt>(nb_element, 1, "background_filter");
     filterInterfaceBackgroundElements(*background_filter, *back_it, type, ghost_type, ghost_type);
@@ -264,7 +259,7 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
     Array<Real>::matrix_iterator disp_it = disp_per_element->begin(dim, nodes_per_background_e);
     Array<Real>::matrix_iterator disp_end = disp_per_element->end(dim, nodes_per_background_e);
 
-    Array<Real>::matrix_iterator shapes_it = shapesd_filtered->begin(dim, nodes_per_background_e);
+    Array<Real>::matrix_iterator shapes_it = shapesd.begin(dim, nodes_per_background_e);
     Array<Real>::matrix_iterator grad_u_it = gradu_vec.begin(dim, dim);
 
     for (; disp_it != disp_end ; ++disp_it) {
@@ -277,7 +272,6 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
       }
     }
 
-    delete shapesd_filtered;
     delete background_filter;
     delete disp_per_element;
   }
@@ -347,14 +341,6 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
 
   Array<Real> & shapesd = shape_derivatives(interface_type, interface_ghost)->operator()(background_type, background_ghost);
 
-  Array<Real> * shapesd_filtered = new Array<Real>(nb_element * nb_quadrature_points,
-                                                   back_dof,
-                                                   "background_shapesd");
-
-
-  FEEngine::filterElementalData(model->getInterfaceMesh(), shapesd, *shapesd_filtered,
-                                interface_type, interface_ghost, elem_filter);
-
   Array<Real> * integrant = new Array<Real>(nb_quadrature_points * nb_element,
                                             back_dof,
                                             "integrant");
@@ -365,7 +351,7 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
     integrant->end(back_dof);
 
   Array<Real>::matrix_iterator B_it =
-    shapesd_filtered->begin(dim, nodes_per_background_e);
+    shapesd.begin(dim, nodes_per_background_e);
   Array<Real>::matrix_iterator C_it =
     directing_cosines(interface_type, interface_ghost).begin(voigt_size, voigt_size);
   Array<Real>::matrix_iterator sigma_it =
@@ -390,7 +376,6 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
     BtCt_sigma *= area;
   }
 
-  delete shapesd_filtered;
 
   Array<Real> * residual_interface = new Array<Real>(nb_element, back_dof, "residual_interface");
   interface_engine.integrate(*integrant,
@@ -542,13 +527,6 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
   computeTangentModuli(interface_type, *tangent_moduli, interface_ghost);
 
   Array<Real> & shapesd = shape_derivatives(interface_type, interface_ghost)->operator()(background_type, background_ghost);
-  Array<Real> * shapesd_filtered = new Array<Real>(nb_element * nb_quadrature_points,
-                                                   back_dof,
-                                                   "background_shapesd");
-
-
-  FEEngine::filterElementalData(model->getInterfaceMesh(), shapesd, *shapesd_filtered,
-                                interface_type, interface_ghost, elem_filter);
 
   Array<Real> * integrant = new Array<Real>(nb_element * nb_quadrature_points,
                                             integrant_size * integrant_size,
@@ -567,7 +545,7 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
   Array<Real>::matrix_iterator C_it =
     directing_cosines(interface_type, interface_ghost).begin(voigt_size, voigt_size);
   Array<Real>::matrix_iterator B_it =
-    shapesd_filtered->begin(dim, nodes_per_background_e);
+    shapesd.begin(dim, nodes_per_background_e);
   Array<Real>::matrix_iterator integrant_it =
     integrant->begin(integrant_size, integrant_size);
 
@@ -588,7 +566,6 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
   }
 
   delete tangent_moduli;
-  delete shapesd_filtered;
 
   Array<Real> * K_interface = new Array<Real>(nb_element, integrant_size * integrant_size, "K_interface");
   interface_engine.integrate(*integrant, *K_interface,

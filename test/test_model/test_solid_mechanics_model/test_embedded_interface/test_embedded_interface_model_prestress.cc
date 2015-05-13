@@ -100,7 +100,7 @@ int main (int argc, char * argv[]) {
   reinforcement_mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(EmbeddedInterfaceModelOptions(_static));
 
 /* -------------------------------------------------------------------------- */
 /* Computation of analytical residual                                         */

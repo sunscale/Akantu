@@ -33,7 +33,7 @@
 #include "aka_common.hh"
 #include "mesh_segment_intersector.hh"
 
-#include <CGAL/Cartesian.h>
+#include "mesh_geom_common.hh"
 
 #include <iostream>
 
@@ -41,7 +41,7 @@
 
 using namespace akantu;
 
-typedef CGAL::Cartesian<Real> K;
+typedef Cartesian K;
 typedef K::Point_3 Point;
 typedef K::Segment_3 Segment;
 
@@ -66,23 +66,26 @@ int main (int argc, char * argv[]) {
   if (interface_mesh.getNbElement(_segment_2) != 2)
     return EXIT_FAILURE;
 
+  Vector<Real> bary(2), bary1(2), bary2(2);
+
   Element test;
   test.type = _segment_2;
+
   test.element = 0;
-
-  Vector<Real> bary(2);
-  interface_mesh.getBarycenter(test, bary);
-  Real first_bary[] = {1./6., 1./6., 1./6.};
-
-  if (!Math::are_vector_equal(3, bary.storage(), first_bary))
-    return EXIT_FAILURE;
-
+  interface_mesh.getBarycenter(test, bary1);
   test.element = 1;
-  interface_mesh.getBarycenter(test, bary);
+  interface_mesh.getBarycenter(test, bary2);
+
+  Real first_bary[] = {1./6., 1./6., 1./6.};
   Real second_bary[] = {2./3., 2./3., 2./3.};
 
-  if (!Math::are_vector_equal(3, bary.storage(), second_bary))
+  // We don't know the order of the elements, so here we test permutations
+  if (!( (Math::are_vector_equal(3, bary1.storage(), first_bary)  &&
+          Math::are_vector_equal(3, bary2.storage(), second_bary) ) ||
+         (Math::are_vector_equal(3, bary1.storage(), second_bary) &&
+          Math::are_vector_equal(3, bary2.storage(), first_bary)  ) ))
     return EXIT_FAILURE;
+
 
   // Testing a segment completely inside one element
   Point a(0.05, 0.05, 0.05),
@@ -103,21 +106,22 @@ int main (int argc, char * argv[]) {
   Segment crossing_segment(c, d);
 
   intersector.computeIntersectionQuery(crossing_segment);
-  UInt el1 = interface_mesh.getNbElement(_segment_2) - 1;
-  UInt el2 = el1 - 1;
+  UInt el1 = interface_mesh.getNbElement(_segment_2) - 2;
+  UInt el2 = el1 + 1;
 
   test.element = el1;
-  interface_mesh.getBarycenter(test, bary);
-  Real fourth_bary[] = {13./60., 13./60., 13./60.};
-
-  if (!Math::are_vector_equal(3, bary.storage(), fourth_bary))
-    return EXIT_FAILURE;
-
+  interface_mesh.getBarycenter(test, bary1);
   test.element = el2;
-  interface_mesh.getBarycenter(test, bary);
+  interface_mesh.getBarycenter(test, bary2);
+
+  Real fourth_bary[] = {13./60., 13./60., 13./60.};
   Real fifth_bary[] = {37./60., 37./60., 37./60.};
 
-  if (!Math::are_vector_equal(3, bary.storage(), fifth_bary))
+  // We don't know the order of the elements, so here we test permutations
+  if (!( (Math::are_vector_equal(3, bary1.storage(), fourth_bary)   &&
+          Math::are_vector_equal(3, bary2.storage(), fifth_bary)  ) ||
+         (Math::are_vector_equal(3, bary1.storage(), fifth_bary)    &&
+          Math::are_vector_equal(3, bary2.storage(), fourth_bary) ) ))
     return EXIT_FAILURE;
 
   // Testing a segment along the edge of elements

@@ -62,7 +62,7 @@ int main (int argc, char * argv[]) {
   reinforcement_mesh.getData<std::string>("physical_names")(_segment_2).copy(names_vec);
 
   EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(EmbeddedInterfaceModelOptions(_static));
 
   Array<Real> & nodes  = mesh.getNodes();
   Array<Real> & forces = model.getForce();

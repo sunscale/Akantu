@@ -62,7 +62,7 @@ int main(int argc, char * argv[]) {
 
   EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
 
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(EmbeddedInterfaceModelOptions(_static));
 
   if (model.getInterfaceMesh().getNbElement(_segment_2) != 1)
     return EXIT_FAILURE;

@@ -37,6 +37,8 @@
 #include "triangle.hh"
 #include "tetrahedron.hh"
 
+#include "mesh_geom_common.hh"
+
 __BEGIN_AKANTU__
 
 /**
@@ -76,7 +78,7 @@ __BEGIN_AKANTU__
 
 // If the primitive is supported by CGAL::intersection() then the 
 // implementation process is really easy with this macro
-AKANTU_AABB_CLASS(Triangle, CGAL::Cartesian<Real>);
+AKANTU_AABB_CLASS(Triangle, Cartesian);
 
 #undef AKANTU_AABB_CLASS
 

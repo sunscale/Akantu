@@ -36,14 +36,14 @@
 #include "aka_common.hh"
 #include "mesh_geom_intersector.hh"
 
-#include <CGAL/Cartesian.h>
+#include "mesh_geom_common.hh"
 
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /// Here, we know what kernel we have to use
-typedef CGAL::Cartesian<Real> K;
+typedef Cartesian K;
 
 template<UInt dim, ElementType type>
 class MeshSegmentIntersector : public MeshGeomIntersector<dim, type, Triangle<K>, K::Segment_3, K> {
@@ -81,7 +81,7 @@ public:
 protected:
   /// Compute segments from intersection list
   void computeSegments(const std::list<result_type> & intersections,
-                       std::list<pair_type> & segments,
+                       std::set<pair_type, segmentPairsLess> & segments,
                        const K::Segment_3 & query);
 
 protected:
