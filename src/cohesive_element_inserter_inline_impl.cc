@@ -14,9 +14,6 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "cohesive_element_inserter.hh"
-
-/* -------------------------------------------------------------------------- */
 inline UInt CohesiveElementInserter::getNbDataForElements(const Array<Element> & elements,
 							  SynchronizationTag tag) const {
   AKANTU_DEBUG_IN();
