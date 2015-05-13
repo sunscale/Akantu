@@ -234,7 +234,7 @@ void CohesiveElementInserter::insertIntrinsicElements() {
 }
 
 /* -------------------------------------------------------------------------- */
-UInt CohesiveElementInserter::insertElements() {
+UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
   NewNodesEvent node_event;
   node_event.getList().extendComponentsInterlaced(2, 1);
   NewElementsEvent element_event;
@@ -243,7 +243,8 @@ UInt CohesiveElementInserter::insertElements() {
 				    mesh_facets,
 				    insertion_facets,
 				    node_event.getList(),
-				    element_event.getList());
+				    element_event.getList(),
+				    only_double_facets);
 
   UInt nb_new_nodes = node_event.getList().getSize();
   UInt nb_new_elements = element_event.getList().getSize();

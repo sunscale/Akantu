@@ -81,6 +81,13 @@ protected:
 			       GhostType ghost_type = _not_ghost);
 
   /* ------------------------------------------------------------------------ */
+  /* Accessors                                                                */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// get the switches
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Switches, switches, UInt);
+
+  /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
@@ -96,6 +103,9 @@ private:
   /// element when the traction is computed
   bool progressive_delta_f;
 
+  /// count the opening/closing switches per element
+  bool count_switches;
+
   /// delta of the previous step
   CohesiveInternalField<Real> delta_prec;
 
@@ -107,6 +117,12 @@ private:
 
   /// 1D traction in the cohesive law
   CohesiveInternalField<Real> T_1d;
+
+  /// Number of opening/closing switches
+  CohesiveInternalField<UInt> switches;
+
+  /// delta increment of the previous time step
+  CohesiveInternalField<Real> delta_dot_prec;
 };
 
 __END_AKANTU__

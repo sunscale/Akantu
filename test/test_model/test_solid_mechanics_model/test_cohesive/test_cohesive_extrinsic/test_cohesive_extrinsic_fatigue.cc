@@ -27,7 +27,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
-#include "material_cohesive.hh"
+#include "material_cohesive_linear_fatigue.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -101,8 +101,8 @@ int main(int argc, char *argv[]) {
   SolidMechanicsModelCohesive model(mesh);
   model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
 
-  MaterialCohesive & numerical_material
-    = dynamic_cast<MaterialCohesive &>(model.getMaterial("cohesive"));
+  MaterialCohesiveLinearFatigue<2> & numerical_material
+    = dynamic_cast<MaterialCohesiveLinearFatigue<2> &>(model.getMaterial("cohesive"));
 
   Real delta_f = numerical_material.getParam<Real>("delta_f");
   Real delta_c = numerical_material.getParam<Real>("delta_c");
@@ -145,6 +145,8 @@ int main(int argc, char *argv[]) {
   arange(openings, 0.3, 0.7, increment);
   arange(openings, 0.7, 1.3, increment);
 
+  const Array<UInt> & switches = numerical_material.getSwitches(type_cohesive);
+
   // std::ofstream edis("fatigue_edis.txt");
 
   // impose openings
@@ -167,6 +169,9 @@ int main(int argc, char *argv[]) {
 
     // edis << model.getEnergy("dissipated") << std::endl;
   }
+
+  if (switches(0) != 7)
+    AKANTU_DEBUG_ERROR("The number of switches is wrong");
 
   std::cout << "OK: the test_cohesive_extrinsic_fatigue passed." << std::endl;
   return 0;

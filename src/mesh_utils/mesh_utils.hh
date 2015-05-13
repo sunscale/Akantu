@@ -139,7 +139,8 @@ public:
 				     Mesh & mesh_facets,
 				     const ElementTypeMapArray<bool> & facet_insertion,
 				     Array<UInt> & doubled_nodes,
-				     Array<Element> & new_elements);
+				     Array<Element> & new_elements,
+				     bool only_double_facets);
 #endif
 
   /// fill the subelement to element and the elements to subelements data

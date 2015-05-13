@@ -654,7 +654,8 @@ void MeshUtils::insertCohesiveElements(Mesh & mesh,
 				       Mesh & mesh_facets,
 				       const ElementTypeMapArray<bool> & facet_insertion,
 				       Array<UInt> & doubled_nodes,
-				       Array<Element> & new_elements) {
+				       Array<Element> & new_elements,
+				       bool only_double_facets) {
   UInt spatial_dimension = mesh.getSpatialDimension();
   UInt elements_to_insert = updateFacetToDouble(mesh_facets, facet_insertion);
 
@@ -678,7 +679,8 @@ void MeshUtils::insertCohesiveElements(Mesh & mesh,
       }
     }
 
-    updateCohesiveData(mesh, mesh_facets, new_elements);
+    if (!only_double_facets)
+      updateCohesiveData(mesh, mesh_facets, new_elements);
   }
 }
 #endif

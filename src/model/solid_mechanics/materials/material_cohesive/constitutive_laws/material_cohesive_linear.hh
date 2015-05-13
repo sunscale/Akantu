@@ -70,7 +70,7 @@ public:
   virtual void initMaterial();
 
   /// check stress for cohesive elements' insertion
-  virtual void checkInsertion();
+  virtual void checkInsertion(bool check_only = false);
 
   /// compute effective stress norm for insertion check
   inline Real computeEffectiveNorm(const Matrix<Real> & stress,

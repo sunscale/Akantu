@@ -73,7 +73,7 @@ public:
 
   /// insert extrinsic cohesive elements (returns the number of new
   /// cohesive elements)
-  UInt insertElements();
+  UInt insertElements(bool only_double_facets = false);
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
