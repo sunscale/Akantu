@@ -679,9 +679,7 @@ UInt MeshUtils::insertCohesiveElements(Mesh & mesh,
       }
     }
 
-    if (only_double_facets)
-      updateFacetToElementData(mesh, mesh_facets);
-    else
+    if (!only_double_facets)
       updateCohesiveData(mesh, mesh_facets, new_elements);
   }
 
@@ -1261,45 +1259,6 @@ void MeshUtils::updateCohesiveData(Mesh & mesh,
   AKANTU_DEBUG_OUT();
 }
 #endif
-
-/* -------------------------------------------------------------------------- */
-void MeshUtils::updateFacetToElementData(Mesh & mesh, Mesh & mesh_facets) {
-  AKANTU_DEBUG_IN();
-
-  UInt spatial_dimension = mesh.getSpatialDimension();
-
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    GhostType gt_facet = *gt;
-
-    Mesh::type_iterator it  = mesh_facets.firstType(spatial_dimension - 1, gt_facet);
-    Mesh::type_iterator end = mesh_facets.lastType(spatial_dimension - 1, gt_facet);
-
-    for(; it != end; ++it) {
-
-      ElementType type_facet = *it;
-
-      Array<UInt> & f_to_double = mesh_facets.getData<UInt>("facet_to_double",
-							    type_facet,
-							    gt_facet);
-
-      UInt nb_facet_to_double = f_to_double.getSize();
-      if (nb_facet_to_double == 0) continue;
-
-      Array< std::vector<Element> > & element_to_facet
-	= mesh_facets.getElementToSubelement(type_facet, gt_facet);
-
-      UInt old_nb_facet = element_to_facet.getSize() - nb_facet_to_double;
-
-      for (UInt facet = 0; facet < nb_facet_to_double; ++facet) {
-	/// update element_to_facet vectors
-	element_to_facet(f_to_double(facet))[1] = ElementNull;
-	element_to_facet(old_nb_facet + facet)[1] = ElementNull;
-      }
-    }
-  }
-}
 
 /* -------------------------------------------------------------------------- */
 void MeshUtils::doublePointFacet(Mesh & mesh,

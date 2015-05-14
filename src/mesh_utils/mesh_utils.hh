@@ -240,9 +240,6 @@ private:
 				 Array<Element> & new_elements);
 #endif
 
-  /// update the facet to element data to add the link to ElementNull for doubled facets
-  static void updateFacetToElementData(Mesh & mesh, Mesh & mesh_facets);
-
   /// update elemental connectivity after doubling a node
   inline static void updateElementalConnectivity(Mesh & mesh,
 						 UInt old_node,
