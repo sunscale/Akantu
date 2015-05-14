@@ -650,7 +650,7 @@ void MeshUtils::purifyMesh(Mesh & mesh) {
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
 /* -------------------------------------------------------------------------- */
-void MeshUtils::insertCohesiveElements(Mesh & mesh,
+UInt MeshUtils::insertCohesiveElements(Mesh & mesh,
 				       Mesh & mesh_facets,
 				       const ElementTypeMapArray<bool> & facet_insertion,
 				       Array<UInt> & doubled_nodes,
@@ -682,6 +682,8 @@ void MeshUtils::insertCohesiveElements(Mesh & mesh,
     if (!only_double_facets)
       updateCohesiveData(mesh, mesh_facets, new_elements);
   }
+
+  return elements_to_insert;
 }
 #endif
 
