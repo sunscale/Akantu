@@ -35,7 +35,7 @@
 #include "mesh_segment_intersector.hh"
 #include "geom_helper_functions.hh"
 
-#include <CGAL/Cartesian.h>
+#include "mesh_geom_common.hh"
 
 #include <iostream>
 
@@ -43,13 +43,13 @@
 
 using namespace akantu;
 
-typedef CGAL::Cartesian<Real> K;
+typedef Cartesian K;
 
 /* -------------------------------------------------------------------------- */
 
 int main (int argc, char * argv[]) {
-  debug::setDebugLevel(dblError);
   initialize("", argc, argv);
+  debug::setDebugLevel(dblError);
 
   Math::setTolerance(1e-10);
 
@@ -59,6 +59,7 @@ int main (int argc, char * argv[]) {
   MeshSegmentIntersector<2, _triangle_3> intersector(mesh, interface_mesh);
   intersector.constructData();
 
+  // Testing a segment going out of the mesh
   K::Point_3 a(0, 0.25, 0),
              b(1, 0.25, 0),
              c(0.25, 0, 0),
@@ -78,12 +79,27 @@ int main (int argc, char * argv[]) {
 
   Vector<Real> bary(2);
   Element test;
-  test.element = 1;
+  test.element = 0;
   test.type = _segment_2;
   
   interface_mesh.getBarycenter(test, bary);
+  Real first_bary[] = {0.125, 0.25};
 
-  if (!Math::are_float_equal(bary(0), 0.5) || !Math::are_float_equal(bary(1), 0.25))
+  if (!Math::are_vector_equal(2, bary.storage(), first_bary))
+    return EXIT_FAILURE;
+
+  // Testing a segment completely inside an element
+  K::Point_3 e(0.1, 0.33, 0),
+             f(0.1, 0.67, 0);
+  K::Segment_3 inside_segment(e, f);
+  intersector.computeIntersectionQuery(inside_segment);
+
+  test.element = interface_mesh.getNbElement(_segment_2) - 1;
+  interface_mesh.getBarycenter(test, bary);
+
+  Real second_bary[] = {0.1, 0.5};
+
+  if (!Math::are_vector_equal(2, bary.storage(), second_bary))
     return EXIT_FAILURE;
 
   finalize();

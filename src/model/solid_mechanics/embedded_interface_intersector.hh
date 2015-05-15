@@ -34,16 +34,15 @@
 #define __AKANTU_EMBEDDED_INTERFACE_INTERSECTOR_HH__
 
 #include "aka_common.hh"
+#include "mesh_geom_common.hh"
 #include "mesh_geom_abstract.hh"
 #include "mesh_segment_intersector.hh"
-
-#include <CGAL/Cartesian.h>
 
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-typedef CGAL::Cartesian<Real> K;
+typedef Cartesian K;
 
 /**
  * @brief Computes the intersections of the reinforcements defined in the primitive mesh

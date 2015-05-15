@@ -40,13 +40,23 @@
 
 #include "embedded_interface_intersector.hh"
 
-#include <CGAL/Cartesian.h>
-
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-typedef CGAL::Cartesian<Real> K;
+/// Options for the EmbeddedInterfaceModel
+struct EmbeddedInterfaceModelOptions : SolidMechanicsModelOptions {
+  EmbeddedInterfaceModelOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
+                                bool no_init_intersections = false,
+                                bool no_init_materials = false):
+    SolidMechanicsModelOptions(analysis_method, no_init_materials),
+    no_init_intersections(no_init_intersections)
+  {}
+
+  bool no_init_intersections;
+};
+
+extern const EmbeddedInterfaceModelOptions default_embedded_interface_model_options;
 
 /**
  * @brief Solid mechanics model using the embedded model.
@@ -91,7 +101,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// Initialise the model
-  virtual void initFull(const ModelOptions & options = default_solid_mechanics_model_options);
+  virtual void initFull(const ModelOptions & options = default_embedded_interface_model_options);
 
   /// Initialise the materials
   virtual void initMaterials();

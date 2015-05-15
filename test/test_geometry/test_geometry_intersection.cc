@@ -35,7 +35,7 @@
 #include "tree_type_helper.hh"
 #include "geom_helper_functions.hh"
 
-#include <CGAL/Cartesian.h>
+#include "mesh_geom_common.hh"
 
 #include <iostream>
 
@@ -43,16 +43,14 @@
 
 using namespace akantu;
 
-typedef CGAL::Cartesian<Real> K;
+typedef Cartesian K;
 typedef IntersectionTypeHelper<TreeTypeHelper<Triangle<K>, K>, K::Segment_3>::intersection_type result_type;
 
 /* -------------------------------------------------------------------------- */
 
 int main (int argc, char * argv[]) {
-  debug::setDebugLevel(dblWarning);
   initialize("", argc, argv);
-
-  Math::setTolerance(1e-10);
+  debug::setDebugLevel(dblWarning);
 
   Mesh mesh(2);
   mesh.read("test_geometry_triangle.msh");
@@ -71,8 +69,8 @@ int main (int argc, char * argv[]) {
   std::list<result_type> list_of_intersections;
   tree.all_intersections(line, std::back_inserter(list_of_intersections));
 
-  const result_type & intersection_0 = list_of_intersections.front();
-  const result_type & intersection_1 = list_of_intersections.back();
+  const result_type & intersection_0 = list_of_intersections.back();
+  const result_type & intersection_1 = list_of_intersections.front();
 
   if (!intersection_0 || !intersection_1)
     return EXIT_FAILURE;
@@ -82,13 +80,13 @@ int main (int argc, char * argv[]) {
     if (!compareSegments(*segment, result_0)) {
       return EXIT_FAILURE;
     }
-  }
+  } else return EXIT_FAILURE;
 
   if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&(intersection_1->first))) {
     if (!compareSegments(*segment, result_1)) {
       return EXIT_FAILURE;
     }
-  }
+  } else return EXIT_FAILURE;
 
   finalize();
   return EXIT_SUCCESS;

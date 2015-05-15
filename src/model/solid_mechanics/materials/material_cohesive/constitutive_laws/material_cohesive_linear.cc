@@ -174,7 +174,7 @@ void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
+void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) {
   AKANTU_DEBUG_IN();
 
   const Mesh & mesh_facets = model->getMeshFacets();
@@ -265,27 +265,29 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
         if (model->isExplicit()){
           f_insertion(facet) = true;
 
-          // store the new cohesive material parameters for each quadrature point
-          for (UInt q = 0; q < nb_quad_facet; ++q) {
-            Real new_sigma = stress_check(q);
-            Vector<Real> normal_traction_vec(normal_traction(q));
+	  if (!check_only) {
+	    // store the new cohesive material parameters for each quadrature point
+	    for (UInt q = 0; q < nb_quad_facet; ++q) {
+	      Real new_sigma = stress_check(q);
+	      Vector<Real> normal_traction_vec(normal_traction(q));
 
-            if (spatial_dimension != 3)
-              normal_traction_vec *= -1.;
+	      if (spatial_dimension != 3)
+		normal_traction_vec *= -1.;
 
-            new_sigmas.push_back(new_sigma);
-            new_normal_traction.push_back(normal_traction_vec);
+	      new_sigmas.push_back(new_sigma);
+	      new_normal_traction.push_back(normal_traction_vec);
 
-            Real new_delta;
+	      Real new_delta;
 
-            // set delta_c in function of G_c or a given delta_c value
-            if (Math::are_float_equal(delta_c, 0.))
-              new_delta = 2 * G_c / new_sigma;
-            else
-              new_delta = (*sigma_lim_it) / new_sigma * delta_c;
+	      // set delta_c in function of G_c or a given delta_c value
+	      if (Math::are_float_equal(delta_c, 0.))
+		new_delta = 2 * G_c / new_sigma;
+	      else
+		new_delta = (*sigma_lim_it) / new_sigma * delta_c;
 
-            new_delta_c.push_back(new_delta);
-          }
+	      new_delta_c.push_back(new_delta);
+	    }
+	  }
 
         }else{
           Real ratio = stress_check.mean()/(*sigma_lim_it);
@@ -317,29 +319,31 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion() {
       if (nn) {
 	f_insertion(index_filter) = true;
 
-	//  Array<Real>::iterator<Matrix<Real> > normal_traction_it =
-	//  normal_traction.begin_reinterpret(nb_quad_facet, spatial_dimension, nb_facet);
-	Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
+	if (!check_only) {
+	  //  Array<Real>::iterator<Matrix<Real> > normal_traction_it =
+	  //  normal_traction.begin_reinterpret(nb_quad_facet, spatial_dimension, nb_facet);
+	  Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
 
-	for (UInt q = 0; q < nb_quad_facet; ++q) {
+	  for (UInt q = 0; q < nb_quad_facet; ++q) {
 
-	  //  Vector<Real> ins_s(normal_traction_it[index_f].storage() + q * spatial_dimension,
-	  //            spatial_dimension);
+	    //  Vector<Real> ins_s(normal_traction_it[index_f].storage() + q * spatial_dimension,
+	    //            spatial_dimension);
 
-	  Real new_sigma = (sigma_lim_it[index_f]);
+	    Real new_sigma = (sigma_lim_it[index_f]);
 
-	  new_sigmas.push_back(new_sigma);
-	  new_normal_traction.push_back(0.0);
+	    new_sigmas.push_back(new_sigma);
+	    new_normal_traction.push_back(0.0);
 
-	  Real new_delta;
+	    Real new_delta;
 
-	  //set delta_c in function of G_c or a given delta_c value
-	  if (!Math::are_float_equal(delta_c, 0.))
-	    new_delta = delta_c;
-	  else
-	    new_delta = 2 * G_c / (new_sigma);
+	    //set delta_c in function of G_c or a given delta_c value
+	    if (!Math::are_float_equal(delta_c, 0.))
+	      new_delta = delta_c;
+	    else
+	      new_delta = 2 * G_c / (new_sigma);
 
-	  new_delta_c.push_back(new_delta);
+	    new_delta_c.push_back(new_delta);
+	  }
 
 	}
       }

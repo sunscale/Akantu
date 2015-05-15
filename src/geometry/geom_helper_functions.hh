@@ -37,18 +37,17 @@
 #include "aka_math.hh"
 #include "tree_type_helper.hh"
 
-#include <CGAL/Cartesian.h>
+#include "mesh_geom_common.hh"
 
 __BEGIN_AKANTU__
 
-typedef CGAL::Cartesian<Real> K;
-
-#define EPS 1e-10
+typedef Cartesian K;
 
 /// Fuzzy compare of two points
 inline bool comparePoints(const K::Point_3 & a, const K::Point_3 & b) {
-  Math::setTolerance(EPS);
-  return Math::are_float_equal(a.x(), b.x()) && Math::are_float_equal(a.y(), b.y());
+  return Math::are_float_equal(a.x(), b.x()) &&
+         Math::are_float_equal(a.y(), b.y()) &&
+         Math::are_float_equal(a.z(), b.z());
 }
 
 /// Fuzzy compare of two segments
@@ -62,36 +61,16 @@ inline bool compareSegmentPairs(const std::pair<K::Segment_3, UInt> & a, const s
   return compareSegments(a.first, b.first);
 }
 
-/// Pair ordering operator based on second member
-inline bool comparePairElement(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
-  return a.second < b.second;
-}
-
 /// Pair ordering operator based on first member
-inline bool lessSegmentPair(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
-  return CGAL::compare_lexicographically(a.first.min(), b.first.min()) || CGAL::compare_lexicographically(a.first.max(), b.first.max());
-}
+struct segmentPairsLess {
+  inline bool operator()(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
+    return CGAL::compare_lexicographically(a.first.min(), b.first.min()) || CGAL::compare_lexicographically(a.first.max(), b.first.max());
+  }
+};
 
 /* -------------------------------------------------------------------------- */
 /* Predicates                                                                 */
 /* -------------------------------------------------------------------------- */
-
-/// Predicate used to eliminate faces of mesh not belonging to a specific element
-template <class Primitive, class Kernel>
-class BelongsNotToElement {
-
-public:
-  BelongsNotToElement(UInt el):
-    el(el)
-  {}
-
-  bool operator()(const typename TreeTypeHelper<Primitive, Kernel>::primitive_type & primitive) {
-    return primitive.id() != el;
-  }
-
-protected:
-  const UInt el;
-};
 
 /// Predicate used to determine if two segments are equal
 class IsSameSegment {

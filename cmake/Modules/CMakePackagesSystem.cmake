@@ -1343,10 +1343,12 @@ function(_package_load_packages)
   # Load the packages in the propoer order
   foreach(_pkg_name ${ordered_loading_list})
     _package_get_option_name(${_pkg_name} _option_name)
-    _package_is_deactivated(${_pkg_name} _deactivated)
 
-    if(NOT _deactivated AND ${_option_name})
+    if(${_option_name})
       _package_load_package(${_pkg_name})
+    else()
+      # deactivate the packages than can already be deactivated
+      _package_deactivate(${_pkg_name})
     endif()
   endforeach()
 
@@ -1429,9 +1431,6 @@ function(_package_load_dependencies_package pkg_name loading_list)
       add_flags(cxx ${_pkg_comile_flags})
     endif()
   else()
-    # deactivate the packages than can already be deactivated
-    _package_deactivate(${pkg_name})
-
     #remove the comilation flags if needed
     if(_pkg_comile_flags)
       remove_flags(cxx ${_pkg_comile_flags})
@@ -1608,7 +1607,7 @@ function(_package_check_files_registered)
   endforeach()
 
   if(AUTO_MOVE_UNKNOWN_FILES)
-    file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/tmp/)
+    file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/unknown_files)
   endif()
 
   # warn the user and move the files if needed
@@ -1622,7 +1621,7 @@ function(_package_check_files_registered)
       message(" ${_file}")
       if(AUTO_MOVE_UNKNOWN_FILES)
 	get_filename_component(_file_name ${_file} NAME)
-	file(RENAME ${_file} ${PROJECT_SOURCE_DIR}/tmp/${_file_name})
+	file(RENAME ${_file} ${PROJECT_BINARY_DIR}/unknown_files/${_file_name})
       endif()
 
       file(APPEND ${PROJECT_BINARY_DIR}/missing_files_in_packages "${_file}
@@ -1630,8 +1629,11 @@ function(_package_check_files_registered)
     endforeach()
 
     if(AUTO_MOVE_UNKNOWN_FILES)
-      message(SEND_ERROR "The files where moved in the followinf folder ${PROJECT_SOURCE_DIR}/tmp/")
+      message(SEND_ERROR "The files where moved in the followinf folder ${PROJECT_BINARY_DIR}/unknown_files\n
+Please register them in the good package or clean the sources")
+    else()
+      message(SEND_ERROR "Please register them in the good package or clean the sources")
     endif()
-    message(SEND_ERROR "Please register them in the good package or clean the sources")
+
   endif()
 endfunction()

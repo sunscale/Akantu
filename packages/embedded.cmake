@@ -49,3 +49,7 @@ package_declare_sources(embedded
   model/solid_mechanics/materials/material_embedded/material_reinforcement_template.hh
   model/solid_mechanics/materials/material_embedded/material_reinforcement_template_inline_impl.cc
   )
+
+package_declare_documentation(embedded
+"This package allows the use of the embedded model in solid mechanics. This package depends on the CGAL package."
+)

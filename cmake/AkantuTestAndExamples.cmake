@@ -220,7 +220,7 @@ function(register_test test_name)
     set(_akantu_${_akantu_current_parent_test}_tests_count ${_tmp_parent_count} CACHE INTERNAL "" FORCE)
 
     string(TOUPPER ${_akantu_current_parent_test} _u_parent)
-    if(AKANTU_BUILD_${_u_parent})
+    if(AKANTU_BUILD_${_u_parent} OR AKANTU_BUILD_ALL_TESTS)
       # get the include directories for sources in activated directories
       package_get_all_include_directories(
 	AKANTU_LIBRARY_INCLUDE_DIRS

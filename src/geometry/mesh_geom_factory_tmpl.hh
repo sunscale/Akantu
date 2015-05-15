@@ -34,15 +34,12 @@
 /* -------------------------------------------------------------------------- */
 
 #include "aka_common.hh"
+#include "mesh_geom_common.hh"
 #include "mesh_geom_factory.hh"
-
-#include <CGAL/Cartesian.h>
 
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
-
-typedef CGAL::Cartesian<Real> Cartesian;
 
 template<UInt dim, ElementType type, class Primitive, class Kernel>
 MeshGeomFactory<dim, type, Primitive, Kernel>::MeshGeomFactory(const Mesh & mesh) :
