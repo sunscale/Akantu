@@ -428,8 +428,8 @@ void SolidMechanicsModelCohesive::updateResidual(bool need_initialize) {
 void SolidMechanicsModelCohesive::computeNormals() {
   AKANTU_DEBUG_IN();
 
-  Mesh & mesh_facets = inserter->getMeshFacets();
-  getFEEngine("FacetsFEEngine").computeNormalsOnControlPoints(_not_ghost);
+  Mesh & mesh_facets = this->inserter->getMeshFacets();
+  this->getFEEngine("FacetsFEEngine").computeNormalsOnControlPoints(_not_ghost);
 
   /**
    *  @todo store tangents while computing normals instead of
@@ -449,40 +449,11 @@ void SolidMechanicsModelCohesive::computeNormals() {
     ElementType facet_type = *it;
 
     const Array<Real> & normals =
-      getFEEngine("FacetsFEEngine").getNormalsOnQuadPoints(facet_type);
+      this->getFEEngine("FacetsFEEngine").getNormalsOnQuadPoints(facet_type);
 
-    UInt nb_quad = normals.getSize();
+    Array<Real> & tangents = this->tangents(facet_type);
 
-    Array<Real> & tang = tangents(facet_type);
-    tang.resize(nb_quad);
-
-    Real * normal_it = normals.storage();
-    Real * tangent_it = tang.storage();
-
-    /// compute first tangent
-    for (UInt q = 0; q < nb_quad; ++q) {
-
-      /// if normal is orthogonal to xy plane, arbitrarly define tangent
-      if ( Math::are_float_equal(Math::norm2(normal_it), 0) )
-	tangent_it[0] = 1;
-      else
-	Math::normal2(normal_it, tangent_it);
-
-      normal_it += spatial_dimension;
-      tangent_it += tangent_components;
-    }
-
-    /// compute second tangent (3D case)
-    if (spatial_dimension == 3) {
-      normal_it = normals.storage();
-      tangent_it = tang.storage();
-
-      for (UInt q = 0; q < nb_quad; ++q) {
-	Math::normal3(normal_it, tangent_it, tangent_it + spatial_dimension);
-	normal_it += spatial_dimension;
-	tangent_it += tangent_components;
-      }
-    }
+    Math::compute_tangents(normals, tangents);
   }
 
   AKANTU_DEBUG_OUT();
