@@ -38,3 +38,4 @@ register_test(test_grid test_grid.cc
   PACKAGE core)
 
 register_test(test_math test_math.cc PACKAGE core)
+register_test(test_types test_types.cc PACKAGE core)
