@@ -46,7 +46,8 @@ inline void IntegratorGauss<kind>::initIntegrator(const Array<Real> & nodes,
 #define INIT_INTEGRATOR(type)						\
   computeQuadraturePoints<type>(ghost_type);				\
   precomputeJacobiansOnQuadraturePoints<type>(nodes, ghost_type);	\
-  checkJacobians<type>(ghost_type);
+  checkJacobians<type>(ghost_type);                                     \
+  multiplyJacobiansByWeights<type>(ghost_type);
 
   AKANTU_BOOST_ALL_ELEMENT_SWITCH(INIT_INTEGRATOR);
 #undef INIT_INTEGRATOR
@@ -180,6 +181,7 @@ void IntegratorGauss<kind>::checkJacobians(const GhostType & ghost_type) const {
 			 << i / nb_quadrature_points << ":"
 			 << type << ":"
 			 << ghost_type << ")");
+
   }
   AKANTU_DEBUG_OUT();
 }
@@ -211,8 +213,6 @@ void IntegratorGauss<kind>::precomputeJacobiansOnQuadraturePoints(const Array<Re
   Array<Real>::vector_iterator jacobians_it =
     jacobians_tmp->begin_reinterpret(nb_quadrature_points, nb_element);
 
-  Vector<Real> weights = GaussIntegrationElement<type>::getWeights();
-
   Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type);
 
@@ -224,7 +224,6 @@ void IntegratorGauss<kind>::precomputeJacobiansOnQuadraturePoints(const Array<Re
     const Matrix<Real> & x = *x_it;
     Vector<Real> & J = *jacobians_it;
     computeJacobianOnQuadPointsByElement<type>(x, J);
-    J *= weights;
   }
 
   // >>>>>> DEBUG CODE >>>>>> //
@@ -247,6 +246,32 @@ void IntegratorGauss<kind>::precomputeJacobiansOnQuadraturePoints(const Array<Re
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type>
+void IntegratorGauss<kind>::multiplyJacobiansByWeights(const GhostType & ghost_type) {
+  AKANTU_DEBUG_IN();
+
+  UInt nb_quadrature_points = GaussIntegrationElement<type>::getNbQuadraturePoints();
+  UInt nb_element = this->mesh.getNbElement(type, ghost_type);
+
+
+  Vector<Real> weights = GaussIntegrationElement<type>::getWeights();
+
+  Array<Real>::vector_iterator jacobians_it =
+    this->jacobians(type, ghost_type).begin_reinterpret(nb_quadrature_points, nb_element);
+  Array<Real>::vector_iterator jacobians_end =
+    this->jacobians(type, ghost_type).end_reinterpret(nb_quadrature_points, nb_element);
+
+  for (; jacobians_it != jacobians_end; ++jacobians_it) {
+    Vector<Real> & J = *jacobians_it;
+    J *= weights;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
 
 /* -------------------------------------------------------------------------- */
 #if defined(AKANTU_COHESIVE_ELEMENT)
