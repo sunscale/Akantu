@@ -1,16 +1,15 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Marco Vocialta <marco.vocialta@epfl.ch>
+# @author Mauro Corrado <mauro.corrado@epfl.ch>
 #
-# @date creation: Tue May 08 2012
-# @date last modification: Fri Jun 21 2013
+# @date   Fri May 01 11:56:18 2015
 #
-# @brief  configuration for cohesive elements tests
+# @brief  checking correct assembling of stiffness matrix in case of cohe elems
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -30,11 +29,13 @@
 #
 #===============================================================================
 
-add_akantu_test(test_cohesive_buildfacets "test_cohesive_buildfacets")
-add_akantu_test(test_cohesive_intrinsic "test_cohesive_intrinsic")
-add_akantu_test(test_cohesive_extrinsic "test_cohesive_extrinsic")
-add_akantu_test(test_cohesive_buildfragments "test_cohesive_buildfragments")
-add_akantu_test(test_cohesive_intrinsic_impl "test_cohesive_intrinsic_impl")
-add_akantu_test(test_cohesive_1d_element "test_cohesive_1d_element")
-add_akantu_test(test_cohesive_extrinsic_implicit "test_cohesive_extrinsic_implicit")
-#===============================================================================
+
+register_test(test_assembling_K_cohe_elements
+  SOURCES test_assembling_K_cohe_elements.cc
+  FILES_TO_COPY quadrangle.msh material.dat
+  PACKAGE cohesive_element
+  )
+
+#add_mesh(test_cohesive_buildfacets_mesh mesh.geo 3 2)
+#add_dependencies(test_cohesive_buildfacets test_cohesive_buildfacets_mesh)
+
