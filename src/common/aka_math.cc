@@ -184,6 +184,50 @@ void Math::matrix_matrixt(UInt m, UInt n, UInt k,
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+void Math::compute_tangents(const Array<Real> & normals, Array<Real> & tangents) {
+  AKANTU_DEBUG_IN();
+
+  UInt spatial_dimension  = normals.getNbComponent();
+  UInt tangent_components = spatial_dimension * (spatial_dimension - 1);
+
+  AKANTU_DEBUG_ASSERT(tangent_components == tangents.getNbComponent(),
+		      "Cannot compute the tangents, the storage array for tangents"
+		      << " does not have the good amount of components.");
+
+  UInt nb_normals = normals.getSize();
+  tangents.resize(nb_normals);
+
+  Real * normal_it  = normals .storage();
+  Real * tangent_it = tangents.storage();
+
+  /// compute first tangent
+  for (UInt q = 0; q < nb_normals; ++q) {
+    /// if normal is orthogonal to xy plane, arbitrarly define tangent
+    if ( Math::are_float_equal(Math::norm2(normal_it), 0) )
+      tangent_it[0] = 1;
+    else
+      Math::normal2(normal_it, tangent_it);
+
+    normal_it  += spatial_dimension;
+    tangent_it += tangent_components;
+  }
+
+  /// compute second tangent (3D case)
+  if (spatial_dimension == 3) {
+    normal_it  = normals .storage();
+    tangent_it = tangents.storage();
+
+    for (UInt q = 0; q < nb_normals; ++q) {
+      Math::normal3(normal_it, tangent_it, tangent_it + spatial_dimension);
+      normal_it  += spatial_dimension;
+      tangent_it += tangent_components;
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
 
 
 __END_AKANTU__

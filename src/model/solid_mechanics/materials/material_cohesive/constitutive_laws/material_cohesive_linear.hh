@@ -73,10 +73,10 @@ public:
   virtual void checkInsertion(bool check_only = false);
 
   /// compute effective stress norm for insertion check
-  inline Real computeEffectiveNorm(const Matrix<Real> & stress,
-				   const Vector<Real> & normal,
-				   const Vector<Real> & tangent,
-				   Vector<Real> & normal_stress) const;
+  Real computeEffectiveNorm(const Matrix<Real> & stress,
+			    const Vector<Real> & normal,
+			    const Vector<Real> & tangent,
+			    Vector<Real> & normal_stress) const;
 
 protected:
 

@@ -594,6 +594,7 @@ typedef Vector<Real> RVector;
 /* -------------------------------------------------------------------------- */
 // support operations for the creation of other vectors
 template <typename T> Vector<T> operator*(T scalar, const Vector<T> & a);
+template <typename T> Vector<T> operator/(const Vector<T> & a, T scalar);
 template <typename T> Vector<T> operator+(const Vector<T> & a, const Vector<T> & b);
 template <typename T> Vector<T> operator-(const Vector<T> & a, const Vector<T> & b);
 
@@ -603,6 +604,13 @@ Vector<T> operator*(T scalar, const Vector<T> & a) {
   Vector<T> r(a.size());
   r = a;
   r *= scalar;
+  return r;
+}
+
+template <typename T>
+Vector<T> operator/(const Vector<T> & a, T scalar) {
+  Vector<T> r(a);
+  r /= scalar;
   return r;
 }
 
