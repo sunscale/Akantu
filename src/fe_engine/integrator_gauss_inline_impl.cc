@@ -326,8 +326,6 @@ void IntegratorGauss<_ek_cohesive>::precomputeJacobiansOnQuadraturePoints(const 
       J(0) = 1;
     else
       computeJacobianOnQuadPointsByElement<type>(x, J);
-
-    J *= weights;
   }
 
   AKANTU_DEBUG_OUT();
