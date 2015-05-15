@@ -35,6 +35,8 @@ package_declare(CGAL EXTERNAL
   )
 
 package_declare_sources(CGAL
+  geometry/mesh_geom_common.hh
+
   geometry/mesh_geom_abstract.hh
   geometry/mesh_geom_abstract.cc
 
@@ -54,4 +56,10 @@ package_declare_sources(CGAL
   geometry/aabb_primitives/tetrahedron.hh
 
   geometry/aabb_primitives/aabb_primitive.hh
+  )
+
+package_declare_documentation(CGAL
+  "This package allows the use of CGAL's geometry algorithms in Akantu. Note that it needs a version of CGAL $\\geq$ 4.5 and needs activation of boost's system component."
+  ""
+  "CGAL checks with an assertion that the compilation flag \\shellcode{-frounding-math} is activated, which forbids the use of Valgrind on any code compilated with the package."
   )

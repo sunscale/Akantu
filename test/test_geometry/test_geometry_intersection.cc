@@ -35,7 +35,7 @@
 #include "tree_type_helper.hh"
 #include "geom_helper_functions.hh"
 
-#include <CGAL/Cartesian.h>
+#include "mesh_geom_common.hh"
 
 #include <iostream>
 
@@ -43,7 +43,7 @@
 
 using namespace akantu;
 
-typedef CGAL::Cartesian<Real> K;
+typedef Cartesian K;
 typedef IntersectionTypeHelper<TreeTypeHelper<Triangle<K>, K>, K::Segment_3>::intersection_type result_type;
 
 /* -------------------------------------------------------------------------- */

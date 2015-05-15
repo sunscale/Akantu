@@ -40,13 +40,9 @@
 #  include "dumpable_inline_impl.hh"
 #endif
 
-#include <CGAL/Cartesian.h>
-
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
-
-typedef CGAL::Cartesian<Real> K;
 
 EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
                                                Mesh & primitive_mesh,
@@ -69,18 +65,19 @@ EmbeddedInterfaceModel::~EmbeddedInterfaceModel() {
 }
 
 void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
-  const SolidMechanicsModelOptions & smm_options =
-    dynamic_cast<const SolidMechanicsModelOptions &>(options);
+  const EmbeddedInterfaceModelOptions & eim_options =
+    dynamic_cast<const EmbeddedInterfaceModelOptions &>(options);
 
   // We don't want to initiate materials before shape functions are initialized
-  SolidMechanicsModelOptions dummy_options(smm_options.analysis_method, true);
+  SolidMechanicsModelOptions dummy_options(eim_options.analysis_method, true);
 
   interface_mesh = &(intersector.getInterfaceMesh());
   registerFEEngineObject<MyFEEngineType>("EmbeddedInterfaceFEEngine", *interface_mesh, 1);
 
   SolidMechanicsModel::initFull(dummy_options);
 
-  intersector.constructData();
+  if (!eim_options.no_init_intersections)
+    intersector.constructData();
 
   FEEngine & engine = getFEEngine("EmbeddedInterfaceFEEngine");
   engine.initShapeFunctions(_not_ghost);

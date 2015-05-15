@@ -35,7 +35,7 @@
 
 #include "aka_common.hh"
 
-#include <CGAL/Cartesian.h>
+#include "mesh_geom_common.hh"
 
 __BEGIN_AKANTU__
   

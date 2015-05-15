@@ -33,7 +33,7 @@
 #include "aka_common.hh"
 #include "geom_helper_functions.hh"
 
-#include <CGAL/Cartesian.h>
+#include "mesh_geom_common.hh"
 
 #include <iostream>
 
@@ -41,7 +41,7 @@
 
 using namespace akantu;
 
-typedef CGAL::Cartesian<Real> K;
+typedef Cartesian K;
 typedef K::Point_3 Point;
 typedef K::Segment_3 Segment;
 
@@ -57,6 +57,31 @@ int main(int argc, char * argv[]) {
 
   if (!compareSegments(seg1, seg2))
     return EXIT_FAILURE;
+
+  // Testing sort + unique on list of segments
+  std::vector<std::pair<K::Segment_3, UInt> > pair_list;
+  pair_list.push_back(std::make_pair(seg1, 1));
+  pair_list.push_back(std::make_pair(seg2, 2));
+
+  segmentPairsLess sorter;
+  std::sort(pair_list.begin(), pair_list.end(), sorter);
+  std::vector<std::pair<K::Segment_3, UInt> >::iterator
+    it = std::unique(pair_list.begin(), pair_list.end(), compareSegmentPairs);
+
+  if (it - pair_list.begin() != 1) {
+    std::cout << pair_list.size() << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  // Testing insertion in set
+  std::set<std::pair<K::Segment_3, UInt>, segmentPairsLess> pair_set;
+  pair_set.insert(pair_set.begin(), std::make_pair(seg1, 1));
+  pair_set.insert(pair_set.begin(), std::make_pair(seg2, 2));
+
+  if (pair_set.size() != 1) {
+    std::cout << pair_set.size() << std::endl;
+    return EXIT_FAILURE;
+  }
 
   finalize();
   return EXIT_SUCCESS;

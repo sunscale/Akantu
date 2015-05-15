@@ -35,7 +35,7 @@
 #include "mesh_segment_intersector.hh"
 #include "geom_helper_functions.hh"
 
-#include <CGAL/Cartesian.h>
+#include "mesh_geom_common.hh"
 
 #include <iostream>
 
@@ -43,7 +43,7 @@
 
 using namespace akantu;
 
-typedef CGAL::Cartesian<Real> K;
+typedef Cartesian K;
 
 /* -------------------------------------------------------------------------- */
 
@@ -83,7 +83,7 @@ int main (int argc, char * argv[]) {
   test.type = _segment_2;
   
   interface_mesh.getBarycenter(test, bary);
-  Real first_bary[] = {0.5, 0.25};
+  Real first_bary[] = {0.125, 0.25};
 
   if (!Math::are_vector_equal(2, bary.storage(), first_bary))
     return EXIT_FAILURE;

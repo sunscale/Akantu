@@ -104,6 +104,8 @@ void EmbeddedInterfaceIntersector::constructData() {
   for (; type_it != type_end ; ++type_it) {
     ElementType type = *type_it;
 
+    AKANTU_DEBUG_INFO("Computing intersections with background element type " << type);
+
     switch(dim) {
       case 1:
         AKANTU_DEBUG_ERROR("No embedded model in 1D");
