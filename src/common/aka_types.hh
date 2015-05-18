@@ -187,7 +187,7 @@ class VectorProxy : public TensorProxy<T, 1, Vector<T> > {
   typedef TensorProxy<T, 1, Vector<T> > parent;
   typedef Vector<T> type;
 public:
-  VectorProxy(T * data = NULL, UInt n = 0) : parent(data, n, 0, 0) { }
+  VectorProxy(T * data, UInt n) : parent(data, n, 0, 0) { }
   VectorProxy(const VectorProxy & src) : parent(src) {  }
   VectorProxy(const Vector<T> & src) : parent(src) { }
   VectorProxy & operator=(const type & src) {
@@ -205,7 +205,7 @@ class MatrixProxy : public TensorProxy<T, 2, Matrix<T> > {
   typedef TensorProxy<T, 2, Matrix<T> > parent;
   typedef Matrix<T> type;
 public:
-  MatrixProxy(T * data = NULL, UInt m = 0, UInt n = 0) : parent(data, m, n, 0) { }
+  MatrixProxy(T * data, UInt m, UInt n) : parent(data, m, n, 0) { }
   MatrixProxy(const MatrixProxy & src) : parent(src) {  }
   MatrixProxy(const type & src) : parent(src) { }
   MatrixProxy & operator=(const type & src) {
@@ -223,7 +223,7 @@ class Tensor3Proxy : public TensorProxy<T, 3, Tensor3<T> > {
   typedef TensorProxy<T, 3, Tensor3<T> > parent;
   typedef Tensor3<T> type;
 public:
-  Tensor3Proxy(T * data = NULL, UInt m = 0, UInt n = 0, UInt k = 0) :
+  Tensor3Proxy(T * data, UInt m, UInt n, UInt k) :
     parent(data, m, n, k) { }
   Tensor3Proxy(const Tensor3Proxy & src) : parent(src) {  }
   Tensor3Proxy(const Tensor3<T> & src) : parent(src) { }
