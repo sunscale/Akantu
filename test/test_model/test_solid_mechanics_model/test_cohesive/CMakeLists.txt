@@ -30,7 +30,6 @@
 #
 #===============================================================================
 
-add_akantu_test(test_cohesive_buildfacets "test_cohesive_buildfacets")
 add_akantu_test(test_cohesive_intrinsic "test_cohesive_intrinsic")
 add_akantu_test(test_cohesive_extrinsic "test_cohesive_extrinsic")
 add_akantu_test(test_cohesive_buildfragments "test_cohesive_buildfragments")

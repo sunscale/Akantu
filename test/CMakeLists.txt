@@ -51,7 +51,6 @@ add_akantu_test(test_io "Test the IO modules")
 add_akantu_test(test_contact "Test the contact part of Akantu")
 add_akantu_test(test_geometry "Test the geometry module of Akantu")
 
-add_akantu_test(test_surface_extraction "Test mesh utils surface extraction")
 add_akantu_test(test_synchronizer "Test synchronizers")
 
 
