@@ -88,6 +88,8 @@ void arange(Array<Real> &, Real, Real, Real);
 int main(int argc, char *argv[]) {
   initialize("material_fatigue.dat", argc, argv);
 
+  Math::setTolerance(1e-13);
+
   const UInt spatial_dimension = 2;
   const ElementType type = _quadrangle_4;
 
