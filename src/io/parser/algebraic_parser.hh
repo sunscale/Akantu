@@ -276,6 +276,15 @@ namespace akantu {
       std::vector<Real> _cells;
     };
 
+    std::ostream& operator<<(std::ostream& stream, const parsable_vector& pv) {
+      stream << "pv[";
+      std::vector<Real>::const_iterator it = pv._cells.begin();
+      if(it != pv._cells.end()) stream << *it;
+      for (++it; it != pv._cells.end(); ++it) stream << ", " << *it;
+      stream << "]";
+      return stream;
+    }
+
     struct parsable_matrix {
       operator Matrix<Real>() {
 	size_t cols = 0;
@@ -297,6 +306,14 @@ namespace akantu {
       std::vector<parsable_vector> _cells;
     };
 
+    std::ostream& operator<<(std::ostream& stream, const parsable_matrix& pm) {
+      stream << "pm[";
+      std::vector<parsable_vector>::const_iterator it = pm._cells.begin();
+      if(it != pm._cells.end()) stream << *it;
+      for (++it; it != pm._cells.end(); ++it) stream << ", " << *it;
+      stream << "]";
+      return stream;
+    }
 
     /* ---------------------------------------------------------------------- */
     struct lazy_cont_add_ {
@@ -331,6 +348,12 @@ namespace akantu {
               )                     [ lbs::_val = lbs::_a ]
           ;
 
+#if !defined AKANTU_NDEBUG
+	if(AKANTU_DEBUG_TEST(dblDebug)) {
+	  qi::debug(start);
+	  qi::debug(vector);
+	}
+#endif
         qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
 
 	start .name("start");
@@ -366,14 +389,14 @@ namespace akantu {
     template<class Iterator, typename Skipper = spirit::unused_type>
     struct MatrixGrammar : qi::grammar<Iterator, parsable_matrix(), Skipper> {
       MatrixGrammar(const ParserSection & section) : MatrixGrammar::base_type(start,
-									    "matrix_algebraic_grammar"),
+									      "matrix_algebraic_grammar"),
 						    vector(section) {
         phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
         phx::function<lazy_vector_eval_> lazy_vector_eval;
         phx::function<lazy_cont_add_> lazy_matrix_add;
 
         start
-          =   '[' > matrix > ']'
+          =   '[' >> matrix >> ']'
           ;
 
         matrix
@@ -397,9 +420,20 @@ namespace akantu {
 	  =   qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9") // coming from the InputFileGrammar
 	  ;
 
+
+#ifndef AKANTU_NDEBUG
+	if(AKANTU_DEBUG_TEST(dblDebug)) {
+	  qi::debug(start);
+	  qi::debug(matrix);
+	  qi::debug(rows);
+	  qi::debug(eval_vector);
+	  qi::debug(key);
+	}
+#endif
+
         qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
 
-	start.name("matrix");
+	start .name("matrix");
 	matrix.name("all_rows");
         rows  .name("rows");
 	vector.name("vector");
