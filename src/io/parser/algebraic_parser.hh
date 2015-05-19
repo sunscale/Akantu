@@ -290,8 +290,10 @@ namespace akantu {
     std::ostream& operator<<(std::ostream& stream, const parsable_vector& pv) {
       stream << "pv[";
       std::vector<Real>::const_iterator it = pv._cells.begin();
-      if(it != pv._cells.end()) stream << *it;
-      for (++it; it != pv._cells.end(); ++it) stream << ", " << *it;
+      if(it != pv._cells.end()) {
+	stream << *it;
+	for (++it; it != pv._cells.end(); ++it) stream << ", " << *it;
+      }
       stream << "]";
       return stream;
     }
@@ -320,8 +322,10 @@ namespace akantu {
     std::ostream& operator<<(std::ostream& stream, const parsable_matrix& pm) {
       stream << "pm[";
       std::vector<parsable_vector>::const_iterator it = pm._cells.begin();
-      if(it != pm._cells.end()) stream << *it;
-      for (++it; it != pm._cells.end(); ++it) stream << ", " << *it;
+      if(it != pm._cells.end()) {
+	stream << *it;
+	for (++it; it != pm._cells.end(); ++it) stream << ", " << *it;
+      }
       stream << "]";
       return stream;
     }
@@ -476,7 +480,7 @@ namespace akantu {
     };
 
     std::ostream& operator<<(std::ostream& stream, const ParsableRandomGenerator& prg) {
-      stream << "prg[" << prg.base << " " << prg.type << " " << prg.parameters << "]";
+      stream << "prg[" << prg.base << " " << UInt(prg.type) << " " << prg.parameters << "]";
       return stream;
     }
 
