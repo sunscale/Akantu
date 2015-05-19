@@ -87,25 +87,27 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(const K::Segmen
 
   // Loop over the segment pairs
   for (; it != end ; ++it) {
-    Vector<UInt> segment_connectivity(2);
-    segment_connectivity(0) = result_mesh.getNbNodes();
-    segment_connectivity(1) = result_mesh.getNbNodes() + 1;
-    connectivity.push_back(segment_connectivity);
+    if (!it->first.is_degenerate()) {
+      Vector<UInt> segment_connectivity(2);
+      segment_connectivity(0) = result_mesh.getNbNodes();
+      segment_connectivity(1) = result_mesh.getNbNodes() + 1;
+      connectivity.push_back(segment_connectivity);
 
-    // Copy nodes
-    Vector<Real> source(dim), target(dim);
-    for (UInt j = 0 ; j < dim ; j++) {
-      source(j) = it->first.source()[j];
-      target(j) = it->first.target()[j];
-    }
+      // Copy nodes
+      Vector<Real> source(dim), target(dim);
+      for (UInt j = 0 ; j < dim ; j++) {
+        source(j) = it->first.source()[j];
+        target(j) = it->first.target()[j];
+      }
 
-    nodes.push_back(source);
-    nodes.push_back(target);
+      nodes.push_back(source);
+      nodes.push_back(target);
 
-    // Copy associated element info
-    if (valid_elemental_data) {
-      associated_element->push_back(Element(type, it->second));
-      associated_physical_name->push_back(current_physical_name);
+      // Copy associated element info
+      if (valid_elemental_data) {
+        associated_element->push_back(Element(type, it->second));
+        associated_physical_name->push_back(current_physical_name);
+      }
     }
   }
 
