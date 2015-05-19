@@ -67,11 +67,17 @@ enum NormType {
 };
 
 
+/**
+ * DimHelper is a class to generalize the setup of a dim array from 3
+ * values. This gives a common interface in the TensorStorage class
+ * independently of its derived inheritance (Vector, Matrix, Tensor3)
+ */
 template<UInt dim>
 struct DimHelper {
   static inline void setDims(UInt m, UInt n, UInt p, UInt dims[dim]);
 };
 
+/* -------------------------------------------------------------------------- */
 template<>
 struct DimHelper<1> {
   static inline void setDims(UInt m,
@@ -82,6 +88,7 @@ struct DimHelper<1> {
   }
 };
 
+/* -------------------------------------------------------------------------- */
 template<>
 struct DimHelper<2> {
   static inline void setDims(UInt m,
@@ -93,6 +100,7 @@ struct DimHelper<2> {
   }
 };
 
+/* -------------------------------------------------------------------------- */
 template<>
 struct DimHelper<3> {
   static inline void setDims(UInt m,
@@ -111,6 +119,16 @@ template<typename T, UInt ndim, class RetType>
 class TensorStorage;
 
 /* -------------------------------------------------------------------------- */
+/* Proxy classes                                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The TensorProxy class is a proxy class to the TensorStorage it handles the
+ * wrapped case. That is to say if an accessor should give access to a Tensor
+ * wrapped on some data, like the Array<T>::iterator they can return a
+ * TensorProxy that will be automatically transformed as a TensorStorage wrapped
+ * on the same data
+ */
 template<typename T, UInt ndim, class RetType>
 class TensorProxy {
 protected:
@@ -143,10 +161,18 @@ public:
 
   T * storage() const { return values; }
 
-  void copyExternalMemory(T * data, UInt nb_values) {
-    AKANTU_DEBUG_ASSERT(nb_values == this->size(),
-			"You are trying to copy two tensors with differents sizes");
-    memcpy(this->values, data, nb_values * sizeof(T));
+  inline TensorProxy & operator=(const RetType & src) {
+    AKANTU_DEBUG_ASSERT(src.size() == this->size(),
+			"You are trying to copy two tensors with different sizes");
+    memcpy(this->values, src.storage(), this->size() * sizeof(T));
+    return *this;
+  }
+
+  inline TensorProxy & operator=(const TensorProxy & src) {
+    AKANTU_DEBUG_ASSERT(src.size() == this->size(),
+			"You are trying to copy two tensors with different sizes");
+    memcpy(this->values, src.storage(), this->size() * sizeof(T));
+    return *this;
   }
 
 protected:
@@ -159,13 +185,17 @@ protected:
 template<typename T>
 class VectorProxy : public TensorProxy<T, 1, Vector<T> > {
   typedef TensorProxy<T, 1, Vector<T> > parent;
+  typedef Vector<T> type;
 public:
-  VectorProxy(T * data = NULL, UInt n = 0) : parent(data, n, 0, 0) { }
+  VectorProxy(T * data, UInt n) : parent(data, n, 0, 0) { }
   VectorProxy(const VectorProxy & src) : parent(src) {  }
   VectorProxy(const Vector<T> & src) : parent(src) { }
-
-  VectorProxy & operator=(const Vector<T> & src) {
-    this->copyExternalMemory(src.storage(), src.size());
+  VectorProxy & operator=(const type & src) {
+    parent::operator=(src);
+    return *this;
+  }
+  VectorProxy & operator=(const VectorProxy & src) {
+    parent::operator=(src);
     return *this;
   }
 };
@@ -173,13 +203,17 @@ public:
 template<typename T>
 class MatrixProxy : public TensorProxy<T, 2, Matrix<T> > {
   typedef TensorProxy<T, 2, Matrix<T> > parent;
+  typedef Matrix<T> type;
 public:
-  MatrixProxy(T * data = NULL, UInt m = 0, UInt n = 0) : parent(data, m, n, 0) { }
+  MatrixProxy(T * data, UInt m, UInt n) : parent(data, m, n, 0) { }
   MatrixProxy(const MatrixProxy & src) : parent(src) {  }
-  MatrixProxy(const Matrix<T> & src) : parent(src) { }
-
-  MatrixProxy & operator=(const Matrix<T> & src) {
-    this->copyExternalMemory(src.storage(), src.size());
+  MatrixProxy(const type & src) : parent(src) { }
+  MatrixProxy & operator=(const type & src) {
+    parent::operator=(src);
+    return *this;
+  }
+  MatrixProxy & operator=(const MatrixProxy & src) {
+    parent::operator=(src);
     return *this;
   }
 };
@@ -187,14 +221,18 @@ public:
 template<typename T>
 class Tensor3Proxy : public TensorProxy<T, 3, Tensor3<T> > {
   typedef TensorProxy<T, 3, Tensor3<T> > parent;
+  typedef Tensor3<T> type;
 public:
-  Tensor3Proxy(T * data = NULL, UInt m = 0, UInt n = 0, UInt k = 0) :
+  Tensor3Proxy(T * data, UInt m, UInt n, UInt k) :
     parent(data, m, n, k) { }
   Tensor3Proxy(const Tensor3Proxy & src) : parent(src) {  }
   Tensor3Proxy(const Tensor3<T> & src) : parent(src) { }
-
-  Tensor3Proxy & operator=(const Tensor3<T> & src) {
-    this->copyExternalMemory(src.storage(), src.size());
+  Tensor3Proxy & operator=(const type & src) {
+    parent::operator=(src);
+    return *this;
+  }
+  Tensor3Proxy & operator=(const Tensor3Proxy & src) {
+    parent::operator=(src);
     return *this;
   }
 };
@@ -279,10 +317,12 @@ public:
       delete [] this->values;
   }
 
+  /* ------------------------------------------------------------------------ */
   inline TensorStorage & operator=(const RetType & src) {
     if(this != &src) {
       if (this->wrapped) {
-	AKANTU_DEBUG_ASSERT(this->_size == src.size(), "vectors of different size");
+	// this test is not sufficient for Tensor of order higher than 1
+	AKANTU_DEBUG_ASSERT(this->_size == src.size(), "Tensors of different size");
 	memcpy(this->values, src.storage(), this->_size * sizeof(T));
       } else {
 	deepCopy(src);
@@ -362,6 +402,8 @@ public:
     memcpy(values, other.storage(), _size * sizeof(T));
   }
 
+
+  bool isWrapped() const { return this->wrapped; }
 protected:
   friend class Array<T>;
 
@@ -477,6 +519,7 @@ public:
   /* ------------------------------------------------------------------------ */
   inline Vector<T> & operator*=(Real x) { return parent::operator*=(x); }
   inline Vector<T> & operator/=(Real x) { return parent::operator/=(x); }
+
   /* ------------------------------------------------------------------------ */
   inline Vector<T> & operator*=(const Vector<T> & vect) {
     T * a = this->storage();
@@ -512,8 +555,8 @@ public:
   /* ------------------------------------------------------------------------ */
   inline void solve(Matrix<T> & A, const Vector<T> & b) {
     AKANTU_DEBUG_ASSERT(this->size() == A.rows() && this->_size = A.cols(),
-			"The solution vector as a mismatch in size with the matrix");
-    AKANTU_DEBUG_ASSERT(this->_size == b._size, "The rhs vector as a mismatch in size with the matrix");
+			"The size of the solution vector mismatches the size of the matrix");
+    AKANTU_DEBUG_ASSERT(this->_size == b._size, "The rhs vector has a mismatch in size with the matrix");
     Math::solve(this->_size, A.storage(), this->values, b.storage());
   }
 
@@ -562,7 +605,7 @@ public:
     T * b = v.storage();
     for (UInt i(0); i < this->_size; ++i, ++a, ++b) {
       if(std::abs(*a - *b) > tolerance)
-        return (((*a - *b) > tolerance) ? 1 : -1);
+	return (((*a - *b) > tolerance) ? 1 : -1);
     }
     return 0;
   }
@@ -578,7 +621,7 @@ public:
     std::string space;
     for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
 
-    stream << space << "Vector<" << debug::demangle(typeid(T).name()) << ">(" << this->_size <<") : [";
+    stream << "[";
     for (UInt i = 0; i < this->_size; ++i) {
       if(i != 0) stream << ", ";
       stream << this->values[i];
@@ -590,69 +633,6 @@ public:
 };
 
 typedef Vector<Real> RVector;
-
-/* -------------------------------------------------------------------------- */
-// support operations for the creation of other vectors
-template <typename T> Vector<T> operator*(T scalar, const Vector<T> & a);
-template <typename T> Vector<T> operator/(const Vector<T> & a, T scalar);
-template <typename T> Vector<T> operator+(const Vector<T> & a, const Vector<T> & b);
-template <typename T> Vector<T> operator-(const Vector<T> & a, const Vector<T> & b);
-
-/* -------------------------------------------------------------------------- */
-template <typename T>
-Vector<T> operator*(T scalar, const Vector<T> & a) {
-  Vector<T> r(a.size());
-  r = a;
-  r *= scalar;
-  return r;
-}
-
-template <typename T>
-Vector<T> operator/(const Vector<T> & a, T scalar) {
-  Vector<T> r(a);
-  r /= scalar;
-  return r;
-}
-
-template <typename T>
-Vector<T> operator+(const Vector<T> & a, const Vector<T> & b) {
-  Vector<T> r(a.size());
-  r = a;
-  r += b;
-  return r;
-}
-
-template <typename T>
-Vector<T> operator-(const Vector<T>& a, const Vector<T>& b) {
-  Vector<T> r(a.size());
-  r = a;
-  r -= b;
-  return r;
-}
-
-template <typename T>
-Matrix<T> operator*(T scalar, const Matrix<T>& a) {
-  Matrix<T> r(a.rows(), a.cols());
-  r = a;
-  r *= scalar;
-  return r;
-}
-
-template <typename T>
-Matrix<T> operator+(const Matrix<T>& a, const Matrix<T>& b) {
-  Matrix<T> r(a.rows(), a.cols());
-  r = a;
-  r += b;
-  return r;
-}
-
-template <typename T>
-Matrix<T> operator-(const Matrix<T>& a, const Matrix<T>& b) {
-  Matrix<T> r(a.rows(), a.cols());
-  r = a;
-  r -= b;
-  return r;
-}
 
 /* ------------------------------------------------------------------------ */
 template<>
@@ -694,23 +674,18 @@ public:
   UInt cols() const { return this->n[1]; }
 
   /* ---------------------------------------------------------------------- */
-  inline T& operator()(UInt i, UInt j) {
-    return this->at(i,j);
-  }
-
   inline T& at(UInt i, UInt j) {
     return *(this->values + i + j*this->n[0]);
   }
-  
-  inline const T& operator()(UInt i, UInt j) const {
-    return this->at(i,j);
-  }
 
-  inline T& at(UInt i, UInt j) const {
+  inline const T & at(UInt i, UInt j) const {
     return *(this->values + i + j*this->n[0]);
   }
 
-  
+  /* ---------------------------------------------------------------------- */
+  inline T & operator()(UInt i, UInt j) { return this->at(i,j); }
+  inline const T & operator()(UInt i, UInt j) const { return this->at(i,j); }
+
   /// give a line vector wrapped on the column i
   inline VectorProxy<T> operator()(UInt j) {
     return VectorProxy<T>(this->values + j*this->n[0], this->n[0]);
@@ -846,7 +821,8 @@ public:
 
   /* ---------------------------------------------------------------------- */
   inline void eye(T alpha = 1.) {
-    AKANTU_DEBUG_ASSERT(this->cols() == this->rows(), "eye is not a valid operation on a rectangular matrix");
+    AKANTU_DEBUG_ASSERT(this->cols() == this->rows(),
+			"eye is not a valid operation on a rectangular matrix");
     this->clear();
     for (UInt i = 0; i < this->cols(); ++i) {
       this->values[i + i * this->rows()] = alpha;
@@ -862,7 +838,8 @@ public:
 
   /* ---------------------------------------------------------------------- */
   inline T trace() const {
-    AKANTU_DEBUG_ASSERT(this->cols() == this->rows(), "trace is not a valid operation on a rectangular matrix");
+    AKANTU_DEBUG_ASSERT(this->cols() == this->rows(),
+			"trace is not a valid operation on a rectangular matrix");
     T trace = 0.;
     for (UInt i = 0; i < this->rows(); ++i) {
       trace += this->values[i + i * this->rows()];
@@ -912,7 +889,7 @@ public:
      else if(this->cols() == 2) return Math::matrixDoubleDot22(this->values, other.storage());
      else if(this->cols() == 3) return Math::matrixDoubleDot33(this->values, other.storage());
      else AKANTU_DEBUG_ERROR("doubleDot is not defined for other spatial dimensions"
-                             << " than 1, 2 or 3.");
+			     << " than 1, 2 or 3.");
      return T();
   }
 
@@ -922,8 +899,7 @@ public:
     std::string space;
     for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
 
-    stream << space << "Matrix<" << debug::demangle(typeid(T).name())
-	   << ">(" << this->n[0] << "," << this->n[1] <<") :" << "[";
+    stream << "[";
     for (UInt i = 0; i < this->n[0]; ++i) {
       if(i != 0) stream << ", ";
       stream << "[";
@@ -1014,6 +990,83 @@ public:
   inline const MatrixProxy<T> operator[](UInt k) const
   { return MatrixProxy<T>(this->values + k*this->n[0]*this->n[1], this->n[0], this->n[1]); }
 };
+
+
+/* -------------------------------------------------------------------------- */
+// support operations for the creation of other vectors
+/* -------------------------------------------------------------------------- */
+template <typename T>
+Vector<T> operator*(const T & scalar, const Vector<T> & a) {
+  Vector<T> r(a);
+  r *= scalar;
+  return r;
+}
+
+template <typename T>
+Vector<T> operator*(const Vector<T> & a, const T & scalar) {
+  Vector<T> r(a);
+  r *= scalar;
+  return r;
+}
+
+template <typename T>
+Vector<T> operator/(const Vector<T> & a, const T & scalar) {
+  Vector<T> r(a);
+  r /= scalar;
+  return r;
+}
+
+template <typename T>
+Vector<T> operator+(const Vector<T> & a, const Vector<T> & b) {
+  Vector<T> r(a);
+  r += b;
+  return r;
+}
+
+template <typename T>
+Vector<T> operator-(const Vector<T>& a, const Vector<T>& b) {
+  Vector<T> r(a);
+  r -= b;
+  return r;
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+Matrix<T> operator*(const T & scalar, const Matrix<T>& a) {
+  Matrix<T> r(a);
+  r *= scalar;
+  return r;
+}
+
+template <typename T>
+Matrix<T> operator*(const Matrix<T>& a, const T & scalar) {
+  Matrix<T> r(a);
+  r *= scalar;
+  return r;
+}
+
+template <typename T>
+Matrix<T> operator/(const Matrix<T>& a, const T & scalar) {
+  Matrix<T> r(a);
+  r /= scalar;
+  return r;
+}
+
+template <typename T>
+Matrix<T> operator+(const Matrix<T>& a, const Matrix<T>& b) {
+  Matrix<T> r(a);
+  r += b;
+  return r;
+}
+
+template <typename T>
+Matrix<T> operator-(const Matrix<T>& a, const Matrix<T>& b) {
+  Matrix<T> r(a);
+  r -= b;
+  return r;
+}
+
+
 
 __END_AKANTU__
 

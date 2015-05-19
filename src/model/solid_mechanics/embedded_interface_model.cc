@@ -44,6 +44,8 @@
 
 __BEGIN_AKANTU__
 
+const EmbeddedInterfaceModelOptions default_embedded_interface_model_options(_explicit_lumped_mass, false, false);
+
 EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
                                                Mesh & primitive_mesh,
                                                UInt spatial_dimension,
