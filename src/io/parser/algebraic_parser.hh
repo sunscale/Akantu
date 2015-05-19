@@ -240,6 +240,17 @@ namespace akantu {
 	constant.name("constants-list");
 	unary_function.name("unary-functions-list");
 	binary_function.name("binary-functions-list");
+
+#if !defined AKANTU_NDEBUG
+	if(AKANTU_DEBUG_TEST(dblDebug)) {
+	  qi::debug(expr);
+	  qi::debug(term);
+	  qi::debug(factor);
+	  qi::debug(number);
+	  qi::debug(variable);
+	  qi::debug(function);
+	}
+#endif
       }
 
     private:
@@ -332,21 +343,27 @@ namespace akantu {
       VectorGrammar(const ParserSection & section) : VectorGrammar::base_type(start,
 									    "vector_algebraic_grammar"),
 						    number(section) {
-        phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
-        //phx::function<lazy_algebraic_eval_> lazy_algebraic_eval;
-        phx::function<lazy_cont_add_> lazy_vector_add;
+	phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
+	//phx::function<lazy_algebraic_eval_> lazy_algebraic_eval;
+	phx::function<lazy_cont_add_> lazy_vector_add;
 
-        start
-          =   '[' > vector > ']'
-          ;
+	start
+	  =   '[' > vector > ']'
+	  ;
 
-        vector
-          =   (   number            [ lazy_vector_add(lbs::_a, lbs::_1) ]
+	vector
+	  =   (   number            [ lazy_vector_add(lbs::_a, lbs::_1) ]
 		  >> *(   ','
 			  >> number [ lazy_vector_add(lbs::_a, lbs::_1) ]
 		      )
-              )                     [ lbs::_val = lbs::_a ]
-          ;
+	      )                     [ lbs::_val = lbs::_a ]
+	  ;
+
+	qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
+
+	start .name("start");
+	vector.name("vector");
+	number.name("value");
 
 #if !defined AKANTU_NDEBUG
 	if(AKANTU_DEBUG_TEST(dblDebug)) {
@@ -354,11 +371,6 @@ namespace akantu {
 	  qi::debug(vector);
 	}
 #endif
-        qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
-
-	start .name("start");
-        vector.name("vector");
-	number.name("value");
       }
 
     private:
@@ -391,16 +403,16 @@ namespace akantu {
       MatrixGrammar(const ParserSection & section) : MatrixGrammar::base_type(start,
 									      "matrix_algebraic_grammar"),
 						    vector(section) {
-        phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
-        phx::function<lazy_vector_eval_> lazy_vector_eval;
-        phx::function<lazy_cont_add_> lazy_matrix_add;
+	phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
+	phx::function<lazy_vector_eval_> lazy_vector_eval;
+	phx::function<lazy_cont_add_> lazy_matrix_add;
 
-        start
-          =   '[' >> matrix >> ']'
-          ;
+	start
+	  =   '[' >> matrix >> ']'
+	  ;
 
-        matrix
-          =   (   rows            [ lazy_matrix_add(lbs::_a, lbs::_1) ]
+	matrix
+	  =   (   rows            [ lazy_matrix_add(lbs::_a, lbs::_1) ]
 		  >> *(   ','
 			  >> rows [ lazy_matrix_add(lbs::_a, lbs::_1) ]
 		      )
@@ -421,6 +433,14 @@ namespace akantu {
 	  ;
 
 
+	qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
+
+	start .name("matrix");
+	matrix.name("all_rows");
+	rows  .name("rows");
+	vector.name("vector");
+	eval_vector.name("eval_vector");
+
 #ifndef AKANTU_NDEBUG
 	if(AKANTU_DEBUG_TEST(dblDebug)) {
 	  qi::debug(start);
@@ -430,14 +450,6 @@ namespace akantu {
 	  qi::debug(key);
 	}
 #endif
-
-        qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
-
-	start .name("matrix");
-	matrix.name("all_rows");
-        rows  .name("rows");
-	vector.name("vector");
-	eval_vector.name("eval_vector");
       }
 
     private:
@@ -463,27 +475,32 @@ namespace akantu {
       parsable_vector parameters;
     };
 
+    std::ostream& operator<<(std::ostream& stream, const ParsableRandomGenerator& prg) {
+      stream << "prg[" << prg.base << " " << prg.type << " " << prg.parameters << "]";
+      return stream;
+    }
+
     /* ---------------------------------------------------------------------- */
     template<class Iterator, typename Skipper = spirit::unused_type>
     struct RandomGeneratorGrammar : qi::grammar<Iterator, ParsableRandomGenerator(), Skipper> {
       RandomGeneratorGrammar(const ParserSection & section) : RandomGeneratorGrammar::base_type(start,
 											      "random_generator_grammar"),
 							      number(section) {
-        phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
-        phx::function<lazy_cont_add_> lazy_params_add;
+	phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
+	phx::function<lazy_cont_add_> lazy_params_add;
 
 	start
 	  = generator.alias()
 	  ;
 
-        generator
-          =   qi::hold[distribution [ lbs::_val = lbs::_1 ] ]
+	generator
+	  =   qi::hold[distribution [ lbs::_val = lbs::_1 ] ]
 	  |   number [ lbs::_val = phx::construct<ParsableRandomGenerator>(lbs::_1) ]
-          ;
+	  ;
 
 	distribution
 	  =   (
-	          number
+		  number
 		  >> generator_type
 		  >> '['
 		  >> generator_params
@@ -491,8 +508,8 @@ namespace akantu {
 	      ) [ lbs::_val = phx::construct<ParsableRandomGenerator>(lbs::_1, lbs::_2, lbs::_3) ]
 	  ;
 
-        generator_params
-          =   (   number            [ lazy_params_add(lbs::_a, lbs::_1) ]
+	generator_params
+	  =   (   number            [ lazy_params_add(lbs::_a, lbs::_1) ]
 		  >> *(   ','
 			  > number  [ lazy_params_add(lbs::_a, lbs::_1) ]
 		      )
@@ -508,14 +525,22 @@ namespace akantu {
 #undef AKANTU_RANDOM_DISTRIBUTION_TYPE_ADD
 
 
-        qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
+	qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
 
 	start           .name("random-generator");
 	generator       .name("random-generator");
 	distribution    .name("random-distribution");
 	generator_type  .name("generator-type");
-        generator_params.name("generator-parameters");
+	generator_params.name("generator-parameters");
 	number          .name("number");
+
+#ifndef AKANTU_NDEBUG
+	if(AKANTU_DEBUG_TEST(dblDebug)) {
+	  qi::debug(generator);
+	  qi::debug(distribution);
+	  qi::debug(generator_params);
+	}
+#endif
       }
 
     private:

@@ -241,6 +241,21 @@ namespace parser {
       value          .name("parameter-value");
       section_type   .name("section-types-list");
       mono_line_value.name("mono-line-value");
+
+
+#if !defined AKANTU_NDEBUG
+      if(AKANTU_DEBUG_TEST(dblDebug)) {
+	//	qi::debug(section);
+	qi::debug(section_name);
+	qi::debug(section_option);
+	//	qi::debug(mini_section);
+	//	qi::debug(entry);
+	qi::debug(key);
+	qi::debug(value);
+	qi::debug(mono_line_value);
+      }
+#endif
+
     }
 
     const std::string & getErrorMessage() const { return error_message; };
