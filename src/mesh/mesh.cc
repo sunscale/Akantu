@@ -339,10 +339,11 @@ void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
   Mesh::type_iterator end = lastType(dim, gt, element_kind);
   for(; it != end; ++it) {
     ElementType type = *it;
-    if (flag_nb_node_per_elem_multiply) nb_component *= Mesh::getNbNodesPerElement(*it);
+    UInt nb_comp = nb_component;
+    if (flag_nb_node_per_elem_multiply) nb_comp *= Mesh::getNbNodesPerElement(*it);
     UInt size = 0;
     if (size_to_nb_element) size = this->getNbElement(type, gt);
-    vect.alloc(size, nb_component, type, gt, default_value);
+    vect.alloc(size, nb_comp, type, gt, default_value);
   }
   AKANTU_DEBUG_OUT();
 }

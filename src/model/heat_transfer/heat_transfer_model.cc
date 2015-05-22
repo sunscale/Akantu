@@ -166,28 +166,30 @@ void HeatTransferModel::initArrays() {
   /* -------------------------------------------------------------------------- */
   // byelementtype vectors
   getFEEngine().getMesh().initElementTypeMapArray(temperature_on_qpoints,
-					     1,
-					     spatial_dimension);
+						  1,
+						  spatial_dimension);
 
   getFEEngine().getMesh().initElementTypeMapArray(temperature_gradient,
-					     spatial_dimension,
-					     spatial_dimension);
+						  spatial_dimension,
+						  spatial_dimension);
 
   getFEEngine().getMesh().initElementTypeMapArray(conductivity_on_qpoints,
-					     spatial_dimension*spatial_dimension,
-					     spatial_dimension);
+						  spatial_dimension*spatial_dimension,
+						  spatial_dimension);
 
   getFEEngine().getMesh().initElementTypeMapArray(k_gradt_on_qpoints,
-					     spatial_dimension,
-					     spatial_dimension);
+						  spatial_dimension,
+						  spatial_dimension);
 
   getFEEngine().getMesh().initElementTypeMapArray(bt_k_gT,
-					     1,
-					     spatial_dimension,true);
+						  1,
+						  spatial_dimension,
+						  true);
 
   getFEEngine().getMesh().initElementTypeMapArray(int_bt_k_gT,
-					     1,
-					     spatial_dimension,true);
+						  1,
+						  spatial_dimension,
+						  true);
 
   getFEEngine().getMesh().initElementTypeMapArray(thermal_energy,
 					     1,
