@@ -82,7 +82,7 @@ class SolidMechanicsModel : public Model,
 			    public DataAccessor,
 			    public MeshEventHandler,
 			    public BoundaryCondition<SolidMechanicsModel>,
-                            public EventHandlerManager<SolidMechanicsModelEventHandler> {
+			    public EventHandlerManager<SolidMechanicsModelEventHandler> {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -287,7 +287,7 @@ public:
   /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
   template <NewmarkBeta::IntegrationSchemeCorrectorType type>
   void solve(Array<Real> &increment, Real block_val = 1.,
-             bool need_factorize = true, bool has_profile_changed = false);
+	     bool need_factorize = true, bool has_profile_changed = false);
 
 private:
   /// re-initialize the J matrix (to use if the profile of K changed)
@@ -413,12 +413,12 @@ public:
 
   //! decide wether a field is a material internal or not
   bool isInternal(const std::string & field_name, const ElementKind & element_kind);
-#ifndef SWIG  
+#ifndef SWIG
   //! give the amount of data per element
   virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-					     const ElementKind & kind);
+						      const ElementKind & kind);
 
-  //! flatten a given material internal field 
+  //! flatten a given material internal field
   ElementTypeMapArray<Real> & flattenInternal(const std::string & field_name,
 					      const ElementKind & kind,
 					      const GhostType ghost_type = _not_ghost);
@@ -433,12 +433,12 @@ public:
   virtual dumper::Field * createNodalFieldBool(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag);
-  
 
-  virtual dumper::Field * createElementalField(const std::string & field_name, 
+
+  virtual dumper::Field * createElementalField(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag,
-                 const UInt & spatial_dimension,
+		 const UInt & spatial_dimension,
 					       const ElementKind & kind);
 
 

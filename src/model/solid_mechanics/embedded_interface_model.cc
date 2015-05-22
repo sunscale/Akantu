@@ -46,6 +46,7 @@ __BEGIN_AKANTU__
 
 const EmbeddedInterfaceModelOptions default_embedded_interface_model_options(_explicit_lumped_mass, false, false);
 
+/* -------------------------------------------------------------------------- */
 EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
                                                Mesh & primitive_mesh,
                                                UInt spatial_dimension,
@@ -55,17 +56,18 @@ EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
   interface_mesh(NULL),
   primitive_mesh(primitive_mesh),
   interface_material_selector(NULL),
-  intersector(mesh, primitive_mesh)
-{
+  intersector(mesh, primitive_mesh) {
   // This pointer should be deleted by ~SolidMechanicsModel()
   MaterialSelector * mat_sel_pointer = new MeshDataMaterialSelector<std::string>("physical_names", *this);
   this->setMaterialSelector(*mat_sel_pointer);
 }
 
+/* -------------------------------------------------------------------------- */
 EmbeddedInterfaceModel::~EmbeddedInterfaceModel() {
   delete interface_material_selector;
 }
 
+/* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
   const EmbeddedInterfaceModelOptions & eim_options =
     dynamic_cast<const EmbeddedInterfaceModelOptions &>(options);
@@ -94,6 +96,7 @@ void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
 #endif
 }
 
+/* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::initMaterials() {
   Element element;
 
@@ -128,38 +131,8 @@ void EmbeddedInterfaceModel::initMaterials() {
   SolidMechanicsModel::initMaterials();
 }
 
-ElementTypeMap<UInt> EmbeddedInterfaceModel::getInternalDataPerElem(const std::string & field_name,
-                                                                    const ElementKind & kind) {
-  if (!(this->isInternal(field_name,kind))) AKANTU_EXCEPTION("unknown internal " << field_name);
 
-  for (UInt m = 0; m < materials.size() ; ++m) {
-    if (materials[m]->isInternal(field_name, kind)) {
-      Material * mat = NULL;
-
-      switch(this->spatial_dimension) {
-        case 1:
-          mat = dynamic_cast<MaterialReinforcement<1> *>(materials[m]);
-          break;
-
-        case 2:
-          mat = dynamic_cast<MaterialReinforcement<2> *>(materials[m]);
-          break;
-
-        case 3:
-          mat = dynamic_cast<MaterialReinforcement<3> *>(materials[m]);
-          break;
-      }
-
-      if (mat == NULL && field_name != "stress_embedded")
-        return materials[m]->getInternalDataPerElem(field_name,kind);
-      else if (mat != NULL && field_name == "stress_embedded")
-        return mat->getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
-    }
-  }
-
-  return ElementTypeMap<UInt>();
-}
-
+/* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                                        const std::string & field_id,
                                                        const std::string & group_name,

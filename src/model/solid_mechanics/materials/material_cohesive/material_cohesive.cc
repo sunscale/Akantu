@@ -616,5 +616,15 @@ Real MaterialCohesive::getEnergy(std::string type) {
 }
 
 /* -------------------------------------------------------------------------- */
+inline ElementTypeMap<UInt> MaterialCohesive::getInternalDataPerElem(const ID & id,
+							     const ElementKind & element_kind,
+                                                             const ID & fe_engine_id) const {
+  if (element_kind == _ek_cohesive) {
+    return Material::getInternalDataPerElem(id, element_kind, "CohesiveFEEngine");
+  } else {
+    return Material::getInternalDataPerElem(id, element_kind, fe_engine_id);
+  }
+}
 
+/* -------------------------------------------------------------------------- */
 __END_AKANTU__

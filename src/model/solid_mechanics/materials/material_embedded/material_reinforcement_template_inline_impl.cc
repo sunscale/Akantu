@@ -195,11 +195,3 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computePotentialEnergy(Elemen
   ConstLaw::computePotentialEnergy(type, ghost_type);
 }
 
-template <UInt dim, class ConstLaw>
-void MaterialReinforcementTemplate<dim, ConstLaw>::flattenInternal(const std::string & field_id,
-                                                                   ElementTypeMapArray<Real> & internal_flat,
-                                                                   const GhostType ghost_type,
-                                                                   ElementKind element_kind) {
-  if (field_id == "stress_embedded")
-    MaterialReinforcement<dim>::flattenInternal(field_id, internal_flat, ghost_type, element_kind);
-}

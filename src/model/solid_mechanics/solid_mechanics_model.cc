@@ -1532,7 +1532,7 @@ ElementTypeMap<UInt> SolidMechanicsModel::getInternalDataPerElem(const std::stri
 
   for (UInt m = 0; m < materials.size() ; ++m) {
     if (materials[m]->isInternal(field_name, element_kind))
-      return materials[m]->getInternalDataPerElem(field_name,element_kind);
+      return materials[m]->getInternalDataPerElem(field_name, element_kind);
   }
 
   return ElementTypeMap<UInt>();
@@ -1541,30 +1541,31 @@ ElementTypeMap<UInt> SolidMechanicsModel::getInternalDataPerElem(const std::stri
 
 /* -------------------------------------------------------------------------- */
 ElementTypeMapArray<Real> & SolidMechanicsModel::flattenInternal(const std::string & field_name,
-								 const ElementKind & kind, const GhostType ghost_type){
-
+								 const ElementKind & kind,
+								 const GhostType ghost_type){
   std::pair<std::string,ElementKind> key(field_name,kind);
   if (this->registered_internals.count(key) == 0){
     this->registered_internals[key] =
-      new ElementTypeMapArray<Real>(field_name,this->id);
+      new ElementTypeMapArray<Real>(field_name, this->id);
   }
 
   ElementTypeMapArray<Real> * internal_flat = this->registered_internals[key];
   for (UInt m = 0; m < materials.size(); ++m)
-    materials[m]->flattenInternal(field_name,*internal_flat,ghost_type,kind);
+    materials[m]->flattenInternal(field_name, *internal_flat, ghost_type, kind);
 
   return  *internal_flat;
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::flattenAllRegisteredInternals(const ElementKind & kind){
-
-  std::map<std::pair<std::string,ElementKind>,ElementTypeMapArray<Real> *> ::iterator it = this->registered_internals.begin();
-  std::map<std::pair<std::string,ElementKind>,ElementTypeMapArray<Real> *>::iterator end = this->registered_internals.end();
+  std::map<std::pair<std::string, ElementKind>,
+	   ElementTypeMapArray<Real> *>::iterator it  = this->registered_internals.begin();
+  std::map<std::pair<std::string, ElementKind>,
+	   ElementTypeMapArray<Real> *>::iterator end = this->registered_internals.end();
 
   while (it != end){
     if (kind == it->first.second)
-      this->flattenInternal(it->first.first,kind);
+      this->flattenInternal(it->first.first, kind);
     ++it;
   }
 }
@@ -1607,7 +1608,7 @@ dumper::Field * SolidMechanicsModel
     bool is_internal = this->isInternal(field_name_copy,kind);
 
     if (is_internal) {
-      ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name_copy,kind);
+      ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name_copy, kind);
       ElementTypeMapArray<Real> & internal_flat = this->flattenInternal(field_name_copy,kind);
       field = mesh.createElementalField<Real, dumper::InternalMaterialField>(internal_flat,
 									     group_name,
