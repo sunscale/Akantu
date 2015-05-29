@@ -67,14 +67,24 @@ public:
   virtual void write(__attribute__((unused)) const std::string & filename,
 		     __attribute__((unused)) const Mesh & mesh) {}
 
+
+  /// function to request the manual construction of the physical names maps
+  virtual void constructPhysicalNames(const std::string & tag_name,
+				      Mesh & mesh);
+  
 private:
   MeshIO * getMeshIO(const std::string & filename, const MeshIOType & type);
 
+  
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
 
+  std::map<UInt, std::string> & getPhysicalNameMap(){
+    return phys_name_map;
+  }
+  
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -83,9 +93,9 @@ protected:
 
   bool canReadExtendedData;
 
-  //  std::string filename;
+  /// correspondance between a tag and physical names (if applicable)
+  std::map<UInt, std::string> phys_name_map;
 
-  //  Mesh & mesh;
 };
 
 __END_AKANTU__
