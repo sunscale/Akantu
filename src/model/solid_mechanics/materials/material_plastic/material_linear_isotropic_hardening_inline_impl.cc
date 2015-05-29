@@ -52,10 +52,9 @@ MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(const Matrix<Real> & 
                                                            const Real & sigma_th,
                                                            const Real & previous_sigma_th) {
   //Infinitesimal plasticity
-  //Real r=iso_hardening;
-  Real dp=0.0;
-  Real d_dp=0.0;
-  UInt n=0;
+  Real dp   = 0.0;
+  Real d_dp = 0.0;
+  UInt n    = 0;
 
   Real delta_sigma_th = sigma_th - previous_sigma_th;
 
@@ -75,27 +74,29 @@ MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(const Matrix<Real> & 
   Real s = sigma_tr_dev.doubleDot(sigma_tr_dev);
   Real sigma_tr_dev_eff = std::sqrt(3./2. * s);
 
+  // In 1D Von-Mises stress is the stress
+  if (dim == 1) sigma_tr_dev_eff = sigma_tr(0, 0);
+
   const Real iso_hardening_t = previous_iso_hardening;
   iso_hardening = iso_hardening_t;
  
   //Loop for correcting stress based on yield function
   bool initial_yielding = ( (sigma_tr_dev_eff - iso_hardening - this->sigma_y) > 0) ;
-  while ( initial_yielding && std::abs(sigma_tr_dev_eff - iso_hardening - this->sigma_y) > Math::getTolerance() ) {
 
+  while (initial_yielding && std::abs(sigma_tr_dev_eff - iso_hardening - this->sigma_y) > Math::getTolerance()) {
     d_dp = (sigma_tr_dev_eff - 3. * this->mu *dp -  iso_hardening - this->sigma_y)
       / (3. * this->mu + this->h);
 
-    //r = r +  h * dp;    
     dp = dp + d_dp;
     iso_hardening = iso_hardening_t + this->h * dp;
-
     ++n;
-   
-    /// TODO : explicit this criterion with an error message
-    if ((d_dp < 1e-5) || (n>50))
-      {
-	break;
-      }
+
+    if (d_dp < 1e-5) {
+      break;
+    } else if (n > 50) {
+      AKANTU_DEBUG_WARNING("Isotropic hardening convergence failed");
+      break;
+    }
   }
 
   //Update internal variable
@@ -268,6 +269,7 @@ MaterialLinearIsotropicHardening<dim>::computeTangentModuliOnQuad(Matrix<Real> &
 
   // Real __attribute__((unused)) q = 1.5 * (1. / (1. +  3. * this->mu  / this->h) - xr);
 
+  /*
   UInt cols = tangent.cols();
   UInt rows = tangent.rows();
 
@@ -278,6 +280,7 @@ MaterialLinearIsotropicHardening<dim>::computeTangentModuliOnQuad(Matrix<Real> &
     for (UInt n = 0; n < cols; ++n) {
       UInt k = VoigtHelper<dim>::vec[n][0];
       UInt l = VoigtHelper<dim>::vec[n][1];
+      */
 
       // This section of the code is commented
       // There were some problems with the convergence of plastic-coupled simulations with thermal expansion
@@ -290,12 +293,15 @@ MaterialLinearIsotropicHardening<dim>::computeTangentModuliOnQuad(Matrix<Real> &
         if ((m == n) && (m>=dim))
         tangent(m, n) = tangent(m, n) - this->mu * xr;
         } else {*/
+      /*
       tangent(m,n) =  (i==k) * (j==l) * 2. * this->mu +
         (i==j) * (k==l) * this->lambda;
       tangent(m,n) -= (m==n) * (m>=dim) * this->mu;
+      */
       //}
       //correct tangent stiffness for shear component
-    }
-  }
+    //}
+  //}
+  MaterialElastic<dim>::computeTangentModuliOnQuad(tangent);
 }
 

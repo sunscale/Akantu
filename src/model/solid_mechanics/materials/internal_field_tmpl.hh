@@ -217,8 +217,8 @@ void InternalField<T>::saveCurrentValues() {
 
   for(UInt g = _not_ghost; g <= _ghost; ++g) {
     GhostType gt = (GhostType) g;
-    typename ElementTypeMapArray<T>::type_iterator it  = this->firstType(spatial_dimension, gt, element_kind);
-    typename ElementTypeMapArray<T>::type_iterator end = this->lastType(spatial_dimension, gt, element_kind);
+    typename ElementTypeMapArray<T>::type_iterator it  = this->firstType(_all_dimensions, gt, element_kind);
+    typename ElementTypeMapArray<T>::type_iterator end = this->lastType(_all_dimensions, gt, element_kind);
     for(; it != end; ++it) {
       this->previous_values->operator()(*it, gt).copy(this->operator()(*it, gt));
     }

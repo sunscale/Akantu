@@ -168,7 +168,7 @@ void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumpe
 #ifdef AKANTU_USE_IOHELPER
   dumper::Field * field = NULL;
 
-  if (field_id == "stress_embedded")
+  if (field_id == "stress_embedded" || field_id == "inelastic_strain")
     field = this->createElementalField(field_id, group_name, padding_flag, 1, element_kind);
   else
     SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, field_id, group_name, element_kind, padding_flag);
