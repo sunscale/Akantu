@@ -128,7 +128,7 @@ public:
   bool solveStepCohesive(Real tolerance,
                          Real & error,
                          UInt max_iteration = 100,
-                         UInt cont = 1,
+                         bool load_reduction = false,
                          bool do_not_factorize = false);
 
   /// initialize stress interpolation

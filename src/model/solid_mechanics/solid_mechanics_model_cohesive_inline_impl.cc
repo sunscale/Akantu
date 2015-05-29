@@ -45,7 +45,7 @@ template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
 bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
                                                     Real & error,
                                                     UInt max_iteration,
-                                                    UInt cont,
+                                                    bool load_reduction,
                                                     bool do_not_factorize) {
 
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeSolveStepEvent(method));
