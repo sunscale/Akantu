@@ -35,8 +35,8 @@
 #endif
 
 #define AKANTU_MATERIAL_REINFORCEMENT_LAW_TMPL_LIST       \
-  ((elastic, (MaterialElastic<1>))) 
-  //((plastic_law, (MaterialLinearIsotropicHardening  )))
+  ((elastic, (MaterialElastic<1>)))                       \
+  ((plastic, (MaterialLinearIsotropicHardening<1>)))
 
 #define AKANTU_EMBEDDED_MATERIAL_LIST                     \
   ((3, (reinforcement, MaterialReinforcementTemplate,     \
