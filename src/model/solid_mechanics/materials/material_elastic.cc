@@ -57,7 +57,7 @@ void MaterialElastic<dim>::initMaterial() {
   AKANTU_DEBUG_IN();
   Parent::initMaterial();
 
-  if (dim == 1) this->nu = 0.;
+  if (dim == 1) this->nu = 0.5;
 
   this->updateInternalParameters();
   AKANTU_DEBUG_OUT();
