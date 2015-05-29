@@ -162,6 +162,7 @@ T Parser::parseType(const std::string & value, Grammar & grammar) {
 Real Parser::parseReal(const std::string & value, const ParserSection & section) {
   using boost::spirit::ascii::space_type;
   parser::AlgebraicGrammar<std::string::const_iterator, space_type> grammar(section);
+  grammar.name("algebraic_grammar");
   return Parser::parseType<Real>(value, grammar);
 }
 
@@ -169,6 +170,7 @@ Real Parser::parseReal(const std::string & value, const ParserSection & section)
 Vector<Real> Parser::parseVector(const std::string & value, const ParserSection & section) {
   using boost::spirit::ascii::space_type;
   parser::VectorGrammar<std::string::const_iterator, space_type> grammar(section);
+  grammar.name("vector_grammar");
   return Parser::parseType<parser::parsable_vector>(value, grammar);
 }
 
@@ -176,6 +178,7 @@ Vector<Real> Parser::parseVector(const std::string & value, const ParserSection 
 Matrix<Real> Parser::parseMatrix(const std::string & value, const ParserSection & section) {
   using boost::spirit::ascii::space_type;
   parser::MatrixGrammar<std::string::const_iterator, space_type> grammar(section);
+  grammar.name("matrix_grammar");
   return Parser::parseType<parser::parsable_matrix>(value, grammar);
 }
 
@@ -183,6 +186,7 @@ Matrix<Real> Parser::parseMatrix(const std::string & value, const ParserSection 
 RandomParameter<Real> Parser::parseRandomParameter(const std::string & value, const ParserSection & section) {
   using boost::spirit::ascii::space_type;
   parser::RandomGeneratorGrammar<std::string::const_iterator, space_type> grammar(section);
+  grammar.name("random_grammar");
   parser::ParsableRandomGenerator rg = Parser::parseType<parser::ParsableRandomGenerator>(value, grammar);
   Vector<Real> params = rg.parameters;
   switch(rg.type) {

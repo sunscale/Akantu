@@ -1,16 +1,15 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+# @author Marco Vocialta <marco.vocialta@epfl.ch>
 #
-# @date creation: Fri Sep 03 2010
-# @date last modification: Tue Nov 06 2012
+# @date   Tue May 08 13:01:18 2012
 #
-# @brief  configuration for facet extraction tests
+# @brief  configuration for build facets test
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -30,22 +29,14 @@
 #
 #===============================================================================
 
-#===============================================================================
-add_mesh(test_facet_square_mesh square.geo 2 2)
-
-register_test(test_facet_extraction_triangle_3
-  SOURCES test_facet_extraction_triangle_3.cc
-  DEPENDENCIES test_facet_square_mesh
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
+register_test(test_buildfacets_tetrahedron
+  SOURCES test_buildfacets_tetrahedron.cc
+  FILES_TO_COPY tetrahedron.msh
+  PACKAGE cohesive_element
+  )
+register_test(test_buildfacets_hexahedron
+  SOURCES test_buildfacets_hexahedron.cc
+  FILES_TO_COPY hexahedron.msh
+  PACKAGE cohesive_element
   )
 
-#===============================================================================
-add_mesh(test_facet_cube_mesh cube.geo 3 1)
-
-register_test(test_facet_extraction_tetrahedron_4
-  SOURCES test_facet_extraction_tetrahedron_4.cc
-  DEPENDENCIES test_facet_cube_mesh
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
-  )

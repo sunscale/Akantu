@@ -47,7 +47,7 @@ package_declare_sources(embedded
   model/solid_mechanics/materials/material_embedded/material_reinforcement_inline_impl.cc
 
   model/solid_mechanics/materials/material_embedded/material_reinforcement_template.hh
-  model/solid_mechanics/materials/material_embedded/material_reinforcement_template_inline_impl.cc
+  model/solid_mechanics/materials/material_embedded/material_reinforcement_template_tmpl.hh
   )
 
 package_declare_documentation(embedded

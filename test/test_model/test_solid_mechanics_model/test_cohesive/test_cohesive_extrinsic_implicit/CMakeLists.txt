@@ -32,10 +32,6 @@
 
 register_test(test_assembling_K_cohe_elements
   SOURCES test_assembling_K_cohe_elements.cc
-  FILES_TO_COPY quadrangle.msh material.dat
+  FILES_TO_COPY quadrangle.msh material.dat K_matrix_verified
   PACKAGE cohesive_element
   )
-
-#add_mesh(test_cohesive_buildfacets_mesh mesh.geo 3 2)
-#add_dependencies(test_cohesive_buildfacets test_cohesive_buildfacets_mesh)
-

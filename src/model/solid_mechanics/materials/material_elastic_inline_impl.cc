@@ -57,7 +57,7 @@ inline void MaterialElastic<1>::computeStressOnQuad(const Matrix<Real> & grad_u,
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-inline void MaterialElastic<spatial_dimension>::computeTangentModuliOnQuad(Matrix<Real> & tangent) {
+inline void MaterialElastic<spatial_dimension>::computeTangentModuliOnQuad(Matrix<Real> & tangent) const {
   UInt n = tangent.cols();
 
   //Real Ep = E/((1+nu)*(1-2*nu));
@@ -101,7 +101,7 @@ inline void MaterialElastic<dim>::computePotentialEnergyOnQuad(const Matrix<Real
 
 /* -------------------------------------------------------------------------- */
 template<>
-inline void MaterialElastic<1>::computeTangentModuliOnQuad(Matrix<Real> & tangent) {
+inline void MaterialElastic<1>::computeTangentModuliOnQuad(Matrix<Real> & tangent) const {
   tangent(0, 0) = E;
 }
 

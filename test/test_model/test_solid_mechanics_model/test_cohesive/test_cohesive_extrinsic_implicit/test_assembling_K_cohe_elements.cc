@@ -73,19 +73,6 @@ int main(int argc, char *argv[]) {
       boundary(n,1) = true;
   }
 
-  model.setBaseName("test_K");
-  model.addDumpFieldVector("displacement");
-  model.addDumpField("residual"    );
-  model.addDumpField("stress"      );
-  model.addDumpField("blocked_dofs");
-  model.dump();
-
-  // Dumping cohesive elements
-  model.setBaseNameToDumper("cohesive elements", "cohe_test_K");
-  model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
-  model.addDumpFieldToDumper("cohesive elements", "damage");
-  model.dump("cohesive elements");
-
   Real increment = 0.004;
   Real error;
 
@@ -94,23 +81,10 @@ int main(int argc, char *argv[]) {
       displacement(n,1) += increment;
   }
 
-  model.solveStepCohesive<_scm_newton_raphson_tangent, _scc_increment>(1e-13, error, 100);
-
-  model.dump();
-  model.dump("cohesive elements");
-
-  //  Matrix<Real> matrix = getStiffnessMatrix();
+  model.solveStepCohesive<_scm_newton_raphson_tangent, _scc_increment>(1e-13, error, 10);
 
   /// save the matrix
-  model.getStiffnessMatrix().saveMatrix("K_matrix.txt");
-
-  /// print the matrix to screen
-  std::ifstream K_matrix;
-  K_matrix.open("K_matrix.txt");
-  std::string current_line;
-  while(getline(K_matrix, current_line))
-    std::cout << current_line << std::endl;
-  K_matrix.close();
+  model.getStiffnessMatrix().saveMatrix("K_matrix_test");
 
   finalize();
 

@@ -38,6 +38,7 @@
 #include "aka_common.hh"
 #include "material_reinforcement.hh"
 #include "material_elastic.hh"
+#include "material_linear_isotropic_hardening.hh"
 
 __BEGIN_AKANTU__
 
@@ -88,11 +89,19 @@ public:
   virtual Real getEnergy(std::string id);
 
   virtual void flattenInternal(const std::string & field_id,
-		                           ElementTypeMapArray<Real> & internal_flat,
+                               ElementTypeMapArray<Real> & internal_flat,
                                const GhostType ghost_type = _not_ghost,
                                ElementKind element_kind = _ek_not_defined);
 
+  /// Save the previous internals
+  virtual void savePreviousState();
+
 protected:
+  /// Init plasticity internals if ConstLaw is plastic law
+  void initPlastic(MaterialReinforcementTemplate<dim, MaterialElastic<1> > & _this);
+  void initPlastic(
+    MaterialReinforcementTemplate<dim, MaterialLinearIsotropicHardening<1> > & _this);
+
   /**
    * @brief Compute interface gradu from bulk gradu
    * \f[
@@ -105,8 +114,9 @@ protected:
 
 };
 
-#include "material_reinforcement_template_inline_impl.cc"
+#include "material_reinforcement_template_tmpl.hh"
 
 __END_AKANTU__
+
 
 #endif // __AKANTU_MATERIAL_REINFORCEMENT_TEMPLATE_HH__

@@ -367,8 +367,8 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
     }
   }
 
-   AKANTU_DEBUG_OUT();
- }
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>

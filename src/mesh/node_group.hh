@@ -95,6 +95,8 @@ public:
   /// give the number of nodes in the current group
   inline UInt getSize() const;
 
+  UInt * storage(){return node_group.storage();};
+  
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

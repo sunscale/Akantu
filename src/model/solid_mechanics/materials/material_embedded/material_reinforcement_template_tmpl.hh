@@ -1,5 +1,5 @@
 /**
- * @file   material_reinforcement_template.cc
+ * @file   material_reinforcement_template_tmpl.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
@@ -28,15 +28,20 @@
  *
  */
 
+// /!\ no namespace here !
+
 /* -------------------------------------------------------------------------- */
 
 template<UInt dim, class ConstLaw>
 MaterialReinforcementTemplate<dim, ConstLaw>::MaterialReinforcementTemplate(SolidMechanicsModel & model,
-	                                                      								    const ID & id):
+                                                                            const ID & id):
   Material(model, id),
   MaterialReinforcement<dim>(model, id),
-  ConstLaw(model, id)
-{}
+  ConstLaw(model, id) {
+  this->element_filter.free();
+  this->model->getInterfaceMesh().initElementTypeMapArray(this->element_filter, 1, 1,
+                                                          false, _ek_regular);
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -46,6 +51,7 @@ MaterialReinforcementTemplate<dim, ConstLaw>::~MaterialReinforcementTemplate()
 
 /* -------------------------------------------------------------------------- */
 
+/// TODO this function is super ugly. Find better way to initialize internals
 template<UInt dim, class ConstLaw>
 void MaterialReinforcementTemplate<dim, ConstLaw>::initMaterial() {
   MaterialReinforcement<dim>::initMaterial();
@@ -60,8 +66,9 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::initMaterial() {
   this->ConstLaw::sigma_th.free();
   this->ConstLaw::potential_energy.free();
 
-  Mesh::type_iterator type_it = this->MaterialReinforcement<dim>::model->getInterfaceMesh().firstType();
-  Mesh::type_iterator type_end = this->MaterialReinforcement<dim>::model->getInterfaceMesh().lastType();
+  Mesh::type_iterator
+    type_it = this->MaterialReinforcement<dim>::model->getInterfaceMesh().firstType(),
+    type_end = this->MaterialReinforcement<dim>::model->getInterfaceMesh().lastType();
 
   
   // Reshape the ConstLaw internal fields
@@ -79,7 +86,26 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::initMaterial() {
     this->ConstLaw::delta_T.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
     this->ConstLaw::sigma_th.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
     this->ConstLaw::potential_energy.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
-    //this->ConstLaw::gradu.alloc(0, dim * dim, *type_it, _ghost);
+
+    if (this->ConstLaw::use_previous_stress) {
+      this->ConstLaw::stress.initializeHistory();
+      this->ConstLaw::stress.previous().free();
+      this->ConstLaw::stress.previous().alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+    }
+
+    if (this->ConstLaw::use_previous_gradu) {
+      this->ConstLaw::gradu.initializeHistory();
+      this->ConstLaw::gradu.previous().free();
+      this->ConstLaw::gradu.previous().alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+    }
+
+    if (this->ConstLaw::use_previous_stress_thermal) {
+      this->ConstLaw::sigma_th.initializeHistory();
+      this->ConstLaw::sigma_th.previous().free();
+      this->ConstLaw::sigma_th.previous().alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+    }
+
+    this->initPlastic(*this);
   }
 }
 
@@ -141,8 +167,8 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeInterfaceGradUOnQuad(c
 
 template<UInt dim, class ConstLaw>
 void MaterialReinforcementTemplate<dim, ConstLaw>::computeTangentModuli(const ElementType & el_type,
-								 Array<Real> & tangent,
-								 GhostType ghost_type) {
+                                                                        Array<Real> & tangent,
+                                                                        GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(tangent.getNbComponent() == 1, "Reinforcements only work in 1D");
@@ -195,11 +221,72 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computePotentialEnergy(Elemen
   ConstLaw::computePotentialEnergy(type, ghost_type);
 }
 
+/* -------------------------------------------------------------------------- */
+
 template <UInt dim, class ConstLaw>
 void MaterialReinforcementTemplate<dim, ConstLaw>::flattenInternal(const std::string & field_id,
                                                                    ElementTypeMapArray<Real> & internal_flat,
                                                                    const GhostType ghost_type,
                                                                    ElementKind element_kind) {
-  if (field_id == "stress_embedded")
+  if (field_id == "stress_embedded" || field_id == "inelastic_strain")
     MaterialReinforcement<dim>::flattenInternal(field_id, internal_flat, ghost_type, element_kind);
+}
+
+template<UInt dim, class ConstLaw>
+void MaterialReinforcementTemplate<dim, ConstLaw>::initPlastic(
+  MaterialReinforcementTemplate<dim, MaterialElastic<1> > & _this) {
+
+}
+
+template<UInt dim, class ConstLaw>
+void MaterialReinforcementTemplate<dim, ConstLaw>::initPlastic(
+  MaterialReinforcementTemplate<dim, MaterialLinearIsotropicHardening<1> > & _this) {
+  _this.ConstLaw::iso_hardening.free();
+  _this.ConstLaw::plastic_energy.free();
+  _this.ConstLaw::d_plastic_energy.free();
+  _this.ConstLaw::inelastic_strain.free();
+
+  Mesh::type_iterator
+    type_it = _this.MaterialReinforcement<dim>::model->getInterfaceMesh().firstType(),
+    type_end = _this.MaterialReinforcement<dim>::model->getInterfaceMesh().lastType();
+
+  for (; type_it != type_end ; ++type_it) {
+    UInt nb_elements = _this.MaterialReinforcement<dim>::element_filter(*type_it).getSize();
+
+    FEEngine & interface_engine =
+      _this.MaterialReinforcement<dim>::model->getFEEngine("EmbeddedInterfaceFEEngine");
+
+    UInt nb_quad = interface_engine.getNbQuadraturePoints(*type_it);
+
+    _this.ConstLaw::iso_hardening.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+    _this.ConstLaw::plastic_energy.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+    _this.ConstLaw::d_plastic_energy.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+    _this.ConstLaw::inelastic_strain.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+
+    _this.plastic_energy.initialize(1);
+    _this.d_plastic_energy.initialize(1);
+    _this.iso_hardening.initialize(1);
+    _this.inelastic_strain.initialize(1);
+
+    _this.ConstLaw::iso_hardening.initializeHistory();
+    _this.ConstLaw::iso_hardening.previous().free();
+    _this.ConstLaw::iso_hardening.previous().alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+
+    _this.ConstLaw::plastic_energy.initializeHistory();
+    _this.ConstLaw::plastic_energy.previous().free();
+    _this.ConstLaw::plastic_energy.previous().alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+
+    _this.ConstLaw::d_plastic_energy.initializeHistory();
+    _this.ConstLaw::d_plastic_energy.previous().free();
+    _this.ConstLaw::d_plastic_energy.previous().alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+
+    _this.ConstLaw::inelastic_strain.initializeHistory();
+    _this.ConstLaw::inelastic_strain.previous().free();
+    _this.ConstLaw::inelastic_strain.previous().alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
+  }
+}
+
+template<UInt dim, class ConstLaw>
+void MaterialReinforcementTemplate<dim, ConstLaw>::savePreviousState() {
+  ConstLaw::savePreviousState();
 }

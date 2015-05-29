@@ -109,6 +109,9 @@ public:
   }
 
   UInt getNbDataPerElem(const ElementType & type) const {
+    if (!nb_data_per_elem.exists(type, ghost_type))
+      return field(type,ghost_type).getNbComponent();
+    
     return nb_data_per_elem(type,ghost_type);
   }
 

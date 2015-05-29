@@ -25,7 +25,7 @@ toto =   2*pi + max(2, general)
 
 vect = [ 1, 23+2, 5, toto ]
 mat = [[ 1, 23+2, 5, toto ],\
-	vect ]
+       [ 0, 10, general, 5+8] ]
 
 rand1 = 10 uniform [0.2, 0.5 ]
 rand2 = 10 weibull [0.2, 0.5 ]

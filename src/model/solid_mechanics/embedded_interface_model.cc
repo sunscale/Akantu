@@ -44,6 +44,8 @@
 
 __BEGIN_AKANTU__
 
+const EmbeddedInterfaceModelOptions default_embedded_interface_model_options(_explicit_lumped_mass, false, false);
+
 EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
                                                Mesh & primitive_mesh,
                                                UInt spatial_dimension,
@@ -166,7 +168,7 @@ void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumpe
 #ifdef AKANTU_USE_IOHELPER
   dumper::Field * field = NULL;
 
-  if (field_id == "stress_embedded")
+  if (field_id == "stress_embedded" || field_id == "inelastic_strain")
     field = this->createElementalField(field_id, group_name, padding_flag, 1, element_kind);
   else
     SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, field_id, group_name, element_kind, padding_flag);

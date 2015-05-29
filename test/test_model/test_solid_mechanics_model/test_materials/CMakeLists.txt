@@ -53,7 +53,7 @@ register_test(test_interpolate_stress test_interpolate_stress.cc
   FILES_TO_COPY material.dat
   DEPENDENCIES test_interpolate_stress_mesh
   DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
+  PACKAGE lapack core
   )
 
 # ==============================================================================
