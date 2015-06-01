@@ -107,8 +107,6 @@ protected:
   /// correspondence between akantu element types and msh element types
   std::map<ElementType, MSHElementType> _akantu_to_msh_element_types;
 
-  /// correspondance between tag_0 and physical name (if applicable)
-  std::map<UInt, std::string> phys_name_map;
 };
 
 
