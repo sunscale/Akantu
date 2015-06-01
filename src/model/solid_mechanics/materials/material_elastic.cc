@@ -43,13 +43,32 @@ MaterialElastic<dim>::MaterialElastic(SolidMechanicsModel & model, const ID & id
   Material(model, id),
   Parent(model, id) {
   AKANTU_DEBUG_IN();
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
 
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+MaterialElastic<dim>::MaterialElastic(SolidMechanicsModel & model,
+                                      UInt a_dim,
+                                      const Mesh & mesh,
+                                      FEEngine & fe_engine,
+                                      const ID & id) :
+  Material(model, dim, mesh, fe_engine, id),
+  Parent(model, dim, mesh, fe_engine, id) {
+  AKANTU_DEBUG_IN();
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+void MaterialElastic<dim>::initialize() {
   this->registerParam("lambda"      ,lambda             , _pat_readable, "First Lamé coefficient" );
   this->registerParam("mu"          ,mu                 , _pat_readable, "Second Lamé coefficient");
   this->registerParam("kapa"        ,kpa                , _pat_readable, "Bulk coefficient"       );
-
-  AKANTU_DEBUG_OUT();
 }
+
 
 /* -------------------------------------------------------------------------- */
 template<UInt dim>

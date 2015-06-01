@@ -462,8 +462,8 @@ inline bool Material::isInternal(const ID & id, const ElementKind & element_kind
 
 /* -------------------------------------------------------------------------- */
 
-inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id, const ElementKind & element_kind,
-                                                             const ID & fe_engine_id) const {
+inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id,
+                                                             const ElementKind & element_kind) const {
 
   std::map<ID, InternalField<Real> *>::const_iterator internal_array =
     internal_vectors_real.find(this->getID()+":"+id);
@@ -479,12 +479,7 @@ inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id, cons
   ElementTypeMap<UInt> res;
   for(; it != last_type; ++it) {
     UInt nb_quadrature_points = 0;
-    if (element_kind == _ek_regular)
-      nb_quadrature_points = model->getFEEngine(fe_engine_id).getNbQuadraturePoints(*it);
-#if defined(AKANTU_COHESIVE_ELEMENT)
-    else if (element_kind == _ek_cohesive)
-      nb_quadrature_points = model->getFEEngine("CohesiveFEEngine").getNbQuadraturePoints(*it);
-#endif
+    nb_quadrature_points = internal.getFEEngine().getNbQuadraturePoints(*it);
     res(*it) = internal.getNbComponent() * nb_quadrature_points;
   }
     return res;
