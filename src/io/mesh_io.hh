@@ -73,13 +73,11 @@ public:
 				      Mesh & mesh);
 
 
-  //  virtual void printself(std::ostream & stream, int indent = 0) const;
+  /// method to permit to be printed to a generic stream
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
-private:
-  MeshIO * getMeshIO(const std::string & filename, const MeshIOType & type);
-
-
+  /// static contruction of a meshio object
+  static MeshIO * getMeshIO(const std::string & filename, const MeshIOType & type);
   
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
