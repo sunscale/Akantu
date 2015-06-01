@@ -658,6 +658,8 @@ void MeshIODiana::createGroupsInMesh(Mesh & mesh) {
       std::vector<Element> & element_group = *git->second; 
 
       if (element_group.size() == 0) continue;
+
+      std::cerr << "adding group " << group_name << std::endl;
       Element & first_element = element_group[0];
     
       UInt group_dim = mesh.getSpatialDimension(first_element.type);
@@ -668,7 +670,13 @@ void MeshIODiana::createGroupsInMesh(Mesh & mesh) {
       std::vector<Element>::iterator end = element_group.end();
     
       for(; it != end; ++it){
-	group.add(*it);
+	std::cerr << "adding element " << it->element << "(" << it->type << ") : ";
+	Array<UInt> & connectivity = *mesh.getConnectivityPointer(it->type);
+	UInt node_per_element = connectivity.getNbComponent();
+	for (UInt n = 0 ; n < node_per_element; ++n)
+	  std::cerr << connectivity(it->element,n) << " ";
+	std::cerr << std::endl;
+	group.add(*it,true,false);
       }
   
     }
