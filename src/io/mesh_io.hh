@@ -71,12 +71,15 @@ public:
   /// function to request the manual construction of the physical names maps
   virtual void constructPhysicalNames(const std::string & tag_name,
 				      Mesh & mesh);
-  
+
+
+  //  virtual void printself(std::ostream & stream, int indent = 0) const;
+  virtual void printself(std::ostream & stream, int indent = 0) const;
+
 private:
   MeshIO * getMeshIO(const std::string & filename, const MeshIOType & type);
 
 
-  virtual printself();
   
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -100,6 +103,17 @@ protected:
 
 };
 
+/* -------------------------------------------------------------------------- */
+
+inline std::ostream & operator <<(std::ostream & stream, const MeshIO &_this) {
+  _this.printself(stream);
+  return stream;
+}
+
+/* -------------------------------------------------------------------------- */
+
+
+
 __END_AKANTU__
 
 #include "mesh_io_msh.hh"
@@ -111,4 +125,3 @@ __END_AKANTU__
 #endif
 
 #endif /* __AKANTU_MESH_IO_HH__ */
-

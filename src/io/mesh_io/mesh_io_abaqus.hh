@@ -48,6 +48,9 @@ public:
   /// write a mesh to a file
   //  virtual void write(const std::string & filename, const Mesh & mesh);
 
+  /// convenient printself
+  virtual void printself(std::ostream & stream, int indent = 0) const{AKANTU_DEBUG_TO_IMPLEMENT();};
+
 private:
   /// correspondence between msh element types and akantu element types
   std::map<std::string, ElementType> _abaqus_to_akantu_element_types;

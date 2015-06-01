@@ -187,17 +187,49 @@ std::string MeshIODiana::readCoordinates(std::ifstream & infile, Mesh & mesh, UI
 /* -------------------------------------------------------------------------- */
 UInt MeshIODiana::readInterval(std::stringstream & line,
 			       std::set<UInt> & interval) {
+
+  int space;
+  space = line.get();
+  while (space == ' '){
+    space = line.get();
+    if(line.fail()) {
+      line.clear(std::ios::eofbit);
+      return 0;
+    }
+  }
+  if(!line.fail()) line.unget();
+  else {
+    line.clear(std::ios::eofbit);
+    return 0;
+  }
+  
   UInt first;
   line >> first;
   if(line.fail()) { return 0; }
   interval.insert(first);
 
+  //  std::cerr << "first: " << first << std::endl;
+  
   UInt second;
   int dash;
   dash = line.get();
   if(dash == '-') {
     line >> second;
     interval.insert(second);
+
+    //    std::cerr << "second: " << second << std::endl;
+    
+    int bracket;
+    UInt unknown_stuff;
+    bracket = line.get();
+    if(bracket == '('){
+      line >> unknown_stuff;
+      bracket = line.get();
+    }
+    else{
+      if(line.fail()) line.clear(std::ios::eofbit);
+      else line.unget();
+    }
     return 2;
   }
 
@@ -228,6 +260,7 @@ std::string MeshIODiana::readGroups(std::ifstream & infile,
       my_getline(infile, line);
     }
 
+    //    std::cerr << line << std::endl;
     std::stringstream *str = new std::stringstream(line);
 
     UInt id;
@@ -235,6 +268,8 @@ std::string MeshIODiana::readGroups(std::ifstream & infile,
     char c;
     *str >> id >> name >> c;
 
+    //    std::cerr << "AAAA " << id << " " << name << " " << c << std::endl;
+    
     Array<UInt> * list_ids = new Array<UInt>(0, 1, name);
 
     UInt s = 1; bool end = false;
@@ -258,17 +293,24 @@ std::string MeshIODiana::readGroups(std::ifstream & infile,
 	my_getline(infile, line);
 	delete str;
 	str = new std::stringstream(line);
+	s = 1;
       }
     }
 
     delete str;
 
     if(reading_nodes_group) {
+
+      // reading a node group
+
       for (UInt i = 0; i < list_ids->getSize(); ++i) {
 	(*list_ids)(i) -= first_node_number;
       }
       node_groups[name] = list_ids;
     } else {
+      
+      // reading an element group
+
       std::vector<Element> * elem = new std::vector<Element>;
       elem->reserve(list_ids->getSize());
       for (UInt i = 0; i < list_ids->getSize(); ++i) {
@@ -479,7 +521,7 @@ std::string MeshIODiana::readMaterialElement(std::ifstream & infile,
     char tutu[250];
     strcpy(tutu, line.c_str());
 
-    AKANTU_DEBUG_WARNING("reading line " << line);
+    //    AKANTU_DEBUG_WARNING("reading line " << line);
     Array<UInt> temp_id(0, 2);
     UInt mat;
     while(true){
@@ -601,31 +643,101 @@ std::string MeshIODiana::readMaterial(std::ifstream & infile,
 
 void MeshIODiana::createGroupsInMesh(Mesh & mesh) {
 
-  std::map<std::string, std::vector<Element> *>::iterator git
-    = element_groups.begin();
-  std::map<std::string, std::vector<Element> *>::iterator gend
-    = element_groups.end();
-
-  for (;git != gend; ++git) {
-    std::string group_name = git->first;
-    std::vector<Element> & element_group = *git->second; 
-
-    Element & first_element = element_group[0];
-    
-    UInt group_dim = mesh.getSpatialDimension(first_element.type);
-    mesh.createElementGroup(group_name, group_dim);
-    ElementGroup & group = mesh.getElementGroup(git->first);
-
-    std::vector<Element>::iterator it = element_group.begin();
-    std::vector<Element>::iterator end = element_group.end();
-    
-    for(; it != end; ++it){
-      group.add(*it, true, true);
-    }
+  /* ------------------------------------------------------------------------ */
+  // create the element groups
+  /* ------------------------------------------------------------------------ */
   
+  {
+    std::map<std::string, std::vector<Element> *>::iterator git
+      = element_groups.begin();
+    std::map<std::string, std::vector<Element> *>::iterator gend
+      = element_groups.end();
+
+    for (;git != gend; ++git) {
+      std::string group_name = git->first;
+      std::vector<Element> & element_group = *git->second; 
+
+      if (element_group.size() == 0) continue;
+      Element & first_element = element_group[0];
+    
+      UInt group_dim = mesh.getSpatialDimension(first_element.type);
+      mesh.createElementGroup(group_name, group_dim);
+      ElementGroup & group = mesh.getElementGroup(git->first);
+
+      std::vector<Element>::iterator it = element_group.begin();
+      std::vector<Element>::iterator end = element_group.end();
+    
+      for(; it != end; ++it){
+	group.add(*it);
+      }
+  
+    }
+  }
+  
+  /* ------------------------------------------------------------------------ */
+  // create the node groups
+  /* ------------------------------------------------------------------------ */
+
+  {
+    std::map<std::string, Array<UInt> *>::iterator git
+      = node_groups.begin();
+    std::map<std::string, Array<UInt> *>::iterator gend
+      = node_groups.end();
+
+    for (;git != gend; ++git) {
+      std::string group_name = git->first;
+      Array<UInt> & node_group = *git->second; 
+
+      if (node_group.getSize() == 0) continue;
+      //      Element & first_element = element_group[0];
+    
+      UInt group_dim = 1;//mesh.getSpatialDimension(first_element.type);
+      mesh.createNodeGroup(group_name, group_dim);
+      NodeGroup & group = mesh.getNodeGroup(git->first);
+
+      Array<UInt>::iterator<UInt> it = node_group.begin();
+      Array<UInt>::iterator<UInt> end = node_group.end();
+    
+      for(; it != end; ++it){
+	group.add(*it);
+      }
+  
+    }
   }
 }
 
+
+/* -------------------------------------------------------------------------- */
+
+void MeshIODiana::printself(std::ostream & stream,int indent) const {
+
+  MeshIO::printself(stream,indent);
+  
+  std::string space;
+  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+  
+  if (node_groups.size()){
+    stream << space << "Read node groups: ";
+    std::map<std::string, Array<UInt> *>::const_iterator it = node_groups.begin();
+    std::map<std::string, Array<UInt> *>::const_iterator end = node_groups.end();
+
+    for (;it != end; ++it) {
+      stream << "'" << it->first << "' ";
+    }
+    stream << std::endl;
+  }
+
+  if (element_groups.size()){
+    stream << space << "Read element groups: ";
+    std::map<std::string, std::vector<Element> *>::const_iterator it = element_groups.begin();
+    std::map<std::string, std::vector<Element> *>::const_iterator end = element_groups.end();
+
+    for (;it != end; ++it) {
+      stream << "'" << it->first << "' ";
+    }
+    stream << std::endl;
+  }
+}
 
 
 __END_AKANTU__
