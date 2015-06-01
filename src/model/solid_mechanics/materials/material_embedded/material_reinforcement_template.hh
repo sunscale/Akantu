@@ -38,9 +38,18 @@
 #include "aka_common.hh"
 #include "material_reinforcement.hh"
 #include "material_elastic.hh"
+#include "material_linear_isotropic_hardening.hh"
 
 __BEGIN_AKANTU__
 
+/**
+ * @brief Implementation of MaterialReinforcement with 1D constitutive law
+ * @see MaterialReinforcement, MaterialElastic
+ *
+ * This class is a reinforcement featuring a constitutive law.
+ * <strong>Be careful !</strong> Because of multiple inheritance, this class
+ * forms a diamond.
+ */
 template<UInt dim, class ConstLaw = MaterialElastic<1> >
 class MaterialReinforcementTemplate : public MaterialReinforcement<dim>,
                                       public ConstLaw {
@@ -73,20 +82,36 @@ public:
   /// Computes gradu to be used by the constitutive law
   virtual void computeGradU(const ElementType & type, GhostType ghost_type);
 
+  /// Compute the potential energy of the reinforcement
   virtual void computePotentialEnergy(ElementType type, GhostType ghost_type = _not_ghost);
 
+  /// Get energy in reinforcement (currently limited to potential)
   virtual Real getEnergy(std::string id);
 
+  virtual void flattenInternal(const std::string & field_id,
+                               ElementTypeMapArray<Real> & internal_flat,
+                               const GhostType ghost_type = _not_ghost,
+                               ElementKind element_kind = _ek_not_defined);
+
+  /// Save the previous internals
+  virtual void savePreviousState();
+
 protected:
-  /// Compute interface gradu from bulk gradu
+  /**
+   * @brief Compute interface gradu from bulk gradu
+   * \f[
+   *  \varepsilon_s = C \varepsilon_c
+   * \f]
+   */
   inline void computeInterfaceGradUOnQuad(const Matrix<Real> & full_gradu,
                                           Real & gradu,
                                           const Matrix<Real> & C);
 
 };
 
-#include "material_reinforcement_template_inline_impl.cc"
+#include "material_reinforcement_template_tmpl.hh"
 
 __END_AKANTU__
+
 
 #endif // __AKANTU_MATERIAL_REINFORCEMENT_TEMPLATE_HH__

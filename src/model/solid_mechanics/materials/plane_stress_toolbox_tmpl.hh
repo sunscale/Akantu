@@ -43,10 +43,20 @@ class PlaneStressToolbox<2, ParentMaterial> : public ParentMaterial {
   /* ------------------------------------------------------------------------ */
 public:
   PlaneStressToolbox(SolidMechanicsModel & model, const ID & id = "");
+  PlaneStressToolbox(SolidMechanicsModel & model,
+                     UInt dim,
+                     const Mesh & mesh,
+                     FEEngine & fe_engine,
+                     const ID & id = "");
 
   virtual ~PlaneStressToolbox() {}
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(ThirdAxisDeformation, third_axis_deformation, Real);
+
+protected:
+  void initialize() {
+    this->registerParam("Plane_Stress", plane_stress, false, _pat_parsmod, "Is plane stress");
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -127,7 +137,21 @@ inline PlaneStressToolbox<2, ParentMaterial>::PlaneStressToolbox(SolidMechanicsM
   initialize_third_axis_deformation(false) {
 
   /// @todo Plane_Stress should not be possible to be modified after initMaterial (but before)
-  this->registerParam("Plane_Stress", plane_stress, false, _pat_parsmod, "Is plane stress");
+  this->initialize();
+}
+
+template<class ParentMaterial>
+inline PlaneStressToolbox<2, ParentMaterial>::PlaneStressToolbox(SolidMechanicsModel & model,
+                                                                 UInt dim,
+                                                                 const Mesh & mesh,
+                                                                 FEEngine & fe_engine,
+                                                                 const ID & id):
+  Material(model, dim, mesh, fe_engine, id),
+  ParentMaterial(model, dim, mesh, fe_engine, id),
+  third_axis_deformation("third_axis_deformation", *this, dim, fe_engine, this->element_filter),
+  plane_stress(false),
+  initialize_third_axis_deformation(false) {
+  this->initialize();
 }
 
 template<>

@@ -53,6 +53,8 @@ set(LIST_TYPES
   tetrahedron_10
   hexahedron_8
   hexahedron_20
+  pentahedron_6
+  pentahedron_15
   )
 
 foreach(_type ${LIST_TYPES})

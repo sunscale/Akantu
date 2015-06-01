@@ -41,12 +41,14 @@ __BEGIN_AKANTU__
 class Material;
 class FEEngine;
 
+/// This class is used for MaterialReinforcement internal fields
 template<typename T>
 class EmbeddedInternalField : public InternalField<T> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  /// Constructor
   EmbeddedInternalField(const ID & id, Material & material):
     InternalField<T>(id,
                      material,
@@ -56,6 +58,7 @@ public:
     this->spatial_dimension = 1;
   }
 
+  /// Copy constructor
   EmbeddedInternalField(const ID & id, const EmbeddedInternalField & other):
     InternalField<T>(id, other)
   {
@@ -69,6 +72,7 @@ public:
 
 };
 
+/// Method used to initialise the embedded internal fields from material file
 template<>
 inline void ParsableParamTyped< EmbeddedInternalField<Real> >::parseParam(const ParserParameter & in_param) {
   ParsableParam::parseParam(in_param);

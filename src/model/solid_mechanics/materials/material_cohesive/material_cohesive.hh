@@ -80,8 +80,9 @@ public:
   /// compute reversible and total energies by element
   void computeEnergies();
 
-  /// check stress for cohesive elements' insertion
-  virtual void checkInsertion() {
+  /// check stress for cohesive elements' insertion, by default it
+  /// also updates the cohesive elements' data
+  virtual void checkInsertion(bool check_only = false) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 

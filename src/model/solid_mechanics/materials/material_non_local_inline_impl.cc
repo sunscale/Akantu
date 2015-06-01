@@ -36,6 +36,7 @@ __END_AKANTU__
 #include "grid_synchronizer.hh"
 #include "synchronizer_registry.hh"
 #include "integrator.hh"
+#include "dumper_paraview.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */
@@ -115,7 +116,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::initMaterial() {
 #endif
 
   AKANTU_DEBUG_INFO("Cleaning extra ghosts");
-  cleanupExtraGhostElement(nb_ghost_protected);
+  ///  cleanupExtraGhostElement(nb_ghost_protected);
 
   AKANTU_DEBUG_INFO("Computing weights");
   weight_func->setRadius(weight_func->getRadius());
@@ -151,35 +152,41 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::cleanupExtraGhostEleme
   RemovedElementsEvent remove_elem(mesh);
 
 
-  Element element_global;   // member element corresponds to global element number
-  element_global.ghost_type = _ghost;
+  Element element_local;   // member element corresponds to global element number
+  element_local.ghost_type = _ghost;
 
   for(; it != last_type; ++it) {
-    element_global.type = *it;
-    UInt nb_ghost_elem = mesh.getNbElement(*it, _ghost);
+    element_local.type = *it;
+    UInt nb_ghost_elem_global = mesh.getNbElement(*it, _ghost);
     UInt nb_ghost_elem_protected = 0;
     try {
       nb_ghost_elem_protected = nb_ghost_protected(*it, _ghost);
     } catch (...) {}
 
     if(!remove_elem.getNewNumbering().exists(*it, _ghost))
-      remove_elem.getNewNumbering().alloc(nb_ghost_elem, 1, *it, _ghost);
-    else remove_elem.getNewNumbering(*it, _ghost).resize(nb_ghost_elem);
-
+      remove_elem.getNewNumbering().alloc(nb_ghost_elem_global, 1, *it, _ghost);
+    else remove_elem.getNewNumbering(*it, _ghost).resize(nb_ghost_elem_global);
+    Array<UInt> & elem_filter = element_filter(*it, _ghost);
+    UInt nb_ghost_elem_local = elem_filter.getSize();
     Array<UInt> & new_numbering = remove_elem.getNewNumbering(*it, _ghost);
-    UInt ng = 0;
-    for (UInt g = 0; g < nb_ghost_elem; ++g) {
-      if (element_global.element >= nb_ghost_elem_protected) {
-	Element element_local = this->convertToLocalElement(element_global);
-
-	if (std::find(relevant_ghost_element.begin(),
-		      relevant_ghost_element.end(),
-		      element_local) == relevant_ghost_element.end()) {
+    for (UInt g = 0; g < nb_ghost_elem_local; ++g) {
+      element_local.element = g;
+      Element element_global = this->convertToGlobalElement(element_local);
+      if (element_global.element >= nb_ghost_elem_protected &&
+	  relevant_ghost_element.find(element_local) == relevant_ghost_element.end()) {
+	  // (std::find(relevant_ghost_element.begin(),
+	  // 	     relevant_ghost_element.end(),
+	  // 	     element_local) == relevant_ghost_element.end())) {
+	std::cout<< "element removed" << std::endl;
 	remove_elem.getList().push_back(element_global);
-	new_numbering(g) = UInt(-1);
+	new_numbering(element_global.element) = UInt(-1);
       }
-    } else {
-      new_numbering(g) = ng;
+    }
+
+    UInt ng = 0;
+    for (UInt g = 0; g < nb_ghost_elem_global; ++g) {
+      if (new_numbering(g) != UInt(-1)) {
+	new_numbering(g) = ng;
 	++ng;
       }
     }

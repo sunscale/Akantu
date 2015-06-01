@@ -80,8 +80,21 @@ class Material : public Memory, public DataAccessor, public Parsable,
   /* ------------------------------------------------------------------------ */
 public:
 
+  /// Initialize material with defaults
   Material(SolidMechanicsModel & model, const ID & id = "");
+
+  /// Initialize material with custom mesh & fe_engine
+  Material(SolidMechanicsModel & model,
+           UInt dim,
+           const Mesh & mesh,
+           FEEngine & fe_engine,
+           const ID & id = "");
+
+  /// Destructor
   virtual ~Material();
+
+protected:
+  void initialize();
 
   /* ------------------------------------------------------------------------ */
   /* Function that materials can/should reimplement                           */
@@ -266,7 +279,7 @@ protected:
   void computePotentialEnergyByElements();
 
   /// resize the intenals arrays
-  void resizeInternals();
+  virtual void resizeInternals();
 
 public:
   /// compute the coordinates of the quadrature points
@@ -392,6 +405,8 @@ public:
   AKANTU_GET_MACRO(Rho, rho, Real);
   AKANTU_SET_MACRO(Rho, rho, Real);
 
+  AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
+
   /// return the potential energy for the subset of elements contained by the material
   Real getPotentialEnergy();
   /// return the potential energy for the provided element
@@ -420,7 +435,8 @@ public:
   InternalField<Real> & getInternal(const ID & id);
 
   inline bool isInternal(const ID & id, const ElementKind & element_kind) const;
-  inline ElementTypeMap<UInt> getInternalDataPerElem(const ID & id, const ElementKind & element_kind, const ID & fe_engine_id = "") const;
+  inline ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
+                                                     const ElementKind & element_kind) const;
 
   bool isFiniteDeformation() const { return finite_deformation; }
   bool isInelasticDeformation() const { return inelastic_deformation; }
@@ -431,10 +447,10 @@ public:
   template <typename T>
   inline const T & getParam(const ID & param) const;
 
-  void flattenInternal(const std::string & field_id,
-		       ElementTypeMapArray<Real> & internal_flat, 
-		       const GhostType ghost_type = _not_ghost,  
-		       ElementKind element_kind = _ek_not_defined);
+  virtual void flattenInternal(const std::string & field_id,
+		                           ElementTypeMapArray<Real> & internal_flat,
+                               const GhostType ghost_type = _not_ghost,
+                               ElementKind element_kind = _ek_not_defined);
 
 
 protected:

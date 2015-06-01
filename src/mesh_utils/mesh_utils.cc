@@ -650,15 +650,16 @@ void MeshUtils::purifyMesh(Mesh & mesh) {
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
 /* -------------------------------------------------------------------------- */
-bool MeshUtils::insertCohesiveElements(Mesh & mesh,
+UInt MeshUtils::insertCohesiveElements(Mesh & mesh,
 				       Mesh & mesh_facets,
 				       const ElementTypeMapArray<bool> & facet_insertion,
 				       Array<UInt> & doubled_nodes,
-				       Array<Element> & new_elements) {
+				       Array<Element> & new_elements,
+				       bool only_double_facets) {
   UInt spatial_dimension = mesh.getSpatialDimension();
-  bool elements_inserted = updateFacetToDouble(mesh_facets, facet_insertion);
+  UInt elements_to_insert = updateFacetToDouble(mesh_facets, facet_insertion);
 
-  if (elements_inserted) {
+  if (elements_to_insert > 0) {
 
     if (spatial_dimension == 1) {
       doublePointFacet(mesh, mesh_facets, doubled_nodes);
@@ -678,10 +679,11 @@ bool MeshUtils::insertCohesiveElements(Mesh & mesh,
       }
     }
 
-    updateCohesiveData(mesh, mesh_facets, new_elements);
+    if (!only_double_facets)
+      updateCohesiveData(mesh, mesh_facets, new_elements);
   }
 
-  return elements_inserted;
+  return elements_to_insert;
 }
 #endif
 
@@ -825,12 +827,12 @@ void MeshUtils::doubleFacet(Mesh & mesh,
 }
 
 /* -------------------------------------------------------------------------- */
-bool MeshUtils::updateFacetToDouble(Mesh & mesh_facets,
+UInt MeshUtils::updateFacetToDouble(Mesh & mesh_facets,
 				    const ElementTypeMapArray<bool> & facet_insertion) {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh_facets.getSpatialDimension();
-  bool facets_to_double = false;
+  UInt nb_facets_to_double = 0.;
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {
@@ -863,7 +865,7 @@ bool MeshUtils::updateFacetToDouble(Mesh & mesh_facets,
 
 	if (f_insertion(f) == false) continue;
 
-	facets_to_double = true;
+	++nb_facets_to_double;
 
 	if (element_to_facet(f)[1].type == _not_defined
 #if defined(AKANTU_COHESIVE_ELEMENT)
@@ -918,7 +920,7 @@ bool MeshUtils::updateFacetToDouble(Mesh & mesh_facets,
   }
 
   AKANTU_DEBUG_OUT();
-  return facets_to_double;
+  return nb_facets_to_double;
 }
 
 /* -------------------------------------------------------------------------- */

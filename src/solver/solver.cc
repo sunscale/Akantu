@@ -64,6 +64,7 @@ Solver::~Solver() {
 
   this->destroyInternalData();
   delete synch_registry;
+  StaticSolver::getStaticSolver().unregisterEventHandler(*this);
   AKANTU_DEBUG_OUT();
 }
 

@@ -1,11 +1,11 @@
 /**
- * @file   reinforced_concrete
+ * @file  test_embedded_interface_model.cc
  *
- * @author Lucas Frerot
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
  * @date   lun. 09 29 16:03:10 2014
  *
- * @brief  Reinforced concrete simulation
+ * @brief Embedded model test based on potential energy
  *
  * @section LICENSE
  *
@@ -45,8 +45,24 @@ int main (int argc, char * argv[]) {
   Mesh mesh(dim);
   mesh.read("embedded_mesh.msh");
 
-  EmbeddedInterfaceModel model(mesh, dim);
-  model.initFull(SolidMechanicsModelOptions(_static));
+  Array<Real> nodes_vec(2, dim, "reinforcement_nodes");
+  nodes_vec.storage()[0] = 0; nodes_vec.storage()[1] = 0.5;
+  nodes_vec.storage()[2] = 1; nodes_vec.storage()[3] = 0.5;
+
+  Array<UInt> conn_vec(1, 2, "reinforcement_connectivity");
+  conn_vec.storage()[0] = 0; conn_vec.storage()[1] = 1;
+
+  Array<std::string> names_vec(1, 1, "reinforcement", "reinforcement_names");
+
+  Mesh reinforcement_mesh(dim, "reinforcement_mesh");
+  reinforcement_mesh.getNodes().copy(nodes_vec);
+  reinforcement_mesh.addConnectivityType(_segment_2);
+  reinforcement_mesh.getConnectivity(_segment_2).copy(conn_vec);
+  reinforcement_mesh.registerData<std::string>("physical_names").alloc(1, 1, _segment_2);
+  reinforcement_mesh.getData<std::string>("physical_names")(_segment_2).copy(names_vec);
+
+  EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
+  model.initFull(EmbeddedInterfaceModelOptions(_static));
 
   Array<Real> & nodes  = mesh.getNodes();
   Array<Real> & forces = model.getForce();

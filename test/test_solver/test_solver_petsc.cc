@@ -84,8 +84,6 @@ int main(int argc, char *argv[]) {
 
   // fill the matrix with 
   UInt nb_element = mesh.getNbElement(element_type);
-  std::cout << mesh.getNbElement(element_type, _ghost) <<std::endl;
-
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(element_type);
   UInt nb_dofs_per_element = spatial_dimension * nb_nodes_per_element;
   SparseMatrix K(nb_global_nodes * spatial_dimension, _symmetric);
@@ -129,21 +127,30 @@ int main(int argc, char *argv[]) {
 
   // compute residual: apply nodal force on last node
   Array<Real> residual(nb_nodes, spatial_dimension, 0.);
-  residual -= internal_forces;
+  
   for (UInt i = 0; i < nb_nodes; ++i) {
     if (std::abs(position(i, 0) - 10) < Math::getTolerance() )
       residual(i, 0) += 2;
   }
 
-  /// solve the matrix before the solve step
-  petsc_matrix.saveMatrix("1D_bar.mtx");
+  residual -= internal_forces;
   
   /// initialize solver and solution
   Array<Real> solution(nb_nodes, spatial_dimension, 0.);
   SolverPETSc solver(petsc_matrix);
   solver.initialize();
+  solver.setOperators();
   solver.setRHS(residual);
   solver.solve(solution);
+
+  /// verify solution
+  Math::setTolerance(1e-11);
+  for (UInt i = 0; i < nb_nodes; ++i) {
+    if (!dof_synchronizer.isPureGhostDOF(i) && !Math::are_float_equal(2 * position(i, 0), solution(i, 0))) {
+      std::cout << "The solution is not correct!!!!" << std::endl;
+      return EXIT_FAILURE;
+    }
+  }
 
   delete communicator;
 

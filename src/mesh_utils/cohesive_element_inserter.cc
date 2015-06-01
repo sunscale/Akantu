@@ -234,19 +234,19 @@ void CohesiveElementInserter::insertIntrinsicElements() {
 }
 
 /* -------------------------------------------------------------------------- */
-bool CohesiveElementInserter::insertElements() {
+UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
   NewNodesEvent node_event;
   node_event.getList().extendComponentsInterlaced(2, 1);
   NewElementsEvent element_event;
 
-  bool elements_inserted = MeshUtils::insertCohesiveElements(mesh,
-							     mesh_facets,
-							     insertion_facets,
-							     node_event.getList(),
-							     element_event.getList());
+  UInt nb_new_elements = MeshUtils::insertCohesiveElements(mesh,
+							   mesh_facets,
+							   insertion_facets,
+							   node_event.getList(),
+							   element_event.getList(),
+							   only_double_facets);
 
   UInt nb_new_nodes = node_event.getList().getSize();
-  UInt nb_new_elements = element_event.getList().getSize();
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (mesh.getNodesType().getSize()) {
@@ -277,7 +277,7 @@ bool CohesiveElementInserter::insertElements() {
     MeshUtils::resetFacetToDouble(mesh_facets);
   }
 
-  return elements_inserted;
+  return nb_new_elements;
 }
 
 /* -------------------------------------------------------------------------- */

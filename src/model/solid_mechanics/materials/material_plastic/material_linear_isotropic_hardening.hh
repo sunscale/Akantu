@@ -52,6 +52,11 @@ class MaterialLinearIsotropicHardening : public MaterialPlastic<spatial_dimensio
 public:
 
   MaterialLinearIsotropicHardening(SolidMechanicsModel & model, const ID & id = "");
+  MaterialLinearIsotropicHardening(SolidMechanicsModel & model,
+                                   UInt dim,
+                                   const Mesh & mesh,
+                                   FEEngine & fe_engine,
+                                   const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

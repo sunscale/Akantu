@@ -92,6 +92,7 @@ void SolverPETSc::initialize(SolverOptions & options) {
   /// create a solver context
   ierr = KSPCreate(this->petsc_solver_wrapper->communicator, &(this->petsc_solver_wrapper->ksp)); CHKERRXX(ierr);
  
+  /// create the PETSc vector for the right-hand side
   ierr = VecCreate(this->petsc_solver_wrapper->communicator, &(this->petsc_solver_wrapper->rhs)); CHKERRXX(ierr);
  
   ierr = VecSetSizes((this->petsc_solver_wrapper->rhs),
@@ -99,7 +100,9 @@ void SolverPETSc::initialize(SolverOptions & options) {
 		     petsc_matrix->getSize()); CHKERRXX(ierr);
   ierr = VecSetFromOptions((this->petsc_solver_wrapper->rhs)); CHKERRXX(ierr);
 
+  /// create the PETSc vector for the solution
   ierr = VecDuplicate((this->petsc_solver_wrapper->rhs), &(this->petsc_solver_wrapper->solution)); CHKERRXX(ierr);
+  /// set the solution to zero
   ierr = VecZeroEntries(this->petsc_solver_wrapper->solution);
   this->is_petsc_data_initialized = true; 
   AKANTU_DEBUG_OUT();

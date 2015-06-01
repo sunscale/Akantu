@@ -88,7 +88,7 @@ NodeGroup & GroupManager::createNodeGroup(const std::string & group_name,
       return *(it->second);
     }
     else
-      AKANTU_EXCEPTION("Trying to create a node group that already exists:" << group_name << "_nodes");
+      AKANTU_EXCEPTION("Trying to create a node group that already exists:" << group_name);
   }
 
   NodeGroup * node_group = new NodeGroup(group_name, id + ":" + group_name + "_node_group",

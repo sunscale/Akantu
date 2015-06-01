@@ -37,19 +37,41 @@
 
 #include "solid_mechanics_model.hh"
 #include "mesh.hh"
-#include "parsable.hh"
 
-#include "embedded_interface.hh"
-#include "mesh_geom_container.hh"
-
-#include <CGAL/Cartesian.h>
+#include "embedded_interface_intersector.hh"
 
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-typedef CGAL::Cartesian<Real> K;
+/// Options for the EmbeddedInterfaceModel
+struct EmbeddedInterfaceModelOptions : SolidMechanicsModelOptions {
+  EmbeddedInterfaceModelOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
+                                bool no_init_intersections = false,
+                                bool no_init_materials = false):
+    SolidMechanicsModelOptions(analysis_method, no_init_materials),
+    no_init_intersections(no_init_intersections)
+  {}
 
+  bool no_init_intersections;
+};
+
+extern const EmbeddedInterfaceModelOptions default_embedded_interface_model_options;
+
+/**
+ * @brief Solid mechanics model using the embedded model.
+ *
+ * This SolidMechanicsModel subclass implements the embedded model,
+ * a method used to represent 1D elements in a finite elements model
+ * (eg. reinforcements in concrete).
+ *
+ * In addition to the SolidMechanicsModel properties, this model has
+ * a mesh of the 1D elements embedded in the model, and an instance of the
+ * EmbeddedInterfaceIntersector class for the computation of the intersections of the
+ * 1D elements with the background (bulk) mesh.
+ *
+ * @see MaterialReinforcement
+ */
 class EmbeddedInterfaceModel : public SolidMechanicsModel {
 
   typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular> MyFEEngineType;
@@ -59,8 +81,14 @@ class EmbeddedInterfaceModel : public SolidMechanicsModel {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  /// Constructor
+  /**
+   * @brief Constructor
+   *
+   * @param mesh main mesh (concrete)
+   * @param primitive_mesh mesh of the embedded reinforcement
+   */
   EmbeddedInterfaceModel(Mesh & mesh,
+                         Mesh & primitive_mesh,
                          UInt spatial_dimension = _all_dimensions,
                          const ID & id = "embedded_interface_model",
                          const MemoryID & memory_id = 0);
@@ -73,28 +101,16 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// Initialise the model
-  virtual void initModel();
+  virtual void initFull(const ModelOptions & options = default_embedded_interface_model_options);
 
   /// Initialise the materials
   virtual void initMaterials();
 
-  /// Instanciate the interfaces
-  virtual void instanciateInterfaces();
-
-  /// Initialise the interface mesh
-  void initInterface(const std::list<std::pair<K::Segment_3, std::string> > & interface_list);
-
-  /// Assemble the stiffness matrix of the model
-  virtual void assembleStiffnessMatrix();
-
-  /// Dump
-  virtual dumper::Field * createElementalField(const std::string & field_name,
-					       const std::string & group_name,
-					       bool padding_flag,
-					       const ElementKind & kind,
-                 const std::string & fe_engine_id = "");
-
-
+  virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
+                                         const std::string & field_id,
+                                         const std::string & group_name,
+                                         const ElementKind & element_kind,
+                                         bool padding_flag);
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -111,50 +127,25 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  /// Intersector object to build the interface mesh
+  EmbeddedInterfaceIntersector intersector;
+
   /// Interface mesh (weak reference)
   Mesh * interface_mesh;
 
+  /// Mesh used to create the CGAL primitives for intersections
+  Mesh & primitive_mesh;
+
   /// Material selector for interface
   MaterialSelector * interface_material_selector;
-  
-  /// Geom object to build the interface mesh
-  MeshGeomContainer interface_container;
-
 };
 
-/// Material selector for EmbeddedInterfaceModel
-template <typename T> class EmbeddedInterfaceMaterialSelector : public DefaultMaterialSelector {};
-
-/// Material selector based on associated material name
-template<>
-class EmbeddedInterfaceMaterialSelector<std::string> : public DefaultMaterialSelector {
-
+template<typename T>
+class InterfaceMeshDataMaterialSelector : public ElementDataMaterialSelector<T> {
 public:
-  EmbeddedInterfaceMaterialSelector(const std::string & name, const EmbeddedInterfaceModel & model):
-    DefaultMaterialSelector(model.getMaterialByElement()),
-    names(model.getInterfaceMesh().getData<std::string>(name)),
-    model(model)
+  InterfaceMeshDataMaterialSelector(const std::string & name, const EmbeddedInterfaceModel & model, UInt first_index = 1) :
+    ElementDataMaterialSelector<T>(model.getInterfaceMesh().getData<T>(name), model, first_index)
   {}
-
-  UInt operator() (const Element & element) {
-    try {
-      DebugLevel dbl = debug::getDebugLevel();
-      debug::setDebugLevel(dblError);
-
-      std::string material_name = names(element.type, element.ghost_type)(element.element);
-
-      debug::setDebugLevel(dbl);
-
-      return model.getMaterialIndex(material_name);
-    } catch (debug::Exception& e) {
-      /// TODO this returns the last material, which should be a bulk material. Try to find cleaner way
-      return model.getNbMaterials() - 1;
-    }
-  }
-
-protected:
-  const ElementTypeMapArray<std::string> & names;
-  const EmbeddedInterfaceModel & model;
 };
 
 __END_AKANTU__

@@ -3,7 +3,7 @@ Section(_st_global) global [
  Parameters [
   + debug_level: 1 (input_file.dat:2:1)
   + general: 50 (input_file.dat:22:1)
-  + mat: [[ 1, 23+2, 5, toto ],vect ] (input_file.dat:27:1)
+  + mat: [[ 1, 23+2, 5, toto ],[ 0, 10, general, 5+8] ] (input_file.dat:27:1)
   + rand1: 10 uniform [0.2, 0.5 ] (input_file.dat:30:1)
   + rand2: 10 weibull [0.2, 0.5 ] (input_file.dat:31:1)
   + rand3: 10 (input_file.dat:32:1)
@@ -37,8 +37,8 @@ Section(_st_global) global [
 ]
 
 56.2832==56.2832
-Vector<double>(4) : [1, 25, 5, 56.2832]
-Matrix<double>(2,4) :[[1, 25, 5, 56.2832], [1, 25, 5, 56.2832]]
+[1, 25, 5, 56.2832]
+[[1, 25, 5, 56.2832], [0, 10, 50, 13]]
 10 Uniform [ min=0.2, max=0.5 ]
 10 Weibull [ shape=0.5, scale=0.2]
 10

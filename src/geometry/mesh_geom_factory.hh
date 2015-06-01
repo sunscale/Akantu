@@ -37,16 +37,21 @@
 #include "mesh.hh"
 #include "mesh_geom_abstract.hh"
 #include "tree_type_helper.hh"
+#include "geom_helper_functions.hh"
 
-#include <CGAL/Cartesian.h>
+#include <algorithm>
 
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-typedef CGAL::Cartesian<Real> K;
-
-template<UInt dim, ElementType el_type>
+/**
+ * @brief Class used to construct AABB tree for intersection computations
+ *
+ * This class constructs a CGAL AABB tree of one type of element in a mesh
+ * for fast intersection computations.
+ */
+template<UInt dim, ElementType el_type, class Primitive, class Kernel>
 class MeshGeomFactory : public MeshGeomAbstract {
 
 public:
@@ -60,31 +65,43 @@ public:
   /// Construct AABB tree for fast intersection computing
   virtual void constructData();
 
-  /// Compute the number of intersections with primitive
-  virtual UInt numberOfIntersectionsWithInterface(const K::Segment_3 & interface) const;
+  /**
+   * @brief Construct a primitive and add it to a list of primitives
+   *
+   * This function needs to be specialized for every type that is wished to be supported.
+   * @param node_coordinates coordinates of the nodes making up the element
+   * @param id element number
+   * @param list the primitive list (not used inside MeshGeomFactory)
+   */
+  inline void addPrimitive(
+      const Matrix<Real> & node_coordinates,
+      UInt id,
+      typename TreeTypeHelper<Primitive, Kernel>::container_type & list
+  );
 
-  /// Create a mesh of the intersection with a linear interface
-  virtual void meshOfLinearInterface(const Interface & interface, Mesh & interface_mesh);
+  inline void addPrimitive(
+      const Matrix<Real> & node_coordinates,
+      UInt id
+  );
 
-  /// Construct a primitive and add it to the list
-  void addPrimitive(const Matrix<Real> & node_coordinates, UInt id);
+  /// Getter for the AABB tree
+  const typename TreeTypeHelper<Primitive, Kernel>::tree & getTree() const { return *data_tree; }
 
-  /// Construct segment list from intersections and remove duplicates
-  void constructSegments(
-      const std::list<typename TreeTypeHelper<dim, el_type>::linear_intersection> & intersections,
-      std::list<std::pair<K::Segment_3, UInt> > & segments,
-      const K::Segment_3 & interface);
-
-  const typename TreeTypeHelper<dim, el_type>::tree & getTree() const { return *data_tree; }
+  /// Getter for primitive list
+  const typename TreeTypeHelper<Primitive, Kernel>::container_type & getPrimitiveList() const
+    { return primitive_list; }
 
 protected:
-  typename TreeTypeHelper<dim, el_type>::tree * data_tree;
-  typename TreeTypeHelper<dim, el_type>::container_type primitive_list;
-};
+  /// AABB data tree
+  typename TreeTypeHelper<Primitive, Kernel>::tree * data_tree;
 
+  /// Primitive list
+  typename TreeTypeHelper<Primitive, Kernel>::container_type primitive_list;
+};
 
 __END_AKANTU__
 
 #include "mesh_geom_factory_tmpl.hh"
+
 
 #endif // __AKANTU_MESH_GEOM_FACTORY_HH__

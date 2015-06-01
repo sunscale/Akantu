@@ -2,9 +2,10 @@
  * @file   material_selector_tmpl.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
  * @date creation: Wed Nov 13 2013
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Fri May 1 2015
  *
  * @brief  Implementation of the template MaterialSelector
  *
@@ -36,53 +37,33 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<>
-class MeshDataMaterialSelector<std::string> : public MaterialSelector {
-public:
-  MeshDataMaterialSelector(const std::string & name, const SolidMechanicsModel & model) :
-    names(model.getMesh().getData<std::string>(name)), model(model) { }
-  UInt operator() (const Element & element) {
-    try {
-      DebugLevel dbl = debug::getDebugLevel();
-      debug::setDebugLevel(dblError);
-      std::string material_name = names(element.type, element.ghost_type)(element.element);
-      debug::setDebugLevel(dbl);
-
-      return model.getMaterialIndex(material_name);
-    } catch (...) {
-      return MaterialSelector::operator()(element);
-    }
-  }
-
-private:
-  const ElementTypeMapArray<std::string> & names;
-protected:
-  const SolidMechanicsModel & model;
-};
+template<typename T>
+MeshDataMaterialSelector<T>::MeshDataMaterialSelector(const std::string & name,
+                                                      const SolidMechanicsModel & model,
+                                                      UInt first_index):
+  ElementDataMaterialSelector<T>(model.getMesh().getData<T>(name), model, first_index)
+{}
 
 /* -------------------------------------------------------------------------- */
 template<>
-class MeshDataMaterialSelector<UInt> : public MaterialSelector {
-public:
-  MeshDataMaterialSelector(const std::string & name, const SolidMechanicsModel & model, UInt first_index = 1) :
-    indexes(model.getMesh().getData<UInt>(name)), model(model), first_index(first_index) { }
-  UInt operator() (const Element & element) {
-    try {
-      DebugLevel dbl = debug::getDebugLevel();
-      debug::setDebugLevel(dblError);
-      UInt mat = indexes(element.type, element.ghost_type)(element.element) - first_index;
-      debug::setDebugLevel(dbl);
-      return mat;
-    } catch (...) {
-      return MaterialSelector::operator()(element);
-    }
+inline UInt ElementDataMaterialSelector<std::string>::operator() (const Element & element) {
+  try {
+    std::string material_name = this->elementData(element);
+    return model.getMaterialIndex(material_name);
+  } catch (...) {
+    return MaterialSelector::operator()(element);
   }
-protected:
-  const ElementTypeMapArray<UInt> indexes;
-  const SolidMechanicsModel & model;
-  UInt first_index;
-};
+}
 
+/* -------------------------------------------------------------------------- */
+template<>
+inline UInt ElementDataMaterialSelector<UInt>::operator() (const Element & element) {
+  try {
+    return this->elementData(element) - first_index;
+  } catch (...) {
+    return MaterialSelector::operator()(element);
+  }
+}
 
 __END_AKANTU__
 

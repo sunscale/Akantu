@@ -91,7 +91,9 @@ endfunction()
 #===============================================================================
 if(AKANTU_TESTS)
   option(AKANTU_BUILD_ALL_TESTS "Build all tests" ON)
+  option(AKANTU_BUILD_UNSTABLE_TESTS "Build the tests marked as unstable" OFF)
   mark_as_advanced(AKANTU_BUILD_ALL_TESTS)
+  mark_as_advanced(AKANTU_BUILD_UNSTABLE_TESTS)
 endif(AKANTU_TESTS)
 
 #===============================================================================
@@ -199,12 +201,12 @@ endfunction()
 # ==============================================================================
 function(register_test test_name)
    set(multi_variables
-    SOURCES FILES_TO_COPY DEPENDENCIES DIRECTORIES_TO_CREATE COMPILE_OPTIONS EXTRA_FILES
+    SOURCES FILES_TO_COPY DEPENDENCIES DIRECTORIES_TO_CREATE COMPILE_OPTIONS EXTRA_FILES PACKAGE
     )
 
   cmake_parse_arguments(_register_test
+    "UNSTABLE"
     ""
-    "PACKAGE"
     "${multi_variables}"
     ${ARGN}
     )
@@ -213,22 +215,38 @@ function(register_test test_name)
     message(FATAL_ERROR "No reference package was defined for the test ${test_name} in folder ${CMAKE_CURRENT_SOURCE_DIR}")
   endif()
 
-  package_is_activated(${_register_test_PACKAGE} _act)
+  set(_test_act TRUE)
+  # Activate the test anly if all packages associated to the test are activated
+  foreach(_package ${_register_test_PACKAGE})
+    package_is_activated(${_package} _act)
+    if(NOT _act)
+      set(_test_act FALSE)
+    endif()
+  endforeach()
 
-  if(_act)
+  # check if the test is marked unstable and if the unstable test should be run
+  if(_register_test_UNSTABLE AND NOT AKANTU_BUILD_UNSTABLE_TESTS)
+    set(_test_act FALSE)
+  endif()
+
+  # todo this should be checked for the build package_sources since the file will not be listed.
+  if(_test_act)
     math(EXPR _tmp_parent_count "${_akantu_${_akantu_current_parent_test}_tests_count} + 1")
     set(_akantu_${_akantu_current_parent_test}_tests_count ${_tmp_parent_count} CACHE INTERNAL "" FORCE)
 
     string(TOUPPER ${_akantu_current_parent_test} _u_parent)
-    if(AKANTU_BUILD_${_u_parent})
+    if(AKANTU_BUILD_${_u_parent} OR AKANTU_BUILD_ALL_TESTS)
+      # get the include directories for sources in activated directories
       package_get_all_include_directories(
 	AKANTU_LIBRARY_INCLUDE_DIRS
 	)
 
+      # get the external packages compilation and linking informations
       package_get_all_external_informations(
 	AKANTU_EXTERNAL_INCLUDE_DIR
 	AKANTU_EXTERNAL_LIBRARIES
 	)
+
       # set the proper includes to build most of the tests
       include_directories(
 	${AKANTU_INCLUDE_DIRS}

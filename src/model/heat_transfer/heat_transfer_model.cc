@@ -166,28 +166,30 @@ void HeatTransferModel::initArrays() {
   /* -------------------------------------------------------------------------- */
   // byelementtype vectors
   getFEEngine().getMesh().initElementTypeMapArray(temperature_on_qpoints,
-					     1,
-					     spatial_dimension);
+						  1,
+						  spatial_dimension);
 
   getFEEngine().getMesh().initElementTypeMapArray(temperature_gradient,
-					     spatial_dimension,
-					     spatial_dimension);
+						  spatial_dimension,
+						  spatial_dimension);
 
   getFEEngine().getMesh().initElementTypeMapArray(conductivity_on_qpoints,
-					     spatial_dimension*spatial_dimension,
-					     spatial_dimension);
+						  spatial_dimension*spatial_dimension,
+						  spatial_dimension);
 
   getFEEngine().getMesh().initElementTypeMapArray(k_gradt_on_qpoints,
-					     spatial_dimension,
-					     spatial_dimension);
+						  spatial_dimension,
+						  spatial_dimension);
 
   getFEEngine().getMesh().initElementTypeMapArray(bt_k_gT,
-					     1,
-					     spatial_dimension,true);
+						  1,
+						  spatial_dimension,
+						  true);
 
   getFEEngine().getMesh().initElementTypeMapArray(int_bt_k_gT,
-					     1,
-					     spatial_dimension,true);
+						  1,
+						  spatial_dimension,
+						  true);
 
   getFEEngine().getMesh().initElementTypeMapArray(thermal_energy,
 					     1,
@@ -886,6 +888,9 @@ Real HeatTransferModel::getEnergy(const std::string & energy_id, const ElementTy
 
 /* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
+#ifdef AKANTU_USE_IOHELPER
+
 dumper::Field * HeatTransferModel::createNodalFieldBool(const std::string & field_name,
 							const std::string & group_name,
 							bool padding_flag) {
@@ -916,7 +921,9 @@ dumper::Field * HeatTransferModel::createNodalFieldReal(const std::string & fiel
   
   return field;
 }
+
 /* -------------------------------------------------------------------------- */
+
 
 dumper::Field * HeatTransferModel
 ::createElementalField(const std::string & field_name, 
@@ -943,10 +950,37 @@ dumper::Field * HeatTransferModel
 
   return field;
 }
+/* -------------------------------------------------------------------------- */
+#else
+/* -------------------------------------------------------------------------- */
+dumper::Field * HeatTransferModel
+::createElementalField(const std::string & field_name, 
+		       const std::string & group_name,
+		       bool padding_flag,
+		       const ElementKind & element_kind){
+
+  return NULL;
+}
 
 /* -------------------------------------------------------------------------- */
- 
- 
+
+dumper::Field * HeatTransferModel::createNodalFieldBool(const std::string & field_name,
+							const std::string & group_name,
+							bool padding_flag) {
+  
+  return NULL;
+
+}
+/* -------------------------------------------------------------------------- */
+
+dumper::Field * HeatTransferModel::createNodalFieldReal(const std::string & field_name,
+							const std::string & group_name,
+							bool padding_flag) {
+  
+  return NULL;
+}
+
+#endif 
 
 
 __END_AKANTU__

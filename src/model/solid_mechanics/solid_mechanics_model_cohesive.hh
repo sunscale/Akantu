@@ -96,9 +96,9 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
   /// function to perform a stress check on each facet and insert
-  /// cohesive elements if needed (returns true if some elements are
-  /// inserted)
-  bool checkCohesiveStress();
+  /// cohesive elements if needed (returns the number of new cohesive
+  /// elements)
+  UInt checkCohesiveStress();
 
   /// interpolate stress on facets
   void interpolateStress();
@@ -124,24 +124,20 @@ public:
   /// insert intrinsic cohesive elements
   void insertIntrinsicElements();
 
-
-  //  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
-  //  bool solveStepCohesive(Real tolerance, UInt max_iteration = 100);
-
   template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
   bool solveStepCohesive(Real tolerance,
                          Real & error,
                          UInt max_iteration = 100,
+                         bool load_reduction = false,
                          bool do_not_factorize = false);
 
+  /// initialize stress interpolation
+  void initStressInterpolation();
 
 private:
 
   /// initialize completely the model for extrinsic elements
   void initAutomaticInsertion();
-
-  /// initialize stress interpolation
-  void initStressInterpolation();
 
   /// compute facets' normals
   void computeNormals();

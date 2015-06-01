@@ -54,14 +54,35 @@ InternalField<T>::InternalField(const ID & id, Material & material) :
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
-InternalField<T>::InternalField(const ID & id, Material & material, FEEngine & fem,
+InternalField<T>::InternalField(const ID & id,
+                                Material & material,
+                                FEEngine & fem,
 				const ElementTypeMapArray<UInt> & element_filter) :
   ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
   material(material),
   fem(fem),
   element_filter(element_filter),
   default_value(T()),
-  spatial_dimension(material.getModel().getSpatialDimension()),
+  spatial_dimension(material.getSpatialDimension()),
+  element_kind(_ek_regular),
+  nb_component(0),
+  is_init(false),
+  previous_values(NULL) {
+}
+
+/* -------------------------------------------------------------------------- */
+template<typename T>
+InternalField<T>::InternalField(const ID & id,
+                                Material & material,
+                                UInt dim,
+                                FEEngine & fem,
+				const ElementTypeMapArray<UInt> & element_filter) :
+  ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
+  material(material),
+  fem(fem),
+  element_filter(element_filter),
+  default_value(T()),
+  spatial_dimension(dim),
   element_kind(_ek_regular),
   nb_component(0),
   is_init(false),

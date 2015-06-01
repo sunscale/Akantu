@@ -73,6 +73,58 @@ Material::Material(SolidMechanicsModel & model, const ID & id) :
 					 _ek_regular);
 
 
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+Material::Material(SolidMechanicsModel & model,
+                   UInt dim,
+                   const Mesh & mesh,
+                   FEEngine & fe_engine,
+                   const ID & id) :
+  Memory(id, model.getMemoryID()),
+  Parsable(_st_material, id),
+  is_init(false),
+  finite_deformation(false),
+  name(""),
+  model(&model),
+  spatial_dimension(dim),
+  element_filter("element_filter", id, this->memory_id),
+  stress("stress", *this, dim, fe_engine, this->element_filter),
+  eigenstrain("eignestrain", *this, dim, fe_engine, this->element_filter),
+  gradu("gradu", *this, dim, fe_engine, this->element_filter),
+  green_strain("green_strain", *this, dim, fe_engine, this->element_filter),
+  piola_kirchhoff_2("poila_kirchhoff_2", *this, dim, fe_engine, this->element_filter),
+  potential_energy("potential_energy", *this, dim, fe_engine, this->element_filter),
+  is_non_local(false),
+  use_previous_stress(false),
+  use_previous_gradu(false),
+  interpolation_inverse_coordinates("interpolation inverse_coordinates", *this,
+                                    dim, fe_engine, this->element_filter),
+  interpolation_points_matrices("interpolation points matrices", *this,
+                                dim, fe_engine, this->element_filter) {
+
+  AKANTU_DEBUG_IN();
+  mesh.initElementTypeMapArray(element_filter,
+                               1,
+                               spatial_dimension,
+                               false,
+                               _ek_regular);
+
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+Material::~Material() {
+  AKANTU_DEBUG_IN();
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void Material::initialize() {
   registerParam("rho"                  , rho                  , 0.           , _pat_parsable | _pat_modifiable, "Density");
   registerParam("name"                 , name                 , std::string(), _pat_parsable | _pat_readable);
   registerParam("finite_deformation"   , finite_deformation   , false        , _pat_parsable | _pat_readable, "Is finite deformation");
@@ -83,16 +135,7 @@ Material::Material(SolidMechanicsModel & model, const ID & id) :
   gradu.initialize(spatial_dimension * spatial_dimension);
   stress.initialize(spatial_dimension * spatial_dimension);
 
-  model.registerEventHandler(*this);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-Material::~Material() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_OUT();
+  this->model->registerEventHandler(*this);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1065,11 +1108,15 @@ void Material::initElementalFieldInterpolation(const Array<Real> & quad_coordina
     interpolation_inverse_coordinates.alloc(nb_element,
 					    nb_quad_per_element*nb_quad_per_element,
 					    type, ghost_type);
+  else
+    interpolation_inverse_coordinates(type, ghost_type).resize(nb_element);
 
   if(!interpolation_points_matrices.exists(type, ghost_type))
     interpolation_points_matrices.alloc(nb_element,
 					nb_interpolation_points_per_elem * nb_quad_per_element,
 					type, ghost_type);
+  else
+    interpolation_points_matrices(type, ghost_type).resize(nb_element);
 
   Array<Real> & interp_inv_coord = interpolation_inverse_coordinates(type, ghost_type);
   Array<Real> & interp_points_mat = interpolation_points_matrices(type, ghost_type);

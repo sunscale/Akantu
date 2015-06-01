@@ -415,9 +415,8 @@ public:
   bool isInternal(const std::string & field_name, const ElementKind & element_kind);
 #ifndef SWIG  
   //! give the amount of data per element
-  ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-					     const ElementKind & kind,
-               const std::string & fe_engine_id = "");
+  virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
+					     const ElementKind & kind);
 
   //! flatten a given material internal field 
   ElementTypeMapArray<Real> & flattenInternal(const std::string & field_name,
@@ -439,8 +438,8 @@ public:
   virtual dumper::Field * createElementalField(const std::string & field_name, 
 					       const std::string & group_name,
 					       bool padding_flag,
-					       const ElementKind & kind,
-					       const std::string & fe_engine_id = "");
+                 const UInt & spatial_dimension,
+					       const ElementKind & kind);
 
 
 
@@ -467,6 +466,9 @@ public:
   AKANTU_GET_MACRO(TimeStep, time_step, Real);
   /// set the value of the time step
   void setTimeStep(Real time_step);
+
+  /// return the of iterations done in the last solveStep
+  AKANTU_GET_MACRO(NumberIter, n_iter, UInt);
 
   /// get the value of the conversion from forces/ mass to acceleration
   AKANTU_GET_MACRO(F_M2A, f_m2a, Real);
@@ -616,6 +618,9 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  /// number of iterations
+  UInt n_iter;
+
   /// time step
   Real time_step;
 

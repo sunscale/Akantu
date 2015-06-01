@@ -32,10 +32,10 @@
 
 #include "aka_common.hh"
 
-#include "mesh_geom_container.hh"
+#include "mesh_segment_intersector.hh"
 #include "geom_helper_functions.hh"
 
-#include <CGAL/Cartesian.h>
+#include "mesh_geom_common.hh"
 
 #include <iostream>
 
@@ -43,22 +43,23 @@
 
 using namespace akantu;
 
-typedef CGAL::Cartesian<Real> K;
+typedef Cartesian K;
 
 /* -------------------------------------------------------------------------- */
 
 int main (int argc, char * argv[]) {
-  debug::setDebugLevel(dblWarning);
   initialize("", argc, argv);
+  debug::setDebugLevel(dblError);
 
   Math::setTolerance(1e-10);
 
-  Mesh mesh(2);
-  mesh.read("triangle_3.msh");
+  Mesh mesh(2), interface_mesh(2, "interface_mesh");
+  mesh.read("test_geometry_triangle.msh");
 
-  MeshGeomContainer container(mesh);
-  container.constructData();
+  MeshSegmentIntersector<2, _triangle_3> intersector(mesh, interface_mesh);
+  intersector.constructData();
 
+  // Testing a segment going out of the mesh
   K::Point_3 a(0, 0.25, 0),
              b(1, 0.25, 0),
              c(0.25, 0, 0),
@@ -67,23 +68,38 @@ int main (int argc, char * argv[]) {
   K::Segment_3 h_interface(a, b),
                v_interface(c, d);
 
-  std::list<std::pair<K::Segment_3, std::string> > interface_list;
-  interface_list.push_back(std::make_pair(h_interface, "mat"));
-  interface_list.push_back(std::make_pair(v_interface, "mat"));
+  std::list<K::Segment_3> interface_list;
+  interface_list.push_back(h_interface);
+  interface_list.push_back(v_interface);
 
-  Mesh & interface_mesh = container.meshOfLinearInterfaces(interface_list);
+  intersector.computeIntersectionQueryList(interface_list);
 
   if (interface_mesh.getNbElement(_segment_2) != 4)
     return EXIT_FAILURE;
 
   Vector<Real> bary(2);
   Element test;
-  test.element = 1;
+  test.element = 0;
   test.type = _segment_2;
   
   interface_mesh.getBarycenter(test, bary);
+  Real first_bary[] = {0.125, 0.25};
 
-  if (!Math::are_float_equal(bary(0), 0.5) || !Math::are_float_equal(bary(1), 0.25))
+  if (!Math::are_vector_equal(2, bary.storage(), first_bary))
+    return EXIT_FAILURE;
+
+  // Testing a segment completely inside an element
+  K::Point_3 e(0.1, 0.33, 0),
+             f(0.1, 0.67, 0);
+  K::Segment_3 inside_segment(e, f);
+  intersector.computeIntersectionQuery(inside_segment);
+
+  test.element = interface_mesh.getNbElement(_segment_2) - 1;
+  interface_mesh.getBarycenter(test, bary);
+
+  Real second_bary[] = {0.1, 0.5};
+
+  if (!Math::are_vector_equal(2, bary.storage(), second_bary))
     return EXIT_FAILURE;
 
   finalize();
