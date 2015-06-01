@@ -40,6 +40,7 @@
 /* -------------------------------------------------------------------------- */
 #include "mesh_io_diana.hh"
 #include "mesh_utils.hh"
+#include "element_group.hh"
 /* -------------------------------------------------------------------------- */
 #include <string.h>
 /* -------------------------------------------------------------------------- */
@@ -134,6 +135,8 @@ void MeshIODiana::read(const std::string & filename, Mesh & mesh) {
 
   mesh.nb_global_nodes = mesh.nodes->getSize();
 
+  createGroupsInMesh(mesh);
+  
   MeshUtils::fillElementToSubElementsData(mesh);
 
   AKANTU_DEBUG_OUT();
@@ -592,6 +595,35 @@ std::string MeshIODiana::readMaterial(std::ifstream & infile,
 
   AKANTU_DEBUG_OUT();
   return line;
+}
+
+/* -------------------------------------------------------------------------- */
+
+void MeshIODiana::createGroupsInMesh(Mesh & mesh) {
+
+  std::map<std::string, std::vector<Element> *>::iterator git
+    = element_groups.begin();
+  std::map<std::string, std::vector<Element> *>::iterator gend
+    = element_groups.end();
+
+  for (;git != gend; ++git) {
+    std::string group_name = git->first;
+    std::vector<Element> & element_group = *git->second; 
+
+    Element & first_element = element_group[0];
+    
+    UInt group_dim = mesh.getSpatialDimension(first_element.type);
+    mesh.createElementGroup(group_name, group_dim);
+    ElementGroup & group = mesh.getElementGroup(git->first);
+
+    std::vector<Element>::iterator it = element_group.begin();
+    std::vector<Element>::iterator end = element_group.end();
+    
+    for(; it != end; ++it){
+      group.add(*it, true, true);
+    }
+  
+  }
 }
 
 

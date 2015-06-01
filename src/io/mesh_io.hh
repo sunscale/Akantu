@@ -75,6 +75,8 @@ public:
 private:
   MeshIO * getMeshIO(const std::string & filename, const MeshIOType & type);
 
+
+  virtual printself();
   
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

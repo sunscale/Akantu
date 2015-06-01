@@ -89,6 +89,8 @@ private:
   UInt readInterval(std::stringstream & line,
 		    std::set<UInt> & interval);
 
+  void createGroupsInMesh(Mesh & mesh);
+  
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
