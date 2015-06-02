@@ -198,6 +198,9 @@ public:
     parent::operator=(src);
     return *this;
   }
+
+  T & operator()(UInt index){return this->values[index];};
+  const T & operator()(UInt index) const {return this->values[index];};
 };
 
 template<typename T>

@@ -292,6 +292,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
         }else{
           Real ratio = stress_check.mean()/(*sigma_lim_it);
           if (ratio > max_ratio){
+            std::cout << "ratio = " << ratio << std::endl;
             ++nn;
             max_ratio = ratio;
             index_f = f;
@@ -330,9 +331,10 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
 	    //            spatial_dimension);
 
 	    Real new_sigma = (sigma_lim_it[index_f]);
+            Vector<Real> normal_traction_vec(spatial_dimension, 0.0);
 
 	    new_sigmas.push_back(new_sigma);
-	    new_normal_traction.push_back(0.0);
+	    new_normal_traction.push_back(normal_traction_vec);
 
 	    Real new_delta;
 

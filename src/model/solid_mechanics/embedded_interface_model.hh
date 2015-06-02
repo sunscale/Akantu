@@ -106,12 +106,6 @@ public:
   /// Initialise the materials
   virtual void initMaterials();
 
-#ifndef SWIG
-  /// give the amount of data per element
-  ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-                                              const ElementKind & kind);
-#endif
-
   virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
                                          const std::string & field_id,
                                          const std::string & group_name,
@@ -133,6 +127,9 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  /// Intersector object to build the interface mesh
+  EmbeddedInterfaceIntersector intersector;
+
   /// Interface mesh (weak reference)
   Mesh * interface_mesh;
 
@@ -141,10 +138,6 @@ protected:
 
   /// Material selector for interface
   MaterialSelector * interface_material_selector;
-  
-  /// Intersector object to build the interface mesh
-  EmbeddedInterfaceIntersector intersector;
-
 };
 
 template<typename T>
