@@ -57,6 +57,9 @@ package_declare_sources(CGAL
   geometry/aabb_primitives/tetrahedron.hh
 
   geometry/aabb_primitives/aabb_primitive.hh
+  geometry/aabb_primitives/aabb_primitive.cc
+
+  geometry/mesh_geom_spherical_traits.hh
   )
 
 package_declare_documentation(CGAL

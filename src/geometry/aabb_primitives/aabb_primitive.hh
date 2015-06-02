@@ -82,17 +82,6 @@ __BEGIN_AKANTU__
 AKANTU_AABB_CLASS(Triangle, Cartesian);
 AKANTU_AABB_CLASS(Line_arc, Spherical);
 
-Triangle_primitive::Point Triangle_primitive::reference_point() const {
-  return primitive.vertex(0);
-}
-
-Line_arc_primitive::Point Line_arc_primitive::reference_point() const {
-  Real x = primitive.source().x();
-  Real y = primitive.source().y();
-  Real z = primitive.source().z();
-  return Spherical::Point_3(x, y, z);
-}
-
 #undef AKANTU_AABB_CLASS
 
 __END_AKANTU__
