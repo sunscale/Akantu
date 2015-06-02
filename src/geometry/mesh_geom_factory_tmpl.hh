@@ -115,6 +115,30 @@ inline void MeshGeomFactory<2, _triangle_3, Triangle<Cartesian>, Cartesian>::add
   list.push_back(t);
 }
 
+// 2D and _triangle_3 with segments implementation
+/*template<>
+inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::addPrimitive(
+    const Matrix<Real> & node_coordinates,
+    UInt id,
+    TreeTypeHelper<Line_arc<Spherical>, Spherical>::container_type & list) {
+
+  TreeTypeHelper<Line_arc<Spherical>, Spherical>::point_type
+    a(node_coordinates(0, 0), node_coordinates(1, 0), 0.),
+    b(node_coordinates(0, 1), node_coordinates(1, 1), 0.),
+    c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
+
+  CGAL::Line_3<Spherical> l1(a, b), l2(b, c), l3(c, a);
+  Line_arc<Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
+
+  s1.setId(id);
+  s2.setId(id);
+  s3.setId(id);
+
+  list.push_back(s1);
+  list.push_back(s2);
+  list.push_back(s3);
+  }*/
+
 // 3D and _tetrahedron_4 with triangles implementation
 template<>
 inline void MeshGeomFactory<3, _tetrahedron_4, Triangle<Cartesian>, Cartesian>::addPrimitive(

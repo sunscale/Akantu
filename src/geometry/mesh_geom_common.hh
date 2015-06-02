@@ -35,10 +35,14 @@
 
 #include <CGAL/Cartesian.h>
 #include <CGAL/Simple_cartesian.h>
+#include <CGAL/Spherical_kernel_3.h>
+#include <CGAL/Algebraic_kernel_for_spheres_2_3.h>
 
 __BEGIN_AKANTU__
 
-typedef CGAL::Simple_cartesian<double> Cartesian;
+typedef CGAL::Simple_cartesian<Real> Cartesian;
+
+typedef CGAL::Spherical_kernel_3<Cartesian, CGAL::Algebraic_kernel_for_spheres_2_3<Real> > Spherical;
 
 __END_AKANTU__
 

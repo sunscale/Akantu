@@ -35,6 +35,7 @@
 
 #include "aka_common.hh"
 
+#include "line_arc.hh"
 #include "triangle.hh"
 #include "tetrahedron.hh"
 
@@ -85,6 +86,7 @@ struct IntersectionTypeHelper;
   }
 
 TREE_TYPE_HELPER_MACRO(Triangle, Cartesian::Segment_3, Cartesian);
+//TREE_TYPE_HELPER_MACRO(Line_arc, Spherical::Sphere_3, Spherical);
 
 #undef TREE_TYPE_HELPER_MACRO
 

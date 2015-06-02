@@ -41,20 +41,22 @@
 
 __BEGIN_AKANTU__
 
-typedef Cartesian K;
-
 /// Fuzzy compare of two points
-inline bool comparePoints(const K::Point_3 & a, const K::Point_3 & b) {
+template <class Point>
+bool comparePoints(const Point & a, const Point & b) {
   return Math::are_float_equal(a.x(), b.x()) &&
          Math::are_float_equal(a.y(), b.y()) &&
          Math::are_float_equal(a.z(), b.z());
 }
 
 /// Fuzzy compare of two segments
-inline bool compareSegments(const K::Segment_3 & a, const K::Segment_3 & b) {
+template <class K>
+inline bool compareSegments(const CGAL::Segment_3<K> & a, const CGAL::Segment_3<K> & b) {
   return (comparePoints(a.source(), b.source()) && comparePoints(a.target(), b.target())) ||
          (comparePoints(a.source(), b.target()) && comparePoints(a.target(), b.source()));
 }
+
+typedef Cartesian K;
 
 /// Compare segment pairs
 inline bool compareSegmentPairs(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
