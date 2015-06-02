@@ -439,6 +439,26 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile,
     }
     
     switch(akantu_type){
+
+    case _triangle_6:
+      local_connect[0] = local_connect_non_modified[0];
+      local_connect[1] = local_connect_non_modified[2];
+      local_connect[2] = local_connect_non_modified[4];
+      local_connect[3] = local_connect_non_modified[1];
+      local_connect[4] = local_connect_non_modified[3];
+      local_connect[5] = local_connect_non_modified[5];
+      break;
+
+    case _quadrangle_8:
+      local_connect[0] = local_connect_non_modified[0];
+      local_connect[1] = local_connect_non_modified[2];
+      local_connect[2] = local_connect_non_modified[4];
+      local_connect[3] = local_connect_non_modified[6];
+      local_connect[4] = local_connect_non_modified[1];
+      local_connect[5] = local_connect_non_modified[3];
+      local_connect[6] = local_connect_non_modified[5];
+      local_connect[7] = local_connect_non_modified[7];
+      break;
       
     case _pentahedron_15:
       local_connect[0] = local_connect_non_modified[2];
