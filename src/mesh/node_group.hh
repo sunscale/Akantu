@@ -33,6 +33,7 @@
 #include "aka_array.hh"
 #include "aka_memory.hh"
 #include "mesh_filter.hh"
+#include "dumpable.hh"
 /* -------------------------------------------------------------------------- */
 
 
@@ -42,13 +43,14 @@
 
 __BEGIN_AKANTU__
 
-class NodeGroup : Memory {
+class NodeGroup : Memory, public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
 
   NodeGroup(const std::string & name,
+	    const Mesh & mesh,
             const std::string & id = "node_group",
             const MemoryID & memory_id = 0);
   virtual ~NodeGroup();
@@ -106,6 +108,9 @@ private:
 
   /// list of nodes in the group
   Array<UInt> & node_group;
+
+  /// reference to the mesh in question
+  const Mesh & mesh;
 };
 
 /// standard output stream operator

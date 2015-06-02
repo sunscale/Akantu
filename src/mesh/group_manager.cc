@@ -91,7 +91,9 @@ NodeGroup & GroupManager::createNodeGroup(const std::string & group_name,
       AKANTU_EXCEPTION("Trying to create a node group that already exists:" << group_name);
   }
 
-  NodeGroup * node_group = new NodeGroup(group_name, id + ":" + group_name + "_node_group",
+  NodeGroup * node_group = new NodeGroup(group_name,
+					 mesh,
+					 id + ":" + group_name + "_node_group",
 					 memory_id);
 
   node_groups[group_name] = node_group;

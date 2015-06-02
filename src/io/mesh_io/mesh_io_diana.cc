@@ -135,8 +135,6 @@ void MeshIODiana::read(const std::string & filename, Mesh & mesh) {
 
   mesh.nb_global_nodes = mesh.nodes->getSize();
 
-  createGroupsInMesh(mesh);
-  
   MeshUtils::fillElementToSubElementsData(mesh);
 
   AKANTU_DEBUG_OUT();
@@ -661,78 +659,63 @@ std::string MeshIODiana::readMaterial(std::ifstream & infile,
 
 /* -------------------------------------------------------------------------- */
 
-void MeshIODiana::createGroupsInMesh(Mesh & mesh) {
+void MeshIODiana::createElementGroupInMesh(Mesh & mesh, const std::string & group_name) {
 
-  /* ------------------------------------------------------------------------ */
-  // create the element groups
-  /* ------------------------------------------------------------------------ */
+  std::map<std::string, std::vector<Element> *>::iterator git
+    = element_groups.find(group_name);
   
-  {
-    std::map<std::string, std::vector<Element> *>::iterator git
-      = element_groups.begin();
-    std::map<std::string, std::vector<Element> *>::iterator gend
-      = element_groups.end();
-
-    for (;git != gend; ++git) {
-      std::string group_name = git->first;
-      std::vector<Element> & element_group = *git->second; 
-
-      if (element_group.size() == 0) continue;
-
-      std::cerr << "adding group " << group_name << std::endl;
-      Element & first_element = element_group[0];
-    
-      UInt group_dim = mesh.getSpatialDimension(first_element.type);
-      mesh.createElementGroup(group_name, group_dim);
-      ElementGroup & group = mesh.getElementGroup(git->first);
-
-      std::vector<Element>::iterator it = element_group.begin();
-      std::vector<Element>::iterator end = element_group.end();
-    
-      for(; it != end; ++it){
-	std::cerr << "adding element " << it->element << "(" << it->type << ") : ";
-	Array<UInt> & connectivity = *mesh.getConnectivityPointer(it->type);
-	UInt node_per_element = connectivity.getNbComponent();
-	for (UInt n = 0 ; n < node_per_element; ++n)
-	  std::cerr << connectivity(it->element,n) << " ";
-	std::cerr << std::endl;
-	group.add(*it,true,false);
-      }
-  
-    }
+  if (git == element_groups.end()) {
+    AKANTU_EXCEPTION("group '" << group_name
+		     << "' not found in data loaded from Diana");
   }
-  
-  /* ------------------------------------------------------------------------ */
-  // create the node groups
-  /* ------------------------------------------------------------------------ */
-
-  {
-    std::map<std::string, Array<UInt> *>::iterator git
-      = node_groups.begin();
-    std::map<std::string, Array<UInt> *>::iterator gend
-      = node_groups.end();
-
-    for (;git != gend; ++git) {
-      std::string group_name = git->first;
-      Array<UInt> & node_group = *git->second; 
-
-      if (node_group.getSize() == 0) continue;
-      //      Element & first_element = element_group[0];
     
-      UInt group_dim = 1;//mesh.getSpatialDimension(first_element.type);
-      mesh.createNodeGroup(group_name, group_dim);
-      NodeGroup & group = mesh.getNodeGroup(git->first);
+  std::vector<Element> & element_group = *git->second; 
 
-      Array<UInt>::iterator<UInt> it = node_group.begin();
-      Array<UInt>::iterator<UInt> end = node_group.end();
+  if (element_group.size() == 0) return;
+
+  //      std::cerr << "adding group " << group_name << std::endl;
+  Element & first_element = element_group[0];
     
-      for(; it != end; ++it){
-	group.add(*it);
-      }
-  
-    }
+  UInt group_dim = mesh.getSpatialDimension(first_element.type);
+  mesh.createElementGroup(group_name, group_dim);
+  ElementGroup & group = mesh.getElementGroup(git->first);
+    
+  std::vector<Element>::iterator it = element_group.begin();
+  std::vector<Element>::iterator end = element_group.end();
+    
+  for(; it != end; ++it){
+    group.add(*it,true,false);
   }
+    
 }
+
+/* -------------------------------------------------------------------------- */
+
+void MeshIODiana::createNodeGroupInMesh(Mesh & mesh, const std::string & group_name) {
+
+  std::map<std::string, Array<UInt> *>::iterator git
+    = node_groups.find(group_name);
+
+  if (git == node_groups.end()) {
+    AKANTU_EXCEPTION("group '" << group_name
+		     << "' not found in data loaded from Diana");
+  }
+
+  Array<UInt> & node_group = *git->second; 
+
+  mesh.createNodeGroup(group_name);
+  NodeGroup & group = mesh.getNodeGroup(git->first);
+
+  Array<UInt>::iterator<UInt> it = node_group.begin();
+  Array<UInt>::iterator<UInt> end = node_group.end();
+    
+  for(; it != end; ++it){
+    group.add(*it);
+  }
+  
+}
+
+
 
 
 /* -------------------------------------------------------------------------- */

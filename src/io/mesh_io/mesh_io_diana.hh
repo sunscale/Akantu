@@ -64,6 +64,11 @@ public:
   /// write a mesh to a file
   virtual void write(const std::string & filename, const Mesh & mesh);
 
+  /// request creation of an element group from data read from Diana file
+  void createElementGroupInMesh(Mesh & mesh, const std::string & group_name);
+  /// request creation of a nodal group from data read from Diana file
+  void createNodeGroupInMesh(Mesh & mesh, const std::string & group_name);
+
 private:
   std::string readCoordinates(std::ifstream & infile,
 			      Mesh & mesh,
@@ -88,8 +93,6 @@ private:
 
   UInt readInterval(std::stringstream & line,
 		    std::set<UInt> & interval);
-
-  void createGroupsInMesh(Mesh & mesh);
 
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
