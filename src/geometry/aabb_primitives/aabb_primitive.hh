@@ -34,6 +34,7 @@
 #define __AKANTU_AABB_PRIMITIVE_HH__
 
 #include "aka_common.hh"
+#include "line_arc.hh"
 #include "triangle.hh"
 #include "tetrahedron.hh"
 
@@ -52,7 +53,7 @@ __BEGIN_AKANTU__
  *  @param name the name of the primitive type
  *  @param kernel the name of the kernel used
  */
-#define AKANTU_AABB_CLASS(name, kernel) \
+#define AKANTU_AABB_CLASS(name, kernel)	\
   class name##_primitive {      \
     typedef std::list< name<kernel> >::iterator Iterator; \
                                                           \
@@ -67,7 +68,7 @@ __BEGIN_AKANTU__
                                                                         \
   public:                                                               \
     const Datum & datum() const { return primitive; }                   \
-    const Point & reference_point() const { return primitive.vertex(0); } \
+    Point reference_point() const;				\
     const Id & id() const { return meshId; }                              \
                                                                           \
   protected:                                                              \
@@ -79,6 +80,7 @@ __BEGIN_AKANTU__
 // If the primitive is supported by CGAL::intersection() then the 
 // implementation process is really easy with this macro
 AKANTU_AABB_CLASS(Triangle, Cartesian);
+AKANTU_AABB_CLASS(Line_arc, Spherical);
 
 #undef AKANTU_AABB_CLASS
 

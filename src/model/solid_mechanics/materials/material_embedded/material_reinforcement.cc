@@ -36,25 +36,40 @@
 
 __BEGIN_AKANTU__
 
+/* -------------------------------------------------------------------------- */
 template<UInt dim>
-MaterialReinforcement<dim>::MaterialReinforcement(SolidMechanicsModel & model, const ID & id):
-  Material(model, id),
+MaterialReinforcement<dim>::MaterialReinforcement(SolidMechanicsModel & model,
+                                                  UInt spatial_dimension,
+                                                  const Mesh & mesh,
+                                                  FEEngine & fe_engine,
+                                                  const ID & id) :
+  Material(model, dim, mesh, fe_engine, id), // /!\ dim, not spatial_dimension !
   model(NULL),
-  gradu("gradu_embedded", *this),
-  stress("stress_embedded", *this),
-  directing_cosines("directing_cosines", *this),
-  pre_stress("pre_stress", *this),
+  stress_embedded("stress_embedded", *this, 1, fe_engine, this->element_filter),
+  gradu_embedded("gradu_embedded", *this, 1, fe_engine, this->element_filter),
+  directing_cosines("directing_cosines", *this, 1, fe_engine, this->element_filter),
+  pre_stress("pre_stress", *this, 1, fe_engine, this->element_filter),
   area(1.0),
-  shape_derivatives()
-{
-  this->model = dynamic_cast<EmbeddedInterfaceModel *>(&model);
+  shape_derivatives() {
+  AKANTU_DEBUG_IN();
+  this->initialize(model);
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+void MaterialReinforcement<dim>::initialize(SolidMechanicsModel & a_model) {
+  this->model = dynamic_cast<EmbeddedInterfaceModel *>(&a_model);
   AKANTU_DEBUG_ASSERT(this->model != NULL, "MaterialReinforcement needs an EmbeddedInterfaceModel");
 
-  this->model->getInterfaceMesh().initElementTypeMapArray(element_filter, 1, 1,
-                                                          false, _ek_regular);
+  this->registerParam("area", area, _pat_parsable | _pat_modifiable,
+                      "Reinforcement cross-sectional area");
+  this->registerParam("pre_stress", pre_stress, _pat_parsable | _pat_modifiable,
+                      "Uniform pre-stress");
 
-  this->registerParam("area", area, _pat_parsable | _pat_modifiable, "Reinforcement cross-sectional area");
-  this->registerParam("pre_stress", pre_stress, _pat_parsable | _pat_modifiable, "Uniform pre-stress");
+  this->element_filter.free();
+  this->model->getInterfaceMesh().initElementTypeMapArray(this->element_filter,
+                                                          1, 1, false, _ek_regular);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -80,10 +95,9 @@ template<UInt dim>
 void MaterialReinforcement<dim>::initMaterial() {
   Material::initMaterial();
 
-  gradu.initialize(dim * dim);
-  stress.initialize(dim * dim);
+  stress_embedded.initialize(dim * dim); // Check this
+  gradu_embedded.initialize(dim * dim);
   pre_stress.initialize(1);
-
 
   /// We initialise the stuff that is not going to change during the simulation
   this->allocBackgroundShapeDerivatives();
@@ -105,8 +119,8 @@ void MaterialReinforcement<dim>::allocBackgroundShapeDerivatives() {
 
   // Loop over interface ghosts
   for (; int_ghost_it != ghost_type_t::end() ; ++int_ghost_it) {
-    Mesh::type_iterator interface_type_it = interface_mesh.firstType();
-    Mesh::type_iterator interface_type_end = interface_mesh.lastType();
+    Mesh::type_iterator interface_type_it = interface_mesh.firstType(1, *int_ghost_it);
+    Mesh::type_iterator interface_type_end = interface_mesh.lastType(1, *int_ghost_it);
 
     for (; interface_type_it != interface_type_end ; ++interface_type_it) {
       Mesh::type_iterator background_type_it = mesh.firstType(dim, *int_ghost_it);
@@ -188,8 +202,8 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(GhostType ghost_type) {
 
   Mesh & interface_mesh = model->getInterfaceMesh();
 
-  Mesh::type_iterator type_it = interface_mesh.firstType();
-  Mesh::type_iterator type_end = interface_mesh.lastType();
+  Mesh::type_iterator type_it = interface_mesh.firstType(1, _not_ghost);
+  Mesh::type_iterator type_end = interface_mesh.lastType(1, _not_ghost);
 
   for (; type_it != type_end ; ++type_it) {
     assembleStiffnessMatrix(*type_it, ghost_type);
@@ -218,8 +232,8 @@ void MaterialReinforcement<dim>::assembleResidual(GhostType ghost_type) {
 
   Mesh & interface_mesh = model->getInterfaceMesh();
 
-  Mesh::type_iterator type_it = interface_mesh.firstType();
-  Mesh::type_iterator type_end = interface_mesh.lastType();
+  Mesh::type_iterator type_it = interface_mesh.firstType(1, _not_ghost);
+  Mesh::type_iterator type_end = interface_mesh.lastType(1, _not_ghost);
 
   for (; type_it != type_end ; ++type_it) {
     assembleResidual(*type_it, ghost_type);
@@ -237,7 +251,7 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
   UInt nb_element = elem_filter.getSize();
   UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(type);
 
-  Array<Real> & gradu_vec = gradu(type, ghost_type);
+  Array<Real> & gradu_vec = gradu_embedded(type, ghost_type);
 
   Mesh::type_iterator back_it = model->getMesh().firstType(dim, ghost_type);
   Mesh::type_iterator back_end = model->getMesh().lastType(dim, ghost_type);
@@ -355,7 +369,7 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
   Array<Real>::matrix_iterator C_it =
     directing_cosines(interface_type, interface_ghost).begin(voigt_size, voigt_size);
   Array<Real>::matrix_iterator sigma_it =
-    stress(interface_type, interface_ghost).begin(dim, dim);
+    stress_embedded(interface_type, interface_ghost).begin(dim, dim);
 
   Vector<Real> sigma(voigt_size);
   Matrix<Real> Bvoigt(voigt_size, back_dof);
@@ -504,7 +518,7 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
   FEEngine & interface_engine = model->getFEEngine("EmbeddedInterfaceFEEngine");
 
   Array<UInt> & elem_filter = element_filter(interface_type, interface_ghost);
-  Array<Real> & grad_u = gradu(interface_type, interface_ghost);
+  Array<Real> & grad_u = gradu_embedded(interface_type, interface_ghost);
 
   UInt nb_element = elem_filter.getSize();
   UInt nodes_per_background_e = Mesh::getNbNodesPerElement(background_type);
@@ -659,8 +673,8 @@ Real MaterialReinforcement<dim>::getEnergy(std::string id) {
     for (; it != end ; ++it) {
       FEEngine & interface_engine = model->getFEEngine("EmbeddedInterfaceFEEngine");
       epot += interface_engine.integrate(potential_energy(*it, _not_ghost),
-                                                          *it, _not_ghost,
-                                                          element_filter(*it, _not_ghost));
+                                         *it, _not_ghost,
+                                         element_filter(*it, _not_ghost));
       epot *= area;
     }
 

@@ -54,14 +54,35 @@ InternalField<T>::InternalField(const ID & id, Material & material) :
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
-InternalField<T>::InternalField(const ID & id, Material & material, FEEngine & fem,
+InternalField<T>::InternalField(const ID & id,
+                                Material & material,
+                                FEEngine & fem,
 				const ElementTypeMapArray<UInt> & element_filter) :
   ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
   material(material),
   fem(fem),
   element_filter(element_filter),
   default_value(T()),
-  spatial_dimension(material.getModel().getSpatialDimension()),
+  spatial_dimension(material.getSpatialDimension()),
+  element_kind(_ek_regular),
+  nb_component(0),
+  is_init(false),
+  previous_values(NULL) {
+}
+
+/* -------------------------------------------------------------------------- */
+template<typename T>
+InternalField<T>::InternalField(const ID & id,
+                                Material & material,
+                                UInt dim,
+                                FEEngine & fem,
+				const ElementTypeMapArray<UInt> & element_filter) :
+  ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
+  material(material),
+  fem(fem),
+  element_filter(element_filter),
+  default_value(T()),
+  spatial_dimension(dim),
   element_kind(_ek_regular),
   nb_component(0),
   is_init(false),
@@ -217,8 +238,8 @@ void InternalField<T>::saveCurrentValues() {
 
   for(UInt g = _not_ghost; g <= _ghost; ++g) {
     GhostType gt = (GhostType) g;
-    typename ElementTypeMapArray<T>::type_iterator it  = this->firstType(_all_dimensions, gt, element_kind);
-    typename ElementTypeMapArray<T>::type_iterator end = this->lastType(_all_dimensions, gt, element_kind);
+    typename ElementTypeMapArray<T>::type_iterator it  = this->firstType(spatial_dimension, gt, element_kind);
+    typename ElementTypeMapArray<T>::type_iterator end = this->lastType(spatial_dimension, gt, element_kind);
     for(; it != end; ++it) {
       this->previous_values->operator()(*it, gt).copy(this->operator()(*it, gt));
     }
