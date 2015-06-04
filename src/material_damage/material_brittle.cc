@@ -116,7 +116,7 @@ void MaterialBrittle<spatial_dimension>::computeStress(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialBrittle);
+INSTANTIATE_MATERIAL(MaterialBrittle);
 
 
 __END_AKANTU__

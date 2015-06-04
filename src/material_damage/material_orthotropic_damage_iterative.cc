@@ -361,7 +361,7 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::updateEnergiesAfterD
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialOrthotropicDamageIterative);
+INSTANTIATE_MATERIAL(MaterialOrthotropicDamageIterative);
 
 
 __END_AKANTU__
