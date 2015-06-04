@@ -49,9 +49,22 @@ __BEGIN_AKANTU__
   
 /* -------------------------------------------------------------------------- */
 
+template<typename iterator>
+struct VoidTree {
+  VoidTree(const iterator & begin, const iterator & end) {}
+};
+
 /// Helper class used to ease the use of CGAL AABB tree algorithm
 template<class Primitive, class Kernel>
-struct TreeTypeHelper;
+struct TreeTypeHelper {
+  static const bool is_valid = false;
+
+  typedef Primitive primitive_type;
+  typedef typename std::list<primitive_type> container_type;
+  typedef typename container_type::iterator iterator;
+  typedef typename CGAL::Point_3<Kernel> point_type;
+  typedef VoidTree<iterator> tree;
+};
 
 /// Helper class used to ease the use of intersections
 template<class TTHelper, class Query>
@@ -67,6 +80,7 @@ struct IntersectionTypeHelper;
 #define TREE_TYPE_HELPER_MACRO(my_primitive, my_query, my_kernel)      \
   template<>                                                            \
   struct TreeTypeHelper<my_primitive<my_kernel>, my_kernel> {            \
+    static const bool is_valid = true;                                          \
     typedef my_primitive<my_kernel> primitive_type;                       \
     typedef my_primitive##_primitive aabb_primitive_type;                  \
     typedef CGAL::Point_3<my_kernel> point_type;                            \

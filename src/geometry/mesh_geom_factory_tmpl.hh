@@ -87,7 +87,8 @@ void MeshGeomFactory<dim, type, Primitive, Kernel>::constructData() {
 
   delete data_tree;
 
-  data_tree = new typename TreeTypeHelper<Primitive, Kernel>::tree(primitive_list.begin(), primitive_list.end());
+  if (TreeTypeHelper<Primitive, Kernel>::is_valid)
+    data_tree = new typename TreeTypeHelper<Primitive, Kernel>::tree(primitive_list.begin(), primitive_list.end());
 
   AKANTU_DEBUG_OUT();
 }
@@ -116,7 +117,7 @@ inline void MeshGeomFactory<2, _triangle_3, Triangle<Cartesian>, Cartesian>::add
 }
 
 // 2D and _triangle_3 with segments implementation
-/*template<>
+template<>
 inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::addPrimitive(
     const Matrix<Real> & node_coordinates,
     UInt id,
@@ -137,7 +138,7 @@ inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::add
   list.push_back(s1);
   list.push_back(s2);
   list.push_back(s3);
-  }*/
+}
 
 // 3D and _tetrahedron_4 with triangles implementation
 template<>
