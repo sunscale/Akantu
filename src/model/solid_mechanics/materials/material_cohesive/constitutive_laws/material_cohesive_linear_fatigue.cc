@@ -280,7 +280,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialCohesiveLinearFatigue);
+INSTANTIATE_MATERIAL(MaterialCohesiveLinearFatigue);
 
 
 __END_AKANTU__

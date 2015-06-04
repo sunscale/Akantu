@@ -201,6 +201,6 @@ void MaterialPlastic<spatial_dimension>::updateEnergies(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialPlastic);
+INSTANTIATE_MATERIAL(MaterialPlastic);
 
 __END_AKANTU__

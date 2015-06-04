@@ -266,6 +266,6 @@ Real MaterialNeohookean<spatial_dimension>::getShearWaveSpeed(__attribute__((unu
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialNeohookean);
+INSTANTIATE_MATERIAL(MaterialNeohookean);
 
 __END_AKANTU__

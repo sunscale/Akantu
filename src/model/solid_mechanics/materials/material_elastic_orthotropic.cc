@@ -207,6 +207,6 @@ void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergyByElem
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialElasticOrthotropic);
+INSTANTIATE_MATERIAL(MaterialElasticOrthotropic);
 
 __END_AKANTU__

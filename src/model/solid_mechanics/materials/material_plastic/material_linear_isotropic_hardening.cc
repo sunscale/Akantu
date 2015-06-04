@@ -210,6 +210,6 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeTangentModuli(_
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialLinearIsotropicHardening);
+INSTANTIATE_MATERIAL(MaterialLinearIsotropicHardening);
 
 __END_AKANTU__

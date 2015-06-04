@@ -100,7 +100,7 @@ void MaterialMarigo<spatial_dimension>::computeStress(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialMarigo);
+INSTANTIATE_MATERIAL(MaterialMarigo);
 
 
 __END_AKANTU__

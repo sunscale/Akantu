@@ -117,6 +117,6 @@ void MaterialThermal<dim>::computeStress(ElementType el_type, GhostType ghost_ty
 /* -------------------------------------------------------------------------- */
 
 
-INSTANSIATE_MATERIAL(MaterialThermal);
+INSTANTIATE_MATERIAL(MaterialThermal);
 
 __END_AKANTU__

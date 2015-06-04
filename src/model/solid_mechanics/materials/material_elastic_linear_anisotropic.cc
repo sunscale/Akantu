@@ -326,7 +326,7 @@ Real MaterialElasticLinearAnisotropic<spatial_dimension>::getCelerity(__attribut
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialElasticLinearAnisotropic);
+INSTANTIATE_MATERIAL(MaterialElasticLinearAnisotropic);
 
 
 __END_AKANTU__

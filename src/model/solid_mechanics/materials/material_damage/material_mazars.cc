@@ -78,6 +78,6 @@ void MaterialMazars<spatial_dimension>::computeStress(ElementType el_type,
 }
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialMazars);
+INSTANTIATE_MATERIAL(MaterialMazars);
 
 __END_AKANTU__

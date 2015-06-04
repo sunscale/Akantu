@@ -693,6 +693,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
 /* -------------------------------------------------------------------------- */
 
 
-INSTANSIATE_MATERIAL(MaterialCohesiveLinear);
+INSTANTIATE_MATERIAL(MaterialCohesiveLinear);
 
 __END_AKANTU__

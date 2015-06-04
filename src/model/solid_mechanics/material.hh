@@ -399,6 +399,9 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+
+  AKANTU_GET_MACRO(Name,    name,  const std::string &);
+
   AKANTU_GET_MACRO(Model, *model, const SolidMechanicsModel &)
 
   AKANTU_GET_MACRO(ID, Memory::getID(), const ID &);
@@ -608,7 +611,7 @@ __END_AKANTU__
   }                                                                     \
 
 /* -------------------------------------------------------------------------- */
-#define INSTANSIATE_MATERIAL(mat_name)			\
+#define INSTANTIATE_MATERIAL(mat_name)			\
   template class mat_name<1>;				\
   template class mat_name<2>;				\
   template class mat_name<3>

@@ -751,7 +751,7 @@ void MaterialReinforcement<dim>::flattenInternal(const std::string & field_id,
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialReinforcement);
+INSTANTIATE_MATERIAL(MaterialReinforcement);
 
 /* -------------------------------------------------------------------------- */
 
