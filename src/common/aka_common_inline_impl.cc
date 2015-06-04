@@ -35,7 +35,7 @@
 
 #include <algorithm>
 #include <iomanip>
-
+#include <iostream>
 #include <cctype>
 
 __BEGIN_AKANTU__
@@ -60,6 +60,28 @@ inline std::ostream & operator <<(std::ostream & stream, ElementType type)
 #undef STRINGIFY
   return stream;
 }
+
+/* -------------------------------------------------------------------------- */
+
+//! standard input stream operator for ElementType
+inline std::istream & operator >>(std::istream & stream, ElementType & type)
+{
+#define IF_SEQUENCE(_type)				\
+  else if (tmp == BOOST_PP_STRINGIZE(_type)) type = _type;
+
+  std::string tmp;
+  stream >> tmp;
+
+  if (1 == 2) {}
+  BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_LIST_MACRO,     \
+			IF_SEQUENCE,		     \
+			AKANTU_ALL_ELEMENT_TYPE)
+  else AKANTU_EXCEPTION("unknown element type: '" << tmp << "'");
+
+#undef IF_SEQUENCE
+  return stream;
+}
+
 
 /* -------------------------------------------------------------------------- */
 //! standard output stream operator for ElementType

@@ -239,6 +239,9 @@ enum InterpolationType {
 //! standard output stream operator for ElementType
 inline std::ostream & operator <<(std::ostream & stream, ElementType type);
 
+//! standard input stream operator for ElementType
+inline std::istream & operator >>(std::istream & stream, ElementType & type);
+
 
 #define AKANTU_REGULAR_KIND      (_ek_regular)
 
