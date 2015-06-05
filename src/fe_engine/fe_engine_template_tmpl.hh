@@ -913,6 +913,14 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
     mid_factor    = 8./36.;
   }
 
+  if (type == _hexahedron_20) {
+    AKANTU_EXCEPTION("not handled type for diagonal scaling");
+  }
+
+  if (type == _pentahedron_15) {
+    AKANTU_EXCEPTION("not handled type for diagonal scaling");
+  }
+
   if (nb_element == 0) {
     AKANTU_DEBUG_OUT();
     return;
@@ -1464,6 +1472,34 @@ assembleLumpedTemplate<_quadrangle_8>(const Array<Real> & field_1,
 				      const GhostType & ghost_type) const {
   assembleLumpedDiagonalScaling<_quadrangle_8>(field_1, nb_degree_of_freedom,
 					       lumped, equation_number, ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
+template <>
+template <>
+inline void
+FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
+assembleLumpedTemplate<_hexahedron_20>(const Array<Real> & field_1,
+				      UInt nb_degree_of_freedom,
+				      Array<Real> & lumped,
+				      const Array<Int> & equation_number,
+				      const GhostType & ghost_type) const {
+  assembleLumpedDiagonalScaling<_hexahedron_20>(field_1, nb_degree_of_freedom,
+						lumped, equation_number, ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
+template <>
+template <>
+inline void
+FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
+assembleLumpedTemplate<_pentahedron_15>(const Array<Real> & field_1,
+				      UInt nb_degree_of_freedom,
+				      Array<Real> & lumped,
+				      const Array<Int> & equation_number,
+				      const GhostType & ghost_type) const {
+  assembleLumpedDiagonalScaling<_pentahedron_15>(field_1, nb_degree_of_freedom,
+						lumped, equation_number, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
