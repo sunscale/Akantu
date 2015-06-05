@@ -59,6 +59,10 @@ template<UInt dim, class ConstLaw>
 void MaterialReinforcementTemplate<dim, ConstLaw>::initMaterial() {
   MaterialReinforcement<dim>::initMaterial();
   ConstLaw::initMaterial();
+
+  // Needed for plasticity law
+  this->ConstLaw::nu = 0.5;
+  this->ConstLaw::updateInternalParameters();
 }
 
 /* -------------------------------------------------------------------------- */
