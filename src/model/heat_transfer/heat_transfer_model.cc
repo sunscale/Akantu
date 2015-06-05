@@ -270,8 +270,9 @@ void HeatTransferModel::initSolver(__attribute__((unused)) SolverOptions & optio
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::initImplicit(SolverOptions & solver_options) {
-  method = _static;
+void HeatTransferModel::initImplicit(bool dynamic, SolverOptions & solver_options) {
+
+  method = dynamic ? _implicit_dynamic : _static;
   initSolver(solver_options);
 }
 
@@ -440,6 +441,11 @@ void HeatTransferModel::assembleStiffnessMatrix(const ElementType & type, const 
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+
 
 /* -------------------------------------------------------------------------- */
 void HeatTransferModel::solveStatic() {
@@ -762,7 +768,10 @@ void HeatTransferModel::initFull(const ModelOptions & options){
   method = my_options.analysis_method;
 
   if (method == _static) {
-    initImplicit();
+    initImplicit(true);
+  }
+  if (method == _implicit_dynamic) {
+    initImplicit(false);
   }
 }
 

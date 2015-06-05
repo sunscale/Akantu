@@ -108,7 +108,7 @@ public:
   void initSolver(SolverOptions & solver_options);
 
   /// initialize the stuff for the implicit solver
-  void initImplicit(SolverOptions & solver_options = _solver_no_options);
+  void initImplicit(bool dynamic, SolverOptions & solver_options = _solver_no_options);
 
   /// function to print the contain of the class
   virtual void printself(__attribute__ ((unused)) std::ostream & stream,
@@ -134,6 +134,13 @@ public:
   /// update the temperature rate from the increment
   void explicitCorr();
 
+  /// implicit time integration predictor
+  void implicitPred();
+
+  /// implicit time integration corrector
+  void implicitCorr();
+
+  
   /// solve the system in temperature rate  @f$C\delta \dot T = q_{n+1} - C \dot T_{n}@f$
   /// this function needs to be run for dynamics
   void solveExplicitLumped();
@@ -149,7 +156,24 @@ public:
 public:
   /// solve the static equilibrium
   void solveStatic();
-  //
+
+    /**
+   * solve a step (predictor + convergence loop + corrector) using the
+   * the given convergence method (see akantu::SolveConvergenceMethod)
+   * and the given convergence criteria (see
+   * akantu::SolveConvergenceCriteria)
+   **/
+  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
+  bool solveStep(Real tolerance, UInt max_iteration = 100);
+
+  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
+  bool solveStep(Real   tolerance,
+		 Real & error,
+		 UInt   max_iteration = 100,
+		 bool   do_not_factorize = false);
+
+
+  
   /// assemble the stiffness matrix
   void assembleStiffnessMatrix();
 
@@ -282,6 +306,10 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+
+    /// number of iterations
+  UInt n_iter;
+
   IntegrationScheme1stOrder * integrator;
 
   /// time step
@@ -347,6 +375,10 @@ private:
   //conductivity matrix
   Matrix<Real> conductivity;
 
+  /// capacity matrix
+  SparseMatrix *capacity_matrix;
+
+  
   //linear variation of the conductivity (for temperature dependent conductivity)
   Real conductivity_variation;
 

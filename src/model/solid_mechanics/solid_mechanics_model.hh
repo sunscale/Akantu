@@ -438,7 +438,7 @@ public:
   virtual dumper::Field * createElementalField(const std::string & field_name, 
 					       const std::string & group_name,
 					       bool padding_flag,
-                 const UInt & spatial_dimension,
+					       const UInt & spatial_dimension,
 					       const ElementKind & kind);
 
 

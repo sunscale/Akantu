@@ -294,3 +294,100 @@ inline void HeatTransferModel::unpackElementData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
+
+template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
+bool HeatTransferModel::solveStep(Real tolerance,
+                                    UInt max_iteration) {
+  Real error = 0.;
+  return this->template solveStep<cmethod,criteria>(tolerance,
+                                                    error,
+                                                    max_iteration);
+}
+
+/* -------------------------------------------------------------------------- */
+template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
+bool HeatTransferModel::solveStep(Real tolerance, Real & error,
+				  UInt max_iteration,
+				  bool do_not_factorize) {
+  //EventManager::sendEvent(HeatTransferModelEvent::BeforeSolveStepEvent(method));
+  this->implicitPred();
+  this->updateResidual();
+
+  AKANTU_DEBUG_ASSERT(stiffness_matrix != NULL,
+                      "You should first initialize the implicit solver and assemble the stiffness matrix");
+
+  bool need_factorize = !do_not_factorize;
+
+  if (method ==_implicit_dynamic) {
+    AKANTU_DEBUG_ASSERT(capacity_matrix != NULL,
+                        "You should first initialize the implicit solver and assemble the mass matrix");
+  }
+
+  switch (cmethod) {
+  case _scm_newton_raphson_tangent:
+  case _scm_newton_raphson_tangent_not_computed:
+    break;
+  case _scm_newton_raphson_tangent_modified:
+    this->assembleStiffnessMatrix();
+    break;
+  default:
+    AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been implemented!");
+  }
+
+  this->n_iter = 0;
+  bool converged = false;
+  error = 0.;
+  if(criteria == _scc_residual) {
+    converged = this->testConvergence<criteria> (tolerance, error);
+    if(converged) return converged;
+  }
+
+  do {
+    if (cmethod == _scm_newton_raphson_tangent)
+      this->assembleStiffnessMatrix();
+
+    solve<NewmarkBeta::_displacement_corrector> (*increment, 1., need_factorize);
+
+    this->implicitCorr();
+
+    if(criteria == _scc_residual) this->updateResidual();
+
+    converged = this->testConvergence<criteria> (tolerance, error);
+
+    if(criteria == _scc_increment && !converged) this->updateResidual();
+    //this->dump();
+
+    this->n_iter++;
+    AKANTU_DEBUG_INFO("[" << criteria << "] Convergence iteration "
+                      << std::setw(std::log10(max_iteration)) << this->n_iter
+                      << ": error " << error << (converged ? " < " : " > ") << tolerance);
+
+    switch (cmethod) {
+    case _scm_newton_raphson_tangent:
+      need_factorize = true;
+      break;
+    case _scm_newton_raphson_tangent_not_computed:
+    case _scm_newton_raphson_tangent_modified:
+      need_factorize = false;
+      break;
+    default:
+      AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been implemented!");
+    }
+
+
+  } while (!converged && this->n_iter < max_iteration);
+
+  // this makes sure that you have correct strains and stresses after the solveStep function (e.g., for dumping)
+  if(criteria == _scc_increment) this->updateResidual();
+
+  if (converged) {
+    EventManager::sendEvent(HeatTransferModelEvent::AfterSolveStepEvent(method));
+  } else if(this->n_iter == max_iteration) {
+    AKANTU_DEBUG_WARNING("[" << criteria << "] Convergence not reached after "
+                         << std::setw(std::log10(max_iteration)) << this->n_iter <<
+                         " iteration" << (this->n_iter == 1 ? "" : "s") << "!" << std::endl);
+  }
+
+  return converged;
+}
+
