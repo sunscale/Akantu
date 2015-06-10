@@ -102,6 +102,10 @@ ExternalProject_Add(MUMPS
   CONFIGURE_COMMAND cmake -E copy ${PROJECT_BINARY_DIR}/third-party/MUMPSmake.inc Makefile.inc
   BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} d
   INSTALL_COMMAND prefix=<INSTALL_DIR> ${CMAKE_MAKE_PROGRAM} install
+  LOG_DOWNLOAD 1
+  LOG_CONFIGURE 1
+  LOG_BUILD 1
+  LOG_INSTALL 1
   )
 
 set_third_party_shared_libirary_name(MUMPS_LIBRARY_DMUMPS dmumps${MUMPS_PREFIX})
@@ -125,8 +129,5 @@ set(MUMPS_LIBRARIES_ALL
 
 set(MUMPS_INCLUDE_DIR ${PROJECT_BINARY_DIR}/third-party/include CACHE PATH "" FORCE)
 set(MUMPS_LIBRARIES ${MUMPS_LIBRARIES_ALL} CACHE INTERNAL "Libraries for MUMPS" FORCE)
-
-package_set_libraries(Mumps   ${MUMPS_LIBRARIES})
-package_set_include_dir(Mumps ${MUMPS_INCLUDE_DIR})
 
 package_add_extra_dependency(Mumps MUMPS)

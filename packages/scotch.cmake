@@ -40,6 +40,8 @@ package_add_third_party_script_variable(Scotch
 package_add_third_party_script_variable(Scotch
   SCOTCH_ARCHIVE_HASH "MD5=e13b49be804755470b159d7052764dc0")
 package_add_third_party_script_variable(Scotch
+  SCOTCH_ARCHIVE "scotch_${SCOTCH_VERSION}_esmumps.tar.gz")
+package_add_third_party_script_variable(Scotch
   SCOTCH_URL "https://gforge.inria.fr/frs/download.php/28978/scotch_${SCOTCH_VERSION}_esmumps.tar.gz")
 
 
