@@ -1,3 +1,7 @@
+if(TARGET Scotch)
+  return()
+endif()
+
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/third-party/${SCOTCH_ARCHIVE})
   set(_scotch_download_command
     URL ${SCOTCH_URL}
@@ -9,8 +13,12 @@ else()
     URL_HASH ${SCOTCH_ARCHIVE_HASH})
 endif()
 
-if(TARGET Scotch)
-  return()
+if(CMAKE_VERSION VERSION_GREATER 3.1)
+  set(_extra_options 
+    UPDATE_DISCONNECTED 1
+    DOWNLOAD_NO_PROGRESS 1
+    EXCLUDE_FROM_ALL 1
+    )
 endif()
 
 find_package(BISON REQUIRED)
@@ -37,8 +45,7 @@ include(ExternalProject)
 ExternalProject_Add(Scotch
   PREFIX ${SCOTCH_DIR}
   ${_scotch_download_command}
-  DOWNLOAD_NO_PROGRESS 1
-  EXCLUDE_FROM_ALL 1
+  ${_extra_options}
   PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}.patch
   CONFIGURE_COMMAND cmake -E copy ${SCOTCH_DIR}/scotch_make.inc src/Makefile.inc
   BUILD_IN_SOURCE 1

@@ -66,7 +66,6 @@ if(NOT _scalapack_use_system AND ${_scalapack_option})
 endif()
 
 include(AkantuMacros)
-include(ExternalProject)
 
 package_get_libraries(Scotch _scotch_libraries)
 string(REPLACE ";" " " MUMPS_SCOTCH_LIBRARIES
@@ -92,11 +91,21 @@ endif()
 configure_file(${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}_make.inc.cmake
   ${PROJECT_BINARY_DIR}/third-party/MUMPSmake.inc)
 
+if(CMAKE_VERSION VERSION_GREATER 3.1)
+  set(_extra_options 
+    UPDATE_DISCONNECTED 1
+    DOWNLOAD_NO_PROGRESS 1
+    EXCLUDE_FROM_ALL 1
+    )
+endif()
+
+
 ExternalProject_Add(MUMPS
   DEPENDS ${MUMPS_DEPENDS}
   PREFIX ${PROJECT_BINARY_DIR}/third-party
   URL ${MUMPS_ARCHIVE}
   URL_HASH ${MUMPS_ARCHIVE_HASH_${MUMPS_VERSION}}
+  ${_extra_options}
   BUILD_IN_SOURCE 1
   PATCH_COMMAND patch -p2 < ${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}.patch
   CONFIGURE_COMMAND cmake -E copy ${PROJECT_BINARY_DIR}/third-party/MUMPSmake.inc Makefile.inc

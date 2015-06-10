@@ -4,16 +4,21 @@ if(${PROJECT_SOURCE_DIR}/third-party/${BLACKDYNAMITE_ARCHIVE})
 else()
   set(_blackdynamite_download_command
     SVN_REPOSITORY ${BLACKDYNAMITE_URL}
-    UPDATE_DISCONNECTED 1)
+    )
 endif()
 
-include(ExternalProject)
+if(CMAKE_VERSION VERSION_GREATER 3.1)
+  set(_extra_options 
+    UPDATE_DISCONNECTED 1
+    DOWNLOAD_NO_PROGRESS 1
+    EXCLUDE_FROM_ALL 1
+    )
+endif()
 
 ExternalProject_Add(blackdynamite
   PREFIX ${PROJECT_BINARY_DIR}/third-party
   ${_blackdynamite_download_command}
-  DOWNLOAD_NO_PROGRESS 1
-  EXCLUDE_FROM_ALL 1
+  ${_extra_options}
   CMAKE_ARGS <SOURCE_DIR>/
   CMAKE_CACHE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
   BUILD_COMMAND make
