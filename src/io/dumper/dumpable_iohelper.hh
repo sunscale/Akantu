@@ -110,7 +110,7 @@ public:
 
   template<typename T>
   inline void addDumpFieldExternal(const std::string & field_id,
-                            const Array<T> & field);
+				   const Array<T> & field);
   template<typename T>
   inline void addDumpFieldExternalToDumper(const std::string & dumper_name,
                                     const std::string & field_id,
