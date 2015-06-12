@@ -5,8 +5,9 @@ endif()
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/third-party/${SCOTCH_ARCHIVE})
   set(_scotch_download_command
     URL ${SCOTCH_URL}
-    URL_HASH ${SCOTCH_ARCHIVE_HASH}
-    TLS_VERIFY FALSE)
+#    URL_HASH ${SCOTCH_ARCHIVE_HASH}
+    TLS_VERIFY FALSE
+    )
 else()
   set(_scotch_download_command
     URL ${PROJECT_SOURCE_DIR}/third-party/${SCOTCH_ARCHIVE}

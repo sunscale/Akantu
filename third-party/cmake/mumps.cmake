@@ -88,6 +88,12 @@ else()
   set(MUMPS_LIBRARY_MPI "")
 endif()
 
+if(CMAKE_C_COMPILER_ID STREQUAL "Intel")
+  set(MUMPS_EXTRA_Fortran_FLAGS "-nofor_main")
+else()
+  set(MUMPS_EXTRA_Fortran_FLAGS "")
+endif()
+
 configure_file(${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}_make.inc.cmake
   ${PROJECT_BINARY_DIR}/third-party/MUMPSmake.inc)
 
