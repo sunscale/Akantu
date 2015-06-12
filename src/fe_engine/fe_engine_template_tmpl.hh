@@ -985,28 +985,23 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(const Array<Real> & field
   modified_shapes->clear();
   Array<Real> * local_mat = new Array<Real>(vect_size, lmat_size * lmat_size);
 
-  Array<Real>::matrix_iterator shape_vect  = modified_shapes->begin(nb_degree_of_freedom, lmat_size);
-  Real * sh  = shapes.storage();
-  for(UInt q = 0; q < vect_size; ++q) {
-    Real * msh = shape_vect->storage();
+  Array<Real>::matrix_iterator mshapes_it = modified_shapes->begin(lmat_size, nb_degree_of_freedom);
+  Array<Real>::const_vector_iterator shapes_it = shapes.begin(shapes_size);
+
+  for(UInt q = 0; q < vect_size; ++q, ++mshapes_it, ++shapes_it) {
     for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
-      Real * msh_tmp = msh + d * (lmat_size + 1);
       for (UInt s = 0; s < shapes_size; ++s) {
-	*msh_tmp = sh[s];
-	msh_tmp += nb_degree_of_freedom;
+	(*mshapes_it)(s*nb_degree_of_freedom + d, d) = (*shapes_it)(s);
       }
     }
-    ++shape_vect;
-    sh += shapes_size;
   }
 
-  shape_vect  = modified_shapes->begin(nb_degree_of_freedom, lmat_size);
+  mshapes_it  = modified_shapes->begin(lmat_size, nb_degree_of_freedom);
   Array<Real>::matrix_iterator lmat = local_mat->begin(lmat_size, lmat_size);
-  Real * field_val = field_1.storage();
+  Array<Real>::const_scalar_iterator field_val = field_1.begin();
 
-  for(UInt q = 0; q < vect_size; ++q) {
-    (*lmat).mul<true, false>(*shape_vect, *shape_vect, *field_val);
-    ++lmat; ++shape_vect; ++field_val;
+  for(UInt q = 0; q < vect_size; ++q, ++lmat, ++mshapes_it, ++field_val) {
+    (*lmat).mul<false, true>(*mshapes_it, *mshapes_it, *field_val);
   }
 
   delete modified_shapes;
