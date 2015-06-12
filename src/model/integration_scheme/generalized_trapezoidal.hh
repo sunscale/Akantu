@@ -50,7 +50,7 @@ __BEGIN_AKANTU__
  * To solve it :
  * Predictor :
  * @f{eqnarray*}{
- * u^0_{n+1} &=& u_{n} + \Delta t v_{n} \\
+ * u^0_{n+1} &=& u_{n} + (1-\alpha) \Delta t v_{n} \\
  * \dot{u}^0_{n+1} &=& \dot{u}_{n}
  * @f}
  *
