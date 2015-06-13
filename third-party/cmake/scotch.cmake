@@ -1,10 +1,25 @@
-set(SCOTCH_ARCHIVE ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}_esmumps.tar.gz)
-if(NOT EXISTS ${SCOTCH_ARCHIVE})
-  set(SCOTCH_ARCHIVE ${SCOTCH_URL})
-endif()
-
 if(TARGET Scotch)
   return()
+endif()
+
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/third-party/${SCOTCH_ARCHIVE})
+  set(_scotch_download_command
+    URL ${SCOTCH_URL}
+#    URL_HASH ${SCOTCH_ARCHIVE_HASH}
+    TLS_VERIFY FALSE
+    )
+else()
+  set(_scotch_download_command
+    URL ${PROJECT_SOURCE_DIR}/third-party/${SCOTCH_ARCHIVE}
+    URL_HASH ${SCOTCH_ARCHIVE_HASH})
+endif()
+
+if(CMAKE_VERSION VERSION_GREATER 3.1)
+  set(_extra_options 
+    UPDATE_DISCONNECTED 1
+    DOWNLOAD_NO_PROGRESS 1
+    EXCLUDE_FROM_ALL 1
+    )
 endif()
 
 find_package(BISON REQUIRED)
@@ -30,14 +45,17 @@ include(ExternalProject)
 
 ExternalProject_Add(Scotch
   PREFIX ${SCOTCH_DIR}
-  URL ${SCOTCH_ARCHIVE}
-  URL_HASH ${SCOTCH_ARCHIVE_HASH}
-  TLS_VERIFY FALSE
+  ${_scotch_download_command}
+  ${_extra_options}
   PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}.patch
   CONFIGURE_COMMAND cmake -E copy ${SCOTCH_DIR}/scotch_make.inc src/Makefile.inc
   BUILD_IN_SOURCE 1
   BUILD_COMMAND MPICH_CC=${CMAKE_C_COMPILER} ${CMAKE_MAKE_PROGRAM} -C src
   INSTALL_COMMAND prefix=<INSTALL_DIR> ${CMAKE_MAKE_PROGRAM} -C src install
+  LOG_DOWNLOAD 1
+  LOG_CONFIGURE 1
+  LOG_BUILD 1
+  LOG_INSTALL 1
   )
 
 set_third_party_shared_libirary_name(SCOTCH_LIBRARY scotch)
@@ -56,8 +74,5 @@ mark_as_advanced(
 
 set(SCOTCH_LIBRARIES_ALL ${SCOTCH_LIBRARY} ${SCOTCH_LIBRARY_ERR})
 set(SCOTCH_LIBRARIES ${SCOTCH_LIBRARIES_ALL} CACHE INTERNAL "Libraries for scotch" FORCE)
-
-package_set_libraries(Scotch   ${SCOTCH_LIBRARIES})
-package_set_include_dir(Scotch ${SCOTCH_INCLUDE_DIR})
 
 package_add_extra_dependency(Scotch Scotch)

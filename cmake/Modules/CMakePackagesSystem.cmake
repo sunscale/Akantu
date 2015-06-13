@@ -1455,6 +1455,10 @@ function(_package_load_package pkg_name)
       _package_load_external_package(${pkg_name} _activated)
     else()
       _package_load_third_party_script(${pkg_name})
+
+      string(TOUPPER ${${pkg_name}} _u_package)
+      _package_set_libraries(${pkg_name} ${${_u_package}_LIBRARIES})
+      _package_set_include_dir(${pkg_name} ${${_u_package}_INCLUDE_DIR})
     endif()
 
     if(_activated)

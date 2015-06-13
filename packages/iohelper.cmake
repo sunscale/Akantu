@@ -33,10 +33,13 @@ package_declare(IOHelper EXTERNAL
   SYSTEM OFF third-party/cmake/iohelper.cmake
   DEFAULT ON)
 
+set(_version "master")
 package_add_third_party_script_variable(IOHelper
-  IOHELPER_VERSION "1.1")
+  IOHELPER_VERSION ${_version})
 package_add_third_party_script_variable(IOHelper
   IOHELPER_GIT "https://git.epfl.ch/repo/iohelper.git")
+package_add_third_party_script_variable(Scotch
+  IOHELPER_ARCHIVE "iohelper_${_version}.tar.gz")
 
 package_declare_sources(IOHelper
   io/dumper/dumpable_iohelper.hh

@@ -978,70 +978,42 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(const Array<Real> & field
 
   UInt vect_size   = field_1.getSize();
   UInt shapes_size = ElementClass<type>::getShapeSize();
+  UInt lmat_size   = nb_degree_of_freedom * shapes_size;
 
-
-  /// construct the "field phi_I(x_q) phi_J(x_q)" matrices
-  
   const Array<Real> & shapes = shape_functions.getShapes(type,ghost_type);
-  Array<Real>::const_matrix_iterator shape_vect  = shapes.begin(1, shapes_size);
-  Array<Real> * local_mat = new Array<Real>(vect_size, shapes_size * shapes_size);
-  Array<Real>::matrix_iterator lmat = local_mat->begin(shapes_size, shapes_size);
-  Real * field_val = field_1.storage();
+  Array<Real> * modified_shapes = new Array<Real>(vect_size, lmat_size * nb_degree_of_freedom);
+  modified_shapes->clear();
+  Array<Real> * local_mat = new Array<Real>(vect_size, lmat_size * lmat_size);
 
-  for(UInt q = 0; q < vect_size; ++q) {
-    (*lmat).mul<true, false>(*shape_vect, *shape_vect, *field_val);
-    ++lmat; ++shape_vect; ++field_val;
-  }
+  Array<Real>::matrix_iterator mshapes_it = modified_shapes->begin(lmat_size, nb_degree_of_freedom);
+  Array<Real>::const_vector_iterator shapes_it = shapes.begin(shapes_size);
 
-  /// integration 
-  UInt nb_element = mesh.getNbElement(type, ghost_type);
-  
-  Array<Real> * int_field_times_shapes_scalar
-    = new Array<Real>(nb_element, shapes_size * shapes_size,
-		      "inte_rho_x_shapes_scalar");
-  
-  integrator.template integrate<type>(*local_mat, *int_field_times_shapes_scalar,
-				      shapes_size * shapes_size, ghost_type, empty_filter);
-  delete local_mat;
-
-  Array<Real> * int_field_times_shapes = int_field_times_shapes_scalar;
-  if (nb_degree_of_freedom > 1){
-
-    /// extend the mass matrix to be dimensional 
-    UInt lmat_size = nb_degree_of_freedom * shapes_size;
-
-    int_field_times_shapes = new Array<Real>(nb_element, lmat_size * lmat_size,
-					     "inte_rho_x_shapes");
-  
-
-
-  
-    Array<Real>::const_matrix_iterator scalar_mass_it
-      = int_field_times_shapes_scalar->begin(shapes_size, shapes_size);
-
-    Array<Real>::matrix_iterator mass_it
-      = int_field_times_shapes->begin(lmat_size, lmat_size);
-
-    for (UInt el = 0 ; el < nb_element; ++el, ++scalar_mass_it, ++mass_it) {
-      
-      const Matrix<Real> & _mat_scalar = *scalar_mass_it;
-      Matrix<Real> & _mat = *mass_it;
-
-      for (UInt d = 0; d < nb_degree_of_freedom ; d++) {
-	for (UInt n1 = 0; n1 < shapes_size ; n1++) {
-	  for (UInt n2 = 0; n2 < shapes_size ; n2++) {
-	    UInt new_n1 = n1*nb_degree_of_freedom+d;
-	    UInt new_n2 = n2*nb_degree_of_freedom+d;
-	    _mat(new_n1,new_n2) = _mat_scalar(n1,n2);
-	  }
-	}
+  for(UInt q = 0; q < vect_size; ++q, ++mshapes_it, ++shapes_it) {
+    for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
+      for (UInt s = 0; s < shapes_size; ++s) {
+	(*mshapes_it)(s*nb_degree_of_freedom + d, d) = (*shapes_it)(s);
       }
     }
-    delete int_field_times_shapes_scalar;
   }
-  /// assemble the matrix
+
+  mshapes_it  = modified_shapes->begin(lmat_size, nb_degree_of_freedom);
+  Array<Real>::matrix_iterator lmat = local_mat->begin(lmat_size, lmat_size);
+  Array<Real>::const_scalar_iterator field_val = field_1.begin();
+
+  for(UInt q = 0; q < vect_size; ++q, ++lmat, ++mshapes_it, ++field_val) {
+    (*lmat).mul<false, true>(*mshapes_it, *mshapes_it, *field_val);
+  }
+
+  delete modified_shapes;
+
+  UInt nb_element = mesh.getNbElement(type, ghost_type);
+  Array<Real> * int_field_times_shapes = new Array<Real>(nb_element, lmat_size * lmat_size,
+							 "inte_rho_x_shapes");
+  integrator.template integrate<type>(*local_mat, *int_field_times_shapes,
+				      lmat_size * lmat_size, ghost_type, empty_filter);
+  delete local_mat;
+
   assembleMatrix(*int_field_times_shapes, matrix, nb_degree_of_freedom, type, ghost_type);
-  
   delete int_field_times_shapes;
 
   AKANTU_DEBUG_OUT();

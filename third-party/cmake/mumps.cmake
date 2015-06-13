@@ -66,7 +66,6 @@ if(NOT _scalapack_use_system AND ${_scalapack_option})
 endif()
 
 include(AkantuMacros)
-include(ExternalProject)
 
 package_get_libraries(Scotch _scotch_libraries)
 string(REPLACE ";" " " MUMPS_SCOTCH_LIBRARIES
@@ -89,19 +88,39 @@ else()
   set(MUMPS_LIBRARY_MPI "")
 endif()
 
+if(CMAKE_C_COMPILER_ID STREQUAL "Intel")
+  set(MUMPS_EXTRA_Fortran_FLAGS "-nofor_main")
+else()
+  set(MUMPS_EXTRA_Fortran_FLAGS "")
+endif()
+
 configure_file(${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}_make.inc.cmake
   ${PROJECT_BINARY_DIR}/third-party/MUMPSmake.inc)
+
+if(CMAKE_VERSION VERSION_GREATER 3.1)
+  set(_extra_options 
+    UPDATE_DISCONNECTED 1
+    DOWNLOAD_NO_PROGRESS 1
+    EXCLUDE_FROM_ALL 1
+    )
+endif()
+
 
 ExternalProject_Add(MUMPS
   DEPENDS ${MUMPS_DEPENDS}
   PREFIX ${PROJECT_BINARY_DIR}/third-party
   URL ${MUMPS_ARCHIVE}
   URL_HASH ${MUMPS_ARCHIVE_HASH_${MUMPS_VERSION}}
+  ${_extra_options}
   BUILD_IN_SOURCE 1
   PATCH_COMMAND patch -p2 < ${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}.patch
   CONFIGURE_COMMAND cmake -E copy ${PROJECT_BINARY_DIR}/third-party/MUMPSmake.inc Makefile.inc
   BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} d
   INSTALL_COMMAND prefix=<INSTALL_DIR> ${CMAKE_MAKE_PROGRAM} install
+  LOG_DOWNLOAD 1
+  LOG_CONFIGURE 1
+  LOG_BUILD 1
+  LOG_INSTALL 1
   )
 
 set_third_party_shared_libirary_name(MUMPS_LIBRARY_DMUMPS dmumps${MUMPS_PREFIX})
@@ -125,8 +144,5 @@ set(MUMPS_LIBRARIES_ALL
 
 set(MUMPS_INCLUDE_DIR ${PROJECT_BINARY_DIR}/third-party/include CACHE PATH "" FORCE)
 set(MUMPS_LIBRARIES ${MUMPS_LIBRARIES_ALL} CACHE INTERNAL "Libraries for MUMPS" FORCE)
-
-package_set_libraries(Mumps   ${MUMPS_LIBRARIES})
-package_set_include_dir(Mumps ${MUMPS_INCLUDE_DIR})
 
 package_add_extra_dependency(Mumps MUMPS)
