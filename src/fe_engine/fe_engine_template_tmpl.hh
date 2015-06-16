@@ -897,6 +897,9 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
 
   Real corner_factor = 0;
   Real mid_factor    = 0;
+  Real mid_triangle_factor = 0;
+  Real mid_quadrangle_factor = 0;
+
 
   if(type == _triangle_6) {
     corner_factor = 1./12.;
