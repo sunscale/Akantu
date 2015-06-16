@@ -914,11 +914,14 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
   }
 
   if (type == _hexahedron_20) {
-    AKANTU_EXCEPTION("not handled type for diagonal scaling");
+    corner_factor = 1./40.;
+    mid_factor    = 1./15.;
   }
 
   if (type == _pentahedron_15) {
-    AKANTU_EXCEPTION("not handled type for diagonal scaling");
+    corner_factor = 51./2358.;
+    mid_triangle_factor = 192./2358.;
+    mid_quadrangle_factor = 300./2358.;
   }
 
   if (nb_element == 0) {
