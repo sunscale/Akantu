@@ -894,34 +894,38 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
   UInt nb_quadrature_points    = integrator.template getQuadraturePoints<type>(ghost_type).cols();
 
   UInt nb_element = field_1.getSize() / nb_quadrature_points;
+  Vector<Real> nodal_factor(nb_nodes_per_element);
 
-  Real corner_factor = 0;
-  Real mid_factor    = 0;
-
-  if(type == _triangle_6) {
-    corner_factor = 1./12.;
-    mid_factor    = 1./4.;
+#define ASSIGN_WEIGHT_TO_NODES(corner,mid) \
+  {									\
+    for (UInt n = 0; n < nb_nodes_per_element_p1; n++)			\
+      nodal_factor(n) = corner;						\
+    for (UInt n = nb_nodes_per_element_p1;				\
+	 n < nb_nodes_per_element; n++)					\
+      nodal_factor(n) = mid;						\
   }
 
-  if (type == _tetrahedron_10) {
-    corner_factor = 1./32.;
-    mid_factor    = 7./48.;
-  }
-
-  if (type == _quadrangle_8) {
-    corner_factor = 1./36.;
-    mid_factor    = 8./36.;
-  }
-
-  if (type == _hexahedron_20) {
-    corner_factor = 1./40.;
-    mid_factor    = 1./15.;
-  }
-
+  
+  if(type == _triangle_6)      ASSIGN_WEIGHT_TO_NODES(1./12.,1./4.);
+  if (type == _tetrahedron_10) ASSIGN_WEIGHT_TO_NODES(1./32.,1./48.);
+  if (type == _quadrangle_8)   ASSIGN_WEIGHT_TO_NODES(1./36.,8./36.);
+  if (type == _hexahedron_20)  ASSIGN_WEIGHT_TO_NODES(1./40.,1./15.);
   if (type == _pentahedron_15) {
-    corner_factor = 51./2358.;
-    mid_triangle_factor = 192./2358.;
-    mid_quadrangle_factor = 300./2358.;
+    for (UInt n = 0; n < nb_nodes_per_element_p1; n++)
+      nodal_factor(n) = 51./2358.;
+
+    Real mid_triangle = 192./2358.;
+    Real mid_quadrangle = 300./2358.;
+
+    nodal_factor(6)  = mid_triangle;
+    nodal_factor(7)  = mid_triangle;
+    nodal_factor(8)  = mid_triangle;
+    nodal_factor(9)  = mid_quadrangle;
+    nodal_factor(10) = mid_quadrangle;
+    nodal_factor(11) = mid_quadrangle;
+    nodal_factor(12) = mid_triangle;
+    nodal_factor(13) = mid_triangle;
+    nodal_factor(14) = mid_triangle;
   }
 
   if (nb_element == 0) {
@@ -929,6 +933,8 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
     return;
   }
 
+#undef ASSIGN_WEIGHT_TO_NODES
+  
   /// compute @f$ \int \rho dV = \rho V @f$ for each element
   Array<Real> * int_field_1 = new Array<Real>(field_1.getSize(), 1,
 					      "inte_rho_x_1");
@@ -941,18 +947,11 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
     = lumped_per_node->begin(nb_degree_of_freedom, nb_nodes_per_element);
 
   for (UInt e = 0; e < nb_element; ++e) {
-    Real lmass = *int_field_1_it * corner_factor;
-    for (UInt n = 0; n < nb_nodes_per_element_p1; ++n) {
+    for (UInt n = 0; n < nb_nodes_per_element; ++n) {
+      Real lmass = *int_field_1_it * nodal_factor(n);
       Vector<Real> l = (*lumped_per_node_it)(n);
-      l.set(lmass); /// corner points
+      l.set(lmass);
     }
-
-    lmass = *int_field_1_it * mid_factor;
-    for (UInt n = nb_nodes_per_element_p1; n < nb_nodes_per_element; ++n) {
-      Vector<Real> l = (*lumped_per_node_it)(n);
-      l.set(lmass); /// mid points
-    }
-
     ++int_field_1_it;
     ++lumped_per_node_it;
   }
