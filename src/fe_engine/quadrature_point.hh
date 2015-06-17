@@ -78,9 +78,15 @@ public:
   /* ------------------------------------------------------------------------ */
 
 public:
+  /// number of quadrature point in the element
   UInt num_point;
+  /// global number of the quadrature point
   UInt global_num;
+  // TODO might be temporary: however this class should be tought maybe...
+  UInt material_id;
 private:
+
+  /// position of the quadrature point
   position_type position;
 };
 
