@@ -66,7 +66,13 @@ DistributedSynchronizer::DistributedSynchronizer(Mesh & mesh,
 
   send_element = new Array<Element>[nb_proc];
   recv_element = new Array<Element>[nb_proc];
-
+  
+for (UInt p = 0; p < nb_proc; ++p) {
+  std::stringstream sstr; sstr << p;
+  send_element[p].setID(id+":send_elements_"+sstr.str());
+  recv_element[p].setID(id+":recv_elements_"+sstr.str());
+ }
+  
   mesh.registerEventHandler(*this);
 
   AKANTU_DEBUG_OUT();
@@ -1077,7 +1083,7 @@ void DistributedSynchronizer::onElementsRemoved(const Array<Element> & element_t
 
     Array<Element> new_send;
     for (UInt ns = 0; ns < list.getSize(); ++ns) {
-      new_send.push_back(send(list(ns)));
+      new_send.push_back(send(list(ns)));   
     }
 
     AKANTU_DEBUG_INFO("I had " << send.getSize() << " elements to send to proc " << p << " and "
