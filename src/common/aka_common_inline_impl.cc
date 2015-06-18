@@ -35,11 +35,10 @@
 
 #include <algorithm>
 #include <iomanip>
-
+#include <iostream>
 #include <cctype>
 
 __BEGIN_AKANTU__
-
 
 /* -------------------------------------------------------------------------- */
 /// standard output stream operator for GhostType

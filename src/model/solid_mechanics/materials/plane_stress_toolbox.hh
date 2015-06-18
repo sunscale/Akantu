@@ -48,8 +48,19 @@ class PlaneStressToolbox : public ParentMaterial {
 public:
   PlaneStressToolbox(SolidMechanicsModel & model, const ID & id = "") : Material(model, id),
                                                                         ParentMaterial(model, id) {}
+  PlaneStressToolbox(SolidMechanicsModel & model,
+                     UInt spatial_dimension,
+                     const Mesh & mesh,
+                     FEEngine & fe_engine,
+                     const ID & id = "") : Material(model, spatial_dimension, mesh, fe_engine, id),
+                                           ParentMaterial(model, spatial_dimension, mesh, fe_engine, id) {}
+
   virtual ~PlaneStressToolbox() {}
 
+protected:
+  void initialize();
+
+public:
   virtual void computeAllCauchyStresses(GhostType ghost_type = _not_ghost){
     AKANTU_DEBUG_IN();
 

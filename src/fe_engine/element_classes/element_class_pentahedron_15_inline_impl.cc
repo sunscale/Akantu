@@ -97,9 +97,9 @@ InterpolationElement<_itp_lagrange_pentahedron_15>::computeShapes(const vector_t
   N( 6) = 2.0 * c(1) * c(2) * (1 - c(0));
   N( 7) = 2.0 * c(2) * (1 - c(1) - c(2)) * (1 - c(0));
   N( 8) = 2.0 * c(1) * (1 - c(0)) * (1 - c(1) - c(2));
-  N( 9) = c(1) * (1 - c(0)*c(0));
-  N(10) = c(2) * (1 - c(0)*c(0));
-  N(11) = (1 - c(1) - c(2)) * (1 - c(0)*c(0));
+  N( 9) = c(1) * (1 - c(0) * c(0));
+  N(10) = c(2) * (1 - c(0) * c(0));
+  N(11) = (1 - c(1) - c(2)) * (1 - c(0) * c(0));
   N(12) = 2.0 * c(1) * c(2) * (1 + c(0));
   N(13) = 2.0 * c(2) * (1 - c(1) - c(2)) * (1 + c(0));
   N(14) = 2.0 * c(1) * (1 - c(1) - c(2)) * (1 + c(0));
@@ -138,7 +138,7 @@ InterpolationElement<_itp_lagrange_pentahedron_15>::computeDNDS(const vector_typ
   dnds(1, 6) = -2.0 * (c(0) - 1) * c(2);
   dnds(1, 7) =  2.0 * c(2) * (c(0) - 1);
   dnds(1, 8) =  2.0 * (2 * c(1) + c(2) - 1) * (c(0) - 1);
-  dnds(1, 9) = -(c(0)*c(0) - 1);
+  dnds(1, 9) = -(c(0) * c(0) - 1);
   dnds(1,10) =  0.0;
   dnds(1,11) =  (c(0)*c(0) - 1);
   dnds(1,12) =  2.0 * c(2) * (c(0) + 1);
@@ -156,8 +156,8 @@ InterpolationElement<_itp_lagrange_pentahedron_15>::computeDNDS(const vector_typ
   dnds(2, 7) =  2.0 * (c(0) - 1) * (2 * c(2) + c(1) - 1);
   dnds(2, 8) =  2.0 * c(1) * (c(0) - 1);
   dnds(2, 9) =  0.0;
-  dnds(2,10) = -(c(0)*c(0) - 1);
-  dnds(2,11) =  (c(0)*c(0) - 1);
+  dnds(2,10) = -(c(0) * c(0) - 1);
+  dnds(2,11) =  (c(0) * c(0) - 1);
   dnds(2,12) =  2.0 * (c(0) + 1) * c(1);
   dnds(2,13) = -2.0 * (c(0) + 1) * (2 * c(2) + c(1) - 1);
   dnds(2,14) = -2.0 * (c(0) + 1) * c(1);

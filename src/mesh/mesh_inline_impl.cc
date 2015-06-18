@@ -452,16 +452,14 @@ inline UInt Mesh::getNbFacetsPerElement(const ElementType & type) {
 inline MatrixProxy<UInt> Mesh::getFacetLocalConnectivity(const ElementType & type) {
   AKANTU_DEBUG_IN();
 
-  MatrixProxy<UInt> mat;
-
 #define GET_FACET_CON(type)						\
-  mat = ElementClass<type>::getFacetLocalConnectivityPerElement()
+  AKANTU_DEBUG_OUT();							\
+  return ElementClass<type>::getFacetLocalConnectivityPerElement()
 
   AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_FACET_CON);
 #undef GET_FACET_CON
 
   AKANTU_DEBUG_OUT();
-  return mat;
 }
 
 /* -------------------------------------------------------------------------- */

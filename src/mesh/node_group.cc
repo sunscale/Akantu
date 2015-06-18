@@ -31,17 +31,36 @@
 /* -------------------------------------------------------------------------- */
 
 #include "node_group.hh"
+#include "dumpable.hh"
+#include "dumpable_inline_impl.hh"
+#include "mesh.hh"
+
+#if defined(AKANTU_USE_IOHELPER)
+#  include "dumper_paraview.hh"
+#endif
 
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 NodeGroup::NodeGroup(const std::string & name,
-                     const std::string & id,
+		     const Mesh & mesh,
+		     const std::string & id,
                      const MemoryID & memory_id) :
   Memory(id, memory_id),
   name(name),
-  node_group(alloc<UInt>(id + ":nodes", 0, 1)) {
+  node_group(alloc<UInt>(id + ":nodes", 0, 1)),
+  mesh(mesh){
+
+#if defined(AKANTU_USE_IOHELPER)
+  this->registerDumper<DumperParaview>("paraview_"  + name, name, true);
+  this->getDumper().registerField("positions",new dumper::NodalField<Real,true>(
+                                                                    mesh.getNodes(),
+                                                                    0,
+                                                                    0,
+                                                                    &this->getNodes()));
+#endif
+
 }
 
 /* -------------------------------------------------------------------------- */

@@ -357,6 +357,6 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCompressivePenalty(M
 
 }
 
-INSTANSIATE_MATERIAL(MaterialCohesiveExponential);
+INSTANTIATE_MATERIAL(MaterialCohesiveExponential);
 
 __END_AKANTU__

@@ -52,11 +52,6 @@ class Array;
 
 class Math {
   /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
-public:
-
-  /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
@@ -182,12 +177,6 @@ public:
   /// vector cross product
   static inline void vectorProduct3(const Real * v1, const Real * v2, Real * res);
 
-  /// compute normal a normal to a vector
-  static inline void normal2(const Real * v1, Real * res);
-
-  /// compute normal a normal to a vector
-  static inline void normal3(const Real * v1,const Real * v2, Real * res);
-
   /// normalize a vector
   static inline void normalize2(Real * v);
 
@@ -215,6 +204,15 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Geometry                                                                 */
   /* ------------------------------------------------------------------------ */
+  /// compute normal a normal to a vector
+  static inline void normal2(const Real * v1, Real * res);
+
+  /// compute normal a normal to a vector
+  static inline void normal3(const Real * v1,const Real * v2, Real * res);
+
+  /// compute the tangents to an array of normal vectors
+  static void compute_tangents(const Array<Real> & normals, Array<Real> & tangents);
+
   /// distance in 2D between x and y
   static inline Real distance_2d(const Real * x, const Real * y);
 

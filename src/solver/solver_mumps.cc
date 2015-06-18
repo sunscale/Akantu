@@ -136,7 +136,13 @@ SolverMumps::SolverMumps(SparseMatrix & matrix,
 }
 
 /* -------------------------------------------------------------------------- */
-SolverMumps::~SolverMumps() { }
+SolverMumps::~SolverMumps() {
+  AKANTU_DEBUG_IN();
+
+  this->destroyInternalData();
+  
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 void SolverMumps::destroyInternalData() {
@@ -348,7 +354,7 @@ void SolverMumps::solve(Array<Real> & solution) {
 
 /* -------------------------------------------------------------------------- */
 void SolverMumps::printError() {
-  UInt _info_v[2];
+  Int _info_v[2];
   _info_v[0] =  info(1); // to get errors
   _info_v[1] = -info(1); // to get warnings
   communicator.allReduce(_info_v, 2, _so_min);

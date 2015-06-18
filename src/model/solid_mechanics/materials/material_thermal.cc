@@ -41,15 +41,36 @@ MaterialThermal<spatial_dimension>::MaterialThermal(SolidMechanicsModel & model,
   sigma_th("sigma_th", *this),
   use_previous_stress_thermal(false) {
   AKANTU_DEBUG_IN();
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
 
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+MaterialThermal<spatial_dimension>::MaterialThermal(SolidMechanicsModel & model,
+                                                    UInt dim,
+                                                    const Mesh & mesh,
+                                                    FEEngine & fe_engine,
+                                                    const ID & id) :
+  Material(model, dim, mesh, fe_engine, id),
+  delta_T("delta_T", *this, dim, fe_engine, this->element_filter),
+  sigma_th("sigma_th", *this, dim, fe_engine, this->element_filter),
+  use_previous_stress_thermal(false) {
+  AKANTU_DEBUG_IN();
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
+
+template<UInt spatial_dimension>
+void MaterialThermal<spatial_dimension>::initialize() {
   this->registerParam("E"      , E      , 0.  , _pat_parsable | _pat_modifiable, "Young's modulus"        );
   this->registerParam("nu"     , nu     , 0.5 , _pat_parsable | _pat_modifiable, "Poisson's ratio"        );
   this->registerParam("alpha"  , alpha  , 0.  , _pat_parsable | _pat_modifiable, "Thermal expansion coefficient");
   this->registerParam("delta_T", delta_T,       _pat_parsable | _pat_modifiable, "Uniform temperature field");
 
   delta_T.initialize(1);
-  AKANTU_DEBUG_OUT();
 }
+
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -96,6 +117,6 @@ void MaterialThermal<dim>::computeStress(ElementType el_type, GhostType ghost_ty
 /* -------------------------------------------------------------------------- */
 
 
-INSTANSIATE_MATERIAL(MaterialThermal);
+INSTANTIATE_MATERIAL(MaterialThermal);
 
 __END_AKANTU__

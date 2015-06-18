@@ -45,8 +45,10 @@ StaticSolver::StaticSolver() : CommunicatorEventHandler(), is_initialized(false)
 /* -------------------------------------------------------------------------- */
 StaticSolver::~StaticSolver() {
   --this->nb_references;
-  if(this->nb_references == 0)
+  if(this->nb_references == 0) {
+    StaticCommunicator::getStaticCommunicator().unregisterEventHandler(*this);
     delete this->static_solver;
+  }
 }
 
 /* -------------------------------------------------------------------------- */

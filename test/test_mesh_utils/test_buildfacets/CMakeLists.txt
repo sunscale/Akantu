@@ -29,17 +29,14 @@
 #
 #===============================================================================
 
-register_test(test_cohesive_buildfacets_tetrahedron
-  SOURCES test_cohesive_buildfacets_tetrahedron.cc
+register_test(test_buildfacets_tetrahedron
+  SOURCES test_buildfacets_tetrahedron.cc
   FILES_TO_COPY tetrahedron.msh
   PACKAGE cohesive_element
   )
-register_test(test_cohesive_buildfacets_hexahedron
-  SOURCES test_cohesive_buildfacets_hexahedron.cc
+register_test(test_buildfacets_hexahedron
+  SOURCES test_buildfacets_hexahedron.cc
   FILES_TO_COPY hexahedron.msh
   PACKAGE cohesive_element
   )
-
-#add_mesh(test_cohesive_buildfacets_mesh mesh.geo 3 2)
-#add_dependencies(test_cohesive_buildfacets test_cohesive_buildfacets_mesh)
 

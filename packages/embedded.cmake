@@ -35,8 +35,8 @@ package_declare(embedded
 package_declare_sources(embedded
   model/solid_mechanics/materials/material_embedded/material_embedded_includes.hh
 
-  model/solid_mechanics/embedded_interface.hh
-  model/solid_mechanics/embedded_interface.cc
+  model/solid_mechanics/embedded_interface_intersector.hh
+  model/solid_mechanics/embedded_interface_intersector.cc
   model/solid_mechanics/embedded_interface_model.hh
   model/solid_mechanics/embedded_interface_model.cc
 
@@ -47,5 +47,9 @@ package_declare_sources(embedded
   model/solid_mechanics/materials/material_embedded/material_reinforcement_inline_impl.cc
 
   model/solid_mechanics/materials/material_embedded/material_reinforcement_template.hh
-  model/solid_mechanics/materials/material_embedded/material_reinforcement_template_inline_impl.cc
+  model/solid_mechanics/materials/material_embedded/material_reinforcement_template_tmpl.hh
   )
+
+package_declare_documentation(embedded
+"This package allows the use of the embedded model in solid mechanics. This package depends on the CGAL package."
+)

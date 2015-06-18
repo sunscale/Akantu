@@ -49,6 +49,10 @@ __BEGIN_AKANTU__
  * This class is used for computing the reinforcement stiffness matrix
  * along with the reinforcement residual. Room is made for constitutive law,
  * but actual use of contitutive laws is made in MaterialReinforcementTemplate.
+ *
+ * Be careful with the dimensions in this class :
+ *  -  this->spatial_dimension is always 1
+ *  -  the template parameter dim is the dimension of the problem
  */
 template<UInt dim>
 class MaterialReinforcement : virtual public Material {
@@ -58,10 +62,17 @@ class MaterialReinforcement : virtual public Material {
   /* ------------------------------------------------------------------------ */
 public:
   /// Constructor
-  MaterialReinforcement(SolidMechanicsModel & model, const ID & id = "");
+  MaterialReinforcement(SolidMechanicsModel & model,
+                        UInt spatial_dimension,
+                        const Mesh & mesh,
+                        FEEngine & fe_engine,
+                        const ID & id = "");
 
   /// Destructor
   virtual ~MaterialReinforcement();
+
+protected:
+  void initialize(SolidMechanicsModel & a_model);
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -94,6 +105,11 @@ public:
                                     GhostType ghost_type) = 0;
 
   virtual Real getEnergy(std::string id);
+
+  void flattenInternal(const std::string & field_id,
+                       ElementTypeMapArray<Real> & internal_flat,
+                       const GhostType ghost_type,
+                       ElementKind element_kind);
 
   /* ------------------------------------------------------------------------ */
   /* Protected methods                                                        */
@@ -179,17 +195,17 @@ protected:
   /// Embedded model
   EmbeddedInterfaceModel * model;
 
-  /// grad_u
-  EmbeddedInternalField<Real> gradu;
+  /// Stress in the reinforcement
+  InternalField<Real> stress_embedded;
 
-  /// stress
-  EmbeddedInternalField<Real> stress;
+  /// Gradu of concrete on reinforcement
+  InternalField<Real> gradu_embedded;
 
   /// C matrix on quad
-  EmbeddedInternalField<Real> directing_cosines;
+  InternalField<Real> directing_cosines;
 
   /// Prestress on quad
-  EmbeddedInternalField<Real> pre_stress;
+  InternalField<Real> pre_stress;
 
   /// Cross-sectional area
   Real area;

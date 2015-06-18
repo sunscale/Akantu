@@ -139,7 +139,7 @@ void MaterialMazarsNonLocal<spatial_dimension>::computeNonLocalStress(Array<Real
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialMazarsNonLocal);
+INSTANTIATE_MATERIAL(MaterialMazarsNonLocal);
 
 
 __END_AKANTU__

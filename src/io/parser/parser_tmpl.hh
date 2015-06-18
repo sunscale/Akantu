@@ -47,8 +47,8 @@ inline ParserParameter::operator T() const {
 
 /* -------------------------------------------------------------------------- */
 template<>
-inline ParserParameter::operator std::string() const {
-  return value;
+inline ParserParameter::operator const char *() const {
+  return value.c_str();
 }
 
 /* -------------------------------------------------------------------------- */

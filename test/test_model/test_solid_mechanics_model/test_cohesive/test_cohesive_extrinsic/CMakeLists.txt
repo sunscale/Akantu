@@ -33,7 +33,6 @@
 add_mesh(test_cohesive_extrinsic_mesh triangle.geo 2 1)
 add_mesh(test_cohesive_extrinsic_quadrangle_mesh quadrangle.geo 2 2)
 add_mesh(test_cohesive_extrinsic_tetrahedron_mesh tetrahedron.geo 3 2)
-add_mesh(test_cohesive_extrinsic_fatigue_mesh fatigue.geo 2 1)
 
 register_test(test_cohesive_extrinsic
   SOURCES test_cohesive_extrinsic.cc
@@ -57,8 +56,7 @@ register_test(test_cohesive_extrinsic_tetrahedron
 
 register_test(test_cohesive_extrinsic_fatigue
   SOURCES test_cohesive_extrinsic_fatigue.cc
-  DEPENDENCIES test_cohesive_extrinsic_fatigue_mesh
-  FILES_TO_COPY material_fatigue.dat
+  FILES_TO_COPY material_fatigue.dat fatigue.msh
   DIRECTORIES_TO_CREATE paraview
   PACKAGE cohesive_element
   )

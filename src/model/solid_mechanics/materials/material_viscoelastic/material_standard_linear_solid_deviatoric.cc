@@ -293,6 +293,6 @@ Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getEnergy(std::st
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialStandardLinearSolidDeviatoric);
+INSTANTIATE_MATERIAL(MaterialStandardLinearSolidDeviatoric);
 
 __END_AKANTU__

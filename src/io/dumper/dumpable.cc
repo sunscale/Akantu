@@ -41,6 +41,13 @@ Dumpable::Dumpable() : default_dumper("") {
 
 /* -------------------------------------------------------------------------- */
 Dumpable::~Dumpable() {
+
+  DumperMap::iterator it = dumpers.begin();
+  DumperMap::iterator end = dumpers.end();
+
+  for (; it != end; ++it){
+    delete it->second;
+  }
 }
 
 /* -------------------------------------------------------------------------- */

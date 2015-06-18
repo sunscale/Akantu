@@ -34,8 +34,8 @@
 # List of tests
 #===============================================================================
 add_akantu_test(test_mesh_io "Test mesh io object")
-add_akantu_test(test_facet_extraction "Test mesh utils facet extraction")
 add_akantu_test(test_pbc_tweak "Test pbc facilities")
+add_akantu_test(test_buildfacets "Tests for the generation of facets")
 
 register_test(test_purify_mesh
   SOURCES test_purify_mesh.cc

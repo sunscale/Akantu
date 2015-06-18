@@ -421,6 +421,22 @@ ElementTypeMap<Stored, SupportType>::lastType(UInt dim, GhostType ghost_type, El
   return typename ElementTypeMap<Stored, SupportType>::type_iterator(e, e, dim, kind);
 }
 
+/* -------------------------------------------------------------------------- */
+
+/// standard output stream operator
+template <class Stored, typename SupportType>
+inline std::ostream & operator <<(std::ostream & stream, const ElementTypeMap<Stored, SupportType> & _this)
+{
+  _this.printself(stream);
+  return stream;
+}
+
+/* -------------------------------------------------------------------------- */
+
+
+
+
+
 __END_AKANTU__
 
 #endif /* __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__ */

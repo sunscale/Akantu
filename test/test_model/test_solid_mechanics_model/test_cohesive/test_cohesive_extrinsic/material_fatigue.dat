@@ -11,4 +11,5 @@ material cohesive_linear_fatigue [
 	 beta = 1
 	 delta_c = 1
 	 delta_f = 1
+	 count_switches = true
 ]

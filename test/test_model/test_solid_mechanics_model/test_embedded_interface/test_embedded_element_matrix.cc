@@ -39,15 +39,30 @@ int main(int argc, char * argv[]) {
   initialize("embedded_element.dat", argc, argv);
 
   const UInt dim = 2;
+  const Real height = 0.5;
 
   Mesh mesh(dim);
   mesh.read("triangle.msh");
 
-  EmbeddedInterfaceModel model(mesh, dim);
+  Array<Real> nodes_vec(2, dim, "reinforcement_nodes");
+  nodes_vec.storage()[0] = 0; nodes_vec.storage()[1] = height;
+  nodes_vec.storage()[2] = 1; nodes_vec.storage()[3] = height;
 
-  const Real height = 0.5;
+  Array<UInt> conn_vec(1, 2, "reinforcement_connectivity");
+  conn_vec.storage()[0] = 0; conn_vec.storage()[1] = 1;
 
-  model.initFull(SolidMechanicsModelOptions(_static));
+  Array<std::string> names_vec(1, 1, "reinforcement", "reinforcement_names");
+
+  Mesh reinforcement_mesh(dim, "reinforcement_mesh");
+  reinforcement_mesh.getNodes().copy(nodes_vec);
+  reinforcement_mesh.addConnectivityType(_segment_2);
+  reinforcement_mesh.getConnectivity(_segment_2).copy(conn_vec);
+  reinforcement_mesh.registerData<std::string>("physical_names").alloc(1, 1, _segment_2);
+  reinforcement_mesh.getData<std::string>("physical_names")(_segment_2).copy(names_vec);
+
+  EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
+
+  model.initFull(EmbeddedInterfaceModelOptions(_static));
 
   if (model.getInterfaceMesh().getNbElement(_segment_2) != 1)
     return EXIT_FAILURE;

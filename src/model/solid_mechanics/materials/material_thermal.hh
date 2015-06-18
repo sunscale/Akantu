@@ -45,8 +45,16 @@ class MaterialThermal : public virtual Material {
 public:
 
   MaterialThermal(SolidMechanicsModel & model, const ID & id = "");
+  MaterialThermal(SolidMechanicsModel & model,
+                  UInt dim,
+                  const Mesh & mesh,
+                  FEEngine & fe_engine,
+                  const ID & id = "");
 
   virtual ~MaterialThermal() {};
+
+protected:
+  void initialize();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

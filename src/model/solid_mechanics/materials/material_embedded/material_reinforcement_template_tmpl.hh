@@ -1,5 +1,5 @@
 /**
- * @file   material_reinforcement_template.cc
+ * @file   material_reinforcement_template_tmpl.hh
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
@@ -28,14 +28,22 @@
  *
  */
 
+// /!\ no namespace here !
+
 /* -------------------------------------------------------------------------- */
 
 template<UInt dim, class ConstLaw>
-MaterialReinforcementTemplate<dim, ConstLaw>::MaterialReinforcementTemplate(SolidMechanicsModel & model,
-	                                                      								    const ID & id):
-  Material(model, id),
-  MaterialReinforcement<dim>(model, id),
-  ConstLaw(model, id)
+MaterialReinforcementTemplate<dim, ConstLaw>::MaterialReinforcementTemplate(SolidMechanicsModel & a_model,
+                                                                            const ID & id):
+  Material(a_model, 1,
+           dynamic_cast<EmbeddedInterfaceModel &>(a_model).getInterfaceMesh(),
+           a_model.getFEEngine("EmbeddedInterfaceFEEngine"), id),
+  MaterialReinforcement<dim>(a_model, 1,
+                             dynamic_cast<EmbeddedInterfaceModel &>(a_model).getInterfaceMesh(),
+                             a_model.getFEEngine("EmbeddedInterfaceFEEngine"), id),
+  ConstLaw(a_model, 1,
+           dynamic_cast<EmbeddedInterfaceModel &>(a_model).getInterfaceMesh(),
+           a_model.getFEEngine("EmbeddedInterfaceFEEngine"), id)
 {}
 
 /* -------------------------------------------------------------------------- */
@@ -46,41 +54,15 @@ MaterialReinforcementTemplate<dim, ConstLaw>::~MaterialReinforcementTemplate()
 
 /* -------------------------------------------------------------------------- */
 
+/// TODO this function is super ugly. Find better way to initialize internals
 template<UInt dim, class ConstLaw>
 void MaterialReinforcementTemplate<dim, ConstLaw>::initMaterial() {
   MaterialReinforcement<dim>::initMaterial();
-  
-  // Gotta change the dimension from here onwards
-  this->ConstLaw::spatial_dimension = 1;
   ConstLaw::initMaterial();
-  
-  this->ConstLaw::gradu.free();
-  this->ConstLaw::stress.free();
-  this->ConstLaw::delta_T.free();
-  this->ConstLaw::sigma_th.free();
-  this->ConstLaw::potential_energy.free();
 
-  Mesh::type_iterator type_it = this->MaterialReinforcement<dim>::model->getInterfaceMesh().firstType();
-  Mesh::type_iterator type_end = this->MaterialReinforcement<dim>::model->getInterfaceMesh().lastType();
-
-  
-  // Reshape the ConstLaw internal fields
-  for (; type_it != type_end ; ++type_it) {
-    UInt nb_elements = this->MaterialReinforcement<dim>::element_filter(*type_it).getSize();
-
-    FEEngine & interface_engine =
-      this->MaterialReinforcement<dim>::model->getFEEngine("EmbeddedInterfaceFEEngine");
-
-    UInt nb_quad = interface_engine.getNbQuadraturePoints(*type_it);
-
-    this->ConstLaw::gradu.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
-    this->ConstLaw::stress.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
-    this->ConstLaw::stress.initialize(1);
-    this->ConstLaw::delta_T.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
-    this->ConstLaw::sigma_th.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
-    this->ConstLaw::potential_energy.alloc(nb_elements * nb_quad, 1, *type_it, _not_ghost);
-    //this->ConstLaw::gradu.alloc(0, dim * dim, *type_it, _ghost);
-  }
+  // Needed for plasticity law
+  this->ConstLaw::nu = 0.5;
+  this->ConstLaw::updateInternalParameters();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -95,9 +77,9 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeGradU(const ElementTyp
   const UInt voigt_size = Material::getTangentStiffnessVoigtSize(dim);
 
   Array<Real>::matrix_iterator full_gradu_it =
-    this->MaterialReinforcement<dim>::gradu(el_type, ghost_type).begin(dim, dim);
+    this->MaterialReinforcement<dim>::gradu_embedded(el_type, ghost_type).begin(dim, dim);
   Array<Real>::matrix_iterator full_gradu_end =
-    this->MaterialReinforcement<dim>::gradu(el_type, ghost_type).end(dim, dim);
+    this->MaterialReinforcement<dim>::gradu_embedded(el_type, ghost_type).end(dim, dim);
 
   Array<Real>::scalar_iterator gradu_it =
     this->ConstLaw::gradu(el_type, ghost_type).begin();
@@ -141,8 +123,8 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeInterfaceGradUOnQuad(c
 
 template<UInt dim, class ConstLaw>
 void MaterialReinforcementTemplate<dim, ConstLaw>::computeTangentModuli(const ElementType & el_type,
-								 Array<Real> & tangent,
-								 GhostType ghost_type) {
+                                                                        Array<Real> & tangent,
+                                                                        GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(tangent.getNbComponent() == 1, "Reinforcements only work in 1D");
@@ -162,9 +144,9 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computeStress(ElementType typ
   ConstLaw::computeStress(type, ghost_type);
 
   Array<Real>::matrix_iterator full_sigma_it =
-    this->MaterialReinforcement<dim>::stress(type, ghost_type).begin(dim, dim);
+    this->MaterialReinforcement<dim>::stress_embedded(type, ghost_type).begin(dim, dim);
   Array<Real>::matrix_iterator full_sigma_end =
-    this->MaterialReinforcement<dim>::stress(type, ghost_type).end(dim, dim);
+    this->MaterialReinforcement<dim>::stress_embedded(type, ghost_type).end(dim, dim);
   Array<Real>::scalar_iterator sigma_it =
     this->ConstLaw::stress(type, ghost_type).begin();
   Array<Real>::scalar_iterator pre_stress_it =
@@ -192,5 +174,25 @@ Real MaterialReinforcementTemplate<dim, ConstLaw>::getEnergy(std::string id) {
 template <UInt dim, class ConstLaw>
 void MaterialReinforcementTemplate<dim, ConstLaw>::computePotentialEnergy(ElementType type,
                                                                           GhostType ghost_type) {
+  const UInt nb_elements = this->element_filter(type, ghost_type).getSize();
+  const UInt nb_quad = this->model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(type);
+  this->ConstLaw::potential_energy.alloc(nb_quad * nb_elements, 1, type, ghost_type, 0.);
+
   ConstLaw::computePotentialEnergy(type, ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
+
+template <UInt dim, class ConstLaw>
+void MaterialReinforcementTemplate<dim, ConstLaw>::flattenInternal(const std::string & field_id,
+                                                                   ElementTypeMapArray<Real> & internal_flat,
+                                                                   const GhostType ghost_type,
+                                                                   ElementKind element_kind) {
+  if (field_id == "stress_embedded" || field_id == "inelastic_strain")
+    MaterialReinforcement<dim>::flattenInternal(field_id, internal_flat, ghost_type, element_kind);
+}
+
+template<UInt dim, class ConstLaw>
+void MaterialReinforcementTemplate<dim, ConstLaw>::savePreviousState() {
+  ConstLaw::savePreviousState();
 }

@@ -64,6 +64,10 @@ public:
   void precomputeJacobiansOnQuadraturePoints(const Array<Real> & nodes,
 					     const GhostType & ghost_type);
 
+  // multiply the jacobians by the integration weights and stores the results in jacobians
+  template <ElementType type>
+  void multiplyJacobiansByWeights(const GhostType & ghost_type);
+
 
   /// integrate f on the element "elem" of type "type"
   template <ElementType type>

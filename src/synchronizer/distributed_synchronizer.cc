@@ -855,13 +855,13 @@ void DistributedSynchronizer::waitEndSynchronize(DataAccessor & data_accessor,
 	  Real tolerance = Math::getTolerance();
 	  Real bary_norm = barycenter.norm();
 	  for (UInt i = 0; i < spatial_dimension; ++i) {
-	    if((std::abs((barycenter(i) - barycenter_loc(i))/bary_norm) <= tolerance) ||
-	       (std::abs(barycenter_loc(i)) <= tolerance && std::abs(barycenter(i)) <= tolerance)) continue;
+	    if((std::abs(barycenter_loc(i)) <= tolerance && std::abs(barycenter(i)) <= tolerance) ||
+               (std::abs((barycenter(i) - barycenter_loc(i))/bary_norm) <= tolerance)) continue;
 	    AKANTU_DEBUG_ERROR("Unpacking an unknown value for the element: "
 			       << element
 			       << "(barycenter[" << i << "] = " << barycenter_loc(i)
 			       << " and buffer[" << i << "] = " << barycenter(i) << ") ["
-			       << std::abs((barycenter(i) - barycenter_loc(i))/barycenter_loc(i))
+			       << std::abs((barycenter(i) - barycenter_loc(i))/bary_norm)
 			       << "] - tag: " << tag);
 	  }
 	}
