@@ -185,8 +185,6 @@ private:
 
   DumperMap dumpers;
   std::string default_dumper;
-
-  DumperSet external_dumpers;
 };
 
 __END_AKANTU__

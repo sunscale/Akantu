@@ -36,8 +36,6 @@
 #include "static_communicator.hh"
 #include "aka_math.hh"
 #include "dof_synchronizer.hh"
-
-
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
