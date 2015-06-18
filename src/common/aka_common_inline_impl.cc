@@ -40,66 +40,6 @@
 
 __BEGIN_AKANTU__
 
-/* -------------------------------------------------------------------------- */
-//! standard output stream operator for ElementType
-inline std::ostream & operator <<(std::ostream & stream, ElementType type)
-{
-#define STRINGIFY(type)				\
-  stream << BOOST_PP_STRINGIZE(type)
-
-  switch(type) {
-    BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_CASE_MACRO, \
-                          STRINGIFY,               \
-                          AKANTU_ALL_ELEMENT_TYPE)
-    case _not_defined:       stream << "_not_defined"; break;
-    case _max_element_type:  stream << "_max_element_type"; break;
-  }
-
-
-
-#undef STRINGIFY
-  return stream;
-}
-
-/* -------------------------------------------------------------------------- */
-//! standard output stream operator for ElementType
-inline std::ostream & operator <<(std::ostream & stream, ElementKind kind )
-{
-#define STRINGIFY(kind)				\
-  stream << BOOST_PP_STRINGIZE(kind)
-
-  AKANTU_BOOST_ALL_KIND_SWITCH(STRINGIFY);
-#undef STRINGIFY
-  return stream;
-}
-
-/* -------------------------------------------------------------------------- */
-/// standard output stream operator for InterpolationType
-inline std::ostream & operator <<(std::ostream & stream, InterpolationType type)
-{
-  switch(type)
-    {
-    case _itp_lagrange_point_1        : stream << "_itp_lagrange_point_1"       ; break;
-    case _itp_lagrange_segment_2      : stream << "_itp_lagrange_segment_2"     ; break;
-    case _itp_lagrange_segment_3      : stream << "_itp_lagrange_segment_3"     ; break;
-    case _itp_lagrange_triangle_3     : stream << "_itp_lagrange_triangle_3"    ; break;
-    case _itp_lagrange_triangle_6     : stream << "_itp_lagrange_triangle_6"    ; break;
-    case _itp_lagrange_quadrangle_4   : stream << "_itp_lagrange_quadrangle_4"  ; break;
-    case _itp_serendip_quadrangle_8   : stream << "_itp_serendip_quadrangle_8"  ; break;
-    case _itp_lagrange_tetrahedron_4  : stream << "_itp_lagrange_tetrahedron_4" ; break;
-    case _itp_lagrange_tetrahedron_10 : stream << "_itp_lagrange_tetrahedron_10"; break;
-    case _itp_lagrange_hexahedron_8   : stream << "_itp_lagrange_hexahedron_8"  ; break;
-    case _itp_lagrange_pentahedron_6  : stream << "_itp_lagrange_pentahedron_6" ; break;
-    case _itp_serendip_hexahedron_20  : stream << "_itp_serendip_hexahedron_20" ; break;
-    case _itp_lagrange_pentahedron_15 : stream << "_itp_lagrange_pentahedron_15"; break;
-#if defined(AKANTU_STRUCTURAL_MECHANICS)
-    case _itp_bernoulli_beam          : stream << "_itp_bernoulli_beam"         ; break;
-    case _itp_kirchhoff_shell         : stream << "_itp_kirchhoff_shell"        ; break;
-#endif
-    case _itp_not_defined             : stream << "_itp_not_defined"            ; break;
-    }
-  return stream;
-}
 
 /* -------------------------------------------------------------------------- */
 /// standard output stream operator for GhostType

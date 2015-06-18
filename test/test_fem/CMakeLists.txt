@@ -93,6 +93,3 @@ register_test(test_facet_element_mapping
   DEPENDENCIES test_boundary_msh_physical_names
   PACKAGE core)
 
-register_test(test_igfem_integrate
-  SOURCES test_igfem_integrate.cc
-  PACKAGE igfem)
