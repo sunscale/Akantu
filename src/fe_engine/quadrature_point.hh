@@ -64,6 +64,10 @@ public:
     this->position.shallowCopy(position);
   }
 
+  void copyPosition(const position_type & position) {
+    this->position.deepCopy(position);
+  }
+
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const {
     std::string space;
@@ -83,7 +87,7 @@ public:
   /// global number of the quadrature point
   UInt global_num;
   // TODO might be temporary: however this class should be tought maybe...
-  UInt material_id;
+  std::string material_id;
 private:
 
   /// position of the quadrature point
