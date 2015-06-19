@@ -23,8 +23,6 @@ package_declare_sources(igfem
   element_classes_igfem/element_class_igfem_segment_3_inline_impl.cc
   element_classes_igfem/element_class_igfem_triangle_4_inline_impl.cc
   element_classes_igfem/element_class_igfem_triangle_5_inline_impl.cc
-  igfem_element.cc
-  igfem_element.hh
   integrator_gauss_igfem.hh
   integrator_gauss_igfem_inline_impl.cc
   interpolation_element_igfem.cc
