@@ -108,6 +108,7 @@ package_declare_sources(core
   fe_engine/shape_linked.hh
   fe_engine/shape_linked_inline_impl.cc
   fe_engine/element.hh
+  fe_engine/quadrature_point.hh
 
   io/dumper/dumpable.hh
   io/dumper/dumpable.cc
