@@ -110,53 +110,50 @@ __END_AKANTU__
   AKANTU_ek_cohesive_ELEMENT_TYPE		\
   AKANTU_ek_igfem_ELEMENT_TYPE
 
-/// @enum ElementType type of elements
-enum ElementType {
-  _not_defined,
-  _point_1,
-  _segment_2,         ///< first order segment
-  _segment_3,         ///< second order segment
-  _triangle_3,        ///< first order triangle
-  _triangle_6,        ///< second order triangle
-  _tetrahedron_4,     ///< first order tetrahedron
-  _tetrahedron_10,    ///< second order tetrahedron
-  _quadrangle_4,      ///< first order quadrangle
-  _quadrangle_8,      ///< second order quadrangle
-  _hexahedron_8,      ///< first order hexahedron
-  _hexahedron_20,     ///< second order hexahedron
-  _pentahedron_6,     ///< first order pentahedron
-  _pentahedron_15,    ///< second order pentahedron
+// /// @enum ElementType type of elements
+// enum ElementType {
+//   _not_defined,
+//   _point_1,
+//   _segment_2,         ///< first order segment
+//   _segment_3,         ///< second order segment
+//   _triangle_3,        ///< first order triangle
+//   _triangle_6,        ///< second order triangle
+//   _tetrahedron_4,     ///< first order tetrahedron
+//   _tetrahedron_10,    ///< second order tetrahedron
+//   _quadrangle_4,      ///< first order quadrangle
+//   _quadrangle_8,      ///< second order quadrangle
+//   _hexahedron_8,      ///< first order hexahedron
+//   _hexahedron_20,     ///< second order hexahedron
+//   _pentahedron_6,     ///< first order pentahedron
+//   _pentahedron_15,    ///< second order pentahedron
 
-#if defined (AKANTU_STRUCTURAL_MECHANICS)
-  _bernoulli_beam_2,  ///< Bernoulli beam 2D
-  _bernoulli_beam_3,  ///< Bernoulli beam 3D
-  _kirchhoff_shell,   ///< Kirchhoff shell
-#endif
+// #if defined (AKANTU_STRUCTURAL_MECHANICS)
+//   _bernoulli_beam_2,  ///< Bernoulli beam 2D
+//   _bernoulli_beam_3,  ///< Bernoulli beam 3D
+//   _kirchhoff_shell,   ///< Kirchhoff shell
+// #endif
 
-#if defined(AKANTU_COHESIVE_ELEMENT)
-  _cohesive_2d_4,     ///< first order 2D cohesive
-  _cohesive_2d_6,     ///< second order 2D cohesive
-  _cohesive_1d_2,     ///< first order 1D cohesive
-  _cohesive_3d_6,     ///< first order 3D cohesive
-  _cohesive_3d_12,     ///< second order 3D cohesive
-#endif
-#if defined(AKANTU_IGFEM)
-  _igfem_triangle_3,  ///< first order triangle for IGFEM
-#endif
-  _max_element_type
-};
-
-
-
-//! standard output stream operator for ElementType
-inline std::ostream & operator <<(std::ostream & stream, ElementType type);
-
-//! standard input stream operator for ElementType
-inline std::istream & operator >>(std::istream & stream, ElementType & type);
+// #if defined(AKANTU_COHESIVE_ELEMENT)
+//   _cohesive_2d_4,     ///< first order 2D cohesive
+//   _cohesive_2d_6,     ///< second order 2D cohesive
+//   _cohesive_1d_2,     ///< first order 1D cohesive
+//   _cohesive_3d_6,     ///< first order 3D cohesive
+//   _cohesive_3d_12,     ///< second order 3D cohesive
+// #endif
+// #if defined(AKANTU_IGFEM)
+//   _igfem_triangle_3,  ///< first order triangle for IGFEM
+// #endif
+//   _max_element_type
+// };
 
 
 
->>>>>>> aa23fede75a27f42e38d9c4ed84e1c67fa93931b
+// //! standard output stream operator for ElementType
+// inline std::ostream & operator <<(std::ostream & stream, ElementType type);
+
+// //! standard input stream operator for ElementType
+// inline std::istream & operator >>(std::istream & stream, ElementType & type);
+
 
 #include "aka_element_classes_info.hh"
 

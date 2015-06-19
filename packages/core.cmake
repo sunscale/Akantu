@@ -98,6 +98,7 @@ package_declare_sources(core
   fe_engine/integrator_gauss_inline_impl.cc
   fe_engine/interpolation_element.cc
   fe_engine/interpolation_element_tmpl.hh
+  fe_engine/quadrature_point.hh
   fe_engine/shape_functions.hh
   fe_engine/shape_functions_inline_impl.cc
   fe_engine/shape_lagrange.cc
