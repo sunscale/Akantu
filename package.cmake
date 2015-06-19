@@ -18,12 +18,22 @@ package_declare(IGFEM
   DESCRIPTION "Use Interface-enriched generalized FEM")
 
 package_declare_sources(igfem
-  element_class_igfem.hh
-  shape_igfem.hh
-  shape_igfem_inline_impl.cc
   element_class_igfem.cc
-  element_class_igfem_triangle_3_inline_impl.cc
-  igfem_element.hh
+  element_class_igfem.hh
+  element_classes_igfem/element_class_igfem_segment_3_inline_impl.cc
+  element_classes_igfem/element_class_igfem_triangle_4_inline_impl.cc
+  element_classes_igfem/element_class_igfem_triangle_5_inline_impl.cc
   igfem_element.cc
+  igfem_element.hh
+  integrator_gauss_igfem.hh
+  integrator_gauss_igfem_inline_impl.cc
+  interpolation_element_igfem.cc
+  interpolation_element_igfem_tmpl.hh
+  geometrical_element_igfem.cc
+  shape_igfem.hh
+  shape_igfem.cc
+  shape_igfem_inline_impl.cc
+  fe_engine_template_tmpl_igfem.hh
+  dumper_igfem_connectivity.hh
   )
 

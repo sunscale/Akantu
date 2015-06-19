@@ -13,16 +13,17 @@
  *
  */
 
+/* -------------------------------------------------------------------------- */
+//#include "aka_array.hh"
+#include "shape_functions.hh"
+
 #ifndef __AKANTU_SHAPE_IGFEM_HH__
 #define __AKANTU_SHAPE_IGFEM_HH__
-
-#include "shape_functions.hh"
-#include "igfem_element.hh"
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<>
+template <>
 class ShapeLagrange<_ek_igfem> : public ShapeFunctions{
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -32,41 +33,32 @@ public:
   ShapeLagrange(const Mesh & mesh,
 		const ID & id = "shape_igfem",
 		const MemoryID & memory_id = 0);
-  virtual ~ShapeLagrange(){};
+  
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  inline void initShapeFunctions(const Array<Real> & nodes,
+inline void initShapeFunctions(const Array<Real> & nodes,
 				 const Matrix<Real> & control_points,
+				 const Matrix<Real> & control_points_1,
+				 const Matrix<Real> & control_points_2,
 				 const ElementType & type,
 				 const GhostType & ghost_type);
 
-  /// set the control points for a given element
-  template <ElementType type, bool is_sub>
-  void setControlPointsByType(const Matrix<Real> & control_points,
-			      const GhostType & ghost_type);
 
   /// pre compute all shapes on the element control points from natural coordinates
-  template<ElementType type, bool is_sub>
+  template<ElementType type>
   void precomputeShapesOnControlPoints(const Array<Real> & nodes,
 				       GhostType ghost_type);
 
   /// pre compute all shape derivatives on the element control points from natural coordinates
-  template <ElementType type, bool is_sub>
+  template <ElementType type>
   void precomputeShapeDerivativesOnControlPoints(const Array<Real> & nodes,
 						 GhostType ghost_type);
 
   /// interpolate nodal values on the control points
   template <ElementType type>
-  void interpolateOnControlPoints(const Array<Real> &u,
-				  Array<Real> &uq,
-				  UInt nb_degree_of_freedom,
-				  GhostType ghost_type = _not_ghost,
-				  const Array<UInt> & filter_elements = empty_filter) const;
-
-  template <ElementType type, bool is_sub>
   void interpolateOnControlPoints(const Array<Real> &u,
 				  Array<Real> &uq,
 				  UInt nb_degree_of_freedom,
@@ -81,20 +73,8 @@ public:
 			       GhostType ghost_type = _not_ghost,
 			       const Array<UInt> & filter_elements = empty_filter) const;
 
-  template <ElementType type, bool is_sub>
-  void gradientOnControlPoints(const Array<Real> &u,
-			       Array<Real> &nablauq,
-			       UInt nb_degree_of_freedom,
-			       GhostType ghost_type = _not_ghost,
-			       const Array<UInt> & filter_elements = empty_filter) const;
-
   /// multiply a field by shape functions  @f$ fts_{ij} = f_i * \varphi_j @f$
   template <ElementType type>
-  void fieldTimesShapes(const Array<Real> & field,
-			Array<Real> & field_times_shapes,
-			GhostType ghost_type) const;
-
-  template <ElementType type, bool is_sub>
   void fieldTimesShapes(const Array<Real> & field,
 			Array<Real> & field_times_shapes,
 			GhostType ghost_type) const;
@@ -106,19 +86,8 @@ public:
 		  Vector<Real> & natural_coords,
 		  const GhostType & ghost_type = _not_ghost) const;
 
-  template <ElementType type, bool is_sub>
-  void inverseMap(const Vector<Real> & real_coords,
-		  UInt element,
-		  Vector<Real> & natural_coords,
-		  const GhostType & ghost_type = _not_ghost) const;
-
   /// return true if the coordinates provided are inside the element, false otherwise
   template <ElementType type>
-  bool contains(const Vector<Real> & real_coords,
-		UInt elem,
-		const GhostType & ghost_type) const;
-
-  template <ElementType type, bool is_sub>
   bool contains(const Vector<Real> & real_coords,
 		UInt elem,
 		const GhostType & ghost_type) const;
@@ -130,24 +99,22 @@ public:
 		     Vector<Real> & shapes,
 		     const GhostType & ghost_type) const;
 
-  template <ElementType type, bool is_sub>
-  void computeShapes(const Vector<Real> & real_coords,
+  /// compute the shape derivatives on a provided point
+  template <ElementType type>
+  void computeShapeDerivatives(const Matrix<Real> & real_coords,
 		     UInt elem,
-		     Vector<Real> & shapes,
+		     Tensor3<Real> & shapes,
 		     const GhostType & ghost_type) const;
 
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
-  template<bool is_sub>
-  void printself(std::ostream & stream, int indent = 0) const;
-
 protected:
   /// compute the shape derivatives on control points for a given element
-  template <ElementType type, bool is_sub>
+  template <ElementType type>
   inline void computeShapeDerivativesOnCPointsByElement(const Matrix<Real> & node_coords,
 							const Matrix<Real> & natural_coords,
-							Tensor3<Real> & shapesd);
+							Tensor3<Real> & shapesd) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -171,12 +138,8 @@ protected:
   /// shape functions derivatives for all elements
   ElementTypeMapArray<Real, InterpolationType> shapes_derivatives;
 
-  /// for parent interpolation types store boolean to decide wheter element is enriched or not
-  ElementTypeMapArray<bool> is_split;
-
-  /// for subelement store the control points of the corresponding parent elements
-  ElementTypeMapArray<Real, InterpolationType> parent_control_points;
-  
+  /// additional control points for the IGFEM formulation
+  ElementTypeMapArray<Real> igfem_control_points;
 };
 
 
@@ -184,7 +147,13 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 #include "shape_igfem_inline_impl.cc"
-
+/// standard output stream operator
+// template <class ShapeFunction>
+// inline std::ostream & operator <<(std::ostream & stream, const ShapeIGFEM<ShapeFunction> & _this)
+// {
+//   _this.printself(stream);
+//   return stream;
+// }
 __END_AKANTU__
 
 #endif /* __AKANTU_SHAPE_IGFEM_HH__ */
