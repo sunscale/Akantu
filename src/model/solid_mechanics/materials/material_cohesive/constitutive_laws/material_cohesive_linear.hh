@@ -154,6 +154,10 @@ protected:
 
   /// stress at insertion
   CohesiveInternalField<Real> insertion_stress;
+
+  /// variable saying if there should be penalty contact also after
+  /// breaking the cohesive elements
+  bool contact_after_breaking;
 };
 
 
