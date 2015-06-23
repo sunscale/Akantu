@@ -97,11 +97,6 @@ public:
   virtual void savePreviousState();
 
 protected:
-  /// Init plasticity internals if ConstLaw is plastic law
-  void initPlastic(MaterialReinforcementTemplate<dim, MaterialElastic<1> > & _this);
-  void initPlastic(
-    MaterialReinforcementTemplate<dim, MaterialLinearIsotropicHardening<1> > & _this);
-
   /**
    * @brief Compute interface gradu from bulk gradu
    * \f[

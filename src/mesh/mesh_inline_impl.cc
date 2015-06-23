@@ -35,9 +35,6 @@
 #if defined(AKANTU_COHESIVE_ELEMENT)
 #  include "cohesive_element.hh"
 #endif
-#if defined(AKANTU_IGFEM)
-#  include "igfem_element.hh"
-#endif
 
 #ifndef __AKANTU_MESH_INLINE_IMPL_CC__
 #define __AKANTU_MESH_INLINE_IMPL_CC__

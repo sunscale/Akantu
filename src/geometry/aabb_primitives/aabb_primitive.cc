@@ -1,16 +1,16 @@
 /**
- * @file mesh_geom_common.hh
+ * @file   aabb_primitive.cc
  *
- * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Wed May 13 2015
- * @date last modification: Wed May 13 2015
+ * @date creation: Tue Jun 2 2015
+ * @date last modification: Tue Jun 2 2015
  *
- * @brief Common file for MeshGeom module
+ * @brief  Macro classe (primitive) for AABB CGAL algos
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -28,22 +28,21 @@
  *
  */
 
-#ifndef __AKANTU_MESH_GEOM_COMMON_HH__
-#define __AKANTU_MESH_GEOM_COMMON_HH__
+/* -------------------------------------------------------------------------- */
 
-#include "aka_common.hh"
-
-#include <CGAL/Cartesian.h>
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Spherical_kernel_3.h>
-#include <CGAL/Algebraic_kernel_for_spheres_2_3.h>
+#include "aabb_primitive.hh"
 
 __BEGIN_AKANTU__
 
-typedef CGAL::Simple_cartesian<Real> Cartesian;
+Triangle_primitive::Point Triangle_primitive::reference_point() const {
+  return primitive.vertex(0);
+}
 
-typedef CGAL::Spherical_kernel_3<Cartesian, CGAL::Algebraic_kernel_for_spheres_2_3<Real> > Spherical;
+Line_arc_primitive::Point Line_arc_primitive::reference_point() const {
+  Real x = primitive.source().x();
+  Real y = primitive.source().y();
+  Real z = primitive.source().z();
+  return Spherical::Point_3(x, y, z);
+}
 
 __END_AKANTU__
-
-#endif // __AKANTU_MESH_GEOM_COMMON_HH__

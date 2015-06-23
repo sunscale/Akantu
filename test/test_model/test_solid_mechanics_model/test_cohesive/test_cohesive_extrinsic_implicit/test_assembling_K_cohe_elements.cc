@@ -46,6 +46,10 @@ int main(int argc, char *argv[]) {
   debug::setDebugLevel(dblWarning);
 
   const UInt spatial_dimension = 2;
+  Real increment = 0.004;
+  Real error;
+  bool passed = true;
+  Real tol = 1.0e-13;
 
   Mesh mesh(spatial_dimension);
   mesh.read("quadrangle.msh");
@@ -55,15 +59,45 @@ int main(int argc, char *argv[]) {
   /// model initialization
   model.initFull(SolidMechanicsModelCohesiveOptions(_static, true));
 
-  //  CohesiveElementInserter inserter(mesh);
+  ///  CohesiveElementInserter
   model.limitInsertion(_y, -0.001, 0.001);
   model.updateAutomaticInsertion();
 
-  /// boundary conditions
   Array<bool> & boundary = model.getBlockedDOFs();
   Array<Real> & position = mesh.getNodes();
   Array<Real> & displacement = model.getDisplacement();
+  //SparseMatrix & K_test = model.getStiffnessMatrix();
+  Array<Real> K_verified(0,3, "K_matrix_verified");
+  Array<Real> K_test(0,3, "K_matrix_test");
 
+  /// load the verified stiffness matrix
+  Vector<Real> tmp(3);
+  UInt nb_lines;
+
+  std::ifstream infile("K_matrix_verified.dat");
+  std::string line;
+  if(!infile.good()) AKANTU_DEBUG_ERROR("Cannot open file K_matrix_verified.dat");
+  else{
+    for (UInt i = 0; i < 2; ++i){
+      getline(infile, line);
+      std::stringstream sstr_data(line);
+      if (i == 1){
+	sstr_data >> tmp(0) >> tmp(1) >> tmp(2);
+        nb_lines  = tmp(2);
+      }
+    }
+
+    for (UInt i = 0; i < nb_lines; ++i){
+      getline(infile, line);
+      std::stringstream sstr_data(line);
+      sstr_data >> tmp(0) >> tmp(1) >> tmp(2);
+      K_verified.push_back(tmp);
+    }
+  }
+  infile.close();
+
+
+  /// impose boundary conditions
   for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
     if (position(n,1) < -0.99){
       boundary(n,1) = true;
@@ -73,9 +107,8 @@ int main(int argc, char *argv[]) {
       boundary(n,1) = true;
   }
 
-  Real increment = 0.004;
-  Real error;
 
+  /// solve step
   for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
     if (position(n,1) > 0.99 && position(n,0) < -0.99)
       displacement(n,1) += increment;
@@ -83,10 +116,50 @@ int main(int argc, char *argv[]) {
 
   model.solveStepCohesive<_scm_newton_raphson_tangent, _scc_increment>(1e-13, error, 10);
 
-  /// save the matrix
-  model.getStiffnessMatrix().saveMatrix("K_matrix_test");
+
+  model.getStiffnessMatrix().saveMatrix("K_matrix_test.dat");
+
+  /// load the stiffness matrix to be tested
+  std::ifstream infile2("K_matrix_test.dat");
+  if(!infile2.good()) AKANTU_DEBUG_ERROR("Cannot open file K_matrix_test.dat");
+  else{
+    for (UInt i = 0; i < 2; ++i){
+      getline(infile2, line);
+      std::stringstream sstr_data(line);
+      if (i == 1){
+	sstr_data >> tmp(0) >> tmp(1) >> tmp(2);
+        nb_lines  = tmp(2);
+      }
+    }
+
+    for (UInt i = 0; i < nb_lines; ++i){
+      getline(infile2, line);
+      std::stringstream sstr_data(line);
+      sstr_data >> tmp(0) >> tmp(1) >> tmp(2);
+      K_test.push_back(tmp);
+    }
+  }
+  infile2.close();
+
+  for (UInt i = 0; i < K_verified.getSize(); ++i){
+    for (UInt j = 0; j < K_test.getSize(); ++j){
+      if ((K_test(j,0) == K_verified(i,0)) &&  (K_test(j,1) == K_verified(i,1))){
+        if (std::abs(K_verified(i,2)) < tol){
+          if (std::abs(K_verified(j,2)) > tol)
+            passed = false;
+        }else{
+          Real ratio = (std::abs(K_test(j,2) - K_verified(i,2))) / (std::abs(K_verified(i,2)));
+          if (ratio > tol)
+            passed = false;
+        }
+      }
+    }
+  }
 
   finalize();
 
-  return EXIT_SUCCESS;
+  if (passed)
+    return EXIT_SUCCESS;
+  else
+    return EXIT_FAILURE;
 }

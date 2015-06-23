@@ -30,6 +30,9 @@
  *
  */
 
+
+__BEGIN_AKANTU__
+
 /* -------------------------------------------------------------------------- */
 template<InterpolationType interpolation_type>
 class InterpolationElement<interpolation_type, _itk_structural> {
@@ -227,3 +230,8 @@ public:
   static AKANTU_GET_MACRO_NOT_CONST(FacetType,     _not_defined, ElementType);
   static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension, ElementClassProperty<element_type>::spatial_dimension, UInt);
 };
+
+#include "element_classes/element_class_bernoulli_beam_inline_impl.cc"
+#include "element_classes/element_class_kirchhoff_shell_inline_impl.cc"
+
+__END_AKANTU__

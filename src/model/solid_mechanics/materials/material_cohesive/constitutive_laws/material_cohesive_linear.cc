@@ -74,6 +74,10 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
                       _pat_parsable | _pat_readable,
                       "Kappa parameter");
 
+  this->registerParam("contact_after_breaking", contact_after_breaking, false,
+		      _pat_parsable | _pat_readable,
+		      "Activation of contact when the elements are fully damaged");
+
   //  if (!model->isExplicit())
     use_previous_delta_max = true;
 
@@ -449,6 +453,8 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
     Real delta = tangential_opening_norm * tangential_opening_norm * beta2_kappa2;
 
     bool penetration = normal_opening_norm < -Math::getTolerance();
+    if (contact_after_breaking == false && Math::are_float_equal(*damage_it, 1.))
+      penetration = false;
 
     if (penetration) {
       /// use penalty coefficient in case of penetration
@@ -615,6 +621,9 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
 
     Real tangential_opening_norm = tangential_opening.norm();
     bool penetration = normal_opening_norm < -Math::getTolerance();
+    if (contact_after_breaking == false && Math::are_float_equal(*damage_it, 1.))
+      penetration = false;
+
     Real derivative = 0;
     Real t = 0;
 
@@ -702,6 +711,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
 /* -------------------------------------------------------------------------- */
 
 
-INSTANSIATE_MATERIAL(MaterialCohesiveLinear);
+INSTANTIATE_MATERIAL(MaterialCohesiveLinear);
 
 __END_AKANTU__

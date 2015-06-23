@@ -53,9 +53,13 @@ package_declare_sources(CGAL
   geometry/geom_helper_functions.hh
 
   geometry/aabb_primitives/triangle.hh
+  geometry/aabb_primitives/line_arc.hh
   geometry/aabb_primitives/tetrahedron.hh
 
   geometry/aabb_primitives/aabb_primitive.hh
+  geometry/aabb_primitives/aabb_primitive.cc
+
+  geometry/mesh_geom_spherical_traits.hh
   )
 
 package_declare_documentation(CGAL

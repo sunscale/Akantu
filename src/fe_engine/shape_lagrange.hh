@@ -39,6 +39,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 template<class Shape>
 class ShapeCohesive;
+class ShapeIGFEM;
 
 
 template <ElementKind kind>

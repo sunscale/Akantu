@@ -281,9 +281,7 @@ protected:
   void updateSupportReaction();
 
 
-public:
-
-  //protected: Daniel changed it just for a test
+protected:
   /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
   template <NewmarkBeta::IntegrationSchemeCorrectorType type>
   void solve(Array<Real> &increment, Real block_val = 1.,
@@ -438,7 +436,7 @@ public:
   virtual dumper::Field * createElementalField(const std::string & field_name, 
 					       const std::string & group_name,
 					       bool padding_flag,
-                 const UInt & spatial_dimension,
+					       const UInt & spatial_dimension,
 					       const ElementKind & kind);
 
 

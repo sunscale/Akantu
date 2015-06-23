@@ -39,19 +39,38 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template <ElementKind kind>
-inline void IntegratorGauss<kind>::initIntegrator(const Array<Real> & nodes,
-						  const ElementType & type,
-						  const GhostType & ghost_type) {
 #define INIT_INTEGRATOR(type)						\
   computeQuadraturePoints<type>(ghost_type);				\
   precomputeJacobiansOnQuadraturePoints<type>(nodes, ghost_type);	\
   checkJacobians<type>(ghost_type);                                     \
   multiplyJacobiansByWeights<type>(ghost_type);
 
-  AKANTU_BOOST_ALL_ELEMENT_SWITCH(INIT_INTEGRATOR);
-#undef INIT_INTEGRATOR
+template <>
+inline void IntegratorGauss<_ek_regular>::initIntegrator(const Array<Real> & nodes,
+						  const ElementType & type,
+						  const GhostType & ghost_type) {
+  AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(INIT_INTEGRATOR);
 }
+
+#if defined(AKANTU_COHESIVE_ELEMENT)
+template <>
+inline void IntegratorGauss<_ek_cohesive>::initIntegrator(const Array<Real> & nodes,
+ 						  const ElementType & type,
+ 						  const GhostType & ghost_type) {
+   AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(INIT_INTEGRATOR);
+}
+#endif
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+template <>
+inline void IntegratorGauss<_ek_structural>::initIntegrator(const Array<Real> & nodes,
+							    const ElementType & type,
+							    const GhostType & ghost_type) {
+  AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(INIT_INTEGRATOR);
+}
+#endif
+
+#undef INIT_INTEGRATOR
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
@@ -147,7 +166,6 @@ computeJacobianOnQuadPointsByElement(const Matrix<Real> & node_coords,
   ElementClass<type>::computeJacobian(quad, node_coords, jacobians);
 }
 
-/* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 IntegratorGauss<kind>::IntegratorGauss(const Mesh & mesh,

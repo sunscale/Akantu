@@ -47,10 +47,6 @@ MaterialCohesiveLinearFatigue<spatial_dimension>
 		      _pat_parsable | _pat_readable,
 		      "delta_f");
 
-  this->registerParam("contact_after_breaking", contact_after_breaking, true,
-		      _pat_parsable | _pat_readable,
-		      "Activation of contact when the elements are fully damaged");
-
   this->registerParam("progressive_delta_f", progressive_delta_f, false,
 		      _pat_parsable | _pat_readable,
 		      "Whether or not delta_f is equal to delta_max");
@@ -166,7 +162,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
     Real delta = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
     bool penetration = normal_opening_norm < -tolerance;
-    if (contact_after_breaking == false && Math::are_float_equal(*damage_it, 1.))
+    if (this->contact_after_breaking == false && Math::are_float_equal(*damage_it, 1.))
       penetration = false;
 
     if (penetration) {
@@ -280,7 +276,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialCohesiveLinearFatigue);
+INSTANTIATE_MATERIAL(MaterialCohesiveLinearFatigue);
 
 
 __END_AKANTU__

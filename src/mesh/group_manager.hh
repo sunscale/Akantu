@@ -131,10 +131,11 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+
   /// create an empty node group
   NodeGroup & createNodeGroup(const std::string & group_name,
 			      bool replace_group = false);
-
+  
   /// create a node group from another node group but filtered
   template <typename T>
   NodeGroup & createFilteredNodeGroup(const std::string & group_name,

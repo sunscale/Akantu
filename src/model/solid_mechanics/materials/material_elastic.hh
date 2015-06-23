@@ -61,8 +61,16 @@ private:
 public:
 
   MaterialElastic(SolidMechanicsModel & model, const ID & id = "");
+  MaterialElastic(SolidMechanicsModel & model,
+                  UInt dim,
+                  const Mesh & mesh,
+                  FEEngine & fe_engine,
+                  const ID & id = "");
 
   virtual ~MaterialElastic() {}
+
+protected:
+  void initialize();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
