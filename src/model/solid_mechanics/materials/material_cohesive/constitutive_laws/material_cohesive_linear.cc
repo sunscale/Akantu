@@ -619,7 +619,26 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
     Real t = 0;
 
     Real delta = tangential_opening_norm * tangential_opening_norm * beta2_kappa2;
-    delta += normal_opening_norm * normal_opening_norm;
+
+    Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
+    n_outer_n.outerProduct(*normal_it, *normal_it);
+
+    if (penetration){
+      /// don't consider penetration contribution for delta
+      *opening_it = tangential_opening;
+      normal_opening_norm = opening_it->dot(*normal_it);
+      normal_opening = (*normal_it);
+      normal_opening *= normal_opening_norm;
+      //      std::cout << "normal opening in case of penetration = " << normal_opening << std::endl;
+
+      /// stiffness in compression given by the penalty parameter
+      *tangent_it += n_outer_n;
+      *tangent_it *= penalty;
+    }
+    else{
+      delta += normal_opening_norm * normal_opening_norm;
+    }
+
     delta = std::sqrt(delta);
 
     /// Delta has to be different from 0 to have finite values of tangential stiffness.
@@ -628,26 +647,16 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
     if (delta < Math::getTolerance())
       delta = (*delta_c_it)/1000.;
 
-    if (normal_opening_norm >= 0.0){
-      if (delta >= *delta_max_it){
-        derivative = -*sigma_c_it/(delta * delta);
-        t = *sigma_c_it * (1 - delta / *delta_c_it);
-      }	else if (delta < *delta_max_it){
-        Real tmax = *sigma_c_it * (1 - *delta_max_it / *delta_c_it);
-        t = tmax / *delta_max_it * delta;
-      }
+    //if (!penetration){
+    if (delta >= *delta_max_it){
+      derivative = -*sigma_c_it/(delta * delta);
+      t = *sigma_c_it * (1 - delta / *delta_c_it);
+    }	else if (delta < *delta_max_it){
+      Real tmax = *sigma_c_it * (1 - *delta_max_it / *delta_c_it);
+      t = tmax / *delta_max_it * delta;
     }
+      //    }
 
-    Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
-    n_outer_n.outerProduct(*normal_it, *normal_it);
-
-    if (penetration){
-      /// don't consider penetration contribution for delta
-      *opening_it = tangential_opening;
-      /// stiffness in compression given by the penalty parameter
-      *tangent_it += n_outer_n;
-      *tangent_it *= penalty;
-    }
 
     /// computation of the derivative of the constitutive law (dT/ddelta)
     Matrix<Real> I(spatial_dimension, spatial_dimension);
