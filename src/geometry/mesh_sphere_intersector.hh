@@ -1,12 +1,11 @@
 /**
  * @file mesh_segment_intersector.hh
  *
- * @author Lucas Frerot
+ * @author Clement Roux-Langlois <clement.roux@epfl.ch>
  *
- * @date creation: Wed Apr 29 2015
- * @date last modification: Wed Apr 29 2015
+ * @date creation: Wed Jun 10 2015
  *
- * @brief Computation of mesh intersection with segments
+ * @brief Computation of mesh intersection with sphere(s)
  *
  * @section LICENSE
  *
@@ -30,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_SEGMENT_INTERSECTOR_HH__
-#define __AKANTU_MESH_SEGMENT_INTERSECTOR_HH__
+#ifndef __AKANTU_MESH_SPHERE_INTERSECTOR_HH__
+#define __AKANTU_MESH_SPHERE_INTERSECTOR_HH__
 
 #include "aka_common.hh"
 #include "mesh_geom_intersector.hh"
@@ -43,25 +42,32 @@
 __BEGIN_AKANTU__
 
 /// Here, we know what kernel we have to use
-typedef Cartesian K;
+typedef Spherical SK;
 
 template<UInt dim, ElementType type>
-class MeshSegmentIntersector : public MeshGeomIntersector<dim, type, Triangle<K>, K::Segment_3, K> {
+class MeshSphereIntersector : public MeshGeomIntersector<dim, type, Line_arc<SK>, SK::Sphere_3, SK> {
   /// Parent class type
-  typedef MeshGeomIntersector<dim, type, Triangle<K>, K::Segment_3, K> parent_type;
+  typedef MeshGeomIntersector<dim, type, Line_arc<SK>, SK::Sphere_3, SK> parent_type;
 
   /// Result of intersection function type
   typedef typename IntersectionTypeHelper<TreeTypeHelper< Triangle<K>, K>, K::Segment_3>::intersection_type result_type;
 
-  /// Pair of segments and element id
-  typedef std::pair<K::Segment_3, UInt> pair_type;
+  /// Pair of intersection points and element id
+  typedef std::pair<SK::Circular_arc_point_3, UInt> pair_type;
 
 public:
   /// Construct from mesh
-  explicit MeshSegmentIntersector(const Mesh & mesh, Mesh & result_mesh);
+  explicit MeshSphereIntersector(const Mesh & mesh);
 
   /// Destructor
-  virtual ~MeshSegmentIntersector();
+  virtual ~MeshSphereIntersector();
+
+  /* ------------------------------------------------------------------------ */
+  /* Accessors                                                                */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// get the new_node_per_elem array
+  AKANTU_GET_MACRO(NewNodePerElem, new_node_per_elem, const Array<UInt>)
 
 public:
   /**
@@ -69,31 +75,24 @@ public:
    *
    * @param query the segment to compute the intersections with the mesh
    */
-  virtual void computeIntersectionQuery(const K::Segment_3 & query);
+  virtual void computeIntersectionQuery(const SK::Sphere_3 & query);
 
   /// Compute the list of queries
-  virtual void computeIntersectionQueryList(const std::list<K::Segment_3> & query_list);
-  
-  /// Compute the list of queries and adds sets the physical name of the elements created
-  virtual void computeIntersectionQueryList(const std::list<K::Segment_3> & query_list,
-                                            const std::string & physical_name);
+  virtual void computeIntersectionQueryList(const std::list<SK::Sphere_3> & query_list);
+
+  /// Build the IGFEM mesh
+  void BuildIgfemMesh(const std::list<SK::Sphere_3> & query_list);
 
 protected:
-  /// Compute segments from intersection list
-  void computeSegments(const std::list<result_type> & intersections,
-                       std::set<pair_type, segmentPairsLess> & segments,
-                       const K::Segment_3 & query);
+  /// new node per element TODO convert to ElementTypeMapArray<UInt>
+  Array<UInt> new_node_per_elem;
 
-protected:
-  /// Result mesh
-  Mesh & result_mesh;
-
-  /// Physical name of the current batch of queries
-  std::string current_physical_name;
+  /// new node per element TODO convert to ElementTypeMapArray<UInt>
+  const UInt nb_nodes_init;
 };
  
 __END_AKANTU__
 
-#include "mesh_segment_intersector_tmpl.hh"
+#include "mesh_sphere_intersector_tmpl.hh"
 
-#endif // __AKANTU_MESH_SEGMENT_INTERSECTOR_HH__
+#endif // __AKANTU_MESH_SPHERE_INTERSECTOR_HH__
