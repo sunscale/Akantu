@@ -28,12 +28,14 @@
 #
 #===============================================================================
 
-#===============================================================================
-if(NOT MUMPS_TYPE)
-  set(MUMPS_TYPE par)
-endif()
+set(_MUMPS_COMPONENTS "sequential" "parallel")
 
-if("${MUMPS_TYPE}" STREQUAL "seq")
+if(NOT Mumps_FIND_COMPONENTS)
+  set(Mumps_FIND_COMPONENTS "parallel")
+endif()
+#===============================================================================
+
+if("${Mumps_FIND_COMPONENTS}" STREQUAL "sequential")
   set(MUMPS_PREFIX _seq)
 else()
   unset(MUMPS_PREFIX)
@@ -66,7 +68,7 @@ mark_as_advanced(MUMPS_LIBRARY_PORD)
 mark_as_advanced(MUMPS_INCLUDE_DIR)
 set(MUMPS_LIBRARIES_ALL ${MUMPS_LIBRARY_DMUMPS} ${MUMPS_LIBRARY_COMMON} ${MUMPS_LIBRARY_PORD})
 
-if("${MUMPS_TYPE}" STREQUAL "par")
+if("${Mumps_FIND_COMPONENTS}" STREQUAL "parallel")
   find_library(BLACS_LIBRARY_C NAME blacsC
     HINTS ${MUMPS_DIR} PATH_SUFFIXES lib)
   find_library(BLACS_LIBRARY_F77 NAME blacsF77
