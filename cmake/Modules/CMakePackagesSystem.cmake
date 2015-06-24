@@ -192,6 +192,14 @@ function(package_add_third_party_script_variable pkg var)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Set if system package or compile external lib
+# ------------------------------------------------------------------------------
+function(package_add_to_export_list pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_add_to_export_list(${_pkg_name} ${ARGN})
+endfunction()
+
+# ------------------------------------------------------------------------------
 # Nature
 # ------------------------------------------------------------------------------
 function(package_get_nature pkg ret)
@@ -433,6 +441,27 @@ function(package_get_all_include_directories inc_dirs)
   list(REMOVE_DUPLICATES _tmp)
 
   set(${inc_dirs} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Get export list for all activated packages
+# ------------------------------------------------------------------------------
+function(package_get_all_export_list export_list)
+
+  set(_tmp)
+
+  package_get_all_activated_packages(_activated_list)
+  foreach(_pkg_name ${_activated_list})
+    _package_get_export_list(${_pkg_name} _export_list)
+    list(APPEND _tmp ${_export_list})
+  endforeach()
+
+  if (_tmp)
+    list(REMOVE_DUPLICATES _tmp)
+  endif()
+
+
+  set(${export_list} ${_tmp} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -1145,7 +1174,6 @@ function(_package_unset_dependencies pkg_name)
   unset(${pkg_name}_DEPENDENCIES CACHE)
 endfunction()
 
-
 # ------------------------------------------------------------------------------
 # Functions to handle reverse dependencies
 # ------------------------------------------------------------------------------
@@ -1462,8 +1490,12 @@ function(_package_load_package pkg_name)
       _package_load_third_party_script(${pkg_name})
 
       string(TOUPPER ${${pkg_name}} _u_package)
-      _package_set_libraries(${pkg_name} ${${_u_package}_LIBRARIES})
-      _package_set_include_dir(${pkg_name} ${${_u_package}_INCLUDE_DIR})
+      if(${${_u_package}_LIBRARIES})
+	_package_set_libraries(${pkg_name} ${${_u_package}_LIBRARIES})
+      endif()
+      if(${${_u_package}_INCLUDE_DIR})
+	_package_set_include_dir(${pkg_name} ${${_u_package}_INCLUDE_DIR})
+      endif()
     endif()
 
     if(_activated)
@@ -1648,4 +1680,20 @@ Please register them in the good package or clean the sources")
     endif()
 
   endif()
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Export list
+# ------------------------------------------------------------------------------
+
+function(_package_add_to_export_list pkg_name)
+  set(_tmp_export_list ${${pkg_name}_EXPORT_LIST})
+  list(APPEND _tmp_export_list ${ARGN})
+  list(REMOVE_DUPLICATES _tmp_export_list)
+  set(${pkg_name}_EXPORT_LIST "${_tmp_export_list}"
+    CACHE INTERNAL "List of exports for package ${_opt_name}" FORCE)
+endfunction()
+
+function(_package_get_export_list pkg_name export_list)
+  set(${export_list} "${${pkg_name}_EXPORT_LIST}" PARENT_SCOPE)
 endfunction()
