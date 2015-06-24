@@ -444,27 +444,6 @@ function(package_get_all_include_directories inc_dirs)
 endfunction()
 
 # ------------------------------------------------------------------------------
-# Get export list for all activated packages
-# ------------------------------------------------------------------------------
-function(package_get_all_export_list export_list)
-
-  set(_tmp)
-
-  package_get_all_activated_packages(_activated_list)
-  foreach(_pkg_name ${_activated_list})
-    _package_get_export_list(${_pkg_name} _export_list)
-    list(APPEND _tmp ${_export_list})
-  endforeach()
-
-  if (_tmp)
-    list(REMOVE_DUPLICATES _tmp)
-  endif()
-
-
-  set(${export_list} ${_tmp} PARENT_SCOPE)
-endfunction()
-
-# ------------------------------------------------------------------------------
 # Get external libraries informations
 # ------------------------------------------------------------------------------
 function(package_get_all_external_informations INCLUDE_DIR LIBRARIES)
@@ -490,6 +469,25 @@ function(package_get_all_external_informations INCLUDE_DIR LIBRARIES)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Get export list for all activated packages
+# ------------------------------------------------------------------------------
+function(package_get_all_export_list export_list)
+
+  set(_tmp)
+
+  package_get_all_activated_packages(_activated_list)
+  foreach(_pkg_name ${_activated_list})
+    _package_get_export_list(${_pkg_name} _export_list)
+    list(APPEND _tmp ${_export_list})
+  endforeach()
+  if (_tmp)
+    list(REMOVE_DUPLICATES _tmp)
+  endif()
+
+  set(${export_list} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # Get definitions like external projects
 # ------------------------------------------------------------------------------
 function(package_get_all_definitions definitions)
@@ -501,6 +499,9 @@ function(package_get_all_definitions definitions)
     _package_get_option_name(${_pkg_name} _option_name)
     list(APPEND _tmp ${_option_name})
   endforeach()
+  if (_tmp)
+    list(REMOVE_DUPLICATES _tmp)
+  endif()
 
   set(${definitions} ${_tmp} PARENT_SCOPE)
 endfunction()
@@ -521,6 +522,7 @@ function(package_get_all_extra_dependencies DEPS)
   if(_tmp_DEPS)
     list(REMOVE_DUPLICATES _tmp_DEPS)
   endif()
+
   set(${DEPS} ${_tmp_DEPS} PARENT_SCOPE)
 endfunction()
 
@@ -540,6 +542,7 @@ function(package_get_all_test_folders TEST_DIRS)
   if(_tmp_TEST_DIRS)
     list(REMOVE_DUPLICATES _tmp_TEST_DIRS)
   endif()
+
   set(${TEST_DIRS} ${_tmp_TEST_DIRS} PARENT_SCOPE)
 endfunction()
 
@@ -1156,6 +1159,21 @@ function(_package_unset_activated pkg_name)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Export list
+# ------------------------------------------------------------------------------
+function(_package_add_to_export_list pkg_name)
+  set(_tmp_export_list ${${pkg_name}_EXPORT_LIST})
+  list(APPEND _tmp_export_list ${ARGN})
+  list(REMOVE_DUPLICATES _tmp_export_list)
+  set(${pkg_name}_EXPORT_LIST "${_tmp_export_list}"
+    CACHE INTERNAL "List of exports for package ${_opt_name}" FORCE)
+endfunction()
+
+function(_package_get_export_list pkg_name export_list)
+  set(${export_list} "${${pkg_name}_EXPORT_LIST}" PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # Direct dependencies
 # ------------------------------------------------------------------------------
 function(_package_add_dependencies pkg_name)
@@ -1490,10 +1508,10 @@ function(_package_load_package pkg_name)
       _package_load_third_party_script(${pkg_name})
 
       string(TOUPPER ${${pkg_name}} _u_package)
-      if(${${_u_package}_LIBRARIES})
+      if(${_u_package}_LIBRARIES)
 	_package_set_libraries(${pkg_name} ${${_u_package}_LIBRARIES})
       endif()
-      if(${${_u_package}_INCLUDE_DIR})
+      if(${_u_package}_INCLUDE_DIR)
 	_package_set_include_dir(${pkg_name} ${${_u_package}_INCLUDE_DIR})
       endif()
     endif()
@@ -1682,18 +1700,3 @@ Please register them in the good package or clean the sources")
   endif()
 endfunction()
 
-# ------------------------------------------------------------------------------
-# Export list
-# ------------------------------------------------------------------------------
-
-function(_package_add_to_export_list pkg_name)
-  set(_tmp_export_list ${${pkg_name}_EXPORT_LIST})
-  list(APPEND _tmp_export_list ${ARGN})
-  list(REMOVE_DUPLICATES _tmp_export_list)
-  set(${pkg_name}_EXPORT_LIST "${_tmp_export_list}"
-    CACHE INTERNAL "List of exports for package ${_opt_name}" FORCE)
-endfunction()
-
-function(_package_get_export_list pkg_name export_list)
-  set(${export_list} "${${pkg_name}_EXPORT_LIST}" PARENT_SCOPE)
-endfunction()
