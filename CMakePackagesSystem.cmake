@@ -132,6 +132,9 @@ if(__CMAKE_PACKAGES_SYSTEM)
 endif()
 set(__CMAKE_PACKAGES_SYSTEM TRUE)
 
+if(CMAKE_VERSION VERSION_GREATER 3.1.2)
+  cmake_policy(SET CMP0054 NEW)
+endif()
 
 include(CMakeDebugMessages)
 cmake_register_debug_message_module(PackagesSystem)
@@ -186,6 +189,14 @@ function(package_add_third_party_script_variable pkg var)
   package_get_name(${pkg} _pkg_name)
   _package_add_third_party_script_variable(${_pkg_name} ${var} ${ARGN})
   set(${var} ${ARGN} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Set if system package or compile external lib
+# ------------------------------------------------------------------------------
+function(package_add_to_export_list pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_add_to_export_list(${_pkg_name} ${ARGN})
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -433,6 +444,27 @@ function(package_get_all_include_directories inc_dirs)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Get export list for all activated packages
+# ------------------------------------------------------------------------------
+function(package_get_all_export_list export_list)
+
+  set(_tmp)
+
+  package_get_all_activated_packages(_activated_list)
+  foreach(_pkg_name ${_activated_list})
+    _package_get_export_list(${_pkg_name} _export_list)
+    list(APPEND _tmp ${_export_list})
+  endforeach()
+
+  if (_tmp)
+    list(REMOVE_DUPLICATES _tmp)
+  endif()
+
+
+  set(${export_list} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # Get external libraries informations
 # ------------------------------------------------------------------------------
 function(package_get_all_external_informations INCLUDE_DIR LIBRARIES)
@@ -446,10 +478,10 @@ function(package_get_all_external_informations INCLUDE_DIR LIBRARIES)
     _package_get_nature(${_pkg_name} _nature)
     if(${_nature} MATCHES "external")
       _package_get_include_dir(${_pkg_name} _inc)
-      _package_get_libraries  (${_pkg_name} _lib)
+      _package_get_libraries  (${_pkg_name} _libraries)
 
       list(APPEND tmp_INCLUDE_DIR ${_inc})
-      list(APPEND tmp_LIBRARIES   ${_lib})
+      list(APPEND tmp_LIBRARIES   ${_libraries})
     endif()
   endforeach()
 
@@ -534,6 +566,11 @@ function(package_get_all_documentation_files doc_files)
 
   set(${doc_files} ${_tmp_DOC_FILES} PARENT_SCOPE)
 endfunction()
+
+
+# ==============================================================================
+# User Functions
+# ==============================================================================
 
 # ------------------------------------------------------------------------------
 # List packages
@@ -1065,7 +1102,11 @@ function(_package_set_libraries pkg_name)
 endfunction()
 
 function(_package_get_libraries pkg_name libraries)
-  set(${libraries} ${${pkg_name}_LIBRARIES} PARENT_SCOPE)
+  if(${pkg_name}_LIBRARIES)
+    set(${libraries} ${${pkg_name}_LIBRARIES} PARENT_SCOPE)
+  else()
+    set(${libraries} "" PARENT_SCOPE)
+  endif()
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -1132,7 +1173,6 @@ endfunction()
 function(_package_unset_dependencies pkg_name)
   unset(${pkg_name}_DEPENDENCIES CACHE)
 endfunction()
-
 
 # ------------------------------------------------------------------------------
 # Functions to handle reverse dependencies
@@ -1231,12 +1271,12 @@ function(_package_set_boost_component_needed pkg_name)
   _package_add_dependencies(${pkg_name} ${_boost_pkg_name})
 endfunction()
 
-function(_package_get_boost_component_needed pkg_name)
-  set(_tmp ${${_project}_BOOST_COMPONENTS_NEEDED})
-  list(APPEND _tmp ${ARGN})
-  list(REMOVE_DUPLICATES _tmp)
-  set(${pkg_name}_BOOST_NEEDED_COMPONENTS ${_tmp}
-    CACHE INTERNAL "List of Boost component needed by package ${${pkg_name}}" FORCE)
+function(_package_get_boost_component_needed pkg_name needed)
+  if(${pkg_name}_BOOST_NEEDED_COMPONENTS)
+    set(${needed} ${${pkg_name}_BOOST_NEEDED_COMPONENTS} PARENT_SCOPE)
+  else()
+    set(${needed} PARENT_SCOPE)
+  endif()
 endfunction()
 
 function(_package_load_boost_components)
@@ -1247,16 +1287,14 @@ function(_package_load_boost_components)
 
   package_get_all_activated_packages(_activated_list)
   foreach(_pkg_name ${_activated_list})
-    _package_get_documentation_files(${_pkg_name} _doc_files)
+    _package_get_boost_component_needed(${_pkg_name} _boost_comp)
 
-    foreach(_doc_file ${_doc_files})
-      list(APPEND _tmp_DOC_FILES ${_doc_dir}/${_doc_file})
-    endforeach()
+    list(APPEND _boost_needed_components ${_boost_comp})
   endforeach()
 
-  if(_boost_components_needed)
-    message(STATUS "Looking for Boost liraries")
-    foreach(_comp ${_boost_components_needed})
+  if(_boost_needed_components)
+    message(STATUS "Looking for Boost liraries: ${_boost_needed_components}")
+    foreach(_comp ${_boost_needed_components})
       find_package(Boost COMPONENTS ${_comp} QUIET)
       string(TOUPPER ${_comp} _u_comp)
       if(Boost_${_u_comp}_FOUND)
@@ -1341,10 +1379,12 @@ function(_package_load_packages)
   # Load the packages in the propoer order
   foreach(_pkg_name ${ordered_loading_list})
     _package_get_option_name(${_pkg_name} _option_name)
-    _package_is_deactivated(${_pkg_name} _deactivated)
 
-    if(NOT _deactivated AND ${_option_name})
+    if(${_option_name})
       _package_load_package(${_pkg_name})
+    else()
+      # deactivate the packages than can already be deactivated
+      _package_deactivate(${_pkg_name})
     endif()
   endforeach()
 
@@ -1427,9 +1467,6 @@ function(_package_load_dependencies_package pkg_name loading_list)
       add_flags(cxx ${_pkg_comile_flags})
     endif()
   else()
-    # deactivate the packages than can already be deactivated
-    _package_deactivate(${pkg_name})
-
     #remove the comilation flags if needed
     if(_pkg_comile_flags)
       remove_flags(cxx ${_pkg_comile_flags})
@@ -1451,6 +1488,14 @@ function(_package_load_package pkg_name)
       _package_load_external_package(${pkg_name} _activated)
     else()
       _package_load_third_party_script(${pkg_name})
+
+      string(TOUPPER ${${pkg_name}} _u_package)
+      if(${${_u_package}_LIBRARIES})
+	_package_set_libraries(${pkg_name} ${${_u_package}_LIBRARIES})
+      endif()
+      if(${${_u_package}_INCLUDE_DIR})
+	_package_set_include_dir(${pkg_name} ${${_u_package}_INCLUDE_DIR})
+      endif()
     endif()
 
     if(_activated)
@@ -1606,7 +1651,7 @@ function(_package_check_files_registered)
   endforeach()
 
   if(AUTO_MOVE_UNKNOWN_FILES)
-    file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/tmp/)
+    file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/unknown_files)
   endif()
 
   # warn the user and move the files if needed
@@ -1620,7 +1665,7 @@ function(_package_check_files_registered)
       message(" ${_file}")
       if(AUTO_MOVE_UNKNOWN_FILES)
 	get_filename_component(_file_name ${_file} NAME)
-	file(RENAME ${_file} ${PROJECT_SOURCE_DIR}/tmp/${_file_name})
+	file(RENAME ${_file} ${PROJECT_BINARY_DIR}/unknown_files/${_file_name})
       endif()
 
       file(APPEND ${PROJECT_BINARY_DIR}/missing_files_in_packages "${_file}
@@ -1628,8 +1673,27 @@ function(_package_check_files_registered)
     endforeach()
 
     if(AUTO_MOVE_UNKNOWN_FILES)
-      message(SEND_ERROR "The files where moved in the followinf folder ${PROJECT_SOURCE_DIR}/tmp/")
+      message(SEND_ERROR "The files where moved in the followinf folder ${PROJECT_BINARY_DIR}/unknown_files\n
+Please register them in the good package or clean the sources")
+    else()
+      message(SEND_ERROR "Please register them in the good package or clean the sources")
     endif()
-    message(SEND_ERROR "Please register them in the good package or clean the sources")
+
   endif()
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Export list
+# ------------------------------------------------------------------------------
+
+function(_package_add_to_export_list pkg_name)
+  set(_tmp_export_list ${${pkg_name}_EXPORT_LIST})
+  list(APPEND _tmp_export_list ${ARGN})
+  list(REMOVE_DUPLICATES _tmp_export_list)
+  set(${pkg_name}_EXPORT_LIST "${_tmp_export_list}"
+    CACHE INTERNAL "List of exports for package ${_opt_name}" FORCE)
+endfunction()
+
+function(_package_get_export_list pkg_name export_list)
+  set(${export_list} "${${pkg_name}_EXPORT_LIST}" PARENT_SCOPE)
 endfunction()
