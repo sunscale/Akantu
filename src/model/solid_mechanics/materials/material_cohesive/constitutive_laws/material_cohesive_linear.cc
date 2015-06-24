@@ -30,6 +30,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include <algorithm>
 #include <numeric>
 
 /* -------------------------------------------------------------------------- */
@@ -77,6 +78,10 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
   this->registerParam("contact_after_breaking", contact_after_breaking, false,
 		      _pat_parsable | _pat_readable,
 		      "Activation of contact when the elements are fully damaged");
+
+  this->registerParam("max_quad_stress_insertion", max_quad_stress_insertion, false,
+		      _pat_parsable | _pat_readable,
+		      "Insertion of cohesive element when stress is high enough just on one quadrature point");
 
   //  if (!model->isExplicit())
     use_previous_delta_max = true;
@@ -264,7 +269,12 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
       }
 
       // verify if the effective stress overcomes the threshold
-      if (stress_check.mean() > (*sigma_lim_it - tolerance)) {
+      Real final_stress = stress_check.mean();
+      if (max_quad_stress_insertion)
+	final_stress = *std::max_element(stress_check.storage(),
+					 stress_check.storage() + nb_quad_facet);
+
+      if (final_stress > (*sigma_lim_it - tolerance)) {
 
         if (model->isExplicit()){
           f_insertion(facet) = true;
@@ -294,7 +304,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
 	  }
 
         }else{
-          Real ratio = stress_check.mean()/(*sigma_lim_it);
+          Real ratio = final_stress/(*sigma_lim_it);
           if (ratio > max_ratio){
             std::cout << "ratio = " << ratio << std::endl;
             ++nn;
