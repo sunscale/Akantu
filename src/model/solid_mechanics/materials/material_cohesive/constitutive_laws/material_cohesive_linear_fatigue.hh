@@ -119,6 +119,9 @@ private:
 
   /// delta increment of the previous time step
   CohesiveInternalField<Real> delta_dot_prec;
+
+  /// ratio indicating until what point fatigue is applied in the cohesive law
+  Real fatigue_ratio;
 };
 
 __END_AKANTU__
