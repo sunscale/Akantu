@@ -457,6 +457,8 @@ inline MatrixProxy<UInt> Mesh::getFacetLocalConnectivity(const ElementType & typ
 #undef GET_FACET_CON
 
   AKANTU_DEBUG_OUT();
+  return Matrix<UInt>(); // This avoid a compilation warning but will certainly
+			 // also cause a segfault if reached
 }
 
 /* -------------------------------------------------------------------------- */
