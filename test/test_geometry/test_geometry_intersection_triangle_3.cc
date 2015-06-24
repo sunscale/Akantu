@@ -106,10 +106,10 @@ int main (int argc, char * argv[]) {
     return EXIT_FAILURE;
 
   // Spherical kernel testing the addition of nodes
-  std::cout << "initial mesh size = " << mesh.getNodes().getSize() << std::endl;
+  std::cout << "initial mesh size = " << mesh.getNodes().getSize() << " nodes" << std::endl;
 
   SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.2*0.2);
-  SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.5);
+  SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.4999999999);
   MeshSphereIntersector<2, _triangle_3> intersector_sphere(mesh);
   intersector_sphere.constructData();
 
@@ -126,11 +126,12 @@ int main (int argc, char * argv[]) {
   std::cout << "node 5, x=" << nodes(4,0) << ", y=" << nodes(4,1) << std::endl;*/
 
   intersector_sphere.BuildIgfemMesh(sphere_list);
+  UInt nb_tri3 = mesh.getConnectivity(_triangle_3).getSize();
   UInt nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
-  UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();
-  if ( (nb_tri4 != 1) || (nb_tri5 != 1)){
-  std::cout << "final mesh with " << nb_tri4 << " _igfem_triangle_4, and "
-	    << nb_tri5 << " _igfem_triangle_5"<< std::endl;    
+  UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();   
+  if ( (nb_tri3 != 0) || (nb_tri4 != 1) || (nb_tri5 != 1)){ 
+    std::cout << "final mesh with " << nb_tri3 << " _triangle_3, and " << nb_tri4
+	      << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl; 
     return EXIT_FAILURE;
   }
 

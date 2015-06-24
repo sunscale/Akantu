@@ -64,6 +64,7 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
 
   Array<Real> & nodes = const_cast<Array<Real> &>(this->mesh.getNodes());
   UInt nb_node = nodes.getSize() ;
+  Real tol = pow(10,-10);
   //Array<UInt> & connectivity_tri3 = this->mesh.getConnectivity(_triangle_3);
   //Array<UInt> & connectivity_IGFEMtri4 = this->mesh.getConnectivity(_IGFEM_triangle_3);
   typedef boost::variant<pair_type> sk_inter_res;
@@ -72,6 +73,7 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
     it = this->factory.getPrimitiveList().begin(),
     end= this->factory.getPrimitiveList().end();
 
+  NewNodesEvent new_nodes;
   for(; it!=end; ++it){
     std::list<sk_inter_res> s_results;
     CGAL::intersection(*it, query, std::back_inserter(s_results));
@@ -83,26 +85,29 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
 	  SK::Circular_arc_point_3 arc_point = pair->first;
 	  new_node(0) = arc_point.x();
 	  new_node(1) = arc_point.y();
-	  bool is_on_mesh = false;
-	  bool is_new = true;
-	  UInt n = 0;
+	  bool is_on_mesh = false, is_new = true;
+	  UInt n = nb_nodes_init-1;
 	  for(; n != nb_node; ++n){
 	    if( ( pow((new_node(0)-nodes(n,0)),2) +
-		  pow((new_node(1)-nodes(n,1)),2) ) < 0.0000000001 ){ //to IMPROVE
-	      if(n < nb_nodes_init)
-		is_on_mesh = true;
+		  pow((new_node(1)-nodes(n,1)),2) ) < pow(tol,2) ){
 	      is_new = false;
 	      break;
 	    }
-	  } 
+	  }
+	  Real x1 = it->source().x(), y1 = it->source().y(), x2 = it->target().x(),
+	    y2 = it->target().y(), l = pow( pow((new_node(0)-x1),2) + pow((new_node(1)-y1),2), 1/2);
+	  if( ( ( pow((new_node(0)-x1),2) + pow((new_node(1)-y1),2) ) < pow(l*tol,2) )
+	      || ( ( pow((new_node(0)-x2),2) + pow((new_node(1)-y2),2) ) < pow(l*tol,2) ) ){
+	    is_on_mesh = true;
+	    is_new = false;
+	  }
 	  if(is_new){
 	    nodes.push_back(new_node);
+	    new_nodes.getList().push_back(nb_node);
 	    nb_node += 1 ;
 	  }
 	  if(!is_on_mesh){
 	    new_node_per_elem(it->id(), 0) += 1;
-	    std::cout << "nb new_node_per_elem  " << new_node_per_elem(it->id(), 0)
-		      << std::endl;
 	    new_node_per_elem(it->id(), ( 2*new_node_per_elem(it->id(),0)) - 1 ) = n ;
 	    new_node_per_elem(it->id(), 2*new_node_per_elem(it->id(),0) ) = it->segId() ;
 	  }
@@ -110,6 +115,7 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
       }
     }
   }
+  const_cast<Mesh &>(this->mesh).sendEvent(new_nodes);
 
   AKANTU_DEBUG_OUT();
 }
@@ -133,13 +139,23 @@ void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere
   const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_4, _ghost);
   const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_5, _not_ghost);
   const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_5, _ghost);
+
   Array<UInt> &
     connec_igfem_tri4 = const_cast<Array<UInt> &>(this->mesh.getConnectivity(_igfem_triangle_4)),
     & connec_igfem_tri5 = const_cast<Array<UInt> &>(this->mesh.getConnectivity(_igfem_triangle_5));
+  Element element_tri4(_igfem_triangle_4, 0, _not_ghost),
+    element_tri5(_igfem_triangle_5, 0, _not_ghost);
+  NewElementsEvent new_elements;
+
   Array<UInt> ctri3 = this->mesh.getConnectivity(_triangle_3);
+  RemovedElementsEvent remove_elem(this->mesh);
+  remove_elem.getNewNumbering().alloc(ctri3.getSize(), 1, _triangle_3, _not_ghost);
+  Array<UInt> & new_numbering = remove_elem.getNewNumbering(_triangle_3, _not_ghost);
+  UInt new_nb_tri3 = 0;
 
   for(UInt nel=0; nel != ctri3.getSize(); ++nel){
     if(new_node_per_elem(nel,0)!=0){
+      Element element_tri3(_triangle_3, 0, _not_ghost);
       switch(new_node_per_elem(nel,0)){
       case 1 :{
 	Vector<UInt> ctri4(4);
@@ -163,8 +179,11 @@ void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere
 	  AKANTU_DEBUG_ERROR("A triangle have only 3 segments not "<< new_node_per_elem(nel,2));
 	  break;
 	}
-	ctri4(3) = new_node_per_elem(nel,1);	  
-	connec_igfem_tri4.push_back(ctri4);;
+	ctri4(3) = new_node_per_elem(nel,1);
+	UInt nb_tri4 = connec_igfem_tri4.getSize();
+	connec_igfem_tri4.push_back(ctri4);
+	element_tri4.element = nb_tri4;
+	new_elements.getList().push_back(element_tri4);
 	break;
       }
       case 2 :{
@@ -214,16 +233,28 @@ void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere
 	else{
 	  AKANTU_DEBUG_ERROR("A triangle have only 3 segments not "<< new_node_per_elem(nel,2) << "and" << new_node_per_elem(nel,4));
 	}
+	UInt nb_tri5 = connec_igfem_tri5.getSize();
 	connec_igfem_tri5.push_back(ctri5);
+	element_tri5.element = nb_tri5;
+	new_elements.getList().push_back(element_tri5);
 	break;
       }
       default:
 	AKANTU_DEBUG_ERROR("Igfem cannot add "<< new_node_per_elem(nel,0) << " nodes to triangles");
 	break;
       }
+      element_tri3.element = nel;
+      remove_elem.getList().push_back(element_tri3);
+      new_numbering(nel) =  UInt(-1);
+    }
+    else{
+      new_numbering(nel) = new_nb_tri3;
+      ++new_nb_tri3 ;
     }
   }
-  
+  const_cast<Mesh &>(this->mesh).sendEvent(new_elements);
+  const_cast<Mesh &>(this->mesh).sendEvent(remove_elem);
+
   AKANTU_DEBUG_OUT();
 }
 
