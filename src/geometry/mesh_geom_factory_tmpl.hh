@@ -116,7 +116,7 @@ inline void MeshGeomFactory<2, _triangle_3, Triangle<Cartesian>, Cartesian>::add
   list.push_back(t);
 }
 
-// 2D and _triangle_3 with segments implementation
+// 2D and _triangle_3 with Line_arc<spherical> implementation
 template<>
 inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::addPrimitive(
     const Matrix<Real> & node_coordinates,
@@ -127,13 +127,23 @@ inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::add
     a(node_coordinates(0, 0), node_coordinates(1, 0), 0.),
     b(node_coordinates(0, 1), node_coordinates(1, 1), 0.),
     c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
+ 
+  /*std::cout << "elem " << id << " node 1 : x_node=" << node_coordinates(0, 0)
+	    << ", x_arc_node=" << a.x() << ", y_node=" << node_coordinates(1, 0)
+	    << ", y_arc_node=" << a.y() << std::endl ;
+  std::cout << "elem " << id << " node 2 : x_node=" << node_coordinates(0, 1)
+	    << ", x_arc_node=" << b.x() << ", y_node=" << node_coordinates(1, 1)
+	    << ", y_arc_node=" << b.y() << std::endl ;
+  std::cout << "elem " << id << " node 2 : x_node=" << node_coordinates(0, 2)
+	    << ", x_arc_node=" << c.x() << ", y_node=" << node_coordinates(1, 2)
+	    << ", y_arc_node=" << c.y() << std::endl ;*/
 
   CGAL::Line_3<Spherical> l1(a, b), l2(b, c), l3(c, a);
   Line_arc<Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
 
-  s1.setId(id);
-  s2.setId(id);
-  s3.setId(id);
+  s1.setId(id); s1.setSegId(1);
+  s2.setId(id); s2.setSegId(2);
+  s3.setId(id); s3.setSegId(3);
 
   list.push_back(s1);
   list.push_back(s2);

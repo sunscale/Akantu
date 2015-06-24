@@ -2,9 +2,10 @@
  * @file   test_geometry_mesh.cc
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Clement Roux-Langlois <clement.roux@epfl.ch>
  *
  * @date creation: Fri Mar 13 2015
- * @date last modification: Fri Mar 13 2015
+ * @date last modification: Tue june 16 2015
  *
  * @brief  Tests the interface mesh generation
  *
@@ -33,6 +34,7 @@
 #include "aka_common.hh"
 
 #include "mesh_segment_intersector.hh"
+#include "mesh_sphere_intersector.hh"
 #include "geom_helper_functions.hh"
 
 #include "mesh_geom_common.hh"
@@ -44,6 +46,7 @@
 using namespace akantu;
 
 typedef Cartesian K;
+typedef Spherical SK;
 
 /* -------------------------------------------------------------------------- */
 
@@ -101,6 +104,46 @@ int main (int argc, char * argv[]) {
 
   if (!Math::are_vector_equal(2, bary.storage(), second_bary))
     return EXIT_FAILURE;
+
+  // Spherical kernel testing the addition of nodes
+  std::cout << "initial mesh size = " << mesh.getNodes().getSize() << std::endl;
+
+  SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.2*0.2);
+  SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.5);
+  MeshSphereIntersector<2, _triangle_3> intersector_sphere(mesh);
+  intersector_sphere.constructData();
+
+  std::list<SK::Sphere_3> sphere_list;
+  sphere_list.push_back(sphere);
+  sphere_list.push_back(sphere2);
+
+  /*intersector_sphere.computeIntersectionQueryList(sphere_list);
+  std::cout << "final mesh size = " << mesh.getNodes().getSize() << std::endl;
+
+  const Array<UInt> new_node_triangle_3 = intersector_sphere.getNewNodePerElem();*/
+  /* const Array<Real> & nodes = mesh.getNodes();
+  std::cout << "New nodes :" << std::endl;
+  std::cout << "node 5, x=" << nodes(4,0) << ", y=" << nodes(4,1) << std::endl;*/
+
+  intersector_sphere.BuildIgfemMesh(sphere_list);
+  UInt nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
+  UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();
+  if ( (nb_tri4 != 1) || (nb_tri5 != 1)){
+  std::cout << "final mesh with " << nb_tri4 << " _igfem_triangle_4, and "
+	    << nb_tri5 << " _igfem_triangle_5"<< std::endl;    
+    return EXIT_FAILURE;
+  }
+
+  const Array<UInt> new_node_triangle_3 = intersector_sphere.getNewNodePerElem();
+  if ( (new_node_triangle_3(0,0) != 1) || (new_node_triangle_3(1,0) != 2)){
+    for(UInt k=0; k != new_node_triangle_3.getSize(); ++k){
+      std::cout << new_node_triangle_3(k,0) << " new nodes in element " << k << ", node(s): "
+		<< new_node_triangle_3(k,1) << ", " << new_node_triangle_3(k,3)
+		<< ", on segment(s):" << new_node_triangle_3(k,2) << ", "
+		<< new_node_triangle_3(k,4) << std::endl;
+    }
+    return EXIT_FAILURE;
+  }
 
   finalize();
   return EXIT_SUCCESS;
