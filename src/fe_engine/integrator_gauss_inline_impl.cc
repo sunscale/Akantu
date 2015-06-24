@@ -39,40 +39,6 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-#define INIT_INTEGRATOR(type)						\
-  computeQuadraturePoints<type>(ghost_type);				\
-  precomputeJacobiansOnQuadraturePoints<type>(nodes, ghost_type);	\
-  checkJacobians<type>(ghost_type);                                     \
-  multiplyJacobiansByWeights<type>(ghost_type);
-
-template <>
-inline void IntegratorGauss<_ek_regular>::initIntegrator(const Array<Real> & nodes,
-						  const ElementType & type,
-						  const GhostType & ghost_type) {
-  AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(INIT_INTEGRATOR);
-}
-
-#if defined(AKANTU_COHESIVE_ELEMENT)
-template <>
-inline void IntegratorGauss<_ek_cohesive>::initIntegrator(const Array<Real> & nodes,
- 						  const ElementType & type,
- 						  const GhostType & ghost_type) {
-   AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(INIT_INTEGRATOR);
-}
-#endif
-
-#if defined(AKANTU_STRUCTURAL_MECHANICS)
-template <>
-inline void IntegratorGauss<_ek_structural>::initIntegrator(const Array<Real> & nodes,
-							    const ElementType & type,
-							    const GhostType & ghost_type) {
-  AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(INIT_INTEGRATOR);
-}
-#endif
-
-#undef INIT_INTEGRATOR
-
-/* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
 inline void IntegratorGauss<kind>::integrateOnElement(const Array<Real> & f,
@@ -497,3 +463,38 @@ void IntegratorGauss<kind>::integrateOnQuadraturePoints(const Array<Real> & in_f
 
   AKANTU_DEBUG_OUT();
 }
+
+
+/* -------------------------------------------------------------------------- */
+#define INIT_INTEGRATOR(type)						\
+  computeQuadraturePoints<type>(ghost_type);				\
+  precomputeJacobiansOnQuadraturePoints<type>(nodes, ghost_type);	\
+  checkJacobians<type>(ghost_type);                                     \
+  multiplyJacobiansByWeights<type>(ghost_type);
+
+template <>
+inline void IntegratorGauss<_ek_regular>::initIntegrator(const Array<Real> & nodes,
+						  const ElementType & type,
+						  const GhostType & ghost_type) {
+  AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(INIT_INTEGRATOR);
+}
+
+#if defined(AKANTU_COHESIVE_ELEMENT)
+template <>
+inline void IntegratorGauss<_ek_cohesive>::initIntegrator(const Array<Real> & nodes,
+ 						  const ElementType & type,
+ 						  const GhostType & ghost_type) {
+   AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(INIT_INTEGRATOR);
+}
+#endif
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+template <>
+inline void IntegratorGauss<_ek_structural>::initIntegrator(const Array<Real> & nodes,
+							    const ElementType & type,
+							    const GhostType & ghost_type) {
+  AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(INIT_INTEGRATOR);
+}
+#endif
+
+#undef INIT_INTEGRATOR
