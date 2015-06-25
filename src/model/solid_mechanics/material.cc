@@ -159,6 +159,10 @@ void Material::initMaterial() {
        it != internal_vectors_uint.end();
        ++it) it->second->resize();
 
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
+       ++it) it->second->resize();
+
   is_init = true;
 
   AKANTU_DEBUG_OUT();
@@ -1490,6 +1494,10 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
        it != internal_vectors_uint.end();
        ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
 
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
+       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -1502,6 +1510,10 @@ void Material::resizeInternals() {
 
   for (std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end();
+       ++it) it->second->resize();
+
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
        ++it) it->second->resize();
   AKANTU_DEBUG_OUT();
 }
@@ -1579,6 +1591,10 @@ void Material::onElementsRemoved(const Array<Element> & element_list,
 
   for (std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end();
+       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
        ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
 }
 
