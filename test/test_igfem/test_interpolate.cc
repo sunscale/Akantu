@@ -108,13 +108,15 @@ int main(int argc, char *argv[]) {
   my_file << val_on_quad << std::endl;
 
   //  DumperParaview dumper_regular("mesh");
-  DumperParaview dumper_igfem("mesh");
+  DumperParaview dumper_igfem("mesh_igfem");
   dumper_igfem.registerMesh(mesh, dim, _not_ghost, _ek_igfem);
-  dumper_igfem.registerMesh(mesh, dim, _not_ghost, _ek_regular);
-  dumper_igfem.registerField("displacement", new dumper::NodalField<Real,false>(const_val, 0, 0));
+  DumperParaview dumper_regular("mesh_regular");
+  dumper_regular.registerMesh(mesh, dim, _not_ghost, _ek_regular);
+
   //  dumper_regular.registerField("displacement", new dumper::NodalField<Real,false>(const_val, 0, 0));
 
   dumper_igfem.dump();
+  dumper_regular.dump();
   //  dumper_regular.dump();
   // // interpolate coordinates
   // Array<Real> coord_on_quad(nb_quadrature_points, mesh.getSpatialDimension(), "coord_on_quad");
