@@ -235,6 +235,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
       else if (*delta_max_it > fatigue_ratio * *delta_c_it) {
 	// reset delta_max to avoid big jumps in the traction
 	*delta_max_it = *sigma_c_it / (*T_1d_it / delta + *sigma_c_it / *delta_c_it);
+	*damage_it = std::min(*delta_max_it / *delta_c_it, 1.);
 	// compute stiffness according to the standard law
 	*K_minus_it = *sigma_c_it / *delta_max_it * (1. - *damage_it);
       }
