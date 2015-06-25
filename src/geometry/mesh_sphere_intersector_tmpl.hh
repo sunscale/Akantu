@@ -64,7 +64,7 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
 
   Array<Real> & nodes = const_cast<Array<Real> &>(this->mesh.getNodes());
   UInt nb_node = nodes.getSize() ;
-  Real tol = pow(10,-10);
+  Real tol = 1e-10;
   //Array<UInt> & connectivity_tri3 = this->mesh.getConnectivity(_triangle_3);
   //Array<UInt> & connectivity_IGFEMtri4 = this->mesh.getConnectivity(_IGFEM_triangle_3);
   typedef boost::variant<pair_type> sk_inter_res;
@@ -129,12 +129,15 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQueryList(const std::l
   AKANTU_DEBUG_OUT();
 }
 
+#if defined(AKANTU_IGFEM)
+
 template<UInt dim, ElementType type>
-void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere_3> & query_list) {
+void MeshSphereIntersector<dim, type>::buildIgfemMesh(const std::list<SK::Sphere_3> & query_list) {
   AKANTU_DEBUG_IN();
   
   computeIntersectionQueryList(query_list);
   // Addition of the segment type in the mesh
+  //TODO Mesh & mesh_no_const = const_cast<Mesh &>(this->mesh); or remove init const...
   const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_4, _not_ghost);
   const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_4, _ghost);
   const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_5, _not_ghost);
@@ -257,6 +260,8 @@ void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere
 
   AKANTU_DEBUG_OUT();
 }
+
+#endif
 
 __END_AKANTU__
 

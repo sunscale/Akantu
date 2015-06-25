@@ -36,7 +36,6 @@
 #include "mesh_segment_intersector.hh"
 #include "mesh_sphere_intersector.hh"
 #include "geom_helper_functions.hh"
-
 #include "mesh_geom_common.hh"
 
 #include <iostream>
@@ -117,25 +116,16 @@ int main (int argc, char * argv[]) {
   sphere_list.push_back(sphere);
   sphere_list.push_back(sphere2);
 
-  /*intersector_sphere.computeIntersectionQueryList(sphere_list);
+  intersector_sphere.computeIntersectionQueryList(sphere_list);
   std::cout << "final mesh size = " << mesh.getNodes().getSize() << std::endl;
 
-  const Array<UInt> new_node_triangle_3 = intersector_sphere.getNewNodePerElem();*/
-  /* const Array<Real> & nodes = mesh.getNodes();
-  std::cout << "New nodes :" << std::endl;
-  std::cout << "node 5, x=" << nodes(4,0) << ", y=" << nodes(4,1) << std::endl;*/
-
-  intersector_sphere.BuildIgfemMesh(sphere_list);
-  UInt nb_tri3 = mesh.getConnectivity(_triangle_3).getSize();
-  UInt nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
-  UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();   
-  if ( (nb_tri3 != 0) || (nb_tri4 != 1) || (nb_tri5 != 1)){ 
-    std::cout << "final mesh with " << nb_tri3 << " _triangle_3, and " << nb_tri4
-	      << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl; 
-    return EXIT_FAILURE;
-  }
-
   const Array<UInt> new_node_triangle_3 = intersector_sphere.getNewNodePerElem();
+  const Array<Real> & nodes = mesh.getNodes();
+  std::cout << "New nodes :" << std::endl;
+  std::cout << "node 5, x=" << nodes(4,0) << ", y=" << nodes(4,1) << std::endl;
+  std::cout << "node 6, x=" << nodes(5,0) << ", y=" << nodes(5,1) << std::endl;
+  std::cout << "node 7, x=" << nodes(6,0) << ", y=" << nodes(6,1) << std::endl;
+
   if ( (new_node_triangle_3(0,0) != 1) || (new_node_triangle_3(1,0) != 2)){
     for(UInt k=0; k != new_node_triangle_3.getSize(); ++k){
       std::cout << new_node_triangle_3(k,0) << " new nodes in element " << k << ", node(s): "
