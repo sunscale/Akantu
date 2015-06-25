@@ -92,7 +92,7 @@ public:
   };
 
   /// return the size of the contained data: i.e. the number of elements ?
-  UInt size() {
+  virtual UInt size() {
     checkHomogeneity();
     return this->nb_total_element;
   }
