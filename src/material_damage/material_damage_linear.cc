@@ -71,6 +71,6 @@ void MaterialDamageLinear<spatial_dimension>::computeStress(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialDamageLinear);
+INSTANTIATE_MATERIAL(MaterialDamageLinear);
 
 __END_AKANTU__

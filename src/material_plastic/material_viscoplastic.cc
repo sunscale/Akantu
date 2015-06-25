@@ -99,6 +99,6 @@ void MaterialViscoPlastic<spatial_dimension>::computeTangentModuli(__attribute__
     AKANTU_DEBUG_OUT();
 }
 
-INSTANSIATE_MATERIAL(MaterialViscoPlastic);
+INSTANTIATE_MATERIAL(MaterialViscoPlastic);
 
 __END_AKANTU__

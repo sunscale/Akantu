@@ -208,7 +208,7 @@ void MaterialDamageIterative<spatial_dimension>::updateEnergiesAfterDamage(Eleme
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialDamageIterative);
+INSTANTIATE_MATERIAL(MaterialDamageIterative);
 
 
 __END_AKANTU__

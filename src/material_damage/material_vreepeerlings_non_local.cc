@@ -23,6 +23,6 @@ __BEGIN_AKANTU__
 
 
 /* -------------------------------------------------------------------------- */
-//INSTANSIATE_MATERIAL(MaterialVreePeerlingsNonLocal);
+//INSTANTIATE_MATERIAL(MaterialVreePeerlingsNonLocal);
 
 __END_AKANTU__

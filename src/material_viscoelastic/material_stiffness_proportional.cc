@@ -122,7 +122,7 @@ void MaterialStiffnessProportional<spatial_dimension>::computePotentialEnergy(El
 /* -------------------------------------------------------------------------- */
 
 
-INSTANSIATE_MATERIAL(MaterialStiffnessProportional);
+INSTANTIATE_MATERIAL(MaterialStiffnessProportional);
 
 
 __END_AKANTU__
