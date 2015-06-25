@@ -41,7 +41,8 @@ MaterialCohesiveLinearFatigue<spatial_dimension>
   K_minus("K_minus", *this),
   T_1d("T_1d", *this),
   switches("switches", *this),
-  delta_dot_prec("delta_dot_prec", *this) {
+  delta_dot_prec("delta_dot_prec", *this),
+  normal_regime("normal_regime", *this) {
 
   this->registerParam("delta_f", delta_f, -1. ,
 		      _pat_parsable | _pat_readable,
@@ -74,6 +75,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>::initMaterial() {
   K_plus.initialize(1);
   K_minus.initialize(1);
   T_1d.initialize(1);
+  normal_regime.initialize(1);
 
   if (count_switches) {
     switches.initialize(1);
@@ -125,6 +127,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
   Array<Real>::scalar_iterator K_plus_it = K_plus(el_type, ghost_type).begin();
   Array<Real>::scalar_iterator K_minus_it = K_minus(el_type, ghost_type).begin();
   Array<Real>::scalar_iterator T_1d_it = T_1d(el_type, ghost_type).begin();
+  Array<bool>::scalar_iterator normal_regime_it = normal_regime(el_type, ghost_type).begin();
 
   Array<UInt>::scalar_iterator switches_it;
   Array<Real>::scalar_iterator delta_dot_prec_it;
@@ -146,7 +149,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
        ++traction_it, ++opening_it, ++normal_it, ++sigma_c_it,
 	 ++delta_max_it, ++delta_c_it, ++damage_it, ++contact_traction_it,
 	 ++insertion_stress_it, ++contact_opening_it, ++delta_prec_it,
-	 ++K_plus_it, ++K_minus_it, ++T_1d_it) {
+	 ++K_plus_it, ++K_minus_it, ++T_1d_it, ++normal_regime_it) {
 
     /// compute normal and tangential opening vectors
     Real normal_opening_norm = opening_it->dot(*normal_it);
@@ -233,9 +236,12 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
 	traction_it->clear();
       // switch to standard linear cohesive law
       else if (*delta_max_it > fatigue_ratio * *delta_c_it) {
-	// reset delta_max to avoid big jumps in the traction
-	*delta_max_it = *sigma_c_it / (*T_1d_it / delta + *sigma_c_it / *delta_c_it);
-	*damage_it = std::min(*delta_max_it / *delta_c_it, 1.);
+	if (*normal_regime_it == false) {
+	  // reset delta_max to avoid big jumps in the traction
+	  *delta_max_it = *sigma_c_it / (*T_1d_it / delta + *sigma_c_it / *delta_c_it);
+	  *damage_it = std::min(*delta_max_it / *delta_c_it, 1.);
+	  *normal_regime_it = true;
+	}
 	// compute stiffness according to the standard law
 	*K_minus_it = *sigma_c_it / *delta_max_it * (1. - *damage_it);
       }
