@@ -36,13 +36,15 @@
 
 #include "dumper_iohelper.hh"
 #include "dumper_elemental_field.hh"
-#include "dumper_igfem_connectivity.hh"
 #include "dumper_nodal_field.hh"
 #include "dumper_filtered_connectivity.hh"
 //#include "dumper_connectivity_field.hh"
 #include "dumper_element_type.hh"
 #include "dumper_variable.hh"
 #include "mesh.hh"
+#if defined(AKANTU_IGFEM)
+#include "dumper_igfem_connectivity.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
