@@ -45,7 +45,7 @@
 
 __BEGIN_AKANTU__
 
-class MeshIODiana : public MeshIO {
+class MeshIODiana : public MeshIO , public MeshEventHandler{
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -131,6 +131,13 @@ public:
     return names;
   }
 
+  /* ------------------------------------------------------------------------ */
+  /* Mesh Event Handler inherited members                                     */
+  /* ------------------------------------------------------------------------ */
+protected:
+  virtual void onNodesRemoved(const Array<UInt> & element_list,
+                              const Array<UInt> & new_numbering,
+                              const RemovedNodesEvent & event);
  
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

@@ -47,10 +47,6 @@ __BEGIN_AKANTU__
 template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
 class MeshGeomIntersector : public MeshGeomAbstract {
 
-protected:
-  /// Result of intersection function type
-  typedef typename IntersectionTypeHelper<TreeTypeHelper<Primitive, Kernel>, Query>::intersection_type result_type;
-
 public:
   /// Construct from mesh
   explicit MeshGeomIntersector(const Mesh & mesh);

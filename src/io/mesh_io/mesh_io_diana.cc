@@ -390,7 +390,7 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile,
     UInt local_connect[node_per_element];
     
     //used if element is written on two lines
-    UInt j_last;
+    UInt j_last = 0;
     
     for(UInt j = 0; j < node_per_element; ++j) {
       UInt node_index;
@@ -749,6 +749,26 @@ void MeshIODiana::printself(std::ostream & stream,int indent) const {
     stream << std::endl;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+
+void MeshIODiana::onNodesRemoved(const Array<UInt> & element_list,
+				 const Array<UInt> & new_numbering,
+				 const RemovedNodesEvent & event) {
+  std::map<std::string, Array<UInt> *>::iterator it = node_groups.begin();
+  std::map<std::string, Array<UInt> *>::iterator end = node_groups.end();
+  for (; it != end; ++it) {
+    Array<UInt> & group = *(it->second);
+    Array<UInt>::iterator<> git = group.begin();
+    Array<UInt>::iterator<> gend = group.end();
+    for (; git != gend; ++git) {
+      UInt new_id = new_numbering(*git);
+      AKANTU_DEBUG_ASSERT(new_id != UInt(-1), "Argh " << *git << " was suppressed!");
+      *git = new_id;
+    }
+  }
+}
+
 
 
 __END_AKANTU__

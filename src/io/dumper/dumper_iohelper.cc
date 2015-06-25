@@ -123,6 +123,7 @@ void DumperIOHelper::registerMesh(const Mesh & mesh,
 //							ghost_type));
 //   } else
 // #endif
+  
     registerField("connectivities",
 		  new dumper::ElementalField<UInt>(mesh.getConnectivities(),
 						   spatial_dimension,

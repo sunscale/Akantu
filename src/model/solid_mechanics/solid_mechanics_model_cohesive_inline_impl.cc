@@ -60,6 +60,9 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
   Int prank = comm.whoAmI();
 
   while (insertion_new_element) {  //loop for insertion of new cohesive elements
+
+    //insertion_new_element = false;
+
     if (is_extrinsic) {
       // If in extrinsic saves the current displacements, velocities and accelerations
       Array<Real> * tmp_swap;
@@ -196,7 +199,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       this->acceleration = tmp_swap;
 
 
-      if (converged){   // || load_reduction){
+      if (converged || (load_reduction && error < 1.0)){
         //        UInt nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive);
         //        this->checkCohesiveStress();
         //        UInt new_nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive);
@@ -220,7 +223,11 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       }
     }
 
-    if (!converged){   // && !load_reduction){
+    if (!converged && load_reduction)
+      insertion_new_element = false;
+
+    //    if ((!converged && !load_reduction) || (error > 1.)){
+    if (!converged && !load_reduction){
       insertion_new_element = false;
 
       for (UInt m = 0; m < materials.size(); ++m) {
@@ -235,7 +242,8 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
   } //end while insertion_new_element
 
 
-  if ((is_extrinsic && converged)){   // || (is_extrinsic && load_reduction))  {
+  //  if ((is_extrinsic && converged) || (is_extrinsic && load_reduction && error < 1.))  {
+  if ((is_extrinsic && converged) || (is_extrinsic && load_reduction))  {
 
     EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
 
