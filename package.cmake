@@ -33,5 +33,10 @@ package_declare_sources(igfem
   shape_igfem_inline_impl.cc
   fe_engine_template_tmpl_igfem.hh
   dumper_igfem_connectivity.hh
+  dumper_igfem_elemental_field.hh
+  dumper_igfem_generic_elemental_field.hh
+  dumper_igfem_element_iterator.hh
+  igfem_helper.hh
+  solid_mechanics_model_igfem.hh
   )
 

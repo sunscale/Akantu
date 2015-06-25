@@ -21,8 +21,8 @@
 #include "mesh.hh"
 #include "mesh_io.hh"
 #include "mesh_io_msh.hh"
-
-
+#include "dumper_paraview.hh"
+#include "dumper_nodal_field.hh" 
 /* -------------------------------------------------------------------------- */
 #include <cstdlib>
 #include <fstream>
@@ -33,20 +33,25 @@ using namespace akantu;
 int main(int argc, char *argv[]) {
   initialize(argc, argv);
 
-  const ElementType type = _igfem_triangle_4;
+  const ElementType type_igfem = _igfem_triangle_4;
+  const ElementType type_regular = _triangle_3;
   ///  debug::setDebugLevel(dblTest);
-  UInt dim = ElementClass<type>::getSpatialDimension();
+  UInt dim = ElementClass<type_igfem>::getSpatialDimension();
 
   // create a mesh that containes one IGFEM triangle 4
-  UInt nb_elements = 1;
-  UInt nb_nodes = 4;
+  UInt nb_elements_igfem = 1;
+  UInt nb_elements_regular = 1;
+  UInt nb_nodes = 5;
   Mesh mesh(dim);
   std::cout << "Generating mesh..." << std::endl;
   Array<Real> & nodes = const_cast<Array<Real> &>(mesh.getNodes());
   nodes.resize(nb_nodes);
-  mesh.addConnectivityType(type);
-  Array<UInt> & connectivity = const_cast<Array<UInt> &>(mesh.getConnectivity(type));
-  connectivity.resize(nb_elements);
+  mesh.addConnectivityType(type_regular);
+  mesh.addConnectivityType(type_igfem);
+  Array<UInt> & connectivity_igfem = const_cast<Array<UInt> &>(mesh.getConnectivity(type_igfem));
+  connectivity_igfem.resize(nb_elements_igfem);
+  Array<UInt> & connectivity_regular = const_cast<Array<UInt> &>(mesh.getConnectivity(type_regular));
+  connectivity_regular.resize(nb_elements_regular);
   // set the nodal coordinates
   nodes.storage()[0] = 0.;
   nodes.storage()[1] = 0.;
@@ -56,15 +61,21 @@ int main(int argc, char *argv[]) {
   nodes.storage()[5] = 1.;
   nodes.storage()[6] = 0.5;
   nodes.storage()[7] = 0.5;
+  nodes.storage()[8] = -1.;
   // set the element connectivity 
-  connectivity[0] = 0;
-  connectivity[1] = 1;
-  connectivity[2] = 2;
-  connectivity[3] = 3;
+  // first element
+  connectivity_igfem[0] = 0;
+  connectivity_igfem[1] = 1;
+  connectivity_igfem[2] = 2;
+  connectivity_igfem[3] = 3;
+  // second element
+  connectivity_regular[0] = 0;
+  connectivity_regular[1] = 2;
+  connectivity_regular[2] = 4;
 
   FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange,_ek_igfem>(mesh, dim, "my_fem");
 
-  std::stringstream outfilename; outfilename << "out_" << type << ".txt";
+  std::stringstream outfilename; outfilename << "out_" << type_igfem << ".txt";
   std::ofstream my_file(outfilename.str().c_str());
 
   fem->initShapeFunctions();
@@ -73,7 +84,7 @@ int main(int argc, char *argv[]) {
 
   Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
  
-  UInt nb_quadrature_points = fem->getNbQuadraturePoints(type) * nb_elements;
+  UInt nb_quadrature_points = fem->getNbQuadraturePoints(type_igfem) * nb_elements_igfem;
 
   Array<Real> val_on_quad(nb_quadrature_points, 2, "val_on_quad");
 
@@ -89,12 +100,22 @@ int main(int argc, char *argv[]) {
   const_val.storage()[5] = 2.;
   const_val.storage()[6] = 0.;
   const_val.storage()[7] = 0.;
-  fem->interpolateOnQuadraturePoints(const_val, val_on_quad, 2, type);
+  const_val.storage()[8] = 1.;
+  const_val.storage()[9] = 2.;
+  fem->interpolateOnQuadraturePoints(const_val, val_on_quad, 2, type_igfem);
 
   my_file << const_val << std::endl;
   my_file << val_on_quad << std::endl;
 
+  //  DumperParaview dumper_regular("mesh");
+  DumperParaview dumper_igfem("mesh");
+  dumper_igfem.registerMesh(mesh, dim, _not_ghost, _ek_igfem);
+  dumper_igfem.registerMesh(mesh, dim, _not_ghost, _ek_regular);
+  dumper_igfem.registerField("displacement", new dumper::NodalField<Real,false>(const_val, 0, 0));
+  //  dumper_regular.registerField("displacement", new dumper::NodalField<Real,false>(const_val, 0, 0));
 
+  dumper_igfem.dump();
+  //  dumper_regular.dump();
   // // interpolate coordinates
   // Array<Real> coord_on_quad(nb_quadrature_points, mesh.getSpatialDimension(), "coord_on_quad");
 

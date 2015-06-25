@@ -14,7 +14,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-//#include "aka_array.hh"
+#include "aka_array.hh"
 #include "shape_functions.hh"
 
 #ifndef __AKANTU_SHAPE_IGFEM_HH__
