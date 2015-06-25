@@ -26,6 +26,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include <limits>
 #include "solid_mechanics_model_cohesive.hh"
 #include "material_cohesive_linear_fatigue.hh"
 
@@ -39,6 +40,8 @@ class MaterialFatigue {
 public:
   MaterialFatigue(Real delta_f, Real sigma_c, Real delta_c) :
     delta_f(delta_f), sigma_c(sigma_c), delta_c(delta_c),
+    delta_prec(0), traction(sigma_c), delta_max(0),
+    stiff_plus(std::numeric_limits<Real>::max()),
     tolerance(Math::getTolerance()) {};
 
   Real computeTraction(Real delta) {
