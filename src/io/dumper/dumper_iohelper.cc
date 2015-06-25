@@ -36,6 +36,7 @@
 
 #include "dumper_iohelper.hh"
 #include "dumper_elemental_field.hh"
+#include "dumper_igfem_connectivity.hh"
 #include "dumper_nodal_field.hh"
 #include "dumper_filtered_connectivity.hh"
 //#include "dumper_connectivity_field.hh"
@@ -123,6 +124,15 @@ void DumperIOHelper::registerMesh(const Mesh & mesh,
 //							ghost_type));
 //   } else
 // #endif
+
+#if defined(AKANTU_IGFEM)
+  if (element_kind == _ek_igfem) {
+    registerField("connectivities",
+		  new dumper::IGFEMConnectivityField(mesh.getConnectivities(),
+						     spatial_dimension,
+						     ghost_type));
+  } else
+#endif
   
     registerField("connectivities",
 		  new dumper::ElementalField<UInt>(mesh.getConnectivities(),
