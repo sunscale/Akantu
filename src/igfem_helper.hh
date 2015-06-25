@@ -28,9 +28,9 @@ struct IGFEMHelper {
 #define GET_NB_NODES_PER_SUB_ELEMENT(type)			\
   switch (sub_element) {					\
   case 0:							\
-    nb_nodes_per_sub_element = ElementClass<ElementClassProperty<type>::sub_element_type_1>::getNbNodesPerInterpolationElement(); \
+    nb_nodes_per_sub_element = ElementClass<ElementClassProperty<type>::sub_element_type_1>::getNbNodesPerInterpolationElement(); break;  \
   case 1:							\
-    nb_nodes_per_sub_element = ElementClass<ElementClassProperty<type>::sub_element_type_2>::getNbNodesPerInterpolationElement(); \
+    nb_nodes_per_sub_element = ElementClass<ElementClassProperty<type>::sub_element_type_2>::getNbNodesPerInterpolationElement(); break;  \
   }			
   AKANTU_BOOST_IGFEM_ELEMENT_SWITCH(GET_NB_NODES_PER_SUB_ELEMENT);
 #undef GET_NB_NODES_PER_SUB_ELEMENT
@@ -53,9 +53,9 @@ struct IGFEMHelper {
 #define GET_SUB_ELEMENT_TYPE(type)						\
     switch (sub_element) {						\
     case 0:								\
-      sub_type = ElementClassProperty<type>::sub_element_type_1;	\
+      sub_type = ElementClassProperty<type>::sub_element_type_1; break;	\
     case 1:								\
-      sub_type = ElementClassProperty<type>::sub_element_type_2;	\
+      sub_type = ElementClassProperty<type>::sub_element_type_2; break;	\
     }
     AKANTU_BOOST_IGFEM_ELEMENT_SWITCH(GET_SUB_ELEMENT_TYPE);    
 #undef GET_SUB_ELEMENT_TYPE   
