@@ -104,8 +104,10 @@ public:
                                     Array<Real> & tangent,
                                     GhostType ghost_type) = 0;
 
+  /// Compute energy
   virtual Real getEnergy(std::string id);
 
+  /// Flatten internal (modified from Material for 1D internals)
   void flattenInternal(const std::string & field_id,
                        ElementTypeMapArray<Real> & internal_flat,
                        const GhostType ghost_type,
@@ -115,7 +117,14 @@ public:
   /* Protected methods                                                        */
   /* ------------------------------------------------------------------------ */
 protected:
-  /// Allocate the background shape derivatives
+  /**
+   * @brief Allocate the background shape derivatives
+   *
+   * Background shape derivatives need to be stored per background element
+   * types but also per embedded element type, which is why they are stored
+   * in an ElementTypeMap<ElementTypeMapArray<Real> *>. The outer ElementTypeMap
+   * refers to the embedded types, and the inner refers to the background types.
+   */
   void allocBackgroundShapeDerivatives();
 
   /// Compute the directing cosines matrix for one element type
@@ -152,8 +161,7 @@ protected:
    */
   void assembleStiffnessMatrix(const ElementType & interface_type,
                                const ElementType & background_type,
-                               GhostType interface_ghost,
-                               GhostType background_ghost);
+                               GhostType ghost_type);
 
   /// Compute the background shape derivatives for a type
   void computeBackgroundShapeDerivatives(const ElementType & type, GhostType ghost_type);
@@ -162,8 +170,7 @@ protected:
   void filterInterfaceBackgroundElements(Array<UInt> & filter,
                                          const ElementType & type,
                                          const ElementType & interface_type,
-                                         GhostType ghost_type,
-                                         GhostType interface_ghost_type);
+                                         GhostType ghost_type);
 
   /// Assemble the residual of one type of element (typically _segment_2)
   void assembleResidual(const ElementType & type, GhostType ghost_type);
@@ -178,8 +185,7 @@ protected:
    */
   void assembleResidual(const ElementType & interface_type,
                         const ElementType & background_type,
-                        GhostType interface_ghost,
-                        GhostType background_ghost);
+                        GhostType ghost_type);
 
   // TODO figure out why voigt size is 4 in 2D
   inline void stressTensorToVoigtVector(const Matrix<Real> & tensor, Vector<Real> & vector);

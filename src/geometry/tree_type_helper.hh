@@ -49,6 +49,7 @@ __BEGIN_AKANTU__
   
 /* -------------------------------------------------------------------------- */
 
+/// Replacement class for algorithm that can't use the AABB tree types
 template<typename iterator>
 struct VoidTree {
   VoidTree(const iterator & begin, const iterator & end) {}

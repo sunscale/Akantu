@@ -87,6 +87,8 @@ void MeshGeomFactory<dim, type, Primitive, Kernel>::constructData() {
 
   delete data_tree;
 
+  // This condition allows the use of the mesh geom module
+  // even if types are not compatible with AABB tree algorithm
   if (TreeTypeHelper<Primitive, Kernel>::is_valid)
     data_tree = new typename TreeTypeHelper<Primitive, Kernel>::tree(primitive_list.begin(), primitive_list.end());
 
@@ -99,7 +101,7 @@ void MeshGeomFactory<dim, type, Primitive, Kernel>::addPrimitive(const Matrix<Re
   this->addPrimitive(node_coordinates, id, this->primitive_list);
 }
 
-// 2D and _triangle_3 implementation
+// (2D, _triangle_3) decomposed into Triangle<Cartesian>
 template<>
 inline void MeshGeomFactory<2, _triangle_3, Triangle<Cartesian>, Cartesian>::addPrimitive(
     const Matrix<Real> & node_coordinates,
@@ -116,7 +118,7 @@ inline void MeshGeomFactory<2, _triangle_3, Triangle<Cartesian>, Cartesian>::add
   list.push_back(t);
 }
 
-// 2D and _triangle_3 with Line_arc<spherical> implementation
+// (2D, _triangle_3) decomposed into Line_arc<Spherical>
 template<>
 inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::addPrimitive(
     const Matrix<Real> & node_coordinates,
@@ -150,7 +152,7 @@ inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::add
   list.push_back(s3);
 }
 
-// 3D and _tetrahedron_4 with triangles implementation
+// (3D, _tetrahedron_4) decomposed into Triangle<Cartesian>
 template<>
 inline void MeshGeomFactory<3, _tetrahedron_4, Triangle<Cartesian>, Cartesian>::addPrimitive(
     const Matrix<Real> & node_coordinates,
