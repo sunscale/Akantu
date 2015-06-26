@@ -54,7 +54,6 @@ MaterialReinforcementTemplate<dim, ConstLaw>::~MaterialReinforcementTemplate()
 
 /* -------------------------------------------------------------------------- */
 
-/// TODO this function is super ugly. Find better way to initialize internals
 template<UInt dim, class ConstLaw>
 void MaterialReinforcementTemplate<dim, ConstLaw>::initMaterial() {
   MaterialReinforcement<dim>::initMaterial();

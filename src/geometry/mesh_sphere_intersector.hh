@@ -79,9 +79,11 @@ public:
 
   /// Compute the list of queries
   virtual void computeIntersectionQueryList(const std::list<SK::Sphere_3> & query_list);
-
+  
+#if defined(AKANTU_IGFEM)
   /// Build the IGFEM mesh
-  void BuildIgfemMesh(const std::list<SK::Sphere_3> & query_list);
+  void buildIgfemMesh(const std::list<SK::Sphere_3> & query_list);
+#endif
 
 protected:
   /// new node per element TODO convert to ElementTypeMapArray<UInt>

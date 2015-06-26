@@ -469,6 +469,7 @@ private:
 
   std::map<ID, InternalField<Real> *> internal_vectors_real;
   std::map<ID, InternalField<UInt> *> internal_vectors_uint;
+  std::map<ID, InternalField<bool> *> internal_vectors_bool;
 
 protected:
   /// Finite deformation

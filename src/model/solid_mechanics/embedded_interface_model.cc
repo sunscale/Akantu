@@ -65,6 +65,8 @@ EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
   this->setMaterialSelector(*mat_sel_pointer);
 
   interface_mesh = &(intersector.getInterfaceMesh());
+
+  // Create 1D FEEngine on the interface mesh
   registerFEEngineObject<MyFEEngineType>("EmbeddedInterfaceFEEngine", *interface_mesh, 1);
 }
 
@@ -79,15 +81,18 @@ void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
   // We don't want to initiate materials before shape functions are initialized
   SolidMechanicsModelOptions dummy_options(eim_options.analysis_method, true);
 
+  // Do no initialize interface_mesh if told so
   if (!eim_options.no_init_intersections)
     intersector.constructData();
 
+  // Initialize interface FEEngine
   FEEngine & engine = getFEEngine("EmbeddedInterfaceFEEngine");
   engine.initShapeFunctions(_not_ghost);
   engine.initShapeFunctions(_ghost);
 
   SolidMechanicsModel::initFull(dummy_options);
 
+  // This will call SolidMechanicsModel::initMaterials() last
   this->initMaterials();
 
 #if defined(AKANTU_USE_IOHELPER)
@@ -97,6 +102,7 @@ void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
 #endif
 }
 
+// This function is very similar to SolidMechanicsModel's
 void EmbeddedInterfaceModel::initMaterials() {
   Element element;
 
@@ -140,6 +146,7 @@ void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumpe
 #ifdef AKANTU_USE_IOHELPER
   dumper::Field * field = NULL;
 
+  // If dumper is reinforcement, create a 1D elemental field
   if (dumper_name == "reinforcement")
     field = this->createElementalField(field_id, group_name, padding_flag, 1, element_kind);
   else
