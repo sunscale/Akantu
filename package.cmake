@@ -38,5 +38,14 @@ package_declare_sources(igfem
   dumper_igfem_element_iterator.hh
   igfem_helper.hh
   solid_mechanics_model_igfem.hh
+  solid_mechanics_model_igfem.cc
+
+  material_igfem/material_igfem_includes.hh
+  material_igfem/material_igfem.hh
+  material_igfem/material_igfem.cc
+  material_igfem/material_igfem_elastic.hh
+  material_igfem/material_igfem_elastic.cc
+  material_igfem/material_igfem_elastic_inline_impl.cc
+
   )
 

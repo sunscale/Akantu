@@ -15,9 +15,9 @@
 #
 #===============================================================================
 
-register_test(test_interpolate
-  SOURCES test_interpolate.cc
-  PACKAGE IGFEM
+register_test(test_solid_mechanics_model_igfem
+  SOURCES test_solid_mechanics_model_igfem.cc
+  FILES_TO_COPY material.dat patch_test.msh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE IGFEM 
   )
-
-add_akantu_test(test_solid_mechanics_model_igfem "test_solid_mechanics_model_igfem")

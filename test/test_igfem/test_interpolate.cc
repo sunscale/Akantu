@@ -33,7 +33,7 @@ using namespace akantu;
 int main(int argc, char *argv[]) {
   initialize(argc, argv);
 
-  const ElementType type_igfem = _igfem_triangle_4;
+  const ElementType type_igfem = _igfem_triangle_5;
   const ElementType type_regular = _triangle_3;
   ///  debug::setDebugLevel(dblTest);
   UInt dim = ElementClass<type_igfem>::getSpatialDimension();
@@ -60,58 +60,64 @@ int main(int argc, char *argv[]) {
   nodes.storage()[4] = 0.;
   nodes.storage()[5] = 1.;
   nodes.storage()[6] = 0.5;
-  nodes.storage()[7] = 0.5;
-  nodes.storage()[8] = -1.;
+  nodes.storage()[7] = 0.;
+  nodes.storage()[8] = 0.5;
+  nodes.storage()[9] = 0.5;
+  nodes.storage()[10] = -1.;
+  nodes.storage()[11] = 0.;
   // set the element connectivity 
   // first element
-  connectivity_igfem[0] = 0;
-  connectivity_igfem[1] = 1;
-  connectivity_igfem[2] = 2;
-  connectivity_igfem[3] = 3;
+  connectivity_igfem[0] = 1;
+  connectivity_igfem[1] = 2;
+  connectivity_igfem[2] = 0;
+  connectivity_igfem[3] = 4;
+  connectivity_igfem[4] = 3;
   // second element
   connectivity_regular[0] = 0;
   connectivity_regular[1] = 2;
-  connectivity_regular[2] = 4;
+  connectivity_regular[2] = 5;
 
-  FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange,_ek_igfem>(mesh, dim, "my_fem");
+  // FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange,_ek_igfem>(mesh, dim, "my_fem");
 
-  std::stringstream outfilename; outfilename << "out_" << type_igfem << ".txt";
-  std::ofstream my_file(outfilename.str().c_str());
+  // std::stringstream outfilename; outfilename << "out_" << type_igfem << ".txt";
+  // std::ofstream my_file(outfilename.str().c_str());
 
-  fem->initShapeFunctions();
+  // fem->initShapeFunctions();
 
-  std::cout << *fem << std::endl;
+  // std::cout << *fem << std::endl;
 
-  Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
+  // Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
  
-  UInt nb_quadrature_points = fem->getNbQuadraturePoints(type_igfem) * nb_elements_igfem;
+  // UInt nb_quadrature_points = fem->getNbQuadraturePoints(type_igfem) * nb_elements_igfem;
 
-  Array<Real> val_on_quad(nb_quadrature_points, 2, "val_on_quad");
+  // Array<Real> val_on_quad(nb_quadrature_points, 2, "val_on_quad");
 
   // for (UInt i = 0; i < const_val.getSize(); ++i) {
   //   const_val.storage()[i * 2 + 0] = 1.;
   //   const_val.storage()[i * 2 + 1] = 2.;
   // }
-  const_val.storage()[0] = 1.;
-  const_val.storage()[1] = 2.;
-  const_val.storage()[2] = 1.;
-  const_val.storage()[3] = 2.;
-  const_val.storage()[4] = 1.;
-  const_val.storage()[5] = 2.;
-  const_val.storage()[6] = 0.;
-  const_val.storage()[7] = 0.;
-  const_val.storage()[8] = 1.;
-  const_val.storage()[9] = 2.;
-  fem->interpolateOnQuadraturePoints(const_val, val_on_quad, 2, type_igfem);
+  // const_val.storage()[0] = 1.;
+  // const_val.storage()[1] = 2.;
+  // const_val.storage()[2] = 1.;
+  // const_val.storage()[3] = 2.;
+  // const_val.storage()[4] = 1.;
+  // const_val.storage()[5] = 2.;
+  // const_val.storage()[6] = 0.;
+  // const_val.storage()[7] = 0.;
+  // const_val.storage()[8] = 0.;
+  // const_val.storage()[9] = 0.;
+  // const_val.storage()[10] = 0.;
+  // const_val.storage()[11] = 0.;
+  // fem->interpolateOnQuadraturePoints(const_val, val_on_quad, 2, type_igfem);
 
-  my_file << const_val << std::endl;
-  my_file << val_on_quad << std::endl;
+  // my_file << const_val << std::endl;
+  // my_file << val_on_quad << std::endl;
 
   //  DumperParaview dumper_regular("mesh");
   DumperParaview dumper_igfem("mesh");
   dumper_igfem.registerMesh(mesh, dim, _not_ghost, _ek_igfem);
-  dumper_igfem.registerMesh(mesh, dim, _not_ghost, _ek_regular);
-  dumper_igfem.registerField("displacement", new dumper::NodalField<Real,false>(const_val, 0, 0));
+  // dumper_igfem.registerMesh(mesh, dim, _not_ghost, _ek_regular);
+  //  dumper_igfem.registerField("displacement", new dumper::NodalField<Real,false>(const_val, 0, 0));
   //  dumper_regular.registerField("displacement", new dumper::NodalField<Real,false>(const_val, 0, 0));
 
   dumper_igfem.dump();
@@ -126,7 +132,7 @@ int main(int argc, char *argv[]) {
   // my_file << mesh.getNodes() << std::endl;
   // my_file << coord_on_quad << std::endl;
 
-  delete fem;
+  //  delete fem;
 
   finalize();
   return EXIT_SUCCESS;
