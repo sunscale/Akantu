@@ -2,6 +2,7 @@
 # @file   CMakeLists.txt
 #
 # @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
+# @author Clement Roux-Langlois <clement.roux@epfl.ch>
 #
 #
 # @brief  configuration for IGFEM tests
@@ -20,4 +21,12 @@ register_test(test_interpolate
   PACKAGE IGFEM
   )
 
+
 add_akantu_test(test_solid_mechanics_model_igfem "test_solid_mechanics_model_igfem")
+
+register_test(test_generation_igfem_mesh_from_sphere
+  SOURCES test_generation_igfem_mesh_from_sphere.cc
+  FILES_TO_COPY test_geometry_triangle.msh
+  PACKAGE CGAL IGFEM
+  )
+
