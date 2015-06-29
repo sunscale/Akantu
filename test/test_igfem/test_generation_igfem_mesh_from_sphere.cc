@@ -30,15 +30,9 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include "aka_common.hh"
-
 #include "mesh_sphere_intersector.hh"
-#include "geom_helper_functions.hh"
-#include "mesh_geom_common.hh"
 
 #include "dumper_paraview.hh"
-
-#include <iostream>
 
 /* -------------------------------------------------------------------------- */
 
@@ -78,9 +72,10 @@ int main (int argc, char * argv[]) {
   dumper_igfem.dump();
   dumper_regular.dump();
 
+  
   UInt nb_tri3 = mesh.getConnectivity(_triangle_3).getSize();
   UInt nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
-  UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();   
+  UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();
   if ( (nb_tri3 != 0) || (nb_tri4 != 1) || (nb_tri5 != 1)){ 
     std::cout << "final mesh with " << nb_tri3 << " _triangle_3, and " << nb_tri4
 	      << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl; 
