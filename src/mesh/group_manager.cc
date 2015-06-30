@@ -779,38 +779,7 @@ void GroupManager::createElementGroupFromNodeGroup(const std::string & name,
   NodeGroup & node_group = getNodeGroup(node_group_name);
   ElementGroup & group = createElementGroup(name, dimension, node_group);
 
-  CSR<Element> node_to_elem;
-  MeshUtils::buildNode2Elements(mesh, node_to_elem, dimension);
-
-  std::set<Element> seen;
-
-  Array<UInt>::const_iterator<> itn  = node_group.begin();
-  Array<UInt>::const_iterator<> endn = node_group.end();
-  for (;itn != endn; ++itn) {
-    CSR<Element>::iterator ite = node_to_elem.begin(*itn);
-    CSR<Element>::iterator ende = node_to_elem.end(*itn);
-    for (;ite != ende; ++ite) {
-      const Element & elem = *ite;
-      if(dimension != _all_dimensions && dimension != Mesh::getSpatialDimension(elem.type)) continue;
-      if(seen.find(elem) != seen.end()) continue;
-
-      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(elem.type);
-      Array<UInt>::const_iterator< Vector<UInt> > conn_it =
-	mesh.getConnectivity(elem.type, elem.ghost_type).begin(nb_nodes_per_element);
-      const Vector<UInt> & conn = conn_it[elem.element];
-
-      UInt count = 0;
-      for (UInt n = 0; n < conn.size(); ++n) {
-	count += (node_group.getNodes().find(conn(n)) != -1 ? 1 : 0);
-      }
-
-      if(count == nb_nodes_per_element) group.add(elem);
-
-      seen.insert(elem);
-    }
-  }
-
-  group.optimize();
+  group.fillFromNodeGroup();
 }
 
 /* -------------------------------------------------------------------------- */

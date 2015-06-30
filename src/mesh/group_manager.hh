@@ -114,7 +114,7 @@ public:
   AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(element_group, find, const std::string & name, name);
   AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(node_group, find, const std::string & name, name);
 #endif
-  
+
   /* ------------------------------------------------------------------------ */
   /* Clustering filter                                                        */
   /* ------------------------------------------------------------------------ */
@@ -197,7 +197,7 @@ public:
   /// register an elemental field to the given group name (overloading for ElementalPartionField)
 #ifndef SWIG
   template <typename T, template <bool> class dump_type>
-  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field, 
+  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field,
 					      const std::string & group_name,
 					      UInt spatial_dimension,
 					      const ElementKind & kind,
@@ -205,27 +205,27 @@ public:
 
   /// register an elemental field to the given group name (overloading for ElementalField)
   template <typename T, template <class> class ret_type, template <class,template <class> class,bool> class dump_type>
-  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field, 
+  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field,
 					      const std::string & group_name,
 					      UInt spatial_dimension,
 					      const ElementKind & kind,
 					      ElementTypeMap<UInt> nb_data_per_elem = ElementTypeMap<UInt>());
 
   /// register an elemental field to the given group name (overloading for MaterialInternalField)
-  template <typename T, 
+  template <typename T,
 	    /// type of InternalMaterialField
 	    template<typename T, bool filtered> class dump_type>
-  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field, 
+  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field,
 					      const std::string & group_name,
 					      UInt spatial_dimension,
 					      const ElementKind & kind,
 					      ElementTypeMap<UInt> nb_data_per_elem);
-  
+
   template <typename type, bool flag, template<class,bool> class ftype>
   inline dumper::Field * createNodalField(const ftype<type,flag> * field,
 					  const std::string & group_name,
 					  UInt padding_size = 0);
-  
+
   template <typename type, bool flag, template<class,bool> class ftype>
   inline dumper::Field * createStridedNodalField(const ftype<type,flag> * field,
 						 const std::string & group_name,
@@ -238,12 +238,12 @@ protected:
 
   /// take a buffer and create the missing groups localy
   void checkAndAddGroups(CommunicationBufferTemplated<true> & buffer);
-  
+
 
 
   /// register an elemental field to the given group name
   template <class dump_type,typename field_type>
-  inline dumper::Field * createElementalField(const field_type & field, 
+  inline dumper::Field * createElementalField(const field_type & field,
 				       const std::string & group_name,
 				       UInt spatial_dimension,
 				       const ElementKind & kind,
@@ -252,7 +252,7 @@ protected:
 
   /// register an elemental field to the given group name
   template <class dump_type,typename field_type>
-  inline dumper::Field * createElementalFilteredField(const field_type & field, 
+  inline dumper::Field * createElementalFilteredField(const field_type & field,
 					       const std::string & group_name,
 					       UInt spatial_dimension,
 					       const ElementKind & kind,
