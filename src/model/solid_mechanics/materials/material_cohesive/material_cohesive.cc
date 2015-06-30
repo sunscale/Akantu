@@ -202,9 +202,9 @@ void MaterialCohesive::assembleResidual(GhostType ghost_type) {
 
     /// assemble
     model->getFEEngineBoundary().assembleArray(*int_t_N, residual,
-					  model->getDOFSynchronizer().getLocalDOFEquationNumbers(),
-					  residual.getNbComponent(),
-					  *it, ghost_type, elem_filter, 1);
+					       model->getDOFSynchronizer().getLocalDOFEquationNumbers(),
+					       residual.getNbComponent(),
+					       *it, ghost_type, elem_filter, 1);
 
     delete int_t_N;
   }
@@ -278,7 +278,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
     }
 
     /// compute traction
-        computeTraction(ghost_type);
+    computeTraction(ghost_type);
 
     /// get the tangent matrix @f$\frac{\partial{(t/\delta)}}{\partial{\delta}} @f$
     Array<Real> * tangent_stiffness_matrix =

@@ -694,11 +694,13 @@ void MaterialReinforcement<dim>::flattenInternal(const std::string & field_id,
 
   // si c'est pour tous les champ qu'il faut spatial_dimension = 1 vire juste le if statement
   if(field_id == "stress_embedded") {
-    Material::flattenInternal(field_id,
-			      internal_flat,
-			      1
-			      ghost_type,
-			      _ek_not_defined);
+    Material::flattenInternalIntern(field_id,
+				    internal_flat,
+				    1,
+				    ghost_type,
+				    _ek_not_defined,
+				    &(this->element_filter),
+				    &(this->model->getInterfaceMesh()));
 
   } else {
     Material::flattenInternal(field_id,
