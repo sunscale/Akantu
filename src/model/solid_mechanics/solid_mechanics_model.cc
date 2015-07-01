@@ -1550,8 +1550,10 @@ ElementTypeMapArray<Real> & SolidMechanicsModel::flattenInternal(const std::stri
   }
 
   ElementTypeMapArray<Real> * internal_flat = this->registered_internals[key];
-  for (UInt m = 0; m < materials.size(); ++m)
-    materials[m]->flattenInternal(field_name, *internal_flat, ghost_type, kind);
+  for (UInt m = 0; m < materials.size(); ++m) {
+    if (materials[m]->isInternal(field_name, kind))
+      materials[m]->flattenInternal(field_name, *internal_flat, ghost_type, kind);
+  }
 
   return  *internal_flat;
 }

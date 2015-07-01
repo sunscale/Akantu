@@ -49,13 +49,18 @@ package_declare_sources(CGAL
   geometry/mesh_segment_intersector.hh
   geometry/mesh_segment_intersector_tmpl.hh
 
+  geometry/mesh_sphere_intersector.hh
+  geometry/mesh_sphere_intersector_tmpl.hh
+
   geometry/tree_type_helper.hh
   geometry/geom_helper_functions.hh
 
   geometry/aabb_primitives/triangle.hh
+  geometry/aabb_primitives/line_arc.hh
   geometry/aabb_primitives/tetrahedron.hh
 
   geometry/aabb_primitives/aabb_primitive.hh
+  geometry/aabb_primitives/aabb_primitive.cc
   )
 
 package_declare_documentation(CGAL

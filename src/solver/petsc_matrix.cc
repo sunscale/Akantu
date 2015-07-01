@@ -38,6 +38,13 @@
 
 __BEGIN_AKANTU__
 
+#if not defined(PETSC_CLANGUAGE_CXX)
+int aka_PETScError(int ierr) {
+  CHKERRQ(ierr);
+  return 0;
+}
+#endif
+
 // struct PETScWrapper {
 //   Mat mat;
 //   AO ao;

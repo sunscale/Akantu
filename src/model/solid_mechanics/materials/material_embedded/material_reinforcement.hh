@@ -49,6 +49,10 @@ __BEGIN_AKANTU__
  * This class is used for computing the reinforcement stiffness matrix
  * along with the reinforcement residual. Room is made for constitutive law,
  * but actual use of contitutive laws is made in MaterialReinforcementTemplate.
+ *
+ * Be careful with the dimensions in this class :
+ *  -  this->spatial_dimension is always 1
+ *  -  the template parameter dim is the dimension of the problem
  */
 template<UInt dim>
 class MaterialReinforcement : virtual public Material {
@@ -58,10 +62,17 @@ class MaterialReinforcement : virtual public Material {
   /* ------------------------------------------------------------------------ */
 public:
   /// Constructor
-  MaterialReinforcement(SolidMechanicsModel & model, const ID & id = "");
+  MaterialReinforcement(SolidMechanicsModel & model,
+                        UInt spatial_dimension,
+                        const Mesh & mesh,
+                        FEEngine & fe_engine,
+                        const ID & id = "");
 
   /// Destructor
   virtual ~MaterialReinforcement();
+
+protected:
+  void initialize(SolidMechanicsModel & a_model);
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -93,6 +104,7 @@ public:
                                     Array<Real> & tangent,
                                     GhostType ghost_type) = 0;
 
+  /// Compute energy
   virtual Real getEnergy(std::string id);
 
   ElementTypeMap<UInt> getInternalDataPerElem(const ID & field_name,
@@ -109,7 +121,14 @@ public:
   /* Protected methods                                                        */
   /* ------------------------------------------------------------------------ */
 protected:
-  /// Allocate the background shape derivatives
+  /**
+   * @brief Allocate the background shape derivatives
+   *
+   * Background shape derivatives need to be stored per background element
+   * types but also per embedded element type, which is why they are stored
+   * in an ElementTypeMap<ElementTypeMapArray<Real> *>. The outer ElementTypeMap
+   * refers to the embedded types, and the inner refers to the background types.
+   */
   void allocBackgroundShapeDerivatives();
 
   /// Compute the directing cosines matrix for one element type
@@ -146,8 +165,7 @@ protected:
    */
   void assembleStiffnessMatrix(const ElementType & interface_type,
                                const ElementType & background_type,
-                               GhostType interface_ghost,
-                               GhostType background_ghost);
+                               GhostType ghost_type);
 
   /// Compute the background shape derivatives for a type
   void computeBackgroundShapeDerivatives(const ElementType & type, GhostType ghost_type);
@@ -156,8 +174,7 @@ protected:
   void filterInterfaceBackgroundElements(Array<UInt> & filter,
                                          const ElementType & type,
                                          const ElementType & interface_type,
-                                         GhostType ghost_type,
-                                         GhostType interface_ghost_type);
+                                         GhostType ghost_type);
 
   /// Assemble the residual of one type of element (typically _segment_2)
   void assembleResidual(const ElementType & type, GhostType ghost_type);
@@ -172,8 +189,7 @@ protected:
    */
   void assembleResidual(const ElementType & interface_type,
                         const ElementType & background_type,
-                        GhostType interface_ghost,
-                        GhostType background_ghost);
+                        GhostType ghost_type);
 
   // TODO figure out why voigt size is 4 in 2D
   inline void stressTensorToVoigtVector(const Matrix<Real> & tensor, Vector<Real> & vector);
@@ -189,17 +205,17 @@ protected:
   /// Embedded model
   EmbeddedInterfaceModel * model;
 
-  /// grad_u
-  EmbeddedInternalField<Real> gradu;
+  /// Stress in the reinforcement
+  InternalField<Real> stress_embedded;
 
-  /// stress
-  EmbeddedInternalField<Real> stress;
+  /// Gradu of concrete on reinforcement
+  InternalField<Real> gradu_embedded;
 
   /// C matrix on quad
-  EmbeddedInternalField<Real> directing_cosines;
+  InternalField<Real> directing_cosines;
 
   /// Prestress on quad
-  EmbeddedInternalField<Real> pre_stress;
+  InternalField<Real> pre_stress;
 
   /// Cross-sectional area
   Real area;

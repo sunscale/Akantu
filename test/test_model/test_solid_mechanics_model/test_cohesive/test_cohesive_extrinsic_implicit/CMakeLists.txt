@@ -32,6 +32,6 @@
 
 register_test(test_assembling_K_cohe_elements
   SOURCES test_assembling_K_cohe_elements.cc
-  FILES_TO_COPY quadrangle.msh material.dat K_matrix_verified
+  FILES_TO_COPY quadrangle.msh material.dat K_matrix_verified.dat
   PACKAGE cohesive_element
   )

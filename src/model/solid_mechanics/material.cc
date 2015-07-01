@@ -73,6 +73,58 @@ Material::Material(SolidMechanicsModel & model, const ID & id) :
 					 _ek_regular);
 
 
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+Material::Material(SolidMechanicsModel & model,
+                   UInt dim,
+                   const Mesh & mesh,
+                   FEEngine & fe_engine,
+                   const ID & id) :
+  Memory(id, model.getMemoryID()),
+  Parsable(_st_material, id),
+  is_init(false),
+  finite_deformation(false),
+  name(""),
+  model(&model),
+  spatial_dimension(dim),
+  element_filter("element_filter", id, this->memory_id),
+  stress("stress", *this, dim, fe_engine, this->element_filter),
+  eigenstrain("eignestrain", *this, dim, fe_engine, this->element_filter),
+  gradu("gradu", *this, dim, fe_engine, this->element_filter),
+  green_strain("green_strain", *this, dim, fe_engine, this->element_filter),
+  piola_kirchhoff_2("poila_kirchhoff_2", *this, dim, fe_engine, this->element_filter),
+  potential_energy("potential_energy", *this, dim, fe_engine, this->element_filter),
+  is_non_local(false),
+  use_previous_stress(false),
+  use_previous_gradu(false),
+  interpolation_inverse_coordinates("interpolation inverse_coordinates", *this,
+                                    dim, fe_engine, this->element_filter),
+  interpolation_points_matrices("interpolation points matrices", *this,
+                                dim, fe_engine, this->element_filter) {
+
+  AKANTU_DEBUG_IN();
+  mesh.initElementTypeMapArray(element_filter,
+                               1,
+                               spatial_dimension,
+                               false,
+                               _ek_regular);
+
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+Material::~Material() {
+  AKANTU_DEBUG_IN();
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void Material::initialize() {
   registerParam("rho"                  , rho                  , 0.           , _pat_parsable | _pat_modifiable, "Density");
   registerParam("name"                 , name                 , std::string(), _pat_parsable | _pat_readable);
   registerParam("finite_deformation"   , finite_deformation   , false        , _pat_parsable | _pat_readable, "Is finite deformation");
@@ -83,16 +135,7 @@ Material::Material(SolidMechanicsModel & model, const ID & id) :
   gradu.initialize(spatial_dimension * spatial_dimension);
   stress.initialize(spatial_dimension * spatial_dimension);
 
-  model.registerEventHandler(*this);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-Material::~Material() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_OUT();
+  this->model->registerEventHandler(*this);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -114,6 +157,10 @@ void Material::initMaterial() {
 
   for (std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end();
+       ++it) it->second->resize();
+
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
        ++it) it->second->resize();
 
   is_init = true;
@@ -1447,6 +1494,10 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
        it != internal_vectors_uint.end();
        ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
 
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
+       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -1459,6 +1510,10 @@ void Material::resizeInternals() {
 
   for (std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end();
+       ++it) it->second->resize();
+
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
        ++it) it->second->resize();
   AKANTU_DEBUG_OUT();
 }
@@ -1536,6 +1591,10 @@ void Material::onElementsRemoved(const Array<Element> & element_list,
 
   for (std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end();
+       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
        ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
 }
 
@@ -1631,19 +1690,19 @@ void Material::flattenInternal(const std::string & field_id,
 			       ElementTypeMapArray<Real> & internal_flat,
 			       const GhostType ghost_type,
 			       ElementKind element_kind) const {
-  this->flattenInternalInterne(field_id, internal_flat,
-			       this->spatial_dimension,
-			       ghost_type, element_kind);
+  this->flattenInternalIntern(field_id, internal_flat,
+			      this->spatial_dimension,
+			      ghost_type, element_kind);
 }
 
 /* -------------------------------------------------------------------------- */
-void Material::flattenInternalInterne(const std::string & field_id,
-				      ElementTypeMapArray<Real> & internal_flat,
-				      UInt spatial_dimension,
-				      const GhostType ghost_type,
-				      ElementKind element_kind,
-				      const ElementTypeMapArray<UInt> * element_filter,
-				      const Mesh * mesh) const {
+void Material::flattenInternalIntern(const std::string & field_id,
+				     ElementTypeMapArray<Real> & internal_flat,
+				     UInt spatial_dimension,
+				     const GhostType ghost_type,
+				     ElementKind element_kind,
+				     const ElementTypeMapArray<UInt> * element_filter,
+				     const Mesh * mesh) const {
   typedef ElementTypeMapArray<UInt>::type_iterator iterator;
 
   if(element_filter == NULL) element_filter = &(this->element_filter);

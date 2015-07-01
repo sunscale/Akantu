@@ -50,8 +50,17 @@ public:
   InternalField(const ID & id, Material & material);
   virtual ~InternalField();
 
-protected:
-  InternalField(const ID & id, Material & material, FEEngine & fem,
+  /// This constructor is only here to let cohesive elements compile
+  InternalField(const ID & id,
+                Material & material,
+                FEEngine & fem,
+		const ElementTypeMapArray<UInt> & element_filter);
+
+  /// More general constructor
+  InternalField(const ID & id,
+                Material & material,
+                UInt dim,
+                FEEngine & fem,
 		const ElementTypeMapArray<UInt> & element_filter);
 
   InternalField(const ID & id, const InternalField<T> & other);
@@ -89,6 +98,8 @@ public:
 
   /// get the default value
   inline operator T() const;
+
+  AKANTU_GET_MACRO(FEEngine, fem, const FEEngine &);
 
 protected:
   /// initialize the arrays in the ElementTypeMapArray<T>

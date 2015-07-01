@@ -38,6 +38,7 @@
 #include "aka_common.hh"
 #include "material_reinforcement.hh"
 #include "material_elastic.hh"
+#include "material_linear_isotropic_hardening.hh"
 
 __BEGIN_AKANTU__
 
@@ -100,8 +101,9 @@ protected:
 
 };
 
-#include "material_reinforcement_template_inline_impl.cc"
+#include "material_reinforcement_template_tmpl.hh"
 
 __END_AKANTU__
+
 
 #endif // __AKANTU_MATERIAL_REINFORCEMENT_TEMPLATE_HH__

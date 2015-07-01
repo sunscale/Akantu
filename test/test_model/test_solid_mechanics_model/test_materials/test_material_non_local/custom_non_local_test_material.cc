@@ -73,7 +73,7 @@ void CustomNonLocalTestMaterial<dim>::computeNonLocalStress(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 // Instantiate the material for the 3 dimensions
-INSTANSIATE_MATERIAL(CustomNonLocalTestMaterial);
+INSTANTIATE_MATERIAL(CustomNonLocalTestMaterial);
 /* -------------------------------------------------------------------------- */
 
 

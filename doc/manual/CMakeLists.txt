@@ -150,3 +150,5 @@ package_get_all_activated_packages(_package_list)
 foreach (_pkg_name ${_package_list})
   generate_package_tex_doc(${_pkg_name} ${DOC_DEPS_TEX_FILENAME})
 endforeach()
+
+configure_file(version-definition.tex.in "${CMAKE_CURRENT_BINARY_DIR}/version-definition.tex" @ONLY)

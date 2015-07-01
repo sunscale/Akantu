@@ -33,17 +33,17 @@
 register_test(test_embedded_element_matrix
   SOURCES test_embedded_element_matrix.cc
   FILES_TO_COPY triangle.msh embedded_element.dat
-  PACKAGE embedded
+  PACKAGE embedded implicit
   )
 
 register_test(test_embedded_interface_model
   SOURCES test_embedded_interface_model.cc
   FILES_TO_COPY embedded_mesh.msh material.dat matrix
-  PACKAGE embedded
+  PACKAGE embedded implicit
   )
 
 register_test(test_embedded_interface_model_prestress
   SOURCES test_embedded_interface_model_prestress.cc
   FILES_TO_COPY embedded_mesh_prestress.msh embedded_mesh_prestress_reinforcement.msh prestress.dat
-  PACKAGE embedded
+  PACKAGE embedded implicit
   )

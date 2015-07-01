@@ -273,21 +273,17 @@ public:
   /// compute the Cauchy stress on user demand.
   void computeCauchyStresses();
 
+  /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
+  template <NewmarkBeta::IntegrationSchemeCorrectorType type>
+  void solve(Array<Real> &increment, Real block_val = 1.,
+             bool need_factorize = true, bool has_profile_changed = false);
+
 protected:
   /// finish the computation of residual to solve in increment
   void updateResidualInternal();
 
   /// compute the support reaction and store it in force
   void updateSupportReaction();
-
-
-public:
-
-  //protected: Daniel changed it just for a test
-  /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
-  template <NewmarkBeta::IntegrationSchemeCorrectorType type>
-  void solve(Array<Real> &increment, Real block_val = 1.,
-	     bool need_factorize = true, bool has_profile_changed = false);
 
 private:
   /// re-initialize the J matrix (to use if the profile of K changed)
@@ -438,10 +434,8 @@ public:
   virtual dumper::Field * createElementalField(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag,
-		 const UInt & spatial_dimension,
+					       const UInt & spatial_dimension,
 					       const ElementKind & kind);
-
-
 
   virtual void dump(const std::string & dumper_name);
 

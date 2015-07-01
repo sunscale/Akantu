@@ -440,6 +440,10 @@ template<> inline void Material::registerInternal<UInt>(InternalField<UInt> & ve
   internal_vectors_uint[vect.getID()] = &vect;
 }
 
+template<> inline void Material::registerInternal<bool>(InternalField<bool> & vect) {
+  internal_vectors_bool[vect.getID()] = &vect;
+}
+
 /* -------------------------------------------------------------------------- */
 template<> inline void Material::unregisterInternal<Real>(InternalField<Real> & vect) {
   internal_vectors_real.erase(vect.getID());
@@ -447,6 +451,10 @@ template<> inline void Material::unregisterInternal<Real>(InternalField<Real> & 
 
 template<> inline void Material::unregisterInternal<UInt>(InternalField<UInt> & vect) {
   internal_vectors_uint.erase(vect.getID());
+}
+
+template<> inline void Material::unregisterInternal<bool>(InternalField<bool> & vect) {
+  internal_vectors_bool.erase(vect.getID());
 }
 
 /* -------------------------------------------------------------------------- */

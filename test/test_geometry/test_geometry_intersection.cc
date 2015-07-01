@@ -38,6 +38,11 @@
 #include "mesh_geom_common.hh"
 
 #include <iostream>
+#include <iterator>
+
+#include <CGAL/Exact_spherical_kernel_3.h>
+#include <CGAL/intersections.h>
+#include <CGAL/Spherical_kernel_intersections.h>
 
 /* -------------------------------------------------------------------------- */
 
@@ -45,6 +50,16 @@ using namespace akantu;
 
 typedef Cartesian K;
 typedef IntersectionTypeHelper<TreeTypeHelper<Triangle<K>, K>, K::Segment_3>::intersection_type result_type;
+
+typedef Spherical SK;
+typedef boost::variant<std::pair<SK::Circular_arc_point_3, UInt> > sk_inter_res;
+/*typedef CGAL::cpp11::result_of<SK::Intersect_3(SK::Line_arc_3,
+					       SK::Sphere_3,
+					       std::back_insert_iterator<
+					       std::list<sk_inter_res> >)>::type sk_res;*/
+
+typedef std::pair<SK::Circular_arc_point_3, UInt> pair_type;
+
 
 /* -------------------------------------------------------------------------- */
 
@@ -87,6 +102,23 @@ int main (int argc, char * argv[]) {
       return EXIT_FAILURE;
     }
   } else return EXIT_FAILURE;
+
+  SK::Sphere_3 sphere(SK::Point_3(0, 0, 0), 1.);
+  SK::Segment_3 seg(SK::Point_3(0, 0, 0), SK::Point_3(1., 1., 1.));
+  SK::Line_arc_3 arc(seg);
+
+  std::list<sk_inter_res> s_results;
+  CGAL::intersection(arc, sphere, std::back_inserter(s_results));
+
+  if (pair_type * pair = boost::get<pair_type>(&s_results.front())) {
+    if (!comparePoints(pair->first, SK::Circular_arc_point_3(1.0 / std::sqrt(3.),
+							     1.0 / std::sqrt(3.),
+							     1.0 / std::sqrt(3.))))
+	return EXIT_FAILURE;
+  } else return EXIT_FAILURE;
+
+  MeshGeomFactory<2, _triangle_3, Line_arc<SK>, SK> Sfactory(mesh);
+  Sfactory.constructData();
 
   finalize();
   return EXIT_SUCCESS;

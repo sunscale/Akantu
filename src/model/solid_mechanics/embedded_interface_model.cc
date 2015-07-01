@@ -44,7 +44,8 @@
 
 __BEGIN_AKANTU__
 
-const EmbeddedInterfaceModelOptions default_embedded_interface_model_options(_explicit_lumped_mass, false, false);
+const EmbeddedInterfaceModelOptions
+  default_embedded_interface_model_options(_explicit_lumped_mass, false, false);
 
 /* -------------------------------------------------------------------------- */
 EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
@@ -53,13 +54,26 @@ EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
                                                const ID & id,
                                                const MemoryID & memory_id) :
   SolidMechanicsModel(mesh, spatial_dimension, id, memory_id),
+  intersector(mesh, primitive_mesh),
   interface_mesh(NULL),
   primitive_mesh(primitive_mesh),
+<<<<<<< HEAD
   interface_material_selector(NULL),
   intersector(mesh, primitive_mesh) {
+=======
+  interface_material_selector(NULL)
+{
+>>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
   // This pointer should be deleted by ~SolidMechanicsModel()
-  MaterialSelector * mat_sel_pointer = new MeshDataMaterialSelector<std::string>("physical_names", *this);
+  MaterialSelector * mat_sel_pointer =
+    new MeshDataMaterialSelector<std::string>("physical_names", *this);
+
   this->setMaterialSelector(*mat_sel_pointer);
+
+  interface_mesh = &(intersector.getInterfaceMesh());
+
+  // Create 1D FEEngine on the interface mesh
+  registerFEEngineObject<MyFEEngineType>("EmbeddedInterfaceFEEngine", *interface_mesh, 1);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -75,18 +89,18 @@ void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
   // We don't want to initiate materials before shape functions are initialized
   SolidMechanicsModelOptions dummy_options(eim_options.analysis_method, true);
 
-  interface_mesh = &(intersector.getInterfaceMesh());
-  registerFEEngineObject<MyFEEngineType>("EmbeddedInterfaceFEEngine", *interface_mesh, 1);
-
-  SolidMechanicsModel::initFull(dummy_options);
-
+  // Do no initialize interface_mesh if told so
   if (!eim_options.no_init_intersections)
     intersector.constructData();
 
+  // Initialize interface FEEngine
   FEEngine & engine = getFEEngine("EmbeddedInterfaceFEEngine");
   engine.initShapeFunctions(_not_ghost);
   engine.initShapeFunctions(_ghost);
 
+  SolidMechanicsModel::initFull(dummy_options);
+
+  // This will call SolidMechanicsModel::initMaterials() last
   this->initMaterials();
 
 #if defined(AKANTU_USE_IOHELPER)
@@ -96,12 +110,17 @@ void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
 #endif
 }
 
+<<<<<<< HEAD
 /* -------------------------------------------------------------------------- */
+=======
+// This function is very similar to SolidMechanicsModel's
+>>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
 void EmbeddedInterfaceModel::initMaterials() {
   Element element;
 
   delete interface_material_selector;
-  interface_material_selector = new InterfaceMeshDataMaterialSelector<std::string>("physical_names", *this);
+  interface_material_selector =
+    new InterfaceMeshDataMaterialSelector<std::string>("physical_names", *this);
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin(); gt != ghost_type_t::end(); ++gt) {
     element.ghost_type = *gt;
@@ -131,7 +150,6 @@ void EmbeddedInterfaceModel::initMaterials() {
   SolidMechanicsModel::initMaterials();
 }
 
-
 /* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                                        const std::string & field_id,
@@ -141,7 +159,8 @@ void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumpe
 #ifdef AKANTU_USE_IOHELPER
   dumper::Field * field = NULL;
 
-  if (field_id == "stress_embedded")
+  // If dumper is reinforcement, create a 1D elemental field
+  if (dumper_name == "reinforcement")
     field = this->createElementalField(field_id, group_name, padding_flag, 1, element_kind);
   else
     SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, field_id, group_name, element_kind, padding_flag);

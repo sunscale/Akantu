@@ -136,7 +136,13 @@ SolverMumps::SolverMumps(SparseMatrix & matrix,
 }
 
 /* -------------------------------------------------------------------------- */
-SolverMumps::~SolverMumps() { }
+SolverMumps::~SolverMumps() {
+  AKANTU_DEBUG_IN();
+
+  this->destroyInternalData();
+  
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 void SolverMumps::destroyInternalData() {

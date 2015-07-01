@@ -61,8 +61,16 @@ private:
 public:
 
   MaterialElastic(SolidMechanicsModel & model, const ID & id = "");
+  MaterialElastic(SolidMechanicsModel & model,
+                  UInt dim,
+                  const Mesh & mesh,
+                  FEEngine & fe_engine,
+                  const ID & id = "");
 
   virtual ~MaterialElastic() {}
+
+protected:
+  void initialize();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -99,7 +107,7 @@ protected:
 				  const Real sigma_th = 0) const;
 
   /// compute the tangent stiffness matrix for an element
-  inline void computeTangentModuliOnQuad(Matrix<Real> & tangent);
+  inline void computeTangentModuliOnQuad(Matrix<Real> & tangent) const;
 
   /// recompute the lame coefficient if E or nu changes
   virtual void updateInternalParameters();

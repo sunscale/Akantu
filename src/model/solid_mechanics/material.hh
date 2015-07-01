@@ -80,8 +80,21 @@ class Material : public Memory, public DataAccessor, public Parsable,
   /* ------------------------------------------------------------------------ */
 public:
 
+  /// Initialize material with defaults
   Material(SolidMechanicsModel & model, const ID & id = "");
+
+  /// Initialize material with custom mesh & fe_engine
+  Material(SolidMechanicsModel & model,
+           UInt dim,
+           const Mesh & mesh,
+           FEEngine & fe_engine,
+           const ID & id = "");
+
+  /// Destructor
   virtual ~Material();
+
+protected:
+  void initialize();
 
   /* ------------------------------------------------------------------------ */
   /* Function that materials can/should reimplement                           */
@@ -386,11 +399,16 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+
+  AKANTU_GET_MACRO(Name,    name,  const std::string &);
+
   AKANTU_GET_MACRO(Model, *model, const SolidMechanicsModel &)
 
   AKANTU_GET_MACRO(ID, Memory::getID(), const ID &);
   AKANTU_GET_MACRO(Rho, rho, Real);
   AKANTU_SET_MACRO(Rho, rho, Real);
+
+  AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
 
   /// return the potential energy for the subset of elements contained by the material
   Real getPotentialEnergy();
@@ -440,13 +458,13 @@ public:
 protected:
   /// internal variation of the flatten function that is more flexible and can
   /// be used by inherited materials to change some behavior
-  virtual void flattenInternalInterne(const std::string & field_id,
-				      ElementTypeMapArray<Real> & internal_flat,
-				      UInt spatial_dimension,
-				      const GhostType ghost_type,
-				      ElementKind element_kind,
-				      const ElementTypeMapArray<UInt> * element_filter = NULL,
-				      const Mesh * mesh = NULL) const;
+  virtual void flattenInternalIntern(const std::string & field_id,
+				     ElementTypeMapArray<Real> & internal_flat,
+				     UInt spatial_dimension,
+				     const GhostType ghost_type,
+				     ElementKind element_kind,
+				     const ElementTypeMapArray<UInt> * element_filter = NULL,
+				     const Mesh * mesh = NULL) const;
 
 protected:
 
@@ -461,6 +479,7 @@ private:
 
   std::map<ID, InternalField<Real> *> internal_vectors_real;
   std::map<ID, InternalField<UInt> *> internal_vectors_uint;
+  std::map<ID, InternalField<bool> *> internal_vectors_bool;
 
 protected:
   /// Finite deformation
@@ -603,7 +622,7 @@ __END_AKANTU__
   }                                                                     \
 
 /* -------------------------------------------------------------------------- */
-#define INSTANSIATE_MATERIAL(mat_name)			\
+#define INSTANTIATE_MATERIAL(mat_name)			\
   template class mat_name<1>;				\
   template class mat_name<2>;				\
   template class mat_name<3>

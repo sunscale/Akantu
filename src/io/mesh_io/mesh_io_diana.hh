@@ -45,7 +45,7 @@
 
 __BEGIN_AKANTU__
 
-class MeshIODiana : public MeshIO, public MeshEventHandler {
+class MeshIODiana : public MeshIO , public MeshEventHandler{
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -64,6 +64,11 @@ public:
   /// write a mesh to a file
   virtual void write(const std::string & filename, const Mesh & mesh);
 
+  /// request creation of an element group from data read from Diana file
+  void createElementGroupInMesh(Mesh & mesh, const std::string & group_name);
+  /// request creation of a nodal group from data read from Diana file
+  void createNodeGroupInMesh(Mesh & mesh, const std::string & group_name);
+
 private:
   std::string readCoordinates(std::ifstream & infile,
 			      Mesh & mesh,
@@ -71,27 +76,25 @@ private:
 
   std::string readElements(std::ifstream & infile,
 			   Mesh & mesh,
-			   std::vector<Element> & global_to_local_index,
 			   UInt first_node_number);
 
   std::string readGroups(std::ifstream & infile,
-			 std::vector<Element> & global_to_local_index,
 			 UInt first_node_number);
 
   std::string readConnectivity(std::ifstream & infile,
 			       Mesh & mesh,
-			       std::vector<Element> & global_to_local_index,
 			       UInt first_node_number);
 
   std::string readMaterialElement(std::ifstream & infile,
-				  Mesh & mesh,
-				  std::vector<Element> & global_to_local_index);
+				  Mesh & mesh);
 
   std::string readMaterial(std::ifstream & infile,
 			   const std::string & filename);
 
   UInt readInterval(std::stringstream & line,
 		    std::set<UInt> & interval);
+
+  virtual void printself(std::ostream & stream, int indent = 0) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -135,7 +138,7 @@ protected:
   virtual void onNodesRemoved(const Array<UInt> & element_list,
                               const Array<UInt> & new_numbering,
                               const RemovedNodesEvent & event);
-
+ 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -147,6 +150,9 @@ private:
 
   std::map<std::string, Array<UInt> *> node_groups;
   std::map<std::string, std::vector<Element> *> element_groups;
+
+  std::map<UInt,Element> diana_element_number_to_elements;
+  std::map<Element,UInt> akantu_number_to_diana_number;
 };
 
 __END_AKANTU__
