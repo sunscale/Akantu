@@ -26,8 +26,9 @@
 
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
+
 template<>
-inline void ParsableParamTyped< akantu_simtools::SynchronizedArray<Real> >::parseParam(const ParserParameter & in_param) {
+inline void ParsableParamTyped< akantu::SynchronizedArray<Real> >::parseParam(const ParserParameter & in_param) {
   ParsableParam::parseParam(in_param);
   Real tmp = in_param;
   param.setAndChangeDefault(tmp);
@@ -36,15 +37,9 @@ inline void ParsableParamTyped< akantu_simtools::SynchronizedArray<Real> >::pars
 /* -------------------------------------------------------------------------- */
 template<>
 template<>
-inline void ParsableParamTyped< akantu_simtools::SynchronizedArray<Real> >::setTyped<Real>(const Real & value) { 
+inline void ParsableParamTyped< akantu::SynchronizedArray<Real> >::setTyped<Real>(const Real & value) { 
   param.setAndChangeDefault(value); 
 }
-__END_AKANTU__
-
-__BEGIN_SIMTOOLS__
-
-/* -------------------------------------------------------------------------- */
-using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
 class NTNBaseFriction : protected Memory, public Parsable, public Dumpable {
@@ -161,6 +156,6 @@ inline std::ostream & operator <<(std::ostream & stream, const NTNBaseFriction &
   return stream;
 }
 
-__END_SIMTOOLS__
+__END_AKANTU__
 
 #endif /* __AST_NTN_BASE_FRICTION_HH__ */

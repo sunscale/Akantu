@@ -27,7 +27,7 @@
 #include "ntn_friclaw_linear_cohesive.hh"
 #include "ntn_friclaw_linear_slip_weakening.hh"
 
-__BEGIN_SIMTOOLS__
+__BEGIN_AKANTU__
 
 NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact, 
 					ParameterReader & data) {
@@ -317,4 +317,4 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 }
 
 
-__END_SIMTOOLS__
+__END_AKANTU__

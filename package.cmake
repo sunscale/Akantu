@@ -31,7 +31,7 @@ package_declare_sources(traction-at-split-node-contact
   ntn_contact/ntn_initiation_function.cc
 
   common/ast_common.hh
-  akantu_simtools.hh
+  tasn_contact.hh
 
   # headers
   common/synchronized_array.hh

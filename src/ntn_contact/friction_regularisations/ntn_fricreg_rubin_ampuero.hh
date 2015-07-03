@@ -21,11 +21,9 @@
 // simtools
 #include "ntn_fricreg_no_regularisation.hh"
 
-__BEGIN_SIMTOOLS__
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-using namespace akantu;
-
 class NTNFricRegRubinAmpuero : public NTNFricRegNoRegularisation {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -88,6 +86,6 @@ inline std::ostream & operator <<(std::ostream & stream,
   return stream;
 }
 
-__END_SIMTOOLS__
+__END_AKANTU__
 
 #endif /* __AST_NTN_FRICREG_RUBIN_AMPUERO_HH__ */

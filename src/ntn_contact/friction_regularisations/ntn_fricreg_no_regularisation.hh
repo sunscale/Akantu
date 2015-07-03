@@ -22,11 +22,9 @@
 // simtools
 #include "ntn_base_friction.hh"
 
-__BEGIN_SIMTOOLS__
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-using namespace akantu;
-
 class NTNFricRegNoRegularisation : public NTNBaseFriction {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -117,6 +115,6 @@ inline std::ostream & operator <<(std::ostream & stream,
   return stream;
 }
 
-__END_SIMTOOLS__
+__END_AKANTU__
 
 #endif /* __AST_NTN_FRICREG_NO_REGULARISATION_HH__ */

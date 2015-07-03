@@ -22,12 +22,8 @@
 #include "aka_common.hh"
 #include "mesh_filter.hh"
 
-// simtools
-#include "ast_common.hh"
 
-__BEGIN_SIMTOOLS__
-
-using namespace akantu;
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 class GeometryFilter : public NodeFilterFunctor {
@@ -105,6 +101,6 @@ public:
 //   }
 // }; 
 
-__END_SIMTOOLS__
+__END_AKANTU__
 
 #endif /* __AST_NODE_FILTER_HH__ */

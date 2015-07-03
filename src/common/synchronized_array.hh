@@ -24,13 +24,7 @@
 // akantu
 #include "aka_array.hh"
 
-// simtools
-#include "ast_common.hh"
-
-__BEGIN_SIMTOOLS__
-
-/* -------------------------------------------------------------------------- */
-using namespace akantu;
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 enum SyncChoice {_added, _deleted};
@@ -190,6 +184,6 @@ inline std::ostream & operator <<(std::ostream & stream,
   return stream;
 }
 
-__END_SIMTOOLS__
+__END_AKANTU__
 
 #endif /* __AST_SYNCHRONIZED_ARRAY_HH__ */

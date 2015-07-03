@@ -25,13 +25,7 @@
 // akantu
 #include "aka_common.hh"
 
-// simtools
-#include "ast_common.hh"
-
-__BEGIN_SIMTOOLS__
-
-/* -------------------------------------------------------------------------- */
-using namespace akantu;
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 class ParameterReader {
@@ -100,6 +94,6 @@ inline std::ostream & operator <<(std::ostream & stream, const ParameterReader &
   return stream;
 }
 
-__END_SIMTOOLS__
+__END_AKANTU__
 
 #endif /* __AST_PARAMETER_READER_HH__ */

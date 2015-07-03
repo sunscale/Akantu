@@ -16,7 +16,7 @@
 /* -------------------------------------------------------------------------- */
 #include "dumper_text.hh"
 
-__BEGIN_SIMTOOLS__
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
@@ -168,4 +168,4 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::addDumpFieldToDumper(const s
   AKANTU_DEBUG_OUT();
 }
 
-__END_SIMTOOLS__
+__END_AKANTU__

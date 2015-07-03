@@ -19,7 +19,7 @@
 #include "dumper_text.hh"
 #include "dumper_nodal_field.hh"
 
-__BEGIN_SIMTOOLS__
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 NTNFricRegSimplifiedPrakashClifton::NTNFricRegSimplifiedPrakashClifton(NTNBaseContact * contact,
@@ -141,4 +141,4 @@ void NTNFricRegSimplifiedPrakashClifton::addDumpFieldToDumper(const std::string 
   AKANTU_DEBUG_OUT();
 }
 
-__END_SIMTOOLS__
+__END_AKANTU__

@@ -21,11 +21,9 @@
 // simtools
 #include "ntn_fricreg_no_regularisation.hh"
 
-__BEGIN_SIMTOOLS__
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-using namespace akantu;
-
 template <class Regularisation = NTNFricRegNoRegularisation>
 class NTNFricLawCoulomb : public Regularisation {
   /* ------------------------------------------------------------------------ */
@@ -90,7 +88,7 @@ inline std::ostream & operator <<(std::ostream & stream,
   return stream;
 }
 
-__END_SIMTOOLS__
+__END_AKANTU__
 
 #include "ntn_friclaw_coulomb_tmpl.hh"
 

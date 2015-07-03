@@ -14,7 +14,7 @@
 
 #include "boundary_functions.hh"
 
-__BEGIN_SIMTOOLS__
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 Real integrateResidual(const std::string & sub_boundary_name,
@@ -60,4 +60,4 @@ void boundaryFix(Mesh & mesh,
 }
 
 
-__END_SIMTOOLS__
+__END_AKANTU__

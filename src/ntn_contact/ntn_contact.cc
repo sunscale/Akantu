@@ -19,7 +19,7 @@
 #include "dumper_text.hh"
 #include "dumper_nodal_field.hh"
 
-__BEGIN_SIMTOOLS__
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 NTNContact::NTNContact(SolidMechanicsModel & model,
@@ -532,4 +532,4 @@ void NTNContact::addDumpFieldToDumper(const std::string & dumper_name,
   AKANTU_DEBUG_OUT();
 }
 
-__END_SIMTOOLS__
+__END_AKANTU__

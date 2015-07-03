@@ -16,7 +16,7 @@
 /* -------------------------------------------------------------------------- */
 //#include "dumper_text.hh"
 
-__BEGIN_SIMTOOLS__
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
@@ -167,4 +167,4 @@ void NTNFricLawLinearCohesive<Regularisation>::addDumpFieldToDumper(const std::s
   AKANTU_DEBUG_OUT();
 }
 
-__END_SIMTOOLS__
+__END_AKANTU__

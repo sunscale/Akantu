@@ -21,10 +21,7 @@
 // simtools
 #include "force_based_dirichlet.hh"
 
-__BEGIN_SIMTOOLS__
-
-/* -------------------------------------------------------------------------- */
-using namespace akantu;
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 class SpringBC : public ForceBasedDirichlet {
@@ -135,6 +132,6 @@ protected:
 // }
 
 
-__END_SIMTOOLS__
+__END_AKANTU__
 
 #endif /* __AST_SPRING_BC_HH__ */
