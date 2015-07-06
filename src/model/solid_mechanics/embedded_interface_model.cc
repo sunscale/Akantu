@@ -57,13 +57,8 @@ EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
   intersector(mesh, primitive_mesh),
   interface_mesh(NULL),
   primitive_mesh(primitive_mesh),
-<<<<<<< HEAD
-  interface_material_selector(NULL),
-  intersector(mesh, primitive_mesh) {
-=======
   interface_material_selector(NULL)
 {
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
   // This pointer should be deleted by ~SolidMechanicsModel()
   MaterialSelector * mat_sel_pointer =
     new MeshDataMaterialSelector<std::string>("physical_names", *this);
@@ -110,11 +105,8 @@ void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
 #endif
 }
 
-<<<<<<< HEAD
 /* -------------------------------------------------------------------------- */
-=======
 // This function is very similar to SolidMechanicsModel's
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
 void EmbeddedInterfaceModel::initMaterials() {
   Element element;
 

@@ -62,15 +62,11 @@ void MaterialReinforcement<dim>::initialize(SolidMechanicsModel & a_model) {
   this->model = dynamic_cast<EmbeddedInterfaceModel *>(&a_model);
   AKANTU_DEBUG_ASSERT(this->model != NULL, "MaterialReinforcement needs an EmbeddedInterfaceModel");
 
-<<<<<<< HEAD
-  this->model->getInterfaceMesh().initElementTypeMapArray(element_filter, 1, 1,
-							  false, _ek_regular);
-=======
   this->registerParam("area", area, _pat_parsable | _pat_modifiable,
                       "Reinforcement cross-sectional area");
   this->registerParam("pre_stress", pre_stress, _pat_parsable | _pat_modifiable,
                       "Uniform pre-stress");
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
+
 
   // Reallocate the element filter
   this->element_filter.free();
@@ -148,13 +144,6 @@ void MaterialReinforcement<dim>::allocBackgroundShapeDerivatives() {
 	UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(int_type);
 	UInt nb_elements = element_filter(int_type, int_ghost).getSize();
 
-<<<<<<< HEAD
-	shaped_etma->alloc(nb_elements * nb_quad_points,
-	    dim * nb_points,
-	    back_type);
-
-	shape_derivatives(shaped_etma, int_type, int_ghost);
-=======
         // Alloc the background ElementTypeMapArray
         shaped_etma->alloc(nb_elements * nb_quad_points,
             dim * nb_points,
@@ -162,7 +151,6 @@ void MaterialReinforcement<dim>::allocBackgroundShapeDerivatives() {
 
         // Insert the background ElementTypeMapArray in the interface ElementTypeMap
         shape_derivatives(shaped_etma, int_type, int_ghost);
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
       }
     }
   }
@@ -348,14 +336,8 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & type, Ghos
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_type,
-<<<<<<< HEAD
-						  const ElementType & background_type,
-						  GhostType interface_ghost,
-						  GhostType background_ghost) {
-=======
                                                   const ElementType & background_type,
                                                   GhostType ghost_type) {
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
   AKANTU_DEBUG_IN();
 
   UInt voigt_size = getTangentStiffnessVoigtSize(dim);
@@ -413,38 +395,21 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
 
   Array<Real> * residual_interface = new Array<Real>(nb_element, back_dof, "residual_interface");
   interface_engine.integrate(*integrant,
-<<<<<<< HEAD
-			     *residual_interface,
-			     back_dof,
-			     interface_type, interface_ghost,
-			     elem_filter);
-=======
                              *residual_interface,
                              back_dof,
                              interface_type, ghost_type,
                              elem_filter);
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
 
   delete integrant;
 
   Array<UInt> * background_filter = new Array<UInt>(nb_element, 1, "background_filter");
 
   filterInterfaceBackgroundElements(*background_filter,
-<<<<<<< HEAD
-				    background_type, interface_type,
-				    background_ghost, interface_ghost);
-  background_engine.assembleArray(*residual_interface, residual,
-				  model->getDOFSynchronizer().getLocalDOFEquationNumbers(),
-				  dim, background_type, background_ghost, *background_filter, -1.0);
-
-=======
                                     background_type, interface_type,
                                     ghost_type);
   background_engine.assembleArray(*residual_interface, residual,
                                   model->getDOFSynchronizer().getLocalDOFEquationNumbers(),
                                   dim, background_type, ghost_type, *background_filter, -1.0);
-  
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
   delete residual_interface;
   delete background_filter;
 
@@ -454,16 +419,10 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 void MaterialReinforcement<dim>::filterInterfaceBackgroundElements(Array<UInt> & filter,
-<<<<<<< HEAD
-								   const ElementType & type,
-								   const ElementType & interface_type,
-								   GhostType ghost_type,
-								   GhostType interface_ghost_type) {
-=======
+
                                                                    const ElementType & type,
                                                                    const ElementType & interface_type,
                                                                    GhostType ghost_type) {
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
   AKANTU_DEBUG_IN();
 
   filter.resize(0);
@@ -546,14 +505,8 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & typ
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & interface_type,
-<<<<<<< HEAD
-							 const ElementType & background_type,
-							 GhostType interface_ghost,
-							 GhostType background_ghost) {
-=======
                                                          const ElementType & background_type,
                                                          GhostType ghost_type) {
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
   AKANTU_DEBUG_IN();
 
   UInt voigt_size = getTangentStiffnessVoigtSize(dim);
@@ -576,14 +529,6 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
 
   grad_u.resize(nb_quadrature_points * nb_element);
 
-<<<<<<< HEAD
-  //need function model->getInterfaceDisplacement()
-  /*interface_engine.gradientOnQuadraturePoints(model->getInterfaceDisplacement(),
-					      grad_u, dim, interface_type, interface_ghost,
-					      elem_filter);*/
-
-=======
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
   Array<Real> * tangent_moduli = new Array<Real>(nb_element * nb_quadrature_points,
 						 1, "interface_tangent_moduli");
   tangent_moduli->clear();
@@ -632,28 +577,17 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
 
   Array<Real> * K_interface = new Array<Real>(nb_element, integrant_size * integrant_size, "K_interface");
   interface_engine.integrate(*integrant, *K_interface,
-<<<<<<< HEAD
-			     integrant_size * integrant_size,
-			     interface_type, interface_ghost,
-			     elem_filter);
-=======
                              integrant_size * integrant_size,
                              interface_type, ghost_type,
                              elem_filter);
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
 
   delete integrant;
 
   Array<UInt> * background_filter = new Array<UInt>(nb_element, 1, "background_filter");
 
   filterInterfaceBackgroundElements(*background_filter,
-<<<<<<< HEAD
-				    background_type, interface_type,
-				    background_ghost, interface_ghost);
-=======
                                     background_type, interface_type,
                                     ghost_type);
->>>>>>> 5a96a726f378cec56d14573e7cb55f97b606f530
 
   background_engine.assembleMatrix(*K_interface, K, dim, background_type, ghost_type, *background_filter);
 
