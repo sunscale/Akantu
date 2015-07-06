@@ -30,7 +30,6 @@ package_declare_sources(traction-at-split-node-contact
   ntn_contact/friction_regularisations/ntn_fricreg_simplified_prakash_clifton.cc
   ntn_contact/ntn_initiation_function.cc
 
-  common/ast_common.hh
   tasn_contact.hh
 
   # headers
