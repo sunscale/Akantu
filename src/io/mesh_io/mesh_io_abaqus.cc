@@ -534,6 +534,8 @@ void MeshIOAbaqus::read(const std::string& filename, Mesh& mesh) {
     }
   }
 
+  mesh.nb_global_nodes = mesh.getNodes().getSize();
+  MeshUtils::fillElementToSubElementsData(mesh);
 }
 
 
