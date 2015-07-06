@@ -46,6 +46,12 @@ __BEGIN_AKANTU__
 
 /// Options for the EmbeddedInterfaceModel
 struct EmbeddedInterfaceModelOptions : SolidMechanicsModelOptions {
+  /**
+   * @brief Constructor for EmbeddedInterfaceModelOptions
+   * @param analysis_method see SolidMeechanicsModelOptions
+   * @param no_init_intersections ignores the embedded elements
+   * @param no_init_materials see SolidMeechanicsModelOptions
+   */
   EmbeddedInterfaceModelOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
                                 bool no_init_intersections = false,
                                 bool no_init_materials = false):
@@ -53,6 +59,7 @@ struct EmbeddedInterfaceModelOptions : SolidMechanicsModelOptions {
     no_init_intersections(no_init_intersections)
   {}
 
+  /// Ignore the reinforcements
   bool no_init_intersections;
 };
 
@@ -74,6 +81,7 @@ extern const EmbeddedInterfaceModelOptions default_embedded_interface_model_opti
  */
 class EmbeddedInterfaceModel : public SolidMechanicsModel {
 
+  /// Same type as SolidMechanicsModel
   typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular> MyFEEngineType;
 
 
@@ -106,6 +114,7 @@ public:
   /// Initialise the materials
   virtual void initMaterials();
 
+  /// Allows filtering of dump fields which need to be dumpes on interface mesh
   virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
                                          const std::string & field_id,
                                          const std::string & group_name,
@@ -115,10 +124,10 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  /// get interface mesh
+  /// Get interface mesh
   AKANTU_GET_MACRO(InterfaceMesh, *interface_mesh, Mesh &);
 
-  /// get associated elements
+  /// Get associated elements
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(InterfaceAssociatedElements,
                                    interface_mesh->getData<Element>("associated_element"),
                                    Element);
@@ -140,6 +149,7 @@ protected:
   MaterialSelector * interface_material_selector;
 };
 
+/// Material selector based on mesh data for interface elements
 template<typename T>
 class InterfaceMeshDataMaterialSelector : public ElementDataMaterialSelector<T> {
 public:

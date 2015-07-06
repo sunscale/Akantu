@@ -67,6 +67,8 @@ void MaterialReinforcement<dim>::initialize(SolidMechanicsModel & a_model) {
   this->registerParam("pre_stress", pre_stress, _pat_parsable | _pat_modifiable,
                       "Uniform pre-stress");
 
+
+  // Reallocate the element filter
   this->element_filter.free();
   this->model->getInterfaceMesh().initElementTypeMapArray(this->element_filter,
                                                           1, 1, false, _ek_regular);
@@ -77,7 +79,7 @@ void MaterialReinforcement<dim>::initialize(SolidMechanicsModel & a_model) {
 template<UInt dim>
 MaterialReinforcement<dim>::~MaterialReinforcement() {
   AKANTU_DEBUG_IN();
-  
+
   ElementTypeMap<ElementTypeMapArray<Real> *>::type_iterator it = shape_derivatives.firstType();
   ElementTypeMap<ElementTypeMapArray<Real> *>::type_iterator end = shape_derivatives.lastType();
 
@@ -85,7 +87,7 @@ MaterialReinforcement<dim>::~MaterialReinforcement() {
     delete shape_derivatives(*it, _not_ghost);
     delete shape_derivatives(*it, _ghost);
   }
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -95,7 +97,7 @@ template<UInt dim>
 void MaterialReinforcement<dim>::initMaterial() {
   Material::initMaterial();
 
-  stress_embedded.initialize(dim * dim); // Check this
+  stress_embedded.initialize(dim * dim);
   gradu_embedded.initialize(dim * dim);
   pre_stress.initialize(1);
 
@@ -110,10 +112,9 @@ void MaterialReinforcement<dim>::initMaterial() {
 template<UInt dim>
 void MaterialReinforcement<dim>::allocBackgroundShapeDerivatives() {
   AKANTU_DEBUG_IN();
-  
+
   Mesh & interface_mesh = model->getInterfaceMesh();
   Mesh & mesh = model->getMesh();
-
 
   ghost_type_t::iterator int_ghost_it = ghost_type_t::begin();
 
@@ -122,29 +123,33 @@ void MaterialReinforcement<dim>::allocBackgroundShapeDerivatives() {
     Mesh::type_iterator interface_type_it = interface_mesh.firstType(1, *int_ghost_it);
     Mesh::type_iterator interface_type_end = interface_mesh.lastType(1, *int_ghost_it);
 
+    // Loop over interface types
     for (; interface_type_it != interface_type_end ; ++interface_type_it) {
       Mesh::type_iterator background_type_it = mesh.firstType(dim, *int_ghost_it);
       Mesh::type_iterator background_type_end = mesh.lastType(dim, *int_ghost_it);
 
+      // Loop over background types
       for (; background_type_it != background_type_end ; ++background_type_it) {
-        const ElementType & int_type = *interface_type_it;
-        const ElementType & back_type = *background_type_it;
-        const GhostType & int_ghost = *int_ghost_it;
+	const ElementType & int_type = *interface_type_it;
+	const ElementType & back_type = *background_type_it;
+	const GhostType & int_ghost = *int_ghost_it;
 
-        std::string shaped_id = "embedded_shape_derivatives";
+	std::string shaped_id = "embedded_shape_derivatives";
 
-        if (int_ghost == _ghost) shaped_id += ":ghost";
+	if (int_ghost == _ghost) shaped_id += ":ghost";
 
-        ElementTypeMapArray<Real> * shaped_etma = new ElementTypeMapArray<Real>(shaped_id, this->name);
+	ElementTypeMapArray<Real> * shaped_etma = new ElementTypeMapArray<Real>(shaped_id, this->name);
 
-        UInt nb_points = Mesh::getNbNodesPerElement(back_type);
-        UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(int_type);
-        UInt nb_elements = element_filter(int_type, int_ghost).getSize();
+	UInt nb_points = Mesh::getNbNodesPerElement(back_type);
+	UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(int_type);
+	UInt nb_elements = element_filter(int_type, int_ghost).getSize();
 
+        // Alloc the background ElementTypeMapArray
         shaped_etma->alloc(nb_elements * nb_quad_points,
             dim * nb_points,
             back_type);
 
+        // Insert the background ElementTypeMapArray in the interface ElementTypeMap
         shape_derivatives(shaped_etma, int_type, int_ghost);
       }
     }
@@ -188,7 +193,7 @@ void MaterialReinforcement<dim>::initDirectingCosines() {
 
   for (; type_it != type_end ; ++type_it) {
     computeDirectingCosines(*type_it, _not_ghost);
-    computeDirectingCosines(*type_it, _ghost);
+    //computeDirectingCosines(*type_it, _ghost);
   }
 
   AKANTU_DEBUG_OUT();
@@ -262,13 +267,13 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
     Array<Real> & shapesd = shape_derivatives(type, ghost_type)->operator()(*back_it, ghost_type);
 
     Array<UInt> * background_filter = new Array<UInt>(nb_element, 1, "background_filter");
-    filterInterfaceBackgroundElements(*background_filter, *back_it, type, ghost_type, ghost_type);
+    filterInterfaceBackgroundElements(*background_filter, *back_it, type, ghost_type);
 
     Array<Real> * disp_per_element = new Array<Real>(0, dim * nodes_per_background_e, "disp_elem");
     FEEngine::extractNodalToElementField(model->getMesh(),
-        model->getDisplacement(),
-        *disp_per_element,
-        *back_it, ghost_type, *background_filter);
+	model->getDisplacement(),
+	*disp_per_element,
+	*back_it, ghost_type, *background_filter);
 
     Array<Real>::matrix_iterator disp_it = disp_per_element->begin(dim, nodes_per_background_e);
     Array<Real>::matrix_iterator disp_end = disp_per_element->end(dim, nodes_per_background_e);
@@ -278,11 +283,11 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
 
     for (; disp_it != disp_end ; ++disp_it) {
       for (UInt i = 0; i < nb_quad_points; i++, ++shapes_it, ++grad_u_it) {
-        Matrix<Real> & B = *shapes_it;
-        Matrix<Real> & du = *grad_u_it;
-        Matrix<Real> & u = *disp_it;
+	Matrix<Real> & B = *shapes_it;
+	Matrix<Real> & du = *grad_u_it;
+	Matrix<Real> & u = *disp_it;
 
-        du.mul<false, true>(u, B);
+	du.mul<false, true>(u, B);
       }
     }
 
@@ -293,6 +298,7 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
 template<UInt dim>
 void MaterialReinforcement<dim>::computeAllStresses(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -309,7 +315,6 @@ void MaterialReinforcement<dim>::computeAllStresses(GhostType ghost_type) {
 }
 
 /* -------------------------------------------------------------------------- */
-
 template<UInt dim>
 void MaterialReinforcement<dim>::assembleResidual(const ElementType & type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -320,24 +325,21 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & type, Ghos
   Mesh::type_iterator type_end = mesh.lastType(dim, ghost_type);
 
   for (; type_it != type_end ; ++type_it) {
-    assembleResidual(type, *type_it, ghost_type, _not_ghost);
-    //assembleResidual(type, *type_it, ghost_type, _ghost);
+    assembleResidual(type, *type_it, ghost_type);
   }
 
-  
+
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-
 template<UInt dim>
 void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_type,
                                                   const ElementType & background_type,
-                                                  GhostType interface_ghost,
-                                                  GhostType background_ghost) {
+                                                  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
-  
+
   UInt voigt_size = getTangentStiffnessVoigtSize(dim);
 
   Array<Real> & residual = const_cast<Array<Real> &>(model->getResidual());
@@ -345,19 +347,19 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
   FEEngine & interface_engine = model->getFEEngine("EmbeddedInterfaceFEEngine");
   FEEngine & background_engine = model->getFEEngine();
 
-  Array<UInt> & elem_filter = element_filter(interface_type, interface_ghost);
+  Array<UInt> & elem_filter = element_filter(interface_type, ghost_type);
 
   UInt nodes_per_background_e = Mesh::getNbNodesPerElement(background_type);
-  UInt nb_quadrature_points = interface_engine.getNbQuadraturePoints(interface_type, interface_ghost);
+  UInt nb_quadrature_points = interface_engine.getNbQuadraturePoints(interface_type, ghost_type);
   UInt nb_element = elem_filter.getSize();
 
   UInt back_dof = dim * nodes_per_background_e;
 
-  Array<Real> & shapesd = shape_derivatives(interface_type, interface_ghost)->operator()(background_type, background_ghost);
+  Array<Real> & shapesd = shape_derivatives(interface_type, ghost_type)->operator()(background_type, ghost_type);
 
   Array<Real> * integrant = new Array<Real>(nb_quadrature_points * nb_element,
-                                            back_dof,
-                                            "integrant");
+					    back_dof,
+					    "integrant");
 
   Array<Real>::vector_iterator integrant_it =
     integrant->begin(back_dof);
@@ -367,24 +369,24 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
   Array<Real>::matrix_iterator B_it =
     shapesd.begin(dim, nodes_per_background_e);
   Array<Real>::matrix_iterator C_it =
-    directing_cosines(interface_type, interface_ghost).begin(voigt_size, voigt_size);
+    directing_cosines(interface_type, ghost_type).begin(voigt_size, voigt_size);
   Array<Real>::matrix_iterator sigma_it =
-    stress_embedded(interface_type, interface_ghost).begin(dim, dim);
+    stress_embedded(interface_type, ghost_type).begin(dim, dim);
 
   Vector<Real> sigma(voigt_size);
   Matrix<Real> Bvoigt(voigt_size, back_dof);
   Vector<Real> Ct_sigma(voigt_size);
-  
+
   for (; integrant_it != integrant_end ; ++integrant_it,
-                                         ++B_it,
-                                         ++C_it,
-                                         ++sigma_it) {
+					 ++B_it,
+					 ++C_it,
+					 ++sigma_it) {
     VoigtHelper<dim>::transferBMatrixToSymVoigtBMatrix(*B_it, Bvoigt, nodes_per_background_e);
     Matrix<Real> & C = *C_it;
     Vector<Real> & BtCt_sigma = *integrant_it;
 
     stressTensorToVoigtVector(*sigma_it, sigma);
-    
+
     Ct_sigma.mul<true>(C, sigma);
     BtCt_sigma.mul<true>(Bvoigt, Ct_sigma);
     BtCt_sigma *= area;
@@ -395,7 +397,7 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
   interface_engine.integrate(*integrant,
                              *residual_interface,
                              back_dof,
-                             interface_type, interface_ghost,
+                             interface_type, ghost_type,
                              elem_filter);
 
   delete integrant;
@@ -404,11 +406,10 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
 
   filterInterfaceBackgroundElements(*background_filter,
                                     background_type, interface_type,
-                                    background_ghost, interface_ghost);
+                                    ghost_type);
   background_engine.assembleArray(*residual_interface, residual,
                                   model->getDOFSynchronizer().getLocalDOFEquationNumbers(),
-                                  dim, background_type, background_ghost, *background_filter, -1.0);
-  
+                                  dim, background_type, ghost_type, *background_filter, -1.0);
   delete residual_interface;
   delete background_filter;
 
@@ -416,20 +417,19 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_
 }
 
 /* -------------------------------------------------------------------------- */
-
 template<UInt dim>
 void MaterialReinforcement<dim>::filterInterfaceBackgroundElements(Array<UInt> & filter,
+
                                                                    const ElementType & type,
                                                                    const ElementType & interface_type,
-                                                                   GhostType ghost_type,
-                                                                   GhostType interface_ghost_type) {
+                                                                   GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   filter.resize(0);
   filter.clear();
 
-  Array<Element> & elements = model->getInterfaceAssociatedElements(interface_type, interface_ghost_type);
-  Array<UInt> & elem_filter = element_filter(interface_type, interface_ghost_type);
+  Array<Element> & elements = model->getInterfaceAssociatedElements(interface_type, ghost_type);
+  Array<UInt> & elem_filter = element_filter(interface_type, ghost_type);
 
   Array<UInt>::scalar_iterator
     filter_it = elem_filter.begin(),
@@ -450,7 +450,7 @@ void MaterialReinforcement<dim>::computeDirectingCosines(const ElementType & typ
   AKANTU_DEBUG_IN();
 
   Mesh & interface_mesh = this->model->getInterfaceMesh();
-  
+
   const UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   const UInt steel_dof = dim * nb_nodes_per_element;
   const UInt voigt_size = getTangentStiffnessVoigtSize(dim);
@@ -460,11 +460,11 @@ void MaterialReinforcement<dim>::computeDirectingCosines(const ElementType & typ
   Array<Real> node_coordinates(this->element_filter(type, ghost_type).getSize(), steel_dof);
 
   this->model->getFEEngine().template extractNodalToElementField<Real>(interface_mesh,
-                                                                       interface_mesh.getNodes(),
-                                                                       node_coordinates,
-                                                                       type,
-                                                                       ghost_type,
-                                                                       this->element_filter(type, ghost_type));
+								       interface_mesh.getNodes(),
+								       node_coordinates,
+								       type,
+								       ghost_type,
+								       this->element_filter(type, ghost_type));
 
   Array<Real>::matrix_iterator
     directing_cosines_it = directing_cosines(type, ghost_type).begin(voigt_size, voigt_size);
@@ -496,18 +496,17 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & typ
   Mesh::type_iterator type_end = mesh.lastType(dim, ghost_type);
 
   for (; type_it != type_end ; ++type_it) {
-    assembleStiffnessMatrix(type, *type_it, ghost_type, _not_ghost);
-    //assembleStiffnessMatrix(type, *type_it, ghost_type, _ghost);
+    assembleStiffnessMatrix(type, *type_it, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
 template<UInt dim>
 void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & interface_type,
                                                          const ElementType & background_type,
-                                                         GhostType interface_ghost,
-                                                         GhostType background_ghost) {
+                                                         GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   UInt voigt_size = getTangentStiffnessVoigtSize(dim);
@@ -517,12 +516,12 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
   FEEngine & background_engine = model->getFEEngine();
   FEEngine & interface_engine = model->getFEEngine("EmbeddedInterfaceFEEngine");
 
-  Array<UInt> & elem_filter = element_filter(interface_type, interface_ghost);
-  Array<Real> & grad_u = gradu_embedded(interface_type, interface_ghost);
+  Array<UInt> & elem_filter = element_filter(interface_type, ghost_type);
+  Array<Real> & grad_u = gradu_embedded(interface_type, ghost_type);
 
   UInt nb_element = elem_filter.getSize();
   UInt nodes_per_background_e = Mesh::getNbNodesPerElement(background_type);
-  UInt nb_quadrature_points = interface_engine.getNbQuadraturePoints(interface_type, interface_ghost);
+  UInt nb_quadrature_points = interface_engine.getNbQuadraturePoints(interface_type, ghost_type);
 
   UInt back_dof = dim * nodes_per_background_e;
 
@@ -530,21 +529,16 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
 
   grad_u.resize(nb_quadrature_points * nb_element);
 
-  //need function model->getInterfaceDisplacement()
-  /*interface_engine.gradientOnQuadraturePoints(model->getInterfaceDisplacement(),
-                                              grad_u, dim, interface_type, interface_ghost,
-                                              elem_filter);*/
-
   Array<Real> * tangent_moduli = new Array<Real>(nb_element * nb_quadrature_points,
-                                                 1, "interface_tangent_moduli");
+						 1, "interface_tangent_moduli");
   tangent_moduli->clear();
-  computeTangentModuli(interface_type, *tangent_moduli, interface_ghost);
+  computeTangentModuli(interface_type, *tangent_moduli, ghost_type);
 
-  Array<Real> & shapesd = shape_derivatives(interface_type, interface_ghost)->operator()(background_type, background_ghost);
+  Array<Real> & shapesd = shape_derivatives(interface_type, ghost_type)->operator()(background_type, ghost_type);
 
   Array<Real> * integrant = new Array<Real>(nb_element * nb_quadrature_points,
-                                            integrant_size * integrant_size,
-                                            "B^t*C^t*D*C*B");
+					    integrant_size * integrant_size,
+					    "B^t*C^t*D*C*B");
   integrant->clear();
 
   /// Temporary matrices for integrant product
@@ -557,7 +551,7 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
   Array<Real>::scalar_iterator D_end = tangent_moduli->end();
 
   Array<Real>::matrix_iterator C_it =
-    directing_cosines(interface_type, interface_ghost).begin(voigt_size, voigt_size);
+    directing_cosines(interface_type, ghost_type).begin(voigt_size, voigt_size);
   Array<Real>::matrix_iterator B_it =
     shapesd.begin(dim, nodes_per_background_e);
   Array<Real>::matrix_iterator integrant_it =
@@ -584,7 +578,7 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
   Array<Real> * K_interface = new Array<Real>(nb_element, integrant_size * integrant_size, "K_interface");
   interface_engine.integrate(*integrant, *K_interface,
                              integrant_size * integrant_size,
-                             interface_type, interface_ghost,
+                             interface_type, ghost_type,
                              elem_filter);
 
   delete integrant;
@@ -593,9 +587,9 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
 
   filterInterfaceBackgroundElements(*background_filter,
                                     background_type, interface_type,
-                                    background_ghost, interface_ghost);
+                                    ghost_type);
 
-  background_engine.assembleMatrix(*K_interface, K, dim, background_type, background_ghost, *background_filter);
+  background_engine.assembleMatrix(*K_interface, K, dim, background_type, ghost_type, *background_filter);
 
   delete K_interface;
   delete background_filter;
@@ -605,7 +599,7 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & int
 
 /* -------------------------------------------------------------------------- */
 
-/// In this function, type and ghost type refer to background elements
+/// In this function, type and ghost_type refer to background elements
 template<UInt dim>
 void MaterialReinforcement<dim>::computeBackgroundShapeDerivatives(const ElementType & type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -628,15 +622,15 @@ void MaterialReinforcement<dim>::computeBackgroundShapeDerivatives(const Element
     Array<Real> quad_pos(nb_quad_per_element * nb_elements, dim, "interface_quad_points");
     quad_pos.resize(nb_quad_per_element * nb_elements);
     interface_engine.interpolateOnQuadraturePoints(interface_mesh.getNodes(),
-                                                   quad_pos, dim, *interface_type,
-                                                   ghost_type, filter);
+						   quad_pos, dim, *interface_type,
+						   ghost_type, filter);
 
 
     Array<Real> & background_shapesd = shape_derivatives(*interface_type, ghost_type)->operator()(type, ghost_type);
     background_shapesd.clear();
 
     Array<UInt> * background_elements = new Array<UInt>(nb_elements, 1, "computeBackgroundShapeDerivatives:background_filter");
-    filterInterfaceBackgroundElements(*background_elements, type, *interface_type, ghost_type, ghost_type);
+    filterInterfaceBackgroundElements(*background_elements, type, *interface_type, ghost_type);
 
     Array<UInt>::scalar_iterator
       back_it = background_elements->begin(),
@@ -649,7 +643,7 @@ void MaterialReinforcement<dim>::computeBackgroundShapeDerivatives(const Element
 
     for (; back_it != back_end ; ++back_it) {
       for (UInt i = 0 ; i < nb_quad_per_element ; i++, ++shapesd_it, ++quad_pos_it)
-        engine.computeShapeDerivatives(*quad_pos_it, *back_it, type, *shapesd_it, ghost_type);
+	engine.computeShapeDerivatives(*quad_pos_it, *back_it, type, *shapesd_it, ghost_type);
     }
 
     delete background_elements;
@@ -685,69 +679,48 @@ Real MaterialReinforcement<dim>::getEnergy(std::string id) {
   return 0;
 }
 
-// Author is Nicolas Richart, see material.cc
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+ElementTypeMap<UInt> MaterialReinforcement<dim>::getInternalDataPerElem(const ID & field_name,
+									const ElementKind & kind,
+									const ID & fe_engine_id) {
+  if (field_name == "stress_embedded")
+    return Material::getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
+  else {
+    return Material::getInternalDataPerElem(field_name, kind, fe_engine_id);
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
+// Author is Guillaume Anciaux, see material.cc
 template<UInt dim>
 void MaterialReinforcement<dim>::flattenInternal(const std::string & field_id,
-                                                 ElementTypeMapArray<Real> & internal_flat,
-                                                 const GhostType ghost_type,
-                                                 ElementKind element_kind) {
+						 ElementTypeMapArray<Real> & internal_flat,
+						 const GhostType ghost_type,
+						 ElementKind element_kind) {
   AKANTU_DEBUG_IN();
 
-  typedef ElementTypeMapArray<UInt>::type_iterator iterator;
-  iterator tit = this->element_filter.firstType(1, ghost_type, element_kind);
-  iterator end = this->element_filter.lastType(1, ghost_type, element_kind);
+  // si c'est pour tous les champ qu'il faut spatial_dimension = 1 vire juste le if statement
+  if(field_id == "stress_embedded") {
+    Material::flattenInternalIntern(field_id,
+				    internal_flat,
+				    1,
+				    ghost_type,
+				    _ek_not_defined,
+				    &(this->element_filter),
+				    &(this->model->getInterfaceMesh()));
 
-  for (; tit != end; ++tit) {
-    ElementType type = *tit;
-
-    try {
-      __attribute__((unused)) const Array<Real> & src_vect
-        = this->getArray(field_id,type,ghost_type);
-
-    } catch(debug::Exception & e) {
-      continue;
-    }
-
-    const Array<Real> & src_vect = this->getArray(field_id,type,ghost_type);
-    const Array<UInt> & filter   = this->element_filter(type,ghost_type);
-
-    // total number of elements for a given type
-    UInt nb_element = this->model->getInterfaceMesh().getNbElement(type,ghost_type);
-    // number of filtered elements
-    UInt nb_element_src = filter.getSize();
-    // number of quadrature points per elem
-    UInt nb_quad_per_elem = 0;
-    // number of data per quadrature point
-    UInt nb_data_per_quad = src_vect.getNbComponent();
-
-    if (!internal_flat.exists(type,ghost_type)) {
-      internal_flat.alloc(nb_element*nb_quad_per_elem,nb_data_per_quad,type,ghost_type);
-    }
-
-    if (nb_element_src == 0) continue;
-    nb_quad_per_elem = (src_vect.getSize()/nb_element_src);
-
-    // number of data per element
-    UInt nb_data = nb_quad_per_elem * src_vect.getNbComponent();
-
-    Array<Real> & dst_vect = internal_flat(type,ghost_type);
-    dst_vect.resize(nb_element*nb_quad_per_elem);
-
-    Array<UInt>::const_scalar_iterator it  = filter.begin();
-    Array<UInt>::const_scalar_iterator end = filter.end();
-    Array<Real>::const_vector_iterator it_src =
-      src_vect.begin_reinterpret(nb_data,nb_element_src);
-
-    Array<Real>::vector_iterator it_dst =
-      dst_vect.begin_reinterpret(nb_data,nb_element);
-
-    for (; it != end ; ++it,++it_src) {
-      it_dst[*it] = *it_src;
-    }
+  } else {
+    Material::flattenInternal(field_id,
+			      internal_flat,
+			      ghost_type,
+			      _ek_not_defined);
   }
 
   AKANTU_DEBUG_OUT();
 }
+
 
 /* -------------------------------------------------------------------------- */
 

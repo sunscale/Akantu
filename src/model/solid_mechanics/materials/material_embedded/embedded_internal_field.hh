@@ -53,15 +53,13 @@ public:
     InternalField<T>(id,
                      material,
                      material.getModel().getFEEngine("EmbeddedInterfaceFEEngine"),
-                     material.getElementFilter())
-  {
+                     material.getElementFilter()) {
     this->spatial_dimension = 1;
   }
 
   /// Copy constructor
   EmbeddedInternalField(const ID & id, const EmbeddedInternalField & other):
-    InternalField<T>(id, other)
-  {
+    InternalField<T>(id, other) {
     this->spatial_dimension = 1;
   }
 
@@ -69,7 +67,6 @@ public:
     InternalField<T>::operator=(other);
     this->spatial_dimension = 1;
   }
-
 };
 
 /// Method used to initialise the embedded internal fields from material file

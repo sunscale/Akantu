@@ -40,8 +40,18 @@
 
 __BEGIN_AKANTU__
 
+/**
+ * Cartesian kernel definition
+ *  - CGAL::Cartesian uses internal referene counting
+ *  - CGAL::Simple_cartesian doesn't (better performance)
+ *  Both use exact predicates and inexact constructions (single/double precision)
+ */
 typedef CGAL::Simple_cartesian<Real> Cartesian;
 
+/**
+ * Spherical kernel definition
+ * Uses exact predicates and inexact constructions
+ */
 typedef CGAL::Spherical_kernel_3<Cartesian, CGAL::Algebraic_kernel_for_spheres_2_3<Real> > Spherical;
 
 __END_AKANTU__

@@ -64,7 +64,7 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
 
   Array<Real> & nodes = const_cast<Array<Real> &>(this->mesh.getNodes());
   UInt nb_node = nodes.getSize() ;
-  Real tol = pow(10,-10);
+  Real tol = 1e-10;
   //Array<UInt> & connectivity_tri3 = this->mesh.getConnectivity(_triangle_3);
   //Array<UInt> & connectivity_IGFEMtri4 = this->mesh.getConnectivity(_IGFEM_triangle_3);
   typedef boost::variant<pair_type> sk_inter_res;
@@ -129,12 +129,15 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQueryList(const std::l
   AKANTU_DEBUG_OUT();
 }
 
+#if defined(AKANTU_IGFEM)
+
 template<UInt dim, ElementType type>
-void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere_3> & query_list) {
+void MeshSphereIntersector<dim, type>::buildIgfemMesh(const std::list<SK::Sphere_3> & query_list) {
   AKANTU_DEBUG_IN();
   
   computeIntersectionQueryList(query_list);
   // Addition of the segment type in the mesh
+  //TODO Mesh & mesh_no_const = const_cast<Mesh &>(this->mesh); or remove init const...
   const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_4, _not_ghost);
   const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_4, _ghost);
   const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_5, _not_ghost);
@@ -146,6 +149,7 @@ void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere
   Element element_tri4(_igfem_triangle_4, 0, _not_ghost),
     element_tri5(_igfem_triangle_5, 0, _not_ghost);
   NewElementsEvent new_elements;
+  new_elements.getList().extendComponentsInterlaced(2, 1);
 
   Array<UInt> ctri3 = this->mesh.getConnectivity(_triangle_3);
   RemovedElementsEvent remove_elem(this->mesh);
@@ -156,6 +160,9 @@ void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere
   for(UInt nel=0; nel != ctri3.getSize(); ++nel){
     if(new_node_per_elem(nel,0)!=0){
       Element element_tri3(_triangle_3, 0, _not_ghost);
+      Array<Element> & new_elements_list = new_elements.getList() ;
+      UInt n_new_el = new_elements_list.getSize();
+      new_elements_list.resize(n_new_el+1);
       switch(new_node_per_elem(nel,0)){
       case 1 :{
 	Vector<UInt> ctri4(4);
@@ -183,7 +190,8 @@ void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere
 	UInt nb_tri4 = connec_igfem_tri4.getSize();
 	connec_igfem_tri4.push_back(ctri4);
 	element_tri4.element = nb_tri4;
-	new_elements.getList().push_back(element_tri4);
+	//new_elements.getList().push_back(element_tri4);
+	new_elements_list(n_new_el,0) = element_tri4;
 	break;
       }
       case 2 :{
@@ -236,7 +244,8 @@ void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere
 	UInt nb_tri5 = connec_igfem_tri5.getSize();
 	connec_igfem_tri5.push_back(ctri5);
 	element_tri5.element = nb_tri5;
-	new_elements.getList().push_back(element_tri5);
+	//new_elements.getList().push_back(element_tri5);
+	new_elements_list(n_new_el,0) = element_tri5;
 	break;
       }
       default:
@@ -244,6 +253,7 @@ void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere
 	break;
       }
       element_tri3.element = nel;
+      new_elements_list(n_new_el,1) = element_tri3;
       remove_elem.getList().push_back(element_tri3);
       new_numbering(nel) =  UInt(-1);
     }
@@ -257,6 +267,8 @@ void MeshSphereIntersector<dim, type>::BuildIgfemMesh(const std::list<SK::Sphere
 
   AKANTU_DEBUG_OUT();
 }
+
+#endif
 
 __END_AKANTU__
 

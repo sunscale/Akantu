@@ -159,6 +159,10 @@ void Material::initMaterial() {
        it != internal_vectors_uint.end();
        ++it) it->second->resize();
 
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
+       ++it) it->second->resize();
+
   is_init = true;
 
   AKANTU_DEBUG_OUT();
@@ -1365,7 +1369,7 @@ const Array<Real> & Material::getArray(const ID & vect_id, const ElementType & t
   try {
     return Memory::getArray<Real>(fvect_id);
   } catch(debug::Exception & e) {
-    AKANTU_EXCEPTION("The material " << name << "(" <<getID() << ") does not contain a vector " << vect_id << "(" << fvect_id << ") [" << e << "]");
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" <<getID() << ") does not contain a vector " << vect_id << "(" << fvect_id << ") [" << e << "]");
   }
 }
 
@@ -1380,7 +1384,7 @@ Array<Real> & Material::getArray(const ID & vect_id, const ElementType & type, c
   try {
     return Memory::getArray<Real>(fvect_id);
   } catch(debug::Exception & e) {
-    AKANTU_EXCEPTION("The material " << name << "(" << getID() << ") does not contain a vector " << vect_id << "(" << fvect_id << ") [" << e << "]");
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID() << ") does not contain a vector " << vect_id << "(" << fvect_id << ") [" << e << "]");
   }
 }
 
@@ -1388,7 +1392,7 @@ Array<Real> & Material::getArray(const ID & vect_id, const ElementType & type, c
 const InternalField<Real> & Material::getInternal(const ID & int_id) const {
   std::map<ID, InternalField<Real> *>::const_iterator it = internal_vectors_real.find(getID() + ":" + int_id);
   if(it == internal_vectors_real.end()) {
-    AKANTU_EXCEPTION("The material " << name << "(" << getID()
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
 		     << ") does not contain an internal "
 		     << int_id << " (" << (getID() + ":" + int_id) << ")");
   }
@@ -1399,9 +1403,9 @@ const InternalField<Real> & Material::getInternal(const ID & int_id) const {
 InternalField<Real> & Material::getInternal(const ID & int_id) {
   std::map<ID, InternalField<Real> *>::iterator it = internal_vectors_real.find(getID() + ":" + int_id);
   if(it == internal_vectors_real.end()) {
-    AKANTU_EXCEPTION("The material " << name << "(" << getID()
-		     << ") does not contain an internal "
-		     << int_id << " (" << (getID() + ":" + int_id) << ")");
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
+			    << ") does not contain an internal "
+			    << int_id << " (" << (getID() + ":" + int_id) << ")");
   }
   return *it->second;
 }
@@ -1490,6 +1494,10 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
        it != internal_vectors_uint.end();
        ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
 
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
+       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -1502,6 +1510,10 @@ void Material::resizeInternals() {
 
   for (std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end();
+       ++it) it->second->resize();
+
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
        ++it) it->second->resize();
   AKANTU_DEBUG_OUT();
 }
@@ -1580,6 +1592,10 @@ void Material::onElementsRemoved(const Array<Element> & element_list,
   for (std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end();
        ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+
+  for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
+       it != internal_vectors_bool.end();
+       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1642,35 +1658,78 @@ void Material::printself(std::ostream & stream, int indent) const {
 }
 
 /* -------------------------------------------------------------------------- */
+inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id,
+							     const ElementKind & element_kind,
+                                                             const ID & fe_engine_id) const {
+
+  std::map<ID, InternalField<Real> *>::const_iterator internal_array =
+    internal_vectors_real.find(this->getID()+":"+id);
+
+  if (internal_array == internal_vectors_real.end() ||
+      internal_array->second->getElementKind() != element_kind)
+    AKANTU_EXCEPTION("Cannot find internal field " << id << " in material " << this->name);
+
+  InternalField<Real> & internal = *internal_array->second;
+  InternalField<Real>::type_iterator it = internal.firstType(internal.getSpatialDimension(),
+							     _not_ghost, element_kind);
+  InternalField<Real>::type_iterator last_type = internal.lastType(internal.getSpatialDimension(),
+								   _not_ghost, element_kind);
+
+  ElementTypeMap<UInt> res;
+  for(; it != last_type; ++it) {
+    UInt nb_quadrature_points = 0;
+    nb_quadrature_points = model->getFEEngine(fe_engine_id).getNbQuadraturePoints(*it);
+
+    res(*it) = internal.getNbComponent() * nb_quadrature_points;
+  }
+  return res;
+}
+
+/* -------------------------------------------------------------------------- */
 void Material::flattenInternal(const std::string & field_id,
 			       ElementTypeMapArray<Real> & internal_flat,
 			       const GhostType ghost_type,
-			       ElementKind element_kind){
+			       ElementKind element_kind) const {
+  this->flattenInternalIntern(field_id, internal_flat,
+			      this->spatial_dimension,
+			      ghost_type, element_kind);
+}
 
+/* -------------------------------------------------------------------------- */
+void Material::flattenInternalIntern(const std::string & field_id,
+				     ElementTypeMapArray<Real> & internal_flat,
+				     UInt spatial_dimension,
+				     const GhostType ghost_type,
+				     ElementKind element_kind,
+				     const ElementTypeMapArray<UInt> * element_filter,
+				     const Mesh * mesh) const {
   typedef ElementTypeMapArray<UInt>::type_iterator iterator;
-  iterator tit = this->element_filter.firstType(this->spatial_dimension,
-						ghost_type, element_kind);
-  iterator end = this->element_filter.lastType(this->spatial_dimension,
-					       ghost_type, element_kind);
 
+  if(element_filter == NULL) element_filter = &(this->element_filter);
+  if(mesh == NULL)  mesh = &(this->model->mesh);
+
+  iterator tit = element_filter->firstType(spatial_dimension,
+					  ghost_type,
+					  element_kind);
+  iterator end = element_filter->lastType(spatial_dimension,
+					 ghost_type,
+					 element_kind);
 
   for (; tit != end; ++tit) {
-
     ElementType type = *tit;
 
     try {
       __attribute__((unused)) const Array<Real> & src_vect
-	= this->getArray(field_id,type,ghost_type);
-
+	= this->getArray(field_id, type, ghost_type);
     } catch(debug::Exception & e) {
       continue;
     }
 
-    const Array<Real> & src_vect = this->getArray(field_id,type,ghost_type);
-    const Array<UInt> & filter   = this->element_filter(type,ghost_type);
+    const Array<Real> & src_vect = this->getArray(field_id, type, ghost_type);
+    const Array<UInt> & filter   = (*element_filter)(type, ghost_type);
 
     // total number of elements for a given type
-    UInt nb_element = this->model->mesh.getNbElement(type,ghost_type);
+    UInt nb_element = mesh->getNbElement(type,ghost_type);
     // number of filtered elements
     UInt nb_element_src = filter.getSize();
     // number of quadrature points per elem
@@ -1679,11 +1738,14 @@ void Material::flattenInternal(const std::string & field_id,
     UInt nb_data_per_quad = src_vect.getNbComponent();
 
     if (!internal_flat.exists(type,ghost_type)) {
-      internal_flat.alloc(nb_element*nb_quad_per_elem,nb_data_per_quad,type,ghost_type);
+      internal_flat.alloc(nb_element * nb_quad_per_elem,
+			  nb_data_per_quad,
+			  type,
+			  ghost_type);
     }
 
     if (nb_element_src == 0) continue;
-    nb_quad_per_elem = (src_vect.getSize()/nb_element_src);
+    nb_quad_per_elem = (src_vect.getSize() / nb_element_src);
 
     // number of data per element
     UInt nb_data = nb_quad_per_elem * src_vect.getNbComponent();
@@ -1694,10 +1756,10 @@ void Material::flattenInternal(const std::string & field_id,
     Array<UInt>::const_scalar_iterator it  = filter.begin();
     Array<UInt>::const_scalar_iterator end = filter.end();
     Array<Real>::const_vector_iterator it_src =
-      src_vect.begin_reinterpret(nb_data,nb_element_src);
+      src_vect.begin_reinterpret(nb_data, nb_element_src);
 
     Array<Real>::vector_iterator it_dst =
-      dst_vect.begin_reinterpret(nb_data,nb_element);
+      dst_vect.begin_reinterpret(nb_data, nb_element);
 
     for (; it != end ; ++it,++it_src) {
       it_dst[*it] = *it_src;

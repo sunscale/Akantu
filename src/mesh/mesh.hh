@@ -421,6 +421,8 @@ public:
   /* Private methods for friends                                              */
   /* ------------------------------------------------------------------------ */
 private:
+  friend class MeshAccessor;
+
   friend class MeshIOMSH;
   friend class MeshIOMSHStruct;
   friend class MeshIODiana;

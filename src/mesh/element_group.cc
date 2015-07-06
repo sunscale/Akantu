@@ -159,8 +159,42 @@ void ElementGroup::optimize() {
 }
 
 /* -------------------------------------------------------------------------- */
+void ElementGroup::fillFromNodeGroup() {
+  CSR<Element> node_to_elem;
+  MeshUtils::buildNode2Elements(this->mesh, node_to_elem, this->dimension);
 
+  std::set<Element> seen;
 
+  Array<UInt>::const_iterator<> itn  = this->node_group.begin();
+  Array<UInt>::const_iterator<> endn = this->node_group.end();
+  for (;itn != endn; ++itn) {
+    CSR<Element>::iterator ite = node_to_elem.begin(*itn);
+    CSR<Element>::iterator ende = node_to_elem.end(*itn);
+    for (;ite != ende; ++ite) {
+      const Element & elem = *ite;
+      if(this->dimension != _all_dimensions && this->dimension != Mesh::getSpatialDimension(elem.type)) continue;
+      if(seen.find(elem) != seen.end()) continue;
+
+      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(elem.type);
+      Array<UInt>::const_iterator< Vector<UInt> > conn_it =
+	this->mesh.getConnectivity(elem.type, elem.ghost_type).begin(nb_nodes_per_element);
+      const Vector<UInt> & conn = conn_it[elem.element];
+
+      UInt count = 0;
+      for (UInt n = 0; n < conn.size(); ++n) {
+	count += (this->node_group.getNodes().find(conn(n)) != -1 ? 1 : 0);
+      }
+
+      if(count == nb_nodes_per_element) this->add(elem);
+
+      seen.insert(elem);
+    }
+  }
+
+  this->optimize();
+}
+
+/* -------------------------------------------------------------------------- */
 
 
 __END_AKANTU__

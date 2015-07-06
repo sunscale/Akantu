@@ -2,7 +2,11 @@
 \usepackage{manual}
 \usepackage{manual-macros}
 
-\newcommand{\version}{}
+\IfFileExists{version-definition.tex}{
+  \input{version-definition}
+}{
+  \newcommand{\version}{2.2}
+}
 \graphicspath{ {./figures/} }
 %%% For references \todo check the coherency
 %% section 3.5 -> Section 3.5

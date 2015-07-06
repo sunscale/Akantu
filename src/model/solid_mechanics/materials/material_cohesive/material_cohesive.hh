@@ -111,6 +111,10 @@ protected:
   }
 
 
+  virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
+						      const ElementKind & element_kind,
+						      const ID & fe_engine_id) const;
+
   void computeNormal(const Array<Real> & position,
 		     Array<Real> & normal,
 		     ElementType type,

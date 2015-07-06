@@ -30,8 +30,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-template<UInt d>
-inline void MaterialReinforcement<d>::computeDirectingCosinesOnQuad(const Matrix<Real> & nodes,
+template<UInt dim>
+inline void MaterialReinforcement<dim>::computeDirectingCosinesOnQuad(const Matrix<Real> & nodes,
                                                                  Matrix<Real> & cosines) {
   AKANTU_DEBUG_IN();
 
@@ -42,12 +42,12 @@ inline void MaterialReinforcement<d>::computeDirectingCosinesOnQuad(const Matrix
   cosines.clear();
 
   Real sq_length = 0.;
-  for (UInt i = 0 ; i < d ; i++) {
+  for (UInt i = 0 ; i < dim ; i++) {
     sq_length += Math::pow<2, Real>(b(i) - a(i));
   }
 
   // Fill the first row of cosine matrix
-  for (UInt i = 0 ; i < d ; i++) {
+  for (UInt i = 0 ; i < dim ; i++) {
     cosines(0, i) = Math::pow<2, Real>(b(i) - a(i)) / sq_length;
   }
 
