@@ -73,5 +73,4 @@ template<> UInt * InterpolationElement<_itp_igfem_triangle_4>::enrichments[] = {
 template<> UInt * InterpolationElement<_itp_igfem_triangle_5>::enrichments[] = { &enrichment_vect[0],
 										&enrichment_vect[2]};
 
-
 __END_AKANTU__

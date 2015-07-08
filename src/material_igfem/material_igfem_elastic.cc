@@ -20,15 +20,13 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 MaterialIGFEMElastic<dim>::MaterialIGFEMElastic(SolidMechanicsModel & model, const ID & id)  :
-  MaterialIGFEM(model, id),
-  E(2),
-  nu(2),
+  Material(model, id),
+  Parent(model, id),
+  E(this->nb_sub_materials),
+  nu(this->nb_sub_materials),
   lambda("lambda", *this),
   mu("mu", *this),
-  kpa("kappa", *this),
-  lambda_default(0),
-  mu_default(0),
-  kpa_default(0) {
+  kpa("kappa", *this) {
   AKANTU_DEBUG_IN();
   this->initialize();
   AKANTU_DEBUG_OUT();
@@ -39,7 +37,7 @@ template<UInt dim>
 void MaterialIGFEMElastic<dim>::initialize() {
   this->registerParam("E"      , E      , _pat_parsable | _pat_modifiable, "Young's modulus"        );
   this->registerParam("nu"     , nu     , _pat_parsable | _pat_modifiable, "Poisson's ratio"        );
-  this->registerParam("Plane_Stress", plane_stress, false, _pat_parsmod, "Is plane stress");
+  ///  this->registerParam("Plane_Stress", plane_stress, false, _pat_parsmod, "Is plane stress");
 
   this->lambda           .initialize(1);
   this->mu           .initialize(1);
@@ -52,40 +50,112 @@ template<UInt dim>
 void MaterialIGFEMElastic<dim>::initMaterial() {
   AKANTU_DEBUG_IN();
 
-  Material::initMaterial();
+  Parent::initMaterial();
 
   if (dim == 1) this->nu.clear(); /// set the Poisson ratios to zero
-  this->updateDefaultInternals();
-
-  /// set the Lamé constants at all quad points to the constants of the first sub-material
-  this->lambda.setDefaultValue(lambda_default);
-  this->mu.setDefaultValue(mu_default);
-  this->kpa.setDefaultValue(kpa_default);
-
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-void MaterialIGFEMElastic<dim>::updateDefaultInternals(const UInt default_idx) {
+template<UInt spatial_dimension>
+void MaterialIGFEMElastic<spatial_dimension>::updateElasticInternals(GhostType ghost_type) {
 
-  this->lambda_default = this->nu(default_idx) * this->E(default_idx) / ((1 + this->nu(default_idx)) * (1 - 2*this->nu(default_idx)));
-  this->mu_default     = this->E(default_idx) / (2 * (1 + this->nu(default_idx)));
+  SolidMechanicsModelIGFEM * igfem_model = static_cast<SolidMechanicsModelIGFEM*>(this->model);
+  const Mesh & mesh = this->model->getMesh();
+  Array<Real> nodes_coordinates(mesh.getNodes(), true);
+  Array<Real>::const_vector_iterator nodes_it = nodes_coordinates.begin(spatial_dimension);
+
+  /// compute the Lamé constants for both sub-materials
+  Vector<Real> lambda_per_sub_mat(this->nb_sub_materials);
+  Vector<Real> mu_per_sub_mat(this->nb_sub_materials);
+  Vector<Real> kpa_per_sub_mat(this->nb_sub_materials);
   
-  this->kpa_default    = this->lambda_default + 2./3. * this->mu_default;
+  this->updateElasticConstants(lambda_per_sub_mat, mu_per_sub_mat, kpa_per_sub_mat);
+
+
+  /// loop over all types in the material
+  typedef ElementTypeMapArray<UInt>:: type_iterator iterator;
+  iterator it = this->element_filter.firstType(spatial_dimension, ghost_type, _ek_igfem);
+  iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type, _ek_igfem);
+  UInt index_1 = 0;
+  UInt index_2 = 0;
+  /// loop over all types in the filter
+  for(; it != last_type; ++it) {
+    ElementType el_type = *it;
+    UInt nb_nodes_per_el = mesh.getNbNodesPerElement(el_type);
+    UInt nb_parent_nodes = IGFEMHelper::getNbParentNodes(el_type);
+    Vector<bool> is_inside(nb_parent_nodes);
+    const Array<UInt> & connectivity = mesh.getConnectivity(el_type, ghost_type);
+    Array<UInt>::const_vector_iterator connec_it = connectivity.begin(nb_nodes_per_el);
+
+    /// get the number of quadrature points for the two sub-elements
+    UInt quads_1 = IGFEMHelper::getNbQuadraturePoints(el_type, 0);
+    UInt quads_2 = IGFEMHelper::getNbQuadraturePoints(el_type, 1);
+  
+    /// get pointer to internals for given type
+    Real * lambda_ptr = this->lambda(el_type, ghost_type).storage();
+    Real * mu_ptr = this->mu(el_type, ghost_type).storage();
+    Real * kpa_ptr = this->kpa(el_type, ghost_type).storage();
+
+    /// loop all elements for the given type
+    const Array<UInt> & filter   = this->element_filter(el_type,ghost_type);
+    UInt nb_elements = filter.getSize();
+    for (UInt e = 0; e < nb_elements; ++e, ++connec_it) {
+      for (UInt i = 0; i < nb_parent_nodes; ++i) {
+	Vector<Real> node = nodes_it[(*connec_it)(i)];
+	is_inside(i) = igfem_model->isInside(node, this->name_sub_mat_1);
+      }
+
+      UInt orientation = IGFEMHelper::getElementOrientation(el_type, is_inside);
+
+      if (orientation) {
+	index_1 = 0;
+	index_2 = 1;
+      }
+      else {
+	index_1 = 1;
+	index_2 = 0;	
+      }
+
+      for (UInt q = 0; q < quads_1; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr) {
+	*lambda_ptr = lambda_per_sub_mat(index_1);
+	*mu_ptr = mu_per_sub_mat(index_1);
+	*kpa_ptr = kpa_per_sub_mat(index_1); 
+      }
+      for (UInt q = 0; q < quads_2; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr) {
+	*lambda_ptr = lambda_per_sub_mat(index_2);
+	*mu_ptr = mu_per_sub_mat(index_2);
+	*kpa_ptr = kpa_per_sub_mat(index_2); 
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+void MaterialIGFEMElastic<dim>::updateElasticConstants(Vector<Real> & lambda_vec, Vector<Real> & mu_vec, Vector<Real> & kpa_vec) {
+
+  for (UInt i = 0; i < this->nb_sub_materials; ++i) {
+    lambda_vec(i) = this->nu(i) * this->E(i) / ((1 + this->nu(i)) * (1 - 2*this->nu(i)));
+    mu_vec(i)     = this->E(i) / (2 * (1 + this->nu(i)));
+
+    kpa_vec(i)    = lambda_vec(i) + 2./3. * mu_vec(i);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 template<>
-void MaterialIGFEMElastic<2>::updateDefaultInternals(const UInt default_idx) {
+void MaterialIGFEMElastic<2>::updateElasticConstants(Vector<Real> & lambda_vec, Vector<Real> & mu_vec, Vector<Real> & kpa_vec) {
 
-  this->lambda_default = this->nu(default_idx) * this->E(default_idx) / ((1 + this->nu(default_idx)) * (1 - 2*this->nu(default_idx)));
-  this->mu_default     = this->E(default_idx) / (2 * (1 + this->nu(default_idx)));
+  for (UInt i = 0; i < this->nb_sub_materials; ++i) {
+    lambda_vec(i) = this->nu(i) * this->E(i) / ((1 + this->nu(1)) * (1 - 2*this->nu(i)));
+    mu_vec(i)     = this->E(i) / (2 * (1 + this->nu(i)));
 
-  if(this->plane_stress) this->lambda_default = this->nu(default_idx) * this->E(default_idx) / ((1 + this->nu(default_idx))*(1 - this->nu(default_idx)));
+    if(this->plane_stress) lambda_vec(i) = this->nu(i) * this->E(i) / ((1 + this->nu(i))*(1 - this->nu(i)));
 
-  this->kpa_default    = this->lambda_default + 2./3. * this->mu_default;
+    kpa_vec(i)    = lambda_vec(i) + 2./3. * mu_vec(i);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -205,7 +275,14 @@ void MaterialIGFEMElastic<spatial_dimension>::computePotentialEnergyByElement(El
 }
 
 /* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void MaterialIGFEMElastic<spatial_dimension>::onElementsAdded(const Array<Element> & element_list,
+							      const NewElementsEvent & event) {
+  
+  Parent::onElementsAdded(element_list, event);
+  updateElasticInternals(_not_ghost);
 
+};
 
 INSTANTIATE_MATERIAL(MaterialIGFEMElastic);
 

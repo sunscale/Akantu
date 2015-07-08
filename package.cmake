@@ -15,7 +15,8 @@
 #===============================================================================
 
 package_declare(IGFEM
-  DESCRIPTION "Use Interface-enriched generalized FEM")
+  DESCRIPTION "Use Interface-enriched generalized FEM"
+  DEPENDS CGAL)
 
 package_declare_sources(igfem
   element_class_igfem.cc
@@ -36,16 +37,27 @@ package_declare_sources(igfem
   dumper_igfem_elemental_field.hh
   dumper_igfem_generic_elemental_field.hh
   dumper_igfem_element_iterator.hh
+  dumper_igfem_material_internal_field.hh
+  dumper_igfem_quadrature_points_field.hh
+  
   igfem_helper.hh
+  igfem_helper.cc
+  igfem_enrichment.hh
+  igfem_enrichment.cc
+  igfem_enrichment_inline_impl.cc
   solid_mechanics_model_igfem.hh
   solid_mechanics_model_igfem.cc
 
   material_igfem/material_igfem_includes.hh
   material_igfem/material_igfem.hh
   material_igfem/material_igfem.cc
+  material_igfem/material_igfem_inline_impl.cc
   material_igfem/material_igfem_elastic.hh
   material_igfem/material_igfem_elastic.cc
   material_igfem/material_igfem_elastic_inline_impl.cc
+
+  material_igfem/igfem_internal_field.hh
+  material_igfem/igfem_internal_field_tmpl.hh
 
   )
 

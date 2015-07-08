@@ -18,6 +18,7 @@
 #define __AKANTU_SOLID_MECHANICS_MODEL_IGFEM_HH__
 #include "solid_mechanics_model.hh"
 #include "solid_mechanics_model_event_handler.hh"
+#include "igfem_enrichment.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -38,7 +39,8 @@ extern const SolidMechanicsModelIGFEMOptions default_solid_mechanics_model_igfem
 /* Solid Mechanics Model for IGFEM analysis                                   */
 /* -------------------------------------------------------------------------- */
 class SolidMechanicsModelIGFEM : public SolidMechanicsModel,
-				 public SolidMechanicsModelEventHandler{
+				 public SolidMechanicsModelEventHandler,
+				 public IGFEMEnrichment{
 public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -80,10 +82,16 @@ private:
 
 protected:
 
-  virtual void onNodesAdded  (const Array<UInt> & nodes_list,
-			      const NewNodesEvent & event) {};
-  virtual void onElementsAdded  (const Array<Element> & nodes_list,
-				 const NewElementsEvent & event) {};
+  virtual void onNodesAdded(const Array<UInt> & nodes_list,
+			    const NewNodesEvent & event);
+  virtual void onNodesRemoved(const Array <UInt> & element_list,
+			      const Array <UInt> & new_numbering,
+			      const RemovedNodesEvent & event);
+  virtual void onElementsAdded(const Array<Element> & nodes_list,
+			       const NewElementsEvent & event);
+  virtual void onElementsRemoved(const Array <Element> & element_list,
+				 const ElementTypeMapArray<UInt> & new_numbering,
+				 const RemovedElementsEvent & event);
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface                                                       */
@@ -97,20 +105,38 @@ public:
 					 const std::string & group_name,
 					 const ElementKind & element_kind,
 					 bool padding_flag);
+
+  virtual dumper::Field * createElementalField(const std::string & field_name, 
+					       const std::string & group_name,
+					       bool padding_flag,
+					       const UInt & spatial_dimension,
+					       const ElementKind & kind);
+
+/* -------------------------------------------------------------------------- */
+/* Accessors                                                                  */
+/* -------------------------------------------------------------------------- */
+public:
+  /// get the array of igfem nodes
+  virtual const Array<Real> & getIGFEMNodes() {
+    return *igfem_nodes;
+  }
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
 
   /// real displacements array
-  Array <Real> *real_displacement;
+  Array<Real> * real_displacement;
   /// real forces array
-  Array <Real> *real_force;
+  Array<Real> * real_force;
   /// real residuals array
-  Array <Real> *real_residual;
-  /// 
+  Array<Real> * real_residual;
+  /// IGFEM values at nodes
+  Array<Real> * igfem_nodes;
+  /// interface can move throughout the analysis
   bool moving_interface; 
-};
+};  
 
 /* -------------------------------------------------------------------------- */
 /* IGFEMMaterialSelector                                                      */

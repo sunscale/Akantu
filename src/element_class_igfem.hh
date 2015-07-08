@@ -237,6 +237,9 @@ public:
 							Matrix<Real> & normals) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
+
+  /// determine orientation of the element with respect to the interface
+  static inline bool getOrientation(const Vector<bool> & is_inside);
   
   
 /* -------------------------------------------------------------------------- */

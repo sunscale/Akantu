@@ -17,6 +17,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "material_igfem.hh"
+#include "plane_stress_toolbox.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_IGFEM_ELASTIC_HH__
@@ -33,12 +34,13 @@ __BEGIN_AKANTU__
  *   - Plane_Stress : if 0: plane strain, else: plane stress (default: 0)
  */
 template<UInt spatial_dimension>
-class MaterialIGFEMElastic : public MaterialIGFEM {
+class MaterialIGFEMElastic : public PlaneStressToolbox< spatial_dimension,
+							MaterialIGFEM > {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef  Material Parent;
+  typedef PlaneStressToolbox< spatial_dimension, MaterialIGFEM > Parent;
 public:
 
   MaterialIGFEMElastic(SolidMechanicsModel & model, const ID & id = "");
@@ -74,11 +76,12 @@ public:
   virtual void computePotentialEnergyByElement(ElementType type, UInt index,
 					       Vector<Real> & epot_on_quad_points);
 
+  void updateElasticInternals(GhostType ghost_type = _not_ghost);
+
 
 protected:
-  /// update the default internal parameters
-  void updateDefaultInternals(const UInt default_idx = 0);
 
+  void updateElasticConstants(Vector<Real> & lambda_vec, Vector<Real> & mu_vec, Vector<Real> & kpa_vec); 
   /// constitutive law for a given quadrature point
   inline void computeStressOnQuad(const Matrix<Real> & grad_u,
 				  Matrix<Real> & sigma,
@@ -93,6 +96,14 @@ protected:
   static inline void computePotentialEnergyOnQuad(const Matrix<Real> & grad_u,
 						  const Matrix<Real> & sigma,
 						  Real & epot);
+
+  /* ------------------------------------------------------------------------ */
+  /* MeshEventHandler inherited members                                       */
+  /* ------------------------------------------------------------------------ */
+public:
+  /* ------------------------------------------------------------------------ */
+  virtual void onElementsAdded(const Array<Element> & element_list,
+                               const NewElementsEvent & event);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -111,21 +122,13 @@ protected:
   Vector<Real> nu;
   
   /// First Lamé coefficient
-  InternalField<Real> lambda;
+  IGFEMInternalField<Real> lambda;
 
   /// Second Lamé coefficient (shear modulus)
-  InternalField<Real> mu;
+  IGFEMInternalField<Real> mu;
 
   /// Bulk modulus
-  InternalField<Real> kpa;
-
-  /// default Lamé coefficients and bulk modulus
-  Real lambda_default;
-  Real mu_default;
-  Real kpa_default;
-
-  /// Plane stress or plane strain
-  bool plane_stress;
+  IGFEMInternalField<Real> kpa;
 
 };
 
