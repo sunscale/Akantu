@@ -146,6 +146,8 @@ public:
     for (;tit != end && this->field(*tit, this->ghost_type).getSize() == 0; ++tit)
       type = *tit;
 
+    if (tit == end) return this->end();
+
     /// getting information for the field of the given type
     const array_type & vect = this->field(type, this->ghost_type);
     UInt nb_data_per_elem = this->getNbDataPerElem(type);

@@ -650,13 +650,17 @@ void SolidMechanicsModelCohesive::addDumpGroupFieldToDumper(const std::string & 
 							    bool padding_flag) {
   AKANTU_DEBUG_IN();
 
+  UInt spatial_dimension = this->spatial_dimension;
   ElementKind _element_kind = element_kind;
   if (dumper_name == "cohesive elements") {
     _element_kind = _ek_cohesive;
+  } else if (dumper_name == "facets") {
+    spatial_dimension = this->spatial_dimension - 1;
   }
   SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, 
 						 field_id,
 						 group_name,
+						 spatial_dimension,
 						 _element_kind,
 						 padding_flag);
 
