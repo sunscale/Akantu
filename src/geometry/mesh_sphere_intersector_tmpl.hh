@@ -65,8 +65,8 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
   Array<Real> & nodes = const_cast<Array<Real> &>(this->mesh.getNodes());
   UInt nb_node = nodes.getSize() ;
   Real tol = 1e-10;
-  //Array<UInt> & connectivity_tri3 = this->mesh.getConnectivity(_triangle_3);
-  //Array<UInt> & connectivity_IGFEMtri4 = this->mesh.getConnectivity(_IGFEM_triangle_3);
+  ///Array<UInt> & connectivity_tri3 = this->mesh.getConnectivity(_triangle_3);
+  ///Array<UInt> & connectivity_IGFEMtri4 = this->mesh.getConnectivity(_IGFEM_triangle_3);
   typedef boost::variant<pair_type> sk_inter_res;
 
   TreeTypeHelper<Line_arc<Spherical>, Spherical>::const_iterator
@@ -146,8 +146,8 @@ void MeshSphereIntersector<dim, type>::buildIgfemMesh(const std::list<SK::Sphere
   Array<UInt> &
     connec_igfem_tri4 = const_cast<Array<UInt> &>(this->mesh.getConnectivity(_igfem_triangle_4)),
     & connec_igfem_tri5 = const_cast<Array<UInt> &>(this->mesh.getConnectivity(_igfem_triangle_5));
-  Element element_tri4(_igfem_triangle_4, 0, _not_ghost),
-    element_tri5(_igfem_triangle_5, 0, _not_ghost);
+  Element element_tri4(_igfem_triangle_4, 0, _not_ghost, _ek_igfem),
+    element_tri5(_igfem_triangle_5, 0, _not_ghost, _ek_igfem);
   NewElementsEvent new_elements;
   new_elements.getList().extendComponentsInterlaced(2, 1);
 
