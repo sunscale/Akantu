@@ -47,6 +47,7 @@ __BEGIN_AKANTU__
 const EmbeddedInterfaceModelOptions
   default_embedded_interface_model_options(_explicit_lumped_mass, false, false);
 
+/* -------------------------------------------------------------------------- */
 EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
                                                Mesh & primitive_mesh,
                                                UInt spatial_dimension,
@@ -70,10 +71,12 @@ EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
   registerFEEngineObject<MyFEEngineType>("EmbeddedInterfaceFEEngine", *interface_mesh, 1);
 }
 
+/* -------------------------------------------------------------------------- */
 EmbeddedInterfaceModel::~EmbeddedInterfaceModel() {
   delete interface_material_selector;
 }
 
+/* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
   const EmbeddedInterfaceModelOptions & eim_options =
     dynamic_cast<const EmbeddedInterfaceModelOptions &>(options);
@@ -102,6 +105,7 @@ void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
 #endif
 }
 
+/* -------------------------------------------------------------------------- */
 // This function is very similar to SolidMechanicsModel's
 void EmbeddedInterfaceModel::initMaterials() {
   Element element;
@@ -138,6 +142,7 @@ void EmbeddedInterfaceModel::initMaterials() {
   SolidMechanicsModel::initMaterials();
 }
 
+/* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                                        const std::string & field_id,
                                                        const std::string & group_name,

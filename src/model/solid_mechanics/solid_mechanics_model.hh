@@ -82,7 +82,7 @@ class SolidMechanicsModel : public Model,
 			    public DataAccessor,
 			    public MeshEventHandler,
 			    public BoundaryCondition<SolidMechanicsModel>,
-                            public EventHandlerManager<SolidMechanicsModelEventHandler> {
+			    public EventHandlerManager<SolidMechanicsModelEventHandler> {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -277,7 +277,7 @@ public:
   template <NewmarkBeta::IntegrationSchemeCorrectorType type>
   void solve(Array<Real> &increment, Real block_val = 1.,
              bool need_factorize = true, bool has_profile_changed = false);
-  
+
 protected:
   /// finish the computation of residual to solve in increment
   void updateResidualInternal();
@@ -409,12 +409,12 @@ public:
 
   //! decide wether a field is a material internal or not
   bool isInternal(const std::string & field_name, const ElementKind & element_kind);
-#ifndef SWIG  
+#ifndef SWIG
   //! give the amount of data per element
   virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-					     const ElementKind & kind);
+						      const ElementKind & kind);
 
-  //! flatten a given material internal field 
+  //! flatten a given material internal field
   ElementTypeMapArray<Real> & flattenInternal(const std::string & field_name,
 					      const ElementKind & kind,
 					      const GhostType ghost_type = _not_ghost);
@@ -429,15 +429,13 @@ public:
   virtual dumper::Field * createNodalFieldBool(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag);
-  
 
-  virtual dumper::Field * createElementalField(const std::string & field_name, 
+
+  virtual dumper::Field * createElementalField(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag,
 					       const UInt & spatial_dimension,
 					       const ElementKind & kind);
-
-
 
   virtual void dump(const std::string & dumper_name);
 

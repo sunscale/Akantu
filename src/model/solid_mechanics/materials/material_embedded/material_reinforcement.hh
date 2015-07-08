@@ -107,11 +107,15 @@ public:
   /// Compute energy
   virtual Real getEnergy(std::string id);
 
-  /// Flatten internal (modified from Material for 1D internals)
-  void flattenInternal(const std::string & field_id,
-                       ElementTypeMapArray<Real> & internal_flat,
-                       const GhostType ghost_type,
-                       ElementKind element_kind);
+  ElementTypeMap<UInt> getInternalDataPerElem(const ID & field_name,
+					      const ElementKind & kind,
+					      const ID & fe_engine_id);
+
+  /// Reimplementation of Material's function to accomodate for interface mesh
+  virtual void flattenInternal(const std::string & field_id,
+			       ElementTypeMapArray<Real> & internal_flat,
+                               const GhostType ghost_type = _not_ghost,
+                               ElementKind element_kind = _ek_not_defined);
 
   /* ------------------------------------------------------------------------ */
   /* Protected methods                                                        */

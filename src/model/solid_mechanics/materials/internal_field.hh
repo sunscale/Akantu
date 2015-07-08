@@ -155,11 +155,14 @@ public:
   bool hasHistory() const { return (previous_values != NULL); }
 
   /// get the kind treated by the internal
-  const ElementKind & getElementKind() const {return element_kind;};
-
+  const ElementKind & getElementKind() const { return element_kind; }
 
   /// return the number of components
-  UInt getNbComponent(){return nb_component;}
+  UInt getNbComponent() const { return nb_component; }
+
+  /// return the spatial dimension corresponding to the internal element type loop filter
+  UInt getSpatialDimension() const { return this->spatial_dimension; }
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

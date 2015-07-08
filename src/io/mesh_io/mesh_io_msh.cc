@@ -481,7 +481,7 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
 
   outfile << std::setprecision(std::numeric_limits<Real>::digits10);
   outfile << "$Nodes" << std::endl;;
-  outfile << nodes.getSize() << std::endl;;
+  outfile << nodes.getSize() << std::endl;
 
   outfile << std::uppercase;
   for(UInt i = 0; i < nodes.getSize(); ++i) {

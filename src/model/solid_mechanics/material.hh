@@ -438,8 +438,9 @@ public:
   InternalField<Real> & getInternal(const ID & id);
 
   inline bool isInternal(const ID & id, const ElementKind & element_kind) const;
-  inline ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
-                                                     const ElementKind & element_kind) const;
+  virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
+						      const ElementKind & element_kind,
+						      const ID & fe_engine_id = "") const;
 
   bool isFiniteDeformation() const { return finite_deformation; }
   bool isInelasticDeformation() const { return inelastic_deformation; }
@@ -451,10 +452,19 @@ public:
   inline const T & getParam(const ID & param) const;
 
   virtual void flattenInternal(const std::string & field_id,
-		                           ElementTypeMapArray<Real> & internal_flat,
+			       ElementTypeMapArray<Real> & internal_flat,
                                const GhostType ghost_type = _not_ghost,
-                               ElementKind element_kind = _ek_not_defined);
-
+                               ElementKind element_kind = _ek_not_defined) const;
+protected:
+  /// internal variation of the flatten function that is more flexible and can
+  /// be used by inherited materials to change some behavior
+  virtual void flattenInternalIntern(const std::string & field_id,
+				     ElementTypeMapArray<Real> & internal_flat,
+				     UInt spatial_dimension,
+				     const GhostType ghost_type,
+				     ElementKind element_kind,
+				     const ElementTypeMapArray<UInt> * element_filter = NULL,
+				     const Mesh * mesh = NULL) const;
 
 protected:
 
