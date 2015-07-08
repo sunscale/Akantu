@@ -48,7 +48,7 @@ public:
 			 const array_iterator & array_it,
 			 const array_iterator & array_it_end,
 			 const GhostType ghost_type = _not_ghost,
-			 UInt sub_element = 01)
+			 UInt sub_element = 0)
     : field(field),
       tit(t_it),
       tit_end(t_it_end),
@@ -75,9 +75,9 @@ public:
       this->sub_element += 1;
     else {
       ++array_it;
+      this->sub_element = 0;
       while(array_it == array_it_end && tit != tit_end) {
 	++tit;
-	this->sub_element = 0;
 	if(tit != tit_end) {
 	  const array_type & vect = field(*tit, ghost_type);
 	  UInt _nb_data_per_elem = getNbDataPerElem(*tit);
