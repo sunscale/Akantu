@@ -143,8 +143,8 @@ public:
 
     /// skip all types without data
     ElementType type = *tit;
-    for (;tit != end && this->field(*tit, this->ghost_type).getSize() == 0; ++tit)
-      type = *tit;
+    for (;tit != end && this->field(*tit, this->ghost_type).getSize() == 0; ++tit) {}
+    type = *tit;
 
     /// getting information for the field of the given type
     const array_type & vect = this->field(type, this->ghost_type);
