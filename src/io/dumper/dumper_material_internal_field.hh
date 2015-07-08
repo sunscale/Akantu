@@ -33,6 +33,9 @@
 #define __AKANTU_DUMPER_MATERIAL_INTERNAL_FIELD_HH__
 /* -------------------------------------------------------------------------- */
 #include "dumper_quadrature_points_field.hh"
+#ifdef AKANTU_IGFEM
+#  include "dumper_igfem_material_internal_field.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
