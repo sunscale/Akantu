@@ -178,7 +178,7 @@ template <ElementType type>
 void ShapeLagrange<_ek_igfem>::precomputeShapesOnControlPoints(__attribute__((unused)) const Array<Real> & nodes,
 							  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
-
+ 
   InterpolationType itp_type = ElementClassProperty<type>::interpolation_type;
 
   /// typedef for the two subelement_types and the parent element type
@@ -189,8 +189,8 @@ void ShapeLagrange<_ek_igfem>::precomputeShapesOnControlPoints(__attribute__((un
   /// get the spatial dimension for the given element type
   UInt spatial_dimension = ElementClass<type>::getSpatialDimension();
   /// get the integration points for the subelements 
-  Matrix<Real> natural_coords_sub_1 = control_points(sub_type_1, ghost_type);
-  Matrix<Real> natural_coords_sub_2 = control_points(sub_type_2, ghost_type);
+  Matrix<Real> & natural_coords_sub_1 = control_points(sub_type_1, ghost_type);
+  Matrix<Real> & natural_coords_sub_2 = control_points(sub_type_2, ghost_type);
 
   /// store the number of quadrature points on each subelement and the toal number 
   UInt nb_points_sub_1 = natural_coords_sub_1.cols();
@@ -252,6 +252,8 @@ void ShapeLagrange<_ek_igfem>::precomputeShapesOnControlPoints(__attribute__((un
   Matrix<Real> sub_el_2_coords(spatial_dimension, nb_nodes_sub_el_2);
 
   /// loop over all elements of the given type and compute the shape functions
+  Vector<Real> all_shapes(size_of_shapes);
+
   for (UInt elem = 0; elem < nb_element; ++elem, ++shapes_it, ++x_it, ++natural_coords_parent_it) {
     Matrix<Real> & N = *shapes_it;
     const Matrix<Real> & X = *x_it;
@@ -266,18 +268,17 @@ void ShapeLagrange<_ek_igfem>::precomputeShapesOnControlPoints(__attribute__((un
     ElementClass<sub_type_1>::computeShapes(parent_natural_coords_2, parent_2_shapes);
 
     /// copy the results into the shape functions iterator and natural coords iterator
-    Vector<Real> all_shapes(size_of_shapes);
     for (UInt i = 0; i < nb_points_sub_1; ++i) {
       ElementClass<type>::assembleShapes(parent_1_shapes(i), sub_1_shapes(i), all_shapes, 0);
       N(i) = all_shapes;
-      Vector<Real> tmp(nc_parent(i));
-      tmp = parent_natural_coords_1(i);
+      nc_parent(i) = parent_natural_coords_1(i);
     }
     for (UInt i = 0; i < nb_points_sub_2; ++i) {
-      ElementClass<type>::assembleShapes(parent_2_shapes(i), sub_2_shapes(i), all_shapes, 0);
-      N(i + nb_points_sub_2) = all_shapes;
-      Vector<Real> tmp(nc_parent(i + nb_points_sub_1));
-      tmp = parent_natural_coords_2(i);
+      ElementClass<type>::assembleShapes(parent_2_shapes(i), sub_2_shapes(i), all_shapes, 1);
+      N(i + nb_points_sub_1) = all_shapes;
+      
+      ///N(i + nb_points_sub_2) = all_shapes;
+      nc_parent(i + nb_points_sub_1) = parent_natural_coords_2(i);
     }
       
   }
@@ -299,8 +300,8 @@ void ShapeLagrange<_ek_igfem>::precomputeShapeDerivativesOnControlPoints(const A
   UInt spatial_dimension = mesh.getSpatialDimension();
 
   /// get the integration points for the subelements 
-  Matrix<Real> natural_coords_sub_1 = control_points(sub_type_1, ghost_type);
-  Matrix<Real> natural_coords_sub_2 = control_points(sub_type_2, ghost_type);
+  Matrix<Real> & natural_coords_sub_1 = control_points(sub_type_1, ghost_type);
+  Matrix<Real> & natural_coords_sub_2 = control_points(sub_type_2, ghost_type);
   /// store the number of quadrature points on each subelement and the toal number 
   UInt nb_points_sub_1 = natural_coords_sub_1.cols();
   UInt nb_points_sub_2 = natural_coords_sub_2.cols();
@@ -326,7 +327,7 @@ void ShapeLagrange<_ek_igfem>::precomputeShapeDerivativesOnControlPoints(const A
   /// get an iterator to the coordiantes of the elements
   Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, nodes, x_el,
-  				  type, ghost_type);
+				       type, ghost_type);
 
   Real * shapesd_val = shapes_derivatives_tmp.storage();
   Array<Real>::matrix_iterator x_it = x_el.begin(spatial_dimension,
@@ -339,13 +340,14 @@ void ShapeLagrange<_ek_igfem>::precomputeShapeDerivativesOnControlPoints(const A
   Tensor3<Real> B_sub_1(spatial_dimension,  nb_nodes_sub_el_1, nb_points_sub_1);
   Tensor3<Real> B_sub_2(spatial_dimension, nb_nodes_sub_el_2, nb_points_sub_2);
   Tensor3<Real> B_parent(spatial_dimension, nb_nodes_parent_el, nb_points_total);
- 
+  /// assemble the shape derivatives 
+  Matrix<Real> all_shapes(spatial_dimension, nb_nodes_per_element);
   for (UInt elem = 0; elem < nb_element; ++elem, ++x_it, ++natural_coords_parent_it) {
     Matrix<Real> & X = *x_it;
     Matrix<Real> & nc_parent = *natural_coords_parent_it;
 
     Tensor3<Real> B(shapesd_val,
-  			   spatial_dimension, nb_nodes_per_element, nb_points_total);
+		    spatial_dimension, nb_nodes_per_element, nb_points_total);
   
     /// get the coordinates of the two sub elements and the parent element
     ElementClass<type>::getSubElementCoords(X, sub_el_1_coords, 0);
@@ -362,15 +364,15 @@ void ShapeLagrange<_ek_igfem>::precomputeShapeDerivativesOnControlPoints(const A
     computeShapeDerivativesOnCPointsByElement<parent_type>(parent_coords,
 							  nc_parent,
 							  B_parent);
-    /// assemble the shape derivatives 
-    Matrix<Real> all_shapes(spatial_dimension, nb_nodes_per_element);
+
     for (UInt i = 0; i < nb_points_sub_1; ++i) {
       ElementClass<type>::assembleShapeDerivatives(B_parent(i), B_sub_1(i), all_shapes, 0);
       B(i) = all_shapes;
     }
+
     for (UInt i = 0; i < nb_points_sub_2; ++i) {
       ElementClass<type>::assembleShapeDerivatives(B_parent(i), B_sub_2(i), all_shapes, 1);
-      B(i + nb_points_sub_2) = all_shapes;
+      B(i + nb_points_sub_1) = all_shapes;
     }
     
     shapesd_val += size_of_shapesd*nb_points_total;
