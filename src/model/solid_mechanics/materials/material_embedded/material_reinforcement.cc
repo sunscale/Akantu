@@ -109,6 +109,12 @@ void MaterialReinforcement<dim>::initMaterial() {
 
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Background shape derivatives need to be stored per background element
+ * types but also per embedded element type, which is why they are stored
+ * in an ElementTypeMap<ElementTypeMapArray<Real> *>. The outer ElementTypeMap
+ * refers to the embedded types, and the inner refers to the background types.
+ */
 template<UInt dim>
 void MaterialReinforcement<dim>::allocBackgroundShapeDerivatives() {
   AKANTU_DEBUG_IN();
@@ -325,7 +331,7 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & type, Ghos
   Mesh::type_iterator type_end = mesh.lastType(dim, ghost_type);
 
   for (; type_it != type_end ; ++type_it) {
-    assembleResidual(type, *type_it, ghost_type);
+    assembleResidualInterface(type, *type_it, ghost_type);
   }
 
 
@@ -334,10 +340,17 @@ void MaterialReinforcement<dim>::assembleResidual(const ElementType & type, Ghos
 }
 
 /* -------------------------------------------------------------------------- */
+
+/**
+ * Computes and assemble the residual. Residual in reinforcement is computed as :
+ * \f[
+ * \vec{r} = A_s \int_S{\mathbf{B}^T\mathbf{C}^T \vec{\sigma_s}\,\mathrm{d}s}
+ * \f]
+ */
 template<UInt dim>
-void MaterialReinforcement<dim>::assembleResidual(const ElementType & interface_type,
-                                                  const ElementType & background_type,
-                                                  GhostType ghost_type) {
+void MaterialReinforcement<dim>::assembleResidualInterface(const ElementType & interface_type,
+                                                           const ElementType & background_type,
+                                                           GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   UInt voigt_size = getTangentStiffnessVoigtSize(dim);
@@ -496,17 +509,24 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & typ
   Mesh::type_iterator type_end = mesh.lastType(dim, ghost_type);
 
   for (; type_it != type_end ; ++type_it) {
-    assembleStiffnessMatrix(type, *type_it, ghost_type);
+    assembleStiffnessMatrixInterface(type, *type_it, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
+/**
+ * Computes the reinforcement stiffness matrix (Gomes & Awruch, 2001)
+ * \f[
+ * \mathbf{K}_e = \sum_{i=1}^R{A_i\int_{S_i}{\mathbf{B}^T
+ * \mathbf{C}_i^T \mathbf{D}_{s, i} \mathbf{C}_i \mathbf{B}\,\mathrm{d}s}}
+ * \f]
+ */
 template<UInt dim>
-void MaterialReinforcement<dim>::assembleStiffnessMatrix(const ElementType & interface_type,
-                                                         const ElementType & background_type,
-                                                         GhostType ghost_type) {
+void MaterialReinforcement<dim>::assembleStiffnessMatrixInterface(const ElementType & interface_type,
+                                                                  const ElementType & background_type,
+                                                                  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   UInt voigt_size = getTangentStiffnessVoigtSize(dim);
@@ -643,7 +663,7 @@ void MaterialReinforcement<dim>::computeBackgroundShapeDerivatives(const Element
 
     for (; back_it != back_end ; ++back_it) {
       for (UInt i = 0 ; i < nb_quad_per_element ; i++, ++shapesd_it, ++quad_pos_it)
-	engine.computeShapeDerivatives(*quad_pos_it, *back_it, type, *shapesd_it, ghost_type);
+        engine.computeShapeDerivatives(*quad_pos_it, *back_it, type, *shapesd_it, ghost_type);
     }
 
     delete background_elements;
@@ -682,13 +702,9 @@ Real MaterialReinforcement<dim>::getEnergy(std::string id) {
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 ElementTypeMap<UInt> MaterialReinforcement<dim>::getInternalDataPerElem(const ID & field_name,
-									const ElementKind & kind,
-									const ID & fe_engine_id) {
-  if (field_name == "stress_embedded")
-    return Material::getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
-  else {
-    return Material::getInternalDataPerElem(field_name, kind, fe_engine_id);
-  }
+                                                                        const ElementKind & kind,
+                                                                        const ID & fe_engine_id) const {
+  return Material::getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
 }
 
 
@@ -696,27 +712,18 @@ ElementTypeMap<UInt> MaterialReinforcement<dim>::getInternalDataPerElem(const ID
 // Author is Guillaume Anciaux, see material.cc
 template<UInt dim>
 void MaterialReinforcement<dim>::flattenInternal(const std::string & field_id,
-						 ElementTypeMapArray<Real> & internal_flat,
-						 const GhostType ghost_type,
-						 ElementKind element_kind) {
+                                                 ElementTypeMapArray<Real> & internal_flat,
+                                                 const GhostType ghost_type,
+                                                 ElementKind element_kind) const {
   AKANTU_DEBUG_IN();
 
-  // si c'est pour tous les champ qu'il faut spatial_dimension = 1 vire juste le if statement
-  if(field_id == "stress_embedded") {
-    Material::flattenInternalIntern(field_id,
-				    internal_flat,
-				    1,
-				    ghost_type,
-				    _ek_not_defined,
-				    &(this->element_filter),
-				    &(this->model->getInterfaceMesh()));
-
-  } else {
-    Material::flattenInternal(field_id,
-			      internal_flat,
-			      ghost_type,
-			      _ek_not_defined);
-  }
+  Material::flattenInternalIntern(field_id,
+                                  internal_flat,
+                                  1,
+                                  ghost_type,
+                                  _ek_not_defined,
+                                  &(this->element_filter),
+                                  &(this->model->getInterfaceMesh()));
 
   AKANTU_DEBUG_OUT();
 }
