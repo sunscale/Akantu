@@ -63,6 +63,7 @@ int main (int argc, char * argv[]) {
 
   intersector.computeIntersectionQuery(segment);
 
+  std::cout << "number of seg_2 : " << interface_mesh.getNbElement(_segment_2) << std::endl;
   if (interface_mesh.getNbElement(_segment_2) != 2)
     return EXIT_FAILURE;
 
