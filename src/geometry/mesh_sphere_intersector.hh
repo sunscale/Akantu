@@ -76,9 +76,6 @@ public:
    * @param query the segment to compute the intersections with the mesh
    */
   virtual void computeIntersectionQuery(const SK::Sphere_3 & query);
-
-  /// Compute the list of queries
-  virtual void computeIntersectionQueryList(const std::list<SK::Sphere_3> & query_list);
   
 #if defined(AKANTU_IGFEM)
   /// Build the IGFEM mesh

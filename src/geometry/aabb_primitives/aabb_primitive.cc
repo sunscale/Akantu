@@ -39,9 +39,9 @@ Triangle_primitive::Point Triangle_primitive::reference_point() const {
 }
 
 Line_arc_primitive::Point Line_arc_primitive::reference_point() const {
-  Real x = primitive.source().x();
-  Real y = primitive.source().y();
-  Real z = primitive.source().z();
+  Real x = to_double(primitive.source().x());
+  Real y = to_double(primitive.source().y());
+  Real z = to_double(primitive.source().z());
   return Spherical::Point_3(x, y, z);
 }
 

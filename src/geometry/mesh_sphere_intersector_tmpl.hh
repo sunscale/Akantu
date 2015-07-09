@@ -48,10 +48,13 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(const Mesh & mesh):
   this->constructData();
   this->new_node_per_elem.clear();
 
-  if( ++mesh.firstType() != mesh.lastType() )
+  if( ++mesh.firstType() != mesh.lastType() ){
+    if( ( (*(mesh.firstType()) != _triangle_3) && (*(mesh.firstType()) != _segment_2) )
+	|| ((*(mesh.lastType()) != _triangle_3) && (*(mesh.lastType()) != _segment_2)) )
     AKANTU_DEBUG_ERROR("first_type : " << *(mesh.firstType()) <<
 		       ", last_type : " << *(mesh.lastType()) <<
 		       "Not ready for mesh type different than triangle_3");
+  }
 }
 
 template<UInt dim, ElementType type>
@@ -83,8 +86,8 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
 	  // Addition of the new node
 	  Vector<Real> new_node(dim, 0.0);
 	  SK::Circular_arc_point_3 arc_point = pair->first;
-	  new_node(0) = arc_point.x();
-	  new_node(1) = arc_point.y();
+	  new_node(0) = to_double(arc_point.x());
+	  new_node(1) = to_double(arc_point.y());
 	  bool is_on_mesh = false, is_new = true;
 	  UInt n = nb_nodes_init-1;
 	  for(; n != nb_node; ++n){
@@ -94,8 +97,9 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
 	      break;
 	    }
 	  }
-	  Real x1 = it->source().x(), y1 = it->source().y(), x2 = it->target().x(),
-	    y2 = it->target().y(), l = pow( pow((new_node(0)-x1),2) + pow((new_node(1)-y1),2), 1/2);
+	  Real x1 = to_double(it->source().x()), y1 = to_double(it->source().y()),
+	    x2 = to_double(it->target().x()), y2 = to_double(it->target().y()),
+	    l = pow( pow((new_node(0)-x1),2) + pow((new_node(1)-y1),2), 1/2);
 	  if( ( ( pow((new_node(0)-x1),2) + pow((new_node(1)-y1),2) ) < pow(l*tol,2) )
 	      || ( ( pow((new_node(0)-x2),2) + pow((new_node(1)-y2),2) ) < pow(l*tol,2) ) ){
 	    is_on_mesh = true;
@@ -120,14 +124,6 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
   AKANTU_DEBUG_OUT();
 }
 
-template<UInt dim, ElementType type>
-void MeshSphereIntersector<dim, type>::computeIntersectionQueryList(const std::list<SK::Sphere_3> & query_list) {
-  AKANTU_DEBUG_IN();
-  
-  parent_type::computeIntersectionQueryList(query_list);
-  
-  AKANTU_DEBUG_OUT();
-}
 
 #if defined(AKANTU_IGFEM)
 
@@ -135,7 +131,7 @@ template<UInt dim, ElementType type>
 void MeshSphereIntersector<dim, type>::buildIgfemMesh(const std::list<SK::Sphere_3> & query_list) {
   AKANTU_DEBUG_IN();
   
-  computeIntersectionQueryList(query_list);
+  this->computeIntersectionQueryList(query_list);
   // Addition of the segment type in the mesh
   //TODO Mesh & mesh_no_const = const_cast<Mesh &>(this->mesh); or remove init const...
   const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_4, _not_ghost);
