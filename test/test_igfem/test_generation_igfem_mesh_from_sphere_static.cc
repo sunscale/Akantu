@@ -50,21 +50,20 @@ int main (int argc, char * argv[]) {
 
   Mesh mesh(2);
   mesh.read("test_geometry_triangle.msh");
-  //mesh.read("mesh.msh");
+  // mesh.read("inclusion_2D_fineness_level_1.msh");
+  // mesh.read("mesh.msh");
 
   // Spherical kernel testing the addition of nodes
-  SK::Sphere_3 sphere(SK::Point_3(1, 0, 0), 0.2*0.2);
-  //SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.4999999999);
-  MeshSphereIntersector<2, _triangle_3> intersector_sphere3(mesh);
-  MeshSphereIntersector<2, _igfem_triangle_4> intersector_sphere4(mesh);
-  MeshSphereIntersector<2, _igfem_triangle_5> intersector_sphere5(mesh);
-  /*intersector_sphere3.constructData();
-  intersector_sphere4.constructData();
-  intersector_sphere5.constructData();*/
+  SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.401*0.401); //"inclusion_2D_fineness_level_1.msh"
+  // SK::Sphere_3 sphere(SK::Point_3(0, 0, 0), 0.3*0.3); //"mesh.msh"
+  // SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.2*0.2); //"test_geometry_triangle.msh"
+  // SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.4999999999); //"test_geometry_triangle.msh"
+  MeshSphereIntersector<2, _triangle_3> intersector_sphere(mesh);
+  intersector_sphere.constructData();
 
   std::list<SK::Sphere_3> sphere_list;
   sphere_list.push_back(sphere);
-  //sphere_list.push_back(sphere2);
+  // sphere_list.push_back(sphere2);
 
   DumperParaview dumper_igfem("mesh_igfem");
   dumper_igfem.registerMesh(mesh, 2, _not_ghost, _ek_igfem);
@@ -73,40 +72,11 @@ int main (int argc, char * argv[]) {
   //dumper_igfem.dump();
   dumper_regular.dump();
 
-  intersector_sphere3.buildIgfemMesh(sphere_list);
-  intersector_sphere4.buildIgfemMesh(sphere_list);
-  intersector_sphere5.buildIgfemMesh(sphere_list);
+  intersector_sphere.buildIgfemMesh(sphere_list);
   dumper_igfem.dump();
   dumper_regular.dump();
-
+  
   UInt nb_tri3 = mesh.getConnectivity(_triangle_3).getSize();
-  UInt nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
-  UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();
-  std::cout << "intermediary mesh 1 with " << nb_tri3 << " _triangle_3, and " << nb_tri4
-	    << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl;
-
-  SK::Sphere_3 sphere_2(SK::Point_3(1, 0, 0), 1.3*1.3);
-  std::list<SK::Sphere_3> sphere_list2;
-  sphere_list2.push_back(sphere_2);
-  intersector_sphere3.constructData();
-  intersector_sphere4.constructData();
-  intersector_sphere5.constructData();
-  intersector_sphere3.removeAdditionnalNodes();
-  
-  intersector_sphere3.buildIgfemMesh(sphere_list2);
-  intersector_sphere4.buildIgfemMesh(sphere_list2);
-  intersector_sphere5.buildIgfemMesh(sphere_list2);
-
-  nb_tri3 = mesh.getConnectivity(_triangle_3).getSize();
-  nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
-  nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();
-  std::cout << "final mesh with " << nb_tri3 << " _triangle_3, and " << nb_tri4
-	    << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl;
-
-  dumper_igfem.dump();
-  dumper_regular.dump();
-  
-  /* UInt nb_tri3 = mesh.getConnectivity(_triangle_3).getSize();
   UInt nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
   UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();
   if ( (nb_tri3 != 0) || (nb_tri4 != 1) || (nb_tri5 != 1)){ 
@@ -124,7 +94,7 @@ int main (int argc, char * argv[]) {
 		<< new_node_triangle_3(k,4) << std::endl;
     }
     return EXIT_FAILURE;
-  }*/
+    }
 
   finalize();
   return EXIT_SUCCESS;
