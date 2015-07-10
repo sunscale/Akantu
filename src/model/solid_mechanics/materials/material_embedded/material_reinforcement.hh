@@ -107,65 +107,37 @@ public:
   /// Compute energy
   virtual Real getEnergy(std::string id);
 
-  ElementTypeMap<UInt> getInternalDataPerElem(const ID & field_name,
-					      const ElementKind & kind,
-					      const ID & fe_engine_id);
+  virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & field_name,
+                                                      const ElementKind & kind,
+                                                      const ID & fe_engine_id) const;
 
   /// Reimplementation of Material's function to accomodate for interface mesh
   virtual void flattenInternal(const std::string & field_id,
-			       ElementTypeMapArray<Real> & internal_flat,
+                               ElementTypeMapArray<Real> & internal_flat,
                                const GhostType ghost_type = _not_ghost,
-                               ElementKind element_kind = _ek_not_defined);
+                               ElementKind element_kind = _ek_not_defined) const;
 
   /* ------------------------------------------------------------------------ */
   /* Protected methods                                                        */
   /* ------------------------------------------------------------------------ */
 protected:
-  /**
-   * @brief Allocate the background shape derivatives
-   *
-   * Background shape derivatives need to be stored per background element
-   * types but also per embedded element type, which is why they are stored
-   * in an ElementTypeMap<ElementTypeMapArray<Real> *>. The outer ElementTypeMap
-   * refers to the embedded types, and the inner refers to the background types.
-   */
+  /// Allocate the background shape derivatives
   void allocBackgroundShapeDerivatives();
 
   /// Compute the directing cosines matrix for one element type
   void computeDirectingCosines(const ElementType & type, GhostType ghost_type);
 
-  /**
-   * @brief Compute the directing cosines matrix on quadrature points.
-   *
-   * The structure of the directing cosines matrix is :
-   * \f{eqnarray*}{
-   *  C_{1,\cdot} & = & (l^2, m^2, n^2, lm, mn, ln) \\
-   *  C_{i,j} & = & 0
-   * \f}
-   *
-   * with :
-   * \f[
-   * (l, m, n) = \frac{1}{\|\frac{\mathrm{d}\vec{r}(s)}{\mathrm{d}s}\|} \cdot \frac{\mathrm{d}\vec{r}(s)}{\mathrm{d}s}
-   * \f]
-   */
+  /// Compute the directing cosines matrix on quadrature points.
   inline void computeDirectingCosinesOnQuad(const Matrix<Real> & nodes,
                                             Matrix<Real> & cosines);
 
   /// Assemble the stiffness matrix for an element type (typically _segment_2)
   void assembleStiffnessMatrix(const ElementType & type, GhostType ghost_type);
 
-  /**
-   * @brief Assemble the stiffness matrix for background & interface types
-   *
-   * Computes the reinforcement stiffness matrix (Gomes & Awruch, 2001)
-   * \f[
-   * \mathbf{K}_e = \sum_{i=1}^R{A_i\int_{S_i}{\mathbf{B}^T
-   * \mathbf{C}_i^T \mathbf{D}_{s, i} \mathbf{C}_i \mathbf{B}\,\mathrm{d}s}}
-   * \f]
-   */
-  void assembleStiffnessMatrix(const ElementType & interface_type,
-                               const ElementType & background_type,
-                               GhostType ghost_type);
+  /// Assemble the stiffness matrix for background & interface types
+  void assembleStiffnessMatrixInterface(const ElementType & interface_type,
+                                        const ElementType & background_type,
+                                        GhostType ghost_type);
 
   /// Compute the background shape derivatives for a type
   void computeBackgroundShapeDerivatives(const ElementType & type, GhostType ghost_type);
@@ -179,17 +151,10 @@ protected:
   /// Assemble the residual of one type of element (typically _segment_2)
   void assembleResidual(const ElementType & type, GhostType ghost_type);
 
-  /**
-   * @brief Assemble the residual for a pair of elements
-   *
-   * Computes and assemble the residual. Residual in reinforcement is computed as :
-   * \f[
-   * \vec{r} = A_s \int_S{\mathbf{B}^T\mathbf{C}^T \vec{\sigma_s}\,\mathrm{d}s}
-   * \f]
-   */
-  void assembleResidual(const ElementType & interface_type,
-                        const ElementType & background_type,
-                        GhostType ghost_type);
+  /// Assemble the residual for a pair of elements
+  void assembleResidualInterface(const ElementType & interface_type,
+                                 const ElementType & background_type,
+                                 GhostType ghost_type);
 
   // TODO figure out why voigt size is 4 in 2D
   inline void stressTensorToVoigtVector(const Matrix<Real> & tensor, Vector<Real> & vector);

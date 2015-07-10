@@ -30,6 +30,18 @@
 
 /* -------------------------------------------------------------------------- */
 
+/**
+ * The structure of the directing cosines matrix is :
+ * \f{eqnarray*}{
+ *  C_{1,\cdot} & = & (l^2, m^2, n^2, lm, mn, ln) \\
+ *  C_{i,j} & = & 0
+ * \f}
+ *
+ * with :
+ * \f[
+ * (l, m, n) = \frac{1}{\|\frac{\mathrm{d}\vec{r}(s)}{\mathrm{d}s}\|} \cdot \frac{\mathrm{d}\vec{r}(s)}{\mathrm{d}s}
+ * \f]
+ */
 template<UInt dim>
 inline void MaterialReinforcement<dim>::computeDirectingCosinesOnQuad(const Matrix<Real> & nodes,
                                                                  Matrix<Real> & cosines) {
