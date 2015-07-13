@@ -36,6 +36,7 @@ set(AKANTU_OPTIMIZATION_FILES
   )
 
 add_external_package_dependencies(optimization nlopt)
+add_external_package_dependencies(optimization cpparray)
 mark_as_advanced(AKANTU_OPTIMIZATION)
 
 set(AKANTU_OPTIMIZATION_DOCUMENTATION "

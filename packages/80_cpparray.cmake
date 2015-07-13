@@ -31,6 +31,8 @@ option(AKANTU_USE_CPPARRAY "Use cpp-array library" OFF)
 option(AKANTU_USE_THIRD_PARTY_CPPARRAY "Automatic download of the CPP-ARRAY library" ON)
 mark_as_advanced(AKANTU_USE_THIRD_PARTY_CPPARRAY AKANTU_USE_CPPARRAY)
 
+add_external_package_dependencies(cpparray blas)
+
 if(AKANTU_USE_CPPARRAY AND AKANTU_USE_THIRD_PARTY_CPPARRAY)
   find_package(Git)
 
