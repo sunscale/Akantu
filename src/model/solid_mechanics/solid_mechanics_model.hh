@@ -123,7 +123,7 @@ public:
   void initParallel(MeshPartition *partition, DataAccessor *data_accessor = NULL);
 
   /// allocate all vectors
-  void initArrays();
+  virtual void initArrays();
 
   /// allocate all vectors
   void initArraysPreviousDisplacment();

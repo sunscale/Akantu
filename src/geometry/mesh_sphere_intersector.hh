@@ -70,15 +70,21 @@ public:
   AKANTU_GET_MACRO(NewNodePerElem, new_node_per_elem, const Array<UInt>)
 
 public:
+  /// Construct the primitive tree object
+  virtual void constructData();
+
   /**
-   * @brief Computes the intersection of the mesh with a segment
+   * @brief Computes the intersection of the mesh with a sphere
    *
-   * @param query the segment to compute the intersections with the mesh
+   * @param query (sphere) to compute the intersections with the mesh
    */
   virtual void computeIntersectionQuery(const SK::Sphere_3 & query);
 
-  /// Compute the list of queries
-  virtual void computeIntersectionQueryList(const std::list<SK::Sphere_3> & query_list);
+  /// Addition of the IGFEM types to the mesh
+  void addIgfemTypes();
+
+  /// Remove the additionnal nodes
+  void removeAdditionnalNodes();
   
 #if defined(AKANTU_IGFEM)
   /// Build the IGFEM mesh
@@ -89,8 +95,8 @@ protected:
   /// new node per element TODO convert to ElementTypeMapArray<UInt>
   Array<UInt> new_node_per_elem;
 
-  /// new node per element TODO convert to ElementTypeMapArray<UInt>
-  const UInt nb_nodes_init;
+  /// number of fem nodes in the initial mesh
+  const UInt nb_nodes_fem;
 };
  
 __END_AKANTU__

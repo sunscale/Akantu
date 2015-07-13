@@ -514,10 +514,24 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
-  inline T& operator()(UInt i) { return *(this->values + i); };
-  inline const T& operator()(UInt i) const { return *(this->values + i); };
-  inline T& operator[](UInt i) { return *(this->values + i); };
-  inline const T& operator[](UInt i) const { return *(this->values + i); };
+  inline T& operator()(UInt i) {
+    AKANTU_DEBUG_ASSERT((i < this->n[0]),
+			"Access out of the vector! " 
+			<< "Index (" << i << ") is out of the vector of size ("
+			<< this->n[0] << ")");
+    return *(this->values + i);
+  }
+
+  inline const T& operator()(UInt i) const {
+    AKANTU_DEBUG_ASSERT((i < this->n[0]),
+			"Access out of the vector! " 
+			<< "Index (" << i << ") is out of the vector of size ("
+			<< this->n[0] << ")");
+    return *(this->values + i);
+  }
+
+  inline T& operator[](UInt i) { return *(this->values + i); }
+  inline const T& operator[](UInt i) const { return *(this->values + i); }
 
   /* ------------------------------------------------------------------------ */
   inline Vector<T> & operator*=(Real x) { return parent::operator*=(x); }
@@ -678,10 +692,20 @@ public:
 
   /* ---------------------------------------------------------------------- */
   inline T& at(UInt i, UInt j) {
+    AKANTU_DEBUG_ASSERT(((i < this->n[0]) && (j < this->n[1])),
+			"Access out of the matrix! " 
+			<< "Index (" << i << ", " << j
+			<< ") is out of the matrix of size ("
+			<< this->n[0] << ", " << this->n[1] << ")");
     return *(this->values + i + j*this->n[0]);
   }
 
   inline const T & at(UInt i, UInt j) const {
+    AKANTU_DEBUG_ASSERT(((i < this->n[0]) && (j < this->n[1])),
+			"Access out of the matrix! " 
+			<< "Index (" << i << ", " << j
+			<< ") is out of the matrix of size ("
+			<< this->n[0] << ", " << this->n[1] << ")");
     return *(this->values + i + j*this->n[0]);
   }
 
@@ -691,9 +715,18 @@ public:
 
   /// give a line vector wrapped on the column i
   inline VectorProxy<T> operator()(UInt j) {
+    AKANTU_DEBUG_ASSERT(j < this->n[1], "Access out of the matrix! " 
+			<< "You are trying to access the column vector "
+			<< j << " in a matrix of size ("
+			<< this->n[0] << ", " << this->n[1] << ")");
     return VectorProxy<T>(this->values + j*this->n[0], this->n[0]);
   }
+
   inline const VectorProxy<T> operator()(UInt j) const {
+    AKANTU_DEBUG_ASSERT(j < this->n[1], "Access out of the matrix! " 
+			<< "You are trying to access the column vector "
+			<< j << " in a matrix of size ("
+			<< this->n[0] << ", " << this->n[1] << ")");
     return VectorProxy<T>(this->values + j*this->n[0], this->n[0]);
   }
 
@@ -978,20 +1011,49 @@ public:
   }
 
   /* ---------------------------------------------------------------------- */
-  inline T& operator()(UInt i, UInt j, UInt k)
-  { return *(this->values + (k*this->n[0] + i)*this->n[1] + j); };
-  inline const T& operator()(UInt i, UInt j, UInt k) const
-  { return *(this->values + (k*this->n[0] + i)*this->n[1] + j); };
+  inline T& operator()(UInt i, UInt j, UInt k) {
+    AKANTU_DEBUG_ASSERT((i < this->n[0]) && (j < this->n[1])  && (k < this->n[2]),
+			"Access out of the tensor3! " 
+			<< "You are trying to access the element "
+			<< "(" << i << ", " << j << ", " << k << ") in a tensor of size ("
+			<< this->n[0] << ", " << this->n[1] << ", " << this->n[2] << ")");
+    return *(this->values + (k*this->n[0] + i)*this->n[1] + j);
+  }
 
-  inline MatrixProxy<T> operator()(UInt k)
-  { return MatrixProxy<T>(this->values + k*this->n[0]*this->n[1], this->n[0], this->n[1]); }
-  inline const MatrixProxy<T> operator()(UInt k) const
-  { return MatrixProxy<T>(this->values + k*this->n[0]*this->n[1], this->n[0], this->n[1]); }
+  inline const T& operator()(UInt i, UInt j, UInt k) const {
+    AKANTU_DEBUG_ASSERT((i < this->n[0]) && (j < this->n[1])  && (k < this->n[2]),
+			"Access out of the tensor3! " 
+			<< "You are trying to access the element "
+			<< "(" << i << ", " << j << ", " << k << ") in a tensor of size ("
+			<< this->n[0] << ", " << this->n[1] << ", " << this->n[2] << ")");
+    return *(this->values + (k*this->n[0] + i)*this->n[1] + j);
+  }
 
-  inline MatrixProxy<T> operator[](UInt k)
-  { return Matrix<T>(this->values + k*this->n[0]*this->n[1], this->n[0], this->n[1]); }
-  inline const MatrixProxy<T> operator[](UInt k) const
-  { return MatrixProxy<T>(this->values + k*this->n[0]*this->n[1], this->n[0], this->n[1]); }
+  inline MatrixProxy<T> operator()(UInt k) {
+    AKANTU_DEBUG_ASSERT((k < this->n[2]),
+			"Access out of the tensor3! " 
+			<< "You are trying to access the slice "
+			<< k << " in a tensor3 of size ("
+			<< this->n[0] << ", " << this->n[1] << ", " << this->n[2] << ")");
+    return MatrixProxy<T>(this->values + k*this->n[0]*this->n[1], this->n[0], this->n[1]);
+  }
+
+  inline const MatrixProxy<T> operator()(UInt k) const {
+    AKANTU_DEBUG_ASSERT((k < this->n[2]),
+			"Access out of the tensor3! " 
+			<< "You are trying to access the slice "
+			<< k << " in a tensor3 of size ("
+			<< this->n[0] << ", " << this->n[1] << ", " << this->n[2] << ")");
+    return MatrixProxy<T>(this->values + k*this->n[0]*this->n[1], this->n[0], this->n[1]);
+  }
+
+  inline MatrixProxy<T> operator[](UInt k) {
+    return Matrix<T>(this->values + k*this->n[0]*this->n[1], this->n[0], this->n[1]);
+  }
+
+  inline const MatrixProxy<T> operator[](UInt k) const {
+    return MatrixProxy<T>(this->values + k*this->n[0]*this->n[1], this->n[0], this->n[1]);
+  }
 };
 
 

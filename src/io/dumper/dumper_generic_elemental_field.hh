@@ -143,8 +143,8 @@ public:
 
     /// skip all types without data
     ElementType type = *tit;
-    for (;tit != end && this->field(*tit, this->ghost_type).getSize() == 0; ++tit)
-      type = *tit;
+    for (;tit != end && this->field(*tit, this->ghost_type).getSize() == 0; ++tit) {}
+    type = *tit;
 
     if (tit == end) return this->end();
 
