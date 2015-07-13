@@ -47,23 +47,19 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(const Mesh & mesh):
 {
   this->constructData();
 
-  
-  this->addIgfemTypes();
-  bool is_igfem = false;
   #if defined(AKANTU_IGFEM)
-    is_igfem = true;
+  this->addIgfemTypes();
   #endif
   
   for(Mesh::type_iterator it = mesh.firstType(); it != mesh.lastType(); ++it){
-    if(is_igfem){
+    #if defined(AKANTU_IGFEM)
     if( (*it != _triangle_3) && (*it != _segment_2) && (*it != _igfem_triangle_4)
 	&& (*it != _igfem_triangle_5) )
       AKANTU_DEBUG_ERROR("Not ready for mesh type " << *it);
-    }
-    else {
+    #else
        if( (*it != _triangle_3) && (*it != _segment_2) )
       AKANTU_DEBUG_ERROR("Not ready for mesh type " << *it);
-    }
+    #endif
   }
 }
 
