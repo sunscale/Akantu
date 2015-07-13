@@ -50,18 +50,30 @@ inline void MaterialReinforcement<dim>::computeDirectingCosinesOnQuad(const Matr
   AKANTU_DEBUG_ASSERT(nodes.cols() == 2, "Higher order reinforcement elements not implemented");
 
   const Vector<Real> & a = nodes(0), b = nodes(1);
+  Vector<Real> delta = b - a;
 
   cosines.clear();
 
   Real sq_length = 0.;
   for (UInt i = 0 ; i < dim ; i++) {
-    sq_length += Math::pow<2, Real>(b(i) - a(i));
+    sq_length += Math::pow<2, Real>(delta(i));
   }
 
-  // Fill the first row of cosine matrix
-  for (UInt i = 0 ; i < dim ; i++) {
-    cosines(0, i) = Math::pow<2, Real>(b(i) - a(i)) / sq_length;
+  if (dim == 2) {
+    cosines(0, 0) = Math::pow<2, Real>(delta(0)); // l^2
+    cosines(0, 1) = Math::pow<2, Real>(delta(1)); // m^2
+    cosines(0, 2) = delta(0) * delta(1); // lm
+  } else if (dim == 3) {
+    cosines(0, 0) = Math::pow<2, Real>(delta(0)); // l^2
+    cosines(0, 1) = Math::pow<2, Real>(delta(1)); // m^2
+    cosines(0, 2) = Math::pow<2, Real>(delta(2)); // n^2
+
+    cosines(0, 3) = delta(0) * delta(1); // lm
+    cosines(0, 4) = delta(1) * delta(2); // mn
+    cosines(0, 5) = delta(0) * delta(2); // ln
   }
+
+  cosines /= sq_length;
 
   AKANTU_DEBUG_OUT();
 }
