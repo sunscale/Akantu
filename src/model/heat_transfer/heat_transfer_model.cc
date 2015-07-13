@@ -710,6 +710,7 @@ void HeatTransferModel::solveExplicitLumped() {
 void HeatTransferModel::explicitPred() {
   AKANTU_DEBUG_IN();
 
+  AKANTU_DEBUG_ASSERT(integrator, "integrator was not instanciated");
   integrator->integrationSchemePred(time_step,
 				    *temperature,
 				    *temperature_rate,
@@ -849,7 +850,8 @@ void HeatTransferModel::initFull(const ModelOptions & options){
 
   readMaterials();
 
-  const HeatTransferModelOptions & my_options = dynamic_cast<const HeatTransferModelOptions &>(options);
+  const HeatTransferModelOptions & my_options
+    = dynamic_cast<const HeatTransferModelOptions &>(options);
 
   //initialize the vectors
   initArrays();
@@ -859,6 +861,9 @@ void HeatTransferModel::initFull(const ModelOptions & options){
 
   method = my_options.analysis_method;
 
+  if (method == _explicit_lumped_capacity){
+    integrator = new ForwardEuler();
+  }
   if (method == _implicit_dynamic) {
     initImplicit(true);
   }
