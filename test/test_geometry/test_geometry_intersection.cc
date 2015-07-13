@@ -2,6 +2,7 @@
  * @file   test_geometry_intersection.cc
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Clément Roux-Langlois <clement.roux@epfl.ch>
  *
  * @date creation: Fri Feb 27 2015
  * @date last modification: Thu Mar 5 2015

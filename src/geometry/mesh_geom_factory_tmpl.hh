@@ -152,6 +152,8 @@ inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::add
   list.push_back(s3);
 }
 
+#if defined(AKANTU_IGFEM)
+
 // (2D, _igfem_triangle_4) decomposed into Line_arc<Spherical>
 template<>
 inline void MeshGeomFactory<2, _igfem_triangle_4, Line_arc<Spherical>, Spherical>::addPrimitive(
@@ -199,6 +201,8 @@ inline void MeshGeomFactory<2, _igfem_triangle_5, Line_arc<Spherical>, Spherical
   list.push_back(s2);
   list.push_back(s3);
 }
+
+#endif
 
 // (3D, _tetrahedron_4) decomposed into Triangle<Cartesian>
 template<>

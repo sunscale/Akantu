@@ -1,7 +1,7 @@
 /**
  * @file mesh_sphere_intersector_tmpl.hh
  *
- * @author Clement Roux-Langlois <clement.roux@epfl.ch>
+ * @author Clément Roux-Langlois <clement.roux@epfl.ch>
  *
  * @date creation: Wed june 10 2015
  * @date last modification: Wed June 17 2015
@@ -45,13 +45,25 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(const Mesh & mesh):
   new_node_per_elem(0, 1 + 4*(dim-1)),
   nb_nodes_fem(mesh.getNodes().getSize())
 {
-  this->addIgfemTypes();
   this->constructData();
 
+  
+  this->addIgfemTypes();
+  bool is_igfem = false;
+  #if defined(AKANTU_IGFEM)
+    is_igfem = true;
+  #endif
+  
   for(Mesh::type_iterator it = mesh.firstType(); it != mesh.lastType(); ++it){
+    if(is_igfem){
     if( (*it != _triangle_3) && (*it != _segment_2) && (*it != _igfem_triangle_4)
 	&& (*it != _igfem_triangle_5) )
       AKANTU_DEBUG_ERROR("Not ready for mesh type " << *it);
+    }
+    else {
+       if( (*it != _triangle_3) && (*it != _segment_2) )
+      AKANTU_DEBUG_ERROR("Not ready for mesh type " << *it);
+    }
   }
 }
 
