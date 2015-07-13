@@ -58,6 +58,7 @@ set(LIST_TYPES
   )
 
 foreach(_type ${LIST_TYPES})
+  register_fem_test(fe_engine_precomputation ${_type})
   register_fem_test(interpolate ${_type})
   register_fem_test(gradient    ${_type})
   register_fem_test(integrate   ${_type})

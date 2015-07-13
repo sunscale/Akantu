@@ -30,16 +30,11 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "fe_engine.hh"
-#include "mesh.hh"
-#include "mesh_io.hh"
-#include "mesh_io_msh.hh"
 #include "shape_lagrange.hh"
 #include "integrator_gauss.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstdlib>
-#include <fstream>
 #include <iostream>
 /* -------------------------------------------------------------------------- */
 
@@ -47,27 +42,23 @@ using namespace akantu;
 
 int main(int argc, char *argv[]) {
   akantu::initialize(argc, argv);
+
   debug::setDebugLevel(dblTest);
+
   const ElementType type = TYPE;
   UInt dim = ElementClass<type>::getSpatialDimension();
 
   Real eps = 3e-13;
   std::cout << "Epsilon : " << eps << std::endl;
 
-  MeshIOMSH mesh_io;
   Mesh my_mesh(dim);
 
   std::stringstream meshfilename; meshfilename << type << ".msh";
-  mesh_io.read(meshfilename.str(), my_mesh);
+  my_mesh.read(meshfilename.str());
 
   FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange>(my_mesh, dim, "my_fem");
 
-  std::stringstream outfilename; outfilename << "out_" << type << ".txt";
-  std::ofstream my_file(outfilename.str().c_str());
-
   fem->initShapeFunctions();
-
-  std::cout << *fem << std::endl;
 
   UInt nb_element = my_mesh.getNbElement(type);
   UInt nb_quadrature_points = fem->getNbQuadraturePoints(type) * nb_element;
@@ -89,14 +80,15 @@ int main(int argc, char *argv[]) {
 
   // get global integration value
   Real value[2] = {0,0};
-  my_file << val_on_quad << std::endl << int_val_on_elem << std::endl;
+  std::cout << "Val on quads : " << val_on_quad << std::endl;
+  std::cout << "Integral on elements : " << int_val_on_elem << std::endl;
+
   for (UInt i = 0; i < fem->getMesh().getNbElement(type); ++i) {
     value[0] += int_val_on_elem.storage()[2*i];
     value[1] += int_val_on_elem.storage()[2*i+1];
   }
 
-  my_file << "integral on the mesh of 1 is " << value[0] << " and of 2 is " << value[1] << std::endl;
-
+  std::cout << "integral on the mesh of 1 is " << value[0] << " and of 2 is " << value[1] << std::endl;
 
   delete fem;
   finalize();

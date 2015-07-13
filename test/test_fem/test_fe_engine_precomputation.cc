@@ -33,7 +33,6 @@
 #include "shape_lagrange.hh"
 #include "integrator_gauss.hh"
 /* -------------------------------------------------------------------------- */
-#include <cstdlib>
 #include <iostream>
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
@@ -42,11 +41,9 @@ int main(int argc, char *argv[]) {
   akantu::initialize(argc, argv);
 
   debug::setDebugLevel(dblTest);
+
   const ElementType type = TYPE;
   UInt dim = ElementClass<type>::getSpatialDimension();
-
-  Real eps = 3e-13;
-  std::cout << "Epsilon : " << eps << std::endl;
 
   Mesh my_mesh(dim);
 
@@ -57,35 +54,10 @@ int main(int argc, char *argv[]) {
 
   fem->initShapeFunctions();
 
-  Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
-
-  UInt nb_element = my_mesh.getNbElement(type);
-  UInt nb_quadrature_points = fem->getNbQuadraturePoints(type) * nb_element;
-
-  Array<Real> val_on_quad(nb_quadrature_points, 2, "val_on_quad");
-
-  for (UInt i = 0; i < const_val.getSize(); ++i) {
-    const_val.storage()[i * 2 + 0] = 1.;
-    const_val.storage()[i * 2 + 1] = 2.;
-  }
-
-  fem->interpolateOnQuadraturePoints(const_val, val_on_quad, 2, type);
-
-  std::cout << "Interpolation of array : " << const_val << std::endl;
-  std::cout << "Gives on quads : " << val_on_quad << std::endl;
-
-  // interpolate coordinates
-  Array<Real> coord_on_quad(nb_quadrature_points, my_mesh.getSpatialDimension(), "coord_on_quad");
-
-  fem->interpolateOnQuadraturePoints(my_mesh.getNodes(),
-				     coord_on_quad,
-				     my_mesh.getSpatialDimension(),
-				     type);
-  std::cout << "Interpolations of node coordinates : " << my_mesh.getNodes() << std::endl;
-  std::cout << "Gives : " << coord_on_quad << std::endl;
+  std::cout << *fem << std::endl;
 
   delete fem;
   finalize();
 
-  return EXIT_SUCCESS;
+  return 0;
 }

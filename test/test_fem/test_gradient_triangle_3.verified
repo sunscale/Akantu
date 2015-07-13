@@ -1,66 +1,37 @@
 Epsilon : 1e-12
-FEEngine [
- + id                : my_fem
- + element dimension : 2
- + mesh [
-  Mesh [
-   + id                : mesh
-   + spatial dimension : 2
-   + nodes [
-    Array<double> [
-     + id             : mesh:coordinates
-     + size           : 13
-     + nb_component   : 2
-     + allocated size : 2000
-     + memory size    : 31.25KiByte
-     + values         : {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0.5, 0}, {1, 0.5}, {0.5, 1}, {0, 0.5}, {0.5, 0.5}, {0.25, 0.75}, {0.75, 0.75}, {0.75, 0.25}, {0.25, 0.25}}
-    ]
-   + connectivities [
-    ElementTypeMapArray<unsigned int> [
-        (not_ghost:_point_1) [
-       Array<unsigned int> [
-        + id             : mesh:connectivities:_point_1
-        + size           : 4
-        + nb_component   : 1
-        + allocated size : 2000
-        + memory size    : 7.81KiByte
-        + values         : {{0}, {1}, {2}, {3}}
-       ]
-         ]
-        (not_ghost:_segment_2) [
-       Array<unsigned int> [
-        + id             : mesh:connectivities:_segment_2
-        + size           : 8
-        + nb_component   : 2
-        + allocated size : 2000
-        + memory size    : 15.62KiByte
-        + values         : {{0, 4}, {4, 1}, {1, 5}, {5, 2}, {2, 6}, {6, 3}, {3, 7}, {7, 0}}
-       ]
-         ]
-        (not_ghost:_triangle_3) [
-       Array<unsigned int> [
-        + id             : mesh:connectivities:_triangle_3
-        + size           : 16
-        + nb_component   : 3
-        + allocated size : 2000
-        + memory size    : 23.44KiByte
-        + values         : {{3, 9, 6}, {0, 12, 7}, {2, 10, 5}, {1, 11, 4}, {7, 8, 9}, {6, 9, 8}, {6, 8, 10}, {7, 12, 8}, {5, 10, 8}, {4, 8, 12}, {4, 11, 8}, {5, 8, 11}, {0, 4, 12}, {3, 7, 9}, {1, 5, 11}, {2, 6, 10}}
-       ]
-         ]
-    ]
-   ]
-   GroupManager [
-   ]
-  ]
- ]
+Linear array on nodes : Array<double> [
+ + id             : const_val
+ + size           : 13
+ + nb_component   : 2
+ + allocated size : 13
+ + memory size    : 208.00Byte
+ + values         : {{0, 0}, {13, 11}, {36, 18}, {23, 7}, {6.5, 5.5}, {24.5, 14.5}, {29.5, 12.5}, {11.5, 3.5}, {18, 9}, {20.5, 8}, {27, 13.5}, {15.5, 10}, {9, 4.5}}
 ]
 
-Array<double> [
+Gradient on quad : Array<double> [
  + id             : grad_on_quad
  + size           : 16
  + nb_component   : 4
  + allocated size : 16
  + memory size    : 512.00Byte
  + values         : {{13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}, {13, 11, 23, 7}}
+]
+
+Node positions : Array<double> [
+ + id             : mesh:coordinates
+ + size           : 13
+ + nb_component   : 2
+ + allocated size : 2000
+ + memory size    : 31.25KiByte
+ + values         : {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0.5, 0}, {1, 0.5}, {0.5, 1}, {0, 0.5}, {0.5, 0.5}, {0.25, 0.75}, {0.75, 0.75}, {0.75, 0.25}, {0.25, 0.25}}
+]
+
+Gradient of nodes : Array<double> [
+ + id             : grad_coord_on_quad
+ + size           : 16
+ + nb_component   : 4
+ + allocated size : 16
+ + memory size    : 512.00Byte
+ + values         : {{1, 0, 0, 1}, {1, 0, 0, 1}, {1, 1.11022e-16, 0, 1}, {1, 0, -3.33067e-16, 1}, {1, 1.29199e-23, 0, 1}, {1, 2.22045e-16, 0, 1}, {1, 0, -1.42689e-23, 1}, {1, 0, 0, 1}, {1, 0, 0, 1}, {1, 0, -1.11022e-16, 1}, {1, 0, 0, 1}, {1, 1.58651e-24, 4.44089e-16, 1}, {1, 0, 0, 1}, {1, -4.44089e-16, 0, 1}, {1, 0, 0, 1}, {1, 0, 0, 1}}
 ]
 

@@ -35,16 +35,11 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "fe_engine.hh"
-#include "mesh.hh"
-#include "mesh_io.hh"
-#include "mesh_io_msh.hh"
 #include "shape_lagrange.hh"
 #include "integrator_gauss.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstdlib>
-#include <fstream>
 #include <iostream>
 /* -------------------------------------------------------------------------- */
 
@@ -53,24 +48,21 @@ using namespace akantu;
 int main(int argc, char *argv[]) {
   akantu::initialize(argc, argv);
   debug::setDebugLevel(dblTest);
+
   const ElementType type = TYPE;
   UInt dim = ElementClass<type>::getSpatialDimension();
 
   Real eps = 1e-12;
   std::cout << "Epsilon : " << eps << std::endl;
 
-  MeshIOMSH mesh_io;
   Mesh my_mesh(dim);
+
   std::stringstream meshfilename; meshfilename << type << ".msh";
-  mesh_io.read(meshfilename.str(), my_mesh);
+  my_mesh.read(meshfilename.str());
+
   FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange>(my_mesh, dim, "my_fem");
 
-  std::stringstream outfilename; outfilename << "out_grad" << type << ".txt";
-  std::ofstream my_file(outfilename.str().c_str());
-
   fem->initShapeFunctions();
-
-  std::cout << *fem << std::endl;
 
   Real alpha[2][3] = {{13, 23, 31},
 		      {11,  7,  5}};
@@ -96,9 +88,8 @@ int main(int argc, char *argv[]) {
   /// compute the gradient
   fem->gradientOnQuadraturePoints(const_val, grad_on_quad, 2, type);
 
-  my_file << const_val << std::endl;
-  my_file << grad_on_quad << std::endl;
-  std::cout << grad_on_quad << std::endl;
+  std::cout << "Linear array on nodes : " << const_val << std::endl;
+  std::cout << "Gradient on quad : " <<grad_on_quad << std::endl;
 
   /// check the results
   Array<Real>::matrix_iterator it = grad_on_quad.begin(2,dim);
@@ -123,8 +114,8 @@ int main(int argc, char *argv[]) {
   Array<Real> grad_coord_on_quad(nb_quadrature_points, dim * dim, "grad_coord_on_quad");
   fem->gradientOnQuadraturePoints(my_mesh.getNodes(), grad_coord_on_quad, my_mesh.getSpatialDimension(), type);
 
-  my_file << my_mesh.getNodes() << std::endl;
-  my_file << grad_coord_on_quad << std::endl;
+  std::cout << "Node positions : " << my_mesh.getNodes() << std::endl;
+  std::cout << "Gradient of nodes : " << grad_coord_on_quad << std::endl;
 
   Array<Real>::matrix_iterator itp = grad_coord_on_quad.begin(dim, dim);
   Array<Real>::matrix_iterator itp_end = grad_coord_on_quad.end(dim, dim);

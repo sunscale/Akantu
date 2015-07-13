@@ -31,16 +31,13 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "fe_engine.hh"
-#include "mesh.hh"
-#include "mesh_io.hh"
-#include "mesh_io_msh.hh"
 #include "shape_lagrange.hh"
 #include "integrator_gauss.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstdlib>
-#include <fstream>
 #include <iostream>
 /* -------------------------------------------------------------------------- */
+
 using namespace akantu;
 
 int main(int argc, char *argv[]) {
@@ -50,7 +47,6 @@ int main(int argc, char *argv[]) {
   const ElementType type = TYPE;
   UInt dim = ElementClass<type>::getSpatialDimension();
 
-  MeshIOMSH mesh_io;
   Mesh my_mesh(dim);
 
   my_mesh.computeBoundingBox();
@@ -58,7 +54,7 @@ int main(int argc, char *argv[]) {
   const Vector<Real> & upper = my_mesh.getUpperBounds();
 
   std::stringstream meshfilename; meshfilename << type << ".msh";
-  mesh_io.read(meshfilename.str(), my_mesh);
+  my_mesh.read(meshfilename.str());
 
   UInt nb_elements = my_mesh.getNbElement(type);
   ///
@@ -86,7 +82,7 @@ int main(int argc, char *argv[]) {
 
   Matrix<Real> quad = GaussIntegrationElement<type>::getQuadraturePoints();
 
-   for(UInt el = 0 ; el < nb_elements ; ++el){
+  for(UInt el = 0 ; el < nb_elements ; ++el){
     for(UInt q = 0 ; q < nb_quad_points ; ++q){
       fem->inverseMap(*it, el, type, natural_coords);
       for (UInt i = 0; i < dim; ++i) {
@@ -98,10 +94,9 @@ int main(int argc, char *argv[]) {
       }
       ++it;
     }
-   }
+  }
 
-   std::cout << "inverse completed over " << nb_elements << " elements" << std::endl;
-
+  std::cout << "inverse completed over " << nb_elements << " elements" << std::endl;
 
   delete fem;
   finalize();
