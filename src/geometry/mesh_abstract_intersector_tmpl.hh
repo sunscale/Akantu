@@ -1,10 +1,10 @@
 /**
- * @file mesh_geom_intersector.hh
+ * @file mesh_abstract_intersector_tmpl.hh
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Wed Apr 29 2015
- * @date last modification: Wed Apr 29 2015
+ * @date creation: Mon Jul 13 2015
+ * @date last modification: Mon Jul 13 2015
  *
  * @brief General class for intersection computations
  *
@@ -30,41 +30,39 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_GEOM_INTERSECTOR_HH__
-#define __AKANTU_MESH_GEOM_INTERSECTOR_HH__
+#ifndef __AKANTU_MESH_ABSTRACT_INTERSECTOR_TMPL_HH__
+#define __AKANTU_MESH_ABSTRACT_INTERSECTOR_TMPL_HH__
 
 #include "aka_common.hh"
 #include "mesh_abstract_intersector.hh"
-#include "mesh_geom_factory.hh"
-
-/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-/**
- * @brief Class used to perform intersections on a mesh and construct output data
- */
-template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
-class MeshGeomIntersector : public MeshAbstractIntersector<Query> {
+template<class Query>
+MeshAbstractIntersector<Query>::MeshAbstractIntersector(const Mesh & mesh):
+  MeshGeomAbstract(mesh)
+{}
 
-public:
-  /// Construct from mesh
-  explicit MeshGeomIntersector(const Mesh & mesh);
+template<class Query>
+MeshAbstractIntersector<Query>::~MeshAbstractIntersector()
+{}
 
-  /// Destructor
-  virtual ~MeshGeomIntersector();
+template<class Query>
+void MeshAbstractIntersector<Query>::computeIntersectionQueryList(
+  const std::list<Query> & query_list) {
+  AKANTU_DEBUG_IN();
+  
+  typename std::list<Query>::const_iterator
+    query_it = query_list.begin(),
+    query_end = query_list.end();
 
-public:
-  /// Construct the primitive tree object
-  virtual void constructData();
-
-protected:
-  /// Factory object containing the primitive tree
-  MeshGeomFactory<dim, type, Primitive, Kernel> factory;
-};
+  for (; query_it != query_end ; ++query_it) {
+    computeIntersectionQuery(*query_it);
+  }
+  
+  AKANTU_DEBUG_OUT();
+}
 
 __END_AKANTU__
 
-#include "mesh_geom_intersector_tmpl.hh"
-
-#endif // __AKANTU_MESH_GEOM_INTERSECTOR_HH__
+#endif // __AKANTU_MESH_ABSTRACT_INTERSECTOR_TMPL_HH__

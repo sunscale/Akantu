@@ -43,6 +43,9 @@ package_declare_sources(CGAL
   geometry/mesh_geom_factory.hh
   geometry/mesh_geom_factory_tmpl.hh
 
+  geometry/mesh_abstract_intersector.hh
+  geometry/mesh_abstract_intersector_tmpl.hh
+
   geometry/mesh_geom_intersector.hh
   geometry/mesh_geom_intersector_tmpl.hh
 
