@@ -67,6 +67,9 @@ void MaterialReinforcement<dim>::initialize(SolidMechanicsModel & a_model) {
   this->registerParam("pre_stress", pre_stress, _pat_parsable | _pat_modifiable,
                       "Uniform pre-stress");
 
+  // Fool the AvgHomogenizingFunctor
+  //stress.initialize(dim * dim);
+
 
   // Reallocate the element filter
   this->element_filter.free();
@@ -717,13 +720,15 @@ void MaterialReinforcement<dim>::flattenInternal(const std::string & field_id,
                                                  ElementKind element_kind) const {
   AKANTU_DEBUG_IN();
 
-  Material::flattenInternalIntern(field_id,
-                                  internal_flat,
-                                  1,
-                                  ghost_type,
-                                  _ek_not_defined,
-                                  &(this->element_filter),
-                                  &(this->model->getInterfaceMesh()));
+  if (field_id == "stress_embedded" || field_id == "inelastic_strain") {
+    Material::flattenInternalIntern(field_id,
+                                    internal_flat,
+                                    1,
+                                    ghost_type,
+                                    _ek_not_defined,
+                                    &(this->element_filter),
+                                    &(this->model->getInterfaceMesh()));
+  }
 
   AKANTU_DEBUG_OUT();
 }
