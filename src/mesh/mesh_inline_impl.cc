@@ -420,14 +420,35 @@ inline UInt Mesh::getSpatialDimension(const ElementType & type) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline ElementType Mesh::getFacetType(const ElementType & type) {
+inline UInt Mesh::getNbFacetTypes(const ElementType & type, UInt t) {
+  UInt nb = 0;
+#define GET_NB_FACET_TYPE(type)					\
+  nb = ElementClass<type>::getNbFacetTypes()
+  AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_NB_FACET_TYPE);
+#undef GET_NB_FACET_TYPE
+
+  return nb;
+}
+
+/* -------------------------------------------------------------------------- */
+inline ElementType Mesh::getFacetType(const ElementType & type, UInt t) {
   ElementType surface_type = _not_defined;
 #define GET_FACET_TYPE(type)					\
-  surface_type = ElementClass<type>::getFacetType()
+  surface_type = ElementClass<type>::getFacetType(t)
   AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_FACET_TYPE);
 #undef GET_FACET_TYPE
 
   return surface_type;
+}
+
+/* -------------------------------------------------------------------------- */
+inline VectorProxy<ElementType> Mesh::getAllFacetTypes(const ElementType & type) {
+#define GET_FACET_TYPE(type)					\
+  UInt nb = ElementClass<type>::getNbFacetTypes();		\
+  return VectorProxy<ElementType>(ElementClass<type>::getFacetTypeInternal(), nb);
+
+  AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_FACET_TYPE);
+#undef GET_FACET_TYPE
 }
 
 /* -------------------------------------------------------------------------- */
@@ -446,12 +467,27 @@ inline UInt Mesh::getNbFacetsPerElement(const ElementType & type) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline MatrixProxy<UInt> Mesh::getFacetLocalConnectivity(const ElementType & type) {
+inline UInt Mesh::getNbFacetsPerElement(const ElementType & type, UInt t) {
+  AKANTU_DEBUG_IN();
+
+  UInt n_facet = 0;
+#define GET_NB_FACET(type)				\
+  n_facet = ElementClass<type>::getNbFacetsPerElement(t)
+
+  AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_NB_FACET);
+#undef GET_NB_FACET
+
+  AKANTU_DEBUG_OUT();
+  return n_facet;
+}
+
+/* -------------------------------------------------------------------------- */
+inline MatrixProxy<UInt> Mesh::getFacetLocalConnectivity(const ElementType & type, UInt t) {
   AKANTU_DEBUG_IN();
 
 #define GET_FACET_CON(type)						\
   AKANTU_DEBUG_OUT();							\
-  return ElementClass<type>::getFacetLocalConnectivityPerElement()
+  return ElementClass<type>::getFacetLocalConnectivityPerElement(t)
 
   AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_FACET_CON);
 #undef GET_FACET_CON
@@ -462,19 +498,17 @@ inline MatrixProxy<UInt> Mesh::getFacetLocalConnectivity(const ElementType & typ
 }
 
 /* -------------------------------------------------------------------------- */
-inline Matrix<UInt> Mesh::getFacetConnectivity(UInt element,
-					       const ElementType & type,
-					       const GhostType & ghost_type) const {
+inline Matrix<UInt> Mesh::getFacetConnectivity(const Element & element, UInt t) const {
   AKANTU_DEBUG_IN();
 
-  Matrix<UInt> local_facets(getFacetLocalConnectivity(type), false);
+  Matrix<UInt> local_facets(getFacetLocalConnectivity(element.type, t), false);
   Matrix<UInt> facets(local_facets.rows(), local_facets.cols());
 
-  const Array<UInt> & conn = connectivities(type, ghost_type);
+  const Array<UInt> & conn = connectivities(element.type, element.ghost_type);
 
   for (UInt f = 0; f < facets.rows(); ++f) {
     for (UInt n = 0; n < facets.cols(); ++n) {
-      facets(f, n) = conn(element, local_facets(f, n));
+      facets(f, n) = conn(element.element, local_facets(f, n));
     }
   }
 
