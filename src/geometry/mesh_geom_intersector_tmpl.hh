@@ -40,7 +40,7 @@ __BEGIN_AKANTU__
 
 template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
 MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::MeshGeomIntersector(const Mesh & mesh) :
-  MeshGeomAbstract(mesh),
+  MeshAbstractIntersector<Query>(mesh),
   factory(mesh)
 {}
 
@@ -52,23 +52,6 @@ template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
 void MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::constructData() {
   factory.constructData();
 }
-
-template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
-void MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::computeIntersectionQueryList(
-    const std::list<Query> & query_list) {
-  AKANTU_DEBUG_IN();
-  
-  typename std::list<Query>::const_iterator
-    query_it = query_list.begin(),
-    query_end = query_list.end();
-
-  for (; query_it != query_end ; ++query_it) {
-    computeIntersectionQuery(*query_it);
-  }
-  
-  AKANTU_DEBUG_OUT();
-}
-
 
 __END_AKANTU__
 

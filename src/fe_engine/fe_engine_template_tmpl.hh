@@ -565,6 +565,69 @@ void FEEngineTemplate<I, S, kind>::interpolateOnQuadraturePoints(const Array<Rea
 
   AKANTU_DEBUG_OUT();
 }
+/* -------------------------------------------------------------------------- */
+/**
+ * Helper class to be able to write a partial specialization on the element kind
+ */
+template<ElementKind kind>
+struct InterpolateHelper {
+  template <class S>
+  static void call(const S & shape_functions,
+                   const Vector<Real> & real_coords,
+                   UInt elem,
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const ElementType & type,
+		   const GhostType & ghost_type) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+};
+
+#define INTERPOLATE(type)						\
+  shape_functions.template interpolate<type>(real_coords,		\
+					     element,			\
+					     nodal_values,		\
+					     interpolated,		\
+					     ghost_type);
+
+#define AKANTU_SPECIALIZE_INTERPOLATE_HELPER(kind)		\
+  template<>							\
+  struct InterpolateHelper<kind> {				\
+    template <class S>						\
+    static void call(const S & shape_functions,			\
+                     const Vector<Real> & real_coords,		\
+                     UInt element,				\
+		     const Matrix<Real> & nodal_values,		\
+		     Vector<Real> & interpolated,		\
+                     const ElementType & type,			\
+                     const GhostType & ghost_type) {		\
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(INTERPOLATE, kind);	\
+    }								\
+  };
+
+
+#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_IGFEM_KIND)
+AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INTERPOLATE_HELPER, \
+                           INTEREST_LIST)
+
+#undef AKANTU_SPECIALIZE_INTERPOLATE_HELPER
+#undef INTERPOLATE
+#undef INTEREST_LIST
+
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::interpolate(const Vector<Real> & real_coords, 
+						      const Matrix<Real> & nodal_values,
+						      Vector<Real> & interpolated,
+						      const Element & element) const{
+
+  AKANTU_DEBUG_IN();
+
+  InterpolateHelper<kind>::call(shape_functions, real_coords, element.element, nodal_values, interpolated, element.type, element.ghost_type);
+
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,

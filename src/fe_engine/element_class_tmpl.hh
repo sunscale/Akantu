@@ -174,7 +174,7 @@ inline bool
 GeometricalShapeContains<_gst_square>::contains(const vector_type & coords) {
   bool in = true;
   for (UInt i = 0; i < coords.size() && in; ++i)
-    in &= ((coords(i) >= -1.) && (coords(i) <= 1.));
+    in &= ((coords(i) >= -(1. + std::numeric_limits<Real>::epsilon() )) && (coords(i) <= (1. + std::numeric_limits<Real>::epsilon())));
   return in;
 }
 
@@ -186,10 +186,10 @@ GeometricalShapeContains<_gst_triangle>::contains(const vector_type & coords) {
   bool in = true;
   Real sum = 0;
     for (UInt i = 0; (i < coords.size()) && in; ++i) {
-    in &= ((coords(i) >= 0) && (coords(i) <= 1.));
+      in &= ((coords(i) >= - (Math::getTolerance())) && (coords(i) <= (1. + Math::getTolerance())));
     sum += coords(i);
   }
-  if(in) return (in && (sum <= 1));
+    if(in) return (in && (sum <= (1. + Math::getTolerance())));
   return in;
 }
 

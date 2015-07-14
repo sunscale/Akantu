@@ -100,6 +100,11 @@ public:
 				   const GhostType & ghost_type = _not_ghost,
 				   const Array<UInt> & filter_elements = empty_filter) const;
 
+  /// interpolate on a phyiscal point inside an element
+  void interpolate(const Vector<Real> & real_coords, 
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const Element & element) const;
 
   /// get the number of quadrature points
   UInt getNbQuadraturePoints(const ElementType & type,

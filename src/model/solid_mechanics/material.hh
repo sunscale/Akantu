@@ -230,6 +230,7 @@ public:
   /* Common part                                                              */
   /* ------------------------------------------------------------------------ */
 protected:
+
   /// assemble the residual
   template<UInt dim>
   void assembleResidual(GhostType ghost_type);
@@ -482,6 +483,9 @@ private:
   std::map<ID, InternalField<bool> *> internal_vectors_bool;
 
 protected:
+  /// Link to the fem object in the model
+  FEEngine * fem;
+
   /// Finite deformation
   bool finite_deformation;
 

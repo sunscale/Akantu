@@ -1,12 +1,12 @@
 /**
- * @file mesh_geom_intersector.hh
+ * @file mesh_abstract_intersector.hh
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Wed Apr 29 2015
- * @date last modification: Wed Apr 29 2015
+ * @date creation: Mon Jul 13 2015
+ * @date last modification: Mon Jul 13 2015
  *
- * @brief General class for intersection computations
+ * @brief Abstract class for intersection computations
  *
  * @section LICENSE
  *
@@ -30,12 +30,11 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_GEOM_INTERSECTOR_HH__
-#define __AKANTU_MESH_GEOM_INTERSECTOR_HH__
+#ifndef __AKANTU_MESH_ABSTRACT_INTERSECTOR_HH__
+#define __AKANTU_MESH_ABSTRACT_INTERSECTOR_HH__
 
 #include "aka_common.hh"
-#include "mesh_abstract_intersector.hh"
-#include "mesh_geom_factory.hh"
+#include "mesh_geom_abstract.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -44,27 +43,36 @@ __BEGIN_AKANTU__
 /**
  * @brief Class used to perform intersections on a mesh and construct output data
  */
-template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
-class MeshGeomIntersector : public MeshAbstractIntersector<Query> {
+template<class Query>
+class MeshAbstractIntersector : public MeshGeomAbstract {
 
 public:
   /// Construct from mesh
-  explicit MeshGeomIntersector(const Mesh & mesh);
+  explicit MeshAbstractIntersector(const Mesh & mesh);
 
   /// Destructor
-  virtual ~MeshGeomIntersector();
+  virtual ~MeshAbstractIntersector();
 
 public:
-  /// Construct the primitive tree object
-  virtual void constructData();
+  /**
+   * @brief Compute the intersection with a query object
+   *
+   * This function needs to be implemented for every subclass. It computes the intersections
+   * with the tree of primitives and creates the data for the user.
+   * 
+   * @param query the CGAL primitive of the query object
+   */
+  virtual void computeIntersectionQuery(const Query & query) = 0;
 
-protected:
-  /// Factory object containing the primitive tree
-  MeshGeomFactory<dim, type, Primitive, Kernel> factory;
+  /// Compute list of queries
+  virtual void computeIntersectionQueryList(const std::list<Query> & query_list);
+
+  /// Compute whatever result is needed from the user
+  virtual void buildResultFromQueryList(const std::list<Query> & query_list) = 0;
 };
 
 __END_AKANTU__
 
-#include "mesh_geom_intersector_tmpl.hh"
+#include "mesh_abstract_intersector_tmpl.hh"
 
-#endif // __AKANTU_MESH_GEOM_INTERSECTOR_HH__
+#endif // __AKANTU_MESH_ABSTRACT_INTERSECTOR_HH__

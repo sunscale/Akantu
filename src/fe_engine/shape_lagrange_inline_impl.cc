@@ -147,6 +147,20 @@ bool ShapeLagrange<kind>::contains(const Vector<Real> & real_coords,
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
+void ShapeLagrange<kind>::interpolate(const Vector <Real> & real_coords,
+				      UInt elem,
+				      const Matrix<Real> & nodal_values,
+				      Vector<Real> & interpolated,
+				      const GhostType & ghost_type) const {
+  UInt nb_shapes = ElementClass<type>::getShapeSize();
+  Vector<Real> shapes(nb_shapes);
+  computeShapes<type>(real_coords, elem, shapes, ghost_type);
+  ElementClass<type>::interpolate(nodal_values, shapes, interpolated);
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type>
 void ShapeLagrange<kind>::computeShapes(const Vector<Real> & real_coords,
 				  UInt elem,
 				  Vector<Real> & shapes,

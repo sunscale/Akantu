@@ -80,6 +80,9 @@ public:
    */
   virtual void computeIntersectionQuery(const SK::Sphere_3 & query);
 
+  /// Clément: calcule les données voulues pour la IGFEM (modification du mesh etc.)
+  virtual void buildResultFromQueryList(const std::list<SK::Sphere_3> & query) {}
+
   /// Addition of the IGFEM types to the mesh
   void addIgfemTypes();
 
