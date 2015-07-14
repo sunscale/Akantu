@@ -39,6 +39,7 @@ package_declare_sources(igfem
   dumper_igfem_element_iterator.hh
   dumper_igfem_material_internal_field.hh
   dumper_igfem_quadrature_points_field.hh
+  dumper_igfem_element_partition.hh
   
   igfem_helper.hh
   igfem_helper.cc

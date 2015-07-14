@@ -35,7 +35,8 @@ inline const Array<Real> & ShapeLagrange<_ek_igfem>::getShapesDerivatives(const 
   precomputeShapesOnControlPoints<type>(nodes, ghost_type);		\
   if (ElementClass<type>::getNaturalSpaceDimension() ==			\
       mesh.getSpatialDimension())					\
-    precomputeShapeDerivativesOnControlPoints<type>(nodes, ghost_type);
+    precomputeShapeDerivativesOnControlPoints<type>(nodes, ghost_type);	\
+  precomputeShapesOnEnrichedNodes<type>(nodes, ghost_type);
 
 
 inline void ShapeLagrange<_ek_igfem>::initShapeFunctions(const Array<Real> & nodes,
@@ -70,14 +71,19 @@ computeShapeDerivativesOnCPointsByElement(const Matrix<Real> & node_coords,
   AKANTU_DEBUG_OUT();
 }
 
+
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 void ShapeLagrange<_ek_igfem>::inverseMap(const Vector<Real> & real_coords,
-				     UInt elem,
-				     Vector<Real> & natural_coords,
-				     const GhostType & ghost_type) const{
+					  UInt elem,
+					  Vector<Real> & natural_coords,
+					  UInt sub_element,
+					  const GhostType & ghost_type) const{
 
   AKANTU_DEBUG_IN();
+  /// typedef for the two subelement_types and the parent element type
+  const ElementType sub_type_1 = ElementClassProperty<type>::sub_element_type_1;
+  const ElementType sub_type_2 = ElementClassProperty<type>::sub_element_type_2;
 
   UInt spatial_dimension = mesh.getSpatialDimension();
   UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
@@ -91,18 +97,67 @@ void ShapeLagrange<_ek_igfem>::inverseMap(const Vector<Real> & real_coords,
 				     nb_nodes_per_element,
 				     spatial_dimension);
 
-  ElementClass<type>::inverseMap(real_coords,
-				 nodes_coord,
-				 natural_coords);
+ 
+  if (!sub_element) {
+    UInt nb_nodes_sub_el = ElementClass<sub_type_1>::getNbNodesPerInterpolationElement();
+    Matrix<Real> sub_el_coords(spatial_dimension, nb_nodes_sub_el);
+    ElementClass<type>::getSubElementCoords(nodes_coord, sub_el_coords, sub_element);
+    ElementClass<sub_type_1>::inverseMap(real_coords,
+					 sub_el_coords,
+					 natural_coords);
+  }
 
+  else {
+    UInt nb_nodes_sub_el = ElementClass<sub_type_2>::getNbNodesPerInterpolationElement();
+    Matrix<Real> sub_el_coords(spatial_dimension, nb_nodes_sub_el);
+    ElementClass<type>::getSubElementCoords(nodes_coord, sub_el_coords, sub_element);
+    ElementClass<sub_type_2>::inverseMap(real_coords,
+					 sub_el_coords,
+					 natural_coords);
+  }
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementType type>
+void ShapeLagrange<_ek_igfem>::inverseMap(const Vector<Real> & real_coords,
+					  UInt elem,
+					  Vector<Real> & natural_coords,
+					  const GhostType & ghost_type) const{
+
+  /// map point into parent reference domain
+  AKANTU_DEBUG_IN();
+
+  const ElementType parent_type = ElementClassProperty<type>::parent_element_type;
+
+
+  UInt spatial_dimension = mesh.getSpatialDimension();
+  UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
+
+  UInt * elem_val = mesh.getConnectivity(type, ghost_type).storage();
+  Matrix<Real> nodes_coord(spatial_dimension, nb_nodes_per_element);
+
+  mesh.extractNodalValuesFromElement(mesh.getNodes(),
+				     nodes_coord.storage(),
+				     elem_val + elem*nb_nodes_per_element,
+				     nb_nodes_per_element,
+				     spatial_dimension);
+
+ 
+  UInt nb_nodes_parent_el = ElementClass<parent_type>::getNbNodesPerInterpolationElement();
+  Matrix<Real> parent_coords(spatial_dimension, nb_nodes_parent_el);
+  ElementClass<type>::getParentCoords(nodes_coord, parent_coords);
+  ElementClass<parent_type>::inverseMap(real_coords,
+					parent_coords,
+					natural_coords);
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 bool ShapeLagrange<_ek_igfem>::contains(const Vector<Real> & real_coords,
-			     UInt elem,
-			     const GhostType & ghost_type) const{
+					UInt elem,
+					const GhostType & ghost_type) const{
 
   UInt spatial_dimension = mesh.getSpatialDimension();
   Vector<Real> natural_coords(spatial_dimension);
@@ -113,18 +168,68 @@ bool ShapeLagrange<_ek_igfem>::contains(const Vector<Real> & real_coords,
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
+void ShapeLagrange<_ek_igfem>::interpolate(const Vector <Real> & real_coords,
+					   UInt elem,
+					   const Matrix<Real> & nodal_values,
+					   Vector<Real> & interpolated,
+					   const GhostType & ghost_type) const {
+  UInt nb_shapes = ElementClass<type>::getShapeSize();
+  Vector<Real> shapes(nb_shapes);
+  computeShapes<type>(real_coords, elem, shapes, ghost_type);
+  ElementClass<type>::interpolate(nodal_values, shapes, interpolated);
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementType type>
 void ShapeLagrange<_ek_igfem>::computeShapes(const Vector<Real> & real_coords,
-				  UInt elem,
-				  Vector<Real> & shapes,
-				  const GhostType & ghost_type) const {
+					     UInt elem,
+					     Vector<Real> & shapes,
+					     const GhostType & ghost_type) const {
 
   AKANTU_DEBUG_IN();
+  /// typedef for the two subelement_types and the parent element type
+  const ElementType sub_type_1 = ElementClassProperty<type>::sub_element_type_1;
+  const ElementType sub_type_2 = ElementClassProperty<type>::sub_element_type_2;
+  const ElementType parent_type = ElementClassProperty<type>::parent_element_type;
 
   UInt spatial_dimension = mesh.getSpatialDimension();
+
+  /// parent contribution
+  /// get the size of the parent shapes 
+  UInt size_of_parent_shapes = ElementClass<parent_type>::getShapeSize();
+  Vector<Real> parent_shapes(size_of_parent_shapes);
+  
+  /// compute parent shapes -> map shapes in the physical domain of the parent
   Vector<Real> natural_coords(spatial_dimension);
 
   inverseMap<type>(real_coords, elem, natural_coords, ghost_type);
-  ElementClass<type>::computeShapes(natural_coords, shapes);
+  ElementClass<parent_type>::computeShapes(natural_coords, parent_shapes);
+  natural_coords.clear();
+
+  /// sub-element contribution
+  /// check which sub-element contains the physical point
+  /// check if point is in sub-element 1
+  inverseMap<type>(real_coords, elem, natural_coords, 0, ghost_type);
+  if (ElementClass<sub_type_1>::contains(natural_coords)) {
+    UInt size_of_sub_shapes = ElementClass<sub_type_1>::getShapeSize();
+    Vector<Real> sub_shapes(size_of_sub_shapes);
+    ElementClass<sub_type_1>::computeShapes(natural_coords, sub_shapes);
+    /// assemble shape functions
+    ElementClass<type>::assembleShapes(parent_shapes, sub_shapes, shapes, 0);
+  }
+  else {
+    natural_coords.clear();
+    inverseMap<type>(real_coords, elem, natural_coords, 1, ghost_type);
+
+    AKANTU_DEBUG_ASSERT(ElementClass<sub_type_2>::contains(natural_coords), 
+			"Physical point not contained in any element");
+
+    UInt size_of_sub_shapes = ElementClass<sub_type_2>::getShapeSize();
+    Vector<Real> sub_shapes(size_of_sub_shapes);
+    ElementClass<sub_type_2>::computeShapes(natural_coords, sub_shapes);
+    /// assemble shape functions
+    ElementClass<type>::assembleShapes(parent_shapes, sub_shapes, shapes, 1);
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -136,40 +241,7 @@ void ShapeLagrange<_ek_igfem>::computeShapeDerivatives(const Matrix<Real> & real
 						    Tensor3<Real> & shapesd,
 						    const GhostType & ghost_type) const {
 
-  AKANTU_DEBUG_IN();
-
-  UInt spatial_dimension = mesh.getSpatialDimension();
-  UInt nb_points = real_coords.cols();
-  UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
-
-  AKANTU_DEBUG_ASSERT(mesh.getSpatialDimension() == shapesd.size(0) && nb_nodes_per_element == shapesd.size(1),
-		      "Shape size doesn't match");
-  AKANTU_DEBUG_ASSERT(nb_points == shapesd.size(2),
-		      "Number of points doesn't match shapes size");
-
-  Matrix<Real> natural_coords(spatial_dimension, nb_points);
-
-  // Creates the matrix of natural coordinates
-  for (UInt i = 0 ; i < nb_points ; i++) {
-    Vector<Real> real_point = real_coords(i);
-    Vector<Real> natural_point = natural_coords(i);
-
-    inverseMap<type>(real_point, elem, natural_point, ghost_type);
-  }
-
-
-  UInt * elem_val = mesh.getConnectivity(type, ghost_type).storage();
-  Matrix<Real> nodes_coord(spatial_dimension, nb_nodes_per_element);
-
-  mesh.extractNodalValuesFromElement(mesh.getNodes(),
-				     nodes_coord.storage(),
-				     elem_val + elem*nb_nodes_per_element,
-				     nb_nodes_per_element,
-				     spatial_dimension);
-
-  computeShapeDerivativesOnCPointsByElement<type>(nodes_coord, natural_coords, shapesd);
-
-  AKANTU_DEBUG_OUT();
+  AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
 
@@ -359,7 +431,7 @@ void ShapeLagrange<_ek_igfem>::precomputeShapeDerivativesOnControlPoints(const A
 							  natural_coords_sub_1,
 							  B_sub_1);
     computeShapeDerivativesOnCPointsByElement<sub_type_2>(sub_el_2_coords,
-							  natural_coords_sub_1,
+							  natural_coords_sub_2,
 							  B_sub_2);
     computeShapeDerivativesOnCPointsByElement<parent_type>(parent_coords,
 							  nc_parent,
@@ -462,6 +534,173 @@ void ShapeLagrange<_ek_igfem>::fieldTimesShapes(const Array<Real> & field,
 }
 
 /* -------------------------------------------------------------------------- */
+template <ElementType type>
+void ShapeLagrange<_ek_igfem>::interpolateOnPhysicalPoint(const Vector<Real> & real_coords,
+							  UInt elem,
+							  const Array<Real> & field,
+							  Vector<Real> & interpolated,
+							  const GhostType & ghost_type) const {
+
+  AKANTU_DEBUG_IN();
+  Vector<Real> shapes(ElementClass<type>::getShapeSize());
+  computeShapes<type>(real_coords, elem, shapes, ghost_type);
+
+  UInt spatial_dimension = mesh.getSpatialDimension();
+  UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
+
+  UInt * elem_val = mesh.getConnectivity(type, ghost_type).storage();
+  Matrix<Real> nodes_val(spatial_dimension, nb_nodes_per_element);
+  mesh.extractNodalValuesFromElement(field,
+				     nodes_val.storage(),
+				     elem_val + elem * nb_nodes_per_element,
+				     nb_nodes_per_element,
+				     spatial_dimension);
+
+  ElementClass<type>::interpolate(nodes_val, shapes, interpolated);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementType type>
+void ShapeLagrange<_ek_igfem>::precomputeShapesOnEnrichedNodes(__attribute__((unused)) const Array<Real> & nodes,
+							       const GhostType & ghost_type) {
+
+  AKANTU_DEBUG_IN();
+ 
+  InterpolationType itp_type = ElementClassProperty<type>::interpolation_type;
+
+  const ElementType parent_type = ElementClassProperty<type>::parent_element_type;
+  const ElementType sub_type = ElementClassProperty<type>::sub_element_type_1;
+
+  /// get the spatial dimension for the given element type
+  UInt spatial_dimension = ElementClass<type>::getSpatialDimension();
+  
+// get the integration points for the parent element
+  UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
+
+  /// get the size of the shapes 
+  UInt nb_enriched_nodes = ElementClass<type>::getNbEnrichments();
+  UInt nb_parent_nodes = ElementClass<parent_type>::getNbNodesPerInterpolationElement();
+  UInt size_of_shapes = ElementClass<type>::getShapeSize();
+  UInt size_of_parent_shapes = ElementClass<parent_type>::getShapeSize();
+  UInt size_of_sub_shapes = ElementClass<sub_type>::getShapeSize();
+
+  Vector<Real> parent_shapes(size_of_parent_shapes);
+  Vector<Real> sub_shapes(size_of_sub_shapes);
+
+  Vector<Real> shapes(size_of_shapes);
+
+  /// get the nodal coordinates per element
+  UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
+  Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
+  FEEngine::extractNodalToElementField(mesh, nodes, x_el,
+				  type, ghost_type);
+  Array<Real>::matrix_iterator x_it = x_el.begin(spatial_dimension,
+						 nb_nodes_per_element);
+
+  /// allocate the shapes for the given element type
+  Array<Real> & shapes_tmp = shapes_at_enrichments.alloc(nb_element * nb_enriched_nodes,
+							 size_of_shapes,
+							 itp_type,
+							 ghost_type);
+
+  Array<Real>::matrix_iterator shapes_it =
+    shapes_tmp.begin_reinterpret(ElementClass<type>::getNbNodesPerInterpolationElement(), nb_enriched_nodes, nb_element);
+
+  Vector<Real> real_coords(spatial_dimension);
+  Vector<Real> natural_coords(spatial_dimension);
+  Matrix<Real> parent_coords(spatial_dimension, nb_parent_nodes);
+  UInt * sub_element_enrichments = ElementClass<type>::getSubElementEnrichments();
+  
+  /// loop over all elements
+  for (UInt elem = 0; elem < nb_element; ++elem, ++shapes_it, ++x_it) {
+    Matrix<Real> & N = *shapes_it;
+    const Matrix<Real> & X = *x_it;
+    for (UInt i = 0; i < nb_enriched_nodes; ++i) {
+      /// get the parent element coordinates
+      ElementClass<type>::getParentCoords(X, parent_coords);
+      /// get the physical coords of the enriched node
+      real_coords = X(nb_parent_nodes + i);
+      /// map the physical point into the parent ref domain
+      ElementClass<parent_type>::inverseMap(real_coords,
+					    parent_coords,
+					    natural_coords);
+      /// compute the parent shape functions
+      ElementClass<parent_type>::computeShapes(natural_coords, parent_shapes);
+      ///Sub-element contribution
+      sub_shapes.clear();
+      sub_shapes(sub_element_enrichments[i]) = 1.;     
+      ElementClass<type>::assembleShapes(parent_shapes, sub_shapes, shapes, 0);
+      N(i) = shapes;
+    }    
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementType type>
+void ShapeLagrange<_ek_igfem>::interpolateAtEnrichedNodes(const Array<Real> & src,
+							  Array<Real> & dst,
+							  const GhostType & ghost_type) const {
+
+  AKANTU_DEBUG_IN();
+
+  const ElementType parent_type = ElementClassProperty<type>::parent_element_type; 
+ 
+  UInt nb_element = mesh.getNbElement(type, ghost_type);
+  UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
+  UInt nb_parent_nodes = ElementClass<parent_type>::getNbNodesPerInterpolationElement();
+  UInt nb_enrichments = ElementClass<type>::getNbEnrichments();
+  UInt * elem_val = mesh.getConnectivity(type, ghost_type).storage();
+  UInt spatial_dimension = mesh.getSpatialDimension();
+  Matrix<Real> nodes_val(spatial_dimension, nb_nodes_per_element);
+  InterpolationType itp_type = ElementClassProperty<type>::interpolation_type;
+
+  const Array<Real> & shapes = shapes_at_enrichments(itp_type, ghost_type);
+  Array<Real>::const_matrix_iterator shapes_it =
+    shapes.begin_reinterpret(nb_nodes_per_element, nb_enrichments, nb_element);
+  Array<Real>::vector_iterator dst_vect = dst.begin(spatial_dimension);
+
+  Vector<Real> interpolated(spatial_dimension);
+  for(UInt e = 0; e < nb_element; ++e, ++shapes_it) {
+    const Matrix<Real> & el_shapes = *shapes_it;
+    mesh.extractNodalValuesFromElement(src,
+				       nodes_val.storage(),
+				       elem_val + e * nb_nodes_per_element,
+				       nb_nodes_per_element,
+				       spatial_dimension);;
+    for (UInt i = 0; i < nb_enrichments; ++i) {
+      ElementClass<type>::interpolate(nodes_val, el_shapes(i), interpolated);
+      UInt enr_node_idx = elem_val[e * nb_nodes_per_element + nb_parent_nodes + i];
+      dst_vect[enr_node_idx] = interpolated;
+    }
+  }
+   
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+#define COMPUTE_ENRICHED_VALUES(type)					\
+  interpolateAtEnrichedNodes<type>(src,					\
+				   dst,					\
+				   ghost_type);		
+
+inline void ShapeLagrange<_ek_igfem>::interpolateEnrichmentsAllTypes(const Array<Real> & src,		
+								     Array<Real> & dst,		
+								     const ElementType & type,
+								     const GhostType & ghost_type) const {
+  
+  AKANTU_BOOST_IGFEM_ELEMENT_SWITCH(COMPUTE_ENRICHED_VALUES);
+}
+#undef COMPUTE_ENRICHED_VALUES
+
+/* -------------------------------------------------------------------------- */
+
+
+
 
 
 

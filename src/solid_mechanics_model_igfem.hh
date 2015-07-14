@@ -74,7 +74,7 @@ public:
 private:
 
   /// compute the real values of displacement, force, etc. on the enriched nodes
-  void computeRealNodalFields();
+  void computeValuesOnEnrichedNodes();
 
   /* ------------------------------------------------------------------------ */
   /* Mesh Event Handler inherited members                                     */
@@ -111,6 +111,10 @@ public:
 					       bool padding_flag,
 					       const UInt & spatial_dimension,
 					       const ElementKind & kind);
+ 
+  virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
+					       const std::string & group_name,
+					       bool padding_flag);
 
 /* -------------------------------------------------------------------------- */
 /* Accessors                                                                  */
@@ -157,7 +161,7 @@ public:
 
   void setIGFEMFallback(UInt f) { this->fallback_value_igfem = f; }
 
-private:
+protected:
   UInt fallback_value_igfem;  
 };
 __END_AKANTU__
