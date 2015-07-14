@@ -35,6 +35,9 @@
 #include "static_communicator.hh"
 #include "dumper_field.hh"
 #include "dumper_generic_elemental_field.hh"
+#ifdef AKANTU_IGFEM
+#  include "dumper_igfem_elemental_field.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
