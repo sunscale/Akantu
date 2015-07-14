@@ -59,3 +59,4 @@ namespace akantu {
     _initializeWithArgv(input_file, _aka_sys.argv)
 %}
 %include "aka_common.hh"
+%include "aka_element_classes_info.hh"
