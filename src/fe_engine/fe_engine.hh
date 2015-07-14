@@ -166,6 +166,12 @@ public:
 				     ElementTypeMapArray<Real> & uq,
                                      const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
 
+  virtual 
+  void interpolate(const Vector<Real> & real_coords, 
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const Element & element) const = 0;
+
   virtual
   void computeShapes(const Vector<Real> & real_coords,
                      UInt elem,
