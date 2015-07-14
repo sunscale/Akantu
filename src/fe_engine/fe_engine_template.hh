@@ -67,7 +67,7 @@ public:
   /// pre-compute all the shape functions, their derivatives and the jacobians
   void initShapeFunctions(const GhostType & ghost_type = _not_ghost);
   void initShapeFunctions(const Array<Real> & nodes,
-			  const GhostType & ghost_type = _not_ghost);
+				 const GhostType & ghost_type = _not_ghost);
 
   /* ------------------------------------------------------------------------ */
   /* Integration method bridges                                               */
@@ -100,6 +100,11 @@ public:
 				   const GhostType & ghost_type = _not_ghost,
 				   const Array<UInt> & filter_elements = empty_filter) const;
 
+  /// interpolate on a phyiscal point inside an element
+  void interpolate(const Vector<Real> & real_coords, 
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const Element & element) const;
 
   /// get the number of quadrature points
   UInt getNbQuadraturePoints(const ElementType & type,
@@ -192,7 +197,7 @@ public:
 
 
   /// function to print the contain of the class
-  //  virtual void printself(std::ostream & stream, int indent = 0) const{};
+  virtual void printself(std::ostream & stream, int indent = 0) const;
 
   void assembleFieldLumped(const Array<Real> & field_1,
 			   UInt nb_degree_of_freedom,
@@ -301,11 +306,18 @@ __END_AKANTU__
 /* -------------------------------------------------------------------------- */
 #include "fe_engine_template_tmpl.hh"
 
-#if defined(AKANTU_STRUCTURAL_MECHANICS)
 /* -------------------------------------------------------------------------- */
 /* Shape Linked specialization                                                */
 /* -------------------------------------------------------------------------- */
-#include "fe_engine_template_tmpl_struct.hh"
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+#  include "fe_engine_template_tmpl_struct.hh"
+#endif
+
+/* -------------------------------------------------------------------------- */
+/* Shape IGFEM specialization                                                 */
+/* -------------------------------------------------------------------------- */
+#if defined(AKANTU_IGFEM)
+#  include "fe_engine_template_tmpl_igfem.hh"
 #endif
 
 #endif /* __AKANTU_FE_ENGINE_TEMPLATE_HH__ */

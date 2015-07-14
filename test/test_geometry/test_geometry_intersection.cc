@@ -2,6 +2,7 @@
  * @file   test_geometry_intersection.cc
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Clément Roux-Langlois <clement.roux@epfl.ch>
  *
  * @date creation: Fri Feb 27 2015
  * @date last modification: Thu Mar 5 2015
@@ -53,10 +54,10 @@ typedef IntersectionTypeHelper<TreeTypeHelper<Triangle<K>, K>, K::Segment_3>::in
 
 typedef Spherical SK;
 typedef boost::variant<std::pair<SK::Circular_arc_point_3, UInt> > sk_inter_res;
-typedef CGAL::cpp11::result_of<SK::Intersect_3(SK::Line_arc_3,
+/*typedef CGAL::cpp11::result_of<SK::Intersect_3(SK::Line_arc_3,
 					       SK::Sphere_3,
 					       std::back_insert_iterator<
-					       std::list<sk_inter_res> >)>::type sk_res;
+					       std::list<sk_inter_res> >)>::type sk_res;*/
 
 typedef std::pair<SK::Circular_arc_point_3, UInt> pair_type;
 
@@ -103,19 +104,22 @@ int main (int argc, char * argv[]) {
     }
   } else return EXIT_FAILURE;
 
-  SK::Sphere_3 sphere(SK::Point_3(0, 0, 0), 1.);
-  SK::Segment_3 seg(SK::Point_3(0, 0, 0), SK::Point_3(1., 1., 1.));
+  SK::Sphere_3 sphere(SK::Point_3(0, 0, 0), 3.);
+  SK::Segment_3 seg(SK::Point_3(0, 0, 0), SK::Point_3(2., 2., 2.));
   SK::Line_arc_3 arc(seg);
 
   std::list<sk_inter_res> s_results;
   CGAL::intersection(arc, sphere, std::back_inserter(s_results));
 
   if (pair_type * pair = boost::get<pair_type>(&s_results.front())) {
-    if (!comparePoints(pair->first, SK::Circular_arc_point_3(1.0 / std::sqrt(3.),
-							     1.0 / std::sqrt(3.),
-							     1.0 / std::sqrt(3.))))
+    std::cout << "xi = " << to_double(pair->first.x()) 
+	      << ", yi = " << to_double(pair->first.y()) << std::endl;
+    if (!comparePoints(pair->first, SK::Circular_arc_point_3(1.0, 1.0, 1.0)))
 	return EXIT_FAILURE;
   } else return EXIT_FAILURE;
+
+  MeshGeomFactory<2, _triangle_3, Line_arc<SK>, SK> Sfactory(mesh);
+  Sfactory.constructData();
 
   finalize();
   return EXIT_SUCCESS;

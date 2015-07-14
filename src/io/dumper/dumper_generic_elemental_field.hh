@@ -92,7 +92,7 @@ public:
   };
 
   /// return the size of the contained data: i.e. the number of elements ?
-  UInt size() {
+  virtual UInt size() {
     checkHomogeneity();
     return this->nb_total_element;
   }
@@ -143,8 +143,10 @@ public:
 
     /// skip all types without data
     ElementType type = *tit;
-    for (;tit != end && this->field(*tit, this->ghost_type).getSize() == 0; ++tit)
-      type = *tit;
+    for (;tit != end && this->field(*tit, this->ghost_type).getSize() == 0; ++tit) {}
+    type = *tit;
+
+    if (tit == end) return this->end();
 
     /// getting information for the field of the given type
     const array_type & vect = this->field(type, this->ghost_type);

@@ -440,6 +440,10 @@ template<> inline void Material::registerInternal<UInt>(InternalField<UInt> & ve
   internal_vectors_uint[vect.getID()] = &vect;
 }
 
+template<> inline void Material::registerInternal<bool>(InternalField<bool> & vect) {
+  internal_vectors_bool[vect.getID()] = &vect;
+}
+
 /* -------------------------------------------------------------------------- */
 template<> inline void Material::unregisterInternal<Real>(InternalField<Real> & vect) {
   internal_vectors_real.erase(vect.getID());
@@ -449,38 +453,17 @@ template<> inline void Material::unregisterInternal<UInt>(InternalField<UInt> & 
   internal_vectors_uint.erase(vect.getID());
 }
 
+template<> inline void Material::unregisterInternal<bool>(InternalField<bool> & vect) {
+  internal_vectors_bool.erase(vect.getID());
+}
+
 /* -------------------------------------------------------------------------- */
 inline bool Material::isInternal(const ID & id, const ElementKind & element_kind) const {
 
   std::map<ID, InternalField<Real> *>::const_iterator internal_array =
     internal_vectors_real.find(this->getID()+":"+id);
 
-  if (internal_array == internal_vectors_real.end())    return false;
-  if (internal_array->second->getElementKind() != element_kind) return false;
+  if (internal_array == internal_vectors_real.end() ||
+      internal_array->second->getElementKind() != element_kind) return false;
   return true;
-}
-
-/* -------------------------------------------------------------------------- */
-
-inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id,
-                                                             const ElementKind & element_kind) const {
-
-  std::map<ID, InternalField<Real> *>::const_iterator internal_array =
-    internal_vectors_real.find(this->getID()+":"+id);
-
-  if (internal_array == internal_vectors_real.end())  AKANTU_EXCEPTION("cannot find internal " << id);
-  if (internal_array->second->getElementKind() != element_kind) AKANTU_EXCEPTION("cannot find internal " << id);
-
-  InternalField<Real> & internal = *internal_array->second;
-  InternalField<Real>::type_iterator it = internal.firstType(spatial_dimension, _not_ghost,element_kind);
-  InternalField<Real>::type_iterator last_type = internal.lastType(spatial_dimension, _not_ghost,element_kind);
-
-
-  ElementTypeMap<UInt> res;
-  for(; it != last_type; ++it) {
-    UInt nb_quadrature_points = 0;
-    nb_quadrature_points = internal.getFEEngine().getNbQuadraturePoints(*it);
-    res(*it) = internal.getNbComponent() * nb_quadrature_points;
-  }
-    return res;
 }

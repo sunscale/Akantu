@@ -174,7 +174,7 @@ inline bool
 GeometricalShapeContains<_gst_square>::contains(const vector_type & coords) {
   bool in = true;
   for (UInt i = 0; i < coords.size() && in; ++i)
-    in &= ((coords(i) >= -1.) && (coords(i) <= 1.));
+    in &= ((coords(i) >= -(1. + std::numeric_limits<Real>::epsilon() )) && (coords(i) <= (1. + std::numeric_limits<Real>::epsilon())));
   return in;
 }
 
@@ -186,10 +186,10 @@ GeometricalShapeContains<_gst_triangle>::contains(const vector_type & coords) {
   bool in = true;
   Real sum = 0;
     for (UInt i = 0; (i < coords.size()) && in; ++i) {
-    in &= ((coords(i) >= 0) && (coords(i) <= 1.));
+      in &= ((coords(i) >= - (Math::getTolerance())) && (coords(i) <= (1. + Math::getTolerance())));
     sum += coords(i);
   }
-  if(in) return (in && (sum <= 1));
+    if(in) return (in && (sum <= (1. + Math::getTolerance())));
   return in;
 }
 
@@ -238,6 +238,48 @@ InterpolationElement<interpolation_type, kind>::computeDNDS(const Matrix<Real> &
 
 /* -------------------------------------------------------------------------- */
 /**
+ * interpolate on a point a field for which values are given on the
+ * node of the element using the shape functions at this interpolation point
+ *
+ * @param nodal_values values of the function per node @f$ f_{ij} = f_{n_i j} @f$ so it should be a matrix of size nb_nodes_per_element @f$\times@f$ nb_degree_of_freedom
+ * @param shapes value of shape functions at the interpolation point
+ * @param interpolated interpolated value of f @f$ f_j(\xi) = \sum_i f_{n_i j} N_i @f$
+ */
+template<InterpolationType interpolation_type, InterpolationKind kind>
+inline void
+InterpolationElement<interpolation_type, kind>::interpolate(const Matrix<Real> & nodal_values,
+							    const Vector<Real> & shapes,
+							    Vector<Real> & interpolated) {
+  Matrix<Real> interpm(interpolated.storage(), nodal_values.rows(), 1);
+  Matrix<Real> shapesm(shapes.storage(), InterpolationPorperty<interpolation_type>::nb_nodes_per_element, 1);
+  interpm.mul<false, false>(nodal_values, shapesm);
+}
+
+/* -------------------------------------------------------------------------- */
+/**
+ * interpolate on several points a field  for which values are given on the
+ * node of the element using the shape functions at the interpolation point
+ *
+ * @param nodal_values values of the function per node @f$ f_{ij} = f_{n_i j} @f$ so it should be a matrix of size nb_nodes_per_element @f$\times@f$ nb_degree_of_freedom
+ * @param shapes value of shape functions at the interpolation point
+ * @param interpolated interpolated values of f @f$ f_j(\xi) = \sum_i f_{n_i j} N_i @f$
+ */
+template<InterpolationType interpolation_type, InterpolationKind kind>
+inline void
+InterpolationElement<interpolation_type, kind>::interpolate(const Matrix<Real> & nodal_values,
+							    const Matrix<Real> & shapes,
+							    Matrix<Real> & interpolated) {
+  UInt nb_points = shapes.cols();
+  for (UInt p = 0; p < nb_points; ++p) {
+    Vector<Real> Np(shapes(p));
+    Vector<Real> interpolated_p(interpolated(p));
+    interpolate(nodal_values, Np, interpolated_p);
+  }
+
+}
+
+/* -------------------------------------------------------------------------- */
+/**
  * interpolate the field on a point given in natural coordinates the field which
  * values are given on the node of the element
  *
@@ -252,10 +294,8 @@ InterpolationElement<interpolation_type, kind>::interpolateOnNaturalCoordinates(
 										Vector<Real> & interpolated) {
   Vector<Real> shapes(InterpolationPorperty<interpolation_type>::nb_nodes_per_element);
   computeShapes(natural_coords, shapes);
-
-  Matrix<Real> interpm(interpolated.storage(), nodal_values.rows(), 1);
-  Matrix<Real> shapesm(shapes.storage(), InterpolationPorperty<interpolation_type>::nb_nodes_per_element, 1);
-  interpm.mul<false, false>(nodal_values, shapesm);
+  
+  interpolate(nodal_values, shapes, interpolated);
 }
 
 
@@ -513,4 +553,18 @@ inline void ElementClass<type, kind>::inverseMap(const Vector<Real> & real_coord
     inverse_map_error = f.norm<L_2>();
   }
   //  memcpy(natural_coords.storage(), natural_guess.storage(), sizeof(Real) * natural_coords.size());
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementType type, ElementKind kind>
+inline void ElementClass<type, kind>::inverseMap(const Matrix<Real> & real_coords,
+						 const Matrix<Real> & node_coords,
+						 Matrix<Real> & natural_coords,
+						 Real tolerance) {
+  UInt nb_points = real_coords.cols();
+  for (UInt p = 0; p < nb_points; ++p) {
+    Vector<Real> X(real_coords(p));
+    Vector<Real> ncoord_p(natural_coords(p));
+    inverseMap(X, node_coords, ncoord_p, tolerance);
+  }
 }

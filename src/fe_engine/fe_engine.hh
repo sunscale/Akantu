@@ -166,6 +166,12 @@ public:
 				     ElementTypeMapArray<Real> & uq,
                                      const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
 
+  virtual 
+  void interpolate(const Vector<Real> & real_coords, 
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const Element & element) const = 0;
+
   virtual
   void computeShapes(const Vector<Real> & real_coords,
                      UInt elem,
@@ -299,6 +305,9 @@ public:
 
   /// get cohesive element type for a given facet type
   static inline ElementType getCohesiveElementType(const ElementType & type_facet);
+
+  /// get igfem element type for a given regular type
+  static inline Vector<ElementType> getIGFEMElementTypes(const ElementType & type);
 
   /// get the interpolation element associated to an element type
   static inline InterpolationType getInterpolationType(const ElementType & el_type);

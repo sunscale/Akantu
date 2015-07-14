@@ -39,6 +39,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 template<class Shape>
 class ShapeCohesive;
+class ShapeIGFEM;
 
 
 template <ElementKind kind>
@@ -79,6 +80,14 @@ public:
 				  UInt nb_degree_of_freedom,
 				  GhostType ghost_type = _not_ghost,
 				  const Array<UInt> & filter_elements = empty_filter) const;
+
+  /// interpolate on physical point
+  template <ElementType type>
+  void interpolate(const Vector <Real> & real_coords,
+		   UInt elem,
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const GhostType & ghost_type) const;
 
   /// compute the gradient of u on the control points
   template <ElementType type>

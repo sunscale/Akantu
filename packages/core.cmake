@@ -42,6 +42,8 @@ package_declare_sources(core
   common/aka_common.hh
   common/aka_common_inline_impl.cc
   common/aka_csr.hh
+  common/aka_element_classes_info.hh
+  common/aka_element_classes_info_inline_impl.cc
   common/aka_error.cc
   common/aka_error.hh
   common/aka_event_handler_manager.hh
@@ -96,6 +98,7 @@ package_declare_sources(core
   fe_engine/integrator_gauss_inline_impl.cc
   fe_engine/interpolation_element.cc
   fe_engine/interpolation_element_tmpl.hh
+  fe_engine/quadrature_point.hh
   fe_engine/shape_functions.hh
   fe_engine/shape_functions_inline_impl.cc
   fe_engine/shape_lagrange.cc
@@ -151,6 +154,7 @@ package_declare_sources(core
   mesh/group_manager_inline_impl.cc
   mesh/mesh.cc
   mesh/mesh.hh
+  mesh/mesh_accessor.hh
   mesh/mesh_events.hh
   mesh/mesh_filter.hh
   mesh/mesh_data.cc

@@ -113,6 +113,7 @@ public:
     for (UInt i = 0; i < nb_to_average; ++i) {
       Vector<value_type> tmp(ptr,this->nb_data);
       res += tmp;
+      ptr += this->nb_data;
     }
     res /= nb_to_average;
     return typeConverter(d,res,this->nb_data);

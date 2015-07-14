@@ -87,6 +87,8 @@ void MeshGeomFactory<dim, type, Primitive, Kernel>::constructData() {
 
   delete data_tree;
 
+  // This condition allows the use of the mesh geom module
+  // even if types are not compatible with AABB tree algorithm
   if (TreeTypeHelper<Primitive, Kernel>::is_valid)
     data_tree = new typename TreeTypeHelper<Primitive, Kernel>::tree(primitive_list.begin(), primitive_list.end());
 
@@ -99,7 +101,7 @@ void MeshGeomFactory<dim, type, Primitive, Kernel>::addPrimitive(const Matrix<Re
   this->addPrimitive(node_coordinates, id, this->primitive_list);
 }
 
-// 2D and _triangle_3 implementation
+// (2D, _triangle_3) decomposed into Triangle<Cartesian>
 template<>
 inline void MeshGeomFactory<2, _triangle_3, Triangle<Cartesian>, Cartesian>::addPrimitive(
     const Matrix<Real> & node_coordinates,
@@ -116,9 +118,45 @@ inline void MeshGeomFactory<2, _triangle_3, Triangle<Cartesian>, Cartesian>::add
   list.push_back(t);
 }
 
-// 2D and _triangle_3 with segments implementation
+// (2D, _triangle_3) decomposed into Line_arc<Spherical>
 template<>
 inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::addPrimitive(
+    const Matrix<Real> & node_coordinates,
+    UInt id,
+    TreeTypeHelper<Line_arc<Spherical>, Spherical>::container_type & list) {
+
+  TreeTypeHelper<Line_arc<Spherical>, Spherical>::point_type
+    a(node_coordinates(0, 0), node_coordinates(1, 0), 0.),
+    b(node_coordinates(0, 1), node_coordinates(1, 1), 0.),
+    c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
+ 
+  /*std::cout << "elem " << id << " node 1 : x_node=" << node_coordinates(0, 0)
+	    << ", x_arc_node=" << a.x() << ", y_node=" << node_coordinates(1, 0)
+	    << ", y_arc_node=" << a.y() << std::endl ;
+  std::cout << "elem " << id << " node 2 : x_node=" << node_coordinates(0, 1)
+	    << ", x_arc_node=" << b.x() << ", y_node=" << node_coordinates(1, 1)
+	    << ", y_arc_node=" << b.y() << std::endl ;
+  std::cout << "elem " << id << " node 2 : x_node=" << node_coordinates(0, 2)
+	    << ", x_arc_node=" << c.x() << ", y_node=" << node_coordinates(1, 2)
+	    << ", y_arc_node=" << c.y() << std::endl ;*/
+
+  CGAL::Line_3<Spherical> l1(a, b), l2(b, c), l3(c, a);
+  Line_arc<Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
+
+  s1.setId(id); s1.setSegId(1);
+  s2.setId(id); s2.setSegId(2);
+  s3.setId(id); s3.setSegId(3);
+
+  list.push_back(s1);
+  list.push_back(s2);
+  list.push_back(s3);
+}
+
+#if defined(AKANTU_IGFEM)
+
+// (2D, _igfem_triangle_4) decomposed into Line_arc<Spherical>
+template<>
+inline void MeshGeomFactory<2, _igfem_triangle_4, Line_arc<Spherical>, Spherical>::addPrimitive(
     const Matrix<Real> & node_coordinates,
     UInt id,
     TreeTypeHelper<Line_arc<Spherical>, Spherical>::container_type & list) {
@@ -131,16 +169,42 @@ inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::add
   CGAL::Line_3<Spherical> l1(a, b), l2(b, c), l3(c, a);
   Line_arc<Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
 
-  s1.setId(id);
-  s2.setId(id);
-  s3.setId(id);
+  s1.setId(id); s1.setSegId(1);
+  s2.setId(id); s2.setSegId(2);
+  s3.setId(id); s3.setSegId(3);
 
   list.push_back(s1);
   list.push_back(s2);
   list.push_back(s3);
 }
 
-// 3D and _tetrahedron_4 with triangles implementation
+// (2D, _igfem_triangle_4) decomposed into Line_arc<Spherical>
+template<>
+inline void MeshGeomFactory<2, _igfem_triangle_5, Line_arc<Spherical>, Spherical>::addPrimitive(
+    const Matrix<Real> & node_coordinates,
+    UInt id,
+    TreeTypeHelper<Line_arc<Spherical>, Spherical>::container_type & list) {
+
+  TreeTypeHelper<Line_arc<Spherical>, Spherical>::point_type
+    a(node_coordinates(0, 0), node_coordinates(1, 0), 0.),
+    b(node_coordinates(0, 1), node_coordinates(1, 1), 0.),
+    c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
+
+  CGAL::Line_3<Spherical> l1(a, b), l2(b, c), l3(c, a);
+  Line_arc<Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
+
+  s1.setId(id); s1.setSegId(1);
+  s2.setId(id); s2.setSegId(2);
+  s3.setId(id); s3.setSegId(3);
+
+  list.push_back(s1);
+  list.push_back(s2);
+  list.push_back(s3);
+}
+
+#endif
+
+// (3D, _tetrahedron_4) decomposed into Triangle<Cartesian>
 template<>
 inline void MeshGeomFactory<3, _tetrahedron_4, Triangle<Cartesian>, Cartesian>::addPrimitive(
     const Matrix<Real> & node_coordinates,

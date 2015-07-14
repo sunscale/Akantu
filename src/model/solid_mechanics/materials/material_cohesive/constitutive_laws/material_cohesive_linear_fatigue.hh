@@ -95,10 +95,6 @@ private:
   /// delta_f parameter
   Real delta_f;
 
-  /// variable saying if there should be penalty contact also after
-  /// breaking the cohesive elements
-  bool contact_after_breaking;
-
   /// variable saying if delta_f is equal to delta_max for each
   /// element when the traction is computed
   bool progressive_delta_f;
@@ -123,6 +119,12 @@ private:
 
   /// delta increment of the previous time step
   CohesiveInternalField<Real> delta_dot_prec;
+
+  /// has the element passed to normal regime (not in fatigue anymore)
+  CohesiveInternalField<bool> normal_regime;
+
+  /// ratio indicating until what point fatigue is applied in the cohesive law
+  Real fatigue_ratio;
 };
 
 __END_AKANTU__

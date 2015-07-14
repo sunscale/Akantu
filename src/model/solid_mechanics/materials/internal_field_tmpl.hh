@@ -42,7 +42,7 @@ template<typename T>
 InternalField<T>::InternalField(const ID & id, Material & material) :
   ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
   material(material),
-  fem(material.getModel().getFEEngine()),
+  fem(&(material.getModel().getFEEngine())),
   element_filter(material.getElementFilter()),
   default_value(T()),
   spatial_dimension(material.getModel().getSpatialDimension()),
@@ -60,7 +60,7 @@ InternalField<T>::InternalField(const ID & id,
 				const ElementTypeMapArray<UInt> & element_filter) :
   ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
   material(material),
-  fem(fem),
+  fem(&fem),
   element_filter(element_filter),
   default_value(T()),
   spatial_dimension(material.getSpatialDimension()),
@@ -79,7 +79,7 @@ InternalField<T>::InternalField(const ID & id,
 				const ElementTypeMapArray<UInt> & element_filter) :
   ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
   material(material),
-  fem(fem),
+  fem(&fem),
   element_filter(element_filter),
   default_value(T()),
   spatial_dimension(dim),
@@ -120,6 +120,18 @@ InternalField<T>::~InternalField() {
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
+void InternalField<T>::setFEEngine(FEEngine & fe_engine) {
+  this->fem = &fe_engine;
+}
+
+/* -------------------------------------------------------------------------- */
+template<typename T>
+void InternalField<T>::setElementKind(ElementKind element_kind) {
+  this->element_kind = element_kind;
+}
+
+/* -------------------------------------------------------------------------- */
+template<typename T>
 void InternalField<T>::initialize(UInt nb_component) {
   internalInitialize(nb_component);
 }
@@ -146,7 +158,7 @@ void InternalField<T>::resize() {
     for(; it != end; ++it) {
       UInt nb_element = element_filter(*it, gt).getSize();
 
-      UInt nb_quadrature_points = fem.getNbQuadraturePoints(*it, gt);
+      UInt nb_quadrature_points = fem->getNbQuadraturePoints(*it, gt);
       UInt new_size = nb_element * nb_quadrature_points;
 
       UInt old_size = 0;
@@ -205,7 +217,7 @@ void InternalField<T>::internalInitialize(UInt nb_component) {
 
       for(; it != end; ++it) {
 	UInt nb_element = element_filter(*it, gt).getSize();
-	UInt nb_quadrature_points = fem.getNbQuadraturePoints(*it, gt);
+	UInt nb_quadrature_points = fem->getNbQuadraturePoints(*it, gt);
 	if(this->exists(*it, gt))
 	  this->operator()(*it, gt).resize(nb_element * nb_quadrature_points);
 	else
@@ -260,7 +272,7 @@ void InternalField<T>::removeQuadraturePoints(const ElementTypeMapArray<UInt> & 
 
 	Array<T> & vect = this->operator()(type, gt);
 
-	UInt nb_quad_per_elem = fem.getNbQuadraturePoints(type, gt);
+	UInt nb_quad_per_elem = fem->getNbQuadraturePoints(type, gt);
 	UInt nb_component = vect.getNbComponent();
 
 	Array<T> tmp(renumbering.getSize()*nb_quad_per_elem, nb_component);

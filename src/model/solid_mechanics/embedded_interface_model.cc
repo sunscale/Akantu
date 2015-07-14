@@ -47,6 +47,7 @@ __BEGIN_AKANTU__
 const EmbeddedInterfaceModelOptions
   default_embedded_interface_model_options(_explicit_lumped_mass, false, false);
 
+/* -------------------------------------------------------------------------- */
 EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
                                                Mesh & primitive_mesh,
                                                UInt spatial_dimension,
@@ -65,13 +66,17 @@ EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
   this->setMaterialSelector(*mat_sel_pointer);
 
   interface_mesh = &(intersector.getInterfaceMesh());
+
+  // Create 1D FEEngine on the interface mesh
   registerFEEngineObject<MyFEEngineType>("EmbeddedInterfaceFEEngine", *interface_mesh, 1);
 }
 
+/* -------------------------------------------------------------------------- */
 EmbeddedInterfaceModel::~EmbeddedInterfaceModel() {
   delete interface_material_selector;
 }
 
+/* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
   const EmbeddedInterfaceModelOptions & eim_options =
     dynamic_cast<const EmbeddedInterfaceModelOptions &>(options);
@@ -79,15 +84,18 @@ void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
   // We don't want to initiate materials before shape functions are initialized
   SolidMechanicsModelOptions dummy_options(eim_options.analysis_method, true);
 
+  // Do no initialize interface_mesh if told so
   if (!eim_options.no_init_intersections)
     intersector.constructData();
 
+  // Initialize interface FEEngine
   FEEngine & engine = getFEEngine("EmbeddedInterfaceFEEngine");
   engine.initShapeFunctions(_not_ghost);
   engine.initShapeFunctions(_ghost);
 
   SolidMechanicsModel::initFull(dummy_options);
 
+  // This will call SolidMechanicsModel::initMaterials() last
   this->initMaterials();
 
 #if defined(AKANTU_USE_IOHELPER)
@@ -97,6 +105,8 @@ void EmbeddedInterfaceModel::initFull(const ModelOptions & options) {
 #endif
 }
 
+/* -------------------------------------------------------------------------- */
+// This function is very similar to SolidMechanicsModel's
 void EmbeddedInterfaceModel::initMaterials() {
   Element element;
 
@@ -132,6 +142,46 @@ void EmbeddedInterfaceModel::initMaterials() {
   SolidMechanicsModel::initMaterials();
 }
 
+/**
+ * DO NOT REMOVE - This prevents the material reinforcement to register
+ * their number of components. Problems arise with AvgHomogenizingFunctor
+ * if the material reinforcement gives its number of components for a
+ * field. Since AvgHomogenizingFunctor verifies that all the fields
+ * have the same number of components, an exception is raised.
+ */
+ElementTypeMap<UInt> EmbeddedInterfaceModel::getInternalDataPerElem(const std::string & field_name,
+                                                                    const ElementKind & kind) {
+  if (!(this->isInternal(field_name,kind))) AKANTU_EXCEPTION("unknown internal " << field_name);
+
+  for (UInt m = 0; m < materials.size() ; ++m) {
+    if (materials[m]->isInternal(field_name, kind)) {
+      Material * mat = NULL;
+
+      switch(this->spatial_dimension) {
+        case 1:
+          mat = dynamic_cast<MaterialReinforcement<1> *>(materials[m]);
+          break;
+
+        case 2:
+          mat = dynamic_cast<MaterialReinforcement<2> *>(materials[m]);
+          break;
+
+        case 3:
+          mat = dynamic_cast<MaterialReinforcement<3> *>(materials[m]);
+          break;
+      }
+
+      if (mat == NULL && field_name != "stress_embedded")
+        return materials[m]->getInternalDataPerElem(field_name,kind);
+      else if (mat != NULL && field_name == "stress_embedded")
+        return mat->getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
+    }
+  }
+
+  return ElementTypeMap<UInt>();
+}
+
+/* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                                        const std::string & field_id,
                                                        const std::string & group_name,
@@ -140,14 +190,14 @@ void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumpe
 #ifdef AKANTU_USE_IOHELPER
   dumper::Field * field = NULL;
 
-  if (dumper_name == "reinforcement" &&
-      (field_id == "stress_embedded"  ||
-       field_id == "inelastic_strain" ||
-       field_id == "material_index"))
+  // If dumper is reinforcement, create a 1D elemental field
+  if (dumper_name == "reinforcement")
     field = this->createElementalField(field_id, group_name, padding_flag, 1, element_kind);
-  else
-    SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, field_id, group_name, element_kind, padding_flag);
-
+  else {
+    try {
+      SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, field_id, group_name, element_kind, padding_flag);
+    } catch (...) {}
+  }
   if (field) {
     DumperIOHelper & dumper = mesh.getGroupDumper(dumper_name,group_name);
     Model::addDumpGroupFieldToDumper(field_id,field,dumper);

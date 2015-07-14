@@ -589,7 +589,7 @@ class ArrayPrintHelper {
 public:
   template<typename T>
   static void print_content(const Array<T> & vect, std::ostream & stream, int indent) {
-    if(AKANTU_DEBUG_TEST(dblDump)) {
+    if(AKANTU_DEBUG_TEST(dblDump) || AKANTU_DEBUG_LEVEL_IS_TEST()) {
       std::string space;
       for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
 

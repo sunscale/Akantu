@@ -115,22 +115,11 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(const K::Segmen
 }
 
 template<UInt dim, ElementType type>
-void MeshSegmentIntersector<dim, type>::computeIntersectionQueryList(const std::list<K::Segment_3> & query_list,
-                                                                     const std::string & physical_name) {
+void MeshSegmentIntersector<dim, type>::buildResultFromQueryList(const std::list<K::Segment_3> & query_list) {
   AKANTU_DEBUG_IN();
-  
-  current_physical_name = physical_name;
-  parent_type::computeIntersectionQueryList(query_list);
-  
-  AKANTU_DEBUG_OUT();
-}
 
-template<UInt dim, ElementType type>
-void MeshSegmentIntersector<dim, type>::computeIntersectionQueryList(const std::list<K::Segment_3> & query_list) {
-  AKANTU_DEBUG_IN();
-  
-  parent_type::computeIntersectionQueryList(query_list);
-  
+  this->computeIntersectionQueryList(query_list);
+
   AKANTU_DEBUG_OUT();
 }
 

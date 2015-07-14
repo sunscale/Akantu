@@ -565,6 +565,69 @@ void FEEngineTemplate<I, S, kind>::interpolateOnQuadraturePoints(const Array<Rea
 
   AKANTU_DEBUG_OUT();
 }
+/* -------------------------------------------------------------------------- */
+/**
+ * Helper class to be able to write a partial specialization on the element kind
+ */
+template<ElementKind kind>
+struct InterpolateHelper {
+  template <class S>
+  static void call(const S & shape_functions,
+                   const Vector<Real> & real_coords,
+                   UInt elem,
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const ElementType & type,
+		   const GhostType & ghost_type) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+};
+
+#define INTERPOLATE(type)						\
+  shape_functions.template interpolate<type>(real_coords,		\
+					     element,			\
+					     nodal_values,		\
+					     interpolated,		\
+					     ghost_type);
+
+#define AKANTU_SPECIALIZE_INTERPOLATE_HELPER(kind)		\
+  template<>							\
+  struct InterpolateHelper<kind> {				\
+    template <class S>						\
+    static void call(const S & shape_functions,			\
+                     const Vector<Real> & real_coords,		\
+                     UInt element,				\
+		     const Matrix<Real> & nodal_values,		\
+		     Vector<Real> & interpolated,		\
+                     const ElementType & type,			\
+                     const GhostType & ghost_type) {		\
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(INTERPOLATE, kind);	\
+    }								\
+  };
+
+
+#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_IGFEM_KIND)
+AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INTERPOLATE_HELPER, \
+                           INTEREST_LIST)
+
+#undef AKANTU_SPECIALIZE_INTERPOLATE_HELPER
+#undef INTERPOLATE
+#undef INTEREST_LIST
+
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::interpolate(const Vector<Real> & real_coords, 
+						      const Matrix<Real> & nodal_values,
+						      Vector<Real> & interpolated,
+						      const Element & element) const{
+
+  AKANTU_DEBUG_IN();
+
+  InterpolateHelper<kind>::call(shape_functions, real_coords, element.element, nodal_values, interpolated, element.type, element.ghost_type);
+
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,
@@ -906,10 +969,10 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
   }
 
 
-  if(type == _triangle_6)      ASSIGN_WEIGHT_TO_NODES(1./12.,1./4.);
-  if (type == _tetrahedron_10) ASSIGN_WEIGHT_TO_NODES(1./32.,1./48.);
-  if (type == _quadrangle_8)   ASSIGN_WEIGHT_TO_NODES(1./36.,8./36.);
-  if (type == _hexahedron_20)  ASSIGN_WEIGHT_TO_NODES(1./40.,1./15.);
+  if (type == _triangle_6    ) ASSIGN_WEIGHT_TO_NODES(1./12.,  1./4.);
+  if (type == _tetrahedron_10) ASSIGN_WEIGHT_TO_NODES(1./32., 7./48.);
+  if (type == _quadrangle_8  ) ASSIGN_WEIGHT_TO_NODES(1./36., 8./36.);
+  if (type == _hexahedron_20 ) ASSIGN_WEIGHT_TO_NODES(1./40., 1./15.);
   if (type == _pentahedron_15) {
     for (UInt n = 0; n < nb_nodes_per_element_p1; n++)
       nodal_factor(n) = 51./2358.;
@@ -1426,9 +1489,33 @@ FEEngineTemplate<I, S, kind>::getQuadraturePoints(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+void FEEngineTemplate<I, S, kind>::printself(std::ostream & stream, int indent) const {
+  std::string space;
+  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+
+  stream << space << "FEEngineTemplate [" << std::endl;
+  stream << space << " + parent [" << std::endl;
+  FEEngine::printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << " + shape functions [" << std::endl;
+  shape_functions.printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << " + integrator [" << std::endl;
+  integrator.printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << "]" << std::endl;
+}
+
+/* -------------------------------------------------------------------------- */
+
 __END_AKANTU__
+
 #include "shape_lagrange.hh"
 #include "integrator_gauss.hh"
+
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */

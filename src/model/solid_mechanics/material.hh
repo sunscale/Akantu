@@ -230,6 +230,7 @@ public:
   /* Common part                                                              */
   /* ------------------------------------------------------------------------ */
 protected:
+
   /// assemble the residual
   template<UInt dim>
   void assembleResidual(GhostType ghost_type);
@@ -283,8 +284,8 @@ protected:
 
 public:
   /// compute the coordinates of the quadrature points
-  void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
-                                          const GhostType & ghost_type) const;
+  virtual void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
+						  const GhostType & ghost_type) const;
 
 protected:
   /// interpolate an elemental field on given points for each element
@@ -438,8 +439,9 @@ public:
   InternalField<Real> & getInternal(const ID & id);
 
   inline bool isInternal(const ID & id, const ElementKind & element_kind) const;
-  inline ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
-                                                     const ElementKind & element_kind) const;
+  virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
+						      const ElementKind & element_kind,
+						      const ID & fe_engine_id = "") const;
 
   bool isFiniteDeformation() const { return finite_deformation; }
   bool isInelasticDeformation() const { return inelastic_deformation; }
@@ -451,10 +453,19 @@ public:
   inline const T & getParam(const ID & param) const;
 
   virtual void flattenInternal(const std::string & field_id,
-		                           ElementTypeMapArray<Real> & internal_flat,
+			       ElementTypeMapArray<Real> & internal_flat,
                                const GhostType ghost_type = _not_ghost,
-                               ElementKind element_kind = _ek_not_defined);
-
+                               ElementKind element_kind = _ek_not_defined) const;
+protected:
+  /// internal variation of the flatten function that is more flexible and can
+  /// be used by inherited materials to change some behavior
+  virtual void flattenInternalIntern(const std::string & field_id,
+				     ElementTypeMapArray<Real> & internal_flat,
+				     UInt spatial_dimension,
+				     const GhostType ghost_type,
+				     ElementKind element_kind,
+				     const ElementTypeMapArray<UInt> * element_filter = NULL,
+				     const Mesh * mesh = NULL) const;
 
 protected:
 
@@ -469,8 +480,12 @@ private:
 
   std::map<ID, InternalField<Real> *> internal_vectors_real;
   std::map<ID, InternalField<UInt> *> internal_vectors_uint;
+  std::map<ID, InternalField<bool> *> internal_vectors_bool;
 
 protected:
+  /// Link to the fem object in the model
+  FEEngine * fem;
+
   /// Finite deformation
   bool finite_deformation;
 

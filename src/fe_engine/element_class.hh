@@ -39,21 +39,6 @@
 
 __BEGIN_AKANTU__
 
-
-/* -------------------------------------------------------------------------- */
-enum GaussIntergrationType {
-  _git_not_defined,
-  _git_point,
-  _git_segment,
-  _git_triangle,
-  _git_tetrahedron,
-  _git_pentahedron
-};
-
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-
-
 /* -------------------------------------------------------------------------- */
 template<ElementType element_type>
 struct ElementClassProperty {
@@ -84,14 +69,6 @@ struct ElementClassProperty {
 /* -------------------------------------------------------------------------- */
 /* Geometry                                                                   */
 /* -------------------------------------------------------------------------- */
-enum GeometricalShapeType {
-  _gst_not_defined,
-  _gst_point,
-  _gst_triangle,
-  _gst_square,
-  _gst_prism
-};
-
 template<GeometricalType geometrical_type>
 struct GeometricalShape {
   static const GeometricalShapeType shape = _gst_point;
@@ -150,14 +127,6 @@ private:
 /* -------------------------------------------------------------------------- */
 /* Interpolation                                                              */
 /* -------------------------------------------------------------------------- */
-/// @enum InterpolationKind the family of interpolation types
-enum InterpolationKind {
-  _itk_not_defined,
-  _itk_lagrangian,
-  _itk_structural
-};
-
-
 template<InterpolationType interpolation_type>
 struct InterpolationPorperty {
   static const InterpolationKind kind = _itk_not_defined;
@@ -225,6 +194,16 @@ public:
   static inline void interpolateOnNaturalCoordinates(const Vector<Real> & natural_coords,
 						     const Matrix<Real> & nodal_values,
 						     Vector<Real> & interpolated);
+
+  /// interpolate a field given the shape functions on the interpolation point
+  static inline void interpolate(const Matrix<Real> & nodal_values,
+				 const Vector<Real> & shapes,
+				 Vector<Real> & interpolated);
+
+  /// interpolate a field given the shape functions on the interpolations points
+  static inline void interpolate(const Matrix<Real> & nodal_values,
+				 const Matrix<Real> & shapes,
+				 Matrix<Real> & interpolated);
 
 
   /// compute the gradient of a given field on the given natural coordinates
@@ -326,6 +305,12 @@ public:
 				const Matrix<Real> & node_coords,
 				Vector<Real> & natural_coords,
 				Real tolerance = 1e-8);
+
+  /// get natural coordinates from real coordinates
+  static inline void inverseMap(const Matrix<Real> & real_coords,
+				const Matrix<Real> & node_coords,
+				Matrix<Real> & natural_coords,
+				Real tolerance = 1e-8);
 public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, element_kind, ElementKind);
   static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension, ElementClassProperty<element_type>::spatial_dimension, UInt);
@@ -358,16 +343,17 @@ protected:
 #include "element_classes/element_class_pentahedron_6_inline_impl.cc"
 #include "element_classes/element_class_pentahedron_15_inline_impl.cc"
 
+__END_AKANTU__
+
+
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 #  include "element_class_structural.hh"
-#  include "element_classes/element_class_bernoulli_beam_inline_impl.cc"
-#  include "element_classes/element_class_kirchhoff_shell_inline_impl.cc"
 #endif
 
-// #if defined(AKANTU_IGFEM)
-// #  include "element_class_igfem.hh"
-// #endif
+#if defined(AKANTU_IGFEM)
+#  include "element_class_igfem.hh"
+#endif
 
-__END_AKANTU__
+
 
 #endif /* __AKANTU_ELEMENT_CLASS_HH__ */

@@ -30,6 +30,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include <algorithm>
 #include <numeric>
 
 /* -------------------------------------------------------------------------- */
@@ -73,6 +74,14 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
   this->registerParam("kappa"  , kappa  , 1. ,
                       _pat_parsable | _pat_readable,
                       "Kappa parameter");
+
+  this->registerParam("contact_after_breaking", contact_after_breaking, false,
+		      _pat_parsable | _pat_readable,
+		      "Activation of contact when the elements are fully damaged");
+
+  this->registerParam("max_quad_stress_insertion", max_quad_stress_insertion, false,
+		      _pat_parsable | _pat_readable,
+		      "Insertion of cohesive element when stress is high enough just on one quadrature point");
 
   //  if (!model->isExplicit())
     use_previous_delta_max = true;
@@ -260,7 +269,12 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
       }
 
       // verify if the effective stress overcomes the threshold
-      if (stress_check.mean() > (*sigma_lim_it - tolerance)) {
+      Real final_stress = stress_check.mean();
+      if (max_quad_stress_insertion)
+	final_stress = *std::max_element(stress_check.storage(),
+					 stress_check.storage() + nb_quad_facet);
+
+      if (final_stress > (*sigma_lim_it - tolerance)) {
 
         if (model->isExplicit()){
           f_insertion(facet) = true;
@@ -290,7 +304,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
 	  }
 
         }else{
-          Real ratio = stress_check.mean()/(*sigma_lim_it);
+          Real ratio = final_stress/(*sigma_lim_it);
           if (ratio > max_ratio){
             std::cout << "ratio = " << ratio << std::endl;
             ++nn;
@@ -449,6 +463,8 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
     Real delta = tangential_opening_norm * tangential_opening_norm * beta2_kappa2;
 
     bool penetration = normal_opening_norm < -Math::getTolerance();
+    if (contact_after_breaking == false && Math::are_float_equal(*damage_it, 1.))
+      penetration = false;
 
     if (penetration) {
       /// use penalty coefficient in case of penetration
@@ -615,11 +631,33 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
 
     Real tangential_opening_norm = tangential_opening.norm();
     bool penetration = normal_opening_norm < -Math::getTolerance();
+    if (contact_after_breaking == false && Math::are_float_equal(*damage_it, 1.))
+      penetration = false;
+
     Real derivative = 0;
     Real t = 0;
 
     Real delta = tangential_opening_norm * tangential_opening_norm * beta2_kappa2;
-    delta += normal_opening_norm * normal_opening_norm;
+
+    Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
+    n_outer_n.outerProduct(*normal_it, *normal_it);
+
+    if (penetration){
+      /// don't consider penetration contribution for delta
+      *opening_it = tangential_opening;
+      normal_opening_norm = opening_it->dot(*normal_it);
+      normal_opening = (*normal_it);
+      normal_opening *= normal_opening_norm;
+      //      std::cout << "normal opening in case of penetration = " << normal_opening << std::endl;
+
+      /// stiffness in compression given by the penalty parameter
+      *tangent_it += n_outer_n;
+      *tangent_it *= penalty;
+    }
+    else{
+      delta += normal_opening_norm * normal_opening_norm;
+    }
+
     delta = std::sqrt(delta);
 
     /// Delta has to be different from 0 to have finite values of tangential stiffness.
@@ -628,26 +666,16 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
     if (delta < Math::getTolerance())
       delta = (*delta_c_it)/1000.;
 
-    if (normal_opening_norm >= 0.0){
-      if (delta >= *delta_max_it){
-        derivative = -*sigma_c_it/(delta * delta);
-        t = *sigma_c_it * (1 - delta / *delta_c_it);
-      }	else if (delta < *delta_max_it){
-        Real tmax = *sigma_c_it * (1 - *delta_max_it / *delta_c_it);
-        t = tmax / *delta_max_it * delta;
-      }
+    //if (!penetration){
+    if (delta >= *delta_max_it){
+      derivative = -*sigma_c_it/(delta * delta);
+      t = *sigma_c_it * (1 - delta / *delta_c_it);
+    }	else if (delta < *delta_max_it){
+      Real tmax = *sigma_c_it * (1 - *delta_max_it / *delta_c_it);
+      t = tmax / *delta_max_it * delta;
     }
+      //    }
 
-    Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
-    n_outer_n.outerProduct(*normal_it, *normal_it);
-
-    if (penetration){
-      /// don't consider penetration contribution for delta
-      *opening_it = tangential_opening;
-      /// stiffness in compression given by the penalty parameter
-      *tangent_it += n_outer_n;
-      *tangent_it *= penalty;
-    }
 
     /// computation of the derivative of the constitutive law (dT/ddelta)
     Matrix<Real> I(spatial_dimension, spatial_dimension);
