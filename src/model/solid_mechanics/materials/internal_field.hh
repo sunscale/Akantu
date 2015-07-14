@@ -72,6 +72,13 @@ private:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+
+  /// function to reset the FEEngine for the internal field
+  virtual void setFEEngine(FEEngine & fe_engine);
+
+  /// function to reset the element kind for the internal
+  virtual void setElementKind(ElementKind element_kind);
+
   /// initialize the field to a given number of component
   virtual void initialize(UInt nb_component);
 
@@ -99,7 +106,7 @@ public:
   /// get the default value
   inline operator T() const;
 
-  AKANTU_GET_MACRO(FEEngine, fem, const FEEngine &);
+  AKANTU_GET_MACRO(FEEngine, *fem, FEEngine &);
 
 protected:
   /// initialize the arrays in the ElementTypeMapArray<T>
@@ -171,7 +178,7 @@ protected:
   Material & material;
 
   /// the fem containing the mesh and the element informations
-  FEEngine & fem;
+  FEEngine * fem;
 
   /// Element filter if needed
   const ElementTypeMapArray<UInt> & element_filter;
