@@ -1489,9 +1489,33 @@ FEEngineTemplate<I, S, kind>::getQuadraturePoints(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+void FEEngineTemplate<I, S, kind>::printself(std::ostream & stream, int indent) const {
+  std::string space;
+  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+
+  stream << space << "FEEngineTemplate [" << std::endl;
+  stream << space << " + parent [" << std::endl;
+  FEEngine::printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << " + shape functions [" << std::endl;
+  shape_functions.printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << " + integrator [" << std::endl;
+  integrator.printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << "]" << std::endl;
+}
+
+/* -------------------------------------------------------------------------- */
+
 __END_AKANTU__
+
 #include "shape_lagrange.hh"
 #include "integrator_gauss.hh"
+
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */

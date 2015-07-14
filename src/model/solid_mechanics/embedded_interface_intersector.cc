@@ -38,9 +38,8 @@
   MeshSegmentIntersector<dim, type> intersector(this->mesh, interface_mesh);        \
   name_to_primitives_it = name_to_primitives_map.begin();                            \
   for (; name_to_primitives_it != name_to_primitives_end ; ++name_to_primitives_it) { \
-    intersector.computeIntersectionQueryList(                                          \
-        name_to_primitives_it->second,                                                  \
-        name_to_primitives_it->first);                                                   \
+    intersector.setPhysicalName(name_to_primitives_it->first);                         \
+    intersector.buildResultFromQueryList(name_to_primitives_it->second);                \
   } } while(0)
 
 #define INTERFACE_INTERSECTOR_CASE_2D(type) INTERFACE_INTERSECTOR_CASE(2, type)

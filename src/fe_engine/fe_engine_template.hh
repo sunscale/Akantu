@@ -197,7 +197,7 @@ public:
 
 
   /// function to print the contain of the class
-  //  virtual void printself(std::ostream & stream, int indent = 0) const{};
+  virtual void printself(std::ostream & stream, int indent = 0) const;
 
   void assembleFieldLumped(const Array<Real> & field_1,
 			   UInt nb_degree_of_freedom,

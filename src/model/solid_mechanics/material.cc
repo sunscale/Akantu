@@ -1668,8 +1668,8 @@ void Material::printself(std::ostream & stream, int indent) const {
 
 /* -------------------------------------------------------------------------- */
 inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id,
-							     const ElementKind & element_kind,
-                                                             const ID & fe_engine_id) const {
+                                                      const ElementKind & element_kind,
+                                                      const ID & fe_engine_id) const {
 
   std::map<ID, InternalField<Real> *>::const_iterator internal_array =
     internal_vectors_real.find(this->getID()+":"+id);

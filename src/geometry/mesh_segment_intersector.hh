@@ -71,12 +71,11 @@ public:
    */
   virtual void computeIntersectionQuery(const K::Segment_3 & query);
 
-  /// Compute the list of queries
-  virtual void computeIntersectionQueryList(const std::list<K::Segment_3> & query_list);
-  
-  /// Compute the list of queries and adds sets the physical name of the elements created
-  virtual void computeIntersectionQueryList(const std::list<K::Segment_3> & query_list,
-                                            const std::string & physical_name);
+  /// Compute the embedded mesh
+  virtual void buildResultFromQueryList(const std::list<K::Segment_3> & query_list);
+
+  void setPhysicalName(const std::string & other)
+  { current_physical_name = other; }
 
 protected:
   /// Compute segments from intersection list
