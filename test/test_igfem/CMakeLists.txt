@@ -21,8 +21,18 @@ register_test(test_interpolate
   PACKAGE IGFEM
   )
 
-
 add_akantu_test(test_solid_mechanics_model_igfem "test_solid_mechanics_model_igfem")
+
+register_test(test_spherical_kernel
+  SOURCES test_spherical_kernel.cc
+  PACKAGE CGAL
+  )
+
+register_test(test_generation_igfem_mesh_from_sphere_static
+  SOURCES test_generation_igfem_mesh_from_sphere_static.cc
+  FILES_TO_COPY test_geometry_triangle.msh
+  PACKAGE CGAL IGFEM
+  )
 
 register_test(test_generation_igfem_mesh_from_sphere
   SOURCES test_generation_igfem_mesh_from_sphere.cc
