@@ -6,6 +6,7 @@
 
 %ignore akantu::operator <<;
 
+
 %include "aka_common.i"
 %include "aka_array.i"
 
@@ -26,4 +27,5 @@
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 %include "load_functions.i"
 %include "structural_mechanics_model.i"
+
 #endif
