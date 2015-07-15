@@ -24,6 +24,7 @@
 %include "mesh_utils.i"
 %include "model.i"
 %include "solid_mechanics_model.i"
+%include "heat_transfer_model.i"
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 %include "load_functions.i"
 %include "structural_mechanics_model.i"
