@@ -30,6 +30,8 @@ namespace akantu {
 
 
   %ignore SolidMechanicsModel::testConvergence;
+  %ignore SolidMechanicsModel::testConvergenceIncrement;
+  %ignore SolidMechanicsModel::testConvergenceResidual;
   %ignore SolidMechanicsModel::initVelocityDampingMatrix;
 
   %ignore SolidMechanicsModel::getNbDataForElements;

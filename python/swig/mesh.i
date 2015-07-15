@@ -3,6 +3,7 @@
 #include "node_group.hh"
 #include "solid_mechanics_model.hh"
 
+using akantu::QuadraturePoint;
 using akantu::Vector;
 using akantu::ElementTypeMapArray;
 using akantu::MatrixProxy;
