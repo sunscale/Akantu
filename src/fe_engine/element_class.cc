@@ -72,13 +72,13 @@ template<> ElementType ElementClass<_quadrangle_8>::facet_type[] = { _segment_3 
 template<> ElementType ElementClass<_hexahedron_8>::p1_type      = _hexahedron_8;
 template<> ElementType ElementClass<_hexahedron_8>::facet_type[] = { _quadrangle_4 };
 /* -------------------------------------------------------------------------- */
-template<> ElementType ElementClass<_hexahedron_20>::p1_type      = _hexahedron_20;
+template<> ElementType ElementClass<_hexahedron_20>::p1_type      = _hexahedron_8;
 template<> ElementType ElementClass<_hexahedron_20>::facet_type[] = { _quadrangle_8 };
 /* -------------------------------------------------------------------------- */
 template<> ElementType ElementClass<_pentahedron_6>::p1_type      = _pentahedron_6;
 template<> ElementType ElementClass<_pentahedron_6>::facet_type[] = { _triangle_3, _quadrangle_4 };
 /* -------------------------------------------------------------------------- */
-template<> ElementType ElementClass<_pentahedron_15>::p1_type      = _pentahedron_15;
+template<> ElementType ElementClass<_pentahedron_15>::p1_type      = _pentahedron_6;
 template<> ElementType ElementClass<_pentahedron_15>::facet_type[] = { _triangle_6, _quadrangle_8 };
 /* -------------------------------------------------------------------------- */
 __END_AKANTU__
