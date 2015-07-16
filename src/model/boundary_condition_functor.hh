@@ -1,6 +1,7 @@
 /**
  * @file   boundary_condition_functor.hh
  *
+
  * @author Dana Christen <dana.christen@gmail.com>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
@@ -148,6 +149,8 @@ namespace BC {
 			     Vector<Real> & dual,
 			     const Vector<Real> & coord,
 			     const Vector<Real> & normals) const = 0;
+
+      virtual ~NeumannFunctor(){}
     public:
       static const Type type = _neumann;
     };
@@ -156,6 +159,7 @@ namespace BC {
     class FromHigherDim : public NeumannFunctor {
     public:
       FromHigherDim(const Matrix<Real> & mat) : bc_data(mat) {}
+      virtual ~FromHigherDim(){}
 
     public:
       inline void operator()(const QuadraturePoint & quad_point,
@@ -171,6 +175,7 @@ namespace BC {
     class FromSameDim : public NeumannFunctor {
     public:
       FromSameDim(const Vector<Real> & vec) : bc_data(vec) {}
+      virtual ~FromSameDim(){}
 
     public:
       inline void operator()(const QuadraturePoint & quad_point,

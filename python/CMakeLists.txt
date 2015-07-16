@@ -30,7 +30,7 @@
 #===============================================================================
 # Configuration
 #===============================================================================
-set(AKANTU_SWIG_FLAGS -w309,325,401)
+set(AKANTU_SWIG_FLAGS -w309,325,401,317,509,503)
 set(AKANTU_SWIG_OUTDIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(AKANTU_SWIG_MODULES swig/akantu.i)
 
@@ -160,7 +160,7 @@ function(swig_generate_wrappers project _wrappers)
 
       set(_dependencies_file ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/_swig_${_module_we}_depends.cmake)
 
-      set(_ouput "${_wrapper}" "${_extra_wrapper}" "${_extra_wrapper_bin}")
+      set(_ouput "${_wrapper}" "${_extra_wrapper}")
       add_custom_command(
 	OUTPUT ${_ouput}
 	COMMAND "${SWIG_EXECUTABLE}"
