@@ -6,7 +6,7 @@ namespace akantu {
   %ignore Model::registerFEEngineObject;
   %ignore Model::unregisterFEEngineObject;
   %ignore Model::getFEEngineBoundary;
-  %ignore Model::getFEEngine;
+  //  %ignore Model::getFEEngine;
   %ignore Model::getFEEngineClass;
   %ignore Model::getFEEngineClassBoundary;
   %ignore Model::setParser;

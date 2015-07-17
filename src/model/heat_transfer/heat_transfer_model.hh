@@ -217,7 +217,9 @@ private:
 
   /// assemble the conductivity matrix
   template <UInt dim>
-  void assembleConductivityMatrix(const ElementType & type, const GhostType & ghost_type);
+  void assembleConductivityMatrix(const ElementType & type,
+				  const GhostType & ghost_type,
+				  bool compute_conductivity = true);
 
   /// compute the conductivity tensor for each quadrature point in an array
   void computeConductivityOnQuadPoints(const GhostType & ghost_type);

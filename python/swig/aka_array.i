@@ -71,3 +71,39 @@ namespace akantu {
   $result = SWIG_Python_AppendOutput($result, obj);
 }
 
+template <typename T>
+class ArrayForPython : public Array<T>{
+
+ ArrayForPython(T * wrapped_memory,
+		UInt size = 0,
+		UINT nb_component = 1,
+		const ID & id = "")
+   : Array(size,nb_component,id){};
+
+  ~ArrayForPython(){
+    values = NULL;
+  };
+};
+
+%typemap(in) Array<double> & {
+  if (!PyArray_Check($input)) {
+    $1 = $input;
+    std::cout << "AAAAAAAAAAAAAAAAAA";
+  }
+  else {
+    PyArray_Descr * numpy_type = (PyArray_Descr*)PyArray_DESCR((PyArrayObject*)$input);
+    std::cout << "BBBBBBBBBBBBBBAAAAAAAAAAAAAAAAAA";
+    if (numpy_type->kind != 'f') throw;
+    //      $input
+  }
+ }
+
+%inline %{
+  namespace akantu{  
+    void testArrayPython(Array<Real> test){
+      
+    }
+  }
+  
+%}
+

@@ -396,10 +396,15 @@ void HeatTransferModel::assembleConductivityMatrix(const GhostType & ghost_type)
 
   AKANTU_DEBUG_OUT();
 }
-  
+
+/* -------------------------------------------------------------------------- */
+
+
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-void HeatTransferModel::assembleConductivityMatrix(const ElementType & type, const GhostType & ghost_type) {
+void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
+						   const GhostType & ghost_type,
+						   bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
   SparseMatrix & K = *conductivity_matrix;
@@ -422,7 +427,8 @@ void HeatTransferModel::assembleConductivityMatrix(const ElementType & type, con
 
   Array<Real>::iterator< Matrix<Real> > Bt_D_B_it = bt_d_b->begin(bt_d_b_size, bt_d_b_size);
 
-  this->computeConductivityOnQuadPoints(ghost_type);
+  if (compute_conductivity)
+    this->computeConductivityOnQuadPoints(ghost_type);
   Array<Real>::iterator< Matrix<Real> > D_it = conductivity_on_qpoints(type, ghost_type).begin(dim, dim);
   Array<Real>::iterator< Matrix<Real> > D_end = conductivity_on_qpoints(type, ghost_type).end(dim, dim);
 
