@@ -1,5 +1,15 @@
 %module akantu
 
+%exception {
+	try {
+	$action
+	}
+	catch (akantu::debug::Exception e) {
+	  PyErr_SetString(PyExc_IndexError,e.what());
+		return NULL;
+	}
+}
+
 %include "stl.i"
 
 #define __attribute__(x)
