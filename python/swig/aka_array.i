@@ -71,39 +71,51 @@ namespace akantu {
   $result = SWIG_Python_AppendOutput($result, obj);
 }
 
-template <typename T>
-class ArrayForPython : public Array<T>{
+%inline %{
+namespace akantu{
+  template <typename T>
+    class ArrayForPython : public Array<T>{
 
- ArrayForPython(T * wrapped_memory,
-		UInt size = 0,
-		UINT nb_component = 1,
-		const ID & id = "")
-   : Array(size,nb_component,id){};
+  public:
+  ArrayForPython(T * wrapped_memory,
+		 UInt size = 0,
+		 UInt nb_component = 1,
+		 const ID & id = "")
+    : Array<T>(0,nb_component,id){
+      this->values = wrapped_memory;
+      this->size = size;
+    };
 
-  ~ArrayForPython(){
-    values = NULL;
+    ~ArrayForPython(){
+      this->values = NULL;
+    };
   };
-};
+}
+%}
 
-%typemap(in) Array<double> & {
+namespace akantu {
+%template(ArrayForPythonReal) ArrayForPython<akantu::Real>;
+}
+
+%typemap(in) akantu::Array<double> & {
   if (!PyArray_Check($input)) {
-    $1 = $input;
-    std::cout << "AAAAAAAAAAAAAAAAAA";
+    AKANTU_EXCEPTION("incompatible input which is not a numpy");
   }
   else {
     PyArray_Descr * numpy_type = (PyArray_Descr*)PyArray_DESCR((PyArrayObject*)$input);
-    std::cout << "BBBBBBBBBBBBBBAAAAAAAAAAAAAAAAAA";
     if (numpy_type->kind != 'f') throw;
-    //      $input
+    UInt _n = PyArray_NDIM((PyArrayObject*)$input);
+    if (_n != 2) AKANTU_EXCEPTION("incompatible numpy dimension " << _n);
+    npy_intp * ndims = PyArray_DIMS((PyArrayObject*)$input);
+    akantu::UInt sz = ndims[0];
+    akantu::UInt nb_components = ndims[1];
+    PyArrayIterObject *iter = (PyArrayIterObject *)PyArray_IterNew($input);
+    if (iter == NULL) {
+    AKANTU_EXCEPTION("Python internal error");
+    //    PyErr_Print();
+    }
+    $1 = new akantu::ArrayForPython<double>((double*)(iter->dataptr),sz,nb_components,"tmp_array_for_python");
   }
  }
 
-%inline %{
-  namespace akantu{  
-    void testArrayPython(Array<Real> test){
-      
-    }
-  }
-  
-%}
 
