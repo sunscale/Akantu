@@ -87,11 +87,15 @@ public:
   void removeAdditionnalNodes();
 
 protected:
-  /// new node per element
+  /// new node per element (column 0: number of new nodes, then odd is the intersection node number and even the ID of the sintersected segment)
   Array<UInt> new_node_per_elem;
 
   /// number of fem nodes in the initial mesh
   const UInt nb_nodes_fem;
+
+  /// number of primitive in an element of the template type
+  const UInt nb_prim_by_el;
+
 };
  
 __END_AKANTU__
