@@ -1420,6 +1420,28 @@ InternalField<Real> & Material::getInternal(const ID & int_id) {
 }
 
 /* -------------------------------------------------------------------------- */
+const InternalField<UInt> & Material::getInternalUInt(const ID & int_id) const {
+  std::map<ID, InternalField<UInt> *>::const_iterator it = internal_vectors_uint.find(getID() + ":" + int_id);
+  if(it == internal_vectors_uint.end()) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
+		     << ") does not contain an internal "
+		     << int_id << " (" << (getID() + ":" + int_id) << ")");
+  }
+  return *it->second;
+}
+
+/* -------------------------------------------------------------------------- */
+InternalField<UInt> & Material::getInternalUInt(const ID & int_id) {
+  std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.find(getID() + ":" + int_id);
+  if(it == internal_vectors_uint.end()) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
+			    << ") does not contain an internal "
+			    << int_id << " (" << (getID() + ":" + int_id) << ")");
+  }
+  return *it->second;
+}
+
+/* -------------------------------------------------------------------------- */
 void Material::addElements(const Array<Element> & elements_to_add) {
   AKANTU_DEBUG_IN();
   UInt mat_id = model->getInternalIndexFromID(getID());

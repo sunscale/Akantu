@@ -429,6 +429,7 @@ public:
   AKANTU_GET_MACRO(GradU, gradu, const ElementTypeMapArray<Real> &);
   AKANTU_GET_MACRO(Stress, stress, const ElementTypeMapArray<Real> &);
   AKANTU_GET_MACRO(ElementFilter, element_filter, const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO(FEEngine, *fem, FEEngine &);
 
   bool isNonLocal() const { return is_non_local; }
 
@@ -437,6 +438,9 @@ public:
 
   const InternalField<Real> & getInternal(const ID & id) const;
   InternalField<Real> & getInternal(const ID & id);
+
+  const InternalField<UInt> & getInternalUInt(const ID & id) const;
+  InternalField<UInt> & getInternalUInt(const ID & id);
 
   inline bool isInternal(const ID & id, const ElementKind & element_kind) const;
   virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
