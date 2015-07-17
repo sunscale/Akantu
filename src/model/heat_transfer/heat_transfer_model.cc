@@ -366,7 +366,7 @@ void HeatTransferModel::updateResidual() {
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::assembleConductivityMatrix() {
+void HeatTransferModel::assembleConductivityMatrix(bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_INFO("Assemble the new stiffness matrix.");
@@ -374,9 +374,9 @@ void HeatTransferModel::assembleConductivityMatrix() {
   conductivity_matrix->clear();
 
   switch(mesh.getSpatialDimension()) {
-    case 1: this->assembleConductivityMatrix<1>(_not_ghost); break;
-    case 2: this->assembleConductivityMatrix<2>(_not_ghost); break;
-    case 3: this->assembleConductivityMatrix<3>(_not_ghost); break;
+  case 1: this->assembleConductivityMatrix<1>(_not_ghost,compute_conductivity); break;
+  case 2: this->assembleConductivityMatrix<2>(_not_ghost,compute_conductivity); break;
+  case 3: this->assembleConductivityMatrix<3>(_not_ghost,compute_conductivity); break;
   }
 
   AKANTU_DEBUG_OUT();
@@ -384,14 +384,14 @@ void HeatTransferModel::assembleConductivityMatrix() {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-void HeatTransferModel::assembleConductivityMatrix(const GhostType & ghost_type) {
+void HeatTransferModel::assembleConductivityMatrix(const GhostType & ghost_type,bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
   Mesh & mesh = this->getFEEngine().getMesh();
   Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
   for(; it != last_type; ++it) {
-    this->assembleConductivityMatrix<dim>(*it, ghost_type);
+    this->assembleConductivityMatrix<dim>(*it, ghost_type,compute_conductivity);
   }
 
   AKANTU_DEBUG_OUT();
@@ -1159,6 +1159,7 @@ dumper::Field * HeatTransferModel
 ::createElementalField(const std::string & field_name, 
 		       const std::string & group_name,
 		       bool padding_flag,
+		       const UInt & spatial_dimension,
 		       const ElementKind & element_kind){
 
 
@@ -1172,6 +1173,17 @@ dumper::Field * HeatTransferModel
     field = 
       mesh.createElementalField<Real, 
 				dumper::InternalMaterialField>(temperature_gradient,
+							       group_name,
+							       this->spatial_dimension,
+							       element_kind,
+							       nb_data_per_elem);
+  }
+  else if(field_name == "conductivity"){
+    ElementTypeMap<UInt> nb_data_per_elem = this->mesh.getNbDataPerElem(conductivity_on_qpoints,element_kind);
+
+    field = 
+      mesh.createElementalField<Real, 
+				dumper::InternalMaterialField>(conductivity_on_qpoints,
 							       group_name,
 							       this->spatial_dimension,
 							       element_kind,

@@ -69,6 +69,14 @@ register_test(test_heat_transfer_model_square2d
   PACKAGE heat_transfer
   )
 
+register_test(test_heat_transfer_model_square2d_implicit
+  SOURCES test_heat_transfer_model_square2d_implicit.cc
+  DEPENDENCIES test_heat_square_tri3
+  FILES_TO_COPY material.dat
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE heat_transfer
+  )
+
 
 register_test(test_heat_transfer_model_cube3d_istropic_conductivity
   SOURCES test_heat_transfer_model_cube3d_istropic_conductivity.cc

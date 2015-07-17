@@ -181,7 +181,7 @@ public:
 		 bool   do_not_factorize = false);
 
   /// assemble the conductivity matrix
-  void assembleConductivityMatrix();
+  void assembleConductivityMatrix(bool compute_conductivity = true);
 
   /// assemble the conductivity matrix
   void assembleCapacity();
@@ -213,7 +213,8 @@ private:
 
   /// assemble the conductivity matrix (w/ ghost type)
   template <UInt dim>
-  void assembleConductivityMatrix(const GhostType & ghost_type);
+  void assembleConductivityMatrix(const GhostType & ghost_type,
+				  bool compute_conductivity = true);
 
   /// assemble the conductivity matrix
   template <UInt dim>
@@ -269,6 +270,7 @@ public:
   virtual dumper::Field * createElementalField(const std::string & field_name, 
 					       const std::string & group_name,
 					       bool padding_flag,
+					       const UInt & spatial_dimension,
 					       const ElementKind & kind);
 
   /* ------------------------------------------------------------------------ */
