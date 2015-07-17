@@ -17,6 +17,7 @@ namespace akantu {
   %ignore FEEngine::getShapes;
   %ignore FEEngine::getShapesDerivatives;
   %ignore FEEngine::getQuadraturePoints;
+  %ignore FEEngine::getIGFEMElementTypes;
 }
 
 %include "sparse_matrix.hh"

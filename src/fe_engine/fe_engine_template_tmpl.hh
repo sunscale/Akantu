@@ -969,11 +969,16 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
   }
 
 
-  if(type == _triangle_6)      ASSIGN_WEIGHT_TO_NODES(1./12.,1./4.);
-  if (type == _tetrahedron_10) ASSIGN_WEIGHT_TO_NODES(1./32.,1./48.);
-  if (type == _quadrangle_8)   ASSIGN_WEIGHT_TO_NODES(1./36.,8./36.);
-  if (type == _hexahedron_20)  ASSIGN_WEIGHT_TO_NODES(1./40.,1./15.);
+  if (type == _triangle_6    ) ASSIGN_WEIGHT_TO_NODES(1./12.,  1./4.);
+  if (type == _tetrahedron_10) ASSIGN_WEIGHT_TO_NODES(1./32., 7./48.);
+  if (type == _quadrangle_8  ) ASSIGN_WEIGHT_TO_NODES(3./76., 16./76.);  /** coeff. derived by scaling the diagonal terms of the corresponding 
+									  * consistent mass computed with 3x3 gauss points; 
+									  * coeff. are (1./36., 8./36.) for 2x2 gauss points */
+  if (type == _hexahedron_20 ) ASSIGN_WEIGHT_TO_NODES(7./248., 16./248.); /** coeff. derived by scaling the diagonal terms of the corresponding
+									   * consistent mass computed with 3x3x3 gauss points;
+									   * coeff. are (1./40., 1./15.) for 2x2x2 gauss points */
   if (type == _pentahedron_15) {
+    // coefficients derived by scaling the diagonal terms of the corresponding consistent mass computed with 8 gauss points; 
     for (UInt n = 0; n < nb_nodes_per_element_p1; n++)
       nodal_factor(n) = 51./2358.;
 

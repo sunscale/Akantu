@@ -46,20 +46,22 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(const Mesh & mesh):
   nb_nodes_fem(mesh.getNodes().getSize())
 {
   this->constructData();
-
-  #if defined(AKANTU_IGFEM)
-  this->addIgfemTypes();
-  #endif
   
-  for(Mesh::type_iterator it = mesh.firstType(); it != mesh.lastType(); ++it){
-    #if defined(AKANTU_IGFEM)
-    if( (*it != _triangle_3) && (*it != _segment_2) && (*it != _igfem_triangle_4)
-	&& (*it != _igfem_triangle_5) )
+  for(Mesh::type_iterator it = mesh.firstType(dim); it != mesh.lastType(dim); ++it){
+#if defined(AKANTU_IGFEM)
+    if(*it == _triangle_3){
+      // Addition of the igfem types in the mesh
+      const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_4, _not_ghost);
+      const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_4, _ghost);
+      const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_5, _not_ghost);
+      const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_5, _ghost);
+    }
+    else if( (*it != _triangle_3) && (*it != _igfem_triangle_4) && (*it != _igfem_triangle_5) )
       AKANTU_DEBUG_ERROR("Not ready for mesh type " << *it);
-    #else
-       if( (*it != _triangle_3) && (*it != _segment_2) )
+#else
+    if( (*it != _triangle_3) )
       AKANTU_DEBUG_ERROR("Not ready for mesh type " << *it);
-    #endif
+#endif
   }
 }
 
@@ -160,21 +162,7 @@ void MeshSphereIntersector<dim, type>::removeAdditionnalNodes() {
 #if defined(AKANTU_IGFEM)
 
 template<UInt dim, ElementType type>
-void MeshSphereIntersector<dim, type>::addIgfemTypes() {
-  AKANTU_DEBUG_IN();
-
-  // Addition of the igfem types in the mesh
-  //TODO Mesh & mesh_no_const = const_cast<Mesh &>(this->mesh); or remove init const...
-  const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_4, _not_ghost);
-  const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_4, _ghost);
-  const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_5, _not_ghost);
-  const_cast<Mesh &>(this->mesh).addConnectivityType(_igfem_triangle_5, _ghost);
-
-  AKANTU_DEBUG_OUT();
-}
-
-template<UInt dim, ElementType type>
-void MeshSphereIntersector<dim, type>::buildIgfemMesh(const std::list<SK::Sphere_3> & query_list) {
+void MeshSphereIntersector<dim, type>::buildResultFromQueryList(const std::list<SK::Sphere_3> & query_list) {
   AKANTU_DEBUG_IN();
 
   this->computeIntersectionQueryList(query_list);
@@ -246,6 +234,8 @@ void MeshSphereIntersector<dim, type>::buildIgfemMesh(const std::list<SK::Sphere
 	element_tri4.element = nb_tri4;
 	//new_elements.getList().push_back(element_tri4);
 	new_elements_list(n_new_el,0) = element_tri4;
+	if(type == _igfem_triangle_4)
+	   new_numbering.push_back(connec_igfem_tri4.getSize()-2);
 	break;
       }
       case 2 :{
@@ -294,12 +284,16 @@ void MeshSphereIntersector<dim, type>::buildIgfemMesh(const std::list<SK::Sphere
 	}
 	else{
 	  AKANTU_DEBUG_ERROR("A triangle have only 3 segments not "<< new_node_per_elem(nel,2) << "and" << new_node_per_elem(nel,4));
-	}
-	UInt nb_tri5 = connec_igfem_tri5.getSize();
+	}	      
 	connec_igfem_tri5.push_back(ctri5);
+	UInt nb_tri5 = connec_igfem_tri5.getSize();
 	element_tri5.element = nb_tri5;
 	//new_elements.getList().push_back(element_tri5);
 	new_elements_list(n_new_el,0) = element_tri5;
+	if(type == _igfem_triangle_5){
+	  new_numbering.push_back(new_nb_type_tmpl);
+	  ++new_nb_type_tmpl;
+	}
 	break;
       }
       default:
@@ -317,11 +311,22 @@ void MeshSphereIntersector<dim, type>::buildIgfemMesh(const std::list<SK::Sphere
       ++new_nb_type_tmpl;
     }
   }
-  const_cast<Mesh &>(this->mesh).sendEvent(new_elements);
-  const_cast<Mesh &>(this->mesh).sendEvent(remove_elem);
+
+  if(n_new_el > 0){
+    const_cast<Mesh &>(this->mesh).sendEvent(new_elements);
+    const_cast<Mesh &>(this->mesh).sendEvent(remove_elem);
+  }
 
   AKANTU_DEBUG_OUT();
 }
+
+#else
+
+template<UInt dim, ElementType type>
+void MeshSphereIntersector<dim, type>::buildResultFromQueryList(const std::list<SK::Sphere_3> & query_list) {
+  AKANTU_DEBUG_TO_IMPLEMENT();
+}
+
 
 #endif
 

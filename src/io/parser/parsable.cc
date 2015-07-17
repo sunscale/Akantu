@@ -116,14 +116,8 @@ void Parsable::printself(std::ostream & stream, int indent) const {
   for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
   std::map<std::string, ParsableParam *>::const_iterator it, end;
   for(it = params.begin(); it != params.end(); ++it){
-#ifdef AKANTU_NDEBUG
-    if(!it->second->isInternal()) {
-#endif
-      stream << space;
-      it->second->printself(stream);
-#ifdef AKANTU_NDEBUG
-    }
-#endif
+    stream << space;
+    it->second->printself(stream);
   }
 
   SubSections::const_iterator sit, send;

@@ -49,7 +49,7 @@ __BEGIN_AKANTU__
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 #define AKANTU_ek_structural_ELEMENT_TYPE	\
   (_bernoulli_beam_2)				\
-  (_bernoulli_beam_3)  				\
+  (_bernoulli_beam_3)					\
   (_kirchhoff_shell)
 #else
 #define AKANTU_ek_structural_ELEMENT_TYPE
@@ -74,6 +74,47 @@ __BEGIN_AKANTU__
 #else
 #  define AKANTU_ek_igfem_ELEMENT_TYPE
 #endif
+
+// This enum cannot be boosted dy to swig
+/// @enum ElementType type of elements
+enum ElementType {
+  _not_defined,
+  _point_1,
+  _segment_2,
+  _segment_3,
+  _triangle_3,
+  _triangle_6,
+  _quadrangle_4,
+  _quadrangle_8,
+  _tetrahedron_4,
+  _tetrahedron_10,
+  _pentahedron_6,
+  _pentahedron_15,
+  _hexahedron_8,
+  _hexahedron_20,
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+  _bernoulli_beam_2,
+  _bernoulli_beam_3,
+  _kirchhoff_shell,
+#endif
+
+#if defined(AKANTU_COHESIVE_ELEMENT)
+  _cohesive_2d_4,
+  _cohesive_2d_6,
+  _cohesive_1d_2,
+  _cohesive_3d_6,
+  _cohesive_3d_12,
+#endif
+#if defined(AKANTU_IGFEM)
+  _igfem_segment_3,
+  _igfem_triangle_4,
+  _igfem_triangle_5,
+#endif
+  _max_element_type
+};
+
+
 
 /* -------------------------------------------------------------------------- */
 /// @enum GeometricalType type of element potentially contained in a Mesh
@@ -213,13 +254,6 @@ enum InterpolationKind {
   AKANTU_ek_cohesive_ELEMENT_TYPE		\
   AKANTU_ek_igfem_ELEMENT_TYPE
 
-/// @enum ElementType type of elements
-enum ElementType {
-  _not_defined,
-  BOOST_PP_SEQ_ENUM(AKANTU_ALL_ELEMENT_TYPE),
-  _max_element_type
-};
-
 #ifndef SWIG
 enum ElementKind {
   BOOST_PP_SEQ_ENUM(AKANTU_ELEMENT_KIND),
@@ -267,18 +301,18 @@ enum ElementKind;
   AKANTU_BOOST_ELEMENT_SWITCH(macro,					\
 			      AKANTU_ek_igfem_ELEMENT_TYPE)
 
-#define AKANTU_BOOST_LIST_MACRO(r, macro, type)	                        \
+#define AKANTU_BOOST_LIST_MACRO(r, macro, type)				\
   macro(type)
 
-#define AKANTU_BOOST_APPLY_ON_LIST(macro, list)			        \
+#define AKANTU_BOOST_APPLY_ON_LIST(macro, list)				\
   BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_LIST_MACRO, macro, list)
 
 #define AKANTU_BOOST_ALL_ELEMENT_LIST(macro)				\
   AKANTU_BOOST_APPLY_ON_LIST(macro,					\
 			     AKANTU_ALL_ELEMENT_TYPE)
 
-#define AKANTU_BOOST_REGULAR_ELEMENT_LIST(macro)		        \
-  AKANTU_BOOST_APPLY_ON_LIST(macro,				        \
+#define AKANTU_BOOST_REGULAR_ELEMENT_LIST(macro)			\
+  AKANTU_BOOST_APPLY_ON_LIST(macro,					\
 			     AKANTU_ek_regular_ELEMENT_TYPE)
 
 #define AKANTU_BOOST_STRUCTURAL_ELEMENT_LIST(macro)			\
@@ -293,7 +327,7 @@ enum ElementKind;
   AKANTU_BOOST_APPLY_ON_LIST(macro,					\
 			     AKANTU_ek_igfem_ELEMENT_TYPE)
 
-#define AKANTU_GET_ELEMENT_LIST(kind)	                                \
+#define AKANTU_GET_ELEMENT_LIST(kind)					\
   AKANTU##kind##_ELEMENT_TYPE
 
 #define AKANTU_BOOST_KIND_ELEMENT_SWITCH(macro, kind)			\
@@ -303,19 +337,19 @@ enum ElementKind;
 // BOOST_PP_SEQ_TO_LIST does not exists in Boost < 1.49
 #define AKANTU_GENERATE_KIND_LIST(seq)                                  \
   BOOST_PP_TUPLE_TO_LIST(BOOST_PP_SEQ_SIZE(seq),                        \
-                         BOOST_PP_SEQ_TO_TUPLE(seq))
+			 BOOST_PP_SEQ_TO_TUPLE(seq))
 
 #define AKANTU_ELEMENT_KIND_BOOST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_ELEMENT_KIND)
 
-#define AKANTU_BOOST_ALL_KIND_LIST(macro, list)			        \
+#define AKANTU_BOOST_ALL_KIND_LIST(macro, list)				\
   BOOST_PP_LIST_FOR_EACH(AKANTU_BOOST_LIST_MACRO, macro, list)
 
 #define AKANTU_BOOST_ALL_KIND(macro)					\
   AKANTU_BOOST_ALL_KIND_LIST(macro, AKANTU_ELEMENT_KIND_BOOST_LIST)
 
-#define AKANTU_BOOST_ALL_KIND_SWITCH(macro)			        \
-  AKANTU_BOOST_LIST_SWITCH(macro,				        \
-			   AKANTU_ELEMENT_KIND,			        \
+#define AKANTU_BOOST_ALL_KIND_SWITCH(macro)				\
+  AKANTU_BOOST_LIST_SWITCH(macro,					\
+			   AKANTU_ELEMENT_KIND,				\
 			   kind)
 
 /// define kept for compatibility reasons (they are most probably not needed

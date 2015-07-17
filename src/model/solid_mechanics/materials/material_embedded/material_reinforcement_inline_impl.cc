@@ -33,7 +33,7 @@
 /**
  * The structure of the directing cosines matrix is :
  * \f{eqnarray*}{
- *  C_{1,\cdot} & = & (l^2, m^2, n^2, lm, mn, ln) \\
+ *  C_{1,\cdot} & = & (l^2, m^2, n^2, mn, ln, lm) \\
  *  C_{i,j} & = & 0
  * \f}
  *
@@ -68,9 +68,9 @@ inline void MaterialReinforcement<dim>::computeDirectingCosinesOnQuad(const Matr
     cosines(0, 1) = Math::pow<2, Real>(delta(1)); // m^2
     cosines(0, 2) = Math::pow<2, Real>(delta(2)); // n^2
 
-    cosines(0, 3) = delta(0) * delta(1); // lm
-    cosines(0, 4) = delta(1) * delta(2); // mn
-    cosines(0, 5) = delta(0) * delta(2); // ln
+    cosines(0, 3) = delta(1) * delta(2); // mn
+    cosines(0, 4) = delta(0) * delta(2); // ln
+    cosines(0, 5) = delta(0) * delta(1); // lm
   }
 
   cosines /= sq_length;
@@ -92,9 +92,9 @@ inline void MaterialReinforcement<dim>::stressTensorToVoigtVector(const Matrix<R
   if (dim == 2) {
     vector(2) = tensor(0, 1);
   } else if (dim == 3) {
-    vector(3) = tensor(0, 1);
+    vector(3) = tensor(1, 2);
     vector(4) = tensor(0, 2);
-    vector(5) = tensor(1, 2);
+    vector(5) = tensor(0, 1);
   }
   
   AKANTU_DEBUG_OUT();
@@ -114,9 +114,9 @@ inline void MaterialReinforcement<dim>::strainTensorToVoigtVector(const Matrix<R
   if (dim == 2) {
     vector(2) = 2 * tensor(0, 1);
   } else if (dim == 3) {
-    vector(3) = 2 * tensor(0, 1);
+    vector(3) = 2 * tensor(1, 2);
     vector(4) = 2 * tensor(0, 2);
-    vector(5) = 2 * tensor(1, 2);
+    vector(5) = 2 * tensor(0, 1);
   }
   
   AKANTU_DEBUG_OUT();
