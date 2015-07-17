@@ -54,16 +54,16 @@ int main (int argc, char * argv[]) {
   // mesh.read("mesh.msh");
 
   // Spherical kernel testing the addition of nodes
-  SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.401*0.401); //"inclusion_2D_fineness_level_1.msh"
+  // SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.401*0.401); //"inclusion_2D_fineness_level_1.msh"
   // SK::Sphere_3 sphere(SK::Point_3(0, 0, 0), 0.3*0.3); //"mesh.msh"
-  // SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.2*0.2); //"test_geometry_triangle.msh"
-  // SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.4999999999); //"test_geometry_triangle.msh"
+  SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.2*0.2); //"test_geometry_triangle.msh"
+  SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.4999999999); //"test_geometry_triangle.msh"
   MeshSphereIntersector<2, _triangle_3> intersector_sphere(mesh);
   intersector_sphere.constructData();
 
   std::list<SK::Sphere_3> sphere_list;
   sphere_list.push_back(sphere);
-  // sphere_list.push_back(sphere2);
+  sphere_list.push_back(sphere2);
 
   DumperParaview dumper_igfem("mesh_igfem");
   dumper_igfem.registerMesh(mesh, 2, _not_ghost, _ek_igfem);
@@ -72,7 +72,7 @@ int main (int argc, char * argv[]) {
   //dumper_igfem.dump();
   dumper_regular.dump();
 
-  intersector_sphere.buildIgfemMesh(sphere_list);
+  intersector_sphere.buildResultFromQueryList(sphere_list);
   dumper_igfem.dump();
   dumper_regular.dump();
   
