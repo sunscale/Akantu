@@ -21,6 +21,11 @@ register_test(test_interpolate
   PACKAGE IGFEM
   )
 
+register_test(test_conforming_mesh
+  SOURCES test_conforming_mesh.cc
+  PACKAGE IGFEM
+  )
+
 add_akantu_test(test_solid_mechanics_model_igfem "test_solid_mechanics_model_igfem")
 
 register_test(test_spherical_kernel

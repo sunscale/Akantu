@@ -180,21 +180,51 @@ void SolidMechanicsModelIGFEM::initModel() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelIGFEM::onElementsAdded(const Array<Element> & doubled_elements,
+void SolidMechanicsModelIGFEM::onElementsAdded(const Array<Element> & elements,
 					       const NewElementsEvent & event) {
   AKANTU_DEBUG_IN();
-
-  UInt nb_new_elements = doubled_elements.getSize();
-  Array<Element> element_list(nb_new_elements);
 
   /// update shape functions
   getFEEngine("IGFEMFEEngine").initShapeFunctions(_not_ghost);
   getFEEngine("IGFEMFEEngine").initShapeFunctions(_ghost);
 
-  for (UInt e = 0; e < nb_new_elements; ++e)
-    element_list(e) = doubled_elements(e, 0);
+  // for (UInt e = 0; e < nb_new_elements; ++e) 
+  //   element_list(e) = doubled_elements(e, 0);
 
-  SolidMechanicsModel::onElementsAdded(element_list, event);
+
+  SolidMechanicsModel::onElementsAdded(elements, event);
+
+  // /// store the new and old elements by their material
+  // for (UInt e = 0; e < nb_new_elements; ++e) {
+  //   const Element new_el = doubled_elements(e, 0);
+  //   const Element old_el = doubled_elements(e, 1);
+  //   UInt mat_new = material_index(new_el.type, new_el.ghost_type)(new_el.element);
+  //   UInt mat_old = material_index(old_el.type, old_el.ghost_type)(old_el.element);
+  //   new_elements_by_mat[mat_new].push_back(new_el);
+  //   old_elements_by_mat[mat_old].push_back(old_el);
+  // }
+    
+  // for (ElementsByMatMap::iterator new_el_it = new_elements_by_mat.begin(); new_el_it != new_elements_by_mat.end();
+  //      ++new_el_it;) {
+  //   Material & new_mat = *(materials[new_el_it->first]);
+  //   std::unordered_set<ID> & ids = new_mat->getInternalIDs();
+
+  //   /// loop over all internals of the new material
+  //   for (std::unordered_set<std::string>::iterator  it = ids.begin(); it != ids.end(); ++it) {
+  //     for (ElementsByMatMap::iterator old_el_it = old_elements_by_mat.begin(); old_el_it != old_elements_by_mat.end(); ++old_el_it;) {
+  // 	Material & old_mat = *(materials[old_el_it->first]);
+  // 	std::vector<Element> & elements_old_mat = old_el_it->second;
+  // 	if (old_material->isInternals(*it) {
+  // 	  old_material->getInternal(*it);
+  // 	  new_mat.transferInternal();
+  // 	}
+  //     }
+  //   }
+
+  // }
+
+
+
 
   AKANTU_DEBUG_OUT();
 }

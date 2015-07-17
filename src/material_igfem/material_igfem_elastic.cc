@@ -97,6 +97,7 @@ void MaterialIGFEMElastic<spatial_dimension>::updateElasticInternals(GhostType g
     Real * lambda_ptr = this->lambda(el_type, ghost_type).storage();
     Real * mu_ptr = this->mu(el_type, ghost_type).storage();
     Real * kpa_ptr = this->kpa(el_type, ghost_type).storage();
+    UInt * sub_mat_ptr = this->sub_material(el_type, ghost_type).storage();
 
     /// loop all elements for the given type
     const Array<UInt> & filter   = this->element_filter(el_type,ghost_type);
@@ -118,15 +119,17 @@ void MaterialIGFEMElastic<spatial_dimension>::updateElasticInternals(GhostType g
 	index_2 = 0;	
       }
 
-      for (UInt q = 0; q < quads_1; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr) {
+      for (UInt q = 0; q < quads_1; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr, ++sub_mat_ptr) {
 	*lambda_ptr = lambda_per_sub_mat(index_1);
 	*mu_ptr = mu_per_sub_mat(index_1);
 	*kpa_ptr = kpa_per_sub_mat(index_1); 
+	*sub_mat_ptr = index_1;
       }
-      for (UInt q = 0; q < quads_2; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr) {
+      for (UInt q = 0; q < quads_2; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr, ++sub_mat_ptr) {
 	*lambda_ptr = lambda_per_sub_mat(index_2);
 	*mu_ptr = mu_per_sub_mat(index_2);
-	*kpa_ptr = kpa_per_sub_mat(index_2); 
+	*kpa_ptr = kpa_per_sub_mat(index_2);
+	*sub_mat_ptr = index_2; 
       }
     }
   }

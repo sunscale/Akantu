@@ -41,10 +41,11 @@ extern const SolidMechanicsModelIGFEMOptions default_solid_mechanics_model_igfem
 class SolidMechanicsModelIGFEM : public SolidMechanicsModel,
 				 public SolidMechanicsModelEventHandler,
 				 public IGFEMEnrichment{
-public:
+
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
+public:
   typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem> MyFEEngineIGFEMType;
 
   SolidMechanicsModelIGFEM(Mesh & mesh,

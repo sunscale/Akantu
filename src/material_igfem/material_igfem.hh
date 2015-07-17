@@ -51,11 +51,12 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
 
-  inline void interpolateInternal(const ElementType & type,
-				  const Vector<Real> & internal,
+  inline void interpolateInternal(const Element new_el,
+				  const Element old_el,
 				  Vector<Real> & interpolated,
-				  const UInt nb_quads,
-				  const UInt sub_element);
+				  const Vector<Real> & internal,
+				  const UInt nb_quads_new,
+				  const UInt nb_quads_old);
 
   virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
 

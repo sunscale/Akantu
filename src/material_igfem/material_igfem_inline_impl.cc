@@ -25,25 +25,19 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 /// map internals from an old regular element to new IGFEM element
-inline void MaterialIGFEM::interpolateInternal(const ElementType & type,
-				   const Vector<Real> & internal,
-				   Vector<Real> & interpolated,
-				   const UInt nb_quads,
-				   const UInt sub_element) {
+inline void MaterialIGFEM::interpolateInternal(const Element new_el,
+					       const Element old_el,
+					       Vector<Real> & interpolated,
+					       const Vector<Real> & internal,
+					       const UInt nb_quads_new,
+					       const UInt nb_quads_old) {
   /// @todo make this function generic!! Works right now only for
   /// elements with constant fields! A generic function would map the
   /// sub element quads into the physical domain, then interpolate the
-  /// _ek_regular element on these points. For this operation the
-  /// element coordinates would be needed as a parameter of the
-  /// function
+  /// _ek_regular element on these points.
   
-  UInt nb_quads_sub_element = IGFEMHelper::getNbQuadraturePoints(type, sub_element);
-  UInt components = internal.size() / nb_quads;
-  UInt start_idx = 0;
-  if (sub_element) 
-    start_idx = (nb_quads - nb_quads_sub_element) * components;
-  for (UInt i = 0; i < nb_quads_sub_element; ++i)
-    interpolated(start_idx + i) = internal(0);
+  for (UInt q = 0; q < nb_quads_new; ++q)
+    interpolated(q) = internal(0);
 }
 
 
