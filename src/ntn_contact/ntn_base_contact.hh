@@ -207,7 +207,7 @@ protected:
 
   /// parallelisation
   SynchronizerRegistry * synch_registry;
-  FilteredSynchronizer * synchronizer;
+  Synchronizer * synchronizer;
 };
 
 
