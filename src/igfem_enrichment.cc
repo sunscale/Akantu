@@ -30,7 +30,7 @@ void IGFEMEnrichment::initialize(){
 void IGFEMEnrichment::update(ID & domain) {
   if (domain == "") domain = default_geometry;
   Geometry & geometry = getGeometry(domain);
-  intersector_sphere.buildIgfemMesh(geometry);
+  intersector_sphere.buildResultFromQueryList(geometry);
 }
 /* -------------------------------------------------------------------------- */
 void IGFEMEnrichment::unRegisterGeometryObject(const ID & domain){
