@@ -123,7 +123,7 @@ public:
   Real getStableTimeStep();
 
   /// compute the heat flux
-  void updateResidual();
+  void updateResidual(bool compute_conductivity = false);
 
   /// calculate the lumped capacity vector for heat transfer problem
   void assembleCapacityLumped();
@@ -206,7 +206,7 @@ protected:
 private:
 
   /// compute the heat flux on ghost types
-  void updateResidual(const GhostType & ghost_type);
+  void updateResidual(const GhostType & ghost_type, bool compute_conductivity = false);
 
   /// calculate the lumped capacity vector for heat transfer problem (w ghosttype)
   void assembleCapacityLumped(const GhostType & ghost_type);
@@ -226,7 +226,7 @@ private:
   void computeConductivityOnQuadPoints(const GhostType & ghost_type);
 
   /// compute vector k \grad T for each quadrature point
-  void computeKgradT(const GhostType & ghost_type);
+  void computeKgradT(const GhostType & ghost_type,bool compute_conductivity);
 
   /// compute the thermal energy
   Real computeThermalEnergyByNode();

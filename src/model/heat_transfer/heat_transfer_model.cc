@@ -336,7 +336,7 @@ void HeatTransferModel::assembleCapacityLumped() {
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::updateResidual() {
+void HeatTransferModel::updateResidual(bool compute_conductivity) {
   AKANTU_DEBUG_IN();
   /// @f$ r = q_{ext} - q_{int} - C \dot T @f$
 
@@ -575,9 +575,10 @@ void HeatTransferModel::computeConductivityOnQuadPoints(const GhostType & ghost_
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::computeKgradT(const GhostType & ghost_type) {
+void HeatTransferModel::computeKgradT(const GhostType & ghost_type,bool compute_conductivity) {
 
-  computeConductivityOnQuadPoints(ghost_type);
+  if (compute_conductivity)
+    computeConductivityOnQuadPoints(ghost_type);
 
   const Mesh::ConnectivityTypeList & type_list =
     this->getFEEngine().getMesh().getConnectivityTypeList(ghost_type);
@@ -615,7 +616,7 @@ void HeatTransferModel::computeKgradT(const GhostType & ghost_type) {
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::updateResidual(const GhostType & ghost_type) {
+void HeatTransferModel::updateResidual(const GhostType & ghost_type, bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
   const Mesh::ConnectivityTypeList & type_list =
@@ -631,7 +632,7 @@ void HeatTransferModel::updateResidual(const GhostType & ghost_type) {
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
 
     // compute k \grad T
-    computeKgradT(ghost_type);
+    computeKgradT(ghost_type,compute_conductivity);
 
     Array<Real>::vector_iterator k_BT_it =
       k_gradt_on_qpoints(*it,ghost_type).begin(spatial_dimension);
