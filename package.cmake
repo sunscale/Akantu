@@ -67,6 +67,11 @@ package_declare_sources(extra_materials
   )
 
 
+package_declare_material_infos(extra_materials
+  LIST AKANTU_EXTRA_MATERIAL_LIST AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST
+  INCLUDE material_extra_includes.hh
+  )
+
 package_declare_documentation_files(extra_materials
   manual-extra_materials.tex
   manual-appendix-materials-extra-materials.tex
