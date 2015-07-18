@@ -41,7 +41,9 @@ Model::Model(Mesh& m, UInt dim, const ID & id,
 	     const MemoryID & memory_id) :
   Memory(id, memory_id), mesh(m), 
   spatial_dimension(dim == _all_dimensions ? m.getSpatialDimension() : dim),
-  synch_registry(NULL),is_pbc_slave_node(0,1,"is_pbc_slave_node") ,
+  synch_registry(NULL),
+  dof_synchronizer(NULL),
+  is_pbc_slave_node(0,1,"is_pbc_slave_node") ,
   parser(&getStaticParser()) {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_OUT();

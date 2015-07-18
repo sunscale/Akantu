@@ -142,6 +142,45 @@ void EmbeddedInterfaceModel::initMaterials() {
   SolidMechanicsModel::initMaterials();
 }
 
+/**
+ * DO NOT REMOVE - This prevents the material reinforcement to register
+ * their number of components. Problems arise with AvgHomogenizingFunctor
+ * if the material reinforcement gives its number of components for a
+ * field. Since AvgHomogenizingFunctor verifies that all the fields
+ * have the same number of components, an exception is raised.
+ */
+ElementTypeMap<UInt> EmbeddedInterfaceModel::getInternalDataPerElem(const std::string & field_name,
+                                                                    const ElementKind & kind) {
+  if (!(this->isInternal(field_name,kind))) AKANTU_EXCEPTION("unknown internal " << field_name);
+
+  for (UInt m = 0; m < materials.size() ; ++m) {
+    if (materials[m]->isInternal(field_name, kind)) {
+      Material * mat = NULL;
+
+      switch(this->spatial_dimension) {
+        case 1:
+          mat = dynamic_cast<MaterialReinforcement<1> *>(materials[m]);
+          break;
+
+        case 2:
+          mat = dynamic_cast<MaterialReinforcement<2> *>(materials[m]);
+          break;
+
+        case 3:
+          mat = dynamic_cast<MaterialReinforcement<3> *>(materials[m]);
+          break;
+      }
+
+      if (mat == NULL && field_name != "stress_embedded")
+        return materials[m]->getInternalDataPerElem(field_name,kind);
+      else if (mat != NULL && field_name == "stress_embedded")
+        return mat->getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
+    }
+  }
+
+  return ElementTypeMap<UInt>();
+}
+
 /* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                                        const std::string & field_id,
@@ -154,9 +193,11 @@ void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumpe
   // If dumper is reinforcement, create a 1D elemental field
   if (dumper_name == "reinforcement")
     field = this->createElementalField(field_id, group_name, padding_flag, 1, element_kind);
-  else
-    SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, field_id, group_name, element_kind, padding_flag);
-
+  else {
+    try {
+      SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, field_id, group_name, element_kind, padding_flag);
+    } catch (...) {}
+  }
   if (field) {
     DumperIOHelper & dumper = mesh.getGroupDumper(dumper_name,group_name);
     Model::addDumpGroupFieldToDumper(field_id,field,dumper);
