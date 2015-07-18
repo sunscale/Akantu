@@ -39,7 +39,7 @@ package_declare_sources(igfem
   dumper_igfem_element_iterator.hh
   dumper_igfem_material_internal_field.hh
   dumper_igfem_quadrature_points_field.hh
-  
+
   igfem_helper.hh
   igfem_helper.cc
   igfem_enrichment.hh
@@ -58,6 +58,9 @@ package_declare_sources(igfem
 
   material_igfem/igfem_internal_field.hh
   material_igfem/igfem_internal_field_tmpl.hh
-
   )
 
+package_declare_material_infos(igfem
+  LIST AKANTU_IGFEM_MATERIAL_LIST
+  INCLUDE material_igfem_includes.hh
+  )
