@@ -39,6 +39,7 @@ package_declare_sources(igfem
   dumper_igfem_element_iterator.hh
   dumper_igfem_material_internal_field.hh
   dumper_igfem_quadrature_points_field.hh
+  dumper_igfem_element_partition.hh
 
   igfem_helper.hh
   igfem_helper.cc
@@ -47,6 +48,7 @@ package_declare_sources(igfem
   igfem_enrichment_inline_impl.cc
   solid_mechanics_model_igfem.hh
   solid_mechanics_model_igfem.cc
+  mesh_igfem_spherical_growing_gel.hh
 
   material_igfem/material_igfem_includes.hh
   material_igfem/material_igfem.hh

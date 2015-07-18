@@ -22,14 +22,14 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 MaterialIGFEM::MaterialIGFEM(SolidMechanicsModel & model, const ID & id) :
   Material(model, id),
-  fem_igfem(&(model.getFEEngineClass<MyFEEngineIGFEMType>("IGFEMFEEngine"))),
   sub_material("sub-material", *this),
   name_sub_mat_1(""),
   name_sub_mat_2("") {
   AKANTU_DEBUG_IN();
 
   this->model = dynamic_cast<SolidMechanicsModelIGFEM*>(&model);
-
+  this->fem = &(model.getFEEngineClass<MyFEEngineIGFEMType>("IGFEMFEEngine"));
+ 
   this->model->getMesh().initElementTypeMapArray(element_filter,
 						 1,
 						 spatial_dimension,
@@ -52,10 +52,19 @@ MaterialIGFEM::~MaterialIGFEM() {
 /* -------------------------------------------------------------------------- */
 void MaterialIGFEM::initialize() {
 
+  this->gradu.setElementKind(_ek_igfem);
+  this->stress.setElementKind(_ek_igfem);
+  this->eigenstrain.setElementKind(_ek_igfem);
+
+  this->gradu.setFEEngine(*fem);
+  this->stress.setFEEngine(*fem);
+  this->eigenstrain.setFEEngine(*fem);
+
   registerParam("name_sub_mat_1"                 , name_sub_mat_1                 , std::string(), _pat_parsable | _pat_readable);
   registerParam("name_sub_mat_2"                 , name_sub_mat_2                 , std::string(), _pat_parsable | _pat_readable);
 
   this->sub_material.initialize(1);
+
 }
 
 /* -------------------------------------------------------------------------- */
@@ -135,7 +144,7 @@ void MaterialIGFEM::computeQuadraturePointsCoordinates(ElementTypeMapArray<Real>
     const Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
       UInt nb_element  = elem_filter.getSize();
       if(nb_element) {
-      UInt nb_tot_quad = this->fem_igfem->getNbQuadraturePoints(*it, ghost_type) * nb_element;
+      UInt nb_tot_quad = this->fem->getNbQuadraturePoints(*it, ghost_type) * nb_element;
 
       Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
       quads.resize(nb_tot_quad);
@@ -150,7 +159,51 @@ void MaterialIGFEM::computeQuadraturePointsCoordinates(ElementTypeMapArray<Real>
 }
 
 /* -------------------------------------------------------------------------- */
+inline ElementTypeMap<UInt> MaterialIGFEM::getInternalDataPerElem(const ID & id,
+								  const ElementKind & element_kind,
+								  const ID & fe_engine_id) const {
+  if (element_kind == _ek_igfem) {
+    return Material::getInternalDataPerElem(id, element_kind, "IGFEMFEEngine");
+  } else {
+    return Material::getInternalDataPerElem(id, element_kind, fe_engine_id);
+  }
+}
 
+/* -------------------------------------------------------------------------- */
+/**
+ * Compute  the  stress from the gradu
+ *
+ * @param[in] current_position nodes postition + displacements
+ * @param[in] ghost_type compute the residual for _ghost or _not_ghost element
+ */
+void MaterialIGFEM::computeAllStresses(GhostType ghost_type) {
+  AKANTU_DEBUG_IN();
+
+  UInt spatial_dimension = model->getSpatialDimension();
+
+  Mesh::type_iterator it = this->fem->getMesh().firstType(spatial_dimension, ghost_type, _ek_igfem);
+  Mesh::type_iterator last_type = this->fem->getMesh().lastType(spatial_dimension, ghost_type, _ek_igfem);
+
+  for(; it != last_type; ++it) {
+    Array<UInt> & elem_filter = element_filter(*it, ghost_type);
+    if (elem_filter.getSize()) {
+      Array<Real> & gradu_vect = gradu(*it, ghost_type);
+
+      /// compute @f$\nabla u@f$
+      this->fem->gradientOnQuadraturePoints(model->getDisplacement(), gradu_vect,
+						  spatial_dimension,
+						  *it, ghost_type, elem_filter);
+
+      gradu_vect -= eigenstrain(*it, ghost_type);
+
+      /// compute @f$\mathbf{\sigma}_q@f$ from @f$\nabla u@f$
+      computeStress(*it, ghost_type);
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+/* -------------------------------------------------------------------------- */
 
 
 

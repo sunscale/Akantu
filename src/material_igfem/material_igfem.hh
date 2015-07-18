@@ -50,11 +50,15 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+
   inline void interpolateInternal(const ElementType & type,
 				  const Vector<Real> & internal,
 				  Vector<Real> & interpolated,
 				  const UInt nb_quads,
 				  const UInt sub_element);
+
+  virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
+
 
   /* ------------------------------------------------------------------------ */
   /* MeshEventHandler inherited members                                       */
@@ -70,15 +74,24 @@ public:
   //                                const ElementTypeMapArray<UInt> & new_numbering,
   //                                const RemovedElementsEvent & event) {};
 protected:
+
+  /// constitutive law
+  virtual void computeStress(__attribute__((unused)) ElementType el_type,
+                             __attribute__((unused)) GhostType ghost_type = _not_ghost)  {
+   
+  }
   void initialize();
+
+  
+  virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
+						      const ElementKind & element_kind,
+						      const ID & fe_engine_id) const;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 
 protected:
-  /// Link to the igfem fem object in the model
-  MyFEEngineIGFEMType * fem_igfem;
 
   const UInt nb_sub_materials = 2;
 
@@ -93,6 +106,7 @@ protected:
 
   /// material name of first sub-material
   std::string name_sub_mat_2;
+
 };
 
 /* -------------------------------------------------------------------------- */

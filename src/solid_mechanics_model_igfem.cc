@@ -18,9 +18,13 @@
 #include "dumpable_inline_impl.hh"
 #include "material_igfem.hh"
 #include "group_manager_inline_impl.cc"
+#include "igfem_helper.hh"
 #ifdef AKANTU_USE_IOHELPER
 #  include "dumper_paraview.hh"
 #  include "dumper_igfem_material_internal_field.hh"
+#  include "dumper_igfem_element_partition.hh"
+#  include "dumper_igfem_elemental_field.hh"
+#  include "dumper_material_padders.hh"
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -172,7 +176,6 @@ void SolidMechanicsModelIGFEM::initModel() {
   getFEEngine("IGFEMFEEngine").initShapeFunctions(_not_ghost);
   getFEEngine("IGFEMFEEngine").initShapeFunctions(_ghost);
 
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -266,6 +269,7 @@ void SolidMechanicsModelIGFEM::addDumpGroupFieldToDumper(const std::string & dum
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelIGFEM::onDump(){
+  this->computeValuesOnEnrichedNodes();
   this->flattenAllRegisteredInternals(_ek_igfem);
   SolidMechanicsModel::onDump();
 }
@@ -288,78 +292,156 @@ dumper::Field * SolidMechanicsModelIGFEM
   else {
  
 
-  // if(field_name == "partitions")
-  //   field = mesh.createElementalField<UInt, dumper::ElementPartitionField>(mesh.getConnectivities(),group_name,spatial_dimension,kind);
-  // else if(field_name == "material_index")
-  //   field = mesh.createElementalField<UInt, Vector, dumper::ElementalField >(material_index,group_name,spatial_dimension,kind);
-  //  else {
-    // this copy of field_name is used to compute derivated data such as
-    // strain and von mises stress that are based on grad_u and stress
-    std::string field_name_copy(field_name);
+    if(field_name == "partitions")
+      field = mesh.createElementalField<UInt, dumper::IGFEMElementPartitionField>(mesh.getConnectivities(),group_name,spatial_dimension, kind);
+    else if(field_name == "material_index")
+      field = mesh.createElementalField<UInt, Vector, dumper::IGFEMElementalField >(material_index,group_name,spatial_dimension,kind);
+    else {
+      // this copy of field_name is used to compute derivated data such as
+      // strain and von mises stress that are based on grad_u and stress
+      std::string field_name_copy(field_name);
 
-    if (field_name == "strain"
- 	|| field_name == "Green strain"
- 	|| field_name == "principal strain"
- 	|| field_name == "principal Green strain")
-      field_name_copy = "grad_u";
-    else if (field_name == "Von Mises stress")
-      field_name_copy = "stress";
+      if (field_name == "strain"
+	  || field_name == "Green strain"
+	  || field_name == "principal strain"
+	  || field_name == "principal Green strain")
+	field_name_copy = "grad_u";
+      else if (field_name == "Von Mises stress")
+	field_name_copy = "stress";
 
-    bool is_internal = this->isInternal(field_name_copy,kind);
+      bool is_internal = this->isInternal(field_name_copy,kind);
 
-    if (is_internal) {
-      ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name_copy,kind);
-      ElementTypeMapArray<Real> & internal_flat = this->flattenInternal(field_name_copy,kind);
-      field = mesh.createElementalField<Real, dumper::IGFEMInternalMaterialField>(internal_flat,
- 										  group_name,
- 										  spatial_dimension,kind,nb_data_per_elem);
-      // if (field_name == "strain"){
-      // 	dumper::ComputeStrain<false> * foo = new dumper::ComputeStrain<false>(*this);
-      // 	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
-      // } else if (field_name == "Von Mises stress") {
-      // 	dumper::ComputeVonMisesStress * foo = new dumper::ComputeVonMisesStress(*this);
-      // 	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
-      // } else if (field_name == "Green strain") {
-      // 	dumper::ComputeStrain<true> * foo = new dumper::ComputeStrain<true>(*this);
-      // 	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
-      // } else if (field_name == "principal strain") {
-      // 	dumper::ComputePrincipalStrain<false> * foo = new dumper::ComputePrincipalStrain<false>(*this);
-      // 	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
-      // } else if (field_name == "principal Green strain") {
-      // 	dumper::ComputePrincipalStrain<true> * foo = new dumper::ComputePrincipalStrain<true>(*this);
-      // 	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
-      // }
+      if (is_internal) {
+	ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name_copy,kind);
+	ElementTypeMapArray<Real> & internal_flat = this->flattenInternal(field_name_copy,kind);
+	field = mesh.createElementalField<Real, dumper::IGFEMInternalMaterialField>(internal_flat,
+										    group_name,
+										    spatial_dimension,kind,nb_data_per_elem);
+	if (field_name == "strain"){
+		dumper::ComputeStrain<false> * foo = new dumper::ComputeStrain<false>(*this);
+		field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+	} else if (field_name == "Von Mises stress") {
+		dumper::ComputeVonMisesStress * foo = new dumper::ComputeVonMisesStress(*this);
+		field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+	} else if (field_name == "Green strain") {
+		dumper::ComputeStrain<true> * foo = new dumper::ComputeStrain<true>(*this);
+		field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+	} else if (field_name == "principal strain") {
+		dumper::ComputePrincipalStrain<false> * foo = new dumper::ComputePrincipalStrain<false>(*this);
+		field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+	} else if (field_name == "principal Green strain") {
+		dumper::ComputePrincipalStrain<true> * foo = new dumper::ComputePrincipalStrain<true>(*this);
+		field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+	}
 
-      //treat the paddings
-      // if (padding_flag){
-      // 	if (field_name == "stress"){
-      // 	  if (spatial_dimension == 2) {
-      // 	    dumper::StressPadder<2> * foo = new dumper::StressPadder<2>(*this);
-      // 	    field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
-      // 	  }
-      // 	} else if (field_name == "strain" || field_name == "Green strain"){
-      // 	  if (spatial_dimension == 2) {
-      // 	    dumper::StrainPadder<2> * foo = new dumper::StrainPadder<2>(*this);
-      // 	    field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
-      // 	  }
-      // 	}
-      // }
+	/// treat the paddings
+	if (padding_flag){
+		if (field_name == "stress"){
+		  if (spatial_dimension == 2) {
+		    dumper::StressPadder<2> * foo = new dumper::StressPadder<2>(*this);
+		    field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+		  }
+		} else if (field_name == "strain" || field_name == "Green strain"){
+		  if (spatial_dimension == 2) {
+		    dumper::StrainPadder<2> * foo = new dumper::StrainPadder<2>(*this);
+		    field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+		  }
+		}
+	}
+	// homogenize the field
+	dumper::ComputeFunctorInterface * foo =
+	  dumper::HomogenizerProxy::createHomogenizer(*field);
 
-      // homogenize the field
-      dumper::ComputeFunctorInterface * foo =
- 	dumper::HomogenizerProxy::createHomogenizer(*field);
-
-      field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
-
+	field = dumper::FieldComputeProxy::createFieldCompute(field,*foo);
+      }
     }
   }
     //  }
   return field;
 }
 
-#endif
 /* -------------------------------------------------------------------------- */
 
+dumper::Field * SolidMechanicsModelIGFEM::createNodalFieldReal(const std::string & field_name,
+							  const std::string & group_name,
+							  bool padding_flag) {
+
+  std::map<std::string,Array<Real>* > real_nodal_fields;
+  real_nodal_fields["real_displacement"             ] = real_displacement;
+
+  dumper::Field * field = NULL;
+  if (padding_flag)
+    field = mesh.createNodalField(real_nodal_fields[field_name],group_name, 3);
+  else
+    field = mesh.createNodalField(real_nodal_fields[field_name],group_name);
+  
+  if (field == NULL)
+    return SolidMechanicsModel::createNodalFieldReal(field_name, group_name, padding_flag);
+  
+  return field;
+}
+
+#endif
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModelIGFEM::computeValuesOnEnrichedNodes() {
+
+  for (UInt n = 0; n < mesh.getNbNodes(); ++ n) {
+    for (UInt s = 0; s < spatial_dimension; ++s)
+      (*real_displacement)(n,s) = (*displacement)(n,s);
+  }
+
+
+  Element element;
+  Vector<Real> real_coords(spatial_dimension);
+  Vector<Real> interpolated(spatial_dimension);
+  Array<Real>::const_vector_iterator r_displ_it = this->real_displacement->begin(spatial_dimension);
+  
+  for (ghost_type_t::iterator gt = ghost_type_t::begin(); gt != ghost_type_t::end(); ++gt) {
+    element.ghost_type = *gt;
+    Mesh::type_iterator it = mesh.firstType(spatial_dimension, *gt, _ek_igfem);
+    Mesh::type_iterator last  = mesh.lastType(spatial_dimension, *gt, _ek_igfem);
+    for(;it != last; ++it) {
+      element.type = *it;
+      UInt nb_element = mesh.getNbElement(*it, *gt);
+      if (!nb_element) continue;    
+      UInt * elem_val = mesh.getConnectivity(*it, *gt).storage();
+      UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*it);
+      Matrix<Real> nodes_coord(spatial_dimension, nb_nodes_per_element);
+      Matrix<Real> displ_val(spatial_dimension, nb_nodes_per_element);
+ 
+      UInt nb_enriched_nodes = IGFEMHelper::getNbEnrichedNodes(*it);
+      UInt nb_parent_nodes = IGFEMHelper::getNbParentNodes(*it);
+      for (UInt el = 0; el < nb_element; ++el) {
+	element.element = el;
+	/// get the node coordinates of the element
+	mesh.extractNodalValuesFromElement(mesh.getNodes(),
+					   nodes_coord.storage(),
+					   elem_val + el * nb_nodes_per_element,
+					   nb_nodes_per_element,
+					   spatial_dimension);
+
+	/// get the displacement values at the nodes of the element
+	mesh.extractNodalValuesFromElement(*(this->displacement),
+					   displ_val.storage(),
+					   elem_val + el * nb_nodes_per_element,
+					   nb_nodes_per_element,
+					   spatial_dimension);
+
+	for (UInt i = 0; i < nb_enriched_nodes; ++i) {
+	  /// coordinates of enriched node
+	  real_coords = nodes_coord(nb_parent_nodes + i);
+	  /// global index of the enriched node
+	  UInt idx = elem_val[el * nb_nodes_per_element + nb_parent_nodes + i];
+	  /// compute the real displacement value
+	  this->getFEEngine("IGFEMFEEngine").interpolate(real_coords, displ_val,
+							 interpolated, element);
+	  r_displ_it[idx] = interpolated;	 
+	}
+      }
+    }
+  }
+}
 
 
 __END_AKANTU__

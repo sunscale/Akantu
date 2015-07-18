@@ -284,7 +284,9 @@ inline void IntegratorGauss<_ek_igfem>::integrate(const Array<Real> & in_f,
 		      "No jacobians for the type "
 		      << jacobians.printType(type, ghost_type));
 
-  UInt nb_points = GaussIntegrationElement<type>::getNbQuadraturePoints();
+  const Matrix<Real> & quads = quadrature_points(type, ghost_type);
+
+  UInt nb_points = quads.cols();
 
   const Array<Real> & jac_loc = jacobians(type, ghost_type);
 
@@ -378,7 +380,9 @@ inline void IntegratorGauss<_ek_igfem>::integrateOnQuadraturePoints(const Array<
 		      << jacobians.printType(type, ghost_type));
 
   UInt nb_element;
-  UInt nb_points = GaussIntegrationElement<type>::getNbQuadraturePoints();
+  const Matrix<Real> & quads = quadrature_points(type, ghost_type);
+
+  UInt nb_points = quads.cols();
 
   const Array<Real> & jac_loc = jacobians(type, ghost_type);
 

@@ -149,7 +149,7 @@ template<>
 void MaterialIGFEMElastic<2>::updateElasticConstants(Vector<Real> & lambda_vec, Vector<Real> & mu_vec, Vector<Real> & kpa_vec) {
 
   for (UInt i = 0; i < this->nb_sub_materials; ++i) {
-    lambda_vec(i) = this->nu(i) * this->E(i) / ((1 + this->nu(1)) * (1 - 2*this->nu(i)));
+    lambda_vec(i) = this->nu(i) * this->E(i) / ((1 + this->nu(i)) * (1 - 2*this->nu(i)));
     mu_vec(i)     = this->E(i) / (2 * (1 + this->nu(i)));
 
     if(this->plane_stress) lambda_vec(i) = this->nu(i) * this->E(i) / ((1 + this->nu(i))*(1 - this->nu(i)));

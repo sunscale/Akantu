@@ -20,6 +20,8 @@
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
+class FEEngine; 
+
 template<ElementType type>
 struct ElementTypeIGFEMData {
   static ElementType igfem_element_types[];
@@ -99,6 +101,17 @@ struct IGFEMHelper {
     return nb_parent_nodes;
   }
 
+  /// get the nb of parent nodes of a given igfem element type
+  static UInt getNbEnrichedNodes(const ElementType & type) {
+    UInt nb_enriched_nodes = 0;
+#define GET_NB_ENRICHED_NODES(type)					\
+    nb_enriched_nodes = ElementClass<type>::getNbEnrichments(); 
+
+    AKANTU_BOOST_IGFEM_ELEMENT_SWITCH(GET_NB_ENRICHED_NODES);
+#undef GET_NB_ENRICHED_NODES
+    return nb_enriched_nodes;
+  }
+
   /// get the nb of quads for one sub element type
   static bool getElementOrientation(const ElementType & type, const Vector<bool> & is_inside) {
     bool orientation = false;
@@ -111,11 +124,13 @@ struct IGFEMHelper {
     return orientation;
   }
 
+
 };
 
 __END_AKANTU__
-/* -------------------------------------------------------------------------- */
-
-
-
 #endif /* __AKANTU_IGFEM_HELPER_HH__ */
+
+
+
+
+

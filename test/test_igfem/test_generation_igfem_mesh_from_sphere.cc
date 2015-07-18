@@ -31,8 +31,10 @@
 /* -------------------------------------------------------------------------- */
 
 #include "mesh_sphere_intersector.hh"
+#include "mesh_igfem_spherical_growing_gel.hh"
 
 #include "dumper_paraview.hh"
+#include "dumpable_inline_impl.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -46,25 +48,20 @@ int main (int argc, char * argv[]) {
   initialize("", argc, argv);
   debug::setDebugLevel(dblError);
 
-  Math::setTolerance(1e-10);
+  Math::setTolerance(1e-12);
 
   Mesh mesh(2);
   mesh.read("test_geometry_triangle.msh");
   //mesh.read("mesh.msh");
 
   // Spherical kernel testing the addition of nodes
-  SK::Sphere_3 sphere(SK::Point_3(1, 0, 0), 0.2*0.2);
-  //SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.4999999999);
+  SK::Sphere_3 sphere(SK::Point_3(0.7, 0.1, 0), 0.4*0.4 + 0.2*0.2 ); //1.2*1.2);
   MeshSphereIntersector<2, _triangle_3> intersector_sphere3(mesh);
   MeshSphereIntersector<2, _igfem_triangle_4> intersector_sphere4(mesh);
   MeshSphereIntersector<2, _igfem_triangle_5> intersector_sphere5(mesh);
-  /*intersector_sphere3.constructData();
-  intersector_sphere4.constructData();
-  intersector_sphere5.constructData();*/
 
   std::list<SK::Sphere_3> sphere_list;
   sphere_list.push_back(sphere);
-  //sphere_list.push_back(sphere2);
 
   DumperParaview dumper_igfem("mesh_igfem");
   dumper_igfem.registerMesh(mesh, 2, _not_ghost, _ek_igfem);
@@ -72,59 +69,137 @@ int main (int argc, char * argv[]) {
   dumper_regular.registerMesh(mesh, 2, _not_ghost, _ek_regular);
   //dumper_igfem.dump();
   dumper_regular.dump();
+  
+  intersector_sphere3.buildResultFromQueryList(sphere_list);
+  intersector_sphere4.buildResultFromQueryList(sphere_list); 
+  intersector_sphere5.buildResultFromQueryList(sphere_list);;
 
-  intersector_sphere3.buildIgfemMesh(sphere_list);
-  intersector_sphere4.buildIgfemMesh(sphere_list);
-  intersector_sphere5.buildIgfemMesh(sphere_list);
+  dumper_regular.dump(); 
+  //dumper_igfem.getDumper().setMode(iohelper::TEXT);
   dumper_igfem.dump();
-  dumper_regular.dump();
 
   UInt nb_tri3 = mesh.getConnectivity(_triangle_3).getSize();
   UInt nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
-  UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();
-  std::cout << "intermediary mesh 1 with " << nb_tri3 << " _triangle_3, and " << nb_tri4
-	    << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl;
-
-  SK::Sphere_3 sphere_2(SK::Point_3(1, 0, 0), 1.3*1.3);
+  UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize(); 
+  if ( (nb_tri3 != 1) || (nb_tri4 != 0) || (nb_tri5 != 1)){ 
+    std::cout << "final mesh with " << nb_tri3 << " _triangle_3, and " << nb_tri4
+	      << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl; 
+    return EXIT_FAILURE;
+  }
+  SK::Sphere_3 sphere1(SK::Point_3(1, 0, 0), 1.2*1.2);
   std::list<SK::Sphere_3> sphere_list2;
-  sphere_list2.push_back(sphere_2);
+  sphere_list2.push_back(sphere1);
   intersector_sphere3.constructData();
   intersector_sphere4.constructData();
   intersector_sphere5.constructData();
   intersector_sphere3.removeAdditionnalNodes();
   
-  intersector_sphere3.buildIgfemMesh(sphere_list2);
-  intersector_sphere4.buildIgfemMesh(sphere_list2);
-  intersector_sphere5.buildIgfemMesh(sphere_list2);
+  intersector_sphere3.buildResultFromQueryList(sphere_list2);
+  intersector_sphere4.buildResultFromQueryList(sphere_list2);
+  intersector_sphere5.buildResultFromQueryList(sphere_list2);
 
-  nb_tri3 = mesh.getConnectivity(_triangle_3).getSize();
-  nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
-  nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();
-  std::cout << "final mesh with " << nb_tri3 << " _triangle_3, and " << nb_tri4
-	    << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl;
+  dumper_igfem.dump();
+  dumper_regular.dump();
+  SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.4999999999);
+  sphere_list2.push_back(sphere2);
+  intersector_sphere3.constructData();
+  intersector_sphere4.constructData();
+  intersector_sphere5.constructData();
+  intersector_sphere3.removeAdditionnalNodes();
+  
+  intersector_sphere3.buildResultFromQueryList(sphere_list2);
+  intersector_sphere4.buildResultFromQueryList(sphere_list2);
+  intersector_sphere5.buildResultFromQueryList(sphere_list2);
 
   dumper_igfem.dump();
   dumper_regular.dump();
   
-  /* UInt nb_tri3 = mesh.getConnectivity(_triangle_3).getSize();
-  UInt nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
-  UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();
+  nb_tri3 = mesh.getConnectivity(_triangle_3).getSize();
+  nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
+  nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();
+  std::cout << "final mesh with " << nb_tri3 << " _triangle_3, and " << nb_tri4
+	    << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl; 
   if ( (nb_tri3 != 0) || (nb_tri4 != 1) || (nb_tri5 != 1)){ 
     std::cout << "final mesh with " << nb_tri3 << " _triangle_3, and " << nb_tri4
 	      << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl; 
     return EXIT_FAILURE;
   }
 
-  const Array<UInt> new_node_triangle_3 = intersector_sphere.getNewNodePerElem();
-  if ( (new_node_triangle_3(0,0) != 1) || (new_node_triangle_3(1,0) != 2)){
-    for(UInt k=0; k != new_node_triangle_3.getSize(); ++k){
-      std::cout << new_node_triangle_3(k,0) << " new nodes in element " << k << ", node(s): "
-		<< new_node_triangle_3(k,1) << ", " << new_node_triangle_3(k,3)
-		<< ", on segment(s):" << new_node_triangle_3(k,2) << ", "
-		<< new_node_triangle_3(k,4) << std::endl;
-    }
+  /// test of MeshIgfemSphericalGrowingGel
+  Mesh mesh_gel(2, "mesh_gel");
+  mesh_gel.read("test_geometry_triangle.msh");
+  MeshIgfemSphericalGrowingGel<2> gel_intersector(mesh_gel);
+
+  SK::Sphere_3 sphere_gel(SK::Point_3(1, 0, 0), 0.4999999999/4);
+  std::list<SK::Sphere_3> sphere_list_gel;
+  sphere_list_gel.push_back(sphere_gel);
+
+  DumperParaview dumper_gel_igfem("mesh_gel_igfem");
+  dumper_gel_igfem.registerMesh(mesh_gel, 2, _not_ghost, _ek_igfem);
+  DumperParaview dumper_gel_regular("mesh_gel_regular");
+  dumper_gel_regular.registerMesh(mesh_gel, 2, _not_ghost, _ek_regular);
+  dumper_gel_regular.dump();
+
+  gel_intersector.buildResultFromQueryList(sphere_list_gel);
+  dumper_gel_igfem.dump();
+  dumper_gel_regular.dump();
+  UInt nb_tri3_gel = mesh_gel.getConnectivity(_triangle_3).getSize();
+  UInt nb_tri4_gel = mesh_gel.getConnectivity(_igfem_triangle_4).getSize();
+  UInt nb_tri5_gel = mesh_gel.getConnectivity(_igfem_triangle_5).getSize();
+  if ( (nb_tri3_gel != 1) || (nb_tri4_gel != 0) || (nb_tri5_gel != 1)){ 
+    std::cout << "interm. mesh_gel with " << nb_tri3_gel << " _triangle_3, and " << nb_tri4_gel
+	      << " _igfem_triangle_4, and " << nb_tri5_gel << " _igfem_triangle_5"<< std::endl; 
     return EXIT_FAILURE;
-  }*/
+  }
+
+  gel_intersector.buildResultFromQueryList(sphere_list_gel, 1.5);
+  dumper_gel_igfem.dump();
+  dumper_gel_regular.dump();
+  nb_tri3_gel = mesh_gel.getConnectivity(_triangle_3).getSize();
+  nb_tri4_gel = mesh_gel.getConnectivity(_igfem_triangle_4).getSize();
+  nb_tri5_gel = mesh_gel.getConnectivity(_igfem_triangle_5).getSize();
+  if ( (nb_tri3_gel != 1) || (nb_tri4_gel != 0) || (nb_tri5_gel != 1)){ 
+    std::cout << "final mesh with " << nb_tri3_gel << " _triangle_3, and " << nb_tri4_gel
+	      << " _igfem_triangle_4, and " << nb_tri5_gel << " _igfem_triangle_5"<< std::endl; 
+    return EXIT_FAILURE;
+    }
+  
+  gel_intersector.buildResultFromQueryList(sphere_list_gel, 2);
+  dumper_gel_igfem.dump();
+  dumper_gel_regular.dump();
+  nb_tri3_gel = mesh_gel.getConnectivity(_triangle_3).getSize();
+  nb_tri4_gel = mesh_gel.getConnectivity(_igfem_triangle_4).getSize();
+  nb_tri5_gel = mesh_gel.getConnectivity(_igfem_triangle_5).getSize();
+  if ( (nb_tri3_gel != 1) || (nb_tri4_gel != 1) || (nb_tri5_gel != 0)){ 
+    std::cout << "final mesh with " << nb_tri3_gel << " _triangle_3, and " << nb_tri4_gel
+	      << " _igfem_triangle_4, and " << nb_tri5_gel << " _igfem_triangle_5"<< std::endl; 
+    return EXIT_FAILURE;
+    }
+
+  gel_intersector.buildResultFromQueryList(sphere_list_gel,2.1);
+  dumper_gel_igfem.dump();
+  dumper_gel_regular.dump();
+  nb_tri3_gel = mesh_gel.getConnectivity(_triangle_3).getSize();
+  nb_tri4_gel = mesh_gel.getConnectivity(_igfem_triangle_4).getSize();
+  nb_tri5_gel = mesh_gel.getConnectivity(_igfem_triangle_5).getSize();
+  if ( (nb_tri3_gel != 0) || (nb_tri4_gel != 0) || (nb_tri5_gel != 2)){ 
+    std::cout << "final mesh with " << nb_tri3_gel << " _triangle_3, and " << nb_tri4_gel
+	      << " _igfem_triangle_4, and " << nb_tri5_gel << " _igfem_triangle_5"<< std::endl; 
+    return EXIT_FAILURE;
+    }
+  
+  gel_intersector.buildResultFromQueryList(sphere_list_gel,3.5);
+  dumper_gel_igfem.dump();
+  dumper_gel_regular.dump();
+
+  nb_tri3_gel = mesh_gel.getConnectivity(_triangle_3).getSize();
+  nb_tri4_gel = mesh_gel.getConnectivity(_igfem_triangle_4).getSize();
+  nb_tri5_gel = mesh_gel.getConnectivity(_igfem_triangle_5).getSize();
+  if ( (nb_tri3_gel != 1) || (nb_tri4_gel != 0) || (nb_tri5_gel != 1)){ 
+    std::cout << "final mesh with " << nb_tri3_gel << " _triangle_3, and " << nb_tri4_gel
+	      << " _igfem_triangle_4, and " << nb_tri5_gel << " _igfem_triangle_5"<< std::endl; 
+    return EXIT_FAILURE;
+    }
 
   finalize();
   return EXIT_SUCCESS;

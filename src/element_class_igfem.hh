@@ -75,6 +75,13 @@ public:
     }
   }
 
+  static void interpolate(const Matrix<Real> & nodal_values,
+			  const Vector<Real> & shapes,
+			  Vector<Real> & interpolated) {
+    Matrix<Real> interpm(interpolated.storage(), nodal_values.rows(), 1);
+    Matrix<Real> shapesm(shapes.storage(), InterpolationPorperty<interpolation_type>::nb_nodes_per_element, 1);
+    interpm.mul<false, false>(nodal_values, shapesm);
+  }
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(ShapeSize, interpolation_property::nb_nodes_per_element, UInt);
@@ -83,6 +90,10 @@ public:
   static AKANTU_GET_MACRO_NOT_CONST(NbNodesPerInterpolationElement,  InterpolationPorperty<interpolation_type>::nb_nodes_per_element, UInt);
   static AKANTU_GET_MACRO_NOT_CONST(NbSubElements, nb_sub_elements, UInt);
   static UInt * getSubElementConnectivity(UInt t = 0) {return sub_element_connectivity[t];};
+  static UInt getNbEnrichments() {return nb_enrichments;};
+  static UInt * getSubElementEnrichments(UInt t = 0) {return enrichments[t];};
+
+
 protected:
   /// storage of the subelement local connectivity
 

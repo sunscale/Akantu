@@ -46,10 +46,11 @@ public:
 
   IGFEMElementalField(const field_type & field,
 		      UInt spatial_dimension = _all_dimensions,
-		      GhostType ghost_type = _not_ghost) :
+		      GhostType ghost_type = _not_ghost,
+		      ElementKind element_kind = _ek_igfem) :
     IGFEMGenericElementalField<types,igfem_elemental_field_iterator>(field,
 								     spatial_dimension,
-								     ghost_type) { }
+								     ghost_type, element_kind) { }
 };
 
 

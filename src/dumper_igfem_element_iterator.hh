@@ -179,8 +179,7 @@ public:
   /* ------------------------------------------------------------------------ */
 
   return_type operator*(){
-    AKANTU_DEBUG_TO_IMPLEMENT();
-    return NULL;
+    return *this->array_it;
   }
 
 private:
