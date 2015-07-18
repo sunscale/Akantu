@@ -66,6 +66,7 @@ include(CMakeVersionGenerator)
 include(CMakePackagesSystem)
 include(CMakeFlagsHandling)
 
+include(AkantuPackagesSystem)
 include(AkantuMacros)
 
 #cmake_activate_debug_message()
@@ -108,7 +109,6 @@ mark_as_advanced(
   )
 
 include(CMakeDetermineCCompiler)
-cmake_deactivate_debug_message(PackagesSystem)
 #===============================================================================
 # Dependencies
 #===============================================================================

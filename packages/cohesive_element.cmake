@@ -71,6 +71,12 @@ package_declare_sources(cohesive_element
   )
 
 
+package_declare_material_infos(cohesive_element
+  LIST AKANTU_COHESIVE_MATERIAL_LIST
+  INCLUDE material_cohesive_includes.hh
+  )
+
+
 package_declare_documentation_files(cohesive_element
   manual-cohesive_elements.tex
   manual-cohesive_elements_insertion.tex

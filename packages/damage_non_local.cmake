@@ -51,6 +51,11 @@ package_declare_sources(damage_non_local
   synchronizer/grid_synchronizer.hh
   )
 
+package_declare_material_infos(damage_non_local
+  LIST AKANTU_DAMAGE_NON_LOCAL_MATERIAL_LIST
+  INCLUDE material_non_local_includes.hh
+  )
+
 package_declare_documentation_files(damage_non_local
   manual-constitutive-laws-non_local.tex
   manual-appendix-materials-non-local.tex)

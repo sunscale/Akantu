@@ -211,6 +211,7 @@ package_declare_sources(core
   model/solid_mechanics/materials/plane_stress_toolbox_tmpl.hh
 
 
+  model/solid_mechanics/materials/material_core_includes.hh
   model/solid_mechanics/materials/material_elastic.cc
   model/solid_mechanics/materials/material_elastic.hh
   model/solid_mechanics/materials/material_elastic_inline_impl.cc
@@ -276,25 +277,10 @@ package_declare_sources(core
   synchronizer/synchronizer_registry.hh
   )
 
-
-set(AKANTU_CORE_DEB_DEPEND
-  libboost-dev
+package_declare_material_infos(core
+  LIST AKANTU_CORE_MATERIAL_LIST
+  INCLUDE material_core_includes.hh
   )
-
-find_program(READLINK_COMMAND readlink)
-find_program(ADDR2LINE_COMMAND addr2line)
-mark_as_advanced(READLINK_COMMAND)
-mark_as_advanced(ADDR2LINE_COMMAND)
-
-include(CheckFunctionExists)
-
-check_function_exists(clock_gettime _clock_gettime)
-
-if(NOT _clock_gettime)
-  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY ON  CACHE INTERNAL "" FORCE)
-else()
-  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF CACHE INTERNAL "" FORCE)
-endif()
 
 package_declare_documentation_files(core
   manual.sty
@@ -397,3 +383,17 @@ package_declare_documentation(core
   "  > sudo port install cmake gcc48 boost"
   "\\end{command}"
   )
+
+find_program(READLINK_COMMAND readlink)
+find_program(ADDR2LINE_COMMAND addr2line)
+mark_as_advanced(READLINK_COMMAND)
+mark_as_advanced(ADDR2LINE_COMMAND)
+
+include(CheckFunctionExists)
+check_function_exists(clock_gettime _clock_gettime)
+
+if(NOT _clock_gettime)
+  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY ON  CACHE INTERNAL "" FORCE)
+else()
+  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF CACHE INTERNAL "" FORCE)
+endif()

@@ -50,6 +50,11 @@ package_declare_sources(embedded
   model/solid_mechanics/materials/material_embedded/material_reinforcement_template_tmpl.hh
   )
 
+package_declare_material_infos(embedded
+  LIST AKANTU_EMBEDDED_MATERIAL_LIST
+  INCLUDE material_embedded_includes.hh
+  )
+
 package_declare_documentation(embedded
 "This package allows the use of the embedded model in solid mechanics. This package depends on the CGAL package."
 )
