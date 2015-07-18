@@ -192,7 +192,6 @@ package_declare_sources(core
   model/solid_mechanics/material.cc
   model/solid_mechanics/material.hh
   model/solid_mechanics/material_inline_impl.cc
-  model/solid_mechanics/material_list.hh
   model/solid_mechanics/material_random_internal.hh
   model/solid_mechanics/material_selector.hh
   model/solid_mechanics/material_selector_tmpl.hh
