@@ -45,7 +45,7 @@ function(_package_set_variable variable pkg_name)
 endfunction()
 
 function(_package_get_variable variable pkg_name value)
-  unset(${value} PARENT_SCOPE)
+  #unset(${value} PARENT_SCOPE)
   if(DEFINED ${pkg_name}_${variable})
     set(${value} ${${pkg_name}_${variable}} PARENT_SCOPE)
   elseif(DEFINED ARGN)
