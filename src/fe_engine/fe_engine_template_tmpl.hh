@@ -93,7 +93,9 @@ struct GradientOnQuadraturePointsHelper {
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_GRADIENT, kind);		\
     }									\
   };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
+#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND  \
+						AKANTU_COHESIVE_KIND \
+						AKANTU_IGFEM_KIND)
 
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_GRADIENT_ON_QUADRATURE_POINTS_HELPER, \
                            INTEREST_LIST)
@@ -1451,7 +1453,6 @@ template<template <ElementKind> class I,
 inline const Array<Real> & FEEngineTemplate<I, S, kind>::getShapesDerivatives(const ElementType & type,
                                                                               const GhostType & ghost_type,
                                                                               __attribute__((unused)) UInt id) const {
-
   return GetShapesDerivativesHelper<kind>::call(shape_functions, type, ghost_type, id);
 }
 

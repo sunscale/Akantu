@@ -69,11 +69,12 @@ endif()
 
 package_get_all_material_includes(AKANTU_MATERIAL_INCLUDES)
 package_get_all_material_lists(AKANTU_MATERIAL_LISTS)
+configure_file(model/solid_mechanics/material_list.hh.in "${CMAKE_CURRENT_BINARY_DIR}/material_list.hh" @ONLY)
 
-message("---- \n${AKANTU_MATERIAL_INCLUDES} ${AKANTU_MATERIAL_LISTS}")
+package_get_element_lists()
+configure_file(common/aka_element_classes_info.hh.in "${CMAKE_CURRENT_BINARY_DIR}/aka_element_classes_info.hh" @ONLY)
 
 configure_file(common/aka_config.hh.in "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
-configure_file(model/solid_mechanics/material_list.hh.in "${CMAKE_CURRENT_BINARY_DIR}/material_list.hh" @ONLY)
 
 list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS ${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh ${CMAKE_CURRENT_BINARY_DIR}/material_list.hh)
 list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})

@@ -518,6 +518,11 @@ function(package_get_all_activated_packages activated_list)
   set(${activated_list} ${_activated_list} PARENT_SCOPE)
 endfunction()
 
+function(package_get_all_deactivated_packages deactivated_list)
+  package_get_project_variable(DEACTIVATED_PACKAGE_LIST _deactivated_list)
+  set(${deactivated_list} ${_deactivated_list} PARENT_SCOPE)
+endfunction()
+
 function(package_get_all_packages packages_list)
   package_get_project_variable(ALL_PACKAGES_LIST _packages_list)
   set(${packages_list} ${_packages_list} PARENT_SCOPE)

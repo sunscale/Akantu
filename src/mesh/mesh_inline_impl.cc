@@ -424,9 +424,9 @@ inline UInt Mesh::getNbFacetTypes(const ElementType & type, UInt t) {
   UInt nb = 0;
 #define GET_NB_FACET_TYPE(type)					\
   nb = ElementClass<type>::getNbFacetTypes()
+
   AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_NB_FACET_TYPE);
 #undef GET_NB_FACET_TYPE
-
   return nb;
 }
 
