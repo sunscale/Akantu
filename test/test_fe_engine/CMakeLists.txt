@@ -31,38 +31,30 @@
 #===============================================================================
 
 #===============================================================================
-macro(register_fem_test operation type)
-  set(_target test_${operation}_${_type})
+function(register_fem_test operation type)
+  set(_target test_${operation}${type})
+
   register_test(${_target}
     SOURCES test_${operation}.cc
-    FILES_TO_COPY _${type}.msh
-    COMPILE_OPTIONS TYPE=_${_type}
+    FILES_TO_COPY ${type}.msh
+    COMPILE_OPTIONS TYPE=${type}
     PACKAGE core
     )
-endmacro()
+endfunction()
+
 #===============================================================================
+package_get_element_types(core _types)
 
-set(LIST_TYPES
-  segment_2
-  segment_3
-  triangle_3
-  triangle_6
-  quadrangle_4
-  quadrangle_8
-  tetrahedron_4
-  tetrahedron_10
-  hexahedron_8
-  hexahedron_20
-  pentahedron_6
-  pentahedron_15
-  )
-
-foreach(_type ${LIST_TYPES})
-  register_fem_test(fe_engine_precomputation ${_type})
-  register_fem_test(interpolate ${_type})
-  register_fem_test(gradient    ${_type})
-  register_fem_test(integrate   ${_type})
-  register_fem_test(inverse_map ${_type})
+foreach(_type ${_types})
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_type}.msh)
+    register_fem_test(fe_engine_precomputation ${_type})
+    register_fem_test(interpolate ${_type})
+    register_fem_test(gradient    ${_type})
+    register_fem_test(integrate   ${_type})
+    register_fem_test(inverse_map ${_type})
+  else()
+    message("The mesh ${_type}.msh is missing, the fe_engine test cannot be activated without it")
+  endif()
 endforeach()
 
 

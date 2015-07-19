@@ -192,6 +192,12 @@ function(package_get_element_lists)
   set(AKANTU_ELEMENT_KINDS_BOOST_MACROS ${_boost_macros} PARENT_SCOPE)
 endfunction()
 
+#-------------------------------------------------------------------------------
+function(package_get_element_types pkg list)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_variable(ET_ELEMENT_TYPES ${_pkg_name} _tmp_list)
+  set(${list} ${_tmp_list} PARENT_SCOPE)
+endfunction()
 
 #===============================================================================
 # Material specific

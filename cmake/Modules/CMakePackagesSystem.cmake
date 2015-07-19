@@ -379,10 +379,10 @@ function(package_set_variable variable pkg)
   _package_set_variable(${variable} ${_pkg_name} ${ARGN})
 endfunction()
 
-macro(package_get_variable variable pkg value_out)
+macro(package_get_variable variable pkg value)
   package_get_name(${pkg} _pkg_name)
-  _package_get_variable(${variable} ${_pkg_name} _value_out)
-  set(${value_out} ${_value_out} PARENT_SCOPE)
+  _package_get_variable(${variable} ${_pkg_name} _value_tmp)
+  set(${value} ${_value_tmp} PARENT_SCOPE)
 endmacro()
 
 # ==============================================================================
