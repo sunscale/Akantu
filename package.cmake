@@ -62,6 +62,24 @@ package_declare_sources(igfem
   material_igfem/igfem_internal_field_tmpl.hh
   )
 
+package_declare_elements(igfem
+  ELEMENT_TYPES
+  _igfem_segment_3
+  _igfem_triangle_4
+  _igfem_triangle_5
+  KIND igfem
+  GEOMETRICAL_TYPES
+  _gt_igfem_segment_3
+  _gt_igfem_triangle_4
+  _gt_igfem_triangle_5
+  INTERPOLATION_TYPES
+  _itp_igfem_segment_3
+  _itp_igfem_triangle_4
+  _itp_igfem_triangle_5
+  INTERPOLATION_KIND
+  _itk_igfem
+  )
+
 package_declare_material_infos(igfem
   LIST AKANTU_IGFEM_MATERIAL_LIST
   INCLUDE material_igfem_includes.hh
