@@ -40,11 +40,21 @@ set(AKANTU_SWIG_MODULES swig/akantu.i)
 find_package(SWIG REQUIRED)
 find_package(PythonLibs)
 
+package_get_all_include_directories(
+  AKANTU_LIBRARY_INCLUDE_DIRS
+  )
+
+package_get_all_external_informations(
+  AKANTU_EXTERNAL_INCLUDE_DIR
+  AKANTU_EXTERNAL_LIBRARIES
+)
+
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/swig
   ${PYTHON_INCLUDE_PATH}
-  ${AKANTU_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
+  ${AKANTU_LIBRARY_INCLUDE_DIRS}
+  ${PROJECT_BINARY_DIR}/src
+  ${AKANTU_EXTERNAL_INCLUDE_DIR}
   )
 
 include(CMakeParseArguments)

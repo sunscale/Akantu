@@ -26,6 +26,7 @@ namespace akantu {
   %ignore Mesh::extractNodalCoordinatesFromPBCElement;
   %ignore Mesh::getGroupDumer;
   %ignore Mesh::getFacetLocalConnectivity;
+  %ignore Mesh::getAllFacetTypes;
 }
 
 print_self(Mesh)
