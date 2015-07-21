@@ -30,7 +30,13 @@
 #===============================================================================
 # Configuration
 #===============================================================================
-set(AKANTU_SWIG_FLAGS -w309,325,401,317,509,503)
+package_get_all_definitions(AKANTU_DEFS)
+set(AKA_DEFS "")
+foreach (def ${AKANTU_DEFS})
+  list(APPEND AKA_DEFS "-D${def}")
+endforeach()
+
+set(AKANTU_SWIG_FLAGS -w309,325,401,317,509,503 ${AKA_DEFS})
 set(AKANTU_SWIG_OUTDIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(AKANTU_SWIG_MODULES swig/akantu.i)
 
