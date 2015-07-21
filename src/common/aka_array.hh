@@ -257,7 +257,7 @@ public:
   inline iterator<R> erase(const iterator<R> & it);
 
   /// change the size of the Array
-  void resize(UInt size);
+  virtual void resize(UInt size);
 
   /// change the number of components by interlacing data
   void extendComponentsInterlaced(UInt multiplicator, UInt stride);
