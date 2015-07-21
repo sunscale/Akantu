@@ -31,6 +31,8 @@
 # Configuration
 #===============================================================================
 package_get_all_definitions(AKANTU_DEFS)
+list(REMOVE_ITEM AKANTU_DEFS AKANTU_CORE_CXX11)
+message(${AKANTU_DEFS})
 set(AKA_DEFS "")
 foreach (def ${AKANTU_DEFS})
   list(APPEND AKA_DEFS "-D${def}")
