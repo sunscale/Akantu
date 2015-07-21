@@ -89,6 +89,11 @@ namespace akantu{
     ~ArrayForPython(){
       this->values = NULL;
     };
+
+    void resize(UInt new_size){
+      AKANTU_DEBUG_ASSERT(this->size == new_size,"cannot resize a temporary vector");
+    }
+    
   };
 }
 %}
