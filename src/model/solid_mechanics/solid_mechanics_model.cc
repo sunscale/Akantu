@@ -208,7 +208,7 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
   acceleration->clear();
   displacement->clear();
 
-  // initialize pcb
+  // initialize pbc
   if(pbc_pair.size()!=0)
     initPBC();
 
