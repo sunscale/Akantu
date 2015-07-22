@@ -37,7 +37,7 @@
 
 __BEGIN_AKANTU__
 
-MeshGeomAbstract::MeshGeomAbstract(const Mesh & mesh) :
+MeshGeomAbstract::MeshGeomAbstract(Mesh & mesh) :
   mesh(mesh)
 {}
 

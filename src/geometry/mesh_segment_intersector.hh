@@ -58,7 +58,7 @@ class MeshSegmentIntersector : public MeshGeomIntersector<dim, type, Triangle<K>
 
 public:
   /// Construct from mesh
-  explicit MeshSegmentIntersector(const Mesh & mesh, Mesh & result_mesh);
+  explicit MeshSegmentIntersector(Mesh & mesh, Mesh & result_mesh);
 
   /// Destructor
   virtual ~MeshSegmentIntersector();

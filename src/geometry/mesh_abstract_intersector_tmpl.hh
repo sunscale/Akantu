@@ -39,7 +39,7 @@
 __BEGIN_AKANTU__
 
 template<class Query>
-MeshAbstractIntersector<Query>::MeshAbstractIntersector(const Mesh & mesh):
+MeshAbstractIntersector<Query>::MeshAbstractIntersector(Mesh & mesh):
   MeshGeomAbstract(mesh)
 {}
 
