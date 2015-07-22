@@ -91,7 +91,6 @@ template<UInt dim, ElementType type>
 void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere_3 & query) {
   AKANTU_DEBUG_IN();
 
-  Array<UInt> connec_type_tmpl = this->mesh.getConnectivity(type);
   Array<Real> & nodes = this->mesh.getNodes();
   UInt nb_node = nodes.getSize() ;
 
@@ -129,6 +128,7 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
               is_new = false;
               break;
             }
+          }
 
             Cartesian::Point_3 source_cgal(CGAL::to_double(it->source().x()),
                                     CGAL::to_double(it->source().y()),
@@ -158,7 +158,7 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
 
             if (!is_on_mesh) {
               new_node_per_elem(it->id(), 0) += 1;
-              new_node_per_elem(it->id(), (2 * new_node_per_elem(it->id(), 0)) - 1) = n;
+              new_node_per_elem(it->id(), (2 * new_node_per_elem(it->id(), 0)) - 1) = nb_node;
               new_node_per_elem(it->id(), 2 * new_node_per_elem(it->id(), 0)) = it->segId();
             }
 
@@ -174,7 +174,6 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
           }
         }
       }
-    }
   }
 
   this->mesh.sendEvent(new_nodes);
@@ -212,8 +211,7 @@ void MeshSphereIntersector<dim, type>::buildResultFromQueryList(const std::list<
 
   this->computeIntersectionQueryList(query_list);
 
-  // XXX Why is this not a reference ?
-  Array<UInt> connec_type_tmpl = this->mesh.getConnectivity(type);
+  Array<UInt> & connec_type_tmpl = this->mesh.getConnectivity(type);
 
   Array<UInt>
     & connec_igfem_tri4 = this->mesh.getConnectivity(_igfem_triangle_4),
