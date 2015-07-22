@@ -44,14 +44,14 @@ register_test(test_geometry_intersection
   PACKAGE CGAL
   )
 
-register_test(test_geometry_intersection_triangle_3
-  SOURCES test_geometry_intersection_triangle_3.cc
+register_test(test_segment_intersection_triangle_3
+  SOURCES test_segment_intersection_triangle_3.cc
   FILES_TO_COPY test_geometry_triangle.msh
   PACKAGE CGAL
   )
 
-register_test(test_geometry_intersection_tetrahedron_4
-  SOURCES test_geometry_intersection_tetrahedron_4.cc
+register_test(test_segment_intersection_tetrahedron_4
+  SOURCES test_segment_intersection_tetrahedron_4.cc
   FILES_TO_COPY test_geometry_tetrahedron.msh
   PACKAGE CGAL
   )
