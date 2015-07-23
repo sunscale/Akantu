@@ -9,9 +9,9 @@ namespace akantu {
   %ignore getUserParser;
   %ignore initialize(int & argc, char ** & argv);
   %ignore initialize(const std::string & input_file, int & argc, char ** & argv);
-
   extern const Array<UInt> empty_filter;
 
+  %ignore CSR::begin;
 }
 
 %typemap(in) (int argc, char *argv[]) {
@@ -125,7 +125,8 @@ namespace akantu{
 
 %include "aka_csr.hh"
 namespace akantu {
-  %template (CSRUInt) CSR<UInt>;
-  %template (CSRElement) CSR<Element>;
-  %template(CSRIteratorElement) CSRIterator<Element>;
-}
+//  %template (CSRUInt) CSR<UInt>;
+//  %template (CSRElement) CSR<Element>;
+//  %template (CSRIteratorElement) CSRIterator<Element>;
+ }
+
