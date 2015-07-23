@@ -48,7 +48,7 @@ class MeshAbstractIntersector : public MeshGeomAbstract {
 
 public:
   /// Construct from mesh
-  explicit MeshAbstractIntersector(const Mesh & mesh);
+  explicit MeshAbstractIntersector(Mesh & mesh);
 
   /// Destructor
   virtual ~MeshAbstractIntersector();

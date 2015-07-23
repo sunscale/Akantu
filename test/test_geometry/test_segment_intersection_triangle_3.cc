@@ -1,5 +1,5 @@
 /**
- * @file   test_geometry_mesh.cc
+ * @file   test_segment_intersection_triangle_3.cc
  *
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  * @author Clement Roux-Langlois <clement.roux@epfl.ch>
@@ -104,6 +104,7 @@ int main (int argc, char * argv[]) {
   if (!Math::are_vector_equal(2, bary.storage(), second_bary))
     return EXIT_FAILURE;
 
+#if 0
   // Spherical kernel testing the addition of nodes
   std::cout << "initial mesh size = " << mesh.getNodes().getSize() << " nodes" << std::endl;
 
@@ -135,6 +136,7 @@ int main (int argc, char * argv[]) {
     }
     return EXIT_FAILURE;
   }
+#endif
 
   finalize();
   return EXIT_SUCCESS;

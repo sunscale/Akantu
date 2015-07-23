@@ -62,7 +62,7 @@ class EmbeddedInterfaceIntersector : public MeshGeomAbstract {
 
 public:
   /// Construct from mesh and a reinforcement mesh
-  explicit EmbeddedInterfaceIntersector(const Mesh & mesh, const Mesh & primitive_mesh);
+  explicit EmbeddedInterfaceIntersector(Mesh & mesh, const Mesh & primitive_mesh);
 
   /// Destructor
   virtual ~EmbeddedInterfaceIntersector();

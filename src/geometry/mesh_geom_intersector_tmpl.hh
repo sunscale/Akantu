@@ -39,7 +39,7 @@
 __BEGIN_AKANTU__
 
 template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
-MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::MeshGeomIntersector(const Mesh & mesh) :
+MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::MeshGeomIntersector(Mesh & mesh) :
   MeshAbstractIntersector<Query>(mesh),
   factory(mesh)
 {}
