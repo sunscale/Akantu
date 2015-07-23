@@ -99,7 +99,7 @@ namespace akantu{
 %}
 
 namespace akantu {
-%template(ArrayForPythonReal) ArrayForPython<akantu::Real>;
+%template(ArrayForPythonReal) ArrayForPython<Real>;
 }
 
 %typemap(in) akantu::Array<double> & {
