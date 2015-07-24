@@ -45,7 +45,7 @@ set(AKANTU_SWIG_MODULES swig/akantu.i)
 #===============================================================================
 # Swig wrapper
 #===============================================================================
-find_package(SWIG REQUIRED)
+find_package(SWIG 3.0 REQUIRED)
 find_package(PythonLibs)
 
 package_get_all_include_directories(

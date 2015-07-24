@@ -125,8 +125,8 @@ namespace akantu{
 
 %include "aka_csr.hh"
 namespace akantu {
-//  %template (CSRUInt) CSR<UInt>;
-//  %template (CSRElement) CSR<Element>;
-//  %template (CSRIteratorElement) CSRIterator<Element>;
+  %template (CSRUInt) CSR<UInt>;
+  %template (CSRElement) CSR<Element>;
+  %template (CSRIteratorElement) CSRIterator<Element>;
  }
 
