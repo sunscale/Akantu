@@ -32,5 +32,5 @@ material elastic_anisotropic [
     n2 = [ 1, 1,  1]
     n3 = [ 1, 1, -2]
 
-    alpha = 1e-3
+#    alpha = 1e-3    # viscous proportion useless unless manually activated in material_elastic_linear_anisotropic.cc
 ]
