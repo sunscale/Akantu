@@ -18,6 +18,7 @@
 
 
 %include "aka_common.i"
+%include "aka_csr.i"
 %include "aka_array.i"
 
 %define print_self(MY_CLASS)
