@@ -254,15 +254,43 @@ void NTNContact::updateNormals() {
     Mesh::type_iterator last = mesh.lastType(dim-1, *gt);
 
     for (; it != last; ++it) {
-      // get elements connected to each node
-      CSR<UInt> node_to_element;
-      MeshUtils::buildNode2ElementsElementTypeMap(mesh, node_to_element, *it, *gt);
-
       // compute the normals
       Array<Real> quad_normals(0,dim);
       boundary_fem.computeNormalsOnControlPoints(cur_pos, quad_normals, *it, *gt);
 
       UInt nb_quad_points = boundary_fem.getNbQuadraturePoints(*it, *gt);
+
+      // new version: compute normals only based on master elements (and not all boundary elements)
+      // -------------------------------------------------------------------------------------
+
+      UInt nb_nodes_per_element        = mesh.getNbNodesPerElement(*it);
+      const Array<UInt> & connectivity = mesh.getConnectivity(*it, *gt);
+
+      Array<UInt>::const_iterator<UInt> elem_it     = (this->master_elements)(*it, *gt).begin();
+      Array<UInt>::const_iterator<UInt> elem_it_end = (this->master_elements)(*it, *gt).end();
+      // loop over contact nodes
+      for (; elem_it != elem_it_end; ++elem_it) {
+        for (UInt q=0; q<nb_nodes_per_element; ++q) {
+          UInt node = connectivity(*elem_it,q);
+          UInt node_index = this->masters.find(node);
+          AKANTU_DEBUG_ASSERT(node_index != UInt(-1), 
+			      "Could not find node " << node 
+			      << " in the array!");
+	  
+	  for (UInt q=0; q<nb_quad_points; ++q) {
+	    // add quad normal to master normal
+	    for (UInt d=0; d<dim; ++d) {
+	      this->normals(node_index,d) += quad_normals((*elem_it)*nb_quad_points + q, d);
+	    }
+	  }
+        }
+      }
+      // -------------------------------------------------------------------------------------
+      
+      /*
+      // get elements connected to each node
+      CSR<UInt> node_to_element;
+      MeshUtils::buildNode2ElementsElementTypeMap(mesh, node_to_element, *it, *gt);
 
       // add up normals to all master nodes
       for (UInt n=0; n<nb_contact_nodes; ++n) {
@@ -280,6 +308,7 @@ void NTNContact::updateNormals() {
 	  }
 	}
       }
+      */
     }
   }
 
