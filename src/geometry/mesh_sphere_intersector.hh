@@ -57,7 +57,7 @@ class MeshSphereIntersector : public MeshGeomIntersector<dim, type, Line_arc<SK>
 
 public:
   /// Construct from mesh
-  explicit MeshSphereIntersector(const Mesh & mesh);
+  explicit MeshSphereIntersector(Mesh & mesh);
 
   /// Destructor
   virtual ~MeshSphereIntersector();
@@ -94,7 +94,7 @@ protected:
   const UInt nb_nodes_fem;
 
   /// number of primitive in an element of the template type
-  const UInt nb_prim_by_el;
+  UInt nb_prim_by_el;
 
 };
  

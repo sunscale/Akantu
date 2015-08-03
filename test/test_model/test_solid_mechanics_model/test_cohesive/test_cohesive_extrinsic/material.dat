@@ -10,7 +10,6 @@ material cohesive_linear [
 	 beta = 1
 	 G_c = 100
 	 sigma_c = 100
-	 volume_s = 1
 ]
 
 material cohesive_linear [

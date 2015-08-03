@@ -47,7 +47,7 @@
 
 __BEGIN_AKANTU__
 
-EmbeddedInterfaceIntersector::EmbeddedInterfaceIntersector(const Mesh & mesh, const Mesh & primitive_mesh) :
+EmbeddedInterfaceIntersector::EmbeddedInterfaceIntersector(Mesh & mesh, const Mesh & primitive_mesh) :
   MeshGeomAbstract(mesh),
   interface_mesh(mesh.getSpatialDimension(), "interface_mesh"),
   primitive_mesh(primitive_mesh)

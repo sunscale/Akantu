@@ -89,12 +89,17 @@ namespace akantu{
     ~ArrayForPython(){
       this->values = NULL;
     };
+
+    void resize(UInt new_size){
+      AKANTU_DEBUG_ASSERT(this->size == new_size,"cannot resize a temporary vector");
+    }
+    
   };
 }
 %}
 
 namespace akantu {
-%template(ArrayForPythonReal) ArrayForPython<akantu::Real>;
+%template(ArrayForPythonReal) ArrayForPython<Real>;
 }
 
 %typemap(in) akantu::Array<double> & {

@@ -1,5 +1,12 @@
 %{
   #include "aka_common.hh"
+  #include "aka_csr.hh"
+  #include "element.hh"
+%}
+%{
+  #include "aka_common.hh"
+  #include "aka_csr.hh"
+  #include "element.hh"
 %}
 
 namespace akantu {
@@ -7,7 +14,6 @@ namespace akantu {
   %ignore getUserParser;
   %ignore initialize(int & argc, char ** & argv);
   %ignore initialize(const std::string & input_file, int & argc, char ** & argv);
-
   extern const Array<UInt> empty_filter;
 
 }
@@ -63,4 +69,7 @@ namespace akantu {
 %}
 %include "aka_common.hh"
 %include "aka_element_classes_info.hh"
+%include "element.hh"
+
+
 

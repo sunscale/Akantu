@@ -49,7 +49,7 @@ class MeshGeomIntersector : public MeshAbstractIntersector<Query> {
 
 public:
   /// Construct from mesh
-  explicit MeshGeomIntersector(const Mesh & mesh);
+  explicit MeshGeomIntersector(Mesh & mesh);
 
   /// Destructor
   virtual ~MeshGeomIntersector();
