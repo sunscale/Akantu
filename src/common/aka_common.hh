@@ -63,17 +63,11 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /* Common types                                                               */
 /* -------------------------------------------------------------------------- */
-
-typedef double Real;
-typedef unsigned int UInt;
-typedef unsigned long long UInt64;
-typedef signed int Int;
-
 typedef std::string ID;
 
-static const Real UINT_INIT_VALUE = 0;
+static const Real UINT_INIT_VALUE = Real(0.);
 #ifdef AKANTU_NDEBUG
-  static const Real REAL_INIT_VALUE = 0;
+  static const Real REAL_INIT_VALUE = Real(0.);
 #else
   static const Real REAL_INIT_VALUE = std::numeric_limits<Real>::quiet_NaN();
 #endif
