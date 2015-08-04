@@ -300,7 +300,7 @@ void InternalField<T>::removeQuadraturePoints(const ElementTypeMapArray<UInt> & 
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
-void InternalField<T>::printself(std::ostream & stream, unsigned int indent) const {
+void InternalField<T>::printself(std::ostream & stream, UInt indent) const {
   stream << "InternalField [ " << this->getID();
 #if !defined(AKANTU_NDEBUG)
   if(AKANTU_DEBUG_TEST(dblDump)) {

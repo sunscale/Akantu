@@ -117,6 +117,8 @@ if(AKANTU_PYTHON_INTERFACE)
   list(APPEND AKANTU_BOOST_COMPONENTS python)
 endif()
 
+declare_akantu_types()
+
 package_list_packages(${PROJECT_SOURCE_DIR}/packages
   EXTRA_PACKAGES_FOLDER ${PROJECT_SOURCE_DIR}/extra_packages)
 
