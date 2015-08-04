@@ -187,8 +187,6 @@ package_declare_sources(core
   model/model.cc
   model/model.hh
   model/model_inline_impl.cc
-  model/dof_manager.hh
-  model/model_solver.hh
 
   model/solid_mechanics/material.cc
   model/solid_mechanics/material.hh
