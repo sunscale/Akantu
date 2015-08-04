@@ -79,7 +79,8 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh,
   int_bt_k_gT             ("int_bt_k_gT", id),
   bt_k_gT                 ("bt_k_gT", id),
   conductivity(spatial_dimension, spatial_dimension),
-  thermal_energy          ("thermal_energy", id) {
+  thermal_energy          ("thermal_energy", id),
+  solver(NULL) {
   AKANTU_DEBUG_IN();
 
   createSynchronizerRegistry(this);
@@ -301,7 +302,7 @@ void HeatTransferModel::initImplicit(bool dynamic, SolverOptions & solver_option
 HeatTransferModel::~HeatTransferModel()
 {
   AKANTU_DEBUG_IN();
-
+  if (solver) delete solver;
   AKANTU_DEBUG_OUT();
 }
 
