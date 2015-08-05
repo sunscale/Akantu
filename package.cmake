@@ -24,6 +24,7 @@ package_declare_sources(traction-at-split-node-contact
   ntn_contact/ntn_base_contact.cc
   ntn_contact/ntn_contact.cc
   ntn_contact/ntrf_contact.cc
+  ntn_contact/mIIasym_contact.cc
   ntn_contact/ntn_base_friction.cc
   ntn_contact/friction_regularisations/ntn_fricreg_no_regularisation.cc
   ntn_contact/friction_regularisations/ntn_fricreg_rubin_ampuero.cc
@@ -47,6 +48,7 @@ package_declare_sources(traction-at-split-node-contact
   ntn_contact/ntn_base_contact.hh
   ntn_contact/ntn_contact.hh
   ntn_contact/ntrf_contact.hh
+  ntn_contact/mIIasym_contact.hh
   ntn_contact/ntn_base_friction.hh
 
   ntn_contact/friction_regularisations/ntn_fricreg_no_regularisation.hh

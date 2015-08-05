@@ -30,6 +30,7 @@
 #include "ntn_base_contact.hh"
 #include "ntn_contact.hh"
 #include "ntrf_contact.hh"
+#include "mIIasym_contact.hh"
 
 // ntn/ntrf friction
 #include "ntn_base_friction.hh"

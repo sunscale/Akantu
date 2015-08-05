@@ -15,6 +15,7 @@
 
 /* -------------------------------------------------------------------------- */
 // simtools
+#include "mIIasym_contact.hh"
 #include "ntn_initiation_function.hh"
 #include "ntn_friction.hh"
 #include "ntrf_friction.hh"
@@ -39,7 +40,8 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
   NTNBaseFriction * friction;
   
   bool is_ntn_contact = true;
-  if (dynamic_cast<NTRFContact *>(contact) != NULL) {
+  if (dynamic_cast<NTRFContact *>(contact) != NULL || 
+      dynamic_cast<MIIASYMContact *>(contact) != NULL) {
     is_ntn_contact = false;
   }
 
@@ -207,9 +209,10 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
   
   NTNBaseFriction * friction;
   
-  // check whether is is node-to-rigid-flat contact
+  // check whether is is node-to-rigid-flat contact or mIIasym (which is also ntrf)
   bool is_ntn_contact = true;
-  if (dynamic_cast<NTRFContact *>(contact) != NULL) {
+  if (dynamic_cast<NTRFContact *>(contact) != NULL ||
+      dynamic_cast<MIIASYMContact *>(contact) != NULL) {
     is_ntn_contact = false;
   }
 
