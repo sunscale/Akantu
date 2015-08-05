@@ -105,33 +105,33 @@ template<typename T> inline void StaticCommunicator::probe(Int sender, Int tag,
 
 
 /* -------------------------------------------------------------------------- */
-template<typename T> inline void StaticCommunicator::allReduce(T * values, Int nb_values,
+template<typename T> inline void StaticCommunicator::allReduce(T * values, int nb_values,
 							       const SynchronizerOperation & op) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(allReduce(values, nb_values, op), 0);
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T> inline void StaticCommunicator::allGather(T * values, Int nb_values) {
+template<typename T> inline void StaticCommunicator::allGather(T * values, int nb_values) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(allGather(values, nb_values), 0);
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T> inline void StaticCommunicator::allGatherV(T * values, Int * nb_values) {
+template<typename T> inline void StaticCommunicator::allGatherV(T * values, int * nb_values) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(allGatherV(values, nb_values), 0);
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T> inline void StaticCommunicator::gather(T * values, Int nb_values, Int root) {
+template<typename T> inline void StaticCommunicator::gather(T * values, int nb_values, int root) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(gather(values, nb_values, root), 0);
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T> inline void StaticCommunicator::gatherV(T * values, Int * nb_values, Int root) {
+template<typename T> inline void StaticCommunicator::gatherV(T * values, int * nb_values, int root) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(gatherV(values, nb_values, root), 0);
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T> inline void StaticCommunicator::broadcast(T * values, Int nb_values, Int root) {
+template<typename T> inline void StaticCommunicator::broadcast(T * values, int nb_values, int root) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(broadcast(values, nb_values, root), 0);
 }
 

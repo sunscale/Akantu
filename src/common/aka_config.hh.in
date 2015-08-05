@@ -46,6 +46,9 @@ namespace akantu {
   typedef @AKANTU_UNSIGNED_INTEGER_TYPE@ UInt;
 }
 
+#define AKANTU_INTEGER_SIZE @AKANTU_INTEGER_SIZE@
+#define AKANTU_FLOAT_SIZE @AKANTU_FLOAT_SIZE@
+
 #cmakedefine AKANTU_USE_BLAS
 #cmakedefine AKANTU_USE_LAPACK
 
