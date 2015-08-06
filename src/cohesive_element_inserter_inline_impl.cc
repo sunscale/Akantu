@@ -33,6 +33,12 @@ inline UInt CohesiveElementInserter::getNbDataForElements(const Array<Element> &
     size += nb_nodes * sizeof(UInt);
   }
 
+  if (tag == _gst_ce_groups) {
+
+    size = elements.getSize() * (sizeof(bool) + sizeof(unsigned int));
+
+  }
+
   AKANTU_DEBUG_OUT();
   return size;
 }
@@ -46,6 +52,9 @@ inline void CohesiveElementInserter::packElementData(CommunicationBuffer & buffe
   if (tag == _gst_ce_inserter)
     packUnpackGlobalConnectivity<true>(buffer, elements);
 
+  if (tag == _gst_ce_groups)
+    packUnpackGroupedInsertionData<true>(buffer,elements);
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -57,6 +66,9 @@ inline void CohesiveElementInserter::unpackElementData(CommunicationBuffer & buf
 
   if (tag == _gst_ce_inserter)
     packUnpackGlobalConnectivity<false>(buffer, elements);
+
+  if (tag == _gst_ce_groups)
+    packUnpackGroupedInsertionData<false>(buffer,elements);
 
   AKANTU_DEBUG_OUT();
 }
@@ -113,6 +125,47 @@ inline void CohesiveElementInserter::packUnpackGlobalConnectivity(CommunicationB
 	if (index != UInt(-1) && mesh.isSlaveNode(node))
 	  (*mesh.nodes_global_ids)(node) = index;
       }
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<bool pack_mode>
+inline void CohesiveElementInserter::packUnpackGroupedInsertionData(CommunicationBuffer & buffer,
+								    const Array<Element> & elements) const {
+
+  AKANTU_DEBUG_IN();
+  
+  ElementType current_element_type = _not_defined;
+  GhostType current_ghost_type = _casper;
+  ElementTypeMapArray<UInt> & physical_names = mesh_facets.registerData<UInt>("physical_names");
+
+  Array<bool> *vect = NULL;
+  Array<unsigned int> *vect2 = NULL;
+
+  Array<Element>::const_iterator<Element> it  = elements.begin();
+  Array<Element>::const_iterator<Element> end = elements.end();
+  for (; it != end; ++it) {
+    const Element & el = *it;
+    if(el.type != current_element_type || el.ghost_type != current_ghost_type) {
+      current_element_type = el.type;
+      current_ghost_type   = el.ghost_type;
+      vect = &const_cast<Array<bool> &>(insertion_facets(el.type, el.ghost_type));
+      vect2 = &(physical_names(el.type, el.ghost_type));
+    }
+
+    Vector<bool> data(vect->storage() + el.element, 1);
+    Vector<unsigned int> data2(vect2->storage() + el.element, 1);
+
+    if(pack_mode) {
+      buffer << data;
+      buffer << data2;
+    }
+    else {
+      buffer >> data;
+      buffer >> data2;
     }
   }
 
