@@ -1,12 +1,11 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Marco Vocialta <marco.vocialta@epfl.ch>
+# @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Tue May 08 2012
-# @date last modification: Fri Jun 21 2013
-#
-# @brief  configuration for cohesive elements tests
+# @date creation: Fri Aug  7 09:07:44 2015
+# 
+# @brief  Tests insertion of cohesive elements
 #
 # @section LICENSE
 #
@@ -30,11 +29,11 @@
 #
 #===============================================================================
 
-add_akantu_test(test_cohesive_intrinsic "test_cohesive_intrinsic")
-add_akantu_test(test_cohesive_extrinsic "test_cohesive_extrinsic")
-add_akantu_test(test_cohesive_buildfragments "test_cohesive_buildfragments")
-add_akantu_test(test_cohesive_intrinsic_impl "test_cohesive_intrinsic_impl")
-add_akantu_test(test_cohesive_1d_element "test_cohesive_1d_element")
-add_akantu_test(test_cohesive_extrinsic_implicit "test_cohesive_extrinsic_implicit")
-add_akantu_test(test_cohesive_insertion "test_cohesive_insertion")
-#===============================================================================
+add_mesh(3d_spherical_inclusion 3d_spherical_inclusion.geo 3 2)
+
+register_test(test_cohesive_insertion_along_physical_surfaces
+  SOURCES test_cohesive_insertion_along_physical_surfaces.cc
+  DEPENDENCIES 3d_spherical_inclusion
+  FILES_TO_COPY input_file.dat
+  PACKAGE cohesive_element
+  )

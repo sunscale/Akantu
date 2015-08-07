@@ -205,20 +205,23 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(std::string coh
   std::istringstream split(cohesive_surfaces);
   std::string physname;
   while(std::getline(split,physname,',')){
-    std::cout << physname << std::endl;
+    AKANTU_DEBUG_INFO("Pre-inserting cohesive elements along facets from physical surface: " 
+		      << physname);
     insertElementsFromMeshData(physname);
   }
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  facet_synchronizer-> asynchronousSynchronize(*inserter, _gst_ce_groups);
-  facet_synchronizer-> waitEndSynchronize(*inserter, _gst_ce_groups);
+  if (facet_synchronizer != NULL){
+    facet_synchronizer-> asynchronousSynchronize(*inserter, _gst_ce_groups);
+    facet_synchronizer-> waitEndSynchronize(*inserter, _gst_ce_groups);
+  }
 #endif
   
+  SolidMechanicsModel::initMaterials();
+
   delete material_selector;
   material_selector = new MeshDataMaterialCohesiveSelector(*this);
   inserter->insertElements();
-
-  SolidMechanicsModel::initMaterials();
 
   AKANTU_DEBUG_OUT();
 }
