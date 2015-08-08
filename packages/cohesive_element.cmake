@@ -85,6 +85,13 @@ package_declare_elements(cohesive_element
   _gt_cohesive_1d_2
   _gt_cohesive_3d_6
   _gt_cohesive_3d_12
+  FE_ENGINE_LISTS
+  gradient_on_quadrature_points
+  interpolate_on_quadrature_points
+  compute_normals_on_control_points
+  inverse_map
+  contains
+  get_shapes_derivatives
   )
 
 package_declare_material_infos(cohesive_element

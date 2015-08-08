@@ -331,6 +331,16 @@ package_declare_elements(core
   _git_tetrahedron
   _git_pentahedron
   INTERPOLATION_KIND _itk_lagrangian
+  FE_ENGINE_LISTS
+  gradient_on_quadrature_points
+  interpolate_on_quadrature_points
+  interpolate
+  compute_normals_on_control_points
+  inverse_map
+  contains
+  compute_shapes
+  compute_shapes_derivatives
+  get_shapes_derivatives
   )
 
 package_declare_material_infos(core

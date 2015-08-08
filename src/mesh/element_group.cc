@@ -136,7 +136,7 @@ void ElementGroup::printself(std::ostream & stream, int indent) const {
   stream << space << " + dimension: " << dimension << std::endl;
   elements.printself(stream, indent + 1);
   node_group.printself(stream, indent + 1);
-  stream << "]" << std::endl;
+  stream << space << "]" << std::endl;
 }
 
 /* -------------------------------------------------------------------------- */
