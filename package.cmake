@@ -78,6 +78,14 @@ package_declare_elements(igfem
   _itp_igfem_triangle_5
   INTERPOLATION_KIND
   _itk_igfem
+  FE_ENGINE_LISTS
+  gradient_on_quadrature_points
+  interpolate_on_quadrature_points
+  interpolate
+  compute_normals_on_control_points
+  inverse_map
+  contains
+  get_shapes_derivatives
   )
 
 package_declare_material_infos(igfem
