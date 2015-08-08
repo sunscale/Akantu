@@ -246,7 +246,7 @@ materials are assigned to the regular elements and cohesive materials
 are assigned to cohesive elements or element facets).
 
 To assign different materials to specific elements, mesh data
-information such as tag information or specified pyhsical names can be
+information such as tag information or specified physical names can be
 used. \code{MeshDataMaterialSelector} class uses this information to
 assign different materials. With the proper physical name or tag name
 and index, different materials can be assigned as demonstrated in the
@@ -278,21 +278,13 @@ There are four different material selectors pre-defined in
 used to assign a material to regular elements by default. For the
 regular elements, as in the example above,
 \code{MeshDataMaterialSelector} can be used to assign different
-materials to different elements. However, for cohesive elements, it is
-not possible to assign multiple cohesive materials automatically and
-user has to write a custom class. \akantu has a pre-defined material
-selector to assign the first cohesive material by default to the
-cohesive elements which is called
-\code{DefaultMaterialCohesiveSelector} and it inherits its properties
-from \code{DefaultMaterialSelector}. This material selector first
-checks if an element is a cohesive element or a facet. If there is,
-then the first cohesive material in the material file is assigned to
-that element. Otherwise, this material is assigned to the element
-facet, to which, a cohesive element might be inserted later. Hence,
-this material selector works for the extrinsic cohesive elements which
-are dynamically inserted throughout the analysis. If the element of
-interest is not a cohesive element or an element facet, then
-\code{DefaultMaterialSelector} is used by default.
+materials to different elements. 
+
+For cohesive material, \akantu has a pre-defined material selector to assign 
+the first cohesive material by default to the cohesive elements which is called 
+\code{DefaultMaterialCohesiveSelector} and it inherits its properties from 
+\code{DefaultMaterialSelector}. Multiple cohesive materials can be assigned 
+using mesh data information (for more details, see \ref{intrinsic_insertion}).
 
 Apart from the \akantu's default material selectors, users can always
 develop their own classes in the main code to tackle various

@@ -136,6 +136,15 @@ public:
 
 private:
 
+  /// initialize cohesive material with intrinsic insertion (by default) 
+  void initIntrinsicCohesiveMaterials(UInt cohesive_index);
+
+  ///  initialize cohesive material with intrinsic insertion (if physical surfaces are precised) 
+  void initIntrinsicCohesiveMaterials(std::string cohesive_surfaces);
+
+  /// insert cohesive elements along a given physical surface of the mesh 
+  void insertElementsFromMeshData(std::string physical_name);
+
   /// initialize completely the model for extrinsic elements
   void initAutomaticInsertion();
 
@@ -272,7 +281,34 @@ private:
   const Mesh & mesh;
 };
 
+/* -------------------------------------------------------------------------- */
+/// To be used with intrinsic elements inserted along mesh physical surfaces
+class MeshDataMaterialCohesiveSelector : public DefaultMaterialSelector {
+public:
+  MeshDataMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model):
+    DefaultMaterialSelector(model.getMaterialByElement()),
+    mesh_facets(model.getMeshFacets()),
+    material_index(mesh_facets.getData<UInt>("physical_names")) {
+    third_dimension = (model.getSpatialDimension()==3);}
+  inline virtual UInt operator() (const Element & element) {
 
+    if(element.kind == _ek_cohesive) {  
+      const Array<Element> & cohesive_el_to_facet = mesh_facets.getSubelementToElement(element.type, element.ghost_type);
+      const Element & facet = cohesive_el_to_facet(element.element,third_dimension);
+      UInt material_id = material_index(facet.type,facet.ghost_type)(facet.element);
+      return material_id; }
+
+    else return DefaultMaterialSelector::operator()(element);
+  }
+
+protected:
+  const Mesh & mesh_facets;
+  const ElementTypeMapArray<UInt> & material_index;
+  bool third_dimension;
+
+};
+
+/* -------------------------------------------------------------------------- */
 /// standard output stream operator
 inline std::ostream & operator <<(std::ostream & stream, const SolidMechanicsModelCohesive & _this)
 {

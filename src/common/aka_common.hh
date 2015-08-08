@@ -233,6 +233,7 @@ enum SynchronizationTag {
   _gst_smmc_damage,      //< synchronization of damage
   //--- CohesiveElementInserter tags ---
   _gst_ce_inserter,      //< synchronization of global nodes id of newly inserted cohesive elements
+  _gst_ce_groups,        //< synchronization of cohesive element insertion depending on facet groups
   //--- GroupManager tags ---
   _gst_gm_clusters,      //< synchronization of clusters
   //--- HeatTransfer tags ---

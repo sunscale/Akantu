@@ -71,6 +71,11 @@ public:
   /// insert intrinsic cohesive elements in a predefined range
   void insertIntrinsicElements();
 
+  /// preset insertion of intrinsic cohesive elements along 
+  /// a predefined group of facet and assign them a defined material index.
+  /// insertElement() method has to be called to finalize insertion. 
+  void insertIntrinsicElements(std::string physname, UInt material_index);
+
   /// insert extrinsic cohesive elements (returns the number of new
   /// cohesive elements)
   UInt insertElements(bool only_double_facets = false);
@@ -116,6 +121,10 @@ protected:
   template<bool pack_mode>
   inline void packUnpackGlobalConnectivity(CommunicationBuffer & buffer,
 					   const Array<Element> & elements) const;
+
+  template<bool pack_mode>
+  inline void packUnpackGroupedInsertionData(CommunicationBuffer & buffer,
+					     const Array<Element> & elements) const;
 #endif
 
   /* ------------------------------------------------------------------------ */

@@ -302,7 +302,11 @@ void HeatTransferModel::initImplicit(bool dynamic, SolverOptions & solver_option
 HeatTransferModel::~HeatTransferModel()
 {
   AKANTU_DEBUG_IN();
-  if (solver) delete solver;
+  if (integrator)          delete integrator         ;
+  if (conductivity_matrix) delete conductivity_matrix;
+  if (capacity_matrix)     delete capacity_matrix    ;  
+  if (jacobian_matrix)     delete jacobian_matrix    ;
+  if (solver)              delete solver             ;
   AKANTU_DEBUG_OUT();
 }
 
