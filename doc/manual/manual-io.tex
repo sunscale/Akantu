@@ -104,6 +104,16 @@ and damage:
   model.dump("cohesive elements");
 \end{cpp}
 
+
+\section{Advanced dumping}
+
+In addition to the predetermined fields from the models and materials, the user
+can add any data to a dumper as long as the support is the same. That is to say
+data that have the size of the full mesh on if the dumper is dumping the mesh,
+or of the size of an element group if it is a filtered dumper.
+
+
+
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "manual"
