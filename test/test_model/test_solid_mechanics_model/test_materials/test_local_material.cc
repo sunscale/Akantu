@@ -9,7 +9,8 @@
  * @date creation: Fri Nov 26 2010
  * @date last modification: Fri Sep 19 2014
  *
- * @brief  test of the class SolidMechanicsModel
+ * @brief  test of the class SolidMechanicsModel with custom local damage on a
+ *         notched plate
  *
  * @section LICENSE
  *

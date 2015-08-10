@@ -79,6 +79,10 @@ class Material : public Memory, public DataAccessor, public Parsable,
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+#if __cplusplus > 199711L
+  Material(const Material & mat) = delete;
+  Material & operator=(const Material & mat) = delete;
+#endif
 
   /// Initialize material with defaults
   Material(SolidMechanicsModel & model, const ID & id = "");
