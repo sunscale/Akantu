@@ -619,26 +619,23 @@ has to be smaller than the stable time step which is obtained in
 \akantu as follows:
 
 \begin{cpp}
-time_step = model.getStableTimeStep();
+critical_time_step = model.getStableTimeStep();
 \end{cpp} \index{SolidMechanicsModel!StableTimeStep}
 
-The stable time step is defined as:
+The stable time  step corresponds to the time the fastest wave (the compressive
+wave) needs to travel the characteristic length of the mesh:
 \begin{equation}
 \label{eqn:smm:explicit:stabletime}
-\Delta t_{\st{crit}} = \Delta x \sqrt{\frac{\rho}{2 \mu + \lambda}}
+\Delta t_{\st{crit}} = \frac{\Delta x}{c}
 \end{equation}
 where $\Delta x$ is a characteristic length (\eg the inradius in the
-case of linear triangle element), $\mu$ and $\lambda$ are the first
-and second Lame's coefficients and $\rho$ is the density.  The stable
-time step corresponds to the time the fastest wave (the compressive
-wave) needs to travel the characteristic length of the mesh.
-However, it is recommended to impose a time step that is smaller than the stable time step, for
-instance, by multiplying the stable time step by a safety factor
-smaller than one.
+case of linear triangle element) and $c$ is the celerity of the fastest wave in the material. It is generally the compressive
+wave of celerity $c = \sqrt{\frac{2 \mu + \lambda}{\rho}}$, $\mu$ and $\lambda$ are the first and second Lame's coefficients and $\rho$ is the density. However, it is recommended to impose a time step that is smaller than the stable time step, for
+instance, by multiplying the stable time step by a safety factor smaller than one.
 
 \begin{cpp}
 const Real safety_time_factor = 0.8;
-Real applied_time_step = time_step * safety_time_factor;
+Real applied_time_step = critical_time_step * safety_time_factor;
 model.setTimeStep(applied_time_step);
 \end{cpp}
 \index{SolidMechanicsModel!setTimeStep} The initial displacement and
@@ -987,19 +984,7 @@ In the following a detailed description of these functions is provided:
     \end{center}
   \end{figure}
 
-
-\item \code{getStableTimeStep}:~ The stable time step should be
-  calculated based on \eqref{eqn:smm:explicit:stabletime} for the
-  conditionally stable  methods.  This function depends on the longitudinal wave
-  speed which changes for different materials and strains. Therefore,
-  the value of this velocity should be defined in this method for
-  each new material.
-
-  \note {In case of need, the calculation of the longitudinal and
-    shear wave speeds can be done in separate functions
-    (\code{getPushWaveSpeed} and \code{getShearWaveSpeed}).
-    Therefore, the first function can be called for calculation of the
-    stable time step.}
+\item \code{getCelerity}:~The stability criterion of the explicit integration scheme depend on the fastest wave celerity~\eqref{eqn:smm:explicit:stabletime}. This celerity depend on the material, and therefore the value of this velocity should be defined in this method for each new material. By default, the fastest wave speed is the compressive wave whose celerity can be defined in~\code{getPushWaveSpeed}.
 \end{itemize}
 Once the declaration and implementation of the new material has been
 completed, this material can be used in the user's example by including the header file:
