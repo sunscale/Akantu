@@ -46,17 +46,17 @@ MaterialElasticOrthotropic<Dim>::MaterialElasticOrthotropic(SolidMechanicsModel 
   Material(model, id),
   MaterialElasticLinearAnisotropic<Dim>(model, id) {
   AKANTU_DEBUG_IN();
-  this->registerParam("E1",   E1  , 0., _pat_parsmod, "Young's modulus (n1)");
-  this->registerParam("E2",   E2  , 0., _pat_parsmod, "Young's modulus (n2)");
-  this->registerParam("nu12", nu12, 0., _pat_parsmod, "Poisson's ratio (12)");
-  this->registerParam("G12",  G12 , 0., _pat_parsmod, "Shear modulus (12)");
+  this->registerParam("E1",   E1  , Real(0.), _pat_parsmod, "Young's modulus (n1)");
+  this->registerParam("E2",   E2  , Real(0.), _pat_parsmod, "Young's modulus (n2)");
+  this->registerParam("nu12", nu12, Real(0.), _pat_parsmod, "Poisson's ratio (12)");
+  this->registerParam("G12",  G12 , Real(0.), _pat_parsmod, "Shear modulus (12)");
 
   if (Dim > 2) {
-    this->registerParam("E3"  , E3  , 0., _pat_parsmod, "Young's modulus (n3)");
-    this->registerParam("nu13", nu13, 0., _pat_parsmod, "Poisson's ratio (13)");
-    this->registerParam("nu23", nu23, 0., _pat_parsmod, "Poisson's ratio (23)");
-    this->registerParam("G13" , G13 , 0., _pat_parsmod, "Shear modulus (13)");
-    this->registerParam("G23" , G23 , 0., _pat_parsmod, "Shear modulus (23)");
+    this->registerParam("E3"  , E3  , Real(0.), _pat_parsmod, "Young's modulus (n3)");
+    this->registerParam("nu13", nu13, Real(0.), _pat_parsmod, "Poisson's ratio (13)");
+    this->registerParam("nu23", nu23, Real(0.), _pat_parsmod, "Poisson's ratio (23)");
+    this->registerParam("G13" , G13 , Real(0.), _pat_parsmod, "Shear modulus (13)");
+    this->registerParam("G23" , G23 , Real(0.), _pat_parsmod, "Shear modulus (23)");
   }
 
   AKANTU_DEBUG_OUT();

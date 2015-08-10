@@ -294,7 +294,9 @@ public:
     distributed_synchronizer.waitEndSynchronize(*this, _gst_gm_clusters);
 
     /// count total number of pairs
-    Array<Int> nb_pairs(nb_proc);
+    Array<int> nb_pairs(nb_proc); // This is potentially a bug for more than
+				  // 2**31 pairs, but due to a all gatherv after
+				  // it must be int to match MPI interfaces
     nb_pairs(rank) = distant_ids.size();
     comm.allGather(nb_pairs.storage(), 1);
 

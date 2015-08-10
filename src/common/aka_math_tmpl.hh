@@ -706,7 +706,7 @@ inline void Math::vector_3d(const Real * x, const Real * y, Real * res) {
 /* -------------------------------------------------------------------------- */
 inline bool Math::are_float_equal(const Real x, const Real y){
   Real abs_max = std::max(std::abs(x), std::abs(y));
-  abs_max = std::max(1., abs_max);
+  abs_max = std::max(abs_max, Real(1.));
   return std::abs(x - y) <= (tolerance * abs_max);
 }
 

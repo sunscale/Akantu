@@ -45,6 +45,23 @@ package_add_third_party_script_variable(Scotch
   SCOTCH_URL "https://gforge.inria.fr/frs/download.php/28978/scotch_${SCOTCH_VERSION}_esmumps.tar.gz")
 
 
+package_get_option_name(Scotch _opt_name)
+package_use_system(Scotch _system)
+if(${_opt_name} AND _system)
+  include(CheckTypeSize)
+
+  package_get_include_dir(Scotch _include_dir)
+  set(CMAKE_EXTRA_INCLUDE_FILES stdio.h scotch.h)
+  set(CMAKE_REQUIRED_INCLUDES ${_include_dir})
+  check_type_size("SCOTCH_Num" SCOTCH_NUM)
+
+  if(NOT SCOTCH_NUM EQUAL AKANTU_INTEGER_SIZE)
+    math(EXPR _n "${AKANTU_INTEGER_SIZE} * 8")
+    message(SEND_ERROR "This version of Scotch cannot be used, it is compiled with the wrong size for SCOTCH_Num."
+      "Recompile Scotch with the define -DINTSIZE${_n}")
+  endif()
+endif()
+
 package_declare_documentation(Scotch
   "This package enables the use the \\href{http://www.labri.fr/perso/pelegrin/scotch/}{Scotch}"
   "library in order to perform a graph partitioning leading to the domain"

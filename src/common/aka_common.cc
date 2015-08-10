@@ -103,7 +103,7 @@ void initialize(const std::string & input_file, int & argc, char ** & argv) {
   AKANTU_DEBUG_INFO("Random seed set to " << seed);
 
   /// initialize external solvers
-  StaticSolver::getStaticSolver().initialize(argc, argv);
+  StaticSolver::getStaticSolver().initialize(argc,argv);
 
   AKANTU_DEBUG_OUT();
 

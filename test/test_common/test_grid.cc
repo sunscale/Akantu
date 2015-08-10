@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 
   Vector<Real> pos(spatial_dimension);
 
-  const SpatialGrid<Element>::CellID & id = grid.getCellID(pos);
+  //  const SpatialGrid<Element>::CellID & id = grid.getCellID(pos);
 
 // #if !defined AKANTU_NDEBUG
 //   SpatialGrid<Element>::neighbor_cells_iterator nit = grid.beginNeighborCells(id);

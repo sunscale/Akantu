@@ -63,10 +63,10 @@ MaterialThermal<spatial_dimension>::MaterialThermal(SolidMechanicsModel & model,
 
 template<UInt spatial_dimension>
 void MaterialThermal<spatial_dimension>::initialize() {
-  this->registerParam("E"      , E      , 0.  , _pat_parsable | _pat_modifiable, "Young's modulus"        );
-  this->registerParam("nu"     , nu     , 0.5 , _pat_parsable | _pat_modifiable, "Poisson's ratio"        );
-  this->registerParam("alpha"  , alpha  , 0.  , _pat_parsable | _pat_modifiable, "Thermal expansion coefficient");
-  this->registerParam("delta_T", delta_T,       _pat_parsable | _pat_modifiable, "Uniform temperature field");
+  this->registerParam("E"      , E      , Real(0. ) , _pat_parsable | _pat_modifiable, "Young's modulus"        );
+  this->registerParam("nu"     , nu     , Real(0.5) , _pat_parsable | _pat_modifiable, "Poisson's ratio"        );
+  this->registerParam("alpha"  , alpha  , Real(0. ) , _pat_parsable | _pat_modifiable, "Thermal expansion coefficient");
+  this->registerParam("delta_T", delta_T,             _pat_parsable | _pat_modifiable, "Uniform temperature field");
 
   delta_T.initialize(1);
 }

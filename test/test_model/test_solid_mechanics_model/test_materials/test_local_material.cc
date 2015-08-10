@@ -46,8 +46,7 @@ int main(int argc, char *argv[])
 {
   akantu::initialize("material.dat", argc, argv);
   UInt max_steps = 1100;
-  Real epot, ekin;
-
+  
   const UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   mesh.read("mesh_section_gap.msh");

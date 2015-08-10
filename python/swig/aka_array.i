@@ -53,7 +53,6 @@ namespace akantu {
       void resize(UInt new_size){
 	AKANTU_DEBUG_ASSERT(this->size == new_size,"cannot resize a temporary vector");
       }
-    
     };
   }
  template <typename T> int getPythonDataTypeCode(){ AKANTU_EXCEPTION("undefined type");}

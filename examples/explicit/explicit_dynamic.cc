@@ -88,8 +88,8 @@ int main(int argc, char *argv[]) {
   for(UInt s = 1; s <= max_steps; ++s) {
     model.solveStep();
 
-    Real epot = model.getPotentialEnergy();
-    Real ekin = model.getKineticEnergy();
+    Real epot = model.getEnergy("potential");
+    Real ekin = model.getEnergy("kinetic");
 
     energy << s << "," << s*time_step << ","
 	   << epot << ","
