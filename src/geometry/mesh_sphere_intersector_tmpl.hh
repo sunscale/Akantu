@@ -36,6 +36,7 @@
 #include "aka_common.hh"
 #include "mesh_geom_common.hh"
 #include "tree_type_helper.hh"
+#include "mesh_sphere_intersector.hh"
 
 __BEGIN_AKANTU__
 
@@ -134,7 +135,8 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
       }
     }
   }
-  const_cast<Mesh &>(this->mesh).sendEvent(new_nodes);
+  if(new_nodes.getList().getSize())
+    const_cast<Mesh &>(this->mesh).sendEvent(new_nodes);
 
   AKANTU_DEBUG_OUT();
 }
@@ -175,10 +177,11 @@ void MeshSphereIntersector<dim, type>::buildResultFromQueryList(const std::list<
   Element element_tri3(_triangle_3, 0, _not_ghost, _ek_regular),
     element_tri4(_igfem_triangle_4, 0, _not_ghost, _ek_igfem),
     element_tri5(_igfem_triangle_5, 0, _not_ghost, _ek_igfem);
-  NewElementsEvent new_elements;
+  NewIGFEMElementsEvent new_elements;
   UInt n_new_el = 0;
-  Array<Element> & new_elements_list = new_elements.getList() ;
-  new_elements.getList().extendComponentsInterlaced(2, 1);
+  Array<Element> & new_elements_list = new_elements.getList();
+  Array<Element> & old_elements_list = new_elements.getOldElementsList();
+ 
 
   RemovedElementsEvent remove_elem(this->mesh);
   remove_elem.getNewNumbering().alloc(connec_type_tmpl.getSize(), 1, type, _not_ghost);
@@ -187,24 +190,34 @@ void MeshSphereIntersector<dim, type>::buildResultFromQueryList(const std::list<
 
   for(UInt nel=0; nel != new_node_per_elem.getSize(); ++nel){
     if( (type != _triangle_3) && (new_node_per_elem(nel,0)==0) ){
-      Element element_type_tmpl(type, 0, _not_ghost);
+      /// this element was previously an IGFEM element and is replaced by a regular element
+      /// store the old element that will be removed
+      Element element_type_tmpl(type, 0, _not_ghost, Mesh::getKind(type));
       new_elements_list.resize(n_new_el+1);
+      old_elements_list.resize(n_new_el+1);
       Vector<UInt> ctri3(3);
       ctri3(0) =  connec_type_tmpl(nel,0);
       ctri3(1) =  connec_type_tmpl(nel,1);
       ctri3(2) =  connec_type_tmpl(nel,2);
+      /// add the new element in the mesh
       UInt nb_tri3 = connec_tri3.getSize();
       connec_tri3.push_back(ctri3);
       element_tri3.element = nb_tri3;
-      new_elements_list(n_new_el,0) = element_tri3;
+      new_elements_list(n_new_el) = element_tri3;
+      /// the number of the old element in the mesh
       element_type_tmpl.element = nel;
-      new_elements_list(n_new_el,1) = element_type_tmpl;
+      old_elements_list(n_new_el) = element_type_tmpl;
       new_numbering(nel) =  UInt(-1);
       ++n_new_el;
+
+      remove_elem.getList().push_back(element_type_tmpl);
+  
     }
     else if(new_node_per_elem(nel,0)!=0){
       Element element_type_tmpl(type, 0, _not_ghost);
+      element_type_tmpl.kind = Mesh::getKind(type);
       new_elements_list.resize(n_new_el+1);
+      old_elements_list.resize(n_new_el+1);
       switch(new_node_per_elem(nel,0)){
       case 1 :{
 	Vector<UInt> ctri4(4);
@@ -233,7 +246,7 @@ void MeshSphereIntersector<dim, type>::buildResultFromQueryList(const std::list<
 	connec_igfem_tri4.push_back(ctri4);
 	element_tri4.element = nb_tri4;
 	//new_elements.getList().push_back(element_tri4);
-	new_elements_list(n_new_el,0) = element_tri4;
+	new_elements_list(n_new_el) = element_tri4;
 	if(type == _igfem_triangle_4)
 	   new_numbering.push_back(connec_igfem_tri4.getSize()-2);
 	break;
@@ -285,11 +298,11 @@ void MeshSphereIntersector<dim, type>::buildResultFromQueryList(const std::list<
 	else{
 	  AKANTU_DEBUG_ERROR("A triangle have only 3 segments not "<< new_node_per_elem(nel,2) << "and" << new_node_per_elem(nel,4));
 	}	      
-	connec_igfem_tri5.push_back(ctri5);
 	UInt nb_tri5 = connec_igfem_tri5.getSize();
+	connec_igfem_tri5.push_back(ctri5);
 	element_tri5.element = nb_tri5;
 	//new_elements.getList().push_back(element_tri5);
-	new_elements_list(n_new_el,0) = element_tri5;
+	new_elements_list(n_new_el) = element_tri5;
 	if(type == _igfem_triangle_5){
 	  new_numbering.push_back(new_nb_type_tmpl);
 	  ++new_nb_type_tmpl;
@@ -301,7 +314,7 @@ void MeshSphereIntersector<dim, type>::buildResultFromQueryList(const std::list<
 	break;
       }
       element_type_tmpl.element = nel;
-      new_elements_list(n_new_el,1) = element_type_tmpl;
+      old_elements_list(n_new_el) = element_type_tmpl;
       remove_elem.getList().push_back(element_type_tmpl);
       new_numbering(nel) =  UInt(-1);
       ++n_new_el;
@@ -312,6 +325,19 @@ void MeshSphereIntersector<dim, type>::buildResultFromQueryList(const std::list<
     }
   }
 
+  // for(UInt nel=new_node_per_elem.getSize(); nel < this->mesh.getNbElement(type); ++nel) {
+  //     new_numbering(nel) = new_nb_type_tmpl;
+  //     ++new_nb_type_tmpl;
+  // }
+
+  UInt el_index = 0;
+  for (UInt e = 0; e < this->mesh.getNbElement(type); ++e) {
+    if (new_numbering(e) != UInt(-1)) {
+      new_numbering(e) = el_index;
+      ++el_index;
+    }
+  }
+    
   if(n_new_el > 0){
     const_cast<Mesh &>(this->mesh).sendEvent(new_elements);
     const_cast<Mesh &>(this->mesh).sendEvent(remove_elem);

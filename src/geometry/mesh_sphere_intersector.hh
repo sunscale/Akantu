@@ -41,6 +41,20 @@
 
 __BEGIN_AKANTU__
 
+/* -------------------------------------------------------------------------- */
+/* class for new igfem elements mesh events                                   */
+/* -------------------------------------------------------------------------- */
+#if defined(AKANTU_IGFEM)
+class NewIGFEMElementsEvent : public NewElementsEvent {
+public:
+  AKANTU_GET_MACRO_NOT_CONST(OldElementsList, old_elements, Array<Element> &);
+  AKANTU_GET_MACRO(OldElementsList, old_elements, const Array<Element> &);
+protected:
+  Array<Element> old_elements;
+};
+#endif
+
+
 /// Here, we know what kernel we have to use
 typedef Spherical SK;
 

@@ -106,7 +106,9 @@ public:
   /// get the default value
   inline operator T() const;
 
-  AKANTU_GET_MACRO(FEEngine, *fem, FEEngine &);
+  virtual FEEngine &  getFEEngine() {
+    return *fem;}
+  ///AKANTU_GET_MACRO(FEEngine, *fem, FEEngine &);
 
 protected:
   /// initialize the arrays in the ElementTypeMapArray<T>

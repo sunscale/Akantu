@@ -1367,7 +1367,21 @@ void Material::interpolateElementalFieldOnFacets(const ElementTypeMapArray<Real>
 }
 
 /* -------------------------------------------------------------------------- */
+template<typename T>
+const Array<T> & Material::getArray(const ID & vect_id, const ElementType & type, const GhostType & ghost_type) const {
+  AKANTU_DEBUG_TO_IMPLEMENT();
+  return NULL;
+}
 
+/* -------------------------------------------------------------------------- */
+template<typename T>
+Array<T> & Material::getArray(const ID & vect_id, const ElementType & type, const GhostType & ghost_type) {
+  AKANTU_DEBUG_TO_IMPLEMENT();
+  return NULL;
+}
+
+/* -------------------------------------------------------------------------- */
+template<>
 const Array<Real> & Material::getArray(const ID & vect_id, const ElementType & type, const GhostType & ghost_type) const {
   std::stringstream sstr;
   std::string ghost_id = "";
@@ -1383,6 +1397,7 @@ const Array<Real> & Material::getArray(const ID & vect_id, const ElementType & t
 }
 
 /* -------------------------------------------------------------------------- */
+template<>
 Array<Real> & Material::getArray(const ID & vect_id, const ElementType & type, const GhostType & ghost_type) {
   std::stringstream sstr;
   std::string ghost_id = "";
@@ -1398,6 +1413,21 @@ Array<Real> & Material::getArray(const ID & vect_id, const ElementType & type, c
 }
 
 /* -------------------------------------------------------------------------- */
+template<typename T>
+const InternalField<T> & Material::getInternal(const ID & int_id) const {
+  AKANTU_DEBUG_TO_IMPLEMENT();
+  return NULL;
+}
+
+/* -------------------------------------------------------------------------- */
+template<typename T>
+InternalField<T> & Material::getInternal(const ID & int_id) {
+  AKANTU_DEBUG_TO_IMPLEMENT();
+  return NULL;
+}
+
+/* -------------------------------------------------------------------------- */
+template<>
 const InternalField<Real> & Material::getInternal(const ID & int_id) const {
   std::map<ID, InternalField<Real> *>::const_iterator it = internal_vectors_real.find(getID() + ":" + int_id);
   if(it == internal_vectors_real.end()) {
@@ -1409,6 +1439,7 @@ const InternalField<Real> & Material::getInternal(const ID & int_id) const {
 }
 
 /* -------------------------------------------------------------------------- */
+template<>
 InternalField<Real> & Material::getInternal(const ID & int_id) {
   std::map<ID, InternalField<Real> *>::iterator it = internal_vectors_real.find(getID() + ":" + int_id);
   if(it == internal_vectors_real.end()) {
@@ -1420,7 +1451,8 @@ InternalField<Real> & Material::getInternal(const ID & int_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-const InternalField<UInt> & Material::getInternalUInt(const ID & int_id) const {
+template<>
+const InternalField<UInt> & Material::getInternal(const ID & int_id) const {
   std::map<ID, InternalField<UInt> *>::const_iterator it = internal_vectors_uint.find(getID() + ":" + int_id);
   if(it == internal_vectors_uint.end()) {
     AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
@@ -1431,7 +1463,8 @@ const InternalField<UInt> & Material::getInternalUInt(const ID & int_id) const {
 }
 
 /* -------------------------------------------------------------------------- */
-InternalField<UInt> & Material::getInternalUInt(const ID & int_id) {
+template<>
+InternalField<UInt> & Material::getInternal(const ID & int_id) {
   std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.find(getID() + ":" + int_id);
   if(it == internal_vectors_uint.end()) {
     AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
@@ -1594,6 +1627,7 @@ void Material::onElementsRemoved(const Array<Element> & element_list,
 	Element el;
 	el.type = type;
 	el.ghost_type = gt;
+	el.kind = Mesh::getKind(type);
 	for (UInt i = 0; i < elem_filter.getSize(); ++i) {
 	  el.element = elem_filter(i);
 	  if(std::find(el_begin, el_end, el) == el_end) {
@@ -1751,12 +1785,12 @@ void Material::flattenInternalIntern(const std::string & field_id,
 
     try {
       __attribute__((unused)) const Array<Real> & src_vect
-	= this->getArray(field_id, type, ghost_type);
+	= this->getArray<Real>(field_id, type, ghost_type);
     } catch(debug::Exception & e) {
       continue;
     }
 
-    const Array<Real> & src_vect = this->getArray(field_id, type, ghost_type);
+    const Array<Real> & src_vect = this->getArray<Real>(field_id, type, ghost_type);
     const Array<UInt> & filter   = (*element_filter)(type, ghost_type);
 
     // total number of elements for a given type
@@ -1798,6 +1832,41 @@ void Material::flattenInternalIntern(const std::string & field_id,
   }
 };
 /* -------------------------------------------------------------------------- */
+/// extrapolate internal values
+void Material::extrapolateInternal(const ID & id, const Element & element, const Matrix<Real> & point, Matrix<Real> & extrapolated) {
+  if (this->isInternal(id, element.kind)) {
+    UInt nb_element = this->element_filter(element.type, element.ghost_type).getSize();
+    const ID name = this->getID() +  ":" + id;
+    UInt nb_quads = this->internal_vectors_real[name]->getFEEngine().getNbQuadraturePoints(element.type, element.ghost_type); 
+    const Array<Real> & internal = this->getArray<Real>(id, element.type, element.ghost_type);
+    UInt nb_component = internal.getNbComponent();
+    Array<Real>::const_matrix_iterator internal_it = internal.begin_reinterpret(nb_component, nb_quads, nb_element);
+    Element local_element = this->convertToLocalElement(element);
 
+    /// instead of really extrapolating, here the value of the first GP
+    /// is copied into the result vector. This works only for linear
+    /// elements
+    /// @todo extrapolate!!!!
+
+    const Matrix<Real> & values = internal_it[local_element.element];
+    UInt index = 0;
+    Vector<Real> tmp(nb_component);
+    for (UInt j = 0; j < values.cols(); ++j) {
+      tmp = values(j);
+      if (tmp.norm() > 0) { 
+	index = j;
+	continue;
+      }
+    }
+      
+    for (UInt i = 0; i < extrapolated.size(); ++i) {
+      extrapolated(i) = values(index);
+    }
+  }
+  else {
+    Matrix<Real> default_values(extrapolated.rows(), extrapolated.cols(), 0.);
+    extrapolated = default_values;
+  }
+}
 
 __END_AKANTU__
