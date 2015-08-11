@@ -40,7 +40,7 @@ package_declare_sources(igfem
   dumper_igfem_material_internal_field.hh
   dumper_igfem_quadrature_points_field.hh
   dumper_igfem_element_partition.hh
-  
+
   igfem_helper.hh
   igfem_helper.cc
   igfem_enrichment.hh
@@ -63,7 +63,6 @@ package_declare_sources(igfem
 
   material_igfem/igfem_internal_field.hh
   material_igfem/igfem_internal_field_tmpl.hh
-
   )
 
 package_declare_elements(igfem
@@ -79,8 +78,9 @@ package_declare_elements(igfem
   INTERPOLATION_TYPES
   _itp_igfem_segment_3
   _itp_igfem_triangle_4
-  _itp_igfem_triangle_5  
-  INTERPOLATION_KIND _itk_igfem
+  _itp_igfem_triangle_5
+  INTERPOLATION_KIND
+  _itk_igfem
   FE_ENGINE_LISTS
   gradient_on_quadrature_points
   interpolate_on_quadrature_points
