@@ -48,6 +48,18 @@ package_declare_sources(structural_mechanics
   model/structural_mechanics/structural_mechanics_model_mass.cc
   )
 
+package_declare_elements(structural_mechanics
+  ELEMENT_TYPES
+  _bernoulli_beam_2
+  _bernoulli_beam_3
+  _kirchhoff_shell
+  KIND structural
+  INTERPOLATION_TYPES
+  _itp_bernoulli_beam
+  _itp_kirchhoff_shell
+  INTERPOLATION_KIND
+  _itk_structural
+  )
 
 package_declare_documentation_files(structural_mechanics
   manual-structuralmechanicsmodel.tex

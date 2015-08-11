@@ -391,14 +391,23 @@ public:
   /// get number of facets of a given element type
   static inline UInt getNbFacetsPerElement(const ElementType & type);
 
+  /// get number of facets of a given element type
+  static inline UInt getNbFacetsPerElement(const ElementType & type, UInt t);
+
   /// get local connectivity of a facet for a given facet type
-  static inline MatrixProxy<UInt> getFacetLocalConnectivity(const ElementType & type);
+  static inline MatrixProxy<UInt> getFacetLocalConnectivity(const ElementType & type, UInt t = 0);
 
   /// get connectivity of facets for a given element
-  inline Matrix<UInt> getFacetConnectivity(UInt element, const ElementType & type, const GhostType & ghost_type) const;
+  inline Matrix<UInt> getFacetConnectivity(const Element & element, UInt t = 0) const;
+
+  /// get the number of type of the surface element associated to a given element type
+  static inline UInt getNbFacetTypes(const ElementType & type, UInt t = 0);
 
   /// get the type of the surface element associated to a given element
-  static inline ElementType getFacetType(const ElementType & type);
+  static inline ElementType getFacetType(const ElementType & type, UInt t = 0);
+
+  /// get all the type of the surface element associated to a given element
+  static inline VectorProxy<ElementType> getAllFacetTypes(const ElementType & type);
 
   /* ------------------------------------------------------------------------ */
   /* Element type Iterator                                                    */

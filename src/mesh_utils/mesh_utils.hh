@@ -53,13 +53,6 @@
 __BEGIN_AKANTU__
 
 class MeshUtils {
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
-public:
-
-  MeshUtils();
-  virtual ~MeshUtils();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -126,9 +119,6 @@ public:
   static void computePBCMap(const Mesh & mymesh,
 			    const std::pair<Surface, Surface> & surface_pair,
 			    std::map<UInt,UInt> & pbc_pair);
-
-  /// create a multimap of nodes per surfaces
-  static void buildNodesPerSurface(const Mesh & mesh, CSR<UInt> & nodes_per_surface);
 
   /// remove not connected nodes /!\ this functions renumbers the nodes.
   static void purifyMesh(Mesh & mesh);

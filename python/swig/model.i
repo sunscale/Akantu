@@ -2,11 +2,11 @@ namespace akantu {
   %ignore Model::createSynchronizerRegistry;
   %ignore Model::createParallelSynch;
   %ignore Model::getDOFSynchronizer;
-  %ignore Model::getSynchronizerRegistry;
+  //%ignore Model::getSynchronizerRegistry;
   %ignore Model::registerFEEngineObject;
   %ignore Model::unregisterFEEngineObject;
   %ignore Model::getFEEngineBoundary;
-  %ignore Model::getFEEngine;
+  //  %ignore Model::getFEEngine;
   %ignore Model::getFEEngineClass;
   %ignore Model::getFEEngineClassBoundary;
   %ignore Model::setParser;
@@ -18,6 +18,11 @@ namespace akantu {
   %ignore FEEngine::getShapesDerivatives;
   %ignore FEEngine::getQuadraturePoints;
   %ignore FEEngine::getIGFEMElementTypes;
+  %ignore FEEngine::interpolateOnQuadraturePoints(const Array<Real> &,ElementTypeMapArray<Real> &,const ElementTypeMapArray<UInt> *) const;
+  %ignore FEEngine::interpolateOnQuadraturePoints(const Array<Real> &,ElementTypeMapArray<Real> &) const;
+  %ignore FEEngine::interpolateOnQuadraturePoints(const Array<Real> &,Array<Real> &,UInt,const ElementType&,const GhostType &,const Array< UInt > &) const;
+  %ignore FEEngine::interpolateOnQuadraturePoints(const Array<Real> &,Array<Real> &,UInt,const ElementType&,const GhostType &) const;
+
 }
 
 %include "sparse_matrix.hh"
@@ -26,10 +31,11 @@ namespace akantu {
 %rename(FreeBoundaryDirichlet) akantu::BC::Dirichlet::FreeBoundary;
 %rename(FreeBoundaryNeumann) akantu::BC::Neumann::FreeBoundary;
 
-
-
 %include "boundary_condition_functor.hh"
-
 %include "boundary_condition.hh"
-
+%include "communication_buffer.hh"
+%include "data_accessor.hh"
+%include "synchronizer.hh"
+%include "synchronizer_registry.hh"
 %include "model.hh"
+

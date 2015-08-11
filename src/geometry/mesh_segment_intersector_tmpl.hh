@@ -40,7 +40,7 @@
 __BEGIN_AKANTU__
 
 template<UInt dim, ElementType type>
-MeshSegmentIntersector<dim, type>::MeshSegmentIntersector(const Mesh & mesh, Mesh & result_mesh):
+MeshSegmentIntersector<dim, type>::MeshSegmentIntersector(Mesh & mesh, Mesh & result_mesh):
   parent_type(mesh),
   result_mesh(result_mesh),
   current_physical_name()

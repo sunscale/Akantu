@@ -138,8 +138,8 @@ int main(int argc, char *argv[]) {
 
     double end = MPI_Wtime();
 
-    akantu::Real epot = model.getPotentialEnergy();
-    akantu::Real ekin = model.getKineticEnergy();
+    akantu::Real epot = model.getEnergy("potential");
+    akantu::Real ekin = model.getEnergy("kinetic");
 
     total_time += end - start;
 

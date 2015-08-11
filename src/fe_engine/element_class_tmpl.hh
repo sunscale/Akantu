@@ -147,6 +147,18 @@ GeometricalElement<geometrical_type, shape>::getFacetLocalConnectivityPerElement
 /* -------------------------------------------------------------------------- */
 template<GeometricalType geometrical_type, GeometricalShapeType shape>
 inline UInt
+GeometricalElement<geometrical_type, shape>::getNbFacetsPerElement() {
+  UInt total_nb_facets = 0;
+  for(UInt n = 0; n < nb_facet_types; ++n) {
+    total_nb_facets += nb_facets[n];
+  }
+
+  return total_nb_facets;
+}
+
+/* -------------------------------------------------------------------------- */
+template<GeometricalType geometrical_type, GeometricalShapeType shape>
+inline UInt
 GeometricalElement<geometrical_type, shape>::getNbFacetsPerElement(UInt t) {
   return nb_facets[t];
 }

@@ -1,22 +1,27 @@
 \section{Cohesive linear}
 
 \begin{MaterialDesc}{cohesive\_linear}{ssect:smm:cl:coh-snozzi}
-\matparam{sigma\_c}{Real}{Critical stress $\sigma_\mathrm{c}$}
+\matparam{sigma\_c}{Real}{Critical stress $\sigma_\mathrm{c}$}\\
+Either G\_c and kappa or, G\_cI and G\_cII or delta\_c have to be specified
+\matparam{G\_c}{Real}{Mode I fracture energy}
+\matparam{kappa}{Real}{$\kappa = G\_cI / G\_cII$ parameter (default 1)}
+\matparam{G\_cI (G\_cII)}{Real}{Mode I (II) fracture energy}
 \matparam{delta\_c}{Real}{Critical displacement $\delta_\mathrm{c}$}
 \matparam{beta}{Real}{$\beta$ parameter}
-\matparam{G\_c}{Real}{Mode I fracture energy}
-\matparam{kappa}{Real}{$\kappa$ parameter}
-\matparam{penalty}{Real}{penalty coefficient $\alpha$}
+\matparam{penalty}{Real}{penalty coefficient $\alpha$ (optional)}
+\matparam{volume\_s \& m\_s}{Reals}{OPTIONAL: to adapt statistical distribution following~\cite{Zhou_Molinari_2004}}
 \end{MaterialDesc}
 
 \section{Cohesive bilinear}
 
 \begin{MaterialDesc}{cohesive\_bilinear}{ssect:smm:cl:coh-snozzi}
-\matparam{sigma\_c}{Real}{Critical stress $\sigma_\mathrm{c}$}
+\matparam{sigma\_c}{Real}{Critical stress $\sigma_\mathrm{c}$}\\
+Either G\_c and kappa or, G\_cI and G\_cII or delta\_c have to be specified
+\matparam{G\_c}{Real}{Mode I fracture energy}
+\matparam{kappa}{Real}{$\kappa = G\_cI / G\_cII$ parameter (default 1)}
+\matparam{G\_cI (G\_cII)}{Real}{Mode I (II) fracture energy}
 \matparam{delta\_c}{Real}{Critical displacement $\delta_\mathrm{c}$}
 \matparam{beta}{Real}{$\beta$ parameter}
-\matparam{G\_c}{Real}{Mode I fracture energy}
-\matparam{kappa}{Real}{$\kappa$ parameter}
 \matparam{penalty}{Real}{Penalty coefficient $\alpha$}
 \matparam{delta\_0}{Real}{Elastic limit displacement $\delta_0$}
 \end{MaterialDesc}

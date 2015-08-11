@@ -66,6 +66,7 @@ include(CMakeVersionGenerator)
 include(CMakePackagesSystem)
 include(CMakeFlagsHandling)
 
+include(AkantuPackagesSystem)
 include(AkantuMacros)
 
 #cmake_activate_debug_message()
@@ -108,7 +109,6 @@ mark_as_advanced(
   )
 
 include(CMakeDetermineCCompiler)
-cmake_deactivate_debug_message(PackagesSystem)
 #===============================================================================
 # Dependencies
 #===============================================================================
@@ -116,6 +116,8 @@ option(AKANTU_PYTHON_INTERFACE "Generates the Akantu Python module" OFF)
 if(AKANTU_PYTHON_INTERFACE)
   list(APPEND AKANTU_BOOST_COMPONENTS python)
 endif()
+
+declare_akantu_types()
 
 package_list_packages(${PROJECT_SOURCE_DIR}/packages
   EXTRA_PACKAGES_FOLDER ${PROJECT_SOURCE_DIR}/extra_packages)

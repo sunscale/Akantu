@@ -2,7 +2,8 @@
 #include "mesh.hh"
 #include "node_group.hh"
 #include "solid_mechanics_model.hh"
-
+#include "dumpable_inline_impl.hh"
+  
 using akantu::QuadraturePoint;
 using akantu::Vector;
 using akantu::ElementTypeMapArray;
@@ -12,6 +13,7 @@ using akantu::UInt;
 using akantu::Real;
 using akantu::Array;
 using akantu::SolidMechanicsModel;
+
 %}
 
 
@@ -26,6 +28,7 @@ namespace akantu {
   %ignore Mesh::extractNodalCoordinatesFromPBCElement;
   %ignore Mesh::getGroupDumer;
   %ignore Mesh::getFacetLocalConnectivity;
+  %ignore Mesh::getAllFacetTypes;
 }
 
 print_self(Mesh)
@@ -109,7 +112,16 @@ print_self(Mesh)
 
 %include "element_group.hh"
 %include "node_group.hh"
-
+%include "dumper_iohelper.hh"
+%include "dumpable_iohelper.hh"
 %include "mesh.hh"
 
+namespace akantu{
+%extend Dumpable {
+    void addDumpFieldExternalReal(const std::string & field_id,
+				  const Array<Real> & field){
+      $self->addDumpFieldExternal<Real>(field_id,field);
+    }
+  }
+ }
 

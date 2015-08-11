@@ -30,6 +30,7 @@
  *
  */
 
+/* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 
 __BEGIN_AKANTU__
@@ -93,14 +94,11 @@ struct GradientOnQuadraturePointsHelper {
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_GRADIENT, kind);		\
     }									\
   };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
-
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_GRADIENT_ON_QUADRATURE_POINTS_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_GRADIENT_ON_QUADRATURE_POINTS)
 
 #undef AKANTU_SPECIALIZE_GRADIENT_ON_QUADRATURE_POINTS_HELPER
 #undef COMPUTE_GRADIENT
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -466,14 +464,11 @@ struct InterpolateOnQuadraturePointsHelper {
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(INTERPOLATE, kind);		\
     }									\
   };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
-
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INTERPOLATE_ON_QUADRATURE_POINTS_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_INTERPOLATE_ON_QUADRATURE_POINTS)
 
 #undef AKANTU_SPECIALIZE_INTERPOLATE_ON_QUADRATURE_POINTS_HELPER
 #undef INTERPOLATE
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -605,14 +600,11 @@ struct InterpolateHelper {
     }								\
   };
 
-
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_IGFEM_KIND)
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INTERPOLATE_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_INTERPOLATE)
 
 #undef AKANTU_SPECIALIZE_INTERPOLATE_HELPER
 #undef INTERPOLATE
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -712,14 +704,11 @@ struct ComputeNormalsOnControlPoints {
     }									\
     };
 
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
-
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_NORMALS_ON_CONTROL_POINTS, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_COMPUTE_NORMALS_ON_CONTROL_POINTS)
 
 #undef AKANTU_SPECIALIZE_COMPUTE_NORMALS_ON_CONTROL_POINTS
 #undef COMPUTE_NORMALS_ON_QUAD
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -1122,14 +1111,12 @@ struct InverseMapHelper {
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(INVERSE_MAP, kind);	\
     }								\
   };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
 
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INVERSE_MAP_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_INVERSE_MAP)
 
 #undef AKANTU_SPECIALIZE_INVERSE_MAP_HELPER
 #undef INVERSE_MAP
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -1181,14 +1168,12 @@ struct ContainsHelper {
       return contain;					\
     }							\
     };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
 
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_CONTAINS_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_CONTAINS)
 
 #undef AKANTU_SPECIALIZE_CONTAINS_HELPER
 #undef CONTAINS
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -1237,14 +1222,11 @@ struct ComputeShapesHelper {
     }								\
   };
 
-
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND)
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_COMPUTE_SHAPES)
 
 #undef AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER
 #undef COMPUTE_SHAPES
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -1303,13 +1285,11 @@ struct ComputeShapeDerivativesHelper {
     }									\
   };
 
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND)
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_COMPUTE_SHAPES_DERIVATIVES)
 
 #undef AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER
 #undef COMPUTE_SHAPE_DERIVATIVES
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -1436,14 +1416,11 @@ struct GetShapesDerivativesHelper {
     }									\
     };
 
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
-
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_GET_SHAPES_DERIVATIVES_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_GET_SHAPES_DERIVATIVES)
 
 #undef AKANTU_SPECIALIZE_GET_SHAPE_DERIVATIVES_HELPER
 #undef GET_SHAPES_DERIVATIVES
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -1451,7 +1428,6 @@ template<template <ElementKind> class I,
 inline const Array<Real> & FEEngineTemplate<I, S, kind>::getShapesDerivatives(const ElementType & type,
                                                                               const GhostType & ghost_type,
                                                                               __attribute__((unused)) UInt id) const {
-
   return GetShapesDerivativesHelper<kind>::call(shape_functions, type, ghost_type, id);
 }
 

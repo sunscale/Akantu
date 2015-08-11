@@ -29,13 +29,12 @@
 
 __BEGIN_AKANTU__
 
-/* -------------------------------------------------------------------------- */
-//! standard output stream operator for ElementType
-inline std::ostream & operator <<(std::ostream & stream, ElementType type)
-{
 #define STRINGIFY(type)				\
   stream << BOOST_PP_STRINGIZE(type)
 
+/* -------------------------------------------------------------------------- */
+//! standard output stream operator for ElementType
+inline std::ostream & operator <<(std::ostream & stream, ElementType type) {
   switch(type) {
     BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_CASE_MACRO, \
                           STRINGIFY,               \
@@ -44,15 +43,13 @@ inline std::ostream & operator <<(std::ostream & stream, ElementType type)
     case _max_element_type:  stream << "_max_element_type"; break;
   }
 
-#undef STRINGIFY
   return stream;
 }
 
 /* -------------------------------------------------------------------------- */
 
 //! standard input stream operator for ElementType
-inline std::istream & operator >>(std::istream & stream, ElementType & type)
-{
+inline std::istream & operator >>(std::istream & stream, ElementType & type) {
 #define IF_SEQUENCE(_type)				\
   else if (tmp == BOOST_PP_STRINGIZE(_type)) type = _type;
 
@@ -71,13 +68,9 @@ inline std::istream & operator >>(std::istream & stream, ElementType & type)
 
 /* -------------------------------------------------------------------------- */
 //! standard output stream operator for ElementType
-inline std::ostream & operator <<(std::ostream & stream, ElementKind kind )
-{
-#define STRINGIFY(kind)				\
-  stream << BOOST_PP_STRINGIZE(kind)
-
+inline std::ostream & operator <<(std::ostream & stream, ElementKind kind ) {
   AKANTU_BOOST_ALL_KIND_SWITCH(STRINGIFY);
-#undef STRINGIFY
+
   return stream;
 }
 
@@ -85,33 +78,15 @@ inline std::ostream & operator <<(std::ostream & stream, ElementKind kind )
 /// standard output stream operator for InterpolationType
 inline std::ostream & operator <<(std::ostream & stream, InterpolationType type)
 {
-  switch(type)
-    {
-    case _itp_lagrange_point_1        : stream << "_itp_lagrange_point_1"       ; break;
-    case _itp_lagrange_segment_2      : stream << "_itp_lagrange_segment_2"     ; break;
-    case _itp_lagrange_segment_3      : stream << "_itp_lagrange_segment_3"     ; break;
-    case _itp_lagrange_triangle_3     : stream << "_itp_lagrange_triangle_3"    ; break;
-    case _itp_lagrange_triangle_6     : stream << "_itp_lagrange_triangle_6"    ; break;
-    case _itp_lagrange_quadrangle_4   : stream << "_itp_lagrange_quadrangle_4"  ; break;
-    case _itp_serendip_quadrangle_8   : stream << "_itp_serendip_quadrangle_8"  ; break;
-    case _itp_lagrange_tetrahedron_4  : stream << "_itp_lagrange_tetrahedron_4" ; break;
-    case _itp_lagrange_tetrahedron_10 : stream << "_itp_lagrange_tetrahedron_10"; break;
-    case _itp_lagrange_hexahedron_8   : stream << "_itp_lagrange_hexahedron_8"  ; break;
-    case _itp_lagrange_pentahedron_6  : stream << "_itp_lagrange_pentahedron_6" ; break;
-    case _itp_serendip_hexahedron_20  : stream << "_itp_serendip_hexahedron_20" ; break;
-    case _itp_lagrange_pentahedron_15 : stream << "_itp_lagrange_pentahedron_15"; break;
-#if defined(AKANTU_STRUCTURAL_MECHANICS)
-    case _itp_bernoulli_beam          : stream << "_itp_bernoulli_beam"         ; break;
-    case _itp_kirchhoff_shell         : stream << "_itp_kirchhoff_shell"        ; break;
-#endif
-#if defined(AKANTU_IGFEM)
-    case _itp_igfem_segment_3         : stream << "_itp_igfem_segment_3"        ; break;
-    case _itp_igfem_triangle_4        : stream << "_itp_igfem_triangle_4"       ; break;
-    case _itp_igfem_triangle_5        : stream << "_itp_igfem_triangle_5"       ; break;
-#endif
+  switch(type) {
+    BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_CASE_MACRO, \
+                          STRINGIFY,               \
+                          AKANTU_INTERPOLATION_TYPES)
     case _itp_not_defined             : stream << "_itp_not_defined"            ; break;
     }
   return stream;
 }
+
+#undef STRINGIFY
 
 __END_AKANTU__

@@ -6,7 +6,7 @@
  * @date creation: Tue Oct 29 2013
  * @date last modification: Fri Sep 19 2014
  *
- * @brief  List of materials and all includes
+ * @brief  List of materials for core package
  *
  * @section LICENSE
  *
@@ -30,10 +30,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_LIST_HH__
-#define __AKANTU_MATERIAL_LIST_HH__
-
-#include "aka_config.hh"
+#ifndef __AKANTU_MATERIAL_CORE_INCLUDES_HH__
+#define __AKANTU_MATERIAL_CORE_INCLUDES_HH__
 
 /* -------------------------------------------------------------------------- */
 /* Material list                                                              */
@@ -68,54 +66,4 @@
   ((2, (mazars             , MaterialMazars                       )))	\
   ((2, (plastic_linear_isotropic_hardening, MaterialLinearIsotropicHardening)))
 
-
-#if defined(AKANTU_EXTRA_MATERIALS)
-#  include "material_extra_includes.hh"
-#else
-#  define AKANTU_EXTRA_MATERIAL_LIST
-#  define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST
-#endif
-
-#if defined(AKANTU_COHESIVE_ELEMENT)
-#  include "material_cohesive_includes.hh"
-#else
-#  define AKANTU_COHESIVE_MATERIAL_LIST
-#endif
-
-#if defined(AKANTU_DAMAGE_NON_LOCAL)
-#  include "material_non_local_includes.hh"
-#else
-#  define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_LIST
-#endif
-
-#if defined(AKANTU_EMBEDDED)
-#  include "material_embedded_includes.hh"
-#else
-#  define AKANTU_EMBEDDED_MATERIAL_LIST
-#endif
-
-#if defined(AKANTU_IGFEM)
-#  include "material_igfem_includes.hh"
-#else
-#  define AKANTU_IGFEM_MATERIAL_LIST
-#endif
-
-#if defined(AKANTU_STUDENTS_EXTRA_PACKAGE)
-#  include "material_students_include.hh"
-#else
-#  define AKANTU_STUDENTS_MATERIAL_LIST
-#endif
-
-
-
-#define AKANTU_MATERIAL_LIST			\
-  AKANTU_CORE_MATERIAL_LIST			\
-  AKANTU_COHESIVE_MATERIAL_LIST			\
-  AKANTU_DAMAGE_NON_LOCAL_MATERIAL_LIST		\
-  AKANTU_EXTRA_MATERIAL_LIST			\
-  AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST	\
-  AKANTU_EMBEDDED_MATERIAL_LIST			\
-  AKANTU_IGFEM_MATERIAL_LIST			\
-  AKANTU_STUDENTS_MATERIAL_LIST
-
-#endif /* __AKANTU_MATERIAL_LIST_HH__ */
+#endif /* __AKANTU_MATERIAL_CORE_INCLUDES_HH__ */

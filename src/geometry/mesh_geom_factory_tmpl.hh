@@ -42,7 +42,7 @@
 __BEGIN_AKANTU__
 
 template<UInt dim, ElementType type, class Primitive, class Kernel>
-MeshGeomFactory<dim, type, Primitive, Kernel>::MeshGeomFactory(const Mesh & mesh) :
+MeshGeomFactory<dim, type, Primitive, Kernel>::MeshGeomFactory(Mesh & mesh) :
   MeshGeomAbstract(mesh),
   data_tree(NULL),
   primitive_list()

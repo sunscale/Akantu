@@ -36,7 +36,6 @@
 #include "aka_common.hh"
 #include "aka_math.hh"
 #include "tree_type_helper.hh"
-//#include <CGAL/squared_distance_3.h>
 
 #include "mesh_geom_common.hh"
 
@@ -44,29 +43,18 @@ __BEGIN_AKANTU__
 
 /// Fuzzy compare of two points
 template <class Point>
-bool comparePoints(const Point & a, const Point & b) {
-  //std::cout << "CGAL::squared_distance(a,b) = " << CGAL::squared_distance(a,b) << std::endl;
-  /* std::cout << "xa = " << CGAL::to_double(a.x()) << ", ya = " << CGAL::to_double(a.y())
-	    << ",   xb = " << CGAL::to_double(b.x()) << ", yb = " << CGAL::to_double(b.y()) << std::endl;
-  Real tol = 0.0000000001 ;
-std::cout << "|xa-xb| = " << abs( CGAL::to_double(a.x()-b.x()) / tol )*tol
-	  << ", |ya-yb| = " << abs( CGAL::to_double(a.y() - b.y()) / tol )*tol << std::endl;
+inline bool comparePoints(const Point & a, const Point & b) {
+ return Math::are_float_equal(a.x(), b.x()) &&
+        Math::are_float_equal(a.y(), b.y()) &&
+        Math::are_float_equal(a.z(), b.z());
+}
 
-  bool cdt2 = ( abs(CGAL::to_double(a.x()) - CGAL::to_double(b.x())) < tol ) &&
-    ( abs(CGAL::to_double(a.y()) - CGAL::to_double(b.y())) < tol ) &&
-    ( abs(CGAL::to_double(a.z()) - CGAL::to_double(b.z())) < tol );
-
-  bool cdt3 = Math::are_float_equal(CGAL::to_double(a.x()), CGAL::to_double(b.x())) &&
-    Math::are_float_equal(CGAL::to_double(a.y()), CGAL::to_double(b.y())) &&
-    Math::are_float_equal(CGAL::to_double(a.z()), CGAL::to_double(b.z()));
-
-  std::cout << "CGAL::compare_xyz(a,b) = " << CGAL::compare_xyz(a,b)
-	    << ", cdt2 = " << cdt2 << ", cdt3 = " << cdt3 << std::endl;
-  return ( CGAL::compare_xyz(a,b)==0 ) ;*/
+template <>
+inline bool comparePoints(const Spherical::Circular_arc_point_3 & a,
+                          const Spherical::Circular_arc_point_3 & b) {
  return Math::are_float_equal(CGAL::to_double(a.x()), CGAL::to_double(b.x())) &&
-    Math::are_float_equal(CGAL::to_double(a.y()), CGAL::to_double(b.y())) &&
-    Math::are_float_equal(CGAL::to_double(a.z()), CGAL::to_double(b.z()));
-
+        Math::are_float_equal(CGAL::to_double(a.y()), CGAL::to_double(b.y())) &&
+        Math::are_float_equal(CGAL::to_double(a.z()), CGAL::to_double(b.z()));
 }
 
 /// Fuzzy compare of two segments

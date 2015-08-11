@@ -162,3 +162,10 @@ InterpolationElement<_itp_lagrange_pentahedron_15>::computeDNDS(const vector_typ
   dnds(2,13) = -2.0 * (c(0) + 1) * (2 * c(2) + c(1) - 1);
   dnds(2,14) = -2.0 * (c(0) + 1) * c(1);
 }
+
+/* -------------------------------------------------------------------------- */
+template<>
+inline Real
+GeometricalElement<_gt_pentahedron_15>::getInradius(const Matrix<Real> & coord) {
+  return GeometricalElement<_gt_pentahedron_6>::getInradius(coord);
+}
