@@ -123,7 +123,8 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
 
           bool is_on_mesh = false, is_new = true;
           // check if we already compute this intersection for a neighboor element
-          for (UInt n = nb_nodes_fem ; n < nb_node ; ++n) {
+	  UInt n = nb_nodes_fem-1;
+          for (; n < nb_node ; ++n) {
             Array<Real>::vector_iterator existing_node = nodes.begin(dim) + n;
             if (Math::are_vector_equal(dim, new_node.storage(), existing_node->storage())) {
               is_new = false;
@@ -159,7 +160,7 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
 
             if (!is_on_mesh) {
               new_node_per_elem(it->id(), 0) += 1;
-              new_node_per_elem(it->id(), (2 * new_node_per_elem(it->id(), 0)) - 1) = nb_node;
+              new_node_per_elem(it->id(), (2 * new_node_per_elem(it->id(), 0)) - 1) = n;
               new_node_per_elem(it->id(), 2 * new_node_per_elem(it->id(), 0)) = it->segId();
             }
 
