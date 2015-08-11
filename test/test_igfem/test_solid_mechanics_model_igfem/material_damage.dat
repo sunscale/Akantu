@@ -1,19 +1,23 @@
-material elastic [
-	 name = outside
+seed = 1
+
+material damage_iterative [
+	 name = aggregate
 	 rho = 2.7e-9   # density
 	 E   = 10. # young's modulus
 	 nu  = 0.3    # poisson's ratio
+	 Sc = 100
 ]
 
-material elastic [
-	 name = inside
+material damage_iterative [
+	 name = agg_inside
 	 rho = 2.7e-9   # density
 	 E   = 1. # young's modulus
 	 nu  = 0.25    # poisson's ratio
+	 Sc = 100
 ]
 
-material igfem_elastic [
-	 name = igfem_elastic
+material igfem_saw_tooth_damage [
+	 name = igfem_damage
 	 name_sub_mat_1 = gel
 	 name_sub_mat_2 = aggregate
 	 rho = 2.7e-9   # density
