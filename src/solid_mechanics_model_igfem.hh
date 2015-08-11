@@ -47,6 +47,7 @@ class SolidMechanicsModelIGFEM : public SolidMechanicsModel,
   /* ------------------------------------------------------------------------ */
 public:
   typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem> MyFEEngineIGFEMType;
+  typedef std::map<Element, Element> ElementMap;
 
   SolidMechanicsModelIGFEM(Mesh & mesh,
 			   UInt spatial_dimension = _all_dimensions,
@@ -72,6 +73,9 @@ public:
   ///allocate all vectors
   virtual void initArrays();
 
+  /// transfer internals from old to new elements
+  void transferInternalValues(const ID & internal, std::vector<Element> & new_elements, 
+				 Array<Real> & added_quads, Array<Real> & internal_values);
 private:
 
   /// compute the real values of displacement, force, etc. on the enriched nodes
@@ -141,6 +145,8 @@ private:
   Array<Real> * igfem_nodes;
   /// interface can move throughout the analysis
   bool moving_interface; 
+  /// map between and new elements (needed when the interface is moving)
+  ElementMap element_map;
 };  
 
 /* -------------------------------------------------------------------------- */
@@ -163,7 +169,8 @@ public:
   void setIGFEMFallback(UInt f) { this->fallback_value_igfem = f; }
 
 protected:
-  UInt fallback_value_igfem;  
+  UInt fallback_value_igfem; 
+  
 };
 __END_AKANTU__
 

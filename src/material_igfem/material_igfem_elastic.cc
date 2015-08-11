@@ -59,7 +59,7 @@ void MaterialIGFEMElastic<dim>::initMaterial() {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-void MaterialIGFEMElastic<spatial_dimension>::updateElasticInternals(GhostType ghost_type) {
+void MaterialIGFEMElastic<spatial_dimension>::updateElasticInternals(const Array<Element> & element_list) {
 
   SolidMechanicsModelIGFEM * igfem_model = static_cast<SolidMechanicsModelIGFEM*>(this->model);
   const Mesh & mesh = this->model->getMesh();
@@ -72,64 +72,79 @@ void MaterialIGFEMElastic<spatial_dimension>::updateElasticInternals(GhostType g
   Vector<Real> kpa_per_sub_mat(this->nb_sub_materials);
   
   this->updateElasticConstants(lambda_per_sub_mat, mu_per_sub_mat, kpa_per_sub_mat);
+  Array<Element>::const_iterator<Element> el_begin = element_list.begin();
+  Array<Element>::const_iterator<Element> el_end   = element_list.end();
+  Element el;
+  el.kind = _ek_igfem;
+  for (ghost_type_t::iterator g = ghost_type_t::begin(); g != ghost_type_t::end(); ++g) {
+    GhostType ghost_type = *g;
+    /// loop over all types in the material
+    typedef ElementTypeMapArray<UInt>:: type_iterator iterator;
+    iterator it = this->element_filter.firstType(spatial_dimension, ghost_type, _ek_igfem);
+    iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type, _ek_igfem);
+    UInt index_1 = 0;
+    UInt index_2 = 0;
+    /// loop over all types in the filter
+    for(; it != last_type; ++it) {
+      ElementType el_type = *it;
+      el.type = el_type;
+      el.ghost_type = ghost_type;
+      UInt nb_nodes_per_el = mesh.getNbNodesPerElement(el_type);
+      UInt nb_parent_nodes = IGFEMHelper::getNbParentNodes(el_type);
+      Vector<bool> is_inside(nb_parent_nodes);
+      const Array<UInt> & connectivity = mesh.getConnectivity(el_type, ghost_type);
+      Array<UInt>::const_vector_iterator connec_it = connectivity.begin(nb_nodes_per_el);
 
-
-  /// loop over all types in the material
-  typedef ElementTypeMapArray<UInt>:: type_iterator iterator;
-  iterator it = this->element_filter.firstType(spatial_dimension, ghost_type, _ek_igfem);
-  iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type, _ek_igfem);
-  UInt index_1 = 0;
-  UInt index_2 = 0;
-  /// loop over all types in the filter
-  for(; it != last_type; ++it) {
-    ElementType el_type = *it;
-    UInt nb_nodes_per_el = mesh.getNbNodesPerElement(el_type);
-    UInt nb_parent_nodes = IGFEMHelper::getNbParentNodes(el_type);
-    Vector<bool> is_inside(nb_parent_nodes);
-    const Array<UInt> & connectivity = mesh.getConnectivity(el_type, ghost_type);
-    Array<UInt>::const_vector_iterator connec_it = connectivity.begin(nb_nodes_per_el);
-
-    /// get the number of quadrature points for the two sub-elements
-    UInt quads_1 = IGFEMHelper::getNbQuadraturePoints(el_type, 0);
-    UInt quads_2 = IGFEMHelper::getNbQuadraturePoints(el_type, 1);
+      /// get the number of quadrature points for the two sub-elements
+      UInt quads_1 = IGFEMHelper::getNbQuadraturePoints(el_type, 0);
+      UInt quads_2 = IGFEMHelper::getNbQuadraturePoints(el_type, 1);
   
-    /// get pointer to internals for given type
-    Real * lambda_ptr = this->lambda(el_type, ghost_type).storage();
-    Real * mu_ptr = this->mu(el_type, ghost_type).storage();
-    Real * kpa_ptr = this->kpa(el_type, ghost_type).storage();
-    UInt * sub_mat_ptr = this->sub_material(el_type, ghost_type).storage();
+      /// get pointer to internals for given type
+      Real * lambda_ptr = this->lambda(el_type, ghost_type).storage();
+      Real * mu_ptr = this->mu(el_type, ghost_type).storage();
+      Real * kpa_ptr = this->kpa(el_type, ghost_type).storage();
+      UInt * sub_mat_ptr = this->sub_material(el_type, ghost_type).storage();
 
-    /// loop all elements for the given type
-    const Array<UInt> & filter   = this->element_filter(el_type,ghost_type);
-    UInt nb_elements = filter.getSize();
-    for (UInt e = 0; e < nb_elements; ++e, ++connec_it) {
-      for (UInt i = 0; i < nb_parent_nodes; ++i) {
-	Vector<Real> node = nodes_it[(*connec_it)(i)];
-	is_inside(i) = igfem_model->isInside(node, this->name_sub_mat_1);
-      }
+      /// loop all elements for the given type
+      const Array<UInt> & filter   = this->element_filter(el_type,ghost_type);
+      UInt nb_elements = filter.getSize();
+      for (UInt e = 0; e < nb_elements; ++e, ++connec_it) {
+	el.element = filter(e);
+	if(std::find(el_begin, el_end, el) == el_end) {
+	  lambda_ptr += (quads_1 + quads_2);
+	  mu_ptr += (quads_1 + quads_2);
+	  kpa_ptr += (quads_1 + quads_2);
+	  sub_mat_ptr += (quads_1 + quads_2);
+	  continue;
+	}
+	for (UInt i = 0; i < nb_parent_nodes; ++i) {
+	  Vector<Real> node = nodes_it[(*connec_it)(i)];
+	  is_inside(i) = igfem_model->isInside(node, this->name_sub_mat_1);
+	}
 
-      UInt orientation = IGFEMHelper::getElementOrientation(el_type, is_inside);
+	UInt orientation = IGFEMHelper::getElementOrientation(el_type, is_inside);
 
-      if (orientation) {
-	index_1 = 0;
-	index_2 = 1;
-      }
-      else {
-	index_1 = 1;
-	index_2 = 0;	
-      }
+	if (orientation) {
+	  index_1 = 0;
+	  index_2 = 1;
+	}
+	else {
+	  index_1 = 1;
+	  index_2 = 0;	
+	}
 
-      for (UInt q = 0; q < quads_1; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr, ++sub_mat_ptr) {
-	*lambda_ptr = lambda_per_sub_mat(index_1);
-	*mu_ptr = mu_per_sub_mat(index_1);
-	*kpa_ptr = kpa_per_sub_mat(index_1); 
-	*sub_mat_ptr = index_1;
-      }
-      for (UInt q = 0; q < quads_2; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr, ++sub_mat_ptr) {
-	*lambda_ptr = lambda_per_sub_mat(index_2);
-	*mu_ptr = mu_per_sub_mat(index_2);
-	*kpa_ptr = kpa_per_sub_mat(index_2);
-	*sub_mat_ptr = index_2; 
+	for (UInt q = 0; q < quads_1; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr, ++sub_mat_ptr) {
+	  *lambda_ptr = lambda_per_sub_mat(index_1);
+	  *mu_ptr = mu_per_sub_mat(index_1);
+	  *kpa_ptr = kpa_per_sub_mat(index_1); 
+	  *sub_mat_ptr = index_1;
+	}
+	for (UInt q = 0; q < quads_2; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr, ++sub_mat_ptr) {
+	  *lambda_ptr = lambda_per_sub_mat(index_2);
+	  *mu_ptr = mu_per_sub_mat(index_2);
+	  *kpa_ptr = kpa_per_sub_mat(index_2);
+	  *sub_mat_ptr = index_2; 
+	}
       }
     }
   }
@@ -283,7 +298,7 @@ void MaterialIGFEMElastic<spatial_dimension>::onElementsAdded(const Array<Elemen
 							      const NewElementsEvent & event) {
   
   Parent::onElementsAdded(element_list, event);
-  updateElasticInternals(_not_ghost);
+  updateElasticInternals(element_list);
 
 };
 

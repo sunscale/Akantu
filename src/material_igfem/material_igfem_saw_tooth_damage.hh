@@ -82,7 +82,7 @@ protected:
                                            Real & dam);
 
 protected:
-  virtual void transferInternals(Material & old_mat, std::vector<ElementPair> & element_pairs);
+
   /* ------------------------------------------------------------------------ */
   /* MeshEventHandler inherited members                                       */
   /* ------------------------------------------------------------------------ */
@@ -95,6 +95,8 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /// get max normalized equivalent stress
+  AKANTU_GET_MACRO(NormMaxEquivalentStress, norm_max_equivalent_stress, Real);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

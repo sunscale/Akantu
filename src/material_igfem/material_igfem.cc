@@ -72,8 +72,8 @@ void MaterialIGFEM::computeQuadraturePointsCoordinates(ElementTypeMapArray<Real>
 						       const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
+  /// compute quadrature points position in undeformed configuration
   Array<Real> nodes_coordinates(model->getIGFEMNodes(), true);
-  nodes_coordinates += this->model->getDisplacement();
 
   Mesh::type_iterator it = this->element_filter.firstType(spatial_dimension, ghost_type, _ek_igfem);
   Mesh::type_iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type, _ek_igfem);

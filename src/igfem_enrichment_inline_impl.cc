@@ -21,21 +21,16 @@ __BEGIN_AKANTU__
 
 
 /* -------------------------------------------------------------------------- */
-inline bool IGFEMEnrichment::isInside(const Vector<Real> & point, const ID & domain) {
-  /// geometries[default_geometry];
-  //  bool is_inside = true;
-  Real tolerance = 1.e-14;
-  Real radius = 0.401;
-
-  /// @todo change to make this function generic!!
-  Vector<Real> center(2);
-  center(0) = 0.;
-  center(1) = 0.;
-
-  // if (std::abs(point(1)) >= point(0) + radius + tolerance)
-  //   is_inside = false;
-
-  return (point.distance(center) < radius + tolerance);
-  ///return is_inside;
+inline bool IGFEMEnrichment::isInside(const Vector<Real> & point, ID & domain) {
+  if (domain == "") domain = default_geometry;
+  Geometry & spheres = this->getGeometry(domain);
+  SK::Point_3 p(point(0), point(1), 0.);
+  std::list<Spherical::Sphere_3>::const_iterator begin = spheres.begin();
+  std::list<Spherical::Sphere_3>::const_iterator end = spheres.end();
+  for ( ; begin != end; ++begin) {
+    if (!(begin->has_on_unbounded_side(p)))
+      return true;
+  }
+  return false;
 }
 

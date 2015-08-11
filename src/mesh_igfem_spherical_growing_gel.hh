@@ -37,7 +37,7 @@
 
 #include "aka_common.hh"
 #include "mesh_sphere_intersector.hh"
-
+#include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -71,7 +71,8 @@ public:
   /// Construct from mesh
   MeshIgfemSphericalGrowingGel(Mesh & mesh):
     mesh(mesh),
-    nb_nodes_fem(mesh.getNodes().getSize())
+    nb_nodes_fem(mesh.getNodes().getSize()),
+    nb_enriched_nodes(0)
   {
     // Solution 1
     //   /// the mesh sphere intersector for the supported element type
@@ -138,13 +139,44 @@ public:
     RemovedNodesEvent remove_nodes(this->mesh);
     Array<UInt> & nodes_removed = remove_nodes.getList();
     Array<UInt> & new_numbering = remove_nodes.getNewNumbering();
-    UInt nnod = 0;
-    for(; nnod != nb_nodes_fem ; ++nnod){
+    UInt total_nodes = this->mesh.getNbNodes();
+    UInt nb_new_enriched_nodes  = total_nodes - this->nb_enriched_nodes - this->nb_nodes_fem;
+    UInt old_total_nodes = this->nb_nodes_fem + this->nb_enriched_nodes; 
+
+    for(UInt nnod = 0; nnod < this->nb_nodes_fem ; ++nnod){
       new_numbering(nnod) = nnod ;
     }
-    for(nnod = nb_nodes_fem ; nnod != this->mesh.getNodes().getSize(); ++nnod){
+
+    for(UInt nnod = nb_nodes_fem ; nnod < old_total_nodes; ++nnod){
       new_numbering(nnod) = UInt(-1) ;
       nodes_removed.push_back(nnod);
+    }
+
+    for(UInt nnod = 0; nnod < nb_new_enriched_nodes ; ++nnod){
+      new_numbering(nnod + old_total_nodes) = this->nb_nodes_fem + nnod ;
+    }
+    for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+      GhostType ghost_type = (GhostType) gt;
+
+      Mesh::type_iterator it  = mesh.firstType(_all_dimensions, ghost_type, _ek_not_defined);
+      Mesh::type_iterator end = mesh.lastType(_all_dimensions, ghost_type, _ek_not_defined);
+      for(; it != end; ++it) {
+
+	ElementType type(*it);
+	UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+
+	const Array<UInt> & connectivity_vect = mesh.getConnectivity(type, ghost_type);
+	UInt nb_element(connectivity_vect.getSize());
+	UInt * connectivity = connectivity_vect.storage();
+
+	UInt nb_nodes = nb_element*nb_nodes_per_element;
+
+	for (UInt n = 0; n < nb_nodes; ++n, ++connectivity) {
+	  UInt & node = *connectivity;
+	  UInt old_node = node;
+	  node = new_numbering(old_node);
+	}	
+      }
     }
     this->mesh.sendEvent(remove_nodes);
     AKANTU_DEBUG_OUT();
@@ -156,9 +188,9 @@ public:
 
   /// Build the IGFEM mesh
   void buildResultFromQueryList(const std::list<SK::Sphere_3> & query_list) {
-    constructData();
-    removeAdditionnalNodes();
-
+    /// store number of currently enriched nodes
+    this->nb_enriched_nodes = mesh.getNbNodes() - nb_nodes_fem;
+   constructData();  
     //Solution 1
     //     it = mesh.firstType();
     //     end = mesh.lastType();
@@ -175,6 +207,8 @@ public:
       MeshAbstractIntersector<SK::Sphere_3> & intersector = *(iit->second);
       intersector.buildResultFromQueryList(query_list);
     }
+    removeAdditionnalNodes();
+    ///MeshUtils::purifyMesh(mesh);
   }
 
   /// increase sphere radius and build the IGFEM mesh
@@ -196,6 +230,9 @@ protected:
 
   /// number of fem nodes in the initial mesh
   const UInt nb_nodes_fem;
+
+  /// number of enriched nodes before intersection
+  UInt nb_enriched_nodes;
 
   //Solution 2
   /// map of the elements types in the mesh and the corresponding intersectors

@@ -76,7 +76,7 @@ public:
   virtual void computePotentialEnergyByElement(ElementType type, UInt index,
 					       Vector<Real> & epot_on_quad_points);
 
-  void updateElasticInternals(GhostType ghost_type = _not_ghost);
+  void updateElasticInternals(const Array<Element> & element_list);
 
 
 protected:

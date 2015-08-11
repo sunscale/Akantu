@@ -130,7 +130,9 @@ void SolidMechanicsModelIGFEM::initMaterials() {
   AKANTU_DEBUG_ASSERT(igfem_index != materials.size(),
 		      "No igfem materials in the material input file");
 
-  (dynamic_cast<DefaultMaterialIGFEMSelector *>(material_selector))->setIGFEMFallback(igfem_index);
+  DefaultMaterialIGFEMSelector * igfem_mat_selector = dynamic_cast<DefaultMaterialIGFEMSelector *>(material_selector);
+  if (igfem_mat_selector != NULL)  
+    igfem_mat_selector->setIGFEMFallback(igfem_index);
 
   SolidMechanicsModel::initMaterials();
 
@@ -184,46 +186,22 @@ void SolidMechanicsModelIGFEM::onElementsAdded(const Array<Element> & elements,
 					       const NewElementsEvent & event) {
   AKANTU_DEBUG_IN();
 
+  const NewIGFEMElementsEvent * igfem_event = dynamic_cast<const NewIGFEMElementsEvent *>(&event);
+  /// insert the new and old elements in the map
+  if (igfem_event != NULL) { 
+    this->element_map.clear();
+    const Array<Element> & old_elements = igfem_event->getOldElementsList();
+    for (UInt e = 0; e < elements.getSize(); ++e) {
+      this->element_map.insert( std::pair<Element, Element>(elements(e), old_elements(e)) );
+    }
+  }
+
   /// update shape functions
   getFEEngine("IGFEMFEEngine").initShapeFunctions(_not_ghost);
   getFEEngine("IGFEMFEEngine").initShapeFunctions(_ghost);
 
-  // for (UInt e = 0; e < nb_new_elements; ++e) 
-  //   element_list(e) = doubled_elements(e, 0);
-
-
   SolidMechanicsModel::onElementsAdded(elements, event);
-
-  // /// store the new and old elements by their material
-  // for (UInt e = 0; e < nb_new_elements; ++e) {
-  //   const Element new_el = doubled_elements(e, 0);
-  //   const Element old_el = doubled_elements(e, 1);
-  //   UInt mat_new = material_index(new_el.type, new_el.ghost_type)(new_el.element);
-  //   UInt mat_old = material_index(old_el.type, old_el.ghost_type)(old_el.element);
-  //   new_elements_by_mat[mat_new].push_back(new_el);
-  //   old_elements_by_mat[mat_old].push_back(old_el);
-  // }
-    
-  // for (ElementsByMatMap::iterator new_el_it = new_elements_by_mat.begin(); new_el_it != new_elements_by_mat.end();
-  //      ++new_el_it;) {
-  //   Material & new_mat = *(materials[new_el_it->first]);
-  //   std::unordered_set<ID> & ids = new_mat->getInternalIDs();
-
-  //   /// loop over all internals of the new material
-  //   for (std::unordered_set<std::string>::iterator  it = ids.begin(); it != ids.end(); ++it) {
-  //     for (ElementsByMatMap::iterator old_el_it = old_elements_by_mat.begin(); old_el_it != old_elements_by_mat.end(); ++old_el_it;) {
-  // 	Material & old_mat = *(materials[old_el_it->first]);
-  // 	std::vector<Element> & elements_old_mat = old_el_it->second;
-  // 	if (old_material->isInternals(*it) {
-  // 	  old_material->getInternal(*it);
-  // 	  new_mat.transferInternal();
-  // 	}
-  //     }
-  //   }
-
-  // }
-
-
+  this->reassignMaterial();
 
 
   AKANTU_DEBUG_OUT();
@@ -237,6 +215,8 @@ void SolidMechanicsModelIGFEM::onElementsRemoved(const Array<Element> & element_
   this->getFEEngine("IGFEMFEEngine").initShapeFunctions(_not_ghost);
   this->getFEEngine("IGFEMFEEngine").initShapeFunctions(_ghost);
   SolidMechanicsModel::onElementsRemoved(element_list, new_numbering, event);
+
+
 }
 
 /* -------------------------------------------------------------------------- */
@@ -411,8 +391,26 @@ dumper::Field * SolidMechanicsModelIGFEM::createNodalFieldReal(const std::string
   return field;
 }
 
-#endif
+#else
+/* -------------------------------------------------------------------------- */
+dumper::Field * SolidMechanicsModelIGFEM
+::createElementalField(const std::string & field_name,
+		       const std::string & group_name,
+		       bool padding_flag,
+		       const UInt & spatial_dimension,
+		       const ElementKind & kind){
+  return NULL;
+}
 
+/* -------------------------------------------------------------------------- */
+
+dumper::Field * SolidMechanicsModelIGFEM::createNodalFieldReal(const std::string & field_name,
+							  const std::string & group_name,
+							  bool padding_flag) {
+  return NULL;
+}
+
+#endif
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelIGFEM::computeValuesOnEnrichedNodes() {
 
@@ -473,5 +471,28 @@ void SolidMechanicsModelIGFEM::computeValuesOnEnrichedNodes() {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModelIGFEM::transferInternalValues(const ID & internal, std::vector<Element> & new_elements, Array<Real> & added_quads, Array<Real> & internal_values) {
+
+  /// @todo sort the new elements by their corresponding old element type and old material!!!
+
+  /// get the number of elements for which iternals need to be transfered
+  UInt nb_new_elements = new_elements.size();
+  UInt nb_old_quads = added_quads.getSize() / nb_new_elements;
+
+  Array<Real>::const_matrix_iterator quad_coords = added_quads.begin_reinterpret(this->spatial_dimension, nb_old_quads, nb_new_elements);
+  UInt nb_internal_component = internal_values.getNbComponent();
+  Array<Real>::matrix_iterator internal_val = internal_values.begin_reinterpret(nb_internal_component, nb_old_quads, nb_new_elements);
+  Vector<Real> default_values(nb_internal_component, 0.);
+  
+  for (UInt e = 0; e < nb_new_elements; ++e, ++quad_coords, ++internal_val) {
+    Element new_element = new_elements[e];
+    Element old_element = this->element_map[new_element];
+    UInt mat_idx = (this->material_index(old_element.type, old_element.ghost_type))(old_element.element);
+    Material & old_material = *(this->materials[mat_idx]);
+    old_material.extrapolateInternal(internal, old_element, *quad_coords, *internal_val);
+  
+  }
+}
 
 __END_AKANTU__

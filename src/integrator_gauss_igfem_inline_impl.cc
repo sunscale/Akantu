@@ -197,7 +197,7 @@ inline void IntegratorGauss<_ek_igfem>::checkJacobians(const GhostType & ghost_t
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 inline void IntegratorGauss<_ek_igfem>::precomputeJacobiansOnQuadraturePoints(const Array<Real> & nodes,
-								  const GhostType & ghost_type) {
+									      const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   /// typedef for the two subelement_types and the parent element type

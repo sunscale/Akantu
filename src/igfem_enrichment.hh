@@ -18,7 +18,7 @@
 #define __AKANTU_IGFEM_ENRICHMENT_HH__
 
 #include "mesh_sphere_intersector.hh"
-#include "mesh_geom_common.hh"
+#include "mesh_igfem_spherical_growing_gel.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -57,14 +57,14 @@ public:
   virtual void registerGeometryObject(Geometry & geometry, const ID & domain = "");
 
   /// check if a point is in a given domain
-  inline bool isInside(const Vector<Real> & point, const ID & domain);
+  inline bool isInside(const Vector<Real> & point, ID & domain);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
 
-  MeshSphereIntersector<2, _triangle_3> intersector_sphere;
+  MeshIgfemSphericalGrowingGel<2> intersector_sphere;
 
   GeometryMap geometries;
 
