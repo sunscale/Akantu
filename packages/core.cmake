@@ -89,7 +89,6 @@ package_declare_sources(core
   fe_engine/fe_engine_inline_impl.cc
   fe_engine/fe_engine_template.hh
   fe_engine/fe_engine_template_tmpl.hh
-  fe_engine/geometrical_data_tmpl.hh
   fe_engine/geometrical_element.cc
   fe_engine/integration_element.cc
   fe_engine/integrator.hh
