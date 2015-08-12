@@ -53,7 +53,7 @@ Material::Material(SolidMechanicsModel & model, const ID & id) :
   spatial_dimension(this->model->getSpatialDimension()),
   element_filter("element_filter", id, this->memory_id),
   stress("stress", *this),
-  eigenstrain("eigenstrain", *this),
+  eigengradu("eigen_grad_u", *this),
   gradu("grad_u", *this),
   green_strain("green_strain",*this),
   piola_kirchhoff_2("piola_kirchhoff_2", *this),
@@ -94,7 +94,7 @@ Material::Material(SolidMechanicsModel & model,
   spatial_dimension(dim),
   element_filter("element_filter", id, this->memory_id),
   stress("stress", *this, dim, fe_engine, this->element_filter),
-  eigenstrain("eignestrain", *this, dim, fe_engine, this->element_filter),
+  eigengradu("eigen_grad_u", *this, dim, fe_engine, this->element_filter),
   gradu("gradu", *this, dim, fe_engine, this->element_filter),
   green_strain("green_strain", *this, dim, fe_engine, this->element_filter),
   piola_kirchhoff_2("poila_kirchhoff_2", *this, dim, fe_engine, this->element_filter),
@@ -133,7 +133,7 @@ void Material::initialize() {
   registerParam("inelastic_deformation", inelastic_deformation, false        ,  _pat_internal, "Is inelastic deformation");
 
   /// allocate gradu stress for local elements
-  eigenstrain.initialize(spatial_dimension * spatial_dimension);
+  eigengradu.initialize(spatial_dimension * spatial_dimension);
   gradu.initialize(spatial_dimension * spatial_dimension);
   stress.initialize(spatial_dimension * spatial_dimension);
 
@@ -317,7 +317,7 @@ void Material::computeAllStresses(GhostType ghost_type) {
 						    spatial_dimension,
 						    *it, ghost_type, elem_filter);
 
-    gradu_vect -= eigenstrain(*it, ghost_type);
+    gradu_vect -= eigengradu(*it, ghost_type);
 
     /// compute @f$\mathbf{\sigma}_q@f$ from @f$\nabla u@f$
     computeStress(*it, ghost_type);

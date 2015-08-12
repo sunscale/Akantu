@@ -521,8 +521,8 @@ protected:
   /// stresses arrays ordered by element types
   InternalField<Real> stress;
 
-  /// eigenstrain arrays ordered by element types
-  InternalField<Real> eigenstrain;
+  /// eigengrad_u arrays ordered by element types
+  InternalField<Real> eigengradu;
 
   /// grad_u arrays ordered by element types
   InternalField<Real> gradu;
