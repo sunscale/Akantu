@@ -54,11 +54,11 @@ void MaterialIGFEM::initialize() {
 
   this->gradu.setElementKind(_ek_igfem);
   this->stress.setElementKind(_ek_igfem);
-  this->eigenstrain.setElementKind(_ek_igfem);
+  this->eigengradu.setElementKind(_ek_igfem);
 
   this->gradu.setFEEngine(*fem);
   this->stress.setFEEngine(*fem);
-  this->eigenstrain.setFEEngine(*fem);
+  this->eigengradu.setFEEngine(*fem);
 
   registerParam("name_sub_mat_1"                 , name_sub_mat_1                 , std::string(), _pat_parsable | _pat_readable);
   registerParam("name_sub_mat_2"                 , name_sub_mat_2                 , std::string(), _pat_parsable | _pat_readable);
@@ -131,7 +131,7 @@ void MaterialIGFEM::computeAllStresses(GhostType ghost_type) {
 						  spatial_dimension,
 						  *it, ghost_type, elem_filter);
 
-      gradu_vect -= eigenstrain(*it, ghost_type);
+      gradu_vect -= eigengradu(*it, ghost_type);
 
       /// compute @f$\mathbf{\sigma}_q@f$ from @f$\nabla u@f$
       computeStress(*it, ghost_type);
