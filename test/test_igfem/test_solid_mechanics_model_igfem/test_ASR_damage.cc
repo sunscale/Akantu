@@ -102,7 +102,7 @@ void applyEigenstrain(SolidMechanicsModelIGFEM & model) {
   /// igfem elements
   GhostType ghost_type = _not_ghost;
   ElementType element_type = _igfem_triangle_5;
-  Array<Real> & eigenstrain = const_cast<Array<Real> &>(model.getMaterial("igfem_damage").getInternal<Real>("eigenstrain")(element_type, ghost_type));
+  Array<Real> & eigenstrain = const_cast<Array<Real> &>(model.getMaterial("igfem_damage").getInternal<Real>("eigen_grad_u")(element_type, ghost_type));
   const Array<UInt> & is_inside = model.getMaterial("igfem_damage").getInternal<UInt>("sub_material")(element_type, ghost_type);
 
   Vector<Real> prestrain(4);
@@ -120,7 +120,7 @@ void applyEigenstrain(SolidMechanicsModelIGFEM & model) {
 
   /// regular elements
   element_type = _triangle_3;
-  Array<Real> & eigenstrain_reg = const_cast<Array<Real> &>(model.getMaterial("gel").getInternal<Real>("eigenstrain")(element_type, ghost_type));
+  Array<Real> & eigenstrain_reg = const_cast<Array<Real> &>(model.getMaterial("gel").getInternal<Real>("eigen_grad_u")(element_type, ghost_type));
 
   eig_it = eigenstrain_reg.begin(4);
   eig_end = eigenstrain_reg.end(4);
@@ -152,13 +152,13 @@ public:
     for (; iit != eit; ++iit) {
       const Sphere & sp = *iit;
       if(sp.isInside(barycenter)) {
-	/// return 2; //elastic gel material
-	return 0; /// aggregate
+	return 2; //elastic gel material
+	//return 0; /// aggregate
       }
     }
     if (aggregate.isInside(barycenter))
-      ///return 0;
-      return 2;
+      return 0;
+    ///return 2;
     return 1;
   }
 
@@ -194,7 +194,7 @@ int main(int argc, char *argv[]) {
 
   Real aggregate_radius = 0.016;
   /// geometry of inclusion
-  Real radius_inclusion = 0.0158;//0.0002;
+  Real radius_inclusion = 0.0002;///0.0158;//0.0002;
   // Spherical kernel testing the addition of nodes
   SK::Sphere_3 sphere(SK::Point_3(0, 0, 0), radius_inclusion * radius_inclusion);
   std::list<SK::Sphere_3> sphere_list;
@@ -223,7 +223,7 @@ int main(int argc, char *argv[]) {
   model.addDumpField("stress");
   model.addDumpField("damage");
   model.addDumpField("Sc");
-  model.addDumpField("eigenstrain");
+  model.addDumpField("eigen_grad_u");
   // model.dump();
 
   model.registerGeometryObject(sphere_list, domain_name);
@@ -239,7 +239,7 @@ int main(int argc, char *argv[]) {
   model.addDumpFieldToDumper("igfem elements", "stress");
   model.addDumpFieldToDumper("igfem elements", "Sc");
   model.addDumpFieldToDumper("igfem elements", "damage");
-  model.addDumpFieldToDumper("igfem elements", "eigenstrain");
+  model.addDumpFieldToDumper("igfem elements", "eigen_grad_u");
 
 
   /// Instantiate objects of class MyDamage
@@ -283,7 +283,8 @@ int main(int argc, char *argv[]) {
 
   /// grow the gel i = 12
   for (UInt i = 1; i < 12; ++i) {
-    Real new_radius = radius_inclusion - i * 0.00015;
+    // Real new_radius = radius_inclusion - i * 0.00015;
+    Real new_radius = radius_inclusion + i * 0.0002;
     growGel(sphere_list, new_radius);
     mat_selector->update(new_radius);
     model.update(domain_name);
