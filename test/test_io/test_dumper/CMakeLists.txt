@@ -43,3 +43,10 @@ register_test(swiss_train
   DIRECTORIES_TO_CREATE paraview
   PACKAGE iohelper
   )
+
+register_test(example_dumpable_interface
+  SOURCES example_dumpable_interface.cc
+  FILES_TO_COPY swiss_train.msh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE iohelper
+  )
