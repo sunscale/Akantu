@@ -275,8 +275,8 @@ public:
                          __attribute__((unused)) GhostType ghost_type1,
                          ElementType type2,
                          GhostType ghost_type2) {
-    selected_damage_with_damage_rate = &(this->material.getArray("damage",type2, ghost_type2));
-    selected_damage_rate_with_damage_rate = &(this->material.getArray("damage-rate",type2, ghost_type2));
+    selected_damage_with_damage_rate = &(this->material.template getArray<Real>("damage",type2, ghost_type2));
+    selected_damage_rate_with_damage_rate = &(this->material.template getArray<Real>("damage-rate",type2, ghost_type2));
   }
 
   inline Real operator()(Real r,

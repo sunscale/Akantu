@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
   mat.savePairs("pairs");
 
   //Array<Real> & damage = mat.getArray("local_damage", _quadrangle_4);
-  Array<Real> & damage = mat.getArray("local_damage", _triangle_3);
+  Array<Real> & damage = mat.getArray<Real>("local_damage", _triangle_3);
 
   RandGenerator<UInt> gen;
 
