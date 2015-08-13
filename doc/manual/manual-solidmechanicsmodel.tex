@@ -14,7 +14,7 @@ solved. A second parameter called \code{spatial\_dimension} can be
 added after \code{mesh} if the spatial dimension of the problem is
 different than that of the mesh.
 
-This model contains at least the the following six \code{Arrays}:
+This model contains at least the following six \code{Arrays}:
 \begin{description}
 \item[blocked\_dofs] contains a Boolean value for each degree of
   freedom specifying whether that degree is blocked or not. A
@@ -161,7 +161,11 @@ each element which shows the physical group that they belong to. In
 Gmsh, it is also possible to consider strings for different groups of
 elements. These elements can be separated by giving a string
 \code{physical\_names} to the function
-\code{createGroupsFromMeshData}.  Boundary conditions can also be
+\code{createGroupsFromMeshData}:
+\begin{cpp}
+mesh.createGroupsFromMeshData<std::string>("physical_names").
+\end{cpp}
+Boundary conditions support can also be
 created from the geometry by calling
 \code{createBoundaryGroupFromGeometry}. This function gathers all the
 elements on the boundary of the geometry.
@@ -182,13 +186,11 @@ utilization of three functors for the top, bottom and side surface of
 the mesh which were already defined in the Gmsh file:
 
 \begin{cpp}
-mesh.createGroupsFromMeshData<std::string>("physical_names");
+model.applyBC(BC::Dirichlet::FixedValue(13.0, _y), "Top");
 
-model.applyBC(BC::Dirichlet::FixedValue(13.0, BC::_y), "Top");
+model.applyBC(BC::Dirichlet::FlagOnly(_x), "Bottom");
 
-model.applyBC(BC::Dirichlet::FlagOnly(BC::_x), "Bottom");
-
-model.applyBC(BC::Dirichlet::IncrementValue(13.0, BC::_x), "Side");
+model.applyBC(BC::Dirichlet::IncrementValue(13.0, _x), "Side");
 \end{cpp}
 
 To apply a Neumann boundary condition, the applied traction or stress
@@ -238,8 +240,8 @@ respectively.
 
 \subsection{Material Selector\label{sect:smm:materialselector}}
 
-If the user wants to assign different materials to the different
-finite elements of choice in \akantu, a material selector has to be
+If the user wants to assign different materials to different
+finite elements groups in \akantu, a material selector has to be
 used. By default, \akantu assigns the first valid material in the
 material file to all elements present in the model (regular continuum
 materials are assigned to the regular elements and cohesive materials
@@ -261,17 +263,15 @@ examples below.
 In this example the physical names specified in a GMSH geometry file will by
 used to match the material names in the input file.
 
-Another example would be:
+Another example would be to use the first (\code{tag\_0}) or the second (\code{tag\_1}) tag associated to each elements in the mesh:
 
 \begin{cpp}
   MeshDataMaterialSelector<UInt> * mat_selector;
-  mat_selector = new MeshDataMaterialSelector<UInt>("tag_1", model);
+  mat_selector = new MeshDataMaterialSelector<UInt>("tag_1", model, first_index);
   model.setMaterialSelector(*mat_selector);
 \end{cpp}
 
-where \code{tag\_1} of the mesh file is used as the classifier index
-and the elements that have index value equal to one will be assigned
-to the second material in the material file.
+where \code{first\_index} (default is 1) is the value of \code{tag\_1} that will be associated to the first material in the material input file. The following values of the tag will be associated with the following materials.
 
 There are four different material selectors pre-defined in
 \akantu. \code{MaterialSelector} and \code{DefaultMaterialSelector} is
@@ -318,10 +318,10 @@ in Section~\ref{sect:common:mesh}.  Once an instance of a
 it is to use the \code{initFull}\index{SolidMechanicsModel!initFull}
 method by giving the \code{SolidMechanicsModelOptions}. These options
 specify the type of analysis to be performed and whether the materials
-should be initialized or not.
+should be initialized with \code{initMaterials} or not.
 \begin{cpp}
 SolidMechanicsModel model(mesh);
-model.initFull(SolidMechanicsModelOptions(_static));
+model.initFull(SolidMechanicsModelOptions(_static, false));
 \end{cpp}
 Here, a static analysis is chosen by passing the argument
 \code{\_static} to the method. By default, the Boolean for no
@@ -339,7 +339,7 @@ model.solveStep<_scm_newton_raphson_tangent_modified, _scc_residual>(1e-4, 1);
 \end{cpp}
 This function is templated by the solving method and the convergence
 criterion and takes two arguments: the tolerance and the maximum
-number of iterations, which are $\num{1e-4}$ and $1$ for this example. The
+number of iterations (100 by default), which are $\num{1e-4}$ and $1$ for this example. The
 modified Newton-Raphson method is chosen to solve the system. In this
 method, the equilibrium equation (\ref{eqn:smm:static}) is modified in
 order to apply a Newton-Raphson convergence algorithm:
@@ -525,7 +525,7 @@ within reason.  \index{SolidMechanicsModel!setTimeStep}
 \begin{cpp}
 model.setTimeStep(time_step);
 \end{cpp}
-Since the system has to be solved for a given amount of time, the
+Since the system has to be solved for a given amount of time steps, the
 method \code{solveStep()}, (which has already been used in the static
 example in Section~\ref{sect:smm:static}), is called inside a time
 loop:
