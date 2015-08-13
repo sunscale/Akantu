@@ -3,7 +3,7 @@
  * @author Fabian Barras <fabian.barras@epfl.ch>
  * @date   Thu Jul  2 14:34:41 2015
  *
- * @brief  Example of IOHelper dumper advanced usage  
+ * @brief  Example of dumper::Dumpable interface.  
  *
  * @section LICENSE
  *
@@ -46,10 +46,16 @@ using namespace akantu;
 
 int main(int argc, char *argv[]) {
 
-  /// In this example, we 
+  /*In this example, we present dumper::Dumpable which is an interface 
+    for other classes who want to dump themselves. 
+    Several classes of Akantu inheritate from Dumpable (Model, Mesh, ...).
+    In this example we reproduce the same tasks as example_dumper_low_level.cc 
+    using this time Dumpable interface inherted by Mesh, NodeGroup and ElementGroup.
+    It is then advised to read first example_dumper_low_level.cc.*/
+  
   initialize(argc, argv);
-
-  /// To start let us load the swiss train mesh with its mesh data
+  
+  /// To start let us load the swiss train mesh and its mesh data information.
   UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   mesh.read("swiss_train.msh");    
@@ -71,8 +77,8 @@ int main(int argc, char *argv[]) {
      ..."
    */
 
-  /// Create grouping nodes and elements belonging to train wheels (=four mesh data)
-  NodeGroup wheels_nodes("wheels_nodes", mesh);
+  /// Grouping nodes and elements belonging to train wheels (=four mesh data).
+  NodeGroup & wheels_nodes = mesh.createNodeGroup("wheels_nodes");
   wheels_nodes.append(mesh.getElementGroup("lwheel_1").getNodeGroup());
   wheels_nodes.append(mesh.getElementGroup("lwheel_2").getNodeGroup());
   wheels_nodes.append(mesh.getElementGroup("rwheel_1").getNodeGroup());
@@ -84,21 +90,31 @@ int main(int argc, char *argv[]) {
   wheels_elements.append(mesh.getElementGroup("rwheel_1"));
   wheels_elements.append(mesh.getElementGroup("rwheel_2"));
 
+  /// Create dumper for the complete mesh and register it as default dumper.
   DumperParaview dumper("train", "paraview/dumpable", false);
   mesh.registerExternalDumper(dumper, "train", true);
   mesh.addDumpMesh(mesh);
   
-  mesh.registerExternalDumper(mesh.getGroupDumper("paraview_wheels_elements", "wheels_elements"),"wheels_elements");
+  /// The dumper for the filtered mesh can be directly taken from the ElementGroup
+  /// and then registered as "wheels_elements" dumper.  
+  DumperIOHelper & wheels = mesh.getGroupDumper("paraview_wheels_elements", "wheels_elements");
+  mesh.registerExternalDumper(wheels,"wheels_elements");
   mesh.setDirectoryToDumper("wheels_elements","paraview/dumpable");
 
   Array<Real> & node = mesh.getNodes();
   UInt nb_nodes = mesh.getNbNodes();
+  /// This time 2D Array is created and a padding size of 3 is passed to NodalField 
+  /// in order to warp train deformation on Paraview.
   Array<Real> * displacement = new Array<Real>(nb_nodes,spatial_dimension);
   UInt padding_size = 3;
 
+  /// The colour ElementTypeMapArray is directly attached to the Mesh object 
+  /// to simplify the creation of dumper::Field.  
   ElementTypeMapArray<UInt> & colour = mesh.registerData<UInt>("colour");
   mesh.initElementTypeMapArray(colour, 1, spatial_dimension, false, _ek_regular, true);   
   
+  /// The creation of dumper::Field is completely handled by Dumpable interface.
+  /// The group name allows to create filter fields or standard fields if "all" is passed. 
   mesh.addDumpFieldExternal("displacement", mesh.createNodalField(displacement, "all",padding_size));
   mesh.addDumpFieldExternal("color", mesh.createFieldFromAttachedData<UInt>("colour", "all", _ek_regular)); 
 
@@ -107,7 +123,7 @@ int main(int argc, char *argv[]) {
   mesh.addDumpFieldExternalToDumper("wheels_elements", "colour", 
 				    mesh.createFieldFromAttachedData<UInt>("colour", "wheels_elements", _ek_regular));  
   
-  /// Fill the ElementTypeMapArray colour according to mesh data information
+  /// Fill the ElementTypeMapArray colour.
   ElementTypeMapArray<std::string> * phys_data = &(mesh.getData<std::string>("physical_names"));
   Array<std::string> & txt_colour = (*phys_data)(_triangle_3);
   Array<UInt> & id_colour = (colour)(_triangle_3);
@@ -124,7 +140,7 @@ int main(int argc, char *argv[]) {
       id_colour[i] = 1;
   }
  
-  /// Apply displacement and wheels rotation
+  /// Apply displacement and wheels rotation.
   Real tot_displacement = 50.;
   Real radius = 1.;
   UInt nb_steps = 500;
@@ -157,7 +173,7 @@ int main(int argc, char *argv[]) {
     for (UInt j = 0; j < nb_nodes; ++j) {
       (*displacement)(j,0) += (Real)i / (Real)nb_steps *tot_displacement;
     }
-    /// Results are output after each moving steps for main and wheel dumpers.  
+    /// Dump call is finally made through Dumpable interface.  
     mesh.dump();
     mesh.dump("wheels_elements");
   }

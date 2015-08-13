@@ -37,8 +37,8 @@ register_test(test_dumper
   PACKAGE iohelper
   )
 
-register_test(swiss_train
-  SOURCES swiss_train.cc
+register_test(example_dumper_low_level
+  SOURCES example_dumper_low_level.cc
   FILES_TO_COPY swiss_train.msh
   DIRECTORIES_TO_CREATE paraview
   PACKAGE iohelper

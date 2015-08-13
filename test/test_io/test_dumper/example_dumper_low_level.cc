@@ -1,9 +1,9 @@
 /**
- * @file   swiss_train.cc
+ * @file   example_dumper_low_level.cc
  * @author Fabian Barras <fabian.barras@epfl.ch>
  * @date   Thu Jul  2 14:34:41 2015
  *
- * @brief  Example of IOHelper dumper advanced usage  
+ * @brief  Example of dumper::DumperIOHelper low-level methods.   
  *
  * @section LICENSE
  *
@@ -48,11 +48,13 @@ using namespace akantu;
 
 int main(int argc, char *argv[]) {
 
-  /// This example aims at illustrating how to manipulate low-level methods of DumperIOHelper.
-  /// The aims is to visualize a colorized moving train with Paraview
+  /* This example aims at illustrating how to manipulate low-level methods of DumperIOHelper.
+     The aims is to visualize a colorized moving train with Paraview */
+
   initialize(argc, argv);
 
-  /// To start let us load the swiss train mesh with its mesh data
+  /// To start let us load the swiss train mesh and its mesh data information.
+  /// We aknowledge here a weel-known swiss industry for mesh donation.
   UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   mesh.read("swiss_train.msh");    
@@ -74,20 +76,21 @@ int main(int argc, char *argv[]) {
      ..."
    */
 
-  /// Creation of two dumper paraview. One for the complete mesh, one for a filtered mesh
-  DumperParaview dumper("train", "./paraview", false);
-  DumperParaview wheels("wheels", "./paraview", false);
+  /// Creation of two DumperParaview. One for full mesh, one for a filtered mesh.
+  DumperParaview dumper("train", "./paraview/dumper", false);
+  DumperParaview wheels("wheels", "./paraview/dumper", false);
 
-  /// Register the entire mesh
+  /// Register the full mesh
   dumper.registerMesh(mesh);
 
-  /// Create grouping nodes and elements belonging to train wheels (=four mesh data)
-  NodeGroup wheels_nodes("wheels_nodes", mesh);
+  /// Grouping nodes and elements belonging to train wheels (=four mesh data)
+  NodeGroup & wheels_nodes = mesh.createNodeGroup("wheels_nodes");
   wheels_nodes.append(mesh.getElementGroup("lwheel_1").getNodeGroup());
   wheels_nodes.append(mesh.getElementGroup("lwheel_2").getNodeGroup());
   wheels_nodes.append(mesh.getElementGroup("rwheel_1").getNodeGroup());
   wheels_nodes.append(mesh.getElementGroup("rwheel_2").getNodeGroup());
-  ElementGroup wheels_elements("wheels_elements", mesh, wheels_nodes);
+  
+  ElementGroup & wheels_elements = mesh.createElementGroup("wheels_elements", spatial_dimension, wheels_nodes);
   wheels_elements.append(mesh.getElementGroup("lwheel_1"));
   wheels_elements.append(mesh.getElementGroup("lwheel_2"));
   wheels_elements.append(mesh.getElementGroup("rwheel_1"));
@@ -97,6 +100,7 @@ int main(int argc, char *argv[]) {
   wheels.registerFilteredMesh(mesh,
 			      wheels_elements.getElements(),
 			      wheels_elements.getNodes());
+
   /// Generate an output file of the two mesh registered.  
   dumper.dump();
   wheels.dump();
@@ -111,20 +115,24 @@ int main(int argc, char *argv[]) {
   Array<Real> & node = mesh.getNodes();
   UInt nb_nodes = mesh.getNbNodes();
 
-  /// NodalField are constructed with an Array
+  /// NodalField are constructed with an Array.
+  /* Note that this Array is constructed with three components
+     in order to warp train deformation on Paraview.
+     A more appropriate way to do this is to set a padding in the NodalField
+     (See example_dumpable_interface.cc.) */
   Array<Real> * displacement = new Array<Real>(nb_nodes,3);
   dumper::Field * displ = new dumper::NodalField<Real>(*displacement);
 
-  /// ElementalField are constructed with an ElementTypeMapArray 
+  /// ElementalField are constructed with an ElementTypeMapArray. 
   ElementTypeMapArray<UInt> colour;
   mesh.initElementTypeMapArray(colour, 1, spatial_dimension, false, _ek_regular, true);   
   dumper::Field * color = new dumper::ElementalField<UInt>(colour);
 
-  /// Register the freshly created fields to our dumper
+  /// Register the freshly created fields to our dumper.
   dumper.registerField("displacement", displ);
   dumper.registerField("colour", color);
 
-  /// Fields have to be filtered at registration to dumper wheels
+  /// For the dumper wheels, fields have to be filtered at registration.
 
   /// Filter NodalField can be simply registered by adding an Array<UInt> listing filtered nodes.    
   wheels.registerField("displacement", 
@@ -137,9 +145,9 @@ int main(int argc, char *argv[]) {
   wheels.registerField("colour", 
 		       new dumper::ElementalField<UInt,Vector,true>(*filter));
 
-  ///Now that are dumper are created and the two fields are associated, let's paint and move the train!
+  ///Now that our dumpers are created and the two fields are associated, let's paint and move the train!
 
-  /// Fill the ElementTypeMapArray colour according to mesh data information
+  /// Fill the ElementTypeMapArray colour according to mesh data information.
   ElementTypeMapArray<std::string> * phys_data = &(mesh.getData<std::string>("physical_names"));
   Array<std::string> & txt_colour = (*phys_data)(_triangle_3);
   Array<UInt> & id_colour = (colour)(_triangle_3);
@@ -156,7 +164,7 @@ int main(int argc, char *argv[]) {
       id_colour[i] = 1;
   }
 
-  /// Apply displacement and wheels rotation
+  /// Apply displacement and wheels rotation.
   Real tot_displacement = 50.;
   Real radius = 1.;
   UInt nb_steps = 500;
@@ -189,7 +197,7 @@ int main(int argc, char *argv[]) {
     for (UInt j = 0; j < nb_nodes; ++j) {
       (*displacement)(j,0) += (Real)i / (Real)nb_steps *tot_displacement;
     }
-    /// Results are output after each moving steps for main and wheel dumpers.  
+    /// Output results after each moving steps for main and wheel dumpers.  
     dumper.dump();
     wheels.dump();
   }
