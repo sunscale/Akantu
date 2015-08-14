@@ -1,12 +1,11 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author David Simon Kammer <david.kammer@epfl.ch>
+# @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Tue Sep 02 2014
-# @date last modification: Tue Sep 02 2014
+# @date creation: Fri Aug 14 2015
 #
-# @brief  configuration for tests
+# @brief  CMakeLists for DumperIOHelper examples
 #
 # @section LICENSE
 #
@@ -30,9 +29,19 @@
 #
 #===============================================================================
 
-register_test(test_dumper
-  SOURCES test_dumper.cc
-  FILES_TO_COPY input_file.dat test_dumper.msh
+register_example(example_dumper_low_level
+  SOURCES example_dumper_low_level.cc
+  FILES_TO_COPY swiss_train.msh
   DIRECTORIES_TO_CREATE paraview
   PACKAGE iohelper
   )
+
+register_example(example_dumpable_interface
+  SOURCES example_dumpable_interface.cc
+  FILES_TO_COPY swiss_train.msh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE iohelper
+  )
+
+#===============================================================================
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)

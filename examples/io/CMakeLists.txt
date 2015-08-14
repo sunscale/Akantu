@@ -1,12 +1,11 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author David Simon Kammer <david.kammer@epfl.ch>
+# @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Tue Sep 02 2014
-# @date last modification: Tue Sep 02 2014
+# @date creation: Fri Aug 14 2015
 #
-# @brief  configuration for tests
+# @brief  CMakeLists for Input/Output examples
 #
 # @section LICENSE
 #
@@ -26,13 +25,5 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
-# @section DESCRIPTION
-#
 #===============================================================================
-
-register_test(test_dumper
-  SOURCES test_dumper.cc
-  FILES_TO_COPY input_file.dat test_dumper.msh
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE iohelper
-  )
+add_example(dumper "Examples on how to use DumperIOHelper to output data" PACKAGE iohelper)
