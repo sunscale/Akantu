@@ -31,6 +31,38 @@ MIIASYMContact::MIIASYMContact(SolidMechanicsModel & model,
 }
 
 /* -------------------------------------------------------------------------- */
+void MIIASYMContact::updateImpedance() {
+  AKANTU_DEBUG_IN();
+
+  NTRFContact::updateImpedance();
+
+  for (UInt i=0; i<this->impedance.getSize(); ++i) {
+    this->impedance(i) *= 0.5;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+/// WARNING: this is only valid for the acceleration in equilibrium
+void MIIASYMContact::computeRelativeNormalField(const Array<Real> & field,
+						Array<Real> & rel_normal_field) const {
+  AKANTU_DEBUG_IN();
+
+  NTRFContact::computeRelativeNormalField(field, rel_normal_field);
+
+  for (Array<Real>::iterator<Real> it_rtfield  = rel_normal_field.begin();
+       it_rtfield != rel_normal_field.end();
+       ++it_rtfield) {
+
+    // in the anti-symmetric case
+    *it_rtfield *= 2.;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 void MIIASYMContact::computeRelativeTangentialField(const Array<Real> & field,
 						    Array<Real> & rel_tang_field) const {
   AKANTU_DEBUG_IN();
@@ -49,6 +81,16 @@ void MIIASYMContact::computeRelativeTangentialField(const Array<Real> & field,
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+void MIIASYMContact::computeContactPressureInEquilibrium() {
+  AKANTU_DEBUG_IN();
+
+  NTRFContact::computeContactPressure();
+
+  AKANTU_DEBUG_OUT();
+}
+
 
 /* -------------------------------------------------------------------------- */
 void MIIASYMContact::printself(std::ostream & stream, int indent) const {
