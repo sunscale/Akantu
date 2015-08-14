@@ -30,18 +30,18 @@
 #===============================================================================
 
 register_example(example_dumper_low_level
-  SOURCES example_dumper_low_level.cc
-  FILES_TO_COPY swiss_train.msh
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE iohelper
+  example_dumper_low_level.cc
   )
 
 register_example(example_dumpable_interface
-  SOURCES example_dumpable_interface.cc
-  FILES_TO_COPY swiss_train.msh
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE iohelper
+  example_dumpable_interface.cc
   )
 
 #===============================================================================
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/swiss_train.msh
+  ${CMAKE_CURRENT_BINARY_DIR}/swiss_train.msh
+  COPYONLY
+  )
