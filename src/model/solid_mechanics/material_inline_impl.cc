@@ -204,7 +204,8 @@ inline Element Material::convertToLocalElement(const Element & global_element) c
 
   Element tmp_quad(global_element.type,
 		   le,
-		   global_element.ghost_type);
+		   global_element.ghost_type,
+		   global_element.kind);
   return tmp_quad;
 }
 
@@ -215,7 +216,8 @@ inline Element Material::convertToGlobalElement(const Element & local_element) c
 
   Element tmp_quad(local_element.type,
 		   ge,
-		   local_element.ghost_type);
+		   local_element.ghost_type,
+		   local_element.kind);
   return tmp_quad;
 }
 

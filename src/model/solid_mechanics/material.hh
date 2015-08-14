@@ -142,6 +142,8 @@ protected:
   virtual void updateInternalParameters() {}
 
 public:
+  /// extrapolate internal values
+  virtual void extrapolateInternal(const ID & id, const Element & element, const Matrix<Real> & points, Matrix<Real> & extrapolated);
 
   /// compute the p-wave speed in the material
   virtual Real getPushWaveSpeed(const Element & element) const { AKANTU_DEBUG_TO_IMPLEMENT(); }
@@ -433,14 +435,19 @@ public:
   AKANTU_GET_MACRO(GradU, gradu, const ElementTypeMapArray<Real> &);
   AKANTU_GET_MACRO(Stress, stress, const ElementTypeMapArray<Real> &);
   AKANTU_GET_MACRO(ElementFilter, element_filter, const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO(FEEngine, *fem, FEEngine &);
 
   bool isNonLocal() const { return is_non_local; }
 
-  const Array<Real> & getArray(const ID & id, const ElementType & type, const GhostType & ghost_type = _not_ghost) const;
-  Array<Real> & getArray(const ID & id, const ElementType & type, const GhostType & ghost_type = _not_ghost);
+  template <typename T>
+  const Array<T> & getArray(const ID & id, const ElementType & type, const GhostType & ghost_type = _not_ghost) const;
+  template <typename T>
+  Array<T> & getArray(const ID & id, const ElementType & type, const GhostType & ghost_type = _not_ghost);
 
-  const InternalField<Real> & getInternal(const ID & id) const;
-  InternalField<Real> & getInternal(const ID & id);
+  template <typename T>
+  const InternalField<T> & getInternal(const ID & id) const;
+  template <typename T>
+  InternalField<T> & getInternal(const ID & id);
 
   inline bool isInternal(const ID & id, const ElementKind & element_kind) const;
   virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
@@ -478,7 +485,7 @@ protected:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
+protected:
   /// boolean to know if the material has been initialized
   bool is_init;
 
@@ -514,8 +521,8 @@ protected:
   /// stresses arrays ordered by element types
   InternalField<Real> stress;
 
-  /// eigenstrain arrays ordered by element types
-  InternalField<Real> eigenstrain;
+  /// eigengrad_u arrays ordered by element types
+  InternalField<Real> eigengradu;
 
   /// grad_u arrays ordered by element types
   InternalField<Real> gradu;
@@ -543,6 +550,10 @@ protected:
 
   /// elemental field interpolation points
   InternalField<Real> interpolation_points_matrices;
+
+  /// vector that contains the names of all the internals that need to
+  /// be transferred when material interfaces move
+  std::vector<ID> internals_to_transfer;
 };
 
 /* -------------------------------------------------------------------------- */

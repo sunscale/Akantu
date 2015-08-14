@@ -144,7 +144,7 @@ public:
                          __attribute__((unused)) GhostType ghost_type1,
                          ElementType type2,
                          GhostType ghost_type2) {
-    selected_damage = &(this->material.getArray("damage", type2, ghost_type2));
+    selected_damage = &(this->material.template getArray<Real>("damage", type2, ghost_type2));
   }
 
   inline Real operator()(Real r,
@@ -201,7 +201,7 @@ public:
                          __attribute__((unused)) GhostType ghost_type1,
                          ElementType type2,
                          GhostType ghost_type2) {
-    selected_damage = &(this->material.getArray("damage", type2, ghost_type2));
+    selected_damage = &(this->material.template getArray<Real>("damage", type2, ghost_type2));
     //    selected_damage = &mat.getDamage(type2, ghost_type2);
   }
 
@@ -234,7 +234,7 @@ public:
                                       const Array<Element> & elements,
                                       SynchronizationTag tag) const {
     if(tag == _gst_mnl_weight) {
-      ElementTypeMapArray<Real> & damage = this->material.getInternal("damage");
+      ElementTypeMapArray<Real> & damage = this->material.template getInternal<Real>("damage");
       this->material.packElementDataHelper(damage,
                                            buffer,
                                            elements);
@@ -245,7 +245,7 @@ public:
                                         const Array<Element> & elements,
                                         SynchronizationTag tag) {
     if(tag == _gst_mnl_weight) {
-      ElementTypeMapArray<Real> & damage = this->material.getInternal("damage");
+      ElementTypeMapArray<Real> & damage = this->material.template getInternal<Real>("damage");
       this->material.unpackElementDataHelper(damage,
                                              buffer,
                                              elements);
@@ -275,8 +275,8 @@ public:
                          __attribute__((unused)) GhostType ghost_type1,
                          ElementType type2,
                          GhostType ghost_type2) {
-    selected_damage_with_damage_rate = &(this->material.getArray("damage",type2, ghost_type2));
-    selected_damage_rate_with_damage_rate = &(this->material.getArray("damage-rate",type2, ghost_type2));
+    selected_damage_with_damage_rate = &(this->material.template getArray<Real>("damage",type2, ghost_type2));
+    selected_damage_rate_with_damage_rate = &(this->material.template getArray<Real>("damage-rate",type2, ghost_type2));
   }
 
   inline Real operator()(Real r,
