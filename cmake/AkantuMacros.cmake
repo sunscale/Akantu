@@ -108,6 +108,9 @@ function(declare_akantu_types)
 
   include(CheckTypeSize)
 
+  # ----------------------------------------------------------------------------
+  # Floating point types
+  # ----------------------------------------------------------------------------
   if(AKANTU_TYPE_FLOAT STREQUAL "float (32bit)")
     set(AKANTU_FLOAT_TYPE "float" CACHE INTERNAL "")
     set(AKANTU_FLOAT_SIZE 4 CACHE INTERNAL "")
@@ -129,18 +132,20 @@ function(declare_akantu_types)
 
   include(CheckIncludeFileCXX)
 
+
+  # ----------------------------------------------------------------------------
+  # Integer types
+  # ----------------------------------------------------------------------------
   check_include_file_cxx(cstdint HAVE_CSTDINT)
   if(NOT HAVE_CSTDINT)
     check_include_file_cxx(stdint.h HAVE_STDINT_H)
     if(HAVE_STDINT_H)
-      set(_inc_stdint stdint.h)
+      list(APPEND _int_include stdint.h)
     endif()
   else()
-    set(_inc_stdint cstdint)
+    list(APPEND _int_include cstdint)
   endif()
-  set(_stdint "#include <${_inc_stdint}>")
 
-  set(AKANTU_EXTRA_INTEGER_TYPE_INCLUDE "" CACHE INTERNAL "")
   if(AKANTU_TYPE_INTEGER STREQUAL "int (32bit)")
     set(AKANTU_INTEGER_SIZE 4 CACHE INTERNAL "")
     check_type_size("int" INT)
@@ -152,7 +157,7 @@ function(declare_akantu_types)
       if(HAVE_INT32_T)
         set(AKANTU_SIGNED_INTEGER_TYPE "int32_t" CACHE INTERNAL "")
         set(AKANTU_UNSIGNED_INTEGER_TYPE "uint32_t" CACHE INTERNAL "")
-        set(AKANTU_EXTRA_INTEGER_TYPE_INCLUDE ${_stdint} CACHE INTERNAL "")
+        list(APPEND _extra_includes ${_int_include})
       endif()
     endif()
   elseif(AKANTU_TYPE_INTEGER STREQUAL "long int (64bit)")
@@ -171,13 +176,45 @@ function(declare_akantu_types)
         if(HAVE_INT64_T)
           set(AKANTU_SIGNED_INTEGER_TYPE "int64_t" CACHE INTERNAL "")
           set(AKANTU_UNSIGNED_INTEGER_TYPE "uint64_t" CACHE INTERNAL "")
-          set(AKANTU_EXTRA_INTEGER_TYPE_INCLUDE ${_stdint} CACHE INTERNAL "")
+          list(APPEND _extra_includes ${_int_include})
         endif()
       endif()
     endif()
   else()
     message(FATAL_ERROR "The integer type is not defined")
   endif()
+
+  # ----------------------------------------------------------------------------
+  # unordered map type
+  # ----------------------------------------------------------------------------
+  check_include_file_cxx(unordered_map HAVE_UNORDERED_MAP)
+  set(AKANTU_UNORDERED_MAP_IS_CXX11 TRUE CACHE INTERNAL "")
+  if(HAVE_UNORDERED_MAP)
+    list(APPEND _extra_includes unordered_map)
+    set(AKANTU_UNORDERED_MAP_TYPE "std::unordered_map" CACHE INTERNAL "")
+    set(AKANTU_UNORDERED_MAP_NAMESPACE_BEGIN "namespace std {" CACHE INTERNAL "")
+    set(AKANTU_UNORDERED_MAP_NAMESPACE_END "}" CACHE INTERNAL "")
+  else()
+    check_include_file_cxx(unordered_map HAVE_TR1_UNORDERED_MAP)
+    if(HAVE_TR1_UNORDERED_MAP)
+      list(APPEND _extra_includes tr1/unordered_map)
+      set(AKANTU_UNORDERED_MAP_TYPE "std::tr1::unordered_map" CACHE INTERNAL "")
+      set(AKANTU_UNORDERED_MAP_NAMESPACE_BEGIN "namespace std { namespace tr1 {" CACHE INTERNAL "")
+      set(AKANTU_UNORDERED_MAP_NAMESPACE_END "}}" CACHE INTERNAL "")
+    else()
+      list(APPEND _extra_includes map)
+      set(AKANTU_UNORDERED_MAP_TYPE "std::map" CACHE INTERNAL "")
+      set(AKANTU_UNORDERED_MAP_IS_CXX11 FALSE CACHE INTERNAL "")
+    endif()
+  endif()
+
+  # ----------------------------------------------------------------------------
+  # includes
+  # ----------------------------------------------------------------------------
+  foreach(_inc ${_extra_includes})
+    set(_incs "#include <${_inc}>\n${_incs}")
+  endforeach()
+  set(AKANTU_TYPES_EXTRA_INCLUDES ${_incs} CACHE INTERNAL "")
 endfunction()
 
 

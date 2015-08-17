@@ -33,39 +33,20 @@
 #include "aka_fwd.hh"
 #include "aka_math.hh"
 #include "aka_array.hh"
-
 /* -------------------------------------------------------------------------- */
 #include <iomanip>
-
-#ifndef __INTEL_COMPILER
-#include <tr1/unordered_map>
-#else
-#include <map>
-#endif
-
 /* -------------------------------------------------------------------------- */
+
 #ifndef __AKANTU_AKA_TYPES_HH__
 #define __AKANTU_AKA_TYPES_HH__
 
 __BEGIN_AKANTU__
-
-/* -------------------------------------------------------------------------- */
-/* maps                                                                       */
-/* -------------------------------------------------------------------------- */
-#ifndef __INTEL_COMPILER
-template<class Key, class Ty>
-struct unordered_map { typedef typename std::tr1::unordered_map<Key, Ty> type; };
-#else
-template<class Key, class Ty>
-struct unordered_map { typedef typename std::map<Key, Ty> type; };
-#endif
 
 enum NormType {
   L_1 = 1,
   L_2 = 2,
   L_inf = UInt(-1)
 };
-
 
 /**
  * DimHelper is a class to generalize the setup of a dim array from 3
