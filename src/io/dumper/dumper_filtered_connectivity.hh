@@ -35,39 +35,33 @@ __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
 template <class types>
-class filtered_connectivity_field_iterator 
+class filtered_connectivity_field_iterator
   : public element_iterator<types, filtered_connectivity_field_iterator> {
-
-public:
-
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
-  /* ------------------------------------------------------------------------ */  
-  
-
+  /* ------------------------------------------------------------------------ */
+public:
   typedef element_iterator<types, dumper::filtered_connectivity_field_iterator> parent;
   typedef typename types::return_type return_type;
   typedef typename types::field_type field_type;
   typedef typename types::array_iterator array_iterator;
 
-public:
-
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
+public:
   filtered_connectivity_field_iterator(const field_type & field,
-				       const typename field_type::type_iterator & t_it,
+                                       const typename field_type::type_iterator & t_it,
                                        const typename field_type::type_iterator & t_it_end,
                                        const array_iterator & array_it,
                                        const array_iterator & array_it_end,
-				       const GhostType ghost_type = _not_ghost) :
+                                       const GhostType ghost_type = _not_ghost) :
     parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type) { }
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-  
+public:
   return_type operator*(){
     const Vector<UInt> & old_connect = *this->array_it;
     Vector<UInt> new_connect(old_connect.size());
@@ -89,23 +83,19 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-  
 private:
   const Array<UInt> * nodal_filter;
 };
 
 /* -------------------------------------------------------------------------- */
 
-class FilteredConnectivityField : 
+class FilteredConnectivityField :
   public GenericElementalField<SingleType<UInt,Vector,true>,
- 			       filtered_connectivity_field_iterator> {
-
+                               filtered_connectivity_field_iterator> {
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
-  /* ------------------------------------------------------------------------ */  
-
+  /* ------------------------------------------------------------------------ */
 public:
-
   typedef SingleType<UInt,Vector,true> types;
   typedef filtered_connectivity_field_iterator<types> iterator;
   typedef types::field_type field_type;
@@ -114,19 +104,24 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
+public:
   FilteredConnectivityField(const field_type & field,
- 			    const Array<UInt> & nodal_filter,
-			    UInt spatial_dimension = _all_dimensions,
-			    GhostType ghost_type = _not_ghost,
-			    ElementKind element_kind = _ek_not_defined) :
+                            const Array<UInt> & nodal_filter,
+                            UInt spatial_dimension = _all_dimensions,
+                            GhostType ghost_type = _not_ghost,
+                            ElementKind element_kind = _ek_not_defined) :
     parent(field, spatial_dimension, ghost_type, element_kind),
     nodal_filter(nodal_filter) { }
+
+  ~FilteredConnectivityField() {
+    // since the field is created in registerFilteredMesh it is destroyed here
+    delete const_cast<field_type *>(&this->field);
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-  
+public:
   iterator begin() {
     iterator it = parent::begin();
     it.setNodalFilter(nodal_filter);
@@ -142,8 +137,6 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-
-
 private:
   const Array<UInt> & nodal_filter;
 };

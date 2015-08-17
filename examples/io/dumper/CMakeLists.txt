@@ -28,20 +28,24 @@
 # @section DESCRIPTION
 #
 #===============================================================================
+add_mesh(swiss_train swiss_train.geo 2 1)
 
-register_example(example_dumper_low_level
-  example_dumper_low_level.cc
+add_library(locomotive_tools
+  locomotive_tools.cc
+  locomotive_tools.hh
   )
 
-register_example(example_dumpable_interface
-  example_dumpable_interface.cc
+register_example(dumper_low_level
+  dumper_low_level.cc
+  USE IOHelper
+  DEPENDS swiss_train locomotive_tools
+  DIRECTORIES_TO_CREATE paraview
   )
 
-#===============================================================================
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/swiss_train.msh
-  ${CMAKE_CURRENT_BINARY_DIR}/swiss_train.msh
-  COPYONLY
+register_example(dumpable_interface
+  dumpable_interface.cc
+  USE IOHelper
+  DEPENDS swiss_train locomotive_tools
+  DIRECTORIES_TO_CREATE paraview
   )
+

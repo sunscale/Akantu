@@ -43,15 +43,11 @@ __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
 template<class _types, template <class> class iterator_type>
-class GenericElementalField : public Field
-{
-
+class GenericElementalField : public Field {
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
-
   typedef _types types;
   typedef typename types::data_type data_type;
   typedef typename types::it_type it_type;
@@ -64,14 +60,11 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
-
   GenericElementalField(const field_type & field,
                         UInt spatial_dimension = _all_dimensions,
                         GhostType ghost_type = _not_ghost,
                         ElementKind element_kind = _ek_not_defined) :
-
     field(field), spatial_dimension(spatial_dimension),
     ghost_type(ghost_type), element_kind(element_kind) {
     this->checkHomogeneity();
@@ -80,10 +73,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-
 public:
-
-
   /// get the number of components of the hosted field
   virtual ElementTypeMap<UInt> getNbComponents(UInt dim = _all_dimensions,
                                               GhostType ghost_type = _not_ghost,
@@ -101,7 +91,6 @@ public:
   iohelper::DataType getDataType() { return iohelper::getDataType<data_type>(); }
 
 protected:
-
   /// return the number of entries per element
   UInt getNbDataPerElem(const ElementType & type,
                         const GhostType & ghost_type = _not_ghost) const {
@@ -114,10 +103,7 @@ protected:
   /// check if the same quantity of data for all element types
   virtual void checkHomogeneity();
 
-
-
 public:
-
   virtual void registerToDumper(const std::string & id, iohelper::Dumper & dumper) {
     dumper.addElemDataField(id, *this);
   };
@@ -131,7 +117,6 @@ public:
   inline virtual ComputeFunctorInterface * connect(HomogenizerProxy & proxy){
     return proxy.connectToField(this);
   };
-
 
   virtual iterator begin() {
     field_type_iterator tit;
@@ -201,7 +186,6 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-
 protected:
 
   /// the ElementTypeMapArray embedded in the field

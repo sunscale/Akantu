@@ -68,7 +68,6 @@ package_get_all_packages(_package_list)
 
 foreach(_pkg_name ${_package_list})
   #  package_pkg_name(${_option} _pkg_name)
-
   _package_is_activated(${_pkg_name} _acctivated)
   _package_get_real_name(${_pkg_name} _real_name)
 
@@ -87,6 +86,13 @@ set(AKANTU_${_real_pkg_name}_LIBRARIES ${_libs})")
   if(_incs)
     file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
 set(AKANTU_${_real_pkg_name}_INCLUDE_DIR ${_incs})
+")
+  endif()
+
+  _package_get_compile_flags(${_pkg_name} _compile_flags)
+  if(_compile_flags)
+    file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
+set(AKANTU_${_real_pkg_name}_COMPILE_FLAGS ${_compile_flags})
 ")
   endif()
 endforeach()

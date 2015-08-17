@@ -158,10 +158,8 @@ void DumperIOHelper::registerFilteredMesh(const Mesh & mesh,
 					  UInt spatial_dimension,
 					  const GhostType & ghost_type,
 					  const ElementKind & element_kind) {
-
-
   ElementTypeMapArrayFilter<UInt> * f_connectivities =
-    new ElementTypeMapArrayFilter<UInt>(mesh.getConnectivities(),elements_filter);
+    new ElementTypeMapArrayFilter<UInt>(mesh.getConnectivities(), elements_filter);
 
   this->registerField("connectivities",
                       new dumper::FilteredConnectivityField(*f_connectivities,
