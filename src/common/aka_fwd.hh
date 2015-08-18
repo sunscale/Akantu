@@ -64,6 +64,9 @@ namespace akantu {
   extern Parser static_parser;
 
   extern cppargparse::ArgumentParser static_argparser;
+
+  class Mesh;
+  class SparseMatrix;
 }
 
 

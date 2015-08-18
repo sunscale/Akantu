@@ -35,11 +35,9 @@
 #define __AKANTU_FE_ENGINE_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_memory.hh"
 #include "mesh.hh"
 #include "element_class.hh"
-#include "sparse_matrix.hh"
 #include "quadrature_point.hh"
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__

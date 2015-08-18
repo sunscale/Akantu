@@ -49,10 +49,11 @@ __BEGIN_AKANTU__
   (heat)					\
   (contact)                                     \
   (friction)					\
-  (embedded_interface) \
+  (embedded_interface)                          \
   (rules)					\
   (non_local)					\
   (user)					\
+  (solver)                                      \
   (not_defined)
 
 

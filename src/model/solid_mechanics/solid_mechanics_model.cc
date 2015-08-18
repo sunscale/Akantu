@@ -110,13 +110,14 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh,
 
   registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh, spatial_dimension);
 
-  this->displacement = NULL;
-  this->mass         = NULL;
-  this->velocity     = NULL;
-  this->acceleration = NULL;
-  this->force        = NULL;
-  this->residual     = NULL;
-  this->blocked_dofs = NULL;
+  this->displacement   = NULL;
+  this->mass           = NULL;
+  this->velocity       = NULL;
+  this->acceleration   = NULL;
+  this->force          = NULL;
+  this->internal_force = NULL;
+  this->residual       = NULL;
+  this->blocked_dofs   = NULL;
 
   this->increment    = NULL;
   this->increment_acceleration = NULL;
@@ -179,7 +180,7 @@ void SolidMechanicsModel::setTimeStep(Real time_step) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Initialisation                                                             */
+/* Initialization                                                             */
 /* -------------------------------------------------------------------------- */
 /**
  * This function groups  many of the initialization in on  function. For most of
@@ -321,6 +322,7 @@ void SolidMechanicsModel::initArrays() {
   std::stringstream sstr_velo; sstr_velo << id << ":velocity";
   std::stringstream sstr_acce; sstr_acce << id << ":acceleration";
   std::stringstream sstr_forc; sstr_forc << id << ":force";
+  std::stringstream sstr_ifor; sstr_forc << id << ":internal_force";
   std::stringstream sstr_resi; sstr_resi << id << ":residual";
   std::stringstream sstr_boun; sstr_boun << id << ":blocked_dofs";
 
@@ -329,6 +331,7 @@ void SolidMechanicsModel::initArrays() {
   velocity     = &(alloc<Real>(sstr_velo.str(), nb_nodes, spatial_dimension, REAL_INIT_VALUE));
   acceleration = &(alloc<Real>(sstr_acce.str(), nb_nodes, spatial_dimension, REAL_INIT_VALUE));
   force        = &(alloc<Real>(sstr_forc.str(), nb_nodes, spatial_dimension, REAL_INIT_VALUE));
+  internal_force = &(alloc<Real>(sstr_ifor.str(), nb_nodes, spatial_dimension, REAL_INIT_VALUE));
   residual     = &(alloc<Real>(sstr_resi.str(), nb_nodes, spatial_dimension, REAL_INIT_VALUE));
   blocked_dofs = &(alloc<bool>(sstr_boun.str(), nb_nodes, spatial_dimension, false));
 
@@ -428,13 +431,6 @@ void SolidMechanicsModel::initializeUpdateResidualData() {
   AKANTU_DEBUG_OUT();
 }
 
-/*----------------------------------------------------------------------------*/
-void SolidMechanicsModel::reInitialize()
-{
-
-}
-
-
 /* -------------------------------------------------------------------------- */
 /* Explicit scheme                                                            */
 /* -------------------------------------------------------------------------- */
@@ -526,7 +522,6 @@ void SolidMechanicsModel::computeStresses() {
       mat.computeAllStresses(_not_ghost);
     }
 
-    /* ------------------------------------------------------------------------ */
 #ifdef AKANTU_DAMAGE_NON_LOCAL
     /* Computation of the non local part */
     synch_registry->asynchronousSynchronize(_gst_mnl_for_average);
@@ -814,40 +809,6 @@ void SolidMechanicsModel::initImplicit(bool dynamic, SolverOptions & solver_opti
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::initialAcceleration() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_INFO("Solving Ma = f");
-
-  Solver * acc_solver = NULL;
-
-  std::stringstream sstr; sstr << id << ":tmp_mass_matrix";
-  SparseMatrix * tmp_mass = new SparseMatrix(*mass_matrix, sstr.str(), memory_id);
-
-#ifdef AKANTU_USE_MUMPS
-  std::stringstream sstr_solver; sstr << id << ":solver_mass_matrix";
-  acc_solver = new SolverMumps(*mass_matrix, sstr_solver.str());
-
-  dof_synchronizer->initScatterGatherCommunicationScheme();
-#else
-  AKANTU_DEBUG_ERROR("You should at least activate one solver.");
-#endif //AKANTU_USE_MUMPS
-
-  acc_solver->initialize();
-
-  tmp_mass->applyBoundary(*blocked_dofs);
-
-  acc_solver->setRHS(*residual);
-  acc_solver->solve(*acceleration);
-
-  delete acc_solver;
-  delete tmp_mass;
-
-  AKANTU_DEBUG_OUT();
-}
-
-
-/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::assembleStiffnessMatrix() {
   AKANTU_DEBUG_IN();
 
@@ -867,8 +828,7 @@ void SolidMechanicsModel::assembleStiffnessMatrix() {
 /* -------------------------------------------------------------------------- */
 SparseMatrix & SolidMechanicsModel::initVelocityDampingMatrix() {
   if(!velocity_damping_matrix)
-    velocity_damping_matrix =
-      new SparseMatrix(*jacobian_matrix, id + ":velocity_damping_matrix", memory_id);
+    velocity_damping_matrix = &(this->getDOFManager().getNewMatrix("velocity_damping", "jacobian"));
 
   return *velocity_damping_matrix;
 }

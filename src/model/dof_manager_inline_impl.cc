@@ -1,16 +1,15 @@
 /**
- * @file   sparse_matrix_inline_impl.cc
+ * @file   dof_manager_inline_impl.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Mon Dec 13 2010
- * @date last modification: Thu Jun 05 2014
+ * @date   Wed Aug 12 11:07:01 2015
  *
- * @brief  implementation of inline methods of the SparseMatrix class
+ * @brief
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -29,10 +28,25 @@
  */
 
 /* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_DOF_MANAGER_INLINE_IMPL_CC__
+#define __AKANTU_DOF_MANAGER_INLINE_IMPL_CC__
+
 __BEGIN_AKANTU__
 
-inline void SparseMatrix::clearProfile() {
-  this->nb_non_zero = 0;
+inline void DOFManager::extractElementEquationNumber(const Array<Int> & equation_numbers,
+						     const Vector<UInt> & connectivity,
+						     UInt nb_degree_of_freedom,
+						     Vector<Int> & local_equation_number) {
+  for (UInt i = 0, ld = 0: i < connectivity.size(); ++i) {
+    UInt n = connectivity(i);
+    for (UInt d = 0; d < nb_degree_of_freedom; ++d, ++ld) {
+      local_eq_nb(ld) = equation_numbers(n * nb_degree_of_freedom + d);
+    }
+  }
 }
 
 __END_AKANTU__
+
+
+#endif /* __AKANTU_DOF_MANAGER_INLINE_IMPL_CC__ */

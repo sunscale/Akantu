@@ -48,6 +48,7 @@
 #include "dof_synchronizer.hh"
 #include "pbc_synchronizer.hh"
 #include "parser.hh"
+#include "model_solver.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -59,15 +60,11 @@ struct ModelOptions {
 
 class DumperIOHelper;
 
-class Model : public Memory {
+class Model : public Memory, public ModelSolver {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  typedef Mesh mesh_type;
-
-
   Model(Mesh& mesh, UInt spatial_dimension = _all_dimensions,
 	const ID & id = "model",
 	const MemoryID & memory_id = 0);

@@ -39,7 +39,8 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 Model::Model(Mesh& m, UInt dim, const ID & id,
 	     const MemoryID & memory_id) :
-  Memory(id, memory_id), mesh(m), 
+  Memory(id, memory_id), ModelSolver(id),
+  mesh(m),
   spatial_dimension(dim == _all_dimensions ? m.getSpatialDimension() : dim),
   synch_registry(NULL),
   dof_synchronizer(NULL),

@@ -178,6 +178,12 @@ package_declare_sources(core
   model/boundary_condition_functor.hh
   model/boundary_condition_functor_inline_impl.cc
   model/boundary_condition_tmpl.hh
+  model/dof_manager.cc
+  model/dof_manager.hh
+  model/dof_manager_inline_impl.cc
+  model/model_solver.hh
+  model/model_solver.cc
+
   model/integration_scheme/generalized_trapezoidal.hh
   model/integration_scheme/generalized_trapezoidal_inline_impl.cc
   model/integration_scheme/integration_scheme_1st_order.hh
@@ -453,3 +459,4 @@ if(NOT _clock_gettime)
 else()
   set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF CACHE INTERNAL "" FORCE)
 endif()
+

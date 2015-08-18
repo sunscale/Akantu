@@ -53,7 +53,7 @@ Solver::Solver(SparseMatrix & matrix,
   StaticSolver::getStaticSolver().registerEventHandler(*this);
   //createSynchronizerRegistry();
   this->synch_registry = new SynchronizerRegistry(*this);
-  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(), _gst_solver_solution);
+  //  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(), _gst_solver_solution);
 
   AKANTU_DEBUG_OUT();
 }

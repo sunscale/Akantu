@@ -494,8 +494,11 @@ public:
   /// SolidMechanicsModel::updateAcceleration
   AKANTU_GET_MACRO(Acceleration,    *acceleration,           Array <Real> &);
 
-  /// get the SolidMechanicsModel::force vector (boundary forces)
+  /// get the SolidMechanicsModel::force vector (external forces)
   AKANTU_GET_MACRO(Force,           *force,                  Array <Real> &);
+
+  /// get the SolidMechanicsModel::internal_force vector (internal forces)
+  AKANTU_GET_MACRO(InternalForce,   *internal_force,         Array <Real> &);
 
   /// get     the    SolidMechanicsModel::residual    vector,     computed    by
   /// SolidMechanicsModel::updateResidual
@@ -639,8 +642,11 @@ protected:
   /// accelerations array
   Array <Real> *increment_acceleration;
 
-  /// forces array
+  /// external forces array
   Array <Real> *force;
+
+  /// internal forces array
+  Array <Real> *internal_force;
 
   /// residuals array
   Array <Real> *residual;

@@ -92,12 +92,10 @@ void SolidMechanicsModel::assembleMass() {
   AKANTU_DEBUG_IN();
 
   if(!mass_matrix) {
-    std::stringstream sstr; sstr << id << ":mass_matrix";
-    mass_matrix = new SparseMatrix(*jacobian_matrix, sstr.str(), memory_id);
+    mass_matrix = &(this->getDOFManager().getNewMatrix("mass", "jacobian"));
   }
 
   assembleMass(_not_ghost);
-  //  assembleMass(_ghost);
 
   AKANTU_DEBUG_OUT();
 }

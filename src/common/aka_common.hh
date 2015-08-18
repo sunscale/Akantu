@@ -175,7 +175,7 @@ enum BoundaryFunctionType {
 };
 
 /// @enum SparseMatrixType type of sparse matrix used
-enum SparseMatrixType {
+enum MatrixType {
   _unsymmetric,
   _symmetric
 };
