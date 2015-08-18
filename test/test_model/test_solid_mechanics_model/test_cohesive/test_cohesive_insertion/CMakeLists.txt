@@ -1,12 +1,11 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Lucas Frerot <lucas.frerot@epfl.ch>
+# @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Fri Feb 27 2015
-# @date last modification: Fri Feb 27 2015
-#
-# @brief  configuration for solver tests
+# @date creation: Fri Aug  7 09:07:44 2015
+# 
+# @brief  Tests insertion of cohesive elements
 #
 # @section LICENSE
 #
@@ -30,28 +29,11 @@
 #
 #===============================================================================
 
-add_mesh(test_geometry_intersection_triangle_3_mesh triangle_3.geo 2 1)
-add_mesh(test_geometry_intersection_tetrahedron_4_mesh tetrahedron_4.geo 3 1)
+add_mesh(3d_spherical_inclusion 3d_spherical_inclusion.geo 3 2)
 
-register_test(test_geometry_predicates
-  SOURCES test_geometry_predicates.cc
-  PACKAGE CGAL
-  )
-
-register_test(test_geometry_intersection
-  SOURCES test_geometry_intersection.cc
-  FILES_TO_COPY test_geometry_triangle.msh
-  PACKAGE CGAL
-  )
-
-register_test(test_segment_intersection_triangle_3
-  SOURCES test_segment_intersection_triangle_3.cc
-  FILES_TO_COPY test_geometry_triangle.msh
-  PACKAGE CGAL
-  )
-
-register_test(test_segment_intersection_tetrahedron_4
-  SOURCES test_segment_intersection_tetrahedron_4.cc
-  FILES_TO_COPY test_geometry_tetrahedron.msh
-  PACKAGE CGAL
+register_test(test_cohesive_insertion_along_physical_surfaces
+  SOURCES test_cohesive_insertion_along_physical_surfaces.cc
+  DEPENDENCIES 3d_spherical_inclusion
+  FILES_TO_COPY input_file.dat
+  PACKAGE cohesive_element
   )

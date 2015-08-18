@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 
   // Boundary condition (Neumann)
   Matrix<Real> stress(2,2);
-  stress.eye(1e3);
+  stress.eye(Real(1e3));
   model.applyBC(BC::Neumann::FromHigherDim(stress), "boundary_0");
 
   model.setBaseName       ("square-orthotrope"      );
@@ -85,8 +85,8 @@ int main(int argc, char *argv[]) {
     model.updateAcceleration();
     model.explicitCorr();
 
-    epot = model.getPotentialEnergy();
-    ekin = model.getKineticEnergy();
+    epot = model.getEnergy("potential");
+    ekin = model.getEnergy("kinetic");
 
     std::cerr << "passing step " << s << "/" << max_steps << std::endl;
     energy << s << "," << epot << "," << ekin << "," << epot + ekin

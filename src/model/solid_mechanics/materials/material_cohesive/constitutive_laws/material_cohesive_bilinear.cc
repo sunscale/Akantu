@@ -40,7 +40,7 @@ MaterialCohesiveBilinear<spatial_dimension>::MaterialCohesiveBilinear(SolidMecha
   MaterialCohesiveLinear<spatial_dimension>(model, id) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("delta_0", delta_0, 0.,
+  this->registerParam("delta_0", delta_0, Real(0.),
 		      _pat_parsable | _pat_readable,
 		      "Elastic limit displacement");
 
@@ -197,8 +197,8 @@ void MaterialCohesiveBilinear<spatial_dimension>::computeTraction(const Array<Re
    = this->damage(el_type, ghost_type).end();
 
   for (; damage_it != damage_end; ++damage_it, ++delta_max_it, ++delta_c_it) {
-    *damage_it = std::max((*delta_max_it - delta_0) / (*delta_c_it - delta_0), 0.);
-    *damage_it = std::min(*damage_it, 1.);
+    *damage_it = std::max((*delta_max_it - delta_0) / (*delta_c_it - delta_0), Real(0.));
+    *damage_it = std::min(*damage_it, Real(1.));
   }
 }
 

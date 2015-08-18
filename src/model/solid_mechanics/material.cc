@@ -127,7 +127,7 @@ Material::~Material() {
 
 /* -------------------------------------------------------------------------- */
 void Material::initialize() {
-  registerParam("rho"                  , rho                  , 0.           , _pat_parsable | _pat_modifiable, "Density");
+  registerParam("rho"                  , rho                  , Real(0.)     , _pat_parsable | _pat_modifiable, "Density");
   registerParam("name"                 , name                 , std::string(), _pat_parsable | _pat_readable);
   registerParam("finite_deformation"   , finite_deformation   , false        , _pat_parsable | _pat_readable, "Is finite deformation");
   registerParam("inelastic_deformation", inelastic_deformation, false        ,  _pat_internal, "Is inelastic deformation");

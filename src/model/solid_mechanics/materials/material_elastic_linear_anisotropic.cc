@@ -80,7 +80,7 @@ MaterialElasticLinearAnisotropic(SolidMechanicsModel & model,
     for (UInt j = start ;  j < this->voigt_h.size ; ++j) {
       std::stringstream param("C");
       param << "C" << i+1 << j+1;
-      this->registerParam(param.str() , this->Cprime(i,j), 0., _pat_parsmod,
+      this->registerParam(param.str() , this->Cprime(i,j), Real(0.), _pat_parsmod,
                           "Coefficient " + param.str());
     }
   }

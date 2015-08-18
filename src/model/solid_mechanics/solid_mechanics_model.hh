@@ -353,6 +353,12 @@ protected:
 		  ElementType    type,
 		  GhostType      ghost_type);
 
+  /// compute the kinetic energy
+  Real getKineticEnergy();
+  Real getKineticEnergy(const ElementType & type, UInt index);
+
+  /// compute the external work (for impose displacement, the velocity should be given too)
+  Real getExternalWork();
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
@@ -540,16 +546,6 @@ public:
 
   /// compute the stable time step
   Real getStableTimeStep();
-
-  /// compute the potential energy
-  Real getPotentialEnergy();
-
-  /// compute the kinetic energy
-  Real getKineticEnergy();
-  Real getKineticEnergy(const ElementType & type, UInt index);
-
-  /// compute the external work (for impose displacement, the velocity should be given too)
-  Real getExternalWork();
 
   /// get the energies
   Real getEnergy(const std::string & energy_id);

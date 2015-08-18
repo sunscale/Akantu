@@ -32,7 +32,7 @@
 #include <algorithm>
 #include <limits>
 #include "cohesive_element_inserter.hh"
-
+#include "element_group.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -234,7 +234,88 @@ void CohesiveElementInserter::insertIntrinsicElements() {
 }
 
 /* -------------------------------------------------------------------------- */
+void CohesiveElementInserter::insertIntrinsicElements(std::string physname, 
+						      UInt material_index) {
+  AKANTU_DEBUG_IN();
+
+  UInt spatial_dimension = mesh.getSpatialDimension();
+  ElementTypeMapArray<UInt> * phys_data;
+  try {
+    phys_data = &(mesh_facets.getData<UInt>("physical_names"));
+  }
+  catch(...){
+    phys_data = &(mesh_facets.registerData<UInt>("physical_names"));
+    mesh_facets.initElementTypeMapArray(*phys_data, 1, spatial_dimension-1, false, _ek_regular, true); 
+  }
+  Vector<Real> bary_facet(spatial_dimension);
+  mesh_facets.createElementGroup(physname);
+
+  GhostType ghost_type = _not_ghost;
+
+  Mesh::type_iterator it  = mesh_facets.firstType(spatial_dimension - 1, ghost_type);
+  Mesh::type_iterator end = mesh_facets.lastType(spatial_dimension - 1, ghost_type);
+
+  for(; it != end; ++it) {
+    const ElementType type_facet = *it;
+    Array<bool> & f_insertion = insertion_facets(type_facet, ghost_type);
+    Array<std::vector<Element> > & element_to_facet
+      = mesh_facets.getElementToSubelement(type_facet, ghost_type);
+
+    UInt nb_facet = mesh_facets.getNbElement(type_facet, ghost_type);
+    UInt coord_in_limit = 0;
+
+    ElementGroup & group = mesh.getElementGroup(physname);
+    ElementGroup & group_facet = mesh_facets.getElementGroup(physname);
+	
+    Vector<Real> bary_physgroup(spatial_dimension);
+    Real norm_bary;
+    for(ElementGroup::const_element_iterator el_it(group.element_begin
+						   (type_facet, ghost_type));
+	el_it!= group.element_end(type_facet, ghost_type);
+	++el_it) {
+
+      UInt e = *el_it;
+      mesh.getBarycenter(e, type_facet, bary_physgroup.storage(), ghost_type); 	
+      bool find_a_partner = false;
+      norm_bary = bary_physgroup.norm();
+      Array<UInt> & material_id = (*phys_data)(type_facet, ghost_type);
+
+      for (UInt f = 0; f < nb_facet; ++f) {
+	  
+	if (element_to_facet(f)[1] == ElementNull) continue;
+	  	  
+	mesh_facets.getBarycenter(f, type_facet, bary_facet.storage(), ghost_type);
+
+	coord_in_limit = 0;
+	  
+	while (coord_in_limit < spatial_dimension && 
+	       (std::abs(bary_facet(coord_in_limit) 
+			 - bary_physgroup(coord_in_limit))/norm_bary 
+		< Math::getTolerance()))
+	  ++coord_in_limit;
+	  
+	if (coord_in_limit == spatial_dimension) {
+	  f_insertion(f) = true;
+	  find_a_partner = true;
+	  group_facet.add(type_facet, f, ghost_type,false);
+	  material_id(f) = material_index;
+	  break;
+	}
+      }
+      AKANTU_DEBUG_ASSERT(find_a_partner,
+			  "The element nO " << e 
+			  << " of physical group " << physname
+			  << " did not find its associated facet!"
+			  << " Try to decrease math tolerance. "
+			  << std::endl);
+    }
+  } 
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
+
   NewNodesEvent node_event;
   node_event.getList().extendComponentsInterlaced(2, 1);
   NewElementsEvent element_event;

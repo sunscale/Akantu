@@ -153,6 +153,10 @@ public:
   void setTimeStepToDumper(const std::string & dumper_name,
                            Real time_step);
 
+  
+  void setTextModeToDumper(const std::string & dumper_name);
+  void setTextModeToDumper();
+  
   virtual void dump();
   virtual void dump(UInt step);
   virtual void dump(Real time, UInt step);

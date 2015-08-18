@@ -1,0 +1,67 @@
+material elastic [
+	 name    = bulk
+	 rho     = 2500
+	 nu      = 0.29
+	 E       = 70e9
+#	 finite_deformation = 1
+]
+
+material cohesive_exponential [
+	 name = coh1
+	 sigma_c = 1.5e6
+	 beta = 1
+	 delta_c = 1e-4
+	 exponential_penalty = true
+	 contact_tangent = 1.0
+]
+
+material cohesive_exponential [
+	 name = coh2
+	 sigma_c = 1.5e6
+	 beta = 1
+	 delta_c = 1e-4
+	 exponential_penalty = true
+	 contact_tangent = 1.0
+]
+
+material cohesive_exponential [
+	 name = coh3
+	 sigma_c = 1.5e6
+	 beta = 1
+	 delta_c = 1e-4
+	 exponential_penalty = true
+	 contact_tangent = 1.0
+]
+
+material cohesive_exponential [
+	 name = coh4
+	 sigma_c = 1.5e6
+	 beta = 1
+	 delta_c = 1e-4
+	 exponential_penalty = true
+	 contact_tangent = 1.0
+]
+
+material cohesive_exponential [
+	 name = coh5
+	 sigma_c = 1.5e6
+	 beta = 1
+	 delta_c = 1e-4
+	 exponential_penalty = true
+	 contact_tangent = 1.0
+]
+
+material cohesive_exponential [
+	 name = interface
+	 sigma_c = 1.5e6
+	 beta = 1
+	 delta_c = 1e-4
+	 exponential_penalty = true
+	 contact_tangent = 1.0
+]
+
+mesh parameters [
+
+     	cohesive_surfaces = coh1,coh2,coh3,coh4,coh5,interface
+
+]

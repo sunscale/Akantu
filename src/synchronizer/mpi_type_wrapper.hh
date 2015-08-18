@@ -50,7 +50,7 @@ public:
 
   inline void setMPICommunicator(MPI_Comm comm) {
     communicator = comm;
-    Int prank, psize;
+    int prank, psize;
     MPI_Comm_rank(communicator, &prank);
     MPI_Comm_size(communicator, &psize);
 

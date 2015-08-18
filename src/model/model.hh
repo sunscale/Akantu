@@ -185,6 +185,8 @@ public:
   /* Dumpable interface (kept for convenience) and dumper relative functions  */
   /* ------------------------------------------------------------------------ */
 
+  void setTextModeToDumper();
+
   virtual void addDumpGroupFieldToDumper(const std::string & field_id,
 					 dumper::Field * field,
 					 DumperIOHelper & dumper);

@@ -79,7 +79,8 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh,
   int_bt_k_gT             ("int_bt_k_gT", id),
   bt_k_gT                 ("bt_k_gT", id),
   conductivity(spatial_dimension, spatial_dimension),
-  thermal_energy          ("thermal_energy", id) {
+  thermal_energy          ("thermal_energy", id),
+  solver(NULL) {
   AKANTU_DEBUG_IN();
 
   createSynchronizerRegistry(this);
@@ -136,6 +137,16 @@ void HeatTransferModel::initPBC() {
   synch_registry->registerSynchronizer(*synch, _gst_htm_capacity);
   synch_registry->registerSynchronizer(*synch, _gst_htm_temperature);
   changeLocalEquationNumberForPBC(pbc_pair,1);
+
+  // as long as there are ones on the diagonal of the matrix, we can put boudandary true for slaves
+  std::map<UInt, UInt>::iterator it = pbc_pair.begin();
+  std::map<UInt, UInt>::iterator end = pbc_pair.end();
+  while(it != end) {
+    (*blocked_dofs)((*it).first,0) = true;
+    ++it;
+  }
+  
+
 
   AKANTU_DEBUG_OUT();
 }
@@ -291,7 +302,11 @@ void HeatTransferModel::initImplicit(bool dynamic, SolverOptions & solver_option
 HeatTransferModel::~HeatTransferModel()
 {
   AKANTU_DEBUG_IN();
-
+  if (integrator)          delete integrator         ;
+  if (conductivity_matrix) delete conductivity_matrix;
+  if (capacity_matrix)     delete capacity_matrix    ;  
+  if (jacobian_matrix)     delete jacobian_matrix    ;
+  if (solver)              delete solver             ;
   AKANTU_DEBUG_OUT();
 }
 
@@ -860,13 +875,18 @@ void HeatTransferModel::initFull(const ModelOptions & options){
   const HeatTransferModelOptions & my_options
     = dynamic_cast<const HeatTransferModelOptions &>(options);
 
+  method = my_options.analysis_method;
+
   //initialize the vectors
   initArrays();
   temperature->clear();
   temperature_rate->clear();
   external_heat_rate->clear();
 
-  method = my_options.analysis_method;
+  
+  // initialize pbc
+  if(pbc_pair.size()!=0)
+    initPBC();
 
   if (method == _explicit_lumped_capacity){
     integrator = new ForwardEuler();

@@ -384,6 +384,14 @@ void Model::setDirectoryToDumper(const std::string & dumper_name,
   mesh.setDirectoryToDumper(dumper_name,directory);
 }
 
+/* -------------------------------------------------------------------------- */
+
+void Model::setTextModeToDumper(){
+  mesh.setTextModeToDumper();
+}
+
+/* -------------------------------------------------------------------------- */
+
 
 
 
