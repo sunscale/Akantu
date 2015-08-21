@@ -86,12 +86,12 @@ void ElementGroup::append(const ElementGroup & other_group) {
 
     GhostType ghost_type = *gt;
 
-    type_iterator it = other_group.firstType(_all_dimensions, 
-					     ghost_type,
-					     _ek_not_defined);
-    type_iterator last = other_group.lastType(_all_dimensions, 
-					      ghost_type,
-					      _ek_not_defined);
+    type_iterator it = other_group.firstType(_all_dimensions,
+                                             ghost_type,
+                                             _ek_not_defined);
+    type_iterator last = other_group.lastType(_all_dimensions,
+                                              ghost_type,
+                                              _ek_not_defined);
 
     for (; it != last; ++it) {
       ElementType type = *it;
@@ -103,18 +103,18 @@ void ElementGroup::append(const ElementGroup & other_group) {
 
       /// create current type if doesn't exists, otherwise get information
       if (elements.exists(type, ghost_type)) {
-	elem_list = &elements(type, ghost_type);
-	nb_elem = elem_list->getSize();
+        elem_list = &elements(type, ghost_type);
+        nb_elem = elem_list->getSize();
       }
       else {
-	elem_list = &(elements.alloc(0, 1, type, ghost_type));
+        elem_list = &(elements.alloc(0, 1, type, ghost_type));
       }
 
       /// append new elements to current list
       elem_list->resize(nb_elem + nb_other_elem);
       std::copy(other_elem_list.begin(),
-		other_elem_list.end(),
-		elem_list->begin() + nb_elem);
+                other_elem_list.end(),
+                elem_list->begin() + nb_elem);
 
       /// remove duplicates
       std::sort(elem_list->begin(), elem_list->end());
@@ -177,12 +177,12 @@ void ElementGroup::fillFromNodeGroup() {
 
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(elem.type);
       Array<UInt>::const_iterator< Vector<UInt> > conn_it =
-	this->mesh.getConnectivity(elem.type, elem.ghost_type).begin(nb_nodes_per_element);
+        this->mesh.getConnectivity(elem.type, elem.ghost_type).begin(nb_nodes_per_element);
       const Vector<UInt> & conn = conn_it[elem.element];
 
       UInt count = 0;
       for (UInt n = 0; n < conn.size(); ++n) {
-	count += (this->node_group.getNodes().find(conn(n)) != -1 ? 1 : 0);
+        count += (this->node_group.getNodes().find(conn(n)) != -1 ? 1 : 0);
       }
 
       if(count == nb_nodes_per_element) this->add(elem);
@@ -198,4 +198,3 @@ void ElementGroup::fillFromNodeGroup() {
 
 
 __END_AKANTU__
-

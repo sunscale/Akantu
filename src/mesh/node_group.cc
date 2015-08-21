@@ -29,7 +29,6 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
 #include "node_group.hh"
 #include "dumpable.hh"
 #include "dumpable_inline_impl.hh"
@@ -38,7 +37,7 @@
 #if defined(AKANTU_USE_IOHELPER)
 #  include "dumper_paraview.hh"
 #endif
-
+/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
@@ -49,7 +48,7 @@ NodeGroup::NodeGroup(const std::string & name,
                      const MemoryID & memory_id) :
   Memory(id, memory_id),
   name(name),
-  node_group(alloc<UInt>(id + ":nodes", 0, 1)),
+  node_group(alloc<UInt>(std::string(this->id + ":nodes"), 0, 1)),
   mesh(mesh){
 
 #if defined(AKANTU_USE_IOHELPER)

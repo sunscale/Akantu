@@ -32,8 +32,7 @@ The fields are dumped with the number of components of the memory. For example, 
 This memory can be dealt with \code{addDumpFieldVector}\index{I\/O!addDumpFieldVector} which always dumps
 \code{Vector}s with 3 components or \code{addDumpFieldTensor}\index{I\/O!addDumpFieldTensor} which dumps $2^{nd}$
 order tensors with $3\times3$ components respectively. The routines \code{addDumpFieldVector}\index{I\/O!addDumpFieldVector} and
-\code{addDumpFieldTensor}\index{I\/O!addDumpFieldTensor} were introduced because of Paraview which mostly manipulate 3D 
-data.
+\code{addDumpFieldTensor}\index{I\/O!addDumpFieldTensor} were introduced because of Paraview which mostly manipulate 3D data.
 
 Those fields which are stored by quadrature point are modified to be seen in the
 \code{VTK} file as elemental data. To do this, the default is to average the
@@ -49,21 +48,23 @@ The list of fields depends on the models (for
     key          &    type      & support \\
     \midrule
     displacement & Vector<Real> & nodes  \\
+    mass         & Vector<Real> & nodes  \\
     velocity     & Vector<Real> & nodes  \\
     acceleration & Vector<Real> & nodes  \\
     force	       & Vector<Real> & nodes  \\
     residual     & Vector<Real> & nodes  \\
-    boundary     & Vector<bool> & nodes  \\
-    mass         & Vector<Real> & nodes  \\
+    increment     & Vector<Real> & nodes  \\
+    {blocked\_dofs}  & Vector<bool> & nodes  \\    
     partitions   & Real         & elements \\
-    stress & Matrix<Real> & quadrature points  \\
-    Von Mises stress & Real & quadrature points  \\
-    grad\_u & Matrix<Real> & quadrature points  \\
+    material\_index & variable  & elements\\    
     strain & Matrix<Real> & quadrature points  \\
-    principal strain & Vector<Real> & quadrature points  \\
     Green strain & Matrix<Real> & quadrature points  \\
+    principal strain & Vector<Real> & quadrature points  \\
     principal Green strain & Vector<Real> & quadrature points  \\
-    \textit{material internals} & variable  & quadrature points  \\
+    grad\_u & Matrix<Real> & quadrature points  \\    
+    stress & Matrix<Real> & quadrature points  \\
+    Von Mises stress & Real & quadrature points  \\        
+    material\_index & variable  & quadrature points \\
     \bottomrule
   \end{tabular}
   \caption{List of dumpable fields for \code{SolidMechanicsModel}.}
@@ -76,14 +77,14 @@ The user can also register external fields which have the same mesh as the mesh 
 \item For nodal fields :
 \begin{cpp}
   Vector<T> vect(nb_nodes, nb_component);
-  Field field = new DumperIOHelper::NodalField<T>(vect));
+  dumper::Field * field = new dumper::NodalField<T>(vect);
   model.addDumpFieldExternal("my_field", field);
 \end{cpp}
 
 \item For elemental fields :
 \begin{cpp}
   ElementTypeMapArray<T> arr;
-  Field field = new DumperIOHelper::ElementalField<T>(arr, spatial_displacement));
+  dumper::Field * field = new dumper::ElementalField<T>(arr, spatial_dimension);
   model.addDumpFieldExternal("my_field", field);
 \end{cpp}
 \end{itemize}

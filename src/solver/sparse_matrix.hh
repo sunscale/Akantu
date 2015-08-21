@@ -47,12 +47,11 @@ class SparseMatrix : protected Memory {
 public:
   SparseMatrix(DOFManager & dof_manager,
                const MatrixType & matrix_type,
-	       const ID & id = "sparse_matrix",
-	       const MemoryID & memory_id = 0);
+               const ID & id = "sparse_matrix",
+               const MemoryID & memory_id = 0);
 
-  SparseMatrix(const SparseMatrix & matrix,
-	       const ID & id = "sparse_matrix",
-	       const MemoryID & memory_id = 0);
+  SparseMatrix(const SparseMatrix & matrix, const ID & id = "sparse_matrix",
+               const MemoryID & memory_id = 0);
 
   virtual ~SparseMatrix();
 

@@ -40,7 +40,7 @@
 #===============================================================================
 # CMake Project
 #===============================================================================
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 # add this options before PROJECT keyword
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -156,9 +156,11 @@ endif()
 option(AKANTU_EXAMPLES "Activate examples" OFF)
 option(AKANTU_TESTS "Activate tests" OFF)
 
-include(AkantuTestAndExamples)
+include(AkantuTestsMacros)
+include(AkantuExamplesMacros)
 
 if(AKANTU_EXAMPLES OR AKANTU_TESTS)
+  option(AKANTU_BUILD_ALL_EXAMPLES "Build all examples")
   find_package(GMSH REQUIRED)
 endif()
 

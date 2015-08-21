@@ -42,16 +42,12 @@ __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
-template<class _types, template <class> class iterator_type>
-class GenericElementalField : public Field
-{
-
+template <class _types, template <class> class iterator_type>
+class GenericElementalField : public Field {
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
-
   typedef _types types;
   typedef typename types::data_type data_type;
   typedef typename types::it_type it_type;
@@ -64,31 +60,25 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
-
   GenericElementalField(const field_type & field,
                         UInt spatial_dimension = _all_dimensions,
                         GhostType ghost_type = _not_ghost,
-                        ElementKind element_kind = _ek_not_defined) :
-
-    field(field), spatial_dimension(spatial_dimension),
-    ghost_type(ghost_type), element_kind(element_kind) {
+                        ElementKind element_kind = _ek_not_defined)
+      : field(field), spatial_dimension(spatial_dimension),
+        ghost_type(ghost_type), element_kind(element_kind) {
     this->checkHomogeneity();
   }
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-
 public:
-
-
   /// get the number of components of the hosted field
-  virtual ElementTypeMap<UInt> getNbComponents(UInt dim = _all_dimensions,
-                                              GhostType ghost_type = _not_ghost,
-                                              ElementKind kind = _ek_not_defined){
-    return this->field.getNbComponents(dim,ghost_type,kind);
+  virtual ElementTypeMap<UInt>
+  getNbComponents(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+                  ElementKind kind = _ek_not_defined) {
+    return this->field.getNbComponents(dim, ghost_type, kind);
   };
 
   /// return the size of the contained data: i.e. the number of elements ?
@@ -98,55 +88,59 @@ public:
   }
 
   /// return the iohelper datatype to be dumped
-  iohelper::DataType getDataType() { return iohelper::getDataType<data_type>(); }
+  iohelper::DataType getDataType() {
+    return iohelper::getDataType<data_type>();
+  }
 
 protected:
-
   /// return the number of entries per element
   UInt getNbDataPerElem(const ElementType & type,
                         const GhostType & ghost_type = _not_ghost) const {
     if (!nb_data_per_elem.exists(type, ghost_type))
-      return field(type,ghost_type).getNbComponent();
+      return field(type, ghost_type).getNbComponent();
 
-    return nb_data_per_elem(type,this->ghost_type);
+    return nb_data_per_elem(type, this->ghost_type);
   }
 
   /// check if the same quantity of data for all element types
   virtual void checkHomogeneity();
 
-
-
 public:
-
-  virtual void registerToDumper(const std::string & id, iohelper::Dumper & dumper) {
+  virtual void registerToDumper(const std::string & id,
+                                iohelper::Dumper & dumper) {
     dumper.addElemDataField(id, *this);
   };
 
   /// for connection to a FieldCompute
-  inline virtual Field * connect(FieldComputeProxy & proxy){
+  inline virtual Field * connect(FieldComputeProxy & proxy) {
     return proxy.connectToField(this);
   }
 
   /// for connection to a Homogenizer
-  inline virtual ComputeFunctorInterface * connect(HomogenizerProxy & proxy){
+  inline virtual ComputeFunctorInterface * connect(HomogenizerProxy & proxy) {
     return proxy.connectToField(this);
   };
-
 
   virtual iterator begin() {
     field_type_iterator tit;
     field_type_iterator end;
 
     /// type iterators on the elemental field
-    tit = this->field.firstType(this->spatial_dimension, this->ghost_type, this->element_kind);
-    end = this->field.lastType(this->spatial_dimension, this->ghost_type, this->element_kind);
+    tit = this->field.firstType(this->spatial_dimension, this->ghost_type,
+                                this->element_kind);
+    end = this->field.lastType(this->spatial_dimension, this->ghost_type,
+                               this->element_kind);
 
     /// skip all types without data
     ElementType type = *tit;
-    for (;tit != end && this->field(*tit, this->ghost_type).getSize() == 0; ++tit) {}
+    for (; tit != end && this->field(*tit, this->ghost_type).getSize() == 0;
+         ++tit) {
+    }
+
     type = *tit;
 
-    if (tit == end) return this->end();
+    if (tit == end)
+      return this->end();
 
     /// getting information for the field of the given type
     const array_type & vect = this->field(type, this->ghost_type);
@@ -158,20 +152,24 @@ public:
     array_iterator it = vect.begin_reinterpret(nb_data_per_elem, size);
     array_iterator it_end = vect.end_reinterpret(nb_data_per_elem, size);
     /// define data iterator
-    iterator rit = iterator(this->field, tit, end, it, it_end, this->ghost_type);
+    iterator rit =
+        iterator(this->field, tit, end, it, it_end, this->ghost_type);
     rit.setNbDataPerElem(this->nb_data_per_elem);
     return rit;
   }
 
-  virtual iterator end  () {
+  virtual iterator end() {
     field_type_iterator tit;
     field_type_iterator end;
 
-    tit = this->field.firstType(this->spatial_dimension, this->ghost_type, this->element_kind);
-    end = this->field.lastType(this->spatial_dimension, this->ghost_type, this->element_kind);
+    tit = this->field.firstType(this->spatial_dimension, this->ghost_type,
+                                this->element_kind);
+    end = this->field.lastType(this->spatial_dimension, this->ghost_type,
+                               this->element_kind);
 
     ElementType type = *tit;
-    for (; tit != end; ++tit) type = *tit;
+    for (; tit != end; ++tit)
+      type = *tit;
 
     const array_type & vect = this->field(type, this->ghost_type);
     UInt nb_data = this->getNbDataPerElem(type);
@@ -179,31 +177,30 @@ public:
     UInt size = (vect.getSize() * nb_component) / nb_data;
     array_iterator it = vect.end_reinterpret(nb_data, size);
 
-    iterator rit =  iterator(this->field, end, end, it, it, this->ghost_type);
+    iterator rit = iterator(this->field, end, end, it, it, this->ghost_type);
     rit.setNbDataPerElem(this->nb_data_per_elem);
     return rit;
   }
 
   virtual UInt getDim() {
-
-    if (this->homogeneous){
-      field_type_iterator tit = this->field.firstType(this->spatial_dimension, this->ghost_type, this->element_kind);
+    if (this->homogeneous) {
+      field_type_iterator tit = this->field.firstType(
+          this->spatial_dimension, this->ghost_type, this->element_kind);
       return this->getNbDataPerElem(*tit);
     }
+
     throw;
     return 0;
   }
 
-  void setNbDataPerElem(const ElementTypeMap<UInt> & nb_data){
+  void setNbDataPerElem(const ElementTypeMap<UInt> & nb_data) {
     nb_data_per_elem = nb_data;
   }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-
 protected:
-
   /// the ElementTypeMapArray embedded in the field
   const field_type & field;
   /// total number of elements
@@ -216,15 +213,12 @@ protected:
   ElementKind element_kind;
   /// The number of data per element type
   ElementTypeMap<UInt> nb_data_per_elem;
-
 };
 
 /* -------------------------------------------------------------------------- */
 #include "dumper_generic_elemental_field_tmpl.hh"
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU_DUMPER__
-__END_AKANTU__
-
+__END_AKANTU_DUMPER__ __END_AKANTU__
 
 #endif /* __AKANTU_DUMPER_GENERIC_ELEMENTAL_FIELD_HH__ */

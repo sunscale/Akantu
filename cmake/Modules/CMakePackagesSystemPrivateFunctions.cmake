@@ -246,6 +246,10 @@ function(_package_get_libraries pkg_name libraries)
   set(${libraries} ${_libraries} PARENT_SCOPE)
 endfunction()
 
+function(_package_add_libraries pkg_name)
+  _package_add_to_variable(LIBRARIES ${pkg_name} ${ARGN})
+endfunction()
+
 # ------------------------------------------------------------------------------
 # Extra dependencies like custom commands of ExternalProject
 # ------------------------------------------------------------------------------
@@ -450,6 +454,7 @@ function(_package_load_boost_components)
   string(TOUPPER ${PROJECT_NAME} _project)
 
   _package_get_variable_for_activated(BOOST_COMPONENTS_NEEDED _boost_needed_components)
+  package_get_name(Boost _pkg_name)
 
   if(_boost_needed_components)
     message(STATUS "Looking for Boost liraries: ${_boost_needed_components}")
@@ -461,7 +466,7 @@ function(_package_load_boost_components)
 	package_set_project_variable(BOOST_${_u_comp} TRUE)
 
 	# Generate the libraries for the package
-	_package_set_libraries(${_pkg_name} ${Boost_${_u_comp}_LIBRARY})
+	_package_add_libraries(${_pkg_name} ${Boost_${_u_comp}_LIBRARY})
       else()
 	message(STATUS "   ${_comp}: NOT FOUND")
       endif()
