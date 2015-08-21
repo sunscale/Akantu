@@ -268,13 +268,17 @@ public:
   inline const ArrayFilter<T>
   operator()(const SupportType & type,
              const GhostType & ghost_type = _not_ghost) const {
-    if (nb_data_per_elem.exists(type, ghost_type))
-      return ArrayFilter<T>(array(type, ghost_type), filter(type, ghost_type),
-                            nb_data_per_elem(type, ghost_type) /
-                                array(type, ghost_type).getNbComponent());
-    else
-      return ArrayFilter<T>(array(type, ghost_type), filter(type, ghost_type),
-                            1);
+    if (filter.exists(type, ghost_type)) {
+      if (nb_data_per_elem.exists(type, ghost_type))
+        return ArrayFilter<T>(array(type, ghost_type), filter(type, ghost_type),
+                              nb_data_per_elem(type, ghost_type) /
+                                  array(type, ghost_type).getNbComponent());
+      else
+        return ArrayFilter<T>(array(type, ghost_type), filter(type, ghost_type),
+                              1);
+    } else {
+      return ArrayFilter<T>(empty_array, empty_filter, 1);
+    }
   };
 
   inline type_iterator firstType(UInt dim = _all_dimensions,
@@ -311,6 +315,10 @@ protected:
   const ElementTypeMapArray<T, SupportType> & array;
   const ElementTypeMapArray<UInt, SupportType> & filter;
   ElementTypeMap<UInt> nb_data_per_elem;
+
+  /// Empty array to be able to return consistent filtered arrays
+  Array<T> empty_array;
+  Array<UInt> empty_filter;
 };
 
 __END_AKANTU__
