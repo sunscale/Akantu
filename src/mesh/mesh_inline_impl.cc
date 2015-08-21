@@ -445,7 +445,8 @@ inline ElementType Mesh::getFacetType(const ElementType & type, UInt t) {
 inline VectorProxy<ElementType> Mesh::getAllFacetTypes(const ElementType & type) {
 #define GET_FACET_TYPE(type)					\
   UInt nb = ElementClass<type>::getNbFacetTypes();		\
-  return VectorProxy<ElementType>(ElementClass<type>::getFacetTypeInternal(), nb);
+  ElementType * elt_ptr = const_cast<ElementType *>(ElementClass<type>::getFacetTypeInternal()); \
+  return VectorProxy<ElementType>(elt_ptr, nb);
 
   AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_FACET_TYPE);
 #undef GET_FACET_TYPE

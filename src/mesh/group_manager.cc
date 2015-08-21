@@ -91,9 +91,12 @@ NodeGroup & GroupManager::createNodeGroup(const std::string & group_name,
       AKANTU_EXCEPTION("Trying to create a node group that already exists:" << group_name);
   }
 
+  std::stringstream sstr;
+  sstr << this->id << ":" << group_name << "_node_group";
+
   NodeGroup * node_group = new NodeGroup(group_name,
 					 mesh,
-					 id + ":" + group_name + "_node_group",
+                                         sstr.str(),
 					 memory_id);
 
   node_groups[group_name] = node_group;
@@ -158,12 +161,18 @@ ElementGroup & GroupManager::createElementGroup(const std::string & group_name,
       AKANTU_EXCEPTION("Trying to create a element group that already exists:" << group_name);
   }
 
+  std::stringstream sstr;
+  sstr << this->id << ":" << group_name << "_element_group";
+
   ElementGroup * element_group = new ElementGroup(group_name, mesh, new_node_group,
 						  dimension,
-						  id + ":" + group_name + "_element_group",
+                                                  sstr.str(),
 						  memory_id);
 
-  node_groups[group_name + "_nodes"] = &new_node_group;
+  std::stringstream sstr_nodes;
+  sstr_nodes << group_name << "_nodes";
+
+  node_groups[sstr_nodes.str()] = &new_node_group;
   element_groups[group_name] = element_group;
 
   AKANTU_DEBUG_OUT();

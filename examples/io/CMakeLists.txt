@@ -1,16 +1,15 @@
 #===============================================================================
-# @file   AkantuUse.cmake
+# @file   CMakeLists.txt
 #
-# @author Nicolas Richart <nicolas.richart@epfl.ch>
+# @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Thu Dec 01 2011
-# @date last modification: Tue Nov 06 2012
+# @date creation: Fri Aug 14 2015
 #
-# @brief  CMake file for the library
+# @brief  CMakeLists for Input/Output examples
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -27,23 +26,4 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
-function(package_is_activated pgk activated)
-  string(TOUPPER ${pkg} _u_pkg)
-  set(activated ${AKANTU_HAS_${_u_pkg}} PARENT_SCOPE)
-endfunction()
-
-function(package_get_include_dir pkg include_dir)
-  string(TOUPPER ${pkg} _u_pkg)
-  set(include_dir ${AKANTU_${_u_pkg}_INCLUDE_DIR} PARENT_SCOPE)
-endfunction()
-
-function(package_get_libraries pkg libs)
-  string(TOUPPER ${pkg} _u_pkg)
-  set(libs ${AKANTU_${_u_pkg}_LIBRARIES} PARENT_SCOPE)
-endfunction()
-
-function(package_get_compile_flags pkg flags)
-  string(TOUPPER ${pkg} _u_pkg)
-  set(flags ${AKANTU_${_u_pkg}_COMPILE_FLAGS} PARENT_SCOPE)
-endfunction()
+add_example(dumper "Examples on how to use DumperIOHelper to output data" PACKAGE iohelper)

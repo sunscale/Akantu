@@ -59,8 +59,8 @@ public:
   /// this dumper is the default dumper.
   template<class T>
   inline void registerDumper(const std::string & dumper_name,
-   			     const std::string & file_name = "",
-  			     const bool is_default = false);
+                             const std::string & file_name = "",
+                             const bool is_default = false);
 
   /// register an externally created dumper
   void registerExternalDumper(DumperIOHelper & dumper,
@@ -100,8 +100,8 @@ public:
   /// to implement
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
                                     const std::string & field_id);
-  
-  /// add a field 
+
+  /// add a field
   virtual void addDumpFieldExternal(const std::string & field_id,
                                     dumper::Field * field);
   virtual void addDumpFieldExternalToDumper(const std::string & dumper_name,
@@ -110,17 +110,17 @@ public:
 
   template<typename T>
   inline void addDumpFieldExternal(const std::string & field_id,
-				   const Array<T> & field);
+                                   const Array<T> & field);
   template<typename T>
   inline void addDumpFieldExternalToDumper(const std::string & dumper_name,
                                     const std::string & field_id,
                                     const Array<T> & field);
   template<typename T>
   inline void addDumpFieldExternal(const std::string & field_id,
-                            const ElementTypeMapArray<T> & field,
-                            UInt spatial_dimension = _all_dimensions,
-                            const GhostType & ghost_type = _not_ghost,
-                            const ElementKind & element_kind = _ek_not_defined);
+                                   const ElementTypeMapArray<T> & field,
+                                   UInt spatial_dimension = _all_dimensions,
+                                   const GhostType & ghost_type = _not_ghost,
+                                   const ElementKind & element_kind = _ek_not_defined);
   template<typename T>
   inline void addDumpFieldExternalToDumper(const std::string & dumper_name,
                                     const std::string & field_id,
@@ -153,10 +153,10 @@ public:
   void setTimeStepToDumper(const std::string & dumper_name,
                            Real time_step);
 
-  
+
   void setTextModeToDumper(const std::string & dumper_name);
   void setTextModeToDumper();
-  
+
   virtual void dump();
   virtual void dump(UInt step);
   virtual void dump(Real time, UInt step);
