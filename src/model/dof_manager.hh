@@ -88,15 +88,17 @@ public:
    * implicitly considered as conn(el, n) * nb_nodes_per_element + d.  With 0 <
    * n < nb_nodes_per_element and 0 < d < nb_dof_per_node
    **/
-  virtual void
-  assembleElementalMatricesToMatrix(const ID & matrix_id, const ID & dof_id,
-                                    const Array<Real> & elemental_mat) = 0;
+  virtual void assembleElementalMatricesToMatrix(
+      const ID & matrix_id, const ID & dof_id,
+      const Array<Real> & elementary_mat, const ElementType & type,
+      const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
+      const Array<UInt> & filter_elements) = 0;
 
   /// notation fully defined yet...
-  virtual void assemblePreassembledMatrix(const ID & matrix_id,
-                                          const ID & dof_id_m,
-                                          const ID & dof_id_n,
-                                          const Matrix<Real> & matrix) = 0;
+  // virtual void assemblePreassembledMatrix(const ID & matrix_id,
+  //                                         const ID & dof_id_m,
+  //                                         const ID & dof_id_n,
+  //                                         const Matrix<Real> & matrix) = 0;
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
@@ -115,8 +117,15 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  /// get the equation numbers corresponding to a dof ID
-  Array<Real> & getEquationNumbers(const ID & dof_id);
+  /// get the equation numbers (in local numbering) corresponding to a dof ID
+  Array<UInt> & getLocalEquationNumbers(const ID & dof_id);
+  /// get the equation numbers (in global numbering) corresponding to a dof ID
+  Array<UInt> & getGlobalEquationNumbers(const ID & dof_id);
+
+  /// get the equation numbers (in local numbering) corresponding to a dof ID
+  const Array<UInt> & getLocalEquationNumbers(const ID & dof_id) const;
+  /// get the equation numbers (in global numbering) corresponding to a dof ID
+  const Array<UInt> & getGlobalEquationNumbers(const ID & dof_id) const;
 
   const Array<Real> & getDOFs(const ID & id) const;
 
@@ -140,8 +149,15 @@ public:
 protected:
   /// store a reference to the dof arrays
   std::map<ID, Array<Real> *> dofs;
+
+  struct EquationNumberArray {
+    Array<UInt> global_equation_number;
+    Array<UInt> local_equation_number;
+    unordered_map<UInt, UInt>::type global_to_local_equation_number;
+  };
+
   /// equation numbers corresponding to the dofglobalids arrays
-  std::map<ID, Array<UInt> *> equation_numbers;
+  std::map<ID, EquationNumberArray *> equation_numbers_infos;
 
   /// list of sparse matrices that where created
   std::map<ID, SparseMatrix *> matrices;

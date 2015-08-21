@@ -33,7 +33,7 @@
 /* -------------------------------------------------------------------------- */
 #include <mpi.h>
 #include <petscmat.h>
-#include <petscvec.h> 
+#include <petscvec.h>
 #include <petscao.h>
 #include <petscis.h>
 #include <petscksp.h>
@@ -44,7 +44,7 @@ struct PETScMatrixWrapper {
   Mat mat;
   AO ao;
   ISLocalToGlobalMapping mapping;
-  /// pointer to the MPI communicator for PETSc commands
+  /// MPI communicator for PETSc commands
   MPI_Comm communicator;
 };
 
@@ -52,20 +52,18 @@ struct PETScSolverWrapper {
   KSP ksp;
   Vec solution;
   Vec rhs;
-  /// pointer to the MPI communicator for PETSc commands
+  // MPI communicator for PETSc commands
   MPI_Comm communicator;
 };
 
 #if not defined(PETSC_CLANGUAGE_CXX)
 extern int aka_PETScError(int ierr);
 
-#  define CHKERRXX(x) do {			\
-    int error = aka_PETScError(x);		\
-    if(error != 0) {				\
-      AKANTU_EXCEPTION("Error in PETSC");	\
-    }						\
-  } while(0)
-
+#define CHKERRXX(x)                                                            \
+  do {                                                                         \
+    int error = aka_PETScError(x);                                             \
+    if (error != 0) { AKANTU_EXCEPTION("Error in PETSC"); }                    \
+  } while (0)
 #endif
 
 __END_AKANTU__

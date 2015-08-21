@@ -331,6 +331,31 @@ function(_package_unset_dependencies pkg_name)
   _package_variable_unset(DEPENDENCIES ${pkg_name})
 endfunction()
 
+function(_package_remove_dependency pkg_name dep)
+  set(_deps ${${pkg_name}_DEPENDENCIES})
+
+  _package_get_fdependencies(${dep} _fdeps)
+
+  # check if this is the last reverse dependency
+  list(LENGTH _fdeps len)
+  list(FIND _fdeps ${pkg_name} pos)
+  if((len EQUAL 1) AND (NOT pos EQUAL -1))
+    _package_get_description(${dep} _dep_desc)
+    _package_get_option_name(${dep} _dep_option_name)
+    set(${_dep_option_name} ${${dep}_OLD} CACHE BOOL "${_dep_desc}" FORCE)
+    unset(${dep}_OLD CACHE)
+  endif()
+
+  # remove the pkg_name form the reverse dependency
+  _package_remove_fdependency(${dep} ${pkg_name})
+
+  list(FIND _deps ${dep} pos)
+  if(NOT pos EQUAL -1)
+    list(REMOVE_AT _deps ${pos})
+    _package_set_variable(DEPENDENCIES ${pkg_name} ${_deps})
+  endif()
+endfunction()
+
 # ------------------------------------------------------------------------------
 # Functions to handle reverse dependencies
 # ------------------------------------------------------------------------------

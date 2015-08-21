@@ -1,11 +1,11 @@
 /**
- * @file   dof_manager_default.hh
+ * @file   dof_manager_petsc.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date   Tue Aug 11 14:06:18 2015
  *
- * @brief  Default implementation of the dof manager
+ * @brief  PETSc implementation of the dof manager
  *
  * @section LICENSE
  *
@@ -31,21 +31,21 @@
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_DOF_MANAGER_DEFAULT_HH__
-#define __AKANTU_DOF_MANAGER_DEFAULT_HH__
+#ifndef __AKANTU_DOF_MANAGER_PETSC_HH__
+#define __AKANTU_DOF_MANAGER_PETSC_HH__
 
 __BEGIN_AKANTU__
 
-class SparseMatrixAIJ;
+class SparseMatrixPETSc;
 
-class DOFManagerDefault : public DOFManager {
+class DOFManagerPETSc : public DOFManager {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DOFManagerDefault(const Mesh & mesh, const ID & id = "dof_manager_default",
-                    const MemoryID & memory_id = 0);
-  virtual ~DOFManagerDefault();
+  DOFManagerPETSc(const Mesh & mesh, const ID & id = "dof_manager_petsc",
+                  const MemoryID & memory_id = 0);
+  virtual ~DOFManagerPETSc();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -110,17 +110,17 @@ public:
                                       const ID & matrix_to_copy_id);
 
   /// Get the reference of an existing matrix
-  SparseMatrixAIJ & getMatrix(const ID & matrix_id);
+  SparseMatrixPETSc & getMatrix(const ID & matrix_id);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef std::map<ID, SparseMatrixAIJ *> AIJMatrixMap;
+  typedef std::map<ID, SparseMatrixPETSc *> PETScMatrixMap;
   Array<Real> residual;
-  AIJMatrixMap aij_matrices;
+  PETScMatrixMap aij_matrices;
 };
 
 __END_AKANTU__
 
-#endif /* __AKANTU_DOF_MANAGER_DEFAULT_HH__ */
+#endif /* __AKANTU_DOF_MANAGER_PETSC_HH__ */

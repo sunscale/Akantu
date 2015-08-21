@@ -37,11 +37,11 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-Model::Model(Mesh& m, UInt dim, const ID & id,
+Model::Model(Mesh& mesh, UInt dim, const ID & id,
 	     const MemoryID & memory_id) :
-  Memory(id, memory_id), ModelSolver(id),
-  mesh(m),
-  spatial_dimension(dim == _all_dimensions ? m.getSpatialDimension() : dim),
+  Memory(id, memory_id), ModelSolver(mesh, id),
+  mesh(mesh),
+  spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension() : dim),
   synch_registry(NULL),
   dof_synchronizer(NULL),
   is_pbc_slave_node(0,1,"is_pbc_slave_node") ,

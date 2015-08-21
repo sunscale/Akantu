@@ -90,6 +90,8 @@
 #
 #     package_get_dependencies(<pkg> <retval>)
 #     package_add_dependencies(<pkg> <dep1> <dep2> ... <depn>)
+#     package_remove_dependencies(<pkg> <dep1> <dep2> ... <depn>)
+#     package_remove_dependency(<pkg> <dep>)
 #
 #     package_get_all_source_files(<srcs> <public_headers> <private_headers>)
 #     package_get_all_include_directories(<inc_dirs>)
@@ -367,6 +369,18 @@ function(package_add_dependencies pkg)
   endforeach()
 
   _package_add_dependencies(${_pkg_name} ${_tmp_deps})
+endfunction()
+
+function(package_remove_dependencies pkg)
+  foreach(_dep ${ARGN})
+    package_remove_dependency(${pkg} _dep)
+  endforeach()
+endfunction()
+
+function(package_remove_dependency pkg dep)
+  package_get_name(${pkg} _pkg_name)
+  package_get_name(${dep} _dep_pkg_name)
+  _package_remove_dependency(${_pkg_name} ${_dep_pkg_name})
 endfunction()
 
 # ------------------------------------------------------------------------------

@@ -1,17 +1,15 @@
 /**
- * @file   sparse_matrix.hh
+ * @file   sparse_matrix_aij.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Mon Dec 13 2010
- * @date last modification: Mon Sep 15 2014
+ * @date   Mon Aug 17 21:22:57 2015
  *
- * @brief  sparse matrix storage class (distributed assembled matrix)
- * This is a COO format (Coordinate List)
+ * @brief AIJ implementation of the SparseMatrix (this the format used by Mumps)
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -30,47 +28,70 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "sparse_matrix.hh"
+/* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SPARSE_MATRIX_HH__
-#define __AKANTU_SPARSE_MATRIX_HH__
+#ifndef __AKANTU_SPARSE_MATRIX_AIJ_HH__
+#define __AKANTU_SPARSE_MATRIX_AIJ_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "dof_manager.hh"
-#include "mesh.hh"
+#ifndef __INTEL_COMPILER
+namespace std {
+  namespace tr1 {
+    /// hashing function for pairs
+    template <typename a, typename b> class hash<std::pair<a, b>> {
+    public:
+      hash() : ah(), bh() {}
+      size_t operator()(const std::pair<a, b> & p) const {
+        size_t seed = ah(p.first);
+        return bh(p.second) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      }
+
+    private:
+      const hash<a> ah;
+      const hash<b> bh;
+    };
+  }
+} // namespaces
+#endif
 
 __BEGIN_AKANTU__
 
-class SparseMatrix : protected Memory {
+class SparseMatrixAIJ : public SparseMatrix {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SparseMatrix(DOFManager & dof_manager,
-               const MatrixType & matrix_type,
-	       const ID & id = "sparse_matrix",
-	       const MemoryID & memory_id = 0);
+  SparseMatrixAIJ(DOFManager & dof_manager, const MatrixType & matrix_type,
+                  const ID & id = "sparse_matrix",
+                  const MemoryID & memory_id = 0);
 
-  SparseMatrix(const SparseMatrix & matrix,
-	       const ID & id = "sparse_matrix",
-	       const MemoryID & memory_id = 0);
+  SparseMatrixAIJ(const SparseMatrix & matrix, const ID & id = "sparse_matrix",
+                  const MemoryID & memory_id = 0);
 
-  virtual ~SparseMatrix();
+  virtual ~SparseMatrixAIJ();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// remove the existing profile
-  virtual void clearProfile();
+  inline void clearProfile();
+
+  /// add a non-zero element
+  virtual UInt addToProfile(UInt i, UInt j);
 
   /// set the matrix to 0
   virtual void clear();
 
-  /// add a non-zero element to the profile
-  virtual inline UInt addToProfile(UInt i, UInt j) = 0;
-
   /// assemble a local matrix in the sparse one
-  virtual inline void addToMatrix(UInt i, UInt j, Real value) = 0;
+  inline void addToMatrix(UInt i, UInt j, Real value);
+
+  /// set the size of the matrix
+  void resize(UInt size) { this->size = size; }
+
+  /// modify the matrix to "remove" the blocked dof
+  virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
 
   /// save the profil in a file using the MatrixMarket file format
   virtual void saveProfile(const std::string & filename) const;
@@ -84,52 +105,58 @@ public:
   /// add matrix assuming the profile are the same
   virtual void add(const SparseMatrix & matrix, Real alpha);
 
-  /// modify the matrix to "remove" the blocked dof
-  virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
+  /* ------------------------------------------------------------------------ */
+  /// accessor to A_{ij} - if (i, j) not present it returns 0
+  inline Real operator()(UInt i, UInt j) const;
+
+  /// accessor to A_{ij} - if (i, j) not present it fails, (i, j) should be
+  /// first added to the profile
+  inline Real & operator()(UInt i, UInt j);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  /// return the values at potition i, j
-  virtual inline Real operator()(UInt i, UInt j) const { AKANTU_DEBUG_TO_IMPLEMENT(); }
-  /// return the values at potition i, j
-  virtual inline Real & operator()(UInt i, UInt j) { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  AKANTU_GET_MACRO(IRN, irn, const Array<Int> &);
 
-  AKANTU_GET_MACRO(NbNonZero, nb_non_zero, UInt);
+  AKANTU_GET_MACRO(JCN, jcn, const Array<Int> &);
 
-  AKANTU_GET_MACRO(Size, size, UInt);
+  AKANTU_GET_MACRO(A, a, const Array<Real> &);
 
-  AKANTU_GET_MACRO(MatrixType, matrix_type, const MatrixType &);
+protected:
+  typedef std::pair<UInt, UInt> KeyCOO;
+  typedef unordered_map<KeyCOO, UInt>::type coordinate_list_map;
+
+  /// get the pair corresponding to (i, j)
+  inline KeyCOO key(UInt i, UInt j) const {
+    if (this->matrix_type == _symmetric && (i > j)) return std::make_pair(j, i);
+    return std::make_pair(i, j);
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-protected:
-  /// Underlying dof manager
-  DOFManager & dof_manager;
+private:
+  /// row indexes
+  Array<Int> irn;
 
-  /// sparce matrix type
-  MatrixType matrix_type;
+  /// column indexes
+  Array<Int> jcn;
 
-  /// Size of the matrix
-  UInt size;
+  /// values : A[k] = Matrix[irn[k]][jcn[k]]
+  Array<Real> a;
 
-  /// number of processors
-  UInt nb_proc;
-
-  /// number of non zero element
-  UInt nb_non_zero;
+  /*
+   * map for (i, j) ->  k correspondence
+   */
+  coordinate_list_map irn_jcn_k;
 };
-
-Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
 
 __END_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-#include "sparse_matrix_inline_impl.cc"
+#include "sparse_matrix_aij_inline_impl.cc"
 
-
-#endif /* __AKANTU_SPARSE_MATRIX_HH__ */
+#endif /* __AKANTU_SPARSE_MATRIX_AIJ_HH__ */

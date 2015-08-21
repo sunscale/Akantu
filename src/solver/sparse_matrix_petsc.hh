@@ -32,30 +32,26 @@
 
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix.hh"
-#include "static_communicator.hh"
-#include "static_solver.hh"
-
 /* -------------------------------------------------------------------------- */
+
 __BEGIN_AKANTU__
 
-class PETScMatrixWrapper;
+class PETScWrapper;
 
-class PETScMatrix : public SparseMatrix, StaticSolverEventHandler {
+class SparseMatrixPETSc : public SparseMatrix, StaticSolverEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  PETScMatrix(UInt size,
-	      const SparseMatrixType & sparse_matrix_type,
-	      const ID & id = "petsc_matrix",
-	      const MemoryID & memory_id = 0);
+  SparseMatrixPETSc(UInt size, const SparseMatrixType & sparse_matrix_type,
+                    const ID & id = "sparse_matrix_petsc",
+                    const MemoryID & memory_id = 0);
 
-  PETScMatrix(const SparseMatrix & matrix,
-	      const ID & id = "petsc_matrix",
-	      const MemoryID & memory_id = 0);
+  SparseMatrixPETSc(const SparseMatrix & matrix,
+                    const ID & id = "sparse_matrix_petsc",
+                    const MemoryID & memory_id = 0);
 
-  virtual ~PETScMatrix();
-
+  virtual ~SparseMatrixPETSc();
 
 private:
   /// init internal PETSc matrix
@@ -65,12 +61,13 @@ private:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// set the matrix to 0
   virtual void clear();
 
   /// fill the profil of the matrix
-  virtual void buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_synchronizer, UInt nb_degree_of_freedom);
+  virtual void buildProfile(const Mesh & mesh,
+                            const DOFSynchronizer & dof_synchronizer,
+                            UInt nb_degree_of_freedom);
 
   /// modify the matrix to "remove" the blocked dof
   virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
@@ -81,44 +78,36 @@ public:
   /// add a sparse matrix assuming the profile are the same
   virtual void add(const SparseMatrix & matrix, Real alpha);
   /// add a petsc matrix assuming the profile are the same
-  virtual void add(const PETScMatrix & matrix, Real alpha);
-
+  virtual void add(const SparseMatrixPETSc & matrix, Real alpha);
 
   virtual void beforeStaticSolverDestroy();
 
   Real operator()(UInt i, UInt j) const;
 
 protected:
-  inline KeyCOO keyPETSc(UInt i, UInt j) const {
-    return std::make_pair(i, j);
-  }
+  inline KeyCOO keyPETSc(UInt i, UInt j) const { return std::make_pair(i, j); }
 
 private:
   virtual void destroyInternalData();
 
   /// set the size of the PETSc matrix
   void setSize();
-  void createGlobalAkantuToPETScMap(Int* local_master_eq_nbs_ptr);
+  void createGlobalAkantuToPETScMap(Int * local_master_eq_nbs_ptr);
   void createLocalAkantuToPETScMap(const DOFSynchronizer & dof_synchronizer);
   /// perform assembly so that matrix is ready for use
   void performAssembly();
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  
-  AKANTU_GET_MACRO(PETScMatrixWrapper, petsc_matrix_wrapper, PETScMatrixWrapper*);
+  AKANTU_GET_MACRO(PETScMatrixWrapper, petsc_matrix_wrapper,
+                   PETScMatrixWrapper *);
   AKANTU_GET_MACRO(LocalSize, local_size, Int);
-  ///  AKANTU_GET_MACRO(LocalSize, local_size, Int);
-  
-
-public:
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-
-
 private:
   /// store the PETSc structures
   PETScMatrixWrapper * petsc_matrix_wrapper;
@@ -132,13 +121,12 @@ private:
   /// number of nonzeros in every row of the off-diagonal part
   Array<Int> o_nnz;
 
-  /// the global index of the first local row 
+  /// the global index of the first local row
   Int first_global_index;
 
-  /// bool to indicate if the matrix data has been initialized by calling MatCreate
-
+  /// bool to indicate if the matrix data has been initialized by calling
+  /// MatCreate
   bool is_petsc_matrix_initialized;
-
 };
 
 __END_AKANTU__

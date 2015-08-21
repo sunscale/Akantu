@@ -29,6 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_manager_default.hh"
+#include "sparse_matrix_aij.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -39,12 +40,12 @@ DOFManagerDefault::DOFManagerDefault(const Mesh & mesh, const ID & id,
     : DOFManager(mesh, id, memory_id) {}
 
 /* -------------------------------------------------------------------------- */
-~DOFManagerDefault::DOFManagerDefault() {
+DOFManagerDefault::~DOFManagerDefault() {
   AIJMatrixMap::iterator it = this->aij_matrices.begin();
   AIJMatrixMap::iterator end = this->aij_matrices.end();
 
   for (; it != end; ++it)
-    delete *it->second;
+    delete it->second;
 
   this->aij_matrices.clear();
 }
@@ -54,9 +55,11 @@ SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & matrix_id,
                                                const MatrixType & matrix_type) {
   std::stringstream sstr;
   sstr << this->id << ":" << matrix_id;
-  SparseMatrix * sm = new SparseMatrixAIJ(this->system_size, matrix_type,
-                                          sstr.str(), this->memory_id);
-  this->registerSparseMatrix(matrix_matrix, *sm);
+  SparseMatrix * sm =
+      new SparseMatrixAIJ(*this, matrix_type, sstr.str(), this->memory_id);
+  this->registerSparseMatrix(matrix_id, *sm);
+
+  return *sm;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -67,19 +70,21 @@ SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & matrix_id,
   SparseMatrixAIJ & sm_to_copy = this->getMatrix(matrix_to_copy_id);
   SparseMatrix * sm =
       new SparseMatrixAIJ(sm_to_copy, sstr.str(), this->memory_id);
-  this->registerSparseMatrix(matrix_matrix, *sm);
+  this->registerSparseMatrix(matrix_id, *sm);
+
+  return *sm;
 }
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ & DOFManagerDefault::getMatrix(const ID & matrix_id) {
-  AIJMatrixMap::iterator it = this->aij_matrices.find();
+  AIJMatrixMap::iterator it = this->aij_matrices.find(matrix_id);
 
   if (it == this->aij_matrices.end())
     AKANTU_EXCEPTION("The matrix " << matrix_id
                                    << " does not exists in the DOFManager "
                                    << this->id);
 
-  return it->second;
+  return *(it->second);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -87,20 +92,23 @@ void DOFManagerDefault::getSolution(const ID & dof_id,
                                     Array<Real> & solution_array) {
   AKANTU_DEBUG_IN();
 
-  const Array<UInt> & equation_number = this->getEquationNumbers(dof_id);
+  const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
 
   UInt nb_degree_of_freedoms =
       solution_array.getSize() * solution_array.getNbComponent();
 
-  AKANTU_DEBUG_ASSERT(equation_number.getSize() == nb_degree_of_freedoms,
-                      "The array to assemble does not have a correct size."
-                          << " (" << array_to_assemble.getID() << ")");
+  AKANTU_DEBUG_ASSERT(
+      equation_number.getSize() == nb_degree_of_freedoms,
+      "The array to get the solution does not have a correct size."
+          << " (" << solution_array.getID() << ")");
 
   Real * sol_it = solution_array.storage();
-  UInt * equ_it = equation_number.sotarge();
+  UInt * equ_it = equation_number.storage();
+
+  Array<Real> solution;
 
   for (UInt d = 0; d < nb_degree_of_freedoms; ++d, ++sol_it, ++equ_it) {
-    sol_it = this->solution(*equ_it);
+    (*sol_it) = solution(*equ_it);
   }
 
   AKANTU_DEBUG_OUT();
@@ -113,7 +121,7 @@ DOFManagerDefault::assembleToResidual(const ID & dof_id,
                                       Real scale_factor) {
   AKANTU_DEBUG_IN();
 
-  const Array<UInt> & equation_number = this->getEquationNumbers(dof_id);
+  const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
 
   UInt nb_degree_of_freedoms =
       array_to_assemble.getSize() * array_to_assemble.getNbComponent();
@@ -123,10 +131,10 @@ DOFManagerDefault::assembleToResidual(const ID & dof_id,
                           << " (" << array_to_assemble.getID() << ")");
 
   Real * arr_it = array_to_assemble.storage();
-  UInt * equ_it = equation_number.sotarge();
+  UInt * equ_it = equation_number.storage();
 
   for (UInt d = 0; d < nb_degree_of_freedoms; ++d, ++arr_it, ++equ_it) {
-    residual(*equ_it) += scale_factor * arr_it;
+    residual(*equ_it) += scale_factor * (*arr_it);
   }
 
   AKANTU_DEBUG_OUT();
@@ -137,11 +145,11 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     const ID & matrix_id, const ID & dof_id, const Array<Real> & elementary_mat,
     const ElementType & type, const GhostType & ghost_type,
     const MatrixType & elemental_matrix_type,
-    const Array<UInt> & filter_elements) const {
+    const Array<UInt> & filter_elements) {
   AKANTU_DEBUG_IN();
 
-  const Array<Int> & equation_number = this->getEquationNumbers(dof_id);
-  const SparseMatrixAIJ & A = this->getSparseMatrix(matrix_id);
+  const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
+  SparseMatrixAIJ & A = this->getSparseMatrix(matrix_id);
 
   if (ghost_type == _not_ghost) { nb_element = mesh.getNbElement(type); } else {
     AKANTU_DEBUG_TO_IMPLEMENT();

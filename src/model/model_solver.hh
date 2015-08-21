@@ -43,7 +43,7 @@ class ModelSolver : public Parsable {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ModelSolver(const ID & id);
+  ModelSolver(const Mesh & mesh, const ID & id);
   virtual ~ModelSolver();
 
   /* ------------------------------------------------------------------------ */

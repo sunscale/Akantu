@@ -48,15 +48,6 @@
 
 #include <cmath>
 
-#ifdef AKANTU_USE_MUMPS
-#include "solver_mumps.hh"
-#endif
-
-#ifdef AKANTU_USE_PETSC
-#include "solver_petsc.hh"
-#include "petsc_matrix.hh"
-#endif
-
 #ifdef AKANTU_USE_IOHELPER
 #  include "dumper_field.hh"
 #  include "dumper_paraview.hh"
@@ -719,72 +710,44 @@ void SolidMechanicsModel::solveStep() {
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-/**
- * Initialize the solver and create the sparse matrices needed.
- *
- */
-void SolidMechanicsModel::initSolver(__attribute__((unused)) SolverOptions & options) {
-#if !defined(AKANTU_USE_MUMPS) && !defined(AKANTU_USE_PETSC)// or other solver in the future \todo add AKANTU_HAS_SOLVER in CMake
-  AKANTU_DEBUG_ERROR("You should at least activate one solver.");
-#else
-  UInt nb_global_nodes = mesh.getNbGlobalNodes();
+// /**
+//  * Initialize the solver and create the sparse matrices needed.
+//  *
+//  */
+// void SolidMechanicsModel::initSolver(__attribute__((unused))
+//                                      SolverOptions & options) {
+//   UInt nb_global_nodes = mesh.getNbGlobalNodes();
 
-  delete jacobian_matrix;
-  std::stringstream sstr; sstr << id << ":jacobian_matrix";
+//   jacobian_matrix = &(this->getDOFManager().getNewMatrix("jacobian", _symmetric));
 
-#ifdef AKANTU_USE_PETSC
-  jacobian_matrix = new PETScMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
-#else
-  jacobian_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
-#endif //AKANTU_USE PETSC
-  jacobian_matrix->buildProfile(mesh, *dof_synchronizer, spatial_dimension);
+//   //  jacobian_matrix->buildProfile(mesh, *dof_synchronizer, spatial_dimension);
 
-  if (!isExplicit()) {
-    delete stiffness_matrix;
-    std::stringstream sstr_sti; sstr_sti << id << ":stiffness_matrix";
-#ifdef AKANTU_USE_PETSC
-    stiffness_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
-    stiffness_matrix->buildProfile(mesh, *dof_synchronizer, spatial_dimension);
-#else
-    stiffness_matrix = new SparseMatrix(*jacobian_matrix, sstr_sti.str(), memory_id);
-#endif //AKANTU_USE_PETSC
-  }
+//   if (!isExplicit()) {
+//     delete stiffness_matrix;
+//     std::stringstream sstr_sti;
+//     sstr_sti << id << ":stiffness_matrix";
 
-  delete solver;
-  std::stringstream sstr_solv; sstr_solv << id << ":solver";
-#ifdef AKANTU_USE_PETSC
-  solver = new SolverPETSc(*jacobian_matrix, sstr_solv.str());
-#elif defined(AKANTU_USE_MUMPS)
-  solver = new SolverMumps(*jacobian_matrix, sstr_solv.str());
-  dof_synchronizer->initScatterGatherCommunicationScheme();
-#else
-  AKANTU_DEBUG_ERROR("You should at least activate one solver.");
-#endif //AKANTU_USE_MUMPS
+//     stiffness_matrix = &(this->getDOFManager().getNewMatrix("stiffness", _symmetric));
+//   }
 
-  if(solver)
-    solver->initialize(options);
-#endif //AKANTU_HAS_SOLVER
-}
 
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::initJacobianMatrix() {
-#if defined(AKANTU_USE_MUMPS) && !defined(AKANTU_USE_PETSC)
+//   if (solver) solver->initialize(options);
+// }
 
-  // @todo make it more flexible: this is an ugly patch to treat the case of non
-  // fix profile of the K matrix
-  delete jacobian_matrix;
-  std::stringstream sstr_sti; sstr_sti << id << ":jacobian_matrix";
-  jacobian_matrix = new SparseMatrix(*stiffness_matrix, sstr_sti.str(), memory_id);
+// /* -------------------------------------------------------------------------- */
+// void SolidMechanicsModel::initJacobianMatrix() {
+//   // @todo make it more flexible: this is an ugly patch to treat the case of non
+//   // fix profile of the K matrix
+//   delete jacobian_matrix;
 
-  std::stringstream sstr_solv; sstr_solv << id << ":solver";
-  delete solver;
-  solver = new SolverMumps(*jacobian_matrix, sstr_solv.str());
-  if(solver)
-    solver->initialize(_solver_no_options);
-#else
-  AKANTU_DEBUG_ERROR("You need to activate the solver mumps.");
-#endif
-}
+//   jacobian_matrix = &(this->getDOFManager().getNewMatrix("jacobian", "stiffness"));
+
+//   std::stringstream sstr_solv; sstr_solv << id << ":solver";
+//   delete solver;
+//   solver = new SolverMumps(*jacobian_matrix, sstr_solv.str());
+//   if(solver)
+//     solver->initialize(_solver_no_options);
+// }
 
 /* -------------------------------------------------------------------------- */
 /**

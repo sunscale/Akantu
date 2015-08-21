@@ -29,8 +29,29 @@
 #===============================================================================
 
 package_declare(implicit META
-  DESCRIPTION "Add support for implicit time scheme"
-  DEPENDS scotch mumps)
+  DESCRIPTION "Add support for implicit time scheme")
+
+set(AKANTU_IMPLICIT_SOLVER "Mumps"
+  CACHE STRING "Solver activated in Akantu")
+set_property(CACHE AKANTU_IMPLICIT_SOLVER PROPERTY STRINGS
+  Mumps
+  PETSc
+  Mumps+PETSc
+  )
+
+if(AKANTU_IMPLICIT_SOLVER MATCHES "Mumps")
+  package_add_dependencies(implicit Mumps scotch)
+else()
+  package_remove_dependencies(implicit Mumps scotch)
+endif()
+
+if(AKANTU_IMPLICIT_SOLVER MATCHES "PETSc")
+  package_add_dependencies(implicit PETSc)
+else()
+  package_remove_dependency(implicit PETSc)
+endif()
+
+
 
 package_declare_documentation(implicit
   "This package activates the sparse solver necessary to solve implicitely static/dynamic"

@@ -41,7 +41,7 @@
 
 __BEGIN_AKANTU__
 
-ModelSolver::ModelSolver(const ID & id)
+ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
     : Parsable(_st_solver, id), dof_manager(NULL) {
   std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
       sub_sect = getStaticParser().getSubSections(_st_solver);
@@ -55,14 +55,14 @@ ModelSolver::ModelSolver(const ID & id)
 
   if (solver_type == "petsc") {
 #if defined(AKANTU_USE_PETSC)
-    this->dof_manager = new DOFManagerPETSc();
+    this->dof_manager = new DOFManagerPETSc(mesh, id + ":dof_manager_petsc");
 #else
     AKANTU_EXCEPTION(
         "To use PETSc you have to activate it in the compilations options");
 #endif
   } else if (solver_type == "mumps") {
 #if defined(AKANTU_USE_MUMPS)
-    this->dof_manager = new DOFManagerDefault();
+    this->dof_manager = new DOFManagerDefault(mesh, id + ":dof_manager_default");
 #else
     AKANTU_EXCEPTION(
         "To use MUMPS you have to activate it in the compilations options");
