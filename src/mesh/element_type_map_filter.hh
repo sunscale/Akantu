@@ -147,9 +147,12 @@ public:
             << this->getSize() << "," << this->getNbComponent() << ")");
     UInt new_full_array_size =
         this->array.getSize() * array.getNbComponent() / n;
-    UInt new_nb_item_per_elem = this->array.getNbComponent() *
-                                this->filter.getSize() *
-                                this->nb_item_per_elem / (n * new_size);
+    UInt new_nb_item_per_elem = this->nb_item_per_elem;
+    if (new_size != 0 && n != 0)
+      new_nb_item_per_elem = this->array.getNbComponent() *
+                             this->filter.getSize() * this->nb_item_per_elem /
+                             (n * new_size);
+
     return const_vector_iterator(
         this->array.begin_reinterpret(n, new_full_array_size),
         this->filter.begin(), new_nb_item_per_elem);
@@ -164,9 +167,12 @@ public:
             << this->getSize() << "," << this->getNbComponent() << ")");
     UInt new_full_array_size =
         this->array.getSize() * this->array.getNbComponent() / n;
-    UInt new_nb_item_per_elem = this->array.getNbComponent() *
-                                this->filter.getSize() *
-                                this->nb_item_per_elem / (n * new_size);
+    UInt new_nb_item_per_elem = this->nb_item_per_elem;
+    if (new_size != 0 && n != 0)
+      new_nb_item_per_elem = this->array.getNbComponent() *
+                             this->filter.getSize() * this->nb_item_per_elem /
+                             (n * new_size);
+
     return const_vector_iterator(
         this->array.begin_reinterpret(n, new_full_array_size),
         this->filter.end(), new_nb_item_per_elem);
