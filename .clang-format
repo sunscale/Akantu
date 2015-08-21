@@ -6,8 +6,6 @@ IndentWidth:                         2
 TabWidth:                            4
 UseTab:                              Never
 ColumnLimit:                         80
-AllowShortBlocksOnASingleLine:       true
-AllowShortIfStatementsOnASingleLine: true
 AccessModifierOffset:                -2
 PointerAlignment:                    Middle
 NamespaceIndentation:                Inner
@@ -17,6 +15,8 @@ ContinuationIndentWidth:             4
 # AlignEscapedNewlinesLeft: false
 # AlignTrailingComments: true
 # AllowAllParametersOfDeclarationOnNextLine: true
+# AllowShortBlocksOnASingleLine:       false
+# AllowShortIfStatementsOnASingleLine: false
 # AllowShortLoopsOnASingleLine: false
 # AllowShortFunctionsOnASingleLine: All
 # AlwaysBreakTemplateDeclarations: false
