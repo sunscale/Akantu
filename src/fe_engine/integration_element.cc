@@ -114,8 +114,8 @@ template<> Real GaussIntegrationTypeData<_git_pentahedron, 1>::quad_positions[] 
   										        1./sqrt(3.), 0.5, 0.5,
 										        1./sqrt(3.), 0. , 0.5,
 										        1./sqrt(3.), 0.5 ,0.};
-template<> Real GaussIntegrationTypeData<_git_pentahedron, 1>::quad_weights[]       = {1./6, 1./6, 1./6,
-										       1./6, 1./6, 1./6};
+template<> Real GaussIntegrationTypeData<_git_pentahedron, 1>::quad_weights[]       = {1./6., 1./6., 1./6.,
+										       1./6., 1./6., 1./6.};
 /* -------------------------------------------------------------------------- */
 template<> UInt GaussIntegrationTypeData<_git_pentahedron, 2>::nb_quadrature_points = 8;
 template<> Real GaussIntegrationTypeData<_git_pentahedron, 2>::quad_positions[]     = {-sqrt(3.)/3., 1./3., 1./3.,

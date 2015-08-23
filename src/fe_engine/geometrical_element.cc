@@ -160,13 +160,13 @@ template<> UInt GeometricalElement<_gt_hexahedron_20>::facet_connectivity_vect[]
 
 template<> UInt GeometricalElement<_gt_pentahedron_6>::facet_connectivity_vect[]  = {// first type
                                                                                      0, 3,
-                                                                                     1, 4,
-                                                                                     2, 5,
+                                                                                     2, 4,
+                                                                                     1, 5,
                                                                                      // second type
                                                                                      0, 0, 1,
-                                                                                     3, 2, 4,
+                                                                                     1, 3, 2,
                                                                                      4, 5, 5,
-                                                                                     1, 3, 2};
+                                                                                     3, 2, 4};
 template<> UInt GeometricalElement<_gt_pentahedron_15>::facet_connectivity_vect[] = {// first type
                                                                                      0,  3,
                                                                                      2,  4,
