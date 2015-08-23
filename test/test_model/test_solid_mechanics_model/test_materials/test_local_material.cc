@@ -9,7 +9,8 @@
  * @date creation: Fri Nov 26 2010
  * @date last modification: Fri Sep 19 2014
  *
- * @brief  test of the class SolidMechanicsModel
+ * @brief  test of the class SolidMechanicsModel with custom local damage on a
+ *         notched plate
  *
  * @section LICENSE
  *
@@ -45,8 +46,7 @@ int main(int argc, char *argv[])
 {
   akantu::initialize("material.dat", argc, argv);
   UInt max_steps = 1100;
-  Real epot, ekin;
-
+  
   const UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   mesh.read("mesh_section_gap.msh");
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
   for(; it != end; ++it) {
     UInt nb_elem = mesh.getNbElement(*it);
     const UInt nb_gp = model.getFEEngine().getNbQuadraturePoints(*it);
-    Array<Real> & material_damage_array = model.getMaterial(0).getArray("damage", *it);
+    Array<Real> & material_damage_array = model.getMaterial(0).getArray<Real>("damage", *it);
     UInt cpt = 0;
     for(UInt nel = 0; nel < nb_elem ; ++nel){
       if (material_damage_array(cpt,0) > 0.9){

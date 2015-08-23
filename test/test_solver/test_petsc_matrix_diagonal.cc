@@ -72,9 +72,9 @@ int main(int argc, char *argv[]) {
     communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
   
-  DumperParaview mesh_dumper("mesh_dumper");
-  mesh_dumper.registerMesh(mesh, spatial_dimension, _not_ghost);
-  mesh_dumper.dump();
+  // DumperParaview mesh_dumper("mesh_dumper");
+  // mesh_dumper.registerMesh(mesh, spatial_dimension, _not_ghost);
+  // mesh_dumper.dump();
 
   /// initialize the FEEngine and the dof_synchronizer
   FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange,_ek_regular>(mesh, spatial_dimension, "my_fem");

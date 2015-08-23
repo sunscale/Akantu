@@ -84,8 +84,8 @@ int main(int argc, char *argv[]) {
     model.updateAcceleration();
     model.explicitCorr();
 
-    epot = model.getPotentialEnergy();
-    ekin = model.getKineticEnergy();
+    epot = model.getEnergy("potential");
+    ekin = model.getEnergy("kinetic");
 
     std::cerr << "passing step " << s << "/" << max_steps << std::endl;
     energy << s << "," << epot << "," << ekin << "," << epot + ekin

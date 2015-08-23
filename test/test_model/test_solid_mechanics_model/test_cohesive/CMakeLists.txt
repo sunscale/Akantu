@@ -36,4 +36,5 @@ add_akantu_test(test_cohesive_buildfragments "test_cohesive_buildfragments")
 add_akantu_test(test_cohesive_intrinsic_impl "test_cohesive_intrinsic_impl")
 add_akantu_test(test_cohesive_1d_element "test_cohesive_1d_element")
 add_akantu_test(test_cohesive_extrinsic_implicit "test_cohesive_extrinsic_implicit")
+add_akantu_test(test_cohesive_insertion "test_cohesive_insertion")
 #===============================================================================

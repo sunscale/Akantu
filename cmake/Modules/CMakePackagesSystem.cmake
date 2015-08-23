@@ -227,6 +227,17 @@ function(package_get_filename pkg ret)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Source files
+# ------------------------------------------------------------------------------
+function(package_get_source_files pkg ret_srcs ret_pub ret_priv)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_source_files(${_pkg_name} _tmp_srcs _tmp_pub _tmp_priv)
+  set(${ret_srcs} ${_tmp_srcs} PARENT_SCOPE)
+  set(${ret_pub}  ${_tmp_pub}  PARENT_SCOPE)
+  set(${ret_priv} ${_tmp_pric} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # Source folder
 # ------------------------------------------------------------------------------
 function(package_get_sources_folder pkg ret)

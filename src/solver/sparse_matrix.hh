@@ -39,23 +39,39 @@
 #include "mesh.hh"
 
 /* -------------------------------------------------------------------------- */
-#ifndef __INTEL_COMPILER
-namespace std {
-  namespace tr1 {
-    template<typename a, typename b>
-    struct hash< std::pair<a, b> > {
-    private:
-      const hash<a> ah;
-      const hash<b> bh;
-    public:
-      hash() : ah(), bh() {}
-      size_t operator()(const std::pair<a, b> &p) const {
-	size_t seed = ah(p.first);
-	return bh(p.second) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-      }
-    };
+#if defined(AKANTU_UNORDERED_MAP_IS_CXX11)
+
+__BEGIN_AKANTU_UNORDERED_MAP__
+
+#if AKANTU_INTEGER_SIZE == 4
+#define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b9
+#elif AKANTU_INTEGER_SIZE == 8
+#define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b97f4a7c13LL
+#endif
+
+/**
+ * Hashing function for pairs based on hash_combine from boost The magic number
+ * is coming from the golden number @f[\phi = \frac{1 + \sqrt5}{2}@f]
+ * @f[\frac{2^32}{\phi} = 0x9e3779b9@f]
+ * http://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
+ * http://burtleburtle.net/bob/hash/doobs.html
+ */
+template <typename a, typename b> struct hash<std::pair<a, b>> {
+public:
+  hash() : ah(), bh() {}
+  size_t operator()(const std::pair<a, b> & p) const {
+    size_t seed = ah(p.first);
+    return bh(p.second) + AKANTU_HASH_COMBINE_MAGIC_NUMBER + (seed << 6) +
+           (seed >> 2);
   }
-} // namespaces
+
+private:
+  const hash<a> ah;
+  const hash<b> bh;
+};
+
+__END_AKANTU_UNORDERED_MAP__
+
 #endif
 
 __BEGIN_AKANTU__
@@ -67,14 +83,11 @@ class SparseMatrix : protected Memory {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SparseMatrix(UInt size,
-	       const SparseMatrixType & sparse_matrix_type,
-	       const ID & id = "sparse_matrix",
-	       const MemoryID & memory_id = 0);
+  SparseMatrix(UInt size, const SparseMatrixType & sparse_matrix_type,
+               const ID & id = "sparse_matrix", const MemoryID & memory_id = 0);
 
-  SparseMatrix(const SparseMatrix & matrix,
-	       const ID & id = "sparse_matrix",
-	       const MemoryID & memory_id = 0);
+  SparseMatrix(const SparseMatrix & matrix, const ID & id = "sparse_matrix",
+               const MemoryID & memory_id = 0);
 
   virtual ~SparseMatrix();
 
@@ -87,7 +100,7 @@ public:
 public:
   /// remove the existing profile
   inline void clearProfile();
-  
+
   /// add a non-zero element
   virtual UInt addToProfile(UInt i, UInt j);
 
@@ -98,16 +111,19 @@ public:
   inline void addToMatrix(UInt i, UInt j, Real value);
 
   /// set the size of the matrix
-  void resize(UInt size)
-  { this->size = size; }
-  
-  virtual void buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_synchronizer, UInt nb_degree_of_freedom);
+  void resize(UInt size) { this->size = size; }
+
+  virtual void buildProfile(const Mesh & mesh,
+                            const DOFSynchronizer & dof_synchronizer,
+                            UInt nb_degree_of_freedom);
 
   /// modify the matrix to "remove" the blocked dof
   virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
 
-//  /// modify the matrix to "remove" the blocked dof
-//  void applyBoundaryNormal(Array<bool> & boundary_normal, Array<Real> & EulerAngles, Array<Real> & rhs, const Array<Real> & matrix, Array<Real> & rhs_rotated);
+  //  /// modify the matrix to "remove" the blocked dof
+  //  void applyBoundaryNormal(Array<bool> & boundary_normal, Array<Real> &
+  //  EulerAngles, Array<Real> & rhs, const Array<Real> & matrix, Array<Real> &
+  //  rhs_rotated);
 
   /// save the profil in a file using the MatrixMarket file format
   virtual void saveProfile(const std::string & filename) const;
@@ -117,9 +133,9 @@ public:
 
   /// copy assuming the profile are the same
   virtual void copyContent(const SparseMatrix & matrix);
-  
+
   /// copy profile
-//  void copyProfile(const SparseMatrix & matrix);
+  //  void copyProfile(const SparseMatrix & matrix);
 
   /// add matrix assuming the profile are the same
   virtual void add(const SparseMatrix & matrix, Real alpha);
@@ -128,16 +144,15 @@ public:
   virtual void lump(Array<Real> & lumped);
 
   /// function to print the contain of the class
-  //virtual void printself(std::ostream & stream, int indent = 0) const;
+  // virtual void printself(std::ostream & stream, int indent = 0) const;
 
 protected:
   inline KeyCOO key(UInt i, UInt j) const {
-    if(sparse_matrix_type == _symmetric && (i > j))
+    if (sparse_matrix_type == _symmetric && (i > j))
       return std::make_pair(j, i);
 
     return std::make_pair(i, j);
   }
-
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -157,19 +172,20 @@ public:
 
   AKANTU_GET_MACRO(Size, size, UInt);
 
-  AKANTU_GET_MACRO(SparseMatrixType, sparse_matrix_type, const SparseMatrixType &);
+  AKANTU_GET_MACRO(SparseMatrixType, sparse_matrix_type,
+                   const SparseMatrixType &);
 
   AKANTU_GET_MACRO(Offset, offset, UInt);
 
   const DOFSynchronizer & getDOFSynchronizer() const {
     AKANTU_DEBUG_ASSERT(dof_synchronizer != NULL,
-			"DOFSynchronizer not initialized in the SparseMatrix!");
+                        "DOFSynchronizer not initialized in the SparseMatrix!");
     return *dof_synchronizer;
   }
 
   DOFSynchronizer & getDOFSynchronizer() {
     AKANTU_DEBUG_ASSERT(dof_synchronizer != NULL,
-			"DOFSynchronizer not initialized in the SparseMatrix!");
+                        "DOFSynchronizer not initialized in the SparseMatrix!");
     return *dof_synchronizer;
   }
 
@@ -208,7 +224,6 @@ protected:
   /// values : A[k] = Matrix[irn[k]][jcn[k]]
   Array<Real> a;
 
-
   /// saved row indexes
   Array<Int> * irn_save;
 
@@ -222,37 +237,36 @@ protected:
   //  ElementTypeMapArray<UInt> element_to_sparse_profile;
 
   /* map for  (i,j) ->  k correspondence \warning std::map are slow
-   *  \todo improve  with hash_map (non standard in stl) or unordered_map (boost or C++0x)
+   *  \todo improve  with hash_map (non standard in stl) or unordered_map (boost
+   * or C++0x)
    */
   coordinate_list_map irn_jcn_k;
 
   DOFSynchronizer * dof_synchronizer;
   //  std::map<std::pair<UInt, UInt>, UInt> * irn_jcn_to_k;
 
-  /// offset to inidcate whether row and column indices start at 0 (C/C++) or 1 (Fortran)
-  UInt offset; 
-
-
+  /// offset to inidcate whether row and column indices start at 0 (C/C++) or 1
+  /// (Fortran)
+  UInt offset;
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "sparse_matrix_inline_impl.cc"
+#if defined(AKANTU_INCLUDE_INLINE_IMPL)
+#include "sparse_matrix_inline_impl.cc"
 #endif
 
 // /// standard output stream operator
-// inline std::ostream & operator <<(std::ostream & stream, const SparseMatrix & _this)
+// inline std::ostream & operator <<(std::ostream & stream, const SparseMatrix &
+// _this)
 // {
 //   _this.printself(stream);
 //   return stream;
 // }
 
 Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
-
 
 __END_AKANTU__
 

@@ -1,13 +1,12 @@
 #===============================================================================
 # @file   AkantuTestAndExamples.cmake
 #
-# @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Oct 25 2010
 # @date last modification: Tue Jun 24 2014
 #
-# @brief  macros for tests and examples
+# @brief  macros for tests
 #
 # @section LICENSE
 #
@@ -32,85 +31,6 @@
 #===============================================================================
 
 set(AKANTU_DIFF_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_diff.sh)
-
-#===============================================================================
-function(manage_test_and_example et_name desc build_all label)
-  string(TOUPPER ${et_name} upper_name)
-
-  cmake_parse_arguments(manage_test_and_example
-    ""
-    "PACKAGE"
-    ""
-    ${ARGN}
-    )
-
-  if(manage_test_and_example_PACKAGE)
-    package_is_activated(${manage_test_and_example_PACKAGE} _activated)
-    file(RELATIVE_PATH _dir ${PROJECT_SOURCE_DIR}  ${CMAKE_CURRENT_SOURCE_DIR}/${et_name})
-    list(APPEND AKANTU_TESTS_EXCLUDE_FILES /${_dir})
-    set(AKANTU_TESTS_EXCLUDE_FILES ${AKANTU_TESTS_EXCLUDE_FILES} CACHE INTERNAL "")
-  endif()
-
-  if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${et_name} AND _activated)
-    #    message("Example or test ${et_name} not present")
-    return()
-  endif()
-
-  option(AKANTU_BUILD${label}${upper_name} "${desc}")
-  mark_as_advanced(AKANTU_BUILD_${upper_name})
-
-  if(${build_all} OR NOT _activated)
-    set(AKANTU_BUILD${label}${upper_name}_OLD
-      ${AKANTU_BUILD${label}${upper_name}}
-      CACHE INTERNAL "${desc}" FORCE)
-
-    set(AKANTU_BUILD${label}${upper_name} ${_activated}
-      CACHE INTERNAL "${desc}" FORCE)
-  else()
-    if(DEFINED AKANTU_BUILD${label}${upper_name}_OLD)
-      set(AKANTU_BUILD${label}${upper_name}
-	${AKANTU_BUILD${label}${upper_name}_OLD}
-	CACHE BOOL "${desc}" FORCE)
-
-      unset(AKANTU_BUILD${label}${upper_name}_OLD
-	CACHE)
-    endif(DEFINED AKANTU_BUILD${label}${upper_name}_OLD)
-  endif()
-
-  if(AKANTU_BUILD${label}${upper_name})
-    add_subdirectory(${et_name})
-  endif(AKANTU_BUILD${label}${upper_name})
-endfunction()
-
-#===============================================================================
-# Tests
-#===============================================================================
-if(AKANTU_TESTS)
-  option(AKANTU_BUILD_ALL_TESTS "Build all tests" ON)
-  option(AKANTU_BUILD_UNSTABLE_TESTS "Build the tests marked as unstable" OFF)
-  mark_as_advanced(AKANTU_BUILD_ALL_TESTS)
-  mark_as_advanced(AKANTU_BUILD_UNSTABLE_TESTS)
-endif(AKANTU_TESTS)
-
-#===============================================================================
-# Examples
-#===============================================================================
-if(AKANTU_EXAMPLES)
-  option(AKANTU_BUILD_ALL_EXAMPLES "Build all examples")
-  #  mark_as_advanced(AKANTU_BUILD_ALL_EXAMPLES)
-endif(AKANTU_EXAMPLES)
-
-#===============================================================================
-macro(register_example example_name)
-  add_executable(${example_name} ${ARGN})
-  target_link_libraries(${example_name} akantu ${AKANTU_EXTERNAL_LIBRARIES})
-endmacro()
-
-#===============================================================================
-macro(add_example example_name desc)
-  manage_test_and_example(${example_name} ${desc} AKANTU_BUILD_ALL_EXAMPLES _EXAMPLE_ ${ARGN})
-endmacro()
-
 
 # ==============================================================================
 # this should be a macro due to the enable_testing

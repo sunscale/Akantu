@@ -82,7 +82,7 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  /// compute the celerity of wave in the material
+  /// compute the celerity of the fastest wave in the material
   inline Real getCelerity(const Element & element) const;
 
   /* ------------------------------------------------------------------------ */

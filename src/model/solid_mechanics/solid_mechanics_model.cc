@@ -259,6 +259,7 @@ void SolidMechanicsModel::initParallel(MeshPartition * partition,
   synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_mass);
   synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_stress);
   synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_boundary);
+  synch_registry->registerSynchronizer(*synch_parallel, _gst_for_dump);
 
   AKANTU_DEBUG_OUT();
 }
@@ -1219,24 +1220,6 @@ Real SolidMechanicsModel::getStableTimeStep(const GhostType & ghost_type) {
 }
 
 /* -------------------------------------------------------------------------- */
-Real SolidMechanicsModel::getPotentialEnergy() {
-  AKANTU_DEBUG_IN();
-  Real energy = 0.;
-
-  /// call update residual on each local elements
-  std::vector<Material *>::iterator mat_it;
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    energy += (*mat_it)->getPotentialEnergy();
-  }
-
-  /// reduction sum over all processors
-  StaticCommunicator::getStaticCommunicator().allReduce(&energy, 1, _so_sum);
-
-  AKANTU_DEBUG_OUT();
-  return energy;
-}
-
-/* -------------------------------------------------------------------------- */
 Real SolidMechanicsModel::getKineticEnergy() {
   AKANTU_DEBUG_IN();
 
@@ -1449,10 +1432,6 @@ void SolidMechanicsModel::onElementsRemoved(__attribute__((unused)) const Array<
     (*mat_it)->onElementsRemoved(element_list, new_numbering, event);
   }
 
-  if (method != _explicit_lumped_mass) {
-    this->initSolver();
-  }
-
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1507,6 +1486,11 @@ void SolidMechanicsModel::onNodesRemoved(__attribute__((unused)) const Array<UIn
   dof_synchronizer = new DOFSynchronizer(mesh, spatial_dimension);
   dof_synchronizer->initLocalDOFEquationNumbers();
   dof_synchronizer->initGlobalDOFEquationNumbers();
+
+  if (method != _explicit_lumped_mass) {
+    this->initSolver();
+  }
+
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1550,6 +1534,20 @@ ElementTypeMapArray<Real> & SolidMechanicsModel::flattenInternal(const std::stri
   }
 
   ElementTypeMapArray<Real> * internal_flat = this->registered_internals[key];
+
+  typedef ElementTypeMapArray<Real>::type_iterator iterator;
+  iterator tit = internal_flat->firstType(spatial_dimension,
+					  ghost_type,
+					  kind);
+  iterator end = internal_flat->lastType(spatial_dimension,
+					 ghost_type,
+					 kind);
+
+  for (; tit != end; ++tit) {
+    ElementType type = *tit;
+    (*internal_flat)(type,ghost_type).clear();
+  }
+  
   for (UInt m = 0; m < materials.size(); ++m) {
     if (materials[m]->isInternal(field_name, kind))
       materials[m]->flattenInternal(field_name, *internal_flat, ghost_type, kind);
@@ -1560,6 +1558,7 @@ ElementTypeMapArray<Real> & SolidMechanicsModel::flattenInternal(const std::stri
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::flattenAllRegisteredInternals(const ElementKind & kind){
+
   std::map<std::pair<std::string, ElementKind>,
 	   ElementTypeMapArray<Real> *>::iterator it  = this->registered_internals.begin();
   std::map<std::pair<std::string, ElementKind>,
@@ -1730,7 +1729,6 @@ bool padding_flag) {
 void SolidMechanicsModel::dump(const std::string & dumper_name) {
   this->onDump();
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeDumpEvent());
-  synch_registry->synchronize(_gst_for_dump);
   mesh.dump(dumper_name);
 }
 
@@ -1738,7 +1736,6 @@ void SolidMechanicsModel::dump(const std::string & dumper_name) {
 void SolidMechanicsModel::dump(const std::string & dumper_name, UInt step) {
   this->onDump();
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeDumpEvent());
-  synch_registry->synchronize(_gst_for_dump);
   mesh.dump(dumper_name, step);
 }
 
@@ -1746,7 +1743,6 @@ void SolidMechanicsModel::dump(const std::string & dumper_name, UInt step) {
 void SolidMechanicsModel::dump(const std::string & dumper_name, Real time, UInt step) {
   this->onDump();
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeDumpEvent());
-  synch_registry->synchronize(_gst_for_dump);
   mesh.dump(dumper_name, time, step);
 }
 

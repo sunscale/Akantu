@@ -168,12 +168,17 @@ enum InterpolationKind {
 
 @AKANTU_ELEMENT_KINDS_BOOST_MACROS@
 
-/// define kept for compatibility reasons (they are most probably not needed
-/// anymore) \todo check if they can be removed
-#define AKANTU_REGULAR_ELEMENT_TYPE	AKANTU_ek_regular_ELEMENT_TYPE
-#define AKANTU_COHESIVE_ELEMENT_TYPE	AKANTU_ek_cohesive_ELEMENT_TYPE
-#define AKANTU_STRUCTURAL_ELEMENT_TYPE  AKANTU_ek_structural_ELEMENT_TYPE
-#define AKANTU_IGFEM_ELEMENT_TYPE       AKANTU_ek_igfem_ELEMENT_TYPE
+// /// define kept for compatibility reasons (they are most probably not needed
+// /// anymore) \todo check if they can be removed
+// #define AKANTU_REGULAR_ELEMENT_TYPE	AKANTU_ek_regular_ELEMENT_TYPE
+// #define AKANTU_COHESIVE_ELEMENT_TYPE	AKANTU_ek_cohesive_ELEMENT_TYPE
+// #define AKANTU_STRUCTURAL_ELEMENT_TYPE  AKANTU_ek_structural_ELEMENT_TYPE
+// #define AKANTU_IGFEM_ELEMENT_TYPE       AKANTU_ek_igfem_ELEMENT_TYPE
+
+/* -------------------------------------------------------------------------- */
+/* Lists of interests for FEEngineTemplate functions                          */
+/* -------------------------------------------------------------------------- */
+@AKANTU_FE_ENGINE_LISTS@
 
 __END_AKANTU__
 

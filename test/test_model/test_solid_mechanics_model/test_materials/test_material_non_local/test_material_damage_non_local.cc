@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
   for(; it != end; ++it) {
     UInt nb_elem = mesh.getNbElement(*it);
     const UInt nb_gp = model.getFEEngine().getNbQuadraturePoints(*it);
-    Array<Real> & material_damage_array = model.getMaterial(0).getArray("damage", *it);
+    Array<Real> & material_damage_array = model.getMaterial(0).getArray<Real>("damage", *it);
     UInt cpt = 0;
     for(UInt nel = 0; nel < nb_elem ; ++nel){
       mesh.getBarycenter(nel,*it,barycenter.storage());

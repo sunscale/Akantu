@@ -89,7 +89,6 @@ package_declare_sources(core
   fe_engine/fe_engine_inline_impl.cc
   fe_engine/fe_engine_template.hh
   fe_engine/fe_engine_template_tmpl.hh
-  fe_engine/geometrical_data_tmpl.hh
   fe_engine/geometrical_element.cc
   fe_engine/integration_element.cc
   fe_engine/integrator.hh
@@ -191,7 +190,6 @@ package_declare_sources(core
   model/solid_mechanics/material.cc
   model/solid_mechanics/material.hh
   model/solid_mechanics/material_inline_impl.cc
-  model/solid_mechanics/material_random_internal.hh
   model/solid_mechanics/material_selector.hh
   model/solid_mechanics/material_selector_tmpl.hh
   model/solid_mechanics/materials/internal_field.hh
@@ -331,6 +329,16 @@ package_declare_elements(core
   _git_tetrahedron
   _git_pentahedron
   INTERPOLATION_KIND _itk_lagrangian
+  FE_ENGINE_LISTS
+  gradient_on_quadrature_points
+  interpolate_on_quadrature_points
+  interpolate
+  compute_normals_on_control_points
+  inverse_map
+  contains
+  compute_shapes
+  compute_shapes_derivatives
+  get_shapes_derivatives
   )
 
 package_declare_material_infos(core

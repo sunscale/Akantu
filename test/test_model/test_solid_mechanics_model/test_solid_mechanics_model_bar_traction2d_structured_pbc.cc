@@ -110,8 +110,8 @@ int main(int argc, char *argv[])
     model.updateAcceleration();
     model.explicitCorr();
 
-    epot = model.getPotentialEnergy();
-    ekin = model.getKineticEnergy();
+    epot = model.getEnergy("potential");
+    ekin = model.getEnergy("kinetic");
 
     if(s % 20 == 0) model.dump();
 

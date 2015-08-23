@@ -19,7 +19,11 @@ the same dimensionality as the one specified by the mesh.
 \note[\ 1]{Dynamic computations are not supported to date.}
 
 \note[\ 2]{Structural meshes are created and loaded as described in
-  Section~\ref{sect:common:mesh} with \code{MeshIOMSHStruct} instead  of \code{MeshIOMSH}.}
+  Section~\ref{sect:common:mesh} with \code{MeshIOMSHStruct} instead  of \code{MeshIOMSH}:}
+\begin{cpp}
+	akantu::MeshIOMSHStruct mesh_io;
+	mesh_io.read("structural_mesh.msh", beams);
+\end{cpp}
 
 \vspace{1cm}
 This model contains at least the following \code{Arrays}:
@@ -61,13 +65,12 @@ next section.
 \subsection{Initialization}
 The easiest way to initialize the structural mechanics model is:
 
-
 \begin{cpp}
   model.initFull();
 \end{cpp}
 The method \code{initFull} computes the shape functions, initializes
 the internal vectors mentioned above and allocates the memory for the
-stiffness matrix.
+stiffness matrix, unlike the solid mechanics model, its default argument is \code{\_static}.
 
 Material properties are defined using the \code{StructuralMaterial}
 structure described in
