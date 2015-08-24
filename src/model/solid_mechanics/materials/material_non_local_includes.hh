@@ -30,6 +30,11 @@
 
 /* -------------------------------------------------------------------------- */
 #ifndef AKANTU_CMAKE_LIST_MATERIALS
+#  include "base_weight_function.hh"
+#  include "damaged_weight_function.hh"
+#  include "remove_damaged_weight_function.hh"
+#  include "remove_damaged_with_damage_rate_weight_function.hh"
+#  include "stress_based_weight_function.hh"
 #  include "material_marigo_non_local.hh"
 #  include "material_mazars_non_local.hh"
 #endif
