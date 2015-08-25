@@ -59,6 +59,8 @@ package_declare_sources(traction-at-split-node-contact
   ntn_contact/friction_laws/ntn_friclaw_coulomb_tmpl.hh
   ntn_contact/friction_laws/ntn_friclaw_linear_slip_weakening.hh
   ntn_contact/friction_laws/ntn_friclaw_linear_slip_weakening_tmpl.hh
+  ntn_contact/friction_laws/ntn_friclaw_linear_slip_weakening_no_healing.hh
+  ntn_contact/friction_laws/ntn_friclaw_linear_slip_weakening_no_healing_tmpl.hh
   ntn_contact/friction_laws/ntn_friclaw_linear_cohesive.hh
   ntn_contact/friction_laws/ntn_friclaw_linear_cohesive_tmpl.hh
 

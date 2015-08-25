@@ -27,6 +27,7 @@
 // friction laws
 #include "ntn_friclaw_linear_cohesive.hh"
 #include "ntn_friclaw_linear_slip_weakening.hh"
+#include "ntn_friclaw_linear_slip_weakening_no_healing.hh"
 
 __BEGIN_AKANTU__
 
@@ -108,6 +109,46 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 				   NTNFricRegSimplifiedPrakashClifton>(contact);
       else
 	friction = new NTRFFriction<NTNFricLawLinearSlipWeakening, 
+				    NTNFricRegSimplifiedPrakashClifton>(contact);
+
+      friction->setMixed< SynchronizedArray<Real> >("t_star", data.get<Real>("t_star"));
+    }
+    else {
+      AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
+			 << friction_reg);
+    }
+
+    friction->setMixed< SynchronizedArray<Real> >("mu_s", data.get<Real>("mu_s"));
+    friction->setMixed< SynchronizedArray<Real> >("mu_k", data.get<Real>("mu_k"));
+    friction->setMixed< SynchronizedArray<Real> >("d_c",  data.get<Real>("d_c"));
+  }
+
+  // Friction Law: Linear Slip Weakening No Healing
+  else if (friction_law == "linear_slip_weakening_no_healing") {
+    if (friction_reg == "no_regularisation") {
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
+				   NTNFricRegNoRegularisation>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
+				    NTNFricRegNoRegularisation>(contact);
+    }
+    else if (friction_reg == "rubin_ampuero") {
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
+				   NTNFricRegRubinAmpuero>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
+				    NTNFricRegRubinAmpuero>(contact);
+
+      friction->setMixed< SynchronizedArray<Real> >("t_star", data.get<Real>("t_star"));
+    }
+    else if (friction_reg == "simplified_prakash_clifton") {
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
+				   NTNFricRegSimplifiedPrakashClifton>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
 				    NTNFricRegSimplifiedPrakashClifton>(contact);
 
       friction->setMixed< SynchronizedArray<Real> >("t_star", data.get<Real>("t_star"));

@@ -1,10 +1,10 @@
 /**
- * @file   ntn_fricreg_no_regularisation.hh
+ * @file   ntn_friclaw_linear_slip_weakening_no_healing.hh
  *
  * @author David Simon Kammer <david.kammer@epfl.ch>
  *
  *
- * @brief  regularisation that does nothing
+ * @brief  linear slip weakening
  *
  * @section LICENSE
  *
@@ -14,107 +14,61 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-#ifndef __AST_NTN_FRICREG_NO_REGULARISATION_HH__
-#define __AST_NTN_FRICREG_NO_REGULARISATION_HH__
+#ifndef __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_NO_HEALING_HH__
+#define __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_NO_HEALING_HH__
 
 /* -------------------------------------------------------------------------- */
-// simtools
-#include "ntn_base_friction.hh"
+#include "ntn_friclaw_linear_slip_weakening.hh"
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-class NTNFricRegNoRegularisation : public NTNBaseFriction {
+template <class Regularisation = NTNFricRegNoRegularisation>
+class NTNFricLawLinearSlipWeakeningNoHealing : public NTNFricLawLinearSlipWeakening<Regularisation> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   
-  NTNFricRegNoRegularisation(NTNBaseContact * contact,
-			     const FrictionID & id = "no_regularisation",
-			     const MemoryID & memory_id = 0);
-  virtual ~NTNFricRegNoRegularisation() {};
+  NTNFricLawLinearSlipWeakeningNoHealing(NTNBaseContact * contact,
+					 const FrictionID & id = "linear_slip_weakening_no_healing",
+					 const MemoryID & memory_id = 0);
+  virtual ~NTNFricLawLinearSlipWeakeningNoHealing() {};
   
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// set to steady state for no regularisation -> do nothing
-  virtual void setToSteadyState() {};
-
-  virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
-  virtual void dumpRestart(const std::string & file_name) const;
-  virtual void readRestart(const std::string & file_name);
-
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-
+  
 protected:
-  virtual void computeFrictionalContactPressure();
-
-  /// compute frictional strength according to friction law
-  virtual void computeFrictionalStrength() {};
+  /// computes the friction coefficient as a function of slip
+  virtual void computeFrictionCoefficient();
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
   /* ------------------------------------------------------------------------ */
-public:
-  virtual void addDumpFieldToDumper(const std::string & dumper_name,
-				    const std::string & field_id);
-  
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-public:
-
-protected:
-  /// get the is_in_contact array
-  virtual const SynchronizedArray<bool> & internalGetIsInContact() {
-    return this->contact->getIsInContact();
-  };
-
-  /// get the contact pressure (the norm: scalar value)
-  virtual const SynchronizedArray<Real> & internalGetContactPressure();
-
-  /// get the frictional strength array
-  virtual SynchronizedArray<Real> & internalGetFrictionalStrength() {
-    return this->frictional_strength;
-  };
-
-  /// get the is_sticking array
-  virtual SynchronizedArray<bool> & internalGetIsSticking() {
-    return this->is_sticking;
-  }
   
-  /// get the slip array
-  virtual SynchronizedArray<Real> & internalGetSlip() {
-    return this->slip;
-  }
-
-  /// get the slip array
-  virtual SynchronizedArray<Real> & internalGetCumulativeSlip() {
-    return this->cumulative_slip;
-  }
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  // contact pressure (absolut value) for computation of friction
-  SynchronizedArray<Real> frictional_contact_pressure;
-};
 
+};
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntn_fricreg_no_regularisation_inline_impl.cc"
-
 /// standard output stream operator
+template <class Regularisation>
 inline std::ostream & operator <<(std::ostream & stream, 
-				  const NTNFricRegNoRegularisation & _this)
+				  const NTNFricLawLinearSlipWeakeningNoHealing<Regularisation> & _this)
 {
   _this.printself(stream);
   return stream;
@@ -122,4 +76,6 @@ inline std::ostream & operator <<(std::ostream & stream,
 
 __END_AKANTU__
 
-#endif /* __AST_NTN_FRICREG_NO_REGULARISATION_HH__ */
+#include "ntn_friclaw_linear_slip_weakening_no_healing_tmpl.hh"
+
+#endif /* __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_NO_HEALING_HH__ */
