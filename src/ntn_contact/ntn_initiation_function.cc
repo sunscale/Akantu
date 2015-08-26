@@ -202,6 +202,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
     friction->setMixed< SynchronizedArray<Real> >("tau_c", data.get<Real>("tau_c"));
     friction->setMixed< SynchronizedArray<Real> >("tau_r", data.get<Real>("tau_r"));
   }
+  
   else {
     AKANTU_DEBUG_ERROR("Do not know the following friction law: " 
 		       << friction_law);
@@ -312,6 +313,39 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 				   NTNFricRegSimplifiedPrakashClifton>(contact);
       else
 	friction = new NTRFFriction<NTNFricLawLinearSlipWeakening, 
+				    NTNFricRegSimplifiedPrakashClifton>(contact);
+    }
+    else {
+      AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
+			 << friction_reg);
+    }
+  }
+
+
+  // Friction Law: Linear Slip Weakening No Healing
+  else if (friction_law == "linear_slip_weakening_no_healing") {
+    if (friction_reg == "no_regularisation") {
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
+				   NTNFricRegNoRegularisation>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
+				    NTNFricRegNoRegularisation>(contact);
+    }
+    else if (friction_reg == "rubin_ampuero") {
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
+				   NTNFricRegRubinAmpuero>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
+				    NTNFricRegRubinAmpuero>(contact);
+    }
+    else if (friction_reg == "simplified_prakash_clifton") {
+      if (is_ntn_contact)
+	friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
+				   NTNFricRegSimplifiedPrakashClifton>(contact);
+      else
+	friction = new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing, 
 				    NTNFricRegSimplifiedPrakashClifton>(contact);
     }
     else {

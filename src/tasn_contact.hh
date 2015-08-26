@@ -50,12 +50,3 @@
 
 // initiation of friction
 #include "ntn_initiation_function.hh"
-
-/*
-#include "ntn_friction_coulomb.hh"
-#include "ntn_friction_linear_slip_weakening.hh"
-#include "ntrf_friction_coulomb.hh"
-#include "ntrf_friction_regularized_coulomb.hh"
-#include "ntrf_friction_linear_slip_weakening.hh"
-#include "ntrf_friction_mathilde.hh"
-*/
