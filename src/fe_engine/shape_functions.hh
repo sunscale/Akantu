@@ -73,6 +73,20 @@ public:
   void setControlPointsByType(const Matrix<Real> & control_points,
 			      const GhostType & ghost_type);
 
+  inline void initElementalFieldInterpolation(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+					      ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+					      ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+					      const ElementTypeMapArray<Real> & quadrature_points_coordinates,
+					      const ElementTypeMapArray<UInt> * element_filter = NULL) const;
+  
+  template <ElementType type>
+  inline void initElementalFieldInterpolation(const Array<Real> & interpolation_points_coordinates,
+					      ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+					      ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+					      const Array<Real> & quadrature_points_coordinates,
+					      GhostType & ghost_type,
+					      const Array<UInt> & element_filter) const;
+
 protected:
   /// interpolate nodal values stored by element on the control points
   template <ElementType type>
@@ -89,6 +103,20 @@ protected:
 					     GhostType ghost_type,
 					     const Array<Real> & shapes_derivatives,
 					     const Array<UInt> & filter_elements) const;
+
+  /// build the coordinate matrix for the interpolation on elemental field
+  template <ElementType type>
+  inline void buildElementalFieldInterpolationCoodinates(const Matrix<Real> & coordinates,
+                                                         Matrix<Real> & coordMatrix);
+
+  /// build interpolation coordinates for basic linear elements
+  inline void buildElementalFieldInterpolationCoodinatesLinear(const Matrix<Real> & coordinates,
+                                                               Matrix<Real> & coordMatrix);
+
+  /// build interpolation coordinates for basic quadratic elements
+  inline void buildElementalFieldInterpolationCoodinatesQuadratic(const Matrix<Real> & coordinates,
+                                                                  Matrix<Real> & coordMatrix);
+
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

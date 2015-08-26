@@ -1035,36 +1035,6 @@ Real Material::getEnergy(std::string energy_id, ElementType type, UInt index) {
 }
 
 /* -------------------------------------------------------------------------- */
-void Material::computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
-						  const GhostType & ghost_type) const {
-  AKANTU_DEBUG_IN();
-
-  const Mesh & mesh = this->model->getMesh();
-
-  Array<Real> nodes_coordinates(mesh.getNodes(), true);
-  nodes_coordinates += this->model->getDisplacement();
-
-  Mesh::type_iterator it = this->element_filter.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type);
-  for(; it != last_type; ++it) {
-    const Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
-
-    UInt nb_element  = elem_filter.getSize();
-    if (nb_element == 0) continue;
-    UInt nb_tot_quad = this->fem->getNbQuadraturePoints(*it, ghost_type) * nb_element;
-
-    Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
-    quads.resize(nb_tot_quad);
-
-    this->fem->interpolateOnQuadraturePoints(nodes_coordinates,
-							     quads, spatial_dimension,
-							     *it, ghost_type, elem_filter);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
 void Material::initElementalFieldInterpolation(const ElementTypeMapArray<Real> & interpolation_points_coordinates) {
   AKANTU_DEBUG_IN();
   const Mesh & mesh = fem->getMesh();
@@ -1072,12 +1042,12 @@ void Material::initElementalFieldInterpolation(const ElementTypeMapArray<Real> &
   ElementTypeMapArray<Real> quadrature_points_coordinates("quadrature_points_coordinates_for_interpolation", getID());
   mesh.initElementTypeMapArray(quadrature_points_coordinates, spatial_dimension, spatial_dimension);
 
+  this->fem->computeQuadraturePointsCoordinates(quadrature_points_coordinates, &element_filter);
+
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {
 
     GhostType ghost_type = *gt;
-
-    computeQuadraturePointsCoordinates(quadrature_points_coordinates, ghost_type);
 
     Mesh::type_iterator it   = element_filter.firstType(spatial_dimension, ghost_type);
     Mesh::type_iterator last = element_filter.lastType(spatial_dimension, ghost_type);

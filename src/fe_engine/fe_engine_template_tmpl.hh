@@ -560,6 +560,44 @@ void FEEngineTemplate<I, S, kind>::interpolateOnQuadraturePoints(const Array<Rea
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
+								      const ElementTypeMapArray<UInt> * filter_elements) const {
+  
+  
+  const Array<Real> & nodes_coordinates = mesh.getNodes();
+
+  interpolateOnQuadraturePoints(nodes_coordinates, quadrature_points_coordinates, filter_elements);
+}
+
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::initElementalFieldInterpolation(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+									  ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+									  ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+									  const ElementTypeMapArray<UInt> * element_filter) const {
+
+    AKANTU_DEBUG_IN();
+  
+    UInt spatial_dimension = this->mesh.getSpatialDimension();
+
+    ElementTypeMapArray<Real> quadrature_points_coordinates("quadrature_points_coordinates_for_interpolation", getID());
+    mesh.initElementTypeMapArray(quadrature_points_coordinates, spatial_dimension, spatial_dimension);
+    computeQuadraturePointsCoordinates(quadrature_points_coordinates, element_filter);
+    shape_functions.initElementalFieldInterpolation(interpolation_points_coordinates,
+						    interpolation_points_coordinates_matrices,
+						    quad_points_coordinates_inv_matrices,
+						    quadrature_points_coordinates,
+						    element_filter);    
+    
+}
+
 /* -------------------------------------------------------------------------- */
 /**
  * Helper class to be able to write a partial specialization on the element kind

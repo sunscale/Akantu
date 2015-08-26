@@ -149,6 +149,15 @@ public:
 				     ElementTypeMapArray<Real> & uq,
                                      const ElementTypeMapArray<UInt> * filter_elements = NULL) const;
 
+  /// compute the position of quadrature points from nodes position
+  inline void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
+						 const ElementTypeMapArray<UInt> * filter_elements = NULL) const;
+
+  inline void initElementalFieldInterpolation(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+					      ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+					      ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+					      const ElementTypeMapArray<UInt> * element_filter) const;
+    
   /// find natural coords from real coords provided an element
   void inverseMap(const Vector<Real> & real_coords,
 		  UInt element,

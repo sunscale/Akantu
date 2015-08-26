@@ -165,6 +165,15 @@ public:
   void interpolateOnQuadraturePoints(const Array<Real> & u,
 				     ElementTypeMapArray<Real> & uq,
                                      const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+  virtual
+  void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
+					  const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+  
+  virtual
+  void initElementalFieldInterpolation(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+				       ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+				       ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+				       const ElementTypeMapArray<UInt> * element_filter) const = 0;
 
   virtual 
   void interpolate(const Vector<Real> & real_coords, 

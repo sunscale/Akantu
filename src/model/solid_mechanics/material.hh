@@ -288,10 +288,6 @@ protected:
   /// resize the intenals arrays
   virtual void resizeInternals();
 
-public:
-  /// compute the coordinates of the quadrature points
-  virtual void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
-						  const GhostType & ghost_type) const;
 
 protected:
   /// interpolate an elemental field on given points for each element
