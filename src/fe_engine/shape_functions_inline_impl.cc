@@ -143,6 +143,7 @@ inline void ShapeFunctions::initElementalFieldInterpolation(const Array<Real> & 
 
   AKANTU_DEBUG_IN();
 
+  UInt spatial_dimension = this->mesh.getSpatialDimension();
   UInt nb_element = this->mesh.getNbElement(type, ghost_type);
   UInt nb_element_filter;
 
@@ -170,16 +171,16 @@ inline void ShapeFunctions::initElementalFieldInterpolation(const Array<Real> & 
 						    type, ghost_type);
   else
     interpolation_points_coordinates_matrices(type, ghost_type).resize(nb_element_filter);
-  /*
-  Array<Real> & interp_inv_coord = interpolation_inverse_coordinates(type, ghost_type);
-  Array<Real> & interp_points_mat = interpolation_points_matrices(type, ghost_type);
+ 
+  Array<Real> & quad_inv_mat = quad_points_coordinates_inv_matrices(type, ghost_type);
+  Array<Real> & interp_points_mat = interpolation_points_coordinates_matrices(type, ghost_type);
 
   Matrix<Real> quad_coord_matrix(nb_quad_per_element, nb_quad_per_element);
 
   Array<Real>::const_matrix_iterator quad_coords_it =
-    quad_coordinates.begin_reinterpret(spatial_dimension,
-				       nb_quad_per_element,
-				       nb_element);
+    quadrature_points_coordinates.begin_reinterpret(spatial_dimension,
+						    nb_quad_per_element,
+						    nb_element);
 
   Array<Real>::const_matrix_iterator points_coords_begin =
     interpolation_points_coordinates.begin_reinterpret(spatial_dimension,
@@ -187,14 +188,14 @@ inline void ShapeFunctions::initElementalFieldInterpolation(const Array<Real> & 
 						       interpolation_points_coordinates.getSize() / nb_interpolation_points_per_elem);
 
   Array<Real>::matrix_iterator inv_quad_coord_it =
-    interp_inv_coord.begin(nb_quad_per_element, nb_quad_per_element);
+    quad_inv_mat.begin(nb_quad_per_element, nb_quad_per_element);
 
-  Array<Real>::matrix_iterator inv_points_mat_it =
+  Array<Real>::matrix_iterator int_points_mat_it =
     interp_points_mat.begin(nb_interpolation_points_per_elem, nb_quad_per_element);
 
   /// loop over the elements of the current material and element type
   for (UInt el = 0; el < nb_element; ++el, ++inv_quad_coord_it,
-	 ++inv_points_mat_it, ++quad_coords_it) {
+	 ++int_points_mat_it, ++quad_coords_it) {
     /// matrix containing the quadrature points coordinates
     const Matrix<Real> & quad_coords = *quad_coords_it;
     /// matrix to store the matrix inversion result
@@ -209,29 +210,29 @@ inline void ShapeFunctions::initElementalFieldInterpolation(const Array<Real> & 
 
 
     /// matrix containing the interpolation points coordinates
-    const Matrix<Real> & points_coords = points_coords_begin[elem_fil(el)];
+    const Matrix<Real> & points_coords = points_coords_begin[element_filter(el)];
     /// matrix to store the interpolation points coordinates
     /// compatible with these functions
-    Matrix<Real> & inv_points_coord_matrix = *inv_points_mat_it;
+    Matrix<Real> & inv_points_coord_matrix = *int_points_mat_it;
 
     /// insert the quad coordinates in a matrix compatible with the interpolation
     buildElementalFieldInterpolationCoodinates<type>(points_coords,
 						     inv_points_coord_matrix);
   }
-*/
+
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template<ElementType type>
 inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates(__attribute__((unused)) const Matrix<Real> & coordinates,
-								       __attribute__((unused)) Matrix<Real> & coordMatrix) {
+								       __attribute__((unused)) Matrix<Real> & coordMatrix) const {
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */
 inline void ShapeFunctions::buildElementalFieldInterpolationCoodinatesLinear(const Matrix<Real> & coordinates,
-									     Matrix<Real> & coordMatrix) {
+									     Matrix<Real> & coordMatrix) const {
 
   for (UInt i = 0; i < coordinates.cols(); ++i)
     coordMatrix(i, 0) = 1;
@@ -239,7 +240,7 @@ inline void ShapeFunctions::buildElementalFieldInterpolationCoodinatesLinear(con
 
 /* -------------------------------------------------------------------------- */
 inline void ShapeFunctions::buildElementalFieldInterpolationCoodinatesQuadratic(const Matrix<Real> & coordinates,
-										Matrix<Real> & coordMatrix) {
+										Matrix<Real> & coordMatrix) const {
 
   UInt nb_quadrature_points = coordMatrix.cols();
 
@@ -253,14 +254,14 @@ inline void ShapeFunctions::buildElementalFieldInterpolationCoodinatesQuadratic(
 /* -------------------------------------------------------------------------- */
 template<>
 inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_segment_2>(const Matrix<Real> & coordinates,
-										   Matrix<Real> & coordMatrix) {
+										   Matrix<Real> & coordMatrix) const  {
   buildElementalFieldInterpolationCoodinatesLinear(coordinates, coordMatrix);
 }
 
 /* -------------------------------------------------------------------------- */
 template<>
 inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_segment_3>(const Matrix<Real> & coordinates,
-										   Matrix<Real> & coordMatrix) {
+										   Matrix<Real> & coordMatrix) const {
 
   buildElementalFieldInterpolationCoodinatesQuadratic(coordinates, coordMatrix);
 }
@@ -268,14 +269,14 @@ inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_segment_
 /* -------------------------------------------------------------------------- */
 template<>
 inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_triangle_3>(const Matrix<Real> & coordinates,
-										    Matrix<Real> & coordMatrix) {
+										    Matrix<Real> & coordMatrix) const  {
   buildElementalFieldInterpolationCoodinatesLinear(coordinates, coordMatrix);
 }
 
 /* -------------------------------------------------------------------------- */
 template<>
 inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_triangle_6>(const Matrix<Real> & coordinates,
-										    Matrix<Real> & coordMatrix) {
+										    Matrix<Real> & coordMatrix) const {
 
   buildElementalFieldInterpolationCoodinatesQuadratic(coordinates, coordMatrix);
 }
@@ -284,14 +285,14 @@ inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_triangle
 /* -------------------------------------------------------------------------- */
 template<>
 inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_tetrahedron_4>(const Matrix<Real> & coordinates,
-										       Matrix<Real> & coordMatrix) {
+										       Matrix<Real> & coordMatrix) const {
   buildElementalFieldInterpolationCoodinatesLinear(coordinates, coordMatrix);
 }
 
 /* -------------------------------------------------------------------------- */
 template<>
 inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_tetrahedron_10>(const Matrix<Real> & coordinates,
-											Matrix<Real> & coordMatrix) {
+											Matrix<Real> & coordMatrix) const {
 
   buildElementalFieldInterpolationCoodinatesQuadratic(coordinates, coordMatrix);
 }
@@ -305,7 +306,7 @@ inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_tetrahed
 /* -------------------------------------------------------------------------- */
 template<>
 inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_quadrangle_4>(const Matrix<Real> & coordinates,
-										      Matrix<Real> & coordMatrix) {
+										      Matrix<Real> & coordMatrix) const  {
 
   for (UInt i = 0; i < coordinates.cols(); ++i) {
     Real x = coordinates(0, i);
@@ -321,7 +322,7 @@ inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_quadrang
 /* -------------------------------------------------------------------------- */
 template<>
 inline void ShapeFunctions::buildElementalFieldInterpolationCoodinates<_quadrangle_8>(const Matrix<Real> & coordinates,
-										      Matrix<Real> & coordMatrix) {
+										      Matrix<Real> & coordMatrix) const  {
 
   for (UInt i = 0; i < coordinates.cols(); ++i) {
 

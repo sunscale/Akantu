@@ -300,26 +300,6 @@ protected:
 					 ElementTypeMapArray<Real> & result,
 					 const GhostType ghost_type);
 
-  /// template function to initialize the elemental field interpolation
-  template <ElementType type>
-  void initElementalFieldInterpolation(const Array<Real> & quad_coordinates,
-                                       const Array<Real> & interpolation_points_coordinates,
-                                       const UInt nb_interpolation_points_per_elem,
-                                       const GhostType ghost_type);
-
-  /// build the coordinate matrix for the interpolation on elemental field
-  template <ElementType type>
-  inline void buildElementalFieldInterpolationCoodinates(const Matrix<Real> & coordinates,
-                                                         Matrix<Real> & coordMatrix);
-
-  /// build interpolation coordinates for basic linear elements
-  inline void buildElementalFieldInterpolationCoodinatesLinear(const Matrix<Real> & coordinates,
-                                                               Matrix<Real> & coordMatrix);
-
-  /// build interpolation coordinates for basic quadratic elements
-  inline void buildElementalFieldInterpolationCoodinatesQuadratic(const Matrix<Real> & coordinates,
-                                                                  Matrix<Real> & coordMatrix);
-
 public:
   /* ------------------------------------------------------------------------ */
   /* Conversion functions                                                     */

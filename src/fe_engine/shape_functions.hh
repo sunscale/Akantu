@@ -107,15 +107,15 @@ protected:
   /// build the coordinate matrix for the interpolation on elemental field
   template <ElementType type>
   inline void buildElementalFieldInterpolationCoodinates(const Matrix<Real> & coordinates,
-                                                         Matrix<Real> & coordMatrix);
+                                                         Matrix<Real> & coordMatrix) const;
 
   /// build interpolation coordinates for basic linear elements
   inline void buildElementalFieldInterpolationCoodinatesLinear(const Matrix<Real> & coordinates,
-                                                               Matrix<Real> & coordMatrix);
+                                                               Matrix<Real> & coordMatrix) const;
 
   /// build interpolation coordinates for basic quadratic elements
   inline void buildElementalFieldInterpolationCoodinatesQuadratic(const Matrix<Real> & coordinates,
-                                                                  Matrix<Real> & coordMatrix);
+                                                                  Matrix<Real> & coordMatrix) const;
 
 
   /* ------------------------------------------------------------------------ */
