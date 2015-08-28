@@ -1,12 +1,14 @@
 /**
- * @file   weight_function_tmpl.hh
+ * @file   stress_based_weight_function_inline_impl.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Cyprien Wolff <cyprien.wolff@epfl.ch>
  *
  * @date creation: Fri Apr 13 2012
  * @date last modification: Thu Jun 05 2014
  *
- * @brief  implementation of the weight function classes
+ * @brief Implementation of inline function of remove damaged with
+ * damage rate weight function
  *
  * @section LICENSE
  *
@@ -29,89 +31,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-/* Stress based weight function                                               */
-/* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-StressBasedWeightFunction<spatial_dimension>::StressBasedWeightFunction(Material & material) :
-  BaseWeightFunction<spatial_dimension>(material, "stress_based"),
-  stress_diag("stress_diag", material), selected_stress_diag(NULL),
-  stress_base("stress_base", material), selected_stress_base(NULL),
-  characteristic_size("lc", material),  selected_characteristic_size(NULL) {
-
-  this->registerParam("ft", this->ft, 0., _pat_parsable, "Tensile strength");
-  stress_diag.initialize(spatial_dimension);
-  stress_base.initialize(spatial_dimension * spatial_dimension);
-  characteristic_size.initialize(1);
-}
-
-/* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void StressBasedWeightFunction<spatial_dimension>::init() {
-  const Mesh & mesh = this->material.getModel().getFEEngine().getMesh();
-  for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = GhostType(g);
-    Mesh::type_iterator it = mesh.firstType(spatial_dimension, gt);
-    Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, gt);
-    for(; it != last_type; ++it) {
-      UInt nb_quadrature_points =
-	this->material.getModel().getFEEngine().getNbQuadraturePoints(*it, gt);
-      const Array<UInt> & element_filter = this->material.getElementFilter(*it, gt);
-      UInt nb_element = element_filter.getSize();
-
-      Array<Real> ones(nb_element*nb_quadrature_points, 1, 1.);
-      Array<Real> & lc = characteristic_size(*it, gt);
-      this->material.getModel().getFEEngine().integrateOnQuadraturePoints(ones,
-								     lc,
-								     1,
-								     *it,
-								     gt,
-								     element_filter);
-
-      for (UInt q = 0;  q < nb_quadrature_points * nb_element; q++) {
-	lc(q) = pow(lc(q), 1./ Real(spatial_dimension));
-      }
-    }
-  }
-}
-
-
-/* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void StressBasedWeightFunction<spatial_dimension>::updatePrincipalStress(GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
-
-  const Mesh & mesh = this->material.getModel().getFEEngine().getMesh();
-
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
-  for(; it != last_type; ++it) {
-    Array<Real>::const_matrix_iterator sigma =
-      this->material.getStress(*it, ghost_type).begin(spatial_dimension, spatial_dimension);
-    Array<Real>::vector_iterator eigenvalues =
-      stress_diag(*it, ghost_type).begin(spatial_dimension);
-    Array<Real>::vector_iterator eigenvalues_end =
-      stress_diag(*it, ghost_type).end(spatial_dimension);
-    Array<Real>::matrix_iterator eigenvector =
-      stress_base(*it, ghost_type).begin(spatial_dimension, spatial_dimension);
-
-#ifndef __trick__
-    Array<Real>::iterator<Real> cl = characteristic_size(*it, ghost_type).begin();
-#endif
-    UInt q = 0;
-    for(;eigenvalues != eigenvalues_end; ++sigma, ++eigenvalues, ++eigenvector, ++cl, ++q) {
-      sigma->eig(*eigenvalues, *eigenvector);
-      *eigenvalues /= ft;
-#ifndef __trick__
-      // specify a lower bound for principal stress based on the size of the element
-      for (UInt i = 0; i < spatial_dimension; ++i) {
-        (*eigenvalues)(i) = std::max(*cl / this->R, (*eigenvalues)(i));
-      }
-#endif
-    }
-  }
-  AKANTU_DEBUG_OUT();
+inline void StressBasedWeightFunction<spatial_dimension>::updateInternals(__attribute__((unused)) const ElementTypeMapArray<Real> & quadrature_points_coordinates) {
+  updatePrincipalStress(_not_ghost);
+  updatePrincipalStress(_ghost);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -277,3 +200,4 @@ inline Real StressBasedWeightFunction<3>::computeRhoSquare(Real r,
 
   return 1./ (rhop1 + rhop2 + rhop3);
 }
+
