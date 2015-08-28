@@ -289,42 +289,6 @@ protected:
   virtual void resizeInternals();
 
 public:
-  /// compute the coordinates of the quadrature points
-  virtual void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
-						  const GhostType & ghost_type) const;
-
-protected:
-  /// interpolate an elemental field on given points for each element
-  void interpolateElementalField(const ElementTypeMapArray<Real> & field,
-                                 ElementTypeMapArray<Real> & result,
-                                 const GhostType ghost_type);
-
-  /// interpolate an elemental field and store the results per facet
-  void interpolateElementalFieldOnFacets(const ElementTypeMapArray<Real> & field,
-					 ElementTypeMapArray<Real> & result,
-					 const GhostType ghost_type);
-
-  /// template function to initialize the elemental field interpolation
-  template <ElementType type>
-  void initElementalFieldInterpolation(const Array<Real> & quad_coordinates,
-                                       const Array<Real> & interpolation_points_coordinates,
-                                       const UInt nb_interpolation_points_per_elem,
-                                       const GhostType ghost_type);
-
-  /// build the coordinate matrix for the interpolation on elemental field
-  template <ElementType type>
-  inline void buildElementalFieldInterpolationCoodinates(const Matrix<Real> & coordinates,
-                                                         Matrix<Real> & coordMatrix);
-
-  /// build interpolation coordinates for basic linear elements
-  inline void buildElementalFieldInterpolationCoodinatesLinear(const Matrix<Real> & coordinates,
-                                                               Matrix<Real> & coordMatrix);
-
-  /// build interpolation coordinates for basic quadratic elements
-  inline void buildElementalFieldInterpolationCoodinatesQuadratic(const Matrix<Real> & coordinates,
-                                                                  Matrix<Real> & coordMatrix);
-
-public:
   /* ------------------------------------------------------------------------ */
   /* Conversion functions                                                     */
   /* ------------------------------------------------------------------------ */

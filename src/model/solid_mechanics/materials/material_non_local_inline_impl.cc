@@ -214,7 +214,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 
   spatial_grid = new SpatialGrid<QuadraturePoint>(spatial_dimension, spacing, center);
 
-  this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _not_ghost);
+  this->fem->computeQuadraturePointsCoordinates(quadrature_points_coordinates, &element_filter);
   this->fillCellList(quadrature_points_coordinates, _not_ghost);
 
   is_creating_grid = true;
@@ -232,7 +232,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 							       tags);
   is_creating_grid = false;
 
-  this->computeQuadraturePointsCoordinates(quadrature_points_coordinates, _ghost);
+  this->fem->computeQuadraturePointsCoordinates(quadrature_points_coordinates, &element_filter);
   fillCellList(quadrature_points_coordinates, _ghost);
 
   AKANTU_DEBUG_OUT();
@@ -526,8 +526,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::updateResidual(GhostTy
     ElementTypeMapArray<Real> quadrature_points_coordinates("quadrature_points_coordinates", getID());
     Mesh & mesh = this->model->getFEEngine().getMesh();
     mesh.initElementTypeMapArray(quadrature_points_coordinates, spatial_dimension, spatial_dimension);
-    computeQuadraturePointsCoordinates(quadrature_points_coordinates, _not_ghost);
-    computeQuadraturePointsCoordinates(quadrature_points_coordinates, _ghost);
+    this->fem->computeQuadraturePointsCoordinates(quadrature_points_coordinates, &element_filter);
     computeWeights(quadrature_points_coordinates);
   }
   if(ghost_type == _not_ghost) ++this->compute_stress_calls;
@@ -552,9 +551,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeAllNonLocalStre
       ElementTypeMapArray<Real> quadrature_points_coordinates("quadrature_points_coordinates", getID());
       Mesh & mesh = this->model->getFEEngine().getMesh();
       mesh.initElementTypeMapArray(quadrature_points_coordinates, spatial_dimension, spatial_dimension);
-      computeQuadraturePointsCoordinates(quadrature_points_coordinates, _not_ghost);
-      computeQuadraturePointsCoordinates(quadrature_points_coordinates, _ghost);
-
+      this->fem->computeQuadraturePointsCoordinates(quadrature_points_coordinates, &element_filter);
       this->model->getSynchronizerRegistry().waitEndSynchronize(_gst_mnl_weight);
 
       computeWeights(quadrature_points_coordinates);
