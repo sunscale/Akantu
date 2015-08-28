@@ -73,21 +73,24 @@ public:
   void setControlPointsByType(const Matrix<Real> & control_points,
 			      const GhostType & ghost_type);
 
-  inline void initElementalFieldInterpolation(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
-					      ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
-					      ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-					      const ElementTypeMapArray<Real> & quadrature_points_coordinates,
-					      const ElementTypeMapArray<UInt> * element_filter = NULL) const;
+  /// Build pre-computed matrices for interpolation of field form control points at other given positions (interpolation_points)
+  inline void initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+							       ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							       ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+							       const ElementTypeMapArray<Real> & quadrature_points_coordinates,
+							       const ElementTypeMapArray<UInt> * element_filter) const;
   
-  template <ElementType type>
-  inline void initElementalFieldInterpolation(const Array<Real> & interpolation_points_coordinates,
-					      ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
-					      ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-					      const Array<Real> & quadrature_points_coordinates,
-					      GhostType & ghost_type,
-					      const Array<UInt> & element_filter) const;
+  /// Interpolate field at given position from given values of this field at control points (field) 
+  /// using matrices precomputed with initElementalFieldInterplationFromControlPoints
+  inline void interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+							 const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							 const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+							 ElementTypeMapArray<Real> & result,
+							 const GhostType ghost_type,
+							 const ElementTypeMapArray<UInt> * element_filter) const;
 
 protected:
+
   /// interpolate nodal values stored by element on the control points
   template <ElementType type>
   void interpolateElementalFieldOnControlPoints(const Array<Real> &u_el,
@@ -104,19 +107,33 @@ protected:
 					     const Array<Real> & shapes_derivatives,
 					     const Array<UInt> & filter_elements) const;
 
-  /// build the coordinate matrix for the interpolation on elemental field
+  /// By element versions of non-templated eponym methods
   template <ElementType type>
-  inline void buildElementalFieldInterpolationCoodinates(const Matrix<Real> & coordinates,
-                                                         Matrix<Real> & coordMatrix) const;
+  inline void interpolateElementalFieldFromControlPoints(const Array<Real> & field,
+							 const Array<Real> & interpolation_points_coordinates_matrices,
+							 const Array<Real> & quad_points_coordinates_inv_matrices,
+							 ElementTypeMapArray<Real> & result,
+							 const GhostType ghost_type,
+							 const Array<UInt> & element_filter) const;
+  template <ElementType type>
+  inline void initElementalFieldInterpolationFromControlPoints(const Array<Real> & interpolation_points_coordinates,
+							       ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							       ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+							       const Array<Real> & quadrature_points_coordinates,
+							       GhostType & ghost_type,
+							       const Array<UInt> & element_filter) const;
 
-  /// build interpolation coordinates for basic linear elements
-  inline void buildElementalFieldInterpolationCoodinatesLinear(const Matrix<Real> & coordinates,
-                                                               Matrix<Real> & coordMatrix) const;
 
-  /// build interpolation coordinates for basic quadratic elements
-  inline void buildElementalFieldInterpolationCoodinatesQuadratic(const Matrix<Real> & coordinates,
-                                                                  Matrix<Real> & coordMatrix) const;
+  /// build matrix for the interpolation of field form control points
+  template <ElementType type> 
+  inline void buildElementalFieldInterpolationMatrix(const Matrix<Real> & coordinates,
+						     Matrix<Real> & coordMatrix,
+						     UInt integration_order = 
+						     ElementClassProperty<type>::minimal_integration_order) const;
 
+  inline void buildInterpolationMatrix(const Matrix<Real> & coordinates,
+				       Matrix<Real> & coordMatrix,
+				       UInt integration_order) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

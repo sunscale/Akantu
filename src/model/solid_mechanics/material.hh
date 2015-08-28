@@ -288,18 +288,6 @@ protected:
   /// resize the intenals arrays
   virtual void resizeInternals();
 
-
-protected:
-  /// interpolate an elemental field on given points for each element
-  void interpolateElementalField(const ElementTypeMapArray<Real> & field,
-                                 ElementTypeMapArray<Real> & result,
-                                 const GhostType ghost_type);
-
-  /// interpolate an elemental field and store the results per facet
-  void interpolateElementalFieldOnFacets(const ElementTypeMapArray<Real> & field,
-					 ElementTypeMapArray<Real> & result,
-					 const GhostType ghost_type);
-
 public:
   /* ------------------------------------------------------------------------ */
   /* Conversion functions                                                     */

@@ -578,10 +578,10 @@ inline void FEEngineTemplate<I, S, kind>::computeQuadraturePointsCoordinates(Ele
 template<template <ElementKind> class I,
          template <ElementKind> class S,
          ElementKind kind>
-inline void FEEngineTemplate<I, S, kind>::initElementalFieldInterpolation(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
-									  ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
-									  ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-									  const ElementTypeMapArray<UInt> * element_filter) const {
+inline void FEEngineTemplate<I, S, kind>::initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+											   ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+											   ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+											   const ElementTypeMapArray<UInt> * element_filter) const {
 
     AKANTU_DEBUG_IN();
   
@@ -590,12 +590,56 @@ inline void FEEngineTemplate<I, S, kind>::initElementalFieldInterpolation(const 
     ElementTypeMapArray<Real> quadrature_points_coordinates("quadrature_points_coordinates_for_interpolation", getID());
     mesh.initElementTypeMapArray(quadrature_points_coordinates, spatial_dimension, spatial_dimension);
     computeQuadraturePointsCoordinates(quadrature_points_coordinates, element_filter);
-    shape_functions.initElementalFieldInterpolation(interpolation_points_coordinates,
-						    interpolation_points_coordinates_matrices,
-						    quad_points_coordinates_inv_matrices,
-						    quadrature_points_coordinates,
-						    element_filter);    
+    shape_functions.initElementalFieldInterpolationFromControlPoints(interpolation_points_coordinates,
+								     interpolation_points_coordinates_matrices,
+								     quad_points_coordinates_inv_matrices,
+								     quadrature_points_coordinates,
+								     element_filter);    
     
+}
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+								const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+								ElementTypeMapArray<Real> & result,
+								const GhostType ghost_type,
+								const ElementTypeMapArray<UInt> * element_filter) const {
+
+  ElementTypeMapArray<Real> interpolation_points_coordinates_matrices("interpolation_points_coordinates_matrices"); 
+  ElementTypeMapArray<Real> quad_points_coordinates_inv_matrices("quad_points_coordinates_inv_matrices");
+
+  initElementalFieldInterpolationFromControlPoints(interpolation_points_coordinates,
+						   interpolation_points_coordinates_matrices,
+						   quad_points_coordinates_inv_matrices,
+						   element_filter);
+
+  interpolateElementalFieldFromControlPoints(field,
+					     interpolation_points_coordinates_matrices,
+					     quad_points_coordinates_inv_matrices,
+					     result,
+					     ghost_type,
+					     element_filter);
+}
+
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+										     const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+										     const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+										     ElementTypeMapArray<Real> & result,
+										     const GhostType ghost_type,
+										     const ElementTypeMapArray<UInt> * element_filter) const {
+
+  shape_functions.interpolateElementalFieldFromControlPoints(field,
+							     interpolation_points_coordinates_matrices,
+							     quad_points_coordinates_inv_matrices,
+							     result,
+							     ghost_type,
+							     element_filter);
 }
 
 /* -------------------------------------------------------------------------- */

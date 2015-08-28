@@ -170,10 +170,25 @@ public:
 					  const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
   
   virtual
-  void initElementalFieldInterpolation(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
-				       ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
-				       ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-				       const ElementTypeMapArray<UInt> * element_filter) const = 0;
+  void initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+							ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+							const ElementTypeMapArray<UInt> * element_filter) const = 0;
+
+  virtual
+  void interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+						  const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+						  ElementTypeMapArray<Real> & result,
+						  const GhostType ghost_type,
+						  const ElementTypeMapArray<UInt> * element_filter) const = 0;
+
+  virtual
+  void interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+						  const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+						  const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+						  ElementTypeMapArray<Real> & result,
+						  const GhostType ghost_type,
+						  const ElementTypeMapArray<UInt> * element_filter) const = 0;
 
   virtual 
   void interpolate(const Vector<Real> & real_coords, 
