@@ -263,7 +263,8 @@ examples below.
 In this example the physical names specified in a GMSH geometry file will by
 used to match the material names in the input file.
 
-Another example would be to use the first (\code{tag\_0}) or the second (\code{tag\_1}) tag associated to each elements in the mesh:
+Another example would be to use the first (\code{tag\_0}) or the second
+(\code{tag\_1}) tag associated to each elements in the mesh:
 
 \begin{cpp}
   MeshDataMaterialSelector<UInt> * mat_selector;
@@ -271,7 +272,9 @@ Another example would be to use the first (\code{tag\_0}) or the second (\code{t
   model.setMaterialSelector(*mat_selector);
 \end{cpp}
 
-where \code{first\_index} (default is 1) is the value of \code{tag\_1} that will be associated to the first material in the material input file. The following values of the tag will be associated with the following materials.
+where \code{first\_index} (default is 1) is the value of \code{tag\_1} that will
+be associated to the first material in the material input file. The following
+values of the tag will be associated with the following materials.
 
 There are four different material selectors pre-defined in
 \akantu. \code{MaterialSelector} and \code{DefaultMaterialSelector} is
@@ -279,12 +282,6 @@ used to assign a material to regular elements by default. For the
 regular elements, as in the example above,
 \code{MeshDataMaterialSelector} can be used to assign different
 materials to different elements. 
-
-For cohesive material, \akantu has a pre-defined material selector to assign 
-the first cohesive material by default to the cohesive elements which is called 
-\code{DefaultMaterialCohesiveSelector} and it inherits its properties from 
-\code{DefaultMaterialSelector}. Multiple cohesive materials can be assigned 
-using mesh data information (for more details, see \ref{intrinsic_insertion}).
 
 Apart from the \akantu's default material selectors, users can always
 develop their own classes in the main code to tackle various
@@ -500,7 +497,8 @@ are parameters depending on the method used to solve the equations
   \end{tabular}
 \end{center}
 
-%\note{If you want to use the implicit solver \akantu should be compiled at least with one sparse matrix solver such as Mumps\cite{mumps}.}
+% \note{If you want to use the implicit solver \akantu should be compiled at
+% least with one sparse matrix solver such as Mumps\cite{mumps}.}
 
 
 \subsection{Implicit Time Integration}
@@ -628,10 +626,13 @@ wave) needs to travel the characteristic length of the mesh:
 \label{eqn:smm:explicit:stabletime}
 \Delta t_{\st{crit}} = \frac{\Delta x}{c}
 \end{equation}
-where $\Delta x$ is a characteristic length (\eg the inradius in the
-case of linear triangle element) and $c$ is the celerity of the fastest wave in the material. It is generally the compressive
-wave of celerity $c = \sqrt{\frac{2 \mu + \lambda}{\rho}}$, $\mu$ and $\lambda$ are the first and second Lame's coefficients and $\rho$ is the density. However, it is recommended to impose a time step that is smaller than the stable time step, for
-instance, by multiplying the stable time step by a safety factor smaller than one.
+where $\Delta x$ is a characteristic length (\eg the inradius in the case of
+linear triangle element) and $c$ is the celerity of the fastest wave in the
+material. It is generally the compressive wave of celerity
+$c = \sqrt{\frac{2 \mu + \lambda}{\rho}}$, $\mu$ and $\lambda$ are the first and
+second Lame's coefficients and $\rho$ is the density. However, it is recommended
+to impose a time step that is smaller than the stable time step, for instance,
+by multiplying the stable time step by a safety factor smaller than one.
 
 \begin{cpp}
 const Real safety_time_factor = 0.8;
@@ -765,15 +766,18 @@ class MaterialXXX : public Material {
 \end{cpp}
 In the header file the user also needs to declare all the members of the new
 material. These include the parameters that a read from the
-material input file, as well as any other material parameters that will be computed during the simulation and internal variables.\\
-In the following the example of adding a new damage material will be presented. In this
-case the parameters in the material will consist of the Young's modulus, the
-Poisson coefficient, the resistance to damage and the damage threshold. The
-material will then from these values compute its Lam\'{e} coefficients and its
-bulk modulus. Furthermore, the user has to add a new internal variable
-\code{damage} in order to store the amount of damage at each quadrature point in
-each step of the simulation. For this specific material the member declaration
-inside the class will look as follows:
+material input file, as well as any other material parameters that will be
+computed during the simulation and internal variables.
+
+
+In the following the example of adding a new damage material will be
+presented. In this case the parameters in the material will consist of the
+Young's modulus, the Poisson coefficient, the resistance to damage and the
+damage threshold. The material will then from these values compute its Lam\'{e}
+coefficients and its bulk modulus. Furthermore, the user has to add a new
+internal variable \code{damage} in order to store the amount of damage at each
+quadrature point in each step of the simulation. For this specific material the
+member declaration inside the class will look as follows:
 \begin{cpp}
 class LocalMaterialDamage : public Material {
 

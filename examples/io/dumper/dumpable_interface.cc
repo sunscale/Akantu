@@ -118,7 +118,13 @@ int main(int argc, char * argv[]) {
 
   // Arrays and ElementTypeMapArrays can be added as external fields directly
   mesh.addDumpFieldExternal("displacement", displacement);
-  mesh.addDumpFieldExternal("color", colour);
+
+    ElementTypeMapArrayFilter<UInt> filtered_colour(
+      colour, wheels_elements.getElements());
+
+  dumper::Field * colour_field_wheel =
+      new dumper::ElementalField<UInt, Vector, true>(filtered_colour);
+  mesh.addDumpFieldExternal("color", colour_field_wheel);
 
   mesh.addDumpFieldExternalToDumper("wheels", "displacement",
                                     displacement);
