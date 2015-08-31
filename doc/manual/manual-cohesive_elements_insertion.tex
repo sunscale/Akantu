@@ -5,9 +5,12 @@ the first cohesive material by default to the cohesive elements which is called
 using mesh data information (for more details, see \ref{intrinsic_insertion}).
 
 \subsection{Insertion of Cohesive Elements}
-Cohesive elements are currently compatible only with static simulation and dynamic simualtion with an explicit time integration scheme
-(see section~\ref{ssect:smm:expl-time-integr}). They do not have to be
-inserted when the mesh is generated but during the simulation. At any time during the simulation, it is possible to access the following energies with the relative function:
+Cohesive elements are currently compatible only with static simulation
+and dynamic simulation with an explicit time integration scheme (see
+section~\ref{ssect:smm:expl-time-integr}). They do not have to be
+inserted when the mesh is generated but during the simulation. At any
+time during the simulation, it is possible to access the following
+energies with the relative function:
 \begin{cpp}
   Real Ed = model.getEnergy("dissipated");
   Real Er = model.getEnergy("reversible");
@@ -16,7 +19,7 @@ inserted when the mesh is generated but during the simulation. At any time durin
 
 \subsubsection{Extrinsic approach}
 The dynamic insertion of extrinsic cohesive elements should be initialized 
-the following way:
+in the following way:
 \begin{cpp}
   SolidMechanicsModelCohesive model(mesh);
   model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
@@ -30,7 +33,7 @@ example before each step resolution:
   model.checkCohesiveStress();
   model.solveStep();
 \end{cpp}
-The area where stress are checked and cohesive elements inserted can be limited 
+The area where stresses are checked and cohesive elements inserted can be limited 
 using the method \code{limitInsertion} during initialization. As example, to 
 limit insertion in the range $[-1.5, 1.5]$ in the $x$ direction: 
 \begin{cpp}

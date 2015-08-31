@@ -77,12 +77,423 @@ void ShapeFunctions::setControlPointsByType(const Matrix<Real> & points,
 }
 
 /* -------------------------------------------------------------------------- */
+inline void ShapeFunctions::initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+									     ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+									     ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+									     const ElementTypeMapArray<Real> & quadrature_points_coordinates, 
+									     const ElementTypeMapArray<UInt> * element_filter) const {
+  
+  AKANTU_DEBUG_IN();
+  
+  UInt spatial_dimension = this->mesh.getSpatialDimension();
+
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();
+       gt != ghost_type_t::end(); ++gt) {
+    
+    GhostType ghost_type = *gt;
+
+    Mesh::type_iterator it, last;
+    
+    if(element_filter) {
+      it = element_filter->firstType(spatial_dimension, ghost_type);
+      last = element_filter->lastType(spatial_dimension, ghost_type);
+    } 
+    else {
+      it = mesh.firstType(spatial_dimension, ghost_type);
+      last = mesh.lastType(spatial_dimension, ghost_type);
+    }
+    for (; it != last; ++it) {
+      
+      ElementType type = *it;
+      UInt nb_element = mesh.getNbElement(type, ghost_type);
+      if (nb_element == 0) continue;
+
+      const Array<UInt> * elem_filter;
+      if(element_filter) elem_filter = &((*element_filter)(type, ghost_type));
+      else elem_filter = &(empty_filter);
+
+#define AKANTU_INIT_ELEMENTAL_FIELD_INTERPOLATION_FROM_C_POINTS(type)			\
+      initElementalFieldInterpolationFromControlPoints<type>(interpolation_points_coordinates(type, ghost_type), \
+							     interpolation_points_coordinates_matrices, \
+							     quad_points_coordinates_inv_matrices, \
+							     quadrature_points_coordinates(type, ghost_type), \
+							     ghost_type, \
+							     *elem_filter) \
+
+
+      AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(AKANTU_INIT_ELEMENTAL_FIELD_INTERPOLATION_FROM_C_POINTS);
+#undef AKANTU_INIT_ELEMENTAL_FIELD_INTERPOLATION_FROM_C_POINTS
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 template <ElementType type>
-void ShapeFunctions::interpolateElementalFieldOnControlPoints(const Array<Real> &u_el,
-							      Array<Real> &uq,
-							      GhostType ghost_type,
-							      const Array<Real> & shapes,
-							      const Array<UInt> & filter_elements) const {
+inline void ShapeFunctions::initElementalFieldInterpolationFromControlPoints(const Array<Real> & interpolation_points_coordinates,
+									     ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+									     ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+									     const Array<Real> & quadrature_points_coordinates,
+									     GhostType & ghost_type,
+									     const Array<UInt> & element_filter) const {
+
+  AKANTU_DEBUG_IN();
+
+  UInt spatial_dimension = this->mesh.getSpatialDimension();
+  UInt nb_element = this->mesh.getNbElement(type, ghost_type);
+  UInt nb_element_filter;
+
+  if(element_filter == empty_filter) 
+    nb_element_filter = element_filter.getSize();
+  else nb_element_filter = nb_element;
+
+  UInt nb_quad_per_element = GaussIntegrationElement<type>::getNbQuadraturePoints();
+  UInt nb_interpolation_points_per_elem = interpolation_points_coordinates.getSize() / nb_element;
+
+  AKANTU_DEBUG_ASSERT(interpolation_points_coordinates.getSize() % nb_element == 0,
+		      "Number of interpolation points should be a multiple of total number of elements");
+
+
+  if(!quad_points_coordinates_inv_matrices.exists(type, ghost_type))
+    quad_points_coordinates_inv_matrices.alloc(nb_element_filter,
+					       nb_quad_per_element*nb_quad_per_element,
+					       type, ghost_type);
+  else
+    quad_points_coordinates_inv_matrices(type, ghost_type).resize(nb_element_filter);
+
+  if(!interpolation_points_coordinates_matrices.exists(type, ghost_type))
+    interpolation_points_coordinates_matrices.alloc(nb_element_filter,
+						    nb_interpolation_points_per_elem * nb_quad_per_element,
+						    type, ghost_type);
+  else
+    interpolation_points_coordinates_matrices(type, ghost_type).resize(nb_element_filter);
+ 
+  Array<Real> & quad_inv_mat = quad_points_coordinates_inv_matrices(type, ghost_type);
+  Array<Real> & interp_points_mat = interpolation_points_coordinates_matrices(type, ghost_type);
+
+  Matrix<Real> quad_coord_matrix(nb_quad_per_element, nb_quad_per_element);
+
+  Array<Real>::const_matrix_iterator quad_coords_it =
+    quadrature_points_coordinates.begin_reinterpret(spatial_dimension,
+						    nb_quad_per_element,
+						    nb_element);
+
+  Array<Real>::const_matrix_iterator points_coords_begin =
+    interpolation_points_coordinates.begin_reinterpret(spatial_dimension,
+						       nb_interpolation_points_per_elem,
+						       nb_element);
+
+  Array<Real>::matrix_iterator inv_quad_coord_it =
+    quad_inv_mat.begin(nb_quad_per_element, nb_quad_per_element);
+
+  Array<Real>::matrix_iterator int_points_mat_it =
+    interp_points_mat.begin(nb_interpolation_points_per_elem, nb_quad_per_element);
+
+  /// loop over the elements of the current material and element type
+  for (UInt el = 0; el < nb_element; ++el, ++inv_quad_coord_it,
+	 ++int_points_mat_it, ++quad_coords_it) {
+    /// matrix containing the quadrature points coordinates
+    const Matrix<Real> & quad_coords = *quad_coords_it;
+    /// matrix to store the matrix inversion result
+    Matrix<Real> & inv_quad_coord_matrix = *inv_quad_coord_it;
+
+    /// insert the quad coordinates in a matrix compatible with the interpolation
+    buildElementalFieldInterpolationMatrix<type>(quad_coords,
+						 quad_coord_matrix);
+
+    /// invert the interpolation matrix
+    inv_quad_coord_matrix.inverse(quad_coord_matrix);
+
+
+    /// matrix containing the interpolation points coordinates
+    const Matrix<Real> & points_coords = points_coords_begin[element_filter(el)];
+    /// matrix to store the interpolation points coordinates
+    /// compatible with these functions
+    Matrix<Real> & inv_points_coord_matrix = *int_points_mat_it;
+
+    /// insert the quad coordinates in a matrix compatible with the interpolation
+    buildElementalFieldInterpolationMatrix<type>(points_coords,
+						 inv_points_coord_matrix);
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+inline void ShapeFunctions::buildInterpolationMatrix(const Matrix<Real> & coordinates,
+						     Matrix<Real> & coordMatrix,
+						     UInt integration_order) const {
+  switch (integration_order) {
+
+  case 1:{
+    for (UInt i = 0; i < coordinates.cols(); ++i)
+      coordMatrix(i, 0) = 1;
+    break;
+  }
+
+  case 2:{
+    UInt nb_quadrature_points = coordMatrix.cols();
+    
+    for (UInt i = 0; i < coordinates.cols(); ++i) {
+      coordMatrix(i, 0) = 1;
+      for (UInt j = 1; j < nb_quadrature_points; ++j)
+	coordMatrix(i, j) = coordinates(j-1, i);
+    }
+    break;
+  }
+
+  default:{
+
+    AKANTU_DEBUG_TO_IMPLEMENT();
+    break;
+  }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template<ElementType type>
+inline void ShapeFunctions::buildElementalFieldInterpolationMatrix(__attribute__((unused)) const Matrix<Real> & coordinates,
+								   __attribute__((unused)) Matrix<Real> & coordMatrix,
+								   __attribute__((unused)) UInt integration_order) const {
+  AKANTU_DEBUG_TO_IMPLEMENT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<>
+inline void ShapeFunctions::buildElementalFieldInterpolationMatrix<_segment_2>(const Matrix<Real> & coordinates,
+									       Matrix<Real> & coordMatrix,
+									       UInt integration_order) const {
+  buildInterpolationMatrix(coordinates, coordMatrix, integration_order);
+}
+
+/* -------------------------------------------------------------------------- */
+template<>
+inline void ShapeFunctions::buildElementalFieldInterpolationMatrix<_segment_3>(const Matrix<Real> & coordinates,
+									       Matrix<Real> & coordMatrix,
+									       UInt integration_order) const {
+  
+  buildInterpolationMatrix(coordinates, coordMatrix, integration_order);
+}
+  
+/* -------------------------------------------------------------------------- */
+template<>
+inline void ShapeFunctions::buildElementalFieldInterpolationMatrix<_triangle_3>(const Matrix<Real> & coordinates,
+										Matrix<Real> & coordMatrix,
+										UInt integration_order) const {
+  buildInterpolationMatrix(coordinates, coordMatrix, integration_order);
+}
+  
+/* -------------------------------------------------------------------------- */
+template<>
+inline void ShapeFunctions::buildElementalFieldInterpolationMatrix<_triangle_6>(const Matrix<Real> & coordinates,
+										Matrix<Real> & coordMatrix,
+										UInt integration_order) const {
+  
+  buildInterpolationMatrix(coordinates, coordMatrix, integration_order);
+}
+  
+  
+/* -------------------------------------------------------------------------- */
+template<>
+inline void ShapeFunctions::buildElementalFieldInterpolationMatrix<_tetrahedron_4>(const Matrix<Real> & coordinates,
+										   Matrix<Real> & coordMatrix,
+										   UInt integration_order) const {
+  buildInterpolationMatrix(coordinates, coordMatrix, integration_order);
+}
+  
+/* -------------------------------------------------------------------------- */
+template<>
+inline void ShapeFunctions::buildElementalFieldInterpolationMatrix<_tetrahedron_10>(const Matrix<Real> & coordinates,
+										    Matrix<Real> & coordMatrix,
+										    UInt integration_order) const {
+  
+  buildInterpolationMatrix(coordinates, coordMatrix, integration_order);
+}
+  
+/**
+ * @todo Write a more efficient interpolation for quadrangles by
+ * dropping unnecessary quadrature points
+ *
+ */
+  
+/* -------------------------------------------------------------------------- */
+template<>
+inline void ShapeFunctions::buildElementalFieldInterpolationMatrix<_quadrangle_4>(const Matrix<Real> & coordinates,
+										  Matrix<Real> & coordMatrix,
+										  UInt integration_order) const  {
+
+  if(integration_order!=ElementClassProperty<_quadrangle_4>::minimal_integration_order){
+  
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  } else {
+    
+    for (UInt i = 0; i < coordinates.cols(); ++i) {
+      Real x = coordinates(0, i);
+      Real y = coordinates(1, i);
+      
+      coordMatrix(i, 0) = 1;
+      coordMatrix(i, 1) = x;
+      coordMatrix(i, 2) = y;
+      coordMatrix(i, 3) = x * y;
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template<>
+inline void ShapeFunctions::buildElementalFieldInterpolationMatrix<_quadrangle_8>(const Matrix<Real> & coordinates,
+										  Matrix<Real> & coordMatrix,
+										  UInt integration_order) const  {
+ 
+  if(integration_order!=ElementClassProperty<_quadrangle_8>::minimal_integration_order){
+  
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  } else {
+  
+    for (UInt i = 0; i < coordinates.cols(); ++i) {
+
+      UInt j = 0;
+      Real x = coordinates(0, i);
+      Real y = coordinates(1, i);
+      
+      for (UInt e = 0; e <= 2; ++e) {
+	for (UInt n = 0; n <= 2; ++n) {
+	  coordMatrix(i, j) = std::pow(x, e) * std::pow(y, n);
+	  ++j;
+	}
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void ShapeFunctions::interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+								const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+								const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+								ElementTypeMapArray<Real> & result,
+								const GhostType ghost_type,
+								const ElementTypeMapArray<UInt> * element_filter) const {
+
+  AKANTU_DEBUG_IN();
+
+  UInt spatial_dimension = this->mesh.getSpatialDimension();
+  
+  Mesh::type_iterator it, last;
+    
+  if(element_filter) {
+    it = element_filter->firstType(spatial_dimension, ghost_type);
+    last = element_filter->lastType(spatial_dimension, ghost_type);
+  } 
+  else {
+    it = mesh.firstType(spatial_dimension, ghost_type);
+    last = mesh.lastType(spatial_dimension, ghost_type);
+  }
+  
+  for (; it != last; ++it) {
+      
+    ElementType type = *it;
+    UInt nb_element = mesh.getNbElement(type, ghost_type);
+    if (nb_element == 0) continue;
+
+    const Array<UInt> * elem_filter;
+    if(element_filter) elem_filter = &((*element_filter)(type, ghost_type));
+    else elem_filter = &(empty_filter);
+
+#define AKANTU_INTERPOLATE_ELEMENTAL_FIELD_FROM_C_POINTS(type)			\
+    interpolateElementalFieldFromControlPoints<type>(field(type, ghost_type), \
+						     interpolation_points_coordinates_matrices(type, ghost_type), \
+						     quad_points_coordinates_inv_matrices(type, ghost_type), \
+						     result,		\
+						     ghost_type,	\
+						     *elem_filter)	\
+
+
+    AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(AKANTU_INTERPOLATE_ELEMENTAL_FIELD_FROM_C_POINTS);
+#undef AKANTU_INTERPOLATE_ELEMENTAL_FIELD_FROM_C_POINTS
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementType type>
+inline void ShapeFunctions::interpolateElementalFieldFromControlPoints(const Array<Real> & field,
+								       const Array<Real> & interpolation_points_coordinates_matrices,
+								       const Array<Real> & quad_points_coordinates_inv_matrices,
+								       ElementTypeMapArray<Real> & result,
+								       const GhostType ghost_type,		
+								       const Array<UInt> & element_filter) const {
+  AKANTU_DEBUG_IN();
+
+  UInt nb_element = this->mesh.getNbElement(type, ghost_type);
+  
+  UInt nb_quad_per_element = GaussIntegrationElement<type>::getNbQuadraturePoints();
+  UInt nb_interpolation_points_per_elem
+   = interpolation_points_coordinates_matrices.getNbComponent() / nb_quad_per_element;
+  
+  if(!result.exists(type, ghost_type))
+    result.alloc(nb_element*nb_interpolation_points_per_elem,
+		 field.getNbComponent(),
+		 type, ghost_type);
+
+  if(element_filter != empty_filter) 
+    nb_element = element_filter.getSize();
+  
+  Matrix<Real> coefficients(nb_quad_per_element, field.getNbComponent());
+  
+  Array<Real> & result_vec = result(type, ghost_type);
+  
+
+  Array<Real>::const_matrix_iterator field_it
+    = field.begin_reinterpret(field.getNbComponent(),
+				  nb_quad_per_element,
+				  nb_element);
+
+  Array<Real>::const_matrix_iterator interpolation_points_coordinates_it =
+    interpolation_points_coordinates_matrices.begin(nb_interpolation_points_per_elem, nb_quad_per_element);
+
+  Array<Real>::matrix_iterator result_begin
+    = result_vec.begin_reinterpret(field.getNbComponent(),
+				   nb_interpolation_points_per_elem,
+				   result_vec.getSize() / nb_interpolation_points_per_elem);
+
+  Array<Real>::const_matrix_iterator inv_quad_coord_it =
+    quad_points_coordinates_inv_matrices.begin(nb_quad_per_element, nb_quad_per_element);
+
+  /// loop over the elements of the current material and element type
+  for (UInt el = 0; el < nb_element;
+       ++el, ++field_it, ++inv_quad_coord_it, ++interpolation_points_coordinates_it) {
+    /**
+     * matrix containing the inversion of the quadrature points'
+     * coordinates
+     */
+    const Matrix<Real> & inv_quad_coord_matrix = *inv_quad_coord_it;
+
+    /**
+     * multiply it by the field values over quadrature points to get
+     * the interpolation coefficients
+     */
+    coefficients.mul<false, true>(inv_quad_coord_matrix, *field_it);
+
+    /// matrix containing the points' coordinates
+    const Matrix<Real> & coord = *interpolation_points_coordinates_it;
+
+    /// multiply the coordinates matrix by the coefficients matrix and store the result
+    Matrix<Real> res(result_begin[element_filter(el)]);
+    res.mul<true, true>(coefficients, coord);
+  }
+
+  AKANTU_DEBUG_OUT();  
+  
+}
+/* -------------------------------------------------------------------------- */
+template <ElementType type>
+inline void ShapeFunctions::interpolateElementalFieldOnControlPoints(const Array<Real> &u_el,
+								     Array<Real> &uq,
+								     GhostType ghost_type,
+								     const Array<Real> & shapes,
+								     const Array<UInt> & filter_elements) const {
   UInt nb_element;
   UInt nb_points = control_points(type, ghost_type).cols();
   UInt nb_nodes_per_element = ElementClass<type>::getShapeSize();
