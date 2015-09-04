@@ -224,6 +224,7 @@ public:
    * results per facet
    */
   void interpolateStressOnFacets(ElementTypeMapArray<Real> & result,
+				 ElementTypeMapArray<Real> & by_elem_result,
 				 const GhostType ghost_type = _not_ghost);
 
   /**

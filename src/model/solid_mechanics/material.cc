@@ -1060,10 +1060,9 @@ void Material::interpolateStress(ElementTypeMapArray<Real> & result,
 
 /* -------------------------------------------------------------------------- */
 void Material::interpolateStressOnFacets(ElementTypeMapArray<Real> & result,
+					 ElementTypeMapArray<Real> & by_elem_result,
 					 const GhostType ghost_type) {
   
-  ElementTypeMapArray<Real> by_elem_result;
-
   interpolateStress(by_elem_result, ghost_type);
 
   UInt stress_size = this->stress.getNbComponent();
@@ -1080,7 +1079,8 @@ void Material::interpolateStressOnFacets(ElementTypeMapArray<Real> & result,
     Array<UInt> & elem_fil = element_filter(type, ghost_type);
     Array<Real> & by_elem_res = by_elem_result(type, ghost_type);
     UInt nb_element = elem_fil.getSize();
-    UInt nb_interpolation_points_per_elem  = by_elem_res.getSize() / nb_element;
+    UInt nb_element_full = this->model->getMesh().getNbElement(type, ghost_type);
+    UInt nb_interpolation_points_per_elem  = by_elem_res.getSize() / nb_element_full;
   
     const Array<Element> & facet_to_element =
       mesh_facets.getSubelementToElement(type, ghost_type);
@@ -1095,7 +1095,7 @@ void Material::interpolateStressOnFacets(ElementTypeMapArray<Real> & result,
     Array<Real>::const_matrix_iterator result_it
       = by_elem_res.begin_reinterpret(stress_size,
 				      nb_interpolation_points_per_elem,
-				      nb_element);
+				      nb_element_full);
 
     for (UInt el = 0; el < nb_element; ++el){
       UInt global_el = elem_fil(el);
@@ -1118,7 +1118,7 @@ void Material::interpolateStressOnFacets(ElementTypeMapArray<Real> & result,
 				    + is_second_element * stress_size,
 				    stress_size);
 
-	  Matrix<Real> result_tmp(result_it[elem_fil(el)]);
+	  const Matrix<Real> & result_tmp(result_it[global_el]);
 	  result_local = result_tmp(f * nb_quad_per_facet + q);
 	}
       }
