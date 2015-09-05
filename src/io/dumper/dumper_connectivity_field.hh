@@ -61,6 +61,23 @@ public:
                                        const GhostType ghost_type = _not_ghost) :
     parent(field, t_it, t_it_end, array_it, array_it_end,ghost_type) {
 
+    write_order[_cohesive_3d_16].push_back(0);
+    write_order[_cohesive_3d_16].push_back(1);
+    write_order[_cohesive_3d_16].push_back(2);
+    write_order[_cohesive_3d_16].push_back(3);
+    write_order[_cohesive_3d_16].push_back(4);
+    write_order[_cohesive_3d_16].push_back(5);
+    write_order[_cohesive_3d_16].push_back(6);
+    write_order[_cohesive_3d_16].push_back(7);
+    write_order[_cohesive_3d_16].push_back(8);
+    write_order[_cohesive_3d_16].push_back(9);
+    write_order[_cohesive_3d_16].push_back(10);
+    write_order[_cohesive_3d_16].push_back(11);
+    write_order[_cohesive_3d_16].push_back(12);
+    write_order[_cohesive_3d_16].push_back(13);
+    write_order[_cohesive_3d_16].push_back(14);
+    write_order[_cohesive_3d_16].push_back(15);
+
     write_order[_cohesive_3d_12].push_back(0);
     write_order[_cohesive_3d_12].push_back(1);
     write_order[_cohesive_3d_12].push_back(2);
@@ -73,6 +90,15 @@ public:
     write_order[_cohesive_3d_12].push_back(9);
     write_order[_cohesive_3d_12].push_back(10);
     write_order[_cohesive_3d_12].push_back(11);
+
+    write_order[_cohesive_3d_8].push_back(0);
+    write_order[_cohesive_3d_8].push_back(1);
+    write_order[_cohesive_3d_8].push_back(2);
+    write_order[_cohesive_3d_8].push_back(3);
+    write_order[_cohesive_3d_8].push_back(4);
+    write_order[_cohesive_3d_8].push_back(5);
+    write_order[_cohesive_3d_8].push_back(6);
+    write_order[_cohesive_3d_8].push_back(7);
 
     write_order[_cohesive_3d_6].push_back(0);
     write_order[_cohesive_3d_6].push_back(1);

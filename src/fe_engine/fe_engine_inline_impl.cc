@@ -78,6 +78,8 @@ inline ElementType FEEngine::getCohesiveElementType(const ElementType & type_fac
   else if (type_facet == _segment_3) type_cohesive = _cohesive_2d_6;
   else if (type_facet == _triangle_3) type_cohesive = _cohesive_3d_6;
   else if (type_facet == _triangle_6) type_cohesive = _cohesive_3d_12;
+  else if (type_facet == _quadrangle_4) type_cohesive = _cohesive_3d_8;
+  else if (type_facet == _quadrangle_8) type_cohesive = _cohesive_3d_16;
 
   AKANTU_DEBUG_OUT();
   return type_cohesive;
