@@ -150,7 +150,7 @@ template<> UInt GeometricalElement<_gt_hexahedron_8>::facet_connectivity_vect[] 
 										     2, 5, 6, 7, 4, 6,
 										     3, 4, 5, 6,  7, 7};
 template<> UInt GeometricalElement<_gt_hexahedron_20>::facet_connectivity_vect[]  = {0,   1,  2,  3,  0,  4,
-                                                                                     1,   3,  3,  0,  3,  5,
+                                                                                     1,   2,  3,  0,  3,  5,
                                                                                      5,   6,  7,  4,  2,  6,
                                                                                      4,   5,  6,  7,  1,  7,
                                                                                      8,   9, 10, 11, 11, 16,
