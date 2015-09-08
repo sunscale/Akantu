@@ -35,6 +35,7 @@
 #include "solid_mechanics_model.hh"
 #include "solid_mechanics_model_event_handler.hh"
 #include "cohesive_element_inserter.hh"
+#include "material_selector.hh"
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
 #  include "facet_synchronizer.hh"
 #  include "facet_stress_synchronizer.hh"
@@ -283,10 +284,10 @@ private:
 
 /* -------------------------------------------------------------------------- */
 /// To be used with intrinsic elements inserted along mesh physical surfaces
-class MeshDataMaterialCohesiveSelector : public DefaultMaterialSelector {
+class MeshDataMaterialCohesiveSelector : public MeshDataMaterialSelector<std::string> {
 public:
   MeshDataMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model):
-    DefaultMaterialSelector(model.getMaterialByElement()),
+    MeshDataMaterialSelector("physical_names",model),
     mesh_facets(model.getMeshFacets()),
     material_index(mesh_facets.getData<UInt>("physical_names")) {
     third_dimension = (model.getSpatialDimension()==3);}
@@ -298,7 +299,7 @@ public:
       UInt material_id = material_index(facet.type,facet.ghost_type)(facet.element);
       return material_id; }
 
-    else return DefaultMaterialSelector::operator()(element);
+    else return MeshDataMaterialSelector<std::string>::operator()(element);
   }
 
 protected:

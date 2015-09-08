@@ -219,7 +219,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(std::string coh
   
   SolidMechanicsModel::initMaterials();
 
-  delete material_selector;
+   if(is_default_material_selector) delete material_selector;
   material_selector = new MeshDataMaterialCohesiveSelector(*this);
   inserter->insertElements();
 
