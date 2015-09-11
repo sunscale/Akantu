@@ -502,9 +502,11 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
 		    if (loc_el.type != _not_defined) {
 
 		      Array<Element> & subelement_to_element =
-			mesh_facets.getSubelementToElement(type, loc_el.ghost_type);
+			mesh_facets.getSubelementToElement(loc_el.type, loc_el.ghost_type);
 
-		      for (UInt f_in = 0; f_in < nb_facet_per_element; ++f_in) {
+		      UInt nb_facet_per_loc_element = subelement_to_element.getNbComponent();
+
+		      for (UInt f_in = 0; f_in < nb_facet_per_loc_element; ++f_in) {
 			if (subelement_to_element(loc_el.element, f_in).type == _not_defined) {
 			  subelement_to_element(loc_el.element, f_in).type = facet_type;
 			  subelement_to_element(loc_el.element, f_in).element = current_facet;

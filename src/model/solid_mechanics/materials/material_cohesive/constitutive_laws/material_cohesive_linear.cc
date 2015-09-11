@@ -707,7 +707,7 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
           //          std::cout << "k_us = " << k_us << std::endl;
           if (std::abs(k_ls) > 1e-13 && std::abs(k_us) > 1e-13){
             Real error = std::abs((k_ls - k_us) / k_us);
-            if (error > 1e-13){
+            if (error > 1e-10){
               std::cout << "non symmetric cohesive matrix" << std::endl;
               std::cout << "error " << error << std::endl;
             }

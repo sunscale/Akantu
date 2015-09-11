@@ -288,8 +288,8 @@ iohelper::ElemType getIOHelperType<_cohesive_3d_12>() { return iohelper::COH3D12
 
 template <>
 iohelper::ElemType getIOHelperType<_cohesive_3d_8>() { return iohelper::COH3D8; }
-template <>
-iohelper::ElemType getIOHelperType<_cohesive_3d_16>() { return iohelper::COH3D16; }
+//template <>
+//iohelper::ElemType getIOHelperType<_cohesive_3d_16>() { return iohelper::COH3D16; }
 #endif
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
