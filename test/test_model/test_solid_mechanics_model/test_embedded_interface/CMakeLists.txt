@@ -39,6 +39,7 @@ register_test(test_embedded_element_matrix
 register_test(test_embedded_interface_model
   SOURCES test_embedded_interface_model.cc
   FILES_TO_COPY embedded_mesh.msh material.dat matrix
+  DIRECTORIES_TO_CREATE paraview
   PACKAGE embedded implicit
   )
 

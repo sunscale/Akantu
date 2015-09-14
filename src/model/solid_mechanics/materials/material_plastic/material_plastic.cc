@@ -57,9 +57,9 @@ MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model,
                                                     const ID & id) :
   Material(model, dim, mesh, fe_engine, id),
   MaterialElastic<spatial_dimension>(model, dim, mesh, fe_engine, id),
-  iso_hardening("iso_hardening", *this, dim, fe_engine, this->element_filter),
+  iso_hardening   ("iso_hardening"   , *this, dim, fe_engine, this->element_filter),
   inelastic_strain("inelastic_strain", *this, dim, fe_engine, this->element_filter),
-  plastic_energy("plastic_energy", *this, dim, fe_engine, this->element_filter),
+  plastic_energy  ("plastic_energy"  , *this, dim, fe_engine, this->element_filter),
   d_plastic_energy("d_plastic_energy", *this, dim, fe_engine, this->element_filter) {
   AKANTU_DEBUG_IN();
   this->initialize();
@@ -69,11 +69,8 @@ MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model,
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialPlastic<spatial_dimension>::initialize() {
-  this->registerParam("h", h, 0., _pat_parsable | _pat_modifiable, "Hardening  modulus");
-  this->registerParam("sigma_y", sigma_y, 0., _pat_parsable | _pat_modifiable, "Yield stress");
-
-  //already registered in material
-  //  this->registerParam("finite_deformation",finite_deformation, false,  _pat_parsable | _pat_modifiable, "Flag for large deformation");
+  this->registerParam(      "h",       h, Real(0.), _pat_parsable | _pat_modifiable, "Hardening  modulus");
+  this->registerParam("sigma_y", sigma_y, Real(0.), _pat_parsable | _pat_modifiable, "Yield stress");
 
   this->iso_hardening.initialize(1);
   this->iso_hardening.initializeHistory();
@@ -84,7 +81,6 @@ void MaterialPlastic<spatial_dimension>::initialize() {
   this->use_previous_stress           = true;
   this->use_previous_gradu            = true;
   this->use_previous_stress_thermal   = true;
-
 
   this->inelastic_strain.initialize(spatial_dimension * spatial_dimension);
   this->inelastic_strain.initializeHistory();

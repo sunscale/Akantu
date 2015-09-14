@@ -282,7 +282,7 @@ A particular case of anisotropy is when the material basis is orthogonal in whic
   \Gamma &= \frac{1}{1 - \nu_{12} \nu_{21} - \nu_{13} \nu_{31} - \nu_{32} \nu_{23} - 2 \nu_{21} \nu_{32} \nu_{13}}
 \end{align}
 
-The poison ratios follow the rule $\nu_{ij} = \nu_{ji} E_i / E_j$.
+The Poisson ratios follow the rule $\nu_{ij} = \nu_{ji} E_i / E_j$.
 
 \subsection{Neo-Hookean\matlabel{ssect:smm:cl:neohookean}}\index{Material!Neohookean}
 The hyperelastic Neo-Hookean constitutive law results from an
@@ -504,12 +504,16 @@ rupture criterion and $S$ the damage energy.  The non-local version of
 this damage evolution law is constructed by averaging the energy $Y$.
 
 \subsubsection{Mazars\matlabel{ssect:smm:cl:damage-mazars}}
+
 This law introduced by Mazars \cite{mazars84a} is a behavioral model to
-represent damage evolution in concrete. The governing variable in this damage
+represent damage evolution in concrete. This model does not rely on the computation of the tangent stiffness, the damage is directly evaluated from the strain.
+
+The governing variable in this damage
 law is the equivalent strain $\varepsilon_{\st{eq}} =
 \sqrt{<\mat{\varepsilon}>_+:<\mat{\varepsilon}>_+}$, with $<.>_+$ the positive
-part of the tensor.
-The damage the is defined as:
+part of the tensor. This part is defined in the principal coordinates (I, II, III) as $\varepsilon_{\st{eq}} =
+\sqrt{<\mat{\varepsilon_I}>_+^2 + <\mat{\varepsilon_{II}}>_+^2 + <\mat{\varepsilon_{III}}>_+^2}$.
+The damage is defined as:
 \begin{align}
   D &= \alpha_t^\beta D_t + (1-\alpha_t)^\beta D_c\\
   D_t &= 1 - \frac{\kappa_0 (1- A_t)}{\varepsilon_{\st{eq}}} - A_t \exp^{-B_t(\varepsilon_{\st{eq}}-\kappa_0)}\\

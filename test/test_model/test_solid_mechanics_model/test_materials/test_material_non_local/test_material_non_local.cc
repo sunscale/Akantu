@@ -40,9 +40,7 @@ int main(int argc, char *argv[]) {
   akantu::initialize("material.dat", argc, argv);
 
   // some configuration variables
-  const UInt max_steps = 4000;
   const UInt spatial_dimension = 2;
-  const Real traction = 1.;
 
   Mesh mesh(spatial_dimension);
 
@@ -76,10 +74,6 @@ int main(int argc, char *argv[]) {
 
   if(prank == 0) std::cout << mat << std::endl;
 
-  Array<Real> & disp = model.getDisplacement();
-  Array<Real> & pos = mesh.getNodes();
-
-
   // Setting up the dumpers + first dump
   model.setBaseName("non_local_material");
   model.addDumpFieldVector("displacement");
@@ -96,7 +90,7 @@ int main(int argc, char *argv[]) {
   mat.savePairs("pairs");
 
   //Array<Real> & damage = mat.getArray("local_damage", _quadrangle_4);
-  Array<Real> & damage = mat.getArray("local_damage", _triangle_3);
+  Array<Real> & damage = mat.getArray<Real>("local_damage", _triangle_3);
 
   RandGenerator<UInt> gen;
 
@@ -105,7 +99,6 @@ int main(int argc, char *argv[]) {
     std::cout << prank << " -> " << g << std::endl;
     damage(g) = 1.;
   }
-
 
   model.updateResidual();
   model.dump();

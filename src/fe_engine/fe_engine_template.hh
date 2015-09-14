@@ -100,6 +100,11 @@ public:
 				   const GhostType & ghost_type = _not_ghost,
 				   const Array<UInt> & filter_elements = empty_filter) const;
 
+  /// interpolate on a phyiscal point inside an element
+  void interpolate(const Vector<Real> & real_coords, 
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const Element & element) const;
 
   /// get the number of quadrature points
   UInt getNbQuadraturePoints(const ElementType & type,
@@ -144,6 +149,32 @@ public:
 				     ElementTypeMapArray<Real> & uq,
                                      const ElementTypeMapArray<UInt> * filter_elements = NULL) const;
 
+  /// compute the position of quadrature points from nodes position
+  inline void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
+						 const ElementTypeMapArray<UInt> * filter_elements = NULL) const;
+
+  /// interpolate field at given position (interpolation_points) from given values of this field at control points (field) 
+  inline void interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+							 const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+							 ElementTypeMapArray<Real> & result,
+							 const GhostType ghost_type,
+							 const ElementTypeMapArray<UInt> * element_filter) const;
+  
+  /// Interpolate field at given position from given values of this field at control points (field) 
+  /// using matrices precomputed with initElementalFieldInterplationFromControlPoints
+  inline void interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+							 const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							 const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+							 ElementTypeMapArray<Real> & result,
+							 const GhostType ghost_type,
+							 const ElementTypeMapArray<UInt> * element_filter) const;
+
+  /// Build pre-computed matrices for interpolation of field form control points at other given positions (interpolation_points)
+  inline void initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+							       ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							       ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+							       const ElementTypeMapArray<UInt> * element_filter = NULL) const;
+    
   /// find natural coords from real coords provided an element
   void inverseMap(const Vector<Real> & real_coords,
 		  UInt element,
@@ -192,7 +223,7 @@ public:
 
 
   /// function to print the contain of the class
-  //  virtual void printself(std::ostream & stream, int indent = 0) const{};
+  virtual void printself(std::ostream & stream, int indent = 0) const;
 
   void assembleFieldLumped(const Array<Real> & field_1,
 			   UInt nb_degree_of_freedom,

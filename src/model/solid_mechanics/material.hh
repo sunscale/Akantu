@@ -79,6 +79,10 @@ class Material : public Memory, public DataAccessor, public Parsable,
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+#if __cplusplus > 199711L
+  Material(const Material & mat) = delete;
+  Material & operator=(const Material & mat) = delete;
+#endif
 
   /// Initialize material with defaults
   Material(SolidMechanicsModel & model, const ID & id = "");
@@ -118,7 +122,7 @@ protected:
 
   /// compute the potential energy for an element
   virtual void computePotentialEnergyByElement(__attribute__((unused)) ElementType type,
-					       __attribute__((unused)) UInt index,
+                                               __attribute__((unused)) UInt index,
                                                __attribute__((unused)) Vector<Real> & epot_on_quad_points) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
@@ -127,7 +131,7 @@ protected:
                               __attribute__((unused)) GhostType ghost_type = _not_ghost) {  }
 
   virtual void updateEnergiesAfterDamage(__attribute__((unused)) ElementType el_type,
-					 __attribute__((unused)) GhostType ghost_type = _not_ghost) {}
+                                         __attribute__((unused)) GhostType ghost_type = _not_ghost) {}
 
   /// set the material to steady state (to be implemented for materials that need it)
   virtual void setToSteadyState(__attribute__((unused)) ElementType el_type,
@@ -138,6 +142,8 @@ protected:
   virtual void updateInternalParameters() {}
 
 public:
+  /// extrapolate internal values
+  virtual void extrapolateInternal(const ID & id, const Element & element, const Matrix<Real> & points, Matrix<Real> & extrapolated);
 
   /// compute the p-wave speed in the material
   virtual Real getPushWaveSpeed(const Element & element) const { AKANTU_DEBUG_TO_IMPLEMENT(); }
@@ -218,6 +224,7 @@ public:
    * results per facet
    */
   void interpolateStressOnFacets(ElementTypeMapArray<Real> & result,
+				 ElementTypeMapArray<Real> & by_elem_result,
 				 const GhostType ghost_type = _not_ghost);
 
   /**
@@ -230,23 +237,43 @@ public:
   /* Common part                                                              */
   /* ------------------------------------------------------------------------ */
 protected:
+  /* ------------------------------------------------------------------------ */
+  inline UInt getTangentStiffnessVoigtSize(UInt spatial_dimension) const;
+
+
+  /// compute the potential energy by element
+  void computePotentialEnergyByElements();
+
+  /// resize the intenals arrays
+  virtual void resizeInternals();
+
+  /* ------------------------------------------------------------------------ */
+  /* Finite deformation functions                                             */
+  /* This functions area implementing what is described in the paper of Bathe */
+  /* et al, in IJNME, Finite Element Formulations For Large Deformation       */
+  /* Dynamic Analysis, Vol 9, 353-386, 1975                                   */
+  /* ------------------------------------------------------------------------ */
+protected:
   /// assemble the residual
   template<UInt dim>
   void assembleResidual(GhostType ghost_type);
 
-  /// Computation of Cauchy stress tensor in the case of finite deformation
+  /// Computation of Cauchy stress tensor in the case of finite deformation from
+  /// the 2nd Piola-Kirchhoff for a given element type
   template<UInt dim>
   void computeCauchyStress(__attribute__((unused)) ElementType el_type,
                            __attribute__((unused)) GhostType ghost_type = _not_ghost);
 
+  /// Computation the Cauchy stress the 2nd Piola-Kirchhoff and the deformation
+  /// gradient
   template<UInt dim >
   inline void computeCauchyStressOnQuad(const Matrix<Real> & F, const Matrix<Real> & S,
-					Matrix<Real> & cauchy,
-                                        const Real & C33 = 1.0 ) const;
+                                        Matrix<Real> & cauchy,
+                                        const Real & C33 = 1.0) const;
 
   template<UInt dim>
   void computeAllStressesFromTangentModuli(const ElementType & type,
-					   GhostType ghost_type);
+                                           GhostType ghost_type);
 
   template<UInt dim>
   void assembleStiffnessMatrix(const ElementType & type,
@@ -261,66 +288,24 @@ protected:
   void assembleStiffnessMatrixL2(const ElementType & type,
                                  GhostType ghost_type);
 
-  /// write the stress tensor in the Voigt notation.
-  template<UInt dim>
-  inline void SetCauchyStressArray(const Matrix<Real> & S_t, Matrix<Real> & Stress_vect);
-
-  inline UInt getTangentStiffnessVoigtSize(UInt spatial_dimension) const;
-
-  /// Size of the Stress matrix for the case of finite deformation see: Bathe et al, IJNME, Vol 9, 353-386, 1975
+  /// Size of the Stress matrix for the case of finite deformation see: Bathe et
+  /// al, IJNME, Vol 9, 353-386, 1975
   inline UInt getCauchyStressMatrixSize(UInt spatial_dimension) const;
 
   /// Sets the stress matrix according to Bathe et al, IJNME, Vol 9, 353-386, 1975
   template<UInt dim>
   inline void setCauchyStressMatrix(const Matrix<Real> & S_t,
-				    Matrix<Real> & Stress_matrix);
+                                    Matrix<Real> & sigma);
 
-  /// compute the potential energy by element
-  void computePotentialEnergyByElements();
+  /// write the stress tensor in the Voigt notation.
+  template<UInt dim>
+  inline void setCauchyStressArray(const Matrix<Real> & S_t,
+                                   Matrix<Real> & sigma_voight);
 
-  /// resize the intenals arrays
-  virtual void resizeInternals();
-
-public:
-  /// compute the coordinates of the quadrature points
-  void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
-                                          const GhostType & ghost_type) const;
-
-protected:
-  /// interpolate an elemental field on given points for each element
-  void interpolateElementalField(const ElementTypeMapArray<Real> & field,
-                                 ElementTypeMapArray<Real> & result,
-                                 const GhostType ghost_type);
-
-  /// interpolate an elemental field and store the results per facet
-  void interpolateElementalFieldOnFacets(const ElementTypeMapArray<Real> & field,
-					 ElementTypeMapArray<Real> & result,
-					 const GhostType ghost_type);
-
-  /// template function to initialize the elemental field interpolation
-  template <ElementType type>
-  void initElementalFieldInterpolation(const Array<Real> & quad_coordinates,
-                                       const Array<Real> & interpolation_points_coordinates,
-                                       const UInt nb_interpolation_points_per_elem,
-                                       const GhostType ghost_type);
-
-  /// build the coordinate matrix for the interpolation on elemental field
-  template <ElementType type>
-  inline void buildElementalFieldInterpolationCoodinates(const Matrix<Real> & coordinates,
-                                                         Matrix<Real> & coordMatrix);
-
-  /// build interpolation coordinates for basic linear elements
-  inline void buildElementalFieldInterpolationCoodinatesLinear(const Matrix<Real> & coordinates,
-                                                               Matrix<Real> & coordMatrix);
-
-  /// build interpolation coordinates for basic quadratic elements
-  inline void buildElementalFieldInterpolationCoodinatesQuadratic(const Matrix<Real> & coordinates,
-                                                                  Matrix<Real> & coordMatrix);
-
-public:
   /* ------------------------------------------------------------------------ */
   /* Conversion functions                                                     */
   /* ------------------------------------------------------------------------ */
+public:
   template<UInt dim>
   static inline void gradUToF   (const Matrix<Real> & grad_u, Matrix<Real> & F);
   static inline void rightCauchy(const Matrix<Real> & F,      Matrix<Real> & C);
@@ -328,10 +313,10 @@ public:
 
   template<UInt dim>
   static inline void gradUToEpsilon(const Matrix<Real> & grad_u,
-				    Matrix<Real> & epsilon);
+                                    Matrix<Real> & epsilon);
   template<UInt dim>
   static inline void gradUToGreenStrain(const Matrix<Real> & grad_u,
-					Matrix<Real> & epsilon);
+                                        Matrix<Real> & epsilon);
 
   static inline Real stressToVonMises(const Matrix<Real> & stress);
 
@@ -428,18 +413,24 @@ public:
   AKANTU_GET_MACRO(GradU, gradu, const ElementTypeMapArray<Real> &);
   AKANTU_GET_MACRO(Stress, stress, const ElementTypeMapArray<Real> &);
   AKANTU_GET_MACRO(ElementFilter, element_filter, const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO(FEEngine, *fem, FEEngine &);
 
   bool isNonLocal() const { return is_non_local; }
 
-  const Array<Real> & getArray(const ID & id, const ElementType & type, const GhostType & ghost_type = _not_ghost) const;
-  Array<Real> & getArray(const ID & id, const ElementType & type, const GhostType & ghost_type = _not_ghost);
+  template <typename T>
+  const Array<T> & getArray(const ID & id, const ElementType & type, const GhostType & ghost_type = _not_ghost) const;
+  template <typename T>
+  Array<T> & getArray(const ID & id, const ElementType & type, const GhostType & ghost_type = _not_ghost);
 
-  const InternalField<Real> & getInternal(const ID & id) const;
-  InternalField<Real> & getInternal(const ID & id);
+  template <typename T>
+  const InternalField<T> & getInternal(const ID & id) const;
+  template <typename T>
+  InternalField<T> & getInternal(const ID & id);
 
   inline bool isInternal(const ID & id, const ElementKind & element_kind) const;
-  inline ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
-                                                     const ElementKind & element_kind) const;
+  virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
+                                                      const ElementKind & element_kind,
+                                                      const ID & fe_engine_id = "") const;
 
   bool isFiniteDeformation() const { return finite_deformation; }
   bool isInelasticDeformation() const { return inelastic_deformation; }
@@ -451,10 +442,19 @@ public:
   inline const T & getParam(const ID & param) const;
 
   virtual void flattenInternal(const std::string & field_id,
-		                           ElementTypeMapArray<Real> & internal_flat,
+                               ElementTypeMapArray<Real> & internal_flat,
                                const GhostType ghost_type = _not_ghost,
-                               ElementKind element_kind = _ek_not_defined);
-
+                               ElementKind element_kind = _ek_not_defined) const;
+protected:
+  /// internal variation of the flatten function that is more flexible and can
+  /// be used by inherited materials to change some behavior
+  virtual void flattenInternalIntern(const std::string & field_id,
+                                     ElementTypeMapArray<Real> & internal_flat,
+                                     UInt spatial_dimension,
+                                     const GhostType ghost_type,
+                                     ElementKind element_kind,
+                                     const ElementTypeMapArray<UInt> * element_filter = NULL,
+                                     const Mesh * mesh = NULL) const;
 
 protected:
 
@@ -463,7 +463,7 @@ protected:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
+protected:
   /// boolean to know if the material has been initialized
   bool is_init;
 
@@ -472,6 +472,9 @@ private:
   std::map<ID, InternalField<bool> *> internal_vectors_bool;
 
 protected:
+  /// Link to the fem object in the model
+  FEEngine * fem;
+
   /// Finite deformation
   bool finite_deformation;
 
@@ -496,8 +499,8 @@ protected:
   /// stresses arrays ordered by element types
   InternalField<Real> stress;
 
-  /// eigenstrain arrays ordered by element types
-  InternalField<Real> eigenstrain;
+  /// eigengrad_u arrays ordered by element types
+  InternalField<Real> eigengradu;
 
   /// grad_u arrays ordered by element types
   InternalField<Real> gradu;
@@ -525,6 +528,10 @@ protected:
 
   /// elemental field interpolation points
   InternalField<Real> interpolation_points_matrices;
+
+  /// vector that contains the names of all the internals that need to
+  /// be transferred when material interfaces move
+  std::vector<ID> internals_to_transfer;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -548,73 +555,79 @@ __END_AKANTU__
 /* -------------------------------------------------------------------------- */
 /* Auto loop                                                                  */
 /* -------------------------------------------------------------------------- */
-
+/// This can be used to automatically write the loop on quadrature points in
+/// functions such as computeStress. This macro in addition to write the loop
+/// provides two tensors (matrices) sigma and grad_u
 #define MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type) \
-  Array<Real>::matrix_iterator gradu_it =				\
+  Array<Real>::matrix_iterator gradu_it =                               \
     this->gradu(el_type, ghost_type).begin(this->spatial_dimension,     \
-					  this->spatial_dimension);     \
-  Array<Real>::matrix_iterator gradu_end =				\
+                                          this->spatial_dimension);     \
+  Array<Real>::matrix_iterator gradu_end =                              \
     this->gradu(el_type, ghost_type).end(this->spatial_dimension,       \
-					this->spatial_dimension);       \
+                                        this->spatial_dimension);       \
                                                                         \
   this->stress(el_type,                                                 \
-               ghost_type).resize(this->gradu(el_type,			\
-					      ghost_type).getSize());	\
+               ghost_type).resize(this->gradu(el_type,                  \
+                                              ghost_type).getSize());   \
                                                                         \
-  Array<Real>::iterator< Matrix<Real> > stress_it =			\
+  Array<Real>::iterator< Matrix<Real> > stress_it =                     \
     this->stress(el_type, ghost_type).begin(this->spatial_dimension,    \
                                             this->spatial_dimension);   \
                                                                         \
   if(this->isFiniteDeformation()){                                      \
     this->piola_kirchhoff_2(el_type,                                    \
-			    ghost_type).resize(this->gradu(el_type,	\
-							   ghost_type).getSize()); \
+                            ghost_type).resize(this->gradu(el_type,     \
+                                                           ghost_type).getSize()); \
     stress_it =                                                         \
       this->piola_kirchhoff_2(el_type,                                  \
-			      ghost_type).begin(this->spatial_dimension, \
-						this->spatial_dimension); \
+                              ghost_type).begin(this->spatial_dimension, \
+                                                this->spatial_dimension); \
   }                                                                     \
                                                                         \
-  for(;gradu_it != gradu_end; ++gradu_it, ++stress_it) {		\
-    Matrix<Real> & __attribute__((unused)) grad_u = *gradu_it;		\
+  for(;gradu_it != gradu_end; ++gradu_it, ++stress_it) {                \
+    Matrix<Real> & __attribute__((unused)) grad_u = *gradu_it;          \
     Matrix<Real> & __attribute__((unused)) sigma  = *stress_it
 
-#define MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END	                \
-  }							                \
+#define MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END                       \
+  }                                                                     \
 
 
-#define MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_mat)	\
-  Array<Real>::matrix_iterator gradu_it =				\
+/// This can be used to automatically write the loop on quadrature points in
+/// functions such as computeTangentModuli. This macro in addition to write the
+/// loop provides two tensors (matrices) sigma_tensor, grad_u, and a matrix
+/// where the elemental tangent moduli should be stored in Voigt Notation
+#define MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_mat)       \
+  Array<Real>::matrix_iterator gradu_it =                               \
     this->gradu(el_type, ghost_type).begin(this->spatial_dimension,     \
-					   this->spatial_dimension);    \
-  Array<Real>::matrix_iterator gradu_end =				\
+                                           this->spatial_dimension);    \
+  Array<Real>::matrix_iterator gradu_end =                              \
     this->gradu(el_type, ghost_type).end(this->spatial_dimension,       \
-					 this->spatial_dimension);      \
-  Array<Real>::matrix_iterator sigma_it =				\
+                                         this->spatial_dimension);      \
+  Array<Real>::matrix_iterator sigma_it =                               \
     this->stress(el_type, ghost_type).begin(this->spatial_dimension,    \
-					    this->spatial_dimension);   \
-  									\
-  tangent_mat.resize(this->gradu(el_type, ghost_type).getSize());	\
-  									\
-  UInt tangent_size =							\
+                                            this->spatial_dimension);   \
+                                                                        \
+  tangent_mat.resize(this->gradu(el_type, ghost_type).getSize());       \
+                                                                        \
+  UInt tangent_size =                                                   \
     this->getTangentStiffnessVoigtSize(this->spatial_dimension);        \
-  Array<Real>::matrix_iterator tangent_it =				\
-    tangent_mat.begin(tangent_size,					\
-		      tangent_size);					\
-  									\
-  for(;gradu_it != gradu_end; ++gradu_it, ++sigma_it, ++tangent_it) {	\
-    Matrix<Real> & __attribute__((unused)) grad_u  = *gradu_it;		\
-    Matrix<Real> & __attribute__((unused)) sigma_tensor = *sigma_it;	\
+  Array<Real>::matrix_iterator tangent_it =                             \
+    tangent_mat.begin(tangent_size,                                     \
+                      tangent_size);                                    \
+                                                                        \
+  for(;gradu_it != gradu_end; ++gradu_it, ++sigma_it, ++tangent_it) {   \
+    Matrix<Real> & __attribute__((unused)) grad_u  = *gradu_it;         \
+    Matrix<Real> & __attribute__((unused)) sigma_tensor = *sigma_it;    \
     Matrix<Real> & tangent = *tangent_it
 
 
-#define MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END			\
+#define MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END                      \
   }                                                                     \
 
 /* -------------------------------------------------------------------------- */
-#define INSTANTIATE_MATERIAL(mat_name)			\
-  template class mat_name<1>;				\
-  template class mat_name<2>;				\
+#define INSTANTIATE_MATERIAL(mat_name)                  \
+  template class mat_name<1>;                           \
+  template class mat_name<2>;                           \
   template class mat_name<3>
 
 #endif /* __AKANTU_MATERIAL_HH__ */

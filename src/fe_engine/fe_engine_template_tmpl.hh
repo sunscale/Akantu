@@ -30,6 +30,7 @@
  *
  */
 
+/* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 
 __BEGIN_AKANTU__
@@ -93,14 +94,11 @@ struct GradientOnQuadraturePointsHelper {
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_GRADIENT, kind);		\
     }									\
   };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
-
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_GRADIENT_ON_QUADRATURE_POINTS_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_GRADIENT_ON_QUADRATURE_POINTS)
 
 #undef AKANTU_SPECIALIZE_GRADIENT_ON_QUADRATURE_POINTS_HELPER
 #undef COMPUTE_GRADIENT
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -466,14 +464,11 @@ struct InterpolateOnQuadraturePointsHelper {
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(INTERPOLATE, kind);		\
     }									\
   };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
-
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INTERPOLATE_ON_QUADRATURE_POINTS_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_INTERPOLATE_ON_QUADRATURE_POINTS)
 
 #undef AKANTU_SPECIALIZE_INTERPOLATE_ON_QUADRATURE_POINTS_HELPER
 #undef INTERPOLATE
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -570,6 +565,148 @@ void FEEngineTemplate<I, S, kind>::interpolateOnQuadraturePoints(const Array<Rea
 template<template <ElementKind> class I,
          template <ElementKind> class S,
          ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
+								      const ElementTypeMapArray<UInt> * filter_elements) const {
+  
+  
+  const Array<Real> & nodes_coordinates = mesh.getNodes();
+
+  interpolateOnQuadraturePoints(nodes_coordinates, quadrature_points_coordinates, filter_elements);
+}
+
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+											   ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+											   ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+											   const ElementTypeMapArray<UInt> * element_filter) const {
+
+    AKANTU_DEBUG_IN();
+  
+    UInt spatial_dimension = this->mesh.getSpatialDimension();
+
+    ElementTypeMapArray<Real> quadrature_points_coordinates("quadrature_points_coordinates_for_interpolation", getID());
+    mesh.initElementTypeMapArray(quadrature_points_coordinates, spatial_dimension, spatial_dimension);
+    computeQuadraturePointsCoordinates(quadrature_points_coordinates, element_filter);
+    shape_functions.initElementalFieldInterpolationFromControlPoints(interpolation_points_coordinates,
+								     interpolation_points_coordinates_matrices,
+								     quad_points_coordinates_inv_matrices,
+								     quadrature_points_coordinates,
+								     element_filter);    
+    
+}
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+								const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+								ElementTypeMapArray<Real> & result,
+								const GhostType ghost_type,
+								const ElementTypeMapArray<UInt> * element_filter) const {
+
+  ElementTypeMapArray<Real> interpolation_points_coordinates_matrices("interpolation_points_coordinates_matrices"); 
+  ElementTypeMapArray<Real> quad_points_coordinates_inv_matrices("quad_points_coordinates_inv_matrices");
+
+  initElementalFieldInterpolationFromControlPoints(interpolation_points_coordinates,
+						   interpolation_points_coordinates_matrices,
+						   quad_points_coordinates_inv_matrices,
+						   element_filter);
+
+  interpolateElementalFieldFromControlPoints(field,
+					     interpolation_points_coordinates_matrices,
+					     quad_points_coordinates_inv_matrices,
+					     result,
+					     ghost_type,
+					     element_filter);
+}
+
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+										     const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+										     const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+										     ElementTypeMapArray<Real> & result,
+										     const GhostType ghost_type,
+										     const ElementTypeMapArray<UInt> * element_filter) const {
+
+  shape_functions.interpolateElementalFieldFromControlPoints(field,
+							     interpolation_points_coordinates_matrices,
+							     quad_points_coordinates_inv_matrices,
+							     result,
+							     ghost_type,
+							     element_filter);
+}
+
+/* -------------------------------------------------------------------------- */
+/**
+ * Helper class to be able to write a partial specialization on the element kind
+ */
+template<ElementKind kind>
+struct InterpolateHelper {
+  template <class S>
+  static void call(const S & shape_functions,
+                   const Vector<Real> & real_coords,
+                   UInt elem,
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const ElementType & type,
+		   const GhostType & ghost_type) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+};
+
+#define INTERPOLATE(type)						\
+  shape_functions.template interpolate<type>(real_coords,		\
+					     element,			\
+					     nodal_values,		\
+					     interpolated,		\
+					     ghost_type);
+
+#define AKANTU_SPECIALIZE_INTERPOLATE_HELPER(kind)		\
+  template<>							\
+  struct InterpolateHelper<kind> {				\
+    template <class S>						\
+    static void call(const S & shape_functions,			\
+                     const Vector<Real> & real_coords,		\
+                     UInt element,				\
+		     const Matrix<Real> & nodal_values,		\
+		     Vector<Real> & interpolated,		\
+                     const ElementType & type,			\
+                     const GhostType & ghost_type) {		\
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(INTERPOLATE, kind);	\
+    }								\
+  };
+
+AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INTERPOLATE_HELPER, \
+                           AKANTU_FE_ENGINE_LIST_INTERPOLATE)
+
+#undef AKANTU_SPECIALIZE_INTERPOLATE_HELPER
+#undef INTERPOLATE
+
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::interpolate(const Vector<Real> & real_coords, 
+						      const Matrix<Real> & nodal_values,
+						      Vector<Real> & interpolated,
+						      const Element & element) const{
+
+  AKANTU_DEBUG_IN();
+
+  InterpolateHelper<kind>::call(shape_functions, real_coords, element.element, nodal_values, interpolated, element.type, element.ghost_type);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
 void FEEngineTemplate<I, S, kind>::computeNormalsOnControlPoints(const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -649,14 +786,11 @@ struct ComputeNormalsOnControlPoints {
     }									\
     };
 
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
-
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_NORMALS_ON_CONTROL_POINTS, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_COMPUTE_NORMALS_ON_CONTROL_POINTS)
 
 #undef AKANTU_SPECIALIZE_COMPUTE_NORMALS_ON_CONTROL_POINTS
 #undef COMPUTE_NORMALS_ON_QUAD
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -906,11 +1040,16 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
   }
 
 
-  if(type == _triangle_6)      ASSIGN_WEIGHT_TO_NODES(1./12.,1./4.);
-  if (type == _tetrahedron_10) ASSIGN_WEIGHT_TO_NODES(1./32.,1./48.);
-  if (type == _quadrangle_8)   ASSIGN_WEIGHT_TO_NODES(1./36.,8./36.);
-  if (type == _hexahedron_20)  ASSIGN_WEIGHT_TO_NODES(1./40.,1./15.);
+  if (type == _triangle_6    ) ASSIGN_WEIGHT_TO_NODES(1./12.,  1./4.);
+  if (type == _tetrahedron_10) ASSIGN_WEIGHT_TO_NODES(1./32., 7./48.);
+  if (type == _quadrangle_8  ) ASSIGN_WEIGHT_TO_NODES(3./76., 16./76.);  /** coeff. derived by scaling the diagonal terms of the corresponding 
+									  * consistent mass computed with 3x3 gauss points; 
+									  * coeff. are (1./36., 8./36.) for 2x2 gauss points */
+  if (type == _hexahedron_20 ) ASSIGN_WEIGHT_TO_NODES(7./248., 16./248.); /** coeff. derived by scaling the diagonal terms of the corresponding
+									   * consistent mass computed with 3x3x3 gauss points;
+									   * coeff. are (1./40., 1./15.) for 2x2x2 gauss points */
   if (type == _pentahedron_15) {
+    // coefficients derived by scaling the diagonal terms of the corresponding consistent mass computed with 8 gauss points; 
     for (UInt n = 0; n < nb_nodes_per_element_p1; n++)
       nodal_factor(n) = 51./2358.;
 
@@ -1054,14 +1193,12 @@ struct InverseMapHelper {
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(INVERSE_MAP, kind);	\
     }								\
   };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
 
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INVERSE_MAP_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_INVERSE_MAP)
 
 #undef AKANTU_SPECIALIZE_INVERSE_MAP_HELPER
 #undef INVERSE_MAP
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -1113,14 +1250,12 @@ struct ContainsHelper {
       return contain;					\
     }							\
     };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
 
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_CONTAINS_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_CONTAINS)
 
 #undef AKANTU_SPECIALIZE_CONTAINS_HELPER
 #undef CONTAINS
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -1169,14 +1304,11 @@ struct ComputeShapesHelper {
     }								\
   };
 
-
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND)
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_COMPUTE_SHAPES)
 
 #undef AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER
 #undef COMPUTE_SHAPES
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -1235,13 +1367,11 @@ struct ComputeShapeDerivativesHelper {
     }									\
   };
 
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND)
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_COMPUTE_SHAPES_DERIVATIVES)
 
 #undef AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER
 #undef COMPUTE_SHAPE_DERIVATIVES
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -1368,14 +1498,11 @@ struct GetShapesDerivativesHelper {
     }									\
     };
 
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
-
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_GET_SHAPES_DERIVATIVES_HELPER, \
-                           INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_GET_SHAPES_DERIVATIVES)
 
 #undef AKANTU_SPECIALIZE_GET_SHAPE_DERIVATIVES_HELPER
 #undef GET_SHAPES_DERIVATIVES
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
          template <ElementKind> class S,
@@ -1383,7 +1510,6 @@ template<template <ElementKind> class I,
 inline const Array<Real> & FEEngineTemplate<I, S, kind>::getShapesDerivatives(const ElementType & type,
                                                                               const GhostType & ghost_type,
                                                                               __attribute__((unused)) UInt id) const {
-
   return GetShapesDerivativesHelper<kind>::call(shape_functions, type, ghost_type, id);
 }
 
@@ -1426,9 +1552,33 @@ FEEngineTemplate<I, S, kind>::getQuadraturePoints(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+void FEEngineTemplate<I, S, kind>::printself(std::ostream & stream, int indent) const {
+  std::string space;
+  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+
+  stream << space << "FEEngineTemplate [" << std::endl;
+  stream << space << " + parent [" << std::endl;
+  FEEngine::printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << " + shape functions [" << std::endl;
+  shape_functions.printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << " + integrator [" << std::endl;
+  integrator.printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << "]" << std::endl;
+}
+
+/* -------------------------------------------------------------------------- */
+
 __END_AKANTU__
+
 #include "shape_lagrange.hh"
 #include "integrator_gauss.hh"
+
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */

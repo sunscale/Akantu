@@ -15,8 +15,7 @@ else()
 endif()
 
 if(CMAKE_VERSION VERSION_GREATER 3.1)
-  set(_extra_options 
-    UPDATE_DISCONNECTED 1
+  set(_extra_options
     DOWNLOAD_NO_PROGRESS 1
     EXCLUDE_FROM_ALL 1
     )
@@ -36,6 +35,9 @@ else()
   set(SCOTCH_ARCHITECTURE)
 endif()
 
+math(EXPR _n "${AKANTU_INTEGER_SIZE} * 8")
+set(SCOTCH_NUM_SIZE "-DINTSIZE${_n}")
+
 set(SCOTCH_DIR ${PROJECT_BINARY_DIR}/third-party)
 configure_file(
   ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}_make.inc.cmake
@@ -50,8 +52,8 @@ ExternalProject_Add(Scotch
   PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}.patch
   CONFIGURE_COMMAND cmake -E copy ${SCOTCH_DIR}/scotch_make.inc src/Makefile.inc
   BUILD_IN_SOURCE 1
-  BUILD_COMMAND MPICH_CC=${CMAKE_C_COMPILER} ${CMAKE_MAKE_PROGRAM} -C src
-  INSTALL_COMMAND prefix=<INSTALL_DIR> ${CMAKE_MAKE_PROGRAM} -C src install
+  BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -C src
+  INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} prefix=<INSTALL_DIR> -C src install
   LOG_DOWNLOAD 1
   LOG_CONFIGURE 1
   LOG_BUILD 1

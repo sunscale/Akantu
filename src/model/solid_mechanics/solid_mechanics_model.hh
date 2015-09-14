@@ -82,7 +82,7 @@ class SolidMechanicsModel : public Model,
 			    public DataAccessor,
 			    public MeshEventHandler,
 			    public BoundaryCondition<SolidMechanicsModel>,
-                            public EventHandlerManager<SolidMechanicsModelEventHandler> {
+			    public EventHandlerManager<SolidMechanicsModelEventHandler> {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -123,7 +123,7 @@ public:
   void initParallel(MeshPartition *partition, DataAccessor *data_accessor = NULL);
 
   /// allocate all vectors
-  void initArrays();
+  virtual void initArrays();
 
   /// allocate all vectors
   void initArraysPreviousDisplacment();
@@ -277,7 +277,7 @@ public:
   template <NewmarkBeta::IntegrationSchemeCorrectorType type>
   void solve(Array<Real> &increment, Real block_val = 1.,
              bool need_factorize = true, bool has_profile_changed = false);
-  
+
 protected:
   /// finish the computation of residual to solve in increment
   void updateResidualInternal();
@@ -353,6 +353,12 @@ protected:
 		  ElementType    type,
 		  GhostType      ghost_type);
 
+  /// compute the kinetic energy
+  Real getKineticEnergy();
+  Real getKineticEnergy(const ElementType & type, UInt index);
+
+  /// compute the external work (for impose displacement, the velocity should be given too)
+  Real getExternalWork();
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
@@ -409,12 +415,12 @@ public:
 
   //! decide wether a field is a material internal or not
   bool isInternal(const std::string & field_name, const ElementKind & element_kind);
-#ifndef SWIG  
+#ifndef SWIG
   //! give the amount of data per element
   virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-					     const ElementKind & kind);
+						      const ElementKind & kind);
 
-  //! flatten a given material internal field 
+  //! flatten a given material internal field
   ElementTypeMapArray<Real> & flattenInternal(const std::string & field_name,
 					      const ElementKind & kind,
 					      const GhostType ghost_type = _not_ghost);
@@ -429,15 +435,13 @@ public:
   virtual dumper::Field * createNodalFieldBool(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag);
-  
 
-  virtual dumper::Field * createElementalField(const std::string & field_name, 
+
+  virtual dumper::Field * createElementalField(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag,
 					       const UInt & spatial_dimension,
 					       const ElementKind & kind);
-
-
 
   virtual void dump(const std::string & dumper_name);
 
@@ -539,16 +543,6 @@ public:
 
   /// compute the stable time step
   Real getStableTimeStep();
-
-  /// compute the potential energy
-  Real getPotentialEnergy();
-
-  /// compute the kinetic energy
-  Real getKineticEnergy();
-  Real getKineticEnergy(const ElementType & type, UInt index);
-
-  /// compute the external work (for impose displacement, the velocity should be given too)
-  Real getExternalWork();
 
   /// get the energies
   Real getEnergy(const std::string & energy_id);

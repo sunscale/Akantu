@@ -72,13 +72,13 @@ public:
   template<typename T> void probe(Int sender, Int tag,
 				  CommunicationStatus & status);
 
-  template<typename T> void allGather (T * values, Int nb_values);
-  template<typename T> void allGatherV(T * values, Int * nb_values);
+  template<typename T> void allGather (T * values, int nb_values);
+  template<typename T> void allGatherV(T * values, int * nb_values);
 
-  template<typename T> void gather (T * values, Int nb_values, Int root);
-  template<typename T> void gatherV(T * values, Int * nb_values, Int root);
+  template<typename T> void gather (T * values, int nb_values, int root);
+  template<typename T> void gatherV(T * values, int * nb_values, int root);
 
-  template<typename T> void broadcast(T * values, Int nb_values, Int root);
+  template<typename T> void broadcast(T * values, int nb_values, int root);
 
   bool testRequest(CommunicationRequest * request);
 
@@ -87,7 +87,7 @@ public:
 
   void barrier();
 
-  template<typename T> void allReduce(T * values, Int nb_values,
+  template<typename T> void allReduce(T * values, int nb_values,
 				      const SynchronizerOperation & op);
 
   /* ------------------------------------------------------------------------ */

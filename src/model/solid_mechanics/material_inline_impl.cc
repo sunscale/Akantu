@@ -40,8 +40,8 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 inline UInt Material::addElement(const ElementType & type,
-				 UInt element,
-				 const GhostType & ghost_type) {
+                                 UInt element,
+                                 const GhostType & ghost_type) {
   Array<UInt> & el_filter = element_filter(type, ghost_type);
   el_filter.push_back(element);
   return el_filter.getSize()-1;
@@ -58,7 +58,7 @@ inline UInt Material::getCauchyStressMatrixSize(UInt dim) const {
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 inline void Material::gradUToF(const Matrix<Real> & grad_u,
-			       Matrix<Real> & F) {
+                               Matrix<Real> & F) {
   AKANTU_DEBUG_ASSERT(F.size() >= grad_u.size() && grad_u.size() == dim*dim,
             "The dimension of the tensor F should be greater or equal to the dimension of the tensor grad_u.");
 
@@ -72,8 +72,8 @@ inline void Material::gradUToF(const Matrix<Real> & grad_u,
 /* -------------------------------------------------------------------------- */
 template<UInt dim >
 inline void Material::computeCauchyStressOnQuad(const Matrix<Real> & F,
-						const Matrix<Real> & piola,
-						Matrix<Real> & sigma,
+                                                const Matrix<Real> & piola,
+                                                Matrix<Real> & sigma,
                                                 const Real & C33 ) const {
 
   Real J = F.det() * sqrt(C33);
@@ -86,20 +86,20 @@ inline void Material::computeCauchyStressOnQuad(const Matrix<Real> & F,
 
 /* -------------------------------------------------------------------------- */
 inline void Material::rightCauchy(const Matrix<Real> & F,
-				  Matrix<Real> & C) {
+                                  Matrix<Real> & C) {
   C.mul<true, false>(F, F);
 }
 
 /* -------------------------------------------------------------------------- */
 inline void Material::leftCauchy(const Matrix<Real> & F,
-				 Matrix<Real> & B) {
+                                 Matrix<Real> & B) {
   B.mul<false, true>(F, F);
 }
 
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 inline void Material::gradUToEpsilon(const Matrix<Real> & grad_u,
-				     Matrix<Real> & epsilon) {
+                                     Matrix<Real> & epsilon) {
   for (UInt i = 0; i < dim; ++i)
     for (UInt j = 0; j < dim; ++j)
       epsilon(i, j) = 0.5*(grad_u(i, j) + grad_u(j, i));
@@ -108,7 +108,7 @@ inline void Material::gradUToEpsilon(const Matrix<Real> & grad_u,
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 inline void Material::gradUToGreenStrain(const Matrix<Real> & grad_u,
-					 Matrix<Real> & epsilon) {
+                                         Matrix<Real> & epsilon) {
   epsilon.mul<true, false>(grad_u, grad_u, .5);
 
   for (UInt i = 0; i < dim; ++i)
@@ -132,59 +132,46 @@ inline Real Material::stressToVonMises(const Matrix<Real> & stress) {
 
 /* ---------------------------------------------------------------------------*/
 template<UInt dim>
-inline void Material::SetCauchyStressArray(const Matrix<Real> & S_t, Matrix<Real> & Stress_vect) {
+inline void Material::setCauchyStressArray(const Matrix<Real> & S_t, Matrix<Real> & sigma_voight) {
+  AKANTU_DEBUG_IN();
+  sigma_voight.clear();
+  //see Finite ekement formulations for large deformation dynamic analysis, Bathe et al. IJNME vol 9, 1975, page 364 ^t\tau
 
-    AKANTU_DEBUG_IN();
+  /*
+   * 1d: [ s11 ]'
+   * 2d: [ s11 s22 s12 ]'
+   * 3d: [ s11 s22 s33 s23 s13 s12 ]
+   */
+  for (UInt i = 0; i < dim; ++i)//diagonal terms
+    sigma_voight(i, 0) = S_t(i, i);
 
-    Stress_vect.clear();
+  for (UInt i = 1; i < dim; ++i)// term s12 in 2D and terms s23 s13 in 3D
+    sigma_voight(dim+i-1, 0) = S_t(dim-i-1, dim-1);
 
-    //UInt cauchy_matrix_size = getCauchyStressArraySize(dim);
+  for (UInt i = 2; i < dim; ++i)//term s13 in 3D
+    sigma_voight(dim+i, 0) = S_t(0, 1);
 
-    //see Finite ekement formulations for large deformation dynamic analysis, Bathe et al. IJNME vol 9, 1975, page 364 ^t\tau
-
-    /*
-     * 1d: [ s11 ]'
-     * 2d: [ s11 s22 s12 ]'
-     * 3d: [ s11 s22 s33 s23 s13 s12 ]
-     */
-    for (UInt i = 0; i < dim; ++i)//diagonal terms
-        Stress_vect(i, 0) = S_t(i, i);
-
-    for (UInt i = 1; i < dim; ++i)// term s12 in 2D and terms s23 s13 in 3D
-        Stress_vect(dim+i-1, 0) = S_t(dim-i-1, dim-1);
-
-    for (UInt i = 2; i < dim; ++i)//term s13 in 3D
-        Stress_vect(dim+i, 0) = S_t(0, 1);
-
-    AKANTU_DEBUG_OUT();
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
-inline void Material::setCauchyStressMatrix(const Matrix<Real> & S_t, Matrix<Real> & Stress_matrix) {
+inline void Material::setCauchyStressMatrix(const Matrix<Real> & S_t, Matrix<Real> & sigma) {
+  AKANTU_DEBUG_IN();
 
-    AKANTU_DEBUG_IN();
+  sigma.clear();
 
-    Stress_matrix.clear();
-
-    /// see Finite ekement formulations for large deformation dynamic analysis,
-    /// Bathe et al. IJNME vol 9, 1975, page 364 ^t\tau
-
-    for (UInt i = 0; i < dim; ++i) {
-        for (UInt m = 0; m < dim; ++m) {
-            for (UInt n = 0; n < dim; ++n) {
-                Stress_matrix(i * dim + m, i * dim + n) = S_t(m, n);
-            }
-        }
+  /// see Finite ekement formulations for large deformation dynamic analysis,
+  /// Bathe et al. IJNME vol 9, 1975, page 364 ^t\tau
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt m = 0; m < dim; ++m) {
+      for (UInt n = 0; n < dim; ++n) {
+        sigma(i * dim + m, i * dim + n) = S_t(m, n);
+      }
     }
+  }
 
-    //other terms from the diagonal
-    /*for (UInt i = 0; i < 3 - dim; ++i) {
-        Stress_matrix(dim * dim + i, dim * dim + i) = S_t(dim + i, dim + i);
-    }*/
-
-
-    AKANTU_DEBUG_OUT();
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -192,19 +179,20 @@ inline Element Material::convertToLocalElement(const Element & global_element) c
   UInt ge = global_element.element;
 #ifndef AKANTU_NDEBUG
   UInt model_mat_index = this->model->getMaterialByElement(global_element.type,
-							   global_element.ghost_type)(ge);
+                                                           global_element.ghost_type)(ge);
 
   UInt mat_index = this->model->getMaterialIndex(this->name);
   AKANTU_DEBUG_ASSERT(model_mat_index == mat_index,
-		      "Conversion of a global  element in a local element for the wrong material "
-		      << this->name << std::endl);
+                      "Conversion of a global  element in a local element for the wrong material "
+                      << this->name << std::endl);
 #endif
   UInt le = this->model->getMaterialLocalNumbering(global_element.type,
-						   global_element.ghost_type)(ge);
+                                                   global_element.ghost_type)(ge);
 
   Element tmp_quad(global_element.type,
-		   le,
-		   global_element.ghost_type);
+                   le,
+                   global_element.ghost_type,
+                   global_element.kind);
   return tmp_quad;
 }
 
@@ -214,8 +202,9 @@ inline Element Material::convertToGlobalElement(const Element & local_element) c
   UInt ge = this->element_filter(local_element.type, local_element.ghost_type)(le);
 
   Element tmp_quad(local_element.type,
-		   ge,
-		   local_element.ghost_type);
+                   ge,
+                   local_element.ghost_type,
+                   local_element.kind);
   return tmp_quad;
 }
 
@@ -238,125 +227,8 @@ inline QuadraturePoint Material::convertToGlobalPoint(const QuadraturePoint & lo
 }
 
 /* -------------------------------------------------------------------------- */
-template<ElementType type>
-inline void Material::buildElementalFieldInterpolationCoodinates(__attribute__((unused)) const Matrix<Real> & coordinates,
-								 __attribute__((unused)) Matrix<Real> & coordMatrix) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
-}
-
-/* -------------------------------------------------------------------------- */
-inline void Material::buildElementalFieldInterpolationCoodinatesLinear(const Matrix<Real> & coordinates,
-								       Matrix<Real> & coordMatrix) {
-
-  for (UInt i = 0; i < coordinates.cols(); ++i)
-    coordMatrix(i, 0) = 1;
-}
-
-/* -------------------------------------------------------------------------- */
-inline void Material::buildElementalFieldInterpolationCoodinatesQuadratic(const Matrix<Real> & coordinates,
-									  Matrix<Real> & coordMatrix) {
-
-  UInt nb_quadrature_points = coordMatrix.cols();
-
-  for (UInt i = 0; i < coordinates.cols(); ++i) {
-    coordMatrix(i, 0) = 1;
-    for (UInt j = 1; j < nb_quadrature_points; ++j)
-      coordMatrix(i, j) = coordinates(j-1, i);
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-template<>
-inline void Material::buildElementalFieldInterpolationCoodinates<_segment_2>(const Matrix<Real> & coordinates,
-									     Matrix<Real> & coordMatrix) {
-  buildElementalFieldInterpolationCoodinatesLinear(coordinates, coordMatrix);
-}
-
-/* -------------------------------------------------------------------------- */
-template<>
-inline void Material::buildElementalFieldInterpolationCoodinates<_segment_3>(const Matrix<Real> & coordinates,
-									     Matrix<Real> & coordMatrix) {
-
-  buildElementalFieldInterpolationCoodinatesQuadratic(coordinates, coordMatrix);
-}
-
-/* -------------------------------------------------------------------------- */
-template<>
-inline void Material::buildElementalFieldInterpolationCoodinates<_triangle_3>(const Matrix<Real> & coordinates,
-									      Matrix<Real> & coordMatrix) {
-  buildElementalFieldInterpolationCoodinatesLinear(coordinates, coordMatrix);
-}
-
-/* -------------------------------------------------------------------------- */
-template<>
-inline void Material::buildElementalFieldInterpolationCoodinates<_triangle_6>(const Matrix<Real> & coordinates,
-									      Matrix<Real> & coordMatrix) {
-
-  buildElementalFieldInterpolationCoodinatesQuadratic(coordinates, coordMatrix);
-}
-
-
-/* -------------------------------------------------------------------------- */
-template<>
-inline void Material::buildElementalFieldInterpolationCoodinates<_tetrahedron_4>(const Matrix<Real> & coordinates,
-										 Matrix<Real> & coordMatrix) {
-  buildElementalFieldInterpolationCoodinatesLinear(coordinates, coordMatrix);
-}
-
-/* -------------------------------------------------------------------------- */
-template<>
-inline void Material::buildElementalFieldInterpolationCoodinates<_tetrahedron_10>(const Matrix<Real> & coordinates,
-										  Matrix<Real> & coordMatrix) {
-
-  buildElementalFieldInterpolationCoodinatesQuadratic(coordinates, coordMatrix);
-}
-
-/**
- * @todo Write a more efficient interpolation for quadrangles by
- * dropping unnecessary quadrature points
- *
- */
-
-/* -------------------------------------------------------------------------- */
-template<>
-inline void Material::buildElementalFieldInterpolationCoodinates<_quadrangle_4>(const Matrix<Real> & coordinates,
-										Matrix<Real> & coordMatrix) {
-
-  for (UInt i = 0; i < coordinates.cols(); ++i) {
-    Real x = coordinates(0, i);
-    Real y = coordinates(1, i);
-
-    coordMatrix(i, 0) = 1;
-    coordMatrix(i, 1) = x;
-    coordMatrix(i, 2) = y;
-    coordMatrix(i, 3) = x * y;
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-template<>
-inline void Material::buildElementalFieldInterpolationCoodinates<_quadrangle_8>(const Matrix<Real> & coordinates,
-										Matrix<Real> & coordMatrix) {
-
-  for (UInt i = 0; i < coordinates.cols(); ++i) {
-
-    UInt j = 0;
-    Real x = coordinates(0, i);
-    Real y = coordinates(1, i);
-
-    for (UInt e = 0; e <= 2; ++e) {
-      for (UInt n = 0; n <= 2; ++n) {
-	coordMatrix(i, j) = std::pow(x, e) * std::pow(y, n);
-	++j;
-      }
-    }
-
-  }
-}
-
-/* -------------------------------------------------------------------------- */
 inline UInt Material::getNbDataForElements(const Array<Element> & elements,
-					   SynchronizationTag tag) const {
+                                           SynchronizationTag tag) const {
   if(tag == _gst_smm_stress) {
     return (this->isFiniteDeformation() ? 3 : 1) * spatial_dimension * spatial_dimension *
       sizeof(Real) * this->getModel().getNbQuadraturePoints(elements);
@@ -366,8 +238,8 @@ inline UInt Material::getNbDataForElements(const Array<Element> & elements,
 
 /* -------------------------------------------------------------------------- */
 inline void Material::packElementData(CommunicationBuffer & buffer,
-				      const Array<Element> & elements,
-				      SynchronizationTag tag) const {
+                                      const Array<Element> & elements,
+                                      SynchronizationTag tag) const {
   if(tag == _gst_smm_stress) {
     if(this->isFiniteDeformation()) {
       packElementDataHelper(piola_kirchhoff_2, buffer, elements);
@@ -379,8 +251,8 @@ inline void Material::packElementData(CommunicationBuffer & buffer,
 
 /* -------------------------------------------------------------------------- */
 inline void Material::unpackElementData(CommunicationBuffer & buffer,
-					const Array<Element> & elements,
-					SynchronizationTag tag) {
+                                        const Array<Element> & elements,
+                                        SynchronizationTag tag) {
   if(tag == _gst_smm_stress) {
     if(this->isFiniteDeformation()) {
       unpackElementDataHelper(piola_kirchhoff_2, buffer, elements);
@@ -414,21 +286,21 @@ inline void Material::setParam(const ID & param, T value) {
 /* -------------------------------------------------------------------------- */
 template<typename T>
 inline void Material::packElementDataHelper(const ElementTypeMapArray<T> & data_to_pack,
-					    CommunicationBuffer & buffer,
-					    const Array<Element> & elements,
-					    const ID & fem_id) const {
+                                            CommunicationBuffer & buffer,
+                                            const Array<Element> & elements,
+                                            const ID & fem_id) const {
   DataAccessor::packElementalDataHelper<T>(data_to_pack, buffer, elements, true,
-					   model->getFEEngine(fem_id));
+                                           model->getFEEngine(fem_id));
 }
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
 inline void Material::unpackElementDataHelper(ElementTypeMapArray<T> & data_to_unpack,
-					      CommunicationBuffer & buffer,
-					      const Array<Element> & elements,
-					      const ID & fem_id) {
+                                              CommunicationBuffer & buffer,
+                                              const Array<Element> & elements,
+                                              const ID & fem_id) {
   DataAccessor::unpackElementalDataHelper<T>(data_to_unpack, buffer, elements, true,
-					     model->getFEEngine(fem_id));
+                                             model->getFEEngine(fem_id));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -463,32 +335,7 @@ inline bool Material::isInternal(const ID & id, const ElementKind & element_kind
   std::map<ID, InternalField<Real> *>::const_iterator internal_array =
     internal_vectors_real.find(this->getID()+":"+id);
 
-  if (internal_array == internal_vectors_real.end())    return false;
-  if (internal_array->second->getElementKind() != element_kind) return false;
+  if (internal_array == internal_vectors_real.end() ||
+      internal_array->second->getElementKind() != element_kind) return false;
   return true;
-}
-
-/* -------------------------------------------------------------------------- */
-
-inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id,
-                                                             const ElementKind & element_kind) const {
-
-  std::map<ID, InternalField<Real> *>::const_iterator internal_array =
-    internal_vectors_real.find(this->getID()+":"+id);
-
-  if (internal_array == internal_vectors_real.end())  AKANTU_EXCEPTION("cannot find internal " << id);
-  if (internal_array->second->getElementKind() != element_kind) AKANTU_EXCEPTION("cannot find internal " << id);
-
-  InternalField<Real> & internal = *internal_array->second;
-  InternalField<Real>::type_iterator it = internal.firstType(spatial_dimension, _not_ghost,element_kind);
-  InternalField<Real>::type_iterator last_type = internal.lastType(spatial_dimension, _not_ghost,element_kind);
-
-
-  ElementTypeMap<UInt> res;
-  for(; it != last_type; ++it) {
-    UInt nb_quadrature_points = 0;
-    nb_quadrature_points = internal.getFEEngine().getNbQuadraturePoints(*it);
-    res(*it) = internal.getNbComponent() * nb_quadrature_points;
-  }
-    return res;
 }

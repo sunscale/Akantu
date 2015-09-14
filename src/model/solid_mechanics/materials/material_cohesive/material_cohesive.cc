@@ -66,7 +66,7 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
 
   this->registerParam("sigma_c", sigma_c,
 		      _pat_parsable | _pat_readable, "Critical stress");
-  this->registerParam("delta_c", delta_c, 0.,
+  this->registerParam("delta_c", delta_c, Real(0.),
 		      _pat_parsable | _pat_readable, "Critical displacement");
 
   this->model->getMesh().initElementTypeMapArray(this->element_filter,
@@ -202,9 +202,9 @@ void MaterialCohesive::assembleResidual(GhostType ghost_type) {
 
     /// assemble
     model->getFEEngineBoundary().assembleArray(*int_t_N, residual,
-					  model->getDOFSynchronizer().getLocalDOFEquationNumbers(),
-					  residual.getNbComponent(),
-					  *it, ghost_type, elem_filter, 1);
+					       model->getDOFSynchronizer().getLocalDOFEquationNumbers(),
+					       residual.getNbComponent(),
+					       *it, ghost_type, elem_filter, 1);
 
     delete int_t_N;
   }
@@ -278,7 +278,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
     }
 
     /// compute traction
-        computeTraction(ghost_type);
+    computeTraction(ghost_type);
 
     /// get the tangent matrix @f$\frac{\partial{(t/\delta)}}{\partial{\delta}} @f$
     Array<Real> * tangent_stiffness_matrix =
@@ -616,5 +616,15 @@ Real MaterialCohesive::getEnergy(std::string type) {
 }
 
 /* -------------------------------------------------------------------------- */
+inline ElementTypeMap<UInt> MaterialCohesive::getInternalDataPerElem(const ID & id,
+							     const ElementKind & element_kind,
+                                                             const ID & fe_engine_id) const {
+  if (element_kind == _ek_cohesive) {
+    return Material::getInternalDataPerElem(id, element_kind, "CohesiveFEEngine");
+  } else {
+    return Material::getInternalDataPerElem(id, element_kind, fe_engine_id);
+  }
+}
 
+/* -------------------------------------------------------------------------- */
 __END_AKANTU__

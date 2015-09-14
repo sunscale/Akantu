@@ -42,7 +42,6 @@ package_declare_sources(core
   common/aka_common.hh
   common/aka_common_inline_impl.cc
   common/aka_csr.hh
-  common/aka_element_classes_info.hh
   common/aka_element_classes_info_inline_impl.cc
   common/aka_error.cc
   common/aka_error.hh
@@ -90,7 +89,6 @@ package_declare_sources(core
   fe_engine/fe_engine_inline_impl.cc
   fe_engine/fe_engine_template.hh
   fe_engine/fe_engine_template_tmpl.hh
-  fe_engine/geometrical_data_tmpl.hh
   fe_engine/geometrical_element.cc
   fe_engine/integration_element.cc
   fe_engine/integrator.hh
@@ -154,6 +152,7 @@ package_declare_sources(core
   mesh/group_manager_inline_impl.cc
   mesh/mesh.cc
   mesh/mesh.hh
+  mesh/mesh_accessor.hh
   mesh/mesh_events.hh
   mesh/mesh_filter.hh
   mesh/mesh_data.cc
@@ -191,8 +190,6 @@ package_declare_sources(core
   model/solid_mechanics/material.cc
   model/solid_mechanics/material.hh
   model/solid_mechanics/material_inline_impl.cc
-  model/solid_mechanics/material_list.hh
-  model/solid_mechanics/material_random_internal.hh
   model/solid_mechanics/material_selector.hh
   model/solid_mechanics/material_selector_tmpl.hh
   model/solid_mechanics/materials/internal_field.hh
@@ -210,6 +207,7 @@ package_declare_sources(core
   model/solid_mechanics/materials/plane_stress_toolbox_tmpl.hh
 
 
+  model/solid_mechanics/materials/material_core_includes.hh
   model/solid_mechanics/materials/material_elastic.cc
   model/solid_mechanics/materials/material_elastic.hh
   model/solid_mechanics/materials/material_elastic_inline_impl.cc
@@ -275,25 +273,78 @@ package_declare_sources(core
   synchronizer/synchronizer_registry.hh
   )
 
-
-set(AKANTU_CORE_DEB_DEPEND
-  libboost-dev
+package_declare_elements(core
+  ELEMENT_TYPES
+  _point_1
+  _segment_2
+  _segment_3
+  _triangle_3
+  _triangle_6
+  _quadrangle_4
+  _quadrangle_8
+  _tetrahedron_4
+  _tetrahedron_10
+  _pentahedron_6
+  _pentahedron_15
+  _hexahedron_8
+  _hexahedron_20
+  KIND regular
+  GEOMETRICAL_TYPES
+  _gt_point
+  _gt_segment_2
+  _gt_segment_3
+  _gt_triangle_3
+  _gt_triangle_6
+  _gt_quadrangle_4
+  _gt_quadrangle_8
+  _gt_tetrahedron_4
+  _gt_tetrahedron_10
+  _gt_hexahedron_8
+  _gt_hexahedron_20
+  _gt_pentahedron_6
+  _gt_pentahedron_15
+  INTERPOLATION_TYPES
+  _itp_lagrange_point_1
+  _itp_lagrange_segment_2
+  _itp_lagrange_segment_3
+  _itp_lagrange_triangle_3
+  _itp_lagrange_triangle_6
+  _itp_lagrange_quadrangle_4
+  _itp_serendip_quadrangle_8
+  _itp_lagrange_tetrahedron_4
+  _itp_lagrange_tetrahedron_10
+  _itp_lagrange_hexahedron_8
+  _itp_serendip_hexahedron_20
+  _itp_lagrange_pentahedron_6
+  _itp_lagrange_pentahedron_15
+  GEOMETRICAL_SHAPES
+  _gst_point
+  _gst_triangle
+  _gst_square
+  _gst_prism
+  GAUSS_INTEGRATION_TYPES
+  _git_point
+  _git_segment
+  _git_triangle
+  _git_tetrahedron
+  _git_pentahedron
+  INTERPOLATION_KIND _itk_lagrangian
+  FE_ENGINE_LISTS
+  gradient_on_quadrature_points
+  interpolate_on_quadrature_points
+  interpolate
+  compute_normals_on_control_points
+  inverse_map
+  contains
+  compute_shapes
+  compute_shapes_derivatives
+  get_shapes_derivatives
   )
 
-find_program(READLINK_COMMAND readlink)
-find_program(ADDR2LINE_COMMAND addr2line)
-mark_as_advanced(READLINK_COMMAND)
-mark_as_advanced(ADDR2LINE_COMMAND)
-
-include(CheckFunctionExists)
-
-check_function_exists(clock_gettime _clock_gettime)
-
-if(NOT _clock_gettime)
-  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY ON  CACHE INTERNAL "" FORCE)
-else()
-  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF CACHE INTERNAL "" FORCE)
-endif()
+package_declare_material_infos(core
+  LIST AKANTU_CORE_MATERIAL_LIST
+  INCLUDE material_core_includes.hh
+  )
 
 package_declare_documentation_files(core
   manual.sty
@@ -396,3 +447,17 @@ package_declare_documentation(core
   "  > sudo port install cmake gcc48 boost"
   "\\end{command}"
   )
+
+find_program(READLINK_COMMAND readlink)
+find_program(ADDR2LINE_COMMAND addr2line)
+mark_as_advanced(READLINK_COMMAND)
+mark_as_advanced(ADDR2LINE_COMMAND)
+
+include(CheckFunctionExists)
+check_function_exists(clock_gettime _clock_gettime)
+
+if(NOT _clock_gettime)
+  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY ON  CACHE INTERNAL "" FORCE)
+else()
+  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF CACHE INTERNAL "" FORCE)
+endif()

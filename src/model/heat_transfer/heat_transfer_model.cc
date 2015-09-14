@@ -79,7 +79,8 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh,
   int_bt_k_gT             ("int_bt_k_gT", id),
   bt_k_gT                 ("bt_k_gT", id),
   conductivity(spatial_dimension, spatial_dimension),
-  thermal_energy          ("thermal_energy", id) {
+  thermal_energy          ("thermal_energy", id),
+  solver(NULL) {
   AKANTU_DEBUG_IN();
 
   createSynchronizerRegistry(this);
@@ -136,6 +137,16 @@ void HeatTransferModel::initPBC() {
   synch_registry->registerSynchronizer(*synch, _gst_htm_capacity);
   synch_registry->registerSynchronizer(*synch, _gst_htm_temperature);
   changeLocalEquationNumberForPBC(pbc_pair,1);
+
+  // as long as there are ones on the diagonal of the matrix, we can put boudandary true for slaves
+  std::map<UInt, UInt>::iterator it = pbc_pair.begin();
+  std::map<UInt, UInt>::iterator end = pbc_pair.end();
+  while(it != end) {
+    (*blocked_dofs)((*it).first,0) = true;
+    ++it;
+  }
+  
+
 
   AKANTU_DEBUG_OUT();
 }
@@ -291,7 +302,11 @@ void HeatTransferModel::initImplicit(bool dynamic, SolverOptions & solver_option
 HeatTransferModel::~HeatTransferModel()
 {
   AKANTU_DEBUG_IN();
-
+  if (integrator)          delete integrator         ;
+  if (conductivity_matrix) delete conductivity_matrix;
+  if (capacity_matrix)     delete capacity_matrix    ;  
+  if (jacobian_matrix)     delete jacobian_matrix    ;
+  if (solver)              delete solver             ;
   AKANTU_DEBUG_OUT();
 }
 
@@ -336,7 +351,7 @@ void HeatTransferModel::assembleCapacityLumped() {
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::updateResidual() {
+void HeatTransferModel::updateResidual(bool compute_conductivity) {
   AKANTU_DEBUG_IN();
   /// @f$ r = q_{ext} - q_{int} - C \dot T @f$
 
@@ -366,7 +381,7 @@ void HeatTransferModel::updateResidual() {
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::assembleConductivityMatrix() {
+void HeatTransferModel::assembleConductivityMatrix(bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_INFO("Assemble the new stiffness matrix.");
@@ -374,9 +389,9 @@ void HeatTransferModel::assembleConductivityMatrix() {
   conductivity_matrix->clear();
 
   switch(mesh.getSpatialDimension()) {
-    case 1: this->assembleConductivityMatrix<1>(_not_ghost); break;
-    case 2: this->assembleConductivityMatrix<2>(_not_ghost); break;
-    case 3: this->assembleConductivityMatrix<3>(_not_ghost); break;
+  case 1: this->assembleConductivityMatrix<1>(_not_ghost,compute_conductivity); break;
+  case 2: this->assembleConductivityMatrix<2>(_not_ghost,compute_conductivity); break;
+  case 3: this->assembleConductivityMatrix<3>(_not_ghost,compute_conductivity); break;
   }
 
   AKANTU_DEBUG_OUT();
@@ -384,22 +399,27 @@ void HeatTransferModel::assembleConductivityMatrix() {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-void HeatTransferModel::assembleConductivityMatrix(const GhostType & ghost_type) {
+void HeatTransferModel::assembleConductivityMatrix(const GhostType & ghost_type,bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
   Mesh & mesh = this->getFEEngine().getMesh();
   Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
   for(; it != last_type; ++it) {
-    this->assembleConductivityMatrix<dim>(*it, ghost_type);
+    this->assembleConductivityMatrix<dim>(*it, ghost_type,compute_conductivity);
   }
 
   AKANTU_DEBUG_OUT();
 }
-  
+
+/* -------------------------------------------------------------------------- */
+
+
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-void HeatTransferModel::assembleConductivityMatrix(const ElementType & type, const GhostType & ghost_type) {
+void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
+						   const GhostType & ghost_type,
+						   bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
   SparseMatrix & K = *conductivity_matrix;
@@ -422,7 +442,8 @@ void HeatTransferModel::assembleConductivityMatrix(const ElementType & type, con
 
   Array<Real>::iterator< Matrix<Real> > Bt_D_B_it = bt_d_b->begin(bt_d_b_size, bt_d_b_size);
 
-  this->computeConductivityOnQuadPoints(ghost_type);
+  if (compute_conductivity)
+    this->computeConductivityOnQuadPoints(ghost_type);
   Array<Real>::iterator< Matrix<Real> > D_it = conductivity_on_qpoints(type, ghost_type).begin(dim, dim);
   Array<Real>::iterator< Matrix<Real> > D_end = conductivity_on_qpoints(type, ghost_type).end(dim, dim);
 
@@ -569,9 +590,10 @@ void HeatTransferModel::computeConductivityOnQuadPoints(const GhostType & ghost_
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::computeKgradT(const GhostType & ghost_type) {
+void HeatTransferModel::computeKgradT(const GhostType & ghost_type,bool compute_conductivity) {
 
-  computeConductivityOnQuadPoints(ghost_type);
+  if (compute_conductivity)
+    computeConductivityOnQuadPoints(ghost_type);
 
   const Mesh::ConnectivityTypeList & type_list =
     this->getFEEngine().getMesh().getConnectivityTypeList(ghost_type);
@@ -609,7 +631,7 @@ void HeatTransferModel::computeKgradT(const GhostType & ghost_type) {
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::updateResidual(const GhostType & ghost_type) {
+void HeatTransferModel::updateResidual(const GhostType & ghost_type, bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
   const Mesh::ConnectivityTypeList & type_list =
@@ -625,7 +647,7 @@ void HeatTransferModel::updateResidual(const GhostType & ghost_type) {
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
 
     // compute k \grad T
-    computeKgradT(ghost_type);
+    computeKgradT(ghost_type,compute_conductivity);
 
     Array<Real>::vector_iterator k_BT_it =
       k_gradt_on_qpoints(*it,ghost_type).begin(spatial_dimension);
@@ -710,6 +732,7 @@ void HeatTransferModel::solveExplicitLumped() {
 void HeatTransferModel::explicitPred() {
   AKANTU_DEBUG_IN();
 
+  AKANTU_DEBUG_ASSERT(integrator, "integrator was not instanciated");
   integrator->integrationSchemePred(time_step,
 				    *temperature,
 				    *temperature_rate,
@@ -849,7 +872,10 @@ void HeatTransferModel::initFull(const ModelOptions & options){
 
   readMaterials();
 
-  const HeatTransferModelOptions & my_options = dynamic_cast<const HeatTransferModelOptions &>(options);
+  const HeatTransferModelOptions & my_options
+    = dynamic_cast<const HeatTransferModelOptions &>(options);
+
+  method = my_options.analysis_method;
 
   //initialize the vectors
   initArrays();
@@ -857,8 +883,14 @@ void HeatTransferModel::initFull(const ModelOptions & options){
   temperature_rate->clear();
   external_heat_rate->clear();
 
-  method = my_options.analysis_method;
+  
+  // initialize pbc
+  if(pbc_pair.size()!=0)
+    initPBC();
 
+  if (method == _explicit_lumped_capacity){
+    integrator = new ForwardEuler();
+  }
   if (method == _implicit_dynamic) {
     initImplicit(true);
   }
@@ -1148,6 +1180,7 @@ dumper::Field * HeatTransferModel
 ::createElementalField(const std::string & field_name, 
 		       const std::string & group_name,
 		       bool padding_flag,
+		       const UInt & spatial_dimension,
 		       const ElementKind & element_kind){
 
 
@@ -1161,6 +1194,17 @@ dumper::Field * HeatTransferModel
     field = 
       mesh.createElementalField<Real, 
 				dumper::InternalMaterialField>(temperature_gradient,
+							       group_name,
+							       this->spatial_dimension,
+							       element_kind,
+							       nb_data_per_elem);
+  }
+  else if(field_name == "conductivity"){
+    ElementTypeMap<UInt> nb_data_per_elem = this->mesh.getNbDataPerElem(conductivity_on_qpoints,element_kind);
+
+    field = 
+      mesh.createElementalField<Real, 
+				dumper::InternalMaterialField>(conductivity_on_qpoints,
 							       group_name,
 							       this->spatial_dimension,
 							       element_kind,

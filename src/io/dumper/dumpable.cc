@@ -29,8 +29,8 @@
  */
 
 #include "dumpable.hh"
-
 #ifdef AKANTU_USE_IOHELPER
+#include <io_helper.hh>
 
 
 __BEGIN_AKANTU__
@@ -210,12 +210,28 @@ void Dumpable::setTimeStepToDumper(Real time_step) {
 
 /* -------------------------------------------------------------------------- */
 void Dumpable::setTimeStepToDumper(const std::string & dumper_name,
-                                          Real time_step) {
+				   Real time_step) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.setTimeStep(time_step);
 };
 
 /* -------------------------------------------------------------------------- */
+
+void Dumpable::setTextModeToDumper(const std::string & dumper_name) {
+  DumperIOHelper & dumper = this->getDumper(dumper_name);
+  dumper.getDumper().setMode(iohelper::TEXT);
+};
+
+
+/* -------------------------------------------------------------------------- */
+void Dumpable::setTextModeToDumper() {
+  DumperIOHelper & dumper = this->getDumper(this->default_dumper);
+  dumper.getDumper().setMode(iohelper::TEXT);
+};
+
+
+/* -------------------------------------------------------------------------- */
+
 void Dumpable::dump(const std::string & dumper_name) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.dump();

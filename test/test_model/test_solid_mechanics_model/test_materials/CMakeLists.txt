@@ -30,7 +30,8 @@
 #
 #===============================================================================
 
-add_mesh(test_local_material_barre_trou_mesh barre_trou.geo 2 2)
+#add_mesh(test_local_material_barre_trou_mesh barre_trou.geo 2 2)
+add_mesh(test_local_material_barre_trou_mesh mesh_section_gap.geo 2 2)
 register_test(test_local_material
   SOURCES  test_local_material.cc local_material_damage.cc
   EXTRA_FILES local_material_damage.hh local_material_damage_inline_impl.cc
@@ -54,6 +55,16 @@ register_test(test_interpolate_stress test_interpolate_stress.cc
   DEPENDENCIES test_interpolate_stress_mesh
   DIRECTORIES_TO_CREATE paraview
   PACKAGE lapack core
+  )
+
+#===============================================================================
+add_mesh(test_material_orthotropic_square_mesh square.geo 2 1)
+register_test(test_material_orthotropic
+  SOURCES test_material_orthotropic.cc
+  DEPENDENCIES test_material_orthotropic_square_mesh
+  FILES_TO_COPY orthotropic.dat
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
 
 # ==============================================================================

@@ -123,7 +123,7 @@ public:
   Real getStableTimeStep();
 
   /// compute the heat flux
-  void updateResidual();
+  void updateResidual(bool compute_conductivity = false);
 
   /// calculate the lumped capacity vector for heat transfer problem
   void assembleCapacityLumped();
@@ -181,7 +181,7 @@ public:
 		 bool   do_not_factorize = false);
 
   /// assemble the conductivity matrix
-  void assembleConductivityMatrix();
+  void assembleConductivityMatrix(bool compute_conductivity = true);
 
   /// assemble the conductivity matrix
   void assembleCapacity();
@@ -206,24 +206,27 @@ protected:
 private:
 
   /// compute the heat flux on ghost types
-  void updateResidual(const GhostType & ghost_type);
+  void updateResidual(const GhostType & ghost_type, bool compute_conductivity = false);
 
   /// calculate the lumped capacity vector for heat transfer problem (w ghosttype)
   void assembleCapacityLumped(const GhostType & ghost_type);
 
   /// assemble the conductivity matrix (w/ ghost type)
   template <UInt dim>
-  void assembleConductivityMatrix(const GhostType & ghost_type);
+  void assembleConductivityMatrix(const GhostType & ghost_type,
+				  bool compute_conductivity = true);
 
   /// assemble the conductivity matrix
   template <UInt dim>
-  void assembleConductivityMatrix(const ElementType & type, const GhostType & ghost_type);
+  void assembleConductivityMatrix(const ElementType & type,
+				  const GhostType & ghost_type,
+				  bool compute_conductivity = true);
 
   /// compute the conductivity tensor for each quadrature point in an array
   void computeConductivityOnQuadPoints(const GhostType & ghost_type);
 
   /// compute vector k \grad T for each quadrature point
-  void computeKgradT(const GhostType & ghost_type);
+  void computeKgradT(const GhostType & ghost_type,bool compute_conductivity);
 
   /// compute the thermal energy
   Real computeThermalEnergyByNode();
@@ -267,6 +270,7 @@ public:
   virtual dumper::Field * createElementalField(const std::string & field_name, 
 					       const std::string & group_name,
 					       bool padding_flag,
+					       const UInt & spatial_dimension,
 					       const ElementKind & kind);
 
   /* ------------------------------------------------------------------------ */

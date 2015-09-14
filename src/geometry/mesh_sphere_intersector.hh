@@ -41,6 +41,20 @@
 
 __BEGIN_AKANTU__
 
+/* -------------------------------------------------------------------------- */
+/* class for new igfem elements mesh events                                   */
+/* -------------------------------------------------------------------------- */
+#if defined(AKANTU_IGFEM)
+class NewIGFEMElementsEvent : public NewElementsEvent {
+public:
+  AKANTU_GET_MACRO_NOT_CONST(OldElementsList, old_elements, Array<Element> &);
+  AKANTU_GET_MACRO(OldElementsList, old_elements, const Array<Element> &);
+protected:
+  Array<Element> old_elements;
+};
+#endif
+
+
 /// Here, we know what kernel we have to use
 typedef Spherical SK;
 
@@ -57,7 +71,7 @@ class MeshSphereIntersector : public MeshGeomIntersector<dim, type, Line_arc<SK>
 
 public:
   /// Construct from mesh
-  explicit MeshSphereIntersector(const Mesh & mesh);
+  explicit MeshSphereIntersector(Mesh & mesh);
 
   /// Destructor
   virtual ~MeshSphereIntersector();
@@ -70,27 +84,32 @@ public:
   AKANTU_GET_MACRO(NewNodePerElem, new_node_per_elem, const Array<UInt>)
 
 public:
+  /// Construct the primitive tree object
+  virtual void constructData();
+
   /**
-   * @brief Computes the intersection of the mesh with a segment
+   * @brief Computes the intersection of the mesh with a sphere
    *
-   * @param query the segment to compute the intersections with the mesh
+   * @param query (sphere) to compute the intersections with the mesh
    */
   virtual void computeIntersectionQuery(const SK::Sphere_3 & query);
 
-  /// Compute the list of queries
-  virtual void computeIntersectionQueryList(const std::list<SK::Sphere_3> & query_list);
-  
-#if defined(AKANTU_IGFEM)
   /// Build the IGFEM mesh
-  void buildIgfemMesh(const std::list<SK::Sphere_3> & query_list);
-#endif
+  virtual void buildResultFromQueryList(const std::list<SK::Sphere_3> & query);
+
+  /// Remove the additionnal nodes
+  void removeAdditionnalNodes();
 
 protected:
-  /// new node per element TODO convert to ElementTypeMapArray<UInt>
+  /// new node per element (column 0: number of new nodes, then odd is the intersection node number and even the ID of the sintersected segment)
   Array<UInt> new_node_per_elem;
 
-  /// new node per element TODO convert to ElementTypeMapArray<UInt>
-  const UInt nb_nodes_init;
+  /// number of fem nodes in the initial mesh
+  const UInt nb_nodes_fem;
+
+  /// number of primitive in an element of the template type
+  UInt nb_prim_by_el;
+
 };
  
 __END_AKANTU__

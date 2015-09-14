@@ -171,30 +171,83 @@ void SolidMechanicsModelCohesive::initMaterials() {
 	}
       }
     }
-  } else {
-    for (ghost_type_t::iterator gt = ghost_type_t::begin(); gt != ghost_type_t::end(); ++gt) {
-      Mesh::type_iterator first = mesh.firstType(spatial_dimension, *gt, _ek_cohesive);
-      Mesh::type_iterator last  = mesh.lastType(spatial_dimension, *gt, _ek_cohesive);
+    SolidMechanicsModel::initMaterials();
 
-      for(;first != last; ++first) {
-	Array<UInt> & mat_indexes = this->material_index(*first, *gt);
-	Array<UInt> & mat_loc_num = this->material_local_numbering(*first, *gt);
-	mat_indexes.set(cohesive_index);
-	mat_loc_num.clear();
-      }
+#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+    if (facet_synchronizer != NULL)
+      inserter->initParallel(facet_synchronizer);
+#endif
+    initAutomaticInsertion();
+  } 
+  else {
+    try { /// In case of insertion of intrinsic elements along mesh physical surfaces
+      const ParserSection & mesh_section = *(this->parser->getSubSections(_st_mesh).first);
+      std::string cohesive_surfaces = mesh_section.getParameter("cohesive_surfaces");
+      initIntrinsicCohesiveMaterials(cohesive_surfaces);
+    }
+    catch(...) { /// Default intrinsic insertion
+      initIntrinsicCohesiveMaterials(cohesive_index);
     }
   }
+  
+  AKANTU_DEBUG_OUT();
+}
 
-  SolidMechanicsModel::initMaterials();
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(std::string cohesive_surfaces) {
+
+  AKANTU_DEBUG_IN();
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (facet_synchronizer != NULL)
     inserter->initParallel(facet_synchronizer);
 #endif
+  std::istringstream split(cohesive_surfaces);
+  std::string physname;
+  while(std::getline(split,physname,',')){
+    AKANTU_DEBUG_INFO("Pre-inserting cohesive elements along facets from physical surface: " 
+		      << physname);
+    insertElementsFromMeshData(physname);
+  }
 
-  if (is_extrinsic)
-    initAutomaticInsertion();
+#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+  if (facet_synchronizer != NULL){
+    facet_synchronizer-> asynchronousSynchronize(*inserter, _gst_ce_groups);
+    facet_synchronizer-> waitEndSynchronize(*inserter, _gst_ce_groups);
+  }
+#endif
+  
+  SolidMechanicsModel::initMaterials();
 
+   if(is_default_material_selector) delete material_selector;
+  material_selector = new MeshDataMaterialCohesiveSelector(*this);
+  inserter->insertElements();
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(UInt cohesive_index) {
+
+  AKANTU_DEBUG_IN();
+
+  for (ghost_type_t::iterator gt = ghost_type_t::begin(); gt != ghost_type_t::end(); ++gt) {
+    Mesh::type_iterator first = mesh.firstType(spatial_dimension, *gt, _ek_cohesive);
+    Mesh::type_iterator last  = mesh.lastType(spatial_dimension, *gt, _ek_cohesive);
+    
+    for(;first != last; ++first) {
+      Array<UInt> & mat_indexes = this->material_index(*first, *gt);
+      Array<UInt> & mat_loc_num = this->material_local_numbering(*first, *gt);
+      mat_indexes.set(cohesive_index);
+      mat_loc_num.clear();
+    }
+  }
+#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+  if (facet_synchronizer != NULL)
+    inserter->initParallel(facet_synchronizer);
+#endif
+
+  SolidMechanicsModel::initMaterials();
 
   AKANTU_DEBUG_OUT();
 }
@@ -264,6 +317,15 @@ void SolidMechanicsModelCohesive::limitInsertion(BC::Axis axis,
 void SolidMechanicsModelCohesive::insertIntrinsicElements() {
   AKANTU_DEBUG_IN();
   inserter->insertIntrinsicElements();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModelCohesive::insertElementsFromMeshData(std::string physname) {
+  AKANTU_DEBUG_IN();
+
+  UInt material_index = SolidMechanicsModel::getMaterialIndex(physname);
+  inserter->insertIntrinsicElements(physname, material_index);
   AKANTU_DEBUG_OUT();
 }
 
@@ -461,13 +523,16 @@ void SolidMechanicsModelCohesive::computeNormals() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::interpolateStress() {
+
+  ElementTypeMapArray<Real> by_elem_result("temporary_stress_by_facets", id);
+  
   for (UInt m = 0; m < materials.size(); ++m) {
     try {
       MaterialCohesive & mat __attribute__((unused)) =
 	dynamic_cast<MaterialCohesive &>(*materials[m]);
     } catch(std::bad_cast&) {
       /// interpolate stress on facet quadrature points positions
-      materials[m]->interpolateStressOnFacets(facet_stress);
+      materials[m]->interpolateStressOnFacets(facet_stress, by_elem_result);
     }
   }
 
@@ -650,13 +715,17 @@ void SolidMechanicsModelCohesive::addDumpGroupFieldToDumper(const std::string & 
 							    bool padding_flag) {
   AKANTU_DEBUG_IN();
 
+  UInt spatial_dimension = this->spatial_dimension;
   ElementKind _element_kind = element_kind;
   if (dumper_name == "cohesive elements") {
     _element_kind = _ek_cohesive;
+  } else if (dumper_name == "facets") {
+    spatial_dimension = this->spatial_dimension - 1;
   }
   SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, 
 						 field_id,
 						 group_name,
+						 spatial_dimension,
 						 _element_kind,
 						 padding_flag);
 

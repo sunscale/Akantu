@@ -44,7 +44,7 @@ MaterialCohesiveLinearFatigue<spatial_dimension>
   delta_dot_prec("delta_dot_prec", *this),
   normal_regime("normal_regime", *this) {
 
-  this->registerParam("delta_f", delta_f, -1. ,
+  this->registerParam("delta_f", delta_f, Real(-1.) ,
 		      _pat_parsable | _pat_readable,
 		      "delta_f");
 
@@ -56,7 +56,7 @@ MaterialCohesiveLinearFatigue<spatial_dimension>
 		      _pat_parsable | _pat_readable,
 		      "Count the opening/closing switches per element");
 
-  this->registerParam("fatigue_ratio", fatigue_ratio, 1.,
+  this->registerParam("fatigue_ratio", fatigue_ratio, Real(1.),
 		      _pat_parsable | _pat_readable,
 		      "What portion of the cohesive law is subjected to fatigue");
 }
@@ -191,7 +191,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
 
     // update maximum displacement and damage
     delta_max_array(q) = std::max(delta, delta_max_array(q));
-    damage_array(q) = std::min(delta_max_array(q) / delta_c_array(q), 1.);
+    damage_array(q) = std::min(delta_max_array(q) / delta_c_array(q), Real(1.));
 
     Real delta_dot = delta - delta_prec_array(q);
 
@@ -245,7 +245,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
 	    if (delta_max_array(q) > fatigue_ratio * delta_c_array(q)) {
 	      // reset delta_max to avoid big jumps in the traction
 	      delta_max_array(q) = sigma_c_array(q) / (T_1d_array(q) / delta + sigma_c_array(q) / delta_c_array(q));
-	      damage_array(q) = std::min(delta_max_array(q) / delta_c_array(q), 1.);
+	      damage_array(q) = std::min(delta_max_array(q) / delta_c_array(q), Real(1.));
 	      K_minus_array(q) = sigma_c_array(q) / delta_max_array(q) * (1. - damage_array(q));
 	      normal_regime_array(q) = true;
 	    } else {

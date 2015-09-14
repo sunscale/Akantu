@@ -64,12 +64,32 @@ if(_blas_activated OR _lapack_activated)
     ${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh
     MACRO_NAMESPACE "AKA_FC_")
   mark_as_advanced(CDEFS)
-  list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS ${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh)
+  list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
+    ${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh)
 endif()
 
-configure_file(common/aka_config.hh.in "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
-list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS ${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh)
+
+#===========================================================================
+# configurations
+#===========================================================================
+package_get_all_material_includes(AKANTU_MATERIAL_INCLUDES)
+package_get_all_material_lists(AKANTU_MATERIAL_LISTS)
+configure_file(model/solid_mechanics/material_list.hh.in
+  "${CMAKE_CURRENT_BINARY_DIR}/material_list.hh" @ONLY)
+
+package_get_element_lists()
+configure_file(common/aka_element_classes_info.hh.in
+  "${CMAKE_CURRENT_BINARY_DIR}/aka_element_classes_info.hh" @ONLY)
+
+configure_file(common/aka_config.hh.in
+  "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
+
+list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
+  ${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh
+  ${CMAKE_CURRENT_BINARY_DIR}/material_list.hh)
 list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
+
+add_extra_mpi_options()
 
 #===========================================================================
 # header precompilation

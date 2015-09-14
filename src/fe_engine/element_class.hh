@@ -104,7 +104,8 @@ public:
   static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension,   spatial_dimension,    UInt);
   static AKANTU_GET_MACRO_NOT_CONST(NbNodesPerElement,  nb_nodes_per_element, UInt);
   static AKANTU_GET_MACRO_NOT_CONST(NbFacetTypes,  nb_facet_types, UInt);
-  static inline UInt getNbFacetsPerElement(UInt t = 0);
+  static inline UInt getNbFacetsPerElement(UInt t);
+  static inline UInt getNbFacetsPerElement();
   static inline const MatrixProxy<UInt> getFacetLocalConnectivityPerElement(UInt t = 0);
 protected:
   /// Number of nodes per element
@@ -316,7 +317,7 @@ public:
   static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension, ElementClassProperty<element_type>::spatial_dimension, UInt);
   static AKANTU_GET_MACRO_NOT_CONST(P1ElementType, p1_type,    const ElementType &);
   static const ElementType & getFacetType(UInt t = 0) { return facet_type[t]; }
-  static const ElementType * getFacetTypeInternal() { return facet_type; }
+  static ElementType * getFacetTypeInternal() { return facet_type; }
 protected:
   /// Type of the facet elements
   static ElementType facet_type[];

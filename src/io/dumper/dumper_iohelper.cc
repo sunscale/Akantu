@@ -158,10 +158,8 @@ void DumperIOHelper::registerFilteredMesh(const Mesh & mesh,
 					  UInt spatial_dimension,
 					  const GhostType & ghost_type,
 					  const ElementKind & element_kind) {
-
-
   ElementTypeMapArrayFilter<UInt> * f_connectivities =
-    new ElementTypeMapArrayFilter<UInt>(mesh.getConnectivities(),elements_filter);
+    new ElementTypeMapArrayFilter<UInt>(mesh.getConnectivities(), elements_filter);
 
   this->registerField("connectivities",
                       new dumper::FilteredConnectivityField(*f_connectivities,
@@ -287,6 +285,11 @@ template <>
 iohelper::ElemType getIOHelperType<_cohesive_3d_6>() { return iohelper::COH3D6; }
 template <>
 iohelper::ElemType getIOHelperType<_cohesive_3d_12>() { return iohelper::COH3D12; }
+
+template <>
+iohelper::ElemType getIOHelperType<_cohesive_3d_8>() { return iohelper::COH3D8; }
+//template <>
+//iohelper::ElemType getIOHelperType<_cohesive_3d_16>() { return iohelper::COH3D16; }
 #endif
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)

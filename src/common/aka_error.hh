@@ -222,7 +222,7 @@ namespace akantu {
   /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_NDEBUG
 #define AKANTU_DEBUG_TEST(level)     (false)
-#define AKANTU_DEBUG_LEVEL_IS_TEST() (false)
+#define AKANTU_DEBUG_LEVEL_IS_TEST() (::akantu::debug::debugger.testLevel(dblTest))
 #define AKANTU_DEBUG(level,info)
 #define AKANTU_DEBUG_(pref,level,info)
 #define AKANTU_DEBUG_IN()
@@ -249,8 +249,8 @@ namespace akantu {
 #define AKANTU_DEBUG_TEST(level)		\
   (::akantu::debug::debugger.testLevel(level))
 
-#define AKANTU_DEBUG_LEVEL_IS_TEST()                                    \
-                                     (::akantu::debug::debugger.testLevel(dblTest))
+#define AKANTU_DEBUG_LEVEL_IS_TEST()			\
+  (::akantu::debug::debugger.testLevel(dblTest))
 
 #define AKANTU_DEBUG_IN()					\
   AKANTU_DEBUG_("==>", ::akantu::dblIn,      __func__ << "()")

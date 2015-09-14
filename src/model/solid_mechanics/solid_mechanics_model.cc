@@ -208,7 +208,7 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
   acceleration->clear();
   displacement->clear();
 
-  // initialize pcb
+  // initialize pbc
   if(pbc_pair.size()!=0)
     initPBC();
 
@@ -259,6 +259,7 @@ void SolidMechanicsModel::initParallel(MeshPartition * partition,
   synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_mass);
   synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_stress);
   synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_boundary);
+  synch_registry->registerSynchronizer(*synch_parallel, _gst_for_dump);
 
   AKANTU_DEBUG_OUT();
 }
@@ -1219,24 +1220,6 @@ Real SolidMechanicsModel::getStableTimeStep(const GhostType & ghost_type) {
 }
 
 /* -------------------------------------------------------------------------- */
-Real SolidMechanicsModel::getPotentialEnergy() {
-  AKANTU_DEBUG_IN();
-  Real energy = 0.;
-
-  /// call update residual on each local elements
-  std::vector<Material *>::iterator mat_it;
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    energy += (*mat_it)->getPotentialEnergy();
-  }
-
-  /// reduction sum over all processors
-  StaticCommunicator::getStaticCommunicator().allReduce(&energy, 1, _so_sum);
-
-  AKANTU_DEBUG_OUT();
-  return energy;
-}
-
-/* -------------------------------------------------------------------------- */
 Real SolidMechanicsModel::getKineticEnergy() {
   AKANTU_DEBUG_IN();
 
@@ -1430,6 +1413,10 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
 
   if(method == _explicit_lumped_mass) this->assembleMassLumped();
 
+  if (method != _explicit_lumped_mass) {
+    this->initSolver();
+  }
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -1444,6 +1431,7 @@ void SolidMechanicsModel::onElementsRemoved(__attribute__((unused)) const Array<
   for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
     (*mat_it)->onElementsRemoved(element_list, new_numbering, event);
   }
+
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1474,10 +1462,6 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
   std::vector<Material *>::iterator mat_it;
   for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
     (*mat_it)->onNodesAdded(nodes_list, event);
-  }
-
-  if (method != _explicit_lumped_mass) {
-    this->initSolver();
   }
 
   AKANTU_DEBUG_OUT();
@@ -1532,7 +1516,7 @@ ElementTypeMap<UInt> SolidMechanicsModel::getInternalDataPerElem(const std::stri
 
   for (UInt m = 0; m < materials.size() ; ++m) {
     if (materials[m]->isInternal(field_name, element_kind))
-      return materials[m]->getInternalDataPerElem(field_name,element_kind);
+      return materials[m]->getInternalDataPerElem(field_name, element_kind);
   }
 
   return ElementTypeMap<UInt>();
@@ -1541,18 +1525,32 @@ ElementTypeMap<UInt> SolidMechanicsModel::getInternalDataPerElem(const std::stri
 
 /* -------------------------------------------------------------------------- */
 ElementTypeMapArray<Real> & SolidMechanicsModel::flattenInternal(const std::string & field_name,
-								 const ElementKind & kind, const GhostType ghost_type){
-
+								 const ElementKind & kind,
+								 const GhostType ghost_type){
   std::pair<std::string,ElementKind> key(field_name,kind);
   if (this->registered_internals.count(key) == 0){
     this->registered_internals[key] =
-      new ElementTypeMapArray<Real>(field_name,this->id);
+      new ElementTypeMapArray<Real>(field_name, this->id);
   }
 
   ElementTypeMapArray<Real> * internal_flat = this->registered_internals[key];
+
+  typedef ElementTypeMapArray<Real>::type_iterator iterator;
+  iterator tit = internal_flat->firstType(spatial_dimension,
+					  ghost_type,
+					  kind);
+  iterator end = internal_flat->lastType(spatial_dimension,
+					 ghost_type,
+					 kind);
+
+  for (; tit != end; ++tit) {
+    ElementType type = *tit;
+    (*internal_flat)(type,ghost_type).clear();
+  }
+  
   for (UInt m = 0; m < materials.size(); ++m) {
     if (materials[m]->isInternal(field_name, kind))
-      materials[m]->flattenInternal(field_name,*internal_flat,ghost_type,kind);
+      materials[m]->flattenInternal(field_name, *internal_flat, ghost_type, kind);
   }
 
   return  *internal_flat;
@@ -1561,12 +1559,14 @@ ElementTypeMapArray<Real> & SolidMechanicsModel::flattenInternal(const std::stri
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::flattenAllRegisteredInternals(const ElementKind & kind){
 
-  std::map<std::pair<std::string,ElementKind>,ElementTypeMapArray<Real> *> ::iterator it = this->registered_internals.begin();
-  std::map<std::pair<std::string,ElementKind>,ElementTypeMapArray<Real> *>::iterator end = this->registered_internals.end();
+  std::map<std::pair<std::string, ElementKind>,
+	   ElementTypeMapArray<Real> *>::iterator it  = this->registered_internals.begin();
+  std::map<std::pair<std::string, ElementKind>,
+	   ElementTypeMapArray<Real> *>::iterator end = this->registered_internals.end();
 
   while (it != end){
     if (kind == it->first.second)
-      this->flattenInternal(it->first.first,kind);
+      this->flattenInternal(it->first.first, kind);
     ++it;
   }
 }
@@ -1609,7 +1609,7 @@ dumper::Field * SolidMechanicsModel
     bool is_internal = this->isInternal(field_name_copy,kind);
 
     if (is_internal) {
-      ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name_copy,kind);
+      ElementTypeMap<UInt> nb_data_per_elem = this->getInternalDataPerElem(field_name_copy, kind);
       ElementTypeMapArray<Real> & internal_flat = this->flattenInternal(field_name_copy,kind);
       field = mesh.createElementalField<Real, dumper::InternalMaterialField>(internal_flat,
 									     group_name,
@@ -1729,7 +1729,6 @@ bool padding_flag) {
 void SolidMechanicsModel::dump(const std::string & dumper_name) {
   this->onDump();
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeDumpEvent());
-  synch_registry->synchronize(_gst_for_dump);
   mesh.dump(dumper_name);
 }
 
@@ -1737,7 +1736,6 @@ void SolidMechanicsModel::dump(const std::string & dumper_name) {
 void SolidMechanicsModel::dump(const std::string & dumper_name, UInt step) {
   this->onDump();
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeDumpEvent());
-  synch_registry->synchronize(_gst_for_dump);
   mesh.dump(dumper_name, step);
 }
 
@@ -1745,7 +1743,6 @@ void SolidMechanicsModel::dump(const std::string & dumper_name, UInt step) {
 void SolidMechanicsModel::dump(const std::string & dumper_name, Real time, UInt step) {
   this->onDump();
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeDumpEvent());
-  synch_registry->synchronize(_gst_for_dump);
   mesh.dump(dumper_name, time, step);
 }
 

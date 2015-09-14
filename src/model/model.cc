@@ -41,7 +41,9 @@ Model::Model(Mesh& m, UInt dim, const ID & id,
 	     const MemoryID & memory_id) :
   Memory(id, memory_id), mesh(m), 
   spatial_dimension(dim == _all_dimensions ? m.getSpatialDimension() : dim),
-  synch_registry(NULL),is_pbc_slave_node(0,1,"is_pbc_slave_node") ,
+  synch_registry(NULL),
+  dof_synchronizer(NULL),
+  is_pbc_slave_node(0,1,"is_pbc_slave_node") ,
   parser(&getStaticParser()) {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_OUT();
@@ -313,15 +315,29 @@ void Model::addDumpGroupFieldVectorToDumper(const std::string & dumper_name,
 /* -------------------------------------------------------------------------- */
 
 void Model::addDumpFieldTensorToDumper(const std::string & dumper_name,
-                                                     const std::string & field_id) {
+				       const std::string & field_id) {
   this->addDumpGroupFieldToDumper(dumper_name,field_id,"all",_ek_regular,true);
 }
 
 /* -------------------------------------------------------------------------- */
-
 void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                       const std::string & field_id,
                                       const std::string & group_name,
+                                      const ElementKind & element_kind,
+                                      bool padding_flag) {
+  this->addDumpGroupFieldToDumper(dumper_name,
+				  field_id,
+				  group_name,
+				  this->spatial_dimension,
+				  element_kind,
+				  padding_flag);
+}
+
+/* -------------------------------------------------------------------------- */
+void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
+                                      const std::string & field_id,
+                                      const std::string & group_name,
+				      UInt spatial_dimension,
                                       const ElementKind & element_kind,
                                       bool padding_flag) {
 
@@ -331,7 +347,7 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
   if (!field) field = this->createNodalFieldReal(field_id,group_name,padding_flag);
   if (!field) field = this->createNodalFieldUInt(field_id,group_name,padding_flag);
   if (!field) field = this->createNodalFieldBool(field_id,group_name,padding_flag);
-  if (!field) field = this->createElementalField(field_id,group_name,padding_flag,this->spatial_dimension,element_kind);
+  if (!field) field = this->createElementalField(field_id,group_name,padding_flag,spatial_dimension,element_kind);
   if (!field) field = 
 		this->mesh.createFieldFromAttachedData<UInt>(field_id,group_name,
 							     element_kind);
@@ -366,6 +382,14 @@ void Model::setDirectoryToDumper(const std::string & dumper_name,
 				 const std::string & directory) {
   mesh.setDirectoryToDumper(dumper_name,directory);
 }
+
+/* -------------------------------------------------------------------------- */
+
+void Model::setTextModeToDumper(){
+  mesh.setTextModeToDumper();
+}
+
+/* -------------------------------------------------------------------------- */
 
 
 

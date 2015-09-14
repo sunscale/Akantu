@@ -232,6 +232,14 @@ MeshIOMSH::MeshIOMSH() {
       tmp[8] = 9;
       tmp[9] = 8;
       break;
+    case _pentahedron_6:
+      tmp[ 0] =  2;
+      tmp[ 1] =  0;
+      tmp[ 2] =  1;
+      tmp[ 3] =  5;
+      tmp[ 4] =  3;
+      tmp[ 5] =  4;
+      break;
     case _pentahedron_15:
       tmp[ 0] =  2;
       tmp[ 1] =  0;
@@ -481,7 +489,7 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
 
   outfile << std::setprecision(std::numeric_limits<Real>::digits10);
   outfile << "$Nodes" << std::endl;;
-  outfile << nodes.getSize() << std::endl;;
+  outfile << nodes.getSize() << std::endl;
 
   outfile << std::uppercase;
   for(UInt i = 0; i < nodes.getSize(); ++i) {

@@ -56,7 +56,7 @@ class MeshGeomFactory : public MeshGeomAbstract {
 
 public:
   /// Construct from mesh
-  explicit MeshGeomFactory(const Mesh & mesh);
+  explicit MeshGeomFactory(Mesh & mesh);
 
   /// Desctructor
   virtual ~MeshGeomFactory();

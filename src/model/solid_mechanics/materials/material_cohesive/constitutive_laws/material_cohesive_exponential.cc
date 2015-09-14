@@ -44,11 +44,11 @@ MaterialCohesiveExponential<spatial_dimension>::MaterialCohesiveExponential(Soli
   MaterialCohesive(model,id) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("beta"   , beta   , 0. , _pat_parsable, "Beta parameter"         );
+  this->registerParam("beta"   , beta   , Real(0.) , _pat_parsable, "Beta parameter");
   this->registerParam("exponential_penalty", exp_penalty, true, 
 		      _pat_parsable, "Is contact penalty following the exponential law?"  );
   
-  this->registerParam("contact_tangent", contact_tangent, 1.0, 
+  this->registerParam("contact_tangent", contact_tangent, Real(1.0),
 		      _pat_parsable, "Ratio of contact tangent over the initial exponential tangent"  );
 
   // this->initInternalArray(delta_max, 1, _ek_cohesive);

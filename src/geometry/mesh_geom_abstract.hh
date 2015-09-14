@@ -45,7 +45,7 @@ class MeshGeomAbstract {
 
 public:
   /// Construct from mesh
-  explicit MeshGeomAbstract(const Mesh & mesh);
+  explicit MeshGeomAbstract(Mesh & mesh);
 
   /// Destructor
   virtual ~MeshGeomAbstract();
@@ -56,7 +56,7 @@ public:
 
 protected:
   /// Mesh used to construct the primitives
-  const Mesh & mesh;
+  Mesh & mesh;
 };
 
 __END_AKANTU__

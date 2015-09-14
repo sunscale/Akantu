@@ -143,8 +143,8 @@ int main(int argc, char *argv[]) {
     model.updateAcceleration();
     model.explicitCorr();
 
-    akantu::Real epot = model.getPotentialEnergy();
-    akantu::Real ekin = model.getKineticEnergy();
+    akantu::Real epot = model.getEnergy("potential");
+    akantu::Real ekin = model.getEnergy("kinetic");
     energy << s << "," << epot << "," << ekin << "," << epot + ekin
 	   << std::endl;
 

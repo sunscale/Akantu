@@ -34,7 +34,7 @@
 #include "aka_grid_dynamic.hh"
 #include "fe_engine.hh"
 
-#include "weight_function.hh"
+#include "base_weight_function.hh"
 
 namespace akantu {
   class GridSynchronizer;

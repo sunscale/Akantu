@@ -30,6 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "mesh_io.hh"
+#include "mesh_accessor.hh"
 
 #ifndef __AKANTU_MESH_IO_ABAQUS_HH__
 #define __AKANTU_MESH_IO_ABAQUS_HH__
@@ -37,7 +38,7 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-class MeshIOAbaqus : public MeshIO {
+class MeshIOAbaqus : public MeshIO, private MeshAccessor {
 public:
   MeshIOAbaqus();
   virtual ~MeshIOAbaqus();

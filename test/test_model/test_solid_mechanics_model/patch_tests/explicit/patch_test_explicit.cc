@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
 
 
   std::cout << my_model.getMaterial(0) << std::endl;
-  Real time_step = my_model.getStableTimeStep()/5.;
+  Real time_step = my_model.getStableTimeStep()/100.;
   my_model.setTimeStep(time_step);
   my_model.assembleMassLumped();
 
@@ -175,6 +175,17 @@ int main(int argc, char *argv[])
   energy << "id,time,ekin" << std::endl;
   Real ekin_mean = 0.;
 
+  //#define DEBUG_TEST
+#ifdef DEBUG_TEST
+  my_model.solveStep();
+  my_model.addDumpField("strain");
+  my_model.addDumpField("stress");
+  my_model.addDumpField("residual");
+  my_model.addDumpField("velocity");
+  my_model.addDumpField("acceleration");
+  my_model.addDumpField("displacement");
+  my_model.dump();
+#endif
   /* ------------------------------------------------------------------------ */
   /* Main loop                                                                */
   /* ------------------------------------------------------------------------ */
@@ -197,7 +208,7 @@ int main(int argc, char *argv[])
 
     my_model.solveStep();
 
-    akantu::Real ekin = my_model.getKineticEnergy(); ekin_mean += ekin;
+    akantu::Real ekin = my_model.getEnergy("kinetic"); ekin_mean += ekin;
 
     if(s % 1000 == 0)
       energy << s << "," << s*time_step  << "," << ekin << std::endl;

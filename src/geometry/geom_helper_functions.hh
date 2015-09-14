@@ -43,10 +43,18 @@ __BEGIN_AKANTU__
 
 /// Fuzzy compare of two points
 template <class Point>
-bool comparePoints(const Point & a, const Point & b) {
-  return Math::are_float_equal(a.x(), b.x()) &&
-         Math::are_float_equal(a.y(), b.y()) &&
-         Math::are_float_equal(a.z(), b.z());
+inline bool comparePoints(const Point & a, const Point & b) {
+ return Math::are_float_equal(a.x(), b.x()) &&
+        Math::are_float_equal(a.y(), b.y()) &&
+        Math::are_float_equal(a.z(), b.z());
+}
+
+template <>
+inline bool comparePoints(const Spherical::Circular_arc_point_3 & a,
+                          const Spherical::Circular_arc_point_3 & b) {
+ return Math::are_float_equal(CGAL::to_double(a.x()), CGAL::to_double(b.x())) &&
+        Math::are_float_equal(CGAL::to_double(a.y()), CGAL::to_double(b.y())) &&
+        Math::are_float_equal(CGAL::to_double(a.z()), CGAL::to_double(b.z()));
 }
 
 /// Fuzzy compare of two segments

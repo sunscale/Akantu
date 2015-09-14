@@ -14,7 +14,7 @@ solved. A second parameter called \code{spatial\_dimension} can be
 added after \code{mesh} if the spatial dimension of the problem is
 different than that of the mesh.
 
-This model contains at least the the following six \code{Arrays}:
+This model contains at least the following six \code{Arrays}:
 \begin{description}
 \item[blocked\_dofs] contains a Boolean value for each degree of
   freedom specifying whether that degree is blocked or not. A
@@ -161,7 +161,11 @@ each element which shows the physical group that they belong to. In
 Gmsh, it is also possible to consider strings for different groups of
 elements. These elements can be separated by giving a string
 \code{physical\_names} to the function
-\code{createGroupsFromMeshData}.  Boundary conditions can also be
+\code{createGroupsFromMeshData}:
+\begin{cpp}
+mesh.createGroupsFromMeshData<std::string>("physical_names").
+\end{cpp}
+Boundary conditions support can also be
 created from the geometry by calling
 \code{createBoundaryGroupFromGeometry}. This function gathers all the
 elements on the boundary of the geometry.
@@ -182,13 +186,11 @@ utilization of three functors for the top, bottom and side surface of
 the mesh which were already defined in the Gmsh file:
 
 \begin{cpp}
-mesh.createGroupsFromMeshData<std::string>("physical_names");
+model.applyBC(BC::Dirichlet::FixedValue(13.0, _y), "Top");
 
-model.applyBC(BC::Dirichlet::FixedValue(13.0, BC::_y), "Top");
+model.applyBC(BC::Dirichlet::FlagOnly(_x), "Bottom");
 
-model.applyBC(BC::Dirichlet::FlagOnly(BC::_x), "Bottom");
-
-model.applyBC(BC::Dirichlet::IncrementValue(13.0, BC::_x), "Side");
+model.applyBC(BC::Dirichlet::IncrementValue(13.0, _x), "Side");
 \end{cpp}
 
 To apply a Neumann boundary condition, the applied traction or stress
@@ -238,15 +240,15 @@ respectively.
 
 \subsection{Material Selector\label{sect:smm:materialselector}}
 
-If the user wants to assign different materials to the different
-finite elements of choice in \akantu, a material selector has to be
+If the user wants to assign different materials to different
+finite elements groups in \akantu, a material selector has to be
 used. By default, \akantu assigns the first valid material in the
 material file to all elements present in the model (regular continuum
 materials are assigned to the regular elements and cohesive materials
 are assigned to cohesive elements or element facets).
 
 To assign different materials to specific elements, mesh data
-information such as tag information or specified pyhsical names can be
+information such as tag information or specified physical names can be
 used. \code{MeshDataMaterialSelector} class uses this information to
 assign different materials. With the proper physical name or tag name
 and index, different materials can be assigned as demonstrated in the
@@ -261,38 +263,25 @@ examples below.
 In this example the physical names specified in a GMSH geometry file will by
 used to match the material names in the input file.
 
-Another example would be:
+Another example would be to use the first (\code{tag\_0}) or the second
+(\code{tag\_1}) tag associated to each elements in the mesh:
 
 \begin{cpp}
   MeshDataMaterialSelector<UInt> * mat_selector;
-  mat_selector = new MeshDataMaterialSelector<UInt>("tag_1", model);
+  mat_selector = new MeshDataMaterialSelector<UInt>("tag_1", model, first_index);
   model.setMaterialSelector(*mat_selector);
 \end{cpp}
 
-where \code{tag\_1} of the mesh file is used as the classifier index
-and the elements that have index value equal to one will be assigned
-to the second material in the material file.
+where \code{first\_index} (default is 1) is the value of \code{tag\_1} that will
+be associated to the first material in the material input file. The following
+values of the tag will be associated with the following materials.
 
 There are four different material selectors pre-defined in
 \akantu. \code{MaterialSelector} and \code{DefaultMaterialSelector} is
 used to assign a material to regular elements by default. For the
 regular elements, as in the example above,
 \code{MeshDataMaterialSelector} can be used to assign different
-materials to different elements. However, for cohesive elements, it is
-not possible to assign multiple cohesive materials automatically and
-user has to write a custom class. \akantu has a pre-defined material
-selector to assign the first cohesive material by default to the
-cohesive elements which is called
-\code{DefaultMaterialCohesiveSelector} and it inherits its properties
-from \code{DefaultMaterialSelector}. This material selector first
-checks if an element is a cohesive element or a facet. If there is,
-then the first cohesive material in the material file is assigned to
-that element. Otherwise, this material is assigned to the element
-facet, to which, a cohesive element might be inserted later. Hence,
-this material selector works for the extrinsic cohesive elements which
-are dynamically inserted throughout the analysis. If the element of
-interest is not a cohesive element or an element facet, then
-\code{DefaultMaterialSelector} is used by default.
+materials to different elements. 
 
 Apart from the \akantu's default material selectors, users can always
 develop their own classes in the main code to tackle various
@@ -326,10 +315,10 @@ in Section~\ref{sect:common:mesh}.  Once an instance of a
 it is to use the \code{initFull}\index{SolidMechanicsModel!initFull}
 method by giving the \code{SolidMechanicsModelOptions}. These options
 specify the type of analysis to be performed and whether the materials
-should be initialized or not.
+should be initialized with \code{initMaterials} or not.
 \begin{cpp}
 SolidMechanicsModel model(mesh);
-model.initFull(SolidMechanicsModelOptions(_static));
+model.initFull(SolidMechanicsModelOptions(_static, false));
 \end{cpp}
 Here, a static analysis is chosen by passing the argument
 \code{\_static} to the method. By default, the Boolean for no
@@ -347,7 +336,7 @@ model.solveStep<_scm_newton_raphson_tangent_modified, _scc_residual>(1e-4, 1);
 \end{cpp}
 This function is templated by the solving method and the convergence
 criterion and takes two arguments: the tolerance and the maximum
-number of iterations, which are $\num{1e-4}$ and $1$ for this example. The
+number of iterations (100 by default), which are $\num{1e-4}$ and $1$ for this example. The
 modified Newton-Raphson method is chosen to solve the system. In this
 method, the equilibrium equation (\ref{eqn:smm:static}) is modified in
 order to apply a Newton-Raphson convergence algorithm:
@@ -508,7 +497,8 @@ are parameters depending on the method used to solve the equations
   \end{tabular}
 \end{center}
 
-%\note{If you want to use the implicit solver \akantu should be compiled at least with one sparse matrix solver such as Mumps\cite{mumps}.}
+% \note{If you want to use the implicit solver \akantu should be compiled at
+% least with one sparse matrix solver such as Mumps\cite{mumps}.}
 
 
 \subsection{Implicit Time Integration}
@@ -533,7 +523,7 @@ within reason.  \index{SolidMechanicsModel!setTimeStep}
 \begin{cpp}
 model.setTimeStep(time_step);
 \end{cpp}
-Since the system has to be solved for a given amount of time, the
+Since the system has to be solved for a given amount of time steps, the
 method \code{solveStep()}, (which has already been used in the static
 example in Section~\ref{sect:smm:static}), is called inside a time
 loop:
@@ -627,26 +617,26 @@ has to be smaller than the stable time step which is obtained in
 \akantu as follows:
 
 \begin{cpp}
-time_step = model.getStableTimeStep();
+critical_time_step = model.getStableTimeStep();
 \end{cpp} \index{SolidMechanicsModel!StableTimeStep}
 
-The stable time step is defined as:
+The stable time  step corresponds to the time the fastest wave (the compressive
+wave) needs to travel the characteristic length of the mesh:
 \begin{equation}
 \label{eqn:smm:explicit:stabletime}
-\Delta t_{\st{crit}} = \Delta x \sqrt{\frac{\rho}{2 \mu + \lambda}}
+\Delta t_{\st{crit}} = \frac{\Delta x}{c}
 \end{equation}
-where $\Delta x$ is a characteristic length (\eg the inradius in the
-case of linear triangle element), $\mu$ and $\lambda$ are the first
-and second Lame's coefficients and $\rho$ is the density.  The stable
-time step corresponds to the time the fastest wave (the compressive
-wave) needs to travel the characteristic length of the mesh.
-However, it is recommended to impose a time step that is smaller than the stable time step, for
-instance, by multiplying the stable time step by a safety factor
-smaller than one.
+where $\Delta x$ is a characteristic length (\eg the inradius in the case of
+linear triangle element) and $c$ is the celerity of the fastest wave in the
+material. It is generally the compressive wave of celerity
+$c = \sqrt{\frac{2 \mu + \lambda}{\rho}}$, $\mu$ and $\lambda$ are the first and
+second Lame's coefficients and $\rho$ is the density. However, it is recommended
+to impose a time step that is smaller than the stable time step, for instance,
+by multiplying the stable time step by a safety factor smaller than one.
 
 \begin{cpp}
 const Real safety_time_factor = 0.8;
-Real applied_time_step = time_step * safety_time_factor;
+Real applied_time_step = critical_time_step * safety_time_factor;
 model.setTimeStep(applied_time_step);
 \end{cpp}
 \index{SolidMechanicsModel!setTimeStep} The initial displacement and
@@ -776,15 +766,18 @@ class MaterialXXX : public Material {
 \end{cpp}
 In the header file the user also needs to declare all the members of the new
 material. These include the parameters that a read from the
-material input file, as well as any other material parameters that will be computed during the simulation and internal variables.\\
-In the following the example of adding a new damage material will be presented. In this
-case the parameters in the material will consist of the Young's modulus, the
-Poisson coefficient, the resistance to damage and the damage threshold. The
-material will then from these values compute its Lam\'{e} coefficients and its
-bulk modulus. Furthermore, the user has to add a new internal variable
-\code{damage} in order to store the amount of damage at each quadrature point in
-each step of the simulation. For this specific material the member declaration
-inside the class will look as follows:
+material input file, as well as any other material parameters that will be
+computed during the simulation and internal variables.
+
+
+In the following the example of adding a new damage material will be
+presented. In this case the parameters in the material will consist of the
+Young's modulus, the Poisson coefficient, the resistance to damage and the
+damage threshold. The material will then from these values compute its Lam\'{e}
+coefficients and its bulk modulus. Furthermore, the user has to add a new
+internal variable \code{damage} in order to store the amount of damage at each
+quadrature point in each step of the simulation. For this specific material the
+member declaration inside the class will look as follows:
 \begin{cpp}
 class LocalMaterialDamage : public Material {
 
@@ -995,19 +988,7 @@ In the following a detailed description of these functions is provided:
     \end{center}
   \end{figure}
 
-
-\item \code{getStableTimeStep}:~ The stable time step should be
-  calculated based on \eqref{eqn:smm:explicit:stabletime} for the
-  conditionally stable  methods.  This function depends on the longitudinal wave
-  speed which changes for different materials and strains. Therefore,
-  the value of this velocity should be defined in this method for
-  each new material.
-
-  \note {In case of need, the calculation of the longitudinal and
-    shear wave speeds can be done in separate functions
-    (\code{getPushWaveSpeed} and \code{getShearWaveSpeed}).
-    Therefore, the first function can be called for calculation of the
-    stable time step.}
+\item \code{getCelerity}:~The stability criterion of the explicit integration scheme depend on the fastest wave celerity~\eqref{eqn:smm:explicit:stabletime}. This celerity depend on the material, and therefore the value of this velocity should be defined in this method for each new material. By default, the fastest wave speed is the compressive wave whose celerity can be defined in~\code{getPushWaveSpeed}.
 \end{itemize}
 Once the declaration and implementation of the new material has been
 completed, this material can be used in the user's example by including the header file:

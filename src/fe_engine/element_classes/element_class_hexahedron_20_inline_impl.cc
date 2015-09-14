@@ -81,7 +81,8 @@ AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_hexahedron_20,
                                      _itp_serendip_hexahedron_20,
                                      _ek_regular,
                                      3,
-                                     _git_segment, 2);
+                                     _git_segment,
+				     3);
 
 AKANTU_DEFINE_SHAPE(_gt_hexahedron_20, _gst_square);
 

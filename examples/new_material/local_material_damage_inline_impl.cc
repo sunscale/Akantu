@@ -76,5 +76,6 @@ inline void LocalMaterialDamage::computePotentialEnergyOnQuad(Matrix<Real> & gra
 
 /* -------------------------------------------------------------------------- */
 inline Real LocalMaterialDamage::getCelerity(__attribute__ ((unused)) const Element & element) const {
-  return (std::sqrt(E/rho));
+  // Here the fastest celerity is the push wave speed
+  return (std::sqrt((2*mu+lambda)/rho));
 }

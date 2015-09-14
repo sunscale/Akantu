@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
 
     my_model.explicitCorr();
 
-    akantu::Real ekin = my_model.getKineticEnergy(); ekin_mean += ekin;
+    akantu::Real ekin = my_model.getEnergy("kinetic"); ekin_mean += ekin;
 
     if(s % 1000 == 0)
       energy << s << "," << s*time_step  << "," << ekin << std::endl;

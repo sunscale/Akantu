@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 
   std::cout << mass << std::endl << sum << std::endl;
 
-  if(!(std::abs((mass - sum[0])/mass) < 1e-15)) {
+  if(!(std::abs((mass - sum[0])/mass) < 2e-15)) {
     std::cerr << "total mass is not correct" <<  std::endl;
     return EXIT_FAILURE;
   }

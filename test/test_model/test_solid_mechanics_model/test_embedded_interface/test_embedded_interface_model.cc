@@ -79,6 +79,12 @@ int main (int argc, char * argv[]) {
       bound(i, 1) = true;
   }
 
+  model.addDumpFieldVector("displacement");
+  model.addDumpFieldTensor("stress");
+
+  model.setBaseNameToDumper("reinforcement", "reinforcement");
+  model.addDumpFieldTensorToDumper("reinforcement", "stress_embedded");
+
   // Assemble the global stiffness matrix
   model.assembleStiffnessMatrix();
   model.updateResidual();
@@ -87,6 +93,7 @@ int main (int argc, char * argv[]) {
 
   model.solveStatic<_scm_newton_raphson_tangent_not_computed, _scc_residual>(1e-7, 1);
   model.updateResidual();
+  model.dump();
 
   Real pot_energy = model.getEnergy("potential");
 

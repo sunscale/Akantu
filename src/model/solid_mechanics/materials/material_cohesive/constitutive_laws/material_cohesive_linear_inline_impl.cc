@@ -52,7 +52,7 @@ inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(const Matrix<Real>
   }
 
   tangent_contrib = std::sqrt(tangent_contrib);
-  normal_contrib = std::max(0., normal_contrib);
+  normal_contrib = std::max(Real(0.), normal_contrib);
 
   return std::sqrt(normal_contrib * normal_contrib + tangent_contrib * tangent_contrib * beta2_inv);
 }

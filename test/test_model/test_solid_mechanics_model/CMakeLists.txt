@@ -159,7 +159,6 @@ register_test(test_solid_mechanics_model_bar_traction2d_structured_pbc
 #  PACKAGE parallel
 #  )
 
-
 #===============================================================================
 add_mesh(test_cube3d_mesh1 cube.geo 3 1 OUTPUT cube1.msh)
 add_mesh(test_cube3d_mesh2 cube.geo 3 2 OUTPUT cube2.msh)
@@ -211,15 +210,6 @@ register_test(test_solid_mechanics_model_reassign_material
 register_test(test_solid_mechanics_model_material_eigenstrain
   SOURCES test_solid_mechanics_model_material_eigenstrain.cc
   FILES_TO_COPY cube_3d_tet_4.msh; material_elastic_plane_strain.dat
-  PACKAGE core
-  )
-
-#===============================================================================
-register_test(test_solid_mechanics_model_orthotropic
-  SOURCES test_solid_mechanics_model_orthotropic.cc
-  DEPENDENCIES test_solid_mechanics_model_square_mesh
-  FILES_TO_COPY orthotropic.dat
-  DIRECTORIES_TO_CREATE paraview
   PACKAGE core
   )
 

@@ -51,27 +51,27 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
   insertion_stress("insertion_stress", *this) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("beta"   , beta   , 0. ,
+  this->registerParam("beta"   , beta   , Real(0.) ,
                       _pat_parsable | _pat_readable,
                       "Beta parameter"         );
 
-  this->registerParam("G_c"   , G_c   , 0. ,
+  this->registerParam("G_c"   , G_c   , Real(0.) ,
                       _pat_parsable | _pat_readable,
                       "Mode I fracture energy" );
 
-  this->registerParam("penalty", penalty, 0. ,
+  this->registerParam("penalty", penalty, Real(0.) ,
                       _pat_parsable | _pat_readable,
                       "Penalty coefficient"    );
 
-  this->registerParam("volume_s", volume_s, 0. ,
+  this->registerParam("volume_s", volume_s, Real(0.) ,
                       _pat_parsable | _pat_readable,
                       "Reference volume for sigma_c scaling");
 
-  this->registerParam("m_s", m_s, 1. ,
+  this->registerParam("m_s", m_s, Real(1.) ,
                       _pat_parsable | _pat_readable,
                       "Weibull exponent for sigma_c scaling");
 
-  this->registerParam("kappa"  , kappa  , 1. ,
+  this->registerParam("kappa"  , kappa  , Real(1.) ,
                       _pat_parsable | _pat_readable,
                       "Kappa parameter");
 
@@ -485,7 +485,7 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
 
     /// update maximum displacement and damage
     *delta_max_it = std::max(*delta_max_it, delta);
-    *damage_it = std::min(*delta_max_it / *delta_c_it, 1.);
+    *damage_it = std::min(*delta_max_it / *delta_c_it, Real(1.));
 
     /**
      * Compute traction @f$ \mathbf{T} = \left(
@@ -707,7 +707,7 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
           //          std::cout << "k_us = " << k_us << std::endl;
           if (std::abs(k_ls) > 1e-13 && std::abs(k_us) > 1e-13){
             Real error = std::abs((k_ls - k_us) / k_us);
-            if (error > 1e-13){
+            if (error > 1e-10){
               std::cout << "non symmetric cohesive matrix" << std::endl;
               std::cout << "error " << error << std::endl;
             }
