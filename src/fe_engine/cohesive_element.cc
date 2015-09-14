@@ -95,7 +95,7 @@ template<> UInt GeometricalElement<_gt_cohesive_3d_12>::spatial_dimension    = 3
 template<> UInt GeometricalElement<_gt_cohesive_3d_12>::nb_nodes_per_element = 12;
 template<> UInt GeometricalElement<_gt_cohesive_3d_12>::nb_facet_types       = 1;
 template<> UInt GeometricalElement<_gt_cohesive_3d_12>::nb_facets[]          = { 2 };
-template<> UInt GeometricalElement<_gt_cohesive_3d_12>::nb_nodes_per_facet[] = { 3 };
+template<> UInt GeometricalElement<_gt_cohesive_3d_12>::nb_nodes_per_facet[] = { 6 };
 template<> UInt GeometricalElement<_gt_cohesive_3d_12>::facet_connectivity_vect[] = {0, 6,
 										     1, 7,
 										     2, 8,
@@ -129,7 +129,7 @@ template<> UInt GeometricalElement<_gt_cohesive_3d_16>::spatial_dimension    = 3
 template<> UInt GeometricalElement<_gt_cohesive_3d_16>::nb_nodes_per_element = 16;
 template<> UInt GeometricalElement<_gt_cohesive_3d_16>::nb_facet_types       = 1;
 template<> UInt GeometricalElement<_gt_cohesive_3d_16>::nb_facets[]          = { 2 };
-template<> UInt GeometricalElement<_gt_cohesive_3d_16>::nb_nodes_per_facet[] = { 4 };
+template<> UInt GeometricalElement<_gt_cohesive_3d_16>::nb_nodes_per_facet[] = { 8 };
 template<> UInt GeometricalElement<_gt_cohesive_3d_16>::facet_connectivity_vect[] = {0, 8,
 										     1, 9,
 										     2, 10,
