@@ -211,11 +211,10 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// initialize the solver and the jacobian_matrix (called by initImplicit)
-  void initSolver(SolverOptions & options = _solver_no_options);
+  void initSolver();
 
   /// initialize the stuff for the implicit solver
-  void initImplicit(bool            dynamic = false,
-		    SolverOptions & solver_options = _solver_no_options);
+  void initImplicit(bool            dynamic = false);
 
   /// solve Ma = f to get the initial acceleration
   void initialAcceleration();
@@ -577,9 +576,6 @@ public:
   /// get integrator
   AKANTU_GET_MACRO(Integrator, *integrator, const IntegrationScheme2ndOrder &);
 
-  /// get access to the internal solver
-  AKANTU_GET_MACRO(Solver, *solver, Solver &);
-
   /// get synchronizer
   AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const DistributedSynchronizer &);
 
@@ -693,9 +689,6 @@ protected:
   /// flag defining if the increment must be computed or not
   bool increment_flag;
 
-  /// solver for implicit
-  Solver *solver;
-
   /// analysis method check the list in akantu::AnalysisMethod
   AnalysisMethod method;
 
@@ -729,10 +722,7 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 #include "solid_mechanics_model_tmpl.hh"
-
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "solid_mechanics_model_inline_impl.cc"
-#endif
+#include "solid_mechanics_model_inline_impl.cc"
 
 /// standard output stream operator
 inline std::ostream & operator << (std::ostream & stream, const SolidMechanicsModel &_this) {

@@ -28,14 +28,19 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_memory.hh"
+#include "non_linear_solver.hh"
+#include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DOF_MANAGER_HH__
 #define __AKANTU_DOF_MANAGER_HH__
+
+namespace akantu {
+class SolverCallback;
+}
 
 __BEGIN_AKANTU__
 
@@ -44,15 +49,23 @@ class DOFManager : protected Memory {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DOFManager(const Mesh & mesh, const ID & id = "dof_manager",
-             const MemoryID & memory_id = 0);
+  DOFManager(const Mesh & mesh, SolverCallback & solver_callback,
+             const ID & id = "dof_manager", const MemoryID & memory_id = 0);
   virtual ~DOFManager();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// register an array of degree of freedom
   void registerDOFs(const ID & dof_id, Array<Real> & dofs_array);
+
+  /// register an array of derivatives for a particular dof array
+  void registerDOFDerivative(const ID & dof_id, UInt order,
+                             Array<Real> & dofs_derivative);
+
+  /// register array representing the blocked degree of freedoms
+  void registerBlockedDOFs(const ID & dof_id, Array<Real> & blocked_dofs);
 
   /// Get the part of the solution corresponding to the dof_id
   virtual void getSolution(const ID & dof_id, Array<Real> & solution_array) = 0;
@@ -70,8 +83,9 @@ public:
    **/
   virtual void assembleElementalArrayLocalArray(
       const Array<Real> & elementary_vect, Array<Real> & array_assembeled,
-      const ElementType & type, const GhostType & ghost_type, Real scale_factor,
-      const Array<UInt> & filter_elements);
+      const ElementType & type, const GhostType & ghost_type,
+      Real scale_factor = 1.,
+      const Array<UInt> & filter_elements = empty_filter);
 
   /**
    * Assemble elementary values to the global residual array. The dof number is
@@ -80,8 +94,9 @@ public:
    **/
   virtual void assembleElementalArrayResidual(
       const ID & dof_id, const Array<Real> & elementary_vect,
-      const ElementType & type, const GhostType & ghost_type, Real scale_factor,
-      const Array<UInt> & filter_elements);
+      const ElementType & type, const GhostType & ghost_type,
+      Real scale_factor = 1.,
+      const Array<UInt> & filter_elements = empty_filter);
 
   /**
    * Assemble elementary values to the global residual array. The dof number is
@@ -91,8 +106,9 @@ public:
   virtual void assembleElementalMatricesToMatrix(
       const ID & matrix_id, const ID & dof_id,
       const Array<Real> & elementary_mat, const ElementType & type,
-      const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
-      const Array<UInt> & filter_elements) = 0;
+      const GhostType & ghost_type,
+      const MatrixType & elemental_matrix_type = _symmetric,
+      const Array<UInt> & filter_elements = empty_filter) = 0;
 
   /// notation fully defined yet...
   // virtual void assemblePreassembledMatrix(const ID & matrix_id,
@@ -127,8 +143,15 @@ public:
   /// get the equation numbers (in global numbering) corresponding to a dof ID
   const Array<UInt> & getGlobalEquationNumbers(const ID & dof_id) const;
 
-  const Array<Real> & getDOFs(const ID & id) const;
+  /// Global number of dofs
+  AKANTU_GET_MACRO(SystemSize, this->system_size, UInt);
 
+  /// Get the solver callback stored in the dof_manager
+  AKANTU_GET_MACRO(SolverCallback, solver_callback, SolverCallback &);
+
+  /* ------------------------------------------------------------------------ */
+  /* Matrices accessors                                                       */
+  /* ------------------------------------------------------------------------ */
   /// Get an instance of a new SparseMatrix
   virtual SparseMatrix & getNewMatrix(const ID & matrix_id,
                                       const MatrixType & matrix_type);
@@ -141,29 +164,71 @@ public:
   /// Get the reference of an existing matrix
   SparseMatrix & getMatrix(const ID & matrix_id);
 
-  AKANTU_GET_MACRO(SystemSize, this->system_size, UInt);
+  /* ------------------------------------------------------------------------ */
+  /* Non linear system solver                                                 */
+  /* ------------------------------------------------------------------------ */
+  /// Get instance of a non linear solver
+  virtual NonLinearSolver &
+  getNewNonLinearSolver(const ID & nls_solver_id,
+                        const NonLinearSolverType & _non_linear_solver_type);
+
+  /// get instance of a non linear solver
+  virtual NonLinearSolver & getNonLinearSolver(const ID & nls_solver_id);
 
   /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
+  /* TimeStepSolver                                                           */
   /* ------------------------------------------------------------------------ */
+  /// Get instance of a time step solver
+  virtual TimeStepSolver &
+  getNewTimeStepSolver(const ID & time_step_solver_id, UInt order,
+                       const TimeStepSolverType & type);
+
+  /// get instance of a time step solver
+  virtual TimeStepSolver & getTimeStepSolver(const ID & time_step_solver_id);
+
+  /* ------------------------------------------------------------------------*/
+  /* Class Members                                                           */
+  /* ------------------------------------------------------------------------*/
 protected:
-  /// store a reference to the dof arrays
-  std::map<ID, Array<Real> *> dofs;
+  /// dof representations in the dof manager
+  struct DOFData {
+    /// Degree of freedom array
+    Array<Real> * dof;
+    /// Blocked degree of freedoms array
+    Array<Real> * blocked_dofs;
+    /* ---------------------------------------------------------------------- */
+    /* data for dynamic simulations                                           */
+    /* ---------------------------------------------------------------------- */
+    /// Degree of freedom derivatives arrays
+    std::vector<Array<Real> *> dof_derivatives;
 
-  struct EquationNumberArray {
+    /// global numbering equation numbers
     Array<UInt> global_equation_number;
+    /// local numbering equation numbers
     Array<UInt> local_equation_number;
+    /// link between global and local equation numbers
     unordered_map<UInt, UInt>::type global_to_local_equation_number;
   };
 
-  /// equation numbers corresponding to the dofglobalids arrays
-  std::map<ID, EquationNumberArray *> equation_numbers_infos;
+  typedef std::map<ID, DOFData *> DOFStorage;
+
+  /// store a reference to the dof arrays
+  DOFStorage dofs;
 
   /// list of sparse matrices that where created
   std::map<ID, SparseMatrix *> matrices;
 
+  /// non linear solvers storage
+  std::map<ID, NonLinearSolver *> non_linear_solvers;
+
+  /// time step solvers storage
+  std::map<ID, TimeStepSolver *> time_step_solvers;
+
   /// reference to the underlying mesh
   const Mesh & mesh;
+
+  /// Solver callback to assemble residual and jacobian
+  SolverCallback & solver_callback;
 
   /// Total number of degrees of freedom
   UInt local_system_size;
@@ -173,5 +238,7 @@ protected:
 };
 
 __END_AKANTU__
+
+#include "dof_manager_inline_impl.cc"
 
 #endif /* __AKANTU_DOF_MANAGER_HH__ */

@@ -34,61 +34,6 @@
 
 __BEGIN_AKANTU__
 
-/* -------------------------------------------------------------------------- */
-void DOFManagerDefault::addSymmetricElementalMatrixToSymmetric(SparseMatrixAIJ & matrix,
-							       const Matrix<Real> & element_mat,
-							       const Vector<Real> & equation_numbers,
-							       UInt max_size) {
-  for (UInt i = 0; i < element_mat.rows(); ++i) {
-    UInt c_irn = equation_numbers(i);
-    if(c_irn < max_size) {
-      for (UInt j = i; j < element_mat.cols(); ++j) {
-	UInt c_jcn = equation_numbers(j);
-	if(c_jcn < max_size) {
-	  matrix(c_irn, c_jcn) += elementary_mat(i, j);
-	}
-      }
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-void DOFManagerDefault::addUnsymmetricElementalMatrixToSymmetric(SparseMatrixAIJ & matrix,
-								 const Matrix<Real> & element_mat,
-								 const Vector<Real> & equation_numbers,
-								 UInt max_size) {
-  for (UInt i = 0; i < size_mat; ++i) {
-    UInt c_irn = equation_numbers(i);
-    if(c_irn < size) {
-      for (UInt j = 0; j < size_mat; ++j) {
-	UInt c_jcn = equation_numbers(j);
-	if(c_jcn < size) {
-	  if (c_jcn >= c_irn) {
-	    matrix(c_irn, c_jcn) += elementary_mat(i, j);
-	  }
-	}
-      }
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-void DOFManagerDefault::addElementalMatrixToUnsymmetric(SparseMatrixAIJ & matrix,
-							const Matrix<Real> & element_mat,
-							const Vector<Real> & equation_numbers,
-							UInt max_size) {
-  for (UInt i = 0; i < element_mat.rows(); ++i) {
-    UInt c_irn = equation_numbers(i);
-    if(c_irn < max_size) {
-      for (UInt j = 0; j < element_mat.cols(); ++j) {
-	UInt c_jcn = equation_numbers(j);
-	if(c_jcn < max_size) {
-	  matrix(c_irn, c_jcn) += elementary_mat(i, j);
-	}
-      }
-    }
-  }
-}
 
 /* -------------------------------------------------------------------------- */
 

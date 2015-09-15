@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
 #include "material.hh"
+#include "model_solver.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -42,8 +43,9 @@ void SolidMechanicsModel::assembleMassLumped() {
   UInt nb_nodes = mesh.getNbNodes();
 
   if (!mass) {
-    std::stringstream sstr_mass; sstr_mass << id << ":mass";
-    mass         = &(alloc<Real>(sstr_mass.str(), nb_nodes, spatial_dimension, 0));
+    std::stringstream sstr_mass;
+    sstr_mass << id << ":mass";
+    mass = &(alloc<Real>(sstr_mass.str(), nb_nodes, spatial_dimension, 0));
   } else
     mass->clear();
 
@@ -54,7 +56,8 @@ void SolidMechanicsModel::assembleMassLumped() {
   /// wrong range in paraview
   Real * mass_values = mass->storage();
   for (UInt i = 0; i < nb_nodes; ++i) {
-    if (fabs(mass_values[i]) < std::numeric_limits<Real>::epsilon() || Math::isnan(mass_values[i]))
+    if (fabs(mass_values[i]) < std::numeric_limits<Real>::epsilon() ||
+        Math::isnan(mass_values[i]))
       mass_values[i] = 1.;
   }
 
@@ -68,20 +71,20 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
 
   FEEngine & fem = getFEEngine();
 
-  Array<Real> rho_1(0,1);
+  Array<Real> rho_1(0, spatial_dimension);
 
-  Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type);
+  Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
-  for(; it != end; ++it) {
+  for (; it != end; ++it) {
     ElementType type = *it;
 
-    computeRho(rho_1, type, ghost_type);
+    computeRho(rho, type, ghost_type);
 
     AKANTU_DEBUG_ASSERT(dof_synchronizer,
-			"DOFSynchronizer number must not be initialized");
-    fem.assembleFieldLumped(rho_1, spatial_dimension,*mass,
-			    dof_synchronizer->getLocalDOFEquationNumbers(),
-			    type, ghost_type);
+                        "DOFSynchronizer number must not be initialized");
+    fem.assembleFieldLumped(rho, spatial_dimension, *mass,
+                            dof_synchronizer->getLocalDOFEquationNumbers(),
+                            type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -91,7 +94,7 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
 void SolidMechanicsModel::assembleMass() {
   AKANTU_DEBUG_IN();
 
-  if(!mass_matrix) {
+  if (!mass_matrix) {
     mass_matrix = &(this->getDOFManager().getNewMatrix("mass", "jacobian"));
   }
 
@@ -106,51 +109,50 @@ void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
 
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
 
-  Array<Real> rho_1(0,1);
-  //UInt nb_element;
-  mass_matrix->clear();
+  Array<Real> rho_1(0, spatial_dimension);
+  // UInt nb_element;
+  this->getDOFManager().getMatrix("mass").clear();
 
-  Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type);
+  Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
-  for(; it != end; ++it) {
+  for (; it != end; ++it) {
     ElementType type = *it;
-
-    computeRho(rho_1, type, ghost_type);
-    fem.assembleFieldMatrix(rho_1, spatial_dimension, *mass_matrix, type, ghost_type);
+    computeRho(rho, type, ghost_type);
+    fem.assembleFieldMatrix(rho, "mass", this->getDOFManager(),
+                            type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::computeRho(Array<Real> & rho,
-				     ElementType type,
-				     GhostType ghost_type) {
+void SolidMechanicsModel::computeRho(Array<Real> & rho, ElementType type,
+                                     GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Material ** mat_val = &(this->materials.at(0));
 
   FEEngine & fem = this->getFEEngine();
-  UInt nb_element = fem.getMesh().getNbElement(type,ghost_type);
+  UInt nb_element = fem.getMesh().getNbElement(type, ghost_type);
 
   Array<UInt> & mat_indexes = this->material_index(type, ghost_type);
 
   UInt nb_quadrature_points = fem.getNbQuadraturePoints(type);
 
   rho.resize(nb_element * nb_quadrature_points);
-  Real * rho_1_val = rho.storage();
+  Array<Real>::vector_iterator rho_it = rho.begin(spatial_dimension);
 
   /// compute @f$ rho @f$ for each nodes of each element
   for (UInt el = 0; el < nb_element; ++el) {
-    Real mat_rho = mat_val[mat_indexes(el)]->getParam<Real>("rho"); /// here rho is constant in an element
+    Real mat_rho = mat_val[mat_indexes(el)]->getParam<Real>(
+        "rho"); /// here rho is constant in an element
 
-    for (UInt n = 0; n < nb_quadrature_points; ++n) {
-      *rho_1_val++ = mat_rho;
+    for (UInt n = 0; n < nb_quadrature_points; ++n, ++rho_it) {
+      *rho_it = mat_rho;
     }
   }
 
   AKANTU_DEBUG_OUT();
 }
-
 
 __END_AKANTU__

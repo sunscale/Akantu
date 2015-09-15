@@ -1,11 +1,12 @@
 /**
- * @file   model_solver.hh
+ * @file   non_linear_solver_default.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Wed Jul 22 10:53:10 2015
+ * @date   Tue Aug 25 00:48:07 2015
  *
- * @brief  Class regrouping the common solve interface to the different models
+ * @brief Default implementation of NonLinearSolver, in case no external library
+ * is there to do the job
  *
  * @section LICENSE
  *
@@ -28,54 +29,48 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "parsable.hh"
-#include "dof_manager.hh"
-/* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MODEL_SOLVER_HH__
-#define __AKANTU_MODEL_SOLVER_HH__
+#ifndef __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__
+#define __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__
 
 __BEGIN_AKANTU__
 
-class ModelSolver : public Parsable {
+class NonLinearSolverDefault : public NonLinearSolver {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ModelSolver(const Mesh & mesh, const ID & id);
-  virtual ~ModelSolver();
+  NonLinearSolverDefault(DOFManagerDefault & dof_manager,
+                         const NonLinearSolverType & non_linear_solver_type,
+                         const ID & id = "non_linear_solver_default",
+                         UInt memory_id = 0);
+  virtual ~NonLinearSolverDefault();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// Solve a step, implicit, explicit, static, ... any things based on the
-  /// current configuration
-  void solveStep();
-
-protected:
-  /// assemble the residual
-  void assembleResidual() { AKANTU_DEBUG_TO_IMPLEMENT(); }
-
-  /// assemble the Jacobian matrix
-  void assembleJacobian() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  void solve();
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-protected:
-  DOFManager & getDOFManager() { return *this->dof_manager; }
+public:
+  virtual void setParameters(const ParserSection & parameters_section);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-protected:
-  DOFManager * dof_manager;
-  //  TimeStepSolver * time_step_solver;
+private:
+  DOFManagerDefault & dof_manager;
+
+  /// convergence threshold
+  Real convergence_criteria;
+
+  /// Max number of iterations
+  UInt max_iterations;
 };
 
 __END_AKANTU__
 
-
-#endif /* __AKANTU_MODEL_SOLVER_HH__ */
+#endif /* __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__ */

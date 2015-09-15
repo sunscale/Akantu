@@ -34,19 +34,18 @@
 
 __BEGIN_AKANTU__
 
-inline void DOFManager::extractElementEquationNumber(const Array<Int> & equation_numbers,
-						     const Vector<UInt> & connectivity,
-						     UInt nb_degree_of_freedom,
-						     Vector<Int> & local_equation_number) {
-  for (UInt i = 0, ld = 0: i < connectivity.size(); ++i) {
+inline void DOFManager::extractElementEquationNumber(
+    const Array<UInt> & equation_numbers, const Vector<UInt> & connectivity,
+    UInt nb_degree_of_freedom, Vector<UInt> & local_equation_number) {
+  for (UInt i = 0, ld = 0; i < connectivity.size(); ++i) {
     UInt n = connectivity(i);
     for (UInt d = 0; d < nb_degree_of_freedom; ++d, ++ld) {
-      local_eq_nb(ld) = equation_numbers(n * nb_degree_of_freedom + d);
+      local_equation_number(ld) =
+          equation_numbers(n * nb_degree_of_freedom + d);
     }
   }
 }
 
 __END_AKANTU__
-
 
 #endif /* __AKANTU_DOF_MANAGER_INLINE_IMPL_CC__ */

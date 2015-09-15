@@ -35,6 +35,59 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
+inline void DOFManagerDefault::addSymmetricElementalMatrixToSymmetric(
+    SparseMatrixAIJ & matrix, const Matrix<Real> & elementary_mat,
+    const Vector<UInt> & equation_numbers, UInt max_size) {
+  for (UInt i = 0; i < elementary_mat.rows(); ++i) {
+    UInt c_irn = equation_numbers(i);
+    if (c_irn < max_size) {
+      for (UInt j = i; j < elementary_mat.cols(); ++j) {
+        UInt c_jcn = equation_numbers(j);
+        if (c_jcn < max_size) {
+          matrix(c_irn, c_jcn) += elementary_mat(i, j);
+        }
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+inline void DOFManagerDefault::addUnsymmetricElementalMatrixToSymmetric(
+    SparseMatrixAIJ & matrix, const Matrix<Real> & elementary_mat,
+    const Vector<UInt> & equation_numbers, UInt max_size) {
+  for (UInt i = 0; i < elementary_mat.rows(); ++i) {
+    UInt c_irn = equation_numbers(i);
+    if (c_irn < max_size) {
+      for (UInt j = 0; j < elementary_mat.cols(); ++j) {
+        UInt c_jcn = equation_numbers(j);
+        if (c_jcn < max_size) {
+          if (c_jcn >= c_irn) {
+            matrix(c_irn, c_jcn) += elementary_mat(i, j);
+          }
+        }
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+inline void DOFManagerDefault::addElementalMatrixToUnsymmetric(
+    SparseMatrixAIJ & matrix, const Matrix<Real> & elementary_mat,
+    const Vector<UInt> & equation_numbers, UInt max_size) {
+  for (UInt i = 0; i < elementary_mat.rows(); ++i) {
+    UInt c_irn = equation_numbers(i);
+    if (c_irn < max_size) {
+      for (UInt j = 0; j < elementary_mat.cols(); ++j) {
+        UInt c_jcn = equation_numbers(j);
+        if (c_jcn < max_size) {
+          matrix(c_irn, c_jcn) += elementary_mat(i, j);
+        }
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 DOFManagerDefault::DOFManagerDefault(const Mesh & mesh, const ID & id,
                                      const MemoryID & memory_id)
     : DOFManager(mesh, id, memory_id) {}
@@ -149,18 +202,22 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
   AKANTU_DEBUG_IN();
 
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
-  SparseMatrixAIJ & A = this->getSparseMatrix(matrix_id);
+  SparseMatrixAIJ & A = this->getMatrix(matrix_id);
 
-  if (ghost_type == _not_ghost) { nb_element = mesh.getNbElement(type); } else {
+  UInt nb_element;
+  if (ghost_type == _not_ghost) {
+    nb_element = mesh.getNbElement(type);
+  } else {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
-  UInt nb_element;
   UInt * filter_it = NULL;
   if (filter_elements != empty_filter) {
     nb_element = filter_elements.getSize();
     filter_it = filter_elements.storage();
-  } else { nb_element = mesh.getNbElement(type, ghost_type); }
+  } else {
+    nb_element = mesh.getNbElement(type, ghost_type);
+  }
 
   AKANTU_DEBUG_ASSERT(elementary_mat.getSize() == nb_element,
                       "The vector elementary_mat("
@@ -183,7 +240,8 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
       elementary_mat.begin(size_mat, size_mat);
 
   for (UInt e = 0; e < nb_element; ++e, ++el_mat_it) {
-    if (filter_it != NULL) conn_it = conn_begin + *filter_it;
+    if (filter_it != NULL)
+      conn_it = conn_begin + *filter_it;
 
     this->extractElementEquationNumber(equation_number, *conn_it,
                                        nb_degree_of_freedom, local_eq_nb);
@@ -193,16 +251,16 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     else
       ++conn_it;
 
-    if (matrix.getSparseMatrixType())
+    if (A.getMatrixType() == _symmetric)
       if (elemental_matrix_type == _symmetric)
-        this->addSymmetricElementalMatrixToSymmetric(A, *el_mat_it,
-                                                     local_eq_nb_val, A.size());
+        this->addSymmetricElementalMatrixToSymmetric(A, *el_mat_it, local_eq_nb,
+                                                     A.getSize());
       else
         this->addUnsymmetricElementalMatrixToSymmetric(
-            A, *el_mat_it, local_eq_nb_val, A.size());
+            A, *el_mat_it, local_eq_nb, A.getSize());
     else
-      this->addElementalMatrixToUnsymmetric(A, *el_mat_it, local_eq_nb_val,
-                                            A.size());
+      this->addElementalMatrixToUnsymmetric(A, *el_mat_it, local_eq_nb,
+                                            A.getSize());
   }
 
   AKANTU_DEBUG_OUT();

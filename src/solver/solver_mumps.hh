@@ -1,5 +1,5 @@
 /**
- * @file   solver_mumps.hh
+ * @file   sparse_solver_mumps.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
@@ -34,38 +34,20 @@
 #include <dmumps_c.h>
 
 #include "solver.hh"
-#include "static_communicator.hh"
 
 __BEGIN_AKANTU__
 
-class SolverMumpsOptions : public SolverOptions {
-public:
-  enum ParallelMethod {
-    _not_parallel,
-    _fully_distributed,
-    _master_slave_distributed
-  };
-
-  SolverMumpsOptions(ParallelMethod parallel_method = _fully_distributed) :
-    SolverOptions(),
-    parallel_method(parallel_method) { }
-
-private:
-  friend class SolverMumps;
-  ParallelMethod parallel_method;
-};
-
-class SolverMumps : public Solver {
+class SparseSolverMumps : public SparseSolver {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  SparseSolverMumps(DOFManager & dof_manager,
+                    const ID & matrix_id,
+                    const ID & id = "sparse_solver_mumps",
+                    const MemoryID & memory_id = 0);
 
-  SolverMumps(SparseMatrix & sparse_matrix,
-	      const ID & id = "solver_mumps",
-	      const MemoryID & memory_id = 0);
-
-  virtual ~SolverMumps();
+  virtual ~SparseSolverMumps();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -84,12 +66,7 @@ public:
   virtual void factorize();
 
   /// solve the system
-  virtual void solve(Array<Real> & solution);
   virtual void solve();
-
-  void solveSlave();
-
-  virtual void setRHS(Array<Real> & rhs);
 
 private:
   /// print the error if any happened in mumps
@@ -119,6 +96,17 @@ private:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+  /// DOFManager used by the Mumps implementation of the SparseSolver
+  DOFManagerDefault & dof_manager;
+
+  /// AIJ Matrix, usualy the jacobian matrix
+  SparseMatrixAIJ & matrix;
+
+  /// Right hand side per processors
+  Array<Real> & rhs;
+
+  /// Full right hand side on the master processors
+  Array<Real> * master_rhs_solution;
 
   /// mumps data
   DMUMPS_STRUC_C mumps_data;

@@ -1,11 +1,11 @@
 /**
- * @file   model_solver.hh
+ * @file   non_linear_solver.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Wed Jul 22 10:53:10 2015
+ * @date   Mon Aug 24 23:48:41 2015
  *
- * @brief  Class regrouping the common solve interface to the different models
+ * @brief  Non linear solver interface
  *
  * @section LICENSE
  *
@@ -28,54 +28,52 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "parsable.hh"
-#include "dof_manager.hh"
+#include "aka_memory.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MODEL_SOLVER_HH__
-#define __AKANTU_MODEL_SOLVER_HH__
+#ifndef __AKANTU_NON_LINEAR_SOLVER_HH__
+#define __AKANTU_NON_LINEAR_SOLVER_HH__
+
+namespace akantu {
+  class DOFManager;
+}
 
 __BEGIN_AKANTU__
 
-class ModelSolver : public Parsable {
+class NonLinearSolver : Memory {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ModelSolver(const Mesh & mesh, const ID & id);
-  virtual ~ModelSolver();
+  NonLinearSolver(DOFManager & dof_manager,
+                  const NonLinearSolverType & non_linear_solver_type,
+                  const ID & id = "non_linear_solver", UInt memory_id = 0);
+  virtual ~NonLinearSolver();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// Solve a step, implicit, explicit, static, ... any things based on the
-  /// current configuration
-  void solveStep();
-
-protected:
-  /// assemble the residual
-  void assembleResidual() { AKANTU_DEBUG_TO_IMPLEMENT(); }
-
-  /// assemble the Jacobian matrix
-  void assembleJacobian() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  /// solve the system described by the jacobian matrix, and rhs contained in
+  /// the dof manager
+  virtual void solve() = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-protected:
-  DOFManager & getDOFManager() { return *this->dof_manager; }
+public:
+  /// configure the solver from ParserSection
+  virtual void setParameters(const ParserSection & parameters_section);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-protected:
-  DOFManager * dof_manager;
-  //  TimeStepSolver * time_step_solver;
+private:
+  /// type of non linear solver
+  NonLinearSolverType non_linear_solver_type;
 };
+
 
 __END_AKANTU__
 
-
-#endif /* __AKANTU_MODEL_SOLVER_HH__ */
+#endif /* __AKANTU_NON_LINEAR_SOLVER_HH__ */

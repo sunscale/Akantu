@@ -81,20 +81,21 @@ public:
 
 private:
   /// Add a symmetric matrices to a symmetric sparse matrix
-  inline void addSymmetricElementalMatrixToSymmetric(
+  void addSymmetricElementalMatrixToSymmetric(
       SparseMatrixAIJ & matrix, const Matrix<Real> & element_mat,
       const Vector<UInt> & equation_numbers, UInt max_size);
 
   /// Add a unsymmetric matrices to a symmetric sparse matrix (i.e. cohesive
   /// elements)
-  inline void addUnsymmetricElementalMatrixToSymmetric(
+  void addUnsymmetricElementalMatrixToSymmetric(
       SparseMatrixAIJ & matrix, const Matrix<Real> & element_mat,
       const Vector<UInt> & equation_numbers, UInt max_size);
 
   /// Add a matrices to a unsymmetric sparse matrix
-  inline void addElementalMatrixToUnsymmetric(
-      SparseMatrixAIJ & matrix, const Matrix<Real> & element_mat,
-      const Vector<UInt> & equation_numbers, UInt max_size);
+  void addElementalMatrixToUnsymmetric(SparseMatrixAIJ & matrix,
+                                       const Matrix<Real> & element_mat,
+                                       const Vector<UInt> & equation_numbers,
+                                       UInt max_size);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -122,5 +123,7 @@ private:
 };
 
 __END_AKANTU__
+
+#include "dof_manager_default_inline_impl.cc"
 
 #endif /* __AKANTU_DOF_MANAGER_DEFAULT_HH__ */

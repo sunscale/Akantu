@@ -26,56 +26,56 @@
  */
 
 /* -------------------------------------------------------------------------- */
-inline UInt Solver::getNbDataForDOFs(const Array<UInt> & dofs,
-				     SynchronizationTag tag) const {
-  AKANTU_DEBUG_IN();
+// inline UInt Solver::getNbDataForDOFs(const Array<UInt> & dofs,
+// 				     SynchronizationTag tag) const {
+//   AKANTU_DEBUG_IN();
 
-  UInt size = 0;
+//   UInt size = 0;
 
-  switch(tag) {
-  case _gst_solver_solution: {
-    size += dofs.getSize() * sizeof(Real);
-    break;
-  }
-  default: {  }
-  }
+//   switch(tag) {
+//   case _gst_solver_solution: {
+//     size += dofs.getSize() * sizeof(Real);
+//     break;
+//   }
+//   default: {  }
+//   }
 
-  AKANTU_DEBUG_OUT();
-  return size;
-}
+//   AKANTU_DEBUG_OUT();
+//   return size;
+// }
 
-/* -------------------------------------------------------------------------- */
-inline void Solver::packDOFData(CommunicationBuffer & buffer,
-				const Array<UInt> & dofs,
-				SynchronizationTag tag) const {
-  AKANTU_DEBUG_IN();
+// /* -------------------------------------------------------------------------- */
+// inline void Solver::packDOFData(CommunicationBuffer & buffer,
+// 				const Array<UInt> & dofs,
+// 				SynchronizationTag tag) const {
+//   AKANTU_DEBUG_IN();
 
-  switch(tag) {
-  case _gst_solver_solution: {
-    packDOFDataHelper(*solution, buffer, dofs);
-    break;
-  }
-  default: {
-  }
-  }
+//   switch(tag) {
+//   case _gst_solver_solution: {
+//     packDOFDataHelper(*solution, buffer, dofs);
+//     break;
+//   }
+//   default: {
+//   }
+//   }
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
-/* -------------------------------------------------------------------------- */
-inline void Solver::unpackDOFData(CommunicationBuffer & buffer,
-				  const Array<UInt> & dofs,
-				  SynchronizationTag tag) {
-  AKANTU_DEBUG_IN();
+// /* -------------------------------------------------------------------------- */
+// inline void Solver::unpackDOFData(CommunicationBuffer & buffer,
+// 				  const Array<UInt> & dofs,
+// 				  SynchronizationTag tag) {
+//   AKANTU_DEBUG_IN();
 
-  switch(tag) {
-  case _gst_solver_solution: {
-    unpackDOFDataHelper(*solution, buffer, dofs);
-    break;
-  }
-  default: {
-  }
-  }
+//   switch(tag) {
+//   case _gst_solver_solution: {
+//     unpackDOFDataHelper(*solution, buffer, dofs);
+//     break;
+//   }
+//   default: {
+//   }
+//   }
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }

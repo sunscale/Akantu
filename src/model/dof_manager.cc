@@ -36,9 +36,9 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-DOFManager::DOFManager(const Mesh & mesh, const ID & id,
-                       const MemoryID & memory_id)
-    : Memory(id, memory_id), mesh(mesh) {}
+DOFManager::DOFManager(const Mesh & mesh, SolverCallback & solver_callback,
+                       const ID & id, const MemoryID & memory_id)
+  : Memory(id, memory_id), mesh(mesh), solver_callback(solver_callback) {}
 
 /* -------------------------------------------------------------------------- */
 void DOFManager::assembleElementalArrayLocalArray(
@@ -56,7 +56,9 @@ void DOFManager::assembleElementalArrayLocalArray(
   if (filter_elements != empty_filter) {
     nb_element = filter_elements.getSize();
     filter_it = filter_elements.storage();
-  } else { nb_element = mesh.getNbElement(type, ghost_type); }
+  } else {
+    nb_element = mesh.getNbElement(type, ghost_type);
+  }
 
   AKANTU_DEBUG_ASSERT(elementary_vect.getSize() == nb_element,
                       "The vector elementary_vect("
@@ -72,7 +74,8 @@ void DOFManager::assembleElementalArrayLocalArray(
   Array<Real>::const_vector_iterator elem_it = elementary_vect.begin(size_mat);
 
   for (UInt el = 0; el < nb_element; ++el, ++elem_it) {
-    if (filter_it != NULL) conn_it = conn_begin + *filter_it;
+    if (filter_it != NULL)
+      conn_it = conn_begin + *filter_it;
 
     for (UInt n = 0, ld = 0; n < nb_nodes_per_element; ++n) {
       UInt offset_node = (*conn_it)(n) * nb_degree_of_freedom;
@@ -111,6 +114,73 @@ void DOFManager::assembleElementalArrayResidual(
   this->assembleToResidual(dof_id, array_localy_assembeled, scale_factor);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array) {
+  DOFStorage::iterator it = this->dofs.find(dof_id);
+
+  if (it != this->dofs.end()) {
+    AKANTU_EXCEPTION("This dof array has already been registered");
+  }
+
+  DOFData * dofs_storage = new DOFData();
+
+  dofs_storage->dof = &dofs_array;
+  dofs_storage->blocked_dofs = NULL;
+
+  dofs_storage->local_equation_number.resize(dofs_array.getSize() *
+                                             dofs_array.getNbComponent());
+  dofs_storage->global_equation_number.resize(dofs_array.getSize() *
+                                              dofs_array.getNbComponent());
+
+  this->dofs[dof_id] = dofs_storage;
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::registerDOFDerivative(const ID & dof_id, UInt order,
+                                       Array<Real> & dofs_derivative) {
+  DOFStorage::iterator it = this->dofs.find(dof_id);
+
+  if (it == this->dofs.end()) {
+    AKANTU_EXCEPTION("The dof array corresponding to this derivatives has not "
+                     << "been registered yet");
+  }
+
+  DOFData & dof = *it->second;
+  std::vector<Array<Real> *> & derivatives = dof.dof_derivatives;
+
+  if (derivatives.size() < order) {
+    derivatives.resize(order, NULL);
+  } else {
+    if (derivatives[order - 1] != NULL) {
+      AKANTU_EXCEPTION("The dof derivatives of order "
+                       << order << " already been registered for this dof ("
+                       << dof_id << ")");
+    }
+  }
+
+  derivatives[order - 1] = &dofs_derivative;
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::registerBlockedDOFs(const ID & dof_id,
+                                     Array<Real> & blocked_dofs) {
+  DOFStorage::iterator it = this->dofs.find(dof_id);
+
+  if (it == this->dofs.end()) {
+    AKANTU_EXCEPTION("The dof array corresponding to this derivatives has not "
+                     << "been registered yet");
+  }
+
+  DOFData & dof = *it->second;
+
+  if (dof.blocked_dofs != NULL) {
+    AKANTU_EXCEPTION("The blocked dofs array for "
+                     << dof_id << " has already been registered");
+  }
+
+  dof.blocked_dofs = &blocked_dofs;
 }
 
 /* -------------------------------------------------------------------------- */

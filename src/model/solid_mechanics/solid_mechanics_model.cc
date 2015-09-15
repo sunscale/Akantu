@@ -91,8 +91,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh,
   material_selector(new DefaultMaterialSelector(material_index)),
   is_default_material_selector(true),
   integrator(NULL),
-  increment_flag(false), solver(NULL),
-  synch_parallel(NULL),
+  increment_flag(false), synch_parallel(NULL),
   are_materials_instantiated(false) {
 
   AKANTU_DEBUG_IN();
@@ -142,15 +141,6 @@ SolidMechanicsModel::~SolidMechanicsModel() {
   materials.clear();
 
   delete integrator;
-
-  delete solver;
-  delete mass_matrix;
-  delete velocity_damping_matrix;
-
-  if(stiffness_matrix && stiffness_matrix != jacobian_matrix)
-    delete stiffness_matrix;
-
-  delete jacobian_matrix;
 
   delete synch_parallel;
 
@@ -539,171 +529,6 @@ void SolidMechanicsModel::computeStresses() {
   }
 }
 
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::updateResidualInternal() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_INFO("Update the residual");
-  // f = f_ext - f_int - Ma - Cv = r - Ma - Cv;
-
-  if(method != _static) {
-    // f -= Ma
-    if(mass_matrix) {
-      // if full mass_matrix
-      Array<Real> * Ma = new Array<Real>(*acceleration, true, "Ma");
-      *Ma *= *mass_matrix;
-      /// \todo check unit conversion for implicit dynamics
-      //      *Ma /= f_m2a
-      *residual -= *Ma;
-      delete Ma;
-    } else if (mass) {
-
-      // else lumped mass
-      UInt nb_nodes = acceleration->getSize();
-      UInt nb_degree_of_freedom = acceleration->getNbComponent();
-
-      Real * mass_val     = mass->storage();
-      Real * accel_val    = acceleration->storage();
-      Real * res_val      = residual->storage();
-      bool * blocked_dofs_val = blocked_dofs->storage();
-
-      for (UInt n = 0; n < nb_nodes * nb_degree_of_freedom; ++n) {
-	if(!(*blocked_dofs_val)) {
-	  *res_val -= *accel_val * *mass_val /f_m2a;
-	}
-	blocked_dofs_val++;
-	res_val++;
-	mass_val++;
-	accel_val++;
-      }
-    } else {
-      AKANTU_DEBUG_ERROR("No function called to assemble the mass matrix.");
-    }
-
-    // f -= Cv
-    if(velocity_damping_matrix) {
-      Array<Real> * Cv = new Array<Real>(*velocity);
-      *Cv *= *velocity_damping_matrix;
-      *residual -= *Cv;
-      delete Cv;
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::updateAcceleration() {
-  AKANTU_DEBUG_IN();
-
-  updateResidualInternal();
-
-  if(method == _explicit_lumped_mass) {
-    /* residual = residual_{n+1} - M * acceleration_n therefore
-       solution = increment acceleration not acceleration */
-    solveLumped(*increment_acceleration,
-		*mass,
-		*residual,
-		*blocked_dofs,
-		f_m2a);
-  } else if (method == _explicit_consistent_mass) {
-    solve<NewmarkBeta::_acceleration_corrector>(*increment_acceleration);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::solveLumped(Array<Real> & x,
-				      const Array<Real> & A,
-				      const Array<Real> & b,
-				      const Array<bool> & blocked_dofs,
-				      Real alpha) {
-
-  Real * A_val = A.storage();
-  Real * b_val = b.storage();
-  Real * x_val = x.storage();
-  bool * blocked_dofs_val = blocked_dofs.storage();
-
-  UInt nb_degrees_of_freedom = x.getSize() * x.getNbComponent();
-
-  for (UInt n = 0; n < nb_degrees_of_freedom; ++n) {
-    if(!(*blocked_dofs_val)) {
-      *x_val = alpha * (*b_val / *A_val);
-    }
-    x_val++;
-    A_val++;
-    b_val++;
-    blocked_dofs_val++;
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::explicitPred() {
-  AKANTU_DEBUG_IN();
-
-  if(increment_flag) {
-    if(previous_displacement) increment->copy(*previous_displacement);
-    else increment->copy(*displacement);
-  }
-
-  AKANTU_DEBUG_ASSERT(integrator,"itegrator should have been allocated: "
-		      << "have called initExplicit ? "
-		      << "or initImplicit ?");
-
-  integrator->integrationSchemePred(time_step,
-				    *displacement,
-				    *velocity,
-				    *acceleration,
-				    *blocked_dofs);
-
-  if(increment_flag) {
-    Real * inc_val = increment->storage();
-    Real * dis_val = displacement->storage();
-    UInt nb_degree_of_freedom = displacement->getSize() * displacement->getNbComponent();
-
-    for (UInt n = 0; n < nb_degree_of_freedom; ++n) {
-      *inc_val = *dis_val - *inc_val;
-      inc_val++;
-      dis_val++;
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::explicitCorr() {
-  AKANTU_DEBUG_IN();
-
-  integrator->integrationSchemeCorrAccel(time_step,
-					 *displacement,
-					 *velocity,
-					 *acceleration,
-					 *blocked_dofs,
-					 *increment_acceleration);
-
-  if(previous_displacement) previous_displacement->copy(*displacement);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::solveStep() {
-  AKANTU_DEBUG_IN();
-
-  EventManager::sendEvent(SolidMechanicsModelEvent::BeforeSolveStepEvent(method));
-
-  this->explicitPred();
-  this->updateResidual();
-  this->updateAcceleration();
-  this->explicitCorr();
-
-  EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
-
-  AKANTU_DEBUG_OUT();
-}
-
 
 /* -------------------------------------------------------------------------- */
 /* Implicit scheme                                                            */
@@ -755,14 +580,14 @@ void SolidMechanicsModel::solveStep() {
  *
  * @param dynamic
  */
-void SolidMechanicsModel::initImplicit(bool dynamic, SolverOptions & solver_options) {
+void SolidMechanicsModel::initImplicit(bool dynamic) {
   AKANTU_DEBUG_IN();
 
   method = dynamic ? _implicit_dynamic : _static;
 
   if (!increment) setIncrementFlagOn();
 
-  initSolver(solver_options);
+  initSolver();
 
   if(method == _implicit_dynamic) {
     if(integrator) delete integrator;
@@ -777,8 +602,6 @@ void SolidMechanicsModel::assembleStiffnessMatrix() {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_INFO("Assemble the new stiffness matrix.");
-
-  stiffness_matrix->clear();
 
   // call compute stiffness matrix on each local elements
   std::vector<Material *>::iterator mat_it;

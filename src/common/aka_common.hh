@@ -138,6 +138,20 @@ enum ContactImplementationMethod {
   _generalized_newton
 };
 
+
+/// Type of non linear resolution available in akantu
+enum NonLinearSolverType {
+  _nls_linear,                  ///< No non linear convergence loop
+  _nls_newton_raphson,          ///< Regular Newton-Raphson
+  _nls_newton_raphson_modified, ///< Newton-Raphson with initial tangent
+};
+
+/// Type of time stepping solver
+enum TimeStepSolverType {
+  _tsst_forward_euler,
+  _tsst_central_difference,
+};
+
 /// enum SolveConvergenceMethod different resolution algorithms
 enum SolveConvergenceMethod {
   _scm_newton_raphson_tangent,             ///< Newton-Raphson with tangent matrix
