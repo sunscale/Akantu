@@ -737,10 +737,7 @@ function(_package_load_external_package pkg_name activate)
 
     string(TOLOWER "${pkg_name}" _l_pkg_name)
     set(_output_file "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${_l_pkg_name}.cmake")
-
-    message("Check ${_output_file}")
     if(EXISTS "${_output_file}")
-      message("Loading on enabled file")
       include(${_output_file})
     endif()
   endif()
