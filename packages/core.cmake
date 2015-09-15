@@ -168,7 +168,7 @@ package_declare_sources(core
   mesh_utils/mesh_partition/mesh_partition_mesh_data.cc
   mesh_utils/mesh_partition/mesh_partition_mesh_data.hh
   mesh_utils/mesh_partition/mesh_partition_scotch.hh
-  mesh_utils/mesh_pbc.cc
+  mesh_utils/mesh_utils_pbc.cc
   mesh_utils/mesh_utils.cc
   mesh_utils/mesh_utils.hh
   mesh_utils/mesh_utils_inline_impl.cc
