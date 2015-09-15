@@ -451,8 +451,8 @@ function(package_get_all_include_directories inc_dirs)
   foreach(_pkg_name ${_activated_list})
     foreach(_type SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
       foreach(_file ${${_pkg_name}_${_type}})
-	get_filename_component(_path "${_file}" PATH)
-	list(APPEND _tmp "${_path}")
+        get_filename_component(_path "${_file}" PATH)
+        list(APPEND _tmp "${_path}")
       endforeach()
     endforeach()
   endforeach()
@@ -530,11 +530,6 @@ function(package_get_all_documentation_files doc_files)
   set(${doc_files} ${_tmp_DOC_FILES} PARENT_SCOPE)
 endfunction()
 
-
-# ==============================================================================
-# User Functions
-# ==============================================================================
-
 # ------------------------------------------------------------------------------
 # List packages
 # ------------------------------------------------------------------------------
@@ -551,6 +546,19 @@ endfunction()
 function(package_get_all_packages packages_list)
   package_get_project_variable(ALL_PACKAGES_LIST _packages_list)
   set(${packages_list} ${_packages_list} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Callbacks
+# ------------------------------------------------------------------------------
+function(package_on_enabled_script pkg script)
+  package_get_name(${pkg} _pkg_name)
+
+  string(TOLOWER "${_pkg_name}" _l_pkg_name)
+  set(_output_file "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${_l_pkg_name}.cmake")
+
+  file(WRITE "${_output_file}"
+    "${script}")
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -645,28 +653,28 @@ function(package_list_packages PACKAGE_FOLDER)
     foreach(_pkg ${_extra_package_list})
       if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
 
-	package_get_name(${_pkg} _pkg_name)
+        package_get_name(${_pkg} _pkg_name)
 
-	_package_set_filename(${_pkg_name}
-	  "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
+        _package_set_filename(${_pkg_name}
+          "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
 
-	_package_set_sources_folder(${_pkg_name}
-	  "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
+        _package_set_sources_folder(${_pkg_name}
+          "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
 
-	if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
-	  _package_set_tests_folder(${_pkg_name}
-	    "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
-	endif()
+        if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
+          _package_set_tests_folder(${_pkg_name}
+            "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
+        endif()
 
-	if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual")
-	  _package_set_manual_folder(${_pkg_name}
-	    "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual")
-	endif()
+        if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual")
+          _package_set_manual_folder(${_pkg_name}
+            "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual")
+        endif()
 
-	list(APPEND _extra_pkg_src_folders "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
+        list(APPEND _extra_pkg_src_folders "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
 
-	list(APPEND _packages_list_all ${_pkg_name})
-	include("${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
+        list(APPEND _packages_list_all ${_pkg_name})
+        include("${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
       endif()
     endforeach()
   endif()
