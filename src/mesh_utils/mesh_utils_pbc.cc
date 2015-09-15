@@ -1,5 +1,5 @@
 /**
- * @file   mesh_pbc.cc
+ * @file   mesh_utils_pbc.cc
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
