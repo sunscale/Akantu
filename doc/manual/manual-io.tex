@@ -86,6 +86,52 @@ and damage:
   model.dump("cohesive elements");
 \end{cpp}
 
+\subsection{Fragmentation data}
+
+Whenever the \code{SolidMechanicsModelCohesive} is used, it is
+possible to dump additional data about the fragments that get formed
+in the simulation both in serial and parallel. This task is carried
+out by the \code{FragmentManager} class, that takes care of computing
+the following quantities for each fragment:
+\begin{itemize}
+\item index;
+\item mass;
+\item moments of inertia;
+\item velocity;
+\item number of elements.
+\end{itemize}
+These computations can be realized at once by calling the function
+\code{computeAllData}, or individually by calling the other public
+functions of the class. The data can be dumped to be visualized in
+Paraview, or can be accessed within the simulation. An example of
+usage is:
+\begin{cpp}
+  FragmentManager fragment_manager(model);
+  fragment_manager.buildAllData();
+  ...
+
+  model.addDumpField("fragments");       // this field contains the indices
+  model.addDumpField("fragments mass");
+  model.addDumpField("moments of inertia");
+  model.addDumpField("elements per fragment");
+  ...
+
+  for (UInt step = 1; step <= total_steps; ++step) {
+    ...
+
+    fragment_manager.buildAllData();
+    model.dump();
+  }
+  ...
+
+  const Array<Real> & fragment_velocities = fragment_manager.getVelocity();
+  ...
+\end{cpp}
+At the end of this example the velocities of the fragments are
+accessed with a reference to a \code{const Array<Real>}. The size of
+this array is the number of fragments, and its number of components is
+the spatial dimension in this case.
+
 
 \section{Advanced dumping}
 
