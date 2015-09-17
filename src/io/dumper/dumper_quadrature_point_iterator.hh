@@ -1,12 +1,12 @@
 /**
- * @file   dumper_quadrature_points_field.hh
+ * @file   dumper_quadrature_point_iterator.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Sep 02 2014
  * @date last modification: Tue Sep 02 2014
  *
- * @brief  Description of quadrature points fields
+ * @brief  Description of quadrature point iterator
  *
  * @section LICENSE
  *
@@ -28,8 +28,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_IOHELPER_TMPL_QUADRATURE_POINTS_FIELD_HH__
-#define __AKANTU_DUMPER_IOHELPER_TMPL_QUADRATURE_POINTS_FIELD_HH__
+#ifndef __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__
+#define __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__
 
 /* -------------------------------------------------------------------------- */
 #include "dumper_elemental_field.hh"
@@ -74,4 +74,4 @@ public:
 __END_AKANTU_DUMPER__
 __END_AKANTU__
 
-#endif /* __AKANTU_DUMPER_IOHELPER_TMPL_QUADRATURE_POINTS_FIELD_HH__ */
+#endif /* __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__ */

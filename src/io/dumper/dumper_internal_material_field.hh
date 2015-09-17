@@ -29,10 +29,11 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_MATERIAL_INTERNAL_FIELD_HH__
-#define __AKANTU_DUMPER_MATERIAL_INTERNAL_FIELD_HH__
+
+#ifndef __AKANTU_DUMPER_INTERNAL_MATERIAL_FIELD_HH__
+#define __AKANTU_DUMPER_INTERNAL_MATERIAL_FIELD_HH__
 /* -------------------------------------------------------------------------- */
-#include "dumper_quadrature_points_field.hh"
+#include "dumper_quadrature_point_iterator.hh"
 #ifdef AKANTU_IGFEM
 #  include "dumper_igfem_material_internal_field.hh"
 #endif
@@ -74,4 +75,4 @@ public:
 __END_AKANTU_DUMPER__
 __END_AKANTU__
 
-#endif /* __AKANTU_DUMPER_MATERIAL_INTERNAL_FIELD_HH__ */
+#endif /* __AKANTU_DUMPER_INTERNAL_MATERIAL_FIELD_HH__ */
