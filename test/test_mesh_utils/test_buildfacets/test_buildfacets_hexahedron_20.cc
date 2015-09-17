@@ -44,10 +44,10 @@ int main(int argc, char *argv[]) {
   initialize(argc, argv);
 
   const UInt spatial_dimension = 3;
-  const ElementType type = _hexahedron_8;
+  const ElementType type = _hexahedron_20;
 
   Mesh mesh(spatial_dimension);
-  mesh.read("hexahedron.msh");
+  mesh.read("hexahedron_20.msh");
   Mesh mesh_facets(mesh.initMeshFacets("mesh_facets"));
 
   MeshUtils::buildAllFacets(mesh, mesh_facets);
@@ -68,26 +68,30 @@ int main(int argc, char *argv[]) {
   const Array< std::vector<Element> > & el_to_subel2 = mesh_facets.getElementToSubelement(type_subfacet);
   const Array< std::vector<Element> > & el_to_subel1 = mesh_facets.getElementToSubelement(type_subsubfacet);
 
+
+  Array<Real> & position = mesh.getNodes();
+  const Array<UInt> & connect = mesh.getConnectivity(_hexahedron_20);
+
   /// build vectors for comparison
   Array<Element> hexahedron(2);
   hexahedron(0).type = type;
   hexahedron(0).element = 0;
 
   hexahedron(1).type = type;
-  hexahedron(1).element = 3;
+  hexahedron(1).element = 1;
 
   Array<Element> quadrangle(4);
   quadrangle(0).type = type_facet;
-  quadrangle(0).element = 1;
+  quadrangle(0).element = 0;
 
   quadrangle(1).type = type_facet;
-  quadrangle(1).element = 2;
+  quadrangle(1).element = 1;
 
   quadrangle(2).type = type_facet;
   quadrangle(2).element = 7;
 
   quadrangle(3).type = type_facet;
-  quadrangle(3).element = 11;
+  quadrangle(3).element = 14;
 
   Array<Element> segment(5);
   segment(0).type = type_subfacet;
@@ -103,7 +107,7 @@ int main(int argc, char *argv[]) {
   segment(3).element = 15;
 
   segment(4).type = type_subfacet;
-  segment(4).element = 22;
+  segment(4).element = 26;
 
 
   /// comparison
@@ -111,7 +115,7 @@ int main(int argc, char *argv[]) {
   for (UInt i = 0; i < hexahedron.getSize(); ++i) {
     if (hexahedron(i).type != el_to_subel3(1)[i].type ||
   	hexahedron(i).element != el_to_subel3(1)[i].element) {
-      std::cout << hexahedron(i).element << " " << el_to_subel3(4)[i].element << std::endl;
+      std::cout << hexahedron(i).element << " " << el_to_subel3(1)[i].element << std::endl;
       std::cout << "The two hexahedrons connected to quadrangle 1 are wrong"
   		<< std::endl;
       return EXIT_FAILURE;
@@ -119,9 +123,9 @@ int main(int argc, char *argv[]) {
   }
 
   for (UInt i = 0; i < quadrangle.getSize(); ++i) {
-    if (quadrangle(i).type != el_to_subel2(4)[i].type ||
-  	quadrangle(i).element != el_to_subel2(4)[i].element) {
-      std::cout << "The quadrangles connected to segment 4 are wrong"
+    if (quadrangle(i).type != el_to_subel2(1)[i].type ||
+  	quadrangle(i).element != el_to_subel2(1)[i].element) {
+      std::cout << "The quadrangles connected to segment 1 are wrong"
   		<< std::endl;
       return EXIT_FAILURE;
     }
@@ -145,13 +149,39 @@ int main(int argc, char *argv[]) {
   const Array<Element> & subel_to_el2 = mesh_facets.getSubelementToElement(type_facet);
   const Array<Element> & subel_to_el1 = mesh_facets.getSubelementToElement(type_subfacet);
 
+
+  for (UInt i = 0; i < 4; ++i) {
+    std::cout << "hexa " << i << " connected to quadrangles ";
+    for (UInt j = 0; j < 6; ++j){
+      std::cout << subel_to_el3(i, j).element << " ";
+    }
+    std::cout << " " << std::endl;
+  }
+
+  for (UInt i = 0; i < 20; ++i) {
+    std::cout << "quadrangle " << i << " connected to segments ";
+    for (UInt j = 0; j < 4; ++j){
+      std::cout << subel_to_el2(i, j).element << " ";
+    }
+    std::cout << " " << std::endl;
+  }
+
+  for (UInt i = 0; i < 33; ++i) {
+    std::cout << "segment " << i << " connected to points ";
+    for (UInt j = 0; j < 2; ++j){
+      std::cout << subel_to_el1(i, j).element << " ";
+    }
+    std::cout << " " << std::endl;
+  }
+
+
   /// build vectors for comparison
   Array<Element> quadrangle2(mesh.getNbFacetsPerElement(type));
   quadrangle2(0).type = type_facet;
-  quadrangle2(0).element = 1;
+  quadrangle2(0).element = 0;
 
   quadrangle2(1).type = type_facet;
-  quadrangle2(1).element = 11;
+  quadrangle2(1).element = 14;
 
   quadrangle2(2).type = type_facet;
   quadrangle2(2).element = 16;
@@ -167,20 +197,20 @@ int main(int argc, char *argv[]) {
 
   Array<Element> segment2(4);
   segment2(0).type = type_subfacet;
-  segment2(0).element = 3;
+  segment2(0).element = 0;
 
   segment2(1).type = type_subfacet;
-  segment2(1).element = 6;
+  segment2(1).element = 4;
 
   segment2(2).type = type_subfacet;
-  segment2(2).element = 9;
+  segment2(2).element = 7;
 
   segment2(3).type = type_subfacet;
-  segment2(3).element = 11;
+  segment2(3).element = 10;
 
   Array<Element> point(2);
   point(0).type = mesh.getFacetType(type_subfacet);
-  point(0).element = 5;
+  point(0).element = 3;
 
   point(1).type = mesh.getFacetType(type_subfacet);
   point(1).element = 7;

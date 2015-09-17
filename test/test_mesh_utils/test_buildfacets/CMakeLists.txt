@@ -2,8 +2,8 @@
 # @file   CMakeLists.txt
 #
 # @author Marco Vocialta <marco.vocialta@epfl.ch>
-#
-# @date   Tue May 08 13:01:18 2012
+# @author Mauro Corrado <mauro.corrado@epfl.ch>
+# @date   Thu Sep 17 13:01:18 2015
 #
 # @brief  configuration for build facets test
 #
@@ -34,9 +34,14 @@ register_test(test_buildfacets_tetrahedron
   FILES_TO_COPY tetrahedron.msh
   PACKAGE cohesive_element
   )
-register_test(test_buildfacets_hexahedron
-  SOURCES test_buildfacets_hexahedron.cc
-  FILES_TO_COPY hexahedron.msh
+register_test(test_buildfacets_hexahedron_8
+  SOURCES test_buildfacets_hexahedron_8.cc
+  FILES_TO_COPY hexahedron_8.msh
+  PACKAGE cohesive_element
+  )
+register_test(test_buildfacets_hexahedron_20
+  SOURCES test_buildfacets_hexahedron_20.cc
+  FILES_TO_COPY hexahedron_20.msh
   PACKAGE cohesive_element
   )
 
