@@ -69,51 +69,6 @@ public:
   }
 };
 
- /* -------------------------------------------------------------------------- */
- /* Fields type description                                                    */
- /* -------------------------------------------------------------------------- */
- template<class types, template <class> class iterator_type>
- class GenericQuadraturePointsField :
-   public GenericElementalField<types,iterator_type> {
-
- public:
-
-   /* ------------------------------------------------------------------------ */
-   /* Typedefs                                                                 */
-   /* ------------------------------------------------------------------------ */
-
-
-   typedef iterator_type<types> iterator;
-   typedef typename types::field_type field_type;
-   typedef typename iterator::it_type T;
-   typedef GenericElementalField<types,iterator_type> parent;
-
-   /* ------------------------------------------------------------------------ */
-   /* Constructors/Destructors                                                 */
-   /* ------------------------------------------------------------------------ */
-
-   GenericQuadraturePointsField(const field_type & field,
-			       UInt spatial_dimension = _all_dimensions,
-			       GhostType ghost_type = _not_ghost,
-			       ElementKind element_kind = _ek_not_defined) :
-     parent(field, spatial_dimension, ghost_type, element_kind) { }
-
-   /* ------------------------------------------------------------------------ */
-   /* Methods                                                                  */
-   /* ------------------------------------------------------------------------ */
-
-   virtual iterator begin() {
-     iterator it = parent::begin();
-     return it;
-   }
-
-   virtual iterator end  () {
-     iterator it = parent::end();
-     return it;
-   }
-
- };
-
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU_DUMPER__

@@ -33,7 +33,6 @@
 #define __AKANTU_DUMPER_GENERIC_ELEMENTAL_FIELD_HH__
 /* -------------------------------------------------------------------------- */
 #include "dumper_field.hh"
-#include "dumper_iterator_helper.hh"
 #include "element_type_map_filter.hh"
 #include "dumper_element_iterator.hh"
 #include "dumper_homogenizing_field.hh"

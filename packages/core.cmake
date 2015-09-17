@@ -115,7 +115,6 @@ package_declare_sources(core
   io/dumper/dumper_field.hh
   io/dumper/dumper_material_padders.hh
   io/dumper/dumper_filtered_connectivity.hh
-  io/dumper/dumper_element_type.hh
   io/dumper/dumper_element_partition.hh
 
   io/mesh_io.cc

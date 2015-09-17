@@ -1,5 +1,5 @@
 /**
- * @file   dumper_iterator_helper.hh
+ * @file   dumper_internal_material_field.hh
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
@@ -7,7 +7,7 @@
  * @date creation: Tue Sep 02 2014
  * @date last modification: Tue Sep 02 2014
  *
- * @brief  Helper to write field iterators
+ * @brief  description of material internal field
  *
  * @section LICENSE
  *
@@ -29,43 +29,22 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_ITERATOR_HELPER_HH__
-#define __AKANTU_DUMPER_ITERATOR_HELPER_HH__
+#ifndef __AKANTU_DUMPER_MATERIAL_INTERNAL_FIELD_HH__
+#define __AKANTU_DUMPER_MATERIAL_INTERNAL_FIELD_HH__
 /* -------------------------------------------------------------------------- */
-
+#include "dumper_quadrature_points_field.hh"
+#ifdef AKANTU_IGFEM
+#  include "dumper_igfem_material_internal_field.hh"
+#endif
+/* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
-
-template<class T, class R>
-class iterator_helper {
-
-  /* ------------------------------------------------------------------------ */
-  /* Typedefs                                                                 */
-  /* ------------------------------------------------------------------------ */
-public:
-
-
-  typedef typename Array<T>::template const_iterator< R > internal_iterator;
-
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
-
-public:
-
-  static internal_iterator begin(const Array<T> & vect, UInt m, UInt n, UInt size) {
-    return vect.begin_reinterpret(n*m, size);
-  }
-
-  static internal_iterator end(const Array<T> & vect, UInt m, UInt n, UInt size) {
-    return vect.end_reinterpret(n*m, size);
-  }
-};
-
 /* -------------------------------------------------------------------------- */
 
-template<class T>
-class iterator_helper<T, Matrix<T> > {
+template<typename T, bool filtered = false>
+class InternalMaterialField
+  : public GenericElementalField<SingleType<T,Vector,filtered>,
+                                 quadrature_point_iterator> {
 
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
@@ -73,29 +52,26 @@ class iterator_helper<T, Matrix<T> > {
 
 public:
 
-  typedef typename Array<T>::template const_iterator< Matrix<T> > internal_iterator;
-
-public:
+  typedef SingleType<T,Vector,filtered> types;
+  typedef GenericElementalField<types,quadrature_point_iterator> parent;
+  typedef typename types::field_type field_type;
 
   /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
+  /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 
 
-  static internal_iterator begin(const Array<T> & vect, UInt m, UInt n, UInt size) {
-    return vect.begin_reinterpret(m, n, size);
-  }
+  InternalMaterialField(const field_type & field,
+                        UInt spatial_dimension = _all_dimensions,
+                        GhostType ghost_type = _not_ghost,
+                        ElementKind element_kind = _ek_not_defined) :
+    parent(field, spatial_dimension, ghost_type, element_kind){}
 
-  static internal_iterator end(const Array<T> & vect, UInt m, UInt n, UInt size) {
-    return vect.end_reinterpret(m, n, size);
-  }
+
 };
 
-
-/* -------------------------------------------------------------------------- */
 
 __END_AKANTU_DUMPER__
 __END_AKANTU__
 
-
-#endif /* __AKANTU_DUMPER_ITERATOR_HELPER_HH__ */
+#endif /* __AKANTU_DUMPER_MATERIAL_INTERNAL_FIELD_HH__ */
