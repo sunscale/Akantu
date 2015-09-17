@@ -186,6 +186,7 @@ package_declare_sources(core
   model/non_linear_solver.hh
   model/non_linear_solver_default.cc
   model/non_linear_solver_default.hh
+  model/solver_callback.hh
   model/time_step_solver.hh
   model/time_step_solvers/time_step_solver_default.cc
   model/time_step_solvers/time_step_solver_default.hh

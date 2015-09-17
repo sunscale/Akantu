@@ -113,12 +113,36 @@ public:
   /// Get the reference of an existing matrix
   SparseMatrixAIJ & getMatrix(const ID & matrix_id);
 
+  /// Get the solution array
+  AKANTU_GET_MACRO_NOT_CONST(Solution, solution, Array<Real> &);
+  /// Get the residual array
+  AKANTU_GET_MACRO_NOT_CONST(Residual, residual, Array<Real> &);
+  /// Get the blocked dofs array
+  AKANTU_GET_MACRO(BlockedDOFs, blocked_dofs, const Array<bool> &);
+
+  bool isLocalOrMasterDOF(UInt dof_num);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
   typedef std::map<ID, SparseMatrixAIJ *> AIJMatrixMap;
+
+  /// rhs to the system of equation corresponding to the residual linked to the
+  /// different dofs
   Array<Real> residual;
+
+  /// solution of the system of equation corresponding to the different dofs
+  Array<Real> solution;
+
+  /// blocked degree of freedom in the system equation corresponding to the
+  /// different dofs
+  Array<bool> blocked_dofs;
+
+  /// define the dofs type, local, shared, ghost
+  Array<Int> dofs_type;
+
+  /// Map of the different matrices stored in the dof manager
   AIJMatrixMap aij_matrices;
 };
 

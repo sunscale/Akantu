@@ -39,6 +39,16 @@
 #include "data_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
+enum SolverParallelMethod {
+  _not_parallel,
+  _fully_distributed,
+  _master_slave_distributed
+};
+
+namespace akantu {
+  class DOFManager;
+}
+
 __BEGIN_AKANTU__
 
 class SparseSolver : protected Memory,
@@ -57,9 +67,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// initialize the solver
-  virtual void initialize() = 0;
-
-  virtual void setOperators(){};
+  virtual void initialize(ParserSection & section) = 0;
 
   virtual void analysis(){};
 

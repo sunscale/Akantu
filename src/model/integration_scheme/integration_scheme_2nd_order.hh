@@ -47,49 +47,48 @@ class IntegrationScheme2ndOrder {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   enum IntegrationSchemeCorrectorType {
     _acceleration_corrector,
     _velocity_corrector,
     _displacement_corrector
   };
 
-  virtual ~IntegrationScheme2ndOrder() {};
+  virtual ~IntegrationScheme2ndOrder(){};
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  virtual void integrationSchemePred(Real delta_t, Array<Real> & u,
+                                     Array<Real> & u_dot,
+                                     Array<Real> & u_dot_dot,
+                                     Array<bool> & blocked_dofs) const = 0;
 
-  virtual void integrationSchemePred(Real delta_t,
-				     Array<Real> & u,
-				     Array<Real> & u_dot,
-				     Array<Real> & u_dot_dot,
-				     Array<bool> & blocked_dofs) const = 0;
+  virtual void integrationSchemeCorrDispl(Real delta_t, Array<Real> & u,
+                                          Array<Real> & u_dot,
+                                          Array<Real> & u_dot_dot,
+                                          Array<bool> & blocked_dofs,
+                                          Array<Real> & delta_u) const = 0;
 
-  virtual void integrationSchemeCorrDispl(Real delta_t,
-					  Array<Real> & u,
-					  Array<Real> & u_dot,
-					  Array<Real> & u_dot_dot,
-					  Array<bool> & blocked_dofs,
-					  Array<Real> & delta) const = 0;
+  virtual void integrationSchemeCorrVeloc(Real delta_t, Array<Real> & u,
+                                         Array<Real> & u_dot,
+                                         Array<Real> & u_dot_dot,
+                                         Array<bool> & blocked_dofs,
+                                         Array<Real> & delta_u_dot) const = 0;
 
-  virtual void integrationSchemeCorrAccel(Real delta_t,
-					  Array<Real> & u,
-					  Array<Real> & u_dot,
-					  Array<Real> & u_dot_dot,
-					  Array<bool> & blocked_dofs,
-					  Array<Real> & delta) const = 0;
+  virtual void integrationSchemeCorrAccel(Real delta_t, Array<Real> & u,
+                                          Array<Real> & u_dot,
+                                          Array<Real> & u_dot_dot,
+                                          Array<bool> & blocked_dofs,
+                                          Array<Real> & delta_u_dot_dot) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
 };
 
 __END_AKANTU__

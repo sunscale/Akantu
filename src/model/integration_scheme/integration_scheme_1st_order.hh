@@ -41,48 +41,39 @@ class IntegrationScheme1stOrder {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   enum IntegrationSchemeCorrectorType {
     _temperature_corrector,
     _temperature_rate_corrector
   };
 
-
-  virtual ~IntegrationScheme1stOrder() {};
+  virtual ~IntegrationScheme1stOrder(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  virtual void integrationSchemePred(Real delta_t, Array<Real> & u,
+                                     Array<Real> & u_dot,
+                                     Array<bool> & boundary) = 0;
 
+  virtual void integrationSchemeCorrTemp(Real delta_t, Array<Real> & u,
+                                         Array<Real> & u_dot,
+                                         Array<bool> & boundary,
+                                         Array<Real> & delta) = 0;
 
-  virtual void integrationSchemePred(Real delta_t,
-				     Array<Real> & u,
-				     Array<Real> & u_dot,
-				     Array<bool> & boundary) = 0;
-
-  virtual void integrationSchemeCorrTemp(Real delta_t,
-					 Array<Real> & u,
-					 Array<Real> & u_dot,
-					 Array<bool> & boundary,
-					 Array<Real> & delta) = 0;
-
-  virtual void integrationSchemeCorrTempRate(Real delta_t,
-					     Array<Real> & u,
-					     Array<Real> & u_dot,
-					     Array<bool> & boundary,
-					     Array<Real> & delta) = 0;
+  virtual void integrationSchemeCorrTempRate(Real delta_t, Array<Real> & u,
+                                             Array<Real> & u_dot,
+                                             Array<bool> & boundary,
+                                             Array<Real> & delta) = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
 };
 
 __END_AKANTU__

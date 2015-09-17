@@ -28,6 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_TIME_STEP_SOLVER_HH__
 #define __AKANTU_TIME_STEP_SOLVER_HH__
@@ -39,7 +41,7 @@ class TimeStepSolver {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  TimeStepSolver();
+  TimeStepSolver(TimeStepSolverType & time_step_solver_type);
   virtual ~TimeStepSolver();
 
   /* ------------------------------------------------------------------------ */

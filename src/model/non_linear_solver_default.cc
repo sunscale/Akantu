@@ -28,78 +28,99 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "non_linear_solver_default.hh"
+#include "dof_manager_default.hh"
+#include "solver_callback.hh"
+/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
+/* -------------------------------------------------------------------------- */
 NonLinearSolverDefault::NonLinearSolverDefault(
     DOFManagerDefault & dof_manager,
     const NonLinearSolverType & non_linear_solver_type, const ID & id,
     UInt memory_id)
-    : NonLinearSolver(dof_manager, non_linear_solver_type, id, memory_id) {}
+    : NonLinearSolver(dof_manager, non_linear_solver_type, id, memory_id),
+      dof_manager(dof_manager),
+      solver(dof_manager, "jacobian", id + ":sparse_solver", memory_id),
+      convergence_criteria_type(_scc_solution), convergence_criteria(1e-10),
+      max_iterations(10), n_iter(0), error(0.), converged(false) {}
 
 /* -------------------------------------------------------------------------- */
 NonLinearSolverDefault::~NonLinearSolverDefault() {}
 
 /* ------------------------------------------------------------------------ */
 void NonLinearSolverDefault::solve() {
-  EventManager::sendEvent(NonLinearSolver::BeforeNonLinearSolverSolve(method));
+  // EventManager::sendEvent(NonLinearSolver::BeforeNonLinearSolverSolve(method));
 
   switch (this->non_linear_solver_type) {
   case _nls_linear:
   case _nls_newton_raphson:
     break;
   case _nls_newton_raphson_modified:
-    this->solver_callback.assembleJacobian();
+    this->dof_manager.getSolverCallback().assembleJacobian();
     break;
   default:
-    AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been implemented!");
+    AKANTU_DEBUG_ERROR("The resolution method "
+                       << this->non_linear_solver_type
+                       << " has not been implemented!");
   }
 
   this->n_iter = 0;
-  bool converged = false;
-  Real error = 0.;
+  this->converged = false;
 
-  if(this->criteria == _scc_residual) {
-    converged = this->testConvergence<_scc_residual>(this->convergence_criteria, error);
-    if(converged) return converged;
+  if (this->convergence_criteria_type == _scc_residual) {
+    this->converged = this->testConvergence(this->dof_manager.getResidual());
+
+    if (this->converged)  return;
   }
 
   do {
-    if (this->non_linear_solver_type == _nlsnewton_raphson)
-      this->solver_callback.assembleJacobian();
+    if (this->non_linear_solver_type == _nls_newton_raphson)
+      this->dof_manager.getSolverCallback().assembleJacobian();
 
     this->solver.solve();
 
-    EventManager::sendEvent(NonLinearSolver::AfterSparseSolve(method));
+    // EventManager::sendEvent(NonLinearSolver::AfterSparseSolve(method));
 
-    if(criteria == _scc_residual) this->solver_callback.assembleResidual();
+    if (this->convergence_criteria_type == _scc_residual) {
+      this->dof_manager.getSolverCallback().assembleResidual();
+      this->converged = this->testConvergence(this->dof_manager.getResidual());
+    } else {
+      this->converged = this->testConvergence(this->dof_manager.getSolution());
+    }
 
-    converged = this->testConvergence<criteria> (this->convergence_criteria, error);
-
-    if(criteria == _scc_solution && !converged) this->solver_callback.assembleResidual();
-    //this->dump();
+    if (this->convergence_criteria_type == _scc_solution && !this->converged)
+      this->dof_manager.getSolverCallback().assembleResidual();
+    // this->dump();
 
     this->n_iter++;
-    AKANTU_DEBUG_INFO("[" << criteria << "] Convergence iteration "
-		      << std::setw(std::log10(max_iteration)) << this->n_iter
-		      << ": error " << error << (converged ? " < " : " > ") << tolerance);
+    AKANTU_DEBUG_INFO(
+        "[" << this->convergence_criteria_type << "] Convergence iteration "
+            << std::setw(std::log10(this->max_iterations)) << this->n_iter
+            << ": error " << this->error << (this->converged ? " < " : " > ")
+            << this->convergence_criteria);
 
-  } while (!converged && this->n_iter < this->max_iterations);
+  } while (!this->converged && this->n_iter < this->max_iterations);
 
-  // this makes sure that you have correct strains and stresses after the solveStep function (e.g., for dumping)
-  if(criteria == _scc_solution) this->updateResidual();
+  // this makes sure that you have correct strains and stresses after the
+  // solveStep function (e.g., for dumping)
+  if (this->convergence_criteria_type == _scc_solution)
+    this->dof_manager.getSolverCallback().assembleResidual();
 
-  if (converged) {
-    EventManager::sendEvent(SolidMechanicsModelEvent::AfterNonLinearSolverSolves(method));
-  } else if(this->n_iter == max_iteration) {
-    AKANTU_DEBUG_WARNING("[" << criteria << "] Convergence not reached after "
-			 << std::setw(std::log10(max_iteration)) << this->n_iter <<
-			 " iteration" << (this->n_iter == 1 ? "" : "s") << "!" << std::endl);
+  if (this->converged) {
+    //    EventManager::sendEvent(
+    //   SolidMechanicsModelEvent::AfterNonLinearSolverSolves(method));
+  } else if (this->n_iter == this->max_iterations) {
+    AKANTU_DEBUG_WARNING("[" << this->convergence_criteria_type
+                             << "] Convergence not reached after "
+                             << std::setw(std::log10(this->max_iterations))
+                             << this->n_iter << " iteration"
+                             << (this->n_iter == 1 ? "" : "s") << "!"
+                             << std::endl);
   }
 
-  return converged;
-
-
+  return;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -107,5 +128,37 @@ void NonLinearSolverDefault::setParameters(
     const ParserSection & parameters_section) {}
 
 /* -------------------------------------------------------------------------- */
+bool NonLinearSolverDefault::testConvergence(const Array<Real> & array) {
+  AKANTU_DEBUG_IN();
+
+  const Array<bool> & blocked_dofs = this->dof_manager.getBlockedDOFs();
+
+  UInt nb_degree_of_freedoms = array.getSize();
+
+  Array<Real>::const_scalar_iterator arr_it = array.begin();
+  Array<bool>::const_scalar_iterator bld_it = blocked_dofs.begin();
+
+  Real norm = 0.;
+  for (UInt n = 0; n < nb_degree_of_freedoms; ++n, ++arr_it, ++bld_it) {
+    bool is_local_node = this->dof_manager.isLocalOrMasterDOF(n);
+    if(!(*bld_it) && is_local_node) {
+        norm += *arr_it * *arr_it;
+    }
+  }
+
+  StaticCommunicator::getStaticCommunicator().allReduce(&norm, 1, _so_sum);
+
+  norm = std::sqrt(norm);
+
+  AKANTU_DEBUG_ASSERT(!Math::isnan(norm), "Something goes wrong in the solve phase");
+
+  this->error = norm;
+
+  return (error < this->convergence_criteria);
+}
+
+/* -------------------------------------------------------------------------- */
+
+
 
 __END_AKANTU__

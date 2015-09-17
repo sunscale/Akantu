@@ -162,7 +162,7 @@ enum SolveConvergenceMethod {
 /// enum SolveConvergenceCriteria different convergence criteria
 enum SolveConvergenceCriteria {
   _scc_residual, ///< Use residual to test the convergence
-  _scc_increment, ///< Use increment to test the convergence
+  _scc_solution, ///< Use solution to test the convergence
   _scc_residual_mass_wgh ///< Use residual weighted by inv. nodal mass to testb
 };
 

@@ -48,6 +48,10 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
+  virtual void predictor();
+
+  virtual void corrector();
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -57,23 +61,8 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
+  std::map<ID, >
 };
-
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#include "time_step_solver_default_inline_impl.cc"
-
-/// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const TimeStepSolverDefault & _this)
-{
-  _this.printself(stream);
-  return stream;
-}
-
 
 __END_AKANTU__
 

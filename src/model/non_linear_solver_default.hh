@@ -29,9 +29,16 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "non_linear_solver.hh"
+#include "solver_mumps.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__
 #define __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__
+
+namespace akantu {
+  class DOFManagerDefault;
+}
 
 __BEGIN_AKANTU__
 
@@ -50,7 +57,13 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// Function that solve the non linear system described by the dof manager and
+  /// the solver callback functions
   void solve();
+
+protected:
+  /// test the convergence compare norm of array to convergence_criteria
+  bool testConvergence(const Array<Real> & array);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -64,11 +77,26 @@ public:
 private:
   DOFManagerDefault & dof_manager;
 
+  /// Sparse solver used for the linear solves
+  SparseSolverMumps solver;
+
+  /// Type of convergence criteria
+  SolveConvergenceCriteria convergence_criteria_type;
+
   /// convergence threshold
   Real convergence_criteria;
 
   /// Max number of iterations
   UInt max_iterations;
+
+  /// Number of iterations at last solve call
+  UInt n_iter;
+
+  /// Convergence error at last solve call
+  Real error;
+
+  /// Did the last call to solve reached convergence
+  bool converged;
 };
 
 __END_AKANTU__

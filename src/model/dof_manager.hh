@@ -61,8 +61,8 @@ public:
   void registerDOFs(const ID & dof_id, Array<Real> & dofs_array);
 
   /// register an array of derivatives for a particular dof array
-  void registerDOFDerivative(const ID & dof_id, UInt order,
-                             Array<Real> & dofs_derivative);
+  void registerDOFsDerivatives(const ID & dof_id, UInt order,
+                               Array<Real> & dofs_derivative);
 
   /// register array representing the blocked degree of freedoms
   void registerBlockedDOFs(const ID & dof_id, Array<Real> & blocked_dofs);
@@ -148,6 +148,18 @@ public:
 
   /// Get the solver callback stored in the dof_manager
   AKANTU_GET_MACRO(SolverCallback, solver_callback, SolverCallback &);
+
+  /* ------------------------------------------------------------------------ */
+  /* DOFs and derivatives accessors                                          */
+  /* ------------------------------------------------------------------------ */
+  /// Get a reference to the registered dof array for a given id
+  Array<Real> & getDOFs(ID & dofs_id);
+
+  /// Get a reference to the registered dof derivatives array for a given id
+  Array<Real> & getDOFsDerivatives(ID & dofs_id, UInt order);
+
+  /// Get a reference to the blocked dofs array registered for the given id
+  Array<bool> & getBlockedDOFs(ID & dofs_id)
 
   /* ------------------------------------------------------------------------ */
   /* Matrices accessors                                                       */

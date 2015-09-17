@@ -98,7 +98,7 @@ inline std::ostream & operator <<(std::ostream & stream, SolveConvergenceCriteri
 {
   switch(criteria) {
   case _scc_residual : stream << "_scc_residual" ; break;
-  case _scc_increment: stream << "_scc_increment"; break;
+  case _scc_solution: stream << "_scc_increment"; break;
   case _scc_residual_mass_wgh: stream << "_scc_residual_mass_wgh"; break;
   }
   return stream;

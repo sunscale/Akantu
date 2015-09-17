@@ -248,18 +248,6 @@ public:
   bool solveStatic(Real tolerance, UInt max_iteration,
 		   bool do_not_factorize = false);
 
-  /// test if the system is converged
-  template <SolveConvergenceCriteria criteria>
-  bool testConvergence(Real tolerance, Real & error);
-
-  /// test the convergence (norm of increment)
-  bool testConvergenceIncrement(Real tolerance) __attribute__((deprecated));
-  bool testConvergenceIncrement(Real tolerance, Real & error) __attribute__((deprecated));
-
-  /// test the convergence (norm of residual)
-  bool testConvergenceResidual(Real tolerance) __attribute__((deprecated));
-  bool testConvergenceResidual(Real tolerance, Real & error) __attribute__((deprecated));
-
   /// create and return the velocity damping matrix
   SparseMatrix & initVelocityDampingMatrix();
 

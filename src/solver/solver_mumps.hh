@@ -29,11 +29,19 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "solver.hh"
+/* -------------------------------------------------------------------------- */
+#include <dmumps_c.h>
+/* -------------------------------------------------------------------------- */
+
 #ifndef __AKANTU_SOLVER_MUMPS_HH__
 #define __AKANTU_SOLVER_MUMPS_HH__
-#include <dmumps_c.h>
 
-#include "solver.hh"
+namespace akantu {
+  class DOFManagerDefault;
+  class SparseMatrixAIJ;
+}
+
 
 __BEGIN_AKANTU__
 
@@ -42,7 +50,7 @@ class SparseSolverMumps : public SparseSolver {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SparseSolverMumps(DOFManager & dof_manager,
+  SparseSolverMumps(DOFManagerDefault & dof_manager,
                     const ID & matrix_id,
                     const ID & id = "sparse_solver_mumps",
                     const MemoryID & memory_id = 0);
@@ -53,11 +61,10 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// build the profile and do the analysis part
-  virtual void initialize(SolverOptions & options = _solver_no_options);
+  virtual void initialize(ParserSection & parser_section);
 
-  void initializeSlave(SolverOptions & options = _solver_no_options);
+  //  void initializeSlave(SolverOptions & options = _solver_no_options);
 
   /// analysis (symbolic facto + permutations)
   virtual void analysis();
@@ -120,7 +127,7 @@ private:
   /* Local types                                                              */
   /* ------------------------------------------------------------------------ */
 private:
-  SolverMumpsOptions::ParallelMethod parallel_method;
+  SolverParallelMethod parallel_method;
 
   bool rhs_is_local;
 
