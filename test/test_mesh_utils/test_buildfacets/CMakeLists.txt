@@ -29,19 +29,44 @@
 #
 #===============================================================================
 
+register_test(test_buildfacets_triangle_3
+  SOURCES test_buildfacets_triangle_3.cc
+  FILES_TO_COPY triangle_3.msh
+  PACKAGE cohesive_element
+  )
+
+register_test(test_buildfacets_triangle_6
+  SOURCES test_buildfacets_triangle_6.cc
+  FILES_TO_COPY triangle_6.msh
+  PACKAGE cohesive_element
+  )
+
+register_test(test_buildfacets_quadrangle_4
+  SOURCES test_buildfacets_quadrangle_4.cc
+  FILES_TO_COPY quadrangle_4.msh
+  PACKAGE cohesive_element
+  )
+
+register_test(test_buildfacets_quadrangle_8
+  SOURCES test_buildfacets_quadrangle_8.cc
+  FILES_TO_COPY quadrangle_8.msh
+  PACKAGE cohesive_element
+  )
+
 register_test(test_buildfacets_tetrahedron
   SOURCES test_buildfacets_tetrahedron.cc
   FILES_TO_COPY tetrahedron.msh
   PACKAGE cohesive_element
   )
+
 register_test(test_buildfacets_hexahedron_8
   SOURCES test_buildfacets_hexahedron_8.cc
   FILES_TO_COPY hexahedron_8.msh
   PACKAGE cohesive_element
   )
+
 register_test(test_buildfacets_hexahedron_20
   SOURCES test_buildfacets_hexahedron_20.cc
   FILES_TO_COPY hexahedron_20.msh
   PACKAGE cohesive_element
   )
-
