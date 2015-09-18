@@ -162,6 +162,12 @@ public:
   /// reset facet_to_double arrays in the Mesh
   static void resetFacetToDouble(Mesh & mesh_facets);
 
+  /// associate a node type to each segment in the mesh
+  static void buildSegmentToNodeType(const Mesh & mesh,
+				     Mesh & mesh_facets,
+				     DistributedSynchronizer * synchronizer);
+
+
 private:
 
   /// match pairs that are on the associated pbc's
