@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   const ElementType type = _hexahedron_8;
 
   Mesh mesh(spatial_dimension);
-  mesh.read("hexahedron.msh");
+  mesh.read("hexahedron_8.msh");
   Mesh mesh_facets(mesh.initMeshFacets("mesh_facets"));
 
   MeshUtils::buildAllFacets(mesh, mesh_facets);
@@ -91,10 +91,10 @@ int main(int argc, char *argv[]) {
 
   Array<Element> segment(5);
   segment(0).type = type_subfacet;
-  segment(0).element = 0;
+  segment(0).element = 2;
 
   segment(1).type = type_subfacet;
-  segment(1).element = 1;
+  segment(1).element = 3;
 
   segment(2).type = type_subfacet;
   segment(2).element = 4;
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
   segment(3).element = 15;
 
   segment(4).type = type_subfacet;
-  segment(4).element = 22;
+  segment(4).element = 20;
 
 
   /// comparison
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
   for (UInt i = 0; i < hexahedron.getSize(); ++i) {
     if (hexahedron(i).type != el_to_subel3(1)[i].type ||
   	hexahedron(i).element != el_to_subel3(1)[i].element) {
-      std::cout << hexahedron(i).element << " " << el_to_subel3(4)[i].element << std::endl;
+      std::cout << hexahedron(i).element << " " << el_to_subel3(1)[i].element << std::endl;
       std::cout << "The two hexahedrons connected to quadrangle 1 are wrong"
   		<< std::endl;
       return EXIT_FAILURE;
@@ -128,9 +128,9 @@ int main(int argc, char *argv[]) {
   }
 
   for (UInt i = 0; i < segment.getSize(); ++i) {
-    if (segment(i).type != el_to_subel1(1)[i].type ||
-  	segment(i).element != el_to_subel1(1)[i].element) {
-      std::cout << "The segments connected to point 1 are wrong"
+    if (segment(i).type != el_to_subel1(3)[i].type ||
+  	segment(i).element != el_to_subel1(3)[i].element) {
+      std::cout << "The segments connected to point 3 are wrong"
   		<< std::endl;
       return EXIT_FAILURE;
     }
@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
 
   Array<Element> segment2(4);
   segment2(0).type = type_subfacet;
-  segment2(0).element = 3;
+  segment2(0).element = 0;
 
   segment2(1).type = type_subfacet;
   segment2(1).element = 6;
