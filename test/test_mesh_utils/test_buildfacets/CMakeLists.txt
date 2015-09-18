@@ -70,3 +70,15 @@ register_test(test_buildfacets_hexahedron_20
   FILES_TO_COPY hexahedron_20.msh
   PACKAGE cohesive_element
   )
+
+register_test(test_buildfacets_mixed3d_linear
+  SOURCES test_buildfacets_mixed3d_linear.cc
+  FILES_TO_COPY mixed3d_linear.msh
+  PACKAGE cohesive_element
+  )
+
+register_test(test_buildfacets_mixed3d_quadratic
+  SOURCES test_buildfacets_mixed3d_quadratic.cc
+  FILES_TO_COPY mixed3d_quadratic.msh
+  PACKAGE cohesive_element
+  )
