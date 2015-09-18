@@ -99,7 +99,14 @@ UInt CohesiveElementInserter::updateGlobalIDs(NewNodesEvent & node_event) {
   }
 
   /// update distributed synchronizer
-  distributed_synchronizer->reset();
+
+  /// \todo richart: I commented this line because some communications where
+  //  missing to synchronize global node numbering, The effect is that know
+  //  there is way to much useless communications. This could perhaps be solved
+  //  by using the dof_synchonizer for global ids
+
+  //distributed_synchronizer->reset();
+
   facet_synchronizer->updateDistributedSynchronizer(*distributed_synchronizer,
 						    *this, mesh);
   distributed_synchronizer->computeAllBufferSizes(*this);
