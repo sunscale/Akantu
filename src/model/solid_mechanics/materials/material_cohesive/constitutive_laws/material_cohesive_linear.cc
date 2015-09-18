@@ -214,7 +214,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
 
     UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
     UInt nb_facet = f_filter.getSize();
-    if (nb_facet == 0) continue;
+    //  if (nb_facet == 0) continue;
 
     Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
 
