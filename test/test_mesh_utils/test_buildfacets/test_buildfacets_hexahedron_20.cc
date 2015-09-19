@@ -1,11 +1,11 @@
 /**
- * @file   test_cohesive_buildfacets_hexahedron.cc
+ * @file   test_cohesive_buildfacets_hexahedron_20.cc
  *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date   Wed Oct 03 10:20:53 2012
  *
- * @brief  Test for cohesive elements
+ * @brief  Test to check the building of the facets. Mesh with hexahedrons
  *
  * @section LICENSE
  *

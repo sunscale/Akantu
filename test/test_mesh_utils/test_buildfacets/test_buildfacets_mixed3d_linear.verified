@@ -109,7 +109,6 @@ _quadrangle_4 14 connected to _segment_2 7, _segment_2 25, _segment_2 32, _segme
 _quadrangle_4 15 connected to _segment_2 21, _segment_2 33, _segment_2 34, _segment_2 35,  
 _quadrangle_4 16 connected to _segment_2 29, _segment_2 32, _segment_2 34, _segment_2 36,  
 _quadrangle_4 17 connected to _segment_2 10, _segment_2 30, _segment_2 35, _segment_2 36,  
-SubelementToElement2
 _triangle_3 0 connected to _segment_2 0, _segment_2 1, _segment_2 2,  
 _triangle_3 1 connected to _segment_2 3, _segment_2 4, _segment_2 5,  
 _triangle_3 2 connected to _segment_2 6, _segment_2 7, _segment_2 8,  

@@ -53,9 +53,21 @@ register_test(test_buildfacets_quadrangle_8
   PACKAGE cohesive_element
   )
 
-register_test(test_buildfacets_tetrahedron
-  SOURCES test_buildfacets_tetrahedron.cc
-  FILES_TO_COPY tetrahedron.msh
+register_test(test_buildfacets_mixed2d_linear
+  SOURCES test_buildfacets_mixed2d_linear.cc
+  FILES_TO_COPY mixed2d_linear.msh
+  PACKAGE cohesive_element
+  )
+
+register_test(test_buildfacets_mixed2d_quadratic
+  SOURCES test_buildfacets_mixed2d_quadratic.cc
+  FILES_TO_COPY mixed2d_quadratic.msh
+  PACKAGE cohesive_element
+  )
+
+register_test(test_buildfacets_tetrahedron_10
+  SOURCES test_buildfacets_tetrahedron_10.cc
+  FILES_TO_COPY tetrahedron_10.msh
   PACKAGE cohesive_element
   )
 

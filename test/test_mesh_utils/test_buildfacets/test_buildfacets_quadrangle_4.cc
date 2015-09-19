@@ -1,11 +1,11 @@
 /**
- * @file   test_cohesive_buildfacets_hexahedron.cc
+ * @file   test_cohesive_buildfacets_quadrangle_4.cc
  *
  * @author Mauro Corrado <mauro.corrado@epfl.ch>
  *
  * @date   Fri Sep 18 10:20:53 2015
  *
- * @brief  Test for cohesive elements
+ * @brief  Test to check the building of the facets. Mesh with quadrangles 
  *
  * @section LICENSE
  *

@@ -1,11 +1,12 @@
 /**
- * @file   test_cohesive_buildfacets_hexahedron.cc
+ * @file   test_cohesive_buildfacets_mixed3d_linear.cc
  *
  * @author Mauro Corrado <mauro.corrado@epfl.ch>
  *
  * @date   Fri Sep 18 10:20:53 2015
  *
- * @brief  Test for cohesive elements
+ * @brief  Test to check the building of the facets. Mesh with hexahedrons 
+ *         and pentahedrons
  *
  * @section LICENSE
  *
@@ -140,8 +141,6 @@ int main(int argc, char *argv[]) {
     std::cout << " " << std::endl;
   }
 
-
-  std::cout << "SubelementToElement2" << std::endl;
   for (UInt i = 0; i < subel_to_el2_2.getSize(); ++i) {
     std::cout << type_facet2 << " " << i << " connected to ";
     for (UInt j = 0; j < 3; ++j){
