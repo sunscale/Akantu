@@ -71,6 +71,7 @@ nb_prim_by_el(0)
 #else
     if( (*it != _triangle_3) )
       AKANTU_DEBUG_ERROR("Not ready for mesh type " << *it);
+    this->nb_prim_by_el = 3;
 #endif
   }
 
@@ -114,7 +115,12 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
     it = this->factory.getPrimitiveList().begin(),
     end= this->factory.getPrimitiveList().end();
 
+#if defined(AKANTU_IGFEM)
   NewIGFEMNodesEvent new_nodes;
+#else
+  NewNodesEvent new_nodes;
+#endif
+
   for (; it != end ; ++it) {
     std::list<sk_inter_res> s_results;
     CGAL::intersection(*it, query, std::back_inserter(s_results));
@@ -198,8 +204,10 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
   }
 
   if(new_nodes.getList().getSize()) {
+#if defined(AKANTU_IGFEM)
     new_nodes.setNewNodePerElem(new_node_per_elem);
     new_nodes.setType(type);
+#endif
     this->mesh.sendEvent(new_nodes);
   }
 
