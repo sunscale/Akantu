@@ -85,7 +85,7 @@ int main (int argc, char * argv[]) {
     return EXIT_FAILURE;
   }
 
-  const Array<UInt> new_node_triangle_3 = intersector_sphere.getNewNodePerElem();
+  const Array<UInt> new_node_triangle_3 = intersector_sphere.getNewNodePerElem(_triangle_3);
   if ( (new_node_triangle_3(0,0) != 1) || (new_node_triangle_3(1,0) != 2)){
     for(UInt k=0; k != new_node_triangle_3.getSize(); ++k){
       std::cout << new_node_triangle_3(k,0) << " new nodes in element " << k << ", node(s): "

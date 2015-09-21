@@ -72,7 +72,8 @@ public:
   MeshIgfemSphericalGrowingGel(Mesh & mesh):
     mesh(mesh),
     nb_nodes_fem(mesh.getNodes().getSize()),
-    nb_enriched_nodes(0)
+    nb_enriched_nodes(0),
+    synchronizer(NULL)
   {
     // Solution 1
     //   /// the mesh sphere intersector for the supported element type
@@ -81,11 +82,11 @@ public:
     ElementTypeMapArray<UInt>::type_iterator tend = mesh.lastType(dim);
     for(;tit != tend; ++tit) { // loop to add corresponding IGFEM element types
       if(*tit == _triangle_3){
-        this->mesh.addConnectivityType(_igfem_triangle_4, _not_ghost);
+	this->mesh.addConnectivityType(_igfem_triangle_4, _not_ghost);
 	this->mesh.addConnectivityType(_igfem_triangle_4, _ghost);
-        this->mesh.addConnectivityType(_igfem_triangle_5, _not_ghost);
+	this->mesh.addConnectivityType(_igfem_triangle_5, _not_ghost);
 	this->mesh.addConnectivityType(_igfem_triangle_5, _ghost);
-      }	
+      }
       else
 	AKANTU_DEBUG_ERROR("Not ready for mesh type " << *tit);
     }
@@ -141,7 +142,7 @@ public:
     Array<UInt> & new_numbering = remove_nodes.getNewNumbering();
     UInt total_nodes = this->mesh.getNbNodes();
     UInt nb_new_enriched_nodes  = total_nodes - this->nb_enriched_nodes - this->nb_nodes_fem;
-    UInt old_total_nodes = this->nb_nodes_fem + this->nb_enriched_nodes; 
+    UInt old_total_nodes = this->nb_nodes_fem + this->nb_enriched_nodes;
 
     for(UInt nnod = 0; nnod < this->nb_nodes_fem ; ++nnod){
       new_numbering(nnod) = nnod ;
@@ -175,7 +176,7 @@ public:
 	  UInt & node = *connectivity;
 	  UInt old_node = node;
 	  node = new_numbering(old_node);
-	}	
+	}
       }
     }
     this->mesh.sendEvent(remove_nodes);
@@ -190,7 +191,7 @@ public:
   void buildResultFromQueryList(const std::list<SK::Sphere_3> & query_list) {
     /// store number of currently enriched nodes
     this->nb_enriched_nodes = mesh.getNbNodes() - nb_nodes_fem;
-   constructData();  
+   constructData();
     //Solution 1
     //     it = mesh.firstType();
     //     end = mesh.lastType();
@@ -224,6 +225,24 @@ public:
     buildResultFromQueryList(sphere_list);
   }
 
+  /// set the distributed synchronizer
+  void setDistributedSynchronizer(DistributedSynchronizer * dist) {
+    synchronizer = dist;
+    buildSegmentConnectivityToNodeType();
+  }
+
+  /// update node type
+  void updateNodeType(const Array<UInt> & nodes_list,
+		      const ElementTypeMapUInt & new_node_per_elem,
+		      ElementType type);
+
+protected:
+  /// Build the unordered_map needed to assign the node type to new nodes in parallel
+  void buildSegmentConnectivityToNodeType();
+
+  /// add a segment node type in the map
+  inline void addSegmentNodeType(const Mesh & mesh_facets, const Element & segment);
+
 protected:
   /// Mesh used to construct the primitives
   Mesh & mesh;
@@ -237,9 +256,19 @@ protected:
   //Solution 2
   /// map of the elements types in the mesh and the corresponding intersectors
   std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *> intersectors;
+
+  /// Map linking pairs of nodes to a node type. The pairs of nodes
+  /// contain the connectivity of the primitive segments that are
+  /// intersected.
+  unordered_map< std::pair<UInt, UInt>, Int >::type segment_conn_to_node_type;
+
+  /// Pointer to the distributed synchronizer of the model
+  DistributedSynchronizer * synchronizer;
 };
- 
+
 __END_AKANTU__
+
+#include "mesh_igfem_spherical_growing_gel_tmpl.hh"
 
 #endif // __AKANTU_MESH_IGFEM_SPHERICAL_GROWING_GEL_HH__
 

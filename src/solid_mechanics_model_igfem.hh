@@ -70,11 +70,15 @@ public:
   /// initialize igfem material
   virtual void initMaterials();
 
+  /// register the tags associated with the parallel synchronizer
+  virtual void initParallel(MeshPartition *partition,
+			    DataAccessor *data_accessor = NULL);
+
   ///allocate all vectors
   virtual void initArrays();
 
   /// transfer internals from old to new elements
-  void transferInternalValues(const ID & internal, std::vector<Element> & new_elements, 
+  void transferInternalValues(const ID & internal, std::vector<Element> & new_elements,
 				 Array<Real> & added_quads, Array<Real> & internal_values);
 private:
 
@@ -98,6 +102,8 @@ protected:
 				 const ElementTypeMapArray<UInt> & new_numbering,
 				 const RemovedElementsEvent & event);
 
+  virtual void updateLocalMasterGlobalConnectivity(const Array<UInt> & nodes_list);
+
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface                                                       */
   /* ------------------------------------------------------------------------ */
@@ -111,15 +117,35 @@ public:
 					 const ElementKind & element_kind,
 					 bool padding_flag);
 
-  virtual dumper::Field * createElementalField(const std::string & field_name, 
+  virtual dumper::Field * createElementalField(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag,
 					       const UInt & spatial_dimension,
 					       const ElementKind & kind);
- 
+
   virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag);
+
+  /* ------------------------------------------------------------------------ */
+  /* Data Accessor inherited members                                          */
+  /* ------------------------------------------------------------------------ */
+public:
+
+  inline virtual UInt getNbDataForElements(const Array<Element> & elements,
+					   SynchronizationTag tag) const;
+
+  inline virtual void packElementData(CommunicationBuffer & buffer,
+				      const Array<Element> & elements,
+				      SynchronizationTag tag) const;
+
+  inline virtual void unpackElementData(CommunicationBuffer & buffer,
+					const Array<Element> & elements,
+					SynchronizationTag tag);
+
+  template<bool pack_mode>
+  inline void packUnpackGlobalConnectivity(CommunicationBuffer & buffer,
+					   const Array<Element> & elements) const;
 
 /* -------------------------------------------------------------------------- */
 /* Accessors                                                                  */
@@ -144,10 +170,10 @@ private:
   /// IGFEM values at nodes
   Array<Real> * igfem_nodes;
   /// interface can move throughout the analysis
-  bool moving_interface; 
+  bool moving_interface;
   /// map between and new elements (needed when the interface is moving)
   ElementMap element_map;
-};  
+};
 
 /* -------------------------------------------------------------------------- */
 /* IGFEMMaterialSelector                                                      */
@@ -160,7 +186,7 @@ public:
     fallback_value_igfem(0) { }
 
   virtual UInt operator()(const Element & element) {
-    if(Mesh::getKind(element.type) == _ek_igfem) 
+    if(Mesh::getKind(element.type) == _ek_igfem)
       return fallback_value_igfem;
     else
       return DefaultMaterialSelector::operator()(element);
@@ -169,11 +195,11 @@ public:
   void setIGFEMFallback(UInt f) { this->fallback_value_igfem = f; }
 
 protected:
-  UInt fallback_value_igfem; 
-  
+  UInt fallback_value_igfem;
+
 };
 __END_AKANTU__
 
+#include "solid_mechanics_model_igfem_inline_impl.cc"
+
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_IGFEM_HH__ */
-
-
