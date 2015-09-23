@@ -52,6 +52,21 @@ public:
 protected:
   Array<Element> old_elements;
 };
+
+class NewIGFEMNodesEvent : public NewNodesEvent {
+public:
+  void setNewNodePerElem(ElementTypeMapUInt & new_node_per_elem) {
+    this->new_node_per_elem = &new_node_per_elem;
+  }
+  void setType(ElementType new_type) {type = new_type;}
+  AKANTU_GET_MACRO(NewNodePerElem, *new_node_per_elem, const ElementTypeMapUInt &);
+  AKANTU_GET_MACRO(ElementType, type, ElementType);
+protected:
+  ElementType type;
+  ElementTypeMapUInt * new_node_per_elem;
+};
+
+
 #endif
 
 
@@ -81,7 +96,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// get the new_node_per_elem array
-  AKANTU_GET_MACRO(NewNodePerElem, new_node_per_elem, const Array<UInt>)
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(NewNodePerElem, new_node_per_elem, UInt);
 
 public:
   /// Construct the primitive tree object
@@ -102,7 +117,7 @@ public:
 
 protected:
   /// new node per element (column 0: number of new nodes, then odd is the intersection node number and even the ID of the sintersected segment)
-  Array<UInt> new_node_per_elem;
+  ElementTypeMapUInt new_node_per_elem;
 
   /// number of fem nodes in the initial mesh
   const UInt nb_nodes_fem;
