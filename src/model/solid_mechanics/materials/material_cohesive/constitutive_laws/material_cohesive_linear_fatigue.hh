@@ -119,6 +119,12 @@ private:
 
   /// delta increment of the previous time step
   CohesiveInternalField<Real> delta_dot_prec;
+
+  /// has the element passed to normal regime (not in fatigue anymore)
+  CohesiveInternalField<bool> normal_regime;
+
+  /// ratio indicating until what point fatigue is applied in the cohesive law
+  Real fatigue_ratio;
 };
 
 __END_AKANTU__

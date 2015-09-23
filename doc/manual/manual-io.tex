@@ -1,4 +1,3 @@
-
 \chapter{Input/Output}\index{I\/O}
 
 \section{Generic data}
@@ -32,8 +31,7 @@ The fields are dumped with the number of components of the memory. For example, 
 This memory can be dealt with \code{addDumpFieldVector}\index{I\/O!addDumpFieldVector} which always dumps
 \code{Vector}s with 3 components or \code{addDumpFieldTensor}\index{I\/O!addDumpFieldTensor} which dumps $2^{nd}$
 order tensors with $3\times3$ components respectively. The routines \code{addDumpFieldVector}\index{I\/O!addDumpFieldVector} and
-\code{addDumpFieldTensor}\index{I\/O!addDumpFieldTensor} were introduced because of Paraview which mostly manipulate 3D 
-data.
+\code{addDumpFieldTensor}\index{I\/O!addDumpFieldTensor} were introduced because of \code{ParaView} which mostly manipulate 3D data.
 
 Those fields which are stored by quadrature point are modified to be seen in the
 \code{VTK} file as elemental data. To do this, the default is to average the
@@ -49,44 +47,28 @@ The list of fields depends on the models (for
     key          &    type      & support \\
     \midrule
     displacement & Vector<Real> & nodes  \\
+    mass         & Vector<Real> & nodes  \\
     velocity     & Vector<Real> & nodes  \\
     acceleration & Vector<Real> & nodes  \\
     force	       & Vector<Real> & nodes  \\
     residual     & Vector<Real> & nodes  \\
-    boundary     & Vector<bool> & nodes  \\
-    mass         & Vector<Real> & nodes  \\
+    increment     & Vector<Real> & nodes  \\
+    {blocked\_dofs}  & Vector<bool> & nodes  \\    
     partitions   & Real         & elements \\
-    stress & Matrix<Real> & quadrature points  \\
-    Von Mises stress & Real & quadrature points  \\
-    grad\_u & Matrix<Real> & quadrature points  \\
+    material\_index & variable  & elements\\    
     strain & Matrix<Real> & quadrature points  \\
-    principal strain & Vector<Real> & quadrature points  \\
     Green strain & Matrix<Real> & quadrature points  \\
+    principal strain & Vector<Real> & quadrature points  \\
     principal Green strain & Vector<Real> & quadrature points  \\
-    \textit{material internals} & variable  & quadrature points  \\
+    grad\_u & Matrix<Real> & quadrature points  \\    
+    stress & Matrix<Real> & quadrature points  \\
+    Von Mises stress & Real & quadrature points  \\        
+    material\_index & variable  & quadrature points \\
     \bottomrule
   \end{tabular}
   \caption{List of dumpable fields for \code{SolidMechanicsModel}.}
   \label{tab:io:smm_field_list}
 \end{table}
-
-The user can also register external fields which have the same mesh as the mesh from the model as support. To do this, an object of type \code{Field} has to be created.\index{I\/O!addDumpFieldExternal}
-
-\begin{itemize}
-\item For nodal fields :
-\begin{cpp}
-  Vector<T> vect(nb_nodes, nb_component);
-  Field field = new DumperIOHelper::NodalField<T>(vect));
-  model.addDumpFieldExternal("my_field", field);
-\end{cpp}
-
-\item For elemental fields :
-\begin{cpp}
-  ElementTypeMapArray<T> arr;
-  Field field = new DumperIOHelper::ElementalField<T>(arr, spatial_displacement));
-  model.addDumpFieldExternal("my_field", field);
-\end{cpp}
-\end{itemize}
 
 \section{Cohesive elements' data}
 Cohesive elements and their relative data can be easily dumped thanks
@@ -104,7 +86,115 @@ and damage:
   model.dump("cohesive elements");
 \end{cpp}
 
-%%% Local Variables: 
+\subsection{Fragmentation data}
+
+Whenever the \code{SolidMechanicsModelCohesive} is used, it is
+possible to dump additional data about the fragments that get formed
+in the simulation both in serial and parallel. This task is carried
+out by the \code{FragmentManager} class, that takes care of computing
+the following quantities for each fragment:
+\begin{itemize}
+\item index;
+\item mass;
+\item moments of inertia;
+\item velocity;
+\item number of elements.
+\end{itemize}
+These computations can be realized at once by calling the function
+\code{computeAllData}, or individually by calling the other public
+functions of the class. The data can be dumped to be visualized in
+Paraview, or can be accessed within the simulation. An example of
+usage is:
+\begin{cpp}
+  FragmentManager fragment_manager(model);
+  fragment_manager.buildAllData();
+  ...
+
+  model.addDumpField("fragments");       // this field contains the indices
+  model.addDumpField("fragments mass");
+  model.addDumpField("moments of inertia");
+  model.addDumpField("elements per fragment");
+  ...
+
+  for (UInt step = 1; step <= total_steps; ++step) {
+    ...
+
+    fragment_manager.buildAllData();
+    model.dump();
+  }
+  ...
+
+  const Array<Real> & fragment_velocities = fragment_manager.getVelocity();
+  ...
+\end{cpp}
+At the end of this example the velocities of the fragments are
+accessed with a reference to a \code{const Array<Real>}. The size of
+this array is the number of fragments, and its number of components is
+the spatial dimension in this case.
+
+
+\section{Advanced dumping}
+
+\subsection{Arbitrary fields}
+In addition to the predetermined fields from the models and materials, the user
+can add any data to a dumper as long as the support is the same. That is to say
+data that have the size of the full mesh on if the dumper is dumping the mesh,
+or of the size of an element group if it is a filtered dumper.
+
+For this the easiest is to use the ``external'' fields register functions\index{I\/O!addDumpFieldExternal}
+
+The simple case force nodal and elemental data are to pass directly the data
+container itself if it as the good size.
+\begin{itemize}
+\item For nodal fields :
+\begin{cpp}
+  Array<T> nodal_data(nb_nodes, nb_component);
+  ...
+  model.addDumpFieldExternal("my_field", nodal_data);
+\end{cpp}
+
+\item For elemental fields :
+\begin{cpp}
+  ElementTypeMapArray<T> elem_data;
+  ...
+  model.addDumpFieldExternal("my_field", elem_data);
+\end{cpp}
+\end{itemize}
+
+If some changes have to be applied on the data as for example a padding for
+\code{ParaView} vectors, this can be done by using the
+field interface.
+
+\begin{cpp}
+  model.addDumpFieldExternal(const std::string & field_name,
+                             dumper::Field * field);
+\end{cpp}
+
+An example of code presenting this interface is present in the
+\shellcode{\examplesdir/io/dumper}. This interface is part of the
+\code{Dumpable} class from which the \code{Mesh} inherits.
+
+\subsection{Creating a new dumper}
+
+You can also create you own dumpers, \akantu uses a third-party library in order
+to write the output files, \code{IOHelper}. \akantu supports the \code{ParaView}
+format and a Text format defined by \code{IOHelper}.
+
+This two files format are handled by the classes
+\code{DumperParaview}\index{I\/O!DumperParaview} and
+\code{DumperText}\index{I\/O!DumperText}.
+
+In order to use them you can instantiate on of this object in your code. This
+dumper have a simple interface. You can register a mesh
+\code{registerMesh}\index{I\/O!registerMesh},
+\code{registerFilteredMesh}\index{I\/O!registerFilteredMesh} or a field,
+\code{registerField}\index{I\/O!registerField}.
+
+An example of code presenting this low level interface is present in the
+\shellcode{\examplesdir/io/dumper}. The different types of \code{Field} that can
+be created are present in the source folder \shellcode{src/io/dumper}.
+
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "manual"
 %%% End: 

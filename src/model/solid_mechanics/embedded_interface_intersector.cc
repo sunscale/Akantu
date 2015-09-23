@@ -33,13 +33,13 @@
 #include "embedded_interface_intersector.hh"
 #include "mesh_segment_intersector.hh"
 
+/// Helper macro for types in the mesh. Creates an intersector and computes intersection queries
 #define INTERFACE_INTERSECTOR_CASE(dim, type) do {                                 \
   MeshSegmentIntersector<dim, type> intersector(this->mesh, interface_mesh);        \
   name_to_primitives_it = name_to_primitives_map.begin();                            \
   for (; name_to_primitives_it != name_to_primitives_end ; ++name_to_primitives_it) { \
-    intersector.computeIntersectionQueryList(                                          \
-        name_to_primitives_it->second,                                                  \
-        name_to_primitives_it->first);                                                   \
+    intersector.setPhysicalName(name_to_primitives_it->first);                         \
+    intersector.buildResultFromQueryList(name_to_primitives_it->second);                \
   } } while(0)
 
 #define INTERFACE_INTERSECTOR_CASE_2D(type) INTERFACE_INTERSECTOR_CASE(2, type)
@@ -47,11 +47,12 @@
 
 __BEGIN_AKANTU__
 
-EmbeddedInterfaceIntersector::EmbeddedInterfaceIntersector(const Mesh & mesh, const Mesh & primitive_mesh) :
+EmbeddedInterfaceIntersector::EmbeddedInterfaceIntersector(Mesh & mesh, const Mesh & primitive_mesh) :
   MeshGeomAbstract(mesh),
   interface_mesh(mesh.getSpatialDimension(), "interface_mesh"),
   primitive_mesh(primitive_mesh)
 {
+  // Initiating mesh connectivity and data
   interface_mesh.addConnectivityType(_segment_2, _not_ghost);
   interface_mesh.addConnectivityType(_segment_2, _ghost);
   interface_mesh.registerData<Element>("associated_element").alloc(0, 1, _segment_2);
@@ -65,6 +66,9 @@ void EmbeddedInterfaceIntersector::constructData() {
   AKANTU_DEBUG_IN();
 
   const UInt dim = this->mesh.getSpatialDimension();
+
+  if (dim == 1)
+    AKANTU_DEBUG_ERROR("No embedded model in 1D. Deactivate intersection initialization");
 
   Array<std::string> * physical_names = NULL;
 
@@ -84,6 +88,7 @@ void EmbeddedInterfaceIntersector::constructData() {
 
   std::map<std::string, std::list<K::Segment_3> > name_to_primitives_map;
 
+  // Loop over the physical names and register segment lists in name_to_primitives_map
   for (; names_it != names_end ; ++names_it) {
     UInt element_id = names_it - physical_names->begin();
     const Vector<UInt> el_connectivity = connectivity[element_id];
@@ -102,20 +107,22 @@ void EmbeddedInterfaceIntersector::constructData() {
     name_to_primitives_end = name_to_primitives_map.end();
 
   for (; type_it != type_end ; ++type_it) {
+    // Used in AKANTU_BOOST_ELEMENT_SWITCH
     ElementType type = *type_it;
 
     AKANTU_DEBUG_INFO("Computing intersections with background element type " << type);
 
     switch(dim) {
       case 1:
-        AKANTU_DEBUG_ERROR("No embedded model in 1D");
         break;
 
       case 2:
+        // Compute intersections for supported 2D elements
         AKANTU_BOOST_ELEMENT_SWITCH(INTERFACE_INTERSECTOR_CASE_2D, (_triangle_3));
         break;
 
       case 3:
+        // Compute intersections for supported 3D elements
         AKANTU_BOOST_ELEMENT_SWITCH(INTERFACE_INTERSECTOR_CASE_3D, (_tetrahedron_4));
         break;
     }

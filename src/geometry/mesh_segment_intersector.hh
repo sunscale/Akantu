@@ -50,15 +50,15 @@ class MeshSegmentIntersector : public MeshGeomIntersector<dim, type, Triangle<K>
   /// Parent class type
   typedef MeshGeomIntersector<dim, type, Triangle<K>, K::Segment_3, K> parent_type;
 
-  /// Result of intersection type
-  typedef typename parent_type::result_type result_type;
+  /// Result of intersection function type
+  typedef typename IntersectionTypeHelper<TreeTypeHelper< Triangle<K>, K>, K::Segment_3>::intersection_type result_type;
 
   /// Pair of segments and element id
   typedef std::pair<K::Segment_3, UInt> pair_type;
 
 public:
   /// Construct from mesh
-  explicit MeshSegmentIntersector(const Mesh & mesh, Mesh & result_mesh);
+  explicit MeshSegmentIntersector(Mesh & mesh, Mesh & result_mesh);
 
   /// Destructor
   virtual ~MeshSegmentIntersector();
@@ -71,12 +71,11 @@ public:
    */
   virtual void computeIntersectionQuery(const K::Segment_3 & query);
 
-  /// Compute the list of queries
-  virtual void computeIntersectionQueryList(const std::list<K::Segment_3> & query_list);
-  
-  /// Compute the list of queries and adds sets the physical name of the elements created
-  virtual void computeIntersectionQueryList(const std::list<K::Segment_3> & query_list,
-                                            const std::string & physical_name);
+  /// Compute the embedded mesh
+  virtual void buildResultFromQueryList(const std::list<K::Segment_3> & query_list);
+
+  void setPhysicalName(const std::string & other)
+  { current_physical_name = other; }
 
 protected:
   /// Compute segments from intersection list

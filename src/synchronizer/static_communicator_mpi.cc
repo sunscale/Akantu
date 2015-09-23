@@ -227,7 +227,7 @@ void StaticCommunicatorMPI::barrier() {
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
-void StaticCommunicatorMPI::allReduce(T * values, Int nb_values,
+void StaticCommunicatorMPI::allReduce(T * values, int nb_values,
 				      const SynchronizerOperation & op) {
   MPI_Comm communicator = mpi_data->getMPICommunicator();
   MPI_Datatype type = MPITypeWrapper::getMPIDatatype<T>();
@@ -243,7 +243,7 @@ void StaticCommunicatorMPI::allReduce(T * values, Int nb_values,
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
-void StaticCommunicatorMPI::allGather(T * values, Int nb_values) {
+void StaticCommunicatorMPI::allGather(T * values, int nb_values) {
   MPI_Comm communicator = mpi_data->getMPICommunicator();
   MPI_Datatype type = MPITypeWrapper::getMPIDatatype<T>();
 
@@ -257,11 +257,11 @@ void StaticCommunicatorMPI::allGather(T * values, Int nb_values) {
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
-void StaticCommunicatorMPI::allGatherV(T * values, Int * nb_values) {
+void StaticCommunicatorMPI::allGatherV(T * values, int * nb_values) {
   MPI_Comm communicator = mpi_data->getMPICommunicator();
-  Int * displs = new Int[psize];
+  int * displs = new int[psize];
   displs[0] = 0;
-  for (Int i = 1; i < psize; ++i) {
+  for (int i = 1; i < psize; ++i) {
     displs[i] = displs[i-1] + nb_values[i-1];
   }
 
@@ -278,7 +278,7 @@ void StaticCommunicatorMPI::allGatherV(T * values, Int * nb_values) {
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
-void StaticCommunicatorMPI::gather(T * values, Int nb_values, Int root) {
+void StaticCommunicatorMPI::gather(T * values, int nb_values, int root) {
   MPI_Comm communicator = mpi_data->getMPICommunicator();
   T * send_buf = NULL, * recv_buf = NULL;
   if(prank == root) {
@@ -300,13 +300,13 @@ void StaticCommunicatorMPI::gather(T * values, Int nb_values, Int root) {
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
-void StaticCommunicatorMPI::gatherV(T * values, Int * nb_values, Int root) {
+void StaticCommunicatorMPI::gatherV(T * values, int * nb_values, int root) {
   MPI_Comm communicator = mpi_data->getMPICommunicator();
-  Int * displs = NULL;
+  int * displs = NULL;
   if(prank == root) {
-    displs = new Int[psize];
+    displs = new int[psize];
     displs[0] = 0;
-    for (Int i = 1; i < psize; ++i) {
+    for (int i = 1; i < psize; ++i) {
       displs[i] = displs[i-1] + nb_values[i-1];
     }
   }
@@ -332,7 +332,7 @@ void StaticCommunicatorMPI::gatherV(T * values, Int * nb_values, Int root) {
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
-void StaticCommunicatorMPI::broadcast(T * values, Int nb_values, Int root) {
+void StaticCommunicatorMPI::broadcast(T * values, int nb_values, int root) {
   MPI_Comm communicator = mpi_data->getMPICommunicator();
   MPI_Datatype type = MPITypeWrapper::getMPIDatatype<T>();
 
@@ -355,18 +355,48 @@ MPI_Datatype MPITypeWrapper::getMPIDatatype<char>() {
 }
 
 template<>
-MPI_Datatype MPITypeWrapper::getMPIDatatype<Real>() {
+MPI_Datatype MPITypeWrapper::getMPIDatatype<float>() {
+  return MPI_FLOAT;
+}
+
+template<>
+MPI_Datatype MPITypeWrapper::getMPIDatatype<double>() {
   return MPI_DOUBLE;
 }
 
 template<>
-MPI_Datatype MPITypeWrapper::getMPIDatatype<UInt>() {
+MPI_Datatype MPITypeWrapper::getMPIDatatype<long double>() {
+  return MPI_LONG_DOUBLE;
+}
+
+template<>
+MPI_Datatype MPITypeWrapper::getMPIDatatype<signed int>() {
+  return MPI_INT;
+}
+
+template<>
+MPI_Datatype MPITypeWrapper::getMPIDatatype<unsigned int>() {
   return MPI_UNSIGNED;
 }
 
 template<>
-MPI_Datatype MPITypeWrapper::getMPIDatatype<Int>() {
-  return MPI_INT;
+MPI_Datatype MPITypeWrapper::getMPIDatatype<signed long int>() {
+  return MPI_LONG;
+}
+
+template<>
+MPI_Datatype MPITypeWrapper::getMPIDatatype<unsigned long int>() {
+  return MPI_UNSIGNED_LONG;
+}
+
+template<>
+MPI_Datatype MPITypeWrapper::getMPIDatatype<signed long long int>() {
+  return MPI_LONG_LONG;
+}
+
+template<>
+MPI_Datatype MPITypeWrapper::getMPIDatatype<unsigned long long int>() {
+  return MPI_UNSIGNED_LONG_LONG;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -379,18 +409,20 @@ MPI_Datatype MPITypeWrapper::getMPIDatatype<Int>() {
   template CommunicationRequest * StaticCommunicatorMPI::asyncSend<T>   (T * buffer, Int size, Int receiver, Int tag); \
   template CommunicationRequest * StaticCommunicatorMPI::asyncReceive<T>(T * buffer, Int size, Int sender,   Int tag); \
   template void StaticCommunicatorMPI::probe<T>(Int sender, Int tag, CommunicationStatus & status); \
-  template void StaticCommunicatorMPI::allGather<T> (T * values, Int nb_values); \
-  template void StaticCommunicatorMPI::allGatherV<T>(T * values, Int * nb_values); \
-  template void StaticCommunicatorMPI::gather<T> (T * values, Int nb_values, Int root);	\
-  template void StaticCommunicatorMPI::gatherV<T>(T * values, Int * nb_values, Int root); \
-  template void StaticCommunicatorMPI::broadcast<T>(T * values, Int nb_values, Int root); \
-  template void StaticCommunicatorMPI::allReduce<T>(T * values, Int nb_values, const SynchronizerOperation & op);
+  template void StaticCommunicatorMPI::allGather<T> (T * values, int nb_values); \
+  template void StaticCommunicatorMPI::allGatherV<T>(T * values, int * nb_values); \
+  template void StaticCommunicatorMPI::gather<T> (T * values, int nb_values, int root);	\
+  template void StaticCommunicatorMPI::gatherV<T>(T * values, int * nb_values, int root); \
+  template void StaticCommunicatorMPI::broadcast<T>(T * values, int nb_values, int root); \
+  template void StaticCommunicatorMPI::allReduce<T>(T * values, int nb_values, const SynchronizerOperation & op);
 
 
 AKANTU_MPI_COMM_INSTANTIATE(Real);
 AKANTU_MPI_COMM_INSTANTIATE(UInt);
 AKANTU_MPI_COMM_INSTANTIATE(Int);
 AKANTU_MPI_COMM_INSTANTIATE(char);
-
+#if AKANTU_INTEGER_SIZE > 4
+AKANTU_MPI_COMM_INSTANTIATE(int);
+#endif
 
 __END_AKANTU__

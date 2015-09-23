@@ -165,6 +165,36 @@ public:
   void interpolateOnQuadraturePoints(const Array<Real> & u,
 				     ElementTypeMapArray<Real> & uq,
                                      const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+  virtual
+  void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
+					  const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+  
+  virtual
+  void initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+							ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+							const ElementTypeMapArray<UInt> * element_filter) const = 0;
+
+  virtual
+  void interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+						  const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+						  ElementTypeMapArray<Real> & result,
+						  const GhostType ghost_type,
+						  const ElementTypeMapArray<UInt> * element_filter) const = 0;
+
+  virtual
+  void interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+						  const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+						  const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+						  ElementTypeMapArray<Real> & result,
+						  const GhostType ghost_type,
+						  const ElementTypeMapArray<UInt> * element_filter) const = 0;
+
+  virtual 
+  void interpolate(const Vector<Real> & real_coords, 
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const Element & element) const = 0;
 
   virtual
   void computeShapes(const Vector<Real> & real_coords,
@@ -299,6 +329,9 @@ public:
 
   /// get cohesive element type for a given facet type
   static inline ElementType getCohesiveElementType(const ElementType & type_facet);
+
+  /// get igfem element type for a given regular type
+  static inline Vector<ElementType> getIGFEMElementTypes(const ElementType & type);
 
   /// get the interpolation element associated to an element type
   static inline InterpolationType getInterpolationType(const ElementType & el_type);

@@ -43,7 +43,7 @@
 
 __BEGIN_AKANTU__
 
-class NodeGroup : Memory, public Dumpable {
+class NodeGroup : public Memory, public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

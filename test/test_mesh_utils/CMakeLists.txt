@@ -36,6 +36,7 @@
 add_akantu_test(test_mesh_io "Test mesh io object")
 add_akantu_test(test_pbc_tweak "Test pbc facilities")
 add_akantu_test(test_buildfacets "Tests for the generation of facets")
+add_akantu_test(test_segment_nodetype "segment_nodetype")
 
 register_test(test_purify_mesh
   SOURCES test_purify_mesh.cc

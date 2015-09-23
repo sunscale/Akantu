@@ -91,9 +91,12 @@ NodeGroup & GroupManager::createNodeGroup(const std::string & group_name,
       AKANTU_EXCEPTION("Trying to create a node group that already exists:" << group_name);
   }
 
+  std::stringstream sstr;
+  sstr << this->id << ":" << group_name << "_node_group";
+
   NodeGroup * node_group = new NodeGroup(group_name,
 					 mesh,
-					 id + ":" + group_name + "_node_group",
+                                         sstr.str(),
 					 memory_id);
 
   node_groups[group_name] = node_group;
@@ -158,12 +161,18 @@ ElementGroup & GroupManager::createElementGroup(const std::string & group_name,
       AKANTU_EXCEPTION("Trying to create a element group that already exists:" << group_name);
   }
 
+  std::stringstream sstr;
+  sstr << this->id << ":" << group_name << "_element_group";
+
   ElementGroup * element_group = new ElementGroup(group_name, mesh, new_node_group,
 						  dimension,
-						  id + ":" + group_name + "_element_group",
+                                                  sstr.str(),
 						  memory_id);
 
-  node_groups[group_name + "_nodes"] = &new_node_group;
+  std::stringstream sstr_nodes;
+  sstr_nodes << group_name << "_nodes";
+
+  node_groups[sstr_nodes.str()] = &new_node_group;
   element_groups[group_name] = element_group;
 
   AKANTU_DEBUG_OUT();
@@ -294,7 +303,9 @@ public:
     distributed_synchronizer.waitEndSynchronize(*this, _gst_gm_clusters);
 
     /// count total number of pairs
-    Array<Int> nb_pairs(nb_proc);
+    Array<int> nb_pairs(nb_proc); // This is potentially a bug for more than
+				  // 2**31 pairs, but due to a all gatherv after
+				  // it must be int to match MPI interfaces
     nb_pairs(rank) = distant_ids.size();
     comm.allGather(nb_pairs.storage(), 1);
 
@@ -781,38 +792,7 @@ void GroupManager::createElementGroupFromNodeGroup(const std::string & name,
   NodeGroup & node_group = getNodeGroup(node_group_name);
   ElementGroup & group = createElementGroup(name, dimension, node_group);
 
-  CSR<Element> node_to_elem;
-  MeshUtils::buildNode2Elements(mesh, node_to_elem, dimension);
-
-  std::set<Element> seen;
-
-  Array<UInt>::const_iterator<> itn  = node_group.begin();
-  Array<UInt>::const_iterator<> endn = node_group.end();
-  for (;itn != endn; ++itn) {
-    CSR<Element>::iterator ite = node_to_elem.begin(*itn);
-    CSR<Element>::iterator ende = node_to_elem.end(*itn);
-    for (;ite != ende; ++ite) {
-      const Element & elem = *ite;
-      if(dimension != _all_dimensions && dimension != Mesh::getSpatialDimension(elem.type)) continue;
-      if(seen.find(elem) != seen.end()) continue;
-
-      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(elem.type);
-      Array<UInt>::const_iterator< Vector<UInt> > conn_it =
-	mesh.getConnectivity(elem.type, elem.ghost_type).begin(nb_nodes_per_element);
-      const Vector<UInt> & conn = conn_it[elem.element];
-
-      UInt count = 0;
-      for (UInt n = 0; n < conn.size(); ++n) {
-	count += (node_group.getNodes().find(conn(n)) != -1 ? 1 : 0);
-      }
-
-      if(count == nb_nodes_per_element) group.add(elem);
-
-      seen.insert(elem);
-    }
-  }
-
-  group.optimize();
+  group.fillFromNodeGroup();
 }
 
 /* -------------------------------------------------------------------------- */

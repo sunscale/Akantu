@@ -49,6 +49,7 @@ __BEGIN_AKANTU__
   
 /* -------------------------------------------------------------------------- */
 
+/// Replacement class for algorithm that can't use the AABB tree types
 template<typename iterator>
 struct VoidTree {
   VoidTree(const iterator & begin, const iterator & end) {}
@@ -62,6 +63,7 @@ struct TreeTypeHelper {
   typedef Primitive primitive_type;
   typedef typename std::list<primitive_type> container_type;
   typedef typename container_type::iterator iterator;
+  typedef typename container_type::const_iterator const_iterator;
   typedef typename CGAL::Point_3<Kernel> point_type;
   typedef VoidTree<iterator> tree;
 };

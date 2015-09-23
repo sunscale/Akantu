@@ -40,7 +40,6 @@
 /* -------------------------------------------------------------------------- */
 #include <list>
 #include <limits>
-#include <boost/preprocessor.hpp>
 
 /* -------------------------------------------------------------------------- */
 #define __BEGIN_AKANTU__ namespace akantu {
@@ -64,17 +63,11 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /* Common types                                                               */
 /* -------------------------------------------------------------------------- */
-
-typedef double Real;
-typedef unsigned int UInt;
-typedef unsigned long long UInt64;
-typedef signed int Int;
-
 typedef std::string ID;
 
-static const Real UINT_INIT_VALUE = 0;
+static const Real UINT_INIT_VALUE = Real(0.);
 #ifdef AKANTU_NDEBUG
-  static const Real REAL_INIT_VALUE = 0;
+  static const Real REAL_INIT_VALUE = Real(0.);
 #else
   static const Real REAL_INIT_VALUE = std::numeric_limits<Real>::quiet_NaN();
 #endif
@@ -98,62 +91,6 @@ extern const UInt _all_dimensions;
 /* Mesh/FEM/Model types                                                       */
 /* -------------------------------------------------------------------------- */
 __END_AKANTU__
-
-#define AKANTU_ALL_ELEMENT_TYPE			\
-  AKANTU_ek_regular_ELEMENT_TYPE		\
-  AKANTU_ek_cohesive_ELEMENT_TYPE		\
-  AKANTU_ek_structural_ELEMENT_TYPE		\
-  AKANTU_ek_igfem_ELEMENT_TYPE
-
-#define AKANTU_NOT_STRUCTURAL_ELEMENT_TYPE	\
-  AKANTU_ek_regular_ELEMENT_TYPE		\
-  AKANTU_ek_cohesive_ELEMENT_TYPE		\
-  AKANTU_ek_igfem_ELEMENT_TYPE
-
-// /// @enum ElementType type of elements
-// enum ElementType {
-//   _not_defined,
-//   _point_1,
-//   _segment_2,         ///< first order segment
-//   _segment_3,         ///< second order segment
-//   _triangle_3,        ///< first order triangle
-//   _triangle_6,        ///< second order triangle
-//   _tetrahedron_4,     ///< first order tetrahedron
-//   _tetrahedron_10,    ///< second order tetrahedron
-//   _quadrangle_4,      ///< first order quadrangle
-//   _quadrangle_8,      ///< second order quadrangle
-//   _hexahedron_8,      ///< first order hexahedron
-//   _hexahedron_20,     ///< second order hexahedron
-//   _pentahedron_6,     ///< first order pentahedron
-//   _pentahedron_15,    ///< second order pentahedron
-
-// #if defined (AKANTU_STRUCTURAL_MECHANICS)
-//   _bernoulli_beam_2,  ///< Bernoulli beam 2D
-//   _bernoulli_beam_3,  ///< Bernoulli beam 3D
-//   _kirchhoff_shell,   ///< Kirchhoff shell
-// #endif
-
-// #if defined(AKANTU_COHESIVE_ELEMENT)
-//   _cohesive_2d_4,     ///< first order 2D cohesive
-//   _cohesive_2d_6,     ///< second order 2D cohesive
-//   _cohesive_1d_2,     ///< first order 1D cohesive
-//   _cohesive_3d_6,     ///< first order 3D cohesive
-//   _cohesive_3d_12,     ///< second order 3D cohesive
-// #endif
-// #if defined(AKANTU_IGFEM)
-//   _igfem_triangle_3,  ///< first order triangle for IGFEM
-// #endif
-//   _max_element_type
-// };
-
-
-
-// //! standard output stream operator for ElementType
-// inline std::ostream & operator <<(std::ostream & stream, ElementType type);
-
-// //! standard input stream operator for ElementType
-// inline std::istream & operator >>(std::istream & stream, ElementType & type);
-
 
 #include "aka_element_classes_info.hh"
 
@@ -200,9 +137,6 @@ enum ContactImplementationMethod {
   _uzawa,
   _generalized_newton
 };
-
-
-
 
 /// enum SolveConvergenceMethod different resolution algorithms
 enum SolveConvergenceMethod {
@@ -297,8 +231,10 @@ enum SynchronizationTag {
   _gst_smmc_facets_conn, //< synchronization of facet global connectivity
   _gst_smmc_facets_stress, //< synchronization of facets' stress to setup facet synch
   _gst_smmc_damage,      //< synchronization of damage
+  _gst_smmi_global_conn, //< synchronization of global connectivities for igfem
   //--- CohesiveElementInserter tags ---
   _gst_ce_inserter,      //< synchronization of global nodes id of newly inserted cohesive elements
+  _gst_ce_groups,        //< synchronization of cohesive element insertion depending on facet groups
   //--- GroupManager tags ---
   _gst_gm_clusters,      //< synchronization of clusters
   //--- HeatTransfer tags ---
@@ -496,5 +432,43 @@ const ParserSection & getUserParser();
 __END_AKANTU__
 
 #include "aka_common_inline_impl.cc"
+
+/* -------------------------------------------------------------------------- */
+
+#if defined(AKANTU_UNORDERED_MAP_IS_CXX11)
+
+__BEGIN_AKANTU_UNORDERED_MAP__
+
+#if AKANTU_INTEGER_SIZE == 4
+#define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b9
+#elif AKANTU_INTEGER_SIZE == 8
+#define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b97f4a7c13LL
+#endif
+
+/**
+ * Hashing function for pairs based on hash_combine from boost The magic number
+ * is coming from the golden number @f[\phi = \frac{1 + \sqrt5}{2}@f]
+ * @f[\frac{2^32}{\phi} = 0x9e3779b9@f]
+ * http://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
+ * http://burtleburtle.net/bob/hash/doobs.html
+ */
+template <typename a, typename b> struct hash<std::pair<a, b>> {
+public:
+  hash() : ah(), bh() {}
+  size_t operator()(const std::pair<a, b> & p) const {
+    size_t seed = ah(p.first);
+    return bh(p.second) + AKANTU_HASH_COMBINE_MAGIC_NUMBER + (seed << 6) +
+           (seed >> 2);
+  }
+
+private:
+  const hash<a> ah;
+  const hash<b> bh;
+};
+
+__END_AKANTU_UNORDERED_MAP__
+
+#endif
+
 
 #endif /* __AKANTU_COMMON_HH__ */

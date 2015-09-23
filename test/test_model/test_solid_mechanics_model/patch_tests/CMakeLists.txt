@@ -50,7 +50,8 @@ set(LIST_TYPES
   tetrahedron_10
   hexahedron_8
   hexahedron_20
-#  pentahedron_6
+  pentahedron_6
+  pentahedron_15
   )
 
 set(LIST_TYPES_2D

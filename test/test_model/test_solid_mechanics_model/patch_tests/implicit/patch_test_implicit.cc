@@ -152,6 +152,7 @@ int main(int argc, char *argv[])
   /* ------------------------------------------------------------------------ */
   my_model.solveStep<_scm_newton_raphson_tangent_modified, _scc_residual>(2e-4, 2);
   my_model.getStiffnessMatrix().saveMatrix("clown_matrix.mtx");
+
   /* ------------------------------------------------------------------------ */
   /* Checks                                                                   */
   /* ------------------------------------------------------------------------ */
@@ -186,7 +187,7 @@ int main(int argc, char *argv[])
 	std::cerr << "strain error: " << strain_error << " > " << strain_tolerance << std::endl;
 	std::cerr << "strain: " << strain << std::endl
 		  << "prescribed strain: " << presc_strain << std::endl;
-	return EXIT_FAILURE;
+       	return EXIT_FAILURE;
       } else {
 	std::cerr << "strain error: " << strain_error << " < " << strain_tolerance << std::endl;
       }

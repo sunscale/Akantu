@@ -38,10 +38,11 @@
 #include "dumper_elemental_field.hh"
 #include "dumper_nodal_field.hh"
 #include "dumper_filtered_connectivity.hh"
-//#include "dumper_connectivity_field.hh"
-#include "dumper_element_type.hh"
 #include "dumper_variable.hh"
 #include "mesh.hh"
+#if defined(AKANTU_IGFEM)
+#include "dumper_igfem_connectivity.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
@@ -115,14 +116,15 @@ void DumperIOHelper::registerMesh(const Mesh & mesh,
 				  UInt spatial_dimension,
 				  const GhostType & ghost_type,
 				  const ElementKind & element_kind) {
-// #if defined(AKANTU_COHESIVE_ELEMENT)
-//   if (element_kind == _ek_cohesive) {
-//     registerField("connectivities",
-//		  new dumper::CohesiveConnectivityField(mesh.getConnectivities(),
-//							spatial_dimension,
-//							ghost_type));
-//   } else
-// #endif
+
+#if defined(AKANTU_IGFEM)
+  if (element_kind == _ek_igfem) {
+    registerField("connectivities",
+		  new dumper::IGFEMConnectivityField(mesh.getConnectivities(),
+						     spatial_dimension,
+						     ghost_type));
+  } else
+#endif
   
     registerField("connectivities",
 		  new dumper::ElementalField<UInt>(mesh.getConnectivities(),
@@ -130,11 +132,6 @@ void DumperIOHelper::registerMesh(const Mesh & mesh,
 						   ghost_type,
 						   element_kind));
 
-  // registerField("element_type",
-  //		new dumper::ElementTypeField<>(mesh.getConnectivities(),
-  //					       spatial_dimension,
-  //					       ghost_type,
-  //					       element_kind));
   registerField("positions",
 		new dumper::NodalField<Real>(mesh.getNodes()));
 }
@@ -146,10 +143,8 @@ void DumperIOHelper::registerFilteredMesh(const Mesh & mesh,
 					  UInt spatial_dimension,
 					  const GhostType & ghost_type,
 					  const ElementKind & element_kind) {
-
-
   ElementTypeMapArrayFilter<UInt> * f_connectivities =
-    new ElementTypeMapArrayFilter<UInt>(mesh.getConnectivities(),elements_filter);
+    new ElementTypeMapArrayFilter<UInt>(mesh.getConnectivities(), elements_filter);
 
   this->registerField("connectivities",
                       new dumper::FilteredConnectivityField(*f_connectivities,
@@ -157,12 +152,6 @@ void DumperIOHelper::registerFilteredMesh(const Mesh & mesh,
                                                             spatial_dimension,
                                                             ghost_type,
                                                             element_kind));
-
-  // this->registerField("element_type",
-  //		      new dumper::ElementTypeField<true>(*f_connectivities,
-  //							 spatial_dimension,
-  //							 ghost_type,
-  //							 element_kind));
 
   this->registerField("positions",new dumper::NodalField<Real,true>(
                                                                     mesh.getNodes(),
@@ -275,6 +264,11 @@ template <>
 iohelper::ElemType getIOHelperType<_cohesive_3d_6>() { return iohelper::COH3D6; }
 template <>
 iohelper::ElemType getIOHelperType<_cohesive_3d_12>() { return iohelper::COH3D12; }
+
+template <>
+iohelper::ElemType getIOHelperType<_cohesive_3d_8>() { return iohelper::COH3D8; }
+//template <>
+//iohelper::ElemType getIOHelperType<_cohesive_3d_16>() { return iohelper::COH3D16; }
 #endif
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)

@@ -47,25 +47,30 @@ class Line_arc : public CGAL::Line_arc_3<K> {
 public:
   /// Default constructor
   Line_arc() :
-    CGAL::Line_arc_3<K>(), meshId(0) {}
+    CGAL::Line_arc_3<K>(), mesh_id(0), seg_id(0) {}
 
   /// Copy constructor
   Line_arc(const Line_arc & other) :
-    CGAL::Line_arc_3<K>(other), meshId(other.meshId) {}
+    CGAL::Line_arc_3<K>(other), mesh_id(other.mesh_id), seg_id(other.seg_id) {}
 
   /// Construct from 3 points
   // "CGAL-4.5/doc_html/Circular_kernel_3/classCGAL_1_1Line__arc__3.html"
   Line_arc(const CGAL::Line_3<K> & l, const CGAL::Circular_arc_point_3<K> & a,
 	  const CGAL::Circular_arc_point_3<K> & b):
-    CGAL::Line_arc_3<K>(l, a, b), meshId(0) {}
+    CGAL::Line_arc_3<K>(l, a, b), mesh_id(0), seg_id(0) {}
 
 public:
-  UInt id() const { return meshId; }
-  void setId(UInt newId) { meshId = newId; }
+  UInt id() const { return mesh_id; }
+  UInt segId() const { return seg_id; }
+  void setId(UInt newId) { mesh_id = newId; }
+  void setSegId(UInt newId) { seg_id = newId; }
 
 protected:
   /// Id of the element represented by the primitive
-  UInt meshId;
+  UInt mesh_id;
+
+  /// Id of the segment represented by the primitive
+  UInt seg_id;
 };
 
 __END_AKANTU__

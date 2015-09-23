@@ -83,7 +83,8 @@ static PetscErrorCode PETScErrorHandler(MPI_Comm,
 
 /* -------------------------------------------------------------------------- */
 void StaticSolver::initialize(int & argc, char ** & argv) {
-  AKANTU_DEBUG_ASSERT(this->is_initialized != true, "The static solver has already been initialized");
+  if (this->is_initialized) return;
+  //  AKANTU_DEBUG_ASSERT(this->is_initialized != true, "The static solver has already been initialized");
 #ifdef AKANTU_USE_PETSC
     PetscErrorCode petsc_error = PetscInitialize(&argc, &argv, NULL, NULL);
     if(petsc_error != 0) {

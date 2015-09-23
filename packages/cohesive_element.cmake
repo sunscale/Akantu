@@ -71,6 +71,39 @@ package_declare_sources(cohesive_element
   )
 
 
+package_declare_elements(cohesive_element
+  ELEMENT_TYPES
+  _cohesive_2d_4
+  _cohesive_2d_6
+  _cohesive_1d_2
+  _cohesive_3d_6
+  _cohesive_3d_12
+  _cohesive_3d_8
+  _cohesive_3d_16
+  KIND cohesive
+  GEOMETRICAL_TYPES
+  _gt_cohesive_2d_4
+  _gt_cohesive_2d_6
+  _gt_cohesive_1d_2
+  _gt_cohesive_3d_6
+  _gt_cohesive_3d_12
+  _gt_cohesive_3d_8
+  _gt_cohesive_3d_16
+  FE_ENGINE_LISTS
+  gradient_on_quadrature_points
+  interpolate_on_quadrature_points
+  compute_normals_on_control_points
+  inverse_map
+  contains
+  get_shapes_derivatives
+  )
+
+package_declare_material_infos(cohesive_element
+  LIST AKANTU_COHESIVE_MATERIAL_LIST
+  INCLUDE material_cohesive_includes.hh
+  )
+
+
 package_declare_documentation_files(cohesive_element
   manual-cohesive_elements.tex
   manual-cohesive_elements_insertion.tex

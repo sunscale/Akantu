@@ -35,6 +35,7 @@
 // akantu header files
 #include "mesh_io_abaqus.hh"
 #include "mesh.hh"
+#include "mesh_utils.hh"
 
 #include "element_group.hh"
 #include "node_group.hh"
@@ -523,7 +524,7 @@ void MeshIOAbaqus::read(const std::string& filename, Mesh& mesh) {
 
       for (; tit != tend; ++tit) {
 	Array<std::string> & abaqus_material
-	  = *mesh.getDataPointer<std::string>("abaqus_material", *tit);
+	  = this->getData<std::string>(mesh, "abaqus_material", *tit);
 
 	ElementGroup::const_element_iterator eit  = eg.element_begin(*tit);
 	ElementGroup::const_element_iterator eend = eg.element_end(*tit);
@@ -534,6 +535,8 @@ void MeshIOAbaqus::read(const std::string& filename, Mesh& mesh) {
     }
   }
 
+  this->setNbGlobalNodes(mesh, mesh.getNodes().getSize());
+  MeshUtils::fillElementToSubElementsData(mesh);
 }
 
 

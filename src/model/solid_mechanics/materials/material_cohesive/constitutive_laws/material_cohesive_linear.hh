@@ -158,6 +158,10 @@ protected:
   /// variable saying if there should be penalty contact also after
   /// breaking the cohesive elements
   bool contact_after_breaking;
+
+  /// insertion of cohesive element when stress is high enough just on
+  /// one quadrature point
+  bool max_quad_stress_insertion;
 };
 
 

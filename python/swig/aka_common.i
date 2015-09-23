@@ -1,5 +1,7 @@
 %{
   #include "aka_common.hh"
+  #include "aka_csr.hh"
+  #include "element.hh"
 %}
 
 namespace akantu {
@@ -7,6 +9,8 @@ namespace akantu {
   %ignore getUserParser;
   %ignore initialize(int & argc, char ** & argv);
   %ignore initialize(const std::string & input_file, int & argc, char ** & argv);
+  extern const Array<UInt> empty_filter;
+
 }
 
 %typemap(in) (int argc, char *argv[]) {
@@ -49,7 +53,6 @@ namespace akantu {
     void _initializeWithArgv(const std::string & input_file, int argc, char *argv[]) {
       initialize(input_file, argc, argv);
     }
-    
   }
 %}
 
@@ -58,4 +61,11 @@ namespace akantu {
   def initializeWithArgv(input_file):
     _initializeWithArgv(input_file, _aka_sys.argv)
 %}
+
+%include "aka_config.hh"
 %include "aka_common.hh"
+%include "aka_element_classes_info.hh"
+%include "element.hh"
+
+
+

@@ -460,8 +460,8 @@ void DOFSynchronizer::initScatterGatherCommunicationScheme() {
   UInt nb_total_dofs = pos;
   for (UInt p = prank; p < psize; ++p)  nb_total_dofs += nb_dof_per_proc[p];
 
-  Int * nb_values = new Int[psize];
-  for (UInt p = 0; p < psize; ++p) nb_values[p] = nb_dof_per_proc[p] * 2;
+  int * nb_values = new int[psize];
+  for (unsigned int p = 0; p < psize; ++p) nb_values[p] = nb_dof_per_proc[p] * 2;
 
   UInt * buffer = new UInt[2*nb_total_dofs];
   memcpy(buffer + 2 * pos, local_dofs->storage(), local_dofs->getSize() * 2 * sizeof(UInt));

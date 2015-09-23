@@ -34,7 +34,7 @@
 #define __AKANTU_MESH_GEOM_INTERSECTOR_HH__
 
 #include "aka_common.hh"
-#include "mesh_geom_abstract.hh"
+#include "mesh_abstract_intersector.hh"
 #include "mesh_geom_factory.hh"
 
 /* -------------------------------------------------------------------------- */
@@ -45,15 +45,11 @@ __BEGIN_AKANTU__
  * @brief Class used to perform intersections on a mesh and construct output data
  */
 template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
-class MeshGeomIntersector : public MeshGeomAbstract {
-
-protected:
-  /// Result of intersection function type
-  typedef typename IntersectionTypeHelper<TreeTypeHelper<Primitive, Kernel>, Query>::intersection_type result_type;
+class MeshGeomIntersector : public MeshAbstractIntersector<Query> {
 
 public:
   /// Construct from mesh
-  explicit MeshGeomIntersector(const Mesh & mesh);
+  explicit MeshGeomIntersector(Mesh & mesh);
 
   /// Destructor
   virtual ~MeshGeomIntersector();
@@ -61,19 +57,6 @@ public:
 public:
   /// Construct the primitive tree object
   virtual void constructData();
-
-  /**
-   * @brief Compute the intersection with a query object
-   *
-   * This function needs to be implemented for every subclass. It computes the intersections
-   * with the tree of primitives and creates the data for the user.
-   * 
-   * @param query the CGAL primitive of the query object
-   */
-  virtual void computeIntersectionQuery(const Query & query) = 0;
-
-  /// Compute list of queries
-  virtual void computeIntersectionQueryList(const std::list<Query> & query_list);
 
 protected:
   /// Factory object containing the primitive tree

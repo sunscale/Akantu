@@ -57,6 +57,7 @@ struct TypeTraits {
 
 /* -------------------------------------------------------------------------- */
 
+// specialization for the case in which input and output types are the same
 template <class T, template <class> class ret, bool filtered>
 struct SingleType
   : public TypeTraits<T,ret<T>,ElementTypeMapArray<T> >{
@@ -64,12 +65,16 @@ struct SingleType
 };
 
 /* -------------------------------------------------------------------------- */
+
+// same as before but for filtered data
 template <class T, template <class> class ret>
 struct SingleType<T,ret,true> : 
   public TypeTraits<T,ret<T>, ElementTypeMapArrayFilter<T> >{
   
 };
 /* -------------------------------------------------------------------------- */
+
+// specialization for the case in which input and output types are different
 template <class it_type, class data_type, template <class> class ret, 
 	  bool filtered>
 struct DualType
@@ -77,6 +82,8 @@ struct DualType
 };
 
 /* -------------------------------------------------------------------------- */
+
+// same as before but for filtered data
 template <class it_type, class data_type,template <class> class ret>
 struct DualType<it_type,data_type,ret,true> : 
   public TypeTraits<data_type,ret<data_type>, ElementTypeMapArrayFilter<it_type> >{

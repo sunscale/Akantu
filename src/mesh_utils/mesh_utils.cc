@@ -38,8 +38,10 @@
 #include "aka_safe_enum.hh"
 #include "fe_engine.hh"
 /* -------------------------------------------------------------------------- */
+#include <limits>
 #include <numeric>
 #include <queue>
+#include <set>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -345,7 +347,6 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
     }
   }
 
-
   Element current_element;
   for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
     GhostType ghost_type = *gt;
@@ -357,166 +358,174 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
 
     for(; first != last; ++first) {
       ElementType type = *first;
-      ElementType facet_type = mesh.getFacetType(type);
+      Vector<ElementType> facet_types = mesh.getAllFacetTypes(type);
 
       current_element.type = type;
 
-      UInt nb_element = mesh.getNbElement(type, ghost_type);
-      Array< std::vector<Element> > * element_to_subelement =
-	&mesh_facets.getElementToSubelement(facet_type, ghost_type);
-      Array<UInt> * connectivity_facets = &mesh_facets.getConnectivity(facet_type, ghost_type);
-      UInt nb_facet_per_element = mesh.getNbFacetsPerElement(type);
-      const Array<UInt> & element_connectivity = mesh.getConnectivity(type, ghost_type);
-      const Matrix<UInt> facet_local_connectivity = mesh.getFacetLocalConnectivity(type);
-      UInt nb_nodes_per_facet = connectivity_facets->getNbComponent();
-      Vector<UInt> facet(nb_nodes_per_facet);
+      for (UInt ft = 0; ft < facet_types.size(); ++ft) {
+	ElementType facet_type = facet_types(ft);
+	UInt nb_element = mesh.getNbElement(type, ghost_type);
 
-      for (UInt el = 0; el < nb_element; ++el) {
-	current_element.element = el;
+	Array< std::vector<Element> > * element_to_subelement =
+	  &mesh_facets.getElementToSubelement(facet_type, ghost_type);
+	Array<UInt> * connectivity_facets = &mesh_facets.getConnectivity(facet_type, ghost_type);
 
-	for (UInt f = 0; f < nb_facet_per_element; ++f) {
-	  for (UInt n = 0; n < nb_nodes_per_facet; ++n)
-	    facet(n) = element_connectivity(el, facet_local_connectivity(f, n));
+	UInt nb_facet_per_element = mesh.getNbFacetsPerElement(type, ft);
+	const Array<UInt> & element_connectivity = mesh.getConnectivity(type, ghost_type);
 
-	  UInt first_node_nb_elements = node_to_elem.getNbCols(facet(0));
-	  counter.resize(first_node_nb_elements);
-	  counter.clear();
+	const Matrix<UInt> facet_local_connectivity = mesh.getFacetLocalConnectivity(type, ft);
+	UInt nb_nodes_per_facet = connectivity_facets->getNbComponent();
+	Vector<UInt> facet(nb_nodes_per_facet);
 
-	  //loop over the other nodes to search intersecting elements,
-	  //which are the elements that share another node with the
-	  //starting element after first_node
-	  CSR<Element>::iterator first_node_elements = node_to_elem.begin(facet(0));
-	  CSR<Element>::iterator first_node_elements_end = node_to_elem.end(facet(0));
-	  UInt local_el = 0;
-	  for (; first_node_elements != first_node_elements_end;
-	       ++first_node_elements, ++local_el) {
-	    for (UInt n = 1; n < nb_nodes_per_facet; ++n) {
-	      CSR<Element>::iterator node_elements_begin = node_to_elem.begin(facet(n));
-	      CSR<Element>::iterator node_elements_end   = node_to_elem.end  (facet(n));
-	      counter(local_el) += std::count(node_elements_begin,
-					      node_elements_end,
-					      *first_node_elements);
+	for (UInt el = 0; el < nb_element; ++el) {
+	  current_element.element = el;
+
+	  for (UInt f = 0; f < nb_facet_per_element; ++f) {
+	    for (UInt n = 0; n < nb_nodes_per_facet; ++n)
+	      facet(n) = element_connectivity(el, facet_local_connectivity(f, n));
+
+	    UInt first_node_nb_elements = node_to_elem.getNbCols(facet(0));
+	    counter.resize(first_node_nb_elements);
+	    counter.clear();
+
+	    //loop over the other nodes to search intersecting elements,
+	    //which are the elements that share another node with the
+	    //starting element after first_node
+	    CSR<Element>::iterator first_node_elements = node_to_elem.begin(facet(0));
+	    CSR<Element>::iterator first_node_elements_end = node_to_elem.end(facet(0));
+	    UInt local_el = 0;
+	    for (; first_node_elements != first_node_elements_end;
+		 ++first_node_elements, ++local_el) {
+	      for (UInt n = 1; n < nb_nodes_per_facet; ++n) {
+		CSR<Element>::iterator node_elements_begin = node_to_elem.begin(facet(n));
+		CSR<Element>::iterator node_elements_end   = node_to_elem.end  (facet(n));
+		counter(local_el) += std::count(node_elements_begin,
+						node_elements_end,
+						*first_node_elements);
+	      }
 	    }
-	  }
 
-	  // counting the number of elements connected to the facets and
-	  // taking the minimum element number, because the facet should
-	  // be inserted just once
-	  UInt nb_element_connected_to_facet = 0;
-	  Element minimum_el = ElementNull;
-	  connected_elements.clear();
-	  for (UInt el_f = 0; el_f < first_node_nb_elements; el_f++) {
-	    Element real_el = node_to_elem(facet(0), el_f);
-	    if (counter(el_f) == nb_nodes_per_facet - 1) {
-	      ++nb_element_connected_to_facet;
-	      minimum_el = std::min(minimum_el, real_el);
-	      connected_elements.push_back(real_el);
+	    // counting the number of elements connected to the facets and
+	    // taking the minimum element number, because the facet should
+	    // be inserted just once
+	    UInt nb_element_connected_to_facet = 0;
+	    Element minimum_el = ElementNull;
+	    connected_elements.clear();
+	    for (UInt el_f = 0; el_f < first_node_nb_elements; el_f++) {
+	      Element real_el = node_to_elem(facet(0), el_f);
+	      if (counter(el_f) == nb_nodes_per_facet - 1) {
+		++nb_element_connected_to_facet;
+		minimum_el = std::min(minimum_el, real_el);
+		connected_elements.push_back(real_el);
+	      }
 	    }
-	  }
 
-	  if (minimum_el == current_element) {
-	    bool full_ghost_facet = false;
+	    if (minimum_el == current_element) {
+	      bool full_ghost_facet = false;
 
-	    UInt n = 0;
-	    while (n < nb_nodes_per_facet && mesh.isPureGhostNode(facet(n))) ++n;
-	    if (n == nb_nodes_per_facet) full_ghost_facet = true;
+	      UInt n = 0;
+	      while (n < nb_nodes_per_facet && mesh.isPureGhostNode(facet(n))) ++n;
+	      if (n == nb_nodes_per_facet) full_ghost_facet = true;
 
-	    if (!full_ghost_facet) {
-	      if (!boundary_only || (boundary_only && nb_element_connected_to_facet == 1)) {
+	      if (!full_ghost_facet) {
+		if (!boundary_only || (boundary_only && nb_element_connected_to_facet == 1)) {
 
-		std::vector<Element> elements;
+		  std::vector<Element> elements;
 
-		// build elements_on_facets: linearized_el must come first
-		// in order to store the facet in the correct direction
-		// and avoid to invert the sign in the normal computation
-		elements.push_back(current_element);
+		  // build elements_on_facets: linearized_el must come first
+		  // in order to store the facet in the correct direction
+		  // and avoid to invert the sign in the normal computation
+		  elements.push_back(current_element);
 
-		/// boundary facet
-		if (nb_element_connected_to_facet == 1)
-		  elements.push_back(ElementNull);
-		/// internal facet
-		else if (nb_element_connected_to_facet == 2) {
-		  elements.push_back(connected_elements[1]);
+		  /// boundary facet
+		  if (nb_element_connected_to_facet == 1)
+		    elements.push_back(ElementNull);
+		  /// internal facet
+		  else if (nb_element_connected_to_facet == 2) {
+		    elements.push_back(connected_elements[1]);
 
-		  /// check if facet is in between ghost and normal
-		  /// elements: if it's the case, the facet is either
-		  /// ghost or not ghost. The criterion to decide this
-		  /// is arbitrary. It was chosen to check the processor
-		  /// id (prank) of the two neighboring elements. If
-		  /// prank of the ghost element is lower than prank of
-		  /// the normal one, the facet is not ghost, otherwise
-		  /// it's ghost
-		  GhostType gt[2] = { _not_ghost, _not_ghost };
-		  for (UInt el = 0; el < connected_elements.size(); ++el)
-		    gt[el] = connected_elements[el].ghost_type;
+		    /// check if facet is in between ghost and normal
+		    /// elements: if it's the case, the facet is either
+		    /// ghost or not ghost. The criterion to decide this
+		    /// is arbitrary. It was chosen to check the processor
+		    /// id (prank) of the two neighboring elements. If
+		    /// prank of the ghost element is lower than prank of
+		    /// the normal one, the facet is not ghost, otherwise
+		    /// it's ghost
+		    GhostType gt[2] = { _not_ghost, _not_ghost };
+		    for (UInt el = 0; el < connected_elements.size(); ++el)
+		      gt[el] = connected_elements[el].ghost_type;
 
-		  if (gt[0] + gt[1] == 1) {
-		    if (prank_to_element) {
-		      UInt prank[2];
-		      for (UInt el = 0; el < 2; ++el) {
-			UInt current_el = connected_elements[el].element;
-			ElementType current_type = connected_elements[el].type;
-			GhostType current_gt = connected_elements[el].ghost_type;
+		    if (gt[0] + gt[1] == 1) {
+		      if (prank_to_element) {
+			UInt prank[2];
+			for (UInt el = 0; el < 2; ++el) {
+			  UInt current_el = connected_elements[el].element;
+			  ElementType current_type = connected_elements[el].type;
+			  GhostType current_gt = connected_elements[el].ghost_type;
 
-			const Array<UInt> & prank_to_el
-			  = (*prank_to_element)(current_type, current_gt);
+			  const Array<UInt> & prank_to_el
+			    = (*prank_to_element)(current_type, current_gt);
 
-			prank[el] = prank_to_el(current_el);
-		      }
+			  prank[el] = prank_to_el(current_el);
+			}
 
-		      bool ghost_one = (gt[0] != _ghost);
+			bool ghost_one = (gt[0] != _ghost);
 
-		      if (prank[ghost_one] > prank[!ghost_one])
-			facet_ghost_type = _not_ghost;
-		      else
-			facet_ghost_type = _ghost;
+			if (prank[ghost_one] > prank[!ghost_one])
+			  facet_ghost_type = _not_ghost;
+			else
+			  facet_ghost_type = _ghost;
 
-		      connectivity_facets = &mesh_facets.getConnectivity(facet_type, facet_ghost_type);
-		      element_to_subelement = &mesh_facets.getElementToSubelement(facet_type, facet_ghost_type);
-		    }
-		  }
-		}
-		/// facet of facet
-		else {
-		  for (UInt i = 1; i < nb_element_connected_to_facet; ++i) {
-		    elements.push_back(connected_elements[i]);
-		  }
-		}
-
-		element_to_subelement->push_back(elements);
-		connectivity_facets->push_back(facet);
-
-		/// current facet index
-		UInt current_facet = connectivity_facets->getSize() - 1;
-
-		/// loop on every element connected to current facet and
-		/// insert current facet in the first free spot of the
-		/// subelement_to_element vector
-		for (UInt elem = 0; elem < elements.size(); ++elem) {
-		  Element loc_el = elements[elem];
-
-		  if (loc_el.type != _not_defined) {
-
-		    Array<Element> & subelement_to_element =
-		      mesh_facets.getSubelementToElement(type, loc_el.ghost_type);
-
-		    for (UInt f_in = 0; f_in < nb_facet_per_element; ++f_in) {
-		      if (subelement_to_element(loc_el.element, f_in).type == _not_defined) {
-			subelement_to_element(loc_el.element, f_in).type = facet_type;
-			subelement_to_element(loc_el.element, f_in).element = current_facet;
-			subelement_to_element(loc_el.element, f_in).ghost_type = facet_ghost_type;
-			break;
+			connectivity_facets = &mesh_facets.getConnectivity(facet_type, facet_ghost_type);
+			element_to_subelement = &mesh_facets.getElementToSubelement(facet_type, facet_ghost_type);
 		      }
 		    }
 		  }
-		}
+		  /// facet of facet
+		  else {
+		    for (UInt i = 1; i < nb_element_connected_to_facet; ++i) {
+		      elements.push_back(connected_elements[i]);
+		    }
+		  }
 
-		/// reset connectivity in case a facet was found in
-		/// between ghost and normal elements
-		if (facet_ghost_type != ghost_type) {
-		  facet_ghost_type = ghost_type;
-		  connectivity_facets = mesh_facets.getConnectivityPointer(facet_type, facet_ghost_type);
-		  element_to_subelement = mesh_facets.getElementToSubelementPointer(facet_type, facet_ghost_type);
+		  element_to_subelement->push_back(elements);
+		  connectivity_facets->push_back(facet);
+
+		  /// current facet index
+		  UInt current_facet = connectivity_facets->getSize() - 1;
+
+		  /// loop on every element connected to current facet and
+		  /// insert current facet in the first free spot of the
+		  /// subelement_to_element vector
+		  for (UInt elem = 0; elem < elements.size(); ++elem) {
+		    Element loc_el = elements[elem];
+
+		    if (loc_el.type != _not_defined) {
+
+		      Array<Element> & subelement_to_element =
+			mesh_facets.getSubelementToElement(loc_el.type, loc_el.ghost_type);
+
+		      UInt nb_facet_per_loc_element = subelement_to_element.getNbComponent();
+
+		      for (UInt f_in = 0; f_in < nb_facet_per_loc_element; ++f_in) {
+			if (subelement_to_element(loc_el.element, f_in).type == _not_defined) {
+			  subelement_to_element(loc_el.element, f_in).type = facet_type;
+			  subelement_to_element(loc_el.element, f_in).element = current_facet;
+			  subelement_to_element(loc_el.element, f_in).ghost_type = facet_ghost_type;
+			  break;
+			}
+		      }
+		    }
+		  }
+
+		  /// reset connectivity in case a facet was found in
+		  /// between ghost and normal elements
+		  if (facet_ghost_type != ghost_type) {
+		    facet_ghost_type = ghost_type;
+		    connectivity_facets = mesh_facets.getConnectivityPointer(facet_type, facet_ghost_type);
+		    element_to_subelement = mesh_facets.getElementToSubelementPointer(facet_type, facet_ghost_type);
+		  }
 		}
 	      }
 	    }
@@ -525,7 +534,6 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
       }
     }
   }
-
   // restore the parent of mesh_facet
   mesh_facets.defineMeshParent(mesh_facets_parent);
 
@@ -1813,7 +1821,6 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
       }
     }
 
-
     CSR<Element> nodes_to_elements;
     buildNode2Elements(mesh, nodes_to_elements, sp);
 
@@ -1873,8 +1880,11 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
 						   elem.ghost_type));
 
 	    UInt f(0);
-	    for(; f < mesh.getNbFacetsPerElement(elem.type) && subelement_to_element(elem.element, f) != ElementNull; ++f);
+	    for(; f < mesh.getNbFacetsPerElement(elem.type) &&
+		  subelement_to_element(elem.element, f) != ElementNull; ++f);
+
 	    AKANTU_DEBUG_ASSERT(f < mesh.getNbFacetsPerElement(elem.type), "The element " << elem << " seems to have too many facets!! (" << f << " < " << mesh.getNbFacetsPerElement(elem.type) << ")");
+
 	    subelement_to_element(elem.element, f) = facet_element;
 	  }
 	}
@@ -2046,6 +2056,88 @@ bool MeshUtils::findElementsAroundSubfacet(const Mesh & mesh,
   AKANTU_DEBUG_OUT();
   return facet_matched;
 }
+
+/* -------------------------------------------------------------------------- */
+void MeshUtils::buildSegmentToNodeType(const Mesh & mesh,
+				       Mesh & mesh_facets,
+				       DistributedSynchronizer * synchronizer) {
+  buildAllFacets(mesh, mesh_facets, 1, synchronizer);
+  UInt spatial_dimension = mesh.getSpatialDimension();
+  const ElementTypeMapArray<UInt> & element_to_rank = synchronizer->getPrankToElement();
+  Int local_rank = StaticCommunicator::getStaticCommunicator().whoAmI();
+
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();
+       gt != ghost_type_t::end();
+       ++gt) {
+    GhostType ghost_type = *gt;
+    Mesh::type_iterator it  = mesh_facets.firstType(1, ghost_type);
+    Mesh::type_iterator end = mesh_facets.lastType(1, ghost_type);
+    for(; it != end; ++it) {
+      ElementType type = *it;
+      UInt nb_segments = mesh_facets.getNbElement(type, ghost_type);
+
+      // allocate the data
+      Array<Int> & segment_to_nodetype =
+	*(mesh_facets.getDataPointer<Int>("segment_to_nodetype", type, ghost_type));
+
+      std::set<Element> connected_elements;
+      const Array< std::vector<Element> > & segment_to_2Delement
+	= mesh_facets.getElementToSubelement(type, ghost_type);
+
+      // loop over segments
+      for (UInt s = 0; s < nb_segments; ++s) {
+
+	// determine the elements connected to the segment
+	connected_elements.clear();
+	const std::vector<Element> & twoD_elements = segment_to_2Delement(s);
+
+	if (spatial_dimension == 2) {
+	  // if 2D just take the elements connected to the segments
+	  connected_elements.insert(twoD_elements.begin(), twoD_elements.end());
+	} else if (spatial_dimension == 3) {
+	  // if 3D a second loop is needed to get to the 3D elements
+	  std::vector<Element>::const_iterator facet = twoD_elements.begin();
+
+	  for (; facet != twoD_elements.end(); ++facet) {
+	    const std::vector<Element> & threeD_elements
+	      = mesh_facets.getElementToSubelement(facet->type, facet->ghost_type)(facet->element);
+	    connected_elements.insert(threeD_elements.begin(), threeD_elements.end());
+	  }
+	}
+
+	// get the minimum processor rank associated to the connected
+	// elements and verify if ghost and not ghost elements are
+	// found
+	Int minimum_rank = std::numeric_limits<Int>::max();
+
+	// two booleans saying if not ghost and ghost elements are found in the loop
+	bool ghost_found[2];
+	ghost_found[0] = false; ghost_found[1] = false;
+
+	std::set<Element>::iterator connected_elements_it = connected_elements.begin();
+
+	for (; connected_elements_it != connected_elements.end(); ++connected_elements_it) {
+	  if (*connected_elements_it == ElementNull) continue;
+	  ghost_found[connected_elements_it->ghost_type] = true;
+	  const Array<UInt> & el_to_rank_array = element_to_rank(connected_elements_it->type,
+								 connected_elements_it->ghost_type);
+	  minimum_rank = std::min(minimum_rank, Int(el_to_rank_array(connected_elements_it->element)));
+	}
+
+	// if no ghost elements are found the segment is local
+	if (!ghost_found[1]) segment_to_nodetype(s) = -1;
+	// if no not ghost elements are found the segment is pure ghost
+	else if (!ghost_found[0]) segment_to_nodetype(s) = -3;
+	// if the minimum rank is equal to the local rank, the segment is master
+	else if (local_rank == minimum_rank) segment_to_nodetype(s) = -2;
+	// if the minimum rank is less than the local rank, the segment is slave
+	else if (local_rank > minimum_rank) segment_to_nodetype(s) = minimum_rank;
+	else AKANTU_DEBUG_ERROR("The local rank cannot be smaller than the minimum rank if both ghost and not ghost elements are found");
+      }
+    }
+  }
+}
+
 
 __END_AKANTU__
 

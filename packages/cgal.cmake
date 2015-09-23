@@ -43,11 +43,17 @@ package_declare_sources(CGAL
   geometry/mesh_geom_factory.hh
   geometry/mesh_geom_factory_tmpl.hh
 
+  geometry/mesh_abstract_intersector.hh
+  geometry/mesh_abstract_intersector_tmpl.hh
+
   geometry/mesh_geom_intersector.hh
   geometry/mesh_geom_intersector_tmpl.hh
 
   geometry/mesh_segment_intersector.hh
   geometry/mesh_segment_intersector_tmpl.hh
+
+  geometry/mesh_sphere_intersector.hh
+  geometry/mesh_sphere_intersector_tmpl.hh
 
   geometry/tree_type_helper.hh
   geometry/geom_helper_functions.hh
@@ -58,8 +64,6 @@ package_declare_sources(CGAL
 
   geometry/aabb_primitives/aabb_primitive.hh
   geometry/aabb_primitives/aabb_primitive.cc
-
-  geometry/mesh_geom_spherical_traits.hh
   )
 
 package_declare_documentation(CGAL

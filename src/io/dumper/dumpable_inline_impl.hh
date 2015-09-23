@@ -128,6 +128,8 @@ inline T & Dumpable::getDumper(const std::string & dumper_name) {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+
 __END_AKANTU__
 
 #endif

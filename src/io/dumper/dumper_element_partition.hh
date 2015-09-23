@@ -31,7 +31,9 @@
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
-
+#ifdef AKANTU_IGFEM
+#  include "dumper_igfem_element_partition.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 template<class types>
 class element_partition_field_iterator

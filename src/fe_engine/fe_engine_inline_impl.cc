@@ -78,6 +78,8 @@ inline ElementType FEEngine::getCohesiveElementType(const ElementType & type_fac
   else if (type_facet == _segment_3) type_cohesive = _cohesive_2d_6;
   else if (type_facet == _triangle_3) type_cohesive = _cohesive_3d_6;
   else if (type_facet == _triangle_6) type_cohesive = _cohesive_3d_12;
+  else if (type_facet == _quadrangle_4) type_cohesive = _cohesive_3d_8;
+  else if (type_facet == _quadrangle_8) type_cohesive = _cohesive_3d_16;
 
   AKANTU_DEBUG_OUT();
   return type_cohesive;
@@ -88,7 +90,22 @@ inline ElementType FEEngine::getCohesiveElementType(__attribute__((unused)) cons
 }
 #endif
 
+/* -------------------------------------------------------------------------- */
+#if defined(AKANTU_IGFEM)
+__END_AKANTU__
+#include "igfem_helper.hh"
+__BEGIN_AKANTU__
 
+inline Vector<ElementType> FEEngine::getIGFEMElementTypes(const ElementType & type) {
+
+#define GET_IGFEM_ELEMENT_TYPES(type) \
+  return IGFEMHelper::getIGFEMElementTypes<type>();
+  
+ AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(GET_IGFEM_ELEMENT_TYPES);
+
+#undef GET_IGFEM_ELEMENT_TYPES
+}
+#endif
 
 /* -------------------------------------------------------------------------- */
 template<typename T>

@@ -72,6 +72,13 @@ private:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+
+  /// function to reset the FEEngine for the internal field
+  virtual void setFEEngine(FEEngine & fe_engine);
+
+  /// function to reset the element kind for the internal
+  virtual void setElementKind(ElementKind element_kind);
+
   /// initialize the field to a given number of component
   virtual void initialize(UInt nb_component);
 
@@ -99,7 +106,9 @@ public:
   /// get the default value
   inline operator T() const;
 
-  AKANTU_GET_MACRO(FEEngine, fem, const FEEngine &);
+  virtual FEEngine &  getFEEngine() {
+    return *fem;}
+  ///AKANTU_GET_MACRO(FEEngine, *fem, FEEngine &);
 
 protected:
   /// initialize the arrays in the ElementTypeMapArray<T>
@@ -155,11 +164,14 @@ public:
   bool hasHistory() const { return (previous_values != NULL); }
 
   /// get the kind treated by the internal
-  const ElementKind & getElementKind() const {return element_kind;};
-
+  const ElementKind & getElementKind() const { return element_kind; }
 
   /// return the number of components
-  UInt getNbComponent(){return nb_component;}
+  UInt getNbComponent() const { return nb_component; }
+
+  /// return the spatial dimension corresponding to the internal element type loop filter
+  UInt getSpatialDimension() const { return this->spatial_dimension; }
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -168,7 +180,7 @@ protected:
   Material & material;
 
   /// the fem containing the mesh and the element informations
-  FEEngine & fem;
+  FEEngine * fem;
 
   /// Element filter if needed
   const ElementTypeMapArray<UInt> & element_filter;

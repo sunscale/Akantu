@@ -69,8 +69,8 @@ public:
 
 
   Model(Mesh& mesh, UInt spatial_dimension = _all_dimensions,
-        const ID & id = "model",
-        const MemoryID & memory_id = 0);
+	const ID & id = "model",
+	const MemoryID & memory_id = 0);
 
   virtual ~Model();
 
@@ -111,17 +111,17 @@ public:
   /// Dump the data for a given group
   void dumpGroup(const std::string & group_name);
   void dumpGroup(const std::string & group_name,
-                 const std::string & dumper_name);
+		 const std::string & dumper_name);
   /// Dump the data for all boundaries
   void dumpGroup();
   /// Set the directory for a given group
   void setGroupDirectory(const std::string & directory,
-                         const std::string & group_name);
+			 const std::string & group_name);
   /// Set the directory for all boundaries
   void setGroupDirectory(const std::string & directory);
   /// Set the base name for a given group
   void setGroupBaseName(const std::string & basename,
-                        const std::string & group_name);
+			const std::string & group_name);
   /// Get the internal dumper of a given group
   DumperIOHelper & getGroupDumper(const std::string & group_name);
 
@@ -140,7 +140,7 @@ public:
 
   /// return the object handling synchronizers
   AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry, SynchronizerRegistry &)
-  
+
   /// synchronize the boundary in case of parallel run
   virtual void synchronizeBoundaries() {};
 
@@ -152,8 +152,8 @@ public:
 
   /// register a fem object associated with name
   template <typename FEEngineClass> inline void registerFEEngineObject(const std::string & name,
-                                                             Mesh & mesh,
-                                                             UInt spatial_dimension);
+							     Mesh & mesh,
+							     UInt spatial_dimension);
   /// unregister a fem object associated with name
   inline void unRegisterFEEngineObject(const std::string & name);
 
@@ -188,6 +188,8 @@ public:
   /* Dumpable interface (kept for convenience) and dumper relative functions  */
   /* ------------------------------------------------------------------------ */
 
+  void setTextModeToDumper();
+
   virtual void addDumpGroupFieldToDumper(const std::string & field_id,
 					 dumper::Field * field,
 					 DumperIOHelper & dumper);
@@ -207,9 +209,9 @@ public:
 
   virtual void addDumpFieldTensor(const std::string & field_id);
 
-  virtual void setBaseName(const std::string & basename);  
-  
-  virtual void  setBaseNameToDumper(const std::string & dumper_name,
+  virtual void setBaseName(const std::string & basename);
+
+  virtual void setBaseNameToDumper(const std::string & dumper_name,
 				    const std::string & basename);
 
 
@@ -219,6 +221,13 @@ public:
   virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
 					 const std::string & field_id,
 					 const std::string & group_name,
+					 const ElementKind & element_kind,
+					 bool padding_flag);
+
+  virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
+					 const std::string & field_id,
+					 const std::string & group_name,
+					 UInt spatial_dimension,
 					 const ElementKind & element_kind,
 					 bool padding_flag);
 
@@ -248,10 +257,10 @@ public:
 					       bool padding_flag){return NULL;}
 
 
-  virtual dumper::Field * createElementalField(const std::string & field_name, 
+  virtual dumper::Field * createElementalField(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag,
-                 const UInt & spatial_dimension,
+					       const UInt & spatial_dimension,
 					       const ElementKind & kind){return NULL;}
 
 

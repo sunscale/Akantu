@@ -91,6 +91,29 @@ inline FEEngine & SolidMechanicsModel::getFEEngineBoundary(const ID & name) {
 }
 
 /* -------------------------------------------------------------------------- */
+inline UInt SolidMechanicsModel::getNbNodesPerElementList(const Array<Element> & elements) const {
+  UInt nb_nodes_per_element = 0;
+  UInt nb_nodes = 0;
+  ElementType current_element_type = _not_defined;
+
+  Array<Element>::const_iterator<Element> el_it = elements.begin();
+  Array<Element>::const_iterator<Element> el_end = elements.end();
+
+  for (; el_it != el_end; ++el_it) {
+    const Element & el = *el_it;
+
+    if(el.type != current_element_type) {
+      current_element_type = el.type;
+      nb_nodes_per_element = Mesh::getNbNodesPerElement(current_element_type);
+    }
+
+    nb_nodes += nb_nodes_per_element;
+  }
+
+  return nb_nodes;
+}
+
+/* -------------------------------------------------------------------------- */
 inline void SolidMechanicsModel::splitElementByMaterial(const Array<Element> & elements,
                                                        Array<Element> * elements_per_mat) const {
   ElementType current_element_type = _not_defined;
@@ -149,6 +172,11 @@ inline UInt SolidMechanicsModel::getNbDataForElements(const Array<Element> & ele
     size += nb_nodes_per_element * spatial_dimension * (2 * sizeof(Real) + sizeof(bool));
     break;
   }
+  case _gst_for_dump: {
+    // displacement, velocity, acceleration, residual, force
+    size += nb_nodes_per_element * spatial_dimension * sizeof(Real) * 5; 
+    break;
+  }
   default: {  }
   }
 
@@ -183,6 +211,14 @@ inline void SolidMechanicsModel::packElementData(CommunicationBuffer & buffer,
   }
   case _gst_smm_for_gradu: {
     packNodalDataHelper(*displacement, buffer, elements, mesh);
+    break;
+  }
+  case _gst_for_dump: {
+    packNodalDataHelper(*displacement, buffer, elements, mesh);
+    packNodalDataHelper(*velocity, buffer, elements, mesh);
+    packNodalDataHelper(*acceleration, buffer, elements, mesh);
+    packNodalDataHelper(*residual, buffer, elements, mesh);
+    packNodalDataHelper(*force, buffer, elements, mesh);
     break;
   }
   case _gst_smm_boundary: {
@@ -226,6 +262,14 @@ inline void SolidMechanicsModel::unpackElementData(CommunicationBuffer & buffer,
   }
   case _gst_smm_for_gradu: {
     unpackNodalDataHelper(*displacement, buffer, elements, mesh);
+    break;
+  }
+  case _gst_for_dump: {
+    unpackNodalDataHelper(*displacement, buffer, elements, mesh);
+    unpackNodalDataHelper(*velocity, buffer, elements, mesh);
+    unpackNodalDataHelper(*acceleration, buffer, elements, mesh);
+    unpackNodalDataHelper(*residual, buffer, elements, mesh);
+    unpackNodalDataHelper(*force, buffer, elements, mesh);
     break;
   }
   case _gst_smm_boundary: {

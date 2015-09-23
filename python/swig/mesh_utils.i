@@ -5,4 +5,5 @@ namespace akantu {
 }
 
 %include "mesh_partition.hh"
+%include "mesh_utils.hh"
 

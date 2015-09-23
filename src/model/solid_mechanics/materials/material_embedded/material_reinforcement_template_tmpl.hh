@@ -54,7 +54,6 @@ MaterialReinforcementTemplate<dim, ConstLaw>::~MaterialReinforcementTemplate()
 
 /* -------------------------------------------------------------------------- */
 
-/// TODO this function is super ugly. Find better way to initialize internals
 template<UInt dim, class ConstLaw>
 void MaterialReinforcementTemplate<dim, ConstLaw>::initMaterial() {
   MaterialReinforcement<dim>::initMaterial();
@@ -181,18 +180,3 @@ void MaterialReinforcementTemplate<dim, ConstLaw>::computePotentialEnergy(Elemen
   ConstLaw::computePotentialEnergy(type, ghost_type);
 }
 
-/* -------------------------------------------------------------------------- */
-
-template <UInt dim, class ConstLaw>
-void MaterialReinforcementTemplate<dim, ConstLaw>::flattenInternal(const std::string & field_id,
-                                                                   ElementTypeMapArray<Real> & internal_flat,
-                                                                   const GhostType ghost_type,
-                                                                   ElementKind element_kind) {
-  if (field_id == "stress_embedded" || field_id == "inelastic_strain")
-    MaterialReinforcement<dim>::flattenInternal(field_id, internal_flat, ghost_type, element_kind);
-}
-
-template<UInt dim, class ConstLaw>
-void MaterialReinforcementTemplate<dim, ConstLaw>::savePreviousState() {
-  ConstLaw::savePreviousState();
-}

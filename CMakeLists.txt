@@ -40,7 +40,7 @@
 #===============================================================================
 # CMake Project
 #===============================================================================
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 # add this options before PROJECT keyword
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -66,6 +66,7 @@ include(CMakeVersionGenerator)
 include(CMakePackagesSystem)
 include(CMakeFlagsHandling)
 
+include(AkantuPackagesSystem)
 include(AkantuMacros)
 
 #cmake_activate_debug_message()
@@ -108,7 +109,6 @@ mark_as_advanced(
   )
 
 include(CMakeDetermineCCompiler)
-cmake_deactivate_debug_message(PackagesSystem)
 #===============================================================================
 # Dependencies
 #===============================================================================
@@ -116,6 +116,8 @@ option(AKANTU_PYTHON_INTERFACE "Generates the Akantu Python module" OFF)
 if(AKANTU_PYTHON_INTERFACE)
   list(APPEND AKANTU_BOOST_COMPONENTS python)
 endif()
+
+declare_akantu_types()
 
 package_list_packages(${PROJECT_SOURCE_DIR}/packages
   EXTRA_PACKAGES_FOLDER ${PROJECT_SOURCE_DIR}/extra_packages)
@@ -154,9 +156,11 @@ endif()
 option(AKANTU_EXAMPLES "Activate examples" OFF)
 option(AKANTU_TESTS "Activate tests" OFF)
 
-include(AkantuTestAndExamples)
+include(AkantuTestsMacros)
+include(AkantuExamplesMacros)
 
 if(AKANTU_EXAMPLES OR AKANTU_TESTS)
+  option(AKANTU_BUILD_ALL_EXAMPLES "Build all examples")
   find_package(GMSH REQUIRED)
 endif()
 
@@ -179,7 +183,6 @@ endif()
 #===============================================================================
 # Install and Packaging
 #===============================================================================
-mark_as_advanced(AKANTU_PYTHON_INTERFACE)
 if(AKANTU_PYTHON_INTERFACE)
   add_subdirectory(python)
 #  add_subdirectory(akantu4py)

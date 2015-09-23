@@ -20,6 +20,7 @@
   applicable)}
 \matparam{C..}{Real}{Coefficient ij of the material tensor C (all the 36 values
   in Voigt notation can be entered .)}
+% \matparam{alpha}{Real}{Viscous proportion (default value is 0)}
 \end{MaterialDesc}
 
 \section{Linear elastic orthotropic}
@@ -48,7 +49,7 @@
 \matparam{rho}{Real}{Density}
 \matparam{E}{Real}{Young's modulus}
 \matparam{nu}{Real}{Poisson's ratio}
-\matparam{Plane\_Stress}{bool}{Plane stress simplification (only 2D problems)}
+\matparam{Plane\_Stress}{bool}{Plane stress simplification : false = plane strain, true = plane stress (default: false) (only 2D problems)}
 \end{MaterialDesc}
 
 \section{Standard linear solid}
@@ -80,7 +81,7 @@
 \matparam{nu}{Real}{Poisson's ratio}
 \matparam{Plane\_Stress}{bool}{Plane stress simplification (only 2D problems)}
 \matparam{Yd}{Random}{Rupture criterion}
-\matparam{S}{Real}{Damage Energy}
+\matparam{Sd}{Real}{Damage Energy}
 \end{MaterialDesc}
 
 
