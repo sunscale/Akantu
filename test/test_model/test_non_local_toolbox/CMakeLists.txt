@@ -3,14 +3,14 @@
 #
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 #
-# @date creation: Fri Nov 26 2010
-# @date last modification: Thu Jul 03 2014
+# @date creation: Sun May 01 2011
+# @date last modification: Tue Nov 06 2012
 #
-# @brief  configuration for model tests
+# @brief  configuration for heat transfer model tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -31,8 +31,11 @@
 #===============================================================================
 
 #===============================================================================
+add_mesh(test_neighbors_mesh plate.geo 2 1 OUTPUT plate.msh)
 
-add_akantu_test(test_solid_mechanics_model "Test for the solid mechanics model")
-add_akantu_test(test_heat_transfer_model "Test for the heat transfer model")
-add_akantu_test(test_structural_mechanics_model "Test for the structural mechanics model")
-add_akantu_test(test_non_local_toolbox "Test of the functionalities in the non-local toolbox")
+register_test(test_non_local_neighborhood_base
+  SOURCES test_non_local_neighborhood_base.cc test_material.hh test_material.cc
+  DEPENDENCIES test_neighbors_mesh 
+  FILES_TO_COPY material.dat plot_neighborhoods.py
+  PACKAGE damage_non_local
+  )

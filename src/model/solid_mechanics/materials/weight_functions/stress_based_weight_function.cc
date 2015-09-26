@@ -1,5 +1,5 @@
 /**
- * @file   stress_based_weight_function_tmpl.hh
+ * @file   stress_based_weight_function.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
@@ -27,11 +27,12 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-StressBasedWeightFunction<spatial_dimension>::StressBasedWeightFunction(Material & material) :
-  BaseWeightFunction<spatial_dimension>(material, "stress_based"),
+#include "stress_based_weight_function.hh"
+__BEGIN_AKANTU__
+/* -------------------------------------------------------------------------- */
+StressBasedWeightFunction::StressBasedWeightFunction(Material & material) :
+  BaseWeightFunction(material, "stress_based"),
   stress_diag("stress_diag", material), selected_stress_diag(NULL),
   stress_base("stress_base", material), selected_stress_base(NULL),
   characteristic_size("lc", material),  selected_characteristic_size(NULL) {
@@ -45,8 +46,7 @@ StressBasedWeightFunction<spatial_dimension>::StressBasedWeightFunction(Material
 /* -------------------------------------------------------------------------- */
 /// During intialization the characteristic sizes for all quadrature
 /// points are computed
-template<UInt spatial_dimension>
-void StressBasedWeightFunction<spatial_dimension>::init() {
+void StressBasedWeightFunction::init() {
   const Mesh & mesh = this->material.getModel().getFEEngine().getMesh();
   for (UInt g = _not_ghost; g <= _ghost; ++g) {
     GhostType gt = GhostType(g);
@@ -77,8 +77,7 @@ void StressBasedWeightFunction<spatial_dimension>::init() {
 
 /* -------------------------------------------------------------------------- */
 /// computation of principals stresses and principal directions
-template<UInt spatial_dimension>
-void StressBasedWeightFunction<spatial_dimension>::updatePrincipalStress(GhostType ghost_type) {
+void StressBasedWeightFunction::updatePrincipalStress(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   const Mesh & mesh = this->material.getModel().getFEEngine().getMesh();
@@ -113,4 +112,4 @@ void StressBasedWeightFunction<spatial_dimension>::updatePrincipalStress(GhostTy
   AKANTU_DEBUG_OUT();
 }
 
-
+__END_AKANTU__

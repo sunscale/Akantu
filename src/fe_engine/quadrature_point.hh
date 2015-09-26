@@ -3,6 +3,8 @@
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
+class QuadraturePoint;
+extern const QuadraturePoint QuadraturePointNull;
 
 class QuadraturePoint : public Element {
 
@@ -38,13 +40,45 @@ public:
 
   QuadraturePoint(const QuadraturePoint & quad) :
     Element(quad), num_point(quad.num_point), global_num(quad.global_num), position((Real *) NULL, 0) {
-    position.shallowCopy(quad.position);
+    if (quad.position.isWrapped())
+      position.shallowCopy(quad.position);
+    else
+      position.deepCopy(quad.position);
   };
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-  
+
+    inline bool operator==(const QuadraturePoint & quad) const {
+    return ((element == quad.element)
+            && (type == quad.type)
+            && (ghost_type == quad.ghost_type)
+            && (kind == quad.kind)
+	    && (num_point == quad.num_point)
+	    && (global_num == quad.global_num));
+  }
+
+  inline bool operator!=(const QuadraturePoint & quad) const {
+    return ((element != quad.element)
+            || (type != quad.type)
+            || (ghost_type != quad.ghost_type)
+            || (kind != quad.kind)
+	    || (num_point != quad.num_point)
+	    || (global_num != quad.global_num));
+  }
+
+  bool operator<(const QuadraturePoint& rhs) const {
+    bool res = (rhs == QuadraturePointNull) || ((this->kind < rhs.kind) ||
+						((this->kind == rhs.kind) &&
+						 ((this->ghost_type < rhs.ghost_type) ||
+						  ((this->ghost_type == rhs.ghost_type) &&
+						   ((this->type < rhs.type) ||
+						    ((this->type == rhs.type) &&
+						     (this->element < rhs.element)))))));
+    return res;
+  }
+
   inline QuadraturePoint & operator=(const QuadraturePoint & q) {
     if(this != &q) {
       element    = q.element;
@@ -52,7 +86,7 @@ public:
       ghost_type = q.ghost_type;
       num_point  = q.num_point;
       global_num = q.global_num;
-      position.shallowCopy(q.position);
+      position = q.position;
     }
 
     return *this;

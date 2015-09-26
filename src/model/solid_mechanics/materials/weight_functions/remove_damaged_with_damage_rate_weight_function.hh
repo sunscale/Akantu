@@ -40,14 +40,13 @@ __BEGIN_AKANTU__
 /* Remove damaged with damage rate weight function                                             */
 /* -------------------------------------------------------------------------- */
 
-template<UInt spatial_dimension>
-class RemoveDamagedWithDamageRateWeightFunction : public BaseWeightFunction<spatial_dimension> {
+class RemoveDamagedWithDamageRateWeightFunction : public BaseWeightFunction {
 public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  RemoveDamagedWithDamageRateWeightFunction(Material & material) : BaseWeightFunction<spatial_dimension>(material, "remove_damage_with_damage_rate") {
-    this->registerParam("damage_limit", this->damage_limit_with_damage_rate, 1, _pat_parsable, "Damage Threshold");
+  RemoveDamagedWithDamageRateWeightFunction(Material & material) : BaseWeightFunction(material, "remove_damage_with_damage_rate") {
+    this->registerParam<Real>("damage_limit", this->damage_limit_with_damage_rate, 1, _pat_parsable, "Damage Threshold");
   }
 
   /* -------------------------------------------------------------------------- */

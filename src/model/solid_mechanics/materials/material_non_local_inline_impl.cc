@@ -49,7 +49,7 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt DIM, template <UInt> class WeightFunction>
+template<UInt DIM, class WeightFunction>
 MaterialNonLocal<DIM, WeightFunction>::MaterialNonLocal(SolidMechanicsModel & model,
 							const ID & id)  :
   Material(model, id), weight_func(NULL), spatial_grid(NULL),
@@ -64,7 +64,7 @@ MaterialNonLocal<DIM, WeightFunction>::MaterialNonLocal(SolidMechanicsModel & mo
 
 
   this->is_non_local = true;
-  this->weight_func = new WeightFunction<DIM>(*this);
+  this->weight_func = new WeightFunction(*this);
 
   this->registerSubSection(_st_non_local, "weight_function", *weight_func);
 
@@ -72,7 +72,7 @@ MaterialNonLocal<DIM, WeightFunction>::MaterialNonLocal(SolidMechanicsModel & mo
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 MaterialNonLocal<spatial_dimension, WeightFunction>::~MaterialNonLocal() {
   AKANTU_DEBUG_IN();
 
@@ -89,7 +89,7 @@ MaterialNonLocal<spatial_dimension, WeightFunction>::~MaterialNonLocal() {
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::initMaterial() {
   AKANTU_DEBUG_IN();
   //  Material::initMaterial();
@@ -128,7 +128,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::initMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::cleanupExtraGhostElement(const ElementTypeMap<UInt> & nb_ghost_protected) {
   AKANTU_DEBUG_IN();
 
@@ -198,7 +198,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::cleanupExtraGhostEleme
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(ElementTypeMapArray<Real> & quadrature_points_coordinates) {
   AKANTU_DEBUG_IN();
 
@@ -239,7 +239,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::createCellList(Element
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::fillCellList(const ElementTypeMapArray<Real> & quadrature_points_coordinates,
 								       const GhostType & ghost_type) {
   QuadraturePoint q;
@@ -274,7 +274,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::fillCellList(const Ele
 
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::updatePairList(const ElementTypeMapArray<Real> & quadrature_points_coordinates) {
   AKANTU_DEBUG_IN();
 
@@ -342,7 +342,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::updatePairList(const E
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const ElementTypeMapArray<Real> & quadrature_points_coordinates) {
   AKANTU_DEBUG_IN();
 
@@ -460,7 +460,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 template<typename T>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::weightedAvergageOnNeighbours(const InternalField<T> & to_accumulate,
 										       InternalField<T> & accumulated,
@@ -515,7 +515,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::weightedAvergageOnNeig
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::updateResidual(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -540,7 +540,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::updateResidual(GhostTy
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::computeAllNonLocalStresses(GhostType ghost_type) {
   // Update the weights for the non local variable averaging
   if(ghost_type == _not_ghost) {
@@ -581,7 +581,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeAllNonLocalStre
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::savePairs(const std::string & filename) const {
   std::ofstream pout;
 
@@ -612,7 +612,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::savePairs(const std::s
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::neighbourhoodStatistics(const std::string & filename) const {
   //   std::ofstream pout;
   // pout.open(filename.c_str());
@@ -698,7 +698,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::neighbourhoodStatistic
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 inline UInt MaterialNonLocal<spatial_dimension, WeightFunction>::getNbDataForElements(const Array<Element> & elements,
 										      SynchronizationTag tag) const {
   UInt nb_quadrature_points = this->getModel().getNbQuadraturePoints(elements);
@@ -720,7 +720,7 @@ inline UInt MaterialNonLocal<spatial_dimension, WeightFunction>::getNbDataForEle
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 inline void MaterialNonLocal<spatial_dimension, WeightFunction>::packElementData(CommunicationBuffer & buffer,
 										 const Array<Element> & elements,
 										 SynchronizationTag tag) const {
@@ -739,7 +739,7 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::packElementData
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 inline void MaterialNonLocal<spatial_dimension, WeightFunction>::unpackElementData(CommunicationBuffer & buffer,
 										   const Array<Element> & elements,
 										   SynchronizationTag tag) {
@@ -758,7 +758,7 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::unpackElementDa
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsAdded(const Array<Element> & element_list) {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ERROR("This is a case not taken into account!!!");
@@ -766,7 +766,7 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsAdded
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeightFunction>
+template<UInt spatial_dimension, class WeightFunction>
 inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsRemoved(const Array<Element> & element_list,
 										   const ElementTypeMapArray<UInt> & new_numbering,
 										   __attribute__((unused)) const RemovedElementsEvent & event) {

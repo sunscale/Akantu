@@ -30,21 +30,19 @@
  */
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void RemoveDamagedWeightFunction<spatial_dimension>::selectType(__attribute__((unused)) ElementType type1,
-								       __attribute__((unused)) GhostType ghost_type1,
-								       ElementType type2,
-								       GhostType ghost_type2) {
+inline void RemoveDamagedWeightFunction::selectType(__attribute__((unused)) ElementType type1,
+						    __attribute__((unused)) GhostType ghost_type1,
+						    ElementType type2,
+						    GhostType ghost_type2) {
   /// select the damage array for a given type: For optimization
   selected_damage = &(this->material.template getArray<Real>("damage", type2, ghost_type2));
-    //    selected_damage = &mat.getDamage(type2, ghost_type2);
+  //    selected_damage = &mat.getDamage(type2, ghost_type2);
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline Real RemoveDamagedWeightFunction<spatial_dimension>::operator()(Real r,
-								       const __attribute__((unused)) QuadraturePoint & q1,
-								       const QuadraturePoint & q2) {
+inline Real RemoveDamagedWeightFunction::operator()(Real r,
+						    const __attribute__((unused)) QuadraturePoint & q1,
+						    const QuadraturePoint & q2) {
   /// compute the weight
   UInt quad = q2.global_num;
 
@@ -60,9 +58,8 @@ inline Real RemoveDamagedWeightFunction<spatial_dimension>::operator()(Real r,
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline UInt RemoveDamagedWeightFunction<spatial_dimension>::getNbDataForElements(const Array<Element> & elements,
-										 SynchronizationTag tag) const {
+inline UInt RemoveDamagedWeightFunction::getNbDataForElements(const Array<Element> & elements,
+							      SynchronizationTag tag) const {
   if(tag == _gst_mnl_weight)
     return this->material.getModel().getNbQuadraturePoints(elements) * sizeof(Real);
   
@@ -70,10 +67,9 @@ inline UInt RemoveDamagedWeightFunction<spatial_dimension>::getNbDataForElements
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void RemoveDamagedWeightFunction<spatial_dimension>::packElementData(CommunicationBuffer & buffer,
-                                      const Array<Element> & elements,
-                                      SynchronizationTag tag) const {
+inline void RemoveDamagedWeightFunction::packElementData(CommunicationBuffer & buffer,
+							 const Array<Element> & elements,
+							 SynchronizationTag tag) const {
   if(tag == _gst_mnl_weight) {
     ElementTypeMapArray<Real> & damage = this->material.template getInternal<Real>("damage");
     this->material.packElementDataHelper(damage,
@@ -83,10 +79,9 @@ inline void RemoveDamagedWeightFunction<spatial_dimension>::packElementData(Comm
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void RemoveDamagedWeightFunction<spatial_dimension>::unpackElementData(CommunicationBuffer & buffer,
-									      const Array<Element> & elements,
-									      SynchronizationTag tag) {
+inline void RemoveDamagedWeightFunction::unpackElementData(CommunicationBuffer & buffer,
+							   const Array<Element> & elements,
+							   SynchronizationTag tag) {
   if(tag == _gst_mnl_weight) {
     ElementTypeMapArray<Real> & damage = this->material.template getInternal<Real>("damage");
     this->material.unpackElementDataHelper(damage,
