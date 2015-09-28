@@ -1,5 +1,5 @@
 /**
- * @file mesh_segment_intersector.hh
+ * @file mesh_sphere_intersector.hh
  *
  * @author Clement Roux-Langlois <clement.roux@epfl.ch>
  *
@@ -60,9 +60,6 @@ typedef Spherical SK;
 
 template<UInt dim, ElementType type>
 class MeshSphereIntersector : public MeshGeomIntersector<dim, type, Line_arc<SK>, SK::Sphere_3, SK> {
-  /// Parent class type
-  typedef MeshGeomIntersector<dim, type, Line_arc<SK>, SK::Sphere_3, SK> parent_type;
-
   /// Result of intersection function type
   typedef typename IntersectionTypeHelper<TreeTypeHelper< Triangle<K>, K>, K::Segment_3>::intersection_type result_type;
 
@@ -76,12 +73,6 @@ public:
   /// Destructor
   virtual ~MeshSphereIntersector();
 
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// get the new_node_per_elem array
-  AKANTU_GET_MACRO(NewNodePerElem, new_node_per_elem, const Array<UInt>)
 
 public:
   /// Construct the primitive tree object
@@ -94,15 +85,23 @@ public:
    */
   virtual void computeIntersectionQuery(const SK::Sphere_3 & query);
 
+  /// Compute intersection points between the mesh and a query
+  virtual void computeMeshQueryIntersectionPoint(const SK::Sphere_3 & query);
+
   /// Build the IGFEM mesh
   virtual void buildResultFromQueryList(const std::list<SK::Sphere_3> & query);
 
   /// Remove the additionnal nodes
   void removeAdditionnalNodes();
 
+  /// Set the tolerance
+  void setToleranceIntersectionOnNode(UInt tol) {
+    this->tol_intersection_on_node = tol;
+  }
+
 protected:
-  /// new node per element (column 0: number of new nodes, then odd is the intersection node number and even the ID of the sintersected segment)
-  Array<UInt> new_node_per_elem;
+  /// tolerance for which the intersection is considered on the mesh node (relative to the segment lenght)
+  Real tol_intersection_on_node;
 
   /// number of fem nodes in the initial mesh
   const UInt nb_nodes_fem;

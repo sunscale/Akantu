@@ -71,6 +71,9 @@ public:
    */
   virtual void computeIntersectionQuery(const K::Segment_3 & query);
 
+  /// Compute intersection points between the mesh and a query
+  virtual void computeMeshQueryIntersectionPoint(const K::Segment_3 & query);
+
   /// Compute the embedded mesh
   virtual void buildResultFromQueryList(const std::list<K::Segment_3> & query_list);
 

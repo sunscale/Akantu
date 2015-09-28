@@ -54,6 +54,18 @@ public:
   virtual ~MeshAbstractIntersector();
 
 public:
+  /* ------------------------------------------------------------------------ */
+  /* Accessors                                                                */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// get the new_node_per_elem array
+  AKANTU_GET_MACRO(NewNodePerElem, new_node_per_elem, const Array<UInt> *)
+  AKANTU_GET_MACRO_NOT_CONST(NewNodePerElemNotConst, new_node_per_elem, Array<UInt> *)
+  /// get the new_nodes array
+  AKANTU_GET_MACRO(NewNodes, new_nodes, const Array<Real> *)
+  /// get the nb_seg_by_el UInt
+  AKANTU_GET_MACRO(NbSegByEl, nb_seg_by_el, const UInt)
+
   /**
    * @brief Compute the intersection with a query object
    *
@@ -64,11 +76,27 @@ public:
    */
   virtual void computeIntersectionQuery(const Query & query) = 0;
 
-  /// Compute list of queries
+  /// Compute intersection points between the mesh and a query (closed surface in 3D or a closed curve in 2D)
+  virtual void computeMeshQueryIntersectionPoint(const Query & query) = 0;
+
+  /// Compute intersection between the mesh and a list of queries
   virtual void computeIntersectionQueryList(const std::list<Query> & query_list);
+
+  /// Compute intersection points between the mesh and a list of queries
+  virtual void  computeMeshQueryListIntersectionPoint(const std::list<Query> & query_list);
 
   /// Compute whatever result is needed from the user
   virtual void buildResultFromQueryList(const std::list<Query> & query_list) = 0;
+
+protected:
+  /// new node per element (column 0: number of new nodes, then odd is the intersection node number and even the ID of the intersected segment)
+  Array<UInt> * new_node_per_elem;
+
+  /// intersection output: new intersection points (computeMeshQueryListIntersectionPoint)
+  Array<Real> * new_nodes;
+
+  /// number of segment in a considered element of the templated type of element specialized intersector
+  const UInt nb_seg_by_el;
 };
 
 __END_AKANTU__

@@ -42,11 +42,13 @@ __BEGIN_AKANTU__
 
 template<UInt dim, ElementType type>
 MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
-  parent_type(mesh),
-  new_node_per_elem(0, 1 + 4*(dim-1)),
+  MeshGeomIntersector<dim, type, Line_arc<SK>, SK::Sphere_3, SK>(mesh),
+  tol_intersection_on_node(1e-10),
   nb_nodes_fem(mesh.getNodes().getSize()),
   nb_prim_by_el(0)
 {
+  this->new_node_per_elem = new Array<UInt>(0, 1 + 4*(dim-1));
+  this->new_nodes = new Array<Real>(0,dim);
   this->constructData();
 
   for(Mesh::type_iterator it = mesh.firstType(dim); it != mesh.lastType(dim); ++it){
@@ -65,6 +67,7 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
 
     if( (type == _triangle_3) || (type == _igfem_triangle_4) || (type == _igfem_triangle_5) ){
       this->nb_prim_by_el = 3;
+      const_cast<UInt &>(this->nb_seg_by_el) = 3;
     } else {
       AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
     }
@@ -82,8 +85,8 @@ MeshSphereIntersector<dim, type>::~MeshSphereIntersector()
 template<UInt dim, ElementType type>
 void MeshSphereIntersector<dim, type>::constructData() {
 
-  this->new_node_per_elem.resize(this->mesh.getConnectivity(type).getSize());
-  this->new_node_per_elem.clear();
+  this->new_node_per_elem->resize(this->mesh.getConnectivity(type).getSize());
+  this->new_node_per_elem->clear();
 
   MeshGeomIntersector<dim, type, Line_arc<SK>, SK::Sphere_3, SK>::constructData();
 }
@@ -94,9 +97,10 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
 
   Array<Real> & nodes = this->mesh.getNodes();
   UInt nb_node = nodes.getSize() ;
+  Array<UInt> & new_node_per_elem = *(this->new_node_per_elem);
 
   // Tolerance for proximity checks should be defined by user
-  Math::setTolerance(1e-10);
+  Math::setTolerance(tol_intersection_on_node);
   typedef boost::variant<pair_type> sk_inter_res;
 
   TreeTypeHelper<Line_arc<Spherical>, Spherical>::const_iterator
@@ -185,6 +189,105 @@ void MeshSphereIntersector<dim, type>::computeIntersectionQuery(const SK::Sphere
 }
 
 template<UInt dim, ElementType type>
+void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const SK::Sphere_3 & query) {
+  /// function to replace computeIntersectionQuery in a more generic geometry module version
+  // The newNodeEvent is not send from this method who only compute the intersection points
+  AKANTU_DEBUG_IN();
+
+  Array<Real> & nodes = this->mesh.getNodes();
+  UInt nb_node = nodes.getSize() + this->new_nodes->getSize();
+  Array<UInt> & new_node_per_elem = *(this->new_node_per_elem);
+
+  // Tolerance for proximity checks should be defined by user
+  Math::setTolerance(tol_intersection_on_node);
+  typedef boost::variant<pair_type> sk_inter_res;
+
+  TreeTypeHelper<Line_arc<Spherical>, Spherical>::const_iterator
+    it = this->factory.getPrimitiveList().begin(),
+    end= this->factory.getPrimitiveList().end();
+
+  //NewNodesEvent new_nodes;
+  for (; it != end ; ++it) {
+    std::list<sk_inter_res> s_results;
+    CGAL::intersection(*it, query, std::back_inserter(s_results));
+
+    if (s_results.size() == 1) { // just one point
+      if (pair_type * pair = boost::get<pair_type>(&s_results.front())) {
+        if (pair->second == 1) { // not a point tangent to the sphere
+          // Addition of the new node
+          Vector<Real> new_node(dim, 0.0);
+          Cartesian::Point_3 point(CGAL::to_double(pair->first.x()),
+                                   CGAL::to_double(pair->first.y()),
+                                   CGAL::to_double(pair->first.z()));
+
+          for (UInt i = 0 ; i < dim ; i++) {
+            new_node(i) = point[i];
+          }
+
+          bool is_on_mesh = false, is_new = true;
+          // check if we already compute this intersection for a neighboor element
+	  UInt n = nb_nodes_fem-1;
+          for (; n < nb_node ; ++n) {
+            Array<Real>::vector_iterator existing_node = nodes.begin(dim) + n;
+            if (Math::are_vector_equal(dim, new_node.storage(), existing_node->storage())) {
+              is_new = false;
+              break;
+            }
+          }
+
+            Cartesian::Point_3 source_cgal(CGAL::to_double(it->source().x()),
+                                    CGAL::to_double(it->source().y()),
+                                    CGAL::to_double(it->source().z()));
+            Cartesian::Point_3 target_cgal(CGAL::to_double(it->target().x()),
+                                    CGAL::to_double(it->target().y()),
+                                    CGAL::to_double(it->target().z()));
+
+            Vector<Real> source(dim), target(dim);
+            for (UInt i = 0 ; i < dim ; i++) {
+              source(i) = source_cgal[i];
+              target(i) = target_cgal[i];
+            }
+
+            // Check if we are close from a node of the segment
+            if (Math::are_vector_equal(dim, source.storage(), new_node.storage()) ||
+                Math::are_vector_equal(dim, target.storage(), new_node.storage())) {
+              is_on_mesh = true;
+              is_new = false;
+            }
+
+            if (is_new) {
+              this->new_nodes->push_back(new_node);
+              // new_nodes.getList().push_back(nb_node);
+              nb_node++;
+            }
+
+            if (!is_on_mesh) {
+              new_node_per_elem(it->id(), 0) += 1;
+              new_node_per_elem(it->id(), (2 * new_node_per_elem(it->id(), 0)) - 1) = n;
+              new_node_per_elem(it->id(), 2 * new_node_per_elem(it->id(), 0)) = it->segId();
+            }
+
+            else {
+              // if intersection is at a node, write node number (in el) in pennultimate position
+              if (Math::are_vector_equal(dim, source.storage(), new_node.storage())) {
+                new_node_per_elem(it->id(), (new_node_per_elem.getNbComponent() - 2)) = it->segId() - 1;
+              } else {
+                new_node_per_elem(it->id(), (new_node_per_elem.getNbComponent() - 2)) =
+                  it->segId() % this->nb_prim_by_el;
+              }
+            }
+          }
+        }
+      }
+  }
+
+  /*if(new_nodes.getList().getSize())
+    this->mesh.sendEvent(new_nodes);*/
+
+  AKANTU_DEBUG_OUT();
+}
+
+template<UInt dim, ElementType type>
 void MeshSphereIntersector<dim, type>::removeAdditionnalNodes() {
   AKANTU_DEBUG_IN();
 
@@ -215,6 +318,7 @@ void MeshSphereIntersector<dim, type>::buildResultFromQueryList(const std::list<
   this->computeIntersectionQueryList(query_list);
 
   Array<UInt> & connec_type_tmpl = this->mesh.getConnectivity(type);
+  const Array<UInt> new_node_per_elem = *(this->new_node_per_elem);
 
   Array<UInt>
     & connec_igfem_tri4 = this->mesh.getConnectivity(_igfem_triangle_4),
