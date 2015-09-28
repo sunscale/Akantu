@@ -37,6 +37,7 @@
 #include "mesh_geom_common.hh"
 #include "tree_type_helper.hh"
 #include "mesh_sphere_intersector.hh"
+#include "static_communicator.hh"
 
 __BEGIN_AKANTU__
 
@@ -47,8 +48,6 @@ new_node_per_elem("new_node_per_elem", "MeshSphereIntersector"),
 nb_nodes_fem(mesh.getNodes().getSize()),
 nb_prim_by_el(0)
 {
-  this->constructData();
-
   for(Mesh::type_iterator it = mesh.firstType(dim); it != mesh.lastType(dim); ++it){
 #if defined(AKANTU_IGFEM)
     if(*it == _triangle_3){
@@ -81,6 +80,7 @@ nb_prim_by_el(0)
     new_node_per_elem.alloc(0, nb_comp, type, ghost_type, 0);
   }
 
+  this->constructData();
 }
 
   template<UInt dim, ElementType type>
@@ -249,10 +249,12 @@ void MeshSphereIntersector<dim, type>::buildResultFromQueryList(const std::list<
   Array<Element> & new_elements_list = new_elements.getList();
   Array<Element> & old_elements_list = new_elements.getOldElementsList();
   RemovedElementsEvent remove_elem(this->mesh);
+  Int nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
     GhostType ghost_type = *gt;
 
+    if (nb_proc == 1 && ghost_type == _ghost) continue;
     if (!this->mesh.getConnectivities().exists(type, ghost_type)) continue;
     UInt n_new_el = 0;
     Array<UInt> & connec_type_tmpl = this->mesh.getConnectivity(type, ghost_type);

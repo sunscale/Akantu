@@ -75,6 +75,19 @@ protected:
   ElementTypeMapArray<UInt> new_numbering;
 };
 
+class ChangedElementsEvent : public RemovedElementsEvent {
+public:
+  virtual ~ChangedElementsEvent() {};
+  inline ChangedElementsEvent(const Mesh & mesh);
+  AKANTU_GET_MACRO(ListOld, list, const Array<Element> &);
+  AKANTU_GET_MACRO_NOT_CONST(ListOld, list, Array<Element> &);
+  AKANTU_GET_MACRO(ListNew, new_list, const Array<Element> &);
+  AKANTU_GET_MACRO_NOT_CONST(ListNew, new_list, Array<Element> &);
+protected:
+  Array<Element> new_list;
+};
+
+
 /* -------------------------------------------------------------------------- */
 
 class MeshEventHandler {
@@ -96,6 +109,11 @@ private:
                                                                                 event.getNewNumbering(),
                                                                                 event); }
 
+  inline void sendEvent(const ChangedElementsEvent & event) { onElementsChanged(event.getListOld(),
+										event.getListNew(),
+										event.getNewNumbering(),
+										event); }
+
   template<class EventHandler>
   friend class EventHandlerManager;
 
@@ -114,6 +132,16 @@ public:
   virtual void onElementsRemoved(__attribute__((unused)) const Array<Element> & elements_list,
                                  __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
                                  __attribute__((unused)) const RemovedElementsEvent & event) { }
+
+  virtual void onElementsChanged(const Array<Element> & old_elements_list,
+				 const Array<Element> & new_elements_list,
+                                 const ElementTypeMapArray<UInt> & new_numbering,
+                                 const ChangedElementsEvent & event) {
+    NewElementsEvent new_elements;
+    new_elements.getList() = new_elements_list;
+    this->onElementsAdded(new_elements_list, new_elements);
+    this->onElementsRemoved(old_elements_list, new_numbering, event);
+  }
 };
 
 

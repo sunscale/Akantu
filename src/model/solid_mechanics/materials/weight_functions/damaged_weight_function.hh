@@ -40,13 +40,12 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /*  Damage weight function                                                    */
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-class DamagedWeightFunction : public BaseWeightFunction<spatial_dimension> {
+class DamagedWeightFunction : public BaseWeightFunction {
 public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  DamagedWeightFunction(Material & material) : BaseWeightFunction<spatial_dimension>(material, "damaged") {
+  DamagedWeightFunction(Material & material) : BaseWeightFunction(material, "damaged") {
     //AKANTU_DEBUG_ASSERT(dynamic_cast<MaterialDamage<spatial_dimension> *>(&material) != NULL, "This weight function works only with damage materials!");
   }
 

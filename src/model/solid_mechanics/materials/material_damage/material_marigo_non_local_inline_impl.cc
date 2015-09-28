@@ -39,7 +39,7 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::MaterialMarigoNonLocal(SolidMechanicsModel & model, const ID & id)  :
   Material(model, id),
   MaterialMarigoNonLocalParent(model, id),
@@ -52,7 +52,7 @@ MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::MaterialMarigoNonLoca
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::initMaterial() {
   AKANTU_DEBUG_IN();
   this->registerNonLocalVariable(Y, Ynl, 1);
@@ -61,7 +61,7 @@ void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::initMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::computeStress(ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -81,7 +81,7 @@ void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::computeStress(El
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::computeNonLocalStress(ElementType type,
 										      GhostType ghost_type) {
   AKANTU_DEBUG_IN();

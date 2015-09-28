@@ -41,13 +41,12 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /*  Remove damaged weight function                                            */
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-class RemoveDamagedWeightFunction : public BaseWeightFunction<spatial_dimension> {
+class RemoveDamagedWeightFunction : public BaseWeightFunction {
 public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  RemoveDamagedWeightFunction(Material & material) : BaseWeightFunction<spatial_dimension>(material, "remove_damaged") {
+  RemoveDamagedWeightFunction(Material & material) : BaseWeightFunction(material, "remove_damaged") {
     this->registerParam("damage_limit", this->damage_limit, 1., _pat_parsable, "Damage Threshold");
   }
 

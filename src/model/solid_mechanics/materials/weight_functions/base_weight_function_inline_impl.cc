@@ -30,25 +30,22 @@
  */
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void BaseWeightFunction<spatial_dimension>::init() {
+inline void BaseWeightFunction::init() {
   /// compute R^2 for a given non-local radius
   this->R2 = this->R *this-> R;
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void BaseWeightFunction<spatial_dimension>::setRadius(Real radius) {
+inline void BaseWeightFunction::setRadius(Real radius) {
   /// set the non-local radius and update R^2 accordingly
   this->R = radius; 
   this->R2 = this->R * this->R;
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline Real BaseWeightFunction<spatial_dimension>:: operator()(Real r,
-							       const __attribute__((unused)) QuadraturePoint & q1,
-							       const __attribute__((unused)) QuadraturePoint & q2) {
+inline Real BaseWeightFunction:: operator()(Real r,
+					    const __attribute__((unused)) QuadraturePoint & q1,
+					    const __attribute__((unused)) QuadraturePoint & q2) {
   /// initialize the weight
   Real w = 0;
   /// compute weight for given r 

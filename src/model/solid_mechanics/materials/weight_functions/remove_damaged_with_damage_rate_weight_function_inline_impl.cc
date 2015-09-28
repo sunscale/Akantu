@@ -31,21 +31,19 @@
  */
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void RemoveDamagedWithDamageRateWeightFunction<spatial_dimension>::selectType(__attribute__((unused)) ElementType type1,
-										     __attribute__((unused)) GhostType ghost_type1,
-										     ElementType type2,
-										     GhostType ghost_type2) {
+inline void RemoveDamagedWithDamageRateWeightFunction::selectType(__attribute__((unused)) ElementType type1,
+								  __attribute__((unused)) GhostType ghost_type1,
+								  ElementType type2,
+								  GhostType ghost_type2) {
   /// select the damage arrays for given types: For optimization
   selected_damage_with_damage_rate = &(this->material.template getArray<Real>("damage",type2, ghost_type2));
   selected_damage_rate_with_damage_rate = &(this->material.template getArray<Real>("damage-rate",type2, ghost_type2));
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline Real RemoveDamagedWithDamageRateWeightFunction<spatial_dimension>::operator()(Real r,
-										     const __attribute__((unused)) QuadraturePoint & q1,
-										     const QuadraturePoint & q2) {
+inline Real RemoveDamagedWithDamageRateWeightFunction::operator()(Real r,
+								  const __attribute__((unused)) QuadraturePoint & q1,
+								  const QuadraturePoint & q2) {
   /// compute the weight
   UInt quad = q2.global_num;
 

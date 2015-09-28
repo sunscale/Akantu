@@ -41,8 +41,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /// based on based on Giry et al.: Stress-based nonlocal damage model,
 /// IJSS, 48, 2011
-template<UInt spatial_dimension>
-class StressBasedWeightFunction : public BaseWeightFunction<spatial_dimension> {
+class StressBasedWeightFunction : public BaseWeightFunction {
 public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -54,7 +53,7 @@ public:
   /* -------------------------------------------------------------------------- */
   void init();
 
-  virtual inline void updateInternals(__attribute__((unused)) const ElementTypeMapArray<Real> & quadrature_points_coordinates);
+  virtual inline void updateInternals();
 
   void updatePrincipalStress(GhostType ghost_type);
 
@@ -105,7 +104,6 @@ private:
   Array<Real> * selected_characteristic_size;
 };
 
-#include "stress_based_weight_function_tmpl.hh"
 #if defined (AKANTU_INCLUDE_INLINE_IMPL)
 #  include "stress_based_weight_function_inline_impl.cc"
 #endif
