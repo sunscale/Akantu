@@ -63,7 +63,7 @@ class MeshIgfemSphericalGrowingGel {
   if(iit != intersectors.end()) {					\
     inter = iit->second;						\
   } else {								\
-    inter = new MeshSphereIntersector<dim, _type>(this->mesh);		\
+    inter = new MeshSphereIntersector<dim, _type>(this->mesh, "mesh_sphere_intersector_"+_type); \
     intersectors[_type] = inter;					\
   }
 

@@ -262,7 +262,7 @@ int main(int argc, char *argv[]) {
   Real error; 
   converged = model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(1e-12, error, 2, factorize);
   if (!converged) {
-    std::cout << "Solving step did not yield a converged solution" << std::endl;
+    std::cout << "Solving step did not yield a converged solution, error: " << error << std::endl;
     return EXIT_FAILURE;
   }
   
