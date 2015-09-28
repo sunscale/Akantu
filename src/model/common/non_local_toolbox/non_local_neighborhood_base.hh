@@ -29,8 +29,12 @@
 #ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
 #define __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
 /* -------------------------------------------------------------------------- */
-#include "base_weight_function.hh"
+#include "aka_common.hh"
+#include "solid_mechanics_model.hh"
+#include "aka_grid_dynamic.hh"
+#include "grid_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
+
 
 
 __BEGIN_AKANTU__
@@ -62,6 +66,9 @@ public:
 
   /// save the coordinates of all neighbors of a quad
   void saveNeighborCoords(const std::string & filename) const;
+
+  /// create grid synchronizer and exchange ghost cells
+  void createGridSynchronizer();
 
 protected:
 
@@ -106,9 +113,6 @@ protected:
    * 1: not ghost to ghost
    */
   PairList pair_list[2];
-
-  /// the weights associated to the pairs
-  Array<Real> * pair_weight[2];
 
   /// the regular grid to construct/update the pair lists
   SpatialGrid<QuadraturePoint> * spatial_grid;

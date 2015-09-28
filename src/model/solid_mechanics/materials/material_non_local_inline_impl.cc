@@ -351,7 +351,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::computeWeights(const E
 
   const FEEngine & fem = this->model->getFEEngine();
 
-  weight_func->updateInternals(quadrature_points_volumes);
+  weight_func->updateInternals();
 
   for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
     GhostType ghost_type2 = (GhostType) gt;

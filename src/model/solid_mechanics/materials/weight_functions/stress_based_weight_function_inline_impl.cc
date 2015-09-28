@@ -31,7 +31,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-inline void StressBasedWeightFunction::updateInternals(__attribute__((unused)) const ElementTypeMapArray<Real> & quadrature_points_coordinates) {
+inline void StressBasedWeightFunction::updateInternals() {
   updatePrincipalStress(_not_ghost);
   updatePrincipalStress(_ghost);
 }

@@ -42,20 +42,6 @@ NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(SolidMechanicsModel & model, 
   AKANTU_DEBUG_IN();
 
 
-  for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-    GhostType ghost_type = (GhostType) gt;
-    pair_weight[ghost_type] = NULL;
-  }
-
-  // if (weight_func_type == "base_wf") 
-  //   this->weight_function = new Dummy();
-  // case damage_wf:
-  //   this->weight_function = new DamagedWeightFunction(); break;
-  // case remove_wf:
-  //   this->weight_function = new RemoveDamagedWeightFunction(); break;
-  // case stress_wf:
-  //   this->weight_function = new StressBasedWeightFunction(); break
-
   this->initNeighborhood();
 
   AKANTU_DEBUG_OUT();
@@ -64,11 +50,6 @@ NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(SolidMechanicsModel & model, 
 /* -------------------------------------------------------------------------- */
 NonLocalNeighborhoodBase::~NonLocalNeighborhoodBase() {
   AKANTU_DEBUG_IN();
-
-  for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-    GhostType ghost_type = (GhostType) gt;
-    delete pair_weight[ghost_type];
-  }
 
   delete spatial_grid;
   delete grid_synchronizer;
@@ -172,6 +153,25 @@ void NonLocalNeighborhoodBase::updatePairList() {
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLocalNeighborhoodBase::createGridSynchronizer() {
+  this->is_creating_grid = true;
+  std::set<SynchronizationTag> tags;
+  tags.insert(_gst_mnl_for_average);
+  tags.insert(_gst_mnl_weight);
+  tags.insert(_gst_material_id);
+
+  SynchronizerRegistry & synch_registry = this->model.getSynchronizerRegistry();
+  const ID synchr_id = "non_local_grid_synchronizer";
+  this->grid_synchronizer = GridSynchronizer::createGridSynchronizer(this->model.getMesh(),
+								     *spatial_grid,
+								     synchr_id,
+								     &synch_registry,
+								     tags);
+  this->is_creating_grid = false;
+
 }
 
 /* -------------------------------------------------------------------------- */

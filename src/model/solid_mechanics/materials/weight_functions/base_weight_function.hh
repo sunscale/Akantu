@@ -76,7 +76,7 @@ public:
   virtual inline void init();
 
   /// update the internal parameters
-  virtual void updateInternals(__attribute__((unused)) const ElementTypeMapArray<Real> & quadrature_points_coordinates) {};
+  virtual void updateInternals() {};
 
   /* ------------------------------------------------------------------------ */
   /// set the non-local radius
@@ -156,12 +156,6 @@ protected:
   /// the spatial dimension 
   UInt spatial_dimension;
 };
-
-class Dummy {
-public:
-  Real getRadius(){return 1.;};
-};
-
 
 inline std::ostream & operator <<(std::ostream & stream,
                                   const BaseWeightFunction & _this)

@@ -65,6 +65,8 @@ package_declare_sources(damage_non_local
   model/common/non_local_toolbox/non_local_neighborhood_base.hh
   model/common/non_local_toolbox/non_local_neighborhood_base.cc
   model/common/non_local_toolbox/non_local_neighborhood_base_inline_impl.cc
+  model/common/non_local_toolbox/non_local_neighborhood.hh
+  model/common/non_local_toolbox/non_local_neighborhood.cc
 
   )
 

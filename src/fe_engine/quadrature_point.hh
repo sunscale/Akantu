@@ -75,7 +75,9 @@ public:
 						  ((this->ghost_type == rhs.ghost_type) &&
 						   ((this->type < rhs.type) ||
 						    ((this->type == rhs.type) &&
-						     (this->element < rhs.element)))))));
+						     ((this->element < rhs.element) ||
+						      ((this->element == rhs.element) &&
+						       (this->num_point < rhs.num_point)))))))));
     return res;
   }
 

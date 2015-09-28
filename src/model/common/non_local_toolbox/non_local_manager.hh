@@ -47,7 +47,6 @@ public:
   virtual ~NonLocalManager();
   typedef std::map<ID, NonLocalNeighborhoodBase *> NeighborhoodMap;
   /// typedef std::map<ID, NonLocalVariable *> NonLocalVariableMap;
-  typedef std::map<ID, BaseWeightFunction *> WeightFunctionMap;
 
 /* -------------------------------------------------------------------------- */
 /* Methods                                                                    */
@@ -81,9 +80,6 @@ private:
 
   /// the non-local variables associated to a certain neighborhood
   std::map<ID, NonLocalVariable> non_local_variables;
-  
-  /// the weight functions associated to a certain neighborhood
-  WeightFunctionMap weight_functions;
 
   /// reference to the model
   SolidMechanicsModel & model;

@@ -53,7 +53,7 @@ public:
   /* -------------------------------------------------------------------------- */
   void init();
 
-  virtual inline void updateInternals(__attribute__((unused)) const ElementTypeMapArray<Real> & quadrature_points_coordinates);
+  virtual inline void updateInternals();
 
   void updatePrincipalStress(GhostType ghost_type);
 
