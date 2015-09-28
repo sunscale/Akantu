@@ -161,8 +161,6 @@ void SolidMechanicsModelIGFEM::initModel() {
 
   /// add the igfem type connectivities
 
-  ElementType type = _not_defined;
-
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {
 
@@ -174,7 +172,7 @@ void SolidMechanicsModelIGFEM::initModel() {
     for (; it != last; ++it) {
       const Array<UInt> & connectivity = mesh.getConnectivity(*it, type_ghost);
       if (connectivity.getSize() != 0) {
-	type = *it;
+	ElementType type = *it;
 	Vector<ElementType> types_igfem = FEEngine::getIGFEMElementTypes(type);
 	for (UInt i = 0; i < types_igfem.size(); ++i)
 	  mesh.addConnectivityType(types_igfem(i), type_ghost);
@@ -223,12 +221,12 @@ void SolidMechanicsModelIGFEM::onElementsRemoved(const Array<Element> & element_
   this->getFEEngine("IGFEMFEEngine").initShapeFunctions(_ghost);
   SolidMechanicsModel::onElementsRemoved(element_list, new_numbering, event);
 
-
   // communicate global connectivity for slave nodes
-  synch_parallel->computeBufferSize(*this, _gst_smmi_global_conn);
-  synch_parallel->asynchronousSynchronize(*this, _gst_smmi_global_conn);
-  synch_parallel->waitEndSynchronize(*this, _gst_smmi_global_conn);
-
+  if (synch_parallel) {
+    synch_parallel->computeBufferSize(*this, _gst_smmi_global_conn);
+    synch_parallel->asynchronousSynchronize(*this, _gst_smmi_global_conn);
+    synch_parallel->waitEndSynchronize(*this, _gst_smmi_global_conn);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -523,6 +521,7 @@ void SolidMechanicsModelIGFEM::updateLocalMasterGlobalConnectivity(const Array<U
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   Int rank = comm.whoAmI();
   Int nb_proc = comm.getNbProc();
+  if (nb_proc == 1) return;
 
   /// resize global ids array
   Array<UInt> & nodes_global_ids = mesh.getGlobalNodesIds();
