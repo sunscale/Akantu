@@ -29,7 +29,7 @@ __BEGIN_AKANTU__
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension, template <UInt> class WeightFunction = BaseWeightFunction>
+template<UInt spatial_dimension, class WeightFunction = BaseWeightFunction>
 class MaterialOrthotropicDamageIterativeNonLocal : public MaterialDamageNonLocal<spatial_dimension,
 								      MaterialOrthotropicDamageIterative<spatial_dimension>,
 								      WeightFunction> {

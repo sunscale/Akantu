@@ -25,7 +25,7 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::MaterialOrthotropicDamageIterativeNonLocal(SolidMechanicsModel & model, const ID & id)  :
   Material(model, id),
   MaterialOrthotropicDamageIterativeNonLocalParent(model, id),
@@ -37,7 +37,7 @@ MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::M
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::initMaterial() {
   AKANTU_DEBUG_IN();
   this->registerNonLocalVariable(this->gradu, grad_u_nl, spatial_dimension*spatial_dimension);
@@ -46,7 +46,7 @@ void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunctio
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::computeStress(ElementType type,
 										       GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -55,7 +55,7 @@ void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunctio
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::computeNonLocalStress(ElementType el_type,
 													  GhostType ghost_type) {
   AKANTU_DEBUG_IN();

@@ -24,7 +24,7 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 MaterialDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::MaterialDamageIterativeNonLocal(SolidMechanicsModel & model, const ID & id)  :
   Material(model, id),
   MaterialDamageIterativeNonLocalParent(model, id),
@@ -36,7 +36,7 @@ MaterialDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::MaterialDama
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::initMaterial() {
   AKANTU_DEBUG_IN();
   this->registerNonLocalVariable(this->gradu, grad_u_nl, spatial_dimension*spatial_dimension);
@@ -45,7 +45,7 @@ void MaterialDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::initMat
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::computeStress(ElementType type,
 										       GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -54,7 +54,7 @@ void MaterialDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::compute
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::computeNonLocalStress(ElementType el_type,
 											       GhostType ghost_type) {
   AKANTU_DEBUG_IN();

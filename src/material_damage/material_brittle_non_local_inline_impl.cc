@@ -24,7 +24,7 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::MaterialBrittleNonLocal(SolidMechanicsModel & model, const ID & id)  :
   Material(model, id),
   MaterialBrittleNonLocalParent(model, id),
@@ -40,7 +40,7 @@ MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::MaterialBrittleNonLo
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::initMaterial() {
   AKANTU_DEBUG_IN();
   this->registerNonLocalVariable(Sigma_max, Sigma_maxnl, 1);
@@ -49,7 +49,7 @@ void MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::initMaterial() 
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::computeStress(ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -83,7 +83,7 @@ void MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::computeStress(E
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
+template<UInt spatial_dimension, class WeigthFunction>
 void MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::computeNonLocalStress(ElementType type,
 										      GhostType ghost_type) {
   AKANTU_DEBUG_IN();

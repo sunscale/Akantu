@@ -33,7 +33,7 @@ __BEGIN_AKANTU__
  * parameters in the material files :
  */
 template<UInt spatial_dimension,
-         template <UInt> class WeightFunction = BaseWeightFunction,
+         class WeightFunction = BaseWeightFunction,
          template <UInt> class MatParent = MaterialElastic>
 class MaterialVreePeerlingsNonLocal : public MaterialDamageNonLocal<spatial_dimension,
                                                                     MaterialVreePeerlings<spatial_dimension,

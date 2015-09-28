@@ -17,7 +17,7 @@
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction, template <UInt> class MatParent>
+template<UInt spatial_dimension, class WeigthFunction, template <UInt> class MatParent>
 MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>::MaterialVreePeerlingsNonLocal(SolidMechanicsModel & model,
 												const ID & id)  :
   Material(model, id),
@@ -35,7 +35,7 @@ MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>::Mat
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction, template <UInt> class MatParent>
+template<UInt spatial_dimension, class WeigthFunction, template <UInt> class MatParent>
 void MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>::initMaterial() {
   AKANTU_DEBUG_IN();
 
@@ -49,7 +49,7 @@ void MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>
 
 /* -------------------------------------------------------------------------- */
 
-//template<UInt spatial_dimension, template <UInt> class WeigthFunction, template <UInt> class MatParent>
+//template<UInt spatial_dimension, class WeigthFunction, template <UInt> class MatParent>
 //void MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>::computeStress(ElementType el_type,
 //										     GhostType ghost_type) {
 //   AKANTU_DEBUG_IN();
@@ -111,7 +111,7 @@ void MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>
 //
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction, template <UInt> class MatParent>
+template<UInt spatial_dimension, class WeigthFunction, template <UInt> class MatParent>
 void MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>::computeNonLocalStress(ElementType el_type,
 											     GhostType ghost_type) {
   AKANTU_DEBUG_IN();
