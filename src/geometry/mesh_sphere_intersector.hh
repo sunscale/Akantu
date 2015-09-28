@@ -86,7 +86,9 @@ class MeshSphereIntersector : public MeshGeomIntersector<dim, type, Line_arc<SK>
 
 public:
   /// Construct from mesh
-  explicit MeshSphereIntersector(Mesh & mesh);
+  explicit MeshSphereIntersector(Mesh & mesh,
+				 const ID & id = "mesh_sphere_intersector",
+				 const MemoryID & memory_id = 0);
 
   /// Destructor
   virtual ~MeshSphereIntersector();

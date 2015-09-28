@@ -42,11 +42,13 @@
 __BEGIN_AKANTU__
 
 template<UInt dim, ElementType type>
-MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
-parent_type(mesh),
-new_node_per_elem("new_node_per_elem", "MeshSphereIntersector"),
-nb_nodes_fem(mesh.getNodes().getSize()),
-nb_prim_by_el(0)
+MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh,
+							const ID & id,
+							const MemoryID & memory_id):
+  parent_type(mesh, id, memory_id),
+  new_node_per_elem("new_node_per_elem", id),
+  nb_nodes_fem(mesh.getNodes().getSize()),
+  nb_prim_by_el(0)
 {
   for(Mesh::type_iterator it = mesh.firstType(dim); it != mesh.lastType(dim); ++it){
 #if defined(AKANTU_IGFEM)

@@ -41,11 +41,13 @@
 __BEGIN_AKANTU__
 
 /// Abstract class for mesh geometry operations
-class MeshGeomAbstract {
+class MeshGeomAbstract : public Memory {
 
 public:
   /// Construct from mesh
-  explicit MeshGeomAbstract(Mesh & mesh);
+  explicit MeshGeomAbstract(Mesh & mesh,
+			    const ID & id = "mesh_geom_abstract",
+			    const MemoryID & memory_id = 0);
 
   /// Destructor
   virtual ~MeshGeomAbstract();
