@@ -39,5 +39,5 @@ Line Loop(101) = {101:104};
 
 // Base Cube
 Plane Surface(101) = {101};
-Physical Line("Edges") = {101};
+Physical Line("Edges") = {101, 102, 103, 104};
 Physical Surface(6) = {101};

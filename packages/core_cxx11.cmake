@@ -29,7 +29,7 @@
 #===============================================================================
 
 include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag (-std=c++0x HAVE_NEW_STD)
+check_cxx_compiler_flag (-std=c++0x HAVE_CPP_0X)
 
 package_declare_sources(core_cxx11
   common/aka_point.hh
@@ -48,20 +48,25 @@ package_declare_sources(core_cxx11
   )
 
 
-if(HAVE_NEW_STD)
+if(HAVE_CPP_0X)
+  set(_cpp_11_flag "-std=c++0x")
+else()
+  check_cxx_compiler_flag (-std=c++11 HAVE_CPP_11)
+  if(HAVE_CPP_11)
+    set(_cpp_11_flag "-std=c++11")
+  else()
+    set(_cpp_11_flag)
+  endif()
+endif()
+
+if(_cpp_11_flag)
   package_declare(core_cxx11 ADVANCED
     DESCRIPTION "C++ 11 additions for Akantu core" DEFAULT ON
-    COMPILE_FLAGS "-std=c++0x")
+    COMPILE_FLAGS "${_cpp_11_flag}")
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.6")
       set(AKANTU_CORE_CXX11 OFF CACHE BOOL "C++ 11 additions for Akantu core - not supported by the selected compiler" FORCE)
-    elseif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.8")
-      if(AKANTU_CORE_CXX11)
-	add_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
-      else()
-	remove_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
-      endif()
     endif()
   endif()
 else()
@@ -69,7 +74,7 @@ else()
     DESCRIPTION "C++ 11 additions for Akantu core"
     DEFAULT OFF
     NOT_OPTIONAL
-    COMPILE_FLAGS "-std=c++0x")
+    COMPILE_FLAGS "")
 endif()
 
 package_declare_documentation(core_cxx11

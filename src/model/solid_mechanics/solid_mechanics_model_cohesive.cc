@@ -219,7 +219,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(std::string coh
   
   SolidMechanicsModel::initMaterials();
 
-  delete material_selector;
+   if(is_default_material_selector) delete material_selector;
   material_selector = new MeshDataMaterialCohesiveSelector(*this);
   inserter->insertElements();
 
@@ -523,13 +523,16 @@ void SolidMechanicsModelCohesive::computeNormals() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::interpolateStress() {
+
+  ElementTypeMapArray<Real> by_elem_result("temporary_stress_by_facets", id);
+  
   for (UInt m = 0; m < materials.size(); ++m) {
     try {
       MaterialCohesive & mat __attribute__((unused)) =
 	dynamic_cast<MaterialCohesive &>(*materials[m]);
     } catch(std::bad_cast&) {
       /// interpolate stress on facet quadrature points positions
-      materials[m]->interpolateStressOnFacets(facet_stress);
+      materials[m]->interpolateStressOnFacets(facet_stress, by_elem_result);
     }
   }
 

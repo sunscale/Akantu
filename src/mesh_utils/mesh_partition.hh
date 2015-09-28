@@ -74,7 +74,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// defini a partition of the mesh
+  /// define a partition of the mesh
   virtual void partitionate(UInt nb_part,
 			    const EdgeLoadFunctor & edge_load_func = ConstEdgeLoadFunctor(),
 			    const Array<UInt> & pairs = Array<UInt>()) = 0;

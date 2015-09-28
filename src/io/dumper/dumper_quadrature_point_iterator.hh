@@ -1,12 +1,12 @@
 /**
- * @file   dumper_quadrature_points_field.hh
+ * @file   dumper_quadrature_point_iterator.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Sep 02 2014
  * @date last modification: Tue Sep 02 2014
  *
- * @brief  Description of quadrature points fields
+ * @brief  Description of quadrature point iterator
  *
  * @section LICENSE
  *
@@ -28,8 +28,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_IOHELPER_TMPL_QUADRATURE_POINTS_FIELD_HH__
-#define __AKANTU_DUMPER_IOHELPER_TMPL_QUADRATURE_POINTS_FIELD_HH__
+#ifndef __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__
+#define __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__
 
 /* -------------------------------------------------------------------------- */
 #include "dumper_elemental_field.hh"
@@ -69,54 +69,9 @@ public:
   }
 };
 
- /* -------------------------------------------------------------------------- */
- /* Fields type description                                                    */
- /* -------------------------------------------------------------------------- */
- template<class types, template <class> class iterator_type>
- class GenericQuadraturePointsField :
-   public GenericElementalField<types,iterator_type> {
-
- public:
-
-   /* ------------------------------------------------------------------------ */
-   /* Typedefs                                                                 */
-   /* ------------------------------------------------------------------------ */
-
-
-   typedef iterator_type<types> iterator;
-   typedef typename types::field_type field_type;
-   typedef typename iterator::it_type T;
-   typedef GenericElementalField<types,iterator_type> parent;
-
-   /* ------------------------------------------------------------------------ */
-   /* Constructors/Destructors                                                 */
-   /* ------------------------------------------------------------------------ */
-
-   GenericQuadraturePointsField(const field_type & field,
-			       UInt spatial_dimension = _all_dimensions,
-			       GhostType ghost_type = _not_ghost,
-			       ElementKind element_kind = _ek_not_defined) :
-     parent(field, spatial_dimension, ghost_type, element_kind) { }
-
-   /* ------------------------------------------------------------------------ */
-   /* Methods                                                                  */
-   /* ------------------------------------------------------------------------ */
-
-   virtual iterator begin() {
-     iterator it = parent::begin();
-     return it;
-   }
-
-   virtual iterator end  () {
-     iterator it = parent::end();
-     return it;
-   }
-
- };
-
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU_DUMPER__
 __END_AKANTU__
 
-#endif /* __AKANTU_DUMPER_IOHELPER_TMPL_QUADRATURE_POINTS_FIELD_HH__ */
+#endif /* __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__ */

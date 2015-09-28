@@ -120,7 +120,8 @@ public:
   void initFEEngineBoundary();
 
   /// register the tags associated with the parallel synchronizer
-  void initParallel(MeshPartition *partition, DataAccessor *data_accessor = NULL);
+  virtual void initParallel(MeshPartition *partition,
+			    DataAccessor *data_accessor = NULL);
 
   /// allocate all vectors
   virtual void initArrays();
@@ -364,6 +365,9 @@ protected:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
+
+  inline UInt getNbNodesPerElementList(const Array<Element> & elements) const;
+
   inline virtual UInt getNbDataForElements(const Array <Element> & elements,
 					   SynchronizationTag tag) const;
 

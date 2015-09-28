@@ -145,8 +145,8 @@ inline void ShapeFunctions::initElementalFieldInterpolationFromControlPoints(con
   UInt nb_element_filter;
 
   if(element_filter == empty_filter) 
-    nb_element_filter = element_filter.getSize();
-  else nb_element_filter = nb_element;
+    nb_element_filter = nb_element;
+  else nb_element_filter = element_filter.getSize();
 
   UInt nb_quad_per_element = GaussIntegrationElement<type>::getNbQuadraturePoints();
   UInt nb_interpolation_points_per_elem = interpolation_points_coordinates.getSize() / nb_element;
@@ -177,7 +177,7 @@ inline void ShapeFunctions::initElementalFieldInterpolationFromControlPoints(con
   Array<Real>::const_matrix_iterator quad_coords_it =
     quadrature_points_coordinates.begin_reinterpret(spatial_dimension,
 						    nb_quad_per_element,
-						    nb_element);
+						    nb_element_filter);
 
   Array<Real>::const_matrix_iterator points_coords_begin =
     interpolation_points_coordinates.begin_reinterpret(spatial_dimension,
@@ -191,7 +191,7 @@ inline void ShapeFunctions::initElementalFieldInterpolationFromControlPoints(con
     interp_points_mat.begin(nb_interpolation_points_per_elem, nb_quad_per_element);
 
   /// loop over the elements of the current material and element type
-  for (UInt el = 0; el < nb_element; ++el, ++inv_quad_coord_it,
+  for (UInt el = 0; el < nb_element_filter; ++el, ++inv_quad_coord_it,
 	 ++int_points_mat_it, ++quad_coords_it) {
     /// matrix containing the quadrature points coordinates
     const Matrix<Real> & quad_coords = *quad_coords_it;
@@ -427,11 +427,11 @@ inline void ShapeFunctions::interpolateElementalFieldFromControlPoints(const Arr
   AKANTU_DEBUG_IN();
 
   UInt nb_element = this->mesh.getNbElement(type, ghost_type);
-  
+    
   UInt nb_quad_per_element = GaussIntegrationElement<type>::getNbQuadraturePoints();
   UInt nb_interpolation_points_per_elem
    = interpolation_points_coordinates_matrices.getNbComponent() / nb_quad_per_element;
-  
+
   if(!result.exists(type, ghost_type))
     result.alloc(nb_element*nb_interpolation_points_per_elem,
 		 field.getNbComponent(),
@@ -439,7 +439,7 @@ inline void ShapeFunctions::interpolateElementalFieldFromControlPoints(const Arr
 
   if(element_filter != empty_filter) 
     nb_element = element_filter.getSize();
-  
+
   Matrix<Real> coefficients(nb_quad_per_element, field.getNbComponent());
   
   Array<Real> & result_vec = result(type, ghost_type);
@@ -461,7 +461,7 @@ inline void ShapeFunctions::interpolateElementalFieldFromControlPoints(const Arr
   Array<Real>::const_matrix_iterator inv_quad_coord_it =
     quad_points_coordinates_inv_matrices.begin(nb_quad_per_element, nb_quad_per_element);
 
-  /// loop over the elements of the current material and element type
+  /// loop over the elements of the current filter and element type
   for (UInt el = 0; el < nb_element;
        ++el, ++field_it, ++inv_quad_coord_it, ++interpolation_points_coordinates_it) {
     /**

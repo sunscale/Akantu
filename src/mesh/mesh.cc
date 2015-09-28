@@ -46,7 +46,7 @@
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #  include "dumper_field.hh"
-#  include "dumper_material_internal_field.hh"
+#  include "dumper_internal_material_field.hh"
 #endif
 /* -------------------------------------------------------------------------- */
 

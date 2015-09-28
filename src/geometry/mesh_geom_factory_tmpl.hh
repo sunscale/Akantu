@@ -61,28 +61,35 @@ template<UInt dim, ElementType type, class Primitive, class Kernel>
 void MeshGeomFactory<dim, type, Primitive, Kernel>::constructData() {
   AKANTU_DEBUG_IN();
 
-  const GhostType ghost_type = _not_ghost;
-
   primitive_list.clear();
-
+  UInt nb_not_ghost_elements = mesh.getNbElement(type);
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
-  const Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
-  const Array<Real> & nodes = mesh.getNodes();
 
-  Array<UInt>::const_vector_iterator begin = connectivity.begin(nb_nodes_per_element);
-  Array<UInt>::const_vector_iterator it    = connectivity.begin(nb_nodes_per_element);
-  Array<UInt>::const_vector_iterator end   = connectivity.end(nb_nodes_per_element);
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
+    GhostType ghost_type = *gt;
 
-  // This loop builds the list of primitives
-  for (; it != end ; ++it) {
-    const Vector<UInt> & el_connectivity = *it;
+    if (!mesh.getConnectivities().exists(type, ghost_type)) continue;
+    const Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
+    const Array<Real> & nodes = mesh.getNodes();
+
+    Array<UInt>::const_vector_iterator begin = connectivity.begin(nb_nodes_per_element);
+    Array<UInt>::const_vector_iterator it    = connectivity.begin(nb_nodes_per_element);
+    Array<UInt>::const_vector_iterator end   = connectivity.end(nb_nodes_per_element);
+
     Matrix<Real> node_coordinates(dim, nb_nodes_per_element);
 
-    for (UInt i = 0 ; i < nb_nodes_per_element ; i++)
-      for (UInt j = 0 ; j < dim ; j++)
-        node_coordinates(j, i) = nodes(el_connectivity(i), j);
+    // This loop builds the list of primitives
+    for (; it != end ; ++it) {
+      const Vector<UInt> & el_connectivity = *it;
 
-    addPrimitive(node_coordinates, it - begin);
+      for (UInt i = 0 ; i < nb_nodes_per_element ; i++)
+	for (UInt j = 0 ; j < dim ; j++)
+	  node_coordinates(j, i) = nodes(el_connectivity(i), j);
+
+      // the unique elemental id assigned to the primitive is the
+      // linearized element index over ghost type
+      addPrimitive(node_coordinates, (it - begin) + ghost_type * nb_not_ghost_elements);
+    }
   }
 
   delete data_tree;

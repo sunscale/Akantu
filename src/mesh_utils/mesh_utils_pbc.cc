@@ -1,5 +1,5 @@
 /**
- * @file   mesh_pbc.cc
+ * @file   mesh_utils_pbc.cc
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
@@ -72,84 +72,6 @@ private:
   Real tolerance;
   Real * coordinates;
 };
-
-/* -------------------------------------------------------------------------- */
-// void MeshUtils::tweakConnectivityForPBC(Mesh & mesh,
-//					bool flag_x,
-//					bool flag_y,
-//					bool flag_z){
-//   std::map<UInt,UInt> pbc_pair;
-//   mesh.computeBoundingBox();
-//   mesh.pbc_directions[0] = flag_x;
-//   mesh.pbc_directions[1] = flag_y;
-//   mesh.pbc_directions[2] = flag_z;
-
-//   if (flag_x) computePBCMap(mesh,0,pbc_pair);
-//   if (flag_y) computePBCMap(mesh,1,pbc_pair);
-//   if (flag_z) computePBCMap(mesh,2,pbc_pair);
-
-//   {
-//     std::map<UInt,UInt>::iterator it = pbc_pair.begin();
-//     std::map<UInt,UInt>::iterator end = pbc_pair.end();
-
-//     Real * coords = mesh.nodes->values;
-//     UInt dim = mesh.getSpatialDimension();
-//     while(it != end){
-//       UInt i1 = (*it).first;
-//       UInt i2 = (*it).second;
-
-//       AKANTU_DEBUG_INFO("pairing " << i1 << "("
-//			<< coords[dim*i1] << "," << coords[dim*i1+1] << ","
-//			<< coords[dim*i1+2]
-//			<< ") with"
-//			<< i2 << "("
-//			<< coords[dim*i2] << "," << coords[dim*i2+1] << ","
-//			<< coords[dim*i2+2]
-//			<< ")");
-//       ++it;
-//     }
-//   }
-
-//   //allocate and initialize list of reversed elements
-//   mesh.initElementTypeMapArray<UInt>Array(mesh.reversed_elements_pbc,1,0,mesh.id,"reversed");
-//   // now loop over the elements to change the connectivity of some elements
-//   const Mesh::ConnectivityTypeList & type_list = mesh.getConnectivityTypeList();
-//   Mesh::ConnectivityTypeList::const_iterator it;
-//   for(it = type_list.begin(); it != type_list.end(); ++it) {
-//     ElementType type = *it;
-//     UInt nb_elem = mesh.getNbElement(type);
-//     UInt nb_nodes_per_elem = mesh.getNbNodesPerElement(type);
-//     UInt * conn = mesh.getConnectivityPointer(type)->values;
-//     UInt index = 0;
-//     Array<UInt> & list = *(mesh.reversed_elements_pbc[type]);
-//     for (UInt el = 0; el < nb_elem; el++) {
-//       UInt flag_should_register_elem = false;
-//       for (UInt k = 0; k < nb_nodes_per_elem; ++k,++index){
-//	if (pbc_pair.count(conn[index])){
-//	  flag_should_register_elem = true;
-//	  AKANTU_DEBUG_INFO("elem list size " << list.getSize());
-//	  AKANTU_DEBUG_INFO("node " << conn[index] +1
-//			    << " switch to "
-//			    << pbc_pair[conn[index]]+1);
-//	  // for (UInt toto = 0; toto < 3; ++toto) {
-//	  //   AKANTU_DEBUG_INFO("dir " << toto << " coords "
-//	  //		      << mesh.nodes->values[conn[index]*3+toto]
-//	  //		      << " switch to "
-//	  //		      << mesh.nodes->values[pbc_pair[conn[index]]*3+toto]);
-//	  // }
-//	  std::stringstream str_temp;
-//	  str_temp << "initial elem(" << el << ") is ";
-//	  for (UInt l = 0 ; l < nb_nodes_per_elem ; ++ l){
-//	    str_temp << conn[el*nb_nodes_per_elem+l]+1 << " ";
-//	  }
-//	  AKANTU_DEBUG_INFO(str_temp.str());
-//	  conn[index] = pbc_pair[conn[index]];
-//	}
-//       }
-//       if (flag_should_register_elem) list.push_back(el);
-//     }
-//   }
-// }
 
 /* -------------------------------------------------------------------------- */
 void MeshUtils::computePBCMap(const Mesh & mymesh,

@@ -38,8 +38,10 @@
 #include "aka_safe_enum.hh"
 #include "fe_engine.hh"
 /* -------------------------------------------------------------------------- */
+#include <limits>
 #include <numeric>
 #include <queue>
+#include <set>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -502,9 +504,11 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
 		    if (loc_el.type != _not_defined) {
 
 		      Array<Element> & subelement_to_element =
-			mesh_facets.getSubelementToElement(type, loc_el.ghost_type);
+			mesh_facets.getSubelementToElement(loc_el.type, loc_el.ghost_type);
 
-		      for (UInt f_in = 0; f_in < nb_facet_per_element; ++f_in) {
+		      UInt nb_facet_per_loc_element = subelement_to_element.getNbComponent();
+
+		      for (UInt f_in = 0; f_in < nb_facet_per_loc_element; ++f_in) {
 			if (subelement_to_element(loc_el.element, f_in).type == _not_defined) {
 			  subelement_to_element(loc_el.element, f_in).type = facet_type;
 			  subelement_to_element(loc_el.element, f_in).element = current_facet;
@@ -2052,6 +2056,88 @@ bool MeshUtils::findElementsAroundSubfacet(const Mesh & mesh,
   AKANTU_DEBUG_OUT();
   return facet_matched;
 }
+
+/* -------------------------------------------------------------------------- */
+void MeshUtils::buildSegmentToNodeType(const Mesh & mesh,
+				       Mesh & mesh_facets,
+				       DistributedSynchronizer * synchronizer) {
+  buildAllFacets(mesh, mesh_facets, 1, synchronizer);
+  UInt spatial_dimension = mesh.getSpatialDimension();
+  const ElementTypeMapArray<UInt> & element_to_rank = synchronizer->getPrankToElement();
+  Int local_rank = StaticCommunicator::getStaticCommunicator().whoAmI();
+
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();
+       gt != ghost_type_t::end();
+       ++gt) {
+    GhostType ghost_type = *gt;
+    Mesh::type_iterator it  = mesh_facets.firstType(1, ghost_type);
+    Mesh::type_iterator end = mesh_facets.lastType(1, ghost_type);
+    for(; it != end; ++it) {
+      ElementType type = *it;
+      UInt nb_segments = mesh_facets.getNbElement(type, ghost_type);
+
+      // allocate the data
+      Array<Int> & segment_to_nodetype =
+	*(mesh_facets.getDataPointer<Int>("segment_to_nodetype", type, ghost_type));
+
+      std::set<Element> connected_elements;
+      const Array< std::vector<Element> > & segment_to_2Delement
+	= mesh_facets.getElementToSubelement(type, ghost_type);
+
+      // loop over segments
+      for (UInt s = 0; s < nb_segments; ++s) {
+
+	// determine the elements connected to the segment
+	connected_elements.clear();
+	const std::vector<Element> & twoD_elements = segment_to_2Delement(s);
+
+	if (spatial_dimension == 2) {
+	  // if 2D just take the elements connected to the segments
+	  connected_elements.insert(twoD_elements.begin(), twoD_elements.end());
+	} else if (spatial_dimension == 3) {
+	  // if 3D a second loop is needed to get to the 3D elements
+	  std::vector<Element>::const_iterator facet = twoD_elements.begin();
+
+	  for (; facet != twoD_elements.end(); ++facet) {
+	    const std::vector<Element> & threeD_elements
+	      = mesh_facets.getElementToSubelement(facet->type, facet->ghost_type)(facet->element);
+	    connected_elements.insert(threeD_elements.begin(), threeD_elements.end());
+	  }
+	}
+
+	// get the minimum processor rank associated to the connected
+	// elements and verify if ghost and not ghost elements are
+	// found
+	Int minimum_rank = std::numeric_limits<Int>::max();
+
+	// two booleans saying if not ghost and ghost elements are found in the loop
+	bool ghost_found[2];
+	ghost_found[0] = false; ghost_found[1] = false;
+
+	std::set<Element>::iterator connected_elements_it = connected_elements.begin();
+
+	for (; connected_elements_it != connected_elements.end(); ++connected_elements_it) {
+	  if (*connected_elements_it == ElementNull) continue;
+	  ghost_found[connected_elements_it->ghost_type] = true;
+	  const Array<UInt> & el_to_rank_array = element_to_rank(connected_elements_it->type,
+								 connected_elements_it->ghost_type);
+	  minimum_rank = std::min(minimum_rank, Int(el_to_rank_array(connected_elements_it->element)));
+	}
+
+	// if no ghost elements are found the segment is local
+	if (!ghost_found[1]) segment_to_nodetype(s) = -1;
+	// if no not ghost elements are found the segment is pure ghost
+	else if (!ghost_found[0]) segment_to_nodetype(s) = -3;
+	// if the minimum rank is equal to the local rank, the segment is master
+	else if (local_rank == minimum_rank) segment_to_nodetype(s) = -2;
+	// if the minimum rank is less than the local rank, the segment is slave
+	else if (local_rank > minimum_rank) segment_to_nodetype(s) = minimum_rank;
+	else AKANTU_DEBUG_ERROR("The local rank cannot be smaller than the minimum rank if both ghost and not ghost elements are found");
+      }
+    }
+  }
+}
+
 
 __END_AKANTU__
 

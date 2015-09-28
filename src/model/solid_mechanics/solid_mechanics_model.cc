@@ -61,7 +61,7 @@
 #  include "dumper_field.hh"
 #  include "dumper_paraview.hh"
 #  include "dumper_homogenizing_field.hh"
-#  include "dumper_material_internal_field.hh"
+#  include "dumper_internal_material_field.hh"
 #  include "dumper_elemental_field.hh"
 #  include "dumper_material_padders.hh"
 #  include "dumper_element_partition.hh"
