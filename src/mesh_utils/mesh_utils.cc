@@ -339,11 +339,16 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh,
 
     for(; first != last; ++first) {
       ElementType type = *first;
-      ElementType facet_type = mesh.getFacetType(type);
 
       mesh_facets.getSubelementToElementPointer(type, ghost_type);
-      mesh_facets.getElementToSubelementPointer(facet_type, ghost_type);
-      mesh_facets.getConnectivityPointer(facet_type, ghost_type);
+
+      Vector<ElementType> facet_types = mesh.getAllFacetTypes(type);
+
+      for (UInt ft = 0; ft < facet_types.size(); ++ft) {
+	ElementType facet_type = facet_types(ft);
+    	mesh_facets.getElementToSubelementPointer(facet_type, ghost_type);
+	mesh_facets.getConnectivityPointer(facet_type, ghost_type);
+      }
     }
   }
 

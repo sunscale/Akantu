@@ -83,6 +83,18 @@ register_test(test_buildfacets_hexahedron_20
   PACKAGE cohesive_element
   )
 
+register_test(test_buildfacets_pentahedron_6
+  SOURCES test_buildfacets_pentahedron_6.cc
+  FILES_TO_COPY pentahedron_6.msh
+  PACKAGE cohesive_element
+  )
+
+register_test(test_buildfacets_pentahedron_15
+  SOURCES test_buildfacets_pentahedron_15.cc
+  FILES_TO_COPY pentahedron_15.msh
+  PACKAGE cohesive_element
+  )
+
 register_test(test_buildfacets_mixed3d_linear
   SOURCES test_buildfacets_mixed3d_linear.cc
   FILES_TO_COPY mixed3d_linear.msh
