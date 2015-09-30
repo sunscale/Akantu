@@ -202,10 +202,10 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	  } else {
 	    // if intersection is at a node, write node number (in el) in pennultimate position
 	    if (Math::are_vector_equal(dim, source.storage(), new_node.storage())) {
-	      new_node_per_elem_array(element_id, (new_node_per_elem_array.getNbComponent() - 2)) = it->segId() - 1;
+	      new_node_per_elem_array(element_id, (new_node_per_elem_array.getNbComponent() - 2)) = it->segId();
 	    } else {
 	      new_node_per_elem_array(element_id, (new_node_per_elem_array.getNbComponent() - 2)) =
-		it->segId() % this->nb_prim_by_el;
+		(it->segId()+1) % this->nb_prim_by_el;
 	    }
 	  }
 	}

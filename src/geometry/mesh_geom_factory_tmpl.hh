@@ -150,9 +150,9 @@ inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::add
   CGAL::Line_3<Spherical> l1(a, b), l2(b, c), l3(c, a);
   Line_arc<Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
 
-  s1.setId(id); s1.setSegId(1);
-  s2.setId(id); s2.setSegId(2);
-  s3.setId(id); s3.setSegId(3);
+  s1.setId(id); s1.setSegId(0);
+  s2.setId(id); s2.setSegId(1);
+  s3.setId(id); s3.setSegId(2);
 
   list.push_back(s1);
   list.push_back(s2);
@@ -176,9 +176,9 @@ inline void MeshGeomFactory<2, _igfem_triangle_4, Line_arc<Spherical>, Spherical
   CGAL::Line_3<Spherical> l1(a, b), l2(b, c), l3(c, a);
   Line_arc<Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
 
-  s1.setId(id); s1.setSegId(1);
-  s2.setId(id); s2.setSegId(2);
-  s3.setId(id); s3.setSegId(3);
+  s1.setId(id); s1.setSegId(0);
+  s2.setId(id); s2.setSegId(1);
+  s3.setId(id); s3.setSegId(2);
 
   list.push_back(s1);
   list.push_back(s2);
@@ -200,9 +200,9 @@ inline void MeshGeomFactory<2, _igfem_triangle_5, Line_arc<Spherical>, Spherical
   CGAL::Line_3<Spherical> l1(a, b), l2(b, c), l3(c, a);
   Line_arc<Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
 
-  s1.setId(id); s1.setSegId(1);
-  s2.setId(id); s2.setSegId(2);
-  s3.setId(id); s3.setSegId(3);
+  s1.setId(id); s1.setSegId(0);
+  s2.setId(id); s2.setSegId(1);
+  s3.setId(id); s3.setSegId(2);
 
   list.push_back(s1);
   list.push_back(s2);
