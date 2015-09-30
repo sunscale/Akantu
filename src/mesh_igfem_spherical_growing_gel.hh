@@ -79,9 +79,6 @@ public:
     nb_enriched_nodes(0),
     synchronizer(NULL)
   {
-    // Solution 1
-    //   /// the mesh sphere intersector for the supported element type
-    //   AKANTU_BOOST_APPLY_ON_LIST(INTERSECTOR_DEFINITION, ELEMENT_LIST)
     ElementTypeMapArray<UInt>::type_iterator tit = mesh.firstType(dim);
     ElementTypeMapArray<UInt>::type_iterator tend = mesh.lastType(dim);
     for(;tit != tend; ++tit) { // loop to add corresponding IGFEM element types
@@ -104,7 +101,6 @@ public:
 
   /// Destructor
   ~MeshIgfemSphericalGrowingGel() {
-    // Solution 2
     std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iit
       = intersectors.begin();
     std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iend
@@ -124,9 +120,6 @@ public:
 public:
   /// Construct the primitive tree object
   void constructData(){
-    // Solution 1 TODO
-
-    // Solution 2
     std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iit
       = intersectors.begin();
     std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iend
@@ -288,7 +281,7 @@ public:
 	  if( (type != _triangle_3)
 	      && ( (new_node_per_elem_array(nel,0)==0)
 		   || ( (new_node_per_elem_array(nel,0) == 1)
-			&& ( ( (new_node_per_elem_array(nel,2)+1) % nb_prim_by_el )
+			&& ( ( (new_node_per_elem_array(nel,2)-1) % nb_prim_by_el )
 			     != new_node_per_elem_array(nel, new_node_per_elem_array.getNbComponent() - 2) ) ) ) ){
 	    Element element_type_tmpl(type, 0, ghost_type, Mesh::getKind(type));
 	    new_elements_list.resize(n_new_el+1);
@@ -313,7 +306,7 @@ public:
 	  }
 	  else if( (new_node_per_elem_array(nel,0)!=0)
 		   && !( (new_node_per_elem_array(nel,0) == 1)
-			 && ( ( (new_node_per_elem_array(nel,2)+1) % nb_prim_by_el )
+			 && ( ( (new_node_per_elem_array(nel,2)+2) % nb_prim_by_el )
 			      != new_node_per_elem_array(nel, new_node_per_elem_array.getNbComponent() - 2) ) ) ){
 	    Element element_type_tmpl(type, 0, ghost_type);
 	    element_type_tmpl.kind = Mesh::getKind(type);
@@ -323,17 +316,17 @@ public:
 	    case 1 :{
 	      Vector<UInt> ctri4(4);
 	      switch(new_node_per_elem_array(nel,2)){
-	      case 1 :
+	      case 0 :
 		ctri4(0) = connec_type_tmpl(nel,2);
 		ctri4(1) = connec_type_tmpl(nel,0);
 		ctri4(2) = connec_type_tmpl(nel,1);
 		break;
-	      case 2 :
+	      case 1 :
 		ctri4(0) = connec_type_tmpl(nel,0);
 		ctri4(1) = connec_type_tmpl(nel,1);
 		ctri4(2) = connec_type_tmpl(nel,2);
 		break;
-	      case 3 :
+	      case 2 :
 		ctri4(0) = connec_type_tmpl(nel,1);
 		ctri4(1) = connec_type_tmpl(nel,2);
 		ctri4(2) = connec_type_tmpl(nel,0);
@@ -354,42 +347,42 @@ public:
 	    }
 	    case 2 :{
 	      Vector<UInt> ctri5(5);
-	      if( (new_node_per_elem_array(nel,2)==1) && (new_node_per_elem_array(nel,4)==2) ){
+	      if( (new_node_per_elem_array(nel,2)==0) && (new_node_per_elem_array(nel,4)==1) ){
 		ctri5(0) = connec_type_tmpl(nel,1);
 		ctri5(1) = connec_type_tmpl(nel,2);
 		ctri5(2) = connec_type_tmpl(nel,0);
 		ctri5(3) = new_node_per_elem_array(nel,3);
 		ctri5(4) = new_node_per_elem_array(nel,1);
 	      }
-	      else if((new_node_per_elem_array(nel,2)==1) && (new_node_per_elem_array(nel,4)==3)){
+	      else if((new_node_per_elem_array(nel,2)==0) && (new_node_per_elem_array(nel,4)==2)){
 		ctri5(0) = connec_type_tmpl(nel,0);
 		ctri5(1) = connec_type_tmpl(nel,1);
 		ctri5(2) = connec_type_tmpl(nel,2);
 		ctri5(3) = new_node_per_elem_array(nel,1);
 		ctri5(4) = new_node_per_elem_array(nel,3);
 	      }
-	      else if((new_node_per_elem_array(nel,2)==2) && (new_node_per_elem_array(nel,4)==3)){
+	      else if((new_node_per_elem_array(nel,2)==1) && (new_node_per_elem_array(nel,4)==2)){
 		ctri5(0) = connec_type_tmpl(nel,2);
 		ctri5(1) = connec_type_tmpl(nel,0);
 		ctri5(2) = connec_type_tmpl(nel,1);
 		ctri5(3) = new_node_per_elem_array(nel,3);
 		ctri5(4) = new_node_per_elem_array(nel,1);
 	      }
-	      else if((new_node_per_elem_array(nel,2)==2) && (new_node_per_elem_array(nel,4)==1)){
+	      else if((new_node_per_elem_array(nel,2)==1) && (new_node_per_elem_array(nel,4)==0)){
 		ctri5(0) = connec_type_tmpl(nel,1);
 		ctri5(1) = connec_type_tmpl(nel,2);
 		ctri5(2) = connec_type_tmpl(nel,0);
 		ctri5(3) = new_node_per_elem_array(nel,1);
 		ctri5(4) = new_node_per_elem_array(nel,3);
 	      }
-	      else if((new_node_per_elem_array(nel,2)==3) && (new_node_per_elem_array(nel,4)==1)){
+	      else if((new_node_per_elem_array(nel,2)==2) && (new_node_per_elem_array(nel,4)==0)){
 		ctri5(0) = connec_type_tmpl(nel,0);
 		ctri5(1) = connec_type_tmpl(nel,1);
 		ctri5(2) = connec_type_tmpl(nel,2);
 		ctri5(3) = new_node_per_elem_array(nel,3);
 		ctri5(4) = new_node_per_elem_array(nel,1);
 	      }
-	      else if((new_node_per_elem_array(nel,2)==3) && (new_node_per_elem_array(nel,4)==2)){
+	      else if((new_node_per_elem_array(nel,2)==2) && (new_node_per_elem_array(nel,4)==1)){
 		ctri5(0) = connec_type_tmpl(nel,2);
 		ctri5(1) = connec_type_tmpl(nel,0);
 		ctri5(2) = connec_type_tmpl(nel,1);
@@ -397,7 +390,7 @@ public:
 		ctri5(4) = new_node_per_elem_array(nel,3);
 	      }
 	      else{
-		AKANTU_DEBUG_ERROR("A triangle have only 3 segments not "<< new_node_per_elem_array(nel,2) << "and" << new_node_per_elem_array(nel,4));
+		AKANTU_DEBUG_ERROR("A triangle have only 3 segments (0 to 2) not "<< new_node_per_elem_array(nel,2) << "and" << new_node_per_elem_array(nel,4));
 	      }
 	      UInt nb_tri5 = connec_igfem_tri5.getSize();
 	      connec_igfem_tri5.push_back(ctri5);
