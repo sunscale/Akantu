@@ -187,48 +187,6 @@ public:
     AKANTU_DEBUG_OUT();
   }
 
-  //Solution 1
-  /* #define INTERSECTORS(type)					\
-     intersector##type.buildResultFromQueryList(query_list)*/
-
-  /// Build the IGFEM mesh
-  void buildResultFromQueryList(const std::list<SK::Sphere_3> & query_list) {
-    /// store number of currently enriched nodes
-    this->nb_enriched_nodes = mesh.getNbNodes() - nb_nodes_fem;
-    constructData();
-    //Solution 1
-    //     it = mesh.firstType();
-    //     end = mesh.lastType();
-    //     for(;it != end;++it) {
-    //       AKANTU_BOOST_LIST_SWITCH(INTERSECTORS, ELEMENT_LIST, *it)
-    //     } }
-
-    //Solution 2
-    std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iit
-      = intersectors.begin();
-    std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iend
-      = intersectors.end();
-    for(;iit != iend; ++iit) {
-      MeshAbstractIntersector<SK::Sphere_3> & intersector = *(iit->second);
-      intersector.buildResultFromQueryList(query_list);
-    }
-    removeAdditionnalNodes();
-    ///MeshUtils::purifyMesh(mesh);
-  }
-
-  /// increase sphere radius and build the IGFEM mesh
-  void buildResultFromQueryList(const std::list<SK::Sphere_3> & query_list, Real inf_fact) {
-    std::list<SK::Sphere_3>::const_iterator query_it = query_list.begin(),
-      query_end = query_list.end();
-    std::list<SK::Sphere_3> sphere_list;
-    for (; query_it != query_end ; ++query_it) {
-      SK::Sphere_3 sphere(query_it->center(),
-			  query_it->squared_radius() * inf_fact * inf_fact );
-      sphere_list.push_back(sphere);
-    }
-    buildResultFromQueryList(sphere_list);
-  }
-
   /// Compute the intersection points between the mesh and the query list for all element types and send the NewNodeEvent
   void computeMeshQueryListIntersectionPoint(const std::list<SK::Sphere_3> & query_list) {
     /// store number of currently enriched nodes
@@ -263,9 +221,6 @@ public:
 	this->mesh.sendEvent(new_nodes_event);
       }
     }
-    
-    //removeAdditionnalNodes();
-    ///MeshUtils::purifyMesh(mesh);
   }
 
   /// increase sphere radius and build the new intersection points between the mesh and the query list for all element types and send the NewNodeEvent
