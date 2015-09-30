@@ -87,7 +87,7 @@ public:
   /// Compute intersection points between the mesh and a list of queries
   virtual void  computeMeshQueryListIntersectionPoint(const std::list<Query> & query_list);
 
-  /// Compute whatever result is needed from the user
+  /// Compute whatever result is needed from the user (should be move to the appropriate specific classe for genericity)
   virtual void buildResultFromQueryList(const std::list<Query> & query_list) = 0;
 
 protected:

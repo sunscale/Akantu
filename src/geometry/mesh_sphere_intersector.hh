@@ -66,7 +66,6 @@ protected:
   const ElementTypeMapUInt * new_node_per_elem;
 };
 
-
 #endif
 
 
@@ -102,16 +101,17 @@ public:
    *
    * @param query (sphere) to compute the intersections with the mesh
    */
-  virtual void computeIntersectionQuery(const SK::Sphere_3 & query);
+  virtual void computeIntersectionQuery(const SK::Sphere_3 & query){
+    AKANTU_DEBUG_ERROR("This function is not implemented for spheres (It was to generic and has been replaced by computeMeshQueryIntersectionPoint");
+  }
 
   /// Compute intersection points between the mesh and a query
   virtual void computeMeshQueryIntersectionPoint(const SK::Sphere_3 & query);
 
   /// Build the IGFEM mesh
-  virtual void buildResultFromQueryList(const std::list<SK::Sphere_3> & query);
-
-  /// Remove the additionnal nodes
-  void removeAdditionnalNodes();
+  virtual void buildResultFromQueryList(const std::list<SK::Sphere_3> & query){
+    AKANTU_DEBUG_ERROR("This function is no longer implemented to split geometrical operations and dedicated result construction");
+  }
 
   /// Set the tolerance
   void setToleranceIntersectionOnNode(UInt tol) {
