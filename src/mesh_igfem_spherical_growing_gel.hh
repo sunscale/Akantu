@@ -242,18 +242,18 @@ public:
     for(;iit != iend; ++iit) {
       MeshAbstractIntersector<SK::Sphere_3> & intersector = *(iit->second);
       intersector.computeMeshQueryListIntersectionPoint(query_list);
-      const Array<Real> new_node_current_type = *(intersector.getNewNodes());
+      const Array<Real> intersection_points_current_type = *(intersector.getIntersectionPoints());
       const ElementTypeMapUInt & new_node_per_elem = intersector.getNewNodePerElem();
       
       /// Send the new node event
-      if(new_node_current_type.getSize()) {
+      if(intersection_points_current_type.getSize()) {
 	Array<Real> & nodes = this->mesh.getNodes();
 	UInt nb_node = nodes.getSize() ;
 	NewIGFEMNodesEvent new_nodes_event;
-	for(UInt in = 0; in < new_node_current_type.getSize(); ++in ) {
+	for(UInt in = 0; in < intersection_points_current_type.getSize(); ++in ) {
 	  Vector<Real> new_node(dim, 0.0);
 	  for(UInt id = 0; id < dim; ++id)
-	    new_node(id) = new_node_current_type(in,id);
+	    new_node(id) = intersection_points_current_type(in,id);
 	  nodes.push_back(new_node);
 	  new_nodes_event.getList().push_back(nb_node);
 	  ++nb_node;
