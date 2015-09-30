@@ -50,7 +50,7 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh,
   nb_nodes_fem(mesh.getNodes().getSize()),
   nb_prim_by_el(0)
 {
-  this->new_nodes = new Array<Real>(0,dim);
+  this->intersection_points = new Array<Real>(0,dim);
 
   for(Mesh::type_iterator it = mesh.firstType(dim); it != mesh.lastType(dim); ++it){
 #if defined(AKANTU_IGFEM)
@@ -227,7 +227,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
   AKANTU_DEBUG_IN();
 
   Array<Real> & nodes = this->mesh.getNodes();
-  UInt nb_node = nodes.getSize() + this->new_nodes->getSize();
+  UInt nb_node = nodes.getSize() + this->intersection_points->getSize();
   UInt nb_not_ghost_elements = this->mesh.getNbElement(type);
 
   // Tolerance for proximity checks should be defined by user
@@ -266,10 +266,10 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	    }
 	  }
 	  if(is_new){
-	    Array<Real>::vector_iterator new_nodes_it = this->new_nodes->begin(dim);
-	    Array<Real>::vector_iterator new_nodes_end = this->new_nodes->end(dim);
-	    for (; new_nodes_it != new_nodes_end ; ++new_nodes_it, ++n) {
-	      if (Math::are_vector_equal(dim, new_node.storage(), new_nodes_it->storage())) {
+	    Array<Real>::vector_iterator intersection_points_it = this->intersection_points->begin(dim);
+	    Array<Real>::vector_iterator intersection_points_end = this->intersection_points->end(dim);
+	    for (; intersection_points_it != intersection_points_end ; ++intersection_points_it, ++n) {
+	      if (Math::are_vector_equal(dim, new_node.storage(), intersection_points_it->storage())) {
 		is_new = false;
 		break;
 	      }
@@ -297,7 +297,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	  }
 
 	  if (is_new) {
-	    this->new_nodes->push_back(new_node);
+	    this->intersection_points->push_back(new_node);
 	    nb_node++;
 	  }
 

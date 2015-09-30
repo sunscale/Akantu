@@ -54,7 +54,7 @@ MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::~MeshGeomIntersector()
 
 template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
 void MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::constructData() {
-  this->new_nodes->resize(0);
+  this->intersection_points->resize(0);
   factory.constructData();
 }
 

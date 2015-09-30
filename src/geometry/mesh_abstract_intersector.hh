@@ -63,8 +63,8 @@ public:
   /// get the new_node_per_elem array
   AKANTU_GET_MACRO(NewNodePerElem, new_node_per_elem, const ElementTypeMapUInt &);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(NewNodePerElem, new_node_per_elem, UInt);
-  /// get the new_nodes array
-  AKANTU_GET_MACRO(NewNodes, new_nodes, const Array<Real> *);
+  /// get the intersection_points array
+  AKANTU_GET_MACRO(IntersectionPoints, intersection_points, const Array<Real> *);
   /// get the nb_seg_by_el UInt
   AKANTU_GET_MACRO(NbSegByEl, nb_seg_by_el, const UInt);
 
@@ -95,7 +95,7 @@ protected:
   ElementTypeMapUInt new_node_per_elem;
 
   /// intersection output: new intersection points (computeMeshQueryListIntersectionPoint)
-  Array<Real> * new_nodes;
+  Array<Real> * intersection_points;
 
   /// number of segment in a considered element of the templated type of element specialized intersector
   const UInt nb_seg_by_el;

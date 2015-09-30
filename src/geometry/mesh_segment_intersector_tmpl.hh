@@ -45,7 +45,7 @@ MeshSegmentIntersector<dim, type>::MeshSegmentIntersector(Mesh & mesh, Mesh & re
   result_mesh(result_mesh),
   current_physical_name()
 {
-  this->new_nodes = new Array<Real>(0,dim);
+  this->intersection_points = new Array<Real>(0,dim);
   this->constructData();
 }
 

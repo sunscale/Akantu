@@ -44,7 +44,7 @@ MeshAbstractIntersector<Query>::MeshAbstractIntersector(Mesh & mesh,
 							const MemoryID & memory_id):
   MeshGeomAbstract(mesh, id, memory_id),
   new_node_per_elem("new_node_per_elem", id),
-  new_nodes(NULL),
+  intersection_points(NULL),
   nb_seg_by_el(0)
 {}
 
