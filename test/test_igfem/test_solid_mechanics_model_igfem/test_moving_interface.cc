@@ -4,7 +4,7 @@
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  *
- * @brief  test the solidmechancis model for IGFEM analysis
+ * @brief  test the solidmechanics model for a moving interface
  *
  * @section LICENSE
  *
@@ -15,7 +15,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_igfem.hh"
-#include "material_elastic.hh"
 #include "aka_common.hh"
 #include <cstdlib>
 #include <fstream>
@@ -234,47 +233,18 @@ int main(int argc, char *argv[]) {
 
   /// create the interface
   model.update(domain_name);
-
-/* -------------------------------------------------------------------------- */
-    /// apply exact solution for the displacement along the outer boundary
-  Real outer_radius = 2.0;
-
-  /// get the Lame constants for the two non-igfem materials (frist two materials in the material file):
-  /// Needed for compuation of boundary conditions
-  Vector<Real> lambda(2);
-  Vector<Real> mu(2);
-
-  for (UInt m = 0; m < 2; ++m) {
-    MaterialElastic<spatial_dimension> & mat = dynamic_cast<MaterialElastic<spatial_dimension> & >(model.getMaterial(m));
-    lambda(m) = mat.getLambda();
-    mu(m) = mat.getMu();
-  }
-
-  applyBoundaryConditions(model, radius_inclusion, outer_radius, lambda, mu);
-
   /// dump the mesh after the IGFEM interface has been created
   model.dump();
   model.dump("igfem elements");
 
-  /// solve the system
-  bool factorize = false;
-  bool converged = false;
-  Real error; 
-  converged = model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(1e-12, error, 2, factorize);
-  if (!converged) {
-    std::cout << "Solving step did not yield a converged solution, error: " << error << std::endl;
-    return EXIT_FAILURE;
-  }
-  
-  /// dump the solution
+
+  /// move interface
+  growGel(sphere_list, 1.0);
+  mat_selector->update(1.0);
+ 
+  /// dump after the interface has moved
   model.dump();
   model.dump("igfem elements");
-
-
-  Array<Real> & disp = model.getDisplacement();
-  Array<Real>::const_vector_iterator disp_it = disp.begin(spatial_dimension);
-  for (UInt n = 0; n < mesh.getNbNodes(); ++n, ++disp_it)
-    std::cout << *disp_it << std::endl;
 
   finalize();
   return EXIT_SUCCESS;

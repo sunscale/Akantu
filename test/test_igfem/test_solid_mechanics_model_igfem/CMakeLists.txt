@@ -15,11 +15,18 @@
 #
 #===============================================================================
 
-register_test(test_elastic_moving_interface
+register_test(test_solid_mechanics_model_igfem
   SOURCES test_solid_mechanics_model_igfem.cc
-  FILES_TO_COPY material.dat patch_test.msh
+  FILES_TO_COPY material.dat plate.msh
   DIRECTORIES_TO_CREATE paraview
-  PACKAGE IGFEM 
+  PACKAGE IGFEM implicit
+  )
+
+register_test(test_moving_interface
+  SOURCES test_moving_interface.cc
+  FILES_TO_COPY material.dat plate.msh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE IGFEM implicit
   )
 
 register_test(test_transfer_internals
@@ -33,5 +40,5 @@ register_test(test_ASR_damge
   SOURCES test_ASR_damage.cc
   FILES_TO_COPY material_ASR.dat 
   DIRECTORIES_TO_CREATE paraview
-  PACKAGE IGFEM 
+  PACKAGE IGFEM extra_materials
   )

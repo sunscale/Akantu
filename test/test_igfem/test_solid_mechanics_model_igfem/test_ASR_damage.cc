@@ -275,16 +275,16 @@ int main(int argc, char *argv[]) {
 	nb_damaged_elements = mat_igfem.updateDamage();
   } while (nb_damaged_elements);
 
-  model.dump("igfem elements");
+
   model.dump();
 
-
+  model.dump("igfem elements");
 
 
   /// grow the gel i = 12
   for (UInt i = 1; i < 12; ++i) {
     // Real new_radius = radius_inclusion - i * 0.00015;
-    Real new_radius = radius_inclusion + i * 0.0002;
+    Real new_radius = radius_inclusion + i * 0.00015;
     growGel(sphere_list, new_radius);
     mat_selector->update(new_radius);
     model.update(domain_name);

@@ -114,6 +114,13 @@ void SolidMechanicsModelIGFEM::initArrays() {
 }
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModelIGFEM::initParallel(MeshPartition * partition,
+					    DataAccessor * data_accessor) {
+  SolidMechanicsModel::initParallel(partition, data_accessor);
+  this->intersector_sphere.setDistributedSynchronizer(synch_parallel);
+}
+
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModelIGFEM::initMaterials() {
   AKANTU_DEBUG_IN();
 
@@ -154,8 +161,6 @@ void SolidMechanicsModelIGFEM::initModel() {
 
   /// add the igfem type connectivities
 
-  ElementType type = _not_defined;
-
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {
 
@@ -167,7 +172,7 @@ void SolidMechanicsModelIGFEM::initModel() {
     for (; it != last; ++it) {
       const Array<UInt> & connectivity = mesh.getConnectivity(*it, type_ghost);
       if (connectivity.getSize() != 0) {
-	type = *it;
+	ElementType type = *it;
 	Vector<ElementType> types_igfem = FEEngine::getIGFEMElementTypes(type);
 	for (UInt i = 0; i < types_igfem.size(); ++i)
 	  mesh.addConnectivityType(types_igfem(i), type_ghost);
@@ -216,13 +221,27 @@ void SolidMechanicsModelIGFEM::onElementsRemoved(const Array<Element> & element_
   this->getFEEngine("IGFEMFEEngine").initShapeFunctions(_ghost);
   SolidMechanicsModel::onElementsRemoved(element_list, new_numbering, event);
 
-
+  // communicate global connectivity for slave nodes
+  if (synch_parallel) {
+    synch_parallel->computeBufferSize(*this, _gst_smmi_global_conn);
+    synch_parallel->asynchronousSynchronize(*this, _gst_smmi_global_conn);
+    synch_parallel->waitEndSynchronize(*this, _gst_smmi_global_conn);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelIGFEM::onNodesAdded(const Array<UInt> & nodes_list,
 					    const NewNodesEvent & event) {
   AKANTU_DEBUG_IN();
+
+  const NewIGFEMNodesEvent * igfem_event = dynamic_cast<const NewIGFEMNodesEvent *>(&event);
+  // update the node type
+  if (igfem_event != NULL) {
+    intersector_sphere.updateNodeType(nodes_list,
+				      igfem_event->getNewNodePerElem(),
+				      igfem_event->getElementType());
+    updateLocalMasterGlobalConnectivity(nodes_list);
+  }
 
   UInt nb_new_nodes = nodes_list.getSize();
   UInt nb_nodes = mesh.getNbNodes();
@@ -494,5 +513,52 @@ void SolidMechanicsModelIGFEM::transferInternalValues(const ID & internal, std::
   
   }
 }
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModelIGFEM::updateLocalMasterGlobalConnectivity(const Array<UInt> & nodes_list) {
+  UInt local_nb_new_nodes = nodes_list.getSize();
+
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  Int rank = comm.whoAmI();
+  Int nb_proc = comm.getNbProc();
+  if (nb_proc == 1) return;
+
+  /// resize global ids array
+  Array<UInt> & nodes_global_ids = mesh.getGlobalNodesIds();
+  UInt nb_old_nodes = nodes_global_ids.getSize();
+
+  nodes_global_ids.resize(nb_old_nodes + local_nb_new_nodes);
+
+  /// compute amount of local or master doubled nodes
+  Vector<UInt> local_master_nodes(nb_proc);
+
+  for (UInt n = 0; n < local_nb_new_nodes; ++n) {
+    UInt node = nodes_list(n);
+    if (mesh.isLocalOrMasterNode(node)) ++local_master_nodes(rank);
+  }
+
+  comm.allGather(local_master_nodes.storage(), 1);
+
+  /// update global number of nodes
+  UInt total_nb_new_nodes = std::accumulate(local_master_nodes.storage(),
+					    local_master_nodes.storage() + nb_proc,
+					    0);
+
+  if (total_nb_new_nodes == 0) return;
+
+  /// set global ids of local and master nodes
+  UInt starting_index = std::accumulate(local_master_nodes.storage(),
+  					local_master_nodes.storage() + rank,
+  					mesh.getNbGlobalNodes());
+
+  for (UInt n = 0; n < local_nb_new_nodes; ++n) {
+    UInt node = nodes_list(n);
+    if (mesh.isLocalOrMasterNode(node)) {
+      nodes_global_ids(node) = starting_index;
+      ++starting_index;
+    }
+  }
+}
+
 
 __END_AKANTU__

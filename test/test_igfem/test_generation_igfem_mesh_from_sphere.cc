@@ -204,7 +204,7 @@ int main (int argc, char * argv[]) {
   /// test of new MeshIgfemSphericalGrowingGel
   Mesh mesh_gel2(2, "mesh_gel2");
   mesh_gel2.read("test_geometry_triangle.msh");
-  MeshIgfemSphericalGrowingGel<2> gel_intersector2(mesh_gel2);
+  MeshIgfemSphericalGrowingGel<2> gel_intersector2(mesh_gel2, "igfem_mesher2");
 
   SK::Sphere_3 sphere_gel2(SK::Point_3(1, 0, 0), 0.4999999999/4);
   std::list<SK::Sphere_3> sphere_list_gel2;
