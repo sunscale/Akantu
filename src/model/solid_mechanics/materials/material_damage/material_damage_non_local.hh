@@ -40,7 +40,7 @@ __BEGIN_AKANTU__
 
 template<UInt spatial_dimension,
          class MaterialDamageLocal,
-	 template <UInt> class WeightFunction = BaseWeightFunction>
+	 class WeightFunction = BaseWeightFunction>
 class MaterialDamageNonLocal : public MaterialDamageLocal,
 			       public MaterialNonLocal<spatial_dimension, WeightFunction> {
 public:

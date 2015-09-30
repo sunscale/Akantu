@@ -1003,6 +1003,48 @@ void DistributedSynchronizer::printself(std::ostream & stream, int indent) const
 }
 
 /* -------------------------------------------------------------------------- */
+void DistributedSynchronizer::onElementsChanged(const Array<Element> & old_elements_list,
+						const Array<Element> & new_elements_list,
+						const ElementTypeMapArray<UInt> & new_numbering,
+						const ChangedElementsEvent & event) {
+  AKANTU_DEBUG_ASSERT(old_elements_list.getSize() == new_elements_list.getSize(),
+		      "The element lists of onElementsChanged must have the same size");
+
+  // create a map to link old elements to new ones
+  std::map<Element, Element> old_to_new_elements;
+
+  for (UInt el = 0; el < old_elements_list.getSize(); ++el)
+    old_to_new_elements[old_elements_list(el)] = new_elements_list(el);
+
+  // substitute old elements with new ones
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  UInt psize = comm.getNbProc();
+  UInt prank = comm.whoAmI();
+
+  std::map<Element, Element>::iterator found_element_it;
+  std::map<Element, Element>::iterator found_element_end = old_to_new_elements.end();
+
+  for (UInt p = 0; p < psize; ++p) {
+    if (p == prank) continue;
+
+    Array<Element> & recv = recv_element[p];
+    for (UInt el = 0; el < recv.getSize(); ++el) {
+      found_element_it = old_to_new_elements.find(recv(el));
+      if (found_element_it != found_element_end)
+	recv(el) = found_element_it->second;
+    }
+
+    Array<Element> & send = send_element[p];
+    for (UInt el = 0; el < send.getSize(); ++el) {
+      found_element_it = old_to_new_elements.find(send(el));
+      if (found_element_it != found_element_end)
+	send(el) = found_element_it->second;
+    }
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
 void DistributedSynchronizer::onElementsRemoved(const Array<Element> & element_to_remove,
 						const ElementTypeMapArray<UInt> & new_numbering,
 						__attribute__((unused)) const RemovedElementsEvent & event) {

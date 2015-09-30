@@ -214,7 +214,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
 
     UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
     UInt nb_facet = f_filter.getSize();
-    if (nb_facet == 0) continue;
+    //  if (nb_facet == 0) continue;
 
     Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
 
@@ -707,7 +707,7 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
           //          std::cout << "k_us = " << k_us << std::endl;
           if (std::abs(k_ls) > 1e-13 && std::abs(k_us) > 1e-13){
             Real error = std::abs((k_ls - k_us) / k_us);
-            if (error > 1e-13){
+            if (error > 1e-10){
               std::cout << "non symmetric cohesive matrix" << std::endl;
               std::cout << "error " << error << std::endl;
             }

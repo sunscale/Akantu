@@ -30,20 +30,18 @@
  */
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void DamagedWeightFunction<spatial_dimension>::selectType(__attribute__((unused)) ElementType type1,
-								 __attribute__((unused)) GhostType ghost_type1,
-								 ElementType type2,
-								 GhostType ghost_type2) {
+inline void DamagedWeightFunction::selectType(__attribute__((unused)) ElementType type1,
+					      __attribute__((unused)) GhostType ghost_type1,
+					      ElementType type2,
+					      GhostType ghost_type2) {
   /// preselect the damage array for a given type: for optimization
   selected_damage = &(this->material.template getArray<Real>("damage", type2, ghost_type2));
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline Real DamagedWeightFunction<spatial_dimension>::operator()(Real r,
-								 const __attribute__((unused)) QuadraturePoint & q1,
-								 const QuadraturePoint & q2) {
+inline Real DamagedWeightFunction::operator()(Real r,
+					      const __attribute__((unused)) QuadraturePoint & q1,
+					      const QuadraturePoint & q2) {
   /// compute the weight
   UInt quad = q2.global_num;
   Real D = (*selected_damage)(quad);

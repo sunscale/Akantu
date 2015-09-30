@@ -53,14 +53,12 @@ package_declare_sources(IOHelper
   io/dumper/dumper_type_traits.hh
   io/dumper/dumper_compute.hh
   io/dumper/dumper_nodal_field.hh
-  io/dumper/dumper_quadrature_points_field.hh
+  io/dumper/dumper_quadrature_point_iterator.hh
   io/dumper/dumper_variable.hh
-  io/dumper/dumper_iterator_helper.hh
-  io/dumper/dumper_connectivity_field.hh
   io/dumper/dumper_padding_helper.hh
   io/dumper/dumper_elemental_field.hh
   io/dumper/dumper_element_iterator.hh
-  io/dumper/dumper_material_internal_field.hh
+  io/dumper/dumper_internal_material_field.hh
   io/dumper/dumper_generic_elemental_field.hh
   io/dumper/dumper_generic_elemental_field_tmpl.hh
   )

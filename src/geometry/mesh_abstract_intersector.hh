@@ -48,7 +48,9 @@ class MeshAbstractIntersector : public MeshGeomAbstract {
 
 public:
   /// Construct from mesh
-  explicit MeshAbstractIntersector(Mesh & mesh);
+  explicit MeshAbstractIntersector(Mesh & mesh,
+				   const ID & id = "mesh_abstract_intersector",
+				   const MemoryID & memory_id = 0);
 
   /// Destructor
   virtual ~MeshAbstractIntersector();
@@ -59,12 +61,12 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// get the new_node_per_elem array
-  AKANTU_GET_MACRO(NewNodePerElem, new_node_per_elem, const Array<UInt> *)
-  AKANTU_GET_MACRO_NOT_CONST(NewNodePerElemNotConst, new_node_per_elem, Array<UInt> *)
+  AKANTU_GET_MACRO(NewNodePerElem, new_node_per_elem, const ElementTypeMapUInt &);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(NewNodePerElem, new_node_per_elem, UInt);
   /// get the new_nodes array
-  AKANTU_GET_MACRO(NewNodes, new_nodes, const Array<Real> *)
+  AKANTU_GET_MACRO(NewNodes, new_nodes, const Array<Real> *);
   /// get the nb_seg_by_el UInt
-  AKANTU_GET_MACRO(NbSegByEl, nb_seg_by_el, const UInt)
+  AKANTU_GET_MACRO(NbSegByEl, nb_seg_by_el, const UInt);
 
   /**
    * @brief Compute the intersection with a query object
@@ -76,7 +78,7 @@ public:
    */
   virtual void computeIntersectionQuery(const Query & query) = 0;
 
-  /// Compute intersection points between the mesh and a query (closed surface in 3D or a closed curve in 2D)
+  /// Compute intersection points between the mesh primitives (segments) and a query (surface in 3D or a curve in 2D), double intersection points for the same primitives are not considered
   virtual void computeMeshQueryIntersectionPoint(const Query & query) = 0;
 
   /// Compute intersection between the mesh and a list of queries
@@ -90,7 +92,7 @@ public:
 
 protected:
   /// new node per element (column 0: number of new nodes, then odd is the intersection node number and even the ID of the intersected segment)
-  Array<UInt> * new_node_per_elem;
+  ElementTypeMapUInt new_node_per_elem;
 
   /// intersection output: new intersection points (computeMeshQueryListIntersectionPoint)
   Array<Real> * new_nodes;

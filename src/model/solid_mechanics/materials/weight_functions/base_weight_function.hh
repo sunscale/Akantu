@@ -54,14 +54,13 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /*  Normal weight function                                                    */
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
 class BaseWeightFunction : public Parsable {
 public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
   BaseWeightFunction(Material & material, const std::string & type = "base") :
-    Parsable(_st_non_local, "weight_function:" + type), material(material), type(type) {
+    Parsable(_st_non_local, "weight_function:" + type), material(material), type(type), spatial_dimension(material.getSpatialDimension()) {
     this->registerParam("radius"       , R             , 100.,
 			_pat_parsable | _pat_readable  , "Non local radius");
     this->registerParam("update_rate"  , update_rate, 0U  ,
@@ -77,7 +76,7 @@ public:
   virtual inline void init();
 
   /// update the internal parameters
-  virtual void updateInternals(__attribute__((unused)) const ElementTypeMapArray<Real> & quadrature_points_coordinates) {};
+  virtual void updateInternals() {};
 
   /* ------------------------------------------------------------------------ */
   /// set the non-local radius
@@ -99,7 +98,7 @@ public:
                          const __attribute__((unused)) QuadraturePoint & q2);
 
   /// print function
-  void printself(std::ostream & stream, int indent) const {
+  void printself(std::ostream & stream, int indent = 0) const {
     std::string space;
     for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
     stream << space << "WeightFunction " << type << " [" << std::endl;
@@ -153,12 +152,13 @@ protected:
 
   /// name of the type of weight function
   const std::string type;
+
+  /// the spatial dimension 
+  UInt spatial_dimension;
 };
 
-
-template<UInt spatial_dimension>
 inline std::ostream & operator <<(std::ostream & stream,
-                                  const BaseWeightFunction<spatial_dimension> & _this)
+                                  const BaseWeightFunction & _this)
 {
   _this.printself(stream);
   return stream;

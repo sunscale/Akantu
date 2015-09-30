@@ -33,7 +33,6 @@
 #include "material.hh"
 #include "aka_grid_dynamic.hh"
 #include "fe_engine.hh"
-
 #include "base_weight_function.hh"
 
 namespace akantu {
@@ -47,7 +46,7 @@ namespace akantu {
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim, template <UInt> class WeightFunction = BaseWeightFunction>
+template<UInt dim, class WeightFunction = BaseWeightFunction>
 class MaterialNonLocal : public virtual Material {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -136,7 +135,7 @@ public:
 protected:
 
   /// the weight function used
-  WeightFunction<dim> * weight_func;
+  WeightFunction * weight_func;
 
 private:
   /**

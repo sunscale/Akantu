@@ -37,7 +37,10 @@
 
 __BEGIN_AKANTU__
 
-MeshGeomAbstract::MeshGeomAbstract(Mesh & mesh) :
+MeshGeomAbstract::MeshGeomAbstract(Mesh & mesh,
+				   const ID & id,
+				   const MemoryID & memory_id) :
+  Memory(id, memory_id),
   mesh(mesh)
 {}
 

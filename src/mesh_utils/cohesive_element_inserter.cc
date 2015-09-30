@@ -287,7 +287,7 @@ void CohesiveElementInserter::insertIntrinsicElements(std::string physname,
 	mesh_facets.getBarycenter(f, type_facet, bary_facet.storage(), ghost_type);
 
 	coord_in_limit = 0;
-	  
+
 	while (coord_in_limit < spatial_dimension && 
 	       (std::abs(bary_facet(coord_in_limit) 
 			 - bary_physgroup(coord_in_limit))/norm_bary 

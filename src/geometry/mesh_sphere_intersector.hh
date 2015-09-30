@@ -52,6 +52,21 @@ public:
 protected:
   Array<Element> old_elements;
 };
+
+class NewIGFEMNodesEvent : public NewNodesEvent {
+public:
+  void setNewNodePerElem(const ElementTypeMapUInt & new_node_per_elem) {
+    this->new_node_per_elem = &new_node_per_elem;
+  }
+  void setType(ElementType new_type) {type = new_type;}
+  AKANTU_GET_MACRO(NewNodePerElem, *new_node_per_elem, const ElementTypeMapUInt &);
+  AKANTU_GET_MACRO(ElementType, type, ElementType);
+protected:
+  ElementType type;
+  const ElementTypeMapUInt * new_node_per_elem;
+};
+
+
 #endif
 
 
@@ -60,6 +75,9 @@ typedef Spherical SK;
 
 template<UInt dim, ElementType type>
 class MeshSphereIntersector : public MeshGeomIntersector<dim, type, Line_arc<SK>, SK::Sphere_3, SK> {
+  /// Parent class type
+  typedef MeshGeomIntersector<dim, type, Line_arc<SK>, SK::Sphere_3, SK> parent_type;
+
   /// Result of intersection function type
   typedef typename IntersectionTypeHelper<TreeTypeHelper< Triangle<K>, K>, K::Segment_3>::intersection_type result_type;
 
@@ -68,11 +86,12 @@ class MeshSphereIntersector : public MeshGeomIntersector<dim, type, Line_arc<SK>
 
 public:
   /// Construct from mesh
-  explicit MeshSphereIntersector(Mesh & mesh);
+  explicit MeshSphereIntersector(Mesh & mesh,
+				 const ID & id = "mesh_sphere_intersector",
+				 const MemoryID & memory_id = 0);
 
   /// Destructor
   virtual ~MeshSphereIntersector();
-
 
 public:
   /// Construct the primitive tree object
