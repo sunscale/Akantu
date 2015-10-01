@@ -28,14 +28,14 @@
 #===============================================================================
 package_declare(BlackDynamite EXTERNAL
   DESCRIPTION "Use BlackDynamite library"
-  SYSTEM OFF)
+  SYSTEM OFF third-party/cmake/blackdynamite.cmake
+  EXTRA_PACKAGE_OPTIONS FOUND BlackDynamite_FOUND)
 
-
-set(_version 1)
+set(_version master)
 
 package_add_third_party_script_variable(BlackDynamite
   BLACKDYNAMITE_VERSION "${_version}")
 package_add_third_party_script_variable(BlackDynamite
-  BLACKDYNAMITE_GIT "svn+ssh://lsmssrv1.epfl.ch/space/repositories/SimulPack/BlackDynamite")
+  BLACKDYNAMITE_GIT "git@lsmssrv1.epfl.ch:blackdynamite.git")
 package_add_third_party_script_variable(BlackDynamite
   BLACKDYNAMITE_ARCHIVE "blackdynamite-${_version}.tar.gz")

@@ -1,5 +1,5 @@
 /**
- * @file mesh_segment_intersector.hh
+ * @file mesh_sphere_intersector.hh
  *
  * @author Clement Roux-Langlois <clement.roux@epfl.ch>
  *
@@ -75,7 +75,7 @@ protected:
 
 class NewIGFEMNodesEvent : public NewNodesEvent {
 public:
-  void setNewNodePerElem(ElementTypeMapUInt & new_node_per_elem) {
+  void setNewNodePerElem(const ElementTypeMapUInt & new_node_per_elem) {
     this->new_node_per_elem = &new_node_per_elem;
   }
   void setType(ElementType new_type) {type = new_type;}
@@ -83,9 +83,8 @@ public:
   AKANTU_GET_MACRO(ElementType, type, ElementType);
 protected:
   ElementType type;
-  ElementTypeMapUInt * new_node_per_elem;
+  const ElementTypeMapUInt * new_node_per_elem;
 };
-
 
 #endif
 
@@ -113,13 +112,6 @@ public:
   /// Destructor
   virtual ~MeshSphereIntersector();
 
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// get the new_node_per_elem array
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(NewNodePerElem, new_node_per_elem, UInt);
-
 public:
   /// Construct the primitive tree object
   virtual void constructData();
@@ -129,17 +121,26 @@ public:
    *
    * @param query (sphere) to compute the intersections with the mesh
    */
-  virtual void computeIntersectionQuery(const SK::Sphere_3 & query);
+  virtual void computeIntersectionQuery(const SK::Sphere_3 & query){
+    AKANTU_DEBUG_ERROR("This function is not implemented for spheres (It was to generic and has been replaced by computeMeshQueryIntersectionPoint");
+  }
+
+  /// Compute intersection points between the mesh and a query
+  virtual void computeMeshQueryIntersectionPoint(const SK::Sphere_3 & query);
 
   /// Build the IGFEM mesh
-  virtual void buildResultFromQueryList(const std::list<SK::Sphere_3> & query);
+  virtual void buildResultFromQueryList(const std::list<SK::Sphere_3> & query){
+    AKANTU_DEBUG_ERROR("This function is no longer implemented to split geometrical operations and dedicated result construction");
+  }
 
-  /// Remove the additionnal nodes
-  void removeAdditionnalNodes();
+  /// Set the tolerance
+  void setToleranceIntersectionOnNode(UInt tol) {
+    this->tol_intersection_on_node = tol;
+  }
 
 protected:
-  /// new node per element (column 0: number of new nodes, then odd is the intersection node number and even the ID of the sintersected segment)
-  ElementTypeMapUInt new_node_per_elem;
+  /// tolerance for which the intersection is considered on the mesh node (relative to the segment lenght)
+  Real tol_intersection_on_node;
 
   /// number of fem nodes in the initial mesh
   const UInt nb_nodes_fem;

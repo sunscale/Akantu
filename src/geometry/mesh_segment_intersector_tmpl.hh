@@ -45,6 +45,7 @@ MeshSegmentIntersector<dim, type>::MeshSegmentIntersector(Mesh & mesh, Mesh & re
   result_mesh(result_mesh),
   current_physical_name()
 {
+  this->intersection_points = new Array<Real>(0,dim);
   this->constructData();
 }
 
@@ -112,6 +113,11 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(const K::Segmen
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+template<UInt dim, ElementType type>
+void MeshSegmentIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const K::Segment_3 & query) {
+  AKANTU_DEBUG_ERROR("The method: computeMeshQueryIntersectionPoint has not been implemented in class MeshSegmentIntersector!");
 }
 
 template<UInt dim, ElementType type>

@@ -36,6 +36,8 @@
 #include "aka_common.hh"
 #include "mesh_geom_intersector.hh"
 
+/* -------------------------------------------------------------------------- */
+
 __BEGIN_AKANTU__
 
 template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
@@ -52,6 +54,7 @@ MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::~MeshGeomIntersector()
 
 template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
 void MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::constructData() {
+  this->intersection_points->resize(0);
   factory.constructData();
 }
 
