@@ -39,3 +39,10 @@ register_test(test_non_local_neighborhood_base
   FILES_TO_COPY material.dat plot_neighborhoods.py
   PACKAGE damage_non_local
   )
+
+register_test(test_weight_computation
+  SOURCES test_weight_computation.cc test_material.hh test_material.cc 
+  DEPENDENCIES test_neighbors_mesh 
+  FILES_TO_COPY material_weight_computation.dat 
+  PACKAGE damage_non_local
+  )

@@ -33,19 +33,22 @@
 #include "solid_mechanics_model.hh"
 #include "aka_grid_dynamic.hh"
 #include "grid_synchronizer.hh"
+#include "aka_memory.hh"
 /* -------------------------------------------------------------------------- */
 
 
 
 __BEGIN_AKANTU__
 
-class NonLocalNeighborhoodBase {
+class NonLocalNeighborhoodBase : public Memory {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
 
-  NonLocalNeighborhoodBase(SolidMechanicsModel & model, Real radius);
+  NonLocalNeighborhoodBase(const SolidMechanicsModel & model, Real radius,
+			   const ID & id = "neighborhood",
+			   const MemoryID & memory_id = 0);
   virtual ~NonLocalNeighborhoodBase();
 
   typedef std::vector< std::pair<QuadraturePoint, QuadraturePoint> > PairList;
@@ -69,6 +72,9 @@ public:
 
   /// create grid synchronizer and exchange ghost cells
   void createGridSynchronizer();
+
+  /// compute weights, for instance needed for non-local damage computation
+  virtual void computeWeights() {};
 
 protected:
 
@@ -102,7 +108,7 @@ protected:
 protected:
   
   /// the model to which the neighborhood belongs
-  SolidMechanicsModel & model;
+  const SolidMechanicsModel & model;
 
   /// Radius of non-local neighborhood
   Real non_local_radius;

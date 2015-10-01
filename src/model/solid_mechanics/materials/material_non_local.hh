@@ -70,7 +70,12 @@ public:
   virtual void computeAllNonLocalStresses(GhostType ghost_type = _not_ghost);
 
   void savePairs(const std::string & filename) const;
+ 
+  void saveWeights(const std::string & filename) const;
+
   void neighbourhoodStatistics(const std::string & filename) const;
+
+  virtual void insertQuadsInNeighborhoods(GhostType ghost_type = _not_ghost);
 
 protected:
   void updatePairList(const ElementTypeMapArray<Real> & quadrature_points_coordinates);

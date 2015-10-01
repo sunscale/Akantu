@@ -578,6 +578,24 @@ inline void FEEngineTemplate<I, S, kind>::computeQuadraturePointsCoordinates(Ele
 template<template <ElementKind> class I,
          template <ElementKind> class S,
          ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::computeQuadraturePointsCoordinates(Array<Real> & quadrature_points_coordinates,
+									     const ElementType & type, 
+									     const GhostType & ghost_type,
+									     const Array<UInt> & filter_elements) const {
+  
+  
+  const Array<Real> & nodes_coordinates = mesh.getNodes();
+
+  UInt spatial_dimension = mesh.getSpatialDimension();
+
+  interpolateOnQuadraturePoints(nodes_coordinates, quadrature_points_coordinates, spatial_dimension, 
+				type, ghost_type, filter_elements);
+}
+
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
 inline void FEEngineTemplate<I, S, kind>::initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
 											   ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
 											   ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,

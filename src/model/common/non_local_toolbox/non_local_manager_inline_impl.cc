@@ -35,24 +35,6 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-inline void NonLocalManager::createNeighborhood(const ID & name, const ID & type, Real radius) {
-
-  AKANTU_DEBUG_IN();
-
-  /// check if neighborhood already exists
-  NeighborhoodMap::const_iterator it = neighborhoods.find(name);
-
-  if (it == neighborhoods.end() ) {
-    /// create new neighborhood for given ID
-    std::stringstream sstr; sstr << "neighborhood:" << name;
-    neighborhoods[name] = new NonLocalNeighborhoodBase(this->model, radius);
-  }
-
-  AKANTU_DEBUG_OUT();
-
-}
-
-/* -------------------------------------------------------------------------- */
 inline void NonLocalManager::insertQuad(const QuadraturePoint & quad, const ID & id) {
 
   AKANTU_DEBUG_IN();
@@ -60,13 +42,58 @@ inline void NonLocalManager::insertQuad(const QuadraturePoint & quad, const ID &
 
   NeighborhoodMap::const_iterator it = neighborhoods.find(id);
 
-  AKANTU_DEBUG_ASSERT(it != neighborhoods.end(), "No neighborhood for domain with id " << id) ;
-
   it->second->insertQuad(quad, coords);
 
   AKANTU_DEBUG_OUT();
 
 }
+
+/* -------------------------------------------------------------------------- */
+inline NonLocalNeighborhoodBase & NonLocalManager::getNeighborhood(const ID & name) const{
+  AKANTU_DEBUG_IN();
+  ID tmp_name = name;
+  if (name == "") tmp_name = default_neighborhood;
+
+  NeighborhoodMap::const_iterator it = neighborhoods.find(tmp_name);
+
+  AKANTU_DEBUG_ASSERT(it != neighborhoods.end(),
+		      "The neighborhood " << tmp_name << " is not registered");
+
+  AKANTU_DEBUG_OUT();
+  return *(it->second);
+}
+
+/* -------------------------------------------------------------------------- */
+inline void NonLocalManager::computeWeights() {
+  AKANTU_DEBUG_IN();
+
+  NeighborhoodMap::iterator it = neighborhoods.begin();
+  NeighborhoodMap::iterator end = neighborhoods.end();
+
+  for (; it != end; ++it)
+    it->second->computeWeights();
+
+  AKANTU_DEBUG_OUT();
+
+}
+
+/* -------------------------------------------------------------------------- */
+inline void NonLocalManager::updatePairLists() {
+  AKANTU_DEBUG_IN();
+
+  NeighborhoodMap::iterator it = neighborhoods.begin();
+  NeighborhoodMap::iterator end = neighborhoods.end();
+
+  for (; it != end; ++it)
+    it->second->updatePairList();
+
+  AKANTU_DEBUG_OUT();
+
+}
+
+
+
+
 
 
 

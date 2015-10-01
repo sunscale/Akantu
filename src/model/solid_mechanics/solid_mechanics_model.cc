@@ -68,6 +68,10 @@
 #  include "dumper_iohelper.hh"
 #endif
 
+#ifdef AKANTU_DAMAGE_NON_LOCAL
+#  include "non_local_manager.hh"
+#endif
+
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
@@ -102,7 +106,8 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh,
   integrator(NULL),
   increment_flag(false), solver(NULL),
   synch_parallel(NULL),
-  are_materials_instantiated(false) {
+  are_materials_instantiated(false),
+  non_local_manager(NULL) {
 
   AKANTU_DEBUG_IN();
 
@@ -167,9 +172,13 @@ SolidMechanicsModel::~SolidMechanicsModel() {
     material_selector = NULL;
   }
 
+  if(non_local_manager)
+    delete non_local_manager;
+
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::setTimeStep(Real time_step) {
   this->time_step = time_step;
 
@@ -231,6 +240,11 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
     AKANTU_EXCEPTION("analysis method not recognised by SolidMechanicsModel");
     break;
   }
+
+#ifdef AKANTU_DAMAGE_NON_LOCAL
+  /// create the non-local manager object for non-local damage computations
+  this->non_local_manager = new NonLocalManager(*this);
+#endif
 
   // initialize the materials
   if(this->parser->getLastParsedFile() != "") {

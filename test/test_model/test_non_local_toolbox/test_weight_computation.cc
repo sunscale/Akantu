@@ -1,9 +1,9 @@
 /**
- * @file   test_non_local_neighborhood_base.cc
+ * @file   test_weight_computation.cc
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @date   Wed Sep 23 16:30:12 2015
  *
- * @brief  test for the class NonLocalNeighborhoodBase
+ * @brief  test for the weight computation with base weight function
  *
  * @section LICENSE
  *
@@ -28,13 +28,14 @@
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
 #include "test_material.hh"
-#include "non_local_neighborhood_base.hh"
+#include "non_local_manager.hh"
+#include "non_local_neighborhood.hh"
 #include "dumper_paraview.hh"
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 /* -------------------------------------------------------------------------- */
 int main(int argc, char *argv[]) {
-  akantu::initialize("material.dat", argc, argv);
+  akantu::initialize("material_weight_computation.dat", argc, argv);
 
   // some configuration variables
   const UInt spatial_dimension = 2;
@@ -45,11 +46,6 @@ int main(int argc, char *argv[]) {
 
   /// model creation
   SolidMechanicsModel  model(mesh);
-
-  /// creation of material selector
-  MeshDataMaterialSelector<std::string> * mat_selector;
-  mat_selector = new MeshDataMaterialSelector<std::string>("physical_names", model);
-  model.setMaterialSelector(*mat_selector);
  
   /// model initialization changed to use our material
   model.initFull(SolidMechanicsModelOptions(_static, true));
@@ -59,29 +55,21 @@ int main(int argc, char *argv[]) {
   model.addDumpField("material_index");
   model.dump();
 
-  NonLocalNeighborhoodBase & neighborhood = model.getNonLocalManager().getNeighborhood();
-  /// create the pairs of quadrature points
-  neighborhood.updatePairList();
+  /// compute the weights 
+  model.getNonLocalManager().updatePairLists();
+  model.getNonLocalManager().computeWeights();
 
-  /// save the pair of quadrature points and the coords of all neighbors
-  std::string output_1 = "quadrature_pairs";
-  std::string output_2 = "neighborhoods";
-  neighborhood.savePairs(output_1);
-  neighborhood.saveNeighborCoords(output_2);
+  /// save the weights in a file
+  NonLocalNeighborhood & neighborhood = dynamic_cast<NonLocalNeighborhood &> (model.getNonLocalManager().getNeighborhood());
+  neighborhood.saveWeights("weights");
 
   /// print results to screen for validation
-  std::ifstream quad_pairs;
-  quad_pairs.open("quadrature_pairs.0");
+  std::ifstream weights;
+  weights.open("weights.0");
   std::string current_line;
-  while(getline(quad_pairs, current_line))
+  while(getline(weights, current_line))
     std::cout << current_line << std::endl;
-  quad_pairs.close();
-  std::ifstream neighborhoods;
-  neighborhoods.open("neighborhoods.0");
-  while(getline(neighborhoods, current_line))
-    std::cout << current_line << std::endl;
-  neighborhoods.close();
-
+  weights.close();
   finalize();
   
   return EXIT_SUCCESS;

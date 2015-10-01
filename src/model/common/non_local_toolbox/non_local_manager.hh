@@ -26,24 +26,24 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
 #ifndef __AKANTU_NON_LOCAL_MANAGER_HH__
 #define __AKANTU_NON_LOCAL_MANAGER_HH__
-
 /* -------------------------------------------------------------------------- */
+#include "aka_memory.hh"
+#include "solid_mechanics_model.hh"
 #include "non_local_neighborhood_base.hh"
 /* -------------------------------------------------------------------------- */
 
-
-
 __BEGIN_AKANTU__
 
-class NonLocalManager {
+class NonLocalManager : public Memory {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NonLocalManager(SolidMechanicsModel & model);
+  NonLocalManager(SolidMechanicsModel & model, 
+		  const ID & id = "non_local_manager",
+		  const MemoryID & memory_id = 0);
   virtual ~NonLocalManager();
   typedef std::map<ID, NonLocalNeighborhoodBase *> NeighborhoodMap;
   /// typedef std::map<ID, NonLocalVariable *> NonLocalVariableMap;
@@ -53,20 +53,43 @@ public:
 /* -------------------------------------------------------------------------- */
 public:
   /// insert new quadrature point in the grid
-  inline void insertQuad(const QuadraturePoint & quad, const ID & id);
+  inline void insertQuad(const QuadraturePoint & quad, const ID & id = "");
+
+  /// return the fem object associated with a provided name
+  inline NonLocalNeighborhoodBase & getNeighborhood(const ID & name = "") const;
 
   /// create a new neighborhood for a given domain ID
-  inline void createNeighborhood(const ID & name, const ID & type, Real radius);
+  void createNeighborhood(const ID & type, Real radius, const ID & name = "");
 
+  /// set the values of the jacobians
+  void setJacobians(const FEEngine & fe_engine, const ElementKind & kind);
 
+  /// create the grid synchronizers for each neighborhood
+  void createNeighborhoodSynchronizers();
+
+  /// compute the weights in each neighborhood for non-local averaging
+  inline void computeWeights();
+
+  /// compute the weights in each neighborhood for non-local averaging
+  inline void updatePairLists();
 
 private:
+
   /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
+  /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
 
+  AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &);
+  AKANTU_GET_MACRO_NOT_CONST(Volumes, volumes, ElementTypeMapReal &)
 
+  inline const Array<Real> & getJacobians(const ElementType & type, const GhostType & ghost_type) {
+    return *jacobians(type, ghost_type);
+  }
+
+  /* ------------------------------------------------------------------------ */
+  /* Class Members                                                            */
+  /* ------------------------------------------------------------------------ */
 private:
 
   /// the non-local neighborhoods present
@@ -83,6 +106,15 @@ private:
 
   /// reference to the model
   SolidMechanicsModel & model;
+
+  /// jacobians for all the elements in the mesh
+  ElementTypeMap<const Array<Real> * > jacobians;
+
+  /// default neighborhood object
+  std::string default_neighborhood;
+
+  /// store the volume of each quadrature point for the non-local weight normalization
+  ElementTypeMapReal volumes; 
 };
 
 /* -------------------------------------------------------------------------- */

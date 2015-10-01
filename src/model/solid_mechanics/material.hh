@@ -191,6 +191,9 @@ public:
   virtual void computeAllStressesFromTangentModuli(GhostType ghost_type = _not_ghost);
   virtual void computeAllCauchyStresses(GhostType ghost_type = _not_ghost);
 
+  /// insert the quadrature points of a given ghost type into the non-local neighborhoods
+  virtual void insertQuadsInNeighborhoods(GhostType ghost_type = _not_ghost) {};
+
   /// set material to steady state
   void setToSteadyState(GhostType ghost_type = _not_ghost);
 

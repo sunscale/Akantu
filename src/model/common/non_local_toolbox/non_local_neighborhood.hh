@@ -33,28 +33,75 @@
 #include "base_weight_function.hh"
 #include "non_local_neighborhood_base.hh"
 /* -------------------------------------------------------------------------- */
+
+namespace akantu {
+  class NonLocalManager;
+}
+
 __BEGIN_AKANTU__
 
-class NonLocalNeighborhood : NonLocalNeighborhoodBase {
+class WeightFunction {
+
+public:
+  void setRadius(Real radius) {
+    /// set the non-local radius and update R^2 accordingly
+    this->R = radius; 
+    this->R2 = this->R * this->R;
+  }
+
+Real operator()(Real r,
+		const __attribute__((unused)) QuadraturePoint & q1,
+		const __attribute__((unused)) QuadraturePoint & q2) {
+  /// initialize the weight
+  Real w = 0;
+  /// compute weight for given r 
+  if(r <= this->R) {
+    Real alpha = (1. - r*r / this->R2);
+    w = alpha * alpha;
+    // *weight = 1 - sqrt(r / radius);
+  }
+  return w;
+}
+  void updateInternals(){};
+
+protected:
+
+  Real R;
+  Real R2;
+
+};
+
+class NonLocalNeighborhood : public NonLocalNeighborhoodBase {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
 
-  NonLocalNeighborhood(SolidMechanicsModel & model, Real radius, const ID & weight_type);
+  NonLocalNeighborhood(NonLocalManager & manager, Real radius, const ID & weight_type,
+		       const ID & id = "neighborhood",
+		       const MemoryID & memory_id = 0);
   virtual ~NonLocalNeighborhood();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  
-  void computeWeights();
 
+   /// compute the weights for non-local averaging
+  void computeWeights();
+  
+  /// save the pair of weights in a file
+  void saveWeights(const std::string & filename) const;
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+
+  /// Pointer to non-local manager class
+  NonLocalManager * non_local_manager;
+
+  /// name of the type of weight function
+  const ID type;
 
   /// the weights associated to the pairs
   Array<Real> * pair_weight[2];
@@ -63,7 +110,7 @@ private:
   UInt compute_stress_calls;
 
   /// weight function
-  BaseWeightFunction * weight_function;
+  WeightFunction * weight_function;
 
 };
 

@@ -27,13 +27,20 @@
 
 /* -------------------------------------------------------------------------- */
 #include "non_local_neighborhood.hh"
+#include "non_local_manager.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-NonLocalNeighborhood::NonLocalNeighborhood(SolidMechanicsModel & model, Real radius, const ID & type)  :
-  NonLocalNeighborhoodBase(model, radius) {
+NonLocalNeighborhood::NonLocalNeighborhood(NonLocalManager & manager, 
+					   Real radius, 
+					   const ID & type,
+					   const ID & id,
+					   const MemoryID & memory_id)  :
+  NonLocalNeighborhoodBase(manager.getModel(), radius, id, memory_id),
+  non_local_manager(&manager),
+  type(type) {
 
   AKANTU_DEBUG_IN();
 
@@ -44,7 +51,9 @@ NonLocalNeighborhood::NonLocalNeighborhood(SolidMechanicsModel & model, Real rad
   }
 
   // if (weight_func_type == "base_wf") 
-  /// this->weight_function = new Dummy();
+  this->weight_function = new WeightFunction();
+  this->weight_function->setRadius(radius);
+
   // case damage_wf:
   //   this->weight_function = new DamagedWeightFunction(); break;
   // case remove_wf:
@@ -76,112 +85,132 @@ NonLocalNeighborhood::~NonLocalNeighborhood() {
 void NonLocalNeighborhood::computeWeights() {
   AKANTU_DEBUG_IN();
 
+  UInt nb_weights_per_pair = 2; /// w1: q1->q2, w2: q2->q1
+
+  /// get the elementtypemap for the neighborhood volume for each quadrature point
+  ElementTypeMapReal & quadrature_points_volumes = this->non_local_manager->getVolumes();
+
+  /// update the internals of the weight function if applicable (not
+  /// all the weight functions have internals and do noting in that
+  /// case)
   weight_function->updateInternals();
 
-  // for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-  //   GhostType ghost_type2 = (GhostType) gt;
+  for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+    GhostType ghost_type = (GhostType) gt;
 
-  //   if(!(pair_weight[ghost_type2])) {
-  //     std::string ghost_id = "";
-  //     if (ghost_type2 == _ghost) ghost_id = ":ghost";
-  //     std::stringstream sstr; sstr << getID() << ":pair_weight:" << ghost_id;
-  //     pair_weight[ghost_type2] = new Array<Real>(0, 2, sstr.str());
-  //   }
+    /// allocate the array to store the weight, if it doesn't exist already
+    if(!(pair_weight[ghost_type])) {
+      std::string ghost_id = "";
+      if (ghost_type == _ghost) ghost_id = ":ghost";
+      std::stringstream sstr; sstr << this->id <<":pair_weight:" << ghost_id;
+      pair_weight[ghost_type] = new Array<Real>(0, nb_weights_per_pair, sstr.str());
+    }
 
-  //   pair_weight[ghost_type2]->resize(pair_list[ghost_type2].size());
-  //   pair_weight[ghost_type2]->clear();
 
-  //   PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
-  //   PairList::const_iterator last_pair  = pair_list[ghost_type2].end();
+    /// resize the array to the correct size
+    pair_weight[ghost_type]->resize(pair_list[ghost_type].size());
+    /// set entries to zero
+    pair_weight[ghost_type]->clear();
 
-  //   Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
+    /// loop over all pairs in the current pair list array and their corresponding weights
+    PairList::const_iterator first_pair = pair_list[ghost_type].begin();
+    PairList::const_iterator last_pair  = pair_list[ghost_type].end();
+    Array<Real>::vector_iterator weight_it = pair_weight[ghost_type]->begin(nb_weights_per_pair);
 
-  //   // Compute the weights
-  //   for(;first_pair != last_pair; ++first_pair, ++weight_it) {
-  //     Vector<Real> & weight = *weight_it;
+    // Compute the weights
+    for(;first_pair != last_pair; ++first_pair, ++weight_it) {
+      Vector<Real> & weight = *weight_it;
 
-  //     const QuadraturePoint & lq1 = first_pair->first;
-  //     const QuadraturePoint & lq2 = first_pair->second;
+      const QuadraturePoint & q1 = first_pair->first;
+      const QuadraturePoint & q2 = first_pair->second;
 
-  //     QuadraturePoint gq1 = this->convertToGlobalPoint(lq1);
-  //     QuadraturePoint gq2 = this->convertToGlobalPoint(lq2);
+      Array<Real> & quad_volumes_1 = quadrature_points_volumes(q1.type, q1.ghost_type);
+      const Array<Real> & jacobians_2 =
+  	this->non_local_manager->getJacobians(q2.type, q2.ghost_type);
+      const Real & q2_wJ = jacobians_2(q2.global_num);
 
-  //     //   const Real q2_wJ = fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type)(gq2.global_num);
 
-  //     Array<Real>::const_vector_iterator quad_coords_1 =
-  // 	quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension);
-  //     Array<Real>::const_vector_iterator quad_coords_2 =
-  // 	quadrature_points_coordinates(lq2.type, lq2.ghost_type).begin(spatial_dimension);
+      /// compute distance between the two quadrature points
+      const Vector<Real> & q1_coord = q1.getPosition();
+      const Vector<Real> & q2_coord = q2.getPosition();
+      Real r = q1_coord.distance(q2_coord);
 
-  //     Array<Real> & quad_volumes_1 = quadrature_points_volumes(lq1.type, lq1.ghost_type);
-  //     const Array<Real> & jacobians_2 =
-  // 	fem.getIntegratorInterface().getJacobians(gq2.type, gq2.ghost_type);
-  //     const Real & q2_wJ = jacobians_2(gq2.global_num);
-  //     // Real & q1_volume = quad_volumes(lq1.global_num);
+      /// compute the weight for averaging on q1 based on the distance
+      Real w1 = this->weight_function->operator()(r, q1, q2);
+      weight(0) = q2_wJ * w1;
 
-  //     const Vector<Real> & q1_coord = quad_coords_1[lq1.global_num];
-  //     // quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq1.global_num];
-  //     const Vector<Real> & q2_coord = quad_coords_2[lq2.global_num];
-  //     // quadrature_points_coordinates(lq1.type, lq1.ghost_type).begin(spatial_dimension)[lq2.global_num];
+      quad_volumes_1(q1.global_num) += weight(0);
 
-  //     this->weight_func->selectType(lq1.type, lq1.ghost_type, lq2.type, lq2.ghost_type);
+      if(q2.ghost_type != _ghost && q1.global_num != q2.global_num) {
+  	const Array<Real> & jacobians_1 =
+  	  this->non_local_manager->getJacobians(q1.type, q1.ghost_type);
+  	Array<Real> & quad_volumes_2 =
+  	  quadrature_points_volumes(q2.type, q2.ghost_type);
+	/// compute the weight for averaging on q2
+  	const Real & q1_wJ = jacobians_1(q1.global_num);
+  	Real w2 = this->weight_function->operator()(r, q2, q1);
+  	weight(1) = q1_wJ * w2;
+  	quad_volumes_2(q2.global_num) += weight(1);
+      } else
+  	weight(1) = 0.;
+    }
+  }
 
-  //     // Weight function
-  //     Real r = q1_coord.distance(q2_coord);
-  //     Real w1 = this->weight_func->operator()(r, lq1, lq2);
-  //     weight(0) = q2_wJ * w1;
-  //     //     q1_volume += weight(0);
-  //     quad_volumes_1(lq1.global_num) += weight(0);
+  ///  normalize the weights
+  for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+    GhostType ghost_type2 = (GhostType) gt;
 
-  //     if(lq2.ghost_type != _ghost && lq1.global_num != lq2.global_num) {
-  // 	const Array<Real> & jacobians_1 =
-  // 	  fem.getIntegratorInterface().getJacobians(gq1.type, gq1.ghost_type);
-  // 	Array<Real> & quad_volumes_2 =
-  // 	  quadrature_points_volumes(lq2.type, lq2.ghost_type);
+    PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
+    PairList::const_iterator last_pair  = pair_list[ghost_type2].end();
 
-  // 	const Real & q1_wJ = jacobians_1(gq1.global_num);
-  // 	//Real & q2_volume = quad_volumes_2(lq2.global_num);
+    Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(nb_weights_per_pair);
 
-  // 	Real w2 = this->weight_func->operator()(r, lq2, lq1);
-  // 	weight(1) = q1_wJ * w2;
+    // Compute the weights
+    for(;first_pair != last_pair; ++first_pair, ++weight_it) {
+      Vector<Real> & weight = *weight_it;
 
-  // 	quad_volumes_2(lq2.global_num) += weight(1);
-  // 	//q2_volume += weight(1);
-  //     } else
-  // 	weight(1) = 0.;
-  //   }
-  // }
+      const QuadraturePoint & q1 = first_pair->first;
+      const QuadraturePoint & q2 = first_pair->second;
 
-  // //normalize the weights
-  // for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-  //   GhostType ghost_type2 = (GhostType) gt;
+      Array<Real> & quad_volumes_1 = quadrature_points_volumes(q1.type, q1.ghost_type);
+      Array<Real> & quad_volumes_2 = quadrature_points_volumes(q2.type, q2.ghost_type);
 
-  //   PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
-  //   PairList::const_iterator last_pair  = pair_list[ghost_type2].end();
+      Real q1_volume = quad_volumes_1(q1.global_num);
 
-  //   Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
-
-  //   // Compute the weights
-  //   for(;first_pair != last_pair; ++first_pair, ++weight_it) {
-  //     Vector<Real> & weight = *weight_it;
-
-  //     const QuadraturePoint & lq1 = first_pair->first;
-  //     const QuadraturePoint & lq2 = first_pair->second;
-
-  //     Array<Real> & quad_volumes_1 = quadrature_points_volumes(lq1.type, lq1.ghost_type);
-  //     Array<Real> & quad_volumes_2 = quadrature_points_volumes(lq2.type, lq2.ghost_type);
-
-  //     Real q1_volume = quad_volumes_1(lq1.global_num);
-
-  //     weight(0) *= 1. / q1_volume;
-  //     if(ghost_type2 != _ghost) {
-  // 	Real q2_volume = quad_volumes_2(lq2.global_num);
-  // 	weight(1) *= 1. / q2_volume;
-  //     }
-  //   }
-  // }
+      weight(0) *= 1. / q1_volume;
+      if(ghost_type2 != _ghost) {
+  	Real q2_volume = quad_volumes_2(q2.global_num);
+  	weight(1) *= 1. / q2_volume;
+      }
+    }
+  }
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+void NonLocalNeighborhood::saveWeights(const std::string & filename) const {
+  std::ofstream pout;
+
+  std::stringstream sstr;
+
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  Int prank = comm.whoAmI();
+  sstr << filename << "." << prank;
+
+  pout.open(sstr.str().c_str());
+
+  for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+    GhostType ghost_type = (GhostType) gt;
+ 
+   AKANTU_DEBUG_ASSERT((pair_weight[ghost_type]), "the weights have not been computed yet");
+   
+   Array<Real> & weights = *(pair_weight[ghost_type]);
+   Array<Real>::const_vector_iterator weights_it = weights.begin(2);
+   for (UInt i = 0; i < weights.getSize(); ++i, ++weights_it) 
+     pout << "w1: " << (*weights_it)(0) <<" w2: " << (*weights_it)(1) << std::endl;
+  }
+}
+
 
 __END_AKANTU__

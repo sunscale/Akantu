@@ -32,7 +32,11 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(SolidMechanicsModel & model, Real radius)  :
+NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(const SolidMechanicsModel & model, 
+						   Real radius,
+						   const ID & id,
+						   const MemoryID & memory_id)  :
+  Memory(id, memory_id),
   model(model),
   non_local_radius(radius),
   spatial_grid(NULL), 
@@ -164,10 +168,10 @@ void NonLocalNeighborhoodBase::createGridSynchronizer() {
   tags.insert(_gst_material_id);
 
   SynchronizerRegistry & synch_registry = this->model.getSynchronizerRegistry();
-  const ID synchr_id = "non_local_grid_synchronizer";
+  std::stringstream sstr; sstr << getID() << ":grid_synchronizer";
   this->grid_synchronizer = GridSynchronizer::createGridSynchronizer(this->model.getMesh(),
 								     *spatial_grid,
-								     synchr_id,
+								     sstr.str(),
 								     &synch_registry,
 								     tags);
   this->is_creating_grid = false;
@@ -194,9 +198,9 @@ void NonLocalNeighborhoodBase::savePairs(const std::string & filename) const {
 
     for(;first_pair != last_pair; ++first_pair) {
 
-      const QuadraturePoint & lq1 = first_pair->first;
-      const QuadraturePoint & lq2 = first_pair->second;
-      pout << lq1 << " " << lq2 << " " << std::endl;
+      const QuadraturePoint & q1 = first_pair->first;
+      const QuadraturePoint & q2 = first_pair->second;
+      pout << q1 << " " << q2 << " " << std::endl;
     }
   }
 }

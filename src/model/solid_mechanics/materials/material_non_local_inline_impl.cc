@@ -37,6 +37,7 @@ __END_AKANTU__
 #include "synchronizer_registry.hh"
 #include "integrator.hh"
 #include "dumper_paraview.hh"
+#include "non_local_manager.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */
@@ -68,6 +69,7 @@ MaterialNonLocal<DIM, WeightFunction>::MaterialNonLocal(SolidMechanicsModel & mo
 
   this->registerSubSection(_st_non_local, "weight_function", *weight_func);
 
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -93,6 +95,9 @@ template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::initMaterial() {
   AKANTU_DEBUG_IN();
   //  Material::initMaterial();
+
+  this->model->getNonLocalManager().createNeighborhood("base_wf", this->weight_func->getRadius());
+
   Mesh & mesh = this->model->getFEEngine().getMesh();
 
   InternalField<Real> quadrature_points_coordinates("quadrature_points_coordinates_tmp_nl", *this);
@@ -244,10 +249,12 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::fillCellList(const Ele
 								       const GhostType & ghost_type) {
   QuadraturePoint q;
   q.ghost_type = ghost_type;
+  q.kind = _ek_regular;
 
   Mesh::type_iterator it        = this->element_filter.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator last_type = this->element_filter.lastType (spatial_dimension, ghost_type);
   for(; it != last_type; ++it) {
+    q.type = *it;
     Array<UInt> & elem_filter = element_filter(*it, ghost_type);
     UInt nb_element = elem_filter.getSize();
     UInt nb_quad    = this->model->getFEEngine().getNbQuadraturePoints(*it, ghost_type);
@@ -613,6 +620,31 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::savePairs(const std::s
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, class WeightFunction>
+void MaterialNonLocal<spatial_dimension, WeightFunction>::saveWeights(const std::string & filename) const {
+  std::ofstream pout;
+
+  std::stringstream sstr;
+
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  Int prank = comm.whoAmI();
+  sstr << filename << "." << prank;
+
+  pout.open(sstr.str().c_str());
+
+  for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+    GhostType ghost_type = (GhostType) gt;
+ 
+   AKANTU_DEBUG_ASSERT((pair_weight[ghost_type]), "the weights have not been computed yet");
+   
+   Array<Real> & weights = *(pair_weight[ghost_type]);
+   Array<Real>::const_vector_iterator weights_it = weights.begin(2);
+   for (UInt i = 0; i < weights.getSize(); ++i, ++weights_it)
+     pout << "w1: " << (*weights_it)(0) <<" w2: " << (*weights_it)(1) << std::endl;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::neighbourhoodStatistics(const std::string & filename) const {
   //   std::ofstream pout;
   // pout.open(filename.c_str());
@@ -824,4 +856,51 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsRemov
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension, class WeightFunction>
+void MaterialNonLocal<spatial_dimension, WeightFunction>::insertQuadsInNeighborhoods(GhostType ghost_type) {
+
+  NonLocalManager & manager = this->model->getNonLocalManager();
+  UInt spatial_dimension = this->model->getSpatialDimension();
+  InternalField<Real> quadrature_points_coordinates("quadrature_points_coordinates_tmp_nl", *this);
+  quadrature_points_coordinates.initialize(spatial_dimension);
+
+  /// intialize quadrature point object
+  QuadraturePoint q;
+  q.ghost_type = ghost_type;
+  q.kind = _ek_regular;
+
+  Mesh::type_iterator it = this->element_filter.firstType(spatial_dimension, ghost_type, _ek_regular);
+  Mesh::type_iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type, _ek_regular);
+  for(; it != last_type; ++it) {
+    q.type = *it;
+    const Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
+    UInt nb_element  = elem_filter.getSize();
+    if(nb_element) {
+      UInt nb_quad = this->fem->getNbQuadraturePoints(*it, ghost_type);
+      UInt nb_tot_quad = nb_quad * nb_element;
+      
+      Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
+      quads.resize(nb_tot_quad);
+
+      this->model->getFEEngine().computeQuadraturePointsCoordinates(quads, *it, ghost_type, elem_filter);
+      
+      Array<Real>::const_vector_iterator quad = quads.begin(spatial_dimension);
+      UInt * elem = elem_filter.storage();
+
+      for (UInt e = 0; e < nb_element; ++e) {
+	q.element = *elem;
+	for (UInt nq = 0; nq < nb_quad; ++nq) {
+	  q.num_point = nq;
+	  q.global_num = q.element * nb_quad + nq;
+	  q.copyPosition(*quad);
+	  manager.insertQuad(q);
+	  ++quad;
+	}
+	++elem;
+      }
+    }
+  }
 }

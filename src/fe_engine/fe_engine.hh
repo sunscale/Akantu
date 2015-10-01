@@ -168,6 +168,12 @@ public:
   virtual
   void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
 					  const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+
+  virtual
+  void computeQuadraturePointsCoordinates(Array<Real> & quadrature_points_coordinates,
+					  const ElementType & type,
+					  const GhostType & ghost_type = _not_ghost,
+					  const Array<UInt> & filter_elements = empty_filter) const = 0;
   
   virtual
   void initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
