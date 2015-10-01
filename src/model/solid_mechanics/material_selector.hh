@@ -43,6 +43,10 @@ __BEGIN_AKANTU__
 class SolidMechanicsModel;
 
 /* -------------------------------------------------------------------------- */
+
+/**
+ * main class to assign different materials for different elements
+ */
 class MaterialSelector {
 public:
   MaterialSelector() : fallback_value(0) {}
@@ -57,6 +61,9 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
+/**
+ * class that assigns the first material to regular elements by default
+ */
 class DefaultMaterialSelector : public MaterialSelector {
 public:
   DefaultMaterialSelector(const ElementTypeMapArray<UInt> & material_index) :
@@ -85,6 +92,10 @@ private:
 };
 
 /* -------------------------------------------------------------------------- */
+/**
+ * class that uses element data to assign materials (to be completed
+ * by lucas)
+ */
 template<typename T>
 class ElementDataMaterialSelector : public MaterialSelector {
 public:
@@ -115,6 +126,10 @@ private:
 };
 
 /* -------------------------------------------------------------------------- */
+/**
+ * class to use mesh data information to assign different materials
+ * where name is the tag value: tag_0, tag_1
+ */
 template<typename T>
 class MeshDataMaterialSelector : public ElementDataMaterialSelector<T> {
 public:

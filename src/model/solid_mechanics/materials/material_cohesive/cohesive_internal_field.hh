@@ -36,6 +36,7 @@
 
 __BEGIN_AKANTU__
 
+/// internal field class for cohesive materials
 template<typename T>
 class CohesiveInternalField : public InternalField<T> {
 public:

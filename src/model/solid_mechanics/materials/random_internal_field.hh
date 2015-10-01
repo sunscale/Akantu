@@ -39,6 +39,10 @@
 
 __BEGIN_AKANTU__
 
+/**
+ * class for the internal fields of materials with a random
+ * distribution
+ */
 template<typename T,
 	 template<typename> class BaseField = InternalField,
 	 template<typename> class Generator = RandGenerator>
