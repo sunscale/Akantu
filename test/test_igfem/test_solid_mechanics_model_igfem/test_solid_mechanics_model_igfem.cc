@@ -186,9 +186,24 @@ int main(int argc, char *argv[]) {
   /// problem dimension
   const UInt spatial_dimension = 2;  
 
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  Int psize = comm.getNbProc();
+  Int prank = comm.whoAmI();
+
   /// mesh creation
   Mesh mesh(spatial_dimension);
-  mesh.read("plate.msh");
+
+  akantu::MeshPartition * partition = NULL;
+  if(prank == 0) {
+    mesh.read("plate.msh");
+    partition = new MeshPartitionScotch(mesh, spatial_dimension);
+    partition->partitionate(psize);
+  }
+
+  /// model creation
+  SolidMechanicsModelIGFEM model(mesh);
+  model.initParallel(partition);
+
   Math::setTolerance(1e-14);
 
   /// geometry of IGFEM interface: circular inclusion
@@ -201,8 +216,6 @@ int main(int argc, char *argv[]) {
   sphere_list.push_back(sphere);
   ID domain_name = "gel";
 
-  /// model creation
-  SolidMechanicsModelIGFEM model(mesh);
   SphereMaterialSelector * mat_selector;
   
   /// set material selector and initialize the model completely
@@ -219,6 +232,7 @@ int main(int argc, char *argv[]) {
   model.setBaseName("regular_elements");
   model.setBaseNameToDumper("igfem elements", "igfem elements");
   model.addDumpField("material_index");
+  model.addDumpField("partitions");
   model.addDumpFieldVector("displacement");
   model.addDumpField("blocked_dofs");
   model.addDumpField("stress");
@@ -227,6 +241,7 @@ int main(int argc, char *argv[]) {
   model.addDumpFieldVectorToDumper("igfem elements", "displacement");
   model.addDumpFieldToDumper("igfem elements", "material_index");
   model.addDumpFieldToDumper("igfem elements", "stress");
+  model.addDumpFieldToDumper("igfem elements", "partitions");
 
 
   /// dump mesh before the IGFEM interface is created
@@ -271,10 +286,25 @@ int main(int argc, char *argv[]) {
   model.dump("igfem elements");
 
 
-  Array<Real> & disp = model.getDisplacement();
+  /// output the displacement in parallel
+  const Array<Real> & disp = model.getDisplacement();
+
+  UInt nb_global_nodes = mesh.getNbGlobalNodes();
+  Array<Real> solution(nb_global_nodes, spatial_dimension, 0.);
+
+  Array<Real>::vector_iterator solution_begin = solution.begin(spatial_dimension);
   Array<Real>::const_vector_iterator disp_it = disp.begin(spatial_dimension);
-  for (UInt n = 0; n < mesh.getNbNodes(); ++n, ++disp_it)
-    std::cout << *disp_it << std::endl;
+  
+  for (UInt n = 0; n < mesh.getNbNodes(); ++n, ++disp_it) {
+    if (mesh.isLocalOrMasterNode(n))
+      solution_begin[mesh.getNodeGlobalId(n)] = *disp_it;
+  }
+
+  comm.allReduce(solution.storage(), solution.getSize() * solution.getNbComponent(), _so_sum);
+
+  Array<Real>::const_vector_iterator sol_it = solution.begin(spatial_dimension);
+  for (UInt n = 0; n < nb_global_nodes; ++n, ++sol_it)
+    std::cout << *sol_it << std::endl;
 
   finalize();
   return EXIT_SUCCESS;

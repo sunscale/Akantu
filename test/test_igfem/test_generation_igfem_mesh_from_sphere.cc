@@ -70,6 +70,10 @@ int main (int argc, char * argv[]) {
   //dumper_igfem.dump();
   dumper_regular.dump();
   
+  intersector_sphere3.constructData();
+  intersector_sphere4.constructData();
+  intersector_sphere5.constructData();
+
   intersector_sphere3.buildResultFromQueryList(sphere_list);
   intersector_sphere4.buildResultFromQueryList(sphere_list); 
   intersector_sphere5.buildResultFromQueryList(sphere_list);;

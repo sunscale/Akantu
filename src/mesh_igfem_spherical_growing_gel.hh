@@ -71,7 +71,7 @@ public:
   /// Construct from mesh
   MeshIgfemSphericalGrowingGel(Mesh & mesh):
     mesh(mesh),
-    nb_nodes_fem(mesh.getNodes().getSize()),
+    nb_nodes_fem(mesh.getNbNodes()),
     nb_enriched_nodes(0),
     synchronizer(NULL)
   {
@@ -229,6 +229,7 @@ public:
   void setDistributedSynchronizer(DistributedSynchronizer * dist) {
     synchronizer = dist;
     buildSegmentConnectivityToNodeType();
+    nb_nodes_fem = mesh.getNbNodes();
   }
 
   /// update node type
@@ -240,15 +241,12 @@ protected:
   /// Build the unordered_map needed to assign the node type to new nodes in parallel
   void buildSegmentConnectivityToNodeType();
 
-  /// add a segment node type in the map
-  inline void addSegmentNodeType(const Mesh & mesh_facets, const Element & segment);
-
 protected:
   /// Mesh used to construct the primitives
   Mesh & mesh;
 
   /// number of fem nodes in the initial mesh
-  const UInt nb_nodes_fem;
+  UInt nb_nodes_fem;
 
   /// number of enriched nodes before intersection
   UInt nb_enriched_nodes;

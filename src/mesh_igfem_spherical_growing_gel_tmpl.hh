@@ -33,57 +33,46 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-void MeshIgfemSphericalGrowingGel<dim>::addSegmentNodeType(const Mesh & mesh_facets, const Element & segment) {
-  const Array<Int> & segment_to_nodetype
-    = mesh_facets.getData<Int>("segment_to_nodetype",
-			       segment.type, segment.ghost_type);
-  const Array<UInt> & segment_connectivity
-    = mesh_facets.getConnectivity(segment.type, segment.ghost_type);
-
-  UInt connectivity_vals[2];
-  connectivity_vals[0] = segment_connectivity(segment.element, 0);
-  connectivity_vals[1] = segment_connectivity(segment.element, 1);
-  std::sort(connectivity_vals, connectivity_vals+1);
-
-  segment_conn_to_node_type[std::make_pair(connectivity_vals[0],
-					   connectivity_vals[1])]
-    = segment_to_nodetype(segment.element);
-}
-
-/* -------------------------------------------------------------------------- */
-template <UInt dim>
 void MeshIgfemSphericalGrowingGel<dim>::buildSegmentConnectivityToNodeType() {
   Mesh mesh_facets(mesh.initMeshFacets());
   MeshUtils::buildSegmentToNodeType(mesh, mesh_facets, synchronizer);
 
   // only the ghost elements are considered
-  GhostType ghost_type = _ghost;
-  Mesh::type_iterator it  = mesh.firstType(dim, ghost_type);
-  Mesh::type_iterator end = mesh.lastType(dim, ghost_type);
-  for(; it != end; ++it) {
-    ElementType type = *it;
-    const Array<Element> & element_to_facet
-      = mesh_facets.getSubelementToElement(type, ghost_type);
+  for(UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType ghost_type = (GhostType) g;
 
-    // looping over the facets of the elements
-    for (UInt el = 0; el < element_to_facet.getSize(); ++el) {
-      for (UInt f = 0; f < element_to_facet.getNbComponent(); ++f) {
-	const Element & facet = element_to_facet(el, f);
-	if (facet == ElementNull) continue;
+    Mesh::type_iterator it  = mesh_facets.firstType(1, ghost_type);
+    Mesh::type_iterator end = mesh_facets.lastType(1, ghost_type);
+    for(; it != end; ++it) {
+      ElementType type = *it;
 
-	if (dim == 2) {
-	  // in 2D the facets are already segments and can be added
-	  addSegmentNodeType(mesh_facets, facet);
-	} else if (dim == 3) {
-	  // in 3D another loop is needed to get to segments
-	  const Array<Element> & facet_to_segment
-	    = mesh_facets.getSubelementToElement(facet.type, facet.ghost_type);
+      const Array<Int> & segment_to_nodetype
+	= mesh_facets.getData<Int>("segment_to_nodetype", type, ghost_type);
 
-	  for (UInt s = 0; s < facet_to_segment.getNbComponent(); ++s) {
-	    const Element & segment = facet_to_segment(facet.element, s);
-	    if (segment == ElementNull) continue;
-	    addSegmentNodeType(mesh_facets, segment);
-	  }
+      const Array<UInt> & segment_connectivity
+	= mesh_facets.getConnectivity(type, ghost_type);
+
+      // looping over all the segments
+      Array<UInt>::const_vector_iterator conn_it
+	= segment_connectivity.begin(segment_connectivity.getNbComponent());
+      Array<UInt>::const_vector_iterator conn_end
+	= segment_connectivity.end(segment_connectivity.getNbComponent());
+      UInt seg_index = 0;
+
+      UInt connectivity_vals[2];
+      for (; conn_it != conn_end; ++conn_it, ++seg_index) {
+	connectivity_vals[0] = (*conn_it)(0);
+	connectivity_vals[1] = (*conn_it)(1);
+
+	if (!(mesh.isLocalNode(connectivity_vals[0]) &&
+	      mesh.isLocalNode(connectivity_vals[1])) &&
+	    !(mesh.isPureGhostNode(connectivity_vals[0]) &&
+	      mesh.isPureGhostNode(connectivity_vals[1])) ) {
+	  std::sort(connectivity_vals, connectivity_vals+2);
+
+	  segment_conn_to_node_type[std::make_pair(connectivity_vals[0],
+						   connectivity_vals[1])]
+	    = segment_to_nodetype(seg_index);
 	}
       }
     }
@@ -95,10 +84,12 @@ template <UInt dim>
 void MeshIgfemSphericalGrowingGel<dim>::updateNodeType(const Array<UInt> & nodes_list,
 						       const ElementTypeMapUInt & new_node_per_elem,
 						       ElementType type) {
-  if (!synchronizer) return;
-
   Array<Int> & nodes_type = mesh.getNodesType();
   UInt old_nodes = nodes_type.getSize();
+
+  // exit this function if the simulation in run in serial
+  if (old_nodes == 0) return;
+
   UInt new_nodes = nodes_list.getSize();
   nodes_type.resize(old_nodes + new_nodes);
   Array<bool> checked_node(new_nodes, 1, false);
@@ -125,12 +116,12 @@ void MeshIgfemSphericalGrowingGel<dim>::updateNodeType(const Array<UInt> & nodes
 
       for (UInt n = 0; n < nb_nodes; ++n) {
 	UInt node_index = new_node_per_elem_array(el, 2*n+1);
-	if (checked_node(node_index - old_nodes + 1)) continue;
+	if (checked_node(node_index - old_nodes)) continue;
 
 	// get the elemental connectivity of the segment associated to the node
-	UInt segment_index = new_node_per_elem_array(el, 2*n+2);
+	UInt segment_index = new_node_per_elem_array(el, 2*n+2) - 1;
 
-	UInt extreme_nodes[0];
+	UInt extreme_nodes[2];
 	extreme_nodes[0] = segment_index;
 	extreme_nodes[1] = segment_index + 1;
 	if (extreme_nodes[1] == nb_prim_by_el) extreme_nodes[1] = 0;
@@ -150,7 +141,7 @@ void MeshIgfemSphericalGrowingGel<dim>::updateNodeType(const Array<UInt> & nodes
 	  nodes_type(node_index) = -3;
 	// otherwise use the value stored in the map
 	else {
-	  std::sort(extreme_nodes, extreme_nodes+1);
+	  std::sort(extreme_nodes, extreme_nodes+2);
 
 	  AKANTU_DEBUG_ASSERT(segment_conn_to_node_type
 			      .find(std::make_pair(extreme_nodes[0],
@@ -163,7 +154,7 @@ void MeshIgfemSphericalGrowingGel<dim>::updateNodeType(const Array<UInt> & nodes
 						       extreme_nodes[1])];
 	}
 
-	checked_node(node_index - old_nodes + 1) = true;
+	checked_node(node_index - old_nodes) = true;
       }
     }
   }

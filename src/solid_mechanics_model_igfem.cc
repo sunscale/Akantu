@@ -197,7 +197,7 @@ void SolidMechanicsModelIGFEM::onElementsAdded(const Array<Element> & elements,
     this->element_map.clear();
     const Array<Element> & old_elements = igfem_event->getOldElementsList();
     for (UInt e = 0; e < elements.getSize(); ++e) {
-      this->element_map.insert( std::pair<Element, Element>(elements(e), old_elements(e)) );
+      this->element_map[elements(e)] = old_elements(e);
     }
   }
 
@@ -207,7 +207,6 @@ void SolidMechanicsModelIGFEM::onElementsAdded(const Array<Element> & elements,
 
   SolidMechanicsModel::onElementsAdded(elements, event);
   this->reassignMaterial();
-
 
   AKANTU_DEBUG_OUT();
 }
