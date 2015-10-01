@@ -47,6 +47,10 @@
 #  include "aka_debug_tools.hh"
 #endif
 
+#if defined(AKANTU_IGFEM)
+#  include "mesh_sphere_intersector.hh"
+#endif
+
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -1003,26 +1007,14 @@ void DistributedSynchronizer::printself(std::ostream & stream, int indent) const
 }
 
 /* -------------------------------------------------------------------------- */
-void DistributedSynchronizer::onElementsChanged(const Array<Element> & old_elements_list,
-						const Array<Element> & new_elements_list,
-						const ElementTypeMapArray<UInt> & new_numbering,
-						const ChangedElementsEvent & event) {
-  AKANTU_DEBUG_ASSERT(old_elements_list.getSize() == new_elements_list.getSize(),
-		      "The element lists of onElementsChanged must have the same size");
-
-  // create a map to link old elements to new ones
-  std::map<Element, Element> old_to_new_elements;
-
-  for (UInt el = 0; el < old_elements_list.getSize(); ++el)
-    old_to_new_elements[old_elements_list(el)] = new_elements_list(el);
-
+void DistributedSynchronizer::substituteElements(const std::map<Element, Element> & old_to_new_elements) {
   // substitute old elements with new ones
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   UInt psize = comm.getNbProc();
   UInt prank = comm.whoAmI();
 
-  std::map<Element, Element>::iterator found_element_it;
-  std::map<Element, Element>::iterator found_element_end = old_to_new_elements.end();
+  std::map<Element, Element>::const_iterator found_element_it;
+  std::map<Element, Element>::const_iterator found_element_end = old_to_new_elements.end();
 
   for (UInt p = 0; p < psize; ++p) {
     if (p == prank) continue;
@@ -1043,12 +1035,32 @@ void DistributedSynchronizer::onElementsChanged(const Array<Element> & old_eleme
   }
 }
 
-
 /* -------------------------------------------------------------------------- */
 void DistributedSynchronizer::onElementsRemoved(const Array<Element> & element_to_remove,
 						const ElementTypeMapArray<UInt> & new_numbering,
 						__attribute__((unused)) const RemovedElementsEvent & event) {
   AKANTU_DEBUG_IN();
+
+#if defined(AKANTU_IGFEM)
+  const RemovedIGFEMElementsEvent * igfem_event
+    = dynamic_cast<const RemovedIGFEMElementsEvent *>(&event);
+  if (igfem_event) {
+    const Array<Element> & new_elements_list = igfem_event->getNewElementsList();
+
+    // create a map to link old elements to new ones
+    std::map<Element, Element> old_to_new_elements;
+
+    for (UInt el = 0; el < element_to_remove.getSize(); ++el) {
+      AKANTU_DEBUG_ASSERT(old_to_new_elements.find(element_to_remove(el)) == old_to_new_elements.end(),
+			  "The same element cannot appear twice in the list");
+
+      old_to_new_elements[element_to_remove(el)] = new_elements_list(el);
+    }
+
+    substituteElements(old_to_new_elements);
+    return;
+  }
+#endif
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   UInt psize = comm.getNbProc();

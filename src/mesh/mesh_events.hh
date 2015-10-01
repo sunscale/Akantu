@@ -78,7 +78,7 @@ protected:
 class ChangedElementsEvent : public RemovedElementsEvent {
 public:
   virtual ~ChangedElementsEvent() {};
-  inline ChangedElementsEvent(const Mesh & mesh);
+  inline ChangedElementsEvent(const Mesh & mesh) : RemovedElementsEvent(mesh) {};
   AKANTU_GET_MACRO(ListOld, list, const Array<Element> &);
   AKANTU_GET_MACRO_NOT_CONST(ListOld, list, Array<Element> &);
   AKANTU_GET_MACRO(ListNew, new_list, const Array<Element> &);

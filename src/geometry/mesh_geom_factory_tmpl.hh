@@ -72,14 +72,14 @@ void MeshGeomFactory<dim, type, Primitive, Kernel>::constructData() {
     const Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
     const Array<Real> & nodes = mesh.getNodes();
 
-    Array<UInt>::const_vector_iterator begin = connectivity.begin(nb_nodes_per_element);
-    Array<UInt>::const_vector_iterator it    = connectivity.begin(nb_nodes_per_element);
-    Array<UInt>::const_vector_iterator end   = connectivity.end(nb_nodes_per_element);
+    UInt el_index = 0;
+    Array<UInt>::const_vector_iterator it  = connectivity.begin(nb_nodes_per_element);
+    Array<UInt>::const_vector_iterator end = connectivity.end(nb_nodes_per_element);
 
     Matrix<Real> node_coordinates(dim, nb_nodes_per_element);
 
     // This loop builds the list of primitives
-    for (; it != end ; ++it) {
+    for (; it != end ; ++it, ++el_index) {
       const Vector<UInt> & el_connectivity = *it;
 
       for (UInt i = 0 ; i < nb_nodes_per_element ; i++)
@@ -88,7 +88,7 @@ void MeshGeomFactory<dim, type, Primitive, Kernel>::constructData() {
 
       // the unique elemental id assigned to the primitive is the
       // linearized element index over ghost type
-      addPrimitive(node_coordinates, (it - begin) + ghost_type * nb_not_ghost_elements);
+      addPrimitive(node_coordinates, el_index + ghost_type * nb_not_ghost_elements);
     }
   }
 

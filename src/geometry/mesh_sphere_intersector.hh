@@ -45,12 +45,32 @@ __BEGIN_AKANTU__
 /* class for new igfem elements mesh events                                   */
 /* -------------------------------------------------------------------------- */
 #if defined(AKANTU_IGFEM)
+class RemovedIGFEMElementsEvent : public RemovedElementsEvent {
+public:
+  inline RemovedIGFEMElementsEvent(const Mesh & mesh) : RemovedElementsEvent(mesh) {};
+  AKANTU_GET_MACRO_NOT_CONST(NewElementsList, new_elements, Array<Element> &);
+  AKANTU_GET_MACRO(NewElementsList, new_elements, const Array<Element> &);
+protected:
+  Array<Element> new_elements;
+};
+
 class NewIGFEMElementsEvent : public NewElementsEvent {
 public:
+  inline NewIGFEMElementsEvent(RemovedIGFEMElementsEvent & event) :
+  old_elements(event.getList()),
+  new_numbering(event.getNewNumbering()) {
+    list.copy(event.getNewElementsList());
+  }
+
   AKANTU_GET_MACRO_NOT_CONST(OldElementsList, old_elements, Array<Element> &);
   AKANTU_GET_MACRO(OldElementsList, old_elements, const Array<Element> &);
+  AKANTU_GET_MACRO(NewNumbering, new_numbering, const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO_NOT_CONST(NewNumbering, new_numbering, ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(NewNumbering, new_numbering, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(NewNumbering, new_numbering, UInt);
 protected:
-  Array<Element> old_elements;
+  Array<Element> & old_elements;
+  ElementTypeMapUInt & new_numbering;
 };
 
 class NewIGFEMNodesEvent : public NewNodesEvent {

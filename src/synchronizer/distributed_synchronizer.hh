@@ -88,12 +88,6 @@ public:
 
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
-  /// mesh event handler onElementsChanged
-  virtual void onElementsChanged(const Array<Element> & old_elements_list,
-				 const Array<Element> & new_elements_list,
-                                 const ElementTypeMapArray<UInt> & new_numbering,
-                                 const ChangedElementsEvent & event);
-
   /// mesh event handler onRemovedElement
   virtual void onElementsRemoved(const Array<Element> & element_list,
                                  const ElementTypeMapArray<UInt> & new_numbering,
@@ -219,6 +213,9 @@ protected:
   static void fillNodeGroupsFromBuffer(DistributedSynchronizer & communicator,
 					  Mesh & mesh,
 					  CommunicationBuffer & buffer);
+
+  /// substitute elements in the send and recv arrays
+  void substituteElements(const std::map<Element, Element> & old_to_new_elements);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

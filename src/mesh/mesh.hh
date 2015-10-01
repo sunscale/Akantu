@@ -281,6 +281,7 @@ public:
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Connectivity, connectivities, UInt);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(Connectivity, connectivities, UInt);
   AKANTU_GET_MACRO(Connectivities, connectivities, const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO_NOT_CONST(Connectivities, connectivities, ElementTypeMapArray<UInt> &);
 
   /// get the number of element of a type in the mesh
   inline UInt getNbElement(const ElementType & type, const GhostType & ghost_type = _not_ghost) const;
