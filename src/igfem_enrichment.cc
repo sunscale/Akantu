@@ -23,14 +23,14 @@ IGFEMEnrichment::IGFEMEnrichment(Mesh & mesh) : intersector_sphere(mesh) {
 
 /* -------------------------------------------------------------------------- */
 void IGFEMEnrichment::initialize(){
-  intersector_sphere.constructData();
+  intersector_sphere.init();
 }
 
 /* -------------------------------------------------------------------------- */
 void IGFEMEnrichment::update(ID & domain) {
   if (domain == "") domain = default_geometry;
   Geometry & geometry = getGeometry(domain);
-  intersector_sphere.buildResultFromQueryList(geometry);
+  intersector_sphere.buildIgfemMeshFromSpheres(geometry);
 }
 /* -------------------------------------------------------------------------- */
 void IGFEMEnrichment::unRegisterGeometryObject(const ID & domain){
