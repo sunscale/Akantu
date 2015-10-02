@@ -46,3 +46,10 @@ register_test(test_weight_computation
   FILES_TO_COPY material_weight_computation.dat 
   PACKAGE damage_non_local
   )
+
+register_test(test_non_local_averaging
+  SOURCES test_non_local_averaging.cc test_material.hh test_material.cc 
+  DEPENDENCIES test_neighbors_mesh 
+  FILES_TO_COPY material_weight_computation.dat 
+  PACKAGE damage_non_local
+  )

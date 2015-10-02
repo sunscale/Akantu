@@ -78,6 +78,7 @@ class NonLocalNeighborhood : public NonLocalNeighborhoodBase {
 public:
 
   NonLocalNeighborhood(NonLocalManager & manager, Real radius, const ID & weight_type,
+		       const ElementTypeMapReal & quad_coordinates,
 		       const ID & id = "neighborhood",
 		       const MemoryID & memory_id = 0);
   virtual ~NonLocalNeighborhood();
@@ -92,6 +93,13 @@ public:
   
   /// save the pair of weights in a file
   void saveWeights(const std::string & filename) const;
+
+  /// compute the non-local counter part for a given element type map
+  void weightedAvergageOnNeighbours(const ElementTypeMapReal & to_accumulate,
+				    ElementTypeMapReal & accumulated,
+				    UInt nb_degree_of_freedom,
+				    const GhostType & ghost_type2) const;
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

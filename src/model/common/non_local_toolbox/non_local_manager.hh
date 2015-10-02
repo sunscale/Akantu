@@ -46,23 +46,22 @@ public:
 		  const MemoryID & memory_id = 0);
   virtual ~NonLocalManager();
   typedef std::map<ID, NonLocalNeighborhoodBase *> NeighborhoodMap;
-  /// typedef std::map<ID, NonLocalVariable *> NonLocalVariableMap;
+  typedef std::pair<ID, ID> KeyCOO;
+
 
 /* -------------------------------------------------------------------------- */
 /* Methods                                                                    */
 /* -------------------------------------------------------------------------- */
 public:
+  
+  /// initialize the non-local manager: compute pair lists and weights for all neighborhoods
+  void init();
+
   /// insert new quadrature point in the grid
-  inline void insertQuad(const QuadraturePoint & quad, const ID & id = "");
+  inline void insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords, Real radius, const ID & type, ID name = "");
 
   /// return the fem object associated with a provided name
   inline NonLocalNeighborhoodBase & getNeighborhood(const ID & name = "") const;
-
-  /// create a new neighborhood for a given domain ID
-  void createNeighborhood(const ID & type, Real radius, const ID & name = "");
-
-  /// set the values of the jacobians
-  void setJacobians(const FEEngine & fe_engine, const ElementKind & kind);
 
   /// create the grid synchronizers for each neighborhood
   void createNeighborhoodSynchronizers();
@@ -73,7 +72,27 @@ public:
   /// compute the weights in each neighborhood for non-local averaging
   inline void updatePairLists();
 
+  /// register a new non-local material
+  inline void registerNonLocalMaterial(Material & new_mat);
+
+  /// register a non-local variable
+  inline void registerNonLocalVariable(const ID & variable_name, const ID & nl_variable_name, UInt nb_component);
+
+  void averageInternals(const GhostType & ghost_type = _not_ghost);
+
 private:
+
+  /// create a new neighborhood for a given domain ID
+  void createNeighborhood(const ID & type, Real radius, const ID & name);
+
+  /// flatten the material internal fields needed for the non-local computations
+  void flattenInternal(ElementTypeMapReal & internal_flat,
+		       const GhostType & ghost_type,
+		       const ElementKind & kind);
+
+  /// set the values of the jacobians
+  void setJacobians(const FEEngine & fe_engine, const ElementKind & kind);
+
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -95,14 +114,22 @@ private:
   /// the non-local neighborhoods present
   NeighborhoodMap neighborhoods;
 
+  /// list of all the non-local materials in the model
+  std::vector<Material * > non_local_materials;
+
   struct NonLocalVariable {
-    ElementTypeMap<Real> * local;
-    ElementTypeMap<Real> * non_local;
+    NonLocalVariable(const ID & variable_name, const ID & nl_variable_name, const ID & id, UInt nb_component) :
+      local(variable_name, id),
+      non_local(nl_variable_name, id),
+      nb_component(nb_component){
+    } 
+    ElementTypeMapReal local;
+    ElementTypeMapReal non_local;
     UInt nb_component;
   };
 
   /// the non-local variables associated to a certain neighborhood
-  std::map<ID, NonLocalVariable> non_local_variables;
+  std::map<ID, NonLocalVariable *> non_local_variables;
 
   /// reference to the model
   SolidMechanicsModel & model;
@@ -113,9 +140,15 @@ private:
   /// default neighborhood object
   std::string default_neighborhood;
 
+  /// store the position of the quadrature points
+  ElementTypeMapReal quad_positions;
+
   /// store the volume of each quadrature point for the non-local weight normalization
   ElementTypeMapReal volumes; 
+
 };
+
+__END_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
@@ -123,6 +156,5 @@ private:
 
 #include "non_local_manager_inline_impl.cc"
 
-__END_AKANTU__
 
 #endif /* __AKANTU_NON_LOCAL_MANAGER_HH__ */

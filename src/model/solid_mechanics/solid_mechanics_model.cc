@@ -172,8 +172,7 @@ SolidMechanicsModel::~SolidMechanicsModel() {
     material_selector = NULL;
   }
 
-  if(non_local_manager)
-    delete non_local_manager;
+  delete non_local_manager;
 
   AKANTU_DEBUG_OUT();
 }

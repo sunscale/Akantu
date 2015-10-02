@@ -712,6 +712,7 @@ protected:
 
   /// pointer to non-local manager: For non-local continuum damage computations
   NonLocalManager * non_local_manager; 
+
 };
 
 

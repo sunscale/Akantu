@@ -36,9 +36,10 @@ __BEGIN_AKANTU__
 NonLocalNeighborhood::NonLocalNeighborhood(NonLocalManager & manager, 
 					   Real radius, 
 					   const ID & type,
+					   const ElementTypeMapReal & quad_coordinates,
 					   const ID & id,
 					   const MemoryID & memory_id)  :
-  NonLocalNeighborhoodBase(manager.getModel(), radius, id, memory_id),
+  NonLocalNeighborhoodBase(manager.getModel(), radius, quad_coordinates, id, memory_id),
   non_local_manager(&manager),
   type(type) {
 
@@ -85,11 +86,15 @@ NonLocalNeighborhood::~NonLocalNeighborhood() {
 void NonLocalNeighborhood::computeWeights() {
   AKANTU_DEBUG_IN();
 
+  UInt spatial_dimension = this->model.getSpatialDimension();
+  Vector<Real> q1_coord(spatial_dimension);
+  Vector<Real> q2_coord(spatial_dimension);
+ 
   UInt nb_weights_per_pair = 2; /// w1: q1->q2, w2: q2->q1
-
+ 
   /// get the elementtypemap for the neighborhood volume for each quadrature point
   ElementTypeMapReal & quadrature_points_volumes = this->non_local_manager->getVolumes();
-
+ 
   /// update the internals of the weight function if applicable (not
   /// all the weight functions have internals and do noting in that
   /// case)
@@ -120,19 +125,21 @@ void NonLocalNeighborhood::computeWeights() {
     // Compute the weights
     for(;first_pair != last_pair; ++first_pair, ++weight_it) {
       Vector<Real> & weight = *weight_it;
-
       const QuadraturePoint & q1 = first_pair->first;
       const QuadraturePoint & q2 = first_pair->second;
+
+      /// get the coordinates for the given pair of quads
+      Array<Real>::const_vector_iterator coords_type_1_it = this->quad_coordinates(q1.type, q1.ghost_type).begin(spatial_dimension);
+      q1_coord = coords_type_1_it[q1.global_num];
+      Array<Real>::const_vector_iterator coords_type_2_it = this->quad_coordinates(q2.type, q2.ghost_type).begin(spatial_dimension);
+      q2_coord = coords_type_2_it[q2.global_num];
 
       Array<Real> & quad_volumes_1 = quadrature_points_volumes(q1.type, q1.ghost_type);
       const Array<Real> & jacobians_2 =
   	this->non_local_manager->getJacobians(q2.type, q2.ghost_type);
       const Real & q2_wJ = jacobians_2(q2.global_num);
 
-
       /// compute distance between the two quadrature points
-      const Vector<Real> & q1_coord = q1.getPosition();
-      const Vector<Real> & q2_coord = q2.getPosition();
       Real r = q1_coord.distance(q2_coord);
 
       /// compute the weight for averaging on q1 based on the distance
@@ -212,5 +219,42 @@ void NonLocalNeighborhood::saveWeights(const std::string & filename) const {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+void NonLocalNeighborhood::weightedAvergageOnNeighbours(const ElementTypeMapReal & to_accumulate,
+							ElementTypeMapReal & accumulated,
+							UInt nb_degree_of_freedom,
+							const GhostType & ghost_type2) const {
+  AKANTU_DEBUG_IN();
+
+  PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
+  PairList::const_iterator last_pair  = pair_list[ghost_type2].end();
+
+  Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
+
+  // Compute the weights
+  for(;first_pair != last_pair; ++first_pair, ++weight_it) {
+    Vector<Real> & weight = *weight_it;
+
+    const QuadraturePoint & q1 = first_pair->first;
+    const QuadraturePoint & q2 = first_pair->second;
+
+    const Array<Real> & to_acc_1 = to_accumulate(q1.type, q1.ghost_type);
+    Array<Real> & acc_1 = accumulated(q1.type, q1.ghost_type);
+    const Array<Real> & to_acc_2 = to_accumulate(q2.type, q2.ghost_type);
+    Array<Real> & acc_2 = accumulated(q2.type, q2.ghost_type);
+
+    for(UInt d = 0; d < nb_degree_of_freedom; ++d) {
+      acc_1(q1.global_num, d) += weight(0) * to_acc_2(q2.global_num, d);
+    }
+
+    if(ghost_type2 != _ghost) {
+      for(UInt d = 0; d < nb_degree_of_freedom; ++d) {
+      	acc_2(q2.global_num, d) += weight(1) * to_acc_1(q1.global_num, d);
+      }
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
 
 __END_AKANTU__

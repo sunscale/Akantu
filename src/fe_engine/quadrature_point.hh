@@ -40,10 +40,7 @@ public:
 
   QuadraturePoint(const QuadraturePoint & quad) :
     Element(quad), num_point(quad.num_point), global_num(quad.global_num), position((Real *) NULL, 0) {
-    if (quad.position.isWrapped())
-      position.shallowCopy(quad.position);
-    else
-      position.deepCopy(quad.position);
+    position.shallowCopy(quad.position);
   };
 
   /* ------------------------------------------------------------------------ */
@@ -51,12 +48,7 @@ public:
   /* ------------------------------------------------------------------------ */
 
     inline bool operator==(const QuadraturePoint & quad) const {
-    return ((element == quad.element)
-            && (type == quad.type)
-            && (ghost_type == quad.ghost_type)
-            && (kind == quad.kind)
-	    && (num_point == quad.num_point)
-	    && (global_num == quad.global_num));
+      return Element::operator==(quad) && this->num_point == quad.num_point;
   }
 
   inline bool operator!=(const QuadraturePoint & quad) const {
@@ -69,15 +61,7 @@ public:
   }
 
   bool operator<(const QuadraturePoint& rhs) const {
-    bool res = (rhs == QuadraturePointNull) || ((this->kind < rhs.kind) ||
-						((this->kind == rhs.kind) &&
-						 ((this->ghost_type < rhs.ghost_type) ||
-						  ((this->ghost_type == rhs.ghost_type) &&
-						   ((this->type < rhs.type) ||
-						    ((this->type == rhs.type) &&
-						     ((this->element < rhs.element) ||
-						      ((this->element == rhs.element) &&
-						       (this->num_point < rhs.num_point)))))))));
+    bool res = Element::operator<(rhs) || (Element::operator==(rhs) && this->num_point < rhs.num_point);
     return res;
   }
 
@@ -88,7 +72,7 @@ public:
       ghost_type = q.ghost_type;
       num_point  = q.num_point;
       global_num = q.global_num;
-      position = q.position;
+      position.shallowCopy(q.position);
     }
 
     return *this;

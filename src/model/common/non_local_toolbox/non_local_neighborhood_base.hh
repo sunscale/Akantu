@@ -47,6 +47,7 @@ class NonLocalNeighborhoodBase : public Memory {
 public:
 
   NonLocalNeighborhoodBase(const SolidMechanicsModel & model, Real radius,
+			   const ElementTypeMapReal & quad_coordinates,
 			   const ID & id = "neighborhood",
 			   const MemoryID & memory_id = 0);
   virtual ~NonLocalNeighborhoodBase();
@@ -75,6 +76,12 @@ public:
 
   /// compute weights, for instance needed for non-local damage computation
   virtual void computeWeights() {};
+
+  /// compute the non-local counter part for a given element type map
+  void weightedAvergageOnNeighbours(const ElementTypeMapReal & to_accumulate,
+				    ElementTypeMapReal & accumulated,
+				    UInt nb_degree_of_freedom,
+				    const GhostType & ghost_type2) const {};
 
 protected:
 
@@ -125,7 +132,11 @@ protected:
 
   bool is_creating_grid;
 
+  /// the grid synchronizer for parallel computations
   GridSynchronizer * grid_synchronizer;
+
+  /// the quadrature point positions
+  const ElementTypeMapReal & quad_coordinates;
 };
 
 /* -------------------------------------------------------------------------- */

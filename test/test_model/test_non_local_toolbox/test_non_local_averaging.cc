@@ -3,7 +3,7 @@
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @date   Wed Sep 23 16:30:12 2015
  *
- * @brief  test for the weight computation with base weight function
+ * @brief  test for non-local averaging of strain
  *
  * @section LICENSE
  *
@@ -39,6 +39,8 @@ int main(int argc, char *argv[]) {
 
   // some configuration variables
   const UInt spatial_dimension = 2;
+  ElementType element_type = _quadrangle_4;
+  GhostType ghost_type = _not_ghost;
 
   // mesh creation and read
   Mesh mesh(spatial_dimension);
@@ -55,18 +57,20 @@ int main(int argc, char *argv[]) {
   model.addDumpField("material_index");
   model.dump();
 
-  /// save the weights in a file
-  NonLocalNeighborhood & neighborhood = dynamic_cast<NonLocalNeighborhood &> (model.getNonLocalManager().getNeighborhood());
+  /// apply constant strain field everywhere in the plate
+  Matrix<Real> applied_strain(spatial_dimension, spatial_dimension);
+  applied_strain.clear();
+  for (UInt i = 0; i < spatial_dimension; ++i)
+    applied_strain(i,i) = 2.;
 
-  neighborhood.saveWeights("weights");
-  /// print results to screen for validation
-  std::ifstream weights;
-  weights.open("weights.0");
-  std::string current_line;
-  while(getline(weights, current_line))
-    std::cout << current_line << std::endl;
-  weights.close();
-  finalize();
+  Array<Real> & grad_u = const_cast<Array<Real> &>(model.getMaterial(0).getInternal<Real>("grad_u")(element_type, ghost_type));
+  Array<Real>::iterator< Matrix<Real> > grad_u_it = grad_u.begin(spatial_dimension, spatial_dimension);
+  Array<Real>::iterator< Matrix<Real> > grad_u_end = grad_u.end(spatial_dimension, spatial_dimension);
+  for (; grad_u_it != grad_u_end; ++grad_u_it) 
+    (*grad_u_it) += applied_strain;
+
+  /// compute the non-local strains
+  model.getNonLocalManager().averageInternals(ghost_type);
   
   return EXIT_SUCCESS;
 }

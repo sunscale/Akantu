@@ -52,12 +52,15 @@ public:
 /* Methods                                                                    */
 /* -------------------------------------------------------------------------- */
 public:
-  void initMaterial() {
-    MyElasticParent::initMaterial();
-    MyNonLocalParent::initMaterial();
-  };
+  void initMaterial();
 
   void computeNonLocalStresses(GhostType ghost_type) {};
+
+/* -------------------------------------------------------------------------- */
+/* Members                                                                   */
+/* -------------------------------------------------------------------------- */
+private:
+  InternalField<Real> grad_u_nl; 
 
 };
 

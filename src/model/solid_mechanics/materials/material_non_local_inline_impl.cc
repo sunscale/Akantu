@@ -57,6 +57,7 @@ MaterialNonLocal<DIM, WeightFunction>::MaterialNonLocal(SolidMechanicsModel & mo
   compute_stress_calls(0), is_creating_grid(false), grid_synchronizer(NULL) {
   AKANTU_DEBUG_IN();
 
+  this->model->getNonLocalManager().registerNonLocalMaterial(*this);
 
   for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
     GhostType ghost_type = (GhostType) gt;
@@ -94,10 +95,10 @@ MaterialNonLocal<spatial_dimension, WeightFunction>::~MaterialNonLocal() {
 template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::initMaterial() {
   AKANTU_DEBUG_IN();
+
+  this->insertQuadsInNeighborhoods(_not_ghost);
+
   //  Material::initMaterial();
-
-  this->model->getNonLocalManager().createNeighborhood("base_wf", this->weight_func->getRadius());
-
   Mesh & mesh = this->model->getFEEngine().getMesh();
 
   InternalField<Real> quadrature_points_coordinates("quadrature_points_coordinates_tmp_nl", *this);
@@ -862,6 +863,8 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsRemov
 template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::insertQuadsInNeighborhoods(GhostType ghost_type) {
 
+  Real radius = this->weight_func->getRadius();
+  const ID & type = this->weight_func->getType();
   NonLocalManager & manager = this->model->getNonLocalManager();
   UInt spatial_dimension = this->model->getSpatialDimension();
   InternalField<Real> quadrature_points_coordinates("quadrature_points_coordinates_tmp_nl", *this);
@@ -895,8 +898,7 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::insertQuadsInNeighborh
 	for (UInt nq = 0; nq < nb_quad; ++nq) {
 	  q.num_point = nq;
 	  q.global_num = q.element * nb_quad + nq;
-	  q.copyPosition(*quad);
-	  manager.insertQuad(q);
+	  manager.insertQuad(q, *quad, radius, type);
 	  ++quad;
 	}
 	++elem;

@@ -35,53 +35,23 @@ template<UInt dim>
 TestMaterial<dim>::TestMaterial(SolidMechanicsModel & model, const ID & id) :
   Material(model, id),
   MyElasticParent(model, id),
-  MyNonLocalParent(model, id){ }
+  MyNonLocalParent(model, id),
+  grad_u_nl("grad_u non local", *this) {
+  this->is_non_local = true;
+  this->grad_u_nl.initialize(dim*dim);
+ }
 
 /* -------------------------------------------------------------------------- */
-// template<UInt dim>
-// void TestMaterial<dim>::insertQuads(NonLocalNeighborhoodBase & neighborhood) {
+template<UInt spatial_dimension>
+void TestMaterial<spatial_dimension>::initMaterial() {
+  AKANTU_DEBUG_IN();
+  this->registerNonLocalVariable(this->gradu, grad_u_nl, spatial_dimension*spatial_dimension);
+  this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), spatial_dimension*spatial_dimension);
+  MyElasticParent::initMaterial();
+  MyNonLocalParent::initMaterial();
 
-//   UInt spatial_dimension = this->model->getSpatialDimension();
-//   InternalField<Real> quadrature_points_coordinates("quadrature_points_coordinates_tmp_nl", *this);
-//   quadrature_points_coordinates.initialize(spatial_dimension);
-
-//   GhostType ghost_type = _not_ghost;
-//   QuadraturePoint q;
-//   q.ghost_type = ghost_type;
-//   q.kind = _ek_regular;
-
-//   Mesh::type_iterator it        = this->element_filter.firstType(spatial_dimension, ghost_type);
-//   Mesh::type_iterator last_type = this->element_filter.lastType (spatial_dimension, ghost_type);
-//   for(; it != last_type; ++it) {
-//     q.type = *it;
-//     Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
-//     UInt nb_element = elem_filter.getSize();
-//     if(nb_element) {
-//       UInt nb_quad = this->fem->getNbQuadraturePoints(*it, ghost_type);
-//       UInt nb_tot_quad = nb_quad * nb_element;
-      
-//       Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
-//       quads.resize(nb_tot_quad);
-
-//       this->model->getFEEngine().computeQuadraturePointsCoordinates(quads, *it, ghost_type, elem_filter);
-      
-//       Array<Real>::const_vector_iterator quad = quads.begin(spatial_dimension);
-//       UInt * elem = elem_filter.storage();
-
-//       for (UInt e = 0; e < nb_element; ++e) {
-// 	q.element = *elem;
-// 	for (UInt nq = 0; nq < nb_quad; ++nq) {
-// 	  q.num_point = nq;
-// 	  q.global_num = q.element * nb_quad + nq;
-// 	  q.copyPosition(*quad);
-// 	  neighborhood.insertQuad(q, *quad);
-// 	  ++quad;
-// 	}
-// 	++elem;
-//       }
-//     }
-//   }
-// }
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 // Instantiate the material for the 3 dimensions

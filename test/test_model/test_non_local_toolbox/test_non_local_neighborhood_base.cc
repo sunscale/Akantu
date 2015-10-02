@@ -60,8 +60,6 @@ int main(int argc, char *argv[]) {
   model.dump();
 
   NonLocalNeighborhoodBase & neighborhood = model.getNonLocalManager().getNeighborhood();
-  /// create the pairs of quadrature points
-  neighborhood.updatePairList();
 
   /// save the pair of quadrature points and the coords of all neighbors
   std::string output_1 = "quadrature_pairs";

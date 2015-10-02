@@ -34,6 +34,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(const SolidMechanicsModel & model, 
 						   Real radius,
+						   const ElementTypeMapReal & quad_coordinates,
 						   const ID & id,
 						   const MemoryID & memory_id)  :
   Memory(id, memory_id),
@@ -41,7 +42,8 @@ NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(const SolidMechanicsModel & m
   non_local_radius(radius),
   spatial_grid(NULL), 
   is_creating_grid(false), 
-  grid_synchronizer(NULL) {
+  grid_synchronizer(NULL),
+  quad_coordinates(quad_coordinates){
 
   AKANTU_DEBUG_IN();
 
@@ -112,6 +114,8 @@ void NonLocalNeighborhoodBase::updatePairList() {
 
   Vector<Real> q1_coords(spatial_dimension);
   Vector<Real> q2_coords(spatial_dimension);
+  QuadraturePoint q1;
+  QuadraturePoint q2;
 
   UInt counter = 0;
   for (; cell_it != cell_end; ++cell_it) {
@@ -122,8 +126,9 @@ void NonLocalNeighborhoodBase::updatePairList() {
       spatial_grid->endCell(*cell_it);
   
     for (;first_quad != last_quad; ++first_quad, ++counter){
-      QuadraturePoint q1(*first_quad);
-      q1_coords = q1.getPosition();
+      q1 = *first_quad;
+      Array<Real>::const_vector_iterator coords_type_1_it = this->quad_coordinates(q1.type, q1.ghost_type).begin(spatial_dimension);
+      q1_coords = coords_type_1_it[q1.global_num];
       AKANTU_DEBUG_INFO("Current quadrature point in this cell: " << q1);
       SpatialGrid<QuadraturePoint>::CellID cell_id = spatial_grid->getCellID(q1_coords);
       /// loop over all the neighbouring cells of the current quad
@@ -140,8 +145,9 @@ void NonLocalNeighborhoodBase::updatePairList() {
 
       	// loop over the quadrature point in the current neighboring cell
       	for (;first_neigh_quad != last_neigh_quad; ++first_neigh_quad){
-      	  QuadraturePoint q2 = *first_neigh_quad;
-      	  q2_coords = q2.getPosition();
+      	  q2 = *first_neigh_quad;
+      Array<Real>::const_vector_iterator coords_type_2_it = this->quad_coordinates(q2.type, q2.ghost_type).begin(spatial_dimension);
+	  q2_coords = coords_type_2_it[q2.global_num];
 
       	  Real distance = q1_coords.distance(q2_coords);
 
@@ -211,6 +217,12 @@ void NonLocalNeighborhoodBase::saveNeighborCoords(const std::string & filename) 
   /// this function is not optimazed and only used for tests on small meshes
   /// @todo maybe optimize this function for better performance?
 
+  UInt spatial_dimension = this->model.getSpatialDimension();
+  Vector<Real> q1_coords(spatial_dimension);
+  Vector<Real> q2_coords(spatial_dimension);
+  QuadraturePoint q1;
+  QuadraturePoint q2;
+
   std::ofstream pout;
 
   std::stringstream sstr;
@@ -232,20 +244,30 @@ void NonLocalNeighborhoodBase::saveNeighborCoords(const std::string & filename) 
       spatial_grid->endCell(*cell_it);
   
     for (;first_quad != last_quad; ++first_quad){
-      QuadraturePoint q1(*first_quad);
+      q1 = *first_quad;
+      Array<Real>::const_vector_iterator coords_type_1_it = this->quad_coordinates(q1.type, q1.ghost_type).begin(spatial_dimension);
+      q1_coords = coords_type_1_it[q1.global_num];
       pout << "#neighbors for quad " << q1.global_num << std::endl;
-      pout << q1.getPosition() << std::endl;
+      pout << q1_coords << std::endl;
       for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
 	GhostType ghost_type2 = (GhostType) gt;
-
 	PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
 	PairList::const_iterator last_pair  = pair_list[ghost_type2].end();
-
 	for(;first_pair != last_pair; ++first_pair) {
-	  if (q1 == first_pair->first && first_pair->second != q1)
-	    pout << first_pair->second.getPosition() << std::endl;
-	  if (q1 == first_pair->second && first_pair->first != q1)
-	    pout << first_pair->first.getPosition() << std::endl;
+	  if (q1 == first_pair->first && first_pair->second != q1) {
+	    q2 = first_pair->second;	 
+	    Array<Real>::const_vector_iterator coords_type_2_it = 
+	    this->quad_coordinates(q2.type, q2.ghost_type).begin(spatial_dimension);
+	    q2_coords = coords_type_2_it[q2.global_num]; 
+	    pout << q2_coords << std::endl;  	  
+	  }
+	  if (q1 == first_pair->second && first_pair->first != q1) {
+	    q2 = first_pair->first;
+	    Array<Real>::const_vector_iterator coords_type_2_it = 
+	    this->quad_coordinates(q2.type, q2.ghost_type).begin(spatial_dimension);
+	    q2_coords = coords_type_2_it[q2.global_num]; 
+	    pout << q2_coords << std::endl;
+	  }
 	}
       }
     }

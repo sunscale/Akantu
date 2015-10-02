@@ -28,6 +28,7 @@
 /* -------------------------------------------------------------------------- */
 #include "non_local_manager.hh"
 #include "non_local_neighborhood.hh"
+#include "material_non_local.hh"
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
@@ -37,35 +38,19 @@ NonLocalManager::NonLocalManager(SolidMechanicsModel & model,
 				const MemoryID & memory_id) : 
   Memory(id, memory_id),
   model(model),
-  volumes("volumes", id){ 
+  default_neighborhood("default_neighborhood"),
+  quad_positions("quad_positions", id),
+  volumes("volumes", id) { 
   UInt spatial_dimension = this->model.getSpatialDimension();
   Mesh & mesh = this->model.getMesh();
 
+  /// initialize the element type map arrays
   mesh.initElementTypeMapArray(volumes, 1, spatial_dimension, false, _ek_regular, true);
+  mesh.initElementTypeMapArray(quad_positions, spatial_dimension, spatial_dimension, false, _ek_regular, true);
 
-  for(UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType) g;
-    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, gt, _ek_regular);
-    Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, _ek_regular);
-    for(; it != end; ++it) {
-      UInt nb_element = mesh.getNbElement(*it, gt);
-      UInt nb_quads = this->model.getFEEngine().getNbQuadraturePoints(*it, gt);
-      volumes.alloc(nb_element *nb_quads, 1, *it, gt);
-    }
-  }
 #ifdef AKANTU_IGFEM
   mesh.initElementTypeMapArray(volumes, 1, spatial_dimension, false, _ek_igfem, true);
-  for(UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType) g;
-    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, gt, _ek_igfem);
-    Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, _ek_igfem);
-    for(; it != end; ++it) {
-      UInt nb_element = mesh.getNbElement(*it, gt);
-      UInt nb_quads = this->model.getFEEngine("IGFEMFEEngine").getNbQuadraturePoints(*it, gt);
-      volumes.alloc(nb_element *nb_quads, 1, *it, gt);
-    }
-  }
-
+  mesh.initElementTypeMapArray(quad_positions, spatial_dimension, spatial_dimension, false, _ek_igfem, true);
 #endif
 
 }
@@ -104,7 +89,7 @@ void NonLocalManager::createNeighborhood(const ID & type, Real radius, const ID 
   if (it == neighborhoods.end() ) {
     /// create new neighborhood for given ID
     std::stringstream sstr; sstr << "neighborhood:" << name;
-    neighborhoods[name] = new NonLocalNeighborhood(*this, radius, type, sstr.str());
+    neighborhoods[name] = new NonLocalNeighborhood(*this, radius, type, this->quad_positions, sstr.str());
   }
 
   AKANTU_DEBUG_OUT();
@@ -121,5 +106,76 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
 
 }
 
+/* -------------------------------------------------------------------------- */
+void NonLocalManager::flattenInternal(ElementTypeMapReal & internal_flat,
+				      const GhostType & ghost_type,
+				      const ElementKind & kind) {
+
+  internal_flat.clear();
+  
+  const ID field_name = internal_flat.getName();
+  for (UInt m = 0; m < this->non_local_materials.size(); ++m) {
+    Material & material = *(this->non_local_materials[m]);
+    if (material.isInternal(field_name, kind))
+      material.flattenInternal(field_name, internal_flat, ghost_type, kind);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLocalManager::averageInternals(const GhostType & ghost_type) {
+
+  /// update the flattened version of the internals
+  std::map<ID, NonLocalVariable *>::iterator non_local_variable_it = non_local_variables.begin();
+  std::map<ID, NonLocalVariable *>::iterator non_local_variable_end = non_local_variables.end();
+
+  for(; non_local_variable_it != non_local_variable_end; ++non_local_variable_it) {
+    for(UInt gt = _not_ghost; gt <= _ghost; ++gt) {
+      GhostType ghost_type = (GhostType) gt;
+      this->flattenInternal(non_local_variable_it->second->local, ghost_type, _ek_regular);
+      this->flattenInternal(non_local_variable_it->second->non_local, ghost_type, _ek_regular);
+    }
+  }
+
+  /// loop over all neighborhoods and compute the non-local variables
+  NeighborhoodMap::iterator neighborhood_it = neighborhoods.begin();
+  NeighborhoodMap::iterator neighborhood_end = neighborhoods.end();
+  for (; neighborhood_it != neighborhood_end; ++neighborhood_it) {
+    non_local_variable_it = non_local_variables.begin();
+    non_local_variable_end = non_local_variables.end();
+    for(; non_local_variable_it != non_local_variable_end; ++non_local_variable_it) {
+      NonLocalVariable * non_local_var = non_local_variable_it->second;
+      neighborhood_it->second->weightedAvergageOnNeighbours(non_local_var->local, non_local_var->non_local, non_local_var->nb_component, ghost_type);
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLocalManager::init(){
+
+  UInt spatial_dimension = this->model.getSpatialDimension();
+
+  /// exchange the missing ghosts for the non-local neighborhoods
+  this->createNeighborhoodSynchronizers();
+
+  /// insert the ghost quadrature points of the non-local materials into the non-local neighborhoods
+  for(UInt m = 0; m < this->non_local_materials.size(); ++m) {
+    switch (spatial_dimension) {
+    case 1:
+    dynamic_cast<MaterialNonLocal<1> &>(*(this->non_local_materials[m])).insertQuadsInNeighborhoods(_ghost); 
+    break;      
+    case 2:
+    dynamic_cast<MaterialNonLocal<2> &>(*(this->non_local_materials[m])).insertQuadsInNeighborhoods(_ghost); 
+    break;      
+    case 3:
+    dynamic_cast<MaterialNonLocal<3> &>(*(this->non_local_materials[m])).insertQuadsInNeighborhoods(_ghost); 
+    break;      
+    }
+
+  }
+
+  this->setJacobians(this->model.getFEEngine(), _ek_regular);
+  this->updatePairLists();
+  this->computeWeights();
+}
 
 __END_AKANTU__

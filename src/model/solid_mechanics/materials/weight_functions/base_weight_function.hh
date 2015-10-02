@@ -134,6 +134,13 @@ public:
   virtual inline void unpackElementData(__attribute__((unused)) CommunicationBuffer & buffer,
                                         __attribute__((unused)) const Array<Element> & elements,
                                         __attribute__((unused)) SynchronizationTag tag) {}
+
+  /* ------------------------------------------------------------------------ */
+  /* Accessors                                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
+  AKANTU_GET_MACRO(Type, type, const ID &);
+
 protected:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

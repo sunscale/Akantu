@@ -245,26 +245,8 @@ void SolidMechanicsModel::initMaterials() {
 
 
 #ifdef AKANTU_DAMAGE_NON_LOCAL
-
-  /// insert the non-ghost quadrature points of the non-local materials into the non-local neighborhoods
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    Material & mat = **mat_it;
-    mat.insertQuadsInNeighborhoods(_not_ghost);
-  }
-
-  /// exchange the missing ghosts for the non-local neighborhoods
-  this->non_local_manager->createNeighborhoodSynchronizers();
-
-  /// insert the ghost quadrature points of the non-local materials into the non-local neighborhoods
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    Material & mat = **mat_it;
-    mat.insertQuadsInNeighborhoods(_ghost);
-  }
-
-  ///set the jacobians in the non-local manager: needed for weight computations
-  this->non_local_manager->setJacobians(this->getFEEngine(), _ek_regular);
-
-
+  /// initialize the non-local manager for non-local computations
+  this->non_local_manager->init();
 #endif
 }
 
