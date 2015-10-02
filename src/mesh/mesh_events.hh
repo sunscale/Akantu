@@ -66,7 +66,7 @@ public:
 class RemovedElementsEvent : public MeshEvent<Element> {
 public:
   virtual ~RemovedElementsEvent() {};
-  inline RemovedElementsEvent(const Mesh & mesh);
+  inline RemovedElementsEvent(const Mesh & mesh, ID new_numbering_id = "new_numbering");
   AKANTU_GET_MACRO(NewNumbering, new_numbering, const ElementTypeMapArray<UInt> &);
   AKANTU_GET_MACRO_NOT_CONST(NewNumbering, new_numbering, ElementTypeMapArray<UInt> &);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(NewNumbering, new_numbering, UInt);
@@ -78,7 +78,9 @@ protected:
 class ChangedElementsEvent : public RemovedElementsEvent {
 public:
   virtual ~ChangedElementsEvent() {};
-  inline ChangedElementsEvent(const Mesh & mesh) : RemovedElementsEvent(mesh) {};
+  inline ChangedElementsEvent(const Mesh & mesh,
+			      ID new_numbering_id = "changed_event:new_numbering")
+    : RemovedElementsEvent(mesh, new_numbering_id) {};
   AKANTU_GET_MACRO(ListOld, list, const Array<Element> &);
   AKANTU_GET_MACRO_NOT_CONST(ListOld, list, Array<Element> &);
   AKANTU_GET_MACRO(ListNew, new_list, const Array<Element> &);
@@ -133,15 +135,10 @@ public:
                                  __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
                                  __attribute__((unused)) const RemovedElementsEvent & event) { }
 
-  virtual void onElementsChanged(const Array<Element> & old_elements_list,
-				 const Array<Element> & new_elements_list,
-                                 const ElementTypeMapArray<UInt> & new_numbering,
-                                 const ChangedElementsEvent & event) {
-    NewElementsEvent new_elements;
-    new_elements.getList() = new_elements_list;
-    this->onElementsAdded(new_elements_list, new_elements);
-    this->onElementsRemoved(old_elements_list, new_numbering, event);
-  }
+  virtual void onElementsChanged(__attribute__((unused)) const Array<Element> & old_elements_list,
+				 __attribute__((unused)) const Array<Element> & new_elements_list,
+                                 __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+                                 __attribute__((unused)) const ChangedElementsEvent & event) { }
 };
 
 

@@ -41,20 +41,18 @@
 __BEGIN_AKANTU__
 
 /// Abstract class for mesh geometry operations
-class MeshGeomAbstract : public Memory {
+class MeshGeomAbstract {
 
 public:
   /// Construct from mesh
-  explicit MeshGeomAbstract(Mesh & mesh,
-			    const ID & id = "mesh_geom_abstract",
-			    const MemoryID & memory_id = 0);
+  explicit MeshGeomAbstract(Mesh & mesh) : mesh(mesh) {};
 
   /// Destructor
-  virtual ~MeshGeomAbstract();
+  virtual ~MeshGeomAbstract() {};
 
 public:
   /// Construct geometric data for computational geometry algorithms
-  virtual void constructData() = 0;
+  virtual void constructData(GhostType ghost_type = _not_ghost) = 0;
 
 protected:
   /// Mesh used to construct the primitives

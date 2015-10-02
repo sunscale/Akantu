@@ -55,7 +55,7 @@ CohesiveElementInserter::CohesiveElementInserter(Mesh & mesh,
 /* -------------------------------------------------------------------------- */
 CohesiveElementInserter::~CohesiveElementInserter() {
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  delete distributed_synchronizer;
+  delete global_ids_updater;
 #endif
 }
 
@@ -87,7 +87,7 @@ void CohesiveElementInserter::init(bool is_extrinsic) {
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   facet_synchronizer = NULL;
-  distributed_synchronizer = NULL;
+  global_ids_updater = NULL;
 #endif
 
   AKANTU_DEBUG_OUT();

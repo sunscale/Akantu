@@ -277,6 +277,7 @@ inline void ElementTypeMapArray<T, SupportType>::onElementsRemoved(const Element
       SupportType type = *it;
       if(this->exists(type, gt)){
         const Array<UInt> & renumbering = new_numbering(type, gt);
+	if (renumbering.getSize() == 0) continue;
         Array<T> & vect = this->operator()(type, gt);
         UInt nb_component = vect.getNbComponent();
         Array<T> tmp(renumbering.getSize(), nb_component);

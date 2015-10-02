@@ -171,6 +171,9 @@ package_declare_sources(core
   mesh_utils/mesh_utils.cc
   mesh_utils/mesh_utils.hh
   mesh_utils/mesh_utils_inline_impl.cc
+  mesh_utils/global_ids_updater.hh
+  mesh_utils/global_ids_updater.cc
+  mesh_utils/global_ids_updater_inline_impl.cc
 
   model/boundary_condition.hh
   model/boundary_condition_functor.hh

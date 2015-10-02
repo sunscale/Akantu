@@ -39,11 +39,9 @@
 __BEGIN_AKANTU__
 
 template<class Query>
-MeshAbstractIntersector<Query>::MeshAbstractIntersector(Mesh & mesh,
-							const ID & id,
-							const MemoryID & memory_id):
-  MeshGeomAbstract(mesh, id, memory_id),
-  new_node_per_elem("new_node_per_elem", id),
+MeshAbstractIntersector<Query>::MeshAbstractIntersector(Mesh & mesh):
+  MeshGeomAbstract(mesh),
+  new_node_per_elem(NULL),
   intersection_points(NULL),
   nb_seg_by_el(0)
 {}
@@ -70,7 +68,7 @@ void MeshAbstractIntersector<Query>::computeIntersectionQueryList(
 
 template<class Query>
 void MeshAbstractIntersector<Query>::computeMeshQueryListIntersectionPoint(
-  const std::list<Query> & query_list) {
+  const std::list<Query> & query_list, UInt nb_old_nodes) {
   AKANTU_DEBUG_IN();
   
   typename std::list<Query>::const_iterator
@@ -78,7 +76,7 @@ void MeshAbstractIntersector<Query>::computeMeshQueryListIntersectionPoint(
     query_end = query_list.end();
 
   for (; query_it != query_end ; ++query_it) {
-    computeMeshQueryIntersectionPoint(*query_it);
+    computeMeshQueryIntersectionPoint(*query_it, nb_old_nodes);
   }
   
   AKANTU_DEBUG_OUT();

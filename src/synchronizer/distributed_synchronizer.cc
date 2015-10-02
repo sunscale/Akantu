@@ -47,10 +47,6 @@
 #  include "aka_debug_tools.hh"
 #endif
 
-#if defined(AKANTU_IGFEM)
-#  include "mesh_sphere_intersector.hh"
-#endif
-
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -70,13 +66,13 @@ DistributedSynchronizer::DistributedSynchronizer(Mesh & mesh,
 
   send_element = new Array<Element>[nb_proc];
   recv_element = new Array<Element>[nb_proc];
-  
+
 for (UInt p = 0; p < nb_proc; ++p) {
   std::stringstream sstr; sstr << p;
   send_element[p].setID(id+":send_elements_"+sstr.str());
   recv_element[p].setID(id+":recv_elements_"+sstr.str());
  }
-  
+
   mesh.registerEventHandler(*this);
 
   AKANTU_DEBUG_OUT();
@@ -860,7 +856,7 @@ void DistributedSynchronizer::waitEndSynchronize(DataAccessor & data_accessor,
 	  Real bary_norm = barycenter.norm();
 	  for (UInt i = 0; i < spatial_dimension; ++i) {
 	    if((std::abs(barycenter_loc(i)) <= tolerance && std::abs(barycenter(i)) <= tolerance) ||
-               (std::abs((barycenter(i) - barycenter_loc(i))/bary_norm) <= tolerance)) continue;
+	       (std::abs((barycenter(i) - barycenter_loc(i))/bary_norm) <= tolerance)) continue;
 	    AKANTU_DEBUG_ERROR("Unpacking an unknown value for the element: "
 			       << element
 			       << "(barycenter[" << i << "] = " << barycenter_loc(i)
@@ -1009,15 +1005,11 @@ void DistributedSynchronizer::printself(std::ostream & stream, int indent) const
 /* -------------------------------------------------------------------------- */
 void DistributedSynchronizer::substituteElements(const std::map<Element, Element> & old_to_new_elements) {
   // substitute old elements with new ones
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  UInt psize = comm.getNbProc();
-  UInt prank = comm.whoAmI();
-
   std::map<Element, Element>::const_iterator found_element_it;
   std::map<Element, Element>::const_iterator found_element_end = old_to_new_elements.end();
 
-  for (UInt p = 0; p < psize; ++p) {
-    if (p == prank) continue;
+  for (UInt p = 0; p < nb_proc; ++p) {
+    if (p == rank) continue;
 
     Array<Element> & recv = recv_element[p];
     for (UInt el = 0; el < recv.getSize(); ++el) {
@@ -1036,31 +1028,28 @@ void DistributedSynchronizer::substituteElements(const std::map<Element, Element
 }
 
 /* -------------------------------------------------------------------------- */
+void DistributedSynchronizer::onElementsChanged(const Array<Element> & old_elements_list,
+						const Array<Element> & new_elements_list,
+						const ElementTypeMapArray<UInt> & new_numbering,
+						__attribute__((unused)) const ChangedElementsEvent & event) {
+  // create a map to link old elements to new ones
+  std::map<Element, Element> old_to_new_elements;
+
+  for (UInt el = 0; el < old_elements_list.getSize(); ++el) {
+    AKANTU_DEBUG_ASSERT(old_to_new_elements.find(old_elements_list(el)) == old_to_new_elements.end(),
+			"The same element cannot appear twice in the list");
+
+    old_to_new_elements[old_elements_list(el)] = new_elements_list(el);
+  }
+
+  substituteElements(old_to_new_elements);
+}
+
+/* -------------------------------------------------------------------------- */
 void DistributedSynchronizer::onElementsRemoved(const Array<Element> & element_to_remove,
 						const ElementTypeMapArray<UInt> & new_numbering,
 						__attribute__((unused)) const RemovedElementsEvent & event) {
   AKANTU_DEBUG_IN();
-
-#if defined(AKANTU_IGFEM)
-  const RemovedIGFEMElementsEvent * igfem_event
-    = dynamic_cast<const RemovedIGFEMElementsEvent *>(&event);
-  if (igfem_event) {
-    const Array<Element> & new_elements_list = igfem_event->getNewElementsList();
-
-    // create a map to link old elements to new ones
-    std::map<Element, Element> old_to_new_elements;
-
-    for (UInt el = 0; el < element_to_remove.getSize(); ++el) {
-      AKANTU_DEBUG_ASSERT(old_to_new_elements.find(element_to_remove(el)) == old_to_new_elements.end(),
-			  "The same element cannot appear twice in the list");
-
-      old_to_new_elements[element_to_remove(el)] = new_elements_list(el);
-    }
-
-    substituteElements(old_to_new_elements);
-    return;
-  }
-#endif
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   UInt psize = comm.getNbProc();
@@ -1099,7 +1088,6 @@ void DistributedSynchronizer::onElementsRemoved(const Array<Element> & element_t
 					    p, Tag::genTag(prank, 0, 0)));
 
     list.erase(list.getSize() - 1);
-    if(list.getSize() == recv.getSize()) continue;
 
     Array<Element> new_recv;
     for (UInt nr = 0; nr < list.getSize(); ++nr) {
@@ -1137,7 +1125,9 @@ void DistributedSynchronizer::onElementsRemoved(const Array<Element> & element_t
 
     Array<Element> new_send;
     for (UInt ns = 0; ns < list.getSize(); ++ns) {
-      new_send.push_back(send(list(ns)));   
+      Element & el = send(list(ns));
+      el.element = new_numbering(el.type, el.ghost_type)(el.element);
+      new_send.push_back(el);
     }
 
     AKANTU_DEBUG_INFO("I had " << send.getSize() << " elements to send to proc " << p << " and "
