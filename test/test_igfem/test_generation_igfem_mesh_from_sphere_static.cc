@@ -60,6 +60,7 @@ int main (int argc, char * argv[]) {
   SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.2*0.2); //"test_geometry_triangle.msh"
   SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.4999999999); //"test_geometry_triangle.msh"
   MeshIgfemSphericalGrowingGel<2> sphere_intersector(mesh);
+  sphere_intersector.init();
 
   std::list<SK::Sphere_3> sphere_list;
   sphere_list.push_back(sphere);

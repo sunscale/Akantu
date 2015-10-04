@@ -255,7 +255,24 @@ void SolidMechanicsModelIGFEM::onNodesAdded(const Array<UInt> & nodes_list,
   if (mesh.isDistributed())
     mesh.getGlobalNodesIds().resize(mesh.getNbNodes());
 
-  SolidMechanicsModel::onNodesAdded(nodes_list, event);  
+  if(displacement) displacement->resize(nb_nodes);
+  if(mass        ) mass        ->resize(nb_nodes);
+  if(velocity    ) velocity    ->resize(nb_nodes);
+  if(acceleration) acceleration->resize(nb_nodes);
+  if(force       ) force       ->resize(nb_nodes);
+  if(residual    ) residual    ->resize(nb_nodes);
+  if(blocked_dofs) blocked_dofs->resize(nb_nodes);
+
+  if(previous_displacement) previous_displacement->resize(nb_nodes);
+  if(increment_acceleration) increment_acceleration->resize(nb_nodes);
+  if(increment) increment->resize(nb_nodes);
+
+  if(current_position) current_position->resize(nb_nodes);
+
+  std::vector<Material *>::iterator mat_it;
+  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+    (*mat_it)->onNodesAdded(nodes_list, event);
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -271,7 +288,7 @@ void SolidMechanicsModelIGFEM::onNodesRemoved(const Array<UInt> & nodes_list,
 
   // communicate global connectivity for slave nodes
   if (global_ids_updater)
-    global_ids_updater->updateGlobalIDs(intersector_sphere.getNbOriginalNodes());
+    global_ids_updater->updateGlobalIDs(mesh.getNbNodes() - intersector_sphere.getNbOriginalNodes());
 
   SolidMechanicsModel::onNodesRemoved(nodes_list, new_numbering, event);
 }

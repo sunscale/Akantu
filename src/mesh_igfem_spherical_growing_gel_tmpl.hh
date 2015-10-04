@@ -90,15 +90,16 @@ void MeshIgfemSphericalGrowingGel<dim>::computeMeshQueryListIntersectionPoint(co
 
       if (new_points > 0) {
 	Array<Real> & nodes = this->mesh.getNodes();
-	UInt nb_node = nodes.getSize() ;
+	UInt nb_node = nodes.getSize();
+
+	Array<Real>::const_vector_iterator intersec_p_it
+	  = intersection_points_current_type.begin(dim);
+
 	NewIGFEMNodesEvent new_nodes_event;
-	for(UInt in = 0; in < intersection_points_current_type.getSize(); ++in ) {
-	  Vector<Real> new_node(dim, 0.0);
-	  for(UInt id = 0; id < dim; ++id)
-	    new_node(id) = intersection_points_current_type(in,id);
-	  nodes.push_back(new_node);
-	  new_nodes_event.getList().push_back(nb_node);
-	  ++nb_node;
+	for(UInt in = 0; in < intersection_points_current_type.getSize();
+	    ++in, ++intersec_p_it) {
+	  nodes.push_back(*intersec_p_it);
+	  new_nodes_event.getList().push_back(nb_node + in);
 	}
 	new_nodes_event.setNewNodePerElem(new_node_per_elem);
 	new_nodes_event.setType(*iit);
@@ -401,19 +402,16 @@ void MeshIgfemSphericalGrowingGel<dim>::buildSegmentConnectivityToNodeType() {
 	= segment_connectivity.end(segment_connectivity.getNbComponent());
       UInt seg_index = 0;
 
-      UInt connectivity_vals[2];
+      UInt n[2];
       for (; conn_it != conn_end; ++conn_it, ++seg_index) {
 	Int seg_type = segment_to_nodetype(seg_index);
+	n[0] = (*conn_it)(0);
+	n[1] = (*conn_it)(1);
 
-	if (seg_type != -1 && seg_type != -3) {
-	  connectivity_vals[0] = (*conn_it)(0);
-	  connectivity_vals[1] = (*conn_it)(1);
-
-	  std::sort(connectivity_vals, connectivity_vals+2);
-
-	  segment_conn_to_node_type[std::make_pair(connectivity_vals[0],
-						   connectivity_vals[1])]
-	    = seg_type;
+	if ( (mesh.isMasterNode(n[0]) || mesh.isSlaveNode(n[0])) &&
+	     (mesh.isMasterNode(n[1]) || mesh.isSlaveNode(n[1]))) {
+	  std::sort(n, n+2);
+	  segment_conn_to_node_type[std::make_pair(n[0], n[1])] = seg_type;
 	}
       }
     }
@@ -456,7 +454,7 @@ void MeshIgfemSphericalGrowingGel<dim>::updateNodeType(const Array<UInt> & nodes
 
     for (UInt n = 0; n < nb_nodes; ++n) {
       UInt node_index = new_node_per_elem(el, 2*n+1);
-      if (checked_node(node_index - old_nodes)) continue;
+      if (node_index < old_nodes || checked_node(node_index - old_nodes)) continue;
 
       // get the elemental connectivity of the segment associated to the node
       UInt segment_index = new_node_per_elem(el, 2*n+2);
@@ -473,12 +471,12 @@ void MeshIgfemSphericalGrowingGel<dim>::updateNodeType(const Array<UInt> & nodes
 
       // if on of the two extreme nodes is local, then also the new node is local
       if (mesh.isLocalNode(extreme_nodes[0]) ||
-	  mesh.isLocalNode(extreme_nodes[1]))
-	nodes_type(node_index) = -1;
-      // if both extreme nodes are pure ghost, then also the new node is pure ghost
-      else if (mesh.isPureGhostNode(extreme_nodes[0]) &&
-	       mesh.isPureGhostNode(extreme_nodes[1]))
-	nodes_type(node_index) = -3;
+      	  mesh.isLocalNode(extreme_nodes[1]))
+      	nodes_type(node_index) = -1;
+      // if one extreme nodes is pure ghost, then also the new node is pure ghost
+      else if (mesh.isPureGhostNode(extreme_nodes[0]) ||
+      	       mesh.isPureGhostNode(extreme_nodes[1]))
+      	nodes_type(node_index) = -3;
       // otherwise use the value stored in the map
       else {
 	std::sort(extreme_nodes, extreme_nodes+2);
@@ -486,10 +484,9 @@ void MeshIgfemSphericalGrowingGel<dim>::updateNodeType(const Array<UInt> & nodes
 	seg_type_it = segment_conn_to_node_type.find(std::make_pair(extreme_nodes[0],
 								    extreme_nodes[1]));
 
-	if (seg_type_it != seg_type_end)
-	  nodes_type(node_index) = seg_type_it->second;
-	else
-	  nodes_type(node_index) = -3;
+	AKANTU_DEBUG_ASSERT(seg_type_it != seg_type_end, "Segment not found");
+
+	nodes_type(node_index) = seg_type_it->second;
       }
 
       checked_node(node_index - old_nodes) = true;

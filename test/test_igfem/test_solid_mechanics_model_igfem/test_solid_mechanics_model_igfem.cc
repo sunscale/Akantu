@@ -28,6 +28,33 @@
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
+/* -------------------------------------------------------------------------- */
+void outputArray(const Mesh & mesh, const Array<Real> & array) {
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  Int prank = comm.whoAmI();
+
+  UInt spatial_dimension = mesh.getSpatialDimension();
+  UInt nb_global_nodes = mesh.getNbGlobalNodes();
+  Array<Real> solution(nb_global_nodes, spatial_dimension, 0.);
+
+  Array<Real>::vector_iterator solution_begin = solution.begin(spatial_dimension);
+  Array<Real>::const_vector_iterator array_it = array.begin(spatial_dimension);
+  
+  for (UInt n = 0; n < mesh.getNbNodes(); ++n, ++array_it) {
+    if (mesh.isLocalOrMasterNode(n))
+      solution_begin[mesh.getNodeGlobalId(n)] = *array_it;
+  }
+
+  comm.allReduce(solution.storage(), solution.getSize() * solution.getNbComponent(), _so_sum);
+
+  if (prank == 0) {
+    Array<Real>::const_vector_iterator sol_it = solution.begin(spatial_dimension);
+    for (UInt n = 0; n < nb_global_nodes; ++n, ++sol_it)
+      std::cout << *sol_it << std::endl;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 class Sphere {
 public:
   Sphere(const Vector<Real> & center, Real radius, Real tolerance = 0.) : center(center), radius(radius), tolerance(tolerance) {
@@ -207,7 +234,7 @@ int main(int argc, char *argv[]) {
   Math::setTolerance(1e-14);
 
   /// geometry of IGFEM interface: circular inclusion
-  Real radius_inclusion = 0.401;
+  Real radius_inclusion = 0.801;
   Vector<Real> center(spatial_dimension, 0.);
   /// @todo: Simplify this: need to create two type of spheres:
   /// one for the geometry and one for the material selector
@@ -287,24 +314,10 @@ int main(int argc, char *argv[]) {
 
 
   /// output the displacement in parallel
-  const Array<Real> & disp = model.getDisplacement();
+  outputArray(mesh, model.getDisplacement());
 
-  UInt nb_global_nodes = mesh.getNbGlobalNodes();
-  Array<Real> solution(nb_global_nodes, spatial_dimension, 0.);
-
-  Array<Real>::vector_iterator solution_begin = solution.begin(spatial_dimension);
-  Array<Real>::const_vector_iterator disp_it = disp.begin(spatial_dimension);
-  
-  for (UInt n = 0; n < mesh.getNbNodes(); ++n, ++disp_it) {
-    if (mesh.isLocalOrMasterNode(n))
-      solution_begin[mesh.getNodeGlobalId(n)] = *disp_it;
-  }
-
-  comm.allReduce(solution.storage(), solution.getSize() * solution.getNbComponent(), _so_sum);
-
-  Array<Real>::const_vector_iterator sol_it = solution.begin(spatial_dimension);
-  for (UInt n = 0; n < nb_global_nodes; ++n, ++sol_it)
-    std::cout << *sol_it << std::endl;
+  if (prank == 0)
+    std::cout << "Total number of nodes: " << mesh.getNbGlobalNodes() << std::endl;
 
   finalize();
   return EXIT_SUCCESS;
