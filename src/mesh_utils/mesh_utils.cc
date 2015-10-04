@@ -2144,9 +2144,7 @@ void MeshUtils::buildSegmentToNodeType(const Mesh & mesh,
 }
 
 /* -------------------------------------------------------------------------- */
-UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh, UInt old_nb_nodes) {
-  UInt local_nb_new_nodes = mesh.getNbNodes() - old_nb_nodes;
-
+UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh, UInt local_nb_new_nodes) {
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   Int rank = comm.whoAmI();
   Int nb_proc = comm.getNbProc();
@@ -2154,9 +2152,9 @@ UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh, UInt old_nb_nod
 
   /// resize global ids array
   Array<UInt> & nodes_global_ids = mesh.getGlobalNodesIds();
-  UInt nb_old_nodes = nodes_global_ids.getSize();
+  UInt old_nb_nodes = mesh.getNbNodes() - local_nb_new_nodes;
 
-  nodes_global_ids.resize(nb_old_nodes + local_nb_new_nodes);
+  nodes_global_ids.resize(mesh.getNbNodes());
 
   /// compute amount of local or master doubled nodes
   Vector<UInt> local_master_nodes(nb_proc);

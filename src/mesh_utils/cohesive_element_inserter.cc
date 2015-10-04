@@ -345,11 +345,8 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
   }
 #endif
 
-  if (nb_new_nodes > 0) {
-    mesh.nb_global_nodes += nb_new_nodes;
-    mesh_facets.nb_global_nodes += nb_new_nodes;
+  if (nb_new_nodes > 0)
     mesh.sendEvent(node_event);
-  }
 
   if (nb_new_elements > 0) {
     updateInsertionFacets();

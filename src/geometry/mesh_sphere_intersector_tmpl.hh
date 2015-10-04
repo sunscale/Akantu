@@ -44,14 +44,12 @@ __BEGIN_AKANTU__
 template<UInt dim, ElementType type>
 MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
   parent_type(mesh),
-  tol_intersection_on_node(1e-10),
-  nb_prim_by_el(0)
+  tol_intersection_on_node(1e-10)
 {
   this->intersection_points = new Array<Real>(0,dim);
 
 #if defined(AKANTU_IGFEM)
   if( (type == _triangle_3) || (type == _igfem_triangle_4) || (type == _igfem_triangle_5) ){
-    this->nb_prim_by_el = 3;
     const_cast<UInt &>(this->nb_seg_by_el) = 3;
   } else {
     AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
@@ -59,10 +57,9 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
 #else
   if( (type != _triangle_3) )
     AKANTU_DEBUG_ERROR("Not ready for mesh type " << *it);
-  this->nb_prim_by_el = 3;
 #endif
 
-  this->new_node_per_elem = new Array<UInt>(0, 1 + nb_prim_by_el * 2);
+  this->new_node_per_elem = new Array<UInt>(0, 1 + 4 * (dim-1));
 }
 
 template<UInt dim, ElementType type>
@@ -165,16 +162,17 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	  UInt element_id = it->id();
 
 	  if (!is_on_mesh) {
-	    (*this->new_node_per_elem)(element_id, 0) += 1;
-	    (*this->new_node_per_elem)(element_id, (2 * (*this->new_node_per_elem)(element_id, 0)) - 1) = n;
-	    (*this->new_node_per_elem)(element_id, 2 * (*this->new_node_per_elem)(element_id, 0)) = it->segId();
+	    UInt & nb_new_nodes_per_el = (*this->new_node_per_elem)(element_id, 0);
+	    nb_new_nodes_per_el += 1;
+	    (*this->new_node_per_elem)(element_id, (2 * nb_new_nodes_per_el) - 1) = n;
+	    (*this->new_node_per_elem)(element_id, 2 * nb_new_nodes_per_el) = it->segId();
 	  } else {
 	    // if intersection is at a node, write node number (in el) in pennultimate position
 	    if (Math::are_vector_equal(dim, source.storage(), new_node.storage())) {
 	      (*this->new_node_per_elem)(element_id, ((*this->new_node_per_elem).getNbComponent() - 2)) = it->segId();
 	    } else {
 	      (*this->new_node_per_elem)(element_id, ((*this->new_node_per_elem).getNbComponent() - 2)) =
-		(it->segId()+1) % this->nb_prim_by_el;
+		(it->segId()+1) % this->nb_seg_by_el;
 	    }
 	  }
 	}

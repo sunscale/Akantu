@@ -641,15 +641,6 @@ void SolidMechanicsModelCohesive::onNodesAdded(const Array<UInt> & doubled_nodes
     }
   }
 
-  delete dof_synchronizer;
-  dof_synchronizer = new DOFSynchronizer(mesh, spatial_dimension);
-  dof_synchronizer->initLocalDOFEquationNumbers();
-  dof_synchronizer->initGlobalDOFEquationNumbers();
-
-  if (method != _explicit_lumped_mass) {
-    this->initSolver();
-  }
-
   AKANTU_DEBUG_OUT();
 }
 

@@ -92,9 +92,6 @@ protected:
   /// tolerance for which the intersection is considered on the mesh node (relative to the segment lenght)
   Real tol_intersection_on_node;
 
-  /// number of primitive in an element of the template type
-  UInt nb_prim_by_el;
-
 };
  
 __END_AKANTU__

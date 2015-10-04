@@ -65,7 +65,7 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(CommunicationBuffer &
   ElementType current_element_type = _not_defined;
   GhostType current_ghost_type = _casper;
 
-  Array<UInt>::vector_iterator conn_begin;
+  Array<UInt>::const_vector_iterator conn_begin;
   UInt nb_nodes_per_elem = 0;
   UInt index;
 
@@ -80,14 +80,14 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(CommunicationBuffer &
       current_element_type = el.type;
       current_ghost_type   = el.ghost_type;
 
-      Array<UInt> & connectivity = mesh.getConnectivity(current_element_type,
-							current_ghost_type);
+      const Array<UInt> & connectivity = mesh.getConnectivity(current_element_type,
+							      current_ghost_type);
       nb_nodes_per_elem = connectivity.getNbComponent();
       conn_begin = connectivity.begin(nb_nodes_per_elem);
     }
 
     /// get element connectivity
-    Vector<UInt> current_conn = conn_begin[el.element];
+    const Vector<UInt> current_conn = conn_begin[el.element];
 
     /// loop on all connectivity nodes
     for (UInt n = 0; n < nb_nodes_per_elem; ++n) {
@@ -97,7 +97,7 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(CommunicationBuffer &
 	/// if node is local or master pack its global id, otherwise
 	/// dummy data
 	if (mesh.isLocalOrMasterNode(node))
-	  index = mesh.getNodeGlobalId(node);
+	  index = global_nodes_ids(node);
 	else
 	  index = UInt(-1);
 
