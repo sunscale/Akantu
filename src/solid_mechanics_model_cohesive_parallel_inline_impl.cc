@@ -62,7 +62,7 @@ inline UInt SolidMechanicsModelCohesive::getNbDataForElements(const Array<Elemen
       break;
     }
     case _gst_smmc_facets_conn: {
-      UInt nb_nodes = getNbNodesPerElementList(elements);
+      UInt nb_nodes = Mesh::getNbNodesPerElementList(elements);
       size += nb_nodes * sizeof(UInt);
       break;
     }
