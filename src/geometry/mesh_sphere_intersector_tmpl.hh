@@ -56,7 +56,7 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
   }
 #else
   if( (type != _triangle_3) )
-    AKANTU_DEBUG_ERROR("Not ready for mesh type " << *it);
+    AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
 #endif
 
   this->new_node_per_elem = new Array<UInt>(0, 1 + 4 * (dim-1));
