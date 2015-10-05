@@ -65,6 +65,7 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
 template<UInt dim, ElementType type>
 MeshSphereIntersector<dim, type>::~MeshSphereIntersector() {
   delete this->new_node_per_elem;
+  delete this->intersection_points;
 }
 
 template<UInt dim, ElementType type>
