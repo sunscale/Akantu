@@ -35,7 +35,6 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 inline void NonLocalNeighborhoodBase::insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords) {
-  Vector<Real> test = quad.getPosition();
   this->spatial_grid->insert(quad, coords);
 }
 

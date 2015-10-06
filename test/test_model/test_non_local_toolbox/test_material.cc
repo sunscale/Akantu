@@ -54,6 +54,54 @@ void TestMaterial<spatial_dimension>::initMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void TestMaterial<spatial_dimension>::insertQuadsInNeighborhoods(GhostType ghost_type) {
+
+  /// this function will add all the quadrature points to the same
+  /// default neighborhood instead of using one neighborhood per
+  /// material
+  NonLocalManager & manager = this->model->getNonLocalManager();
+  InternalField<Real> quadrature_points_coordinates("quadrature_points_coordinates_tmp_nl", *this);
+  quadrature_points_coordinates.initialize(spatial_dimension);
+
+  /// intialize quadrature point object
+  QuadraturePoint q;
+  q.ghost_type = ghost_type;
+  q.kind = _ek_regular;
+
+  Mesh::type_iterator it = this->element_filter.firstType(spatial_dimension, ghost_type, _ek_regular);
+  Mesh::type_iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type, _ek_regular);
+  for(; it != last_type; ++it) {
+    q.type = *it;
+    const Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
+    UInt nb_element  = elem_filter.getSize();
+    if(nb_element) {
+      UInt nb_quad = this->fem->getNbQuadraturePoints(*it, ghost_type);
+      UInt nb_tot_quad = nb_quad * nb_element;
+      
+      Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
+      quads.resize(nb_tot_quad);
+
+      this->model->getFEEngine().computeQuadraturePointsCoordinates(quads, *it, ghost_type, elem_filter);
+      
+      Array<Real>::const_vector_iterator quad = quads.begin(spatial_dimension);
+      UInt * elem = elem_filter.storage();
+
+      for (UInt e = 0; e < nb_element; ++e) {
+	q.element = *elem;
+	for (UInt nq = 0; nq < nb_quad; ++nq) {
+	  q.num_point = nq;
+	  q.global_num = q.element * nb_quad + nq;
+	  manager.insertQuad(q, *quad, "test_region");
+	  ++quad;
+	}
+	++elem;
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 // Instantiate the material for the 3 dimensions
 INSTANTIATE_MATERIAL(TestMaterial);
 /* -------------------------------------------------------------------------- */

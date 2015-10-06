@@ -32,17 +32,96 @@
 /* -------------------------------------------------------------------------- */
 #include "base_weight_function.hh"
 #include "non_local_neighborhood_base.hh"
+#include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
   class NonLocalManager;
+  class TestWeightFunction;
 }
 
 __BEGIN_AKANTU__
 
-class WeightFunction {
+
+template<class WeightFunction = TestWeightFunction>
+class NonLocalNeighborhood : public NonLocalNeighborhoodBase {
+  /* ------------------------------------------------------------------------ */
+  /* Constructors/Destructors                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+
+  NonLocalNeighborhood(NonLocalManager & manager, 
+		       const ElementTypeMapReal & quad_coordinates,
+		       const ID & id = "neighborhood",
+		       const MemoryID & memory_id = 0);
+  virtual ~NonLocalNeighborhood();
+
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
+
+   /// compute the weights for non-local averaging
+  void computeWeights();
+  
+  /// save the pair of weights in a file
+  void saveWeights(const std::string & filename) const;
+
+  /// compute the non-local counter part for a given element type map
+  virtual void weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
+					   ElementTypeMapReal & accumulated,
+					   UInt nb_degree_of_freedom,
+					   const GhostType & ghost_type2) const;
+
+  /// update the weights based on the weight function
+  void updateWeights();
+
+protected:
+  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
+					  SynchronizationTag tag) const;
+
+  virtual inline void packElementData(CommunicationBuffer & buffer,
+				      const Array<Element> & elements,
+				      SynchronizationTag tag) const;
+
+  virtual inline void unpackElementData(CommunicationBuffer & buffer,
+					const Array<Element> & elements,
+					SynchronizationTag tag);
+
+  /* -------------------------------------------------------------------------- */
+  /* Accessor                                                                   */
+  /* -------------------------------------------------------------------------- */
+  AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, const NonLocalManager &);
+  AKANTU_GET_MACRO_NOT_CONST(NonLocalManager, *non_local_manager, NonLocalManager &);
+
+  /* ------------------------------------------------------------------------ */
+  /* Class Members                                                            */
+  /* ------------------------------------------------------------------------ */
+private:
+
+  /// Pointer to non-local manager class
+  NonLocalManager * non_local_manager;
+
+  /// the weights associated to the pairs
+  Array<Real> * pair_weight[2];
+
+  /// weight function
+  WeightFunction * weight_function;
+
+};
+
+
+class TestWeightFunction : public Parsable {
 
 public:
+  TestWeightFunction(NonLocalManager & manager) : Parsable(_st_weight_function, "weight_function:"), 
+							manager(manager)
+{
+    this->registerParam("update_rate"  , update_rate, 0U  ,
+			_pat_parsmod, "Update frequency");
+
+  }
+
   void setRadius(Real radius) {
     /// set the non-local radius and update R^2 accordingly
     this->R = radius; 
@@ -63,66 +142,70 @@ Real operator()(Real r,
   return w;
 }
   void updateInternals(){};
+  UInt getUpdateRate(){return update_rate;};
 
 protected:
 
+  NonLocalManager & manager;
   Real R;
   Real R2;
+  UInt update_rate;
 
 };
 
-class NonLocalNeighborhood : public NonLocalNeighborhoodBase {
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
+class TestDamageWeightFunction : public TestWeightFunction {
+
 public:
+  TestDamageWeightFunction(NonLocalManager & manager) : TestWeightFunction(manager){ 
+    this->registerParam("damage_limit", this->damage_limit, 1., _pat_parsable, "Damage Threshold");
+    this->setInternals();}
 
-  NonLocalNeighborhood(NonLocalManager & manager, Real radius, const ID & weight_type,
-		       const ElementTypeMapReal & quad_coordinates,
-		       const ID & id = "neighborhood",
-		       const MemoryID & memory_id = 0);
-  virtual ~NonLocalNeighborhood();
+Real operator()(Real r,
+		const __attribute__((unused)) QuadraturePoint & q1,
+		const __attribute__((unused)) QuadraturePoint & q2) {
+  /// compute the weight
+  UInt quad = q2.global_num;
 
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
-public:
+  if(q1 == q2) return 1.;
 
-   /// compute the weights for non-local averaging
-  void computeWeights();
-  
-  /// save the pair of weights in a file
-  void saveWeights(const std::string & filename) const;
+  Array<Real> & dam = (*(this->damage))(q2.type, q2.ghost_type);
+  Real D = dam(quad);
+  Real w = 0.;
+  if(D < damage_limit) {
+    Real alpha = std::max(0., 1. - r*r / this->R2);
+    w = alpha * alpha;
+  }
+  return w;
+}
+  void updateInternals(){};
+  UInt getUpdateRate(){return update_rate;};
 
-  /// compute the non-local counter part for a given element type map
-  void weightedAvergageOnNeighbours(const ElementTypeMapReal & to_accumulate,
-				    ElementTypeMapReal & accumulated,
-				    UInt nb_degree_of_freedom,
-				    const GhostType & ghost_type2) const;
+  void setInternals() {
+    this->damage = &(this->manager.registerWeightFunctionInternal("damage"));}
 
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
-private:
+protected:
 
-  /// Pointer to non-local manager class
-  NonLocalManager * non_local_manager;
+ /// limit at which a point is considered as complitely broken
+  Real damage_limit;
 
-  /// name of the type of weight function
-  const ID type;
-
-  /// the weights associated to the pairs
-  Array<Real> * pair_weight[2];
-
-  /// count the number of calls of computeStress
-  UInt compute_stress_calls;
-
-  /// weight function
-  WeightFunction * weight_function;
+  /// internal pointer to the current damage vector
+  ElementTypeMapReal * damage;
 
 };
 
 
 __END_AKANTU__
 
+/* -------------------------------------------------------------------------- */
+/* Implementation of template functions                                       */
+/* -------------------------------------------------------------------------- */
+#include "non_local_neighborhood_tmpl.hh"
+/* -------------------------------------------------------------------------- */
+/* inline functions                                                           */
+/* -------------------------------------------------------------------------- */
+#include "non_local_neighborhood_inline_impl.cc"
+
+
+
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_HH__ */
+

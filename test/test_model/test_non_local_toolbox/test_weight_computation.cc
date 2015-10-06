@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
   model.dump();
 
   /// save the weights in a file
-  NonLocalNeighborhood & neighborhood = dynamic_cast<NonLocalNeighborhood &> (model.getNonLocalManager().getNeighborhood());
+  NonLocalNeighborhood<TestWeightFunction> & neighborhood = dynamic_cast<NonLocalNeighborhood<TestWeightFunction> &> (model.getNonLocalManager().getNeighborhood());
 
   neighborhood.saveWeights("weights");
   /// print results to screen for validation

@@ -32,11 +32,12 @@
 #include "aka_memory.hh"
 #include "solid_mechanics_model.hh"
 #include "non_local_neighborhood_base.hh"
+#include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-class NonLocalManager : public Memory {
+class NonLocalManager : public Memory, public Parsable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -58,7 +59,7 @@ public:
   void init();
 
   /// insert new quadrature point in the grid
-  inline void insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords, Real radius, const ID & type, ID name = "");
+  inline void insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords, const ID & weight_func, ID neighborhood = "");
 
   /// return the fem object associated with a provided name
   inline NonLocalNeighborhoodBase & getNeighborhood(const ID & name = "") const;
@@ -78,12 +79,25 @@ public:
   /// register a non-local variable
   inline void registerNonLocalVariable(const ID & variable_name, const ID & nl_variable_name, UInt nb_component);
 
+  /// average the non-local variables
   void averageInternals(const GhostType & ghost_type = _not_ghost);
+
+  /// average the non-local variables
+  //void testo(const GhostType & ghost_type = _not_ghost);
+
+  /// average the internals and compute the non-local stresses 
+  void computeAllNonLocalStresses();
+
+  /// register a new internal needed for the weight computations
+  inline ElementTypeMapReal & registerWeightFunctionInternal(const ID & field_name);
+
+  /// update the flattened version of the weight function internals
+  inline void updateWeightFunctionInternals();
 
 private:
 
   /// create a new neighborhood for a given domain ID
-  void createNeighborhood(const ID & type, Real radius, const ID & name);
+  void createNeighborhood(const ID & weight_func, const ID & neighborhood);
 
   /// flatten the material internal fields needed for the non-local computations
   void flattenInternal(ElementTypeMapReal & internal_flat,
@@ -93,14 +107,24 @@ private:
   /// set the values of the jacobians
   void setJacobians(const FEEngine & fe_engine, const ElementKind & kind);
 
+  /// allocation of elment type maps
+  void initElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map);
+
+  /// allocate the non-local variables
+  void initNonLocalVariables();
+
+  /// copy the results of the averaging in the materials
+  void distributeInternals(ElementKind kind);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
 
+  AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
   AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &);
   AKANTU_GET_MACRO_NOT_CONST(Volumes, volumes, ElementTypeMapReal &)
+  AKANTU_GET_MACRO(NbStressCalls, compute_stress_calls, UInt);
 
   inline const Array<Real> & getJacobians(const ElementType & type, const GhostType & ghost_type) {
     return *jacobians(type, ghost_type);
@@ -145,6 +169,18 @@ private:
 
   /// store the volume of each quadrature point for the non-local weight normalization
   ElementTypeMapReal volumes; 
+
+  /// the spatial dimension
+  const UInt spatial_dimension;
+
+  /// counter for computeStress calls
+  UInt compute_stress_calls;
+
+  /// map to store weight function types from input file
+  std::map<ID, ParserSection> weight_function_types;
+
+  /// map to store the internals needed by the weight functions
+  std::map<ID, ElementTypeMapReal *> weight_function_internals;
 
 };
 

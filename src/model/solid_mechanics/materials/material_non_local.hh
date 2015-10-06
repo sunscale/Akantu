@@ -75,7 +75,21 @@ public:
 
   void neighbourhoodStatistics(const std::string & filename) const;
 
+  /// insert the quadrature points in the neighborhoods of the non-local manager
   virtual void insertQuadsInNeighborhoods(GhostType ghost_type = _not_ghost);
+
+  /// update the values in the non-local internal fields
+  void updateNonLocalInternals(ElementTypeMapReal & non_local_flattened, const ID & field_id, 
+			       const UInt nb_component);
+
+  template<typename T>
+  void weightedAvergageOnNeighbours(const InternalField<T> & to_accumulate,
+				    InternalField<T> & accumulated,
+				    UInt nb_degree_of_freedom,
+				    GhostType ghost_type2 = _not_ghost) const;
+
+  /// constitutive law
+  virtual void computeNonLocalStresses(GhostType ghost_type = _not_ghost) = 0;
 
 protected:
   void updatePairList(const ElementTypeMapArray<Real> & quadrature_points_coordinates);
@@ -88,15 +102,6 @@ protected:
 
   void fillCellList(const ElementTypeMapArray<Real> & quadrature_points_coordinates,
 		    const GhostType & ghost_type);
-
-  /// constitutive law
-  virtual void computeNonLocalStresses(GhostType ghost_type = _not_ghost) = 0;
-
-  template<typename T>
-  void weightedAvergageOnNeighbours(const InternalField<T> & to_accumulate,
-				    InternalField<T> & accumulated,
-				    UInt nb_degree_of_freedom,
-				    GhostType ghost_type2 = _not_ghost) const;
 
   virtual inline UInt getNbDataForElements(const Array<Element> & elements,
 					  SynchronizationTag tag) const;

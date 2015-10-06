@@ -56,6 +56,8 @@ public:
 
   void computeNonLocalStresses(GhostType ghost_type) {};
 
+  void insertQuadsInNeighborhoods(GhostType ghost_type);
+
 /* -------------------------------------------------------------------------- */
 /* Members                                                                   */
 /* -------------------------------------------------------------------------- */

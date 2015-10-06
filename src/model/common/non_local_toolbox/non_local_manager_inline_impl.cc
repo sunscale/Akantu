@@ -37,16 +37,16 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 inline void NonLocalManager::insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords, 
-					Real radius, const ID & type, ID name) {
+					const ID & weight_func, ID neighborhood) {
 
-  if (name == "") name = default_neighborhood;
+  if (neighborhood == "") neighborhood = default_neighborhood;
 
-  NeighborhoodMap::const_iterator it = neighborhoods.find(name);
+  NeighborhoodMap::const_iterator it = neighborhoods.find(neighborhood);
   if (it == neighborhoods.end()) {
-    this->createNeighborhood(type, radius, name);
+    this->createNeighborhood(weight_func, neighborhood);
   }
 
-  neighborhoods[name]->insertQuad(quad, coords);
+  neighborhoods[neighborhood]->insertQuad(quad, coords);
 
 }
 
@@ -69,20 +69,19 @@ inline NonLocalNeighborhoodBase & NonLocalManager::getNeighborhood(const ID & na
 inline void NonLocalManager::computeWeights() {
   AKANTU_DEBUG_IN();
 
-  Mesh & mesh = this->model.getMesh();
-  UInt spatial_dimension = this->model.getSpatialDimension();
-  /// need to resize the arrays
-  for(UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType) g;
-    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, gt, _ek_regular);
-    Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, _ek_regular);
-    for(; it != end; ++it) {
-      UInt nb_element = mesh.getNbElement(*it, gt);
-      UInt nb_quads = this->model.getFEEngine().getNbQuadraturePoints(*it, gt);
-      volumes(*it, gt).resize(nb_element *nb_quads);
-    }
-  }
+  // /// need to resize the arrays
+  // for(UInt g = _not_ghost; g <= _ghost; ++g) {
+  //   GhostType gt = (GhostType) g;
+  //   Mesh::type_iterator it  = mesh.firstType(spatial_dimension, gt, _ek_regular);
+  //   Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, _ek_regular);
+  //   for(; it != end; ++it) {
+  //     UInt nb_element = mesh.getNbElement(*it, gt);
+  //     UInt nb_quads = this->model.getFEEngine().getNbQuadraturePoints(*it, gt);
+  //     volumes(*it, gt).resize(nb_element *nb_quads);
+  //   }
+  // }
 
+  this->updateWeightFunctionInternals();
   this->volumes.clear();
 
   NeighborhoodMap::iterator it = neighborhoods.begin();
@@ -132,7 +131,35 @@ inline void NonLocalManager::registerNonLocalMaterial(Material & new_mat) {
   non_local_materials.push_back(&new_mat);
 }
 
+/* -------------------------------------------------------------------------- */
+inline ElementTypeMapReal & NonLocalManager::registerWeightFunctionInternal(const ID & field_name) {
 
+  AKANTU_DEBUG_IN();
+
+  std::map<ID, ElementTypeMapReal *>::const_iterator it = this->weight_function_internals.find(field_name);
+  if (it == weight_function_internals.end()) {
+    weight_function_internals[field_name] = new ElementTypeMapReal();
+  }
+
+  return *(weight_function_internals[field_name]);
+
+  AKANTU_DEBUG_OUT();
+
+}
+
+/* -------------------------------------------------------------------------- */
+inline void NonLocalManager::updateWeightFunctionInternals() {
+  
+  std::map<ID, ElementTypeMapReal *>::const_iterator it = this->weight_function_internals.begin();
+  std::map<ID, ElementTypeMapReal *>::const_iterator end = this->weight_function_internals.end();
+  for (; it != end; ++it) {
+    it->second->clear();
+    for(UInt g = _not_ghost; g <= _ghost; ++g) {
+      GhostType ghost_type = (GhostType) g;
+      this->flattenInternal(*(it->second), ghost_type, _ek_regular);
+    }   
+  }
+}
 __END_AKANTU__
 
 #endif /* __AKANTU_NON_LOCAL_MANAGER_INLINE_IMPL_CC__ */

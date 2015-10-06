@@ -863,8 +863,6 @@ inline void MaterialNonLocal<spatial_dimension, WeightFunction>::onElementsRemov
 template<UInt spatial_dimension, class WeightFunction>
 void MaterialNonLocal<spatial_dimension, WeightFunction>::insertQuadsInNeighborhoods(GhostType ghost_type) {
 
-  Real radius = this->weight_func->getRadius();
-  const ID & type = this->weight_func->getType();
   NonLocalManager & manager = this->model->getNonLocalManager();
   UInt spatial_dimension = this->model->getSpatialDimension();
   InternalField<Real> quadrature_points_coordinates("quadrature_points_coordinates_tmp_nl", *this);
@@ -898,11 +896,42 @@ void MaterialNonLocal<spatial_dimension, WeightFunction>::insertQuadsInNeighborh
 	for (UInt nq = 0; nq < nb_quad; ++nq) {
 	  q.num_point = nq;
 	  q.global_num = q.element * nb_quad + nq;
-	  manager.insertQuad(q, *quad, radius, type);
+	  manager.insertQuad(q, *quad, this->name);
 	  ++quad;
 	}
 	++elem;
       }
     }
   }
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension, class WeightFunction>
+void MaterialNonLocal<spatial_dimension, WeightFunction>::updateNonLocalInternals(ElementTypeMapReal & non_local_flattened, const ID & field_id, const UInt nb_component) {
+
+  for (ghost_type_t::iterator g = ghost_type_t::begin(); g != ghost_type_t::end(); ++g) {
+    GhostType ghost_type = *g;
+    /// loop over all types in the material
+    typedef ElementTypeMapArray<UInt>:: type_iterator iterator;
+    iterator it = this->element_filter.firstType(spatial_dimension, ghost_type, _ek_regular);
+    iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type, _ek_regular);
+    for(; it != last_type; ++it) {
+      ElementType el_type = *it;
+      Array<Real> & internal = this->getInternal<Real>(field_id)(el_type, ghost_type);
+      Array<Real>::vector_iterator internal_it = internal.begin(nb_component);
+      Array<Real> & internal_flat = non_local_flattened(el_type, ghost_type);
+      Array<Real>::const_vector_iterator internal_flat_it = internal_flat.begin(nb_component);
+      /// loop all elements for the given type
+      const Array<UInt> & filter   = this->element_filter(el_type,ghost_type);
+      UInt nb_elements = filter.getSize();
+      UInt nb_quads = this->getFEEngine().getNbQuadraturePoints(el_type, ghost_type);
+      for (UInt e = 0; e < nb_elements; ++e) {
+	UInt global_el = filter(e);
+	for (UInt q = 0; q < nb_quads; ++q, ++internal_it) {
+	  UInt global_quad = global_el * nb_quads + q;
+	  *internal_it = internal_flat_it[global_quad];
+	}
+      }
+    }
+  }  
 }

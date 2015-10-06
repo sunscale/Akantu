@@ -35,7 +35,7 @@
 using namespace akantu;
 /* -------------------------------------------------------------------------- */
 int main(int argc, char *argv[]) {
-  akantu::initialize("material_weight_computation.dat", argc, argv);
+  akantu::initialize("material.dat", argc, argv);
 
   // some configuration variables
   const UInt spatial_dimension = 2;
@@ -48,13 +48,20 @@ int main(int argc, char *argv[]) {
 
   /// model creation
   SolidMechanicsModel  model(mesh);
- 
+
+  /// creation of material selector
+  MeshDataMaterialSelector<std::string> * mat_selector;
+  mat_selector = new MeshDataMaterialSelector<std::string>("physical_names", model);
+  model.setMaterialSelector(*mat_selector);
+
   /// model initialization changed to use our material
   model.initFull(SolidMechanicsModelOptions(_static, true));
   model.registerNewCustomMaterials< TestMaterial<spatial_dimension> >("test_material");
   model.initMaterials();
   /// dump material index in paraview
   model.addDumpField("material_index");
+  model.addDumpField("grad_u");
+  model.addDumpField("grad_u non local");
   model.dump();
 
   /// apply constant strain field everywhere in the plate
@@ -63,14 +70,42 @@ int main(int argc, char *argv[]) {
   for (UInt i = 0; i < spatial_dimension; ++i)
     applied_strain(i,i) = 2.;
 
-  Array<Real> & grad_u = const_cast<Array<Real> &>(model.getMaterial(0).getInternal<Real>("grad_u")(element_type, ghost_type));
-  Array<Real>::iterator< Matrix<Real> > grad_u_it = grad_u.begin(spatial_dimension, spatial_dimension);
-  Array<Real>::iterator< Matrix<Real> > grad_u_end = grad_u.end(spatial_dimension, spatial_dimension);
-  for (; grad_u_it != grad_u_end; ++grad_u_it) 
-    (*grad_u_it) += applied_strain;
+  /// apply constant grad_u field in all elements
+  for (UInt m = 0; m < model.getNbMaterials(); ++m) {
+    MaterialNonLocal<spatial_dimension, BaseWeightFunction> & mat = dynamic_cast<MaterialNonLocal<spatial_dimension, BaseWeightFunction> & >(model.getMaterial(m));
 
+    Array<Real> & grad_u = const_cast<Array<Real> &> (mat.getInternal<Real>("grad_u")(element_type, ghost_type));
+
+    Array<Real>::iterator< Matrix<Real> > grad_u_it = grad_u.begin(spatial_dimension, spatial_dimension);
+    Array<Real>::iterator< Matrix<Real> > grad_u_end = grad_u.end(spatial_dimension, spatial_dimension);
+    for (; grad_u_it != grad_u_end; ++grad_u_it) 
+      (*grad_u_it) += applied_strain;
+  }
   /// compute the non-local strains
-  model.getNonLocalManager().averageInternals(ghost_type);
-  
+  model.getNonLocalManager().computeAllNonLocalStresses();
+  model.dump();
+
+  /// verify the result: non-local averaging over constant field must
+  /// yield same constant field
+  Real test_result = 0.;
+  Matrix<Real> difference(spatial_dimension, spatial_dimension);
+  for (UInt m = 0; m < model.getNbMaterials(); ++m) {
+    MaterialNonLocal<spatial_dimension, BaseWeightFunction> & mat = dynamic_cast<MaterialNonLocal<spatial_dimension, BaseWeightFunction> & >(model.getMaterial(m));
+
+    Array<Real> & grad_u_nl = const_cast<Array<Real> &> (mat.getInternal<Real>("grad_u non local")(element_type, ghost_type));
+
+    Array<Real>::iterator< Matrix<Real> > grad_u_nl_it = grad_u_nl.begin(spatial_dimension, spatial_dimension);
+    Array<Real>::iterator< Matrix<Real> > grad_u_nl_end = grad_u_nl.end(spatial_dimension, spatial_dimension);
+    for (; grad_u_nl_it != grad_u_nl_end; ++grad_u_nl_it) {
+      difference = (*grad_u_nl_it) - applied_strain;
+      test_result += difference.norm<L_2>();
+    }
+  }
+
+  if (test_result > 10.e-13) {
+    std::cout << "the total norm is: " << test_result << std::endl;
+    return EXIT_FAILURE;
+  }
+
   return EXIT_SUCCESS;
 }

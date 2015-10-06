@@ -49,9 +49,11 @@ __BEGIN_AKANTU__
   (heat)					\
   (contact)                                     \
   (friction)					\
-  (embedded_interface) \
+  (embedded_interface)				\
   (rules)					\
+  (neighborhoods)				\
   (non_local)					\
+  (weight_function)				\
   (user)					\
   (not_defined)
 
@@ -245,7 +247,7 @@ public:
       type = other.type;
       option = other.option;
       parameters = other.parameters;
-      sub_sections_by_type = sub_sections_by_type;
+      sub_sections_by_type = other.sub_sections_by_type;
       setChldrenPointers();
     }
     return *this;

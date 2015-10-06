@@ -1,5 +1,5 @@
 /**
- * @file   non_local_neighborhood.cc
+ * @file   non_local_neighborhood_tmpl.hh
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @date   Sat Sep 26 18:43:30 2015
  *
@@ -26,22 +26,22 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "non_local_neighborhood.hh"
 #include "non_local_manager.hh"
 /* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_TMPL_HH__
+#define __AKANTU_NON_LOCAL_NEIGHBORHOOD_TMPL_HH__
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-NonLocalNeighborhood::NonLocalNeighborhood(NonLocalManager & manager, 
-					   Real radius, 
-					   const ID & type,
-					   const ElementTypeMapReal & quad_coordinates,
-					   const ID & id,
-					   const MemoryID & memory_id)  :
-  NonLocalNeighborhoodBase(manager.getModel(), radius, quad_coordinates, id, memory_id),
-  non_local_manager(&manager),
-  type(type) {
+template<class WeightFunction>
+NonLocalNeighborhood<WeightFunction>::NonLocalNeighborhood(NonLocalManager & manager,
+							   const ElementTypeMapReal & quad_coordinates,
+							   const ID & id,
+							   const MemoryID & memory_id)  :
+  NonLocalNeighborhoodBase(manager.getModel(), quad_coordinates, id, memory_id),
+  non_local_manager(&manager) {
 
   AKANTU_DEBUG_IN();
 
@@ -51,23 +51,16 @@ NonLocalNeighborhood::NonLocalNeighborhood(NonLocalManager & manager,
     pair_weight[ghost_type] = NULL;
   }
 
-  // if (weight_func_type == "base_wf") 
-  this->weight_function = new WeightFunction();
-  this->weight_function->setRadius(radius);
+  this->weight_function = new WeightFunction(this->getNonLocalManager());
 
-  // case damage_wf:
-  //   this->weight_function = new DamagedWeightFunction(); break;
-  // case remove_wf:
-  //   this->weight_function = new RemoveDamagedWeightFunction(); break;
-  // case stress_wf:
-  //   this->weight_function = new StressBasedWeightFunction(); break
-
+  this->registerSubSection(_st_weight_function, "weight_parameter", *weight_function);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-NonLocalNeighborhood::~NonLocalNeighborhood() {
+template<class WeightFunction>
+NonLocalNeighborhood<WeightFunction>::~NonLocalNeighborhood() {
   AKANTU_DEBUG_IN();
 
 
@@ -83,12 +76,13 @@ NonLocalNeighborhood::~NonLocalNeighborhood() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLocalNeighborhood::computeWeights() {
+template<class WeightFunction>
+void NonLocalNeighborhood<WeightFunction>::computeWeights() {
   AKANTU_DEBUG_IN();
 
-  UInt spatial_dimension = this->model.getSpatialDimension();
-  Vector<Real> q1_coord(spatial_dimension);
-  Vector<Real> q2_coord(spatial_dimension);
+  this->weight_function->setRadius(this->non_local_radius);
+  Vector<Real> q1_coord(this->spatial_dimension);
+  Vector<Real> q2_coord(this->spatial_dimension);
  
   UInt nb_weights_per_pair = 2; /// w1: q1->q2, w2: q2->q1
  
@@ -129,14 +123,14 @@ void NonLocalNeighborhood::computeWeights() {
       const QuadraturePoint & q2 = first_pair->second;
 
       /// get the coordinates for the given pair of quads
-      Array<Real>::const_vector_iterator coords_type_1_it = this->quad_coordinates(q1.type, q1.ghost_type).begin(spatial_dimension);
+      Array<Real>::const_vector_iterator coords_type_1_it = this->quad_coordinates(q1.type, q1.ghost_type).begin(this->spatial_dimension);
       q1_coord = coords_type_1_it[q1.global_num];
-      Array<Real>::const_vector_iterator coords_type_2_it = this->quad_coordinates(q2.type, q2.ghost_type).begin(spatial_dimension);
+      Array<Real>::const_vector_iterator coords_type_2_it = this->quad_coordinates(q2.type, q2.ghost_type).begin(this->spatial_dimension);
       q2_coord = coords_type_2_it[q2.global_num];
 
       Array<Real> & quad_volumes_1 = quadrature_points_volumes(q1.type, q1.ghost_type);
       const Array<Real> & jacobians_2 =
-  	this->non_local_manager->getJacobians(q2.type, q2.ghost_type);
+	this->non_local_manager->getJacobians(q2.type, q2.ghost_type);
       const Real & q2_wJ = jacobians_2(q2.global_num);
 
       /// compute distance between the two quadrature points
@@ -149,17 +143,17 @@ void NonLocalNeighborhood::computeWeights() {
       quad_volumes_1(q1.global_num) += weight(0);
 
       if(q2.ghost_type != _ghost && q1.global_num != q2.global_num) {
-  	const Array<Real> & jacobians_1 =
-  	  this->non_local_manager->getJacobians(q1.type, q1.ghost_type);
-  	Array<Real> & quad_volumes_2 =
-  	  quadrature_points_volumes(q2.type, q2.ghost_type);
+	const Array<Real> & jacobians_1 =
+	  this->non_local_manager->getJacobians(q1.type, q1.ghost_type);
+	Array<Real> & quad_volumes_2 =
+	  quadrature_points_volumes(q2.type, q2.ghost_type);
 	/// compute the weight for averaging on q2
-  	const Real & q1_wJ = jacobians_1(q1.global_num);
-  	Real w2 = this->weight_function->operator()(r, q2, q1);
-  	weight(1) = q1_wJ * w2;
-  	quad_volumes_2(q2.global_num) += weight(1);
+	const Real & q1_wJ = jacobians_1(q1.global_num);
+	Real w2 = this->weight_function->operator()(r, q2, q1);
+	weight(1) = q1_wJ * w2;
+	quad_volumes_2(q2.global_num) += weight(1);
       } else
-  	weight(1) = 0.;
+	weight(1) = 0.;
     }
   }
 
@@ -186,8 +180,8 @@ void NonLocalNeighborhood::computeWeights() {
 
       weight(0) *= 1. / q1_volume;
       if(ghost_type2 != _ghost) {
-  	Real q2_volume = quad_volumes_2(q2.global_num);
-  	weight(1) *= 1. / q2_volume;
+	Real q2_volume = quad_volumes_2(q2.global_num);
+	weight(1) *= 1. / q2_volume;
       }
     }
   }
@@ -196,7 +190,8 @@ void NonLocalNeighborhood::computeWeights() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLocalNeighborhood::saveWeights(const std::string & filename) const {
+template<class WeightFunction>
+void NonLocalNeighborhood<WeightFunction>::saveWeights(const std::string & filename) const {
   std::ofstream pout;
 
   std::stringstream sstr;
@@ -210,20 +205,21 @@ void NonLocalNeighborhood::saveWeights(const std::string & filename) const {
   for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
     GhostType ghost_type = (GhostType) gt;
  
-   AKANTU_DEBUG_ASSERT((pair_weight[ghost_type]), "the weights have not been computed yet");
+    AKANTU_DEBUG_ASSERT((pair_weight[ghost_type]), "the weights have not been computed yet");
    
-   Array<Real> & weights = *(pair_weight[ghost_type]);
-   Array<Real>::const_vector_iterator weights_it = weights.begin(2);
-   for (UInt i = 0; i < weights.getSize(); ++i, ++weights_it) 
-     pout << "w1: " << (*weights_it)(0) <<" w2: " << (*weights_it)(1) << std::endl;
+    Array<Real> & weights = *(pair_weight[ghost_type]);
+    Array<Real>::const_vector_iterator weights_it = weights.begin(2);
+    for (UInt i = 0; i < weights.getSize(); ++i, ++weights_it) 
+      pout << "w1: " << (*weights_it)(0) <<" w2: " << (*weights_it)(1) << std::endl;
   }
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLocalNeighborhood::weightedAvergageOnNeighbours(const ElementTypeMapReal & to_accumulate,
-							ElementTypeMapReal & accumulated,
-							UInt nb_degree_of_freedom,
-							const GhostType & ghost_type2) const {
+template<class WeightFunction>
+void NonLocalNeighborhood<WeightFunction>::weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
+								       ElementTypeMapReal & accumulated,
+								       UInt nb_degree_of_freedom,
+								       const GhostType & ghost_type2) const {
   AKANTU_DEBUG_IN();
 
   PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
@@ -257,4 +253,20 @@ void NonLocalNeighborhood::weightedAvergageOnNeighbours(const ElementTypeMapReal
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+template<class WeightFunction>
+void NonLocalNeighborhood<WeightFunction>::updateWeights() {
+  // Update the weights for the non local variable averaging  
+  if(this->weight_function->getUpdateRate() &&
+     (this->non_local_manager->getNbStressCalls() % this->weight_function->getUpdateRate() == 0))  {
+    // this->model->getSynchronizerRegistry().asynchronousSynchronize(_gst_mnl_weight);
+    // this->model->getSynchronizerRegistry().waitEndSynchronize(_gst_mnl_weight);
+    this->computeWeights();
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+
 __END_AKANTU__
+
+#endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_TMPL__ */

@@ -34,19 +34,23 @@
 #include "aka_grid_dynamic.hh"
 #include "grid_synchronizer.hh"
 #include "aka_memory.hh"
+#include "data_accessor.hh"
+#include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
 
 
 __BEGIN_AKANTU__
 
-class NonLocalNeighborhoodBase : public Memory {
+class NonLocalNeighborhoodBase : public Memory,
+				 public DataAccessor,
+				 public Parsable{
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
 
-  NonLocalNeighborhoodBase(const SolidMechanicsModel & model, Real radius,
+  NonLocalNeighborhoodBase(const SolidMechanicsModel & model, 
 			   const ElementTypeMapReal & quad_coordinates,
 			   const ID & id = "neighborhood",
 			   const MemoryID & memory_id = 0);
@@ -59,6 +63,10 @@ public:
   /* ------------------------------------------------------------------------ */
 
 public:
+
+  /// intialize the neighborhood
+  void initNeighborhood();
+
   /// initialize the material computed parameter
   inline void insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords);
 
@@ -78,36 +86,43 @@ public:
   virtual void computeWeights() {};
 
   /// compute the non-local counter part for a given element type map
-  void weightedAvergageOnNeighbours(const ElementTypeMapReal & to_accumulate,
-				    ElementTypeMapReal & accumulated,
-				    UInt nb_degree_of_freedom,
-				    const GhostType & ghost_type2) const {};
+  virtual void weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
+					   ElementTypeMapReal & accumulated,
+					   UInt nb_degree_of_freedom,
+					   const GhostType & ghost_type2) const {};
+
+  /// update the weights for the non-local averaging
+  virtual void updateWeights() {};
 
 protected:
-
-  /// intialize the neighborhood
-  void initNeighborhood();
 
   /// create the grid
   void createGrid();
 
   void cleanupExtraGhostElement(const ElementTypeMap<UInt> & nb_ghost_protected) {};
 
-  // virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-  // 					 SynchronizationTag tag) const;
+  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
+					     SynchronizationTag tag) const {return 0; };
 
-  // virtual inline void packElementData(CommunicationBuffer & buffer,
-  // 				      const Array<Element> & elements,
-  // 				      SynchronizationTag tag) const;
+  virtual inline void packElementData(CommunicationBuffer & buffer,
+  				      const Array<Element> & elements,
+  				      SynchronizationTag tag) const {};
 
-  // virtual inline void unpackElementData(CommunicationBuffer & buffer,
-  // 					const Array<Element> & elements,
-  // 					SynchronizationTag tag);
+  virtual inline void unpackElementData(CommunicationBuffer & buffer,
+  					const Array<Element> & elements,
+  					SynchronizationTag tag) {};
 
   // virtual inline void onElementsAdded(const Array<Element> & element_list);
   // virtual inline void onElementsRemoved(const Array<Element> & element_list,
   // 					const ElementTypeMapArray<UInt> & new_numbering,
   // 					const RemovedElementsEvent & event) {};
+
+/* -------------------------------------------------------------------------- */
+/* Accessors                                                                  */
+/* -------------------------------------------------------------------------- */
+public:
+  AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
+  AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -137,6 +152,9 @@ protected:
 
   /// the quadrature point positions
   const ElementTypeMapReal & quad_coordinates;
+
+  /// the spatial dimension of the problem
+  const UInt spatial_dimension;
 };
 
 /* -------------------------------------------------------------------------- */

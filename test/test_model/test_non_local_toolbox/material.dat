@@ -17,3 +17,12 @@ material test_material base_wf [
 	 	   radius = 0.5
 	 ]	 
 ]
+
+neighborhoods regions [
+	  non_local test_region base_wf [
+          radius = 0.5
+	  weight_function weight_parameter [
+	  		  update_rate = 1
+			  ]	  
+	]	  	  
+]		  

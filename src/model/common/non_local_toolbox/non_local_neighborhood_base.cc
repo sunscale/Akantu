@@ -32,23 +32,25 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(const SolidMechanicsModel & model, 
-						   Real radius,
+NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(const SolidMechanicsModel & model,
 						   const ElementTypeMapReal & quad_coordinates,
 						   const ID & id,
 						   const MemoryID & memory_id)  :
   Memory(id, memory_id),
+  Parsable(_st_non_local, id),
   model(model),
-  non_local_radius(radius),
+  non_local_radius(0.),
   spatial_grid(NULL), 
   is_creating_grid(false), 
   grid_synchronizer(NULL),
-  quad_coordinates(quad_coordinates){
+  quad_coordinates(quad_coordinates),
+  spatial_dimension(this->model.getSpatialDimension()){
 
   AKANTU_DEBUG_IN();
 
+  this->registerParam("radius"       , non_local_radius             , 100.,
+		      _pat_parsable | _pat_readable  , "Non local radius");
 
-  this->initNeighborhood();
 
   AKANTU_DEBUG_OUT();
 }
@@ -70,7 +72,6 @@ void NonLocalNeighborhoodBase::initNeighborhood() {
   Mesh & mesh = this->model.getMesh();
 
   ElementTypeMap<UInt> nb_ghost_protected;
-  UInt spatial_dimension = this->model.getSpatialDimension();
   Mesh::type_iterator it = mesh.firstType(spatial_dimension, _ghost);
   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, _ghost);
   for(; it != last_type; ++it)
@@ -95,7 +96,6 @@ void NonLocalNeighborhoodBase::createGrid() {
   const Vector<Real> & lower_bounds = mesh.getLocalLowerBounds();
   const Vector<Real> & upper_bounds = mesh.getLocalUpperBounds();
   Vector<Real> center = 0.5 * (upper_bounds + lower_bounds);
-  UInt spatial_dimension = this->model.getSpatialDimension();
   Vector<Real> spacing(spatial_dimension, this->non_local_radius * safety_factor);
 
   spatial_grid = new SpatialGrid<QuadraturePoint>(spatial_dimension, spacing, center);
@@ -107,7 +107,6 @@ void NonLocalNeighborhoodBase::createGrid() {
 void NonLocalNeighborhoodBase::updatePairList() {
   AKANTU_DEBUG_IN();
 
-  UInt spatial_dimension = this->model.getSpatialDimension();
   //// loop over all quads -> all cells
   SpatialGrid<QuadraturePoint>::cells_iterator cell_it = spatial_grid->beginCells();
   SpatialGrid<QuadraturePoint>::cells_iterator cell_end = spatial_grid->endCells();
@@ -217,7 +216,6 @@ void NonLocalNeighborhoodBase::saveNeighborCoords(const std::string & filename) 
   /// this function is not optimazed and only used for tests on small meshes
   /// @todo maybe optimize this function for better performance?
 
-  UInt spatial_dimension = this->model.getSpatialDimension();
   Vector<Real> q1_coords(spatial_dimension);
   Vector<Real> q2_coords(spatial_dimension);
   QuadraturePoint q1;
