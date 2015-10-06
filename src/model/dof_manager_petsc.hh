@@ -30,6 +30,8 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
+#include <petscvec.h>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DOF_MANAGER_PETSC_HH__
 #define __AKANTU_DOF_MANAGER_PETSC_HH__
@@ -51,6 +53,10 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// register an array of degree of freedom
+  void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+                    DOFSupportType & support_type);
+
   /// Get the part of the solution corresponding to the dof_id
   virtual void getSolution(const ID & dof_id, Array<Real> & solution_array);
 
@@ -112,13 +118,33 @@ public:
   /// Get the reference of an existing matrix
   SparseMatrixPETSc & getMatrix(const ID & matrix_id);
 
+  /// Get the solution array
+  AKANTU_GET_MACRO_NOT_CONST(Solution, solution, Vec &);
+  /// Get the residual array
+  AKANTU_GET_MACRO_NOT_CONST(Residual, residual, Vec &);
+  /// Get the blocked dofs array
+  //  AKANTU_GET_MACRO(BlockedDOFs, blocked_dofs, const Array<bool> &);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
   typedef std::map<ID, SparseMatrixPETSc *> PETScMatrixMap;
-  Array<Real> residual;
-  PETScMatrixMap aij_matrices;
+
+  /// list of matrices registered to the dof manager
+  PETScMatrixMap petsc_matrices;
+
+  /// PETSc version of the solution
+  Vec solution;
+
+  /// PETSc version of the residual
+  Vec residual;
+
+  /// Communicator associated to PETSc
+  MPI_Comm communicator;
+
+  /// Static handler for petsc to know if it was initialized or not
+  static UInt petsc_dof_manager_instances;
 };
 
 __END_AKANTU__

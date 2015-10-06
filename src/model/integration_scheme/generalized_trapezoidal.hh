@@ -44,7 +44,8 @@ __BEGIN_AKANTU__
  * The two differentiate equation (thermal and kinematic) are :
  * @f{eqnarray*}{
  *  C\dot{u}_{n+1} + Ku_{n+1} = q_{n+1}\\
- *  u_{n+1} = u_{n} + (1-\alpha) \Delta t \dot{u}_{n} + \alpha \Delta t \dot{u}_{n+1}
+ *  u_{n+1} = u_{n} + (1-\alpha) \Delta t \dot{u}_{n} + \alpha \Delta t
+ *\dot{u}_{n+1}
  * @f}
  *
  * To solve it :
@@ -63,7 +64,8 @@ __BEGIN_AKANTU__
  * u^{i+1}_{n+1} &=& u^{i}_{n+1} + b w
  * @f}
  *
- * a and b depends on the resolution method : temperature (u) or temperature rate (@f$\dot{u}@f$)
+ * a and b depends on the resolution method : temperature (u) or temperature
+ *rate (@f$\dot{u}@f$)
  *
  * For temperature : @f$ w = \delta u, a = 1 / (\alpha \Delta t) , b = 1 @f$ @n
  * For temperature rate : @f$ w = \delta \dot{u}, a = 1, b = \alpha \Delta t @f$
@@ -73,47 +75,40 @@ class GeneralizedTrapezoidal : public IntegrationScheme1stOrder {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  GeneralizedTrapezoidal(Real alpha) : alpha(alpha) {};
-  virtual ~GeneralizedTrapezoidal() {};
+  GeneralizedTrapezoidal(Real alpha) : alpha(alpha){};
+  virtual ~GeneralizedTrapezoidal(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  virtual void integrationSchemePred(Real delta_t, Array<Real> & u,
+                                     Array<Real> & u_dot,
+                                     const Array<bool> & blocked_dofs) const;
 
-  virtual void integrationSchemePred(Real delta_t,
-				     Array<Real> & u,
-				     Array<Real> & u_dot,
-				     Array<bool> & blocked_dofs);
+  virtual void integrationSchemeCorrTemp(Real delta_t, Array<Real> & u,
+                                         Array<Real> & u_dot,
+                                         const Array<bool> & blocked_dofs,
+                                         const Array<Real> & delta) const;
 
-  virtual void integrationSchemeCorrTemp(Real delta_t,
-					 Array<Real> & u,
-					 Array<Real> & u_dot,
-					 Array<bool> & blocked_dofs,
-					 Array<Real> & delta);
-
-  virtual void integrationSchemeCorrTempRate(Real delta_t,
-					     Array<Real> & u,
-					     Array<Real> & u_dot,
-					     Array<bool> & blocked_dofs,
-					     Array<Real> & delta);
+  virtual void integrationSchemeCorrTempRate(Real delta_t, Array<Real> & u,
+                                             Array<Real> & u_dot,
+                                             const Array<bool> & blocked_dofs,
+                                             const Array<Real> & delta) const;
 
 public:
   /// the coeffichent @f{b@f} in the description
-  template<IntegrationSchemeCorrectorType type>
-  Real getTemperatureCoefficient(Real delta_t);
+  template <IntegrationSchemeCorrectorType type>
+  Real getTemperatureCoefficient(Real delta_t) const;
 
   /// the coeffichent @f{a@f} in the description
-  template<IntegrationSchemeCorrectorType type>
-  Real getTemperatureRateCoefficient(Real delta_t);
+  template <IntegrationSchemeCorrectorType type>
+  Real getTemperatureRateCoefficient(Real delta_t) const;
 
 private:
-  template<IntegrationSchemeCorrectorType type>
-  void integrationSchemeCorr(Real delta_t,
-			     Array<Real> & u,
-			     Array<Real> & u_dot,
-			     Array<bool> & blocked_dofs,
-			     Array<Real> & delta);
+  template <IntegrationSchemeCorrectorType type>
+  void integrationSchemeCorr(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                             const Array<bool> & blocked_dofs, const Array<Real> & delta) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -133,26 +128,24 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "generalized_trapezoidal_inline_impl.cc"
+#if defined(AKANTU_INCLUDE_INLINE_IMPL)
+#include "generalized_trapezoidal_inline_impl.cc"
 #endif
-
 
 /**
  * Forward Euler (explicit) -> condition on delta_t
  */
 class ForwardEuler : public GeneralizedTrapezoidal {
 public:
-  ForwardEuler() : GeneralizedTrapezoidal(0.) {};
+  ForwardEuler() : GeneralizedTrapezoidal(0.){};
 };
-
 
 /**
  * Trapezoidal rule (implicit), midpoint rule or Crank-Nicolson
  */
 class TrapezoidalRule1 : public GeneralizedTrapezoidal {
 public:
-  TrapezoidalRule1() : GeneralizedTrapezoidal(.5) {};
+  TrapezoidalRule1() : GeneralizedTrapezoidal(.5){};
 };
 
 /**
@@ -160,9 +153,8 @@ public:
  */
 class BackwardEuler : public GeneralizedTrapezoidal {
 public:
-  BackwardEuler() : GeneralizedTrapezoidal(1.) {};
+  BackwardEuler() : GeneralizedTrapezoidal(1.){};
 };
-
 
 __END_AKANTU__
 

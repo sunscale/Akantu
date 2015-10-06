@@ -101,6 +101,7 @@ public:
 
   AKANTU_GET_MACRO(MatrixType, matrix_type, const MatrixType &);
 
+  AKANTU_GET_MACRO(Offset, offset, UInt);
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -119,6 +120,9 @@ protected:
 
   /// number of non zero element
   UInt nb_non_zero;
+
+  /// Offset indexes
+  UInt offset;
 };
 
 Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);

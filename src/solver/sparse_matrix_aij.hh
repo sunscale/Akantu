@@ -52,7 +52,7 @@ __BEGIN_AKANTU_UNORDERED_MAP__
  * http://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
  * http://burtleburtle.net/bob/hash/doobs.html
  */
-template <typename a, typename b> struct hash<std::pair<a, b>> {
+template <typename a, typename b> struct hash<std::pair<a, b> > {
 public:
   hash() : ah(), bh() {}
   size_t operator()(const std::pair<a, b> & p) const {
@@ -78,10 +78,10 @@ class SparseMatrixAIJ : public SparseMatrix {
   /* ------------------------------------------------------------------------ */
 public:
   SparseMatrixAIJ(DOFManager & dof_manager, const MatrixType & matrix_type,
-                  const ID & id = "sparse_matrix",
+                  const ID & id = "sparse_matrix_aij",
                   const MemoryID & memory_id = 0);
 
-  SparseMatrixAIJ(const SparseMatrix & matrix, const ID & id = "sparse_matrix",
+  SparseMatrixAIJ(const SparseMatrix & matrix, const ID & id = "sparse_matrix_aij",
                   const MemoryID & memory_id = 0);
 
   virtual ~SparseMatrixAIJ();
@@ -119,6 +119,10 @@ public:
 
   /// add matrix assuming the profile are the same
   virtual void add(const SparseMatrix & matrix, Real alpha);
+
+  /// Equivalent of *gemv in blas
+  virtual void matVecMul(const Array<Real> & x, Array<Real> & y,
+                         Real alpha = 1., Real beta = 0.);
 
   /* ------------------------------------------------------------------------ */
   /// accessor to A_{ij} - if (i, j) not present it returns 0

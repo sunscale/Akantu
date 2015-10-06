@@ -36,6 +36,7 @@ package_declare(PETSc EXTERNAL
 
 package_declare_sources(petsc
   model/dof_manager_petsc.hh
+  model/dof_manager_petsc.cc
   solver/sparse_matrix_petsc.hh
   solver/sparse_matrix_petsc.cc
   solver/solver_petsc.hh

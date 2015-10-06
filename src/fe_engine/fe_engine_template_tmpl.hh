@@ -961,11 +961,11 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
   mshapes_it = modified_shapes->begin(lmat_size, nb_degree_of_freedom);
   Array<Real>::matrix_iterator lmat = local_mat->begin(lmat_size, lmat_size);
   Array<Real>::const_matrix_iterator field_it =
-      field.begin_reinterpret(nb_degree_of_freedom, 1);
+      field.begin_reinterpret(nb_degree_of_freedom, 1, field.getSize());
 
   for (UInt q = 0; q < vect_size; ++q, ++lmat, ++mshapes_it, ++field_it) {
     Matrix<Real> & mat = *lmat;
-    Matrix<Real> & f_mat = *field_it;
+    const Matrix<Real> & f_mat = *field_it;
     Matrix<Real> f_times_mat(lmat_size, nb_degree_of_freedom);
 
     f_times_mat.mul<false, true>(f_mat, *mshapes_it);

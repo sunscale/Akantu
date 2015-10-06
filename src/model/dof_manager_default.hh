@@ -34,9 +34,11 @@
 #ifndef __AKANTU_DOF_MANAGER_DEFAULT_HH__
 #define __AKANTU_DOF_MANAGER_DEFAULT_HH__
 
-__BEGIN_AKANTU__
-
+namespace akantu {
 class SparseMatrixAIJ;
+}
+
+__BEGIN_AKANTU__
 
 class DOFManagerDefault : public DOFManager {
   /* ------------------------------------------------------------------------ */
@@ -51,6 +53,10 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// register an array of degree of freedom
+  void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+                    DOFSupportType & support_type);
+
   /// Get the part of the solution corresponding to the dof_id
   virtual void getSolution(const ID & dof_id, Array<Real> & solution_array);
 
@@ -69,7 +75,7 @@ public:
       const ElementType & type, const GhostType & ghost_type,
       Real scale_factor = 1.);
   /**
-   * Assemble elementary values to the global residual array. The dof number is
+   * Assemble elementary values to the global matrix. The dof number is
    * implicitly considered as conn(el, n) * nb_nodes_per_element + d.
    * With 0 < n < nb_nodes_per_element and 0 < d < nb_dof_per_node
    **/

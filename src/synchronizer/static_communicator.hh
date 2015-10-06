@@ -35,6 +35,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "aka_array.hh"
 #include "aka_event_handler_manager.hh"
 
 /* -------------------------------------------------------------------------- */
@@ -43,17 +44,17 @@
 #define AKANTU_COMMUNICATOR_LIST_0 BOOST_PP_SEQ_NIL
 
 #include "static_communicator_dummy.hh"
-#define AKANTU_COMMUNICATOR_LIST_1					\
-  BOOST_PP_SEQ_PUSH_BACK(AKANTU_COMMUNICATOR_LIST_0,			\
-			 (_communicator_dummy,	(StaticCommunicatorDummy, BOOST_PP_NIL)))
+#define AKANTU_COMMUNICATOR_LIST_1                                      \
+  BOOST_PP_SEQ_PUSH_BACK(AKANTU_COMMUNICATOR_LIST_0,                    \
+                         (_communicator_dummy,  (StaticCommunicatorDummy, BOOST_PP_NIL)))
 
 #if defined(AKANTU_USE_MPI)
 #  include "static_communicator_mpi.hh"
-#  define AKANTU_COMMUNICATOR_LIST_ALL					\
-  BOOST_PP_SEQ_PUSH_BACK(AKANTU_COMMUNICATOR_LIST_1,			\
-			 (_communicator_mpi, (StaticCommunicatorMPI, BOOST_PP_NIL)))
+#  define AKANTU_COMMUNICATOR_LIST_ALL                                  \
+  BOOST_PP_SEQ_PUSH_BACK(AKANTU_COMMUNICATOR_LIST_1,                    \
+                         (_communicator_mpi, (StaticCommunicatorMPI, BOOST_PP_NIL)))
 #else
-#  define AKANTU_COMMUNICATOR_LIST_ALL	AKANTU_COMMUNICATOR_LIST_1
+#  define AKANTU_COMMUNICATOR_LIST_ALL  AKANTU_COMMUNICATOR_LIST_1
 #endif // AKANTU_COMMUNICATOR_LIST
 
 #include "real_static_communicator.hh"
@@ -89,13 +90,13 @@ class StaticCommunicator : public EventHandlerManager<CommunicatorEventHandler>{
   /* ------------------------------------------------------------------------ */
 protected:
   StaticCommunicator(int & argc, char ** & argv,
-		     CommunicatorType type = _communicator_mpi);
+                     CommunicatorType type = _communicator_mpi);
 
 public:
   virtual ~StaticCommunicator() {
     FinalizeCommunicatorEvent *event = new FinalizeCommunicatorEvent(*this);
     this->sendEvent(*event);
- 
+
    delete event;
     delete real_static_communicator;
   };
@@ -108,39 +109,98 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Point to Point                                                           */
   /* ------------------------------------------------------------------------ */
+  template<typename T> inline void send(Array<T> & values,
+                                        Int receiver, Int tag) {
+    return this->send(values.storage(), values.getSize(),
+                      receiver, tag);
+  }
   template<typename T> inline void send(T * buffer, Int size,
-					Int receiver, Int tag);
+                                        Int receiver, Int tag);
+
+  /* ------------------------------------------------------------------------ */
+  template<typename T> inline void receive(Array<T> & values,
+                                           Int sender, Int tag) {
+    return this->receive(values.storage(), values.getSize(),
+                         sender, tag);
+  }
   template<typename T> inline void receive(T * buffer, Int size,
-					   Int sender, Int tag);
+                                           Int sender, Int tag);
 
+  /* ------------------------------------------------------------------------ */
+  template<typename T> inline CommunicationRequest * asyncSend(Array<T> & values,
+                                                               Int receiver,
+                                                               Int tag) {
+    return this->asyncSend(values.storage(), values.getSize(),
+                           receiver, tag);
+  }
   template<typename T> inline CommunicationRequest * asyncSend(T * buffer,
-							       Int size,
-							       Int receiver,
-							       Int tag);
-  template<typename T> inline CommunicationRequest * asyncReceive(T * buffer,
-								  Int size,
-								  Int sender,
-								  Int tag);
+                                                               Int size,
+                                                               Int receiver,
+                                                               Int tag);
 
+  /* ------------------------------------------------------------------------ */
+  template<typename T> inline CommunicationRequest * asyncReceive(Array<T> & values,
+                                                                  Int sender,
+                                                                  Int tag) {
+    return this->asyncReceive(values.storage(), values.getSize(),
+                              sender, tag);
+  }
+  template<typename T> inline CommunicationRequest * asyncReceive(T * buffer,
+                                                                  Int size,
+                                                                  Int sender,
+                                                                  Int tag);
+
+  /* ------------------------------------------------------------------------ */
   template<typename T> inline void probe(Int sender, Int tag,
                                          CommunicationStatus & status);
 
   /* ------------------------------------------------------------------------ */
   /* Collectives                                                              */
   /* ------------------------------------------------------------------------ */
+  template<typename T> inline void allReduce(Array<T> & values,
+                                             const SynchronizerOperation & op) {
+    this->allReduce(values.storage(), values.getSize(), op);
+  }
   template<typename T> inline void allReduce(T * values, int nb_values,
-					     const SynchronizerOperation & op);
+                                             const SynchronizerOperation & op);
 
+  /* ------------------------------------------------------------------------ */
+  template<typename T> inline void allGather(Array<T> & values) {
+    this->allGather(values.storage(), values.getSize());
+  }
   template<typename T> inline void allGather(T * values, int nb_values);
+
+  /* ------------------------------------------------------------------------ */
+  template<typename T> inline void allGatherV(Array<T> & values) {
+    this->allGatherV(values.storage(), values.getSize());
+  }
   template<typename T> inline void allGatherV(T * values, int * nb_values);
+
+  /* ------------------------------------------------------------------------ */
+  template<typename T> inline void gather(Array<T> & values,
+                                          int root = 0) {
+    this->gather(values.storage(), values.getSize(), root);
+  }
 
   template<typename T> inline void gather(T * values, int nb_values,
                                           int root = 0);
+
+  /* ------------------------------------------------------------------------ */
+  template<typename T> inline void gatherV(Array<T> & values,
+                                           int root = 0) {
+     this->gatherV(values.storage(), values.getSize(), root);
+  }
   template<typename T> inline void gatherV(T * values, int * nb_values,
                                            int root = 0);
+
+  /* ------------------------------------------------------------------------ */
+  template<typename T> inline void broadcast(Array<T> & values,
+                                             int root = 0) {
+    this->broadcast(values.storage(), values.getSize(), root);
+  }
   template<typename T> inline void broadcast(T * values, int nb_values,
                                              int root = 0);
-
+  /* ------------------------------------------------------------------------ */
   inline void barrier();
 
   /* ------------------------------------------------------------------------ */
@@ -170,7 +230,7 @@ public:
   static StaticCommunicator & getStaticCommunicator(CommunicatorType type = _communicator_mpi);
 
   static StaticCommunicator & getStaticCommunicator(int & argc, char ** & argv,
-						    CommunicatorType type = _communicator_mpi);
+                                                    CommunicatorType type = _communicator_mpi);
 
   static bool isInstantiated() { return is_instantiated; };
 

@@ -30,6 +30,10 @@
 /* -------------------------------------------------------------------------- */
 #include "model_solver.hh"
 #include "dof_manager.hh"
+
+#if defined(AKANTU_USE_MPI)
+# include "mpi_type_wrapper.hh"
+#endif
 #if defined(AKANTU_USE_MUMPS)
 #include "dof_manager_default.hh"
 #endif

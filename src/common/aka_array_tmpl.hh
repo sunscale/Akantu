@@ -42,10 +42,10 @@ __BEGIN_AKANTU__
 template <class T, bool is_scal>
 inline T & Array<T, is_scal>::operator()(UInt i, UInt j) {
   AKANTU_DEBUG_ASSERT(size > 0,
-		      "The array \"" << id << "\" is empty");
+                      "The array \"" << id << "\" is empty");
   AKANTU_DEBUG_ASSERT((i < size) && (j < nb_component),
-		      "The value at position [" << i << "," << j
-		      << "] is out of range in array \"" << id << "\"");
+                      "The value at position [" << i << "," << j
+                      << "] is out of range in array \"" << id << "\"");
   return values[i*nb_component + j];
 }
 
@@ -53,10 +53,10 @@ inline T & Array<T, is_scal>::operator()(UInt i, UInt j) {
 template <class T, bool is_scal>
 inline const T & Array<T, is_scal>::operator()(UInt i, UInt j) const {
   AKANTU_DEBUG_ASSERT(size > 0,
-		      "The array \"" << id << "\" is empty");
+                      "The array \"" << id << "\" is empty");
   AKANTU_DEBUG_ASSERT((i < size) && (j < nb_component),
-		      "The value at position [" << i << "," << j
-		      << "] is out of range in array \"" << id << "\"");
+                      "The value at position [" << i << "," << j
+                      << "] is out of range in array \"" << id << "\"");
   return values[i*nb_component + j];
 }
 
@@ -118,7 +118,7 @@ template <class T, bool is_scal>
 template<template<typename> class C>
 inline void Array<T, is_scal>::push_back(const C<T> & new_elem) {
   AKANTU_DEBUG_ASSERT(nb_component == new_elem.size(),
-		      "The vector("<< new_elem.size() <<") as not a size compatible with the Array (nb_component=" << nb_component << ").");
+                      "The vector("<< new_elem.size() <<") as not a size compatible with the Array (nb_component=" << nb_component << ").");
   UInt pos = size;
   resizeUnitialized(size+1);
 
@@ -155,9 +155,9 @@ template <class T, bool is_scal>
 inline void Array<T, is_scal>::erase(UInt i){
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT((size > 0),
-		      "The array is empty");
+                      "The array is empty");
   AKANTU_DEBUG_ASSERT((i < size),
-		      "The element at position [" << i << "] is out of range (" << i << ">=" << size << ")");
+                      "The element at position [" << i << "] is out of range (" << i << ">=" << size << ")");
 
 
   if(i != (size - 1)) {
@@ -182,7 +182,7 @@ inline void Array<T, is_scal>::erase(UInt i){
 template <class T, bool is_scal>
 Array<T, is_scal> & Array<T, is_scal>::operator-=(const Array<T, is_scal> & vect) {
   AKANTU_DEBUG_ASSERT((size == vect.size) && (nb_component == vect.nb_component),
-		      "The too array don't have the same sizes");
+                      "The too array don't have the same sizes");
 
   T * a = values;
   T * b = vect.storage();
@@ -206,7 +206,7 @@ Array<T, is_scal> & Array<T, is_scal>::operator-=(const Array<T, is_scal> & vect
 template <class T, bool is_scal>
 Array<T, is_scal> & Array<T, is_scal>::operator+=(const Array<T, is_scal> & vect) {
   AKANTU_DEBUG_ASSERT((size == vect.size) && (nb_component == vect.nb_component),
-		      "The too array don't have the same sizes");
+                      "The too array don't have the same sizes");
 
   T * a = values;
   T * b = vect.storage();
@@ -260,7 +260,7 @@ template <class T, bool is_scal>
 template<template<typename> class C>
 inline void Array<T, is_scal>::set(const C<T> & vm) {
   AKANTU_DEBUG_ASSERT(nb_component == vm.size(),
-		      "The size of the object does not match the number of components");
+                      "The size of the object does not match the number of components");
   for (T * it = values;
        it < values + nb_component * size;
        it += nb_component) {
@@ -365,14 +365,14 @@ template <class T, bool is_scal>
 Array<T, is_scal>::~Array () {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG(dblAccessory, "Freeing "
-	       << printMemorySize<T>(allocated_size*nb_component)
-	       << " (" << id <<")");
+               << printMemorySize<T>(allocated_size*nb_component)
+               << " (" << id <<")");
 
   if(values){
     if(!is_scal)
       for (UInt i = 0; i < size * nb_component; ++i) {
-	T * obj = values+i;
-	obj->~T();
+        T * obj = values+i;
+        obj->~T();
       }
     free(values);
   }
@@ -390,17 +390,17 @@ void Array<T, is_scal>::allocate(UInt size,
   } else {
     values = static_cast<T*>(malloc(nb_component * size * sizeof(T)));
     AKANTU_DEBUG_ASSERT(values != NULL,
-			"Cannot allocate "
-			<< printMemorySize<T>(size*nb_component)
-			<< " (" << id <<")");
+                        "Cannot allocate "
+                        << printMemorySize<T>(size*nb_component)
+                        << " (" << id <<")");
   }
 
   if (values == NULL) {
     this->size = this->allocated_size = 0;
   } else {
     AKANTU_DEBUG(dblAccessory, "Allocated "
-		 << printMemorySize<T>(size*nb_component)
-		 << " (" << id <<")");
+                 << printMemorySize<T>(size*nb_component)
+                 << " (" << id <<")");
     this->size = this->allocated_size = size;
   }
 
@@ -443,15 +443,15 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size) {
   if(new_size <= allocated_size) {
     if(allocated_size - new_size > AKANTU_MIN_ALLOCATION) {
       AKANTU_DEBUG(dblAccessory, "Freeing "
-		   << printMemorySize<T>((allocated_size - size)*nb_component)
-		   << " (" << id <<")");
+                   << printMemorySize<T>((allocated_size - size)*nb_component)
+                   << " (" << id <<")");
 
       // Normally there are no allocation problem when reducing an array
       T * tmp_ptr = static_cast<T*>(realloc(values, new_size * nb_component * sizeof(T)));
       if(new_size != 0 && tmp_ptr == NULL) {
-	AKANTU_DEBUG_ERROR("Cannot free data (" << id << ")"
-			   << " [current allocated size : " << allocated_size << " | "
-			   << "requested size : " << new_size << "]");
+        AKANTU_DEBUG_ERROR("Cannot free data (" << id << ")"
+                           << " [current allocated size : " << allocated_size << " | "
+                           << "requested size : " << new_size << "]");
       }
       values = tmp_ptr;
       allocated_size = new_size;
@@ -470,15 +470,15 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size) {
   T *tmp_ptr = static_cast<T*>(realloc(values, size_to_alloc * nb_component * sizeof(T)));
   AKANTU_DEBUG_ASSERT(tmp_ptr != NULL,
                       "Cannot allocate "
-		      << printMemorySize<T>(size_to_alloc * nb_component));
+                      << printMemorySize<T>(size_to_alloc * nb_component));
   if (tmp_ptr == NULL) {
     AKANTU_DEBUG_ERROR("Cannot allocate more data (" << id << ")"
-		       << " [current allocated size : " << allocated_size << " | "
-		       << "requested size : " << new_size << "]");
+                       << " [current allocated size : " << allocated_size << " | "
+                       << "requested size : " << new_size << "]");
   }
 
   AKANTU_DEBUG(dblAccessory, "Allocating "
-	       << printMemorySize<T>((size_to_alloc - allocated_size)*nb_component));
+               << printMemorySize<T>((size_to_alloc - allocated_size)*nb_component));
 
   allocated_size = size_to_alloc;
   size = new_size;
@@ -496,9 +496,9 @@ void Array<T, is_scal>::extendComponentsInterlaced(UInt multiplicator,
   if (multiplicator == 1) return;
 
   AKANTU_DEBUG_ASSERT(multiplicator > 1,
-  		      "invalid multiplicator");
+                      "invalid multiplicator");
   AKANTU_DEBUG_ASSERT(nb_component%block_size == 0,
-		      "stride must divide actual number of components");
+                      "stride must divide actual number of components");
 
   values = static_cast<T*>(realloc(values, nb_component*multiplicator*size* sizeof(T)));
 
@@ -509,8 +509,8 @@ void Array<T, is_scal>::extendComponentsInterlaced(UInt multiplicator,
       UInt m = new_component - j -1;
       UInt n = m/multiplicator;
       for (UInt l = 0,p=block_size-1;  l < block_size; ++l,--p) {
-	values[k*nb_component*multiplicator+m*block_size+p] =
-	  values[k*nb_component+n*block_size+p];
+        values[k*nb_component*multiplicator+m*block_size+p] =
+          values[k*nb_component+n*block_size+p];
       }
     }
   }
@@ -549,8 +549,8 @@ Int Array<T, is_scal>::find(T elem[]) const {
       UInt c = 0;
       for(; (c < nb_component) && (*cit == elem[c]); ++c, ++cit);
       if(c == nb_component) {
-	AKANTU_DEBUG_OUT();
-	return i;
+        AKANTU_DEBUG_OUT();
+        return i;
       }
     }
     it += nb_component;
@@ -595,13 +595,13 @@ public:
 
       stream << space << " + values         : {";
       for (UInt i = 0; i < vect.getSize(); ++i) {
-	stream << "{";
-	for (UInt j = 0; j < vect.getNbComponent(); ++j) {
-	  stream << vect(i, j);
-	  if(j != vect.getNbComponent() - 1) stream << ", ";
-	}
-	stream << "}";
-	if(i != vect.getSize() - 1) stream << ", ";
+        stream << "{";
+        for (UInt j = 0; j < vect.getNbComponent(); ++j) {
+          stream << vect(i, j);
+          if(j != vect.getNbComponent() - 1) stream << ", ";
+        }
+        stream << "}";
+        if(i != vect.getSize() - 1) stream << ", ";
       }
       stream << "}" << std::endl;
     }
@@ -613,8 +613,8 @@ class ArrayPrintHelper<false> {
 public:
   template<typename T>
   static void print_content(__attribute__((unused)) const Array<T> & vect,
-			    __attribute__((unused)) std::ostream & stream,
-			    __attribute__((unused)) int indent) { }
+                            __attribute__((unused)) std::ostream & stream,
+                            __attribute__((unused)) int indent) { }
 };
 
 
@@ -636,10 +636,10 @@ void Array<T, is_scal>::printself(std::ostream & stream, int indent) const {
   stream << space << " + nb_component   : " << this->nb_component << std::endl;
   stream << space << " + allocated size : " << this->allocated_size << std::endl;
   stream << space << " + memory size    : "
-	 << printMemorySize<T>(allocated_size*nb_component) << std::endl;
+         << printMemorySize<T>(allocated_size*nb_component) << std::endl;
   if(!AKANTU_DEBUG_LEVEL_IS_TEST())
     stream << space << " + address        : " << std::hex << this->values
-	   << std::dec << std::endl;
+           << std::dec << std::endl;
 
   stream.precision(prec);
   stream.flags(ff);
@@ -691,9 +691,9 @@ public:
   }
 
   iterator_internal(pointer wrapped)  : _offset(wrapped->size()),
-					initial(wrapped->storage()),
-					ret(const_cast<internal_pointer>(wrapped)),
-					ret_ptr(wrapped->storage()) {
+                                        initial(wrapped->storage()),
+                                        ret(const_cast<internal_pointer>(wrapped)),
+                                        ret_ptr(wrapped->storage()) {
   }
 
   iterator_internal(const iterator_internal & it) {
@@ -834,8 +834,8 @@ protected:
 template <class T, bool is_scal>
 inline typename Array<T, is_scal>::vector_iterator Array<T, is_scal>::begin(UInt n) {
   AKANTU_DEBUG_ASSERT(nb_component == n,
-		      "The iterator is not compatible with the type Array("
-		      << n<< ")");
+                      "The iterator is not compatible with the type Array("
+                      << n<< ")");
   return vector_iterator(new Vector<T>(values, n));
 }
 
@@ -849,8 +849,8 @@ inline typename Array<T, is_scal>::vector_iterator Array<T, is_scal>::begin(UInt
 template <class T, bool is_scal>
 inline typename Array<T, is_scal>::vector_iterator Array<T, is_scal>::end(UInt n) {
   AKANTU_DEBUG_ASSERT(nb_component == n,
-		      "The iterator is not compatible with the type Array("
-		      << n<< ")");
+                      "The iterator is not compatible with the type Array("
+                      << n<< ")");
   return vector_iterator(new Vector<T>(values + nb_component * size,
                                              n));
 }
@@ -865,8 +865,8 @@ inline typename Array<T, is_scal>::vector_iterator Array<T, is_scal>::end(UInt n
 template <class T, bool is_scal>
 inline typename Array<T, is_scal>::const_vector_iterator Array<T, is_scal>::begin(UInt n) const {
   AKANTU_DEBUG_ASSERT(nb_component == n,
-		      "The iterator is not compatible with the type Array("
-		      << n<< ")");
+                      "The iterator is not compatible with the type Array("
+                      << n<< ")");
   return const_vector_iterator(new Vector<T>(values, n));
 }
 
@@ -880,8 +880,8 @@ inline typename Array<T, is_scal>::const_vector_iterator Array<T, is_scal>::begi
 template <class T, bool is_scal>
 inline typename Array<T, is_scal>::const_vector_iterator Array<T, is_scal>::end(UInt n) const {
   AKANTU_DEBUG_ASSERT(nb_component == n,
-		      "The iterator is not compatible with the type Array("
-		      << n<< ")");
+                      "The iterator is not compatible with the type Array("
+                      << n<< ")");
   return const_vector_iterator(new Vector<T>(values + nb_component * size,
                                                    n));
 }
@@ -906,10 +906,10 @@ template <class T, bool is_scal>
 inline typename Array<T, is_scal>::vector_iterator
 Array<T, is_scal>::begin_reinterpret(UInt n, __attribute__((unused)) UInt size) {
   AKANTU_DEBUG_ASSERT(n * size == this->nb_component * this->size,
-		      "The new values for size (" << size
-		      << ") and nb_component (" << n
-		      << ") are not compatible with the one of this array("
-		      << this->size << "," << this->nb_component << ")");
+                      "The new values for size (" << size
+                      << ") and nb_component (" << n
+                      << ") are not compatible with the one of this array("
+                      << this->size << "," << this->nb_component << ")");
   return vector_iterator(new Vector<T>(values, n));
 }
 
@@ -925,10 +925,10 @@ template <class T, bool is_scal>
 inline typename Array<T, is_scal>::vector_iterator
 Array<T, is_scal>::end_reinterpret(UInt n, UInt size) {
   AKANTU_DEBUG_ASSERT(n * size == this->nb_component * this->size,
-		      "The new values for size (" << size
-		      << ") and nb_component (" << n
-		      << ") are not compatible with the one of this array("
-		      << this->size << "," << this->nb_component << ")");
+                      "The new values for size (" << size
+                      << ") and nb_component (" << n
+                      << ") are not compatible with the one of this array("
+                      << this->size << "," << this->nb_component << ")");
   return vector_iterator(new Vector<T>(values + n * size, n));
 }
 
@@ -945,10 +945,10 @@ template <class T, bool is_scal>
 inline typename Array<T, is_scal>::const_vector_iterator
 Array<T, is_scal>::begin_reinterpret(UInt n, __attribute__((unused)) UInt size) const {
   AKANTU_DEBUG_ASSERT(n * size == this->nb_component * this->size,
-		      "The new values for size (" << size
-		      << ") and nb_component (" << n
-		      << ") are not compatible with the one of this array("
-		      << this->size << "," << this->nb_component << ")");
+                      "The new values for size (" << size
+                      << ") and nb_component (" << n
+                      << ") are not compatible with the one of this array("
+                      << this->size << "," << this->nb_component << ")");
   return const_vector_iterator(new Vector<T>(values, n));
 }
 
@@ -964,10 +964,10 @@ template <class T, bool is_scal>
 inline typename Array<T, is_scal>::const_vector_iterator
 Array<T, is_scal>::end_reinterpret(UInt n, UInt size) const {
   AKANTU_DEBUG_ASSERT(n * size == this->nb_component * this->size,
-		      "The new values for size (" << size
-		      << ") and nb_component (" << n
-		      << ") are not compatible with the one of this array("
-		      << this->size << "," << this->nb_component << ")");
+                      "The new values for size (" << size
+                      << ") and nb_component (" << n
+                      << ") are not compatible with the one of this array("
+                      << this->size << "," << this->nb_component << ")");
   return const_vector_iterator(new Vector<T>(values + n * size, n));
 }
 
@@ -985,8 +985,8 @@ Array<T, is_scal>::end_reinterpret(UInt n, UInt size) const {
 template <class T, bool is_scal>
 inline typename Array<T, is_scal>::matrix_iterator Array<T, is_scal>::begin(UInt m, UInt n) {
   AKANTU_DEBUG_ASSERT(nb_component == n*m,
-		      "The iterator is not compatible with the type Matrix("
-		      << m << "," << n<< ")");
+                      "The iterator is not compatible with the type Matrix("
+                      << m << "," << n<< ")");
   return matrix_iterator(new Matrix<T>(values, m, n));
 }
 
@@ -1001,8 +1001,8 @@ inline typename Array<T, is_scal>::matrix_iterator Array<T, is_scal>::begin(UInt
 template <class T, bool is_scal>
 inline typename Array<T, is_scal>::matrix_iterator Array<T, is_scal>::end(UInt m, UInt n) {
   AKANTU_DEBUG_ASSERT(nb_component == n*m,
-		      "The iterator is not compatible with the type Matrix("
-		      << m << "," << n<< ")");
+                      "The iterator is not compatible with the type Matrix("
+                      << m << "," << n<< ")");
   return matrix_iterator(new Matrix<T>(values + nb_component * size, m, n));
 }
 
@@ -1017,8 +1017,8 @@ inline typename Array<T, is_scal>::matrix_iterator Array<T, is_scal>::end(UInt m
 template <class T, bool is_scal>
 inline typename Array<T, is_scal>::const_matrix_iterator Array<T, is_scal>::begin(UInt m, UInt n) const {
   AKANTU_DEBUG_ASSERT(nb_component == n*m,
-		      "The iterator is not compatible with the type Matrix("
-		      << m << "," << n<< ")");
+                      "The iterator is not compatible with the type Matrix("
+                      << m << "," << n<< ")");
   return const_matrix_iterator(new Matrix<T>(values, m, n));
 }
 
@@ -1033,8 +1033,8 @@ inline typename Array<T, is_scal>::const_matrix_iterator Array<T, is_scal>::begi
 template <class T, bool is_scal>
 inline typename Array<T, is_scal>::const_matrix_iterator Array<T, is_scal>::end(UInt m, UInt n) const {
   AKANTU_DEBUG_ASSERT(nb_component == n*m,
-		      "The iterator is not compatible with the type Matrix("
-		      << m << "," << n<< ")");
+                      "The iterator is not compatible with the type Matrix("
+                      << m << "," << n<< ")");
   return const_matrix_iterator(new Matrix<T>(values + nb_component * size, m, n));
 }
 
@@ -1059,10 +1059,10 @@ template <class T, bool is_scal>
 inline typename Array<T, is_scal>::matrix_iterator
 Array<T, is_scal>::begin_reinterpret(UInt m, UInt n, __attribute__((unused)) UInt size) {
   AKANTU_DEBUG_ASSERT(n * m * size == this->nb_component * this->size,
-		      "The new values for size (" << size
-		      << ") and nb_component (" << m << "," << n << " = " << n * m
-		      << ") are not compatible with the one of this array("
-		      << this->size << "," << this->nb_component << ")");
+                      "The new values for size (" << size
+                      << ") and nb_component (" << m << "," << n << " = " << n * m
+                      << ") are not compatible with the one of this array("
+                      << this->size << "," << this->nb_component << ")");
   return matrix_iterator(new Matrix<T>(values, m, n));
 }
 
@@ -1079,10 +1079,10 @@ template <class T, bool is_scal>
 inline typename Array<T, is_scal>::matrix_iterator
 Array<T, is_scal>::end_reinterpret(UInt m, UInt n, UInt size) {
   AKANTU_DEBUG_ASSERT(n * m * size == this->nb_component * this->size,
-		      "The new values for size (" << size
-		      << ") and nb_component (" << m << "," << n << " = " << n * m
-		      << ") are not compatible with the one of this array("
-		      << this->size << "," << this->nb_component << ")");
+                      "The new values for size (" << size
+                      << ") and nb_component (" << m << "," << n << " = " << n * m
+                      << ") are not compatible with the one of this array("
+                      << this->size << "," << this->nb_component << ")");
   return matrix_iterator(new Matrix<T>(values + n * m * size, m, n));
 }
 
@@ -1100,10 +1100,10 @@ template <class T, bool is_scal>
 inline typename Array<T, is_scal>::const_matrix_iterator
 Array<T, is_scal>::begin_reinterpret(UInt m, UInt n, __attribute__((unused)) UInt size) const {
   AKANTU_DEBUG_ASSERT(n * m * size == this->nb_component * this->size,
-		      "The new values for size (" << size
-		      << ") and nb_component (" << m << "," << n << " = " << n * m
-		      << ") are not compatible with the one of this array("
-		      << this->size << "," << this->nb_component << ")");
+                      "The new values for size (" << size
+                      << ") and nb_component (" << m << "," << n << " = " << n * m
+                      << ") are not compatible with the one of this array("
+                      << this->size << "," << this->nb_component << ")");
   return const_matrix_iterator(new Matrix<T>(values, m, n));
 }
 
@@ -1120,10 +1120,10 @@ template <class T, bool is_scal>
 inline typename Array<T, is_scal>::const_matrix_iterator
 Array<T, is_scal>::end_reinterpret(UInt m, UInt n, UInt size) const {
   AKANTU_DEBUG_ASSERT(n * m * size == this->nb_component * this->size,
-		      "The new values for size (" << size
-		      << ") and nb_component (" << m << "," << n << " = " << n * m
-		      << ") are not compatible with the one of this array("
-		      << this->size << "," << this->nb_component << ")");
+                      "The new values for size (" << size
+                      << ") and nb_component (" << m << "," << n << " = " << n * m
+                      << ") are not compatible with the one of this array("
+                      << this->size << "," << this->nb_component << ")");
   return const_matrix_iterator(new Matrix<T>(values + n * m * size, m, n));
 }
 
@@ -1133,20 +1133,24 @@ Array<T, is_scal>::end_reinterpret(UInt m, UInt n, UInt size) const {
  *  @return a scalar_iterator
  */
 template <class T, bool is_scal>
-inline Array<T, is_scal>::iterator<T> Array<T, is_scal>::begin() {
-  AKANTU_DEBUG_ASSERT(nb_component == 1, "this iterator cannot be used on a vector which has nb_component != 1");
-  return iterator<T>(values);
+inline typename Array<T, is_scal>::scalar_iterator Array<T, is_scal>::begin() {
+  AKANTU_DEBUG_ASSERT(
+      nb_component == 1,
+      "this iterator cannot be used on a vector which has nb_component != 1");
+  return scalar_iterator(values);
 }
 
 /* -------------------------------------------------------------------------- */
-  /*! Get an iterator that behaves like a pointer T * that points *past* the
-   *  last entry in the member array values
-   *  @return a scalar_iterator
-   */
+/*! Get an iterator that behaves like a pointer T * that points *past* the
+ *  last entry in the member array values
+ *  @return a scalar_iterator
+ */
 template <class T, bool is_scal>
-inline Array<T, is_scal>::iterator<T> Array<T, is_scal>::end() {
-  AKANTU_DEBUG_ASSERT(nb_component == 1, "this iterator cannot be used on a array which has nb_component != 1");
-  return iterator<T>(values + size);
+inline typename Array<T, is_scal>::scalar_iterator Array<T, is_scal>::end() {
+  AKANTU_DEBUG_ASSERT(
+      nb_component == 1,
+      "this iterator cannot be used on a array which has nb_component != 1");
+  return scalar_iterator(values + size);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1155,9 +1159,12 @@ inline Array<T, is_scal>::iterator<T> Array<T, is_scal>::end() {
  *  @return a const_scalar_iterator
  */
 template <class T, bool is_scal>
-inline Array<T, is_scal>::const_iterator<T> Array<T, is_scal>::begin() const {
-  AKANTU_DEBUG_ASSERT(nb_component == 1, "this iterator cannot be used on a array which has nb_component != 1");
-  return const_iterator<T>(values);
+inline typename Array<T, is_scal>::const_scalar_iterator
+Array<T, is_scal>::begin() const {
+  AKANTU_DEBUG_ASSERT(
+      nb_component == 1,
+      "this iterator cannot be used on a array which has nb_component != 1");
+  return const_scalar_iterator(values);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1166,9 +1173,60 @@ inline Array<T, is_scal>::const_iterator<T> Array<T, is_scal>::begin() const {
  *  @return a const_scalar_iterator
  */
 template <class T, bool is_scal>
-inline Array<T, is_scal>::const_iterator<T> Array<T, is_scal>::end() const {
-  AKANTU_DEBUG_ASSERT(nb_component == 1, "this iterator cannot be used on a array which has nb_component != 1");
-  return const_iterator<T>(values + size);
+inline typename Array<T, is_scal>::const_scalar_iterator
+Array<T, is_scal>::end() const {
+  AKANTU_DEBUG_ASSERT(
+      nb_component == 1,
+      "this iterator cannot be used on a array which has nb_component != 1");
+  return const_scalar_iterator(values + size);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, bool is_scal>
+inline typename Array<T, is_scal>::scalar_iterator
+Array<T, is_scal>::begin_reinterpret(UInt new_size) {
+  AKANTU_DEBUG_ASSERT(new_size == this->nb_component * this->size,
+                      "The new values for size ("
+                          << new_size
+                          << ") is not compatible with the one of this array("
+                          << this->size << "," << this->nb_component << ")");
+  return scalar_iterator(values);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, bool is_scal>
+inline typename Array<T, is_scal>::scalar_iterator
+Array<T, is_scal>::end_reinterpret(UInt new_size) {
+  AKANTU_DEBUG_ASSERT(new_size == this->nb_component * this->size,
+                      "The new values for size ("
+                          << new_size
+                          << ") is not compatible with the one of this array("
+                          << this->size << "," << this->nb_component << ")");
+  return scalar_iterator(values + size);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, bool is_scal>
+inline typename Array<T, is_scal>::const_scalar_iterator
+Array<T, is_scal>::begin_reinterpret(UInt new_size) const {
+  AKANTU_DEBUG_ASSERT(new_size == this->nb_component * this->size,
+                      "The new values for size ("
+                          << new_size
+                          << ") is not compatible with the one of this array("
+                          << this->size << "," << this->nb_component << ")");
+  return const_scalar_iterator(values);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, bool is_scal>
+inline typename Array<T, is_scal>::const_scalar_iterator
+Array<T, is_scal>::end_reinterpret(UInt new_size) const {
+  AKANTU_DEBUG_ASSERT(new_size == this->nb_component * this->size,
+                      "The new values for size ("
+                          << new_size
+                          << ") is not compatible with the one of this array("
+                          << this->size << "," << this->nb_component << ")");
+  return const_scalar_iterator(values + size);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1177,9 +1235,9 @@ template<typename R>
 class Array<T, is_scal>::const_iterator : public iterator_internal<const R, R> {
 public:
   typedef iterator_internal<const R, R> parent;
-  typedef typename parent::value_type	       value_type;
-  typedef typename parent::pointer	       pointer;
-  typedef typename parent::reference	       reference;
+  typedef typename parent::value_type          value_type;
+  typedef typename parent::pointer             pointer;
+  typedef typename parent::reference           reference;
   typedef typename parent::difference_type   difference_type;
   typedef typename parent::iterator_category iterator_category;
 public:
@@ -1234,9 +1292,9 @@ template<typename R>
 class  Array<T, is_scal>::iterator : public iterator_internal<R> {
 public:
   typedef iterator_internal<R> parent;
-  typedef typename parent::value_type	       value_type;
-  typedef typename parent::pointer	       pointer;
-  typedef typename parent::reference	       reference;
+  typedef typename parent::value_type          value_type;
+  typedef typename parent::pointer             pointer;
+  typedef typename parent::reference           reference;
   typedef typename parent::difference_type   difference_type;
   typedef typename parent::iterator_category iterator_category;
 public:

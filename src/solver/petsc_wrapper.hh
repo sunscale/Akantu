@@ -40,6 +40,7 @@
 
 __BEGIN_AKANTU__
 
+/* -------------------------------------------------------------------------- */
 struct PETScMatrixWrapper {
   Mat mat;
   AO ao;
@@ -48,6 +49,7 @@ struct PETScMatrixWrapper {
   MPI_Comm communicator;
 };
 
+/* -------------------------------------------------------------------------- */
 struct PETScSolverWrapper {
   KSP ksp;
   Vec solution;

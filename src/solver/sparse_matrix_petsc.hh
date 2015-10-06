@@ -32,19 +32,26 @@
 
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix.hh"
+#include "static_solver.hh"
 /* -------------------------------------------------------------------------- */
+#include <petscmat.h>
+#include <petscao.h>
+/* -------------------------------------------------------------------------- */
+
+namespace akantu {
+  class DOFManagerPETSc;
+}
 
 __BEGIN_AKANTU__
 
-class PETScWrapper;
 
-class SparseMatrixPETSc : public SparseMatrix, StaticSolverEventHandler {
+class SparseMatrixPETSc : public SparseMatrix {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SparseMatrixPETSc(UInt size, const SparseMatrixType & sparse_matrix_type,
-                    const ID & id = "sparse_matrix_petsc",
+  SparseMatrixPETSc(DOFManagerPETSc & dof_manager, const MatrixType & matrix_type,
+                    const ID & id = "sparse_matrix",
                     const MemoryID & memory_id = 0);
 
   SparseMatrixPETSc(const SparseMatrix & matrix,
@@ -53,21 +60,12 @@ public:
 
   virtual ~SparseMatrixPETSc();
 
-private:
-  /// init internal PETSc matrix
-  void init();
-
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// set the matrix to 0
   virtual void clear();
-
-  /// fill the profil of the matrix
-  virtual void buildProfile(const Mesh & mesh,
-                            const DOFSynchronizer & dof_synchronizer,
-                            UInt nb_degree_of_freedom);
 
   /// modify the matrix to "remove" the blocked dof
   virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
@@ -80,12 +78,11 @@ public:
   /// add a petsc matrix assuming the profile are the same
   virtual void add(const SparseMatrixPETSc & matrix, Real alpha);
 
-  virtual void beforeStaticSolverDestroy();
-
   Real operator()(UInt i, UInt j) const;
 
 protected:
-  inline KeyCOO keyPETSc(UInt i, UInt j) const { return std::make_pair(i, j); }
+  typedef std::pair<UInt, UInt> KeyCOO;
+  inline KeyCOO key(UInt i, UInt j) const { return std::make_pair(i, j); }
 
 private:
   virtual void destroyInternalData();
@@ -93,24 +90,32 @@ private:
   /// set the size of the PETSc matrix
   void setSize();
   void createGlobalAkantuToPETScMap(Int * local_master_eq_nbs_ptr);
-  void createLocalAkantuToPETScMap(const DOFSynchronizer & dof_synchronizer);
-  /// perform assembly so that matrix is ready for use
+  void createLocalAkantuToPETScMap();
+
+  /// start to assemble the matrix
+  void beginAssembly();
+  /// finishes to assemble the matrix
+  void endAssembly();
+
+  /// perform the assembly stuff from petsc
   void performAssembly();
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  AKANTU_GET_MACRO(PETScMatrixWrapper, petsc_matrix_wrapper,
-                   PETScMatrixWrapper *);
-  AKANTU_GET_MACRO(LocalSize, local_size, Int);
-
+  AKANTU_GET_MACRO(PETScMat, mat, const Mat &);
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  /// store the PETSc structures
-  PETScMatrixWrapper * petsc_matrix_wrapper;
+  // DOFManagerPETSc that contains the numbering for petsc
+  DOFManagerPETSc & dof_manager;
+
+  /// store the PETSc matrix
+  Mat mat;
+
+  AO ao;
 
   /// size of the diagonal part of the matrix partition
   Int local_size;

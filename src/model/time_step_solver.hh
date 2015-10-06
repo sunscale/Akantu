@@ -29,10 +29,15 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "aka_array.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_TIME_STEP_SOLVER_HH__
 #define __AKANTU_TIME_STEP_SOLVER_HH__
+
+namespace akantu {
+  class DOFManager;
+}
 
 __BEGIN_AKANTU__
 
@@ -41,7 +46,7 @@ class TimeStepSolver {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  TimeStepSolver(TimeStepSolverType & time_step_solver_type);
+  TimeStepSolver(const TimeStepSolverType & time_step_solver_type);
   virtual ~TimeStepSolver();
 
   /* ------------------------------------------------------------------------ */
@@ -63,8 +68,18 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
+protected:
+  /// Underlying dof manager containing the dof to treat
+  DOFManager & dof_manager;
 
+  /// The dof to make evolve
+  ID dof_id;
+
+  /// The increment of the dof from @f[ u_{n+1} = u_{n} + inc @f]
+  Array<Real> increment;
+
+  /// The time step for this solver
+  Real time_step;
 };
 
 // /// standard output stream operator

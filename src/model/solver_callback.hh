@@ -1,12 +1,11 @@
 /**
- * @file   non_linear_solver_default.hh
+ * @file   solver_callback.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Tue Aug 25 00:48:07 2015
+ * @date   Tue Sep 15 22:45:27 2015
  *
- * @brief Default implementation of NonLinearSolver, in case no external library
- * is there to do the job
+ * @brief  Class defining the interface for non_linear_solver callbacks
  *
  * @section LICENSE
  *
@@ -29,81 +28,43 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "non_linear_solver.hh"
-#include "solver_mumps.hh"
-/* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__
-#define __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__
-
-namespace akantu {
-  class DOFManagerDefault;
-  class NonLinearSolverCallback;
-}
+#ifndef __AKANTU_SOLVER_CALLBACK_HH__
+#define __AKANTU_SOLVER_CALLBACK_HH__
 
 __BEGIN_AKANTU__
 
-class NonLinearSolverDefault : public NonLinearSolver {
+class SolverCallback {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NonLinearSolverDefault(DOFManagerDefault & dof_manager,
-                         const NonLinearSolverType & non_linear_solver_type,
-                         const ID & id = "non_linear_solver_default",
-                         UInt memory_id = 0);
-  virtual ~NonLinearSolverDefault();
+  SolverCallback(DOFManager & dof_manager) : dof_manager(dof_manager) {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// Function that solve the non linear system described by the dof manager and
-  /// the solver callback functions
-  void solve();
 
-protected:
-  /// test the convergence compare norm of array to convergence_criteria
-  bool testConvergence(const Array<Real> & array);
+  /// assemble the residual
+  virtual void assembleResidual() = 0;
+
+  /// assemble the Jacobian matrix
+  virtual void assembleJacobian() = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void setParameters(const ParserSection & parameters_section);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  DOFManagerDefault & dof_manager;
-
-  /// Sparse solver used for the linear solves
-  SparseSolverMumps solver;
-
-  /// Type of convergence criteria
-  SolveConvergenceCriteria convergence_criteria_type;
-
-  /// Set of callbacks to use in the solver for jacobian assembly, residual
-  /// assembly, corrector & predictor if needed
-  NonLinearSolverCallback * solver_callback;
-
-  /// convergence threshold
-  Real convergence_criteria;
-
-  /// Max number of iterations
-  UInt max_iterations;
-
-  /// Number of iterations at last solve call
-  UInt n_iter;
-
-  /// Convergence error at last solve call
-  Real error;
-
-  /// Did the last call to solve reached convergence
-  bool converged;
+  DOFManager & dof_manager;
 };
 
 __END_AKANTU__
 
-#endif /* __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__ */
+
+#endif /* __AKANTU_SOLVER_CALLBACK_HH__ */

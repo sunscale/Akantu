@@ -27,6 +27,11 @@
 
 /* -------------------------------------------------------------------------- */
 #include "static_solver.hh"
+
+#if defined(AKANTU_USE_MPI)
+#  include "mpi_type_wrapper.hh"
+#endif
+
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_PETSC
 #include <petscsys.h>
@@ -60,41 +65,16 @@ StaticSolver & StaticSolver::getStaticSolver() {
 }
 
 #ifdef AKANTU_USE_PETSC
-#if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5
-static PetscErrorCode PETScErrorHandler(MPI_Comm,
-                                        int line, const char * dir, const char *file,
-                                        PetscErrorCode number,
-                                        PetscErrorType type,
-                                        const char *message,
-                                        void *) {
-  AKANTU_DEBUG_ERROR("An error occured in PETSc in file \"" << file << ":" << line << "\" - PetscErrorCode "<< number << " - \""<< message << "\"");
-}
-#else
-static PetscErrorCode PETScErrorHandler(MPI_Comm,
-                                        int line, const char * func, const char * dir, const char *file,
-                                        PetscErrorCode number,
-                                        PetscErrorType type,
-                                        const char *message,
-                                        void *) {
-  AKANTU_DEBUG_ERROR("An error occured in PETSc in file \"" << file << ":" << line << "\" - PetscErrorCode "<< number << " - \""<< message << "\"");
-}
-#endif
 #endif
 
 /* -------------------------------------------------------------------------- */
 void StaticSolver::initialize(int & argc, char ** & argv) {
   if (this->is_initialized) return;
   //  AKANTU_DEBUG_ASSERT(this->is_initialized != true, "The static solver has already been initialized");
-#ifdef AKANTU_USE_PETSC
-    PetscErrorCode petsc_error = PetscInitialize(&argc, &argv, NULL, NULL);
-    if(petsc_error != 0) {
-      AKANTU_DEBUG_ERROR("An error occured while initializing Petsc (PetscErrorCode "<< petsc_error << ")");
-    }
-    PetscPushErrorHandler(PETScErrorHandler, NULL);
-#endif
 
-    this->is_initialized = true;
-  }
+
+  this->is_initialized = true;
+}
 
 /* -------------------------------------------------------------------------- */
 void StaticSolver::finalize() {

@@ -1,11 +1,11 @@
 /**
- * @file   time_step_solver_default.hh
+ * @file   time_step_solver_default_solver_callback.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Mon Aug 24 17:10:29 2015
+ * @date   Mon Sep 28 18:58:07 2015
  *
- * @brief  Default implementation for the time stepper
+ * @brief  Implementation of the NonLinearSolverCallback for the time step solver
  *
  * @section LICENSE
  *
@@ -28,55 +28,36 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "time_step_solver.hh"
+#include "non_linear_solver_callback.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
-#define __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
-
-namespace akantu {
-  class IntegrationScheme;
-}
+#ifndef __AKANTU_TIME_STEP_SOLVER_DEFAULT_SOLVER_CALLBACK_HH__
+#define __AKANTU_TIME_STEP_SOLVER_DEFAULT_SOLVER_CALLBACK_HH__
 
 __BEGIN_AKANTU__
 
-class TimeStepSolverDefault : public TimeStepSolver {
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
-public:
-  TimeStepSolverDefault(const TimeStepSolverType & type);
-  virtual ~TimeStepSolverDefault();
-
+class TimeStepSolverCallback : public NonLinearSolverCallback {
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// implementation of the TimeStepSolver::predictor()
+  /// callback to assemble the Jacobian Matrix
+  virtual void assembleJacobian();
+
+  /// callback to assemble the residual (rhs)
+  virtual void assembleResidual();
+
+  /* ------------------------------------------------------------------------ */
+  /* Dynamic simulations part                                                 */
+  /* ------------------------------------------------------------------------ */
+  /// callback for the predictor (in case of dynamic simulation)
   virtual void predictor();
-  /// implementation of the TimeStepSolver::corrector()
+
+  /// callback for the corrector (in case of dynamic simulation)
   virtual void corrector();
-
-  /// implementation of the generic TimeStepSolver::solveStep()
-  virtual void solveStep();
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
-private:
-  /// Underlying integration scheme
-  IntegrationScheme * integration_scheme;
-
-  /// Type of corrector to use
-  UInt corrector_type;
 };
 
 __END_AKANTU__
 
 
-#endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__ */
+#endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_SOLVER_CALLBACK_HH__ */

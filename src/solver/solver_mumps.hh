@@ -29,7 +29,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solver.hh"
+#include "sparse_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <dmumps_c.h>
 /* -------------------------------------------------------------------------- */
@@ -62,7 +62,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// build the profile and do the analysis part
-  virtual void initialize(ParserSection & parser_section);
+  virtual void initialize();
 
   //  void initializeSlave(SolverOptions & options = _solver_no_options);
 
@@ -110,10 +110,10 @@ private:
   SparseMatrixAIJ & matrix;
 
   /// Right hand side per processors
-  Array<Real> & rhs;
+  const Array<Real> & rhs;
 
-  /// Full right hand side on the master processors
-  Array<Real> * master_rhs_solution;
+  /// Full right hand side on the master processors and solution after solve
+  Array<Real> master_rhs_solution;
 
   /// mumps data
   DMUMPS_STRUC_C mumps_data;
@@ -121,6 +121,10 @@ private:
   /// specify if the mumps_data are initialized or not
   bool is_mumps_data_initialized;
 
+  /// Communicator used for the solver
+  StaticCommunicator &communicator;
+
+  /// Rank of the current process
   UInt prank;
 
   /* ------------------------------------------------------------------------ */

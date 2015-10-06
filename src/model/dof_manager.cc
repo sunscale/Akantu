@@ -30,15 +30,38 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
 #include "mesh.hh"
-
+#include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-DOFManager::DOFManager(const Mesh & mesh, SolverCallback & solver_callback,
-                       const ID & id, const MemoryID & memory_id)
-  : Memory(id, memory_id), mesh(mesh), solver_callback(solver_callback) {}
+DOFManager::DOFManager(const Mesh & mesh, const ID & id,
+                       const MemoryID & memory_id)
+    : Memory(id, memory_id), mesh(mesh) {}
+
+/* -------------------------------------------------------------------------- */
+DOFManager::~DOFManager() {
+  DOFStorage::iterator ds_it = dofs.begin();
+  DOFStorage::iterator ds_end = dofs.end();
+  for (; ds_it != ds_end; ++ds_it)
+    delete ds_it->second;
+
+  SparseMatricesMap::iterator sm_it = matrices.begin();
+  SparseMatricesMap::iterator sm_end = matrices.end();
+  for (; sm_it != sm_end; ++sm_it)
+    delete sm_it->second;
+
+  NonLinearSolversMap::iterator nls_it = non_linear_solvers.begin();
+  NonLinearSolversMap::iterator nls_end = non_linear_solvers.end();
+  for (; nls_it != nls_end; ++nls_it)
+    delete nls_it->second;
+
+  TimeStepSolversMap::iterator tss_it = time_step_solvers.begin();
+  TimeStepSolversMap::iterator tss_end = time_step_solvers.end();
+  for (; tss_it != tss_end; ++tss_it)
+    delete tss_it->second;
+}
 
 /* -------------------------------------------------------------------------- */
 void DOFManager::assembleElementalArrayLocalArray(
@@ -117,7 +140,8 @@ void DOFManager::assembleElementalArrayResidual(
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array) {
+void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+                              const DOFSupportType & support_type) {
   DOFStorage::iterator it = this->dofs.find(dof_id);
 
   if (it != this->dofs.end()) {
@@ -125,21 +149,40 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array) {
   }
 
   DOFData * dofs_storage = new DOFData();
-
   dofs_storage->dof = &dofs_array;
   dofs_storage->blocked_dofs = NULL;
+  dofs_storage->support_type = support_type;
 
-  dofs_storage->local_equation_number.resize(dofs_array.getSize() *
-                                             dofs_array.getNbComponent());
-  dofs_storage->global_equation_number.resize(dofs_array.getSize() *
-                                              dofs_array.getNbComponent());
+  switch (support_type) {
+  case _dst_nodal: {
+    UInt nb_local_dofs = mesh.getNbNodes();
+    AKANTU_DEBUG_ASSERT(
+        dofs_array.getSize() == nb_local_dofs,
+        "The array of dof is too shot to be associated to nodes.");
+
+    UInt nb_nodes = this->mesh.getNbNodes();
+    UInt nb_pure_local = 0;
+    for (UInt n = 0; n < nb_nodes; ++n) {
+      nb_pure_local += mesh.isLocalOrMasterNode(n) ? 1 : 0;
+    }
+
+    nb_pure_local *= dofs_array.getNbComponent();
+    this->pure_local_system_size += nb_pure_local;
+    this->system_size += this->mesh.getNbNodes() * dofs_array.getNbComponent();
+
+    nb_local_dofs *= dofs_array.getNbComponent();
+    this->local_system_size += nb_local_dofs;
+    break;
+  }
+  default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }
+  }
 
   this->dofs[dof_id] = dofs_storage;
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::registerDOFDerivative(const ID & dof_id, UInt order,
-                                       Array<Real> & dofs_derivative) {
+void DOFManager::registerDOFsDerivative(const ID & dof_id, UInt order,
+                                        Array<Real> & dofs_derivative) {
   DOFStorage::iterator it = this->dofs.find(dof_id);
 
   if (it == this->dofs.end()) {

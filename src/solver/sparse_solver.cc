@@ -29,60 +29,56 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solver.hh"
+#include "sparse_solver.hh"
 #include "dof_synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-SolverOptions _solver_no_options(true);
-
 /* -------------------------------------------------------------------------- */
-Solver::Solver(SparseMatrix & matrix,
-	       const ID & id,
-	       const MemoryID & memory_id) :
-  Memory(id, memory_id), StaticSolverEventHandler(),
-  matrix(&matrix),
-  is_matrix_allocated(false),
-  mesh(NULL),
-  communicator(StaticCommunicator::getStaticCommunicator()),
-  solution(NULL),
-  synch_registry(NULL) {
+SparseSolver::SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
+                           const ID & id, const MemoryID & memory_id)
+  : Memory(id, memory_id), Parsable(_st_solver, id), StaticSolverEventHandler(),
+      _dof_manager(dof_manager), matrix_id(matrix_id) {
   AKANTU_DEBUG_IN();
+
   StaticSolver::getStaticSolver().registerEventHandler(*this);
-  //createSynchronizerRegistry();
-  this->synch_registry = new SynchronizerRegistry(*this);
-  //  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(), _gst_solver_solution);
+
+  // createSynchronizerRegistry();
+  // this->synch_registry = new SynchronizerRegistry(*this);
+  //  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(),
+  //  _gst_solver_solution);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-Solver::~Solver() {
+SparseSolver::~SparseSolver() {
   AKANTU_DEBUG_IN();
 
   this->destroyInternalData();
-  delete synch_registry;
+  //  delete synch_registry;
   StaticSolver::getStaticSolver().unregisterEventHandler(*this);
+
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void Solver::beforeStaticSolverDestroy() {
+void SparseSolver::beforeStaticSolverDestroy() {
   AKANTU_DEBUG_IN();
 
-  try{
+  try {
     this->destroyInternalData();
-  } catch(...) {}
+  } catch (...) {
+  }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void Solver::createSynchronizerRegistry() {
-  //this->synch_registry = new SynchronizerRegistry(this);
+void SparseSolver::createSynchronizerRegistry() {
+  // this->synch_registry = new SynchronizerRegistry(this);
 }
-
 
 __END_AKANTU__

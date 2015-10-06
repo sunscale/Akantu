@@ -1,11 +1,11 @@
 /**
- * @file   time_step_solver_default.hh
+ * @file   integration_scheme.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Mon Aug 24 17:10:29 2015
+ * @date   Mon Sep 28 10:43:18 2015
  *
- * @brief  Default implementation for the time stepper
+ * @brief  This class is just a base class for the integration schemes
  *
  * @section LICENSE
  *
@@ -28,55 +28,34 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "time_step_solver.hh"
-/* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
-#define __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
-
-namespace akantu {
-  class IntegrationScheme;
-}
+#ifndef __AKANTU_INTEGRATION_SCHEME_HH__
+#define __AKANTU_INTEGRATION_SCHEME_HH__
 
 __BEGIN_AKANTU__
 
-class TimeStepSolverDefault : public TimeStepSolver {
+class IntegrationScheme {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  TimeStepSolverDefault(const TimeStepSolverType & type);
-  virtual ~TimeStepSolverDefault();
-
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// implementation of the TimeStepSolver::predictor()
-  virtual void predictor();
-  /// implementation of the TimeStepSolver::corrector()
-  virtual void corrector();
-
-  /// implementation of the generic TimeStepSolver::solveStep()
-  virtual void solveStep();
+  IntegrationScheme(UInt order) : order(order) {}
+  virtual ~IntegrationScheme() {}
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /// return the order of the integration scheme
+  UInt getOrder();
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
-  /// Underlying integration scheme
-  IntegrationScheme * integration_scheme;
-
-  /// Type of corrector to use
-  UInt corrector_type;
+protected:
+  UInt order;
 };
 
 __END_AKANTU__
 
-
-#endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__ */
+#endif /* __AKANTU_INTEGRATION_SCHEME_HH__ */

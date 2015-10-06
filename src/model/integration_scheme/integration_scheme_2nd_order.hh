@@ -37,12 +37,12 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_array.hh"
-
+#include "integration_scheme.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-class IntegrationScheme2ndOrder {
+class IntegrationScheme2ndOrder : public IntegrationScheme {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -53,6 +53,8 @@ public:
     _displacement_corrector
   };
 
+  IntegrationScheme2ndOrder() : IntegrationScheme(2){};
+
   virtual ~IntegrationScheme2ndOrder(){};
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -61,25 +63,25 @@ public:
   virtual void integrationSchemePred(Real delta_t, Array<Real> & u,
                                      Array<Real> & u_dot,
                                      Array<Real> & u_dot_dot,
-                                     Array<bool> & blocked_dofs) const = 0;
+                                     const Array<bool> & blocked_dofs) const = 0;
 
   virtual void integrationSchemeCorrDispl(Real delta_t, Array<Real> & u,
                                           Array<Real> & u_dot,
                                           Array<Real> & u_dot_dot,
-                                          Array<bool> & blocked_dofs,
-                                          Array<Real> & delta_u) const = 0;
+                                          const Array<bool> & blocked_dofs,
+                                          const Array<Real> & delta_u) const = 0;
 
   virtual void integrationSchemeCorrVeloc(Real delta_t, Array<Real> & u,
-                                         Array<Real> & u_dot,
-                                         Array<Real> & u_dot_dot,
-                                         Array<bool> & blocked_dofs,
-                                         Array<Real> & delta_u_dot) const = 0;
+                                          Array<Real> & u_dot,
+                                          Array<Real> & u_dot_dot,
+                                          const Array<bool> & blocked_dofs,
+                                          const Array<Real> & delta_u_dot) const = 0;
 
   virtual void integrationSchemeCorrAccel(Real delta_t, Array<Real> & u,
                                           Array<Real> & u_dot,
                                           Array<Real> & u_dot_dot,
-                                          Array<bool> & blocked_dofs,
-                                          Array<Real> & delta_u_dot_dot) const = 0;
+                                          const Array<bool> & blocked_dofs,
+                                          const Array<Real> & delta_u_dot_dot) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

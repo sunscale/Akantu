@@ -90,7 +90,6 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh,
   material_local_numbering("material local numbering", id),
   material_selector(new DefaultMaterialSelector(material_index)),
   is_default_material_selector(true),
-  integrator(NULL),
   increment_flag(false), synch_parallel(NULL),
   are_materials_instantiated(false) {
 
@@ -139,8 +138,6 @@ SolidMechanicsModel::~SolidMechanicsModel() {
   }
 
   materials.clear();
-
-  delete integrator;
 
   delete synch_parallel;
 
@@ -235,7 +232,7 @@ void SolidMechanicsModel::initParallel(MeshPartition * partition,
   AKANTU_DEBUG_IN();
 
   if (data_accessor == NULL) data_accessor = this;
-  synch_parallel = &createParallelSynch(partition,data_accessor);
+  synch_parallel = &createParallelSynch(partition, data_accessor);
 
   synch_registry->registerSynchronizer(*synch_parallel, _gst_material_id);
   synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_mass);
@@ -265,8 +262,8 @@ void SolidMechanicsModel::initExplicit(AnalysisMethod analysis_method) {
   if(!this->isExplicit())
     method = analysis_method;
 
-  if (integrator) delete integrator;
-  integrator = new CentralDifference();
+  // if (integrator) delete integrator;
+  // integrator = new CentralDifference();
 
   UInt nb_nodes = acceleration->getSize();
   UInt nb_degree_of_freedom = acceleration->getNbComponent();
@@ -277,6 +274,7 @@ void SolidMechanicsModel::initExplicit(AnalysisMethod analysis_method) {
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initArraysPreviousDisplacment() {
   AKANTU_DEBUG_IN();
 
@@ -293,7 +291,6 @@ void SolidMechanicsModel::initArraysPreviousDisplacment() {
 /**
  * Allocate all the needed vectors. By  default their are not necessarily set to
  * 0
- *
  */
 void SolidMechanicsModel::initArrays() {
   AKANTU_DEBUG_IN();
@@ -589,10 +586,10 @@ void SolidMechanicsModel::initImplicit(bool dynamic) {
 
   initSolver();
 
-  if(method == _implicit_dynamic) {
-    if(integrator) delete integrator;
-    integrator = new TrapezoidalRule2();
-  }
+  // if(method == _implicit_dynamic) {
+  //   if(integrator) delete integrator;
+  //   integrator = new TrapezoidalRule2();
+  // }
 
   AKANTU_DEBUG_OUT();
 }
@@ -620,56 +617,56 @@ SparseMatrix & SolidMechanicsModel::initVelocityDampingMatrix() {
   return *velocity_damping_matrix;
 }
 
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::implicitPred() {
-  AKANTU_DEBUG_IN();
+// /* -------------------------------------------------------------------------- */
+// void SolidMechanicsModel::implicitPred() {
+//   AKANTU_DEBUG_IN();
 
-  if(previous_displacement) previous_displacement->copy(*displacement);
+//   if(previous_displacement) previous_displacement->copy(*displacement);
 
-  if(method == _implicit_dynamic)
-    integrator->integrationSchemePred(time_step,
-				      *displacement,
-				      *velocity,
-				      *acceleration,
-				      *blocked_dofs);
+//   if(method == _implicit_dynamic)
+//     integrator->integrationSchemePred(time_step,
+// 				      *displacement,
+// 				      *velocity,
+// 				      *acceleration,
+// 				      *blocked_dofs);
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::implicitCorr() {
-  AKANTU_DEBUG_IN();
+// /* -------------------------------------------------------------------------- */
+// void SolidMechanicsModel::implicitCorr() {
+//   AKANTU_DEBUG_IN();
 
-  if(method == _implicit_dynamic) {
-    integrator->integrationSchemeCorrDispl(time_step,
-					   *displacement,
-					   *velocity,
-					   *acceleration,
-					   *blocked_dofs,
-					   *increment);
-  } else {
-    UInt nb_nodes = displacement->getSize();
-    UInt nb_degree_of_freedom = displacement->getNbComponent() * nb_nodes;
+//   if(method == _implicit_dynamic) {
+//     integrator->integrationSchemeCorrDispl(time_step,
+// 					   *displacement,
+// 					   *velocity,
+// 					   *acceleration,
+// 					   *blocked_dofs,
+// 					   *increment);
+//   } else {
+//     UInt nb_nodes = displacement->getSize();
+//     UInt nb_degree_of_freedom = displacement->getNbComponent() * nb_nodes;
 
-    Real * incr_val = increment->storage();
-    Real * disp_val = displacement->storage();
-    bool * boun_val = blocked_dofs->storage();
+//     Real * incr_val = increment->storage();
+//     Real * disp_val = displacement->storage();
+//     bool * boun_val = blocked_dofs->storage();
 
-    for (UInt j = 0; j < nb_degree_of_freedom; ++j, ++disp_val, ++incr_val, ++boun_val){
-      *incr_val *= (1. - *boun_val);
-      *disp_val += *incr_val;
-    }
-  }
+//     for (UInt j = 0; j < nb_degree_of_freedom; ++j, ++disp_val, ++incr_val, ++boun_val){
+//       *incr_val *= (1. - *boun_val);
+//       *disp_val += *incr_val;
+//     }
+//   }
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::updateIncrement() {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(previous_displacement,"The previous displacement has to be initialized."
-		      << " Are you working with Finite or Ineslactic deformations?");
+                      << " Are you working with Finite or Ineslactic deformations?");
 
   UInt nb_nodes = displacement->getSize();
   UInt nb_degree_of_freedom = displacement->getNbComponent() * nb_nodes;
@@ -689,7 +686,7 @@ void SolidMechanicsModel::updatePreviousDisplacement() {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(previous_displacement,"The previous displacement has to be initialized."
-		      << " Are you working with Finite or Ineslactic deformations?");
+                      << " Are you working with Finite or Ineslactic deformations?");
 
   previous_displacement->copy(*displacement);
 
@@ -703,7 +700,7 @@ void SolidMechanicsModel::updatePreviousDisplacement() {
 void SolidMechanicsModel::synchronizeBoundaries() {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT(synch_registry,"Synchronizer registry was not initialized."
-		      << " Did you call initParallel?");
+                      << " Did you call initParallel?");
   synch_registry->synchronize(_gst_smm_boundary);
   AKANTU_DEBUG_OUT();
 }
@@ -712,7 +709,7 @@ void SolidMechanicsModel::synchronizeBoundaries() {
 void SolidMechanicsModel::synchronizeResidual() {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT(synch_registry,"Synchronizer registry was not initialized."
-		      << " Did you call initPBC?");
+                      << " Did you call initPBC?");
   synch_registry->synchronize(_gst_smm_res);
   AKANTU_DEBUG_OUT();
 }

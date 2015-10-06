@@ -288,6 +288,7 @@ function(add_extra_mpi_options)
     package_get_include_dir(MPI _include_dir)
     foreach(_inc_dir ${_include_dir})
       if(EXISTS "${_inc_dir}/mpi.h")
+        set(_include_file "${_inc_dir}/mpi.h")
         if(NOT MPI_ID)
           file(STRINGS "${_inc_dir}/mpi.h" _mpi_version REGEX "#define MPI_(SUB)?VERSION .*")
           foreach(_ver ${_mpi_version})
@@ -347,6 +348,11 @@ function(add_extra_mpi_options)
             endif()
           endif()
         endif()
+
+        if(NOT MPI_ID)
+          set(MPI_ID "UNKNOWN" CACHE INTERNAL "")
+          set(MPI_ID_VERSION "UNKNOWN" CACHE INTERNAL "")
+        endif()
       endif()
     endforeach()
 
@@ -368,10 +374,24 @@ function(add_extra_mpi_options)
     set(MPI_EXTRA_COMPILE_FLAGS "${_flags}" CACHE STRING "Extra flags for MPI" FORCE)
     mark_as_advanced(MPI_EXTRA_COMPILE_FLAGS)
 
-    package_get_source_files(MPI _srcs _pub _priv)
-    list(APPEND _srcs "common/aka_error.cc")
+    if(_flags)
+      package_get_source_files(MPI _mpi_srcs _pub _priv)
+      package_get_all_source_files(
+        _srcs
+        _public_hdrs
+        _private_HDRS
+        )
 
-    set_property(SOURCE ${_srcs} PROPERTY COMPILE_FLAGS "${_flags}")
+      foreach(_src ${_srcs})
+        file(STRINGS "${_src}" _res REGEX "# *include *[<\"]mpi[a-z_]*\\.[h]+[>\"]")
+        if(_res)
+          list(APPEND _mpi_srcs ${_src})
+        endif()
+      endforeach()
+
+      if(_mpi_srcs)
+        set_property(SOURCE ${_mpi_srcs} PROPERTY COMPILE_FLAGS "${_flags}")
+      endif()
+    endif()
   endif()
-
 endfunction()

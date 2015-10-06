@@ -191,7 +191,10 @@ package_declare_sources(core
   model/time_step_solvers/time_step_solver_default.cc
   model/time_step_solvers/time_step_solver_default.hh
   model/time_step_solvers/time_step_solver_default_explicit.hh
-  
+  model/non_linear_solver_callback.hh
+  model/integration_scheme/integration_scheme.hh
+  model/time_step_solvers/time_step_solver_default_solver_callback.hh
+
   model/integration_scheme/generalized_trapezoidal.hh
   model/integration_scheme/generalized_trapezoidal_inline_impl.cc
   model/integration_scheme/integration_scheme_1st_order.hh
@@ -252,9 +255,9 @@ package_declare_sources(core
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.cc
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.hh
 
-  solver/solver.cc
-  solver/solver.hh
-  solver/solver_inline_impl.cc
+  solver/sparse_solver.cc
+  solver/sparse_solver.hh
+  solver/sparse_solver_inline_impl.cc
   solver/sparse_matrix.cc
   solver/sparse_matrix.hh
   solver/sparse_matrix_inline_impl.cc

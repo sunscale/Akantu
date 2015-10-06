@@ -1,12 +1,12 @@
 /**
- * @file   solver_mumps.cc
+ * @file   sparse_solver_mumps.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Dec 13 2010
  * @date last modification: Mon Sep 15 2014
  *
- * @brief  implem of SolverMumps class
+ * @brief  implem of SparseSolverMumps class
  *
  * @section LICENSE
  *
@@ -90,6 +90,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "dof_manager_default.hh"
+#include "sparse_matrix_aij.hh"
 
 #if defined(AKANTU_USE_MPI)
 #include "static_communicator_mpi.hh"
@@ -124,110 +126,42 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
                                      const ID & matrix_id, const ID & id,
                                      const MemoryID & memory_id)
     : SparseSolver(dof_manager, matrix_id, id, memory_id),
-      dof_manager(dof_manager),
-      matrix(dof_manager.getMatrix(matrix_id)) rhs(dof_manager.getRHS()),
-      master_rhs(NULL) is_mumps_data_initialized(false) {
+      dof_manager(dof_manager), matrix(dof_manager.getMatrix(matrix_id)),
+      rhs(dof_manager.getRHS()), master_rhs_solution(0, 1),
+      is_mumps_data_initialized(false),
+      communicator(StaticCommunicator::getStaticCommunicator()),
+      prank(communicator.whoAmI()) {
   AKANTU_DEBUG_IN();
 
 #ifdef AKANTU_USE_MPI
-  parallel_method = SolverMumpsOptions::_fully_distributed;
+  this->parallel_method = _fully_distributed;
 #else  // AKANTU_USE_MPI
-  parallel_method = SolverMumpsOptions::_not_parallel;
+  this->parallel_method = _not_parallel;
 #endif // AKANTU_USE_MPI
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-SolverMumps::~SolverMumps() {
-  AKANTU_DEBUG_IN();
-
-  this->destroyInternalData();
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolverMumps::destroyInternalData() {
-  AKANTU_DEBUG_IN();
-
-  if (this->is_mumps_data_initialized) {
-    this->mumps_data.job = _smj_destroy; // destroy
-    dmumps_c(&this->mumps_data);
-    this->is_mumps_data_initialized = false;
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolverMumps::initMumpsData() {
-  // Default Scaling
-  icntl(8) = 77;
-
-  // Assembled matrix
-  icntl(5) = 0;
-
-  /// Default centralized dense second member
-  icntl(20) = 0;
-  icntl(21) = 0;
-
-  icntl(28) = 0; // automatic choice for analysis analysis
-
-  switch (this->parallel_method) {
-  case SolverMumpsOptions::_fully_distributed:
-    icntl(18) = 3; // fully distributed
-
-    this->mumps_data.nz_loc = matrix->getNbNonZero();
-    this->mumps_data.irn_loc = matrix->getIRN().storage();
-    this->mumps_data.jcn_loc = matrix->getJCN().storage();
-    break;
-  case SolverMumpsOptions::_not_parallel:
-  case SolverMumpsOptions::_master_slave_distributed:
-    icntl(18) = 0; // centralized
-
-    if (prank == 0) {
-      this->mumps_data.nz = matrix->getNbNonZero();
-      this->mumps_data.irn = matrix->getIRN().storage();
-      this->mumps_data.jcn = matrix->getJCN().storage();
-    } else {
-      this->mumps_data.nz = 0;
-      this->mumps_data.irn = NULL;
-      this->mumps_data.jcn = NULL;
-    }
-    break;
-  default:
-    AKANTU_DEBUG_ERROR("This case should not happen!!");
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-void SolverMumps::initialize(SolverOptions & options) {
-  AKANTU_DEBUG_IN();
-
-  if (SolverMumpsOptions * opt = dynamic_cast<SolverMumpsOptions *>(&options)) {
-    this->parallel_method = opt->parallel_method;
-  }
 
   this->mumps_data.par = 1; // The host is part of computations
 
   switch (this->parallel_method) {
-  case SolverMumpsOptions::_not_parallel:
+  case _not_parallel:
     break;
-  case SolverMumpsOptions::_master_slave_distributed:
+  case _master_slave_distributed:
     this->mumps_data.par = 0; // The host is not part of the computations
-  case SolverMumpsOptions::_fully_distributed:
+  case _fully_distributed:
 #ifdef AKANTU_USE_MPI
     const StaticCommunicatorMPI & mpi_st_comm =
         dynamic_cast<const StaticCommunicatorMPI &>(
             communicator.getRealStaticCommunicator());
+
     this->mumps_data.comm_fortran =
         MPI_Comm_c2f(mpi_st_comm.getMPITypeWrapper().getMPICommunicator());
+#else
+    AKANTU_DEBUG_ERROR(
+        "You cannot use parallel method to solve without activating MPI");
 #endif
     break;
   }
 
-  this->mumps_data.sym = 2 * (matrix->getSparseMatrixType() == _symmetric);
+  this->mumps_data.sym = 2 * (matrix.getMatrixType() == _symmetric);
   this->prank = communicator.whoAmI();
 
   this->mumps_data.job = _smj_initialize; // initialize
@@ -236,18 +170,6 @@ void SolverMumps::initialize(SolverOptions & options) {
   this->is_mumps_data_initialized = true;
 
   /* ------------------------------------------------------------------------ */
-  UInt size = matrix->getSize();
-
-  if (prank == 0) {
-    std::stringstream sstr_rhs;
-    sstr_rhs << id << ":rhs";
-    this->rhs = &(alloc<Real>(sstr_rhs.str(), size, 1, 0.));
-  } else {
-    this->rhs = NULL;
-  }
-
-  this->mumps_data.nz_alloc = 0;
-  this->mumps_data.n = size;
   /* ------------------------------------------------------------------------ */
   // Output setup
   if (AKANTU_DEBUG_TEST(dblTrace)) {
@@ -267,6 +189,87 @@ void SolverMumps::initialize(SolverOptions & options) {
     strcpy(this->mumps_data.write_problem, "mumps_matrix.mtx");
   }
 
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+SparseSolverMumps::~SparseSolverMumps() {
+  AKANTU_DEBUG_IN();
+
+  this->destroyInternalData();
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseSolverMumps::destroyInternalData() {
+  AKANTU_DEBUG_IN();
+
+  if (this->is_mumps_data_initialized) {
+    this->mumps_data.job = _smj_destroy; // destroy
+    dmumps_c(&this->mumps_data);
+    this->is_mumps_data_initialized = false;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseSolverMumps::initMumpsData() {
+  // Default Scaling
+  icntl(8) = 77;
+
+  // Assembled matrix
+  icntl(5) = 0;
+
+  /// Default centralized dense second member
+  icntl(20) = 0;
+  icntl(21) = 0;
+
+  // automatic choice for analysis
+  icntl(28) = 0;
+
+  UInt size = matrix.getSize();
+
+  if (prank == 0) {
+    this->master_rhs_solution.resize(size);
+  }
+
+  this->mumps_data.nz_alloc = 0;
+  this->mumps_data.n = size;
+
+  switch (this->parallel_method) {
+  case _fully_distributed:
+    icntl(18) = 3; // fully distributed
+
+    this->mumps_data.nz_loc = matrix.getNbNonZero();
+    this->mumps_data.irn_loc = matrix.getIRN().storage();
+    this->mumps_data.jcn_loc = matrix.getJCN().storage();
+
+    break;
+  case _not_parallel:
+  case _master_slave_distributed:
+    icntl(18) = 0; // centralized
+
+    if (prank == 0) {
+      this->mumps_data.nz = matrix.getNbNonZero();
+      this->mumps_data.irn = matrix.getIRN().storage();
+      this->mumps_data.jcn = matrix.getJCN().storage();
+    } else {
+      this->mumps_data.nz = 0;
+      this->mumps_data.irn = NULL;
+      this->mumps_data.jcn = NULL;
+    }
+    break;
+  default:
+    AKANTU_DEBUG_ERROR("This case should not happen!!");
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseSolverMumps::initialize() {
+  AKANTU_DEBUG_IN();
+
   this->analysis();
 
   //  icntl(14) = 80;
@@ -274,24 +277,7 @@ void SolverMumps::initialize(SolverOptions & options) {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolverMumps::setRHS(Array<Real> & rhs) {
-  if (prank == 0) {
-
-    // std::copy(rhs.storage(), rhs.storage() + this->rhs->getSize(),
-    // this->rhs->storage());
-
-    DebugLevel dbl = debug::getDebugLevel();
-    debug::setDebugLevel(dblError);
-    matrix->getDOFSynchronizer().gather(rhs, 0, this->rhs);
-    debug::setDebugLevel(dbl);
-
-  } else {
-    this->matrix->getDOFSynchronizer().gather(rhs, 0);
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-void SolverMumps::analysis() {
+void SparseSolverMumps::analysis() {
   AKANTU_DEBUG_IN();
 
   initMumpsData();
@@ -303,18 +289,15 @@ void SolverMumps::analysis() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolverMumps::factorize() {
+void SparseSolverMumps::factorize() {
   AKANTU_DEBUG_IN();
 
-  if (parallel_method == SolverMumpsOptions::_fully_distributed)
-    this->mumps_data.a_loc = this->matrix->getA().storage();
+  this->mumps_data.rhs = this->rhs.storage();
+  if (parallel_method == _fully_distributed)
+    this->mumps_data.a_loc = this->matrix.getA().storage();
   else {
     if (prank == 0)
-      this->mumps_data.a = this->matrix->getA().storage();
-  }
-
-  if (prank == 0) {
-    this->mumps_data.rhs = this->rhs->storage();
+      this->mumps_data.a = this->matrix.getA().storage();
   }
 
   this->mumps_data.job = _smj_factorize; // factorize
@@ -326,12 +309,24 @@ void SolverMumps::factorize() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolverMumps::solve() {
+void SparseSolverMumps::solve() {
   AKANTU_DEBUG_IN();
 
-  if (prank == 0) {
-    this->mumps_data.rhs = this->rhs->storage();
-  }
+  // if (prank == 0) {
+  //   // deactivate debug messages
+  //   DebugLevel dbl = debug::getDebugLevel();
+  //   debug::setDebugLevel(dblError);
+
+  //   matrix.getDOFSynchronizer().gather(this->rhs, 0, this->master_rhs_solution);
+
+  //   // reactivate debug messages
+  //   debug::setDebugLevel(dbl);
+  // } else {
+  //   this->matrix.getDOFSynchronizer().gather(this->rhs, 0);
+  // }
+
+  if (prank == 0)
+    this->mumps_data.rhs = this->master_rhs_solution.storage();
 
   this->mumps_data.job = _smj_solve; // solve
   dmumps_c(&this->mumps_data);
@@ -342,25 +337,7 @@ void SolverMumps::solve() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolverMumps::solve(Array<Real> & solution) {
-  AKANTU_DEBUG_IN();
-
-  this->solve();
-
-  if (prank == 0) {
-    matrix->getDOFSynchronizer().scatter(solution, 0, this->rhs);
-    //    std::copy(this->rhs->storage(), this->rhs->storage() +
-    //    this->rhs->getSize(), solution.storage());
-
-  } else {
-    this->matrix->getDOFSynchronizer().scatter(solution, 0);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolverMumps::printError() {
+void SparseSolverMumps::printError() {
   Int _info_v[2];
   _info_v[0] = info(1);  // to get errors
   _info_v[1] = -info(1); // to get warnings

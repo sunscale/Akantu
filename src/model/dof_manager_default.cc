@@ -30,6 +30,7 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager_default.hh"
 #include "sparse_matrix_aij.hh"
+#include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -94,13 +95,51 @@ DOFManagerDefault::DOFManagerDefault(const Mesh & mesh, const ID & id,
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::~DOFManagerDefault() {
-  AIJMatrixMap::iterator it = this->aij_matrices.begin();
-  AIJMatrixMap::iterator end = this->aij_matrices.end();
 
-  for (; it != end; ++it)
-    delete it->second;
+}
 
-  this->aij_matrices.clear();
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::registerDOFs(const ID & dof_id,
+                                     Array<Real> & dofs_array,
+                                     DOFSupportType & support_type) {
+  // stores the current numbers of dofs
+  UInt local_nb_dofs = this->local_system_size;
+  UInt pure_local_nb_dofs = this->pure_local_system_size;
+
+  // update or create the dof_data
+  DOFManager::registerDOFs(dof_id, dofs_array, support_type);
+
+  // Count the number of pure local dofs per proc
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  UInt prank = comm.whoAmI();
+  UInt psize = comm.getNbProc();
+
+  Array<UInt> nb_dofs_per_proc(psize);
+  nb_dofs_per_proc(prank) = this->pure_local_system_size - pure_local_nb_dofs;
+  comm.allGather(nb_dofs_per_proc);
+
+  UInt first_global_dofs_id = std::accumulate(
+      nb_dofs_per_proc.begin(), nb_dofs_per_proc.begin() + prank, 0);
+
+  // nb local dofs to account for
+  UInt nb_dofs = this->local_system_size - local_nb_dofs;
+
+  DOFData & dof_data = *dofs[dof_id];
+
+  this->global_equation_number.resize(this->local_system_size);
+
+  // set the equation numbers
+  if (support_type == _dst_nodal) {
+    UInt first_dof_id = local_nb_dofs;
+
+    dof_data.local_equation_number.resize(nb_dofs);
+
+    for (UInt d = 0; d < nb_dofs; ++d) {
+      UInt local_eq_num = first_dof_id + d;
+      dof_data.local_equation_number(d) = local_eq_num;
+      this->global_equation_number(local_eq_num) = first_global_dofs_id + d;
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */

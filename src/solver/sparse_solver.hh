@@ -1,5 +1,5 @@
 /**
- * @file   solver.hh
+ * @file   sparse_solver.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
@@ -37,6 +37,8 @@
 /* -------------------------------------------------------------------------- */
 #include "static_solver.hh"
 #include "data_accessor.hh"
+#include "parsable.hh"
+
 /* -------------------------------------------------------------------------- */
 
 enum SolverParallelMethod {
@@ -52,6 +54,7 @@ namespace akantu {
 __BEGIN_AKANTU__
 
 class SparseSolver : protected Memory,
+                     public Parsable,
                      public StaticSolverEventHandler,
                      public DataAccessor {
   /* ------------------------------------------------------------------------ */
@@ -59,7 +62,7 @@ class SparseSolver : protected Memory,
   /* ------------------------------------------------------------------------ */
 public:
   SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
-         const ID & id = "solver", const MemoryID & memory_id = 0);
+               const ID & id = "solver", const MemoryID & memory_id = 0);
 
   virtual ~SparseSolver();
   /* ------------------------------------------------------------------------ */
@@ -67,7 +70,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// initialize the solver
-  virtual void initialize(ParserSection & section) = 0;
+  virtual void initialize() = 0;
 
   virtual void analysis(){};
 
@@ -86,16 +89,16 @@ public:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  inline virtual UInt getNbDataForDOFs(const Array<UInt> & dofs,
-                                       SynchronizationTag tag) const;
+  // inline virtual UInt getNbDataForDOFs(const Array<UInt> & dofs,
+  //                                      SynchronizationTag tag) const;
 
-  inline virtual void packDOFData(CommunicationBuffer & buffer,
-                                  const Array<UInt> & dofs,
-                                  SynchronizationTag tag) const;
+  // inline virtual void packDOFData(CommunicationBuffer & buffer,
+  //                                 const Array<UInt> & dofs,
+  //                                 SynchronizationTag tag) const;
 
-  inline virtual void unpackDOFData(CommunicationBuffer & buffer,
-                                    const Array<UInt> & dofs,
-                                    SynchronizationTag tag);
+  // inline virtual void unpackDOFData(CommunicationBuffer & buffer,
+  //                                   const Array<UInt> & dofs,
+  //                                   SynchronizationTag tag);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -103,13 +106,13 @@ public:
 protected:
   /// manager handling the dofs for this SparseMatrix solver
   DOFManager & _dof_manager;
+
+  /// The id of the associated matrix
+  ID matrix_id;
+
+  /// How to parallelize the solve
+  SolverParallelMethod parallel_method;
 };
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#include "solver_inline_impl.cc"
 
 __END_AKANTU__
 

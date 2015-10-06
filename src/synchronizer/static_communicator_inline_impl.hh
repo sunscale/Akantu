@@ -47,27 +47,27 @@ inline void StaticCommunicator::freeCommunicationRequest(std::vector<Communicati
 #endif //defined(__INTEL_COMPILER)
 
 /* -------------------------------------------------------------------------- */
-#define AKANTU_BOOST_REAL_COMMUNICATOR_CALL(r, call, comm_type)		\
-  case BOOST_PP_LIST_AT(comm_type, 0): {				\
-    BOOST_PP_LIST_AT(comm_type, 1) * comm =				\
+#define AKANTU_BOOST_REAL_COMMUNICATOR_CALL(r, call, comm_type)         \
+  case BOOST_PP_LIST_AT(comm_type, 0): {                                \
+    BOOST_PP_LIST_AT(comm_type, 1) * comm =                             \
       static_cast<BOOST_PP_LIST_AT(comm_type, 1) *>(real_static_communicator); \
-    BOOST_PP_IF(BOOST_PP_LIST_AT(call, 0),				\
-		return comm->BOOST_PP_LIST_AT(call, 1),			\
-		comm->BOOST_PP_LIST_AT(call, 1); break;);		\
+    BOOST_PP_IF(BOOST_PP_LIST_AT(call, 0),                              \
+                return comm->BOOST_PP_LIST_AT(call, 1),                 \
+                comm->BOOST_PP_LIST_AT(call, 1); break;);               \
   }
 
-#define AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(call, ret)		\
-  do {									\
-    switch(real_type)							\
-      {									\
-	BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_REAL_COMMUNICATOR_CALL,	\
-			      (ret, (call, BOST_PP_NIL)),		\
-			      AKANTU_COMMUNICATOR_LIST_ALL)		\
-      default:								\
-	StaticCommunicatorDummy * comm =				\
-	  static_cast<StaticCommunicatorDummy *>(real_static_communicator); \
-	BOOST_PP_IF(ret, return comm->call, comm->call);		\
-      }									\
+#define AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(call, ret)           \
+  do {                                                                  \
+    switch(real_type)                                                   \
+      {                                                                 \
+        BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_REAL_COMMUNICATOR_CALL,      \
+                              (ret, (call, BOST_PP_NIL)),               \
+                              AKANTU_COMMUNICATOR_LIST_ALL)             \
+      default:                                                          \
+        StaticCommunicatorDummy * comm =                                \
+          static_cast<StaticCommunicatorDummy *>(real_static_communicator); \
+        BOOST_PP_IF(ret, return comm->call, comm->call);                \
+      }                                                                 \
   } while(0)
 
 
@@ -86,7 +86,7 @@ inline void StaticCommunicator::receive(T * buffer, Int size, Int sender, Int ta
 /* -------------------------------------------------------------------------- */
 template<typename T>
 inline CommunicationRequest * StaticCommunicator::asyncSend(T * buffer, Int size,
-							    Int receiver, Int tag) {
+                                                            Int receiver, Int tag) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(asyncSend(buffer, size, receiver, tag), 1);
 }
 
@@ -106,7 +106,7 @@ template<typename T> inline void StaticCommunicator::probe(Int sender, Int tag,
 
 /* -------------------------------------------------------------------------- */
 template<typename T> inline void StaticCommunicator::allReduce(T * values, int nb_values,
-							       const SynchronizerOperation & op) {
+                                                               const SynchronizerOperation & op) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(allReduce(values, nb_values, op), 0);
 }
 

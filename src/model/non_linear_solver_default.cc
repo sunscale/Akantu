@@ -30,7 +30,7 @@
 /* -------------------------------------------------------------------------- */
 #include "non_linear_solver_default.hh"
 #include "dof_manager_default.hh"
-#include "solver_callback.hh"
+#include "non_linear_solver_callback.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -52,13 +52,14 @@ NonLinearSolverDefault::~NonLinearSolverDefault() {}
 /* ------------------------------------------------------------------------ */
 void NonLinearSolverDefault::solve() {
   // EventManager::sendEvent(NonLinearSolver::BeforeNonLinearSolverSolve(method));
+  this->solver_callback->predictor();
 
   switch (this->non_linear_solver_type) {
   case _nls_linear:
   case _nls_newton_raphson:
     break;
   case _nls_newton_raphson_modified:
-    this->dof_manager.getSolverCallback().assembleJacobian();
+    this->solver_callback->assembleJacobian();
     break;
   default:
     AKANTU_DEBUG_ERROR("The resolution method "
@@ -77,21 +78,23 @@ void NonLinearSolverDefault::solve() {
 
   do {
     if (this->non_linear_solver_type == _nls_newton_raphson)
-      this->dof_manager.getSolverCallback().assembleJacobian();
+      this->solver_callback->assembleJacobian();
 
     this->solver.solve();
+
+    this->solver_callback->corrector();
 
     // EventManager::sendEvent(NonLinearSolver::AfterSparseSolve(method));
 
     if (this->convergence_criteria_type == _scc_residual) {
-      this->dof_manager.getSolverCallback().assembleResidual();
+      this->solver_callback->assembleResidual();
       this->converged = this->testConvergence(this->dof_manager.getResidual());
     } else {
       this->converged = this->testConvergence(this->dof_manager.getSolution());
     }
 
     if (this->convergence_criteria_type == _scc_solution && !this->converged)
-      this->dof_manager.getSolverCallback().assembleResidual();
+      this->solver_callback->assembleResidual();
     // this->dump();
 
     this->n_iter++;
@@ -106,7 +109,7 @@ void NonLinearSolverDefault::solve() {
   // this makes sure that you have correct strains and stresses after the
   // solveStep function (e.g., for dumping)
   if (this->convergence_criteria_type == _scc_solution)
-    this->dof_manager.getSolverCallback().assembleResidual();
+    this->solver_callback->assembleResidual();
 
   if (this->converged) {
     //    EventManager::sendEvent(

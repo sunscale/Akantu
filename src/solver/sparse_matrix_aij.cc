@@ -30,10 +30,13 @@
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix_aij.hh"
 /* -------------------------------------------------------------------------- */
+#include <fstream>
+/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-// /* -------------------------------------------------------------------------- */
+// /* --------------------------------------------------------------------------
+// */
 // void SparseMatrixAIJ::buildProfile(const Mesh & mesh,
 //                                    const DOFSynchronizer & dof_synchronizer,
 //                                    UInt nb_degree_of_freedom) {
@@ -50,7 +53,8 @@ __BEGIN_AKANTU__
 //   Int * eq_nb_val = dof_synchronizer.getGlobalDOFEquationNumbers().storage();
 
 //   Mesh::type_iterator it =
-//       mesh.firstType(mesh.getSpatialDimension(), _not_ghost, _ek_not_defined);
+//       mesh.firstType(mesh.getSpatialDimension(), _not_ghost,
+//       _ek_not_defined);
 //   Mesh::type_iterator end =
 //       mesh.lastType(mesh.getSpatialDimension(), _not_ghost, _ek_not_defined);
 //   for (; it != end; ++it) {
@@ -119,7 +123,8 @@ __BEGIN_AKANTU__
 //   AKANTU_DEBUG_OUT();
 // }
 
-// /* -------------------------------------------------------------------------- */
+// /* --------------------------------------------------------------------------
+// */
 // void SparseMatrixAIJ::applyBoundary(const Array<bool> & boundary,
 //                                     Real block_val) {
 //   AKANTU_DEBUG_IN();
@@ -177,7 +182,8 @@ void SparseMatrixAIJ::saveProfile(const std::string & filename) const {
   outfile << m << " " << m << " " << this->nb_non_zero << std::endl;
 
   for (UInt i = 0; i < this->nb_non_zero; ++i) {
-    outfile << this->irn.storage()[i] << " " << this->jcn.storage()[i] << " 1" << std::endl;
+    outfile << this->irn.storage()[i] << " " << this->jcn.storage()[i] << " 1"
+            << std::endl;
   }
 
   outfile.close();
@@ -202,10 +208,12 @@ void SparseMatrixAIJ::saveMatrix(const std::string & filename) const {
     outfile << " general";
   outfile << std::endl;
 
-  outfile << this->size << " " << this->size << " " << this->nb_non_zero << std::endl;
+  outfile << this->size << " " << this->size << " " << this->nb_non_zero
+          << std::endl;
 
   for (UInt i = 0; i < this->nb_non_zero; ++i) {
-    outfile << this->irn(i) << " " << this->jcn(i) << " " << this->a(i) << std::endl;
+    outfile << this->irn(i) << " " << this->jcn(i) << " " << this->a(i)
+            << std::endl;
   }
 
   outfile.close();
@@ -215,55 +223,56 @@ void SparseMatrixAIJ::saveMatrix(const std::string & filename) const {
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
-                                Real alpha = 1., Real beta = 0.) {
+                                Real alpha, Real beta) {
   AKANTU_DEBUG_IN();
 
   y *= beta;
 
-  Int *  i_it = this->irn.storage();
-  Int *  j_it = this->jcn.storage();
-  Real * a_it = this->a.storage();
-  Real * y_it = y.storage();
-  Real * x_it = x.storage();
+  Array<Int>::const_scalar_iterator i_it = this->irn.storage();
+  Array<Int>::const_scalar_iterator j_it = this->jcn.storage();
+  Array<Real>::const_scalar_iterator a_it = this->a.storage();
+  Array<Real>::const_scalar_iterator x_it = x.storage();
+  Array<Real>::scalar_iterator y_it = y.storage();
 
-  for (UInt k = 0; k < this->nb_non_zero; ++k) {
-    UInt & i = *(i_it++);
-    UInt & j = *(j_it++);
-    Real & A = *(a_it++);
+  for (UInt k = 0; k < this->nb_non_zero; ++k, ++i_it, ++j_it, ++a_it) {
+    const Int & i = *i_it;
+    const Int & j = *j_it;
+    const Real & A = *a_it;
 
-    UInt local_i = this->dof_manager.getLocalDOFID(i - 1);
-    UInt local_j = this->dof_manager.getLocalDOFID(j - 1);
+    y_it[i] += alpha * A * x_it[j];
 
-    y_it[local_i] += alpha * A * x_it[local_j];
-
-    if ((this->matrix_type == _symmetric) && (local_i != local_j))
-      y_it[local_j] += alpha * A * x_it[local_i];
+    if ((this->matrix_type == _symmetric) && (i != j))
+      y_it[j] += alpha * A * x_it[i];
   }
 
-  //  if (dof_synchronizer) dof_synchronizer->reduceSynchronize<AddOperation>(vect);
+  //  if (dof_synchronizer)
+  //  dof_synchronizer->reduceSynchronize<AddOperation>(vect);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrixAIJ::copyContent(const SparseMatrixAIJ & matrix) {
+void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
   AKANTU_DEBUG_IN();
-  AKANTU_DEBUG_ASSERT(nb_non_zero == matrix.getNbNonZero(),
+  const SparseMatrixAIJ & mat = dynamic_cast<const SparseMatrixAIJ &>(matrix);
+  AKANTU_DEBUG_ASSERT(nb_non_zero == mat.getNbNonZero(),
                       "The to matrix don't have the same profiles");
-  memcpy(a.storage(), matrix.getA().storage(), nb_non_zero * sizeof(Real));
+  memcpy(a.storage(), mat.getA().storage(), nb_non_zero * sizeof(Real));
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrixAIJ::add(const SparseMatrixAIJ & matrix, Real alpha) {
-  AKANTU_DEBUG_ASSERT(nb_non_zero == matrix.getNbNonZero(),
-                      "The to matrix don't have the same profiles");
+void SparseMatrixAIJ::add(const SparseMatrix & B, Real alpha) {
+  Array<Real>::scalar_iterator a_it = this->a.storage();
+  Array<Int>::const_scalar_iterator i_it = this->irn.storage();
+  Array<Int>::const_scalar_iterator j_it = this->jcn.storage();
 
-  Real * a_val = this->a.storage();
-  Real * b_val = matrix.a.storage();
+  for (UInt n = 0; n < this->nb_non_zero; ++n, ++a_it, ++i_it, ++j_it) {
+    const Int & i = *i_it;
+    const Int & j = *j_it;
+    Real & A_ij = *a_it;
 
-  for (UInt n = 0; n < this->nb_non_zero; ++n) {
-    *a_val++ += alpha * *b_val++;
+    A_ij += alpha * B(i - 1, j - 1);
   }
 }
 

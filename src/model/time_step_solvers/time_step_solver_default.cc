@@ -29,6 +29,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "time_step_solver_default.hh"
+#include "dof_manager.hh"
+#include "integration_scheme_1st_order.hh"
+#include "integration_scheme_2nd_order.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -50,47 +53,66 @@ __BEGIN_AKANTU__
 
 //   AKANTU_DEBUG_OUT();
 // }
+/* -------------------------------------------------------------------------- */
+TimeStepSolverDefault::TimeStepSolverDefault(const TimeStepSolverType & type) :
+  TimeStepSolver(type) {
+  switch(type) {
+  case _tsst_forward_euler:
+    this->integration_scheme = new ForwardEuler();
+  case _tsst_trapezoidal_rule_1:
+    this->integration_scheme = new TrapezoidalRule1();
+  case _tsst_backward_euler:
+    this->integration_scheme = new BackwardEuler();
+  case _tsst_central_difference:
+    this->integration_scheme = new CentralDifference();
+  case _tsst_trapezoidal_rule_2:
+    this->integration_scheme = new TrapezoidalRule2();
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+TimeStepSolverDefault::~TimeStepSolverDefault() {
+  delete this->integration_scheme;
+}
 
 /* -------------------------------------------------------------------------- */
 void TimeStepSolverDefault::predictor() {
   AKANTU_DEBUG_IN();
 
-  Array<Real> & u = dof_manager.getDOFs(this->dof_id);
-  Array<Real> & blocked_dofs = dof_manager.getBlockedDOFs(this->dof_id);
+  Array<Real> & u = this->dof_manager.getDOFs(this->dof_id);
+  const Array<bool> & blocked_dofs =
+      this->dof_manager.getBlockedDOFs(this->dof_id);
 
-  IncrementsMap::itreator inc_it = increments.find(dof_id);
-  if(inc_it != increments.end()) {
-    inc_it->second->copy(u);
-  }
+  // increment.copy(u);
 
-  if (this->integrator->getOrder() == 1) {
+  if (this->integration_scheme->getOrder() == 1) {
     Array<Real> & u_dot = dof_manager.getDOFsDerivatives(this->dof_id, 1);
-    IntergrationScheme1stOrder & int =
-        *dynamic_cast<IntergrationScheme1stOrder *>(integrator);
-    int.integrationSchemePred(this->time_step, u, u_dot, blocked_dofs);
-  } else if (this->integrator->getOrder() == 2) {
+    IntegrationScheme1stOrder & int_scheme =
+        *dynamic_cast<IntegrationScheme1stOrder *>(this->integration_scheme);
+    int_scheme.integrationSchemePred(this->time_step, u, u_dot, blocked_dofs);
+  } else if (this->integration_scheme->getOrder() == 2) {
 
     Array<Real> & u_dot = dof_manager.getDOFsDerivatives(this->dof_id, 1);
     Array<Real> & u_dot_dot = dof_manager.getDOFsDerivatives(this->dof_id, 2);
 
-    IntergrationScheme2ndOrder & int =
-        *dynamic_cast<IntergrationScheme2ndOrder *>(integrator);
-    int.integrationSchemePred(this->time_step, u, u_dot, u_dot_dot,
-                              blocked_dofs);
+    IntegrationScheme2ndOrder & int_scheme =
+        *dynamic_cast<IntegrationScheme2ndOrder *>(this->integration_scheme);
+    int_scheme.integrationSchemePred(this->time_step, u, u_dot, u_dot_dot,
+                                     blocked_dofs);
   }
 
-  if (inc_it != increments.end()) {
-    UInt nb_degree_of_freedom =
-        u.getSize() * u.getNbComponent();
+  // UInt nb_degree_of_freedom = u.getSize() * u.getNbComponent();
 
-    Array<Real>::scalar_iterator incr_it = inc_it->second->begin_reinterpret(nb_degree_of_freedom);
-    Array<Real>::const_scalar_iterator u_it = u.begin_reinterpret(nb_degree_of_freedom);
-    Array<Real>::const_scalar_iterator u_end = u.end_reinterpret(nb_degree_of_freedom);
+  // Array<Real>::scalar_iterator incr_it =
+  //     increment.begin_reinterpret(nb_degree_of_freedom);
+  // Array<Real>::const_scalar_iterator u_it =
+  //     u.begin_reinterpret(nb_degree_of_freedom);
+  // Array<Real>::const_scalar_iterator u_end =
+  //     u.end_reinterpret(nb_degree_of_freedom);
 
-    for (; u_it != u_end; ++u_it, ++incr_it) {
-      *incr_it = *u_it - *incr_it;
-    }
-  }
+  // for (; u_it != u_end; ++u_it, ++incr_it) {
+  //   *incr_it = *u_it - *incr_it;
+  // }
 
   AKANTU_DEBUG_OUT();
 }
@@ -99,15 +121,51 @@ void TimeStepSolverDefault::predictor() {
 void TimeStepSolverDefault::corrector() {
   AKANTU_DEBUG_IN();
 
-  Array<Real> & u = dof_manager.getDOFs(this->dof_id);
-  Array<Real> & blocked_dofs = dof_manager.getBlockedDOFs(this->dof_id);
+  Array<Real> & u = this->dof_manager.getDOFs(this->dof_id);
+  const Array<Real> & solution = this->dof_manager.getSolution(this->dof_id);
+  const Array<bool> & blocked_dofs =
+      this->dof_manager.getBlockedDOFs(this->dof_id);
 
-  integrator->integrationSchemeCorrAccel(time_step, *displacement, *velocity,
-                                         *acceleration, *blocked_dofs,
-                                         *increment_acceleration);
+  // increment.copy(u);
 
-  if (previous_dofs)
-    previous_dofs.copy(u);
+  if (this->integration_scheme->getOrder() == 1) {
+    Array<Real> & u_dot = dof_manager.getDOFsDerivatives(this->dof_id, 1);
+    IntegrationScheme1stOrder & int_scheme =
+        *dynamic_cast<IntegrationScheme1stOrder *>(this->integration_scheme);
+
+    switch (this->corrector_type) {
+    case IntegrationScheme1stOrder::_temperature_corrector:
+      int_scheme.integrationSchemeCorrTemp(this->time_step, u, u_dot,
+                                           blocked_dofs, solution);
+      break;
+    case IntegrationScheme1stOrder::_temperature_rate_corrector:
+      int_scheme.integrationSchemeCorrTempRate(this->time_step, u, u_dot,
+                                               blocked_dofs, solution);
+      break;
+    }
+  } else if (this->integration_scheme->getOrder() == 2) {
+
+    Array<Real> & u_dot = dof_manager.getDOFsDerivatives(this->dof_id, 1);
+    Array<Real> & u_dot_dot = dof_manager.getDOFsDerivatives(this->dof_id, 2);
+
+    IntegrationScheme2ndOrder & int_scheme =
+        *dynamic_cast<IntegrationScheme2ndOrder *>(this->integration_scheme);
+
+    switch (this->corrector_type) {
+    case IntegrationScheme2ndOrder::_displacement_corrector:
+      int_scheme.integrationSchemeCorrDispl(this->time_step, u, u_dot,
+                                            u_dot_dot, blocked_dofs, solution);
+      break;
+    case IntegrationScheme2ndOrder::_velocity_corrector:
+      int_scheme.integrationSchemeCorrVeloc(this->time_step, u, u_dot,
+                                            u_dot_dot, blocked_dofs, solution);
+      break;
+    case IntegrationScheme2ndOrder::_acceleration_corrector:
+      int_scheme.integrationSchemeCorrAccel(this->time_step, u, u_dot,
+                                            u_dot_dot, blocked_dofs, solution);
+      break;
+    }
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -116,15 +174,15 @@ void TimeStepSolverDefault::corrector() {
 void TimeStepSolverDefault::solveStep() {
   AKANTU_DEBUG_IN();
 
-  EventManager::sendEvent(
-      SolidMechanicsModelEvent::BeforeSolveStepEvent(method));
+  // EventManager::sendEvent(
+  //     SolidMechanicsModelEvent::BeforeSolveStepEvent(method));
 
-  this->predictor();
-  this->solver->solve();
-  this->corrector();
+  // this->predictor();
+  // this->solver->solve();
+  // this->corrector();
 
-  EventManager::sendEvent(
-      SolidMechanicsModelEvent::AfterSolveStepEvent(method));
+  // EventManager::sendEvent(
+  //     SolidMechanicsModelEvent::AfterSolveStepEvent(method));
 
   AKANTU_DEBUG_OUT();
 }

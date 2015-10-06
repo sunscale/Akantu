@@ -50,15 +50,11 @@
 #include "boundary_condition.hh"
 #include "integrator_gauss.hh"
 #include "shape_lagrange.hh"
-#include "integration_scheme_2nd_order.hh"
-#include "solver.hh"
 #include "material_selector.hh"
 #include "solid_mechanics_model_event_handler.hh"
 /* -------------------------------------------------------------------------- */
 namespace akantu {
   class Material;
-  class IntegrationScheme2ndOrder;
-  class SparseMatrix;
   class DumperIOHelper;
 }
 /* -------------------------------------------------------------------------- */
@@ -260,10 +256,10 @@ public:
   /// compute the Cauchy stress on user demand.
   void computeCauchyStresses();
 
-  /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
-  template <NewmarkBeta::IntegrationSchemeCorrectorType type>
-  void solve(Array<Real> &increment, Real block_val = 1.,
-             bool need_factorize = true, bool has_profile_changed = false);
+  // /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
+  // template <NewmarkBeta::IntegrationSchemeCorrectorType type>
+  // void solve(Array<Real> &increment, Real block_val = 1.,
+  //            bool need_factorize = true, bool has_profile_changed = false);
 
 protected:
   /// finish the computation of residual to solve in increment
@@ -561,8 +557,8 @@ public:
   /// get the FEEngine object to integrate or interpolate on the boundary
   inline FEEngine & getFEEngineBoundary(const ID & name = "");
 
-  /// get integrator
-  AKANTU_GET_MACRO(Integrator, *integrator, const IntegrationScheme2ndOrder &);
+  // /// get integrator
+  // AKANTU_GET_MACRO(Integrator, *integrator, const IntegrationScheme2ndOrder &);
 
   /// get synchronizer
   AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const DistributedSynchronizer &);
@@ -668,8 +664,8 @@ protected:
   /// define if it is the default selector or not
   bool is_default_material_selector;
 
-  /// integration scheme of second order used
-  IntegrationScheme2ndOrder *integrator;
+  // /// integration scheme of second order used
+  // IntegrationScheme2ndOrder *integrator;
 
   /// increment of displacement
   Array <Real> *increment;

@@ -189,48 +189,57 @@ public:
   /* ------------------------------------------------------------------------ */
 
   /// Get an iterator that behaves like a pointer T * to the first entry
-  inline iterator<T> begin();
+  inline scalar_iterator begin();
   /// Get an iterator that behaves like a pointer T * to the end of the Array
-  inline iterator<T> end();
+  inline scalar_iterator end();
   /// Get a const_iterator to the beginging of an Array of scalar
-  inline const_iterator<T> begin() const;
+  inline const_scalar_iterator begin() const;
   /// Get a const_iterator to the end of an Array of scalar
-  inline const_iterator<T> end() const;
+  inline const_scalar_iterator end() const;
+
+  /// Get a scalar_iterator on the beginning of the Array considered of shape (new_size)
+  inline scalar_iterator begin_reinterpret(UInt new_size);
+  /// Get a scalar_iterator on the end of the Array considered of shape (new_size)
+  inline scalar_iterator end_reinterpret(UInt new_size);
+  /// Get a const_scalar_iterator on the beginning of the Array considered of shape (new_size)
+  inline const_scalar_iterator begin_reinterpret(UInt new_size) const;
+  /// Get a const_scalar_iterator on the end of the Array considered of shape (new_size)
+  inline const_scalar_iterator end_reinterpret(UInt new_size) const;
 
   /* ------------------------------------------------------------------------ */
-  /// Get a vector_iterator on the begining of the Array
+  /// Get a vector_iterator on the beginning of the Array
   inline vector_iterator begin(UInt n);
   /// Get a vector_iterator on the end of the Array
   inline vector_iterator end(UInt n);
-  /// Get a vector_iterator on the begining of the Array
+  /// Get a vector_iterator on the beginning of the Array
   inline const_vector_iterator begin(UInt n) const;
   /// Get a vector_iterator on the end of the Array
   inline const_vector_iterator end(UInt n) const;
 
-  /// Get a vector_iterator on the begining of the Array considered of shape (new_size, n)
+  /// Get a vector_iterator on the beginning of the Array considered of shape (new_size, n)
   inline vector_iterator begin_reinterpret(UInt n, UInt new_size);
   /// Get a vector_iterator on the end of the Array considered of shape (new_size, n)
   inline vector_iterator end_reinterpret(UInt n, UInt new_size);
-  /// Get a const_vector_iterator on the begining of the Array considered of shape (new_size, n)
+  /// Get a const_vector_iterator on the beginning of the Array considered of shape (new_size, n)
   inline const_vector_iterator begin_reinterpret(UInt n, UInt new_size) const;
   /// Get a const_vector_iterator on the end of the Array considered of shape (new_size, n)
   inline const_vector_iterator end_reinterpret(UInt n, UInt new_size) const;
 
   /* ------------------------------------------------------------------------ */
-  /// Get a matrix_iterator on the begining of the Array (Matrices of size (m, n))
+  /// Get a matrix_iterator on the beginning of the Array (Matrices of size (m, n))
   inline matrix_iterator begin(UInt m, UInt n);
   /// Get a matrix_iterator on the end of the Array (Matrices of size (m, n))
   inline matrix_iterator end(UInt m, UInt n);
-  /// Get a const_matrix_iterator on the begining of the Array (Matrices of size (m, n))
+  /// Get a const_matrix_iterator on the beginning of the Array (Matrices of size (m, n))
   inline const_matrix_iterator begin(UInt m, UInt n) const;
   /// Get a const_matrix_iterator on the end of the Array (Matrices of size (m, n))
   inline const_matrix_iterator end(UInt m, UInt n) const;
 
-  /// Get a matrix_iterator on the begining of the Array considered of shape (new_size, m*n)
+  /// Get a matrix_iterator on the beginning of the Array considered of shape (new_size, m*n)
   inline matrix_iterator begin_reinterpret(UInt m, UInt n, UInt size);
   /// Get a matrix_iterator on the end of the Array considered of shape (new_size, m*n)
   inline matrix_iterator end_reinterpret(UInt m, UInt n, UInt size);
-  /// Get a const_matrix_iterator on the begining of the Array considered of shape (new_size, m*n)
+  /// Get a const_matrix_iterator on the beginning of the Array considered of shape (new_size, m*n)
   inline const_matrix_iterator begin_reinterpret(UInt m, UInt n, UInt size) const;
   /// Get a const_matrix_iterator on the end of the Array considered of shape (new_size, m*n)
   inline const_matrix_iterator end_reinterpret(UInt m, UInt n, UInt size) const;

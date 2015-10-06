@@ -122,6 +122,12 @@ enum AnalysisMethod {
   _explicit_consistent_mass
 };
 
+/// enum DOFSupportType defines which kind of dof that can exists
+enum DOFSupportType {
+  _dst_nodal,
+  _dst_generic
+};
+
 //! enum ContactResolutionMethod types of solving for the contact
 enum ContactResolutionMethod {
   _penalty,
@@ -149,7 +155,10 @@ enum NonLinearSolverType {
 /// Type of time stepping solver
 enum TimeStepSolverType {
   _tsst_forward_euler,
+  _tsst_trapezoidal_rule_1,
+  _tsst_backward_euler,
   _tsst_central_difference,
+  _tsst_trapezoidal_rule_2
 };
 
 /// enum SolveConvergenceMethod different resolution algorithms

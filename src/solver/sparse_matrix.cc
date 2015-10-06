@@ -42,14 +42,16 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 SparseMatrix::SparseMatrix(DOFManager & dof_manager,
                            const MatrixType & matrix_type,
-			   const ID & id,
-			   const MemoryID & memory_id) :
+                           const ID & id,
+                           const MemoryID & memory_id) :
   Memory(id, memory_id),
   dof_manager(dof_manager),
   matrix_type(matrix_type),
   size(dof_manager.getSystemSize()),
   nb_non_zero(0) {
   AKANTU_DEBUG_IN();
+
+  this->offset = 1;
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   this->nb_proc = comm.getNbProc();
@@ -59,8 +61,8 @@ SparseMatrix::SparseMatrix(DOFManager & dof_manager,
 
 /* -------------------------------------------------------------------------- */
 SparseMatrix::SparseMatrix(const SparseMatrix & matrix,
-			   const ID & id,
-			   const MemoryID & memory_id) :
+                           const ID & id,
+                           const MemoryID & memory_id) :
   Memory(id, memory_id),
   dof_manager(matrix.dof_manager),
   matrix_type(matrix.matrix_type),
@@ -68,6 +70,8 @@ SparseMatrix::SparseMatrix(const SparseMatrix & matrix,
   nb_proc(matrix.nb_proc),
   nb_non_zero(matrix.nb_non_zero) {
   AKANTU_DEBUG_IN();
+
+  this->offset = 1;
 
   AKANTU_DEBUG_OUT();
 }

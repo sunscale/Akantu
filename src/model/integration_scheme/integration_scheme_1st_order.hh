@@ -30,13 +30,15 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "integration_scheme.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_INTEGRATION_SCHEME_1ST_ORDER_HH__
 #define __AKANTU_INTEGRATION_SCHEME_1ST_ORDER_HH__
 
 __BEGIN_AKANTU__
 
-class IntegrationScheme1stOrder {
+class IntegrationScheme1stOrder : public IntegrationScheme {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -46,25 +48,28 @@ public:
     _temperature_rate_corrector
   };
 
-  virtual ~IntegrationScheme1stOrder(){};
+  IntegrationScheme1stOrder() : IntegrationScheme(1){ };
+
+  virtual ~IntegrationScheme1stOrder() {};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void integrationSchemePred(Real delta_t, Array<Real> & u,
+  virtual void integrationSchemePred(Real delta_t,
+                                     Array<Real> & u,
                                      Array<Real> & u_dot,
-                                     Array<bool> & boundary) = 0;
+                                     const Array<bool> & boundary) const = 0;
 
   virtual void integrationSchemeCorrTemp(Real delta_t, Array<Real> & u,
                                          Array<Real> & u_dot,
-                                         Array<bool> & boundary,
-                                         Array<Real> & delta) = 0;
+                                         const Array<bool> & boundary,
+                                         const Array<Real> & delta) const = 0;
 
   virtual void integrationSchemeCorrTempRate(Real delta_t, Array<Real> & u,
                                              Array<Real> & u_dot,
-                                             Array<bool> & boundary,
-                                             Array<Real> & delta) = 0;
+                                             const Array<bool> & boundary,
+                                             const Array<Real> & delta) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

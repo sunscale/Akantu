@@ -31,9 +31,9 @@
 /* -------------------------------------------------------------------------- */
 
 inline void GeneralizedTrapezoidal::integrationSchemePred(Real delta_t,
-							  Array<Real> & u,
-							  Array<Real> & u_dot,
-							  Array<bool> & blocked_dofs) {
+                                                          Array<Real> & u,
+                                                          Array<Real> & u_dot,
+                                                          const Array<bool> & blocked_dofs) const {
   AKANTU_DEBUG_IN();
 
   UInt nb_nodes = u.getSize();
@@ -57,67 +57,67 @@ inline void GeneralizedTrapezoidal::integrationSchemePred(Real delta_t,
 
 /* -------------------------------------------------------------------------- */
 inline void GeneralizedTrapezoidal::integrationSchemeCorrTemp(Real delta_t,
-						       Array<Real> & u,
-						       Array<Real> & u_dot,
-						       Array<bool> & blocked_dofs,
-						       Array<Real> & delta) {
+                                                       Array<Real> & u,
+                                                       Array<Real> & u_dot,
+                                                       const Array<bool> & blocked_dofs,
+                                                       const Array<Real> & delta) const {
   AKANTU_DEBUG_IN();
 
   integrationSchemeCorr<GeneralizedTrapezoidal::_temperature_corrector>(delta_t,
-									u,
-									u_dot,
-									blocked_dofs,
-									delta);
+                                                                        u,
+                                                                        u_dot,
+                                                                        blocked_dofs,
+                                                                        delta);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 inline void GeneralizedTrapezoidal::integrationSchemeCorrTempRate(Real delta_t,
-							   Array<Real> & u,
-							   Array<Real> & u_dot,
-							   Array<bool> & blocked_dofs,
-							   Array<Real> & delta) {
+                                                           Array<Real> & u,
+                                                           Array<Real> & u_dot,
+                                                           const Array<bool> & blocked_dofs,
+                                                           const Array<Real> & delta) const {
   AKANTU_DEBUG_IN();
 
   integrationSchemeCorr<GeneralizedTrapezoidal::_temperature_rate_corrector>(delta_t,
-									     u,
-									     u_dot,
-									     blocked_dofs,
-									     delta);
+                                                                             u,
+                                                                             u_dot,
+                                                                             blocked_dofs,
+                                                                             delta);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template<>
-inline Real GeneralizedTrapezoidal::getTemperatureCoefficient<GeneralizedTrapezoidal::_temperature_corrector>(__attribute__ ((unused)) Real delta_t) {
+inline Real GeneralizedTrapezoidal::getTemperatureCoefficient<GeneralizedTrapezoidal::_temperature_corrector>(__attribute__ ((unused)) Real delta_t) const {
   return 1.;
 }
 
 template<>
-inline Real GeneralizedTrapezoidal::getTemperatureRateCoefficient<GeneralizedTrapezoidal::_temperature_corrector>(Real delta_t) {
+inline Real GeneralizedTrapezoidal::getTemperatureRateCoefficient<GeneralizedTrapezoidal::_temperature_corrector>(Real delta_t) const {
   return 1./(alpha * delta_t);
 }
 
 /* -------------------------------------------------------------------------- */
 template<>
-inline Real GeneralizedTrapezoidal::getTemperatureCoefficient<GeneralizedTrapezoidal::_temperature_rate_corrector>(Real delta_t) {
+inline Real GeneralizedTrapezoidal::getTemperatureCoefficient<GeneralizedTrapezoidal::_temperature_rate_corrector>(Real delta_t) const {
   return alpha * delta_t;
 }
 
 template<>
-inline Real GeneralizedTrapezoidal::getTemperatureRateCoefficient<GeneralizedTrapezoidal::_temperature_rate_corrector>(__attribute__ ((unused)) Real delta_t) {
+inline Real GeneralizedTrapezoidal::getTemperatureRateCoefficient<GeneralizedTrapezoidal::_temperature_rate_corrector>(__attribute__ ((unused)) Real delta_t) const {
   return 1.;
 }
 
 /* -------------------------------------------------------------------------- */
 template<GeneralizedTrapezoidal::IntegrationSchemeCorrectorType type>
 inline void GeneralizedTrapezoidal::integrationSchemeCorr(Real delta_t,
-						   Array<Real> & u,
-						   Array<Real> & u_dot,
-						   Array<bool> & blocked_dofs,
-						   Array<Real> & delta) {
+                                                   Array<Real> & u,
+                                                   Array<Real> & u_dot,
+                                                   const Array<bool> & blocked_dofs,
+                                                   const Array<Real> & delta) const {
   AKANTU_DEBUG_IN();
 
   UInt nb_nodes = u.getSize();

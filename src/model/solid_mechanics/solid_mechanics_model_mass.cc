@@ -71,7 +71,7 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
 
   FEEngine & fem = getFEEngine();
 
-  Array<Real> rho_1(0, spatial_dimension);
+  Array<Real> rho(0, spatial_dimension);
 
   Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
@@ -109,16 +109,16 @@ void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
 
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
 
-  Array<Real> rho_1(0, spatial_dimension);
+  Array<Real> rho(0, spatial_dimension);
   // UInt nb_element;
-  this->getDOFManager().getMatrix("mass").clear();
+  //  this->getDOFManager().getMatrix("mass").clear();
 
   Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
   for (; it != end; ++it) {
     ElementType type = *it;
     computeRho(rho, type, ghost_type);
-    fem.assembleFieldMatrix(rho, "mass", this->getDOFManager(),
+    fem.assembleFieldMatrix(rho, "mass", "displacement", this->getDOFManager(),
                             type, ghost_type);
   }
 

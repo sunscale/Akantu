@@ -98,25 +98,25 @@ public:
   inline void integrationSchemePred(Real delta_t, Array<Real> & u,
                                     Array<Real> & u_dot,
                                     Array<Real> & u_dot_dot,
-                                    Array<bool> & blocked_dofs) const;
+                                    const Array<bool> & blocked_dofs) const;
 
   inline void integrationSchemeCorrAccel(Real delta_t, Array<Real> & u,
                                          Array<Real> & u_dot,
                                          Array<Real> & u_dot_dot,
-                                         Array<bool> & blocked_dofs,
-                                         Array<Real> & delta) const;
+                                         const Array<bool> & blocked_dofs,
+                                         const Array<Real> & delta) const;
 
   inline void integrationSchemeCorrVeloc(Real delta_t, Array<Real> & u,
                                          Array<Real> & u_dot,
                                          Array<Real> & u_dot_dot,
-                                         Array<bool> & blocked_dofs,
-                                         Array<Real> & delta) const;
+                                         const Array<bool> & blocked_dofs,
+                                         const Array<Real> & delta) const;
 
   inline void integrationSchemeCorrDispl(Real delta_t, Array<Real> & u,
                                          Array<Real> & u_dot,
                                          Array<Real> & u_dot_dot,
-                                         Array<bool> & blocked_dofs,
-                                         Array<Real> & delta) const;
+                                         const Array<bool> & blocked_dofs,
+                                         const Array<Real> & delta) const;
 
 public:
   template <IntegrationSchemeCorrectorType type>
@@ -132,8 +132,8 @@ private:
   template <IntegrationSchemeCorrectorType type>
   void integrationSchemeCorr(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
                              Array<Real> & u_dot_dot,
-                             Array<bool> & blocked_dofs,
-                             Array<Real> & delta) const;
+                             const Array<bool> & blocked_dofs,
+                             const Array<Real> & delta) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
