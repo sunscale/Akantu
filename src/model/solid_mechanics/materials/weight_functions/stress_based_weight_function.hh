@@ -46,7 +46,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-  StressBasedWeightFunction(Material & material);
+  StressBasedWeightFunction(NonLocalManager & manager);
 
   /* -------------------------------------------------------------------------- */
   /* Base Weight Function inherited methods                                     */
@@ -59,8 +59,6 @@ public:
 
   inline void updateQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates);
 
-  inline void selectType(ElementType type1, GhostType ghost_type1,
-                         ElementType type2, GhostType ghost_type2);
 
   inline Real operator()(Real r,
 			 const QuadraturePoint & q1,
@@ -72,6 +70,9 @@ public:
                                Matrix<Real> & eigenvects,
                                Vector<Real> & x_s);
 
+protected:
+  inline void setInternal();
+
 private:
 
   /* ------------------------------------------------------------------------ */
@@ -81,27 +82,17 @@ private:
   Real ft;
 
   /// prinicipal stresses
-  InternalField<Real> stress_diag;
+  ElementTypeMapReal * stress_diag;
 
   /// for preselection of types (optimization)
-  Array<Real> * selected_stress_diag;
+  ElementTypeMapReal * selected_stress_diag;
 
   /// principal directions
-  InternalField<Real> stress_base;
-
-  /// for preselection of types (optimization)
-  Array<Real> * selected_stress_base;
-
-  //  InternalField<Real> quadrature_points_coordinates;
-  /// for preselection of types (optimization)
-  Array<Real> * selected_position_1;
-  Array<Real> * selected_position_2;
+  ElementTypeMapReal * stress_base;
 
   /// lenght intrinisic to the material
-  InternalField<Real> characteristic_size;
+  ElementTypeMapReal * characteristic_size;
 
-  /// for preselection of types (optimization)
-  Array<Real> * selected_characteristic_size;
 };
 
 #if defined (AKANTU_INCLUDE_INLINE_IMPL)

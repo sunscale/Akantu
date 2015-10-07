@@ -3,7 +3,7 @@
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @date   Wed Sep 23 17:16:30 2015
  *
- * @brief  Implementation of test material for the non-local neighborhood base test
+ * @brief  Implementation of test material damage
  *
  * @section LICENSE
  *
@@ -26,15 +26,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "test_material.hh"
+#include "test_material_damage.hh"
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
-TestMaterial<dim>::TestMaterial(SolidMechanicsModel & model, const ID & id) :
+TestMaterialDamage<dim>::TestMaterialDamage(SolidMechanicsModel & model, const ID & id) :
   Material(model, id),
-  MyElasticParent(model, id),
+  MaterialDamage<dim>(model, id),
   MyNonLocalParent(model, id),
   grad_u_nl("grad_u non local", *this) {
   this->is_non_local = true;
@@ -43,10 +43,10 @@ TestMaterial<dim>::TestMaterial(SolidMechanicsModel & model, const ID & id) :
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-void TestMaterial<spatial_dimension>::initMaterial() {
+void TestMaterialDamage<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
   this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), spatial_dimension*spatial_dimension);
-  MyElasticParent::initMaterial();
+  MaterialDamage<spatial_dimension>::initMaterial();
   MyNonLocalParent::initMaterial();
 
   AKANTU_DEBUG_OUT();
@@ -54,7 +54,7 @@ void TestMaterial<spatial_dimension>::initMaterial() {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-void TestMaterial<spatial_dimension>::insertQuadsInNeighborhoods(GhostType ghost_type) {
+void TestMaterialDamage<spatial_dimension>::insertQuadsInNeighborhoods(GhostType ghost_type) {
 
   /// this function will add all the quadrature points to the same
   /// default neighborhood instead of using one neighborhood per
@@ -91,7 +91,7 @@ void TestMaterial<spatial_dimension>::insertQuadsInNeighborhoods(GhostType ghost
 	for (UInt nq = 0; nq < nb_quad; ++nq) {
 	  q.num_point = nq;
 	  q.global_num = q.element * nb_quad + nq;
-	  manager.insertQuad(q, *quad, "test_region");
+	  manager.insertQuad(q, *quad, this->name, this->name);
 	  ++quad;
 	}
 	++elem;
@@ -102,7 +102,7 @@ void TestMaterial<spatial_dimension>::insertQuadsInNeighborhoods(GhostType ghost
 
 /* -------------------------------------------------------------------------- */
 // Instantiate the material for the 3 dimensions
-INSTANTIATE_MATERIAL(TestMaterial);
+INSTANTIATE_MATERIAL(TestMaterialDamage);
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

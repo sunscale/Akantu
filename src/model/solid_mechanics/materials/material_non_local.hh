@@ -31,13 +31,8 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "material.hh"
-#include "aka_grid_dynamic.hh"
 #include "fe_engine.hh"
-#include "base_weight_function.hh"
 
-namespace akantu {
-  class GridSynchronizer;
-}
 
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_MATERIAL_NON_LOCAL_HH__
@@ -46,7 +41,7 @@ namespace akantu {
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim, class WeightFunction = BaseWeightFunction>
+template<UInt dim>
 class MaterialNonLocal : public virtual Material {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -56,8 +51,6 @@ public:
   MaterialNonLocal(SolidMechanicsModel & model, const ID & id = "");
   virtual ~MaterialNonLocal();
 
-  typedef std::vector< std::pair<QuadraturePoint, QuadraturePoint> > PairList;
-
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -65,15 +58,7 @@ public:
   /// initialize the material computed parameter
   virtual void initMaterial();
 
-  virtual void updateResidual(GhostType ghost_type);
-
-  virtual void computeAllNonLocalStresses(GhostType ghost_type = _not_ghost);
-
-  void savePairs(const std::string & filename) const;
- 
-  void saveWeights(const std::string & filename) const;
-
-  void neighbourhoodStatistics(const std::string & filename) const;
+  virtual void updateResidual(GhostType ghost_type) {};
 
   /// insert the quadrature points in the neighborhoods of the non-local manager
   virtual void insertQuadsInNeighborhoods(GhostType ghost_type = _not_ghost);
@@ -81,104 +66,33 @@ public:
   /// update the values in the non-local internal fields
   void updateNonLocalInternals(ElementTypeMapReal & non_local_flattened, const ID & field_id, 
 			       const UInt nb_component);
-
-  template<typename T>
-  void weightedAvergageOnNeighbours(const InternalField<T> & to_accumulate,
-				    InternalField<T> & accumulated,
-				    UInt nb_degree_of_freedom,
-				    GhostType ghost_type2 = _not_ghost) const;
-
   /// constitutive law
   virtual void computeNonLocalStresses(GhostType ghost_type = _not_ghost) = 0;
 
 protected:
-  void updatePairList(const ElementTypeMapArray<Real> & quadrature_points_coordinates);
-
-  void computeWeights(const ElementTypeMapArray<Real> & quadrature_points_coordinates);
-
-  void createCellList(ElementTypeMapArray<Real> & quadrature_points_coordinates);
-
-  void cleanupExtraGhostElement(const ElementTypeMap<UInt> & nb_ghost_protected);
-
-  void fillCellList(const ElementTypeMapArray<Real> & quadrature_points_coordinates,
-		    const GhostType & ghost_type);
 
   virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-					  SynchronizationTag tag) const;
+					   SynchronizationTag tag) const{ return 0;};
 
   virtual inline void packElementData(CommunicationBuffer & buffer,
 				      const Array<Element> & elements,
-				      SynchronizationTag tag) const;
+				      SynchronizationTag tag) const {};
 
   virtual inline void unpackElementData(CommunicationBuffer & buffer,
 					const Array<Element> & elements,
-					SynchronizationTag tag);
+					SynchronizationTag tag){};
 
-  virtual inline void onElementsAdded(const Array<Element> & element_list);
+  virtual inline void onElementsAdded(const Array<Element> & element_list) {};
   virtual inline void onElementsRemoved(const Array<Element> & element_list,
 					const ElementTypeMapArray<UInt> & new_numbering,
-					const RemovedElementsEvent & event);
+					const RemovedElementsEvent & event) {};
 
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-
-  void registerNonLocalVariable(InternalField<Real> & local,
-				InternalField<Real> & non_local,
-				UInt nb_degree_of_freedom) {
-    ID id = local.getID();
-    NonLocalVariable & non_local_variable = non_local_variables[id];
-
-    non_local_variable.local = &local;
-    non_local_variable.non_local = &non_local;
-    non_local_variable.nb_component = nb_degree_of_freedom;
-  }
-
-  AKANTU_GET_MACRO(PairList, pair_list, const PairList &)
-  Real getRadius() const { return weight_func->getRadius(); }
-  AKANTU_GET_MACRO(CellList, *spatial_grid, const SpatialGrid<QuadraturePoint> &)
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
 
-  /// the weight function used
-  WeightFunction * weight_func;
-
-private:
-  /**
-   * the pairs of quadrature points
-   * 0: not ghost to not ghost
-   * 1: not ghost to ghost
-   */
-  PairList pair_list[2];
-
-  /// the weights associated to the pairs
-  Array<Real> * pair_weight[2];
-
-  /// the regular grid to construct/update the pair lists
-  SpatialGrid<QuadraturePoint> * spatial_grid;
-
-  /// the types of the existing pairs
-  typedef std::set< std::pair<ElementType, ElementType> > pair_type;
-  pair_type existing_pairs[2];
-
-  /// count the number of calls of computeStress
-  UInt compute_stress_calls;
-
-  struct NonLocalVariable {
-    InternalField<Real> * local;
-    InternalField<Real> * non_local;
-    UInt nb_component;
-  };
-
-  std::map<ID, NonLocalVariable> non_local_variables;
-
-  bool is_creating_grid;
-
-  GridSynchronizer * grid_synchronizer;
 };
 
 

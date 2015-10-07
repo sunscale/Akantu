@@ -13,10 +13,18 @@ material test_material [
 ]
 
 neighborhoods regions [
-	  non_local test_region base_wf [
-          radius = 0.5
+	  non_local mat_1 remove_wf [
+          radius = 0.5		  
 	  weight_function weight_parameter [
 	  		  update_rate = 1
+			  damage_limit = 0.9
+			  ]	  
+	]
+	  non_local mat_2 remove_wf [
+          radius = 0.5		  
+	  weight_function weight_parameter [
+	  		  update_rate = 1
+			  damage_limit = 0.9
 			  ]	  
 	]	  	  
 ]		  

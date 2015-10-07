@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
   model.addDumpField("material_index");
   model.dump();
 
-  NonLocalNeighborhoodBase & neighborhood = model.getNonLocalManager().getNeighborhood();
+  NonLocalNeighborhoodBase & neighborhood = model.getNonLocalManager().getNeighborhood("test_region");
 
   /// save the pair of quadrature points and the coords of all neighbors
   std::string output_1 = "quadrature_pairs";

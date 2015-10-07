@@ -62,7 +62,7 @@ public:
   inline void insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords, const ID & weight_func, ID neighborhood = "");
 
   /// return the fem object associated with a provided name
-  inline NonLocalNeighborhoodBase & getNeighborhood(const ID & name = "") const;
+  inline NonLocalNeighborhoodBase & getNeighborhood(const ID & name) const;
 
   /// create the grid synchronizers for each neighborhood
   void createNeighborhoodSynchronizers();
@@ -160,9 +160,6 @@ private:
 
   /// jacobians for all the elements in the mesh
   ElementTypeMap<const Array<Real> * > jacobians;
-
-  /// default neighborhood object
-  std::string default_neighborhood;
 
   /// store the position of the quadrature points
   ElementTypeMapReal quad_positions;

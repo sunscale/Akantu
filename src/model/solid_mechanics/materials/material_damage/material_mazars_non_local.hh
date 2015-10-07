@@ -47,12 +47,12 @@ __BEGIN_AKANTU__
  */
 template<UInt spatial_dimension>
 class MaterialMazarsNonLocal : public MaterialMazars<spatial_dimension>,
-			       public MaterialNonLocal<spatial_dimension, BaseWeightFunction> {
+			       public MaterialNonLocal<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialNonLocal<spatial_dimension, BaseWeightFunction> MaterialNonLocalParent;
+  typedef MaterialNonLocal<spatial_dimension> MaterialNonLocalParent;
 
   MaterialMazarsNonLocal(SolidMechanicsModel & model, const ID & id = "");
 

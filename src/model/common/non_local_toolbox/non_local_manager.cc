@@ -29,6 +29,7 @@
 #include "non_local_manager.hh"
 #include "non_local_neighborhood.hh"
 #include "material_non_local.hh"
+#include "base_weight_function.hh"
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
@@ -39,7 +40,6 @@ NonLocalManager::NonLocalManager(SolidMechanicsModel & model,
   Memory(id, memory_id),
   Parsable(_st_neighborhoods, id),
   model(model),
-  default_neighborhood("default_neighborhood"),
   quad_positions("quad_positions", id),
   volumes("volumes", id),
   spatial_dimension(this->model.getSpatialDimension()),
@@ -66,9 +66,22 @@ NonLocalManager::NonLocalManager(SolidMechanicsModel & model,
 
 /* -------------------------------------------------------------------------- */
 NonLocalManager::~NonLocalManager() {
+
+  /// delete neighborhoods
   NeighborhoodMap::iterator it;
   for (it = neighborhoods.begin(); it != neighborhoods.end(); ++it) {
     if(it->second) delete it->second;
+  }
+
+  /// delete non-local variables
+  std::map<ID, NonLocalVariable *>::iterator it_variables;
+  for (it_variables = non_local_variables.begin(); it_variables != non_local_variables.end(); ++it_variables) {
+    if(it_variables->second) delete it_variables->second;
+  }
+
+  std::map<ID, ElementTypeMapReal *>::iterator it_internals;
+  for (it_internals = weight_function_internals.begin(); it_internals != weight_function_internals.end(); ++it_internals) {
+    if(it_internals->second) delete it_internals->second;
   }
 
 }
@@ -98,9 +111,15 @@ void NonLocalManager::createNeighborhood(const ID & weight_func, const ID & neig
   std::stringstream sstr; sstr << id << ":neighborhood:" << neighborhood_id;
 
   if (weight_func_type == "base_wf")
-    neighborhoods[neighborhood_id] = new NonLocalNeighborhood<TestWeightFunction>(*this, this->quad_positions, sstr.str());
+    neighborhoods[neighborhood_id] = new NonLocalNeighborhood<BaseWeightFunction>(*this, this->quad_positions, sstr.str());
+  else if (weight_func_type == "remove_wf")
+    neighborhoods[neighborhood_id] = new NonLocalNeighborhood<RemoveDamagedWeightFunction>(*this, this->quad_positions, sstr.str());                                              
+  else if (weight_func_type == "stress_wf")
+    neighborhoods[neighborhood_id] = new NonLocalNeighborhood<StressBasedWeightFunction>(*this, this->quad_positions, sstr.str());
+  else if (weight_func_type == "damage_wf")
+    neighborhoods[neighborhood_id] = new NonLocalNeighborhood<DamagedWeightFunction>(*this, this->quad_positions, sstr.str());
   else
-    {std::cout << "error here" << std::endl;}
+    AKANTU_EXCEPTION("error in weight function type provided in material file");
 
   neighborhoods[neighborhood_id]->parseSection(section);
   neighborhoods[neighborhood_id]->initNeighborhood();
@@ -134,14 +153,14 @@ void NonLocalManager::flattenInternal(ElementTypeMapReal & internal_flat,
 
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::averageInternals(const GhostType & ghost_type) {
+  /// update the weights of the weight function
+    if (ghost_type == _not_ghost) 
+      this->computeWeights();
 
   /// loop over all neighborhoods and compute the non-local variables
   NeighborhoodMap::iterator neighborhood_it = neighborhoods.begin();
   NeighborhoodMap::iterator neighborhood_end = neighborhoods.end(); 
   for (; neighborhood_it != neighborhood_end; ++neighborhood_it) {
-    /// update the weights of the weight function
-    if (ghost_type == _not_ghost) 
-      neighborhood_it->second->updateWeights();
     /// loop over all the non-local variables
     std::map<ID, NonLocalVariable *>::iterator non_local_variable_it = non_local_variables.begin();
     std::map<ID, NonLocalVariable *>::iterator non_local_variable_end = non_local_variables.end();
@@ -164,13 +183,13 @@ void NonLocalManager::init(){
   for(UInt m = 0; m < this->non_local_materials.size(); ++m) {
     switch (spatial_dimension) {
     case 1:
-    dynamic_cast<MaterialNonLocal<1> &>(*(this->non_local_materials[m])).insertQuadsInNeighborhoods(_ghost); 
+      dynamic_cast<MaterialNonLocal<1> &>(*(this->non_local_materials[m])).insertQuadsInNeighborhoods(_ghost); 
     break;      
     case 2:
-    dynamic_cast<MaterialNonLocal<2> &>(*(this->non_local_materials[m])).insertQuadsInNeighborhoods(_ghost); 
+      dynamic_cast<MaterialNonLocal<2> &>(*(this->non_local_materials[m])).insertQuadsInNeighborhoods(_ghost); 
     break;      
     case 3:
-    dynamic_cast<MaterialNonLocal<3> &>(*(this->non_local_materials[m])).insertQuadsInNeighborhoods(_ghost); 
+      dynamic_cast<MaterialNonLocal<3> &>(*(this->non_local_materials[m])).insertQuadsInNeighborhoods(_ghost); 
     break;      
     }
 

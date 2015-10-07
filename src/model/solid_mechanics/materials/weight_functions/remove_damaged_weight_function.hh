@@ -46,17 +46,17 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  RemoveDamagedWeightFunction(Material & material) : BaseWeightFunction(material, "remove_damaged") {
+  RemoveDamagedWeightFunction(NonLocalManager & manager) : BaseWeightFunction(manager, "remove_damaged"),
+							   damage(NULL){
     this->registerParam("damage_limit", this->damage_limit, 1., _pat_parsable, "Damage Threshold");
+    this->init();
   }
 
   /* -------------------------------------------------------------------------- */
   /* Base Weight Function inherited methods                                     */
   /* -------------------------------------------------------------------------- */
-  inline void selectType(__attribute__((unused)) ElementType type1,
-                         __attribute__((unused)) GhostType ghost_type1,
-                         ElementType type2,
-                         GhostType ghost_type2);
+
+  virtual inline void init();
 
   inline Real operator()(Real r,
 			 const __attribute__((unused)) QuadraturePoint & q1,
@@ -86,7 +86,8 @@ private:
   Real damage_limit;
 
   /// internal pointer to the current damage vector
-  const Array<Real> * selected_damage;
+  ElementTypeMapReal * damage;
+
 };
 
 

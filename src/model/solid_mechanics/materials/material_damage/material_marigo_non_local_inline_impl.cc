@@ -39,8 +39,8 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::MaterialMarigoNonLocal(SolidMechanicsModel & model, const ID & id)  :
+template<UInt spatial_dimension>
+MaterialMarigoNonLocal<spatial_dimension>::MaterialMarigoNonLocal(SolidMechanicsModel & model, const ID & id)  :
   Material(model, id),
   MaterialMarigoNonLocalParent(model, id),
   Y("Y", *this), Ynl("Y non local", *this) {
@@ -52,17 +52,17 @@ MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::MaterialMarigoNonLoca
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::initMaterial() {
+template<UInt spatial_dimension>
+void MaterialMarigoNonLocal<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
-  this->registerNonLocalVariable(Y, Ynl, 1);
+  this->model->getNonLocalManager().registerNonLocalVariable(this->Y.getName(), Ynl.getName(), 1);
   MaterialMarigoNonLocalParent::initMaterial();
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::computeStress(ElementType el_type, GhostType ghost_type) {
+template<UInt spatial_dimension>
+void MaterialMarigoNonLocal<spatial_dimension>::computeStress(ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Real * dam = this->damage(el_type, ghost_type).storage();
@@ -81,8 +81,8 @@ void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::computeStress(El
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::computeNonLocalStress(ElementType type,
+template<UInt spatial_dimension>
+void MaterialMarigoNonLocal<spatial_dimension>::computeNonLocalStress(ElementType type,
 										      GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 

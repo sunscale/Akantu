@@ -30,21 +30,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
-inline void DamagedWeightFunction::selectType(__attribute__((unused)) ElementType type1,
-					      __attribute__((unused)) GhostType ghost_type1,
-					      ElementType type2,
-					      GhostType ghost_type2) {
-  /// preselect the damage array for a given type: for optimization
-  selected_damage = &(this->material.template getArray<Real>("damage", type2, ghost_type2));
-}
-
-/* -------------------------------------------------------------------------- */
 inline Real DamagedWeightFunction::operator()(Real r,
 					      const __attribute__((unused)) QuadraturePoint & q1,
 					      const QuadraturePoint & q2) {
   /// compute the weight
   UInt quad = q2.global_num;
-  Real D = (*selected_damage)(quad);
+  Array<Real> & dam_array = (*this->damage)(q2.type, q2.ghost_type);
+  Real D = dam_array(quad);
   Real Radius_t = 0;
   Real Radius_init = this->R2;
 
@@ -74,4 +66,9 @@ inline Real DamagedWeightFunction::operator()(Real r,
   Real alpha = std::max(0., 1. - r*r / Radius_init);
   Real w = std::pow(alpha,b);
   return w;
+}
+
+/* -------------------------------------------------------------------------- */
+inline void DamagedWeightFunction::init() {
+  this->damage = &(this->manager.registerWeightFunctionInternal("damage"));
 }

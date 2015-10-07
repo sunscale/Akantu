@@ -43,7 +43,7 @@ namespace akantu {
 __BEGIN_AKANTU__
 
 
-template<class WeightFunction = TestWeightFunction>
+template<class WeightFunction = BaseWeightFunction>
 class NonLocalNeighborhood : public NonLocalNeighborhoodBase {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -131,7 +131,7 @@ public:
 Real operator()(Real r,
 		const __attribute__((unused)) QuadraturePoint & q1,
 		const __attribute__((unused)) QuadraturePoint & q2) {
-  /// initialize the weight
+  /// initialize the weightx
   Real w = 0;
   /// compute weight for given r 
   if(r <= this->R) {
@@ -153,45 +153,45 @@ protected:
 
 };
 
-class TestDamageWeightFunction : public TestWeightFunction {
+// class TestDamageWeightFunction : public TestWeightFunction {
 
-public:
-  TestDamageWeightFunction(NonLocalManager & manager) : TestWeightFunction(manager){ 
-    this->registerParam("damage_limit", this->damage_limit, 1., _pat_parsable, "Damage Threshold");
-    this->setInternals();}
+// public:
+//   TestDamageWeightFunction(NonLocalManager & manager) : TestWeightFunction(manager){ 
+//     this->registerParam("damage_limit", this->damage_limit, 1., _pat_parsable, "Damage Threshold");
+//     this->setInternals();}
 
-Real operator()(Real r,
-		const __attribute__((unused)) QuadraturePoint & q1,
-		const __attribute__((unused)) QuadraturePoint & q2) {
-  /// compute the weight
-  UInt quad = q2.global_num;
+// Real operator()(Real r,
+// 		const __attribute__((unused)) QuadraturePoint & q1,
+// 		const __attribute__((unused)) QuadraturePoint & q2) {
+//   /// compute the weight
+//   UInt quad = q2.global_num;
 
-  if(q1 == q2) return 1.;
+//   if(q1 == q2) return 1.;
 
-  Array<Real> & dam = (*(this->damage))(q2.type, q2.ghost_type);
-  Real D = dam(quad);
-  Real w = 0.;
-  if(D < damage_limit) {
-    Real alpha = std::max(0., 1. - r*r / this->R2);
-    w = alpha * alpha;
-  }
-  return w;
-}
-  void updateInternals(){};
-  UInt getUpdateRate(){return update_rate;};
+//   Array<Real> & dam = (*(this->damage))(q2.type, q2.ghost_type);
+//   Real D = dam(quad);
+//   Real w = 0.;
+//   if(D < damage_limit) {
+//     Real alpha = std::max(0., 1. - r*r / this->R2);
+//     w = alpha * alpha;
+//   }
+//   return w;
+// }
+//   void updateInternals(){};
+//   UInt getUpdateRate(){return update_rate;};
 
-  void setInternals() {
-    this->damage = &(this->manager.registerWeightFunctionInternal("damage"));}
+//   void setInternals() {
+//     this->damage = &(this->manager.registerWeightFunctionInternal("damage"));}
 
-protected:
+// protected:
 
- /// limit at which a point is considered as complitely broken
-  Real damage_limit;
+//  /// limit at which a point is considered as complitely broken
+//   Real damage_limit;
 
-  /// internal pointer to the current damage vector
-  ElementTypeMapReal * damage;
+//   /// internal pointer to the current damage vector
+//   ElementTypeMapReal * damage;
 
-};
+// };
 
 
 __END_AKANTU__

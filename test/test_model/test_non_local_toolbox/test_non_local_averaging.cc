@@ -72,15 +72,14 @@ int main(int argc, char *argv[]) {
 
   /// apply constant grad_u field in all elements
   for (UInt m = 0; m < model.getNbMaterials(); ++m) {
-    MaterialNonLocal<spatial_dimension, BaseWeightFunction> & mat = dynamic_cast<MaterialNonLocal<spatial_dimension, BaseWeightFunction> & >(model.getMaterial(m));
-
+    Material & mat = model.getMaterial(m);
     Array<Real> & grad_u = const_cast<Array<Real> &> (mat.getInternal<Real>("grad_u")(element_type, ghost_type));
-
     Array<Real>::iterator< Matrix<Real> > grad_u_it = grad_u.begin(spatial_dimension, spatial_dimension);
     Array<Real>::iterator< Matrix<Real> > grad_u_end = grad_u.end(spatial_dimension, spatial_dimension);
     for (; grad_u_it != grad_u_end; ++grad_u_it) 
       (*grad_u_it) += applied_strain;
   }
+
   /// compute the non-local strains
   model.getNonLocalManager().computeAllNonLocalStresses();
   model.dump();
@@ -88,10 +87,9 @@ int main(int argc, char *argv[]) {
   /// verify the result: non-local averaging over constant field must
   /// yield same constant field
   Real test_result = 0.;
-  Matrix<Real> difference(spatial_dimension, spatial_dimension);
+  Matrix<Real> difference(spatial_dimension, spatial_dimension, 0.);
   for (UInt m = 0; m < model.getNbMaterials(); ++m) {
-    MaterialNonLocal<spatial_dimension, BaseWeightFunction> & mat = dynamic_cast<MaterialNonLocal<spatial_dimension, BaseWeightFunction> & >(model.getMaterial(m));
-
+    MaterialNonLocal<spatial_dimension> & mat = dynamic_cast<MaterialNonLocal<spatial_dimension> & >(model.getMaterial(m));
     Array<Real> & grad_u_nl = const_cast<Array<Real> &> (mat.getInternal<Real>("grad_u non local")(element_type, ghost_type));
 
     Array<Real>::iterator< Matrix<Real> > grad_u_nl_it = grad_u_nl.begin(spatial_dimension, spatial_dimension);

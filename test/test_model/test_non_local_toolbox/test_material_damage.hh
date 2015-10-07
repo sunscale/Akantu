@@ -1,9 +1,9 @@
 /**
- * @file   test_material.hh
+ * @file   test_material_damage.hh
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @date   Wed Sep 23 17:16:30 2015
  *
- * @brief  test material for the non-local neighborhood base test
+ * @brief  test material damage for the non-local remove damage test
  *
  * @section LICENSE
  *
@@ -26,17 +26,17 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "material_elastic.hh"
+#include "material_damage.hh"
 #include "material_non_local.hh"
 
-#ifndef __TEST_MATERIAL_HH__
-#define __TEST_MATERIAL_HH__
+#ifndef __TEST_MATERIAL_DAMAGE_HH__
+#define __TEST_MATERIAL_DAMAGE_HH__
 
 __BEGIN_AKANTU__
 
 template<UInt dim>
-class TestMaterial : public MaterialElastic<dim>,
-		     public MaterialNonLocal<dim>{
+class TestMaterialDamage : public  MaterialDamage<dim, MaterialElastic>,
+									 public MaterialNonLocal<dim> {
 
 /* -------------------------------------------------------------------------- */
 /* Constructor/Destructor                                                     */
@@ -44,15 +44,17 @@ class TestMaterial : public MaterialElastic<dim>,
 
 public:
   
-  TestMaterial(SolidMechanicsModel & model, const ID & id);
-  virtual ~TestMaterial() {};
+  TestMaterialDamage(SolidMechanicsModel & model, const ID & id);
+  virtual ~TestMaterialDamage() {};
   typedef MaterialNonLocal<dim> MyNonLocalParent;
-  typedef MaterialElastic<dim> MyElasticParent;
+
 /* -------------------------------------------------------------------------- */
 /* Methods                                                                    */
 /* -------------------------------------------------------------------------- */
 public:
   void initMaterial();
+
+  //void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
 
   void computeNonLocalStresses(GhostType ghost_type) {};
 
@@ -68,4 +70,4 @@ private:
 
 __END_AKANTU__
 
-#endif /* __TEST_MATERIAL_HH__ */
+#endif /* __TEST_MATERIAL_DAMAGE_HH__ */

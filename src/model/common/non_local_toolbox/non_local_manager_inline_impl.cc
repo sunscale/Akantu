@@ -39,7 +39,7 @@ __BEGIN_AKANTU__
 inline void NonLocalManager::insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords, 
 					const ID & weight_func, ID neighborhood) {
 
-  if (neighborhood == "") neighborhood = default_neighborhood;
+  if (neighborhood == "") neighborhood = weight_func;
 
   NeighborhoodMap::const_iterator it = neighborhoods.find(neighborhood);
   if (it == neighborhoods.end()) {
@@ -53,13 +53,11 @@ inline void NonLocalManager::insertQuad(const QuadraturePoint & quad, const Vect
 /* -------------------------------------------------------------------------- */
 inline NonLocalNeighborhoodBase & NonLocalManager::getNeighborhood(const ID & name) const{
   AKANTU_DEBUG_IN();
-  ID tmp_name = name;
-  if (name == "") tmp_name = default_neighborhood;
 
-  NeighborhoodMap::const_iterator it = neighborhoods.find(tmp_name);
+  NeighborhoodMap::const_iterator it = neighborhoods.find(name);
 
   AKANTU_DEBUG_ASSERT(it != neighborhoods.end(),
-		      "The neighborhood " << tmp_name << " is not registered");
+		      "The neighborhood " << name << " is not registered");
 
   AKANTU_DEBUG_OUT();
   return *(it->second);
@@ -138,7 +136,7 @@ inline ElementTypeMapReal & NonLocalManager::registerWeightFunctionInternal(cons
 
   std::map<ID, ElementTypeMapReal *>::const_iterator it = this->weight_function_internals.find(field_name);
   if (it == weight_function_internals.end()) {
-    weight_function_internals[field_name] = new ElementTypeMapReal();
+    weight_function_internals[field_name] = new ElementTypeMapReal(field_name, id);
   }
 
   return *(weight_function_internals[field_name]);
