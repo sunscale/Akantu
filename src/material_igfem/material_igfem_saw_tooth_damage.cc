@@ -174,8 +174,8 @@ UInt MaterialIGFEMSawToothDamage<spatial_dimension>::updateDamage() {
     AKANTU_DEBUG_IN();
     GhostType ghost_type = _not_ghost;;
 
-    Mesh::type_iterator it = this->model->getFEEngine().getMesh().firstType(spatial_dimension, ghost_type, _ek_igfem);
-    Mesh::type_iterator last_type = this->model->getFEEngine().getMesh().lastType(spatial_dimension, ghost_type, _ek_igfem);
+    Mesh::type_iterator it = this->model->getMesh().firstType(spatial_dimension, ghost_type, _ek_igfem);
+    Mesh::type_iterator last_type = this->model->getMesh().lastType(spatial_dimension, ghost_type, _ek_igfem);
 
     for(; it != last_type; ++it) {
       ElementType el_type = *it;

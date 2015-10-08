@@ -231,6 +231,7 @@ int main(int argc, char *argv[]) {
 
   /// dump mesh before the IGFEM interface is created
   model.dump();
+  model.dump("igfem elements");
 
   /// create the interface
   model.update(domain_name);
