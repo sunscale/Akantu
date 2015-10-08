@@ -63,7 +63,7 @@ public:
 
 public:
   /// Construct AABB tree for fast intersection computing
-  virtual void constructData();
+  virtual void constructData(GhostType ghost_type = _not_ghost);
 
   /**
    * @brief Construct a primitive and add it to a list of primitives

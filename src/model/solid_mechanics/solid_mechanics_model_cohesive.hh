@@ -248,6 +248,10 @@ private:
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
+/** 
+ * class that assigns the first cohesive material by default to the
+ * cohesive elements
+ */
 class DefaultMaterialCohesiveSelector : public DefaultMaterialSelector {
 public:
   DefaultMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model) :
