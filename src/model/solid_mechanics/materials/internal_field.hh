@@ -41,6 +41,10 @@ __BEGIN_AKANTU__
 class Material;
 class FEEngine;
 
+/**
+ * class for the internal fields of materials
+ * to store values for each quadrature
+ */
 template<typename T>
 class InternalField : public ElementTypeMapArray<T> {
   /* ------------------------------------------------------------------------ */

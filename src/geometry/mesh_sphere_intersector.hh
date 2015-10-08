@@ -41,34 +41,6 @@
 
 __BEGIN_AKANTU__
 
-/* -------------------------------------------------------------------------- */
-/* class for new igfem elements mesh events                                   */
-/* -------------------------------------------------------------------------- */
-#if defined(AKANTU_IGFEM)
-class NewIGFEMElementsEvent : public NewElementsEvent {
-public:
-  AKANTU_GET_MACRO_NOT_CONST(OldElementsList, old_elements, Array<Element> &);
-  AKANTU_GET_MACRO(OldElementsList, old_elements, const Array<Element> &);
-protected:
-  Array<Element> old_elements;
-};
-
-class NewIGFEMNodesEvent : public NewNodesEvent {
-public:
-  void setNewNodePerElem(const ElementTypeMapUInt & new_node_per_elem) {
-    this->new_node_per_elem = &new_node_per_elem;
-  }
-  void setType(ElementType new_type) {type = new_type;}
-  AKANTU_GET_MACRO(NewNodePerElem, *new_node_per_elem, const ElementTypeMapUInt &);
-  AKANTU_GET_MACRO(ElementType, type, ElementType);
-protected:
-  ElementType type;
-  const ElementTypeMapUInt * new_node_per_elem;
-};
-
-#endif
-
-
 /// Here, we know what kernel we have to use
 typedef Spherical SK;
 
@@ -85,16 +57,14 @@ class MeshSphereIntersector : public MeshGeomIntersector<dim, type, Line_arc<SK>
 
 public:
   /// Construct from mesh
-  explicit MeshSphereIntersector(Mesh & mesh,
-				 const ID & id = "mesh_sphere_intersector",
-				 const MemoryID & memory_id = 0);
+  explicit MeshSphereIntersector(Mesh & mesh);
 
   /// Destructor
   virtual ~MeshSphereIntersector();
 
 public:
   /// Construct the primitive tree object
-  virtual void constructData();
+  virtual void constructData(GhostType ghost_type = _not_ghost);
 
   /**
    * @brief Computes the intersection of the mesh with a sphere
@@ -106,7 +76,7 @@ public:
   }
 
   /// Compute intersection points between the mesh and a query
-  virtual void computeMeshQueryIntersectionPoint(const SK::Sphere_3 & query);
+  virtual void computeMeshQueryIntersectionPoint(const SK::Sphere_3 & query, UInt nb_old_nodes);
 
   /// Build the IGFEM mesh
   virtual void buildResultFromQueryList(const std::list<SK::Sphere_3> & query){
@@ -121,12 +91,6 @@ public:
 protected:
   /// tolerance for which the intersection is considered on the mesh node (relative to the segment lenght)
   Real tol_intersection_on_node;
-
-  /// number of fem nodes in the initial mesh
-  const UInt nb_nodes_fem;
-
-  /// number of primitive in an element of the template type
-  UInt nb_prim_by_el;
 
 };
  

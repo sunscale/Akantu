@@ -220,6 +220,9 @@ protected:
 					  Mesh & mesh,
 					  CommunicationBuffer & buffer);
 
+  /// substitute elements in the send and recv arrays
+  void substituteElements(const std::map<Element, Element> & old_to_new_elements);
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */

@@ -42,79 +42,53 @@
 __BEGIN_AKANTU__
 
 template<UInt dim, ElementType type>
-MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh,
-							const ID & id,
-							const MemoryID & memory_id):
-  parent_type(mesh, id, memory_id),
-  tol_intersection_on_node(1e-10),
-  nb_nodes_fem(mesh.getNodes().getSize()),
-  nb_prim_by_el(0)
+MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
+  parent_type(mesh),
+  tol_intersection_on_node(1e-10)
 {
   this->intersection_points = new Array<Real>(0,dim);
 
-  for(Mesh::type_iterator it = mesh.firstType(dim); it != mesh.lastType(dim); ++it){
 #if defined(AKANTU_IGFEM)
-    if(*it == _triangle_3){
-      // Addition of the igfem types in the mesh
-      this->mesh.addConnectivityType(_igfem_triangle_4, _not_ghost);
-      this->mesh.addConnectivityType(_igfem_triangle_4, _ghost);
-      this->mesh.addConnectivityType(_igfem_triangle_5, _not_ghost);
-      this->mesh.addConnectivityType(_igfem_triangle_5, _ghost);
-    }
-
-    else if( (*it != _triangle_3) && (*it != _igfem_triangle_4) && (*it != _igfem_triangle_5) ) {
-      AKANTU_DEBUG_ERROR("Not ready for mesh type " << *it);
-    }
-
-    if( (type == _triangle_3) || (type == _igfem_triangle_4) || (type == _igfem_triangle_5) ){
-      this->nb_prim_by_el = 3;
-      const_cast<UInt &>(this->nb_seg_by_el) = 3;
-    } else {
-      AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
-    }
+  if( (type == _triangle_3) || (type == _igfem_triangle_4) || (type == _igfem_triangle_5) ){
+    const_cast<UInt &>(this->nb_seg_by_el) = 3;
+  } else {
+    AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
+  }
 #else
-    if( (*it != _triangle_3) )
-      AKANTU_DEBUG_ERROR("Not ready for mesh type " << *it);
-    this->nb_prim_by_el = 3;
+  if( (type != _triangle_3) )
+    AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
 #endif
-  }
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
-    UInt nb_comp = 1 + nb_prim_by_el * 2;
-    this->new_node_per_elem.alloc(0, nb_comp, type, ghost_type, 0);
-  }
-
-  this->constructData();
-}
-
-  template<UInt dim, ElementType type>
-MeshSphereIntersector<dim, type>::~MeshSphereIntersector()
-{}
-
-template<UInt dim, ElementType type>
-void MeshSphereIntersector<dim, type>::constructData() {
-
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
-    this->new_node_per_elem(type, ghost_type).resize(this->mesh.getNbElement(type, ghost_type));
-    this->new_node_per_elem(type, ghost_type).clear();
-  }
-
-  MeshGeomIntersector<dim, type, Line_arc<SK>, SK::Sphere_3, SK>::constructData();
+  this->new_node_per_elem = new Array<UInt>(0, 1 + 4 * (dim-1));
 }
 
 template<UInt dim, ElementType type>
-void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const SK::Sphere_3 & query) {
+MeshSphereIntersector<dim, type>::~MeshSphereIntersector() {
+  delete this->new_node_per_elem;
+  delete this->intersection_points;
+}
+
+template<UInt dim, ElementType type>
+void MeshSphereIntersector<dim, type>::constructData(GhostType ghost_type) {
+
+  this->new_node_per_elem->resize(this->mesh.getNbElement(type, ghost_type));
+  this->new_node_per_elem->clear();
+
+  MeshGeomIntersector<dim, type, Line_arc<SK>, SK::Sphere_3, SK>::constructData(ghost_type);
+}
+
+template<UInt dim, ElementType type>
+void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const SK::Sphere_3 & query,
+									  UInt nb_old_nodes) {
   /// function to replace computeIntersectionQuery in a more generic geometry module version
   // The newNodeEvent is not send from this method who only compute the intersection points
   AKANTU_DEBUG_IN();
 
   Array<Real> & nodes = this->mesh.getNodes();
   UInt nb_node = nodes.getSize() + this->intersection_points->getSize();
-  UInt nb_not_ghost_elements = this->mesh.getNbElement(type);
 
   // Tolerance for proximity checks should be defined by user
+  Real global_tolerance = Math::getTolerance();
   Math::setTolerance(tol_intersection_on_node);
   typedef boost::variant<pair_type> sk_inter_res;
 
@@ -141,7 +115,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 
           bool is_on_mesh = false, is_new = true;
           // check if we already compute this intersection for a neighboor element
-	  UInt n = nb_nodes_fem;
+	  UInt n = nb_old_nodes;
 	  Array<Real>::vector_iterator existing_node = nodes.begin(dim);
 	  for (; n < nodes.getSize() ; ++n) {
 	    if (Math::are_vector_equal(dim, new_node.storage(), existing_node[n].storage())) {
@@ -187,25 +161,19 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 
 	  // deduce ghost type and element id
 	  UInt element_id = it->id();
-	  GhostType ghost_type = _not_ghost;
-	  if (element_id >= nb_not_ghost_elements) {
-	    element_id -= nb_not_ghost_elements;
-	    ghost_type = _ghost;
-	  }
-
-	  Array<UInt> & new_node_per_elem_array = this->new_node_per_elem(type, ghost_type);
 
 	  if (!is_on_mesh) {
-	    new_node_per_elem_array(element_id, 0) += 1;
-	    new_node_per_elem_array(element_id, (2 * new_node_per_elem_array(element_id, 0)) - 1) = n;
-	    new_node_per_elem_array(element_id, 2 * new_node_per_elem_array(element_id, 0)) = it->segId();
+	    UInt & nb_new_nodes_per_el = (*this->new_node_per_elem)(element_id, 0);
+	    nb_new_nodes_per_el += 1;
+	    (*this->new_node_per_elem)(element_id, (2 * nb_new_nodes_per_el) - 1) = n;
+	    (*this->new_node_per_elem)(element_id, 2 * nb_new_nodes_per_el) = it->segId();
 	  } else {
 	    // if intersection is at a node, write node number (in el) in pennultimate position
 	    if (Math::are_vector_equal(dim, source.storage(), new_node.storage())) {
-	      new_node_per_elem_array(element_id, (new_node_per_elem_array.getNbComponent() - 2)) = it->segId();
+	      (*this->new_node_per_elem)(element_id, ((*this->new_node_per_elem).getNbComponent() - 2)) = it->segId();
 	    } else {
-	      new_node_per_elem_array(element_id, (new_node_per_elem_array.getNbComponent() - 2)) =
-		(it->segId()+1) % this->nb_prim_by_el;
+	      (*this->new_node_per_elem)(element_id, ((*this->new_node_per_elem).getNbComponent() - 2)) =
+		(it->segId()+1) % this->nb_seg_by_el;
 	    }
 	  }
 	}
@@ -213,8 +181,11 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
     }
   }
 
+  Math::setTolerance(global_tolerance);
+
   AKANTU_DEBUG_OUT();
 }
+
 __END_AKANTU__
 
 #endif // __AKANTU_MESH_SPHERE_INTERSECTOR_TMPL_HH__

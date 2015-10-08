@@ -58,38 +58,32 @@ MeshGeomFactory<dim, type, Primitive, Kernel>::~MeshGeomFactory() {
  * AABB tree of geometrical primitves (`data_tree`).
  */
 template<UInt dim, ElementType type, class Primitive, class Kernel>
-void MeshGeomFactory<dim, type, Primitive, Kernel>::constructData() {
+void MeshGeomFactory<dim, type, Primitive, Kernel>::constructData(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   primitive_list.clear();
-  UInt nb_not_ghost_elements = mesh.getNbElement(type);
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
+  const Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
+  const Array<Real> & nodes = mesh.getNodes();
 
-    if (!mesh.getConnectivities().exists(type, ghost_type)) continue;
-    const Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
-    const Array<Real> & nodes = mesh.getNodes();
+  UInt el_index = 0;
+  Array<UInt>::const_vector_iterator it  = connectivity.begin(nb_nodes_per_element);
+  Array<UInt>::const_vector_iterator end = connectivity.end(nb_nodes_per_element);
 
-    Array<UInt>::const_vector_iterator begin = connectivity.begin(nb_nodes_per_element);
-    Array<UInt>::const_vector_iterator it    = connectivity.begin(nb_nodes_per_element);
-    Array<UInt>::const_vector_iterator end   = connectivity.end(nb_nodes_per_element);
+  Matrix<Real> node_coordinates(dim, nb_nodes_per_element);
 
-    Matrix<Real> node_coordinates(dim, nb_nodes_per_element);
+  // This loop builds the list of primitives
+  for (; it != end ; ++it, ++el_index) {
+    const Vector<UInt> & el_connectivity = *it;
 
-    // This loop builds the list of primitives
-    for (; it != end ; ++it) {
-      const Vector<UInt> & el_connectivity = *it;
+    for (UInt i = 0 ; i < nb_nodes_per_element ; i++)
+      for (UInt j = 0 ; j < dim ; j++)
+	node_coordinates(j, i) = nodes(el_connectivity(i), j);
 
-      for (UInt i = 0 ; i < nb_nodes_per_element ; i++)
-	for (UInt j = 0 ; j < dim ; j++)
-	  node_coordinates(j, i) = nodes(el_connectivity(i), j);
-
-      // the unique elemental id assigned to the primitive is the
-      // linearized element index over ghost type
-      addPrimitive(node_coordinates, (it - begin) + ghost_type * nb_not_ghost_elements);
-    }
+    // the unique elemental id assigned to the primitive is the
+    // linearized element index over ghost type
+    addPrimitive(node_coordinates, el_index);
   }
 
   delete data_tree;

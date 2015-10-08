@@ -366,8 +366,6 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
 
-  inline UInt getNbNodesPerElementList(const Array<Element> & elements) const;
-
   inline virtual UInt getNbDataForElements(const Array <Element> & elements,
 					   SynchronizationTag tag) const;
 

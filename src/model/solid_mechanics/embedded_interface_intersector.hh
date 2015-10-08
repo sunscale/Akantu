@@ -69,7 +69,7 @@ public:
 
 public:
   /// Generate the interface mesh
-  virtual void constructData();
+  virtual void constructData(GhostType ghost_type = _not_ghost);
 
   /// Create a segment with an element connectivity
   K::Segment_3 createSegment(const Vector<UInt> & connectivity);

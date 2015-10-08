@@ -175,7 +175,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
     if (facet_synchronizer != NULL)
-      inserter->initParallel(facet_synchronizer);
+      inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
     initAutomaticInsertion();
   } 
@@ -200,7 +200,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(std::string coh
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (facet_synchronizer != NULL)
-    inserter->initParallel(facet_synchronizer);
+    inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
   std::istringstream split(cohesive_surfaces);
   std::string physname;
@@ -244,7 +244,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(UInt cohesive_i
   }
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (facet_synchronizer != NULL)
-    inserter->initParallel(facet_synchronizer);
+    inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
 
   SolidMechanicsModel::initMaterials();

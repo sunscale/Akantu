@@ -1413,10 +1413,6 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
 
   if(method == _explicit_lumped_mass) this->assembleMassLumped();
 
-  if (method != _explicit_lumped_mass) {
-    this->initSolver();
-  }
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -1454,14 +1450,18 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
 
   if(current_position) current_position->resize(nb_nodes);
 
+  std::vector<Material *>::iterator mat_it;
+  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+    (*mat_it)->onNodesAdded(nodes_list, event);
+  }
+
   delete dof_synchronizer;
   dof_synchronizer = new DOFSynchronizer(mesh, spatial_dimension);
   dof_synchronizer->initLocalDOFEquationNumbers();
   dof_synchronizer->initGlobalDOFEquationNumbers();
 
-  std::vector<Material *>::iterator mat_it;
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    (*mat_it)->onNodesAdded(nodes_list, event);
+  if (method != _explicit_lumped_mass) {
+    this->initSolver();
   }
 
   AKANTU_DEBUG_OUT();
