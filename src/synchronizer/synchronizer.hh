@@ -82,6 +82,9 @@ public:
    */
   class Tag {
   public:
+    Tag() : tag(0) {}
+    Tag(int val) : tag(val) {}
+
     operator int() { return int(tag); }
 
     template<typename CommTag>
@@ -96,8 +99,14 @@ public:
       stream << (tag >> 12) << ":" << (tag >> 4 & 0xFF) << ":" << (tag & 0xF);
     }
   private:
-    UInt tag;
+    int tag;
   };
+
+  template<typename CommTag>
+  inline Tag genTagFromID(CommTag tag) {
+    Tag t(int(hash<std::string>(this->getID())) << 4 + (tag & 0xF));
+    return t;
+  }
 
 protected:
 

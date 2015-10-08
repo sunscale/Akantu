@@ -718,7 +718,11 @@ void DistributedSynchronizer::asynchronousSynchronize(DataAccessor & data_access
     if(p == rank || ssize == 0) continue;
 
     CommunicationBuffer & buffer = communication.send_buffer[p];
-    buffer.resize(ssize);
+    buffer.resize(ssize + sizeof(int)); // sizeof(int) is for the communication tag
+
+    Tag comm_tag = Tag::genTag(rank, counter, tag);
+    buffer << int(comm_tag);
+
 #ifndef AKANTU_NDEBUG
     UInt nb_elements   =  send_element[p].getSize();
     AKANTU_DEBUG_INFO("Packing data for proc " << p
@@ -744,11 +748,11 @@ void DistributedSynchronizer::asynchronousSynchronize(DataAccessor & data_access
 			<< buffer.getPackedSize() << " != " << ssize);
     AKANTU_DEBUG_INFO("Posting send to proc " << p
 		      << " (tag: " << tag << " - " << ssize << " data to send)"
-		      << " [" << Tag::genTag(rank, counter, tag) << "]");
+		      << " [ " << comm_tag << ":" << std::hex << int(this->genTagFromID(tag)) << " ]");
     communication.send_requests.push_back(static_communicator->asyncSend(buffer.storage(),
 									 ssize,
 									 p,
-									 Tag::genTag(rank, counter, tag)));
+									 this->genTagFromID(tag)));
   }
 
   AKANTU_DEBUG_ASSERT(communication.recv_requests.size() == 0,
@@ -758,55 +762,19 @@ void DistributedSynchronizer::asynchronousSynchronize(DataAccessor & data_access
     UInt rsize = communication.size_to_receive[p];
     if(p == rank || rsize == 0) continue;
     CommunicationBuffer & buffer = communication.recv_buffer[p];
-    buffer.resize(rsize);
+    buffer.resize(rsize + sizeof(int));
+
+    Tag comm_tag = Tag::genTag(rank, counter, tag);
+    buffer << int(comm_tag);
 
     AKANTU_DEBUG_INFO("Posting receive from proc " << p
 		      << " (tag: " << tag << " - " << rsize << " data to receive) "
-		      << " [" << Tag::genTag(p, counter, tag) << "]");
+		      << " [ " << comm_tag << ":" << std::hex << int(this->genTagFromID(tag)) << " ]");
     communication.recv_requests.push_back(static_communicator->asyncReceive(buffer.storage(),
 									    rsize,
 									    p,
-									    Tag::genTag(p, counter, tag)));
+									    this->genTagFromID(tag)));
   }
-
-
-#if defined(AKANTU_DEBUG_TOOLS) && defined(AKANTU_CORE_CXX11)
-  static std::set<SynchronizationTag> tags;
-  if(tags.find(tag) == tags.end()) {
-    debug::element_manager.print(debug::_dm_synch,
-				 [&send_element, rank, nb_proc, tag, id](const Element & el)->std::string {
-				   std::stringstream out;
-				   UInt elp = 0;
-				   for (UInt p = 0; p < nb_proc; ++p) {
-				     UInt pos = send_element[p].find(el);
-				     if(pos != UInt(-1)) {
-				       if(elp > 0) out << std::endl;
-				       out << id << " send (" << pos << "/" << send_element[p].getSize() << ") to proc " << p << " tag:" << tag;
-				       ++elp;
-				     }
-				   }
-				   return out.str();
-				 });
-
-    debug::element_manager.print(debug::_dm_synch,
-				 [&recv_element, rank, nb_proc, tag, id](const Element & el)->std::string {
-				   std::stringstream out;
-				   UInt elp = 0;
-				   for (UInt p = 0; p < nb_proc; ++p) {
-				     if(p == rank) continue;
-				     UInt pos = recv_element[p].find(el);
-				     if(pos != UInt(-1)) {
-				       if(elp > 0) out << std::endl;
-				       out << id << " recv (" << pos << "/" << recv_element[p].getSize() << ") from proc " << p << " tag:" << tag;
-				       ++elp;
-				     }
-				   }
-				   return out.str();
-				 });
-    tags.insert(tag);
-  }
-#endif
-
 
   AKANTU_DEBUG_OUT();
 }
@@ -836,6 +804,9 @@ void DistributedSynchronizer::waitEndSynchronize(DataAccessor & data_accessor,
 	AKANTU_DEBUG_INFO("Unpacking data coming from proc " << proc);
 	CommunicationBuffer & buffer = communication.recv_buffer[proc];
 
+	int _tag; buffer >> _tag;
+	Tag comm_tag(_tag);
+
 #ifndef AKANTU_NDEBUG
 	Array<Element>::const_iterator<Element> bit  = recv_element[proc].begin();
 	Array<Element>::const_iterator<Element> bend = recv_element[proc].end();
@@ -862,7 +833,8 @@ void DistributedSynchronizer::waitEndSynchronize(DataAccessor & data_accessor,
 			       << "(barycenter[" << i << "] = " << barycenter_loc(i)
 			       << " and buffer[" << i << "] = " << barycenter(i) << ") ["
 			       << std::abs((barycenter(i) - barycenter_loc(i))/bary_norm)
-			       << "] - tag: " << tag);
+			       << "] - tag: " << tag
+			       << " comm_tag[ " << comm_tag << " ]");
 	  }
 	}
 #endif
@@ -872,7 +844,8 @@ void DistributedSynchronizer::waitEndSynchronize(DataAccessor & data_accessor,
 
 	AKANTU_DEBUG_ASSERT(buffer.getLeftToUnpack() == 0,
 			    "all data have not been unpacked: "
-			    << buffer.getLeftToUnpack() << " bytes left");
+			    << buffer.getLeftToUnpack() << " bytes left"
+			    << " [ " << comm_tag << " ]");
 	static_communicator->freeCommunicationRequest(req);
       } else {
 	req_not_finished_tmp->push_back(req);
