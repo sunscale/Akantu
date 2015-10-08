@@ -6,7 +6,7 @@
  * @date creation: Fri Mar 13 2015
  * @date last modification: Tue june 16 2015
  *
- * @brief  Tests the interface mesh generation
+ * @brief  Tests the IGFEM mesh generation for multiple spheres
  *
  * @section LICENSE
  *
@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 
 #include "mesh_sphere_intersector.hh"
+#include "mesh_igfem_spherical_growing_gel.hh"
 
 #include "dumper_paraview.hh"
 
@@ -58,8 +59,8 @@ int main (int argc, char * argv[]) {
   // SK::Sphere_3 sphere(SK::Point_3(0, 0, 0), 0.3*0.3); //"mesh.msh"
   SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.2*0.2); //"test_geometry_triangle.msh"
   SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.4999999999); //"test_geometry_triangle.msh"
-  MeshSphereIntersector<2, _triangle_3> intersector_sphere(mesh);
-  intersector_sphere.constructData();
+  MeshIgfemSphericalGrowingGel<2> sphere_intersector(mesh);
+  sphere_intersector.init();
 
   std::list<SK::Sphere_3> sphere_list;
   sphere_list.push_back(sphere);
@@ -72,7 +73,7 @@ int main (int argc, char * argv[]) {
   //dumper_igfem.dump();
   dumper_regular.dump();
 
-  intersector_sphere.buildResultFromQueryList(sphere_list);
+  sphere_intersector.buildIgfemMeshFromSpheres(sphere_list);
   dumper_igfem.dump();
   dumper_regular.dump();
   
@@ -84,17 +85,6 @@ int main (int argc, char * argv[]) {
 	      << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl; 
     return EXIT_FAILURE;
   }
-
-  const Array<UInt> new_node_triangle_3 = intersector_sphere.getNewNodePerElem(_triangle_3);
-  if ( (new_node_triangle_3(0,0) != 1) || (new_node_triangle_3(1,0) != 2)){
-    for(UInt k=0; k != new_node_triangle_3.getSize(); ++k){
-      std::cout << new_node_triangle_3(k,0) << " new nodes in element " << k << ", node(s): "
-		<< new_node_triangle_3(k,1) << ", " << new_node_triangle_3(k,3)
-		<< ", on segment(s):" << new_node_triangle_3(k,2) << ", "
-		<< new_node_triangle_3(k,4) << std::endl;
-    }
-    return EXIT_FAILURE;
-    }
 
   finalize();
   return EXIT_SUCCESS;

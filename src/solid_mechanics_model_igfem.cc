@@ -40,7 +40,8 @@ SolidMechanicsModelIGFEM::SolidMechanicsModelIGFEM(Mesh & mesh,
 						   const ID & id,
 						   const MemoryID & memory_id) :
   SolidMechanicsModel(mesh, dim, id, memory_id),
-  IGFEMEnrichment(mesh) {
+  IGFEMEnrichment(mesh),
+  global_ids_updater(NULL) {
   AKANTU_DEBUG_IN();
 
   delete material_selector;
@@ -61,7 +62,7 @@ SolidMechanicsModelIGFEM::SolidMechanicsModelIGFEM(Mesh & mesh,
 /* -------------------------------------------------------------------------- */
 SolidMechanicsModelIGFEM::~SolidMechanicsModelIGFEM() {
   AKANTU_DEBUG_IN();
-
+  if (global_ids_updater) delete global_ids_updater;
   AKANTU_DEBUG_OUT();
 }
 
@@ -118,6 +119,8 @@ void SolidMechanicsModelIGFEM::initParallel(MeshPartition * partition,
 					    DataAccessor * data_accessor) {
   SolidMechanicsModel::initParallel(partition, data_accessor);
   this->intersector_sphere.setDistributedSynchronizer(synch_parallel);
+  if (mesh.isDistributed())
+    global_ids_updater = new GlobalIdsUpdater(mesh, synch_parallel);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -197,7 +200,7 @@ void SolidMechanicsModelIGFEM::onElementsAdded(const Array<Element> & elements,
     this->element_map.clear();
     const Array<Element> & old_elements = igfem_event->getOldElementsList();
     for (UInt e = 0; e < elements.getSize(); ++e) {
-      this->element_map.insert( std::pair<Element, Element>(elements(e), old_elements(e)) );
+      this->element_map[elements(e)] = old_elements(e);
     }
   }
 
@@ -207,7 +210,6 @@ void SolidMechanicsModelIGFEM::onElementsAdded(const Array<Element> & elements,
 
   SolidMechanicsModel::onElementsAdded(elements, event);
   this->reassignMaterial();
-
 
   AKANTU_DEBUG_OUT();
 }
@@ -220,13 +222,6 @@ void SolidMechanicsModelIGFEM::onElementsRemoved(const Array<Element> & element_
   this->getFEEngine("IGFEMFEEngine").initShapeFunctions(_not_ghost);
   this->getFEEngine("IGFEMFEEngine").initShapeFunctions(_ghost);
   SolidMechanicsModel::onElementsRemoved(element_list, new_numbering, event);
-
-  // communicate global connectivity for slave nodes
-  if (synch_parallel) {
-    synch_parallel->computeBufferSize(*this, _gst_smmi_global_conn);
-    synch_parallel->asynchronousSynchronize(*this, _gst_smmi_global_conn);
-    synch_parallel->waitEndSynchronize(*this, _gst_smmi_global_conn);
-  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -239,8 +234,8 @@ void SolidMechanicsModelIGFEM::onNodesAdded(const Array<UInt> & nodes_list,
   if (igfem_event != NULL) {
     intersector_sphere.updateNodeType(nodes_list,
 				      igfem_event->getNewNodePerElem(),
-				      igfem_event->getElementType());
-    updateLocalMasterGlobalConnectivity(nodes_list);
+				      igfem_event->getElementType(),
+				      igfem_event->getGhostType());
   }
 
   UInt nb_new_nodes = nodes_list.getSize();
@@ -256,13 +251,34 @@ void SolidMechanicsModelIGFEM::onNodesAdded(const Array<UInt> & nodes_list,
 	(*igfem_nodes)(new_node, dim) = 0.;
     }
   }
-  SolidMechanicsModel::onNodesAdded(nodes_list, event);  
+
+  if (mesh.isDistributed())
+    mesh.getGlobalNodesIds().resize(mesh.getNbNodes());
+
+  if(displacement) displacement->resize(nb_nodes);
+  if(mass        ) mass        ->resize(nb_nodes);
+  if(velocity    ) velocity    ->resize(nb_nodes);
+  if(acceleration) acceleration->resize(nb_nodes);
+  if(force       ) force       ->resize(nb_nodes);
+  if(residual    ) residual    ->resize(nb_nodes);
+  if(blocked_dofs) blocked_dofs->resize(nb_nodes);
+
+  if(previous_displacement) previous_displacement->resize(nb_nodes);
+  if(increment_acceleration) increment_acceleration->resize(nb_nodes);
+  if(increment) increment->resize(nb_nodes);
+
+  if(current_position) current_position->resize(nb_nodes);
+
+  std::vector<Material *>::iterator mat_it;
+  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+    (*mat_it)->onNodesAdded(nodes_list, event);
+  }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelIGFEM::onNodesRemoved(const Array<UInt> & element_list,
+void SolidMechanicsModelIGFEM::onNodesRemoved(const Array<UInt> & nodes_list,
 					      const Array<UInt> & new_numbering,
 					      const RemovedNodesEvent & event) {
   if(real_displacement) mesh.removeNodesFromArray(*real_displacement, new_numbering);
@@ -270,8 +286,11 @@ void SolidMechanicsModelIGFEM::onNodesRemoved(const Array<UInt> & element_list,
   if(real_residual    ) mesh.removeNodesFromArray(*real_residual    , new_numbering);
   if(igfem_nodes    ) mesh.removeNodesFromArray(*igfem_nodes    , new_numbering);
 
-  SolidMechanicsModel::onNodesRemoved(element_list, new_numbering, event);
+  // communicate global connectivity for slave nodes
+  if (global_ids_updater)
+    global_ids_updater->updateGlobalIDs(mesh.getNbNodes() - intersector_sphere.getNbOriginalNodes());
 
+  SolidMechanicsModel::onNodesRemoved(nodes_list, new_numbering, event);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -515,50 +534,6 @@ void SolidMechanicsModelIGFEM::transferInternalValues(const ID & internal, std::
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelIGFEM::updateLocalMasterGlobalConnectivity(const Array<UInt> & nodes_list) {
-  UInt local_nb_new_nodes = nodes_list.getSize();
-
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  Int rank = comm.whoAmI();
-  Int nb_proc = comm.getNbProc();
-  if (nb_proc == 1) return;
-
-  /// resize global ids array
-  Array<UInt> & nodes_global_ids = mesh.getGlobalNodesIds();
-  UInt nb_old_nodes = nodes_global_ids.getSize();
-
-  nodes_global_ids.resize(nb_old_nodes + local_nb_new_nodes);
-
-  /// compute amount of local or master doubled nodes
-  Vector<UInt> local_master_nodes(nb_proc);
-
-  for (UInt n = 0; n < local_nb_new_nodes; ++n) {
-    UInt node = nodes_list(n);
-    if (mesh.isLocalOrMasterNode(node)) ++local_master_nodes(rank);
-  }
-
-  comm.allGather(local_master_nodes.storage(), 1);
-
-  /// update global number of nodes
-  UInt total_nb_new_nodes = std::accumulate(local_master_nodes.storage(),
-					    local_master_nodes.storage() + nb_proc,
-					    0);
-
-  if (total_nb_new_nodes == 0) return;
-
-  /// set global ids of local and master nodes
-  UInt starting_index = std::accumulate(local_master_nodes.storage(),
-  					local_master_nodes.storage() + rank,
-  					mesh.getNbGlobalNodes());
-
-  for (UInt n = 0; n < local_nb_new_nodes; ++n) {
-    UInt node = nodes_list(n);
-    if (mesh.isLocalOrMasterNode(node)) {
-      nodes_global_ids(node) = starting_index;
-      ++starting_index;
-    }
-  }
-}
 
 
 __END_AKANTU__

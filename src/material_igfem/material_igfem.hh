@@ -89,6 +89,21 @@ protected:
 						      const ID & fe_engine_id) const;
 
   /* ------------------------------------------------------------------------ */
+  /* DataAccessor inherited members                                           */
+  /* ------------------------------------------------------------------------ */
+public:
+  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
+                                           SynchronizationTag tag) const;
+
+  virtual inline void packElementData(CommunicationBuffer & buffer,
+                                      const Array<Element> & elements,
+                                      SynchronizationTag tag) const;
+
+  virtual inline void unpackElementData(CommunicationBuffer & buffer,
+                                        const Array<Element> & elements,
+                                        SynchronizationTag tag);
+
+  /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 

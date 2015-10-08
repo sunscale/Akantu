@@ -72,7 +72,7 @@ void applyBoundaryConditions(SolidMechanicsModelIGFEM & model) {
   Real bottom  = lowerBounds(1);
   Real top = upperBounds(1);
   Real left = lowerBounds(0);
-  Real right = upperBounds(0);
+  //  Real right = upperBounds(0);
 
   Real eps = std::abs((top - bottom) * 1e-12);
   const Array<Real> & pos = mesh.getNodes();
@@ -242,7 +242,7 @@ int main(int argc, char *argv[]) {
   model.addDumpFieldToDumper("igfem elements", "eigen_grad_u");
 
 
-  /// Instantiate objects of class MyDamage
+  /// Instantiate objects of class MyDamageso
   MaterialDamageIterative<spatial_dimension> & mat_paste = dynamic_cast<MaterialDamageIterative<spatial_dimension> & >(model.getMaterial(1));
   MaterialDamageIterative<spatial_dimension> & mat_aggregate = dynamic_cast<MaterialDamageIterative<spatial_dimension> & >(model.getMaterial(0)); 
   MaterialIGFEMSawToothDamage<spatial_dimension> & mat_igfem = dynamic_cast<MaterialIGFEMSawToothDamage<spatial_dimension> & >(model.getMaterial(3)); 

@@ -19,6 +19,7 @@
 #include "solid_mechanics_model.hh"
 #include "solid_mechanics_model_event_handler.hh"
 #include "igfem_enrichment.hh"
+#include "global_ids_updater.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -102,8 +103,6 @@ protected:
 				 const ElementTypeMapArray<UInt> & new_numbering,
 				 const RemovedElementsEvent & event);
 
-  virtual void updateLocalMasterGlobalConnectivity(const Array<UInt> & nodes_list);
-
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface                                                       */
   /* ------------------------------------------------------------------------ */
@@ -126,26 +125,6 @@ public:
   virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag);
-
-  /* ------------------------------------------------------------------------ */
-  /* Data Accessor inherited members                                          */
-  /* ------------------------------------------------------------------------ */
-public:
-
-  inline virtual UInt getNbDataForElements(const Array<Element> & elements,
-					   SynchronizationTag tag) const;
-
-  inline virtual void packElementData(CommunicationBuffer & buffer,
-				      const Array<Element> & elements,
-				      SynchronizationTag tag) const;
-
-  inline virtual void unpackElementData(CommunicationBuffer & buffer,
-					const Array<Element> & elements,
-					SynchronizationTag tag);
-
-  template<bool pack_mode>
-  inline void packUnpackGlobalConnectivity(CommunicationBuffer & buffer,
-					   const Array<Element> & elements) const;
 
 /* -------------------------------------------------------------------------- */
 /* Accessors                                                                  */
@@ -173,6 +152,8 @@ private:
   bool moving_interface;
   /// map between and new elements (needed when the interface is moving)
   ElementMap element_map;
+  /// global connectivity ids updater
+  GlobalIdsUpdater * global_ids_updater;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -199,7 +180,5 @@ protected:
 
 };
 __END_AKANTU__
-
-#include "solid_mechanics_model_igfem_inline_impl.cc"
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_IGFEM_HH__ */

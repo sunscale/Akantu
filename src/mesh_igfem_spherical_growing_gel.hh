@@ -42,10 +42,37 @@
 
 __BEGIN_AKANTU__
 
+/* -------------------------------------------------------------------------- */
+/* classes for new igfem elements mesh events                                   */
+/* -------------------------------------------------------------------------- */
 
+class NewIGFEMElementsEvent : public NewElementsEvent {
+public:
+  AKANTU_GET_MACRO_NOT_CONST(OldElementsList, old_elements, Array<Element> &);
+  AKANTU_GET_MACRO(OldElementsList, old_elements, const Array<Element> &);
+protected:
+  Array<Element> old_elements;
+};
+
+class NewIGFEMNodesEvent : public NewNodesEvent {
+public:
+  void setNewNodePerElem(const Array<UInt> & new_node_per_elem) {
+    this->new_node_per_elem = &new_node_per_elem;
+  }
+  void setType(ElementType new_type) {type = new_type;}
+  void setGhostType(GhostType new_type) {ghost_type = new_type;}
+  AKANTU_GET_MACRO(NewNodePerElem, *new_node_per_elem, const Array<UInt> &);
+  AKANTU_GET_MACRO(ElementType, type, ElementType);
+  AKANTU_GET_MACRO(GhostType, ghost_type, GhostType);
+protected:
+  ElementType type;
+  GhostType ghost_type;
+  const Array<UInt> * new_node_per_elem;
+};
+
+/* -------------------------------------------------------------------------- */
 template<UInt dim>
 class MeshIgfemSphericalGrowingGel {
-
   // definition of the element list
 #define ELEMENT_LIST \
   (_triangle_3)		      \
@@ -58,171 +85,68 @@ class MeshIgfemSphericalGrowingGel {
 
   // Solution 2
 #define INSTANTIATOR(_type)						\
-  									\
-  std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iit = intersectors.find(_type); \
-  if(iit != intersectors.end()) {					\
-    inter = iit->second;						\
-  } else {								\
-    inter = new MeshSphereIntersector<dim, _type>(this->mesh, "mesh_sphere_intersector_"+_type); \
-    intersectors[_type] = inter;					\
-  }
+  intersectors(_type, ghost_type) = new MeshSphereIntersector<dim, _type>(this->mesh)
 
 public:
   /// Construct from mesh
-  MeshIgfemSphericalGrowingGel(Mesh & mesh):
-    mesh(mesh),
-    nb_nodes_fem(mesh.getNodes().getSize()),
-    nb_enriched_nodes(0),
-    synchronizer(NULL)
-  {
-    // Solution 1
-    //   /// the mesh sphere intersector for the supported element type
-    //   AKANTU_BOOST_APPLY_ON_LIST(INTERSECTOR_DEFINITION, ELEMENT_LIST)
-    ElementTypeMapArray<UInt>::type_iterator tit = mesh.firstType(dim);
-    ElementTypeMapArray<UInt>::type_iterator tend = mesh.lastType(dim);
-    for(;tit != tend; ++tit) { // loop to add corresponding IGFEM element types
-      if(*tit == _triangle_3){
-	this->mesh.addConnectivityType(_igfem_triangle_4, _not_ghost);
-	this->mesh.addConnectivityType(_igfem_triangle_4, _ghost);
-	this->mesh.addConnectivityType(_igfem_triangle_5, _not_ghost);
-	this->mesh.addConnectivityType(_igfem_triangle_5, _ghost);
-      }
-      else
-	AKANTU_DEBUG_ERROR("Not ready for mesh type " << *tit);
-    }
-    ElementTypeMapArray<UInt>::type_iterator tcit = mesh.getConnectivities().firstType(dim);
-    ElementTypeMapArray<UInt>::type_iterator tcend = mesh.getConnectivities().lastType(dim);
-    for(;tcit != tcend; ++tcit) {
-      MeshAbstractIntersector<SK::Sphere_3> * inter;
-      AKANTU_BOOST_LIST_SWITCH(INSTANTIATOR, ELEMENT_LIST, *tcit);
-    }
-  }
+  MeshIgfemSphericalGrowingGel(Mesh & mesh);
 
   /// Destructor
   ~MeshIgfemSphericalGrowingGel() {
-    // Solution 2
-    std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iit
-      = intersectors.begin();
-    std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iend
-      = intersectors.end();
-    for(;iit != iend; ++iit) {
-      delete iit->second;
+    for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
+      GhostType ghost_type = *gt;
+
+      Mesh::type_iterator it  = mesh.firstType(dim, ghost_type, _ek_not_defined);
+      Mesh::type_iterator end = mesh.lastType(dim, ghost_type, _ek_not_defined);
+
+      for(;it != end; ++it) {
+	delete intersectors(*it, ghost_type);
+      }
     }
   }
+
+  void init();
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   /// get the new_node_per_elem array
-  // AKANTU_GET_MACRO(NewNodePerElem, new_node_per_elem, const Array<UInt>)
+  AKANTU_GET_MACRO(NbOriginalNodes, nb_nodes_fem, UInt);
 
 public:
-  /// Construct the primitive tree object
-  void constructData(){
-    // Solution 1 TODO
-
-    // Solution 2
-    std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iit
-      = intersectors.begin();
-    std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iend
-      = intersectors.end();
-    for(;iit != iend; ++iit) {
-      MeshAbstractIntersector<SK::Sphere_3> & intersector = *(iit->second);
-      intersector.constructData();
-    }
-  }
-
   /// Remove the additionnal nodes
-  void removeAdditionnalNodes(){
-    AKANTU_DEBUG_IN();
+  void removeAdditionnalNodes();
 
-    RemovedNodesEvent remove_nodes(this->mesh);
-    Array<UInt> & nodes_removed = remove_nodes.getList();
-    Array<UInt> & new_numbering = remove_nodes.getNewNumbering();
-    UInt total_nodes = this->mesh.getNbNodes();
-    UInt nb_new_enriched_nodes  = total_nodes - this->nb_enriched_nodes - this->nb_nodes_fem;
-    UInt old_total_nodes = this->nb_nodes_fem + this->nb_enriched_nodes;
+  /// Compute the intersection points between the mesh and the query list for all element types and send the NewNodeEvent
+  void computeMeshQueryListIntersectionPoint(const std::list<SK::Sphere_3> & query_list);
 
-    for(UInt nnod = 0; nnod < this->nb_nodes_fem ; ++nnod){
-      new_numbering(nnod) = nnod ;
-    }
-
-    for(UInt nnod = nb_nodes_fem ; nnod < old_total_nodes; ++nnod){
-      new_numbering(nnod) = UInt(-1) ;
-      nodes_removed.push_back(nnod);
-    }
-
-    for(UInt nnod = 0; nnod < nb_new_enriched_nodes ; ++nnod){
-      new_numbering(nnod + old_total_nodes) = this->nb_nodes_fem + nnod ;
-    }
-    for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-      GhostType ghost_type = (GhostType) gt;
-
-      Mesh::type_iterator it  = mesh.firstType(_all_dimensions, ghost_type, _ek_not_defined);
-      Mesh::type_iterator end = mesh.lastType(_all_dimensions, ghost_type, _ek_not_defined);
-      for(; it != end; ++it) {
-
-	ElementType type(*it);
-	UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-
-	const Array<UInt> & connectivity_vect = mesh.getConnectivity(type, ghost_type);
-	UInt nb_element(connectivity_vect.getSize());
-	UInt * connectivity = connectivity_vect.storage();
-
-	UInt nb_nodes = nb_element*nb_nodes_per_element;
-
-	for (UInt n = 0; n < nb_nodes; ++n, ++connectivity) {
-	  UInt & node = *connectivity;
-	  UInt old_node = node;
-	  node = new_numbering(old_node);
-	}
-      }
-    }
-    this->mesh.sendEvent(remove_nodes);
-    AKANTU_DEBUG_OUT();
-  }
-
-  //Solution 1
-  /* #define INTERSECTORS(type)					\
-     intersector##type.buildResultFromQueryList(query_list)*/
-
-  /// Build the IGFEM mesh
-  void buildResultFromQueryList(const std::list<SK::Sphere_3> & query_list) {
-    /// store number of currently enriched nodes
-    this->nb_enriched_nodes = mesh.getNbNodes() - nb_nodes_fem;
-   constructData();
-    //Solution 1
-    //     it = mesh.firstType();
-    //     end = mesh.lastType();
-    //     for(;it != end;++it) {
-    //       AKANTU_BOOST_LIST_SWITCH(INTERSECTORS, ELEMENT_LIST, *it)
-    //     } }
-
-    //Solution 2
-    std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iit
-      = intersectors.begin();
-    std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *>::iterator iend
-      = intersectors.end();
-    for(;iit != iend; ++iit) {
-      MeshAbstractIntersector<SK::Sphere_3> & intersector = *(iit->second);
-      intersector.buildResultFromQueryList(query_list);
-    }
-    removeAdditionnalNodes();
-    ///MeshUtils::purifyMesh(mesh);
-  }
-
-  /// increase sphere radius and build the IGFEM mesh
-  void buildResultFromQueryList(const std::list<SK::Sphere_3> & query_list, Real inf_fact) {
+  /// increase sphere radius and build the new intersection points between the mesh and the query list for all element types and send the NewNodeEvent
+  void computeMeshQueryListIntersectionPoint(const std::list<SK::Sphere_3> & query_list, Real inf_fact) {
     std::list<SK::Sphere_3>::const_iterator query_it = query_list.begin(),
       query_end = query_list.end();
     std::list<SK::Sphere_3> sphere_list;
     for (; query_it != query_end ; ++query_it) {
       SK::Sphere_3 sphere(query_it->center(),
-			    query_it->squared_radius() * inf_fact * inf_fact );
+			  query_it->squared_radius() * inf_fact * inf_fact );
       sphere_list.push_back(sphere);
     }
-    buildResultFromQueryList(sphere_list);
+    computeMeshQueryListIntersectionPoint(sphere_list);
+  }
+
+  /// Build the IGFEM mesh from intersection points
+  void buildIgfemMesh();
+
+  /// Build the IGFEM mesh from spheres
+  void buildIgfemMeshFromSpheres(const std::list<SK::Sphere_3> & query_list){
+    computeMeshQueryListIntersectionPoint(query_list);
+    buildIgfemMesh();
+  }
+
+  /// Build the IGFEM mesh from spheres with increase factor
+  void buildIgfemMeshFromSpheres(const std::list<SK::Sphere_3> & query_list, Real inf_fact){
+    computeMeshQueryListIntersectionPoint(query_list, inf_fact);
+    buildIgfemMesh();
   }
 
   /// set the distributed synchronizer
@@ -233,29 +157,27 @@ public:
 
   /// update node type
   void updateNodeType(const Array<UInt> & nodes_list,
-		      const ElementTypeMapUInt & new_node_per_elem,
-		      ElementType type);
+		      const Array<UInt> & new_node_per_elem,
+		      ElementType type,
+		      GhostType ghost_type);
 
 protected:
   /// Build the unordered_map needed to assign the node type to new nodes in parallel
   void buildSegmentConnectivityToNodeType();
-
-  /// add a segment node type in the map
-  inline void addSegmentNodeType(const Mesh & mesh_facets, const Element & segment);
 
 protected:
   /// Mesh used to construct the primitives
   Mesh & mesh;
 
   /// number of fem nodes in the initial mesh
-  const UInt nb_nodes_fem;
+  UInt nb_nodes_fem;
 
   /// number of enriched nodes before intersection
   UInt nb_enriched_nodes;
 
   //Solution 2
   /// map of the elements types in the mesh and the corresponding intersectors
-  std::map<ElementType, MeshAbstractIntersector<SK::Sphere_3> *> intersectors;
+  ElementTypeMap< MeshAbstractIntersector<SK::Sphere_3> *> intersectors;
 
   /// Map linking pairs of nodes to a node type. The pairs of nodes
   /// contain the connectivity of the primitive segments that are
