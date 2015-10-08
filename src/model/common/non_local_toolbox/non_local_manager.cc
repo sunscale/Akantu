@@ -51,16 +51,15 @@ NonLocalManager::NonLocalManager(SolidMechanicsModel & model,
 
   /// parse the neighborhood information from the input file
   const Parser & parser = getStaticParser();
-  const ParserSection & non_local_section = *(parser.getSubSections(_st_neighborhoods).first);
 
   /// iterate over all the non-local sections and store them in a map
   std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
-    weight_sect = non_local_section.getSubSections(_st_non_local);
-    Parser::const_section_iterator it = weight_sect.first;
-    for (; it != weight_sect.second; ++it) {
-      const ParserSection & section = *it;
-      ID name = section.getName();
-      this->weight_function_types[name] = section;    
+    weight_sect = parser.getSubSections(_st_non_local);
+  Parser::const_section_iterator it = weight_sect.first;
+  for (; it != weight_sect.second; ++it) {
+    const ParserSection & section = *it;
+    ID name = section.getName();
+    this->weight_function_types[name] = section;    
   }
 }
 
@@ -154,14 +153,14 @@ void NonLocalManager::flattenInternal(ElementTypeMapReal & internal_flat,
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::averageInternals(const GhostType & ghost_type) {
   /// update the weights of the weight function
-    if (ghost_type == _not_ghost) 
-      this->computeWeights();
+  if (ghost_type == _not_ghost) 
+    this->computeWeights();
 
   /// loop over all neighborhoods and compute the non-local variables
   NeighborhoodMap::iterator neighborhood_it = neighborhoods.begin();
   NeighborhoodMap::iterator neighborhood_end = neighborhoods.end(); 
   for (; neighborhood_it != neighborhood_end; ++neighborhood_it) {
-    /// loop over all the non-local variables
+    /// loop over all the non-local variables of the given neighborhood
     std::map<ID, NonLocalVariable *>::iterator non_local_variable_it = non_local_variables.begin();
     std::map<ID, NonLocalVariable *>::iterator non_local_variable_end = non_local_variables.end();
     for(; non_local_variable_it != non_local_variable_end; ++non_local_variable_it) {
@@ -170,7 +169,6 @@ void NonLocalManager::averageInternals(const GhostType & ghost_type) {
 
     }
   }    
-
 }
 
 /* -------------------------------------------------------------------------- */
@@ -281,15 +279,23 @@ void NonLocalManager::computeAllNonLocalStresses() {
   }
 
   this->volumes.clear();  
-  SynchronizerRegistry & synch_registry = this->model.getSynchronizerRegistry();
-  synch_registry.asynchronousSynchronize(_gst_mnl_for_average);
 
-  AKANTU_DEBUG_INFO("Compute non local variables for local elements");
-  synch_registry.asynchronousSynchronize(_gst_mnl_weight);
+  /// loop over all neighborhoods and compute the non-local variables
+  NeighborhoodMap::iterator neighborhood_it = neighborhoods.begin();
+  NeighborhoodMap::iterator neighborhood_end = neighborhoods.end(); 
+  for (; neighborhood_it != neighborhood_end; ++neighborhood_it) {
+    neighborhood_it->second->getSynchronizerRegistry().asynchronousSynchronize(_gst_mnl_for_average);
+  }
+
   this->averageInternals(_not_ghost);
 
   AKANTU_DEBUG_INFO("Wait distant non local stresses");
-  synch_registry.waitEndSynchronize(_gst_mnl_for_average);
+
+  /// loop over all neighborhoods and compute the non-local variables
+  neighborhood_it = neighborhoods.begin();
+  for (; neighborhood_it != neighborhood_end; ++neighborhood_it) {
+    neighborhood_it->second->getSynchronizerRegistry().waitEndSynchronize(_gst_mnl_for_average);
+  }
 
   this->averageInternals(_ghost);
 

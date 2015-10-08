@@ -12,19 +12,19 @@ material test_material [
 	 nu  = 0    # poisson's ratio
 ]
 
-neighborhoods regions [
-	  non_local mat_1 remove_wf [
-          radius = 0.5		  
+
+non_local mat_1 remove_wf [
+	  radius = 0.5		  
 	  weight_function weight_parameter [
-	  		  update_rate = 1
-			  damage_limit = 0.9
-			  ]	  
-	]
-	  non_local mat_2 remove_wf [
-          radius = 0.5		  
+	  update_rate = 1
+	  damage_limit = 0.9
+	  ]	  
+]
+
+non_local mat_2 remove_wf [
+	  radius = 0.5		  
 	  weight_function weight_parameter [
-	  		  update_rate = 1
-			  damage_limit = 0.9
-			  ]	  
-	]	  	  
-]		  
+	  update_rate = 1
+	  damage_limit = 0.9
+	  ]	  
+]	  	  

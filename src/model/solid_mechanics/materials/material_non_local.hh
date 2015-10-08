@@ -71,6 +71,9 @@ public:
 
 protected:
 
+  /// associate the non-local variables of the material to their neighborhoods
+  virtual void nonLocalVariableToNeighborhood() = 0;
+  
   virtual inline UInt getNbDataForElements(const Array<Element> & elements,
 					   SynchronizationTag tag) const{ return 0;};
 

@@ -100,3 +100,9 @@ void MaterialMarigoNonLocal<spatial_dimension>::computeNonLocalStress(ElementTyp
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void MaterialMarigoNonLocal<spatial_dimension>::nonLocalVariableToNeighborhood() {
+  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(Ynl.getName(), this->name);
+}

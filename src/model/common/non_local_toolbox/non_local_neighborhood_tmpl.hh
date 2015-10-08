@@ -221,31 +221,34 @@ void NonLocalNeighborhood<WeightFunction>::weightedAverageOnNeighbours(const Ele
 								       UInt nb_degree_of_freedom,
 								       const GhostType & ghost_type2) const {
   AKANTU_DEBUG_IN();
+  std::set<ID>::iterator it = non_local_variables.find(accumulated.getName());
+  ///do averaging only for variables registered in the neighborhood
+  if (it != non_local_variables.end()) {
+    PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
+    PairList::const_iterator last_pair  = pair_list[ghost_type2].end();
 
-  PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
-  PairList::const_iterator last_pair  = pair_list[ghost_type2].end();
+    Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
 
-  Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
+    // Compute the weights
+    for(;first_pair != last_pair; ++first_pair, ++weight_it) {
+      Vector<Real> & weight = *weight_it;
 
-  // Compute the weights
-  for(;first_pair != last_pair; ++first_pair, ++weight_it) {
-    Vector<Real> & weight = *weight_it;
+      const QuadraturePoint & q1 = first_pair->first;
+      const QuadraturePoint & q2 = first_pair->second;
 
-    const QuadraturePoint & q1 = first_pair->first;
-    const QuadraturePoint & q2 = first_pair->second;
+      const Array<Real> & to_acc_1 = to_accumulate(q1.type, q1.ghost_type);
+      Array<Real> & acc_1 = accumulated(q1.type, q1.ghost_type);
+      const Array<Real> & to_acc_2 = to_accumulate(q2.type, q2.ghost_type);
+      Array<Real> & acc_2 = accumulated(q2.type, q2.ghost_type);
 
-    const Array<Real> & to_acc_1 = to_accumulate(q1.type, q1.ghost_type);
-    Array<Real> & acc_1 = accumulated(q1.type, q1.ghost_type);
-    const Array<Real> & to_acc_2 = to_accumulate(q2.type, q2.ghost_type);
-    Array<Real> & acc_2 = accumulated(q2.type, q2.ghost_type);
-
-    for(UInt d = 0; d < nb_degree_of_freedom; ++d) {
-      acc_1(q1.global_num, d) += weight(0) * to_acc_2(q2.global_num, d);
-    }
-
-    if(ghost_type2 != _ghost) {
       for(UInt d = 0; d < nb_degree_of_freedom; ++d) {
-      	acc_2(q2.global_num, d) += weight(1) * to_acc_1(q1.global_num, d);
+	acc_1(q1.global_num, d) += weight(0) * to_acc_2(q2.global_num, d);
+      }
+
+      if(ghost_type2 != _ghost) {
+	for(UInt d = 0; d < nb_degree_of_freedom; ++d) {
+	  acc_2(q2.global_num, d) += weight(1) * to_acc_1(q1.global_num, d);
+	}
       }
     }
   }
@@ -259,13 +262,19 @@ void NonLocalNeighborhood<WeightFunction>::updateWeights() {
   // Update the weights for the non local variable averaging  
   if(this->weight_function->getUpdateRate() &&
      (this->non_local_manager->getNbStressCalls() % this->weight_function->getUpdateRate() == 0))  {
-    // this->model->getSynchronizerRegistry().asynchronousSynchronize(_gst_mnl_weight);
-    // this->model->getSynchronizerRegistry().waitEndSynchronize(_gst_mnl_weight);
+    this->synch_registry->asynchronousSynchronize(_gst_mnl_weight);
+    this->synch_registry->waitEndSynchronize(_gst_mnl_weight);
     this->computeWeights();
   }
 }
 
+
 /* -------------------------------------------------------------------------- */
+template<class WeightFunction>
+void NonLocalNeighborhood<WeightFunction>::registerNonLocalVariable(const ID & id) {
+  this->non_local_variables.insert(id);
+}
+
 
 __END_AKANTU__
 

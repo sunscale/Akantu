@@ -101,6 +101,12 @@ void TestMaterialDamage<spatial_dimension>::insertQuadsInNeighborhoods(GhostType
 }
 
 /* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void TestMaterialDamage<spatial_dimension>::nonLocalVariableToNeighborhood() {
+  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), this->name);
+}
+
+/* -------------------------------------------------------------------------- */
 // Instantiate the material for the 3 dimensions
 INSTANTIATE_MATERIAL(TestMaterialDamage);
 /* -------------------------------------------------------------------------- */

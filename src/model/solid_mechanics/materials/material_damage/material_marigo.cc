@@ -98,7 +98,6 @@ void MaterialMarigo<spatial_dimension>::computeStress(ElementType el_type,
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
 
 INSTANTIATE_MATERIAL(MaterialMarigo);
 

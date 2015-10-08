@@ -44,13 +44,16 @@ NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(const SolidMechanicsModel & m
   is_creating_grid(false), 
   grid_synchronizer(NULL),
   quad_coordinates(quad_coordinates),
-  spatial_dimension(this->model.getSpatialDimension()){
+  spatial_dimension(this->model.getSpatialDimension()),
+  synch_registry(NULL) {
 
   AKANTU_DEBUG_IN();
 
   this->registerParam("radius"       , non_local_radius             , 100.,
 		      _pat_parsable | _pat_readable  , "Non local radius");
 
+
+  this->createSynchronizerRegistry(this);
 
   AKANTU_DEBUG_OUT();
 }
@@ -61,6 +64,7 @@ NonLocalNeighborhoodBase::~NonLocalNeighborhoodBase() {
 
   delete spatial_grid;
   delete grid_synchronizer;
+  delete synch_registry;
 
   AKANTU_DEBUG_OUT();
 }
@@ -165,19 +169,22 @@ void NonLocalNeighborhoodBase::updatePairList() {
 }
 
 /* -------------------------------------------------------------------------- */
+void NonLocalNeighborhoodBase::createSynchronizerRegistry(DataAccessor * data_accessor){
+  synch_registry = new SynchronizerRegistry(*data_accessor);
+}
+
+/* -------------------------------------------------------------------------- */
 void NonLocalNeighborhoodBase::createGridSynchronizer() {
   this->is_creating_grid = true;
   std::set<SynchronizationTag> tags;
   tags.insert(_gst_mnl_for_average);
   tags.insert(_gst_mnl_weight);
-  tags.insert(_gst_material_id);
 
-  SynchronizerRegistry & synch_registry = this->model.getSynchronizerRegistry();
   std::stringstream sstr; sstr << getID() << ":grid_synchronizer";
   this->grid_synchronizer = GridSynchronizer::createGridSynchronizer(this->model.getMesh(),
 								     *spatial_grid,
 								     sstr.str(),
-								     &synch_registry,
+								     synch_registry,
 								     tags);
   this->is_creating_grid = false;
 

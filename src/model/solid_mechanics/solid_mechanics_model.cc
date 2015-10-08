@@ -174,6 +174,7 @@ SolidMechanicsModel::~SolidMechanicsModel() {
 
   delete non_local_manager;
 
+
   AKANTU_DEBUG_OUT();
 }
 

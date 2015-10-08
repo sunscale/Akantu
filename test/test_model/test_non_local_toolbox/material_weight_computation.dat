@@ -5,11 +5,9 @@ material test_material [
 	 nu  = 0    # poisson's ratio
 ]
 
-neighborhoods regions [
-	  non_local test_region base_wf [
-          radius = 0.5
+non_local test_region base_wf [
+	  radius = 0.5
 	  weight_function weight_parameter [
-	  		  update_rate = 1
-			  ]	  
-	]	  	  
-]
+	  update_rate = 1
+	  ]	  
+]	  	  

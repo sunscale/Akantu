@@ -68,6 +68,7 @@ MaterialNonLocal<spatial_dimension>::~MaterialNonLocal() {
 template<UInt spatial_dimension>
 void MaterialNonLocal<spatial_dimension>::initMaterial() {
   this->insertQuadsInNeighborhoods(_not_ghost);
+  this->nonLocalVariableToNeighborhood();
 }
 
 // /* -------------------------------------------------------------------------- */

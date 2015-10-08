@@ -136,8 +136,11 @@ void MaterialMazarsNonLocal<spatial_dimension>::computeNonLocalStress(Array<Real
   AKANTU_DEBUG_OUT();
 }
 
-
 /* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void MaterialMazarsNonLocal<spatial_dimension>::nonLocalVariableToNeighborhood() {
+  
+}
 
 INSTANTIATE_MATERIAL(MaterialMazarsNonLocal);
 

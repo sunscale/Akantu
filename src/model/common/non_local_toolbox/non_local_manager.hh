@@ -61,8 +61,12 @@ public:
   /// insert new quadrature point in the grid
   inline void insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords, const ID & weight_func, ID neighborhood = "");
 
+  /// associate a non-local variable to a neighborhood
+  void nonLocalVariableToNeighborhood(const ID & id, const ID & neighborhood);
+
   /// return the fem object associated with a provided name
   inline NonLocalNeighborhoodBase & getNeighborhood(const ID & name) const;
+
 
   /// create the grid synchronizers for each neighborhood
   void createNeighborhoodSynchronizers();
@@ -94,6 +98,17 @@ public:
   /// update the flattened version of the weight function internals
   inline void updateWeightFunctionInternals();
 
+  /// get Nb data for synchronization in parallel
+  inline UInt getNbDataForElements(const Array<Element> & elements, const ID & id) const;
+
+  /// pack data for synchronization in parallel
+  inline void packElementData(CommunicationBuffer & buffer, const Array<Element> & elements, 
+			      SynchronizationTag tag, const ID & id) const;
+
+  /// unpack data for synchronization in parallel
+  inline void unpackElementData(CommunicationBuffer & buffer, const Array<Element> & elements, 
+				SynchronizationTag tag, const ID & id) const;
+  
 private:
 
   /// create a new neighborhood for a given domain ID

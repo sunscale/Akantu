@@ -35,6 +35,7 @@
 #include "grid_synchronizer.hh"
 #include "aka_memory.hh"
 #include "data_accessor.hh"
+#include "synchronizer_registry.hh"
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -66,6 +67,9 @@ public:
 
   /// intialize the neighborhood
   void initNeighborhood();
+  
+  /// create a synchronizer registry
+  void createSynchronizerRegistry(DataAccessor * data_accessor);
 
   /// initialize the material computed parameter
   inline void insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords);
@@ -93,6 +97,9 @@ public:
 
   /// update the weights for the non-local averaging
   virtual void updateWeights() {};
+
+  /// register a new non-local variable in the neighborhood
+  virtual void registerNonLocalVariable(const ID & id) {};
 
 protected:
 
@@ -123,6 +130,9 @@ protected:
 public:
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
   AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &);
+  /// return the object handling synchronizers
+  AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry, SynchronizerRegistry &);
+  AKANTU_GET_MACRO(NonLocalVariables, non_local_variables, const std::set<ID> &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -155,6 +165,12 @@ protected:
 
   /// the spatial dimension of the problem
   const UInt spatial_dimension;
+
+  /// synchronizer registry
+  SynchronizerRegistry * synch_registry;
+
+ /// list of non-local variables associated to the neighborhood
+  std::set<ID> non_local_variables;
 };
 
 /* -------------------------------------------------------------------------- */

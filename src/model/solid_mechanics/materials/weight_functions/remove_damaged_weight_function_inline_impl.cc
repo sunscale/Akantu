@@ -56,8 +56,9 @@ inline void RemoveDamagedWeightFunction::init() {
 /* -------------------------------------------------------------------------- */
 inline UInt RemoveDamagedWeightFunction::getNbDataForElements(const Array<Element> & elements,
 							      SynchronizationTag tag) const {
-  // if(tag == _gst_mnl_weight)
-  //   return this->material.getModel().getNbQuadraturePoints(elements) * sizeof(Real);
+
+  if(tag == _gst_mnl_weight)
+    return this->manager.getModel().getNbQuadraturePoints(elements) * sizeof(Real);
   
   return 0;
 }
@@ -66,24 +67,18 @@ inline UInt RemoveDamagedWeightFunction::getNbDataForElements(const Array<Elemen
 inline void RemoveDamagedWeightFunction::packElementData(CommunicationBuffer & buffer,
 							 const Array<Element> & elements,
 							 SynchronizationTag tag) const {
-  // if(tag == _gst_mnl_weight) {
-  //   ElementTypeMapArray<Real> & damage = this->material.template getInternal<Real>("damage");
-  //   this->material.packElementDataHelper(damage,
-  // 					 buffer,
-  // 					 elements);
-  // }
+  if(tag == _gst_mnl_weight) {
+    DataAccessor::packElementalDataHelper<Real>(*damage, buffer, elements, true, this->manager.getModel().getFEEngine());
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 inline void RemoveDamagedWeightFunction::unpackElementData(CommunicationBuffer & buffer,
 							   const Array<Element> & elements,
 							   SynchronizationTag tag) {
-  // if(tag == _gst_mnl_weight) {
-  //   ElementTypeMapArray<Real> & damage = this->material.template getInternal<Real>("damage");
-  //   this->material.unpackElementDataHelper(damage,
-  // 					   buffer,
-  // 					   elements);
-  // }
+  if(tag == _gst_mnl_weight) {
+    DataAccessor::unpackElementalDataHelper<Real>(*damage, buffer, elements, true, this->manager.getModel().getFEEngine());
+  }
 }
 
 

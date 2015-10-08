@@ -67,18 +67,6 @@ inline NonLocalNeighborhoodBase & NonLocalManager::getNeighborhood(const ID & na
 inline void NonLocalManager::computeWeights() {
   AKANTU_DEBUG_IN();
 
-  // /// need to resize the arrays
-  // for(UInt g = _not_ghost; g <= _ghost; ++g) {
-  //   GhostType gt = (GhostType) g;
-  //   Mesh::type_iterator it  = mesh.firstType(spatial_dimension, gt, _ek_regular);
-  //   Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, _ek_regular);
-  //   for(; it != end; ++it) {
-  //     UInt nb_element = mesh.getNbElement(*it, gt);
-  //     UInt nb_quads = this->model.getFEEngine().getNbQuadraturePoints(*it, gt);
-  //     volumes(*it, gt).resize(nb_element *nb_quads);
-  //   }
-  // }
-
   this->updateWeightFunctionInternals();
   this->volumes.clear();
 
@@ -158,6 +146,62 @@ inline void NonLocalManager::updateWeightFunctionInternals() {
     }   
   }
 }
+
+/* -------------------------------------------------------------------------- */
+inline void NonLocalManager::nonLocalVariableToNeighborhood(const ID & variable_name, const ID & neighborhood) {
+
+  NeighborhoodMap::const_iterator it = neighborhoods.find(neighborhood);
+
+  AKANTU_DEBUG_ASSERT(it != neighborhoods.end(),
+		      "The neighborhood " << neighborhood << " is not registered");
+  it->second->registerNonLocalVariable(variable_name);
+
+}
+
+/* -------------------------------------------------------------------------- */
+inline UInt NonLocalManager::getNbDataForElements(const Array<Element> & elements,
+						  const ID & id) const {
+  UInt size = 0;
+  UInt nb_quadrature_points = this->getModel().getNbQuadraturePoints(elements);
+  std::map<ID, NonLocalVariable *>::const_iterator it = non_local_variables.find(id);
+
+  AKANTU_DEBUG_ASSERT(it != non_local_variables.end(),
+		      "The non-local variable " << id << " is not registered");
+
+  size += it->second->nb_component * sizeof(Real) * nb_quadrature_points;
+  return size;
+}
+
+/* -------------------------------------------------------------------------- */
+inline void NonLocalManager::packElementData(CommunicationBuffer & buffer, 
+					     const Array<Element> & elements, 
+					     SynchronizationTag tag,
+					     const ID & id) const {
+
+  std::map<ID, NonLocalVariable *>::const_iterator it = non_local_variables.find(id);
+
+  AKANTU_DEBUG_ASSERT(it != non_local_variables.end(),
+		      "The non-local variable " << id << " is not registered");
+
+  DataAccessor::packElementalDataHelper<Real>(it->second->local, buffer, elements, true,
+					      this->model.getFEEngine());
+}
+
+/* -------------------------------------------------------------------------- */
+inline void NonLocalManager::unpackElementData(CommunicationBuffer & buffer, 
+					       const Array<Element> & elements, 
+					       SynchronizationTag tag,
+					       const ID & id) const {
+
+  std::map<ID, NonLocalVariable *>::const_iterator it = non_local_variables.find(id);
+
+  AKANTU_DEBUG_ASSERT(it != non_local_variables.end(),
+		      "The non-local variable " << id << " is not registered");
+
+  DataAccessor::unpackElementalDataHelper<Real>(it->second->local, buffer, elements, true,
+						this->model.getFEEngine());
+}
+
 __END_AKANTU__
 
 #endif /* __AKANTU_NON_LOCAL_MANAGER_INLINE_IMPL_CC__ */

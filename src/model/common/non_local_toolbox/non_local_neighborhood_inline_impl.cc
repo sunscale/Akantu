@@ -34,22 +34,20 @@ __BEGIN_AKANTU__
 template<class WeightFunction>
 inline UInt NonLocalNeighborhood<WeightFunction>::getNbDataForElements(const Array<Element> & elements,
 								       SynchronizationTag tag) const {
-  // UInt nb_quadrature_points = this->getModel().getNbQuadraturePoints(elements);
-  // UInt size = 0;
+  UInt size = 0;
 
-  // if(tag == _gst_mnl_for_average) {
-  //   typename std::map<ID, NonLocalVariable *>::const_iterator it = non_local_variables.begin();
-  //   typename std::map<ID, NonLocalVariable *>::const_iterator end = non_local_variables.end();
+  if(tag == _gst_mnl_for_average) {
+    std::set<ID>::const_iterator it = non_local_variables.begin();
+    std::set<ID>::const_iterator end = non_local_variables.end();
+   
+    for(;it != end; ++it) {   
+      size += this->non_local_manager->getNbDataForElements(elements, *it);
+    }
+  }
 
-  //   for(;it != end; ++it) {
-  //     const NonLocalVariable & non_local_variable = it->second;
-  //     size += non_local_variable.nb_component * sizeof(Real) * nb_quadrature_points;
-  //   }
-  // }
+  size += this->weight_function->getNbDataForElements(elements, tag);
 
-  // size += weight_func->getNbDataForElements(elements, tag);
-
-  return 0;
+  return size;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -57,18 +55,17 @@ template<class WeightFunction>
 inline void NonLocalNeighborhood<WeightFunction>::packElementData(CommunicationBuffer & buffer,
 								  const Array<Element> & elements,
 								  SynchronizationTag tag) const {
-  // if(tag == _gst_mnl_for_average) {
-  //   typename std::map<ID, NonLocalVariable>::const_iterator it = non_local_variables.begin();
-  //   typename std::map<ID, NonLocalVariable>::const_iterator end = non_local_variables.end();
+  if(tag == _gst_mnl_for_average) {
 
-  //   for(;it != end; ++it) {
-  //     const NonLocalVariable & non_local_variable = it->second;
-  //     this->packElementDataHelper(*non_local_variable.local,
-  // 				  buffer, elements);
-  //   }
-  // }
+    std::set<ID>::const_iterator it = non_local_variables.begin();
+    std::set<ID>::const_iterator end = non_local_variables.end();
 
-  // weight_func->packElementData(buffer, elements, tag);
+    for(;it != end; ++it) {
+      this->non_local_manager->packElementData(buffer, elements, tag, *it);
+    }
+  }
+
+  this->weight_function->packElementData(buffer, elements, tag);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -76,18 +73,17 @@ template<class WeightFunction>
 inline void NonLocalNeighborhood<WeightFunction>::unpackElementData(CommunicationBuffer & buffer,
 								    const Array<Element> & elements,
 								    SynchronizationTag tag) {
-  // if(tag == _gst_mnl_for_average) {
-  //   typename std::map<ID, NonLocalVariable>::iterator it = non_local_variables.begin();
-  //   typename std::map<ID, NonLocalVariable>::iterator end = non_local_variables.end();
+  if(tag == _gst_mnl_for_average) {
 
-  //   for(;it != end; ++it) {
-  //     NonLocalVariable & non_local_variable = it->second;
-  //     this->unpackElementDataHelper(*non_local_variable.local,
-  // 				    buffer, elements);
-  //   }
-  // }
+    std::set<ID>::const_iterator it = non_local_variables.begin();
+    std::set<ID>::const_iterator end = non_local_variables.end();
 
-  // weight_func->unpackElementData(buffer, elements, tag);
+    for(;it != end; ++it) {
+      this->non_local_manager->unpackElementData(buffer, elements, tag, *it);
+    }
+  }
+ 
+  this->weight_function->unpackElementData(buffer, elements, tag);
 }
 
 __END_AKANTU__

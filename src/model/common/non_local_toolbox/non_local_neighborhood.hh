@@ -76,6 +76,10 @@ public:
   /// update the weights based on the weight function
   void updateWeights();
 
+  
+  /// register a new non-local variable in the neighborhood
+  virtual void registerNonLocalVariable(const ID & id);
+
 protected:
   virtual inline UInt getNbDataForElements(const Array<Element> & elements,
 					  SynchronizationTag tag) const;
@@ -109,90 +113,6 @@ private:
   WeightFunction * weight_function;
 
 };
-
-
-class TestWeightFunction : public Parsable {
-
-public:
-  TestWeightFunction(NonLocalManager & manager) : Parsable(_st_weight_function, "weight_function:"), 
-							manager(manager)
-{
-    this->registerParam("update_rate"  , update_rate, 0U  ,
-			_pat_parsmod, "Update frequency");
-
-  }
-
-  void setRadius(Real radius) {
-    /// set the non-local radius and update R^2 accordingly
-    this->R = radius; 
-    this->R2 = this->R * this->R;
-  }
-
-Real operator()(Real r,
-		const __attribute__((unused)) QuadraturePoint & q1,
-		const __attribute__((unused)) QuadraturePoint & q2) {
-  /// initialize the weightx
-  Real w = 0;
-  /// compute weight for given r 
-  if(r <= this->R) {
-    Real alpha = (1. - r*r / this->R2);
-    w = alpha * alpha;
-    // *weight = 1 - sqrt(r / radius);
-  }
-  return w;
-}
-  void updateInternals(){};
-  UInt getUpdateRate(){return update_rate;};
-
-protected:
-
-  NonLocalManager & manager;
-  Real R;
-  Real R2;
-  UInt update_rate;
-
-};
-
-// class TestDamageWeightFunction : public TestWeightFunction {
-
-// public:
-//   TestDamageWeightFunction(NonLocalManager & manager) : TestWeightFunction(manager){ 
-//     this->registerParam("damage_limit", this->damage_limit, 1., _pat_parsable, "Damage Threshold");
-//     this->setInternals();}
-
-// Real operator()(Real r,
-// 		const __attribute__((unused)) QuadraturePoint & q1,
-// 		const __attribute__((unused)) QuadraturePoint & q2) {
-//   /// compute the weight
-//   UInt quad = q2.global_num;
-
-//   if(q1 == q2) return 1.;
-
-//   Array<Real> & dam = (*(this->damage))(q2.type, q2.ghost_type);
-//   Real D = dam(quad);
-//   Real w = 0.;
-//   if(D < damage_limit) {
-//     Real alpha = std::max(0., 1. - r*r / this->R2);
-//     w = alpha * alpha;
-//   }
-//   return w;
-// }
-//   void updateInternals(){};
-//   UInt getUpdateRate(){return update_rate;};
-
-//   void setInternals() {
-//     this->damage = &(this->manager.registerWeightFunctionInternal("damage"));}
-
-// protected:
-
-//  /// limit at which a point is considered as complitely broken
-//   Real damage_limit;
-
-//   /// internal pointer to the current damage vector
-//   ElementTypeMapReal * damage;
-
-// };
-
 
 __END_AKANTU__
 
