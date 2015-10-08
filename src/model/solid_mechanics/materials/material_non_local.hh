@@ -32,6 +32,7 @@
 #include "aka_common.hh"
 #include "material.hh"
 #include "fe_engine.hh"
+#include "non_local_manager.hh"
 
 
 /* -------------------------------------------------------------------------- */
@@ -58,7 +59,7 @@ public:
   /// initialize the material computed parameter
   virtual void initMaterial();
 
-  virtual void updateResidual(GhostType ghost_type) {};
+  virtual void updateResidual(GhostType ghost_type);
 
   /// insert the quadrature points in the neighborhoods of the non-local manager
   virtual void insertQuadsInNeighborhoods(GhostType ghost_type = _not_ghost);
@@ -74,21 +75,15 @@ protected:
   /// associate the non-local variables of the material to their neighborhoods
   virtual void nonLocalVariableToNeighborhood() = 0;
   
-  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-					   SynchronizationTag tag) const{ return 0;};
-
-  virtual inline void packElementData(CommunicationBuffer & buffer,
-				      const Array<Element> & elements,
-				      SynchronizationTag tag) const {};
-
-  virtual inline void unpackElementData(CommunicationBuffer & buffer,
-					const Array<Element> & elements,
-					SynchronizationTag tag){};
-
-  virtual inline void onElementsAdded(const Array<Element> & element_list) {};
+  virtual inline void onElementsAdded(const Array<Element> & element_list) {
+    AKANTU_DEBUG_ERROR("This is a case not taken into account!!!");
+  }
+  
   virtual inline void onElementsRemoved(const Array<Element> & element_list,
 					const ElementTypeMapArray<UInt> & new_numbering,
-					const RemovedElementsEvent & event) {};
+					const RemovedElementsEvent & event) {
+    AKANTU_DEBUG_ERROR("This is a case not taken into account!!!");
+  }
 
 
   /* ------------------------------------------------------------------------ */

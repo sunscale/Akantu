@@ -236,6 +236,10 @@ package_declare_sources(core
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.cc
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.hh
 
+  model/common/neighborhood_base.hh
+  model/common/neighborhood_base.cc
+  model/common/neighborhood_base_inline_impl.cc
+
   solver/solver.cc
   solver/solver.hh
   solver/solver_inline_impl.cc

@@ -29,13 +29,7 @@
 #ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
 #define __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "solid_mechanics_model.hh"
-#include "aka_grid_dynamic.hh"
-#include "grid_synchronizer.hh"
-#include "aka_memory.hh"
-#include "data_accessor.hh"
-#include "synchronizer_registry.hh"
+#include "neighborhood_base.hh"
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -43,8 +37,7 @@
 
 __BEGIN_AKANTU__
 
-class NonLocalNeighborhoodBase : public Memory,
-				 public DataAccessor,
+class NonLocalNeighborhoodBase : public NeighborhoodBase,
 				 public Parsable{
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -53,7 +46,7 @@ public:
 
   NonLocalNeighborhoodBase(const SolidMechanicsModel & model, 
 			   const ElementTypeMapReal & quad_coordinates,
-			   const ID & id = "neighborhood",
+			   const ID & id = "non_local_neighborhood",
 			   const MemoryID & memory_id = 0);
   virtual ~NonLocalNeighborhoodBase();
 
@@ -65,26 +58,8 @@ public:
 
 public:
 
-  /// intialize the neighborhood
-  void initNeighborhood();
-  
-  /// create a synchronizer registry
-  void createSynchronizerRegistry(DataAccessor * data_accessor);
-
-  /// initialize the material computed parameter
-  inline void insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords);
-
-  /// create the pairs of quadrature points
-  void updatePairList();
-
-  /// save the pairs of quadrature points in a file
-  void savePairs(const std::string & filename) const;
-
-  /// save the coordinates of all neighbors of a quad
-  void saveNeighborCoords(const std::string & filename) const;
-
   /// create grid synchronizer and exchange ghost cells
-  void createGridSynchronizer();
+  virtual void createGridSynchronizer();
 
   /// compute weights, for instance needed for non-local damage computation
   virtual void computeWeights() {};
@@ -128,56 +103,18 @@ protected:
 /* Accessors                                                                  */
 /* -------------------------------------------------------------------------- */
 public:
-  AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
-  AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &);
-  /// return the object handling synchronizers
-  AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry, SynchronizerRegistry &);
   AKANTU_GET_MACRO(NonLocalVariables, non_local_variables, const std::set<ID> &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  
-  /// the model to which the neighborhood belongs
-  const SolidMechanicsModel & model;
 
-  /// Radius of non-local neighborhood
-  Real non_local_radius;
-
-  /**
-   * the pairs of quadrature points
-   * 0: not ghost to not ghost
-   * 1: not ghost to ghost
-   */
-  PairList pair_list[2];
-
-  /// the regular grid to construct/update the pair lists
-  SpatialGrid<QuadraturePoint> * spatial_grid;
-
-  bool is_creating_grid;
-
-  /// the grid synchronizer for parallel computations
-  GridSynchronizer * grid_synchronizer;
-
-  /// the quadrature point positions
-  const ElementTypeMapReal & quad_coordinates;
-
-  /// the spatial dimension of the problem
-  const UInt spatial_dimension;
-
-  /// synchronizer registry
-  SynchronizerRegistry * synch_registry;
-
- /// list of non-local variables associated to the neighborhood
+  /// list of non-local variables associated to the neighborhood
   std::set<ID> non_local_variables;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
 
-#include "non_local_neighborhood_base_inline_impl.cc"
 
 __END_AKANTU__
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__ */

@@ -80,7 +80,7 @@ template<class WeightFunction>
 void NonLocalNeighborhood<WeightFunction>::computeWeights() {
   AKANTU_DEBUG_IN();
 
-  this->weight_function->setRadius(this->non_local_radius);
+  this->weight_function->setRadius(this->neighborhood_radius);
   Vector<Real> q1_coord(this->spatial_dimension);
   Vector<Real> q2_coord(this->spatial_dimension);
  
