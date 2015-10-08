@@ -31,13 +31,13 @@ __BEGIN_AKANTU__
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension, class WeightFunction = BaseWeightFunction>
-class MaterialBrittleNonLocal : public MaterialDamageNonLocal<spatial_dimension, MaterialBrittle<spatial_dimension>, WeightFunction> {
+template<UInt spatial_dimension>
+class MaterialBrittleNonLocal : public MaterialDamageNonLocal<spatial_dimension, MaterialBrittle<spatial_dimension> > {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialDamageNonLocal<spatial_dimension, MaterialBrittle<spatial_dimension>, WeightFunction> MaterialBrittleNonLocalParent;
+  typedef MaterialDamageNonLocal<spatial_dimension, MaterialBrittle<spatial_dimension> > MaterialBrittleNonLocalParent;
   MaterialBrittleNonLocal(SolidMechanicsModel & model, const ID & id = "");
 
   virtual ~MaterialBrittleNonLocal() {};
@@ -54,6 +54,9 @@ protected:
   void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
+
+  /// associate the non-local variables of the material to their neighborhoods
+  virtual void nonLocalVariableToNeighborhood();
 private:
 
   /* ------------------------------------------------------------------------ */

@@ -25,8 +25,8 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::MaterialOrthotropicDamageIterativeNonLocal(SolidMechanicsModel & model, const ID & id)  :
+template<UInt spatial_dimension>
+MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension>::MaterialOrthotropicDamageIterativeNonLocal(SolidMechanicsModel & model, const ID & id)  :
   Material(model, id),
   MaterialOrthotropicDamageIterativeNonLocalParent(model, id),
   grad_u_nl("grad_u non local", *this) {
@@ -37,27 +37,27 @@ MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::M
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::initMaterial() {
+template<UInt spatial_dimension>
+void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
-  this->registerNonLocalVariable(this->gradu, grad_u_nl, spatial_dimension*spatial_dimension);
+  this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), spatial_dimension*spatial_dimension);
   MaterialOrthotropicDamageIterativeNonLocalParent::initMaterial();
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::computeStress(ElementType type,
-										       GhostType ghost_type) {
+template<UInt spatial_dimension>
+void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension>::computeStress(ElementType type,
+										  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunction>::computeNonLocalStress(ElementType el_type,
-													  GhostType ghost_type) {
+template<UInt spatial_dimension>
+void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension>::computeNonLocalStress(ElementType el_type,
+											  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
   
   MaterialOrthotropicDamage<spatial_dimension>::computeStress(el_type, ghost_type);
@@ -120,4 +120,10 @@ void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension, WeigthFunctio
   this->findMaxNormalizedEquivalentStress(el_type, ghost_type);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension>::nonLocalVariableToNeighborhood() {
+  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), this->name);
 }

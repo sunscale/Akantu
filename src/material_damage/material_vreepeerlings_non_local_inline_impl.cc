@@ -17,8 +17,8 @@
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction, template <UInt> class MatParent>
-MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>::MaterialVreePeerlingsNonLocal(SolidMechanicsModel & model,
+template<UInt spatial_dimension, template <UInt> class MatParent>
+MaterialVreePeerlingsNonLocal<spatial_dimension, MatParent>::MaterialVreePeerlingsNonLocal(SolidMechanicsModel & model,
 												const ID & id)  :
   Material(model, id),
   MaterialVreePeerlingsNonLocalParent(model, id),
@@ -35,8 +35,8 @@ MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>::Mat
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction, template <UInt> class MatParent>
-void MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>::initMaterial() {
+template<UInt spatial_dimension, template <UInt> class MatParent>
+void MaterialVreePeerlingsNonLocal<spatial_dimension, MatParent>::initMaterial() {
   AKANTU_DEBUG_IN();
 
   this->registerNonLocalVariable(this->equi_strain, this->equi_strain_non_local, 1);
@@ -111,9 +111,9 @@ void MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>
 //
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction, template <UInt> class MatParent>
-void MaterialVreePeerlingsNonLocal<spatial_dimension, WeigthFunction, MatParent>::computeNonLocalStress(ElementType el_type,
-											     GhostType ghost_type) {
+template<UInt spatial_dimension, template <UInt> class MatParent>
+void MaterialVreePeerlingsNonLocal<spatial_dimension, MatParent>::computeNonLocalStress(ElementType el_type,
+											GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Real * dam   = this->damage(el_type, ghost_type).storage();

@@ -29,17 +29,15 @@ __BEGIN_AKANTU__
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension, class WeightFunction = BaseWeightFunction>
+template<UInt spatial_dimension>
 class MaterialOrthotropicDamageIterativeNonLocal : public MaterialDamageNonLocal<spatial_dimension,
-								      MaterialOrthotropicDamageIterative<spatial_dimension>,
-								      WeightFunction> {
+								      MaterialOrthotropicDamageIterative<spatial_dimension> > {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   typedef MaterialDamageNonLocal<spatial_dimension,
-				 MaterialOrthotropicDamageIterative<spatial_dimension>,
-				 WeightFunction> MaterialOrthotropicDamageIterativeNonLocalParent;
+				 MaterialOrthotropicDamageIterative<spatial_dimension> > MaterialOrthotropicDamageIterativeNonLocalParent;
   MaterialOrthotropicDamageIterativeNonLocal(SolidMechanicsModel & model, const ID & id = "");
 
   virtual ~MaterialOrthotropicDamageIterativeNonLocal() {};
@@ -55,6 +53,9 @@ protected:
   void computeStress(ElementType type, GhostType ghost_type);
 
   void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
+
+  /// associate the non-local variables of the material to their neighborhoods
+  virtual void nonLocalVariableToNeighborhood();
 private:
 
   /* ------------------------------------------------------------------------ */

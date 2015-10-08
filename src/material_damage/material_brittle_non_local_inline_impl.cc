@@ -24,8 +24,8 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::MaterialBrittleNonLocal(SolidMechanicsModel & model, const ID & id)  :
+template<UInt spatial_dimension>
+MaterialBrittleNonLocal<spatial_dimension>::MaterialBrittleNonLocal(SolidMechanicsModel & model, const ID & id)  :
   Material(model, id),
   MaterialBrittleNonLocalParent(model, id),
   Sigma_max("Sigma max", *this),
@@ -40,17 +40,17 @@ MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::MaterialBrittleNonLo
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-void MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::initMaterial() {
+template<UInt spatial_dimension>
+void MaterialBrittleNonLocal<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
-  this->registerNonLocalVariable(Sigma_max, Sigma_maxnl, 1);
+  this->model->getNonLocalManager().registerNonLocalVariable(this->Sigma_max.getName(), Sigma_maxnl.getName(),1);
   MaterialBrittleNonLocalParent::initMaterial();
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-void MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::computeStress(ElementType el_type, GhostType ghost_type) {
+template<UInt spatial_dimension>
+void MaterialBrittleNonLocal<spatial_dimension>::computeStress(ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Real * dam = this->damage(el_type, ghost_type).storage();
@@ -83,9 +83,9 @@ void MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::computeStress(E
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, class WeigthFunction>
-void MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::computeNonLocalStress(ElementType type,
-										      GhostType ghost_type) {
+template<UInt spatial_dimension>
+void MaterialBrittleNonLocal<spatial_dimension>::computeNonLocalStress(ElementType type,
+								       GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Real * dam  = this->damage(type, ghost_type).storage();
@@ -102,3 +102,10 @@ void MaterialBrittleNonLocal<spatial_dimension, WeigthFunction>::computeNonLocal
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void MaterialBrittleNonLocal<spatial_dimension>::nonLocalVariableToNeighborhood() {
+  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(Sigma_maxnl.getName(), this->name);
+}
+

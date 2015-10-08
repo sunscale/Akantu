@@ -14,6 +14,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#ifndef __AKANTU_MATERIAL_EXTRA_INCLUDES_HH__
+#define __AKANTU_MATERIAL_EXTRA_INCLUDES_HH__
+
 #ifndef AKANTU_CMAKE_LIST_MATERIALS
 
 // visco-elastic materials
@@ -41,12 +44,9 @@
 #endif
 
 #define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST			\
-  ((3, (brittle_non_local       , MaterialBrittleNonLocal,		\
-	AKANTU_MATERIAL_WEIGHT_FUNCTION_TMPL_LIST)))                    \
-  ((3, (damage_iterative_non_local       , MaterialDamageIterativeNonLocal, \
-	AKANTU_MATERIAL_WEIGHT_FUNCTION_TMPL_LIST)))			\
-  ((3, (damage_orthotropic_iterative_non_local       , MaterialOrthotropicDamageIterativeNonLocal, \
-	AKANTU_MATERIAL_WEIGHT_FUNCTION_TMPL_LIST)))
+  ((2, (brittle_non_local       , MaterialBrittleNonLocal)))		\
+  ((2, (damage_iterative_non_local       , MaterialDamageIterativeNonLocal))) \
+  ((2, (damage_orthotropic_iterative_non_local       , MaterialOrthotropicDamageIterativeNonLocal)))
 #else
 #  define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST
 #endif
@@ -59,3 +59,5 @@
   ((2, (ve_stiffness_prop       , MaterialStiffnessProportional        ))) \
   ((2, (visco_plastic                     , MaterialViscoPlastic                 ))) \
   ((2, (orthotropic_damage_iterative      , MaterialOrthotropicDamageIterative            )))
+
+#endif /* __AKANTU_MATERIAL_EXTRA_INCLUDES_HH__ */

@@ -38,12 +38,11 @@
 __BEGIN_AKANTU__
 
 template<UInt spatial_dimension,
-         class MaterialOrthotropicDamageLocal,
-	 class WeightFunction = BaseWeightFunction>
+         class MaterialOrthotropicDamageLocal>
 class MaterialOrthotropicDamageNonLocal : public MaterialOrthotropicDamageLocal,
-			       public MaterialNonLocal<spatial_dimension, WeightFunction> {
+			       public MaterialNonLocal<spatial_dimension> {
 public:
-  typedef MaterialNonLocal<spatial_dimension, WeightFunction> MaterialNonLocalParent;
+  typedef MaterialNonLocal<spatial_dimension> MaterialNonLocalParent;
   typedef MaterialOrthotropicDamageLocal MaterialOrthotropicDamageParent;
 
   MaterialOrthotropicDamageNonLocal(SolidMechanicsModel & model, const ID & id)  :
