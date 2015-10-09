@@ -1,0 +1,5 @@
+material elastic [
+	 name = Bulk
+	 E   = 5e9 # young's modulus
+	 nu  = 0.35    # poisson's ratio
+]
