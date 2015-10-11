@@ -29,20 +29,20 @@ inline const Array<Real> & ShapeLagrange<_ek_igfem>::getShapesDerivatives(const 
 
 /* -------------------------------------------------------------------------- */
 #define INIT_SHAPE_FUNCTIONS(type)					\
-  setControlPointsByType<type>(control_points, ghost_type);		\
-  setControlPointsByType<ElementClassProperty<type>::sub_element_type_1>(control_points_1, ghost_type); \
-  setControlPointsByType<ElementClassProperty<type>::sub_element_type_2>(control_points_2, ghost_type); \
-  precomputeShapesOnControlPoints<type>(nodes, ghost_type);		\
+  setIntegrationPointsByType<type>(integration_points, ghost_type);		\
+  setIntegrationPointsByType<ElementClassProperty<type>::sub_element_type_1>(integration_points_1, ghost_type); \
+  setIntegrationPointsByType<ElementClassProperty<type>::sub_element_type_2>(integration_points_2, ghost_type); \
+  precomputeShapesOnIntegrationPoints<type>(nodes, ghost_type);		\
   if (ElementClass<type>::getNaturalSpaceDimension() ==			\
       mesh.getSpatialDimension())					\
-    precomputeShapeDerivativesOnControlPoints<type>(nodes, ghost_type);	\
+    precomputeShapeDerivativesOnIntegrationPoints<type>(nodes, ghost_type);	\
   precomputeShapesOnEnrichedNodes<type>(nodes, ghost_type);
 
 
 inline void ShapeLagrange<_ek_igfem>::initShapeFunctions(const Array<Real> & nodes,
-							 const Matrix<Real> & control_points, 
-							 const Matrix<Real> & control_points_1,
-							 const Matrix<Real> & control_points_2,
+							 const Matrix<Real> & integration_points, 
+							 const Matrix<Real> & integration_points_1,
+							 const Matrix<Real> & integration_points_2,
 							 const ElementType & type,
 							 const GhostType & ghost_type) {
   
@@ -247,7 +247,7 @@ void ShapeLagrange<_ek_igfem>::computeShapeDerivatives(const Matrix<Real> & real
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
-void ShapeLagrange<_ek_igfem>::precomputeShapesOnControlPoints(__attribute__((unused)) const Array<Real> & nodes,
+void ShapeLagrange<_ek_igfem>::precomputeShapesOnIntegrationPoints(__attribute__((unused)) const Array<Real> & nodes,
 							  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
  
@@ -261,8 +261,8 @@ void ShapeLagrange<_ek_igfem>::precomputeShapesOnControlPoints(__attribute__((un
   /// get the spatial dimension for the given element type
   UInt spatial_dimension = ElementClass<type>::getSpatialDimension();
   /// get the integration points for the subelements 
-  Matrix<Real> & natural_coords_sub_1 = control_points(sub_type_1, ghost_type);
-  Matrix<Real> & natural_coords_sub_2 = control_points(sub_type_2, ghost_type);
+  Matrix<Real> & natural_coords_sub_1 = integration_points(sub_type_1, ghost_type);
+  Matrix<Real> & natural_coords_sub_2 = integration_points(sub_type_2, ghost_type);
 
   /// store the number of quadrature points on each subelement and the toal number 
   UInt nb_points_sub_1 = natural_coords_sub_1.cols();
@@ -271,7 +271,7 @@ void ShapeLagrange<_ek_igfem>::precomputeShapesOnControlPoints(__attribute__((un
 
   // get the integration points for the parent element
   UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
-  Array<Real> & natural_coords_parent = igfem_control_points.alloc(nb_element*nb_total_points,
+  Array<Real> & natural_coords_parent = igfem_integration_points.alloc(nb_element*nb_total_points,
 								   spatial_dimension,
 								   type,
 								   ghost_type);
@@ -331,11 +331,11 @@ void ShapeLagrange<_ek_igfem>::precomputeShapesOnControlPoints(__attribute__((un
     const Matrix<Real> & X = *x_it;
     Matrix<Real> & nc_parent = *natural_coords_parent_it;
 
-    /// map the sub element control points into the parent reference domain
+    /// map the sub element integration points into the parent reference domain
     ElementClass<type>::mapFromSubRefToParentRef(X, sub_el_1_coords, parent_coords, sub_1_shapes, physical_points_1, parent_natural_coords_1, 0);
     ElementClass<type>::mapFromSubRefToParentRef(X, sub_el_2_coords, parent_coords, sub_2_shapes, physical_points_2, parent_natural_coords_2, 1);
 
-    /// compute the parent shape functions on all control points
+    /// compute the parent shape functions on all integration points
     ElementClass<sub_type_1>::computeShapes(parent_natural_coords_1, parent_1_shapes);
     ElementClass<sub_type_1>::computeShapes(parent_natural_coords_2, parent_2_shapes);
 
@@ -360,7 +360,7 @@ void ShapeLagrange<_ek_igfem>::precomputeShapesOnControlPoints(__attribute__((un
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
-void ShapeLagrange<_ek_igfem>::precomputeShapeDerivativesOnControlPoints(const Array<Real> & nodes, GhostType ghost_type) {
+void ShapeLagrange<_ek_igfem>::precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   /// typedef for the two subelement_types and the parent element type
@@ -372,8 +372,8 @@ void ShapeLagrange<_ek_igfem>::precomputeShapeDerivativesOnControlPoints(const A
   UInt spatial_dimension = mesh.getSpatialDimension();
 
   /// get the integration points for the subelements 
-  Matrix<Real> & natural_coords_sub_1 = control_points(sub_type_1, ghost_type);
-  Matrix<Real> & natural_coords_sub_2 = control_points(sub_type_2, ghost_type);
+  Matrix<Real> & natural_coords_sub_1 = integration_points(sub_type_1, ghost_type);
+  Matrix<Real> & natural_coords_sub_2 = integration_points(sub_type_2, ghost_type);
   /// store the number of quadrature points on each subelement and the toal number 
   UInt nb_points_sub_1 = natural_coords_sub_1.cols();
   UInt nb_points_sub_2 = natural_coords_sub_2.cols();
@@ -405,8 +405,8 @@ void ShapeLagrange<_ek_igfem>::precomputeShapeDerivativesOnControlPoints(const A
   Array<Real>::matrix_iterator x_it = x_el.begin(spatial_dimension,
   								  nb_nodes_per_element);
 
-  /// get an iterator to the control points of the parent element
-  Array<Real> & natural_coords_parent = igfem_control_points(type, ghost_type);
+  /// get an iterator to the integration points of the parent element
+  Array<Real> & natural_coords_parent = igfem_integration_points(type, ghost_type);
   Array<Real>::matrix_iterator natural_coords_parent_it = natural_coords_parent.begin_reinterpret(spatial_dimension, nb_points_total, nb_element);
   
   Tensor3<Real> B_sub_1(spatial_dimension,  nb_nodes_sub_el_1, nb_points_sub_1);
@@ -455,7 +455,7 @@ void ShapeLagrange<_ek_igfem>::precomputeShapeDerivativesOnControlPoints(const A
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
-void ShapeLagrange<_ek_igfem>::interpolateOnControlPoints(const Array<Real> &in_u,
+void ShapeLagrange<_ek_igfem>::interpolateOnIntegrationPoints(const Array<Real> &in_u,
 					       Array<Real> &out_uq,
 					       UInt nb_degree_of_freedom,
 					       GhostType ghost_type,
@@ -472,7 +472,7 @@ void ShapeLagrange<_ek_igfem>::interpolateOnControlPoints(const Array<Real> &in_
   Array<Real> u_el(0, nb_degree_of_freedom * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, in_u, u_el, type, ghost_type, filter_elements);
 
-  this->interpolateElementalFieldOnControlPoints<type>(u_el, out_uq, ghost_type,
+  this->interpolateElementalFieldOnIntegrationPoints<type>(u_el, out_uq, ghost_type,
 						       shapes(itp_type, ghost_type),
 						       filter_elements);
 
@@ -481,7 +481,7 @@ void ShapeLagrange<_ek_igfem>::interpolateOnControlPoints(const Array<Real> &in_
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
-void ShapeLagrange<_ek_igfem>::gradientOnControlPoints(const Array<Real> &in_u,
+void ShapeLagrange<_ek_igfem>::gradientOnIntegrationPoints(const Array<Real> &in_u,
 					       Array<Real> &out_nablauq,
 					       UInt nb_degree_of_freedom,
 					       GhostType ghost_type,
@@ -498,7 +498,7 @@ void ShapeLagrange<_ek_igfem>::gradientOnControlPoints(const Array<Real> &in_u,
   Array<Real> u_el(0, nb_degree_of_freedom * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, in_u, u_el, type, ghost_type, filter_elements);
 
-  this->gradientElementalFieldOnControlPoints<type>(u_el, out_nablauq, ghost_type,
+  this->gradientElementalFieldOnIntegrationPoints<type>(u_el, out_nablauq, ghost_type,
 						    shapes_derivatives(itp_type, ghost_type),
 						    filter_elements);
 

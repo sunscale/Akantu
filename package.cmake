@@ -83,10 +83,10 @@ package_declare_elements(igfem
   INTERPOLATION_KIND
   _itk_igfem
   FE_ENGINE_LISTS
-  gradient_on_quadrature_points
-  interpolate_on_quadrature_points
+  gradient_on_integration_points
+  interpolate_on_integration_points
   interpolate
-  compute_normals_on_control_points
+  compute_normals_on_integration_points
   inverse_map
   contains
   get_shapes_derivatives

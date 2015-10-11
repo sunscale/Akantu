@@ -81,12 +81,12 @@ void MaterialIGFEM::computeQuadraturePointsCoordinates(ElementTypeMapArray<Real>
     const Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
       UInt nb_element  = elem_filter.getSize();
       if(nb_element) {
-      UInt nb_tot_quad = this->fem->getNbQuadraturePoints(*it, ghost_type) * nb_element;
+      UInt nb_tot_quad = this->fem->getNbIntegrationPoints(*it, ghost_type) * nb_element;
 
       Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
       quads.resize(nb_tot_quad);
 
-      this->model->getFEEngine("IGFEMFEEngine").interpolateOnQuadraturePoints(nodes_coordinates,
+      this->model->getFEEngine("IGFEMFEEngine").interpolateOnIntegrationPoints(nodes_coordinates,
 							       quads, spatial_dimension,
 							       *it, ghost_type, elem_filter);
     }
@@ -127,7 +127,7 @@ void MaterialIGFEM::computeAllStresses(GhostType ghost_type) {
       Array<Real> & gradu_vect = gradu(*it, ghost_type);
 
       /// compute @f$\nabla u@f$
-      this->fem->gradientOnQuadraturePoints(model->getDisplacement(), gradu_vect,
+      this->fem->gradientOnIntegrationPoints(model->getDisplacement(), gradu_vect,
 						  spatial_dimension,
 						  *it, ghost_type, elem_filter);
 

@@ -238,7 +238,7 @@ void MaterialIGFEMSawToothDamage<spatial_dimension>::onElementsAdded(__attribute
       std::vector<Element> new_elements;
       Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
       UInt nb_element = elem_filter.getSize();
-      UInt nb_quads = quadrature_points_coordinates.getFEEngine().getNbQuadraturePoints(*it, ghost_type);
+      UInt nb_quads = quadrature_points_coordinates.getFEEngine().getNbIntegrationPoints(*it, ghost_type);
       Array<Real> added_quads(0, spatial_dimension);
       const Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
       Array<Real>::const_vector_iterator quad = quads.begin(spatial_dimension);
@@ -307,8 +307,8 @@ void MaterialIGFEMSawToothDamage<spatial_dimension>::onElementsAdded(__attribute
   //   Array<UInt> & mat_local_numbering = this->model->getMaterialLocalNumbering(old_el_global.type, old_el_global.ghost_type);
   //   old_el_local.element = mat_local_numbering(old_el_global.element); 
   //   new_el_local = this->convertToLocalElement(new_el_global);
-  //   UInt nb_old_quads = fem_old_mat.getNbQuadraturePoints(old_el_global.type, old_el_global.ghost_type);
-  //   UInt nb_new_quads = this->fem->getNbQuadraturePoints(new_el_global.type, new_el_global.ghost_type);
+  //   UInt nb_old_quads = fem_old_mat.getNbIntegrationPoints(old_el_global.type, old_el_global.ghost_type);
+  //   UInt nb_new_quads = this->fem->getNbIntegrationPoints(new_el_global.type, new_el_global.ghost_type);
 
   //   if (old_mat.isInternal("damage", Mesh::getKind(old_el_global.type)) 
   // 	&& old_mat.isInternal("Sc", Mesh::getKind(old_el_global.type)) ) {

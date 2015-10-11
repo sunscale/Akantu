@@ -46,7 +46,7 @@ inline UInt MaterialIGFEM::getNbDataForElements(const Array<Element> & elements,
 						SynchronizationTag tag) const {
   if(tag == _gst_smm_stress) {
     return (this->isFiniteDeformation() ? 3 : 1) * spatial_dimension * spatial_dimension *
-      sizeof(Real) * this->getModel().getNbQuadraturePoints(elements, "IGFEMFEEngine");
+      sizeof(Real) * this->getModel().getNbIntegrationPoints(elements, "IGFEMFEEngine");
   }
   return 0;
 }
