@@ -90,7 +90,7 @@ void MaterialBrittle<spatial_dimension>::computeStress(ElementType el_type,
   Array<Real> & strain_rate_brittle = this->strain_rate_brittle(el_type, ghost_type);
   Array<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
 
-  this->model->getFEEngine().gradientOnQuadraturePoints(velocity, strain_rate_brittle,
+  this->model->getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate_brittle,
 						   spatial_dimension,
 						   el_type, ghost_type, elem_filter);
 

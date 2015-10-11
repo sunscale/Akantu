@@ -75,7 +75,7 @@ void MaterialVreePeerlings<spatial_dimension, MatParent>::computeStress(ElementT
   Array<Real> & velocity = this->model->getVelocity();
   Array<Real> & strain_rate_vrplgs = this->strain_rate_vreepeerlings(el_type, ghost_type);
 
-  this->model->getFEEngine().gradientOnQuadraturePoints(velocity, strain_rate_vrplgs,
+  this->model->getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate_vrplgs,
 						   spatial_dimension,
 						   el_type, ghost_type, elem_filter);
 

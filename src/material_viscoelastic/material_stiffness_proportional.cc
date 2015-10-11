@@ -62,7 +62,7 @@ void MaterialStiffnessProportional<spatial_dimension>::computeStress(ElementType
   Array<Real> strain_rate(0, spatial_dimension * spatial_dimension,
 			   "strain_rate");
 
-  this->model->getFEEngine().gradientOnQuadraturePoints(velocity, strain_rate,
+  this->model->getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate,
 						   spatial_dimension,
 						   el_type, ghost_type, elem_filter);
 

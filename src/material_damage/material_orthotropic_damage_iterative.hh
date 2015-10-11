@@ -108,7 +108,7 @@ protected:
   Real dam_threshold; 
 
   /// quadrature point with highest equivalent Stress
-  QuadraturePoint q_max;
+  IntegrationPoint q_max;
 
 };
 
