@@ -34,7 +34,7 @@ inline UInt SolidMechanicsModelCohesive::getNbQuadsForFacetCheck(const Array<Ele
       current_element_type = el.type;
       current_ghost_type   = el.ghost_type;
 
-      nb_quad_per_facet = this->getFEEngine("FacetsFEEngine").getNbQuadraturePoints(el.type,
+      nb_quad_per_facet = this->getFEEngine("FacetsFEEngine").getNbIntegrationPoints(el.type,
 									  el.ghost_type);
     }
 
@@ -287,7 +287,7 @@ inline void SolidMechanicsModelCohesive::packUnpackFacetStressDataHelper(Element
       element_to_facet =
 	&( mesh_facets.getElementToSubelement(el.type, el.ghost_type) );
 
-      nb_quad_per_elem = this->getFEEngine("FacetsFEEngine").getNbQuadraturePoints(el.type,
+      nb_quad_per_elem = this->getFEEngine("FacetsFEEngine").getNbIntegrationPoints(el.type,
 									 el.ghost_type);
     }
 
