@@ -256,9 +256,9 @@ void NTNContact::updateNormals() {
     for (; it != last; ++it) {
       // compute the normals
       Array<Real> quad_normals(0,dim);
-      boundary_fem.computeNormalsOnControlPoints(cur_pos, quad_normals, *it, *gt);
+      boundary_fem.computeNormalsOnIntegrationPoints(cur_pos, quad_normals, *it, *gt);
 
-      UInt nb_quad_points = boundary_fem.getNbQuadraturePoints(*it, *gt);
+      UInt nb_quad_points = boundary_fem.getNbIntegrationPoints(*it, *gt);
 
       // new version: compute normals only based on master elements (and not all boundary elements)
       // -------------------------------------------------------------------------------------
