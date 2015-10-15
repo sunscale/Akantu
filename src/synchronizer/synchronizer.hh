@@ -85,7 +85,7 @@ public:
     Tag() : tag(0) {}
     Tag(int val) : tag(val) {}
 
-    operator int() { return int(tag); }
+    operator int() { return int(tag); } // remove the sign bit
 
     template<typename CommTag>
     static inline Tag genTag(int proc, UInt msg_count, CommTag tag) {
@@ -104,7 +104,7 @@ public:
 
   template<typename CommTag>
   inline Tag genTagFromID(CommTag tag) {
-    Tag t(int(hash<std::string>(this->getID())) << 4 + (tag & 0xF));
+    Tag t(std::abs((int(hash<std::string>(this->getID())) << 4) + (tag & 0xF)));
     return t;
   }
 

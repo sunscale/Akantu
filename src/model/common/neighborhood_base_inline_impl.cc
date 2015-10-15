@@ -34,7 +34,7 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-inline void NeighborhoodBase::insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords) {
+inline void NeighborhoodBase::insertQuad(const IntegrationPoint & quad, const Vector<Real> & coords) {
   this->spatial_grid->insert(quad, coords);
 }
 

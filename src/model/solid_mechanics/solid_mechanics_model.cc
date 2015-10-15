@@ -284,8 +284,8 @@ void SolidMechanicsModel::initFEEngineBoundary() {
   fem_boundary.initShapeFunctions(_not_ghost);
   fem_boundary.initShapeFunctions(_ghost);
 
-  fem_boundary.computeNormalsOnControlPoints(_not_ghost);
-  fem_boundary.computeNormalsOnControlPoints(_ghost);
+  fem_boundary.computeNormalsOnIntegrationPoints(_not_ghost);
+  fem_boundary.computeNormalsOnIntegrationPoints(_ghost);
 }
 
 
@@ -1245,12 +1245,12 @@ Real SolidMechanicsModel::getKineticEnergy() {
 Real SolidMechanicsModel::getKineticEnergy(const ElementType & type, UInt index) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_quadrature_points = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points = getFEEngine().getNbIntegrationPoints(type);
 
   Array<Real> vel_on_quad(nb_quadrature_points, spatial_dimension);
   Array<UInt> filter_element(1, 1, index);
 
-  getFEEngine().interpolateOnQuadraturePoints(*velocity, vel_on_quad,
+  getFEEngine().interpolateOnIntegrationPoints(*velocity, vel_on_quad,
 					      spatial_dimension,
 					      type, _not_ghost,
 					      filter_element);

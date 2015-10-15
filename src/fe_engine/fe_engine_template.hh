@@ -67,7 +67,7 @@ public:
   /// pre-compute all the shape functions, their derivatives and the jacobians
   void initShapeFunctions(const GhostType & ghost_type = _not_ghost);
   void initShapeFunctions(const Array<Real> & nodes,
-				 const GhostType & ghost_type = _not_ghost);
+			  const GhostType & ghost_type = _not_ghost);
 
   /* ------------------------------------------------------------------------ */
   /* Integration method bridges                                               */
@@ -92,13 +92,13 @@ public:
 			 UInt index, const GhostType & ghost_type = _not_ghost) const;
 
 
-  /// integrate partially around a quadrature point (@f$ intf_q = f_q * J_q * w_q @f$)
-  void integrateOnQuadraturePoints(const Array<Real> & f,
-				   Array<Real> &intf,
-				   UInt nb_degree_of_freedom,
-				   const ElementType & type,
-				   const GhostType & ghost_type = _not_ghost,
-				   const Array<UInt> & filter_elements = empty_filter) const;
+  /// integrate partially around an integration point (@f$ intf_q = f_q * J_q * w_q @f$)
+  void integrateOnIntegrationPoints(const Array<Real> & f,
+				    Array<Real> &intf,
+				    UInt nb_degree_of_freedom,
+				    const ElementType & type,
+				    const GhostType & ghost_type = _not_ghost,
+				    const Array<UInt> & filter_elements = empty_filter) const;
 
   /// interpolate on a phyiscal point inside an element
   void interpolate(const Vector<Real> & real_coords, 
@@ -106,9 +106,9 @@ public:
 		   Vector<Real> & interpolated,
 		   const Element & element) const;
 
-  /// get the number of quadrature points
-  UInt getNbQuadraturePoints(const ElementType & type,
-			     const GhostType & ghost_type = _not_ghost) const;
+  /// get the number of integration points
+  UInt getNbIntegrationPoints(const ElementType & type,
+			      const GhostType & ghost_type = _not_ghost) const;
 
   /// get shapes precomputed
   const Array<Real> & getShapes(const ElementType & type,
@@ -120,66 +120,66 @@ public:
 					   const GhostType & ghost_type = _not_ghost,
 					   UInt id=0) const;
 
-  /// get quadrature points
-  const inline Matrix<Real> & getQuadraturePoints(const ElementType & type,
-						  const GhostType & ghost_type = _not_ghost) const;
+  /// get integration points
+  const inline Matrix<Real> & getIntegrationPoints(const ElementType & type,
+						   const GhostType & ghost_type = _not_ghost) const;
 
   /* ------------------------------------------------------------------------ */
   /* Shape method bridges                                                     */
   /* ------------------------------------------------------------------------ */
 
-  /// compute the gradient of a nodal field on the quadrature points
-  void gradientOnQuadraturePoints(const Array<Real> &u,
-				  Array<Real> &nablauq,
-				  const UInt nb_degree_of_freedom,
-				  const ElementType & type,
-				  const GhostType & ghost_type = _not_ghost,
-				  const Array<UInt> & filter_elements = empty_filter) const;
+  /// compute the gradient of a nodal field on the integration points
+  void gradientOnIntegrationPoints(const Array<Real> &u,
+				   Array<Real> &nablauq,
+				   const UInt nb_degree_of_freedom,
+				   const ElementType & type,
+				   const GhostType & ghost_type = _not_ghost,
+				   const Array<UInt> & filter_elements = empty_filter) const;
 
-  /// interpolate a nodal field on the quadrature points
-  void interpolateOnQuadraturePoints(const Array<Real> &u,
-				     Array<Real> &uq,
-				     UInt nb_degree_of_freedom,
-				     const ElementType & type,
-				     const GhostType & ghost_type = _not_ghost,
-				     const Array<UInt> & filter_elements = empty_filter) const;
+  /// interpolate a nodal field on the integration points
+  void interpolateOnIntegrationPoints(const Array<Real> &u,
+				      Array<Real> &uq,
+				      UInt nb_degree_of_freedom,
+				      const ElementType & type,
+				      const GhostType & ghost_type = _not_ghost,
+				      const Array<UInt> & filter_elements = empty_filter) const;
 
-  /// interpolate a nodal field on the quadrature points given a by_element_type
-  void interpolateOnQuadraturePoints(const Array<Real> & u,
-				     ElementTypeMapArray<Real> & uq,
-                                     const ElementTypeMapArray<UInt> * filter_elements = NULL) const;
+  /// interpolate a nodal field on the integration points given a by_element_type
+  void interpolateOnIntegrationPoints(const Array<Real> & u,
+				      ElementTypeMapArray<Real> & uq,
+				      const ElementTypeMapArray<UInt> * filter_elements = NULL) const;
 
-  /// compute the position of quadrature points given by an element_type_map from nodes position
-  inline void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
-						 const ElementTypeMapArray<UInt> * filter_elements = NULL) const;
+  /// compute the position of integration points given by an element_type_map from nodes position
+  inline void computeIntegrationPointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
+						  const ElementTypeMapArray<UInt> * filter_elements = NULL) const;
 
-  /// compute the position of quadrature points from nodes position
-  inline void computeQuadraturePointsCoordinates(Array<Real> & quadrature_points_coordinates,
-						 const ElementType & type,
-						 const GhostType & ghost_type = _not_ghost,
-						 const Array<UInt> & filter_elements = empty_filter) const;
+  /// compute the position of integration points from nodes position
+  inline void computeIntegrationPointsCoordinates(Array<Real> & quadrature_points_coordinates,
+						  const ElementType & type,
+						  const GhostType & ghost_type = _not_ghost,
+						  const Array<UInt> & filter_elements = empty_filter) const;
 
-  /// interpolate field at given position (interpolation_points) from given values of this field at control points (field) 
-  inline void interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
-							 const ElementTypeMapArray<Real> & interpolation_points_coordinates,
-							 ElementTypeMapArray<Real> & result,
-							 const GhostType ghost_type,
-							 const ElementTypeMapArray<UInt> * element_filter) const;
+  /// interpolate field at given position (interpolation_points) from given values of this field at integration points (field) 
+  inline void interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
+							     const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+							     ElementTypeMapArray<Real> & result,
+							     const GhostType ghost_type,
+							     const ElementTypeMapArray<UInt> * element_filter) const;
   
-  /// Interpolate field at given position from given values of this field at control points (field) 
-  /// using matrices precomputed with initElementalFieldInterplationFromControlPoints
-  inline void interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
-							 const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
-							 const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-							 ElementTypeMapArray<Real> & result,
-							 const GhostType ghost_type,
-							 const ElementTypeMapArray<UInt> * element_filter) const;
+  /// Interpolate field at given position from given values of this field at integration points (field) 
+  /// using matrices precomputed with initElementalFieldInterplationFromIntegrationPoints
+  inline void interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
+							     const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							     const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+							     ElementTypeMapArray<Real> & result,
+							     const GhostType ghost_type,
+							     const ElementTypeMapArray<UInt> * element_filter) const;
 
-  /// Build pre-computed matrices for interpolation of field form control points at other given positions (interpolation_points)
-  inline void initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
-							       ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
-							       ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-							       const ElementTypeMapArray<UInt> * element_filter = NULL) const;
+  /// Build pre-computed matrices for interpolation of field form integration points at other given positions (interpolation_points)
+  inline void initElementalFieldInterpolationFromIntegrationPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+								   ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+								   ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+								   const ElementTypeMapArray<UInt> * element_filter = NULL) const;
     
   /// find natural coords from real coords provided an element
   void inverseMap(const Vector<Real> & real_coords,
@@ -214,18 +214,18 @@ public:
   /* Other methods                                                            */
   /* ------------------------------------------------------------------------ */
 
-  /// pre-compute normals on control points
-  void computeNormalsOnControlPoints(const GhostType & ghost_type = _not_ghost);
-  void computeNormalsOnControlPoints(const Array<Real> & field,
-				     const GhostType & ghost_type = _not_ghost);
-  void computeNormalsOnControlPoints(const Array<Real> & field,
-				     Array<Real> & normal,
-				     const ElementType & type,
-				     const GhostType & ghost_type = _not_ghost) const;
+  /// pre-compute normals on integration points
+  void computeNormalsOnIntegrationPoints(const GhostType & ghost_type = _not_ghost);
+  void computeNormalsOnIntegrationPoints(const Array<Real> & field,
+					 const GhostType & ghost_type = _not_ghost);
+  void computeNormalsOnIntegrationPoints(const Array<Real> & field,
+					 Array<Real> & normal,
+					 const ElementType & type,
+					 const GhostType & ghost_type = _not_ghost) const;
   template<ElementType type>
-  void computeNormalsOnControlPoints(const Array<Real> & field,
-				     Array<Real> & normal,
-				     const GhostType & ghost_type) const;
+  void computeNormalsOnIntegrationPoints(const Array<Real> & field,
+					 Array<Real> & normal,
+					 const GhostType & ghost_type) const;
 
 
   /// function to print the contain of the class

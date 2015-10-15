@@ -249,6 +249,8 @@ enum SynchronizationTag {
   //--- Material non local ---
   _gst_mnl_for_average,  //< synchronization of data to average in non local material
   _gst_mnl_weight,       //< synchronization of data for the weight computations
+  //--- NeighborhoodSynchronization tags ---
+  _gst_nh_criterion,
   //--- General tags ---
   _gst_test,             //< Test tag
   _gst_user_1,           //< tag for user simulations

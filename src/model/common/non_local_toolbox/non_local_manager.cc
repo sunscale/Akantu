@@ -43,10 +43,14 @@ NonLocalManager::NonLocalManager(SolidMechanicsModel & model,
   quad_positions("quad_positions", id),
   volumes("volumes", id),
   spatial_dimension(this->model.getSpatialDimension()),
-  compute_stress_calls(0){ 
+  compute_stress_calls(0),
+  dummy_registry(NULL),
+  dummy_grid(NULL) { 
   Mesh & mesh = this->model.getMesh();
+  mesh.registerEventHandler(*this);
 
-  /// initialize the element type map arrays
+  /// initialize the element type map array
+  /// it will be resized to nb_quad * nb_element during the computation of coords
   mesh.initElementTypeMapArray(quad_positions, spatial_dimension, spatial_dimension, false, _ek_regular, true);
 
   /// parse the neighborhood information from the input file
@@ -61,6 +65,8 @@ NonLocalManager::NonLocalManager(SolidMechanicsModel & model,
     ID name = section.getName();
     this->weight_function_types[name] = section;    
   }
+  
+  this->dummy_registry = new SynchronizerRegistry(this->dummy_accessor);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -83,6 +89,13 @@ NonLocalManager::~NonLocalManager() {
     if(it_internals->second) delete it_internals->second;
   }
 
+  std::map<ID, GridSynchronizer * >::iterator grid_synch_it;
+  for (grid_synch_it = dummy_synchronizers.begin(); grid_synch_it != dummy_synchronizers.end(); ++grid_synch_it) {
+    if(grid_synch_it->second) delete grid_synch_it->second;
+  }
+  /// delete all objects related to the dummy synchronizers
+  delete dummy_registry;
+  delete dummy_grid;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -129,12 +142,99 @@ void NonLocalManager::createNeighborhood(const ID & weight_func, const ID & neig
 
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::createNeighborhoodSynchronizers() {
-
-  NeighborhoodMap::iterator it;
+  /// exchange all the neighborhood IDs, so that every proc knows how many neighborhoods exist globally
+  /// First: Compute locally the maximum ID size
+  UInt max_id_size = 0;
+  UInt current_size = 0;
+  NeighborhoodMap::const_iterator it;
   for (it = neighborhoods.begin(); it != neighborhoods.end(); ++it) {
-    it->second->createGridSynchronizer();
+    current_size = it->first.size();
+    if (current_size > max_id_size)
+      max_id_size = current_size;
   }
 
+  /// get the global maximum ID size on each proc
+  StaticCommunicator & static_communicator = akantu::StaticCommunicator::getStaticCommunicator();
+  static_communicator.allReduce(&max_id_size, 1, _so_max);
+
+  /// get the rank for this proc and the total nb proc
+  UInt prank = static_communicator.whoAmI();
+  UInt psize = static_communicator.getNbProc();
+
+  /// exchange the number of neighborhoods on each proc
+  Array<Int> nb_neighborhoods_per_proc(psize);
+  nb_neighborhoods_per_proc(prank) = neighborhoods.size();
+  static_communicator.allGather(nb_neighborhoods_per_proc.storage(), 1);
+
+  /// compute the total number of neighborhoods
+  UInt nb_neighborhoods_global = std::accumulate(nb_neighborhoods_per_proc.begin(),
+						 nb_neighborhoods_per_proc.end(), 0);
+ 
+  /// allocate an array of chars to store the names of all neighborhoods
+  Array<char> buffer(nb_neighborhoods_global, max_id_size);
+
+  /// starting index on this proc
+  UInt starting_index = std::accumulate(nb_neighborhoods_per_proc.begin(),
+					nb_neighborhoods_per_proc.begin() + prank, 0);
+
+  
+  it = neighborhoods.begin();
+  /// store the names of local neighborhoods in the buffer
+  for (UInt i = 0; i < neighborhoods.size(); ++i, ++it) {
+    UInt c = 0;
+    for (; c < it->first.size(); ++c)
+      buffer(i + starting_index, c) = it->first[c];
+
+    for (; c < max_id_size; ++c)
+      buffer(i + starting_index, c) = char( 0 );
+  }
+
+  /// store the nb of data to send in the all gather
+  Array<Int> buffer_size(nb_neighborhoods_per_proc);
+  buffer_size *= max_id_size;
+  /// exchange the names of all the neighborhoods with all procs
+  static_communicator.allGatherV(buffer.storage(), buffer_size.storage());
+
+
+
+  for (UInt i = 0; i < nb_neighborhoods_global; ++i) {
+    std::stringstream neighborhood_id;
+    for(UInt c = 0; c < max_id_size; ++c) {
+      if (buffer(i,c) == char( 0 )) break;
+      neighborhood_id << buffer(i,c);    
+    }
+    global_neighborhoods.insert(neighborhood_id.str());
+  }
+
+
+
+  /// this proc does not know all the neighborhoods -> create dummy
+  /// grid so that this proc can participate in the all gather for
+  /// detecting the overlap of neighborhoods this proc doesn't know
+  Vector<Real> grid_center(this->spatial_dimension);
+  for(UInt s = 0; s < this->spatial_dimension; ++s)
+    grid_center(s) = std::numeric_limits<Real>::max();
+  dummy_grid = new SpatialGrid<IntegrationPoint>(spatial_dimension, 0., grid_center);
+  std::set<SynchronizationTag> tags;
+  tags.insert(_gst_mnl_for_average);
+  tags.insert(_gst_mnl_weight);
+ 
+    
+  std::set<ID>::const_iterator global_neighborhoods_it = global_neighborhoods.begin();
+  for (; global_neighborhoods_it != global_neighborhoods.end(); ++global_neighborhoods_it) {
+    it = neighborhoods.find(*global_neighborhoods_it);
+    if (it != neighborhoods.end())
+      it->second->createGridSynchronizer();
+    else {
+      ID neighborhood_name = *global_neighborhoods_it;
+      std::stringstream sstr; sstr << getID() << ":" << neighborhood_name << ":grid_synchronizer";
+      dummy_synchronizers[neighborhood_name] = GridSynchronizer::createGridSynchronizer(this->model.getMesh(),
+											*dummy_grid,
+											sstr.str(),
+											dummy_registry,
+											tags, 0, false);
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -169,10 +269,35 @@ void NonLocalManager::averageInternals(const GhostType & ghost_type) {
 
     }
   }    
+
+  if (ghost_type == _ghost) {
+    /// compute the non-local stresses in the materials
+    for(UInt m = 0; m < this->non_local_materials.size(); ++m) {
+      switch (spatial_dimension) {
+      case 1:
+	dynamic_cast<MaterialNonLocal<1> &>(*(this->non_local_materials[m])).computeNonLocalStresses(ghost_type); 
+	break;      
+      case 2:
+	dynamic_cast<MaterialNonLocal<2> &>(*(this->non_local_materials[m])).computeNonLocalStresses(ghost_type); 
+	break;      
+      case 3:
+	dynamic_cast<MaterialNonLocal<3> &>(*(this->non_local_materials[m])).computeNonLocalStresses(ghost_type); 
+	break;      
+      }
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::init(){
+
+  /// store the number of current ghost elements for each type in the mesh
+  ElementTypeMap<UInt> nb_ghost_protected;
+  Mesh & mesh = this->model.getMesh();
+  Mesh::type_iterator it = mesh.firstType(spatial_dimension, _ghost);
+  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, _ghost);
+  for(; it != last_type; ++it)
+    nb_ghost_protected(mesh.getNbElement(*it, _ghost), *it, _ghost);
 
   /// exchange the missing ghosts for the non-local neighborhoods
   this->createNeighborhoodSynchronizers();
@@ -193,10 +318,12 @@ void NonLocalManager::init(){
 
   }
 
+  this->updatePairLists();
+  /// cleanup the unneccessary ghost elements
+  this->cleanupExtraGhostElements(nb_ghost_protected);
+  this->initElementTypeMap(1, volumes);
   this->setJacobians(this->model.getFEEngine(), _ek_regular);
   this->initNonLocalVariables();
-  this->updatePairLists();
-  this->initElementTypeMap(1, volumes);
   this->computeWeights();
 }
 
@@ -223,7 +350,7 @@ void NonLocalManager::initElementTypeMap(UInt nb_component, ElementTypeMapReal &
     for(; it != end; ++it) {
       ElementType el_type = *it;
       UInt nb_element = mesh.getNbElement(*it, gt);
-      UInt nb_quads = this->model.getFEEngine().getNbQuadraturePoints(*it, gt);
+      UInt nb_quads = this->model.getFEEngine().getNbIntegrationPoints(*it, gt);
       if (!element_map.exists(el_type, gt)) {
 	element_map.alloc(nb_element * nb_quads,
 			  nb_component,
@@ -279,23 +406,34 @@ void NonLocalManager::computeAllNonLocalStresses() {
   }
 
   this->volumes.clear();  
-
-  /// loop over all neighborhoods and compute the non-local variables
-  NeighborhoodMap::iterator neighborhood_it = neighborhoods.begin();
-  NeighborhoodMap::iterator neighborhood_end = neighborhoods.end(); 
-  for (; neighborhood_it != neighborhood_end; ++neighborhood_it) {
-    neighborhood_it->second->getSynchronizerRegistry().asynchronousSynchronize(_gst_mnl_for_average);
+  /// loop over all the neighborhoods and compute intiate the
+  /// exchange of the non-local_variables
+  std::set<ID>::const_iterator global_neighborhood_it = global_neighborhoods.begin();
+  NeighborhoodMap::iterator it;
+  for(; global_neighborhood_it != global_neighborhoods.end(); ++global_neighborhood_it) {
+    it = neighborhoods.find(*global_neighborhood_it);
+    if (it != neighborhoods.end())
+      it->second->getSynchronizerRegistry().asynchronousSynchronize(_gst_mnl_for_average);
+      else
+	dummy_synchronizers[*global_neighborhood_it]->asynchronousSynchronize(dummy_accessor, _gst_mnl_for_average);
   }
 
   this->averageInternals(_not_ghost);
 
   AKANTU_DEBUG_INFO("Wait distant non local stresses");
 
-  /// loop over all neighborhoods and compute the non-local variables
-  neighborhood_it = neighborhoods.begin();
-  for (; neighborhood_it != neighborhood_end; ++neighborhood_it) {
-    neighborhood_it->second->getSynchronizerRegistry().waitEndSynchronize(_gst_mnl_for_average);
+  /// loop over all the neighborhoods and block until all non-local
+  /// variables have been exchanged
+  global_neighborhood_it = global_neighborhoods.begin();
+  it = neighborhoods.begin();
+  for(; global_neighborhood_it != global_neighborhoods.end(); ++global_neighborhood_it) {
+    it = neighborhoods.find(*global_neighborhood_it);
+    if (it != neighborhoods.end())
+      it->second->getSynchronizerRegistry().waitEndSynchronize(_gst_mnl_for_average);
+    else
+      dummy_synchronizers[*global_neighborhood_it]->waitEndSynchronize(dummy_accessor, _gst_mnl_for_average);
   }
+
 
   this->averageInternals(_ghost);
 
@@ -314,6 +452,164 @@ void NonLocalManager::computeAllNonLocalStresses() {
     }
     
     ++this->compute_stress_calls;
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLocalManager::cleanupExtraGhostElements(ElementTypeMap<UInt> & nb_ghost_protected) {
+
+  typedef std::set<Element> ElementSet;
+  ElementSet relevant_ghost_elements;
+  ElementSet to_keep_per_neighborhood;
+  /// loop over all the neighborhoods and get their protected ghosts
+  NeighborhoodMap::iterator neighborhood_it = neighborhoods.begin();
+  NeighborhoodMap::iterator neighborhood_end = neighborhoods.end(); 
+  for (; neighborhood_it != neighborhood_end; ++neighborhood_it) {
+    neighborhood_it->second->cleanupExtraGhostElements(to_keep_per_neighborhood);
+    ElementSet::const_iterator it = to_keep_per_neighborhood.begin();
+    for(; it != to_keep_per_neighborhood.end(); ++it)
+      relevant_ghost_elements.insert(*it);
+    to_keep_per_neighborhood.clear();
+  }
+
+  /// remove all unneccessary ghosts from the mesh
+  /// Create list of element to remove and new numbering for element to keep
+  Mesh & mesh = this->model.getMesh();
+  ElementSet ghost_to_erase;
+
+  Mesh::type_iterator it        = mesh.firstType(spatial_dimension, _ghost);
+  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, _ghost);
+
+  RemovedElementsEvent remove_elem(mesh);
+  Element element; 
+  element.ghost_type = _ghost;
+
+  for(; it != last_type; ++it) {
+    element.type = *it;
+    UInt nb_ghost_elem = mesh.getNbElement(*it, _ghost);
+    UInt nb_ghost_elem_protected = 0;
+    try {
+      nb_ghost_elem_protected = nb_ghost_protected(*it, _ghost);
+    } catch (...) {}
+
+    if(!remove_elem.getNewNumbering().exists(*it, _ghost))
+      remove_elem.getNewNumbering().alloc(nb_ghost_elem, 1, *it, _ghost);
+    else remove_elem.getNewNumbering(*it, _ghost).resize(nb_ghost_elem);
+    Array<UInt> & new_numbering = remove_elem.getNewNumbering(*it, _ghost);
+    for (UInt g = 0; g < nb_ghost_elem; ++g) {
+      element.element = g;
+      if (element.element >= nb_ghost_elem_protected &&
+	  relevant_ghost_elements.find(element) == relevant_ghost_elements.end()) {
+	remove_elem.getList().push_back(element);
+	new_numbering(element.element) = UInt(-1);
+      }
+    }
+    /// renumber remaining ghosts
+    UInt ng = 0;
+    for (UInt g = 0; g < nb_ghost_elem; ++g) {
+      if (new_numbering(g) != UInt(-1)) {
+	new_numbering(g) = ng;
+	++ng;
+      }
+    }
+  }
+
+
+  it        = mesh.firstType(spatial_dimension, _not_ghost);
+  last_type = mesh.lastType(spatial_dimension, _not_ghost);
+  for(; it != last_type; ++it) {
+    UInt nb_elem = mesh.getNbElement(*it, _not_ghost);
+    if(!remove_elem.getNewNumbering().exists(*it, _not_ghost))
+      remove_elem.getNewNumbering().alloc(nb_elem, 1, *it, _not_ghost);
+    Array<UInt> & new_numbering = remove_elem.getNewNumbering(*it, _not_ghost);
+    for (UInt e = 0; e < nb_elem; ++e) {
+      new_numbering(e) = e;
+    }
+  }
+  mesh.sendEvent(remove_elem);
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLocalManager::onElementsRemoved(const Array<Element> & element_list, 
+					const ElementTypeMapArray<UInt> & new_numbering,
+					__attribute__((unused)) const RemovedElementsEvent & event) {
+  
+  this->removeIntegrationPointsFromMap(event.getNewNumbering(), spatial_dimension, quad_positions);
+  this->removeIntegrationPointsFromMap(event.getNewNumbering(), 1, volumes);
+
+  /// loop over all the neighborhoods and call onElementsRemoved
+  std::set<ID>::const_iterator global_neighborhood_it = global_neighborhoods.begin();
+  NeighborhoodMap::iterator it;
+  for(; global_neighborhood_it != global_neighborhoods.end(); ++global_neighborhood_it) {
+    it = neighborhoods.find(*global_neighborhood_it);
+    if (it != neighborhoods.end())
+      it->second->onElementsRemoved(element_list, new_numbering, event);
+    else
+      dummy_synchronizers[*global_neighborhood_it]->onElementsRemoved(element_list, new_numbering, event);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLocalManager::onElementsAdded(__attribute__((unused)) const Array<Element> & element_list,
+				      __attribute__((unused)) const NewElementsEvent & event) {
+  this->resizeElementTypeMap(1, volumes);
+  this->resizeElementTypeMap(spatial_dimension, quad_positions);
+
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLocalManager::resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map) {
+  Mesh & mesh = this->model.getMesh();
+  for(UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType gt = (GhostType) g;
+    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, gt, _ek_not_defined);
+    Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, _ek_not_defined);
+    for(; it != end; ++it) {
+      UInt nb_element = mesh.getNbElement(*it, gt);
+      if(!element_map.exists(*it, gt)) 
+	element_map.alloc(nb_element, nb_component, *it, gt);
+      else 
+	element_map(*it, gt).resize(nb_element);
+    } 
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLocalManager::removeIntegrationPointsFromMap(const ElementTypeMapArray<UInt> & new_numbering, UInt nb_component, ElementTypeMapReal & element_map) {
+
+  for(UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType gt = (GhostType) g;
+    ElementTypeMapArray<UInt>::type_iterator it  = new_numbering.firstType(_all_dimensions, gt, _ek_not_defined);
+    ElementTypeMapArray<UInt>::type_iterator end = new_numbering.lastType(_all_dimensions, gt, _ek_not_defined);
+    for (; it != end; ++it) {
+      ElementType type = *it;
+      if(element_map.exists(type, gt)){
+	const Array<UInt> & renumbering = new_numbering(type, gt);
+
+	Array<Real> & vect = element_map(type, gt);
+
+	UInt nb_quad_per_elem = this->model.getFEEngine().getNbIntegrationPoints(type, gt);
+
+	Array<Real> tmp(renumbering.getSize()*nb_quad_per_elem, nb_component);
+
+	AKANTU_DEBUG_ASSERT(tmp.getSize() == vect.getSize(), "Something strange append some mater was created from nowhere!!");
+
+	AKANTU_DEBUG_ASSERT(tmp.getSize() == vect.getSize(), "Something strange append some mater was created or disappeared in "<< vect.getID() << "("<< vect.getSize() <<"!=" << tmp.getSize() <<") ""!!");
+
+	UInt new_size = 0;
+	for (UInt i = 0; i < renumbering.getSize(); ++i) {
+	  UInt new_i = renumbering(i);
+	  if(new_i != UInt(-1)) {
+	    memcpy(tmp.storage() + new_i * nb_component * nb_quad_per_elem,
+		   vect.storage() + i * nb_component * nb_quad_per_elem,
+		   nb_component * nb_quad_per_elem * sizeof(Real));
+	    ++new_size;
+	  }
+	}
+	tmp.resize(new_size * nb_quad_per_elem);
+	vect.copy(tmp);
+      }
+    }
+  }
 }
 
 

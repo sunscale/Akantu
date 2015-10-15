@@ -156,8 +156,8 @@ inline Real StressBasedWeightFunction::computeRhoSquare(Real r,
 
 /* -------------------------------------------------------------------------- */
 inline Real StressBasedWeightFunction::operator()(Real r,
-						  const QuadraturePoint & q1,
-						  const QuadraturePoint & q2) {
+						  const IntegrationPoint & q1,
+						  const IntegrationPoint & q2) {
   // Real zero = std::numeric_limits<Real>::epsilon();
 
   // if(r < zero) return 1.; // means x and s are the same points

@@ -59,8 +59,8 @@ public:
   virtual inline void init();
 
   inline Real operator()(Real r,
-			 const __attribute__((unused)) QuadraturePoint & q1,
-			 const QuadraturePoint & q2); 
+			 const __attribute__((unused)) IntegrationPoint & q1,
+			 const IntegrationPoint & q2); 
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */

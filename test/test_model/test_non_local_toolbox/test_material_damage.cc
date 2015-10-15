@@ -39,16 +39,18 @@ TestMaterialDamage<dim>::TestMaterialDamage(SolidMechanicsModel & model, const I
   grad_u_nl("grad_u non local", *this) {
   this->is_non_local = true;
   this->grad_u_nl.initialize(dim*dim);
+  this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), dim*dim);
+
  }
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void TestMaterialDamage<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
-  this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), spatial_dimension*spatial_dimension);
+
   MaterialDamage<spatial_dimension>::initMaterial();
   MyNonLocalParent::initMaterial();
-
+  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), this->name);
   AKANTU_DEBUG_OUT();
 }
 
@@ -64,7 +66,7 @@ void TestMaterialDamage<spatial_dimension>::insertQuadsInNeighborhoods(GhostType
   quadrature_points_coordinates.initialize(spatial_dimension);
 
   /// intialize quadrature point object
-  QuadraturePoint q;
+  IntegrationPoint q;
   q.ghost_type = ghost_type;
   q.kind = _ek_regular;
 
@@ -75,13 +77,13 @@ void TestMaterialDamage<spatial_dimension>::insertQuadsInNeighborhoods(GhostType
     const Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
     UInt nb_element  = elem_filter.getSize();
     if(nb_element) {
-      UInt nb_quad = this->fem->getNbQuadraturePoints(*it, ghost_type);
+      UInt nb_quad = this->fem->getNbIntegrationPoints(*it, ghost_type);
       UInt nb_tot_quad = nb_quad * nb_element;
       
       Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
       quads.resize(nb_tot_quad);
 
-      this->model->getFEEngine().computeQuadraturePointsCoordinates(quads, *it, ghost_type, elem_filter);
+      this->model->getFEEngine().computeIntegrationPointsCoordinates(quads, *it, ghost_type, elem_filter);
       
       Array<Real>::const_vector_iterator quad = quads.begin(spatial_dimension);
       UInt * elem = elem_filter.storage();
@@ -91,7 +93,7 @@ void TestMaterialDamage<spatial_dimension>::insertQuadsInNeighborhoods(GhostType
 	for (UInt nq = 0; nq < nb_quad; ++nq) {
 	  q.num_point = nq;
 	  q.global_num = q.element * nb_quad + nq;
-	  manager.insertQuad(q, *quad, this->name, this->name);
+	  manager.insertQuad(q, *quad, this->name);
 	  ++quad;
 	}
 	++elem;
@@ -100,11 +102,6 @@ void TestMaterialDamage<spatial_dimension>::insertQuadsInNeighborhoods(GhostType
   }
 }
 
-/* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void TestMaterialDamage<spatial_dimension>::nonLocalVariableToNeighborhood() {
-  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), this->name);
-}
 
 /* -------------------------------------------------------------------------- */
 // Instantiate the material for the 3 dimensions

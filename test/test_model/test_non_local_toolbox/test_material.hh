@@ -58,9 +58,10 @@ public:
 
   void insertQuadsInNeighborhoods(GhostType ghost_type);
 
+  virtual void registerNeighborhood();
+
 protected:
-  /// associate the non-local variables of the material to their neighborhoods
-  virtual void nonLocalVariableToNeighborhood();
+
 /* -------------------------------------------------------------------------- */
 /* Members                                                                   */
 /* -------------------------------------------------------------------------- */

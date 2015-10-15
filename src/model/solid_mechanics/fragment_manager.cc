@@ -64,7 +64,7 @@ FragmentManager::FragmentManager(SolidMechanicsModelCohesive & model,
 			       spatial_dimension,
 			       _not_ghost);
 
-  model.getFEEngine().interpolateOnQuadraturePoints(model.getMesh().getNodes(),
+  model.getFEEngine().interpolateOnIntegrationPoints(model.getMesh().getNodes(),
 						    quad_coordinates);
 
   /// store mass density per quadrature point
@@ -73,7 +73,7 @@ FragmentManager::FragmentManager(SolidMechanicsModelCohesive & model,
 			       spatial_dimension,
 			       _not_ghost);
 
-  storeMassDensityPerQuadraturePoint();
+  storeMassDensityPerIntegrationPoint();
 
   AKANTU_DEBUG_OUT();
 }
@@ -100,7 +100,7 @@ public:
 
     UInt el_index = mat_loc_num(el.element);
     UInt nb_quad_per_element
-      = model.getFEEngine("CohesiveFEEngine").getNbQuadraturePoints(el.type, el.ghost_type);
+      = model.getFEEngine("CohesiveFEEngine").getNbIntegrationPoints(el.type, el.ghost_type);
 
     const Array<Real> & damage_array = mat.getDamage(el.type, el.ghost_type);
 
@@ -216,7 +216,7 @@ void FragmentManager::computeMass() {
     ElementType type = *it;
     Array<Real> & field_array = unit_field(type);
     UInt nb_element = mesh.getNbElement(type);
-    UInt nb_quad_per_element = model.getFEEngine().getNbQuadraturePoints(type);
+    UInt nb_quad_per_element = model.getFEEngine().getNbIntegrationPoints(type);
 
     field_array.resize(nb_element * nb_quad_per_element);
     field_array.set(1.);
@@ -260,7 +260,7 @@ void FragmentManager::computeVelocity() {
 			       spatial_dimension,
 			       _not_ghost);
 
-  model.getFEEngine().interpolateOnQuadraturePoints(model.getVelocity(),
+  model.getFEEngine().interpolateOnIntegrationPoints(model.getVelocity(),
 						    velocity_field);
 
   /// integrate on fragments
@@ -316,7 +316,7 @@ void FragmentManager::computeInertiaMoments() {
     ElementType type = *it;
     Array<Real> & field_array = moments_coords(type);
     UInt nb_element = mesh.getNbElement(type);
-    UInt nb_quad_per_element = model.getFEEngine().getNbQuadraturePoints(type);
+    UInt nb_quad_per_element = model.getFEEngine().getNbIntegrationPoints(type);
 
     field_array.resize(nb_element * nb_quad_per_element);
   }
@@ -342,7 +342,7 @@ void FragmentManager::computeInertiaMoments() {
     /// loop over elements of the fragment
     for (; type_it != type_end; ++type_it) {
       ElementType type = *type_it;
-      UInt nb_quad_per_element = model.getFEEngine().getNbQuadraturePoints(type);
+      UInt nb_quad_per_element = model.getFEEngine().getNbIntegrationPoints(type);
 
       Array<Real> & moments_coords_array = moments_coords(type);
       const Array<Real> & quad_coordinates_array = quad_coordinates(type);
@@ -418,7 +418,7 @@ void FragmentManager::computeAllData() {
 }
 
 /* -------------------------------------------------------------------------- */
-void FragmentManager::storeMassDensityPerQuadraturePoint() {
+void FragmentManager::storeMassDensityPerIntegrationPoint() {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = model.getSpatialDimension();
@@ -432,7 +432,7 @@ void FragmentManager::storeMassDensityPerQuadraturePoint() {
     Array<Real> & mass_density_array = mass_density(type);
 
     UInt nb_element = mesh.getNbElement(type);
-    UInt nb_quad_per_element = model.getFEEngine().getNbQuadraturePoints(type);
+    UInt nb_quad_per_element = model.getFEEngine().getNbIntegrationPoints(type);
     mass_density_array.resize(nb_element * nb_quad_per_element);
 
     const Array<UInt> & mat_indexes = model.getMaterialByElement(type);
@@ -482,7 +482,7 @@ void FragmentManager::integrateFieldOnFragments(ElementTypeMapArray<Real> & fiel
     /// loop over elements of the fragment
     for (; type_it != type_end; ++type_it) {
       ElementType type = *type_it;
-      UInt nb_quad_per_element = model.getFEEngine().getNbQuadraturePoints(type);
+      UInt nb_quad_per_element = model.getFEEngine().getNbIntegrationPoints(type);
 
       const Array<Real> & density_array = mass_density(type);
       Array<Real> & field_array = field(type);

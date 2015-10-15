@@ -65,7 +65,7 @@ void StructuralMechanicsModel::assembleStiffnessMatrix() {
 
   UInt nb_element                 = getFEEngine().getMesh().getNbElement(type);
   UInt nb_nodes_per_element       = Mesh::getNbNodesPerElement(type);
-  UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(type);
 
   UInt tangent_size = getTangentStiffnessVoigtSize<type>();
 
@@ -152,7 +152,7 @@ void StructuralMechanicsModel::computeStressOnQuad() {
 
   UInt nb_element                 = mesh.getNbElement(type);
   UInt nb_nodes_per_element       = Mesh::getNbNodesPerElement(type);
-  UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(type);
 
   UInt tangent_size = getTangentStiffnessVoigtSize<type>();
 
@@ -219,7 +219,7 @@ void StructuralMechanicsModel::computeForcesByLocalTractionArray(const Array<Rea
 
   UInt nb_element = getFEEngine().getMesh().getNbElement(type);
   UInt nb_nodes_per_element = getFEEngine().getMesh().getNbNodesPerElement(type);
-  UInt nb_quad = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quad = getFEEngine().getNbIntegrationPoints(type);
 
   // check dimension match
   AKANTU_DEBUG_ASSERT(Mesh::getSpatialDimension(type) == getFEEngine().getElementDimension(),
@@ -284,7 +284,7 @@ template<ElementType type>
 void StructuralMechanicsModel::computeForcesByGlobalTractionArray(const Array<Real> & traction_global){
  AKANTU_DEBUG_IN();
   UInt nb_element = getFEEngine().getMesh().getNbElement(type);
-  UInt nb_quad = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quad = getFEEngine().getNbIntegrationPoints(type);
   UInt nb_nodes_per_element = getFEEngine().getMesh().getNbNodesPerElement(type);
 
   std::stringstream name;
@@ -339,7 +339,7 @@ inline void StructuralMechanicsModel::computeForcesFromFunction(BoundaryFunction
   UInt offset = nb_degree_of_freedom;
 
   //prepare the loop over element types
-  UInt nb_quad           = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quad           = getFEEngine().getNbIntegrationPoints(type);
   UInt nb_element        = getFEEngine().getMesh().getNbElement(type);
 
   name.clear();
@@ -347,10 +347,10 @@ inline void StructuralMechanicsModel::computeForcesFromFunction(BoundaryFunction
   Array<Real> quad_coords(nb_element * nb_quad, spatial_dimension, "quad_coords");
 
 
-  getFEEngineClass<MyFEEngineType>().getShapeFunctions().interpolateOnControlPoints<type>(getFEEngine().getMesh().getNodes(),
+  getFEEngineClass<MyFEEngineType>().getShapeFunctions().interpolateOnIntegrationPoints<type>(getFEEngine().getMesh().getNodes(),
 										quad_coords,
 										spatial_dimension);
-  getFEEngineClass<MyFEEngineType>().getShapeFunctions().interpolateOnControlPoints<type>(getFEEngine().getMesh().getNodes(),
+  getFEEngineClass<MyFEEngineType>().getShapeFunctions().interpolateOnIntegrationPoints<type>(getFEEngine().getMesh().getNodes(),
 										quad_coords,
 										spatial_dimension,
 										_not_ghost,
@@ -360,7 +360,7 @@ inline void StructuralMechanicsModel::computeForcesFromFunction(BoundaryFunction
 										1,
 										1);
   if(spatial_dimension == 3)
-    getFEEngineClass<MyFEEngineType>().getShapeFunctions().interpolateOnControlPoints<type>(getFEEngine().getMesh().getNodes(),
+    getFEEngineClass<MyFEEngineType>().getShapeFunctions().interpolateOnIntegrationPoints<type>(getFEEngine().getMesh().getNodes(),
 										  quad_coords,
 										  spatial_dimension,
 										  _not_ghost,
@@ -401,7 +401,7 @@ inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
   UInt nb_element                 = getFEEngine().getMesh().getNbElement(type);
   UInt nb_nodes_per_element       = Mesh::getNbNodesPerElement(type);
-  UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(type);
   UInt nb_fields_to_interpolate = getTangentStiffnessVoigtSize<_bernoulli_beam_2>();
 
   UInt nt_n_field_size = nb_degree_of_freedom * nb_nodes_per_element;
@@ -441,7 +441,7 @@ inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_3>() {
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
   UInt nb_element                 = getFEEngine().getMesh().getNbElement(type);
   UInt nb_nodes_per_element       = Mesh::getNbNodesPerElement(type);
-  UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(type);
   UInt nb_fields_to_interpolate = getTangentStiffnessVoigtSize<_bernoulli_beam_3>();
 
   UInt nt_n_field_size = nb_degree_of_freedom * nb_nodes_per_element; 

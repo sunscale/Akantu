@@ -70,22 +70,15 @@ public:
   /// constitutive law
   virtual void computeNonLocalStresses(GhostType ghost_type = _not_ghost) = 0;
 
-protected:
+  /// register the neighborhoods for the material
+  virtual void registerNeighborhood();
 
-  /// associate the non-local variables of the material to their neighborhoods
-  virtual void nonLocalVariableToNeighborhood() = 0;
+protected:
   
   virtual inline void onElementsAdded(const Array<Element> & element_list) {
     AKANTU_DEBUG_ERROR("This is a case not taken into account!!!");
   }
   
-  virtual inline void onElementsRemoved(const Array<Element> & element_list,
-					const ElementTypeMapArray<UInt> & new_numbering,
-					const RemovedElementsEvent & event) {
-    AKANTU_DEBUG_ERROR("This is a case not taken into account!!!");
-  }
-
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

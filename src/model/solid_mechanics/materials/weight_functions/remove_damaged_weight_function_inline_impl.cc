@@ -31,8 +31,8 @@
 
 /* -------------------------------------------------------------------------- */
 inline Real RemoveDamagedWeightFunction::operator()(Real r,
-						    const __attribute__((unused)) QuadraturePoint & q1,
-						    const QuadraturePoint & q2) {
+						    const __attribute__((unused)) IntegrationPoint & q1,
+						    const IntegrationPoint & q2) {
   /// compute the weight
   UInt quad = q2.global_num;
 
@@ -58,7 +58,7 @@ inline UInt RemoveDamagedWeightFunction::getNbDataForElements(const Array<Elemen
 							      SynchronizationTag tag) const {
 
   if(tag == _gst_mnl_weight)
-    return this->manager.getModel().getNbQuadraturePoints(elements) * sizeof(Real);
+    return this->manager.getModel().getNbIntegrationPoints(elements) * sizeof(Real);
   
   return 0;
 }

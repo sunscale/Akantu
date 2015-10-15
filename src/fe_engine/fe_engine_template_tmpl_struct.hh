@@ -130,7 +130,7 @@ FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>::computeShapesMat
   AKANTU_DEBUG_IN();
 
   UInt nb_element                 = mesh.getNbElement(type);
-  UInt nb_quadrature_points       = getNbQuadraturePoints(type);
+  UInt nb_quadrature_points       = getNbIntegrationPoints(type);
 
   UInt nt_n_field_size = nb_degree_of_freedom * nb_nodes_per_element;
   UInt n_size = n->getNbComponent()/nt_n_field_size;
@@ -174,7 +174,7 @@ FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>::assembleFieldMat
 
   UInt nb_element                 = mesh.getNbElement(type);
   UInt nb_nodes_per_element       = mesh.getNbNodesPerElement(type);
-  UInt nb_quadrature_points       = getNbQuadraturePoints(type);
+  UInt nb_quadrature_points       = getNbIntegrationPoints(type);
 
   UInt nt_n_field_size = nb_degree_of_freedom * nb_nodes_per_element;
   UInt n_size = n->getNbComponent()/nt_n_field_size;

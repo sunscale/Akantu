@@ -1,9 +1,9 @@
 /**
- * @file   non_local_neighborhood_base.hh
+ * @file   neighborhood_max_criterion.hh
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Mon Sep 21 15:43:26 2015
+ * @date   Wed Oct 14 20:59:00 2015
  *
- * @brief  Non-local neighborhood base class
+ * @brief  Neighborhood to find a maximum value in a neighborhood
  *
  * @section LICENSE
  *
@@ -26,29 +26,28 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
-#define __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
+#ifndef __AKANTU_NEIGHBORHOOD_MAX_CRITERION_BASE_HH__
+#define __AKANTU_NEIGHBORHOOD_MAX_CRITERION_BASE_HH__
 /* -------------------------------------------------------------------------- */
 #include "neighborhood_base.hh"
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
-
-
 __BEGIN_AKANTU__
 
-class NonLocalNeighborhoodBase : public NeighborhoodBase,
+class NeighborhoodMaxCriterion : public NeighborhoodBase,
 				 public Parsable{
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
 
-  NonLocalNeighborhoodBase(const SolidMechanicsModel & model, 
+  NeighborhoodMaxCriterion(const SolidMechanicsModel & model, 
 			   const ElementTypeMapReal & quad_coordinates,
-			   const ID & id = "non_local_neighborhood",
+			   const ID & criterion_id,
+			   const ID & id = "neighborhood_max_criterion",
 			   const MemoryID & memory_id = 0);
-  virtual ~NonLocalNeighborhoodBase();
+  virtual ~NeighborhoodMaxCriterion();
 
 
   /* ------------------------------------------------------------------------ */
@@ -57,32 +56,25 @@ public:
 
 public:
 
+  /// initialize the neighborhood
+  virtual void initNeighborhood();
+
   /// create grid synchronizer and exchange ghost cells
   virtual void createGridSynchronizer();
 
-  /// compute weights, for instance needed for non-local damage computation
-  virtual void computeWeights() {};
-
-  /// compute the non-local counter part for a given element type map
-  virtual void weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
-					   ElementTypeMapReal & accumulated,
-					   UInt nb_degree_of_freedom,
-					   const GhostType & ghost_type2) const {};
-
-  /// update the weights for the non-local averaging
-  virtual void updateWeights() {};
-
-  /// register a new non-local variable in the neighborhood
-  virtual void registerNonLocalVariable(const ID & id) {};
-
-  /// clean up the unneccessary ghosts
-  void cleanupExtraGhostElements(std::set<Element> & relevant_ghost_elements);
-
+  /// find the quads which have the maximum criterion in their neighborhood
+  void findMaxQuads(std::vector<IntegrationPoint> & max_quads);
 
 protected:
 
-  /// create the grid
-  void createGrid();
+  /// remove unneccessary ghost elements
+  void cleanupExtraGhostElements(const ElementTypeMap<UInt> & nb_ghost_protected);
+
+  /// insert the quadrature points in the grid
+  void insertAllQuads(const GhostType & ghost_type);
+
+  /// compare criterion with neighbors
+  void checkNeighbors(const GhostType & ghost_type);
 
 /* -------------------------------------------------------------------------- */
 /* DataAccessor inherited members                                             */
@@ -90,32 +82,40 @@ protected:
 public:
 
   virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-					     SynchronizationTag tag) const {return 0; };
+					   SynchronizationTag tag) const;
 
   virtual inline void packElementData(CommunicationBuffer & buffer,
-  				      const Array<Element> & elements,
-  				      SynchronizationTag tag) const {};
-
+				      const Array<Element> & elements,
+				      SynchronizationTag tag) const;
+ 
   virtual inline void unpackElementData(CommunicationBuffer & buffer,
-  					const Array<Element> & elements,
-  					SynchronizationTag tag) {};
+					const Array<Element> & elements,
+					SynchronizationTag tag);
 
 /* -------------------------------------------------------------------------- */
 /* Accessors                                                                  */
 /* -------------------------------------------------------------------------- */
 public:
-  AKANTU_GET_MACRO(NonLocalVariables, non_local_variables, const std::set<ID> &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
 
-  /// list of non-local variables associated to the neighborhood
-  std::set<ID> non_local_variables;
+  /// a boolean to store the information if a quad has the max
+  /// criterion in the neighborhood
+  ElementTypeMapArray<bool> is_highest;
+
+  /// an element type map to store the flattened internal of the criterion
+  ElementTypeMapReal criterion;
+
 };
 
-
-
 __END_AKANTU__
-#endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__ */
+
+/* -------------------------------------------------------------------------- */
+/* inline functions                                                           */
+/* -------------------------------------------------------------------------- */
+#include "neighborhood_max_criterion_inline_impl.cc"
+
+#endif /* __AKANTU_NEIGHBORHOOD_MAX_CRITERION_BASE_HH__ */

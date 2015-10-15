@@ -140,7 +140,7 @@ void MaterialCohesive::assembleResidual(GhostType ghost_type) {
 
     UInt size_of_shapes       = shapes.getNbComponent();
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
-    UInt nb_quadrature_points = fem_cohesive->getNbQuadraturePoints(*it, ghost_type);
+    UInt nb_quadrature_points = fem_cohesive->getNbIntegrationPoints(*it, ghost_type);
 
 
     /// compute @f$t_i N_a@f$
@@ -227,7 +227,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
 						ghost_type, _ek_cohesive);
 
   for(; it != last_type; ++it) {
-    UInt nb_quadrature_points = fem_cohesive->getNbQuadraturePoints(*it, ghost_type);
+    UInt nb_quadrature_points = fem_cohesive->getNbIntegrationPoints(*it, ghost_type);
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
 
     const Array<Real> & shapes = fem_cohesive->getShapes(*it, ghost_type);
@@ -390,7 +390,7 @@ void MaterialCohesive::computeTraction(GhostType ghost_type) {
     UInt nb_element = elem_filter.getSize();
     if (nb_element == 0) continue;
     UInt nb_quadrature_points =
-      nb_element*fem_cohesive->getNbQuadraturePoints(*it, ghost_type);
+      nb_element*fem_cohesive->getNbIntegrationPoints(*it, ghost_type);
 
     normal.resize(nb_quadrature_points);
 
@@ -417,13 +417,13 @@ void MaterialCohesive::computeNormal(const Array<Real> & position,
   AKANTU_DEBUG_IN();
 
   if (type == _cohesive_1d_2)
-    fem_cohesive->computeNormalsOnControlPoints(position,
+    fem_cohesive->computeNormalsOnIntegrationPoints(position,
 						normal,
 						type, ghost_type);
   else {
 #define COMPUTE_NORMAL(type)						\
     fem_cohesive->getShapeFunctions().					\
-      computeNormalsOnControlPoints<type, CohesiveReduceFunctionMean>(position, \
+      computeNormalsOnIntegrationPoints<type, CohesiveReduceFunctionMean>(position, \
 								      normal, \
 								      ghost_type, \
 								      element_filter(type, ghost_type));
@@ -445,7 +445,7 @@ void MaterialCohesive::computeOpening(const Array<Real> & displacement,
 
 #define COMPUTE_OPENING(type)						\
   fem_cohesive->getShapeFunctions().					\
-    interpolateOnControlPoints<type, CohesiveReduceFunctionOpening>(displacement, \
+    interpolateOnIntegrationPoints<type, CohesiveReduceFunctionOpening>(displacement, \
 								    opening, \
 								    spatial_dimension, \
 								    ghost_type, \
@@ -579,7 +579,7 @@ Real MaterialCohesive::getContactEnergy() {
 
   for(; it != last_type; ++it) {
     Array<UInt> & el_filter = element_filter(*it, _not_ghost);
-    UInt nb_quad_per_el = fem_cohesive->getNbQuadraturePoints(*it, _not_ghost);
+    UInt nb_quad_per_el = fem_cohesive->getNbIntegrationPoints(*it, _not_ghost);
     UInt nb_quad_points = el_filter.getSize() * nb_quad_per_el;
     Array<Real> contact_energy(nb_quad_points);
 

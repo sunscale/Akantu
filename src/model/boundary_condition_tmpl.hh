@@ -120,7 +120,7 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<FunctorType, BC::Fu
     UInt dim = model.getSpatialDimension();
     UInt nb_degree_of_freedom = dual.getNbComponent();
 
-    QuadraturePoint quad_point;
+    IntegrationPoint quad_point;
     quad_point.ghost_type = ghost_type;
 
     ElementGroup::type_iterator type_it  = group.firstType(dim - 1, ghost_type);
@@ -133,7 +133,7 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<FunctorType, BC::Fu
       Array<UInt>::const_scalar_iterator elem_iter = element_ids.begin();
       Array<UInt>::const_scalar_iterator elem_iter_end = element_ids.end();
 
-      UInt nb_quad_points = fem_boundary.getNbQuadraturePoints(*type_it, ghost_type);
+      UInt nb_quad_points = fem_boundary.getNbIntegrationPoints(*type_it, ghost_type);
       UInt nb_elements = element_ids.getSize();
       UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*type_it);
 
@@ -143,9 +143,9 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<FunctorType, BC::Fu
       Array<Real> * quad_coords = new Array<Real>(nb_elements * nb_quad_points, dim);
 
       const Array<Real> & normals_on_quad =
-	fem_boundary.getNormalsOnQuadPoints(*type_it, ghost_type);
+	fem_boundary.getNormalsOnIntegrationPoints(*type_it, ghost_type);
 
-      fem_boundary.interpolateOnQuadraturePoints(nodes_coords, *quad_coords,
+      fem_boundary.interpolateOnIntegrationPoints(nodes_coords, *quad_coords,
 						 dim,
 						 *type_it, ghost_type,
 						 element_ids);

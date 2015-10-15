@@ -66,10 +66,44 @@ void NonLocalNeighborhoodBase::createGridSynchronizer() {
 								     *spatial_grid,
 								     sstr.str(),
 								     synch_registry,
-								     tags);
+								     tags, 0, false);
   this->is_creating_grid = false;
 
 }
 
+
+/* -------------------------------------------------------------------------- */
+void NonLocalNeighborhoodBase::cleanupExtraGhostElements(std::set<Element> & relevant_ghost_elements) {
+
+  PairList::const_iterator first_pair = pair_list[_ghost].begin();
+  PairList::const_iterator last_pair  = pair_list[_ghost].end();
+  for(;first_pair != last_pair; ++first_pair) {
+    const IntegrationPoint & q2 = first_pair->second;
+    relevant_ghost_elements.insert(q2);
+  }
+
+  Array<Element> ghosts_to_erase(0);
+  Mesh & mesh = this->model.getMesh();
+  Mesh::type_iterator it        = mesh.firstType(spatial_dimension, _ghost);
+  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, _ghost);
+
+  Element element;  
+  element.ghost_type = _ghost;
+
+  std::set<Element>::const_iterator end = relevant_ghost_elements.end();
+  for(; it != last_type; ++it) {
+    element.type = *it;
+    UInt nb_ghost_elem = mesh.getNbElement(*it, _ghost);
+    for (UInt g = 0; g < nb_ghost_elem; ++g) {
+      element.element = g;
+      if (relevant_ghost_elements.find(element) == end) {
+	ghosts_to_erase.push_back(element);
+      }
+    }
+  }
+
+  /// remove the unneccessary ghosts from the synchronizer
+  this->grid_synchronizer->removeElements(ghosts_to_erase);
+}
 
 __END_AKANTU__

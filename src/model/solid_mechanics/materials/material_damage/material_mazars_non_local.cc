@@ -95,6 +95,7 @@ void MaterialMazarsNonLocal<spatial_dimension>::computeNonLocalStresses(GhostTyp
   InternalField<Real> nl_var("Non local variable", *this);
   nl_var.initialize(1);
 
+  
   // if(this->damage_in_compute_stress)
   //   this->weightedAvergageOnNeighbours(this->damage, nl_var, 1);
   // else

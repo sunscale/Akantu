@@ -39,15 +39,21 @@ TestMaterial<dim>::TestMaterial(SolidMechanicsModel & model, const ID & id) :
   grad_u_nl("grad_u non local", *this) {
   this->is_non_local = true;
   this->grad_u_nl.initialize(dim*dim);
+  this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), dim*dim);
+  
  }
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void TestMaterial<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
-  this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), spatial_dimension*spatial_dimension);
+
+  this->registerNeighborhood();
+
   MyElasticParent::initMaterial();
   MyNonLocalParent::initMaterial();
+
+  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), "test_region");
 
   AKANTU_DEBUG_OUT();
 }
@@ -64,7 +70,7 @@ void TestMaterial<spatial_dimension>::insertQuadsInNeighborhoods(GhostType ghost
   quadrature_points_coordinates.initialize(spatial_dimension);
 
   /// intialize quadrature point object
-  QuadraturePoint q;
+  IntegrationPoint q;
   q.ghost_type = ghost_type;
   q.kind = _ek_regular;
 
@@ -75,13 +81,13 @@ void TestMaterial<spatial_dimension>::insertQuadsInNeighborhoods(GhostType ghost
     const Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
     UInt nb_element  = elem_filter.getSize();
     if(nb_element) {
-      UInt nb_quad = this->fem->getNbQuadraturePoints(*it, ghost_type);
+      UInt nb_quad = this->fem->getNbIntegrationPoints(*it, ghost_type);
       UInt nb_tot_quad = nb_quad * nb_element;
       
       Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
       quads.resize(nb_tot_quad);
 
-      this->model->getFEEngine().computeQuadraturePointsCoordinates(quads, *it, ghost_type, elem_filter);
+      this->model->getFEEngine().computeIntegrationPointsCoordinates(quads, *it, ghost_type, elem_filter);
       
       Array<Real>::const_vector_iterator quad = quads.begin(spatial_dimension);
       UInt * elem = elem_filter.storage();
@@ -102,8 +108,8 @@ void TestMaterial<spatial_dimension>::insertQuadsInNeighborhoods(GhostType ghost
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-void TestMaterial<spatial_dimension>::nonLocalVariableToNeighborhood() {
-  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), "test_region");
+void TestMaterial<spatial_dimension>::registerNeighborhood() {
+  this->model->getNonLocalManager().registerNeighborhood("test_region", "test_region");
 }
 
 /* -------------------------------------------------------------------------- */

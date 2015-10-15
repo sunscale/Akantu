@@ -119,8 +119,8 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
     // Compute the weights
     for(;first_pair != last_pair; ++first_pair, ++weight_it) {
       Vector<Real> & weight = *weight_it;
-      const QuadraturePoint & q1 = first_pair->first;
-      const QuadraturePoint & q2 = first_pair->second;
+      const IntegrationPoint & q1 = first_pair->first;
+      const IntegrationPoint & q2 = first_pair->second;
 
       /// get the coordinates for the given pair of quads
       Array<Real>::const_vector_iterator coords_type_1_it = this->quad_coordinates(q1.type, q1.ghost_type).begin(this->spatial_dimension);
@@ -170,8 +170,8 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
     for(;first_pair != last_pair; ++first_pair, ++weight_it) {
       Vector<Real> & weight = *weight_it;
 
-      const QuadraturePoint & q1 = first_pair->first;
-      const QuadraturePoint & q2 = first_pair->second;
+      const IntegrationPoint & q1 = first_pair->first;
+      const IntegrationPoint & q2 = first_pair->second;
 
       Array<Real> & quad_volumes_1 = quadrature_points_volumes(q1.type, q1.ghost_type);
       Array<Real> & quad_volumes_2 = quadrature_points_volumes(q2.type, q2.ghost_type);
@@ -233,8 +233,8 @@ void NonLocalNeighborhood<WeightFunction>::weightedAverageOnNeighbours(const Ele
     for(;first_pair != last_pair; ++first_pair, ++weight_it) {
       Vector<Real> & weight = *weight_it;
 
-      const QuadraturePoint & q1 = first_pair->first;
-      const QuadraturePoint & q2 = first_pair->second;
+      const IntegrationPoint & q1 = first_pair->first;
+      const IntegrationPoint & q2 = first_pair->second;
 
       const Array<Real> & to_acc_1 = to_accumulate(q1.type, q1.ghost_type);
       Array<Real> & acc_1 = accumulated(q1.type, q1.ghost_type);
@@ -259,6 +259,7 @@ void NonLocalNeighborhood<WeightFunction>::weightedAverageOnNeighbours(const Ele
 /* -------------------------------------------------------------------------- */
 template<class WeightFunction>
 void NonLocalNeighborhood<WeightFunction>::updateWeights() {
+
   // Update the weights for the non local variable averaging  
   if(this->weight_function->getUpdateRate() &&
      (this->non_local_manager->getNbStressCalls() % this->weight_function->getUpdateRate() == 0))  {

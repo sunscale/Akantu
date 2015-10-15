@@ -36,17 +36,23 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-inline void NonLocalManager::insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords, 
-					const ID & weight_func, ID neighborhood) {
+inline void NonLocalManager::insertQuad(const IntegrationPoint & quad, const Vector<Real> & coords, const ID & neighborhood) {
 
-  if (neighborhood == "") neighborhood = weight_func;
-
-  NeighborhoodMap::const_iterator it = neighborhoods.find(neighborhood);
-  if (it == neighborhoods.end()) {
-    this->createNeighborhood(weight_func, neighborhood);
-  }
+  AKANTU_DEBUG_ASSERT(neighborhoods[neighborhood] != NULL,
+		      "The neighborhood " << neighborhood << "has not been created");
 
   neighborhoods[neighborhood]->insertQuad(quad, coords);
+
+}
+
+/* -------------------------------------------------------------------------- */
+inline void NonLocalManager::registerNeighborhood(const ID & neighborhood, const ID & weight_func_id) {
+  
+  /// check if neighborhood has already been created
+  NeighborhoodMap::const_iterator it = neighborhoods.find(neighborhood);
+  if (it == neighborhoods.end()) {
+    this->createNeighborhood(weight_func_id, neighborhood);
+  }  
 
 }
 
@@ -70,11 +76,24 @@ inline void NonLocalManager::computeWeights() {
   this->updateWeightFunctionInternals();
   this->volumes.clear();
 
-  NeighborhoodMap::iterator it = neighborhoods.begin();
-  NeighborhoodMap::iterator end = neighborhoods.end();
+  // NeighborhoodMap::iterator it = neighborhoods.begin();
+  // NeighborhoodMap::iterator end = neighborhoods.end();
 
-  for (; it != end; ++it)
-    it->second->computeWeights();
+  // for (; it != end; ++it)
+  //   it->second->updateWeights();
+
+  /// loop over all the neighborhoods and call onElementsRemoved
+  std::set<ID>::const_iterator global_neighborhood_it = global_neighborhoods.begin();
+  NeighborhoodMap::iterator it;
+  for(; global_neighborhood_it != global_neighborhoods.end(); ++global_neighborhood_it) {
+    it = neighborhoods.find(*global_neighborhood_it);
+    if (it != neighborhoods.end())
+      it->second->updateWeights();
+    else {
+      dummy_synchronizers[*global_neighborhood_it]->asynchronousSynchronize(dummy_accessor, _gst_mnl_weight);
+      dummy_synchronizers[*global_neighborhood_it]->waitEndSynchronize(dummy_accessor, _gst_mnl_weight);
+    }
+  }
 
   AKANTU_DEBUG_OUT();
 
@@ -85,7 +104,7 @@ inline void NonLocalManager::updatePairLists() {
   AKANTU_DEBUG_IN();
 
   /// compute the position of the quadrature points
-  this->model.getFEEngine().computeQuadraturePointsCoordinates(quad_positions);
+  this->model.getFEEngine().computeIntegrationPointsCoordinates(quad_positions);
 
   NeighborhoodMap::iterator it = neighborhoods.begin();
   NeighborhoodMap::iterator end = neighborhoods.end();
@@ -105,7 +124,7 @@ inline void NonLocalManager::registerNonLocalVariable(const ID & variable_name, 
   std::map<ID, NonLocalVariable *>::iterator non_local_variable_it = non_local_variables.find(variable_name);
   
   if (non_local_variable_it == non_local_variables.end()) 
-    non_local_variables[variable_name] = new NonLocalVariable(variable_name, nl_variable_name, this->id, nb_component);
+    non_local_variables[nl_variable_name] = new NonLocalVariable(variable_name, nl_variable_name, this->id, nb_component);
   
 
   AKANTU_DEBUG_OUT();
@@ -162,7 +181,7 @@ inline void NonLocalManager::nonLocalVariableToNeighborhood(const ID & variable_
 inline UInt NonLocalManager::getNbDataForElements(const Array<Element> & elements,
 						  const ID & id) const {
   UInt size = 0;
-  UInt nb_quadrature_points = this->getModel().getNbQuadraturePoints(elements);
+  UInt nb_quadrature_points = this->getModel().getNbIntegrationPoints(elements);
   std::map<ID, NonLocalVariable *>::const_iterator it = non_local_variables.find(id);
 
   AKANTU_DEBUG_ASSERT(it != non_local_variables.end(),

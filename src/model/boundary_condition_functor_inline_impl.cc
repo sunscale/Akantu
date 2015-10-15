@@ -97,7 +97,7 @@ namespace BC {
   /* ------------------------------------------------------------------------ */
   namespace Neumann {
     /* ---------------------------------------------------------------------- */
-    inline void FreeBoundary::operator()(const QuadraturePoint & quad_point,
+    inline void FreeBoundary::operator()(const IntegrationPoint & quad_point,
                                          Vector<Real> & dual,
                                          const Vector<Real> & coord,
                                          const Vector<Real> & normals) const {
@@ -107,7 +107,7 @@ namespace BC {
     }
 
     /* -------------------------------------------------------------------------- */
-    inline void FromHigherDim::operator()(const QuadraturePoint & quad_point,
+    inline void FromHigherDim::operator()(const IntegrationPoint & quad_point,
                                           Vector<Real> & dual,
                                           const Vector<Real> & coord,
                                           const Vector<Real> & normals) const {
@@ -115,7 +115,7 @@ namespace BC {
     }
 
     /* -------------------------------------------------------------------------- */
-    inline void FromSameDim::operator()(const QuadraturePoint & quad_point,
+    inline void FromSameDim::operator()(const IntegrationPoint & quad_point,
                                         Vector<Real> & dual,
                                         const Vector<Real> & coord,
                                         const Vector<Real> & normals) const {

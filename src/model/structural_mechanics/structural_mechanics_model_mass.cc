@@ -82,7 +82,7 @@ void StructuralMechanicsModel::computeRho(Array<Real> & rho,
   AKANTU_DEBUG_IN();
 
   UInt nb_element = getFEEngine().getMesh().getNbElement(type);
-  UInt nb_quadrature_points = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points = getFEEngine().getNbIntegrationPoints(type);
 
   Array<UInt> & el_mat = element_material(type, ghost_type);
 

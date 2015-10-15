@@ -267,7 +267,7 @@ template<UInt spatial_dimension>
 Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getDissipatedEnergy(ElementType type, UInt index) const {
   AKANTU_DEBUG_IN();
 
-  UInt nb_quadrature_points = this->model->getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points = this->model->getFEEngine().getNbIntegrationPoints(type);
   Array<Real>::const_vector_iterator it = this->dissipated_energy(type, _not_ghost).begin(nb_quadrature_points);
   UInt gindex = (this->element_filter(type, _not_ghost))(index);
 

@@ -62,7 +62,7 @@ public:
     manager(manager),
     type(type), 
     spatial_dimension(manager.getModel().getSpatialDimension()) {
-    this->registerParam("update_rate"  , update_rate, 0U  ,
+    this->registerParam("update_rate"  , update_rate, 1U  ,
 			_pat_parsmod, "Update frequency");    
   }
 
@@ -84,8 +84,8 @@ public:
   /* ------------------------------------------------------------------------ */
   /// compute the weight for a given distance between two quadrature points
   inline Real operator()(Real r,
-                         const __attribute__((unused)) QuadraturePoint & q1,
-                         const __attribute__((unused)) QuadraturePoint & q2);
+                         const __attribute__((unused)) IntegrationPoint & q1,
+                         const __attribute__((unused)) IntegrationPoint & q2);
 
   /// print function
   void printself(std::ostream & stream, int indent = 0) const {

@@ -52,7 +52,7 @@ public:
 		   const MemoryID & memory_id = 0);
   virtual ~NeighborhoodBase();
 
-  typedef std::vector< std::pair<QuadraturePoint, QuadraturePoint> > PairList;
+  typedef std::vector< std::pair<IntegrationPoint, IntegrationPoint> > PairList;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -61,13 +61,13 @@ public:
 public:
 
   /// intialize the neighborhood
-  void initNeighborhood();
+  virtual void initNeighborhood();
   
   /// create a synchronizer registry
   void createSynchronizerRegistry(DataAccessor * data_accessor);
 
   /// initialize the material computed parameter
-  inline void insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords);
+  inline void insertQuad(const IntegrationPoint & quad, const Vector<Real> & coords);
 
   /// create the pairs of quadrature points
   void updatePairList();
@@ -81,12 +81,15 @@ public:
   /// create grid synchronizer and exchange ghost cells
   virtual void createGridSynchronizer() = 0;
 
+  /// inherited function from MeshEventHandler
+  virtual void onElementsRemoved(const Array<Element> & element_list,
+				 const ElementTypeMapArray<UInt> & new_numbering,
+				 const RemovedElementsEvent & event);
+
 protected:
 
   /// create the grid
   void createGrid();
-
-  void cleanupExtraGhostElement(const ElementTypeMap<UInt> & nb_ghost_protected) {};
 
 /* -------------------------------------------------------------------------- */
 /* Accessors                                                                  */
@@ -116,7 +119,7 @@ protected:
   PairList pair_list[2];
 
   /// the regular grid to construct/update the pair lists
-  SpatialGrid<QuadraturePoint> * spatial_grid;
+  SpatialGrid<IntegrationPoint> * spatial_grid;
 
   bool is_creating_grid;
 

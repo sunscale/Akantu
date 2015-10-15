@@ -3,10 +3,10 @@
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
-class QuadraturePoint;
-extern const QuadraturePoint QuadraturePointNull;
+class IntegrationPoint;
+extern const IntegrationPoint IntegrationPointNull;
 
-class QuadraturePoint : public Element {
+class IntegrationPoint : public Element {
 
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
@@ -20,17 +20,17 @@ public:
   /* ------------------------------------------------------------------------ */
 
 public:
-  QuadraturePoint(const Element & element, UInt num_point = 0, UInt nb_quad_per_element = 0) :
+  IntegrationPoint(const Element & element, UInt num_point = 0, UInt nb_quad_per_element = 0) :
     Element(element), num_point(num_point),
     global_num(element.element*nb_quad_per_element + num_point),
     position((Real *)NULL, 0) { };
 
-  QuadraturePoint(ElementType type = _not_defined, UInt element = 0,
+  IntegrationPoint(ElementType type = _not_defined, UInt element = 0,
 		  UInt num_point = 0, GhostType ghost_type = _not_ghost) :
     Element(type, element, ghost_type), num_point(num_point), global_num(0),
     position((Real *)NULL, 0) { };
 
-  QuadraturePoint(UInt element, UInt num_point,
+  IntegrationPoint(UInt element, UInt num_point,
 		  UInt global_num,
 		  const position_type & position,
 		  ElementType type,
@@ -38,7 +38,7 @@ public:
     Element(type, element, ghost_type), num_point(num_point), global_num(global_num),
     position((Real *)NULL, 0) { this->position.shallowCopy(position); };
 
-  QuadraturePoint(const QuadraturePoint & quad) :
+  IntegrationPoint(const IntegrationPoint & quad) :
     Element(quad), num_point(quad.num_point), global_num(quad.global_num), position((Real *) NULL, 0) {
     position.shallowCopy(quad.position);
   };
@@ -47,11 +47,11 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
-    inline bool operator==(const QuadraturePoint & quad) const {
+    inline bool operator==(const IntegrationPoint & quad) const {
       return Element::operator==(quad) && this->num_point == quad.num_point;
   }
 
-  inline bool operator!=(const QuadraturePoint & quad) const {
+  inline bool operator!=(const IntegrationPoint & quad) const {
     return ((element != quad.element)
             || (type != quad.type)
             || (ghost_type != quad.ghost_type)
@@ -60,12 +60,12 @@ public:
 	    || (global_num != quad.global_num));
   }
 
-  bool operator<(const QuadraturePoint& rhs) const {
+  bool operator<(const IntegrationPoint& rhs) const {
     bool res = Element::operator<(rhs) || (Element::operator==(rhs) && this->num_point < rhs.num_point);
     return res;
   }
 
-  inline QuadraturePoint & operator=(const QuadraturePoint & q) {
+  inline IntegrationPoint & operator=(const IntegrationPoint & q) {
     if(this != &q) {
       element    = q.element;
       type       = q.type;
@@ -92,7 +92,7 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const {
     std::string space;
     for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
-    stream << space << "QuadraturePoint [";
+    stream << space << "IntegrationPoint [";
     Element::printself(stream, 0);
     stream << ", " << num_point << "(" << global_num << ")" << "]";
   }

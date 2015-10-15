@@ -61,8 +61,8 @@ public:
 
 
   inline Real operator()(Real r,
-			 const QuadraturePoint & q1,
-			 const QuadraturePoint & q2);
+			 const IntegrationPoint & q1,
+			 const IntegrationPoint & q2);
 
   /// computation of ellipsoid
   inline Real computeRhoSquare(Real r,

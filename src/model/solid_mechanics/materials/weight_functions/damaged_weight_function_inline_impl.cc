@@ -31,8 +31,8 @@
 
 /* -------------------------------------------------------------------------- */
 inline Real DamagedWeightFunction::operator()(Real r,
-					      const __attribute__((unused)) QuadraturePoint & q1,
-					      const QuadraturePoint & q2) {
+					      const __attribute__((unused)) IntegrationPoint & q1,
+					      const IntegrationPoint & q2) {
   /// compute the weight
   UInt quad = q2.global_num;
   Array<Real> & dam_array = (*this->damage)(q2.type, q2.ghost_type);

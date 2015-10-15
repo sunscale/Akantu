@@ -56,8 +56,8 @@ public:
   /* ------------------------------------------------------------------------ */
 private:
 
-  /// store mass density per quadrature point
-  void storeMassDensityPerQuadraturePoint();
+  /// store mass density per integration point
+  void storeMassDensityPerIntegrationPoint();
 
   /// integrate an elemental field multiplied by density on global
   /// fragments

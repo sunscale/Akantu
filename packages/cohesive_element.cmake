@@ -90,9 +90,9 @@ package_declare_elements(cohesive_element
   _gt_cohesive_3d_8
   _gt_cohesive_3d_16
   FE_ENGINE_LISTS
-  gradient_on_quadrature_points
-  interpolate_on_quadrature_points
-  compute_normals_on_control_points
+  gradient_on_integration_points
+  interpolate_on_integration_points
+  compute_normals_on_integration_points
   inverse_map
   contains
   get_shapes_derivatives
