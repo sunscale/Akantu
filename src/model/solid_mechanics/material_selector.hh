@@ -33,19 +33,20 @@
 #include "aka_common.hh"
 #include "mesh.hh"
 
-
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_SELECTOR_HH__
 #define __AKANTU_MATERIAL_SELECTOR_HH__
+
+/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 class SolidMechanicsModel;
 
-/* -------------------------------------------------------------------------- */
-
 /**
- * main class to assign different materials for different elements
+ * main class to assign same or different materials for different
+ * elements
  */
 class MaterialSelector {
 public:
@@ -94,7 +95,8 @@ private:
 /* -------------------------------------------------------------------------- */
 /**
  * class that uses element data to assign materials (to be completed
- * by lucas)
+ * by lucas, any implementation apart from the
+ * MeshDataMaterialSelector?)
  */
 template<typename T>
 class ElementDataMaterialSelector : public MaterialSelector {
@@ -120,8 +122,13 @@ public:
   }
 
 private:
+  /// list of element with the specified data (i.e. tag value)
   const ElementTypeMapArray<T> & element_data;
+  
+  /// the model that the materials belong
   const SolidMechanicsModel & model;
+  
+  /// first material index: equal to 1 if none specified
   UInt first_index;
 };
 
