@@ -4,7 +4,7 @@
 #include "solid_mechanics_model.hh"
 #include "dumpable_inline_impl.hh"
   
-using akantu::QuadraturePoint;
+using akantu::IntegrationPoint;
 using akantu::Vector;
 using akantu::ElementTypeMapArray;
 using akantu::MatrixProxy;
