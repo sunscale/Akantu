@@ -98,11 +98,6 @@ print_self(SolidMechanicsModel)
   velo.clear();
   acc.clear();
  }
-  void applyHydrostaticPressure(Real w_level, Real gamma, 
-     SpacialDirection direction, const std::string surface_name){
-
-  $self->applyBC(akantu::BC::Neumann::HydrostatPress(w_level, gamma, direction), surface_name);
- }
 
   void applyUniformPressure(Real pressure, const std::string surface_name){
   
