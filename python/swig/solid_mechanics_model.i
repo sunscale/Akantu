@@ -82,4 +82,41 @@ print_self(SolidMechanicsModel)
     displ.clear();
   }
 
+  void solveStep_TgModifIncr(Real tolerance, UInt max_iteration) {
+      
+  $self->solveStep<akantu::SolveConvergenceMethod::_scm_newton_raphson_tangent_modified, akantu::SolveConvergenceCriteria::_scc_residual>(tolerance, max_iteration);
+    
+ }
+  
+  void clearDisplVeloAcc() {
+
+  akantu::Array<akantu::Real> & displ = $self->getDisplacement();
+  akantu::Array<akantu::Real> & velo = $self->getVelocity();
+  akantu::Array<akantu::Real> & acc = $self->getAcceleration();
+
+  displ.clear();
+  velo.clear();
+  acc.clear();
+ }
+  void applyHydrostaticPressure(Real w_level, Real gamma, 
+     SpacialDirection direction, const std::string surface_name){
+
+  $self->applyBC(akantu::BC::Neumann::HydrostatPress(w_level, gamma, direction), surface_name);
+ }
+
+  void applyUniformPressure(Real pressure, const std::string surface_name){
+  
+  UInt spatial_dimension = $self->getSpatialDimension();
+  akantu::Matrix<akantu::Real> surface_stress(spatial_dimension, spatial_dimension, 0.0);
+
+  for(UInt i = 0; i < spatial_dimension; ++i) {
+  surface_stress(i,i) = -pressure;
+ }  
+  $self->applyBC(akantu::BC::Neumann::FromStress(surface_stress), surface_name);
+ }
+
+  void blockDOF(const std::string surface_name, SpacialDirection direction){
+
+    $self->applyBC(akantu::BC::Dirichlet::FixedValue(0.0, direction), surface_name);
+  }
 }
