@@ -54,8 +54,6 @@ protected:
 
   void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
 
-  /// associate the non-local variables of the material to their neighborhoods
-  virtual void nonLocalVariableToNeighborhood();
 private:
 
   /* ------------------------------------------------------------------------ */

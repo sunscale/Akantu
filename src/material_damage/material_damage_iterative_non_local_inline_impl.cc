@@ -32,6 +32,8 @@ MaterialDamageIterativeNonLocal<spatial_dimension>::MaterialDamageIterativeNonLo
   AKANTU_DEBUG_IN();
   this->is_non_local = true;
   this->grad_u_nl.initialize(spatial_dimension*spatial_dimension);
+  this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), spatial_dimension*spatial_dimension);
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -39,8 +41,10 @@ MaterialDamageIterativeNonLocal<spatial_dimension>::MaterialDamageIterativeNonLo
 template<UInt spatial_dimension>
 void MaterialDamageIterativeNonLocal<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
-  this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), spatial_dimension*spatial_dimension);
   MaterialDamageIterativeNonLocalParent::initMaterial();
+
+  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), this->name);
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -76,8 +80,4 @@ void MaterialDamageIterativeNonLocal<spatial_dimension>::computeNonLocalStress(E
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialDamageIterativeNonLocal<spatial_dimension>::nonLocalVariableToNeighborhood() {
-  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), this->name);
-}
+
