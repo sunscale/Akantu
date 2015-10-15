@@ -280,6 +280,9 @@ package_declare_sources(core
   synchronizer/synchronizer.hh
   synchronizer/synchronizer_registry.cc
   synchronizer/synchronizer_registry.hh
+  synchronizer/grid_synchronizer.cc
+  synchronizer/grid_synchronizer.hh
+
   )
 
 package_declare_elements(core

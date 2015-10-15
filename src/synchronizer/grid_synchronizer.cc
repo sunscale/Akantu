@@ -536,7 +536,7 @@ GridSynchronizer::createGridSynchronizer<IntegrationPoint>(Mesh & mesh,
 							   SynchronizerRegistry * synchronizer_registry,
 							   const std::set<SynchronizationTag> & tags_to_register,
 							   MemoryID memory_id,
-							   const bool register_to_event_manager = true);
+							   const bool register_to_event_manager);
 template GridSynchronizer *
 GridSynchronizer::createGridSynchronizer<Element>(Mesh & mesh,
                                                   const SpatialGrid<Element> & grid,
@@ -544,6 +544,6 @@ GridSynchronizer::createGridSynchronizer<Element>(Mesh & mesh,
 						  SynchronizerRegistry * synchronizer_registry,
 						  const std::set<SynchronizationTag> & tags_to_register,
                                                   MemoryID memory_id,
-						  const bool register_to_event_manager = true);
+						  const bool register_to_event_manager);
 
 __END_AKANTU__

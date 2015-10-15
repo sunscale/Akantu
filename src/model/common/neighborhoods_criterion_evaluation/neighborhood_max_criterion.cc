@@ -84,6 +84,11 @@ NeighborhoodMaxCriterion::~NeighborhoodMaxCriterion() {
 void NeighborhoodMaxCriterion::initNeighborhood() {
   AKANTU_DEBUG_IN();
 
+  /// parse the input parameter
+  const Parser & parser = getStaticParser();
+  const ParserSection & section_neighborhood = *(parser.getSubSections(_st_neighborhood).first);
+  this->parseSection(section_neighborhood);
+
   AKANTU_DEBUG_INFO("Creating the grid");
   this->createGrid();
 

@@ -27,7 +27,7 @@
 
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_NEIGHBORHOOD_BASE_HH__
-#define __AKANTU__NEIGHBORHOOD_BASE_HH__
+#define __AKANTU_NEIGHBORHOOD_BASE_HH__
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "solid_mechanics_model.hh"

@@ -54,6 +54,7 @@ __BEGIN_AKANTU__
   (neighborhoods)				\
   (non_local)					\
   (weight_function)				\
+  (neighborhood)                                \
   (user)					\
   (not_defined)
 
