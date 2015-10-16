@@ -33,15 +33,27 @@
 #include "cppargparse.hh"
 
 #if defined(AKANTU_USE_MPI)
-# include "static_communicator.hh"
-# include "mpi_type_wrapper.hh"
+#include "static_communicator.hh"
+#include "mpi_type_wrapper.hh"
 #endif
+/* -------------------------------------------------------------------------- */
+#include <petscsys.h>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
+#if not defined(PETSC_CLANGUAGE_CXX)
+/// small hack to use the c binding of petsc when the cxx binding does notation
+/// exists
+int aka_PETScError(int ierr) {
+  CHKERRQ(ierr);
+  return 0;
+}
+#endif
+
 UInt DOFManagerPETSc::petsc_dof_manager_instances = 0;
 
+/// Error handler to make PETSc errors caught by Akantu
 #if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5
 static PetscErrorCode PETScErrorHandler(MPI_Comm, int line, const char * dir,
                                         const char * file,
@@ -69,6 +81,21 @@ DOFManagerPETSc::DOFManagerPETSc(const Mesh & mesh, const ID & id,
                                  const MemoryID & memory_id)
     : DOFManager(mesh, id, memory_id) {
 
+// check if the akantu types and PETSc one are consistant
+#if __cplusplus > 199711L
+  static_assert(sizeof(Int) == sizeof(PetscInt),
+                "The integer type of Akantu does not match the one from PETSc");
+  static_assert(sizeof(Real) == sizeof(PetscReal),
+                "The integer type of Akantu does not match the one from PETSc");
+#else
+  AKANTU_DEBUG_ASSERT(
+      sizeof(Int) == sizeof(PetscInt),
+      "The integer type of Akantu does not match the one from PETSc");
+  AKANTU_DEBUG_ASSERT(
+      sizeof(Real) == sizeof(PetscReal),
+      "The integer type of Akantu does not match the one from PETSc");
+#endif
+
   if (this->petsc_dof_manager_instances == 0) {
 #if defined(AKANTU_USE_MPI)
     StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
@@ -87,8 +114,10 @@ DOFManagerPETSc::DOFManagerPETSc(const Mesh & mesh, const ID & id,
 
     PetscErrorCode petsc_error = PetscInitialize(&argc, &argv, NULL, NULL);
 
-    if(petsc_error != 0) {
-      AKANTU_DEBUG_ERROR("An error occured while initializing Petsc (PetscErrorCode "<< petsc_error << ")");
+    if (petsc_error != 0) {
+      AKANTU_DEBUG_ERROR(
+          "An error occured while initializing Petsc (PetscErrorCode "
+          << petsc_error << ")");
     }
 
     PetscPushErrorHandler(PETScErrorHandler, NULL);
@@ -109,34 +138,74 @@ DOFManagerPETSc::~DOFManagerPETSc() {
   CHKERRXX(ierr);
 
   this->petsc_dof_manager_instances--;
-  if(this->petsc_dof_manager_instances == 0) {
+  if (this->petsc_dof_manager_instances == 0) {
     PetscFinalize();
   }
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerPETSc::registerDOFs(const ID & dof_id,
-                                   Array<Real> & dofs_array,
+void DOFManagerPETSc::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
                                    DOFSupportType & support_type) {
   DOFManager::registerDOFs(dof_id, dofs_array, support_type);
 
   PetscErrorCode ierr;
-  ierr = VecSetSizes(this->residual, this->local_system_size, PETSC_DECIDE);
+
+  PetscInt current_size;
+  ierr = VecGetSize(this->residual, &current_size);
   CHKERRXX(ierr);
 
-  ierr = VecSetFromOptions(this->residual);
-  CHKERRXX(ierr);
+  if (current_size == 0) { // first time vector is set
+    PetscInt local_size = this->pure_local_system_size;
+    ierr = VecSetSizes(this->residual, local_size, PETSC_DECIDE);
+    CHKERRXX(ierr);
 
-  ierr = VecDuplicate(this->residual, &this->solution);
-  CHKERRXX(ierr);
+    ierr = VecSetFromOptions(this->residual);
+    CHKERRXX(ierr);
+
+#ifndef AKANTU_NDEBUG
+    PetscInt global_size;
+    ierr = VecGetSize(this->residual, &global_size);
+    CHKERRXX(ierr);
+    AKANTU_DEBUG_ASSERT(this->system_size == UInt(global_size),
+                        "The local value of the system size does not match the "
+                        "one determined by PETSc");
+#endif
+    PetscInt start_dof, end_dof;
+    VecGetOwnershipRange(this->residual, &start_dof, &end_dof);
+
+    PetscInt * global_indices = new PetscInt[local_size];
+    global_indices[0] = start_dof;
+
+    for (PetscInt d = 0; d < local_size; d++)
+      global_indices[d + 1] = global_indices[d] + 1;
+
+// To be change if we switch to a block definition
+#if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5
+    ISLocalToGlobalMappingCreate(this->communicator, 1, local_size,
+                                 global_indices, PETSC_COPY_VALUES,
+                                 &this->is_ltog);
+
+#else
+    ISLocalToGlobalMappingCreate(this->communicator, local_size, global_indices,
+                                 PETSC_COPY_VALUES, &this->is_ltog);
+#endif
+
+    VecSetLocalToGlobalMapping(this->residual, this->is_ltog);
+    delete[] global_indices;
+
+    ierr = VecDuplicate(this->residual, &this->solution);
+    CHKERRXX(ierr);
+
+  } else { // this is an update of the object already created
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
 
   /// set the solution to zero
-  ierr = VecZeroEntries(this->solution);
-  CHKERRXX(ierr);
+  // ierr = VecZeroEntries(this->solution);
+  // CHKERRXX(ierr);
 }
 
 /* -------------------------------------------------------------------------- */
-
 /**
  * This function creates the non-zero pattern of the PETSc matrix. In
  * PETSc the parallel matrix is partitioned across processors such

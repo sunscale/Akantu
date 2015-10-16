@@ -31,7 +31,20 @@
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
 #include <petscvec.h>
+#include <petscis.h>
 /* -------------------------------------------------------------------------- */
+
+#if not defined(PETSC_CLANGUAGE_CXX)
+extern int aka_PETScError(int ierr);
+
+#define CHKERRXX(x)                                                            \
+  do {                                                                         \
+    int error = aka_PETScError(x);                                             \
+    if (error != 0) {                                                          \
+      AKANTU_EXCEPTION("Error in PETSC");                                      \
+    }                                                                          \
+  } while (0)
+#endif
 
 #ifndef __AKANTU_DOF_MANAGER_PETSC_HH__
 #define __AKANTU_DOF_MANAGER_PETSC_HH__
@@ -57,9 +70,6 @@ public:
   void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
                     DOFSupportType & support_type);
 
-  /// Get the part of the solution corresponding to the dof_id
-  virtual void getSolution(const ID & dof_id, Array<Real> & solution_array);
-
   /// Assemble an array to the global residual array
   virtual void assembleToResidual(const ID & dof_id,
                                   const Array<Real> & array_to_assemble,
@@ -84,6 +94,10 @@ public:
       const Array<Real> & elementary_mat, const ElementType & type,
       const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
       const Array<UInt> & filter_elements);
+
+protected:
+  /// Get the part of the solution corresponding to the dof_id
+  virtual void getSolutionPerDOFs(const ID & dof_id, Array<Real> & solution_array);
 
 private:
   /// Add a symmetric matrices to a symmetric sparse matrix
@@ -119,9 +133,9 @@ public:
   SparseMatrixPETSc & getMatrix(const ID & matrix_id);
 
   /// Get the solution array
-  AKANTU_GET_MACRO_NOT_CONST(Solution, solution, Vec &);
+  AKANTU_GET_MACRO_NOT_CONST(GlobalSolution, this->solution, Vec &);
   /// Get the residual array
-  AKANTU_GET_MACRO_NOT_CONST(Residual, residual, Vec &);
+  AKANTU_GET_MACRO_NOT_CONST(Residual, this->residual, Vec &);
   /// Get the blocked dofs array
   //  AKANTU_GET_MACRO(BlockedDOFs, blocked_dofs, const Array<bool> &);
 
@@ -139,6 +153,9 @@ private:
 
   /// PETSc version of the residual
   Vec residual;
+
+  /// PETSc local to global mapping of dofs
+  ISLocalToGlobalMapping is_ltog;
 
   /// Communicator associated to PETSc
   MPI_Comm communicator;

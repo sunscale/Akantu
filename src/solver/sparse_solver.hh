@@ -35,10 +35,8 @@
 #define __AKANTU_SOLVER_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "static_solver.hh"
 #include "data_accessor.hh"
 #include "parsable.hh"
-
 /* -------------------------------------------------------------------------- */
 
 enum SolverParallelMethod {
@@ -55,7 +53,6 @@ __BEGIN_AKANTU__
 
 class SparseSolver : protected Memory,
                      public Parsable,
-                     public StaticSolverEventHandler,
                      public DataAccessor {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */

@@ -261,8 +261,6 @@ package_declare_sources(core
   solver/sparse_matrix.cc
   solver/sparse_matrix.hh
   solver/sparse_matrix_inline_impl.cc
-  solver/static_solver.hh
-  solver/static_solver.cc
 
   synchronizer/communication_buffer.hh
   synchronizer/communication_buffer_inline_impl.cc

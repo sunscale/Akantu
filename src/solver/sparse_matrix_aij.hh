@@ -81,7 +81,7 @@ public:
                   const ID & id = "sparse_matrix_aij",
                   const MemoryID & memory_id = 0);
 
-  SparseMatrixAIJ(const SparseMatrix & matrix, const ID & id = "sparse_matrix_aij",
+  SparseMatrixAIJ(const SparseMatrixAIJ & matrix, const ID & id = "sparse_matrix_aij",
                   const MemoryID & memory_id = 0);
 
   virtual ~SparseMatrixAIJ();
@@ -165,6 +165,11 @@ private:
 
   /// values : A[k] = Matrix[irn[k]][jcn[k]]
   Array<Real> a;
+
+  /// Profile release
+  UInt profile_release;
+  /// Value release
+  UInt value_release;
 
   /*
    * map for (i, j) ->  k correspondence

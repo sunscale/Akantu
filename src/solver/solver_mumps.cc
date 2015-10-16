@@ -127,11 +127,11 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
                                      const MemoryID & memory_id)
     : SparseSolver(dof_manager, matrix_id, id, memory_id),
       dof_manager(dof_manager), matrix(dof_manager.getMatrix(matrix_id)),
-      rhs(dof_manager.getRHS()), master_rhs_solution(0, 1),
-      is_mumps_data_initialized(false),
-      communicator(StaticCommunicator::getStaticCommunicator()),
-      prank(communicator.whoAmI()) {
+      rhs(dof_manager.getResidual()), master_rhs_solution(0, 1) {
   AKANTU_DEBUG_IN();
+
+  StaticCommunicator & communicator = StaticCommunicator::getStaticCommunicator();
+  this->prank = communicator.whoAmI();
 
 #ifdef AKANTU_USE_MPI
   this->parallel_method = _fully_distributed;
@@ -167,8 +167,6 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
   this->mumps_data.job = _smj_initialize; // initialize
   dmumps_c(&this->mumps_data);
 
-  this->is_mumps_data_initialized = true;
-
   /* ------------------------------------------------------------------------ */
   /* ------------------------------------------------------------------------ */
   // Output setup
@@ -196,20 +194,8 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
 SparseSolverMumps::~SparseSolverMumps() {
   AKANTU_DEBUG_IN();
 
-  this->destroyInternalData();
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SparseSolverMumps::destroyInternalData() {
-  AKANTU_DEBUG_IN();
-
-  if (this->is_mumps_data_initialized) {
-    this->mumps_data.job = _smj_destroy; // destroy
-    dmumps_c(&this->mumps_data);
-    this->is_mumps_data_initialized = false;
-  }
+  this->mumps_data.job = _smj_destroy; // destroy
+  dmumps_c(&this->mumps_data);
 
   AKANTU_DEBUG_OUT();
 }
@@ -341,7 +327,7 @@ void SparseSolverMumps::printError() {
   Int _info_v[2];
   _info_v[0] = info(1);  // to get errors
   _info_v[1] = -info(1); // to get warnings
-  communicator.allReduce(_info_v, 2, _so_min);
+  StaticCommunicator::getStaticCommunicator().allReduce(_info_v, 2, _so_min);
   _info_v[1] = -_info_v[1];
 
   if (_info_v[0] < 0) { // < 0 is an error

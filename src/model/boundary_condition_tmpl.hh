@@ -50,9 +50,9 @@ void BoundaryCondition<ModelType>::initBC(ModelType & model, Array<Real> & prima
 /* -------------------------------------------------------------------------- */
 template<typename ModelType>
 void BoundaryCondition<ModelType>::initBC(ModelType & model,
-					  Array<Real> & primal,
-					  Array<Real> & primal_increment,
-					  Array<Real> & dual)
+                                          Array<Real> & primal,
+                                          Array<Real> & primal_increment,
+                                          Array<Real> & dual)
 {
   this->initBC(model, primal, dual);
   this->primal_increment = &primal_increment;
@@ -138,17 +138,17 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<FunctorType, BC::Fu
       UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*type_it);
 
       Array<Real> * dual_before_integ = new Array<Real>(nb_elements * nb_quad_points,
-							nb_degree_of_freedom,
-							0.);
+                                                        nb_degree_of_freedom,
+                                                        0.);
       Array<Real> * quad_coords = new Array<Real>(nb_elements * nb_quad_points, dim);
 
       const Array<Real> & normals_on_quad =
-	fem_boundary.getNormalsOnQuadPoints(*type_it, ghost_type);
+        fem_boundary.getNormalsOnQuadPoints(*type_it, ghost_type);
 
       fem_boundary.interpolateOnQuadraturePoints(nodes_coords, *quad_coords,
-						 dim,
-						 *type_it, ghost_type,
-						 element_ids);
+                                                 dim,
+                                                 *type_it, ghost_type,
+                                                 element_ids);
       Array<Real>::const_vector_iterator normals_begin = normals_on_quad.begin(dim);
       Array<Real>::const_vector_iterator normals_iter;
       Array<Real>::const_vector_iterator quad_coords_iter  = quad_coords->begin(dim);
@@ -158,7 +158,7 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<FunctorType, BC::Fu
       for(; elem_iter != elem_iter_end; ++elem_iter) {
         UInt el = *elem_iter;
         quad_point.element = el;
-	normals_iter = normals_begin + el * nb_quad_points;
+        normals_iter = normals_begin + el * nb_quad_points;
         for(UInt q(0); q < nb_quad_points; ++q) {
           quad_point.num_point = q;
           func(quad_point,
@@ -176,26 +176,26 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<FunctorType, BC::Fu
       /* -------------------------------------------------------------------- */
       // Initialization of iterators
       Array<Real>::matrix_iterator dual_iter_mat =
-	dual_before_integ->begin(nb_degree_of_freedom,1);
+        dual_before_integ->begin(nb_degree_of_freedom,1);
       elem_iter = element_ids.begin();
       Array<Real>::const_matrix_iterator shapes_iter_begin =
-	fem_boundary.getShapes(*type_it, ghost_type).begin(1, nb_nodes_per_element);
+        fem_boundary.getShapes(*type_it, ghost_type).begin(1, nb_nodes_per_element);
 
       Array<Real> * dual_by_shapes =
-	new Array<Real>(nb_elements*nb_quad_points, nb_degree_of_freedom*nb_nodes_per_element);
+        new Array<Real>(nb_elements*nb_quad_points, nb_degree_of_freedom*nb_nodes_per_element);
 
       Array<Real>::matrix_iterator dual_by_shapes_iter =
-	dual_by_shapes->begin(nb_degree_of_freedom, nb_nodes_per_element);
+        dual_by_shapes->begin(nb_degree_of_freedom, nb_nodes_per_element);
 
       Array<Real>::const_matrix_iterator shapes_iter;
 
       /* -------------------------------------------------------------------- */
       // Loop computing dual x shapes
       for(; elem_iter != elem_iter_end; ++elem_iter) {
-	shapes_iter = shapes_iter_begin + *elem_iter*nb_quad_points;
+        shapes_iter = shapes_iter_begin + *elem_iter*nb_quad_points;
 
         for(UInt q(0); q < nb_quad_points; ++q,
-	      ++dual_iter_mat, ++dual_by_shapes_iter, ++shapes_iter) {
+              ++dual_iter_mat, ++dual_by_shapes_iter, ++shapes_iter) {
           dual_by_shapes_iter->mul<false, false>(*dual_iter_mat, *shapes_iter);
         }
       }
@@ -213,13 +213,11 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<FunctorType, BC::Fu
       delete dual_by_shapes;
 
       // assemble the result into force vector
-      fem_boundary.assembleArray(*dual_by_shapes_integ,
-                                 dual,
-                                 model.getDOFSynchronizer().getLocalDOFEquationNumbers(),
-                                 nb_degree_of_freedom,
-                                 *type_it,
-                                 ghost_type,
-                                 element_ids);
+      model.getDOFManager().assembleElementalArrayLocalArray(*dual_by_shapes_integ,
+                                                             dual,
+                                                             *type_it,
+                                                             ghost_type,
+                                                             element_ids);
       delete dual_by_shapes_integ;
     }
   }
@@ -238,13 +236,13 @@ inline void BoundaryCondition<ModelType>::applyBC(const FunctorType & func) {
 template<typename ModelType>
 template<typename FunctorType>
 inline void BoundaryCondition<ModelType>::applyBC(const FunctorType & func,
-						  const std::string & group_name) {
+                                                  const std::string & group_name) {
   try {
     const ElementGroup & element_group = model->getMesh().getElementGroup(group_name);
     applyBC(func, element_group);
   } catch(akantu::debug::Exception e) {
     AKANTU_EXCEPTION("Error applying a boundary condition onto \""
-		     << group_name << "\"! [" << e.what() <<"]");
+                     << group_name << "\"! [" << e.what() <<"]");
   }
 }
 
@@ -252,7 +250,7 @@ inline void BoundaryCondition<ModelType>::applyBC(const FunctorType & func,
 template<typename ModelType>
 template<typename FunctorType>
 inline void BoundaryCondition<ModelType>::applyBC(const FunctorType & func,
-						  const ElementGroup & element_group) {
+                                                  const ElementGroup & element_group) {
 #if !defined(AKANTU_NDEBUG)
   if(element_group.getDimension() != model->getSpatialDimension() - 1)
     AKANTU_DEBUG_WARNING("The group " << element_group.getName()

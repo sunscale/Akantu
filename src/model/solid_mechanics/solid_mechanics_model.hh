@@ -64,7 +64,7 @@ __BEGIN_AKANTU__
 
 struct SolidMechanicsModelOptions : public ModelOptions {
   SolidMechanicsModelOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
-			     bool no_init_materials = false) :
+                             bool no_init_materials = false) :
     analysis_method(analysis_method),
     no_init_materials(no_init_materials)  {  }
   AnalysisMethod analysis_method;
@@ -75,10 +75,10 @@ extern const SolidMechanicsModelOptions default_solid_mechanics_model_options;
 
 
 class SolidMechanicsModel : public Model,
-			    public DataAccessor,
-			    public MeshEventHandler,
-			    public BoundaryCondition<SolidMechanicsModel>,
-			    public EventHandlerManager<SolidMechanicsModelEventHandler> {
+                            public DataAccessor,
+                            public MeshEventHandler,
+                            public BoundaryCondition<SolidMechanicsModel>,
+                            public EventHandlerManager<SolidMechanicsModelEventHandler> {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -99,9 +99,9 @@ protected:
 
 public:
   SolidMechanicsModel(Mesh & mesh,
-		      UInt spatial_dimension = _all_dimensions,
-		      const ID & id = "solid_mechanics_model",
-		      const MemoryID & memory_id = 0);
+                      UInt spatial_dimension = _all_dimensions,
+                      const ID & id = "solid_mechanics_model",
+                      const MemoryID & memory_id = 0);
 
   virtual ~SolidMechanicsModel();
 
@@ -135,9 +135,6 @@ public:
 
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-
-  /// re-initialize model to set fields to 0
-  void reInitialize();
 
   /* ------------------------------------------------------------------------ */
   /* PBC                                                                      */
@@ -188,10 +185,10 @@ public:
 
   /// Solve the system @f[ A x = \alpha b @f] with A a lumped matrix
   void solveLumped(Array <Real> &       x,
-		   const Array <Real> & A,
-		   const Array <Real> & b,
-		   const Array <bool> & blocked_dofs,
-		   Real                 alpha);
+                   const Array <Real> & A,
+                   const Array <Real> & b,
+                   const Array <bool> & blocked_dofs,
+                   Real                 alpha);
 
   /// explicit integration predictor
   void explicitPred();
@@ -230,9 +227,9 @@ public:
 
   template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
   bool solveStep(Real   tolerance,
-		 Real & error,
-		 UInt   max_iteration = 100,
-		 bool   do_not_factorize = false);
+                 Real & error,
+                 UInt   max_iteration = 100,
+                 bool   do_not_factorize = false);
 
 public:
   /**
@@ -242,7 +239,7 @@ public:
    **/
   template <SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
   bool solveStatic(Real tolerance, UInt max_iteration,
-		   bool do_not_factorize = false);
+                   bool do_not_factorize = false);
 
   /// create and return the velocity damping matrix
   SparseMatrix & initVelocityDampingMatrix();
@@ -333,8 +330,8 @@ protected:
 
   /// fill a vector of rho
   void computeRho(Array <Real> & rho,
-		  ElementType    type,
-		  GhostType      ghost_type);
+                  ElementType    type,
+                  GhostType      ghost_type);
 
   /// compute the kinetic energy
   Real getKineticEnergy();
@@ -348,45 +345,45 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   inline virtual UInt getNbDataForElements(const Array <Element> & elements,
-					   SynchronizationTag tag) const;
+                                           SynchronizationTag tag) const;
 
   inline virtual void packElementData(CommunicationBuffer &   buffer,
-				      const Array <Element> & elements,
-				      SynchronizationTag      tag) const;
+                                      const Array <Element> & elements,
+                                      SynchronizationTag      tag) const;
 
   inline virtual void unpackElementData(CommunicationBuffer &   buffer,
-					const Array <Element> & elements,
-					SynchronizationTag      tag);
+                                        const Array <Element> & elements,
+                                        SynchronizationTag      tag);
 
   inline virtual UInt getNbDataToPack(SynchronizationTag tag) const;
   inline virtual UInt getNbDataToUnpack(SynchronizationTag tag) const;
 
   inline virtual void packData(CommunicationBuffer & buffer,
-			       const UInt            index,
-			       SynchronizationTag    tag) const;
+                               const UInt            index,
+                               SynchronizationTag    tag) const;
 
   inline virtual void unpackData(CommunicationBuffer & buffer,
-				 const UInt            index,
-				 SynchronizationTag    tag);
+                                 const UInt            index,
+                                 SynchronizationTag    tag);
 
 protected:
   inline void splitElementByMaterial(const Array <Element> & elements,
-				     Array <Element> *       elements_per_mat) const;
+                                     Array <Element> *       elements_per_mat) const;
 
   /* ------------------------------------------------------------------------ */
   /* Mesh Event Handler inherited members                                     */
   /* ------------------------------------------------------------------------ */
 protected:
   virtual void onNodesAdded(const Array <UInt> &  nodes_list,
-			    const NewNodesEvent & event);
+                            const NewNodesEvent & event);
   virtual void onNodesRemoved(const Array <UInt> &      element_list,
-			      const Array <UInt> &      new_numbering,
-			      const RemovedNodesEvent & event);
+                              const Array <UInt> &      new_numbering,
+                              const RemovedNodesEvent & event);
   virtual void onElementsAdded(const Array <Element> &  nodes_list,
-			       const NewElementsEvent & event);
+                               const NewElementsEvent & event);
   virtual void onElementsRemoved(const Array <Element> &      element_list,
-				 const ElementTypeMapArray<UInt> &    new_numbering,
-				 const RemovedElementsEvent & event);
+                                 const ElementTypeMapArray<UInt> &    new_numbering,
+                                 const RemovedElementsEvent & event);
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface (kept for convenience) and dumper relative functions  */
@@ -401,30 +398,30 @@ public:
 #ifndef SWIG
   //! give the amount of data per element
   virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-						      const ElementKind & kind);
+                                                      const ElementKind & kind);
 
   //! flatten a given material internal field
   ElementTypeMapArray<Real> & flattenInternal(const std::string & field_name,
-					      const ElementKind & kind,
-					      const GhostType ghost_type = _not_ghost);
+                                              const ElementKind & kind,
+                                              const GhostType ghost_type = _not_ghost);
   //! flatten all the registered material internals
   void flattenAllRegisteredInternals(const ElementKind & kind);
 #endif
 
   virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
-					       const std::string & group_name,
-					       bool padding_flag);
+                                               const std::string & group_name,
+                                               bool padding_flag);
 
   virtual dumper::Field * createNodalFieldBool(const std::string & field_name,
-					       const std::string & group_name,
-					       bool padding_flag);
+                                               const std::string & group_name,
+                                               bool padding_flag);
 
 
   virtual dumper::Field * createElementalField(const std::string & field_name,
-					       const std::string & group_name,
-					       bool padding_flag,
-					       const UInt & spatial_dimension,
-					       const ElementKind & kind);
+                                               const std::string & group_name,
+                                               bool padding_flag,
+                                               const UInt & spatial_dimension,
+                                               const ElementKind & kind);
 
   virtual void dump(const std::string & dumper_name);
 
@@ -484,14 +481,10 @@ public:
   AKANTU_GET_MACRO(Acceleration,    *acceleration,           Array <Real> &);
 
   /// get the SolidMechanicsModel::force vector (external forces)
-  AKANTU_GET_MACRO(Force,           *force,                  Array <Real> &);
+  AKANTU_GET_MACRO(Force,           *external_force,         Array <Real> &);
 
   /// get the SolidMechanicsModel::internal_force vector (internal forces)
   AKANTU_GET_MACRO(InternalForce,   *internal_force,         Array <Real> &);
-
-  /// get     the    SolidMechanicsModel::residual    vector,     computed    by
-  /// SolidMechanicsModel::updateResidual
-  AKANTU_GET_MACRO(Residual,        *residual,               Array <Real> &);
 
   /// get the SolidMechanicsModel::blocked_dofs vector
   AKANTU_GET_MACRO(BlockedDOFs,     *blocked_dofs,           Array <bool> &);
@@ -542,17 +535,17 @@ public:
    */
   void setIncrementFlagOn();
 
-  /// get the stiffness matrix
-  AKANTU_GET_MACRO(StiffnessMatrix, *stiffness_matrix, SparseMatrix &);
+  // /// get the stiffness matrix
+  // AKANTU_GET_MACRO(StiffnessMatrix, *stiffness_matrix, SparseMatrix &);
 
-  /// get the global jacobian matrix of the system
-  AKANTU_GET_MACRO(GlobalJacobianMatrix, *jacobian_matrix, const SparseMatrix &);
+  // /// get the global jacobian matrix of the system
+  // AKANTU_GET_MACRO(GlobalJacobianMatrix, *jacobian_matrix, const SparseMatrix &);
 
-  /// get the mass matrix
-  AKANTU_GET_MACRO(MassMatrix, *mass_matrix, SparseMatrix &);
+  // /// get the mass matrix
+  // AKANTU_GET_MACRO(MassMatrix, *mass_matrix, SparseMatrix &);
 
-  /// get the velocity damping matrix
-  AKANTU_GET_MACRO(VelocityDampingMatrix, *velocity_damping_matrix, SparseMatrix &);
+  // /// get the velocity damping matrix
+  // AKANTU_GET_MACRO(VelocityDampingMatrix, *velocity_damping_matrix, SparseMatrix &);
 
   /// get the FEEngine object to integrate or interpolate on the boundary
   inline FEEngine & getFEEngineBoundary(const ID & name = "");
@@ -606,6 +599,9 @@ protected:
   /// displacements array at the previous time step (used in finite deformation)
   Array <Real> *previous_displacement;
 
+  /// increment of displacement
+  Array <Real> *increment;
+
   /// lumped mass array
   Array <Real> *mass;
 
@@ -619,13 +615,10 @@ protected:
   Array <Real> *increment_acceleration;
 
   /// external forces array
-  Array <Real> *force;
+  Array <Real> *external_force;
 
   /// internal forces array
   Array <Real> *internal_force;
-
-  /// residuals array
-  Array <Real> *residual;
 
   /// array specifing if a degree of freedom is blocked or not
   Array <bool> *blocked_dofs;
@@ -633,18 +626,18 @@ protected:
   /// array of current position used during update residual
   Array <Real> *current_position;
 
-  /// mass matrix
-  SparseMatrix *mass_matrix;
+  // /// mass matrix
+  // SparseMatrix *mass_matrix;
 
-  /// velocity damping matrix
-  SparseMatrix *velocity_damping_matrix;
+  // /// velocity damping matrix
+  // SparseMatrix *velocity_damping_matrix;
 
-  /// stiffness matrix
-  SparseMatrix *stiffness_matrix;
+  // /// stiffness matrix
+  // SparseMatrix *stiffness_matrix;
 
-  /// jacobian matrix @f[A = cM + dD + K@f] with @f[c = \frac{1}{\beta \Delta
-  /// t^2}, d = \frac{\gamma}{\beta \Delta t} @f]
-  SparseMatrix *jacobian_matrix;
+  // /// jacobian matrix @f[A = cM + dD + K@f] with @f[c = \frac{1}{\beta \Delta
+  // /// t^2}, d = \frac{\gamma}{\beta \Delta t} @f]
+  // SparseMatrix *jacobian_matrix;
 
   /// Arrays containing the material index for each element
   ElementTypeMapArray<UInt> material_index;
@@ -666,9 +659,6 @@ protected:
 
   // /// integration scheme of second order used
   // IntegrationScheme2ndOrder *integrator;
-
-  /// increment of displacement
-  Array <Real> *increment;
 
   /// flag defining if the increment must be computed or not
   bool increment_flag;

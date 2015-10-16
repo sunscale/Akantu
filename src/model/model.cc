@@ -38,12 +38,11 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 Model::Model(Mesh& mesh, UInt dim, const ID & id,
-	     const MemoryID & memory_id) :
-  Memory(id, memory_id), ModelSolver(mesh, id),
+             const MemoryID & memory_id) :
+  Memory(id, memory_id), ModelSolver(mesh, id, memory_id),
   mesh(mesh),
   spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension() : dim),
   synch_registry(NULL),
-  dof_synchronizer(NULL),
   is_pbc_slave_node(0,1,"is_pbc_slave_node") ,
   parser(&getStaticParser()) {
   AKANTU_DEBUG_IN();
@@ -64,9 +63,6 @@ Model::~Model() {
   }
 
   delete synch_registry;
-
-  delete dof_synchronizer;
-  dof_synchronizer = NULL;
 
   AKANTU_DEBUG_OUT();
 }

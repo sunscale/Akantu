@@ -153,30 +153,31 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name){
   AKANTU_DEBUG_OUT();
   return *(it->second);
 }
-/* -------------------------------------------------------------------------- */
-/// @todo : should merge with a single function which handles local and global
-inline void Model::changeLocalEquationNumberForPBC(std::map<UInt,UInt> & pbc_pair,
-					    UInt dimension){
-  for (std::map<UInt,UInt>::iterator it = pbc_pair.begin();
-       it != pbc_pair.end();++it) {
-    Int node_master = (*it).second;
-    Int node_slave = (*it).first;
-    for (UInt i = 0; i < dimension; ++i) {
-      (*dof_synchronizer->getLocalDOFEquationNumbersPointer())
-	(node_slave*dimension+i) = dimension*node_master+i;
-      (*dof_synchronizer->getGlobalDOFEquationNumbersPointer())
-	(node_slave*dimension+i) = dimension*node_master+i;
-    }
-  }
-}
-/* -------------------------------------------------------------------------- */
-inline bool Model::isPBCSlaveNode(const UInt node) const {
-  // if no pbc is defined, is_pbc_slave_node is of size zero
-  if (is_pbc_slave_node.getSize() == 0)
-    return false;
-  else
-    return is_pbc_slave_node(node);
-}
+
+// /* -------------------------------------------------------------------------- */
+// /// @todo : should merge with a single function which handles local and global
+// inline void Model::changeLocalEquationNumberForPBC(std::map<UInt,UInt> & pbc_pair,
+// 					    UInt dimension){
+//   for (std::map<UInt,UInt>::iterator it = pbc_pair.begin();
+//        it != pbc_pair.end();++it) {
+//     Int node_master = (*it).second;
+//     Int node_slave = (*it).first;
+//     for (UInt i = 0; i < dimension; ++i) {
+//       (*dof_synchronizer->getLocalDOFEquationNumbersPointer())
+// 	(node_slave*dimension+i) = dimension*node_master+i;
+//       (*dof_synchronizer->getGlobalDOFEquationNumbersPointer())
+// 	(node_slave*dimension+i) = dimension*node_master+i;
+//     }
+//   }
+// }
+// /* -------------------------------------------------------------------------- */
+// inline bool Model::isPBCSlaveNode(const UInt node) const {
+//   // if no pbc is defined, is_pbc_slave_node is of size zero
+//   if (is_pbc_slave_node.getSize() == 0)
+//     return false;
+//   else
+//     return is_pbc_slave_node(node);
+// }
 
 /* -------------------------------------------------------------------------- */
 inline UInt Model::getNbQuadraturePoints(const Array<Element> & elements,

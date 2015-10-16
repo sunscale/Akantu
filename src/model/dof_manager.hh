@@ -67,10 +67,7 @@ public:
                               Array<Real> & dofs_derivative);
 
   /// register array representing the blocked degree of freedoms
-  void registerBlockedDOFs(const ID & dof_id, Array<Real> & blocked_dofs);
-
-  /// Get the part of the solution corresponding to the dof_id
-  virtual void getSolution(const ID & dof_id, Array<Real> & solution_array) = 0;
+  void registerBlockedDOFs(const ID & dof_id, Array<bool> & blocked_dofs);
 
   /// Assemble an array to the global residual array
   virtual void assembleToResidual(const ID & dof_id,
@@ -122,6 +119,14 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
 protected:
+  /// splits the solution storage from a global view to the per dof storages
+  void splitSolutionPerDOFs();
+
+  /// minimum fonctionality to implement per derived version of the DOFManager
+  /// to allow the splitSolutionPerDOFs function to work
+  virtual void getSolutionPerDOFs(const ID & dof_id,
+                                  Array<Real> & solution_array) = 0;
+
   /// fill a Vector with the equation numbers corresponding to the given
   /// connectivity
   inline void extractElementEquationNumber(
@@ -130,6 +135,10 @@ protected:
 
   /// register a matrix
   void registerSparseMatrix(const ID & matrix_id, SparseMatrix & matrix);
+
+  /// register a time step solver instantiated by a derived class
+  void registerTimeStepSolver(const ID & time_step_solver_id,
+                              TimeStepSolver & time_step_solver);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -160,23 +169,24 @@ public:
   /* DOFs and derivatives accessors                                          */
   /* ------------------------------------------------------------------------ */
   /// Get a reference to the registered dof array for a given id
-  Array<Real> & getDOFs(ID & dofs_id);
+  Array<Real> & getDOFs(const ID & dofs_id);
 
   /// Get a reference to the registered dof derivatives array for a given id
-  Array<Real> & getDOFsDerivatives(ID & dofs_id, UInt order);
+  Array<Real> & getDOFsDerivatives(const ID & dofs_id, UInt order);
+
+  // /// Get a reference to the blocked dofs array registered for the given id
+  // Array<bool> & getBlockedDOFs(const ID & dofs_id);
 
   /// Get a reference to the blocked dofs array registered for the given id
-  Array<bool> & getBlockedDOFs(ID & dofs_id);
-
-  /// Get a reference to the blocked dofs array registered for the given id
-  const Array<bool> & getBlockedDOFs(ID & dofs_id) const;
+  const Array<bool> & getBlockedDOFs(const ID & dofs_id) const;
 
   /// Get a reference to the solution array registered for the given id
-  const Array<Real> & getSolution(ID & dofs_id) const;
+  const Array<Real> & getSolution(const ID & dofs_id) const;
 
-  /// Get a reference to the right hand side array registered for the given dof
-  /// id
-  const Array<Real> & getRHS() const;
+  // /// Get a reference to the right hand side array registered for the given
+  // dof
+  // /// id
+  // const Array<Real> & getRHS() const;
 
   /* ------------------------------------------------------------------------ */
   /* Matrices accessors                                                       */
@@ -209,7 +219,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /// Get instance of a time step solver
   virtual TimeStepSolver &
-  getNewTimeStepSolver(const ID & time_step_solver_id, UInt order,
+  getNewTimeStepSolver(const ID & time_step_solver_id, const ID & dof_id,
                        const TimeStepSolverType & type);
 
   /// get instance of a time step solver
@@ -227,8 +237,10 @@ protected:
 
     /// Degree of freedom array
     Array<Real> * dof;
+
     /// Blocked degree of freedoms array
-    Array<Real> * blocked_dofs;
+    Array<bool> * blocked_dofs;
+
     /// Solution associated to the dof
     Array<Real> * solution;
 
@@ -245,10 +257,18 @@ protected:
   /// equation number in global numbering
   Array<UInt> global_equation_number;
 
+  /// type to store dofs informations
   typedef std::map<ID, DOFData *> DOFStorage;
+
+  /// type to store all the matrices
   typedef std::map<ID, SparseMatrix *> SparseMatricesMap;
+
+  /// type to store all the non linear solver
   typedef std::map<ID, NonLinearSolver *> NonLinearSolversMap;
+
+  /// type to store all the time step solver
   typedef std::map<ID, TimeStepSolver *> TimeStepSolversMap;
+
   /// store a reference to the dof arrays
   DOFStorage dofs;
 
@@ -260,9 +280,6 @@ protected:
 
   /// time step solvers storage
   TimeStepSolversMap time_step_solvers;
-
-  /// Residual associated to the problem
-  Array<Real> residual;
 
   /// reference to the underlying mesh
   const Mesh & mesh;

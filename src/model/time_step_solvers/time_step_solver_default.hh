@@ -35,7 +35,8 @@
 #define __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
 
 namespace akantu {
-  class IntegrationScheme;
+class IntegrationScheme;
+class DOFManagerDefault;
 }
 
 __BEGIN_AKANTU__
@@ -45,7 +46,10 @@ class TimeStepSolverDefault : public TimeStepSolver {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  TimeStepSolverDefault(const TimeStepSolverType & type);
+  TimeStepSolverDefault(DOFManagerDefault & dof_manager, const ID & dof_id,
+                        const TimeStepSolverType & type, const ID & id,
+                        UInt memory_id);
+
   virtual ~TimeStepSolverDefault();
 
   /* ------------------------------------------------------------------------ */
@@ -64,11 +68,13 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+  /// DOFManager with its real type
+  DOFManagerDefault & dof_manager;
+
   /// Underlying integration scheme
   IntegrationScheme * integration_scheme;
 
@@ -77,6 +83,5 @@ private:
 };
 
 __END_AKANTU__
-
 
 #endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__ */

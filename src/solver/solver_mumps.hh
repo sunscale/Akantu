@@ -118,12 +118,6 @@ private:
   /// mumps data
   DMUMPS_STRUC_C mumps_data;
 
-  /// specify if the mumps_data are initialized or not
-  bool is_mumps_data_initialized;
-
-  /// Communicator used for the solver
-  StaticCommunicator &communicator;
-
   /// Rank of the current process
   UInt prank;
 

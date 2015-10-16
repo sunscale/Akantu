@@ -194,12 +194,12 @@ inline void SolidMechanicsModel::packElementData(CommunicationBuffer & buffer,
     packNodalDataHelper(*displacement, buffer, elements, mesh);
     packNodalDataHelper(*velocity, buffer, elements, mesh);
     packNodalDataHelper(*acceleration, buffer, elements, mesh);
-    packNodalDataHelper(*residual, buffer, elements, mesh);
-    packNodalDataHelper(*force, buffer, elements, mesh);
+    packNodalDataHelper(*internal_force, buffer, elements, mesh);
+    packNodalDataHelper(*external_force, buffer, elements, mesh);
     break;
   }
   case _gst_smm_boundary: {
-    packNodalDataHelper(*force, buffer, elements, mesh);
+    packNodalDataHelper(*external_force, buffer, elements, mesh);
     packNodalDataHelper(*velocity, buffer, elements, mesh);
     packNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
     break;
@@ -245,12 +245,12 @@ inline void SolidMechanicsModel::unpackElementData(CommunicationBuffer & buffer,
     unpackNodalDataHelper(*displacement, buffer, elements, mesh);
     unpackNodalDataHelper(*velocity, buffer, elements, mesh);
     unpackNodalDataHelper(*acceleration, buffer, elements, mesh);
-    unpackNodalDataHelper(*residual, buffer, elements, mesh);
-    unpackNodalDataHelper(*force, buffer, elements, mesh);
+    unpackNodalDataHelper(*internal_force, buffer, elements, mesh);
+    unpackNodalDataHelper(*external_force, buffer, elements, mesh);
     break;
   }
   case _gst_smm_boundary: {
-    unpackNodalDataHelper(*force, buffer, elements, mesh);
+    unpackNodalDataHelper(*external_force, buffer, elements, mesh);
     unpackNodalDataHelper(*velocity, buffer, elements, mesh);
     unpackNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
     break;
@@ -355,7 +355,7 @@ inline void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
     break;
   }
   case _gst_smm_res: {
-    Array<Real>::const_vector_iterator it_res = residual->begin(spatial_dimension);
+    Array<Real>::const_vector_iterator it_res = internal_force->begin(spatial_dimension);
     Vector<Real> resi(it_res[index]); buffer << resi;
     break;
   }
@@ -369,8 +369,8 @@ inline void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
     Array<Real>::const_vector_iterator it_disp = displacement->begin(spatial_dimension);
     Array<Real>::const_vector_iterator it_velo = velocity->begin(spatial_dimension);
     Array<Real>::const_vector_iterator it_acce = acceleration->begin(spatial_dimension);
-    Array<Real>::const_vector_iterator it_resi = residual->begin(spatial_dimension);
-    Array<Real>::const_vector_iterator it_forc = force->begin(spatial_dimension);
+    Array<Real>::const_vector_iterator it_resi = internal_force->begin(spatial_dimension);
+    Array<Real>::const_vector_iterator it_forc = external_force->begin(spatial_dimension);
     Vector<Real> disp(it_disp[index]); buffer << disp;
     Vector<Real> velo(it_velo[index]); buffer << velo;
     Vector<Real> acce(it_acce[index]); buffer << acce;
@@ -401,7 +401,7 @@ inline void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     break;
   }
   case _gst_smm_res: {
-    Array<Real>::vector_iterator it_res = residual->begin(spatial_dimension);
+    Array<Real>::vector_iterator it_res = internal_force->begin(spatial_dimension);
     Vector<Real> res(it_res[index]); buffer >> res;
     break;
   }
@@ -416,8 +416,8 @@ inline void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     Array<Real>::vector_iterator it_disp = displacement->begin(spatial_dimension);
     Array<Real>::vector_iterator it_velo = velocity->begin(spatial_dimension);
     Array<Real>::vector_iterator it_acce = acceleration->begin(spatial_dimension);
-    Array<Real>::vector_iterator it_resi = residual->begin(spatial_dimension);
-    Array<Real>::vector_iterator it_forc = force->begin(spatial_dimension);
+    Array<Real>::vector_iterator it_resi = internal_force->begin(spatial_dimension);
+    Array<Real>::vector_iterator it_forc = external_force->begin(spatial_dimension);
     Vector<Real> disp(it_disp[index]); buffer >> disp;
     Vector<Real> velo(it_velo[index]); buffer >> velo;
     Vector<Real> acce(it_acce[index]); buffer >> acce;

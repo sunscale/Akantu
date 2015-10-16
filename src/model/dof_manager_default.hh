@@ -35,7 +35,9 @@
 #define __AKANTU_DOF_MANAGER_DEFAULT_HH__
 
 namespace akantu {
-class SparseMatrixAIJ;
+  class SparseMatrixAIJ;
+  class NonLinearSolverDefault;
+  class TimeStepSolverDefault;
 }
 
 __BEGIN_AKANTU__
@@ -56,9 +58,6 @@ public:
   /// register an array of degree of freedom
   void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
                     DOFSupportType & support_type);
-
-  /// Get the part of the solution corresponding to the dof_id
-  virtual void getSolution(const ID & dof_id, Array<Real> & solution_array);
 
   /// Assemble an array to the global residual array
   virtual void assembleToResidual(const ID & dof_id,
@@ -84,6 +83,11 @@ public:
       const Array<Real> & elementary_mat, const ElementType & type,
       const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
       const Array<UInt> & filter_elements);
+
+protected:
+  /// Get the part of the solution corresponding to the dof_id
+  virtual void getSolutionPerDOFs(const ID & dof_id, Array<Real> & solution_array);
+
 
 private:
   /// Add a symmetric matrices to a symmetric sparse matrix
@@ -119,13 +123,19 @@ public:
   /// Get the reference of an existing matrix
   SparseMatrixAIJ & getMatrix(const ID & matrix_id);
 
+  /*------------------------------------------------------------------------- */
+  /// Get an instance of a time step solver
+  virtual TimeStepSolver &
+  getNewTimeStepSolver(const ID & time_step_solver, const ID & dof_id,
+                       const TimeStepSolverType & time_step_solver_type);
+
+  /* ------------------------------------------------------------------------ */
   /// Get the solution array
-  AKANTU_GET_MACRO_NOT_CONST(Solution, solution, Array<Real> &);
+  AKANTU_GET_MACRO_NOT_CONST(GlobalSolution, global_solution, Array<Real> &);
   /// Get the residual array
   AKANTU_GET_MACRO_NOT_CONST(Residual, residual, Array<Real> &);
   /// Get the blocked dofs array
-  AKANTU_GET_MACRO(BlockedDOFs, blocked_dofs, const Array<bool> &);
-
+  AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
   bool isLocalOrMasterDOF(UInt dof_num);
 
   /* ------------------------------------------------------------------------ */
@@ -133,23 +143,28 @@ public:
   /* ------------------------------------------------------------------------ */
 private:
   typedef std::map<ID, SparseMatrixAIJ *> AIJMatrixMap;
+  typedef std::map<ID, NonLinearSolverDefault *> DefaultNonLinearSolversMap;
+  typedef std::map<ID, TimeStepSolverDefault *> DefaultTimeStepSolversMap;
 
   /// rhs to the system of equation corresponding to the residual linked to the
   /// different dofs
   Array<Real> residual;
 
   /// solution of the system of equation corresponding to the different dofs
-  Array<Real> solution;
+  Array<Real> global_solution;
 
   /// blocked degree of freedom in the system equation corresponding to the
   /// different dofs
-  Array<bool> blocked_dofs;
+  Array<bool> global_blocked_dofs;
 
   /// define the dofs type, local, shared, ghost
   Array<Int> dofs_type;
 
   /// Map of the different matrices stored in the dof manager
   AIJMatrixMap aij_matrices;
+
+  /// Map of the different time step solvers stored with there real type
+  DefaultTimeStepSolversMap default_time_step_solver_map;
 };
 
 __END_AKANTU__

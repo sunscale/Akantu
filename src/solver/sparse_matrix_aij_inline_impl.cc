@@ -45,6 +45,8 @@ inline UInt SparseMatrixAIJ::addToProfile(UInt i, UInt j) {
 
   (this->nb_non_zero)++;
 
+  this->profile_release++;
+
   return (this->nb_non_zero - 1);
 }
 
@@ -57,6 +59,8 @@ inline void SparseMatrixAIJ::clearProfile() {
   this->irn.resize(0);
   this->jcn.resize(0);
   this->a.resize(0);
+
+  this->profile_release++;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -69,6 +73,7 @@ inline void SparseMatrixAIJ::addToMatrix(UInt i, UInt j, Real value) {
                                          << ") does not exist in the profile");
 
   this->a(irn_jcn_k_it->second) += value;
+  this->value_release++;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -88,6 +93,8 @@ inline Real & SparseMatrixAIJ::operator()(UInt i, UInt j) {
   AKANTU_DEBUG_ASSERT(irn_jcn_k_it != this->irn_jcn_k.end(),
                       "Couple (i,j) = (" << i << "," << j
                                          << ") does not exist in the profile");
+
+  this->value_release++;
 
   return this->a(irn_jcn_k_it->second);
 }

@@ -31,15 +31,12 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solver_petsc.hh"
-
 #include "dof_manager_petsc.hh"
 #include "sparse_matrix_petsc.hh"
-
 #include "mpi_type_wrapper.hh"
-
 /* -------------------------------------------------------------------------- */
-#include <petscsys.h>
 #include <petscksp.h>
+//#include <petscsys.h>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -54,7 +51,7 @@ SolverPETSc::SolverPETSc(DOFManagerPETSc & dof_manager, const ID & matrix_id,
   PetscErrorCode ierr;
 
   /// create a solver context
-  KSPCreate(PETSC_COMM_WORLD, &this->ksp);
+  ierr = KSPCreate(PETSC_COMM_WORLD, &this->ksp);
   CHKERRXX(ierr);
 }
 
@@ -95,7 +92,7 @@ void SolverPETSc::solve() {
   AKANTU_DEBUG_IN();
 
   Vec & rhs = this->dof_manager.getResidual();
-  Vec & solution = this->dof_manager.getSolution();
+  Vec & solution = this->dof_manager.getGlobalSolution();
 
   PetscErrorCode ierr;
   ierr = KSPSolve(this->ksp, rhs, solution);

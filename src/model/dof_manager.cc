@@ -208,7 +208,7 @@ void DOFManager::registerDOFsDerivative(const ID & dof_id, UInt order,
 
 /* -------------------------------------------------------------------------- */
 void DOFManager::registerBlockedDOFs(const ID & dof_id,
-                                     Array<Real> & blocked_dofs) {
+                                     Array<bool> & blocked_dofs) {
   DOFStorage::iterator it = this->dofs.find(dof_id);
 
   if (it == this->dofs.end()) {
@@ -227,5 +227,18 @@ void DOFManager::registerBlockedDOFs(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManager::splitSolutionPerDOFs() {
+  DOFStorage::iterator it = this->dofs.begin();
+  DOFStorage::iterator end = this->dofs.end();
+
+  for (; it != end; ++it) {
+    DOFData & dof_data = *it->second;
+    this->getSolutionPerDOFs(it->first, *dof_data.solution);
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
+
 
 __END_AKANTU__

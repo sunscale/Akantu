@@ -40,19 +40,19 @@ class NonLinearSolverCallback {
   /* ------------------------------------------------------------------------ */
 public:
   /// callback to assemble the Jacobian Matrix
-  virtual void assembleJacobian();
+  virtual void assembleJacobian() { AKANTU_DEBUG_TO_IMPLEMENT(); }
 
   /// callback to assemble the residual (rhs)
-  virtual void assembleResidual();
+  virtual void assembleResidual() { AKANTU_DEBUG_TO_IMPLEMENT(); }
 
   /* ------------------------------------------------------------------------ */
   /* Dynamic simulations part                                                 */
   /* ------------------------------------------------------------------------ */
   /// callback for the predictor (in case of dynamic simulation)
-  virtual void predictor();
+  virtual void predictor() { AKANTU_DEBUG_TO_IMPLEMENT(); }
 
   /// callback for the corrector (in case of dynamic simulation)
-  virtual void corrector();
+  virtual void corrector() { AKANTU_DEBUG_TO_IMPLEMENT(); }
 };
 
 __END_AKANTU__

@@ -28,7 +28,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
+#include "aka_memory.hh"
 #include "aka_array.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -41,12 +41,14 @@ namespace akantu {
 
 __BEGIN_AKANTU__
 
-class TimeStepSolver {
+class TimeStepSolver : public Memory {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  TimeStepSolver(const TimeStepSolverType & time_step_solver_type);
+  TimeStepSolver(DOFManager & dof_manager, const ID & dof_id,
+                 const TimeStepSolverType & type, const ID & id,
+                 UInt memory_id);
   virtual ~TimeStepSolver();
 
   /* ------------------------------------------------------------------------ */
@@ -70,10 +72,13 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
   /// Underlying dof manager containing the dof to treat
-  DOFManager & dof_manager;
+  DOFManager & _dof_manager;
 
   /// The dof to make evolve
   ID dof_id;
+
+  /// Type of solver
+  TimeStepSolverType type;
 
   /// The increment of the dof from @f[ u_{n+1} = u_{n} + inc @f]
   Array<Real> increment;
@@ -82,20 +87,6 @@ protected:
   Real time_step;
 };
 
-// /// standard output stream operator
-// inline std::ostream & operator <<(std::ostream & stream, const TimeStepSolver & _this)
-// {
-//   _this.printself(stream);
-//   return stream;
-// }
-
 __END_AKANTU__
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-//#include "time_step_solver_inline_impl.cc"
-
 
 #endif /* __AKANTU_TIME_STEP_SOLVER_HH__ */

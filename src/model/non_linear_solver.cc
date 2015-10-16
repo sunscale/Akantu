@@ -1,16 +1,15 @@
 /**
- * @file   solver.cc
+ * @file   non_linear_solver.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Mon Dec 13 2010
- * @date last modification: Wed Nov 13 2013
+ * @date   Tue Oct 13 15:34:43 2015
  *
- * @brief  Solver interface class
+ * @brief  Implementation of the base class NonLinearSolver
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -29,53 +28,51 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "sparse_solver.hh"
-#include "dof_synchronizer.hh"
-
+#include "non_linear_solver.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-SparseSolver::SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
-                           const ID & id, const MemoryID & memory_id)
-  : Memory(id, memory_id), Parsable(_st_solver, id),
-      _dof_manager(dof_manager), matrix_id(matrix_id) {
-  AKANTU_DEBUG_IN();
+void NonLinearSolver::callbackPredictors() {
+  NonLinearSolverCallbackMap it = solver_callbacks.begin();
+  NonLinearSolverCallbackMap end = solver_callbacks.end();
 
-  // createSynchronizerRegistry();
-  // this->synch_registry = new SynchronizerRegistry(*this);
-  //  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(),
-  //  _gst_solver_solution);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-SparseSolver::~SparseSolver() {
-  AKANTU_DEBUG_IN();
-
-  this->destroyInternalData();
-  //  delete synch_registry;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SparseSolver::beforeStaticSolverDestroy() {
-  AKANTU_DEBUG_IN();
-
-  try {
-    this->destroyInternalData();
-  } catch (...) {
+  for (; it != end; ++it) {
+    it->second->predictor();
   }
-
-  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseSolver::createSynchronizerRegistry() {
-  // this->synch_registry = new SynchronizerRegistry(this);
+void NonLinearSolver::callbackCorrectors() {
+  NonLinearSolverCallbackMap it = solver_callbacks.begin();
+  NonLinearSolverCallbackMap end = solver_callbacks.end();
+
+  for (; it != end; ++it) {
+    it->second->corrector();
+  }
 }
+
+/* -------------------------------------------------------------------------- */
+void NonLinearSolver::callbackAssembleJacobian() {
+  NonLinearSolverCallbackMap it = solver_callbacks.begin();
+  NonLinearSolverCallbackMap end = solver_callbacks.end();
+
+  for (; it != end; ++it) {
+    it->second->assembleJacobian();
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLinearSolver::callbackAssembleResidual() {
+  NonLinearSolverCallbackMap it = solver_callbacks.begin();
+  NonLinearSolverCallbackMap end = solver_callbacks.end();
+
+  for (; it != end; ++it) {
+    it->second->assembleResidual();
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

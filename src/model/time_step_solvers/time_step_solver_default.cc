@@ -29,7 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "time_step_solver_default.hh"
-#include "dof_manager.hh"
+#include "dof_manager_default.hh"
 #include "integration_scheme_1st_order.hh"
 #include "integration_scheme_2nd_order.hh"
 /* -------------------------------------------------------------------------- */
@@ -54,19 +54,47 @@ __BEGIN_AKANTU__
 //   AKANTU_DEBUG_OUT();
 // }
 /* -------------------------------------------------------------------------- */
-TimeStepSolverDefault::TimeStepSolverDefault(const TimeStepSolverType & type) :
-  TimeStepSolver(type) {
-  switch(type) {
-  case _tsst_forward_euler:
+TimeStepSolverDefault::TimeStepSolverDefault(DOFManagerDefault & dof_manager,
+                                             const ID & dof_id,
+                                             const TimeStepSolverType & type,
+                                             const ID & id, UInt memory_id)
+    : TimeStepSolver(dof_manager, dof_id, type, id, memory_id),
+      dof_manager(dof_manager) {
+  switch (type) {
+  case _tsst_forward_euler: {
     this->integration_scheme = new ForwardEuler();
-  case _tsst_trapezoidal_rule_1:
+    break;
+  }
+  case _tsst_trapezoidal_rule_1: {
     this->integration_scheme = new TrapezoidalRule1();
-  case _tsst_backward_euler:
+    break;
+  }
+  case _tsst_backward_euler: {
     this->integration_scheme = new BackwardEuler();
-  case _tsst_central_difference:
+    break;
+  }
+  case _tsst_central_difference: {
     this->integration_scheme = new CentralDifference();
-  case _tsst_trapezoidal_rule_2:
+    break;
+  }
+  case _tsst_fox_goodwin: {
+    this->integration_scheme = new FoxGoodwin();
+    break;
+  }
+  case _tsst_trapezoidal_rule_2: {
     this->integration_scheme = new TrapezoidalRule2();
+    break;
+  }
+  case _tsst_linear_acceleration: {
+    this->integration_scheme = new LinearAceleration();
+    break;
+  }
+  // Write a c++11 version of the constructor with initializer list that
+  // contains the arguments for the integration scheme
+  case _tsst_generalized_trapezoidal:
+  case _tsst_newmark_beta:
+    AKANTU_EXCEPTION(
+        "This time step solvers cannot be created with this constructor");
   }
 }
 

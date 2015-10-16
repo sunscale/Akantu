@@ -29,7 +29,7 @@
 #include "sparse_matrix_petsc.hh"
 #include "mpi_type_wrapper.hh"
 #include "dof_manager_petsc.hh"
-#include "petsc_wrapper.hh"
+#include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstring>
 #include <petscsys.h>
@@ -71,8 +71,6 @@ SparseMatrixPETSc::SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
    */
   ierr = MatSetType(this->mat, MATAIJ);
   CHKERRXX(ierr);
-
-  this->offset = 0;
 
   AKANTU_DEBUG_OUT();
 }

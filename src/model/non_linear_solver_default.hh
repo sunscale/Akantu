@@ -38,7 +38,6 @@
 
 namespace akantu {
   class DOFManagerDefault;
-  class NonLinearSolverCallback;
 }
 
 __BEGIN_AKANTU__
@@ -83,10 +82,6 @@ private:
 
   /// Type of convergence criteria
   SolveConvergenceCriteria convergence_criteria_type;
-
-  /// Set of callbacks to use in the solver for jacobian assembly, residual
-  /// assembly, corrector & predictor if needed
-  NonLinearSolverCallback * solver_callback;
 
   /// convergence threshold
   Real convergence_criteria;

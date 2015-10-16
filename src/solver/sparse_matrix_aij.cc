@@ -35,6 +35,24 @@
 
 __BEGIN_AKANTU__
 
+/* -------------------------------------------------------------------------- */
+SparseMatrixAIJ::SparseMatrixAIJ(DOFManager & dof_manager,
+                                 const MatrixType & matrix_type, const ID & id,
+                                 const MemoryID & memory_id)
+    : SparseMatrix(dof_manager, matrix_type, id, memory_id),
+      irn(0, 1, id + ":irn"), jcn(0, 1, id + ":jcn"), a(0, 1, id + ":a"),
+      profile_release(0), value_release(0) {}
+
+/* -------------------------------------------------------------------------- */
+SparseMatrixAIJ::SparseMatrixAIJ(const SparseMatrixAIJ & matrix, const ID & id,
+                                 const MemoryID & memory_id)
+    : SparseMatrix(matrix, id, memory_id), irn(matrix.irn, true, id + ":irn"),
+      jcn(matrix.jcn, true, id + ":jcn"), a(matrix.a, true, id + ":a"),
+      profile_release(0), value_release(0) {}
+
+/* -------------------------------------------------------------------------- */
+SparseMatrixAIJ::~SparseMatrixAIJ() {}
+
 // /* --------------------------------------------------------------------------
 // */
 // void SparseMatrixAIJ::buildProfile(const Mesh & mesh,
@@ -258,6 +276,9 @@ void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
   AKANTU_DEBUG_ASSERT(nb_non_zero == mat.getNbNonZero(),
                       "The to matrix don't have the same profiles");
   memcpy(a.storage(), mat.getA().storage(), nb_non_zero * sizeof(Real));
+
+  this->value_release++;
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -274,11 +295,15 @@ void SparseMatrixAIJ::add(const SparseMatrix & B, Real alpha) {
 
     A_ij += alpha * B(i - 1, j - 1);
   }
+
+  this->value_release++;
 }
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::clear() {
   memset(a.storage(), 0, nb_non_zero * sizeof(Real));
+
+  this->value_release++;
 }
 
 __END_AKANTU__

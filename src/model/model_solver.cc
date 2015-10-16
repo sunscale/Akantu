@@ -32,7 +32,7 @@
 #include "dof_manager.hh"
 
 #if defined(AKANTU_USE_MPI)
-# include "mpi_type_wrapper.hh"
+#include "mpi_type_wrapper.hh"
 #endif
 #if defined(AKANTU_USE_MUMPS)
 #include "dof_manager_default.hh"
@@ -45,7 +45,7 @@
 
 __BEGIN_AKANTU__
 
-ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
+ModelSolver::ModelSolver(const Mesh & mesh, const ID & id, UInt memory_id)
     : Parsable(_st_solver, id), dof_manager(NULL) {
   std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
       sub_sect = getStaticParser().getSubSections(_st_solver);
@@ -59,14 +59,15 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
 
   if (solver_type == "petsc") {
 #if defined(AKANTU_USE_PETSC)
-    this->dof_manager = new DOFManagerPETSc(mesh, id + ":dof_manager_petsc");
+    this->dof_manager = new DOFManagerPETSc(mesh, id + ":dof_manager_petsc", memory_id);
 #else
     AKANTU_EXCEPTION(
         "To use PETSc you have to activate it in the compilations options");
 #endif
   } else if (solver_type == "mumps") {
 #if defined(AKANTU_USE_MUMPS)
-    this->dof_manager = new DOFManagerDefault(mesh, id + ":dof_manager_default");
+    this->dof_manager =
+        new DOFManagerDefault(mesh, id + ":dof_manager_default", memory_id);
 #else
     AKANTU_EXCEPTION(
         "To use MUMPS you have to activate it in the compilations options");
@@ -80,11 +81,25 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
 }
 
 /* -------------------------------------------------------------------------- */
+void ModelSolver::initTimeStepSolver(
+    const ID & time_step_solver_id, const ID & dof_id,
+    const TimeStepSolverType & time_step_solver_type) {
+  if(this->default_time_step_solver == "") {
+    this->default_time_step_solver = time_step_solver_id;
+  }
 
-// /* -------------------------------------------------------------------------- */
+  this->dof_manager->getNewTimeStepSolver(time_step_solver_id, dof_id,
+                                          time_step_solver_type);
+}
+
+/* -------------------------------------------------------------------------- */
+
+// /* --------------------------------------------------------------------------
+// */
 // template <NewmarkBeta::IntegrationSchemeCorrectorType type>
 // void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
-//                                 bool need_factorize, bool has_profile_changed) {
+//                                 bool need_factorize, bool
+//                                 has_profile_changed) {
 
 //   if(has_profile_changed) {
 //     this->initJacobianMatrix();
@@ -107,7 +122,6 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
 //       d = nmb_int->getVelocityCoefficient<type>(time_step);
 //       e = nmb_int->getDisplacementCoefficient<type>(time_step);
 //     }
-
 
 //     jacobian_matrix->clear();
 //     // J = c M + d C + e K
@@ -159,26 +173,30 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
 
 // }
 
-
-// /* -------------------------------------------------------------------------- */
+// /* --------------------------------------------------------------------------
+// */
 // template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
 // bool SolidMechanicsModel::solveStatic(Real tolerance, UInt max_iteration,
 //                                       bool do_not_factorize) {
 
 //   AKANTU_DEBUG_INFO("Solving Ku = f");
 //   AKANTU_DEBUG_ASSERT(stiffness_matrix != NULL,
-//                       "You should first initialize the implicit solver and assemble the stiffness matrix by calling initImplicit");
+//                       "You should first initialize the implicit solver and
+//                       assemble the stiffness matrix by calling
+//                       initImplicit");
 
 //   AnalysisMethod analysis_method=method;
 //   Real error = 0.;
 //   method=_static;
-//   bool converged = this->template solveStep<cmethod, criteria>(tolerance, error, max_iteration, do_not_factorize);
+//   bool converged = this->template solveStep<cmethod, criteria>(tolerance,
+//   error, max_iteration, do_not_factorize);
 //   method=analysis_method;
 //   return converged;
 
 // }
 
-// /* -------------------------------------------------------------------------- */
+// /* --------------------------------------------------------------------------
+// */
 // template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
 // bool SolidMechanicsModel::solveStep(Real tolerance,
 //                                     UInt max_iteration) {
@@ -188,22 +206,26 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
 //                                                     max_iteration);
 // }
 
-// /* -------------------------------------------------------------------------- */
+// /* --------------------------------------------------------------------------
+// */
 // template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
-// bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_iteration,
+// bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt
+// max_iteration,
 //                                     bool do_not_factorize) {
 //   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeSolveStepEvent(method));
 //   this->implicitPred();
 //   this->updateResidual();
 
 //   AKANTU_DEBUG_ASSERT(stiffness_matrix != NULL,
-//                       "You should first initialize the implicit solver and assemble the stiffness matrix");
+//                       "You should first initialize the implicit solver and
+//                       assemble the stiffness matrix");
 
 //   bool need_factorize = !do_not_factorize;
 
 //   if (method==_implicit_dynamic) {
 //     AKANTU_DEBUG_ASSERT(mass_matrix != NULL,
-//                         "You should first initialize the implicit solver and assemble the mass matrix");
+//                         "You should first initialize the implicit solver and
+//                         assemble the mass matrix");
 //   }
 
 //   switch (cmethod) {
@@ -214,7 +236,8 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
 //     this->assembleStiffnessMatrix();
 //     break;
 //   default:
-//     AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been implemented!");
+//     AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been
+//     implemented!");
 //   }
 
 //   this->n_iter = 0;
@@ -229,7 +252,8 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
 //     if (cmethod == _scm_newton_raphson_tangent)
 //       this->assembleStiffnessMatrix();
 
-//     solve<NewmarkBeta::_displacement_corrector> (*increment, 1., need_factorize);
+//     solve<NewmarkBeta::_displacement_corrector> (*increment, 1.,
+//     need_factorize);
 
 //     this->implicitCorr();
 
@@ -243,7 +267,8 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
 //     this->n_iter++;
 //     AKANTU_DEBUG_INFO("[" << criteria << "] Convergence iteration "
 //                       << std::setw(std::log10(max_iteration)) << this->n_iter
-//                       << ": error " << error << (converged ? " < " : " > ") << tolerance);
+//                       << ": error " << error << (converged ? " < " : " > ")
+//                       << tolerance);
 
 //     switch (cmethod) {
 //     case _scm_newton_raphson_tangent:
@@ -254,21 +279,25 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
 //       need_factorize = false;
 //       break;
 //     default:
-//       AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been implemented!");
+//       AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not
+//       been implemented!");
 //     }
-
 
 //   } while (!converged && this->n_iter < max_iteration);
 
-//   // this makes sure that you have correct strains and stresses after the solveStep function (e.g., for dumping)
+//   // this makes sure that you have correct strains and stresses after the
+//   solveStep function (e.g., for dumping)
 //   if(criteria == _scc_increment) this->updateResidual();
 
 //   if (converged) {
 //     EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
 //   } else if(this->n_iter == max_iteration) {
-//     AKANTU_DEBUG_WARNING("[" << criteria << "] Convergence not reached after "
-//                          << std::setw(std::log10(max_iteration)) << this->n_iter <<
-//                          " iteration" << (this->n_iter == 1 ? "" : "s") << "!" << std::endl);
+//     AKANTU_DEBUG_WARNING("[" << criteria << "] Convergence not reached after
+//     "
+//                          << std::setw(std::log10(max_iteration)) <<
+//                          this->n_iter <<
+//                          " iteration" << (this->n_iter == 1 ? "" : "s") <<
+//                          "!" << std::endl);
 //   }
 
 //   return converged;
@@ -326,9 +355,8 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id)
 //   AKANTU_DEBUG_OUT();
 // }
 
-
-
-// /* -------------------------------------------------------------------------- */
+// /* --------------------------------------------------------------------------
+// */
 // void SolidMechanicsModel::solveLumped(Array<Real> & x,
 // 				      const Array<Real> & A,
 // 				      const Array<Real> & b,

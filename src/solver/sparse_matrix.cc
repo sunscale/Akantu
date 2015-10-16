@@ -36,22 +36,15 @@
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
 
-
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 SparseMatrix::SparseMatrix(DOFManager & dof_manager,
-                           const MatrixType & matrix_type,
-                           const ID & id,
-                           const MemoryID & memory_id) :
-  Memory(id, memory_id),
-  dof_manager(dof_manager),
-  matrix_type(matrix_type),
-  size(dof_manager.getSystemSize()),
-  nb_non_zero(0) {
+                           const MatrixType & matrix_type, const ID & id,
+                           const MemoryID & memory_id)
+    : Memory(id, memory_id), dof_manager(dof_manager), matrix_type(matrix_type),
+      size(dof_manager.getSystemSize()), nb_non_zero(0), matrix_release(1) {
   AKANTU_DEBUG_IN();
-
-  this->offset = 1;
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   this->nb_proc = comm.getNbProc();
@@ -60,29 +53,15 @@ SparseMatrix::SparseMatrix(DOFManager & dof_manager,
 }
 
 /* -------------------------------------------------------------------------- */
-SparseMatrix::SparseMatrix(const SparseMatrix & matrix,
-                           const ID & id,
-                           const MemoryID & memory_id) :
-  Memory(id, memory_id),
-  dof_manager(matrix.dof_manager),
-  matrix_type(matrix.matrix_type),
-  size(matrix.size),
-  nb_proc(matrix.nb_proc),
-  nb_non_zero(matrix.nb_non_zero) {
-  AKANTU_DEBUG_IN();
-
-  this->offset = 1;
-
-  AKANTU_DEBUG_OUT();
-}
-
+SparseMatrix::SparseMatrix(const SparseMatrix & matrix, const ID & id,
+                           const MemoryID & memory_id)
+    : Memory(id, memory_id), dof_manager(matrix.dof_manager),
+      matrix_type(matrix.matrix_type), size(matrix.size),
+      nb_proc(matrix.nb_proc), nb_non_zero(matrix.nb_non_zero),
+      matrix_release(1) {}
 
 /* -------------------------------------------------------------------------- */
-SparseMatrix::~SparseMatrix() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_OUT();
-}
+SparseMatrix::~SparseMatrix() {}
 
 /* -------------------------------------------------------------------------- */
 

@@ -31,6 +31,9 @@
 #include "aka_common.hh"
 #include "parsable.hh"
 #include "dof_manager.hh"
+#include "non_linear_solver_callback.hh"
+/* -------------------------------------------------------------------------- */
+#include <set>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MODEL_SOLVER_HH__
@@ -38,12 +41,12 @@
 
 __BEGIN_AKANTU__
 
-class ModelSolver : public Parsable {
+class ModelSolver : public Parsable, public NonLinearSolverCallback {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ModelSolver(const Mesh & mesh, const ID & id);
+  ModelSolver(const Mesh & mesh, const ID & id, UInt memory_id);
   virtual ~ModelSolver();
 
   /* ------------------------------------------------------------------------ */
@@ -54,13 +57,11 @@ public:
   /// current configuration
   void solveStep();
 
+  /// Initialize a time solver that can be used afterwards with its id
+  void initTimeStepSolver(const ID & time_step_solver_id, const ID & dof_id,
+                          const TimeStepSolverType & time_step_solver_type);
+
 protected:
-  /// assemble the residual
-  void assembleResidual() { AKANTU_DEBUG_TO_IMPLEMENT(); }
-
-  /// assemble the Jacobian matrix
-  void assembleJacobian() { AKANTU_DEBUG_TO_IMPLEMENT(); }
-
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -70,12 +71,17 @@ protected:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-protected:
+private:
+  /// Underlying dof_manager (the brain...)
   DOFManager * dof_manager;
-  //  TimeStepSolver * time_step_solver;
+
+  /// List of instantiated time step solvers
+  std::set<ID> time_step_solvers;
+
+  /// Default time step solver to use
+  ID default_time_step_solver;
 };
 
 __END_AKANTU__
-
 
 #endif /* __AKANTU_MODEL_SOLVER_HH__ */

@@ -30,6 +30,7 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager_default.hh"
 #include "sparse_matrix_aij.hh"
+#include "time_step_solver_default.hh"
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -89,14 +90,14 @@ inline void DOFManagerDefault::addElementalMatrixToUnsymmetric(
 }
 
 /* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
 DOFManagerDefault::DOFManagerDefault(const Mesh & mesh, const ID & id,
                                      const MemoryID & memory_id)
     : DOFManager(mesh, id, memory_id) {}
 
 /* -------------------------------------------------------------------------- */
-DOFManagerDefault::~DOFManagerDefault() {
-
-}
+DOFManagerDefault::~DOFManagerDefault() {}
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::registerDOFs(const ID & dof_id,
@@ -180,8 +181,23 @@ SparseMatrixAIJ & DOFManagerDefault::getMatrix(const ID & matrix_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::getSolution(const ID & dof_id,
-                                    Array<Real> & solution_array) {
+TimeStepSolver & DOFManagerDefault::getNewTimeStepSolver(
+    const ID & dof_id, const ID & time_step_solver_id,
+    const TimeStepSolverType & time_step_solver_type) {
+  std::stringstream sstr;
+  sstr << this->id << ":" << time_step_solver_id;
+
+  TimeStepSolver * tss = new TimeStepSolverDefault(
+      *this, dof_id, time_step_solver_type, sstr.str(), this->memory_id);
+
+  this->registerTimeStepSolver(time_step_solver_id, *tss);
+
+  return *tss;
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::getSolutionPerDOFs(const ID & dof_id,
+                                           Array<Real> & solution_array) {
   AKANTU_DEBUG_IN();
 
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);

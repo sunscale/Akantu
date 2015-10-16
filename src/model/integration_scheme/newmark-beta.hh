@@ -173,14 +173,26 @@ protected:
  */
 class CentralDifference : public NewmarkBeta {
 public:
-  CentralDifference() : NewmarkBeta(0., .5){};
+  CentralDifference() : NewmarkBeta(0., 1./2.){};
 };
 //#include "integration_scheme/central_difference.hh"
 
 /// undamped trapezoidal rule (implicit)
 class TrapezoidalRule2 : public NewmarkBeta {
 public:
-  TrapezoidalRule2() : NewmarkBeta(.5, .5){};
+  TrapezoidalRule2() : NewmarkBeta(1./2., 1./2.){};
+};
+
+/// Fox-Goodwin rule (implicit)
+class FoxGoodwin : public NewmarkBeta {
+public:
+  FoxGoodwin() : NewmarkBeta(1./6., 1./2.){};
+};
+
+/// Linear acceleration (implicit)
+class LinearAceleration : public NewmarkBeta {
+public:
+  LinearAceleration() : NewmarkBeta(1./3., 1./2.){};
 };
 
 __END_AKANTU__

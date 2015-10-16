@@ -37,6 +37,7 @@
 
 namespace akantu {
   class DOFManager;
+  class NonLinearSolverCallback;
 }
 
 __BEGIN_AKANTU__
@@ -59,6 +60,19 @@ public:
   /// the dof manager
   virtual void solve() = 0;
 
+protected:
+  /// call all the registered predictors
+  virtual void callbackPredictors();
+
+  /// call all the registered correctors
+  virtual void callbackCorrectors();
+
+  /// call all the registered predictors
+  virtual void callbackAssembleJacobian();
+
+  /// call all the registered predictors
+  virtual void callbackAssembleResidual();
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -70,6 +84,12 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  typedef std::map<ID, NonLinearSolverCallback *> NonLinearSolverCallbackMap;
+
+  /// Set of callbacks to use in the solver for jacobian assembly, residual
+  /// assembly, corrector & predictor if needed
+  NonLinearSolverCallbackMap solver_callbacks;
+
   /// type of non linear solver
   NonLinearSolverType non_linear_solver_type;
 };

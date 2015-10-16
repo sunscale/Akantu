@@ -71,11 +71,11 @@ public:
   /// extract the nodal values and store them per element
   template<typename T>
   static void extractNodalToElementField(const Mesh & mesh,
-					 const Array<T> & nodal_f,
-					 Array<T> & elemental_f,
-					 const ElementType & type,
-					 const GhostType & ghost_type = _not_ghost,
-					 const Array<UInt> & filter_elements = empty_filter);
+                                         const Array<T> & nodal_f,
+                                         Array<T> & elemental_f,
+                                         const ElementType & type,
+                                         const GhostType & ghost_type = _not_ghost,
+                                         const Array<UInt> & filter_elements = empty_filter);
 
   /// filter a field
   template<typename T>
@@ -93,30 +93,30 @@ public:
   /* ------------------------------------------------------------------------ */
   /// integrate f for all elements of type "type"
   virtual void integrate(const Array<Real> & f,
-			 Array<Real> &intf,
-			 UInt nb_degree_of_freedom,
-			 const ElementType & type,
-			 const GhostType & ghost_type = _not_ghost,
-			 const Array<UInt> & filter_elements = empty_filter) const = 0;
+                         Array<Real> &intf,
+                         UInt nb_degree_of_freedom,
+                         const ElementType & type,
+                         const GhostType & ghost_type = _not_ghost,
+                         const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// integrate a scalar value on all elements of type "type"
   virtual Real integrate(const Array<Real> & f,
-			 const ElementType & type,
-			 const GhostType & ghost_type = _not_ghost,
-			 const Array<UInt> & filter_elements = empty_filter) const = 0;
+                         const ElementType & type,
+                         const GhostType & ghost_type = _not_ghost,
+                         const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// integrate f for all quadrature points of type "type" but don't sum over all quadrature points
   virtual void integrateOnQuadraturePoints(const Array<Real> & f,
-					   Array<Real> &intf,
-					   UInt nb_degree_of_freedom,
-					   const ElementType & type,
-					   const GhostType & ghost_type = _not_ghost,
-					   const Array<UInt> & filter_elements = empty_filter) const = 0;
+                                           Array<Real> &intf,
+                                           UInt nb_degree_of_freedom,
+                                           const ElementType & type,
+                                           const GhostType & ghost_type = _not_ghost,
+                                           const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// integrate one element scalar value on all elements of type "type"
   virtual Real integrate(const Vector<Real> & f,
-			 const ElementType & type,
-			 UInt index, const GhostType & ghost_type = _not_ghost) const = 0;
+                         const ElementType & type,
+                         UInt index, const GhostType & ghost_type = _not_ghost) const = 0;
 
 
   /* ------------------------------------------------------------------------ */
@@ -125,50 +125,50 @@ public:
 #ifndef SWIG
   /// get the number of quadrature points
   virtual UInt getNbQuadraturePoints(const ElementType & type,
-				     const GhostType & ghost_type = _not_ghost) const = 0;
+                                     const GhostType & ghost_type = _not_ghost) const = 0;
   /// get the precomputed shapes
   const virtual Array<Real> & getShapes(const ElementType & type,
-					const GhostType & ghost_type = _not_ghost,
-					UInt id = 0) const = 0;
+                                        const GhostType & ghost_type = _not_ghost,
+                                        UInt id = 0) const = 0;
 
   /// get the derivatives of shapes
   const virtual Array<Real> & getShapesDerivatives(const ElementType & type,
-						   const GhostType & ghost_type = _not_ghost,
-						   UInt id = 0) const = 0;
+                                                   const GhostType & ghost_type = _not_ghost,
+                                                   UInt id = 0) const = 0;
 
   /// get quadrature points
   const virtual Matrix<Real> & getQuadraturePoints(const ElementType & type,
-						   const GhostType & ghost_type = _not_ghost) const = 0;
+                                                   const GhostType & ghost_type = _not_ghost) const = 0;
 #endif
   /* ------------------------------------------------------------------------ */
   /* Shape method bridges                                                     */
   /* ------------------------------------------------------------------------ */
   virtual
   void gradientOnQuadraturePoints(const Array<Real> &u,
-				  Array<Real> &nablauq,
-				  const UInt nb_degree_of_freedom,
-				  const ElementType & type,
-				  const GhostType & ghost_type = _not_ghost,
+                                  Array<Real> &nablauq,
+                                  const UInt nb_degree_of_freedom,
+                                  const ElementType & type,
+                                  const GhostType & ghost_type = _not_ghost,
                                   const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   virtual
   void interpolateOnQuadraturePoints(const Array<Real> &u,
-				     Array<Real> &uq,
-				     UInt nb_degree_of_freedom,
-				     const ElementType & type,
-				     const GhostType & ghost_type = _not_ghost,
+                                     Array<Real> &uq,
+                                     UInt nb_degree_of_freedom,
+                                     const ElementType & type,
+                                     const GhostType & ghost_type = _not_ghost,
                                      const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   virtual
   void interpolateOnQuadraturePoints(const Array<Real> & u,
-				     ElementTypeMapArray<Real> & uq,
+                                     ElementTypeMapArray<Real> & uq,
                                      const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
 
   virtual 
   void interpolate(const Vector<Real> & real_coords, 
-		   const Matrix<Real> & nodal_values,
-		   Vector<Real> & interpolated,
-		   const Element & element) const = 0;
+                   const Matrix<Real> & nodal_values,
+                   Vector<Real> & interpolated,
+                   const Element & element) const = 0;
 
   virtual
   void computeShapes(const Vector<Real> & real_coords,
@@ -193,57 +193,53 @@ public:
 
   /// pre-compute normals on control points
   virtual void computeNormalsOnControlPoints(__attribute__((unused)) const Array<Real> & field,
-					     __attribute__((unused)) const GhostType & ghost_type = _not_ghost) {
+                                             __attribute__((unused)) const GhostType & ghost_type = _not_ghost) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
   /// pre-compute normals on control points
   virtual void computeNormalsOnControlPoints(__attribute__((unused)) const Array<Real> & field,
-					     __attribute__((unused)) Array<Real> & normal,
-					     __attribute__((unused)) const ElementType & type,
-					     __attribute__((unused)) const GhostType & ghost_type = _not_ghost) const {
+                                             __attribute__((unused)) Array<Real> & normal,
+                                             __attribute__((unused)) const ElementType & type,
+                                             __attribute__((unused)) const GhostType & ghost_type = _not_ghost) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
 
+  // /// assemble vectors
+  // void assembleArray(const Array<Real> & elementary_vect,
+  //                     Array<Real> & nodal_values,
+  //                     const Array<Int> & equation_number,
+  //                     UInt nb_degree_of_freedom,
+  //                     const ElementType & type,
+  //                     const GhostType & ghost_type = _not_ghost,
+  //                     const Array<UInt> & filter_elements = empty_filter,
+  //                     Real scale_factor = 1) const;
 
-
-  /// assemble vectors
-  void assembleArray(const Array<Real> & elementary_vect,
-		      Array<Real> & nodal_values,
-		      const Array<Int> & equation_number,
-		      UInt nb_degree_of_freedom,
-		      const ElementType & type,
-		      const GhostType & ghost_type = _not_ghost,
-		      const Array<UInt> & filter_elements = empty_filter,
-		      Real scale_factor = 1) const;
-
-  /// assemble matrix in the complete sparse matrix
-  void assembleMatrix(const Array<Real> & elementary_mat,
-		      SparseMatrix & matrix,
-		      UInt nb_degree_of_freedom,
-		      const ElementType & type,
-		      const GhostType & ghost_type = _not_ghost,
-		      const Array<UInt> & filter_elements = empty_filter) const;
+  // /// assemble matrix in the complete sparse matrix
+  // void assembleMatrix(const Array<Real> & elementary_mat,
+  //                     SparseMatrix & matrix,
+  //                     UInt nb_degree_of_freedom,
+  //                     const ElementType & type,
+  //                     const GhostType & ghost_type = _not_ghost,
+  //                     const Array<UInt> & filter_elements = empty_filter) const;
 
 
   /// assemble a field as a lumped matrix (ex. rho in lumped mass)
-  virtual void assembleFieldLumped(__attribute__ ((unused)) const Array<Real> & field_1,
-				   __attribute__ ((unused)) UInt nb_degree_of_freedom,
-  				   __attribute__ ((unused)) Array<Real> & lumped,
-  				   __attribute__ ((unused)) const Array<Int> & equation_number,
-  				   __attribute__ ((unused)) ElementType type,
-  				   __attribute__ ((unused)) const GhostType & ghost_type) const {
+  virtual void assembleFieldLumped(__attribute__ ((unused)) const Array<Real> & field,
+                                   __attribute__ ((unused)) Array<Real> & lumped,
+                                   __attribute__ ((unused)) ElementType type,
+                                   __attribute__ ((unused)) const GhostType & ghost_type) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   };
 
 
   /// assemble a field as a matrix (ex. rho to mass matrix)
   virtual void assembleFieldMatrix(__attribute__ ((unused)) const Array<Real> & field_1,
-				   __attribute__ ((unused)) UInt nb_degree_of_freedom,
-				   __attribute__ ((unused)) SparseMatrix & matrix,
-				   __attribute__ ((unused)) ElementType type,
-				   __attribute__ ((unused)) const GhostType & ghost_type) const {
+                                   __attribute__ ((unused)) UInt nb_degree_of_freedom,
+                                   __attribute__ ((unused)) SparseMatrix & matrix,
+                                   __attribute__ ((unused)) ElementType type,
+                                   __attribute__ ((unused)) const GhostType & ghost_type) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
@@ -251,25 +247,25 @@ public:
 #ifdef AKANTU_STRUCTURAL_MECHANICS
 
  virtual  void assembleFieldMatrix(__attribute__ ((unused)) const Array<Real> & field_1,
-				   __attribute__ ((unused)) UInt nb_degree_of_freedom,
-				   __attribute__ ((unused)) SparseMatrix & M,
-				   __attribute__ ((unused)) Array<Real> * n,
-				   __attribute__ ((unused)) ElementTypeMapArray<Real> & rotation_mat,
-				   __attribute__ ((unused)) ElementType type,
-				   __attribute__ ((unused)) const GhostType & ghost_type) const {
+                                   __attribute__ ((unused)) UInt nb_degree_of_freedom,
+                                   __attribute__ ((unused)) SparseMatrix & M,
+                                   __attribute__ ((unused)) Array<Real> * n,
+                                   __attribute__ ((unused)) ElementTypeMapArray<Real> & rotation_mat,
+                                   __attribute__ ((unused)) ElementType type,
+                                   __attribute__ ((unused)) const GhostType & ghost_type) const {
 
    AKANTU_DEBUG_TO_IMPLEMENT();
  }
 
   virtual void computeShapesMatrix(__attribute__ ((unused))const ElementType & type,
-				   __attribute__ ((unused))UInt nb_degree_of_freedom,
-				   __attribute__ ((unused))UInt nb_nodes_per_element,
-				   __attribute__ ((unused))Array<Real> * n,
-				   __attribute__ ((unused))UInt id,
-				   __attribute__ ((unused))UInt degree_to_interpolate,
-				   __attribute__ ((unused))UInt degree_interpolated,
-				   __attribute__ ((unused))const bool sign,
-				   __attribute__ ((unused))const GhostType & ghost_type) const {
+                                   __attribute__ ((unused))UInt nb_degree_of_freedom,
+                                   __attribute__ ((unused))UInt nb_nodes_per_element,
+                                   __attribute__ ((unused))Array<Real> * n,
+                                   __attribute__ ((unused))UInt id,
+                                   __attribute__ ((unused))UInt degree_to_interpolate,
+                                   __attribute__ ((unused))UInt degree_interpolated,
+                                   __attribute__ ((unused))const bool sign,
+                                   __attribute__ ((unused))const GhostType & ghost_type) const {
 
     AKANTU_DEBUG_TO_IMPLEMENT();
   }

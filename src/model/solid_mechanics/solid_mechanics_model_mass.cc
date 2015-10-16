@@ -80,10 +80,7 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
 
     computeRho(rho, type, ghost_type);
 
-    AKANTU_DEBUG_ASSERT(dof_synchronizer,
-                        "DOFSynchronizer number must not be initialized");
-    fem.assembleFieldLumped(rho, spatial_dimension, *mass,
-                            dof_synchronizer->getLocalDOFEquationNumbers(),
+    fem.assembleFieldLumped(rho, *mass,
                             type, ghost_type);
   }
 
@@ -94,10 +91,7 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
 void SolidMechanicsModel::assembleMass() {
   AKANTU_DEBUG_IN();
 
-  if (!mass_matrix) {
-    mass_matrix = &(this->getDOFManager().getNewMatrix("mass", "jacobian"));
-  }
-
+  this->getDOFManager().getNewMatrix("mass", "jacobian");
   assembleMass(_not_ghost);
 
   AKANTU_DEBUG_OUT();
