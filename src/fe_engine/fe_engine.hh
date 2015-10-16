@@ -40,7 +40,7 @@
 #include "mesh.hh"
 #include "element_class.hh"
 #include "sparse_matrix.hh"
-#include "quadrature_point.hh"
+#include "integration_point.hh"
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
@@ -107,13 +107,13 @@ public:
 			 const GhostType & ghost_type = _not_ghost,
 			 const Array<UInt> & filter_elements = empty_filter) const = 0;
 
-  /// integrate f for all quadrature points of type "type" but don't sum over all quadrature points
-  virtual void integrateOnQuadraturePoints(const Array<Real> & f,
-					   Array<Real> &intf,
-					   UInt nb_degree_of_freedom,
-					   const ElementType & type,
-					   const GhostType & ghost_type = _not_ghost,
-					   const Array<UInt> & filter_elements = empty_filter) const = 0;
+  /// integrate f for all integration points of type "type" but don't sum over all integration points
+  virtual void integrateOnIntegrationPoints(const Array<Real> & f,
+					    Array<Real> &intf,
+					    UInt nb_degree_of_freedom,
+					    const ElementType & type,
+					    const GhostType & ghost_type = _not_ghost,
+					    const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// integrate one element scalar value on all elements of type "type"
   virtual Real integrate(const Vector<Real> & f,
@@ -125,9 +125,9 @@ public:
   /* compatibility with old FEEngine fashion */
   /* ------------------------------------------------------------------------ */
 #ifndef SWIG
-  /// get the number of quadrature points
-  virtual UInt getNbQuadraturePoints(const ElementType & type,
-				     const GhostType & ghost_type = _not_ghost) const = 0;
+  /// get the number of integration points
+  virtual UInt getNbIntegrationPoints(const ElementType & type,
+				      const GhostType & ghost_type = _not_ghost) const = 0;
   /// get the precomputed shapes
   const virtual Array<Real> & getShapes(const ElementType & type,
 					const GhostType & ghost_type = _not_ghost,
@@ -138,54 +138,60 @@ public:
 						   const GhostType & ghost_type = _not_ghost,
 						   UInt id = 0) const = 0;
 
-  /// get quadrature points
-  const virtual Matrix<Real> & getQuadraturePoints(const ElementType & type,
-						   const GhostType & ghost_type = _not_ghost) const = 0;
+  /// get integration points
+  const virtual Matrix<Real> & getIntegrationPoints(const ElementType & type,
+						    const GhostType & ghost_type = _not_ghost) const = 0;
 #endif
   /* ------------------------------------------------------------------------ */
   /* Shape method bridges                                                     */
   /* ------------------------------------------------------------------------ */
   virtual
-  void gradientOnQuadraturePoints(const Array<Real> &u,
-				  Array<Real> &nablauq,
-				  const UInt nb_degree_of_freedom,
-				  const ElementType & type,
-				  const GhostType & ghost_type = _not_ghost,
-                                  const Array<UInt> & filter_elements = empty_filter) const = 0;
+  void gradientOnIntegrationPoints(const Array<Real> &u,
+				   Array<Real> &nablauq,
+				   const UInt nb_degree_of_freedom,
+				   const ElementType & type,
+				   const GhostType & ghost_type = _not_ghost,
+				   const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   virtual
-  void interpolateOnQuadraturePoints(const Array<Real> &u,
-				     Array<Real> &uq,
-				     UInt nb_degree_of_freedom,
-				     const ElementType & type,
-				     const GhostType & ghost_type = _not_ghost,
-                                     const Array<UInt> & filter_elements = empty_filter) const = 0;
+  void interpolateOnIntegrationPoints(const Array<Real> &u,
+				      Array<Real> &uq,
+				      UInt nb_degree_of_freedom,
+				      const ElementType & type,
+				      const GhostType & ghost_type = _not_ghost,
+				      const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   virtual
-  void interpolateOnQuadraturePoints(const Array<Real> & u,
-				     ElementTypeMapArray<Real> & uq,
-                                     const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+  void interpolateOnIntegrationPoints(const Array<Real> & u,
+				      ElementTypeMapArray<Real> & uq,
+				      const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
   virtual
-  void computeQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
-					  const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+  void computeIntegrationPointsCoordinates(ElementTypeMapArray<Real> & integration_points_coordinates,
+					   const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+
+  virtual
+  void computeIntegrationPointsCoordinates(Array<Real> & integration_points_coordinates,
+					  const ElementType & type,
+					  const GhostType & ghost_type = _not_ghost,
+					  const Array<UInt> & filter_elements = empty_filter) const = 0;
   
   virtual
-  void initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
-							ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
-							ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-							const ElementTypeMapArray<UInt> * element_filter) const = 0;
+  void initElementalFieldInterpolationFromIntegrationPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+							    ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							    ElementTypeMapArray<Real> & integration_points_coordinates_inv_matrices,
+							    const ElementTypeMapArray<UInt> * element_filter) const = 0;
 
   virtual
-  void interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
-						  const ElementTypeMapArray<Real> & interpolation_points_coordinates,
-						  ElementTypeMapArray<Real> & result,
-						  const GhostType ghost_type,
-						  const ElementTypeMapArray<UInt> * element_filter) const = 0;
+  void interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
+						      const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+						      ElementTypeMapArray<Real> & result,
+						      const GhostType ghost_type,
+						      const ElementTypeMapArray<UInt> * element_filter) const = 0;
 
   virtual
-  void interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+  void interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
 						  const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
-						  const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+						  const ElementTypeMapArray<Real> & integration_points_coordinates_inv_matrices,
 						  ElementTypeMapArray<Real> & result,
 						  const GhostType ghost_type,
 						  const ElementTypeMapArray<UInt> * element_filter) const = 0;
@@ -214,20 +220,20 @@ public:
   /* Other methods                                                            */
   /* ------------------------------------------------------------------------ */
 
-  /// pre-compute normals on control points
-  virtual void computeNormalsOnControlPoints(const GhostType & ghost_type = _not_ghost) = 0;
+  /// pre-compute normals on integration points
+  virtual void computeNormalsOnIntegrationPoints(const GhostType & ghost_type = _not_ghost) = 0;
 
-  /// pre-compute normals on control points
-  virtual void computeNormalsOnControlPoints(__attribute__((unused)) const Array<Real> & field,
+  /// pre-compute normals on integration points
+  virtual void computeNormalsOnIntegrationPoints(__attribute__((unused)) const Array<Real> & field,
 					     __attribute__((unused)) const GhostType & ghost_type = _not_ghost) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
-  /// pre-compute normals on control points
-  virtual void computeNormalsOnControlPoints(__attribute__((unused)) const Array<Real> & field,
-					     __attribute__((unused)) Array<Real> & normal,
-					     __attribute__((unused)) const ElementType & type,
-					     __attribute__((unused)) const GhostType & ghost_type = _not_ghost) const {
+  /// pre-compute normals on integration points
+  virtual void computeNormalsOnIntegrationPoints(__attribute__((unused)) const Array<Real> & field,
+						 __attribute__((unused)) Array<Real> & normal,
+						 __attribute__((unused)) const ElementType & type,
+						 __attribute__((unused)) const GhostType & ghost_type = _not_ghost) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
@@ -324,8 +330,8 @@ public:
   /// get the in-radius of an element
   static inline Real getElementInradius(const Matrix<Real> & coord, const ElementType & type);
 
-  /// get the normals on quadrature points
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(NormalsOnQuadPoints, normals_on_quad_points, Real);
+  /// get the normals on integration points
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(NormalsOnIntegrationPoints, normals_on_integration_points, Real);
 
   /// get cohesive element type for a given facet type
   static inline ElementType getCohesiveElementType(const ElementType & type_facet);
@@ -350,8 +356,8 @@ protected:
   /// the mesh on which all computation are made
   Mesh & mesh;
 
-  /// normals at quadrature points
-  ElementTypeMapArray<Real> normals_on_quad_points;
+  /// normals at integration points
+  ElementTypeMapArray<Real> normals_on_integration_points;
 
 };
 
@@ -368,7 +374,7 @@ inline std::ostream & operator <<(std::ostream & stream, const FEEngine & _this)
 
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const QuadraturePoint & _this)
+inline std::ostream & operator <<(std::ostream & stream, const IntegrationPoint & _this)
 {
   _this.printself(stream);
   return stream;

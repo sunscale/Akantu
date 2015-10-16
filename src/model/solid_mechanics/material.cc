@@ -223,7 +223,7 @@ void Material::assembleResidual(GhostType ghost_type) {
 
         UInt size_of_shapes_derivatives = shapes_derivatives.getNbComponent();
         UInt nb_nodes_per_element       = Mesh::getNbNodesPerElement(*it);
-        UInt nb_quadrature_points       = fem->getNbQuadraturePoints(*it, ghost_type);
+        UInt nb_quadrature_points       = fem->getNbIntegrationPoints(*it, ghost_type);
 
         /// compute @f$\sigma \frac{\partial \varphi}{\partial X}@f$ by @f$\mathbf{B}^t \mathbf{\sigma}_q@f$
         Array<Real> * sigma_dphi_dx =
@@ -313,7 +313,7 @@ void Material::computeAllStresses(GhostType ghost_type) {
     Array<Real> & gradu_vect = gradu(*it, ghost_type);
 
     /// compute @f$\nabla u@f$
-    fem->gradientOnQuadraturePoints(model->getDisplacement(), gradu_vect,
+    fem->gradientOnIntegrationPoints(model->getDisplacement(), gradu_vect,
                                                     spatial_dimension,
                                                     *it, ghost_type, elem_filter);
 
@@ -402,7 +402,7 @@ void Material::setToSteadyState(GhostType ghost_type) {
     Array<Real> & gradu_vect = gradu(*it, ghost_type);
 
     /// compute @f$\nabla u@f$
-    fem->gradientOnQuadraturePoints(displacement, gradu_vect,
+    fem->gradientOnIntegrationPoints(displacement, gradu_vect,
                                                spatial_dimension,
                                                *it, ghost_type, elem_filter);
 
@@ -481,12 +481,12 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
 
     UInt nb_element           = elem_filter.getSize();
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-    UInt nb_quadrature_points = fem->getNbQuadraturePoints(type,
+    UInt nb_quadrature_points = fem->getNbIntegrationPoints(type,
                                                            ghost_type);
 
     gradu_vect.resize(nb_quadrature_points * nb_element);
 
-    fem->gradientOnQuadraturePoints(model->getDisplacement(),
+    fem->gradientOnIntegrationPoints(model->getDisplacement(),
                                     gradu_vect, dim, type, ghost_type,
                                     elem_filter);
 
@@ -577,11 +577,11 @@ void Material::assembleStiffnessMatrixNL(const ElementType & type,
 
   UInt nb_element = elem_filter.getSize();
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-  UInt nb_quadrature_points = fem->getNbQuadraturePoints(type, ghost_type);
+  UInt nb_quadrature_points = fem->getNbIntegrationPoints(type, ghost_type);
 
   //gradu_vect.resize(nb_quadrature_points * nb_element);
 
-  // fem->gradientOnQuadraturePoints(model->getIncrement(), gradu_vect,
+  // fem->gradientOnIntegrationPoints(model->getIncrement(), gradu_vect,
   //        dim, type, ghost_type, &elem_filter);
 
   Array<Real> * shapes_derivatives_filtered = new Array<Real > (nb_element * nb_quadrature_points,
@@ -666,11 +666,11 @@ void Material::assembleStiffnessMatrixL2(const ElementType & type,
 
   UInt nb_element = elem_filter.getSize();
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-  UInt nb_quadrature_points = fem->getNbQuadraturePoints(type, ghost_type);
+  UInt nb_quadrature_points = fem->getNbIntegrationPoints(type, ghost_type);
 
   gradu_vect.resize(nb_quadrature_points * nb_element);
 
-  fem->gradientOnQuadraturePoints(model->getDisplacement(), gradu_vect,
+  fem->gradientOnIntegrationPoints(model->getDisplacement(), gradu_vect,
                                              dim, type, ghost_type, elem_filter);
 
   UInt tangent_size = getTangentStiffnessVoigtSize(dim);
@@ -776,7 +776,7 @@ void Material::assembleResidual(GhostType ghost_type){
     UInt size_of_shapes_derivatives = shapes_derivatives.getNbComponent();
     UInt nb_element = elem_filter.getSize();
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
-    UInt nb_quadrature_points = fem->getNbQuadraturePoints(*it, ghost_type);
+    UInt nb_quadrature_points = fem->getNbIntegrationPoints(*it, ghost_type);
 
     Array<Real> * shapesd_filtered =
       new Array<Real>(0, size_of_shapes_derivatives, "filtered shapesd");
@@ -883,14 +883,14 @@ void Material::computeAllStressesFromTangentModuli(const ElementType & type,
   UInt nb_element                 = elem_filter.getSize();
   if (nb_element) {
     UInt nb_nodes_per_element       = Mesh::getNbNodesPerElement(type);
-    UInt nb_quadrature_points       = fem->getNbQuadraturePoints(type, ghost_type);
+    UInt nb_quadrature_points       = fem->getNbIntegrationPoints(type, ghost_type);
 
 
     gradu_vect.resize(nb_quadrature_points * nb_element);
 
     Array<Real> & disp = model->getDisplacement();
 
-    fem->gradientOnQuadraturePoints(disp, gradu_vect,
+    fem->gradientOnIntegrationPoints(disp, gradu_vect,
                                     dim, type, ghost_type, elem_filter);
 
     UInt tangent_moduli_size = getTangentStiffnessVoigtSize(dim);
@@ -973,7 +973,7 @@ void Material::computePotentialEnergy(ElementType el_type, GhostType ghost_type)
 
   if(!potential_energy.exists(el_type, ghost_type)) {
       UInt nb_element = element_filter(el_type, ghost_type).getSize();
-      UInt nb_quadrature_points = fem->getNbQuadraturePoints(el_type, _not_ghost);
+      UInt nb_quadrature_points = fem->getNbIntegrationPoints(el_type, _not_ghost);
 
       potential_energy.alloc(nb_element * nb_quadrature_points, 1,
                              el_type, ghost_type);
@@ -1008,7 +1008,7 @@ Real Material::getPotentialEnergy(ElementType & type, UInt index) {
   AKANTU_DEBUG_IN();
   Real epot = 0.;
 
-  Vector<Real> epot_on_quad_points(fem->getNbQuadraturePoints(type));
+  Vector<Real> epot_on_quad_points(fem->getNbIntegrationPoints(type));
 
   computePotentialEnergyByElement(type, index, epot_on_quad_points);
 
@@ -1038,7 +1038,7 @@ Real Material::getEnergy(std::string energy_id, ElementType type, UInt index) {
 void Material::initElementalFieldInterpolation(const ElementTypeMapArray<Real> & interpolation_points_coordinates) {
   AKANTU_DEBUG_IN();
 
-  this->fem->initElementalFieldInterpolationFromControlPoints(interpolation_points_coordinates,
+  this->fem->initElementalFieldInterpolationFromIntegrationPoints(interpolation_points_coordinates,
                                                               this->interpolation_points_matrices,
                                                               this->interpolation_inverse_coordinates,
                                                               &(this->element_filter));
@@ -1050,7 +1050,7 @@ void Material::initElementalFieldInterpolation(const ElementTypeMapArray<Real> &
 void Material::interpolateStress(ElementTypeMapArray<Real> & result,
                                  const GhostType ghost_type) {
 
-  this->fem->interpolateElementalFieldFromControlPoints(this->stress, 
+  this->fem->interpolateElementalFieldFromIntegrationPoints(this->stress, 
                                                         this->interpolation_points_matrices,
                                                         this->interpolation_inverse_coordinates,
                                                         result,
@@ -1314,15 +1314,15 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
 
   for (std::map<ID, InternalField<Real> *>::iterator it = internal_vectors_real.begin();
        it != internal_vectors_real.end();
-       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+       ++it) it->second->removeIntegrationPoints(material_local_new_numbering);
 
   for (std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end();
-       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+       ++it) it->second->removeIntegrationPoints(material_local_new_numbering);
 
   for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
        it != internal_vectors_bool.end();
-       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+       ++it) it->second->removeIntegrationPoints(material_local_new_numbering);
 
   AKANTU_DEBUG_OUT();
 }
@@ -1414,15 +1414,15 @@ void Material::onElementsRemoved(const Array<Element> & element_list,
 
   for (std::map<ID, InternalField<Real> *>::iterator it = internal_vectors_real.begin();
        it != internal_vectors_real.end();
-       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+       ++it) it->second->removeIntegrationPoints(material_local_new_numbering);
 
   for (std::map<ID, InternalField<UInt> *>::iterator it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end();
-       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+       ++it) it->second->removeIntegrationPoints(material_local_new_numbering);
 
   for (std::map<ID, InternalField<bool> *>::iterator it = internal_vectors_bool.begin();
        it != internal_vectors_bool.end();
-       ++it) it->second->removeQuadraturePoints(material_local_new_numbering);
+       ++it) it->second->removeIntegrationPoints(material_local_new_numbering);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1457,7 +1457,7 @@ void Material::onDamageUpdate() {
 
     if(!this->potential_energy.exists(*it, _not_ghost)) {
       UInt nb_element = this->element_filter(*it, _not_ghost).getSize();
-      UInt nb_quadrature_points = this->fem->getNbQuadraturePoints(*it, _not_ghost);
+      UInt nb_quadrature_points = this->fem->getNbIntegrationPoints(*it, _not_ghost);
 
       this->potential_energy.alloc(nb_element * nb_quadrature_points, 1,
                                    *it, _not_ghost);
@@ -1505,7 +1505,7 @@ inline ElementTypeMap<UInt> Material::getInternalDataPerElem(const ID & id,
   ElementTypeMap<UInt> res;
   for(; it != last_type; ++it) {
     UInt nb_quadrature_points = 0;
-    nb_quadrature_points = model->getFEEngine(fe_engine_id).getNbQuadraturePoints(*it);
+    nb_quadrature_points = model->getFEEngine(fe_engine_id).getNbIntegrationPoints(*it);
 
     res(*it) = internal.getNbComponent() * nb_quadrature_points;
   }
@@ -1599,7 +1599,7 @@ void Material::extrapolateInternal(const ID & id, const Element & element, const
   if (this->isInternal(id, element.kind)) {
     UInt nb_element = this->element_filter(element.type, element.ghost_type).getSize();
     const ID name = this->getID() +  ":" + id;
-    UInt nb_quads = this->internal_vectors_real[name]->getFEEngine().getNbQuadraturePoints(element.type, element.ghost_type); 
+    UInt nb_quads = this->internal_vectors_real[name]->getFEEngine().getNbIntegrationPoints(element.type, element.ghost_type); 
     const Array<Real> & internal = this->getArray<Real>(id, element.type, element.ghost_type);
     UInt nb_component = internal.getNbComponent();
     Array<Real>::const_matrix_iterator internal_it = internal.begin_reinterpret(nb_component, nb_quads, nb_element);

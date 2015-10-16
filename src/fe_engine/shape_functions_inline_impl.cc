@@ -71,13 +71,13 @@ inline UInt ShapeFunctions::getShapeDerivativesSize(const ElementType & type) {
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
-void ShapeFunctions::setControlPointsByType(const Matrix<Real> & points,
+void ShapeFunctions::setIntegrationPointsByType(const Matrix<Real> & points,
 					    const GhostType & ghost_type) {
-  control_points(type, ghost_type).shallowCopy(points);
+  integration_points(type, ghost_type).shallowCopy(points);
 }
 
 /* -------------------------------------------------------------------------- */
-inline void ShapeFunctions::initElementalFieldInterpolationFromControlPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+inline void ShapeFunctions::initElementalFieldInterpolationFromIntegrationPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
 									     ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
 									     ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
 									     const ElementTypeMapArray<Real> & quadrature_points_coordinates, 
@@ -113,7 +113,7 @@ inline void ShapeFunctions::initElementalFieldInterpolationFromControlPoints(con
       else elem_filter = &(empty_filter);
 
 #define AKANTU_INIT_ELEMENTAL_FIELD_INTERPOLATION_FROM_C_POINTS(type)			\
-      initElementalFieldInterpolationFromControlPoints<type>(interpolation_points_coordinates(type, ghost_type), \
+      initElementalFieldInterpolationFromIntegrationPoints<type>(interpolation_points_coordinates(type, ghost_type), \
 							     interpolation_points_coordinates_matrices, \
 							     quad_points_coordinates_inv_matrices, \
 							     quadrature_points_coordinates(type, ghost_type), \
@@ -131,7 +131,7 @@ inline void ShapeFunctions::initElementalFieldInterpolationFromControlPoints(con
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
-inline void ShapeFunctions::initElementalFieldInterpolationFromControlPoints(const Array<Real> & interpolation_points_coordinates,
+inline void ShapeFunctions::initElementalFieldInterpolationFromIntegrationPoints(const Array<Real> & interpolation_points_coordinates,
 									     ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
 									     ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
 									     const Array<Real> & quadrature_points_coordinates,
@@ -368,7 +368,7 @@ inline void ShapeFunctions::buildElementalFieldInterpolationMatrix<_quadrangle_8
 }
 
 /* -------------------------------------------------------------------------- */
-void ShapeFunctions::interpolateElementalFieldFromControlPoints(const ElementTypeMapArray<Real> & field,
+void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
 								const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
 								const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
 								ElementTypeMapArray<Real> & result,
@@ -401,7 +401,7 @@ void ShapeFunctions::interpolateElementalFieldFromControlPoints(const ElementTyp
     else elem_filter = &(empty_filter);
 
 #define AKANTU_INTERPOLATE_ELEMENTAL_FIELD_FROM_C_POINTS(type)			\
-    interpolateElementalFieldFromControlPoints<type>(field(type, ghost_type), \
+    interpolateElementalFieldFromIntegrationPoints<type>(field(type, ghost_type), \
 						     interpolation_points_coordinates_matrices(type, ghost_type), \
 						     quad_points_coordinates_inv_matrices(type, ghost_type), \
 						     result,		\
@@ -418,7 +418,7 @@ void ShapeFunctions::interpolateElementalFieldFromControlPoints(const ElementTyp
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
-inline void ShapeFunctions::interpolateElementalFieldFromControlPoints(const Array<Real> & field,
+inline void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(const Array<Real> & field,
 								       const Array<Real> & interpolation_points_coordinates_matrices,
 								       const Array<Real> & quad_points_coordinates_inv_matrices,
 								       ElementTypeMapArray<Real> & result,
@@ -489,13 +489,13 @@ inline void ShapeFunctions::interpolateElementalFieldFromControlPoints(const Arr
 }
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
-inline void ShapeFunctions::interpolateElementalFieldOnControlPoints(const Array<Real> &u_el,
+inline void ShapeFunctions::interpolateElementalFieldOnIntegrationPoints(const Array<Real> &u_el,
 								     Array<Real> &uq,
 								     GhostType ghost_type,
 								     const Array<Real> & shapes,
 								     const Array<UInt> & filter_elements) const {
   UInt nb_element;
-  UInt nb_points = control_points(type, ghost_type).cols();
+  UInt nb_points = integration_points(type, ghost_type).cols();
   UInt nb_nodes_per_element = ElementClass<type>::getShapeSize();
   UInt nb_degree_of_freedom = u_el.getNbComponent() / nb_nodes_per_element;
 
@@ -532,7 +532,7 @@ inline void ShapeFunctions::interpolateElementalFieldOnControlPoints(const Array
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
-void ShapeFunctions::gradientElementalFieldOnControlPoints(const Array<Real> &u_el,
+void ShapeFunctions::gradientElementalFieldOnIntegrationPoints(const Array<Real> &u_el,
 							   Array<Real> &out_nablauq,
 							   GhostType ghost_type,
 							   const Array<Real> & shapes_derivatives,
@@ -540,7 +540,7 @@ void ShapeFunctions::gradientElementalFieldOnControlPoints(const Array<Real> &u_
   AKANTU_DEBUG_IN();
 
   UInt nb_nodes_per_element  = ElementClass<type>::getNbNodesPerInterpolationElement();
-  UInt nb_points             = control_points(type, ghost_type).cols();
+  UInt nb_points             = integration_points(type, ghost_type).cols();
   UInt element_dimension     = ElementClass<type>::getNaturalSpaceDimension();
   UInt nb_degree_of_freedom = u_el.getNbComponent() / nb_nodes_per_element;
 

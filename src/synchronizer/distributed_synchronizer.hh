@@ -55,7 +55,8 @@ class DistributedSynchronizer : public Synchronizer, public MeshEventHandler {
 public:
   DistributedSynchronizer(Mesh & mesh,
                           SynchronizerID id = "distributed_synchronizer",
-                          MemoryID memory_id = 0);
+                          MemoryID memory_id = 0,
+			  const bool register_to_event_manager = true);
 
 public:
   virtual ~DistributedSynchronizer();
@@ -112,6 +113,13 @@ public:
   /// recalculate buffer sizes for all tags
   void computeAllBufferSizes(DataAccessor & data_accessor);
 
+  /// remove elements from the synchronizer without renumbering them
+  void removeElements(const Array<Element> & element_to_remove);
+
+  /// renumber the elements in the synchronizer
+  void renumberElements(const ElementTypeMapArray<UInt> & new_numbering);
+
+		      
 protected:
   /// fill the nodes type vector
   void fillNodesType(Mesh & mesh);

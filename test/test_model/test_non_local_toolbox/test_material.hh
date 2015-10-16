@@ -27,7 +27,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "material_elastic.hh"
-#include "non_local_neighborhood_base.hh"
+#include "material_non_local.hh"
 
 #ifndef __TEST_MATERIAL_HH__
 #define __TEST_MATERIAL_HH__
@@ -35,7 +35,8 @@
 __BEGIN_AKANTU__
 
 template<UInt dim>
-class TestMaterial : public MaterialElastic<dim> {
+class TestMaterial : public MaterialElastic<dim>,
+		     public MaterialNonLocal<dim>{
 
 /* -------------------------------------------------------------------------- */
 /* Constructor/Destructor                                                     */
@@ -45,12 +46,27 @@ public:
   
   TestMaterial(SolidMechanicsModel & model, const ID & id);
   virtual ~TestMaterial() {};
+  typedef MaterialNonLocal<dim> MyNonLocalParent;
+  typedef MaterialElastic<dim> MyElasticParent;
 /* -------------------------------------------------------------------------- */
 /* Methods                                                                    */
 /* -------------------------------------------------------------------------- */
 public:
+  void initMaterial();
 
-  void insertQuads(NonLocalNeighborhoodBase & neighborhood);
+  void computeNonLocalStresses(GhostType ghost_type) {};
+
+  void insertQuadsInNeighborhoods(GhostType ghost_type);
+
+  virtual void registerNeighborhood();
+
+protected:
+
+/* -------------------------------------------------------------------------- */
+/* Members                                                                   */
+/* -------------------------------------------------------------------------- */
+private:
+  InternalField<Real> grad_u_nl; 
 
 };
 

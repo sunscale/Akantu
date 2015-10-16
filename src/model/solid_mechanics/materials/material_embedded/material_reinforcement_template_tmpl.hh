@@ -174,7 +174,7 @@ template <UInt dim, class ConstLaw>
 void MaterialReinforcementTemplate<dim, ConstLaw>::computePotentialEnergy(ElementType type,
                                                                           GhostType ghost_type) {
   const UInt nb_elements = this->element_filter(type, ghost_type).getSize();
-  const UInt nb_quad = this->model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(type);
+  const UInt nb_quad = this->model->getFEEngine("EmbeddedInterfaceFEEngine").getNbIntegrationPoints(type);
   this->ConstLaw::potential_energy.alloc(nb_quad * nb_elements, 1, type, ghost_type, 0.);
 
   ConstLaw::computePotentialEnergy(type, ghost_type);

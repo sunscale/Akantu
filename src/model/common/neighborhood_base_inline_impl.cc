@@ -1,9 +1,9 @@
 /**
- * @file   non_local_neighborhood_base_inline_impl.cc
+ * @file   neighborhood_base_inline_impl.cc
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @date   Mon Sep 21 18:25:31 2015
  *
- * @brief  Inline implementation of Non-local neighborhood base functions
+ * @brief  Inline implementation of neighborhood base functions
  *
  * @section LICENSE
  *
@@ -34,8 +34,7 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-inline void NonLocalNeighborhoodBase::insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords) {
-  Vector<Real> test = quad.getPosition();
+inline void NeighborhoodBase::insertQuad(const IntegrationPoint & quad, const Vector<Real> & coords) {
   this->spatial_grid->insert(quad, coords);
 }
 
@@ -43,4 +42,3 @@ inline void NonLocalNeighborhoodBase::insertQuad(const QuadraturePoint & quad, c
 
 
 /* -------------------------------------------------------------------------- */
-

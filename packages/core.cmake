@@ -96,7 +96,7 @@ package_declare_sources(core
   fe_engine/integrator_gauss_inline_impl.cc
   fe_engine/interpolation_element.cc
   fe_engine/interpolation_element_tmpl.hh
-  fe_engine/quadrature_point.hh
+  fe_engine/integration_point.hh
   fe_engine/shape_functions.hh
   fe_engine/shape_functions_inline_impl.cc
   fe_engine/shape_lagrange.cc
@@ -106,7 +106,6 @@ package_declare_sources(core
   fe_engine/shape_linked.hh
   fe_engine/shape_linked_inline_impl.cc
   fe_engine/element.hh
-  fe_engine/quadrature_point.hh
 
   io/dumper/dumpable.hh
   io/dumper/dumpable.cc
@@ -239,6 +238,14 @@ package_declare_sources(core
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.cc
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.hh
 
+  model/common/neighborhood_base.hh
+  model/common/neighborhood_base.cc
+  model/common/neighborhood_base_inline_impl.cc
+
+  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.hh
+  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.cc
+  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion_inline_impl.cc
+ 
   solver/solver.cc
   solver/solver.hh
   solver/solver_inline_impl.cc
@@ -261,7 +268,6 @@ package_declare_sources(core
   synchronizer/dof_synchronizer_inline_impl.cc
   synchronizer/filtered_synchronizer.cc
   synchronizer/filtered_synchronizer.hh
-  synchronizer/mpi_type_wrapper.hh
   synchronizer/pbc_synchronizer.cc
   synchronizer/pbc_synchronizer.hh
   synchronizer/real_static_communicator.hh
@@ -273,6 +279,9 @@ package_declare_sources(core
   synchronizer/synchronizer.hh
   synchronizer/synchronizer_registry.cc
   synchronizer/synchronizer_registry.hh
+  synchronizer/grid_synchronizer.cc
+  synchronizer/grid_synchronizer.hh
+
   )
 
 package_declare_elements(core
@@ -332,10 +341,10 @@ package_declare_elements(core
   _git_pentahedron
   INTERPOLATION_KIND _itk_lagrangian
   FE_ENGINE_LISTS
-  gradient_on_quadrature_points
-  interpolate_on_quadrature_points
+  gradient_on_integration_points
+  interpolate_on_integration_points
   interpolate
-  compute_normals_on_control_points
+  compute_normals_on_integration_points
   inverse_map
   contains
   compute_shapes

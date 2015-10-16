@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
 
   energy.close();
 
-  UInt nb_quadrature_points = my_model.getFEEngine().getNbQuadraturePoints(TYPE);
+  UInt nb_quadrature_points = my_model.getFEEngine().getNbIntegrationPoints(TYPE);
   Array<Real> & stress_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getStress(element_type));
   Array<Real> & gradu_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getGradU(element_type));
 

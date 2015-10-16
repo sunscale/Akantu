@@ -77,7 +77,7 @@ void SynchronizerRegistry::asynchronousSynchronize(SynchronizationTag tag) {
     synchronizers.equal_range(tag);
 
   for (Tag2Sync::iterator it = range.first; it != range.second;++it) {
-    (*it).second->asynchronousSynchronize(data_accessor,tag);
+    (*it).second->asynchronousSynchronize(data_accessor, tag);
   }
 
   AKANTU_DEBUG_OUT();

@@ -254,7 +254,7 @@ void MaterialElasticLinearAnisotropic<spatial_dimension>::computeStress(ElementT
     Array<Real> & velocity = this->model->getVelocity();
     const Array<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
 
-    this->model->getFEEngine().gradientOnQuadraturePoints(velocity, strain_rate,
+    this->model->getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate,
 							  spatial_dimension, el_type,
 							  ghost_type, elem_filter);
 

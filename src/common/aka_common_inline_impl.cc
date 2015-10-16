@@ -80,6 +80,7 @@ inline std::ostream & operator <<(std::ostream & stream, SynchronizationTag type
     case _gst_htm_gradient_phi         : stream << "_gst_htm_gradient_phi"        ; break;
     case _gst_mnl_for_average          : stream << "_gst_mnl_for_average"         ; break;
     case _gst_mnl_weight               : stream << "_gst_mnl_weight"              ; break;
+    case _gst_nh_criterion             : stream << "_gst_nh_criterion"            ; break;
     case _gst_test                     : stream << "_gst_test"                    ; break;
     case _gst_user_1                   : stream << "_gst_user_1"                  ; break;
     case _gst_user_2                   : stream << "_gst_user_2"                  ; break;

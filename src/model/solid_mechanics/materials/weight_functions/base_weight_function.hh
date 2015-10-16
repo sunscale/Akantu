@@ -32,15 +32,13 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_types.hh"
-#include "solid_mechanics_model.hh"
 #include "parsable.hh"
 #include <cmath>
 #if defined(AKANTU_DEBUG_TOOLS)
 #include "aka_debug_tools.hh"
 #include <string>
 #endif
-
-#include "material_list.hh"
+#include "non_local_manager.hh"
 
 /* -------------------------------------------------------------------------- */
 #include <vector>
@@ -59,12 +57,13 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  BaseWeightFunction(Material & material, const std::string & type = "base") :
-    Parsable(_st_non_local, "weight_function:" + type), material(material), type(type), spatial_dimension(material.getSpatialDimension()) {
-    this->registerParam("radius"       , R             , 100.,
-			_pat_parsable | _pat_readable  , "Non local radius");
-    this->registerParam("update_rate"  , update_rate, 0U  ,
-			_pat_parsmod, "Update frequency");
+  BaseWeightFunction(NonLocalManager & manager, const std::string & type = "base") :
+    Parsable(_st_weight_function, "weight_function:" + type),
+    manager(manager),
+    type(type), 
+    spatial_dimension(manager.getModel().getSpatialDimension()) {
+    this->registerParam("update_rate"  , update_rate, 1U  ,
+			_pat_parsmod, "Update frequency");    
   }
 
   virtual ~BaseWeightFunction() {}
@@ -83,19 +82,10 @@ public:
   inline void setRadius(Real radius);
 
   /* ------------------------------------------------------------------------ */
-  /// function for optimization to preselect types for the
-  /// ElementTypeMapArrays (this function is currently not used)
-  inline void selectType(__attribute__((unused)) ElementType type1,
-                         __attribute__((unused)) GhostType   ghost_type1,
-                         __attribute__((unused)) ElementType type2,
-                         __attribute__((unused)) GhostType   ghost_type2) {
-  }
-
-  /* ------------------------------------------------------------------------ */
   /// compute the weight for a given distance between two quadrature points
   inline Real operator()(Real r,
-                         const __attribute__((unused)) QuadraturePoint & q1,
-                         const __attribute__((unused)) QuadraturePoint & q2);
+                         const __attribute__((unused)) IntegrationPoint & q1,
+                         const __attribute__((unused)) IntegrationPoint & q2);
 
   /// print function
   void printself(std::ostream & stream, int indent = 0) const {
@@ -134,12 +124,19 @@ public:
   virtual inline void unpackElementData(__attribute__((unused)) CommunicationBuffer & buffer,
                                         __attribute__((unused)) const Array<Element> & elements,
                                         __attribute__((unused)) SynchronizationTag tag) {}
+
+  /* ------------------------------------------------------------------------ */
+  /* Accessors                                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
+  AKANTU_GET_MACRO(Type, type, const ID &);
+
 protected:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-  /// the material for which the weights are computed
-  Material & material;
+  /// reference to the non-local manager
+  NonLocalManager & manager;
 
   /// the non-local radius
   Real R;
@@ -170,6 +167,15 @@ inline std::ostream & operator <<(std::ostream & stream,
 #endif
 
 __END_AKANTU__
+/* -------------------------------------------------------------------------- */
+/* Include all other weight function types                                    */
+/* -------------------------------------------------------------------------- */
+#  include "damaged_weight_function.hh"
+#  include "remove_damaged_weight_function.hh"
+#  include "remove_damaged_with_damage_rate_weight_function.hh"
+#  include "stress_based_weight_function.hh"
+
+
 
 /* -------------------------------------------------------------------------- */
 

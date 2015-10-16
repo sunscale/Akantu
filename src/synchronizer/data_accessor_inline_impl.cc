@@ -91,7 +91,7 @@ inline void DataAccessor::packUnpackElementalDataHelper(ElementTypeMapArray<T> &
       current_ghost_type   = el.ghost_type;
       vect = &data_to_pack(el.type, el.ghost_type);
       if(per_quadrature_point_data)
-        nb_quad_per_elem = fem.getNbQuadraturePoints(el.type,
+        nb_quad_per_elem = fem.getNbIntegrationPoints(el.type,
 						     el.ghost_type);
       else nb_quad_per_elem = 1;
       nb_component = vect->getNbComponent();

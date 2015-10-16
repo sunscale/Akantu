@@ -327,9 +327,9 @@ protected:
   inline Element convertToGlobalElement(const Element & local_element) const;
 
   /// converts global quadrature point to local quadrature point
-  inline QuadraturePoint convertToLocalPoint(const QuadraturePoint & global_point) const;
+  inline IntegrationPoint convertToLocalPoint(const IntegrationPoint & global_point) const;
   /// converts local quadrature point to global quadrature point
-  inline QuadraturePoint convertToGlobalPoint(const QuadraturePoint & local_point) const;
+  inline IntegrationPoint convertToGlobalPoint(const IntegrationPoint & local_point) const;
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */

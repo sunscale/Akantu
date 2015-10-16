@@ -44,8 +44,8 @@ inline void BaseWeightFunction::setRadius(Real radius) {
 
 /* -------------------------------------------------------------------------- */
 inline Real BaseWeightFunction:: operator()(Real r,
-					    const __attribute__((unused)) QuadraturePoint & q1,
-					    const __attribute__((unused)) QuadraturePoint & q2) {
+					    const __attribute__((unused)) IntegrationPoint & q1,
+					    const __attribute__((unused)) IntegrationPoint & q2) {
   /// initialize the weight
   Real w = 0;
   /// compute weight for given r 

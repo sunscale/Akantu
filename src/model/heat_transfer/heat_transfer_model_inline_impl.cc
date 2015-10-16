@@ -152,7 +152,7 @@ inline UInt HeatTransferModel::getNbDataForElements(const Array<Element> & eleme
     break;
   }
   case _gst_htm_gradient_temperature: {
-    size += getNbQuadraturePoints(elements) * spatial_dimension * sizeof(Real); // temperature gradient
+    size += getNbIntegrationPoints(elements) * spatial_dimension * sizeof(Real); // temperature gradient
     size += nb_nodes_per_element * sizeof(Real); // nodal temperatures
     //    size += spatial_dimension * nb_nodes_per_element * sizeof(Real); // shape derivatives
     break;
