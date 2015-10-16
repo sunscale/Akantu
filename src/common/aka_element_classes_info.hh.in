@@ -58,6 +58,16 @@ enum ElementKind {
   BOOST_PP_SEQ_ENUM(AKANTU_ELEMENT_KIND),
   _ek_not_defined
 };
+
+
+/* -------------------------------------------------------------------------- */
+struct ElementKind_def {
+  typedef ElementKind type;
+  static const type _begin_ = BOOST_PP_SEQ_HEAD(AKANTU_ELEMENT_KIND);
+  static const type _end_   = _ek_not_defined;
+};
+
+typedef safe_enum<ElementKind_def> element_kind_t;
 #else
 enum ElementKind;
 #endif
