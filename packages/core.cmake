@@ -258,7 +258,6 @@ package_declare_sources(core
   synchronizer/dof_synchronizer_inline_impl.cc
   synchronizer/filtered_synchronizer.cc
   synchronizer/filtered_synchronizer.hh
-  synchronizer/mpi_type_wrapper.hh
   synchronizer/pbc_synchronizer.cc
   synchronizer/pbc_synchronizer.hh
   synchronizer/real_static_communicator.hh
