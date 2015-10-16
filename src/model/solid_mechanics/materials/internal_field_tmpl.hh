@@ -158,7 +158,7 @@ void InternalField<T>::resize() {
     for(; it != end; ++it) {
       UInt nb_element = element_filter(*it, gt).getSize();
 
-      UInt nb_quadrature_points = fem->getNbQuadraturePoints(*it, gt);
+      UInt nb_quadrature_points = fem->getNbIntegrationPoints(*it, gt);
       UInt new_size = nb_element * nb_quadrature_points;
 
       UInt old_size = 0;
@@ -217,7 +217,7 @@ void InternalField<T>::internalInitialize(UInt nb_component) {
 
       for(; it != end; ++it) {
 	UInt nb_element = element_filter(*it, gt).getSize();
-	UInt nb_quadrature_points = fem->getNbQuadraturePoints(*it, gt);
+	UInt nb_quadrature_points = fem->getNbIntegrationPoints(*it, gt);
 	if(this->exists(*it, gt))
 	  this->operator()(*it, gt).resize(nb_element * nb_quadrature_points);
 	else
@@ -260,7 +260,7 @@ void InternalField<T>::saveCurrentValues() {
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
-void InternalField<T>::removeQuadraturePoints(const ElementTypeMapArray<UInt> & new_numbering) {
+void InternalField<T>::removeIntegrationPoints(const ElementTypeMapArray<UInt> & new_numbering) {
   for(UInt g = _not_ghost; g <= _ghost; ++g) {
     GhostType gt = (GhostType) g;
     ElementTypeMapArray<UInt>::type_iterator it  = new_numbering.firstType(_all_dimensions, gt, _ek_not_defined);
@@ -272,7 +272,7 @@ void InternalField<T>::removeQuadraturePoints(const ElementTypeMapArray<UInt> & 
 
 	Array<T> & vect = this->operator()(type, gt);
 
-	UInt nb_quad_per_elem = fem->getNbQuadraturePoints(type, gt);
+	UInt nb_quad_per_elem = fem->getNbIntegrationPoints(type, gt);
 	UInt nb_component = vect.getNbComponent();
 
 	Array<T> tmp(renumbering.getSize()*nb_quad_per_elem, nb_component);

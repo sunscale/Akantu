@@ -181,7 +181,7 @@ public:
   /* Pack and unpack helper functions                                         */
   /* ------------------------------------------------------------------------ */
 public:
-  inline UInt getNbQuadraturePoints(const Array<Element> & elements,
+  inline UInt getNbIntegrationPoints(const Array<Element> & elements,
 				    const ID & fem_id = ID()) const;
 
   /* ------------------------------------------------------------------------ */

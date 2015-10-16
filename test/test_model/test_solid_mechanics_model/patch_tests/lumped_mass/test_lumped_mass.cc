@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
   FEEngine & fem = model.getFEEngine();
   UInt nb_element = mesh.getNbElement(type);
-  UInt nb_quadrature_points = fem.getNbQuadraturePoints(type) * nb_element;
+  UInt nb_quadrature_points = fem.getNbIntegrationPoints(type) * nb_element;
   Array<Real> rho_on_quad(nb_quadrature_points, 1, rho, "rho_on_quad");
   Real mass = fem.integrate(rho_on_quad, type);
 

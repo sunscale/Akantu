@@ -217,7 +217,7 @@ void HeatTransferModel::initArrays() {
     for(it = type_list.begin(); it != type_list.end(); ++it) {
       if(Mesh::getSpatialDimension(*it) != spatial_dimension) continue;
       UInt nb_element = getFEEngine().getMesh().getNbElement(*it, gt);
-      UInt nb_quad_points = this->getFEEngine().getNbQuadraturePoints(*it, gt) * nb_element;
+      UInt nb_quad_points = this->getFEEngine().getNbIntegrationPoints(*it, gt) * nb_element;
 
       temperature_on_qpoints(*it, gt).resize(nb_quad_points);
       temperature_on_qpoints(*it, gt).clear();
@@ -325,7 +325,7 @@ void HeatTransferModel::assembleCapacityLumped(const GhostType & ghost_type) {
     if(Mesh::getSpatialDimension(*it) != spatial_dimension) continue;
 
     UInt nb_element = getFEEngine().getMesh().getNbElement(*it,ghost_type);
-    UInt nb_quadrature_points = getFEEngine().getNbQuadraturePoints(*it, ghost_type);
+    UInt nb_quadrature_points = getFEEngine().getNbIntegrationPoints(*it, ghost_type);
 
     Array<Real> rho_1 (nb_element * nb_quadrature_points,1, capacity * density);
     fem.assembleFieldLumped(rho_1,1,*capacity_lumped,
@@ -427,7 +427,7 @@ void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
 
   UInt nb_element                 = mesh.getNbElement(type, ghost_type);
   UInt nb_nodes_per_element       = Mesh::getNbNodesPerElement(type);
-  UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(type, ghost_type);
+  UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(type, ghost_type);
 
   /// compute @f$\mathbf{B}^t * \mathbf{D} * \mathbf{B}@f$
   UInt bt_d_b_size = nb_nodes_per_element;
@@ -567,7 +567,7 @@ void HeatTransferModel::computeConductivityOnQuadPoints(const GhostType & ghost_
     Array<Real> & temperature_interpolated = temperature_on_qpoints(*it, ghost_type);
 
     //compute the temperature on quadrature points
-    this->getFEEngine().interpolateOnQuadraturePoints(*temperature,
+    this->getFEEngine().interpolateOnIntegrationPoints(*temperature,
 						 temperature_interpolated,
 						 1 ,*it,ghost_type);
 
@@ -604,7 +604,7 @@ void HeatTransferModel::computeKgradT(const GhostType & ghost_type,bool compute_
     if(Mesh::getSpatialDimension(*it) != spatial_dimension) continue;
 
     Array<Real> & gradient = temperature_gradient(*it, ghost_type);
-    this->getFEEngine().gradientOnQuadraturePoints(*temperature,
+    this->getFEEngine().gradientOnIntegrationPoints(*temperature,
 					      gradient,
 					      1 ,*it, ghost_type);
 
@@ -944,7 +944,7 @@ void HeatTransferModel::computeRho(Array<Real> & rho,
 
   FEEngine & fem = this->getFEEngine();
   UInt nb_element = fem.getMesh().getNbElement(type,ghost_type);
-  UInt nb_quadrature_points = fem.getNbQuadraturePoints(type, ghost_type);
+  UInt nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
 
   rho.resize(nb_element * nb_quadrature_points);
   Real * rho_1_val = rho.storage();
@@ -1023,7 +1023,7 @@ void HeatTransferModel::initFEEngineBoundary(bool create_surface) {
 
   FEEngine & fem_boundary = getFEEngineBoundary();
   fem_boundary.initShapeFunctions();
-  fem_boundary.computeNormalsOnControlPoints();
+  fem_boundary.computeNormalsOnIntegrationPoints();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1075,7 +1075,7 @@ void HeatTransferModel::getThermalEnergy(iterator Eth,
 Real HeatTransferModel::getThermalEnergy(const ElementType & type, UInt index) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_quadrature_points = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points = getFEEngine().getNbIntegrationPoints(type);
   Vector<Real> Eth_on_quarature_points(nb_quadrature_points);
 
   Array<Real>::iterator<Real> T_it  = this->temperature_on_qpoints(type).begin();
@@ -1097,7 +1097,7 @@ Real HeatTransferModel::getThermalEnergy() {
   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension);
   for(; it != last_type; ++it) {
     UInt nb_element = getFEEngine().getMesh().getNbElement(*it, _not_ghost);
-    UInt nb_quadrature_points = getFEEngine().getNbQuadraturePoints(*it, _not_ghost);
+    UInt nb_quadrature_points = getFEEngine().getNbIntegrationPoints(*it, _not_ghost);
     Array<Real> Eth_per_quad(nb_element * nb_quadrature_points, 1);
 
     Array<Real>::iterator<Real> T_it  = this->temperature_on_qpoints(*it).begin();

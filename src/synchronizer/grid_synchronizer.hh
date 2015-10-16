@@ -50,7 +50,8 @@ class GridSynchronizer : public DistributedSynchronizer {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 protected:
-  GridSynchronizer(Mesh & mesh, const ID & id = "grid_synchronizer", MemoryID memory_id = 0);
+  GridSynchronizer(Mesh & mesh, const ID & id = "grid_synchronizer", MemoryID memory_id = 0,
+		   const bool register_to_event_manager = true);
 
 public:
   virtual ~GridSynchronizer() { };
@@ -66,7 +67,7 @@ public:
 			 SynchronizerID id = "grid_synchronizer",
 			 SynchronizerRegistry * synch_registry = NULL,
 			 const std::set<SynchronizationTag> & tags_to_register = std::set<SynchronizationTag>(),
-			 MemoryID memory_id = 0);
+			 MemoryID memory_id = 0, const bool register_to_event_manager = true);
 
 
 protected:

@@ -38,7 +38,6 @@ package_declare_sources(CGAL
   geometry/mesh_geom_common.hh
 
   geometry/mesh_geom_abstract.hh
-  geometry/mesh_geom_abstract.cc
 
   geometry/mesh_geom_factory.hh
   geometry/mesh_geom_factory_tmpl.hh

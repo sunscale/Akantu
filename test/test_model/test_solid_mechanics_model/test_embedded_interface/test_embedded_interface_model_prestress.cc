@@ -54,7 +54,7 @@ struct StressSolution : public BC::Neumann::FromHigherDim {
 
   virtual ~StressSolution() {}
 
-  void operator()(const QuadraturePoint & quad_point,
+  void operator()(const IntegrationPoint & quad_point,
                           Vector<Real> & dual,
                           const Vector<Real> & coord,
                           const Vector<Real> & normals) const {

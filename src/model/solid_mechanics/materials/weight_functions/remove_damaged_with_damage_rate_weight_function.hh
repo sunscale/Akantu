@@ -45,21 +45,20 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  RemoveDamagedWithDamageRateWeightFunction(Material & material) : BaseWeightFunction(material, "remove_damage_with_damage_rate") {
+  RemoveDamagedWithDamageRateWeightFunction(NonLocalManager & manager) : BaseWeightFunction(manager, "remove_damage_with_damage_rate"),
+									 damage_with_damage_rate(NULL) {
     this->registerParam<Real>("damage_limit", this->damage_limit_with_damage_rate, 1, _pat_parsable, "Damage Threshold");
+    this->init();
   }
 
   /* -------------------------------------------------------------------------- */
   /* Base Weight Function inherited methods                                     */
   /* -------------------------------------------------------------------------- */
-  inline void selectType(__attribute__((unused)) ElementType type1,
-                         __attribute__((unused)) GhostType ghost_type1,
-                         ElementType type2,
-                         GhostType ghost_type2);
-
   inline Real operator()(Real r,
-			 const __attribute__((unused)) QuadraturePoint & q1,
-			 const QuadraturePoint & q2);
+			 const __attribute__((unused)) IntegrationPoint & q1,
+			 const IntegrationPoint & q2);
+
+  virtual inline void init();
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -69,10 +68,8 @@ private:
   Real damage_limit_with_damage_rate;
 
   /// internal pointer to the current damage vector
-  const Array<Real> * selected_damage_with_damage_rate;
+  ElementTypeMapReal * damage_with_damage_rate;
 
-  /// internal pointer to the current damage rate vector
-  const Array<Real> * selected_damage_rate_with_damage_rate;
 };
 
 #if defined (AKANTU_INCLUDE_INLINE_IMPL)

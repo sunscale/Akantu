@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
   Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
 
   UInt nb_element = my_mesh.getNbElement(type);
-  UInt nb_quadrature_points = fem->getNbQuadraturePoints(type) * nb_element;
+  UInt nb_quadrature_points = fem->getNbIntegrationPoints(type) * nb_element;
 
   Array<Real> val_on_quad(nb_quadrature_points, 2, "val_on_quad");
 
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
     const_val.storage()[i * 2 + 1] = 2.;
   }
 
-  fem->interpolateOnQuadraturePoints(const_val, val_on_quad, 2, type);
+  fem->interpolateOnIntegrationPoints(const_val, val_on_quad, 2, type);
 
   std::cout << "Interpolation of array : " << const_val << std::endl;
   std::cout << "Gives on quads : " << val_on_quad << std::endl;
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
   // interpolate coordinates
   Array<Real> coord_on_quad(nb_quadrature_points, my_mesh.getSpatialDimension(), "coord_on_quad");
 
-  fem->interpolateOnQuadraturePoints(my_mesh.getNodes(),
+  fem->interpolateOnIntegrationPoints(my_mesh.getNodes(),
 				     coord_on_quad,
 				     my_mesh.getSpatialDimension(),
 				     type);

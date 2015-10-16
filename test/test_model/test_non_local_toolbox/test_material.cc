@@ -1,9 +1,9 @@
 /**
- * @file   test_material.hh
+ * @file   test_material.cc
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @date   Wed Sep 23 17:16:30 2015
  *
- * @brief  test material for the non-local neighborhood base test
+ * @brief  Implementation of test material for the non-local neighborhood base test
  *
  * @section LICENSE
  *
@@ -34,47 +34,82 @@ __BEGIN_AKANTU__
 template<UInt dim>
 TestMaterial<dim>::TestMaterial(SolidMechanicsModel & model, const ID & id) :
   Material(model, id),
-  MaterialElastic<dim>(model, id) { }
+  MyElasticParent(model, id),
+  MyNonLocalParent(model, id),
+  grad_u_nl("grad_u non local", *this) {
+  this->is_non_local = true;
+  this->grad_u_nl.initialize(dim*dim);
+  this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), dim*dim);
+  
+ }
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-void TestMaterial<dim>::insertQuads(NonLocalNeighborhoodBase & neighborhood) {
+template<UInt spatial_dimension>
+void TestMaterial<spatial_dimension>::initMaterial() {
+  AKANTU_DEBUG_IN();
 
-  UInt spatial_dimension = this->model->getSpatialDimension();
+  this->registerNeighborhood();
+
+  MyElasticParent::initMaterial();
+  MyNonLocalParent::initMaterial();
+
+  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), "test_region");
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void TestMaterial<spatial_dimension>::insertQuadsInNeighborhoods(GhostType ghost_type) {
+
+  /// this function will add all the quadrature points to the same
+  /// default neighborhood instead of using one neighborhood per
+  /// material
+  NonLocalManager & manager = this->model->getNonLocalManager();
   InternalField<Real> quadrature_points_coordinates("quadrature_points_coordinates_tmp_nl", *this);
   quadrature_points_coordinates.initialize(spatial_dimension);
-  this->fem->computeQuadraturePointsCoordinates(quadrature_points_coordinates, &(this->element_filter));
 
-  GhostType ghost_type = _not_ghost;
-  QuadraturePoint q;
-  QuadraturePoint q_global;
+  /// intialize quadrature point object
+  IntegrationPoint q;
   q.ghost_type = ghost_type;
+  q.kind = _ek_regular;
 
-  Mesh::type_iterator it        = this->element_filter.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type = this->element_filter.lastType (spatial_dimension, ghost_type);
+  Mesh::type_iterator it = this->element_filter.firstType(spatial_dimension, ghost_type, _ek_regular);
+  Mesh::type_iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type, _ek_regular);
   for(; it != last_type; ++it) {
-    Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
-    UInt nb_element = elem_filter.getSize();
-    UInt nb_quad    = this->model->getFEEngine().getNbQuadraturePoints(*it, ghost_type);
-
-    const Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
     q.type = *it;
+    const Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
+    UInt nb_element  = elem_filter.getSize();
+    if(nb_element) {
+      UInt nb_quad = this->fem->getNbIntegrationPoints(*it, ghost_type);
+      UInt nb_tot_quad = nb_quad * nb_element;
+      
+      Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
+      quads.resize(nb_tot_quad);
 
-    Array<Real>::const_vector_iterator quad = quads.begin(spatial_dimension);
-    UInt * elem = elem_filter.storage();
+      this->model->getFEEngine().computeIntegrationPointsCoordinates(quads, *it, ghost_type, elem_filter);
+      
+      Array<Real>::const_vector_iterator quad = quads.begin(spatial_dimension);
+      UInt * elem = elem_filter.storage();
 
-    for (UInt e = 0; e < nb_element; ++e) {
-      q.element = *elem;
-      for (UInt nq = 0; nq < nb_quad; ++nq) {
-	q.num_point = nq;
-	q.global_num = q.element * nb_quad + nq;
-	q.copyPosition(*quad);
-	neighborhood.insertQuad(q, *quad);
-	++quad;
+      for (UInt e = 0; e < nb_element; ++e) {
+	q.element = *elem;
+	for (UInt nq = 0; nq < nb_quad; ++nq) {
+	  q.num_point = nq;
+	  q.global_num = q.element * nb_quad + nq;
+	  manager.insertQuad(q, *quad, "test_region");
+	  ++quad;
+	}
+	++elem;
       }
-      ++elem;
     }
   }
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void TestMaterial<spatial_dimension>::registerNeighborhood() {
+  this->model->getNonLocalManager().registerNeighborhood("test_region", "test_region");
 }
 
 /* -------------------------------------------------------------------------- */

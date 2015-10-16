@@ -231,9 +231,9 @@ enum SynchronizationTag {
   _gst_smmc_facets_conn, //< synchronization of facet global connectivity
   _gst_smmc_facets_stress, //< synchronization of facets' stress to setup facet synch
   _gst_smmc_damage,      //< synchronization of damage
-  _gst_smmi_global_conn, //< synchronization of global connectivities for igfem
+  //--- GlobalIdsUpdater tags ---
+  _gst_giu_global_conn, //< synchronization of global connectivities
   //--- CohesiveElementInserter tags ---
-  _gst_ce_inserter,      //< synchronization of global nodes id of newly inserted cohesive elements
   _gst_ce_groups,        //< synchronization of cohesive element insertion depending on facet groups
   //--- GroupManager tags ---
   _gst_gm_clusters,      //< synchronization of clusters
@@ -249,6 +249,8 @@ enum SynchronizationTag {
   //--- Material non local ---
   _gst_mnl_for_average,  //< synchronization of data to average in non local material
   _gst_mnl_weight,       //< synchronization of data for the weight computations
+  //--- NeighborhoodSynchronization tags ---
+  _gst_nh_criterion,
   //--- General tags ---
   _gst_test,             //< Test tag
   _gst_user_1,           //< tag for user simulations

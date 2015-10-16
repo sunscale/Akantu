@@ -32,42 +32,100 @@
 /* -------------------------------------------------------------------------- */
 #include "base_weight_function.hh"
 #include "non_local_neighborhood_base.hh"
+#include "parsable.hh"
 /* -------------------------------------------------------------------------- */
+
+namespace akantu {
+  class NonLocalManager;
+  class TestWeightFunction;
+}
+
 __BEGIN_AKANTU__
 
-class NonLocalNeighborhood : NonLocalNeighborhoodBase {
+
+template<class WeightFunction = BaseWeightFunction>
+class NonLocalNeighborhood : public NonLocalNeighborhoodBase {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
 
-  NonLocalNeighborhood(SolidMechanicsModel & model, Real radius, const ID & weight_type);
+  NonLocalNeighborhood(NonLocalManager & manager, 
+		       const ElementTypeMapReal & quad_coordinates,
+		       const ID & id = "neighborhood",
+		       const MemoryID & memory_id = 0);
   virtual ~NonLocalNeighborhood();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  
+
+   /// compute the weights for non-local averaging
   void computeWeights();
+  
+  /// save the pair of weights in a file
+  void saveWeights(const std::string & filename) const;
+
+  /// compute the non-local counter part for a given element type map
+  virtual void weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
+					   ElementTypeMapReal & accumulated,
+					   UInt nb_degree_of_freedom,
+					   const GhostType & ghost_type2) const;
+
+  /// update the weights based on the weight function
+  void updateWeights();
+
+  
+  /// register a new non-local variable in the neighborhood
+  virtual void registerNonLocalVariable(const ID & id);
+
+protected:
+  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
+					  SynchronizationTag tag) const;
+
+  virtual inline void packElementData(CommunicationBuffer & buffer,
+				      const Array<Element> & elements,
+				      SynchronizationTag tag) const;
+
+  virtual inline void unpackElementData(CommunicationBuffer & buffer,
+					const Array<Element> & elements,
+					SynchronizationTag tag);
+
+  /* -------------------------------------------------------------------------- */
+  /* Accessor                                                                   */
+  /* -------------------------------------------------------------------------- */
+  AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, const NonLocalManager &);
+  AKANTU_GET_MACRO_NOT_CONST(NonLocalManager, *non_local_manager, NonLocalManager &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
 
+  /// Pointer to non-local manager class
+  NonLocalManager * non_local_manager;
+
   /// the weights associated to the pairs
   Array<Real> * pair_weight[2];
 
-  /// count the number of calls of computeStress
-  UInt compute_stress_calls;
-
   /// weight function
-  BaseWeightFunction * weight_function;
+  WeightFunction * weight_function;
 
 };
 
-
 __END_AKANTU__
 
+/* -------------------------------------------------------------------------- */
+/* Implementation of template functions                                       */
+/* -------------------------------------------------------------------------- */
+#include "non_local_neighborhood_tmpl.hh"
+/* -------------------------------------------------------------------------- */
+/* inline functions                                                           */
+/* -------------------------------------------------------------------------- */
+#include "non_local_neighborhood_inline_impl.cc"
+
+
+
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_HH__ */
+

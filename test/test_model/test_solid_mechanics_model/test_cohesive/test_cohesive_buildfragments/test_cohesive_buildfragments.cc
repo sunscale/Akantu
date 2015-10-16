@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
 
   UInt cohesive_index = 1;
 
-  UInt nb_quad_per_facet = model.getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
+  UInt nb_quad_per_facet = model.getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
   MaterialCohesive & mat_cohesive
     = dynamic_cast<MaterialCohesive&>(model.getMaterial(cohesive_index));
   const Array<Real> & damage = mat_cohesive.getDamage(type_cohesive);

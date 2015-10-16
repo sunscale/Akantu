@@ -97,6 +97,7 @@ public:
   virtual void interpolateStress(__attribute__((unused)) const ElementType type,
 				 __attribute__((unused)) Array<Real> & result) { };
 
+  /// compute the stresses
   virtual void computeAllStresses(__attribute__((unused)) GhostType ghost_type = _not_ghost) { };
 
   // add the facet to be handled by the material
@@ -110,16 +111,18 @@ protected:
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
-
+  /// get the internal data for an element
   virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
 						      const ElementKind & element_kind,
 						      const ID & fe_engine_id) const;
 
+  /// compute the normal
   void computeNormal(const Array<Real> & position,
 		     Array<Real> & normal,
 		     ElementType type,
 		     GhostType ghost_type);
 
+  /// compute the opening
   void computeOpening(const Array<Real> & displacement,
 		      Array<Real> & normal,
 		      ElementType type,

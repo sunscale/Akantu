@@ -50,10 +50,10 @@ inline UInt MaterialCohesive::getNbDataForElements(const Array<Element> & elemen
 
   switch (tag) {
   case _gst_smm_stress: {
-    return 2 * spatial_dimension * sizeof(Real) * this->getModel().getNbQuadraturePoints(elements, "CohesiveFEEngine");
+    return 2 * spatial_dimension * sizeof(Real) * this->getModel().getNbIntegrationPoints(elements, "CohesiveFEEngine");
   }
   case _gst_smmc_damage: {
-    return sizeof(Real) * this->getModel().getNbQuadraturePoints(elements, "CohesiveFEEngine");
+    return sizeof(Real) * this->getModel().getNbIntegrationPoints(elements, "CohesiveFEEngine");
   }
   default: {}
   }

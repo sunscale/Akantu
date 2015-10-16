@@ -39,12 +39,11 @@
 __BEGIN_AKANTU__
 
 template<UInt spatial_dimension,
-         class MaterialDamageLocal,
-	 class WeightFunction = BaseWeightFunction>
+         class MaterialDamageLocal>
 class MaterialDamageNonLocal : public MaterialDamageLocal,
-			       public MaterialNonLocal<spatial_dimension, WeightFunction> {
+			       public MaterialNonLocal<spatial_dimension> {
 public:
-  typedef MaterialNonLocal<spatial_dimension, WeightFunction> MaterialNonLocalParent;
+  typedef MaterialNonLocal<spatial_dimension> MaterialNonLocalParent;
   typedef MaterialDamageLocal MaterialDamageParent;
 
   MaterialDamageNonLocal(SolidMechanicsModel & model, const ID & id)  :

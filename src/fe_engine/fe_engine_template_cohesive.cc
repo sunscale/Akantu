@@ -49,7 +49,7 @@ Real FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>::integrate(c
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if(filter_elements != empty_filter) nb_element = filter_elements.getSize();
 
-  UInt nb_quadrature_points  = getNbQuadraturePoints(type);
+  UInt nb_quadrature_points  = getNbIntegrationPoints(type);
 
   AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
 		      "The vector f(" << f.getID()
@@ -87,7 +87,7 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if(filter_elements == filter_elements) nb_element = filter_elements.getSize();
 
-  UInt nb_quadrature_points  = getNbQuadraturePoints(type);
+  UInt nb_quadrature_points  = getNbIntegrationPoints(type);
 
   AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
 		      "The vector f(" << f.getID() << " size " << f.getSize()
@@ -117,7 +117,7 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>
 /* -------------------------------------------------------------------------- */
 template <>
 void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>::
-gradientOnQuadraturePoints(__attribute__((unused)) const Array<Real> &u,
+gradientOnIntegrationPoints(__attribute__((unused)) const Array<Real> &u,
 			   __attribute__((unused)) Array<Real> &nablauq,
 			   __attribute__((unused)) const UInt nb_degree_of_freedom,
 			   __attribute__((unused)) const ElementType & type,
@@ -131,7 +131,7 @@ gradientOnQuadraturePoints(__attribute__((unused)) const Array<Real> &u,
 template<>
 template<>
 void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>::
-computeNormalsOnControlPoints<_cohesive_1d_2>(__attribute__((unused)) const Array<Real> & field,
+computeNormalsOnIntegrationPoints<_cohesive_1d_2>(__attribute__((unused)) const Array<Real> & field,
 					      Array<Real> & normal,
 					      const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();

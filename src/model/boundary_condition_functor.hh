@@ -145,7 +145,7 @@ namespace BC {
     protected:
       NeumannFunctor() {}
     public:
-      virtual void operator()(const QuadraturePoint & quad_point,
+      virtual void operator()(const IntegrationPoint & quad_point,
 			     Vector<Real> & dual,
 			     const Vector<Real> & coord,
 			     const Vector<Real> & normals) const = 0;
@@ -162,7 +162,7 @@ namespace BC {
       virtual ~FromHigherDim(){}
 
     public:
-      inline void operator()(const QuadraturePoint & quad_point,
+      inline void operator()(const IntegrationPoint & quad_point,
 			     Vector<Real> & dual,
 			     const Vector<Real> & coord,
 			     const Vector<Real> & normals) const;
@@ -178,7 +178,7 @@ namespace BC {
       virtual ~FromSameDim(){}
 
     public:
-      inline void operator()(const QuadraturePoint & quad_point,
+      inline void operator()(const IntegrationPoint & quad_point,
 			     Vector<Real> & dual,
 			     const Vector<Real> & coord,
 			     const Vector<Real> & normals) const;
@@ -192,7 +192,7 @@ namespace BC {
     /* ---------------------------------------------------------------------- */
     class FreeBoundary : public NeumannFunctor {
     public:
-      inline void operator()(const QuadraturePoint & quad_point,
+      inline void operator()(const IntegrationPoint & quad_point,
 			     Vector<Real> & dual,
 			     const Vector<Real> & coord,
 			     const Vector<Real> & normals) const;

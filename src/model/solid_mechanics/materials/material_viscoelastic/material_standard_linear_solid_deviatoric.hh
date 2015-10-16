@@ -81,11 +81,14 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
+  
+  /// initialize the material computed parameter
   void initMaterial();
-
+  
+  /// update the internal parameters (for modifiable parameters)
   virtual void updateInternalParameters();
 
+  /// set material to steady state
   void setToSteadyState(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   /// constitutive law for all element of a type
@@ -105,6 +108,7 @@ public:
   Real getDissipatedEnergy() const;
   Real getDissipatedEnergy(ElementType type, UInt index) const;
 
+  /// get the energy using an energy type string for the time step
   virtual Real getEnergy(std::string type);
   virtual Real getEnergy(std::string energy_id, ElementType type, UInt index);
   /* ------------------------------------------------------------------------ */

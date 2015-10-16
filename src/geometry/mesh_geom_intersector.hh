@@ -49,16 +49,14 @@ class MeshGeomIntersector : public MeshAbstractIntersector<Query> {
 
 public:
   /// Construct from mesh
-  explicit MeshGeomIntersector(Mesh & mesh,
-			       const ID & id = "mesh_geometry_intersector",
-			       const MemoryID & memory_id = 0);
+  explicit MeshGeomIntersector(Mesh & mesh);
 
   /// Destructor
   virtual ~MeshGeomIntersector();
 
 public:
   /// Construct the primitive tree object
-  virtual void constructData();
+  virtual void constructData(GhostType ghost_type = _not_ghost);
 
 protected:
   /// Factory object containing the primitive tree
