@@ -55,8 +55,8 @@ void MaterialDamageIterative<spatial_dimension>::computeNormalizedEquivalentStre
   /// Vector to store eigenvalues of current stress tensor
   Vector<Real> eigenvalues(spatial_dimension);
 
-  Array<Real>::const_iterator<Real> Sc_it = Sc(el_type).begin();
-  Array<Real>::iterator<Real> equivalent_stress_it = equivalent_stress(el_type).begin();
+  Array<Real>::const_iterator<Real> Sc_it = Sc(el_type, ghost_type).begin();
+  Array<Real>::iterator<Real> equivalent_stress_it = equivalent_stress(el_type, ghost_type).begin();
 
   Array<Real>::const_matrix_iterator grad_u_it = grad_u.begin(spatial_dimension,
                                                               spatial_dimension);
