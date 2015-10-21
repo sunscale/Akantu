@@ -58,7 +58,7 @@ public:
 public:
   
   /// initialize the non-local manager: compute pair lists and weights for all neighborhoods
-  void init();
+  virtual void init();
 
   /// insert new quadrature point in the grid
   inline void insertQuad(const IntegrationPoint & quad, const Vector<Real> & coords, const ID & neighborhood);
@@ -90,11 +90,8 @@ public:
   /// average the non-local variables
   void averageInternals(const GhostType & ghost_type = _not_ghost);
 
-  /// average the non-local variables
-  //void testo(const GhostType & ghost_type = _not_ghost);
-
   /// average the internals and compute the non-local stresses 
-  void computeAllNonLocalStresses();
+  virtual void computeAllNonLocalStresses();
 
   /// register a new internal needed for the weight computations
   inline ElementTypeMapReal & registerWeightFunctionInternal(const ID & field_name);
@@ -123,7 +120,7 @@ public:
   
   virtual void onElementsAdded(const Array<Element> & element_list,
 			       const NewElementsEvent & event);
-private:
+protected:
 
   /// create a new neighborhood for a given domain ID
   void createNeighborhood(const ID & weight_func, const ID & neighborhood);
@@ -137,13 +134,17 @@ private:
   void setJacobians(const FEEngine & fe_engine, const ElementKind & kind);
 
   /// allocation of eelment type maps
-  void initElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map);
+  void initElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map, 
+			  const FEEngine & fe_engine, const ElementKind el_kind = _ek_regular);
 
   /// resizing of element type maps
-  void resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map);
+  void resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map,
+			    const ElementKind el_kind = _ek_regular);
 
   /// remove integration points from element type maps
-  void removeIntegrationPointsFromMap(const ElementTypeMapArray<UInt> & new_numbering, UInt nb_component, ElementTypeMapReal & element_map);
+  void removeIntegrationPointsFromMap(const ElementTypeMapArray<UInt> & new_numbering, UInt nb_component, 
+				      ElementTypeMapReal & element_map, const FEEngine & fee,
+				      const ElementKind el_kind = _ek_regular);
   
   /// allocate the non-local variables
   void initNonLocalVariables();
@@ -171,7 +172,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
+protected:
 
   /// the non-local neighborhoods present
   NeighborhoodMap neighborhoods;

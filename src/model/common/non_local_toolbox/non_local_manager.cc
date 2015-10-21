@@ -223,8 +223,9 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
   std::set<ID>::const_iterator global_neighborhoods_it = global_neighborhoods.begin();
   for (; global_neighborhoods_it != global_neighborhoods.end(); ++global_neighborhoods_it) {
     it = neighborhoods.find(*global_neighborhoods_it);
-    if (it != neighborhoods.end())
+    if (it != neighborhoods.end()) {
       it->second->createGridSynchronizer();
+    }
     else {
       ID neighborhood_name = *global_neighborhoods_it;
       std::stringstream sstr; sstr << getID() << ":" << neighborhood_name << ":grid_synchronizer";
@@ -318,11 +319,12 @@ void NonLocalManager::init(){
 
   }
 
+  FEEngine & fee = this->model.getFEEngine();
   this->updatePairLists();
   /// cleanup the unneccessary ghost elements
   this->cleanupExtraGhostElements(nb_ghost_protected);
-  this->initElementTypeMap(1, volumes);
-  this->setJacobians(this->model.getFEEngine(), _ek_regular);
+  this->initElementTypeMap(1, volumes, fee);
+  this->setJacobians(fee, _ek_regular);
   this->initNonLocalVariables();
   this->computeWeights();
 }
@@ -335,22 +337,23 @@ void NonLocalManager::initNonLocalVariables(){
 
   for(; non_local_variable_it != non_local_variable_end; ++non_local_variable_it) {
     NonLocalVariable & variable = *(non_local_variable_it->second);
-    this->initElementTypeMap(variable.nb_component, variable.non_local);      
+    this->initElementTypeMap(variable.nb_component, variable.non_local, this->model.getFEEngine());      
   }
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLocalManager::initElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map) {
+void NonLocalManager::initElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map, 
+					 const FEEngine & fee, const ElementKind el_kind) {
   Mesh & mesh = this->model.getMesh();
   /// need to resize the arrays
   for(UInt g = _not_ghost; g <= _ghost; ++g) {
     GhostType gt = (GhostType) g;
-    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, gt, _ek_regular);
-    Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, _ek_regular);
+    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, gt, el_kind);
+    Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, el_kind);
     for(; it != end; ++it) {
       ElementType el_type = *it;
       UInt nb_element = mesh.getNbElement(*it, gt);
-      UInt nb_quads = this->model.getFEEngine().getNbIntegrationPoints(*it, gt);
+      UInt nb_quads = fee.getNbIntegrationPoints(*it, gt);
       if (!element_map.exists(el_type, gt)) {
 	element_map.alloc(nb_element * nb_quads,
 			  nb_component,
@@ -406,16 +409,23 @@ void NonLocalManager::computeAllNonLocalStresses() {
   }
 
   this->volumes.clear();  
-  /// loop over all the neighborhoods and compute intiate the
+  ///loop over all the neighborhoods and compute intiate the
   /// exchange of the non-local_variables
-  std::set<ID>::const_iterator global_neighborhood_it = global_neighborhoods.begin();
-  NeighborhoodMap::iterator it;
-  for(; global_neighborhood_it != global_neighborhoods.end(); ++global_neighborhood_it) {
-    it = neighborhoods.find(*global_neighborhood_it);
-    if (it != neighborhoods.end())
-      it->second->getSynchronizerRegistry().asynchronousSynchronize(_gst_mnl_for_average);
-      else
-	dummy_synchronizers[*global_neighborhood_it]->asynchronousSynchronize(dummy_accessor, _gst_mnl_for_average);
+  // std::set<ID>::const_iterator global_neighborhood_it = global_neighborhoods.begin();
+  // NeighborhoodMap::iterator it;
+  // for(; global_neighborhood_it != global_neighborhoods.end(); ++global_neighborhood_it) {
+  //   it = neighborhoods.find(*global_neighborhood_it);
+  //   if (it != neighborhoods.end())
+  //     it->second->getSynchronizerRegistry().asynchronousSynchronize(_gst_mnl_for_average);
+  //     else
+  // 	dummy_synchronizers[*global_neighborhood_it]->asynchronousSynchronize(dummy_accessor, _gst_mnl_for_average);
+  // }
+
+  NeighborhoodMap::iterator neighborhood_it = neighborhoods.begin();
+  NeighborhoodMap::iterator neighborhood_end = neighborhoods.end();
+
+  for(; neighborhood_it != neighborhoods.end(); ++neighborhood_it) {
+    neighborhood_it->second->getSynchronizerRegistry().asynchronousSynchronize(_gst_mnl_for_average);
   }
 
   this->averageInternals(_not_ghost);
@@ -424,14 +434,18 @@ void NonLocalManager::computeAllNonLocalStresses() {
 
   /// loop over all the neighborhoods and block until all non-local
   /// variables have been exchanged
-  global_neighborhood_it = global_neighborhoods.begin();
-  it = neighborhoods.begin();
-  for(; global_neighborhood_it != global_neighborhoods.end(); ++global_neighborhood_it) {
-    it = neighborhoods.find(*global_neighborhood_it);
-    if (it != neighborhoods.end())
-      it->second->getSynchronizerRegistry().waitEndSynchronize(_gst_mnl_for_average);
-    else
-      dummy_synchronizers[*global_neighborhood_it]->waitEndSynchronize(dummy_accessor, _gst_mnl_for_average);
+  // global_neighborhood_it = global_neighborhoods.begin();
+  // for(; global_neighborhood_it != global_neighborhoods.end(); ++global_neighborhood_it) {
+  //   it = neighborhoods.find(*global_neighborhood_it);
+  //   if (it != neighborhoods.end())
+  //     it->second->getSynchronizerRegistry().waitEndSynchronize(_gst_mnl_for_average);
+  //   else
+  //     dummy_synchronizers[*global_neighborhood_it]->waitEndSynchronize(dummy_accessor, _gst_mnl_for_average);
+  // }
+
+  neighborhood_it = neighborhoods.begin();
+  for(; neighborhood_it != neighborhoods.end(); ++neighborhood_it) {
+    neighborhood_it->second->getSynchronizerRegistry().waitEndSynchronize(_gst_mnl_for_average);
   }
 
 
@@ -533,8 +547,9 @@ void NonLocalManager::onElementsRemoved(const Array<Element> & element_list,
 					const ElementTypeMapArray<UInt> & new_numbering,
 					__attribute__((unused)) const RemovedElementsEvent & event) {
   
-  this->removeIntegrationPointsFromMap(event.getNewNumbering(), spatial_dimension, quad_positions);
-  this->removeIntegrationPointsFromMap(event.getNewNumbering(), 1, volumes);
+  FEEngine & fee = this->model.getFEEngine();
+  this->removeIntegrationPointsFromMap(event.getNewNumbering(), spatial_dimension, quad_positions, fee, _ek_regular);
+  this->removeIntegrationPointsFromMap(event.getNewNumbering(), 1, volumes, fee, _ek_regular);
 
   /// loop over all the neighborhoods and call onElementsRemoved
   std::set<ID>::const_iterator global_neighborhood_it = global_neighborhoods.begin();
@@ -557,12 +572,13 @@ void NonLocalManager::onElementsAdded(__attribute__((unused)) const Array<Elemen
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLocalManager::resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map) {
+void NonLocalManager::resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map,
+					   const ElementKind el_kind) {
   Mesh & mesh = this->model.getMesh();
   for(UInt g = _not_ghost; g <= _ghost; ++g) {
     GhostType gt = (GhostType) g;
-    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, gt, _ek_not_defined);
-    Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, _ek_not_defined);
+    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, gt, el_kind);
+    Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, el_kind);
     for(; it != end; ++it) {
       UInt nb_element = mesh.getNbElement(*it, gt);
       if(!element_map.exists(*it, gt)) 
@@ -574,12 +590,14 @@ void NonLocalManager::resizeElementTypeMap(UInt nb_component, ElementTypeMapReal
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLocalManager::removeIntegrationPointsFromMap(const ElementTypeMapArray<UInt> & new_numbering, UInt nb_component, ElementTypeMapReal & element_map) {
+void NonLocalManager::removeIntegrationPointsFromMap(const ElementTypeMapArray<UInt> & new_numbering, 
+						     UInt nb_component, ElementTypeMapReal & element_map, 
+						     const FEEngine & fee, const ElementKind el_kind) {
 
   for(UInt g = _not_ghost; g <= _ghost; ++g) {
     GhostType gt = (GhostType) g;
-    ElementTypeMapArray<UInt>::type_iterator it  = new_numbering.firstType(_all_dimensions, gt, _ek_not_defined);
-    ElementTypeMapArray<UInt>::type_iterator end = new_numbering.lastType(_all_dimensions, gt, _ek_not_defined);
+    ElementTypeMapArray<UInt>::type_iterator it  = new_numbering.firstType(_all_dimensions, gt, el_kind);
+    ElementTypeMapArray<UInt>::type_iterator end = new_numbering.lastType(_all_dimensions, gt, el_kind);
     for (; it != end; ++it) {
       ElementType type = *it;
       if(element_map.exists(type, gt)){
@@ -587,7 +605,7 @@ void NonLocalManager::removeIntegrationPointsFromMap(const ElementTypeMapArray<U
 
 	Array<Real> & vect = element_map(type, gt);
 
-	UInt nb_quad_per_elem = this->model.getFEEngine().getNbIntegrationPoints(type, gt);
+	UInt nb_quad_per_elem = fee.getNbIntegrationPoints(type, gt);
 
 	Array<Real> tmp(renumbering.getSize()*nb_quad_per_elem, nb_component);
 

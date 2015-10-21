@@ -66,13 +66,18 @@ int main(int argc, char *argv[]) {
   /// dump the ghost elements before the non-local part is intialized
   DumperParaview dumper_ghost("ghost_elements");
   dumper_ghost.registerMesh(mesh, spatial_dimension, _ghost);
-  if(psize > 1)
+  if(psize > 1) {              
     dumper_ghost.dump();
+  }
 
   /// creation of material selector
   MeshDataMaterialSelector<std::string> * mat_selector;
   mat_selector = new MeshDataMaterialSelector<std::string>("physical_names", model);
   model.setMaterialSelector(*mat_selector);
+
+  /// dump material index in paraview
+  model.addDumpField("partitions");
+  model.dump();
 
   /// model initialization changed to use our material
   model.initFull(SolidMechanicsModelOptions(_static, true));
@@ -82,12 +87,9 @@ int main(int argc, char *argv[]) {
   if(psize > 1)
     dumper_ghost.dump();
 
-  /// dump material index in paraview
-  model.addDumpField("material_index");
-  model.addDumpField("partitions");
   model.addDumpField("grad_u");
   model.addDumpField("grad_u non local");
-  model.dump();
+  model.addDumpField("material_index");
 
  /// apply constant strain field everywhere in the plate
   Matrix<Real> applied_strain(spatial_dimension, spatial_dimension);
@@ -117,7 +119,7 @@ int main(int argc, char *argv[]) {
   model.dump();
 
 
-  // /// print results to screen for validation
+  /// print results to screen for validation
   // std::ifstream quad_pairs;
   // quad_pairs.open("quadrature_pairs.0");
   // std::string current_line;
