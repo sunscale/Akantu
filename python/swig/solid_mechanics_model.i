@@ -58,10 +58,16 @@ print_self(SolidMechanicsModel)
 
 %include "solid_mechanics_model.hh"
 
-%template(testConvergenceResidual) akantu::SolidMechanicsModel::testConvergence<akantu::SolveConvergenceCriteria::_scc_residual>;
-
 %extend akantu::SolidMechanicsModel {
   
+
+  bool testConvergenceSccRes(Real tolerance) {
+
+    Real error = 0;
+    bool res = self->testConvergence<akantu::SolveConvergenceCriteria::_scc_residual>(tolerance,error);
+    return res;
+  }
+
   void solveStaticDisplacement(Real tolerance, UInt max_iteration) {
 
     $self->solveStatic<akantu::SolveConvergenceMethod::_scm_newton_raphson_tangent_not_computed, akantu::SolveConvergenceCriteria::_scc_residual>(tolerance, max_iteration);
