@@ -8,7 +8,7 @@
  * @date creation: Wed Jan 16 2013
  * @date last modification: Fri Jul 04 2014
  *
- * @brief  Specialization for structural elements
+ * @brief  Specialization of the element classes for structural elements
  *
  * @section LICENSE
  *
@@ -93,6 +93,8 @@ protected:
   static const UInt nb_shape_derivatives;
 };
 
+
+/// Macro to generate the element class structures for different structural element types
 /* -------------------------------------------------------------------------- */
 #define AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(elem_type,	\
 							geom_type,	\
@@ -115,6 +117,8 @@ protected:
 
 
 /* -------------------------------------------------------------------------- */
+/* ElementClass for structural elements                                       */
+/* -------------------------------------------------------------------------- */
 template<ElementType element_type>
 class ElementClass<element_type, _ek_structural> :
   public GeometricalElement<ElementClassProperty<element_type>::geometrical_type>,
@@ -132,7 +136,7 @@ public:
     UInt nb_points = natural_coord.cols();
 
     if (element_type ==_kirchhoff_shell) {
-      /// TO BE CONTINUED
+      /// TO BE CONTINUED and moved in a _tmpl.hh
 
       UInt spatial_dimension = real_nodal_coord.cols();
       UInt nb_nodes = real_nodal_coord.rows();
