@@ -1,11 +1,11 @@
 /**
- * @file   non_linear_solver.cc
+ * @file   integration_scheme.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Tue Oct 13 15:34:43 2015
+ * @date   Fri Oct 23 15:33:36 2015
  *
- * @brief  Implementation of the base class NonLinearSolver
+ * @brief  Common interface to all interface schemes
  *
  * @section LICENSE
  *
@@ -28,22 +28,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "non_linear_solver.hh"
+#include "integration_scheme.hh"
+#include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-/* -------------------------------------------------------------------------- */
-NonLinearSolver::NonLinearSolver(
-    DOFManager & dof_manager,
-    const NonLinearSolverType & non_linear_solver_type, const ID & id,
-    UInt memory_id)
-    : Memory(id, memory_id), _dof_manager(dof_manager),
-      non_linear_solver_type(non_linear_solver_type) {}
-
-/* -------------------------------------------------------------------------- */
-NonLinearSolver::~NonLinearSolver() {}
-
-/* -------------------------------------------------------------------------- */
+IntegrationScheme::IntegrationScheme(DOFManager & dof_manager, UInt order)
+    : dof_manager(dof_manager), order(order) {}
 
 __END_AKANTU__

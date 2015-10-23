@@ -126,7 +126,7 @@ public:
   /*------------------------------------------------------------------------- */
   /// Get an instance of a time step solver
   virtual TimeStepSolver &
-  getNewTimeStepSolver(const ID & time_step_solver, const ID & dof_id,
+  getNewTimeStepSolver(const ID & time_step_solver,
                        const TimeStepSolverType & time_step_solver_type);
 
   /* ------------------------------------------------------------------------ */
@@ -136,6 +136,7 @@ public:
   AKANTU_GET_MACRO_NOT_CONST(Residual, residual, Array<Real> &);
   /// Get the blocked dofs array
   AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
+  /// Get the location type of a given dof
   bool isLocalOrMasterDOF(UInt dof_num);
 
   /* ------------------------------------------------------------------------ */

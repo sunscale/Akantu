@@ -182,13 +182,13 @@ SparseMatrixAIJ & DOFManagerDefault::getMatrix(const ID & matrix_id) {
 
 /* -------------------------------------------------------------------------- */
 TimeStepSolver & DOFManagerDefault::getNewTimeStepSolver(
-    const ID & dof_id, const ID & time_step_solver_id,
+    const ID & time_step_solver_id,
     const TimeStepSolverType & time_step_solver_type) {
   std::stringstream sstr;
   sstr << this->id << ":" << time_step_solver_id;
 
-  TimeStepSolver * tss = new TimeStepSolverDefault(
-      *this, dof_id, time_step_solver_type, sstr.str(), this->memory_id);
+  TimeStepSolver * tss = new TimeStepSolverDefault(*this, time_step_solver_type,
+                                                   sstr.str(), this->memory_id);
 
   this->registerTimeStepSolver(time_step_solver_id, *tss);
 

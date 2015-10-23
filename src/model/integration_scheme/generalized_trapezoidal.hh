@@ -75,40 +75,37 @@ class GeneralizedTrapezoidal : public IntegrationScheme1stOrder {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  GeneralizedTrapezoidal(Real alpha) : alpha(alpha){};
+  GeneralizedTrapezoidal(DOFManager & dof_manager, Real alpha) : IntegrationScheme1stOrder(dof_manager), alpha(alpha){};
   virtual ~GeneralizedTrapezoidal(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void integrationSchemePred(Real delta_t, Array<Real> & u,
-                                     Array<Real> & u_dot,
-                                     const Array<bool> & blocked_dofs) const;
+  virtual void predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                         const Array<bool> & blocked_dofs) const;
 
-  virtual void integrationSchemeCorrTemp(Real delta_t, Array<Real> & u,
-                                         Array<Real> & u_dot,
-                                         const Array<bool> & blocked_dofs,
-                                         const Array<Real> & delta) const;
+  virtual void corrector(const SolutionType & type, Real delta_t,
+                         Array<Real> & u, Array<Real> & u_dot,
+                         const Array<bool> & blocked_dofs,
+                         const Array<Real> & delta) const;
 
-  virtual void integrationSchemeCorrTempRate(Real delta_t, Array<Real> & u,
-                                             Array<Real> & u_dot,
-                                             const Array<bool> & blocked_dofs,
-                                             const Array<Real> & delta) const;
+  virtual void assembleJacobian(const SolutionType & type,
+                                Real time_step);
 
 public:
   /// the coeffichent @f{b@f} in the description
-  template <IntegrationSchemeCorrectorType type>
-  Real getTemperatureCoefficient(Real delta_t) const;
+  Real getTemperatureCoefficient(const SolutionType & type, Real delta_t) const;
 
   /// the coeffichent @f{a@f} in the description
-  template <IntegrationSchemeCorrectorType type>
-  Real getTemperatureRateCoefficient(Real delta_t) const;
+  Real getTemperatureRateCoefficient(const SolutionType & type,
+                                     Real delta_t) const;
 
 private:
-  template <IntegrationSchemeCorrectorType type>
-  void integrationSchemeCorr(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
-                             const Array<bool> & blocked_dofs, const Array<Real> & delta) const;
+  template <SolutionType type>
+  void allCorrector(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                    const Array<bool> & blocked_dofs,
+                    const Array<Real> & delta) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -125,19 +122,14 @@ private:
 };
 
 /* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
-#include "generalized_trapezoidal_inline_impl.cc"
-#endif
 
 /**
  * Forward Euler (explicit) -> condition on delta_t
  */
 class ForwardEuler : public GeneralizedTrapezoidal {
 public:
-  ForwardEuler() : GeneralizedTrapezoidal(0.){};
+  ForwardEuler(DOFManager & dof_manager) : GeneralizedTrapezoidal(dof_manager, 0.){};
 };
 
 /**
@@ -145,7 +137,7 @@ public:
  */
 class TrapezoidalRule1 : public GeneralizedTrapezoidal {
 public:
-  TrapezoidalRule1() : GeneralizedTrapezoidal(.5){};
+  TrapezoidalRule1(DOFManager & dof_manager) : GeneralizedTrapezoidal(dof_manager, .5){};
 };
 
 /**
@@ -153,8 +145,10 @@ public:
  */
 class BackwardEuler : public GeneralizedTrapezoidal {
 public:
-  BackwardEuler() : GeneralizedTrapezoidal(1.){};
+  BackwardEuler(DOFManager & dof_manager) : GeneralizedTrapezoidal(dof_manager, 1.){};
 };
+
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__
 

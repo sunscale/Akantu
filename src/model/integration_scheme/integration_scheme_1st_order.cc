@@ -1,11 +1,12 @@
 /**
- * @file   non_linear_solver.cc
+ * @file   integration_scheme_1st_order.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Tue Oct 13 15:34:43 2015
+ * @date   Fri Oct 23 12:31:32 2015
  *
- * @brief  Implementation of the base class NonLinearSolver
+ * @brief  Implementation of the common functions for 1st order time
+ *integrations
  *
  * @section LICENSE
  *
@@ -28,21 +29,40 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "non_linear_solver.hh"
+#include "integration_scheme_1st_order.hh"
+#include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolver::NonLinearSolver(
-    DOFManager & dof_manager,
-    const NonLinearSolverType & non_linear_solver_type, const ID & id,
-    UInt memory_id)
-    : Memory(id, memory_id), _dof_manager(dof_manager),
-      non_linear_solver_type(non_linear_solver_type) {}
+void IntegrationScheme1stOrder::predictor(const ID & dof_id, Real delta_t) {
+  AKANTU_DEBUG_IN();
+
+  Array<Real> & u = this->dof_manager.getDOFs(dof_id);
+  Array<Real> & u_dot = this->dof_manager.getDOFsDerivatives(dof_id, 1);
+  const Array<bool> & blocked_dofs = this->dof_manager.getBlockedDOFs(dof_id);
+
+  this->predictor(delta_t, u, u_dot, blocked_dofs);
+
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolver::~NonLinearSolver() {}
+void IntegrationScheme1stOrder::corrector(const SolutionType & type,
+                                          const ID & dof_id, Real delta_t) {
+  AKANTU_DEBUG_IN();
+
+  Array<Real> & u = this->dof_manager.getDOFs(dof_id);
+  Array<Real> & u_dot = this->dof_manager.getDOFsDerivatives(dof_id, 1);
+
+  const Array<Real> & solution = this->dof_manager.getSolution(dof_id);
+  const Array<bool> & blocked_dofs = this->dof_manager.getBlockedDOFs(dof_id);
+
+  this->corrector(type, delta_t, u, u_dot, blocked_dofs, solution);
+
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 

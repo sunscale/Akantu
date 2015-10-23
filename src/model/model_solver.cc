@@ -59,7 +59,8 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id, UInt memory_id)
 
   if (solver_type == "petsc") {
 #if defined(AKANTU_USE_PETSC)
-    this->dof_manager = new DOFManagerPETSc(mesh, id + ":dof_manager_petsc", memory_id);
+    this->dof_manager =
+        new DOFManagerPETSc(mesh, id + ":dof_manager_petsc", memory_id);
 #else
     AKANTU_EXCEPTION(
         "To use PETSc you have to activate it in the compilations options");
@@ -81,11 +82,63 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id, UInt memory_id)
 }
 
 /* -------------------------------------------------------------------------- */
+void ModelSolver::solveStep() {
+  AKANTU_DEBUG_IN();
+
+  this->solveStep(this->default_time_step_solver_id,
+                  this->default_non_linear_solver_id);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void ModelSolver::solveStep(const ID & time_step_solver_id,
+                            const ID & non_linear_solver_id) {
+  AKANTU_DEBUG_IN();
+
+  std::set<ID>::const_iterator tss_it =
+      time_step_solvers.find(time_step_solver_id);
+  if (tss_it == time_step_solvers.end()) {
+    AKANTU_EXCEPTION("No time step solver was instantiated with this id");
+  }
+
+  std::set<ID>::const_iterator nls_it =
+      time_step_solvers.find(time_step_solver_id);
+  if (tss_it == time_step_solvers.end()) {
+    AKANTU_EXCEPTION("No non linear solver was instantiated with this id");
+  }
+
+  NonLinearSolver & nls =
+      this->dof_manager->getNonLinearSolver(non_linear_solver_id);
+  TimeStepSolver & tss =
+      this->dof_manager->getTimeStepSolver(time_step_solver_id);
+
+  NonLinearSolverCallback & previous_nls_callback = nls.getCallbacks();
+  NonLinearSolverCallback & previous_tss_callback = nls.getCallbacks();
+
+  // set the callbacks of the time step solver to the current model
+  // solver
+  tss.registerCallback(*this);
+
+  // set the callbacks of the non linear solver to the chosen time step solver
+  nls.registerCallback(tss);
+
+  // make one non linear solve
+  nls.solve();
+
+  /// restores the callbacks
+  nls.registerCallback(previous_nls_callback);
+  tss.registerCallback(previous_tss_callback);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 void ModelSolver::initTimeStepSolver(
     const ID & time_step_solver_id, const ID & dof_id,
     const TimeStepSolverType & time_step_solver_type) {
-  if(this->default_time_step_solver == "") {
-    this->default_time_step_solver = time_step_solver_id;
+  if (this->default_time_step_solver_id == "") {
+    this->default_time_step_solver_id = time_step_solver_id;
   }
 
   this->dof_manager->getNewTimeStepSolver(time_step_solver_id, dof_id,

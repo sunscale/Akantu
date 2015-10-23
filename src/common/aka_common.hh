@@ -137,15 +137,17 @@ enum NonLinearSolverType {
 
 /// Type of time stepping solver
 enum TimeStepSolverType {
-  _tsst_forward_euler,       ///< GeneralizedTrapezoidal(0)
-  _tsst_trapezoidal_rule_1,  ///< GeneralizedTrapezoidal(1/2)
-  _tsst_backward_euler,      ///< GeneralizedTrapezoidal(1)
-  _tsst_central_difference,  ///< NewmarkBeta(0, 1/2)
-  _tsst_fox_goodwin,         ///< NewmarkBeta(1/6, 1/2)
-  _tsst_trapezoidal_rule_2,  ///< NewmarkBeta(1/2, 1/2)
-  _tsst_linear_acceleration, ///< NewmarkBeta(1/3, 1/2)
-  _tsst_newmark_beta,        ///< generic NewmarkBeta with user defined
-                             /// alpha and beta
+  _tsst_forward_euler,        ///< GeneralizedTrapezoidal(0)
+  _tsst_forward_euler_lumped, ///< GeneralizedTrapezoidal(0) with lumped capacity
+  _tsst_trapezoidal_rule_1,   ///< GeneralizedTrapezoidal(1/2)
+  _tsst_backward_euler,       ///< GeneralizedTrapezoidal(1)
+  _tsst_central_difference,   ///< NewmarkBeta(0, 1/2)
+  _tsst_central_difference_lumped, ///< NewmarkBeta(0, 1/2) with lumped mass
+  _tsst_fox_goodwin,          ///< NewmarkBeta(1/6, 1/2)
+  _tsst_trapezoidal_rule_2,   ///< NewmarkBeta(1/2, 1/2)
+  _tsst_linear_acceleration,  ///< NewmarkBeta(1/3, 1/2)
+  _tsst_newmark_beta,         ///< generic NewmarkBeta with user defined
+                              /// alpha and beta
   _tsst_generalized_trapezoidal, ///< generic GeneralizedTrapezoidal with user
                                  ///defined alpha
 };

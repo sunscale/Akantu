@@ -60,18 +60,13 @@ public:
   /// the dof manager
   virtual void solve() = 0;
 
+  /// register a callback object for a given dof_id
+  virtual void registerCallback(NonLinearSolverCallback & callbacks);
+
+  /// register a callback object for a given dof_id
+  virtual NonLinearSolverCallback & getCallbacks();
+
 protected:
-  /// call all the registered predictors
-  virtual void callbackPredictors();
-
-  /// call all the registered correctors
-  virtual void callbackCorrectors();
-
-  /// call all the registered predictors
-  virtual void callbackAssembleJacobian();
-
-  /// call all the registered predictors
-  virtual void callbackAssembleResidual();
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -83,12 +78,13 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-protected:
-  typedef std::map<ID, NonLinearSolverCallback *> NonLinearSolverCallbackMap;
+private:
+  DOFManager & _dof_manager;
 
+protected:
   /// Set of callbacks to use in the solver for jacobian assembly, residual
   /// assembly, corrector & predictor if needed
-  NonLinearSolverCallbackMap solver_callbacks;
+  NonLinearSolverCallback * solver_callback;
 
   /// type of non linear solver
   NonLinearSolverType non_linear_solver_type;

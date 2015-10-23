@@ -30,15 +30,16 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_array.hh"
+#include "integration_scheme.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_INTEGRATION_SCHEME_2ND_ORDER_HH__
 #define __AKANTU_INTEGRATION_SCHEME_2ND_ORDER_HH__
 
-/* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "aka_array.hh"
-#include "integration_scheme.hh"
-/* -------------------------------------------------------------------------- */
+namespace akantu {
+  class SparseMatrix;
+}
 
 __BEGIN_AKANTU__
 
@@ -47,46 +48,48 @@ class IntegrationScheme2ndOrder : public IntegrationScheme {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  enum IntegrationSchemeCorrectorType {
-    _acceleration_corrector,
-    _velocity_corrector,
-    _displacement_corrector
-  };
-
-  IntegrationScheme2ndOrder() : IntegrationScheme(2){};
+  IntegrationScheme2ndOrder(DOFManager & dof_manager) : IntegrationScheme(dof_manager, 2){};
 
   virtual ~IntegrationScheme2ndOrder(){};
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void integrationSchemePred(Real delta_t, Array<Real> & u,
-                                     Array<Real> & u_dot,
-                                     Array<Real> & u_dot_dot,
-                                     const Array<bool> & blocked_dofs) const = 0;
+  /// generic interface of a predictor
+  virtual void predictor(const ID & dof_id, Real delta_t);
 
-  virtual void integrationSchemeCorrDispl(Real delta_t, Array<Real> & u,
-                                          Array<Real> & u_dot,
-                                          Array<Real> & u_dot_dot,
-                                          const Array<bool> & blocked_dofs,
-                                          const Array<Real> & delta_u) const = 0;
+  /// generic interface of a corrector
+  virtual void corrector(const SolutionType & type, const ID & dof_id,
+                         Real delta_t);
 
-  virtual void integrationSchemeCorrVeloc(Real delta_t, Array<Real> & u,
-                                          Array<Real> & u_dot,
-                                          Array<Real> & u_dot_dot,
-                                          const Array<bool> & blocked_dofs,
-                                          const Array<Real> & delta_u_dot) const = 0;
+  /// generic interface of a predictor of 2nd order
+  virtual void predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                         Array<Real> & u_dot_dot,
+                         const Array<bool> & blocked_dofs) const = 0;
 
-  virtual void integrationSchemeCorrAccel(Real delta_t, Array<Real> & u,
-                                          Array<Real> & u_dot,
-                                          Array<Real> & u_dot_dot,
-                                          const Array<bool> & blocked_dofs,
-                                          const Array<Real> & delta_u_dot_dot) const = 0;
+  /// generic interface of a corrector of 2nd order
+  virtual void corrector(const SolutionType & type,
+                         Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                         Array<Real> & u_dot_dot,
+                         const Array<bool> & blocked_dofs,
+                         const Array<Real> & delta) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-public:
+protected:
+  virtual Real
+  getAccelerationCoefficient(const SolutionType & type,
+                             Real delta_t) const;
+
+  virtual Real
+  getVelocityCoefficient(const SolutionType & type,
+                         Real delta_t) const;
+
+  virtual Real
+  getDisplacementCoefficient(const SolutionType & type,
+                             Real delta_t) const;
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

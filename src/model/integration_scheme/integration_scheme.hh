@@ -28,9 +28,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_INTEGRATION_SCHEME_HH__
 #define __AKANTU_INTEGRATION_SCHEME_HH__
+
+namespace akantu {
+class DOFManager;
+}
 
 __BEGIN_AKANTU__
 
@@ -39,8 +45,30 @@ class IntegrationScheme {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  IntegrationScheme(UInt order) : order(order) {}
+  enum SolutionType {
+    _displacement = 0,
+    _temperature = 0,
+    _velocity = 1,
+    _temperature_rate = 1,
+    _acceleration = 2,
+  };
+
+  IntegrationScheme(DOFManager & dof_manager, UInt order);
   virtual ~IntegrationScheme() {}
+
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// generic interface of a predictor
+  virtual void predictor(const ID & dof_id, Real delta_t) = 0;
+
+  /// generic interface of a corrector
+  virtual void corrector(const SolutionType & type, const ID & dof_id,
+                         Real delta_t) = 0;
+
+  /// assemble the jacobian matrix
+  virtual void assembleJacobian(const SolutionType & type, Real delta_t) = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -53,6 +81,8 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  DOFManager & dof_manager;
+  /// The order of the integrator
   UInt order;
 };
 

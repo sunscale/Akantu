@@ -33,10 +33,18 @@
 
 __BEGIN_AKANTU__
 
-TimeStepSolver::TimeStepSolver(DOFManager & dof_manager, const ID & dof_id,
+/* -------------------------------------------------------------------------- */
+TimeStepSolver::TimeStepSolver(DOFManager & dof_manager,
                                const TimeStepSolverType & type, const ID & id,
                                UInt memory_id)
-    : Memory(id, memory_id), _dof_manager(dof_manager), dof_id(dof_id),
-      type(type) {}
+    : Memory(id, memory_id), _dof_manager(dof_manager), type(type) {}
+
+/* -------------------------------------------------------------------------- */
+TimeStepSolver::~TimeStepSolver() {}
+
+/* -------------------------------------------------------------------------- */
+
+
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

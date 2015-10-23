@@ -201,7 +201,7 @@ public:
                                       const ID & matrix_to_copy_id);
 
   /// Get the reference of an existing matrix
-  SparseMatrixAIJ & getMatrix(const ID & matrix_id);
+  SparseMatrix & getMatrix(const ID & matrix_id);
 
   /* ------------------------------------------------------------------------ */
   /* Non linear system solver                                                 */

@@ -30,6 +30,8 @@
 /* -------------------------------------------------------------------------- */
 #include "time_step_solver_default.hh"
 #include "dof_manager_default.hh"
+#include "sparse_matrix_aij.hh"
+
 #include "integration_scheme_1st_order.hh"
 #include "integration_scheme_2nd_order.hh"
 /* -------------------------------------------------------------------------- */
@@ -55,38 +57,43 @@ __BEGIN_AKANTU__
 // }
 /* -------------------------------------------------------------------------- */
 TimeStepSolverDefault::TimeStepSolverDefault(DOFManagerDefault & dof_manager,
-                                             const ID & dof_id,
                                              const TimeStepSolverType & type,
                                              const ID & id, UInt memory_id)
-    : TimeStepSolver(dof_manager, dof_id, type, id, memory_id),
-      dof_manager(dof_manager) {
+    : TimeStepSolver(dof_manager, type, id, memory_id),
+      dof_manager(dof_manager), is_mass_lumped(false) {
+
   switch (type) {
+  case _tsst_forward_euler_lumped:
+    this->is_mass_lumped = true;
   case _tsst_forward_euler: {
-    this->integration_scheme = new ForwardEuler();
+
+    this->integration_scheme = new ForwardEuler(dof_manager);
     break;
   }
   case _tsst_trapezoidal_rule_1: {
-    this->integration_scheme = new TrapezoidalRule1();
+    this->integration_scheme = new TrapezoidalRule1(dof_manager);
     break;
   }
   case _tsst_backward_euler: {
-    this->integration_scheme = new BackwardEuler();
+    this->integration_scheme = new BackwardEuler(dof_manager);
     break;
   }
+  case _tsst_central_difference_lumped:
+    this->is_mass_lumped = true;
   case _tsst_central_difference: {
-    this->integration_scheme = new CentralDifference();
+    this->integration_scheme = new CentralDifference(dof_manager);
     break;
   }
   case _tsst_fox_goodwin: {
-    this->integration_scheme = new FoxGoodwin();
+    this->integration_scheme = new FoxGoodwin(dof_manager);
     break;
   }
   case _tsst_trapezoidal_rule_2: {
-    this->integration_scheme = new TrapezoidalRule2();
+    this->integration_scheme = new TrapezoidalRule2(dof_manager);
     break;
   }
   case _tsst_linear_acceleration: {
-    this->integration_scheme = new LinearAceleration();
+    this->integration_scheme = new LinearAceleration(dof_manager);
     break;
   }
   // Write a c++11 version of the constructor with initializer list that
@@ -107,27 +114,9 @@ TimeStepSolverDefault::~TimeStepSolverDefault() {
 void TimeStepSolverDefault::predictor() {
   AKANTU_DEBUG_IN();
 
-  Array<Real> & u = this->dof_manager.getDOFs(this->dof_id);
-  const Array<bool> & blocked_dofs =
-      this->dof_manager.getBlockedDOFs(this->dof_id);
+  TimeStepSolver::predictor();
 
-  // increment.copy(u);
-
-  if (this->integration_scheme->getOrder() == 1) {
-    Array<Real> & u_dot = dof_manager.getDOFsDerivatives(this->dof_id, 1);
-    IntegrationScheme1stOrder & int_scheme =
-        *dynamic_cast<IntegrationScheme1stOrder *>(this->integration_scheme);
-    int_scheme.integrationSchemePred(this->time_step, u, u_dot, blocked_dofs);
-  } else if (this->integration_scheme->getOrder() == 2) {
-
-    Array<Real> & u_dot = dof_manager.getDOFsDerivatives(this->dof_id, 1);
-    Array<Real> & u_dot_dot = dof_manager.getDOFsDerivatives(this->dof_id, 2);
-
-    IntegrationScheme2ndOrder & int_scheme =
-        *dynamic_cast<IntegrationScheme2ndOrder *>(this->integration_scheme);
-    int_scheme.integrationSchemePred(this->time_step, u, u_dot, u_dot_dot,
-                                     blocked_dofs);
-  }
+  this->integration_scheme->predictor(this->dof_id, this->time_step);
 
   // UInt nb_degree_of_freedom = u.getSize() * u.getNbComponent();
 
@@ -149,70 +138,77 @@ void TimeStepSolverDefault::predictor() {
 void TimeStepSolverDefault::corrector() {
   AKANTU_DEBUG_IN();
 
-  Array<Real> & u = this->dof_manager.getDOFs(this->dof_id);
-  const Array<Real> & solution = this->dof_manager.getSolution(this->dof_id);
-  const Array<bool> & blocked_dofs =
-      this->dof_manager.getBlockedDOFs(this->dof_id);
+  TimeStepSolver::corrector();
 
-  // increment.copy(u);
-
-  if (this->integration_scheme->getOrder() == 1) {
-    Array<Real> & u_dot = dof_manager.getDOFsDerivatives(this->dof_id, 1);
-    IntegrationScheme1stOrder & int_scheme =
-        *dynamic_cast<IntegrationScheme1stOrder *>(this->integration_scheme);
-
-    switch (this->corrector_type) {
-    case IntegrationScheme1stOrder::_temperature_corrector:
-      int_scheme.integrationSchemeCorrTemp(this->time_step, u, u_dot,
-                                           blocked_dofs, solution);
-      break;
-    case IntegrationScheme1stOrder::_temperature_rate_corrector:
-      int_scheme.integrationSchemeCorrTempRate(this->time_step, u, u_dot,
-                                               blocked_dofs, solution);
-      break;
-    }
-  } else if (this->integration_scheme->getOrder() == 2) {
-
-    Array<Real> & u_dot = dof_manager.getDOFsDerivatives(this->dof_id, 1);
-    Array<Real> & u_dot_dot = dof_manager.getDOFsDerivatives(this->dof_id, 2);
-
-    IntegrationScheme2ndOrder & int_scheme =
-        *dynamic_cast<IntegrationScheme2ndOrder *>(this->integration_scheme);
-
-    switch (this->corrector_type) {
-    case IntegrationScheme2ndOrder::_displacement_corrector:
-      int_scheme.integrationSchemeCorrDispl(this->time_step, u, u_dot,
-                                            u_dot_dot, blocked_dofs, solution);
-      break;
-    case IntegrationScheme2ndOrder::_velocity_corrector:
-      int_scheme.integrationSchemeCorrVeloc(this->time_step, u, u_dot,
-                                            u_dot_dot, blocked_dofs, solution);
-      break;
-    case IntegrationScheme2ndOrder::_acceleration_corrector:
-      int_scheme.integrationSchemeCorrAccel(this->time_step, u, u_dot,
-                                            u_dot_dot, blocked_dofs, solution);
-      break;
-    }
-  }
+  this->integration_scheme->corrector(
+      IntegrationScheme::SolutionType(this->solution_type), this->dof_id,
+      this->time_step);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void TimeStepSolverDefault::solveStep() {
+void TimeStepSolverDefault::assembleJacobian() {
   AKANTU_DEBUG_IN();
 
-  // EventManager::sendEvent(
-  //     SolidMechanicsModelEvent::BeforeSolveStepEvent(method));
+  TimeStepSolver::assembleJacobian();
 
-  // this->predictor();
-  // this->solver->solve();
-  // this->corrector();
-
-  // EventManager::sendEvent(
-  //     SolidMechanicsModelEvent::AfterSolveStepEvent(method));
+  this->integration_scheme->assembleJacobian(
+      IntegrationScheme::SolutionType(this->solution_type), this->time_step);
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+void TimeStepSolverDefault::assembleResidual() {
+  AKANTU_DEBUG_IN();
+
+  TimeStepSolver::assembleResidual();
+
+  //   if (!this->is_mass_lumped) {
+
+  //     Array<Real> * Ma = new Array<Real>(*acceleration, true, "Ma");
+  //     *Ma *= *mass_matrix;
+  //     /// \todo check unit conversion for implicit dynamics
+  //     //      *Ma /= f_m2a
+  //     *residual -= *Ma;
+  //     delete Ma;
+  //   } else if (mass) {
+
+  //     // else lumped mass
+  //     UInt nb_nodes = acceleration->getSize();
+  //     UInt nb_degree_of_freedom = acceleration->getNbComponent();
+
+  //     Real * mass_val = mass->storage();
+  //     Real * accel_val = acceleration->storage();
+  //     Real * res_val = residual->storage();
+  //     bool * blocked_dofs_val = blocked_dofs->storage();
+
+  //     for (UInt n = 0; n < nb_nodes * nb_degree_of_freedom; ++n) {
+  //       if (!(*blocked_dofs_val)) {
+  //         *res_val -= *accel_val * *mass_val / f_m2a;
+  //       }
+  //       blocked_dofs_val++;
+  //       res_val++;
+  //       mass_val++;
+  //       accel_val++;
+  //     }
+  //   } else {
+  //     AKANTU_DEBUG_ERROR("No function called to assemble the mass matrix.");
+  //   }
+
+  //   // f -= Cv
+  //   if (velocity_damping_matrix) {
+  //     Array<Real> * Cv = new Array<Real>(*velocity);
+  //     *Cv *= *velocity_damping_matrix;
+  //     *residual -= *Cv;
+  //     delete Cv;
+  //   }
+  // }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

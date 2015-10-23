@@ -57,11 +57,31 @@ public:
   /// current configuration
   void solveStep();
 
+  /// solve a step using a given pre instantiated time step solver and
+  /// nondynamic linear solver
+  void solveStep(const ID & time_step_solver_id,
+                 const ID & non_linear_solver_id);
+
   /// Initialize a time solver that can be used afterwards with its id
   void initTimeStepSolver(const ID & time_step_solver_id, const ID & dof_id,
                           const TimeStepSolverType & time_step_solver_type);
 
-protected:
+  /* ------------------------------------------------------------------------ */
+  /* NonLinearSolverCallback interface                                        */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// Predictor interface for the callback
+  void predictor();
+
+  /// Corrector interface for the callback
+  void corrector();
+
+  /// AssembleResidual interface for the callback
+  virtual void assembleResidual() = 0;
+
+  /// AssembleJacobian interface for the callback
+  virtual void assembleJacobian() = 0;
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -79,7 +99,13 @@ private:
   std::set<ID> time_step_solvers;
 
   /// Default time step solver to use
-  ID default_time_step_solver;
+  ID default_time_step_solver_id;
+
+  /// List of instantiated non_linear_solvers
+  std::set<ID> non_linear_solvers;
+
+  /// Default nondynamic linear solver
+  ID default_non_linear_solver_id;
 };
 
 __END_AKANTU__

@@ -43,38 +43,37 @@ class IntegrationScheme1stOrder : public IntegrationScheme {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  enum IntegrationSchemeCorrectorType {
-    _temperature_corrector,
-    _temperature_rate_corrector
-  };
+  IntegrationScheme1stOrder(DOFManager & dof_manager)
+      : IntegrationScheme(dof_manager, 1){};
 
-  IntegrationScheme1stOrder() : IntegrationScheme(1){ };
-
-  virtual ~IntegrationScheme1stOrder() {};
+  virtual ~IntegrationScheme1stOrder(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void integrationSchemePred(Real delta_t,
-                                     Array<Real> & u,
-                                     Array<Real> & u_dot,
-                                     const Array<bool> & boundary) const = 0;
+  virtual void predictor(const ID & dof_id, Real delta_t);
+  virtual void corrector(const SolutionType & type, const ID & dof_id, Real delta_t);
 
-  virtual void integrationSchemeCorrTemp(Real delta_t, Array<Real> & u,
-                                         Array<Real> & u_dot,
-                                         const Array<bool> & boundary,
-                                         const Array<Real> & delta) const = 0;
+  /// generic interface of a predictor of 1st order
+  virtual void predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                         const Array<bool> & boundary) const = 0;
 
-  virtual void integrationSchemeCorrTempRate(Real delta_t, Array<Real> & u,
-                                             Array<Real> & u_dot,
-                                             const Array<bool> & boundary,
-                                             const Array<Real> & delta) const = 0;
+  /// generic interface of a corrector of 1st order
+  virtual void corrector(const SolutionType & type, Real delta_t,
+                         Array<Real> & u, Array<Real> & u_dot,
+                         const Array<bool> & boundary,
+                         const Array<Real> & delta) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-public:
+protected:
+  virtual Real getTemperatureCoefficient(const SolutionType & type,
+                                         Real delta_t) const = 0;
+  virtual Real getTemperatureRateCoefficient(const SolutionType & type,
+                                             Real delta_t) const = 0;
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

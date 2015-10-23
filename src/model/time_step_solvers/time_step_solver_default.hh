@@ -35,8 +35,8 @@
 #define __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
 
 namespace akantu {
-class IntegrationScheme;
-class DOFManagerDefault;
+  class IntegrationScheme;
+  class DOFManagerDefault;
 }
 
 __BEGIN_AKANTU__
@@ -46,7 +46,7 @@ class TimeStepSolverDefault : public TimeStepSolver {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  TimeStepSolverDefault(DOFManagerDefault & dof_manager, const ID & dof_id,
+  TimeStepSolverDefault(DOFManagerDefault & dof_manager,
                         const TimeStepSolverType & type, const ID & id,
                         UInt memory_id);
 
@@ -60,6 +60,10 @@ public:
   virtual void predictor();
   /// implementation of the TimeStepSolver::corrector()
   virtual void corrector();
+  /// implementation of the TimeStepSolver::assembleJacobian()
+  virtual void assembleJacobian();
+  /// implementation of the TimeStepSolver::assembleResidual()
+  virtual void assembleResidual();
 
   /// implementation of the generic TimeStepSolver::solveStep()
   virtual void solveStep();
@@ -79,7 +83,10 @@ private:
   IntegrationScheme * integration_scheme;
 
   /// Type of corrector to use
-  UInt corrector_type;
+  UInt solution_type;
+
+  /// define if the mass matrix is lumped or not
+  bool is_mass_lumped;
 };
 
 __END_AKANTU__

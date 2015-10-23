@@ -87,7 +87,9 @@ class NewmarkBeta : public IntegrationScheme2ndOrder {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NewmarkBeta(Real alpha, Real beta) : beta(beta), alpha(alpha), k(0.), h(0.){};
+  NewmarkBeta(DOFManager & dof_manager, Real alpha, Real beta)
+      : IntegrationScheme2ndOrder(dof_manager), beta(beta), alpha(alpha), k(0.),
+        h(0.){};
 
   ~NewmarkBeta(){};
 
@@ -95,45 +97,31 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  inline void integrationSchemePred(Real delta_t, Array<Real> & u,
-                                    Array<Real> & u_dot,
-                                    Array<Real> & u_dot_dot,
-                                    const Array<bool> & blocked_dofs) const;
+  void predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                 Array<Real> & u_dot_dot,
+                 const Array<bool> & blocked_dofs) const;
 
-  inline void integrationSchemeCorrAccel(Real delta_t, Array<Real> & u,
-                                         Array<Real> & u_dot,
-                                         Array<Real> & u_dot_dot,
-                                         const Array<bool> & blocked_dofs,
-                                         const Array<Real> & delta) const;
+  void corrector(const SolutionType & type, Real delta_t, Array<Real> & u,
+                 Array<Real> & u_dot, Array<Real> & u_dot_dot,
+                 const Array<bool> & blocked_dofs,
+                 const Array<Real> & delta) const;
 
-  inline void integrationSchemeCorrVeloc(Real delta_t, Array<Real> & u,
-                                         Array<Real> & u_dot,
-                                         Array<Real> & u_dot_dot,
-                                         const Array<bool> & blocked_dofs,
-                                         const Array<Real> & delta) const;
-
-  inline void integrationSchemeCorrDispl(Real delta_t, Array<Real> & u,
-                                         Array<Real> & u_dot,
-                                         Array<Real> & u_dot_dot,
-                                         const Array<bool> & blocked_dofs,
-                                         const Array<Real> & delta) const;
+  void assembleJacobian(const SolutionType & type, Real delta_t);
 
 public:
-  template <IntegrationSchemeCorrectorType type>
-  Real getAccelerationCoefficient(Real delta_t) const;
+  Real getAccelerationCoefficient(const SolutionType & type,
+                                  Real delta_t) const;
 
-  template <IntegrationSchemeCorrectorType type>
-  Real getVelocityCoefficient(Real delta_t) const;
+  Real getVelocityCoefficient(const SolutionType & type, Real delta_t) const;
 
-  template <IntegrationSchemeCorrectorType type>
-  Real getDisplacementCoefficient(Real delta_t) const;
+  Real getDisplacementCoefficient(const SolutionType & type,
+                                  Real delta_t) const;
 
 private:
-  template <IntegrationSchemeCorrectorType type>
-  void integrationSchemeCorr(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
-                             Array<Real> & u_dot_dot,
-                             const Array<bool> & blocked_dofs,
-                             const Array<Real> & delta) const;
+  template <SolutionType type>
+  void allCorrector(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                    Array<Real> & u_dot_dot, const Array<bool> & blocked_dofs,
+                    const Array<Real> & delta) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -156,14 +144,6 @@ protected:
   const Real h;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
-#include "newmark-beta_inline_impl.cc"
-#endif
-
 /**
  * central difference method (explicit)
  * undamped stability condition :
@@ -173,27 +153,33 @@ protected:
  */
 class CentralDifference : public NewmarkBeta {
 public:
-  CentralDifference() : NewmarkBeta(0., 1./2.){};
+  CentralDifference(DOFManager & dof_manager)
+      : NewmarkBeta(dof_manager, 0., 1. / 2.){};
 };
 //#include "integration_scheme/central_difference.hh"
 
 /// undamped trapezoidal rule (implicit)
 class TrapezoidalRule2 : public NewmarkBeta {
 public:
-  TrapezoidalRule2() : NewmarkBeta(1./2., 1./2.){};
+  TrapezoidalRule2(DOFManager & dof_manager)
+      : NewmarkBeta(dof_manager, 1. / 2., 1. / 2.){};
 };
 
 /// Fox-Goodwin rule (implicit)
 class FoxGoodwin : public NewmarkBeta {
 public:
-  FoxGoodwin() : NewmarkBeta(1./6., 1./2.){};
+  FoxGoodwin(DOFManager & dof_manager)
+      : NewmarkBeta(dof_manager, 1. / 6., 1. / 2.){};
 };
 
 /// Linear acceleration (implicit)
 class LinearAceleration : public NewmarkBeta {
 public:
-  LinearAceleration() : NewmarkBeta(1./3., 1./2.){};
+  LinearAceleration(DOFManager & dof_manager)
+      : NewmarkBeta(dof_manager, 1. / 3., 1. / 2.){};
 };
+
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__
 

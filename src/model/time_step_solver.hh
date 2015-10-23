@@ -30,6 +30,8 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_memory.hh"
 #include "aka_array.hh"
+#include "non_linear_solver_callback.hh"
+
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_TIME_STEP_SOLVER_HH__
@@ -41,31 +43,26 @@ namespace akantu {
 
 __BEGIN_AKANTU__
 
-class TimeStepSolver : public Memory {
+class TimeStepSolver : public Memory, public NonLinearSolverCallback {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  TimeStepSolver(DOFManager & dof_manager, const ID & dof_id,
-                 const TimeStepSolverType & type, const ID & id,
-                 UInt memory_id);
+  TimeStepSolver(DOFManager & dof_manager, const TimeStepSolverType & type,
+                 const ID & id, UInt memory_id);
   virtual ~TimeStepSolver();
-
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
-public:
-  void solveStep();
-
-private:
-  virtual void predictor() = 0;
-
-  virtual void corrector() = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+
+  /// register a callback object for a given dof_id
+  virtual void registerCallback(NonLinearSolverCallback & callbacks);
+
+  /// register a callback object for a given dof_id
+  virtual NonLinearSolverCallback & getCallbacks();
+
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -85,6 +82,9 @@ protected:
 
   /// The time step for this solver
   Real time_step;
+
+  /// NonLinearSolverCallback to use to get the dofs updates
+  NonLinearSolverCallback * callbacks;
 };
 
 __END_AKANTU__

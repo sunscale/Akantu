@@ -184,23 +184,28 @@ package_declare_sources(core
   model/model_solver.cc
   model/model_solver.hh
   model/non_linear_solver.hh
+  model/non_linear_solver.cc
   model/non_linear_solver_default.cc
   model/non_linear_solver_default.hh
   model/solver_callback.hh
   model/time_step_solver.hh
+  model/time_step_solvers/time_step_solver.cc
   model/time_step_solvers/time_step_solver_default.cc
   model/time_step_solvers/time_step_solver_default.hh
   model/time_step_solvers/time_step_solver_default_explicit.hh
   model/non_linear_solver_callback.hh
-  model/integration_scheme/integration_scheme.hh
   model/time_step_solvers/time_step_solver_default_solver_callback.hh
 
   model/integration_scheme/generalized_trapezoidal.hh
-  model/integration_scheme/generalized_trapezoidal_inline_impl.cc
+  model/integration_scheme/generalized_trapezoidal.cc
+  model/integration_scheme/integration_scheme.hh
+  model/integration_scheme/integration_scheme.cc
   model/integration_scheme/integration_scheme_1st_order.hh
+  model/integration_scheme/integration_scheme_1st_order.cc
   model/integration_scheme/integration_scheme_2nd_order.hh
+  model/integration_scheme/integration_scheme_2nd_order.cc
   model/integration_scheme/newmark-beta.hh
-  model/integration_scheme/newmark-beta_inline_impl.cc
+  model/integration_scheme/newmark-beta.cc
   model/model.cc
   model/model.hh
   model/model_inline_impl.cc
