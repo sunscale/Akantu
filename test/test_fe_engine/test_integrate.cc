@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
   fem->initShapeFunctions();
 
   UInt nb_element = my_mesh.getNbElement(type);
-  UInt nb_quadrature_points = fem->getNbQuadraturePoints(type) * nb_element;
+  UInt nb_quadrature_points = fem->getNbIntegrationPoints(type) * nb_element;
 
   Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
   Array<Real> val_on_quad(nb_quadrature_points, 2 , "val_on_quad");
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
   }
 
   //interpolate function on quadrature points
-  fem->interpolateOnQuadraturePoints(const_val, val_on_quad, 2, type);
+  fem->interpolateOnIntegrationPoints(const_val, val_on_quad, 2, type);
 
   //integrate function on elements
   akantu::Array<akantu::Real> int_val_on_elem(nb_element, 2, "int_val_on_elem");

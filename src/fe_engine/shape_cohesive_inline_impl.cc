@@ -44,13 +44,13 @@ inline ShapeLagrange<_ek_cohesive>::ShapeLagrange(const Mesh & mesh,
 }
 
 #define INIT_SHAPE_FUNCTIONS(type)					\
-  setControlPointsByType<type>(control_points, ghost_type);		\
-  precomputeShapesOnControlPoints<type>(nodes, ghost_type);		\
-  precomputeShapeDerivativesOnControlPoints<type>(nodes, ghost_type);
+  setIntegrationPointsByType<type>(integration_points, ghost_type);		\
+  precomputeShapesOnIntegrationPoints<type>(nodes, ghost_type);		\
+  precomputeShapeDerivativesOnIntegrationPoints<type>(nodes, ghost_type);
 
 /* -------------------------------------------------------------------------- */
 inline void ShapeLagrange<_ek_cohesive>::initShapeFunctions(const Array<Real> & nodes,
-						const Matrix<Real> & control_points,
+						const Matrix<Real> & integration_points,
 						const ElementType & type,
 						const GhostType & ghost_type) {
   AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(INIT_SHAPE_FUNCTIONS);
@@ -70,13 +70,13 @@ inline const Array<Real> & ShapeLagrange<_ek_cohesive>::getShapesDerivatives(con
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
-void ShapeLagrange<_ek_cohesive>::precomputeShapesOnControlPoints(__attribute__((unused)) const Array<Real> & nodes,
+void ShapeLagrange<_ek_cohesive>::precomputeShapesOnIntegrationPoints(__attribute__((unused)) const Array<Real> & nodes,
 								  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   InterpolationType itp_type = ElementClassProperty<type>::interpolation_type;
 
-  Matrix<Real> & natural_coords = control_points(type, ghost_type);
+  Matrix<Real> & natural_coords = integration_points(type, ghost_type);
   UInt nb_points = natural_coords.cols();
 
   UInt size_of_shapes = ElementClass<type>::getShapeSize();
@@ -104,7 +104,7 @@ void ShapeLagrange<_ek_cohesive>::precomputeShapesOnControlPoints(__attribute__(
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
-void ShapeLagrange<_ek_cohesive>::precomputeShapeDerivativesOnControlPoints(__attribute__((unused)) const Array<Real> & nodes,
+void ShapeLagrange<_ek_cohesive>::precomputeShapeDerivativesOnIntegrationPoints(__attribute__((unused)) const Array<Real> & nodes,
 									    GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -112,7 +112,7 @@ void ShapeLagrange<_ek_cohesive>::precomputeShapeDerivativesOnControlPoints(__at
   UInt spatial_dimension    = ElementClass<type>::getNaturalSpaceDimension();
   UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
 
-  Matrix<Real> natural_coords = this->control_points(type, ghost_type);
+  Matrix<Real> natural_coords = this->integration_points(type, ghost_type);
   UInt nb_points = natural_coords.cols();
 
   // UInt * elem_val = this->mesh->getConnectivity(type, ghost_type).storage();;
@@ -188,7 +188,7 @@ void ShapeLagrange<_ek_cohesive>::extractNodalToElementField(const Array<Real> &
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type, class ReduceFunction>
-void ShapeLagrange<_ek_cohesive>::interpolateOnControlPoints(const Array<Real> &in_u,
+void ShapeLagrange<_ek_cohesive>::interpolateOnIntegrationPoints(const Array<Real> &in_u,
 							     Array<Real> &out_uq,
 							     UInt nb_degree_of_freedom,
 							     GhostType ghost_type,
@@ -205,7 +205,7 @@ void ShapeLagrange<_ek_cohesive>::interpolateOnControlPoints(const Array<Real> &
   Array<Real> u_el(0, nb_degree_of_freedom * nb_nodes_per_element);
   this->extractNodalToElementField<type, ReduceFunction>(in_u, u_el, ghost_type, filter_elements);
 
-  this->template interpolateElementalFieldOnControlPoints<type>(u_el, out_uq, ghost_type,
+  this->template interpolateElementalFieldOnIntegrationPoints<type>(u_el, out_uq, ghost_type,
 								shapes(itp_type, ghost_type),
 								filter_elements);
 
@@ -214,7 +214,7 @@ void ShapeLagrange<_ek_cohesive>::interpolateOnControlPoints(const Array<Real> &
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type, class ReduceFunction>
-void ShapeLagrange<_ek_cohesive>::variationOnControlPoints(const Array<Real> &in_u,
+void ShapeLagrange<_ek_cohesive>::variationOnIntegrationPoints(const Array<Real> &in_u,
 							   Array<Real> &nablauq,
 							   UInt nb_degree_of_freedom,
 							   GhostType ghost_type,
@@ -231,7 +231,7 @@ void ShapeLagrange<_ek_cohesive>::variationOnControlPoints(const Array<Real> &in
   Array<Real> u_el(0, nb_degree_of_freedom * nb_nodes_per_element);
   this->extractNodalToElementField<type, ReduceFunction>(in_u, u_el, ghost_type, filter_elements);
 
-  this->template gradientElementalFieldOnControlPoints<type>(u_el, nablauq, ghost_type,
+  this->template gradientElementalFieldOnIntegrationPoints<type>(u_el, nablauq, ghost_type,
 							     shapes_derivatives(itp_type, ghost_type),
 							     filter_elements);
 
@@ -241,14 +241,14 @@ void ShapeLagrange<_ek_cohesive>::variationOnControlPoints(const Array<Real> &in
 /* -------------------------------------------------------------------------- */
 
 template <ElementType type, class ReduceFunction>
-void ShapeLagrange<_ek_cohesive>::computeNormalsOnControlPoints(const Array<Real> &u,
+void ShapeLagrange<_ek_cohesive>::computeNormalsOnIntegrationPoints(const Array<Real> &u,
 								Array<Real> &normals_u,
 								GhostType ghost_type,
 								const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   UInt nb_element = this->mesh.getNbElement(type, ghost_type);
-  UInt nb_points  = this->control_points(type, ghost_type).cols();
+  UInt nb_points  = this->integration_points(type, ghost_type).cols();
   UInt spatial_dimension = this->mesh.getSpatialDimension();
 
   if(filter_elements != empty_filter)
@@ -259,7 +259,7 @@ void ShapeLagrange<_ek_cohesive>::computeNormalsOnControlPoints(const Array<Real
   Array<Real> tangents_u(nb_element * nb_points,
 			 (spatial_dimension *  (spatial_dimension -1)));
 
-  this->template variationOnControlPoints<type, ReduceFunction>(u,
+  this->template variationOnIntegrationPoints<type, ReduceFunction>(u,
 								tangents_u,
 								spatial_dimension,
 								ghost_type,

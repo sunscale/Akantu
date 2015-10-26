@@ -210,7 +210,7 @@ template<>
 template <class vector_type>
 inline bool
 GeometricalShapeContains<_gst_prism>::contains(const vector_type & coords) {
-  bool in = ((coords(0) >= -1.) && (coords(0) <= 1.)); // x in segement [-1, 1]
+  bool in = ((coords(0) >= -1.) && (coords(0) <= 1.)); // x in segment [-1, 1]
 
   // y and z in triangle
   in &= ((coords(1) >= 0) && (coords(1) <= 1.));

@@ -137,7 +137,7 @@ void SolidMechanicsModel::computeRho(Array<Real> & rho,
 
   Array<UInt> & mat_indexes = this->material_index(type, ghost_type);
 
-  UInt nb_quadrature_points = fem.getNbQuadraturePoints(type);
+  UInt nb_quadrature_points = fem.getNbIntegrationPoints(type);
 
   rho.resize(nb_element * nb_quadrature_points);
   Real * rho_1_val = rho.storage();

@@ -66,6 +66,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
 
+  /// get the energy specifying the type for the time step
   virtual Real getEnergy(std::string type);
 
   /// Compute the plastic energy
@@ -75,6 +76,8 @@ public:
   virtual void computePotentialEnergy(ElementType el_type, GhostType ghost_type);
 
 protected:
+  
+  /// compute the stress and inelastic strain for the quadrature point
   inline void computeStressAndInelasticStrainOnQuad(const Matrix<Real> & grad_u,
                                                     const Matrix<Real> & previous_grad_u,
                                                     Matrix<Real> & sigma,
@@ -90,7 +93,7 @@ protected:
                                                     const Matrix<Real> & previous_inelas_strain,
                                                     const Matrix<Real> & delta_inelastic_strain) const;
 
-
+  /// get the plastic energy for the time step
   Real getPlasticEnergy();
 
   /* ------------------------------------------------------------------------ */

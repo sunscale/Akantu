@@ -195,7 +195,7 @@ function(declare_akantu_types)
     set(AKANTU_UNORDERED_MAP_NAMESPACE_BEGIN "namespace std {" CACHE INTERNAL "")
     set(AKANTU_UNORDERED_MAP_NAMESPACE_END "}" CACHE INTERNAL "")
   else()
-    check_include_file_cxx(unordered_map HAVE_TR1_UNORDERED_MAP)
+    check_include_file_cxx(tr1/unordered_map HAVE_TR1_UNORDERED_MAP)
     if(HAVE_TR1_UNORDERED_MAP)
       list(APPEND _extra_includes tr1/unordered_map)
       set(AKANTU_UNORDERED_MAP_TYPE "std::tr1::unordered_map" CACHE INTERNAL "")
@@ -207,6 +207,28 @@ function(declare_akantu_types)
       set(AKANTU_UNORDERED_MAP_IS_CXX11 FALSE CACHE INTERNAL "")
     endif()
   endif()
+
+  # ----------------------------------------------------------------------------
+  # hash function
+  # ----------------------------------------------------------------------------
+  check_include_file_cxx(functional HAVE_HASH)
+  set(AKANTU_HASH_IS_CXX11 TRUE CACHE INTERNAL "")
+  if(HAVE_HASH)
+    list(APPEND _extra_includes functional)
+    set(AKANTU_HASH_TYPE "std::hash" CACHE INTERNAL "")
+  else()
+    check_include_file_cxx(tr1/functional HAVE_TR1_HASH)
+    if(HAVE_TR1_HASH)
+      list(APPEND _extra_includes tr1/funtional)
+      set(AKANTU_HASH_TYPE "std::tr1::hash" CACHE INTERNAL "")
+    else()
+      check_include_file_cxx(boost/functional/hash.hpp HAVE_BOOST_HASH)
+      list(APPEND _extra_includes boost/functional/hash.hpp)
+      set(AKANTU_HASH_TYPE "boost::hash" CACHE INTERNAL "")
+      set(AKANTU_HASH_IS_CXX11 FALSE CACHE INTERNAL "")
+    endif()
+  endif()
+
 
   # ----------------------------------------------------------------------------
   # includes

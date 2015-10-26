@@ -146,11 +146,11 @@ template<> UInt GeometricalElement<_gt_quadrangle_8>::facet_connectivity_vect[] 
 										     1, 2, 3, 0,
 										     4, 5, 6, 7};
 template<> UInt GeometricalElement<_gt_hexahedron_8>::facet_connectivity_vect[]   = {0, 0, 1, 2, 3, 4,
-										     1, 1, 2, 3, 0, 5,
+										     3, 1, 2, 3, 0, 5,
 										     2, 5, 6, 7, 4, 6,
-										     3, 4, 5, 6,  7, 7};
+										     1, 4, 5, 6, 7, 7};
 template<> UInt GeometricalElement<_gt_hexahedron_20>::facet_connectivity_vect[]  = {0,   1,  2,  3,  0,  4,
-                                                                                     1,   3,  3,  0,  3,  5,
+                                                                                     1,   2,  3,  0,  3,  5,
                                                                                      5,   6,  7,  4,  2,  6,
                                                                                      4,   5,  6,  7,  1,  7,
                                                                                      8,   9, 10, 11, 11, 16,
@@ -160,13 +160,13 @@ template<> UInt GeometricalElement<_gt_hexahedron_20>::facet_connectivity_vect[]
 
 template<> UInt GeometricalElement<_gt_pentahedron_6>::facet_connectivity_vect[]  = {// first type
                                                                                      0, 3,
-                                                                                     1, 4,
-                                                                                     2, 5,
+                                                                                     2, 4,
+                                                                                     1, 5,
                                                                                      // second type
                                                                                      0, 0, 1,
-                                                                                     3, 2, 4,
+                                                                                     1, 3, 2,
                                                                                      4, 5, 5,
-                                                                                     1, 3, 2};
+                                                                                     3, 2, 4};
 template<> UInt GeometricalElement<_gt_pentahedron_15>::facet_connectivity_vect[] = {// first type
                                                                                      0,  3,
                                                                                      2,  4,

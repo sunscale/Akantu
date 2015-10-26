@@ -38,6 +38,7 @@
 #include "mesh_utils.hh"
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+#  include "global_ids_updater.hh"
 #  include "facet_synchronizer.hh"
 #endif
 
@@ -88,7 +89,8 @@ public:
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   /// init parallel variables
-  void initParallel(FacetSynchronizer * facet_synchronizer);
+  void initParallel(FacetSynchronizer * facet_synchronizer,
+		    DistributedSynchronizer * distributed_synchronizer);
 #endif
 
 protected:
@@ -174,8 +176,8 @@ private:
   /// facet synchronizer
   FacetSynchronizer * facet_synchronizer;
 
-  /// distributed synchronizer
-  DistributedSynchronizer * distributed_synchronizer;
+  /// global connectivity ids updater
+  GlobalIdsUpdater * global_ids_updater;
 #endif
 };
 

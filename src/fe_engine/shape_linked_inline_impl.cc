@@ -32,7 +32,7 @@
 template <ElementKind kind>
 inline void
 ShapeLinked<kind>::initShapeFunctions(const Array<Real> & nodes,
-				      const Matrix<Real> & control_points,
+				      const Matrix<Real> & integration_points,
 				      const ElementType & type,
 				      const GhostType & ghost_type) {
   AKANTU_DEBUG_TO_IMPLEMENT();
@@ -42,15 +42,15 @@ ShapeLinked<kind>::initShapeFunctions(const Array<Real> & nodes,
 
 /* -------------------------------------------------------------------------- */
 #define INIT_SHAPE_FUNCTIONS(type)					\
-  setControlPointsByType<type>(control_points, ghost_type);		\
-  precomputeShapesOnControlPoints<type>(nodes, ghost_type);		\
-  precomputeShapeDerivativesOnControlPoints<type>(nodes, ghost_type);
+  setIntegrationPointsByType<type>(integration_points, ghost_type);		\
+  precomputeShapesOnIntegrationPoints<type>(nodes, ghost_type);		\
+  precomputeShapeDerivativesOnIntegrationPoints<type>(nodes, ghost_type);
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 template <>
 inline void
 ShapeLinked<_ek_structural>::initShapeFunctions(__attribute__((unused)) const Array<Real> & nodes,
-						__attribute__((unused)) const Matrix<Real> & control_points,
+						__attribute__((unused)) const Matrix<Real> & integration_points,
 						__attribute__((unused)) const ElementType & type,
 						__attribute__((unused)) const GhostType & ghost_type) {
   AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(INIT_SHAPE_FUNCTIONS);
@@ -90,7 +90,7 @@ inline const Array<Real> & ShapeLinked<kind>::getShapesDerivatives(const Element
 /* -------------------------------------------------------------------------- */
 template <>
 template <ElementType type>
-void ShapeLinked<_ek_structural>::precomputeShapesOnControlPoints(const Array<Real> & nodes,
+void ShapeLinked<_ek_structural>::precomputeShapesOnIntegrationPoints(const Array<Real> & nodes,
 								  const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -98,8 +98,8 @@ void ShapeLinked<_ek_structural>::precomputeShapesOnControlPoints(const Array<Re
   UInt spatial_dimension    = mesh.getSpatialDimension();
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
-  Matrix<Real> & natural_coords = control_points(type, ghost_type);
-  UInt nb_points = control_points(type, ghost_type).cols();
+  Matrix<Real> & natural_coords = integration_points(type, ghost_type);
+  UInt nb_points = integration_points(type, ghost_type).cols();
 
   UInt size_of_shapes = ElementClass<type>::getShapeSize();
 
@@ -146,7 +146,7 @@ void ShapeLinked<_ek_structural>::precomputeShapesOnControlPoints(const Array<Re
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
-void ShapeLinked<kind>::precomputeShapeDerivativesOnControlPoints(const Array<Real> & nodes,
+void ShapeLinked<kind>::precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
 								  const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -156,7 +156,7 @@ void ShapeLinked<kind>::precomputeShapeDerivativesOnControlPoints(const Array<Re
 
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   UInt size_of_shapesd      = ElementClass<type>::getShapeDerivativesSize();
-  Matrix<Real> & natural_coords = control_points(type, ghost_type);
+  Matrix<Real> & natural_coords = integration_points(type, ghost_type);
   UInt nb_points = natural_coords.cols();
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
@@ -244,7 +244,7 @@ void ShapeLinked<kind>::extractNodalToElementField(const Array<Real> & nodal_f,
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
-void ShapeLinked<kind>::interpolateOnControlPoints(const Array<Real> &in_u,
+void ShapeLinked<kind>::interpolateOnIntegrationPoints(const Array<Real> &in_u,
 						   Array<Real> &out_uq,
 						   UInt nb_degree_of_freedom,
 						   const GhostType & ghost_type,
@@ -267,10 +267,10 @@ void ShapeLinked<kind>::interpolateOnControlPoints(const Array<Real> &in_u,
 
   if(!accumulate) out_uq.clear();
 
-  UInt nb_points  = control_points(type, ghost_type).cols() * u_el.getSize();
+  UInt nb_points  = integration_points(type, ghost_type).cols() * u_el.getSize();
   Array<Real> uq(nb_points, 1, 0.);
 
-  this->template interpolateElementalFieldOnControlPoints<type>(u_el,
+  this->template interpolateElementalFieldOnIntegrationPoints<type>(u_el,
 								uq,
 								ghost_type,
 								*shapes_loc,
@@ -287,7 +287,7 @@ void ShapeLinked<kind>::interpolateOnControlPoints(const Array<Real> &in_u,
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
-void ShapeLinked<kind>::gradientOnControlPoints(const Array<Real> &in_u,
+void ShapeLinked<kind>::gradientOnIntegrationPoints(const Array<Real> &in_u,
 						Array<Real> &out_nablauq,
 						UInt nb_degree_of_freedom,
 						const GhostType & ghost_type,
@@ -307,13 +307,13 @@ void ShapeLinked<kind>::gradientOnControlPoints(const Array<Real> &in_u,
   Array<Real> u_el(0, nb_nodes_per_element);
   extractNodalToElementField<type>(in_u, u_el, num_degre_of_freedom_to_interpolate, ghost_type, filter_elements);
 
-  UInt nb_points  = control_points(type, ghost_type).cols() * u_el.getSize();
+  UInt nb_points  = integration_points(type, ghost_type).cols() * u_el.getSize();
   UInt element_dimension = ElementClass<type>::getSpatialDimension();
 
   Array<Real> nablauq(nb_points, element_dimension, 0.);
 
   if(!accumulate) out_nablauq.clear();
-  this->template gradientElementalFieldOnControlPoints<type>(u_el,
+  this->template gradientElementalFieldOnIntegrationPoints<type>(u_el,
 							     nablauq,
 							     ghost_type,
 							     *shapesd_loc,

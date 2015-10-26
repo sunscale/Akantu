@@ -33,7 +33,6 @@
 #define __AKANTU_DUMPER_GENERIC_ELEMENTAL_FIELD_HH__
 /* -------------------------------------------------------------------------- */
 #include "dumper_field.hh"
-#include "dumper_iterator_helper.hh"
 #include "element_type_map_filter.hh"
 #include "dumper_element_iterator.hh"
 #include "dumper_homogenizing_field.hh"
@@ -48,9 +47,10 @@ class GenericElementalField : public Field {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  // check dumper_type_traits.hh for additional information over these types
   typedef _types types;
   typedef typename types::data_type data_type;
-  typedef typename types::it_type it_type;
+  typedef typename types::it_type it_type; 
   typedef typename types::field_type field_type;
   typedef typename types::array_type array_type;
   typedef typename types::array_iterator array_iterator;

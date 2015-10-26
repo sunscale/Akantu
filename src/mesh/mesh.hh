@@ -246,6 +246,7 @@ public:
 
   /// get the Array of global ids of the nodes (only used in parallel)
   AKANTU_GET_MACRO(GlobalNodesIds, *nodes_global_ids, const Array<UInt> &);
+  AKANTU_GET_MACRO_NOT_CONST(GlobalNodesIds, *nodes_global_ids, Array<UInt> &);
 
   /// get the global id of a node
   inline UInt getNodeGlobalId(UInt local_id) const;
@@ -409,6 +410,9 @@ public:
   /// get all the type of the surface element associated to a given element
   static inline VectorProxy<ElementType> getAllFacetTypes(const ElementType & type);
 
+  /// get the number of nodes in the given element list
+  static inline UInt getNbNodesPerElementList(const Array<Element> & elements);
+
   /* ------------------------------------------------------------------------ */
   /* Element type Iterator                                                    */
   /* ------------------------------------------------------------------------ */
@@ -441,6 +445,10 @@ private:
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
   friend class CohesiveElementInserter;
+#endif
+
+#if defined(AKANTU_IGFEM)
+  template<UInt dim> friend class MeshIgfemSphericalGrowingGel;
 #endif
 
   AKANTU_GET_MACRO(NodesPointer, nodes, Array<Real> *);

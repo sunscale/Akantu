@@ -69,7 +69,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   inline void initShapeFunctions(const Array<Real> & nodes,
-				 const Matrix<Real> & control_points,
+				 const Matrix<Real> & integration_points,
 				 const ElementType & type,
 				 const GhostType & ghost_type);
 
@@ -80,53 +80,54 @@ public:
 				  const GhostType & ghost_type = _not_ghost,
 				  const Array<UInt> & filter_elements = empty_filter) const;
 
-  /// pre compute all shapes on the element control points from natural coordinates
+  /// pre compute all shapes on the element integration points from natural coordinates
   template <ElementType type>
-  void precomputeShapesOnControlPoints(const Array<Real> & nodes,
+  void precomputeShapesOnIntegrationPoints(const Array<Real> & nodes,
 				       GhostType ghost_type);
 
-  /// pre compute all shape derivatives on the element control points from natural coordinates
+  /// pre compute all shape derivatives on the element integration points from natural coordinates
   template <ElementType type>
-  void precomputeShapeDerivativesOnControlPoints(const Array<Real> & nodes,
+  void precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
 						 GhostType ghost_type);
 
-  /// interpolate nodal values on the control points
+  /// interpolate nodal values on the integration points
   template <ElementType type, class ReduceFunction>
-  void interpolateOnControlPoints(const Array<Real> &u,
+  void interpolateOnIntegrationPoints(const Array<Real> &u,
 				  Array<Real> &uq,
 				  UInt nb_degree_of_freedom,
 				  const GhostType ghost_type = _not_ghost,
 				  const Array<UInt> & filter_elements = empty_filter) const;
 
   template <ElementType type>
-  void interpolateOnControlPoints(const Array<Real> &u,
+  void interpolateOnIntegrationPoints(const Array<Real> &u,
 				  Array<Real> &uq,
 				  UInt nb_degree_of_freedom,
 				  const GhostType ghost_type = _not_ghost,
 				  const Array<UInt> & filter_elements = empty_filter) const {
-    interpolateOnControlPoints<type, CohesiveReduceFunctionMean>(u, uq, nb_degree_of_freedom, ghost_type, filter_elements);
+    interpolateOnIntegrationPoints<type, CohesiveReduceFunctionMean>(u, uq, nb_degree_of_freedom, ghost_type, filter_elements);
   }
 
-  /// compute the gradient of u on the control points in the natural coordinates
+  /// compute the gradient of u on the integration points in the natural coordinates
   template <ElementType type>
-  void gradientOnControlPoints(const Array<Real> &u,
+  void gradientOnIntegrationPoints(const Array<Real> &u,
 			       Array<Real> &nablauq,
 			       UInt nb_degree_of_freedom,
 			       GhostType ghost_type = _not_ghost,
 			       const Array<UInt> & filter_elements = empty_filter) const {
-    variationOnControlPoints<type, CohesiveReduceFunctionMean>(u, nablauq, nb_degree_of_freedom, ghost_type, filter_elements);
+    variationOnIntegrationPoints<type, CohesiveReduceFunctionMean>(u, nablauq, nb_degree_of_freedom, ghost_type, filter_elements);
   }
 
-  /// compute the gradient of u on the control points
+  /// compute the gradient of u on the integration points
   template <ElementType type, class ReduceFunction>
-  void variationOnControlPoints(const Array<Real> &u,
+  void variationOnIntegrationPoints(const Array<Real> &u,
 				Array<Real> &nablauq,
 				UInt nb_degree_of_freedom,
 				GhostType ghost_type = _not_ghost,
 				const Array<UInt> & filter_elements = empty_filter) const;
 
+  /// compute the normals to the field u on integration points
   template <ElementType type, class ReduceFunction>
-  void computeNormalsOnControlPoints(const Array<Real> &u,
+  void computeNormalsOnIntegrationPoints(const Array<Real> &u,
 				     Array<Real> &normals_u,
 				     GhostType ghost_type = _not_ghost,
 				     const Array<UInt> & filter_elements = empty_filter) const;

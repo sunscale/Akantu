@@ -47,9 +47,17 @@ CustomNonLocalTestMaterial<dim>::CustomNonLocalTestMaterial(SolidMechanicsModel 
   // Initialize the internal field by specifying the number of components
   this->local_damage.initialize(1);
   this->damage.initialize(1);
+  /// register the non-local variable in the manager
+  this->model->getNonLocalManager().registerNonLocalVariable(this->local_damage.getName(), this->damage.getName(), 1);
 
-  // register the variable Ynl, as the non local version of Y
-  this->registerNonLocalVariable(this->local_damage, this->damage, 1);
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+void CustomNonLocalTestMaterial<dim>::initMaterial() {
+  MyElasticParent::initMaterial();
+  MyNonLocalParent::initMaterial();
+  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(damage.getName(), this->name);
 }
 
 /* -------------------------------------------------------------------------- */

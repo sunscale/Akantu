@@ -1,35 +1,44 @@
+For cohesive material, \akantu has a pre-defined material selector to assign 
+the first cohesive material by default to the cohesive elements which is called 
+\code{DefaultMaterialCohesiveSelector} and it inherits its properties from 
+\code{DefaultMaterialSelector}. Multiple cohesive materials can be assigned 
+using mesh data information (for more details, see \ref{intrinsic_insertion}).
+
 \subsection{Insertion of Cohesive Elements}
-Cohesive elements are currently compatible only with static simulation and dynamic simualtion with an explicit time integration scheme
-(see section~\ref{ssect:smm:expl-time-integr}). They do not have to be
-inserted when the mesh is generated but during the simulation. At any time during the simulation, it is possible to access the following energies with the relative function:
+<<<<<<< Updated upstream
+Cohesive elements are currently compatible only with static simulation
+and dynamic simulation with an explicit time integration scheme (see
+section~\ref{ssect:smm:expl-time-integr}). They do not have to be inserted when the mesh is generated (intrinsic) but can be added during the simulation (extrinsic). At any time during the simulation, it is possible to access the following energies with the relative function:
 \begin{cpp}
   Real Ed = model.getEnergy("dissipated");
   Real Er = model.getEnergy("reversible");
   Real Ec = model.getEnergy("contact");
 \end{cpp}
 
-\subsubsection{Extrinsic approach}
-The dynamic insertion of extrinsic cohesive elements should be initialized 
-the following way:
+A new model have to be call in a very similar way that the solid mechanics model:
 \begin{cpp}
   SolidMechanicsModelCohesive model(mesh);
   model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+\end{cpp} 
+
+
+\subsubsection{Extrinsic approach}
+The dynamic insertion of extrinsic cohesive elements should be initialized 
+in the following way:
+\begin{cpp}
   model.updateAutomaticInsertion();
 \end{cpp} 
-During the simulation, stress has to be checked along each facet in order to 
-eventually insert cohesive elements.
+During the simulation, stress has to be checked along each facet in order to insert cohesive elements where thestress criterion is reached.
 This check is performed by calling the method \code{checkCohesiveStress}, as 
 example before each step resolution:
 \begin{cpp}
   model.checkCohesiveStress();
   model.solveStep();
 \end{cpp}
-The area where stress are checked and cohesive elements inserted can be limited 
+The area where stresses are checked and cohesive elements inserted can be limited 
 using the method \code{limitInsertion} during initialization. As example, to 
 limit insertion in the range $[-1.5, 1.5]$ in the $x$ direction: 
 \begin{cpp}
-  SolidMechanicsModelCohesive model(mesh);
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
   model.limitInsertion(_x, -1.5, 1.5);
   model.updateAutomaticInsertion();
 \end{cpp} 
@@ -40,18 +49,14 @@ Intrinsic cohesive elements are inserted in the mesh with the method
 \code{insertIntrinsicElements}. Similarly, the range of insertion can me limited 
 with \code{limitInsertion}. As example with a static simulation,
 \begin{cpp}
-  SolidMechanicsModelCohesive model(mesh);
-  model.initFull(SolidMechanicsModelCohesiveOptions(_static));
   model.limitInsertion(_x, -1.5, 1.5);
   model.insertIntrinsicElements();
 \end{cpp} 
 Mesh data information becomes vital to the insertion of cohesive elements along 
 surface with more sophisticated geometry or when multiple cohesive materials are 
-wanted. At this purpose, cohesive elements can be easily inserted along a 
+wanted. To do so, cohesive elements can be inserted along a 
 specific group of surface elements identified in a GMSH geometry file. This can 
-be achieved, in the input file, by specifying the name of these physical groups 
-in the \textit{mesh parameters} section as well as their corresponding cohesive 
-materials. As example, with two physical surfaces named 
+be achieved with the material selector (see section~\ref{sect:smm:materialselector}), in the input file specify the name of these physical groups in the corresponding cohesive materials, and call these material in the \textit{mesh parameters} section. As example, with two physical surfaces named 
 \textit{weak\_interface} and \textit{strong\_interface} defined in the GMSH 
 geometry file:
 \begin{cpp}

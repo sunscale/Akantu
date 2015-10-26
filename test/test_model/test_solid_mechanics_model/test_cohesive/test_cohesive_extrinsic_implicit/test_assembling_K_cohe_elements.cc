@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
     for (UInt j = 0; j < K_test.getSize(); ++j){
       if ((K_test(j,0) == K_verified(i,0)) &&  (K_test(j,1) == K_verified(i,1))){
         if (std::abs(K_verified(i,2)) < tol){
-          if (std::abs(K_verified(j,2)) > tol)
+          if (std::abs(K_test(j,2)) > tol)
             passed = false;
         }else{
           Real ratio = (std::abs(K_test(j,2) - K_verified(i,2))) / (std::abs(K_verified(i,2)));

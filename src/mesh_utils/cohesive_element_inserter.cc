@@ -55,7 +55,7 @@ CohesiveElementInserter::CohesiveElementInserter(Mesh & mesh,
 /* -------------------------------------------------------------------------- */
 CohesiveElementInserter::~CohesiveElementInserter() {
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  delete distributed_synchronizer;
+  delete global_ids_updater;
 #endif
 }
 
@@ -87,7 +87,7 @@ void CohesiveElementInserter::init(bool is_extrinsic) {
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   facet_synchronizer = NULL;
-  distributed_synchronizer = NULL;
+  global_ids_updater = NULL;
 #endif
 
   AKANTU_DEBUG_OUT();
@@ -287,7 +287,7 @@ void CohesiveElementInserter::insertIntrinsicElements(std::string physname,
 	mesh_facets.getBarycenter(f, type_facet, bary_facet.storage(), ghost_type);
 
 	coord_in_limit = 0;
-	  
+
 	while (coord_in_limit < spatial_dimension && 
 	       (std::abs(bary_facet(coord_in_limit) 
 			 - bary_physgroup(coord_in_limit))/norm_bary 
@@ -345,11 +345,8 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
   }
 #endif
 
-  if (nb_new_nodes > 0) {
-    mesh.nb_global_nodes += nb_new_nodes;
-    mesh_facets.nb_global_nodes += nb_new_nodes;
+  if (nb_new_nodes > 0)
     mesh.sendEvent(node_event);
-  }
 
   if (nb_new_elements > 0) {
     updateInsertionFacets();

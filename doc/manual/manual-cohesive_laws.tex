@@ -148,12 +148,13 @@ stiffness increment $\dot{K}^+$ is calculated as
     \text{if $\dot{\delta} < 0$}
   \end{cases}
 \end{equation}
-where $\delta_\mathrm{f}$ is a material parameter. During unloading
-the stiffness $K^+$ tends to $K^-$, while during reloading $K^+$ gets
-decreased at every time step. If the cohesive traction during
-reloading exceeds the upper limit given by
-equation~\eqref{eq:smm:coh:tractions}, it is recomputed following the
-behavior of the linear decreasing cohesive law for crack opening.
+where $\delta_\mathrm{f}$ is a material parameter (refer
+to~\cite{vocialta15} for more details). During unloading the stiffness
+$K^+$ tends to $K^-$, while during reloading $K^+$ gets decreased at
+every time step. If the cohesive traction during reloading exceeds the
+upper limit given by equation~\eqref{eq:smm:coh:tractions}, it is
+recomputed following the behavior of the linear decreasing cohesive
+law for crack opening.
 
 \subsubsection{Exponential Cohesive Law\matlabel{ssect:smm:cl:coh-exponential}}
 
@@ -183,6 +184,11 @@ where
     \end{array} \right.
 \end{equation}
 
+As regards the behavior in compression, two options are available:
+a contact penalty approach with stiffness following the formulation of
+the exponential law and a contact penalty approach with constant
+stiffness. In the second case, the stiffness is defined as a function
+of the tangent of the exponential law at the origin.
 
 \begin{figure}[!htb]
   \begin{center}

@@ -55,7 +55,8 @@ class DistributedSynchronizer : public Synchronizer, public MeshEventHandler {
 public:
   DistributedSynchronizer(Mesh & mesh,
                           SynchronizerID id = "distributed_synchronizer",
-                          MemoryID memory_id = 0);
+                          MemoryID memory_id = 0,
+			  const bool register_to_event_manager = true);
 
 public:
   virtual ~DistributedSynchronizer();
@@ -88,6 +89,12 @@ public:
 
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
+  /// mesh event handler onElementsChanged
+  virtual void onElementsChanged(const Array<Element> & old_elements_list,
+				 const Array<Element> & new_elements_list,
+                                 const ElementTypeMapArray<UInt> & new_numbering,
+                                 const ChangedElementsEvent & event);
+
   /// mesh event handler onRemovedElement
   virtual void onElementsRemoved(const Array<Element> & element_list,
                                  const ElementTypeMapArray<UInt> & new_numbering,
@@ -106,6 +113,13 @@ public:
   /// recalculate buffer sizes for all tags
   void computeAllBufferSizes(DataAccessor & data_accessor);
 
+  /// remove elements from the synchronizer without renumbering them
+  void removeElements(const Array<Element> & element_to_remove);
+
+  /// renumber the elements in the synchronizer
+  void renumberElements(const ElementTypeMapArray<UInt> & new_numbering);
+
+		      
 protected:
   /// fill the nodes type vector
   void fillNodesType(Mesh & mesh);
@@ -213,6 +227,9 @@ protected:
   static void fillNodeGroupsFromBuffer(DistributedSynchronizer & communicator,
 					  Mesh & mesh,
 					  CommunicationBuffer & buffer);
+
+  /// substitute elements in the send and recv arrays
+  void substituteElements(const std::map<Element, Element> & old_to_new_elements);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

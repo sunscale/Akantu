@@ -175,7 +175,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
     if (facet_synchronizer != NULL)
-      inserter->initParallel(facet_synchronizer);
+      inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
     initAutomaticInsertion();
   } 
@@ -200,7 +200,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(std::string coh
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (facet_synchronizer != NULL)
-    inserter->initParallel(facet_synchronizer);
+    inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
   std::istringstream split(cohesive_surfaces);
   std::string physname;
@@ -219,7 +219,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(std::string coh
   
   SolidMechanicsModel::initMaterials();
 
-  delete material_selector;
+   if(is_default_material_selector) delete material_selector;
   material_selector = new MeshDataMaterialCohesiveSelector(*this);
   inserter->insertElements();
 
@@ -244,7 +244,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(UInt cohesive_i
   }
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (facet_synchronizer != NULL)
-    inserter->initParallel(facet_synchronizer);
+    inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
 
   SolidMechanicsModel::initMaterials();
@@ -387,7 +387,7 @@ void SolidMechanicsModelCohesive::initStressInterpolation() {
   mesh_facets.initElementTypeMapArray(quad_facets,
 				     spatial_dimension, spatial_dimension - 1);
 
-  getFEEngine("FacetsFEEngine").interpolateOnQuadraturePoints(position, quad_facets);
+  getFEEngine("FacetsFEEngine").interpolateOnIntegrationPoints(position, quad_facets);
 
   /// compute elements quadrature point positions and build
   /// element-facet quadrature points data structure
@@ -421,7 +421,7 @@ void SolidMechanicsModelCohesive::initStressInterpolation() {
       ElementType facet_type = Mesh::getFacetType(type);
 
       UInt nb_quad_per_facet =
-	getFEEngine("FacetsFEEngine").getNbQuadraturePoints(facet_type);
+	getFEEngine("FacetsFEEngine").getNbIntegrationPoints(facet_type);
 
       el_q_facet.resize(nb_element * nb_facet_per_elem * nb_quad_per_facet);
 
@@ -491,7 +491,7 @@ void SolidMechanicsModelCohesive::computeNormals() {
   AKANTU_DEBUG_IN();
 
   Mesh & mesh_facets = this->inserter->getMeshFacets();
-  this->getFEEngine("FacetsFEEngine").computeNormalsOnControlPoints(_not_ghost);
+  this->getFEEngine("FacetsFEEngine").computeNormalsOnIntegrationPoints(_not_ghost);
 
   /**
    *  @todo store tangents while computing normals instead of
@@ -511,7 +511,7 @@ void SolidMechanicsModelCohesive::computeNormals() {
     ElementType facet_type = *it;
 
     const Array<Real> & normals =
-      this->getFEEngine("FacetsFEEngine").getNormalsOnQuadPoints(facet_type);
+      this->getFEEngine("FacetsFEEngine").getNormalsOnIntegrationPoints(facet_type);
 
     Array<Real> & tangents = this->tangents(facet_type);
 
@@ -523,13 +523,16 @@ void SolidMechanicsModelCohesive::computeNormals() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::interpolateStress() {
+
+  ElementTypeMapArray<Real> by_elem_result("temporary_stress_by_facets", id);
+  
   for (UInt m = 0; m < materials.size(); ++m) {
     try {
       MaterialCohesive & mat __attribute__((unused)) =
 	dynamic_cast<MaterialCohesive &>(*materials[m]);
     } catch(std::bad_cast&) {
       /// interpolate stress on facet quadrature points positions
-      materials[m]->interpolateStressOnFacets(facet_stress);
+      materials[m]->interpolateStressOnFacets(facet_stress, by_elem_result);
     }
   }
 
@@ -693,7 +696,7 @@ void SolidMechanicsModelCohesive::resizeFacetStress() {
       UInt nb_facet = mesh_facets.getNbElement(type, ghost_type);
 
       UInt nb_quadrature_points =
-	getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type, ghost_type);
+	getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type, ghost_type);
 
       UInt new_size = nb_facet * nb_quadrature_points;
 

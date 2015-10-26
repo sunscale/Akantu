@@ -87,6 +87,50 @@
    {\bottomrule
    \end{tabular}%\end{table*}
  }
+
+\newenvironment{Element_part1}[1]
+  {%\begin{table*}[!htbp]
+    \footnotesize
+   \ifthenelse{\equal{#1}{1D}}{\renewcommand{\arraystretch}{1.50}}{}
+   \ifthenelse{\equal{#1}{2D}}{\renewcommand{\arraystretch}{1.60}}{}
+   \ifthenelse{\equal{#1}{3D}}{\renewcommand{\arraystretch}{1.70}}{}
+   \textbf{{\normalsize Element properties}}\\%\vspace*{0.5\baselineskip}
+   \begin{tabular}{ccc}\\[-2ex]
+     \toprule
+     % \multicolumn{4}{l}{\textbf{{\normalsize Element properties}}} \\
+     Node ($i$) & Coord.
+     \ifthenelse{\equal{#1}{1D}}{\elemcooroned}{}
+     \ifthenelse{\equal{#1}{2D}}{\elemcoortwod}{}
+     \ifthenelse{\equal{#1}{3D}}{\elemcoorthreed}{}
+     & Shape function ($N_{i}$)\\
+     \midrule
+     \elemline
+   }
+   {\bottomrule\end{tabular}}%\end{table*}}
+
+\newenvironment{Element_part2}[1]
+  {%\begin{table*}[!htbp]
+    \footnotesize
+   \ifthenelse{\equal{#1}{1D}}{\renewcommand{\arraystretch}{1.50}}{}
+   \ifthenelse{\equal{#1}{2D}}{\renewcommand{\arraystretch}{1.60}}{}
+   \ifthenelse{\equal{#1}{3D}}{\renewcommand{\arraystretch}{1.70}}{}
+   \textbf{{\normalsize Element properties}}\\%\vspace*{0.5\baselineskip}
+   \begin{tabular}{cccc}\\[-2ex]
+     \toprule
+     % \multicolumn{4}{l}{\textbf{{\normalsize Element properties}}} \\
+     Node ($i$)
+     & {Derivative
+       \ifthenelse{\equal{#1}{1D}}{\elemdshapeoned}{}
+       \ifthenelse{\equal{#1}{2D}}{\elemdshapetwod}{}
+       \ifthenelse{\equal{#1}{3D}}{\elemdshapethreed}{}
+     }\\
+     \midrule
+     \elemline
+   }
+   {\bottomrule
+   \end{tabular}%\end{table*}
+ }
+
 \newenvironment{QuadPoints}[1]
   {\vspace*{\baselineskip}
    %\begin{table*}[!htbp]

@@ -95,16 +95,17 @@ void MaterialMazarsNonLocal<spatial_dimension>::computeNonLocalStresses(GhostTyp
   InternalField<Real> nl_var("Non local variable", *this);
   nl_var.initialize(1);
 
-  if(this->damage_in_compute_stress)
-    this->weightedAvergageOnNeighbours(this->damage, nl_var, 1);
-  else
-    this->weightedAvergageOnNeighbours(this->Ehat, nl_var, 1);
+  
+  // if(this->damage_in_compute_stress)
+  //   this->weightedAvergageOnNeighbours(this->damage, nl_var, 1);
+  // else
+  //   this->weightedAvergageOnNeighbours(this->Ehat, nl_var, 1);
 
-  Mesh::type_iterator it = this->model->getFEEngine().getMesh().firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type = this->model->getFEEngine().getMesh().lastType(spatial_dimension, ghost_type);
-  for(; it != last_type; ++it) {
-    this->computeNonLocalStress(nl_var(*it, ghost_type), *it, ghost_type);
-  }
+  // Mesh::type_iterator it = this->model->getFEEngine().getMesh().firstType(spatial_dimension, ghost_type);
+  // Mesh::type_iterator last_type = this->model->getFEEngine().getMesh().lastType(spatial_dimension, ghost_type);
+  // for(; it != last_type; ++it) {
+  //   this->computeNonLocalStress(nl_var(*it, ghost_type), *it, ghost_type);
+  // }
 
   AKANTU_DEBUG_OUT();
 }
@@ -136,8 +137,11 @@ void MaterialMazarsNonLocal<spatial_dimension>::computeNonLocalStress(Array<Real
   AKANTU_DEBUG_OUT();
 }
 
-
 /* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void MaterialMazarsNonLocal<spatial_dimension>::nonLocalVariableToNeighborhood() {
+  
+}
 
 INSTANTIATE_MATERIAL(MaterialMazarsNonLocal);
 
