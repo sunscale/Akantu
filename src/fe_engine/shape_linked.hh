@@ -54,6 +54,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// initialization function for structural elements
   inline void initShapeFunctions(const Array<Real> & nodes,
 				 const Matrix<Real> & integration_points,
 				 const ElementType & type,
@@ -103,6 +104,7 @@ public:
   }
 
 private:
+  /// extract the nodal field value to fill an elemental field
   template <ElementType type>
   void extractNodalToElementField(const Array<Real> & nodal_f,
 				  Array<Real> & elemental_f,

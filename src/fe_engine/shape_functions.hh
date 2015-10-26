@@ -115,6 +115,9 @@ protected:
 							 ElementTypeMapArray<Real> & result,
 							 const GhostType ghost_type,
 							 const Array<UInt> & element_filter) const;
+  
+  /// Interpolate field at given position from given values of this field at integration points (field) 
+  /// using matrices precomputed with initElementalFieldInterplationFromIntegrationPoints
   template <ElementType type>
   inline void initElementalFieldInterpolationFromIntegrationPoints(const Array<Real> & interpolation_points_coordinates,
 							       ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
@@ -131,6 +134,7 @@ protected:
 						     UInt integration_order = 
 						     ElementClassProperty<type>::minimal_integration_order) const;
 
+  /// build the so called interpolation matrix (first collumn is 1, then the other collumns are the traansposed coordinates)
   inline void buildInterpolationMatrix(const Matrix<Real> & coordinates,
 				       Matrix<Real> & coordMatrix,
 				       UInt integration_order) const;
@@ -154,6 +158,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  /// associated mesh
   const Mesh & mesh;
 
   /// shape functions for all elements

@@ -7,7 +7,7 @@
  * @date creation: Fri Feb 03 2012
  * @date last modification: Fri Jun 13 2014
  *
- * @brief  Cohesive element class
+ * @brief  Generates the cohesive element structres (defined in element_class.hh)
  *
  * @section LICENSE
  *

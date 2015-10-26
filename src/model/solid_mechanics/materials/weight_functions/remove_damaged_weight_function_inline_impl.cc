@@ -41,7 +41,7 @@ inline Real RemoveDamagedWeightFunction::operator()(Real r,
   Array<Real> & dam_array = (*this->damage)(q2.type, q2.ghost_type);
   Real D = dam_array(quad);
   Real w = 0.;
-  if(D < damage_limit) {
+  if (D < damage_limit * (1 - Math::getTolerance())) {
     Real alpha = std::max(0., 1. - r*r / this->R2);
     w = alpha * alpha;
   }
