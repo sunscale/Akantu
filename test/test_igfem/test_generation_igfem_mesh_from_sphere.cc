@@ -65,7 +65,7 @@ int main (int argc, char * argv[]) {
   dumper_gel2_regular.registerMesh(mesh_gel2, 2, _not_ghost, _ek_regular);
   dumper_gel2_regular.dump();
 
-  gel_intersector2.buildIgfemMeshFromSpheres(sphere_list_gel2);
+  gel_intersector2.buildIGFEMMeshFromSpheres(sphere_list_gel2);
   //gel_intersector2.computeMeshQueryListIntersectionPoint(sphere_list_gel2);
   //gel_intersector2.buildIgfemMesh();
   dumper_gel2_igfem.dump();
@@ -79,7 +79,7 @@ int main (int argc, char * argv[]) {
     return EXIT_FAILURE;
   }
 
-  gel_intersector2.buildIgfemMeshFromSpheres(sphere_list_gel2, 1.5);
+  gel_intersector2.buildIGFEMMeshFromSpheres(sphere_list_gel2, 1.5);
   //gel_intersector2.computeMeshQueryListIntersectionPoint(sphere_list_gel2, 1.5);
   //gel_intersector2.buildIgfemMesh();
   dumper_gel2_igfem.dump();
@@ -93,7 +93,7 @@ int main (int argc, char * argv[]) {
     return EXIT_FAILURE;
     }
 
-  gel_intersector2.buildIgfemMeshFromSpheres(sphere_list_gel2, 2);
+  gel_intersector2.buildIGFEMMeshFromSpheres(sphere_list_gel2, 2);
   //gel_intersector2.computeMeshQueryListIntersectionPoint(sphere_list_gel2, 2);
   //gel_intersector2.buildIgfemMesh();
   dumper_gel2_igfem.dump();
@@ -107,7 +107,7 @@ int main (int argc, char * argv[]) {
     return EXIT_FAILURE;
     }
 
-  gel_intersector2.buildIgfemMeshFromSpheres(sphere_list_gel2,2.1);
+  gel_intersector2.buildIGFEMMeshFromSpheres(sphere_list_gel2,2.1);
   //gel_intersector2.computeMeshQueryListIntersectionPoint(sphere_list_gel2,2.1);
   //gel_intersector2.buildIgfemMesh();
   dumper_gel2_igfem.dump();
@@ -121,7 +121,7 @@ int main (int argc, char * argv[]) {
     return EXIT_FAILURE;
     }
   
-  gel_intersector2.buildIgfemMeshFromSpheres(sphere_list_gel2,3.5);
+  gel_intersector2.buildIGFEMMeshFromSpheres(sphere_list_gel2,3.5);
   //gel_intersector2.computeMeshQueryListIntersectionPoint(sphere_list_gel,3.5);
   //gel_intersector2.buildIgfemMesh();
   dumper_gel2_igfem.dump();

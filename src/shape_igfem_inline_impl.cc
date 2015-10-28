@@ -201,7 +201,8 @@ void ShapeLagrange<_ek_igfem>::computeShapes(const Vector<Real> & real_coords,
   
   /// compute parent shapes -> map shapes in the physical domain of the parent
   Vector<Real> natural_coords(spatial_dimension);
-
+  Real tol = Math::getTolerance();
+  Math::setTolerance(1e-14);
   inverseMap<type>(real_coords, elem, natural_coords, ghost_type);
   ElementClass<parent_type>::computeShapes(natural_coords, parent_shapes);
   natural_coords.clear();
@@ -230,6 +231,8 @@ void ShapeLagrange<_ek_igfem>::computeShapes(const Vector<Real> & real_coords,
     /// assemble shape functions
     ElementClass<type>::assembleShapes(parent_shapes, sub_shapes, shapes, 1);
   }
+
+  Math::setTolerance(tol);
 
   AKANTU_DEBUG_OUT();
 }

@@ -64,6 +64,9 @@ package_declare_sources(igfem
 
   material_igfem/igfem_internal_field.hh
   material_igfem/igfem_internal_field_tmpl.hh
+
+  non_local_manager_igfem.hh
+  non_local_manager_igfem.cc
   )
 
 package_declare_elements(igfem

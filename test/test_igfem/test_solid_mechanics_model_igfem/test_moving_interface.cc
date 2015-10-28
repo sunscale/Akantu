@@ -230,6 +230,7 @@ int main(int argc, char *argv[]) {
 
   /// dump mesh before the IGFEM interface is created
   model.dump();
+  model.dump("igfem elements");
 
   /// create the interface
   model.update(domain_name);
@@ -241,7 +242,8 @@ int main(int argc, char *argv[]) {
   /// move interface
   growGel(sphere_list, 1.0);
   mat_selector->update(1.0);
- 
+  model.update(domain_name);
+
   /// dump after the interface has moved
   model.dump();
   model.dump("igfem elements");

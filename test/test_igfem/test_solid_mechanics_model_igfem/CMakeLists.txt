@@ -30,8 +30,8 @@ register_test(test_moving_interface
   )
 
 register_test(test_transfer_internals
-  SOURCES test_internal_transfer.cc
-  FILES_TO_COPY material_damage.dat 
+  SOURCES test_transfer_internals.cc
+  FILES_TO_COPY material_damage.dat fine_mesh.msh 
   DIRECTORIES_TO_CREATE paraview
   PACKAGE IGFEM 
   )

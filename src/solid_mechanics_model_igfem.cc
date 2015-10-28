@@ -222,6 +222,8 @@ void SolidMechanicsModelIGFEM::onElementsRemoved(const Array<Element> & element_
   this->getFEEngine("IGFEMFEEngine").initShapeFunctions(_not_ghost);
   this->getFEEngine("IGFEMFEEngine").initShapeFunctions(_ghost);
   SolidMechanicsModel::onElementsRemoved(element_list, new_numbering, event);
+  if (synch_parallel)
+    synch_parallel->computeAllBufferSizes(*this);
 }
 
 /* -------------------------------------------------------------------------- */

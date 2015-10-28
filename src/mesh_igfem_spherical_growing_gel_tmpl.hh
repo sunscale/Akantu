@@ -112,7 +112,7 @@ void MeshIgfemSphericalGrowingGel<dim>::computeMeshQueryListIntersectionPoint(co
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-void MeshIgfemSphericalGrowingGel<dim>::removeAdditionnalNodes(){
+void MeshIgfemSphericalGrowingGel<dim>::removeAdditionalNodes(){
   AKANTU_DEBUG_IN();
 
   UInt total_nodes = this->mesh.getNbNodes();
@@ -169,7 +169,7 @@ void MeshIgfemSphericalGrowingGel<dim>::removeAdditionnalNodes(){
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-void MeshIgfemSphericalGrowingGel<dim>::buildIgfemMesh(){
+void MeshIgfemSphericalGrowingGel<dim>::buildIGFEMMesh(){
   AKANTU_DEBUG_IN();
 
   NewIGFEMElementsEvent new_elements_event;
@@ -187,6 +187,7 @@ void MeshIgfemSphericalGrowingGel<dim>::buildIgfemMesh(){
     mesh.initElementTypeMapArray(changed_elements_event.getNewNumbering(),
 				 1, dim, ghost_type, false, _ek_not_defined);
 
+    /// loop over all types in the mesh for a given ghost type
     Mesh::type_iterator iit = mesh.firstType(dim, ghost_type, _ek_not_defined);
     Mesh::type_iterator iend = mesh.lastType(dim, ghost_type, _ek_not_defined);
     for(;iit != iend; ++iit) {
@@ -194,141 +195,135 @@ void MeshIgfemSphericalGrowingGel<dim>::buildIgfemMesh(){
 
       MeshAbstractIntersector<SK::Sphere_3> & intersector = *intersectors(type, ghost_type);
       const Array<UInt> & new_node_per_elem = intersector.getNewNodePerElem();
-      const UInt nb_prim_by_el = intersector.getNbSegByEl();
 
       UInt n_new_el = 0;
-      Array<UInt> & connec_type_tmpl = this->mesh.getConnectivity(type, ghost_type);
+      Array<UInt> & connectivity = this->mesh.getConnectivity(type, ghost_type);
 
-      Array<UInt>
-	& connec_igfem_tri4 = this->mesh.getConnectivity(_igfem_triangle_4, ghost_type),
-	& connec_igfem_tri5 = this->mesh.getConnectivity(_igfem_triangle_5, ghost_type),
-	& connec_tri3 = this->mesh.getConnectivity(_triangle_3, ghost_type);
+      
+      /// get the connectivities of all types that that may transform 
+      Array<UInt> & connec_igfem_tri_4 = this->mesh.getConnectivity(_igfem_triangle_4, ghost_type);
+      Array<UInt> & connec_igfem_tri_5 = this->mesh.getConnectivity(_igfem_triangle_5, ghost_type);
+      Array<UInt> & connec_tri_3 = this->mesh.getConnectivity(_triangle_3, ghost_type);
 
-      Element element_tri3(_triangle_3, 0, ghost_type, _ek_regular);
-      Element element_tri4(_igfem_triangle_4, 0, ghost_type, _ek_igfem);
-      Element element_tri5(_igfem_triangle_5, 0, ghost_type, _ek_igfem);
+      /// create elements to store the newly generated elements
+      Element el_tri_3(_triangle_3, 0, ghost_type, _ek_regular);
+      Element el_igfem_tri_4(_igfem_triangle_4, 0, ghost_type, _ek_igfem);
+      Element el_igfem_tri5(_igfem_triangle_5, 0, ghost_type, _ek_igfem);
 
       Array<UInt> & new_numbering = removed_elements_event.getNewNumbering(type, ghost_type);
-      new_numbering.resize(connec_type_tmpl.getSize());
-      UInt new_nb_type_tmpl = 0; // Meter of the number of element (type) will we loop on elements
+      new_numbering.resize(connectivity.getSize());
+      /// container for element to be removed
       Element old_element(type, 0, ghost_type, Mesh::getKind(type));
 
       for (UInt nel = 0 ; nel != new_node_per_elem.getSize(); ++nel) {
-	if( (type != _triangle_3)
-	    && ( (new_node_per_elem(nel,0)==0)
-		 || ( (new_node_per_elem(nel,0) == 1)
-		      && ( ( (new_node_per_elem(nel,2)-1) % nb_prim_by_el )
-			   != new_node_per_elem(nel, new_node_per_elem.getNbComponent() - 2) ) ) ) ){
-	  Vector<UInt> ctri3(3);
-	  ctri3(0) =  connec_type_tmpl(nel,0);
-	  ctri3(1) =  connec_type_tmpl(nel,1);
-	  ctri3(2) =  connec_type_tmpl(nel,2);
+	/// a former IGFEM triangle is transformed into a regular triangle
+	if ( (type != _triangle_3) && (new_node_per_elem(nel,0) == 0)) {
+
+	  Vector<UInt> connec_new_elem(3);
+	  connec_new_elem(0) =  connectivity(nel,0);
+	  connec_new_elem(1) =  connectivity(nel,1);
+	  connec_new_elem(2) =  connectivity(nel,2);
 	  /// add the new element in the mesh
-	  UInt nb_tri3 = connec_tri3.getSize();
-	  connec_tri3.push_back(ctri3);
-	  element_tri3.element = nb_tri3;
-	  new_elements_list.push_back(element_tri3);
+	  UInt nb_triangles_3 = connec_tri_3.getSize();
+	  connec_tri_3.push_back(connec_new_elem);
+	  el_tri_3.element = nb_triangles_3;
+	  new_elements_list.push_back(el_tri_3);
 	  /// the number of the old element in the mesh
 	  old_element.element = nel;
 	  old_elements_list.push_back(old_element);
 	  new_numbering(nel) =  UInt(-1);
 	  ++n_new_el;
 	}
-	else if( (new_node_per_elem(nel,0)!=0)
-		 && !( (new_node_per_elem(nel,0) == 1)
-		       && ( ( (new_node_per_elem(nel,2)+2) % nb_prim_by_el )
-			    != new_node_per_elem(nel, new_node_per_elem.getNbComponent() - 2) ) ) ){
+
+	/// element is enriched
+	else if (new_node_per_elem(nel,0) != 0) {
 	  switch(new_node_per_elem(nel,0)){
+	    /// new element is of type igfem_triangle_4
 	  case 1 :{
-	    Vector<UInt> ctri4(4);
+	    Vector<UInt> connec_new_elem(4);
 	    switch(new_node_per_elem(nel,2)){
 	    case 0 :
-	      ctri4(0) = connec_type_tmpl(nel,2);
-	      ctri4(1) = connec_type_tmpl(nel,0);
-	      ctri4(2) = connec_type_tmpl(nel,1);
+	      connec_new_elem(0) = connectivity(nel,2);
+	      connec_new_elem(1) = connectivity(nel,0);
+	      connec_new_elem(2) = connectivity(nel,1);
 	      break;
 	    case 1 :
-	      ctri4(0) = connec_type_tmpl(nel,0);
-	      ctri4(1) = connec_type_tmpl(nel,1);
-	      ctri4(2) = connec_type_tmpl(nel,2);
+	      connec_new_elem(0) = connectivity(nel,0);
+	      connec_new_elem(1) = connectivity(nel,1);
+	      connec_new_elem(2) = connectivity(nel,2);
 	      break;
 	    case 2 :
-	      ctri4(0) = connec_type_tmpl(nel,1);
-	      ctri4(1) = connec_type_tmpl(nel,2);
-	      ctri4(2) = connec_type_tmpl(nel,0);
+	      connec_new_elem(0) = connectivity(nel,1);
+	      connec_new_elem(1) = connectivity(nel,2);
+	      connec_new_elem(2) = connectivity(nel,0);
 	      break;
 	    default :
-	      AKANTU_DEBUG_ERROR("A triangle have only 3 segments not "<< new_node_per_elem(nel,2));
+	      AKANTU_DEBUG_ERROR("A triangle has only 3 segments not "<< new_node_per_elem(nel,2));
 	      break;
 	    }
-	    ctri4(3) = new_node_per_elem(nel,1);
-	    UInt nb_tri4 = connec_igfem_tri4.getSize();
-	    connec_igfem_tri4.push_back(ctri4);
-	    element_tri4.element = nb_tri4;
-	    new_elements_list.push_back(element_tri4);
-	    if(type == _igfem_triangle_4)
-	      new_numbering.push_back(connec_igfem_tri4.getSize()-2);
+	    connec_new_elem(3) = new_node_per_elem(nel,1);
+	    UInt nb_igfem_triangles_4 = connec_igfem_tri_4.getSize();
+	    connec_igfem_tri_4.push_back(connec_new_elem);
+	    el_igfem_tri_4.element = nb_igfem_triangles_4;
+	    new_elements_list.push_back(el_igfem_tri_4);
 	    break;
 	  }
+	    /// new element is of type igfem_triangle_5
 	  case 2 :{
-	    Vector<UInt> ctri5(5);
+	    Vector<UInt> connec_new_elem(5);
 	    if( (new_node_per_elem(nel,2)==0) && (new_node_per_elem(nel,4)==1) ){
-	      ctri5(0) = connec_type_tmpl(nel,1);
-	      ctri5(1) = connec_type_tmpl(nel,2);
-	      ctri5(2) = connec_type_tmpl(nel,0);
-	      ctri5(3) = new_node_per_elem(nel,3);
-	      ctri5(4) = new_node_per_elem(nel,1);
+	      connec_new_elem(0) = connectivity(nel,1);
+	      connec_new_elem(1) = connectivity(nel,2);
+	      connec_new_elem(2) = connectivity(nel,0);
+	      connec_new_elem(3) = new_node_per_elem(nel,3);
+	      connec_new_elem(4) = new_node_per_elem(nel,1);
 	    }
 	    else if((new_node_per_elem(nel,2)==0) && (new_node_per_elem(nel,4)==2)){
-	      ctri5(0) = connec_type_tmpl(nel,0);
-	      ctri5(1) = connec_type_tmpl(nel,1);
-	      ctri5(2) = connec_type_tmpl(nel,2);
-	      ctri5(3) = new_node_per_elem(nel,1);
-	      ctri5(4) = new_node_per_elem(nel,3);
+	      connec_new_elem(0) = connectivity(nel,0);
+	      connec_new_elem(1) = connectivity(nel,1);
+	      connec_new_elem(2) = connectivity(nel,2);
+	      connec_new_elem(3) = new_node_per_elem(nel,1);
+	      connec_new_elem(4) = new_node_per_elem(nel,3);
 	    }
 	    else if((new_node_per_elem(nel,2)==1) && (new_node_per_elem(nel,4)==2)){
-	      ctri5(0) = connec_type_tmpl(nel,2);
-	      ctri5(1) = connec_type_tmpl(nel,0);
-	      ctri5(2) = connec_type_tmpl(nel,1);
-	      ctri5(3) = new_node_per_elem(nel,3);
-	      ctri5(4) = new_node_per_elem(nel,1);
+	      connec_new_elem(0) = connectivity(nel,2);
+	      connec_new_elem(1) = connectivity(nel,0);
+	      connec_new_elem(2) = connectivity(nel,1);
+	      connec_new_elem(3) = new_node_per_elem(nel,3);
+	      connec_new_elem(4) = new_node_per_elem(nel,1);
 	    }
 	    else if((new_node_per_elem(nel,2)==1) && (new_node_per_elem(nel,4)==0)){
-	      ctri5(0) = connec_type_tmpl(nel,1);
-	      ctri5(1) = connec_type_tmpl(nel,2);
-	      ctri5(2) = connec_type_tmpl(nel,0);
-	      ctri5(3) = new_node_per_elem(nel,1);
-	      ctri5(4) = new_node_per_elem(nel,3);
+	      connec_new_elem(0) = connectivity(nel,1);
+	      connec_new_elem(1) = connectivity(nel,2);
+	      connec_new_elem(2) = connectivity(nel,0);
+	      connec_new_elem(3) = new_node_per_elem(nel,1);
+	      connec_new_elem(4) = new_node_per_elem(nel,3);
 	    }
 	    else if((new_node_per_elem(nel,2)==2) && (new_node_per_elem(nel,4)==0)){
-	      ctri5(0) = connec_type_tmpl(nel,0);
-	      ctri5(1) = connec_type_tmpl(nel,1);
-	      ctri5(2) = connec_type_tmpl(nel,2);
-	      ctri5(3) = new_node_per_elem(nel,3);
-	      ctri5(4) = new_node_per_elem(nel,1);
+	      connec_new_elem(0) = connectivity(nel,0);
+	      connec_new_elem(1) = connectivity(nel,1);
+	      connec_new_elem(2) = connectivity(nel,2);
+	      connec_new_elem(3) = new_node_per_elem(nel,3);
+	      connec_new_elem(4) = new_node_per_elem(nel,1);
 	    }
 	    else if((new_node_per_elem(nel,2)==2) && (new_node_per_elem(nel,4)==1)){
-	      ctri5(0) = connec_type_tmpl(nel,2);
-	      ctri5(1) = connec_type_tmpl(nel,0);
-	      ctri5(2) = connec_type_tmpl(nel,1);
-	      ctri5(3) = new_node_per_elem(nel,1);
-	      ctri5(4) = new_node_per_elem(nel,3);
+	      connec_new_elem(0) = connectivity(nel,2);
+	      connec_new_elem(1) = connectivity(nel,0);
+	      connec_new_elem(2) = connectivity(nel,1);
+	      connec_new_elem(3) = new_node_per_elem(nel,1);
+	      connec_new_elem(4) = new_node_per_elem(nel,3);
 	    }
-	    else{
-	      AKANTU_DEBUG_ERROR("A triangle have only 3 segments (0 to 2) not "<< new_node_per_elem(nel,2) << "and" << new_node_per_elem(nel,4));
-	    }
-	    UInt nb_tri5 = connec_igfem_tri5.getSize();
-	    connec_igfem_tri5.push_back(ctri5);
-	    element_tri5.element = nb_tri5;
-	    new_elements_list.push_back(element_tri5);
-	    if(type == _igfem_triangle_5){
-	      new_numbering.push_back(new_nb_type_tmpl);
-	      ++new_nb_type_tmpl;
-	    }
+	    else
+	      AKANTU_DEBUG_ERROR("A triangle has only 3 segments (0 to 2) not "<< new_node_per_elem(nel,2) << "and" << new_node_per_elem(nel,4));
+	    
+	    UInt nb_igfem_triangles_5 = connec_igfem_tri_5.getSize();
+	    connec_igfem_tri_5.push_back(connec_new_elem);
+	    el_igfem_tri5.element = nb_igfem_triangles_5;
+	    new_elements_list.push_back(el_igfem_tri5);
 	    break;
 	  }
 	  default:
-	    AKANTU_DEBUG_ERROR("Igfem cannot add "<< new_node_per_elem(nel,0) << " nodes to triangles");
+	    AKANTU_DEBUG_ERROR("IGFEM cannot add "<< new_node_per_elem(nel,0) << " nodes to triangles");
 	    break;
 	  }
 	  old_element.element = nel;
@@ -336,25 +331,33 @@ void MeshIgfemSphericalGrowingGel<dim>::buildIgfemMesh(){
 	  new_numbering(nel) =  UInt(-1);
 	  ++n_new_el;
 	}
-	else{
-	  new_numbering(nel) = new_nb_type_tmpl;
-	  ++new_nb_type_tmpl;
-	}
       }
+      total_new_elements += n_new_el;
+    }
+  }
 
+  /// update new numbering
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
+    GhostType ghost_type = *gt;
+    /// loop over all types in the mesh for a given ghost type
+    Mesh::type_iterator iit = mesh.firstType(dim, ghost_type, _ek_not_defined);
+    Mesh::type_iterator iend = mesh.lastType(dim, ghost_type, _ek_not_defined);
+    for(;iit != iend; ++iit) {
+      ElementType type = *iit;
+      Array<UInt> & new_numbering = removed_elements_event.getNewNumbering(type, ghost_type);
       UInt el_index = 0;
       UInt nb_element = this->mesh.getNbElement(type, ghost_type);
+      new_numbering.resize(nb_element);
       for (UInt e = 0; e < nb_element; ++e) {
 	if (new_numbering(e) != UInt(-1)) {
 	  new_numbering(e) = el_index;
 	  ++el_index;
 	}
       }
-
-      total_new_elements += n_new_el;
-      changed_elements_event.getNewNumbering(type, ghost_type).copy(new_numbering);
+      changed_elements_event.getNewNumbering(type, ghost_type).copy(new_numbering); 
     }
   }
+ 
 
   StaticCommunicator::getStaticCommunicator().allReduce(&total_new_elements, 1, _so_sum);
 
@@ -370,7 +373,7 @@ void MeshIgfemSphericalGrowingGel<dim>::buildIgfemMesh(){
     this->mesh.sendEvent(removed_elements_event);
   }
 
-  removeAdditionnalNodes();
+  removeAdditionalNodes();
   AKANTU_DEBUG_OUT();
 }
 

@@ -73,7 +73,7 @@ int main (int argc, char * argv[]) {
   //dumper_igfem.dump();
   dumper_regular.dump();
 
-  sphere_intersector.buildIgfemMeshFromSpheres(sphere_list);
+  sphere_intersector.buildIGFEMMeshFromSpheres(sphere_list);
   dumper_igfem.dump();
   dumper_regular.dump();
   

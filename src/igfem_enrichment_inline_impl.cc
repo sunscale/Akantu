@@ -21,7 +21,7 @@ __BEGIN_AKANTU__
 
 
 /* -------------------------------------------------------------------------- */
-inline bool IGFEMEnrichment::isInside(const Vector<Real> & point, ID & domain) {
+inline bool IGFEMEnrichment::isInside(const Vector<Real> & point, ID domain) const {
   if (domain == "") domain = default_geometry;
   Geometry & spheres = this->getGeometry(domain);
   SK::Point_3 p(point(0), point(1), 0.);

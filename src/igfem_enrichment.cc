@@ -27,10 +27,10 @@ void IGFEMEnrichment::initialize(){
 }
 
 /* -------------------------------------------------------------------------- */
-void IGFEMEnrichment::update(ID & domain) {
+void IGFEMEnrichment::update(ID domain) {
   if (domain == "") domain = default_geometry;
   Geometry & geometry = getGeometry(domain);
-  intersector_sphere.buildIgfemMeshFromSpheres(geometry);
+  intersector_sphere.buildIGFEMMeshFromSpheres(geometry);
 }
 /* -------------------------------------------------------------------------- */
 void IGFEMEnrichment::unRegisterGeometryObject(const ID & domain){
@@ -45,7 +45,7 @@ void IGFEMEnrichment::unRegisterGeometryObject(const ID & domain){
 
 /* -------------------------------------------------------------------------- */
 void IGFEMEnrichment::registerGeometryObject(Geometry & geometry,
-						    const ID & domain){
+					     const ID & domain){
   if (geometries.size() == 0) default_geometry = domain;
 
 #ifndef AKANTU_NDEBUG

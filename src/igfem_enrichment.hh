@@ -48,7 +48,7 @@ public:
   virtual Geometry & getGeometry(ID & domain) const;
 
   /// detect the interface
-  virtual void update(ID & domain);
+  virtual void update(ID domain = "");
 
   /// remove geometry
   virtual void unRegisterGeometryObject(const ID & domain = "");
@@ -57,7 +57,7 @@ public:
   virtual void registerGeometryObject(Geometry & geometry, const ID & domain = "");
 
   /// check if a point is in a given domain
-  inline bool isInside(const Vector<Real> & point, ID & domain);
+  inline bool isInside(const Vector<Real> & point, ID domain = "") const;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

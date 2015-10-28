@@ -116,7 +116,7 @@ public:
 
 public:
   /// Remove the additionnal nodes
-  void removeAdditionnalNodes();
+  void removeAdditionalNodes();
 
   /// Compute the intersection points between the mesh and the query list for all element types and send the NewNodeEvent
   void computeMeshQueryListIntersectionPoint(const std::list<SK::Sphere_3> & query_list);
@@ -135,18 +135,18 @@ public:
   }
 
   /// Build the IGFEM mesh from intersection points
-  void buildIgfemMesh();
+  void buildIGFEMMesh();
 
   /// Build the IGFEM mesh from spheres
-  void buildIgfemMeshFromSpheres(const std::list<SK::Sphere_3> & query_list){
+  void buildIGFEMMeshFromSpheres(const std::list<SK::Sphere_3> & query_list){
     computeMeshQueryListIntersectionPoint(query_list);
-    buildIgfemMesh();
+    buildIGFEMMesh();
   }
 
   /// Build the IGFEM mesh from spheres with increase factor
-  void buildIgfemMeshFromSpheres(const std::list<SK::Sphere_3> & query_list, Real inf_fact){
+  void buildIGFEMMeshFromSpheres(const std::list<SK::Sphere_3> & query_list, Real inf_fact){
     computeMeshQueryListIntersectionPoint(query_list, inf_fact);
-    buildIgfemMesh();
+    buildIGFEMMesh();
   }
 
   /// set the distributed synchronizer
