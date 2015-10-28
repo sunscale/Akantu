@@ -1175,6 +1175,38 @@ Array<Real> & Material::getArray(const ID & vect_id, const ElementType & type, c
 }
 
 /* -------------------------------------------------------------------------- */
+template<>
+const Array<UInt> & Material::getArray(const ID & vect_id, const ElementType & type, const GhostType & ghost_type) const {
+  std::stringstream sstr;
+  std::string ghost_id = "";
+  if (ghost_type == _ghost) ghost_id = ":ghost";
+  sstr << getID() << ":" << vect_id << ":" << type << ghost_id;
+
+  ID fvect_id = sstr.str();
+  try {
+    return Memory::getArray<UInt>(fvect_id);
+  } catch(debug::Exception & e) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" <<getID() << ") does not contain a vector " << vect_id << "(" << fvect_id << ") [" << e << "]");
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template<>
+Array<UInt> & Material::getArray(const ID & vect_id, const ElementType & type, const GhostType & ghost_type) {
+  std::stringstream sstr;
+  std::string ghost_id = "";
+  if (ghost_type == _ghost) ghost_id = ":ghost";
+  sstr << getID() << ":" << vect_id << ":" << type << ghost_id;
+
+  ID fvect_id = sstr.str();
+  try {
+    return Memory::getArray<UInt>(fvect_id);
+  } catch(debug::Exception & e) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID() << ") does not contain a vector " << vect_id << "(" << fvect_id << ") [" << e << "]");
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 template<typename T>
 const InternalField<T> & Material::getInternal(const ID & int_id) const {
   AKANTU_DEBUG_TO_IMPLEMENT();

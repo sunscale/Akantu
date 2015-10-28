@@ -148,6 +148,7 @@ int main(int argc, char *argv[]) {
   for (UInt i = 0; i < nb_nodes; ++i) {
     if (!dof_synchronizer.isPureGhostDOF(i) && !Math::are_float_equal(2 * position(i, 0), solution(i, 0))) {
       std::cout << "The solution is not correct!!!!" << std::endl;
+      finalize();
       return EXIT_FAILURE;
     }
   }
