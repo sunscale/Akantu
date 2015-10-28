@@ -113,8 +113,12 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
             new_node(i) = point[i];
           }
 
-          bool is_on_mesh = false, is_new = true;
-          // check if we already compute this intersection for a neighboor element
+	  /// boolean to decide wheter intersection point is on a standard node of the mesh or not
+          bool is_on_mesh = false;
+	  /// boolean to decide if this intersection point has been already computed for a neighbor element
+	  bool is_new = true;
+        
+	  /// check if intersection point has already been computed
 	  UInt n = nb_old_nodes;
 	  Array<Real>::vector_iterator existing_node = nodes.begin(dim);
 	  for (; n < nodes.getSize() ; ++n) {
@@ -167,15 +171,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	    nb_new_nodes_per_el += 1;
 	    (*this->new_node_per_elem)(element_id, (2 * nb_new_nodes_per_el) - 1) = n;
 	    (*this->new_node_per_elem)(element_id, 2 * nb_new_nodes_per_el) = it->segId();
-	  } else {
-	    // if intersection is at a node, write node number (in el) in pennultimate position
-	    if (Math::are_vector_equal(dim, source.storage(), new_node.storage())) {
-	      (*this->new_node_per_elem)(element_id, ((*this->new_node_per_elem).getNbComponent() - 2)) = it->segId();
-	    } else {
-	      (*this->new_node_per_elem)(element_id, ((*this->new_node_per_elem).getNbComponent() - 2)) =
-		(it->segId()+1) % this->nb_seg_by_el;
-	    }
-	  }
+	  } 
 	}
       }
     }
