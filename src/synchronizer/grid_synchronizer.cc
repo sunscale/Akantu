@@ -45,8 +45,9 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 GridSynchronizer::GridSynchronizer(Mesh & mesh,
 				   const ID & id,
-                                   MemoryID memory_id) :
-  DistributedSynchronizer(mesh, id, memory_id) {
+                                   MemoryID memory_id,
+				   const bool register_to_event_manager) :
+  DistributedSynchronizer(mesh, id, memory_id, register_to_event_manager) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -59,14 +60,16 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(Mesh & mesh,
                                                             SynchronizerID id,
 							    SynchronizerRegistry * synchronizer_registry,
 							    const std::set<SynchronizationTag> & tags_to_register,
-                                                            MemoryID memory_id) {
+                                                            MemoryID memory_id, 
+							    const bool register_to_event_manager) {
   AKANTU_DEBUG_IN();
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   UInt nb_proc = comm.getNbProc();
   UInt my_rank = comm.whoAmI();
 
-  GridSynchronizer & communicator = *(new GridSynchronizer(mesh, id, memory_id));
+  GridSynchronizer & communicator = *(new GridSynchronizer(mesh, id, memory_id, 
+							   register_to_event_manager));
   if(nb_proc == 1) return &communicator;
 
   UInt spatial_dimension = mesh.getSpatialDimension();
@@ -527,18 +530,20 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(Mesh & mesh,
 
 /* -------------------------------------------------------------------------- */
 template GridSynchronizer *
-GridSynchronizer::createGridSynchronizer<QuadraturePoint>(Mesh & mesh,
-                                                          const SpatialGrid<QuadraturePoint> & grid,
-                                                          SynchronizerID id,
-							  SynchronizerRegistry * synchronizer_registry,
-							  const std::set<SynchronizationTag> & tags_to_register,
-                                                          MemoryID memory_id);
+GridSynchronizer::createGridSynchronizer<IntegrationPoint>(Mesh & mesh,
+							   const SpatialGrid<IntegrationPoint> & grid,
+							   SynchronizerID id,
+							   SynchronizerRegistry * synchronizer_registry,
+							   const std::set<SynchronizationTag> & tags_to_register,
+							   MemoryID memory_id,
+							   const bool register_to_event_manager);
 template GridSynchronizer *
 GridSynchronizer::createGridSynchronizer<Element>(Mesh & mesh,
                                                   const SpatialGrid<Element> & grid,
                                                   SynchronizerID id,
 						  SynchronizerRegistry * synchronizer_registry,
 						  const std::set<SynchronizationTag> & tags_to_register,
-                                                  MemoryID memory_id);
+                                                  MemoryID memory_id,
+						  const bool register_to_event_manager);
 
 __END_AKANTU__

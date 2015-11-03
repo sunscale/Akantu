@@ -33,6 +33,9 @@
 #include "solid_mechanics_model.hh"
 #include "material_list.hh"
 #include "aka_math.hh"
+#ifdef AKANTU_DAMAGE_NON_LOCAL
+#  include "non_local_manager.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -239,6 +242,12 @@ void SolidMechanicsModel::initMaterials() {
       break;
     }
   }
+
+
+#ifdef AKANTU_DAMAGE_NON_LOCAL
+  /// initialize the non-local manager for non-local computations
+  this->non_local_manager->init();
+#endif
 }
 
 /* -------------------------------------------------------------------------- */

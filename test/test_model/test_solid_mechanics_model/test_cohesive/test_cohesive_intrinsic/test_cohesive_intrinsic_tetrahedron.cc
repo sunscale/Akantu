@@ -283,7 +283,7 @@ bool checkTractions(SolidMechanicsModelCohesive & model,
   const Array<Real> & damage = mat_cohesive.getDamage(type_cohesive);
 
   UInt nb_quad_per_el
-    = model.getFEEngine("CohesiveFEEngine").getNbQuadraturePoints(type_cohesive);
+    = model.getFEEngine("CohesiveFEEngine").getNbIntegrationPoints(type_cohesive);
   UInt nb_element = model.getMesh().getNbElement(type_cohesive);
   UInt tot_nb_quad = nb_element * nb_quad_per_el;
 

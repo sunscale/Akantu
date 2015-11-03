@@ -410,6 +410,9 @@ public:
   /// get all the type of the surface element associated to a given element
   static inline VectorProxy<ElementType> getAllFacetTypes(const ElementType & type);
 
+  /// get the number of nodes in the given element list
+  static inline UInt getNbNodesPerElementList(const Array<Element> & elements);
+
   /* ------------------------------------------------------------------------ */
   /* Element type Iterator                                                    */
   /* ------------------------------------------------------------------------ */

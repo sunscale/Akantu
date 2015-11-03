@@ -87,7 +87,7 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(const Array<El
     UInt index = el_it->element;
     ElementType type = el_it->type;
     UInt nb_element = this->model->getMesh().getNbElement(type);
-    UInt nb_quad_per_element = this->fem_cohesive->getNbQuadraturePoints(type);
+    UInt nb_quad_per_element = this->fem_cohesive->getNbIntegrationPoints(type);
 
     Array<Real>::vector_iterator sigma_c_begin
       = this->sigma_c_eff(type).begin_reinterpret(nb_quad_per_element, nb_element);
@@ -157,7 +157,7 @@ void MaterialCohesiveBilinear<spatial_dimension>::scaleTraction(const Element & 
       if (*elem == ElementNull || elem->kind == _ek_cohesive) continue;
 
       // unit vector for integration in order to obtain the volume
-      UInt nb_quadrature_points = fe_engine.getNbQuadraturePoints(elem->type);
+      UInt nb_quadrature_points = fe_engine.getNbIntegrationPoints(elem->type);
       Vector<Real> unit_vector(nb_quadrature_points, 1);
 
       volume += fe_engine.integrate(unit_vector, elem->type,

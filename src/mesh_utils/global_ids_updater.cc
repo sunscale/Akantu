@@ -1,16 +1,13 @@
 /**
- * @file   mesh_geom_abstract.cc
+ * @file   global_ids_updater.cc
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
+ * @date   Fri Oct  2 13:44:02 2015
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
- *
- * @date creation: Thu Feb 26 2015
- * @date last modification: Mon Mar 2 2015
- *
- * @brief  Class for constructing the CGAL primitives of a mesh
+ * @brief  Functions of the GlobalIdsUpdater
  *
  * @section LICENSE
  *
- * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -29,19 +26,19 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-#include "aka_common.hh"
-#include "mesh_geom_abstract.hh"
-
-/* -------------------------------------------------------------------------- */
+#include "global_ids_updater.hh"
+#include "mesh_utils.hh"
 
 __BEGIN_AKANTU__
 
-MeshGeomAbstract::MeshGeomAbstract(Mesh & mesh) :
-  mesh(mesh)
-{}
+UInt GlobalIdsUpdater::updateGlobalIDs(UInt old_nb_nodes) {
+  UInt total_nb_new_nodes = MeshUtils::updateLocalMasterGlobalConnectivity(mesh, old_nb_nodes);
 
-MeshGeomAbstract::~MeshGeomAbstract() 
-{}
+  synchronizer->computeBufferSize(*this, _gst_giu_global_conn);
+  synchronizer->asynchronousSynchronize(*this, _gst_giu_global_conn);
+  synchronizer->waitEndSynchronize(*this, _gst_giu_global_conn);
+
+  return total_nb_new_nodes;
+}
 
 __END_AKANTU__

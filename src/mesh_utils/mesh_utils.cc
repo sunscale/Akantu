@@ -2143,6 +2143,53 @@ void MeshUtils::buildSegmentToNodeType(const Mesh & mesh,
   }
 }
 
+/* -------------------------------------------------------------------------- */
+UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh, UInt local_nb_new_nodes) {
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  Int rank = comm.whoAmI();
+  Int nb_proc = comm.getNbProc();
+  if (nb_proc == 1) return local_nb_new_nodes;
+
+  /// resize global ids array
+  Array<UInt> & nodes_global_ids = mesh.getGlobalNodesIds();
+  UInt old_nb_nodes = mesh.getNbNodes() - local_nb_new_nodes;
+
+  nodes_global_ids.resize(mesh.getNbNodes());
+
+  /// compute amount of local or master doubled nodes
+  Vector<UInt> local_master_nodes(nb_proc);
+
+  for (UInt n = old_nb_nodes; n < mesh.getNbNodes(); ++n)
+    if (mesh.isLocalOrMasterNode(n)) ++local_master_nodes(rank);
+
+  comm.allGather(local_master_nodes.storage(), 1);
+
+  /// update global number of nodes
+  UInt total_nb_new_nodes = std::accumulate(local_master_nodes.storage(),
+					    local_master_nodes.storage() + nb_proc,
+					    0);
+
+  if (total_nb_new_nodes == 0) return 0;
+
+  /// set global ids of local and master nodes
+  UInt starting_index = std::accumulate(local_master_nodes.storage(),
+  					local_master_nodes.storage() + rank,
+  					mesh.getNbGlobalNodes());
+
+  for (UInt n = old_nb_nodes; n < mesh.getNbNodes(); ++n) {
+    if (mesh.isLocalOrMasterNode(n)) {
+      nodes_global_ids(n) = starting_index;
+      ++starting_index;
+    }
+  }
+
+  mesh.nb_global_nodes += total_nb_new_nodes;
+  return total_nb_new_nodes;
+}
+
+/* -------------------------------------------------------------------------- */
+
+
 
 __END_AKANTU__
 

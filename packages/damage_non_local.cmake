@@ -42,6 +42,7 @@ package_declare_sources(damage_non_local
   model/solid_mechanics/materials/material_non_local.hh
   model/solid_mechanics/materials/material_non_local_includes.hh
   model/solid_mechanics/materials/material_non_local_inline_impl.cc
+  model/solid_mechanics/materials/material_non_local.cc
 
   model/solid_mechanics/materials/weight_functions/base_weight_function.hh
   model/solid_mechanics/materials/weight_functions/base_weight_function_inline_impl.cc
@@ -55,18 +56,14 @@ package_declare_sources(damage_non_local
   model/solid_mechanics/materials/weight_functions/stress_based_weight_function.cc
   model/solid_mechanics/materials/weight_functions/stress_based_weight_function_inline_impl.cc
 
-
-  synchronizer/grid_synchronizer.cc
-  synchronizer/grid_synchronizer.hh
-
   model/common/non_local_toolbox/non_local_manager.hh
   model/common/non_local_toolbox/non_local_manager.cc
   model/common/non_local_toolbox/non_local_manager_inline_impl.cc
   model/common/non_local_toolbox/non_local_neighborhood_base.hh
   model/common/non_local_toolbox/non_local_neighborhood_base.cc
-  model/common/non_local_toolbox/non_local_neighborhood_base_inline_impl.cc
   model/common/non_local_toolbox/non_local_neighborhood.hh
-  model/common/non_local_toolbox/non_local_neighborhood.cc
+  model/common/non_local_toolbox/non_local_neighborhood_tmpl.hh
+  model/common/non_local_toolbox/non_local_neighborhood_inline_impl.cc
 
   )
 

@@ -139,17 +139,17 @@ function(package_get_element_lists)
     if(_kind)
       string(TOUPPER "${_kind}" _u_kind)
       if(_element_types)
-	set(_boosted_element_types "${_boosted_element_types}
+        set(_boosted_element_types "${_boosted_element_types}
 #define AKANTU_ek_${_kind}_ELEMENT_TYPE\t")
-	_transfer_list_to_boost_seq(_element_types _boosted_element_types)
-	set(_boosted_element_types "${_boosted_element_types}\n")
+        _transfer_list_to_boost_seq(_element_types _boosted_element_types)
+        set(_boosted_element_types "${_boosted_element_types}\n")
 
-	# defininf the kinds variables
-	set(_element_kinds "${_element_kinds}
+        # defininf the kinds variables
+        set(_element_kinds "${_element_kinds}
 #define AKANTU_${_u_kind}_KIND\t(_ek_${_kind})")
 
-	# defining the full list of element
-	set(_all_element_types "${_all_element_types}\t\\
+        # defining the full list of element
+        set(_all_element_types "${_all_element_types}\t\\
   AKANTU_ek_${_kind}_ELEMENT_TYPE")
       endif()
 
@@ -160,13 +160,13 @@ function(package_get_element_lists)
 
       # defining the macros
       set(_boost_macros "${_boost_macros}
-#define AKANTU_BOOST_${_u_kind}_ELEMENT_SWITCH(macro)			\\
- AKANTU_BOOST_ELEMENT_SWITCH(macro,					\\
-			      AKANTU_ek_${_kind}_ELEMENT_TYPE)
+#define AKANTU_BOOST_${_u_kind}_ELEMENT_SWITCH(macro)                   \\
+ AKANTU_BOOST_ELEMENT_SWITCH(macro,                                     \\
+                              AKANTU_ek_${_kind}_ELEMENT_TYPE)
 
-#define AKANTU_BOOST_${_u_kind}_ELEMENT_LIST(macro)			\\
-  AKANTU_BOOST_APPLY_ON_LIST(macro,					\\
-			     AKANTU_ek_${_kind}_ELEMENT_TYPE)
+#define AKANTU_BOOST_${_u_kind}_ELEMENT_LIST(macro)                     \\
+  AKANTU_BOOST_APPLY_ON_LIST(macro,                                     \\
+                             AKANTU_ek_${_kind}_ELEMENT_TYPE)
 ")
 
       list(APPEND _aka_fe_lists ${_fe_engine_lists})

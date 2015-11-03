@@ -1,0 +1,30 @@
+material test_material [
+	 name = mat_1
+	 rho = 1   # density
+	 E   = 1 # young's modulus
+	 nu  = 0    # poisson's ratio
+]
+
+material test_material [
+	 name = mat_2
+	 rho = 1   # density
+	 E   = 1 # young's modulus
+	 nu  = 0    # poisson's ratio
+]
+
+
+non_local mat_1 remove_wf [
+	  radius = 0.5		  
+	  weight_function weight_parameter [
+	  update_rate = 1
+	  damage_limit = 0.9
+	  ]	  
+]
+
+non_local mat_2 remove_wf [
+	  radius = 0.5		  
+	  weight_function weight_parameter [
+	  update_rate = 1
+	  damage_limit = 0.9
+	  ]	  
+]	  	  

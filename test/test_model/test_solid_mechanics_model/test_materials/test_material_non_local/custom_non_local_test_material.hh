@@ -38,19 +38,15 @@ __BEGIN_AKANTU__
 
 template<UInt dim>
 class CustomNonLocalTestMaterial : public MaterialElastic<dim>,
-                                   public MaterialNonLocal<dim, BaseWeightFunction> {
+                                   public MaterialNonLocal<dim> {
 public:
-  typedef MaterialNonLocal<dim, BaseWeightFunction> MyNonLocalParent;
+  typedef MaterialNonLocal<dim> MyNonLocalParent;
   typedef MaterialElastic<dim> MyElasticParent;
 
   CustomNonLocalTestMaterial(SolidMechanicsModel & model, const ID & id);
 
   /* ------------------------------------------------------------------------ */
-  virtual void initMaterial() {
-    MyElasticParent::initMaterial();
-    MyNonLocalParent::initMaterial();
-  }
-
+  virtual void initMaterial();
 
   void computeNonLocalStress(ElementType el_type, GhostType ghost_type);
   void computeStress(ElementType el_type, GhostType ghost_type);

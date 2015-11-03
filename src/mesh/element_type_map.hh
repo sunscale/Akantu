@@ -216,7 +216,7 @@ public:
    */
   ElementTypeMapArray(const ID & id = "by_element_type_array", const ID & parent_id = "no_parent",
                      const MemoryID & memory_id = 0) :
-    parent(), Memory(parent_id + ":" + id, memory_id) {};
+    parent(), Memory(parent_id + ":" + id, memory_id), name(id) {};
 
   /*! allocate memory for a new array
    *  @param size number of tuples of the new array
@@ -267,6 +267,9 @@ public:
   /*! frees all memory related to the data*/
   inline void free();
 
+  /*! set all values in the ElementTypeMap to zero*/
+  inline void clear();
+
   /*! deletes and reorders entries in the stored arrays
    *  @param new_numbering a ElementTypeMapArray of new indices. UInt(-1) indicates
    *         deleted entries. */
@@ -297,9 +300,18 @@ public:
     }
     return nb_components;
   }
+/* -------------------------------------------------------------------------- */
+/* Accesssors                                                                 */
+/* -------------------------------------------------------------------------- */
+public:
+  /// get the name of the internal field
+  AKANTU_GET_MACRO(Name, name, ID);
 
 private:
   ElementTypeMapArray operator=(__attribute__((unused)) const ElementTypeMapArray & other) {};
+
+  /// name of the elment type map: e.g. connectivity, grad_u
+  ID name;
 };
 
 /// to store data Array<Real> by element type

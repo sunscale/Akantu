@@ -500,10 +500,8 @@ Mesh::createFieldFromAttachedData<UInt>(const std::string & field_id,
 					const std::string & group_name,
 					const ElementKind & element_kind);
 
-
-/* -------------------------------------------------------------------------- */
-
 #endif
 
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

@@ -76,12 +76,12 @@ int main(int argc, char *argv[]) {
   model.registerFEEngineObject<MyFEEngineType>("FacetsFEEngine", mesh_facets, spatial_dimension-1);
   model.getFEEngine("FacetsFEEngine").initShapeFunctions();
 
-  UInt nb_quad_per_facet = model.getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
+  UInt nb_quad_per_facet = model.getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
   UInt nb_tot_quad = nb_quad_per_facet * nb_facet;
 
   Array<Real> quad_facets(nb_tot_quad, spatial_dimension);
 
-  model.getFEEngine("FacetsFEEngine").interpolateOnQuadraturePoints(position,
+  model.getFEEngine("FacetsFEEngine").interpolateOnIntegrationPoints(position,
 							  quad_facets,
 							  spatial_dimension,
 							  type_facet);
@@ -120,13 +120,13 @@ int main(int argc, char *argv[]) {
 
 
   /// compute quadrature points position of the elements
-  UInt nb_quad_per_element = model.getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quad_per_element = model.getFEEngine().getNbIntegrationPoints(type);
   UInt nb_tot_quad_el = nb_quad_per_element * nb_element;
 
   Array<Real> quad_elements(nb_tot_quad_el, spatial_dimension);
 
 
-  model.getFEEngine().interpolateOnQuadraturePoints(position,
+  model.getFEEngine().interpolateOnIntegrationPoints(position,
 					       quad_elements,
 					       spatial_dimension,
 					       type);

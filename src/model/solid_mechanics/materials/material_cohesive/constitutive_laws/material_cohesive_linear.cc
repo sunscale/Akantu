@@ -144,7 +144,7 @@ void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {
       = mesh_facets.getElementToSubelement(type_facet);
 
     UInt nb_facet = facet_to_element.getSize();
-    UInt nb_quad_per_facet = fe_engine_facet.getNbQuadraturePoints(type_facet);
+    UInt nb_quad_per_facet = fe_engine_facet.getNbIntegrationPoints(type_facet);
 
     // iterator to modify sigma_c for all the quadrature points of a facet
     Array<Real>::vector_iterator sigma_c_iterator
@@ -164,7 +164,7 @@ void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {
         if (*elem == ElementNull) continue;
 
         // unit vector for integration in order to obtain the volume
-        UInt nb_quadrature_points = fe_engine.getNbQuadraturePoints(elem->type);
+        UInt nb_quadrature_points = fe_engine.getNbIntegrationPoints(elem->type);
         Vector<Real> unit_vector(nb_quadrature_points, 1);
 
         volume += fe_engine.integrate(unit_vector, elem->type,
@@ -212,7 +212,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
     UInt nn = 0;
 
 
-    UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
+    UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
     UInt nb_facet = f_filter.getSize();
     //  if (nb_facet == 0) continue;
 
@@ -225,7 +225,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
 
     const Array<Real> & tangents = model->getTangents(type_facet);
     const Array<Real> & normals
-      = model->getFEEngine("FacetsFEEngine").getNormalsOnQuadPoints(type_facet);
+      = model->getFEEngine("FacetsFEEngine").getNormalsOnIntegrationPoints(type_facet);
     Array<Real>::const_vector_iterator normal_begin = normals.begin(spatial_dimension);
     Array<Real>::const_vector_iterator tangent_begin = tangents.begin(tangents.getNbComponent());
     Array<Real>::const_matrix_iterator facet_stress_begin =

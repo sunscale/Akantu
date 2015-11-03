@@ -56,7 +56,7 @@ public:
 
 public:
   /// Construct the primitive tree object
-  virtual void constructData();
+  virtual void constructData(GhostType ghost_type = _not_ghost);
 
 protected:
   /// Factory object containing the primitive tree

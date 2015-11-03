@@ -29,104 +29,93 @@
 #ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
 #define __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "solid_mechanics_model.hh"
-#include "aka_grid_dynamic.hh"
-#include "grid_synchronizer.hh"
+#include "neighborhood_base.hh"
+#include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
 
 
 __BEGIN_AKANTU__
 
-class NonLocalNeighborhoodBase {
+class NonLocalNeighborhoodBase : public NeighborhoodBase,
+				 public Parsable{
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
 
-  NonLocalNeighborhoodBase(SolidMechanicsModel & model, Real radius);
+  NonLocalNeighborhoodBase(const SolidMechanicsModel & model, 
+			   const ElementTypeMapReal & quad_coordinates,
+			   const ID & id = "non_local_neighborhood",
+			   const MemoryID & memory_id = 0);
   virtual ~NonLocalNeighborhoodBase();
 
-  typedef std::vector< std::pair<QuadraturePoint, QuadraturePoint> > PairList;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
 public:
-  /// initialize the material computed parameter
-  inline void insertQuad(const QuadraturePoint & quad, const Vector<Real> & coords);
-
-  /// create the pairs of quadrature points
-  void updatePairList();
-
-  /// save the pairs of quadrature points in a file
-  void savePairs(const std::string & filename) const;
-
-  /// save the coordinates of all neighbors of a quad
-  void saveNeighborCoords(const std::string & filename) const;
 
   /// create grid synchronizer and exchange ghost cells
-  void createGridSynchronizer();
+  virtual void createGridSynchronizer();
+
+  /// compute weights, for instance needed for non-local damage computation
+  virtual void computeWeights() {};
+
+  /// compute the non-local counter part for a given element type map
+  virtual void weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
+					   ElementTypeMapReal & accumulated,
+					   UInt nb_degree_of_freedom,
+					   const GhostType & ghost_type2) const {};
+
+  /// update the weights for the non-local averaging
+  virtual void updateWeights() {};
+
+  /// register a new non-local variable in the neighborhood
+  virtual void registerNonLocalVariable(const ID & id) {};
+
+  /// clean up the unneccessary ghosts
+  void cleanupExtraGhostElements(std::set<Element> & relevant_ghost_elements);
+
 
 protected:
-
-  /// intialize the neighborhood
-  void initNeighborhood();
 
   /// create the grid
   void createGrid();
 
-  void cleanupExtraGhostElement(const ElementTypeMap<UInt> & nb_ghost_protected) {};
+/* -------------------------------------------------------------------------- */
+/* DataAccessor inherited members                                             */
+/* -------------------------------------------------------------------------- */
+public:
 
-  // virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-  // 					 SynchronizationTag tag) const;
+  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
+					     SynchronizationTag tag) const {return 0; };
 
-  // virtual inline void packElementData(CommunicationBuffer & buffer,
-  // 				      const Array<Element> & elements,
-  // 				      SynchronizationTag tag) const;
+  virtual inline void packElementData(CommunicationBuffer & buffer,
+  				      const Array<Element> & elements,
+  				      SynchronizationTag tag) const {};
 
-  // virtual inline void unpackElementData(CommunicationBuffer & buffer,
-  // 					const Array<Element> & elements,
-  // 					SynchronizationTag tag);
+  virtual inline void unpackElementData(CommunicationBuffer & buffer,
+  					const Array<Element> & elements,
+  					SynchronizationTag tag) {};
 
-  // virtual inline void onElementsAdded(const Array<Element> & element_list);
-  // virtual inline void onElementsRemoved(const Array<Element> & element_list,
-  // 					const ElementTypeMapArray<UInt> & new_numbering,
-  // 					const RemovedElementsEvent & event) {};
+/* -------------------------------------------------------------------------- */
+/* Accessors                                                                  */
+/* -------------------------------------------------------------------------- */
+public:
+  AKANTU_GET_MACRO(NonLocalVariables, non_local_variables, const std::set<ID> &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  
-  /// the model to which the neighborhood belongs
-  SolidMechanicsModel & model;
 
-  /// Radius of non-local neighborhood
-  Real non_local_radius;
-
-  /**
-   * the pairs of quadrature points
-   * 0: not ghost to not ghost
-   * 1: not ghost to ghost
-   */
-  PairList pair_list[2];
-
-  /// the regular grid to construct/update the pair lists
-  SpatialGrid<QuadraturePoint> * spatial_grid;
-
-  bool is_creating_grid;
-
-  GridSynchronizer * grid_synchronizer;
+  /// list of non-local variables associated to the neighborhood
+  std::set<ID> non_local_variables;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
 
-#include "non_local_neighborhood_base_inline_impl.cc"
 
 __END_AKANTU__
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__ */

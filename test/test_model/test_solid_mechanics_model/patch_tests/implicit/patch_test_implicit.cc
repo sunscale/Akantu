@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
   /* ------------------------------------------------------------------------ */
   /* Checks                                                                   */
   /* ------------------------------------------------------------------------ */
-  UInt nb_quadrature_points = my_model.getFEEngine().getNbQuadraturePoints(element_type);
+  UInt nb_quadrature_points = my_model.getFEEngine().getNbIntegrationPoints(element_type);
 
   Array<Real> & stress_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getStress(element_type));
   Array<Real> & strain_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getGradU(element_type));

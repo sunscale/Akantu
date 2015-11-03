@@ -3,7 +3,8 @@ if(${PROJECT_SOURCE_DIR}/third-party/${BLACKDYNAMITE_ARCHIVE})
     URL ${PROJECT_SOURCE_DIR}/third-party/${BLACKDYNAMITE_ARCHIVE})
 else()
   set(_blackdynamite_download_command
-    SVN_REPOSITORY ${BLACKDYNAMITE_URL}
+    GIT_REPOSITORY ${BLACKDYNAMITE_GIT}
+    GIT_TAG ${BLACKDYNAMITE_VERSION}
     )
 endif()
 
@@ -30,9 +31,8 @@ ExternalProject_Add(blackdynamite
   )
 
 
-
 set_third_party_shared_libirary_name(BLACKDYNAMITE_LIBRARIES blackdynamite)
-package_set_include_dir(BLACKDYNAMITE_INCLUDE_DIR "${PROJECT_BINARY_DIR}/third-party/include/blackdynamite" CACHE PATH "")
+set(BLACKDYNAMITE_INCLUDE_DIR "${PROJECT_BINARY_DIR}/third-party/include/blackdynamite" CACHE PATH "")
 mark_as_advanced(
   BLACKDYNAMITE_LIBRARIES
   BLACKDYNAMITE_INCLUDE_DIR

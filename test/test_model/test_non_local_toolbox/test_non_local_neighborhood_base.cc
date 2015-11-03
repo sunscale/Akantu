@@ -58,18 +58,8 @@ int main(int argc, char *argv[]) {
   /// dump material index in paraview
   model.addDumpField("material_index");
   model.dump();
-  /// non-local neighborhood creation
-  Real non_local_radius = 0.5;
-  NonLocalNeighborhoodBase neighborhood(model, non_local_radius);
 
-  /// insert the quadrature points in the neighborhood
-  for (UInt m = 0; m < model.getNbMaterials(); ++m) {
-    TestMaterial<spatial_dimension> & mat = dynamic_cast<TestMaterial<spatial_dimension> & > (model.getMaterial(m));
-    mat.insertQuads(neighborhood);
-  }
-
-  /// create the pairs of quadrature points
-  neighborhood.updatePairList();
+  NonLocalNeighborhoodBase & neighborhood = model.getNonLocalManager().getNeighborhood("test_region");
 
   /// save the pair of quadrature points and the coords of all neighbors
   std::string output_1 = "quadrature_pairs";

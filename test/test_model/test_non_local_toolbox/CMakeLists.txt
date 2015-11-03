@@ -31,11 +31,32 @@
 #===============================================================================
 
 #===============================================================================
-add_mesh(test_neighbors_mesh plate.geo 2 1 OUTPUT plate.msh)
-
 register_test(test_non_local_neighborhood_base
   SOURCES test_non_local_neighborhood_base.cc test_material.hh test_material.cc
-  DEPENDENCIES test_neighbors_mesh 
-  FILES_TO_COPY material.dat plot_neighborhoods.py
+  FILES_TO_COPY material.dat plot_neighborhoods.py plate.msh
+  PACKAGE damage_non_local
+  )
+
+register_test(test_weight_computation
+  SOURCES test_weight_computation.cc test_material.hh test_material.cc 
+  FILES_TO_COPY material_weight_computation.dat plate.msh
+  PACKAGE damage_non_local
+  )
+
+register_test(test_non_local_averaging
+  SOURCES test_non_local_averaging.cc test_material.hh test_material.cc 
+  FILES_TO_COPY material_weight_computation.dat plate.msh
+  PACKAGE damage_non_local
+  )
+
+register_test(test_remove_damage_weight_function
+  SOURCES test_remove_damage_weight_function.cc test_material_damage.hh test_material_damage.cc 
+  FILES_TO_COPY material_remove_damage.dat plate.msh
+  PACKAGE damage_non_local
+  )
+
+register_test(test_build_neighborhood_parallel
+  SOURCES test_build_neighborhood_parallel.cc test_material_damage.hh test_material_damage.cc
+  FILES_TO_COPY material_parallel_test.dat fine_mesh.msh
   PACKAGE damage_non_local
   )

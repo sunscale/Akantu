@@ -209,20 +209,20 @@ inline Element Material::convertToGlobalElement(const Element & local_element) c
 }
 
 /* -------------------------------------------------------------------------- */
-inline QuadraturePoint Material::convertToLocalPoint(const QuadraturePoint & global_point) const {
+inline IntegrationPoint Material::convertToLocalPoint(const IntegrationPoint & global_point) const {
   const FEEngine & fem = this->model->getFEEngine();
-  UInt nb_quad = fem.getNbQuadraturePoints(global_point.type);
+  UInt nb_quad = fem.getNbIntegrationPoints(global_point.type);
   Element el = this->convertToLocalElement(static_cast<const Element &>(global_point));
-  QuadraturePoint tmp_quad(el, global_point.num_point, nb_quad);
+  IntegrationPoint tmp_quad(el, global_point.num_point, nb_quad);
   return tmp_quad;
 }
 
 /* -------------------------------------------------------------------------- */
-inline QuadraturePoint Material::convertToGlobalPoint(const QuadraturePoint & local_point) const {
+inline IntegrationPoint Material::convertToGlobalPoint(const IntegrationPoint & local_point) const {
   const FEEngine & fem = this->model->getFEEngine();
-  UInt nb_quad = fem.getNbQuadraturePoints(local_point.type);
+  UInt nb_quad = fem.getNbIntegrationPoints(local_point.type);
   Element el = this->convertToGlobalElement(static_cast<const Element &>(local_point));
-  QuadraturePoint tmp_quad(el, local_point.num_point, nb_quad);
+  IntegrationPoint tmp_quad(el, local_point.num_point, nb_quad);
   return tmp_quad;
 }
 
@@ -231,7 +231,7 @@ inline UInt Material::getNbDataForElements(const Array<Element> & elements,
                                            SynchronizationTag tag) const {
   if(tag == _gst_smm_stress) {
     return (this->isFiniteDeformation() ? 3 : 1) * spatial_dimension * spatial_dimension *
-      sizeof(Real) * this->getModel().getNbQuadraturePoints(elements);
+      sizeof(Real) * this->getModel().getNbIntegrationPoints(elements);
   }
   return 0;
 }

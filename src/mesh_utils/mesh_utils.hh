@@ -167,6 +167,8 @@ public:
 				     Mesh & mesh_facets,
 				     DistributedSynchronizer * synchronizer);
 
+  /// update local and master global connectivity when new nodes are added
+  static UInt updateLocalMasterGlobalConnectivity(Mesh & mesh, UInt old_nb_nodes);
 
 private:
 

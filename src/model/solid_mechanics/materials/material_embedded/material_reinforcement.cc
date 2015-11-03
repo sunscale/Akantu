@@ -150,7 +150,7 @@ void MaterialReinforcement<dim>::allocBackgroundShapeDerivatives() {
 	ElementTypeMapArray<Real> * shaped_etma = new ElementTypeMapArray<Real>(shaped_id, this->name);
 
 	UInt nb_points = Mesh::getNbNodesPerElement(back_type);
-	UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(int_type);
+	UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbIntegrationPoints(int_type);
 	UInt nb_elements = element_filter(int_type, int_ghost).getSize();
 
         // Alloc the background ElementTypeMapArray
@@ -263,7 +263,7 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
 
   Array<UInt> & elem_filter = element_filter(type, ghost_type);
   UInt nb_element = elem_filter.getSize();
-  UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(type);
+  UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbIntegrationPoints(type);
 
   Array<Real> & gradu_vec = gradu_embedded(type, ghost_type);
 
@@ -366,7 +366,7 @@ void MaterialReinforcement<dim>::assembleResidualInterface(const ElementType & i
   Array<UInt> & elem_filter = element_filter(interface_type, ghost_type);
 
   UInt nodes_per_background_e = Mesh::getNbNodesPerElement(background_type);
-  UInt nb_quadrature_points = interface_engine.getNbQuadraturePoints(interface_type, ghost_type);
+  UInt nb_quadrature_points = interface_engine.getNbIntegrationPoints(interface_type, ghost_type);
   UInt nb_element = elem_filter.getSize();
 
   UInt back_dof = dim * nodes_per_background_e;
@@ -471,7 +471,7 @@ void MaterialReinforcement<dim>::computeDirectingCosines(const ElementType & typ
   const UInt steel_dof = dim * nb_nodes_per_element;
   const UInt voigt_size = getTangentStiffnessVoigtSize(dim);
   const UInt nb_quad_points =
-    model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(type, ghost_type);
+    model->getFEEngine("EmbeddedInterfaceFEEngine").getNbIntegrationPoints(type, ghost_type);
 
   Array<Real> node_coordinates(this->element_filter(type, ghost_type).getSize(), steel_dof);
 
@@ -544,7 +544,7 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrixInterface(const ElementT
 
   UInt nb_element = elem_filter.getSize();
   UInt nodes_per_background_e = Mesh::getNbNodesPerElement(background_type);
-  UInt nb_quadrature_points = interface_engine.getNbQuadraturePoints(interface_type, ghost_type);
+  UInt nb_quadrature_points = interface_engine.getNbIntegrationPoints(interface_type, ghost_type);
 
   UInt back_dof = dim * nodes_per_background_e;
 
@@ -640,11 +640,11 @@ void MaterialReinforcement<dim>::computeBackgroundShapeDerivatives(const Element
 
     const UInt nb_elements = filter.getSize();
     const UInt nb_nodes = Mesh::getNbNodesPerElement(type);
-    const UInt nb_quad_per_element = interface_engine.getNbQuadraturePoints(*interface_type);
+    const UInt nb_quad_per_element = interface_engine.getNbIntegrationPoints(*interface_type);
 
     Array<Real> quad_pos(nb_quad_per_element * nb_elements, dim, "interface_quad_points");
     quad_pos.resize(nb_quad_per_element * nb_elements);
-    interface_engine.interpolateOnQuadraturePoints(interface_mesh.getNodes(),
+    interface_engine.interpolateOnIntegrationPoints(interface_mesh.getNodes(),
 						   quad_pos, dim, *interface_type,
 						   ghost_type, filter);
 
