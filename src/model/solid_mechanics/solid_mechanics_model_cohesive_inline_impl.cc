@@ -61,8 +61,6 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
   while (insertion_new_element) {  //loop for insertion of new cohesive elements
 
-    //    std::cout << "2 SOLID MECH MODEL COHESIVE INLINE IMPL" << std::endl;
-
     //insertion_new_element = false;
 
     if (is_extrinsic) {
@@ -101,7 +99,6 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
     }
 
     this->updateResidual();
-    //    std::cout << "UPDATE RESIDUAL" << std::endl;
 
     AKANTU_DEBUG_ASSERT(stiffness_matrix != NULL,
                         "You should first initialize the implicit solver and assemble the stiffness matrix");
@@ -130,13 +127,9 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
     if(criteria == _scc_residual) {
       converged = this->testConvergence<criteria> (tolerance, error);
       if(converged) return converged;
-      //      std::cout << "CONVERGED = " << converged << std::endl;
     }
 
     do {
-
-      //      std::cout << "3 NEWTON RHAPSON LOOP" << std::endl;
-
       if (cmethod == _scm_newton_raphson_tangent)
         this->assembleStiffnessMatrix();
 
@@ -167,16 +160,12 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
     } while (!converged && iter < max_iteration);
 
-    //    dump();
-    //    dump("cohesive elements");
-
-    if (load_reduction && (error < tolerance * 10000)) converged = true;
+    if (load_reduction && (error < tolerance * 1.0e8)) converged = true;
 
     if (converged) {
       ////      EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
       // !!! add sendEvent to call computeCauchyStress !!!!
      
-      //      load_reduction = true;
       if (prank==0){
         std::cout << "Error after convergence: " << error << std::endl;
         std::cout << "no. of iterations: " << iter << std::endl;
@@ -206,27 +195,15 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       this->acceleration = tmp_swap;
 
 
-      if (converged || (load_reduction && error < 1.0e-5)){
-        //        UInt nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive);
-        //        this->checkCohesiveStress();
-        //        UInt new_nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive);
+      //      if (converged || (load_reduction && error < tolerance * 1.0e9)){
+      if (converged){
 
         UInt new_cohesive_elements = checkCohesiveStress();
 
-        //        UInt nb_cohe[2];
-        //nb_cohe[0] = nb_cohesive_elements;
-        //nb_cohe[1] = new_nb_cohesive_elements;
-        //        StaticCommunicator::getStaticCommunicator().allReduce(nb_cohe, 2, _so_sum);
-        //        if(nb_cohe[0] == nb_cohe[1]) {
-
         if(new_cohesive_elements == 0){
           insertion_new_element = false;
-	  //load_reduction = true;
-	  //std::cout << "NO new element : load reduction = " << load_reduction << std::endl;
         } else {
           insertion_new_element = true;
-	  //load_reduction = false;
-	  //std::cout << "insertion new element : load reduction = " << load_reduction << std::endl;
           if (prank==0)
             std::cout << "No. cohesive elements inserted = " << new_cohesive_elements << std::endl;
         }
