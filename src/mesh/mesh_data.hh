@@ -79,44 +79,49 @@ public:
   /* Methods and accessors                                                    */
   /* ------------------------------------------------------------------------ */
 public:
+  ///  Register new elemental data (and alloc data) with check if the name is new
   template<typename T>
   void registerElementalData(const std::string & name);
   inline void registerElementalData(const std::string & name, TypeCode type);
 
+  /// Get an existing elemental data array
   template<typename T>
   const Array<T> & getElementalDataArray(const std::string & data_name,
                                          const ElementType & el_type,
                                          const GhostType & ghost_type = _not_ghost) const;
-
   template<typename T>
   Array<T> & getElementalDataArray(const std::string & data_name,
                                    const ElementType & el_type,
                                    const GhostType & ghost_type = _not_ghost);
 
+  /// Get an elemental data array, if it does not exist: allocate it
   template<typename T>
   Array<T> & getElementalDataArrayAlloc(const std::string & data_name,
                                         const ElementType & el_type,
                                         const GhostType & ghost_type = _not_ghost,
                                         UInt nb_component = 1);
 
+  /// get the names of the data stored in elemental_data
   inline void getTagNames(StringVector & tags, const ElementType & type, const GhostType & ghost_type = _not_ghost) const;
 
+  /// get the type of the data stored in elemental_data
+  template<typename T>
+  TypeCode getTypeCode() const;
   inline TypeCode getTypeCode(const std::string name) const;
 
   template<typename T>
-  inline UInt getNbComponentTemplated(const std::string, const ElementType & type, const GhostType & ghost_type) const;
+  inline UInt getNbComponentTemplated(const std::string, const ElementType & el_type, const GhostType & ghost_type) const;
   inline UInt getNbComponent(const std::string name, const ElementType & el_type, const GhostType & ghost_type = _not_ghost) const;
 
+  /// Get an existing elemental data
   template<typename T>
   const ElementTypeMapArray<T> & getElementalData(const std::string & name) const;
-
   template<typename T>
   ElementTypeMapArray<T> & getElementalData(const std::string & name);
 
-  template<typename T>
-  TypeCode getTypeCode() const;
 
 private:
+  ///  Register new elemental data (add alloc data)
   template<typename T>
   ElementTypeMapArray<T> * allocElementalData(const std::string & name);
 
@@ -124,7 +129,9 @@ private:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+  /// Map when elemental data is stored as ElementTypeMap
   ElementalDataMap elemental_data;
+  /// Map when elementalType of the data stored in elemental_data
   TypeCodeMap typecode_map;
 };
 

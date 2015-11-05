@@ -321,13 +321,6 @@ public:
   inline reference operator[](UInt i);
   /// return a const reference to the ith component of the 1D array
   inline const_reference operator[](UInt i) const;
-  
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// get the number of tuples contained in the array
-  UInt getSize() const{ return this->size; };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

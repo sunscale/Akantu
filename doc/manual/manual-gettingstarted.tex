@@ -140,7 +140,7 @@ Data in \akantu can be stored in data containers implemented by
 the \code{Array} class. In its most basic usage, the \code{Array} class
 implemented in \akantu is similar to the \code{vector} class of
 the Standard Template Library (STL) for C++. A simple \code{Array}
-containing a sequence of \code{nb\_element} values can be generated with:
+containing a sequence of \code{nb\_element} values (of a given type) can be generated with:
 \begin{cpp}
   Array<type> example_array(nb_element);
 \end{cpp}
@@ -175,7 +175,7 @@ The \code{Array} object has the possibility to request iterators
 in order to make the writing of loops easier and enhance readability.
 For instance, a loop over the nodal coordinates can be performed like:
 \begin{cpp}
-  //accessing the nodal coordinates Array
+  //accessing the nodal coordinates Array (spatial_dimension components)
   Array<Real> nodes = mesh.getNodes();
 
   //creating the iterators
@@ -217,7 +217,9 @@ tensors by:
 In that last example, the \code{Matrix} objects are
 \code{spatial\_dimension} $\times$ \code{spatial\_dimension} matrices.
 The light objects \code{Matrix} and \code{Vector} can be used and
-combined to do most common linear algebra.
+combined to do most common linear algebra. If the number of component
+is 1, it is possible to use a scalar\_iterator rather than the
+vector/matrix one.
 
 
 In general, a mesh consists of several kinds of elements.

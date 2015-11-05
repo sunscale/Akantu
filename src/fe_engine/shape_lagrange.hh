@@ -43,7 +43,7 @@ class ShapeIGFEM;
 
 
 template <ElementKind kind>
-class ShapeLagrange : public ShapeFunctions{
+class ShapeLagrange : public ShapeFunctions {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
