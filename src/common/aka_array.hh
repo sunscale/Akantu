@@ -260,6 +260,10 @@ public:
   virtual void resize(UInt size);
 
   /// change the number of components by interlacing data
+  /// @param multiplicator number of interlaced components add
+  /// @param block_size blocks of data in the array
+  /// Examaple for block_size = 2, multiplicator = 2
+  /// array = oo oo oo -> new array = oo nn nn oo nn nn oo nn nn 
   void extendComponentsInterlaced(UInt multiplicator, UInt stride);
 
   /// search elem in the vector, return  the position of the first occurrence or -1 if not found
