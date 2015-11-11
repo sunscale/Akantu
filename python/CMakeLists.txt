@@ -45,7 +45,7 @@ set(AKANTU_SWIG_MODULES swig/akantu.i)
 #===============================================================================
 # Swig wrapper
 #===============================================================================
-find_package(SWIG 3.0 REQUIRED)
+find_package(SWIG 3.0)
 find_package(PythonLibs)
 find_package(PythonInterp)
 
@@ -180,7 +180,7 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
     set(_wrapper "${_output_dir}/${_module_we}_wrapper.cc")
     set(_extra_wrapper "${_output_dir}/${_module_we}.py")
     set(_extra_wrapper_bin "${CMAKE_CURRENT_BINARY_DIR}/${_module_we}.py")
-
+    message(${_extra_wrapper_bin})
 
     if(SWIG_FOUND)
       set_source_files_properties("${_wrapper}" PROPERTIES GENERATED 1)
@@ -205,6 +205,7 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
 	)
 
       list(APPEND _swig_wrappers ${_wrapper})
+      list(APPEND _swig_wrappers_py "${_extra_wrapper_bin}")
     else()
       if(NOT EXISTS ${_wrapper} OR NOT EXISTS "${_extra_wrapper}")
         message(FATAL_ERROR "The file ${_wrapper} and/or ${_extra_wrapper} does not exists and they cannot be generated. Install swig in order to generate them")
@@ -218,6 +219,7 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
   add_custom_target(${project}_generate_swig_wrappers DEPENDS ${_swig_wrappers})
 
   set(${_wrappers_cpp} ${_swig_wrappers} PARENT_SCOPE)
+    message(${_swig_wrappers_py})
   set(${_wrappers_py} ${_swig_wrappers_py} PARENT_SCOPE)
 endfunction()
 
@@ -241,6 +243,7 @@ if(AKANTU_SWIG_WRAPPERS_CPP)
     RUNTIME DESTINATION bin COMPONENT python # for windows ...
     )
 
+  message(AKANTU_WRAPPERS_PYTHON ${AKANTU_WRAPPERS_PYTHON})
   install(FILES ${AKANTU_WRAPPERS_PYTHON}
     DESTINATION lib COMPONENT python
     )

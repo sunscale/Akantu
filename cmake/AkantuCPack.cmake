@@ -35,7 +35,7 @@ mark_as_advanced(PACKAGE_FILE_NAME)
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
   set(CPACK_GENERATOR "TGZ")
 else()
-  set(CPACK_GENERATOR "NSIS;TGZ")
+  set(CPACK_GENERATOR "TGZ;NSIS")
 
   package_get_all_external_informations(
     _external_include_dirs
