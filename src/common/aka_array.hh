@@ -189,13 +189,13 @@ public:
   /* ------------------------------------------------------------------------ */
 
   /// Get an iterator that behaves like a pointer T * to the first entry
-  inline iterator<T> begin();
+  inline scalar_iterator begin();
   /// Get an iterator that behaves like a pointer T * to the end of the Array
-  inline iterator<T> end();
+  inline scalar_iterator end();
   /// Get a const_iterator to the beginging of an Array of scalar
-  inline const_iterator<T> begin() const;
+  inline const_scalar_iterator begin() const;
   /// Get a const_iterator to the end of an Array of scalar
-  inline const_iterator<T> end() const;
+  inline const_scalar_iterator end() const;
 
   /* ------------------------------------------------------------------------ */
   /// Get a vector_iterator on the begining of the Array
