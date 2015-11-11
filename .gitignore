@@ -10,3 +10,4 @@ release
 *.tgz
 *.tbz
 *.tar.bz2
+.idea

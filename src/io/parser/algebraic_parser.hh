@@ -69,11 +69,6 @@ namespace akantu {
     static Real my_min(Real a, Real b) { return std::min(a, b); }
     static Real my_max(Real a, Real b) { return std::max(a, b); }
 
-    template<class Iterator>
-    struct Skipper {
-      typedef qi::rule<Iterator, void()> type;
-    };
-
     struct lazy_unary_func_ {
       template <typename Funct, typename T>
       struct result { typedef T type; };
@@ -178,6 +173,12 @@ namespace akantu {
 	  =   qi::no_skip[qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9")] // coming from the InputFileGrammar
 	  ;
 
+#ifndef M_PI
+#  define M_PI		3.14159265358979323846
+#endif
+#ifndef M_E
+#  define M_E		2.7182818284590452354
+#endif
 	constant.add
 	  ("pi", M_PI)
 	  ("e",  M_E);
