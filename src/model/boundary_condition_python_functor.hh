@@ -45,9 +45,18 @@ namespace BC {
 class PythonFunctor : public Functor {
 
 public:
-  PythonFunctor(PyObject * obj) : python_obj(obj) {}
+  PythonFunctor(PyObject * obj);
 
-private:
+protected:
+
+  void callFunctor(PyObject * functor,
+		   PyObject * args,
+		   PyObject * kwargs) const;
+
+
+  template <typename T>
+  PyObject *convertArrayToNumpy(const Vector<T> & array) const;
+
   PyObject * python_obj;
 
 };
@@ -66,6 +75,23 @@ public:
 public:
   static const Type type = _dirichlet;
 
+  
+};
+
+class PythonFunctorNeumann : public PythonFunctor {
+
+public:
+  PythonFunctorNeumann(PyObject * obj) : PythonFunctor(obj) {}
+
+public:
+  
+  void operator()(const IntegrationPoint & quad_point,
+		  Vector<Real> & dual,
+		  const Vector<Real> & coord,
+		  const Vector<Real> & normals) const;
+
+public:
+  static const Type type = _neumann;
   
 };
 

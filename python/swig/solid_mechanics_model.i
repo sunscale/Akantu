@@ -77,11 +77,17 @@ print_self(SolidMechanicsModel)
 
   }
 
-  void applyBC(PyObject * func_obj,
-	       const BC::Functor::Type & type,
-	       const std::string & group_name) {
+  void applyDirichletBC(PyObject * func_obj,
+			const std::string & group_name) {
     
     akantu::BC::PythonFunctorDirichlet functor(func_obj);
+    $self->applyBC(functor,group_name);
+  }
+
+  void applyNeumannBC(PyObject * func_obj,
+		      const std::string & group_name) {
+    
+    akantu::BC::PythonFunctorNeumann functor(func_obj);
     $self->applyBC(functor,group_name);
   }
 
