@@ -26,16 +26,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-
-
-#ifndef __AKANTU_BOUNDARY_CONDITION_PYTHON_FUNCTOR_HH__
-#define __AKANTU_BOUNDARY_CONDITION_PYTHON_FUNCTOR_HH__
-/* -------------------------------------------------------------------------- */
-#include <python2.7/Python.h>
 #include "aka_common.hh"
 #include "boundary_condition_functor.hh"
 /* -------------------------------------------------------------------------- */
+#include <Python.h>
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_BOUNDARY_CONDITION_PYTHON_FUNCTOR_HH__
+#define __AKANTU_BOUNDARY_CONDITION_PYTHON_FUNCTOR_HH__
 
 __BEGIN_AKANTU__
 

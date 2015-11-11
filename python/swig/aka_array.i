@@ -150,7 +150,7 @@ namespace akantu {
 {
 
   int data_typecode = getPythonDataTypeCode< DATA_TYPE >();
-  npy_intp dims[2] = {$1->getSize(), $1->getNbComponent()};
+  npy_intp dims[2] = {npy_intp($1->getSize()), npy_intp($1->getNbComponent())};
   PyObject* obj = PyArray_SimpleNewFromData(2, dims, data_typecode, $1->storage());
   PyArrayObject* array = (PyArrayObject*) obj;
   if (!array) SWIG_fail;
