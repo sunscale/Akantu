@@ -45,14 +45,14 @@ class MeshGeomAbstract {
 
 public:
   /// Construct from mesh
-  explicit MeshGeomAbstract(Mesh & mesh);
+  explicit MeshGeomAbstract(Mesh & mesh) : mesh(mesh) {};
 
   /// Destructor
-  virtual ~MeshGeomAbstract();
+  virtual ~MeshGeomAbstract() {};
 
 public:
   /// Construct geometric data for computational geometry algorithms
-  virtual void constructData() = 0;
+  virtual void constructData(GhostType ghost_type = _not_ghost) = 0;
 
 protected:
   /// Mesh used to construct the primitives

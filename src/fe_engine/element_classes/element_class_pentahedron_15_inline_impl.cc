@@ -140,7 +140,7 @@ InterpolationElement<_itp_lagrange_pentahedron_15>::computeDNDS(const vector_typ
   dnds(1, 8) =  2.0 * (2 * c(1) + c(2) - 1) * (c(0) - 1);
   dnds(1, 9) = -(c(0) * c(0) - 1);
   dnds(1,10) =  0.0;
-  dnds(1,11) =  (c(0)*c(0) - 1);
+  dnds(1,11) =  (c(0) * c(0) - 1);
   dnds(1,12) =  2.0 * c(2) * (c(0) + 1);
   dnds(1,13) = -2.0 * c(2) * (c(0) + 1);
   dnds(1,14) = -2.0 * (2 * c(1) + c(2) - 1) * (c(0) + 1);

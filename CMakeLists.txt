@@ -161,6 +161,7 @@ include(AkantuExamplesMacros)
 
 if(AKANTU_EXAMPLES OR AKANTU_TESTS)
   option(AKANTU_BUILD_ALL_EXAMPLES "Build all examples")
+  option(AKANTU_BUILD_ALL_TESTS "Build all tests")
   find_package(GMSH REQUIRED)
 endif()
 

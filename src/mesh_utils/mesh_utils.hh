@@ -65,7 +65,7 @@ public:
 				 CSR<UInt> & node_to_elem,
 				 UInt spatial_dimension = _all_dimensions);
   /// build a CSR<Element> that contains for each node the list of connected
-  /// elements ofr a given spatial dimension
+  /// elements of a given spatial dimension
   static void buildNode2Elements(const Mesh & mesh,
 				 CSR<Element> & node_to_elem,
 				 UInt spatial_dimension = _all_dimensions);
@@ -103,7 +103,7 @@ public:
 				   UInt dimension,
 				   const ElementTypeMapArray<UInt> * prank_to_element = NULL);
 
-  /// take  the local_connectivity  array  as  the array  of  local and  ghost
+  /// take the local_connectivity array as the array of local and ghost
   /// connectivity, renumber the nodes and set the connectivity of the mesh
   static void renumberMeshNodes(Mesh & mesh,
 				UInt * local_connectivities,
@@ -112,7 +112,7 @@ public:
 				ElementType type,
 				Array<UInt> & old_nodes);
 
-  /// compute pbc pair for on given a direction
+  /// compute pbc pair for a given direction
   static void computePBCMap(const Mesh & mymesh, const UInt dir,
 			    std::map<UInt,UInt> & pbc_pair);
   /// compute pbc pair for a surface pair
@@ -161,6 +161,14 @@ public:
 
   /// reset facet_to_double arrays in the Mesh
   static void resetFacetToDouble(Mesh & mesh_facets);
+
+  /// associate a node type to each segment in the mesh
+  static void buildSegmentToNodeType(const Mesh & mesh,
+				     Mesh & mesh_facets,
+				     DistributedSynchronizer * synchronizer);
+
+  /// update local and master global connectivity when new nodes are added
+  static UInt updateLocalMasterGlobalConnectivity(Mesh & mesh, UInt old_nb_nodes);
 
 private:
 

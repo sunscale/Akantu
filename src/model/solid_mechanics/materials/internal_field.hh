@@ -41,6 +41,10 @@ __BEGIN_AKANTU__
 class Material;
 class FEEngine;
 
+/**
+ * class for the internal fields of materials
+ * to store values for each quadrature
+ */
 template<typename T>
 class InternalField : public ElementTypeMapArray<T> {
   /* ------------------------------------------------------------------------ */
@@ -98,7 +102,7 @@ public:
   virtual void saveCurrentValues();
 
   /// remove the quadrature points corresponding to suppressed elements
-  virtual void removeQuadraturePoints(const ElementTypeMapArray<UInt> & new_numbering);
+  virtual void removeIntegrationPoints(const ElementTypeMapArray<UInt> & new_numbering);
 
   /// print the content
   virtual void printself(std::ostream & stream, UInt indent = 0) const;

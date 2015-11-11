@@ -62,7 +62,7 @@ EmbeddedInterfaceIntersector::EmbeddedInterfaceIntersector(Mesh & mesh, const Me
 EmbeddedInterfaceIntersector::~EmbeddedInterfaceIntersector()
 {}
 
-void EmbeddedInterfaceIntersector::constructData() {
+void EmbeddedInterfaceIntersector::constructData(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   const UInt dim = this->mesh.getSpatialDimension();

@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
   Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
 
   UInt nb_element = my_mesh.getNbElement(type);
-  UInt nb_quadrature_points = fem->getNbQuadraturePoints(type) * nb_element;
+  UInt nb_quadrature_points = fem->getNbIntegrationPoints(type) * nb_element;
 
   Array<Real> grad_on_quad(nb_quadrature_points, 2 * dim, "grad_on_quad");
   for (UInt i = 0; i < const_val.getSize(); ++i) {
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
   }
 
   /// compute the gradient
-  fem->gradientOnQuadraturePoints(const_val, grad_on_quad, 2, type);
+  fem->gradientOnIntegrationPoints(const_val, grad_on_quad, 2, type);
 
   std::cout << "Linear array on nodes : " << const_val << std::endl;
   std::cout << "Gradient on quad : " <<grad_on_quad << std::endl;
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
 
   // compute gradient of coordinates
   Array<Real> grad_coord_on_quad(nb_quadrature_points, dim * dim, "grad_coord_on_quad");
-  fem->gradientOnQuadraturePoints(my_mesh.getNodes(), grad_coord_on_quad, my_mesh.getSpatialDimension(), type);
+  fem->gradientOnIntegrationPoints(my_mesh.getNodes(), grad_coord_on_quad, my_mesh.getSpatialDimension(), type);
 
   std::cout << "Node positions : " << my_mesh.getNodes() << std::endl;
   std::cout << "Gradient of nodes : " << grad_coord_on_quad << std::endl;

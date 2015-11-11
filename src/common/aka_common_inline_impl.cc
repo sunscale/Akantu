@@ -70,7 +70,7 @@ inline std::ostream & operator <<(std::ostream & stream, SynchronizationTag type
     case _gst_smmc_facets_conn         : stream << "_gst_smmc_facets_conn"        ; break;
     case _gst_smmc_facets_stress       : stream << "_gst_smmc_facets_stress"      ; break;
     case _gst_smmc_damage              : stream << "_gst_smmc_damage"             ; break;
-    case _gst_ce_inserter              : stream << "_gst_ce_inserter"             ; break;
+    case _gst_giu_global_conn          : stream << "_gst_giu_global_conn"         ; break;
     case _gst_ce_groups                : stream << "_gst_ce_groups"               ; break;
     case _gst_gm_clusters              : stream << "_gst_gm_clusters"             ; break;
     case _gst_htm_capacity             : stream << "_gst_htm_capacity"            ; break;
@@ -80,6 +80,7 @@ inline std::ostream & operator <<(std::ostream & stream, SynchronizationTag type
     case _gst_htm_gradient_phi         : stream << "_gst_htm_gradient_phi"        ; break;
     case _gst_mnl_for_average          : stream << "_gst_mnl_for_average"         ; break;
     case _gst_mnl_weight               : stream << "_gst_mnl_weight"              ; break;
+    case _gst_nh_criterion             : stream << "_gst_nh_criterion"            ; break;
     case _gst_test                     : stream << "_gst_test"                    ; break;
     case _gst_user_1                   : stream << "_gst_user_1"                  ; break;
     case _gst_user_2                   : stream << "_gst_user_2"                  ; break;

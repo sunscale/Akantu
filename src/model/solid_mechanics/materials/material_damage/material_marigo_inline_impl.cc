@@ -80,7 +80,7 @@ inline UInt MaterialMarigo<spatial_dimension>::getNbDataForElements(const Array<
 
   UInt size = 0;
   if(tag == _gst_smm_init_mat) {
-    size += sizeof(Real) * this->getModel().getNbQuadraturePoints(elements);
+    size += sizeof(Real) * this->getModel().getNbIntegrationPoints(elements);
   }
 
   size += MaterialDamage<spatial_dimension>::getNbDataForElements(elements, tag);

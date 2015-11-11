@@ -30,29 +30,18 @@
  */
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void RemoveDamagedWeightFunction<spatial_dimension>::selectType(__attribute__((unused)) ElementType type1,
-								       __attribute__((unused)) GhostType ghost_type1,
-								       ElementType type2,
-								       GhostType ghost_type2) {
-  /// select the damage array for a given type: For optimization
-  selected_damage = &(this->material.template getArray<Real>("damage", type2, ghost_type2));
-    //    selected_damage = &mat.getDamage(type2, ghost_type2);
-}
-
-/* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline Real RemoveDamagedWeightFunction<spatial_dimension>::operator()(Real r,
-								       const __attribute__((unused)) QuadraturePoint & q1,
-								       const QuadraturePoint & q2) {
+inline Real RemoveDamagedWeightFunction::operator()(Real r,
+						    const __attribute__((unused)) IntegrationPoint & q1,
+						    const IntegrationPoint & q2) {
   /// compute the weight
   UInt quad = q2.global_num;
 
   if(q1 == q2) return 1.;
 
-  Real D = (*selected_damage)(quad);
+  Array<Real> & dam_array = (*this->damage)(q2.type, q2.ghost_type);
+  Real D = dam_array(quad);
   Real w = 0.;
-  if(D < damage_limit) {
+  if (D < damage_limit * (1 - Math::getTolerance())) {
     Real alpha = std::max(0., 1. - r*r / this->R2);
     w = alpha * alpha;
   }
@@ -60,38 +49,35 @@ inline Real RemoveDamagedWeightFunction<spatial_dimension>::operator()(Real r,
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline UInt RemoveDamagedWeightFunction<spatial_dimension>::getNbDataForElements(const Array<Element> & elements,
-										 SynchronizationTag tag) const {
+inline void RemoveDamagedWeightFunction::init() {
+  this->damage = &(this->manager.registerWeightFunctionInternal("damage"));
+}
+
+/* -------------------------------------------------------------------------- */
+inline UInt RemoveDamagedWeightFunction::getNbDataForElements(const Array<Element> & elements,
+							      SynchronizationTag tag) const {
+
   if(tag == _gst_mnl_weight)
-    return this->material.getModel().getNbQuadraturePoints(elements) * sizeof(Real);
+    return this->manager.getModel().getNbIntegrationPoints(elements) * sizeof(Real);
   
   return 0;
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void RemoveDamagedWeightFunction<spatial_dimension>::packElementData(CommunicationBuffer & buffer,
-                                      const Array<Element> & elements,
-                                      SynchronizationTag tag) const {
+inline void RemoveDamagedWeightFunction::packElementData(CommunicationBuffer & buffer,
+							 const Array<Element> & elements,
+							 SynchronizationTag tag) const {
   if(tag == _gst_mnl_weight) {
-    ElementTypeMapArray<Real> & damage = this->material.template getInternal<Real>("damage");
-    this->material.packElementDataHelper(damage,
-					 buffer,
-					 elements);
+    DataAccessor::packElementalDataHelper<Real>(*damage, buffer, elements, true, this->manager.getModel().getFEEngine());
   }
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void RemoveDamagedWeightFunction<spatial_dimension>::unpackElementData(CommunicationBuffer & buffer,
-									      const Array<Element> & elements,
-									      SynchronizationTag tag) {
+inline void RemoveDamagedWeightFunction::unpackElementData(CommunicationBuffer & buffer,
+							   const Array<Element> & elements,
+							   SynchronizationTag tag) {
   if(tag == _gst_mnl_weight) {
-    ElementTypeMapArray<Real> & damage = this->material.template getInternal<Real>("damage");
-    this->material.unpackElementDataHelper(damage,
-					   buffer,
-					   elements);
+    DataAccessor::unpackElementalDataHelper<Real>(*damage, buffer, elements, true, this->manager.getModel().getFEEngine());
   }
 }
 

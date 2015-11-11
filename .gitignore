@@ -6,3 +6,8 @@ third-party/cpp-array/
 *~
 release
 .*.swp
+*.tar.gz
+*.tgz
+*.tbz
+*.tar.bz2
+.idea

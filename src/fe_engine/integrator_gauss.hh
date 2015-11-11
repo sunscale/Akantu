@@ -127,13 +127,13 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
+  /// integrate the field f with the jacobian jac -> inte
   inline void integrate(Real *f, Real *jac, Real * inte,
 			UInt nb_degree_of_freedom,
 			UInt nb_quadrature_points) const;
 
 private:
-
+  /// ElementTypeMap of the quadrature points
   ElementTypeMap< Matrix<Real> > quadrature_points;
 };
 

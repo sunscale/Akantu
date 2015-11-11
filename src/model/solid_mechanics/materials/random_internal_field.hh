@@ -39,6 +39,10 @@
 
 __BEGIN_AKANTU__
 
+/**
+ * class for the internal fields of materials with a random
+ * distribution
+ */
 template<typename T,
 	 template<typename> class BaseField = InternalField,
 	 template<typename> class Generator = RandGenerator>
@@ -60,12 +64,16 @@ private:
 public:
   AKANTU_GET_MACRO(RandomParameter, random_parameter, const RandomParameter<T>);
 
+  /// initialize the field to a given number of component
   virtual void initialize(UInt nb_component);
 
+  /// set the field to a given value
   void setDefaultValue(const T & value);
 
+  /// set the specified random distribution to a given parameter
   void setRandomDistribution(const RandomParameter<T> & param);
 
+  /// print the content
   virtual void printself(std::ostream & stream, unsigned int indent = 0) const;
 
 protected:

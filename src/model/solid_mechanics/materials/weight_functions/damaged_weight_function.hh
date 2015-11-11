@@ -40,35 +40,36 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /*  Damage weight function                                                    */
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-class DamagedWeightFunction : public BaseWeightFunction<spatial_dimension> {
+class DamagedWeightFunction : public BaseWeightFunction {
 public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  DamagedWeightFunction(Material & material) : BaseWeightFunction<spatial_dimension>(material, "damaged") {
-    //AKANTU_DEBUG_ASSERT(dynamic_cast<MaterialDamage<spatial_dimension> *>(&material) != NULL, "This weight function works only with damage materials!");
+  DamagedWeightFunction(NonLocalManager & manager) : BaseWeightFunction(manager, "damaged"),
+						     damage(NULL) {
+    this->init();
   }
 
   /* -------------------------------------------------------------------------- */
   /* Base Weight Function inherited methods                                     */
   /* -------------------------------------------------------------------------- */
-  inline void selectType(__attribute__((unused)) ElementType type1,
-                         __attribute__((unused)) GhostType ghost_type1,
-                         ElementType type2,
-                         GhostType ghost_type2);
+
+  /// set the pointers of internals to the right flattend version
+  virtual void init();
 
   inline Real operator()(Real r,
-			 const __attribute__((unused)) QuadraturePoint & q1,
-			 const QuadraturePoint & q2);
+			 const __attribute__((unused)) IntegrationPoint & q1,
+			 const IntegrationPoint & q2);
 
 private:
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-  /// member for optimization when types for ElementTypeMaps are preselected (currently not in use)
-  const Array<Real> * selected_damage;
+
+  /// internal pointer to the current damage vector
+  ElementTypeMapReal * damage;
+
 };
 
 

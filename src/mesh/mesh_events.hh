@@ -66,7 +66,7 @@ public:
 class RemovedElementsEvent : public MeshEvent<Element> {
 public:
   virtual ~RemovedElementsEvent() {};
-  inline RemovedElementsEvent(const Mesh & mesh);
+  inline RemovedElementsEvent(const Mesh & mesh, ID new_numbering_id = "new_numbering");
   AKANTU_GET_MACRO(NewNumbering, new_numbering, const ElementTypeMapArray<UInt> &);
   AKANTU_GET_MACRO_NOT_CONST(NewNumbering, new_numbering, ElementTypeMapArray<UInt> &);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(NewNumbering, new_numbering, UInt);
@@ -74,6 +74,21 @@ public:
 protected:
   ElementTypeMapArray<UInt> new_numbering;
 };
+
+class ChangedElementsEvent : public RemovedElementsEvent {
+public:
+  virtual ~ChangedElementsEvent() {};
+  inline ChangedElementsEvent(const Mesh & mesh,
+			      ID new_numbering_id = "changed_event:new_numbering")
+    : RemovedElementsEvent(mesh, new_numbering_id) {};
+  AKANTU_GET_MACRO(ListOld, list, const Array<Element> &);
+  AKANTU_GET_MACRO_NOT_CONST(ListOld, list, Array<Element> &);
+  AKANTU_GET_MACRO(ListNew, new_list, const Array<Element> &);
+  AKANTU_GET_MACRO_NOT_CONST(ListNew, new_list, Array<Element> &);
+protected:
+  Array<Element> new_list;
+};
+
 
 /* -------------------------------------------------------------------------- */
 
@@ -96,6 +111,11 @@ private:
                                                                                 event.getNewNumbering(),
                                                                                 event); }
 
+  inline void sendEvent(const ChangedElementsEvent & event) { onElementsChanged(event.getListOld(),
+										event.getListNew(),
+										event.getNewNumbering(),
+										event); }
+
   template<class EventHandler>
   friend class EventHandlerManager;
 
@@ -114,6 +134,11 @@ public:
   virtual void onElementsRemoved(__attribute__((unused)) const Array<Element> & elements_list,
                                  __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
                                  __attribute__((unused)) const RemovedElementsEvent & event) { }
+
+  virtual void onElementsChanged(__attribute__((unused)) const Array<Element> & old_elements_list,
+				 __attribute__((unused)) const Array<Element> & new_elements_list,
+                                 __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+                                 __attribute__((unused)) const ChangedElementsEvent & event) { }
 };
 
 

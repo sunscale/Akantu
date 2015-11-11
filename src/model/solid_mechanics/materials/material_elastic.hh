@@ -120,6 +120,11 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /// get first Lame constant
+  AKANTU_GET_MACRO(Lambda, lambda, Real);
+
+  /// get second Lame constant
+  AKANTU_GET_MACRO(Mu, mu, Real);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

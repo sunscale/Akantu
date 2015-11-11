@@ -57,6 +57,24 @@ register_test(test_interpolate_stress test_interpolate_stress.cc
   PACKAGE lapack core
   )
 
+#===============================================================================
+add_mesh(test_material_orthotropic_square_mesh square.geo 2 1)
+register_test(test_material_orthotropic
+  SOURCES test_material_orthotropic.cc
+  DEPENDENCIES test_material_orthotropic_square_mesh
+  FILES_TO_COPY orthotropic.dat
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
+  )
+
+#===============================================================================
+register_test(test_material_mazars
+  SOURCES test_material_mazars.cc
+  FILES_TO_COPY material_mazars.dat
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
+  )
+
 # ==============================================================================
 add_akantu_test(test_material_viscoelastic "test the visco elastic materials")
 add_akantu_test(test_material_non_local "test the non-local materials")

@@ -188,8 +188,8 @@ void SolverPETSc::setOperators() {
   ierr = KSPSetOperators(this->petsc_solver_wrapper->ksp, petsc_matrix->getPETScMatrixWrapper()->mat, petsc_matrix->getPETScMatrixWrapper()->mat, SAME_NONZERO_PATTERN); CHKERRXX(ierr);
 #endif
   /// If this is not called the solution vector is zeroed in the call to KSPSolve().
-  ierr = KSPSetInitialGuessNonzero(this->petsc_solver_wrapper->ksp, PETSC_TRUE);
-  KSPSetFromOptions(this->petsc_solver_wrapper->ksp);
+  ierr = KSPSetInitialGuessNonzero(this->petsc_solver_wrapper->ksp, PETSC_TRUE); CHKERRXX(ierr);
+  ierr = KSPSetFromOptions(this->petsc_solver_wrapper->ksp); CHKERRXX(ierr);
 
   AKANTU_DEBUG_OUT();
 }

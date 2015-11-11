@@ -61,11 +61,15 @@
 #  include "dumper_field.hh"
 #  include "dumper_paraview.hh"
 #  include "dumper_homogenizing_field.hh"
-#  include "dumper_material_internal_field.hh"
+#  include "dumper_internal_material_field.hh"
 #  include "dumper_elemental_field.hh"
 #  include "dumper_material_padders.hh"
 #  include "dumper_element_partition.hh"
 #  include "dumper_iohelper.hh"
+#endif
+
+#ifdef AKANTU_DAMAGE_NON_LOCAL
+#  include "non_local_manager.hh"
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -102,7 +106,8 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh,
   integrator(NULL),
   increment_flag(false), solver(NULL),
   synch_parallel(NULL),
-  are_materials_instantiated(false) {
+  are_materials_instantiated(false),
+  non_local_manager(NULL) {
 
   AKANTU_DEBUG_IN();
 
@@ -167,9 +172,15 @@ SolidMechanicsModel::~SolidMechanicsModel() {
     material_selector = NULL;
   }
 
+#ifdef AKANTU_DAMAGE_NON_LOCAL
+  delete non_local_manager;
+  non_local_manager = NULL;
+#endif
+
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::setTimeStep(Real time_step) {
   this->time_step = time_step;
 
@@ -232,6 +243,11 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
     break;
   }
 
+#ifdef AKANTU_DAMAGE_NON_LOCAL
+  /// create the non-local manager object for non-local damage computations
+  this->non_local_manager = new NonLocalManager(*this);
+#endif
+
   // initialize the materials
   if(this->parser->getLastParsedFile() != "") {
     instantiateMaterials();
@@ -270,8 +286,8 @@ void SolidMechanicsModel::initFEEngineBoundary() {
   fem_boundary.initShapeFunctions(_not_ghost);
   fem_boundary.initShapeFunctions(_ghost);
 
-  fem_boundary.computeNormalsOnControlPoints(_not_ghost);
-  fem_boundary.computeNormalsOnControlPoints(_ghost);
+  fem_boundary.computeNormalsOnIntegrationPoints(_not_ghost);
+  fem_boundary.computeNormalsOnIntegrationPoints(_ghost);
 }
 
 
@@ -468,23 +484,7 @@ void SolidMechanicsModel::updateResidual(bool need_initialize) {
 #ifdef AKANTU_DAMAGE_NON_LOCAL
   /* ------------------------------------------------------------------------ */
   /* Computation of the non local part */
-  synch_registry->asynchronousSynchronize(_gst_mnl_for_average);
-  AKANTU_DEBUG_INFO("Compute non local stresses for local elements");
-
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    Material & mat = **mat_it;
-    mat.computeAllNonLocalStresses(_not_ghost);
-  }
-
-
-  AKANTU_DEBUG_INFO("Wait distant non local stresses");
-  synch_registry->waitEndSynchronize(_gst_mnl_for_average);
-
-  AKANTU_DEBUG_INFO("Compute non local stresses for ghosts elements");
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    Material & mat = **mat_it;
-    mat.computeAllNonLocalStresses(_ghost);
-  }
+  this->non_local_manager->computeAllNonLocalStresses();
 #endif
 
   /* ------------------------------------------------------------------------ */
@@ -530,19 +530,7 @@ void SolidMechanicsModel::computeStresses() {
     /* ------------------------------------------------------------------------ */
 #ifdef AKANTU_DAMAGE_NON_LOCAL
     /* Computation of the non local part */
-    synch_registry->asynchronousSynchronize(_gst_mnl_for_average);
-
-    for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-      Material & mat = **mat_it;
-      mat.computeAllNonLocalStresses(_not_ghost);
-    }
-
-    synch_registry->waitEndSynchronize(_gst_mnl_for_average);
-
-    for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-      Material & mat = **mat_it;
-      mat.computeAllNonLocalStresses(_ghost);
-    }
+    this->non_local_manager->computeAllNonLocalStresses();
 #endif
   } else {
     std::vector<Material *>::iterator mat_it;
@@ -1259,12 +1247,12 @@ Real SolidMechanicsModel::getKineticEnergy() {
 Real SolidMechanicsModel::getKineticEnergy(const ElementType & type, UInt index) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_quadrature_points = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points = getFEEngine().getNbIntegrationPoints(type);
 
   Array<Real> vel_on_quad(nb_quadrature_points, spatial_dimension);
   Array<UInt> filter_element(1, 1, index);
 
-  getFEEngine().interpolateOnQuadraturePoints(*velocity, vel_on_quad,
+  getFEEngine().interpolateOnIntegrationPoints(*velocity, vel_on_quad,
 					      spatial_dimension,
 					      type, _not_ghost,
 					      filter_element);
@@ -1413,10 +1401,6 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
 
   if(method == _explicit_lumped_mass) this->assembleMassLumped();
 
-  if (method != _explicit_lumped_mass) {
-    this->initSolver();
-  }
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -1454,14 +1438,18 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
 
   if(current_position) current_position->resize(nb_nodes);
 
+  std::vector<Material *>::iterator mat_it;
+  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+    (*mat_it)->onNodesAdded(nodes_list, event);
+  }
+
   delete dof_synchronizer;
   dof_synchronizer = new DOFSynchronizer(mesh, spatial_dimension);
   dof_synchronizer->initLocalDOFEquationNumbers();
   dof_synchronizer->initGlobalDOFEquationNumbers();
 
-  std::vector<Material *>::iterator mat_it;
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    (*mat_it)->onNodesAdded(nodes_list, event);
+  if (method != _explicit_lumped_mass) {
+    this->initSolver();
   }
 
   AKANTU_DEBUG_OUT();

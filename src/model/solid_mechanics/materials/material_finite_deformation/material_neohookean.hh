@@ -65,6 +65,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
+  /// initialize the material computed parameter
   virtual void initMaterial();
 
   /// constitutive law for all element of a type
@@ -97,6 +98,7 @@ protected:
   inline void computePiolaKirchhoffOnQuad(const Matrix<Real> &E,
                                           Matrix<Real> &S);
 
+  /// constitutive law for a given quadrature point (first piola)
   inline void computeFirstPiolaKirchhoffOnQuad(const Matrix<Real> &grad_u,
                                                const Matrix<Real> &S,
                                                Matrix<Real> &P);
@@ -105,10 +107,12 @@ protected:
   inline void computeDeltaStressOnQuad(const Matrix<Real> & grad_u, const Matrix<Real> & grad_delta_u,
         Matrix<Real> & delta_S);
 
+  /// constitutive law for a given quadrature point
   inline void computeStressOnQuad(Matrix<Real> & grad_u,
                                   Matrix<Real> & S,
                                   const Real & C33 = 1.0 );
 
+  /// constitutive law for a given quadrature point
   inline void computeThirdAxisDeformationOnQuad(Matrix<Real> & grad_u, Real & c33_value);
 
   /// constitutive law for a given quadrature point

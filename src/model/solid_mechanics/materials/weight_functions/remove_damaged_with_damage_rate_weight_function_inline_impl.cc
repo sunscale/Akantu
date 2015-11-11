@@ -31,27 +31,22 @@
  */
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void RemoveDamagedWithDamageRateWeightFunction<spatial_dimension>::selectType(__attribute__((unused)) ElementType type1,
-										     __attribute__((unused)) GhostType ghost_type1,
-										     ElementType type2,
-										     GhostType ghost_type2) {
-  /// select the damage arrays for given types: For optimization
-  selected_damage_with_damage_rate = &(this->material.template getArray<Real>("damage",type2, ghost_type2));
-  selected_damage_rate_with_damage_rate = &(this->material.template getArray<Real>("damage-rate",type2, ghost_type2));
+inline void RemoveDamagedWithDamageRateWeightFunction::init() {
+  this->damage_with_damage_rate = &(this->manager.registerWeightFunctionInternal("damage-rate"));
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline Real RemoveDamagedWithDamageRateWeightFunction<spatial_dimension>::operator()(Real r,
-										     const __attribute__((unused)) QuadraturePoint & q1,
-										     const QuadraturePoint & q2) {
+inline Real RemoveDamagedWithDamageRateWeightFunction::operator()(Real r,
+								  const __attribute__((unused)) IntegrationPoint & q1,
+
+								  const IntegrationPoint & q2) {
   /// compute the weight
   UInt quad = q2.global_num;
 
   if(q1.global_num == quad) return 1.;
 
-  Real D = (*selected_damage_with_damage_rate)(quad);
+  Array<Real> & dam_array = (*this->damage_with_damage_rate)(q2.type, q2.ghost_type);
+  Real D = dam_array(quad);
   Real w = 0.;
   Real alphaexp = 1.;
   Real betaexp = 2.;

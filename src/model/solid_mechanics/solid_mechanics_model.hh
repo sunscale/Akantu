@@ -60,6 +60,7 @@ namespace akantu {
   class IntegrationScheme2ndOrder;
   class SparseMatrix;
   class DumperIOHelper;
+  class NonLocalManager;
 }
 /* -------------------------------------------------------------------------- */
 
@@ -120,7 +121,8 @@ public:
   void initFEEngineBoundary();
 
   /// register the tags associated with the parallel synchronizer
-  void initParallel(MeshPartition *partition, DataAccessor *data_accessor = NULL);
+  virtual void initParallel(MeshPartition *partition,
+			    DataAccessor *data_accessor = NULL);
 
   /// allocate all vectors
   virtual void initArrays();
@@ -364,6 +366,7 @@ protected:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
+
   inline virtual UInt getNbDataForElements(const Array <Element> & elements,
 					   SynchronizationTag tag) const;
 
@@ -591,6 +594,9 @@ public:
   /// Get the type of analysis method used
   AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
 
+  /// get the non-local manager
+  AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, NonLocalManager &);
+
   template <int dim, class model_type>
   friend struct ContactData;
 
@@ -701,6 +707,10 @@ protected:
 
   /// map a registered internals to be flattened for dump purposes
   std::map<std::pair<std::string,ElementKind>,ElementTypeMapArray<Real> *> registered_internals;
+
+  /// pointer to non-local manager: For non-local continuum damage computations
+  NonLocalManager * non_local_manager; 
+
 };
 
 

@@ -1,5 +1,5 @@
 /**
- * @file mesh_segment_intersector.hh
+ * @file mesh_sphere_intersector.hh
  *
  * @author Clement Roux-Langlois <clement.roux@epfl.ch>
  *
@@ -41,20 +41,6 @@
 
 __BEGIN_AKANTU__
 
-/* -------------------------------------------------------------------------- */
-/* class for new igfem elements mesh events                                   */
-/* -------------------------------------------------------------------------- */
-#if defined(AKANTU_IGFEM)
-class NewIGFEMElementsEvent : public NewElementsEvent {
-public:
-  AKANTU_GET_MACRO_NOT_CONST(OldElementsList, old_elements, Array<Element> &);
-  AKANTU_GET_MACRO(OldElementsList, old_elements, const Array<Element> &);
-protected:
-  Array<Element> old_elements;
-};
-#endif
-
-
 /// Here, we know what kernel we have to use
 typedef Spherical SK;
 
@@ -76,39 +62,35 @@ public:
   /// Destructor
   virtual ~MeshSphereIntersector();
 
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// get the new_node_per_elem array
-  AKANTU_GET_MACRO(NewNodePerElem, new_node_per_elem, const Array<UInt>)
-
 public:
   /// Construct the primitive tree object
-  virtual void constructData();
+  virtual void constructData(GhostType ghost_type = _not_ghost);
 
   /**
    * @brief Computes the intersection of the mesh with a sphere
    *
    * @param query (sphere) to compute the intersections with the mesh
    */
-  virtual void computeIntersectionQuery(const SK::Sphere_3 & query);
+  virtual void computeIntersectionQuery(const SK::Sphere_3 & query){
+    AKANTU_DEBUG_ERROR("This function is not implemented for spheres (It was to generic and has been replaced by computeMeshQueryIntersectionPoint");
+  }
+
+  /// Compute intersection points between the mesh primitives (segments) and a query (surface in 3D or a curve in 2D), double intersection points for the same primitives are not considered. A maximum is set to the number of intersection nodes per element: 2 in 2D and 4 in 3D
+  virtual void computeMeshQueryIntersectionPoint(const SK::Sphere_3 & query, UInt nb_old_nodes);
 
   /// Build the IGFEM mesh
-  virtual void buildResultFromQueryList(const std::list<SK::Sphere_3> & query);
+  virtual void buildResultFromQueryList(const std::list<SK::Sphere_3> & query){
+    AKANTU_DEBUG_ERROR("This function is no longer implemented to split geometrical operations and dedicated result construction");
+  }
 
-  /// Remove the additionnal nodes
-  void removeAdditionnalNodes();
+  /// Set the tolerance
+  void setToleranceIntersectionOnNode(UInt tol) {
+    this->tol_intersection_on_node = tol;
+  }
 
 protected:
-  /// new node per element (column 0: number of new nodes, then odd is the intersection node number and even the ID of the sintersected segment)
-  Array<UInt> new_node_per_elem;
-
-  /// number of fem nodes in the initial mesh
-  const UInt nb_nodes_fem;
-
-  /// number of primitive in an element of the template type
-  UInt nb_prim_by_el;
+  /// tolerance for which the intersection is considered on the mesh node (relative to the segment lenght)
+  Real tol_intersection_on_node;
 
 };
  

@@ -47,13 +47,13 @@ __BEGIN_AKANTU__
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension, template <UInt> class WeightFunction = BaseWeightFunction>
-class MaterialMarigoNonLocal : public MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension>, WeightFunction> {
+template<UInt spatial_dimension>
+class MaterialMarigoNonLocal : public MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension> > {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension>, WeightFunction> MaterialMarigoNonLocalParent;
+  typedef MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension> > MaterialMarigoNonLocalParent;
   MaterialMarigoNonLocal(SolidMechanicsModel & model, const ID & id = "");
 
   virtual ~MaterialMarigoNonLocal() {};
@@ -70,6 +70,7 @@ protected:
   void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
+
 private:
 
   /* ------------------------------------------------------------------------ */

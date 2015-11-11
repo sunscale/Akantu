@@ -41,37 +41,37 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /// based on based on Giry et al.: Stress-based nonlocal damage model,
 /// IJSS, 48, 2011
-template<UInt spatial_dimension>
-class StressBasedWeightFunction : public BaseWeightFunction<spatial_dimension> {
+class StressBasedWeightFunction : public BaseWeightFunction {
 public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-  StressBasedWeightFunction(Material & material);
+  StressBasedWeightFunction(NonLocalManager & manager);
 
   /* -------------------------------------------------------------------------- */
   /* Base Weight Function inherited methods                                     */
   /* -------------------------------------------------------------------------- */
   void init();
 
-  virtual inline void updateInternals(__attribute__((unused)) const ElementTypeMapArray<Real> & quadrature_points_coordinates);
+  virtual inline void updateInternals();
 
   void updatePrincipalStress(GhostType ghost_type);
 
   inline void updateQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates);
 
-  inline void selectType(ElementType type1, GhostType ghost_type1,
-                         ElementType type2, GhostType ghost_type2);
 
   inline Real operator()(Real r,
-			 const QuadraturePoint & q1,
-			 const QuadraturePoint & q2);
+			 const IntegrationPoint & q1,
+			 const IntegrationPoint & q2);
 
   /// computation of ellipsoid
   inline Real computeRhoSquare(Real r,
                                Vector<Real> & eigs,
                                Matrix<Real> & eigenvects,
                                Vector<Real> & x_s);
+
+protected:
+  inline void setInternal();
 
 private:
 
@@ -82,30 +82,19 @@ private:
   Real ft;
 
   /// prinicipal stresses
-  InternalField<Real> stress_diag;
+  ElementTypeMapReal * stress_diag;
 
   /// for preselection of types (optimization)
-  Array<Real> * selected_stress_diag;
+  ElementTypeMapReal * selected_stress_diag;
 
   /// principal directions
-  InternalField<Real> stress_base;
-
-  /// for preselection of types (optimization)
-  Array<Real> * selected_stress_base;
-
-  //  InternalField<Real> quadrature_points_coordinates;
-  /// for preselection of types (optimization)
-  Array<Real> * selected_position_1;
-  Array<Real> * selected_position_2;
+  ElementTypeMapReal * stress_base;
 
   /// lenght intrinisic to the material
-  InternalField<Real> characteristic_size;
+  ElementTypeMapReal * characteristic_size;
 
-  /// for preselection of types (optimization)
-  Array<Real> * selected_characteristic_size;
 };
 
-#include "stress_based_weight_function_tmpl.hh"
 #if defined (AKANTU_INCLUDE_INLINE_IMPL)
 #  include "stress_based_weight_function_inline_impl.cc"
 #endif

@@ -190,15 +190,15 @@ inline bool Model::isPBCSlaveNode(const UInt node) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt Model::getNbQuadraturePoints(const Array<Element> & elements,
+inline UInt Model::getNbIntegrationPoints(const Array<Element> & elements,
 					 const ID & fem_id) const {
   UInt nb_quad = 0;
   Array<Element>::const_iterator<Element> it  = elements.begin();
   Array<Element>::const_iterator<Element> end = elements.end();
   for (; it != end; ++it) {
     const Element & el = *it;
-    nb_quad += getFEEngine(fem_id).getNbQuadraturePoints(el.type,
-						    el.ghost_type);
+    nb_quad += getFEEngine(fem_id).getNbIntegrationPoints(el.type,
+							  el.ghost_type);
   }
   return nb_quad;
 }

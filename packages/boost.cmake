@@ -34,3 +34,14 @@ package_declare(Boost EXTERNAL
   )
 
 mark_as_advanced(Boost_DIR)
+
+package_on_enabled_script(Boost
+  "if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER \"4.8\")
+  set(_boost_version \${Boost_MAJOR_VERSION}.\${Boost_MINOR_VERSION})
+  if(AKANTU_CORE_CXX11 AND _boost_version VERSION_LESS 1.58)
+    add_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
+  else()
+    remove_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
+  endif()
+endif()
+")

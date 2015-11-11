@@ -1,6 +1,9 @@
 %{
   #include "solid_mechanics_model.hh"
   #include "sparse_matrix.hh"
+  #include "boundary_condition.hh"
+  #include "boundary_condition_functor.hh"
+  #include "boundary_condition_python_functor.hh"
 %}
 
 namespace akantu {
@@ -58,16 +61,31 @@ print_self(SolidMechanicsModel)
 
 %include "solid_mechanics_model.hh"
 
-%template(testConvergenceResidual) akantu::SolidMechanicsModel::testConvergence<akantu::SolveConvergenceCriteria::_scc_residual>;
-
 %extend akantu::SolidMechanicsModel {
   
+
+  bool testConvergenceSccRes(Real tolerance) {
+
+    Real error = 0;
+    bool res = self->testConvergence<akantu::SolveConvergenceCriteria::_scc_residual>(tolerance,error);
+    return res;
+  }
+
   void solveStaticDisplacement(Real tolerance, UInt max_iteration) {
 
     $self->solveStatic<akantu::SolveConvergenceMethod::_scm_newton_raphson_tangent_not_computed, akantu::SolveConvergenceCriteria::_scc_residual>(tolerance, max_iteration);
 
   }
 
+  void applyBC(PyObject * func_obj,
+	       const BC::Functor::Type & type,
+	       const std::string & group_name) {
+    
+    akantu::BC::PythonFunctorDirichlet functor(func_obj);
+    $self->applyBC(functor,group_name);
+  }
+
+  
   void solveDisplCorr(bool need_factorize, bool has_profile_changed) {
 
     akantu::Array<akantu::Real> & increment = $self->getIncrement();
@@ -82,4 +100,36 @@ print_self(SolidMechanicsModel)
     displ.clear();
   }
 
+  void solveStep_TgModifIncr(Real tolerance, UInt max_iteration) {
+      
+  $self->solveStep<akantu::SolveConvergenceMethod::_scm_newton_raphson_tangent_modified, akantu::SolveConvergenceCriteria::_scc_residual>(tolerance, max_iteration);
+    
+ }
+  
+  void clearDisplVeloAcc() {
+
+  akantu::Array<akantu::Real> & displ = $self->getDisplacement();
+  akantu::Array<akantu::Real> & velo = $self->getVelocity();
+  akantu::Array<akantu::Real> & acc = $self->getAcceleration();
+
+  displ.clear();
+  velo.clear();
+  acc.clear();
+ }
+
+  void applyUniformPressure(Real pressure, const std::string surface_name){
+  
+  UInt spatial_dimension = $self->getSpatialDimension();
+  akantu::Matrix<akantu::Real> surface_stress(spatial_dimension, spatial_dimension, 0.0);
+
+  for(UInt i = 0; i < spatial_dimension; ++i) {
+  surface_stress(i,i) = -pressure;
+ }  
+  $self->applyBC(akantu::BC::Neumann::FromStress(surface_stress), surface_name);
+ }
+
+  void blockDOF(const std::string surface_name, SpacialDirection direction){
+
+    $self->applyBC(akantu::BC::Dirichlet::FixedValue(0.0, direction), surface_name);
+  }
 }

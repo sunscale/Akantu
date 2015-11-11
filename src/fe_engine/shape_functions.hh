@@ -64,19 +64,36 @@ public:
     std::string space;
     for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
     stream << space << "Shapes [" << std::endl;
-    control_points.printself(stream, indent + 1);
+    integration_points.printself(stream, indent + 1);
     stream << space << "]" << std::endl;
   };
 
-  /// set the control points for a given element
+  /// set the integration points for a given element
   template <ElementType type>
-  void setControlPointsByType(const Matrix<Real> & control_points,
+  void setIntegrationPointsByType(const Matrix<Real> & integration_points,
 			      const GhostType & ghost_type);
 
+  /// Build pre-computed matrices for interpolation of field form integration points at other given positions (interpolation_points)
+  inline void initElementalFieldInterpolationFromIntegrationPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+							       ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							       ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+							       const ElementTypeMapArray<Real> & quadrature_points_coordinates,
+							       const ElementTypeMapArray<UInt> * element_filter) const;
+  
+  /// Interpolate field at given position from given values of this field at integration points (field) 
+  /// using matrices precomputed with initElementalFieldInterplationFromIntegrationPoints
+  inline void interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
+							 const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							 const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+							 ElementTypeMapArray<Real> & result,
+							 const GhostType ghost_type,
+							 const ElementTypeMapArray<UInt> * element_filter) const;
+
 protected:
-  /// interpolate nodal values stored by element on the control points
+
+  /// interpolate nodal values stored by element on the integration points
   template <ElementType type>
-  void interpolateElementalFieldOnControlPoints(const Array<Real> &u_el,
+  void interpolateElementalFieldOnIntegrationPoints(const Array<Real> &u_el,
 						Array<Real> &uq,
 						GhostType ghost_type,
 						const Array<Real> & shapes,
@@ -84,11 +101,43 @@ protected:
 
   /// gradient of nodal values stored by element on the control points
   template <ElementType type>
-  void gradientElementalFieldOnControlPoints(const Array<Real> &u_el,
+  void gradientElementalFieldOnIntegrationPoints(const Array<Real> &u_el,
 					     Array<Real> &out_nablauq,
 					     GhostType ghost_type,
 					     const Array<Real> & shapes_derivatives,
 					     const Array<UInt> & filter_elements) const;
+
+  /// By element versions of non-templated eponym methods
+  template <ElementType type>
+  inline void interpolateElementalFieldFromIntegrationPoints(const Array<Real> & field,
+							 const Array<Real> & interpolation_points_coordinates_matrices,
+							 const Array<Real> & quad_points_coordinates_inv_matrices,
+							 ElementTypeMapArray<Real> & result,
+							 const GhostType ghost_type,
+							 const Array<UInt> & element_filter) const;
+  
+  /// Interpolate field at given position from given values of this field at integration points (field) 
+  /// using matrices precomputed with initElementalFieldInterplationFromIntegrationPoints
+  template <ElementType type>
+  inline void initElementalFieldInterpolationFromIntegrationPoints(const Array<Real> & interpolation_points_coordinates,
+							       ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							       ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+							       const Array<Real> & quadrature_points_coordinates,
+							       GhostType & ghost_type,
+							       const Array<UInt> & element_filter) const;
+
+
+  /// build matrix for the interpolation of field form integration points
+  template <ElementType type> 
+  inline void buildElementalFieldInterpolationMatrix(const Matrix<Real> & coordinates,
+						     Matrix<Real> & coordMatrix,
+						     UInt integration_order = 
+						     ElementClassProperty<type>::minimal_integration_order) const;
+
+  /// build the so called interpolation matrix (first collumn is 1, then the other collumns are the traansposed coordinates)
+  inline void buildInterpolationMatrix(const Matrix<Real> & coordinates,
+				       Matrix<Real> & coordMatrix,
+				       UInt integration_order) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -100,19 +149,20 @@ public:
   /// get the size of the shapes derivatives returned by the element class
   static inline UInt getShapeDerivativesSize(const ElementType & type);
 
-  inline const Matrix<Real> & getControlPoints(const ElementType & type,
+  inline const Matrix<Real> & getIntegrationPoints(const ElementType & type,
 					       const GhostType & ghost_type) const {
-    return control_points(type, ghost_type);
+    return integration_points(type, ghost_type);
   }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  /// associated mesh
   const Mesh & mesh;
 
   /// shape functions for all elements
-  ElementTypeMap< Matrix<Real> > control_points;
+  ElementTypeMap< Matrix<Real> > integration_points;
 };
 
 

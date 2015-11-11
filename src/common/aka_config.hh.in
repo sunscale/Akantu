@@ -50,6 +50,11 @@ namespace akantu {
     typedef typename @AKANTU_UNORDERED_MAP_TYPE@<Key, Ty> type;
   };
 
+  template<class T>
+  std::size_t hash(const T & t) {
+    typedef @AKANTU_HASH_TYPE@<T> hash_type;
+    return hash_type()(t);
+  };
 }
 
 #define AKANTU_INTEGER_SIZE @AKANTU_INTEGER_SIZE@
@@ -61,6 +66,7 @@ namespace akantu {
 #define __END_AKANTU_UNORDERED_MAP__ \
   @AKANTU_UNORDERED_MAP_NAMESPACE_END@
 
+#cmakedefine AKANTU_HAS_STRDUP
 
 #cmakedefine AKANTU_USE_BLAS
 #cmakedefine AKANTU_USE_LAPACK

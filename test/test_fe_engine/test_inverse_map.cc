@@ -63,14 +63,14 @@ int main(int argc, char *argv[]) {
 
   fem->initShapeFunctions();
 
-  UInt nb_quad_points = fem->getNbQuadraturePoints(type);
+  UInt nb_quad_points = fem->getNbIntegrationPoints(type);
 
   /// get the quadrature points coordinates
   Array<Real> coord_on_quad(nb_quad_points*nb_elements,
 			     my_mesh.getSpatialDimension(),
 			     "coord_on_quad");
 
-  fem->interpolateOnQuadraturePoints(my_mesh.getNodes(),
+  fem->interpolateOnIntegrationPoints(my_mesh.getNodes(),
 				     coord_on_quad,
 				     my_mesh.getSpatialDimension(),
 				     type);
