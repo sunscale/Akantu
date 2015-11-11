@@ -82,29 +82,29 @@ IORDERINGSC = $(IMETIS) $(IPORD) $(ISCOTCH)
 # PLAT : use it to add a default suffix to the generated libraries
 PLAT    = @MUMPS_PREFIX@
 # RM : remove files
-RM      = @CMAKE_COMMAND@ -E remove -f
+RM      = '@CMAKE_COMMAND@' -E remove -f
 
 ifeq ($(MUMPS_TYPE),seq)
 # CC : C compiler
-CC      = @CMAKE_C_COMPILER@
+CC      = '@CMAKE_C_COMPILER@'
 # FC : Fortran 90 compiler
-FC      = @CMAKE_Fortran_COMPILER@
+FC      = '@CMAKE_Fortran_COMPILER@'
 # FL : Fortran linker
-FL      = @CMAKE_Fortran_COMPILER@
+FL      = '@CMAKE_Fortran_COMPILER@'
 else
 # CC : C compiler
-CC      = @MPI_C_COMPILER@
+CC      = '@MPI_C_COMPILER@'
 # FC : Fortran 90 compiler
-FC      = @MPI_Fortran_COMPILER@
+FC      = '@MPI_Fortran_COMPILER@'
 # FL : Fortran linker
-FL      = @MPI_Fortran_COMPILER@
+FL      = '@MPI_Fortran_COMPILER@'
 endif
 
 # AR : Archive object in a library
-AR      = @CMAKE_AR@ vr
+AR      = '@CMAKE_AR@' vr
 # RANLIB : generate index of an archive file
 #   (optionnal use "RANLIB = echo" in case of problem)
-RANLIB  = @CMAKE_RANLIB@
+RANLIB  = '@CMAKE_RANLIB@'
 #RANLIB  = echo
 
 # SCALAP should define the SCALAPACK and  BLACS libraries.
@@ -128,7 +128,7 @@ LIBSEQ  = -L$(topdir)/libseq -lmpiseq
 LIBBLAS = @BLAS_LIBRARIES@
 
 # DEFINE YOUR PTHREAD LIBRARY
-LIBOTHERS = -lpthread
+LIBOTHERS = @AKANTU_MUMPS_PTHREAD@
 
 # FORTRAN/C COMPATIBILITY:
 #  Use:
@@ -140,7 +140,7 @@ LIBOTHERS = -lpthread
 #
 #     leave empty if your Fortran compiler does not change the symbols.
 #
-CDEFS = -DAdd_
+CDEFS = @AKANTU_MUMPS_CDEFS@
 
 #COMPILER OPTIONS
 OPTF    = -O -w -fPIC
