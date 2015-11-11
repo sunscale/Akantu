@@ -55,14 +55,14 @@ namespace akantu {
 
       template <typename Iterator>
       void operator()(qi::info const& what,
-		      Iterator err_pos,
-		      Iterator last) const
+                      Iterator err_pos,
+                      Iterator last) const
       {
-	AKANTU_EXCEPTION("Error! Expecting "
-			 << what                         // what failed?
-			 << " here: \""
-			 << std::string(err_pos, last)   // iterators to error-pos, end
-			 << "\"");
+        AKANTU_EXCEPTION("Error! Expecting "
+                         << what                         // what failed?
+                         << " here: \""
+                         << std::string(err_pos, last)   // iterators to error-pos, end
+                         << "\"");
       }
     };
 
@@ -75,7 +75,7 @@ namespace akantu {
 
       template <typename Funct, typename T>
       typename result<Funct, T>::type operator()(Funct f, T a) const {
-	return f(a);
+        return f(a);
       }
     };
 
@@ -85,7 +85,7 @@ namespace akantu {
 
       template <typename Funct, typename T1, typename T2>
       typename result<Funct, T1, T2>::type operator()(Funct f, T1 a, T2 b) const {
-	return f(a, b);
+        return f(a, b);
       }
     };
 
@@ -95,7 +95,7 @@ namespace akantu {
 
       template <typename T1, typename T2>
       typename result<T1, T2>::type operator()(T1 a, T2 b) const {
-	return std::pow(a, b);
+        return std::pow(a, b);
       }
     };
 
@@ -106,151 +106,151 @@ namespace akantu {
 
       template <typename T1, typename T2, typename res>
       res operator()(T1 a, const T2 & section,
-		     __attribute__((unused)) const res & result) const {
-	return section.getParameter(a, _ppsc_current_and_parent_scope);
+                     __attribute__((unused)) const res & result) const {
+        return section.getParameter(a, _ppsc_current_and_parent_scope);
       }
     };
 
     template<class Iterator, typename Skipper = spirit::unused_type>
     struct AlgebraicGrammar : qi::grammar<Iterator, Real(), Skipper> {
       AlgebraicGrammar(const ParserSection & section) : AlgebraicGrammar::base_type(start,
-										  "algebraic_grammar"),
-						       section(section) {
-	phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
-	phx::function<lazy_pow_>  lazy_pow;
-	phx::function<lazy_unary_func_>  lazy_unary_func;
-	phx::function<lazy_binary_func_> lazy_binary_func;
-	phx::function<lazy_eval_param_> lazy_eval_param;
-	start
-	  =   expr.alias()
-	  ;
+                                                                                  "algebraic_grammar"),
+                                                       section(section) {
+        phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
+        phx::function<lazy_pow_>  lazy_pow;
+        phx::function<lazy_unary_func_>  lazy_unary_func;
+        phx::function<lazy_binary_func_> lazy_binary_func;
+        phx::function<lazy_eval_param_> lazy_eval_param;
+        start
+          =   expr.alias()
+          ;
 
-	expr
-	  =   term                  [ lbs::_val  = lbs::_1 ]
-	      >> *( ('+' > term     [ lbs::_val += lbs::_1 ])
-		  | ('-' > term     [ lbs::_val -= lbs::_1 ])
-		  )
-	  ;
+        expr
+          =   term                  [ lbs::_val  = lbs::_1 ]
+              >> *( ('+' > term     [ lbs::_val += lbs::_1 ])
+                  | ('-' > term     [ lbs::_val -= lbs::_1 ])
+                  )
+          ;
 
-	term
-	  =   factor                [ lbs::_val  = lbs::_1 ]
-	      >> *( ('*' > factor   [ lbs::_val *= lbs::_1 ])
-		  | ('/' > factor   [ lbs::_val /= lbs::_1 ])
-		  )
-	  ;
+        term
+          =   factor                [ lbs::_val  = lbs::_1 ]
+              >> *( ('*' > factor   [ lbs::_val *= lbs::_1 ])
+                  | ('/' > factor   [ lbs::_val /= lbs::_1 ])
+                  )
+          ;
 
-	factor
-	  =   number                [ lbs::_val = lbs::_1 ]
-	      >> *("**" > number    [ lbs::_val = lazy_pow(lbs::_val, lbs::_1) ])
-	  ;
+        factor
+          =   number                [ lbs::_val = lbs::_1 ]
+              >> *("**" > number    [ lbs::_val = lazy_pow(lbs::_val, lbs::_1) ])
+          ;
 
-	number
-	  =   real                  [ lbs::_val =  lbs::_1 ]
-	  |   ('-' > number         [ lbs::_val = -lbs::_1 ])
-	  |   ('+' > number         [ lbs::_val =  lbs::_1 ])
-	  |   constant              [ lbs::_val =  lbs::_1 ]
-	  |   function              [ lbs::_val =  lbs::_1 ]
-	  |   ('(' > expr > ')')    [ lbs::_val =  lbs::_1 ]
-	  |   variable              [ lbs::_val =  lbs::_1 ]
-	  ;
+        number
+          =   real                  [ lbs::_val =  lbs::_1 ]
+          |   ('-' > number         [ lbs::_val = -lbs::_1 ])
+          |   ('+' > number         [ lbs::_val =  lbs::_1 ])
+          |   constant              [ lbs::_val =  lbs::_1 ]
+          |   function              [ lbs::_val =  lbs::_1 ]
+          |   ('(' > expr > ')')    [ lbs::_val =  lbs::_1 ]
+          |   variable              [ lbs::_val =  lbs::_1 ]
+          ;
 
-	function
-	  =   (qi::no_case[unary_function]
-	       > '('
-	       > expr
-	       > ')')               [ lbs::_val = lazy_unary_func(lbs::_1, lbs::_2) ]
-	  |   (qi::no_case[binary_function]
-	       > '(' >> expr
-	       > ',' >> expr
-	       > ')')               [ lbs::_val = lazy_binary_func(lbs::_1, lbs::_2, lbs::_3) ]
-	  ;
+        function
+          =   (qi::no_case[unary_function]
+               > '('
+               > expr
+               > ')')               [ lbs::_val = lazy_unary_func(lbs::_1, lbs::_2) ]
+          |   (qi::no_case[binary_function]
+               > '(' >> expr
+               > ',' >> expr
+               > ')')               [ lbs::_val = lazy_binary_func(lbs::_1, lbs::_2, lbs::_3) ]
+          ;
 
-	variable
-	  =   key [ lbs::_val = lazy_eval_param(lbs::_1, section, lbs::_val) ]
-	  ;
+        variable
+          =   key [ lbs::_val = lazy_eval_param(lbs::_1, section, lbs::_val) ]
+          ;
 
-	key
-	  =   qi::no_skip[qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9")] // coming from the InputFileGrammar
-	  ;
+        key
+          =   qi::no_skip[qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9")] // coming from the InputFileGrammar
+          ;
 
 #ifndef M_PI
-#  define M_PI		3.14159265358979323846
+#  define M_PI          3.14159265358979323846
 #endif
 #ifndef M_E
-#  define M_E		2.7182818284590452354
+#  define M_E           2.7182818284590452354
 #endif
-	constant.add
-	  ("pi", M_PI)
-	  ("e",  M_E);
+        constant.add
+          ("pi", M_PI)
+          ("e",  M_E);
 
-	unary_function.add
-	  ("abs"   , &std::abs   )
-	  ("acos"  , &std::acos  )
-	  ("asin"  , &std::asin  )
-	  ("atan"  , &std::atan  )
-	  ("ceil"  , &std::ceil  )
-	  ("cos"   , &std::cos   )
-	  ("cosh"  , &std::cosh  )
-	  ("exp"   , &std::exp   )
-	  ("floor" , &std::floor )
-	  ("log10" , &std::log10 )
-	  ("log"   , &std::log   )
-	  ("sin"   , &std::sin   )
-	  ("sinh"  , &std::sinh  )
-	  ("sqrt"  , &std::sqrt  )
-	  ("tan"   , &std::tan   )
-	  ("tanh"  , &std::tanh  )
+        unary_function.add
+          ("abs"   , &std::abs   )
+          ("acos"  , &std::acos  )
+          ("asin"  , &std::asin  )
+          ("atan"  , &std::atan  )
+          ("ceil"  , &std::ceil  )
+          ("cos"   , &std::cos   )
+          ("cosh"  , &std::cosh  )
+          ("exp"   , &std::exp   )
+          ("floor" , &std::floor )
+          ("log10" , &std::log10 )
+          ("log"   , &std::log   )
+          ("sin"   , &std::sin   )
+          ("sinh"  , &std::sinh  )
+          ("sqrt"  , &std::sqrt  )
+          ("tan"   , &std::tan   )
+          ("tanh"  , &std::tanh  )
 #if defined(AKANTU_CORE_CXX11 )
-	  ("acosh" , &std::acosh )
-	  ("asinh" , &std::asinh )
-	  ("atanh" , &std::atanh )
-	  ("exp2"  , &std::exp2  )
-	  ("expm1" , &std::expm1 )
-	  ("log1p" , &std::log1p )
-	  ("log2"  , &std::log2  )
-	  ("erf"   , &std::erf   )
-	  ("erfc"  , &std::erfc  )
-	  ("lgamma", &std::lgamma)
-	  ("tgamma", &std::tgamma)
-	  ("trunc" , &std::trunc )
-	  ("round" , &std::round )
-	  //	  ("crbt"  , &std::crbt  )
+          ("acosh" , &std::acosh )
+          ("asinh" , &std::asinh )
+          ("atanh" , &std::atanh )
+          ("exp2"  , &std::exp2  )
+          ("expm1" , &std::expm1 )
+          ("log1p" , &std::log1p )
+          ("log2"  , &std::log2  )
+          ("erf"   , &std::erf   )
+          ("erfc"  , &std::erfc  )
+          ("lgamma", &std::lgamma)
+          ("tgamma", &std::tgamma)
+          ("trunc" , &std::trunc )
+          ("round" , &std::round )
+          //      ("crbt"  , &std::crbt  )
 #endif
-	  ;
+          ;
 
-	binary_function.add
-	  ("pow"  , &std::pow      )
-	  ("min"  , &parser::my_min)
-	  ("max"  , &parser::my_max)
-	  ("atan2", &std::atan2    )
-	  ("fmod" , &std::fmod     )
+        binary_function.add
+          ("pow"  , &std::pow      )
+          ("min"  , &parser::my_min)
+          ("max"  , &parser::my_max)
+          ("atan2", &std::atan2    )
+          ("fmod" , &std::fmod     )
 #if defined(AKANTU_CORE_CXX11)
-	  ("hypot", &std::hypot    )
+          ("hypot", &std::hypot    )
 #endif
-	  ;
+          ;
 
-	qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
+        qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
 
-	expr    .name("expression");
-	term    .name("term");
-	factor  .name("factor");
-	number  .name("numerical-value");
-	variable.name("variable");
-	function.name("function");
+        expr    .name("expression");
+        term    .name("term");
+        factor  .name("factor");
+        number  .name("numerical-value");
+        variable.name("variable");
+        function.name("function");
 
-	constant.name("constants-list");
-	unary_function.name("unary-functions-list");
-	binary_function.name("binary-functions-list");
+        constant.name("constants-list");
+        unary_function.name("unary-functions-list");
+        binary_function.name("binary-functions-list");
 
 #if !defined AKANTU_NDEBUG
-	if(AKANTU_DEBUG_TEST(dblDebug)) {
-	  qi::debug(expr);
-	  qi::debug(term);
-	  qi::debug(factor);
-	  qi::debug(number);
-	  qi::debug(variable);
-	  qi::debug(function);
-	}
+        if(AKANTU_DEBUG_TEST(dblDebug)) {
+          qi::debug(expr);
+          qi::debug(term);
+          qi::debug(factor);
+          qi::debug(number);
+          qi::debug(variable);
+          qi::debug(function);
+        }
 #endif
       }
 
@@ -279,21 +279,21 @@ namespace akantu {
     /* ---------------------------------------------------------------------- */
     struct parsable_vector {
       operator Vector<Real>() {
-	Vector<Real> tmp(_cells.size());
-	std::vector<Real>::iterator it = _cells.begin();
-	for (UInt i = 0; it != _cells.end(); ++it, ++i) tmp(i) = *it;
-	return tmp;
+        Vector<Real> tmp(_cells.size());
+        std::vector<Real>::iterator it = _cells.begin();
+        for (UInt i = 0; it != _cells.end(); ++it, ++i) tmp(i) = *it;
+        return tmp;
       }
 
       std::vector<Real> _cells;
     };
 
-    std::ostream& operator<<(std::ostream& stream, const parsable_vector& pv) {
+    inline std::ostream& operator<<(std::ostream& stream, const parsable_vector& pv) {
       stream << "pv[";
       std::vector<Real>::const_iterator it = pv._cells.begin();
       if(it != pv._cells.end()) {
-	stream << *it;
-	for (++it; it != pv._cells.end(); ++it) stream << ", " << *it;
+        stream << *it;
+        for (++it; it != pv._cells.end(); ++it) stream << ", " << *it;
       }
       stream << "]";
       return stream;
@@ -301,31 +301,31 @@ namespace akantu {
 
     struct parsable_matrix {
       operator Matrix<Real>() {
-	size_t cols = 0;
-	std::vector<parsable_vector>::iterator it_rows = _cells.begin();
-	for (;it_rows != _cells.end(); ++it_rows) cols = std::max(cols, it_rows->_cells.size());
+        size_t cols = 0;
+        std::vector<parsable_vector>::iterator it_rows = _cells.begin();
+        for (;it_rows != _cells.end(); ++it_rows) cols = std::max(cols, it_rows->_cells.size());
 
-	Matrix<Real> tmp(_cells.size(), _cells[0]._cells.size(), 0.);
+        Matrix<Real> tmp(_cells.size(), _cells[0]._cells.size(), 0.);
 
-	it_rows = _cells.begin();
-	for (UInt i = 0; it_rows != _cells.end(); ++it_rows, ++i) {
-	  std::vector<Real>::iterator it_cols = it_rows->_cells.begin();
-	  for (UInt j = 0; it_cols != it_rows->_cells.end(); ++it_cols, ++j) {
-	    tmp(i, j) = *it_cols;
-	  }
-	}
-	return tmp;
+        it_rows = _cells.begin();
+        for (UInt i = 0; it_rows != _cells.end(); ++it_rows, ++i) {
+          std::vector<Real>::iterator it_cols = it_rows->_cells.begin();
+          for (UInt j = 0; it_cols != it_rows->_cells.end(); ++it_cols, ++j) {
+            tmp(i, j) = *it_cols;
+          }
+        }
+        return tmp;
       }
 
       std::vector<parsable_vector> _cells;
     };
 
-    std::ostream& operator<<(std::ostream& stream, const parsable_matrix& pm) {
+    inline std::ostream& operator<<(std::ostream& stream, const parsable_matrix& pm) {
       stream << "pm[";
       std::vector<parsable_vector>::const_iterator it = pm._cells.begin();
       if(it != pm._cells.end()) {
-	stream << *it;
-	for (++it; it != pm._cells.end(); ++it) stream << ", " << *it;
+        stream << *it;
+        for (++it; it != pm._cells.end(); ++it) stream << ", " << *it;
       }
       stream << "]";
       return stream;
@@ -338,7 +338,7 @@ namespace akantu {
 
       template <typename T1, typename T2>
       void operator()(T1 & cont, T2 & value) const {
-	cont._cells.push_back(value);
+        cont._cells.push_back(value);
       }
     };
 
@@ -346,35 +346,35 @@ namespace akantu {
     template<class Iterator, typename Skipper = spirit::unused_type>
     struct VectorGrammar : qi::grammar<Iterator, parsable_vector(), Skipper> {
       VectorGrammar(const ParserSection & section) : VectorGrammar::base_type(start,
-									    "vector_algebraic_grammar"),
-						    number(section) {
-	phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
-	//phx::function<lazy_algebraic_eval_> lazy_algebraic_eval;
-	phx::function<lazy_cont_add_> lazy_vector_add;
+                                                                            "vector_algebraic_grammar"),
+                                                    number(section) {
+        phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
+        //phx::function<lazy_algebraic_eval_> lazy_algebraic_eval;
+        phx::function<lazy_cont_add_> lazy_vector_add;
 
-	start
-	  =   '[' > vector > ']'
-	  ;
+        start
+          =   '[' > vector > ']'
+          ;
 
-	vector
-	  =   (   number            [ lazy_vector_add(lbs::_a, lbs::_1) ]
-		  >> *(   ','
-			  >> number [ lazy_vector_add(lbs::_a, lbs::_1) ]
-		      )
-	      )                     [ lbs::_val = lbs::_a ]
-	  ;
+        vector
+          =   (   number            [ lazy_vector_add(lbs::_a, lbs::_1) ]
+                  >> *(   ','
+                          >> number [ lazy_vector_add(lbs::_a, lbs::_1) ]
+                      )
+              )                     [ lbs::_val = lbs::_a ]
+          ;
 
-	qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
+        qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
 
-	start .name("start");
-	vector.name("vector");
-	number.name("value");
+        start .name("start");
+        vector.name("vector");
+        number.name("value");
 
 #if !defined AKANTU_NDEBUG
-	if(AKANTU_DEBUG_TEST(dblDebug)) {
-	  qi::debug(start);
-	  qi::debug(vector);
-	}
+        if(AKANTU_DEBUG_TEST(dblDebug)) {
+          qi::debug(start);
+          qi::debug(vector);
+        }
 #endif
       }
 
@@ -392,11 +392,11 @@ namespace akantu {
 
       template <typename T1, typename T2, typename res>
       bool operator()(T1 a, const T2 & section, res & result) const {
-	std::string value = section.getParameter(a, _ppsc_current_and_parent_scope);
-	std::string::const_iterator b = value.begin();
-	std::string::const_iterator e = value.end();
-	parser::VectorGrammar<std::string::const_iterator, qi::space_type> grammar(section);
-	return qi::phrase_parse(b, e, grammar, qi::space, result);
+        std::string value = section.getParameter(a, _ppsc_current_and_parent_scope);
+        std::string::const_iterator b = value.begin();
+        std::string::const_iterator e = value.end();
+        parser::VectorGrammar<std::string::const_iterator, qi::space_type> grammar(section);
+        return qi::phrase_parse(b, e, grammar, qi::space, result);
       }
     };
 
@@ -406,54 +406,54 @@ namespace akantu {
     template<class Iterator, typename Skipper = spirit::unused_type>
     struct MatrixGrammar : qi::grammar<Iterator, parsable_matrix(), Skipper> {
       MatrixGrammar(const ParserSection & section) : MatrixGrammar::base_type(start,
-									      "matrix_algebraic_grammar"),
-						    vector(section) {
-	phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
-	phx::function<lazy_vector_eval_> lazy_vector_eval;
-	phx::function<lazy_cont_add_> lazy_matrix_add;
+                                                                              "matrix_algebraic_grammar"),
+                                                    vector(section) {
+        phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
+        phx::function<lazy_vector_eval_> lazy_vector_eval;
+        phx::function<lazy_cont_add_> lazy_matrix_add;
 
-	start
-	  =   '[' >> matrix >> ']'
-	  ;
+        start
+          =   '[' >> matrix >> ']'
+          ;
 
-	matrix
-	  =   (   rows            [ lazy_matrix_add(lbs::_a, lbs::_1) ]
-		  >> *(   ','
-			  >> rows [ lazy_matrix_add(lbs::_a, lbs::_1) ]
-		      )
-	       )                  [ lbs::_val = lbs::_a ]
-	  ;
+        matrix
+          =   (   rows            [ lazy_matrix_add(lbs::_a, lbs::_1) ]
+                  >> *(   ','
+                          >> rows [ lazy_matrix_add(lbs::_a, lbs::_1) ]
+                      )
+               )                  [ lbs::_val = lbs::_a ]
+          ;
 
-	rows
-	  =   eval_vector
-	  |   vector
-	  ;
+        rows
+          =   eval_vector
+          |   vector
+          ;
 
-	eval_vector
-	  =   (key [ lbs::_pass = lazy_vector_eval(lbs::_1, section, lbs::_a) ]) [lbs::_val = lbs::_a]
-	  ;
+        eval_vector
+          =   (key [ lbs::_pass = lazy_vector_eval(lbs::_1, section, lbs::_a) ]) [lbs::_val = lbs::_a]
+          ;
 
-	key
-	  =   qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9") // coming from the InputFileGrammar
-	  ;
+        key
+          =   qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9") // coming from the InputFileGrammar
+          ;
 
 
-	qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
+        qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
 
-	start .name("matrix");
-	matrix.name("all_rows");
-	rows  .name("rows");
-	vector.name("vector");
-	eval_vector.name("eval_vector");
+        start .name("matrix");
+        matrix.name("all_rows");
+        rows  .name("rows");
+        vector.name("vector");
+        eval_vector.name("eval_vector");
 
 #ifndef AKANTU_NDEBUG
-	if(AKANTU_DEBUG_TEST(dblDebug)) {
-	  qi::debug(start);
-	  qi::debug(matrix);
-	  qi::debug(rows);
-	  qi::debug(eval_vector);
-	  qi::debug(key);
-	}
+        if(AKANTU_DEBUG_TEST(dblDebug)) {
+          qi::debug(start);
+          qi::debug(matrix);
+          qi::debug(rows);
+          qi::debug(eval_vector);
+          qi::debug(key);
+        }
 #endif
       }
 
@@ -471,16 +471,16 @@ namespace akantu {
     /* ---------------------------------------------------------------------- */
     struct ParsableRandomGenerator {
       ParsableRandomGenerator(Real base = Real(),
-			      const RandomDistributionType & type = _rdt_not_defined,
-			      const parsable_vector & parameters = parsable_vector()) :
-	base(base), type(type), parameters(parameters) {}
+                              const RandomDistributionType & type = _rdt_not_defined,
+                              const parsable_vector & parameters = parsable_vector()) :
+        base(base), type(type), parameters(parameters) {}
 
       Real base;
       RandomDistributionType type;
       parsable_vector parameters;
     };
 
-    std::ostream& operator<<(std::ostream& stream, const ParsableRandomGenerator& prg) {
+    inline std::ostream& operator<<(std::ostream& stream, const ParsableRandomGenerator& prg) {
       stream << "prg[" << prg.base << " " << UInt(prg.type) << " " << prg.parameters << "]";
       return stream;
     }
@@ -489,62 +489,62 @@ namespace akantu {
     template<class Iterator, typename Skipper = spirit::unused_type>
     struct RandomGeneratorGrammar : qi::grammar<Iterator, ParsableRandomGenerator(), Skipper> {
       RandomGeneratorGrammar(const ParserSection & section) : RandomGeneratorGrammar::base_type(start,
-											      "random_generator_grammar"),
-							      number(section) {
-	phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
-	phx::function<lazy_cont_add_> lazy_params_add;
+                                                                                              "random_generator_grammar"),
+                                                              number(section) {
+        phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
+        phx::function<lazy_cont_add_> lazy_params_add;
 
-	start
-	  = generator.alias()
-	  ;
+        start
+          = generator.alias()
+          ;
 
-	generator
-	  =   qi::hold[distribution [ lbs::_val = lbs::_1 ] ]
-	  |   number [ lbs::_val = phx::construct<ParsableRandomGenerator>(lbs::_1) ]
-	  ;
+        generator
+          =   qi::hold[distribution [ lbs::_val = lbs::_1 ] ]
+          |   number [ lbs::_val = phx::construct<ParsableRandomGenerator>(lbs::_1) ]
+          ;
 
-	distribution
-	  =   (
-		  number
-		  >> generator_type
-		  >> '['
-		  >> generator_params
-		  >> ']'
-	      ) [ lbs::_val = phx::construct<ParsableRandomGenerator>(lbs::_1, lbs::_2, lbs::_3) ]
-	  ;
+        distribution
+          =   (
+                  number
+                  >> generator_type
+                  >> '['
+                  >> generator_params
+                  >> ']'
+              ) [ lbs::_val = phx::construct<ParsableRandomGenerator>(lbs::_1, lbs::_2, lbs::_3) ]
+          ;
 
-	generator_params
-	  =   (   number            [ lazy_params_add(lbs::_a, lbs::_1) ]
-		  >> *(   ','
-			  > number  [ lazy_params_add(lbs::_a, lbs::_1) ]
-		      )
-	      )                     [ lbs::_val = lbs::_a ]
-	  ;
+        generator_params
+          =   (   number            [ lazy_params_add(lbs::_a, lbs::_1) ]
+                  >> *(   ','
+                          > number  [ lazy_params_add(lbs::_a, lbs::_1) ]
+                      )
+              )                     [ lbs::_val = lbs::_a ]
+          ;
 
 #define AKANTU_RANDOM_DISTRIBUTION_TYPE_ADD(r, data, elem)                          \
-	(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, elem)),		\
-	 AKANTU_RANDOM_DISTRIBUTION_TYPES_PREFIX(BOOST_PP_TUPLE_ELEM(2, 0, elem)))
+        (BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, elem)),           \
+         AKANTU_RANDOM_DISTRIBUTION_TYPES_PREFIX(BOOST_PP_TUPLE_ELEM(2, 0, elem)))
 
-	generator_type.add
-	  BOOST_PP_SEQ_FOR_EACH(AKANTU_RANDOM_DISTRIBUTION_TYPE_ADD, _, AKANTU_RANDOM_DISTRIBUTION_TYPES);
+        generator_type.add
+          BOOST_PP_SEQ_FOR_EACH(AKANTU_RANDOM_DISTRIBUTION_TYPE_ADD, _, AKANTU_RANDOM_DISTRIBUTION_TYPES);
 #undef AKANTU_RANDOM_DISTRIBUTION_TYPE_ADD
 
 
-	qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
+        qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
 
-	start           .name("random-generator");
-	generator       .name("random-generator");
-	distribution    .name("random-distribution");
-	generator_type  .name("generator-type");
-	generator_params.name("generator-parameters");
-	number          .name("number");
+        start           .name("random-generator");
+        generator       .name("random-generator");
+        distribution    .name("random-distribution");
+        generator_type  .name("generator-type");
+        generator_params.name("generator-parameters");
+        number          .name("number");
 
 #ifndef AKANTU_NDEBUG
-	if(AKANTU_DEBUG_TEST(dblDebug)) {
-	  qi::debug(generator);
-	  qi::debug(distribution);
-	  qi::debug(generator_params);
-	}
+        if(AKANTU_DEBUG_TEST(dblDebug)) {
+          qi::debug(generator);
+          qi::debug(distribution);
+          qi::debug(generator_params);
+        }
 #endif
       }
 
