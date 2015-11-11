@@ -67,8 +67,8 @@ ExternalProject_Add(Scotch
   PREFIX ${SCOTCH_DIR}
   ${_scotch_download_command}
   ${_extra_options}
-  PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}.patch
-  CONFIGURE_COMMAND cmake -E copy ${SCOTCH_DIR}/scotch_make.inc src/Makefile.inc
+  PATCH_COMMAND ${PATCH_COMMAND} -p1 < ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}.patch
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy ${SCOTCH_DIR}/scotch_make.inc src/Makefile.inc
   BUILD_IN_SOURCE 1
   BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -C src
   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} prefix=<INSTALL_DIR> -C src install

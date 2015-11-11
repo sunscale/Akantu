@@ -53,9 +53,8 @@ else()
   set(MUMPS_PREFIX _seq)
 endif()
 
-package_get_option_name(Scotch _scotch_option)
 package_use_system(Scotch _scotch_use_system)
-if(NOT _scotch_use_system AND ${_scotch_option})
+if(NOT _scotch_use_system)
   list(APPEND MUMPS_DEPENDS Scotch)
 endif()
 
@@ -118,7 +117,7 @@ ExternalProject_Add(MUMPS
   URL_HASH ${MUMPS_ARCHIVE_HASH_${MUMPS_VERSION}}
   ${_extra_options}
   BUILD_IN_SOURCE 1
-  PATCH_COMMAND patch -p2 < ${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}.patch
+  PATCH_COMMAND ${PATCH_COMMAND} -p2 < ${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}.patch
   CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/third-party/MUMPS_make.inc Makefile.inc
   BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} d
   INSTALL_COMMAND "${CMAKE_MAKE_PROGRAM}" prefix=<INSTALL_DIR> install

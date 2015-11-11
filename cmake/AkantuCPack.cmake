@@ -32,8 +32,11 @@ set(PACKAGE_FILE_NAME "akantu" CACHE STRING "Name of package to be generated")
 mark_as_advanced(PACKAGE_FILE_NAME)
 
 #set(CPACK_GENERATOR "DEB;TGZ;TBZ2;STGZ;RPM")
-set(CPACK_GENERATOR "TGZ")
-
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(CPACK_GENERATOR "TGZ")
+else()
+  set(CPACK_GENERATOR "TGZ")
+endif()
 # General configuration
 set(CPACK_PACKAGE_VENDOR "LSMS")
 set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_FILE_NAME}-${AKANTU_VERSION}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
@@ -77,10 +80,15 @@ set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
 
 string(TOUPPER ${PROJECT_NAME} _project)
 
-list(APPEND CPACK_SOURCE_IGNORE_FILES ${AKANTU_EXCLUDE_SOURCE_FILES} ${AKANTU_TESTS_EXCLUDE_FILES} ${AKANTU_DOC_EXCLUDE_FILES})
-foreach(_pkg ${${_project}_PACKAGE_SYSTEM_PACKAGES_OFF})
-  string(TOUPPER "${_pkg}" _pkg)
-  list(APPEND CPACK_SOURCE_IGNORE_FILES ${CMAKE_SOURCE_DIR}/packages/${${_project}_${_pkg}_FILE})
+unset(CPACK_SOURCE_IGNORE_FILES)
+
+package_get_all_deactivated_packages(_deactivated_packages)
+foreach(_pkg ${_deactivated_packages}})
+  _package_get_filename(${_pkg} _file_name)
+  list(APPEND CPACK_SOURCE_IGNORE_FILES ${_file_name})
+
+  _package_get_source_files(${_pkg} _srcs _pub_hdrs _priv_hdrs)
+  list(APPEND CPACK_SOURCE_IGNORE_FILES ${_srcs} ${_pub_hdrs} ${_priv_hdrs})
 endforeach()
 
 list(APPEND CPACK_SOURCE_IGNORE_FILES "/.*build.*/;/CVS/;/\\\\.svn/;/\\\\.bzr/;/\\\\.hg/;/\\\\.hgignore;/\\\\.git/;\\\\.swp$;\\\\.#;/#;~")

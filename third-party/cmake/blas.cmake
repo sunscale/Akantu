@@ -4,6 +4,8 @@ configure_file(
   ${PROJECT_SOURCE_DIR}/third-party/blas_${BLAS_VERSION}_make.inc.cmake
   ${BLAS_DIR}/blas_make.inc @ONLY)
 
+file(MAKE_DIRECTORY ${BLAS_DIR}/lib)
+
 ExternalProject_Add(netlib-blas
   PREFIX ${BLAS_DIR}
   URL ${BLAS_ARCHIVE}

@@ -99,6 +99,7 @@
 #     package_get_all_test_folders(<test_dirs>)
 #     package_get_all_documentation_files(<doc_files>)
 #     package_get_all_activated_packages(<activated_list>)
+#     package_get_all_deactivated_packages(<deactivated_list>)
 #     package_get_all_packages(<packages_list>)
 #
 #
