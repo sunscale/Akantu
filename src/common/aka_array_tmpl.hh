@@ -499,6 +499,12 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size) {
 }
 
 /* -------------------------------------------------------------------------- */
+/**
+ * change the number of components by interlacing data
+ * @param multiplicator number of interlaced components add
+ * @param block_size blocks of data in the array
+ * Examaple for block_size = 2, multiplicator = 2
+ * array = oo oo oo -> new array = oo nn nn oo nn nn oo nn nn */
 template <class T, bool is_scal>
 void Array<T, is_scal>::extendComponentsInterlaced(UInt multiplicator,
                                                    UInt block_size) {

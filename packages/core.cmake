@@ -133,8 +133,13 @@ package_declare_sources(core
   io/parser/parsable.hh
   io/parser/parsable_tmpl.hh
   io/parser/parser.cc
+  io/parser/parser_real.cc
+  io/parser/parser_random.cc
+  io/parser/parser_types.cc
+  io/parser/parser_input_files.cc
   io/parser/parser.hh
   io/parser/parser_tmpl.hh
+  io/parser/parser_grammar_tmpl.hh
   io/parser/cppargparse/cppargparse.hh
   io/parser/cppargparse/cppargparse.cc
   io/parser/cppargparse/cppargparse_tmpl.hh
@@ -468,6 +473,9 @@ mark_as_advanced(ADDR2LINE_COMMAND)
 
 include(CheckFunctionExists)
 check_function_exists(clock_gettime _clock_gettime)
+
+include(CheckCXXSymbolExists)
+check_cxx_symbol_exists(strdup cstring AKANTU_HAS_STRDUP)
 
 if(NOT _clock_gettime)
   set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY ON  CACHE INTERNAL "" FORCE)

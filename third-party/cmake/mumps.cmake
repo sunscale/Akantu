@@ -94,17 +94,22 @@ else()
   set(MUMPS_EXTRA_Fortran_FLAGS "")
 endif()
 
-configure_file(${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}_make.inc.cmake
-  ${PROJECT_BINARY_DIR}/third-party/MUMPSmake.inc)
-
 if(CMAKE_VERSION VERSION_GREATER 3.1)
-  set(_extra_options 
-    UPDATE_DISCONNECTED 1
+  set(_extra_options
     DOWNLOAD_NO_PROGRESS 1
     EXCLUDE_FROM_ALL 1
     )
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(AKANTU_MUMPS_CDEFS "-DAdd_ -DWITHOUT_PTHREAD")
+else()
+  set(AKANTU_MUMPS_CDEFS "-DAdd_")
+  set(AKANTU_MUMPS_PTHREAD "-lpthread")
+endif()
+
+configure_file(${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}_make.inc.cmake
+  ${PROJECT_BINARY_DIR}/third-party/MUMPS_make.inc @ONLY)
 
 ExternalProject_Add(MUMPS
   DEPENDS ${MUMPS_DEPENDS}
@@ -114,9 +119,9 @@ ExternalProject_Add(MUMPS
   ${_extra_options}
   BUILD_IN_SOURCE 1
   PATCH_COMMAND patch -p2 < ${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}.patch
-  CONFIGURE_COMMAND cmake -E copy ${PROJECT_BINARY_DIR}/third-party/MUMPSmake.inc Makefile.inc
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/third-party/MUMPS_make.inc Makefile.inc
   BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} d
-  INSTALL_COMMAND prefix=<INSTALL_DIR> ${CMAKE_MAKE_PROGRAM} install
+  INSTALL_COMMAND "${CMAKE_MAKE_PROGRAM}" prefix=<INSTALL_DIR> install
   LOG_DOWNLOAD 1
   LOG_CONFIGURE 1
   LOG_BUILD 1

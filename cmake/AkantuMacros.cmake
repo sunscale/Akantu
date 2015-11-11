@@ -222,9 +222,9 @@ function(declare_akantu_types)
   # ----------------------------------------------------------------------------
   # hash function
   # ----------------------------------------------------------------------------
-  check_include_file_cxx(functional HAVE_HASH)
+  check_include_file_cxx(functional HAVE_FUNCTIONAL)
   set(AKANTU_HASH_IS_CXX11 TRUE CACHE INTERNAL "")
-  if(HAVE_HASH AND AKANTU_CORE_CXX11)
+  if(HAVE_FUNCTIONAL AND AKANTU_CORE_CXX11)
     list(APPEND _extra_includes functional)
     set(AKANTU_HASH_TYPE "std::hash" CACHE INTERNAL "")
   else()
