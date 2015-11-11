@@ -1,6 +1,9 @@
 %{
   #include "solid_mechanics_model.hh"
   #include "sparse_matrix.hh"
+  #include "boundary_condition.hh"
+  #include "boundary_condition_functor.hh"
+  #include "boundary_condition_python_functor.hh"
 %}
 
 namespace akantu {
@@ -74,6 +77,15 @@ print_self(SolidMechanicsModel)
 
   }
 
+  void applyBC(PyObject * func_obj,
+	       const BC::Functor::Type & type,
+	       const std::string & group_name) {
+    
+    akantu::BC::PythonFunctorDirichlet functor(func_obj);
+    $self->applyBC(functor,group_name);
+  }
+
+  
   void solveDisplCorr(bool need_factorize, bool has_profile_changed) {
 
     akantu::Array<akantu::Real> & increment = $self->getIncrement();
