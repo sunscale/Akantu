@@ -101,7 +101,7 @@ FL      = '@MPI_Fortran_COMPILER@'
 endif
 
 # AR : Archive object in a library
-AR      = '@CMAKE_AR@' vr
+AR      = '@CMAKE_AR@' vr 
 # RANLIB : generate index of an archive file
 #   (optionnal use "RANLIB = echo" in case of problem)
 RANLIB  = '@CMAKE_RANLIB@'
