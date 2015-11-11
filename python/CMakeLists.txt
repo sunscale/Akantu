@@ -226,8 +226,8 @@ swig_generate_wrappers(akantu AKANTU_SWIG_WRAPPERS_CPP AKANTU_WRAPPERS_PYTHON
   ${AKANTU_SWIG_MODULES}
   EXTRA_FLAGS ${AKANTU_SWIG_FLAGS})
 
-if(AKANTU_SWIG_WRAPPERS)
-  add_library(_akantu MODULE ${AKANTU_SWIG_WRAPPERS})
+if(AKANTU_SWIG_WRAPPERS_CPP)
+  add_library(_akantu MODULE ${AKANTU_SWIG_WRAPPERS_CPP})
   target_link_libraries(_akantu akantu ${PYTHON_LIBRARIES})
 
   set_target_properties(_akantu PROPERTIES PREFIX "")
@@ -236,10 +236,10 @@ if(AKANTU_SWIG_WRAPPERS)
 
   install(TARGETS _akantu
     EXPORT ${AKANTU_TARGETS_EXPORT}
-    LIBRARY DESTINATION lib COMPONENT python # for real systems
+    LIBRARY DESTINATION lib COMPONENT python NAMELINK_SKIP # for real systems
     ARCHIVE DESTINATION lib COMPONENT python
     RUNTIME DESTINATION bin COMPONENT python # for windows ...
-    NAMELINK_SKIP)
+    )
 
   install(FILES ${AKANTU_WRAPPERS_PYTHON}
     DESTINATION lib COMPONENT python

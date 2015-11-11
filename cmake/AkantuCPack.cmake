@@ -85,7 +85,7 @@ mark_as_advanced(CPACK_DEBIAN_PACKAGE_ARCHITECTURE)
 #set(CPACK_NSIS_MODIFY_PATH ON)
 
 # Components description
-set(CPACK_COMPONENTS_ALL lib dev bin)
+set(CPACK_COMPONENTS_ALL lib dev bin python)
 set(CPACK_COMPONENT_LIB_DISPLAY_NAME "Libraries")
 set(CPACK_COMPONENT_BIN_DISPLAY_NAME "Examples")
 set(CPACK_COMPONENT_PYTHON_DISPLAY_NAME "Python interface")
