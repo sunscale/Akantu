@@ -183,8 +183,6 @@ package_declare_sources(core
   model/boundary_condition_functor.hh
   model/boundary_condition_functor_inline_impl.cc
   model/boundary_condition_tmpl.hh
-  model/boundary_condition_python_functor.hh
-  model/boundary_condition_python_functor.cc
   model/integration_scheme/generalized_trapezoidal.hh
   model/integration_scheme/generalized_trapezoidal_inline_impl.cc
   model/integration_scheme/integration_scheme_1st_order.hh
@@ -468,6 +466,7 @@ package_declare_documentation(core
 
 find_program(READLINK_COMMAND readlink)
 find_program(ADDR2LINE_COMMAND addr2line)
+find_program(PATCH_COMMAND patch)
 mark_as_advanced(READLINK_COMMAND)
 mark_as_advanced(ADDR2LINE_COMMAND)
 
