@@ -65,16 +65,13 @@ print_self(SolidMechanicsModel)
   
 
   bool testConvergenceSccRes(Real tolerance) {
-
     Real error = 0;
-    bool res = self->testConvergence<akantu::SolveConvergenceCriteria::_scc_residual>(tolerance,error);
+    bool res = self->testConvergence<akantu::_scc_residual>(tolerance,error);
     return res;
   }
 
   void solveStaticDisplacement(Real tolerance, UInt max_iteration) {
-
-    $self->solveStatic<akantu::SolveConvergenceMethod::_scm_newton_raphson_tangent_not_computed, akantu::SolveConvergenceCriteria::_scc_residual>(tolerance, max_iteration);
-
+    $self->solveStatic<akantu::_scm_newton_raphson_tangent_not_computed, akantu::_scc_residual>(tolerance, max_iteration);
   }
 
   void applyDirichletBC(PyObject * func_obj,
@@ -108,7 +105,7 @@ print_self(SolidMechanicsModel)
 
   void solveStep_TgModifIncr(Real tolerance, UInt max_iteration) {
       
-  $self->solveStep<akantu::SolveConvergenceMethod::_scm_newton_raphson_tangent_modified, akantu::SolveConvergenceCriteria::_scc_residual>(tolerance, max_iteration);
+  $self->solveStep<akantu::_scm_newton_raphson_tangent_modified, akantu::_scc_residual>(tolerance, max_iteration);
     
  }
   
