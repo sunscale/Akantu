@@ -202,6 +202,8 @@ package_declare_sources(core
   model/solid_mechanics/materials/internal_field_tmpl.hh
   model/solid_mechanics/materials/random_internal_field.hh
   model/solid_mechanics/materials/random_internal_field_tmpl.hh
+  model/solid_mechanics/materials/material_python/material_python.cc
+  model/solid_mechanics/materials/material_python/material_python.hh
   model/solid_mechanics/solid_mechanics_model.cc
   model/solid_mechanics/solid_mechanics_model.hh
   model/solid_mechanics/solid_mechanics_model_inline_impl.cc
