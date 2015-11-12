@@ -29,69 +29,79 @@
 #include "aka_common.hh"
 #include "boundary_condition_functor.hh"
 /* -------------------------------------------------------------------------- */
-#include <Python.h>
-/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_BOUNDARY_CONDITION_PYTHON_FUNCTOR_HH__
 #define __AKANTU_BOUNDARY_CONDITION_PYTHON_FUNCTOR_HH__
-
+/* -------------------------------------------------------------------------- */
+#include "boundary_condition_functor.hh"
+#include "python_functor.hh"
+/* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
 
 namespace BC {
 
-class PythonFunctor : public Functor {
 
-public:
-  PythonFunctor(PyObject * obj);
+  class PythonFunctorDirichlet : public PythonFunctor, public Functor {
 
-protected:
+    /* ------------------------------------------------------------------------ */
+    /* Constructors/Destructors                                                 */
+    /* ------------------------------------------------------------------------ */
 
-  void callFunctor(PyObject * functor,
-		   PyObject * args,
-		   PyObject * kwargs) const;
+  public:
+    PythonFunctorDirichlet(PyObject * obj) : PythonFunctor(obj) {}
 
+    /* ------------------------------------------------------------------------ */
+    /* Methods                                                                  */
+    /* ------------------------------------------------------------------------ */
 
-  template <typename T>
-  PyObject *convertArrayToNumpy(const Vector<T> & array) const;
+  public:
+    void operator()(UInt node,
+		    Vector<bool> & flags,
+		    Vector<Real> & primal,
+		    const Vector<Real> & coord) const;
 
-  PyObject * python_obj;
+    /* ------------------------------------------------------------------------ */
+    /* Class Members                                                            */
+    /* ------------------------------------------------------------------------ */
 
-};
-
-class PythonFunctorDirichlet : public PythonFunctor {
-
-public:
-  PythonFunctorDirichlet(PyObject * obj) : PythonFunctor(obj) {}
-
-public:
-  void operator()(UInt node,
-		  Vector<bool> & flags,
-		  Vector<Real> & primal,
-		  const Vector<Real> & coord) const;
-
-public:
-  static const Type type = _dirichlet;
+  public:
+    static const Type type = _dirichlet;
 
   
-};
+  };
 
-class PythonFunctorNeumann : public PythonFunctor {
-
-public:
-  PythonFunctorNeumann(PyObject * obj) : PythonFunctor(obj) {}
-
-public:
+/* -------------------------------------------------------------------------- */
   
-  void operator()(const IntegrationPoint & quad_point,
-		  Vector<Real> & dual,
-		  const Vector<Real> & coord,
-		  const Vector<Real> & normals) const;
 
-public:
-  static const Type type = _neumann;
+  class PythonFunctorNeumann : public PythonFunctor, public Functor{
+
+    /* ------------------------------------------------------------------------ */
+    /* Constructors/Destructors                                                 */
+    /* ------------------------------------------------------------------------ */
+
+  public:
+    PythonFunctorNeumann(PyObject * obj) : PythonFunctor(obj) {}
+
+    /* ------------------------------------------------------------------------ */
+    /* Methods                                                                  */
+    /* ------------------------------------------------------------------------ */
+
+  public:
   
-};
+    void operator()(const IntegrationPoint & quad_point,
+		    Vector<Real> & dual,
+		    const Vector<Real> & coord,
+		    const Vector<Real> & normals) const;
+
+    /* ------------------------------------------------------------------------ */
+    /* Class Members                                                            */
+    /* ------------------------------------------------------------------------ */
+
+  public:
+    static const Type type = _neumann;
+  
+  };
 
 
     
