@@ -78,12 +78,29 @@ protected:
 
   /// convert an akantu object to python 
   template <typename T>
-  inline PyObject *convertToNumpy(const T & akantu_obj) const;
+  inline PyObject *convertToPython(const T & akantu_obj) const;
+
+  /// convert a stl vector to python 
+  template <typename T>
+  inline PyObject *convertToPython(const std::vector<T> & akantu_obj) const;
 
   /// convert an akantu vector to python 
   template <typename T>
-  inline PyObject *convertToNumpy(const Vector<T> & akantu_obj) const;
+  inline PyObject *convertToPython(const Vector<T> & akantu_obj) const;
 
+  /// convert a akantu matrix to python 
+  template <typename T>
+  inline PyObject *convertToPython(const Matrix<T> & akantu_obj) const;
+
+  /// convert a python object to an akantu object
+  template <typename return_type>
+  inline return_type convertToAkantu(PyObject * python_obj) const;
+
+  /// convert a python object to an akantu object
+  template <typename T>
+  inline std::vector<T> convertListToAkantu(PyObject * python_obj) const;
+
+  
   /// returns the numpy data type code
   template <typename T>
   inline int getPythonDataTypeCode() const;

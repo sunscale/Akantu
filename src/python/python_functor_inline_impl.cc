@@ -37,34 +37,54 @@ inline int PythonFunctor::getPythonDataTypeCode<double>() const{
 /* -------------------------------------------------------------------------- */
 
 template <typename T>
-PyObject *PythonFunctor::convertToNumpy(const T & akantu_object) const{
+PyObject *PythonFunctor::convertToPython(const T & akantu_object) const{
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 /* -------------------------------------------------------------------------- */
 
 template <>
-inline PyObject *PythonFunctor::convertToNumpy<double>(const double & akantu_object) const{
+inline PyObject *PythonFunctor::convertToPython<double>(const double & akantu_object) const{
   return PyFloat_FromDouble(akantu_object);
 }
 /* -------------------------------------------------------------------------- */
 
 template <>
-inline PyObject *PythonFunctor::convertToNumpy<UInt>(const UInt & akantu_object) const{
+inline PyObject *PythonFunctor::convertToPython<UInt>(const UInt & akantu_object) const{
   return PyInt_FromLong(akantu_object);
 }
 /* -------------------------------------------------------------------------- */
 
 template <>
-inline PyObject *PythonFunctor::convertToNumpy<bool>(const bool & akantu_object) const{
+inline PyObject *PythonFunctor::convertToPython<bool>(const bool & akantu_object) const{
   return PyBool_FromLong(long(akantu_object));
 }
 /* -------------------------------------------------------------------------- */
 
 template <typename T>
-PyObject *PythonFunctor::convertToNumpy(const Vector<T> & array) const{
+inline PyObject *PythonFunctor::convertToPython(const std::vector<T> & array) const{
+  int data_typecode = getPythonDataTypeCode< T >();
+  npy_intp dims[1] = {int(array.size())};
+  PyObject* obj = PyArray_SimpleNewFromData(1, dims, data_typecode, const_cast<T*>(&array[0]));
+  PyArrayObject* res = (PyArrayObject*) obj;
+  return (PyObject*)res;
+}
+/* -------------------------------------------------------------------------- */
+
+template <typename T>
+PyObject *PythonFunctor::convertToPython(const Vector<T> & array) const{
   int data_typecode = getPythonDataTypeCode< T >();
   npy_intp dims[1] = {array.size()};
   PyObject* obj = PyArray_SimpleNewFromData(1, dims, data_typecode, array.storage());
+  PyArrayObject* res = (PyArrayObject*) obj;
+  return (PyObject*)res;
+}
+/* -------------------------------------------------------------------------- */
+
+template <typename T>
+PyObject *PythonFunctor::convertToPython(const Matrix<T> & mat) const{
+  int data_typecode = getPythonDataTypeCode< T >();
+  npy_intp dims[2] = {mat.size(0),mat.size(1)};
+  PyObject* obj = PyArray_SimpleNewFromData(2, dims, data_typecode, mat.storage());
   PyArrayObject* res = (PyArrayObject*) obj;
   return (PyObject*)res;
 }
@@ -99,7 +119,7 @@ inline void PythonFunctor::packArguments(std::vector<PyObject*> & pArgs,
 					 T & p,
 					 Args&...params) const{
 
-  pArgs.push_back(this->convertToNumpy(p));
+  pArgs.push_back(this->convertToPython(p));
   if (sizeof...(params) != 0)
     this->packArguments(pArgs,params...);
 }
@@ -125,11 +145,61 @@ return_type PythonFunctor::callFunctor(const std::string & functor_name,
   PyObject * kwargs = PyDict_New();
 
   PyObject * pFunctor = getPythonFunction(functor_name);
-  this->callFunctor(pFunctor,pArgs,kwargs);
-  
+  PyObject * res = this->callFunctor(pFunctor,pArgs,kwargs);
+
+  return this->convertToAkantu<return_type>(res);
   //Py_XDECREF(pArgs);
   //Py_XDECREF(kwargs);
 
+}
+
+/* -------------------------------------------------------------------------- */
+
+template <typename return_type>
+inline return_type PythonFunctor::convertToAkantu(PyObject * python_obj) const{
+
+  if (PyList_Check(python_obj)){
+    return this->convertListToAkantu<typename return_type::value_type>(python_obj);
+  }
+  AKANTU_DEBUG_TO_IMPLEMENT();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template <>
+inline void PythonFunctor::convertToAkantu<void>(PyObject * python_obj) const{
+  if (python_obj != Py_None) AKANTU_DEBUG_WARNING("functor return a value while none was expected: ignored");
+}
+
+/* -------------------------------------------------------------------------- */
+
+
+template <>
+inline std::string PythonFunctor::convertToAkantu<std::string>(PyObject * python_obj) const{
+  if (!PyString_Check(python_obj)) AKANTU_EXCEPTION("cannot convert object to string");
+  return PyString_AsString(python_obj);
+}
+
+/* -------------------------------------------------------------------------- */
+
+template <>
+inline Real PythonFunctor::convertToAkantu<Real>(PyObject * python_obj) const{
+  if (!PyFloat_Check(python_obj)) AKANTU_EXCEPTION("cannot convert object to float");
+  return PyFloat_AsDouble(python_obj);
+}
+
+/* -------------------------------------------------------------------------- */
+
+template <typename T>
+inline std::vector<T> PythonFunctor::convertListToAkantu(PyObject * python_obj) const{
+
+  std::vector<T> res;
+  UInt size = PyList_Size(python_obj);
+  for (UInt i = 0; i < size; ++i) {
+    PyObject * item = PyList_GET_ITEM(python_obj,i);
+    res.push_back(this->convertToAkantu<T>(item));
+  }
+  return res;
 }
 
 

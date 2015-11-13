@@ -10,7 +10,6 @@ namespace akantu {
   %ignore SolidMechanicsModel::initFEEngineBoundary;
   %ignore SolidMechanicsModel::initParallel;
   %ignore SolidMechanicsModel::initArrays;
-  %ignore SolidMechanicsModel::initMaterials;
   %ignore SolidMechanicsModel::initModel;
   %ignore SolidMechanicsModel::initPBC;
 
