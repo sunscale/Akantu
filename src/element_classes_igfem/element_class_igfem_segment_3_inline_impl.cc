@@ -79,13 +79,12 @@ AKANTU_DEFINE_IGFEM_ELEMENT_CLASS_PROPERTY(_igfem_segment_3,		\
 					   _segment_2,			\
 					   _ek_igfem,			\
 					   1,				\
-					   _git_segment,		\
 					   1);
 
 /* -------------------------------------------------------------------------- */
 template<>
-inline bool ElementClass<_igfem_segment_3>::getOrientation(const Vector<bool> & is_inside) {
-  bool sub_el_is_inside = false;
+inline UInt ElementClass<_igfem_segment_3>::getOrientation(const Vector<bool> & is_inside) {
+  UInt sub_el_is_inside = false;
   if (is_inside(0)) {
     sub_el_is_inside = true;
 

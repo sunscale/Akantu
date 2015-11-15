@@ -15,5 +15,7 @@
 #
 #===============================================================================
 
-add_akantu_test(test_igfem "igfem_tests")
-
+add_akantu_test(test_solid_mechanics_model_igfem "Test solid mechanics model igfem")
+add_akantu_test(test_geometry "Test the IGFEM intersection algorithms")
+add_akantu_test(test_fe_engine "Test the IGFEM interpolation and integration")
+add_akantu_test(patch_tests "Patch tests for IGFEM model")

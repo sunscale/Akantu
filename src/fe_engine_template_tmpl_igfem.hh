@@ -61,6 +61,51 @@ inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem>::initSha
   AKANTU_DEBUG_OUT();
 }
 
-#endif /* __AKANTU_FE_ENGINE_TEMPLATE_TMPL_IGFEM_HH__ */
+/* -------------------------------------------------------------------------- */
+template <>
+inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem>::computeIntegrationPointsCoordinates(Array<Real> & quadrature_points_coordinates,
+													     const ElementType & type, 
+													     const GhostType & ghost_type,
+													     const Array<UInt> & filter_elements) const {
+
+  const Array<Real> & nodes_coordinates = mesh.getNodes();
+  UInt spatial_dimension = mesh.getSpatialDimension();
+  /// create an array with the nodal coordinates that need to be
+  /// interpolated. The nodal coordinates of the enriched nodes need
+  /// to be set to zero, because they represent the enrichment of the
+  /// position field, and the enrichments for this field are all zero!
+  /// There is no gap in the mesh!
+  Array<Real> igfem_nodes(nodes_coordinates.getSize(), spatial_dimension);				
+  shape_functions.extractValuesAtStandardNodes(nodes_coordinates, igfem_nodes, ghost_type);
+
+  interpolateOnIntegrationPoints(igfem_nodes, quadrature_points_coordinates, spatial_dimension, 
+				 type, ghost_type, filter_elements);
+}
+
+/* -------------------------------------------------------------------------- */
+template <>
+inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem>::computeIntegrationPointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
+													     const ElementTypeMapArray<UInt> * filter_elements) const {
+ 
+  const Array<Real> & nodes_coordinates = mesh.getNodes();
+  UInt spatial_dimension = mesh.getSpatialDimension();
+  /// create an array with the nodal coordinates that need to be
+  /// interpolated. The nodal coordinates of the enriched nodes need
+  /// to be set to zero, because they represent the enrichment of the
+  /// position field, and the enrichments for this field are all zero!
+  /// There is no gap in the mesh!
+  Array<Real> igfem_nodes(nodes_coordinates.getSize(), spatial_dimension);
+
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();
+       gt != ghost_type_t::end(); ++gt) {
+    GhostType ghost_type = *gt;
+    shape_functions.extractValuesAtStandardNodes(nodes_coordinates, igfem_nodes, ghost_type); 
+  }
+
+  interpolateOnIntegrationPoints(igfem_nodes, quadrature_points_coordinates, filter_elements);
+}
 
 __END_AKANTU__
+#endif /* __AKANTU_FE_ENGINE_TEMPLATE_TMPL_IGFEM_HH__ */
+
+

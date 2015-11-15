@@ -71,6 +71,7 @@ template <UInt dim>
 void MeshIgfemSphericalGrowingGel<dim>::computeMeshQueryListIntersectionPoint(const std::list<SK::Sphere_3> & query_list) {
   /// store number of currently enriched nodes
   this->nb_enriched_nodes = mesh.getNbNodes() - nb_nodes_fem;
+  UInt nb_old_nodes = mesh.getNbNodes();
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
     GhostType ghost_type = *gt;
@@ -80,7 +81,7 @@ void MeshIgfemSphericalGrowingGel<dim>::computeMeshQueryListIntersectionPoint(co
     for(;iit != iend; ++iit) {
       MeshAbstractIntersector<SK::Sphere_3> & intersector = *intersectors(*iit, ghost_type);
       intersector.constructData(ghost_type);
-      intersector.computeMeshQueryListIntersectionPoint(query_list, nb_nodes_fem);
+      intersector.computeMeshQueryListIntersectionPoint(query_list, nb_old_nodes);
       const Array<Real> intersection_points_current_type = *(intersector.getIntersectionPoints());
       const Array<UInt> & new_node_per_elem = intersector.getNewNodePerElem();
 
@@ -472,14 +473,15 @@ void MeshIgfemSphericalGrowingGel<dim>::updateNodeType(const Array<UInt> & nodes
       extreme_nodes[1] = connectivity(el, extreme_nodes[1]);
 
 
-      // if on of the two extreme nodes is local, then also the new node is local
-      if (mesh.isLocalNode(extreme_nodes[0]) ||
-      	  mesh.isLocalNode(extreme_nodes[1]))
-      	nodes_type(node_index) = -1;
       // if one extreme nodes is pure ghost, then also the new node is pure ghost
-      else if (mesh.isPureGhostNode(extreme_nodes[0]) ||
+      if (mesh.isPureGhostNode(extreme_nodes[0]) ||
       	       mesh.isPureGhostNode(extreme_nodes[1]))
       	nodes_type(node_index) = -3;
+      // if on of the two extreme nodes is local, then also the new node is local
+      else if (mesh.isLocalNode(extreme_nodes[0]) ||
+      	  mesh.isLocalNode(extreme_nodes[1]))
+      	nodes_type(node_index) = -1;
+
       // otherwise use the value stored in the map
       else {
 	std::sort(extreme_nodes, extreme_nodes+2);

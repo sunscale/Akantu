@@ -59,6 +59,21 @@ public:
   /// check if a point is in a given domain
   inline bool isInside(const Vector<Real> & point, ID domain = "") const;
 
+  /// move the interface, in this case grow the gel pockets
+  virtual void moveInterface(Real new_position, ID domain = "");
+
+  /* -------------------------------------------------------------------------- */
+  /* Accessors                                                                  */
+  /* -------------------------------------------------------------------------- */
+public:
+  UInt getNbStandardNodes() {
+    return this->intersector_sphere.getNbStandardNodes();
+  }
+
+  UInt getNbEnrichedNodes() {
+    return this->intersector_sphere.getNbEnrichedNodes();
+  }
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -78,6 +93,9 @@ protected:
 /* -------------------------------------------------------------------------- */
 
 #include "igfem_enrichment_inline_impl.cc"
+
+
+
 
 __END_AKANTU__
 /* -------------------------------------------------------------------------- */

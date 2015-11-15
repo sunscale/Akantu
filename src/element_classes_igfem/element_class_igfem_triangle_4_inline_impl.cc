@@ -79,22 +79,25 @@ AKANTU_DEFINE_IGFEM_ELEMENT_CLASS_PROPERTY(_igfem_triangle_4,		\
 					   _triangle_3,			\
 					   _ek_igfem,			\
 					   2,				\
-					   _git_triangle,		\
 					   1);
 
 /* -------------------------------------------------------------------------- */
 template<>
-inline bool ElementClass<_igfem_triangle_4>::getOrientation(const Vector<bool> & is_inside) {
-  bool sub_el_is_inside = false;
-  if (is_inside(1)) {
-    sub_el_is_inside = true;
+inline UInt ElementClass<_igfem_triangle_4>::getOrientation(const Vector<bool> & is_inside) {
+  UInt orientation = 0;
+  if (is_inside(1) && !is_inside(2)) 
+    orientation = 0;
+  
+  else if (!is_inside(1) && is_inside(2)) 
+    orientation = 1;
 
-    AKANTU_DEBUG_ASSERT(!is_inside(2),
-		      "orientation not determinable");
-  }
-  else
-    AKANTU_DEBUG_ASSERT(is_inside(2),
-		      "orientation not determinable");
+ 
+  else if (is_inside(1) && is_inside(2)) 
+    orientation = 2;
 
-  return sub_el_is_inside;
+ 
+  else if (!is_inside(1) && !is_inside(2)) 
+    orientation = 3;
+  
+  return orientation;
 }

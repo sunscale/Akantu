@@ -81,7 +81,6 @@ public:
 
 protected:
 
-  void updateElasticConstants(Vector<Real> & lambda_vec, Vector<Real> & mu_vec, Vector<Real> & kpa_vec); 
   /// constitutive law for a given quadrature point
   inline void computeStressOnQuad(const Matrix<Real> & grad_u,
 				  Matrix<Real> & sigma,
@@ -114,12 +113,6 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
-  /// the Young's moduli for the different sub-materials
-  Vector<Real> E;
-    
-  /// Poisson ratios for the different sub-materials
-  Vector<Real> nu;
   
   /// First Lamé coefficient
   IGFEMInternalField<Real> lambda;

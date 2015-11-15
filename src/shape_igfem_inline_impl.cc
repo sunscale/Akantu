@@ -14,10 +14,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#ifndef __AKANTU_SHAPE_IGFEM_INLINE_IMPL_CC__
+#define __AKANTU_SHAPE_IGFEM_INLINE_IMPL_CC__
+
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 inline const Array<Real> & ShapeLagrange<_ek_igfem>::getShapes(const ElementType & el_type,
-							   const GhostType & ghost_type) const {
+							       const GhostType & ghost_type) const {
   return shapes(FEEngine::getInterpolationType(el_type), ghost_type);
 }
 
@@ -702,7 +706,9 @@ inline void ShapeLagrange<_ek_igfem>::interpolateEnrichmentsAllTypes(const Array
 
 /* -------------------------------------------------------------------------- */
 
+__END_AKANTU__
 
+#endif /* __AKANTU_SHAPE_IGFEM_INLINE_IMPL_CC__ */
 
 
 

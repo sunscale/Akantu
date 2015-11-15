@@ -121,7 +121,6 @@ protected:
 						   sub_el_type_2,	\
 						   elem_kind,		\
 						   sp,			\
-						   gauss_int_type,	\
 						   min_int_order)	\
   template<>								\
   struct ElementClassProperty<elem_type> {				\
@@ -132,7 +131,6 @@ protected:
     static const ElementType sub_element_type_2 = sub_el_type_2;	\
     static const ElementKind element_kind = elem_kind;			\
     static const UInt spatial_dimension = sp;				\
-    static const GaussIntergrationType gauss_integration_type = gauss_int_type;	\
     static const UInt minimal_integration_order = min_int_order;	\
   }
 
@@ -250,7 +248,7 @@ public:
   }
 
   /// determine orientation of the element with respect to the interface
-  static inline bool getOrientation(const Vector<bool> & is_inside);
+  static inline UInt getOrientation(const Vector<bool> & is_inside);
   
   
 /* -------------------------------------------------------------------------- */

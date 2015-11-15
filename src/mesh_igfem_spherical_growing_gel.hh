@@ -87,6 +87,10 @@ class MeshIgfemSphericalGrowingGel {
 #define INSTANTIATOR(_type)						\
   intersectors(_type, ghost_type) = new MeshSphereIntersector<dim, _type>(this->mesh)
 
+/* -------------------------------------------------------------------------- */
+/* Constructor/Destructor                                                     */
+/* -------------------------------------------------------------------------- */
+
 public:
   /// Construct from mesh
   MeshIgfemSphericalGrowingGel(Mesh & mesh);
@@ -104,17 +108,14 @@ public:
       }
     }
   }
+  
+  /* -------------------------------------------------------------------------- */
+  /* Methods                                                                    */
+  /* -------------------------------------------------------------------------- */
+public:
 
   void init();
 
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// get the new_node_per_elem array
-  AKANTU_GET_MACRO(NbOriginalNodes, nb_nodes_fem, UInt);
-
-public:
   /// Remove the additionnal nodes
   void removeAdditionalNodes();
 
@@ -165,6 +166,16 @@ protected:
   /// Build the unordered_map needed to assign the node type to new nodes in parallel
   void buildSegmentConnectivityToNodeType();
 
+  /* -------------------------------------------------------------------------- */
+  /* Accessors                                                                  */
+  /* -------------------------------------------------------------------------- */
+public:
+  AKANTU_GET_MACRO(NbStandardNodes, nb_nodes_fem, UInt);
+  AKANTU_GET_MACRO(NbEnrichedNodes, nb_enriched_nodes, UInt);
+
+  /* -------------------------------------------------------------------------- */
+  /* Class Members                                                              */
+  /* -------------------------------------------------------------------------- */
 protected:
   /// Mesh used to construct the primitives
   Mesh & mesh;

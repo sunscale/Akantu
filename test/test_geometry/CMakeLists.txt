@@ -16,18 +16,6 @@
 #
 #===============================================================================
 
-add_akantu_test(test_solid_mechanics_model_igfem "Test solid mechanics model igfem")
-
-register_test(test_interpolate
-  SOURCES test_interpolate.cc
-  PACKAGE IGFEM
-  )
-
-register_test(test_conforming_mesh
-  SOURCES test_conforming_mesh.cc
-  PACKAGE IGFEM
-  )
-
 register_test(test_spherical_kernel
   SOURCES test_spherical_kernel.cc
   PACKAGE CGAL
@@ -44,4 +32,3 @@ register_test(test_generation_igfem_mesh_from_sphere
   FILES_TO_COPY test_geometry_triangle.msh
   PACKAGE CGAL IGFEM
   )
-

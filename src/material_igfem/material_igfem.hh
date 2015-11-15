@@ -60,6 +60,11 @@ public:
 
   virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
 
+  virtual void extrapolateInternal(const ID & id, const Element & element, 
+				   const Matrix<Real> & point, Matrix<Real> & extrapolated);
+
+  /// apply a constant eigengrad_u everywhere in the material
+  virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const ID & sub_mat_name, const GhostType = _not_ghost);
 
   /* ------------------------------------------------------------------------ */
   /* MeshEventHandler inherited members                                       */
@@ -87,6 +92,10 @@ protected:
   virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
 						      const ElementKind & element_kind,
 						      const ID & fe_engine_id) const;
+
+
+  template<ElementType type>
+  void setSubMaterial(const Array<Element> & element_list, GhostType ghost_type);
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
@@ -122,6 +131,9 @@ protected:
 
   /// material name of first sub-material
   std::string name_sub_mat_2;
+  
+  /// map the index of the sub-materials to the names
+  std::map<UInt, ID> sub_material_names;
 
 };
 

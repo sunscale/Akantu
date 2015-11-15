@@ -90,6 +90,10 @@ public:
   template <ElementType type>
   const Matrix<Real> & getQuadraturePoints(const GhostType & ghost_type) const;
 
+  /// return the number of quadrature points for a given element type
+  template <ElementType type>
+  inline UInt getNbQuadraturePoints() const;
+
   /// compute the vector of quadrature points natural coordinates
   template <ElementType type> void computeQuadraturePoints(const GhostType & ghost_type);
 

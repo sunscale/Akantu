@@ -62,8 +62,8 @@ void MaterialIGFEMSawToothDamage<spatial_dimension>::computeNormalizedEquivalent
   /// Vector to store eigenvalues of current stress tensor
   Vector<Real> eigenvalues(spatial_dimension);
 
-  Array<Real>::const_iterator<Real> Sc_it = Sc(el_type).begin();
-  Array<Real>::iterator<Real> equivalent_stress_it = equivalent_stress(el_type).begin();
+  Array<Real>::const_iterator<Real> Sc_it = Sc(el_type, ghost_type).begin();
+  Array<Real>::iterator<Real> equivalent_stress_it = equivalent_stress(el_type, ghost_type).begin();
 
   Array<Real>::const_matrix_iterator grad_u_it = grad_u.begin(spatial_dimension,
                                                               spatial_dimension);
@@ -179,17 +179,18 @@ UInt MaterialIGFEMSawToothDamage<spatial_dimension>::updateDamage() {
 
     for(; it != last_type; ++it) {
       ElementType el_type = *it;
-
+      Array<UInt> & sub_mat = this->sub_material(el_type);
+      Array<UInt>::iterator<UInt> sub_mat_it = sub_mat.begin();
       const Array<Real> & e_stress = equivalent_stress(el_type);
       Array<Real>::const_iterator<Real> equivalent_stress_it = e_stress.begin();
       Array<Real>::const_iterator<Real> equivalent_stress_end = e_stress.end();
       Array<Real> & dam = this->damage(el_type);
       Array<Real>::iterator<Real> dam_it = dam.begin();
 
-      for (; equivalent_stress_it != equivalent_stress_end; ++equivalent_stress_it, ++dam_it ) {
+      for (; equivalent_stress_it != equivalent_stress_end; ++equivalent_stress_it, ++dam_it, ++sub_mat_it ) {
 
 	/// check if damage occurs
-	if (*equivalent_stress_it >= (1-dam_tolerance)*norm_max_equivalent_stress) {
+	if (*equivalent_stress_it >= (1-dam_tolerance)*norm_max_equivalent_stress && *sub_mat_it != 0) {
 	  if (*dam_it < dam_threshold)
 	    *dam_it +=prescribed_dam;
 	  else *dam_it = max_damage;

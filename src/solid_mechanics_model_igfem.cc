@@ -84,7 +84,6 @@ void SolidMechanicsModelIGFEM::initFull(const ModelOptions & options) {
   // set the initial condition to 0
   real_force->clear();
   real_displacement->clear();
-  igfem_nodes->copy(this->mesh.getNodes());
 
   AKANTU_DEBUG_OUT();
 }
@@ -102,12 +101,10 @@ void SolidMechanicsModelIGFEM::initArrays() {
   std::stringstream sstr_rdisp; sstr_rdisp << id << ":real_displacement";
   std::stringstream sstr_rforc; sstr_rforc << id << ":real_force";
   std::stringstream sstr_rresi; sstr_rresi << id << ":real_residual";
-  std::stringstream sstr_inodes; sstr_inodes << id << ":igfem_nodes";
 
   real_displacement = &(alloc<Real>(sstr_rdisp.str(), nb_nodes, spatial_dimension, REAL_INIT_VALUE));
   real_force        = &(alloc<Real>(sstr_rforc.str(), nb_nodes, spatial_dimension, REAL_INIT_VALUE));
   real_residual     = &(alloc<Real>(sstr_rresi.str(), nb_nodes, spatial_dimension, REAL_INIT_VALUE));
-  igfem_nodes     = &(alloc<Real>(sstr_inodes.str(), nb_nodes, spatial_dimension, REAL_INIT_VALUE));
 
   SolidMechanicsModel::initArrays(); 
 
@@ -161,6 +158,9 @@ void SolidMechanicsModelIGFEM::initModel() {
   SolidMechanicsModel::initModel();
 
   registerFEEngineObject<MyFEEngineIGFEMType>("IGFEMFEEngine", mesh, spatial_dimension);
+  /// insert the two feengines associated with the model in the map
+  this->fe_engines_per_kind[_ek_regular] = &(this->getFEEngine());
+  this->fe_engines_per_kind[_ek_igfem] = &(this->getFEEngine("IGFEMFEEngine"));
 
   /// add the igfem type connectivities
 
@@ -240,19 +240,11 @@ void SolidMechanicsModelIGFEM::onNodesAdded(const Array<UInt> & nodes_list,
 				      igfem_event->getGhostType());
   }
 
-  UInt nb_new_nodes = nodes_list.getSize();
   UInt nb_nodes = mesh.getNbNodes();
 
   if(real_displacement) real_displacement->resize(nb_nodes);
   if(real_force) real_force->resize(nb_nodes);
   if(real_residual) real_residual->resize(nb_nodes);
-  if(igfem_nodes) {igfem_nodes->resize(nb_nodes);
-    for (UInt n = 0; n < nb_new_nodes; ++n) {
-      UInt new_node = nodes_list(n);
-      for (UInt dim = 0; dim < this->spatial_dimension; ++dim)
-	(*igfem_nodes)(new_node, dim) = 0.;
-    }
-  }
 
   if (mesh.isDistributed())
     mesh.getGlobalNodesIds().resize(mesh.getNbNodes());
@@ -286,11 +278,10 @@ void SolidMechanicsModelIGFEM::onNodesRemoved(const Array<UInt> & nodes_list,
   if(real_displacement) mesh.removeNodesFromArray(*real_displacement, new_numbering);
   if(real_force        ) mesh.removeNodesFromArray(*real_force        , new_numbering);
   if(real_residual    ) mesh.removeNodesFromArray(*real_residual    , new_numbering);
-  if(igfem_nodes    ) mesh.removeNodesFromArray(*igfem_nodes    , new_numbering);
 
   // communicate global connectivity for slave nodes
   if (global_ids_updater)
-    global_ids_updater->updateGlobalIDs(mesh.getNbNodes() - intersector_sphere.getNbOriginalNodes());
+    global_ids_updater->updateGlobalIDs(mesh.getNbNodes() - intersector_sphere.getNbStandardNodes());
 
   SolidMechanicsModel::onNodesRemoved(nodes_list, new_numbering, event);
 }
@@ -518,11 +509,11 @@ void SolidMechanicsModelIGFEM::transferInternalValues(const ID & internal, std::
 
   /// get the number of elements for which iternals need to be transfered
   UInt nb_new_elements = new_elements.size();
-  UInt nb_old_quads = added_quads.getSize() / nb_new_elements;
+  UInt nb_new_quads = added_quads.getSize() / nb_new_elements;
 
-  Array<Real>::const_matrix_iterator quad_coords = added_quads.begin_reinterpret(this->spatial_dimension, nb_old_quads, nb_new_elements);
+  Array<Real>::const_matrix_iterator quad_coords = added_quads.begin_reinterpret(this->spatial_dimension, nb_new_quads, nb_new_elements);
   UInt nb_internal_component = internal_values.getNbComponent();
-  Array<Real>::matrix_iterator internal_val = internal_values.begin_reinterpret(nb_internal_component, nb_old_quads, nb_new_elements);
+  Array<Real>::matrix_iterator internal_val = internal_values.begin_reinterpret(nb_internal_component, nb_new_quads, nb_new_elements);
   Vector<Real> default_values(nb_internal_component, 0.);
   
   for (UInt e = 0; e < nb_new_elements; ++e, ++quad_coords, ++internal_val) {
@@ -536,6 +527,19 @@ void SolidMechanicsModelIGFEM::transferInternalValues(const ID & internal, std::
 }
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModelIGFEM::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const ID & material_name, const GhostType ghost_type) {
 
+  AKANTU_DEBUG_ASSERT(prescribed_eigen_grad_u.size() == spatial_dimension * spatial_dimension, 
+		      "The prescribed grad_u is not of the good size");
+  std::vector<Material *>::iterator mat_it;
+  for(mat_it = this->materials.begin(); mat_it != this->materials.end(); ++mat_it) {
+    MaterialIGFEM * mat_igfem = dynamic_cast<MaterialIGFEM *>(*mat_it);
+    if (mat_igfem != NULL)
+      mat_igfem->applyEigenGradU(prescribed_eigen_grad_u, material_name, ghost_type);
+    else
+      if ((*mat_it)->getName() == material_name)
+	(*mat_it)->applyEigenGradU(prescribed_eigen_grad_u, ghost_type);
+  }
+}
 
 __END_AKANTU__

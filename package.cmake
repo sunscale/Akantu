@@ -48,6 +48,7 @@ package_declare_sources(igfem
   igfem_enrichment_inline_impl.cc
   solid_mechanics_model_igfem.hh
   solid_mechanics_model_igfem.cc
+  solid_mechanics_model_igfem_inline_impl.cc
   mesh_igfem_spherical_growing_gel.hh
   mesh_igfem_spherical_growing_gel_tmpl.hh
 

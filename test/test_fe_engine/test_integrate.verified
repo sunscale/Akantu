@@ -1,0 +1,40 @@
+Epsilon : 3e-13
+Val on quads : Array<double> [
+ + id             : val_on_quad
+ + size           : 16
+ + nb_component   : 2
+ + allocated size : 16
+ + memory size    : 256.00Byte
+ + values         : {{1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}}
+]
+
+Integral on elements : Array<double> [
+ + id             : int_val_on_elem
+ + size           : 8
+ + nb_component   : 2
+ + allocated size : 8
+ + memory size    : 128.00Byte
+ + values         : {{0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}}
+]
+
+integral on the mesh of 1 is 1 and of 2 is 2
+Epsilon : 3e-13
+Val on quads : Array<double> [
+ + id             : val_on_quad
+ + size           : 40
+ + nb_component   : 2
+ + allocated size : 40
+ + memory size    : 640.00Byte
+ + values         : {{1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}}
+]
+
+Integral on elements : Array<double> [
+ + id             : int_val_on_elem
+ + size           : 8
+ + nb_component   : 2
+ + allocated size : 8
+ + memory size    : 128.00Byte
+ + values         : {{0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}, {0.125, 0.25}}
+]
+
+integral on the mesh of 1 is 1 and of 2 is 2

@@ -1,14 +1,14 @@
 seed = 1
 
 material elastic [
-	 name = outside
+	 name = aggregate
 	 rho = 2.7e-9   # density
 	 E   = 10. # young's modulus
 	 nu  = 0.3    # poisson's ratio
 ]
 
 material elastic [
-	 name = inside
+	 name = gel
 	 rho = 2.7e-9   # density
 	 E   = 1. # young's modulus
 	 nu  = 0.25    # poisson's ratio
@@ -18,7 +18,4 @@ material igfem_elastic [
 	 name = igfem_elastic
 	 name_sub_mat_1 = gel
 	 name_sub_mat_2 = aggregate
-	 rho = 2.7e-9   # density
-	 E   = [1., 10.] # young's modulus
-	 nu  = [0.25, 0.3]    # poisson's ratio
 ]

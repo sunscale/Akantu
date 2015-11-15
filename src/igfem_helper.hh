@@ -113,8 +113,8 @@ struct IGFEMHelper {
   }
 
   /// get the nb of quads for one sub element type
-  static bool getElementOrientation(const ElementType & type, const Vector<bool> & is_inside) {
-    bool orientation = false;
+  static UInt getElementOrientation(const ElementType & type, const Vector<bool> & is_inside) {
+    UInt orientation = 0;
 
 #define GET_ORIENTATION(type)						\
       orientation =  ElementClass<type>::getOrientation(is_inside); 

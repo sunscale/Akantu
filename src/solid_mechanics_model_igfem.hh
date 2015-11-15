@@ -49,6 +49,7 @@ class SolidMechanicsModelIGFEM : public SolidMechanicsModel,
 public:
   typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem> MyFEEngineIGFEMType;
   typedef std::map<Element, Element> ElementMap;
+  typedef std::map<ElementKind, FEEngine *> FEEnginesPerKindMap;
 
   SolidMechanicsModelIGFEM(Mesh & mesh,
 			   UInt spatial_dimension = _all_dimensions,
@@ -81,6 +82,16 @@ public:
   /// transfer internals from old to new elements
   void transferInternalValues(const ID & internal, std::vector<Element> & new_elements,
 				 Array<Real> & added_quads, Array<Real> & internal_values);
+
+  /// compute the barycenter for a sub-element
+  inline void getSubElementBarycenter(UInt element, UInt sub_element, 
+				      const ElementType & type, Vector<Real> & barycenter,
+				      GhostType ghost_type) const;
+
+  /// apply a constant eigen_grad_u on all quadrature points of a given material
+  virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const ID & material_name,  
+			       const GhostType ghost_type = _not_ghost);
+
 private:
 
   /// compute the real values of displacement, force, etc. on the enriched nodes
@@ -130,10 +141,9 @@ public:
 /* Accessors                                                                  */
 /* -------------------------------------------------------------------------- */
 public:
-  /// get the array of igfem nodes
-  virtual const Array<Real> & getIGFEMNodes() {
-    return *igfem_nodes;
-  }
+
+  /// get the fe-engines per kind
+  AKANTU_GET_MACRO(FEEnginesPerKind, fe_engines_per_kind, const FEEnginesPerKindMap &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -146,14 +156,14 @@ private:
   Array<Real> * real_force;
   /// real residuals array
   Array<Real> * real_residual;
-  /// IGFEM values at nodes
-  Array<Real> * igfem_nodes;
   /// interface can move throughout the analysis
   bool moving_interface;
   /// map between and new elements (needed when the interface is moving)
   ElementMap element_map;
   /// global connectivity ids updater
   GlobalIdsUpdater * global_ids_updater;
+  /// map between element kind and corresponding FEEngine object
+  FEEnginesPerKindMap fe_engines_per_kind;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -179,6 +189,11 @@ protected:
   UInt fallback_value_igfem;
 
 };
+
 __END_AKANTU__
+
+#if defined (AKANTU_INCLUDE_INLINE_IMPL)
+#  include "solid_mechanics_model_igfem_inline_impl.cc"
+#endif
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_IGFEM_HH__ */

@@ -22,18 +22,25 @@ register_test(test_solid_mechanics_model_igfem
   PACKAGE IGFEM implicit
   )
 
-register_test(test_moving_interface
-  SOURCES test_moving_interface.cc
-  FILES_TO_COPY material.dat plate.msh
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE IGFEM implicit
-  )
-
 register_test(test_transfer_internals
   SOURCES test_transfer_internals.cc
   FILES_TO_COPY material_damage.dat fine_mesh.msh 
   DIRECTORIES_TO_CREATE paraview
   PACKAGE IGFEM 
+  )
+
+register_test(test_eigenstrain
+  SOURCES test_eigenstrain.cc
+  FILES_TO_COPY material_damage.dat fine_mesh.msh 
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE IGFEM 
+  )
+
+register_test(test_igfem_element_orientation
+  SOURCES test_igfem_element_orientation.cc
+  FILES_TO_COPY material.dat test_igfem_element_orientation.msh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE IGFEM
   )
 
 register_test(test_ASR_damge

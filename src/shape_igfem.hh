@@ -144,6 +144,11 @@ public:
 				  Vector<Real> & interpolated,
 				  const GhostType & ghost_type) const;
 
+  /// function to extract values at standard nodes and zero-out enriched values of a nodal field 
+  void extractValuesAtStandardNodes(const Array<Real> & nodal_values,
+  				     Array<Real> & extracted_values,
+				    const GhostType & ghost_type) const;
+
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
@@ -187,6 +192,7 @@ protected:
   ElementTypeMapArray<Real, InterpolationType> shapes_at_enrichments;
 };
 
+__END_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
@@ -199,6 +205,6 @@ protected:
 //   _this.printself(stream);
 //   return stream;
 // }
-__END_AKANTU__
+
 
 #endif /* __AKANTU_SHAPE_IGFEM_HH__ */

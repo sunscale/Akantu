@@ -31,8 +31,8 @@ __BEGIN_AKANTU__
   checkJacobians<type>(ghost_type);
 
 inline void IntegratorGauss<_ek_igfem>::initIntegrator(const Array<Real> & nodes,
-						  const ElementType & type,
-						  const GhostType & ghost_type) {
+						       const ElementType & type,
+						       const GhostType & ghost_type) {
   AKANTU_BOOST_IGFEM_ELEMENT_SWITCH(INIT_INTEGRATOR);
 }
 
@@ -40,59 +40,70 @@ inline void IntegratorGauss<_ek_igfem>::initIntegrator(const Array<Real> & nodes
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
+inline UInt IntegratorGauss<_ek_igfem>::getNbQuadraturePoints() const {
+  const ElementType sub_type_1 = ElementClassProperty<type>::sub_element_type_1;
+  const ElementType sub_type_2 = ElementClassProperty<type>::sub_element_type_2;
+  UInt nb_quad_points_sub_1 = GaussIntegrationElement<sub_type_1>::getNbQuadraturePoints();
+  UInt nb_quad_points_sub_2 = GaussIntegrationElement<sub_type_2>::getNbQuadraturePoints();
+  return (nb_quad_points_sub_1 + nb_quad_points_sub_2);
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementType type>
 inline void IntegratorGauss<_ek_igfem>::integrateOnElement(const Array<Real> & f,
-						      Real * intf,
-						      UInt nb_degree_of_freedom,
-						      const UInt elem,
-						      const GhostType & ghost_type) const {
-  // Array<Real> & jac_loc = jacobians(type, ghost_type);
+							   Real * intf,
+							   UInt nb_degree_of_freedom,
+							   const UInt elem,
+							   const GhostType & ghost_type) const {
 
-  // UInt nb_quadrature_points = ElementClass<type>::getNbQuadraturePoints();
-  // AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom ,
-  // 		      "The vector f do not have the good number of component.");
+  Array<Real> & jac_loc = jacobians(type, ghost_type);
 
-  // Real * f_val    = f.storage() + elem * f.getNbComponent();
-  // Real * jac_val  = jac_loc.storage() + elem * nb_quadrature_points;
+  UInt nb_quadrature_points = getNbQuadraturePoints<type>();
+  AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom ,
+  		      "The vector f do not have the good number of component.");
 
-  // integrate(f_val, jac_val, intf, nb_degree_of_freedom, nb_quadrature_points);
+  Real * f_val    = f.storage() + elem * f.getNbComponent();
+  Real * jac_val  = jac_loc.storage() + elem * nb_quadrature_points;
+
+  integrate(f_val, jac_val, intf, nb_degree_of_freedom, nb_quadrature_points);
 }
 
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 inline Real IntegratorGauss<_ek_igfem>::integrate(const Vector<Real> & in_f,
-					     UInt index,
-					     const GhostType & ghost_type) const {
-  // const Array<Real> & jac_loc = jacobians(type, ghost_type);
+						  UInt index,
+						  const GhostType & ghost_type) const {
+  const Array<Real> & jac_loc = jacobians(type, ghost_type);
 
-  // UInt nb_quadrature_points = GaussIntegrationElement<type>::getNbQuadraturePoints();
-  // AKANTU_DEBUG_ASSERT(in_f.size() == nb_quadrature_points ,
-  // 		      "The vector f do not have nb_quadrature_points entries.");
+  UInt nb_quadrature_points = getNbQuadraturePoints<type>();
+  AKANTU_DEBUG_ASSERT(in_f.size() == nb_quadrature_points ,
+  		      "The vector f do not have nb_quadrature_points entries.");
 
-  // Real * jac_val  = jac_loc.storage() + index * nb_quadrature_points;
-  // Real intf;
+  Real * jac_val  = jac_loc.storage() + index * nb_quadrature_points;
+  Real intf;
 
-  // integrate(in_f.storage(), jac_val, &intf, 1, nb_quadrature_points);
+  integrate(in_f.storage(), jac_val, &intf, 1, nb_quadrature_points);
 
-  // return intf;
+  return intf;
   return 0.;
 }
 
 
 /* -------------------------------------------------------------------------- */
 inline void IntegratorGauss<_ek_igfem>::integrate(Real *f, Real *jac, Real * inte,
-					     UInt nb_degree_of_freedom,
-					     UInt nb_quadrature_points) const {
-  // memset(inte, 0, nb_degree_of_freedom * sizeof(Real));
+						  UInt nb_degree_of_freedom,
+						  UInt nb_quadrature_points) const {
+  memset(inte, 0, nb_degree_of_freedom * sizeof(Real));
 
-  // Real *cjac = jac;
-  // for (UInt q = 0; q < nb_quadrature_points; ++q) {
-  //   for (UInt dof = 0; dof < nb_degree_of_freedom; ++dof) {
-  //     inte[dof] += *f * *cjac;
-  //     ++f;
-  //   }
-  //   ++cjac;
-  // }
+  Real *cjac = jac;
+  for (UInt q = 0; q < nb_quadrature_points; ++q) {
+    for (UInt dof = 0; dof < nb_degree_of_freedom; ++dof) {
+      inte[dof] += *f * *cjac;
+      ++f;
+    }
+    ++cjac;
+  }
 }
 
 

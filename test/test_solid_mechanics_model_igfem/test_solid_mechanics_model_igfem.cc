@@ -230,6 +230,7 @@ int main(int argc, char *argv[]) {
   /// model creation
   SolidMechanicsModelIGFEM model(mesh);
   model.initParallel(partition);
+  delete partition;
 
   Math::setTolerance(1e-14);
 

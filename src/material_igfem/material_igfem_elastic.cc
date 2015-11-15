@@ -14,6 +14,7 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "material_igfem_elastic.hh"
+#include "material_elastic.hh"
 
 __BEGIN_AKANTU__
 
@@ -22,8 +23,6 @@ template<UInt dim>
 MaterialIGFEMElastic<dim>::MaterialIGFEMElastic(SolidMechanicsModel & model, const ID & id)  :
   Material(model, id),
   Parent(model, id),
-  E(this->nb_sub_materials),
-  nu(this->nb_sub_materials),
   lambda("lambda", *this),
   mu("mu", *this),
   kpa("kappa", *this) {
@@ -35,10 +34,6 @@ MaterialIGFEMElastic<dim>::MaterialIGFEMElastic(SolidMechanicsModel & model, con
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 void MaterialIGFEMElastic<dim>::initialize() {
-  this->registerParam("E"      , E      , _pat_parsable | _pat_modifiable, "Young's modulus"        );
-  this->registerParam("nu"     , nu     , _pat_parsable | _pat_modifiable, "Poisson's ratio"        );
-  ///  this->registerParam("Plane_Stress", plane_stress, false, _pat_parsmod, "Is plane stress");
-
   this->lambda           .initialize(1);
   this->mu           .initialize(1);
   this->kpa           .initialize(1);
@@ -52,7 +47,9 @@ void MaterialIGFEMElastic<dim>::initMaterial() {
 
   Parent::initMaterial();
 
-  if (dim == 1) this->nu.clear(); /// set the Poisson ratios to zero
+  /// insert the sub_material names into the map
+  this->sub_material_names[0] = this->name_sub_mat_1;
+  this->sub_material_names[1] = this->name_sub_mat_2;
 
   AKANTU_DEBUG_OUT();
 }
@@ -60,119 +57,49 @@ void MaterialIGFEMElastic<dim>::initMaterial() {
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialIGFEMElastic<spatial_dimension>::updateElasticInternals(const Array<Element> & element_list) {
-
-  SolidMechanicsModelIGFEM * igfem_model = static_cast<SolidMechanicsModelIGFEM*>(this->model);
   const Mesh & mesh = this->model->getMesh();
-  Array<Real> nodes_coordinates(mesh.getNodes(), true);
-  Array<Real>::const_vector_iterator nodes_it = nodes_coordinates.begin(spatial_dimension);
-
   /// compute the Lamé constants for both sub-materials
   Vector<Real> lambda_per_sub_mat(this->nb_sub_materials);
   Vector<Real> mu_per_sub_mat(this->nb_sub_materials);
   Vector<Real> kpa_per_sub_mat(this->nb_sub_materials);
-  
-  this->updateElasticConstants(lambda_per_sub_mat, mu_per_sub_mat, kpa_per_sub_mat);
-  Array<Element>::const_iterator<Element> el_begin = element_list.begin();
-  Array<Element>::const_iterator<Element> el_end   = element_list.end();
-  Element el;
-  el.kind = _ek_igfem;
+  for (UInt i = 0; i < this->nb_sub_materials; ++i) {
+    ID mat_name = this->sub_material_names[i];
+    const MaterialElastic<spatial_dimension> & mat = dynamic_cast<MaterialElastic<spatial_dimension> & >(this->model->getMaterial(mat_name)); 
+    lambda_per_sub_mat(i) = mat.getLambda();
+    mu_per_sub_mat(i) = mat.getMu();
+    kpa_per_sub_mat(i) = mat.getKappa();
+  }
+ 
   for (ghost_type_t::iterator g = ghost_type_t::begin(); g != ghost_type_t::end(); ++g) {
     GhostType ghost_type = *g;
     /// loop over all types in the material
     typedef ElementTypeMapArray<UInt>:: type_iterator iterator;
     iterator it = this->element_filter.firstType(spatial_dimension, ghost_type, _ek_igfem);
     iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type, _ek_igfem);
-    UInt index_1 = 0;
-    UInt index_2 = 0;
     /// loop over all types in the filter
     for(; it != last_type; ++it) {
       ElementType el_type = *it;
-      el.type = el_type;
-      el.ghost_type = ghost_type;
-      UInt nb_nodes_per_el = mesh.getNbNodesPerElement(el_type);
-      UInt nb_parent_nodes = IGFEMHelper::getNbParentNodes(el_type);
-      Vector<bool> is_inside(nb_parent_nodes);
-      const Array<UInt> & connectivity = mesh.getConnectivity(el_type, ghost_type);
-      Array<UInt>::const_vector_iterator connec_it = connectivity.begin(nb_nodes_per_el);
-
-      /// get the number of quadrature points for the two sub-elements
-      UInt quads_1 = IGFEMHelper::getNbQuadraturePoints(el_type, 0);
-      UInt quads_2 = IGFEMHelper::getNbQuadraturePoints(el_type, 1);
+      if (el_type == _igfem_triangle_4)
+	this->template setSubMaterial<_igfem_triangle_4>(element_list, ghost_type);
+      else if (el_type == _igfem_triangle_5)
+	this->template setSubMaterial<_igfem_triangle_5>(element_list, ghost_type);
+      else
+	AKANTU_DEBUG_ERROR("There is currently no other IGFEM type implemented");
   
+      UInt nb_element = mesh.getNbElement(el_type, ghost_type);
+      UInt nb_quads = this->fem->getNbIntegrationPoints(el_type);
       /// get pointer to internals for given type
       Real * lambda_ptr = this->lambda(el_type, ghost_type).storage();
       Real * mu_ptr = this->mu(el_type, ghost_type).storage();
       Real * kpa_ptr = this->kpa(el_type, ghost_type).storage();
       UInt * sub_mat_ptr = this->sub_material(el_type, ghost_type).storage();
-
-      /// loop all elements for the given type
-      const Array<UInt> & filter   = this->element_filter(el_type,ghost_type);
-      UInt nb_elements = filter.getSize();
-      for (UInt e = 0; e < nb_elements; ++e, ++connec_it) {
-	el.element = filter(e);
-	if(std::find(el_begin, el_end, el) == el_end) {
-	  lambda_ptr += (quads_1 + quads_2);
-	  mu_ptr += (quads_1 + quads_2);
-	  kpa_ptr += (quads_1 + quads_2);
-	  sub_mat_ptr += (quads_1 + quads_2);
-	  continue;
-	}
-	for (UInt i = 0; i < nb_parent_nodes; ++i) {
-	  Vector<Real> node = nodes_it[(*connec_it)(i)];
-	  is_inside(i) = igfem_model->isInside(node, this->name_sub_mat_1);
-	}
-
-	UInt orientation = IGFEMHelper::getElementOrientation(el_type, is_inside);
-
-	if (orientation) {
-	  index_1 = 0;
-	  index_2 = 1;
-	}
-	else {
-	  index_1 = 1;
-	  index_2 = 0;	
-	}
-
-	for (UInt q = 0; q < quads_1; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr, ++sub_mat_ptr) {
-	  *lambda_ptr = lambda_per_sub_mat(index_1);
-	  *mu_ptr = mu_per_sub_mat(index_1);
-	  *kpa_ptr = kpa_per_sub_mat(index_1); 
-	  *sub_mat_ptr = index_1;
-	}
-	for (UInt q = 0; q < quads_2; ++q, ++lambda_ptr, ++mu_ptr, ++kpa_ptr, ++sub_mat_ptr) {
-	  *lambda_ptr = lambda_per_sub_mat(index_2);
-	  *mu_ptr = mu_per_sub_mat(index_2);
-	  *kpa_ptr = kpa_per_sub_mat(index_2);
-	  *sub_mat_ptr = index_2; 
-	}
+      for (UInt q = 0; q < nb_element * nb_quads; ++q,  ++lambda_ptr, ++mu_ptr, ++kpa_ptr, ++sub_mat_ptr) {
+	UInt index = *sub_mat_ptr;
+	*lambda_ptr = lambda_per_sub_mat(index);
+	*mu_ptr = mu_per_sub_mat(index);
+	*kpa_ptr = kpa_per_sub_mat(index);
       }
     }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-template<UInt dim>
-void MaterialIGFEMElastic<dim>::updateElasticConstants(Vector<Real> & lambda_vec, Vector<Real> & mu_vec, Vector<Real> & kpa_vec) {
-
-  for (UInt i = 0; i < this->nb_sub_materials; ++i) {
-    lambda_vec(i) = this->nu(i) * this->E(i) / ((1 + this->nu(i)) * (1 - 2*this->nu(i)));
-    mu_vec(i)     = this->E(i) / (2 * (1 + this->nu(i)));
-
-    kpa_vec(i)    = lambda_vec(i) + 2./3. * mu_vec(i);
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-template<>
-void MaterialIGFEMElastic<2>::updateElasticConstants(Vector<Real> & lambda_vec, Vector<Real> & mu_vec, Vector<Real> & kpa_vec) {
-
-  for (UInt i = 0; i < this->nb_sub_materials; ++i) {
-    lambda_vec(i) = this->nu(i) * this->E(i) / ((1 + this->nu(i)) * (1 - 2*this->nu(i)));
-    mu_vec(i)     = this->E(i) / (2 * (1 + this->nu(i)));
-
-    if(this->plane_stress) lambda_vec(i) = this->nu(i) * this->E(i) / ((1 + this->nu(i))*(1 - this->nu(i)));
-
-    kpa_vec(i)    = lambda_vec(i) + 2./3. * mu_vec(i);
   }
 }
 
