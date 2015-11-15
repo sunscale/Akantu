@@ -61,7 +61,7 @@ protected:
   /// call the python functor from variadic types
   template <typename return_type, typename... Params>
   return_type callFunctor(const std::string & functor_name,
-			  Params... parameters) const;
+			  Params&... parameters) const;
 
   /// empty function to cose the recursive template loop
   inline void packArguments(std::vector<PyObject*> & pArgs) const;
@@ -70,11 +70,11 @@ protected:
   inline PyObject * getPythonFunction(const std::string & functor_name) const;
 
 
-  ///
+  /// variadic template for unknown number of arguments to unpack
   template<typename T, typename... Args>
   inline void packArguments(std::vector<PyObject*> & pArgs,
 			    T & p,
-			    Args&...params)const;
+			    Args&...params) const;
 
   /// convert an akantu object to python 
   template <typename T>

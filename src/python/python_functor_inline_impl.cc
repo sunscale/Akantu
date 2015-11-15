@@ -2,6 +2,7 @@
 #define __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__
 /* -------------------------------------------------------------------------- */
 #include <numpy/arrayobject.h>
+#include "integration_point.hh"
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
@@ -90,6 +91,28 @@ PyObject *PythonFunctor::convertToPython(const Matrix<T> & mat) const{
 }
 /* -------------------------------------------------------------------------- */
 
+template <>
+inline PyObject *PythonFunctor::convertToPython<std::string>(const std::string & str) const{
+  return PyString_FromString(str.c_str());  
+}
+/* -------------------------------------------------------------------------- */
+
+template <>
+inline PyObject *PythonFunctor::convertToPython<IntegrationPoint>(const IntegrationPoint & qp) const{
+
+  PyObject * input = PyDict_New();
+  PyObject * num_point   = this->convertToPython(qp.num_point);
+  PyObject * global_num  = this->convertToPython(qp.global_num);
+  PyObject * material_id = this->convertToPython(qp.material_id);
+  PyObject * position    = this->convertToPython(qp.getPosition());
+  PyDict_SetItemString(input,"num_point",num_point);
+  PyDict_SetItemString(input,"global_num",global_num);
+  PyDict_SetItemString(input,"material_id",material_id);
+  PyDict_SetItemString(input,"position",position);
+  return input;
+}
+/* -------------------------------------------------------------------------- */
+
 
 inline PyObject * PythonFunctor::getPythonFunction(const std::string & functor_name) const{
 
@@ -109,7 +132,7 @@ inline PyObject * PythonFunctor::getPythonFunction(const std::string & functor_n
 }
 /* -------------------------------------------------------------------------- */
 
-inline void PythonFunctor::packArguments(std::vector<PyObject*> & pArgs) const{}
+inline void PythonFunctor::packArguments(std::vector<PyObject*> & pArgs)const {}
 
 /* -------------------------------------------------------------------------- */
 
@@ -117,7 +140,7 @@ inline void PythonFunctor::packArguments(std::vector<PyObject*> & pArgs) const{}
 template<typename T, typename... Args>
 inline void PythonFunctor::packArguments(std::vector<PyObject*> & pArgs,
 					 T & p,
-					 Args&...params) const{
+					 Args&...params)const{
 
   pArgs.push_back(this->convertToPython(p));
   if (sizeof...(params) != 0)
@@ -129,7 +152,7 @@ inline void PythonFunctor::packArguments(std::vector<PyObject*> & pArgs,
 
 template <typename return_type, typename... Params>
 return_type PythonFunctor::callFunctor(const std::string & functor_name,
-				       Params... parameters) const{
+				       Params&... parameters) const{
 
 
   _import_array();
@@ -147,9 +170,20 @@ return_type PythonFunctor::callFunctor(const std::string & functor_name,
   PyObject * pFunctor = getPythonFunction(functor_name);
   PyObject * res = this->callFunctor(pFunctor,pArgs,kwargs);
 
+  for (auto a: arg_vector) {
+    // if (PyDict_Check(a)){
+    //   PyObject* values = PyDict_Values(a);
+    //   UInt sz = PyList_GET_SIZE(values);
+    //   for (UInt i = 0; i < sz; ++i) {
+    // 	Py_XDECREF(PyList_GetItem(values,i));
+    //   }
+    // }
+    // Py_XDECREF(a);
+  }
+  Py_XDECREF(pArgs);
+  Py_XDECREF(kwargs);
+
   return this->convertToAkantu<return_type>(res);
-  //Py_XDECREF(pArgs);
-  //Py_XDECREF(kwargs);
 
 }
 
@@ -202,6 +236,7 @@ inline std::vector<T> PythonFunctor::convertListToAkantu(PyObject * python_obj) 
   return res;
 }
 
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__
 

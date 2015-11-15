@@ -31,10 +31,14 @@
 #ifndef AKANTU_QUADRATURE_POINT_H
 #define AKANTU_QUADRATURE_POINT_H
 /* -------------------------------------------------------------------------- */
+#include "element.hh"
+#include "aka_types.hh"
+/* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 class IntegrationPoint;
 extern const IntegrationPoint IntegrationPointNull;
+/* -------------------------------------------------------------------------- */
 
 class IntegrationPoint : public Element {
 
