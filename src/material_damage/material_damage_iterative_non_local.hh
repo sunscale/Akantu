@@ -48,6 +48,7 @@ public:
 public:
 
   void initMaterial();
+  virtual void computeNonLocalStresses(GhostType ghost_type);
 
 protected:
   void computeStress(ElementType type, GhostType ghost_type);

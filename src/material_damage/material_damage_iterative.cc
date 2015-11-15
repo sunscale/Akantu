@@ -97,6 +97,7 @@ void MaterialDamageIterative<spatial_dimension>::computeAllStresses(GhostType gh
 
   AKANTU_DEBUG_OUT();
 }
+
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialDamageIterative<spatial_dimension>::findMaxNormalizedEquivalentStress(ElementType el_type,
@@ -168,6 +169,8 @@ UInt MaterialDamageIterative<spatial_dimension>::updateDamage() {
   if (norm_max_equivalent_stress >= 1.) {
 
     AKANTU_DEBUG_IN();
+
+    /// update the damage only on non-ghosts elements! Doesn't make sense to update on ghost.
     GhostType ghost_type = _not_ghost;;
 
     Mesh::type_iterator it = this->model->getFEEngine().getMesh().firstType(spatial_dimension, ghost_type);

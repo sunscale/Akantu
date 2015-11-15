@@ -51,7 +51,7 @@ void MaterialDamageIterativeNonLocal<spatial_dimension>::initMaterial() {
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialDamageIterativeNonLocal<spatial_dimension>::computeStress(ElementType type,
-										       GhostType ghost_type) {
+								       GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -60,11 +60,13 @@ void MaterialDamageIterativeNonLocal<spatial_dimension>::computeStress(ElementTy
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialDamageIterativeNonLocal<spatial_dimension>::computeNonLocalStress(ElementType el_type,
-											       GhostType ghost_type) {
+									       GhostType ghost_type) {
   AKANTU_DEBUG_IN();
   
+  /// compute the stress (based on the elastic law)
   MaterialDamage<spatial_dimension>::computeStress(el_type, ghost_type);
 
+  /// multiply the stress by (1-d) to get the effective stress
   Real * dam = this->damage(el_type, ghost_type).storage();
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
@@ -73,7 +75,9 @@ void MaterialDamageIterativeNonLocal<spatial_dimension>::computeNonLocalStress(E
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 
+  /// compute the normalized equivalent stress
   this->computeNormalizedEquivalentStress(this->grad_u_nl(el_type, ghost_type), el_type, ghost_type);
+  /// find the maximum
   this->norm_max_equivalent_stress = 0;
   this->findMaxNormalizedEquivalentStress(el_type, ghost_type);
 
