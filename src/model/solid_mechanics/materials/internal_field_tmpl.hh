@@ -268,9 +268,10 @@ void InternalField<T>::removeIntegrationPoints(const ElementTypeMapArray<UInt> &
     for (; it != end; ++it) {
       ElementType type = *it;
       if(this->exists(type, gt)){
-	const Array<UInt> & renumbering = new_numbering(type, gt);
-
 	Array<T> & vect = this->operator()(type, gt);
+	if (!vect.getSize())
+	  continue;
+	const Array<UInt> & renumbering = new_numbering(type, gt);
 
 	UInt nb_quad_per_elem = fem->getNbIntegrationPoints(type, gt);
 	UInt nb_component = vect.getNbComponent();

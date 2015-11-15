@@ -315,6 +315,16 @@ void SolidMechanicsModel::reassignMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const ID & material_name, 
+					  const GhostType ghost_type) {
 
+  AKANTU_DEBUG_ASSERT(prescribed_eigen_grad_u.size() == spatial_dimension * spatial_dimension, 
+		      "The prescribed grad_u is not of the good size");
+  std::vector<Material *>::iterator mat_it;
+  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+    if ((*mat_it)->getName() == material_name)
+      (*mat_it)->applyEigenGradU(prescribed_eigen_grad_u, ghost_type);
+  }
+}
 
 __END_AKANTU__
