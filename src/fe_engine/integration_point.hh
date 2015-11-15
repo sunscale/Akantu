@@ -1,10 +1,44 @@
+/**
+ * @file   integration_point.hh
+ *
+ * @author 
+ *
+ * @date creation: 
+ * @date last modification: Mon Oct 19 2015
+ *
+ * @brief  definition of the class IntegrationPoint
+ *
+ * @section LICENSE
+ *
+ * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as  published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 #ifndef AKANTU_QUADRATURE_POINT_H
 #define AKANTU_QUADRATURE_POINT_H
+/* -------------------------------------------------------------------------- */
+#include "element.hh"
+#include "aka_types.hh"
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 class IntegrationPoint;
 extern const IntegrationPoint IntegrationPointNull;
+/* -------------------------------------------------------------------------- */
 
 class IntegrationPoint : public Element {
 
@@ -47,8 +81,8 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
-    inline bool operator==(const IntegrationPoint & quad) const {
-      return Element::operator==(quad) && this->num_point == quad.num_point;
+  inline bool operator==(const IntegrationPoint & quad) const {
+    return Element::operator==(quad) && this->num_point == quad.num_point;
   }
 
   inline bool operator!=(const IntegrationPoint & quad) const {
@@ -77,13 +111,16 @@ public:
 
     return *this;
   }
-
+  
+  /// get the position of the integration point
   AKANTU_GET_MACRO(Position, position, const position_type &);
 
+  /// set the position of the integration point
   void setPosition(const position_type & position) {
     this->position.shallowCopy(position);
   }
 
+  /// deep copy of the position of the integration point
   void copyPosition(const position_type & position) {
     this->position.deepCopy(position);
   }

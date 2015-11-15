@@ -43,7 +43,7 @@ class ShapeIGFEM;
 
 
 template <ElementKind kind>
-class ShapeLagrange : public ShapeFunctions{
+class ShapeLagrange : public ShapeFunctions {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -58,6 +58,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// initialization function for structural elements not yet implemented
   inline void initShapeFunctions(const Array<Real> & nodes,
 				 const Matrix<Real> & integration_points,
 				 const ElementType & type,

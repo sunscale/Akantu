@@ -306,7 +306,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
         }else{
           Real ratio = final_stress/(*sigma_lim_it);
           if (ratio > max_ratio){
-            std::cout << "ratio = " << ratio << std::endl;
             ++nn;
             max_ratio = ratio;
             index_f = f;

@@ -37,7 +37,8 @@
 
 #include "parser.hh"
 #include "cppargparse.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <ctime>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -98,7 +99,9 @@ void initialize(const std::string & input_file, int & argc, char ** & argv) {
   debug::debugger.printBacktrace(static_argparser["aka_print_backtrace"]);
 
   seed *= (comm.whoAmI() + 1);
+#if not defined(_WIN32)
   Rand48Generator<Real>::seed(seed);
+#endif
   RandGenerator<Real>::seed(seed);
   AKANTU_DEBUG_INFO("Random seed set to " << seed);
 

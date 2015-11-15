@@ -101,7 +101,7 @@ public:
 			 const GhostType & ghost_type = _not_ghost,
 			 const Array<UInt> & filter_elements = empty_filter) const = 0;
 
-  /// integrate a scalar value on all elements of type "type"
+  /// integrate a scalar value f on all elements of type "type"
   virtual Real integrate(const Array<Real> & f,
 			 const ElementType & type,
 			 const GhostType & ghost_type = _not_ghost,
@@ -145,6 +145,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Shape method bridges                                                     */
   /* ------------------------------------------------------------------------ */
+  /// Compute the gradient nablauq on the integration points of an element type from nodal values u
   virtual
   void gradientOnIntegrationPoints(const Array<Real> &u,
 				   Array<Real> &nablauq,
@@ -153,6 +154,7 @@ public:
 				   const GhostType & ghost_type = _not_ghost,
 				   const Array<UInt> & filter_elements = empty_filter) const = 0;
 
+  /// Interpolate a nodal field u at the integration points of an element type -> uq
   virtual
   void interpolateOnIntegrationPoints(const Array<Real> &u,
 				      Array<Real> &uq,
@@ -161,26 +163,32 @@ public:
 				      const GhostType & ghost_type = _not_ghost,
 				      const Array<UInt> & filter_elements = empty_filter) const = 0;
 
+  /// Interpolate a nodal field u at the integration points of many element types -> uq
   virtual
   void interpolateOnIntegrationPoints(const Array<Real> & u,
 				      ElementTypeMapArray<Real> & uq,
 				      const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+
+  /// Compute the interpolation point position in the global coordinates for many element types
   virtual
   void computeIntegrationPointsCoordinates(ElementTypeMapArray<Real> & integration_points_coordinates,
 					   const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
 
+  /// Compute the interpolation point position in the global coordinates for an element type
   virtual
   void computeIntegrationPointsCoordinates(Array<Real> & integration_points_coordinates,
 					  const ElementType & type,
 					  const GhostType & ghost_type = _not_ghost,
 					  const Array<UInt> & filter_elements = empty_filter) const = 0;
   
+  /// Build pre-computed matrices for interpolation of field form integration points at other given positions (interpolation_points)
   virtual
   void initElementalFieldInterpolationFromIntegrationPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
 							    ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
 							    ElementTypeMapArray<Real> & integration_points_coordinates_inv_matrices,
 							    const ElementTypeMapArray<UInt> * element_filter) const = 0;
 
+  /// interpolate field at given position (interpolation_points) from given values of this field at integration points (field) 
   virtual
   void interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
 						      const ElementTypeMapArray<Real> & interpolation_points_coordinates,
@@ -188,6 +196,8 @@ public:
 						      const GhostType ghost_type,
 						      const ElementTypeMapArray<UInt> * element_filter) const = 0;
 
+  /// Interpolate field at given position from given values of this field at integration points (field) 
+  /// using matrices precomputed with initElementalFieldInterplationFromIntegrationPoints
   virtual
   void interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
 						  const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
@@ -196,12 +206,14 @@ public:
 						  const GhostType ghost_type,
 						  const ElementTypeMapArray<UInt> * element_filter) const = 0;
 
+  /// interpolate on a phyiscal point inside an element
   virtual 
   void interpolate(const Vector<Real> & real_coords, 
 		   const Matrix<Real> & nodal_values,
 		   Vector<Real> & interpolated,
 		   const Element & element) const = 0;
 
+  /// compute the shape on a provided point
   virtual
   void computeShapes(const Vector<Real> & real_coords,
                      UInt elem,
@@ -209,6 +221,7 @@ public:
                      Vector<Real> & shapes,
                      const GhostType & ghost_type = _not_ghost) const = 0;
 
+  /// compute the shape derivatives on a provided point
   virtual
   void computeShapeDerivatives(const Vector<Real> & real__coords,
                                UInt element,
@@ -240,7 +253,7 @@ public:
 
 
 
-  /// assemble vectors
+  /// assemble vectors at nodes from elementary vectors
   void assembleArray(const Array<Real> & elementary_vect,
 		      Array<Real> & nodal_values,
 		      const Array<Int> & equation_number,
@@ -282,6 +295,7 @@ public:
 
 #ifdef AKANTU_STRUCTURAL_MECHANICS
 
+  /// assemble a field as a matrix for structural elements (ex. rho to mass matrix)
  virtual  void assembleFieldMatrix(__attribute__ ((unused)) const Array<Real> & field_1,
 				   __attribute__ ((unused)) UInt nb_degree_of_freedom,
 				   __attribute__ ((unused)) SparseMatrix & M,
@@ -292,7 +306,7 @@ public:
 
    AKANTU_DEBUG_TO_IMPLEMENT();
  }
-
+  /// compute shapes function in a matrix for structural elements
   virtual void computeShapesMatrix(__attribute__ ((unused))const ElementType & type,
 				   __attribute__ ((unused))UInt nb_degree_of_freedom,
 				   __attribute__ ((unused))UInt nb_nodes_per_element,
@@ -342,8 +356,9 @@ public:
   /// get the interpolation element associated to an element type
   static inline InterpolationType getInterpolationType(const ElementType & el_type);
 
-
+  /// get the shape function class (probably useless: see getShapeFunction in fe_engine_template.hh)
   virtual const ShapeFunctions & getShapeFunctionsInterface() const = 0;
+  /// get the integrator class (probably useless: see getIntegrator in fe_engine_template.hh)
   virtual const Integrator & getIntegratorInterface() const = 0;
 
   /* ------------------------------------------------------------------------ */

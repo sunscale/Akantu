@@ -6,7 +6,7 @@
  * @date creation: Wed Jan 16 2013
  * @date last modification: Mon Jul 07 2014
  *
- * @brief  Definition of the intagration constants
+ * @brief  Definition of the integration constants
  *
  * @section LICENSE
  *
@@ -125,7 +125,7 @@ template<> Real GaussIntegrationTypeData<_git_pentahedron, 2>::quad_positions[] 
                                                                                        sqrt(3.)/3., 1./3., 1./3.,
                                                                                        sqrt(3.)/3., 0.6 , 0.2,
                                                                                        sqrt(3.)/3.,  0.2, 0.6,
-                                                                                       sqrt(3.)/3., 0.2, 0.2,};
+                                                                                       sqrt(3.)/3., 0.2, 0.2};
 template<> Real GaussIntegrationTypeData<_git_pentahedron, 2>::quad_weights[]       = {-27./96., 25./96., 25./96., 25./96.,
                                                                                        -27./96., 25./96., 25./96., 25./96.};
 

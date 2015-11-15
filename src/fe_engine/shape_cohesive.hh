@@ -125,6 +125,7 @@ public:
 				GhostType ghost_type = _not_ghost,
 				const Array<UInt> & filter_elements = empty_filter) const;
 
+  /// compute the normals to the field u on integration points
   template <ElementType type, class ReduceFunction>
   void computeNormalsOnIntegrationPoints(const Array<Real> &u,
 				     Array<Real> &normals_u,

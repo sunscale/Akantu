@@ -28,10 +28,13 @@
  *
  */
 
+/* -------------------------------------------------------------------------- */
 #include "dumpable.hh"
-#ifdef AKANTU_USE_IOHELPER
-#include <io_helper.hh>
+/* -------------------------------------------------------------------------- */
 
+#ifdef AKANTU_USE_IOHELPER
+
+#include <io_helper.hh>
 
 __BEGIN_AKANTU__
 

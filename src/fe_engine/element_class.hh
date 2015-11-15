@@ -40,6 +40,7 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
+/// default element class structure
 template<ElementType element_type>
 struct ElementClassProperty {
   static const GeometricalType geometrical_type = _gt_not_defined;
@@ -50,6 +51,7 @@ struct ElementClassProperty {
   static const UInt minimal_integration_order = 0;
 };
 
+/// Macro to generate the element class structures for different element types
 #define AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(elem_type, geom_type,	\
 					     interp_type,		\
 					     elem_kind,			\
@@ -69,17 +71,21 @@ struct ElementClassProperty {
 /* -------------------------------------------------------------------------- */
 /* Geometry                                                                   */
 /* -------------------------------------------------------------------------- */
+/// Default GeometricalShape structure
 template<GeometricalType geometrical_type>
 struct GeometricalShape {
   static const GeometricalShapeType shape = _gst_point;
 };
 
+/// Templated GeometricalShape with function contains
 template<GeometricalShapeType shape>
 struct GeometricalShapeContains {
+  /// Check if the point (vector in 2 and 3D) at natural coordinate coor
   template <class vector_type>
   static inline bool contains(const vector_type & coord);
 };
 
+/// Macro to generate the GeometricalShape structures for different geometrical types
 #define AKANTU_DEFINE_SHAPE(geom_type, geom_shape)			\
   template<>								\
   struct GeometricalShape<geom_type> {					\
@@ -88,6 +94,7 @@ struct GeometricalShapeContains {
 
 
 /* -------------------------------------------------------------------------- */
+/// Templated GeometricalElement with function getInradius
 template< GeometricalType geometrical_type,
 	  GeometricalShapeType shape = GeometricalShape<geometrical_type>::shape >
 class GeometricalElement {
@@ -128,6 +135,7 @@ private:
 /* -------------------------------------------------------------------------- */
 /* Interpolation                                                              */
 /* -------------------------------------------------------------------------- */
+/// default InterpolationPorperty structure
 template<InterpolationType interpolation_type>
 struct InterpolationPorperty {
   static const InterpolationKind kind = _itk_not_defined;
@@ -135,6 +143,7 @@ struct InterpolationPorperty {
   static const UInt natural_space_dimension = 0;
 };
 
+/// Macro to generate the InterpolationPorperty structures for different interpolation types
 #define AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(itp_type,		\
 						  itp_kind,		\
 						  nb_nodes,		\
@@ -149,6 +158,7 @@ struct InterpolationPorperty {
 #include "interpolation_element_tmpl.hh"
 
 /* -------------------------------------------------------------------------- */
+/// Generic (templated by the enum InterpolationType which specifies the order and the dimension of the interpolation) class handling the elemental interpolation
 template<InterpolationType interpolation_type,
 	 InterpolationKind kind = InterpolationPorperty<interpolation_type>::kind>
 class InterpolationElement {

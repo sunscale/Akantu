@@ -101,4 +101,6 @@ void SolidMechanicsModel::registerNewCustomMaterials(const ID & mat_type) {
     }
   }
 }
+/* -------------------------------------------------------------------------- */
+
 

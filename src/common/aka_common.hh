@@ -454,7 +454,7 @@ __BEGIN_AKANTU_UNORDERED_MAP__
  * http://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
  * http://burtleburtle.net/bob/hash/doobs.html
  */
-template <typename a, typename b> struct hash<std::pair<a, b>> {
+template <typename a, typename b> struct hash< std::pair<a, b> > {
 public:
   hash() : ah(), bh() {}
   size_t operator()(const std::pair<a, b> & p) const {

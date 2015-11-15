@@ -5,7 +5,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Feb 15 2011
- * @date last modification: Mon Jul 07 2014
+ * @date last modification: Mon Oct 19 2015
  *
  * @brief  templated class that calls integration and shape objects
  *
@@ -231,6 +231,7 @@ public:
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
+  /// assemble a field as a lumped matrix (ex. rho in lumped mass)
   void assembleFieldLumped(const Array<Real> & field_1,
 			   UInt nb_degree_of_freedom,
 			   Array<Real> & lumped,
@@ -238,6 +239,7 @@ public:
 			   ElementType type,
 			   const GhostType & ghost_type = _not_ghost) const;
 
+  /// assemble a field as a matrix (ex. rho to mass matrix)
   void assembleFieldMatrix(const Array<Real> & field,
 			   UInt nb_degree_of_freedom,
 			   SparseMatrix & matrix,
@@ -247,6 +249,7 @@ public:
 #ifdef AKANTU_STRUCTURAL_MECHANICS
 
 
+  /// assemble a field as a matrix (ex. rho to mass matrix)
   void assembleFieldMatrix(const Array<Real> & field_1,
 			   UInt nb_degree_of_freedom,
 			   SparseMatrix & M,
@@ -255,6 +258,7 @@ public:
 			   const ElementType & type,
 			   const GhostType & ghost_type = _not_ghost) const;
 
+  /// compute shapes function in a matrix for structural elements
   void computeShapesMatrix(const ElementType & type,
 			   UInt nb_degree_of_freedom, 
 			   UInt nb_nodes_per_element,
@@ -270,6 +274,7 @@ private:
   friend class AssembleLumpedTemplateHelper<kind>;
   friend class AssembleFieldMatrixHelper<kind>;
 
+  /// templated function to compute the scaling to assemble a lumped matrix
   template <ElementType type>
   void assembleLumpedTemplate(const Array<Real> & field_1,
 			      UInt nb_degree_of_freedom,
@@ -293,6 +298,7 @@ private:
 				     const Array<Int> & equation_number,
 				     const GhostType & ghost_type) const;
 
+  /// assemble a field as a matrix (ex. rho to mass matrix)
   template <ElementType type>
   void assembleFieldMatrix(const Array<Real> & field,
 			   UInt nb_degree_of_freedom,
@@ -301,6 +307,7 @@ private:
 
 #ifdef AKANTU_STRUCTURAL_MECHANICS
 
+  /// assemble a field as a matrix for structural elements (ex. rho to mass matrix)
   template <ElementType type>
   void assembleFieldMatrix(const Array<Real> & field_1,
 			   UInt nb_degree_of_freedom,
@@ -315,11 +322,14 @@ private:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
+  /// get the shape class (probably useless: see getShapeFunction)
   const ShapeFunctions & getShapeFunctionsInterface() const { return shape_functions; };
+  /// get the shape class
   const Shape & getShapeFunctions() const { return shape_functions; };
 
+  /// get the integrator class (probably useless: see getIntegrator)
   const Integrator & getIntegratorInterface() const { return integrator; };
+  /// get the integrator class
   const Integ & getIntegrator() const { return integrator; };
 
   /* ------------------------------------------------------------------------ */
