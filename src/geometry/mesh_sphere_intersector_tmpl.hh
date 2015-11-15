@@ -123,7 +123,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 
           // check if we already compute this intersection and add it as a node for a neighboor element of another type
 	  Array<Real>::vector_iterator existing_node = nodes.begin(dim);
-	  UInt n = nb_old_nodes;
+
 	  for (; n < nodes.getSize() ; ++n) {// loop on the nodes from nb_old_nodes
 	    if (Math::are_vector_equal(dim, new_node.storage(), existing_node[n].storage())) {
 	      is_new = false;
@@ -174,7 +174,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	    UInt & nb_new_nodes_per_el = (*this->new_node_per_elem)(element_id, 0);
 	    nb_new_nodes_per_el += 1;
 	    AKANTU_DEBUG_ASSERT(2 * nb_new_nodes_per_el < this->new_node_per_elem->getNbComponent(),
-				"You might have to interface crossing the same material")
+				"You might have to interface crossing the same material");
 	    (*this->new_node_per_elem)(element_id, (2 * nb_new_nodes_per_el) - 1) = n;
 	    (*this->new_node_per_elem)(element_id, 2 * nb_new_nodes_per_el) = it->segId();
 	  } 
