@@ -477,8 +477,11 @@ void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
       jacobian_matrix->add(*mass_matrix, c);
 
 #if !defined(AKANTU_NDEBUG)
-    if(mass_matrix && AKANTU_DEBUG_TEST(dblDump))
-      mass_matrix->saveMatrix("M.mtx");
+    if(mass_matrix && AKANTU_DEBUG_TEST(dblDump)) {
+      UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+      std::stringstream sstr; sstr << "M" << prank << ".mtx";
+      mass_matrix->saveMatrix(sstr.str());
+    }
 #endif
 
     if(velocity_damping_matrix)
@@ -487,9 +490,13 @@ void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
     jacobian_matrix->applyBoundary(*blocked_dofs, block_val);
 
 #if !defined(AKANTU_NDEBUG)
-    if(AKANTU_DEBUG_TEST(dblDump))
-      jacobian_matrix->saveMatrix("J.mtx");
+    if(AKANTU_DEBUG_TEST(dblDump)) {
+      UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+      std::stringstream sstr; sstr << "J" << prank << ".mtx";
+      jacobian_matrix->saveMatrix(sstr.str());
+    }
 #endif
+
     solver->factorize();
   }
 
