@@ -36,6 +36,9 @@
 #ifdef AKANTU_DAMAGE_NON_LOCAL
 #  include "non_local_manager.hh"
 #endif
+#ifdef AKANTU_PYTHON_INTERFACE
+#  include "material_python.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -315,6 +318,48 @@ void SolidMechanicsModel::reassignMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const ID & material_name, 
+					  const GhostType ghost_type) {
 
+  AKANTU_DEBUG_ASSERT(prescribed_eigen_grad_u.size() == spatial_dimension * spatial_dimension, 
+		      "The prescribed grad_u is not of the good size");
+  std::vector<Material *>::iterator mat_it;
+  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+    if ((*mat_it)->getName() == material_name)
+      (*mat_it)->applyEigenGradU(prescribed_eigen_grad_u, ghost_type);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+#ifdef AKANTU_PYTHON_INTERFACE
+void SolidMechanicsModel::registerNewPythonMaterial(PyObject * obj, const ID & mat_type) {
+
+  std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
+    sub_sect = getStaticParser().getSubSections(_st_material);
+
+  Parser::const_section_iterator it = sub_sect.first;
+  for (; it != sub_sect.second; ++it) {
+    if(it->getName() == mat_type) {
+
+      AKANTU_DEBUG_ASSERT(materials_names_to_id.find(mat_type) == materials_names_to_id.end(),
+			  "A material with this name '" << mat_type
+			  << "' has already been registered. "
+			  << "Please use unique names for materials");
+
+      UInt mat_count = materials.size();
+      materials_names_to_id[mat_type] = mat_count;
+
+      std::stringstream sstr_mat; sstr_mat << id << ":" << mat_count << ":" << mat_type;
+      ID mat_id = sstr_mat.str();
+
+      Material * material = new MaterialPython(*this, obj,mat_id);
+      materials.push_back(material);
+
+      material->parseSection(*it);
+    }
+  }
+}
+#endif
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

@@ -126,6 +126,9 @@ public:
   /// get second Lame constant
   AKANTU_GET_MACRO(Mu, mu, Real);
 
+  /// get bulk modulus
+  AKANTU_GET_MACRO(Kappa, kpa, Real);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

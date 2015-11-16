@@ -30,6 +30,11 @@ ExternalProject_Add(iohelper
   )
 
 set_third_party_shared_libirary_name(IOHELPER_LIBRARIES iohelper)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(_tmp ${IOHELPER_LIBRARIES})
+  set(IOHELPER_LIBRARIES "${_tmp}.a" CACHE FILEPATH "" FORCE)
+endif()
+
 set(IOHELPER_INCLUDE_DIR "${PROJECT_BINARY_DIR}/third-party/include/iohelper" CACHE PATH "IOHelper include directory")
 
 mark_as_advanced(

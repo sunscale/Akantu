@@ -54,6 +54,9 @@
 #include "solver.hh"
 #include "material_selector.hh"
 #include "solid_mechanics_model_event_handler.hh"
+#ifdef AKANTU_PYTHON_INTERFACE
+#  include <Python.h>
+#endif
 /* -------------------------------------------------------------------------- */
 namespace akantu {
   class Material;
@@ -315,11 +318,19 @@ public:
   template <typename M>
   Material & registerNewEmptyMaterial(const std::string & name);
 
+#ifdef AKANTU_PYTHON_INTERFACE
+  /// register an empty material of a given type
+  void registerNewPythonMaterial(PyObject * obj,const ID & name);
+#endif
   // /// Use a UIntData in the mesh to specify the material to use per element
   // void setMaterialIDsFromIntData(const std::string & data_name);
 
   /// reassigns materials depending on the material selector
   virtual void reassignMaterial();
+
+  /// apply a constant eigen_grad_u on all quadrature points of a given material
+  virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const ID & material_name, const GhostType ghost_type = _not_ghost);
+
 
 protected:
   /// register a material in the dynamic database

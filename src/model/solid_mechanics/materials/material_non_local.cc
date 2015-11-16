@@ -145,7 +145,6 @@ void MaterialNonLocal<spatial_dimension>::registerNeighborhood() {
 
 /* -------------------------------------------------------------------------- */
 
-
 INSTANTIATE_MATERIAL(MaterialNonLocal);
 
 __END_AKANTU__
