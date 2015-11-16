@@ -97,6 +97,7 @@ namespace akantu {
 
 #cmakedefine AKANTU_STRUCTURAL_MECHANICS
 #cmakedefine AKANTU_HEAT_TRANSFER
+#cmakedefine AKANTU_PYTHON_INTERFACE
 
 #cmakedefine AKANTU_COHESIVE_ELEMENT
 #cmakedefine AKANTU_PARALLEL_COHESIVE_ELEMENT

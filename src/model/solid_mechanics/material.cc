@@ -1175,6 +1175,38 @@ Array<Real> & Material::getArray(const ID & vect_id, const ElementType & type, c
 }
 
 /* -------------------------------------------------------------------------- */
+template<>
+const Array<UInt> & Material::getArray(const ID & vect_id, const ElementType & type, const GhostType & ghost_type) const {
+  std::stringstream sstr;
+  std::string ghost_id = "";
+  if (ghost_type == _ghost) ghost_id = ":ghost";
+  sstr << getID() << ":" << vect_id << ":" << type << ghost_id;
+
+  ID fvect_id = sstr.str();
+  try {
+    return Memory::getArray<UInt>(fvect_id);
+  } catch(debug::Exception & e) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" <<getID() << ") does not contain a vector " << vect_id << "(" << fvect_id << ") [" << e << "]");
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template<>
+Array<UInt> & Material::getArray(const ID & vect_id, const ElementType & type, const GhostType & ghost_type) {
+  std::stringstream sstr;
+  std::string ghost_id = "";
+  if (ghost_type == _ghost) ghost_id = ":ghost";
+  sstr << getID() << ":" << vect_id << ":" << type << ghost_id;
+
+  ID fvect_id = sstr.str();
+  try {
+    return Memory::getArray<UInt>(fvect_id);
+  } catch(debug::Exception & e) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID() << ") does not contain a vector " << vect_id << "(" << fvect_id << ") [" << e << "]");
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 template<typename T>
 const InternalField<T> & Material::getInternal(const ID & int_id) const {
   AKANTU_DEBUG_TO_IMPLEMENT();
@@ -1609,6 +1641,7 @@ void Material::extrapolateInternal(const ID & id, const Element & element, const
     /// is copied into the result vector. This works only for linear
     /// elements
     /// @todo extrapolate!!!!
+    AKANTU_DEBUG_WARNING("This is a fix, values are not truly extrapolated");
 
     const Matrix<Real> & values = internal_it[local_element.element];
     UInt index = 0;
@@ -1617,7 +1650,7 @@ void Material::extrapolateInternal(const ID & id, const Element & element, const
       tmp = values(j);
       if (tmp.norm() > 0) {
         index = j;
-        continue;
+        break;
       }
     }
 
@@ -1628,6 +1661,29 @@ void Material::extrapolateInternal(const ID & id, const Element & element, const
   else {
     Matrix<Real> default_values(extrapolated.rows(), extrapolated.cols(), 0.);
     extrapolated = default_values;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void Material::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const GhostType ghost_type) {
+
+  ElementTypeMapArray<UInt>::type_iterator it
+    = this->element_filter.firstType(_all_dimensions, _not_ghost, _ek_not_defined);
+  ElementTypeMapArray<UInt>::type_iterator end
+    = element_filter.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
+
+  for(; it != end; ++it) {
+    ElementType type = *it;
+    if (!element_filter(type, ghost_type).getSize())
+      continue;
+    Array<Real>::matrix_iterator eigen_it = this->eigengradu(type, ghost_type).begin(spatial_dimension,
+										     spatial_dimension);
+    Array<Real>::matrix_iterator eigen_end = this->eigengradu(type, ghost_type).end(spatial_dimension,
+										    spatial_dimension);
+    for(; eigen_it != eigen_end; ++eigen_it) {
+      Matrix<Real> & current_eigengradu = *eigen_it;
+      current_eigengradu = prescribed_eigen_grad_u;
+    }
   }
 }
 

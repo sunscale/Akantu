@@ -113,17 +113,23 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
             new_node(i) = point[i];
           }
 
-          bool is_on_mesh = false, is_new = true;
+	  /// boolean to decide wheter intersection point is on a standard node of the mesh or not
+          bool is_on_mesh = false;
+	  /// boolean to decide if this intersection point has been already computed for a neighbor element
+	  bool is_new = true;
+        
+	  /// check if intersection point has already been computed
+	  UInt n = nb_old_nodes;
+
           // check if we already compute this intersection and add it as a node for a neighboor element of another type
 	  Array<Real>::vector_iterator existing_node = nodes.begin(dim);
-	  UInt n = nb_old_nodes;
+
 	  for (; n < nodes.getSize() ; ++n) {// loop on the nodes from nb_old_nodes
 	    if (Math::are_vector_equal(dim, new_node.storage(), existing_node[n].storage())) {
 	      is_new = false;
 	      break;
 	    }
 	  }
-          // check if we already compute this intersection for a neighboor element of this type
 	  if(is_new){
 	    Array<Real>::vector_iterator intersection_points_it = this->intersection_points->begin(dim);
 	    Array<Real>::vector_iterator intersection_points_end = this->intersection_points->end(dim);
@@ -167,19 +173,11 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	  if (!is_on_mesh) { // if the node is not on a mesh node
 	    UInt & nb_new_nodes_per_el = (*this->new_node_per_elem)(element_id, 0);
 	    nb_new_nodes_per_el += 1;
+	    AKANTU_DEBUG_ASSERT(2 * nb_new_nodes_per_el < this->new_node_per_elem->getNbComponent(),
+				"You might have to interface crossing the same material");
 	    (*this->new_node_per_elem)(element_id, (2 * nb_new_nodes_per_el) - 1) = n;
 	    (*this->new_node_per_elem)(element_id, 2 * nb_new_nodes_per_el) = it->segId();
-	  } else { // if intersection is at an existing node, write node number (in el) in pennultimate position
-	    if (Math::are_vector_equal(dim, source.storage(), new_node.storage())) {
-	      // 2D: if it is the initial node of the segment its number within the element is the segment ID
-	      (*this->new_node_per_elem)(element_id, (this->new_node_per_elem->getNbComponent() - 2)) = it->segId();
-	    } else {
-	      // 2D: otherwise (final node of the segment) its number within the element
-	      // is the segment ID+1 modulo the number of segment per elements
-	      (*this->new_node_per_elem)(element_id, (this->new_node_per_elem->getNbComponent() - 2)) =
-		(it->segId()+1) % this->nb_seg_by_el;
-	    }
-	  }
+	  } 
 	}
       }
     }
