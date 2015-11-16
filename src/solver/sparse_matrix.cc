@@ -169,6 +169,24 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
       }
     }
   }
+  else { // for pbc in parallel
+    for (UInt n=0; n<mesh.getNbNodes(); ++n) {
+      for (UInt d=0; d<nb_degree_of_freedom; ++d) {
+	if (mesh.isLocalOrMasterNode(n)) {
+	  UInt i = mesh.getNodeGlobalId(n) * nb_degree_of_freedom + d;
+
+	  KeyCOO irn_jcn = key(i, i);
+	  irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
+	  if(irn_jcn_k_it == irn_jcn_k.end()) {
+	    irn_jcn_k[irn_jcn] = nb_non_zero;
+	    irn.push_back(i + 1);
+	    jcn.push_back(i + 1);
+	    nb_non_zero++;
+	  }
+	}
+      }
+    }
+  }
 
   a.resize(nb_non_zero);
 

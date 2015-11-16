@@ -112,9 +112,10 @@ void Model::initPBC() {
 
   is_pbc_slave_node.resize(mesh.getNbNodes());
 #ifndef AKANTU_NDEBUG
-  Real * coords = mesh.getNodes().storage();
-  UInt dim = mesh.getSpatialDimension();
+  Array<Real>::const_vector_iterator coord_it =
+    mesh.getNodes().begin(this->spatial_dimension);
 #endif
+
   while(it != end){
     UInt i1 = (*it).first;
 
@@ -122,14 +123,13 @@ void Model::initPBC() {
 
 #ifndef AKANTU_NDEBUG
     UInt i2 = (*it).second;
-    AKANTU_DEBUG_INFO("pairing " << i1 << " ("
-		      << coords[dim*i1] << "," << coords[dim*i1+1] << ","
-		      << coords[dim*i1+2]
-		      << ") with "
-		      << i2 << " ("
-		      << coords[dim*i2] << "," << coords[dim*i2+1] << ","
-		      << coords[dim*i2+2]
-		      << ")");
+    UInt slave = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i1) : i1;
+    UInt master = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i2) : i2;
+
+    AKANTU_DEBUG_INFO("pairing " << slave << " ("
+		      << Vector<Real>(coord_it[i1]) << ") with "
+		      << master << " ("
+		      << Vector<Real>(coord_it[i2]) << ")");
 #endif
     ++it;
   }
