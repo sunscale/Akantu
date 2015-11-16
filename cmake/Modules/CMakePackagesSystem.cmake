@@ -77,6 +77,7 @@
 #
 #     package_get_include_dir(<pkg> <retval>)
 #     package_set_include_dir(<pkg> <inc1> <inc2> ... <incn>)
+#     package_add_include_dir(<pkg> <inc1> <inc2> ... <incn>)
 #
 #     package_get_libraries(<pkg> <retval>)
 #     package_set_libraries(<pkg> <lib1> <lib2> ... <libn>)
@@ -90,6 +91,8 @@
 #
 #     package_get_dependencies(<pkg> <retval>)
 #     package_add_dependencies(<pkg> <dep1> <dep2> ... <depn>)
+#
+#     package_on_enabled_script(<pkg> <script>)
 #
 #     package_get_all_source_files(<srcs> <public_headers> <private_headers>)
 #     package_get_all_include_directories(<inc_dirs>)
@@ -300,6 +303,11 @@ endfunction()
 function(package_set_include_dir pkg)
   package_get_name(${pkg} _pkg_name)
   _package_set_include_dir(${_pkg_name} ${ARGN})
+endfunction()
+
+function(package_add_include_dir pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_add_include_dir(${_pkg_name} ${ARGN})
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -540,12 +548,7 @@ endfunction()
 # ------------------------------------------------------------------------------
 function(package_on_enabled_script pkg script)
   package_get_name(${pkg} _pkg_name)
-
-  string(TOLOWER "${_pkg_name}" _l_pkg_name)
-  set(_output_file "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${_l_pkg_name}.cmake")
-
-  file(WRITE "${_output_file}"
-    "${script}")
+  _package_on_enable_script(${_pkg_name} "${script}")
 endfunction()
 
 # ------------------------------------------------------------------------------

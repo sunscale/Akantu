@@ -27,7 +27,9 @@
 set(Python_ADDITIONAL_VERSIONS 2.7)
 
 package_declare(PythonLibs EXTERNAL DESCRIPTION "Akantu's python interface"
-  EXTRA_PACKAGE_OPTIONS PREFIX PYTHON FOUND PYTHONLIBS_FOUND ARGS REQUIRED 2.7)
+  DEPENDS numpy
+  EXTRA_PACKAGE_OPTIONS PREFIX PYTHON FOUND PYTHONLIBS_FOUND
+  )
 
 package_declare_sources(Pythonlibs
   python/python_functor.cc
