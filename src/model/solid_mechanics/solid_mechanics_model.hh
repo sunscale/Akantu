@@ -54,9 +54,6 @@
 #include "solver.hh"
 #include "material_selector.hh"
 #include "solid_mechanics_model_event_handler.hh"
-#ifdef AKANTU_PYTHON_INTERFACE
-#  include <Python.h>
-#endif
 /* -------------------------------------------------------------------------- */
 namespace akantu {
   class Material;
@@ -318,10 +315,6 @@ public:
   template <typename M>
   Material & registerNewEmptyMaterial(const std::string & name);
 
-#ifdef AKANTU_PYTHON_INTERFACE
-  /// register an empty material of a given type
-  void registerNewPythonMaterial(PyObject * obj,const ID & name);
-#endif
   // /// Use a UIntData in the mesh to specify the material to use per element
   // void setMaterialIDsFromIntData(const std::string & data_name);
 
@@ -683,11 +676,17 @@ protected:
   /// Arrays containing the position in the element filter of the material (material's local numbering)
   ElementTypeMapArray<UInt> material_local_numbering;
 
+#ifdef SWIGPYTHON
+public:
+#endif
   /// list of used materials
   std::vector <Material *> materials;
 
   /// mapping between material name and material internal id
   std::map <std::string, UInt> materials_names_to_id;
+#ifdef SWIGPYTHON
+protected:
+#endif
 
   /// class defining of to choose a material
   MaterialSelector *material_selector;
