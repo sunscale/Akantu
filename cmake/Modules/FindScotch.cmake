@@ -101,7 +101,22 @@ endif()
 
 #===============================================================================
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Scotch DEFAULT_MSG
-  SCOTCH_LIBRARY SCOTCH_LIBRARY_ERR SCOTCH_INCLUDE_DIR)
+if(CMAKE_VERSION VERSION_GREATER 2.8.12)
+  if(SCOTCH_INCLUDE_DIR)
+    file(STRINGS ${SCOTCH_INCLUDE_DIR}/scotch.h _versions
+      REGEX "^#define\ +SCOTCH_(VERSION|RELEASE|PATCHLEVEL) .*")
+    foreach(_ver ${_versions})
+      string(REGEX MATCH "SCOTCH_(VERSION|RELEASE|PATCHLEVEL) *([0-9.]+)" _tmp "${_ver}")
+      set(_scotch_${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
+    endforeach()
+    set(SCOTCH_VERSION "${_scotch_VERSION}.${_scotch_PATCHLEVEL}" CACHE INTERNAL "")
+  endif()
+  find_package_handle_standard_args(Scotch
+    REQUIRED_VARS SCOTCH_LIBRARY SCOTCH_LIBRARY_ERR SCOTCH_INCLUDE_DIR
+    VERSION_VAR SCOTCH_VERSION)
+else()
+  find_package_handle_standard_args(Scotch DEFAULT_MSG
+    SCOTCH_LIBRARY SCOTCH_LIBRARY_ERR SCOTCH_INCLUDE_DIR)
+endif()
 
 

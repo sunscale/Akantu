@@ -59,23 +59,7 @@
 #endif
 
 #ifdef AKANTU_USE_MPI
-#if defined(__INTEL_COMPILER)
-//#pragma warning ( disable : 383 )
-#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
-#elif (defined(__GNUC__) || defined(__GNUG__))
-#  if __cplusplus > 199711L
-#    pragma GCC diagnostic ignored "-Wliteral-suffix"
-#  endif
-#endif
 #  include <mpi.h>
-#if defined(__INTEL_COMPILER)
-//#pragma warning ( disable : 383 )
-#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
-#elif (defined(__GNUC__) || defined(__GNUG__))
-#  if __cplusplus > 199711L
-#    pragma GCC diagnostic pop
-#  endif
-#endif
 #endif
 
 #define __BEGIN_AKANTU_DEBUG__ namespace akantu { namespace debug {

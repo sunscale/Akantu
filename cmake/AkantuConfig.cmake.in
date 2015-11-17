@@ -36,8 +36,9 @@ include(${AKANTU_USE_FILE})
 if(EXISTS "${AKANTU_CMAKE_DIR}/CMakeCache.txt")
    # In build tree
    include("${AKANTU_CMAKE_DIR}/AkantuBuildTreeSettings.cmake")
-   include("${AKANTU_CMAKE_DIR}/../cmake/AkantuExamplesMacros.cmake")
-else()
+   include(AkantuExamplesMacros)
+ else()
+   # In install tree
    set(AKANTU_INCLUDE_DIR "${AKANTU_CMAKE_DIR}/../../include/akantu")
    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${AKANTU_CMAKE_DIR}/cmake")
    include(AkantuExamplesMacros)

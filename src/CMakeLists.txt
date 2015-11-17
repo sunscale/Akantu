@@ -89,8 +89,6 @@ list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
   ${CMAKE_CURRENT_BINARY_DIR}/material_list.hh)
 list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
 
-add_extra_mpi_options()
-
 #===========================================================================
 # header precompilation
 #===========================================================================

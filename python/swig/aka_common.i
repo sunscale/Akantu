@@ -14,13 +14,15 @@ namespace akantu {
 }
 
 %typemap(in) (int argc, char *argv[]) {
-  int i;
+  int i = 0;
   if (!PyList_Check($input)) {
     PyErr_SetString(PyExc_ValueError, "Expecting a list");
     return NULL;
   }
+
   $1 = PyList_Size($input);
-  $2 = (char **) malloc(($1+1)*sizeof(char *));
+  $2 = new char *[$1+1];
+
   for (i = 0; i < $1; i++) {
     PyObject *s = PyList_GetItem($input,i);
     if (!PyString_Check(s)) {
@@ -34,7 +36,25 @@ namespace akantu {
 }
 
 %typemap(freearg) (int argc, char *argv[]) {
-   if ($2) free($2);
+%#if defined(__INTEL_COMPILER)
+//#pragma warning ( disable : 383 )
+%#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
+%#elif (defined(__GNUC__) || defined(__GNUG__))
+%#  if __cplusplus > 199711L
+%#    pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+%#  endif
+%#endif
+
+  delete [] $2;
+
+%#if defined(__INTEL_COMPILER)
+//#pragma warning ( disable : 383 )
+%#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
+%#elif (defined(__GNUC__) || defined(__GNUG__))
+%#  if __cplusplus > 199711L
+%#    pragma GCC diagnostic pop
+%#  endif
+%#endif
 }
 
 %inline %{

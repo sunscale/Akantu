@@ -1,4 +1,3 @@
-#===============================================================================
 # @file   pythonlibs.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
@@ -24,19 +23,5 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-set(Python_ADDITIONAL_VERSIONS 2.7)
 
-package_declare(PythonLibs EXTERNAL DESCRIPTION "Akantu's python interface"
-  DEPENDS numpy
-  EXTRA_PACKAGE_OPTIONS PREFIX PYTHON FOUND PYTHONLIBS_FOUND
-  )
-
-package_declare_sources(Pythonlibs
-  python/python_functor.cc
-  python/python_functor.hh
-  python/python_functor_inline_impl.cc
-  model/boundary_condition_python_functor.hh
-  model/boundary_condition_python_functor.cc
-  model/solid_mechanics/materials/material_python/material_python.cc
-  model/solid_mechanics/materials/material_python/material_python.hh
-  )
+package_declare(Numpy EXTERNAL DESCRIPTION "Akantu's numpy dependance check")

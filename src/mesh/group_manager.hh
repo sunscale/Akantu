@@ -215,7 +215,7 @@ public:
   /// register an elemental field to the given group name (overloading for MaterialInternalField)
   template <typename T,
 	    /// type of InternalMaterialField
-	    template<typename T, bool filtered> class dump_type>
+            template<typename, bool filtered> class dump_type>
   inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field,
 					      const std::string & group_name,
 					      UInt spatial_dimension,

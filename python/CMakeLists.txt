@@ -38,7 +38,7 @@ foreach (def ${AKANTU_DEFS})
   list(APPEND AKA_DEFS "-D${def}")
 endforeach()
 
-set(AKANTU_SWIG_FLAGS -w309,325,401,317,509,503 ${AKA_DEFS})
+set(AKANTU_SWIG_FLAGS -w309,325,401,317,509,503,383,384 ${AKA_DEFS})
 set(AKANTU_SWIG_OUTDIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(AKANTU_SWIG_MODULES swig/akantu.i)
 
@@ -46,8 +46,7 @@ set(AKANTU_SWIG_MODULES swig/akantu.i)
 # Swig wrapper
 #===============================================================================
 find_package(SWIG 3.0)
-find_package(PythonLibs)
-find_package(PythonInterp)
+mark_as_advanced(SWIG_EXECUTABLE)
 
 package_get_all_include_directories(
   AKANTU_LIBRARY_INCLUDE_DIRS
@@ -60,20 +59,10 @@ package_get_all_external_informations(
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/swig
-  ${PYTHON_INCLUDE_PATH}
   ${AKANTU_LIBRARY_INCLUDE_DIRS}
   ${PROJECT_BINARY_DIR}/src
   ${AKANTU_EXTERNAL_INCLUDE_DIR}
   )
-
-#numpy includes
-if(PYTHONINTERP_FOUND)
-  execute_process(COMMAND
-    ${PYTHON_EXECUTABLE} -c "import numpy; print(numpy.get_include())"
-    OUTPUT_VARIABLE NUMPY_INCLUDE_DIR)
-
-  include_directories(${NUMPY_INCLUDE_DIR})
-endif()
 
 include(CMakeParseArguments)
 
@@ -180,7 +169,6 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
     set(_wrapper "${_output_dir}/${_module_we}_wrapper.cc")
     set(_extra_wrapper "${_output_dir}/${_module_we}.py")
     set(_extra_wrapper_bin "${CMAKE_CURRENT_BINARY_DIR}/${_module_we}.py")
-    message(${_extra_wrapper_bin})
 
     if(SWIG_FOUND)
       set_source_files_properties("${_wrapper}" PROPERTIES GENERATED 1)
@@ -202,7 +190,7 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
         #	MAIN_DEPENDENCY "${_module_absolute}"
         DEPENDS ${_module_dependencies}
         COMMENT "Generating swig wrapper ${_module} -> ${_wrapper}"
-	)
+        )
 
       list(APPEND _swig_wrappers ${_wrapper})
       list(APPEND _swig_wrappers_py "${_extra_wrapper_bin}")
@@ -219,7 +207,6 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
   add_custom_target(${project}_generate_swig_wrappers DEPENDS ${_swig_wrappers})
 
   set(${_wrappers_cpp} ${_swig_wrappers} PARENT_SCOPE)
-    message(${_swig_wrappers_py})
   set(${_wrappers_py} ${_swig_wrappers_py} PARENT_SCOPE)
 endfunction()
 
@@ -230,7 +217,7 @@ swig_generate_wrappers(akantu AKANTU_SWIG_WRAPPERS_CPP AKANTU_WRAPPERS_PYTHON
 
 if(AKANTU_SWIG_WRAPPERS_CPP)
   add_library(_akantu MODULE ${AKANTU_SWIG_WRAPPERS_CPP})
-  target_link_libraries(_akantu akantu ${PYTHON_LIBRARIES})
+  target_link_libraries(_akantu akantu)
 
   set_target_properties(_akantu PROPERTIES PREFIX "")
 
@@ -243,7 +230,6 @@ if(AKANTU_SWIG_WRAPPERS_CPP)
     RUNTIME DESTINATION bin COMPONENT python # for windows ...
     )
 
-  message(AKANTU_WRAPPERS_PYTHON ${AKANTU_WRAPPERS_PYTHON})
   install(FILES ${AKANTU_WRAPPERS_PYTHON}
     DESTINATION lib COMPONENT python
     )

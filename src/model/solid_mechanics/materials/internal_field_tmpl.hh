@@ -306,7 +306,7 @@ void InternalField<T>::printself(std::ostream & stream, UInt indent) const {
 #if !defined(AKANTU_NDEBUG)
   if(AKANTU_DEBUG_TEST(dblDump)) {
     stream << std::endl;
-    InternalField<T>::printself(stream, indent + 3);
+    ElementTypeMapArray<T>::printself(stream, indent + 3);
   } else {
 #endif
     stream << " {"
