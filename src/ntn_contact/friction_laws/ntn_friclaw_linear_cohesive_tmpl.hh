@@ -47,7 +47,8 @@ void NTNFricLawLinearCohesive<Regularisation>::computeFrictionalStrength() {
 
   // get arrays
   const SynchronizedArray<bool> & is_in_contact = this->internalGetIsInContact();
-  const SynchronizedArray<Real> & slip  = this->internalGetSlip();
+  //const SynchronizedArray<Real> & slip  = this->internalGetSlip();
+  const SynchronizedArray<Real> & slip = this->internalGetCumulativeSlip();
 
   // array to fill
   SynchronizedArray<Real> & strength = this->internalGetFrictionalStrength();
@@ -69,9 +70,6 @@ void NTNFricLawLinearCohesive<Regularisation>::computeFrictionalStrength() {
 	// no strength < tau_r
 	strength(n) = std::max(this->tau_c(n) - slope * slip(n), this->tau_r(n));
 	// strength(n) = std::max(this->tau_c(n) - slope * slip(n), 0.); // no negative strength
-
-	// if we want to keep strength loss after restick,
-	// we need to do min between new strength and previous strength
       }
     }
   }
