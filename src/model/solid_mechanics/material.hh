@@ -178,10 +178,6 @@ public:
   /// assemble the residual for this material
   virtual void assembleResidual(GhostType ghost_type);
 
-  /// Operations before and after solveStep in implicit
-  virtual void beforeSolveStep() {}
-  virtual void afterSolveStep() {}
-
   /// save the stress in the previous_stress if needed
   virtual void savePreviousState();
 
