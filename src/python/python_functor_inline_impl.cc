@@ -170,16 +170,16 @@ return_type PythonFunctor::callFunctor(const std::string & functor_name,
   PyObject * pFunctor = getPythonFunction(functor_name);
   PyObject * res = this->callFunctor(pFunctor,pArgs,kwargs);
 
-  for (auto a: arg_vector) {
-    // if (PyDict_Check(a)){
-    //   PyObject* values = PyDict_Values(a);
-    //   UInt sz = PyList_GET_SIZE(values);
-    //   for (UInt i = 0; i < sz; ++i) {
-    // 	Py_XDECREF(PyList_GetItem(values,i));
-    //   }
-    // }
-    // Py_XDECREF(a);
-  }
+  // for (auto a: arg_vector) {
+  //   // if (PyDict_Check(a)){
+  //   //   PyObject* values = PyDict_Values(a);
+  //   //   UInt sz = PyList_GET_SIZE(values);
+  //   //   for (UInt i = 0; i < sz; ++i) {
+  //   // 	Py_XDECREF(PyList_GetItem(values,i));
+  //   //   }
+  //   // }
+  //   // Py_XDECREF(a);
+  // }
   Py_XDECREF(pArgs);
   Py_XDECREF(kwargs);
 
