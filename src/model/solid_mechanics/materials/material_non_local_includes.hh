@@ -36,4 +36,4 @@
 
 #define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_LIST				\
   ((2, (marigo_non_local       , MaterialMarigoNonLocal)))		\
-  ((2, (mazars_non_local       , MaterialMazarsNonLocal       )))
+  ((2, (mazars_non_local       , MaterialMazarsNonLocal)))

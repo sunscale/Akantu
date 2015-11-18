@@ -588,7 +588,16 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
   error = 0.;
   if(criteria == _scc_residual) {
     converged = this->testConvergence<criteria> (tolerance, error);
-    if(converged) return converged;
+    if (converged) {
+      EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
+
+      if(increment_flag && previous_displacement) {
+	this->updateIncrement();
+      }
+
+      if(previous_displacement) previous_displacement->copy(*displacement);
+      return converged;
+    }
   }
 
   do {
@@ -631,6 +640,12 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
 
   if (converged) {
     EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
+
+    if(increment_flag && previous_displacement) {
+      this->updateIncrement();
+    }
+
+    if(previous_displacement) previous_displacement->copy(*displacement);
   } else if(this->n_iter == max_iteration) {
     AKANTU_DEBUG_WARNING("[" << criteria << "] Convergence not reached after "
                          << std::setw(std::log10(max_iteration)) << this->n_iter <<
