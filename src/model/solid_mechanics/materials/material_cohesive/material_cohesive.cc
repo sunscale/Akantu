@@ -81,9 +81,9 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
 
   this->fem = &(model.getFEEngineClass<MyFEEngineCohesiveType>("CohesiveFEEngine"));
 
-  this->gradu.setElementKind(_ek_igfem);
-  this->stress.setElementKind(_ek_igfem);
-  this->eigengradu.setElementKind(_ek_igfem);
+  this->gradu.setElementKind(_ek_cohesive);
+  this->stress.setElementKind(_ek_cohesive);
+  this->eigengradu.setElementKind(_ek_cohesive);
 
   this->gradu.setFEEngine(*fem);
   this->stress.setFEEngine(*fem);
