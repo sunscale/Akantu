@@ -55,7 +55,7 @@ Index: scotch/src/libscotchmetis/Makefile
  					metis_graph_order_f$(OBJ)		\
  					metis_graph_part$(OBJ)			\
  					metis_graph_part_f$(OBJ)
-+					$(CC) -shared $^ -L../libscotch -lscotch -o libscotchmetis$(SHLIB)
++					$(CC) -shared $^ -L../libscotch -lscotch -lscotcherr -o libscotchmetis$(SHLIB)
  					$(AR) $(ARFLAGS) $(@) $(^)
  					-$(RANLIB) $(@)
 Index: scotch/src/libscotch/Makefile
@@ -92,14 +92,14 @@ Index: scotch/src/libscotch/Makefile
 -libptscotch$(LIB)		:	$(LIBPTSCOTCHDEPS) $(LIBSCOTCHDEPS)
 -					$(AR) $(ARFLAGS) $(@) $(?)
 +libptscotch$(LIB)		:	$(LIBPTSCOTCHDEPS) $(LIBSCOTCHDEPS) libptscotcherr$(LIB)
-+					$(CC) -shared $(LIBPTSCOTCHDEPS) $(LIBSCOTCHDEPS) -L. -lptscotcherr -lz -lpthread -lm -o libptscotch$(SHLIB)
++					$(CC) -shared $(LIBPTSCOTCHDEPS) $(LIBSCOTCHDEPS) -L. -lptscotcherr $(LDFLAGS) -o libptscotch$(SHLIB)
 +					$(AR) $(ARFLAGS) $(@) $(LIBPTSCOTCHDEPS) $(LIBSCOTCHDEPS)
  					-$(RANLIB) $(@)
  
 -libscotch$(LIB)			:	$(LIBSCOTCHDEPS)
 -					$(AR) $(ARFLAGS) $(@) $(?)
 +libscotch$(LIB)			:	$(LIBSCOTCHDEPS) libscotcherr$(LIB)
-+					$(CC) -shared $(LIBSCOTCHDEPS) -L. -lscotcherr -lz -lpthread -lm -o libscotch$(SHLIB)
++					$(CC) -shared $(LIBSCOTCHDEPS) -L. -lscotcherr $(LDFLAGS) -o libscotch$(SHLIB)
 +					$(AR) $(ARFLAGS) $(@) $(LIBSCOTCHDEPS)
  					-$(RANLIB) $(@)
  

@@ -77,6 +77,7 @@
 #
 #     package_get_include_dir(<pkg> <retval>)
 #     package_set_include_dir(<pkg> <inc1> <inc2> ... <incn>)
+#     package_add_include_dir(<pkg> <inc1> <inc2> ... <incn>)
 #
 #     package_get_libraries(<pkg> <retval>)
 #     package_set_libraries(<pkg> <lib1> <lib2> ... <libn>)
@@ -91,6 +92,8 @@
 #     package_get_dependencies(<pkg> <retval>)
 #     package_add_dependencies(<pkg> <dep1> <dep2> ... <depn>)
 #
+#     package_on_enabled_script(<pkg> <script>)
+#
 #     package_get_all_source_files(<srcs> <public_headers> <private_headers>)
 #     package_get_all_include_directories(<inc_dirs>)
 #     package_get_all_external_informations(<include_dir> <libraries>)
@@ -99,6 +102,7 @@
 #     package_get_all_test_folders(<test_dirs>)
 #     package_get_all_documentation_files(<doc_files>)
 #     package_get_all_activated_packages(<activated_list>)
+#     package_get_all_deactivated_packages(<deactivated_list>)
 #     package_get_all_packages(<packages_list>)
 #
 #
@@ -301,6 +305,11 @@ function(package_set_include_dir pkg)
   _package_set_include_dir(${_pkg_name} ${ARGN})
 endfunction()
 
+function(package_add_include_dir pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_add_include_dir(${_pkg_name} ${ARGN})
+endfunction()
+
 # ------------------------------------------------------------------------------
 # Libraries
 # ------------------------------------------------------------------------------
@@ -405,25 +414,25 @@ endmacro()
 function(package_get_all_source_files SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
   string(TOUPPER ${PROJECT_NAME} _project)
 
-  set(tmp_SRCS)
-  set(tmp_PUBLIC_HEADERS)
-  set(tmp_PRIVATE_HEADERS)
+  unset(_tmp_srcs)
+  unset(_tmp_public_headers)
+  unset(_tmp_private_headers)
 
   package_get_all_activated_packages(_activated_list)
   foreach(_pkg_name ${_activated_list})
     _package_get_source_files(${_pkg_name}
-      _tmp_SRCS
-      _tmp_PUBLIC_HEADERS
-      _tmp_PRIVATE_HEADERS
+      _pkg_srcs
+      _pkg_public_headers
+      _pkg_private_headers
       )
-    list(APPEND tmp_SRCS ${_tmp_SRCS})
-    list(APPEND tmp_PUBLIC_HEADERS ${tmp_PUBLIC_HEADERS})
-    list(APPEND tmp_PRIVATE_HEADERS ${tmp_PRIVATE_HEADERS})
+    list(APPEND _tmp_srcs ${_pkg_srcs})
+    list(APPEND _tmp_public_headers ${_pkg_public_headers})
+    list(APPEND _tmp_private_headers ${_pkg_private_headers})
   endforeach()
 
-  set(${SRCS}            ${tmp_SRCS}            PARENT_SCOPE)
-  set(${PUBLIC_HEADERS}  ${tmp_PUBLIC_HEADERS}  PARENT_SCOPE)
-  set(${PRIVATE_HEADERS} ${tmp_PRIVATE_HEADERS} PARENT_SCOPE)
+  set(${SRCS}            ${_tmp_srcs}            PARENT_SCOPE)
+  set(${PUBLIC_HEADERS}  ${_tmp_public_headers}  PARENT_SCOPE)
+  set(${PRIVATE_HEADERS} ${_tmp_private_headers} PARENT_SCOPE)
 endfunction()
 
 
@@ -539,12 +548,7 @@ endfunction()
 # ------------------------------------------------------------------------------
 function(package_on_enabled_script pkg script)
   package_get_name(${pkg} _pkg_name)
-
-  string(TOLOWER "${_pkg_name}" _l_pkg_name)
-  set(_output_file "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${_l_pkg_name}.cmake")
-
-  file(WRITE "${_output_file}"
-    "${script}")
+  _package_on_enable_script(${_pkg_name} "${script}")
 endfunction()
 
 # ------------------------------------------------------------------------------

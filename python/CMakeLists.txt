@@ -38,15 +38,15 @@ foreach (def ${AKANTU_DEFS})
   list(APPEND AKA_DEFS "-D${def}")
 endforeach()
 
-set(AKANTU_SWIG_FLAGS -w309,325,401,317,509,503 ${AKA_DEFS})
+set(AKANTU_SWIG_FLAGS -w309,325,401,317,509,503,383,384 ${AKA_DEFS})
 set(AKANTU_SWIG_OUTDIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(AKANTU_SWIG_MODULES swig/akantu.i)
 
 #===============================================================================
 # Swig wrapper
 #===============================================================================
-find_package(SWIG 3.0 REQUIRED)
-find_package(PythonLibs)
+find_package(SWIG 3.0)
+mark_as_advanced(SWIG_EXECUTABLE)
 
 package_get_all_include_directories(
   AKANTU_LIBRARY_INCLUDE_DIRS
@@ -59,13 +59,13 @@ package_get_all_external_informations(
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/swig
-  ${PYTHON_INCLUDE_PATH}
   ${AKANTU_LIBRARY_INCLUDE_DIRS}
   ${PROJECT_BINARY_DIR}/src
   ${AKANTU_EXTERNAL_INCLUDE_DIR}
   )
 
 include(CMakeParseArguments)
+
 function(swig_generate_dependencies _module _depedencies)
   set(_dependencies_script "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/_swig_generate_dependencies.cmake")
   file(WRITE ${_dependencies_script} "
@@ -141,11 +141,10 @@ file(APPEND \"\${_dependencies_file}\" \"
     DEPENDS ${_swig_${_module_we}_depends}
     )
 
-
   set(${_depedencies} ${_dependencies_file} PARENT_SCOPE)
 endfunction()
 
-function(swig_generate_wrappers project _wrappers)
+function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
   cmake_parse_arguments(_swig_opt "" "OUTPUT_DIR" "EXTRA_FLAGS" ${ARGN})
 
   if(_swig_opt_OUTPUT_DIR)
@@ -171,7 +170,6 @@ function(swig_generate_wrappers project _wrappers)
     set(_extra_wrapper "${_output_dir}/${_module_we}.py")
     set(_extra_wrapper_bin "${CMAKE_CURRENT_BINARY_DIR}/${_module_we}.py")
 
-
     if(SWIG_FOUND)
       set_source_files_properties("${_wrapper}" PROPERTIES GENERATED 1)
       set_source_files_properties("${_extra_wrapper}" PROPERTIES GENERATED 1)
@@ -180,44 +178,61 @@ function(swig_generate_wrappers project _wrappers)
 
       set(_ouput "${_wrapper}" "${_extra_wrapper}")
       add_custom_command(
-	OUTPUT ${_ouput}
-	COMMAND "${SWIG_EXECUTABLE}"
-	ARGS -python -c++
-	${_swig_opt_EXTRA_FLAGS}
-	-outdir ${_output_dir}
-	-I${_swig_include_directories} -I${_module_path}
-	-o "${_wrapper}"
-	"${_module_absolute}"
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_extra_wrapper} ${_extra_wrapper_bin}
-#	MAIN_DEPENDENCY "${_module_absolute}"
+        OUTPUT ${_ouput}
+        COMMAND "${SWIG_EXECUTABLE}"
+        ARGS -python -c++
+        ${_swig_opt_EXTRA_FLAGS}
+        -outdir ${_output_dir}
+        -I${_swig_include_directories} -I${_module_path}
+        -o "${_wrapper}"
+        "${_module_absolute}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_extra_wrapper} ${_extra_wrapper_bin}
+        #	MAIN_DEPENDENCY "${_module_absolute}"
         DEPENDS ${_module_dependencies}
-	COMMENT "Generating swig wrapper ${_module} -> ${_wrapper}"
-	)
+        COMMENT "Generating swig wrapper ${_module} -> ${_wrapper}"
+        )
 
       list(APPEND _swig_wrappers ${_wrapper})
+      list(APPEND _swig_wrappers_py "${_extra_wrapper_bin}")
     else()
       if(NOT EXISTS ${_wrapper} OR NOT EXISTS "${_extra_wrapper}")
-	message(FATAL_ERROR "The file ${_wrapper} and/or ${_extra_wrapper} does not exists and they cannot be generated. Install swig in order to generate them")
+        message(FATAL_ERROR "The file ${_wrapper} and/or ${_extra_wrapper} does not exists and they cannot be generated. Install swig in order to generate them")
       else()
-	list(APPEND _swig_wrappers ${_wrapper})
+        list(APPEND _swig_wrappers "${_wrapper}")
+        list(APPEND _swig_wrappers_py "${_extra_wrapper_bin}")
       endif()
     endif()
   endforeach()
 
   add_custom_target(${project}_generate_swig_wrappers DEPENDS ${_swig_wrappers})
 
-  set(${_wrappers} ${_swig_wrappers} PARENT_SCOPE)
+  set(${_wrappers_cpp} ${_swig_wrappers} PARENT_SCOPE)
+  set(${_wrappers_py} ${_swig_wrappers_py} PARENT_SCOPE)
 endfunction()
 
 
-swig_generate_wrappers(akantu AKANTU_SWIG_WRAPPERS
+swig_generate_wrappers(akantu AKANTU_SWIG_WRAPPERS_CPP AKANTU_WRAPPERS_PYTHON
   ${AKANTU_SWIG_MODULES}
   EXTRA_FLAGS ${AKANTU_SWIG_FLAGS})
 
-if(AKANTU_SWIG_WRAPPERS)
-  add_library(_akantu MODULE ${AKANTU_SWIG_WRAPPERS})
-  target_link_libraries(_akantu akantu ${PYTHON_LIBRARIES})
+if(AKANTU_SWIG_WRAPPERS_CPP)
+  add_library(_akantu MODULE ${AKANTU_SWIG_WRAPPERS_CPP})
+  target_link_libraries(_akantu akantu)
 
   set_target_properties(_akantu PROPERTIES PREFIX "")
+
+  list(APPEND AKANTU_EXPORT_LIST _akantu)
+
+  install(TARGETS _akantu
+    EXPORT ${AKANTU_TARGETS_EXPORT}
+    LIBRARY DESTINATION lib COMPONENT python NAMELINK_SKIP # for real systems
+    ARCHIVE DESTINATION lib COMPONENT python
+    RUNTIME DESTINATION bin COMPONENT python # for windows ...
+    )
+
+  install(FILES ${AKANTU_WRAPPERS_PYTHON}
+    DESTINATION lib COMPONENT python
+    )
+
 endif()
 

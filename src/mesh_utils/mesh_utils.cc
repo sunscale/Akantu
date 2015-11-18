@@ -2156,9 +2156,17 @@ UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh, UInt local_nb_n
 
   nodes_global_ids.resize(mesh.getNbNodes());
 
+  /// compute the number of global nodes based on the number of old nodes
+  Vector<UInt> old_local_master_nodes(nb_proc);
+  for (UInt n = 0; n < old_nb_nodes; ++n)
+    if (mesh.isLocalOrMasterNode(n)) ++old_local_master_nodes(rank);
+  comm.allGather(old_local_master_nodes.storage(), 1);
+  UInt old_global_nodes = std::accumulate(old_local_master_nodes.storage(),
+					  old_local_master_nodes.storage() + nb_proc,
+					  0);
+
   /// compute amount of local or master doubled nodes
   Vector<UInt> local_master_nodes(nb_proc);
-
   for (UInt n = old_nb_nodes; n < mesh.getNbNodes(); ++n)
     if (mesh.isLocalOrMasterNode(n)) ++local_master_nodes(rank);
 
@@ -2174,7 +2182,7 @@ UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh, UInt local_nb_n
   /// set global ids of local and master nodes
   UInt starting_index = std::accumulate(local_master_nodes.storage(),
   					local_master_nodes.storage() + rank,
-  					mesh.getNbGlobalNodes());
+  					old_global_nodes);
 
   for (UInt n = old_nb_nodes; n < mesh.getNbNodes(); ++n) {
     if (mesh.isLocalOrMasterNode(n)) {
@@ -2183,7 +2191,7 @@ UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh, UInt local_nb_n
     }
   }
 
-  mesh.nb_global_nodes += total_nb_new_nodes;
+  mesh.nb_global_nodes = old_global_nodes + total_nb_new_nodes;
   return total_nb_new_nodes;
 }
 

@@ -41,66 +41,64 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL(dim, elem)		\
+#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL(dim, elem)            \
   registerNewMaterial< BOOST_PP_ARRAY_ELEM(1, elem)< dim > >(section)
 
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL_EACH(r, data, i, elem)	\
-  BOOST_PP_EXPR_IF(BOOST_PP_NOT_EQUAL(0, i), else )			\
+#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL_EACH(r, data, i, elem)   \
+  BOOST_PP_EXPR_IF(BOOST_PP_NOT_EQUAL(0, i), else )                     \
   if(opt_param == BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, elem))) { \
     registerNewMaterial< BOOST_PP_ARRAY_ELEM(1, data)< BOOST_PP_ARRAY_ELEM(0, data), \
-						       BOOST_PP_SEQ_ENUM(BOOST_PP_TUPLE_ELEM(2, 1, elem)) > >(section); \
+                                                       BOOST_PP_SEQ_ENUM(BOOST_PP_TUPLE_ELEM(2, 1, elem)) > >(section); \
     }
 
 
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL(dim, elem)		\
-  BOOST_PP_SEQ_FOR_EACH_I(AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL_EACH,	\
-			  (2, (dim, BOOST_PP_ARRAY_ELEM(1, elem))),	\
-			  BOOST_PP_ARRAY_ELEM(2, elem))			\
-  else {								\
-    AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL(dim, elem);		\
+#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL(dim, elem)               \
+  BOOST_PP_SEQ_FOR_EACH_I(AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL_EACH,  \
+                          (2, (dim, BOOST_PP_ARRAY_ELEM(1, elem))),     \
+                          BOOST_PP_ARRAY_ELEM(2, elem))                 \
+  else {                                                                \
+    AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL(dim, elem);               \
   }
 
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM(dim, elem)			\
-  BOOST_PP_IF(BOOST_PP_EQUAL(3, BOOST_PP_ARRAY_SIZE(elem) ),		\
-	      AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL,			\
-	      AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL)(dim, elem)
+#define AKANTU_INTANTIATE_MATERIAL_BY_DIM(dim, elem)                    \
+  BOOST_PP_IF(BOOST_PP_EQUAL(3, BOOST_PP_ARRAY_SIZE(elem) ),            \
+              AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL,                   \
+              AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL)(dim, elem)
 
 
-#define AKANTU_INTANTIATE_MATERIAL(elem)				\
-  switch(spatial_dimension) {						\
-  case 1: { AKANTU_INTANTIATE_MATERIAL_BY_DIM(1, elem); break; }	\
-  case 2: { AKANTU_INTANTIATE_MATERIAL_BY_DIM(2, elem); break; }	\
-  case 3: { AKANTU_INTANTIATE_MATERIAL_BY_DIM(3, elem); break; }	\
+#define AKANTU_INTANTIATE_MATERIAL(elem)                                \
+  switch(spatial_dimension) {                                           \
+  case 1: { AKANTU_INTANTIATE_MATERIAL_BY_DIM(1, elem); break; }        \
+  case 2: { AKANTU_INTANTIATE_MATERIAL_BY_DIM(2, elem); break; }        \
+  case 3: { AKANTU_INTANTIATE_MATERIAL_BY_DIM(3, elem); break; }        \
   }
 
 
-#define AKANTU_INTANTIATE_MATERIAL_IF(elem)				\
-  if (mat_type == BOOST_PP_STRINGIZE(BOOST_PP_ARRAY_ELEM(0, elem))) {	\
-    AKANTU_INTANTIATE_MATERIAL(elem);					\
+#define AKANTU_INTANTIATE_MATERIAL_IF(elem)                             \
+  if (mat_type == BOOST_PP_STRINGIZE(BOOST_PP_ARRAY_ELEM(0, elem))) {   \
+    AKANTU_INTANTIATE_MATERIAL(elem);                                   \
   }
 
-#define AKANTU_INTANTIATE_OTHER_MATERIAL(r, data, elem)			\
+#define AKANTU_INTANTIATE_OTHER_MATERIAL(r, data, elem)                 \
   else AKANTU_INTANTIATE_MATERIAL_IF(elem)
 
-#define AKANTU_INSTANTIATE_MATERIALS()					\
-  do {									\
+#define AKANTU_INSTANTIATE_MATERIALS()                                  \
+  do {                                                                  \
     AKANTU_INTANTIATE_MATERIAL_IF(BOOST_PP_SEQ_HEAD(AKANTU_MATERIAL_LIST)) \
-      BOOST_PP_SEQ_FOR_EACH(AKANTU_INTANTIATE_OTHER_MATERIAL,		\
-			    _,						\
-			    BOOST_PP_SEQ_TAIL(AKANTU_MATERIAL_LIST))	\
-    else {								\
-      if(getStaticParser().isPermissive())				\
-	AKANTU_DEBUG_INFO("Malformed material file " <<			\
-			  ": unknown material type '"			\
-			  << mat_type << "'");				\
-      else								\
-	AKANTU_DEBUG_WARNING("Malformed material file "			\
-			     <<": unknown material type " << mat_type	\
-			     << ". This is perhaps a user"		\
-			     << " defined material ?");			\
-    }									\
+      BOOST_PP_SEQ_FOR_EACH(AKANTU_INTANTIATE_OTHER_MATERIAL,           \
+                            _,                                          \
+                            BOOST_PP_SEQ_TAIL(AKANTU_MATERIAL_LIST))    \
+    else {                                                              \
+      if(getStaticParser().isPermissive())                              \
+        AKANTU_DEBUG_INFO("Malformed material file " <<                 \
+                          ": unknown material type '"                   \
+                          << mat_type << "'");                          \
+      else                                                              \
+        AKANTU_DEBUG_WARNING("Malformed material file "                 \
+                             <<": unknown material type " << mat_type   \
+                             << ". This is perhaps a user"              \
+                             << " defined material ?");                 \
+    }                                                                   \
   } while(0)
 
 /* -------------------------------------------------------------------------- */
@@ -149,13 +147,13 @@ void SolidMechanicsModel::assignMaterialToElements(const ElementTypeMapArray<UIn
     Array<UInt> & mat_indexes = material_index(*it, _not_ghost);
     for (UInt el = 0; el < nb_element; ++el) {
       if (filter != NULL)
-	element.element = (*filter_array)(el);
+        element.element = (*filter_array)(el);
       else
-	element.element = el;
+        element.element = el;
 
       UInt mat_index = (*material_selector)(element);
       AKANTU_DEBUG_ASSERT(mat_index < materials.size(),
-			  "The material selector returned an index that does not exists");
+                          "The material selector returned an index that does not exists");
       mat_indexes(element.element) = mat_index;
 
     }
@@ -181,21 +179,21 @@ void SolidMechanicsModel::assignMaterialToElements(const ElementTypeMapArray<UIn
 
       const Array<UInt> * filter_array = NULL;
       if (filter != NULL) {
-	filter_array = &((*filter)(*it, gt));
-	nb_element = filter_array->getSize();
+        filter_array = &((*filter)(*it, gt));
+        nb_element = filter_array->getSize();
       }
 
       Array<UInt> & mat_indexes   = material_index(*it, gt);
       Array<UInt> & mat_local_num = material_local_numbering(*it, gt);
       for (UInt el = 0; el < nb_element; ++el) {
-	UInt element;
+        UInt element;
 
-	if (filter != NULL) element = (*filter_array)(el);
-	else element = el;
+        if (filter != NULL) element = (*filter_array)(el);
+        else element = el;
 
-	UInt mat_index = mat_indexes(element);
-	UInt index = mat_val[mat_index]->addElement(*it, element, gt);
-	mat_local_num(element) = index;
+        UInt mat_index = mat_indexes(element);
+        UInt index = mat_val[mat_index]->addElement(*it, element, gt);
+        mat_local_num(element) = index;
       }
     }
   }
@@ -291,15 +289,15 @@ void SolidMechanicsModel::reassignMaterial() {
       Array<UInt> & mat_indexes = material_index(type, ghost_type);
 
       for (UInt el = 0; el < nb_element; ++el) {
-	element.element = el;
+        element.element = el;
 
-	UInt old_material = mat_indexes(el);
-	UInt new_material = (*material_selector)(element);
+        UInt old_material = mat_indexes(el);
+        UInt new_material = (*material_selector)(element);
 
-	if(old_material != new_material) {
-	  element_to_add   [new_material].push_back(element);
-	  element_to_remove[old_material].push_back(element);
-	}
+        if(old_material != new_material) {
+          element_to_add   [new_material].push_back(element);
+          element_to_remove[old_material].push_back(element);
+        }
       }
     }
   }
@@ -315,6 +313,18 @@ void SolidMechanicsModel::reassignMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const ID & material_name, 
+                                          const GhostType ghost_type) {
 
+  AKANTU_DEBUG_ASSERT(prescribed_eigen_grad_u.size() == spatial_dimension * spatial_dimension, 
+                      "The prescribed grad_u is not of the good size");
+  std::vector<Material *>::iterator mat_it;
+  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+    if ((*mat_it)->getName() == material_name)
+      (*mat_it)->applyEigenGradU(prescribed_eigen_grad_u, ghost_type);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

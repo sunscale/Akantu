@@ -30,7 +30,11 @@
 
 package_declare(BLAS EXTERNAL
   DESCRIPTION "Use BLAS for arithmetic operations"
-  EXTRA_PACKAGE_OPTIONS LANGUAGE Fortran)
+  EXTRA_PACKAGE_OPTIONS LANGUAGE Fortran
+  SYSTEM ON third-party/cmake/blas.cmake)
+
+package_add_third_party_script_variable(BLAS BLAS_ARCHIVE "http://www.netlib.org/blas/blas-3.5.0.tgz")
+package_add_third_party_script_variable(BLAS BLAS_VERSION "3.5.0")
 
 set(AKANTU_USE_BLAS_VENDOR "Generic" CACHE STRING "Version of blas to use")
 mark_as_advanced(AKANTU_USE_BLAS_VENDOR)

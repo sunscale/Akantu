@@ -121,7 +121,7 @@ public:
     return MaterialSelector::operator()(element);
   }
 
-private:
+protected:
   /// list of element with the specified data (i.e. tag value)
   const ElementTypeMapArray<T> & element_data;
   

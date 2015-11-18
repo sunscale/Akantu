@@ -276,13 +276,13 @@ void NonLocalManager::averageInternals(const GhostType & ghost_type) {
     for(UInt m = 0; m < this->non_local_materials.size(); ++m) {
       switch (spatial_dimension) {
       case 1:
-	dynamic_cast<MaterialNonLocal<1> &>(*(this->non_local_materials[m])).computeNonLocalStresses(ghost_type); 
+	dynamic_cast<MaterialNonLocal<1> &>(*(this->non_local_materials[m])).computeNonLocalStresses(_not_ghost); 
 	break;      
       case 2:
-	dynamic_cast<MaterialNonLocal<2> &>(*(this->non_local_materials[m])).computeNonLocalStresses(ghost_type); 
+	dynamic_cast<MaterialNonLocal<2> &>(*(this->non_local_materials[m])).computeNonLocalStresses(_not_ghost); 
 	break;      
       case 3:
-	dynamic_cast<MaterialNonLocal<3> &>(*(this->non_local_materials[m])).computeNonLocalStresses(ghost_type); 
+	dynamic_cast<MaterialNonLocal<3> &>(*(this->non_local_materials[m])).computeNonLocalStresses(_not_ghost); 
 	break;      
       }
     }

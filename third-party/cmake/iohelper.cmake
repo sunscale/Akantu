@@ -17,7 +17,7 @@ if(CMAKE_VERSION VERSION_GREATER 3.1)
     )
 endif()
 
-ExternalProject_Add(IOHelper
+ExternalProject_Add(iohelper
   PREFIX ${PROJECT_BINARY_DIR}/third-party
   ${_iohelper_download_command}
   ${_extra_options}
@@ -30,6 +30,11 @@ ExternalProject_Add(IOHelper
   )
 
 set_third_party_shared_libirary_name(IOHELPER_LIBRARIES iohelper)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(_tmp ${IOHELPER_LIBRARIES})
+  set(IOHELPER_LIBRARIES "${_tmp}.a" CACHE FILEPATH "" FORCE)
+endif()
+
 set(IOHELPER_INCLUDE_DIR "${PROJECT_BINARY_DIR}/third-party/include/iohelper" CACHE PATH "IOHelper include directory")
 
 mark_as_advanced(
@@ -37,4 +42,4 @@ mark_as_advanced(
   IOHELPER_INCLUDE_DIR
   )
 
-package_add_extra_dependency(IOHelper IOHelper)
+package_add_extra_dependency(IOHelper iohelper)

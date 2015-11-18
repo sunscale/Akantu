@@ -35,14 +35,20 @@
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 #include <csignal>
-#include <execinfo.h>
+
+#if (defined(READLINK_COMMAND) ||   \
+     defined(ADDR2LINE_COMMAND)) && \
+    (not defined(_WIN32))
+#  include <execinfo.h>
+#  include <sys/wait.h>
+#endif
+
 #include <cxxabi.h>
 #include <fstream>
 #include <iomanip>
 #include <cmath>
 #include <cstring>
 #include <map>
-#include <sys/wait.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -53,23 +59,7 @@
 #endif
 
 #ifdef AKANTU_USE_MPI
-#if defined(__INTEL_COMPILER)
-//#pragma warning ( disable : 383 )
-#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
-#elif (defined(__GNUC__) || defined(__GNUG__))
-#  if __cplusplus > 199711L
-#    pragma GCC diagnostic ignored "-Wliteral-suffix"
-#  endif
-#endif
 #  include <mpi.h>
-#if defined(__INTEL_COMPILER)
-//#pragma warning ( disable : 383 )
-#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
-#elif (defined(__GNUC__) || defined(__GNUG__))
-#  if __cplusplus > 199711L
-#    pragma GCC diagnostic pop
-#  endif
-#endif
 #endif
 
 #define __BEGIN_AKANTU_DEBUG__ namespace akantu { namespace debug {
@@ -86,6 +76,7 @@ static void printBacktraceAndExit(int sig) {
 
 /* ------------------------------------------------------------------------ */
 void initSignalHandler() {
+#if not defined(_WIN32)
   struct sigaction action;
 
   action.sa_handler = &printBacktraceAndExit;
@@ -94,6 +85,10 @@ void initSignalHandler() {
 
   sigaction(SIGSEGV, &action, NULL);
   sigaction(SIGABRT, &action, NULL);
+#else
+  std::signal(SIGSEGV, &printBacktraceAndExit);
+  std::signal(SIGABRT, &printBacktraceAndExit);
+#endif
 }
 
 /* ------------------------------------------------------------------------ */
@@ -113,6 +108,7 @@ std::string demangle(const char *symbol) {
 }
 
 /* ------------------------------------------------------------------------ */
+#if (defined(READLINK_COMMAND) || defined(ADDR2LINK_COMMAND)) && (not defined(_WIN32))
 std::string exec(std::string cmd) {
   FILE *pipe = popen(cmd.c_str(), "r");
   if (!pipe) return "";
@@ -127,11 +123,13 @@ std::string exec(std::string cmd) {
   pclose(pipe);
   return result;
 }
+#endif
 
 /* ------------------------------------------------------------------------ */
 void printBacktrace(__attribute__((unused)) int sig) {
   AKANTU_DEBUG_INFO("Caught  signal " << sig << "!");
 
+#if not defined(_WIN32)
 #if defined(READLINK_COMMAND) && defined(ADDR2LINE_COMMAND)
   std::string me = "";
   char buf[1024];
@@ -167,6 +165,8 @@ void printBacktrace(__attribute__((unused)) int sig) {
 
   if (me != "") addr_map[me] = 0;
 #endif
+
+  /// \todo for windows this part could be coded using CaptureStackBackTrace and SymFromAddr
 
   const size_t max_depth = 100;
   size_t stack_depth;
@@ -222,6 +222,7 @@ void printBacktrace(__attribute__((unused)) int sig) {
   free(stack_strings);
 
   std::cerr << "END BACKTRACE" << std::endl;
+#endif
 }
 
 /* ------------------------------------------------------------------------ */

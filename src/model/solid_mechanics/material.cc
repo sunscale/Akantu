@@ -1175,6 +1175,38 @@ Array<Real> & Material::getArray(const ID & vect_id, const ElementType & type, c
 }
 
 /* -------------------------------------------------------------------------- */
+template<>
+const Array<UInt> & Material::getArray(const ID & vect_id, const ElementType & type, const GhostType & ghost_type) const {
+  std::stringstream sstr;
+  std::string ghost_id = "";
+  if (ghost_type == _ghost) ghost_id = ":ghost";
+  sstr << getID() << ":" << vect_id << ":" << type << ghost_id;
+
+  ID fvect_id = sstr.str();
+  try {
+    return Memory::getArray<UInt>(fvect_id);
+  } catch(debug::Exception & e) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" <<getID() << ") does not contain a vector " << vect_id << "(" << fvect_id << ") [" << e << "]");
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template<>
+Array<UInt> & Material::getArray(const ID & vect_id, const ElementType & type, const GhostType & ghost_type) {
+  std::stringstream sstr;
+  std::string ghost_id = "";
+  if (ghost_type == _ghost) ghost_id = ":ghost";
+  sstr << getID() << ":" << vect_id << ":" << type << ghost_id;
+
+  ID fvect_id = sstr.str();
+  try {
+    return Memory::getArray<UInt>(fvect_id);
+  } catch(debug::Exception & e) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID() << ") does not contain a vector " << vect_id << "(" << fvect_id << ") [" << e << "]");
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 template<typename T>
 const InternalField<T> & Material::getInternal(const ID & int_id) const {
   AKANTU_DEBUG_TO_IMPLEMENT();
@@ -1535,64 +1567,78 @@ void Material::flattenInternalIntern(const std::string & field_id,
   if(element_filter == NULL) element_filter = &(this->element_filter);
   if(mesh == NULL)  mesh = &(this->model->mesh);
 
-  iterator tit = element_filter->firstType(spatial_dimension,
+  iterator tit = mesh->firstType(spatial_dimension,
                                           ghost_type,
                                           element_kind);
-  iterator end = element_filter->lastType(spatial_dimension,
+  iterator end = mesh->lastType(spatial_dimension,
                                          ghost_type,
                                          element_kind);
 
-  for (; tit != end; ++tit) {
-    ElementType type = *tit;
+  std::map<ID, InternalField<Real> *>::const_iterator internal_array =
+    internal_vectors_real.find(this->getID()+":"+field_id);
 
-    try {
-      __attribute__((unused)) const Array<Real> & src_vect
-        = this->getArray<Real>(field_id, type, ghost_type);
-    } catch(debug::Exception & e) {
-      continue;
-    }
+  if (!(internal_array == internal_vectors_real.end() ||
+	internal_array->second->getElementKind() != element_kind)) {
 
-    const Array<Real> & src_vect = this->getArray<Real>(field_id, type, ghost_type);
-    const Array<UInt> & filter   = (*element_filter)(type, ghost_type);
+    InternalField<Real> & internal = *internal_array->second;
 
-    // total number of elements for a given type
-    UInt nb_element = mesh->getNbElement(type,ghost_type);
-    // number of filtered elements
-    UInt nb_element_src = filter.getSize();
-    // number of quadrature points per elem
-    UInt nb_quad_per_elem = 0;
     // number of data per quadrature point
-    UInt nb_data_per_quad = src_vect.getNbComponent();
+    UInt nb_data_per_quad = internal.getNbComponent();
+    
+    for (; tit != end; ++tit) {
+      ElementType type = *tit;
+      // number of quadrature points per elem
+      UInt nb_quad_per_elem = this->fem->getNbIntegrationPoints(type);
+      // total number of elements for a given type
+      UInt nb_element = mesh->getNbElement(type,ghost_type);
 
-    if (!internal_flat.exists(type,ghost_type)) {
-      internal_flat.alloc(nb_element * nb_quad_per_elem,
-                          nb_data_per_quad,
-                          type,
-                          ghost_type);
-    }
+      if (!internal_flat.exists(type,ghost_type)) {
+	internal_flat.alloc(nb_element * nb_quad_per_elem,
+			    nb_data_per_quad,
+			    type,
+			    ghost_type);
+      }
+    
+      try {
+	__attribute__((unused)) const Array<Real> & src_vect
+	  = this->getArray<Real>(field_id, type, ghost_type);
+      } catch(debug::Exception & e) {
+	continue;
+      }
 
-    if (nb_element_src == 0) continue;
-    nb_quad_per_elem = (src_vect.getSize() / nb_element_src);
+      const Array<Real> & src_vect = this->getArray<Real>(field_id, type, ghost_type);
+      const Array<UInt> & filter   = (*element_filter)(type, ghost_type);
 
-    // number of data per element
-    UInt nb_data = nb_quad_per_elem * src_vect.getNbComponent();
+      // number of filtered elements
+      UInt nb_element_src = filter.getSize();
+    
+      /// UInt nb_data_per_quad = src_vect.getNbComponent();
 
-    Array<Real> & dst_vect = internal_flat(type,ghost_type);
-    dst_vect.resize(nb_element*nb_quad_per_elem);
 
-    Array<UInt>::const_scalar_iterator it  = filter.begin();
-    Array<UInt>::const_scalar_iterator end = filter.end();
-    Array<Real>::const_vector_iterator it_src =
-      src_vect.begin_reinterpret(nb_data, nb_element_src);
+      if (nb_element_src == 0) continue;
+      nb_quad_per_elem = (src_vect.getSize() / nb_element_src);
 
-    Array<Real>::vector_iterator it_dst =
-      dst_vect.begin_reinterpret(nb_data, nb_element);
+      // number of data per element
+      UInt nb_data = nb_quad_per_elem * src_vect.getNbComponent();
 
-    for (; it != end ; ++it,++it_src) {
-      it_dst[*it] = *it_src;
+      Array<Real> & dst_vect = internal_flat(type,ghost_type);
+      dst_vect.resize(nb_element*nb_quad_per_elem);
+
+      Array<UInt>::const_scalar_iterator it  = filter.begin();
+      Array<UInt>::const_scalar_iterator end = filter.end();
+      Array<Real>::const_vector_iterator it_src =
+	src_vect.begin_reinterpret(nb_data, nb_element_src);
+
+      Array<Real>::vector_iterator it_dst =
+	dst_vect.begin_reinterpret(nb_data, nb_element);
+
+      for (; it != end ; ++it,++it_src) {
+	it_dst[*it] = *it_src;
+      }
     }
   }
 };
+
 /* -------------------------------------------------------------------------- */
 /// extrapolate internal values
 void Material::extrapolateInternal(const ID & id, const Element & element, const Matrix<Real> & point, Matrix<Real> & extrapolated) {
@@ -1609,6 +1655,7 @@ void Material::extrapolateInternal(const ID & id, const Element & element, const
     /// is copied into the result vector. This works only for linear
     /// elements
     /// @todo extrapolate!!!!
+    AKANTU_DEBUG_WARNING("This is a fix, values are not truly extrapolated");
 
     const Matrix<Real> & values = internal_it[local_element.element];
     UInt index = 0;
@@ -1617,7 +1664,7 @@ void Material::extrapolateInternal(const ID & id, const Element & element, const
       tmp = values(j);
       if (tmp.norm() > 0) {
         index = j;
-        continue;
+        break;
       }
     }
 
@@ -1628,6 +1675,29 @@ void Material::extrapolateInternal(const ID & id, const Element & element, const
   else {
     Matrix<Real> default_values(extrapolated.rows(), extrapolated.cols(), 0.);
     extrapolated = default_values;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void Material::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const GhostType ghost_type) {
+
+  ElementTypeMapArray<UInt>::type_iterator it
+    = this->element_filter.firstType(_all_dimensions, _not_ghost, _ek_not_defined);
+  ElementTypeMapArray<UInt>::type_iterator end
+    = element_filter.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
+
+  for(; it != end; ++it) {
+    ElementType type = *it;
+    if (!element_filter(type, ghost_type).getSize())
+      continue;
+    Array<Real>::matrix_iterator eigen_it = this->eigengradu(type, ghost_type).begin(spatial_dimension,
+										     spatial_dimension);
+    Array<Real>::matrix_iterator eigen_end = this->eigengradu(type, ghost_type).end(spatial_dimension,
+										    spatial_dimension);
+    for(; eigen_it != eigen_end; ++eigen_it) {
+      Matrix<Real> & current_eigengradu = *eigen_it;
+      current_eigengradu = prescribed_eigen_grad_u;
+    }
   }
 }
 

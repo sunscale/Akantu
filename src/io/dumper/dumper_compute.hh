@@ -222,7 +222,8 @@ public:
 
   template <typename output, typename T>
   Field * connectToFunctor(T * ptr){
-    return new FieldCompute<T,output>(*ptr,func);
+    FieldCompute<T,output> * functor_ptr = new FieldCompute<T,output>(*ptr,func);
+    return functor_ptr;
   }
 
   template <typename output, typename SubFieldCompute,
@@ -252,6 +253,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   ComputeFunctorInterface & func;
+
 };
 
 /* -------------------------------------------------------------------------- */

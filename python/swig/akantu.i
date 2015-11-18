@@ -1,21 +1,19 @@
 %module akantu
 
 %exception {
-	try {
-	$action
-	}
-	catch (akantu::debug::Exception e) {
-	  PyErr_SetString(PyExc_IndexError,e.what());
-		return NULL;
-	}
-}
+  try {
+    $action
+  } catch (akantu::debug::Exception e) {
+    PyErr_SetString(PyExc_IndexError,e.what());
+    return NULL;
+  }
+ }
 
 %include "stl.i"
 
 #define __attribute__(x)
 
 %ignore akantu::operator <<;
-
 
 %include "aka_common.i"
 %include "aka_csr.i"

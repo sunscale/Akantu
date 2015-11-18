@@ -51,14 +51,16 @@ if(${_opt_name} AND _system)
   include(CheckTypeSize)
 
   package_get_include_dir(Scotch _include_dir)
-  set(CMAKE_EXTRA_INCLUDE_FILES stdio.h scotch.h)
-  set(CMAKE_REQUIRED_INCLUDES ${_include_dir})
-  check_type_size("SCOTCH_Num" SCOTCH_NUM)
+  if(_include_dir)
+    set(CMAKE_EXTRA_INCLUDE_FILES stdio.h scotch.h)
+    set(CMAKE_REQUIRED_INCLUDES ${_include_dir})
+    check_type_size("SCOTCH_Num" SCOTCH_NUM)
 
-  if(NOT SCOTCH_NUM EQUAL AKANTU_INTEGER_SIZE)
-    math(EXPR _n "${AKANTU_INTEGER_SIZE} * 8")
-    message(SEND_ERROR "This version of Scotch cannot be used, it is compiled with the wrong size for SCOTCH_Num."
-      "Recompile Scotch with the define -DINTSIZE${_n}")
+    if(SCOTCH_NUM AND NOT SCOTCH_NUM EQUAL AKANTU_INTEGER_SIZE)
+      math(EXPR _n "${AKANTU_INTEGER_SIZE} * 8")
+      message(SEND_ERROR "This version of Scotch cannot be used, it is compiled with the wrong size for SCOTCH_Num."
+        "Recompile Scotch with the define -DINTSIZE${_n}. The current scotch integer size is ${SCOTCH_NUM}")
+    endif()
   endif()
 endif()
 
