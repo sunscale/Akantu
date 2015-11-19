@@ -78,7 +78,7 @@ namespace debug {
 /// Parser containing the information parsed by the input file given to initFull
 Parser static_parser;
 
-bool Parser::parser_permissive = false;
+bool Parser::permissive_parser = false;
 
 Real Math::tolerance = std::numeric_limits<Real>::epsilon();
 

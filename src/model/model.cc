@@ -292,14 +292,13 @@ void Model::removeDumpGroupFieldFromDumper(const std::string & dumper_name,
 
 /* -------------------------------------------------------------------------- */
 void Model::addDumpFieldVectorToDumper(const std::string & dumper_name,
-                                                     const std::string & field_id) {
-  this->addDumpGroupFieldToDumper(dumper_name,field_id,"all",_ek_regular,3);
+				       const std::string & field_id) {
+  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular, 3);
 }
 
 /* -------------------------------------------------------------------------- */
 void Model::addDumpGroupFieldVector(const std::string & field_id,
                                                   const std::string & group_name) {
-
   ElementGroup & group = mesh.getElementGroup(group_name);
   this->addDumpGroupFieldVectorToDumper(group.getDefaultDumperName(),
                                         field_id,

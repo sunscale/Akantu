@@ -100,7 +100,6 @@ public:
   /// to implement
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
                                     const std::string & field_id);
-
   /// add a field
   virtual void addDumpFieldExternal(const std::string & field_id,
                                     dumper::Field * field);

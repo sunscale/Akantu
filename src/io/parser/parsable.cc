@@ -147,7 +147,7 @@ void Parsable::registerSubSection(const SectionType & type,
 void Parsable::parseParam(const ParserParameter & in_param) {
   std::map<std::string, ParsableParam *>::iterator it = params.find(in_param.getName());
   if(it == params.end()) {
-    if(Parser::parser_permissive) {
+    if(Parser::isPermissive()) {
       AKANTU_DEBUG_WARNING("No parameter named " << in_param.getName()
 			   << " registered in " << pid << ".");
       return;
@@ -184,7 +184,7 @@ void Parsable::parseSubSection(const ParserSection & section) {
   SubSections::iterator it = sub_sections.find(key);
   if(it != sub_sections.end()) {
     it->second->parseSection(section);
-  } else if(!Parser::parser_permissive) {
+  } else if(!Parser::isPermissive()) {
       AKANTU_EXCEPTION("No parsable defined for sub sections of type <"
 		       << key.first << "," << key.second << "> in " << pid);
   } else AKANTU_DEBUG_WARNING("No parsable defined for sub sections of type <"

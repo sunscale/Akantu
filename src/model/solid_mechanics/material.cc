@@ -57,7 +57,6 @@ Material::Material(SolidMechanicsModel & model, const ID & id) :
   gradu("grad_u", *this),
   green_strain("green_strain",*this),
   piola_kirchhoff_2("piola_kirchhoff_2", *this),
-  //  potential_energy_vector(false),
   potential_energy("potential_energy", *this),
   is_non_local(false),
   use_previous_stress(false),
@@ -136,6 +135,8 @@ void Material::initialize() {
   eigengradu.initialize(spatial_dimension * spatial_dimension);
   gradu.initialize(spatial_dimension * spatial_dimension);
   stress.initialize(spatial_dimension * spatial_dimension);
+
+  potential_energy.initialize(1);
 
   this->model->registerEventHandler(*this);
 }
@@ -971,14 +972,6 @@ void Material::computePotentialEnergyByElements() {
 void Material::computePotentialEnergy(ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  if(!potential_energy.exists(el_type, ghost_type)) {
-      UInt nb_element = element_filter(el_type, ghost_type).getSize();
-      UInt nb_quadrature_points = fem->getNbIntegrationPoints(el_type, _not_ghost);
-
-      potential_energy.alloc(nb_element * nb_quadrature_points, 1,
-                             el_type, ghost_type);
-  }
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -1486,14 +1479,6 @@ void Material::onDamageUpdate() {
     = element_filter.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
 
   for(; it != end; ++it) {
-
-    if(!this->potential_energy.exists(*it, _not_ghost)) {
-      UInt nb_element = this->element_filter(*it, _not_ghost).getSize();
-      UInt nb_quadrature_points = this->fem->getNbIntegrationPoints(*it, _not_ghost);
-
-      this->potential_energy.alloc(nb_element * nb_quadrature_points, 1,
-                                   *it, _not_ghost);
-    }
     this->updateEnergiesAfterDamage(*it, _not_ghost);
   }
 }

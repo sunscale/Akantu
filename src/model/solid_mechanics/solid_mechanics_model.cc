@@ -1175,8 +1175,8 @@ Real SolidMechanicsModel::getStableTimeStep(const GhostType & ghost_type) {
   elem.ghost_type = ghost_type;
   elem.kind = _ek_regular;
 
-  Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
+  Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type, _ek_regular);
+  Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type, _ek_regular);
   for(; it != end; ++it) {
     elem.type = *it;
     UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*it);
@@ -1344,7 +1344,7 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id) {
 /* -------------------------------------------------------------------------- */
 Real SolidMechanicsModel::getEnergy(const std::string & energy_id,
 				    const ElementType & type,
-				    UInt index){
+                                    UInt index) {
   AKANTU_DEBUG_IN();
 
   if (energy_id == "kinetic") {
@@ -1668,9 +1668,9 @@ dumper::Field * SolidMechanicsModel::createNodalFieldReal(const std::string & fi
 
   dumper::Field * field = NULL;
   if (padding_flag)
-    field = mesh.createNodalField(real_nodal_fields[field_name],group_name, 3);
+    field = mesh.createNodalField(real_nodal_fields[field_name], group_name, 3);
   else
-    field = mesh.createNodalField(real_nodal_fields[field_name],group_name);
+    field = mesh.createNodalField(real_nodal_fields[field_name], group_name);
 
   return field;
 }

@@ -81,11 +81,11 @@ void Parser::parse(const std::string& filename) {
   try {
     DebugLevel dbl = debug::getDebugLevel();
     debug::setDebugLevel(dblError);
-    bool permissive = getParameter("parser_permissive", _ppsc_current_scope);
+    bool permissive = getParameter("permissive_parser", _ppsc_current_scope);
     debug::setDebugLevel(dbl);
 
-    parser_permissive = permissive;
-    AKANTU_DEBUG_INFO("Parser switched permissive mode to " << std::boolalpha << parser_permissive);
+    permissive_parser = permissive;
+    AKANTU_DEBUG_INFO("Parser switched permissive mode to " << std::boolalpha << permissive_parser);
   } catch (debug::Exception & e) {
   }
 

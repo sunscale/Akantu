@@ -373,7 +373,7 @@ public:
 
   std::string getLastParsedFile() const;
 
-  static bool isPermissive() { return parser_permissive; }
+  static bool isPermissive() { return permissive_parser; }
 public:
 
   static Real         parseReal  (const std::string & value, const ParserSection & section);
@@ -385,8 +385,8 @@ protected:
   static T parseType(const std::string & value, Grammar & grammar);
 
 protected:
-  friend class Parsable;
-  static bool parser_permissive;
+  //  friend class Parsable;
+  static bool permissive_parser;
   std::string last_parsed_file;
 };
 
