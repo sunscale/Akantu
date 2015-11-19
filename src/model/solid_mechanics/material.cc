@@ -136,7 +136,7 @@ void Material::initialize() {
   gradu.initialize(spatial_dimension * spatial_dimension);
   stress.initialize(spatial_dimension * spatial_dimension);
 
-  potential_energy.initialize();
+  potential_energy.initialize(1);
 
   this->model->registerEventHandler(*this);
 }
