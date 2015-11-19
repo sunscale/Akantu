@@ -220,7 +220,7 @@ void IntegratorGauss<kind>::precomputeJacobiansOnQuadraturePoints(const Array<Re
                                  if(el.ghost_type == ghost_type) {
                                    Array<Real>::vector_iterator jacobians_it =
                                      jacobians(el.type, el.ghost_type).begin(nb_quadrature_points);
-                                   out << " jacobian: " << jacobians_it[el.element];
+                                   out << " jacobian: " << Vector<Real>(jacobians_it[el.element]);
                                  }
                                  return out.str();
                                });

@@ -775,7 +775,7 @@ void DistributedSynchronizer::asynchronousSynchronize(DataAccessor & data_access
     communication.recv_requests.push_back(static_communicator->asyncReceive(buffer.storage(),
 									    rsize,
 									    p,
-									    this->genTagFromID(tag)));
+                                                                            this->genTagFromID(tag)));
   }
 
   AKANTU_DEBUG_OUT();

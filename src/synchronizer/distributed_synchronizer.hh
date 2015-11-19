@@ -100,6 +100,14 @@ public:
                                  const ElementTypeMapArray<UInt> & new_numbering,
                                  const RemovedElementsEvent & event);
 
+  virtual void onNodesAdded  (const Array<UInt> & nodes_list,
+                              const NewNodesEvent & event) {};
+  virtual void onNodesRemoved(const Array<UInt> & nodes_list,
+                              const Array<UInt> & new_numbering,
+                              const RemovedNodesEvent & event) {};
+  virtual void onElementsAdded  (const Array<Element> & elements_list,
+                                 const NewElementsEvent & event) {};
+
   /// filter elements of a certain kind and copy them into a new synchronizer
   void filterElementsByKind(DistributedSynchronizer * new_synchronizer,
 			    ElementKind kind);

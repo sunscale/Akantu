@@ -123,11 +123,11 @@ private:
   /* Interface                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void onNodesAdded  (__attribute__((unused)) const Array<UInt> & nodes_list,
-                              __attribute__((unused)) const NewNodesEvent & event) {  }
-  virtual void onNodesRemoved(__attribute__((unused)) const Array<UInt> & nodes_list,
-                              __attribute__((unused)) const Array<UInt> & new_numbering,
-                              __attribute__((unused)) const RemovedNodesEvent & event) {  }
+  virtual void onNodesAdded  (const Array<UInt> & nodes_list,
+                              const NewNodesEvent & event) = 0;
+  virtual void onNodesRemoved(const Array<UInt> & nodes_list,
+                              const Array<UInt> & new_numbering,
+                              const RemovedNodesEvent & event) = 0;
 
   virtual void onElementsAdded  (__attribute__((unused)) const Array<Element> & elements_list,
                                  __attribute__((unused)) const NewElementsEvent & event) { }

@@ -44,16 +44,9 @@ namespace SolidMechanicsModelEvent {
     AfterSolveStepEvent(AnalysisMethod & method) : method(method) {}
     AnalysisMethod method;
   };
-  struct BeforeDumpEvent {
-    BeforeDumpEvent() {}
-  };
-  struct BeginningOfDamageIterationEvent {
-    BeginningOfDamageIterationEvent() {}
-  };
-  struct AfterDamageEvent {
-    AfterDamageEvent() {}
-  };
-
+  struct BeforeDumpEvent { BeforeDumpEvent() {} };
+  struct BeginningOfDamageIterationEvent { BeginningOfDamageIterationEvent() {} };
+  struct AfterDamageEvent { AfterDamageEvent() {} };
 }
 
 

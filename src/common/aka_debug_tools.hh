@@ -219,6 +219,12 @@ namespace akantu {
 	}
       }
 
+      virtual void onNodesAdded  (const Array<UInt> & nodes_list,
+				  const NewNodesEvent & event) {}
+      virtual void onNodesRemoved(const Array<UInt> & nodes_list,
+				  const Array<UInt> & new_numbering,
+				  const RemovedNodesEvent & event) {}
+
     public:
       // Actions
       template<typename T>
