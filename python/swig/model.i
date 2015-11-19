@@ -1,3 +1,8 @@
+%{
+  #include "boundary_condition_python_functor.hh"
+%}
+
+
 namespace akantu {
   %ignore Model::createSynchronizerRegistry;
   %ignore Model::createParallelSynch;
@@ -30,9 +35,11 @@ namespace akantu {
 
 %rename(FreeBoundaryDirichlet) akantu::BC::Dirichlet::FreeBoundary;
 %rename(FreeBoundaryNeumann) akantu::BC::Neumann::FreeBoundary;
+%rename(PythonBoundary) akantu::BC::Dirichlet::PythonFunctor;
 
 %include "boundary_condition_functor.hh"
 %include "boundary_condition.hh"
+%include "boundary_condition_python_functor.hh"
 %include "communication_buffer.hh"
 %include "data_accessor.hh"
 %include "synchronizer.hh"

@@ -208,35 +208,36 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
   const SolidMechanicsModelOptions & smm_options =
     dynamic_cast<const SolidMechanicsModelOptions &>(options);
 
-  method = smm_options.analysis_method;
+  this->method = smm_options.analysis_method;
 
   // initialize the vectors
-  initArrays();
+  this->initArrays();
 
   // set the initial condition to 0
-  force->clear();
-  velocity->clear();
-  acceleration->clear();
-  displacement->clear();
+  this->force->clear();
+  this->velocity->clear();
+  this->acceleration->clear();
+  this->displacement->clear();
 
   // initialize pbc
-  if(pbc_pair.size()!=0)
-    initPBC();
+  if(this->pbc_pair.size()!=0)
+    this->initPBC();
 
   // initialize the time integration schemes
-  switch(method) {
+  switch(this->method) {
   case _explicit_lumped_mass:
-    initExplicit();
+    this->initExplicit();
     break;
   case _explicit_consistent_mass:
-    initSolver();
-    initExplicit();
+    this->initSolver();
+    this->initExplicit();
     break;
   case _implicit_dynamic:
-    initImplicit(true);
+    this->initImplicit(true);
     break;
   case _static:
-    initImplicit(false);
+    this->initImplicit(false);
+    this->initArraysPreviousDisplacment();
     break;
   default:
     AKANTU_EXCEPTION("analysis method not recognised by SolidMechanicsModel");
@@ -250,17 +251,17 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
 
   // initialize the materials
   if(this->parser->getLastParsedFile() != "") {
-    instantiateMaterials();
+    this->instantiateMaterials();
   }
 
   if(!smm_options.no_init_materials) {
-    initMaterials();
+    this->initMaterials();
   }
 
-  if(increment_flag)
-    initBC(*this, *displacement, *increment, *force);
+  if(this->increment_flag)
+    this->initBC(*this, *this->displacement, *this->increment, *this->force);
   else
-    initBC(*this, *displacement, *force);
+    this->initBC(*this, *this->displacement, *this->force);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -314,11 +315,11 @@ void SolidMechanicsModel::initExplicit(AnalysisMethod analysis_method) {
 void SolidMechanicsModel::initArraysPreviousDisplacment() {
   AKANTU_DEBUG_IN();
 
-  SolidMechanicsModel::setIncrementFlagOn();
-  UInt nb_nodes = mesh.getNbNodes();
+  this->setIncrementFlagOn();
+  UInt nb_nodes = this->mesh.getNbNodes();
   std::stringstream sstr_disp_t;
-  sstr_disp_t << id << ":previous_displacement";
-  previous_displacement = &(alloc<Real > (sstr_disp_t.str(), nb_nodes, spatial_dimension, 0.));
+  sstr_disp_t << this->id << ":previous_displacement";
+  this->previous_displacement = &(this->alloc<Real > (sstr_disp_t.str(), nb_nodes, this->spatial_dimension, 0.));
 
   AKANTU_DEBUG_OUT();
 }
@@ -1042,8 +1043,6 @@ bool SolidMechanicsModel::testConvergenceIncrement(Real tolerance, Real & error)
 void SolidMechanicsModel::implicitPred() {
   AKANTU_DEBUG_IN();
 
-  if(previous_displacement) previous_displacement->copy(*displacement);
-
   if(method == _implicit_dynamic)
     integrator->integrationSchemePred(time_step,
 				      *displacement,
@@ -1278,29 +1277,34 @@ Real SolidMechanicsModel::getKineticEnergy(const ElementType & type, UInt index)
 Real SolidMechanicsModel::getExternalWork() {
   AKANTU_DEBUG_IN();
 
-  Real * velo = velocity->storage();
-  Real * forc = force->storage();
-  Real * resi = residual->storage();
-  bool * boun = blocked_dofs->storage();
+  Real * incr_or_velo = NULL;
+  if(this->method == _static){
+    incr_or_velo = this->increment->storage();
+  }
+  else
+   incr_or_velo =  this->velocity->storage();
+  Real * forc = this->force->storage();
+  Real * resi = this->residual->storage();
+  bool * boun = this->blocked_dofs->storage();
 
   Real work = 0.;
 
-  UInt nb_nodes = mesh.getNbNodes();
+  UInt nb_nodes = this->mesh.getNbNodes();
 
   for (UInt n = 0; n < nb_nodes; ++n) {
-    bool is_local_node = mesh.isLocalOrMasterNode(n);
-    bool is_not_pbc_slave_node = !isPBCSlaveNode(n);
+    bool is_local_node = this->mesh.isLocalOrMasterNode(n);
+    bool is_not_pbc_slave_node = !this->isPBCSlaveNode(n);
     bool count_node = is_local_node && is_not_pbc_slave_node;
 
-    for (UInt i = 0; i < spatial_dimension; ++i) {
+    for (UInt i = 0; i < this->spatial_dimension; ++i) {
       if (count_node) {
 	if(*boun)
-	  work -= *resi * *velo * time_step;
+	  work -= *resi * *incr_or_velo;
 	else
-	  work += *forc * *velo * time_step;
+	  work += *forc * *incr_or_velo;
       }
 
-      ++velo;
+      ++incr_or_velo;
       ++forc;
       ++resi;
       ++boun;
@@ -1309,6 +1313,8 @@ Real SolidMechanicsModel::getExternalWork() {
 
   StaticCommunicator::getStaticCommunicator().allReduce(&work, 1, _so_sum);
 
+  if(this->method != _static)
+    work *= this->time_step;
   AKANTU_DEBUG_OUT();
   return work;
 }

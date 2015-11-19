@@ -477,8 +477,11 @@ void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
       jacobian_matrix->add(*mass_matrix, c);
 
 #if !defined(AKANTU_NDEBUG)
-    if(mass_matrix && AKANTU_DEBUG_TEST(dblDump))
-      mass_matrix->saveMatrix("M.mtx");
+    if(mass_matrix && AKANTU_DEBUG_TEST(dblDump)) {
+      UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+      std::stringstream sstr; sstr << "M" << prank << ".mtx";
+      mass_matrix->saveMatrix(sstr.str());
+    }
 #endif
 
     if(velocity_damping_matrix)
@@ -487,9 +490,13 @@ void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
     jacobian_matrix->applyBoundary(*blocked_dofs, block_val);
 
 #if !defined(AKANTU_NDEBUG)
-    if(AKANTU_DEBUG_TEST(dblDump))
-      jacobian_matrix->saveMatrix("J.mtx");
+    if(AKANTU_DEBUG_TEST(dblDump)) {
+      UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+      std::stringstream sstr; sstr << "J" << prank << ".mtx";
+      jacobian_matrix->saveMatrix(sstr.str());
+    }
 #endif
+
     solver->factorize();
   }
 
@@ -581,7 +588,16 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
   error = 0.;
   if(criteria == _scc_residual) {
     converged = this->testConvergence<criteria> (tolerance, error);
-    if(converged) return converged;
+    if (converged) {
+      EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
+
+      if(increment_flag && previous_displacement) {
+	this->updateIncrement();
+      }
+
+      if(previous_displacement) previous_displacement->copy(*displacement);
+      return converged;
+    }
   }
 
   do {
@@ -624,6 +640,12 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
 
   if (converged) {
     EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
+
+    if(increment_flag && previous_displacement) {
+      this->updateIncrement();
+    }
+
+    if(previous_displacement) previous_displacement->copy(*displacement);
   } else if(this->n_iter == max_iteration) {
     AKANTU_DEBUG_WARNING("[" << criteria << "] Convergence not reached after "
                          << std::setw(std::log10(max_iteration)) << this->n_iter <<

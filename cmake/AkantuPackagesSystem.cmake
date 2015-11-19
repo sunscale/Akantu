@@ -139,17 +139,17 @@ function(package_get_element_lists)
     if(_kind)
       string(TOUPPER "${_kind}" _u_kind)
       if(_element_types)
-	set(_boosted_element_types "${_boosted_element_types}
+        set(_boosted_element_types "${_boosted_element_types}
 #define AKANTU_ek_${_kind}_ELEMENT_TYPE\t")
-	_transfer_list_to_boost_seq(_element_types _boosted_element_types)
-	set(_boosted_element_types "${_boosted_element_types}\n")
+        _transfer_list_to_boost_seq(_element_types _boosted_element_types)
+        set(_boosted_element_types "${_boosted_element_types}\n")
 
-	# defininf the kinds variables
-	set(_element_kinds "${_element_kinds}
+        # defininf the kinds variables
+        set(_element_kinds "${_element_kinds}
 #define AKANTU_${_u_kind}_KIND\t(_ek_${_kind})")
 
-	# defining the full list of element
-	set(_all_element_types "${_all_element_types}\t\\
+        # defining the full list of element
+        set(_all_element_types "${_all_element_types}\t\\
   AKANTU_ek_${_kind}_ELEMENT_TYPE")
       endif()
 
@@ -160,13 +160,13 @@ function(package_get_element_lists)
 
       # defining the macros
       set(_boost_macros "${_boost_macros}
-#define AKANTU_BOOST_${_u_kind}_ELEMENT_SWITCH(macro)			\\
- AKANTU_BOOST_ELEMENT_SWITCH(macro,					\\
-			      AKANTU_ek_${_kind}_ELEMENT_TYPE)
+#define AKANTU_BOOST_${_u_kind}_ELEMENT_SWITCH(macro)                   \\
+ AKANTU_BOOST_ELEMENT_SWITCH(macro,                                     \\
+                              AKANTU_ek_${_kind}_ELEMENT_TYPE)
 
-#define AKANTU_BOOST_${_u_kind}_ELEMENT_LIST(macro)			\\
-  AKANTU_BOOST_APPLY_ON_LIST(macro,					\\
-			     AKANTU_ek_${_kind}_ELEMENT_TYPE)
+#define AKANTU_BOOST_${_u_kind}_ELEMENT_LIST(macro)                     \\
+  AKANTU_BOOST_APPLY_ON_LIST(macro,                                     \\
+                             AKANTU_ek_${_kind}_ELEMENT_TYPE)
 ")
 
       list(APPEND _aka_fe_lists ${_fe_engine_lists})
@@ -281,97 +281,3 @@ function(package_get_all_material_lists lists)
 endfunction()
 
 #-------------------------------------------------------------------------------
-function(add_extra_mpi_options)
-  package_is_activated(MPI _act)
-  if(_act)
-    unset(MPI_ID CACHE)
-    package_get_include_dir(MPI _include_dir)
-    foreach(_inc_dir ${_include_dir})
-      if(EXISTS "${_inc_dir}/mpi.h")
-        if(NOT MPI_ID)
-          file(STRINGS "${_inc_dir}/mpi.h" _mpi_version REGEX "#define MPI_(SUB)?VERSION .*")
-          foreach(_ver ${_mpi_version})
-            string(REGEX MATCH "MPI_(VERSION|SUBVERSION) *([0-9]+)" _tmp "${_ver}")
-            set(_mpi_${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
-          endforeach()
-          set(MPI_VERSION "${_mpi_VERSION}.${_mpi_SUBVERSION}" CACHE INTERNAL "")
-        endif()
-
-        if(NOT MPI_ID)
-          # check if openmpi
-          file(STRINGS "${_inc_dir}/mpi.h" _ompi_version REGEX "#define OMPI_.*_VERSION .*")
-          if(_ompi_version)
-            set(MPI_ID "OpenMPI" CACHE INTERNAL "")
-            foreach(_version ${_ompi_version})
-              string(REGEX MATCH "OMPI_(.*)_VERSION (.*)" _tmp "${_version}")
-              if(_tmp)
-                set(MPI_VERSION_${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
-              endif()
-            endforeach()
-            set(MPI_ID_VERSION "${MPI_VERSION_MAJOR}.${MPI_VERSION_MINOR}.${MPI_VERSION_RELEASE}" CACHE INTERNAL "")
-          endif()
-        endif()
-
-        if(NOT MPI_ID)
-          # check if intelmpi
-          file(STRINGS "${_inc_dir}/mpi.h" _impi_version REGEX "#define I_MPI_VERSION .*")
-          if(_impi_version)
-            set(MPI_ID "IntelMPI" CACHE INTERNAL "")
-            string(REGEX MATCH "I_MPI_VERSION \"(.*)\"" _tmp "${_impi_version}")
-            if(_tmp)
-              set(MPI_ID_VERSION "${CMAKE_MATCH_1}" CACHE INTERNAL "")
-            endif()
-          endif()
-        endif()
-
-        if(NOT MPI_ID)
-          # check if mvapich2
-          file(STRINGS "${_inc_dir}/mpi.h" _mvapich2_version REGEX "#define MVAPICH2_VERSION .*")
-          if(_mvapich2_version)
-            set(MPI_ID "MPVAPICH2" CACHE INTERNAL "")
-            string(REGEX MATCH "MVAPICH2_VERSION \"(.*)\"" _tmp "${_mvapich2_version}")
-            if(_tmp)
-              set(MPI_ID_VERSION "${CMAKE_MATCH_1}" CACHE INTERNAL "")
-            endif()
-          endif()
-        endif()
-
-        if(NOT MPI_ID)
-          # check if mpich (mpich as to be checked after all the mpi that derives from it)
-          file(STRINGS "${_inc_dir}/mpi.h" _mpich_version REGEX "#define MPICH_VERSION .*")
-          if(_mpich_version)
-            set(MPI_ID "MPICH" CACHE INTERNAL "")
-            string(REGEX MATCH "I_MPI_VERSION \"(.*)\"" _tmp "${_mpich_version}")
-            if(_tmp)
-              set(MPI_ID_VERSION "${CMAKE_MATCH_1}" CACHE INTERNAL "")
-            endif()
-          endif()
-        endif()
-      endif()
-    endforeach()
-
-    if(MPI_ID STREQUAL "IntelMPI" OR
-        MPI_ID STREQUAL "MPICH" OR
-        MPI_ID STREQUAL "MVAPICH2")
-      set(_flags "-DMPICH_IGNORE_CXX_SEEK")
-    elseif(MPI_ID STREQUAL "OpenMPI")
-      set(_flags "-DOMPI_SKIP_MPICXX")
-
-      package_is_activated(core_cxx11 _act)
-      if(_act)
-        set( _flags "${_flags} -Wno-literal-suffix")
-      endif()
-    endif()
-
-    message(STATUS "MPI ID: ${MPI_ID} ${MPI_ID_VERSION} - (MPI spec v${MPI_VERSION})")
-
-    set(MPI_EXTRA_COMPILE_FLAGS "${_flags}" CACHE STRING "Extra flags for MPI" FORCE)
-    mark_as_advanced(MPI_EXTRA_COMPILE_FLAGS)
-
-    package_get_source_files(MPI _srcs _pub _priv)
-    list(APPEND _srcs "common/aka_error.cc")
-
-    set_property(SOURCE ${_srcs} PROPERTY COMPILE_FLAGS "${_flags}")
-  endif()
-
-endfunction()

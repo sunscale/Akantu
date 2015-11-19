@@ -51,7 +51,7 @@ namespace akantu {
   };
 
   template<class T>
-  size_t hash(const T & t) {
+  std::size_t hash(const T & t) {
     typedef @AKANTU_HASH_TYPE@<T> hash_type;
     return hash_type()(t);
   };
@@ -66,6 +66,7 @@ namespace akantu {
 #define __END_AKANTU_UNORDERED_MAP__ \
   @AKANTU_UNORDERED_MAP_NAMESPACE_END@
 
+#cmakedefine AKANTU_HAS_STRDUP
 
 #cmakedefine AKANTU_USE_BLAS
 #cmakedefine AKANTU_USE_LAPACK
@@ -96,6 +97,7 @@ namespace akantu {
 
 #cmakedefine AKANTU_STRUCTURAL_MECHANICS
 #cmakedefine AKANTU_HEAT_TRANSFER
+#cmakedefine AKANTU_PYTHON_INTERFACE
 
 #cmakedefine AKANTU_COHESIVE_ELEMENT
 #cmakedefine AKANTU_PARALLEL_COHESIVE_ELEMENT

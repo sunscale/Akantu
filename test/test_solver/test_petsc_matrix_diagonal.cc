@@ -134,6 +134,7 @@ int main(int argc, char *argv[]) {
 
   if(error > Math::getTolerance() ) {
     std::cout << "error in the stiffness matrix!!!" << std::cout;
+    finalize();
     return EXIT_FAILURE;
   }
 

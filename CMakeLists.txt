@@ -112,11 +112,6 @@ include(CMakeDetermineCCompiler)
 #===============================================================================
 # Dependencies
 #===============================================================================
-option(AKANTU_PYTHON_INTERFACE "Generates the Akantu Python module" OFF)
-if(AKANTU_PYTHON_INTERFACE)
-  list(APPEND AKANTU_BOOST_COMPONENTS python)
-endif()
-
 declare_akantu_types()
 
 package_list_packages(${PROJECT_SOURCE_DIR}/packages
@@ -184,7 +179,8 @@ endif()
 #===============================================================================
 # Install and Packaging
 #===============================================================================
-if(AKANTU_PYTHON_INTERFACE)
+package_is_activated(python_interface _python_act)
+if(_python_act)
   add_subdirectory(python)
 #  add_subdirectory(akantu4py)
 endif()

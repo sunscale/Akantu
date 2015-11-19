@@ -70,10 +70,8 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       if(!displacement_tmp) {
         displacement_tmp = new Array<Real>(*(this->displacement));
       } else {
-        (*displacement_tmp).resize(this->displacement->getSize());
-        //displacement_tmp->resize(this->displacement->getSize());
-        (*displacement_tmp).copy(*(this->displacement));
-        //displacement_tmp->copy(*(this->displacement));
+        displacement_tmp->resize(this->displacement->getSize());
+        displacement_tmp->copy(*(this->displacement));
       }
       tmp_swap = displacement_tmp;
       displacement_tmp = this->displacement;
@@ -162,14 +160,12 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
     } while (!converged && iter < max_iteration);
 
-    //    dump();
-    //    dump("cohesive elements");
-
-    if (load_reduction && (error < tolerance * 1000)) converged = true;
+    if (load_reduction && (error < tolerance * 1.0e8)) converged = true;
 
     if (converged) {
       ////      EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
       // !!! add sendEvent to call computeCauchyStress !!!!
+     
       if (prank==0){
         std::cout << "Error after convergence: " << error << std::endl;
         std::cout << "no. of iterations: " << iter << std::endl;
@@ -199,20 +195,11 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       this->acceleration = tmp_swap;
 
 
-      if (converged || (load_reduction && error < 1.0)){
-        //        UInt nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive);
-        //        this->checkCohesiveStress();
-        //        UInt new_nb_cohesive_elements = this->mesh.getNbElement(this->spatial_dimension, _not_ghost, _ek_cohesive);
+      //      if (converged || (load_reduction && error < tolerance * 1.0e9)){
+      if (converged){
 
         UInt new_cohesive_elements = checkCohesiveStress();
 
-        //        UInt nb_cohe[2];
-        //nb_cohe[0] = nb_cohesive_elements;
-        //nb_cohe[1] = new_nb_cohesive_elements;
-
-        //        StaticCommunicator::getStaticCommunicator().allReduce(nb_cohe, 2, _so_sum);
-
-        //        if(nb_cohe[0] == nb_cohe[1]) {
         if(new_cohesive_elements == 0){
           insertion_new_element = false;
         } else {
@@ -245,6 +232,13 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
   //  if ((is_extrinsic && converged) || (is_extrinsic && load_reduction && error < 1.))  {
   if ((is_extrinsic && converged) || (is_extrinsic && load_reduction))  {
 
+    for(UInt m = 0; m < materials.size(); ++m) {
+      try {
+	MaterialCohesive & mat = dynamic_cast<MaterialCohesive &>(*materials[m]);
+	mat.computeEnergies();
+      } catch (std::bad_cast & bce) { }
+    }
+
     EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
 
     this->displacement->copy(*displacement_tmp);
@@ -254,6 +248,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
     delete displacement_tmp;
     delete velocity_tmp;
     delete acceleration_tmp;
+
   }
 
   return insertion_new_element;

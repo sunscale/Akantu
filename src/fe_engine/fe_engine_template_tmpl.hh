@@ -551,7 +551,7 @@ void FEEngineTemplate<I, S, kind>::interpolateOnIntegrationPoints(const Array<Re
 
       interpolateOnIntegrationPoints(u,
 				     quad,
-				     mesh.getSpatialDimension(),
+				     quad.getNbComponent(),
 				     type,
 				     ghost_type,
 				     *filter);

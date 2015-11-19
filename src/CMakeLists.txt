@@ -89,8 +89,6 @@ list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
   ${CMAKE_CURRENT_BINARY_DIR}/material_list.hh)
 list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
 
-add_extra_mpi_options()
-
 #===========================================================================
 # header precompilation
 #===========================================================================
@@ -139,10 +137,12 @@ set_target_properties(akantu PROPERTIES PUBLIC_HEADER "${AKANTU_LIBRARY_PUBLIC_H
 
 list(APPEND AKANTU_EXPORT_LIST akantu)
 
+# TODO separate public from private headers
 install(TARGETS akantu
   EXPORT ${AKANTU_TARGETS_EXPORT}
   LIBRARY DESTINATION lib COMPONENT lib
   ARCHIVE DESTINATION lib COMPONENT lib
+  RUNTIME DESTINATION bin COMPONENT bin
   PUBLIC_HEADER DESTINATION include/akantu/ COMPONENT dev
   )
 

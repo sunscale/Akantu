@@ -104,10 +104,20 @@ inline void Dumpable::addDumpFieldExternalToDumper(const std::string & dumper_na
                                                    UInt spatial_dimension,
                                                    const GhostType & ghost_type,
                                                    const ElementKind & element_kind) {
-  dumper::Field * field_cont = new dumper::ElementalField<T>(field,
-							     spatial_dimension,
-							     ghost_type,
-							     element_kind);
+
+  dumper::Field * field_cont;
+#if defined(AKANTU_IGFEM)
+  if (element_kind == _ek_igfem) {
+    field_cont = new dumper::IGFEMElementalField<T>(field,
+						    spatial_dimension,
+						    ghost_type,
+						    element_kind);
+  } else 
+#endif
+    field_cont = new dumper::ElementalField<T>(field,
+					       spatial_dimension,
+					       ghost_type,
+					       element_kind);
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerField(field_id, field_cont);
 }

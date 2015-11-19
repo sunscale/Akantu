@@ -46,8 +46,6 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
   parent_type(mesh),
   tol_intersection_on_node(1e-10)
 {
-  this->intersection_points = new Array<Real>(0,dim);
-
 #if defined(AKANTU_IGFEM)
   if( (type == _triangle_3) || (type == _igfem_triangle_4) || (type == _igfem_triangle_5) ){
     const_cast<UInt &>(this->nb_seg_by_el) = 3;
@@ -59,6 +57,9 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
     AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
 #endif
 
+  // initialize the intersection pointsss array with the spatial dimension
+  this->intersection_points = new Array<Real>(0,dim);
+  //  A maximum is set to the number of intersection nodes per element to limit the size of new_node_per_elem: 2 in 2D and 4 in 3D
   this->new_node_per_elem = new Array<UInt>(0, 1 + 4 * (dim-1));
 }
 
@@ -96,28 +97,34 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
     it = this->factory.getPrimitiveList().begin(),
     end= this->factory.getPrimitiveList().end();
 
-  for (; it != end ; ++it) {
+  for (; it != end ; ++it) { // loop on the primitives (segments)
     std::list<sk_inter_res> s_results;
     CGAL::intersection(*it, query, std::back_inserter(s_results));
 
     if (s_results.size() == 1) { // just one point
       if (pair_type * pair = boost::get<pair_type>(&s_results.front())) {
         if (pair->second == 1) { // not a point tangent to the sphere
-          // Addition of the new node
+          // the intersection point written as a vector
           Vector<Real> new_node(dim, 0.0);
           Cartesian::Point_3 point(CGAL::to_double(pair->first.x()),
                                    CGAL::to_double(pair->first.y()),
                                    CGAL::to_double(pair->first.z()));
-
           for (UInt i = 0 ; i < dim ; i++) {
             new_node(i) = point[i];
           }
 
-          bool is_on_mesh = false, is_new = true;
-          // check if we already compute this intersection for a neighboor element
+	  /// boolean to decide wheter intersection point is on a standard node of the mesh or not
+          bool is_on_mesh = false;
+	  /// boolean to decide if this intersection point has been already computed for a neighbor element
+	  bool is_new = true;
+        
+	  /// check if intersection point has already been computed
 	  UInt n = nb_old_nodes;
+
+          // check if we already compute this intersection and add it as a node for a neighboor element of another type
 	  Array<Real>::vector_iterator existing_node = nodes.begin(dim);
-	  for (; n < nodes.getSize() ; ++n) {
+
+	  for (; n < nodes.getSize() ; ++n) {// loop on the nodes from nb_old_nodes
 	    if (Math::are_vector_equal(dim, new_node.storage(), existing_node[n].storage())) {
 	      is_new = false;
 	      break;
@@ -133,49 +140,44 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	      }
 	    }
 	  }
-
+	  
+	  // get the initial and final points of the primitive (segment) and write them as vectors
 	  Cartesian::Point_3 source_cgal(CGAL::to_double(it->source().x()),
 					 CGAL::to_double(it->source().y()),
 					 CGAL::to_double(it->source().z()));
 	  Cartesian::Point_3 target_cgal(CGAL::to_double(it->target().x()),
 					 CGAL::to_double(it->target().y()),
 					 CGAL::to_double(it->target().z()));
-
 	  Vector<Real> source(dim), target(dim);
 	  for (UInt i = 0 ; i < dim ; i++) {
 	    source(i) = source_cgal[i];
 	    target(i) = target_cgal[i];
 	  }
 
-	  // Check if we are close from a node of the segment
+	  // Check if we are close from a node of the primitive (segment)
 	  if (Math::are_vector_equal(dim, source.storage(), new_node.storage()) ||
 	      Math::are_vector_equal(dim, target.storage(), new_node.storage())) {
 	    is_on_mesh = true;
 	    is_new = false;
 	  }
 
-	  if (is_new) {
+	  if (is_new) {// if the intersection point is a new one add it to the list
 	    this->intersection_points->push_back(new_node);
 	    nb_node++;
 	  }
 
-	  // deduce ghost type and element id
+	  // deduce the element id
 	  UInt element_id = it->id();
 
-	  if (!is_on_mesh) {
+	  // fill the new_node_per_elem array
+	  if (!is_on_mesh) { // if the node is not on a mesh node
 	    UInt & nb_new_nodes_per_el = (*this->new_node_per_elem)(element_id, 0);
 	    nb_new_nodes_per_el += 1;
+	    AKANTU_DEBUG_ASSERT(2 * nb_new_nodes_per_el < this->new_node_per_elem->getNbComponent(),
+				"You might have to interface crossing the same material");
 	    (*this->new_node_per_elem)(element_id, (2 * nb_new_nodes_per_el) - 1) = n;
 	    (*this->new_node_per_elem)(element_id, 2 * nb_new_nodes_per_el) = it->segId();
-	  } else {
-	    // if intersection is at a node, write node number (in el) in pennultimate position
-	    if (Math::are_vector_equal(dim, source.storage(), new_node.storage())) {
-	      (*this->new_node_per_elem)(element_id, ((*this->new_node_per_elem).getNbComponent() - 2)) = it->segId();
-	    } else {
-	      (*this->new_node_per_elem)(element_id, ((*this->new_node_per_elem).getNbComponent() - 2)) =
-		(it->segId()+1) % this->nb_seg_by_el;
-	    }
-	  }
+	  } 
 	}
       }
     }

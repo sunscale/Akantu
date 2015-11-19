@@ -45,7 +45,6 @@ package_declare_sources(contact
   contact/surface.cc
   contact/zone.cc
   contact/contact_impl.cc
-  model/model_manager.cc
 
   # include files
   contact/contact_common.hh
@@ -60,8 +59,6 @@ package_declare_sources(contact
   contact/surface.hh
   contact/zone.hh
   contact/contact_impl.hh
-  model/model_manager.hh
-  model/contact_manager0.hh
   )
 
 

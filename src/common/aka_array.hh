@@ -189,13 +189,13 @@ public:
   /* ------------------------------------------------------------------------ */
 
   /// Get an iterator that behaves like a pointer T * to the first entry
-  inline iterator<T> begin();
+  inline scalar_iterator begin();
   /// Get an iterator that behaves like a pointer T * to the end of the Array
-  inline iterator<T> end();
+  inline scalar_iterator end();
   /// Get a const_iterator to the beginging of an Array of scalar
-  inline const_iterator<T> begin() const;
+  inline const_scalar_iterator begin() const;
   /// Get a const_iterator to the end of an Array of scalar
-  inline const_iterator<T> end() const;
+  inline const_scalar_iterator end() const;
 
   /* ------------------------------------------------------------------------ */
   /// Get a vector_iterator on the begining of the Array
@@ -260,6 +260,10 @@ public:
   virtual void resize(UInt size);
 
   /// change the number of components by interlacing data
+  /// @param multiplicator number of interlaced components add
+  /// @param block_size blocks of data in the array
+  /// Examaple for block_size = 2, multiplicator = 2
+  /// array = oo oo oo -> new array = oo nn nn oo nn nn oo nn nn 
   void extendComponentsInterlaced(UInt multiplicator, UInt stride);
 
   /// search elem in the vector, return  the position of the first occurrence or -1 if not found
@@ -321,13 +325,6 @@ public:
   inline reference operator[](UInt i);
   /// return a const reference to the ith component of the 1D array
   inline const_reference operator[](UInt i) const;
-  
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// get the number of tuples contained in the array
-  UInt getSize() const{ return this->size; };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

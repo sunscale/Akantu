@@ -2,13 +2,12 @@
   #include "aka_csr.hh"
 %}
 
-
 namespace akantu {
   %ignore CSR::begin;
 }
 
 %inline %{
-namespace akantu{
+namespace akantu {
   template <typename T>
   class CSRIterator{
 
@@ -17,7 +16,7 @@ namespace akantu{
     this->it =  csr.begin(row);
     this->end =  csr.end(row);
   };
-  
+
   ~CSRIterator(){
   };
 
@@ -27,9 +26,9 @@ namespace akantu{
     ++this->it;
     return ref;
   }
-  
+
   private:
-  
+
   typename CSR<T>::iterator it;
   typename CSR<T>::iterator end;
   };
@@ -38,7 +37,7 @@ namespace akantu{
 
 %extend akantu::CSRIterator<akantu::Element>
 {
-%insert("python") %{
+  %insert("python") %{
     def __iter__(self):
        return self
 

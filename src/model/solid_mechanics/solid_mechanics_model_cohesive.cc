@@ -475,13 +475,14 @@ void SolidMechanicsModelCohesive::updateResidual(bool need_initialize) {
 
   SolidMechanicsModel::updateResidual(false);
 
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    try {
-      MaterialCohesive & mat = dynamic_cast<MaterialCohesive &>(**mat_it);
-      mat.computeEnergies();
-    } catch (std::bad_cast & bce) { }
+  if (isExplicit()){
+    for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+      try {
+	MaterialCohesive & mat = dynamic_cast<MaterialCohesive &>(**mat_it);
+	mat.computeEnergies();
+      } catch (std::bad_cast & bce) { }
+    }
   }
-
 
   AKANTU_DEBUG_OUT();
 }

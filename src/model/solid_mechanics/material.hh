@@ -178,16 +178,11 @@ public:
   /// assemble the residual for this material
   virtual void assembleResidual(GhostType ghost_type);
 
-  /// Operations before and after solveStep in implicit
-  virtual void beforeSolveStep() {}
-  virtual void afterSolveStep() {}
-
   /// save the stress in the previous_stress if needed
   virtual void savePreviousState();
 
   /// compute the stresses for this material
   virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
-  virtual void computeAllNonLocalStresses(__attribute__((unused)) GhostType ghost_type = _not_ghost) {};
   virtual void computeAllStressesFromTangentModuli(GhostType ghost_type = _not_ghost);
   virtual void computeAllCauchyStresses(GhostType ghost_type = _not_ghost);
 
@@ -453,6 +448,10 @@ public:
                                ElementTypeMapArray<Real> & internal_flat,
                                const GhostType ghost_type = _not_ghost,
                                ElementKind element_kind = _ek_not_defined) const;
+
+  /// apply a constant eigengrad_u everywhere in the material
+  virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const GhostType = _not_ghost);
+
 protected:
   /// internal variation of the flatten function that is more flexible and can
   /// be used by inherited materials to change some behavior

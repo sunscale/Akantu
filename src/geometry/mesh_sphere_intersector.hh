@@ -75,7 +75,7 @@ public:
     AKANTU_DEBUG_ERROR("This function is not implemented for spheres (It was to generic and has been replaced by computeMeshQueryIntersectionPoint");
   }
 
-  /// Compute intersection points between the mesh and a query
+  /// Compute intersection points between the mesh primitives (segments) and a query (surface in 3D or a curve in 2D), double intersection points for the same primitives are not considered. A maximum is set to the number of intersection nodes per element: 2 in 2D and 4 in 3D
   virtual void computeMeshQueryIntersectionPoint(const SK::Sphere_3 & query, UInt nb_old_nodes);
 
   /// Build the IGFEM mesh

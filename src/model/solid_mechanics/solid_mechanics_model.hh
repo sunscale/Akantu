@@ -321,6 +321,10 @@ public:
   /// reassigns materials depending on the material selector
   virtual void reassignMaterial();
 
+  /// apply a constant eigen_grad_u on all quadrature points of a given material
+  virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const ID & material_name, const GhostType ghost_type = _not_ghost);
+
+
 protected:
   /// register a material in the dynamic database
   template <typename M>
@@ -672,11 +676,17 @@ protected:
   /// Arrays containing the position in the element filter of the material (material's local numbering)
   ElementTypeMapArray<UInt> material_local_numbering;
 
+#ifdef SWIGPYTHON
+public:
+#endif
   /// list of used materials
   std::vector <Material *> materials;
 
   /// mapping between material name and material internal id
   std::map <std::string, UInt> materials_names_to_id;
+#ifdef SWIGPYTHON
+protected:
+#endif
 
   /// class defining of to choose a material
   MaterialSelector *material_selector;

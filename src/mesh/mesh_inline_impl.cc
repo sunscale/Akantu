@@ -321,14 +321,10 @@ inline ElementTypeMapArray<T> & Mesh::registerData(const std::string & data_name
 /* -------------------------------------------------------------------------- */
 inline UInt Mesh::getNbElement(const ElementType & type,
 			       const GhostType & ghost_type) const {
-  AKANTU_DEBUG_IN();
-
   try {
     const Array<UInt> & conn = connectivities(type, ghost_type);
-    AKANTU_DEBUG_OUT();
     return conn.getSize();
   } catch (...) {
-    AKANTU_DEBUG_OUT();
     return 0;
   }
 }
@@ -337,14 +333,12 @@ inline UInt Mesh::getNbElement(const ElementType & type,
 inline UInt Mesh::getNbElement(const UInt spatial_dimension,
 			       const GhostType & ghost_type,
 			       const ElementKind & kind) const {
-  AKANTU_DEBUG_IN();
   UInt nb_element = 0;
 
   type_iterator it   = firstType(spatial_dimension, ghost_type, kind);
   type_iterator last = lastType(spatial_dimension, ghost_type, kind);
   for (; it != last; ++it) nb_element += getNbElement(*it, ghost_type);
 
-  AKANTU_DEBUG_OUT();
   return nb_element;
 }
 
@@ -353,8 +347,6 @@ inline UInt Mesh::getNbElement(const UInt spatial_dimension,
 inline void Mesh::getBarycenter(UInt element, const ElementType & type,
 				Real * barycenter,
 				GhostType ghost_type) const {
-  AKANTU_DEBUG_IN();
-
   UInt * conn_val = getConnectivity(type, ghost_type).storage();
   UInt nb_nodes_per_element = getNbNodesPerElement(type);
 
@@ -368,8 +360,6 @@ inline void Mesh::getBarycenter(UInt element, const ElementType & type,
   }
 
   Math::barycenter(local_coord, nb_nodes_per_element, spatial_dimension, barycenter);
-
-  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */

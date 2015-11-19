@@ -75,7 +75,7 @@ public:
    */
   virtual void computeIntersectionQuery(const Query & query) = 0;
 
-  /// Compute intersection points between the mesh primitives (segments) and a query (surface in 3D or a curve in 2D), double intersection points for the same primitives are not considered
+  /// Compute intersection points between the mesh primitives (segments) and a query (surface in 3D or a curve in 2D), double intersection points for the same primitives are not considered. A maximum intersection node per element is set : 2 in 2D and 4 in 3D
   virtual void computeMeshQueryIntersectionPoint(const Query & query, UInt nb_old_nodes) = 0;
 
   /// Compute intersection between the mesh and a list of queries

@@ -114,16 +114,40 @@ function(_package_load_third_party_script pkg_name)
 
     _package_get_option_name(${pkg_name} _opt_name)
     if(${_opt_name}_VERSION)
-      set(_version " (version ${${_opt_name}_VERSION})")
+      set(_version "${${_opt_name}_VERSION}")
+      set(${_u_name}_VERSION "${_version}" CACHE INTERNAL "" FORCE)
     elseif(${_u_name}_VERSION)
-      set(_version " (version ${${_u_name}_VERSION})")
+      set(_version "${${_u_name}_VERSION}")
     endif()
 
     # load the script
-    message(STATUS "${_name}: building as third-party${_version}")
     include(ExternalProject)
     include(${${pkg_name}_COMPILE_SCRIPT})
+
+    if(${_u_name}_LIBRARIES)
+      _package_set_libraries(${pkg_name} ${${_u_name}_LIBRARIES})
+      list(APPEND _required_vars ${_u_name}_LIBRARIES)
+    endif()
+    if(${_u_name}_INCLUDE_DIR)
+      _package_set_include_dir(${pkg_name} ${${_u_name}_INCLUDE_DIR})
+      list(APPEND _required_vars ${_u_name}_INCLUDE_DIR)
+    endif()
+
+    include(FindPackageHandleStandardArgs)
+    if(CMAKE_VERSION VERSION_GREATER 2.8.12)
+      find_package_handle_standard_args(${_name}
+        REQUIRED_VARS ${_required_vars}
+        VERSION_VAR _version
+        FAIL_MESSAGE "Something was not configured by a the third-party script for ${_name}"
+        )
+    else()
+      find_package_handle_standard_args(${_name}
+        "Something was not configured by a the third-party script for ${_name}"
+        ${_required_vars}
+        )
+    endif()
   endif()
+  set(${pkg_name}_USE_SYSTEM_PREVIOUS FALSE CACHE INTERNAL "" FORCE)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -234,6 +258,10 @@ function(_package_get_include_dir pkg_name include_dir)
   set(${include_dir} ${_include_dir} PARENT_SCOPE)
 endfunction()
 
+function(_package_add_include_dir pkg_name)
+  _package_add_to_variable(INCLUDE_DIR ${pkg_name} ${ARGN})
+endfunction()
+
 # ------------------------------------------------------------------------------
 # Libraries
 # ------------------------------------------------------------------------------
@@ -305,6 +333,22 @@ endfunction()
 
 function(_package_unset_activated pkg_name)
   _package_variable_unset(STATE ${pkg_name})
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Callbacks
+# ------------------------------------------------------------------------------
+function(_package_on_enable_script pkg_name script)
+  string(TOLOWER "${pkg_name}" _l_pkg_name)
+  set(_output_file "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${_l_pkg_name}.cmake")
+  file(WRITE "${_output_file}"
+    "${script}")
+  _package_set_variable(CALLBACK_SCRIPT ${pkg_name} "${_output_file}")
+endfunction()
+
+function(_package_get_callback_script pkg_name filename)
+  _package_get_variable(CALLBACK_SCRIPT ${pkg_name} _filename NOTFOUND)
+  set(${filename} ${_filename} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -625,14 +669,6 @@ function(_package_load_package pkg_name)
       _package_load_external_package(${pkg_name} _activated)
     else()
       _package_load_third_party_script(${pkg_name})
-
-      string(TOUPPER ${${pkg_name}} _u_package)
-      if(${_u_package}_LIBRARIES)
-        _package_set_libraries(${pkg_name} ${${_u_package}_LIBRARIES})
-      endif()
-      if(${_u_package}_INCLUDE_DIR)
-        _package_set_include_dir(${pkg_name} ${${_u_package}_INCLUDE_DIR})
-      endif()
     endif()
 
     if(_activated)
@@ -650,6 +686,20 @@ endfunction()
 # Load external packages
 # ------------------------------------------------------------------------------
 function(_package_load_external_package pkg_name activate)
+  _package_get_real_name(${pkg_name} _real_name)
+  string(TOUPPER ${_real_name} _u_package)
+
+  if(NOT ${pkg_name}_USE_SYSTEM_PREVIOUS)
+    #if system was off before clear the cache of preset variables
+    get_cmake_property(_all_vars VARIABLES)
+    foreach(_var ${_all_vars})
+      if(_var MATCHES "^${_u_package}_.*")
+        unset(${_var} CACHE)
+      endif()
+    endforeach()
+    set(${pkg_name}_USE_SYSTEM_PREVIOUS TRUE CACHE INTERNAL "" FORCE)
+  endif()
+
   _package_get_find_package_extra_options(${pkg_name} _options)
   if(_options)
     cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "PREFIX;FOUND;ARGS" ${_options})
@@ -664,7 +714,6 @@ function(_package_load_external_package pkg_name activate)
     endforeach()
   endif()
 
-  _package_get_real_name(${pkg_name} _real_name)
 
   # find the package
   find_package(${_real_name} REQUIRED ${_opt_pkg_ARGS})
@@ -673,7 +722,6 @@ function(_package_load_external_package pkg_name activate)
   if(_opt_pkg_PREFIX)
     set(_package_prefix ${_opt_pkg_PREFIX})
   else()
-    string(TOUPPER ${${pkg_name}} _u_package)
     set(_package_prefix ${_u_package})
   endif()
 
@@ -697,25 +745,24 @@ function(_package_load_external_package pkg_name activate)
     foreach(_prefix ${_prefix_to_consider})
       # Generate the include dir for the package
       if(DEFINED ${_prefix}_INCLUDE_DIRS)
-        _package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIRS})
+        _package_set_include_dir(${pkg_name} ${${_prefix}_INCLUDE_DIRS})
       elseif(DEFINED ${_prefix}_INCLUDE_DIR)
-        _package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_DIR})
+        _package_set_include_dir(${pkg_name} ${${_prefix}_INCLUDE_DIR})
       elseif(DEFINED ${_prefix}_INCLUDE_PATH)
-        _package_set_include_dir(${_pkg_name} ${${_prefix}_INCLUDE_PATH})
+        _package_set_include_dir(${pkg_name} ${${_prefix}_INCLUDE_PATH})
       endif()
 
       # Generate the libraries for the package
       if(DEFINED ${_prefix}_LIBRARIES)
-        _package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARIES})
+        _package_set_libraries(${pkg_name} ${${_prefix}_LIBRARIES})
       elseif(DEFINED ${_prefix}_LIBRARY)
-        _package_set_libraries(${_pkg_name} ${${_prefix}_LIBRARY})
+        _package_set_libraries(${pkg_name} ${${_prefix}_LIBRARY})
       endif()
     endforeach()
 
-    string(TOLOWER "${pkg_name}" _l_pkg_name)
-    set(_output_file "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${_l_pkg_name}.cmake")
-    if(EXISTS "${_output_file}")
-      include(${_output_file})
+    _package_get_callback_script(${pkg_name} _script_file)
+    if(_script_file)
+      include("${_script_file}")
     endif()
   endif()
   set(${activate} ${_act} PARENT_SCOPE)
