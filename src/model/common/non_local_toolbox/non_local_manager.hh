@@ -164,11 +164,11 @@ public:
   virtual void onElementsAdded(const Array<Element> & element_list,
                                const NewElementsEvent & event);
 
-  virtual void onNodesAdded(__attribute__((unsused)) const Array<UInt> & nodes_list,
-                            __attribute__((unsused)) const NewNodesEvent & event) {};
-  virtual void onNodesRemoved(__attribute__((unsused)) const Array<UInt> & nodes_list,
-                              __attribute__((unsused)) const Array<UInt> & new_numbering,
-                              __attribute__((unsused)) const RemovedNodesEvent & event) {};
+  virtual void onNodesAdded(__attribute__((unused)) const Array<UInt> & nodes_list,
+                            __attribute__((unused)) const NewNodesEvent & event) {};
+  virtual void onNodesRemoved(__attribute__((unused)) const Array<UInt> & nodes_list,
+                              __attribute__((unused)) const Array<UInt> & new_numbering,
+                              __attribute__((unused)) const RemovedNodesEvent & event) {};
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
