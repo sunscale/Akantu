@@ -120,6 +120,14 @@ public:
   
   virtual void onElementsAdded(const Array<Element> & element_list,
 			       const NewElementsEvent & event);
+
+  virtual void onNodesAdded  (const Array<UInt> & nodes_list,
+                              const NewNodesEvent & event) {};
+
+  virtual void onNodesRemoved(const Array<UInt> & nodes_list,
+                              const Array<UInt> & new_numbering,
+                              const RemovedNodesEvent & event) {};
+
 protected:
 
   /// create a new neighborhood for a given domain ID
