@@ -33,6 +33,9 @@
 %include "mesh_utils.i"
 %include "model.i"
 %include "solid_mechanics_model.i"
+#if defined(AKANTU_COHESIVE_ELEMENT)
+%include "solid_mechanics_model_cohesive.i"
+#endif
 
 #if defined(AKANTU_HEAT_TRANSFER)
 %include "heat_transfer_model.i"
