@@ -32,39 +32,41 @@
 #include "aka_memory.hh"
 #include "solid_mechanics_model.hh"
 #include "non_local_neighborhood_base.hh"
+#include "mesh_events.hh"
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
-class NonLocalManager : public Memory, 
-			public Parsable, 
-			public MeshEventHandler {
+class NonLocalManager : public Memory,
+                        public Parsable,
+                        public MeshEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NonLocalManager(SolidMechanicsModel & model, 
-		  const ID & id = "non_local_manager",
-		  const MemoryID & memory_id = 0);
+  NonLocalManager(SolidMechanicsModel & model,
+                  const ID & id = "non_local_manager",
+                  const MemoryID & memory_id = 0);
   virtual ~NonLocalManager();
   typedef std::map<ID, NonLocalNeighborhoodBase *> NeighborhoodMap;
   typedef std::pair<ID, ID> KeyCOO;
 
-
-/* -------------------------------------------------------------------------- */
-/* Methods                                                                    */
-/* -------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* -----------------------------------------------------------------------  */
 public:
-  
-  /// initialize the non-local manager: compute pair lists and weights for all neighborhoods
+  /// initialize the non-local manager: compute pair lists and weights for all
+  /// neighborhoods
   virtual void init();
 
   /// insert new quadrature point in the grid
-  inline void insertQuad(const IntegrationPoint & quad, const Vector<Real> & coords, const ID & neighborhood);
+  inline void insertQuad(const IntegrationPoint & quad,
+                         const Vector<Real> & coords, const ID & neighborhood);
 
   /// register non-local neighborhood
-  inline void registerNeighborhood(const ID & neighborhood, const ID & weight_func_id);
+  inline void registerNeighborhood(const ID & neighborhood,
+                                   const ID & weight_func_id);
 
   /// associate a non-local variable to a neighborhood
   void nonLocalVariableToNeighborhood(const ID & id, const ID & neighborhood);
@@ -85,75 +87,63 @@ public:
   inline void registerNonLocalMaterial(Material & new_mat);
 
   /// register a non-local variable
-  inline void registerNonLocalVariable(const ID & variable_name, const ID & nl_variable_name, UInt nb_component);
+  inline void registerNonLocalVariable(const ID & variable_name,
+                                       const ID & nl_variable_name,
+                                       UInt nb_component);
 
   /// average the non-local variables
   void averageInternals(const GhostType & ghost_type = _not_ghost);
 
-  /// average the internals and compute the non-local stresses 
+  /// average the internals and compute the non-local stresses
   virtual void computeAllNonLocalStresses();
 
   /// register a new internal needed for the weight computations
-  inline ElementTypeMapReal & registerWeightFunctionInternal(const ID & field_name);
+  inline ElementTypeMapReal &
+  registerWeightFunctionInternal(const ID & field_name);
 
   /// update the flattened version of the weight function internals
   inline void updateWeightFunctionInternals();
 
   /// get Nb data for synchronization in parallel
-  inline UInt getNbDataForElements(const Array<Element> & elements, const ID & id) const;
+  inline UInt getNbDataForElements(const Array<Element> & elements,
+                                   const ID & id) const;
 
   /// pack data for synchronization in parallel
-  inline void packElementData(CommunicationBuffer & buffer, const Array<Element> & elements, 
-			      SynchronizationTag tag, const ID & id) const;
+  inline void packElementData(CommunicationBuffer & buffer,
+                              const Array<Element> & elements,
+                              SynchronizationTag tag, const ID & id) const;
 
   /// unpack data for synchronization in parallel
-  inline void unpackElementData(CommunicationBuffer & buffer, const Array<Element> & elements, 
-				SynchronizationTag tag, const ID & id) const;
-
-/* -------------------------------------------------------------------------- */
-/* MeshEventHandler inherited members                                         */
-/* -------------------------------------------------------------------------- */
-
-  virtual void onElementsRemoved(const Array<Element> & element_list,
-				 const ElementTypeMapArray<UInt> & new_numbering,
-				 const RemovedElementsEvent & event);
-  
-  virtual void onElementsAdded(const Array<Element> & element_list,
-			       const NewElementsEvent & event);
-
-  virtual void onNodesAdded  (const Array<UInt> & nodes_list,
-                              const NewNodesEvent & event) {};
-
-  virtual void onNodesRemoved(const Array<UInt> & nodes_list,
-                              const Array<UInt> & new_numbering,
-                              const RemovedNodesEvent & event) {};
+  inline void unpackElementData(CommunicationBuffer & buffer,
+                                const Array<Element> & elements,
+                                SynchronizationTag tag, const ID & id) const;
 
 protected:
-
   /// create a new neighborhood for a given domain ID
   void createNeighborhood(const ID & weight_func, const ID & neighborhood);
 
   /// flatten the material internal fields needed for the non-local computations
   void flattenInternal(ElementTypeMapReal & internal_flat,
-		       const GhostType & ghost_type,
-		       const ElementKind & kind);
+                       const GhostType & ghost_type, const ElementKind & kind);
 
   /// set the values of the jacobians
   void setJacobians(const FEEngine & fe_engine, const ElementKind & kind);
 
   /// allocation of eelment type maps
-  void initElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map, 
-			  const FEEngine & fe_engine, const ElementKind el_kind = _ek_regular);
+  void initElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map,
+                          const FEEngine & fe_engine,
+                          const ElementKind el_kind = _ek_regular);
 
   /// resizing of element type maps
   void resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map,
-			    const ElementKind el_kind = _ek_regular);
+                            const ElementKind el_kind = _ek_regular);
 
   /// remove integration points from element type maps
-  void removeIntegrationPointsFromMap(const ElementTypeMapArray<UInt> & new_numbering, UInt nb_component, 
-				      ElementTypeMapReal & element_map, const FEEngine & fee,
-				      const ElementKind el_kind = _ek_regular);
-  
+  void removeIntegrationPointsFromMap(
+      const ElementTypeMapArray<UInt> & new_numbering, UInt nb_component,
+      ElementTypeMapReal & element_map, const FEEngine & fee,
+      const ElementKind el_kind = _ek_regular);
+
   /// allocate the non-local variables
   void initNonLocalVariables();
 
@@ -164,16 +154,38 @@ protected:
   void cleanupExtraGhostElements(ElementTypeMap<UInt> & nb_ghost_protected);
 
   /* ------------------------------------------------------------------------ */
+  /* MeshEventHandler inherited members                                       */
+  /* ------------------------------------------------------------------------ */
+public:
+  virtual void onElementsRemoved(const Array<Element> & element_list,
+				 const ElementTypeMapArray<UInt> & new_numbering,
+				 const RemovedElementsEvent & event);
+  
+  virtual void onElementsAdded(const Array<Element> & element_list,
+                               const NewElementsEvent & event);
+
+  virtual void onElementsChanged(__attribute__((unused)) const Array<Element> & old_elements_list,
+				 __attribute__((unused)) const Array<Element> & new_elements_list,
+				 __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+				 __attribute__((unused)) const ChangedElementsEvent & event) {};
+
+  virtual void onNodesAdded(__attribute__((unused)) const Array<UInt> & nodes_list,
+                            __attribute__((unused)) const NewNodesEvent & event) {};
+  virtual void onNodesRemoved(__attribute__((unused)) const Array<UInt> & nodes_list,
+                              __attribute__((unused)) const Array<UInt> & new_numbering,
+                              __attribute__((unused)) const RemovedNodesEvent & event) {};
+
+  /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
   AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &);
   AKANTU_GET_MACRO_NOT_CONST(Volumes, volumes, ElementTypeMapReal &)
   AKANTU_GET_MACRO(NbStressCalls, compute_stress_calls, UInt);
 
-  inline const Array<Real> & getJacobians(const ElementType & type, const GhostType & ghost_type) {
+  inline const Array<Real> & getJacobians(const ElementType & type,
+                                          const GhostType & ghost_type) {
     return *jacobians(type, ghost_type);
   }
 
@@ -181,19 +193,17 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// the non-local neighborhoods present
   NeighborhoodMap neighborhoods;
 
   /// list of all the non-local materials in the model
-  std::vector<Material * > non_local_materials;
+  std::vector<Material *> non_local_materials;
 
   struct NonLocalVariable {
-    NonLocalVariable(const ID & variable_name, const ID & nl_variable_name, const ID & id, UInt nb_component) :
-      local(variable_name, id),
-      non_local(nl_variable_name, id),
-      nb_component(nb_component){
-    } 
+    NonLocalVariable(const ID & variable_name, const ID & nl_variable_name,
+                     const ID & id, UInt nb_component)
+        : local(variable_name, id), non_local(nl_variable_name, id),
+          nb_component(nb_component) {}
     ElementTypeMapReal local;
     ElementTypeMapReal non_local;
     UInt nb_component;
@@ -206,13 +216,14 @@ protected:
   SolidMechanicsModel & model;
 
   /// jacobians for all the elements in the mesh
-  ElementTypeMap<const Array<Real> * > jacobians;
+  ElementTypeMap<const Array<Real> *> jacobians;
 
   /// store the position of the quadrature points
   ElementTypeMapReal quad_positions;
 
-  /// store the volume of each quadrature point for the non-local weight normalization
-  ElementTypeMapReal volumes; 
+  /// store the volume of each quadrature point for the non-local weight
+  /// normalization
+  ElementTypeMapReal volumes;
 
   /// the spatial dimension
   const UInt spatial_dimension;
@@ -225,8 +236,11 @@ protected:
 
   /// map to store the internals needed by the weight functions
   std::map<ID, ElementTypeMapReal *> weight_function_internals;
-/* -------------------------------------------------------------------------- */
-  /// the following are members needed to make this processor participate in the grid creation of neighborhoods he doesn't own as a member. For details see createGridSynchronizers function
+  /* --------------------------------------------------------------------------
+   */
+  /// the following are members needed to make this processor participate in the
+  /// grid creation of neighborhoods he doesn't own as a member. For details see
+  /// createGridSynchronizers function
 
   /// synchronizer registry for dummy grid synchronizers
   SynchronizerRegistry * dummy_registry;
@@ -242,7 +256,7 @@ protected:
 
   class DummyDataAccessor : public DataAccessor {
   public:
-    virtual inline UInt getNbDataForElements(){return 0;};
+    virtual inline UInt getNbDataForElements() { return 0; };
     virtual inline void packElementData(){};
     virtual inline void unpackElementData(){};
   };
@@ -257,6 +271,5 @@ __END_AKANTU__
 /* -------------------------------------------------------------------------- */
 
 #include "non_local_manager_inline_impl.cc"
-
 
 #endif /* __AKANTU_NON_LOCAL_MANAGER_HH__ */
