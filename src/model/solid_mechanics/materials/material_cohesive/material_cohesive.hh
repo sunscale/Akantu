@@ -57,7 +57,7 @@ class MaterialCohesive : public Material {
   /* ------------------------------------------------------------------------ */
 public:
   typedef FEEngineTemplate<IntegratorGauss,
-		      ShapeLagrange, _ek_cohesive> MyFEEngineCohesiveType;
+                      ShapeLagrange, _ek_cohesive> MyFEEngineCohesiveType;
 public:
 
   MaterialCohesive(SolidMechanicsModel& model, const ID & id = "");
@@ -95,7 +95,7 @@ public:
   /// interpolate   stress  on   given   positions  for   each  element   (empty
   /// implemantation to avoid the generic call to be done on cohesive elements)
   virtual void interpolateStress(__attribute__((unused)) const ElementType type,
-				 __attribute__((unused)) Array<Real> & result) { };
+                                 __attribute__((unused)) Array<Real> & result) { };
 
   /// compute the stresses
   virtual void computeAllStresses(__attribute__((unused)) GhostType ghost_type = _not_ghost) { };
@@ -105,53 +105,48 @@ public:
 
 protected:
   virtual void computeTangentTraction(__attribute__((unused)) const ElementType & el_type,
-				      __attribute__((unused)) Array<Real> & tangent_matrix,
-				      __attribute__((unused)) const Array<Real> & normal,
-				      __attribute__((unused)) GhostType ghost_type = _not_ghost) {
+                                      __attribute__((unused)) Array<Real> & tangent_matrix,
+                                      __attribute__((unused)) const Array<Real> & normal,
+                                      __attribute__((unused)) GhostType ghost_type = _not_ghost) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
-  /// get the internal data for an element
-  virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
-						      const ElementKind & element_kind,
-						      const ID & fe_engine_id) const;
-
   /// compute the normal
   void computeNormal(const Array<Real> & position,
-		     Array<Real> & normal,
-		     ElementType type,
-		     GhostType ghost_type);
+                     Array<Real> & normal,
+                     ElementType type,
+                     GhostType ghost_type);
 
   /// compute the opening
   void computeOpening(const Array<Real> & displacement,
-		      Array<Real> & normal,
-		      ElementType type,
-		      GhostType ghost_type);
+                      Array<Real> & normal,
+                      ElementType type,
+                      GhostType ghost_type);
 
   template<ElementType type>
   void computeNormal(const Array<Real> & position,
-		     Array<Real> & normal,
-		     GhostType ghost_type);
+                     Array<Real> & normal,
+                     GhostType ghost_type);
 
   /// assemble stiffness
   void assembleStiffnessMatrix(GhostType ghost_type);
 
   /// constitutive law
   virtual void computeTraction(const Array<Real> & normal,
-			       ElementType el_type,
-			       GhostType ghost_type = _not_ghost) = 0;
+                               ElementType el_type,
+                               GhostType ghost_type = _not_ghost) = 0;
 
   /// parallelism functions
   inline UInt getNbDataForElements(const Array<Element> & elements,
-				   SynchronizationTag tag) const;
+                                   SynchronizationTag tag) const;
 
   inline void packElementData(CommunicationBuffer & buffer,
-			      const Array<Element> & elements,
-			      SynchronizationTag tag) const;
+                              const Array<Element> & elements,
+                              SynchronizationTag tag) const;
 
   inline void unpackElementData(CommunicationBuffer & buffer,
-				const Array<Element> & elements,
-				SynchronizationTag tag);
+                                const Array<Element> & elements,
+                                SynchronizationTag tag);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
