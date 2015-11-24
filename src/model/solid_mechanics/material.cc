@@ -1552,78 +1552,64 @@ void Material::flattenInternalIntern(const std::string & field_id,
   if(element_filter == NULL) element_filter = &(this->element_filter);
   if(mesh == NULL)  mesh = &(this->model->mesh);
 
-  iterator tit = mesh->firstType(spatial_dimension,
+  iterator tit = element_filter->firstType(spatial_dimension,
                                           ghost_type,
                                           element_kind);
-  iterator end = mesh->lastType(spatial_dimension,
+  iterator end = element_filter->lastType(spatial_dimension,
                                          ghost_type,
                                          element_kind);
 
-  std::map<ID, InternalField<Real> *>::const_iterator internal_array =
-    internal_vectors_real.find(this->getID()+":"+field_id);
+  for (; tit != end; ++tit) {
+    ElementType type = *tit;
 
-  if (!(internal_array == internal_vectors_real.end() ||
-	internal_array->second->getElementKind() != element_kind)) {
+    try {
+      __attribute__((unused)) const Array<Real> & src_vect
+        = this->getArray<Real>(field_id, type, ghost_type);
+    } catch(debug::Exception & e) {
+      continue;
+    }
 
-    InternalField<Real> & internal = *internal_array->second;
+    const Array<Real> & src_vect = this->getArray<Real>(field_id, type, ghost_type);
+    const Array<UInt> & filter   = (*element_filter)(type, ghost_type);
 
+    // total number of elements for a given type
+    UInt nb_element = mesh->getNbElement(type,ghost_type);
+    // number of filtered elements
+    UInt nb_element_src = filter.getSize();
+    // number of quadrature points per elem
+    UInt nb_quad_per_elem = 0;
     // number of data per quadrature point
-    UInt nb_data_per_quad = internal.getNbComponent();
-    
-    for (; tit != end; ++tit) {
-      ElementType type = *tit;
-      // number of quadrature points per elem
-      UInt nb_quad_per_elem = this->fem->getNbIntegrationPoints(type);
-      // total number of elements for a given type
-      UInt nb_element = mesh->getNbElement(type,ghost_type);
+    UInt nb_data_per_quad = src_vect.getNbComponent();
 
-      if (!internal_flat.exists(type,ghost_type)) {
-	internal_flat.alloc(nb_element * nb_quad_per_elem,
-			    nb_data_per_quad,
-			    type,
-			    ghost_type);
-      }
-    
-      try {
-	__attribute__((unused)) const Array<Real> & src_vect
-	  = this->getArray<Real>(field_id, type, ghost_type);
-      } catch(debug::Exception & e) {
-	continue;
-      }
+    if (!internal_flat.exists(type,ghost_type)) {
+      internal_flat.alloc(nb_element * nb_quad_per_elem,
+                          nb_data_per_quad,
+                          type,
+                          ghost_type);
+    }
 
-      const Array<Real> & src_vect = this->getArray<Real>(field_id, type, ghost_type);
-      const Array<UInt> & filter   = (*element_filter)(type, ghost_type);
+    if (nb_element_src == 0) continue;
+    nb_quad_per_elem = (src_vect.getSize() / nb_element_src);
 
-      // number of filtered elements
-      UInt nb_element_src = filter.getSize();
-    
-      /// UInt nb_data_per_quad = src_vect.getNbComponent();
+    // number of data per element
+    UInt nb_data = nb_quad_per_elem * src_vect.getNbComponent();
 
+    Array<Real> & dst_vect = internal_flat(type,ghost_type);
+    dst_vect.resize(nb_element*nb_quad_per_elem);
 
-      if (nb_element_src == 0) continue;
-      nb_quad_per_elem = (src_vect.getSize() / nb_element_src);
+    Array<UInt>::const_scalar_iterator it  = filter.begin();
+    Array<UInt>::const_scalar_iterator end = filter.end();
+    Array<Real>::const_vector_iterator it_src =
+      src_vect.begin_reinterpret(nb_data, nb_element_src);
 
-      // number of data per element
-      UInt nb_data = nb_quad_per_elem * src_vect.getNbComponent();
+    Array<Real>::vector_iterator it_dst =
+      dst_vect.begin_reinterpret(nb_data, nb_element);
 
-      Array<Real> & dst_vect = internal_flat(type,ghost_type);
-      dst_vect.resize(nb_element*nb_quad_per_elem);
-
-      Array<UInt>::const_scalar_iterator it  = filter.begin();
-      Array<UInt>::const_scalar_iterator end = filter.end();
-      Array<Real>::const_vector_iterator it_src =
-	src_vect.begin_reinterpret(nb_data, nb_element_src);
-
-      Array<Real>::vector_iterator it_dst =
-	dst_vect.begin_reinterpret(nb_data, nb_element);
-
-      for (; it != end ; ++it,++it_src) {
-	it_dst[*it] = *it_src;
-      }
+    for (; it != end ; ++it,++it_src) {
+      it_dst[*it] = *it_src;
     }
   }
 };
-
 /* -------------------------------------------------------------------------- */
 /// extrapolate internal values
 void Material::extrapolateInternal(const ID & id, const Element & element, const Matrix<Real> & point, Matrix<Real> & extrapolated) {
