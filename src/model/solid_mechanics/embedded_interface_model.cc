@@ -154,7 +154,7 @@ ElementTypeMap<UInt> EmbeddedInterfaceModel::getInternalDataPerElem(const std::s
   if (!(this->isInternal(field_name,kind))) AKANTU_EXCEPTION("unknown internal " << field_name);
 
   for (UInt m = 0; m < materials.size() ; ++m) {
-    if (materials[m]->isInternal(field_name, kind)) {
+    if (materials[m]->isInternal<Real>(field_name, kind)) {
       Material * mat = NULL;
 
       switch(this->spatial_dimension) {
@@ -172,9 +172,9 @@ ElementTypeMap<UInt> EmbeddedInterfaceModel::getInternalDataPerElem(const std::s
       }
 
       if (mat == NULL && field_name != "stress_embedded")
-        return materials[m]->getInternalDataPerElem(field_name,kind);
+        return materials[m]->getInternalDataPerElem<Real>(field_name,kind);
       else if (mat != NULL && field_name == "stress_embedded")
-        return mat->getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
+        return mat->getInternalDataPerElem<Real>(field_name, kind, "EmbeddedInterfaceFEEngine");
     }
   }
 
