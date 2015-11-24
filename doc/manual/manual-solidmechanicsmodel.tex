@@ -1018,4 +1018,59 @@ model.initMaterials();
 A full example for adding a new damage law can be found in
 \shellcode{\examplesdir/new\_material}.
 
+\subsection{Adding a New Non-Local Constitutive Law}\index{Material!create a new non-local material}
+
+In order to add a new non-local material we first have to add the local constitutive law in \akantu (see above). We can then add the non-local version of the constitutive law by adding the two files (\code{material\_XXX\_non\_local.hh} and \code{material\_XXX\_non\_local.cc}) where \code{XXX} is the name of the corresponding local material. The new law must inherit from the two classes, non-local parent class, such as the \code{MaterialNonLocal} class, and from the local version of the constitutive law, \textit{i.e.} \code{MaterialXXX}. It is therefore necessary to include the interface of those classes in the header file of your custom material and indicate the inheritance in the declaration of the class:
+\begin{cpp}
+/* ---------------------------------------------------------------------- */
+#include "material_non_local.hh" // the non-local parent
+#include "material_XXX.hh"
+/* ---------------------------------------------------------------------- */
+
+#ifndef __AKANTU_MATERIAL_XXX_HH__
+#define __AKANTU_MATERIAL_XXX_HH__
+
+__BEGIN_AKANTU__
+
+class MaterialXXXNonLocal : public MaterialXXX,
+                            public MaterialNonLocal {
+
+/// declare here the interface of your material
+
+};
+\end{cpp}
+As members of the class we only need to add the internal fields to store the non-local quantities, which are obtained from the averaging process:
+\begin{cpp}
+/* -------------------------------------------------------------------------- */
+/* Class members                                                              */
+/* -------------------------------------------------------------------------- *
+protected:
+  InternalField<Real> grad_u_nl;
+\end{cpp}
+The following four functions need to be implemented in the non-local material:
+\begin{cpp}
+  /// initialization of the material
+  void initMaterial();
+  /// loop over all element and invoke stress computation
+  virtual void computeNonLocalStresses(GhostType ghost_type);
+  /// compute stresses after local quantities have been averaged
+  virtual void computeNonLocalStress(ElementType el_type, GhostType ghost_type)
+  /// compute all local quantities
+  void computeStress(ElementType el_type, GhostType ghost_type);
+\end{cpp}
+In the intialization of the non-local material we need to register the local quantity for the averaging process. In our example the internal field \emph{grad\_u\_nl} is the non-local counterpart of the gradient of the displacement field (\emph{grad\_u\_nl}):
+\begin{cpp}
+  void MaterialXXXNonLocal::initMaterial() {
+    MaterialXXX::initMaterial();
+    MaterialNonLocal::initMaterial();
+    /// register the non-local variable in the manager
+    this->model->getNonLocalManager().registerNonLocalVariable(this->grad_u.getName(), this->grad_u_nl.getName(), spatial_dimension * spatial_dimension);
+
+}
+\end{cpp}
+The function to register the non-local variable takes as parameters the name of the local internal field, the name of the non-local counterpart and the number of components of the field we want to average.
+In the \emph{computeStress} we now need to compute all the quantities we want to average. We can then write a loop for the stress computation in the function \emph{computeNonLocalStresses} and then provide the constitutive law on each integration point in the function \emph{computeNonLocalStress}.
+
+
+
 %%% Local Variables: %%% mode: latex %%% TeX-master: "manual" %%% End:

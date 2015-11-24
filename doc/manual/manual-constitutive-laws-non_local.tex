@@ -1,1 +1,29 @@
+\section{Non-Local Constitutive Laws \label{sect:smm:CLNL}}\index{Material}
 
+Continuum damage modeling of quasi-brittle materials undergo significant softening after the onset of damage. This fast growth of damage causes a loss of ellipticity of partial differential equations of equilibrium. Therefore, the numerical simulation results won't be objective anymore, because the dissipated energy will depend on mesh size used in the simulation. One way to avoid this effect is the use of non-local damage formulations. In this approach a local quantity such as the strain is replaced by its non-local average, where the size of the domain, over which the quantitiy is averaged, depends on the underlying material microstructure. 
+\akantu provides non-local versions of many constitutive laws for damage. Examples are for instance the material Mazar and the material Marigo, that can be used in a non-local context. In order to use the corresponding non-local formulation the user has to define the non-local material he wishes to use in the material file:
+\begin{cpp}
+  material %\emph{constitutive\_law\_non\_local}% [
+     name = %\emph{material\_name}
+     rho = $value$
+     ...
+  ]
+\end{cpp}
+where \emph{constitutive\_law\_non\_local} is the name of the non-local consitutive law, \textit{e.g.} \emph{marigo\_non\_local}.
+In addition to the material the non-local neighborhood, that should be used for the averaging process needs to be defined in the material file as well: 
+\begin{cpp}
+  non_local %\emph{neighborhood\_name}%  %\emph{weight\_function\_type}% [
+     radius = $value$
+     ...
+      weight_function weight_parameter [
+        damage_limit = $value$
+        ...
+     ]
+  ]
+\end{cpp}
+for the non-local averaging, \textit{e.g.} \emph{base\_wf}, followed by the properties of the non-local neighborhood, such as the radius, and the weight function parameters. It is important to notice that the non-local neighborhood must have the same name as the material to which the neighborhood belongs!
+The following two sections list the non-local constitutive laws and different type of weight functions available in \akantu.
+\subsection{Non-local constitutive laws}
+\textbf{Description to be added!!!}
+\subsection{Non-local weight functions}
+ \textbf{Description to be added!!!}
