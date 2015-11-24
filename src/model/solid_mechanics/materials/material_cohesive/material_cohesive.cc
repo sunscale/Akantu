@@ -91,7 +91,6 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
   this->damage           .initialize(1                );
 
   if (this->model->getIsExtrinsic()) this->sigma_c.initialize(1);
-  if (this->use_previous_delta_max) this->delta_max.initializeHistory();
 
   AKANTU_DEBUG_OUT();
 }
@@ -107,7 +106,7 @@ MaterialCohesive::~MaterialCohesive() {
 void MaterialCohesive::initMaterial() {
   AKANTU_DEBUG_IN();
   Material::initMaterial();
-
+  if (this->use_previous_delta_max) this->delta_max.initializeHistory();
   AKANTU_DEBUG_OUT();
 }
 
