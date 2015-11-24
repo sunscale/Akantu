@@ -702,36 +702,36 @@ Real MaterialReinforcement<dim>::getEnergy(std::string id) {
   return 0;
 }
 
-/* -------------------------------------------------------------------------- */
-template<UInt dim>
-ElementTypeMap<UInt> MaterialReinforcement<dim>::getInternalDataPerElem(const ID & field_name,
-                                                                        const ElementKind & kind,
-                                                                        const ID & fe_engine_id) const {
-  return Material::getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
-}
+// /* -------------------------------------------------------------------------- */
+// template<UInt dim>
+// ElementTypeMap<UInt> MaterialReinforcement<dim>::getInternalDataPerElem(const ID & field_name,
+//                                                                         const ElementKind & kind,
+//                                                                         const ID & fe_engine_id) const {
+//   return Material::getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
+// }
 
 
-/* -------------------------------------------------------------------------- */
-// Author is Guillaume Anciaux, see material.cc
-template<UInt dim>
-void MaterialReinforcement<dim>::flattenInternal(const std::string & field_id,
-                                                 ElementTypeMapArray<Real> & internal_flat,
-                                                 const GhostType ghost_type,
-                                                 ElementKind element_kind) const {
-  AKANTU_DEBUG_IN();
+// /* -------------------------------------------------------------------------- */
+// // Author is Guillaume Anciaux, see material.cc
+// template<UInt dim>
+// void MaterialReinforcement<dim>::flattenInternal(const std::string & field_id,
+//                                                  ElementTypeMapArray<Real> & internal_flat,
+//                                                  const GhostType ghost_type,
+//                                                  ElementKind element_kind) const {
+//   AKANTU_DEBUG_IN();
 
-  if (field_id == "stress_embedded" || field_id == "inelastic_strain") {
-    Material::flattenInternalIntern(field_id,
-                                    internal_flat,
-                                    1,
-                                    ghost_type,
-                                    _ek_not_defined,
-                                    &(this->element_filter),
-                                    &(this->model->getInterfaceMesh()));
-  }
+//   if (field_id == "stress_embedded" || field_id == "inelastic_strain") {
+//     Material::flattenInternalIntern(field_id,
+//                                     internal_flat,
+//                                     1,
+//                                     ghost_type,
+//                                     _ek_not_defined,
+//                                     &(this->element_filter),
+//                                     &(this->model->getInterfaceMesh()));
+//   }
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
 
 /* -------------------------------------------------------------------------- */
