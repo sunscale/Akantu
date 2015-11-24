@@ -79,16 +79,6 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
     this->model->getMeshFacets().initElementTypeMapArray(facet_filter, 1,
 							 spatial_dimension - 1);
 
-  this->fem = &(model.getFEEngineClass<MyFEEngineCohesiveType>("CohesiveFEEngine"));
-
-  this->gradu.setElementKind(_ek_igfem);
-  this->stress.setElementKind(_ek_igfem);
-  this->eigengradu.setElementKind(_ek_igfem);
-
-  this->gradu.setFEEngine(*fem);
-  this->stress.setFEEngine(*fem);
-  this->eigengradu.setFEEngine(*fem);
-
   AKANTU_DEBUG_OUT();
 }
 
