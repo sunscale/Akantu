@@ -1,6 +1,7 @@
 /**
  * @file   neighborhood_base.hh
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Thu Oct  8 15:27:33 2015
  *
  * @brief  Generic neighborhood of quadrature points

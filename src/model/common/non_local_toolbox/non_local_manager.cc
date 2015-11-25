@@ -1,6 +1,7 @@
 /**
  * @file   non_local_manager.cc
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Mon Sep 21 15:32:10 2015
  *
  * @brief  Implementation of non-local manager

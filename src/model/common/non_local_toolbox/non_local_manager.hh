@@ -1,6 +1,7 @@
 /**
  * @file   non_local_manager.hh
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Mon Sep 21 14:21:33 2015
  *
  * @brief  Classes that manages all the non-local neighborhoods

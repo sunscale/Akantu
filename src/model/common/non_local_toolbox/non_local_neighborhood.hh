@@ -1,6 +1,7 @@
 /**
  * @file   non_local_neighborhood.hh
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Sat Sep 26 18:29:59 2015
  *
  * @brief Non-local neighborhood for non-local averaging based on
