@@ -312,14 +312,18 @@ void SolidMechanicsModel::initExplicit(AnalysisMethod analysis_method) {
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initArraysPreviousDisplacment() {
   AKANTU_DEBUG_IN();
 
   this->setIncrementFlagOn();
-  UInt nb_nodes = this->mesh.getNbNodes();
-  std::stringstream sstr_disp_t;
-  sstr_disp_t << this->id << ":previous_displacement";
-  this->previous_displacement = &(this->alloc<Real > (sstr_disp_t.str(), nb_nodes, this->spatial_dimension, 0.));
+  if(not this->previous_displacement) {
+    UInt nb_nodes = this->mesh.getNbNodes();
+    std::stringstream sstr_disp_t;
+    sstr_disp_t << this->id << ":previous_displacement";
+
+    this->previous_displacement = &(this->alloc<Real > (sstr_disp_t.str(), nb_nodes, this->spatial_dimension, 0.));
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -1489,76 +1493,74 @@ void SolidMechanicsModel::onNodesRemoved(__attribute__((unused)) const Array<UIn
 
 /* -------------------------------------------------------------------------- */
 bool SolidMechanicsModel::isInternal(const std::string & field_name,
-				     const ElementKind & element_kind){
+                                     const ElementKind & element_kind) {
 
   bool is_internal = false;
 
   /// check if at least one material contains field_id as an internal
   for (UInt m = 0; m < materials.size() && !is_internal; ++m) {
-    is_internal |= materials[m]->isInternal(field_name, element_kind);
+    is_internal |= materials[m]->isInternal<Real>(field_name, element_kind);
   }
 
   return is_internal;
 }
 /* -------------------------------------------------------------------------- */
+ElementTypeMap<UInt>
+SolidMechanicsModel::getInternalDataPerElem(const std::string & field_name,
+                                            const ElementKind & element_kind) {
 
-ElementTypeMap<UInt> SolidMechanicsModel::getInternalDataPerElem(const std::string & field_name,
-								const ElementKind & element_kind){
+  if (!(this->isInternal(field_name, element_kind)))
+    AKANTU_EXCEPTION("unknown internal " << field_name);
 
-
-  if (!(this->isInternal(field_name,element_kind))) AKANTU_EXCEPTION("unknown internal " << field_name);
-
-  for (UInt m = 0; m < materials.size() ; ++m) {
-    if (materials[m]->isInternal(field_name, element_kind))
-      return materials[m]->getInternalDataPerElem(field_name, element_kind);
+  for (UInt m = 0; m < materials.size(); ++m) {
+    if (materials[m]->isInternal<Real>(field_name, element_kind))
+      return materials[m]->getInternalDataPerElem<Real>(field_name, element_kind);
   }
 
   return ElementTypeMap<UInt>();
 }
 
-
 /* -------------------------------------------------------------------------- */
-ElementTypeMapArray<Real> & SolidMechanicsModel::flattenInternal(const std::string & field_name,
-								 const ElementKind & kind,
-								 const GhostType ghost_type){
-  std::pair<std::string,ElementKind> key(field_name,kind);
-  if (this->registered_internals.count(key) == 0){
+ElementTypeMapArray<Real> &
+SolidMechanicsModel::flattenInternal(const std::string & field_name,
+                                     const ElementKind & kind,
+                                     const GhostType ghost_type) {
+  std::pair<std::string, ElementKind> key(field_name, kind);
+  if (this->registered_internals.count(key) == 0) {
     this->registered_internals[key] =
-      new ElementTypeMapArray<Real>(field_name, this->id);
+        new ElementTypeMapArray<Real>(field_name, this->id);
   }
 
   ElementTypeMapArray<Real> * internal_flat = this->registered_internals[key];
 
   typedef ElementTypeMapArray<Real>::type_iterator iterator;
-  iterator tit = internal_flat->firstType(spatial_dimension,
-					  ghost_type,
-					  kind);
-  iterator end = internal_flat->lastType(spatial_dimension,
-					 ghost_type,
-					 kind);
+  iterator tit = internal_flat->firstType(spatial_dimension, ghost_type, kind);
+  iterator end = internal_flat->lastType(spatial_dimension, ghost_type, kind);
 
   for (; tit != end; ++tit) {
     ElementType type = *tit;
-    (*internal_flat)(type,ghost_type).clear();
-  }
-  
-  for (UInt m = 0; m < materials.size(); ++m) {
-    if (materials[m]->isInternal(field_name, kind))
-      materials[m]->flattenInternal(field_name, *internal_flat, ghost_type, kind);
+    (*internal_flat)(type, ghost_type).clear();
   }
 
-  return  *internal_flat;
+  for (UInt m = 0; m < materials.size(); ++m) {
+    if (materials[m]->isInternal<Real>(field_name, kind))
+      materials[m]->flattenInternal(field_name, *internal_flat, ghost_type,
+                                    kind);
+  }
+
+  return *internal_flat;
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::flattenAllRegisteredInternals(const ElementKind & kind){
+void SolidMechanicsModel::flattenAllRegisteredInternals(
+    const ElementKind & kind) {
 
-  std::map<std::pair<std::string, ElementKind>,
-	   ElementTypeMapArray<Real> *>::iterator it  = this->registered_internals.begin();
-  std::map<std::pair<std::string, ElementKind>,
-	   ElementTypeMapArray<Real> *>::iterator end = this->registered_internals.end();
+  typedef std::map<std::pair<std::string, ElementKind>,
+                   ElementTypeMapArray<Real> *>::iterator iterator;
+  iterator it = this->registered_internals.begin();
+  iterator end = this->registered_internals.end();
 
-  while (it != end){
+  while (it != end) {
     if (kind == it->first.second)
       this->flattenInternal(it->first.first, kind);
     ++it;
@@ -1576,10 +1578,10 @@ void SolidMechanicsModel::onDump(){
 
 dumper::Field * SolidMechanicsModel
 ::createElementalField(const std::string & field_name,
-		       const std::string & group_name,
-		       bool padding_flag,
-		       const UInt & spatial_dimension,
-		       const ElementKind & kind) {
+                       const std::string & group_name,
+                       bool padding_flag,
+                       const UInt & spatial_dimension,
+                       const ElementKind & kind) {
 
   dumper::Field * field = NULL;
 

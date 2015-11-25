@@ -247,7 +247,7 @@ void NonLocalManager::flattenInternal(ElementTypeMapReal & internal_flat,
   const ID field_name = internal_flat.getName();
   for (UInt m = 0; m < this->non_local_materials.size(); ++m) {
     Material & material = *(this->non_local_materials[m]);
-    if (material.isInternal(field_name, kind)) 
+    if (material.isInternal<Real>(field_name, kind))
       material.flattenInternal(field_name, internal_flat, ghost_type, kind);
   }
 }
@@ -375,7 +375,7 @@ void NonLocalManager::distributeInternals(ElementKind kind) {
     const ID field_name = non_local_var->non_local.getName();
     /// loop over all the materials
     for (UInt m = 0; m < this->non_local_materials.size(); ++m) {
-      if (this->non_local_materials[m]->isInternal(field_name, kind))
+      if (this->non_local_materials[m]->isInternal<Real>(field_name, kind))
 
 	switch (spatial_dimension) {
 	case 1:
