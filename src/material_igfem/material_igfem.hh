@@ -51,13 +51,6 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
 
-  inline void interpolateInternal(const Element new_el,
-				  const Element old_el,
-				  Vector<Real> & interpolated,
-				  const Vector<Real> & internal,
-				  const UInt nb_quads_new,
-				  const UInt nb_quads_old);
-
   virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
 
   virtual void extrapolateInternal(const ID & id, const Element & element, 
@@ -87,11 +80,6 @@ protected:
    
   }
   void initialize();
-
-  
-  virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
-						      const ElementKind & element_kind,
-						      const ID & fe_engine_id) const;
 
 
   template<ElementType type>

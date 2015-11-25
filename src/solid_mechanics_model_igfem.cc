@@ -32,7 +32,6 @@
 __BEGIN_AKANTU__
 
 const SolidMechanicsModelIGFEMOptions default_solid_mechanics_model_igfem_options(_static,
-										  false,
 										  false);
 
 SolidMechanicsModelIGFEM::SolidMechanicsModelIGFEM(Mesh & mesh,
@@ -74,16 +73,12 @@ void SolidMechanicsModelIGFEM::initFull(const ModelOptions & options) {
   /// intialize the IGFEM enrichment
   this->initialize();
 
-  const SolidMechanicsModelIGFEMOptions & smmc_options =
-    dynamic_cast<const SolidMechanicsModelIGFEMOptions &>(options);
-
-  this->moving_interface = smmc_options.moving_interface;
-
   SolidMechanicsModel::initFull(options);
 
   // set the initial condition to 0
   real_force->clear();
   real_displacement->clear();
+  real_residual->clear();
 
   AKANTU_DEBUG_OUT();
 }

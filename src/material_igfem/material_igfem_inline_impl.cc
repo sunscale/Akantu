@@ -24,24 +24,6 @@ __BEGIN_AKANTU__
 
 
 /* -------------------------------------------------------------------------- */
-/// map internals from an old regular element to new IGFEM element
-inline void MaterialIGFEM::interpolateInternal(const Element new_el,
-					       const Element old_el,
-					       Vector<Real> & interpolated,
-					       const Vector<Real> & internal,
-					       const UInt nb_quads_new,
-					       const UInt nb_quads_old) {
-  /// @todo make this function generic!! Works right now only for
-  /// elements with constant fields! A generic function would map the
-  /// sub element quads into the physical domain, then interpolate the
-  /// _ek_regular element on these points.
-  
-  for (UInt q = 0; q < nb_quads_new; ++q)
-    interpolated(q) = internal(0);
-}
-
-
-/* -------------------------------------------------------------------------- */
 inline UInt MaterialIGFEM::getNbDataForElements(const Array<Element> & elements,
 						SynchronizationTag tag) const {
   if(tag == _gst_smm_stress) {

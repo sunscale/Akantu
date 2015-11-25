@@ -95,17 +95,6 @@ void MaterialIGFEM::computeQuadraturePointsCoordinates(ElementTypeMapArray<Real>
 }
 
 /* -------------------------------------------------------------------------- */
-inline ElementTypeMap<UInt> MaterialIGFEM::getInternalDataPerElem(const ID & id,
-								  const ElementKind & element_kind,
-								  const ID & fe_engine_id) const {
-  if (element_kind == _ek_igfem) {
-    return Material::getInternalDataPerElem(id, element_kind, "IGFEMFEEngine");
-  } else {
-    return Material::getInternalDataPerElem(id, element_kind, fe_engine_id);
-  }
-}
-
-/* -------------------------------------------------------------------------- */
 /**
  * Compute  the  stress from the gradu
  *
@@ -143,7 +132,7 @@ void MaterialIGFEM::computeAllStresses(GhostType ghost_type) {
 /* -------------------------------------------------------------------------- */
 /// extrapolate internal values
 void MaterialIGFEM::extrapolateInternal(const ID & id, const Element & element, const Matrix<Real> & point, Matrix<Real> & extrapolated) {
-  if (this->isInternal(id, element.kind)) {
+  if (this->isInternal<Real>(id, element.kind)) {
     UInt nb_element = this->element_filter(element.type, element.ghost_type).getSize();
     const ID name = this->getID() +  ":" + id;
     UInt nb_quads = this->internal_vectors_real[name]->getFEEngine().getNbIntegrationPoints(element.type, element.ghost_type); 

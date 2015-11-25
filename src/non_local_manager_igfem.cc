@@ -246,12 +246,12 @@ void NonLocalManagerIGFEM::cleanupExtraGhostElements(ElementTypeMap<UInt> & nb_g
 /* -------------------------------------------------------------------------- */
 void NonLocalManagerIGFEM::onElementsAdded(__attribute__((unused)) const Array<Element> & element_list,
 					   __attribute__((unused)) const NewElementsEvent & event) {
+  
+  FEEngine & fee = this->model.getFEEngine("IGFEMFEEngine");
+  this->resizeElementTypeMap(1, volumes, fee, _ek_igfem);
+  this->resizeElementTypeMap(spatial_dimension, quad_positions, fee, _ek_igfem);
 
-  for (UInt k = _ek_regular; k <=_ek_igfem; ++k) {
-    ElementKind el_kind = (ElementKind) k;
-    this->resizeElementTypeMap(1, volumes, el_kind);
-    this->resizeElementTypeMap(spatial_dimension, quad_positions, el_kind);
-  }
+  NonLocalManager::onElementsAdded(element_list, event);
 }
 
 /* -------------------------------------------------------------------------- */

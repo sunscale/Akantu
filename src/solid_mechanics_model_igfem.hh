@@ -27,11 +27,8 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 struct SolidMechanicsModelIGFEMOptions : public SolidMechanicsModelOptions {
   SolidMechanicsModelIGFEMOptions(AnalysisMethod analysis_method = _static,
-				  bool no_init_materials = false,
-				  bool moving_interface = false) :
-    SolidMechanicsModelOptions(analysis_method, no_init_materials),
-    moving_interface(moving_interface) { }
-  bool moving_interface;
+				  bool no_init_materials = false) :
+    SolidMechanicsModelOptions(analysis_method, no_init_materials) { }
 };
 
 extern const SolidMechanicsModelIGFEMOptions default_solid_mechanics_model_igfem_options;
@@ -156,8 +153,6 @@ private:
   Array<Real> * real_force;
   /// real residuals array
   Array<Real> * real_residual;
-  /// interface can move throughout the analysis
-  bool moving_interface;
   /// map between and new elements (needed when the interface is moving)
   ElementMap element_map;
   /// global connectivity ids updater
