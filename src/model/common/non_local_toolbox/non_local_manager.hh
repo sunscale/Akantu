@@ -136,6 +136,7 @@ protected:
 
   /// resizing of element type maps
   void resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map,
+			    const FEEngine & fee,
                             const ElementKind el_kind = _ek_regular);
 
   /// remove integration points from element type maps

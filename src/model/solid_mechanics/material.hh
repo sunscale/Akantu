@@ -373,6 +373,11 @@ public:
                                  const ElementTypeMapArray<UInt> & new_numbering,
                                  const RemovedElementsEvent & event);
 
+  virtual void onElementsChanged(__attribute__((unused)) const Array<Element> & old_elements_list,
+				 __attribute__((unused)) const Array<Element> & new_elements_list,
+                                 __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+                                 __attribute__((unused)) const ChangedElementsEvent & event) {};
+
   /* ------------------------------------------------------------------------ */
   /* SolidMechanicsModelEventHandler inherited members                        */
   /* ------------------------------------------------------------------------ */

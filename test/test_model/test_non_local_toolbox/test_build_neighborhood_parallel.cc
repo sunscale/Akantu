@@ -27,7 +27,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
-#include "test_material_damage.hh"
+#include "test_material.hh"
 #include "non_local_neighborhood_base.hh"
 #include "dumper_paraview.hh"
 /* -------------------------------------------------------------------------- */
@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   akantu::MeshPartition * partition = NULL;
   if(prank == 0) {
 
-    mesh.read("fine_mesh.msh");
+    mesh.read("parallel_test.msh");
 
 
     /// partition the mesh
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 
   /// model initialization changed to use our material
   model.initFull(SolidMechanicsModelOptions(_static, true));
-  model.registerNewCustomMaterials< TestMaterialDamage<spatial_dimension> >("test_material");
+  model.registerNewCustomMaterials< TestMaterial<spatial_dimension> >("test_material");
   model.initMaterials();
   /// dump the ghost elements after ghosts for non-local have been added
   if(psize > 1)
@@ -105,32 +105,78 @@ int main(int argc, char *argv[]) {
     Array<Real> & grad_u = const_cast<Array<Real> &> (mat.getInternal<Real>("grad_u")(element_type, ghost_type));
     Array<Real>::iterator< Matrix<Real> > grad_u_it = grad_u.begin(spatial_dimension, spatial_dimension);
     Array<Real>::iterator< Matrix<Real> > grad_u_end = grad_u.end(spatial_dimension, spatial_dimension);
-    /// apply different strain in the first element on each partition
-    if (grad_u_it != grad_u_end) {
-      (*grad_u_it) += (2. *applied_strain);
-      ++grad_u_it;
-    }
     for (; grad_u_it != grad_u_end; ++grad_u_it) 
       (*grad_u_it) += applied_strain;
   }
 
+  /// double the strain in the center: find the closed gauss point to the center 
+  /// compute the quadrature points
+  ElementTypeMapReal quad_coords("quad_coords");
+  mesh.initElementTypeMapArray(quad_coords, spatial_dimension, spatial_dimension, false, _ek_regular, true);
+  model.getFEEngine().computeIntegrationPointsCoordinates(quad_coords);
+
+  Vector<Real> center(spatial_dimension, 0.);
+  Mesh::type_iterator it        = mesh.firstType(spatial_dimension, _not_ghost, _ek_regular);
+  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, _not_ghost, _ek_regular);
+  Real min_distance = 2;
+  IntegrationPoint q_min;
+  for(; it != last_type ; ++it) {
+    ElementType type = *it;
+    UInt nb_elements = mesh.getNbElement(type, _not_ghost);
+    UInt nb_quads = model.getFEEngine().getNbIntegrationPoints(type);
+    Array<Real> & coords = quad_coords(type, _not_ghost);
+    Array<Real>::const_vector_iterator coord_it = coords.begin(spatial_dimension);
+    for (UInt e = 0; e < nb_elements; ++e) {
+      for (UInt q = 0; q < nb_quads; ++q, ++coord_it) {
+	Real dist = center.distance(*coord_it);
+	if (dist < min_distance) {
+	  min_distance = dist;
+	  q_min.element = e;
+	  q_min.num_point = q;
+	  q_min.global_num = nb_elements * nb_quads + q;
+	  q_min.type = type;
+	}	
+      }
+    }
+  }
+
+  Real global_min = min_distance;
+  comm.allReduce(&global_min, 1, _so_min);
+
+  if(Math::are_float_equal(global_min, min_distance)) {
+    UInt mat_index = model.getMaterialByElement(q_min.type, _not_ghost).begin()[q_min.element];
+    Material & mat = model.getMaterial(mat_index);
+    UInt nb_quads = model.getFEEngine().getNbIntegrationPoints(q_min.type);
+    UInt local_el_index = model.getMaterialLocalNumbering(q_min.type, _not_ghost).begin()[q_min.element];
+    UInt local_num = (local_el_index * nb_quads) + q_min.num_point;
+    Array<Real> & grad_u = const_cast<Array<Real> &> (mat.getInternal<Real>("grad_u")(q_min.type, _not_ghost));
+    Array<Real>::iterator< Matrix<Real> > grad_u_it = grad_u.begin(spatial_dimension, spatial_dimension);
+    grad_u_it += local_num;
+    Matrix<Real> & g_u = *grad_u_it;
+    g_u +=  applied_strain;
+  }
+
   /// compute the non-local strains
   model.getNonLocalManager().computeAllNonLocalStresses();
-  model.dump();
+  model.dump(); 
 
+  /// damage the element with higher grad_u completely, so that it is
+  /// not taken into account for the averaging
+  if(Math::are_float_equal(global_min, min_distance)) {
+    UInt mat_index = model.getMaterialByElement(q_min.type, _not_ghost).begin()[q_min.element];
+    Material & mat = model.getMaterial(mat_index);
+    UInt nb_quads = model.getFEEngine().getNbIntegrationPoints(q_min.type);
+    UInt local_el_index = model.getMaterialLocalNumbering(q_min.type, _not_ghost).begin()[q_min.element];
+    UInt local_num = (local_el_index * nb_quads) + q_min.num_point;
+    Array<Real> & damage = const_cast<Array<Real> &> (mat.getInternal<Real>("damage")(q_min.type, _not_ghost));
+    Real * dam_ptr = damage.storage();
+    dam_ptr += local_num;
+    *dam_ptr = 0.9;
+  }
 
-  /// print results to screen for validation
-  // std::ifstream quad_pairs;
-  // quad_pairs.open("quadrature_pairs.0");
-  // std::string current_line;
-  // while(getline(quad_pairs, current_line))
-  //   std::cout << current_line << std::endl;
-  // quad_pairs.close();
-  // std::ifstream neighborhoods;
-  // neighborhoods.open("neighborhoods.0");
-  // while(getline(neighborhoods, current_line))
-  //   std::cout << current_line << std::endl;
-  // neighborhoods.close();
+  /// compute the non-local strains
+  model.getNonLocalManager().computeAllNonLocalStresses();
+  model.dump();  
 
   finalize();
   

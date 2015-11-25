@@ -56,7 +56,13 @@ register_test(test_remove_damage_weight_function
   )
 
 register_test(test_build_neighborhood_parallel
-  SOURCES test_build_neighborhood_parallel.cc test_material_damage.hh test_material_damage.cc
-  FILES_TO_COPY material_parallel_test.dat fine_mesh.msh
+  SOURCES test_build_neighborhood_parallel.cc test_material.hh test_material.cc
+  FILES_TO_COPY material_parallel_test.dat parallel_test.msh
+  PACKAGE damage_non_local
+  )
+
+register_test(test_pair_computation
+  SOURCES test_pair_computation.cc test_material_damage.hh test_material_damage.cc
+  FILES_TO_COPY material_remove_damage.dat pair_test.msh
   PACKAGE damage_non_local
   )

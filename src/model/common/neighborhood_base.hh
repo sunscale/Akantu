@@ -99,6 +99,7 @@ public:
   AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &);
   /// return the object handling synchronizers
   AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry, SynchronizerRegistry &);
+  AKANTU_GET_MACRO(PairLists, pair_list, const PairList *);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
