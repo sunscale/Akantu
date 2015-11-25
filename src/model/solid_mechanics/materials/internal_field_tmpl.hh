@@ -123,12 +123,9 @@ template <typename T> void InternalField<T>::resize() {
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {
 
-    typename ElementTypeMapArray<UInt>::type_iterator it =
-        this->element_filter.firstType(this->spatial_dimension, *gt,
-                                       this->element_kind);
-    typename ElementTypeMapArray<UInt>::type_iterator end =
-        this->element_filter.lastType(this->spatial_dimension, *gt,
-                                      this->element_kind);
+    filter_type_iterator it = this->filterFirstType(*gt);
+    filter_type_iterator end = this->filterLastType(*gt);
+
     for (; it != end; ++it) {
       UInt nb_element = this->element_filter(*it, *gt).getSize();
 
@@ -184,12 +181,8 @@ void InternalField<T>::internalInitialize(UInt nb_component) {
 
     for (ghost_type_t::iterator gt = ghost_type_t::begin();
          gt != ghost_type_t::end(); ++gt) {
-      typename ElementTypeMapArray<UInt>::type_iterator it =
-          this->element_filter.firstType(this->spatial_dimension, *gt,
-                                         this->element_kind);
-      typename ElementTypeMapArray<UInt>::type_iterator end =
-          this->element_filter.lastType(this->spatial_dimension, *gt,
-                                        this->element_kind);
+      filter_type_iterator it = this->filterFirstType(*gt);
+      filter_type_iterator end = this->filterLastType(*gt);
 
       for (; it != end; ++it) {
         UInt nb_element = this->element_filter(*it, *gt).getSize();
