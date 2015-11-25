@@ -26,7 +26,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "material_elastic.hh"
+#include "material_damage.hh"
 #include "material_non_local.hh"
 
 #ifndef __TEST_MATERIAL_HH__
@@ -35,7 +35,7 @@
 __BEGIN_AKANTU__
 
 template<UInt dim>
-class TestMaterial : public MaterialElastic<dim>,
+class TestMaterial : public MaterialDamage<dim, MaterialElastic>,
 		     public MaterialNonLocal<dim>{
 
 /* -------------------------------------------------------------------------- */
@@ -47,7 +47,7 @@ public:
   TestMaterial(SolidMechanicsModel & model, const ID & id);
   virtual ~TestMaterial() {};
   typedef MaterialNonLocal<dim> MyNonLocalParent;
-  typedef MaterialElastic<dim> MyElasticParent;
+  typedef MaterialDamage<dim, MaterialElastic> MyLocalParent;
 /* -------------------------------------------------------------------------- */
 /* Methods                                                                    */
 /* -------------------------------------------------------------------------- */

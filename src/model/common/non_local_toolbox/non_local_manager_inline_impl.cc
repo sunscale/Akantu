@@ -1,6 +1,7 @@
 /**
  * @file   non_local_manager_inline_impl.cc
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Mon Sep 21 17:30:03 2015
  *
  * @brief  inline implementation of non-local manager functions

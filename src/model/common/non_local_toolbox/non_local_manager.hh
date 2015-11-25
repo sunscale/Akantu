@@ -1,6 +1,7 @@
 /**
  * @file   non_local_manager.hh
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Mon Sep 21 14:21:33 2015
  *
  * @brief  Classes that manages all the non-local neighborhoods
@@ -136,6 +137,7 @@ protected:
 
   /// resizing of element type maps
   void resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map,
+			    const FEEngine & fee,
                             const ElementKind el_kind = _ek_regular);
 
   /// remove integration points from element type maps
