@@ -426,6 +426,9 @@ private:
   /// analysis method
   AnalysisMethod method;
 
+  /// pointer to the pbc synchronizer
+  PBCSynchronizer * pbc_synch;
+
 };
 
 

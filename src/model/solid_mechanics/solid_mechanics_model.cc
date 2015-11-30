@@ -107,7 +107,8 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh,
   increment_flag(false), solver(NULL),
   synch_parallel(NULL),
   are_materials_instantiated(false),
-  non_local_manager(NULL) {
+  non_local_manager(NULL),
+  pbc_synch(NULL) {
 
   AKANTU_DEBUG_IN();
 
@@ -176,6 +177,8 @@ SolidMechanicsModel::~SolidMechanicsModel() {
   delete non_local_manager;
   non_local_manager = NULL;
 #endif
+
+  delete pbc_synch;
 
   AKANTU_DEBUG_OUT();
 }
@@ -402,11 +405,11 @@ void SolidMechanicsModel::initPBC() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::registerPBCSynchronizer(){
-  PBCSynchronizer * synch = new PBCSynchronizer(pbc_pair);
-  synch_registry->registerSynchronizer(*synch, _gst_smm_uv);
-  synch_registry->registerSynchronizer(*synch, _gst_smm_mass);
-  synch_registry->registerSynchronizer(*synch, _gst_smm_res);
-  synch_registry->registerSynchronizer(*synch, _gst_for_dump);
+  pbc_synch = new PBCSynchronizer(pbc_pair);
+  synch_registry->registerSynchronizer(*pbc_synch, _gst_smm_uv);
+  synch_registry->registerSynchronizer(*pbc_synch, _gst_smm_mass);
+  synch_registry->registerSynchronizer(*pbc_synch, _gst_smm_res);
+  synch_registry->registerSynchronizer(*pbc_synch, _gst_for_dump);
   changeLocalEquationNumberForPBC(pbc_pair, mesh.getSpatialDimension());
 }
 
