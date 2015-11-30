@@ -173,7 +173,7 @@ void NeighborhoodMaxCriterion::findMaxQuads(std::vector<IntegrationPoint> & max_
   const ID field_name = criterion.getName();
   for (UInt m = 0; m < this->model.getNbMaterials(); ++m) {
     const Material & material = this->model.getMaterial(m);
-    if (material.isInternal(field_name, _ek_regular)) 
+    if (material.isInternal<Real>(field_name, _ek_regular))
       for(UInt g = _not_ghost; g <= _ghost; ++g) {
 	GhostType ghost_type = (GhostType) g;
 	material.flattenInternal(field_name, criterion, ghost_type, _ek_regular);

@@ -79,15 +79,18 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
     this->model->getMeshFacets().initElementTypeMapArray(facet_filter, 1,
 							 spatial_dimension - 1);
 
-  this->fem = &(model.getFEEngineClass<MyFEEngineCohesiveType>("CohesiveFEEngine"));
+  this->reversible_energy.initialize(1                );
+  this->total_energy     .initialize(1                );
+  this->tractions_old    .initialize(spatial_dimension);
+  this->tractions        .initialize(spatial_dimension);
+  this->opening_old      .initialize(spatial_dimension);
+  this->contact_tractions.initialize(spatial_dimension);
+  this->contact_opening  .initialize(spatial_dimension);
+  this->opening          .initialize(spatial_dimension);
+  this->delta_max        .initialize(1                );
+  this->damage           .initialize(1                );
 
-  this->gradu.setElementKind(_ek_cohesive);
-  this->stress.setElementKind(_ek_cohesive);
-  this->eigengradu.setElementKind(_ek_cohesive);
-
-  this->gradu.setFEEngine(*fem);
-  this->stress.setFEEngine(*fem);
-  this->eigengradu.setFEEngine(*fem);
+  if (this->model->getIsExtrinsic()) this->sigma_c.initialize(1);
 
   AKANTU_DEBUG_OUT();
 }
@@ -103,21 +106,7 @@ MaterialCohesive::~MaterialCohesive() {
 void MaterialCohesive::initMaterial() {
   AKANTU_DEBUG_IN();
   Material::initMaterial();
-
-  this->reversible_energy.initialize(1                );
-  this->total_energy     .initialize(1                );
-  this->tractions_old    .initialize(spatial_dimension);
-  this->tractions        .initialize(spatial_dimension);
-  this->opening_old      .initialize(spatial_dimension);
-  this->contact_tractions.initialize(spatial_dimension);
-  this->contact_opening  .initialize(spatial_dimension);
-  this->opening          .initialize(spatial_dimension);
-  this->delta_max        .initialize(1                );
-  this->damage           .initialize(1                );
-
-  if (model->getIsExtrinsic()) this->sigma_c.initialize(1);
-  if (use_previous_delta_max) delta_max.initializeHistory();
-
+  if (this->use_previous_delta_max) this->delta_max.initializeHistory();
   AKANTU_DEBUG_OUT();
 }
 
@@ -623,17 +612,6 @@ Real MaterialCohesive::getEnergy(std::string type) {
 
   AKANTU_DEBUG_OUT();
   return 0.;
-}
-
-/* -------------------------------------------------------------------------- */
-inline ElementTypeMap<UInt> MaterialCohesive::getInternalDataPerElem(const ID & id,
-							     const ElementKind & element_kind,
-                                                             const ID & fe_engine_id) const {
-  if (element_kind == _ek_cohesive) {
-    return Material::getInternalDataPerElem(id, element_kind, "CohesiveFEEngine");
-  } else {
-    return Material::getInternalDataPerElem(id, element_kind, fe_engine_id);
-  }
 }
 
 /* -------------------------------------------------------------------------- */

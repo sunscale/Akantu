@@ -121,8 +121,8 @@ public:
                                          const ElementKind & element_kind,
                                          bool padding_flag);
 
-  virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-                                                      const ElementKind & kind);
+  // virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
+  //                                                     const ElementKind & kind);
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */

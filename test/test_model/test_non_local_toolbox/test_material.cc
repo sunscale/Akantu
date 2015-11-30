@@ -34,7 +34,7 @@ __BEGIN_AKANTU__
 template<UInt dim>
 TestMaterial<dim>::TestMaterial(SolidMechanicsModel & model, const ID & id) :
   Material(model, id),
-  MyElasticParent(model, id),
+  MyLocalParent(model, id),
   MyNonLocalParent(model, id),
   grad_u_nl("grad_u non local", *this) {
   this->is_non_local = true;
@@ -50,7 +50,7 @@ void TestMaterial<spatial_dimension>::initMaterial() {
 
   this->registerNeighborhood();
 
-  MyElasticParent::initMaterial();
+  MyLocalParent::initMaterial();
   MyNonLocalParent::initMaterial();
 
   this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), "test_region");

@@ -1,6 +1,7 @@
 /**
  * @file   neighborhood_base_inline_impl.cc
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Mon Sep 21 18:25:31 2015
  *
  * @brief  Inline implementation of neighborhood base functions

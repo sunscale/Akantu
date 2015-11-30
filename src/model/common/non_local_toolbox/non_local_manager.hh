@@ -1,6 +1,7 @@
 /**
  * @file   non_local_manager.hh
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Mon Sep 21 14:21:33 2015
  *
  * @brief  Classes that manages all the non-local neighborhoods
@@ -32,6 +33,7 @@
 #include "aka_memory.hh"
 #include "solid_mechanics_model.hh"
 #include "non_local_neighborhood_base.hh"
+#include "mesh_events.hh"
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -135,6 +137,7 @@ protected:
 
   /// resizing of element type maps
   void resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map,
+			    const FEEngine & fee,
                             const ElementKind el_kind = _ek_regular);
 
   /// remove integration points from element type maps
@@ -156,13 +159,17 @@ protected:
   /* MeshEventHandler inherited members                                       */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void
-  onElementsRemoved(const Array<Element> & element_list,
-                    const ElementTypeMapArray<UInt> & new_numbering,
-                    const RemovedElementsEvent & event);
-
+  virtual void onElementsRemoved(const Array<Element> & element_list,
+				 const ElementTypeMapArray<UInt> & new_numbering,
+				 const RemovedElementsEvent & event);
+  
   virtual void onElementsAdded(const Array<Element> & element_list,
                                const NewElementsEvent & event);
+
+  virtual void onElementsChanged(__attribute__((unused)) const Array<Element> & old_elements_list,
+				 __attribute__((unused)) const Array<Element> & new_elements_list,
+				 __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+				 __attribute__((unused)) const ChangedElementsEvent & event) {};
 
   virtual void onNodesAdded(__attribute__((unused)) const Array<UInt> & nodes_list,
                             __attribute__((unused)) const NewNodesEvent & event) {};

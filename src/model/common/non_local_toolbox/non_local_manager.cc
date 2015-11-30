@@ -1,6 +1,7 @@
 /**
  * @file   non_local_manager.cc
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Mon Sep 21 15:32:10 2015
  *
  * @brief  Implementation of non-local manager
@@ -52,6 +53,7 @@ NonLocalManager::NonLocalManager(SolidMechanicsModel & model,
   /// initialize the element type map array
   /// it will be resized to nb_quad * nb_element during the computation of coords
   mesh.initElementTypeMapArray(quad_positions, spatial_dimension, spatial_dimension, false, _ek_regular, true);
+  this->initElementTypeMap(1, volumes, this->model.getFEEngine());   
 
   /// parse the neighborhood information from the input file
   const Parser & parser = getStaticParser();
@@ -246,7 +248,7 @@ void NonLocalManager::flattenInternal(ElementTypeMapReal & internal_flat,
   const ID field_name = internal_flat.getName();
   for (UInt m = 0; m < this->non_local_materials.size(); ++m) {
     Material & material = *(this->non_local_materials[m]);
-    if (material.isInternal(field_name, kind)) 
+    if (material.isInternal<Real>(field_name, kind))
       material.flattenInternal(field_name, internal_flat, ghost_type, kind);
   }
 }
@@ -323,7 +325,6 @@ void NonLocalManager::init(){
   this->updatePairLists();
   /// cleanup the unneccessary ghost elements
   this->cleanupExtraGhostElements(nb_ghost_protected);
-  this->initElementTypeMap(1, volumes, fee);
   this->setJacobians(fee, _ek_regular);
   this->initNonLocalVariables();
   this->computeWeights();
@@ -375,7 +376,7 @@ void NonLocalManager::distributeInternals(ElementKind kind) {
     const ID field_name = non_local_var->non_local.getName();
     /// loop over all the materials
     for (UInt m = 0; m < this->non_local_materials.size(); ++m) {
-      if (this->non_local_materials[m]->isInternal(field_name, kind))
+      if (this->non_local_materials[m]->isInternal<Real>(field_name, kind))
 
 	switch (spatial_dimension) {
 	case 1:
@@ -566,14 +567,14 @@ void NonLocalManager::onElementsRemoved(const Array<Element> & element_list,
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::onElementsAdded(__attribute__((unused)) const Array<Element> & element_list,
 				      __attribute__((unused)) const NewElementsEvent & event) {
-  this->resizeElementTypeMap(1, volumes);
-  this->resizeElementTypeMap(spatial_dimension, quad_positions);
+  this->resizeElementTypeMap(1, volumes, model.getFEEngine());
+  this->resizeElementTypeMap(spatial_dimension, quad_positions, model.getFEEngine());
 
 }
 
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map,
-					   const ElementKind el_kind) {
+					   const FEEngine & fee, const ElementKind el_kind) {
   Mesh & mesh = this->model.getMesh();
   for(UInt g = _not_ghost; g <= _ghost; ++g) {
     GhostType gt = (GhostType) g;
@@ -581,10 +582,11 @@ void NonLocalManager::resizeElementTypeMap(UInt nb_component, ElementTypeMapReal
     Mesh::type_iterator end = mesh.lastType(spatial_dimension, gt, el_kind);
     for(; it != end; ++it) {
       UInt nb_element = mesh.getNbElement(*it, gt);
+      UInt nb_quads = fee.getNbIntegrationPoints(*it, gt);
       if(!element_map.exists(*it, gt)) 
-	element_map.alloc(nb_element, nb_component, *it, gt);
+	element_map.alloc(nb_element * nb_quads, nb_component, *it, gt);
       else 
-	element_map(*it, gt).resize(nb_element);
+	element_map(*it, gt).resize(nb_element * nb_quads);
     } 
   }
 }
