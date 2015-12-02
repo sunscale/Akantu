@@ -1,6 +1,7 @@
 /**
  * @file   non_local_neighborhood_base.hh
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Mon Sep 21 15:43:26 2015
  *
  * @brief  Non-local neighborhood base class

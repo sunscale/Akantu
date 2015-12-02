@@ -373,6 +373,11 @@ public:
                                  const ElementTypeMapArray<UInt> & new_numbering,
                                  const RemovedElementsEvent & event);
 
+  virtual void onElementsChanged(__attribute__((unused)) const Array<Element> & old_elements_list,
+				 __attribute__((unused)) const Array<Element> & new_elements_list,
+                                 __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+                                 __attribute__((unused)) const ChangedElementsEvent & event) {};
+
   /* ------------------------------------------------------------------------ */
   /* SolidMechanicsModelEventHandler inherited members                        */
   /* ------------------------------------------------------------------------ */
@@ -430,10 +435,12 @@ public:
   template <typename T>
   InternalField<T> & getInternal(const ID & id);
 
+  template<typename T>
   inline bool isInternal(const ID & id, const ElementKind & element_kind) const;
-  virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
-                                                      const ElementKind & element_kind,
-                                                      const ID & fe_engine_id = "") const;
+
+  template <typename T>
+  ElementTypeMap<UInt> getInternalDataPerElem(const ID & id,
+                                              const ElementKind & element_kind) const;
 
   bool isFiniteDeformation() const { return finite_deformation; }
   bool isInelasticDeformation() const { return inelastic_deformation; }
@@ -444,24 +451,14 @@ public:
   template <typename T>
   inline const T & getParam(const ID & param) const;
 
-  virtual void flattenInternal(const std::string & field_id,
-                               ElementTypeMapArray<Real> & internal_flat,
-                               const GhostType ghost_type = _not_ghost,
-                               ElementKind element_kind = _ek_not_defined) const;
+  template <typename T>
+  void flattenInternal(const std::string & field_id,
+                       ElementTypeMapArray<T> & internal_flat,
+                       const GhostType ghost_type = _not_ghost,
+                       ElementKind element_kind = _ek_not_defined) const;
 
   /// apply a constant eigengrad_u everywhere in the material
   virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const GhostType = _not_ghost);
-
-protected:
-  /// internal variation of the flatten function that is more flexible and can
-  /// be used by inherited materials to change some behavior
-  virtual void flattenInternalIntern(const std::string & field_id,
-                                     ElementTypeMapArray<Real> & internal_flat,
-                                     UInt spatial_dimension,
-                                     const GhostType ghost_type,
-                                     ElementKind element_kind,
-                                     const ElementTypeMapArray<UInt> * element_filter = NULL,
-                                     const Mesh * mesh = NULL) const;
 
 protected:
 
@@ -541,12 +538,6 @@ protected:
   std::vector<ID> internals_to_transfer;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#include "material_inline_impl.cc"
-
 /// standard output stream operator
 inline std::ostream & operator <<(std::ostream & stream, const Material & _this)
 {
@@ -555,6 +546,8 @@ inline std::ostream & operator <<(std::ostream & stream, const Material & _this)
 }
 
 __END_AKANTU__
+
+#include "material_inline_impl.cc"
 
 #include "internal_field_tmpl.hh"
 #include "random_internal_field_tmpl.hh"

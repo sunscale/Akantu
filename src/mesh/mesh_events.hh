@@ -130,15 +130,15 @@ public:
                               const RemovedNodesEvent & event) = 0;
 
   virtual void onElementsAdded  (__attribute__((unused)) const Array<Element> & elements_list,
-                                 __attribute__((unused)) const NewElementsEvent & event) { }
+                                 __attribute__((unused)) const NewElementsEvent & event) = 0;
   virtual void onElementsRemoved(__attribute__((unused)) const Array<Element> & elements_list,
                                  __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-                                 __attribute__((unused)) const RemovedElementsEvent & event) { }
+                                 __attribute__((unused)) const RemovedElementsEvent & event) = 0;
 
   virtual void onElementsChanged(__attribute__((unused)) const Array<Element> & old_elements_list,
 				 __attribute__((unused)) const Array<Element> & new_elements_list,
                                  __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-                                 __attribute__((unused)) const ChangedElementsEvent & event) { }
+                                 __attribute__((unused)) const ChangedElementsEvent & event) = 0;
 };
 
 

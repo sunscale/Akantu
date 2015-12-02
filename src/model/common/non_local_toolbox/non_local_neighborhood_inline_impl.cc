@@ -1,6 +1,7 @@
 /**
  * @file   non_local_neighborhood_inline_impl.cc
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Mon Oct  5 09:36:33 2015
  *
  * @brief  Implementation of inline functions of non-local neighborhood class
