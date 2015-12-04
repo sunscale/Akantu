@@ -59,7 +59,8 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
-  while (insertion_new_element) {  //loop for insertion of new cohesive elements
+  /// Loop for the insertion of new cohesive elements
+  while (insertion_new_element) {
 
     //insertion_new_element = false;
 
@@ -129,6 +130,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       if(converged) return converged;
     }
 
+    /// Loop to solve the nonlinear system
     do {
       if (cmethod == _scm_newton_raphson_tangent)
         this->assembleStiffnessMatrix();
@@ -138,6 +140,9 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       this->implicitCorr();
 
       this->updateResidual();
+
+      //      dump();
+      //   dump("cohesive elements");
 
       converged = this->testConvergence<criteria> (tolerance, error);
 
@@ -160,10 +165,14 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
     } while (!converged && iter < max_iteration);
 
+
+    /// This is to save the obtained result and proceed with the
+    /// simulation even if the error is higher than the pre-fixed
+    /// tolerance.
     if (load_reduction && (error < tolerance * 1.0e8)) converged = true;
 
     if (converged) {
-      ////      EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
+      //      EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
       // !!! add sendEvent to call computeCauchyStress !!!!
      
       if (prank==0){
@@ -213,8 +222,8 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
     if (!converged && load_reduction)
       insertion_new_element = false;
 
-    //    if ((!converged && !load_reduction) || (error > 1.)){
-    if (!converged && !load_reduction){
+    //    if (!converged && !load_reduction){
+      if (!converged) {
       insertion_new_element = false;
 
       for (UInt m = 0; m < materials.size(); ++m) {
@@ -229,8 +238,8 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
   } //end while insertion_new_element
 
 
-  //  if ((is_extrinsic && converged) || (is_extrinsic && load_reduction && error < 1.))  {
-  if ((is_extrinsic && converged) || (is_extrinsic && load_reduction))  {
+  //if ((is_extrinsic && converged) || (is_extrinsic && load_reduction))  {
+  if ((is_extrinsic && converged))  {
 
     for(UInt m = 0; m < materials.size(); ++m) {
       try {
@@ -240,6 +249,15 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
     }
 
     EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
+
+
+    for (UInt m = 0; m < materials.size(); ++m) {
+      try {
+	MaterialCohesive & mat = dynamic_cast<MaterialCohesive &>(*materials[m]);
+	mat.resetVariables(_not_ghost);
+      } catch(std::bad_cast&) { }
+    }
+
 
     this->displacement->copy(*displacement_tmp);
     this->velocity    ->copy(*velocity_tmp);

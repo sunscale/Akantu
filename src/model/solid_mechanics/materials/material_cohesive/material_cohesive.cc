@@ -277,7 +277,10 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
     }
 
     /// compute traction
-    computeTraction(ghost_type);
+    if (!model->getIsExtrinsic()){
+      std::cout << "HELLO!!" << std::endl;
+      computeTraction(ghost_type);
+    }
 
     /// get the tangent matrix @f$\frac{\partial{(t/\delta)}}{\partial{\delta}} @f$
     Array<Real> * tangent_stiffness_matrix =
