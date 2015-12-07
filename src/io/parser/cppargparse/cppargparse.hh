@@ -34,44 +34,42 @@
 #include <iostream>
 #include <vector>
 
-
 #ifndef __CPPARGPARSE_HH__
 #define __CPPARGPARSE_HH__
 
 namespace cppargparse {
 
-enum ArgumentType {
-  _string,
-  _integer,
-  _float,
-  _boolean
-};
+/// define the types of the arguments
+enum ArgumentType { _string, _integer, _float, _boolean };
 
-enum ArgumentNargs {
-  _one_if_possible = -1,
-  _at_least_one = -2,
-  _any = -3
-};
+/// Defines how many arguments to expect
+enum ArgumentNargs { _one_if_possible = -1, _at_least_one = -2, _any = -3 };
 
+/// Flags for the parse function of ArgumentParser
 enum ParseFlags {
-  _no_flags           = 0x0,
-  _stop_on_not_parsed = 0x1,
-  _remove_parsed      = 0x2
+  _no_flags = 0x0,           ///< Default behavior
+  _stop_on_not_parsed = 0x1, ///< Stop on unknown arguments
+  _remove_parsed = 0x2       ///< Remove parsed arguments from argc argv
 };
 
+/// Helps to combine parse flags
 inline ParseFlags operator|(const ParseFlags & a, const ParseFlags & b) {
   ParseFlags tmp = ParseFlags(int(a) | int(b));
   return tmp;
 }
 
+/**
+ * ArgumentParser is a class that mimics the Python argparse module
+ */
 class ArgumentParser {
 public:
+  /// public definition of an argument
   class Argument {
   public:
     Argument() : name(std::string()) {}
     virtual ~Argument() {}
     virtual void printself(std::ostream & stream) const = 0;
-    template<class T> operator T() const;
+    template <class T> operator T() const;
     std::string name;
   };
 
@@ -82,31 +80,22 @@ public:
   ~ArgumentParser();
 
   /// add an argument with a description
-  void addArgument(const std::string & name_or_flag,
-		     const std::string & help,
-		     int nargs = 1,
-		     ArgumentType type = _string);
+  void addArgument(const std::string & name_or_flag, const std::string & help,
+                   int nargs = 1, ArgumentType type = _string);
 
   /// add an argument with an help and a default value
-  template<class T>
-  void addArgument(const std::string & name_or_flag,
-		     const std::string & help,
-		     int nargs,
-		     ArgumentType type,
-		     T def);
+  template <class T>
+  void addArgument(const std::string & name_or_flag, const std::string & help,
+                   int nargs, ArgumentType type, T def);
 
   /// add an argument with an help and a default + const value
-  template<class T>
-  void addArgument(const std::string & name_or_flag,
-		     const std::string & help,
-		     int nargs,
-		     ArgumentType type,
-		     T def,
-		     T cons);
+  template <class T>
+  void addArgument(const std::string & name_or_flag, const std::string & help,
+                   int nargs, ArgumentType type, T def, T cons);
 
   /// parse argc, argv
-  void parse(int & argc, char ** & argv,
-	     int flags = _stop_on_not_parsed, bool parse_help = true);
+  void parse(int & argc, char **& argv, int flags = _stop_on_not_parsed,
+             bool parse_help = true);
 
   /// print the content in the stream
   void printself(std::ostream & stream) const;
@@ -127,47 +116,65 @@ public:
   const Argument & operator[](const std::string & name) const;
 
   bool has(const std::string &) const;
-  
-  /// set the parallel context to avoid multiple help messages in multiproc/thread cases
+
+  /// set the parallel context to avoid multiple help messages in
+  /// multiproc/thread cases
   void setParallelContext(int prank, int psize);
 
 public:
+  /// Internal class describing the arguments
   class _Argument;
-  template<class T> class ArgumentStorage;
+  /// Stores that value of an argument
+  template <class T> class ArgumentStorage;
 
 private:
+  /// Internal function to be used by the public addArgument
   _Argument & _addArgument(const std::string & name_or_flag,
-			     const std::string & description,
-			     int nargs,
-			     ArgumentType type);
+                           const std::string & description, int nargs,
+                           ArgumentType type);
 
   void _exit(const std::string & msg = "", int status = 0);
   bool checkType(ArgumentType type, const std::string & value) const;
 
-  void print_usage_nargs(std::ostream & stream, const _Argument & argument) const;
-  void print_help_argument(std::ostream & stream, const _Argument & argument) const;
+  /// function to help to print help
+  void print_usage_nargs(std::ostream & stream,
+                         const _Argument & argument) const;
+  /// function to help to print help
+  void print_help_argument(std::ostream & stream,
+                           const _Argument & argument) const;
 
 private:
-  typedef std::map<std::string, _Argument *> _Arguments;
+  /// public arguments storage
   typedef std::map<std::string, Argument *> Arguments;
+  /// internal arguments storage
+  typedef std::map<std::string, _Argument *> _Arguments;
+  /// association key argument
   typedef std::map<std::string, _Argument *> ArgumentKeyMap;
+  /// position arguments
   typedef std::vector<_Argument *> PositionalArgument;
 
+  /// internal storage of arguments declared by the user
   _Arguments arguments;
-
-  ArgumentKeyMap     key_args;
-  PositionalArgument pos_args;
+  /// list of arguments successfully parsed
   Arguments success_parsed;
+  /// keys associated to arguments
+  ArgumentKeyMap key_args;
+  /// positional arguments
+  PositionalArgument pos_args;
 
+  /// argv[0]
   std::string program_name;
+
+  /// exit function to use
   void (*external_exit)(int);
 
+  /// parallel context
   int prank, psize;
 };
-
 }
 
-inline std::ostream & operator<<(std::ostream & stream, const cppargparse::ArgumentParser & argparse) {
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const cppargparse::ArgumentParser & argparse) {
   argparse.printself(stream);
   return stream;
 }
