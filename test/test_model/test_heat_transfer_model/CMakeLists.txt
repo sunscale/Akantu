@@ -37,7 +37,7 @@ add_mesh(test_heat_square_mesh1 square.geo 2 1 OUTPUT square1.msh)
 add_mesh(test_heat_line_mesh line.geo 1 1 OUTPUT line.msh)
 register_test(test_heat_transfer_model_cube3d
   SOURCES test_heat_transfer_model_cube3d.cc
-  DEPENDENCIES test_heat_cube3d_mesh1 test_heat_square_mesh1 test_heat_line_mesh
+  DEPENDS test_heat_cube3d_mesh1 test_heat_square_mesh1 test_heat_line_mesh
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE heat_transfer
@@ -46,7 +46,7 @@ register_test(test_heat_transfer_model_cube3d
 add_mesh(test_heat_cube_tet4 cube_tet.geo 3 1 OUTPUT cube_tet4.msh)
 register_test(test_heat_transfer_model_cube3d_pbc
   SOURCES test_heat_transfer_model_cube3d_pbc.cc
-  DEPENDENCIES test_heat_cube_tet4
+  DEPENDS test_heat_cube_tet4
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE heat_transfer
@@ -55,7 +55,7 @@ register_test(test_heat_transfer_model_cube3d_pbc
 add_mesh(test_heat_square_tri3 square_tri.geo 2 1 OUTPUT square_tri3.msh)
 register_test(test_heat_transfer_model_square2d_pbc
   SOURCES test_heat_transfer_model_square2d_pbc.cc
-  DEPENDENCIES test_heat_square_tri3
+  DEPENDS test_heat_square_tri3
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE heat_transfer
@@ -63,7 +63,7 @@ register_test(test_heat_transfer_model_square2d_pbc
 
 register_test(test_heat_transfer_model_square2d
   SOURCES test_heat_transfer_model_square2d.cc
-  DEPENDENCIES test_heat_square_tri3
+  DEPENDS test_heat_square_tri3
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE heat_transfer
@@ -71,7 +71,7 @@ register_test(test_heat_transfer_model_square2d
 
 register_test(test_heat_transfer_model_square2d_implicit
   SOURCES test_heat_transfer_model_square2d_implicit.cc
-  DEPENDENCIES test_heat_square_tri3
+  DEPENDS test_heat_square_tri3
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE heat_transfer
@@ -80,7 +80,7 @@ register_test(test_heat_transfer_model_square2d_implicit
 
 register_test(test_heat_transfer_model_cube3d_istropic_conductivity
   SOURCES test_heat_transfer_model_cube3d_istropic_conductivity.cc
-  DEPENDENCIES test_heat_cube3d_mesh1
+  DEPENDS test_heat_cube3d_mesh1
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE heat_transfer

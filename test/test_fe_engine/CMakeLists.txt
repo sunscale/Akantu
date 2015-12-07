@@ -82,11 +82,11 @@ add_mesh(test_boundary_msh_physical_names cube_physical_names.geo 3 1)
 
 register_test(test_mesh_boundary
   SOURCES test_mesh_boundary.cc
-  DEPENDENCIES test_boundary_msh test_boundary_msh_physical_names
+  DEPENDS test_boundary_msh test_boundary_msh_physical_names
   PACKAGE core)
 
 register_test(test_facet_element_mapping
   SOURCES test_facet_element_mapping.cc
-  DEPENDENCIES test_boundary_msh_physical_names
+  DEPENDS test_boundary_msh_physical_names
   PACKAGE core)
 

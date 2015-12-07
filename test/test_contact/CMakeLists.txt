@@ -34,7 +34,7 @@ add_mesh(hertz_2D_mesh_test hertz_2D.geo 2 1)
 
 register_test(test_hertz_2D
   SOURCES hertz_2D.cc
-  DEPENDENCIES hertz_2D_mesh_test
+  DEPENDS hertz_2D_mesh_test
   FILES_TO_COPY steel.dat
   PACKAGE contact
   )
@@ -51,7 +51,7 @@ add_mesh(offset_1slave_mesh offset_1slave.geo 2 1)
 
 register_test(test_offset_1slave
   SOURCES offset_1slave.cc
-  DEPENDENCIES offset_1slave_mesh
+  DEPENDS offset_1slave_mesh
   FILES_TO_COPY steel.dat
   PACKAGE contact
   )
@@ -60,7 +60,7 @@ add_mesh(offset_2slaves_mesh offset_2slaves.geo 2 1)
 
 register_test(test_offset_2slaves
   SOURCES offset_2slaves.cc
-  DEPENDENCIES offset_2slaves_mesh
+  DEPENDS offset_2slaves_mesh
   FILES_TO_COPY steel.dat
   PACKAGE contact
   )
@@ -72,7 +72,7 @@ add_mesh(acurnier_2D_1_mesh acurnier_2D_1.geo 2 1)
 
 register_test(test_acurnier_2D_1
   SOURCES acurnier_2D_1.cc
-  DEPENDENCIES acurnier_2D_1_mesh
+  DEPENDS acurnier_2D_1_mesh
   FILES_TO_COPY material.dat
   PACKAGE contact
   )
@@ -81,7 +81,7 @@ add_mesh(acurnier_2D_2_mesh acurnier_2D_2.geo 2 1)
 
 register_test(test_acurnier_2D_2
   SOURCES acurnier_2D_2.cc
-  DEPENDENCIES acurnier_2D_2_mesh
+  DEPENDS acurnier_2D_2_mesh
   FILES_TO_COPY material.dat
   PACKAGE contact
   )
@@ -90,7 +90,7 @@ add_mesh(acurnier_2D_3_mesh acurnier_2D_3.geo 2 1)
 
 register_test(test_acurnier_2D_3
   SOURCES acurnier_2D_3.cc
-  DEPENDENCIES acurnier_2D_3_mesh
+  DEPENDS acurnier_2D_3_mesh
   FILES_TO_COPY material.dat
   PACKAGE contact
   )
@@ -100,7 +100,7 @@ add_mesh(acurnier_3D_1_mesh acurnier_3D_1.geo 3 1)
 
 register_test(test_acurnier_3D_1
   SOURCES acurnier_3D_1.cc
-  DEPENDENCIES acurnier_3D_1_mesh
+  DEPENDS acurnier_3D_1_mesh
   FILES_TO_COPY material.dat
   PACKAGE contact
   )
@@ -109,7 +109,7 @@ add_mesh(acurnier_3D_2_mesh acurnier_3D_2.geo 3 1)
 
 register_test(test_acurnier_3D_2
   SOURCES acurnier_3D_2.cc
-  DEPENDENCIES acurnier_3D_2_mesh
+  DEPENDS acurnier_3D_2_mesh
   FILES_TO_COPY material.dat
   PACKAGE contact
   )
@@ -118,7 +118,7 @@ add_mesh(acurnier_3D_3_mesh acurnier_3D_3.geo 3 1)
 
 register_test(test_acurnier_3D_3
   SOURCES acurnier_3D_3.cc
-  DEPENDENCIES acurnier_3D_3_mesh
+  DEPENDS acurnier_3D_3_mesh
   FILES_TO_COPY material.dat
   PACKAGE contact
   )
