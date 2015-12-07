@@ -20,7 +20,7 @@ add_mesh(test_mesh plate.geo 2 1 OUTPUT plate.msh)
 
 register_test(test_igfem_triangle_5
   SOURCES test_igfem_triangle_5.cc
-  DEPENDENCIES test_mesh
+  DEPENDS test_mesh
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE IGFEM
