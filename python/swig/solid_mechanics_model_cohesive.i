@@ -4,6 +4,7 @@
 %}
 
 namespace akantu {
+  %ignore SolidMechanicsModelCohesive::initFacetFilter;
   %ignore SolidMechanicsModelCohesive::initParallel;
   %ignore CohesiveElementInserter::initParallel;
 }
