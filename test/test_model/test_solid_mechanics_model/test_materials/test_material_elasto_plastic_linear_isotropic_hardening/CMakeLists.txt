@@ -1,11 +1,12 @@
 #===============================================================================
-# @file   boost.cmake
+# @file   CMakeLists.txt
 #
-# @author Nicolas Richart <nicolas.richart@epfl.ch>
+# @author Jaehyun Cho <jaehyun.cho@epfl.ch>
 #
-# @date creation: Wed Jan 14 2015
+# @date creation: Fri Aug 3 2015
 #
-# @brief  package handling the dependencies to boost
+# @brief  test for material type elasto plastic linear isotropic hardening using
+#         tension-compression test
 #
 # @section LICENSE
 #
@@ -25,25 +26,20 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
+# @section DESCRIPTION
+#
 #===============================================================================
 
-set(Boost_NO_BOOST_CMAKE ON CACHE BOOL "" FORCE)
+#===============================================================================
+add_mesh(test_material_standard_linear_isotropic_hardening_mesh
+  test_material_elasto_plastic_linear_isotropic_hardening.geo 3 2)
 
-package_declare(Boost EXTERNAL
-  NOT_OPTIONAL
-  DESCRIPTION "Package handling boost components"
-  EXTRA_PACKAGE_OPTIONS PREFIX Boost
+register_test(test_material_standard_linear_isotropic_hardening
+  SOURCES test_material_elasto_plastic_linear_isotropic_hardening.cc
+  DEPENDENCIES test_material_standard_linear_isotropic_hardening_mesh
+  FILES_TO_COPY test_material_elasto_plastic_linear_isotropic_hardening.dat
+  PACKAGE core
   )
 
-mark_as_advanced(Boost_DIR)
 
-package_on_enabled_script(Boost
-  "if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER \"4.8\")
-  set(_boost_version \${Boost_MAJOR_VERSION}.\${Boost_MINOR_VERSION})
-  if(AKANTU_CORE_CXX11 AND _boost_version VERSION_LESS 1.58)
-    add_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
-  else()
-    remove_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
-  endif()
-endif()
-")
+#===============================================================================

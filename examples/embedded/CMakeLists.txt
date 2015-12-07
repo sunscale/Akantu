@@ -1,15 +1,16 @@
 #===============================================================================
-# @file   boost.cmake
+# @file   CMakeLists.txt
 #
-# @author Nicolas Richart <nicolas.richart@epfl.ch>
+# @author Lucas Frérot <lucas.frerot@epfl.ch>
 #
-# @date creation: Wed Jan 14 2015
+# @date creation: Wed Jul 22 2015
+# @date last modification: Wed Jul 22 2015
 #
-# @brief  package handling the dependencies to boost
+# @brief  configuration for embedded example
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -25,25 +26,17 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
+# @section DESCRIPTION
+#
 #===============================================================================
 
-set(Boost_NO_BOOST_CMAKE ON CACHE BOOL "" FORCE)
+register_example(embedded embedded.cc USE CGAL)
 
-package_declare(Boost EXTERNAL
-  NOT_OPTIONAL
-  DESCRIPTION "Package handling boost components"
-  EXTRA_PACKAGE_OPTIONS PREFIX Boost
-  )
+add_mesh(concrete_mesh concrete.geo 2 1)
+add_mesh(reinforcement_mesh reinforcement.geo 1 1)
+add_dependencies(embedded concrete_mesh)
+add_dependencies(embedded reinforcement_mesh)
 
-mark_as_advanced(Boost_DIR)
+#===============================================================================
+file(COPY material.dat DESTINATION .)
 
-package_on_enabled_script(Boost
-  "if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER \"4.8\")
-  set(_boost_version \${Boost_MAJOR_VERSION}.\${Boost_MINOR_VERSION})
-  if(AKANTU_CORE_CXX11 AND _boost_version VERSION_LESS 1.58)
-    add_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
-  else()
-    remove_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
-  endif()
-endif()
-")
