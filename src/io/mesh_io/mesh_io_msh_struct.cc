@@ -55,7 +55,7 @@ MeshIOMSHStruct::MeshIOMSHStruct() : MeshIOMSH() {
   for(it = _akantu_to_msh_element_types.begin();
       it != _akantu_to_msh_element_types.end(); ++it) {
     UInt nb_nodes = _msh_nodes_per_elem[it->second];
-    std::vector<UInt> tmp = new UInt[nb_nodes];
+    std::vector<UInt> tmp(nb_nodes);
     for (UInt i = 0; i < nb_nodes; ++i) tmp[i] = i;
     _read_order[it->first] = tmp;
   }
