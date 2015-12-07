@@ -33,7 +33,7 @@ add_mesh(3d_spherical_inclusion_parallel 3d_spherical_inclusion.geo 3 2)
 
 register_test(test_cohesive_parallel_insertion_along_physical_surfaces
   SOURCES test_cohesive_parallel_insertion_along_physical_surfaces.cc
-  DEPENDENCIES 3d_spherical_inclusion_parallel
+  DEPENDS 3d_spherical_inclusion_parallel
   FILES_TO_COPY input_file.dat
   PACKAGE parallel_cohesive_element
   )

@@ -19,7 +19,7 @@ add_mesh(test_cohesive_parallel_buildfragments_mesh mesh.geo 3 2)
 
 register_test(test_cohesive_parallel_buildfragments
   SOURCES test_cohesive_parallel_buildfragments.cc
-  DEPENDENCIES test_cohesive_parallel_buildfragments_mesh
+  DEPENDS test_cohesive_parallel_buildfragments_mesh
   FILES_TO_COPY material.dat
   PACKAGE parallel_cohesive_element
   DIRECTORIES_TO_CREATE paraview)

@@ -22,6 +22,6 @@ add_mesh(test_facet_synchronizer_mesh
 
 register_test(test_facet_synchronizer
   SOURCES test_facet_synchronizer.cc test_data_accessor.hh
-  DEPENDENCIES test_facet_synchronizer_mesh
+  DEPENDS test_facet_synchronizer_mesh
   PACKAGE parallel_cohesive_element
   )

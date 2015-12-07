@@ -20,14 +20,14 @@ add_mesh(test_cohesive_parallel_intrinsic_tetrahedron_mesh tetrahedron.geo 3 2)
 
 register_test(test_cohesive_parallel_intrinsic
   SOURCES test_cohesive_parallel_intrinsic.cc
-  DEPENDENCIES test_cohesive_parallel_intrinsic_mesh
+  DEPENDS test_cohesive_parallel_intrinsic_mesh
   PACKAGE parallel_cohesive_element
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview)
 
 register_test(test_cohesive_parallel_intrinsic_tetrahedron
   SOURCES test_cohesive_parallel_intrinsic_tetrahedron.cc
-  DEPENDENCIES test_cohesive_parallel_intrinsic_tetrahedron_mesh
+  DEPENDS test_cohesive_parallel_intrinsic_tetrahedron_mesh
   PACKAGE parallel_cohesive_element
   FILES_TO_COPY material_tetrahedron.dat
   DIRECTORIES_TO_CREATE paraview)
