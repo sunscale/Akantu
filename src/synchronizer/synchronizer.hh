@@ -103,6 +103,7 @@ public:
   };
 
   template<typename CommTag>
+  /// generate the tag from the ID
   inline Tag genTagFromID(CommTag tag) {
     Tag t(std::abs((int(hash<std::string>(this->getID())) << 4) + (tag & 0xF)));
     return t;
