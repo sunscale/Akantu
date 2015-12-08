@@ -107,18 +107,14 @@ public:
     int tag;
   };
 
-<<<<<<< HEAD
-  template<typename CommTag>
+
   /// generate the tag from the ID
-  inline Tag genTagFromID(CommTag tag) {
-    Tag t(std::abs((int(hash<std::string>(this->getID())) << 4) + (tag & 0xF)));
-=======
   template <typename CommTag> inline Tag genTagFromID(CommTag tag) {
     int max_tag = StaticCommunicator::getStaticCommunicator().getMaxTag();
     Tag t(
         (std::abs((int(hash<std::string>(this->getID())) << 4) + (tag & 0xF))) %
         max_tag);
->>>>>>> 686ac09f1c085eb03110a75ead1a11087964f10c
+
     return t;
   }
 
