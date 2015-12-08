@@ -49,27 +49,10 @@ package_declare_sources(extra_materials
   material_damage/material_orthotropic_damage_iterative.cc
   material_damage/material_orthotropic_damage_iterative.hh
   material_damage/material_orthotropic_damage_iterative_inline_impl.cc
-
-  material_damage/material_orthotropic_damage_non_local.hh
-
-  material_damage/material_vreepeerlings_non_local.cc
-  material_damage/material_vreepeerlings_non_local.hh
-  material_damage/material_brittle_non_local.hh
-  material_damage/material_damage_iterative_non_local.hh
-  material_damage/material_damage_iterative_non_local.cc
-  material_damage/material_orthotropic_damage_iterative_non_local.hh
-
-  material_damage/material_vreepeerlings_non_local_inline_impl.cc
-  material_damage/material_brittle_non_local_inline_impl.cc
-  material_damage/material_damage_iterative_non_local_inline_impl.cc
-  material_damage/material_orthotropic_damage_iterative_non_local_inline_impl.cc
-
-  material_non_local_extra_includes.hh
   )
 
-
 package_declare_material_infos(extra_materials
-  LIST AKANTU_EXTRA_MATERIAL_LIST AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST
+  LIST AKANTU_EXTRA_MATERIAL_LIST
   INCLUDE material_extra_includes.hh
   )
 
@@ -88,3 +71,30 @@ package_declare_documentation(extra_materials
   "  \\item Visco-plastic"
   "\\end{itemize}"
   )
+
+package_declare(extra_materials_non_local
+  DESCRIPTION "Add the extra list of non local materials in Akantu"
+  DEPENDS extra_materials damage_non_local)
+
+package_declare_sources(extra_materials_non_local
+  material_damage/material_orthotropic_damage_non_local.hh
+
+  material_damage/material_vreepeerlings_non_local.cc
+  material_damage/material_vreepeerlings_non_local.hh
+  material_damage/material_brittle_non_local.hh
+  material_damage/material_damage_iterative_non_local.hh
+  material_damage/material_damage_iterative_non_local.cc
+  material_damage/material_orthotropic_damage_iterative_non_local.hh
+
+  material_damage/material_vreepeerlings_non_local_inline_impl.cc
+  material_damage/material_brittle_non_local_inline_impl.cc
+  material_damage/material_damage_iterative_non_local_inline_impl.cc
+  material_damage/material_orthotropic_damage_iterative_non_local_inline_impl.cc
+
+  material_non_local_extra_includes.hh
+  )
+
+package_declare_material_infos(extra_materials_non_local
+  LIST AKANTU_DAMAGE_NON_LOCAL_MATERIAL_EXTRA_LIST
+  INCLUDE material_extra_includes.hh
+)
