@@ -30,7 +30,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-inline FEEngine & HeatTransferModel::getFEEngineBoundary(std::string name) {
+inline FEEngine & HeatTransferModel::getFEEngineBoundary(const std::string & name) {
   return dynamic_cast<FEEngine &>(getFEEngineClassBoundary<MyFEEngineType>(name));
 }
 
