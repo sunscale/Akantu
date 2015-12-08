@@ -29,9 +29,9 @@
 # ==============================================================================
 # Package system meta functions
 # ==============================================================================
-function(package_set_project_variable variable value_in)
+function(package_set_project_variable variable)
   string(TOUPPER ${PROJECT_NAME} _u_project)
-  set(${_u_project}_${variable} ${value_in} CACHE INTERNAL "" FORCE)
+  set(${_u_project}_${variable} "${ARGN}" CACHE INTERNAL "" FORCE)
 endfunction()
 
 function(package_get_project_variable variable value_out)

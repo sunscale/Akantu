@@ -74,7 +74,9 @@ public:
   virtual void setNbDataPerElem(UInt nb_data){AKANTU_DEBUG_TO_IMPLEMENT();};
 
   /// get the number of components of the hosted field
-  virtual ElementTypeMap<UInt> getNbComponents(){throw;};
+  virtual ElementTypeMap<UInt> getNbComponents(UInt dim = _all_dimensions,
+					       GhostType ghost_type = _not_ghost,
+					       ElementKind kind = _ek_not_defined){throw;};
 
   /// for connection to a FieldCompute
   inline virtual Field * connect(FieldComputeProxy & proxy){throw;};

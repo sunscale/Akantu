@@ -155,6 +155,16 @@ inline void StaticCommunicator::waitAll(std::vector<CommunicationRequest *> & re
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(waitAll(requests), 0);
 }
 
+/* -------------------------------------------------------------------------- */
+inline int StaticCommunicator::getMaxTag() {
+  AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(getMaxTag(), 1);
+}
+
+/* -------------------------------------------------------------------------- */
+inline int StaticCommunicator::getMinTag() {
+  AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(getMinTag(), 1);
+}
+
 #if defined(__INTEL_COMPILER)
 #pragma warning ( pop )
 #endif //defined(__INTEL_COMPILER)

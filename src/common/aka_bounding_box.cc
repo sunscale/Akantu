@@ -71,7 +71,7 @@ BoundingBox<dim> createPointList(const nodes_container& nodes, const Array<Real>
     
     BoundingBox<dim> bbox(Point<dim>(&coord(*it),coord.getNbComponent()));
     for (++it; it != nodes.end(); ++it) {
-        Real * point_coord = &coord(*it);
+      //Real * point_coord = &coord(*it);
         for (UInt d=0; d<coord.getNbComponent(); ++d) {
             ;
         }

@@ -258,9 +258,16 @@ protected:
 
   class DummyDataAccessor : public DataAccessor {
   public:
-    virtual inline UInt getNbDataForElements() { return 0; };
-    virtual inline void packElementData(){};
-    virtual inline void unpackElementData(){};
+    virtual inline UInt getNbDataForElements(__attribute__((unused)) const Array<Element> & elements,
+					     __attribute__((unused)) SynchronizationTag tag) const { return 0; };
+    
+    virtual inline void packElementData(__attribute__((unused)) CommunicationBuffer & buffer,
+					__attribute__((unused)) const Array<Element> & element,
+					__attribute__((unused)) SynchronizationTag tag) const {};
+    
+    virtual inline void unpackElementData(__attribute__((unused)) CommunicationBuffer & buffer,
+					  __attribute__((unused)) const Array<Element> & element,
+					  __attribute__((unused)) SynchronizationTag tag)  {};
   };
 
   DummyDataAccessor dummy_accessor;

@@ -98,10 +98,7 @@ set(AKANTU_${_real_pkg_name}_COMPILE_FLAGS ${_compile_flags})
 endforeach()
 
 file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
-set(AKANTU_BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
-set(AKANTU_BOOST_LIBRARIES ${Boost_LIBRARIES})
 ")
-
 
 # Create the AkantuConfig.cmake and AkantuConfigVersion files
 get_filename_component(CONF_REL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}" ABSOLUTE)
