@@ -74,7 +74,7 @@ public:
   void setRandomDistribution(const RandomParameter<T> & param);
 
   /// print the content
-  virtual void printself(std::ostream & stream, unsigned int indent = 0) const;
+  virtual void printself(std::ostream & stream, int indent = 0) const;
 
 protected:
   virtual void setArrayValues(T * begin, T * end);

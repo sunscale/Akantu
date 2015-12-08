@@ -30,6 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include <stdexcept>
+#include <sstream>
 
 #ifndef __CPPARGPARSE_TMPL_HH__
 #define __CPPARGPARSE_TMPL_HH__

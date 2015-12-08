@@ -132,7 +132,7 @@ public:
   void setParallelContext(int prank, int psize);
 
 public:
-  class _Argument;
+  struct _Argument;
   template<class T> class ArgumentStorage;
 
 private:

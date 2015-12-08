@@ -32,7 +32,6 @@
 #include "aka_error.hh"
 #include "aka_fwd.hh"
 #include "aka_math.hh"
-#include "aka_array.hh"
 /* -------------------------------------------------------------------------- */
 #include <iomanip>
 /* -------------------------------------------------------------------------- */
@@ -292,7 +291,7 @@ public:
     this->copySize(src);
     if(!this->wrapped) delete [] this->values;
     this->values = new T[this->_size];
-    memcpy(this->values, src.storage(), this->_size * sizeof(T));
+    memcpy((void*)this->values, (void*)src.storage(), this->_size * sizeof(T));
     this->wrapped = false;
   }
 
@@ -307,7 +306,7 @@ public:
       if (this->wrapped) {
 	// this test is not sufficient for Tensor of order higher than 1
 	AKANTU_DEBUG_ASSERT(this->_size == src.size(), "Tensors of different size");
-	memcpy(this->values, src.storage(), this->_size * sizeof(T));
+	memcpy((void*)this->values, (void*)src.storage(), this->_size * sizeof(T));
       } else {
 	deepCopy(src);
       }

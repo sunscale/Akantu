@@ -39,8 +39,8 @@
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
-template<ElementKind k> class AssembleLumpedTemplateHelper;
-template<ElementKind k> class AssembleFieldMatrixHelper;
+template<ElementKind k> struct AssembleLumpedTemplateHelper;
+template<ElementKind k> struct AssembleFieldMatrixHelper;
 
 
 /* -------------------------------------------------------------------------- */
@@ -271,8 +271,8 @@ public:
 #endif
 
 private:
-  friend class AssembleLumpedTemplateHelper<kind>;
-  friend class AssembleFieldMatrixHelper<kind>;
+  friend struct AssembleLumpedTemplateHelper<kind>;
+  friend struct AssembleFieldMatrixHelper<kind>;
 
   /// templated function to compute the scaling to assemble a lumped matrix
   template <ElementType type>

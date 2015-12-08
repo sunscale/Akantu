@@ -110,7 +110,7 @@ private:
   Array<UInt> & node_group;
 
   /// reference to the mesh in question
-  const Mesh & mesh;
+  //const Mesh & mesh;
 };
 
 /// standard output stream operator

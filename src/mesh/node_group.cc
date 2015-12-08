@@ -48,8 +48,9 @@ NodeGroup::NodeGroup(const std::string & name,
                      const MemoryID & memory_id) :
   Memory(id, memory_id),
   name(name),
-  node_group(alloc<UInt>(std::string(this->id + ":nodes"), 0, 1)),
-  mesh(mesh){
+  node_group(alloc<UInt>(std::string(this->id + ":nodes"), 0, 1))//,
+  // mesh(mesh)
+{
 
 #if defined(AKANTU_USE_IOHELPER)
   this->registerDumper<DumperParaview>("paraview_"  + name, name, true);
