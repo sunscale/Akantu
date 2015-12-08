@@ -52,29 +52,30 @@ class Synchronizer : protected Memory {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   Synchronizer(SynchronizerID id = "synchronizer", MemoryID memory_id = 0);
 
-  virtual ~Synchronizer() { };
+  virtual ~Synchronizer(){};
 
   virtual void printself(__attribute__((unused)) std::ostream & stream,
-			 __attribute__((unused)) int indent = 0) const {};
+                         __attribute__((unused)) int indent = 0) const {};
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// synchronize ghosts
-  void synchronize(DataAccessor & data_accessor,SynchronizationTag tag);
+  void synchronize(DataAccessor & data_accessor, SynchronizationTag tag);
 
   /// asynchronous synchronization of ghosts
-  virtual void asynchronousSynchronize(DataAccessor & data_accessor,SynchronizationTag tag) = 0;
+  virtual void asynchronousSynchronize(DataAccessor & data_accessor,
+                                       SynchronizationTag tag) = 0;
 
   /// wait end of asynchronous synchronization of ghosts
-  virtual void waitEndSynchronize(DataAccessor & data_accessor,SynchronizationTag tag) = 0;
+  virtual void waitEndSynchronize(DataAccessor & data_accessor,
+                                  SynchronizationTag tag) = 0;
 
   /// compute buffer size for a given tag and data accessor
-  virtual void computeBufferSize(DataAccessor & data_accessor, SynchronizationTag tag)=0;
+  virtual void computeBufferSize(DataAccessor & data_accessor,
+                                 SynchronizationTag tag) = 0;
 
   /**
    * tag = |__________20_________|___8____|_4_|
@@ -87,45 +88,48 @@ public:
 
     operator int() { return int(tag); } // remove the sign bit
 
-    template<typename CommTag>
+    template <typename CommTag>
     static inline Tag genTag(int proc, UInt msg_count, CommTag tag) {
       Tag t;
-      t.tag = (((proc & 0xFFFFF) << 12) + ((msg_count & 0xFF) << 4) + ((Int)tag & 0xF));
+      int max_tag = StaticCommunicator::getStaticCommunicator().getMaxTag();
+      t.tag = ((((proc & 0xFFFFF) << 12) + ((msg_count & 0xFF) << 4) +
+                ((Int)tag & 0xF))) %
+              max_tag;
       return t;
     }
 
     virtual void printself(std::ostream & stream,
-			   __attribute__((unused)) int indent = 0) const {
+                           __attribute__((unused)) int indent = 0) const {
       stream << (tag >> 12) << ":" << (tag >> 4 & 0xFF) << ":" << (tag & 0xF);
     }
+
   private:
     int tag;
   };
 
-  template<typename CommTag>
-  inline Tag genTagFromID(CommTag tag) {
-    Tag t(std::abs((int(hash<std::string>(this->getID())) << 4) + (tag & 0xF)));
+  template <typename CommTag> inline Tag genTagFromID(CommTag tag) {
+    int max_tag = StaticCommunicator::getStaticCommunicator().getMaxTag();
+    Tag t(
+        (std::abs((int(hash<std::string>(this->getID())) << 4) + (tag & 0xF))) %
+        max_tag);
     return t;
   }
 
 protected:
-
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   class Communication {
   public:
     void resize(UInt size) {
       send_buffer.resize(size);
       recv_buffer.resize(size);
-      size_to_send   .resize(size);
+      size_to_send.resize(size);
       size_to_receive.resize(size);
     }
 
@@ -134,8 +138,8 @@ protected:
     std::vector<UInt> size_to_send;
     /// size of data to recv to each processor
     std::vector<UInt> size_to_receive;
-    std::vector< CommunicationBuffer > send_buffer;
-    std::vector< CommunicationBuffer > recv_buffer;
+    std::vector<CommunicationBuffer> send_buffer;
+    std::vector<CommunicationBuffer> recv_buffer;
 
     std::vector<CommunicationRequest *> send_requests;
     std::vector<CommunicationRequest *> recv_requests;
@@ -147,25 +151,22 @@ protected:
   /// message counter per tag
   std::map<SynchronizationTag, UInt> tag_counter;
 
-
   /// the static memory instance
   StaticCommunicator * static_communicator;
 };
 
-
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const Synchronizer & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const Synchronizer & _this) {
   _this.printself(stream);
   return stream;
 }
 
-inline std::ostream & operator <<(std::ostream & stream, const Synchronizer::Tag & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const Synchronizer::Tag & _this) {
   _this.printself(stream);
   return stream;
 }
-
 
 __END_AKANTU__
 

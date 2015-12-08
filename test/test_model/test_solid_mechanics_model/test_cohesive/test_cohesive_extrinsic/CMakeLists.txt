@@ -36,7 +36,7 @@ add_mesh(test_cohesive_extrinsic_tetrahedron_mesh tetrahedron.geo 3 2)
 
 register_test(test_cohesive_extrinsic
   SOURCES test_cohesive_extrinsic.cc
-  DEPENDENCIES test_cohesive_extrinsic_mesh
+  DEPENDS test_cohesive_extrinsic_mesh
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE cohesive_element
@@ -44,13 +44,13 @@ register_test(test_cohesive_extrinsic
 
 register_test(test_cohesive_extrinsic_quadrangle
   SOURCES test_cohesive_extrinsic_quadrangle.cc
-  DEPENDENCIES test_cohesive_extrinsic_quadrangle_mesh
+  DEPENDS test_cohesive_extrinsic_quadrangle_mesh
   PACKAGE cohesive_element
   )
 
 register_test(test_cohesive_extrinsic_tetrahedron
   SOURCES test_cohesive_extrinsic_tetrahedron.cc
-  DEPENDENCIES test_cohesive_extrinsic_tetrahedron_mesh
+  DEPENDS test_cohesive_extrinsic_tetrahedron_mesh
   PACKAGE cohesive_element
   )
 

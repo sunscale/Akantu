@@ -35,7 +35,7 @@ add_mesh(test_pbc_cube_mesh cube.geo 3 1)
 
 register_test(test_pbc_tweak
   SOURCES test_pbc_tweak.cc
-  DEPENDENCIES test_pbc_cube_mesh
+  DEPENDS test_pbc_cube_mesh
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE core

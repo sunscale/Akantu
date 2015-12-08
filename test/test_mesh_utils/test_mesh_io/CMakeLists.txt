@@ -36,14 +36,14 @@ add_mesh(test_msh_cube_physical_names cube_physical_names.geo 3 1)
 
 register_test(test_mesh_io_msh
   SOURCES test_mesh_io_msh.cc
-  DEPENDENCIES test_msh_cube
+  DEPENDS test_msh_cube
   DIRECTORIES_TO_CREATE paraview
   PACKAGE core
   )
 
 register_test(test_mesh_io_msh_physical_names
   SOURCES test_mesh_io_msh_physical_names.cc
-  DEPENDENCIES test_msh_cube_physical_names
+  DEPENDS test_msh_cube_physical_names
   PACKAGE core
   )
 

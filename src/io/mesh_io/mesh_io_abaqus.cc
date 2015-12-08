@@ -78,14 +78,14 @@ namespace mesh_io_abaqus_lazy_eval {
 
     template <typename Iterator>
     void operator()(qi::info const& what,
-		    Iterator err_pos,
-		    Iterator last) const
+                    Iterator err_pos,
+                    Iterator last) const
     {
       AKANTU_EXCEPTION("Error! Expecting "
-		       << what                         // what failed?
-		       << " here: \""
-		       << std::string(err_pos, last)   // iterators to error-pos, end
-		       << "\"");
+                       << what                         // what failed?
+                       << " here: \""
+                       << std::string(err_pos, last)   // iterators to error-pos, end
+                       << "\"");
     }
   };
 
@@ -96,26 +96,26 @@ namespace mesh_io_abaqus_lazy_eval {
 
     template<class Mesh, class ET, class ID, class V, class NodeMap, class ElemMap>
     void operator()(Mesh & mesh,
-		    const ET & type,
-		    const ID & id,
-		    const V & conn,
-		    const NodeMap & nodes_mapping,
-		    ElemMap & elements_mapping) const {
+                    const ET & type,
+                    const ID & id,
+                    const V & conn,
+                    const NodeMap & nodes_mapping,
+                    ElemMap & elements_mapping) const {
       Vector<UInt> tmp_conn(Mesh::getNbNodesPerElement(type));
 
       AKANTU_DEBUG_ASSERT(conn.size() == tmp_conn.size(),
-			  "The nodes in the Abaqus file have too many coordinates"
-			  << " for the mesh you try to fill.");
+                          "The nodes in the Abaqus file have too many coordinates"
+                          << " for the mesh you try to fill.");
 
       mesh.addConnectivityType(type);
       Array<UInt> & connectivity = mesh.getConnectivity(type);
 
       UInt i = 0;
       for(typename V::const_iterator it = conn.begin(); it != conn.end(); ++it) {
-	typename NodeMap::const_iterator nit = nodes_mapping.find(*it);
-	AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
-			    "There is an unknown node in the connectivity.");
-	tmp_conn[i++] = nit->second;
+        typename NodeMap::const_iterator nit = nodes_mapping.find(*it);
+        AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
+                            "There is an unknown node in the connectivity.");
+        tmp_conn[i++] = nit->second;
       }
       Element el(type, connectivity.getSize());
       elements_mapping[id] = el;
@@ -129,15 +129,15 @@ namespace mesh_io_abaqus_lazy_eval {
 
     template<class Mesh, class ID, class V, class Map>
     void operator()(Mesh & mesh,
-		    const ID & id,
-		    const V & pos,
-		    Map & nodes_mapping) const {
+                    const ID & id,
+                    const V & pos,
+                    Map & nodes_mapping) const {
       Vector<Real> tmp_pos(mesh.getSpatialDimension());
       UInt i = 0;
       for(typename V::const_iterator it = pos.begin();
           it != pos.end() || i < mesh.getSpatialDimension();
           ++it)
-	tmp_pos[i++] = *it;
+        tmp_pos[i++] = *it;
 
       nodes_mapping[id] = mesh.getNbNodes();
       mesh.getNodes().push_back(tmp_pos);
@@ -152,9 +152,9 @@ namespace mesh_io_abaqus_lazy_eval {
     ElementGroup & operator()(Mesh & mesh, const S & name) const {
       typename Mesh::element_group_iterator eg_it = mesh.element_group_find(name);
       if(eg_it != mesh.element_group_end()) {
-	return *eg_it->second;
+        return *eg_it->second;
       } else {
-	return mesh.createElementGroup(name, _all_dimensions);
+        return mesh.createElementGroup(name, _all_dimensions);
       }
     }
   };
@@ -165,12 +165,12 @@ namespace mesh_io_abaqus_lazy_eval {
 
     template<class EG, class ID, class Map>
     void operator()(EG * el_grp,
-		  const ID & element,
-		  const Map & elements_mapping) const {
+                  const ID & element,
+                  const Map & elements_mapping) const {
       typename Map::const_iterator eit = elements_mapping.find(element);
       AKANTU_DEBUG_ASSERT(eit != elements_mapping.end(),
-			  "There is an unknown element ("<< element <<") in the in the ELSET "
-			  << el_grp->getName() << ".");
+                          "There is an unknown element ("<< element <<") in the in the ELSET "
+                          << el_grp->getName() << ".");
 
       el_grp->add(eit->second, true, false);
     }
@@ -184,9 +184,9 @@ namespace mesh_io_abaqus_lazy_eval {
     NodeGroup & operator()(Mesh & mesh, const S & name) const {
       typename Mesh::node_group_iterator ng_it = mesh.node_group_find(name);
       if(ng_it != mesh.node_group_end()) {
-	return *ng_it->second;
+        return *ng_it->second;
       } else {
-	return mesh.createNodeGroup(name, mesh.getSpatialDimension());
+        return mesh.createNodeGroup(name, mesh.getSpatialDimension());
       }
     }
   };
@@ -197,13 +197,13 @@ namespace mesh_io_abaqus_lazy_eval {
 
     template<class NG, class ID, class Map>
     void operator()(NG * node_grp,
-		    const ID & node,
-		    const Map & nodes_mapping) const {
+                    const ID & node,
+                    const Map & nodes_mapping) const {
       typename Map::const_iterator nit = nodes_mapping.find(node);
 
       AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
-			  "There is an unknown node in the in the NSET "
-			  << node_grp->getName() << ".");
+                          "There is an unknown node in the in the NSET "
+                          << node_grp->getName() << ".");
 
       node_grp->add(nit->second, false);
     }
@@ -221,7 +221,7 @@ namespace mesh_io_abaqus_lazy_eval {
 template<class Iterator>
 struct AbaqusSkipper : qi::grammar<Iterator> {
   AbaqusSkipper() : AbaqusSkipper::base_type(skip,
-					     "abaqus_skipper") {
+                                             "abaqus_skipper") {
     skip
       =   (ascii::space - spirit::eol)
       |   "**" >> *(qi::char_ - spirit::eol) >> spirit::eol
@@ -233,11 +233,11 @@ struct AbaqusSkipper : qi::grammar<Iterator> {
 /* -------------------------------------------------------------------------- */
 template<class Iterator, typename Skipper = AbaqusSkipper<Iterator> >
 struct AbaqusMeshGrammar : qi::grammar<Iterator, void(),
-				       Skipper> {
+                                       Skipper> {
 public:
   AbaqusMeshGrammar(Mesh & mesh) : AbaqusMeshGrammar::base_type(start,
-								"abaqus_mesh_reader"),
-				   mesh(mesh) {
+                                                                "abaqus_mesh_reader"),
+                                   mesh(mesh) {
     phx::function<mesh_io_abaqus_lazy_eval::mesh_abaqus_error_handler_> const error_handler
       = mesh_io_abaqus_lazy_eval::mesh_abaqus_error_handler_();
     phx::function<mesh_io_abaqus_lazy_eval::lazy_element_read_> lazy_element_read;
@@ -250,20 +250,20 @@ public:
 
     start
       =  *(
-	     (qi::char_('*')
-		>  (   (qi::no_case[ qi::lit("node output")    ] > any_section)
-	           |   (qi::no_case[ qi::lit("element output") ] > any_section)
-	           |   (qi::no_case[ qi::lit("node")           ] > nodes)
-	           |   (qi::no_case[ qi::lit("element")        ] > elements)
-	           |   (qi::no_case[ qi::lit("heading")        ] > header)
-	           |   (qi::no_case[ qi::lit("elset")          ] > elements_set)
-	           |   (qi::no_case[ qi::lit("nset")           ] > nodes_set)
-	           |   (qi::no_case[ qi::lit("material")       ] > material)
-	           |   (keyword > any_section)
-	           )
-	     )
-	  |  spirit::eol
-	  )
+             (qi::char_('*')
+                >  (   (qi::no_case[ qi::lit("node output")    ] > any_section)
+                   |   (qi::no_case[ qi::lit("element output") ] > any_section)
+                   |   (qi::no_case[ qi::lit("node")           ] > nodes)
+                   |   (qi::no_case[ qi::lit("element")        ] > elements)
+                   |   (qi::no_case[ qi::lit("heading")        ] > header)
+                   |   (qi::no_case[ qi::lit("elset")          ] > elements_set)
+                   |   (qi::no_case[ qi::lit("nset")           ] > nodes_set)
+                   |   (qi::no_case[ qi::lit("material")       ] > material)
+                   |   (keyword > any_section)
+                   )
+             )
+          |  spirit::eol
+          )
       ;
 
     header
@@ -274,84 +274,84 @@ public:
     nodes
       =   *(qi::char_(',') >> option)
            >> spirit::eol
-	   >> *( (qi::int_
-		  > node_position) [ lazy_node_read(phx::ref(mesh),
-						    lbs::_1,
-						    lbs::_2,
-						    phx::ref(abaqus_nodes_to_akantu)) ]
-		  >> spirit::eol
-	       )
+           >> *( (qi::int_
+                  > node_position) [ lazy_node_read(phx::ref(mesh),
+                                                    lbs::_1,
+                                                    lbs::_2,
+                                                    phx::ref(abaqus_nodes_to_akantu)) ]
+                  >> spirit::eol
+               )
       ;
 
     elements
       =   (
              (  qi::char_(',') >> qi::no_case[qi::lit("type")] >> '='
-		>> abaqus_element_type  [ lbs::_a = lbs::_1 ]
-	     )
-	  ^  *(qi::char_(',') >> option)
-	  )
+                >> abaqus_element_type  [ lbs::_a = lbs::_1 ]
+             )
+          ^  *(qi::char_(',') >> option)
+          )
           >> spirit::eol
-	  >> *(  (qi::int_
-		  > connectivity) [ lazy_element_read(phx::ref(mesh),
-						     lbs::_a,
-						     lbs::_1,
-						     lbs::_2,
-						     phx::cref(abaqus_nodes_to_akantu),
-						     phx::ref(abaqus_elements_to_akantu)) ]
-		 >> spirit::eol
-	       )
+          >> *(  (qi::int_
+                  > connectivity) [ lazy_element_read(phx::ref(mesh),
+                                                     lbs::_a,
+                                                     lbs::_1,
+                                                     lbs::_2,
+                                                     phx::cref(abaqus_nodes_to_akantu),
+                                                     phx::ref(abaqus_elements_to_akantu)) ]
+                 >> spirit::eol
+               )
       ;
 
     elements_set
       =   (
              (
-	        (  qi::char_(',') >> qi::no_case[ qi::lit("elset") ] >> '='
-		   >> value [ lbs::_a = &lazy_element_group_create(phx::ref(mesh), lbs::_1) ]
+                (  qi::char_(',') >> qi::no_case[ qi::lit("elset") ] >> '='
+                   >> value [ lbs::_a = &lazy_element_group_create(phx::ref(mesh), lbs::_1) ]
                 )
-	     ^  *(qi::char_(',') >> option)
-	     )
-	     >> spirit::eol
-	     >> qi::skip
-	          (qi::char_(',') | qi::space)
-	          [ +(qi::int_ [ lazy_add_element_to_group(lbs::_a,
-							   lbs::_1,
-							   phx::cref(abaqus_elements_to_akantu)
-							  )
-			       ]
-		     )
-	         ]
-	  ) [ lazy_optimize_group(lbs::_a) ]
+             ^  *(qi::char_(',') >> option)
+             )
+             >> spirit::eol
+             >> qi::skip
+                  (qi::char_(',') | qi::space)
+                  [ +(qi::int_ [ lazy_add_element_to_group(lbs::_a,
+                                                           lbs::_1,
+                                                           phx::cref(abaqus_elements_to_akantu)
+                                                          )
+                               ]
+                     )
+                 ]
+          ) [ lazy_optimize_group(lbs::_a) ]
       ;
 
     nodes_set
       =   (
              (
-	        (  qi::char_(',')
-		   >> qi::no_case[ qi::lit("nset") ] >> '='
-		   >> value [ lbs::_a = &lazy_node_group_create(phx::ref(mesh), lbs::_1) ]
+                (  qi::char_(',')
+                   >> qi::no_case[ qi::lit("nset") ] >> '='
+                   >> value [ lbs::_a = &lazy_node_group_create(phx::ref(mesh), lbs::_1) ]
                 )
-	     ^  *(qi::char_(',') >> option)
-	     )
-	     >> spirit::eol
-	     >> qi::skip
-	         (qi::char_(',') | qi::space)
+             ^  *(qi::char_(',') >> option)
+             )
+             >> spirit::eol
+             >> qi::skip
+                 (qi::char_(',') | qi::space)
                  [ +(qi::int_ [ lazy_add_node_to_group(lbs::_a,
-						       lbs::_1,
-						       phx::cref(abaqus_nodes_to_akantu)
-						       )
-			      ]
-		    )
-		 ]
-	   ) [ lazy_optimize_group(lbs::_a) ]
+                                                       lbs::_1,
+                                                       phx::cref(abaqus_nodes_to_akantu)
+                                                       )
+                              ]
+                    )
+                 ]
+           ) [ lazy_optimize_group(lbs::_a) ]
       ;
 
     material
       =   (
              (  qi::char_(',') >> qi::no_case[ qi::lit("name") ] >> '='
-		>> value  [ phx::push_back(phx::ref(material_names), lbs::_1) ]
-	     )
-	  ^  *(qi::char_(',') >> option)
-	  ) >> spirit::eol;
+                >> value  [ phx::push_back(phx::ref(material_names), lbs::_1) ]
+             )
+          ^  *(qi::char_(',') >> option)
+          ) >> spirit::eol;
       ;
 
     node_position
@@ -421,18 +421,18 @@ public:
     start              .name("abaqus-start-rule");
     connectivity       .name("abaqus-connectivity");
     node_position      .name("abaqus-nodes-position");
-    nodes	       .name("abaqus-nodes");
-    any_section	       .name("abaqus-any_section");
-    header	       .name("abaqus-header");
-    material	       .name("abaqus-material");
-    elements	       .name("abaqus-elements");
+    nodes              .name("abaqus-nodes");
+    any_section        .name("abaqus-any_section");
+    header             .name("abaqus-header");
+    material           .name("abaqus-material");
+    elements           .name("abaqus-elements");
     elements_set       .name("abaqus-elements-set");
-    nodes_set	       .name("abaqus-nodes-set");
-    key		       .name("abaqus-key");
-    value	       .name("abaqus-value");
-    option	       .name("abaqus-option");
-    keyword	       .name("abaqus-keyword");
-    any_line	       .name("abaqus-any-line");
+    nodes_set          .name("abaqus-nodes-set");
+    key                .name("abaqus-key");
+    value              .name("abaqus-value");
+    option             .name("abaqus-option");
+    keyword            .name("abaqus-keyword");
+    any_line           .name("abaqus-any-line");
     abaqus_element_type.name("abaqus-element-type");
   }
 
@@ -497,8 +497,8 @@ void MeshIOAbaqus::read(const std::string& filename, Mesh& mesh) {
   std::string storage; // We will read the contents here.
   infile.unsetf(std::ios::skipws); // No white space skipping!
   std::copy(std::istream_iterator<char>(infile),
-	    std::istream_iterator<char>(),
-	    std::back_inserter(storage));
+            std::istream_iterator<char>(),
+            std::back_inserter(storage));
 
   typedef std::string::const_iterator iterator_t;
   typedef AbaqusSkipper    <iterator_t> skipper;
@@ -523,14 +523,14 @@ void MeshIOAbaqus::read(const std::string& filename, Mesh& mesh) {
       ElementGroup::type_iterator tend = eg.lastType();
 
       for (; tit != tend; ++tit) {
-	Array<std::string> & abaqus_material
-	  = this->getData<std::string>(mesh, "abaqus_material", *tit);
+        Array<std::string> & abaqus_material
+          = this->getData<std::string>(mesh, "abaqus_material", *tit);
 
-	ElementGroup::const_element_iterator eit  = eg.element_begin(*tit);
-	ElementGroup::const_element_iterator eend = eg.element_end(*tit);
-	for (; eit != eend; ++eit) {
-	  abaqus_material(*eit) = *mnit;
-	}
+        ElementGroup::const_element_iterator eit  = eg.element_begin(*tit);
+        ElementGroup::const_element_iterator eend = eg.element_end(*tit);
+        for (; eit != eend; ++eit) {
+          abaqus_material(*eit) = *mnit;
+        }
       }
     }
   }

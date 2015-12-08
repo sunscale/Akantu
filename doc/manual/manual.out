@@ -1,0 +1,82 @@
+\BOOKMARK [0][-]{maintitlepage.0}{Titlepage}{}% 1
+\BOOKMARK [0][-]{.0}{Contents}{}% 2
+\BOOKMARK [0][-]{chapter.1}{1 Introduction}{}% 3
+\BOOKMARK [0][-]{chapter.2}{2 Getting Started}{}% 4
+\BOOKMARK [1][-]{section.2.1}{2.1 Downloading the Code}{chapter.2}% 5
+\BOOKMARK [1][-]{section.2.2}{2.2 Compiling Akantu}{chapter.2}% 6
+\BOOKMARK [1][-]{section.2.3}{2.3 Writing a main Function}{chapter.2}% 7
+\BOOKMARK [1][-]{section.2.4}{2.4 Creating and Loading a Mesh}{chapter.2}% 8
+\BOOKMARK [1][-]{section.2.5}{2.5 Using Arrays}{chapter.2}% 9
+\BOOKMARK [2][-]{subsection.2.5.1}{2.5.1 Vector \046 Matrix}{section.2.5}% 10
+\BOOKMARK [1][-]{section.2.6}{2.6 Manipulating group of nodes and/or elements}{chapter.2}% 11
+\BOOKMARK [2][-]{subsection.2.6.1}{2.6.1 The NodeGroup object}{section.2.6}% 12
+\BOOKMARK [2][-]{subsection.2.6.2}{2.6.2 The ElementGroup object}{section.2.6}% 13
+\BOOKMARK [0][-]{chapter.3}{3 Elements}{}% 14
+\BOOKMARK [1][-]{section.3.1}{3.1 Isoparametric Elements}{chapter.3}% 15
+\BOOKMARK [1][-]{section.3.2}{3.2 Cohesive Elements}{chapter.3}% 16
+\BOOKMARK [1][-]{section.3.3}{3.3 Structural Elements}{chapter.3}% 17
+\BOOKMARK [0][-]{chapter.4}{4 Solid Mechanics Model}{}% 18
+\BOOKMARK [1][-]{section.4.1}{4.1 Model Setup}{chapter.4}% 19
+\BOOKMARK [2][-]{subsection.4.1.1}{4.1.1 Setting Initial Conditions }{section.4.1}% 20
+\BOOKMARK [2][-]{subsection.4.1.2}{4.1.2 Setting Boundary Conditions}{section.4.1}% 21
+\BOOKMARK [2][-]{subsection.4.1.3}{4.1.3 Material Selector}{section.4.1}% 22
+\BOOKMARK [2][-]{subsection.4.1.4}{4.1.4 Insertion of Cohesive Elements}{section.4.1}% 23
+\BOOKMARK [1][-]{section.4.2}{4.2 Static Analysis}{chapter.4}% 24
+\BOOKMARK [1][-]{section.4.3}{4.3 Dynamic Methods}{chapter.4}% 25
+\BOOKMARK [2][-]{subsection.4.3.1}{4.3.1 Implicit Time Integration}{section.4.3}% 26
+\BOOKMARK [2][-]{subsection.4.3.2}{4.3.2 Explicit Time Integration}{section.4.3}% 27
+\BOOKMARK [1][-]{section.4.4}{4.4 Constitutive Laws }{chapter.4}% 28
+\BOOKMARK [2][-]{subsection.4.4.1}{4.4.1 Elasticity}{section.4.4}% 29
+\BOOKMARK [2][-]{subsection.4.4.2}{4.4.2 Neo-Hookean \(B.4\)}{section.4.4}% 30
+\BOOKMARK [2][-]{subsection.4.4.3}{4.4.3 Visco-Elasticity \(B.5\)}{section.4.4}% 31
+\BOOKMARK [2][-]{subsection.4.4.4}{4.4.4 Small-Deformation Plasticity \(B.6\)}{section.4.4}% 32
+\BOOKMARK [2][-]{subsection.4.4.5}{4.4.5 Damage}{section.4.4}% 33
+\BOOKMARK [2][-]{subsection.4.4.6}{4.4.6 Cohesive laws}{section.4.4}% 34
+\BOOKMARK [1][-]{section.4.5}{4.5 Adding a New Constitutive Law}{chapter.4}% 35
+\BOOKMARK [0][-]{chapter.5}{5 Structural Mechanics Model}{}% 36
+\BOOKMARK [1][-]{section.5.1}{5.1 Model Setup}{chapter.5}% 37
+\BOOKMARK [2][-]{subsection.5.1.1}{5.1.1 Initialization}{section.5.1}% 38
+\BOOKMARK [2][-]{subsection.5.1.2}{5.1.2 Setting Boundary Conditions}{section.5.1}% 39
+\BOOKMARK [1][-]{section.5.2}{5.2 Static Analysis}{chapter.5}% 40
+\BOOKMARK [0][-]{chapter.6}{6 Heat Transfer Model}{}% 41
+\BOOKMARK [1][-]{section.6.1}{6.1 Theory}{chapter.6}% 42
+\BOOKMARK [1][-]{section.6.2}{6.2 Using the Heat Transfer Model}{chapter.6}% 43
+\BOOKMARK [2][-]{subsection.6.2.1}{6.2.1 Explicit Dynamic}{section.6.2}% 44
+\BOOKMARK [0][-]{chapter.7}{7 Input/Output}{}% 45
+\BOOKMARK [1][-]{section.7.1}{7.1 Generic data}{chapter.7}% 46
+\BOOKMARK [1][-]{section.7.2}{7.2 Cohesive elements' data}{chapter.7}% 47
+\BOOKMARK [0][-]{chapter.8}{8 Parallel Computation}{}% 48
+\BOOKMARK [1][-]{section.8.1}{8.1 Initializing the Parallel Context}{chapter.8}% 49
+\BOOKMARK [1][-]{section.8.2}{8.2 Partitioning the Mesh}{chapter.8}% 50
+\BOOKMARK [1][-]{section.8.3}{8.3 Distributing Mesh Partitions}{chapter.8}% 51
+\BOOKMARK [1][-]{section.8.4}{8.4 Launching a Parallel Program}{chapter.8}% 52
+\BOOKMARK [0][-]{chapter.9}{9 Contact}{}% 53
+\BOOKMARK [1][-]{section.9.1}{9.1 Implicit Contact Solver}{chapter.9}% 54
+\BOOKMARK [2][-]{subsection.9.1.1}{9.1.1 Implementation}{section.9.1}% 55
+\BOOKMARK [0][-]{appendix.A}{A Shape Functions}{}% 56
+\BOOKMARK [1][-]{section.A.1}{A.1 1D-Shape Functions}{appendix.A}% 57
+\BOOKMARK [2][-]{subsection.A.1.1}{A.1.1 Segment 2}{section.A.1}% 58
+\BOOKMARK [2][-]{subsection.A.1.2}{A.1.2 Segment 3}{section.A.1}% 59
+\BOOKMARK [1][-]{section.A.2}{A.2 2D-Shape Functions}{appendix.A}% 60
+\BOOKMARK [2][-]{subsection.A.2.1}{A.2.1 Triangle 3}{section.A.2}% 61
+\BOOKMARK [2][-]{subsection.A.2.2}{A.2.2 Triangle 6}{section.A.2}% 62
+\BOOKMARK [2][-]{subsection.A.2.3}{A.2.3 Quadrangle 4}{section.A.2}% 63
+\BOOKMARK [2][-]{subsection.A.2.4}{A.2.4 Quadrangle 8}{section.A.2}% 64
+\BOOKMARK [1][-]{section.A.3}{A.3 3D-Shape Functions}{appendix.A}% 65
+\BOOKMARK [2][-]{subsection.A.3.1}{A.3.1 Tetrahedron 4}{section.A.3}% 66
+\BOOKMARK [2][-]{subsection.A.3.2}{A.3.2 Tetrahedron 10}{section.A.3}% 67
+\BOOKMARK [2][-]{subsection.A.3.3}{A.3.3 Hexahedron 8}{section.A.3}% 68
+\BOOKMARK [0][-]{appendix.B}{B Material parameters}{}% 69
+\BOOKMARK [1][-]{section.B.1}{B.1 Linear elastic isotropic}{appendix.B}% 70
+\BOOKMARK [1][-]{section.B.2}{B.2 Linear elastic anisotropic}{appendix.B}% 71
+\BOOKMARK [1][-]{section.B.3}{B.3 Linear elastic orthotropic}{appendix.B}% 72
+\BOOKMARK [1][-]{section.B.4}{B.4 Neohookean \(finite strains\)}{appendix.B}% 73
+\BOOKMARK [1][-]{section.B.5}{B.5 Standard linear solid}{appendix.B}% 74
+\BOOKMARK [1][-]{section.B.6}{B.6 Elasto-plastic linear isotropic hardening}{appendix.B}% 75
+\BOOKMARK [1][-]{section.B.7}{B.7 Damage: Marigo}{appendix.B}% 76
+\BOOKMARK [1][-]{section.B.8}{B.8 Damage: Mazars}{appendix.B}% 77
+\BOOKMARK [1][-]{section.B.9}{B.9 Cohesive linear}{appendix.B}% 78
+\BOOKMARK [1][-]{section.B.10}{B.10 Cohesive bilinear}{appendix.B}% 79
+\BOOKMARK [1][-]{section.B.11}{B.11 Cohesive exponential}{appendix.B}% 80
+\BOOKMARK [1][-]{section.B.12}{B.12 Cohesive linear fatigue}{appendix.B}% 81
+\BOOKMARK [0][-]{appendix.C}{C Package dependencies}{}% 82
