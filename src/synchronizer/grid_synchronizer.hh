@@ -60,6 +60,10 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+   /**
+   *Create the Grid Synchronizer:
+   *Compute intersection and send info to neighbours that will be stored in ghosts elements
+   */
   template <class E>
   static GridSynchronizer *
   createGridSynchronizer(Mesh & mesh,
@@ -71,6 +75,7 @@ public:
 
 
 protected:
+  /// Define the tags that will be used in the send and receive instructions
   enum CommTags {
     SIZE_TAG        = 0,
     DATA_TAG        = 1,

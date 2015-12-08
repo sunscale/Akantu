@@ -122,10 +122,11 @@ public:
   void setParallelContext(int prank, int psize);
 
 public:
+
   /// Internal class describing the arguments
-  class _Argument;
+  struct _Argument;
   /// Stores that value of an argument
-  template <class T> class ArgumentStorage;
+  template<class T> class ArgumentStorage;
 
 private:
   /// Internal function to be used by the public addArgument

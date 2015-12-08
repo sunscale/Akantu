@@ -1202,7 +1202,7 @@ void DistributedSynchronizer::synchronizeTagsSend(DistributedSynchronizer & comm
 
   if(mesh_data_sizes_buffer_length !=0) {
     //Sending the actual data to each processor
-    DynamicCommunicationBuffer buffers[nb_proc];
+    DynamicCommunicationBuffer * buffers = new DynamicCommunicationBuffer[nb_proc];
     std::vector<std::string>::const_iterator names_it  = tag_names.begin();
     std::vector<std::string>::const_iterator names_end = tag_names.end();
 
@@ -1245,6 +1245,7 @@ void DistributedSynchronizer::synchronizeTagsSend(DistributedSynchronizer & comm
     comm.waitAll(requests);
     comm.freeCommunicationRequest(requests);
     requests.clear();
+    delete [] buffers;
   }
 
   ++count;
@@ -1384,7 +1385,7 @@ void DistributedSynchronizer::synchronizeElementGroups(DistributedSynchronizer &
   UInt nb_proc = comm.getNbProc();
   UInt my_rank = comm.whoAmI();
 
-  DynamicCommunicationBuffer buffers[nb_proc];
+  DynamicCommunicationBuffer * buffers = new DynamicCommunicationBuffer[nb_proc];
 
   typedef std::vector< std::vector<std::string> > ElementToGroup;
   ElementToGroup element_to_group;
@@ -1446,7 +1447,8 @@ void DistributedSynchronizer::synchronizeElementGroups(DistributedSynchronizer &
   comm.waitAll(requests);
   comm.freeCommunicationRequest(requests);
   requests.clear();
-
+  delete [] buffers;
+  
   AKANTU_DEBUG_OUT();
 }
 

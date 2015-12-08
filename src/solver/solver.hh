@@ -51,12 +51,13 @@ __BEGIN_AKANTU__
 
 class SolverOptions {
 public:
-  SolverOptions(bool no_option = false) : no_option(no_option) { }
+  SolverOptions(bool no_option = false) // : no_option(no_option)
+  { }
 
   virtual ~SolverOptions() {}
 
 private:
-  bool no_option;
+  //bool no_option;
 };
 
 extern SolverOptions _solver_no_options;
