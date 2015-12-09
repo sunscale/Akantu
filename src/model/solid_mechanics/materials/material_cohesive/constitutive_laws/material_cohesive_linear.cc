@@ -487,10 +487,8 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
   Vector<Real> tangential_opening(memory_space + spatial_dimension,
                                   spatial_dimension);
 
-  Vector<Real> open_prec(spatial_dimension);
-  Vector<Real> open(spatial_dimension);
-  Real max_delta_open = 0.0;
-  Int nn = 0;
+  //  Vector<Real> open_prec(spatial_dimension);
+  //  Vector<Real> open(spatial_dimension);
 
   /// loop on each quadrature point
   for (; traction_it != traction_end;
@@ -509,33 +507,21 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
 
     Real normal_opening_prec_norm = opening_prec_it->dot(*normal_it);
 
-    open_prec = *opening_prec_it;
-    Real open_prec_norm = open_prec.norm();
-    open = *opening_it;
-    Real open_norm = open.norm();
-    Real delta_open = std::abs(open_norm - open_prec_norm);
-
-    //    std::cout << "delta_open UPDATE RESIDUAL = " << delta_open << std::endl;
-    max_delta_open = std::max(max_delta_open, delta_open);
-
-    //    if (delta_open > 1.0e-01){
-    //      *opening_it = *opening_prec_it + ((*opening_it - *opening_prec_it) / 50.0);
-    //    }
-    *opening_prec_it = *opening_it;
-
-    Vector<Real> aa(spatial_dimension);
-    aa = *opening_prec_it;
-    //    std::cout << "opening_prec_it = " << aa(0) << ", " << aa(1) << std::endl;
+//    open_prec = *opening_prec_it;
+//    Real open_prec_norm = open_prec.norm();
+//    open = *opening_it;
+//    Real open_norm = open.norm();
+//    Real delta_open = std::abs(open_norm - open_prec_norm);
+//
+//    //    if (delta_open > 1.0e-01){
+//    //      *opening_it = *opening_prec_it + ((*opening_it - *opening_prec_it) / 50.0);
+//    //    }
+//    *opening_prec_it = *opening_it;
 
     /// compute normal and tangential opening vectors
     Real normal_opening_norm = opening_it->dot(*normal_it);
     normal_opening  = (*normal_it);
     normal_opening *= normal_opening_norm;
-    Vector<Real> perpend(spatial_dimension);
-    perpend = *normal_it;
-    //    std::cout << "normal = " << perpend(0) << perpend(1) << std::endl;
-    Vector<Real> displ(spatial_dimension);
-    displ = *opening_it;
     tangential_opening  = *opening_it;
     tangential_opening -= normal_opening;
 
@@ -547,8 +533,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
      * \frac{\beta^2}{\kappa^2} \Delta_t^2 + \Delta_n^2 } @f$
      */
     Real delta = tangential_opening_norm * tangential_opening_norm * beta2_kappa2;
-    ++nn;
-    //    std::cout << "normal opening of gp no. " << nn << " = " << normal_opening_norm << std::endl;
 
     bool penetration = normal_opening_norm < -Math::getTolerance();
     if (contact_after_breaking == false && Math::are_float_equal(*damage_it, 1.))
@@ -557,22 +541,21 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
     /// if during the convergence loop a cohesive element continues to
     /// jumps from penetration to opening, and convergence is not
     /// reached, its penalty parameter will be reduced in the
-    /// recomputation of the same incremental step
+    /// recomputation of the same incremental step. recompute is set
+    /// equal to true when convergence is not reached in the
+    /// solveStepCohesive function and the execution of the program
+    /// goes back to the main file where the variable load_reduction
+    /// is set equal to true.
     if (!model->isExplicit() && !recompute)
       if ((normal_opening_prec_norm * normal_opening_norm) < -Math::getTolerance()){
 	*reduction_penalty_it = true;
-    
-	//       std::cout << "recompute" << recompute << std::endl;
       }
-    //    Vector<Real> friction_force(spatial_dimension);
-    //    friction_force.clear();
 
     if (penetration) {
       Real current_penalty = 0.;
       if (recompute && *reduction_penalty_it){
+	/// the penalty parameter is locally reduced
 	current_penalty = penalty / 1000.;
-	//	std::cout << "recompute" << recompute << std::endl;
-	//	std::cout << "penalty reduced" << std::endl;
       }
       else
 	current_penalty = penalty;
@@ -582,14 +565,11 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
       *contact_traction_it *= current_penalty;
       *contact_opening_it = normal_opening;
 
-
       /* ----------------------------------------- */
       /// ADD FRICTION
       if (friction){
 	Real damage = std::min(*delta_max_prev_it / *delta_c_it, Real(1.));
-	Real mu = mu_max * damage;
-	Vector<Real> check(spatial_dimension);
-	check = *opening_prec_prev_it;
+	Real mu = mu_max * std::sqrt(damage);
 	Real normal_opening_prec_norm = opening_prec_prev_it->dot(*normal_it);
 	Vector<Real> normal_opening_prec = (*normal_it);
 	normal_opening_prec *= normal_opening_prec_norm;
@@ -603,15 +583,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
 	Vector<Real> tangent(spatial_dimension);
 	tangent = tangential_opening / tangential_opening_norm;
 	*friction_force_it = tau * tangent;
-
-	//	std::cout << "mu = " << mu << std::endl;
-	//std::cout << "damage = " << damage << std::endl;
-	//	std::cout << "opening_prev_prec_it = " << check(0) << ", " << check(1) << std::endl;
-	//	std::cout << "normal opening prec norm = " << normal_opening_prec_norm << std::endl;
-	//	std::cout << "normal opening prec = " << normal_opening_prec(0) << ", " << normal_opening_prec(1) << std::endl;
-	//	std::cout << "tau_max = " << tau_max  << std::endl;
-
-	//	std::cout << "friction force = " << friction_force(0) << ", " << friction_force(1) << std::endl;
 
 	//update residual_sliding
 	*res_sliding_it = tangential_opening_norm - (tau / friction_penalty);
@@ -644,7 +615,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
      * \frac{\delta}{\delta_c} \right)@f$
      */
 
-    Vector<Real> forze(spatial_dimension);
     if (Math::are_float_equal(*damage_it, 1.))
       traction_it->clear();
     else if (Math::are_float_equal(*damage_it, 0.)) {
@@ -662,21 +632,12 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
                           "Division by zero, tolerance might be too low");
 
       *traction_it *= *sigma_c_it / *delta_max_it * (1. - *damage_it);
-
-      forze = *traction_it;
-
-      //      std::cout << "cohesive shear = " << forze(0) << ", " << forze(1) << std::endl;
     }
 
     if (friction)
       *traction_it += *friction_force_it;
 
-    forze = *traction_it;
-
   }
-
-  //  if (max_delta_open > 1.0e-01)
-  //    std::cout << "max_delta opening = " << max_delta_open << std::endl;
 
   delete [] memory_space;
   AKANTU_DEBUG_OUT();
@@ -687,11 +648,14 @@ template<UInt spatial_dimension>
 void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
   
-  /// This function set a predefined value to the parameter delta_max_prev of the
-  /// elements that have been inserted in the last loading step for which convergence
-  /// has not been reached. This is done before reducing the loading and re-doing the step.
-  /// Otherwise, the updating of delta_max_prev would be done with reference to the
-  /// non-convergent solution.
+  /// This function set a predefined value to the parameter
+  /// delta_max_prev of the elements that have been inserted in the
+  /// last loading step for which convergence has not been
+  /// reached. This is done before reducing the loading and re-doing
+  /// the step.  Otherwise, the updating of delta_max_prev would be
+  /// done with reference to the non-convergent solution. In this
+  /// function also other variables related to the contact and
+  /// friction behavior are correctly set.
 
   Mesh & mesh = fem_cohesive->getMesh();
   Mesh::type_iterator it = mesh.firstType(spatial_dimension,
@@ -699,6 +663,12 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_ty
   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension,
 						ghost_type, _ek_cohesive);
 
+  /// the variable "recompute" is set to true to activate the
+  /// procedure that reduce the penalty parameter for
+  /// compression. This procedure is set true only during the phase of
+  /// load_reduction, that has to be set in the maiin file. The
+  /// penalty parameter will be reduced only for the elements having
+  /// reduction_penalty = true.
   recompute = true;
 
   for(; it != last_type; ++it) {
@@ -722,11 +692,11 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_ty
     Array<Real>::iterator<Real>delta_c_it =
       delta_c_eff(el_type, ghost_type).begin();
 
-    Array<Real>::vector_iterator opening_prec_it =
-      opening_prec(el_type, ghost_type).begin(spatial_dimension);
-
-    Array<Real>::vector_iterator opening_prec_prev_it =
-      opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
+//    Array<Real>::vector_iterator opening_prec_it =
+//      opening_prec(el_type, ghost_type).begin(spatial_dimension);
+//
+//    Array<Real>::vector_iterator opening_prec_prev_it =
+//      opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
 
     Array<Real>::iterator<Real>res_sliding_it =
       residual_sliding(el_type, ghost_type).begin();
@@ -737,7 +707,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_ty
     /// loop on each quadrature point
     for (; delta_max_it != delta_max_end;
          ++delta_max_it, ++delta_max_prev_it, ++delta_c_it,
-	   ++opening_prec_it, ++opening_prec_prev_it,
+	   //	   ++opening_prec_it, ++opening_prec_prev_it,
 	   ++res_sliding_it, ++res_sliding_prev_it) {
 
       if (*delta_max_prev_it == 0)
@@ -751,9 +721,11 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_ty
 
       /// in case convergence is not reached, set opening_prec to the
       /// value referred to the previous incremental step
-      *opening_prec_it = *opening_prec_prev_it;
+      //      *opening_prec_it = *opening_prec_prev_it;
 
-      /// the same thing for the residual sliding for the friction law
+      /// in case convergence is not reached, set "residual_sliding"
+      /// for the friction behaviour to the value referred to the
+      /// previous incremental step
       *res_sliding_it = *res_sliding_prev_it;
     }
   }
@@ -765,11 +737,10 @@ template<UInt spatial_dimension>
 void MaterialCohesiveLinear<spatial_dimension>::resetVariables(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  /// This function set a predefined value to the parameter delta_max_prev of the
-  /// elements that have been inserted in the last loading step for which convergence
-  /// has not been reached. This is done before reducing the loading and re-doing the step.
-  /// Otherwise, the updating of delta_max_prev would be done with reference to the
-  /// non-convergent solution.
+  /// This function set the variables "recompute" and
+  /// "reduction_penalty" to false. It is called by solveStepCohesive
+  /// when convergence is reached. Such variables, in fact, have to be
+  /// false at the beginning of a new incremental step.
 
   Mesh & mesh = fem_cohesive->getMesh();
   Mesh::type_iterator it = mesh.firstType(spatial_dimension,
@@ -855,41 +826,16 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
   Vector<Real> normal_opening(spatial_dimension);
   Vector<Real> tangential_opening(spatial_dimension);
 
-  Vector<Real> open_prec(spatial_dimension);
-  Vector<Real> open(spatial_dimension);
-  Real max_delta_open = 0.0;
-
-  Array<Real> tang_output(spatial_dimension,spatial_dimension);
-
   for (; tangent_it != tangent_end;
        ++tangent_it, ++normal_it, ++opening_it, ++opening_prec_it,
 	 ++delta_max_it, ++sigma_c_it, ++delta_c_it, ++damage_it,
 	 ++contact_opening_it, ++res_sliding_prev_it, ++reduction_penalty_it) {
 
-    /// check if the local displacement increment is too large. In
-    /// case, reduce arbitrary it in order to prevent problems of
-    /// instability
-    open_prec = *opening_prec_it;
-    Real open_prec_norm = open_prec.norm();
-    //    std::cout << "open_prec_norm = " << open_prec_norm << std::endl;
-
-    /// During the update of the residual (called just before the
-    /// assembly of the matrix) the interpenetrations are stored in
-    /// the array "contact_opening", therefore, in the array "opening"
-    /// there are only the tangential components.
+    /// During the update of the residual the interpenetrations are
+    /// stored in the array "contact_opening", therefore, in the case
+    /// of penetration, in the array "opening" there are only the
+    /// tangential components.
     *opening_it += *contact_opening_it;
-
-    open = *opening_it;
-    Real open_norm = open.norm();
-    //    std::cout << "open_norm = " << open_norm << std::endl;
-    Real delta_open = std::abs(open_norm - open_prec_norm);
-
-    max_delta_open = std::max(max_delta_open, delta_open);
-
-    //    if (delta_open > 1.0e-01){
-    //      *opening_it = *opening_prec_it + ((*opening_it - *opening_prec_it) / 50.0);
-      //      std::cout << "delta_open TANGENT STIFFNESS = " << delta_open << std::endl;
-    //    }
 
     /// compute normal and tangential opening vectors
     Real normal_opening_norm = opening_it->dot(*normal_it);
@@ -914,7 +860,7 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
 
     if (penetration){
       Real current_penalty = 0.;
-      if (recompute && *reduction_penalty_it == 1)
+      if (recompute && *reduction_penalty_it)
 	current_penalty = penalty / 1000.;
       else
 	current_penalty = penalty;
@@ -927,6 +873,8 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
       /// ADD FRICTION
       if (friction){
 	Real damage = std::min(*delta_max_it / *delta_c_it, Real(1.));
+	// the friction coefficient mu is increasing with the
+	// damage. It equals the maximum value when damage = 1.
 	Real mu = mu_max * damage;
 	Real normal_opening_prec_norm = opening_prec_it->dot(*normal_it);
 	Vector<Real> normal_opening_prec = (*normal_it);
@@ -947,14 +895,10 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
       /// end add friction
       /* ------------------------------------- */
 
-      /// don't consider penetration contribution for delta
-      //      std::cout << " AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA penetration !!!" << std::endl;
-
       *opening_it = tangential_opening;
       normal_opening_norm = opening_it->dot(*normal_it);
       normal_opening = (*normal_it);
       normal_opening *= normal_opening_norm;
-      //      std::cout << "normal opening in case of penetration = " << normal_opening << std::endl;
 
     }
     else{
@@ -963,19 +907,18 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
 
     delta = std::sqrt(delta);
 
-    /// Delta has to be different from 0 to have finite values of tangential stiffness.
-    /// At the element insertion, delta = 0. Therefore, a fictictious value is defined,
-    /// for the evaluation of the first value of K.
+    /// Delta has to be different from 0 to have finite values of
+    /// tangential stiffness.  At the element insertion, delta =
+    /// 0. Therefore, a fictictious value is defined, for the
+    /// evaluation of the first value of K.
     if (delta < Math::getTolerance())
       delta = (*delta_c_it)/1000.;
 
-    //if (!penetration){
     if (delta >= *delta_max_it){
       if (delta <= *delta_c_it){
 	derivative = -*sigma_c_it/(delta * delta);
 	t = *sigma_c_it * (1 - delta / *delta_c_it);
       } else {
-	//	std::cout << " BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB delta>delta_c !!!" << std::endl;
 	derivative = 0.;
 	t = 0.;
       }
@@ -983,7 +926,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
       Real tmax = *sigma_c_it * (1 - *delta_max_it / *delta_c_it);
       t = tmax / *delta_max_it * delta;
     }
-      //    }
 
 
     /// computation of the derivative of the constitutive law (dT/ddelta)
@@ -1031,9 +973,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
 //      }
 //    }
   }
-
-  //  if (max_delta_open > 1.0e-05)
-  //    std::cout << "max_delta opening > 1e-05 in COMPUTE TANGENT STIFFNESS" << std::endl;
     
   AKANTU_DEBUG_OUT();
 }

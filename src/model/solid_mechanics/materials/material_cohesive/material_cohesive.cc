@@ -276,9 +276,10 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
       A(i, i + spatial_dimension*size_of_shapes) = -1;
     }
 
-    /// compute traction
+    /// compute traction. This call is not necessary for the linear
+    /// cohesive law that, currently, is the only one used for the
+    /// extrinsic approach.
     if (!model->getIsExtrinsic()){
-      std::cout << "HELLO!!" << std::endl;
       computeTraction(ghost_type);
     }
 

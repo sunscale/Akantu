@@ -155,7 +155,7 @@ protected:
   /// penalty parameter for the friction law
   Real friction_penalty;
 
-  /// variable to define if we are recomputing the last loading step
+  /// variable defining if we are recomputing the last loading step
   /// after load_reduction
   bool recompute;
 

@@ -46,6 +46,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
                                                     Real & error,
                                                     UInt max_iteration,
                                                     bool load_reduction,
+						    Real tol_increase_factor,
                                                     bool do_not_factorize) {
 
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeSolveStepEvent(method));
@@ -62,10 +63,15 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
   /// Loop for the insertion of new cohesive elements
   while (insertion_new_element) {
 
-    //insertion_new_element = false;
-
     if (is_extrinsic) {
-      // If in extrinsic saves the current displacements, velocities and accelerations
+      /// If in extrinsic the solution of the previous incremental
+      /// step is saved in temporary arrays created for displacements,
+      /// velocities and accelerations. Such arrays are used to find
+      /// the solution with the Newton-Raphson scheme (this is done by
+      /// pointing the pointer "displacement" to displacement_tmp). In
+      /// this way, inside the array "displacement" is kept the
+      /// solution of the previous incremental step, and in
+      /// "displacement_tmp" is saved the current solution.
       Array<Real> * tmp_swap;
 
       if(!displacement_tmp) {
@@ -141,9 +147,6 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
       this->updateResidual();
 
-      //      dump();
-      //   dump("cohesive elements");
-
       converged = this->testConvergence<criteria> (tolerance, error);
 
       iter++;
@@ -168,8 +171,9 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
     /// This is to save the obtained result and proceed with the
     /// simulation even if the error is higher than the pre-fixed
-    /// tolerance.
-    if (load_reduction && (error < tolerance * 1.0e8)) converged = true;
+    /// tolerance. This is done only after loading reduction
+    /// (load_reduction = true).
+    if (load_reduction && (error < tolerance * tol_increase_factor)) converged = true;
 
     if (converged) {
       //      EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
@@ -189,6 +193,14 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
     }
 
     if (is_extrinsic) {
+      /// If is extrinsic the pointer "displacement" is moved back to
+      /// the array displacement. In this way, the array displacement
+      /// is correctly resized during the checkCohesiveStress function
+      /// (in case new cohesive elements are added). This is possible
+      /// because the procedure called by checkCohesiveStress does not
+      /// use the displacement field (the correct one is now stored in
+      /// displacement_tmp), but directly the stress field that is
+      /// already computed.
       Array<Real> * tmp_swap;
 
       tmp_swap = displacement_tmp;
@@ -203,8 +215,8 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       acceleration_tmp = this->acceleration;
       this->acceleration = tmp_swap;
 
-
-      //      if (converged || (load_reduction && error < tolerance * 1.0e9)){
+      /// If convergence is reached, call checkCohesiveStress in order
+      /// to check if cohesive elements have to be introduced
       if (converged){
 
         UInt new_cohesive_elements = checkCohesiveStress();
@@ -219,11 +231,17 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       }
     }
 
+
     if (!converged && load_reduction)
       insertion_new_element = false;
 
-    //    if (!converged && !load_reduction){
-      if (!converged) {
+    /// If convergence is not reached, there is the possibility to
+    /// return back to the main file and reduce the load. Before doing
+    /// this, a pre-fixed value as to be defined for the parameter
+    /// delta_max of the cohesive elements introduced in the current
+    /// incremental step. This is done by calling the function
+    /// checkDeltaMax.
+    if (!converged) {
       insertion_new_element = false;
 
       for (UInt m = 0; m < materials.size(); ++m) {
@@ -235,10 +253,12 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
     }
 
-  } //end while insertion_new_element
+  } //end loop for the insertion of new cohesive elements
 
 
-  //if ((is_extrinsic && converged) || (is_extrinsic && load_reduction))  {
+  /// When the solution to the current incremental step is computed
+  /// (no more cohesive elements have to be introduced), call the
+  /// function to compute the energies.
   if ((is_extrinsic && converged))  {
 
     for(UInt m = 0; m < materials.size(); ++m) {
@@ -250,7 +270,9 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
     EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
 
-
+    /// The function resetVariables is necessary to correctly set a
+    /// variable that permit to decrease locally the penalty parameter
+    /// for compression.
     for (UInt m = 0; m < materials.size(); ++m) {
       try {
 	MaterialCohesive & mat = dynamic_cast<MaterialCohesive &>(*materials[m]);
@@ -258,7 +280,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
       } catch(std::bad_cast&) { }
     }
 
-
+    /// The correct solution is saved
     this->displacement->copy(*displacement_tmp);
     this->velocity    ->copy(*velocity_tmp);
     this->acceleration->copy(*acceleration_tmp);
