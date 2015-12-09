@@ -89,7 +89,7 @@ __BEGIN_AKANTU__
 class Mesh : protected Memory,
              public EventHandlerManager<MeshEventHandler>,
              public GroupManager,
-	     public Dumpable {
+             public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -165,13 +165,13 @@ public:
 
   template<typename T>
   void initElementTypeMapArray(ElementTypeMapArray<T> & v,
-			       UInt nb_component,
-			       UInt spatial_dimension,
-			       GhostType ghost_type,
-			       const T & default_value,
-			       const bool & flag_nb_node_per_elem_multiply = false,
-			       ElementKind element_kind = _ek_regular,
-			       bool size_to_nb_element = false) const; /// @todo: think about nicer way to do it
+                               UInt nb_component,
+                               UInt spatial_dimension,
+                               GhostType ghost_type,
+                               const T & default_value,
+                               const bool & flag_nb_node_per_elem_multiply = false,
+                               ElementKind element_kind = _ek_regular,
+                               bool size_to_nb_element = false) const; /// @todo: think about nicer way to do it
 
   /// extract coordinates of nodes from an element
   template<typename T>
@@ -221,8 +221,8 @@ public:
 
   /// get global connectivity array
   void getGlobalConnectivity(ElementTypeMapArray<UInt> & global_connectivity,
-			     UInt dimension,
-			     GhostType ghost_type);
+                             UInt dimension,
+                             GhostType ghost_type);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -287,8 +287,8 @@ public:
 
   /// get the number of element for a given ghost_type and a given dimension
   inline UInt getNbElement(const UInt spatial_dimension = _all_dimensions,
-			   const GhostType & ghost_type = _not_ghost,
-			   const ElementKind & kind = _ek_not_defined) const;
+                           const GhostType & ghost_type = _not_ghost,
+                           const ElementKind & kind = _ek_not_defined) const;
 
   /// get the connectivity list either for the elements or the ghost elements
   inline const ConnectivityTypeList & getConnectivityTypeList(const GhostType & ghost_type = _not_ghost) const;
@@ -315,13 +315,13 @@ public:
   /// get a name field associated to the mesh
   template<typename T>
   inline const Array<T> & getData(const std::string & data_name,
-				  const ElementType & el_type,
+                                  const ElementType & el_type,
                                   const GhostType & ghost_type = _not_ghost) const;
 
   /// get a name field associated to the mesh
   template<typename T>
   inline Array<T> & getData(const std::string & data_name,
-			    const ElementType & el_type,
+                            const ElementType & el_type,
                             const GhostType & ghost_type = _not_ghost);
 
   /// register a new ElementalTypeMap in the MeshData
@@ -339,21 +339,21 @@ public:
 
   template <typename T>
   ElementTypeMap<UInt> getNbDataPerElem(ElementTypeMapArray<T> & array,
-					const ElementKind & element_kind);
+                                        const ElementKind & element_kind);
 
   template <typename T>
   dumper::Field * createFieldFromAttachedData(const std::string & field_id,
-					      const std::string & group_name,
-					      const ElementKind & element_kind);
+                                              const std::string & group_name,
+                                              const ElementKind & element_kind);
 
   /// templated getter returning the pointer to data in MeshData (modifiable)
   template<typename T>
   inline Array<T> * getDataPointer(const std::string & data_name,
-				   const ElementType & el_type,
+                                   const ElementType & el_type,
                                    const GhostType & ghost_type = _not_ghost,
                                    UInt nb_component = 1,
-				   bool size_to_nb_element = true,
-				   bool resize_with_parent = false);
+                                   bool size_to_nb_element = true,
+                                   bool resize_with_parent = false);
 
   /// Facets mesh accessor
   AKANTU_GET_MACRO(MeshFacets, *mesh_facets, const Mesh &);
@@ -370,7 +370,7 @@ public:
 #ifndef SWIG
   /// return the dumper from a group and and a dumper name
   DumperIOHelper & getGroupDumper(const std::string & dumper_name, 
-				  const std::string & group_name);
+                                  const std::string & group_name);
 #endif
   /* ------------------------------------------------------------------------ */
   /* Wrappers on ElementClass functions                                       */

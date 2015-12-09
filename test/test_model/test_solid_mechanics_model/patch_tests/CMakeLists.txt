@@ -36,7 +36,7 @@ add_mesh(test_weight_tetra_mesh colone_tetra.geo 3 1)
 
 register_test(test_weight
   SOURCES colone_weight.cc
-  DEPENDENCIES test_weight_hexa_mesh test_weight_tetra_mesh
+  DEPENDS test_weight_hexa_mesh test_weight_tetra_mesh
   FILES_TO_COPY material_colone.dat
   DIRECTORIES_TO_CREATE paraview/test_weight_hexa paraview/test_weight_tetra
   PACKAGE core

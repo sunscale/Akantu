@@ -625,15 +625,15 @@ function(package_list_packages PACKAGE_FOLDER)
     string(REGEX REPLACE "[0-9]+_" "" _pkg_file_stripped ${_pkg_file})
     string(REGEX REPLACE "\\.cmake" "" _pkg ${_pkg_file_stripped})
 
-    package_get_name(${_pkg} _pkg_name)
-    _package_set_filename(${_pkg_name} "${PACKAGE_FOLDER}/${_pkg_file}")
+    set(_current_src_folder "${_abs_src_folder}" CACHE INTERNAL "" FORCE)
+    set(_current_test_folder "${_abs_test_folder}" CACHE INTERNAL "" FORCE)
+    set(_current_manual_folder "${_abs_manual_folder}" CACHE INTERNAL "" FORCE)
 
-    _package_set_sources_folder(${_pkg_name} "${_abs_src_folder}")
-    _package_set_tests_folder(${_pkg_name} "${_abs_test_folder}")
-    _package_set_manual_folder(${_pkg_name} "${_abs_manual_folder}")
-
-    list(APPEND _packages_list_all ${_pkg_name})
     include("${PACKAGE_FOLDER}/${_pkg_file}")
+
+    unset(_current_src_folder CACHE)
+    unset(_current_test_folder CACHE)
+    unset(_current_manual_folder CACHE)
   endforeach()
 
   # check the extra_packages if they exists
@@ -648,31 +648,26 @@ function(package_list_packages PACKAGE_FOLDER)
         _package_set_filename(${_pkg_name}
           "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
 
-        _package_set_sources_folder(${_pkg_name}
-          "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
+        set(_current_src_folder "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src" CACHE INTERNAL "" FORCE)
 
         if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
-          _package_set_tests_folder(${_pkg_name}
-            "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
+          set(_current_test_folder "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test" CACHE INTERNAL "" FORCE)
         endif()
 
         if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual")
-          _package_set_manual_folder(${_pkg_name}
-            "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual")
+          set(_current_manual_folder "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual" CACHE INTERNAL "" FORCE)
         endif()
 
         list(APPEND _extra_pkg_src_folders "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
 
-        list(APPEND _packages_list_all ${_pkg_name})
         include("${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
+
+        unset(_current_src_folder CACHE)
+        unset(_current_test_folder CACHE)
+        unset(_current_manual_folder CACHE)
       endif()
     endforeach()
   endif()
-
-  # Store the list of packages
-  string(TOUPPER ${PROJECT_NAME} _project)
-  set(${_project}_ALL_PACKAGES_LIST ${_packages_list_all}
-    CACHE INTERNAL "List of available packages" FORCE)
 
   _package_build_rdependencies()
   _package_load_packages()
@@ -700,6 +695,22 @@ endfunction()
 function(package_declare pkg)
   package_get_name(${pkg} _pkg_name)
   _package_set_real_name(${_pkg_name} ${pkg})
+  _package_set_filename(${_pkg_name} "${CMAKE_CURRENT_LIST_FILE}")
+
+  _package_set_sources_folder(${_pkg_name} "${_current_src_folder}")
+
+  if(_current_test_folder)
+    _package_set_tests_folder(${_pkg_name} "${_current_test_folder}")
+  endif()
+
+  if(_current_manual_folder)
+    _package_set_manual_folder(${_pkg_name} "${_current_manual_folder}")
+  endif()
+
+  package_get_project_variable(ALL_PACKAGES_LIST _tmp_pkg_list)
+  list(APPEND _tmp_pkg_list ${_pkg_name})
+  list(REMOVE_DUPLICATES _tmp_pkg_list)
+  package_set_project_variable(ALL_PACKAGES_LIST ${_tmp_pkg_list})
 
   cmake_parse_arguments(_opt_pkg
     "EXTERNAL;NOT_OPTIONAL;META;ADVANCED"

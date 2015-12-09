@@ -97,6 +97,9 @@ public:
   const MPITypeWrapper & getMPITypeWrapper() const { return *mpi_data; }
   MPITypeWrapper & getMPITypeWrapper() { return *mpi_data; }
 
+  int getMinTag();
+  int getMaxTag();
+
 private:
   void setRank(int prank) { this->prank = prank; }
   void setSize(int psize) { this->psize = psize; }

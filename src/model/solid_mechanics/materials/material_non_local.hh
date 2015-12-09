@@ -75,7 +75,8 @@ public:
 
 protected:
   
-  virtual inline void onElementsAdded(const Array<Element> & element_list) {
+  virtual inline void onElementsAdded(const Array<Element> & element_list,
+				      const NewElementsEvent & event) {
     AKANTU_DEBUG_ERROR("This is a case not taken into account!!!");
   }
   
