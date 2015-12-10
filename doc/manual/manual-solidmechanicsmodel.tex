@@ -244,6 +244,25 @@ respectively.
   \caption{Plate on movable supports.\label{fig:smm:bc_and_ic}}
 \end{figure}
 
+As it is mentioned in Section \ref{sect:common:groups}, node and
+element groups can be used to assign the boundary conditions. A
+generic example is given below with a Dirichlet boundary condition.
+
+\begin{cpp}
+  // create a node group
+  NodeGroup & node_group = mesh.createNodeGroup("nodes_fix");
+
+  /* 
+  fill the node group with the nodes you want
+  */
+
+  // create an element group using the existing node group
+  mesh.createElementGroupFromNodeGroup("el_fix", "nodes_fix", spatial_dimension-1);
+
+  // boundary condition can be applied using the element group name
+  model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "el_fix");
+\end{cpp}
+
 \subsection{Material Selector\label{sect:smm:materialselector}}
 
 If the user wants to assign different materials to different
