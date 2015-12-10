@@ -90,11 +90,10 @@ public:
 
     template <typename CommTag>
     static inline Tag genTag(int proc, UInt msg_count, CommTag tag) {
-      Tag t;
       int max_tag = StaticCommunicator::getStaticCommunicator().getMaxTag();
-      t.tag = ((((proc & 0xFFFFF) << 12) + ((msg_count & 0xFF) << 4) +
-                ((Int)tag & 0xF))) %
-              max_tag;
+      int _tag = ((((proc & 0xFFFFF) << 12) + ((msg_count & 0xFF) << 4) +
+                   ((Int)tag & 0xF)));
+      Tag t(max_tag == 0 ? _tag : (_tag % max_tag));
       return t;
     }
 
@@ -111,10 +110,8 @@ public:
   /// generate the tag from the ID
   template <typename CommTag> inline Tag genTagFromID(CommTag tag) {
     int max_tag = StaticCommunicator::getStaticCommunicator().getMaxTag();
-    Tag t(
-        (std::abs((int(hash<std::string>(this->getID())) << 4) + (tag & 0xF))) %
-        max_tag);
-
+    int _tag = std::abs((int(hash<std::string>(this->getID())) << 4) + (tag & 0xF));
+    Tag t(max_tag == 0 ? _tag : (_tag % max_tag));
     return t;
   }
 
