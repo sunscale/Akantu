@@ -35,7 +35,7 @@ add_mesh(test_local_material_barre_trou_mesh mesh_section_gap.geo 2 2)
 register_test(test_local_material
   SOURCES  test_local_material.cc local_material_damage.cc
   EXTRA_FILES local_material_damage.hh local_material_damage_inline_impl.cc
-  DEPENDENCIES test_local_material_barre_trou_mesh
+  DEPENDS test_local_material_barre_trou_mesh
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE core
@@ -44,7 +44,7 @@ register_test(test_local_material
 add_mesh(test_material_thermal_mesh square.geo 2 1)
 register_test(test_material_thermal
   SOURCES test_material_thermal.cc
-  DEPENDENCIES test_material_thermal_mesh
+  DEPENDS test_material_thermal_mesh
   FILES_TO_COPY material_thermal.dat
   PACKAGE core
   )
@@ -52,7 +52,7 @@ register_test(test_material_thermal
 add_mesh(test_interpolate_stress_mesh interpolation.geo 3 2)
 register_test(test_interpolate_stress test_interpolate_stress.cc
   FILES_TO_COPY material.dat
-  DEPENDENCIES test_interpolate_stress_mesh
+  DEPENDS test_interpolate_stress_mesh
   DIRECTORIES_TO_CREATE paraview
   PACKAGE lapack core
   )
@@ -61,7 +61,7 @@ register_test(test_interpolate_stress test_interpolate_stress.cc
 add_mesh(test_material_orthotropic_square_mesh square.geo 2 1)
 register_test(test_material_orthotropic
   SOURCES test_material_orthotropic.cc
-  DEPENDENCIES test_material_orthotropic_square_mesh
+  DEPENDS test_material_orthotropic_square_mesh
   FILES_TO_COPY orthotropic.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE core
@@ -78,3 +78,4 @@ register_test(test_material_mazars
 # ==============================================================================
 add_akantu_test(test_material_viscoelastic "test the visco elastic materials")
 add_akantu_test(test_material_non_local "test the non-local materials")
+add_akantu_test(test_material_elasto_plastic_linear_isotropic_hardening "test the elasto plastic with linear isotropic hardening materials")

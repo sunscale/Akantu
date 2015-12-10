@@ -1,6 +1,7 @@
 /**
  * @file   neighborhood_base.cc
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Thu Oct  8 15:40:36 2015
  *
  * @brief  Implementation of generic neighborhood base

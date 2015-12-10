@@ -1,6 +1,7 @@
 /**
  * @file   neighborhood_base.hh
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Thu Oct  8 15:27:33 2015
  *
  * @brief  Generic neighborhood of quadrature points
@@ -99,6 +100,7 @@ public:
   AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &);
   /// return the object handling synchronizers
   AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry, SynchronizerRegistry &);
+  AKANTU_GET_MACRO(PairLists, pair_list, const PairList *);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

@@ -99,12 +99,16 @@ public:
   virtual void onElementsRemoved(const Array<Element> & element_list,
                                  const ElementTypeMapArray<UInt> & new_numbering,
                                  const RemovedElementsEvent & event);
-
+  /// mesh event handler onNodesAdded
   virtual void onNodesAdded  (const Array<UInt> & nodes_list,
                               const NewNodesEvent & event) {};
+
+  /// mesh event handler onRemovedNodes
   virtual void onNodesRemoved(const Array<UInt> & nodes_list,
                               const Array<UInt> & new_numbering,
                               const RemovedNodesEvent & event) {};
+
+  /// mesh event handler onElementsAdded
   virtual void onElementsAdded  (const Array<Element> & elements_list,
                                  const NewElementsEvent & event) {};
 

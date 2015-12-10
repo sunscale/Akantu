@@ -27,6 +27,8 @@
 #
 #===============================================================================
 
+set(Boost_NO_BOOST_CMAKE ON CACHE BOOL "" FORCE)
+
 package_declare(Boost EXTERNAL
   NOT_OPTIONAL
   DESCRIPTION "Package handling boost components"

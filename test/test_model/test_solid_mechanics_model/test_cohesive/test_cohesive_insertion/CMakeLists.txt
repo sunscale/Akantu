@@ -33,7 +33,7 @@ add_mesh(3d_spherical_inclusion 3d_spherical_inclusion.geo 3 2)
 
 register_test(test_cohesive_insertion_along_physical_surfaces
   SOURCES test_cohesive_insertion_along_physical_surfaces.cc
-  DEPENDENCIES 3d_spherical_inclusion
+  DEPENDS 3d_spherical_inclusion
   FILES_TO_COPY input_file.dat
   PACKAGE cohesive_element
   )

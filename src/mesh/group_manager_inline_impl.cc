@@ -51,7 +51,8 @@ dumper::Field * GroupManager
 		       const ElementKind & kind,
 		       ElementTypeMap<UInt> nb_data_per_elem){
 
-  if (&field == NULL) return NULL;
+  const ElementTypeMapArray<T> *  field_ptr = &field;
+  if (field_ptr == NULL) return NULL;
   if (group_name == "all")
     return this->createElementalField< dump_type<false> >(field,group_name,
 							 spatial_dimension,
@@ -75,7 +76,8 @@ dumper::Field * GroupManager
 		       const ElementKind & kind,
 		       ElementTypeMap<UInt> nb_data_per_elem){
 
-  if (&field == NULL) return NULL;
+  const ElementTypeMapArray<T> *  field_ptr = &field;
+  if (field_ptr == NULL) return NULL;
   if (group_name == "all")
     return this->createElementalField< dump_type<T,T2,false> >(field,
 							       group_name,
@@ -92,13 +94,15 @@ dumper::Field * GroupManager
 
 /* -------------------------------------------------------------------------- */
 template <typename T,
-	  template<typename T, bool filtered> class dump_type> ///< type of InternalMaterialField
+	  template<typename T2, bool filtered> class dump_type> ///< type of InternalMaterialField
 dumper::Field * GroupManager::createElementalField(const ElementTypeMapArray<T> & field,
 						   const std::string & group_name,
 						   UInt spatial_dimension,
 						   const ElementKind & kind,
 						   ElementTypeMap<UInt> nb_data_per_elem) {
-  if (&field == NULL) return NULL;
+  const ElementTypeMapArray<T> *  field_ptr = &field;
+  
+  if (field_ptr == NULL) return NULL;
   if (group_name == "all")
     return this->createElementalField< dump_type<T,false> >(field,
 							    group_name,
@@ -122,7 +126,8 @@ dumper::Field * GroupManager::createElementalField(const field_type & field,
 						   UInt spatial_dimension,
 						   const ElementKind & kind,
 						   ElementTypeMap<UInt> nb_data_per_elem) {
-  if (&field == NULL) return NULL;
+  const field_type *  field_ptr = &field;
+  if (field_ptr == NULL) return NULL;
   if (group_name != "all") throw;
 
   dumper::Field * dumper  = new dump_type(field,spatial_dimension,_not_ghost,kind);
@@ -138,7 +143,9 @@ dumper::Field * GroupManager::createElementalFilteredField(const field_type & fi
 							   UInt spatial_dimension,
 							   const ElementKind & kind,
 							   ElementTypeMap<UInt> nb_data_per_elem) {
-  if (&field == NULL) return NULL;
+
+  const field_type *  field_ptr = &field;
+  if (field_ptr == NULL) return NULL;
   if (group_name == "all") throw;
 
   typedef typename field_type::type T;

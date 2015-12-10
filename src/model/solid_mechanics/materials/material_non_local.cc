@@ -59,7 +59,9 @@ template<UInt spatial_dimension>
 void MaterialNonLocal<spatial_dimension>::insertQuadsInNeighborhoods(GhostType ghost_type) {
 
   NonLocalManager & manager = this->model->getNonLocalManager();
-  UInt spatial_dimension = this->model->getSpatialDimension();
+  UInt _spatial_dimension = this->model->getSpatialDimension();
+  AKANTU_DEBUG_ASSERT(_spatial_dimension == spatial_dimension, "This assert was inserted because the current variable shadows a template parameter: cannot know which to use");
+  
   InternalField<Real> quadrature_points_coordinates("quadrature_points_coordinates_tmp_nl", *this);
   quadrature_points_coordinates.initialize(spatial_dimension);
 

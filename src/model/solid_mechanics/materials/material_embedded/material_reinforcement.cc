@@ -155,8 +155,8 @@ void MaterialReinforcement<dim>::allocBackgroundShapeDerivatives() {
 
         // Alloc the background ElementTypeMapArray
         shaped_etma->alloc(nb_elements * nb_quad_points,
-            dim * nb_points,
-            back_type);
+			   dim * nb_points,
+			   back_type);
 
         // Insert the background ElementTypeMapArray in the interface ElementTypeMap
         shape_derivatives(shaped_etma, int_type, int_ghost);
@@ -280,9 +280,9 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
 
     Array<Real> * disp_per_element = new Array<Real>(0, dim * nodes_per_background_e, "disp_elem");
     FEEngine::extractNodalToElementField(model->getMesh(),
-	model->getDisplacement(),
-	*disp_per_element,
-	*back_it, ghost_type, *background_filter);
+					 model->getDisplacement(),
+					 *disp_per_element,
+					 *back_it, ghost_type, *background_filter);
 
     Array<Real>::matrix_iterator disp_it = disp_per_element->begin(dim, nodes_per_background_e);
     Array<Real>::matrix_iterator disp_end = disp_per_element->end(dim, nodes_per_background_e);
@@ -435,7 +435,6 @@ void MaterialReinforcement<dim>::assembleResidualInterface(const ElementType & i
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 void MaterialReinforcement<dim>::filterInterfaceBackgroundElements(Array<UInt> & filter,
-
                                                                    const ElementType & type,
                                                                    const ElementType & interface_type,
                                                                    GhostType ghost_type) {

@@ -37,7 +37,7 @@ add_mesh(test_cohesive_intrinsic_tetrahedron_fragmentation_mesh tetrahedron_full
 
 register_test(test_cohesive_intrinsic
   SOURCES test_cohesive_intrinsic.cc
-  DEPENDENCIES test_cohesive_intrinsic_mesh
+  DEPENDS test_cohesive_intrinsic_mesh
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE cohesive_element
@@ -45,19 +45,19 @@ register_test(test_cohesive_intrinsic
 
 register_test(test_cohesive_intrinsic_quadrangle
   SOURCES test_cohesive_intrinsic_quadrangle.cc
-  DEPENDENCIES test_cohesive_intrinsic_quadrangle_mesh
+  DEPENDS test_cohesive_intrinsic_quadrangle_mesh
   PACKAGE cohesive_element
   )
 
 register_test(test_cohesive_intrinsic_tetrahedron
   SOURCES test_cohesive_intrinsic_tetrahedron.cc
-  DEPENDENCIES test_cohesive_intrinsic_tetrahedron_mesh
+  DEPENDS test_cohesive_intrinsic_tetrahedron_mesh
   FILES_TO_COPY material_tetrahedron.dat
   PACKAGE cohesive_element
   )
 
 register_test(test_cohesive_intrinsic_tetrahedron_fragmentation
   SOURCES test_cohesive_intrinsic_tetrahedron_fragmentation.cc
-  DEPENDENCIES test_cohesive_intrinsic_tetrahedron_fragmentation_mesh
+  DEPENDS test_cohesive_intrinsic_tetrahedron_fragmentation_mesh
   PACKAGE cohesive_element
   )

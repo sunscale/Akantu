@@ -370,6 +370,19 @@ void StaticCommunicatorMPI::broadcast(T * values, int nb_values, int root) {
 }
 
 /* -------------------------------------------------------------------------- */
+int StaticCommunicatorMPI::getMaxTag() {
+  return MPI_TAG_UB;
+}
+
+/* -------------------------------------------------------------------------- */
+int StaticCommunicatorMPI::getMinTag() {
+  return 0;
+}
+
+/* -------------------------------------------------------------------------- */
+
+
+
 // template<typename T>
 // MPI_Datatype StaticCommunicatorMPI::getMPIDatatype() {
 //   return MPI_DATATYPE_NULL;

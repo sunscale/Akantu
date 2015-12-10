@@ -278,7 +278,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
-  inline FEEngine & getFEEngineBoundary(std::string name = "");
+  inline FEEngine & getFEEngineBoundary(const std::string & name = "");
 
   AKANTU_GET_MACRO(Density, density, Real);
   AKANTU_GET_MACRO(Capacity, capacity, Real);
@@ -425,6 +425,9 @@ private:
 
   /// analysis method
   AnalysisMethod method;
+
+  /// pointer to the pbc synchronizer
+  PBCSynchronizer * pbc_synch;
 
 };
 

@@ -89,6 +89,10 @@ protected:
   /// in the solveStep (only for extrinsic-implicit)
   void checkDeltaMax(GhostType ghost_type = _not_ghost);
 
+  /// reset variables when convergence is reached (only for
+  /// extrinsic-implicit)
+  void resetVariables(GhostType ghost_type = _not_ghost);
+
   /// compute tangent stiffness matrix
   void computeTangentTraction(const ElementType & el_type,
                               Array<Real> & tangent_matrix,
@@ -145,6 +149,16 @@ protected:
   /// weibull exponent used to scale sigma_c
   Real m_s;
 
+  /// maximum value of the friction coefficient
+  Real mu_max;
+
+  /// penalty parameter for the friction law
+  Real friction_penalty;
+
+  /// variable defining if we are recomputing the last loading step
+  /// after load_reduction
+  bool recompute;
+
   /// critical effective stress
   RandomInternalField<Real, CohesiveInternalField> sigma_c_eff;
 
@@ -155,6 +169,20 @@ protected:
   /// stress at insertion
   CohesiveInternalField<Real> insertion_stress;
 
+  /// delta of the previous step
+  CohesiveInternalField<Real> opening_prec;
+
+  /// history parameter for the friction law
+  CohesiveInternalField<Real> residual_sliding;
+
+  /// friction force
+  CohesiveInternalField<Real> friction_force;
+
+  /// variable that defines if the penalty parameter for compression
+  /// has to be decreased for problems of convergence in the solution
+  /// loops
+  CohesiveInternalField<bool> reduction_penalty;
+
   /// variable saying if there should be penalty contact also after
   /// breaking the cohesive elements
   bool contact_after_breaking;
@@ -162,6 +190,10 @@ protected:
   /// insertion of cohesive element when stress is high enough just on
   /// one quadrature point
   bool max_quad_stress_insertion;
+
+  /// variable saying if friction has to be added to the cohesive behavior
+  bool friction;
+
 };
 
 

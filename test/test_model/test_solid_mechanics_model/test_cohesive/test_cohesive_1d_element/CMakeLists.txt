@@ -35,7 +35,7 @@ if(AKANTU_PARALLEL)
 
   register_test(test_cohesive_1d_element
     SOURCES test_cohesive_1d_element.cc
-    DEPENDENCIES test_cohesive_1d_element_mesh
+    DEPENDS test_cohesive_1d_element_mesh
     FILES_TO_COPY material.dat
     DIRECTORIES_TO_CREATE paraview
     PACKAGE cohesive_element)

@@ -412,6 +412,12 @@ protected:
 				 const ElementTypeMapArray<UInt> &    new_numbering,
 				 const RemovedElementsEvent & event);
 
+  virtual void onElementsChanged(__attribute__((unused)) const Array<Element> & old_elements_list,
+				 __attribute__((unused)) const Array<Element> & new_elements_list,
+                                 __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+                                 __attribute__((unused)) const ChangedElementsEvent & event) {};
+
+
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface (kept for convenience) and dumper relative functions  */
   /* ------------------------------------------------------------------------ */
@@ -720,6 +726,9 @@ protected:
 
   /// pointer to non-local manager: For non-local continuum damage computations
   NonLocalManager * non_local_manager; 
+
+  /// pointer to the pbc synchronizer
+  PBCSynchronizer * pbc_synch;
 
 };
 

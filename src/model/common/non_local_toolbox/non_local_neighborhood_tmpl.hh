@@ -1,6 +1,7 @@
 /**
  * @file   non_local_neighborhood_tmpl.hh
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @date   Sat Sep 26 18:43:30 2015
  *
  * @brief  Implementation of class non-local neighborhood
