@@ -74,6 +74,16 @@ private:
   Int tag;
 };
 
+/* -------------------------------------------------------------------------- */
+/// Datatype to pack pairs for MPI_{MIN,MAX}LOC
+template<typename T1, typename T2>
+struct SCMinMaxLoc {
+  T1 min_max;
+  T2 loc;
+};
+
+/* -------------------------------------------------------------------------- */
+
 class StaticCommunicator;
 
 /* -------------------------------------------------------------------------- */

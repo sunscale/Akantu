@@ -105,6 +105,13 @@ template<typename T> inline void StaticCommunicator::probe(Int sender, Int tag,
 
 
 /* -------------------------------------------------------------------------- */
+template<typename T> inline void StaticCommunicator::reduce(T * values, int nb_values,
+							    const SynchronizerOperation & op,
+							    int root) {
+  AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(reduce(values, nb_values, op, root), 0);
+}
+
+/* -------------------------------------------------------------------------- */
 template<typename T> inline void StaticCommunicator::allReduce(T * values, int nb_values,
 							       const SynchronizerOperation & op) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(allReduce(values, nb_values, op), 0);

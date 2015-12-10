@@ -87,6 +87,9 @@ public:
 
   void barrier();
 
+  template<typename T> void reduce(T * values, int nb_values,
+				   const SynchronizerOperation & op,
+				   int root);
   template<typename T> void allReduce(T * values, int nb_values,
 				      const SynchronizerOperation & op);
 

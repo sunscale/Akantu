@@ -292,6 +292,15 @@ enum SynchronizerOperation {
   _so_sum,
   _so_min,
   _so_max,
+  _so_prod,
+  _so_land,
+  _so_band,
+  _so_lor,
+  _so_bor,
+  _so_lxor,
+  _so_bxor,
+  _so_min_loc,
+  _so_max_loc,
   _so_null
 };
 

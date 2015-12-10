@@ -82,7 +82,6 @@ private:
   friend class EventHandlerManager;
 };
 
-
 class StaticCommunicator : public EventHandlerManager<CommunicatorEventHandler>{
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -128,6 +127,9 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Collectives                                                              */
   /* ------------------------------------------------------------------------ */
+  template<typename T> inline void reduce(T * values, int nb_values,
+					  const SynchronizerOperation & op,
+					  int root = 0);
   template<typename T> inline void allReduce(T * values, int nb_values,
 					     const SynchronizerOperation & op);
 
