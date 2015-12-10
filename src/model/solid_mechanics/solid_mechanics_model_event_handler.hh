@@ -35,6 +35,7 @@
 
 __BEGIN_AKANTU__
 
+///akantu::SolidMechanicsModelEvent is the base event for model
 namespace SolidMechanicsModelEvent {
   struct BeforeSolveStepEvent {
     BeforeSolveStepEvent(AnalysisMethod & method) : method(method) {}
@@ -49,7 +50,7 @@ namespace SolidMechanicsModelEvent {
   struct AfterDamageEvent { AfterDamageEvent() {} };
 }
 
-
+/// akantu::SolidMechanicsModelEvent
 class SolidMechanicsModelEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -62,18 +63,23 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
 
+  /// send a akantu::BeforeSolveStepEvent 
   inline void sendEvent(const SolidMechanicsModelEvent::BeforeSolveStepEvent & event) {
     onBeginningSolveStep(event.method);
   }
+  /// send a akantu::AfterSolveStepEvent 
   inline void sendEvent(const SolidMechanicsModelEvent::AfterSolveStepEvent & event) {
     onEndSolveStep(event.method);
   }
+  /// send a akantu::BeforeDumpEvent 
   inline void sendEvent(const SolidMechanicsModelEvent::BeforeDumpEvent & event) {
     onDump();
   }
+  /// send a akantu::BeginningOfDamageIterationEvent 
   inline void sendEvent(const SolidMechanicsModelEvent::BeginningOfDamageIterationEvent & event) {
     onDamageIteration();
   }
+  /// send a akantu::AfterDamageEvent
   inline void sendEvent(const SolidMechanicsModelEvent::AfterDamageEvent & event) {
     onDamageUpdate();
   }
@@ -85,10 +91,15 @@ protected:
   /* Interface                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /// function to implement to react on akantu::BeforeSolveStepEvent
   virtual void onBeginningSolveStep(__attribute__((unused)) const AnalysisMethod & method) {}
+  /// function to implement to react on akantu::AfterSolveStepEvent
   virtual void onEndSolveStep(__attribute__((unused)) const AnalysisMethod & method) {}
+  /// function to implement to react on akantu::BeforeDumpEvent
   virtual void onDump() {}
+  /// function to implement to react on akantu::BeginningOfDamageIterationEvent
   virtual void onDamageIteration() {}
+  /// function to implement to react on akantu::AfterDamageEvent
   virtual void onDamageUpdate() {}
 };
 
