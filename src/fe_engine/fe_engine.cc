@@ -170,19 +170,22 @@ void FEEngine::assembleMatrix(const Array<Real> & elementary_mat,
                       "The vector elementary_mat(" << elementary_mat.getID()
                       << ") has not the good number of component.");
 
-  Real * elementary_mat_val = elementary_mat.storage();
-  UInt offset_elementary_mat = elementary_mat.getNbComponent();
-  UInt * connectivity_val = mesh.getConnectivity(type, ghost_type).storage();
-
   UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom;
   UInt size = mesh.getNbGlobalNodes() * nb_degree_of_freedom;
+
+  Real * elementary_mat_val = elementary_mat.storage();
+  UInt offset_elementary_mat = elementary_mat.getNbComponent();
+  Array<Real>::const_matrix_iterator el_mat_it = elementary_mat.begin(size_mat,size_mat);
+  UInt * connectivity_val = mesh.getConnectivity(type, ghost_type).storage();
 
   Int * eq_nb_val = matrix.getDOFSynchronizer().getGlobalDOFEquationNumbers().storage();
   Int * local_eq_nb_val = new Int[size_mat];
 
-  for (UInt e = 0; e < nb_element; ++e) {
+  for (UInt e = 0; e < nb_element; ++e, ++el_mat_it) {
     UInt el = e;
     if(filter_elements != empty_filter) el = filter_elements(e);
+
+    const Matrix<Real> & el_mat = *el_mat_it;
 
     Int * tmp_local_eq_nb_val = local_eq_nb_val;
     UInt * conn_val = connectivity_val + el * nb_nodes_per_element;
@@ -212,10 +215,10 @@ void FEEngine::assembleMatrix(const Array<Real> & elementary_mat,
             if(c_jcn < size) {
               if (matrix.getSparseMatrixType() == _symmetric){
                 if (c_jcn >= c_irn){
-                  matrix(c_irn, c_jcn) += elementary_mat_val[j * size_mat + i];
+                  matrix(c_irn, c_jcn) += el_mat(i, j);
                 }
               }else{
-                matrix(c_irn, c_jcn) += elementary_mat_val[j * size_mat + i];
+                matrix(c_irn, c_jcn) += el_mat(i, j);
               }
             }
           }
@@ -233,7 +236,7 @@ void FEEngine::assembleMatrix(const Array<Real> & elementary_mat,
           for (UInt j = j_start; j < size_mat; ++j) {
             UInt c_jcn = local_eq_nb_val[j];
             if(c_jcn < size) {
-              matrix(c_irn, c_jcn) += elementary_mat_val[j * size_mat + i];
+              matrix(c_irn, c_jcn) += el_mat(i, j);
             }
           }
         }
