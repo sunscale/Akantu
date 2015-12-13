@@ -51,8 +51,8 @@ package_declare_sources(cohesive_element
 
   model/solid_mechanics/materials/material_cohesive/material_cohesive_inline_impl.cc
 
-  model/solid_mechanics/solid_mechanics_model_cohesive.cc
-  model/solid_mechanics/solid_mechanics_model_cohesive_inline_impl.cc
+  model/solid_mechanics/cohesive/solid_mechanics_model_cohesive.cc
+  model/solid_mechanics/cohesive/solid_mechanics_model_cohesive_inline_impl.cc
   model/solid_mechanics/fragment_manager.cc
   model/solid_mechanics/materials/material_cohesive/material_cohesive.cc
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear.cc
@@ -61,7 +61,7 @@ package_declare_sources(cohesive_element
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_bilinear.cc
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_exponential.cc
 
-  model/solid_mechanics/solid_mechanics_model_cohesive.hh
+  model/solid_mechanics/cohesive/solid_mechanics_model_cohesive.hh
   model/solid_mechanics/fragment_manager.hh
   model/solid_mechanics/materials/material_cohesive/material_cohesive.hh
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_bilinear.hh
