@@ -1,5 +1,5 @@
 /**
- * @file   cohesive.cc
+ * @file   solid_mechanics_model_cohesive.cc
  *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
