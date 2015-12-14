@@ -49,5 +49,5 @@ add_example(contact              "Examples on how to use contact within Akantu" 
 add_example(optimization         "Optimization examples"                               PACKAGE optimization)
 add_example(structural_mechanics "Structural mechanics model examples"                 PACKAGE structural_mechanics)
 add_example(heat_transfer        "Example on how to run heat transfer simulation"      PACKAGE heat_transfer)
-add_example(embedded             "Example on how to run embedded model simulation"     PACKAGE embedded implicit)
+add_example(embedded             "Example on how to run embedded model simulation"     PACKAGE embedded)
 #===============================================================================

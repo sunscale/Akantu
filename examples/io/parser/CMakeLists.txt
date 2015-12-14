@@ -3,9 +3,9 @@
 #
 # @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Fri Aug 14 2015
-#
-# @brief  CMakeLists for Input/Output examples
+# @date creation: Mon Dec 14 09:07:44 2015
+# 
+# @brief  Tests insertion of cohesive elements
 #
 # @section LICENSE
 #
@@ -25,6 +25,20 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
+# @section DESCRIPTION
+#
 #===============================================================================
-add_example(dumper "Examples on how to use DumperIOHelper to output data" PACKAGE iohelper)
-add_example(parser "Examples on how to input data from text file in Akantu" PACKAGE core)
+add_mesh(swiss_cheese swiss_cheese.geo 2 2)
+
+register_example(example_parser
+  example_parser.cc
+  USE IOHelper
+  DEPENDS swiss_cheese
+  DIRECTORIES_TO_CREATE paraview
+  )
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/input_file.dat
+  ${CMAKE_CURRENT_BINARY_DIR}/input_file.dat
+  COPYONLY
+  )
