@@ -35,7 +35,8 @@
 #include "solid_mechanics_model.hh"
 #include "solid_mechanics_model_event_handler.hh"
 #include "cohesive_element_inserter.hh"
-#include "material_selector.hh"
+#include "material_selector_cohesive.hh"
+
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
 #  include "facet_synchronizer.hh"
 #  include "facet_stress_synchronizer.hh"
@@ -243,77 +244,6 @@ private:
 
 };
 
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-/** 
- * class that assigns the first cohesive material by default to the
- * cohesive elements
- */
-class DefaultMaterialCohesiveSelector : public DefaultMaterialSelector {
-public:
-  DefaultMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model) :
-    DefaultMaterialSelector(model.getMaterialByElement()),
-    facet_material(model.getFacetMaterial()),
-    mesh(model.getMesh()) { }
-
-  inline virtual UInt operator()(const Element & element) {
-    if(Mesh::getKind(element.type) == _ek_cohesive) {
-      try {
-	const Array<Element> & cohesive_el_to_facet
-	  = mesh.getMeshFacets().getSubelementToElement(element.type, element.ghost_type);
-	bool third_dimension = (mesh.getSpatialDimension() == 3);
-	const Element & facet = cohesive_el_to_facet(element.element, third_dimension);
-	if(facet_material.exists(facet.type, facet.ghost_type)) {
-	  return facet_material(facet.type, facet.ghost_type)(facet.element);
-	} else {
-	  return MaterialSelector::operator()(element);
-	}
-      } catch (...) {
-	return MaterialSelector::operator()(element);
-      }
-    } else if (Mesh::getSpatialDimension(element.type) == mesh.getSpatialDimension() - 1) {
-      return facet_material(element.type, element.ghost_type)(element.element);
-    } else {
-      return DefaultMaterialSelector::operator()(element);
-    }
-  }
-
-private:
-  const ElementTypeMapArray<UInt> & facet_material;
-  const Mesh & mesh;
-};
-
-/* -------------------------------------------------------------------------- */
-/// To be used with intrinsic elements inserted along mesh physical surfaces
-class MeshDataMaterialCohesiveSelector : public MeshDataMaterialSelector<std::string> {
-public:
-  MeshDataMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model):
-    MeshDataMaterialSelector("physical_names",model),
-    mesh_facets(model.getMeshFacets()),
-    material_index(mesh_facets.getData<UInt>("physical_names")) {
-    third_dimension = (model.getSpatialDimension()==3);}
-  inline virtual UInt operator() (const Element & element) {
-
-    if(element.kind == _ek_cohesive) {  
-      const Array<Element> & cohesive_el_to_facet = mesh_facets.getSubelementToElement(element.type, element.ghost_type);
-      const Element & facet = cohesive_el_to_facet(element.element,third_dimension);
-      UInt material_id = material_index(facet.type,facet.ghost_type)(facet.element);
-      return material_id; }
-
-    else return MeshDataMaterialSelector<std::string>::operator()(element);
-  }
-
-protected:
-  const Mesh & mesh_facets;
-  const ElementTypeMapArray<UInt> & material_index;
-  bool third_dimension;
-
-};
-
 /* -------------------------------------------------------------------------- */
 /// standard output stream operator
 inline std::ostream & operator <<(std::ostream & stream, const SolidMechanicsModelCohesive & _this)
@@ -325,8 +255,6 @@ inline std::ostream & operator <<(std::ostream & stream, const SolidMechanicsMod
 
 __END_AKANTU__
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "solid_mechanics_model_cohesive_inline_impl.cc"
-#endif
+#include "solid_mechanics_model_cohesive_inline_impl.cc"
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__ */

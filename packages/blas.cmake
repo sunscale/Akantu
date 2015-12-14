@@ -36,7 +36,12 @@ package_declare(BLAS EXTERNAL
 package_add_third_party_script_variable(BLAS BLAS_ARCHIVE "http://www.netlib.org/blas/blas-3.5.0.tgz")
 package_add_third_party_script_variable(BLAS BLAS_VERSION "3.5.0")
 
-set(AKANTU_USE_BLAS_VENDOR "Generic" CACHE STRING "Version of blas to use")
+set(_default_blas $ENV{BLA_VENDOR})
+if(NOT _default_blas)
+  set(_default_blas Generic)
+endif()
+
+set(AKANTU_USE_BLAS_VENDOR "${_default_blas}" CACHE STRING "Version of blas to use")
 mark_as_advanced(AKANTU_USE_BLAS_VENDOR)
 set_property(CACHE AKANTU_USE_BLAS_VENDOR PROPERTY STRINGS
   Goto

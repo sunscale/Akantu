@@ -52,7 +52,7 @@ namespace akantu {
 
   template<class T>
   std::size_t hash(const T & t) {
-    typedef @AKANTU_HASH_TYPE@<T> hash_type;
+    typedef typename @AKANTU_HASH_TYPE@<T> hash_type;
     return hash_type()(t);
   };
 }

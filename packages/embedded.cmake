@@ -33,19 +33,15 @@ package_declare(embedded
   DEPENDS CGAL)
 
 package_declare_sources(embedded
-  model/solid_mechanics/materials/material_embedded/material_embedded_includes.hh
-
-  model/solid_mechanics/embedded_interface_intersector.hh
-  model/solid_mechanics/embedded_interface_intersector.cc
-  model/solid_mechanics/embedded_interface_model.hh
-  model/solid_mechanics/embedded_interface_model.cc
-
+  model/solid_mechanics/solid_mechanics_model_embedded_interface/embedded_interface_intersector.cc
+  model/solid_mechanics/solid_mechanics_model_embedded_interface/embedded_interface_intersector.hh
+  model/solid_mechanics/solid_mechanics_model_embedded_interface/embedded_interface_model.cc
+  model/solid_mechanics/solid_mechanics_model_embedded_interface/embedded_interface_model.hh
   model/solid_mechanics/materials/material_embedded/embedded_internal_field.hh
-
-  model/solid_mechanics/materials/material_embedded/material_reinforcement.hh
+  model/solid_mechanics/materials/material_embedded/material_embedded_includes.hh
   model/solid_mechanics/materials/material_embedded/material_reinforcement.cc
+  model/solid_mechanics/materials/material_embedded/material_reinforcement.hh
   model/solid_mechanics/materials/material_embedded/material_reinforcement_inline_impl.cc
-
   model/solid_mechanics/materials/material_embedded/material_reinforcement_template.hh
   model/solid_mechanics/materials/material_embedded/material_reinforcement_template_tmpl.hh
   )
