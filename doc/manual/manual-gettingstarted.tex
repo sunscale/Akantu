@@ -49,7 +49,7 @@ communication setup. This is achieved by a pair of functions
 using namespace akantu;
 
 int main(int argc, char *argv[]) {
-  initialize("material.dat", argc, argv);
+  initialize("input_file.dat", argc, argv);
 
   // your code
   ...
@@ -57,9 +57,9 @@ int main(int argc, char *argv[]) {
   finalize();
 }
 \end{cpp}
-The \code{initialize} function takes the material file and the program
-parameters which can be interpreted by \akantu in due form. Obviously
-it is necessary to include all files needed in main. In this manual
+The \code{initialize} function takes the text inpute file and the program
+parameters which can be parsed by \akantu in due form (see \ref{sect:parser}). 
+Obviously it is necessary to include all files needed in main. In this manual
 all provided code implies the usage of \code{akantu} as namespace.
 
 \section{Creating and Loading a Mesh\label{sect:common:mesh}}
