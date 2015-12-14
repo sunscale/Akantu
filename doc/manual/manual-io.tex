@@ -1,6 +1,76 @@
 \chapter{Input/Output}\index{I\/O}
 
-\section{Generic data}
+\section{Input file \label{sect:parser}}
+
+The text input file of a simulation should be precised using the method \code{initialize} which will instantiate the static \code{Parser} object of \akantu. This section explains how to manipulate \code{Parser} objects to input data in \akantu.      
+\begin{cpp}
+int main(int argc, char *argv[]) {
+  initialize("input_files.dat", argc, argv);
+  ...
+\end{cpp}
+
+\subsection{Akantu Parser}
+
+\akantu file parser has a tree organization.
+\begin{itemize}
+\item \code{Parser}, the root of the tree, can be accessed using
+\begin{cpp}
+Parser & parser = getStaticParser();
+\end{cpp}
+\item \code{ParserSection}, branch of the tree, contains map a of sub-sections (\code{SectionType}, \code{ParserSection}) and a \code{ParserSection *} pointing to the parent section. The user section of the input file can directly be accessed by
+\begin{cpp}
+const ParserSection & usersect = getUserParser();
+\end{cpp} 
+\item \code{ParserParameter}, the leaf of the tree, carries data of the input file which can be casted to the correct type with
+\begin{cpp}
+Real mass = usersect.getParameter("mass");
+\end{cpp}
+or used directly within an expression
+\begin{cpp}
+Real dead_weight = 9.81 * usersect.getParameterValue<Real>("mass");
+\end{cpp}
+\end{itemize}
+
+\subsection{Grammar}
+
+The structure of text input files consists of different sections containing a list of parameters. As example, the file parsed in the previous section will look like
+\begin{cpp}
+  user parameters [
+     mass = 10.5
+  ]
+\end{cpp}  
+Basically every standard arithmetic operations can be used inside of input files as well as the constant \code{pi} and \code{e} and the exponent operator \code{\^{}}. Operations between \code{ParserParameter} are also possible with the convention that only parameters of the current and the parent sections are available. \code{Vector} and \code{Matrix} can also be read according to the \code{NumPy}\cite{numpy} writing convention (a.e. cauchy$\_$stress$\_$tensor = [[$\sigma_{xx}$, $\sigma_{xy}$],[$\sigma_{yx}$,$\sigma_{yy}$]]). 
+An example illustrating how to parse the following input file can be found in \code{example$\backslash$io$\backslash$parser$\backslash$example$\_$parser.cc}.
+\begin{cpp}
+user parameters [
+   spatial$\_$dimension = 2
+   mesh$\_$file = swiss$\_$cheese.msh
+   inner$\_$holes = holes
+   outter$\_$crust = crust
+   lactostatic$\_$p = 30e3
+   stress = [[lactostatic$\_$p,0],[0,lactostatic$\_$p]]
+   max$\_$nb$\_$iterations = 100
+   precision = 1e-9
+]
+\end{cpp}
+\subsection{Material section \label{sect:io:material}}
+The input file should also be used to specify material characteristics (constitutive behavior and material properties). The dedicated material section is then read by \code{initFull} method of \code{SolidMechanicsModel} which initializes the different materials specified with the following convention:
+\begin{cpp}
+  material %\emph{constitutive\_law}% %\emph{<optional flavor>}% [
+     name = $value$
+     rho = $value$
+     ...
+  ]
+\end{cpp}
+\index{Constitutive\_laws} where \emph{constitutive\_law} is the adopted
+constitutive law, followed by the material properties listed one by line in the
+bracket (\eg \code{name} and density \code{rho}). Some constitutive laws can
+also have an \emph{optional flavor}. More information can be found in sections relative to material
+constitutive laws \ref{sect:smm:CL} or in Appendix \ref{app:material-parameters}.
+
+\section{Output data}
+
+\subsection{Generic data}
 In this chapter, we address ways to get the internal data in human-readable formats.
 The models in \akantu handle data associated to the
 mesh, but this data can be split into several \code{Arrays}. For example, the
@@ -70,7 +140,7 @@ The list of fields depends on the models (for
   \label{tab:io:smm_field_list}
 \end{table}
 
-\section{Cohesive elements' data}
+\subsection{Cohesive elements' data}
 Cohesive elements and their relative data can be easily dumped thanks
 to a specific dumper contained in
 \code{SolidMechanicsModelCohesive}. In order to use it, one has just
@@ -86,7 +156,7 @@ and damage:
   model.dump("cohesive elements");
 \end{cpp}
 
-\subsection{Fragmentation data}
+\subsubsection{Fragmentation data}
 
 Whenever the \code{SolidMechanicsModelCohesive} is used, it is
 possible to dump additional data about the fragments that get formed
@@ -133,9 +203,9 @@ this array is the number of fragments, and its number of components is
 the spatial dimension in this case.
 
 
-\section{Advanced dumping}
+\subsection{Advanced dumping}
 
-\subsection{Arbitrary fields}
+\subsubsection{Arbitrary fields}
 In addition to the predetermined fields from the models and materials, the user
 can add any data to a dumper as long as the support is the same. That is to say
 data that have the size of the full mesh on if the dumper is dumping the mesh,
@@ -174,7 +244,7 @@ An example of code presenting this interface is present in the
 \shellcode{\examplesdir/io/dumper}. This interface is part of the
 \code{Dumpable} class from which the \code{Mesh} inherits.
 
-\subsection{Creating a new dumper}
+\subsubsection{Creating a new dumper}
 
 You can also create you own dumpers, \akantu uses a third-party library in order
 to write the output files, \code{IOHelper}. \akantu supports the \code{ParaView}
