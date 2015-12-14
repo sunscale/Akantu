@@ -34,42 +34,35 @@ package_declare(cohesive_element
   DEPENDS lapack)
 
 package_declare_sources(cohesive_element
-  model/solid_mechanics/materials/material_cohesive_includes.hh
-
-  mesh_utils/cohesive_element_inserter.hh
-  mesh_utils/cohesive_element_inserter.cc
-
   fe_engine/cohesive_element.cc
-  fe_engine/shape_cohesive.hh
   fe_engine/cohesive_element.hh
   fe_engine/fe_engine_template_cohesive.cc
-
+  fe_engine/shape_cohesive.hh
   fe_engine/shape_cohesive_inline_impl.cc
-
-  model/solid_mechanics/materials/material_cohesive/cohesive_internal_field_tmpl.hh
+  mesh_utils/cohesive_element_inserter.cc
+  mesh_utils/cohesive_element_inserter.hh
   model/solid_mechanics/materials/material_cohesive/cohesive_internal_field.hh
-
-  model/solid_mechanics/materials/material_cohesive/material_cohesive_inline_impl.cc
-
-  model/solid_mechanics/solid_mechanics_model_cohesive.cc
-  model/solid_mechanics/solid_mechanics_model_cohesive_inline_impl.cc
-  model/solid_mechanics/fragment_manager.cc
-  model/solid_mechanics/material_selector_cohesive.hh
-  model/solid_mechanics/material_selector_cohesive.cc
-  model/solid_mechanics/materials/material_cohesive/material_cohesive.cc
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear.cc
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_inline_impl.cc
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_fatigue.cc
+  model/solid_mechanics/materials/material_cohesive/cohesive_internal_field_tmpl.hh
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_bilinear.cc
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_exponential.cc
-
-  model/solid_mechanics/solid_mechanics_model_cohesive.hh
-  model/solid_mechanics/fragment_manager.hh
-  model/solid_mechanics/materials/material_cohesive/material_cohesive.hh
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_bilinear.hh
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear.hh
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_fatigue.hh
+  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_exponential.cc
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_exponential.hh
+  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear.cc
+  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear.hh
+  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_fatigue.cc
+  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_fatigue.hh
+  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_inline_impl.cc
+  model/solid_mechanics/materials/material_cohesive/material_cohesive.cc
+  model/solid_mechanics/materials/material_cohesive/material_cohesive.hh
+  model/solid_mechanics/materials/material_cohesive/material_cohesive_inline_impl.cc
+  model/solid_mechanics/materials/material_cohesive_includes.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/fragment_manager.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/fragment_manager.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/material_selector_cohesive.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/material_selector_cohesive.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_inline_impl.cc
   )
 
 
