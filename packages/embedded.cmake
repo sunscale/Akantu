@@ -35,10 +35,10 @@ package_declare(embedded
 package_declare_sources(embedded
   model/solid_mechanics/materials/material_embedded/material_embedded_includes.hh
 
-  model/solid_mechanics/embedded_interface/embedded_interface_intersector.hh
-  model/solid_mechanics/embedded_interface/embedded_interface_intersector.cc
-  model/solid_mechanics/embedded_interface/embedded_interface_model.hh
-  model/solid_mechanics/embedded_interface/embedded_interface_model.cc
+  model/solid_mechanics/embedded_interface_intersector.hh
+  model/solid_mechanics/embedded_interface_intersector.cc
+  model/solid_mechanics/embedded_interface_model.hh
+  model/solid_mechanics/embedded_interface_model.cc
 
   model/solid_mechanics/materials/material_embedded/embedded_internal_field.hh
 
