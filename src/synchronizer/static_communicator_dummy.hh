@@ -105,11 +105,12 @@ public:
 
   void barrier(){};
 
-  template<typename T>
+  template <typename T>
   void reduce(__attribute__ ((unused)) T * values,
 	      __attribute__ ((unused)) int nb_values,
 	      __attribute__ ((unused)) const SynchronizerOperation & op,
 	      __attribute__ ((unused)) int root) {}
+
 
   template <typename T>
   void allReduce(__attribute__((unused)) T * values,
