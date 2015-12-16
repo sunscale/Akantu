@@ -82,3 +82,9 @@ register_test(test_solver_petsc
   DEPENDENCIES test_solver_petsc_mesh
   PACKAGE petsc
   )
+
+register_test(test_solver_petsc_parallel
+  SOURCES test_solver_petsc.cc
+  DEPENDENCIES test_solver_petsc_mesh
+  PACKAGE petsc
+  )
