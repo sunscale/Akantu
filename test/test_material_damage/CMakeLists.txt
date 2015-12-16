@@ -15,7 +15,6 @@
 #
 
 #===============================================================================
-add_mesh(one_inclusion one_circular_inclusion.geo 2 1 OUTPUT one_circular_inclusion.msh)
 
 register_test(test_material_damage_iterative
   SOURCES test_material_damage_iterative.cc
@@ -35,14 +34,13 @@ register_test(test_material_damage_iterative_non_local_serial
   SOURCES test_material_damage_iterative_non_local_serial.cc
   FILES_TO_COPY material_non_local.dat plate.msh
   DIRECTORIES_TO_CREATE paraview
-  PACKAGE extra_materials
+  PACKAGE extra_materials_non_local
   )
 
 register_test(test_material_damage_iterative_non_local_parallel
   SOURCES test_material_damage_iterative_non_local_parallel.cc
-  DEPENDENCIES one_inclusion
-  FILES_TO_COPY two_materials.dat
+  FILES_TO_COPY two_materials.dat one_circular_inclusion.msh
   DIRECTORIES_TO_CREATE paraview
-  PACKAGE extra_materials
+  PACKAGE extra_materials_non_local
   )
 
