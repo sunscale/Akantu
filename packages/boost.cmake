@@ -27,6 +27,8 @@
 #
 #===============================================================================
 
+set(Boost_NO_BOOST_CMAKE ON CACHE BOOL "" FORCE)
+
 package_declare(Boost EXTERNAL
   NOT_OPTIONAL
   DESCRIPTION "Package handling boost components"
@@ -38,10 +40,10 @@ mark_as_advanced(Boost_DIR)
 package_on_enabled_script(Boost
   "if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER \"4.8\")
   set(_boost_version \${Boost_MAJOR_VERSION}.\${Boost_MINOR_VERSION})
-  if(AKANTU_CORE_CXX11 AND _boost_version VERSION_LESS 1.58)
-    add_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
+  if(AKANTU_CORE_CXX11 AND _boost_version VERSION_LESS 1.58 AND _boost_version VERSION_GREATER 1.53)
+    add_flags(cxx -DBOOST_SPIRIT_USE_PHOENIX_V3)
   else()
-    remove_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
+    remove_flags(cxx -DBOOST_SPIRIT_USE_PHOENIX_V3)
   endif()
 endif()
 ")

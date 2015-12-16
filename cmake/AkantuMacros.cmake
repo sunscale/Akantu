@@ -91,6 +91,21 @@ endfunction()
 #===============================================================================
 # Declare the options for the types and defines the approriate typedefs
 function(declare_akantu_types)
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag (-std=c++0x HAVE_CPP_0X)
+
+  unset(_cpp_11_flag)
+  if(HAVE_CPP_0X)
+    set(_cpp_11_flag "-std=c++0x")
+  else()
+    check_cxx_compiler_flag (-std=c++11 HAVE_CPP_11)
+    if(HAVE_CPP_11)
+      set(_cpp_11_flag "-std=c++11")
+    endif()
+  endif()
+
+  set(AKANTU_CXX11_FLAGS "${_cpp_11_flag}" CACHE INTERNAL "")
+
   set(AKANTU_TYPE_FLOAT "double (64bit)" CACHE STRING "Precision force floating point types")
   mark_as_advanced(AKANTU_TYPE_FLOAT)
   set_property(CACHE AKANTU_TYPE_FLOAT PROPERTY STRINGS
@@ -131,7 +146,7 @@ function(declare_akantu_types)
   endif()
 
   include(CheckIncludeFileCXX)
-
+  include(CheckCXXSourceCompiles)
 
   # ----------------------------------------------------------------------------
   # Integer types
@@ -222,12 +237,27 @@ function(declare_akantu_types)
   # ----------------------------------------------------------------------------
   # hash function
   # ----------------------------------------------------------------------------
+  unset(AKANTU_HASH_TYPE CACHE)
   check_include_file_cxx(functional HAVE_FUNCTIONAL)
   set(AKANTU_HASH_IS_CXX11 TRUE CACHE INTERNAL "")
-  if(HAVE_FUNCTIONAL AND AKANTU_CORE_CXX11)
+  if(HAVE_FUNCTIONAL AND AKANTU_CXX11_FLAGS)
     list(APPEND _extra_includes functional)
-    set(AKANTU_HASH_TYPE "std::hash" CACHE INTERNAL "")
-  else()
+    check_cxx_source_compiles("
+#include <functional>
+template<class T>
+std::size_t hash(const T & t) {
+  typedef typename std::hash<T> hash_type;
+  return hash_type()(t);
+};
+
+int main() { return 0; }
+" HAVE_HASH)
+    if(HAVE_HASH)
+      set(AKANTU_HASH_TYPE "std::hash" CACHE INTERNAL "")
+    endif()
+  endif()
+
+  if(NOT AKANTU_HASH_TYPE)
     check_include_file_cxx(tr1/functional HAVE_TR1_HASH)
     if(HAVE_TR1_HASH)
       list(APPEND _extra_includes tr1/functional)

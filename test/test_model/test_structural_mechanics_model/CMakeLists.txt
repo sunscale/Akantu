@@ -66,7 +66,7 @@ register_test(test_structural_mechanics_model_kirchhoff_shell_patch_test_4_5_5
 add_mesh(complicated_mesh complicated.geo 1 1)
 register_test(test_structural_mechanics_model_bernoulli_beam_2_complicated
   test_structural_mechanics_model_bernoulli_beam_2_complicated.cc
-  DEPENDENCIES complicated_mesh
+  DEPENDS complicated_mesh
   PACKAGE structural_mechanics
   )
 

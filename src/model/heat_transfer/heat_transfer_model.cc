@@ -80,7 +80,8 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh,
   bt_k_gT                 ("bt_k_gT", id),
   conductivity(spatial_dimension, spatial_dimension),
   thermal_energy          ("thermal_energy", id),
-  solver(NULL) {
+  solver(NULL),
+  pbc_synch(NULL) {
   AKANTU_DEBUG_IN();
 
   createSynchronizerRegistry(this);
@@ -132,10 +133,10 @@ void HeatTransferModel::initPBC() {
   AKANTU_DEBUG_IN();
 
   Model::initPBC();
-  PBCSynchronizer * synch = new PBCSynchronizer(pbc_pair);
+  pbc_synch = new PBCSynchronizer(pbc_pair);
 
-  synch_registry->registerSynchronizer(*synch, _gst_htm_capacity);
-  synch_registry->registerSynchronizer(*synch, _gst_htm_temperature);
+  synch_registry->registerSynchronizer(*pbc_synch, _gst_htm_capacity);
+  synch_registry->registerSynchronizer(*pbc_synch, _gst_htm_temperature);
   changeLocalEquationNumberForPBC(pbc_pair,1);
 
   // as long as there are ones on the diagonal of the matrix, we can put boudandary true for slaves
@@ -307,6 +308,9 @@ HeatTransferModel::~HeatTransferModel()
   if (capacity_matrix)     delete capacity_matrix    ;  
   if (jacobian_matrix)     delete jacobian_matrix    ;
   if (solver)              delete solver             ;
+
+  delete pbc_synch;
+  
   AKANTU_DEBUG_OUT();
 }
 

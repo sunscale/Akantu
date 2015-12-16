@@ -124,7 +124,9 @@ $y$-direction are set to zero. Implementing this displacement boundary
 condition is similar to the implementation of initial displacement
 conditions described above. However, in order to impose a displacement
 boundary condition for all time steps, the corresponding nodes need to
-be marked as boundary nodes as shown in the following code:
+be marked as boundary nodes using the function \code{blocked}. While, 
+in order to impose a load on the right side, the nodes are not marked.
+The detail codes are shown as follows:
 
 \begin{cpp}
 Array<bool> & blocked = model.getBlockedDOFs();
@@ -134,10 +136,13 @@ UInt nb_nodes = mesh.getNbNodes();
 
 for (UInt i = 0; i < nb_nodes; ++i) {
   if(Math::are_float_equal(pos(i, 0), 0)) {
-    blocked(i, 0) = true; //block displacement in x-direction
-    blocked(i, 1) = true; //block displacement in y-direction
+    blocked(i, 0) = true; //block dof in x-direction
+    blocked(i, 1) = true; //block dof in y-direction
     disp(i, 0) = 0.; //fixed displacement in x-direction
     disp(i, 1)= 0.; //fixed displacement in y-direction
+  } else if (Math::are_float_equal(pos(i, 10), 0)) {
+    blocked(i, 0) = false; //unblock dof in x-direction
+    forces(i, 0) = 10.; //force in x-direction
   }
 }
 \end{cpp}
@@ -145,8 +150,9 @@ for (UInt i = 0; i < nb_nodes; ++i) {
 \begin{figure}[!htb]
   \centering
   \includegraphics[scale=0.4]{figures/dirichlet}
-  \caption{Beam with fixed support.\label{fig:smm:dirichlet_bc}}
+  \caption{Beam with fixed support and load.\label{fig:smm:dirichlet_bc}}
 \end{figure}
+
 
 For the more advanced approach, one needs the notion of a boundary in
 the mesh. Therefore, the boundary should be created before boundary
@@ -237,6 +243,25 @@ respectively.
   \includegraphics[scale=0.8]{figures/bc_and_ic_example}
   \caption{Plate on movable supports.\label{fig:smm:bc_and_ic}}
 \end{figure}
+
+As it is mentioned in Section \ref{sect:common:groups}, node and
+element groups can be used to assign the boundary conditions. A
+generic example is given below with a Dirichlet boundary condition.
+
+\begin{cpp}
+  // create a node group
+  NodeGroup & node_group = mesh.createNodeGroup("nodes_fix");
+
+  /* 
+  fill the node group with the nodes you want
+  */
+
+  // create an element group using the existing node group
+  mesh.createElementGroupFromNodeGroup("el_fix", "nodes_fix", spatial_dimension-1);
+
+  // boundary condition can be applied using the element group name
+  model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "el_fix");
+\end{cpp}
 
 \subsection{Material Selector\label{sect:smm:materialselector}}
 

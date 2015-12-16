@@ -335,13 +335,13 @@ protected:
 
 };
 
+#include "aka_array_tmpl.hh"
+
 __END_AKANTU__
 
 #include "aka_types.hh"
 
 __BEGIN_AKANTU__
-
-#include "aka_array_tmpl.hh"
 
 /* -------------------------------------------------------------------------- */
 /* Inline Functions Array<T, is_scal>                                         */

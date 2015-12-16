@@ -1,0 +1,8 @@
+material plastic_linear_isotropic_hardening [
+	 name = hardening
+	 rho = 1000  # density
+	 E   = 12e7  # young's modulus
+	 nu  = 0.3   # poisson's ratio
+	 h = 1e7     # hardening modulus
+	 sigma_y = 12e4  # yielding stress
+]

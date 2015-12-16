@@ -63,7 +63,8 @@ public:
    * @brief get  the number of  data to exchange  for a given akantu::Element  and a
    * given akantu::SynchronizationTag
    */
-  virtual UInt getNbDataForElements(__attribute__((unused)) const Array<Element> & elements,                                __attribute__((unused)) SynchronizationTag tag) const {
+  virtual UInt getNbDataForElements(__attribute__((unused)) const Array<Element> & elements,
+				    __attribute__((unused)) SynchronizationTag tag) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 

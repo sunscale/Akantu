@@ -406,7 +406,7 @@ void NonLocalManager::computeAllNonLocalStresses() {
   // }
 
   NeighborhoodMap::iterator neighborhood_it = neighborhoods.begin();
-  NeighborhoodMap::iterator neighborhood_end = neighborhoods.end();
+  //NeighborhoodMap::iterator neighborhood_end = neighborhoods.end();
 
   for(; neighborhood_it != neighborhoods.end(); ++neighborhood_it) {
     neighborhood_it->second->getSynchronizerRegistry().asynchronousSynchronize(_gst_mnl_for_average);

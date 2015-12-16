@@ -100,7 +100,7 @@ public:
   removeIntegrationPoints(const ElementTypeMapArray<UInt> & new_numbering);
 
   /// print the content
-  virtual void printself(std::ostream & stream, UInt indent = 0) const;
+  virtual void printself(std::ostream & stream, int indent = 0) const;
 
   /// get the default value
   inline operator T() const;
@@ -122,18 +122,31 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef ElementTypeMapArray<UInt>::type_iterator type_iterator;
+  typedef typename ElementTypeMapArray<T>::type_iterator type_iterator;
+  typedef typename ElementTypeMapArray<UInt>::type_iterator filter_type_iterator;
 
   /// get the type iterator on all types contained in the internal field
   type_iterator firstType(const GhostType & ghost_type = _not_ghost) const {
-    return this->element_filter.firstType(this->spatial_dimension, ghost_type,
-                                          this->element_kind);
+    return ElementTypeMapArray<T>::firstType(this->spatial_dimension, ghost_type,
+                                             this->element_kind);
   }
 
   /// get the type iterator on the last type contained in the internal field
   type_iterator lastType(const GhostType & ghost_type = _not_ghost) const {
+    return ElementTypeMapArray<T>::lastType(this->spatial_dimension, ghost_type,
+                                            this->element_kind);
+  }
+
+    /// get the type iterator on all types contained in the internal field
+  filter_type_iterator filterFirstType(const GhostType & ghost_type = _not_ghost) const {
+    return this->element_filter.firstType(this->spatial_dimension, ghost_type,
+                           this->element_kind);
+  }
+
+  /// get the type iterator on the last type contained in the internal field
+  filter_type_iterator filterLastType(const GhostType & ghost_type = _not_ghost) const {
     return this->element_filter.lastType(this->spatial_dimension, ghost_type,
-                                         this->element_kind);
+                          this->element_kind);
   }
 
   /// get the array for a given type of the element_filter

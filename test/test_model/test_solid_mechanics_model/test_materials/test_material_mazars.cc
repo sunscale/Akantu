@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
     }
 
     if(s == (7*nb_steps / 8)) {
-      max_disp = max_disp;
+      //max_disp = max_disp;
       adisp = - max_disp * 8./nb_steps;
       std::cout << "Step " << s << " discharge" << std::endl;
     }
@@ -293,8 +293,8 @@ int main(int argc, char *argv[]) {
 
   std::cout << std::endl << "sigma_max = " << sigma_max << ", sigma_min = " << sigma_min << std::endl;
   /// Verif the maximal/minimal stress values
-  if( (abs(sigma_max)>abs(sigma_min)) || (abs(sigma_max-6.24e6)>1e5)
-      || (abs(sigma_min+2.943e7)>1e6) )
+  if( (std::abs(sigma_max)>std::abs(sigma_min)) || (std::abs(sigma_max-6.24e6)>1e5)
+      || (std::abs(sigma_min+2.943e7)>1e6) )
     return EXIT_FAILURE;
   energy.close();
 

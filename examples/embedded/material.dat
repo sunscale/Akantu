@@ -1,0 +1,12 @@
+material reinforcement elastic [
+  name = reinforcement
+  E = 210e9
+  area = 1e-4
+  pre_stress = 10e6
+]
+
+material elastic [
+  name = concrete
+  E = 30e9
+  nu = 0.1
+]

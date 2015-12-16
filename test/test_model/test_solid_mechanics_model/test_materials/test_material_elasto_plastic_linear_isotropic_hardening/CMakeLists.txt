@@ -1,13 +1,16 @@
 #===============================================================================
-# @file   debug_tools.cmake
+# @file   CMakeLists.txt
 #
-# @author Nicolas Richart <nicolas.richart@epfl.ch>
+# @author Jaehyun Cho <jaehyun.cho@epfl.ch>
 #
-# @brief  some usefull tools to debug
+# @date creation: Fri Aug 3 2015
+#
+# @brief  test for material type elasto plastic linear isotropic hardening using
+#         tension-compression test
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -23,11 +26,20 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
+# @section DESCRIPTION
+#
 #===============================================================================
-package_declare(debug_tools ADVANCED
-  DESCRIPTION "Compiles akantu with the advanced debug tools activated (/!\ can slow down the code)")
 
+#===============================================================================
+add_mesh(test_material_standard_linear_isotropic_hardening_mesh
+  test_material_elasto_plastic_linear_isotropic_hardening.geo 3 2)
 
-package_declare_sources(debug_tools
-  common/aka_debug_tools.hh
+register_test(test_material_standard_linear_isotropic_hardening
+  SOURCES test_material_elasto_plastic_linear_isotropic_hardening.cc
+  DEPENDS test_material_standard_linear_isotropic_hardening_mesh
+  FILES_TO_COPY test_material_elasto_plastic_linear_isotropic_hardening.dat
+  PACKAGE core
   )
+
+
+#===============================================================================

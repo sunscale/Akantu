@@ -87,6 +87,9 @@ public:
 
   void barrier();
 
+  template<typename T> void reduce(T * values, int nb_values,
+				   const SynchronizerOperation & op,
+				   int root);
   template<typename T> void allReduce(T * values, int nb_values,
 				      const SynchronizerOperation & op);
 
@@ -96,6 +99,9 @@ public:
 public:
   const MPITypeWrapper & getMPITypeWrapper() const { return *mpi_data; }
   MPITypeWrapper & getMPITypeWrapper() { return *mpi_data; }
+
+  int getMinTag();
+  int getMaxTag();
 
 private:
   void setRank(int prank) { this->prank = prank; }

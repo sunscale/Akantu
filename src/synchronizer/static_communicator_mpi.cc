@@ -43,6 +43,15 @@ MPI_Op MPITypeWrapper::synchronizer_operation_to_mpi_op[_so_null + 1] = {
   MPI_SUM,
   MPI_MIN,
   MPI_MAX,
+  MPI_PROD,
+  MPI_LAND,
+  MPI_BAND,
+  MPI_LOR,
+  MPI_BOR,
+  MPI_LXOR,
+  MPI_BXOR,
+  MPI_MINLOC,
+  MPI_MAXLOC,
   MPI_OP_NULL
 };
 
@@ -227,6 +236,23 @@ void StaticCommunicatorMPI::barrier() {
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
+void StaticCommunicatorMPI::reduce(T * values, int nb_values,
+				   const SynchronizerOperation & op,
+				   int root) {
+  MPI_Comm communicator = mpi_data->getMPICommunicator();
+  MPI_Datatype type = MPITypeWrapper::getMPIDatatype<T>();
+
+#if !defined(AKANTU_NDEBUG)
+  int ret =
+#endif
+    MPI_Reduce(MPI_IN_PLACE, values, nb_values, type,
+	       MPITypeWrapper::getMPISynchronizerOperation(op),
+	       root, communicator);
+  AKANTU_DEBUG_ASSERT(ret == MPI_SUCCESS, "Error in MPI_Allreduce.");
+}
+
+/* -------------------------------------------------------------------------- */
+template<typename T>
 void StaticCommunicatorMPI::allReduce(T * values, int nb_values,
 				      const SynchronizerOperation & op) {
   MPI_Comm communicator = mpi_data->getMPICommunicator();
@@ -344,6 +370,19 @@ void StaticCommunicatorMPI::broadcast(T * values, int nb_values, int root) {
 }
 
 /* -------------------------------------------------------------------------- */
+int StaticCommunicatorMPI::getMaxTag() {
+  return MPI_TAG_UB;
+}
+
+/* -------------------------------------------------------------------------- */
+int StaticCommunicatorMPI::getMinTag() {
+  return 0;
+}
+
+/* -------------------------------------------------------------------------- */
+
+
+
 // template<typename T>
 // MPI_Datatype StaticCommunicatorMPI::getMPIDatatype() {
 //   return MPI_DATATYPE_NULL;
@@ -399,6 +438,16 @@ MPI_Datatype MPITypeWrapper::getMPIDatatype<unsigned long long int>() {
   return MPI_UNSIGNED_LONG_LONG;
 }
 
+template<>
+MPI_Datatype MPITypeWrapper::getMPIDatatype< SCMinMaxLoc<double, int> >() {
+  return MPI_DOUBLE_INT;
+}
+
+template<>
+MPI_Datatype MPITypeWrapper::getMPIDatatype< SCMinMaxLoc<float, int> >() {
+  return MPI_FLOAT_INT;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Template instantiation                                                     */
 /* -------------------------------------------------------------------------- */
@@ -421,6 +470,21 @@ AKANTU_MPI_COMM_INSTANTIATE(Real);
 AKANTU_MPI_COMM_INSTANTIATE(UInt);
 AKANTU_MPI_COMM_INSTANTIATE(Int);
 AKANTU_MPI_COMM_INSTANTIATE(char);
+
+
+template void StaticCommunicatorMPI::send<SCMinMaxLoc<Real,int> >   (SCMinMaxLoc<Real,int> * buffer, Int size, Int receiver, Int tag);
+template void StaticCommunicatorMPI::receive<SCMinMaxLoc<Real,int> >(SCMinMaxLoc<Real,int> * buffer, Int size, Int sender,   Int tag);
+template CommunicationRequest * StaticCommunicatorMPI::asyncSend<SCMinMaxLoc<Real,int> >   (SCMinMaxLoc<Real,int> * buffer, Int size, Int receiver, Int tag);
+template CommunicationRequest * StaticCommunicatorMPI::asyncReceive<SCMinMaxLoc<Real,int> >(SCMinMaxLoc<Real,int> * buffer, Int size, Int sender,   Int tag);
+template void StaticCommunicatorMPI::probe<SCMinMaxLoc<Real,int> >(Int sender, Int tag, CommunicationStatus & status);
+template void StaticCommunicatorMPI::allGather<SCMinMaxLoc<Real,int> > (SCMinMaxLoc<Real,int> * values, int nb_values);
+template void StaticCommunicatorMPI::allGatherV<SCMinMaxLoc<Real,int> >(SCMinMaxLoc<Real,int> * values, int * nb_values);
+template void StaticCommunicatorMPI::gather<SCMinMaxLoc<Real,int> > (SCMinMaxLoc<Real,int> * values, int nb_values, int root);
+template void StaticCommunicatorMPI::gatherV<SCMinMaxLoc<Real,int> >(SCMinMaxLoc<Real,int> * values, int * nb_values, int root);
+template void StaticCommunicatorMPI::broadcast<SCMinMaxLoc<Real,int> >(SCMinMaxLoc<Real,int> * values, int nb_values, int root);
+template void StaticCommunicatorMPI::allReduce<SCMinMaxLoc<Real,int> >(SCMinMaxLoc<Real,int> * values, int nb_values, const SynchronizerOperation & op);
+
+
 #if AKANTU_INTEGER_SIZE > 4
 AKANTU_MPI_COMM_INSTANTIATE(int);
 #endif

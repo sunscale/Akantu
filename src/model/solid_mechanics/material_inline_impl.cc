@@ -409,9 +409,9 @@ void Material::flattenInternal(const std::string & field_id,
   const FEEngine & fe_engine = internal_field.getFEEngine();
   const Mesh & mesh = fe_engine.getMesh();
 
-  typedef typename InternalField<T>::type_iterator type_iterator;
-  type_iterator tit = internal_field.firstType(ghost_type);
-  type_iterator tend = internal_field.lastType(ghost_type);
+  typedef typename InternalField<T>::filter_type_iterator type_iterator;
+  type_iterator tit = internal_field.filterFirstType(ghost_type);
+  type_iterator tend = internal_field.filterLastType(ghost_type);
 
   for (; tit != tend; ++tit) {
     ElementType type = *tit;
