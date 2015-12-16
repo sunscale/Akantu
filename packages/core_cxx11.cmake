@@ -49,7 +49,6 @@ endif()
 package_declare_sources(core_cxx11
   common/aka_point.hh
   common/aka_ball.cc
-  common/aka_ci_string.hh
   common/aka_plane.hh
   common/aka_polytope.hh
   common/aka_ball.hh
