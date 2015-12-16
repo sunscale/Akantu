@@ -27,10 +27,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#ifdef AKANTU_DAMAGE_NON_LOCAL
 #ifndef __AKANTU_NON_LOCAL_MANAGER_IGFEM_HH__
 #define __AKANTU_NON_LOCAL_MANAGER_IGFEM_HH__
 /* -------------------------------------------------------------------------- */
-#include "non_local_manager.hh"
 #include "solid_mechanics_model_igfem.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -94,3 +94,4 @@ __END_AKANTU__
 
 
 #endif /* __AKANTU_NON_LOCAL_MANAGER_IGFEM_HH__ */
+#endif /* AKANTU_DAMAGE_NON_LOCAL */

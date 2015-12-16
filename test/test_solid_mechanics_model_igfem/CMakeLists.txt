@@ -43,6 +43,13 @@ register_test(test_igfem_element_orientation
   PACKAGE IGFEM
   )
 
+register_test(test_igfem_element_orientation_parallel
+  SOURCES test_igfem_element_orientation.cc
+  FILES_TO_COPY material.dat test_igfem_element_orientation.msh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE IGFEM
+  )
+
 register_test(test_ASR_damge
   SOURCES test_ASR_damage.cc
   FILES_TO_COPY material_ASR.dat 

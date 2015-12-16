@@ -26,6 +26,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#ifdef AKANTU_DAMAGE_NON_LOCAL
 #include "non_local_manager_igfem.hh"
 #include "material_non_local.hh"
 /* -------------------------------------------------------------------------- */
@@ -270,3 +271,5 @@ void NonLocalManagerIGFEM::onElementsRemoved(const Array<Element> & element_list
 
 
 __END_AKANTU__
+
+#endif /* AKANTU_DAMAGE_NON_LOCAL */
