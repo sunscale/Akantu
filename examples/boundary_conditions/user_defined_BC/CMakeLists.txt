@@ -1,13 +1,16 @@
 #===============================================================================
-# @file   debug_tools.cmake
+# @file   CMakeLists.txt
 #
-# @author Nicolas Richart <nicolas.richart@epfl.ch>
+# @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
 #
-# @brief  some usefull tools to debug
+# @date creation: Fri May 11 2012
+# @date last modification: Thu Nov 01 2012
+#
+# @brief  boundary condition example configuration
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -23,11 +26,14 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
+# @section DESCRIPTION
+#
 #===============================================================================
-package_declare(debug_tools ADVANCED
-  DESCRIPTION "Compiles akantu with the advanced debug tools activated (/!\ can slow down the code)")
 
+add_mesh(mesh fine_mesh.geo 2 1)
 
-package_declare_sources(debug_tools
-  common/aka_debug_tools.hh
-  )
+register_example(complex_boundary_condition complex_boundary_condition.cc)
+add_dependencies(complex_boundary_condition mesh)
+
+file(COPY material.dat DESTINATION .)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)

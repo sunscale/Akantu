@@ -1,12 +1,11 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
+# @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Fri Jun 21 2013
-# @date last modification: Fri Jun 21 2013
-#
-# @brief  CMakeLists for the cohesive examples
+# @date creation: Mon Dec 14 09:07:44 2015
+# 
+# @brief  Tests insertion of cohesive elements
 #
 # @section LICENSE
 #
@@ -26,7 +25,20 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
+# @section DESCRIPTION
+#
 #===============================================================================
+add_mesh(swiss_cheese swiss_cheese.geo 2 2)
 
-add_example(predefined_BC "Example of predefined boundary condition")
-add_example(user_defined_BC "Example of user defined boundary condition" PACKAGE implicit)
+register_example(example_parser
+  example_parser.cc
+  USE IOHelper
+  DEPENDS swiss_cheese
+  DIRECTORIES_TO_CREATE paraview
+  )
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/input_file.dat
+  ${CMAKE_CURRENT_BINARY_DIR}/input_file.dat
+  COPYONLY
+  )

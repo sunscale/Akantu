@@ -94,9 +94,7 @@ private:
 
 /* -------------------------------------------------------------------------- */
 /**
- * class that uses element data to assign materials (to be completed
- * by lucas, any implementation apart from the
- * MeshDataMaterialSelector?)
+ * Use elemental data to assign materials
  */
 template<typename T>
 class ElementDataMaterialSelector : public MaterialSelector {

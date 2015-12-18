@@ -1028,7 +1028,7 @@ public:
   }
 
   inline MatrixProxy<T> operator[](UInt k) {
-    return Matrix<T>(this->values + k*this->n[0]*this->n[1], this->n[0], this->n[1]);
+    return MatrixProxy<T>(this->values + k*this->n[0]*this->n[1], this->n[0], this->n[1]);
   }
 
   inline const MatrixProxy<T> operator[](UInt k) const {

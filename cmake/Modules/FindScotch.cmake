@@ -29,10 +29,6 @@
 #===============================================================================
 
 #===============================================================================
-#if(SCOTCH_DIR)
-#  set(SCOTCH_LIBRARY "NOTFOUND" CACHE INTERNAL "Cleared" FORCE)
-#endif(SCOTCH_DIR)
-
 find_library(SCOTCH_LIBRARY scotch
   HINTS ${SCOTCH_DIR}
   PATH_SUFFIXES src/libscotch lib
@@ -94,12 +90,6 @@ endif()
 set(SCOTCH_LIBRARIES ${SCOTCH_LIBRARIES_ALL} CACHE INTERNAL "Libraries for scotch" FORCE)
 
 #===============================================================================
-if(NOT SCOTCH_FOUND)
-  set(SCOTCH_DIR "" CACHE PATH "Location of Scotch library.")
-  mark_as_advanced(SCOTCH_DIR)
-endif()
-
-#===============================================================================
 include(FindPackageHandleStandardArgs)
 if(CMAKE_VERSION VERSION_GREATER 2.8.12)
   if(SCOTCH_INCLUDE_DIR)
@@ -112,11 +102,15 @@ if(CMAKE_VERSION VERSION_GREATER 2.8.12)
     set(SCOTCH_VERSION "${_scotch_VERSION}.${_scotch_PATCHLEVEL}" CACHE INTERNAL "")
   endif()
   find_package_handle_standard_args(Scotch
-    REQUIRED_VARS SCOTCH_LIBRARY SCOTCH_LIBRARY_ERR SCOTCH_INCLUDE_DIR
+    REQUIRED_VARS SCOTCH_LIBRARIES SCOTCH_INCLUDE_DIR
     VERSION_VAR SCOTCH_VERSION)
 else()
   find_package_handle_standard_args(Scotch DEFAULT_MSG
-    SCOTCH_LIBRARY SCOTCH_LIBRARY_ERR SCOTCH_INCLUDE_DIR)
+    SCOTCH_LIBRARIES SCOTCH_INCLUDE_DIR)
 endif()
 
-
+#===============================================================================
+if(NOT SCOTCH_FOUND)
+  set(SCOTCH_DIR "" CACHE PATH "Location of Scotch library.")
+  mark_as_advanced(SCOTCH_DIR)
+endif()

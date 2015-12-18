@@ -28,41 +28,10 @@
 #
 #===============================================================================
 
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag (-std=c++0x HAVE_CPP_0X)
-
-package_declare_sources(core_cxx11
-  common/aka_point.hh
-  common/aka_ball.cc
-  common/aka_ci_string.hh
-  common/aka_plane.hh
-  common/aka_polytope.hh
-  common/aka_ball.hh
-  common/aka_timer.hh
-  common/aka_tree.hh
-  common/aka_bounding_box.hh
-  common/aka_bounding_box.cc
-  common/aka_geometry.hh
-  common/aka_geometry.cc
-  model/solid_mechanics/solid_mechanics_model_element.hh
-  )
-
-
-if(HAVE_CPP_0X)
-  set(_cpp_11_flag "-std=c++0x")
-else()
-  check_cxx_compiler_flag (-std=c++11 HAVE_CPP_11)
-  if(HAVE_CPP_11)
-    set(_cpp_11_flag "-std=c++11")
-  else()
-    set(_cpp_11_flag)
-  endif()
-endif()
-
-if(_cpp_11_flag)
+if(AKANTU_CXX11_FLAGS)
   package_declare(core_cxx11 ADVANCED
     DESCRIPTION "C++ 11 additions for Akantu core" DEFAULT ON
-    COMPILE_FLAGS "${_cpp_11_flag}")
+    COMPILE_FLAGS "${AKANTU_CXX11_FLAGS}")
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.6")
@@ -76,6 +45,22 @@ else()
     NOT_OPTIONAL
     COMPILE_FLAGS "")
 endif()
+
+package_declare_sources(core_cxx11
+  common/aka_point.hh
+  common/aka_ball.cc
+  common/aka_plane.hh
+  common/aka_polytope.hh
+  common/aka_ball.hh
+  common/aka_timer.hh
+  common/aka_tree.hh
+  common/aka_bounding_box.hh
+  common/aka_bounding_box.cc
+  common/aka_geometry.hh
+  common/aka_geometry.cc
+  model/solid_mechanics/solid_mechanics_model_element.hh
+  )
+
 
 package_declare_documentation(core_cxx11
   "This option activates some features of the C++11 standard. This is usable with GCC>=4.7 or Intel>=13.")

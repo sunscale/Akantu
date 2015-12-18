@@ -39,8 +39,10 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-/* Filter Fonctors                                                            */
+/* Filter Functors                                                            */
 /* -------------------------------------------------------------------------- */
+
+/// struct for the possible filter functors
 struct FilterFunctor {
   enum Type {
     _node_filter_functor,
@@ -48,6 +50,7 @@ struct FilterFunctor {
   };
 };
 
+/// class (functor) for the node filter
 class NodeFilterFunctor : public FilterFunctor {
 public:
   bool operator()(UInt node) {
@@ -57,6 +60,7 @@ public:
   static const Type type = _node_filter_functor;
 };
 
+/// class (functor) for the element filter
 class ElementFilterFunctor : public FilterFunctor {
 public:
   bool operator()(const Element & element) {

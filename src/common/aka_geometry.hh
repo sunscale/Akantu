@@ -44,23 +44,6 @@ __BEGIN_AKANTU__
 
 // predicates
 
-
-// combined tolerance test, from Christer Ericson
-template <typename T>
-typename std::enable_if<std::is_floating_point<T>::value, bool>::type
-equal(T x, T y, T tol = 2*std::numeric_limits<T>::epsilon()) {
-  
-  T absTol = tol;
-  T relTol = absTol;
-
-  // here both tolerances are equal, but the code is written
-  // like this so that tolerance values can be assigned indepently
-  // in the future
-  return std::abs(x - y) <= std::max(absTol, relTol * std::max(std::abs(x), std::abs(y)));
-}
-
-
-
 // combined tolerance test, from Christer Ericson
 template <typename T>
 typename std::enable_if<std::is_integral<T>::value, bool>::type

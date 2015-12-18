@@ -112,7 +112,9 @@ public:
     original_iterator<Shape> origin_it;
     filter_iterator filter_it;
 
+    /// the number of item per element
     UInt nb_item_per_elem;
+    /// counter for every sub element group
     UInt sub_element_counter;
   };
 

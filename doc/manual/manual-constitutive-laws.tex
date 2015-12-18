@@ -11,29 +11,7 @@ The chosen materials for the simulation have to be specified in the
 mesh file or, as an alternative, they can be assigned using the
 \code{element\_material} vector.  For every material assigned to the
 problem one has to specify the material characteristics (constitutive
-behavior and material properties) in a text file (\eg material.dat) as
-follows:
-\begin{cpp}
-  material %\emph{constitutive\_law}% %\emph{<optional flavor>}% [
-     name = $value$
-     rho = $value$
-     ...
-  ]
-\end{cpp}
-\index{Constitutive\_laws} where \emph{constitutive\_law} is the adopted
-constitutive law, followed by the material properties listed one by line in the
-bracket (\eg \code{name} and density \code{rho}). Some constitutive laws can
-also have an \emph{optional flavor}. The file needs to be loaded in \akantu
-using the \code{initialize} method of \akantu (as shown in
-Section~\ref{sec:writing_main})
-\begin{cpp}
-  initialize("material.dat", argc, argv);
-\end{cpp}
-% or, alternatively, the \code{initFull} method.
-% \begin{cpp}
-%   model.initFull("material.dat");
-% \end{cpp}
-
+behavior and material properties) using the text input file (see \ref{sect:io:material}).\\
 In order to conveniently store values at each quadrature in a material
 point \akantu provides a special data structure, the
 \code{InternalField}. The internal fields are inheriting from the
@@ -42,7 +20,7 @@ initialization, auto-resizing and auto removal of quadrature points.
 
 Sometimes it is also desired to generate random distributions of
 internal parameters. An example might be the critical stress at which the
-material fails. To generate such a field, in the material input file,
+material fails. To generate such a field, in the text input file,
 a random quantity needs be added to the base value:
 \begin{cpp}
   sigma_c = $base$

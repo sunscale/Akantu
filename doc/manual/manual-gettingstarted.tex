@@ -49,7 +49,7 @@ communication setup. This is achieved by a pair of functions
 using namespace akantu;
 
 int main(int argc, char *argv[]) {
-  initialize("material.dat", argc, argv);
+  initialize("input_file.dat", argc, argv);
 
   // your code
   ...
@@ -57,9 +57,9 @@ int main(int argc, char *argv[]) {
   finalize();
 }
 \end{cpp}
-The \code{initialize} function takes the material file and the program
-parameters which can be interpreted by \akantu in due form. Obviously
-it is necessary to include all files needed in main. In this manual
+The \code{initialize} function takes the text inpute file and the program
+parameters which can be parsed by \akantu in due form (see \ref{sect:parser}). 
+Obviously it is necessary to include all files needed in main. In this manual
 all provided code implies the usage of \code{akantu} as namespace.
 
 \section{Creating and Loading a Mesh\label{sect:common:mesh}}
@@ -343,8 +343,16 @@ a bit more into detail in this here.
   \end{itemize}
 \end{enumerate}
 
+\subsubsection{\texttt{Tensor3<T>}}
+Accessors:
+\begin{itemize}
+  \item \code{t(i, j, k)} gives the component $T_{ijk}$ of the tensor \code{t}
+  \item \code{t(k)} gives the $k^{th}$ two-dimensional tensor as a \code{Matrix}
+  \item \code{t[k]} gives the $k^{th}$ two-dimensional tensor as a \code{Matrix}
+\end{itemize}
 
-\section{Manipulating group of nodes and/or elements}
+
+\section{Manipulating group of nodes and/or elements\label{sect:common:groups}}
 \akantu provides the possibility to manipulate
 subgroups of elements and nodes.
 Any \code{ElementGroup} and/or \code{NodeGroup} must be managed
