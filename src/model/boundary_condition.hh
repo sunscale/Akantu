@@ -56,7 +56,7 @@ private:
   /* ------------------------------------------------------------------------ */
 public:
   BoundaryCondition() : model(NULL), primal(NULL), dual(NULL), primal_increment(NULL) {}
-
+  ///Initialize the boundary conditions
   void initBC(ModelType & ptr, Array<Real> & primal, Array<Real> & dual);
   void initBC(ModelType & ptr, Array<Real> & primal,
 	      Array<Real> & primal_increment, Array<Real> & dual);
@@ -67,6 +67,7 @@ public:
 
   //inline void initBoundaryCondition();
   template<typename FunctorType>
+  ///Apply the boundary conditions
   inline void applyBC(const FunctorType & func);
 
   template<class FunctorType>
