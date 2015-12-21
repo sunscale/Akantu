@@ -64,19 +64,26 @@ function:
 \begin{equation}
   F(x) = 1- e^{-\left({x/\lambda}\right)^m}
 \end{equation}
-which depends on  $m$ and $\lambda$, which are the shape parameter and the scale
-parameter. These random distributions are different each time the code
-is executed. In order to obtain always the same one, it possible to
-manually set the \emph{seed} that is the number from which these
-pseudo-random distributions are created. This can be done by adding
-the following line to the input file \emph{outside} the material
-parameters environments:
+which depends on $m$ and $\lambda$, which are the shape parameter and
+the scale parameter. These random distributions are different each
+time the code is executed. In order to obtain always the same one, it
+possible to manually set the \emph{seed} that is the number from which
+these pseudo-random distributions are created. This can be done by
+adding the following line to the input file \emph{outside} the
+material parameters environments:
 \begin{cpp}
   seed = 1.0
 \end{cpp}
-where the value 1 can be substituted with any number. Currently
-\akantu is can reproduce always the same distribution when the seed is
-specified \emph{only} in serial.
+where the value 1.0 can be substituted with any number. Currently
+\akantu can reproduce always the same distribution when the seed is
+specified \emph{only} in serial. The value of the \emph{seed} can be
+also specified directly in the code (for instance in the main file)
+with the command:
+\begin{cpp}
+  RandGenerator:: seed(1.0)
+\end{cpp}
+The same command, with empty brackets, can be used to check the value
+of the \emph{seed} used in the simulation.
 
 The following sections describe the constitutive models implemented in
 \akantu. In Appendix~\ref{app:material-parameters} a summary of the

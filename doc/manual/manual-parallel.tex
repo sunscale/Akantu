@@ -74,6 +74,22 @@ following code
   }
 \end{cpp}
 
+The algorithm that partition the mesh needs the generation of a random
+distribution of values. Therefore, in order to run several time a
+simulation with the same partition of the mesh, the \emph{seed} has to
+be set manually.  This can be done either by adding the following line
+to the input file \emph{outside} the material parameters environments:
+\begin{cpp}
+  seed = 1.0
+\end{cpp}
+where the value 1.0 can be substituted with any number, or by setting
+it directly in the code with the command:
+\begin{cpp}
+  RandGenerator:: seed(1.0)
+\end{cpp}
+The latter command, with empty brackets, can be used to check the value
+of the \emph{seed} used in the simulation.
+
 \note{Only the processor of rank $0$ should load the mesh file to
   partition it. Nevertheless, the \code{Mesh} object must by declared
   for all processors since the mesh distribution will store mesh pieces to that object.}

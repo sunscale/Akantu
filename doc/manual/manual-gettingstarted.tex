@@ -303,10 +303,13 @@ a bit more into detail in this here.
 \item Level 1: (results are scalars)
 
   \begin{itemize}
-  \item \code{A.norm<N>()} returns the $L_N$ norm defined as $\left(\sum_i
-    |\code{A(i)}|^N\right)^{1/N}$. N can take any positive
-    integer value.
   \item \code{A.norm()} is equivalent to \code{A.norm<L\_2>()}
+  \item \code{A.norm<N>()} returns the $L_N$ norm defined as
+    $\left(\sum_i\sum_j |\code{A(i,j)}|^N\right)^{1/N}$. N can take
+    any positive integer value. There are also some particular values
+    for the most commonly used norms, \code{L\_1} for the Manhattan
+    norm, \code{L\_2} for the geometrical norm and \code{L\_inf} for
+    the norm infinity.
   \item \code{A.trace()} return the trace of \code{A}
   \item \code{A.det()} return the determinant of \code{A}
   \item \code{A.doubleDot(B)} return the double dot product of \code{A} and
