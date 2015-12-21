@@ -62,24 +62,23 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 protected:
-
-  /// send a akantu::BeforeSolveStepEvent 
+  ///Send what is before the solve step to the beginning of solve step through EventManager
   inline void sendEvent(const SolidMechanicsModelEvent::BeforeSolveStepEvent & event) {
     onBeginningSolveStep(event.method);
   }
-  /// send a akantu::AfterSolveStepEvent 
+  ///Send what is after the solve step to the end of solve step through EventManager
   inline void sendEvent(const SolidMechanicsModelEvent::AfterSolveStepEvent & event) {
     onEndSolveStep(event.method);
   }
-  /// send a akantu::BeforeDumpEvent 
+  ///Send what is before dump to current dump through EventManager
   inline void sendEvent(const SolidMechanicsModelEvent::BeforeDumpEvent & event) {
     onDump();
   }
-  /// send a akantu::BeginningOfDamageIterationEvent 
+  ///Send what is at the beginning of damage iteration to Damage iteration through EventManager
   inline void sendEvent(const SolidMechanicsModelEvent::BeginningOfDamageIterationEvent & event) {
     onDamageIteration();
-  }
-  /// send a akantu::AfterDamageEvent
+  } 
+  ///Send what is after damage for the damage update through EventManager
   inline void sendEvent(const SolidMechanicsModelEvent::AfterDamageEvent & event) {
     onDamageUpdate();
   }

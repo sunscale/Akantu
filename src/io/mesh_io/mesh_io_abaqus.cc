@@ -41,15 +41,19 @@
 #include "node_group.hh"
 
 /* -------------------------------------------------------------------------- */
+//#define BOOST_SPIRIT_USE_PHOENIX_V3 1
+//#define BOOST_RESULT_OF_USE_TR1
+
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_fusion.hpp>
-#include <boost/spirit/include/phoenix_object.hpp>
-#include <boost/spirit/include/phoenix_container.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/phoenix_bind.hpp>
-#include <boost/spirit/include/phoenix_stl.hpp>
+#include <boost/spirit/include/phoenix.hpp>
+// #include <boost/spirit/include/phoenix_core.hpp>
+// #include <boost/spirit/include/phoenix_fusion.hpp>
+// #include <boost/spirit/include/phoenix_object.hpp>
+// #include <boost/spirit/include/phoenix_container.hpp>
+// #include <boost/spirit/include/phoenix_operator.hpp>
+// #include <boost/spirit/include/phoenix_bind.hpp>
+// #include <boost/spirit/include/phoenix_stl.hpp>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__

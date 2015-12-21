@@ -62,6 +62,7 @@ __BEGIN_AKANTU__
 #define AKANTU_SECTION_TYPES_PREFIX(elem) BOOST_PP_CAT(_st_, elem)
 
 #define AKANTU_SECT_PREFIX(s, data, elem) AKANTU_SECTION_TYPES_PREFIX(elem)
+/// Defines the possible section types
 enum SectionType {
   BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(AKANTU_SECT_PREFIX, _, AKANTU_SECTION_TYPES))
 };
@@ -82,6 +83,7 @@ inline std::ostream & operator <<(std::ostream & stream, SectionType type) {
 }
 
 #undef AKANTU_SECTION_TYPE_PRINT_CASE
+/// Defines the possible search contexts/scopes (for parameter search)
 enum ParserParameterSearchCxt {
   _ppsc_current_scope             = 0x1,
   _ppsc_parent_scope              = 0x2,
@@ -93,6 +95,8 @@ enum ParserParameterSearchCxt {
 /* ------------------------------------------------------------------------ */
 class ParserSection;
 
+/// @brief The ParserParameter objects represent the end of tree branches as they
+/// are the different informations contained in the input file.
 class ParserParameter {
 public:
   ParserParameter() :
@@ -115,9 +119,12 @@ public:
 
   virtual ~ParserParameter() {}
 
+  /// Get parameter name
   const std::string & getName() const { return name; }
+  /// Get parameter value
   const std::string & getValue() const { return value; }
 
+  /// Set info for debug output
   void setDebugInfo(const std::string & filename,
                     UInt line, UInt column) {
     dbg_filename = filename;
@@ -131,6 +138,7 @@ public:
   // template <typename T> inline operator Matrix<T>() const;
 
 
+  /// Print parameter info in stream
   void printself(std::ostream & stream, unsigned int indent = 0) const {
     stream << name << ": " << value
            << " (" << dbg_filename << ":" << dbg_line << ":" << dbg_column  << ")";
@@ -142,10 +150,15 @@ private:
 
   friend class ParserSection;
 private:
+  /// Pointer to the parent section
   const ParserSection * parent_section;
+  /// Name of the parameter
   std::string name;
+  /// Value of the parameter
   std::string value;
+  /// File for debug output
   std::string dbg_filename;
+  /// Position of parameter in parsed file
   UInt dbg_line, dbg_column;
 };
 
@@ -153,6 +166,7 @@ private:
 /* ------------------------------------------------------------------------ */
 /* Sections Class                                                           */
 /* ------------------------------------------------------------------------ */
+/// ParserSection represents a branch of the parsing tree.
 class ParserSection {
 public:
   typedef std::multimap<SectionType, ParserSection> SubSections;
@@ -163,6 +177,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* SubSection iterator                                                      */
   /* ------------------------------------------------------------------------ */
+  /// Iterator on sections
   class const_section_iterator {
   public:
     const_section_iterator(const const_section_iterator & other) : it(other.it) { }
@@ -193,6 +208,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Parameters iterator                                                      */
   /* ------------------------------------------------------------------------ */
+  /// Iterator on parameters
   class const_parameter_iterator {
   public:
     const_parameter_iterator(const const_parameter_iterator & other) : it(other.it) { }
@@ -278,6 +294,7 @@ private:
   /* Accessors                                                              */
   /* ---------------------------------------------------------------------- */
 public:
+  /// Get begin and end iterators on subsections of certain type
   std::pair<const_section_iterator, const_section_iterator>
   getSubSections(SectionType type = _st_not_defined) const {
     if(type != _st_not_defined) {
@@ -290,6 +307,7 @@ public:
     }
   }
 
+  /// Get begin and end iterators on parameters
   std::pair<const_parameter_iterator, const_parameter_iterator>
   getParameters() const {
     return std::pair<const_parameter_iterator, const_parameter_iterator>(parameters.begin(),
@@ -297,6 +315,7 @@ public:
   }
 
   /* ---------------------------------------------------------------------- */
+  /// Get parameter within specified context
   const ParserParameter & getParameter(const std::string & name,
                                        ParserParameterSearchCxt search_ctx = _ppsc_current_scope) const {
     Parameters::const_iterator it;
@@ -314,6 +333,7 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
+  /// Check if parameter exists within specified context
   bool hasParameter(const std::string & name,
 		    ParserParameterSearchCxt search_ctx = _ppsc_current_scope) const {
 
@@ -331,6 +351,7 @@ public:
   }
 
   /* -------------------------------------------------------------------------- */
+  /// Get value of given parameter in context
   template<class T>
   T getParameterValue(const std::string & name,
 		      ParserParameterSearchCxt search_ctx = _ppsc_current_scope) const {
@@ -340,8 +361,11 @@ public:
   }
 
   /* -------------------------------------------------------------------------- */
+  /// Get section name
   const std::string & getName()   const { return name; }
+  /// Get section type
   const SectionType & getType()   const { return type; }
+  /// Get section option
   const std::string & getOption() const { return option; }
 
 protected:
@@ -353,11 +377,17 @@ protected:
   /* Members                                                                */
   /* ---------------------------------------------------------------------- */
 private:
+  /// Pointer to the parent section
   const ParserSection * parent_section;
+  /// Name of section
   std::string name;
+  /// Type of section, see AKANTU_SECTION_TYPES
   SectionType type;
+  /// Section option
   std::string option;
+  /// Map of parameters in section
   Parameters parameters;
+  /// Multi-map of subsections
   SubSections sub_sections_by_type;
 };
 
@@ -365,6 +395,7 @@ private:
 /* ------------------------------------------------------------------------ */
 /* Parser Class                                                             */
 /* ------------------------------------------------------------------------ */
+/// Root of parsing tree, represents the global ParserSection
 class Parser : public ParserSection {
 public:
   Parser() : ParserSection("global", _st_global) {}
@@ -376,11 +407,16 @@ public:
   static bool isPermissive() { return permissive_parser; }
 public:
 
+  /// Parse real scalar
   static Real         parseReal  (const std::string & value, const ParserSection & section);
+  /// Parse real vector
   static Vector<Real> parseVector(const std::string & value, const ParserSection & section);
+  /// Parse real matrix
   static Matrix<Real> parseMatrix(const std::string & value, const ParserSection & section);
+  /// Parse real random parameter
   static RandomParameter<Real> parseRandomParameter(const std::string & value, const ParserSection & section);
 protected:
+  /// General parse function
   template <class T, class Grammar>
   static T parseType(const std::string & value, Grammar & grammar);
 

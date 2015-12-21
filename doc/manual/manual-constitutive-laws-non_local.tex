@@ -1,7 +1,7 @@
 \section{Non-Local Constitutive Laws \label{sect:smm:CLNL}}\index{Material}
 
 Continuum damage modeling of quasi-brittle materials undergo significant softening after the onset of damage. This fast growth of damage causes a loss of ellipticity of partial differential equations of equilibrium. Therefore, the numerical simulation results won't be objective anymore, because the dissipated energy will depend on mesh size used in the simulation. One way to avoid this effect is the use of non-local damage formulations. In this approach a local quantity such as the strain is replaced by its non-local average, where the size of the domain, over which the quantitiy is averaged, depends on the underlying material microstructure. 
-\akantu provides non-local versions of many constitutive laws for damage. Examples are for instance the material Mazar and the material Marigo, that can be used in a non-local context. In order to use the corresponding non-local formulation the user has to define the non-local material he wishes to use in the material file:
+\akantu provides non-local versions of many constitutive laws for damage. Examples are for instance the material Mazar and the material Marigo, that can be used in a non-local context. In order to use the corresponding non-local formulation the user has to define the non-local material he wishes to use in the text input file:
 \begin{cpp}
   material %\emph{constitutive\_law\_non\_local}% [
      name = %\emph{material\_name}
@@ -9,7 +9,7 @@ Continuum damage modeling of quasi-brittle materials undergo significant softeni
      ...
   ]
 \end{cpp}
-where \emph{constitutive\_law\_non\_local} is the name of the non-local consitutive law, \textit{e.g.} \emph{marigo\_non\_local}.
+where \emph{constitutive\_law\_non\_local} is the name of the non-local constitutive law, \textit{e.g.} \emph{marigo\_non\_local}.
 In addition to the material the non-local neighborhood, that should be used for the averaging process needs to be defined in the material file as well: 
 \begin{cpp}
   non_local %\emph{neighborhood\_name}%  %\emph{weight\_function\_type}% [
@@ -24,6 +24,27 @@ In addition to the material the non-local neighborhood, that should be used for 
 for the non-local averaging, \textit{e.g.} \emph{base\_wf}, followed by the properties of the non-local neighborhood, such as the radius, and the weight function parameters. It is important to notice that the non-local neighborhood must have the same name as the material to which the neighborhood belongs!
 The following two sections list the non-local constitutive laws and different type of weight functions available in \akantu.
 \subsection{Non-local constitutive laws}
-\textbf{Description to be added!!!}
+Let us consider a body having a volume $V$ and a boundary $\Gamma$. The stress-strain relation for a non-local damage model can be described as follows:
+\begin{equation}
+  \label{eq:non-local-const}
+  \vec{\sigma} = (1-\bar{d}) \vec{D}:\epsilon
+\end{equation}
+with $\vec{D}$ the elastic moduli tensor, $\sigma$ the stress tensor, $\epsilon$ the strain tensor and $\bar{d}$ the non-local damage variable. Note that this stres-strain relationship is similar to the relationship defined in Damage model except $\bar{d}$. The non-local damage model can be extended to the damage constitutive laws: Marigo (Section~\ref{ssect:smm:cl:damage-marigo}) and Mazars (Section~\ref{ssect:smm:cl:damage-mazars}).
+
+The non-local damage variable $\bar{d}$ is defined as follows:
+\begin{equation}
+  \label{eq:non-local-const}
+  \bar{d}(\vec{x}) = \int_{V}W(\vec{x}, \vec{y}) d(\vec{y}) dV(\vec{y})
+\end{equation}
+with $W(\vec{x},\vec{y})$ the weight function which averages local damage variables to describe the non-local interactions. A list of available weight functions and its functionalities in \akantu are explained in the next section.
+
 \subsection{Non-local weight functions}
- \textbf{Description to be added!!!}
+The available weight functions in \akantu are follows:
+\begin{itemize}  
+\item \emph{base\_weight\_function}: This weight function averages local damage variables by using a bell-shape function on spatial dimensions.
+\item \emph{damaged\_weight\_function}: A linear-shape weight function is applied to average local damage variables. Its slope is determined by damage variables. For example, the damage variables for an element which is highly damaged are averaged over large spatial dimension (linear function including a small slope).
+\item \emph{remove\_damaged\_weight\_function}: This weight function averages damage values by using a bell-shape function as \emph{base\_weight\_function}, but excludes elements which are fully damaged.
+\item \emph{remove\_damaged\_with\_damage\_rate\_weight\_function}: A bell-shape function is applied to average local damage variables for elements having small damage rates.
+\item \emph{stress\_based\_weight\_function}: Non local integral takes stress states, and use the states to construct weight function: an ellipsoid shape. Detailed explanations of this weight function are given in Giry et al.: Stress-based nonlocal damage model IJSS, 48, 2011.
+\end{itemize}  
+

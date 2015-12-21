@@ -27,3 +27,4 @@
 #
 #===============================================================================
 add_example(dumper "Examples on how to use DumperIOHelper to output data" PACKAGE iohelper)
+add_example(parser "Examples on how to input data from text file in Akantu" PACKAGE core)

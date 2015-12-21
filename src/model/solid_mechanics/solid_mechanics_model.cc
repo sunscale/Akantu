@@ -736,7 +736,7 @@ void SolidMechanicsModel::initSolver(__attribute__((unused)) SolverOptions & opt
 #ifdef AKANTU_USE_PETSC
   jacobian_matrix = new PETScMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
 #else
-  jacobian_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _symmetric, sstr.str(), memory_id);
+  jacobian_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _unsymmetric, sstr.str(), memory_id);
 #endif //AKANTU_USE PETSC
   jacobian_matrix->buildProfile(mesh, *dof_synchronizer, spatial_dimension);
 

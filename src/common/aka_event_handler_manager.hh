@@ -55,14 +55,19 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
+  /// register a new EventHandler to the Manager. The register object
+  /// will then be informed about the events the manager observes.
   void registerEventHandler(EventHandler & event_handler) {
     event_handlers.insert(&event_handler);
   }
 
+  /// unregister a EventHandler object. This object will not be
+  /// notified anymore about the events this manager observes.
   void unregisterEventHandler(EventHandler & event_handler) {
     event_handlers.erase(&event_handler);
   }
 
+  /// Notify all the registered EventHandlers about the event that just occured.
   template<class Event>
   void sendEvent(const Event & event) {
     typename std::set<EventHandler *>::iterator it = event_handlers.begin();

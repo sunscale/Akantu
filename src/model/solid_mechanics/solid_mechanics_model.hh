@@ -186,10 +186,13 @@ public:
    * In the case of not lumped mass call solveDynamic<_acceleration_corrector>
    */
   void updateAcceleration();
-
+  ///Update the increment of displacement
   void updateIncrement();
+  ///Copy the actuel displacement into previous displacement 
   void updatePreviousDisplacement();
+  ///Save stress and strain through EventManager
   void saveStressAndStrainBeforeDamage();
+  ///Update energies through EventManager
   void updateEnergiesAfterDamage();
 
   /// Solve the system @f[ A x = \alpha b @f] with A a lumped matrix
