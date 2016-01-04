@@ -118,7 +118,7 @@ void EmbeddedInterfaceIntersector::constructData(GhostType ghost_type) {
 
       case 2:
         // Compute intersections for supported 2D elements
-        AKANTU_BOOST_ELEMENT_SWITCH(INTERFACE_INTERSECTOR_CASE_2D, (_triangle_3));
+        AKANTU_BOOST_ELEMENT_SWITCH(INTERFACE_INTERSECTOR_CASE_2D, (_triangle_3) (_triangle_6));
         break;
 
       case 3:
