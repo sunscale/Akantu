@@ -95,8 +95,11 @@ public:
     FinalizeCommunicatorEvent *event = new FinalizeCommunicatorEvent(*this);
     this->sendEvent(*event);
  
-   delete event;
+    delete event;
     delete real_static_communicator;
+    is_instantiated = false;
+    StaticCommunicator::static_communicator = NULL;
+
   };
 
   /* ------------------------------------------------------------------------ */
