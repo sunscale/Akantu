@@ -135,7 +135,7 @@ file(APPEND \"\${_dependencies_file}\" \"
     COMMAND ${CMAKE_COMMAND}
     -D_module=${_module_absolute}
     -P ${_dependencies_script}
-    COMMENT "Scannong dependencies for swig module ${_module_we}"
+    COMMENT "Scanning dependencies for swig module ${_module_we}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     MAIN_DEPENDENCY ${_module_absolute}
     DEPENDS ${_swig_${_module_we}_depends}
