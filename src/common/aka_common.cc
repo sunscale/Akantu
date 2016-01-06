@@ -126,6 +126,7 @@ void finalize() {
     delete &comm;
   }
 
+  static_parser.clear();
 
   AKANTU_DEBUG_OUT();
 }
