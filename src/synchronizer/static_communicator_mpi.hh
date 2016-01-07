@@ -102,6 +102,8 @@ public:
 
   int getMinTag();
   int getMaxTag();
+  /// Finalize MPI
+  void finalize();
 
 private:
   void setRank(int prank) { this->prank = prank; }
