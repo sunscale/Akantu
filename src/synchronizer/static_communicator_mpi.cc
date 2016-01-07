@@ -83,9 +83,10 @@ CommunicationRequestMPI::~CommunicationRequestMPI() {
 StaticCommunicatorMPI::StaticCommunicatorMPI(int & argc, char ** & argv) :
   RealStaticCommunicator(argc, argv) {
 
-  if(argc != 0) {
+  int is_initialized = false;
+  MPI_Initialized(&is_initialized);
+  if (!is_initialized)
     MPI_Init(&argc, &argv);
-  }
 
   mpi_data = new MPITypeWrapper(*this);
   mpi_data->setMPICommunicator(MPI_COMM_WORLD);
@@ -93,7 +94,7 @@ StaticCommunicatorMPI::StaticCommunicatorMPI(int & argc, char ** & argv) :
 
 /* -------------------------------------------------------------------------- */
 StaticCommunicatorMPI::~StaticCommunicatorMPI() {
-  MPI_Finalize();
+  // MPI_Finalize();
 }
 
 /* -------------------------------------------------------------------------- */
