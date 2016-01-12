@@ -135,7 +135,7 @@ file(APPEND \"\${_dependencies_file}\" \"
     COMMAND ${CMAKE_COMMAND}
     -D_module=${_module_absolute}
     -P ${_dependencies_script}
-    COMMENT "Scannong dependencies for swig module ${_module_we}"
+    COMMENT "Scanning dependencies for swig module ${_module_we}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     MAIN_DEPENDENCY ${_module_absolute}
     DEPENDS ${_swig_${_module_we}_depends}
@@ -196,7 +196,6 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
       list(APPEND _swig_wrappers_py "${_extra_wrapper_bin}")
     else()
       if(NOT EXISTS ${_wrapper} OR NOT EXISTS "${_extra_wrapper}")
-        message(FATAL_ERROR "The file ${_wrapper} and/or ${_extra_wrapper} does not exists and they cannot be generated. Install swig in order to generate them")
       else()
         list(APPEND _swig_wrappers "${_wrapper}")
         list(APPEND _swig_wrappers_py "${_extra_wrapper_bin}")

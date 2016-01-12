@@ -50,10 +50,8 @@ add_akantu_test(test_solver "Test solver function")
 add_akantu_test(test_io "Test the IO modules")
 add_akantu_test(test_contact "Test the contact part of Akantu")
 add_akantu_test(test_geometry "Test the geometry module of Akantu")
-
 add_akantu_test(test_synchronizer "Test synchronizers")
-
-
+add_akantu_test(test_python_interface "Test python interface")
 
 file(GLOB_RECURSE __all_files "*.*")
 set(_all_files)

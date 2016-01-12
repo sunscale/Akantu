@@ -87,6 +87,11 @@ StaticCommunicator::StaticCommunicator(int & argc,
 }
 
 /* -------------------------------------------------------------------------- */
+void StaticCommunicator::finalize() {
+
+  real_static_communicator->finalize();
+}
+/* -------------------------------------------------------------------------- */
 StaticCommunicator & StaticCommunicator::getStaticCommunicator(CommunicatorType type) {
   AKANTU_DEBUG_IN();
 

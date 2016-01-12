@@ -137,7 +137,14 @@ print_self(SolidMechanicsModel)
   /* ------------------------------------------------------------------------ */
   void solveStep_TgModifIncr(Real tolerance, UInt max_iteration) {
     $self->solveStep<akantu::_scm_newton_raphson_tangent_modified,
-                     akantu::_scc_residual>(tolerance, max_iteration);
+                     akantu::_scc_increment>(tolerance, max_iteration);
+  }
+
+  /* ------------------------------------------------------------------------ */
+  void solveStep_TgIncr(Real tolerance, Real & error, UInt max_iteration) {
+    
+    $self->solveStep<akantu::_scm_newton_raphson_tangent,
+      akantu::_scc_increment>(tolerance, error, max_iteration);
   }
 
   /* ------------------------------------------------------------------------ */

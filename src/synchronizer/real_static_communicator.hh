@@ -95,7 +95,8 @@ public:
     psize = -1;
   };
   virtual ~RealStaticCommunicator() { };
-
+  /// Finalize communication process
+  virtual void finalize() {};
   friend class StaticCommunicator;
 protected:
   Int prank;

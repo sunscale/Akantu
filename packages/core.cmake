@@ -371,6 +371,7 @@ package_declare_documentation_files(core
   manual-introduction.tex
   manual-gettingstarted.tex
   manual-io.tex
+  manual-feengine.tex
   manual-solidmechanicsmodel.tex
   manual-constitutive-laws.tex
   manual-lumping.tex

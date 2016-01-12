@@ -59,17 +59,6 @@ namespace akantu {
 
 %inline %{
   namespace akantu {
-    void initialize(const std::string & input_file) {
-      int argc = 0;
-      char ** argv = NULL;
-      initialize(input_file, argc, argv);
-    }
-    void initialize() {
-      int argc = 0;
-      char ** argv = NULL;
-      initialize(argc, argv);
-    }
-
     void _initializeWithArgv(const std::string & input_file, int argc, char *argv[]) {
       initialize(input_file, argc, argv);
     }
@@ -77,9 +66,9 @@ namespace akantu {
 %}
 
 %pythoncode %{
-  import sys as _aka_sys
-  def initializeWithArgv(input_file):
-    _initializeWithArgv(input_file, _aka_sys.argv)
+import sys as _aka_sys
+def initialize(input_file="", argv=_aka_sys.argv):
+  _initializeWithArgv(input_file, argv)
 %}
 
 %include "aka_config.hh"

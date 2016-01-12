@@ -111,9 +111,8 @@ void initialize(const std::string & input_file, int & argc, char ** & argv) {
   AKANTU_DEBUG_OUT();
 
 }
-
 /* -------------------------------------------------------------------------- */
-void finalize() {
+void clear() {
   AKANTU_DEBUG_IN();
 
   /// finalize external solvers
@@ -126,6 +125,21 @@ void finalize() {
     delete &comm;
   }
 
+  static_parser.clear();
+
+  AKANTU_DEBUG_OUT();
+}
+/* -------------------------------------------------------------------------- */
+void finalize() {
+  AKANTU_DEBUG_IN();
+
+  if(StaticCommunicator::isInstantiated()) {
+    StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+    comm.barrier();
+    comm.finalize();
+  }
+
+  clear();
 
   AKANTU_DEBUG_OUT();
 }

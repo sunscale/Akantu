@@ -78,6 +78,7 @@ StaticMemory::~StaticMemory() {
   }
   memories.clear();
   is_instantiated = false;
+  StaticMemory::single_static_memory = NULL;
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */

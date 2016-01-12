@@ -119,6 +119,23 @@ inline void MeshGeomFactory<2, _triangle_3, Triangle<Cartesian>, Cartesian>::add
   list.push_back(t);
 }
 
+// (2D, _triangle_6) decomposed into Triangle<Cartesian>
+template<>
+inline void MeshGeomFactory<2, _triangle_6, Triangle<Cartesian>, Cartesian>::addPrimitive(
+    const Matrix<Real> & node_coordinates,
+    UInt id,
+    TreeTypeHelper<Triangle<Cartesian>, Cartesian>::container_type & list) {
+
+  TreeTypeHelper<Triangle<Cartesian>, Cartesian>::point_type
+    a(node_coordinates(0, 0), node_coordinates(1, 0), 0.),
+    b(node_coordinates(0, 1), node_coordinates(1, 1), 0.),
+    c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
+
+  Triangle<Cartesian> t(a, b, c);
+  t.setId(id);
+  list.push_back(t);
+}
+
 // (2D, _triangle_3) decomposed into Line_arc<Spherical>
 template<>
 inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::addPrimitive(

@@ -281,6 +281,9 @@ public:
   ParserParameter & addParameter(const ParserParameter & param);
   ParserSection & addSubSection(const ParserSection & section);
 
+  /// Clear ParserSection content
+  void clear() {parameters.clear(); sub_sections_by_type.clear();}
+
 private:
   void setChldrenPointers() {
     Parameters::iterator pit = this->parameters.begin();
