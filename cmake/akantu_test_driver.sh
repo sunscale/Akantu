@@ -35,6 +35,11 @@ full_redirect() {
     fi
     (($* | tee "${name}${sout}") 3>&1 1>&2 2>&3 | tee "${name}${serr}") 3>&1 1>&2 2>&3
 
+    res=$?
+    if [ ! $res -eq 0 ]; then
+        exit $res
+    fi
+
     lastout="${name}${sout}"
 }
 
