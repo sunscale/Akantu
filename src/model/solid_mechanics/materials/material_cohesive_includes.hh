@@ -33,6 +33,7 @@
 #include "material_cohesive.hh"
 #include "material_cohesive_linear.hh"
 #include "material_cohesive_linear_fatigue.hh"
+#include "material_cohesive_linear_friction.hh"
 #include "material_cohesive_bilinear.hh"
 #include "material_cohesive_exponential.hh"
 #endif
@@ -40,5 +41,6 @@
 #define AKANTU_COHESIVE_MATERIAL_LIST					\
   ((2, (cohesive_linear, MaterialCohesiveLinear )))			\
   ((2, (cohesive_linear_fatigue, MaterialCohesiveLinearFatigue )))	\
+  ((2, (cohesive_linear_friction, MaterialCohesiveLinearFriction)))	\
   ((2, (cohesive_bilinear      , MaterialCohesiveBilinear     )))	\
   ((2, (cohesive_exponential   , MaterialCohesiveExponential  )))

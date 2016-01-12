@@ -51,6 +51,8 @@ package_declare_sources(cohesive_element
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear.hh
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_fatigue.cc
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_fatigue.hh
+  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_friction.cc
+  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_friction.hh
   model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_inline_impl.cc
   model/solid_mechanics/materials/material_cohesive/material_cohesive.cc
   model/solid_mechanics/materials/material_cohesive/material_cohesive.hh

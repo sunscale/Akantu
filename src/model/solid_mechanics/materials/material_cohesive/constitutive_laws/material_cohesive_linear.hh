@@ -87,17 +87,17 @@ protected:
 
   /// check delta_max for cohesive elements in case of no convergence
   /// in the solveStep (only for extrinsic-implicit)
-  void checkDeltaMax(GhostType ghost_type = _not_ghost);
+  virtual void checkDeltaMax(GhostType ghost_type = _not_ghost);
 
   /// reset variables when convergence is reached (only for
   /// extrinsic-implicit)
   void resetVariables(GhostType ghost_type = _not_ghost);
 
   /// compute tangent stiffness matrix
-  void computeTangentTraction(const ElementType & el_type,
-                              Array<Real> & tangent_matrix,
-                              const Array<Real> & normal,
-                              GhostType ghost_type);
+  virtual void computeTangentTraction(const ElementType & el_type,
+				      Array<Real> & tangent_matrix,
+				      const Array<Real> & normal,
+				      GhostType ghost_type);
 
   /**
    * Scale insertion traction sigma_c according to the volume of the
@@ -109,6 +109,25 @@ protected:
    * Engineering (2004)
    */
   void scaleInsertionTraction();
+
+  /// compute the traction for a given quadrature point
+  inline void computeTractionOnQuad(Vector<Real> & traction, Real & delta_max,
+    const Real & delta_max_prev, const Real & delta_c,
+    const Vector<Real> & insertion_stress, const Real & sigma_c,
+    Vector<Real> & opening, Vector<Real> & opening_prec, const Vector<Real> & normal,
+    Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
+    Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
+    bool & penetration, bool & reduction_penalty, Real & current_penalty,
+    Vector<Real> & contact_traction, Vector<Real> & contact_opening);
+
+  inline void computeTangentTractionOnQuad(Matrix<Real> & tangent,
+    Real & delta_max, const Real & delta_c,
+    const Real & sigma_c,
+    Vector<Real> & opening, const Vector<Real> & normal,
+    Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
+    Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
+    bool & penetration, bool & reduction_penalty, Real & current_penalty,
+    Vector<Real> & contact_opening);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -201,8 +220,8 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "material_cohesive_linear_inline_impl.cc"
-
 __END_AKANTU__
+
+#include "material_cohesive_linear_inline_impl.cc"
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_LINEAR_HH__ */

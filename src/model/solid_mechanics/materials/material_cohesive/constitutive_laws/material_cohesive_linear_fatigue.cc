@@ -123,8 +123,8 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
   Array<Real> & T_1d_array = T_1d(el_type, ghost_type);
   Array<bool> & normal_regime_array = normal_regime(el_type, ghost_type);
 
-  Array<UInt> * switches_array;
-  Array<Real> * delta_dot_prec_array;
+  Array<UInt> * switches_array = NULL;
+  Array<Real> * delta_dot_prec_array = NULL;
 
   if (count_switches) {
     switches_array = &switches(el_type, ghost_type);
