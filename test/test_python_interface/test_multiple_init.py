@@ -32,11 +32,6 @@
 
 import sys
 import os
-from mpi4py import MPI
-
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-
 sys.path.append(sys.argv[1]+'/python/')
 import akantu as aka
 os.system('gmsh -order 2 -2 -o mesh_dcb_2d.msh mesh_dcb_2d.geo')
@@ -58,5 +53,4 @@ model.initFull(aka.SolidMechanicsModelCohesiveOptions(aka._static))
 del model
 del mesh
 aka.finalize()
-MPI.Finalize()
 print 'All right'
