@@ -94,12 +94,7 @@ StaticCommunicatorMPI::StaticCommunicatorMPI(int & argc, char ** & argv) :
 
 /* -------------------------------------------------------------------------- */
 StaticCommunicatorMPI::~StaticCommunicatorMPI() {
-
-}
-
-/* -------------------------------------------------------------------------- */
-void StaticCommunicatorMPI::finalize() {
-  MPI_Finalize();
+  // MPI_Finalize();
 }
 
 /* -------------------------------------------------------------------------- */
