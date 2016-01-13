@@ -42,44 +42,41 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-ParserSection::~ParserSection() {
-}
+ParserSection::~ParserSection() { this->clean(); }
 
 /* -------------------------------------------------------------------------- */
 ParserParameter & ParserSection::addParameter(const ParserParameter & param) {
-  if(parameters.find(param.getName()) != parameters.end())
-    AKANTU_EXCEPTION("The parameter \"" + param.getName() + "\" is already defined in this section");
+  if (parameters.find(param.getName()) != parameters.end())
+    AKANTU_EXCEPTION("The parameter \"" + param.getName() +
+                     "\" is already defined in this section");
 
-  return (parameters.insert
-	  (std::pair<std::string, ParserParameter>(param.getName(),
-						   param)).first->second);
+  return (parameters.insert(std::pair<std::string, ParserParameter>(
+                                param.getName(), param)).first->second);
 }
 
 /* -------------------------------------------------------------------------- */
 ParserSection & ParserSection::addSubSection(const ParserSection & section) {
-  return ((sub_sections_by_type.insert
-	   (std::pair<SectionType, ParserSection>(section.getType(),
-						  section)))->second);
+  return ((sub_sections_by_type.insert(std::pair<SectionType, ParserSection>(
+               section.getType(), section)))->second);
 }
 
 /* -------------------------------------------------------------------------- */
-std::string Parser::getLastParsedFile() const {
-  return last_parsed_file;
-}
+std::string Parser::getLastParsedFile() const { return last_parsed_file; }
 
 /* -------------------------------------------------------------------------- */
-void ParserSection::printself(std::ostream & stream, unsigned int indent) const {
+void ParserSection::printself(std::ostream & stream,
+                              unsigned int indent) const {
   std::string space;
   std::string ind = AKANTU_INDENT;
-  for(unsigned int i = 0; i < indent; i++, space += ind);
+  for (unsigned int i = 0; i < indent; i++, space += ind)
+    ;
 
-  stream << space << "Section(" << this->type << ") "
-	 << this->name << (option != "" ? (" " + option) : "")
-	 << " [" << std::endl;
-  if(!this->parameters.empty()) {
+  stream << space << "Section(" << this->type << ") " << this->name
+         << (option != "" ? (" " + option) : "") << " [" << std::endl;
+  if (!this->parameters.empty()) {
     stream << space << ind << "Parameters [" << std::endl;
     Parameters::const_iterator pit = this->parameters.begin();
-    for(;pit != this->parameters.end(); ++pit) {
+    for (; pit != this->parameters.end(); ++pit) {
       stream << space << ind << " + ";
       pit->second.printself(stream);
       stream << std::endl;
@@ -87,10 +84,11 @@ void ParserSection::printself(std::ostream & stream, unsigned int indent) const 
     stream << space << ind << "]" << std::endl;
   }
 
-  if(!this->sub_sections_by_type.empty()) {
+  if (!this->sub_sections_by_type.empty()) {
     stream << space << ind << "Subsections [" << std::endl;
     SubSections::const_iterator sit = this->sub_sections_by_type.begin();
-    for (;sit != this->sub_sections_by_type.end(); ++sit) sit->second.printself(stream, indent + 2);
+    for (; sit != this->sub_sections_by_type.end(); ++sit)
+      sit->second.printself(stream, indent + 2);
     stream << std::endl;
     stream << space << ind << "]" << std::endl;
   }
