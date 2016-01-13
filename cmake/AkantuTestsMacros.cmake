@@ -249,7 +249,10 @@ function(register_test test_name)
     set(_akantu_${_akantu_current_parent_test}_tests_count ${_tmp_parent_count} CACHE INTERNAL "" FORCE)
 
     string(TOUPPER ${_akantu_current_parent_test} _u_parent)
+
     if(AKANTU_BUILD_${_u_parent} OR AKANTU_BUILD_ALL_TESTS)
+      set(_test_all_files)
+
       if(_need_to_compile)
         # get the include directories for sources in activated directories
         package_get_all_include_directories(
@@ -279,22 +282,22 @@ function(register_test test_name)
           set_target_properties(${test_name}
             PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
         endif()
+
+        # add the different dependencies (meshes, local libraries, ...)
+        foreach(_dep ${_register_test_DEPENDS})
+          add_dependencies(${test_name} ${_dep})
+          get_target_property(_dep_in_ressources ${_dep} RESSOURCES)
+
+          if(_dep_in_ressources)
+            list(APPEND _test_all_files "${_dep_in_ressources}")
+          endif()
+        endforeach()
+
       else()
         if(_register_test_UNPARSED_ARGUMENTS AND NOT _register_test_SCRIPT)
           set(_register_test_SCRIPT ${_register_test_UNPARSED_ARGUMENTS})
         endif()
       endif()
-
-      set(_test_all_files)
-      # add the different dependencies (meshes, local libraries, ...)
-      foreach(_dep ${_register_test_DEPENDS})
-        add_dependencies(${test_name} ${_dep})
-        get_target_property(_dep_in_ressources ${_dep} RESSOURCES)
-
-        if(_dep_in_ressources)
-          list(APPEND _test_all_files "${_dep_in_ressources}")
-        endif()
-      endforeach()
 
       # copy the needed files to the build folder
       if(_register_test_FILES_TO_COPY)
