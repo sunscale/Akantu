@@ -178,18 +178,22 @@ void SolidMechanicsModelCohesive::initMaterials() {
       inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
     initAutomaticInsertion();
-  } 
-  else {
-    try { /// In case of insertion of intrinsic elements along mesh physical surfaces
-      const ParserSection & mesh_section = *(this->parser->getSubSections(_st_mesh).first);
-      std::string cohesive_surfaces = mesh_section.getParameter("cohesive_surfaces");
-      initIntrinsicCohesiveMaterials(cohesive_surfaces);
-    }
-    catch(...) { /// Default intrinsic insertion
-      initIntrinsicCohesiveMaterials(cohesive_index);
+  } else {
+    // TODO think of something a bit mor consistant than just coding the first
+    // thing that comes in Fabian's head....
+    typedef ParserSection::const_section_iterator const_section_iterator;
+    std::pair<const_section_iterator, const_section_iterator> sub_sections =
+        this->parser->getSubSections(_st_mesh);
+
+    if (sub_sections.first != sub_sections.second) {
+      std::string cohesive_surfaces =
+          sub_sections.first->getParameter("cohesive_surfaces");
+      this->initIntrinsicCohesiveMaterials(cohesive_surfaces);
+    } else {
+      this->initIntrinsicCohesiveMaterials(cohesive_index);
     }
   }
-  
+
   AKANTU_DEBUG_OUT();
 }
 
