@@ -47,6 +47,7 @@ model = aka.SolidMechanicsModelCohesive(mesh)
 model.initFull(aka.SolidMechanicsModelCohesiveOptions(aka._static))
 del model
 del mesh
+comm.barrier()
 aka.clear()
 print('Second initialisation')
 aka.initialize('input_test.dat')
