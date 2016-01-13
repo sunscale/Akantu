@@ -124,8 +124,11 @@ endif()
 # Library generation
 #===============================================================================
 add_library(akantu ${AKANTU_LIBRARY_SRCS})
-target_link_libraries(akantu ${AKANTU_EXTERNAL_LIBRARIES})
 
+# the repetition is ugly but works for static libraries
+target_link_libraries(akantu  ${AKANTU_EXTERNAL_LIBRARIES} ${AKANTU_EXTERNAL_LIBRARIES})
+
+set_target_properties(akantu PROPERTIES LINK_INTERFACE_MULTIPLICITY 0)
 package_get_all_extra_dependencies(_extra_target_dependencies)
 if(_extra_target_dependencies)
   # This only adding todo: find a solution for when a dependency was add the is removed...
