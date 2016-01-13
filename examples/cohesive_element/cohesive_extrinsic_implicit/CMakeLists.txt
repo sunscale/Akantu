@@ -1,12 +1,11 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
+# @author Mauro Corrado <mauro.corrado@epfl.ch>
 #
-# @date creation: Fri Jun 21 2013
-# @date last modification: Tue Jan 07 2016
+# @date creation: Tue Jan 07 2016
 #
-# @brief  CMakeLists for the cohesive examples
+# @brief  Example for extrinsic cohesive elements in implicit
 #
 # @section LICENSE
 #
@@ -26,9 +25,18 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
+# @section DESCRIPTION
+#
 #===============================================================================
 
-add_example(cohesive_extrinsic "Extrinsic cohesive element" PACKAGE cohesive_element)
-add_example(cohesive_intrinsic "Intrinsic cohesive element" PACKAGE cohesive_element )
-add_example(cohesive_extrinsic_IG_TG "Extrinsic cohesive element with intergranular and transgranular material properties" PACKAGE cohesive_element)
-add_example(cohesive_extrinsic_implicit "Extrinsic cohesive element in implicit" PACKAGE cohesive_element )
+add_mesh(cohesive_extrinsic_implicit_mesh dcb_2d.geo 2 2)
+
+register_example(cohesive_extrinsic_implicit
+  cohesive_extrinsic_implicit.cc)
+
+add_dependencies(cohesive_extrinsic_implicit
+  cohesive_extrinsic_implicit_mesh)
+
+ #===============================================================================
+file(COPY material.dat DESTINATION .)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)

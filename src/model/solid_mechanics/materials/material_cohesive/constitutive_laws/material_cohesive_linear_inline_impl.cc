@@ -26,7 +26,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#ifndef __AKANTU_MATERIAL_COHESIVE_LINEAR_INLINE_IMPL_CC__
+#define __AKANTU_MATERIAL_COHESIVE_LINEAR_INLINE_IMPL_CC__
 
+/* -------------------------------------------------------------------------- */
+
+__BEGIN_AKANTU__
+
+/* -------------------------------------------------------------------------- */
 template<UInt dim>
 inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(const Matrix<Real> & stress,
 							      const Vector<Real> & normal,
@@ -56,3 +63,251 @@ inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(const Matrix<Real>
 
   return std::sqrt(normal_contrib * normal_contrib + tangent_contrib * tangent_contrib * beta2_inv);
 }
+
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
+    Vector<Real> & traction,
+    Real & delta_max,
+    const Real & delta_max_prev,
+    const Real & delta_c,
+    const Vector<Real> & insertion_stress,
+    const Real & sigma_c,
+    Vector<Real> & opening,
+    Vector<Real> & opening_prec,
+    const Vector<Real> & normal,
+    Vector<Real> & normal_opening,
+    Vector<Real> & tangential_opening,
+    Real & normal_opening_norm,
+    Real & tangential_opening_norm,
+    Real & damage,
+    bool & penetration,
+    bool & reduction_penalty,
+    Real & current_penalty,
+    Vector<Real> & contact_traction,
+    Vector<Real> & contact_opening) {
+
+  /// compute normal and tangential opening vectors
+  normal_opening_norm = opening.dot(normal);
+  
+  normal_opening  = normal;
+  normal_opening *= normal_opening_norm;
+  tangential_opening  = opening;
+  tangential_opening -= normal_opening;
+
+  tangential_opening_norm = tangential_opening.norm();
+
+  /**
+   * compute effective opening displacement
+   * @f$ \delta = \sqrt{
+   * \frac{\beta^2}{\kappa^2} \Delta_t^2 + \Delta_n^2 } @f$
+   */
+  Real delta = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
+
+  penetration = normal_opening_norm < -Math::getTolerance();
+  if (this->contact_after_breaking == false && Math::are_float_equal(damage, 1.))
+    penetration = false;
+
+  /** 
+   * if during the convergence loop a cohesive element continues to
+   * jumps from penetration to opening, and convergence is not
+   * reached, its penalty parameter will be reduced in the
+   * recomputation of the same incremental step. recompute is set
+   * equal to true when convergence is not reached in the
+   * solveStepCohesive function and the execution of the program
+   * goes back to the main file where the variable load_reduction
+   * is set equal to true.
+   */
+    
+  // opening_prec is the opening of the previous convergence loop
+  // (NB: it is different from opening_prev, that refers to the solution
+  // of the previous incremental step)
+  Real normal_opening_prec_norm = opening_prec.dot(normal);
+  opening_prec = opening;
+
+  if (!this->model->isExplicit() && !this->recompute)
+    if ((normal_opening_prec_norm * normal_opening_norm) < 0) {
+      reduction_penalty = true;
+    }
+
+  if (penetration) {
+    if (this->recompute && reduction_penalty){
+      /// the penalty parameter is locally reduced
+      current_penalty = this->penalty / 1000.;
+    }
+    else
+      current_penalty = this->penalty;
+      
+    /// use penalty coefficient in case of penetration
+    contact_traction = normal_opening;
+    contact_traction *= current_penalty;
+    contact_opening = normal_opening;
+
+    /// don't consider penetration contribution for delta
+    opening = tangential_opening;
+    normal_opening.clear();
+
+  }
+  else {
+    delta += normal_opening_norm * normal_opening_norm;
+    contact_traction.clear();
+    contact_opening.clear();
+  }
+
+  delta = std::sqrt(delta);
+
+  /// update maximum displacement and damage
+  delta_max = std::max(delta_max, delta);
+  damage = std::min(delta_max / delta_c, Real(1.));
+
+  /**
+   * Compute traction @f$ \mathbf{T} = \left(
+   * \frac{\beta^2}{\kappa} \Delta_t \mathbf{t} + \Delta_n
+   * \mathbf{n} \right) \frac{\sigma_c}{\delta} \left( 1-
+   * \frac{\delta}{\delta_c} \right)@f$
+   */
+
+  if (Math::are_float_equal(damage, 1.))
+    traction.clear();
+  else if (Math::are_float_equal(damage, 0.)) {
+    if (penetration)
+      traction.clear();
+    else
+      traction = insertion_stress;
+  }
+  else {
+    traction  = tangential_opening;
+    traction *= beta2_kappa;
+    traction += normal_opening;
+
+    AKANTU_DEBUG_ASSERT(delta_max != 0.,
+			"Division by zero, tolerance might be too low");
+
+    traction *= sigma_c / delta_max * (1. - damage);
+  }
+}
+
+
+
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
+    Matrix<Real> & tangent,
+    Real & delta_max,
+    const Real & delta_c,
+    const Real & sigma_c,
+    Vector<Real> & opening,
+    const Vector<Real> & normal,
+    Vector<Real> & normal_opening,
+    Vector<Real> & tangential_opening,
+    Real & normal_opening_norm,
+    Real & tangential_opening_norm,
+    Real & damage,
+    bool & penetration,
+    bool & reduction_penalty,
+    Real & current_penalty,
+    Vector<Real> & contact_opening) {
+
+  /// During the update of the residual the interpenetrations are
+  /// stored in the array "contact_opening", therefore, in the case
+  /// of penetration, in the array "opening" there are only the
+  /// tangential components.
+  opening += contact_opening;
+
+  /// compute normal and tangential opening vectors
+  normal_opening_norm = opening.dot(normal);
+  normal_opening = normal;
+  normal_opening *= normal_opening_norm;
+
+  tangential_opening = opening;
+  tangential_opening -= normal_opening;
+
+  tangential_opening_norm = tangential_opening.norm();
+  penetration = normal_opening_norm < -Math::getTolerance();
+  if (contact_after_breaking == false && Math::are_float_equal(damage, 1.))
+    penetration = false;
+
+  Real derivative = 0; // derivative = d(t/delta)/ddelta
+  Real t = 0;
+
+  Real delta = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
+
+  Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
+  n_outer_n.outerProduct(normal, normal);
+
+  if (penetration){
+    if (recompute && reduction_penalty)
+      current_penalty = this->penalty / 1000.;
+    else
+      current_penalty = this->penalty;
+
+    /// stiffness in compression given by the penalty parameter
+    tangent += n_outer_n;
+    tangent *= current_penalty;
+
+    opening = tangential_opening;
+    normal_opening_norm = opening.dot(normal);
+    normal_opening = normal;
+    normal_opening *= normal_opening_norm;
+
+  }
+  else{
+    delta += normal_opening_norm * normal_opening_norm;
+  }
+
+  delta = std::sqrt(delta);
+
+  /// Delta has to be different from 0 to have finite values of
+  /// tangential stiffness.  At the element insertion, delta =
+  /// 0. Therefore, a fictictious value is defined, for the
+  /// evaluation of the first value of K.
+  if (delta < Math::getTolerance())
+    delta = (delta_c)/1000.;
+
+  if (delta >= delta_max){
+    if (delta <= delta_c){
+      derivative = -sigma_c / (delta * delta);
+      t = sigma_c * (1 - delta / delta_c);
+    } else {
+      derivative = 0.;
+      t = 0.;
+    }
+  } else if (delta < delta_max){
+    Real tmax = sigma_c * (1 - delta_max / delta_c);
+    t = tmax / delta_max * delta;
+  }
+
+
+  /// computation of the derivative of the constitutive law (dT/ddelta)
+  Matrix<Real> I(spatial_dimension, spatial_dimension);
+  I.eye(this->beta2_kappa);
+
+  Matrix<Real> nn(n_outer_n);
+  nn *= (1. - this->beta2_kappa);
+  nn += I;
+  nn *= t/delta;
+
+  Vector<Real> t_tilde(normal_opening);
+  t_tilde *= (1. - this->beta2_kappa2);
+
+  Vector<Real> mm(opening);
+  mm *= this->beta2_kappa2;
+  t_tilde += mm;
+
+  Vector<Real> t_hat(normal_opening);
+  t_hat += this->beta2_kappa * tangential_opening;
+
+  Matrix<Real> prov(spatial_dimension, spatial_dimension);
+  prov.outerProduct(t_hat, t_tilde);
+  prov *= derivative/delta;
+  prov += nn;
+
+  Matrix<Real> prov_t = prov.transpose();
+  tangent += prov_t;
+}
+
+/* -------------------------------------------------------------------------- */
+__END_AKANTU__
+
+/* -------------------------------------------------------------------------- */
+#endif //__AKANTU_MATERIAL_COHESIVE_LINEAR_INLINE_IMPL_CC__

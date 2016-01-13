@@ -104,7 +104,8 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
                       _pat_parsable | _pat_modifiable,
                       "recompute solution");
 
-  use_previous_delta_max = true;
+  this->use_previous_delta_max = true;
+  this->use_previous_opening = true;
 
   AKANTU_DEBUG_OUT();
 }
@@ -231,7 +232,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
     Array<Real> & ins_stress = insertion_stress(type_cohesive);
     Array<Real> & trac_old = tractions_old(type_cohesive);
     Array<Real> & open_prec = opening_prec(type_cohesive);
-    Array<Real> & res_sliding = residual_sliding(type_cohesive);
     Array<bool> & red_penalty = reduction_penalty(type_cohesive);
     const Array<Real> & f_stress = model->getStressOnFacets(type_facet);
     const Array<Real> & sigma_lim = sigma_c(type_facet);
@@ -239,7 +239,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
     UInt index_f = 0;
     UInt index_filter = 0;
     UInt nn = 0;
-
 
     UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
     UInt nb_facet = f_filter.getSize();
@@ -401,13 +400,11 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
     trac_old.resize(old_nb_quad_points + new_nb_quad_points);
     del_c.resize(old_nb_quad_points + new_nb_quad_points);
     open_prec.resize(old_nb_quad_points + new_nb_quad_points);
-    res_sliding.resize(old_nb_quad_points + new_nb_quad_points);
     red_penalty.resize(old_nb_quad_points + new_nb_quad_points);
 
     for (UInt q = 0; q < new_nb_quad_points; ++q) {
       sig_c_eff(old_nb_quad_points + q) = new_sigmas[q];
       del_c(old_nb_quad_points + q) = new_delta_c[q];
-      res_sliding(old_nb_quad_points + q) = 0.;
       red_penalty(old_nb_quad_points + q) = false;
       for (UInt dim = 0; dim < spatial_dimension; ++dim) {
  	ins_stress(old_nb_quad_points + q, dim) = new_normal_traction[q](dim);
@@ -434,11 +431,11 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
   Array<Real>::vector_iterator opening_it =
     opening(el_type, ghost_type).begin(spatial_dimension);
 
+  Array<Real>::vector_iterator opening_prev_it =
+    opening.previous(el_type, ghost_type).begin(spatial_dimension);
+
   Array<Real>::vector_iterator opening_prec_it =
     opening_prec(el_type, ghost_type).begin(spatial_dimension);
-
-  Array<Real>::vector_iterator opening_prec_prev_it =
-    opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
 
   Array<Real>::vector_iterator contact_traction_it =
     contact_tractions(el_type, ghost_type).begin(spatial_dimension);
@@ -446,200 +443,79 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
   Array<Real>::vector_iterator contact_opening_it =
     contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::const_iterator< Vector<Real> > normal_it =
+  Array<Real>::const_vector_iterator normal_it =
     normal.begin(spatial_dimension);
 
   Array<Real>::vector_iterator traction_end =
     tractions(el_type, ghost_type).end(spatial_dimension);
 
-  Array<Real>::iterator<Real>sigma_c_it =
+  Array<Real>::scalar_iterator sigma_c_it =
     sigma_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>delta_max_it =
+  Array<Real>::scalar_iterator delta_max_it =
     delta_max(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>delta_max_prev_it =
+  Array<Real>::scalar_iterator delta_max_prev_it =
     delta_max.previous(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>delta_c_it =
+  Array<Real>::scalar_iterator delta_c_it =
     delta_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>damage_it =
+  Array<Real>::scalar_iterator damage_it =
     damage(el_type, ghost_type).begin();
 
   Array<Real>::vector_iterator insertion_stress_it =
     insertion_stress(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::iterator<Real>res_sliding_it =
+  Array<Real>::scalar_iterator res_sliding_it =
     residual_sliding(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>res_sliding_prev_it =
+  Array<Real>::scalar_iterator res_sliding_prev_it =
     residual_sliding.previous(el_type, ghost_type).begin();
 
   Array<Real>::vector_iterator friction_force_it =
     friction_force(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<bool>::iterator<bool> reduction_penalty_it =
+  Array<bool>::scalar_iterator reduction_penalty_it =
     reduction_penalty(el_type, ghost_type).begin();
 
-  Real * memory_space = new Real[2*spatial_dimension];
-  Vector<Real> normal_opening(memory_space, spatial_dimension);
-  Vector<Real> tangential_opening(memory_space + spatial_dimension,
-                                  spatial_dimension);
+  Vector<Real> normal_opening(spatial_dimension);
+  Vector<Real> tangential_opening(spatial_dimension);
 
-  //  Vector<Real> open_prec(spatial_dimension);
-  //  Vector<Real> open(spatial_dimension);
-
+  if (! this->model->isExplicit())
+    this->delta_max(el_type, ghost_type).copy(this->delta_max.previous(el_type, ghost_type));
+ 
   /// loop on each quadrature point
   for (; traction_it != traction_end;
-       ++traction_it, ++opening_it, ++opening_prec_it, ++normal_it, ++sigma_c_it,
-         ++delta_max_it, ++delta_c_it, ++damage_it, ++contact_traction_it,
-         ++insertion_stress_it, ++contact_opening_it, ++delta_max_prev_it,
-	 ++res_sliding_it, ++res_sliding_prev_it, ++opening_prec_prev_it,
-	 ++friction_force_it, ++reduction_penalty_it) {
+       ++traction_it, ++opening_it, ++opening_prec_it,
+	 ++normal_it, ++sigma_c_it, ++delta_max_it, ++delta_c_it, ++damage_it,
+	 ++contact_traction_it, ++insertion_stress_it, ++contact_opening_it,
+	 ++delta_max_prev_it, ++reduction_penalty_it) {
 
-    if (!model->isExplicit())
-      *delta_max_it = *delta_max_prev_it;
-
-    // check if the local displacement increment is too large. If so,
-    // reduce arbitrary it in order to prevent problems of
-    // instability
-
-    Real normal_opening_prec_norm = opening_prec_it->dot(*normal_it);
-
-//    open_prec = *opening_prec_it;
-//    Real open_prec_norm = open_prec.norm();
-//    open = *opening_it;
-//    Real open_norm = open.norm();
-//    Real delta_open = std::abs(open_norm - open_prec_norm);
-//
-//    //    if (delta_open > 1.0e-01){
-//    //      *opening_it = *opening_prec_it + ((*opening_it - *opening_prec_it) / 50.0);
-//    //    }
-//    *opening_prec_it = *opening_it;
-
-    /// compute normal and tangential opening vectors
-    Real normal_opening_norm = opening_it->dot(*normal_it);
-    normal_opening  = (*normal_it);
-    normal_opening *= normal_opening_norm;
-    tangential_opening  = *opening_it;
-    tangential_opening -= normal_opening;
-
-    Real tangential_opening_norm = tangential_opening.norm();
-
-    /**
-     * compute effective opening displacement
-     * @f$ \delta = \sqrt{
-     * \frac{\beta^2}{\kappa^2} \Delta_t^2 + \Delta_n^2 } @f$
-     */
-    Real delta = tangential_opening_norm * tangential_opening_norm * beta2_kappa2;
-
-    bool penetration = normal_opening_norm < -Math::getTolerance();
-    if (contact_after_breaking == false && Math::are_float_equal(*damage_it, 1.))
-      penetration = false;
-
-    /// if during the convergence loop a cohesive element continues to
-    /// jumps from penetration to opening, and convergence is not
-    /// reached, its penalty parameter will be reduced in the
-    /// recomputation of the same incremental step. recompute is set
-    /// equal to true when convergence is not reached in the
-    /// solveStepCohesive function and the execution of the program
-    /// goes back to the main file where the variable load_reduction
-    /// is set equal to true.
-    if (!model->isExplicit() && !recompute)
-      if ((normal_opening_prec_norm * normal_opening_norm) < -Math::getTolerance()){
-	*reduction_penalty_it = true;
-      }
-
-    if (penetration) {
-      Real current_penalty = 0.;
-      if (recompute && *reduction_penalty_it){
-	/// the penalty parameter is locally reduced
-	current_penalty = penalty / 1000.;
-      }
-      else
-	current_penalty = penalty;
-      
-      /// use penalty coefficient in case of penetration
-      *contact_traction_it = normal_opening;
-      *contact_traction_it *= current_penalty;
-      *contact_opening_it = normal_opening;
-
-      /* ----------------------------------------- */
-      /// ADD FRICTION
-      if (friction){
-	Real damage = std::min(*delta_max_prev_it / *delta_c_it, Real(1.));
-	Real mu = mu_max * std::sqrt(damage);
-	Real normal_opening_prec_norm = opening_prec_prev_it->dot(*normal_it);
-	Vector<Real> normal_opening_prec = (*normal_it);
-	normal_opening_prec *= normal_opening_prec_norm;
-	Real tau_max = mu * current_penalty * (normal_opening_prec.norm());
-	Real delta_sliding_norm = std::abs(tangential_opening_norm - *res_sliding_prev_it);
-	// tau is the norm of the friction force, acting tangentially to the surface
-	Real tau = std::min(friction_penalty * delta_sliding_norm, tau_max);
-	if ((tangential_opening_norm - *res_sliding_it) < -Math::getTolerance())
-	  tau = -tau;
-	// from tau get the x and y components of friction, to be added in the force vector
-	Vector<Real> tangent(spatial_dimension);
-	tangent = tangential_opening / tangential_opening_norm;
-	*friction_force_it = tau * tangent;
-
-	//update residual_sliding
-	*res_sliding_it = tangential_opening_norm - (tau / friction_penalty);
-      }
-      /// end add friction
-      /* ----------------------------------------- */
-
-      /// don't consider penetration contribution for delta
-      *opening_it = tangential_opening;
-      normal_opening.clear();
-
-    }
-    else {
-      delta += normal_opening_norm * normal_opening_norm;
-      contact_traction_it->clear();
-      contact_opening_it->clear();
-      friction_force_it->clear();
-    }
-
-    delta = std::sqrt(delta);
-
-    /// update maximum displacement and damage
-    *delta_max_it = std::max(*delta_max_it, delta);
-    *damage_it = std::min(*delta_max_it / *delta_c_it, Real(1.));
-
-    /**
-     * Compute traction @f$ \mathbf{T} = \left(
-     * \frac{\beta^2}{\kappa} \Delta_t \mathbf{t} + \Delta_n
-     * \mathbf{n} \right) \frac{\sigma_c}{\delta} \left( 1-
-     * \frac{\delta}{\delta_c} \right)@f$
-     */
-
-    if (Math::are_float_equal(*damage_it, 1.))
-      traction_it->clear();
-    else if (Math::are_float_equal(*damage_it, 0.)) {
-      if (penetration)
-        traction_it->clear();
-      else
-        *traction_it = *insertion_stress_it;
-    }
-    else {
-      *traction_it  = tangential_opening;
-      *traction_it *= beta2_kappa;
-      *traction_it += normal_opening;
-
-      AKANTU_DEBUG_ASSERT(*delta_max_it != 0.,
-                          "Division by zero, tolerance might be too low");
-
-      *traction_it *= *sigma_c_it / *delta_max_it * (1. - *damage_it);
-    }
-
-    if (friction)
-      *traction_it += *friction_force_it;
-
+    Real normal_opening_norm, tangential_opening_norm;
+    bool penetration;
+    Real current_penalty = 0.;
+    this->computeTractionOnQuad(*traction_it,
+				*delta_max_it,
+				*delta_max_prev_it,
+				*delta_c_it,
+				*insertion_stress_it,
+				*sigma_c_it,
+				*opening_it,
+				*opening_prec_it,
+				*normal_it,
+				normal_opening,
+				tangential_opening,
+				normal_opening_norm,
+				tangential_opening_norm,
+				*damage_it,
+				penetration,
+				*reduction_penalty_it,
+				current_penalty,
+				*contact_traction_it,
+				*contact_opening_it);
   }
 
-  delete [] memory_space;
   AKANTU_DEBUG_OUT();
 }
 
@@ -680,34 +556,34 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_ty
     ElementType el_type = *it;
 
     /// define iterators
-    Array<Real>::iterator<Real>delta_max_it =
+    Array<Real>::scalar_iterator delta_max_it =
       delta_max(el_type, ghost_type).begin();
 
-    Array<Real>::iterator<Real>delta_max_end =
+    Array<Real>::scalar_iterator delta_max_end =
       delta_max(el_type, ghost_type).end();
 
-    Array<Real>::iterator<Real>delta_max_prev_it =
+    Array<Real>::scalar_iterator delta_max_prev_it =
       delta_max.previous(el_type, ghost_type).begin();
 
-    Array<Real>::iterator<Real>delta_c_it =
+    Array<Real>::scalar_iterator delta_c_it =
       delta_c_eff(el_type, ghost_type).begin();
 
-//    Array<Real>::vector_iterator opening_prec_it =
-//      opening_prec(el_type, ghost_type).begin(spatial_dimension);
-//
-//    Array<Real>::vector_iterator opening_prec_prev_it =
-//      opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
+    Array<Real>::vector_iterator opening_prec_it =
+      opening_prec(el_type, ghost_type).begin(spatial_dimension);
 
-    Array<Real>::iterator<Real>res_sliding_it =
+    Array<Real>::vector_iterator opening_prec_prev_it =
+      opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
+
+    Array<Real>::scalar_iterator res_sliding_it =
       residual_sliding(el_type, ghost_type).begin();
 
-    Array<Real>::iterator<Real>res_sliding_prev_it =
+    Array<Real>::scalar_iterator res_sliding_prev_it =
       residual_sliding.previous(el_type, ghost_type).begin();
 
     /// loop on each quadrature point
     for (; delta_max_it != delta_max_end;
          ++delta_max_it, ++delta_max_prev_it, ++delta_c_it,
-	   //	   ++opening_prec_it, ++opening_prec_prev_it,
+	   ++opening_prec_it, ++opening_prec_prev_it,
 	   ++res_sliding_it, ++res_sliding_prev_it) {
 
       if (*delta_max_prev_it == 0)
@@ -721,7 +597,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_ty
 
       /// in case convergence is not reached, set opening_prec to the
       /// value referred to the previous incremental step
-      //      *opening_prec_it = *opening_prec_prev_it;
+      *opening_prec_it = *opening_prec_prev_it;
 
       /// in case convergence is not reached, set "residual_sliding"
       /// for the friction behaviour to the value referred to the
@@ -760,10 +636,10 @@ void MaterialCohesiveLinear<spatial_dimension>::resetVariables(GhostType ghost_t
 
     ElementType el_type = *it;
 
-    Array<bool>::iterator<bool> reduction_penalty_it =
+    Array<bool>::scalar_iterator reduction_penalty_it =
       reduction_penalty(el_type, ghost_type).begin();
 
-    Array<bool>::iterator<bool> reduction_penalty_end =
+    Array<bool>::scalar_iterator reduction_penalty_end =
       reduction_penalty(el_type, ghost_type).end();
 
     /// loop on each quadrature point
@@ -796,163 +672,56 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
   Array<Real>::vector_iterator opening_it =
     opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator opening_prec_it =
-    opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
-
   /// NB: delta_max_it points on delta_max_previous, i.e. the
   /// delta_max related to the solution of the previous incremental
   /// step
-  Array<Real>::iterator<Real>delta_max_it =
+  Array<Real>::scalar_iterator delta_max_it =
     delta_max.previous(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>sigma_c_it =
+  Array<Real>::scalar_iterator sigma_c_it =
     sigma_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>delta_c_it =
+  Array<Real>::scalar_iterator delta_c_it =
     delta_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>damage_it =
+  Array<Real>::scalar_iterator damage_it =
     damage(el_type, ghost_type).begin();
 
-  Array<Real>::iterator< Vector<Real> > contact_opening_it =
+  Array<Real>::vector_iterator contact_opening_it =
     contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::iterator<Real>res_sliding_prev_it =
+  Array<Real>::scalar_iterator res_sliding_prev_it =
     residual_sliding.previous(el_type, ghost_type).begin();
 
-  Array<bool>::iterator<bool> reduction_penalty_it =
+  Array<bool>::scalar_iterator reduction_penalty_it =
     reduction_penalty(el_type, ghost_type).begin();
 
   Vector<Real> normal_opening(spatial_dimension);
   Vector<Real> tangential_opening(spatial_dimension);
 
   for (; tangent_it != tangent_end;
-       ++tangent_it, ++normal_it, ++opening_it, ++opening_prec_it,
+       ++tangent_it, ++normal_it, ++opening_it,
 	 ++delta_max_it, ++sigma_c_it, ++delta_c_it, ++damage_it,
-	 ++contact_opening_it, ++res_sliding_prev_it, ++reduction_penalty_it) {
+	 ++contact_opening_it, ++reduction_penalty_it) {
 
-    /// During the update of the residual the interpenetrations are
-    /// stored in the array "contact_opening", therefore, in the case
-    /// of penetration, in the array "opening" there are only the
-    /// tangential components.
-    *opening_it += *contact_opening_it;
-
-    /// compute normal and tangential opening vectors
-    Real normal_opening_norm = opening_it->dot(*normal_it);
-    normal_opening = (*normal_it);
-    normal_opening *= normal_opening_norm;
-
-    tangential_opening = *opening_it;
-    tangential_opening -= normal_opening;
-
-    Real tangential_opening_norm = tangential_opening.norm();
-    bool penetration = normal_opening_norm < -Math::getTolerance();
-    if (contact_after_breaking == false && Math::are_float_equal(*damage_it, 1.))
-      penetration = false;
-
-    Real derivative = 0; // derivative = d(t/delta)/ddelta
-    Real t = 0;
-
-    Real delta = tangential_opening_norm * tangential_opening_norm * beta2_kappa2;
-
-    Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
-    n_outer_n.outerProduct(*normal_it, *normal_it);
-
-    if (penetration){
-      Real current_penalty = 0.;
-      if (recompute && *reduction_penalty_it)
-	current_penalty = penalty / 1000.;
-      else
-	current_penalty = penalty;
-
-      /// stiffness in compression given by the penalty parameter
-      *tangent_it += n_outer_n;
-      *tangent_it *= current_penalty;
-
-      /* ------------------------------------- */
-      /// ADD FRICTION
-      if (friction){
-	Real damage = std::min(*delta_max_it / *delta_c_it, Real(1.));
-	// the friction coefficient mu is increasing with the
-	// damage. It equals the maximum value when damage = 1.
-	Real mu = mu_max * damage;
-	Real normal_opening_prec_norm = opening_prec_it->dot(*normal_it);
-	Vector<Real> normal_opening_prec = (*normal_it);
-	normal_opening_prec *= normal_opening_prec_norm;
-	Real tau_max = mu * current_penalty * normal_opening_prec.norm();
-	Real delta_sliding_norm = std::abs(tangential_opening_norm - *res_sliding_prev_it);
-	// tau is the norm of the friction force, acting tangentially to the surface
-	Real tau = std::min(friction_penalty * delta_sliding_norm, tau_max);
-
-	if (tau < tau_max && tau_max > Math::getTolerance()){
-	  Matrix<Real> I(spatial_dimension, spatial_dimension);
-	  I.eye(1.);
-	  Matrix<Real> nn(n_outer_n);
-	  I -= nn;
-	  *tangent_it += I * friction_penalty;
-	}
-      }
-      /// end add friction
-      /* ------------------------------------- */
-
-      *opening_it = tangential_opening;
-      normal_opening_norm = opening_it->dot(*normal_it);
-      normal_opening = (*normal_it);
-      normal_opening *= normal_opening_norm;
-
-    }
-    else{
-      delta += normal_opening_norm * normal_opening_norm;
-    }
-
-    delta = std::sqrt(delta);
-
-    /// Delta has to be different from 0 to have finite values of
-    /// tangential stiffness.  At the element insertion, delta =
-    /// 0. Therefore, a fictictious value is defined, for the
-    /// evaluation of the first value of K.
-    if (delta < Math::getTolerance())
-      delta = (*delta_c_it)/1000.;
-
-    if (delta >= *delta_max_it){
-      if (delta <= *delta_c_it){
-	derivative = -*sigma_c_it/(delta * delta);
-	t = *sigma_c_it * (1 - delta / *delta_c_it);
-      } else {
-	derivative = 0.;
-	t = 0.;
-      }
-    } else if (delta < *delta_max_it){
-      Real tmax = *sigma_c_it * (1 - *delta_max_it / *delta_c_it);
-      t = tmax / *delta_max_it * delta;
-    }
-
-
-    /// computation of the derivative of the constitutive law (dT/ddelta)
-    Matrix<Real> I(spatial_dimension, spatial_dimension);
-    I.eye(beta2_kappa);
-    Matrix<Real> nn(n_outer_n);
-    nn *= (1 - beta2_kappa);
-    nn += I;
-    nn *= t/delta;
-    Vector<Real> t_tilde(normal_opening);
-    t_tilde *= (1 - beta2_kappa2);
-    Vector<Real> mm(*opening_it);
-    mm *= beta2_kappa2;
-    t_tilde += mm;
-    Vector<Real> t_hat(normal_opening);
-    t_hat += beta2_kappa * tangential_opening;
-    Matrix<Real> prov(spatial_dimension, spatial_dimension);
-    prov.outerProduct(t_hat, t_tilde);
-    prov *= derivative/delta;
-    prov += nn;
-    Matrix<Real> tmp(spatial_dimension, spatial_dimension);
-    for (UInt i = 0; i < spatial_dimension; ++i) {
-      for (UInt j = 0; j < spatial_dimension; ++j) {
-	tmp(j,i) = prov(i,j);
-      }
-    }
-    *tangent_it += tmp;
+    Real normal_opening_norm, tangential_opening_norm;
+    bool penetration;
+    Real current_penalty = 0.;
+    this->computeTangentTractionOnQuad(*tangent_it,
+				       *delta_max_it,
+				       *delta_c_it,
+				       *sigma_c_it,
+				       *opening_it,
+				       *normal_it,
+				       normal_opening,
+				       tangential_opening,
+				       normal_opening_norm,
+				       tangential_opening_norm,
+				       *damage_it,
+				       penetration,
+				       *reduction_penalty_it,
+				       current_penalty,
+				       *contact_opening_it);
 
     /// check if the tangential stiffness matrix is symmetric
 //    for (UInt h = 0; h < spatial_dimension; ++h){

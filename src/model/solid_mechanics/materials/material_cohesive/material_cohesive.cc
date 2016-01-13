@@ -56,6 +56,7 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
   contact_opening("contact_opening", *this),
   delta_max("delta max", *this),
   use_previous_delta_max(false),
+  use_previous_opening(false),
   damage("damage", *this),
   sigma_c("sigma_c", *this),
   normal(0, spatial_dimension, "normal") {
@@ -107,6 +108,7 @@ void MaterialCohesive::initMaterial() {
   AKANTU_DEBUG_IN();
   Material::initMaterial();
   if (this->use_previous_delta_max) this->delta_max.initializeHistory();
+  if (this->use_previous_opening) this->opening.initializeHistory();
   AKANTU_DEBUG_OUT();
 }
 
