@@ -113,6 +113,9 @@
 #]=======================================================================]
 
 set(AKANTU_DRIVER_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_test_driver.sh)
+configure_file(${AKANTU_CMAKE_DIR}/akantu_test_environement.sh.in
+  ${PROJECT_BINARY_DIR}/akantu_test_environement.sh
+  @ONLY)
 
 # ==============================================================================
 macro(add_test_tree dir)
@@ -336,6 +339,8 @@ function(register_test test_name)
       else()
         list(APPEND _arguments -e "${test_name}")
       endif()
+
+      list(APPEND _arguments -E "${PROJECT_BINARY_DIR}/akantu_test_environement.sh")
 
       if(_register_test_PARALLEL)
         list(APPEND _arguments -p "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}")

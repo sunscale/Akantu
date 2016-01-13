@@ -41,16 +41,16 @@ aka.initialize('input_test.dat')
 print 'First initialisation'
 mesh = aka.Mesh(2)
 mesh.read('mesh_dcb_2d.msh')
-model = aka.SolidMechanicsModelCohesive(mesh)
-model.initFull(aka.SolidMechanicsModelCohesiveOptions(aka._static))
+model = aka.SolidMechanicsModel(mesh)
+model.initFull(aka.SolidMechanicsModelOptions(aka._static))
 del model
 del mesh
 
 print 'Second initialisation'
 mesh = aka.Mesh(2)
 mesh.read('mesh_dcb_2d.msh')
-model = aka.SolidMechanicsModelCohesive(mesh)
-model.initFull(aka.SolidMechanicsModelCohesiveOptions(aka._static))
+model = aka.SolidMechanicsModel(mesh)
+model.initFull(aka.SolidMechanicsModelOptions(aka._static))
 del model
 del mesh
 
