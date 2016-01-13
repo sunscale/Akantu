@@ -115,8 +115,6 @@ void initialize(const std::string & input_file, int & argc, char ** & argv) {
 void clear() {
   AKANTU_DEBUG_IN();
 
-  StaticSolver::getStaticSolver().finalize();
-
   if(StaticMemory::isInstantiated()) delete &(StaticMemory::getStaticMemory());
   if(StaticCommunicator::isInstantiated()) {
     StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
@@ -130,6 +128,8 @@ void clear() {
 /* -------------------------------------------------------------------------- */
 void finalize() {
   AKANTU_DEBUG_IN();
+
+  StaticSolver::getStaticSolver().finalize();
 
   if(StaticCommunicator::isInstantiated()) {
     StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
