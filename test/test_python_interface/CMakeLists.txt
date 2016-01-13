@@ -26,12 +26,9 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-package_is_activated(python_interface _python_act)
-if(_python_act)
-    add_test(test_multiple_init 
-      python ${CMAKE_CURRENT_SOURCE_DIR}/test_multiple_init.py ${CMAKE_BINARY_DIR})
-endif()
 
-file(COPY input_test.dat mesh_dcb_2d.geo
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+register_test(test_multiple_init
+  SCRIPT test_multiple_init.py
+  PACKAGE python_interface
+  FILES_TO_COPY input_test.dat mesh_dcb_2d.geo
   )

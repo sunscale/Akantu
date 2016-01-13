@@ -44,7 +44,7 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-void initialize(int & argc, char ** & argv) {
+void initialize(int & argc, char **& argv) {
   AKANTU_DEBUG_IN();
 
   initialize("", argc, argv);
@@ -53,33 +53,36 @@ void initialize(int & argc, char ** & argv) {
 }
 
 /* -------------------------------------------------------------------------- */
-void initialize(const std::string & input_file, int & argc, char ** & argv) {
+void initialize(const std::string & input_file, int & argc, char **& argv) {
   AKANTU_DEBUG_IN();
   StaticMemory::getStaticMemory();
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator(argc, argv);
+  StaticCommunicator & comm =
+      StaticCommunicator::getStaticCommunicator(argc, argv);
   debug::debugger.setParallelContext(comm.whoAmI(), comm.getNbProc());
   debug::initSignalHandler();
 
   static_argparser.setParallelContext(comm.whoAmI(), comm.getNbProc());
   static_argparser.setExternalExitFunction(debug::exit);
-  static_argparser.addArgument("--aka_input_file", "Akantu's input file",
-			       1, cppargparse::_string, std::string());
-  static_argparser.addArgument("--aka_debug_level", std::string("Akantu's overall debug level") +
-			       std::string(" (0: error, 1: exceptions, 4: warnings, 5: info, ..., 100: dump,") +
-			       std::string(" more info on levels can be foind in aka_error.hh)"),
-			       1,
-			       cppargparse::_integer, int(dblWarning));
+  static_argparser.addArgument("--aka_input_file", "Akantu's input file", 1,
+                               cppargparse::_string, std::string());
+  static_argparser.addArgument(
+      "--aka_debug_level",
+      std::string("Akantu's overall debug level") +
+          std::string(" (0: error, 1: exceptions, 4: warnings, 5: info, ..., "
+                      "100: dump,") +
+          std::string(" more info on levels can be foind in aka_error.hh)"),
+      1, cppargparse::_integer, int(dblWarning));
 
-  static_argparser.addArgument("--aka_print_backtrace",
-			       "Should Akantu print a backtrace in case of error",
-			       0,
-			       cppargparse::_boolean, false, true);
+  static_argparser.addArgument(
+      "--aka_print_backtrace",
+      "Should Akantu print a backtrace in case of error", 0,
+      cppargparse::_boolean, false, true);
 
   static_argparser.parse(argc, argv, cppargparse::_remove_parsed);
 
-
   std::string infile = static_argparser["aka_input_file"];
-  if(infile == "") infile = input_file;
+  if (infile == "")
+    infile = input_file;
 
   debug::setDebugLevel(dblError);
 
@@ -106,23 +109,19 @@ void initialize(const std::string & input_file, int & argc, char ** & argv) {
   AKANTU_DEBUG_INFO("Random seed set to " << seed);
 
   /// initialize external solvers
-  StaticSolver::getStaticSolver().initialize(argc,argv);
+  StaticSolver::getStaticSolver().initialize(argc, argv);
 
   AKANTU_DEBUG_OUT();
-
 }
 
 /* -------------------------------------------------------------------------- */
 void finalize() {
   AKANTU_DEBUG_IN();
 
-  /// finalize external solvers
-  StaticSolver::getStaticSolver().finalize();
-
-  if(StaticMemory::isInstantiated()) delete &(StaticMemory::getStaticMemory());
-  if(StaticCommunicator::isInstantiated()) {
+  if (StaticMemory::isInstantiated())
+    delete &(StaticMemory::getStaticMemory());
+  if (StaticCommunicator::isInstantiated()) {
     StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-    comm.barrier();
     delete &comm;
   }
 
@@ -137,9 +136,7 @@ cppargparse::ArgumentParser & getStaticArgumentParser() {
 }
 
 /* -------------------------------------------------------------------------- */
-Parser & getStaticParser() {
-  return static_parser;
-}
+Parser & getStaticParser() { return static_parser; }
 
 /* -------------------------------------------------------------------------- */
 const ParserSection & getUserParser() {

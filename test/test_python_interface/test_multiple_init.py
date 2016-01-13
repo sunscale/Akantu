@@ -32,25 +32,27 @@
 
 import sys
 import os
-sys.path.append(sys.argv[1]+'/python/')
 import akantu as aka
+
 os.system('gmsh -order 2 -2 -o mesh_dcb_2d.msh mesh_dcb_2d.geo')
+
+aka.initialize('input_test.dat')
+
 print 'First initialisation'
-aka.initialize('input_test.dat')
 mesh = aka.Mesh(2)
 mesh.read('mesh_dcb_2d.msh')
 model = aka.SolidMechanicsModelCohesive(mesh)
 model.initFull(aka.SolidMechanicsModelCohesiveOptions(aka._static))
 del model
 del mesh
-aka.finalize()
+
 print 'Second initialisation'
-aka.initialize('input_test.dat')
 mesh = aka.Mesh(2)
 mesh.read('mesh_dcb_2d.msh')
 model = aka.SolidMechanicsModelCohesive(mesh)
 model.initFull(aka.SolidMechanicsModelCohesiveOptions(aka._static))
 del model
 del mesh
+
 aka.finalize()
 print 'All right'

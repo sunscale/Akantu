@@ -56,12 +56,14 @@
 #    register_test(<test_name>
 #      SOURCES <sources>...
 #      PACKAGE <akantu_packages>...
+#      SCRIPT <scirpt>
 #      [FILES_TO_COPY <filenames>...]
 #      [DEPENDS <targets>...]
 #      [DIRECTORIES_TO_CREATE <directories>...]
 #      [COMPILE_OPTIONS <flags>...]
 #      [EXTRA_FILES <filnames>...]
 #      [UNSABLE]
+#      [PARALLEL]
 #      )
 #
 #  This function defines a test ``<test_name>_run`` this test could be of
@@ -78,6 +80,9 @@
 #  ``PACKAGE <akantu_packages>...``
 #    The list of package to which this test belongs. The test will be activable
 #    only of all the packages listed are activated
+#
+#  ``SCRIPT <script>``
+#    The script to execute instead of the executable
 #
 #  ``FILES_TO_COPY <filenames>...``
 #    List of files to copy from the source directory to the build directory
@@ -107,8 +112,6 @@
 #
 #]=======================================================================]
 
-set(AKANTU_DIFF_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_diff.sh)
-set(AKANTU_POSTPROCESS_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_apply_post_process.sh)
 set(AKANTU_DRIVER_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_test_driver.sh)
 
 # ==============================================================================
@@ -199,8 +202,8 @@ function(register_test test_name)
     )
 
   cmake_parse_arguments(_register_test
-    "UNSTABLE PARALLEL"
-    "POSTPROCESS"
+    "UNSTABLE;PARALLEL"
+    "POSTPROCESS;SCRIPT"
     "${multi_variables}"
     ${ARGN}
     )
@@ -223,6 +226,20 @@ function(register_test test_name)
     set(_test_act FALSE)
   endif()
 
+  # check that the sources are files that need to be compiled
+  if(_register_test_SOURCES} OR _register_test_UNPARSED_ARGUMENTS)
+    set(_need_to_compile TRUE)
+  else()
+    set(_need_to_compile FALSE)
+  endif()
+
+  foreach(_file ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS})
+    if(NOT (_file MATCHES "\\.cc$" OR _file MATCHES "\\.hh$"))
+      set(_need_to_compile FALSE)
+      message("NO: ${test_name}")
+    endif()
+  endforeach()
+
   # todo this should be checked for the build package_sources since the file will not be listed.
   if(_test_act)
     math(EXPR _tmp_parent_count "${_akantu_${_akantu_current_parent_test}_tests_count} + 1")
@@ -230,33 +247,39 @@ function(register_test test_name)
 
     string(TOUPPER ${_akantu_current_parent_test} _u_parent)
     if(AKANTU_BUILD_${_u_parent} OR AKANTU_BUILD_ALL_TESTS)
-      # get the include directories for sources in activated directories
-      package_get_all_include_directories(
-        AKANTU_LIBRARY_INCLUDE_DIRS
-        )
+      if(_need_to_compile)
+        # get the include directories for sources in activated directories
+        package_get_all_include_directories(
+          AKANTU_LIBRARY_INCLUDE_DIRS
+          )
 
-      # get the external packages compilation and linking informations
-      package_get_all_external_informations(
-        AKANTU_EXTERNAL_INCLUDE_DIR
-        AKANTU_EXTERNAL_LIBRARIES
-        )
+        # get the external packages compilation and linking informations
+        package_get_all_external_informations(
+          AKANTU_EXTERNAL_INCLUDE_DIR
+          AKANTU_EXTERNAL_LIBRARIES
+          )
 
-      # set the proper includes to build most of the tests
-      include_directories(
-        ${AKANTU_INCLUDE_DIRS}
-        ${AKANTU_EXTERNAL_LIB_INCLUDE_DIR}
-        )
+        # set the proper includes to build most of the tests
+        include_directories(
+          ${AKANTU_INCLUDE_DIRS}
+          ${AKANTU_EXTERNAL_LIB_INCLUDE_DIR}
+          )
 
-      # Register the executable to compile
-      add_executable(${test_name} ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS})
-      set_property(TARGET ${test_name}  APPEND
-        PROPERTY INCLUDE_DIRECTORIES ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
-      target_link_libraries(${test_name} akantu ${AKANTU_EXTERNAL_LIBRARIES})
+        # Register the executable to compile
+        add_executable(${test_name} ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS})
+        set_property(TARGET ${test_name}  APPEND
+          PROPERTY INCLUDE_DIRECTORIES ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
+        target_link_libraries(${test_name} akantu ${AKANTU_EXTERNAL_LIBRARIES})
 
-      # add the extra compilation options
-      if(_register_test_COMPILE_OPTIONS)
-        set_target_properties(${test_name}
-          PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
+        # add the extra compilation options
+        if(_register_test_COMPILE_OPTIONS)
+          set_target_properties(${test_name}
+            PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
+        endif()
+      else()
+        if(_register_test_UNPARSED_ARGUMENTS AND NOT _register_test_SCRIPT)
+          set(_register_test_SCRIPT ${_register_test_UNPARSED_ARGUMENTS})
+        endif()
       endif()
 
       set(_test_all_files)
@@ -298,10 +321,15 @@ function(register_test test_name)
         endif()
       endforeach()
 
-
       set(_arguments -n "${test_name}")
       # register the test for ctest
-      if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
+      if(_register_test_SCRIPT)
+        file(COPY ${_register_test_SCRIPT}
+          FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+          DESTINATION .)
+        list(APPEND _test_all_files "${CMAKE_CURRENT_SOURCE_DIR}/${_register_test_SCRIPT}")
+        list(APPEND _arguments -e "${_register_test_SCRIPT}")
+      elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
         file(COPY ${test_name}.sh DESTINATION .)
         list(APPEND _test_all_files "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
         list(APPEND _arguments -e "${test_name}.sh")
@@ -311,6 +339,10 @@ function(register_test test_name)
 
       if(_register_test_PARALLEL)
         list(APPEND _arguments -p "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}")
+      endif()
+
+      if(_register_test_POSTPROCESS)
+        list(APPEND _arguments -s "${_register_test_POSTPROCESS}")
       endif()
 
       list(APPEND _arguments -w "${CMAKE_CURRENT_BINARY_DIR}")
@@ -326,19 +358,6 @@ function(register_test test_name)
 
       # add the executable as a dependency of the run
       set_tests_properties(${test_name}_run PROPERTIES DEPENDS ${test_name})
-
-
-      #   add_test(${test_name}_run
-      #     ${AKANTU_REDIRECT_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}/${test_name}.sh)
-      # elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.verified)
-      #   list(APPEND _test_all_files ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.verified)
-      #   add_test(${test_name}_run
-      #     ${AKANTU_DIFF_SCRIPT} ${test_name} ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.verified)
-      # else()
-      #   add_test(${test_name}_run
-      #     ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
-      # endif()
-
 
       # clean the list of all files for this test and add them in the total list
       set(_tmp ${AKANTU_TESTS_FILES})
