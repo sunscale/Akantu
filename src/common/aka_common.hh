@@ -397,6 +397,10 @@ void initialize(const std::string & input_file, int & argc, char ** & argv);
 /// finilize correctly akantu and clean the memory
 void finalize ();
 /* -------------------------------------------------------------------------- */
+/// Read an new input file
+void readInputFile(const std::string & input_file);
+/* -------------------------------------------------------------------------- */
+
 
 /*
  * For intel compiler annoying remark

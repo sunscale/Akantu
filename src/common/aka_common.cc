@@ -87,7 +87,7 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   debug::setDebugLevel(dblError);
 
   if ("" != infile) {
-    static_parser.parse(infile);
+    readInputFile(infile);
   }
 
   long int seed;
@@ -126,6 +126,11 @@ void finalize() {
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void readInputFile(const std::string & input_file) {
+  static_parser.parse(input_file);
 }
 
 /* -------------------------------------------------------------------------- */

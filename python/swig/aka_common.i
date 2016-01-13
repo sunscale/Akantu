@@ -73,10 +73,9 @@ namespace akantu {
 %pythoncode %{
   import sys as _aka_sys
   def initialize(input_file="", argv=_aka_sys.argv):
-      if sys_as.modules[__name__].MPI == 1:
-         print "Loading mpi4py"
+      if _aka_sys.modules[__name__].MPI == 1:
          try:
-           import mpi4py
+           from mpi4py import MPI
          except ImportError:
            pass
 
