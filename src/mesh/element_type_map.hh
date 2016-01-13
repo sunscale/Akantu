@@ -216,7 +216,7 @@ public:
    */
   ElementTypeMapArray(const ID & id = "by_element_type_array", const ID & parent_id = "no_parent",
                      const MemoryID & memory_id = 0) :
-    parent(), Memory(parent_id + ":" + id, memory_id) {};
+    parent(), Memory(parent_id + ":" + id, memory_id), name(id) {};
 
   /*! allocate memory for a new array
    *  @param size number of tuples of the new array
@@ -228,7 +228,8 @@ public:
   inline Array<T> & alloc(UInt size,
 			  UInt nb_component,
 			  const SupportType & type,
-			  const GhostType & ghost_type);
+			  const GhostType & ghost_type,
+			  const T & default_value = T());
 
   /*! allocate memory for a new array in both the data and the ghost_data map
    *  @param size number of tuples of the new array
@@ -236,7 +237,8 @@ public:
    *  @param type the type under which the array is indexed in the map*/
   inline void alloc(UInt size,
 		    UInt nb_component,
-		    const SupportType & type);
+		    const SupportType & type,
+		    const T & default_value = T());
 
   /* get a reference to the array of certain type
    * @param type data filed under type is returned
@@ -265,10 +267,14 @@ public:
   /*! frees all memory related to the data*/
   inline void free();
 
+  /*! set all values in the ElementTypeMap to zero*/
+  inline void clear();
+
   /*! deletes and reorders entries in the stored arrays
    *  @param new_numbering a ElementTypeMapArray of new indices. UInt(-1) indicates
    *         deleted entries. */
   inline void onElementsRemoved(const ElementTypeMapArray<UInt> & new_numbering);
+
 
   /// text output helper
   virtual void printself(std::ostream & stream, int indent = 0) const;
@@ -283,7 +289,7 @@ public:
 				       ElementKind kind = _ek_not_defined) const{
 
     ElementTypeMap<UInt> nb_components;
-    
+
     type_iterator tit = this->firstType(dim,ghost_type,kind);
     type_iterator end = this->lastType(dim,ghost_type,kind);
 
@@ -294,9 +300,18 @@ public:
     }
     return nb_components;
   }
+/* -------------------------------------------------------------------------- */
+/* Accesssors                                                                 */
+/* -------------------------------------------------------------------------- */
+public:
+  /// get the name of the internal field
+  AKANTU_GET_MACRO(Name, name, ID);
 
 private:
   ElementTypeMapArray operator=(__attribute__((unused)) const ElementTypeMapArray & other) {};
+
+  /// name of the elment type map: e.g. connectivity, grad_u
+  ID name;
 };
 
 /// to store data Array<Real> by element type

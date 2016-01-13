@@ -57,7 +57,7 @@ class MaterialCohesive : public Material {
   /* ------------------------------------------------------------------------ */
 public:
   typedef FEEngineTemplate<IntegratorGauss,
-		      ShapeLagrange, _ek_cohesive> MyFEEngineCohesiveType;
+                      ShapeLagrange, _ek_cohesive> MyFEEngineCohesiveType;
 public:
 
   MaterialCohesive(SolidMechanicsModel& model, const ID & id = "");
@@ -80,16 +80,30 @@ public:
   /// compute reversible and total energies by element
   void computeEnergies();
 
-  /// check stress for cohesive elements' insertion
-  virtual void checkInsertion() {
+  /// check stress for cohesive elements' insertion, by default it
+  /// also updates the cohesive elements' data
+  virtual void checkInsertion(bool check_only = false) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
+  /// check delta_max for cohesive elements in case of no convergence
+  /// in the solveStep (only for extrinsic-implicit)
+  virtual void checkDeltaMax(GhostType ghost_type = _not_ghost) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
+  /// reset variables when convergence is reached (only for
+  /// extrinsic-implicit)
+  virtual void resetVariables(GhostType ghost_type = _not_ghost) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
   /// interpolate   stress  on   given   positions  for   each  element   (empty
   /// implemantation to avoid the generic call to be done on cohesive elements)
   virtual void interpolateStress(__attribute__((unused)) const ElementType type,
-				 __attribute__((unused)) Array<Real> & result) { };
+                                 __attribute__((unused)) Array<Real> & result) { };
 
+  /// compute the stresses
   virtual void computeAllStresses(__attribute__((unused)) GhostType ghost_type = _not_ghost) { };
 
   // add the facet to be handled by the material
@@ -97,47 +111,48 @@ public:
 
 protected:
   virtual void computeTangentTraction(__attribute__((unused)) const ElementType & el_type,
-				      __attribute__((unused)) Array<Real> & tangent_matrix,
-				      __attribute__((unused)) const Array<Real> & normal,
-				      __attribute__((unused)) GhostType ghost_type = _not_ghost) {
+                                      __attribute__((unused)) Array<Real> & tangent_matrix,
+                                      __attribute__((unused)) const Array<Real> & normal,
+                                      __attribute__((unused)) GhostType ghost_type = _not_ghost) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
-
+  /// compute the normal
   void computeNormal(const Array<Real> & position,
-		     Array<Real> & normal,
-		     ElementType type,
-		     GhostType ghost_type);
+                     Array<Real> & normal,
+                     ElementType type,
+                     GhostType ghost_type);
 
+  /// compute the opening
   void computeOpening(const Array<Real> & displacement,
-		      Array<Real> & normal,
-		      ElementType type,
-		      GhostType ghost_type);
+                      Array<Real> & normal,
+                      ElementType type,
+                      GhostType ghost_type);
 
   template<ElementType type>
   void computeNormal(const Array<Real> & position,
-		     Array<Real> & normal,
-		     GhostType ghost_type);
+                     Array<Real> & normal,
+                     GhostType ghost_type);
 
   /// assemble stiffness
   void assembleStiffnessMatrix(GhostType ghost_type);
 
   /// constitutive law
   virtual void computeTraction(const Array<Real> & normal,
-			       ElementType el_type,
-			       GhostType ghost_type = _not_ghost) = 0;
+                               ElementType el_type,
+                               GhostType ghost_type = _not_ghost) = 0;
 
   /// parallelism functions
   inline UInt getNbDataForElements(const Array<Element> & elements,
-				   SynchronizationTag tag) const;
+                                   SynchronizationTag tag) const;
 
   inline void packElementData(CommunicationBuffer & buffer,
-			      const Array<Element> & elements,
-			      SynchronizationTag tag) const;
+                              const Array<Element> & elements,
+                              SynchronizationTag tag) const;
 
   inline void unpackElementData(CommunicationBuffer & buffer,
-				const Array<Element> & elements,
-				SynchronizationTag tag);
+                                const Array<Element> & elements,
+                                SynchronizationTag tag);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -219,6 +234,9 @@ protected:
   /// tell if the previous delta_max state is needed (in iterative schemes) 
   bool use_previous_delta_max;
 
+  /// tell if the previous opening state is needed (in iterative schemes) 
+  bool use_previous_opening;
+
   /// damage
   CohesiveInternalField<Real> damage;
 
@@ -227,6 +245,12 @@ protected:
 
   /// critical stress
   RandomInternalField<Real, FacetInternalField> sigma_c;
+
+  /// critical displacement
+  Real delta_c;
+
+  /// array to temporarily store the normals
+  Array<Real> normal;
 };
 
 

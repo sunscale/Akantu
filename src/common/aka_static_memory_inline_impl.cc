@@ -35,7 +35,7 @@ inline const ArrayMap & StaticMemory::getMemory(const MemoryID & memory_id) cons
   memory_it = memories.find(memory_id);
 
   if(memory_it == memories.end()) {
-    AKANTU_EXCEPTION("StaticMemory as no memory with ID " << memory_id);
+    AKANTU_SILENT_EXCEPTION("StaticMemory as no memory with ID " << memory_id);
   }
 
   AKANTU_DEBUG_OUT();
@@ -52,8 +52,8 @@ inline const ArrayBase & StaticMemory::getArray(const MemoryID & memory_id,
   ArrayMap::const_iterator vectors_it;
   vectors_it = vectors.find(name);
   if(vectors_it == vectors.end()) {
-    AKANTU_EXCEPTION("StaticMemory as no array named " << name
-		     << " for the Memory " << memory_id);
+    AKANTU_SILENT_EXCEPTION("StaticMemory as no array named " << name
+			    << " for the Memory " << memory_id);
   }
 
   AKANTU_DEBUG_OUT();

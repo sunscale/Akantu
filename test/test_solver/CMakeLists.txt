@@ -32,23 +32,59 @@
 #===============================================================================
 
 add_mesh(test_solver_mesh triangle.geo 2 1)
+add_mesh(test_matrix_mesh square.geo 2 1)
+add_mesh(test_solver_petsc_mesh 1D_bar.geo 1 1)
 
 register_test(test_sparse_matrix_profile
   SOURCES test_sparse_matrix_profile.cc
-  DEPENDENCIES test_solver_mesh
+  DEPENDS test_solver_mesh
+  PACKAGE implicit
   )
 
 register_test(test_sparse_matrix_assemble
   SOURCES test_sparse_matrix_assemble.cc
-  DEPENDENCIES test_solver_mesh
+  DEPENDS test_solver_mesh
+  PACKAGE implicit
   )
 
 register_test(test_sparse_matrix_product
   SOURCES test_sparse_matrix_product.cc
   FILES_TO_COPY bar.msh
+  PACKAGE implicit
   )
 
 register_test(test_petsc_matrix_profile
   SOURCES test_petsc_matrix_profile.cc
-  DEPENDENCIES test_solver_mesh
+  DEPENDS test_matrix_mesh
+  PACKAGE petsc
+  )
+
+register_test(test_petsc_matrix_profile_parallel
+  SOURCES test_petsc_matrix_profile_parallel.cc
+  DEPENDS test_matrix_mesh
+  PACKAGE petsc
+  )
+
+register_test(test_petsc_matrix_diagonal
+  SOURCES test_petsc_matrix_diagonal.cc
+  DEPENDS test_solver_mesh
+  PACKAGE petsc
+  )
+
+register_test(test_petsc_matrix_apply_boundary
+  SOURCES test_petsc_matrix_apply_boundary.cc
+  DEPENDS test_solver_mesh
+  PACKAGE petsc
+  )
+
+register_test(test_solver_petsc
+  SOURCES test_solver_petsc.cc
+  DEPENDS test_solver_petsc_mesh
+  PACKAGE petsc
+  )
+
+register_test(test_solver_petsc_parallel
+  SOURCES test_solver_petsc.cc
+  DEPENDS test_solver_petsc_mesh
+  PACKAGE petsc
   )

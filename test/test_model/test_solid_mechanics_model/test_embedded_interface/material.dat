@@ -1,0 +1,13 @@
+material reinforcement elastic [
+  name = reinforcement
+  E = 210e9
+  area = 0.1
+]
+
+material elastic [
+	 name = concrete
+	 rho = 2500   # density
+	 E   = 30e9   # young's modulus
+	 nu  = 0.0    # poisson's ratio
+   Plane_Stress = true
+]

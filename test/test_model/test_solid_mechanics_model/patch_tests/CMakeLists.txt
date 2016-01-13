@@ -36,9 +36,10 @@ add_mesh(test_weight_tetra_mesh colone_tetra.geo 3 1)
 
 register_test(test_weight
   SOURCES colone_weight.cc
-  DEPENDENCIES test_weight_hexa_mesh test_weight_tetra_mesh
+  DEPENDS test_weight_hexa_mesh test_weight_tetra_mesh
   FILES_TO_COPY material_colone.dat
   DIRECTORIES_TO_CREATE paraview/test_weight_hexa paraview/test_weight_tetra
+  PACKAGE core
   )
 
 #===============================================================================
@@ -48,7 +49,9 @@ set(LIST_TYPES
   tetrahedron_4
   tetrahedron_10
   hexahedron_8
-#  pentahedron_6
+  hexahedron_20
+  pentahedron_6
+  pentahedron_15
   )
 
 set(LIST_TYPES_2D
@@ -58,7 +61,7 @@ set(LIST_TYPES_2D
   quadrangle_8
 )
 
-add_akantu_test(explicit "Explicit patch tests" PACKAGE core)
-add_akantu_test(implicit "Implicit patch tests" PACKAGE implicit)
+add_akantu_test(explicit "Explicit patch tests")
+add_akantu_test(implicit "Implicit patch tests")
 
-add_akantu_test(lumped_mass "Test the mass lumping" PACKAGE core)
+add_akantu_test(lumped_mass "Test the mass lumping")

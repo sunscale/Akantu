@@ -54,10 +54,10 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 DistributedSynchronizer::DistributedSynchronizer(Mesh & mesh,
 						 SynchronizerID id,
-						 MemoryID memory_id) :
+						 MemoryID memory_id,
+						 const bool register_to_event_manager) :
   Synchronizer(id, memory_id),
   mesh(mesh),
-  static_communicator(&StaticCommunicator::getStaticCommunicator()),
   prank_to_element("prank_to_element", id)
 {
   AKANTU_DEBUG_IN();
@@ -68,7 +68,14 @@ DistributedSynchronizer::DistributedSynchronizer(Mesh & mesh,
   send_element = new Array<Element>[nb_proc];
   recv_element = new Array<Element>[nb_proc];
 
-  mesh.registerEventHandler(*this);
+for (UInt p = 0; p < nb_proc; ++p) {
+  std::stringstream sstr; sstr << p;
+  send_element[p].setID(id+":send_elements_"+sstr.str());
+  recv_element[p].setID(id+":recv_elements_"+sstr.str());
+ }
+
+ if (register_to_event_manager)
+   mesh.registerEventHandler(*this);
 
   AKANTU_DEBUG_OUT();
 }
@@ -714,6 +721,10 @@ void DistributedSynchronizer::asynchronousSynchronize(DataAccessor & data_access
 
     CommunicationBuffer & buffer = communication.send_buffer[p];
     buffer.resize(ssize);
+
+    Tag comm_tag = Tag::genTag(rank, counter, tag);
+    buffer << int(comm_tag);
+
 #ifndef AKANTU_NDEBUG
     UInt nb_elements   =  send_element[p].getSize();
     AKANTU_DEBUG_INFO("Packing data for proc " << p
@@ -739,11 +750,11 @@ void DistributedSynchronizer::asynchronousSynchronize(DataAccessor & data_access
 			<< buffer.getPackedSize() << " != " << ssize);
     AKANTU_DEBUG_INFO("Posting send to proc " << p
 		      << " (tag: " << tag << " - " << ssize << " data to send)"
-		      << " [" << Tag::genTag(rank, counter, tag) << "]");
+		      << " [ " << comm_tag << ":" << std::hex << int(this->genTagFromID(tag)) << " ]");
     communication.send_requests.push_back(static_communicator->asyncSend(buffer.storage(),
 									 ssize,
 									 p,
-									 Tag::genTag(rank, counter, tag)));
+									 this->genTagFromID(tag)));
   }
 
   AKANTU_DEBUG_ASSERT(communication.recv_requests.size() == 0,
@@ -755,53 +766,17 @@ void DistributedSynchronizer::asynchronousSynchronize(DataAccessor & data_access
     CommunicationBuffer & buffer = communication.recv_buffer[p];
     buffer.resize(rsize);
 
+    Tag comm_tag = Tag::genTag(rank, counter, tag);
+    buffer << int(comm_tag);
+
     AKANTU_DEBUG_INFO("Posting receive from proc " << p
 		      << " (tag: " << tag << " - " << rsize << " data to receive) "
-		      << " [" << Tag::genTag(p, counter, tag) << "]");
+		      << " [ " << comm_tag << ":" << std::hex << int(this->genTagFromID(tag)) << " ]");
     communication.recv_requests.push_back(static_communicator->asyncReceive(buffer.storage(),
 									    rsize,
 									    p,
-									    Tag::genTag(p, counter, tag)));
+                                                                            this->genTagFromID(tag)));
   }
-
-
-#if defined(AKANTU_DEBUG_TOOLS) && defined(AKANTU_CORE_CXX11)
-  static std::set<SynchronizationTag> tags;
-  if(tags.find(tag) == tags.end()) {
-    debug::element_manager.print(debug::_dm_synch,
-				 [&send_element, rank, nb_proc, tag, id](const Element & el)->std::string {
-				   std::stringstream out;
-				   UInt elp = 0;
-				   for (UInt p = 0; p < nb_proc; ++p) {
-				     UInt pos = send_element[p].find(el);
-				     if(pos != UInt(-1)) {
-				       if(elp > 0) out << std::endl;
-				       out << id << " send (" << pos << "/" << send_element[p].getSize() << ") to proc " << p << " tag:" << tag;
-				       ++elp;
-				     }
-				   }
-				   return out.str();
-				 });
-
-    debug::element_manager.print(debug::_dm_synch,
-				 [&recv_element, rank, nb_proc, tag, id](const Element & el)->std::string {
-				   std::stringstream out;
-				   UInt elp = 0;
-				   for (UInt p = 0; p < nb_proc; ++p) {
-				     if(p == rank) continue;
-				     UInt pos = recv_element[p].find(el);
-				     if(pos != UInt(-1)) {
-				       if(elp > 0) out << std::endl;
-				       out << id << " recv (" << pos << "/" << recv_element[p].getSize() << ") from proc " << p << " tag:" << tag;
-				       ++elp;
-				     }
-				   }
-				   return out.str();
-				 });
-    tags.insert(tag);
-  }
-#endif
-
 
   AKANTU_DEBUG_OUT();
 }
@@ -831,6 +806,9 @@ void DistributedSynchronizer::waitEndSynchronize(DataAccessor & data_accessor,
 	AKANTU_DEBUG_INFO("Unpacking data coming from proc " << proc);
 	CommunicationBuffer & buffer = communication.recv_buffer[proc];
 
+	int _tag; buffer >> _tag;
+	Tag comm_tag(_tag);
+
 #ifndef AKANTU_NDEBUG
 	Array<Element>::const_iterator<Element> bit  = recv_element[proc].begin();
 	Array<Element>::const_iterator<Element> bend = recv_element[proc].end();
@@ -850,14 +828,15 @@ void DistributedSynchronizer::waitEndSynchronize(DataAccessor & data_accessor,
 	  Real tolerance = Math::getTolerance();
 	  Real bary_norm = barycenter.norm();
 	  for (UInt i = 0; i < spatial_dimension; ++i) {
-	    if((std::abs((barycenter(i) - barycenter_loc(i))/bary_norm) <= tolerance) ||
-	       (std::abs(barycenter_loc(i)) <= 0 && std::abs(barycenter(i)) <= tolerance)) continue;
+	    if((std::abs(barycenter_loc(i)) <= tolerance && std::abs(barycenter(i)) <= tolerance) ||
+	       (std::abs((barycenter(i) - barycenter_loc(i))/bary_norm) <= tolerance)) continue;
 	    AKANTU_DEBUG_ERROR("Unpacking an unknown value for the element: "
 			       << element
 			       << "(barycenter[" << i << "] = " << barycenter_loc(i)
 			       << " and buffer[" << i << "] = " << barycenter(i) << ") ["
-			       << std::abs((barycenter(i) - barycenter_loc(i))/barycenter_loc(i))
-			       << "] - tag: " << tag);
+			       << std::abs((barycenter(i) - barycenter_loc(i))/bary_norm)
+			       << "] - tag: " << tag
+			       << " comm_tag[ " << comm_tag << " ]");
 	  }
 	}
 #endif
@@ -867,7 +846,8 @@ void DistributedSynchronizer::waitEndSynchronize(DataAccessor & data_accessor,
 
 	AKANTU_DEBUG_ASSERT(buffer.getLeftToUnpack() == 0,
 			    "all data have not been unpacked: "
-			    << buffer.getLeftToUnpack() << " bytes left");
+			    << buffer.getLeftToUnpack() << " bytes left"
+			    << " [ " << comm_tag << " ]");
 	static_communicator->freeCommunicationRequest(req);
       } else {
 	req_not_finished_tmp->push_back(req);
@@ -912,6 +892,7 @@ void DistributedSynchronizer::computeBufferSize(DataAccessor & data_accessor,
     UInt sreceive = 0;
     if(p != rank) {
       if(send_element[p].getSize() != 0) {
+	ssend += sizeof(int); // sizeof(int) is for the communication tag
 #ifndef AKANTU_NDEBUG
 	ssend += send_element[p].getSize() * mesh.getSpatialDimension() * sizeof(Real);
 #endif
@@ -922,6 +903,7 @@ void DistributedSynchronizer::computeBufferSize(DataAccessor & data_accessor,
       }
 
       if(recv_element[p].getSize() != 0) {
+	sreceive += sizeof(int); // sizeof(int) is for the communication tag
 #ifndef AKANTU_NDEBUG
 	sreceive += recv_element[p].getSize() * mesh.getSpatialDimension() * sizeof(Real);
 #endif
@@ -937,6 +919,18 @@ void DistributedSynchronizer::computeBufferSize(DataAccessor & data_accessor,
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void DistributedSynchronizer::computeAllBufferSizes(DataAccessor & data_accessor) {
+  std::map<SynchronizationTag, Communication>::iterator it = this->communications.begin();
+  std::map<SynchronizationTag, Communication>::iterator end = this->communications.end();
+
+  for (; it != end; ++it) {
+    SynchronizationTag tag = it->first;
+    this->computeBufferSize(data_accessor, tag);
+  }
+
 }
 
 /* -------------------------------------------------------------------------- */
@@ -986,102 +980,57 @@ void DistributedSynchronizer::printself(std::ostream & stream, int indent) const
 }
 
 /* -------------------------------------------------------------------------- */
+void DistributedSynchronizer::substituteElements(const std::map<Element, Element> & old_to_new_elements) {
+  // substitute old elements with new ones
+  std::map<Element, Element>::const_iterator found_element_it;
+  std::map<Element, Element>::const_iterator found_element_end = old_to_new_elements.end();
+
+  for (UInt p = 0; p < nb_proc; ++p) {
+    if (p == rank) continue;
+
+    Array<Element> & recv = recv_element[p];
+    for (UInt el = 0; el < recv.getSize(); ++el) {
+      found_element_it = old_to_new_elements.find(recv(el));
+      if (found_element_it != found_element_end)
+	recv(el) = found_element_it->second;
+    }
+
+    Array<Element> & send = send_element[p];
+    for (UInt el = 0; el < send.getSize(); ++el) {
+      found_element_it = old_to_new_elements.find(send(el));
+      if (found_element_it != found_element_end)
+	send(el) = found_element_it->second;
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void DistributedSynchronizer::onElementsChanged(const Array<Element> & old_elements_list,
+						const Array<Element> & new_elements_list,
+						__attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+						__attribute__((unused)) const ChangedElementsEvent & event) {
+  // create a map to link old elements to new ones
+  std::map<Element, Element> old_to_new_elements;
+
+  for (UInt el = 0; el < old_elements_list.getSize(); ++el) {
+    AKANTU_DEBUG_ASSERT(old_to_new_elements.find(old_elements_list(el)) == old_to_new_elements.end(),
+			"The same element cannot appear twice in the list");
+
+    old_to_new_elements[old_elements_list(el)] = new_elements_list(el);
+  }
+
+  substituteElements(old_to_new_elements);
+}
+
+/* -------------------------------------------------------------------------- */
 void DistributedSynchronizer::onElementsRemoved(const Array<Element> & element_to_remove,
 						const ElementTypeMapArray<UInt> & new_numbering,
 						__attribute__((unused)) const RemovedElementsEvent & event) {
   AKANTU_DEBUG_IN();
-
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  UInt psize = comm.getNbProc();
-  UInt prank = comm.whoAmI();
-
-  std::vector<CommunicationRequest *> isend_requests;
-  Array<UInt> * list_of_el = new Array<UInt>[nb_proc];
-  // Handling ghost elements
-  for (UInt p = 0; p < psize; ++p) {
-    if (p == prank) continue;
-
-    Array<Element> & recv = recv_element[p];
-    if(recv.getSize() == 0) continue;
-
-    Array<Element>::iterator<Element> recv_begin = recv.begin();
-    Array<Element>::iterator<Element> recv_end   = recv.end();
-
-    Array<Element>::const_iterator<Element> er_it  = element_to_remove.begin();
-    Array<Element>::const_iterator<Element> er_end = element_to_remove.end();
-
-    Array<UInt> & list = list_of_el[p];
-    for (UInt i = 0; recv_begin != recv_end; ++i, ++recv_begin) {
-      const Element & el = *recv_begin;
-      Array<Element>::const_iterator<Element> pos = std::find(er_it, er_end, el);
-      if(pos == er_end) {
-	list.push_back(i);
-      }
-    }
-
-    if(list.getSize() == recv.getSize())
-      list.push_back(UInt(0));
-    else list.push_back(UInt(-1));
-
-    AKANTU_DEBUG_INFO("Sending a message of size " << list.getSize() << " to proc " << p << " TAG(" << Tag::genTag(prank, 0, 0) << ")");
-    isend_requests.push_back(comm.asyncSend(list.storage(), list.getSize(),
-					    p, Tag::genTag(prank, 0, 0)));
-
-    list.erase(list.getSize() - 1);
-    if(list.getSize() == recv.getSize()) continue;
-
-    Array<Element> new_recv;
-    for (UInt nr = 0; nr < list.getSize(); ++nr) {
-      Element & el = recv(list(nr));
-      el.element = new_numbering(el.type, el.ghost_type)(el.element);
-      new_recv.push_back(el);
-    }
-
-    AKANTU_DEBUG_INFO("I had " << recv.getSize() << " elements to recv from proc " << p << " and "
-		      << list.getSize() << " elements to keep. I have "
-		      << new_recv.getSize() << " elements left.");
-    recv.copy(new_recv);
-  }
-
-  for (UInt p = 0; p < psize; ++p) {
-    if (p == prank) continue;
-    Array<Element> & send = send_element[p];
-
-    if(send.getSize() == 0) continue;
-
-    CommunicationStatus status;
-    AKANTU_DEBUG_INFO("Getting number of elements of proc " << p << " not needed anymore TAG("<< Tag::genTag(p, 0, 0) <<")");
-    comm.probe<UInt>(p, Tag::genTag(p, 0, 0), status);
-    Array<UInt> list(status.getSize());
-
-    AKANTU_DEBUG_INFO("Receiving list of elements (" << status.getSize() - 1
-		      << " elements) no longer needed by proc " << p
-		      << " TAG("<< Tag::genTag(p, 0, 0) <<")");
-    comm.receive(list.storage(), list.getSize(),
-		 p, Tag::genTag(p, 0, 0));
-
-    if(list.getSize() == 1 && list(0) == 0) continue;
-
-    list.erase(list.getSize() - 1);
-
-    Array<Element> new_send;
-    for (UInt ns = 0; ns < list.getSize(); ++ns) {
-      new_send.push_back(send(list(ns)));
-    }
-
-    AKANTU_DEBUG_INFO("I had " << send.getSize() << " elements to send to proc " << p << " and "
-		      << list.getSize() << " elements to keep. I have "
-		      << new_send.getSize() << " elements left.");
-    send.copy(new_send);
-  }
-
-  comm.waitAll(isend_requests);
-  comm.freeCommunicationRequest(isend_requests);
-
-  delete [] list_of_el;
+  this->removeElements(element_to_remove);
+  this->renumberElements(new_numbering);
   AKANTU_DEBUG_OUT();
 }
-
 
 // void DistributedSynchronizer::checkCommunicationScheme() {
 //   for (UInt p = 0; p < psize; ++p) {
@@ -1253,7 +1202,7 @@ void DistributedSynchronizer::synchronizeTagsSend(DistributedSynchronizer & comm
 
   if(mesh_data_sizes_buffer_length !=0) {
     //Sending the actual data to each processor
-    DynamicCommunicationBuffer buffers[nb_proc];
+    DynamicCommunicationBuffer * buffers = new DynamicCommunicationBuffer[nb_proc];
     std::vector<std::string>::const_iterator names_it  = tag_names.begin();
     std::vector<std::string>::const_iterator names_end = tag_names.end();
 
@@ -1296,6 +1245,7 @@ void DistributedSynchronizer::synchronizeTagsSend(DistributedSynchronizer & comm
     comm.waitAll(requests);
     comm.freeCommunicationRequest(requests);
     requests.clear();
+    delete [] buffers;
   }
 
   ++count;
@@ -1435,7 +1385,7 @@ void DistributedSynchronizer::synchronizeElementGroups(DistributedSynchronizer &
   UInt nb_proc = comm.getNbProc();
   UInt my_rank = comm.whoAmI();
 
-  DynamicCommunicationBuffer buffers[nb_proc];
+  DynamicCommunicationBuffer * buffers = new DynamicCommunicationBuffer[nb_proc];
 
   typedef std::vector< std::vector<std::string> > ElementToGroup;
   ElementToGroup element_to_group;
@@ -1497,7 +1447,8 @@ void DistributedSynchronizer::synchronizeElementGroups(DistributedSynchronizer &
   comm.waitAll(requests);
   comm.freeCommunicationRequest(requests);
   requests.clear();
-
+  delete [] buffers;
+  
   AKANTU_DEBUG_OUT();
 }
 
@@ -1648,5 +1599,124 @@ void DistributedSynchronizer::synchronizeNodeGroupsSlaves(DistributedSynchronize
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+void DistributedSynchronizer::removeElements(const Array<Element> & element_to_remove) {
+  AKANTU_DEBUG_IN();
+
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+
+  std::vector<CommunicationRequest *> isend_requests;
+  Array<UInt> * list_of_el = new Array<UInt>[nb_proc];
+  // Handling ghost elements
+  for (UInt p = 0; p < nb_proc; ++p) {
+    if (p == rank) continue;
+
+    Array<Element> & recv = recv_element[p];
+    if(recv.getSize() == 0) continue;
+
+    Array<Element>::iterator<Element> recv_begin = recv.begin();
+    Array<Element>::iterator<Element> recv_end   = recv.end();
+
+    Array<Element>::const_iterator<Element> er_it  = element_to_remove.begin();
+    Array<Element>::const_iterator<Element> er_end = element_to_remove.end();
+
+    Array<UInt> & list = list_of_el[p];
+    for (UInt i = 0; recv_begin != recv_end; ++i, ++recv_begin) {
+      const Element & el = *recv_begin;
+      Array<Element>::const_iterator<Element> pos = std::find(er_it, er_end, el);
+      if(pos == er_end) {
+	list.push_back(i);
+      }
+    }
+
+    if(list.getSize() == recv.getSize())
+      list.push_back(UInt(0));
+    else list.push_back(UInt(-1));
+
+    AKANTU_DEBUG_INFO("Sending a message of size " << list.getSize() << " to proc " << p << " TAG(" << this->genTagFromID(0) << ")");
+    isend_requests.push_back(comm.asyncSend(list.storage(), list.getSize(),
+					    p, this->genTagFromID(0)));
+
+    list.erase(list.getSize() - 1);
+
+    if (list.getSize() == recv.getSize()) continue;
+
+    Array<Element> new_recv;
+    for (UInt nr = 0; nr < list.getSize(); ++nr) {
+      Element & el = recv(list(nr));
+      new_recv.push_back(el);
+    }
+
+    AKANTU_DEBUG_INFO("I had " << recv.getSize() << " elements to recv from proc " << p << " and "
+		      << list.getSize() << " elements to keep. I have "
+		      << new_recv.getSize() << " elements left.");
+    recv.copy(new_recv);
+  }
+
+  for (UInt p = 0; p < nb_proc; ++p) {
+    if (p == rank) continue;
+    Array<Element> & send = send_element[p];
+
+    if(send.getSize() == 0) continue;
+
+    CommunicationStatus status;
+    AKANTU_DEBUG_INFO("Getting number of elements of proc " << p << " not needed anymore TAG("<< this->genTagFromID(0) <<")");
+    comm.probe<UInt>(p, this->genTagFromID(0), status);
+    Array<UInt> list(status.getSize());
+
+    AKANTU_DEBUG_INFO("Receiving list of elements (" << status.getSize() - 1
+		      << " elements) no longer needed by proc " << p
+		      << " TAG("<< this->genTagFromID(0) <<")");
+    comm.receive(list.storage(), list.getSize(),
+		 p, this->genTagFromID(0));
+
+    if(list.getSize() == 1 && list(0) == 0) continue;
+
+    list.erase(list.getSize() - 1);
+
+    if (list.getSize() == send.getSize()) continue;
+
+    Array<Element> new_send;
+    for (UInt ns = 0; ns < list.getSize(); ++ns) {
+      Element & el = send(list(ns));
+      new_send.push_back(el);
+    }
+
+    AKANTU_DEBUG_INFO("I had " << send.getSize() << " elements to send to proc " << p << " and "
+		      << list.getSize() << " elements to keep. I have "
+		      << new_send.getSize() << " elements left.");
+    send.copy(new_send);
+  }
+
+  comm.waitAll(isend_requests);
+  comm.freeCommunicationRequest(isend_requests);
+
+  delete [] list_of_el;
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void DistributedSynchronizer::renumberElements(const ElementTypeMapArray<UInt> & new_numbering) {
+  // Handling ghost elements
+  for (UInt p = 0; p < nb_proc; ++p) {
+    if (p == rank) continue;
+
+    Array<Element> & recv = recv_element[p];
+
+    for (UInt i = 0; i < recv.getSize(); ++i) {
+      Element & el = recv(i);
+      el.element = new_numbering(el.type, el.ghost_type)(el.element);
+    }
+
+    Array<Element> & send = send_element[p];
+
+    for (UInt i = 0; i < send.getSize(); ++i) {
+      Element & el = send(i);
+      el.element = new_numbering(el.type, el.ghost_type)(el.element);
+    }
+  }
+}
+
 
 __END_AKANTU__

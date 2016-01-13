@@ -61,10 +61,12 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
+  /// empty method
   template <ElementType type>
   inline void precomputeJacobiansOnQuadraturePoints(__attribute__ ((unused))
 						    GhostType ghost_type){}
 
+  /// empty method
   void integrateOnElement(__attribute__ ((unused)) const Array<Real> & f,
 			  __attribute__ ((unused)) Real * intf,
 			  __attribute__ ((unused)) UInt nb_degree_of_freedom,
@@ -91,6 +93,7 @@ public:
     return jacobians(type, ghost_type);
   };
 
+  /// access to the jacobians const
   const Array<Real> & getJacobians(const ElementType & type,
 			      const GhostType & ghost_type = _not_ghost) const {
     return jacobians(type, ghost_type);
@@ -103,6 +106,7 @@ public:
 
 
 protected:
+  /// mesh associated to the integrator
   const Mesh & mesh;
 
   /// jacobians for all elements

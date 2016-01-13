@@ -2,6 +2,7 @@
  * @file   solver.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @date creation: Mon Dec 13 2010
  * @date last modification: Mon Sep 15 2014
@@ -40,6 +41,9 @@
 #include "sparse_matrix.hh"
 #include "mesh.hh"
 #include "static_communicator.hh"
+#include "static_solver.hh"
+#include "data_accessor.hh"
+#include "synchronizer_registry.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -47,17 +51,20 @@ __BEGIN_AKANTU__
 
 class SolverOptions {
 public:
-  SolverOptions(bool no_option = false) : no_option(no_option) { }
+  SolverOptions(bool no_option = false) // : no_option(no_option)
+  { }
 
   virtual ~SolverOptions() {}
 
 private:
-  bool no_option;
+  //bool no_option;
 };
 
 extern SolverOptions _solver_no_options;
 
-class Solver : protected Memory {
+class Solver : protected Memory,
+               public StaticSolverEventHandler, 
+	       public DataAccessor {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -77,6 +84,7 @@ public:
   /// initialize the solver
   virtual void initialize(SolverOptions & options = _solver_no_options) = 0;
 
+  virtual void setOperators() {};
   virtual void analysis() {};
 
   virtual void factorize() {};
@@ -85,10 +93,32 @@ public:
   virtual void solve(Array<Real> & solution) = 0;
   virtual void solve() = 0;
 
-  virtual void setRHS(const Array<Real> & rhs) = 0;
+  virtual void setRHS(Array<Real> & rhs) = 0;
 
   /// function to print the contain of the class
   //  virtual void printself(std::ostream & stream, int indent = 0) const;
+
+protected:
+  virtual void destroyInternalData() {};
+
+public:
+  virtual void beforeStaticSolverDestroy();
+
+  void createSynchronizerRegistry();
+  /* ------------------------------------------------------------------------ */
+  /* Data Accessor inherited members                                          */
+  /* ------------------------------------------------------------------------ */
+public:
+  inline virtual UInt getNbDataForDOFs(const Array <UInt> & dofs,
+					   SynchronizationTag tag) const;
+
+  inline virtual void packDOFData(CommunicationBuffer & buffer,
+			  const Array<UInt> & dofs,
+			  SynchronizationTag tag) const;
+
+  inline virtual void unpackDOFData(CommunicationBuffer & buffer,
+			    const Array<UInt> & dofs,
+			    SynchronizationTag tag);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -117,8 +147,20 @@ protected:
 
   /// pointer to the communicator
   StaticCommunicator & communicator;
+
+  /// the solution obtained from the solve step
+  Array<Real> * solution;
+
+  /// synchronizer registry
+  SynchronizerRegistry * synch_registry;
+
 };
 
+/* -------------------------------------------------------------------------- */
+/* inline functions                                                           */
+/* -------------------------------------------------------------------------- */
+
+#include "solver_inline_impl.cc"
 
 __END_AKANTU__
 

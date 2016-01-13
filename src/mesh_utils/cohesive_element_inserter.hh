@@ -38,6 +38,7 @@
 #include "mesh_utils.hh"
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+#  include "global_ids_updater.hh"
 #  include "facet_synchronizer.hh"
 #endif
 
@@ -71,8 +72,14 @@ public:
   /// insert intrinsic cohesive elements in a predefined range
   void insertIntrinsicElements();
 
-  /// insert extrinsic cohesive elements
-  void insertElements();
+  /// preset insertion of intrinsic cohesive elements along 
+  /// a predefined group of facet and assign them a defined material index.
+  /// insertElement() method has to be called to finalize insertion. 
+  void insertIntrinsicElements(std::string physname, UInt material_index);
+
+  /// insert extrinsic cohesive elements (returns the number of new
+  /// cohesive elements)
+  UInt insertElements(bool only_double_facets = false);
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
@@ -82,7 +89,8 @@ public:
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   /// init parallel variables
-  void initParallel(FacetSynchronizer * facet_synchronizer);
+  void initParallel(FacetSynchronizer * facet_synchronizer,
+		    DistributedSynchronizer * distributed_synchronizer);
 #endif
 
 protected:
@@ -115,6 +123,10 @@ protected:
   template<bool pack_mode>
   inline void packUnpackGlobalConnectivity(CommunicationBuffer & buffer,
 					   const Array<Element> & elements) const;
+
+  template<bool pack_mode>
+  inline void packUnpackGroupedInsertionData(CommunicationBuffer & buffer,
+					     const Array<Element> & elements) const;
 #endif
 
   /* ------------------------------------------------------------------------ */
@@ -164,8 +176,8 @@ private:
   /// facet synchronizer
   FacetSynchronizer * facet_synchronizer;
 
-  /// distributed synchronizer
-  DistributedSynchronizer * distributed_synchronizer;
+  /// global connectivity ids updater
+  GlobalIdsUpdater * global_ids_updater;
 #endif
 };
 

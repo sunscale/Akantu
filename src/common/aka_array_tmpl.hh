@@ -83,8 +83,7 @@ inline const T & Array<T, is_scal>::operator[](UInt i) const {
 
 /* -------------------------------------------------------------------------- */
 /**
- * append a tuple to the array with the value value for all
- * components
+ * append a tuple to the array with the value value for all components
  * @param value the new last tuple or the array will contain nb_component copies of value
  */
 template <class T, bool is_scal>
@@ -256,6 +255,10 @@ bool Array<T, is_scal>::operator!=(const Array<T, is_scal> & array) const {
 }
 
 /* -------------------------------------------------------------------------- */
+/**
+ * set all tuples of the array to a given vector or matrix
+ * @param vm Matrix or Vector to fill the array with
+ */
 template <class T, bool is_scal>
 template<template<typename> class C>
 inline void Array<T, is_scal>::set(const C<T> & vm) {
@@ -346,6 +349,7 @@ Array<T, is_scal>::Array(const Array<T, is_scal> & vect,
 }
 
 /* -------------------------------------------------------------------------- */
+#ifndef SWIG
 template <class T, bool is_scal>
 Array<T, is_scal>::Array(const std::vector<T>& vect) {
   AKANTU_DEBUG_IN();
@@ -357,7 +361,7 @@ Array<T, is_scal>::Array(const std::vector<T>& vect) {
 
   AKANTU_DEBUG_OUT();
 }
-
+#endif
 
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
@@ -380,6 +384,11 @@ Array<T, is_scal>::~Array () {
 }
 
 /* -------------------------------------------------------------------------- */
+/**
+ * perform the allocation for the constructors
+ * @param size is the size of the array
+ * @param nb_component is the number of component of the array
+ */
 template <class T, bool is_scal>
 void Array<T, is_scal>::allocate(UInt size,
                                  UInt nb_component) {
@@ -413,7 +422,7 @@ void Array<T, is_scal>::allocate(UInt size,
 /**
  * change the size of the array and allocate or free memory if needed. If the
  * size increases, the new tuples are filled with zeros
- * @param size new number of tuples contained in the array */
+ * @param new_size new number of tuples contained in the array */
 template <class T, bool is_scal>
 void Array<T, is_scal>::resize(UInt new_size) {
   UInt old_size = size;
@@ -435,6 +444,9 @@ void Array<T, is_scal>::resize(UInt new_size) {
 }
 
 /* -------------------------------------------------------------------------- */
+/**
+ * change the size of the array and allocate or free memory if needed.
+ * @param new_size new number of tuples contained in the array */
 template <class T, bool is_scal>
 void Array<T, is_scal>::resizeUnitialized(UInt new_size) {
   //  AKANTU_DEBUG_IN();
@@ -487,6 +499,12 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size) {
 }
 
 /* -------------------------------------------------------------------------- */
+/**
+ * change the number of components by interlacing data
+ * @param multiplicator number of interlaced components add
+ * @param block_size blocks of data in the array
+ * Examaple for block_size = 2, multiplicator = 2
+ * array = oo oo oo -> new array = oo nn nn oo nn nn oo nn nn */
 template <class T, bool is_scal>
 void Array<T, is_scal>::extendComponentsInterlaced(UInt multiplicator,
                                                    UInt block_size) {
@@ -588,7 +606,7 @@ class ArrayPrintHelper {
 public:
   template<typename T>
   static void print_content(const Array<T> & vect, std::ostream & stream, int indent) {
-    if(AKANTU_DEBUG_TEST(dblDump)) {
+    if(AKANTU_DEBUG_TEST(dblDump) || AKANTU_DEBUG_LEVEL_IS_TEST()) {
       std::string space;
       for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
 
@@ -670,6 +688,8 @@ public:
   typedef R                               value_type;
   typedef R*                              pointer;
   typedef R&                              reference;
+  typedef typename R::proxy               proxy;
+  typedef const typename R::proxy         const_proxy;
   typedef const R&                        const_reference;
   typedef IR                              internal_value_type;
   typedef IR*                             internal_pointer;
@@ -726,8 +746,8 @@ public:
   inline iterator_internal & operator+=(const UInt n) { ret_ptr += _offset * n; return *this; }
   inline iterator_internal & operator-=(const UInt n) { ret_ptr -= _offset * n; return *this; }
 
-  inline reference operator[](const UInt n) { ret->values = ret_ptr + n*_offset; return *ret; }
-  inline const_reference operator[](const UInt n) const { ret->values = ret_ptr + n*_offset; return *ret; }
+  inline proxy       operator[](const UInt n) { ret->values = ret_ptr + n*_offset; return proxy(*ret); }
+  inline const_proxy operator[](const UInt n) const { ret->values = ret_ptr + n*_offset; return const_proxy(*ret); }
 
   inline bool operator==(const iterator_internal & other) const { return this->ret_ptr == other.ret_ptr; }
   inline bool operator!=(const iterator_internal & other) const { return this->ret_ptr != other.ret_ptr; }

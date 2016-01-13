@@ -67,7 +67,7 @@ MaterialMarigo<spatial_dimension>::computeDamageAndStressOnQuad(Matrix<Real> & s
   Real Fd = Y - Ydq - Sd * dam;
 
   if (Fd > 0) dam = (Y - Ydq) / Sd;
-  dam = std::min(dam,1.);
+  dam = std::min(dam, Real(1.));
 
   sigma *= 1-dam;
 }
@@ -80,7 +80,7 @@ inline UInt MaterialMarigo<spatial_dimension>::getNbDataForElements(const Array<
 
   UInt size = 0;
   if(tag == _gst_smm_init_mat) {
-    size += sizeof(Real) * this->getModel().getNbQuadraturePoints(elements);
+    size += sizeof(Real) * this->getModel().getNbIntegrationPoints(elements);
   }
 
   size += MaterialDamage<spatial_dimension>::getNbDataForElements(elements, tag);

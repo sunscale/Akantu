@@ -8,7 +8,7 @@
  * @date creation: Wed Jan 16 2013
  * @date last modification: Fri Jul 04 2014
  *
- * @brief  Specialization for structural elements
+ * @brief  Specialization of the element classes for structural elements
  *
  * @section LICENSE
  *
@@ -29,6 +29,9 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
+
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 template<InterpolationType interpolation_type>
@@ -90,6 +93,8 @@ protected:
   static const UInt nb_shape_derivatives;
 };
 
+
+/// Macro to generate the element class structures for different structural element types
 /* -------------------------------------------------------------------------- */
 #define AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(elem_type,	\
 							geom_type,	\
@@ -112,6 +117,8 @@ protected:
 
 
 /* -------------------------------------------------------------------------- */
+/* ElementClass for structural elements                                       */
+/* -------------------------------------------------------------------------- */
 template<ElementType element_type>
 class ElementClass<element_type, _ek_structural> :
   public GeometricalElement<ElementClassProperty<element_type>::geometrical_type>,
@@ -127,9 +134,9 @@ public:
 					     const Matrix<Real> & real_nodal_coord,
 					     UInt n = 0) {
     UInt nb_points = natural_coord.cols();
-    
-    if (element_type ==_kirchhoff_shell) { 
-      /// TO BE CONTINUED
+
+    if (element_type ==_kirchhoff_shell) {
+      /// TO BE CONTINUED and moved in a _tmpl.hh
 
       UInt spatial_dimension = real_nodal_coord.cols();
       UInt nb_nodes = real_nodal_coord.rows();
@@ -147,7 +154,7 @@ public:
 
       /// compute matrix Pe
       Pe.eye();
-      
+
       /// compute matrix Pg
       Vector<Real> Pg_col_1(spatial_dimension);
       Pg_col_1(0) =  real_nodal_coord(0,1) - real_nodal_coord(0,0);
@@ -161,14 +168,14 @@ public:
 
       Vector<Real> Pg_col_3(spatial_dimension);
       Pg_col_3.crossProduct(Pg_col_1, Pg_col_2);
-      
-      
+
+
       for (UInt i = 0; i < nb_points; ++i) {
 	  Pg(i,0) = Pg_col_1(i);
 	  Pg(i,1) = Pg_col_2(i);
 	  Pg(i,2) = Pg_col_3(i);
 	}
-      
+
       /// compute inverse of Pg
       inv_Pg.inverse(Pg);
 
@@ -179,7 +186,7 @@ public:
 /* -------------------------------------------------------------------------- */
 
       rotated_nodal_coord.mul<false, false>(rotation_matrix, real_nodal_coord);
-	
+
       for (UInt i = 0; i < projected_dim ; ++i) {
 	for (UInt j = 0; j < nb_points; ++j) {
 	  projected_nodal_coord(i,j) = rotated_nodal_coord(i,j);
@@ -190,15 +197,15 @@ public:
       Tensor3<Real> J   (projected_dim, projected_dim, natural_coord.cols());
 
       parent_element::computeDNDS(natural_coord, dnds);
-      
+
       parent_element::computeJMat(dnds, projected_nodal_coord, J);
- 
+
       for (UInt p = 0; p < nb_points; ++p) {
 
 	Matrix<Real> shape_deriv_p = shape_deriv(p);
-	
+
 	interpolation_element::computeDNDS(natural_coord(p), shape_deriv_p, projected_nodal_coord, n);
-     
+
 	Matrix<Real> dNdS = shape_deriv_p;
 	Matrix<Real> inv_J(projected_dim, projected_dim);
 	inv_J.inverse(J(p));
@@ -223,7 +230,14 @@ public:
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, _ek_structural, ElementKind);
-  static AKANTU_GET_MACRO_NOT_CONST(P1ElementType, _not_defined, const ElementType);
-  static AKANTU_GET_MACRO_NOT_CONST(FacetType,     _not_defined, const ElementType);
+  static AKANTU_GET_MACRO_NOT_CONST(P1ElementType, _not_defined, ElementType);
+  static AKANTU_GET_MACRO_NOT_CONST(FacetType,     _not_defined, ElementType);
+  static const ElementType getFacetType(UInt t = 0) { return _not_defined; }
   static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension, ElementClassProperty<element_type>::spatial_dimension, UInt);
+  static ElementType * getFacetTypeInternal() { return NULL; }
 };
+
+#include "element_classes/element_class_bernoulli_beam_inline_impl.cc"
+#include "element_classes/element_class_kirchhoff_shell_inline_impl.cc"
+
+__END_AKANTU__

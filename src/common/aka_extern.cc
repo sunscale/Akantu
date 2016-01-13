@@ -78,7 +78,7 @@ namespace debug {
 /// Parser containing the information parsed by the input file given to initFull
 Parser static_parser;
 
-bool Parser::parser_permissive = false;
+bool Parser::permissive_parser = false;
 
 Real Math::tolerance = std::numeric_limits<Real>::epsilon();
 
@@ -90,7 +90,9 @@ template<> long int RandGenerator<Real>::_seed = 0;
 template<> long int RandGenerator<bool>::_seed = 0; // useless just defined due to a template instantiation
 template<> long int RandGenerator<UInt>::_seed = 0;
 template<> long int RandGenerator<Int>::_seed = 0;
+#if not defined(_WIN32)
 template<> long int Rand48Generator<Real>::_seed = 0;
+#endif
 
 /* -------------------------------------------------------------------------- */
 UInt StaticSolver::nb_references = 0;

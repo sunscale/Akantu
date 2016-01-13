@@ -1,13 +1,111 @@
 #===============================================================================
 # @file   CMakePackagesSystem.cmake
 #
-# @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
+# @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 #
 # @date creation: Thu Dec 20 2012
 # @date last modification: Wed Sep 10 2014
 #
 # @brief  Set of macros used by akantu to handle the package system
+#
+# @section DESCRIPTION
+#
+# This package defines multiple function to handle packages. This packages can
+# be of two kinds regular ones and extra_packages (ex: in akantu the LGPL part
+# is regular packages and extra packages are on Propetary license)
+#
+# Package are loaded with the help of the command:
+# package_list_packages(<regular_package_folder>
+#                       [ EXTRA_PACKAGE_FOLDER <extra_package_folder> ]
+#                       [ SOURCE_FOLDER <source_folder>]
+#                       [ TEST_FOLDER <test_folder> ]
+#                       [ MANUAL_FOLDER <manual_folder> ]
+#                      )
+#
+# This command will look for packages name like
+#         <regular_package_folder>/<package>.cmake
+#      OR <extra_package_folder>/<package>/package.cmake
+#
+# A package is a cmake script that should contain at list the declaration of a
+# package
+#
+# package_declare(<package real name>
+#                 [EXTERNAL] [META] [ADVANCED] [NOT_OPTIONAL]
+#                 [DESCRIPTION <description>] [DEFAULT <default_value>]
+#                 [DEPENDS <pkg> ...]
+#                 [BOOST_COMPONENTS <pkg> ...]
+#                 [EXTRA_PACKAGE_OPTIONS <opt> ...]
+#                 [COMPILE_FLAGS <flags>]
+#                 [SYSTEM <bool> [ <script_to_compile> ]])
+#
+# It can also declare multiple informations:
+# source files:
+#    package_declare_sources(<package real name>
+#                            <src1> <src2> ... <srcn>)
+#
+# a LaTeX documentation:
+#    package_declare_documentation(<package real name>
+#                                  <line1> <line2> ...<linen>)
+#
+# LaTeX documentation files
+#    package_declare_documentation_files(<package real name>
+#                                        <file1> <file2> ... <filen>)
+#
+# Different function can also be retrieved from the package system by using the
+# different accessors
+#     package_get_name(<pkg> <retval>)
+#     package_get_real_name(<pkg> <retval>)
+#
+#     package_get_option_name(<pkg> <retval>)
+#
+#     package_use_system(<pkg> <retval>)
+#
+#     package_get_nature(<pkg> <retval>)
+#
+#     package_get_description(<pkg> <retval>)
+#
+#     package_get_filename(<pkg> <retval>)
+#
+#     package_get_sources_folder(<pkg> <retval>)
+#     package_get_tests_folder(<pkg> <retval>)
+#     package_get_manual_folder(<pkg> <retval>)
+#
+#     package_get_find_package_extra_options(<pkg> <retval>)
+#
+#     package_get_compile_flags(<pkg> <retval>)
+#     package_set_compile_flags(<pkg> <flag1> <flag2> ... <flagn>)
+#
+#     package_get_include_dir(<pkg> <retval>)
+#     package_set_include_dir(<pkg> <inc1> <inc2> ... <incn>)
+#     package_add_include_dir(<pkg> <inc1> <inc2> ... <incn>)
+#
+#     package_get_libraries(<pkg> <retval>)
+#     package_set_libraries(<pkg> <lib1> <lib2> ... <libn>)
+#
+#     package_add_extra_dependency(pkg <dep1> <dep2> ... <depn>)
+#     package_rm_extra_dependency(<pkg> <dep>)
+#     package_get_extra_dependencies(<pkg> <retval>)
+#
+#     package_is_activated(<pkg> <retval>)
+#     package_is_deactivated(<pkg> <retval>)
+#
+#     package_get_dependencies(<pkg> <retval>)
+#     package_add_dependencies(<pkg> <dep1> <dep2> ... <depn>)
+#
+#     package_on_enabled_script(<pkg> <script>)
+#
+#     package_get_all_source_files(<srcs> <public_headers> <private_headers>)
+#     package_get_all_include_directories(<inc_dirs>)
+#     package_get_all_external_informations(<include_dir> <libraries>)
+#     package_get_all_definitions(<definitions>)
+#     package_get_all_extra_dependencies(<dependencies>)
+#     package_get_all_test_folders(<test_dirs>)
+#     package_get_all_documentation_files(<doc_files>)
+#     package_get_all_activated_packages(<activated_list>)
+#     package_get_all_deactivated_packages(<deactivated_list>)
+#     package_get_all_packages(<packages_list>)
+#
 #
 # @section LICENSE
 #
@@ -30,6 +128,7 @@
 #===============================================================================
 
 include(CMakeParseArguments)
+
 #===============================================================================
 # Package Management
 #===============================================================================
@@ -38,376 +137,725 @@ if(__CMAKE_PACKAGES_SYSTEM)
 endif()
 set(__CMAKE_PACKAGES_SYSTEM TRUE)
 
-include(CMakeDebugMessages)
-cmake_register_debug_message_module(PackagesSystem)
-
-macro(package_pkg_name PKG PKG_NAME)
-  string(TOUPPER ${PROJECT_NAME} _project)
-  string(TOUPPER ${PKG} _u_package)
-  set(${PKG_NAME} ${_project}_${_u_package})
-endmacro()
-
-macro(package_opt_name PKG OPT_NAME)
-  string(TOUPPER ${PROJECT_NAME} _project)
-  string(TOUPPER ${PKG} _u_package)
-  set(${OPT_NAME} ${_project}_USE_${_u_package})
-endmacro()
-
-macro(package_nature PKG NATURE)
-  string(TOUPPER ${PROJECT_NAME} _project)
-  string(TOUPPER ${PKG} _u_package)
-  set(${NATURE} ${_project}_${_u_package}_NATURE)
-endmacro()
-
-macro(package_desc_name PKG DESC_NAME)
-  string(TOUPPER ${PROJECT_NAME} _project)
-  string(TOUPPER ${PKG} _u_package)
-  set(${DESC_NAME} ${_project}_DESC_${_u_package})
-endmacro()
+if(CMAKE_VERSION VERSION_GREATER 3.1.2)
+  cmake_policy(SET CMP0054 NEW)
+endif()
 
 #===============================================================================
-option(AUTO_MOVE_OLD_FILES "give cmake permission to move the unregistered files to ${PROJECT_SOURCE_DIR}/tmp directory" FALSE)
-mark_as_advanced(AUTO_MOVE_OLD_FILES)
+option(AUTO_MOVE_UNKNOWN_FILES
+  "Give to cmake the permission to move the unregistered files to the ${PROJECT_SOURCE_DIR}/tmp directory" FALSE)
+mark_as_advanced(AUTO_MOVE_UNKNOWN_FILES)
 
-macro(add_all_packages package_dir src_dir)
+
+include(CMakePackagesSystemGlobalFunctions)
+include(CMakePackagesSystemPrivateFunctions)
+
+# ==============================================================================
+# "Public" Accessors
+# ==============================================================================
+# ------------------------------------------------------------------------------
+# Package name
+# ------------------------------------------------------------------------------
+function(package_get_name pkg pkg_name)
   string(TOUPPER ${PROJECT_NAME} _project)
-  cmake_debug_message(PackagesSystem "add_all_packages: PKG DIR : ${package_dir}")
-  file(GLOB ${_project}_package_list "${package_dir}/*.cmake")
+  string(REPLACE "-" "_" _str_pkg "${pkg}")
+  string(TOUPPER ${_str_pkg} _u_package)
+  set(${pkg_name} ${_project}_PKG_${_u_package} PARENT_SCOPE)
+endfunction()
 
-  set(_${_project}_src_dir ${src_dir})
+# ------------------------------------------------------------------------------
+# Real name
+# ------------------------------------------------------------------------------
+function(package_get_real_name pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_real_name(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Option name
+# ------------------------------------------------------------------------------
+function(package_get_option_name pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_option_name(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Set if system package or compile external lib
+# ------------------------------------------------------------------------------
+function(package_use_system pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_use_system(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+function(package_add_third_party_script_variable pkg var)
+  package_get_name(${pkg} _pkg_name)
+  _package_add_third_party_script_variable(${_pkg_name} ${var} ${ARGN})
+  set(${var} ${ARGN} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Set if system package or compile external lib
+# ------------------------------------------------------------------------------
+function(package_add_to_export_list pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_add_to_export_list(${_pkg_name} ${ARGN})
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Nature
+# ------------------------------------------------------------------------------
+function(package_get_nature pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_nature(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Description
+# ------------------------------------------------------------------------------
+function(package_get_description pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_description(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Package file name
+# ------------------------------------------------------------------------------
+function(package_get_filename pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_filename(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Source files
+# ------------------------------------------------------------------------------
+function(package_get_source_files pkg ret_srcs ret_pub ret_priv)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_source_files(${_pkg_name} _tmp_srcs _tmp_pub _tmp_priv)
+  set(${ret_srcs} ${_tmp_srcs} PARENT_SCOPE)
+  set(${ret_pub}  ${_tmp_pub}  PARENT_SCOPE)
+  set(${ret_priv} ${_tmp_pric} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Source folder
+# ------------------------------------------------------------------------------
+function(package_get_sources_folder pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_sources_folder(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Test folder
+# ------------------------------------------------------------------------------
+function(package_get_tests_folder pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_tests_folder(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Manual folder
+# ------------------------------------------------------------------------------
+function(package_get_manual_folder pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_manual_folder(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Extra option for the find_package
+# ------------------------------------------------------------------------------
+function(package_get_find_package_extra_options pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_find_package_extra_options(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+function(package_set_find_package_extra_options pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_set_find_package_extra_options(${_pkg_name} ${ARGN})
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Compilation flags
+# ------------------------------------------------------------------------------
+function(package_get_compile_flags pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_compile_flags(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+function(package_set_compile_flags pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_set_compile_flags(${_pkg_name} ${ARGN})
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Include dir
+# ------------------------------------------------------------------------------
+function(package_get_include_dir pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_include_dir(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+function(package_set_include_dir pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_set_include_dir(${_pkg_name} ${ARGN})
+endfunction()
+
+function(package_add_include_dir pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_add_include_dir(${_pkg_name} ${ARGN})
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Libraries
+# ------------------------------------------------------------------------------
+function(package_get_libraries pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_libraries(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+function(package_set_libraries pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_set_libraries(${_pkg_name} ${ARGN})
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Extra dependencies like custom commands of ExternalProject
+# ------------------------------------------------------------------------------
+function(package_add_extra_dependency pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_add_extra_dependency(${_pkg_name} ${ARGN})
+endfunction()
+
+function(package_rm_extra_dependency pkg dep)
+  package_get_name(${pkg} _pkg_name)
+  _package_rm_extra_dependency(${_pkg_name} ${dep})
+endfunction()
+
+function(package_get_extra_dependencies pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_extra_dependencies(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Activate/deactivate
+# ------------------------------------------------------------------------------
+function(package_is_activated pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_is_activated(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+function(package_is_deactivated pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_is_deactivated(${_pkg_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Direct dependencies
+# ------------------------------------------------------------------------------
+function(package_get_dependencies pkg ret)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_dependencies(${_pkg_name} _tmp_name)
+  _package_get_real_name(${_tmp_name} _tmp)
+  set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+function(package_add_dependencies pkg)
+  package_get_name(${pkg} _pkg_name)
+  foreach(_dep ${ARGN})
+    package_get_name(${_dep} _dep_pkg_name)
+    list(APPEND _tmp_deps ${_dep_pkg_name})
+  endforeach()
+
+  _package_add_dependencies(${_pkg_name} ${_tmp_deps})
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Documentation related functions
+# ------------------------------------------------------------------------------
+function(package_declare_documentation pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_set_documentation(${_pkg_name} ${ARGN})
+endfunction()
+
+function(package_declare_documentation_files pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_set_documentation_files(${_pkg_name} ${ARGN})
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Set any user variables needed
+# ------------------------------------------------------------------------------
+function(package_set_variable variable pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_set_variable(${variable} ${_pkg_name} ${ARGN})
+endfunction()
+
+macro(package_get_variable variable pkg value)
+  package_get_name(${pkg} _pkg_name)
+  _package_get_variable(${variable} ${_pkg_name} _value_tmp)
+  set(${value} ${_value_tmp} PARENT_SCOPE)
+endmacro()
+
+# ==============================================================================
+# Global accessors
+# ==============================================================================
+# ------------------------------------------------------------------------------
+# get the list of source files
+# ------------------------------------------------------------------------------
+function(package_get_all_source_files SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
+  string(TOUPPER ${PROJECT_NAME} _project)
+
+  unset(_tmp_srcs)
+  unset(_tmp_public_headers)
+  unset(_tmp_private_headers)
+
+  package_get_all_activated_packages(_activated_list)
+  foreach(_pkg_name ${_activated_list})
+    _package_get_source_files(${_pkg_name}
+      _pkg_srcs
+      _pkg_public_headers
+      _pkg_private_headers
+      )
+    list(APPEND _tmp_srcs ${_pkg_srcs})
+    list(APPEND _tmp_public_headers ${_pkg_public_headers})
+    list(APPEND _tmp_private_headers ${_pkg_private_headers})
+  endforeach()
+
+  set(${SRCS}            ${_tmp_srcs}            PARENT_SCOPE)
+  set(${PUBLIC_HEADERS}  ${_tmp_public_headers}  PARENT_SCOPE)
+  set(${PRIVATE_HEADERS} ${_tmp_private_headers} PARENT_SCOPE)
+endfunction()
+
+
+# ------------------------------------------------------------------------------
+# Get include directories
+# ------------------------------------------------------------------------------
+function(package_get_all_include_directories inc_dirs)
+  set(_tmp)
+  package_get_all_activated_packages(_activated_list)
+
+  foreach(_pkg_name ${_activated_list})
+    foreach(_type SRCS PUBLIC_HEADERS PRIVATE_HEADERS)
+      foreach(_file ${${_pkg_name}_${_type}})
+        get_filename_component(_path "${_file}" PATH)
+        list(APPEND _tmp "${_path}")
+      endforeach()
+    endforeach()
+  endforeach()
+
+  if(_tmp)
+    list(REMOVE_DUPLICATES _tmp)
+  endif()
+
+  set(${inc_dirs} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Get external libraries informations
+# ------------------------------------------------------------------------------
+function(package_get_all_external_informations INCLUDE_DIR LIBRARIES)
+  _package_get_variable_for_activated(INCLUDE_DIR tmp_INCLUDE_DIR)
+  _package_get_variable_for_activated(LIBRARIES tmp_LIBRARIES)
+
+  set(${INCLUDE_DIR} ${tmp_INCLUDE_DIR} PARENT_SCOPE)
+  set(${LIBRARIES}   ${tmp_LIBRARIES}   PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Get export list for all activated packages
+# ------------------------------------------------------------------------------
+function(package_get_all_export_list export_list)
+  _package_get_variable_for_activated(EXPORT_LIST _tmp)
+  set(${export_list} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Get definitions like external projects
+# ------------------------------------------------------------------------------
+function(package_get_all_definitions definitions)
+  _package_get_variable_for_activated(OPTION_NAME _tmp)
+  set(${definitions} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Get extra dependencies like external projects
+# ------------------------------------------------------------------------------
+function(package_get_all_extra_dependencies deps)
+  _package_get_variable_for_activated(EXTRA_DEPENDENCY _tmp)
+  set(${deps} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Get extra infos
+# ------------------------------------------------------------------------------
+function(package_get_all_test_folders TEST_DIRS)
+  _package_get_variable_for_activated(TEST_FOLDER _tmp)
+  set(${TEST_DIRS} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Documentation informations
+# ------------------------------------------------------------------------------
+function(package_get_all_documentation_files doc_files)
+  set(_tmp_DOC_FILES)
+
+  package_get_all_activated_packages(_activated_list)
+  foreach(_pkg_name ${_activated_list})
+    _package_get_manual_folder(${_pkg_name} _doc_dir)
+    _package_get_documentation_files(${_pkg_name} _doc_files)
+
+    foreach(_doc_file ${_doc_files})
+      list(APPEND _tmp_DOC_FILES ${_doc_dir}/${_doc_file})
+    endforeach()
+  endforeach()
+
+  if(_tmp_DOC_FILES)
+    list(REMOVE_DUPLICATES _tmp_DOC_FILES)
+  endif()
+
+  set(${doc_files} ${_tmp_DOC_FILES} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# List packages
+# ------------------------------------------------------------------------------
+function(package_get_all_activated_packages activated_list)
+  package_get_project_variable(ACTIVATED_PACKAGE_LIST _activated_list)
+  set(${activated_list} ${_activated_list} PARENT_SCOPE)
+endfunction()
+
+function(package_get_all_deactivated_packages deactivated_list)
+  package_get_project_variable(DEACTIVATED_PACKAGE_LIST _deactivated_list)
+  set(${deactivated_list} ${_deactivated_list} PARENT_SCOPE)
+endfunction()
+
+function(package_get_all_packages packages_list)
+  package_get_project_variable(ALL_PACKAGES_LIST _packages_list)
+  set(${packages_list} ${_packages_list} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Callbacks
+# ------------------------------------------------------------------------------
+function(package_on_enabled_script pkg script)
+  package_get_name(${pkg} _pkg_name)
+  _package_on_enable_script(${_pkg_name} "${script}")
+endfunction()
+
+# ------------------------------------------------------------------------------
+# list all the packages in the PACKAGE_FOLDER
+# extra packages can be given with an EXTRA_PACKAGE_FOLDER
+# <package_folder>/<package>.cmake
+#
+# Extra packages folder structure
+# <extra_package_folder>/<package>/package.cmake
+#                                 /src
+#                                 /test
+#                                 /manual
+#
+# ------------------------------------------------------------------------------
+function(package_list_packages PACKAGE_FOLDER)
+  cmake_parse_arguments(_opt_pkg
+    ""
+    "SOURCE_FOLDER;EXTRA_PACKAGES_FOLDER;TEST_FOLDER;MANUAL_FOLDER"
+    ""
+    ${ARGN})
+
+  string(TOUPPER ${PROJECT_NAME} _project)
+
+  # Cleaning some states to start correctly
+  package_get_all_packages(_already_loaded_pkg)
+  foreach(_pkg_name ${_already_loaded_pkg})
+    _package_unset_extra_dependencies(${_pkg_name})
+    _package_unset_dependencies(${_pkg_name})
+    _package_unset_activated(${_pkg_name})
+  endforeach()
+
+
+  if(_opt_pkg_SOURCE_FOLDER)
+    set(_src_folder "${_opt_pkg_SOURCE_FOLDER}")
+  else()
+    set(_src_folder "src/")
+  endif()
+
+  get_filename_component(_abs_src_folder ${_src_folder} ABSOLUTE)
+
+  if(_opt_pkg_TEST_FOLDER)
+    set(_test_folder "${_opt_pkg_TEST_FOLDER}")
+  else()
+    set(_test_folder "test/")
+  endif()
+
+  if(_opt_pkg_MANUAL_FOLDER)
+    set(_manual_folder "${_opt_pkg_MANUAL_FOLDER}")
+  else()
+    set(_manual_folder "doc/manual")
+  endif()
+
+  get_filename_component(_abs_test_folder ${_test_folder} ABSOLUTE)
+  get_filename_component(_abs_manual_folder ${_manual_folder} ABSOLUTE)
+
+  # check all the packages in the <package_folder>
+  file(GLOB _package_list "${PACKAGE_FOLDER}/*.cmake")
 
   set(_package_files)
-  foreach(_pkg ${${_project}_package_list})
+  foreach(_pkg ${_package_list})
     get_filename_component(_basename ${_pkg} NAME)
-    list(APPEND _package_files ${_basename})
+    if(NOT _basename MATCHES "^\\.#.*")
+      list(APPEND _package_files ${_basename})
+    endif()
   endforeach()
 
   if(_package_files)
     list(SORT _package_files)
   endif()
 
-  set(${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL)
-  foreach(_pkg ${_package_files})
-    string(REGEX REPLACE "[0-9]+_" "" _pkg_name ${_pkg})
-    string(REGEX REPLACE "\\.cmake" "" _option_name ${_pkg_name})
-    string(TOUPPER "${_option_name}" _option_name)
-    set(${_project}_${_option_name}_FILE ${_pkg} CACHE INTERNAL "" FORCE)
-    list(APPEND ${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL ${_option_name})
+  # check all packages
+  set(_packages_list_all)
+  foreach(_pkg_file ${_package_files})
+    string(REGEX REPLACE "[0-9]+_" "" _pkg_file_stripped ${_pkg_file})
+    string(REGEX REPLACE "\\.cmake" "" _pkg ${_pkg_file_stripped})
+
+    set(_current_src_folder "${_abs_src_folder}" CACHE INTERNAL "" FORCE)
+    set(_current_test_folder "${_abs_test_folder}" CACHE INTERNAL "" FORCE)
+    set(_current_manual_folder "${_abs_manual_folder}" CACHE INTERNAL "" FORCE)
+
+    include("${PACKAGE_FOLDER}/${_pkg_file}")
+
+    unset(_current_src_folder CACHE)
+    unset(_current_test_folder CACHE)
+    unset(_current_manual_folder CACHE)
   endforeach()
 
-  cmake_debug_message(PackagesSystem "add_all_packages: PKG LIST : ${${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL}")
+  # check the extra_packages if they exists
+  if(_opt_pkg_EXTRA_PACKAGES_FOLDER)
+    file(GLOB _extra_package_list RELATIVE
+      "${_opt_pkg_EXTRA_PACKAGES_FOLDER}" "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/*")
+    foreach(_pkg ${_extra_package_list})
+      if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
 
-#  message("Packages: ${${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL}")
+        package_get_name(${_pkg} _pkg_name)
 
-  foreach(_pkg ${${_project}_PACKAGE_SYSTEM_PACKAGES_NAMES_LIST_ALL})
-    cmake_debug_message(PackagesSystem "add_all_packages: including ${_pkg}")
-    string(TOLOWER "${_pkg}" _l_pkg)
-    include(${package_dir}/${${_project}_${_pkg}_FILE})
-    package_pkg_name(${_l_pkg} _package_name)
-    if (${_package_name})
-      list(APPEND ${_project}_PACKAGE_SYSTEM_PACKAGES_ON ${_l_pkg})
-      list(APPEND ${_project}_PACKAGE_LIST ${_pkg})
-    else (${_package_name})
-      list(APPEND ${_project}_PACKAGE_SYSTEM_PACKAGES_OFF ${_l_pkg})
-    endif()
+        _package_set_filename(${_pkg_name}
+          "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
 
-    foreach(_file ${${_package_name}_FILES})
-      list(APPEND ${_project}_release_all_files ${_file})
-    endforeach()
-  endforeach()
+        set(_current_src_folder "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src" CACHE INTERNAL "" FORCE)
 
-  cmake_debug_message(PackagesSystem "add_all_packages: ON  PKG : ${${_project}_PACKAGE_SYSTEM_PACKAGES_ON}")
-  cmake_debug_message(PackagesSystem "add_all_packages: ALL RELEASE FILES LIST : ${_project}_release_all_files ${${_project}_release_all_files}")
+        if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test")
+          set(_current_test_folder "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/test" CACHE INTERNAL "" FORCE)
+        endif()
 
-  #check if there are some file in the release that are not registered in a package
-  file(GLOB_RECURSE ${_project}_all_files "*.cc" "*.hh" "*.c" "*.h" "*.hpp")
-  cmake_debug_message(PackagesSystem "add_all_packages: ALL FILES LIST : ${_project}_all_files ${${_project}_all_files}")
+        if(EXISTS "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual")
+          set(_current_manual_folder "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/manual" CACHE INTERNAL "" FORCE)
+        endif()
 
-  cmake_debug_message(PackagesSystem "add_all_packages: SOURCE DIR : ${_${_project}_src_dir}")
-  foreach(_file ${${_project}_all_files})
-    if("${_file}" MATCHES  "${_${_project}_src_dir}")
-      file(RELATIVE_PATH __file "${_${_project}_src_dir}" ${_file})
-      list(APPEND ${_project}_all_files_relatives ${__file})
-    endif()
-  endforeach()
+        list(APPEND _extra_pkg_src_folders "${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/src")
 
-  foreach(_file ${${_project}_all_files_relatives})
-    if(NOT ${_file} MATCHES "test.*" AND NOT ${_file} MATCHES "third-party" AND NOT ${_file} MATCHES "doc")
-      list(FIND ${_project}_release_all_files ${_file} _index)
-      if (_index EQUAL -1)
-	list(APPEND ${_project}_missing_files_in_packages ${_file})
+        include("${_opt_pkg_EXTRA_PACKAGES_FOLDER}/${_pkg}/package.cmake")
+
+        unset(_current_src_folder CACHE)
+        unset(_current_test_folder CACHE)
+        unset(_current_manual_folder CACHE)
       endif()
-    endif()
-  endforeach()
-  if (${_project}_missing_files_in_packages)
-    message("The files:") 
-    message("*****************") 
-    foreach(_file ${${_project}_missing_files_in_packages})
-      message("${_file}")
     endforeach()
-    message("*****************") 
-    message("are not registered in any package.")
-    if (NOT AUTO_MOVE_OLD_FILES)
-      message("Please append these files in one of the packages within directory 
-      ${PROJECT_SOURCE_DIR}/packages 
-or remove the files if useless.
-")
-      message(FATAL_ERROR "abort")
+  endif()
+
+  _package_build_rdependencies()
+  _package_load_packages()
+  _package_check_files_exists()
+  _package_check_files_registered(${_abs_src_folder} ${_extra_pkg_src_folders})
+
+  # Load boost components if boost was loaded
+  package_is_activated(Boost _ret)
+  if(_ret)
+    _package_load_boost_components()
+  endif()
+endfunction()
+
+# ------------------------------------------------------------------------------
+# macro to include internal/external packages packages
+# package_declare(<package real name>
+#                 [EXTERNAL] [META] [ADVANCED] [NOT_OPTIONAL]
+#                 [DESCRIPTION <description>] [DEFAULT <default_value>]
+#                 [DEPENDS <pkg> ...]
+#                 [BOOST_COMPONENTS <pkg> ...]
+#                 [EXTRA_PACKAGE_OPTIONS <opt> ...]
+#                 [COMPILE_FLAGS <flags>]
+#                 [SYSTEM <bool> [ <script_to_compile> ]])
+# ------------------------------------------------------------------------------
+function(package_declare pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_set_real_name(${_pkg_name} ${pkg})
+  _package_set_filename(${_pkg_name} "${CMAKE_CURRENT_LIST_FILE}")
+
+  _package_set_sources_folder(${_pkg_name} "${_current_src_folder}")
+
+  if(_current_test_folder)
+    _package_set_tests_folder(${_pkg_name} "${_current_test_folder}")
+  endif()
+
+  if(_current_manual_folder)
+    _package_set_manual_folder(${_pkg_name} "${_current_manual_folder}")
+  endif()
+
+  package_get_project_variable(ALL_PACKAGES_LIST _tmp_pkg_list)
+  list(APPEND _tmp_pkg_list ${_pkg_name})
+  list(REMOVE_DUPLICATES _tmp_pkg_list)
+  package_set_project_variable(ALL_PACKAGES_LIST ${_tmp_pkg_list})
+
+  cmake_parse_arguments(_opt_pkg
+    "EXTERNAL;NOT_OPTIONAL;META;ADVANCED"
+    "DEFAULT;DESCRIPTION"
+    "DEPENDS;EXTRA_PACKAGE_OPTIONS;COMPILE_FLAGS;BOOST_COMPONENTS;SYSTEM"
+    ${ARGN})
+
+  if(_opt_pkg_UNPARSED_ARGUMENTS)
+    message("You gave to many arguments while registering the package ${pkg} \"${_opt_pkg_UNPARSED_ARGUMENTS}\"")
+  endif()
+
+  # set the nature
+  if(_opt_pkg_EXTERNAL)
+    _package_set_nature(${_pkg_name} "external")
+  elseif(_opt_pkg_META)
+    _package_set_nature(${_pkg_name} "meta")
+  else()
+    _package_set_nature(${_pkg_name} "internal")
+  endif()
+
+  _package_declare_option(${_pkg_name})
+
+  # set description
+  if(_opt_pkg_DESCRIPTION)
+    _package_set_description(${_pkg_name} ${_opt_pkg_DESCRIPTION})
+  else()
+    _package_set_description(${_pkg_name} "")
+  endif()
+
+  _package_get_option_name(${_pkg_name} _option_name)
+  _package_get_description(${_pkg_name} _description)
+
+  # get the default value
+  if(DEFINED _opt_pkg_DEFAULT)
+    set(_default ${_opt_pkg_DEFAULT})
+  else()
+    if(_opt_pkg_NOT_OPTIONAL)
+      set(_default ON)
     else()
-      message("These files are getting displaced to directory ${PROJECT_SOURCE_DIR}/tmp/")
-      message("creating directory ${PROJECT_SOURCE_DIR}/tmp/")
-      file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/tmp/)
-      foreach(_file ${${_project}_missing_files_in_packages})
-	get_filename_component(fname ${_file} NAME)
-	message("renaming ${src_dir}/${_file} to ${PROJECT_SOURCE_DIR}/tmp/${fname}")
-	file(RENAME ${src_dir}/${_file} ${PROJECT_SOURCE_DIR}/tmp/${fname})
-      endforeach()
+      set(_default OFF)
     endif()
   endif()
 
-  if(${_project}_missing_files_in_packages)
-    message("A complete list of files missing in the packages description can be found here: ${PROJECT_BINARY_DIR}/missing_files_in_packages")
-    if(EXISTS ${PROJECT_BINARY_DIR}/missing_files_in_packages)
-      file(REMOVE ${PROJECT_BINARY_DIR}/missing_files_in_packages)
-    endif()
-    foreach(_file ${${_project}_missing_files_in_packages})
-      file(APPEND ${PROJECT_BINARY_DIR}/missing_files_in_packages "${_file}
-")
-    endforeach()
-  endif()
-
-  #check if there are some file in the package list that are not on the current directory
-  foreach(_file ${${_project}_release_all_files})
-    list(FIND ${_project}_all_files_relatives ${_file} _index)
-    if (_index EQUAL -1)
-      message("The file ${_file} is registered in packages but is not present in the source directory.")
-    endif()
-  endforeach()
-
-  #construct list of files for unactivated packages
-#    list(APPEND _tmp_${_project}_EXCLUDE_SOURCE_FILES ${${_project}_EXCLUDE_SOURCE_FILES})
-  set(_tmp_${_project}_EXCLUDE_SOURCE_FILES "")
-  foreach(_pkg ${${_project}_PACKAGE_SYSTEM_PACKAGES_OFF})
-    package_pkg_name(${_pkg} _pkg_name)
-    cmake_debug_message(PackagesSystem "add_all_packages: exlude ${_file}")
-    list(APPEND _tmp_${_project}_EXCLUDE_SOURCE_FILES ${${_pkg_name}_FILES})
-  endforeach()
-
-  set(${_project}_EXCLUDE_SOURCE_FILES "${_tmp_${_project}_EXCLUDE_SOURCE_FILES}" CACHE INTERNAL "File to exclude in the project ${_project} package" FORCE)
-  #check dependencies
-  foreach(_pkg ${${_project}_PACKAGE_SYSTEM_PACKAGES_OFF})
-    # differentiate the file types
-    cmake_debug_message(PackagesSystem "add_all_packages: DEPENDS PKG : ${_pkg}")
-    cmake_debug_message(PackagesSystem "add_all_packages: DEPENDS LST : ${${_pkg}_DEPENDS}")
-    package_pkg_name(${_pkg} _pkg_name)
-    if (NOT "${${_pkg_name}_DEB_DEPEND}" STREQUAL "")
-      set(deb_depend "${deb_depend}, ${${_pkg}_DEB_DEPEND}")
-    endif()
-  endforeach()
-  set(${_project}_PACKAGE_SYSTEM_DEBIAN_PACKAGE_DEPENDS "${deb_depend}")
-endmacro()
-
-#===============================================================================
-macro(generate_source_list_from_packages source_dir source_files inline_files headers_files include_dirs)
-  string(TOUPPER ${PROJECT_NAME} _project)
-
-  cmake_debug_message(PackagesSystem "generate_source_list_from_packages: SRC DIR : ${source_dir}")
-  foreach(_pkg ${${_project}_PACKAGE_SYSTEM_PACKAGES_ON})
-    # differentiate the file types
-    package_pkg_name(${_pkg} _package_name)
-    cmake_debug_message(PackagesSystem "generate_source_list_from_packages: PKG ${_package_name} FILES : ${${_package_name}_FILES}")
-    foreach(_file ${${_package_name}_FILES})
-      if(${_file} MATCHES ".*inline.*\\.cc")
-	list(APPEND ${_package_name}_inlines ${_file})
-      elseif(${_file} MATCHES ".*\\.h+")
-        list(APPEND ${_package_name}_headers ${_file})
-      else()
-        list(APPEND ${_package_name}_srcs ${_file})
-      endif()
-    endforeach()
-
-    # generates the include directory variable
-    foreach(_file ${${_package_name}_headers})
-      get_filename_component(_absolute_name ${_file} ABSOLUTE)
-      get_filename_component(_include_dir ${_absolute_name} PATH)
-      list(APPEND ${_package_name}_include_dirs ${_include_dir})
-      list(REMOVE_DUPLICATES ${_package_name}_include_dirs)
-    endforeach()
-
-    # generate global lists for akantu to know what to build
-    list(APPEND ${source_files} ${${_package_name}_srcs})
-    list(APPEND ${inline_files} ${${_package_name}_inlines})
-    list(APPEND ${headers_files} ${${_package_name}_headers})
-    list(APPEND ${include_dirs}  ${${_package_name}_include_dirs})
-
-    cmake_debug_message(PackagesSystem "generate_source_list_from_packages: PKG ${_package_name} SRCS : ${${_package_name}_srcs}")
-    cmake_debug_message(PackagesSystem "generate_source_list_from_packages: PKG ${_package_name} INLINES : ${${_package_name}_inlines}")
-    cmake_debug_message(PackagesSystem "generate_source_list_from_packages: PKG ${_package_name} HRDS : ${${_package_name}_headers}")
-    cmake_debug_message(PackagesSystem "generate_source_list_from_packages: PKG ${_package_name} INCS : ${${_package_name}_include_dirs}")
-  endforeach()
-
-  cmake_debug_message(PackagesSystem "generate_source_list_from_packages: SRCS : ${${source_files}}")
-  cmake_debug_message(PackagesSystem "generate_source_list_from_packages: HRDS : ${${headers_files}}")
-  cmake_debug_message(PackagesSystem "generate_source_list_from_packages: INCS : ${${include_dirs}}")
-endmacro()
-
-#===============================================================================
-# macro to include optional packages
-macro(add_optional_external_package PACKAGE DESC DEFAULT)
-  package_opt_name (${PACKAGE} _option_name)
-  package_desc_name(${PACKAGE} _desc_name)
-  set(${_desc_name} ${DESC})
-  package_nature(${PACKAGE} _nature)
-  set(${_nature} "external_optional")
-  option(${_option_name} ${DESC} ${DEFAULT})
-  _add_external_package(${PACKAGE} ${ARGN})
-endmacro()
-
-macro(add_external_package PACKAGE)
-  package_opt_name (${PACKAGE} _option_name)
-  set(${_option_name} ON)
-  package_nature(${PACKAGE} _nature)
-  set(${_nature} "external")
-  _add_external_package(${PACKAGE} ${ARGN})
-endmacro()
-
-
-macro(_add_external_package PACKAGE)
-  string(TOUPPER ${PROJECT_NAME} _project)
-  cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "DEPENDS;PREFIX;FOUND;ARGS" ${ARGN})
-
-  package_pkg_name (${PACKAGE} _pkg_name)
-  package_opt_name (${PACKAGE} _option_name)
-
-  cmake_debug_message(PackagesSystem "add_optional_package: Registering ${PACKAGE} ${DESC} -> ${_option_name}")
-
-  if(_opt_pkg_PREFIX)
-    set(_package_prefix ${_opt_pkg_PREFIX})
+  # set the option if needed
+  if(_opt_pkg_NOT_OPTIONAL)
+    _package_get_nature(${_pkg_name} _nature)
+    _package_set_nature(${_pkg_name} "${_nature}_not_optional")
+    set(${_option_name} ${_default} CACHE INTERNAL "${_description}" FORCE)
   else()
-    string(TOUPPER ${PACKAGE} _u_package)
-    set(_package_prefix ${_u_package})
+    option(${_option_name} "${_description}" ${_default})
+    if(_opt_pkg_ADVANCED OR _opt_pkg_EXTERNAL)
+      mark_as_advanced(${_option_name})
+    endif()
   endif()
 
-  if(${_option_name})
-    if(_opt_pkg_LANGUAGE)
-      foreach(_language ${_opt_pkg_LANGUAGE})
-	cmake_debug_message(PackagesSystem "add_optional_package: Package ${PACKAGE} asked for language ${_language}")
-	enable_language(${_language})
-      endforeach()
+  # Set the option for third-partie that can be compiled as an ExternalProject
+  if(DEFINED _opt_pkg_SYSTEM)
+    list(LENGTH _opt_pkg_SYSTEM _length)
+    list(GET _opt_pkg_SYSTEM 0 _bool)
+    _package_set_system_option(${_pkg_name} ${_bool})
+    if(_length GREATER 1)
+      list(GET _opt_pkg_SYSTEM 1 _script)
+      _package_set_system_script(${_pkg_name} ${_script})
     endif()
+  endif()
 
+  # set the dependecies
+  if(_opt_pkg_DEPENDS)
+    set(_depends)
     foreach(_dep ${_opt_pkg_DEPENDS})
-      add_external_package_dependencies(${PACKAGE} ${_dep})
+      package_get_name(${_dep} _dep_pkg_name)
+      list(APPEND _depends ${_dep_pkg_name})
     endforeach()
+    _package_add_dependencies(${_pkg_name} ${_depends})
+  endif()
 
-    find_package(${PACKAGE} REQUIRED ${_opt_pkg_ARGS})
+  # keep the extra option for the future find package
+  if(_opt_pkg_EXTRA_PACKAGE_OPTIONS)
+    _package_set_find_package_extra_options(${_pkg_name} "${_opt_pkg_EXTRA_PACKAGE_OPTIONS}")
+  endif()
 
-    foreach(_prefix ${_package_prefix})
-      if(${_prefix}_FOUND OR _opt_pkg_FOUND)
-	list(APPEND ${_project}_DEFINITIONS ${_option_name})
-	if(DEFINED ${_prefix}_INCLUDE_DIRS)
-          list(APPEND ${_project}_EXTERNAL_LIB_INCLUDE_DIR ${${_prefix}_INCLUDE_DIRS})
-          set(${_pkg_name}_INCLUDE_DIR ${${_prefix}_INCLUDE_DIRS})
-	elseif(DEFINED ${_prefix}_INCLUDE_DIR)
-          list(APPEND ${_project}_EXTERNAL_LIB_INCLUDE_DIR ${${_prefix}_INCLUDE_DIR})
-          set(${_pkg_name}_INCLUDE_DIR ${${_prefix}_INCLUDE_DIR})
-	elseif(DEFINED ${_prefix}_INCLUDE_PATH)
-          list(APPEND ${_project}_EXTERNAL_LIB_INCLUDE_DIR ${${_prefix}_INCLUDE_PATH})
-          set(${_pkg_name}_INCLUDE_DIR ${${_prefix}_INCLUDE_PATH})
-	endif()
-	list(APPEND ${_project}_EXTERNAL_LIBRARIES ${${_prefix}_LIBRARIES})
-	set(${_pkg_name}_LIBRARIES ${${_prefix}_LIBRARIES})
-	set(${_pkg_name} ON)
-        string(TOUPPER ${PACKAGE} _u_package)
-	list(APPEND ${_project}_OPTION_LIST ${_u_package})
-	cmake_debug_message(PackagesSystem "add_optional_package: Package ${PACKAGE} found! (PREFIX: ${_prefix})")
-	cmake_debug_message(PackagesSystem "add_optional_package: Package ${PACKAGE} includes : ${${_pkg_name}_INCLUDE_DIR}")
-	cmake_debug_message(PackagesSystem "add_optional_package: Package ${PACKAGE} libraries: ${${_pkg_name}_LIBRARIES}")
-	cmake_debug_message(PackagesSystem "add_optional_package: option list: ${${_project}_OPTION_LIST}")
-      else(${_prefix}_FOUND)
-	cmake_debug_message(PackagesSystem "add_optional_package: Package ${PACKAGE} not found! (PREFIX: ${_prefix})")
-	set(${_pkg_name} OFF)
-      endif()
-    endforeach()
-  endif(${_option_name})
-endmacro()
+  # register the compilation flags
+  if(_opt_pkg_COMPILE_FLAGS)
+    _package_set_compile_flags(${_pkg_name} "${_opt_pkg_COMPILE_FLAGS}")
+  endif()
 
-#===============================================================================
-# macro to add meta packages
-macro(add_meta_package PKG DESC DEFAULT)
-  cmake_debug_message(PackagesSystem "add_meta_package: register meta option ${PKG} ${DESC} ${DEFAULT}")
-  package_pkg_name (${PKG} _pkg_name)
-  package_desc_name(${PKG} _desc_name)
+  # set the boost dependencies
+  if(_opt_pkg_BOOST_COMPONENTS)
+    _package_set_boost_component_needed(${_pkg_name} "${_opt_pkg_BOOST_COMPONENTS}")
+  endif()
 
-  set(${_desc_name} ${DESC})
-  option(${_pkg_name} ${DESC} ${DEFAULT})
+endfunction()
 
-  foreach(_dep ${ARGN})
-    package_opt_name (${_dep} _dep_name)
-    mark_as_advanced(${_dep_name})
-    add_external_package_dependencies(${PKG} ${_dep})
+# ------------------------------------------------------------------------------
+# declare the source files of a given package
+#
+# package_declare_sources(<package> <list of sources>
+#                         SOURCES <source file> ...
+#                         PUBLIC_HEADER <header file> ...
+#                         PRIVATE_HEADER <header file> ...)
+# ------------------------------------------------------------------------------
+function(package_declare_sources pkg)
+  package_get_name(${pkg} _pkg_name)
+
+  # get 3 lists, if none of the options given try to distinguish the different lists
+  cmake_parse_arguments(_opt_pkg
+    ""
+    ""
+    "SOURCES;PUBLIC_HEADERS;PRIVATE_HEADERS"
+    ${ARGN})
+
+  set(_tmp_srcs     ${_opt_pkg_SOURCES})
+  set(_tmp_pub_hdrs ${_opt_pkg_PUBLIC_HEADER})
+  set(_tmp_pri_hdrs ${_opt_pkg_PRIVATE_HEADERS})
+
+  foreach(_file ${_opt_pkg_UNPARSED_ARGUMENTS})
+    if(${_file} MATCHES ".*inline.*\\.cc")
+      list(APPEND _tmp_pub_hdrs ${_file})
+    elseif(${_file} MATCHES ".*\\.h+")
+      list(APPEND _tmp_pub_hdrs ${_file})
+    else()
+      list(APPEND _tmp_srcs ${_file})
+    endif()
   endforeach()
-endmacro()
 
-#===============================================================================
-macro(_add_package_dependencies PKG DEP _dep_name)
-  package_pkg_name (${PKG} _opt_name)
-  package_desc_name(${DEP} _var_dep_desc)
-  package_pkg_name (${DEP} _dep_pkg_name)
+  _package_get_sources_folder(${_pkg_name} _src_folder)
 
-  if (NOT ${_opt_name}_dependencies)
-    set(${_opt_name}_dependencies)
-  endif()
+  foreach(_type _srcs _pub_hdrs _pri_hdrs)
+    set(${_type})
+    foreach(_file ${_tmp${_type}})
+      # get the full name
+      list(APPEND ${_type} "${_src_folder}/${_file}")
+    endforeach()
+  endforeach()
 
-  list(APPEND ${_opt_name}_dependencies ${_dep_pkg_name})
-  list(REMOVE_DUPLICATES ${_opt_name}_dependencies)
-
-  set(${_opt_name}_dependencies ${${_opt_name}_dependencies} CACHE INTERNAL "List of dependencies for package ${_opt_name}" FORCE)
-
-  cmake_debug_message(PackagesSystem "add_package_dependecies: add dependence between ${_opt_name} and ${_dep_name}")
-  set(_dep_desc ${_var_dep_desc})
-
-  cmake_debug_message(PackagesSystem "add_package_dependecies: ON dependencies of ${_dep_name} are: ${${_dep_name}_DEPS}")
-  cmake_debug_message(PackagesSystem "add_package_dependecies: saved value for ${_dep_name} is: ${${_dep_name}_OLD}")
-  if(${_opt_name})
-    if("${${_dep_name}_DEPS}" STREQUAL "")
-      cmake_debug_message(PackagesSystem "add_package_dependecies: Save dep state ${_dep_name}:${${_dep_name}}")
-      set(${_dep_name}_OLD ${${_dep_name}} CACHE INTERNAL "${_dep_desc}" FORCE)
-    endif()
-
-    cmake_debug_message(PackagesSystem "add_package_dependecies: force value to ON ${_dep_name}")
-    set(${_dep_name} ON CACHE BOOL "${_dep_desc}" FORCE)
-
-    list(FIND ${_dep_name}_DEPS ${_opt_name} pos)
-    if(pos EQUAL -1)
-      list(APPEND ${_dep_name}_DEPS ${_opt_name})
-      set(${_dep_name}_DEPS ${${_dep_name}_DEPS} CACHE INTERNAL "Dependencies ON with package ${_dep_name}" FORCE)
-    endif()
-  else()
-    list(LENGTH ${_dep_name}_DEPS len)
-    list(FIND ${_dep_name}_DEPS ${_opt_name} pos)
-    if((len EQUAL 1) AND (NOT pos EQUAL -1))
-      cmake_debug_message(PackagesSystem "add_package_dependecies: Restore state ${_dep_name}:${${_dep_name}} (${pos})")
-      set(${_dep_name} ${${_dep_name}_OLD} CACHE BOOL "${_dep_desc}" FORCE)
-      unset(${_dep_name}_OLD CACHE)
-    endif()
-
-    if(NOT pos EQUAL -1)
-      list(REMOVE_AT ${_dep_name}_DEPS ${pos})
-      set(${_dep_name}_DEPS ${${_dep_name}_DEPS} CACHE INTERNAL "Nb dependencies with package ${_dep_name}" FORCE)
-    endif()
-  endif()
-
-endmacro()
-
-#===============================================================================
-macro(add_internal_package_dependencies PKG DEP)
-  package_pkg_name (${DEP} _dep_name)
-  _add_package_dependencies(${PKG} ${DEP} ${_dep_name})
-endmacro()
-
-#===============================================================================
-macro(add_external_package_dependencies PKG DEP)
-  package_opt_name (${DEP} _dep_name)
-  _add_package_dependencies(${PKG} ${DEP} ${_dep_name})
-endmacro()
+  set(${_pkg_name}_SRCS "${_srcs}"
+    CACHE INTERNAL "List of sources files" FORCE)
+  set(${_pkg_name}_PUBLIC_HEADERS  "${_pub_hdrs}"
+    CACHE INTERNAL "List of public header files" FORCE)
+  set(${_pkg_name}_PRIVATE_HEADERS "${_pri_hdrs}"
+    CACHE INTERNAL "List of private header files" FORCE)
+endfunction()

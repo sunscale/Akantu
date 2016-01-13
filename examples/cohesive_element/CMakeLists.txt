@@ -4,7 +4,7 @@
 # @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
 #
 # @date creation: Fri Jun 21 2013
-# @date last modification: Fri Jun 21 2013
+# @date last modification: Tue Jan 07 2016
 #
 # @brief  CMakeLists for the cohesive examples
 #
@@ -31,3 +31,4 @@
 add_example(cohesive_extrinsic "Extrinsic cohesive element" PACKAGE cohesive_element)
 add_example(cohesive_intrinsic "Intrinsic cohesive element" PACKAGE cohesive_element )
 add_example(cohesive_extrinsic_IG_TG "Extrinsic cohesive element with intergranular and transgranular material properties" PACKAGE cohesive_element)
+add_example(cohesive_extrinsic_implicit "Extrinsic cohesive element in implicit" PACKAGE cohesive_element )

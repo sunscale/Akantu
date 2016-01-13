@@ -33,4 +33,5 @@
 register_test(test_parser
   SOURCES test_parser.cc
   FILES_TO_COPY input_file.dat
+  PACKAGE core
   )

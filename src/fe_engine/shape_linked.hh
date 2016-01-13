@@ -54,24 +54,25 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// initialization function for structural elements
   inline void initShapeFunctions(const Array<Real> & nodes,
-				 const Matrix<Real> & control_points,
+				 const Matrix<Real> & integration_points,
 				 const ElementType & type,
 				 const GhostType & ghost_type);
 
-  /// pre compute all shapes on the element control points from natural coordinates
+  /// pre compute all shapes on the element integration points from natural coordinates
   template <ElementType type>
-  void precomputeShapesOnControlPoints(const Array<Real> & nodes,
+  void precomputeShapesOnIntegrationPoints(const Array<Real> & nodes,
 				       const GhostType & ghost_type);
 
-  /// pre compute all shapes on the element control points from natural coordinates
+  /// pre compute all shapes on the element integration points from natural coordinates
   template <ElementType type>
-  void precomputeShapeDerivativesOnControlPoints(const Array<Real> & nodes,
+  void precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
 						 const GhostType & ghost_type);
 
-  /// interpolate nodal values on the control points
+  /// interpolate nodal values on the integration points
   template <ElementType type>
-  void interpolateOnControlPoints(const Array<Real> &u,
+  void interpolateOnIntegrationPoints(const Array<Real> &u,
 				  Array<Real> &uq,
 				  UInt nb_degree_of_freedom,
 				  const GhostType & ghost_type = _not_ghost,
@@ -82,9 +83,9 @@ public:
 				  UInt num_degre_of_freedom_interpolated = 0) const;
 
 
-  /// compute the gradient of u on the control points
+  /// compute the gradient of u on the integration points
   template <ElementType type>
-  void gradientOnControlPoints(const Array<Real> &u,
+  void gradientOnIntegrationPoints(const Array<Real> &u,
 			       Array<Real> &nablauq,
 			       UInt nb_degree_of_freedom,
 			       const GhostType & ghost_type = _not_ghost,
@@ -103,6 +104,7 @@ public:
   }
 
 private:
+  /// extract the nodal field value to fill an elemental field
   template <ElementType type>
   void extractNodalToElementField(const Array<Real> & nodal_f,
 				  Array<Real> & elemental_f,

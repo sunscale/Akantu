@@ -1,4 +1,4 @@
-parser_permissive = true
+permissive_parser = true
 
 material elastic [
 	 name = steel

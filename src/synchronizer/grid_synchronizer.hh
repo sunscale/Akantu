@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "distributed_synchronizer.hh"
+#include "synchronizer_registry.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -49,7 +50,8 @@ class GridSynchronizer : public DistributedSynchronizer {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 protected:
-  GridSynchronizer(Mesh & mesh, const ID & id = "grid_synchronizer", MemoryID memory_id = 0);
+  GridSynchronizer(Mesh & mesh, const ID & id = "grid_synchronizer", MemoryID memory_id = 0,
+		   const bool register_to_event_manager = true);
 
 public:
   virtual ~GridSynchronizer() { };
@@ -58,15 +60,22 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+   /**
+   *Create the Grid Synchronizer:
+   *Compute intersection and send info to neighbours that will be stored in ghosts elements
+   */
   template <class E>
   static GridSynchronizer *
   createGridSynchronizer(Mesh & mesh,
 			 const SpatialGrid<E> & grid,
 			 SynchronizerID id = "grid_synchronizer",
-			 MemoryID memory_id = 0);
+			 SynchronizerRegistry * synch_registry = NULL,
+			 const std::set<SynchronizationTag> & tags_to_register = std::set<SynchronizationTag>(),
+			 MemoryID memory_id = 0, const bool register_to_event_manager = true);
 
 
 protected:
+  /// Define the tags that will be used in the send and receive instructions
   enum CommTags {
     SIZE_TAG        = 0,
     DATA_TAG        = 1,

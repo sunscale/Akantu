@@ -52,6 +52,11 @@ class MaterialLinearIsotropicHardening : public MaterialPlastic<spatial_dimensio
 public:
 
   MaterialLinearIsotropicHardening(SolidMechanicsModel & model, const ID & id = "");
+  MaterialLinearIsotropicHardening(SolidMechanicsModel & model,
+                                   UInt dim,
+                                   const Mesh & mesh,
+                                   FEEngine & fe_engine,
+                                   const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -66,6 +71,7 @@ public:
                             GhostType ghost_type = _not_ghost);
 
 protected:
+  /// Infinitesimal deformations
   inline void computeStressOnQuad(const Matrix<Real> & grad_u,
                                   const Matrix<Real> & previous_grad_u,
                                   Matrix<Real> & sigma,
@@ -76,6 +82,18 @@ protected:
                                   const Real & previous_iso_hardening,
                                   const Real & sigma_th,
                                   const Real & previous_sigma_th);
+  /// Finite deformations
+  inline void computeStressOnQuad(const Matrix<Real> & grad_u,
+                                  const Matrix<Real> & previous_grad_u,
+                                  Matrix<Real> & sigma,
+                                  const Matrix<Real> & previous_sigma,
+                                  Matrix<Real> & inelas_strain,
+                                  const Matrix<Real> & previous_inelas_strain,
+                                  Real & iso_hardening,
+                                  const Real & previous_iso_hardening,
+                                  const Real & sigma_th,
+                                  const Real & previous_sigma_th,
+				  const Matrix<Real> & F_tensor);
 
   inline void computeTangentModuliOnQuad(Matrix<Real> & tangent,
                                          const Matrix<Real> & grad_u,

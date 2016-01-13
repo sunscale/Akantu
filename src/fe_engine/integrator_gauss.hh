@@ -64,6 +64,10 @@ public:
   void precomputeJacobiansOnQuadraturePoints(const Array<Real> & nodes,
 					     const GhostType & ghost_type);
 
+  // multiply the jacobians by the integration weights and stores the results in jacobians
+  template <ElementType type>
+  void multiplyJacobiansByWeights(const GhostType & ghost_type);
+
 
   /// integrate f on the element "elem" of type "type"
   template <ElementType type>
@@ -123,13 +127,13 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
+  /// integrate the field f with the jacobian jac -> inte
   inline void integrate(Real *f, Real *jac, Real * inte,
 			UInt nb_degree_of_freedom,
 			UInt nb_quadrature_points) const;
 
 private:
-
+  /// ElementTypeMap of the quadrature points
   ElementTypeMap< Matrix<Real> > quadrature_points;
 };
 

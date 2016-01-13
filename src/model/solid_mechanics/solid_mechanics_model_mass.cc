@@ -130,21 +130,21 @@ void SolidMechanicsModel::computeRho(Array<Real> & rho,
 				     GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Material ** mat_val = &(materials.at(0));
+  Material ** mat_val = &(this->materials.at(0));
 
-  FEEngine & fem = getFEEngine();
+  FEEngine & fem = this->getFEEngine();
   UInt nb_element = fem.getMesh().getNbElement(type,ghost_type);
 
-  Array<UInt> & elem_mat_val = element_index_by_material(type, ghost_type);
+  Array<UInt> & mat_indexes = this->material_index(type, ghost_type);
 
-  UInt nb_quadrature_points = fem.getNbQuadraturePoints(type, ghost_type);
+  UInt nb_quadrature_points = fem.getNbIntegrationPoints(type);
 
   rho.resize(nb_element * nb_quadrature_points);
   Real * rho_1_val = rho.storage();
 
   /// compute @f$ rho @f$ for each nodes of each element
   for (UInt el = 0; el < nb_element; ++el) {
-    Real mat_rho = mat_val[elem_mat_val(el, 0)]->getParam<Real>("rho"); /// here rho is constant in an element
+    Real mat_rho = mat_val[mat_indexes(el)]->getParam<Real>("rho"); /// here rho is constant in an element
 
     for (UInt n = 0; n < nb_quadrature_points; ++n) {
       *rho_1_val++ = mat_rho;

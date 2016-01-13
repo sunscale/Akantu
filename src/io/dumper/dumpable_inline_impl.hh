@@ -40,7 +40,6 @@
 #include "dumper_nodal_field.hh"
 /* -------------------------------------------------------------------------- */
 
-
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
@@ -49,9 +48,9 @@ inline void Dumpable::registerDumper(const std::string & dumper_name,
                                      const std::string & file_name,
                                      const bool is_default) {
 
-  AKANTU_DEBUG_ASSERT(this->dumpers.find(dumper_name) ==
-                      this->dumpers.end(),
-                      "Dumper " + dumper_name + "is already registered.");
+  if (this->dumpers.find(dumper_name) != this->dumpers.end()){
+    AKANTU_DEBUG_INFO("Dumper " + dumper_name + "is already registered.");
+  }
 
   std::string name = file_name;
   if (name == "")
@@ -64,7 +63,6 @@ inline void Dumpable::registerDumper(const std::string & dumper_name,
 }
 
 /* -------------------------------------------------------------------------- */
-
 template<typename T>
 inline void Dumpable::addDumpFieldExternal(const std::string & field_id,
                                            const Array<T> & field) {
@@ -106,10 +104,20 @@ inline void Dumpable::addDumpFieldExternalToDumper(const std::string & dumper_na
                                                    UInt spatial_dimension,
                                                    const GhostType & ghost_type,
                                                    const ElementKind & element_kind) {
-  dumper::Field * field_cont = new dumper::ElementalField<T>(field,
-							     spatial_dimension,
-							     ghost_type,
-							     element_kind);
+
+  dumper::Field * field_cont;
+#if defined(AKANTU_IGFEM)
+  if (element_kind == _ek_igfem) {
+    field_cont = new dumper::IGFEMElementalField<T>(field,
+						    spatial_dimension,
+						    ghost_type,
+						    element_kind);
+  } else 
+#endif
+    field_cont = new dumper::ElementalField<T>(field,
+					       spatial_dimension,
+					       ghost_type,
+					       element_kind);
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerField(field_id, field_cont);
 }
@@ -130,8 +138,7 @@ inline T & Dumpable::getDumper(const std::string & dumper_name) {
   }
 }
 
-
-
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__
 

@@ -40,10 +40,10 @@
 #===============================================================================
 # CMake Project
 #===============================================================================
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 # add this options before PROJECT keyword
-#set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 project(Akantu)
@@ -66,6 +66,7 @@ include(CMakeVersionGenerator)
 include(CMakePackagesSystem)
 include(CMakeFlagsHandling)
 
+include(AkantuPackagesSystem)
 include(AkantuMacros)
 
 #cmake_activate_debug_message()
@@ -75,7 +76,7 @@ include(AkantuMacros)
 #===============================================================================
 # AKANTU version number.  An even minor number corresponds to releases.
 set(AKANTU_MAJOR_VERSION 2)
-set(AKANTU_MINOR_VERSION 2)
+set(AKANTU_MINOR_VERSION 3)
 set(AKANTU_PATCH_VERSION 0)
 define_project_version()
 
@@ -83,38 +84,38 @@ define_project_version()
 # Options
 #===============================================================================
 # Debug
-#option(AKANTU_DEBUG "Compiles akantu with the debug messages" ON)
-#mark_as_advanced(AKANTU_DEBUG)
-
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DAKANTU_NDEBUG"
   CACHE STRING "Flags used by the compiler during release builds" FORCE)
 
 add_flags(cxx "-Wall")
 
-# if(NOT AKANTU_DEBUG)
-#   set(AKANTU_NDEBUG ON)
-# else()
-#   set(AKANTU_NDEBUG OFF)
-# endif()
-
 #Profiling
-set(CMAKE_CXX_FLAGS_PROFILING "-g -pg" CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg" CACHE STRING "Flags used by the linker during profiling builds")
-set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg" CACHE STRING "Flags used by the linker during profiling builds")
-mark_as_advanced(CMAKE_CXX_FLAGS_PROFILING)
-mark_as_advanced(CMAKE_EXE_LINKER_FLAGS_PROFILING)
-mark_as_advanced(CMAKE_SHARED_LINKER_FLAGS_PROFILING)
+set(CMAKE_CXX_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+  CACHE STRING "Flags used by the compiler during profiling builds")
+set(CMAKE_C_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+  CACHE STRING "Flags used by the compiler during profiling builds")
+set(CMAKE_Fortran_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+  CACHE STRING "Flags used by the compiler during profiling builds")
+set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg"
+  CACHE STRING "Flags used by the linker during profiling builds")
+set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg"
+  CACHE STRING "Flags used by the linker during profiling builds")
+mark_as_advanced(
+  CMAKE_CXX_FLAGS_PROFILING
+  CMAKE_C_FLAGS_PROFILING
+  CMAKE_Fortran_FLAGS_PROFILING
+  CMAKE_EXE_LINKER_FLAGS_PROFILING
+  CMAKE_SHARED_LINKER_FLAGS_PROFILING
+  )
 
 include(CMakeDetermineCCompiler)
-cmake_deactivate_debug_message(PackagesSystem)
 #===============================================================================
 # Dependencies
 #===============================================================================
-set(AKANTU_BOOST_COMPONENT)
-set(AKANTU_EXTRA_TARGET_DEPENDENCIES)
-add_all_packages(${PROJECT_SOURCE_DIR}/packages ${PROJECT_SOURCE_DIR}/src)
+declare_akantu_types()
 
-include_boost()
+package_list_packages(${PROJECT_SOURCE_DIR}/packages
+  EXTRA_PACKAGES_FOLDER ${PROJECT_SOURCE_DIR}/extra_packages)
 
 ## meta option \todo better way to do it when multiple package give enable the
 ## same feature
@@ -150,8 +151,12 @@ endif()
 option(AKANTU_EXAMPLES "Activate examples" OFF)
 option(AKANTU_TESTS "Activate tests" OFF)
 
+include(AkantuTestsMacros)
+include(AkantuExamplesMacros)
+
 if(AKANTU_EXAMPLES OR AKANTU_TESTS)
-  include(AkantuTestAndExamples)
+  option(AKANTU_BUILD_ALL_EXAMPLES "Build all examples")
+  option(AKANTU_BUILD_ALL_TESTS "Build all tests")
   find_package(GMSH REQUIRED)
 endif()
 
@@ -159,16 +164,8 @@ if(AKANTU_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-if(AKANTU_TESTS)
-  enable_testing()
-  include(CTest)
-  mark_as_advanced(BUILD_TESTING)
-  set(AKANTU_TESTS_EXCLUDE_FILES "" CACHE INTERNAL "")
-  add_subdirectory(test)
-else()
-  set(AKANTU_TESTS_EXCLUDE_FILES "${PROJECT_SOURCE_DIR}/test" CACHE INTERNAL "")
-endif()
 
+add_test_tree(test)
 
 #===============================================================================
 # Install and Packaging
@@ -177,4 +174,13 @@ include(AkantuInstall)
 
 if(NOT AKANTU_DISABLE_CPACK)
   include(AkantuCPack)
+endif()
+
+#===============================================================================
+# Install and Packaging
+#===============================================================================
+package_is_activated(python_interface _python_act)
+if(_python_act)
+  add_subdirectory(python)
+#  add_subdirectory(akantu4py)
 endif()

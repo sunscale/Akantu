@@ -52,8 +52,10 @@ int main(int argc, char *argv[])
   UInt nb_partitions = 8;
   akantu::Mesh mesh(dim);
   mesh.read("quad.msh");
+
   ElementTypeMapArray<UInt> partition;
   UInt nb_component = 1;
+
   GhostType gt = _not_ghost;
   Mesh::type_iterator tit = mesh.firstType(dim, gt);
   Mesh::type_iterator tend = mesh.lastType(dim, gt);
@@ -66,7 +68,7 @@ int main(int argc, char *argv[])
       Real barycenter[dim];
       mesh.getBarycenter(i, *tit, barycenter, gt);
       Real real_proc = barycenter[0] * nb_partitions;
-      if(real_proc-round(real_proc) < 10*std::numeric_limits<Real>::min()) {
+      if(std::abs(real_proc - round(real_proc)) < 10*std::numeric_limits<Real>::epsilon()) {
         type_partition_reference(i) = round(real_proc);
       } else {
         std::cout << "*";
@@ -75,6 +77,7 @@ int main(int argc, char *argv[])
       std::cout << "Assigned proc " << type_partition_reference(i) << " to elem " << i << " (type " << *tit << ", barycenter x-coordinate " << barycenter[0] << ")" << std::endl;
     }
   }
+
 
   akantu::MeshPartitionMeshData * partitioner = new akantu::MeshPartitionMeshData(mesh, dim);
   partitioner->setPartitionMapping(partition);
@@ -90,14 +93,20 @@ int main(int argc, char *argv[])
     }
   }
 
-#ifdef AKANTU_USE_IOHELPER
+  //#define DEBUG_TEST
+
+#ifdef DEBUG_TEST
   DumperParaview dumper("test-mesh-data-partition");
-  dumper::Field * field =
+  dumper::Field * field1 =
     new dumper::ElementalField<UInt>(partitioner->getPartitions(), dim);
+  dumper::Field * field2 =
+    new dumper::ElementalField<UInt>(partition, dim);
   dumper.registerMesh(mesh, dim);
-  dumper.registerField("partitions", field);
+  dumper.registerField("partitions"    , field1);
+  dumper.registerField("partitions_ref", field2);
   dumper.dump();
-#endif //AKANTU_USE_IOHELPER
+#endif
+
 
   delete partitioner;
 

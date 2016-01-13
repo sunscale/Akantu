@@ -35,9 +35,6 @@
 #if defined(AKANTU_COHESIVE_ELEMENT)
 #  include "cohesive_element.hh"
 #endif
-#if defined(AKANTU_IGFEM)
-#  include "igfem_element.hh"
-#endif
 
 #ifndef __AKANTU_MESH_INLINE_IMPL_CC__
 #define __AKANTU_MESH_INLINE_IMPL_CC__
@@ -51,8 +48,8 @@ inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh) :
 }
 
 /* -------------------------------------------------------------------------- */
-inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh) :
-  new_numbering("new_numbering", mesh.getID()) {
+inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh, ID new_numbering_id) :
+  new_numbering(new_numbering_id, mesh.getID()) {
 }
 
 /* -------------------------------------------------------------------------- */
@@ -324,14 +321,10 @@ inline ElementTypeMapArray<T> & Mesh::registerData(const std::string & data_name
 /* -------------------------------------------------------------------------- */
 inline UInt Mesh::getNbElement(const ElementType & type,
 			       const GhostType & ghost_type) const {
-  AKANTU_DEBUG_IN();
-
   try {
     const Array<UInt> & conn = connectivities(type, ghost_type);
-    AKANTU_DEBUG_OUT();
     return conn.getSize();
   } catch (...) {
-    AKANTU_DEBUG_OUT();
     return 0;
   }
 }
@@ -340,14 +333,12 @@ inline UInt Mesh::getNbElement(const ElementType & type,
 inline UInt Mesh::getNbElement(const UInt spatial_dimension,
 			       const GhostType & ghost_type,
 			       const ElementKind & kind) const {
-  AKANTU_DEBUG_IN();
   UInt nb_element = 0;
 
   type_iterator it   = firstType(spatial_dimension, ghost_type, kind);
   type_iterator last = lastType(spatial_dimension, ghost_type, kind);
   for (; it != last; ++it) nb_element += getNbElement(*it, ghost_type);
 
-  AKANTU_DEBUG_OUT();
   return nb_element;
 }
 
@@ -356,8 +347,6 @@ inline UInt Mesh::getNbElement(const UInt spatial_dimension,
 inline void Mesh::getBarycenter(UInt element, const ElementType & type,
 				Real * barycenter,
 				GhostType ghost_type) const {
-  AKANTU_DEBUG_IN();
-
   UInt * conn_val = getConnectivity(type, ghost_type).storage();
   UInt nb_nodes_per_element = getNbNodesPerElement(type);
 
@@ -371,8 +360,6 @@ inline void Mesh::getBarycenter(UInt element, const ElementType & type,
   }
 
   Math::barycenter(local_coord, nb_nodes_per_element, spatial_dimension, barycenter);
-
-  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -423,14 +410,36 @@ inline UInt Mesh::getSpatialDimension(const ElementType & type) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline ElementType Mesh::getFacetType(const ElementType & type) {
+inline UInt Mesh::getNbFacetTypes(const ElementType & type, UInt t) {
+  UInt nb = 0;
+#define GET_NB_FACET_TYPE(type)					\
+  nb = ElementClass<type>::getNbFacetTypes()
+
+  AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_NB_FACET_TYPE);
+#undef GET_NB_FACET_TYPE
+  return nb;
+}
+
+/* -------------------------------------------------------------------------- */
+inline ElementType Mesh::getFacetType(const ElementType & type, UInt t) {
   ElementType surface_type = _not_defined;
 #define GET_FACET_TYPE(type)					\
-  surface_type = ElementClass<type>::getFacetType()
+  surface_type = ElementClass<type>::getFacetType(t)
   AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_FACET_TYPE);
 #undef GET_FACET_TYPE
 
   return surface_type;
+}
+
+/* -------------------------------------------------------------------------- */
+inline VectorProxy<ElementType> Mesh::getAllFacetTypes(const ElementType & type) {
+#define GET_FACET_TYPE(type)					\
+  UInt nb = ElementClass<type>::getNbFacetTypes();		\
+  ElementType * elt_ptr = const_cast<ElementType *>(ElementClass<type>::getFacetTypeInternal()); \
+  return VectorProxy<ElementType>(elt_ptr, nb);
+
+  AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_FACET_TYPE);
+#undef GET_FACET_TYPE
 }
 
 /* -------------------------------------------------------------------------- */
@@ -449,35 +458,48 @@ inline UInt Mesh::getNbFacetsPerElement(const ElementType & type) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline MatrixProxy<UInt> Mesh::getFacetLocalConnectivity(const ElementType & type) {
+inline UInt Mesh::getNbFacetsPerElement(const ElementType & type, UInt t) {
   AKANTU_DEBUG_IN();
 
-  MatrixProxy<UInt> mat;
+  UInt n_facet = 0;
+#define GET_NB_FACET(type)				\
+  n_facet = ElementClass<type>::getNbFacetsPerElement(t)
+
+  AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_NB_FACET);
+#undef GET_NB_FACET
+
+  AKANTU_DEBUG_OUT();
+  return n_facet;
+}
+
+/* -------------------------------------------------------------------------- */
+inline MatrixProxy<UInt> Mesh::getFacetLocalConnectivity(const ElementType & type, UInt t) {
+  AKANTU_DEBUG_IN();
 
 #define GET_FACET_CON(type)						\
-  mat = ElementClass<type>::getFacetLocalConnectivityPerElement()
+  AKANTU_DEBUG_OUT();							\
+  return ElementClass<type>::getFacetLocalConnectivityPerElement(t)
 
   AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_FACET_CON);
 #undef GET_FACET_CON
 
   AKANTU_DEBUG_OUT();
-  return mat;
+  return Matrix<UInt>(); // This avoid a compilation warning but will certainly
+			 // also cause a segfault if reached
 }
 
 /* -------------------------------------------------------------------------- */
-inline Matrix<UInt> Mesh::getFacetConnectivity(UInt element,
-					       const ElementType & type,
-					       const GhostType & ghost_type) const {
+inline Matrix<UInt> Mesh::getFacetConnectivity(const Element & element, UInt t) const {
   AKANTU_DEBUG_IN();
 
-  Matrix<UInt> local_facets(getFacetLocalConnectivity(type), false);
+  Matrix<UInt> local_facets(getFacetLocalConnectivity(element.type, t), false);
   Matrix<UInt> facets(local_facets.rows(), local_facets.cols());
 
-  const Array<UInt> & conn = connectivities(type, ghost_type);
+  const Array<UInt> & conn = connectivities(element.type, element.ghost_type);
 
   for (UInt f = 0; f < facets.rows(); ++f) {
     for (UInt n = 0; n < facets.cols(); ++n) {
-      facets(f, n) = conn(element, local_facets(f, n));
+      facets(f, n) = conn(element.element, local_facets(f, n));
     }
   }
 
@@ -548,6 +570,29 @@ inline UInt Mesh::getNbGlobalNodes() const {
 }
 
 /* -------------------------------------------------------------------------- */
+inline UInt Mesh::getNbNodesPerElementList(const Array<Element> & elements) {
+  UInt nb_nodes_per_element = 0;
+  UInt nb_nodes = 0;
+  ElementType current_element_type = _not_defined;
+
+  Array<Element>::const_iterator<Element> el_it = elements.begin();
+  Array<Element>::const_iterator<Element> el_end = elements.end();
+
+  for (; el_it != el_end; ++el_it) {
+    const Element & el = *el_it;
+
+    if(el.type != current_element_type) {
+      current_element_type = el.type;
+      nb_nodes_per_element = Mesh::getNbNodesPerElement(current_element_type);
+    }
+
+    nb_nodes += nb_nodes_per_element;
+  }
+
+  return nb_nodes;
+}
+/* -------------------------------------------------------------------------- */
+
 
 __END_AKANTU__
 

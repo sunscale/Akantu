@@ -36,11 +36,14 @@
 
 __BEGIN_AKANTU__
 
+/// internal field class for cohesive materials
 template<typename T>
 class CohesiveInternalField : public InternalField<T> {
 public:
   CohesiveInternalField(const ID & id, Material & material);
   virtual ~CohesiveInternalField();
+
+  /// initialize the field to a given number of component
   void initialize(UInt nb_component);
 private:
   CohesiveInternalField operator=(__attribute__((unused)) const CohesiveInternalField & other) {};
@@ -56,6 +59,8 @@ class FacetInternalField : public InternalField<T> {
 public:
   FacetInternalField(const ID & id, Material & material);
   virtual ~FacetInternalField();
+
+  /// initialize the field to a given number of component
   void initialize(UInt nb_component);
 };
 

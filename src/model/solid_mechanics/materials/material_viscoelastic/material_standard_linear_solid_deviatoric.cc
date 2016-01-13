@@ -46,9 +46,9 @@ MaterialStandardLinearSolidDeviatoric<spatial_dimension>::MaterialStandardLinear
 
   AKANTU_DEBUG_IN();
 
-  this->registerParam("Eta",  eta,   1., ParamAccessType(_pat_parsable | _pat_modifiable), "Viscosity");
-  this->registerParam("Ev",   Ev,    1., ParamAccessType(_pat_parsable | _pat_modifiable), "Stiffness of the viscous element");
-  this->registerParam("Einf", E_inf, 1., ParamAccessType(_pat_readable), "Stiffness of the elastic element");
+  this->registerParam("Eta",  eta,   Real(1.), ParamAccessType(_pat_parsable | _pat_modifiable), "Viscosity");
+  this->registerParam("Ev",   Ev,    Real(1.), ParamAccessType(_pat_parsable | _pat_modifiable), "Stiffness of the viscous element");
+  this->registerParam("Einf", E_inf, Real(1.), ParamAccessType(_pat_readable), "Stiffness of the elastic element");
 
   UInt stress_size = spatial_dimension * spatial_dimension;
 
@@ -150,7 +150,7 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::computeStress(Ele
 
   this->template gradUToEpsilon<spatial_dimension>(grad_u, epsilon_d);
   Real Theta = epsilon_d.trace();
-  epsilon_v.eye(1./3. * Theta);
+  epsilon_v.eye(Theta / Real(3.));
   epsilon_d -= epsilon_v;
 
   Matrix<Real> U_rond_prim(spatial_dimension, spatial_dimension);
@@ -214,7 +214,7 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::updateDissipatedE
   this->template gradUToEpsilon<spatial_dimension>(grad_u, epsilon_d);
 
   Real Theta = epsilon_d.trace();
-  epsilon_v.eye(1./3. * Theta);
+  epsilon_v.eye(Theta / Real(3.));
   epsilon_d -= epsilon_v;
 
   q.copy(dev_s);
@@ -267,7 +267,7 @@ template<UInt spatial_dimension>
 Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getDissipatedEnergy(ElementType type, UInt index) const {
   AKANTU_DEBUG_IN();
 
-  UInt nb_quadrature_points = this->model->getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points = this->model->getFEEngine().getNbIntegrationPoints(type);
   Array<Real>::const_vector_iterator it = this->dissipated_energy(type, _not_ghost).begin(nb_quadrature_points);
   UInt gindex = (this->element_filter(type, _not_ghost))(index);
 
@@ -293,6 +293,6 @@ Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getEnergy(std::st
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialStandardLinearSolidDeviatoric);
+INSTANTIATE_MATERIAL(MaterialStandardLinearSolidDeviatoric);
 
 __END_AKANTU__

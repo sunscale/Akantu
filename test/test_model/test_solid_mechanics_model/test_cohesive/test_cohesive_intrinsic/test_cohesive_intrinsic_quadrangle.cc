@@ -37,8 +37,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
-#include "dumper_paraview.hh"
-#include "dumper_nodal_field.hh" 
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -109,16 +107,13 @@ int main(int argc, char *argv[]) {
   model.addDumpField("stress");
   model.addDumpField("grad_u");
   model.addDumpField("force");
-  model.dump();
 
-  DumperParaview dumper("cohesive_elements_quadrangle");
-  dumper.registerMesh(mesh, spatial_dimension, _not_ghost, _ek_cohesive);
-  dumper::NodalField<Real> * cohesive_displacement =
-    new dumper::NodalField<Real>(model.getDisplacement());
-  
-  cohesive_displacement->setPadding(3);
-  dumper.registerField("displacement", cohesive_displacement);
-  dumper.dump();
+  model.setBaseNameToDumper("cohesive elements", "cohesive_elements_quadrangle");
+  model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
+  model.addDumpFieldToDumper("cohesive elements", "damage");
+
+  model.dump();
+  model.dump("cohesive elements");
 
   /// update displacement
   Array<UInt> elements;
@@ -159,7 +154,7 @@ int main(int argc, char *argv[]) {
 
     if(s % 1 == 0) {
       model.dump();
-      dumper.dump();
+      model.dump("cohesive elements");
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
     }
 

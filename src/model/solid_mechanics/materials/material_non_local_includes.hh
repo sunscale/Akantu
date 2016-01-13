@@ -34,13 +34,6 @@
 #  include "material_mazars_non_local.hh"
 #endif
 
-#define AKANTU_MATERIAL_WEIGHT_FUNCTION_TMPL_LIST			\
-  ((stress_wf, (StressBasedWeightFunction  )))				\
-  ((damage_wf, (DamagedWeightFunction      )))				\
-  ((remove_wf, (RemoveDamagedWeightFunction)))				\
-  ((base_wf,   (BaseWeightFunction         )))
-
 #define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_LIST				\
-  ((3, (marigo_non_local       , MaterialMarigoNonLocal,		\
-	AKANTU_MATERIAL_WEIGHT_FUNCTION_TMPL_LIST)))			\
-  ((2, (mazars_non_local       , MaterialMazarsNonLocal       )))
+  ((2, (marigo_non_local       , MaterialMarigoNonLocal)))		\
+  ((2, (mazars_non_local       , MaterialMazarsNonLocal)))

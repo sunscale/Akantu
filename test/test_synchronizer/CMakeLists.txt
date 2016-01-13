@@ -35,7 +35,7 @@ add_mesh(test_synchronizer_communication_mesh
 
 register_test(test_synchronizer_communication
   SOURCES test_synchronizer_communication.cc
-  DEPENDENCIES test_synchronizer_communication_mesh
+  DEPENDS test_synchronizer_communication_mesh
   PACKAGE parallel
   )
 
@@ -46,14 +46,22 @@ endif()
 
 register_test(test_grid_synchronizer
   SOURCES test_grid_synchronizer.cc test_data_accessor.hh
-  DEPENDENCIES test_synchronizer_communication_mesh test_grid_synchronizer_check_neighbors
+  DEPENDS test_synchronizer_communication_mesh test_grid_synchronizer_check_neighbors
   EXTRA_FILES test_grid_synchronizer_check_neighbors.cc test_grid_tools.hh
   PACKAGE damage_non_local
   )
 
 register_test(test_dof_synchronizer
   SOURCES test_dof_synchronizer.cc test_data_accessor.hh
-  FILES_TO_COPY bar.msh)
+  FILES_TO_COPY bar.msh
+  PACKAGE parallel
+  )
+
+register_test(test_dof_synchronizer_communication
+  SOURCES test_dof_synchronizer_communication.cc test_dof_data_accessor.hh
+  DEPENDS test_synchronizer_communication_mesh
+  PACKAGE parallel
+  )
 
 register_test(test_data_distribution
   SOURCES test_data_distribution.cc

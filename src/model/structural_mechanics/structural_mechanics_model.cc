@@ -191,7 +191,7 @@ void StructuralMechanicsModel::initArrays() {
   Mesh::type_iterator end = getFEEngine().getMesh().lastType(spatial_dimension, _not_ghost, _ek_structural);
   for (; it != end; ++it) {
     UInt nb_element = getFEEngine().getMesh().getNbElement(*it);
-    UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(*it);
+    UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(*it);
 
     element_material.alloc(nb_element, 1, *it, _not_ghost);
     set_ID.alloc(nb_element, 1, *it, _not_ghost);
@@ -559,7 +559,7 @@ void StructuralMechanicsModel::implicitCorr() {
     Real * disp_val = displacement_rotation->storage();
     incr_val = increment->storage();
 
-    for (UInt j = 0; j < nb_nodes *nb_degree_of_freedom; ++j, ++disp_val){
+    for (UInt j = 0; j < nb_nodes *nb_degree_of_freedom; ++j, ++disp_val, ++incr_val){
       *disp_val += *incr_val;
     }
   }
@@ -731,7 +731,7 @@ bool StructuralMechanicsModel::testConvergence<_scc_residual>(Real tolerance, Re
   for (UInt n = 0; n < nb_nodes; ++n) {
     bool is_local_node = mesh.isLocalOrMasterNode(n);
     if(is_local_node) {
-      for (UInt d = 0; d < spatial_dimension; ++d) {
+      for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
         if(!(*blocked_dofs_val)) {
           norm += *residual_val * *residual_val;
         }
@@ -800,7 +800,7 @@ bool StructuralMechanicsModel::testConvergenceIncrement(Real tolerance, Real & e
 template<>
 void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_2>(Array<Real> & tangent_moduli) {
   UInt nb_element                 = getFEEngine().getMesh().getNbElement(_bernoulli_beam_2);
-  UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(_bernoulli_beam_2);
+  UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(_bernoulli_beam_2);
   UInt tangent_size = 2;
 
   Array<Real>::matrix_iterator D_it = tangent_moduli.begin(tangent_size, tangent_size);
@@ -822,7 +822,7 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_2>(Array<Rea
 template<>
 void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_3>(Array<Real> & tangent_moduli) {
   UInt nb_element                 = getFEEngine().getMesh().getNbElement(_bernoulli_beam_3);
-  UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(_bernoulli_beam_3);
+  UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(_bernoulli_beam_3);
   UInt tangent_size = 4;
 
   Array<Real>::matrix_iterator D_it = tangent_moduli.begin(tangent_size, tangent_size);
@@ -848,7 +848,7 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_3>(Array<Rea
 template<>
 void StructuralMechanicsModel::computeTangentModuli<_kirchhoff_shell>(Array<Real> & tangent_moduli) {
   UInt nb_element                 = getFEEngine().getMesh().getNbElement(_kirchhoff_shell);
-  UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(_kirchhoff_shell);
+  UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(_kirchhoff_shell);
   UInt tangent_size = 6;
 
   Array<Real>::matrix_iterator D_it = tangent_moduli.begin(tangent_size, tangent_size);
@@ -883,7 +883,7 @@ template<>
 void StructuralMechanicsModel::transferBMatrixToSymVoigtBMatrix<_bernoulli_beam_2>(Array<Real> & b, bool local) {
   UInt nb_element                 = getFEEngine().getMesh().getNbElement(_bernoulli_beam_2);
   UInt nb_nodes_per_element       = Mesh::getNbNodesPerElement(_bernoulli_beam_2);
-  UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(_bernoulli_beam_2);
+  UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(_bernoulli_beam_2);
 
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
   Array<Real>::const_vector_iterator shape_Np  = fem.getShapesDerivatives(_bernoulli_beam_2, _not_ghost, 0).begin(nb_nodes_per_element);
@@ -927,7 +927,7 @@ void StructuralMechanicsModel::transferBMatrixToSymVoigtBMatrix<_bernoulli_beam_
 
   UInt nb_element                 = getFEEngine().getMesh().getNbElement(_bernoulli_beam_3);
   UInt nb_nodes_per_element       = Mesh::getNbNodesPerElement(_bernoulli_beam_3);
-  UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(_bernoulli_beam_3);
+  UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(_bernoulli_beam_3);
 
   Array<Real>::const_vector_iterator shape_Np  = fem.getShapesDerivatives(_bernoulli_beam_3, _not_ghost, 0).begin(nb_nodes_per_element);
   Array<Real>::const_vector_iterator shape_Mpp = fem.getShapesDerivatives(_bernoulli_beam_3, _not_ghost, 1).begin(nb_nodes_per_element);
@@ -979,7 +979,7 @@ void StructuralMechanicsModel::transferBMatrixToSymVoigtBMatrix<_kirchhoff_shell
 
   UInt nb_element                 = getFEEngine().getMesh().getNbElement(_kirchhoff_shell);
   UInt nb_nodes_per_element       = Mesh::getNbNodesPerElement(_kirchhoff_shell);
-  UInt nb_quadrature_points       = getFEEngine().getNbQuadraturePoints(_kirchhoff_shell);
+  UInt nb_quadrature_points       = getFEEngine().getNbIntegrationPoints(_kirchhoff_shell);
 
 
 
@@ -1127,7 +1127,8 @@ dumper::Field * StructuralMechanicsModel
 ::createElementalField(const std::string & field_name, 
 		       const std::string & group_name,
 		       bool padding_flag,
-		       const ElementKind & kind){
+		       const ElementKind & kind,
+		       const std::string & fe_engine_id){
 
 
   dumper::Field * field = NULL;

@@ -60,6 +60,7 @@ namespace akantu {
   class IntegrationScheme2ndOrder;
   class SparseMatrix;
   class DumperIOHelper;
+  class NonLocalManager;
 }
 /* -------------------------------------------------------------------------- */
 
@@ -82,7 +83,7 @@ class SolidMechanicsModel : public Model,
 			    public DataAccessor,
 			    public MeshEventHandler,
 			    public BoundaryCondition<SolidMechanicsModel>,
-                            public EventHandlerManager<SolidMechanicsModelEventHandler> {
+			    public EventHandlerManager<SolidMechanicsModelEventHandler> {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -120,10 +121,11 @@ public:
   void initFEEngineBoundary();
 
   /// register the tags associated with the parallel synchronizer
-  void initParallel(MeshPartition *partition, DataAccessor *data_accessor = NULL);
+  virtual void initParallel(MeshPartition *partition,
+			    DataAccessor *data_accessor = NULL);
 
   /// allocate all vectors
-  void initArrays();
+  virtual void initArrays();
 
   /// allocate all vectors
   void initArraysPreviousDisplacment();
@@ -140,12 +142,15 @@ public:
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
+  /// re-initialize model to set fields to 0
+  void reInitialize();
+
   /* ------------------------------------------------------------------------ */
   /* PBC                                                                      */
   /* ------------------------------------------------------------------------ */
 public:
   /// change the equation number for proper assembly when using PBC
-  void changeEquationNumberforPBC(std::map <UInt, UInt> & pbc_pair);
+  //  void changeEquationNumberforPBC(std::map <UInt, UInt> & pbc_pair);
 
   /// synchronize Residual for output
   void synchronizeResidual();
@@ -181,10 +186,13 @@ public:
    * In the case of not lumped mass call solveDynamic<_acceleration_corrector>
    */
   void updateAcceleration();
-
+  ///Update the increment of displacement
   void updateIncrement();
+  ///Copy the actuel displacement into previous displacement 
   void updatePreviousDisplacement();
+  ///Save stress and strain through EventManager
   void saveStressAndStrainBeforeDamage();
+  ///Update energies through EventManager
   void updateEnergiesAfterDamage();
 
   /// Solve the system @f[ A x = \alpha b @f] with A a lumped matrix
@@ -270,22 +278,17 @@ public:
   /// compute the Cauchy stress on user demand.
   void computeCauchyStresses();
 
+  /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
+  template <NewmarkBeta::IntegrationSchemeCorrectorType type>
+  void solve(Array<Real> &increment, Real block_val = 1.,
+             bool need_factorize = true, bool has_profile_changed = false);
+
 protected:
   /// finish the computation of residual to solve in increment
   void updateResidualInternal();
 
   /// compute the support reaction and store it in force
   void updateSupportReaction();
-
-
-public:
-
-  //protected: Daniel changed it just for a test
-  /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
-  template <NewmarkBeta::IntegrationSchemeCorrectorType type>
-  void solve(Array<Real> &increment, Real block_val = 1.,
-             bool need_factorize = true, bool has_profile_changed = false,
-             const Array<Real> &rhs = Array<Real>());
 
 private:
   /// re-initialize the J matrix (to use if the profile of K changed)
@@ -321,6 +324,10 @@ public:
   /// reassigns materials depending on the material selector
   virtual void reassignMaterial();
 
+  /// apply a constant eigen_grad_u on all quadrature points of a given material
+  virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const ID & material_name, const GhostType ghost_type = _not_ghost);
+
+
 protected:
   /// register a material in the dynamic database
   template <typename M>
@@ -328,6 +335,9 @@ protected:
 
   /// read the material files to instantiate all the materials
   void instantiateMaterials();
+
+  /// set the element_id_by_material and add the elements to the good materials
+  void assignMaterialToElements(const ElementTypeMapArray<UInt> * filter = NULL);
 
   /* ------------------------------------------------------------------------ */
   /* Mass (solid_mechanics_model_mass.cc)                                     */
@@ -352,13 +362,20 @@ protected:
 		  ElementType    type,
 		  GhostType      ghost_type);
 
+  /// compute the kinetic energy
+  Real getKineticEnergy();
+  Real getKineticEnergy(const ElementType & type, UInt index);
+
+  /// compute the external work (for impose displacement, the velocity should be given too)
+  Real getExternalWork();
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
+
   inline virtual UInt getNbDataForElements(const Array <Element> & elements,
-					   SynchronizationTag      tag) const;
+					   SynchronizationTag tag) const;
 
   inline virtual void packElementData(CommunicationBuffer &   buffer,
 				      const Array <Element> & elements,
@@ -398,6 +415,12 @@ protected:
 				 const ElementTypeMapArray<UInt> &    new_numbering,
 				 const RemovedElementsEvent & event);
 
+  virtual void onElementsChanged(__attribute__((unused)) const Array<Element> & old_elements_list,
+				 __attribute__((unused)) const Array<Element> & new_elements_list,
+                                 __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+                                 __attribute__((unused)) const ChangedElementsEvent & event) {};
+
+
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface (kept for convenience) and dumper relative functions  */
   /* ------------------------------------------------------------------------ */
@@ -408,16 +431,18 @@ public:
 
   //! decide wether a field is a material internal or not
   bool isInternal(const std::string & field_name, const ElementKind & element_kind);
+#ifndef SWIG
   //! give the amount of data per element
-  ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-					     const ElementKind & kind);
+  virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
+						      const ElementKind & kind);
 
-  //! flatten a given material internal field 
+  //! flatten a given material internal field
   ElementTypeMapArray<Real> & flattenInternal(const std::string & field_name,
-					     const ElementKind & kind);
+					      const ElementKind & kind,
+					      const GhostType ghost_type = _not_ghost);
   //! flatten all the registered material internals
   void flattenAllRegisteredInternals(const ElementKind & kind);
-
+#endif
 
   virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
 					       const std::string & group_name,
@@ -426,14 +451,13 @@ public:
   virtual dumper::Field * createNodalFieldBool(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag);
-  
 
-  virtual dumper::Field * createElementalField(const std::string & field_name, 
+
+  virtual dumper::Field * createElementalField(const std::string & field_name,
 					       const std::string & group_name,
 					       bool padding_flag,
+					       const UInt & spatial_dimension,
 					       const ElementKind & kind);
-
-
 
   virtual void dump(const std::string & dumper_name);
 
@@ -458,6 +482,9 @@ public:
   AKANTU_GET_MACRO(TimeStep, time_step, Real);
   /// set the value of the time step
   void setTimeStep(Real time_step);
+
+  /// return the of iterations done in the last solveStep
+  AKANTU_GET_MACRO(NumberIter, n_iter, UInt);
 
   /// get the value of the conversion from forces/ mass to acceleration
   AKANTU_GET_MACRO(F_M2A, f_m2a, Real);
@@ -533,16 +560,6 @@ public:
   /// compute the stable time step
   Real getStableTimeStep();
 
-  /// compute the potential energy
-  Real getPotentialEnergy();
-
-  /// compute the kinetic energy
-  Real getKineticEnergy();
-  Real getKineticEnergy(const ElementType & type, UInt index);
-
-  /// compute the external work (for impose displacement, the velocity should be given too)
-  Real getExternalWork();
-
   /// get the energies
   Real getEnergy(const std::string & energy_id);
 
@@ -579,28 +596,29 @@ public:
   /// get synchronizer
   AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const DistributedSynchronizer &);
 
-  AKANTU_GET_MACRO(ElementIndexByMaterial, element_index_by_material, const ElementTypeMapArray <UInt> &);
+  AKANTU_GET_MACRO(MaterialByElement, material_index, const ElementTypeMapArray<UInt> &);
 
   /// vectors containing local material element index for each global element index
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(ElementIndexByMaterial, element_index_by_material, UInt);
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(ElementIndexByMaterial, element_index_by_material, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialByElement, material_index, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialByElement, material_index, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialLocalNumbering, material_local_numbering, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering, material_local_numbering, UInt);
 
   /// Get the type of analysis method used
   AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
 
+  /// get the non-local manager
+  AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, NonLocalManager &);
 
   template <int dim, class model_type>
   friend struct ContactData;
 
   template <int Dim, AnalysisMethod s, ContactResolutionMethod r>
   friend class ContactResolution;
-            
 
 protected:
   friend class Material;
 
-  template <UInt DIM, template <UInt> class WeightFunction>
-  friend class MaterialNonLocal;
 protected:
   /// compute the stable time step
   Real getStableTimeStep(const GhostType & ghost_type);
@@ -609,6 +627,9 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  /// number of iterations
+  UInt n_iter;
+
   /// time step
   Real time_step;
 
@@ -658,14 +679,23 @@ protected:
   /// t^2}, d = \frac{\gamma}{\beta \Delta t} @f]
   SparseMatrix *jacobian_matrix;
 
-  /// vectors containing local material element index for each global element index
-  ElementTypeMapArray<UInt> element_index_by_material;
+  /// Arrays containing the material index for each element
+  ElementTypeMapArray<UInt> material_index;
 
+  /// Arrays containing the position in the element filter of the material (material's local numbering)
+  ElementTypeMapArray<UInt> material_local_numbering;
+
+#ifdef SWIGPYTHON
+public:
+#endif
   /// list of used materials
   std::vector <Material *> materials;
 
   /// mapping between material name and material internal id
   std::map <std::string, UInt> materials_names_to_id;
+#ifdef SWIGPYTHON
+protected:
+#endif
 
   /// class defining of to choose a material
   MaterialSelector *material_selector;
@@ -696,6 +726,13 @@ protected:
 
   /// map a registered internals to be flattened for dump purposes
   std::map<std::pair<std::string,ElementKind>,ElementTypeMapArray<Real> *> registered_internals;
+
+  /// pointer to non-local manager: For non-local continuum damage computations
+  NonLocalManager * non_local_manager; 
+
+  /// pointer to the pbc synchronizer
+  PBCSynchronizer * pbc_synch;
+
 };
 
 
@@ -703,7 +740,7 @@ protected:
 namespace BC {
   namespace Neumann {
     typedef FromHigherDim FromStress;
-    typedef FromSameDim FromTraction;
+    typedef FromSameDim   FromTraction;
   }
 }
 
@@ -731,7 +768,7 @@ inline std::ostream & operator << (std::ostream & stream, const SolidMechanicsMo
 
 __END_AKANTU__
 
-	#include "material_selector_tmpl.hh"
 
+#include "material_selector_tmpl.hh"
 
-	#endif /* __AKANTU_SOLID_MECHANICS_MODEL_HH__ */
+#endif /* __AKANTU_SOLID_MECHANICS_MODEL_HH__ */

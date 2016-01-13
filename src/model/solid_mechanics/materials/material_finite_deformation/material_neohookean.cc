@@ -40,11 +40,11 @@ MaterialNeohookean<spatial_dimension>::MaterialNeohookean(SolidMechanicsModel & 
   PlaneStressToolbox<spatial_dimension>(model, id) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("E", E, 0., _pat_parsable | _pat_modifiable, "Young's modulus");
-  this->registerParam("nu", nu, 0.5, _pat_parsable | _pat_modifiable, "Poisson's ratio");
-  this->registerParam("lambda", lambda, _pat_readable, "First Lamé coefficient");
-  this->registerParam("mu", mu, _pat_readable, "Second Lamé coefficient");
-  this->registerParam("kapa", kpa, _pat_readable, "Bulk coefficient");
+  this->registerParam(     "E",      E, Real( 0.), _pat_parsable | _pat_modifiable, "Young's modulus");
+  this->registerParam(    "nu",     nu, Real(0.5), _pat_parsable | _pat_modifiable, "Poisson's ratio");
+  this->registerParam("lambda", lambda,                        _pat_readable, "First Lamé coefficient");
+  this->registerParam(    "mu",     mu,                        _pat_readable, "Second Lamé coefficient");
+  this->registerParam(  "kapa",    kpa,                        _pat_readable, "Bulk coefficient");
 
   this->finite_deformation = true;
   this->initialize_third_axis_deformation = true;
@@ -266,6 +266,6 @@ Real MaterialNeohookean<spatial_dimension>::getShearWaveSpeed(__attribute__((unu
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialNeohookean);
+INSTANTIATE_MATERIAL(MaterialNeohookean);
 
 __END_AKANTU__

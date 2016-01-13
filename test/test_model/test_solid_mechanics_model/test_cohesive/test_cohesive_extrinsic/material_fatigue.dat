@@ -1,0 +1,15 @@
+material elastic [
+	 name = bulk
+	 rho = 1   # density
+	 E   = 1   # young's modulus
+	 nu  = 0   # poisson's ratio
+]
+
+material cohesive_linear_fatigue [
+	 name = cohesive
+	 sigma_c = 1
+	 beta = 1
+	 delta_c = 1
+	 delta_f = 1
+	 count_switches = true
+]

@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
     model.checkCohesiveStress();
     model.solveStep();
 
-    if(s % 1 == 0) {
+    if(s % 100 == 0) {
       model.dump();
       model.dump("cohesive elements");
       std::cout << "passing step " << s << "/" << max_steps << std::endl;

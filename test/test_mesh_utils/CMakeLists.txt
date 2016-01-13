@@ -34,14 +34,16 @@
 # List of tests
 #===============================================================================
 add_akantu_test(test_mesh_io "Test mesh io object")
-add_akantu_test(test_facet_extraction "Test mesh utils facet extraction")
 add_akantu_test(test_pbc_tweak "Test pbc facilities")
+add_akantu_test(test_buildfacets "Tests for the generation of facets")
+add_akantu_test(test_segment_nodetype "segment_nodetype")
 
 register_test(test_purify_mesh
   SOURCES test_purify_mesh.cc
-  FILES_TO_COPY purify_mesh.msh DESTINATION
+  FILES_TO_COPY purify_mesh.msh
+  PACKAGE core
   )
 
-add_akantu_test(test_mesh_partitionate "Test mesh partition creation" PACKAGE scotch)
+add_akantu_test(test_mesh_partitionate "Test mesh partition creation")
 
 

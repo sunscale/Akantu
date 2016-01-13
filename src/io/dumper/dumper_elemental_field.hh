@@ -35,6 +35,9 @@
 #include "static_communicator.hh"
 #include "dumper_field.hh"
 #include "dumper_generic_elemental_field.hh"
+#ifdef AKANTU_IGFEM
+#  include "dumper_igfem_elemental_field.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
@@ -45,13 +48,10 @@ template<typename T, template <class> class ret = Vector,bool filtered = false>
 class ElementalField
   : public GenericElementalField<SingleType<T,ret,filtered>,
                                  elemental_field_iterator> {
-
-public:
-
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
-
+public:
   typedef SingleType<T,ret,filtered> types;
   typedef typename types::field_type field_type;
   typedef elemental_field_iterator<types> iterator;
@@ -59,7 +59,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
+public:
   ElementalField(const field_type & field,
                  UInt spatial_dimension = _all_dimensions,
                  GhostType ghost_type = _not_ghost,

@@ -99,7 +99,7 @@ public:
     Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
     Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
     for(; it != last_type; ++it) {
-      Array<UInt> & el_idx_by_mat = model.getElementIndexByMaterial(*it, ghost_type);
+      Array<UInt> & mat_indexes = model.getMaterialByElement(*it, ghost_type);
       UInt nb_element = mesh.getNbElement(*it, ghost_type);
       Array<Real>::iterator<Vector<Real> > bary = barycenters(*it, ghost_type).begin(spatial_dimension);
       for (UInt elem = 0; elem < nb_element; ++elem, ++bary) {
@@ -110,7 +110,7 @@ public:
   	else
   	  mat_index = model.getMaterialIndex(mat_2_material);
 
-  	if (el_idx_by_mat(elem,0) != mat_index)
+  	if (mat_indexes(elem) != mat_index)
 	  /// wrong material index, make test fail
   	  return false;
 

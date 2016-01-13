@@ -66,37 +66,68 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
-  /// initialize the material computed parameter
+  /// initialize the material parameters
   virtual void initMaterial();
 
   /// check stress for cohesive elements' insertion
-  virtual void checkInsertion();
+  virtual void checkInsertion(bool check_only = false);
+
+  /// compute effective stress norm for insertion check
+  Real computeEffectiveNorm(const Matrix<Real> & stress,
+			    const Vector<Real> & normal,
+			    const Vector<Real> & tangent,
+			    Vector<Real> & normal_stress) const;
 
 protected:
 
   /// constitutive law
-  void computeTraction(const Array<Real> & normal,
-		       ElementType el_type,
-		       GhostType ghost_type = _not_ghost);
+  virtual void computeTraction(const Array<Real> & normal,
+			       ElementType el_type,
+			       GhostType ghost_type = _not_ghost);
 
-  /// compute stress norms on quadrature points for each facet for stress check
-  virtual void computeStressNorms(const Array<Real> & facet_stress,
-				  Array<Real> & stress_check,
-				  Array<Real> & normal_stress,
-				  ElementType type_facet);
+  /// check delta_max for cohesive elements in case of no convergence
+  /// in the solveStep (only for extrinsic-implicit)
+  virtual void checkDeltaMax(GhostType ghost_type = _not_ghost);
 
-  /// compute effective stress norm for insertion check
-  inline void computeEffectiveNorm(const Matrix<Real> & stress,
-				   const Vector<Real> & normal,
-				   const Vector<Real> & tangent,
-				   Vector<Real> & normal_stress,
-				   Real & effective_norm);
+  /// reset variables when convergence is reached (only for
+  /// extrinsic-implicit)
+  void resetVariables(GhostType ghost_type = _not_ghost);
+
+  /// compute tangent stiffness matrix
+  virtual void computeTangentTraction(const ElementType & el_type,
+				      Array<Real> & tangent_matrix,
+				      const Array<Real> & normal,
+				      GhostType ghost_type);
 
   /**
    * Scale insertion traction sigma_c according to the volume of the
    * two elements surrounding a facet
+   *
+   * see the article: F. Zhou and J. F. Molinari "Dynamic crack
+   * propagation with cohesive elements: a methodology to address mesh
+   * dependency" International Journal for Numerical Methods in
+   * Engineering (2004)
    */
   void scaleInsertionTraction();
+
+  /// compute the traction for a given quadrature point
+  inline void computeTractionOnQuad(Vector<Real> & traction, Real & delta_max,
+    const Real & delta_max_prev, const Real & delta_c,
+    const Vector<Real> & insertion_stress, const Real & sigma_c,
+    Vector<Real> & opening, Vector<Real> & opening_prec, const Vector<Real> & normal,
+    Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
+    Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
+    bool & penetration, bool & reduction_penalty, Real & current_penalty,
+    Vector<Real> & contact_traction, Vector<Real> & contact_opening);
+
+  inline void computeTangentTractionOnQuad(Matrix<Real> & tangent,
+    Real & delta_max, const Real & delta_c,
+    const Real & sigma_c,
+    Vector<Real> & opening, const Vector<Real> & normal,
+    Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
+    Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
+    bool & penetration, bool & reduction_penalty, Real & current_penalty,
+    Vector<Real> & contact_opening);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -117,10 +148,7 @@ protected:
   Real beta2_inv;
 
   /// mode I fracture energy
-  Real G_cI;
-
-  /// mode II fracture energy
-  Real G_cII;
+  Real G_c;
 
   /// kappa parameter
   Real kappa;
@@ -140,14 +168,51 @@ protected:
   /// weibull exponent used to scale sigma_c
   Real m_s;
 
+  /// maximum value of the friction coefficient
+  Real mu_max;
+
+  /// penalty parameter for the friction law
+  Real friction_penalty;
+
+  /// variable defining if we are recomputing the last loading step
+  /// after load_reduction
+  bool recompute;
+
   /// critical effective stress
   RandomInternalField<Real, CohesiveInternalField> sigma_c_eff;
 
-  /// critical displacement
-  CohesiveInternalField<Real> delta_c;
+  /// effective critical displacement (each element can have a
+  /// different value)
+  CohesiveInternalField<Real> delta_c_eff;
 
   /// stress at insertion
   CohesiveInternalField<Real> insertion_stress;
+
+  /// delta of the previous step
+  CohesiveInternalField<Real> opening_prec;
+
+  /// history parameter for the friction law
+  CohesiveInternalField<Real> residual_sliding;
+
+  /// friction force
+  CohesiveInternalField<Real> friction_force;
+
+  /// variable that defines if the penalty parameter for compression
+  /// has to be decreased for problems of convergence in the solution
+  /// loops
+  CohesiveInternalField<bool> reduction_penalty;
+
+  /// variable saying if there should be penalty contact also after
+  /// breaking the cohesive elements
+  bool contact_after_breaking;
+
+  /// insertion of cohesive element when stress is high enough just on
+  /// one quadrature point
+  bool max_quad_stress_insertion;
+
+  /// variable saying if friction has to be added to the cohesive behavior
+  bool friction;
+
 };
 
 
@@ -155,8 +220,8 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "material_cohesive_linear_inline_impl.cc"
-
 __END_AKANTU__
+
+#include "material_cohesive_linear_inline_impl.cc"
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_LINEAR_HH__ */

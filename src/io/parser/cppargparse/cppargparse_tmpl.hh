@@ -6,7 +6,8 @@
  * @date creation: Thu Apr 03 2014
  * @date last modification: Fri Sep 19 2014
  *
- * @brief  Implementation of the templated part of the commandline argument parser
+ * @brief  Implementation of the templated part of the commandline argument
+ * parser
  *
  * @section LICENSE
  *
@@ -30,6 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include <stdexcept>
+#include <sstream>
 
 #ifndef __CPPARGPARSE_TMPL_HH__
 #define __CPPARGPARSE_TMPL_HH__
@@ -38,21 +40,18 @@ namespace cppargparse {
 /* -------------------------------------------------------------------------- */
 /* Argument                                                                   */
 /* -------------------------------------------------------------------------- */
+
+/// internal description of arguments
 struct ArgumentParser::_Argument : public Argument {
-  _Argument() : Argument(),
-		help(std::string()),
-		nargs(1),
-		type(_string),
-		required(false),
-		parsed(false),
-		has_default(false),
-		has_const(false),
-		is_positional(false) {}
+  _Argument()
+      : Argument(), help(std::string()), nargs(1), type(_string),
+        required(false), parsed(false), has_default(false), has_const(false),
+        is_positional(false) {}
   virtual ~_Argument() {}
 
   void setValues(std::vector<std::string> & values) {
     for (std::vector<std::string>::iterator it = values.begin();
-	 it != values.end(); ++it) {
+         it != values.end(); ++it) {
       this->addValue(*it);
     }
   }
@@ -63,12 +62,12 @@ struct ArgumentParser::_Argument : public Argument {
 
   std::ostream & printDefault(std::ostream & stream) const {
     stream << std::boolalpha;
-    if(has_default) {
+    if (has_default) {
       stream << " (default: ";
       this->_printDefault(stream);
       stream << ")";
     }
-    if(has_const) {
+    if (has_const) {
       stream << " (const: ";
       this->_printConst(stream);
       stream << ")";
@@ -91,7 +90,8 @@ struct ArgumentParser::_Argument : public Argument {
 };
 
 /* -------------------------------------------------------------------------- */
-template<class T>
+/// typed storage of the arguments
+template <class T>
 class ArgumentParser::ArgumentStorage : public ArgumentParser::_Argument {
 public:
   ArgumentStorage() : _default(T()), _const(T()), values(std::vector<T>()) {}
@@ -116,8 +116,8 @@ public:
   void printself(std::ostream & stream) const {
     stream << this->name << " =";
     stream << std::boolalpha; // for boolean
-    for(typename std::vector<T>::const_iterator vit = this->values.begin();
-	vit != this->values.end(); ++vit) {
+    for (typename std::vector<T>::const_iterator vit = this->values.begin();
+         vit != this->values.end(); ++vit) {
       stream << " " << *vit;
     }
   }
@@ -138,74 +138,70 @@ public:
 };
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline void ArgumentParser::ArgumentStorage<std::string>::addValue(std::string & value) {
+template <>
+inline void
+ArgumentParser::ArgumentStorage<std::string>::addValue(std::string & value) {
   values.push_back(value);
 }
 
-template<class T>
-struct is_vector {
+template <class T> struct is_vector {
   enum { value = false };
 };
 
-
-template<class T>
-struct is_vector< std::vector<T> > {
+template <class T> struct is_vector<std::vector<T> > {
   enum { value = true };
 };
 
 /* -------------------------------------------------------------------------- */
-template<class T, bool is_vector = cppargparse::is_vector<T>::value>
+template <class T, bool is_vector = cppargparse::is_vector<T>::value>
 struct cast_helper {
   static T cast(const ArgumentParser::Argument & arg) {
     const ArgumentParser::ArgumentStorage<T> & _arg =
-      dynamic_cast<const ArgumentParser::ArgumentStorage<T> &>(arg);
-    if(_arg.values.size() == 1) {
+        dynamic_cast<const ArgumentParser::ArgumentStorage<T> &>(arg);
+    if (_arg.values.size() == 1) {
       return _arg.values[0];
     } else {
-      throw std::length_error("Not enougth or too many argument where passed for the command line argument: " + arg.name);
+      throw std::length_error("Not enougth or too many argument where passed "
+                              "for the command line argument: " +
+                              arg.name);
     }
   }
 };
 
-template<class T>
-struct cast_helper<T, true> {
+template <class T> struct cast_helper<T, true> {
   static T cast(const ArgumentParser::Argument & arg) {
     const ArgumentParser::ArgumentStorage<T> & _arg =
-      dynamic_cast<const ArgumentParser::ArgumentStorage<T> &>(arg);
+        dynamic_cast<const ArgumentParser::ArgumentStorage<T> &>(arg);
     return _arg.values;
   }
 };
 
 /* -------------------------------------------------------------------------- */
-template<class T>
-ArgumentParser::Argument::operator T() const{
+template <class T> ArgumentParser::Argument::operator T() const {
   return cast_helper<T>::cast(*this);
 }
 
-template<>
-inline ArgumentParser::Argument::operator unsigned int() const{
+template <> inline ArgumentParser::Argument::operator const char *() const {
+  return cast_helper<std::string>::cast(*this).c_str();
+}
+
+template <> inline ArgumentParser::Argument::operator unsigned int() const {
   return cast_helper<int>::cast(*this);
 }
 
-template<class T>
+template <class T>
 void ArgumentParser::addArgument(const std::string & name_or_flag,
-				 const std::string & help,
-				 int nargs,
-				 ArgumentType type,
-				 T def) {
+                                 const std::string & help, int nargs,
+                                 ArgumentType type, T def) {
   _Argument & arg = _addArgument(name_or_flag, help, nargs, type);
   dynamic_cast<ArgumentStorage<T> &>(arg)._default = def;
   arg.has_default = true;
 }
 
-template<class T>
+template <class T>
 void ArgumentParser::addArgument(const std::string & name_or_flag,
-				 const std::string & help,
-				 int nargs,
-				 ArgumentType type,
-				 T def,
-				 T cons) {
+                                 const std::string & help, int nargs,
+                                 ArgumentType type, T def, T cons) {
   _Argument & arg = _addArgument(name_or_flag, help, nargs, type);
   dynamic_cast<ArgumentStorage<T> &>(arg)._default = def;
   arg.has_default = true;
@@ -214,48 +210,36 @@ void ArgumentParser::addArgument(const std::string & name_or_flag,
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline void ArgumentParser::addArgument<const char *>(const std::string & name_or_flag,
-						      const std::string & help,
-						      int nargs,
-						      ArgumentType type,
-						      const char * def) {
+template <>
+inline void
+ArgumentParser::addArgument<const char *>(const std::string & name_or_flag,
+                                          const std::string & help, int nargs,
+                                          ArgumentType type, const char * def) {
   this->addArgument<std::string>(name_or_flag, help, nargs, type, def);
 }
 
-template<>
-inline void ArgumentParser::addArgument<unsigned int>(const std::string & name_or_flag,
-						      const std::string & help,
-						      int nargs,
-						      ArgumentType type,
-						      unsigned int def) {
+template <>
+inline void
+ArgumentParser::addArgument<unsigned int>(const std::string & name_or_flag,
+                                          const std::string & help, int nargs,
+                                          ArgumentType type, unsigned int def) {
   this->addArgument<int>(name_or_flag, help, nargs, type, def);
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline void ArgumentParser::addArgument<const char *>(const std::string & name_or_flag,
-						      const std::string & help,
-						      int nargs,
-						      ArgumentType type,
-						      const char * def,
-						      const char * cons) {
-  this->addArgument<std::string>(name_or_flag, help, nargs, type,
-				 def, cons);
+template <>
+inline void ArgumentParser::addArgument<const char *>(
+    const std::string & name_or_flag, const std::string & help, int nargs,
+    ArgumentType type, const char * def, const char * cons) {
+  this->addArgument<std::string>(name_or_flag, help, nargs, type, def, cons);
 }
 
-template<>
-inline void ArgumentParser::addArgument<unsigned int>(const std::string & name_or_flag,
-						      const std::string & help,
-						      int nargs,
-						      ArgumentType type,
-						      unsigned int def,
-						      unsigned int cons) {
-  this->addArgument<int>(name_or_flag, help, nargs, type,
-			 def, cons);
+template <>
+inline void ArgumentParser::addArgument<unsigned int>(
+    const std::string & name_or_flag, const std::string & help, int nargs,
+    ArgumentType type, unsigned int def, unsigned int cons) {
+  this->addArgument<int>(name_or_flag, help, nargs, type, def, cons);
 }
-
-
 }
 
 #endif /* __AKANTU_CPPARGPARSE_TMPL_HH__ */

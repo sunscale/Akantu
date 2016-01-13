@@ -47,26 +47,23 @@ class HomogenizerProxy;
 
 /// Field interface
 class Field {
-
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
-
   Field(): homogeneous(false) {}
   virtual ~Field() {};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-
+public:
 #ifdef AKANTU_USE_IOHELPER
   /// register this to the provided dumper
-  virtual void registerToDumper(const std::string & id, 
-				iohelper::Dumper & dumper) = 0;
+  virtual void registerToDumper(const std::string & id,
+                                iohelper::Dumper & dumper) = 0;
 #endif
-  
+
   /// set the number of data per item (used for elements fields at the moment)
   virtual void setNbData(UInt nb_data){AKANTU_DEBUG_TO_IMPLEMENT();};
 
@@ -77,14 +74,15 @@ public:
   virtual void setNbDataPerElem(UInt nb_data){AKANTU_DEBUG_TO_IMPLEMENT();};
 
   /// get the number of components of the hosted field
-  virtual ElementTypeMap<UInt> getNbComponents(){throw;};
+  virtual ElementTypeMap<UInt> getNbComponents(UInt dim = _all_dimensions,
+					       GhostType ghost_type = _not_ghost,
+					       ElementKind kind = _ek_not_defined){throw;};
 
   /// for connection to a FieldCompute
   inline virtual Field * connect(FieldComputeProxy & proxy){throw;};
 
   /// for connection to a FieldCompute
   inline virtual ComputeFunctorInterface * connect(HomogenizerProxy & proxy){throw;};
-
 
   /// check if the same quantity of data for all element types
   virtual void checkHomogeneity() = 0;
@@ -98,14 +96,13 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-  
+public:
   /// return the flag to know if the field is homogeneous/contiguous
   virtual bool isHomogeneous() { return homogeneous; }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-  
 protected:
   /// the flag to know if it is homogeneous
   bool homogeneous;
@@ -118,11 +115,6 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
-
-
-
-
-
 
 __END_AKANTU_DUMPER__
 __END_AKANTU__

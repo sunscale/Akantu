@@ -1,0 +1,18 @@
+material elastic [
+	 name = bulk
+	 rho = 2500	# density
+	 E   = 70e9	# young's modulus
+	 nu  = 0.29	# poisson's ratio
+	
+]
+
+material cohesive_linear [
+	 name = interface
+	 beta = 1
+	 G_c = 4.5e2
+	 kappa = 1
+         penalty = 1.0e7
+         sigma_c = 1.5e6
+	 contact_after_breaking = true
+]
+

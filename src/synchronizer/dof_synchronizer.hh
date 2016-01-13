@@ -2,6 +2,7 @@
  * @file   dof_synchronizer.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @date creation: Fri Jun 17 2011
  * @date last modification: Fri Mar 21 2014
@@ -32,6 +33,7 @@
 #include "aka_common.hh"
 #include "aka_array.hh"
 #include "static_communicator.hh"
+#include "synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -51,7 +53,7 @@ public:
 };
 
 
-class DOFSynchronizer {
+class DOFSynchronizer : public Synchronizer {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -64,6 +66,15 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+
+  /// asynchronous synchronization of ghosts
+  virtual void asynchronousSynchronize(DataAccessor & data_accessor,SynchronizationTag tag);
+
+  /// wait end of asynchronous synchronization of ghosts
+  virtual void waitEndSynchronize(DataAccessor & data_accessor,SynchronizationTag tag);
+
+  /// compute buffer size for a given tag and data accessor
+  virtual void computeBufferSize(DataAccessor & data_accessor, SynchronizationTag tag);
 
   /// init the scheme for scatter and gather operation, need extra memory
   void initScatterGatherCommunicationScheme();
@@ -82,6 +93,7 @@ public:
    * @param gathered Array containing the gathered data, only valid on root processor
    */
   template<typename T>
+  /// Gather the DOF value on the root proccessor
   void gather(const Array<T> & to_gather, UInt root,
 	      Array<T> * gathered = NULL) const;
 
@@ -93,10 +105,11 @@ public:
    * @param to_scatter result of scattered data
    */
   template<typename T>
+  /// Scatter a DOF Array form root to all processors
   void scatter(Array<T> & scattered, UInt root,
 	       const Array<T> * to_scatter = NULL) const;
 
-
+  
   template<typename T> void synchronize(Array<T> & vector) const ;
   template<template <class> class Op, typename T> void reduceSynchronize(Array<T> & vector) const;
 
@@ -133,6 +146,25 @@ public:
 
   AKANTU_GET_MACRO(NbDOFs, nb_dofs, UInt);
 
+  AKANTU_GET_MACRO(NbGlobalDOFs, nb_global_dofs, UInt);
+
+  /// say if a node is a pure ghost node
+  inline bool isPureGhostDOF(UInt n) const;
+
+  /// say if a node is pure local or master node
+  inline bool isLocalOrMasterDOF(UInt n) const;
+
+  /// say if a node is pure local 
+  inline bool isLocalDOF(UInt n) const;
+
+  /// say if a node is a master node
+  inline bool isMasterDOF(UInt n) const;
+
+  /// say if a node is a slave node
+  inline bool isSlaveDOF(UInt n) const;
+
+
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -161,7 +193,6 @@ private:
 
   UInt prank;
   UInt psize;
-  StaticCommunicator * communicator;
 
   struct PerProcInformations {
     /// dofs to send to the proc
@@ -186,6 +217,9 @@ private:
   UInt nb_needed_dofs;
 
   bool gather_scatter_scheme_initialized;
+
+
+  std::map<SynchronizationTag, Communication> communications; 
 };
 
 

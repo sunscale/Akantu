@@ -43,13 +43,32 @@ MaterialElastic<dim>::MaterialElastic(SolidMechanicsModel & model, const ID & id
   Material(model, id),
   Parent(model, id) {
   AKANTU_DEBUG_IN();
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
 
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+MaterialElastic<dim>::MaterialElastic(SolidMechanicsModel & model,
+                                      UInt a_dim,
+                                      const Mesh & mesh,
+                                      FEEngine & fe_engine,
+                                      const ID & id) :
+  Material(model, dim, mesh, fe_engine, id),
+  Parent(model, dim, mesh, fe_engine, id) {
+  AKANTU_DEBUG_IN();
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+void MaterialElastic<dim>::initialize() {
   this->registerParam("lambda"      ,lambda             , _pat_readable, "First Lamé coefficient" );
   this->registerParam("mu"          ,mu                 , _pat_readable, "Second Lamé coefficient");
   this->registerParam("kapa"        ,kpa                , _pat_readable, "Bulk coefficient"       );
-
-  AKANTU_DEBUG_OUT();
 }
+
 
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
@@ -200,7 +219,7 @@ void MaterialElastic<spatial_dimension>::computePotentialEnergyByElement(Element
     stress_it = this->piola_kirchhoff_2(type).begin(spatial_dimension,
                                                          spatial_dimension);
 
-  UInt nb_quadrature_points = this->model->getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points = this->model->getFEEngine().getNbIntegrationPoints(type);
 
   gradu_it  += index*nb_quadrature_points;
   gradu_end += (index+1)*nb_quadrature_points;
@@ -224,6 +243,6 @@ void MaterialElastic<spatial_dimension>::computePotentialEnergyByElement(Element
 /* -------------------------------------------------------------------------- */
 
 
-INSTANSIATE_MATERIAL(MaterialElastic);
+INSTANTIATE_MATERIAL(MaterialElastic);
 
 __END_AKANTU__

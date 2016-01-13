@@ -41,7 +41,6 @@
 
 #include <vector>
 
-
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -51,95 +50,103 @@ class StaticCommunicatorDummy : public RealStaticCommunicator {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  StaticCommunicatorDummy(__attribute__ ((unused)) int & argc,
-			  __attribute__ ((unused)) char ** & argv) : RealStaticCommunicator(argc, argv) {
+  StaticCommunicatorDummy(__attribute__((unused)) int & argc,
+                          __attribute__((unused)) char **& argv)
+      : RealStaticCommunicator(argc, argv) {
     prank = 0;
     psize = 1;
   };
-  virtual ~StaticCommunicatorDummy() {};
+  virtual ~StaticCommunicatorDummy(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  template <typename T>
+  void
+  send(__attribute__((unused)) T * buffer, __attribute__((unused)) Int size,
+       __attribute__((unused)) Int receiver, __attribute__((unused)) Int tag) {}
 
-  template<typename T>
-  void send(__attribute__ ((unused)) T * buffer,
-	    __attribute__ ((unused)) Int size,
-	    __attribute__ ((unused)) Int receiver,
-	    __attribute__ ((unused)) Int tag) {}
+  template <typename T>
+  void receive(__attribute__((unused)) T * buffer,
+               __attribute__((unused)) Int size,
+               __attribute__((unused)) Int sender,
+               __attribute__((unused)) Int tag) {}
 
-  template<typename T>
-  void receive(__attribute__ ((unused)) T * buffer,
-	       __attribute__ ((unused)) Int size,
-	       __attribute__ ((unused)) Int sender,
-	       __attribute__ ((unused)) Int tag) {}
-
-  template<typename T>
-  CommunicationRequest * asyncSend(__attribute__ ((unused)) T * buffer,
-				   __attribute__ ((unused)) Int size,
-				   __attribute__ ((unused)) Int receiver,
-				   __attribute__ ((unused)) Int tag) {
+  template <typename T>
+  CommunicationRequest * asyncSend(__attribute__((unused)) T * buffer,
+                                   __attribute__((unused)) Int size,
+                                   __attribute__((unused)) Int receiver,
+                                   __attribute__((unused)) Int tag) {
     return new CommunicationRequest(0, 0);
   }
 
-  template<typename T>
-  CommunicationRequest * asyncReceive(__attribute__ ((unused)) T * buffer,
-				      __attribute__ ((unused)) Int size,
-				      __attribute__ ((unused)) Int sender,
-				      __attribute__ ((unused)) Int tag) {
+  template <typename T>
+  CommunicationRequest * asyncReceive(__attribute__((unused)) T * buffer,
+                                      __attribute__((unused)) Int size,
+                                      __attribute__((unused)) Int sender,
+                                      __attribute__((unused)) Int tag) {
     return new CommunicationRequest(0, 0);
   }
 
-  template<typename T>
-  inline void probe(__attribute__ ((unused)) Int sender,
-		    __attribute__ ((unused)) Int tag,
-		    __attribute__ ((unused)) CommunicationStatus & status) {
-  }
+  template <typename T>
+  inline void probe(__attribute__((unused)) Int sender,
+                    __attribute__((unused)) Int tag,
+                    __attribute__((unused)) CommunicationStatus & status) {}
 
-  bool testRequest(__attribute__ ((unused)) CommunicationRequest * request) { return true; };
+  bool testRequest(__attribute__((unused)) CommunicationRequest * request) {
+    return true;
+  };
 
+  void wait(__attribute__((unused)) CommunicationRequest * request){};
 
-  void wait(__attribute__ ((unused)) CommunicationRequest * request) {};
+  void waitAll(__attribute__((unused))
+               std::vector<CommunicationRequest *> & requests){};
 
-  void waitAll(__attribute__ ((unused)) std::vector<CommunicationRequest *> & requests) {};
+  void barrier(){};
 
-  void barrier() {};
-
-  template<typename T>
-  void allReduce(__attribute__ ((unused)) T * values,
-		 __attribute__ ((unused)) Int nb_values,
-		 __attribute__ ((unused)) const SynchronizerOperation & op) {}
-
-  template<typename T>
-  inline void allGather(__attribute__ ((unused)) T * values,
-			__attribute__ ((unused)) Int nb_values) {}
-
-  template<typename T>
-  inline void allGatherV(__attribute__ ((unused)) T * values,
-			 __attribute__ ((unused)) Int * nb_values) {}
+  template <typename T>
+  void reduce(__attribute__ ((unused)) T * values,
+	      __attribute__ ((unused)) int nb_values,
+	      __attribute__ ((unused)) const SynchronizerOperation & op,
+	      __attribute__ ((unused)) int root) {}
 
 
-  template<typename T>
-  inline void gather(__attribute__ ((unused)) T * values,
-		     __attribute__ ((unused)) Int nb_values,
-		     __attribute__ ((unused)) Int root = 0) {}
+  template <typename T>
+  void allReduce(__attribute__((unused)) T * values,
+                 __attribute__((unused)) int nb_values,
+                 __attribute__((unused)) const SynchronizerOperation & op) {}
 
-  template<typename T>
-  inline void gatherV(__attribute__ ((unused)) T * values,
-		      __attribute__ ((unused)) Int * nb_values,
-		      __attribute__ ((unused)) Int root = 0) {}
+  template <typename T>
+  inline void allGather(__attribute__((unused)) T * values,
+                        __attribute__((unused)) int nb_values) {}
 
-  template<typename T>
-  inline void broadcast(__attribute__ ((unused)) T * values,
-			__attribute__ ((unused)) Int nb_values,
-			__attribute__ ((unused)) Int root = 0) {}
+  template <typename T>
+  inline void allGatherV(__attribute__((unused)) T * values,
+                         __attribute__((unused)) int * nb_values) {}
+
+  template <typename T>
+  inline void gather(__attribute__((unused)) T * values,
+                     __attribute__((unused)) int nb_values,
+                     __attribute__((unused)) int root = 0) {}
+
+  template <typename T>
+  inline void gatherV(__attribute__((unused)) T * values,
+                      __attribute__((unused)) int * nb_values,
+                      __attribute__((unused)) int root = 0) {}
+
+  template <typename T>
+  inline void broadcast(__attribute__((unused)) T * values,
+                        __attribute__((unused)) int nb_values,
+                        __attribute__((unused)) int root = 0) {}
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /* ------------------------------------------------------------------------ */
+  int getMaxTag() { return std::numeric_limits<int>::max(); }
+  int getMinTag() { return 0; }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

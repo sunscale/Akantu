@@ -156,19 +156,30 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name){
 /* -------------------------------------------------------------------------- */
 /// @todo : should merge with a single function which handles local and global
 inline void Model::changeLocalEquationNumberForPBC(std::map<UInt,UInt> & pbc_pair,
-					    UInt dimension){
+						   UInt dimension) {
+  Array<Int> & local_eq_num = *dof_synchronizer->getLocalDOFEquationNumbersPointer();
+  Array<Int> & global_eq_num = *dof_synchronizer->getGlobalDOFEquationNumbersPointer();
+
   for (std::map<UInt,UInt>::iterator it = pbc_pair.begin();
        it != pbc_pair.end();++it) {
     Int node_master = (*it).second;
     Int node_slave = (*it).first;
     for (UInt i = 0; i < dimension; ++i) {
-      (*dof_synchronizer->getLocalDOFEquationNumbersPointer())
-	(node_slave*dimension+i) = dimension*node_master+i;
-      (*dof_synchronizer->getGlobalDOFEquationNumbersPointer())
-	(node_slave*dimension+i) = dimension*node_master+i;
+      local_eq_num(node_slave * dimension + i) =
+	dimension * node_master + i;
+
+      if(mesh.isDistributed()) {
+	global_eq_num(node_slave * dimension+i) =
+	  dimension * mesh.getNodeGlobalId(node_master) + i;
+      } 
+      else {
+	global_eq_num(node_slave * dimension+i) =
+	  dimension * node_master + i;
+      }
     }
   }
 }
+
 /* -------------------------------------------------------------------------- */
 inline bool Model::isPBCSlaveNode(const UInt node) const {
   // if no pbc is defined, is_pbc_slave_node is of size zero
@@ -179,15 +190,15 @@ inline bool Model::isPBCSlaveNode(const UInt node) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt Model::getNbQuadraturePoints(const Array<Element> & elements,
+inline UInt Model::getNbIntegrationPoints(const Array<Element> & elements,
 					 const ID & fem_id) const {
   UInt nb_quad = 0;
   Array<Element>::const_iterator<Element> it  = elements.begin();
   Array<Element>::const_iterator<Element> end = elements.end();
   for (; it != end; ++it) {
     const Element & el = *it;
-    nb_quad += getFEEngine(fem_id).getNbQuadraturePoints(el.type,
-						    el.ghost_type);
+    nb_quad += getFEEngine(fem_id).getNbIntegrationPoints(el.type,
+							  el.ghost_type);
   }
   return nb_quad;
 }

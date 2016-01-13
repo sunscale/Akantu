@@ -9,6 +9,7 @@
 #
 # @brief  Build the documentation
 #
+
 # @section LICENSE
 #
 # Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
@@ -41,6 +42,7 @@ if(DOXYGEN_FOUND AND AKANTU_DOCUMENTATION_DOXYGEN)
 
   add_subdirectory(doxygen)
 endif()
+
 
 file(GLOB_RECURSE __all_files "*.*")
 set(_all_files)

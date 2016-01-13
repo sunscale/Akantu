@@ -45,11 +45,11 @@ MaterialMarigo<spatial_dimension>::MaterialMarigo(SolidMechanicsModel & model,
   Yd("Yd", *this), damage_in_y(false), yc_limit(false) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("Sd",                   Sd, 5000., ParamAccessType(_pat_parsable | _pat_modifiable));
-  this->registerParam("epsilon_c",     epsilon_c,    0., _pat_parsable, "Critical strain");
-  this->registerParam("Yc limit",       yc_limit, false, _pat_internal, "As the material a critical Y");
-  this->registerParam("damage_in_y", damage_in_y, false, _pat_parsable, "Use threshold (1-D)Y");
-  this->registerParam("Yd",                   Yd, _pat_parsable, "Damaging energy threshold");
+  this->registerParam("Sd",                   Sd, Real(5000.), _pat_parsable | _pat_modifiable);
+  this->registerParam("epsilon_c",     epsilon_c,    Real(0.), _pat_parsable, "Critical strain");
+  this->registerParam("Yc limit",       yc_limit,       false, _pat_internal, "As the material a critical Y");
+  this->registerParam("damage_in_y", damage_in_y,       false, _pat_parsable, "Use threshold (1-D)Y");
+  this->registerParam("Yd",                   Yd,              _pat_parsable, "Damaging energy threshold");
 
   this->Yd.initialize(1);
   AKANTU_DEBUG_OUT();
@@ -98,9 +98,8 @@ void MaterialMarigo<spatial_dimension>::computeStress(ElementType el_type,
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialMarigo);
+INSTANTIATE_MATERIAL(MaterialMarigo);
 
 
 __END_AKANTU__

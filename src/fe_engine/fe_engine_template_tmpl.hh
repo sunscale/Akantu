@@ -30,24 +30,25 @@
  *
  */
 
+/* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 FEEngineTemplate<I, S, kind>::FEEngineTemplate(Mesh & mesh, UInt spatial_dimension,
-					       ID id, MemoryID memory_id) :
+                                               ID id, MemoryID memory_id) :
   FEEngine(mesh,spatial_dimension,id,memory_id),
   integrator(mesh, id, memory_id),
   shape_functions(mesh, id, memory_id) { }
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 FEEngineTemplate<I, S, kind>::~FEEngineTemplate() { }
 
 /* -------------------------------------------------------------------------- */
@@ -55,116 +56,113 @@ FEEngineTemplate<I, S, kind>::~FEEngineTemplate() { }
  * Helper class to be able to write a partial specialization on the element kind
  */
 template<ElementKind kind>
-struct GradientOnQuadraturePointsHelper {
+struct GradientOnIntegrationPointsHelper {
   template <class S>
-  static void call(const S & shape_functions,	
-		   Mesh & mesh,
-		   const Array<Real> & u,
-		   Array<Real> & nablauq,
-		   const UInt nb_degree_of_freedom,
-		   const ElementType & type,
-		   const GhostType & ghost_type,
-		   const Array<UInt> & filter_elements) {
+  static void call(const S & shape_functions,
+                   Mesh & mesh,
+                   const Array<Real> & u,
+                   Array<Real> & nablauq,
+                   const UInt nb_degree_of_freedom,
+                   const ElementType & type,
+                   const GhostType & ghost_type,
+                   const Array<UInt> & filter_elements) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 };
 
 #define COMPUTE_GRADIENT(type)						\
   if (element_dimension == ElementClass<type>::getSpatialDimension())	\
-    shape_functions.template gradientOnControlPoints<type>(u,		\
-							   nablauq,	\
-							   nb_degree_of_freedom, \
-							   ghost_type,	\
-							   filter_elements);
+    shape_functions.template gradientOnIntegrationPoints<type>(u,	\
+							       nablauq,	\
+							       nb_degree_of_freedom, \
+							       ghost_type, \
+							       filter_elements);
 
-#define AKANTU_SPECIALIZE_GRADIENT_ON_QUADRATURE_POINTS_HELPER(kind)	\
+#define AKANTU_SPECIALIZE_GRADIENT_ON_INTEGRATION_POINTS_HELPER(kind)	\
   template<>								\
-  struct GradientOnQuadraturePointsHelper<kind> {			\
+  struct GradientOnIntegrationPointsHelper<kind> {			\
     template <class S>							\
     static void call(const S & shape_functions,				\
-		     Mesh & mesh,					\
-		     const Array<Real> & u,				\
-		     Array<Real> & nablauq,				\
-		     const UInt nb_degree_of_freedom,			\
-		     const ElementType & type,				\
-		     const GhostType & ghost_type,			\
-		     const Array<UInt> & filter_elements) {		\
+                     Mesh & mesh,					\
+                     const Array<Real> & u,				\
+                     Array<Real> & nablauq,				\
+                     const UInt nb_degree_of_freedom,			\
+                     const ElementType & type,				\
+                     const GhostType & ghost_type,			\
+                     const Array<UInt> & filter_elements) {		\
       UInt element_dimension = mesh.getSpatialDimension(type);		\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_GRADIENT, kind);		\
     }									\
   };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
+AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_GRADIENT_ON_INTEGRATION_POINTS_HELPER, \
+                           AKANTU_FE_ENGINE_LIST_GRADIENT_ON_INTEGRATION_POINTS)
 
-AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_GRADIENT_ON_QUADRATURE_POINTS_HELPER, \
-			   INTEREST_LIST)
-
-#undef AKANTU_SPECIALIZE_GRADIENT_ON_QUADRATURE_POINTS_HELPER
+#undef AKANTU_SPECIALIZE_GRADIENT_ON_INTEGRATION_POINTS_HELPER
 #undef COMPUTE_GRADIENT
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
-void FEEngineTemplate<I, S, kind>::gradientOnQuadraturePoints(const Array<Real> &u,
-							      Array<Real> &nablauq,
-							      const UInt nb_degree_of_freedom,
-							      const ElementType & type,
-							      const GhostType & ghost_type,
-							      const Array<UInt> & filter_elements) const {
+         template <ElementKind> class S,
+         ElementKind kind>
+void FEEngineTemplate<I, S, kind>::gradientOnIntegrationPoints(const Array<Real> &u,
+							       Array<Real> &nablauq,
+							       const UInt nb_degree_of_freedom,
+							       const ElementType & type,
+							       const GhostType & ghost_type,
+							       const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if(filter_elements != empty_filter) nb_element = filter_elements.getSize();
-  UInt nb_points         = shape_functions.getControlPoints(type, ghost_type).cols();
+  UInt nb_points         = shape_functions.getIntegrationPoints(type, ghost_type).cols();
 
 #ifndef AKANTU_NDEBUG
 
   UInt element_dimension = mesh.getSpatialDimension(type);
 
   AKANTU_DEBUG_ASSERT(u.getSize() == mesh.getNbNodes(),
-		      "The vector u(" << u.getID()
-		      << ") has not the good size.");
+                      "The vector u(" << u.getID()
+                      << ") has not the good size.");
   AKANTU_DEBUG_ASSERT(u.getNbComponent() == nb_degree_of_freedom ,
-		      "The vector u(" << u.getID()
-		      << ") has not the good number of component.");
+                      "The vector u(" << u.getID()
+                      << ") has not the good number of component.");
 
   AKANTU_DEBUG_ASSERT(nablauq.getNbComponent()
-		      == nb_degree_of_freedom * element_dimension,
-		      "The vector nablauq(" << nablauq.getID()
-		      << ") has not the good number of component.");
+                      == nb_degree_of_freedom * element_dimension,
+                      "The vector nablauq(" << nablauq.getID()
+                      << ") has not the good number of component.");
 
   // AKANTU_DEBUG_ASSERT(nablauq.getSize() == nb_element * nb_points,
-  //	   	      "The vector nablauq(" << nablauq.getID()
-  //	   	      << ") has not the good size.");
+  //                  "The vector nablauq(" << nablauq.getID()
+  //                  << ") has not the good size.");
 #endif
 
   nablauq.resize(nb_element * nb_points);
 
-  GradientOnQuadraturePointsHelper<kind>::call(shape_functions,
-					       mesh,
-					       u,
-					       nablauq,
-					       nb_degree_of_freedom,
-					       type,
-					       ghost_type,
-					       filter_elements);
+  GradientOnIntegrationPointsHelper<kind>::call(shape_functions,
+						mesh,
+						u,
+						nablauq,
+						nb_degree_of_freedom,
+						type,
+						ghost_type,
+						filter_elements);
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 void FEEngineTemplate<I, S, kind>::initShapeFunctions(const GhostType & ghost_type) {
   initShapeFunctions(mesh.getNodes(), ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 void FEEngineTemplate<I, S, kind>::initShapeFunctions(const Array<Real> & nodes,
-						      const GhostType & ghost_type) {
+                                                      const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   Mesh::type_iterator it  = mesh.firstType(element_dimension, ghost_type, kind);
@@ -173,7 +171,7 @@ void FEEngineTemplate<I, S, kind>::initShapeFunctions(const Array<Real> & nodes,
     ElementType type = *it;
     integrator.initIntegrator(nodes, type, ghost_type);
     const Matrix<Real> & control_points =
-      getQuadraturePoints(type, ghost_type);
+      getIntegrationPoints(type, ghost_type);
     shape_functions.initShapeFunctions(nodes, control_points, type, ghost_type);
   }
 
@@ -189,22 +187,22 @@ struct IntegrateHelper { };
 
 #define INTEGRATE(type)						\
   integrator.template integrate<type>(f,			\
-				      intf,			\
-				      nb_degree_of_freedom,	\
-				      ghost_type,		\
-				      filter_elements);		\
+                                      intf,			\
+                                      nb_degree_of_freedom,	\
+                                      ghost_type,		\
+                                      filter_elements);		\
 
 #define AKANTU_SPECIALIZE_INTEGRATE_HELPER(kind)		\
   template<>							\
   struct IntegrateHelper<kind> {				\
     template <class I>						\
     static void call(const I & integrator,			\
-		     const Array<Real> & f,			\
-		     Array<Real> &intf,				\
-		     UInt nb_degree_of_freedom,			\
-		     const ElementType & type,			\
-		     const GhostType & ghost_type,		\
-		     const Array<UInt> & filter_elements) {	\
+                     const Array<Real> & f,			\
+                     Array<Real> &intf,				\
+                     UInt nb_degree_of_freedom,			\
+                     const ElementType & type,			\
+                     const GhostType & ghost_type,		\
+                     const Array<UInt> & filter_elements) {	\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(INTEGRATE, kind);	\
     }								\
   };
@@ -215,41 +213,41 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_INTEGRATE_HELPER)
 #undef INTEGRATE
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 void FEEngineTemplate<I, S, kind>::integrate(const Array<Real> & f,
-					     Array<Real> &intf,
-					     UInt nb_degree_of_freedom,
-					     const ElementType & type,
-					     const GhostType & ghost_type,
-					     const Array<UInt> & filter_elements) const{
+                                             Array<Real> &intf,
+                                             UInt nb_degree_of_freedom,
+                                             const ElementType & type,
+                                             const GhostType & ghost_type,
+                                             const Array<UInt> & filter_elements) const{
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if(filter_elements != empty_filter) nb_element = filter_elements.getSize();
 #ifndef AKANTU_NDEBUG
 
-  UInt nb_quadrature_points  = getNbQuadraturePoints(type);
+  UInt nb_quadrature_points  = getNbIntegrationPoints(type);
 
   AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
-		      "The vector f(" << f.getID() << " size " << f.getSize()
-		      << ") has not the good size (" << nb_element << ").");
+                      "The vector f(" << f.getID() << " size " << f.getSize()
+                      << ") has not the good size (" << nb_element << ").");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom ,
-		      "The vector f(" << f.getID()
-		      << ") has not the good number of component.");
+                      "The vector f(" << f.getID()
+                      << ") has not the good number of component.");
   AKANTU_DEBUG_ASSERT(intf.getNbComponent() == nb_degree_of_freedom,
-		      "The vector intf(" << intf.getID()
-		      << ") has not the good number of component.");
+                      "The vector intf(" << intf.getID()
+                      << ") has not the good number of component.");
 #endif
 
   intf.resize(nb_element);
 
   IntegrateHelper<kind>::call(integrator,
-			      f,
-			      intf,
-			      nb_degree_of_freedom,
-			      type,
-			      ghost_type,
-			      filter_elements);
+                              f,
+                              intf,
+                              nb_degree_of_freedom,
+                              type,
+                              ghost_type,
+                              filter_elements);
 
 }
 
@@ -262,17 +260,17 @@ struct IntegrateScalarHelper { };
 
 #define INTEGRATE(type)							\
   integral = integrator.template integrate<type>(f,			\
-						 ghost_type, filter_elements);
+                                                 ghost_type, filter_elements);
 
 #define AKANTU_SPECIALIZE_INTEGRATE_SCALAR_HELPER(kind)		\
   template<>							\
   struct IntegrateScalarHelper<kind> {				\
     template <class I>						\
     static Real call(const I & integrator,			\
-		     const Array<Real> & f,			\
-		     const ElementType & type,			\
-		     const GhostType & ghost_type,		\
-		     const Array<UInt> & filter_elements) {	\
+                     const Array<Real> & f,			\
+                     const ElementType & type,			\
+                     const GhostType & ghost_type,		\
+                     const Array<UInt> & filter_elements) {	\
       Real integral = 0.;					\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(INTEGRATE, kind);	\
       return integral;						\
@@ -285,29 +283,29 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_INTEGRATE_SCALAR_HELPER)
 #undef INTEGRATE
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 Real FEEngineTemplate<I, S, kind>::integrate(const Array<Real> & f,
-					     const ElementType & type,
-					     const GhostType & ghost_type,
-					     const Array<UInt> & filter_elements) const{
+                                             const ElementType & type,
+                                             const GhostType & ghost_type,
+                                             const Array<UInt> & filter_elements) const{
   AKANTU_DEBUG_IN();
 
 #ifndef AKANTU_NDEBUG
   //   std::stringstream sstr; sstr << ghost_type;
   //   AKANTU_DEBUG_ASSERT(sstr.str() == nablauq.getTag(),
-  //		      "The vector " << nablauq.getID() << " is not taged " << ghost_type);
+  //                  "The vector " << nablauq.getID() << " is not taged " << ghost_type);
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if(filter_elements != empty_filter) nb_element = filter_elements.getSize();
 
-  UInt nb_quadrature_points  = getNbQuadraturePoints(type, ghost_type);
+  UInt nb_quadrature_points  = getNbIntegrationPoints(type, ghost_type);
 
   AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
-		      "The vector f(" << f.getID()
-		      << ") has not the good size. (" << f.getSize() << "!=" << nb_quadrature_points * nb_element << ")");
+                      "The vector f(" << f.getID()
+                      << ") has not the good size. (" << f.getSize() << "!=" << nb_quadrature_points * nb_element << ")");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == 1,
-		      "The vector f(" << f.getID()
-		      << ") has not the good number of component.");
+                      "The vector f(" << f.getID()
+                      << ") has not the good number of component.");
 #endif
 
   Real integral = IntegrateScalarHelper<kind>::call(integrator, f, type, ghost_type, filter_elements);
@@ -324,17 +322,17 @@ struct IntegrateScalarOnOneElementHelper { };
 
 #define INTEGRATE(type)						\
   res = integrator.template integrate<type>(f,			\
-					    index, ghost_type);
+                                            index, ghost_type);
 
 #define AKANTU_SPECIALIZE_INTEGRATE_SCALAR_ON_ONE_ELEMENT_HELPER(kind)	\
   template<>								\
   struct IntegrateScalarOnOneElementHelper<kind> {			\
     template <class I>							\
     static Real call(const I & integrator,				\
-		     const Vector<Real> & f,				\
-		     const ElementType & type,				\
-		     UInt index,					\
-		     const GhostType & ghost_type) {			\
+                     const Vector<Real> & f,				\
+                     const ElementType & type,				\
+                     UInt index,					\
+                     const GhostType & ghost_type) {			\
       Real res = 0.;							\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(INTEGRATE, kind);		\
       return res;							\
@@ -347,12 +345,12 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_INTEGRATE_SCALAR_ON_ONE_ELEMENT_HELPER)
 #undef INTEGRATE
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 Real FEEngineTemplate<I, S, kind>::integrate(const Vector<Real> & f,
-					     const ElementType & type,
-					     UInt index,
-					     const GhostType & ghost_type) const{
+                                             const ElementType & type,
+                                             UInt index,
+                                             const GhostType & ghost_type) const{
 
 
   Real res = IntegrateScalarOnOneElementHelper<kind>::call(integrator, f, type, index, ghost_type);
@@ -365,64 +363,64 @@ Real FEEngineTemplate<I, S, kind>::integrate(const Vector<Real> & f,
  * Helper class to be able to write a partial specialization on the element kind
  */
 template<ElementKind kind>
-struct IntegrateOnQuadraturePointsHelper { };
+struct IntegrateOnIntegrationPointsHelper { };
 
 #define INTEGRATE(type)							\
   integrator.template integrateOnQuadraturePoints<type>(f, intf, nb_degree_of_freedom, \
-							ghost_type, filter_elements);
+							 ghost_type, filter_elements);
 
-#define AKANTU_SPECIALIZE_INTEGRATE_ON_QUADRATURE_POINTS_HELPER(kind)	\
+#define AKANTU_SPECIALIZE_INTEGRATE_ON_INTEGRATION_POINTS_HELPER(kind)	\
   template<>								\
-  struct IntegrateOnQuadraturePointsHelper<kind> {			\
+  struct IntegrateOnIntegrationPointsHelper<kind> {			\
     template <class I>							\
     static void call(const I & integrator,				\
-		     const Array<Real> & f,				\
-		     Array<Real> & intf,				\
-		     UInt nb_degree_of_freedom,				\
-		     const ElementType & type,				\
-		     const GhostType & ghost_type,			\
-		     const Array<UInt> & filter_elements) {		\
+                     const Array<Real> & f,				\
+                     Array<Real> & intf,				\
+                     UInt nb_degree_of_freedom,				\
+                     const ElementType & type,				\
+                     const GhostType & ghost_type,			\
+                     const Array<UInt> & filter_elements) {		\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(INTEGRATE, kind);		\
     }									\
   };
 
-AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_INTEGRATE_ON_QUADRATURE_POINTS_HELPER)
+AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_INTEGRATE_ON_INTEGRATION_POINTS_HELPER)
 
-#undef AKANTU_SPECIALIZE_INTEGRATE_ON_QUADRATURE_POINTS_HELPER
+#undef AKANTU_SPECIALIZE_INTEGRATE_ON_INTEGRATION_POINTS_HELPER
 #undef INTEGRATE
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
-void FEEngineTemplate<I, S, kind>::integrateOnQuadraturePoints(const Array<Real> & f,
-							       Array<Real> &intf,
-							       UInt nb_degree_of_freedom,
-							       const ElementType & type,
-							       const GhostType & ghost_type,
-							       const Array<UInt> & filter_elements) const{
+         template <ElementKind> class S,
+         ElementKind kind>
+void FEEngineTemplate<I, S, kind>::integrateOnIntegrationPoints(const Array<Real> & f,
+								Array<Real> &intf,
+								UInt nb_degree_of_freedom,
+								const ElementType & type,
+								const GhostType & ghost_type,
+								const Array<UInt> & filter_elements) const{
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if(filter_elements != empty_filter) nb_element = filter_elements.getSize();
-  UInt nb_quadrature_points  = getNbQuadraturePoints(type);
+  UInt nb_quadrature_points  = getNbIntegrationPoints(type);
 #ifndef AKANTU_NDEBUG
   //   std::stringstream sstr; sstr << ghost_type;
   //   AKANTU_DEBUG_ASSERT(sstr.str() == nablauq.getTag(),
-  //		      "The vector " << nablauq.getID() << " is not taged " << ghost_type);
+  //                  "The vector " << nablauq.getID() << " is not taged " << ghost_type);
 
 
   AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
-		      "The vector f(" << f.getID() << " size " << f.getSize()
-		      << ") has not the good size (" << nb_element << ").");
+                      "The vector f(" << f.getID() << " size " << f.getSize()
+                      << ") has not the good size (" << nb_element << ").");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom ,
-		      "The vector f(" << f.getID()
-		      << ") has not the good number of component.");
+                      "The vector f(" << f.getID()
+                      << ") has not the good number of component.");
   AKANTU_DEBUG_ASSERT(intf.getNbComponent() == nb_degree_of_freedom,
-		      "The vector intf(" << intf.getID()
-		      << ") has not the good number of component.");
+                      "The vector intf(" << intf.getID()
+                      << ") has not the good number of component.");
 #endif
 
   intf.resize(nb_element*nb_quadrature_points);
-  IntegrateOnQuadraturePointsHelper<kind>::call(integrator, f, intf, nb_degree_of_freedom, type, ghost_type, filter_elements);
+  IntegrateOnIntegrationPointsHelper<kind>::call(integrator, f, intf, nb_degree_of_freedom, type, ghost_type, filter_elements);
 }
 
 
@@ -431,97 +429,94 @@ void FEEngineTemplate<I, S, kind>::integrateOnQuadraturePoints(const Array<Real>
  * Helper class to be able to write a partial specialization on the element kind
  */
 template<ElementKind kind>
-struct InterpolateOnQuadraturePointsHelper {
+struct InterpolateOnIntegrationPointsHelper {
   template <class S>
   static void call(const S & shape_functions,
-		   const Array<Real> &u,
-		   Array<Real> &uq,
-		   const UInt nb_degree_of_freedom,
-		   const ElementType & type,
-		   const GhostType & ghost_type,
-		   const Array<UInt> & filter_elements) {
+                   const Array<Real> &u,
+                   Array<Real> &uq,
+                   const UInt nb_degree_of_freedom,
+                   const ElementType & type,
+                   const GhostType & ghost_type,
+                   const Array<UInt> & filter_elements) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 };
 
 
 #define INTERPOLATE(type)						\
-  shape_functions.template interpolateOnControlPoints<type>(u,		\
-							    uq,		\
-							    nb_degree_of_freedom, \
-							    ghost_type, \
-							    filter_elements);
+  shape_functions.template interpolateOnIntegrationPoints<type>(u,	\
+								uq,	\
+								nb_degree_of_freedom, \
+								ghost_type, \
+								filter_elements);
 
-#define AKANTU_SPECIALIZE_INTERPOLATE_ON_QUADRATURE_POINTS_HELPER(kind)	\
+#define AKANTU_SPECIALIZE_INTERPOLATE_ON_INTEGRATION_POINTS_HELPER(kind) \
   template<>								\
-  struct InterpolateOnQuadraturePointsHelper<kind> {			\
+  struct InterpolateOnIntegrationPointsHelper<kind> {			\
     template <class S>							\
     static void call(const S & shape_functions,				\
-		     const Array<Real> & u,				\
-		     Array<Real> & uq,					\
-		     const UInt nb_degree_of_freedom,			\
-		     const ElementType & type,				\
-		     const GhostType & ghost_type,			\
-		     const Array<UInt> & filter_elements) {		\
+                     const Array<Real> & u,				\
+                     Array<Real> & uq,					\
+                     const UInt nb_degree_of_freedom,			\
+                     const ElementType & type,				\
+                     const GhostType & ghost_type,			\
+                     const Array<UInt> & filter_elements) {		\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(INTERPOLATE, kind);		\
     }									\
   };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
+AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INTERPOLATE_ON_INTEGRATION_POINTS_HELPER, \
+                           AKANTU_FE_ENGINE_LIST_INTERPOLATE_ON_INTEGRATION_POINTS)
 
-AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INTERPOLATE_ON_QUADRATURE_POINTS_HELPER, \
-			   INTEREST_LIST)
-
-#undef AKANTU_SPECIALIZE_INTERPOLATE_ON_QUADRATURE_POINTS_HELPER
+#undef AKANTU_SPECIALIZE_INTERPOLATE_ON_INTEGRATION_POINTS_HELPER
 #undef INTERPOLATE
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
-void FEEngineTemplate<I, S, kind>::interpolateOnQuadraturePoints(const Array<Real> &u,
-								 Array<Real> &uq,
-								 const UInt nb_degree_of_freedom,
-								 const ElementType & type,
-								 const GhostType & ghost_type,
-								 const Array<UInt> & filter_elements) const {
+         template <ElementKind> class S,
+         ElementKind kind>
+void FEEngineTemplate<I, S, kind>::interpolateOnIntegrationPoints(const Array<Real> &u,
+								  Array<Real> &uq,
+								  const UInt nb_degree_of_freedom,
+								  const ElementType & type,
+								  const GhostType & ghost_type,
+								  const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
-  UInt nb_points = shape_functions.getControlPoints(type, ghost_type).cols();
+  UInt nb_points = shape_functions.getIntegrationPoints(type, ghost_type).cols();
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if(filter_elements != empty_filter) nb_element = filter_elements.getSize();
 #ifndef AKANTU_NDEBUG
 
   AKANTU_DEBUG_ASSERT(u.getSize() == mesh.getNbNodes(),
-		      "The vector u(" << u.getID()
-		      << ") has not the good size.");
+                      "The vector u(" << u.getID()
+                      << ") has not the good size.");
   AKANTU_DEBUG_ASSERT(u.getNbComponent() == nb_degree_of_freedom ,
-		      "The vector u(" << u.getID()
-		      << ") has not the good number of component.");
+                      "The vector u(" << u.getID()
+                      << ") has not the good number of component.");
   AKANTU_DEBUG_ASSERT(uq.getNbComponent() == nb_degree_of_freedom,
-		      "The vector uq(" << uq.getID()
-		      << ") has not the good number of component.");
+                      "The vector uq(" << uq.getID()
+                      << ") has not the good number of component.");
 #endif
 
   uq.resize(nb_element * nb_points);
 
 
-  InterpolateOnQuadraturePointsHelper<kind>::call(shape_functions,
-						  u,
-						  uq,
-						  nb_degree_of_freedom,
-						  type,
-						  ghost_type,
-						  filter_elements);
+  InterpolateOnIntegrationPointsHelper<kind>::call(shape_functions,
+						   u,
+						   uq,
+						   nb_degree_of_freedom,
+						   type,
+						   ghost_type,
+						   filter_elements);
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
-void FEEngineTemplate<I, S, kind>::interpolateOnQuadraturePoints(const Array<Real> & u,
-								 ElementTypeMapArray<Real> & uq,
-								 const ElementTypeMapArray<UInt> * filter_elements) const {
+         template <ElementKind> class S,
+         ElementKind kind>
+void FEEngineTemplate<I, S, kind>::interpolateOnIntegrationPoints(const Array<Real> & u,
+								  ElementTypeMapArray<Real> & uq,
+								  const ElementTypeMapArray<UInt> * filter_elements) const {
   AKANTU_DEBUG_IN();
 
   const Array<UInt> * filter = NULL;
@@ -536,17 +531,17 @@ void FEEngineTemplate<I, S, kind>::interpolateOnQuadraturePoints(const Array<Rea
     for (; it != last; ++it) {
       ElementType type = *it;
 
-      UInt nb_quad_per_element = getNbQuadraturePoints(type, ghost_type);
+      UInt nb_quad_per_element = getNbIntegrationPoints(type, ghost_type);
 
       UInt nb_element = 0;
 
       if (filter_elements) {
-	filter = &((*filter_elements)(type, ghost_type));
-	nb_element = filter->getSize();
+        filter = &((*filter_elements)(type, ghost_type));
+        nb_element = filter->getSize();
       }
       else {
-	filter = &empty_filter;
-	nb_element = mesh.getNbElement(type, ghost_type);
+        filter = &empty_filter;
+        nb_element = mesh.getNbElement(type, ghost_type);
       }
 
       UInt nb_tot_quad = nb_quad_per_element * nb_element;
@@ -554,12 +549,12 @@ void FEEngineTemplate<I, S, kind>::interpolateOnQuadraturePoints(const Array<Rea
       Array<Real> & quad = uq(type, ghost_type);
       quad.resize(nb_tot_quad);
 
-      interpolateOnQuadraturePoints(u,
-				    quad,
-				    mesh.getSpatialDimension(),
-				    type,
-				    ghost_type,
-				    *filter);
+      interpolateOnIntegrationPoints(u,
+				     quad,
+				     quad.getNbComponent(),
+				     type,
+				     ghost_type,
+				     *filter);
     }
   }
 
@@ -568,23 +563,183 @@ void FEEngineTemplate<I, S, kind>::interpolateOnQuadraturePoints(const Array<Rea
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
-void FEEngineTemplate<I, S, kind>::computeNormalsOnControlPoints(const GhostType & ghost_type) {
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::computeIntegrationPointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates,
+									      const ElementTypeMapArray<UInt> * filter_elements) const {
+  
+  
+  const Array<Real> & nodes_coordinates = mesh.getNodes();
+
+  interpolateOnIntegrationPoints(nodes_coordinates, quadrature_points_coordinates, filter_elements);
+}
+
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::computeIntegrationPointsCoordinates(Array<Real> & quadrature_points_coordinates,
+									      const ElementType & type, 
+									      const GhostType & ghost_type,
+									      const Array<UInt> & filter_elements) const {
+  
+  
+  const Array<Real> & nodes_coordinates = mesh.getNodes();
+
+  UInt spatial_dimension = mesh.getSpatialDimension();
+
+  interpolateOnIntegrationPoints(nodes_coordinates, quadrature_points_coordinates, spatial_dimension, 
+				 type, ghost_type, filter_elements);
+}
+
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::initElementalFieldInterpolationFromIntegrationPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+											       ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+											       ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+											       const ElementTypeMapArray<UInt> * element_filter) const {
+
+  AKANTU_DEBUG_IN();
+  
+  UInt spatial_dimension = this->mesh.getSpatialDimension();
+
+  ElementTypeMapArray<Real> quadrature_points_coordinates("quadrature_points_coordinates_for_interpolation", getID());
+  mesh.initElementTypeMapArray(quadrature_points_coordinates, spatial_dimension, spatial_dimension);
+  computeIntegrationPointsCoordinates(quadrature_points_coordinates, element_filter);
+  shape_functions.initElementalFieldInterpolationFromIntegrationPoints(interpolation_points_coordinates,
+								       interpolation_points_coordinates_matrices,
+								       quad_points_coordinates_inv_matrices,
+								       quadrature_points_coordinates,
+								       element_filter);    
+    
+}
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
+											 const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+											 ElementTypeMapArray<Real> & result,
+											 const GhostType ghost_type,
+											 const ElementTypeMapArray<UInt> * element_filter) const {
+
+  ElementTypeMapArray<Real> interpolation_points_coordinates_matrices("interpolation_points_coordinates_matrices"); 
+  ElementTypeMapArray<Real> quad_points_coordinates_inv_matrices("quad_points_coordinates_inv_matrices");
+
+  initElementalFieldInterpolationFromIntegrationPoints(interpolation_points_coordinates,
+						       interpolation_points_coordinates_matrices,
+						       quad_points_coordinates_inv_matrices,
+						       element_filter);
+
+  interpolateElementalFieldFromIntegrationPoints(field,
+						 interpolation_points_coordinates_matrices,
+						 quad_points_coordinates_inv_matrices,
+						 result,
+						 ghost_type,
+						 element_filter);
+}
+
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
+											 const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+											 const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+											 ElementTypeMapArray<Real> & result,
+											 const GhostType ghost_type,
+											 const ElementTypeMapArray<UInt> * element_filter) const {
+
+  shape_functions.interpolateElementalFieldFromIntegrationPoints(field,
+								 interpolation_points_coordinates_matrices,
+								 quad_points_coordinates_inv_matrices,
+								 result,
+								 ghost_type,
+								 element_filter);
+}
+
+/* -------------------------------------------------------------------------- */
+/**
+ * Helper class to be able to write a partial specialization on the element kind
+ */
+template<ElementKind kind>
+struct InterpolateHelper {
+  template <class S>
+  static void call(const S & shape_functions,
+                   const Vector<Real> & real_coords,
+                   UInt elem,
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const ElementType & type,
+		   const GhostType & ghost_type) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+};
+
+#define INTERPOLATE(type)					\
+  shape_functions.template interpolate<type>(real_coords,	\
+					     element,		\
+					     nodal_values,	\
+					     interpolated,	\
+					     ghost_type);
+
+#define AKANTU_SPECIALIZE_INTERPOLATE_HELPER(kind)		\
+  template<>							\
+  struct InterpolateHelper<kind> {				\
+    template <class S>						\
+    static void call(const S & shape_functions,			\
+                     const Vector<Real> & real_coords,		\
+                     UInt element,				\
+		     const Matrix<Real> & nodal_values,		\
+		     Vector<Real> & interpolated,		\
+                     const ElementType & type,			\
+                     const GhostType & ghost_type) {		\
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(INTERPOLATE, kind);	\
+    }								\
+  };
+
+AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INTERPOLATE_HELPER, \
+                           AKANTU_FE_ENGINE_LIST_INTERPOLATE)
+
+#undef AKANTU_SPECIALIZE_INTERPOLATE_HELPER
+#undef INTERPOLATE
+
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::interpolate(const Vector<Real> & real_coords, 
+						      const Matrix<Real> & nodal_values,
+						      Vector<Real> & interpolated,
+						      const Element & element) const{
+
   AKANTU_DEBUG_IN();
 
-  computeNormalsOnControlPoints(mesh.getNodes(),
-				ghost_type);
+  InterpolateHelper<kind>::call(shape_functions, real_coords, element.element, nodal_values, interpolated, element.type, element.ghost_type);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
-void FEEngineTemplate<I, S, kind>::computeNormalsOnControlPoints(const Array<Real> & field,
-								 const GhostType & ghost_type) {
+         template <ElementKind> class S,
+         ElementKind kind>
+void FEEngineTemplate<I, S, kind>::computeNormalsOnIntegrationPoints(const GhostType & ghost_type) {
+  AKANTU_DEBUG_IN();
+
+  computeNormalsOnIntegrationPoints(mesh.getNodes(),
+				    ghost_type);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+void FEEngineTemplate<I, S, kind>::computeNormalsOnIntegrationPoints(const Array<Real> & field,
+								     const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   //  Real * coord = mesh.getNodes().storage();
@@ -596,18 +751,18 @@ void FEEngineTemplate<I, S, kind>::computeNormalsOnControlPoints(const Array<Rea
   for(; it != end; ++it) {
     ElementType type = *it;
     UInt size = mesh.getNbElement(type, ghost_type);
-    if(normals_on_quad_points.exists(type, ghost_type)) {
-      normals_on_quad_points(type, ghost_type).resize(size);
+    if(normals_on_integration_points.exists(type, ghost_type)) {
+      normals_on_integration_points(type, ghost_type).resize(size);
     } else {
-      normals_on_quad_points.alloc(size, spatial_dimension, type, ghost_type);
+      normals_on_integration_points.alloc(size, spatial_dimension, type, ghost_type);
     }
   }
 
   //loop over the type to build the normals
   it  = mesh.firstType(element_dimension, ghost_type, kind);
   for(; it != end; ++it) {
-    Array<Real> & normals_on_quad = normals_on_quad_points(*it, ghost_type);
-    computeNormalsOnControlPoints(field, normals_on_quad, *it, ghost_type);
+    Array<Real> & normals_on_quad = normals_on_integration_points(*it, ghost_type);
+    computeNormalsOnIntegrationPoints(field, normals_on_quad, *it, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -618,79 +773,76 @@ void FEEngineTemplate<I, S, kind>::computeNormalsOnControlPoints(const Array<Rea
  * Helper class to be able to write a partial specialization on the element kind
  */
 template<ElementKind kind>
-struct ComputeNormalsOnControlPoints {
+struct ComputeNormalsOnIntegrationPoints {
   template <template <ElementKind> class I,
-	    template <ElementKind> class S,
-	    ElementKind k>
+            template <ElementKind> class S,
+            ElementKind k>
   static void call(const FEEngineTemplate<I, S, k> & fem,
-		   const Array<Real> & field,
-		   Array<Real> & normal,
-		   const ElementType & type,
-		   const GhostType & ghost_type) {
+                   const Array<Real> & field,
+                   Array<Real> & normal,
+                   const ElementType & type,
+                   const GhostType & ghost_type) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 };
 
-#define COMPUTE_NORMALS_ON_QUAD(type)					\
-  fem.template computeNormalsOnControlPoints<type>(field, normal, ghost_type);
+#define COMPUTE_NORMALS_ON_INTEGRATION_POINTS(type)			\
+  fem.template computeNormalsOnIntegrationPoints<type>(field, normal, ghost_type);
 
-#define AKANTU_SPECIALIZE_COMPUTE_NORMALS_ON_CONTROL_POINTS(kind)	\
+#define AKANTU_SPECIALIZE_COMPUTE_NORMALS_ON_INTEGRATION_POINTS(kind)	\
   template<>								\
-  struct ComputeNormalsOnControlPoints<kind> {				\
+  struct ComputeNormalsOnIntegrationPoints<kind> {			\
     template <template <ElementKind> class I,				\
-	      template <ElementKind> class S,				\
-	      ElementKind k>						\
+              template <ElementKind> class S,				\
+              ElementKind k>						\
     static void call(const FEEngineTemplate<I, S, k> & fem,		\
-		     const Array<Real> & field,				\
-		     Array<Real> & normal,				\
-		     const ElementType & type,				\
-		     const GhostType & ghost_type) {			\
-      AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_NORMALS_ON_QUAD, kind);	\
+                     const Array<Real> & field,				\
+                     Array<Real> & normal,				\
+                     const ElementType & type,				\
+                     const GhostType & ghost_type) {			\
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_NORMALS_ON_INTEGRATION_POINTS, kind); \
     }									\
-    };
+  };
 
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
+AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_NORMALS_ON_INTEGRATION_POINTS, \
+                           AKANTU_FE_ENGINE_LIST_COMPUTE_NORMALS_ON_INTEGRATION_POINTS)
 
-AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_NORMALS_ON_CONTROL_POINTS, \
-			   INTEREST_LIST)
-
-#undef AKANTU_SPECIALIZE_COMPUTE_NORMALS_ON_CONTROL_POINTS
-#undef COMPUTE_NORMALS_ON_QUAD
-#undef INTEREST_LIST
+#undef AKANTU_SPECIALIZE_COMPUTE_NORMALS_ON_INTEGRATION_POINTS
+#undef COMPUTE_NORMALS_ON_INTEGRATION_POINTS
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
-void FEEngineTemplate<I, S, kind>::computeNormalsOnControlPoints(const Array<Real> & field,
-								 Array<Real> & normal,
-								 const ElementType & type,
-								 const GhostType & ghost_type) const {
-  ComputeNormalsOnControlPoints<kind>::call(*this,
-					    field,
-					    normal,
-					    type,
-					    ghost_type);
+         template <ElementKind> class S,
+         ElementKind kind>
+void FEEngineTemplate<I, S, kind>::computeNormalsOnIntegrationPoints(const Array<Real> & field,
+								     Array<Real> & normal,
+								     const ElementType & type,
+								     const GhostType & ghost_type) const {
+  ComputeNormalsOnIntegrationPoints<kind>::call(*this,
+						field,
+						normal,
+						type,
+						ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 template<ElementType type>
-void FEEngineTemplate<I, S, kind>::computeNormalsOnControlPoints(const Array<Real> & field,
-								 Array<Real> & normal,
-								 const GhostType & ghost_type) const {
+void FEEngineTemplate<I, S, kind>::computeNormalsOnIntegrationPoints(const Array<Real> & field,
+								     Array<Real> & normal,
+								     const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
   UInt nb_nodes_per_element  = Mesh::getNbNodesPerElement(type);
-  UInt nb_points = getNbQuadraturePoints(type, ghost_type);
+  UInt nb_points = getNbIntegrationPoints(type, ghost_type);
 
   UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
   normal.resize(nb_element * nb_points);
   Array<Real>::matrix_iterator normals_on_quad = normal.begin_reinterpret(spatial_dimension,
-									  nb_points,
-									  nb_element);
+                                                                          nb_points,
+                                                                          nb_element);
   Array<Real> f_el(0, spatial_dimension * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, field, f_el, type, ghost_type);
 
@@ -701,8 +853,8 @@ void FEEngineTemplate<I, S, kind>::computeNormalsOnControlPoints(const Array<Rea
 
   for (UInt elem = 0; elem < nb_element; ++elem) {
     ElementClass<type>::computeNormalsOnNaturalCoordinates(quads,
-							   *f_it,
-							   *normals_on_quad);
+                                                           *f_it,
+                                                           *normals_on_quad);
     ++normals_on_quad;
     ++f_it;
   }
@@ -728,18 +880,18 @@ struct AssembleLumpedTemplateHelper { };
   template<>							\
   struct AssembleLumpedTemplateHelper<kind> {			\
     template <template <ElementKind> class I,			\
-	      template <ElementKind> class S,			\
-	      ElementKind k>					\
+              template <ElementKind> class S,			\
+              ElementKind k>					\
     static void call(const FEEngineTemplate<I, S, k> & fem,	\
-		     const Array<Real> & field_1,		\
-		     UInt nb_degree_of_freedom,			\
-		     Array<Real> & lumped,			\
-		     const Array<Int> & equation_number,	\
-		     ElementType type,				\
-		     const GhostType & ghost_type) {		\
+                     const Array<Real> & field_1,		\
+                     UInt nb_degree_of_freedom,			\
+                     Array<Real> & lumped,			\
+                     const Array<Int> & equation_number,	\
+                     ElementType type,				\
+                     const GhostType & ghost_type) {		\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(ASSEMBLE_LUMPED, kind);	\
     }								\
-    };
+  };
 
 AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_ASSEMBLE_HELPER)
 
@@ -748,22 +900,22 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_ASSEMBLE_HELPER)
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 void FEEngineTemplate<I, S, kind>::assembleFieldLumped(const Array<Real> & field_1,
-						       UInt nb_degree_of_freedom,
-						       Array<Real> & lumped,
-						       const Array<Int> & equation_number,
-						       ElementType type,
-						       const GhostType & ghost_type) const {
+                                                       UInt nb_degree_of_freedom,
+                                                       Array<Real> & lumped,
+                                                       const Array<Int> & equation_number,
+                                                       ElementType type,
+                                                       const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
   AssembleLumpedTemplateHelper<kind>::call(*this, field_1,
-					   nb_degree_of_freedom,
-					   lumped,
-					   equation_number,
-					   type,
-					   ghost_type);
+                                           nb_degree_of_freedom,
+                                           lumped,
+                                           equation_number,
+                                           type,
+                                           ghost_type);
 
   AKANTU_DEBUG_OUT();
 }
@@ -777,24 +929,24 @@ struct AssembleFieldMatrixHelper { };
 
 #define ASSEMBLE_MATRIX(type)                                           \
   fem.template assembleFieldMatrix<type>(field_1, nb_degree_of_freedom,	\
-					 matrix,			\
-					 ghost_type)
+                                         matrix,			\
+                                         ghost_type)
 
 #define AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER(kind)	\
   template<>							\
   struct AssembleFieldMatrixHelper<kind> {			\
     template <template <ElementKind> class I,			\
-	      template <ElementKind> class S,			\
-	      ElementKind k>					\
+              template <ElementKind> class S,			\
+              ElementKind k>					\
     static void call(const FEEngineTemplate<I, S, k> & fem,	\
-		     const Array<Real> & field_1,		\
-		     UInt nb_degree_of_freedom,			\
-		     SparseMatrix & matrix,			\
-		     ElementType type,				\
-		     const GhostType & ghost_type) {		\
+                     const Array<Real> & field_1,		\
+                     UInt nb_degree_of_freedom,			\
+                     SparseMatrix & matrix,			\
+                     ElementType type,				\
+                     const GhostType & ghost_type) {		\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(ASSEMBLE_MATRIX, kind);	\
     }								\
-    };
+  };
 
 AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER)
 
@@ -802,13 +954,13 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER)
 #undef ASSEMBLE_MATRIX
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(const Array<Real> & field_1,
-						       UInt nb_degree_of_freedom,
-						       SparseMatrix & matrix,
-						       ElementType type,
-						       const GhostType & ghost_type) const {
+                                                       UInt nb_degree_of_freedom,
+                                                       SparseMatrix & matrix,
+                                                       ElementType type,
+                                                       const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
   AssembleFieldMatrixHelper<kind>::call(*this, field_1, nb_degree_of_freedom, matrix, type, ghost_type);
 
@@ -817,14 +969,14 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(const Array<Real> & field
 
 /* -------------------------------------------------------------------------- */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 template <ElementType type>
 void FEEngineTemplate<I, S, kind>::assembleLumpedTemplate(const Array<Real> & field_1,
-							  UInt nb_degree_of_freedom,
-							  Array<Real> & lumped,
-							  const Array<Int> & equation_number,
-							  const GhostType & ghost_type) const {
+                                                          UInt nb_degree_of_freedom,
+                                                          Array<Real> & lumped,
+                                                          const Array<Int> & equation_number,
+                                                          const GhostType & ghost_type) const {
   this->template assembleLumpedRowSum<type>(field_1, nb_degree_of_freedom,lumped, equation_number,ghost_type);
 }
 
@@ -833,14 +985,14 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedTemplate(const Array<Real> & fi
  * @f$ \tilde{M}_{i} = \sum_j M_{ij} = \sum_j \int \rho \varphi_i \varphi_j dV = \int \rho \varphi_i dV @f$
  */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 template <ElementType type>
 void FEEngineTemplate<I, S, kind>::assembleLumpedRowSum(const Array<Real> & field_1,
-							UInt nb_degree_of_freedom,
-							Array<Real> & lumped,
-							const Array<Int> & equation_number,
-							const GhostType & ghost_type) const {
+                                                        UInt nb_degree_of_freedom,
+                                                        Array<Real> & lumped,
+                                                        const Array<Int> & equation_number,
+                                                        const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
   UInt shapes_size = ElementClass<type>::getShapeSize();
@@ -861,9 +1013,9 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedRowSum(const Array<Real> & fiel
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   Array<Real> * int_field_times_shapes = new Array<Real>(nb_element, shapes_size * nb_degree_of_freedom,
-							 "inte_rho_x_shapes");
+                                                         "inte_rho_x_shapes");
   integrator.template integrate<type>(*field_times_shapes, *int_field_times_shapes,
-				      nb_degree_of_freedom * shapes_size, ghost_type, empty_filter);
+                                      nb_degree_of_freedom * shapes_size, ghost_type, empty_filter);
   delete field_times_shapes;
 
   assembleArray(*int_field_times_shapes, lumped, equation_number,nb_degree_of_freedom, type, ghost_type);
@@ -878,14 +1030,14 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedRowSum(const Array<Real> & fiel
  * @f$ \tilde{M}_{i} = c * M_{ii} = \int_{V_e} \rho dV @f$
  */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 template <ElementType type>
 void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Real> & field_1,
-								 UInt nb_degree_of_freedom,
-								 Array<Real> & lumped,
-								 const Array<Int> & equation_number,
-								 const GhostType & ghost_type) const {
+                                                                 UInt nb_degree_of_freedom,
+                                                                 Array<Real> & lumped,
+                                                                 const Array<Int> & equation_number,
+                                                                 const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
   const ElementType & type_p1  = ElementClass<type>::getP1ElementType();
@@ -894,23 +1046,42 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
   UInt nb_quadrature_points    = integrator.template getQuadraturePoints<type>(ghost_type).cols();
 
   UInt nb_element = field_1.getSize() / nb_quadrature_points;
+  Vector<Real> nodal_factor(nb_nodes_per_element);
 
-  Real corner_factor = 0;
-  Real mid_factor    = 0;
-
-  if(type == _triangle_6) {
-    corner_factor = 1./12.;
-    mid_factor    = 1./4.;
+#define ASSIGN_WEIGHT_TO_NODES(corner,mid)		\
+  {							\
+    for (UInt n = 0; n < nb_nodes_per_element_p1; n++)	\
+      nodal_factor(n) = corner;				\
+    for (UInt n = nb_nodes_per_element_p1;		\
+         n < nb_nodes_per_element; n++)			\
+      nodal_factor(n) = mid;				\
   }
 
-  if (type == _tetrahedron_10) {
-    corner_factor = 1./32.;
-    mid_factor    = 7./48.;
-  }
+  if (type == _triangle_6    ) ASSIGN_WEIGHT_TO_NODES(1./12.,  1./4.);
+  if (type == _tetrahedron_10) ASSIGN_WEIGHT_TO_NODES(1./32., 7./48.);
+  if (type == _quadrangle_8  ) ASSIGN_WEIGHT_TO_NODES(3./76., 16./76.);  /** coeff. derived by scaling the diagonal terms of the corresponding 
+									  * consistent mass computed with 3x3 gauss points; 
+									  * coeff. are (1./36., 8./36.) for 2x2 gauss points */
+  if (type == _hexahedron_20 ) ASSIGN_WEIGHT_TO_NODES(7./248., 16./248.); /** coeff. derived by scaling the diagonal terms of the corresponding
+									   * consistent mass computed with 3x3x3 gauss points;
+                                                                           * coeff. are (1./40., 1./15.) for 2x2x2 gauss points */
+  if (type == _pentahedron_15) {
+    // coefficients derived by scaling the diagonal terms of the corresponding consistent mass computed with 8 gauss points; 
+    for (UInt n = 0; n < nb_nodes_per_element_p1; n++)
+      nodal_factor(n) = 51./2358.;
 
-  if (type == _quadrangle_8) {
-    corner_factor = 1./36.;
-    mid_factor    = 8./36.;
+    Real mid_triangle   = 192./2358.;
+    Real mid_quadrangle = 300./2358.;
+
+    nodal_factor(6)  = mid_triangle;
+    nodal_factor(7)  = mid_triangle;
+    nodal_factor(8)  = mid_triangle;
+    nodal_factor(9)  = mid_quadrangle;
+    nodal_factor(10) = mid_quadrangle;
+    nodal_factor(11) = mid_quadrangle;
+    nodal_factor(12) = mid_triangle;
+    nodal_factor(13) = mid_triangle;
+    nodal_factor(14) = mid_triangle;
   }
 
   if (nb_element == 0) {
@@ -918,9 +1089,11 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
     return;
   }
 
+#undef ASSIGN_WEIGHT_TO_NODES
+
   /// compute @f$ \int \rho dV = \rho V @f$ for each element
   Array<Real> * int_field_1 = new Array<Real>(field_1.getSize(), 1,
-					      "inte_rho_x_1");
+                                              "inte_rho_x_1");
   integrator.template integrate<type>(field_1, *int_field_1, 1, ghost_type, empty_filter);
 
   /// distribute the mass of the element to the nodes
@@ -930,18 +1103,11 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
     = lumped_per_node->begin(nb_degree_of_freedom, nb_nodes_per_element);
 
   for (UInt e = 0; e < nb_element; ++e) {
-    Real lmass = *int_field_1_it * corner_factor;
-    for (UInt n = 0; n < nb_nodes_per_element_p1; ++n) {
+    for (UInt n = 0; n < nb_nodes_per_element; ++n) {
+      Real lmass = *int_field_1_it * nodal_factor(n);
       Vector<Real> l = (*lumped_per_node_it)(n);
-      l.set(lmass); /// corner points
+      l.set(lmass);
     }
-
-    lmass = *int_field_1_it * mid_factor;
-    for (UInt n = nb_nodes_per_element_p1; n < nb_nodes_per_element; ++n) {
-      Vector<Real> l = (*lumped_per_node_it)(n);
-      l.set(lmass); /// mid points
-    }
-
     ++int_field_1_it;
     ++lumped_per_node_it;
   }
@@ -959,13 +1125,13 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(const Array<Rea
  * @f$ \tilde{M}_{i} = \sum_j M_{ij} = \sum_j \int \rho \varphi_i \varphi_j dV = \int \rho \varphi_i dV @f$
  */
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 template <ElementType type>
 void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(const Array<Real> & field_1,
-						       UInt nb_degree_of_freedom,
-						       SparseMatrix & matrix,
-						       const GhostType & ghost_type) const {
+                                                       UInt nb_degree_of_freedom,
+                                                       SparseMatrix & matrix,
+                                                       const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
   UInt vect_size   = field_1.getSize();
@@ -977,37 +1143,32 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(const Array<Real> & field
   modified_shapes->clear();
   Array<Real> * local_mat = new Array<Real>(vect_size, lmat_size * lmat_size);
 
-  Array<Real>::matrix_iterator shape_vect  = modified_shapes->begin(nb_degree_of_freedom, lmat_size);
-  Real * sh  = shapes.storage();
-  for(UInt q = 0; q < vect_size; ++q) {
-    Real * msh = shape_vect->storage();
+  Array<Real>::matrix_iterator mshapes_it = modified_shapes->begin(lmat_size, nb_degree_of_freedom);
+  Array<Real>::const_vector_iterator shapes_it = shapes.begin(shapes_size);
+
+  for(UInt q = 0; q < vect_size; ++q, ++mshapes_it, ++shapes_it) {
     for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
-      Real * msh_tmp = msh + d * (lmat_size + 1);
       for (UInt s = 0; s < shapes_size; ++s) {
-	*msh_tmp = sh[s];
-	msh_tmp += nb_degree_of_freedom;
+        (*mshapes_it)(s*nb_degree_of_freedom + d, d) = (*shapes_it)(s);
       }
     }
-    ++shape_vect;
-    sh += shapes_size;
   }
 
-  shape_vect  = modified_shapes->begin(nb_degree_of_freedom, lmat_size);
+  mshapes_it  = modified_shapes->begin(lmat_size, nb_degree_of_freedom);
   Array<Real>::matrix_iterator lmat = local_mat->begin(lmat_size, lmat_size);
-  Real * field_val = field_1.storage();
+  Array<Real>::const_scalar_iterator field_val = field_1.begin();
 
-  for(UInt q = 0; q < vect_size; ++q) {
-    (*lmat).mul<true, false>(*shape_vect, *shape_vect, *field_val);
-    ++lmat; ++shape_vect; ++field_val;
+  for(UInt q = 0; q < vect_size; ++q, ++lmat, ++mshapes_it, ++field_val) {
+    (*lmat).mul<false, true>(*mshapes_it, *mshapes_it, *field_val);
   }
 
   delete modified_shapes;
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   Array<Real> * int_field_times_shapes = new Array<Real>(nb_element, lmat_size * lmat_size,
-							 "inte_rho_x_shapes");
+                                                         "inte_rho_x_shapes");
   integrator.template integrate<type>(*local_mat, *int_field_times_shapes,
-				      lmat_size * lmat_size, ghost_type, empty_filter);
+                                      lmat_size * lmat_size, ghost_type, empty_filter);
   delete local_mat;
 
   assembleMatrix(*int_field_times_shapes, matrix, nb_degree_of_freedom, type, ghost_type);
@@ -1024,11 +1185,11 @@ template<ElementKind kind>
 struct InverseMapHelper {
   template <class S>
   static void call(const S & shape_functions,
-		   const Vector<Real> & real_coords,
-		   UInt element,
-		   const ElementType & type,
-		   Vector<Real> & natural_coords,
-		   const GhostType & ghost_type) {
+                   const Vector<Real> & real_coords,
+                   UInt element,
+                   const ElementType & type,
+                   Vector<Real> & natural_coords,
+                   const GhostType & ghost_type) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 };
@@ -1041,31 +1202,29 @@ struct InverseMapHelper {
   struct InverseMapHelper<kind> {				\
     template <class S>						\
     static void call(const S & shape_functions,			\
-		     const Vector<Real> & real_coords,		\
-		     UInt element,				\
-		     const ElementType & type,			\
-		     Vector<Real> & natural_coords,		\
-		     const GhostType & ghost_type) {		\
+                     const Vector<Real> & real_coords,		\
+                     UInt element,				\
+                     const ElementType & type,			\
+                     Vector<Real> & natural_coords,		\
+                     const GhostType & ghost_type) {		\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(INVERSE_MAP, kind);	\
     }								\
   };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
 
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_INVERSE_MAP_HELPER, \
-			   INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_INVERSE_MAP)
 
 #undef AKANTU_SPECIALIZE_INVERSE_MAP_HELPER
 #undef INVERSE_MAP
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 inline void FEEngineTemplate<I, S, kind>::inverseMap(const Vector<Real> & real_coords,
-						     UInt element,
-						     const ElementType & type,
-						     Vector<Real> & natural_coords,
-						     const GhostType & ghost_type) const{
+                                                     UInt element,
+                                                     const ElementType & type,
+                                                     Vector<Real> & natural_coords,
+                                                     const GhostType & ghost_type) const{
 
   AKANTU_DEBUG_IN();
 
@@ -1081,11 +1240,11 @@ inline void FEEngineTemplate<I, S, kind>::inverseMap(const Vector<Real> & real_c
 template<ElementKind kind>
 struct ContainsHelper {
   template <class S>
-  static void call(const S & shape_functions,	
-		   const Vector<Real> & real_coords,
-		   UInt element,
-		   const ElementType & type,
-		   const GhostType & ghost_type) {
+  static void call(const S & shape_functions,
+                   const Vector<Real> & real_coords,
+                   UInt element,
+                   const ElementType & type,
+                   const GhostType & ghost_type) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 };
@@ -1097,33 +1256,31 @@ struct ContainsHelper {
   template<>						\
   struct ContainsHelper<kind> {				\
     template <template <ElementKind> class S,		\
-	      ElementKind k>				\
+              ElementKind k>				\
     static bool call(const S<k> & shape_functions,	\
-		     const Vector<Real> & real_coords,	\
-		     UInt element,			\
-		     const ElementType & type,		\
-		     const GhostType & ghost_type) {	\
+                     const Vector<Real> & real_coords,	\
+                     UInt element,			\
+                     const ElementType & type,		\
+                     const GhostType & ghost_type) {	\
       bool contain = false;				\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(CONTAINS, kind);	\
       return contain;					\
     }							\
-    };
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
+  };
 
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_CONTAINS_HELPER, \
-			   INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_CONTAINS)
 
 #undef AKANTU_SPECIALIZE_CONTAINS_HELPER
 #undef CONTAINS
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 inline bool FEEngineTemplate<I, S, kind>::contains(const Vector<Real> & real_coords,
-						   UInt element,
-						   const ElementType & type,
-						   const GhostType & ghost_type) const{
+                                                   UInt element,
+                                                   const ElementType & type,
+                                                   const GhostType & ghost_type) const{
   return ContainsHelper<kind>::call(shape_functions, real_coords, element, type, ghost_type);
 }
 
@@ -1132,41 +1289,55 @@ inline bool FEEngineTemplate<I, S, kind>::contains(const Vector<Real> & real_coo
  * Helper class to be able to write a partial specialization on the element kind
  */
 template<ElementKind kind>
-struct ComputeShapesHelper { };
+struct ComputeShapesHelper {
+  template <class S>
+  static void call(const S & shape_functions,
+                   const Vector<Real> & real_coords,
+                   UInt element,
+                   const ElementType type,
+                   Vector<Real> & shapes,
+                   const GhostType & ghost_type) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+};
 
-#define COMPUTE_SHAPES(type)						\
-  shape_functions.template computeShapes<type>(real_coords,element,shapes,ghost_type); \
+#define COMPUTE_SHAPES(type)					\
+  shape_functions.template computeShapes<type>(real_coords,	\
+                                               element,		\
+                                               shapes,		\
+                                               ghost_type);
 
 #define AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER(kind)		\
   template<>							\
   struct ComputeShapesHelper<kind> {				\
     template <class S>						\
     static void call(const S & shape_functions,			\
-		     const Vector<Real> & real_coords,		\
-		     UInt element,				\
-		     const ElementType type,			\
-		     Vector<Real> & shapes,			\
-		     const GhostType & ghost_type) {		\
+                     const Vector<Real> & real_coords,		\
+                     UInt element,				\
+                     const ElementType type,			\
+                     Vector<Real> & shapes,			\
+                     const GhostType & ghost_type) {		\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_SHAPES, kind);	\
     }								\
   };
 
-AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER)
+AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER, \
+                           AKANTU_FE_ENGINE_LIST_COMPUTE_SHAPES)
 
-#undef AKANTU_SPECIALIZE_ASSEMBLE_COMPUTE_SHAPES_HELPER
+#undef AKANTU_SPECIALIZE_COMPUTE_SHAPES_HELPER
 #undef COMPUTE_SHAPES
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 inline void FEEngineTemplate<I, S, kind>::computeShapes(const Vector<Real> & real_coords,
-							UInt element,
-							const ElementType & type,
-							Vector<Real> & shapes,
-							const GhostType & ghost_type) const{
+                                                        UInt element,
+                                                        const ElementType & type,
+                                                        Vector<Real> & shapes,
+                                                        const GhostType & ghost_type) const{
 
   AKANTU_DEBUG_IN();
-  
+
   ComputeShapesHelper<kind>::call(shape_functions, real_coords, element, type, shapes, ghost_type);
 
   AKANTU_DEBUG_OUT();
@@ -1177,37 +1348,99 @@ inline void FEEngineTemplate<I, S, kind>::computeShapes(const Vector<Real> & rea
  * Helper class to be able to write a partial specialization on the element kind
  */
 template<ElementKind kind>
-struct GetNbQuadraturePointsHelper { };
+struct ComputeShapeDerivativesHelper {
+  template <class S>
+  static void call(const S & shape_functions,
+                   const Vector<Real> & real_coords,
+                   UInt element,
+                   const ElementType type,
+                   Matrix<Real> & shape_derivatives,
+                   const GhostType & ghost_type) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+};
 
-#define GET_NB_QUAD(type)						\
+#define COMPUTE_SHAPE_DERIVATIVES(type)					\
+  Matrix<Real> coords_mat(real_coords.storage(), shape_derivatives.rows(), 1); \
+  Tensor3<Real> shapesd_tensor(shape_derivatives.storage(),		\
+                               shape_derivatives.rows(),		\
+                               shape_derivatives.cols(), 1);		\
+  shape_functions.template computeShapeDerivatives<type>(coords_mat,	\
+                                                         element,	\
+                                                         shapesd_tensor, \
+                                                         ghost_type);
+
+#define AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER(kind)	\
+  template<>								\
+  struct ComputeShapeDerivativesHelper<kind> {				\
+    template <class S>							\
+    static void call(const S & shape_functions,				\
+                     const Vector<Real> & real_coords,			\
+                     UInt element,					\
+                     const ElementType type,				\
+                     Matrix<Real> & shape_derivatives,			\
+                     const GhostType & ghost_type) {			\
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_SHAPE_DERIVATIVES, kind); \
+    }									\
+  };
+
+AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER, \
+                           AKANTU_FE_ENGINE_LIST_COMPUTE_SHAPES_DERIVATIVES)
+
+#undef AKANTU_SPECIALIZE_COMPUTE_SHAPE_DERIVATIVES_HELPER
+#undef COMPUTE_SHAPE_DERIVATIVES
+
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+inline void FEEngineTemplate<I, S, kind>::computeShapeDerivatives(const Vector<Real> & real_coords,
+                                                                  UInt element,
+                                                                  const ElementType & type,
+                                                                  Matrix<Real> & shape_derivatives,
+                                                                  const GhostType & ghost_type) const {
+  AKANTU_DEBUG_IN();
+
+  ComputeShapeDerivativesHelper<kind>::call(shape_functions, real_coords, element, type, shape_derivatives, ghost_type);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+/**
+ * Helper class to be able to write a partial specialization on the element kind
+ */
+template<ElementKind kind>
+struct GetNbIntegrationPointsHelper { };
+
+#define GET_NB_INTEGRATION_POINTS(type)					\
   nb_quad_points =							\
     integrator. template getQuadraturePoints<type>(ghost_type).cols();
 
-#define AKANTU_SPECIALIZE_GET_NB_QUADRATURE_POINTS_HELPER(kind)	\
-  template<>							\
-  struct GetNbQuadraturePointsHelper<kind> {			\
-    template <template <ElementKind> class I,			\
-	      ElementKind k>					\
-    static UInt call(const I<k> & integrator,			\
-		     const ElementType type,			\
-		     const GhostType & ghost_type) {		\
-      UInt nb_quad_points = 0;					\
-      AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_NB_QUAD, kind);	\
-      return nb_quad_points;					\
-    }								\
-    };
+#define AKANTU_SPECIALIZE_GET_NB_INTEGRATION_POINTS_HELPER(kind)	\
+  template<>								\
+  struct GetNbIntegrationPointsHelper<kind> {				\
+    template <template <ElementKind> class I,				\
+              ElementKind k>						\
+    static UInt call(const I<k> & integrator,				\
+                     const ElementType type,				\
+                     const GhostType & ghost_type) {			\
+      UInt nb_quad_points = 0;						\
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_NB_INTEGRATION_POINTS, kind); \
+      return nb_quad_points;						\
+    }									\
+  };
 
-AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_GET_NB_QUADRATURE_POINTS_HELPER)
+AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_GET_NB_INTEGRATION_POINTS_HELPER)
 
-#undef AKANTU_SPECIALIZE_GET_NB_QUADRATURE_POINTS_HELPER
-#undef GET_NB_QUAD
+#undef AKANTU_SPECIALIZE_GET_NB_INTEGRATION_POINTS_HELPER
+#undef GET_NB_INTEGRATION
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
-inline UInt FEEngineTemplate<I, S, kind>::getNbQuadraturePoints(const ElementType & type,
-								const GhostType & ghost_type) const {
-  return GetNbQuadraturePointsHelper<kind>::call(integrator, type, ghost_type);
+         template <ElementKind> class S,
+         ElementKind kind>
+inline UInt FEEngineTemplate<I, S, kind>::getNbIntegrationPoints(const ElementType & type,
+								   const GhostType & ghost_type) const {
+return GetNbIntegrationPointsHelper<kind>::call(integrator, type, ghost_type);
 }
 
 
@@ -1221,17 +1454,17 @@ struct GetShapesHelper { };
 #define GET_SHAPES(type)                                \
   ret = &(shape_functions.getShapes(type, ghost_type));
 
-#define AKANTU_SPECIALIZE_GET_SHAPES_HELPER(kind)		\
-  template<>							\
-  struct GetShapesHelper<kind> {				\
-  template <class S>						\
-  static const Array<Real> & call(const S& shape_functions,	\
-			    const ElementType type,		\
-			    const GhostType & ghost_type) {	\
-    const Array<Real> * ret = NULL;				\
-    AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_SHAPES, kind);		\
-    return *ret;						\
-  }								\
+#define AKANTU_SPECIALIZE_GET_SHAPES_HELPER(kind)			\
+  template<>								\
+  struct GetShapesHelper<kind> {					\
+    template <class S>							\
+    static const Array<Real> & call(const S& shape_functions,		\
+				    const ElementType type,		\
+				    const GhostType & ghost_type) {	\
+      const Array<Real> * ret = NULL;					\
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_SHAPES, kind);		\
+      return *ret;							\
+    }									\
   };
 
 AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_GET_SHAPES_HELPER)
@@ -1240,11 +1473,11 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_GET_SHAPES_HELPER)
 #undef GET_SHAPES
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 inline const Array<Real> & FEEngineTemplate<I, S, kind>::getShapes(const ElementType & type,
-								   const GhostType & ghost_type,
-								   __attribute__((unused)) UInt id) const {
+                                                                   const GhostType & ghost_type,
+                                                                   __attribute__((unused)) UInt id) const {
   return GetShapesHelper<kind>::call(shape_functions, type, ghost_type);
 }
 
@@ -1255,11 +1488,11 @@ inline const Array<Real> & FEEngineTemplate<I, S, kind>::getShapes(const Element
 template<ElementKind kind>
 struct GetShapesDerivativesHelper {
   template <template <ElementKind> class S,
-	    ElementKind k>
+            ElementKind k>
   static const Array<Real> & call(const S<k> & shape_functions,
-				  const ElementType & type,
-				  const GhostType & ghost_type,
-				  UInt id) {
+                                  const ElementType & type,
+                                  const GhostType & ghost_type,
+                                  UInt id) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 };
@@ -1271,33 +1504,29 @@ struct GetShapesDerivativesHelper {
   template<>								\
   struct GetShapesDerivativesHelper<kind> {				\
     template <template <ElementKind> class S,				\
-	      ElementKind k>						\
+              ElementKind k>						\
     static const Array<Real> & call(const S<k> & shape_functions,	\
-				    const ElementType type,		\
-				    const GhostType & ghost_type,	\
-				    UInt id) {				\
+                                    const ElementType type,		\
+                                    const GhostType & ghost_type,	\
+                                    UInt id) {				\
       const Array<Real> * ret = NULL;					\
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_SHAPES_DERIVATIVES, kind);	\
       return *ret;							\
     }									\
-    };
-
-#define INTEREST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_REGULAR_KIND AKANTU_COHESIVE_KIND AKANTU_IGFEM_KIND)
+  };
 
 AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_GET_SHAPES_DERIVATIVES_HELPER, \
-			   INTEREST_LIST)
+                           AKANTU_FE_ENGINE_LIST_GET_SHAPES_DERIVATIVES)
 
 #undef AKANTU_SPECIALIZE_GET_SHAPE_DERIVATIVES_HELPER
 #undef GET_SHAPES_DERIVATIVES
-#undef INTEREST_LIST
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 inline const Array<Real> & FEEngineTemplate<I, S, kind>::getShapesDerivatives(const ElementType & type,
-									      const GhostType & ghost_type,
-									      __attribute__((unused)) UInt id) const {
-
+                                                                              const GhostType & ghost_type,
+                                                                              __attribute__((unused)) UInt id) const {
   return GetShapesDerivativesHelper<kind>::call(shape_functions, type, ghost_type, id);
 }
 
@@ -1306,43 +1535,67 @@ inline const Array<Real> & FEEngineTemplate<I, S, kind>::getShapesDerivatives(co
  * Helper class to be able to write a partial specialization on the element kind
  */
 template<ElementKind kind>
-struct GetQuadraturePointsHelper { };
+struct GetIntegrationPointsHelper { };
 
-#define GET_QUADS(type)                                                 \
+#define GET_INTEGRATION_POINTS(type)					\
   ret = &(integrator. template getQuadraturePoints<type>(ghost_type));	\
 
-#define AKANTU_SPECIALIZE_GET_QUADRATURE_POINTS_HELPER(kind)		\
+#define AKANTU_SPECIALIZE_GET_INTEGRATION_POINTS_HELPER(kind)		\
   template<>								\
-  struct GetQuadraturePointsHelper<kind> {				\
+  struct GetIntegrationPointsHelper<kind> {				\
     template <template <ElementKind> class I,				\
-	      ElementKind k>						\
+              ElementKind k>						\
     static const Matrix<Real> & call(const I<k> & integrator,		\
-				     const ElementType type,		\
-				     const GhostType & ghost_type) {	\
+                                     const ElementType type,		\
+                                     const GhostType & ghost_type) {	\
       const Matrix<Real> * ret = NULL;					\
-      AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_QUADS, kind);		\
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_INTEGRATION_POINTS, kind);	\
       return *ret;							\
     }									\
-    };
+  };
 
-AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_GET_QUADRATURE_POINTS_HELPER)
+AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_GET_INTEGRATION_POINTS_HELPER)
 
-#undef AKANTU_SPECIALIZE_GET_QUADRATURE_POINTS_HELPER
-#undef GET_QUADS
+#undef AKANTU_SPECIALIZE_GET_INTEGRATION_POINTS_HELPER
+#undef GET_INTEGRATION_POINTS
 
 template<template <ElementKind> class I,
-	 template <ElementKind> class S,
-	 ElementKind kind>
+         template <ElementKind> class S,
+         ElementKind kind>
 inline const Matrix<Real> &
-FEEngineTemplate<I, S, kind>::getQuadraturePoints(const ElementType & type,
-						  const GhostType & ghost_type) const {
-  return GetQuadraturePointsHelper<kind>::call(integrator, type, ghost_type);
+FEEngineTemplate<I, S, kind>::getIntegrationPoints(const ElementType & type,
+						   const GhostType & ghost_type) const {
+  return GetIntegrationPointsHelper<kind>::call(integrator, type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
+template<template <ElementKind> class I,
+         template <ElementKind> class S,
+         ElementKind kind>
+void FEEngineTemplate<I, S, kind>::printself(std::ostream & stream, int indent) const {
+  std::string space;
+  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+
+  stream << space << "FEEngineTemplate [" << std::endl;
+  stream << space << " + parent [" << std::endl;
+  FEEngine::printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << " + shape functions [" << std::endl;
+  shape_functions.printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << " + integrator [" << std::endl;
+  integrator.printself(stream, indent + 3);
+  stream << space << "   ]" << std::endl;
+  stream << space << "]" << std::endl;
+}
+
+/* -------------------------------------------------------------------------- */
+
 __END_AKANTU__
+
 #include "shape_lagrange.hh"
 #include "integrator_gauss.hh"
+
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
@@ -1350,12 +1603,12 @@ template <>
 template <>
 inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
 assembleLumpedTemplate<_triangle_6>(const Array<Real> & field_1,
-				    UInt nb_degree_of_freedom,
-				    Array<Real> & lumped,
-				    const Array<Int> & equation_number,
-				    const GhostType & ghost_type) const {
+                                    UInt nb_degree_of_freedom,
+                                    Array<Real> & lumped,
+                                    const Array<Int> & equation_number,
+                                    const GhostType & ghost_type) const {
   assembleLumpedDiagonalScaling<_triangle_6>(field_1, nb_degree_of_freedom,
-					     lumped, equation_number, ghost_type);
+                                             lumped, equation_number, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1363,12 +1616,12 @@ template <>
 template <>
 inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
 assembleLumpedTemplate<_tetrahedron_10>(const Array<Real> & field_1,
-					UInt nb_degree_of_freedom,
-					Array<Real> & lumped,
-					const Array<Int> & equation_number,
-					const GhostType & ghost_type) const {
+                                        UInt nb_degree_of_freedom,
+                                        Array<Real> & lumped,
+                                        const Array<Int> & equation_number,
+                                        const GhostType & ghost_type) const {
   assembleLumpedDiagonalScaling<_tetrahedron_10>(field_1, nb_degree_of_freedom,
-						 lumped,  equation_number, ghost_type);
+                                                 lumped,  equation_number, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1377,34 +1630,62 @@ template <>
 inline void
 FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
 assembleLumpedTemplate<_quadrangle_8>(const Array<Real> & field_1,
-				      UInt nb_degree_of_freedom,
-				      Array<Real> & lumped,
-				      const Array<Int> & equation_number,
-				      const GhostType & ghost_type) const {
+                                      UInt nb_degree_of_freedom,
+                                      Array<Real> & lumped,
+                                      const Array<Int> & equation_number,
+                                      const GhostType & ghost_type) const {
   assembleLumpedDiagonalScaling<_quadrangle_8>(field_1, nb_degree_of_freedom,
-					       lumped, equation_number, ghost_type);
+                                               lumped, equation_number, ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
+template <>
+template <>
+inline void
+FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
+assembleLumpedTemplate<_hexahedron_20>(const Array<Real> & field_1,
+				       UInt nb_degree_of_freedom,
+				       Array<Real> & lumped,
+				       const Array<Int> & equation_number,
+				       const GhostType & ghost_type) const {
+  assembleLumpedDiagonalScaling<_hexahedron_20>(field_1, nb_degree_of_freedom,
+                                                lumped, equation_number, ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
+template <>
+template <>
+inline void
+FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
+assembleLumpedTemplate<_pentahedron_15>(const Array<Real> & field_1,
+					UInt nb_degree_of_freedom,
+					Array<Real> & lumped,
+					const Array<Int> & equation_number,
+					const GhostType & ghost_type) const {
+  assembleLumpedDiagonalScaling<_pentahedron_15>(field_1, nb_degree_of_freedom,
+						 lumped, equation_number, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
 template<>
 template<>
 inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
-computeNormalsOnControlPoints<_point_1>(__attribute__((unused))const Array<Real> & field,
-					Array<Real> & normal,
-					const GhostType & ghost_type) const {
+computeNormalsOnIntegrationPoints<_point_1>(__attribute__((unused))const Array<Real> & field,
+					    Array<Real> & normal,
+					    const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(mesh.getSpatialDimension() == 1, "Mesh dimension must be 1 to compute normals on points!");
   const ElementType type = _point_1;
   UInt spatial_dimension = mesh.getSpatialDimension();
   //UInt nb_nodes_per_element  = Mesh::getNbNodesPerElement(type);
-  UInt nb_points = getNbQuadraturePoints(type, ghost_type);
+  UInt nb_points = getNbIntegrationPoints(type, ghost_type);
 
   UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
   normal.resize(nb_element * nb_points);
   Array<Real>::matrix_iterator normals_on_quad = normal.begin_reinterpret(spatial_dimension,
-									  nb_points,
-									  nb_element);
+                                                                          nb_points,
+                                                                          nb_element);
   Array< std::vector<Element> > segments = mesh.getElementToSubelement(type, ghost_type);
   Array<Real> coords = mesh.getNodes();
 
@@ -1426,9 +1707,9 @@ computeNormalsOnControlPoints<_point_1>(__attribute__((unused))const Array<Real>
       //const Vector<UInt> & segment_points = segment_connectivity.begin(Mesh::getNbNodesPerElement(segment.type))[segment.element];
       Real difference;
       if(segment_connectivity(0) == elem) {
-	difference = coords(elem)-coords(segment_connectivity(1));
+        difference = coords(elem)-coords(segment_connectivity(1));
       } else {
-	difference = coords(elem)-coords(segment_connectivity(0));
+        difference = coords(elem)-coords(segment_connectivity(0));
       }
       normal_value = difference/std::abs(difference);
     }

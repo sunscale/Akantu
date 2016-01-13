@@ -152,10 +152,11 @@ int main(int argc, char *argv[])
   /* ------------------------------------------------------------------------ */
   my_model.solveStep<_scm_newton_raphson_tangent_modified, _scc_residual>(2e-4, 2);
   my_model.getStiffnessMatrix().saveMatrix("clown_matrix.mtx");
+
   /* ------------------------------------------------------------------------ */
   /* Checks                                                                   */
   /* ------------------------------------------------------------------------ */
-  UInt nb_quadrature_points = my_model.getFEEngine().getNbQuadraturePoints(element_type);
+  UInt nb_quadrature_points = my_model.getFEEngine().getNbIntegrationPoints(element_type);
 
   Array<Real> & stress_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getStress(element_type));
   Array<Real> & strain_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getGradU(element_type));
@@ -186,7 +187,7 @@ int main(int argc, char *argv[])
 	std::cerr << "strain error: " << strain_error << " > " << strain_tolerance << std::endl;
 	std::cerr << "strain: " << strain << std::endl
 		  << "prescribed strain: " << presc_strain << std::endl;
-	return EXIT_FAILURE;
+       	return EXIT_FAILURE;
       } else {
 	std::cerr << "strain error: " << strain_error << " < " << strain_tolerance << std::endl;
       }

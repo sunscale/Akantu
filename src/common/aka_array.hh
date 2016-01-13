@@ -40,10 +40,7 @@
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 #include <typeinfo>
-//#include <cstring>
-
 #include <vector>
-
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -85,6 +82,8 @@ public:
   AKANTU_GET_MACRO(NbComponent, nb_component, UInt);
   /// Get the name of th array
   AKANTU_GET_MACRO(ID, id, const ID &);
+  /// Set the name of th array
+  AKANTU_SET_MACRO(ID, id, const ID &);
 
   // AKANTU_GET_MACRO(Tag, tag, const std::string &);
   // AKANTU_SET_MACRO(Tag, tag, const std::string &);
@@ -112,7 +111,6 @@ protected:
   // std::string tag;
 };
 
-/* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
 
@@ -144,9 +142,10 @@ public:
   /// Copy constructor (deep copy if deep=true)
   Array(const Array<value_type, is_scal>& vect, bool deep = true, const ID & id = "");
 
+#ifndef SWIG
   /// Copy constructor (deep copy)
   Array(const std::vector<value_type> & vect);
-
+#endif
 
   virtual inline ~Array();
 
@@ -190,13 +189,13 @@ public:
   /* ------------------------------------------------------------------------ */
 
   /// Get an iterator that behaves like a pointer T * to the first entry
-  inline iterator<T> begin();
+  inline scalar_iterator begin();
   /// Get an iterator that behaves like a pointer T * to the end of the Array
-  inline iterator<T> end();
+  inline scalar_iterator end();
   /// Get a const_iterator to the beginging of an Array of scalar
-  inline const_iterator<T> begin() const;
+  inline const_scalar_iterator begin() const;
   /// Get a const_iterator to the end of an Array of scalar
-  inline const_iterator<T> end() const;
+  inline const_scalar_iterator end() const;
 
   /* ------------------------------------------------------------------------ */
   /// Get a vector_iterator on the begining of the Array
@@ -258,9 +257,13 @@ public:
   inline iterator<R> erase(const iterator<R> & it);
 
   /// change the size of the Array
-  void resize(UInt size);
+  virtual void resize(UInt size);
 
   /// change the number of components by interlacing data
+  /// @param multiplicator number of interlaced components add
+  /// @param block_size blocks of data in the array
+  /// Examaple for block_size = 2, multiplicator = 2
+  /// array = oo oo oo -> new array = oo nn nn oo nn nn oo nn nn 
   void extendComponentsInterlaced(UInt multiplicator, UInt stride);
 
   /// search elem in the vector, return  the position of the first occurrence or -1 if not found
@@ -322,13 +325,6 @@ public:
   inline reference operator[](UInt i);
   /// return a const reference to the ith component of the 1D array
   inline const_reference operator[](UInt i) const;
-  
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// get the number of tuples contained in the array
-  UInt getSize() const{ return this->size; };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -339,13 +335,13 @@ protected:
 
 };
 
+#include "aka_array_tmpl.hh"
+
 __END_AKANTU__
 
 #include "aka_types.hh"
 
 __BEGIN_AKANTU__
-
-#include "aka_array_tmpl.hh"
 
 /* -------------------------------------------------------------------------- */
 /* Inline Functions Array<T, is_scal>                                         */

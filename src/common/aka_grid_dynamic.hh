@@ -73,6 +73,7 @@ public:
   virtual ~SpatialGrid() {};
 
   class neighbor_cells_iterator;
+  class cells_iterator;
 
   class CellID {
   public:
@@ -97,6 +98,7 @@ public:
 
   private:
     friend class neighbor_cells_iterator;
+    friend class cells_iterator;
     Vector<Int> ids;
   };
 
@@ -121,21 +123,21 @@ public:
     iterator end() { return data.end(); }
     const_iterator end() const { return data.end(); }
 
-#if not defined(AKANTU_NDEBUG)
-    Cell & add(const T & d, const Vector<Real> & pos) {
-      data.push_back(d); positions.push_back(pos); return *this;
-    }
-    typedef typename std::vector< Vector<Real> >::const_iterator position_iterator;
-    position_iterator begin_pos() const { return positions.begin(); }
-    position_iterator end_pos() const { return positions.end(); }
-#endif
+// #if not defined(AKANTU_NDEBUG)
+//     Cell & add(const T & d, const Vector<Real> & pos) {
+//       data.push_back(d); positions.push_back(pos); return *this;
+//     }
+//     typedef typename std::vector< Vector<Real> >::const_iterator position_iterator;
+//     position_iterator begin_pos() const { return positions.begin(); }
+//     position_iterator end_pos() const { return positions.end(); }
+// #endif
 
   private:
     CellID id;
     std::vector<T> data;
-#if not defined(AKANTU_NDEBUG)
-    std::vector< Vector<Real> > positions;
-#endif
+// #if not defined(AKANTU_NDEBUG)
+//     std::vector< Vector<Real> > positions;
+// #endif
   };
 
 private:
@@ -225,6 +227,38 @@ public:
     Vector<Int> position;
   };
 
+
+  class cells_iterator : private std::iterator<std::forward_iterator_tag, CellID> {
+  public:
+    cells_iterator(typename std::map<CellID, Cell>::const_iterator it) :
+      it(it) { }
+
+    cells_iterator & operator++() {
+      this->it++;
+      return *this;
+    }
+
+
+    cells_iterator operator++(int) {cells_iterator tmp(*this); operator++(); return tmp; };
+
+    bool operator==(const cells_iterator& rhs) const { return it == rhs.it; };
+    bool operator!=(const cells_iterator& rhs) const { return ! operator==(rhs); };
+
+    CellID operator*() const {
+      CellID cur_cell_id(this->it->first);
+      return cur_cell_id;
+    };
+
+  private:
+
+    /// map iterator
+    typename std::map<CellID, Cell>::const_iterator it;
+
+  };
+
+
+
+
 public:
   template<class vector_type>
   Cell & insert(const T & d, const vector_type & position) {
@@ -234,11 +268,11 @@ public:
 
     if(it == cells.end()) {
       Cell cell(cell_id);
-#if defined(AKANTU_NDEBUG)
+// #if defined(AKANTU_NDEBUG)
       Cell & tmp = (cells[cell_id] = cell).add(d);
-#else
-      Cell & tmp = (cells[cell_id] = cell).add(d, position);
-#endif
+// #else
+//       Cell & tmp = (cells[cell_id] = cell).add(d, position);
+// #endif
 
       for (UInt i = 0; i < dimension; ++i) {
         Real posl = center(i) + cell_id.getID(i) * spacing(i);
@@ -248,11 +282,11 @@ public:
       }
       return tmp;
     } else {
-#if defined(AKANTU_NDEBUG)
+// #if defined(AKANTU_NDEBUG)
       return it->second.add(d);
-#else
-      return it->second.add(d, position);
-#endif
+// #else
+//       return it->second.add(d, position);
+// #endif
     }
   }
 
@@ -264,6 +298,19 @@ public:
   inline neighbor_cells_iterator endNeighborCells(const CellID & cell_id) const {
     return neighbor_cells_iterator(cell_id, true);
   }
+
+  inline cells_iterator beginCells() const {
+    typename std::map<CellID, Cell>::const_iterator begin = this->cells.begin();
+    return cells_iterator(begin);
+  }
+
+  inline cells_iterator endCells() const {
+    typename std::map<CellID, Cell>::const_iterator end = this->cells.end();
+    return cells_iterator(end);
+  }
+
+
+
 
 
   template<class vector_type>
@@ -430,26 +477,26 @@ void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
     uint_data.push_back(global_id);
   }
 
-#if not defined(AKANTU_NDEBUG)
-  mesh.addConnectivityType(_point_1);
-  Array<UInt> & connectivity_pos = const_cast<Array<UInt> &>(mesh.getConnectivity(_point_1));
-  Array<UInt> & uint_data_pos = *mesh.getDataPointer<UInt>( "tag_1", _point_1);
-  Array<UInt> & uint_data_pos_ghost = *mesh.getDataPointer<UInt>("tag_0", _point_1);
+// #if not defined(AKANTU_NDEBUG)
+//   mesh.addConnectivityType(_point_1);
+//   Array<UInt> & connectivity_pos = const_cast<Array<UInt> &>(mesh.getConnectivity(_point_1));
+//   Array<UInt> & uint_data_pos = *mesh.getDataPointer<UInt>( "tag_1", _point_1);
+//   Array<UInt> & uint_data_pos_ghost = *mesh.getDataPointer<UInt>("tag_0", _point_1);
 
-  it  = cells.begin();
-  global_id = 0;
-  for (;it != end; ++it, ++global_id) {
-    typename Cell::position_iterator cell_it  = it->second.begin_pos();
-    typename Cell::const_iterator    cell_it_cont  = it->second.begin();
-    typename Cell::position_iterator cell_end = it->second.end_pos();
-    for (;cell_it != cell_end; ++cell_it, ++cell_it_cont) {
-      nodes.push_back(*cell_it);
-      connectivity_pos.push_back(nodes.getSize()-1);
-      uint_data_pos.push_back(global_id);
-      uint_data_pos_ghost.push_back(cell_it_cont->ghost_type==_ghost);
-    }
-  }
-#endif
+//   it  = cells.begin();
+//   global_id = 0;
+//   for (;it != end; ++it, ++global_id) {
+//     typename Cell::position_iterator cell_it  = it->second.begin_pos();
+//     typename Cell::const_iterator    cell_it_cont  = it->second.begin();
+//     typename Cell::position_iterator cell_end = it->second.end_pos();
+//     for (;cell_it != cell_end; ++cell_it, ++cell_it_cont) {
+//       nodes.push_back(*cell_it);
+//       connectivity_pos.push_back(nodes.getSize()-1);
+//       uint_data_pos.push_back(global_id);
+//       uint_data_pos_ghost.push_back(cell_it_cont->ghost_type==_ghost);
+//     }
+//   }
+// #endif
 }
 
 __END_AKANTU__

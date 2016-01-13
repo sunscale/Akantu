@@ -62,21 +62,23 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  // get another synchronizer and filter its elements using a functor
+  /// get another synchronizer and filter its elements using a functor
   static FilteredSynchronizer * 
   createFilteredSynchronizer(const DistributedSynchronizer & d_synchronizer,
 			     SynchElementFilter & filter);
 
 protected:
+  /// set up the synchronizer
   void setupSynchronizer(const DistributedSynchronizer & d_synchronizer,
 			 SynchElementFilter & filter);
-
+  /// push source elements into destination elements through the filter
   void updateElementList(Array<Element> * source_elements,
 			 Array<Element> * destination_elements,
 			 SynchElementFilter & filter);
 
 
 protected:
+  /// Define the receive list tag
   enum CommTags {
     RECEIVE_LIST_TAG  = 0
   };

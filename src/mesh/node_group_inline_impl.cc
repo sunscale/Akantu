@@ -63,7 +63,7 @@ inline UInt NodeGroup::getSize() const {
 }
 
 /* -------------------------------------------------------------------------- */
-class FilterFunctor;
+struct FilterFunctor;
 
 template <typename T>
 void NodeGroup::applyNodeFilter(T & filter) {

@@ -43,17 +43,17 @@
 #define AKANTU_COMMUNICATOR_LIST_0 BOOST_PP_SEQ_NIL
 
 #include "static_communicator_dummy.hh"
-#define AKANTU_COMMUNICATOR_LIST_1					\
-  BOOST_PP_SEQ_PUSH_BACK(AKANTU_COMMUNICATOR_LIST_0,			\
-			 (_communicator_dummy,	(StaticCommunicatorDummy, BOOST_PP_NIL)))
+#define AKANTU_COMMUNICATOR_LIST_1                                      \
+  BOOST_PP_SEQ_PUSH_BACK(AKANTU_COMMUNICATOR_LIST_0,                    \
+                         (_communicator_dummy,  (StaticCommunicatorDummy, BOOST_PP_NIL)))
 
 #if defined(AKANTU_USE_MPI)
 #  include "static_communicator_mpi.hh"
-#  define AKANTU_COMMUNICATOR_LIST_ALL					\
-  BOOST_PP_SEQ_PUSH_BACK(AKANTU_COMMUNICATOR_LIST_1,			\
-			 (_communicator_mpi, (StaticCommunicatorMPI, BOOST_PP_NIL)))
+#  define AKANTU_COMMUNICATOR_LIST_ALL                                  \
+  BOOST_PP_SEQ_PUSH_BACK(AKANTU_COMMUNICATOR_LIST_1,                    \
+                         (_communicator_mpi, (StaticCommunicatorMPI, BOOST_PP_NIL)))
 #else
-#  define AKANTU_COMMUNICATOR_LIST_ALL	AKANTU_COMMUNICATOR_LIST_1
+#  define AKANTU_COMMUNICATOR_LIST_ALL  AKANTU_COMMUNICATOR_LIST_1
 #endif // AKANTU_COMMUNICATOR_LIST
 
 #include "real_static_communicator.hh"
@@ -73,7 +73,7 @@ class CommunicatorEventHandler {
 public:
   virtual ~CommunicatorEventHandler() {}
   virtual void onCommunicatorFinalize(__attribute__((unused)) const StaticCommunicator & communicator) { }
-protected:
+private:
   inline void sendEvent(const FinalizeCommunicatorEvent & event) {
     onCommunicatorFinalize(event.communicator);
   }
@@ -82,22 +82,24 @@ protected:
   friend class EventHandlerManager;
 };
 
-
 class StaticCommunicator : public EventHandlerManager<CommunicatorEventHandler>{
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 protected:
   StaticCommunicator(int & argc, char ** & argv,
-		     CommunicatorType type = _communicator_mpi);
+                     CommunicatorType type = _communicator_mpi);
 
 public:
   virtual ~StaticCommunicator() {
     FinalizeCommunicatorEvent *event = new FinalizeCommunicatorEvent(*this);
     this->sendEvent(*event);
  
-   delete event;
+    delete event;
     delete real_static_communicator;
+    is_instantiated = false;
+    StaticCommunicator::static_communicator = NULL;
+
   };
 
   /* ------------------------------------------------------------------------ */
@@ -109,18 +111,18 @@ public:
   /* Point to Point                                                           */
   /* ------------------------------------------------------------------------ */
   template<typename T> inline void send(T * buffer, Int size,
-					Int receiver, Int tag);
+                                        Int receiver, Int tag);
   template<typename T> inline void receive(T * buffer, Int size,
-					   Int sender, Int tag);
+                                           Int sender, Int tag);
 
   template<typename T> inline CommunicationRequest * asyncSend(T * buffer,
-							       Int size,
-							       Int receiver,
-							       Int tag);
+                                                               Int size,
+                                                               Int receiver,
+                                                               Int tag);
   template<typename T> inline CommunicationRequest * asyncReceive(T * buffer,
-								  Int size,
-								  Int sender,
-								  Int tag);
+                                                                  Int size,
+                                                                  Int sender,
+                                                                  Int tag);
 
   template<typename T> inline void probe(Int sender, Int tag,
                                          CommunicationStatus & status);
@@ -128,18 +130,21 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Collectives                                                              */
   /* ------------------------------------------------------------------------ */
-  template<typename T> inline void allReduce(T * values, Int nb_values,
-					     const SynchronizerOperation & op);
+  template<typename T> inline void reduce(T * values, int nb_values,
+					  const SynchronizerOperation & op,
+					  int root = 0);
+  template<typename T> inline void allReduce(T * values, int nb_values,
+                                             const SynchronizerOperation & op);
 
-  template<typename T> inline void allGather(T * values, Int nb_values);
-  template<typename T> inline void allGatherV(T * values, Int * nb_values);
+  template<typename T> inline void allGather(T * values, int nb_values);
+  template<typename T> inline void allGatherV(T * values, int * nb_values);
 
-  template<typename T> inline void gather(T * values, Int nb_values,
-					  Int root = 0);
-  template<typename T> inline void gatherV(T * values, Int * nb_values,
-					   Int root = 0);
-  template<typename T> inline void broadcast(T * values, Int nb_values,
-					     Int root = 0);
+  template<typename T> inline void gather(T * values, int nb_values,
+                                          int root = 0);
+  template<typename T> inline void gatherV(T * values, int * nb_values,
+                                           int root = 0);
+  template<typename T> inline void broadcast(T * values, int nb_values,
+                                             int root = 0);
 
   inline void barrier();
 
@@ -170,10 +175,12 @@ public:
   static StaticCommunicator & getStaticCommunicator(CommunicatorType type = _communicator_mpi);
 
   static StaticCommunicator & getStaticCommunicator(int & argc, char ** & argv,
-						    CommunicatorType type = _communicator_mpi);
+                                                    CommunicatorType type = _communicator_mpi);
 
   static bool isInstantiated() { return is_instantiated; };
 
+  int getMaxTag();
+  int getMinTag();
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

@@ -41,7 +41,9 @@ Model::Model(Mesh& m, UInt dim, const ID & id,
 	     const MemoryID & memory_id) :
   Memory(id, memory_id), mesh(m), 
   spatial_dimension(dim == _all_dimensions ? m.getSpatialDimension() : dim),
-  synch_registry(NULL),is_pbc_slave_node(0,1,"is_pbc_slave_node") ,
+  synch_registry(NULL),
+  dof_synchronizer(NULL),
+  is_pbc_slave_node(0,1,"is_pbc_slave_node") ,
   parser(&getStaticParser()) {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_OUT();
@@ -110,9 +112,10 @@ void Model::initPBC() {
 
   is_pbc_slave_node.resize(mesh.getNbNodes());
 #ifndef AKANTU_NDEBUG
-  Real * coords = mesh.getNodes().storage();
-  UInt dim = mesh.getSpatialDimension();
+  Array<Real>::const_vector_iterator coord_it =
+    mesh.getNodes().begin(this->spatial_dimension);
 #endif
+
   while(it != end){
     UInt i1 = (*it).first;
 
@@ -120,14 +123,13 @@ void Model::initPBC() {
 
 #ifndef AKANTU_NDEBUG
     UInt i2 = (*it).second;
-    AKANTU_DEBUG_INFO("pairing " << i1 << " ("
-		      << coords[dim*i1] << "," << coords[dim*i1+1] << ","
-		      << coords[dim*i1+2]
-		      << ") with "
-		      << i2 << " ("
-		      << coords[dim*i2] << "," << coords[dim*i2+1] << ","
-		      << coords[dim*i2+2]
-		      << ")");
+    UInt slave = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i1) : i1;
+    UInt master = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i2) : i2;
+
+    AKANTU_DEBUG_INFO("pairing " << slave << " ("
+		      << Vector<Real>(coord_it[i1]) << ") with "
+		      << master << " ("
+		      << Vector<Real>(coord_it[i2]) << ")");
 #endif
     ++it;
   }
@@ -255,7 +257,7 @@ void Model::setBaseNameToDumper(const std::string & dumper_name,
 /* -------------------------------------------------------------------------- */
 
 void Model::addDumpFieldToDumper(const std::string & dumper_name,
-                                               const std::string & field_id) {
+				 const std::string & field_id) {
 
   this->addDumpGroupFieldToDumper(dumper_name,field_id,"all",_ek_regular,false);
 
@@ -273,7 +275,7 @@ void Model::addDumpGroupField(const std::string & field_id,
 
 /* -------------------------------------------------------------------------- */
 void Model::removeDumpGroupField(const std::string & field_id,
-                                               const std::string & group_name) {
+				 const std::string & group_name) {
   ElementGroup & group = mesh.getElementGroup(group_name);
   this->removeDumpGroupFieldFromDumper(group.getDefaultDumperName(),
                                        field_id,
@@ -282,22 +284,21 @@ void Model::removeDumpGroupField(const std::string & field_id,
 
 /* -------------------------------------------------------------------------- */
 void Model::removeDumpGroupFieldFromDumper(const std::string & dumper_name,
-                                                         const std::string & field_id,
-                                                         const std::string & group_name) {
+					   const std::string & field_id,
+					   const std::string & group_name) {
   ElementGroup & group = mesh.getElementGroup(group_name);
   group.removeDumpFieldFromDumper(dumper_name, field_id);
 }
 
 /* -------------------------------------------------------------------------- */
 void Model::addDumpFieldVectorToDumper(const std::string & dumper_name,
-                                                     const std::string & field_id) {
-  this->addDumpGroupFieldToDumper(dumper_name,field_id,"all",_ek_regular,3);
+				       const std::string & field_id) {
+  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular, 3);
 }
 
 /* -------------------------------------------------------------------------- */
 void Model::addDumpGroupFieldVector(const std::string & field_id,
                                                   const std::string & group_name) {
-
   ElementGroup & group = mesh.getElementGroup(group_name);
   this->addDumpGroupFieldVectorToDumper(group.getDefaultDumperName(),
                                         field_id,
@@ -313,17 +314,31 @@ void Model::addDumpGroupFieldVectorToDumper(const std::string & dumper_name,
 /* -------------------------------------------------------------------------- */
 
 void Model::addDumpFieldTensorToDumper(const std::string & dumper_name,
-                                                     const std::string & field_id) {
+				       const std::string & field_id) {
   this->addDumpGroupFieldToDumper(dumper_name,field_id,"all",_ek_regular,true);
 }
 
 /* -------------------------------------------------------------------------- */
-
 void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
-                                                    const std::string & field_id,
-                                                    const std::string & group_name,
-						    const ElementKind & element_kind,
-						    bool padding_flag) {
+                                      const std::string & field_id,
+                                      const std::string & group_name,
+                                      const ElementKind & element_kind,
+                                      bool padding_flag) {
+  this->addDumpGroupFieldToDumper(dumper_name,
+				  field_id,
+				  group_name,
+				  this->spatial_dimension,
+				  element_kind,
+				  padding_flag);
+}
+
+/* -------------------------------------------------------------------------- */
+void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
+                                      const std::string & field_id,
+                                      const std::string & group_name,
+				      UInt spatial_dimension,
+                                      const ElementKind & element_kind,
+                                      bool padding_flag) {
 
 #ifdef AKANTU_USE_IOHELPER
   dumper::Field * field = NULL;
@@ -331,7 +346,7 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
   if (!field) field = this->createNodalFieldReal(field_id,group_name,padding_flag);
   if (!field) field = this->createNodalFieldUInt(field_id,group_name,padding_flag);
   if (!field) field = this->createNodalFieldBool(field_id,group_name,padding_flag);
-  if (!field) field = this->createElementalField(field_id,group_name,padding_flag,element_kind);
+  if (!field) field = this->createElementalField(field_id,group_name,padding_flag,spatial_dimension,element_kind);
   if (!field) field = 
 		this->mesh.createFieldFromAttachedData<UInt>(field_id,group_name,
 							     element_kind);
@@ -366,6 +381,14 @@ void Model::setDirectoryToDumper(const std::string & dumper_name,
 				 const std::string & directory) {
   mesh.setDirectoryToDumper(dumper_name,directory);
 }
+
+/* -------------------------------------------------------------------------- */
+
+void Model::setTextModeToDumper(){
+  mesh.setTextModeToDumper();
+}
+
+/* -------------------------------------------------------------------------- */
 
 
 

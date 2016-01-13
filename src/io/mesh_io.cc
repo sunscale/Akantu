@@ -92,4 +92,61 @@ void MeshIO::write(const std::string & filename, Mesh & mesh, const MeshIOType &
   delete mesh_io;
 }
 
+/* -------------------------------------------------------------------------- */
+void MeshIO::constructPhysicalNames(const std::string & tag_name,
+				    Mesh & mesh) {
+
+  if(!phys_name_map.empty()) {
+    for(Mesh::type_iterator type_it = mesh.firstType();
+	type_it != mesh.lastType();
+	++type_it) {
+      
+      Array<std::string> * name_vec =
+	mesh.getDataPointer<std::string>("physical_names", *type_it);
+
+      const Array<UInt> & tags_vec =
+	mesh.getData<UInt>(tag_name, *type_it);
+      
+      for(UInt i(0); i < tags_vec.getSize(); i++) {
+        std::map<UInt, std::string>::const_iterator map_it
+	  = phys_name_map.find(tags_vec(i));
+
+        if(map_it == phys_name_map.end()) {
+          std::stringstream sstm;
+          sstm << tags_vec(i);
+          name_vec->operator()(i) = sstm.str();
+        } else {
+          name_vec->operator()(i) = map_it->second;
+        }
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+
+
+void MeshIO::printself(std::ostream & stream, int indent) const{
+
+  std::string space;
+  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+
+  if (phys_name_map.size()){
+
+    stream << space << "Physical map:" << std::endl;
+    
+    std::map<UInt, std::string>::const_iterator it = phys_name_map.begin();
+    std::map<UInt, std::string>::const_iterator end = phys_name_map.end();
+
+    
+    for (; it!=end; ++it) {
+      stream << space << it->first << ": " << it->second << std::endl;
+    }
+  }
+
+}
+
+/* -------------------------------------------------------------------------- */
+
+
 __END_AKANTU__

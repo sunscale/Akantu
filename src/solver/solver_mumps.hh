@@ -55,7 +55,7 @@ private:
   ParallelMethod parallel_method;
 };
 
-class SolverMumps : public Solver, public CommunicatorEventHandler {
+class SolverMumps : public Solver {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -73,33 +73,30 @@ public:
 public:
 
   /// build the profile and do the analysis part
-  void initialize(SolverOptions & options = _solver_no_options);
+  virtual void initialize(SolverOptions & options = _solver_no_options);
 
   void initializeSlave(SolverOptions & options = _solver_no_options);
 
   /// analysis (symbolic facto + permutations)
-  void analysis();
+  virtual void analysis();
 
   /// factorize the matrix
-  void factorize();
+  virtual void factorize();
 
   /// solve the system
-  void solve(Array<Real> & solution);
-  void solve();
+  virtual void solve(Array<Real> & solution);
+  virtual void solve();
 
   void solveSlave();
 
-  virtual void setRHS(const Array<Real> & rhs);
-
-
-  virtual void onCommunicatorFinalize(const StaticCommunicator & communicator);
+  virtual void setRHS(Array<Real> & rhs);
 
 private:
   /// print the error if any happened in mumps
   void printError();
 
   /// clean the mumps info
-  void destroyMumpsData();
+  virtual void destroyInternalData();
 
   /// set internal values;
   void initMumpsData();

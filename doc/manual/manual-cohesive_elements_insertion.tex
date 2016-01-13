@@ -1,67 +1,81 @@
-\subsection{Insertion of Cohesive Elements}
-\subsubsection{Dynamics}
-As far as dynamic simulations are concerned, cohesive elements are
-currently compatible only with the explicit time integration scheme
-(see section~\ref{ssect:smm:expl-time-integr}). They do not have to be
-inserted when the mesh is generated but during the
-simulation. Intrinsic cohesive elements can be introduced at the
-beginning of the simulation as follows:
-\begin{cpp}
-  SolidMechanicsModelCohesive model(mesh);
-  model.initFull();
-  model.limitInsertion(_x, -1, 1);
-  model.insertIntrinsicElements();
-\end{cpp}
-where the insertion is limited to the facets whose barycenter's $x$
-coordinate is in the range $[-1,1]$. Additional restrictions with
-respect to $y$ and $z$ directions can be added as well. Similarly the
-dynamic insertion of extrinsic cohesive elements can be utilized in
-the following way:
-\begin{cpp}
-  SolidMechanicsModelCohesive model(mesh);
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
-  model.limitInsertion(_x, -1, 1);
-  model.updateAutomaticInsertion();
-\end{cpp}
-in which this time the method \code{limitInsertion} prevents the
-cohesive elements to be inserted out of the range $[-1,1]$ in the $x$
-direction. In order to check stress and automatically insert elements,
-it is necessary to call the function \code{checkCohesiveStress} in the
-main loop where \code{solveStep} is:
-\begin{cpp}
-  model.checkCohesiveStress();
-  model.solveStep();
-\end{cpp}
+For cohesive material, \akantu has a pre-defined material selector to assign 
+the first cohesive material by default to the cohesive elements which is called 
+\code{DefaultMaterialCohesiveSelector} and it inherits its properties from 
+\code{DefaultMaterialSelector}. Multiple cohesive materials can be assigned 
+using mesh data information (for more details, see \ref{intrinsic_insertion}).
 
-At any time during the simulation, it is possible to access the
-following energies with the relative function:
+\subsection{Insertion of Cohesive Elements}
+<<<<<<< Updated upstream
+Cohesive elements are currently compatible only with static simulation
+and dynamic simulation with an explicit time integration scheme (see
+section~\ref{ssect:smm:expl-time-integr}). They do not have to be inserted when the mesh is generated (intrinsic) but can be added during the simulation (extrinsic). At any time during the simulation, it is possible to access the following energies with the relative function:
 \begin{cpp}
   Real Ed = model.getEnergy("dissipated");
   Real Er = model.getEnergy("reversible");
   Real Ec = model.getEnergy("contact");
 \end{cpp}
 
-\subsubsection{Statics}
-The only cohesive law that is applicable in this case is the
-exponential one (see
-section~\ref{ssect:smm:cl:coh-exponential}). However
-unloading-reloading cycles are not supported yet. In this case
-cohesive elements have to be inserted before creating the
-\code{SolidMechanicsModelCohesive} model:
+A new model have to be call in a very similar way that the solid mechanics model:
 \begin{cpp}
-  Mesh mesh(spatial_dimension);
-  mesh.read("implicit_mesh.msh");
-
-  CohesiveElementInserter inserter(mesh);
-  inserter.setLimit(_y, 0.9, 1.1);
-  inserter.insertIntrinsicElements();
-
   SolidMechanicsModelCohesive model(mesh);
-  model.initFull(SolidMechanicsModelCohesiveOptions(_static));
+  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+\end{cpp} 
+
+
+\subsubsection{Extrinsic approach}
+The dynamic insertion of extrinsic cohesive elements should be initialized 
+in the following way:
+\begin{cpp}
+  model.updateAutomaticInsertion();
+\end{cpp} 
+During the simulation, stress has to be checked along each facet in order to insert cohesive elements where thestress criterion is reached.
+This check is performed by calling the method \code{checkCohesiveStress}, as 
+example before each step resolution:
+\begin{cpp}
+  model.checkCohesiveStress();
+  model.solveStep();
 \end{cpp}
-Also in this case the element insertion can be limited to a given
-range thanks to the method \code{setLimit}. The first input parameter
-of this method indicates the direction while the other two indicate
-the extreme values of the range $[0.9, 1.1]$. In order to compute the
-energies, the same functions illustrated for dynamics in the last
-section can be used.
+The area where stresses are checked and cohesive elements inserted can be limited 
+using the method \code{limitInsertion} during initialization. As example, to 
+limit insertion in the range $[-1.5, 1.5]$ in the $x$ direction: 
+\begin{cpp}
+  model.limitInsertion(_x, -1.5, 1.5);
+  model.updateAutomaticInsertion();
+\end{cpp} 
+Additional restrictions with respect to $y$ and $z$ directions can be added as well.
+
+\subsubsection{Intrinsic approach \label{intrinsic_insertion}}
+Intrinsic cohesive elements are inserted in the mesh with the method 
+\code{insertIntrinsicElements}. Similarly, the range of insertion can me limited 
+with \code{limitInsertion}. As example with a static simulation,
+\begin{cpp}
+  model.limitInsertion(_x, -1.5, 1.5);
+  model.insertIntrinsicElements();
+\end{cpp} 
+Mesh data information becomes vital to the insertion of cohesive elements along 
+surface with more sophisticated geometry or when multiple cohesive materials are 
+wanted. To do so, cohesive elements can be inserted along a 
+specific group of surface elements identified in a GMSH geometry file. This can 
+be achieved with the material selector (see section~\ref{sect:smm:materialselector}), in the input file specify the name of these physical groups in the corresponding cohesive materials, and call these material in the \textit{mesh parameters} section. As example, with two physical surfaces named 
+\textit{weak\_interface} and \textit{strong\_interface} defined in the GMSH 
+geometry file:
+\begin{cpp}
+...
+  material %\emph{cohesive\_constitutive\_law}% [
+     name = weak_interface
+     sigma_c = $value$
+     ...
+  ]
+  material %\emph{cohesive\_constitutive\_law}% [
+     name = strong_interface
+     sigma_c = $value$
+     ...
+  ]
+  mesh parameters [
+     	cohesive_surfaces = weak_interface,strong_interface
+  ]
+\end{cpp}
+
+In this case, there is no need to call \code{insertIntrinsicElements} anymore 
+since the insertion of cohesive elements along physical surfaces is performed 
+automatically during \code{initFull} call.    

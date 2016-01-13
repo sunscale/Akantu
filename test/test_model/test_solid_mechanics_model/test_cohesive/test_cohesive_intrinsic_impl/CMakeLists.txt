@@ -33,6 +33,7 @@
 
 register_test(test_cohesive_intrinsic_impl
   SOURCES test_cohesive_intrinsic_impl.cc
-  PACKAGE cohesive_element
   FILES_TO_COPY material.dat implicit.msh
-  DIRECTORIES_TO_CREATE paraview)
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE cohesive_element
+  )

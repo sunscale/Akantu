@@ -46,7 +46,7 @@
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #  include "dumper_field.hh"
-#  include "dumper_material_internal_field.hh"
+#  include "dumper_internal_material_field.hh"
 #endif
 /* -------------------------------------------------------------------------- */
 
@@ -209,7 +209,7 @@ void Mesh::read (const std::string & filename, const MeshIOType & mesh_io_type) 
   type_iterator it   = this->firstType(spatial_dimension, _not_ghost, _ek_not_defined);
   type_iterator last = this->lastType(spatial_dimension, _not_ghost, _ek_not_defined);
   if(it == last) AKANTU_EXCEPTION("The mesh contained in the file " << filename
-				  << " does not seam to be of the good dimension."
+				  << " does not seem to be of the good dimension."
 				  << " No element of dimension " << spatial_dimension
 				  << " where read.");
 }
@@ -303,29 +303,54 @@ void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
 /* -------------------------------------------------------------------------- */
 template<typename T>
 void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
-                                  UInt nb_component,
-                                  UInt dim,
-                                  GhostType gt,
-                                  const bool & flag_nb_node_per_elem_multiply,
-                                  ElementKind element_kind,
-                                  bool size_to_nb_element) const {
+				   UInt nb_component,
+				   UInt dim,
+				   GhostType gt,
+				   const bool & flag_nb_node_per_elem_multiply,
+				   ElementKind element_kind,
+				   bool size_to_nb_element) const {
+  AKANTU_DEBUG_IN();
+
+  this->initElementTypeMapArray(vect,
+				nb_component,
+				dim,
+				gt,
+				T(),
+				flag_nb_node_per_elem_multiply,
+				element_kind,
+				size_to_nb_element);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<typename T>
+void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
+				   UInt nb_component,
+				   UInt dim,
+				   GhostType gt,
+				   const T & default_value,
+				   const bool & flag_nb_node_per_elem_multiply,
+				   ElementKind element_kind,
+				   bool size_to_nb_element) const {
   AKANTU_DEBUG_IN();
 
   Mesh::type_iterator it  = firstType(dim, gt, element_kind);
   Mesh::type_iterator end = lastType(dim, gt, element_kind);
   for(; it != end; ++it) {
     ElementType type = *it;
-    if (flag_nb_node_per_elem_multiply) nb_component *= Mesh::getNbNodesPerElement(*it);
+    UInt nb_comp = nb_component;
+    if (flag_nb_node_per_elem_multiply) nb_comp *= Mesh::getNbNodesPerElement(*it);
     UInt size = 0;
     if (size_to_nb_element) size = this->getNbElement(type, gt);
-    vect.alloc(size, nb_component, type, gt);
+    vect.alloc(size, nb_comp, type, gt, default_value);
   }
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void Mesh::initNormals() {
-  initElementTypeMapArray(normals, spatial_dimension, spatial_dimension, false, _ek_not_defined);
+  this->initElementTypeMapArray(normals, spatial_dimension, spatial_dimension, false, _ek_not_defined);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -373,19 +398,27 @@ DumperIOHelper & Mesh::getGroupDumper(const std::string & dumper_name,
 /* -------------------------------------------------------------------------- */
 #define AKANTU_INSTANTIATE_INIT(type)					\
 template void Mesh::initElementTypeMapArray<type>(ElementTypeMapArray<type> & vect, \
-                                                 UInt nb_component,	\
-                                                 UInt dim,		\
-                                                 const bool & flag_nb_elem_multiply, \
-                                                 ElementKind element_kind, \
-                                                 bool size_to_nb_element) const; \
+						  UInt nb_component,	\
+						  UInt dim,		\
+						  const bool & flag_nb_elem_multiply, \
+						  ElementKind element_kind, \
+						  bool size_to_nb_element) const; \
 template void Mesh::initElementTypeMapArray<type>(ElementTypeMapArray<type> & vect, \
-                                                 UInt nb_component,	\
-                                                 UInt dim,		\
-						 GhostType gt,		\
-                                                 const bool & flag_nb_elem_multiply, \
-                                                 ElementKind element_kind, \
-                                                 bool size_to_nb_element) const
-
+						  UInt nb_component,	\
+						  UInt dim,		\
+						  GhostType gt,		\
+						  const bool & flag_nb_elem_multiply, \
+						  ElementKind element_kind, \
+						  bool size_to_nb_element) const; \
+template void Mesh::initElementTypeMapArray<type>(ElementTypeMapArray<type> & vect, \
+						  UInt nb_component,	\
+						  UInt dim,		\
+						  GhostType gt,		\
+						  const type & default_value, \
+						  const bool & flag_nb_elem_multiply, \
+						  ElementKind element_kind, \
+						  bool size_to_nb_element) const;
+    
 AKANTU_INSTANTIATE_INIT(Real);
 AKANTU_INSTANTIATE_INIT(UInt);
 AKANTU_INSTANTIATE_INIT(Int);
@@ -467,10 +500,8 @@ Mesh::createFieldFromAttachedData<UInt>(const std::string & field_id,
 					const std::string & group_name,
 					const ElementKind & element_kind);
 
-
-/* -------------------------------------------------------------------------- */
-
 #endif
 
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

@@ -41,8 +41,11 @@ __BEGIN_AKANTU__
 class Material;
 class FEEngine;
 
-template<typename T>
-class InternalField : public ElementTypeMapArray<T> {
+/**
+ * class for the internal fields of materials
+ * to store values for each quadrature
+ */
+template <typename T> class InternalField : public ElementTypeMapArray<T> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -50,19 +53,30 @@ public:
   InternalField(const ID & id, Material & material);
   virtual ~InternalField();
 
-protected:
+  /// This constructor is only here to let cohesive elements compile
   InternalField(const ID & id, Material & material, FEEngine & fem,
-		const ElementTypeMapArray<UInt> & element_filter);
+                const ElementTypeMapArray<UInt> & element_filter);
+
+  /// More general constructor
+  InternalField(const ID & id, Material & material, UInt dim, FEEngine & fem,
+                const ElementTypeMapArray<UInt> & element_filter);
 
   InternalField(const ID & id, const InternalField<T> & other);
 
 private:
-  InternalField operator=(__attribute__((unused)) const InternalField & other) {};
+  InternalField operator=(__attribute__((unused))
+                          const InternalField & other){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// function to reset the FEEngine for the internal field
+  virtual void setFEEngine(FEEngine & fe_engine);
+
+  /// function to reset the element kind for the internal
+  virtual void setElementKind(ElementKind element_kind);
+
   /// initialize the field to a given number of component
   virtual void initialize(UInt nb_component);
 
@@ -82,10 +96,20 @@ public:
   virtual void saveCurrentValues();
 
   /// remove the quadrature points corresponding to suppressed elements
-  virtual void removeQuadraturePoints(const ElementTypeMapArray<UInt> & new_numbering);
+  virtual void
+  removeIntegrationPoints(const ElementTypeMapArray<UInt> & new_numbering);
 
   /// print the content
-  virtual void printself(std::ostream & stream, UInt indent = 0) const;
+  virtual void printself(std::ostream & stream, int indent = 0) const;
+
+  /// get the default value
+  inline operator T() const;
+
+  virtual FEEngine & getFEEngine() { return *fem; }
+
+  virtual const FEEngine & getFEEngine() const { return *fem; }
+
+  /// AKANTU_GET_MACRO(FEEngine, *fem, FEEngine &);
 
 protected:
   /// initialize the arrays in the ElementTypeMapArray<T>
@@ -98,42 +122,79 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  typedef typename ElementTypeMapArray<T>::type_iterator type_iterator;
+  typedef typename ElementTypeMapArray<UInt>::type_iterator filter_type_iterator;
+
+  /// get the type iterator on all types contained in the internal field
+  type_iterator firstType(const GhostType & ghost_type = _not_ghost) const {
+    return ElementTypeMapArray<T>::firstType(this->spatial_dimension, ghost_type,
+                                             this->element_kind);
+  }
+
+  /// get the type iterator on the last type contained in the internal field
+  type_iterator lastType(const GhostType & ghost_type = _not_ghost) const {
+    return ElementTypeMapArray<T>::lastType(this->spatial_dimension, ghost_type,
+                                            this->element_kind);
+  }
+
+    /// get the type iterator on all types contained in the internal field
+  filter_type_iterator filterFirstType(const GhostType & ghost_type = _not_ghost) const {
+    return this->element_filter.firstType(this->spatial_dimension, ghost_type,
+                           this->element_kind);
+  }
+
+  /// get the type iterator on the last type contained in the internal field
+  filter_type_iterator filterLastType(const GhostType & ghost_type = _not_ghost) const {
+    return this->element_filter.lastType(this->spatial_dimension, ghost_type,
+                          this->element_kind);
+  }
+
+  /// get the array for a given type of the element_filter
+  const Array<UInt> getFilter(const ElementType & type,
+                              const GhostType & ghost_type = _not_ghost) const {
+    return this->element_filter(type, ghost_type);
+  }
 
   /// get the Array corresponding to the type en ghost_type specified
-  virtual Array<T> & operator()(const ElementType & type, const GhostType & ghost_type = _not_ghost) {
+  virtual Array<T> & operator()(const ElementType & type,
+                                const GhostType & ghost_type = _not_ghost) {
     return ElementTypeMapArray<T>::operator()(type, ghost_type);
   }
 
-  virtual const Array<T> & operator()(const ElementType & type, const GhostType & ghost_type = _not_ghost) const {
+  virtual const Array<T> &
+  operator()(const ElementType & type,
+             const GhostType & ghost_type = _not_ghost) const {
     return ElementTypeMapArray<T>::operator()(type, ghost_type);
   }
 
-  virtual Array<T> & previous(const ElementType & type, const GhostType & ghost_type = _not_ghost) {
+  virtual Array<T> & previous(const ElementType & type,
+                              const GhostType & ghost_type = _not_ghost) {
     AKANTU_DEBUG_ASSERT(previous_values != NULL,
-			"The history of the internal " << this->getID()
-			<< " has not been activated");
+                        "The history of the internal "
+                            << this->getID() << " has not been activated");
     return this->previous_values->operator()(type, ghost_type);
   }
 
-  virtual const Array<T> & previous(const ElementType & type, const GhostType & ghost_type = _not_ghost) const {
+  virtual const Array<T> &
+  previous(const ElementType & type,
+           const GhostType & ghost_type = _not_ghost) const {
     AKANTU_DEBUG_ASSERT(previous_values != NULL,
-			"The history of the internal " << this->getID()
-			<< " has not been activated");
+                        "The history of the internal "
+                            << this->getID() << " has not been activated");
     return this->previous_values->operator()(type, ghost_type);
   }
-
 
   virtual InternalField<T> & previous() {
     AKANTU_DEBUG_ASSERT(previous_values != NULL,
-			"The history of the internal " << this->getID()
-			<< " has not been activated");
+                        "The history of the internal "
+                            << this->getID() << " has not been activated");
     return *(this->previous_values);
   }
 
   virtual const InternalField<T> & previous() const {
     AKANTU_DEBUG_ASSERT(previous_values != NULL,
-			"The history of the internal " << this->getID()
-			<< " has not been activated");
+                        "The history of the internal "
+                            << this->getID() << " has not been activated");
     return *(this->previous_values);
   }
 
@@ -141,11 +202,15 @@ public:
   bool hasHistory() const { return (previous_values != NULL); }
 
   /// get the kind treated by the internal
-  const ElementKind & getElementKind() const {return element_kind;};
-
+  const ElementKind & getElementKind() const { return element_kind; }
 
   /// return the number of components
-  UInt getNbComponent(){return nb_component;}
+  UInt getNbComponent() const { return nb_component; }
+
+  /// return the spatial dimension corresponding to the internal element type
+  /// loop filter
+  UInt getSpatialDimension() const { return this->spatial_dimension; }
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -154,7 +219,7 @@ protected:
   Material & material;
 
   /// the fem containing the mesh and the element informations
-  FEEngine & fem;
+  FEEngine * fem;
 
   /// Element filter if needed
   const ElementTypeMapArray<UInt> & element_filter;
@@ -179,9 +244,9 @@ protected:
 };
 
 /// standard output stream operator
-template<typename T>
-inline std::ostream & operator <<(std::ostream & stream, const InternalField<T> & _this)
-{
+template <typename T>
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const InternalField<T> & _this) {
   _this.printself(stream);
   return stream;
 }

@@ -30,6 +30,6 @@
 #
 #===============================================================================
 
-register_test(test_vector test_vector.cc)
-register_test(test_vector_iterator test_vector_iterator.cc)
-register_test(test_matrix test_matrix.cc)
+register_test(test_vector test_vector.cc PACKAGE core)
+register_test(test_vector_iterator test_vector_iterator.cc PACKAGE core)
+register_test(test_matrix test_matrix.cc PACKAGE core)

@@ -53,13 +53,6 @@
 __BEGIN_AKANTU__
 
 class MeshUtils {
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
-public:
-
-  MeshUtils();
-  virtual ~MeshUtils();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -72,7 +65,7 @@ public:
 				 CSR<UInt> & node_to_elem,
 				 UInt spatial_dimension = _all_dimensions);
   /// build a CSR<Element> that contains for each node the list of connected
-  /// elements ofr a given spatial dimension
+  /// elements of a given spatial dimension
   static void buildNode2Elements(const Mesh & mesh,
 				 CSR<Element> & node_to_elem,
 				 UInt spatial_dimension = _all_dimensions);
@@ -110,7 +103,7 @@ public:
 				   UInt dimension,
 				   const ElementTypeMapArray<UInt> * prank_to_element = NULL);
 
-  /// take  the local_connectivity  array  as  the array  of  local and  ghost
+  /// take the local_connectivity array as the array of local and ghost
   /// connectivity, renumber the nodes and set the connectivity of the mesh
   static void renumberMeshNodes(Mesh & mesh,
 				UInt * local_connectivities,
@@ -119,7 +112,7 @@ public:
 				ElementType type,
 				Array<UInt> & old_nodes);
 
-  /// compute pbc pair for on given a direction
+  /// compute pbc pair for a given direction
   static void computePBCMap(const Mesh & mymesh, const UInt dir,
 			    std::map<UInt,UInt> & pbc_pair);
   /// compute pbc pair for a surface pair
@@ -127,19 +120,18 @@ public:
 			    const std::pair<Surface, Surface> & surface_pair,
 			    std::map<UInt,UInt> & pbc_pair);
 
-  /// create a multimap of nodes per surfaces
-  static void buildNodesPerSurface(const Mesh & mesh, CSR<UInt> & nodes_per_surface);
-
   /// remove not connected nodes /!\ this functions renumbers the nodes.
   static void purifyMesh(Mesh & mesh);
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
   /// function to insert cohesive elements on the selected facets
-  static void insertCohesiveElements(Mesh & mesh,
+  /// @return number of facets that have been doubled
+  static UInt insertCohesiveElements(Mesh & mesh,
 				     Mesh & mesh_facets,
 				     const ElementTypeMapArray<bool> & facet_insertion,
 				     Array<UInt> & doubled_nodes,
-				     Array<Element> & new_elements);
+				     Array<Element> & new_elements,
+				     bool only_double_facets);
 #endif
 
   /// fill the subelement to element and the elements to subelements data
@@ -169,6 +161,14 @@ public:
 
   /// reset facet_to_double arrays in the Mesh
   static void resetFacetToDouble(Mesh & mesh_facets);
+
+  /// associate a node type to each segment in the mesh
+  static void buildSegmentToNodeType(const Mesh & mesh,
+				     Mesh & mesh_facets,
+				     DistributedSynchronizer * synchronizer);
+
+  /// update local and master global connectivity when new nodes are added
+  static UInt updateLocalMasterGlobalConnectivity(Mesh & mesh, UInt old_nb_nodes);
 
 private:
 
@@ -214,11 +214,12 @@ private:
 
   /// double a node
   static void doubleNodes(Mesh & mesh,
-			  const Array<UInt> & old_nodes,
+			  const std::vector<UInt> & old_nodes,
 			  Array<UInt> & doubled_nodes);
 
   /// fill facet_to_double array in the mesh
-  static bool updateFacetToDouble(Mesh & mesh_facets,
+  /// returns the number of facets to be doubled
+  static UInt updateFacetToDouble(Mesh & mesh_facets,
 				  const ElementTypeMapArray<bool> & facet_insertion);
 
   /// find subfacets to be doubled

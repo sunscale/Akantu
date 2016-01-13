@@ -37,7 +37,7 @@
 
 using namespace akantu;
 
-const UInt spatial_dimension = 2;
+const UInt spatial_dimension = 3;
 
 #include "test_grid_tools.hh"
 

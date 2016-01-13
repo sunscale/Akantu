@@ -39,7 +39,6 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_array.hh"
-#include "static_communicator.hh"
 #include "synchronizer.hh"
 #include "mesh.hh"
 #include "mesh_partition.hh"
@@ -56,7 +55,8 @@ class DistributedSynchronizer : public Synchronizer, public MeshEventHandler {
 public:
   DistributedSynchronizer(Mesh & mesh,
                           SynchronizerID id = "distributed_synchronizer",
-                          MemoryID memory_id = 0);
+                          MemoryID memory_id = 0,
+			  const bool register_to_event_manager = true);
 
 public:
   virtual ~DistributedSynchronizer();
@@ -89,10 +89,28 @@ public:
 
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
+  /// mesh event handler onElementsChanged
+  virtual void onElementsChanged(const Array<Element> & old_elements_list,
+				 const Array<Element> & new_elements_list,
+                                 const ElementTypeMapArray<UInt> & new_numbering,
+                                 const ChangedElementsEvent & event);
+
   /// mesh event handler onRemovedElement
   virtual void onElementsRemoved(const Array<Element> & element_list,
                                  const ElementTypeMapArray<UInt> & new_numbering,
                                  const RemovedElementsEvent & event);
+  /// mesh event handler onNodesAdded
+  virtual void onNodesAdded  (const Array<UInt> & nodes_list,
+                              const NewNodesEvent & event) {};
+
+  /// mesh event handler onRemovedNodes
+  virtual void onNodesRemoved(const Array<UInt> & nodes_list,
+                              const Array<UInt> & new_numbering,
+                              const RemovedNodesEvent & event) {};
+
+  /// mesh event handler onElementsAdded
+  virtual void onElementsAdded  (const Array<Element> & elements_list,
+                                 const NewElementsEvent & event) {};
 
   /// filter elements of a certain kind and copy them into a new synchronizer
   void filterElementsByKind(DistributedSynchronizer * new_synchronizer,
@@ -104,6 +122,16 @@ public:
   /// compute buffer size for a given tag and data accessor
   void computeBufferSize(DataAccessor & data_accessor, SynchronizationTag tag);
 
+  /// recalculate buffer sizes for all tags
+  void computeAllBufferSizes(DataAccessor & data_accessor);
+
+  /// remove elements from the synchronizer without renumbering them
+  void removeElements(const Array<Element> & element_to_remove);
+
+  /// renumber the elements in the synchronizer
+  void renumberElements(const ElementTypeMapArray<UInt> & new_numbering);
+
+		      
 protected:
   /// fill the nodes type vector
   void fillNodesType(Mesh & mesh);
@@ -212,6 +240,9 @@ protected:
 					  Mesh & mesh,
 					  CommunicationBuffer & buffer);
 
+  /// substitute elements in the send and recv arrays
+  void substituteElements(const std::map<Element, Element> & old_to_new_elements);
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -240,30 +271,6 @@ private:
 protected:
   /// reference to the underlying mesh
   Mesh & mesh;
-
-  /// the static memory instance
-  StaticCommunicator * static_communicator;
-
-  class Communication {
-  public:
-    void resize(UInt size) {
-      send_buffer.resize(size);
-      recv_buffer.resize(size);
-      size_to_send   .resize(size);
-      size_to_receive.resize(size);
-    }
-
-  public:
-    /// size of data to send to each processor
-    std::vector<UInt> size_to_send;
-    /// size of data to recv to each processor
-    std::vector<UInt> size_to_receive;
-    std::vector< CommunicationBuffer > send_buffer;
-    std::vector< CommunicationBuffer > recv_buffer;
-
-    std::vector<CommunicationRequest *> send_requests;
-    std::vector<CommunicationRequest *> recv_requests;
-  };
 
   std::map<SynchronizationTag, Communication> communications;
 

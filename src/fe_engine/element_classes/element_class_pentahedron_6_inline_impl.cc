@@ -30,76 +30,36 @@
  * @section DESCRIPTION
  *
  * @verbatim
-                   \zeta
-                    ^
-         (-1,1,1)   |     (1,1,1)
-                8---|------7
-               /|   |     /|
-              / |   |    / |
-   (-1,-1,1) 5----------6  | (1,-1,1)
-             |  |   |   |  |
-             |  |   |   |  |
-             |  |   +---|-------> \xi
-             |  |  /    |  |
-   (-1,1,-1) |  4-/-----|--3 (1,1,-1)
-             | / /      | /
-             |/ /       |/
-             1-/--------2
-   (-1,-1,-1) /        (1,-1,-1)
-             /
-            \eta
- @endverbatim
- *
- * @subsection shapes Shape functions
- * @f[
- * \begin{array}{llll}
- * N1 = (1 - \xi) (1 - \eta) (1 - \zeta) / 8
- *       & \frac{\partial N1}{\partial \xi}  = - (1 - \eta) (1 - \zeta) / 8
- *       & \frac{\partial N1}{\partial \eta} = - (1 - \xi) (1 - \zeta) / 8
- *       & \frac{\partial N1}{\partial \zeta} = - (1 - \xi) (1 - \eta) / 8 \\
- * N2 = (1 + \xi) (1 - \eta) (1 - \zeta) / 8
- *       & \frac{\partial N2}{\partial \xi}  = (1 - \eta) (1 - \zeta) / 8
- *       & \frac{\partial N2}{\partial \eta} = - (1 + \xi) (1 - \zeta) / 8
- *       & \frac{\partial N2}{\partial \zeta} = - (1 + \xi) (1 - \eta) / 8 \\
- * N3 = (1 + \xi) (1 + \eta) (1 - \zeta) / 8
- *       & \frac{\partial N3}{\partial \xi}  = (1 + \eta) (1 - \zeta) / 8
- *       & \frac{\partial N3}{\partial \eta} = (1 + \xi) (1 - \zeta) / 8
- *       & \frac{\partial N3}{\partial \zeta} = - (1 + \xi) (1 + \eta) / 8 \\
- * N43 = (1 - \xi) (1 + \eta) (1 - \zeta) / 8
- *       & \frac{\partial N4}{\partial \xi}  = - (1 + \eta) (1 - \zeta) / 8
- *       & \frac{\partial N4}{\partial \eta} = (1 - \xi) (1 - \zeta) / 8
- *       & \frac{\partial N4}{\partial \zeta} = - (1 - \xi) (1 + \eta) / 8 \\
- * N5 = (1 - \xi) (1 - \eta) (1 + \zeta) / 8
- *       & \frac{\partial N5}{\partial \xi}  = - (1 - \eta) (1 + \zeta) / 8
- *       & \frac{\partial N5}{\partial \eta} = - (1 - \xi) (1 + \zeta) / 8
- *       & \frac{\partial N5}{\partial \zeta} = (1 - \xi) (1 - \eta) / 8 \\
- * N6 = (1 + \xi) (1 - \eta) (1 + \zeta) / 8
- *       & \frac{\partial N6}{\partial \xi}  = (1 - \eta) (1 + \zeta) / 8
- *       & \frac{\partial N6}{\partial \eta} = - (1 + \xi) (1 + \zeta) / 8
- *       & \frac{\partial N6}{\partial \zeta} = (1 + \xi) (1 - \eta) / 8 \\
- * N7 = (1 + \xi) (1 + \eta) (1 + \zeta) / 8
- *       & \frac{\partial N7}{\partial \xi}  = (1 + \eta) (1 + \zeta) / 8
- *       & \frac{\partial N7}{\partial \eta} = (1 + \xi) (1 + \zeta) / 8
- *       & \frac{\partial N7}{\partial \zeta} = (1 + \xi) (1 + \eta) / 8 \\
- * N8 = (1 - \xi) (1 + \eta) (1 + \zeta) / 8
- *       & \frac{\partial N8}{\partial \xi}  = - (1 + \eta) (1 + \zeta) / 8
- *       & \frac{\partial N8}{\partial \eta} = (1 - \xi) (1 + \zeta) / 8
- *       & \frac{\partial N8}{\partial \zeta} = (1 - \xi) (1 + \eta) / 8 \\
- * \end{array}
- * @f]
- *
- * @subsection quad_points Position of quadrature points
- * @f{eqnarray*}{
- * \xi_{q0}  &=& -1/\sqrt{3} \qquad  \eta_{q0} = -1/\sqrt{3} \qquad \zeta_{q0} = -1/\sqrt{3} \\
- * \xi_{q1}  &=&  1/\sqrt{3} \qquad  \eta_{q1} = -1/\sqrt{3} \qquad \zeta_{q1} = -1/\sqrt{3} \\
- * \xi_{q2}  &=&  1/\sqrt{3} \qquad  \eta_{q2} =  1/\sqrt{3} \qquad \zeta_{q2} = -1/\sqrt{3} \\
- * \xi_{q3}  &=& -1/\sqrt{3} \qquad  \eta_{q3} =  1/\sqrt{3} \qquad \zeta_{q3} = -1/\sqrt{3} \\
- * \xi_{q4}  &=& -1/\sqrt{3} \qquad  \eta_{q4} = -1/\sqrt{3} \qquad \zeta_{q4} =  1/\sqrt{3} \\
- * \xi_{q5}  &=&  1/\sqrt{3} \qquad  \eta_{q5} = -1/\sqrt{3} \qquad \zeta_{q5} =  1/\sqrt{3} \\
- * \xi_{q6}  &=&  1/\sqrt{3} \qquad  \eta_{q6} =  1/\sqrt{3} \qquad \zeta_{q6} =  1/\sqrt{3} \\
- * \xi_{q7}  &=& -1/\sqrt{3} \qquad  \eta_{q7} =  1/\sqrt{3} \qquad \zeta_{q7} =  1/\sqrt{3} \\
- * @f}
- */
+
+             /z
+             |
+             |
+             |  1
+             | /|\
+             |/ | \
+             /  |  \
+            /   |   \
+           /    |    \
+           4    2-----0
+          | \  /      /
+          |  \/      /
+          |   \     /----------/y
+          | /  \   /
+          |/    \ /
+          5---.--3
+         /
+        /
+       /
+      \x
+
+       x   y    z
+* N0  -1   1    0
+* N1  -1   0    1
+* N2  -1   0    0
+* N3   1   1    0
+* N4   1   0    1
+* N5   1   0    0
+*/
 
 /* -------------------------------------------------------------------------- */
 AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_pentahedron_6,
@@ -119,12 +79,12 @@ inline void
 InterpolationElement<_itp_lagrange_pentahedron_6>::computeShapes(const vector_type & c,
 								 vector_type & N) {
   /// Natural coordinates
-  N(0) =  0.5*c(0)*(1-c(2));           // N1(q)
-  N(1) =  0.5*c(1)*(1-c(2));           // N2(q)
-  N(2) =  0.5*(1-c(0)-c(1))*(1-c(2));  // N3(q)
-  N(3) =  0.5*c(0)*(c(2)+1);           // N4(q)
-  N(4) =  0.5*c(1)*(c(2)+1);           // N5(q)
-  N(5) =  0.5*(1-c(0)-c(1))*(c(2)+1);  // N6(q)
+  N(0) =  0.5*c(1)*(1-c(0));           // N1(q)
+  N(1) =  0.5*c(2)*(1-c(0));           // N2(q)
+  N(2) =  0.5*(1-c(1)-c(2))*(1-c(0));  // N3(q)
+  N(3) =  0.5*c(1)*(1+c(0));           // N4(q)
+  N(4) =  0.5*c(2)*(1+c(0));           // N5(q)
+  N(5) =  0.5*(1-c(1)-c(2))*(1+c(0));  // N6(q)
 }
 /* -------------------------------------------------------------------------- */
 template <>
@@ -132,46 +92,26 @@ template <class vector_type, class matrix_type>
 inline void
 InterpolationElement<_itp_lagrange_pentahedron_6>::computeDNDS(const vector_type & c,
                                                               matrix_type & dnds) {
-  /**
-   * @f[
-   * dnds = \left(
-   *          \begin{array}{cccccccc}
-   *            \frac{\partial N1}{\partial \xi}  & \frac{\partial N2}{\partial \xi}
-   *               & \frac{\partial N3}{\partial \xi}  & \frac{\partial N4}{\partial \xi}
-   *               & \frac{\partial N5}{\partial \xi}  & \frac{\partial N6}{\partial \xi}
-   *               & \frac{\partial N7}{\partial \xi}  & \frac{\partial N8}{\partial \xi}\\
-   *            \frac{\partial N1}{\partial \eta} & \frac{\partial N2}{\partial \eta}
-   *               & \frac{\partial N3}{\partial \eta} & \frac{\partial N4}{\partial \eta}
-   *               & \frac{\partial N5}{\partial \eta} & \frac{\partial N6}{\partial \eta}
-   *               & \frac{\partial N7}{\partial \eta} & \frac{\partial N8}{\partial \eta}\\
-   *            \frac{\partial N1}{\partial \zeta} & \frac{\partial N2}{\partial \zeta}
-   *               & \frac{\partial N3}{\partial \zeta} & \frac{\partial N4}{\partial \zeta}
-   *               & \frac{\partial N5}{\partial \zeta} & \frac{\partial N6}{\partial \zeta}
-   *               & \frac{\partial N7}{\partial \zeta} & \frac{\partial N8}{\partial \zeta}
-   *          \end{array}
-   *        \right)
-   * @f]
-   */
-  dnds(0, 0) = 0.5*(1-c(2));
-  dnds(0, 1) = 0 ;
-  dnds(0, 2) = -0.5*(1-c(2));
-  dnds(0, 3) =  0.5*(c(2)+1);
-  dnds(0, 4) =  0.;
-  dnds(0, 5) =  -0.5*(1+c(2));
+  dnds(0, 0) = -0.5*c(1);
+  dnds(0, 1) = -0.5*c(2);
+  dnds(0, 2) = -0.5*(1-c(1)-c(2));
+  dnds(0, 3) =  0.5*c(1);
+  dnds(0, 4) =  0.5*c(2);
+  dnds(0, 5) =  0.5*(1-c(1)-c(2));
 
-  dnds(1, 0) =  0. ;
-  dnds(1, 1) =  0.5*(1-c(2));
-  dnds(1, 2) = -0.5*(1-c(2));
-  dnds(1, 3) =  0.;
-  dnds(1, 4) =  0.5*(c(2)+1);
-  dnds(1, 5) = -0.5*(1+c(2));
+  dnds(1, 0) =  0.5*(1-c(0));
+  dnds(1, 1) =  0.0;
+  dnds(1, 2) = -0.5*(1-c(0));
+  dnds(1, 3) =  0.5*(1+c(0));
+  dnds(1, 4) =  0.0;
+  dnds(1, 5) = -0.5*(1+c(0));
  
-  dnds(2, 0) =  -0.5*c(0);
-  dnds(2, 1) =  -0.5*c(1);
-  dnds(2, 2) = -0.5*(1-c(0)-c(1));
-  dnds(2, 3) =  0.5*c(0);
-  dnds(2, 4) =  0.5*c(1);
-  dnds(2, 5) = 0.5*(1-c(0)-c(1));
+  dnds(2, 0) =  0.0;
+  dnds(2, 1) =  0.5*(1-c(0));
+  dnds(2, 2) = -0.5*(1-c(0));
+  dnds(2, 3) =  0.0;
+  dnds(2, 4) =  0.5*(1+c(0));
+  dnds(2, 5) = -0.5*(1+c(0));
 }
 
 /* -------------------------------------------------------------------------- */

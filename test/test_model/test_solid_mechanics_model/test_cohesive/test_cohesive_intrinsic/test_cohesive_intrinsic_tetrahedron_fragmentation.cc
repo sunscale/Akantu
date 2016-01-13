@@ -35,8 +35,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
-#include "dumper_paraview.hh"
-#include "dumper_nodal_field.hh" 
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -74,19 +72,14 @@ int main(int argc, char *argv[]) {
   model.addDumpField("residual"    );
   model.addDumpField("stress");
   model.addDumpField("grad_u");
+
+  model.setBaseNameToDumper("cohesive elements",
+			    "cohesive_elements_tetrahedron_fragmentation");
+  model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
+  model.addDumpFieldToDumper("cohesive elements", "damage");
+
   model.dump();
-
-  DumperParaview dumper("cohesive_elements_tetrahedron_fragmentation");
-  dumper.registerMesh(mesh, spatial_dimension, _not_ghost, _ek_cohesive);
-  dumper::NodalField<Real> * cohesive_displacement =
-    new dumper::NodalField<Real>(model.getDisplacement());
-
-  cohesive_displacement->setPadding(3);
-
-
-  dumper.registerField("displacement", cohesive_displacement);
-
-  dumper.dump();
+  model.dump("cohesive elements");
 
   /// update displacement
   UInt nb_element = mesh.getNbElement(type);
@@ -118,7 +111,7 @@ int main(int argc, char *argv[]) {
 
     if (s % 10 == 0) {
       model.dump();
-      dumper.dump();
+      model.dump("cohesive elements");
     }
   }
 

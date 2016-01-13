@@ -30,12 +30,21 @@
 #
 #===============================================================================
 
-add_mesh(test_material_non_local_mesh mesh.geo 2 2 OUTPUT mesh.msh)
+add_mesh(test_material_non_local_mesh mesh.geo 2 1 OUTPUT mesh.msh)
+add_mesh(test_material_damage_non_local_mesh mesh_section_gap.geo 2 1 OUTPUT mesh_section_gap.msh)
+
 register_test(test_material_damage_non_local
   SOURCES test_material_damage_non_local.cc
-  DEPENDENCIES test_material_non_local_mesh
+  DEPENDS test_material_damage_non_local_mesh
   FILES_TO_COPY material_damage_non_local.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE damage_non_local
   )
 
+
+register_test(test_material_non_local
+  SOURCES test_material_non_local.cc custom_non_local_test_material.cc
+  DEPENDS test_material_non_local_mesh
+  FILES_TO_COPY material.dat
+  PACKAGE damage_non_local
+  )
