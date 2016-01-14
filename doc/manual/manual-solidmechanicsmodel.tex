@@ -415,6 +415,47 @@ condition, right: the solution (deformation magnified 50 times)}
   \label{fig:smm:implicit:static_solution}
 \end{figure}
 
+
+\subsection{Static implicit analysis with dynamic insertion of cohesive elements}
+In order to solve problems with the extrinsic cohesive method in the
+static implicit solution scheme, the function \code{solveStepCohesive}
+has to be used:
+\begin{cpp}
+model.solveStepCohesive<_scm_newton_raphson_tangent, _scc_increment>(1e-13, error, 25, false, 1e5, true);
+\end{cpp}
+
+in which the arguments are: tolerance, error, max\_iteration,
+load\_reduction, tol\_increase\_factor, do\_not\_factorize.  This
+function, first applies the Newton-Raphson procedure to solve the
+problem.  Then, it calls the method \code{checkCohesiveStress} to
+check if cohesive elements have to be inserted.  Since the approach is
+implicit, only one element is added, the most stressed one (see
+Section \ref{extrinsic_insertion}).  After insertion, the
+Newton-Raphson procedure is applied again to solve the same
+incremental loading step, with the new inserted cohesive element.  The
+procedure loops in this way since no new cohesive elements have to be
+inserted.  At that point, the solution is saved, and the simulation
+can advance to the next incremental loading step.  In case the
+convergence is not reached, the obtained solution is not saved and the
+simulation return to the main file with the error given by the
+solution saved in the argument of the function \emph{error}.  In this
+way, the user can intervene in the simulation in order to find anyhow
+convergence.  A possibility is, for instance, to reduce the last
+incremental loading step.  The variable \emph{load\_reduction} can be
+used to identify if the load has been already reduced or not.  At the
+same time, with the variable \emph{tol\_increase\_factor} it is
+possible to increase the tolerance by a factor decided by the user, in
+order to accept a solution even with an error bigger than the
+tolerance set at the beginning.  It is possible to increase the
+tolerance only in the phase of loading reduction, i.e., when
+load\_reduction = true.  A not converged solution is never saved.  In
+case convergence is not reached even after the loading reduction
+procedure, the displacement field is not updated and remains the one
+of the last converged incremental steps.  Also, cohesive elements are
+inserted only if convergence is reached.  An example of the extrinsic
+cohesive method in the static implicit solution scheme is presented in
+\shellcode{\examplesdir/cohesive\_element/cohesive\_extrinsic\_implicit}.
+
 \section{Dynamic Methods} \label{sect:smm:Dynamic_methods}
 
 Different ways to solve the equations of motion are implemented in the
