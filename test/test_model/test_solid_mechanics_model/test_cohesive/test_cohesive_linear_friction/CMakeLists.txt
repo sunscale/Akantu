@@ -1,16 +1,16 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Marco Vocialta <marco.vocialta@epfl.ch>
+# @author Mauro Corrado <mauro.corrado@epfl.ch>
 #
-# @date creation: Tue May 08 2012
-# @date last modification: Fri Jun 21 2013
+# @date   Wed Jan 13 11:56:18 2016
 #
-# @brief  configuration for cohesive elements tests
+# @brief testing the correct behavior of the friction law included in
+# the cohesive linear law, in implicit
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -30,12 +30,8 @@
 #
 #===============================================================================
 
-add_akantu_test(test_cohesive_intrinsic "test_cohesive_intrinsic")
-add_akantu_test(test_cohesive_extrinsic "test_cohesive_extrinsic")
-add_akantu_test(test_cohesive_buildfragments "test_cohesive_buildfragments")
-add_akantu_test(test_cohesive_intrinsic_impl "test_cohesive_intrinsic_impl")
-add_akantu_test(test_cohesive_1d_element "test_cohesive_1d_element")
-add_akantu_test(test_cohesive_extrinsic_implicit "test_cohesive_extrinsic_implicit")
-add_akantu_test(test_cohesive_insertion "test_cohesive_insertion")
-add_akantu_test(test_cohesive_linear_friction "test_cohesive_linear_friction")
-#===============================================================================
+register_test(test_cohesive_linear_friction
+  SOURCES test_cohesive_friction.cc
+  FILES_TO_COPY mesh_cohesive_friction.msh material.dat
+  PACKAGE cohesive_element
+  )
