@@ -88,11 +88,15 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(const Ar
   Array<Real>::vector_iterator opening_it =
     this->opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator opening_prev_it =
-    this->opening.previous(el_type, ghost_type).begin(spatial_dimension);
-
+  /// opening_prec is the opening at the end of the previous step in
+  /// the Newton-Raphson loop
   Array<Real>::vector_iterator opening_prec_it =
     this->opening_prec(el_type, ghost_type).begin(spatial_dimension);
+
+  /// opening_prec_prev is the opening (opening + penetration) refer to
+  /// the convergence of the previous incremental step
+  Array<Real>::vector_iterator opening_prec_prev_it =
+    this->opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
 
   Array<Real>::vector_iterator contact_traction_it =
     this->contact_tractions(el_type, ghost_type).begin(spatial_dimension);
@@ -141,13 +145,12 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(const Ar
  
   /// loop on each quadrature point
   for (; traction_it != traction_end;
-       ++traction_it, ++opening_it, ++opening_prev_it, ++opening_prec_it, 
-	 ++normal_it, ++sigma_c_it,
-         ++delta_max_it, ++delta_c_it, ++damage_it, ++contact_traction_it,
-         ++insertion_stress_it, ++contact_opening_it, ++delta_max_prev_it,
-	 ++res_sliding_it, ++res_sliding_prev_it,
+       ++traction_it, ++opening_it, ++opening_prec_prev_it, ++opening_prec_it, 
+	 ++normal_it, ++sigma_c_it, ++delta_max_it, ++delta_c_it, ++damage_it,
+	 ++contact_traction_it, ++insertion_stress_it, ++contact_opening_it,
+	 ++delta_max_prev_it, ++res_sliding_it, ++res_sliding_prev_it,
 	 ++friction_force_it, ++reduction_penalty_it) {
-
+    
     Real normal_opening_norm, tangential_opening_norm;
     bool penetration;
     Real current_penalty = 0.;
@@ -173,30 +176,38 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(const Ar
 
 
     if (penetration) {
-      /* ----------------------------------------- */
+
+      /// the friction coefficient mu increases with the damage. It
+      /// equals the maximum value when damage = 1.
       Real damage = std::min(*delta_max_prev_it / *delta_c_it, Real(1.));
-      Real mu = mu_max * std::sqrt(damage);
+      Real mu = mu_max * damage;
+
       /// the definition of tau_max refers to the opening
       /// (penetration) of the previous incremental step
-      Real normal_opening_prev_norm = opening_prev_it->dot(*normal_it);
+      Real normal_opening_prev_norm = opening_prec_prev_it->dot(*normal_it);
       Vector<Real> normal_opening_prev = (*normal_it);
       normal_opening_prev *= normal_opening_prev_norm;
+
       Real tau_max = mu * current_penalty * (normal_opening_prev.norm());
       Real delta_sliding_norm = std::abs(tangential_opening_norm - *res_sliding_prev_it);
-      // tau is the norm of the friction force, acting tangentially to the surface
+
+      /// tau is the norm of the friction force, acting tangentially to the surface
       Real tau = std::min(friction_penalty * delta_sliding_norm, tau_max);
-      if ((tangential_opening_norm - *res_sliding_it) < -Math::getTolerance())
+      if ((tangential_opening_norm - *res_sliding_it) < 0.0)
 	tau = -tau;
-      // from tau get the x and y components of friction, to be added in the force vector
+
+      /// from tau get the x and y components of friction, to be added in the force vector
       Vector<Real> tangent(spatial_dimension);
       tangent = tangential_opening / tangential_opening_norm;
       *friction_force_it = tau * tangent;
       
-      //update residual_sliding
+      /// update residual_sliding
       *res_sliding_it = tangential_opening_norm - (tau / friction_penalty);
-      /* ----------------------------------------- */
+
     } else {
+
       friction_force_it->clear();
+
     }
 
     *traction_it += *friction_force_it;
@@ -243,9 +254,11 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::checkDeltaMax(GhostType 
     for (; delta_max_it != delta_max_end;
          ++delta_max_it, ++res_sliding_it, ++res_sliding_prev_it) {
 
-      /// in case convergence is not reached, set "residual_sliding"
-      /// for the friction behaviour to the value referred to the
-      /// previous incremental step
+      /**
+      * in case convergence is not reached, set "residual_sliding"
+      * for the friction behaviour to the value referred to the
+      * previous incremental step
+      */
       *res_sliding_it = *res_sliding_prev_it;
     }
   }
@@ -272,12 +285,14 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(c
   Array<Real>::vector_iterator opening_it =
     this->opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator opening_prev_it =
-    this->opening.previous(el_type, ghost_type).begin(spatial_dimension);
+  Array<Real>::vector_iterator opening_prec_prev_it =
+    this->opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
 
-  /// NB: delta_max_it points on delta_max_previous, i.e. the
-  /// delta_max related to the solution of the previous incremental
-  /// step
+  /**
+   * NB: delta_max_it points on delta_max_previous, i.e. the
+   * delta_max related to the solution of the previous incremental
+   * step
+   */
   Array<Real>::iterator<Real>delta_max_it =
     this->delta_max.previous(el_type, ghost_type).begin();
 
@@ -303,7 +318,7 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(c
   Vector<Real> tangential_opening(spatial_dimension);
 
   for (; tangent_it != tangent_end;
-       ++tangent_it, ++normal_it, ++opening_it, ++opening_prev_it,
+       ++tangent_it, ++normal_it, ++opening_it, ++opening_prec_prev_it,
 	 ++delta_max_it, ++sigma_c_it, ++delta_c_it, ++damage_it,
 	 ++contact_opening_it, ++res_sliding_prev_it, ++reduction_penalty_it) {
 
@@ -328,14 +343,15 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(c
 
     if (penetration) {
       Real damage = std::min(*delta_max_it / *delta_c_it, Real(1.));
-      // the friction coefficient mu is increasing with the
-      // damage. It equals the maximum value when damage = 1.
       Real mu = mu_max * damage;
-      Real normal_opening_prev_norm = opening_prev_it->dot(*normal_it);
+
+      Real normal_opening_prev_norm = opening_prec_prev_it->dot(*normal_it);
       Vector<Real> normal_opening_prev = (*normal_it);
       normal_opening_prev *= normal_opening_prev_norm;
+
       Real tau_max = mu * current_penalty * normal_opening_prev.norm();
       Real delta_sliding_norm = std::abs(tangential_opening_norm - *res_sliding_prev_it);
+
       // tau is the norm of the friction force, acting tangentially to the surface
       Real tau = std::min(friction_penalty * delta_sliding_norm, tau_max);
 
@@ -352,24 +368,24 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(c
       }
     }
 
-    /// check if the tangential stiffness matrix is symmetric
-//    for (UInt h = 0; h < spatial_dimension; ++h){
-//      for (UInt l = h; l < spatial_dimension; ++l){
-//        if (l > h){
-//          Real k_ls = (*tangent_it)[spatial_dimension*h+l];
-//          Real k_us =  (*tangent_it)[spatial_dimension*l+h];
-//          //          std::cout << "k_ls = " << k_ls << std::endl;
-//          //          std::cout << "k_us = " << k_us << std::endl;
-//          if (std::abs(k_ls) > 1e-13 && std::abs(k_us) > 1e-13){
-//            Real error = std::abs((k_ls - k_us) / k_us);
-//            if (error > 1e-10){
-//	      std::cout << "non symmetric cohesive matrix" << std::endl;
-//	      //  std::cout << "error " << error << std::endl;
-//            }
-//          }
-//        }
-//      }
-//    }
+    // check if the tangential stiffness matrix is symmetric
+    //    for (UInt h = 0; h < spatial_dimension; ++h){
+    //      for (UInt l = h; l < spatial_dimension; ++l){
+    //        if (l > h){
+    //          Real k_ls = (*tangent_it)[spatial_dimension*h+l];
+    //          Real k_us =  (*tangent_it)[spatial_dimension*l+h];
+    //          //          std::cout << "k_ls = " << k_ls << std::endl;
+    //          //          std::cout << "k_us = " << k_us << std::endl;
+    //          if (std::abs(k_ls) > 1e-13 && std::abs(k_us) > 1e-13){
+    //            Real error = std::abs((k_ls - k_us) / k_us);
+    //            if (error > 1e-10){
+    //	      std::cout << "non symmetric cohesive matrix" << std::endl;
+    //	      //  std::cout << "error " << error << std::endl;
+    //            }
+    //          }
+    //        }
+    //      }
+    //    }
   }
     
   AKANTU_DEBUG_OUT();

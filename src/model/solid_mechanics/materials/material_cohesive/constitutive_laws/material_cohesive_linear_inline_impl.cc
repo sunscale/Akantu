@@ -119,9 +119,6 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
    * is set equal to true.
    */
     
-  // opening_prec is the opening of the previous convergence loop
-  // (NB: it is different from opening_prev, that refers to the solution
-  // of the previous incremental step)
   Real normal_opening_prec_norm = opening_prec.dot(normal);
   opening_prec = opening;
 
@@ -177,7 +174,7 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
   }
   else {
     traction  = tangential_opening;
-    traction *= beta2_kappa;
+    traction *= this->beta2_kappa;
     traction += normal_opening;
 
     AKANTU_DEBUG_ASSERT(delta_max != 0.,
@@ -186,7 +183,6 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
     traction *= sigma_c / delta_max * (1. - damage);
   }
 }
-
 
 
 /* -------------------------------------------------------------------------- */
