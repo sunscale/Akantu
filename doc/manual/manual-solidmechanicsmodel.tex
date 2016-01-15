@@ -444,12 +444,12 @@ convergence.  A possibility is, for instance, to reduce the last
 incremental loading step.  The variable \emph{load\_reduction} can be
 used to identify if the load has been already reduced or not.  At the
 same time, with the variable \emph{tol\_increase\_factor} it is
-possible to increase the tolerance by a factor decided by the user, in
-order to accept a solution even with an error bigger than the
-tolerance set at the beginning.  It is possible to increase the
-tolerance only in the phase of loading reduction, i.e., when
+possible to increase the tolerance by a factor defined by the user in
+the main file, in order to accept a solution even with an error bigger
+than the tolerance set at the beginning.  It is possible to increase
+the tolerance only in the phase of loading reduction, i.e., when
 load\_reduction = true.  A not converged solution is never saved.  In
-case convergence is not reached even after the loading reduction
+case the convergence is not reached even after the loading reduction
 procedure, the displacement field is not updated and remains the one
 of the last converged incremental steps.  Also, cohesive elements are
 inserted only if convergence is reached.  An example of the extrinsic
