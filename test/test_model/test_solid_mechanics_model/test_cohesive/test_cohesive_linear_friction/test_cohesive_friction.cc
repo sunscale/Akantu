@@ -171,13 +171,13 @@ int main(int argc, char *argv[]) {
     if (pos(i,1) > 0.49)
       reac_X += residual(i,0);
   }
-  if (std::abs(reac_X - (-23.093432803069547)) > eps)
+  if (std::abs(reac_X - (-13.987451183762181)) > eps)
     passed = false;
 
   // Only friction
   Real friction = friction_force(0,0) + friction_force(1,0);
 
-  if (std::abs(friction - (-21.714260649226127)) > eps)
+  if (std::abs(friction - (-12.517967866999832)) > eps)
     passed = false;
 
 
@@ -214,14 +214,14 @@ int main(int argc, char *argv[]) {
     if (pos(i,1) > 0.49)
       reac_X += residual(i,0);
   }
-  if (std::abs(reac_X - 21.517959089220852) > eps)
+  if (std::abs(reac_X - 12.400313187122208) > eps)
     passed = false;
 
   // Only friction
   friction = 0.;
   friction = friction_force(0,0) + friction_force(1,0);
 
-  if (std::abs(friction - 21.731377046498903) > eps)
+  if (std::abs(friction - 12.523300983293165) > eps)
     passed = false;
 
   // Residual sliding
@@ -229,7 +229,7 @@ int main(int argc, char *argv[]) {
   sliding[0] = cohe_opening(0,0);
   sliding[1] = cohe_opening(1,0);
 
-  if (std::abs(sliding[0] - (-0.0007678018950562827)) > eps)
+  if (std::abs(sliding[0] - (-0.00044246686809147357)) > eps)
     passed = false;
 
 
