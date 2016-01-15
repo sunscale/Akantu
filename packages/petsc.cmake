@@ -38,7 +38,6 @@ package_declare(PETSc EXTERNAL
 package_declare_sources(petsc
   solver/petsc_matrix.hh
   solver/petsc_matrix.cc
-  solver/petsc_matrix_inline_impl.cc
   solver/solver_petsc.hh
   solver/solver_petsc.cc
   solver/petsc_wrapper.hh

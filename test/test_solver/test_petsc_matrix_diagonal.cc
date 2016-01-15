@@ -26,7 +26,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <cstdlib>
+#include <iostream>
+
 /* -------------------------------------------------------------------------- */
 #include "static_communicator.hh"
 #include "aka_common.hh"
@@ -133,7 +134,7 @@ int main(int argc, char *argv[]) {
   }
 
   if(error > Math::getTolerance() ) {
-    std::cout << "error in the stiffness matrix!!!" << std::cout;
+    std::cout << "error in the stiffness matrix!!!" << std::endl;
     finalize();
     return EXIT_FAILURE;
   }
