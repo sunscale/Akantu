@@ -35,49 +35,39 @@
 #include <map>
 /* -------------------------------------------------------------------------- */
 
-
 #ifndef __AKANTU_PARSER_HH__
 #define __AKANTU_PARSER_HH__
 
 __BEGIN_AKANTU__
 
-#define AKANTU_SECTION_TYPES                    \
-  (global)                                      \
-  (material)                                    \
-  (model)					\
-  (mesh)					\
-  (heat)					\
-  (contact)                                     \
-  (friction)					\
-  (embedded_interface)				\
-  (rules)					\
-  (neighborhoods)				\
-  (non_local)					\
-  (weight_function)				\
-  (neighborhood)                                \
-  (user)					\
-  (not_defined)
-
+#define AKANTU_SECTION_TYPES                                                   \
+  (global)(material)(model)(mesh)(heat)(contact)(friction)(                    \
+      embedded_interface)(rules)(neighborhoods)(non_local)(weight_function)(   \
+      neighborhood)(user)(not_defined)
 
 #define AKANTU_SECTION_TYPES_PREFIX(elem) BOOST_PP_CAT(_st_, elem)
 
 #define AKANTU_SECT_PREFIX(s, data, elem) AKANTU_SECTION_TYPES_PREFIX(elem)
 /// Defines the possible section types
 enum SectionType {
-  BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(AKANTU_SECT_PREFIX, _, AKANTU_SECTION_TYPES))
+  BOOST_PP_SEQ_ENUM(
+      BOOST_PP_SEQ_TRANSFORM(AKANTU_SECT_PREFIX, _, AKANTU_SECTION_TYPES))
 };
 #undef AKANTU_SECT_PREFIX
 
-#define AKANTU_SECTION_TYPE_PRINT_CASE(r, data, elem)                   \
-  case AKANTU_SECTION_TYPES_PREFIX(elem): {                             \
-    stream << BOOST_PP_STRINGIZE(AKANTU_SECTION_TYPES_PREFIX(elem));    \
-    break;                                                              \
+#define AKANTU_SECTION_TYPE_PRINT_CASE(r, data, elem)                          \
+  case AKANTU_SECTION_TYPES_PREFIX(elem): {                                    \
+    stream << BOOST_PP_STRINGIZE(AKANTU_SECTION_TYPES_PREFIX(elem));           \
+    break;                                                                     \
   }
 
-inline std::ostream & operator <<(std::ostream & stream, SectionType type) {
-  switch(type) {
-    BOOST_PP_SEQ_FOR_EACH(AKANTU_SECTION_TYPE_PRINT_CASE, _, AKANTU_SECTION_TYPES)
-  default: stream << "not a SectionType"; break;
+inline std::ostream & operator<<(std::ostream & stream, SectionType type) {
+  switch (type) {
+    BOOST_PP_SEQ_FOR_EACH(AKANTU_SECTION_TYPE_PRINT_CASE, _,
+                          AKANTU_SECTION_TYPES)
+  default:
+    stream << "not a SectionType";
+    break;
   }
   return stream;
 }
@@ -85,9 +75,9 @@ inline std::ostream & operator <<(std::ostream & stream, SectionType type) {
 #undef AKANTU_SECTION_TYPE_PRINT_CASE
 /// Defines the possible search contexts/scopes (for parameter search)
 enum ParserParameterSearchCxt {
-  _ppsc_current_scope             = 0x1,
-  _ppsc_parent_scope              = 0x2,
-  _ppsc_current_and_parent_scope  = 0x3
+  _ppsc_current_scope = 0x1,
+  _ppsc_parent_scope = 0x2,
+  _ppsc_current_and_parent_scope = 0x3
 };
 
 /* ------------------------------------------------------------------------ */
@@ -95,27 +85,24 @@ enum ParserParameterSearchCxt {
 /* ------------------------------------------------------------------------ */
 class ParserSection;
 
-/// @brief The ParserParameter objects represent the end of tree branches as they
+/// @brief The ParserParameter objects represent the end of tree branches as
+/// they
 /// are the different informations contained in the input file.
 class ParserParameter {
 public:
-  ParserParameter() :
-    parent_section(NULL),
-    name(std::string()), value(std::string()),
-    dbg_filename(std::string()) {}
+  ParserParameter()
+      : parent_section(NULL), name(std::string()), value(std::string()),
+        dbg_filename(std::string()) {}
 
   ParserParameter(const std::string & name, const std::string & value,
-                  const ParserSection & parent_section) :
-    parent_section(&parent_section),
-    name(name), value(value),
-    dbg_filename(std::string()) {}
+                  const ParserSection & parent_section)
+      : parent_section(&parent_section), name(name), value(value),
+        dbg_filename(std::string()) {}
 
-  ParserParameter(const ParserParameter & param) :
-    parent_section(param.parent_section),
-    name(param.name), value(param.value),
-    dbg_filename(param.dbg_filename),
-    dbg_line(param.dbg_line),
-    dbg_column(param.dbg_column) {}
+  ParserParameter(const ParserParameter & param)
+      : parent_section(param.parent_section), name(param.name),
+        value(param.value), dbg_filename(param.dbg_filename),
+        dbg_line(param.dbg_line), dbg_column(param.dbg_column) {}
 
   virtual ~ParserParameter() {}
 
@@ -125,10 +112,9 @@ public:
   const std::string & getValue() const { return value; }
 
   /// Set info for debug output
-  void setDebugInfo(const std::string & filename,
-                    UInt line, UInt column) {
+  void setDebugInfo(const std::string & filename, UInt line, UInt column) {
     dbg_filename = filename;
-    dbg_line   = line;
+    dbg_line = line;
     dbg_column = column;
   }
 
@@ -137,18 +123,17 @@ public:
   // template <typename T> inline operator Vector<T>() const;
   // template <typename T> inline operator Matrix<T>() const;
 
-
   /// Print parameter info in stream
   void printself(std::ostream & stream, unsigned int indent = 0) const {
-    stream << name << ": " << value
-           << " (" << dbg_filename << ":" << dbg_line << ":" << dbg_column  << ")";
-  }
-private:
-  void setParent(const ParserSection & sect) {
-    parent_section = &sect;
+    stream << name << ": " << value << " (" << dbg_filename << ":" << dbg_line
+           << ":" << dbg_column << ")";
   }
 
+private:
+  void setParent(const ParserSection & sect) { parent_section = &sect; }
+
   friend class ParserSection;
+
 private:
   /// Pointer to the parent section
   const ParserSection * parent_section;
@@ -162,7 +147,6 @@ private:
   UInt dbg_line, dbg_column;
 };
 
-
 /* ------------------------------------------------------------------------ */
 /* Sections Class                                                           */
 /* ------------------------------------------------------------------------ */
@@ -171,8 +155,10 @@ class ParserSection {
 public:
   typedef std::multimap<SectionType, ParserSection> SubSections;
   typedef std::map<std::string, ParserParameter> Parameters;
+
 private:
   typedef SubSections::const_iterator const_section_iterator_;
+
 public:
   /* ------------------------------------------------------------------------ */
   /* SubSection iterator                                                      */
@@ -180,20 +166,28 @@ public:
   /// Iterator on sections
   class const_section_iterator {
   public:
-    const_section_iterator(const const_section_iterator & other) : it(other.it) { }
-    const_section_iterator(const const_section_iterator_ & it) : it(it) { }
+    const_section_iterator(const const_section_iterator & other)
+        : it(other.it) {}
+    const_section_iterator(const const_section_iterator_ & it) : it(it) {}
 
     const_section_iterator & operator=(const const_section_iterator & other) {
-      if(this != &other) {
+      if (this != &other) {
         it = other.it;
       }
       return *this;
     }
-    const ParserSection & operator*  () const { return it->second; }
-    const ParserSection * operator-> () const { return &(it->second); }
-    bool operator==(const const_section_iterator & other) const { return it == other.it; }
-    bool operator!=(const const_section_iterator & other) const { return it != other.it; }
-    const_section_iterator & operator++()  { ++it; return *this; }
+    const ParserSection & operator*() const { return it->second; }
+    const ParserSection * operator->() const { return &(it->second); }
+    bool operator==(const const_section_iterator & other) const {
+      return it == other.it;
+    }
+    bool operator!=(const const_section_iterator & other) const {
+      return it != other.it;
+    }
+    const_section_iterator & operator++() {
+      ++it;
+      return *this;
+    }
     const_section_iterator operator++(int) {
       const_section_iterator tmp = *this;
       operator++();
@@ -204,28 +198,36 @@ public:
     const_section_iterator_ it;
   };
 
-
   /* ------------------------------------------------------------------------ */
   /* Parameters iterator                                                      */
   /* ------------------------------------------------------------------------ */
   /// Iterator on parameters
   class const_parameter_iterator {
   public:
-    const_parameter_iterator(const const_parameter_iterator & other) : it(other.it) { }
-    const_parameter_iterator(const Parameters::const_iterator & it) : it(it) { }
+    const_parameter_iterator(const const_parameter_iterator & other)
+        : it(other.it) {}
+    const_parameter_iterator(const Parameters::const_iterator & it) : it(it) {}
 
-    const_parameter_iterator & operator=(const const_parameter_iterator & other) {
-      if(this != &other) {
+    const_parameter_iterator &
+    operator=(const const_parameter_iterator & other) {
+      if (this != &other) {
         it = other.it;
       }
       return *this;
     }
-    const ParserParameter & operator* () const { return it->second; }
+    const ParserParameter & operator*() const { return it->second; }
     const ParserParameter * operator->() { return &(it->second); };
-    bool operator==(const const_parameter_iterator & other) const { return it == other.it; }
-    bool operator!=(const const_parameter_iterator & other) const { return it != other.it; }
-    const_parameter_iterator & operator++()  { ++it; return *this; }
-    const_parameter_iterator operator++(int) { 
+    bool operator==(const const_parameter_iterator & other) const {
+      return it == other.it;
+    }
+    bool operator!=(const const_parameter_iterator & other) const {
+      return it != other.it;
+    }
+    const_parameter_iterator & operator++() {
+      ++it;
+      return *this;
+    }
+    const_parameter_iterator operator++(int) {
       const_parameter_iterator tmp = *this;
       operator++();
       return tmp;
@@ -236,29 +238,28 @@ public:
   };
 
   /* ---------------------------------------------------------------------- */
-  ParserSection() :
-    parent_section(NULL),
-    name(std::string()), type(_st_not_defined){}
+  ParserSection()
+      : parent_section(NULL), name(std::string()), type(_st_not_defined) {}
 
-  ParserSection(const std::string & name, SectionType type) :
-    parent_section(NULL), name(name), type(type) {}
+  ParserSection(const std::string & name, SectionType type)
+      : parent_section(NULL), name(name), type(type) {}
 
   ParserSection(const std::string & name, SectionType type,
                 const std::string & option,
-                const ParserSection & parent_section) :
-    parent_section(&parent_section), name(name), type(type), option(option) {}
+                const ParserSection & parent_section)
+      : parent_section(&parent_section), name(name), type(type),
+        option(option) {}
 
-  ParserSection(const ParserSection & section) :
-    parent_section(section.parent_section),
-    name(section.name), type(section.type),
-    option(section.option),
-    parameters(section.parameters),
-    sub_sections_by_type(section.sub_sections_by_type) {
+  ParserSection(const ParserSection & section)
+      : parent_section(section.parent_section), name(section.name),
+        type(section.type), option(section.option),
+        parameters(section.parameters),
+        sub_sections_by_type(section.sub_sections_by_type) {
     setChldrenPointers();
   }
 
   ParserSection & operator=(const ParserSection & other) {
-    if(&other != this) {
+    if (&other != this) {
       parent_section = other.parent_section;
       name = other.name;
       type = other.type;
@@ -281,16 +282,22 @@ public:
   ParserParameter & addParameter(const ParserParameter & param);
   ParserSection & addSubSection(const ParserSection & section);
 
-  /// Clear ParserSection content
-  void clear() {parameters.clear(); sub_sections_by_type.clear();}
+protected:
+  /// Clean ParserSection content
+  void clean() {
+    parameters.clear();
+    sub_sections_by_type.clear();
+  }
 
 private:
   void setChldrenPointers() {
     Parameters::iterator pit = this->parameters.begin();
-    for(;pit != this->parameters.end(); ++pit) pit->second.setParent(*this);
+    for (; pit != this->parameters.end(); ++pit)
+      pit->second.setParent(*this);
 
     SubSections::iterator sit = this->sub_sections_by_type.begin();
-    for (;sit != this->sub_sections_by_type.end(); ++sit) sit->second.setParent(*this);
+    for (; sit != this->sub_sections_by_type.end(); ++sit)
+      sit->second.setParent(*this);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -300,36 +307,40 @@ public:
   /// Get begin and end iterators on subsections of certain type
   std::pair<const_section_iterator, const_section_iterator>
   getSubSections(SectionType type = _st_not_defined) const {
-    if(type != _st_not_defined) {
+    if (type != _st_not_defined) {
       std::pair<const_section_iterator_, const_section_iterator_> range =
-	sub_sections_by_type.equal_range(type);
-      return std::pair<const_section_iterator, const_section_iterator>(range.first, range.second);
+          sub_sections_by_type.equal_range(type);
+      return std::pair<const_section_iterator, const_section_iterator>(
+          range.first, range.second);
     } else {
-      return std::pair<const_section_iterator, const_section_iterator>(sub_sections_by_type.begin(),
-								       sub_sections_by_type.end());
+      return std::pair<const_section_iterator, const_section_iterator>(
+          sub_sections_by_type.begin(), sub_sections_by_type.end());
     }
   }
 
   /// Get begin and end iterators on parameters
   std::pair<const_parameter_iterator, const_parameter_iterator>
   getParameters() const {
-    return std::pair<const_parameter_iterator, const_parameter_iterator>(parameters.begin(),
-                                                                         parameters.end());
+    return std::pair<const_parameter_iterator, const_parameter_iterator>(
+        parameters.begin(), parameters.end());
   }
 
   /* ---------------------------------------------------------------------- */
   /// Get parameter within specified context
-  const ParserParameter & getParameter(const std::string & name,
-                                       ParserParameterSearchCxt search_ctx = _ppsc_current_scope) const {
+  const ParserParameter & getParameter(
+      const std::string & name,
+      ParserParameterSearchCxt search_ctx = _ppsc_current_scope) const {
     Parameters::const_iterator it;
-    if(search_ctx & _ppsc_current_scope) it = parameters.find(name);
+    if (search_ctx & _ppsc_current_scope)
+      it = parameters.find(name);
 
-    if(it == parameters.end()) {
-      if((search_ctx & _ppsc_parent_scope) && parent_section)
+    if (it == parameters.end()) {
+      if ((search_ctx & _ppsc_parent_scope) && parent_section)
         return parent_section->getParameter(name, search_ctx);
       else {
-	AKANTU_SILENT_EXCEPTION("The parameter " << name
-				<< " has not been found in the specified context");
+        AKANTU_SILENT_EXCEPTION(
+            "The parameter " << name
+                             << " has not been found in the specified context");
       }
     }
     return it->second;
@@ -337,44 +348,47 @@ public:
 
   /* ------------------------------------------------------------------------ */
   /// Check if parameter exists within specified context
-  bool hasParameter(const std::string & name,
-		    ParserParameterSearchCxt search_ctx = _ppsc_current_scope) const {
+  bool hasParameter(
+      const std::string & name,
+      ParserParameterSearchCxt search_ctx = _ppsc_current_scope) const {
 
     Parameters::const_iterator it;
-    if(search_ctx & _ppsc_current_scope) it = parameters.find(name);
+    if (search_ctx & _ppsc_current_scope)
+      it = parameters.find(name);
 
-    if(it == parameters.end()) {
-      if((search_ctx & _ppsc_parent_scope) && parent_section)
+    if (it == parameters.end()) {
+      if ((search_ctx & _ppsc_parent_scope) && parent_section)
         return parent_section->hasParameter(name, search_ctx);
       else {
-	return false;
+        return false;
       }
     }
     return true;
   }
 
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
   /// Get value of given parameter in context
-  template<class T>
-  T getParameterValue(const std::string & name,
-		      ParserParameterSearchCxt search_ctx = _ppsc_current_scope) const {
+  template <class T>
+  T getParameterValue(
+      const std::string & name,
+      ParserParameterSearchCxt search_ctx = _ppsc_current_scope) const {
     const ParserParameter & tmp_param = getParameter(name, search_ctx);
     T t = tmp_param;
     return t;
   }
 
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
   /// Get section name
-  const std::string & getName()   const { return name; }
+  const std::string & getName() const { return name; }
   /// Get section type
-  const SectionType & getType()   const { return type; }
+  const SectionType & getType() const { return type; }
   /// Get section option
   const std::string & getOption() const { return option; }
 
 protected:
-  void setParent(const ParserSection & sect) {
-    parent_section = &sect;
-  }
+  void setParent(const ParserSection & sect) { parent_section = &sect; }
 
   /* ---------------------------------------------------------------------- */
   /* Members                                                                */
@@ -394,7 +408,6 @@ private:
   SubSections sub_sections_by_type;
 };
 
-
 /* ------------------------------------------------------------------------ */
 /* Parser Class                                                             */
 /* ------------------------------------------------------------------------ */
@@ -408,16 +421,22 @@ public:
   std::string getLastParsedFile() const;
 
   static bool isPermissive() { return permissive_parser; }
-public:
 
+public:
   /// Parse real scalar
-  static Real         parseReal  (const std::string & value, const ParserSection & section);
+  static Real parseReal(const std::string & value,
+                        const ParserSection & section);
   /// Parse real vector
-  static Vector<Real> parseVector(const std::string & value, const ParserSection & section);
+  static Vector<Real> parseVector(const std::string & value,
+                                  const ParserSection & section);
   /// Parse real matrix
-  static Matrix<Real> parseMatrix(const std::string & value, const ParserSection & section);
+  static Matrix<Real> parseMatrix(const std::string & value,
+                                  const ParserSection & section);
   /// Parse real random parameter
-  static RandomParameter<Real> parseRandomParameter(const std::string & value, const ParserSection & section);
+  static RandomParameter<Real>
+  parseRandomParameter(const std::string & value,
+                       const ParserSection & section);
+
 protected:
   /// General parse function
   template <class T, class Grammar>
@@ -429,20 +448,20 @@ protected:
   std::string last_parsed_file;
 };
 
-inline std::ostream & operator <<(std::ostream & stream, const ParserParameter &_this) {
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const ParserParameter & _this) {
   _this.printself(stream);
   return stream;
 }
 
-inline std::ostream & operator <<(std::ostream & stream, const ParserSection & section) {
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const ParserSection & section) {
   section.printself(stream);
   return stream;
 }
 
 __END_AKANTU__
 
-
 #include "parser_tmpl.hh"
-
 
 #endif /* __AKANTU_PARSER_HH__ */

@@ -394,12 +394,13 @@ void initialize(int & argc, char ** & argv);
 /// initialize the static part of akantu and read the global input_file
 void initialize(const std::string & input_file, int & argc, char ** & argv);
 /* -------------------------------------------------------------------------- */
-/// Clean akantu memory. Should be used only before a re-initialize of Akantu.
-/// Otherwise finalize() should be used.
-void clear();
 /// finilize correctly akantu and clean the memory
 void finalize ();
 /* -------------------------------------------------------------------------- */
+/// Read an new input file
+void readInputFile(const std::string & input_file);
+/* -------------------------------------------------------------------------- */
+
 
 /*
  * For intel compiler annoying remark

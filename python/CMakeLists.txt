@@ -45,7 +45,9 @@ set(AKANTU_SWIG_MODULES swig/akantu.i)
 #===============================================================================
 # Swig wrapper
 #===============================================================================
-find_package(SWIG 3.0)
+
+set(SWIG_REQURIED_VERISON 3.0)
+find_package(SWIG ${SWIG_REQURIED_VERISON})
 mark_as_advanced(SWIG_EXECUTABLE)
 
 package_get_all_include_directories(
@@ -196,6 +198,10 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
       list(APPEND _swig_wrappers_py "${_extra_wrapper_bin}")
     else()
       if(NOT EXISTS ${_wrapper} OR NOT EXISTS "${_extra_wrapper}")
+        message(FATAL_ERROR "The file ${_wrapper} and/or ${_extra_wrapper} does "
+          "not exists and they cannot be generated. Install swig ${SWIG_REQURIED_VERISON} "
+          " in order to generate them. Or get them from a different machine, "
+          "in order to be able to compile the python interface")
       else()
         list(APPEND _swig_wrappers "${_wrapper}")
         list(APPEND _swig_wrappers_py "${_extra_wrapper_bin}")

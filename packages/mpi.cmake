@@ -129,10 +129,11 @@ function(add_extra_mpi_options)
   set(MPI_EXTRA_COMPILE_FLAGS "${_flags}" CACHE STRING "Extra flags for MPI" FORCE)
   mark_as_advanced(MPI_EXTRA_COMPILE_FLAGS)
 
-  package_get_source_files(MPI _srcs _pub _priv)
-  list(APPEND _srcs "common/aka_error.cc")
+  #package_get_source_files(MPI _srcs _pub _priv)
+  #list(APPEND _srcs "common/aka_error.cc")
 
-  set_property(SOURCE ${_srcs} PROPERTY COMPILE_FLAGS "${_flags}")
+  #set_property(SOURCE ${_srcs} PROPERTY COMPILE_FLAGS "${_flags}")
+  package_set_compile_flags(MPI ${_flags})
 endfunction()
 
 package_on_enabled_script(MPI

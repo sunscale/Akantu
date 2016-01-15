@@ -74,6 +74,7 @@
 #     package_get_find_package_extra_options(<pkg> <retval>)
 #
 #     package_get_compile_flags(<pkg> <retval>)
+#     package_set_compile_flags(<pkg> <flag1> <flag2> ... <flagn>)
 #
 #     package_get_include_dir(<pkg> <retval>)
 #     package_set_include_dir(<pkg> <inc1> <inc2> ... <incn>)
@@ -289,6 +290,11 @@ function(package_get_compile_flags pkg ret)
   package_get_name(${pkg} _pkg_name)
   _package_get_compile_flags(${_pkg_name} _tmp)
   set(${ret} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+function(package_set_compile_flags pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_set_compile_flags(${_pkg_name} ${ARGN})
 endfunction()
 
 # ------------------------------------------------------------------------------
