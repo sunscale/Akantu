@@ -4,14 +4,15 @@
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 #
 # @date creation: Fri Sep 03 2010
-# @date last modification: Thu Mar 27 2014
+# @date last modification: Mon Dec 07 2015
 #
 # @brief  configuratio for SolidMechanicsModel tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free

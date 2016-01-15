@@ -1,17 +1,19 @@
 /**
- * @file   test_cohesive_buildfacets_mixed3d_linear.cc
+ * @file   test_buildfacets_mixed3d_linear.cc
  *
  * @author Mauro Corrado <mauro.corrado@epfl.ch>
  *
- * @date   Fri Sep 18 10:20:53 2015
+ * @date creation: Tue May 08 2012
+ * @date last modification: Sat Sep 19 2015
  *
- * @brief  Test to check the building of the facets. Mesh with hexahedrons 
- *         and pentahedrons
+ * @brief  Test to check the building of the facets. Mesh with hexahedrons
+ * and pentahedrons
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

@@ -1,17 +1,17 @@
 /**
  * @file   cohesive_internal_field_tmpl.hh
  *
- * @author Marco Vocialta <marco.vocialta@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Wed Nov 13 2013
- * @date last modification: Tue Jul 29 2014
+ * @date last modification: Sun Oct 19 2014
  *
  * @brief  implementation of the cohesive internal field
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

@@ -1,17 +1,18 @@
-
-// A CHECKER PAR LAFFFELY A RECHECK PAR SCANTEUM (Damien : j'ai checker hexaedron_20 et petahedron_15,osef du pentahedron_6)
-/** 
+/**
  * @file   geometrical_element.cc
  *
+ * @author Mauro Corrado <mauro.corrado@epfl.ch>
+ * @author Thomas Menouillard <tmenouillard@stucky.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Wed Nov 14 14:57:27 2012
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Sat Sep 12 2015
  *
  * @brief  Specialization of the geometrical types
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

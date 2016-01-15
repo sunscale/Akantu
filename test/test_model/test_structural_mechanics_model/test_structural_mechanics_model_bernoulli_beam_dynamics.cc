@@ -4,13 +4,13 @@
  * @author Sébastien Hartmann <sebastien.hartmann@epfl.ch>
  *
  * @date creation: Mon Jul 07 2014
- * @date last modification: Mon Jul 07 2014
+ * @date last modification: Sun Oct 19 2014
  *
  * @brief  Test for _bernouilli_beam in dynamic
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

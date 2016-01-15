@@ -1,19 +1,22 @@
 /**
  * @file   material_linear_isotropic_hardening.hh
  *
- * @author Lucas Frerot <lucas.frerot@epfl.ch>
- * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
  * @author Ramin Aghababaei <ramin.aghababaei@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@eplf.ch>
+ * @author Benjamin Paccaud <bpaccaud@epfl.ch>
+ * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Thu Oct 03 2013
- * @date last modification: Mon Apr 07 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Mon Jun 01 2015
  *
  * @brief  Specialization of the material class for isotropic finite deformation linear hardening plasticity
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

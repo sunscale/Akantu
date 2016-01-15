@@ -1,14 +1,17 @@
 /**
- * @file   test_cohesive_intrinsic_fatigue.cc
+ * @file   test_cohesive_extrinsic_fatigue.cc
+ *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
- * @date   Fri Feb 20 10:13:14 2015
+ *
+ * @date creation: Fri Feb 20 2015
+ * @date last modification: Thu Jun 25 2015
  *
  * @brief  Test for the linear fatigue cohesive law
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

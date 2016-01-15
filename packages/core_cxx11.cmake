@@ -1,16 +1,16 @@
 #===============================================================================
-# @file   00_core_cxx11.cmake
+# @file   core_cxx11.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Mon May 06 2013
-# @date last modification: Thu Jul 03 2014
+# @date creation: Tue Feb 26 2013
+# @date last modification: Wed Dec 16 2015
 #
 # @brief  C++11 addition to the core package
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the

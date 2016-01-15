@@ -2,18 +2,19 @@
  * @file   test_material_damage_non_local.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Clément Roux-Langlois <clement.roux@epfl.ch>
+ * @author Clement Roux <clement.roux@epfl.ch>
  *
- * @date creation: Tue Sep 13 2011
- * @date last modification: Thu Apr 03 2014
+ * @date creation: Wed Aug 04 2010
+ * @date last modification: Thu Oct 15 2015
  *
- * @brief test for non-local damage materials on a 2D plate with a section gap
- *        the sample should break at the notch
+ * @brief  test for non-local damage materials on a 2D plate with a section gap
+ * the sample should break at the notch
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

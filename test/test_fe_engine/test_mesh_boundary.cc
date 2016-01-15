@@ -1,15 +1,16 @@
 /**
  * @file   test_mesh_boundary.cc
  *
+ * @author Dana Christen <dana.christen@gmail.com>
  *
  * @date creation: Fri May 03 2013
- * @date last modification: Tue Sep 02 2014
+ * @date last modification: Mon Jul 13 2015
  *
- * @brief  Thest the element groups 
+ * @brief  Thest the element groups
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

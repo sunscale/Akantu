@@ -3,15 +3,14 @@
 #
 # @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Thu Jun 12 2014
-# @date last modification: Thu Jun 12 2014
+# @date creation: Sun Oct 19 2014
 #
 # @brief  configuration for structural mechanics example
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free

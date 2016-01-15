@@ -1,17 +1,17 @@
 /**
  * @file   aka_bounding_box.hh
  *
- * @author David Simon Kammer <david.kammer@epfl.ch>
  * @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
+ * @author David Simon Kammer <david.kammer@epfl.ch>
  *
  * @date creation: Fri Jan 04 2013
- * @date last modification: Mon Jun 02 2014
+ * @date last modification: Sun Oct 19 2014
  *
  * @brief  class for a bounding box
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

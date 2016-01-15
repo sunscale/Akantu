@@ -1,16 +1,16 @@
 #===============================================================================
-# @file   40_optimization.cmake
+# @file   optimization.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Fri Jan 04 2013
-# @date last modification: Wed Jul 30 2014
+# @date last modification: Mon Mar 30 2015
 #
 # @brief  Optimization external library interface
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the

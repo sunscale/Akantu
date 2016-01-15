@@ -1,13 +1,17 @@
 /**
  * @file   petsc_wrapper.hh
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Mon Jul 21 17:40:41 2014
+ *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ *
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Wed Oct 07 2015
  *
  * @brief  Wrapper of PETSc structures
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

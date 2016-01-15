@@ -1,16 +1,16 @@
 /**
  * @file   material_embedded_includes.hh
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Fri Mar 13 2015
- * @date last modification: Fri Mar 13 2015
+ * @date creation: Fri Jan 04 2013
+ * @date last modification: Fri May 29 2015
  *
  * @brief  List of includes for embedded elements
  *
  * @section LICENSE
  *
- * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

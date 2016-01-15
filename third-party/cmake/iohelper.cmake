@@ -1,3 +1,33 @@
+#===============================================================================
+# @file   iohelper.cmake
+#
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
+#
+# @date creation: Mon Mar 30 2015
+# @date last modification: Wed Nov 11 2015
+#
+# @brief  build script for iohelper
+#
+# @section LICENSE
+#
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+#
+# Akantu is free  software: you can redistribute it and/or  modify it under the
+# terms  of the  GNU Lesser  General Public  License as  published by  the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+# details.
+#
+# You should  have received  a copy  of the GNU  Lesser General  Public License
+# along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+#
+#===============================================================================
+
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/third-party/${IOHELPER_ARCHIVE})
   set(_iohelper_download_command
     GIT_REPOSITORY ${IOHELPER_GIT}

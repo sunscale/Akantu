@@ -1,20 +1,20 @@
 /**
  * @file   material_linear_isotropic_hardening_inline_impl.cc
  *
+ * @author Ramin Aghababaei <ramin.aghababaei@epfl.ch>
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Benjamin Paccaud <benjamin.paccaud@epfl.ch>
  * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Ramin Aghababaei <ramin.aghababaei@epfl.ch>
- * @author Benjamin Paccaud <benjamin.paccaud@epfl.ch>
  *
- * @date creation: Thu Oct 03 2013
- * @date last modification: Mon Jun 09 2014
+ * @date creation: Mon Apr 07 2014
+ * @date last modification: Fri May 29 2015
  *
  * @brief  Implementation of the inline functions of the material plasticity
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

@@ -1,17 +1,20 @@
 /**
- * @file mesh_sphere_intersector_tmpl.hh
+ * @file   mesh_sphere_intersector_tmpl.hh
  *
- * @author Clément Roux-Langlois <clement.roux@epfl.ch>
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Clement Roux <clement.roux@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date creation: Wed june 10 2015
- * @date last modification: Wed June 17 2015
+ * @date creation: Tue Jun 23 2015
+ * @date last modification: Thu Jan 14 2016
  *
- * @brief Computation of mesh intersection with spheres
+ * @brief  Computation of mesh intersection with spheres
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

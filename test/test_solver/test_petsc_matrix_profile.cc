@@ -1,14 +1,17 @@
 /**
  * @file   test_petsc_matrix_profile.cc
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Wed Jul 30 12:34:08 2014
+ *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ *
+ * @date creation: Mon Oct 13 2014
+ * @date last modification: Tue Apr 28 2015
  *
  * @brief  test the profile generation of the PETScMatrix class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

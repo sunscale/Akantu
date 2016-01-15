@@ -1,14 +1,17 @@
 /**
  * @file   material_cohesive_linear_fatigue.cc
+ *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
- * @date   Thu Feb 19 14:40:57 2015
+ *
+ * @date creation: Fri Feb 20 2015
+ * @date last modification: Tue Jan 12 2016
  *
  * @brief  See material_cohesive_linear_fatigue.hh for information
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

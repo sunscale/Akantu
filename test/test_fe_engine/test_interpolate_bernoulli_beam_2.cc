@@ -3,14 +3,16 @@
  *
  * @author Fabian Barras <fabian.barras@epfl.ch>
  *
- * @date   Fri Jul 15 19:41:58 2011
+ * @date creation: Fri Jul 15 2011
+ * @date last modification: Mon Jul 13 2015
  *
  * @brief  Test of the interpolation on the type _bernoulli_beam_2
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

@@ -3,15 +3,16 @@
 #
 # @author Lucas Frerot <lucas.frerot@epfl.ch>
 #
-# @date creation: Fri Feb 27 2015
-# @date last modification: Fri Feb 27 2015
+# @date creation: Fri Sep 03 2010
+# @date last modification: Thu Jan 14 2016
 #
 # @brief  configuration for solver tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free

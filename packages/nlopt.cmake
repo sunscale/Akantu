@@ -1,17 +1,18 @@
 #===============================================================================
-# @file   80_nlopt.cmake
+# @file   nlopt.cmake
 #
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+# @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Thu Jun 05 2014
-# @date last modification: Thu Sep 18 2014
+# @date last modification: Mon Mar 30 2015
 #
 # @brief  package for the opitmization library NLopt
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -28,6 +29,7 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
+
 package_declare(nlopt EXTERNAL
   DESCRIPTION "Use NLOPT library"
   SYSTEM OFF)

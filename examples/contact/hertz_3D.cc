@@ -3,15 +3,15 @@
  *
  * @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
  *
- * @date   Fri Apr 4 11:30:00 2014
+ * @date creation: Sun Oct 19 2014
  *
  * @brief  File used to obtain 3D implicit contact results and compare with
  * Hertz theory
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

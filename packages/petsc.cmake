@@ -1,18 +1,20 @@
 #===============================================================================
 # @file   petsc.cmake
 #
-# @author Nicolas Richart <nicolas.richart@epfl.ch>
 # @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
-# @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
+# @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date   Mon Nov 21 18:19:15 2011
+# @date creation: Mon Nov 21 2011
+# @date last modification: Fri Jan 15 2016
 #
 # @brief  package description for PETSc support
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -38,7 +40,6 @@ package_declare(PETSc EXTERNAL
 package_declare_sources(petsc
   solver/petsc_matrix.hh
   solver/petsc_matrix.cc
-  solver/petsc_matrix_inline_impl.cc
   solver/solver_petsc.hh
   solver/solver_petsc.cc
   solver/petsc_wrapper.hh

@@ -1,16 +1,18 @@
 #===============================================================================
-# @file   cpp_array.cmake
+# @file   cpparray.cmake
 #
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+# @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date   Mon Nov 21 18:19:15 2011
+# @date creation: Fri Mar 15 2013
+# @date last modification: Mon Mar 30 2015
 #
 # @brief  package description for cpp_array project
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -27,6 +29,7 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
+
 package_declare(CppArray EXTERNAL
   DESCRIPTION "Use cpp-array library"
   SYSTEM OFF)

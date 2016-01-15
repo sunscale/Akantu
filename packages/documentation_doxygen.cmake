@@ -1,16 +1,17 @@
 #===============================================================================
-# @file   00_documentation_doxygen.cmake
+# @file   documentation_doxygen.cmake
 #
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Tue Jun 10 2014
-# @date last modification: Tue Jun 24 2014
+# @date creation: Wed Jun 11 2014
+# @date last modification: Mon Mar 30 2015
 #
 # @brief  Doxygen documentation of the code
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the

@@ -1,17 +1,17 @@
 /**
- * @file mesh_geom_intersector_tmpl.hh
+ * @file   mesh_geom_intersector_tmpl.hh
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
  * @date creation: Wed Apr 29 2015
- * @date last modification: Wed Apr 29 2015
+ * @date last modification: Thu Jan 14 2016
  *
- * @brief General class for intersection computations
+ * @brief  General class for intersection computations
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

@@ -1,14 +1,17 @@
 /**
- * @file   tes_material_mazars.cc
- * @author Clement Roux-Langlois <clement.roux@epfl.ch>
- * @date   Fri Sep 11 20151
+ * @file   test_material_mazars.cc
  *
- * @brief test for material mazars, dissymmetric
+ * @author Clement Roux <clement.roux@epfl.ch>
+ *
+ * @date creation: Thu Oct 08 2015
+ * @date last modification: Tue Dec 08 2015
+ *
+ * @brief  test for material mazars, dissymmetric
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

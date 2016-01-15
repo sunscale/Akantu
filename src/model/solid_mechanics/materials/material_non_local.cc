@@ -1,14 +1,18 @@
 /**
  * @file   material_non_local.cc
+ *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Thu Oct  8 15:12:27 2015
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ *
+ * @date creation: Sat Sep 26 2015
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Implementation of material non-local
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

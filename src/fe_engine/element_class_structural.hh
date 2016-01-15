@@ -1,18 +1,18 @@
 /**
  * @file   element_class_structural.hh
  *
- * @author Damien Spielmann <damien.spielmann@epfl.ch>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Fabian Barras <fabian.barras@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Damien Spielmann <damien.spielmann@epfl.ch>
  *
- * @date creation: Wed Jan 16 2013
- * @date last modification: Fri Jul 04 2014
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Thu Oct 22 2015
  *
  * @brief  Specialization of the element classes for structural elements
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -29,7 +29,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 
 __BEGIN_AKANTU__
 

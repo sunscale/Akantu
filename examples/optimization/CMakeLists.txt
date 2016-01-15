@@ -3,14 +3,14 @@
 #
 # @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
 #
-# @date   Mon Mar 24 11:30:00 2014
+# @date creation: Sun Oct 19 2014
 #
 # @brief  configuration file for contact examples
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free

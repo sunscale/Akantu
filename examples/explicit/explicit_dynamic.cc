@@ -3,15 +3,15 @@
  *
  * @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
  *
- * @date creation: Mon Apr 16 2012
- * @date last modification: Tue Jun 10 2014
+ * @date creation: Sun Jul 12 2015
+ * @date last modification: Thu Aug 06 2015
  *
  * @brief  This code refers to the explicit dynamic example from the user manual
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

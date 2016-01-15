@@ -1,15 +1,17 @@
 /**
  * @file   test_segment_nodetype.cc
- * @author Marco Vocialta <marco.vocialta@epfl.ch>
- * @date   Fri Sep 18 13:39:35 2015
  *
- * @brief Test to verify that the node type is correctly associated to
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
+ *
+ * @date creation: Fri Sep 18 2015
+ *
+ * @brief  Test to verify that the node type is correctly associated to
  * the segments in parallel
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

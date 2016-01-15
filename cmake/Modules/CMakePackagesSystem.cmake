@@ -1,116 +1,18 @@
 #===============================================================================
 # @file   CMakePackagesSystem.cmake
 #
-# @author Nicolas Richart <nicolas.richart@epfl.ch>
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Thu Dec 20 2012
-# @date last modification: Wed Sep 10 2014
+# @date creation: Wed Nov 05 2014
+# @date last modification: Wed Jan 13 2016
 #
 # @brief  Set of macros used by akantu to handle the package system
 #
-# @section DESCRIPTION
-#
-# This package defines multiple function to handle packages. This packages can
-# be of two kinds regular ones and extra_packages (ex: in akantu the LGPL part
-# is regular packages and extra packages are on Propetary license)
-#
-# Package are loaded with the help of the command:
-# package_list_packages(<regular_package_folder>
-#                       [ EXTRA_PACKAGE_FOLDER <extra_package_folder> ]
-#                       [ SOURCE_FOLDER <source_folder>]
-#                       [ TEST_FOLDER <test_folder> ]
-#                       [ MANUAL_FOLDER <manual_folder> ]
-#                      )
-#
-# This command will look for packages name like
-#         <regular_package_folder>/<package>.cmake
-#      OR <extra_package_folder>/<package>/package.cmake
-#
-# A package is a cmake script that should contain at list the declaration of a
-# package
-#
-# package_declare(<package real name>
-#                 [EXTERNAL] [META] [ADVANCED] [NOT_OPTIONAL]
-#                 [DESCRIPTION <description>] [DEFAULT <default_value>]
-#                 [DEPENDS <pkg> ...]
-#                 [BOOST_COMPONENTS <pkg> ...]
-#                 [EXTRA_PACKAGE_OPTIONS <opt> ...]
-#                 [COMPILE_FLAGS <flags>]
-#                 [SYSTEM <bool> [ <script_to_compile> ]])
-#
-# It can also declare multiple informations:
-# source files:
-#    package_declare_sources(<package real name>
-#                            <src1> <src2> ... <srcn>)
-#
-# a LaTeX documentation:
-#    package_declare_documentation(<package real name>
-#                                  <line1> <line2> ...<linen>)
-#
-# LaTeX documentation files
-#    package_declare_documentation_files(<package real name>
-#                                        <file1> <file2> ... <filen>)
-#
-# Different function can also be retrieved from the package system by using the
-# different accessors
-#     package_get_name(<pkg> <retval>)
-#     package_get_real_name(<pkg> <retval>)
-#
-#     package_get_option_name(<pkg> <retval>)
-#
-#     package_use_system(<pkg> <retval>)
-#
-#     package_get_nature(<pkg> <retval>)
-#
-#     package_get_description(<pkg> <retval>)
-#
-#     package_get_filename(<pkg> <retval>)
-#
-#     package_get_sources_folder(<pkg> <retval>)
-#     package_get_tests_folder(<pkg> <retval>)
-#     package_get_manual_folder(<pkg> <retval>)
-#
-#     package_get_find_package_extra_options(<pkg> <retval>)
-#
-#     package_get_compile_flags(<pkg> <retval>)
-#     package_set_compile_flags(<pkg> <flag1> <flag2> ... <flagn>)
-#
-#     package_get_include_dir(<pkg> <retval>)
-#     package_set_include_dir(<pkg> <inc1> <inc2> ... <incn>)
-#     package_add_include_dir(<pkg> <inc1> <inc2> ... <incn>)
-#
-#     package_get_libraries(<pkg> <retval>)
-#     package_set_libraries(<pkg> <lib1> <lib2> ... <libn>)
-#
-#     package_add_extra_dependency(pkg <dep1> <dep2> ... <depn>)
-#     package_rm_extra_dependency(<pkg> <dep>)
-#     package_get_extra_dependencies(<pkg> <retval>)
-#
-#     package_is_activated(<pkg> <retval>)
-#     package_is_deactivated(<pkg> <retval>)
-#
-#     package_get_dependencies(<pkg> <retval>)
-#     package_add_dependencies(<pkg> <dep1> <dep2> ... <depn>)
-#
-#     package_on_enabled_script(<pkg> <script>)
-#
-#     package_get_all_source_files(<srcs> <public_headers> <private_headers>)
-#     package_get_all_include_directories(<inc_dirs>)
-#     package_get_all_external_informations(<include_dir> <libraries>)
-#     package_get_all_definitions(<definitions>)
-#     package_get_all_extra_dependencies(<dependencies>)
-#     package_get_all_test_folders(<test_dirs>)
-#     package_get_all_documentation_files(<doc_files>)
-#     package_get_all_activated_packages(<activated_list>)
-#     package_get_all_deactivated_packages(<deactivated_list>)
-#     package_get_all_packages(<packages_list>)
-#
-#
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -126,6 +28,158 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
+
+#[=======================================================================[.rst:
+#CMakePackagesSystem
+#-------------------
+#
+#This package defines multiple function to handle packages. This packages can
+#be of two kinds regular ones and extra_packages (ex: in akantu the LGPL part
+#is regular packages and extra packages are on Propetary license)
+#
+#Package are loaded with the help of the command:
+#
+#.. command:: package_list_packages
+#
+#     package_list_packages(<regular_package_folder>
+#       [ EXTRA_PACKAGE_FOLDER <extra_package_folder> ]
+#       [ SOURCE_FOLDER <source_folder>]
+#       [ TEST_FOLDER <test_folder> ]
+#       [ MANUAL_FOLDER <manual_folder> ]
+#       )
+#
+#     This command will look for packages name like ``<regular_package_folder>/<package>.cmake``
+#     OR ``<extra_package_folder>/<package>/package.cmake``
+#
+#A package is a cmake script that should contain at list the declaration of a
+#package
+#
+#.. command:: package_declare
+#
+#     package_declare(<package real name>
+#       [EXTERNAL] [META] [ADVANCED] [NOT_OPTIONAL]
+#       [DESCRIPTION <description>] [DEFAULT <default_value>]
+#       [DEPENDS <pkg> ...]
+#       [BOOST_COMPONENTS <pkg> ...]
+#       [EXTRA_PACKAGE_OPTIONS <opt> ...]
+#       [COMPILE_FLAGS <flags>]
+#       [SYSTEM <bool> [ <script_to_compile> ]]
+#       )
+#
+#.. command:: package_declare_sources
+#
+#     It can also declare multiple informations:
+#     source files:
+#
+#     package_declare_sources(<package real name>
+#       <src1> <src2> ... <srcn>)
+#
+#.. command:: package_declare_documentation
+#
+#     a LaTeX documentation
+#     package_declare_documentation(<package real name>
+#       <line1> <line2> ...<linen>)
+#
+#.. command:: package_declare_documentation_files
+#
+#     LaTeX documentation files
+#     package_declare_documentation_files(<package real name>
+#       <file1> <file2> ... <filen>)
+#
+#Different function can also be retrieved from the package system by using the
+#different accessors
+#
+#.. command:: package_get_name
+#     package_get_name(<pkg> <retval>)
+#
+#.. command:: package_get_real_name
+#     package_get_real_name(<pkg> <retval>)
+#
+#.. command:: package_get_option_name
+#     package_get_option_name(<pkg> <retval>)
+#
+#.. command:: package_use_system
+#     package_use_system(<pkg> <retval>)
+#
+#.. command:: package_get_nature
+#     package_get_nature(<pkg> <retval>)
+#
+#.. command:: package_get_description
+#     package_get_description(<pkg> <retval>)
+#
+#.. command:: package_get_filename
+#     package_get_filename(<pkg> <retval>)
+#
+#.. command:: package_get_sources_folder
+#     package_get_sources_folder(<pkg> <retval>)
+#.. command:: package_get_tests_folder
+#     package_get_tests_folder(<pkg> <retval>)
+#.. command:: package_get_manual_folder
+#     package_get_manual_folder(<pkg> <retval>)
+#
+#.. command:: package_get_find_package_extra_options
+#     package_get_find_package_extra_options(<pkg> <retval>)
+#
+#.. command:: package_get_compile_flags
+#     package_get_compile_flags(<pkg> <retval>)
+#.. command:: package_set_compile_flags
+#     package_set_compile_flags(<pkg> <flag1> <flag2> ... <flagn>)
+#
+#.. command:: package_get_include_dir
+#     package_get_include_dir(<pkg> <retval>)
+#.. command:: package_set_include_dir
+#     package_set_include_dir(<pkg> <inc1> <inc2> ... <incn>)
+#.. command:: package_add_include_dir
+#     package_add_include_dir(<pkg> <inc1> <inc2> ... <incn>)
+#
+#.. command:: package_get_libraries
+#     package_get_libraries(<pkg> <retval>)
+#.. command:: package_set_libraries
+#     package_set_libraries(<pkg> <lib1> <lib2> ... <libn>)
+#
+#.. command:: package_add_extra_dependency
+#     package_add_extra_dependency(pkg <dep1> <dep2> ... <depn>)
+#.. command:: package_rm_extra_dependency
+#     package_rm_extra_dependency(<pkg> <dep>)
+#.. command:: package_get_extra_dependencies
+#     package_get_extra_dependencies(<pkg> <retval>)
+#
+#.. command:: package_is_activated
+#     package_is_activated(<pkg> <retval>)
+#.. command:: package_is_deactivated
+#     package_is_deactivated(<pkg> <retval>)
+#
+#.. command:: package_get_dependencies
+#     package_get_dependencies(<pkg> <retval>)
+#.. command:: package_add_dependencies
+#     package_add_dependencies(<pkg> <dep1> <dep2> ... <depn>)
+#
+#.. command:: package_on_enabled_script
+#     package_on_enabled_script(<pkg> <script>)
+#
+#.. command:: package_get_all_source_files
+#     package_get_all_source_files(<srcs> <public_headers> <private_headers>)
+#.. command:: package_get_all_include_directories
+#     package_get_all_include_directories(<inc_dirs>)
+#.. command:: package_get_all_external_informations
+#     package_get_all_external_informations(<include_dir> <libraries>)
+#.. command:: package_get_all_definitions
+#     package_get_all_definitions(<definitions>)
+#.. command:: package_get_all_extra_dependencies
+#     package_get_all_extra_dependencies(<dependencies>)
+#.. command:: package_get_all_test_folders
+#     package_get_all_test_folders(<test_dirs>)
+#.. command:: package_get_all_documentation_files
+#     package_get_all_documentation_files(<doc_files>)
+#.. command:: package_get_all_activated_packages
+#     package_get_all_activated_packages(<activated_list>)
+#.. command:: package_get_all_deactivated_packages
+#     package_get_all_deactivated_packages(<deactivated_list>)
+#.. command:: package_get_all_packages
+#     package_get_all_packages(<packages_list>)
+#
+#]=======================================================================]
+
 
 include(CMakeParseArguments)
 

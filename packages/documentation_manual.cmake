@@ -1,16 +1,16 @@
 #===============================================================================
-# @file   00_documentation_manual.cmake
+# @file   documentation_manual.cmake
 #
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 #
 # @date creation: Tue Jun 10 2014
-# @date last modification: Thu Jul 03 2014
+# @date last modification: Mon Mar 30 2015
 #
 # @brief  Akantu's manual package
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the

@@ -1,15 +1,16 @@
 /**
- * @file   boundary_condition_functor.cc
+ * @file   boundary_condition_functor_inline_impl.cc
  *
  * @author Dana Christen <dana.christen@gmail.com>
  *
- * @date   Wed Mar 18 11:30:00 2013
+ * @date creation: Fri May 03 2013
+ * @date last modification: Thu Oct 15 2015
  *
- * @brief  XXX
+ * @brief  implementation of the BC::Functors
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

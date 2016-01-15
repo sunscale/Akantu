@@ -2,19 +2,20 @@
  * @file   dumper_iohelper.hh
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+ * @author Dana Christen <dana.christen@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Dana Christen <dana.christen@epfl.ch>
  *
  * @date creation: Fri Oct 26 2012
- * @date last modification: Wed Sep 03 2014
+ * @date last modification: Fri Apr 17 2015
  *
  * @brief  Define the akantu dumper interface for IOhelper dumpers
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

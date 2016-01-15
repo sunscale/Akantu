@@ -1,13 +1,16 @@
 /**
  * @file   test_material_damage.hh
+ *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Wed Sep 23 17:16:30 2015
+ *
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  test material damage for the non-local remove damage test
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

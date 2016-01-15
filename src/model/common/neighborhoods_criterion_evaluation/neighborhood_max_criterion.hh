@@ -1,14 +1,17 @@
 /**
  * @file   neighborhood_max_criterion.hh
+ *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Wed Oct 14 20:59:00 2015
+ *
+ * @date creation: Sat Sep 26 2015
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Neighborhood to find a maximum value in a neighborhood
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
