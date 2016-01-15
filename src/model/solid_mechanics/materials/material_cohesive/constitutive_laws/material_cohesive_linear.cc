@@ -52,8 +52,6 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
   delta_c_eff("delta_c_eff", *this),
   insertion_stress("insertion_stress", *this),
   opening_prec("opening_prec", *this),
-  residual_sliding("residual_sliding", *this),
-  friction_force("friction_force", *this),
   reduction_penalty("reduction_penalty", *this) {
   AKANTU_DEBUG_IN();
 
@@ -89,24 +87,11 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
 		      _pat_parsable | _pat_readable,
 		      "Insertion of cohesive element when stress is high enough just on one quadrature point");
 
-  this->registerParam("friction", friction, false,
-		      _pat_parsable | _pat_readable,
-		      "Activation of friction in case of contact");
-
-  this->registerParam("mu", mu_max, Real(0.),
-                      _pat_parsable | _pat_readable,
-                      "Maximum value of the friction coefficient");
-
-  this->registerParam("penalty_for_friction", friction_penalty, Real(0.),
-                      _pat_parsable | _pat_readable,
-                      "Penalty parameter for the friction behavior");
-
   this->registerParam("recompute", recompute, false,
                       _pat_parsable | _pat_modifiable,
                       "recompute solution");
 
   this->use_previous_delta_max = true;
-  this->use_previous_opening = true;
 
   AKANTU_DEBUG_OUT();
 }
@@ -131,8 +116,6 @@ void MaterialCohesiveLinear<spatial_dimension>::initMaterial() {
   delta_c_eff.initialize(1);
   insertion_stress.initialize(spatial_dimension);
   opening_prec.initialize(spatial_dimension);
-  friction_force.initialize(spatial_dimension);
-  residual_sliding.initialize(1);
   reduction_penalty.initialize(1);
 
   if (!Math::are_float_equal(delta_c, 0.))
@@ -141,7 +124,6 @@ void MaterialCohesiveLinear<spatial_dimension>::initMaterial() {
     delta_c_eff.setDefaultValue(2 * G_c / sigma_c);
 
   if (model->getIsExtrinsic()) scaleInsertionTraction();
-  residual_sliding.initializeHistory();
   opening_prec.initializeHistory();
 
   AKANTU_DEBUG_OUT();
@@ -432,9 +414,8 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
   Array<Real>::vector_iterator opening_it =
     opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator opening_prev_it =
-    opening.previous(el_type, ghost_type).begin(spatial_dimension);
-
+  /// opening_prec is the opening of the previous step in the
+  /// Newton-Raphson loop
   Array<Real>::vector_iterator opening_prec_it =
     opening_prec(el_type, ghost_type).begin(spatial_dimension);
 
@@ -467,15 +448,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
 
   Array<Real>::vector_iterator insertion_stress_it =
     insertion_stress(el_type, ghost_type).begin(spatial_dimension);
-
-  Array<Real>::scalar_iterator res_sliding_it =
-    residual_sliding(el_type, ghost_type).begin();
-
-  Array<Real>::scalar_iterator res_sliding_prev_it =
-    residual_sliding.previous(el_type, ghost_type).begin();
-
-  Array<Real>::vector_iterator friction_force_it =
-    friction_force(el_type, ghost_type).begin(spatial_dimension);
 
   Array<bool>::scalar_iterator reduction_penalty_it =
     reduction_penalty(el_type, ghost_type).begin();
@@ -525,14 +497,16 @@ template<UInt spatial_dimension>
 void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
   
-  /// This function set a predefined value to the parameter
-  /// delta_max_prev of the elements that have been inserted in the
-  /// last loading step for which convergence has not been
-  /// reached. This is done before reducing the loading and re-doing
-  /// the step.  Otherwise, the updating of delta_max_prev would be
-  /// done with reference to the non-convergent solution. In this
-  /// function also other variables related to the contact and
-  /// friction behavior are correctly set.
+  /**
+  * This function set a predefined value to the parameter
+  * delta_max_prev of the elements that have been inserted in the
+  * last loading step for which convergence has not been
+  * reached. This is done before reducing the loading and re-doing
+  * the step.  Otherwise, the updating of delta_max_prev would be
+  * done with reference to the non-convergent solution. In this
+  * function also other variables related to the contact and
+  * friction behavior are correctly set.
+  */
 
   Mesh & mesh = fem_cohesive->getMesh();
   Mesh::type_iterator it = mesh.firstType(spatial_dimension,
@@ -540,12 +514,14 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_ty
   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension,
 						ghost_type, _ek_cohesive);
 
-  /// the variable "recompute" is set to true to activate the
-  /// procedure that reduce the penalty parameter for
-  /// compression. This procedure is set true only during the phase of
-  /// load_reduction, that has to be set in the maiin file. The
-  /// penalty parameter will be reduced only for the elements having
-  /// reduction_penalty = true.
+  /**
+  * the variable "recompute" is set to true to activate the
+  * procedure that reduce the penalty parameter for
+  * compression. This procedure is set true only during the phase of
+  * load_reduction, that has to be set in the maiin file. The
+  * penalty parameter will be reduced only for the elements having
+  * reduction_penalty = true.
+  */
   recompute = true;
 
   for(; it != last_type; ++it) {
@@ -575,17 +551,10 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_ty
     Array<Real>::vector_iterator opening_prec_prev_it =
       opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
 
-    Array<Real>::scalar_iterator res_sliding_it =
-      residual_sliding(el_type, ghost_type).begin();
-
-    Array<Real>::scalar_iterator res_sliding_prev_it =
-      residual_sliding.previous(el_type, ghost_type).begin();
-
     /// loop on each quadrature point
     for (; delta_max_it != delta_max_end;
          ++delta_max_it, ++delta_max_prev_it, ++delta_c_it,
-	   ++opening_prec_it, ++opening_prec_prev_it,
-	   ++res_sliding_it, ++res_sliding_prev_it) {
+	   ++opening_prec_it, ++opening_prec_prev_it) {
 
       if (*delta_max_prev_it == 0)
         /// elements inserted in the last incremental step, that did
@@ -600,10 +569,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_ty
       /// value referred to the previous incremental step
       *opening_prec_it = *opening_prec_prev_it;
 
-      /// in case convergence is not reached, set "residual_sliding"
-      /// for the friction behaviour to the value referred to the
-      /// previous incremental step
-      *res_sliding_it = *res_sliding_prev_it;
     }
   }
 }
@@ -614,10 +579,12 @@ template<UInt spatial_dimension>
 void MaterialCohesiveLinear<spatial_dimension>::resetVariables(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  /// This function set the variables "recompute" and
-  /// "reduction_penalty" to false. It is called by solveStepCohesive
-  /// when convergence is reached. Such variables, in fact, have to be
-  /// false at the beginning of a new incremental step.
+  /**
+  * This function set the variables "recompute" and
+  * "reduction_penalty" to false. It is called by solveStepCohesive
+  * when convergence is reached. Such variables, in fact, have to be
+  * false at the beginning of a new incremental step.
+  */
 
   Mesh & mesh = fem_cohesive->getMesh();
   Mesh::type_iterator it = mesh.firstType(spatial_dimension,
@@ -626,8 +593,6 @@ void MaterialCohesiveLinear<spatial_dimension>::resetVariables(GhostType ghost_t
 						ghost_type, _ek_cohesive);
   
   recompute = false;
-
-  //  std::cout << "RESET VARIABLE" << std::endl;
 
   for(; it != last_type; ++it) {
     Array<UInt> & elem_filter = element_filter(*it, ghost_type);
@@ -691,9 +656,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
   Array<Real>::vector_iterator contact_opening_it =
     contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::scalar_iterator res_sliding_prev_it =
-    residual_sliding.previous(el_type, ghost_type).begin();
-
   Array<bool>::scalar_iterator reduction_penalty_it =
     reduction_penalty(el_type, ghost_type).begin();
 
@@ -724,24 +686,24 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
 				       current_penalty,
 				       *contact_opening_it);
 
-    /// check if the tangential stiffness matrix is symmetric
-//    for (UInt h = 0; h < spatial_dimension; ++h){
-//      for (UInt l = h; l < spatial_dimension; ++l){
-//        if (l > h){
-//          Real k_ls = (*tangent_it)[spatial_dimension*h+l];
-//          Real k_us =  (*tangent_it)[spatial_dimension*l+h];
-//          //          std::cout << "k_ls = " << k_ls << std::endl;
-//          //          std::cout << "k_us = " << k_us << std::endl;
-//          if (std::abs(k_ls) > 1e-13 && std::abs(k_us) > 1e-13){
-//            Real error = std::abs((k_ls - k_us) / k_us);
-//            if (error > 1e-10){
-//	      std::cout << "non symmetric cohesive matrix" << std::endl;
-//	      //  std::cout << "error " << error << std::endl;
-//            }
-//          }
-//        }
-//      }
-//    }
+    // check if the tangential stiffness matrix is symmetric
+    //    for (UInt h = 0; h < spatial_dimension; ++h){
+    //      for (UInt l = h; l < spatial_dimension; ++l){
+    //        if (l > h){
+    //          Real k_ls = (*tangent_it)[spatial_dimension*h+l];
+    //          Real k_us =  (*tangent_it)[spatial_dimension*l+h];
+    //          //          std::cout << "k_ls = " << k_ls << std::endl;
+    //          //          std::cout << "k_us = " << k_us << std::endl;
+    //          if (std::abs(k_ls) > 1e-13 && std::abs(k_us) > 1e-13){
+    //            Real error = std::abs((k_ls - k_us) / k_us);
+    //            if (error > 1e-10){
+    //	      std::cout << "non symmetric cohesive matrix" << std::endl;
+    //	      //  std::cout << "error " << error << std::endl;
+    //            }
+    //          }
+    //        }
+    //      }
+    //    }
   }
     
   AKANTU_DEBUG_OUT();

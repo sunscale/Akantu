@@ -214,7 +214,8 @@ function(register_test test_name)
     )
 
   if(NOT _register_test_PACKAGE)
-    message(FATAL_ERROR "No reference package was defined for the test ${test_name} in folder ${CMAKE_CURRENT_SOURCE_DIR}")
+    message(FATAL_ERROR "No reference package was defined for the test"
+      " ${test_name} in folder ${CMAKE_CURRENT_SOURCE_DIR}")
   endif()
 
   set(_test_act TRUE)
@@ -238,10 +239,10 @@ function(register_test test_name)
     set(_need_to_compile FALSE)
   endif()
 
+  set(_compile_source)
   foreach(_file ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS})
-    if(NOT (_file MATCHES "\\.cc$" OR _file MATCHES "\\.hh$"))
-      set(_need_to_compile FALSE)
-      message("NO: ${test_name}")
+    if(_file MATCHES "\\.cc$" OR _file MATCHES "\\.hh$")
+      list(APPEND _compile_source ${_file})
     endif()
   endforeach()
 
@@ -255,7 +256,8 @@ function(register_test test_name)
     if(AKANTU_BUILD_${_u_parent} OR AKANTU_BUILD_ALL_TESTS)
       set(_test_all_files)
 
-      if(_need_to_compile)
+      if(_compile_source)
+        message("COMPILE: ${test_name}")
         # get the include directories for sources in activated directories
         package_get_all_include_directories(
           AKANTU_LIBRARY_INCLUDE_DIRS
@@ -274,7 +276,7 @@ function(register_test test_name)
           )
 
         # Register the executable to compile
-        add_executable(${test_name} ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS})
+        add_executable(${test_name} ${_compile_source})
         set_property(TARGET ${test_name}  APPEND
           PROPERTY INCLUDE_DIRECTORIES ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
         target_link_libraries(${test_name} akantu ${AKANTU_EXTERNAL_LIBRARIES})
@@ -294,7 +296,6 @@ function(register_test test_name)
             list(APPEND _test_all_files "${_dep_in_ressources}")
           endif()
         endforeach()
-
       else()
         if(_register_test_UNPARSED_ARGUMENTS AND NOT _register_test_SCRIPT)
           set(_register_test_SCRIPT ${_register_test_UNPARSED_ARGUMENTS})
