@@ -1,7 +1,7 @@
 /**
  * @file   mesh_segment_intersector_tmpl.hh
  *
- * @author Lucas Frerot <lucas.frerot@eplf.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  * @author Clement Roux <clement.roux@epfl.ch>
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *

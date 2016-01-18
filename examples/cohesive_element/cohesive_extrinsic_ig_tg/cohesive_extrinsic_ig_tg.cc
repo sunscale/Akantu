@@ -1,13 +1,13 @@
 /**
- * @file   cohesive_extrinsic_IG_TG.cc
+ * @file   cohesive_extrinsic_ig_tg.cc
  *
  * @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date creation: Sun Oct 19 2014
+ * @date creation: Mon Jan 18 2016
  *
  * @brief  Test for considering different cohesive properties for intergranular
- *(IG) and
+ * (IG) and
  * transgranular (TG) fractures in extrinsic cohesive elements
  *
  * @section LICENSE

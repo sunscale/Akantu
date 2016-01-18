@@ -1,8 +1,10 @@
 /**
  * @file   cohesive_extrinsic_implicit.cc
  *
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Jan 12 2016
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  Example for extrinsic cohesive elements in implicit
  *

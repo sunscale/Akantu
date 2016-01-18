@@ -5,7 +5,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Jun 14 2010
-# @date last modification: Thu Nov 19 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  main configuration file
 #

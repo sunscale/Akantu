@@ -6,7 +6,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Thu Jun 05 2014
-# @date last modification: Mon Mar 30 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  package for the opitmization library NLopt
 #

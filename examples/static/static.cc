@@ -3,7 +3,7 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Sun Oct 19 2014
+ * @date creation: Mon Jan 18 2016
  *
  * @brief  This code refers to the implicit static example from the user manual
  *

@@ -2,8 +2,8 @@
  * @file   material_linear_isotropic_hardening.hh
  *
  * @author Ramin Aghababaei <ramin.aghababaei@epfl.ch>
- * @author Lucas Frerot <lucas.frerot@eplf.ch>
- * @author Benjamin Paccaud <bpaccaud@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Benjamin Paccaud <benjamin.paccaud@epfl.ch>
  * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *

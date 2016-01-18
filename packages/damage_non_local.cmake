@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Fri Jun 15 2012
-# @date last modification: Thu Oct 15 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  package description for non-local materials
 #

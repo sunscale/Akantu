@@ -4,6 +4,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Dec 16 2015
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  boundary condition example
  *

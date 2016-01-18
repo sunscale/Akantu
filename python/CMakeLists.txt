@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Fri Dec 12 2014
-# @date last modification: Wed Jan 13 2016
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  CMake file for the python wrapping of akantu
 #

@@ -3,7 +3,7 @@
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  *
- * @date creation: Sun Oct 19 2014
+ * @date creation: Mon Jan 18 2016
  *
  * @brief  test of the class HeatTransferModel on the 3d cube
  *

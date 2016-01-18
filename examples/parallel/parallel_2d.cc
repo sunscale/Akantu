@@ -3,7 +3,7 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Sun Oct 19 2014
+ * @date creation: Mon Jan 18 2016
  *
  * @brief  Parallel example
  *

@@ -3,14 +3,15 @@
 #
 # @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
 #
-# @date creation: Sun Oct 19 2014
+# @date creation: Mon Jan 18 2016
 #
 # @brief  Configuration for  cohesive_extrinsic_IG_TG
 #
 # @section LICENSE
 #
-# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
-# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -28,6 +29,7 @@
 # @section DESCRIPTION
 #
 #===============================================================================
+
 register_example(cohesive_extrinsic_ig_tg
   SOURCES cohesive_extrinsic_ig_tg.cc
   FILES_TO_COPY material.dat square.msh

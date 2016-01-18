@@ -4,6 +4,7 @@
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
  * @date creation: Tue Dec 01 2015
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  This code gives an example of a simulation using the embedded model
  *

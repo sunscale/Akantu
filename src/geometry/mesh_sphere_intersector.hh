@@ -2,7 +2,7 @@
  * @file   mesh_sphere_intersector.hh
  *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @author Lucas Frerot <lucas.frerot@eplf.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  * @author Clement Roux <clement.roux@epfl.ch>
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *

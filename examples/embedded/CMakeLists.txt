@@ -4,6 +4,7 @@
 # @author Lucas Frerot <lucas.frerot@epfl.ch>
 #
 # @date creation: Tue Dec 01 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  configuration for embedded example
 #
@@ -28,6 +29,7 @@
 # @section DESCRIPTION
 #
 #===============================================================================
+
 add_mesh(concrete_mesh concrete.geo 2 1)
 add_mesh(reinforcement_mesh reinforcement.geo 1 1)
 

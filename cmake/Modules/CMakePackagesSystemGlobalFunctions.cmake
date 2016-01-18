@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Sat Jul 18 2015
-# @date last modification: Mon Dec 07 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  Set of macros used by the package system to set internal variables
 #

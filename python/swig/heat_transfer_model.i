@@ -5,7 +5,7 @@
  *
  * @date creation: Wed Jul 15 2015
  *
- * @brief  
+ * @brief  heat transfer model wrapper
  *
  * @section LICENSE
  *

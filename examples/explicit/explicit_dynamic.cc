@@ -4,7 +4,7 @@
  * @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
  *
  * @date creation: Sun Jul 12 2015
- * @date last modification: Thu Aug 06 2015
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  This code refers to the explicit dynamic example from the user manual
  *

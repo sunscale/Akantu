@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Tue Sep 28 2010
-# @date last modification: Sun Oct 19 2014
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  configuration file for doxygen
 #

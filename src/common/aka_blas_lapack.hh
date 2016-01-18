@@ -4,7 +4,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Mar 06 2013
- * @date last modification: Thu Dec 17 2015
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  Interface of the Fortran BLAS/LAPACK libraries
  *

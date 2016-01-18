@@ -5,7 +5,7 @@
  *
  * @date creation: Wed Apr 01 2015
  *
- * @brief  
+ * @brief  structural mechanics model wrapper
  *
  * @section LICENSE
  *

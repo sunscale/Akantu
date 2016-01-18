@@ -4,7 +4,7 @@
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Tue May 08 2012
- * @date last modification: Sun Oct 19 2014
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  Test for cohesive elements
  *

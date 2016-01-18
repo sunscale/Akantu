@@ -4,7 +4,7 @@
  * @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date creation: Sun Oct 19 2014
+ * @date creation: Mon Jan 18 2016
  *
  * @brief  Test for cohesive elements
  *

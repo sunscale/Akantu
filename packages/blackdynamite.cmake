@@ -5,7 +5,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Fri Mar 15 2013
-# @date last modification: Mon Sep 28 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  package description for BlackDynamite support
 #

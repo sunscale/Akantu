@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Tue Oct 16 2012
-# @date last modification: Fri Dec 11 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  package description for blas support
 #

@@ -4,6 +4,7 @@
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @date creation: Wed Dec 16 2015
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  user-defined boundary condition example
  *

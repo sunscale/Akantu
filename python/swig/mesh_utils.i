@@ -7,7 +7,7 @@
  * @date creation: Fri Dec 12 2014
  * @date last modification: Thu Jul 23 2015
  *
- * @brief  
+ * @brief  mesh_utils wrapper
  *
  * @section LICENSE
  *

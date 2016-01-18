@@ -4,7 +4,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Thu Feb 17 2011
- * @date last modification: Tue Dec 08 2015
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  description of the "simple" types
  *

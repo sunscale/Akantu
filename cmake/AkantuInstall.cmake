@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Wed Oct 17 2012
-# @date last modification: Wed Dec 02 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  Create the files that allows users to link with Akantu in an other
 # cmake project

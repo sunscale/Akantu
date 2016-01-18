@@ -6,6 +6,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Aug 10 2015
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  Material isotropic elastic
  *

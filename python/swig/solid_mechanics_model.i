@@ -8,7 +8,7 @@
  * @date creation: Fri Dec 12 2014
  * @date last modification: Wed Jan 06 2016
  *
- * @brief  
+ * @brief  solid mechanics model wrapper
  *
  * @section LICENSE
  *

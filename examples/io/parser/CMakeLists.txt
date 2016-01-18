@@ -4,7 +4,7 @@
 # @author Fabian Barras <fabian.barras@epfl.ch>
 #
 # @date creation: Fri Sep 03 2010
-# @date last modification: Mon Dec 14 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  Tests insertion of cohesive elements
 #

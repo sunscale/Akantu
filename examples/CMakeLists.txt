@@ -5,7 +5,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Fri Oct 22 2010
-# @date last modification: Mon Dec 14 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  List of examples
 #
@@ -31,7 +31,6 @@
 # @section DESCRIPTION
 #
 #===============================================================================
-
 
 add_example(new_material         "Example on how to add a new material in Akantu"      PACKAGE core)
 add_example(boundary_conditions  "Example on hoy to set boundary conditions"           PACKAGE core)

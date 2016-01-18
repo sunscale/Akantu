@@ -4,7 +4,7 @@
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Mon Aug 17 2015
+# @date creation: Mon Jan 18 2016
 #
 # @brief  macros for examples
 #

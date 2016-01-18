@@ -8,7 +8,7 @@
  * @date creation: Fri Dec 12 2014
  * @date last modification: Wed Jan 13 2016
  *
- * @brief  
+ * @brief  wrapper to aka_common.hh
  *
  * @section LICENSE
  *

@@ -8,7 +8,7 @@
  * @date creation: Fri Dec 12 2014
  * @date last modification: Wed Nov 11 2015
  *
- * @brief  
+ * @brief  model wrapper
  *
  * @section LICENSE
  *

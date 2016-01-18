@@ -6,7 +6,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Nov 21 2011
-# @date last modification: Fri Jan 15 2016
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  package description for PETSc support
 #

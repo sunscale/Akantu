@@ -2,9 +2,10 @@
 # @file   documentation_manual.cmake
 #
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Tue Jun 10 2014
-# @date last modification: Mon Mar 30 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  Akantu's manual package
 #

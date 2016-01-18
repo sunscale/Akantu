@@ -3,7 +3,7 @@
  *
  * @author Fabian Barras <fabian.barras@epfl.ch>
  *
- * @date creation: Sun Oct 19 2014
+ * @date creation: Mon Jan 18 2016
  *
  * @brief  Computation of the analytical exemple 1.1 in the TGC vol 6
  *

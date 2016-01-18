@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Sat Jul 18 2015
-# @date last modification: Mon Nov 16 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  Addition to the PackageSystem specific for Akantu
 #

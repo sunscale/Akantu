@@ -1,6 +1,7 @@
 #===============================================================================
 # @file   FindParaDiS.cmake
 #
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Sun Oct 19 2014
 #
