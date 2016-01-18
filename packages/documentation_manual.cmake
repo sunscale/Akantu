@@ -38,3 +38,14 @@ package_declare_documentation(documentation_manual
 "\\begin{command}"
 "  > sudo apt-get install install rubber texlive texlive-science texlive-latex-extra"
 "\\end{command}")
+
+package_set_package_system_dependency(documentation_manual deb-src
+  rubber
+  texlive-fonts-recommended
+  texlive-science
+  texlive-picture
+  texlive-extra
+  texlive-math-extra
+  texlive-latex-extra
+  texlive-bibtex-extra
+  )

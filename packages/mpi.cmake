@@ -164,3 +164,6 @@ package_declare_documentation(MPI
   "  > sudo port install mpich-devel"
   "\\end{command}"
   )
+
+package_set_package_system_dependency(MPI deb mpi-default-bin)
+package_set_package_system_dependency(MPI deb-src mpi-default-dev)

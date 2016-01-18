@@ -426,6 +426,21 @@ function(_package_remove_fdependency pkg_name fdep)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Exteral package system as apt rpm dependencies
+# ------------------------------------------------------------------------------
+function(_package_set_package_system_dependency pkg system)
+  string(TOUPPER "${_system}" _u_system)
+  _package_set_variable(PACKAGE_SYSTEM_${_u_system} ${_pkg_name} ${ARGN})
+endfunction()
+
+
+function(_package_get_package_system_dependency pkg system var)
+  string(TOUPPER "${_system}" _u_system)
+  _package_get_variable(PACKAGE_SYSTEM_${_u_system} ${_pkg_name} ${_deps})
+  set(${var} ${_deps} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # Documentation related functions
 # ------------------------------------------------------------------------------
 function(_package_set_documentation_files pkg_name)

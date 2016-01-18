@@ -449,8 +449,7 @@ public:
 
   /*----------------------------------------------------------------------- */
   /// "Entrywise" norm norm<L_p> @f[ \|\boldsymbol{T}\|_p = \left(
-  /// \sum_i^{n[0]}\sum_j^{n[1]}\sum_k^{n[2]} |T_{ijk}|^p \right)^{\frac{1}{p}}
-  /// @f]
+  /// \sum_i^{n[0]}\sum_j^{n[1]}\sum_k^{n[2]} |T_{ijk}|^p \right)^{\frac{1}{p}} @f]
   template<NormType norm_type>
   inline T norm() const { return NormHelper<T, norm_type>::norm(*this); }
 

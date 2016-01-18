@@ -42,3 +42,6 @@ package_declare_documentation(LAPACK
   "  > sudo apt-get install libatlas-base-dev"
   "\\end{command}"
   )
+
+package_set_package_system_dependency(LAPACK deb liblapack3)
+package_set_package_system_dependency(LAPACK deb-src liblapack-dev)

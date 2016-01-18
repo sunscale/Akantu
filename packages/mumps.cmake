@@ -43,9 +43,15 @@ package_get_option_name(parallel _par_option)
 if(${_par_option})
   package_set_find_package_extra_options(Mumps ARGS COMPONENTS "parallel")
   package_add_third_party_script_variable(Mumps MUMPS_TYPE "par")
+
+  package_set_package_system_dependency(Mumps deb libmumps)
+  package_set_package_system_dependency(Mumps deb-src libmumps-dev)
 else()
   package_set_find_package_extra_options(Mumps ARGS COMPONENTS "sequential")
   package_add_third_party_script_variable(Mumps MUMPS_TYPE "seq")
+
+  package_set_package_system_dependency(Mumps deb libmumps-seq)
+  package_set_package_system_dependency(Mumps deb-src libmumps-seq-dev)
 endif()
 
 package_use_system(Mumps _use_system)

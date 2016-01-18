@@ -32,3 +32,5 @@
 package_declare(python_interface
   DESCRIPTION "Akantu's python interface"
   DEPENDS PythonLibs)
+
+package_set_package_system_dependency(python_interface deb-src swig3.0)

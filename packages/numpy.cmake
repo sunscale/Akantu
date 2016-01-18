@@ -30,3 +30,6 @@
 #===============================================================================
 
 package_declare(Numpy EXTERNAL DESCRIPTION "Akantu's numpy dependance check")
+
+package_set_package_system_dependency(Numpy deb python-numpy)
+package_set_package_system_dependency(Numpy deb-src python-numpy)

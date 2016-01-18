@@ -49,3 +49,10 @@ package_on_enabled_script(Boost
   endif()
 endif()
 ")
+
+
+package_set_package_system_dependency(Boost deb-src libboost-dev)
+
+# only build dependency
+#package_set_package_system_dependency(Boost deb libboost)
+#package_set_package_system_dependency(Boost rmp boost)

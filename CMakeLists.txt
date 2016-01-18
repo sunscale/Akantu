@@ -166,8 +166,16 @@ if(AKANTU_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-
+# tests
 add_test_tree(test)
+
+#===============================================================================
+# Python interface
+#===============================================================================
+package_is_activated(python_interface _python_act)
+if(_python_act)
+  add_subdirectory(python)
+endif()
 
 #===============================================================================
 # Install and Packaging
@@ -176,13 +184,4 @@ include(AkantuInstall)
 
 if(NOT AKANTU_DISABLE_CPACK)
   include(AkantuCPack)
-endif()
-
-#===============================================================================
-# Install and Packaging
-#===============================================================================
-package_is_activated(python_interface _python_act)
-if(_python_act)
-  add_subdirectory(python)
-#  add_subdirectory(akantu4py)
 endif()

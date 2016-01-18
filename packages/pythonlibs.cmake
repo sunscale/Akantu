@@ -46,3 +46,6 @@ package_declare_sources(Pythonlibs
   model/solid_mechanics/materials/material_python/material_python.cc
   model/solid_mechanics/materials/material_python/material_python.hh
   )
+
+package_set_package_system_dependency(PythonLibs deb libpython2.7)
+package_set_package_system_dependency(PythonLibs deb-src libpython2.7-dev)

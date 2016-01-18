@@ -95,3 +95,6 @@ package_declare_documentation(Scotch
 #     set(AKANTU_SCOTCH_NO_EXTERN OFF)
 #   endif()
 # endif()
+
+package_set_package_system_dependency(Scotch deb libscotch)
+package_set_package_system_dependency(Scotch deb-src libscotch-dev)

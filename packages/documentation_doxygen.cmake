@@ -45,4 +45,6 @@ package_declare_documentation(documentation_doxygen
   "  > sudo apt-get install doxygen"
   "  > sudo apt-get install graphviz"
   "\\end{command}"
-)
+  )
+
+package_set_package_system_dependency(documentation_doxygen deb-src doxygen graphviz)

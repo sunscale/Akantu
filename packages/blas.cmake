@@ -80,3 +80,6 @@ package_declare_documentation(BLAS
   "  > sudo apt-get install libatlas-base-dev"
   "\\end{command}"
   )
+
+package_set_package_system_dependency(BLAS deb libblas3)
+package_set_package_system_dependency(BLAS deb-src libblas3)

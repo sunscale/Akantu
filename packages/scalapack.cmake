@@ -42,3 +42,5 @@ package_add_third_party_script_variable(ScaLAPACK
   SCALAPACK_ARCHIVE "http://www.netlib.org/scalapack/scalapack-${SCALAPACK_VERSION}.tgz")
 package_add_third_party_script_variable(ScaLAPACK
   SCALAPACK_ARCHIVE_HASH_2.0.2 "MD5=2f75e600a2ba155ed9ce974a1c4b536f")
+
+package_set_package_system_dependency(ScaLAPACK deb-src libscalapack-mpi-dev)

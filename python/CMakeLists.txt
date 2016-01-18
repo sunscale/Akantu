@@ -69,7 +69,7 @@ include_directories(
 
 include(CMakeParseArguments)
 
-function(swig_generate_dependencies _module _depedencies)
+function(swig_generate_dependencies _module _depedencies _depedencies_out)
   set(_dependencies_script "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/_swig_generate_dependencies.cmake")
   file(WRITE ${_dependencies_script} "
 set(_include_directories ${_include_directories})
@@ -134,6 +134,8 @@ file(APPEND \"\${_dependencies_file}\" \"
     include(${_dependencies_file})
   endif()
 
+  set(${_depedencies_out} ${_swig_${_module_we}_depends} PARENT_SCOPE)
+
   add_custom_command(OUTPUT ${_dependencies_file}
     COMMAND ${CMAKE_COMMAND}
     -D_module=${_module_absolute}
@@ -148,7 +150,7 @@ file(APPEND \"\${_dependencies_file}\" \"
 endfunction()
 
 function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
-  cmake_parse_arguments(_swig_opt "" "OUTPUT_DIR" "EXTRA_FLAGS" ${ARGN})
+  cmake_parse_arguments(_swig_opt "" "OUTPUT_DIR;DEPENDENCIES" "EXTRA_FLAGS" ${ARGN})
 
   if(_swig_opt_OUTPUT_DIR)
     set(_output_dir ${_swig_opt_OUTPUT_DIR})
@@ -163,7 +165,10 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
   endif()
 
   foreach(_module ${_swig_opt_UNPARSED_ARGUMENTS})
-    swig_generate_dependencies(${_module} _module_dependencies)
+    swig_generate_dependencies(${_module} _module_dependencies _depends_out)
+    if(_swig_opt_DEPENDENCIES)
+      set(${_swig_opt_DEPENDENCIES} ${_depends_out} PARENT_SCOPE)
+    endif()
 
     get_filename_component(_module_absolute "${_module}" ABSOLUTE)
     get_filename_component(_module_path "${_module_absolute}" PATH)
@@ -219,7 +224,8 @@ endfunction()
 
 swig_generate_wrappers(akantu AKANTU_SWIG_WRAPPERS_CPP AKANTU_WRAPPERS_PYTHON
   ${AKANTU_SWIG_MODULES}
-  EXTRA_FLAGS ${AKANTU_SWIG_FLAGS})
+  EXTRA_FLAGS ${AKANTU_SWIG_FLAGS}
+  DEPENDENCIES _deps)
 
 if(AKANTU_SWIG_WRAPPERS_CPP)
   add_library(_akantu MODULE ${AKANTU_SWIG_WRAPPERS_CPP})
@@ -240,5 +246,5 @@ if(AKANTU_SWIG_WRAPPERS_CPP)
     DESTINATION lib COMPONENT python
     )
 
+  package_set_variable(python_interface EXTRA_FILES ${_deps})
 endif()
-

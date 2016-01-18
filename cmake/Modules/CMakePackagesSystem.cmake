@@ -178,6 +178,15 @@
 #.. command:: package_get_all_packages
 #     package_get_all_packages(<packages_list>)
 #
+#
+#.. command:: package_set_package_system_dependency(<pkg> <system> <dep1>
+#                                                   <dep2> ... <depn>)
+#     package_set_package_system_dependency(<pkg> <system> <dep1>
+#                                           <dep2> ... <depn>)
+#.. command:: package_get_package_system_dependency(<pkg> <var>)
+#     package_get_package_system_dependency(<pkg> <var>)
+#
+#
 #]=======================================================================]
 
 
@@ -465,6 +474,21 @@ macro(package_get_variable variable pkg value)
   set(${value} ${_value_tmp} PARENT_SCOPE)
 endmacro()
 
+# ------------------------------------------------------------------------------
+# Exteral package system as apt rpm dependencies
+# ------------------------------------------------------------------------------
+function(package_set_package_system_dependency pkg system)
+  package_get_name(${pkg} _pkg_name)
+  _package_set_package_system_dependency(${_pkg_name} ${system} ${ARGN})
+endfunction()
+
+function(package_get_package_system_dependency pkg system var)
+  package_get_name(${pkg} _pkg_name)
+  _package_set_package_system_dependency(${_pkg_name} ${sytem} _tmp)
+  set(${var} ${_tmp} PARENT_SCOPE)
+endfunction()
+# ------------------------------------------------------------------------------
+
 # ==============================================================================
 # Global accessors
 # ==============================================================================
@@ -583,6 +607,15 @@ function(package_get_all_documentation_files doc_files)
   endif()
 
   set(${doc_files} ${_tmp_DOC_FILES} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Get package systems dependencies
+# ------------------------------------------------------------------------------
+function(package_get_all_package_system_dependency system deps)
+  string(TOUPPER ${system} _u_system)
+  _package_get_variable_for_activated(PACKAGE_SYSTEM_${_u_system} _tmp)
+  set(${deps} ${_tmp} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -913,3 +946,5 @@ function(package_declare_sources pkg)
   set(${_pkg_name}_PRIVATE_HEADERS "${_pri_hdrs}"
     CACHE INTERNAL "List of private header files" FORCE)
 endfunction()
+
+# ------------------------------------------------------------------------------
