@@ -31,17 +31,10 @@
 #
 #===============================================================================
 
-add_mesh(swiss_cheese swiss_cheese.geo 2 2)
+add_mesh(swiss_cheese_mesh swiss_cheese.geo 2 2)
 
 register_example(example_parser
   example_parser.cc
-  USE IOHelper
-  DEPENDS swiss_cheese
-  DIRECTORIES_TO_CREATE paraview
-  )
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/input_file.dat
-  ${CMAKE_CURRENT_BINARY_DIR}/input_file.dat
-  COPYONLY
+  DEPENDS swiss_cheese_mesh
+  FILES_TO_COPY input_file.dat
   )

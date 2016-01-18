@@ -110,7 +110,6 @@ mark_as_advanced(
   CMAKE_SHARED_LINKER_FLAGS_PROFILING
   )
 
-include(CMakeDetermineCCompiler)
 #===============================================================================
 # Dependencies
 #===============================================================================
@@ -154,10 +153,9 @@ option(AKANTU_EXAMPLES "Activate examples" OFF)
 option(AKANTU_TESTS "Activate tests" OFF)
 
 include(AkantuTestsMacros)
-include(AkantuExamplesMacros)
+include(AkantuExampleMacros)
 
 if(AKANTU_EXAMPLES OR AKANTU_TESTS)
-  option(AKANTU_BUILD_ALL_EXAMPLES "Build all examples")
   option(AKANTU_BUILD_ALL_TESTS "Build all tests")
   find_package(GMSH REQUIRED)
 endif()
@@ -182,6 +180,9 @@ endif()
 #===============================================================================
 include(AkantuInstall)
 
+option(AKANTU_DISABLE_CPACK
+  "This option commands the generation of extra info for the \"make package\" target" ON)
+mark_as_advanced(AKANTU_DISABLE_CPACK)
 if(NOT AKANTU_DISABLE_CPACK)
   include(AkantuCPack)
 endif()

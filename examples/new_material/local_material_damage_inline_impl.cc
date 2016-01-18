@@ -31,41 +31,42 @@
 
 /* -------------------------------------------------------------------------- */
 
-
 /* -------------------------------------------------------------------------- */
 inline void LocalMaterialDamage::computeStressOnQuad(Matrix<Real> & grad_u,
-					       Matrix<Real> & sigma,
-					       Real & dam) {
+                                                     Matrix<Real> & sigma,
+                                                     Real & dam) {
 
   Real trace = grad_u.trace();
 
-  /// \sigma_{ij} = \lambda * (\nabla u)_{kk} * \delta_{ij} + \mu * (\nabla u_{ij} + \nabla u_{ji})
+  /// \sigma_{ij} = \lambda * (\nabla u)_{kk} * \delta_{ij} + \mu * (\nabla
+  /// u_{ij} + \nabla u_{ji})
   for (UInt i = 0; i < spatial_dimension; ++i) {
     for (UInt j = 0; j < spatial_dimension; ++j) {
-      sigma(i, j) =  (i == j)*lambda*trace + mu*(grad_u(i, j) + grad_u(j, i));
+      sigma(i, j) =
+          (i == j) * lambda * trace + mu * (grad_u(i, j) + grad_u(j, i));
     }
   }
 
   Real Y = 0;
   for (UInt i = 0; i < spatial_dimension; ++i) {
     for (UInt j = 0; j < spatial_dimension; ++j) {
-      Y += sigma(i,j) * grad_u(i,j);
+      Y += sigma(i, j) * grad_u(i, j);
     }
   }
   Y *= 0.5;
 
-  Real Fd = Y - Yd - Sd*dam;
+  Real Fd = Y - Yd - Sd * dam;
 
-  if (Fd > 0) dam = (Y - Yd) / Sd;
-  dam = std::min(dam,1.);
+  if (Fd > 0)
+    dam = (Y - Yd) / Sd;
+  dam = std::min(dam, 1.);
 
-  sigma *= 1-dam;
+  sigma *= 1 - dam;
 }
 
 /* -------------------------------------------------------------------------- */
-inline void LocalMaterialDamage::computePotentialEnergyOnQuad(Matrix<Real> & grad_u,
-							      Matrix<Real> & sigma,
-							      Real & epot) {
+inline void LocalMaterialDamage::computePotentialEnergyOnQuad(
+    Matrix<Real> & grad_u, Matrix<Real> & sigma, Real & epot) {
   epot = 0.;
   for (UInt i = 0, t = 0; i < spatial_dimension; ++i)
     for (UInt j = 0; j < spatial_dimension; ++j, ++t)
@@ -74,7 +75,8 @@ inline void LocalMaterialDamage::computePotentialEnergyOnQuad(Matrix<Real> & gra
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real LocalMaterialDamage::getCelerity(__attribute__ ((unused)) const Element & element) const {
+inline Real LocalMaterialDamage::getCelerity(__attribute__((unused))
+                                             const Element & element) const {
   // Here the fastest celerity is the push wave speed
-  return (std::sqrt((2*mu+lambda)/rho));
+  return (std::sqrt((2 * mu + lambda) / rho));
 }

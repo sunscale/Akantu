@@ -483,3 +483,10 @@ if(NOT _clock_gettime)
 else()
   set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF CACHE INTERNAL "" FORCE)
 endif()
+
+package_declare_extra_files_to_package(core
+  SOURCES
+    common/aka_element_classes_info.hh.in
+    common/aka_config.hh.in
+    model/solid_mechanics/material_list.hh.in
+  )

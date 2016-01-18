@@ -88,3 +88,13 @@ package_declare_documentation(Mumps
   ""
   "If you activate the advanced option AKANTU\\_USE\\_THIRD\\_PARTY\\_MUMPS the make system of akantu can automatically compile MUMPS. For this you will have to download MUMPS from \\url{http://mumps.enseeiht.fr/} or \\url{http://graal.ens-lyon.fr/MUMPS} and place it in \\shellcode{<akantu source>/third-party}"
   )
+
+package_declare_extra_files_to_package(MUMPS
+  PROJECT
+    third-party/MUMPS_4.10.0_make.inc.cmake
+    third-party/MUMPS_5.0.0.patch
+    third-party/MUMPS_4.10.0.patch
+    third-party/MUMPS_4.9.2_make.inc.cmake
+    third-party/cmake/mumps.cmake
+    cmake/Modules/FindMumps.cmake
+  )

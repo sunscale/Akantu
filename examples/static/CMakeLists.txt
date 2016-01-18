@@ -30,14 +30,9 @@
 #===============================================================================
 
 #===============================================================================
-register_example(static static.cc)
-
 add_mesh(static_mesh square.geo 2 2)
-add_dependencies(static static_mesh)
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/material.dat
-  ${CMAKE_CURRENT_BINARY_DIR}/material.dat
-  COPYONLY
+register_example(static
+  SOURCES static.cc
+  DEPENDS static static_mesh
+  FILES_TO_COPY material.dat
   )
-

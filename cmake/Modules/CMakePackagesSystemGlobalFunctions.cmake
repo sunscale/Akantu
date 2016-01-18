@@ -41,6 +41,15 @@ function(package_get_project_variable variable value_out)
   set(${value_out} ${${_u_project}_${variable}} PARENT_SCOPE)
 endfunction()
 
+function(package_add_to_project_variable variable)
+  package_get_project_variable(${variable} _tmp_list)
+  list(APPEND _tmp_list ${ARGN})
+  if(_tmp_list)
+    list(REMOVE_DUPLICATES _tmp_list)
+  endif()
+  package_set_project_variable(${variable} ${_tmp_list})
+endfunction()
+
 # ==============================================================================
 function(_package_set_variable variable pkg_name)
   set(${pkg_name}_${variable} ${ARGN} CACHE INTERNAL "" FORCE)

@@ -28,12 +28,10 @@
 # @section DESCRIPTION
 #
 #===============================================================================
-
-register_example(cohesive_extrinsic  cohesive_extrinsic.cc)
 add_mesh(cohesive_extrinsic_mesh triangle.geo 2 2)
-add_dependencies(cohesive_extrinsic  cohesive_extrinsic_mesh)
 
-#===============================================================================
-
-file(COPY material.dat DESTINATION .)
-
+register_example(cohesive_extrinsic
+  SOURCES cohesive_extrinsic.cc
+  DEPENDS cohesive_extrinsic_mesh
+  FILES_TO_COPY material.dat
+  )

@@ -30,18 +30,15 @@
 #===============================================================================
 
 #===============================================================================
-
 add_mesh(new_local_material_barre_trou_mesh barre_trou.geo 2 2)
 
-register_example(new_local_material local_material_damage.cc new_local_material.cc)
-add_dependencies(new_local_material
-  new_local_material_barre_trou_mesh
+register_example(new_local_material
+  SOURCES
+    local_material_damage.cc
+    local_material_damage.hh
+    new_local_material.cc
+  DEPENDS
+    new_local_material_barre_trou_mesh
+  FILES_TO_COPY
+    material.dat
   )
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/material.dat
-  ${CMAKE_CURRENT_BINARY_DIR}/material.dat
-  COPYONLY
-  )
-
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)

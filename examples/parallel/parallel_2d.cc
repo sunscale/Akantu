@@ -28,21 +28,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-#include <limits>
-#include <fstream>
-
-/* -------------------------------------------------------------------------- */
-#include "mesh_io.hh"
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
+
 using namespace akantu;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
-  debug::setDebugLevel(dblError);
 
   UInt spatial_dimension = 2;
   UInt max_steps = 10000;
@@ -56,7 +48,7 @@ int main(int argc, char *argv[])
   Int prank = comm.whoAmI();
 
   akantu::MeshPartition * partition = NULL;
-  if(prank == 0) {
+  if (prank == 0) {
     // Read the mesh
     mesh.read("square_2d.msh");
     partition = new MeshPartitionScotch(mesh, spatial_dimension);
@@ -71,7 +63,8 @@ int main(int argc, char *argv[])
 
   model.initFull();
 
-  if(prank == 0) std::cout << model.getMaterial(0) << std::endl;
+  if (prank == 0)
+    std::cout << model.getMaterial(0) << std::endl;
 
   model.setBaseName("multi");
   model.addDumpFieldVector("displacement");
@@ -87,16 +80,16 @@ int main(int argc, char *argv[])
   Array<bool> & boun = model.getBlockedDOFs();
 
   mesh.computeBoundingBox();
-  Real left_side  = mesh.getLowerBounds()(0);
+  Real left_side = mesh.getLowerBounds()(0);
   Real right_side = mesh.getUpperBounds()(0);
 
   for (UInt i = 0; i < mesh.getNbNodes(); ++i) {
-    if(std::abs(pos(i,0) - left_side) < eps) {
+    if (std::abs(pos(i, 0) - left_side) < eps) {
       disp(i, 0) = max_disp;
       boun(i, 0) = true;
     }
 
-    if(std::abs(pos(i,0) - right_side) < eps) {
+    if (std::abs(pos(i, 0) - right_side) < eps) {
       disp(i, 0) = -max_disp;
       boun(i, 0) = true;
     }
@@ -107,15 +100,16 @@ int main(int argc, char *argv[])
   model.setTimeStep(time_step);
 
   model.dump();
-  for(UInt s = 1; s <= max_steps; ++s) {
+  for (UInt s = 1; s <= max_steps; ++s) {
     model.explicitPred();
     model.updateResidual();
     model.updateAcceleration();
     model.explicitCorr();
 
-    if(s % 200 == 0) model.dump();
+    if (s % 200 == 0)
+      model.dump();
 
-    if(prank == 0 && s % 100 == 0)
+    if (prank == 0 && s % 100 == 0)
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
   }
 

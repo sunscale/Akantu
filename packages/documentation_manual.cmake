@@ -49,3 +49,7 @@ package_set_package_system_dependency(documentation_manual deb-src
   texlive-latex-extra
   texlive-bibtex-extra
   )
+
+package_declare_extra_files_to_package(documentation_manual
+  MANUAL version-definition.tex.in
+  PROJECT cmake/Modules/FindInkscape.cmake)

@@ -48,7 +48,9 @@ else()
   include(InstallRequiredSystemLibraries)
 endif()
 
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "i.86" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "[aA][mM][dD]64")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "i.86" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "[aA][mM][dD]64")
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(_arch "amd64")
   else()
@@ -75,6 +77,7 @@ set(CPACK_PACKAGE_NAME "akantu")
 # Debian config package
 package_get_all_package_system_dependency(deb _deb_deps)
 package_get_all_package_system_dependency(deb-src _deb_src_deps)
+
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "nicolas.richart@epfl.ch, guillaume.anciaux@epfl.ch")
 set(CPACK_DEBIAN_PACKAGE_SECTION "Science")
 set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${_arch}" CACHE STRING "Architecture of akantu's package")
@@ -110,79 +113,12 @@ set(CPACK_COMPONENT_DEV_GROUP "Development")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PACKAGE_FILE_NAME}-${AKANTU_VERSION}-src")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
 
-string(TOUPPER ${PROJECT_NAME} _project)
+include(AkantuCPackMacros)
+generate_cpack_ignore_list(CPACK_SOURCE_IGNORE_FILES)
 
-unset(CPACK_SOURCE_IGNORE_FILES)
-
-# get a full list of all the files include in the source folder
-file(GLOB _first_level "${PROJECT_SOURCE_DIR}/*")
-set(_all_files ${_first_level})
-foreach(_path ${_first_level})
-  if(IS_DIRECTORY "${_path}" AND
-      NOT _path MATCHES "build.*" AND
-      NOT _path MATCHES "\\.git.*")
-#    message("FILE ${_path}/*")
-    file(GLOB_RECURSE _second_level "${_path}/*")
-    list(APPEND _all_files ${_second_level})
-  endif()
-endforeach()
-
-set(_dirs)
-foreach(_file ${_all_files})
-  get_filename_component(_dir ${_file} DIRECTORY)
-  list(APPEND _dirs ${_dir})
-endforeach()
-list(REMOVE_DUPLICATES _dirs)
-list(APPEND _all_files ${_dirs})
-
-# getting list of all the files that should be in the source package
-set(_all_package_files)
-package_get_all_activated_packages(_activated_packages)
-foreach(_pkg ${_activated_packages})
-  _package_get_filename(${_pkg} _file_name)
-  _package_get_source_files(${_pkg} _srcs _pub_hdrs _priv_hdrs)
-  _package_get_variable(${_pkg} TESTS_FILES _tests_files)
-  set(_need_source_folder)
-  foreach(_src ${_srcs} ${_pub_hdrs} ${_priv_hdrs} ${_tests_files})
-    list(APPEND _need_source_folder ${PROJECT_SOURCE_DIR}/${_src})
-  endforeach()
-
-  _package_get_variable(${_pkg} EXTRA_FILES _extra_files)
-
-  _package_get_documentation_files(${_pkg} _doc_files)
-  set(_all_docs)
-  _package_get_manual_folder(${_pkg} _doc_folder)
-  foreach(_file ${_doc_files})
-    list(APPEND _all_docs ${_doc_folder}/${_file})
-  endforeach()
-
-  # split the set in 2 for debug reasons
-  set(_package_files
-    ${_file_name} ${_need_source_folder}
-    ${_extra_files} ${_all_docs}
-    )
-
-  list(APPEND _all_package_files ${_package_files})
-endforeach()
-
-# generate ignore list
-set(_ignore_list)
-foreach(_file ${_all_files})
-  set(_found FALSE)
-  foreach(_pkg_file ${_all_package_files})
-    if(_pkg_file MATCHES "${_file}")
-      set(_found TRUE)
-      break()
-    endif()
-  endforeach()
-
-  if(NOT _found)
-    list(APPEND _ignore_list ${_file})
-#    message("IGNORE ${_file}")
-  endif()
-endforeach()
-
-
-list(APPEND CPACK_SOURCE_IGNORE_FILES "/.*build.*/;/CVS/;/\\\\.svn/;/\\\\.bzr/;/\\\\.hg/;/\\\\.hgignore;/\\\\.git/;\\\\.swp$;\\\\.#;/#;~")
+list(APPEND CPACK_SOURCE_IGNORE_FILES
+  "/.*build.*/"  "/CVS/" "/\\\\.svn/" "/\\\\.bzr/" "/\\\\.hg/"
+  "/\\\\.hgignore" "/\\\\.git/" "/\\\\.idea/" "\\\\.swp$"
+  "\\\\.#" "/#" "~")
 
 include(CPack)

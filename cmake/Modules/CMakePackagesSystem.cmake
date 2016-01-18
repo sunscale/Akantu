@@ -468,11 +468,20 @@ function(package_set_variable variable pkg)
   _package_set_variable(${variable} ${_pkg_name} ${ARGN})
 endfunction()
 
-macro(package_get_variable variable pkg value)
+function(package_add_to_variable variable pkg)
+  package_get_name(${pkg} _pkg_name)
+  _package_add_to_variable(${variable} ${_pkg_name} ${ARGN})
+endfunction()
+
+function(package_get_variable variable pkg value)
   package_get_name(${pkg} _pkg_name)
   _package_get_variable(${variable} ${_pkg_name} _value_tmp)
-  set(${value} ${_value_tmp} PARENT_SCOPE)
-endmacro()
+  if(_value_tmp)
+    set(${value} ${_value_tmp} PARENT_SCOPE)
+  else()
+    unset(${value} PARENT_SCOPE)
+  endif()
+endfunction()
 
 # ------------------------------------------------------------------------------
 # Exteral package system as apt rpm dependencies

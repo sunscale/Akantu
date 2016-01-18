@@ -246,5 +246,5 @@ if(AKANTU_SWIG_WRAPPERS_CPP)
     DESTINATION lib COMPONENT python
     )
 
-  package_set_variable(python_interface EXTRA_FILES ${_deps})
+  package_declare_extra_files_to_package(python_interface ${_deps} ${PROJECT_SOURCE_DIR}/python/${AKANTU_SWIG_MODULES})
 endif()

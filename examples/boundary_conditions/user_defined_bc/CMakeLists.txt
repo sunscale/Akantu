@@ -1,11 +1,11 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Nicolas Richart <nicolas.richart@epfl.ch>
+# @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
 #
-# @date creation: Sun Oct 19 2014
+# @date creation: Wed Dec 16 2015
 #
-# @brief  configuration for a parallel example
+# @brief  boundary condition example configuration
 #
 # @section LICENSE
 #
@@ -29,14 +29,10 @@
 #
 #===============================================================================
 
-#===============================================================================
-add_mesh(parallel_2d_mesh square_2d.geo 2 1)
+add_mesh(user_defined_bc_mesh fine_mesh.geo 2 1)
 
-register_example(parallel_2d
-  parallel_2d.cc)
-add_dependencies(parallel_2d
-  parallel_2d_mesh)
-
-#===============================================================================
-file(COPY material.dat DESTINATION .)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)
+register_example(user_defined_bc
+  SOURCES user_defined_bc.cc
+  DEPENDS user_defined_bc_mesh
+  FILES_TO_COPY material.dat
+  )

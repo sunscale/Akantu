@@ -31,9 +31,6 @@
 
 #===============================================================================
 add_mesh(parallel_2d_mesh square_2d.geo 2 1)
-
 register_example(bernoulli_beam_2_exemple
-  bernoulli_beam_2_exemple.cc)
-
-#===============================================================================
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)
+  SOURCES bernoulli_beam_2_exemple.cc
+  DEPENDS parallel_2d_mesh)

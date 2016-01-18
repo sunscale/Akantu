@@ -83,3 +83,6 @@ package_declare_documentation(nlopt
   ""
   "If the automated download fails please download \\href{http://ab-initio.mit.edu/nlopt/nlopt-${NLOPT_VERSION}.tar.gz}{nlopt-${NLOPT_VERSION}.tar.gz} and place it in \\shellcode{<akantu source>/third-party} download."
   )
+
+package_declare_extra_files_to_package(nlopt
+  PROJECT cmake/Modules/FindNLopt.cmake)

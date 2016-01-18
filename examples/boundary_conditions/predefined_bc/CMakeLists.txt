@@ -29,10 +29,8 @@
 #
 #===============================================================================
 
-add_mesh(mesh fine_mesh.geo 2 1)
+add_mesh(predefined_bc_mesh square.geo 2 1)
 
-register_example(complex_boundary_condition complex_boundary_condition.cc)
-add_dependencies(complex_boundary_condition mesh)
-
-file(COPY material.dat DESTINATION .)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)
+register_example(predefined_bc SOURCES predefined_bc.cc
+  DEPENDS predefined_bc_mesh
+  FILES_TO_COPY material.dat)

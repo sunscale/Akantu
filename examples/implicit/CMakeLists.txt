@@ -30,14 +30,10 @@
 #===============================================================================
 
 #===============================================================================
-register_example(implicit_dynamic implicit_dynamic.cc)
-
 add_mesh(implicit_dynamic_mesh beam.geo 3 2)
-add_dependencies(implicit_dynamic implicit_dynamic_mesh)
-
-#===============================================================================
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/material_dynamic.dat
-  ${CMAKE_CURRENT_BINARY_DIR}/material_dynamic.dat
-  COPYONLY
+register_example(implicit_dynamic
+  SOURCES implicit_dynamic.cc
+  DEPENDS implicit_dynamic_mesh
+  FILES_TO_COPY material_dynamic.dat
   )
+

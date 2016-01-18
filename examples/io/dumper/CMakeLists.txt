@@ -38,17 +38,17 @@ add_library(locomotive_tools
   locomotive_tools.hh
   )
 
+target_include_directories(locomotive_tools PRIVATE ${AKANTU_INCLUDE_DIRS})
+
 register_example(dumper_low_level
-  dumper_low_level.cc
-  USE IOHelper
+  SOURCES dumper_low_level.cc
+  USE_PACKAGES IOHelper
   DEPENDS swiss_train locomotive_tools
-  DIRECTORIES_TO_CREATE paraview
   )
 
 register_example(dumpable_interface
-  dumpable_interface.cc
-  USE IOHelper
+  SOURCES dumpable_interface.cc
+  USE_PACKAGES IOHelper
   DEPENDS swiss_train locomotive_tools
-  DIRECTORIES_TO_CREATE paraview
   )
 

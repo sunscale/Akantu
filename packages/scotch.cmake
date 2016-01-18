@@ -98,3 +98,11 @@ package_declare_documentation(Scotch
 
 package_set_package_system_dependency(Scotch deb libscotch)
 package_set_package_system_dependency(Scotch deb-src libscotch-dev)
+
+package_declare_extra_files_to_package(Scotch
+  PROJECT
+    third-party/cmake/scotch.cmake
+    third-party/scotch_5.1.12b.patch
+    third-party/scotch_5.1.12b_make.inc.cmake
+    cmake/Modules/FindScotch.cmake
+  )

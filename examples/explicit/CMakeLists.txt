@@ -29,11 +29,9 @@
 # @section DESCRIPTION
 #
 #===============================================================================
-
-register_example(explicit_dynamic explicit_dynamic.cc)
-
 add_mesh(explicit_dynamic_mesh bar.geo 3 1)
-add_dependencies(explicit_dynamic explicit_dynamic_mesh)
 
-#===============================================================================
-file(COPY material.dat DESTINATION .)
+register_example(explicit_dynamic
+  SOURCES explicit_dynamic.cc
+  DEPENDS explicit_dynamic_mesh
+  FILES_TO_COPY material.dat)

@@ -29,5 +29,9 @@
 
 add_example(cohesive_extrinsic "Extrinsic cohesive element" PACKAGE cohesive_element)
 add_example(cohesive_intrinsic "Intrinsic cohesive element" PACKAGE cohesive_element )
-add_example(cohesive_extrinsic_IG_TG "Extrinsic cohesive element with intergranular and transgranular material properties" PACKAGE cohesive_element)
-add_example(cohesive_extrinsic_implicit "Extrinsic cohesive element in implicit" PACKAGE cohesive_element )
+
+add_example(cohesive_extrinsic_ig_tg
+  "Extrinsic cohesive element with intergranular and transgranular material properties"
+  PACKAGE cohesive_element)
+
+add_example(cohesive_extrinsic_implicit "Extrinsic cohesive element in implicit" PACKAGE cohesive_element)

@@ -32,11 +32,7 @@
 add_mesh(cohesive_extrinsic_implicit_mesh dcb_2d.geo 2 2)
 
 register_example(cohesive_extrinsic_implicit
-  cohesive_extrinsic_implicit.cc)
+  SOURCES cohesive_extrinsic_implicit.cc
+  DEPENDS cohesive_extrinsic_implicit_mesh
+  FILES_TO_COPY material.dat)
 
-add_dependencies(cohesive_extrinsic_implicit
-  cohesive_extrinsic_implicit_mesh)
-
- #===============================================================================
-file(COPY material.dat DESTINATION .)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)

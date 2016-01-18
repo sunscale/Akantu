@@ -27,5 +27,5 @@
 #
 #===============================================================================
 
-add_example(predefined_BC "Example of predefined boundary condition")
-add_example(user_defined_BC "Example of user defined boundary condition" PACKAGE implicit)
+add_example(predefined_bc "Example of predefined boundary condition" PACKAGE core)
+add_example(user_defined_bc "Example of user defined boundary condition" PACKAGE core)

@@ -30,13 +30,14 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
-
+/* -------------------------------------------------------------------------- */
 #include <iostream>
+/* -------------------------------------------------------------------------- */
+
 
 using namespace akantu;
 
-
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   const UInt spatial_dimension = 3;
@@ -49,7 +50,6 @@ int main(int argc, char *argv[]) {
   Mesh mesh(spatial_dimension);
   mesh.computeBoundingBox();
 
-
   mesh.read("bar.msh");
 
   SolidMechanicsModel model(mesh);
@@ -58,12 +58,13 @@ int main(int argc, char *argv[]) {
   model.initFull();
 
   time_step = model.getStableTimeStep();
-  std::cout << "Time Step = " << time_step * time_factor << "s ("<< time_step << "s)" << std::endl;
+  std::cout << "Time Step = " << time_step * time_factor << "s (" << time_step
+            << "s)" << std::endl;
   model.setTimeStep(time_step * time_factor);
 
   /// boundary and initial conditions
   Array<Real> & displacement = model.getDisplacement();
-  const Array<Real> & nodes  = mesh.getNodes();
+  const Array<Real> & nodes = mesh.getNodes();
 
   for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
     Real x = nodes(n);
@@ -80,24 +81,22 @@ int main(int argc, char *argv[]) {
 
   model.setBaseName("explicit_dynamic");
   model.addDumpField("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("stress"      );
+  model.addDumpField("stress");
   model.dump();
 
-  for(UInt s = 1; s <= max_steps; ++s) {
+  for (UInt s = 1; s <= max_steps; ++s) {
     model.solveStep();
 
     Real epot = model.getEnergy("potential");
     Real ekin = model.getEnergy("kinetic");
 
-    energy << s << "," << s*time_step << ","
-	   << epot << ","
-	   << ekin << ","
-	   << epot + ekin << ","
-	   << std::endl;
+    energy << s << "," << s * time_step << "," << epot << "," << ekin << ","
+           << epot + ekin << "," << std::endl;
 
-    if(s % 10 == 0) std::cout << "passing step " << s << "/" << max_steps << std::endl;
+    if (s % 10 == 0)
+      std::cout << "passing step " << s << "/" << max_steps << std::endl;
     model.dump();
   }
 

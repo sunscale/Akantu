@@ -28,8 +28,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_array.hh"
 #include "mesh.hh"
-#include "aka_types.hh"
+/* -------------------------------------------------------------------------- */
+#include "locomotive_tools.hh"
+/* -------------------------------------------------------------------------- */
+
 
 using namespace akantu;
 
@@ -55,10 +59,12 @@ void applyRotation(const Vector<Real> & center, Real angle,
     pos_rel -= center;
     Real radius = pos_rel.norm();
 
-    if (std::abs(radius) < Math::getTolerance()) continue;
+    if (std::abs(radius) < Math::getTolerance())
+      continue;
 
     Real phi_i = std::acos(pos_rel(_x) / radius);
-    if (pos_rel(_y) < 0) phi_i *= -1;
+    if (pos_rel(_y) < 0)
+      phi_i *= -1;
 
     dis(_x) = std::cos(phi_i - angle) * radius - pos_rel(_x);
     dis(_y) = std::sin(phi_i - angle) * radius - pos_rel(_y);
@@ -66,8 +72,7 @@ void applyRotation(const Vector<Real> & center, Real angle,
 }
 
 /* -------------------------------------------------------------------------- */
-void fillColour(const Mesh & mesh,
-                ElementTypeMapArray<UInt> & colour) {
+void fillColour(const Mesh & mesh, ElementTypeMapArray<UInt> & colour) {
   const ElementTypeMapArray<std::string> & phys_data =
       mesh.getData<std::string>("physical_names");
   const Array<std::string> & txt_colour = phys_data(_triangle_3);

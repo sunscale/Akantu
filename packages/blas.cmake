@@ -83,3 +83,9 @@ package_declare_documentation(BLAS
 
 package_set_package_system_dependency(BLAS deb libblas3)
 package_set_package_system_dependency(BLAS deb-src libblas3)
+
+package_declare_extra_files_to_package(BLAS
+  PROJECT
+    third-party/cmake/blas.cmake
+    third-party/blas_3.5.0_make.inc.cmake
+  )

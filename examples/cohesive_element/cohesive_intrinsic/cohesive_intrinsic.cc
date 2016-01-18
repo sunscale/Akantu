@@ -29,32 +29,19 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <limits>
-#include <fstream>
-#include <iostream>
-
-/* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "mesh.hh"
-#include "mesh_io.hh"
-#include "mesh_io_msh.hh"
-#include "mesh_utils.hh"
 #include "solid_mechanics_model_cohesive.hh"
-#include "material.hh"
-//#include "io_helper.hh"
+/* -------------------------------------------------------------------------- */
+#include <iostream>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-static void updateDisplacement(SolidMechanicsModelCohesive &,
-			       Array<UInt> &,
-			       ElementType,
-			       Real);
+static void updateDisplacement(SolidMechanicsModelCohesive &, Array<UInt> &,
+                               ElementType, Real);
 
-int main(int argc, char *argv[]) {
+/* -------------------------------------------------------------------------- */
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
-
-  //  debug::setDebugLevel(dblDump);
 
   const UInt spatial_dimension = 2;
   const UInt max_steps = 350;
@@ -73,7 +60,7 @@ int main(int argc, char *argv[]) {
   /// model initialization
   model.initFull();
 
-  Real time_step = model.getStableTimeStep()*0.8;
+  Real time_step = model.getStableTimeStep() * 0.8;
   model.setTimeStep(time_step);
   std::cout << "Time step: " << time_step << std::endl;
 
@@ -93,21 +80,21 @@ int main(int argc, char *argv[]) {
 
   model.setBaseName("intrinsic");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("residual"    );
+  model.addDumpField("residual");
   model.addDumpField("stress");
   model.addDumpField("grad_u");
   model.addDumpField("force");
   model.dump();
-
 
   /// update displacement
   Array<UInt> elements;
   Real * bary = new Real[spatial_dimension];
   for (UInt el = 0; el < nb_element; ++el) {
     mesh.getBarycenter(el, type, bary);
-    if (bary[0] > -0.25) elements.push_back(el);
+    if (bary[0] > -0.25)
+      elements.push_back(el);
   }
   delete[] bary;
 
@@ -121,7 +108,7 @@ int main(int argc, char *argv[]) {
 
     updateDisplacement(model, elements, type, increment);
 
-    if(s % 1 == 0) {
+    if (s % 1 == 0) {
       model.dump();
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
     }
@@ -140,16 +127,13 @@ int main(int argc, char *argv[]) {
 
   finalize();
 
-  std::cout << "OK: test_cohesive_intrinsic was passed!" << std::endl;
   return EXIT_SUCCESS;
 }
 
-
+/* -------------------------------------------------------------------------- */
 static void updateDisplacement(SolidMechanicsModelCohesive & model,
-			       Array<UInt> & elements,
-			       ElementType type,
-			       Real increment) {
-
+                               Array<UInt> & elements, ElementType type,
+                               Real increment) {
   Mesh & mesh = model.getMesh();
   UInt nb_element = elements.getSize();
   UInt nb_nodes = mesh.getNbNodes();
@@ -164,9 +148,9 @@ static void updateDisplacement(SolidMechanicsModelCohesive & model,
     for (UInt n = 0; n < nb_nodes_per_element; ++n) {
       UInt node = connectivity(elements(el), n);
       if (!update(node)) {
-	displacement(node, 0) -= increment;
-	//	displacement(node, 1) += increment;
-	update(node) = true;
+        displacement(node, 0) -= increment;
+        //	displacement(node, 1) += increment;
+        update(node) = true;
       }
     }
   }

@@ -29,15 +29,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-#include <limits>
-#include <fstream>
-#include <iostream>
-
-
-/* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <iostream>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -80,8 +74,6 @@ int main(int argc, char *argv[]) {
       boundary(n, 0) = true;
   }
 
-  model.updateResidual();
-
   model.setBaseName("extrinsic");
   model.addDumpFieldVector("displacement");
   model.addDumpField("velocity"    );
@@ -104,15 +96,11 @@ int main(int argc, char *argv[]) {
     /// update displacement on extreme nodes
     for (UInt n = 0; n < nb_nodes; ++n) {
       if (position(n, 1) > 0.99 || position(n, 1) < -0.99)
-	displacement(n, 1) += disp_update * position(n, 1);
+        displacement(n, 1) += disp_update * position(n, 1);
     }
 
     model.checkCohesiveStress();
-
-    model.explicitPred();
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
+    model.solveStep();
 
     if(s % 10 == 0) {
       model.dump();
@@ -124,17 +112,13 @@ int main(int argc, char *argv[]) {
   Real Ed = model.getEnergy("dissipated");
 
   Real Edt = 200*std::sqrt(2);
-
   std::cout << Ed << " " << Edt << std::endl;
-
   if (Ed < Edt * 0.999 || Ed > Edt * 1.001 || std::isnan(Ed)) {
     std::cout << "The dissipated energy is incorrect" << std::endl;
     return EXIT_FAILURE;
   }
 
-
   finalize();
 
-  std::cout << "OK: test_cohesive_extrinsic was passed!" << std::endl;
   return EXIT_SUCCESS;
 }

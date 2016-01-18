@@ -111,8 +111,6 @@ set(AKANTU_INCLUDE_DIRS
 
 include_directories(${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
 
-generate_material_list()
-
 if(CMAKE_COMPILER_IS_GNUCXX)
   include(PCHgcc)
   foreach(_header ${AKANTU_COMMON_HDR_TO_PRECOMPILE})
@@ -159,3 +157,6 @@ endif()
 export(TARGETS ${AKANTU_EXPORT_LIST}
   FILE "${CMAKE_BINARY_DIR}/AkantuLibraryDepends.cmake")
 export(PACKAGE Akantu)
+
+# print out the list of materials
+generate_material_list()

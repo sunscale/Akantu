@@ -80,3 +80,4 @@ package_declare_documentation_files(damage_non_local
 package_declare_documentation(damage_non_local
 "This package activates the non local damage feature of AKANTU"
 "")
+

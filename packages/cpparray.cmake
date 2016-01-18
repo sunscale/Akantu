@@ -65,3 +65,6 @@ package_declare_documentation(CppArray
   "open-source project. If internet is accessible when configuring the project (during cmake call)"
   "this package will be auto-downloaded."
   )
+
+package_declare_extra_files_to_package(CppArray
+  PROJECT cmake/Modules/FindCppArray.cmake)

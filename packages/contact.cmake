@@ -78,3 +78,8 @@ package_declare_documentation_files(contact
 package_declare_documentation(contact
   "This package enables the contact mechanics engine for Akantu"
   )
+
+package_set_package_system_dependency(contact deb-src
+  libboost-system-dev libboost-chrono-dev)
+package_set_package_system_dependency(contact deb
+  libboost-system1.58 libboost-chrono1.58)

@@ -34,12 +34,8 @@
 #define __AKANTU_AKA_BLAS_LAPACK_HH__
 
 /* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_USE_BLAS) || defined(AKANTU_USE_LAPACK)
-# include "aka_fortran_mangling.hh"
-#endif //AKANTU_USE_BLAS
-
 #ifdef AKANTU_USE_BLAS
+#include "aka_fortran_mangling.hh"
 extern "C" {
 
   /* ------------------------------------------------------------------------ */
@@ -164,6 +160,7 @@ __END_AKANTU__
 
 
 #ifdef AKANTU_USE_LAPACK
+#include "aka_fortran_mangling.hh"
 extern "C" {
   /* ------------------------------------------------------------------------ */
   /* Double general matrix                                                    */

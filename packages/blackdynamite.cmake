@@ -42,3 +42,7 @@ package_add_third_party_script_variable(BlackDynamite
   BLACKDYNAMITE_GIT "git@lsmssrv1.epfl.ch:blackdynamite.git")
 package_add_third_party_script_variable(BlackDynamite
   BLACKDYNAMITE_ARCHIVE "blackdynamite-${_version}.tar.gz")
+
+package_declare_extra_files_to_package(BlackDynamite
+  PROJECT third-party/cmake/blackdynamite.cmake
+  )

@@ -68,3 +68,9 @@ package_declare_documentation(IOHelper
   "This package activates the IOHelper facilities withing Akantu. This is mandatory if you want to be able to output Paraview files"
   "as well as any Dumper within Akantu."
   )
+
+package_declare_extra_files_to_package(IOHelper
+  PROJECT
+    third-party/cmake/iohelper.cmake
+    cmake/Modules/FindIOHelper.cmake
+  )

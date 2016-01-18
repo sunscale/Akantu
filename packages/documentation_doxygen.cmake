@@ -48,3 +48,6 @@ package_declare_documentation(documentation_doxygen
   )
 
 package_set_package_system_dependency(documentation_doxygen deb-src doxygen graphviz)
+
+package_declare_extra_files_to_package(documentation_doxygen
+  PROJECT doc/doxygen/akantu.dox.in)

@@ -36,3 +36,6 @@ package_declare(QVIEW EXTERNAL
 set(AKANTU_QVIEW_DEB_DEPEND
   qview-client
   )
+
+package_declare_extra_files_to_package(QVIEW
+  PROJECT cmake/Modules/FindQVIEW.cmake)

@@ -28,51 +28,52 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-#include <limits>
-#include <fstream>
-#include <iostream>
-/* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "mesh.hh"
 #include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
+#include <iostream>
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
-  
+int main(int argc, char * argv[]) {
+
   // Precise in initialize the name of the text input file to parse.
   initialize("input_file.dat", argc, argv);
 
-  // Get the user ParserSection. 
+  // Get the user ParserSection.
   const ParserSection & usersect = getUserParser();
 
-  // getParameterValue() allows to extract data associated to a given parameter name
+  // getParameterValue() allows to extract data associated to a given parameter
+  // name
   // and cast it in the desired type set as template paramter.
   Mesh mesh(usersect.getParameterValue<UInt>("spatial_dimension"));
   mesh.read(usersect.getParameterValue<std::string>("mesh_file"));
 
-  // getParameter() can be used with variable declaration (destination type is explicitly known).
+  // getParameter() can be used with variable declaration (destination type is
+  // explicitly known).
   UInt max_iter = usersect.getParameter("max_nb_iterations");
   Real precision = usersect.getParameter("precision");
-  
-  // Following NumPy convention, data can be interpreted as Vector or Matrix structures.
+
+  // Following NumPy convention, data can be interpreted as Vector or Matrix
+  // structures.
   Matrix<Real> eigen_stress = usersect.getParameter("stress");
 
   SolidMechanicsModel model(mesh);
   mesh.createGroupsFromMeshData<std::string>("physical_names");
   model.initFull(SolidMechanicsModelOptions(_static));
 
-  model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), usersect.getParameterValue<std::string>("outter_crust"));
-  model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), usersect.getParameterValue<std::string>("outter_crust"));
-  model.applyBC(BC::Neumann::FromStress(eigen_stress), usersect.getParameterValue<std::string>("inner_holes"));
+  model.applyBC(BC::Dirichlet::FixedValue(0.0, _x),
+                usersect.getParameterValue<std::string>("outter_crust"));
+  model.applyBC(BC::Dirichlet::FixedValue(0.0, _y),
+                usersect.getParameterValue<std::string>("outter_crust"));
+  model.applyBC(BC::Neumann::FromStress(eigen_stress),
+                usersect.getParameterValue<std::string>("inner_holes"));
 
   model.setDirectory("./paraview");
   model.setBaseName("swiss_cheese");
   model.addDumpFieldVector("displacement");
 
-  model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(precision, max_iter);
+  model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(precision,
+                                                               max_iter);
 
   model.dump();
 

@@ -1,13 +1,11 @@
 /**
- * @file   plate.cc
+ * @file   user_defined_bc.cc
  *
- * @author Dana Christen <dana.christen@epfl.ch>
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Dec 16 2015
  *
- * @brief  boundary condition example
+ * @brief  user-defined boundary condition example
  *
  * @section LICENSE
  *
@@ -33,63 +31,57 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
+#include <cmath>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
+class SineBoundary : public BC::Dirichlet::DirichletFunctor {
+public:
+  SineBoundary(Real amp, Real phase, BC::Axis ax = _x) : DirichletFunctor(ax),
+                                                         amplitude(amp),
+                                                         phase(phase) {}
+public:
+  inline void operator()(UInt node,
+                         Vector<bool> & flags,
+                         Vector<Real> & primal,
+                         const Vector<Real> & coord) const {
+    DIRICHLET_SANITY_CHECK;
+    flags(axis) = true;
+    primal(axis) = -amplitude * std::sin(phase * coord(1));
+  }
+protected:
+  Real amplitude;
+  Real phase;
+};
+
+/* -------------------------------------------------------------------------- */
 int main(int argc, char *argv[]) {
   initialize("material.dat", argc, argv);
 
-  //Do I need to define the element type?
   UInt spatial_dimension = 2;
-  UInt max_steps = 3000;
 
   Mesh mesh(spatial_dimension);
-  mesh.read("square.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
+  mesh.read("fine_mesh.msh");
 
   SolidMechanicsModel model(mesh);
 
   /// model initialization
   model.initFull();
 
-  std::cout << model.getMaterial(0) << std::endl;
-  model.assembleMassLumped();
+  /// boundary conditions
+  mesh.createGroupsFromMeshData<std::string>("physical_names");
+  Vector<Real> traction(2, 0.2);
+  model.applyBC(SineBoundary(.2, 10., _x), "Fixed_x");
+  model.applyBC(BC::Dirichlet::FixedValue(0., _y), "Fixed_y");
+  model.applyBC(BC::Neumann::FromTraction(traction), "Traction");
 
-  /// Dirichlet boundary conditions
-  model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "Fixed_x");
-  model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "Fixed_y");
-
-  model.updateResidual();
-
+  // output a paraview file with the boundary conditions
   model.setBaseName("plate");
   model.addDumpFieldVector("displacement");
+  model.addDumpFieldVector("force");
   model.addDumpField("blocked_dofs");
-  model.addDumpField("force"       );
-  model.addDumpField("residual"    );
   model.dump();
-
-  Real time_step = model.getStableTimeStep() * .8;
-  model.setTimeStep(time_step);
-
-  Vector<Real> traction(2);
-  for(UInt s = 1; s <= max_steps; ++s) {
-    if(s % 100 == 0)
-      std::cout << "passing step " << s << "/" << max_steps << std::endl;
-
-    // Neumann boundary condition
-    traction(0) = s*0.1;
-    traction(1) = 0.0;
-    model.applyBC(BC::Neumann::FromTraction(traction), "Traction");
-
-    model.explicitPred();
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
-
-    if(s % 10 == 0)
-      model.dump();
-  }
 
   finalize();
   return EXIT_SUCCESS;

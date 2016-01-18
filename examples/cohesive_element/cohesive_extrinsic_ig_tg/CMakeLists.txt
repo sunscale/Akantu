@@ -28,13 +28,9 @@
 # @section DESCRIPTION
 #
 #===============================================================================
-
-register_example(cohesive_extrinsic_IG_TG
-  cohesive_extrinsic_IG_TG.cc)
-
- #===============================================================================
-file(COPY material.dat DESTINATION .)
-file(COPY square.msh DESTINATION .)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)
+register_example(cohesive_extrinsic_ig_tg
+  SOURCES cohesive_extrinsic_ig_tg.cc
+  FILES_TO_COPY material.dat square.msh
+  )
 
 

@@ -381,7 +381,7 @@ function(register_test test_name)
         list(APPEND _tmp "${__file}")
       endforeach()
 
-      _package_add_to_variable(${_pkg_name} TESTS_FILES ${_tmp})
+      _package_add_to_variable(TESTS_FILES ${_pkg_name} ${_tmp})
     endif()
   endif()
 endfunction()

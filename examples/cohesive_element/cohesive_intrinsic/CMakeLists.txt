@@ -30,15 +30,8 @@
 #===============================================================================
 
 add_mesh( cohesive_intrinsic_mesh triangle.geo 2 2)
-
-
 register_example(cohesive_intrinsic
-  cohesive_intrinsic.cc)
+  SOURCES cohesive_intrinsic.cc
+  DEPENDS cohesive_intrinsic_mesh
+  FILES_TO_COPY material.dat)
 
-add_dependencies(cohesive_intrinsic
-  cohesive_intrinsic_mesh)
-
-
- #===============================================================================
-file(COPY material.dat DESTINATION .)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)

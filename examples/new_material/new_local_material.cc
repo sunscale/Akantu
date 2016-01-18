@@ -30,19 +30,18 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <iostream>
-
-/* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
 #include "local_material_damage.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <iostream>
+/* -------------------------------------------------------------------------- */
 using namespace akantu;
 
 #define bar_length 10.
 #define bar_height 4.
 akantu::Real eps = 1e-10;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize("material.dat", argc, argv);
 
   UInt max_steps = 10000;
@@ -55,7 +54,7 @@ int main(int argc, char *argv[]) {
   mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   /// model creation
-  SolidMechanicsModel  model(mesh);
+  SolidMechanicsModel model(mesh);
 
   /// model initialization
   model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass, true));
@@ -65,29 +64,29 @@ int main(int argc, char *argv[]) {
   std::cout << model.getMaterial(0) << std::endl;
 
   Real time_step = model.getStableTimeStep();
-  model.setTimeStep(time_step/10.);
+  model.setTimeStep(time_step / 10.);
 
   /// Dirichlet boundary conditions
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "Fixed_x");
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "Fixed_y");
 
   // Neumann boundary condition
-  Matrix<Real> stress(2,2);
+  Matrix<Real> stress(2, 2);
   stress.eye(3e2);
   model.applyBC(BC::Neumann::FromStress(stress), "Traction");
 
   model.setBaseName("local_material");
   model.addDumpField("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("force"       );
-  model.addDumpField("residual"    );
-  model.addDumpField("grad_u"      );
-  model.addDumpField("stress"      );
-  model.addDumpField("damage"      );
+  model.addDumpField("force");
+  model.addDumpField("residual");
+  model.addDumpField("grad_u");
+  model.addDumpField("stress");
+  model.addDumpField("damage");
   model.dump();
 
-  for(UInt s = 0; s < max_steps; ++s) {
+  for (UInt s = 0; s < max_steps; ++s) {
     model.explicitPred();
 
     model.updateResidual();
@@ -97,10 +96,12 @@ int main(int argc, char *argv[]) {
     epot = model.getEnergy("potential");
     ekin = model.getEnergy("kinetic");
 
-    if(s % 100 == 0) std::cout << s << " " << epot << " " << ekin << " " << epot + ekin
-			       << std::endl;
+    if (s % 100 == 0)
+      std::cout << s << " " << epot << " " << ekin << " " << epot + ekin
+                << std::endl;
 
-    if(s % 100 == 0) model.dump();
+    if (s % 100 == 0)
+      model.dump();
   }
 
   akantu::finalize();

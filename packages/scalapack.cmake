@@ -44,3 +44,11 @@ package_add_third_party_script_variable(ScaLAPACK
   SCALAPACK_ARCHIVE_HASH_2.0.2 "MD5=2f75e600a2ba155ed9ce974a1c4b536f")
 
 package_set_package_system_dependency(ScaLAPACK deb-src libscalapack-mpi-dev)
+
+package_declare_extra_files_to_package(ScaLAPACK
+  PROJECT
+    third-party/scalapack_2.0.2.patch
+    third-party/cmake/scalapack.cmake
+    cmake/Modules/FindScaLAPACK.cmake
+  )
+

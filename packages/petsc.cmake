@@ -45,3 +45,10 @@ package_declare_sources(petsc
   solver/petsc_wrapper.hh
   )
 
+package_declare_extra_files_to_package(PETSc
+  PROJECT
+    cmake/Modules/FindPETSc.cmake
+    cmake/Modules/FindPackageMultipass.cmake
+    cmake/Modules/ResolveCompilerPaths.cmake
+    cmake/Modules/CorrectWindowsPaths.cmake
+  )

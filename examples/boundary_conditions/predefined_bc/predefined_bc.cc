@@ -1,11 +1,11 @@
 /**
- * @file   complex_boundary_condition.cc
+ * @file   predefined_bc.cc
  *
- * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Dec 16 2015
  *
- * @brief  user-defined boundary condition example
+ * @brief  boundary condition example
  *
  * @section LICENSE
  *
@@ -31,65 +31,30 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
-#include <math.h>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-class SineBoundary : public BC::Dirichlet::DirichletFunctor {
-public:                    
-  SineBoundary(Real amp, Real phase, BC::Axis ax = _x) : DirichletFunctor(ax), amplitude(amp), phase(phase) {}
-  
-public:
-  inline void operator()(UInt node,
-			 Vector<bool> & flags,
-			 Vector<Real> & primal,
-			 const Vector<Real> & coord) const {
-    DIRICHLET_SANITY_CHECK;
-    flags(axis) = true;
-    primal(axis) = -amplitude * sin(phase * coord(1));
-  }
-
-protected:
-  Real amplitude;
-  Real phase;
-};
-
 int main(int argc, char *argv[]) {
   initialize("material.dat", argc, argv);
 
-  UInt spatial_dimension = 2;
-
-  Mesh mesh(spatial_dimension);
-  mesh.read("fine_mesh.msh");
-
-  SolidMechanicsModel model(mesh);
-
-  /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_static));
-
-  std::cout << model.getMaterial(0) << std::endl;
-  model.assembleMassLumped();
-
-  /// boundary conditions
+  Mesh mesh(2);
+  mesh.read("square.msh");
   mesh.createGroupsFromMeshData<std::string>("physical_names");
-  Vector<Real> traction(2, 0.2);
-  model.applyBC(SineBoundary(.2, 10., _x), "Fixed_x");
-  model.applyBC(BC::Dirichlet::FixedValue(0., _y), "Fixed_y");
-  model.applyBC(BC::Neumann::FromTraction(traction), "Traction");
 
+  // model initialization
+  SolidMechanicsModel model(mesh);
+  model.initFull();
 
+  // Dirichlet boundary conditions
+  model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "Fixed_x");
+  model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "Fixed_y");
+
+  // output in a paraview file
   model.setBaseName("plate");
   model.addDumpFieldVector("displacement");
   model.addDumpField("blocked_dofs");
-  model.dump();
-
-  /// solve the system
-  model.assembleStiffnessMatrix();
-  Real error = 0;
-  Real converged = model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(1e-10, error, 2, false);
-  AKANTU_DEBUG_ASSERT(converged, "Did not converge");
-
+  model.addDumpField("force"       );
   model.dump();
 
   finalize();
