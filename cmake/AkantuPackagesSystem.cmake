@@ -338,6 +338,7 @@ package_add_files_to_package(
   VERSION
   COPYING
   COPYING.lesser
+  CTestConfig.cmake
   cmake/Modules/CMakeFlagsHandling.cmake
   cmake/Modules/CMakePackagesSystem.cmake
   cmake/Modules/CMakePackagesSystemGlobalFunctions.cmake
