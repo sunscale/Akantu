@@ -172,6 +172,11 @@ add_test_tree(test)
 #===============================================================================
 package_is_activated(python_interface _python_act)
 if(_python_act)
+  if(IS_ABSOLUTE "${CMAKE_INSTALL_PREFIX}")
+    set(AKANTU_PYTHON_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+  else()
+    set(AKANTU_PYTHON_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}")
+  endif()
   add_subdirectory(python)
 endif()
 

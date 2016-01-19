@@ -73,3 +73,12 @@ mark_as_advanced(
   )
 
 package_add_extra_dependency(IOHelper iohelper)
+
+install(FILES ${IOHELPER_LIBRARIES}
+  DESTINATION lib
+  COMPONENT lib
+  )
+
+install(DIRECTORY ${IOHELPER_INCLUDE_DIR}
+  DESTINATION include
+  COMPONENT dev)
