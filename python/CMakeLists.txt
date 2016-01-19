@@ -175,7 +175,7 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
     get_filename_component(_module_path "${_module_absolute}" PATH)
     get_filename_component(_module_name "${_module}" NAME)
     get_filename_component(_module_we "${_module}" NAME_WE)
-    set(_wrapper "${_output_dir}/${_module_we}_wrapper.cc")
+    set(_wrapper "${_output_dir}/${_module_we}_wrapper.cpp")
     set(_extra_wrapper "${_output_dir}/${_module_we}.py")
     set(_extra_wrapper_bin "${CMAKE_CURRENT_BINARY_DIR}/${_module_we}.py")
 
@@ -230,36 +230,47 @@ swig_generate_wrappers(akantu AKANTU_SWIG_WRAPPERS_CPP AKANTU_WRAPPERS_PYTHON
   INCLUDE_DIRECTORIES ${_swig_include_dirs})
 
 if(AKANTU_SWIG_WRAPPERS_CPP)
-  string(REPLACE ";" "\", \"" _ext_files "${AKANTU_SWIG_WRAPPERS_CPP}")
-  string(REPLACE ";" "\", \"" _inc_dirs "${_swig_include_dirs}")
-  string(REPLACE " " "\", \"" _flags "${CMAKE_CXX_FLAGS} -Wmaybe-uninitialized")
+  string(REPLACE ";" "', '" _ext_files "${AKANTU_SWIG_WRAPPERS_CPP}")
+  string(REPLACE ";" "', '" _inc_dirs "${_swig_include_dirs}")
+  string(STRIP "${CMAKE_CXX_FLAGS}" _tmp_flags)
+  string(REGEX REPLACE " +" "', '" _flags "${_tmp_flags} -Wmaybe-uninitialized")
+
+  if(CMAKE_VERBOSE_MAKEFILE)
+    set(_quiet)
+  else()
+    set(_quiet --quiet)
+  endif()
 
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/setup.py "
 from distutils.core import setup
 from distutils.core import setup, Extension
 import os
 
-os.environ[\"CC\"] = \"${CMAKE_CXX_COMPILER}\"
-os.environ[\"CXX\"] = \"${CMAKE_CXX_COMPILER}\"
-setup(name=\"akantu\",
-      license=\"LGPLv3\",
-      version=\"${AKANTU_VERSION}\",
-      py_modules=[\"akantu\"],
-      ext_modules=[Extension(\"_akantu\", [\"${_ext_files}\"],
-                             include_dirs=[\"${_inc_dirs}\"],
-                             language=\"c++\",
-                             libraries=[\"akantu\"],
-                             library_dirs=[\"${PROJECT_BINARY_DIR}/src\"],
-                             extra_compile_args=[\"${_flags}\"])],
+
+os.environ['CC'] = '${CMAKE_CXX_COMPILER}'
+os.environ['CXX'] = '${CMAKE_CXX_COMPILER}'
+setup(name='akantu',
+      license='LGPLv3',
+      version='${AKANTU_VERSION}',
+      py_modules=['akantu'],
+      ext_modules=[Extension('_akantu', ['${_ext_files}'],
+                             include_dirs=['${_inc_dirs}'],
+                             language='c++',
+                             libraries=['akantu'],
+                             library_dirs=['${PROJECT_BINARY_DIR}/src'],
+                             extra_compile_args=['${_flags}'])],
       )
 ")
 
   add_custom_target(_akantu ALL
-    COMMAND ${PYTHON_EXECUTABLE} ./setup.py --quiet --no-user-cfg build_ext
+    COMMAND ${PYTHON_EXECUTABLE} ./setup.py ${_quiet} --no-user-cfg build_ext -b build
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS ${AKANTU_SWIG_WRAPPERS_CPP} akantu
     COMMENT "Building akantu's python interface"
     )
+
+  set_directory_properties(PROPERTIES
+    ADDITIONAL_MAKE_CLEAN_FILES ${CMAKE_CURRENT_BINARY_DIR}/build)
 
   # add_library(_akantu MODULE ${AKANTU_SWIG_WRAPPERS_CPP})
   # target_link_libraries(_akantu akantu)
@@ -280,7 +291,7 @@ setup(name=\"akantu\",
   #   )
 
   install(CODE "execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} ./setup.py --quiet install --prefix=${AKANTU_PYTHON_INSTALL_PREFIX}
+    COMMAND ${PYTHON_EXECUTABLE} ./setup.py ${_quiet} install --prefix=${AKANTU_PYTHON_INSTALL_PREFIX}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )"
     COMPONENT python)

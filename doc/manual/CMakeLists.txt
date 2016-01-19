@@ -113,7 +113,9 @@ endfunction()
 
 #------------------------------------------------------------------------------#
 #------------------------------------------------------------------------------#
-set(DOC_DEPS_TEX_FILENAME "${CMAKE_CURRENT_BINARY_DIR}/manual-packages-doc.tex")
+set(AKANTU_MANUAL_SOURCE_FOLDER ${CMAKE_CURRENT_BINARY_DIR}/latex)
+
+set(DOC_DEPS_TEX_FILENAME "${AKANTU_MANUAL_SOURCE_FOLDER}/manual-packages-doc.tex")
 file(WRITE ${DOC_DEPS_TEX_FILENAME} "")
 
 find_program(RUBBER_EXECUTABLE rubber)
@@ -126,11 +128,13 @@ package_get_all_documentation_files(_manual_files)
 
 set(AKANTU_MANUAL_FILES_DEPEND)
 set(AKANTU_MANUAL_FILES_COPY_COMMAND)
+
+file(MAKE_DIRECTORY ${AKANTU_MANUAL_SOURCE_FOLDER})
 foreach(_f  ${_manual_files})
   file(RELATIVE_PATH _rel_f ${CMAKE_CURRENT_SOURCE_DIR} "${_f}")
   list(APPEND AKANTU_MANUAL_FILES_DEPEND ${_f})
   list(APPEND AKANTU_MANUAL_FILES_COPY_COMMAND
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${_rel_f} ${_rel_f})
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/${_rel_f}" "${_rel_f}")
 endforeach()
 
 set(MANUAL_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/akantu_ug.pdf)
@@ -140,10 +144,12 @@ add_custom_command(
   DEPENDS ${AKANTU_MANUAL_FILES_DEPEND} ${DOC_DEPS_TEX_FILENAME}
   ${AKANTU_MANUAL_FILES_COPY_COMMAND}
   COMMAND ${RUBBER_EXECUTABLE} -dfq manual
-  COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_CURRENT_BINARY_DIR}/manual.pdf ${MANUAL_OUTPUT}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND ${CMAKE_COMMAND} -E copy manual.pdf ${MANUAL_OUTPUT}
+  WORKING_DIRECTORY ${AKANTU_MANUAL_SOURCE_FOLDER}
   COMMENT "Compiling the user's manual"
   )
+
+set_directory_properties(latex/$)
 
 add_custom_target(manual ALL DEPENDS ${MANUAL_OUTPUT})
 
@@ -154,4 +160,4 @@ foreach (_pkg_name ${_package_list})
   generate_package_tex_doc(${_pkg_name} ${DOC_DEPS_TEX_FILENAME})
 endforeach()
 
-configure_file(version-definition.tex.in "${CMAKE_CURRENT_BINARY_DIR}/version-definition.tex" @ONLY)
+configure_file(version-definition.tex.in "${AKANTU_MANUAL_SOURCE_FOLDER}/version-definition.tex" @ONLY)
