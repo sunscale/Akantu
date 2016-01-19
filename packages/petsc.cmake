@@ -52,3 +52,16 @@ package_declare_extra_files_to_package(PETSc
     cmake/Modules/ResolveCompilerPaths.cmake
     cmake/Modules/CorrectWindowsPaths.cmake
   )
+
+package_declare_documentation(PETSc
+  "This package enables PETSc as a solver in Akantu"
+  ""
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  "\\begin{command}"
+  "  > sudo apt-get install libpetsc3.4.2-dev"
+  "\\end{command}"
+  ""
+)
+
+package_set_package_system_dependency(PETSc deb libpetsc3.4.2)
+package_set_package_system_dependency(PETSc deb-src libpetsc3.4.2-dev)

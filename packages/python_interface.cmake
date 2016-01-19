@@ -34,3 +34,13 @@ package_declare(python_interface
   DEPENDS PythonLibs)
 
 package_set_package_system_dependency(python_interface deb-src swig3.0)
+
+package_declare_documentation(python_interface
+  "This package enables the python interface of Akantu. It relies on swig3.0 to generate the code"
+  ""
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  "\\begin{command}"
+  "  > sudo apt-get install swig3.0"
+  "\\end{command}"
+  ""
+)

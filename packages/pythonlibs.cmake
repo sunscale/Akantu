@@ -49,3 +49,13 @@ package_declare_sources(Pythonlibs
 
 package_set_package_system_dependency(PythonLibs deb libpython2.7)
 package_set_package_system_dependency(PythonLibs deb-src libpython2.7-dev)
+
+package_declare_documentation(PythonLibs
+  "This package is a dependency of the python interface"
+  ""
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  "\\begin{command}"
+  "  > sudo apt-get install libpython2.7-dev"
+  "\\end{command}"
+  ""
+)

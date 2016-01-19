@@ -31,6 +31,16 @@
 
 package_declare(Numpy EXTERNAL DESCRIPTION "Akantu's numpy dependance check")
 
+package_declare_documentation(Numpy
+  "This package allows to wrap Akantu arrays to numpy arrays"
+  ""
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  "\\begin{command}"
+  "  > sudo apt-get install python-numpy"
+  "\\end{command}"
+  ""
+)
+
 package_set_package_system_dependency(Numpy deb python-numpy)
 package_set_package_system_dependency(Numpy deb-src python-numpy)
 

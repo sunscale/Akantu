@@ -50,7 +50,7 @@ function(generate_package_dependency_tex_doc pkg_name FILENAME LEVEL)
   string(REPLACE "_" "\\_" _pkg_tex "${_opt_name}")
   get_doc_label(${pkg_name} _pkg_tex_label)
 
-  file(APPEND ${FILENAME} "\\AkantuPackageNameWithLabel{${_pkg_tex}}{${_pkg_tex_label}}{${LEVEL}}\\xspace")
+  file(APPEND ${FILENAME} "\\AkantuPackageNameWithLabel{${_pkg_tex}}{${_pkg_tex_label}}{${LEVEL}}\\allowbreak\\xspace")
 
   math(EXPR _sub_level "${LEVEL}+1")
   _package_get_dependencies(${pkg_name} _dependencies)

@@ -52,3 +52,13 @@ package_declare_extra_files_to_package(ScaLAPACK
     cmake/Modules/FindScaLAPACK.cmake
   )
 
+
+package_declare_documentation(ScaLAPACK
+  "ScaLAPACK is used to compile mumps as a third-party"
+  ""
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  "\\begin{command}"
+  "  > sudo apt-get install libscalapack-mpi-dev"
+  "\\end{command}"
+  ""
+)
