@@ -371,7 +371,6 @@ function(register_test test_name)
     if(_dep_ressources)
       list(APPEND _test_all_files "${_dep_ressources}")
     endif()
-    message("DEPENDS: ${_dep} - ${_dep_ressources}")
   endforeach()
 
   # add estra files to the list of files referenced by a given test
