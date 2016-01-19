@@ -144,6 +144,7 @@ function(generate_cpack_ignore_list ignore_list)
 
   list(SORT _ignore_list)
   list(REMOVE_DUPLICATES _ignore_list)
+
   set(${ignore_list} ${_ignore_list} PARENT_SCOPE)
 endfunction()
 # ==============================================================================

@@ -41,7 +41,7 @@ register_test(test_synchronizer_communication
   )
 
 if(AKANTU_DAMAGE_NON_LOCAL)
-  add_executable(test_grid_synchronizer_check_neighbors test_grid_synchronizer_check_neighbors.cc)
+  add_executable(test_grid_synchronizer_check_neighbors test_grid_synchronizer_check_neighbors.cc test_grid_tools.hh)
   target_link_libraries(test_grid_synchronizer_check_neighbors akantu)
 endif()
 

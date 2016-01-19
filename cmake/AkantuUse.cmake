@@ -48,3 +48,22 @@ function(package_get_compile_flags pkg flags)
   string(TOUPPER ${pkg} _u_pkg)
   set(flags ${AKANTU_${_u_pkg}_COMPILE_FLAGS} PARENT_SCOPE)
 endfunction()
+
+
+function(get_target_list_of_associated_files tgt files)
+  get_target_property(_type ${tgt} TYPE)
+  if(_type STREQUAL "SHARED_LIBRARY"
+      OR _type STREQUAL "STATIC_LIBRARY"
+      OR _type STREQUAL "MODULE_LIBRARY"
+      OR _type STREQUAL "EXECUTABLE")
+    get_target_property(_srcs ${tgt} SOURCES)
+    set(_dep_ressources)
+    foreach(_file ${_srcs})
+      list(APPEND _dep_ressources ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
+    endforeach()
+  else()
+    get_target_property(_dep_ressources ${tgt} RESSOURCES)
+  endif()
+
+  set(${files} ${_dep_ressources} PARENT_SCOPE)
+endfunction()

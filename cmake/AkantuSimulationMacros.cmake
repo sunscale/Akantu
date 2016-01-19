@@ -131,9 +131,9 @@ function(_add_akantu_simulation simulation_name)
     endforeach()
 
     foreach(_dep ${_simulation_DEPENDS})
-      get_target_property(_dep_in_ressources ${_dep} RESSOURCES)
-      if(_dep_in_ressources)
-        list(APPEND _simulation_files "${_dep_in_ressources}")
+      get_target_list_of_associated_files(${_dep} _dep_ressources)
+      if(_dep_ressources)
+        list(APPEND _simulation_files "${_dep_ressources}")
       endif()
     endforeach()
 

@@ -31,7 +31,6 @@
 #===============================================================================
 
 #===============================================================================
-add_mesh(parallel_2d_mesh square_2d.geo 2 1)
 register_example(bernoulli_beam_2_exemple
   SOURCES bernoulli_beam_2_exemple.cc
-  DEPENDS parallel_2d_mesh)
+  )

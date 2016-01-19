@@ -348,6 +348,7 @@ package_add_files_to_package(
   cmake/AkantuConfig.cmake.in
   cmake/AkantuConfigVersion.cmake.in
   cmake/AkantuCPack.cmake
+  cmake/AkantuCPackMacros.cmake
   cmake/AkantuInstall.cmake
   cmake/AkantuMacros.cmake
   cmake/AkantuPackagesSystem.cmake

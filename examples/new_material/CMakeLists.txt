@@ -37,6 +37,7 @@ register_example(new_local_material
   SOURCES
     local_material_damage.cc
     local_material_damage.hh
+    local_material_damage_inline_impl.hh
     new_local_material.cc
   DEPENDS
     new_local_material_barre_trou_mesh

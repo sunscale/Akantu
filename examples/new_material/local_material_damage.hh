@@ -120,7 +120,7 @@ private:
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-#include "local_material_damage_inline_impl.cc"
+#include "local_material_damage_inline_impl.hh"
 
 __END_AKANTU__
 

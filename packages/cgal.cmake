@@ -71,3 +71,5 @@ package_declare_documentation(CGAL
   ""
   "CGAL checks with an assertion that the compilation flag \\shellcode{-frounding-math} is activated, which forbids the use of Valgrind on any code compilated with the package."
   )
+
+package_set_package_system_dependency(CGAL deb-src "libcgal-dev >= 4.5")

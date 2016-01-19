@@ -34,6 +34,6 @@
 add_mesh(static_mesh square.geo 2 2)
 register_example(static
   SOURCES static.cc
-  DEPENDS static static_mesh
+  DEPENDS static_mesh
   FILES_TO_COPY material.dat
   )

@@ -126,7 +126,6 @@ macro(add_test_tree dir)
     include(CTest)
     mark_as_advanced(BUILD_TESTING)
 
-    package_set_project_variable(TESTS_EXCLUDE_FILES "")
 
     set(_akantu_current_parent_test ${dir} CACHE INTERNAL "Current test folder" FORCE)
     set(_akantu_${dir}_tests_count 0 CACHE INTERNAL "" FORCE)
@@ -139,13 +138,15 @@ macro(add_test_tree dir)
     foreach(_dir ${_test_dirs})
       add_subdirectory(${_dir})
     endforeach()
-  else()
-    package_set_project_variable(TESTS_EXCLUDE_FILES "${CMAKE_CURRENT_BINARY_DIR}/${dir}")
   endif()
 endmacro()
 
 # ==============================================================================
 function(add_akantu_test dir desc)
+  if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
+    return()
+  endif()
+
   set(_my_parent_dir ${_akantu_current_parent_test})
 
   # initialize variables
@@ -254,27 +255,6 @@ function(register_test test_name)
     string(TOUPPER ${_akantu_current_parent_test} _u_parent)
 
     if(AKANTU_BUILD_${_u_parent} OR AKANTU_BUILD_ALL_TESTS)
-      # add the different dependencies (meshes, local libraries, ...)
-      foreach(_dep ${_register_test_DEPENDS})
-        get_target_property(_dep_in_ressources ${_dep} RESSOURCES)
-
-        if(_dep_in_ressources)
-          list(APPEND _test_all_files "${_dep_in_ressources}")
-        endif()
-      endforeach()
-
-      # add the source files in the list of all files
-      set(_test_all_files)
-      foreach(_file ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS}
-          ${_register_test_EXTRA_FILES} ${_register_test_SOURCES} ${_register_test_SCRIPT}
-          ${_register_test_POSTPROCESS} ${_register_test_FILES_TO_COPY})
-        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
-          list(APPEND _test_all_files "${_file}")
-        else()
-          message("The file \"${_file}\" registred by the test \"${test_name}\" does not exists")
-        endif()
-      endforeach()
-
       if(_compile_source)
          # get the include directories for sources in activated directories
         package_get_all_include_directories(
@@ -342,7 +322,6 @@ function(register_test test_name)
         list(APPEND _arguments -e "${_register_test_SCRIPT}")
       elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
         file(COPY ${test_name}.sh DESTINATION .)
-        list(APPEND _test_all_files "${test_name}.sh")
         list(APPEND _arguments -e "${test_name}.sh")
       else()
         list(APPEND _arguments -e "${test_name}")
@@ -362,7 +341,6 @@ function(register_test test_name)
 
       if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.verified")
         list(APPEND _arguments -r "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.verified")
-        list(APPEND _test_all_files "${test_name}.verified")
       endif()
 
       string(REPLACE ";" " " _command "${_arguments}")
@@ -372,16 +350,50 @@ function(register_test test_name)
 
       # add the executable as a dependency of the run
       set_tests_properties(${test_name}_run PROPERTIES DEPENDS ${test_name})
-
-      # clean the list of all files for this test and add them in the total list
-      package_get_name(${_register_test_PACKAGE} _pkg_name)
-      foreach(_file ${_test_all_files})
-        get_filename_component(_full ${_file} ABSOLUTE)
-        file(RELATIVE_PATH __file ${PROJECT_SOURCE_DIR} ${_full})
-        list(APPEND _tmp "${__file}")
-      endforeach()
-
-      _package_add_to_variable(TESTS_FILES ${_pkg_name} ${_tmp})
     endif()
   endif()
+
+  set(_test_all_files)
+  # add the source files in the list of all files
+  foreach(_file ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS}
+      ${_register_test_EXTRA_FILES} ${_register_test_SOURCES} ${_register_test_SCRIPT}
+      ${_register_test_POSTPROCESS} ${_register_test_FILES_TO_COPY})
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
+      list(APPEND _test_all_files "${_file}")
+    else()
+      message("The file \"${_file}\" registred by the test \"${test_name}\" does not exists")
+    endif()
+  endforeach()
+
+  # add the different dependencies files (meshes, local libraries, ...)
+  foreach(_dep ${_register_test_DEPENDS})
+    get_target_list_of_associated_files(${_dep} _dep_ressources)
+    if(_dep_ressources)
+      list(APPEND _test_all_files "${_dep_ressources}")
+    endif()
+    message("DEPENDS: ${_dep} - ${_dep_ressources}")
+  endforeach()
+
+  # add estra files to the list of files referenced by a given test
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
+    list(APPEND _test_all_files "${test_name}.sh")
+  endif()
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.verified")
+    list(APPEND _test_all_files "${test_name}.sh")
+  endif()
+  if(_register_test_SCRIPT)
+    list(APPEND _test_all_files "${_register_test_SCRIPT}")
+  endif()
+
+  # clean the list of all files for this test and add them in the total list
+  foreach(_file ${_test_all_files})
+    get_filename_component(_full ${_file} ABSOLUTE)
+    file(RELATIVE_PATH __file ${PROJECT_SOURCE_DIR} ${_full})
+    list(APPEND _tmp "${__file}")
+  endforeach()
+
+  foreach(_pkg ${_register_test_PACKAGE})
+    package_get_name(${_pkg} _pkg_name)
+    _package_add_to_variable(TESTS_FILES ${_pkg_name} ${_tmp})
+  endforeach()
 endfunction()

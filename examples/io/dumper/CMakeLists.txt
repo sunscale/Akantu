@@ -31,7 +31,7 @@
 #
 #===============================================================================
 
-add_mesh(swiss_train swiss_train.geo 2 1)
+add_mesh(swiss_train_mesh swiss_train.geo 2 1)
 
 add_library(locomotive_tools
   locomotive_tools.cc
@@ -43,12 +43,12 @@ target_include_directories(locomotive_tools PRIVATE ${AKANTU_INCLUDE_DIRS})
 register_example(dumper_low_level
   SOURCES dumper_low_level.cc
   USE_PACKAGES IOHelper
-  DEPENDS swiss_train locomotive_tools
+  DEPENDS swiss_train_mesh locomotive_tools
   )
 
 register_example(dumpable_interface
   SOURCES dumpable_interface.cc
   USE_PACKAGES IOHelper
-  DEPENDS swiss_train locomotive_tools
+  DEPENDS swiss_train_mesh locomotive_tools
   )
 

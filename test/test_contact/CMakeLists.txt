@@ -40,8 +40,7 @@ register_test(test_hertz_2D
   PACKAGE contact
   )
 
-add_mesh(hertz_3D_mesh_test hertz_3D.geo 3 1)
-
+#add_mesh(hertz_3D_mesh_test hertz_3D.geo 3 1)
 register_test(test_hertz_3D
   SOURCES hertz_3D.cc
   FILES_TO_COPY steel.dat hertz_3D.msh

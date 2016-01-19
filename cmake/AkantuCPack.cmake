@@ -32,9 +32,9 @@
 set(PACKAGE_FILE_NAME "akantu" CACHE STRING "Name of package to be generated")
 mark_as_advanced(PACKAGE_FILE_NAME)
 
-#set(CPACK_GENERATOR "DEB;TGZ;TBZ2;STGZ;RPM")
+set(CPACK_SOURCE_GENERATOR "TGZ;TBZ2")
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  set(CPACK_GENERATOR "TGZ")
+  set(CPACK_GENERATOR "TGZ;DEB")
 else()
   set(CPACK_GENERATOR "TGZ;NSIS")
 
@@ -115,6 +115,10 @@ set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
 
 include(AkantuCPackMacros)
 generate_cpack_ignore_list(CPACK_SOURCE_IGNORE_FILES)
+
+foreach(_file ${CPACK_SOURCE_IGNORE_FILES})
+  message("IGNORE ${_file}")
+endforeach()
 
 list(APPEND CPACK_SOURCE_IGNORE_FILES
   "/.*build.*/"  "/CVS/" "/\\\\.svn/" "/\\\\.bzr/" "/\\\\.hg/"

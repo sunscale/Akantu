@@ -142,8 +142,6 @@ register_test(test_solid_mechanics_model_implicit_dynamic_2d
   )
 
 #===============================================================================
-add_mesh(test_pbc_parallel_mesh square_structured.geo 2 1 OUTPUT square_structured.msh)
-
 register_test(test_solid_mechanics_model_bar_traction2d_structured_pbc
   SOURCES test_solid_mechanics_model_bar_traction2d_structured_pbc.cc
   DEPENDS test_bar_traction_2d_mesh_structured1
@@ -152,6 +150,7 @@ register_test(test_solid_mechanics_model_bar_traction2d_structured_pbc
   PACKAGE core
   )
 
+#add_mesh(test_pbc_parallel_mesh square_structured.geo 2 1 OUTPUT square_structured.msh)
 #register_test(test_solid_mechanics_model_pbc_parallel
 #  SOURCES  test_solid_mechanics_model_pbc_parallel.cc
 #  DEPENDS test_pbc_parallel_mesh
