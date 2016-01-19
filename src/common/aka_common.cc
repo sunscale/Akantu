@@ -120,11 +120,13 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
 void finalize() {
   AKANTU_DEBUG_IN();
 
-  if (StaticMemory::isInstantiated())
-    delete &(StaticMemory::getStaticMemory());
   if (StaticCommunicator::isInstantiated()) {
     StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
     delete &comm;
+  }
+
+  if (StaticMemory::isInstantiated()) {
+    delete &(StaticMemory::getStaticMemory());
   }
 
   AKANTU_DEBUG_OUT();

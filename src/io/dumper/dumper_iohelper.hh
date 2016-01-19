@@ -44,9 +44,8 @@
 #define __AKANTU_DUMPER_IOHELPER_HH__
 /* -------------------------------------------------------------------------- */
 
-
 namespace iohelper {
-  class Dumper;
+class Dumper;
 }
 
 __BEGIN_AKANTU__
@@ -54,8 +53,8 @@ __BEGIN_AKANTU__
 UInt getIOHelperType(ElementType type);
 
 namespace dumper {
-  class Field;
-  class VariableBase;
+class Field;
+class VariableBase;
 }
 
 class Mesh;
@@ -73,32 +72,37 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// register a given Mesh for the current dumper
-  virtual void registerMesh(const Mesh & mesh, UInt spatial_dimension = _all_dimensions,
-			    const GhostType & ghost_type = _not_ghost,
-			    const ElementKind & element_kind = _ek_not_defined);
+  virtual void registerMesh(const Mesh & mesh,
+                            UInt spatial_dimension = _all_dimensions,
+                            const GhostType & ghost_type = _not_ghost,
+                            const ElementKind & element_kind = _ek_not_defined);
 
   /// register a filtered Mesh (provided filter lists) for the current dumper
-  virtual void registerFilteredMesh(const Mesh & mesh,
-				    const ElementTypeMapArray<UInt> & elements_filter,
-				    const Array<UInt> & nodes_filter,
-				    UInt spatial_dimension = _all_dimensions,
-				    const GhostType & ghost_type = _not_ghost,
-				    const ElementKind & element_kind = _ek_not_defined);
+  virtual void
+  registerFilteredMesh(const Mesh & mesh,
+                       const ElementTypeMapArray<UInt> & elements_filter,
+                       const Array<UInt> & nodes_filter,
+                       UInt spatial_dimension = _all_dimensions,
+                       const GhostType & ghost_type = _not_ghost,
+                       const ElementKind & element_kind = _ek_not_defined);
 
   /// register a Field object identified by name and provided by pointer
   void registerField(const std::string & field_id, dumper::Field * field);
   /// remove the Field identified by name from managed fields
   void unRegisterField(const std::string & field_id);
   /// register a VariableBase object identified by name and provided by pointer
-  void registerVariable(const std::string & variable_id, dumper::VariableBase * variable);
+  void registerVariable(const std::string & variable_id,
+                        dumper::VariableBase * variable);
   /// remove a VariableBase identified by name from managed fields
   void unRegisterVariable(const std::string & variable_id);
 
-  /// request dump: this calls IOHelper dump routine 
+  /// request dump: this calls IOHelper dump routine
   virtual void dump();
-  /// request dump: this first set the current step and then calls IOHelper dump routine 
+  /// request dump: this first set the current step and then calls IOHelper dump
+  /// routine
   virtual void dump(UInt step);
-  /// request dump: this first set the current step and current time and then calls IOHelper dump routine 
+  /// request dump: this first set the current step and current time and then
+  /// calls IOHelper dump routine
   virtual void dump(Real current_time, UInt step);
   /// set the parallel context for IOHeper
   virtual void setParallelContext(bool is_parallel);
@@ -111,7 +115,6 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// direct access to the iohelper::Dumper object
   AKANTU_GET_MACRO(Dumper, *dumper, iohelper::Dumper &)
 
@@ -119,11 +122,9 @@ public:
   void setTimeStep(Real time_step);
 
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Variable wrapper */
-  template<typename T, bool is_scal = is_scalar<T>::value>
-  class Variable;
+  template <typename T, bool is_scal = is_scalar<T>::value> class Variable;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

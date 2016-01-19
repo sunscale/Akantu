@@ -41,21 +41,17 @@ __BEGIN_AKANTU__
 SolverOptions _solver_no_options(true);
 
 /* -------------------------------------------------------------------------- */
-Solver::Solver(SparseMatrix & matrix,
-	       const ID & id,
-	       const MemoryID & memory_id) :
-  Memory(id, memory_id), StaticSolverEventHandler(),
-  matrix(&matrix),
-  is_matrix_allocated(false),
-  mesh(NULL),
-  communicator(StaticCommunicator::getStaticCommunicator()),
-  solution(NULL),
-  synch_registry(NULL) {
+Solver::Solver(SparseMatrix & matrix, const ID & id, const MemoryID & memory_id)
+    : Memory(id, memory_id), StaticSolverEventHandler(), matrix(&matrix),
+      is_matrix_allocated(false), mesh(NULL),
+      communicator(StaticCommunicator::getStaticCommunicator()), solution(NULL),
+      synch_registry(NULL) {
   AKANTU_DEBUG_IN();
   StaticSolver::getStaticSolver().registerEventHandler(*this);
-  //createSynchronizerRegistry();
+  // createSynchronizerRegistry();
   this->synch_registry = new SynchronizerRegistry(*this);
-  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(), _gst_solver_solution);
+  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(),
+                                       _gst_solver_solution);
 
   AKANTU_DEBUG_OUT();
 }
@@ -74,17 +70,17 @@ Solver::~Solver() {
 void Solver::beforeStaticSolverDestroy() {
   AKANTU_DEBUG_IN();
 
-  try{
+  try {
     this->destroyInternalData();
-  } catch(...) {}
+  } catch (...) {
+  }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void Solver::createSynchronizerRegistry() {
-  //this->synch_registry = new SynchronizerRegistry(this);
+  // this->synch_registry = new SynchronizerRegistry(this);
 }
-
 
 __END_AKANTU__

@@ -34,7 +34,7 @@
 #include "static_communicator_dummy.hh"
 
 #ifdef AKANTU_USE_MPI
-#  include "static_communicator_mpi.hh"
+#include "static_communicator_mpi.hh"
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -47,20 +47,19 @@ StaticCommunicator * StaticCommunicator::static_communicator = NULL;
 UInt CommunicationRequest::counter = 0;
 
 /* -------------------------------------------------------------------------- */
-CommunicationRequest::CommunicationRequest(UInt source, UInt dest) :
-  source(source), destination(dest) {
+CommunicationRequest::CommunicationRequest(UInt source, UInt dest)
+    : source(source), destination(dest) {
   this->id = counter++;
 }
 
 /* -------------------------------------------------------------------------- */
-CommunicationRequest::~CommunicationRequest() {
-
-}
+CommunicationRequest::~CommunicationRequest() {}
 
 /* -------------------------------------------------------------------------- */
 void CommunicationRequest::printself(std::ostream & stream, int indent) const {
   std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
 
   stream << space << "CommunicationRequest [" << std::endl;
   stream << space << " + id          : " << id << std::endl;
@@ -69,44 +68,54 @@ void CommunicationRequest::printself(std::ostream & stream, int indent) const {
   stream << space << "]" << std::endl;
 }
 
-
-
 /* -------------------------------------------------------------------------- */
-StaticCommunicator::StaticCommunicator(int & argc,
-				       char ** & argv,
-				       CommunicatorType type) {
+StaticCommunicator::StaticCommunicator(int & argc, char **& argv,
+                                       CommunicatorType type) {
   real_type = type;
 #ifdef AKANTU_USE_MPI
-    if(type == _communicator_mpi) {
-      real_static_communicator = new StaticCommunicatorMPI(argc, argv);
-    } else {
+  if (type == _communicator_mpi) {
+    real_static_communicator = new StaticCommunicatorMPI(argc, argv);
+  } else {
 #endif
-      real_static_communicator = new StaticCommunicatorDummy(argc, argv);
+    real_static_communicator = new StaticCommunicatorDummy(argc, argv);
 #ifdef AKANTU_USE_MPI
-    }
+  }
 #endif
 }
 
 /* -------------------------------------------------------------------------- */
-StaticCommunicator & StaticCommunicator::getStaticCommunicator(CommunicatorType type) {
+StaticCommunicator::~StaticCommunicator() {
+  FinalizeCommunicatorEvent * event = new FinalizeCommunicatorEvent(*this);
+  this->sendEvent(*event);
+
+  this->barrier();
+  delete event;
+  delete real_static_communicator;
+  is_instantiated = false;
+  StaticCommunicator::static_communicator = NULL;
+}
+
+/* -------------------------------------------------------------------------- */
+StaticCommunicator &
+StaticCommunicator::getStaticCommunicator(CommunicatorType type) {
   AKANTU_DEBUG_IN();
 
   if (!static_communicator) {
     int nb_args = 0;
     char ** null;
     static_communicator = new StaticCommunicator(nb_args, null, type);
+    is_instantiated = true;
   }
 
-  is_instantiated = true;
 
   AKANTU_DEBUG_OUT();
   return *static_communicator;
 }
 
 /* -------------------------------------------------------------------------- */
-StaticCommunicator & StaticCommunicator::getStaticCommunicator(int & argc,
-							       char ** & argv,
-  							       CommunicatorType type) {
+StaticCommunicator &
+StaticCommunicator::getStaticCommunicator(int & argc, char **& argv,
+                                          CommunicatorType type) {
   if (!static_communicator)
     static_communicator = new StaticCommunicator(argc, argv, type);
 

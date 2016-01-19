@@ -47,9 +47,8 @@ public:
     _master_slave_distributed
   };
 
-  SolverMumpsOptions(ParallelMethod parallel_method = _fully_distributed) :
-    SolverOptions(),
-    parallel_method(parallel_method) { }
+  SolverMumpsOptions(ParallelMethod parallel_method = _fully_distributed)
+      : SolverOptions(), parallel_method(parallel_method) {}
 
 private:
   friend class SolverMumps;
@@ -61,10 +60,8 @@ class SolverMumps : public Solver {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  SolverMumps(SparseMatrix & sparse_matrix,
-	      const ID & id = "solver_mumps",
-	      const MemoryID & memory_id = 0);
+  SolverMumps(SparseMatrix & sparse_matrix, const ID & id = "solver_mumps",
+              const MemoryID & memory_id = 0);
 
   virtual ~SolverMumps();
 
@@ -72,7 +69,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// build the profile and do the analysis part
   virtual void initialize(SolverOptions & options = _solver_no_options);
 
@@ -107,20 +103,15 @@ private:
   /* ------------------------------------------------------------------------ */
 private:
   /// access the control variable
-  inline Int & icntl(UInt i) {
-    return mumps_data.icntl[i - 1];
-  }
+  inline Int & icntl(UInt i) { return mumps_data.icntl[i - 1]; }
 
   /// access the results info
-  inline Int & info(UInt i) {
-    return mumps_data.info[i - 1];
-  }
+  inline Int & info(UInt i) { return mumps_data.info[i - 1]; }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// mumps data
   DMUMPS_STRUC_C mumps_data;
 
@@ -148,7 +139,6 @@ private:
     _smj_destroy = -2
   };
 };
-
 
 __END_AKANTU__
 

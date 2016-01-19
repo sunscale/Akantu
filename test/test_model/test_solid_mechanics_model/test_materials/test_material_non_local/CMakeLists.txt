@@ -45,7 +45,7 @@ register_test(test_material_damage_non_local
 
 
 register_test(test_material_non_local
-  SOURCES test_material_non_local.cc custom_non_local_test_material.cc
+  SOURCES test_material_non_local.cc custom_non_local_test_material.cc custom_non_local_test_material.hh
   DEPENDS test_material_non_local_mesh
   FILES_TO_COPY material.dat
   PACKAGE damage_non_local

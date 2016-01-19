@@ -53,27 +53,25 @@ __BEGIN_AKANTU__
 class SolverOptions {
 public:
   SolverOptions(bool no_option = false) // : no_option(no_option)
-  { }
+  {}
 
   virtual ~SolverOptions() {}
 
 private:
-  //bool no_option;
+  // bool no_option;
 };
 
 extern SolverOptions _solver_no_options;
 
 class Solver : protected Memory,
-               public StaticSolverEventHandler, 
-	       public DataAccessor {
+               public StaticSolverEventHandler,
+               public DataAccessor {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  Solver(SparseMatrix & matrix,
-	 const ID & id = "solver",
-	 const MemoryID & memory_id = 0);
+  Solver(SparseMatrix & matrix, const ID & id = "solver",
+         const MemoryID & memory_id = 0);
 
   virtual ~Solver();
 
@@ -81,14 +79,13 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// initialize the solver
   virtual void initialize(SolverOptions & options = _solver_no_options) = 0;
 
-  virtual void setOperators() {};
-  virtual void analysis() {};
+  virtual void setOperators(){};
+  virtual void analysis(){};
 
-  virtual void factorize() {};
+  virtual void factorize(){};
 
   /// solve
   virtual void solve(Array<Real> & solution) = 0;
@@ -100,7 +97,7 @@ public:
   //  virtual void printself(std::ostream & stream, int indent = 0) const;
 
 protected:
-  virtual void destroyInternalData() {};
+  virtual void destroyInternalData(){};
 
 public:
   virtual void beforeStaticSolverDestroy();
@@ -110,30 +107,27 @@ public:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  inline virtual UInt getNbDataForDOFs(const Array <UInt> & dofs,
-					   SynchronizationTag tag) const;
+  inline virtual UInt getNbDataForDOFs(const Array<UInt> & dofs,
+                                       SynchronizationTag tag) const;
 
   inline virtual void packDOFData(CommunicationBuffer & buffer,
-			  const Array<UInt> & dofs,
-			  SynchronizationTag tag) const;
+                                  const Array<UInt> & dofs,
+                                  SynchronizationTag tag) const;
 
   inline virtual void unpackDOFData(CommunicationBuffer & buffer,
-			    const Array<UInt> & dofs,
-			    SynchronizationTag tag);
+                                    const Array<UInt> & dofs,
+                                    SynchronizationTag tag);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   AKANTU_GET_MACRO(RHS, *rhs, Array<Real> &);
-
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// the matrix
   SparseMatrix * matrix;
 
@@ -154,7 +148,6 @@ protected:
 
   /// synchronizer registry
   SynchronizerRegistry * synch_registry;
-
 };
 
 /* -------------------------------------------------------------------------- */

@@ -42,7 +42,6 @@
 /* -------------------------------------------------------------------------- */
 #include <vector>
 
-
 __BEGIN_AKANTU__
 
 class MPITypeWrapper;
@@ -53,7 +52,7 @@ class StaticCommunicatorMPI : public RealStaticCommunicator {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  StaticCommunicatorMPI(int & argc, char ** & argv);
+  StaticCommunicatorMPI(int & argc, char **& argv);
 
   virtual ~StaticCommunicatorMPI();
 
@@ -61,38 +60,38 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  template <typename T> void send(T * buffer, Int size, Int receiver, Int tag);
+  template <typename T> void receive(T * buffer, Int size, Int sender, Int tag);
 
-  template<typename T> void send   (T * buffer, Int size, Int receiver, Int tag);
-  template<typename T> void receive(T * buffer, Int size, Int sender,   Int tag);
+  template <typename T>
+  CommunicationRequest * asyncSend(T * buffer, Int size, Int receiver, Int tag);
+  template <typename T>
+  CommunicationRequest * asyncReceive(T * buffer, Int size, Int sender,
+                                      Int tag);
 
-  template<typename T> CommunicationRequest * asyncSend   (T * buffer,   Int size,
-							   Int receiver, Int tag);
-  template<typename T> CommunicationRequest * asyncReceive(T * buffer,   Int size,
-							   Int sender,   Int tag);
+  template <typename T>
+  void probe(Int sender, Int tag, CommunicationStatus & status);
 
-  template<typename T> void probe(Int sender, Int tag,
-				  CommunicationStatus & status);
+  template <typename T> void allGather(T * values, int nb_values);
+  template <typename T> void allGatherV(T * values, int * nb_values);
 
-  template<typename T> void allGather (T * values, int nb_values);
-  template<typename T> void allGatherV(T * values, int * nb_values);
+  template <typename T> void gather(T * values, int nb_values, int root);
+  template <typename T> void gatherV(T * values, int * nb_values, int root);
 
-  template<typename T> void gather (T * values, int nb_values, int root);
-  template<typename T> void gatherV(T * values, int * nb_values, int root);
-
-  template<typename T> void broadcast(T * values, int nb_values, int root);
+  template <typename T> void broadcast(T * values, int nb_values, int root);
 
   bool testRequest(CommunicationRequest * request);
 
-  void wait   (CommunicationRequest * request);
+  void wait(CommunicationRequest * request);
   void waitAll(std::vector<CommunicationRequest *> & requests);
 
   void barrier();
 
-  template<typename T> void reduce(T * values, int nb_values,
-				   const SynchronizerOperation & op,
-				   int root);
-  template<typename T> void allReduce(T * values, int nb_values,
-				      const SynchronizerOperation & op);
+  template <typename T>
+  void reduce(T * values, int nb_values, const SynchronizerOperation & op,
+              int root);
+  template <typename T>
+  void allReduce(T * values, int nb_values, const SynchronizerOperation & op);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -115,8 +114,8 @@ private:
   friend class MPITypeWrapper;
 
   MPITypeWrapper * mpi_data;
+  bool is_externaly_initialized;
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

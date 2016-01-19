@@ -75,12 +75,18 @@ StaticCommunicatorMPI::StaticCommunicatorMPI(int & argc, char **& argv)
     MPI_Init(&argc, &argv);
   }
 
+  this->is_externaly_initialized = is_initialized;
+
   mpi_data = new MPITypeWrapper(*this);
   mpi_data->setMPICommunicator(MPI_COMM_WORLD);
 }
 
 /* -------------------------------------------------------------------------- */
-StaticCommunicatorMPI::~StaticCommunicatorMPI() { MPI_Finalize(); }
+StaticCommunicatorMPI::~StaticCommunicatorMPI() {
+  if (!this->is_externaly_initialized) {
+    MPI_Finalize();
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
