@@ -35,7 +35,7 @@
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
   UInt spatial_dimension = 3;
@@ -51,9 +51,11 @@ int main(int argc, char *argv[]) {
     mesh.read("mesh.msh");
     MeshPartitionScotch partition(mesh, spatial_dimension);
     partition.partitionate(psize);
-    dist = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, &partition);
+    dist = DistributedSynchronizer::createDistributedSynchronizerMesh(
+        mesh, &partition);
   } else {
-    dist = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
+    dist =
+        DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
 
   // compute the node types for each segment
@@ -65,42 +67,41 @@ int main(int argc, char *argv[]) {
   UInt nb_segments = 0;
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end();
-       ++gt) {
+       gt != ghost_type_t::end(); ++gt) {
     GhostType ghost_type = *gt;
 
-    const Array<Int> & segment_to_nodetype = mesh_facets.getData<Int>("segment_to_nodetype",
-								      _segment_2, ghost_type);
+    const Array<Int> & segment_to_nodetype =
+        mesh_facets.getData<Int>("segment_to_nodetype", _segment_2, ghost_type);
 
     // count the number of segments per node type
     for (UInt s = 0; s < segment_to_nodetype.getSize(); ++s) {
-      if (nb_facets_per_nodetype.find(segment_to_nodetype(s)) == nb_facets_per_nodetype.end())
-	nb_facets_per_nodetype[segment_to_nodetype(s)] = 1;
+      if (nb_facets_per_nodetype.find(segment_to_nodetype(s)) ==
+          nb_facets_per_nodetype.end())
+        nb_facets_per_nodetype[segment_to_nodetype(s)] = 1;
       else
-	++nb_facets_per_nodetype[segment_to_nodetype(s)];
+        ++nb_facets_per_nodetype[segment_to_nodetype(s)];
     }
     nb_segments += segment_to_nodetype.getSize();
   }
-
 
   // checking the solution
   if (nb_segments != 24)
     AKANTU_DEBUG_ERROR("The number of segments is wrong");
 
   if (prank == 0) {
-    if (nb_facets_per_nodetype[-1] != 3 ||
-	nb_facets_per_nodetype[-2] != 9 ||
-	nb_facets_per_nodetype[-3] != 12)
-      AKANTU_DEBUG_ERROR("The segments of processor 0 have the wrong node type");
+    if (nb_facets_per_nodetype[-1] != 3 || nb_facets_per_nodetype[-2] != 9 ||
+        nb_facets_per_nodetype[-3] != 12)
+      AKANTU_DEBUG_ERROR(
+          "The segments of processor 0 have the wrong node type");
 
     if (nb_facets_per_nodetype.size() > 3)
       AKANTU_DEBUG_ERROR("Processor 0 cannot have any slave segment");
   }
 
-  if (prank == psize - 1 && nb_facets_per_nodetype.find(-2) != nb_facets_per_nodetype.end())
+  if (prank == psize - 1 &&
+      nb_facets_per_nodetype.find(-2) != nb_facets_per_nodetype.end())
     AKANTU_DEBUG_ERROR("The last processor must not have any master facets");
 
   finalize();
   return 0;
 }
-

@@ -65,7 +65,7 @@ register_test(test_material_orthotropic
   DEPENDS test_material_orthotropic_square_mesh
   FILES_TO_COPY orthotropic.dat
   DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
+  PACKAGE core lapack
   )
 
 #===============================================================================

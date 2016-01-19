@@ -263,14 +263,15 @@ setup(name='akantu',
 ")
 
   add_custom_target(_akantu ALL
-    COMMAND ${PYTHON_EXECUTABLE} ./setup.py ${_quiet} --no-user-cfg build_ext -b build
+    COMMAND ${PYTHON_EXECUTABLE} ./setup.py ${_quiet} --no-user-cfg build_ext -inplace
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS ${AKANTU_SWIG_WRAPPERS_CPP} akantu
     COMMENT "Building akantu's python interface"
     )
 
   set_directory_properties(PROPERTIES
-    ADDITIONAL_MAKE_CLEAN_FILES ${CMAKE_CURRENT_BINARY_DIR}/build)
+    ADDITIONAL_MAKE_CLEAN_FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/_akantu${CMAKE_SHARED_MODULE_SUFFIX})
 
   # add_library(_akantu MODULE ${AKANTU_SWIG_WRAPPERS_CPP})
   # target_link_libraries(_akantu akantu)
