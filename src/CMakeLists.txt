@@ -48,6 +48,10 @@ package_get_all_external_informations(
   AKANTU_EXTERNAL_LIBRARIES
 )
 
+package_get_all_compilation_flags(CXX _cxx_flags)
+set(AKANTU_EXTRA_CXX_FLAGS "${_cxx_flags}" CACHE STRING "Extra flags defined by loaded packages" FORCE)
+mark_as_advanced(AKANTU_EXTRA_CXX_FLAGS)
+
 #===========================================================================
 # header for blas/lapack (any other fortran libraries)
 #===========================================================================
@@ -126,9 +130,6 @@ add_library(akantu ${AKANTU_LIBRARY_SRCS})
 
 # the repetition is ugly but works for static libraries
 target_link_libraries(akantu  ${AKANTU_EXTERNAL_LIBRARIES} ${AKANTU_EXTERNAL_LIBRARIES})
-
-package_get_all_compilation_flags(CXX _cxx_flags)
-set(AKANTU_CXX_COMPILE_FLAGS "_cxx_flags" CACHE STRING "Extra flags defined by loaded packages" FORCE)
 
 set_target_properties(akantu
   PROPERTIES

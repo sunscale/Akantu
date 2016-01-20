@@ -61,6 +61,7 @@ function(_add_akantu_simulation simulation_name)
     )
 
   set(_deps_OK TRUE)
+
   if(_simulation_USE_PACKAGES)
     foreach(_pkg ${_simulation_USE_PACKAGES})
       package_is_activated(${_pkg} _activated)
@@ -81,6 +82,18 @@ function(_add_akantu_simulation simulation_name)
     endforeach()
   endif()
 
+  package_is_activated(CORE_CXX11 _activated)
+  if(_activated)
+    package_get_compile_flags(CORE_CXX11 CXX _flags)
+    list(APPEND _simulation_COMPILE_FLAGS "${_flags}")
+  endif()
+
+  package_get_compile_flags(BOOST CXX _flags)
+  list(APPEND _simulation_COMPILE_FLAGS "${_flags}")
+
+  string(REPLACE ";" " " _tmp_flags "${_simulation_COMPILE_FLAGS}")
+  string(REGEX REPLACE " +" " " _simulation_COMPILE_FLAGS "${_tmp_flags}")
+
   if(_deps_OK)
     add_executable(${simulation_name}
       ${_simulation_UNPARSED_ARGUMENTS} ${_simulation_SOURCES})
@@ -100,9 +113,14 @@ function(_add_akantu_simulation simulation_name)
       endforeach()
     endif()
 
-    if(_simulation_COMPILE_OPTIONS OR _simulation_COMPILE_FLAGS)
+    if(_simulation_COMPILE_OPTIONS)
       set_target_properties(${simulation_name}
-        PROPERTIES COMPILE_FLAGS "${_simulation_COMPILE_FLAGS} ${_simulation_COMPILE_OPTIONS}")
+        PROPERTIES COMPILE_DEFINITIONS "${_simulation_COMPILE_OPTIONS}")
+    endif()
+
+    if(_simulation_COMPILE_FLAGS)
+      set_target_properties(${simulation_name}
+        PROPERTIES COMPILE_FLAGS "${_simulation_COMPILE_FLAGS}")
     endif()
 
     # copy the needed files to the build folder

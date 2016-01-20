@@ -289,6 +289,10 @@ function(register_test test_name)
           set_target_properties(${test_name}
             PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
         endif()
+        if(AKANTU_EXTRA_CXX_FLAGS)
+          set_target_properties(${test_name}
+            PROPERTIES COMPILE_FLAGS "${AKANTU_EXTRA_CXX_FLAGS}")
+        endif()
       else()
         if(_register_test_UNPARSED_ARGUMENTS AND NOT _register_test_SCRIPT)
           set(_register_test_SCRIPT ${_register_test_UNPARSED_ARGUMENTS})
