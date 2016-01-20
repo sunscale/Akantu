@@ -101,7 +101,7 @@ function(_add_akantu_simulation simulation_name)
     endif()
 
     if(_simulation_COMPILE_OPTIONS OR _simulation_COMPILE_FLAGS)
-      set_target_properties(${test_
+      set_target_properties(${simulation_name}
         PROPERTIES COMPILE_FLAGS "${_simulation_COMPILE_FLAGS} ${_simulation_COMPILE_OPTIONS}")
     endif()
 
