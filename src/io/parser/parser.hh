@@ -124,7 +124,8 @@ public:
   // template <typename T> inline operator Matrix<T>() const;
 
   /// Print parameter info in stream
-  void printself(std::ostream & stream, unsigned int indent = 0) const {
+  void printself(std::ostream & stream,
+                 __attribute__((unused)) unsigned int indent = 0) const {
     stream << name << ": " << value << " (" << dbg_filename << ":" << dbg_line
            << ":" << dbg_column << ")";
   }

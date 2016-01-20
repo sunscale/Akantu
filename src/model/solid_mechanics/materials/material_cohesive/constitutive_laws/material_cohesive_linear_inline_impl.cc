@@ -73,7 +73,7 @@ template<UInt dim>
 inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
     Vector<Real> & traction,
     Real & delta_max,
-    const Real & delta_max_prev,
+    __attribute__((unused)) const Real & delta_max_prev,
     const Real & delta_c,
     const Vector<Real> & insertion_stress,
     const Real & sigma_c,

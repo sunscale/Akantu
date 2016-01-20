@@ -40,8 +40,8 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 DumperText::DumperText(const std::string & basename,
-		       iohelper::TextDumpMode mode,
-		       bool parallel) : DumperIOHelper() {
+                       iohelper::TextDumpMode mode, bool parallel)
+    : DumperIOHelper() {
   AKANTU_DEBUG_IN();
 
   iohelper::DumperText * dumper_text = new iohelper::DumperText(mode);
@@ -55,45 +55,39 @@ DumperText::DumperText(const std::string & basename,
 
 /* -------------------------------------------------------------------------- */
 void DumperText::registerMesh(const Mesh & mesh,
-			      UInt spatial_dimension,
-			      const GhostType & ghost_type,
-			      const ElementKind & element_kind) {
+                              __attribute__((unused)) UInt spatial_dimension,
+                              __attribute__((unused))
+                              const GhostType & ghost_type,
+                              __attribute__((unused))
+                              const ElementKind & element_kind) {
 
-  registerField("position",
-		new dumper::NodalField<Real>(mesh.getNodes()));
+  registerField("position", new dumper::NodalField<Real>(mesh.getNodes()));
 
   // in parallel we need node type
   UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
   if (nb_proc > 1) {
     registerField("nodes_type",
-		  new dumper::NodalField<Int>(mesh.getNodesType()));
+                  new dumper::NodalField<Int>(mesh.getNodesType()));
   }
 }
 
 /* -------------------------------------------------------------------------- */
-void DumperText::registerFilteredMesh(const Mesh & mesh,
-				      const ElementTypeMapArray<UInt> & elements_filter,
-				      const Array<UInt> & nodes_filter,
-				      UInt spatial_dimension,
-				      const GhostType & ghost_type,
-				      const ElementKind & element_kind) {
+void DumperText::registerFilteredMesh(
+    const Mesh & mesh,
+    __attribute__((unused)) const ElementTypeMapArray<UInt> & elements_filter,
+    const Array<UInt> & nodes_filter,
+    __attribute__((unused)) UInt spatial_dimension,
+    __attribute__((unused)) const GhostType & ghost_type,
+    __attribute__((unused)) const ElementKind & element_kind) {
 
-  registerField("position",
-		new dumper::NodalField<Real,
-		true>(mesh.getNodes(),
-		      0,
-		      0,
-		      &nodes_filter));
+  registerField("position", new dumper::NodalField<Real, true>(
+                                mesh.getNodes(), 0, 0, &nodes_filter));
 
   // in parallel we need node type
   UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
   if (nb_proc > 1) {
-    registerField("nodes_type",
-		  new dumper::NodalField<Int,
-		  true>(mesh.getNodesType(),
-			0,
-			0,
-			&nodes_filter));
+    registerField("nodes_type", new dumper::NodalField<Int, true>(
+                                    mesh.getNodesType(), 0, 0, &nodes_filter));
   }
 }
 
@@ -102,8 +96,8 @@ void DumperText::setBaseName(const std::string & basename) {
   AKANTU_DEBUG_IN();
 
   DumperIOHelper::setBaseName(basename);
-  static_cast<iohelper::DumperText*>(this->dumper)->setDataSubDirectory(this->filename
-									+ "-DataFiles");
+  static_cast<iohelper::DumperText *>(this->dumper)
+      ->setDataSubDirectory(this->filename + "-DataFiles");
   AKANTU_DEBUG_OUT();
 }
 
@@ -111,7 +105,7 @@ void DumperText::setBaseName(const std::string & basename) {
 void DumperText::setPrecision(UInt prec) {
   AKANTU_DEBUG_IN();
 
-  static_cast<iohelper::DumperText*>(this->dumper)->setPrecision(prec);
+  static_cast<iohelper::DumperText *>(this->dumper)->setPrecision(prec);
 
   AKANTU_DEBUG_OUT();
 }

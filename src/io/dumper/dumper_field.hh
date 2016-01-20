@@ -64,28 +64,38 @@ public:
 #endif
 
   /// set the number of data per item (used for elements fields at the moment)
-  virtual void setNbData(UInt nb_data) { AKANTU_DEBUG_TO_IMPLEMENT(); };
-
-  /// set the number of data per elem (used for elements fields at the moment)
-  virtual void setNbDataPerElem(const ElementTypeMap<UInt> & nb_data) {
+  virtual void setNbData(__attribute__((unused)) UInt nb_data) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   };
 
   /// set the number of data per elem (used for elements fields at the moment)
-  virtual void setNbDataPerElem(UInt nb_data) { AKANTU_DEBUG_TO_IMPLEMENT(); };
+  virtual void setNbDataPerElem(__attribute__((unused))
+                                const ElementTypeMap<UInt> & nb_data) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  };
+
+  /// set the number of data per elem (used for elements fields at the moment)
+  virtual void setNbDataPerElem(__attribute__((unused)) UInt nb_data) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  };
 
   /// get the number of components of the hosted field
   virtual ElementTypeMap<UInt>
-  getNbComponents(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
-                  ElementKind kind = _ek_not_defined) {
+  getNbComponents(__attribute__((unused)) UInt dim = _all_dimensions,
+                  __attribute__((unused)) GhostType ghost_type = _not_ghost,
+                  __attribute__((unused)) ElementKind kind = _ek_not_defined) {
     throw;
   };
 
   /// for connection to a FieldCompute
-  inline virtual Field * connect(FieldComputeProxy & proxy) { throw; };
+  inline virtual Field * connect(__attribute__((unused))
+                                 FieldComputeProxy & proxy) {
+    throw;
+  };
 
   /// for connection to a FieldCompute
-  inline virtual ComputeFunctorInterface * connect(HomogenizerProxy & proxy) {
+  inline virtual ComputeFunctorInterface * connect(__attribute__((unused))
+                                                   HomogenizerProxy & proxy) {
     throw;
   };
 

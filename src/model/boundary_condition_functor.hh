@@ -42,162 +42,150 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 namespace BC {
-  typedef ::akantu::SpacialDirection Axis;
+typedef ::akantu::SpacialDirection Axis;
 
-  struct Functor {
-    enum Type {
-      _dirichlet,
-      _neumann
-    };
+struct Functor {
+  enum Type { _dirichlet, _neumann };
+};
+
+/* ------------------------------------------------------------------------ */
+/* Dirichlet                                                                */
+/* ------------------------------------------------------------------------ */
+namespace Dirichlet {
+  /* ---------------------------------------------------------------------- */
+  class DirichletFunctor : public Functor {
+  protected:
+    DirichletFunctor() : axis(_x) {}
+    DirichletFunctor(Axis ax) : axis(ax) {}
+
+  public:
+    void operator()(__attribute__((unused)) UInt node,
+                    __attribute__((unused)) Vector<bool> & flags,
+                    __attribute__((unused)) Vector<Real> & primal,
+                    __attribute__((unused)) const Vector<Real> & coord) const {
+      AKANTU_DEBUG_TO_IMPLEMENT();
+    }
+
+  public:
+    static const Type type = _dirichlet;
+
+  protected:
+    Axis axis;
   };
 
-  /* ------------------------------------------------------------------------ */
-  /* Dirichlet                                                                */
-  /* ------------------------------------------------------------------------ */
-  namespace Dirichlet {
-    /* ---------------------------------------------------------------------- */
-    class DirichletFunctor : public Functor {
-    protected:
-      DirichletFunctor() : axis(_x) {}
-      DirichletFunctor(Axis ax) : axis(ax) {}
+  /* ---------------------------------------------------------------------- */
+  class FlagOnly : public DirichletFunctor {
+  public:
+    FlagOnly(Axis ax = _x) : DirichletFunctor(ax) {}
 
-    public:
-      void operator()(UInt node,
-		      Vector<bool> & flags,
-		      Vector<Real> & primal,
-		      const Vector<Real> & coord) const {
-	AKANTU_DEBUG_TO_IMPLEMENT();
-      }
+  public:
+    inline void operator()(UInt node, Vector<bool> & flags,
+                           Vector<Real> & primal,
+                           const Vector<Real> & coord) const;
+  };
 
-    public:
-      static const Type type = _dirichlet;
+  /* ---------------------------------------------------------------------- */
+  class FreeBoundary : public DirichletFunctor {
+  public:
+    FreeBoundary(Axis ax = _x) : DirichletFunctor(ax) {}
 
-    protected:
-      Axis axis;
-    };
+  public:
+    inline void operator()(UInt node, Vector<bool> & flags,
+                           Vector<Real> & primal,
+                           const Vector<Real> & coord) const;
+  };
 
-    /* ---------------------------------------------------------------------- */
-    class FlagOnly : public DirichletFunctor {
-    public:
-      FlagOnly(Axis ax = _x) : DirichletFunctor(ax) {}
+  /* ---------------------------------------------------------------------- */
+  class FixedValue : public DirichletFunctor {
+  public:
+    FixedValue(Real val, Axis ax = _x) : DirichletFunctor(ax), value(val) {}
 
-    public:
-      inline void operator()(UInt node,
-			     Vector<bool> & flags,
-			     Vector<Real> & primal,
-			     const Vector<Real> & coord) const;
+  public:
+    inline void operator()(UInt node, Vector<bool> & flags,
+                           Vector<Real> & primal,
+                           const Vector<Real> & coord) const;
 
-    };
+  protected:
+    Real value;
+  };
 
-    /* ---------------------------------------------------------------------- */
-    class FreeBoundary : public DirichletFunctor {
-    public:
-      FreeBoundary(Axis ax = _x) : DirichletFunctor(ax) {}
+  /* ---------------------------------------------------------------------- */
+  class IncrementValue : public DirichletFunctor {
+  public:
+    IncrementValue(Real val, Axis ax = _x) : DirichletFunctor(ax), value(val) {}
 
-    public:
-      inline void operator()(UInt node,
-			     Vector<bool> & flags,
-			     Vector<Real> & primal,
-			     const Vector<Real> & coord) const;
+  public:
+    inline void operator()(UInt node, Vector<bool> & flags,
+                           Vector<Real> & primal,
+                           const Vector<Real> & coord) const;
 
-    };
+    inline void setIncrement(Real val) { this->value = val; }
 
-    /* ---------------------------------------------------------------------- */
-    class FixedValue : public DirichletFunctor {
-    public:
-      FixedValue(Real val, Axis ax = _x) : DirichletFunctor(ax), value(val) {}
+  protected:
+    Real value;
+  };
+} // end namespace Dirichlet
 
-    public:
-      inline void operator()(UInt node,
-			     Vector<bool> & flags,
-			     Vector<Real> & primal,
-			     const Vector<Real> & coord) const;
+/* ------------------------------------------------------------------------ */
+/* Neumann                                                                  */
+/* ------------------------------------------------------------------------ */
+namespace Neumann {
+  /* ---------------------------------------------------------------------- */
+  class NeumannFunctor : public Functor {
 
-    protected:
-      Real value;
-    };
+  protected:
+    NeumannFunctor() {}
 
-    /* ---------------------------------------------------------------------- */
-    class IncrementValue : public DirichletFunctor {
-    public:
-      IncrementValue(Real val, Axis ax = _x) : DirichletFunctor(ax), value(val) {}
+  public:
+    virtual void operator()(const IntegrationPoint & quad_point,
+                            Vector<Real> & dual, const Vector<Real> & coord,
+                            const Vector<Real> & normals) const = 0;
 
-    public:
-      inline void operator()(UInt node,
-			     Vector<bool> & flags,
-			     Vector<Real> & primal,
-			     const Vector<Real> & coord) const;
+    virtual ~NeumannFunctor() {}
 
-      inline void setIncrement(Real val) { this->value = val; }
-    protected:
-      Real value;
-    };
-  } //end namespace Dirichlet
+  public:
+    static const Type type = _neumann;
+  };
 
-  /* ------------------------------------------------------------------------ */
-  /* Neumann                                                                  */
-  /* ------------------------------------------------------------------------ */
-  namespace Neumann {
-    /* ---------------------------------------------------------------------- */
-    class NeumannFunctor : public Functor {
+  /* ---------------------------------------------------------------------- */
+  class FromHigherDim : public NeumannFunctor {
+  public:
+    FromHigherDim(const Matrix<Real> & mat) : bc_data(mat) {}
+    virtual ~FromHigherDim() {}
 
-    protected:
-      NeumannFunctor() {}
-    public:
-      virtual void operator()(const IntegrationPoint & quad_point,
-			     Vector<Real> & dual,
-			     const Vector<Real> & coord,
-			     const Vector<Real> & normals) const = 0;
+  public:
+    inline void operator()(const IntegrationPoint & quad_point,
+                           Vector<Real> & dual, const Vector<Real> & coord,
+                           const Vector<Real> & normals) const;
 
-      virtual ~NeumannFunctor(){}
-    public:
-      static const Type type = _neumann;
-    };
+  protected:
+    Matrix<Real> bc_data;
+  };
 
-    /* ---------------------------------------------------------------------- */
-    class FromHigherDim : public NeumannFunctor {
-    public:
-      FromHigherDim(const Matrix<Real> & mat) : bc_data(mat) {}
-      virtual ~FromHigherDim(){}
+  /* ---------------------------------------------------------------------- */
+  class FromSameDim : public NeumannFunctor {
+  public:
+    FromSameDim(const Vector<Real> & vec) : bc_data(vec) {}
+    virtual ~FromSameDim() {}
 
-    public:
-      inline void operator()(const IntegrationPoint & quad_point,
-			     Vector<Real> & dual,
-			     const Vector<Real> & coord,
-			     const Vector<Real> & normals) const;
+  public:
+    inline void operator()(const IntegrationPoint & quad_point,
+                           Vector<Real> & dual, const Vector<Real> & coord,
+                           const Vector<Real> & normals) const;
 
-    protected:
-      Matrix<Real> bc_data;
-    };
+  protected:
+    Vector<Real> bc_data;
+  };
 
-    /* ---------------------------------------------------------------------- */
-    class FromSameDim : public NeumannFunctor {
-    public:
-      FromSameDim(const Vector<Real> & vec) : bc_data(vec) {}
-      virtual ~FromSameDim(){}
-
-    public:
-      inline void operator()(const IntegrationPoint & quad_point,
-			     Vector<Real> & dual,
-			     const Vector<Real> & coord,
-			     const Vector<Real> & normals) const;
-
-    protected:
-      Vector<Real> bc_data;
-    };
-
-
-
-    /* ---------------------------------------------------------------------- */
-    class FreeBoundary : public NeumannFunctor {
-    public:
-      inline void operator()(const IntegrationPoint & quad_point,
-			     Vector<Real> & dual,
-			     const Vector<Real> & coord,
-			     const Vector<Real> & normals) const;
-    };
-  } //end namespace Neumann
-} //end namespace BC
+  /* ---------------------------------------------------------------------- */
+  class FreeBoundary : public NeumannFunctor {
+  public:
+    inline void operator()(const IntegrationPoint & quad_point,
+                           Vector<Real> & dual, const Vector<Real> & coord,
+                           const Vector<Real> & normals) const;
+  };
+} // end namespace Neumann
+} // end namespace BC
 
 __END_AKANTU__
 

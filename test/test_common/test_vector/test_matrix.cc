@@ -45,7 +45,7 @@
 using namespace akantu;
 
 
-int main(int argc, char *argv[]) {
+int main() {
 
 #define n 4
   UInt nbm = 10000;

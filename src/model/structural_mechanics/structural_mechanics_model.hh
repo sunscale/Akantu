@@ -9,7 +9,8 @@
  * @date creation: Fri Jul 15 2011
  * @date last modification: Wed Apr 22 2015
  *
- * @brief  Particular implementation of the structural elements in the StructuralMechanicsModel
+ * @brief  Particular implementation of the structural elements in the
+ *StructuralMechanicsModel
  *
  * @section LICENSE
  *
@@ -49,11 +50,10 @@
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-  class SparseMatrix;
+class SparseMatrix;
 }
 
 __BEGIN_AKANTU__
-
 
 struct StructuralMaterial {
   Real E;
@@ -68,25 +68,26 @@ struct StructuralMaterial {
 };
 
 struct StructuralMechanicsModelOptions : public ModelOptions {
-  StructuralMechanicsModelOptions(AnalysisMethod analysis_method = _static) :
-    analysis_method(analysis_method)  {}
-    AnalysisMethod analysis_method;
+  StructuralMechanicsModelOptions(AnalysisMethod analysis_method = _static)
+      : analysis_method(analysis_method) {}
+  AnalysisMethod analysis_method;
 };
 
-extern const StructuralMechanicsModelOptions default_structural_mechanics_model_options;
+extern const StructuralMechanicsModelOptions
+    default_structural_mechanics_model_options;
 
 class StructuralMechanicsModel : public Model {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  typedef FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural> MyFEEngineType;
+  typedef FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>
+      MyFEEngineType;
 
   StructuralMechanicsModel(Mesh & mesh,
-			   UInt spatial_dimension = _all_dimensions,
-			   const ID & id = "structural_mechanics_model",
-			   const MemoryID & memory_id = 0);
+                           UInt spatial_dimension = _all_dimensions,
+                           const ID & id = "structural_mechanics_model",
+                           const MemoryID & memory_id = 0);
 
   virtual ~StructuralMechanicsModel();
 
@@ -94,9 +95,9 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// initialize fully the model
-  void initFull(const ModelOptions & options = default_structural_mechanics_model_options);
+  void initFull(const ModelOptions & options =
+                    default_structural_mechanics_model_options);
 
   /// initialize the internal vectors
   void initArrays();
@@ -109,8 +110,7 @@ public:
 
   /// initialize the stuff for the implicit solver
   void initImplicit(bool dynamic = false,
-		    SolverOptions & solver_options = _solver_no_options);
-
+                    SolverOptions & solver_options = _solver_no_options);
 
   /// compute the stresses per elements
   void computeStresses();
@@ -132,11 +132,9 @@ public:
 
   /// solve the system
   void solve();
- 
+
   bool testConvergenceIncrement(Real tolerance);
   bool testConvergenceIncrement(Real tolerance, Real & error);
-
-  virtual void printself(std::ostream & stream, int indent = 0) const {};
 
   void computeRotationMatrix(const ElementType & type);
 
@@ -144,24 +142,22 @@ protected:
   UInt getTangentStiffnessVoigtSize(const ElementType & type);
 
   /// compute Rotation Matrices
-  template<const ElementType type>
-  void computeRotationMatrix(Array<Real> & rotations) {};
+  template <const ElementType type>
+  void computeRotationMatrix(__attribute__((unused)) Array<Real> & rotations){};
 
   /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
-  template<NewmarkBeta::IntegrationSchemeCorrectorType type>
+  template <NewmarkBeta::IntegrationSchemeCorrectorType type>
   void solve(Array<Real> & increment, Real block_val = 1.);
 
- /* ------------------------------------------------------------------------ */
- /* Mass (structural_mechanics_model_mass.cc)                                     */
- /* ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------ */
+  /* Mass (structural_mechanics_model_mass.cc) */
+  /* ------------------------------------------------------------------------ */
 
   /// assemble the mass matrix for either _ghost or _not_ghost elements
   void assembleMass(GhostType ghost_type);
 
   /// computes rho
-  void computeRho(Array<Real> & rho,
-		  ElementType type,
-		  GhostType ghost_type);
+  void computeRho(Array<Real> & rho, ElementType type, GhostType ghost_type);
 
   /// finish the computation of residual to solve in increment
   void updateResidualInternal();
@@ -169,17 +165,13 @@ protected:
   /* ------------------------------------------------------------------------ */
 
 private:
-  template<ElementType type>
-  inline UInt getTangentStiffnessVoigtSize();
+  template <ElementType type> inline UInt getTangentStiffnessVoigtSize();
 
-  template <ElementType type>
-  void assembleStiffnessMatrix();
+  template <ElementType type> void assembleStiffnessMatrix();
 
-  template <ElementType type>
-  void assembleMass();
+  template <ElementType type> void assembleMass();
 
-  template<ElementType type>
-  void computeStressOnQuad();
+  template <ElementType type> void computeStressOnQuad();
 
   template <ElementType type>
   void computeTangentModuli(Array<Real> & tangent_moduli);
@@ -190,32 +182,28 @@ private:
   template <ElementType type>
   void transferNMatrixToSymVoigtNMatrix(Array<Real> & N_matrix);
 
-
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface                                                       */
   /* ------------------------------------------------------------------------ */
 public:
-
   virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
-					       const std::string & group_name,
-					       bool padding_flag);
+                                               const std::string & group_name,
+                                               bool padding_flag);
 
   virtual dumper::Field * createNodalFieldBool(const std::string & field_name,
-					       const std::string & group_name,
-					       bool padding_flag);
+                                               const std::string & group_name,
+                                               bool padding_flag);
 
-
-  virtual dumper::Field * createElementalField(const std::string & field_name, 
-					       const std::string & group_name,
-					       bool padding_flag,
-					       const ElementKind & kind,
-					       const std::string & fe_engine_id = "");
+  virtual dumper::Field *
+  createElementalField(const std::string & field_name,
+                       const std::string & group_name, bool padding_flag,
+                       const ElementKind & kind,
+                       const std::string & fe_engine_id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// set the value of the time step
   void setTimeStep(Real time_step);
 
@@ -226,19 +214,21 @@ public:
   AKANTU_GET_MACRO(Displacement, *displacement_rotation, Array<Real> &);
 
   /// get the StructuralMechanicsModel::velocity vector
-  AKANTU_GET_MACRO(Velocity,        *velocity,               Array<Real> &);
+  AKANTU_GET_MACRO(Velocity, *velocity, Array<Real> &);
 
-  /// get    the    StructuralMechanicsModel::acceleration    vector,   updated    by
+  /// get    the    StructuralMechanicsModel::acceleration    vector,   updated
+  /// by
   /// StructuralMechanicsModel::updateAcceleration
-  AKANTU_GET_MACRO(Acceleration,    *acceleration,           Array<Real> &);
+  AKANTU_GET_MACRO(Acceleration, *acceleration, Array<Real> &);
 
   /// get the StructuralMechanicsModel::force vector (boundary forces)
-  AKANTU_GET_MACRO(Force,        *force_momentum,        Array<Real> &);
+  AKANTU_GET_MACRO(Force, *force_momentum, Array<Real> &);
 
- /// get the StructuralMechanicsModel::residual vector, computed by StructuralMechanicsModel::updateResidual
-  AKANTU_GET_MACRO(Residual,     *residual,        const Array<Real> &);
+  /// get the StructuralMechanicsModel::residual vector, computed by
+  /// StructuralMechanicsModel::updateResidual
+  AKANTU_GET_MACRO(Residual, *residual, const Array<Real> &);
   /// get the StructuralMechanicsModel::boundary vector
-  AKANTU_GET_MACRO(BlockedDOFs,  *blocked_dofs,    Array<bool> &);
+  AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(RotationMatrix, rotation_matrix, Real);
 
@@ -252,10 +242,13 @@ public:
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(Set_ID, set_ID, UInt);
 
-  void addMaterial(StructuralMaterial & material) { materials.push_back(material); }
+  void addMaterial(StructuralMaterial & material) {
+    materials.push_back(material);
+  }
 
   /**
-   * @brief set the StructuralMechanicsModel::increment_flag  to on, the activate the
+   * @brief set the StructuralMechanicsModel::increment_flag  to on, the
+   * activate the
    * update of the StructuralMechanicsModel::increment vector
    */
   void setIncrementFlagOn();
@@ -275,25 +268,22 @@ public:
   /// compute force vector from a function(x,y,momentum) that describe stresses
   template <ElementType type>
   void computeForcesFromFunction(BoundaryFunction in_function,
-				 BoundaryFunctionType function_type);
+                                 BoundaryFunctionType function_type);
 
- /**
-   * solve a step (predictor + convergence loop + corrector) using the
-   * the given convergence method (see akantu::SolveConvergenceMethod)
-   * and the given convergence criteria (see
-   * akantu::SolveConvergenceCriteria)
-   **/
-  template<SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
-  bool solveStep(Real tolerance,
-		 UInt max_iteration = 100);
+  /**
+    * solve a step (predictor + convergence loop + corrector) using the
+    * the given convergence method (see akantu::SolveConvergenceMethod)
+    * and the given convergence criteria (see
+    * akantu::SolveConvergenceCriteria)
+    **/
+  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
+  bool solveStep(Real tolerance, UInt max_iteration = 100);
 
-  template<SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
-  bool solveStep(Real tolerance,
-		 Real & error,
-		 UInt max_iteration = 100);
+  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
+  bool solveStep(Real tolerance, Real & error, UInt max_iteration = 100);
 
   /// test if the system is converged
-  template<SolveConvergenceCriteria criteria>
+  template <SolveConvergenceCriteria criteria>
   bool testConvergence(Real tolerance, Real & error);
 
   /* ------------------------------------------------------------------------ */
@@ -378,10 +368,10 @@ private:
   /// integration scheme of second order used
   IntegrationScheme2ndOrder * integrator;
 
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
   std::vector<StructuralMaterial> materials;
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
@@ -390,12 +380,11 @@ private:
 #include "structural_mechanics_model_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const StructuralMechanicsModel & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const StructuralMechanicsModel & _this) {
   _this.printself(stream);
   return stream;
 }
-
 
 __END_AKANTU__
 

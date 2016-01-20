@@ -30,9 +30,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
 #include <iostream>
-
 
 #include "aka_common.hh"
 #include "aka_csr.hh"
@@ -41,7 +39,7 @@ using namespace akantu;
 
 #define N 1000
 
-int main(int argc, char *argv[]) {
+int main() {
 
   CSR<UInt> csr;
 
@@ -51,7 +49,7 @@ int main(int argc, char *argv[]) {
   csr.clearRows();
 
   for (UInt i = 0; i < N; ++i) {
-    UInt nb_cols(UInt(rand()*double(N)/(RAND_MAX+1.)));
+    UInt nb_cols(UInt(rand() * double(N) / (RAND_MAX + 1.)));
     nb_cols_per_row.push_back(nb_cols);
     for (UInt j = 0; j < nb_cols; ++j) {
       ++csr.rowOffset(i);
@@ -70,11 +68,9 @@ int main(int argc, char *argv[]) {
   }
   csr.endInsertions();
 
-  if(csr.getNbRows() != N) {
+  if (csr.getNbRows() != N) {
     AKANTU_DEBUG_ERROR("The number of rows does not correspond: "
-		       << csr.getNbRows()
-		       << " != "
-		       << N);
+                       << csr.getNbRows() << " != " << N);
   }
 
   for (UInt i = 0; i < csr.getNbRows(); ++i) {
@@ -82,18 +78,17 @@ int main(int argc, char *argv[]) {
     CSR<UInt>::iterator end = csr.end(i);
     UInt nb_cols = nb_cols_per_row[i];
     for (; it != end; ++it) {
-      if(nb_cols != *it) {
-	AKANTU_DEBUG_ERROR("The numbers stored in the row " << i << " are not correct: "
-			   << nb_cols 
-			   << " != "
-			   << *it);
+      if (nb_cols != *it) {
+        AKANTU_DEBUG_ERROR("The numbers stored in the row "
+                           << i << " are not correct: " << nb_cols
+                           << " != " << *it);
       }
       nb_cols--;
     }
 
-    if(nb_cols != 0) {
+    if (nb_cols != 0) {
       AKANTU_DEBUG_ERROR("Not enough columns in the row " << i << ": "
-			 << nb_cols);
+                                                          << nb_cols);
     }
   }
 
@@ -105,19 +100,18 @@ int main(int argc, char *argv[]) {
     UInt j = nb_cols;
 
     for (; it != end; --it) {
-      if((nb_cols - j + 1) != *it) {
-	AKANTU_DEBUG_ERROR("Reverse: The numbers stored in the row " << i << " are not correct: "
-			   << (nb_cols - j + 1)
-			   << " != "
-			   << *it);
+      if ((nb_cols - j + 1) != *it) {
+        AKANTU_DEBUG_ERROR("Reverse: The numbers stored in the row "
+                           << i << " are not correct: " << (nb_cols - j + 1)
+                           << " != " << *it);
       }
       j--;
     }
 
-    if(j != 0) AKANTU_DEBUG_ERROR("Reverse: Not enough columns in the row " << i << ": "
-				  << j);
+    if (j != 0)
+      AKANTU_DEBUG_ERROR("Reverse: Not enough columns in the row " << i << ": "
+                                                                   << j);
   }
 
- 
   return EXIT_SUCCESS;
 }

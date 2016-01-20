@@ -45,7 +45,7 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]){
+int main(){
 
 
   Mesh beams(2);

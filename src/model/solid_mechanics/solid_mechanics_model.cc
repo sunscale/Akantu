@@ -1754,10 +1754,9 @@ SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
 }
 /* -------------------------------------------------------------------------- */
 
-dumper::Field *
-SolidMechanicsModel::createNodalFieldBool(const std::string & field_name,
-                                          const std::string & group_name,
-                                          bool padding_flag) {
+dumper::Field * SolidMechanicsModel::createNodalFieldBool(
+    const std::string & field_name, const std::string & group_name,
+    __attribute__((unused)) bool padding_flag) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
   uint_nodal_fields["blocked_dofs"] = blocked_dofs;
@@ -1771,9 +1770,11 @@ SolidMechanicsModel::createNodalFieldBool(const std::string & field_name,
 /* -------------------------------------------------------------------------- */
 
 dumper::Field * SolidMechanicsModel::createElementalField(
-    const std::string & field_name, const std::string & group_name,
-    bool padding_flag, const UInt & spatial_dimension,
-    const ElementKind & kind) {
+    __attribute__((unused)) const std::string & field_name,
+    __attribute__((unused)) const std::string & group_name,
+    __attribute__((unused)) bool padding_flag,
+    __attribute__((unused)) const UInt & spatial_dimension,
+    __attribute__((unused)) const ElementKind & kind) {
   return NULL;
 }
 

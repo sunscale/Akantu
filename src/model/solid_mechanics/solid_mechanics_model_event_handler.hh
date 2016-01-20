@@ -37,19 +37,25 @@
 
 __BEGIN_AKANTU__
 
-///akantu::SolidMechanicsModelEvent is the base event for model
+/// akantu::SolidMechanicsModelEvent is the base event for model
 namespace SolidMechanicsModelEvent {
-  struct BeforeSolveStepEvent {
-    BeforeSolveStepEvent(AnalysisMethod & method) : method(method) {}
-    AnalysisMethod method;
-  };
-  struct AfterSolveStepEvent {
-    AfterSolveStepEvent(AnalysisMethod & method) : method(method) {}
-    AnalysisMethod method;
-  };
-  struct BeforeDumpEvent { BeforeDumpEvent() {} };
-  struct BeginningOfDamageIterationEvent { BeginningOfDamageIterationEvent() {} };
-  struct AfterDamageEvent { AfterDamageEvent() {} };
+struct BeforeSolveStepEvent {
+  BeforeSolveStepEvent(AnalysisMethod & method) : method(method) {}
+  AnalysisMethod method;
+};
+struct AfterSolveStepEvent {
+  AfterSolveStepEvent(AnalysisMethod & method) : method(method) {}
+  AnalysisMethod method;
+};
+struct BeforeDumpEvent {
+  BeforeDumpEvent() {}
+};
+struct BeginningOfDamageIterationEvent {
+  BeginningOfDamageIterationEvent() {}
+};
+struct AfterDamageEvent {
+  AfterDamageEvent() {}
+};
 }
 
 /// akantu::SolidMechanicsModelEvent
@@ -58,44 +64,56 @@ class SolidMechanicsModelEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual ~SolidMechanicsModelEventHandler() {};
+  virtual ~SolidMechanicsModelEventHandler(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 protected:
-  ///Send what is before the solve step to the beginning of solve step through EventManager
-  inline void sendEvent(const SolidMechanicsModelEvent::BeforeSolveStepEvent & event) {
+  /// Send what is before the solve step to the beginning of solve step through
+  /// EventManager
+  inline void
+  sendEvent(const SolidMechanicsModelEvent::BeforeSolveStepEvent & event) {
     onBeginningSolveStep(event.method);
   }
-  ///Send what is after the solve step to the end of solve step through EventManager
-  inline void sendEvent(const SolidMechanicsModelEvent::AfterSolveStepEvent & event) {
+  /// Send what is after the solve step to the end of solve step through
+  /// EventManager
+  inline void
+  sendEvent(const SolidMechanicsModelEvent::AfterSolveStepEvent & event) {
     onEndSolveStep(event.method);
   }
-  ///Send what is before dump to current dump through EventManager
-  inline void sendEvent(const SolidMechanicsModelEvent::BeforeDumpEvent & event) {
+  /// Send what is before dump to current dump through EventManager
+  inline void
+  sendEvent(__attribute__((unused))
+            const SolidMechanicsModelEvent::BeforeDumpEvent & event) {
     onDump();
   }
-  ///Send what is at the beginning of damage iteration to Damage iteration through EventManager
-  inline void sendEvent(const SolidMechanicsModelEvent::BeginningOfDamageIterationEvent & event) {
+  /// Send what is at the beginning of damage iteration to Damage iteration
+  /// through EventManager
+  inline void sendEvent(
+      __attribute__((unused))
+      const SolidMechanicsModelEvent::BeginningOfDamageIterationEvent & event) {
     onDamageIteration();
-  } 
-  ///Send what is after damage for the damage update through EventManager
-  inline void sendEvent(const SolidMechanicsModelEvent::AfterDamageEvent & event) {
+  }
+  /// Send what is after damage for the damage update through EventManager
+  inline void
+  sendEvent(__attribute__((unused))
+            const SolidMechanicsModelEvent::AfterDamageEvent & event) {
     onDamageUpdate();
   }
 
-  template<class EventHandler>
-  friend class EventHandlerManager;
+  template <class EventHandler> friend class EventHandlerManager;
 
   /* ------------------------------------------------------------------------ */
   /* Interface                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   /// function to implement to react on akantu::BeforeSolveStepEvent
-  virtual void onBeginningSolveStep(__attribute__((unused)) const AnalysisMethod & method) {}
+  virtual void onBeginningSolveStep(__attribute__((unused))
+                                    const AnalysisMethod & method) {}
   /// function to implement to react on akantu::AfterSolveStepEvent
-  virtual void onEndSolveStep(__attribute__((unused)) const AnalysisMethod & method) {}
+  virtual void onEndSolveStep(__attribute__((unused))
+                              const AnalysisMethod & method) {}
   /// function to implement to react on akantu::BeforeDumpEvent
   virtual void onDump() {}
   /// function to implement to react on akantu::BeginningOfDamageIterationEvent
@@ -103,7 +121,6 @@ public:
   /// function to implement to react on akantu::AfterDamageEvent
   virtual void onDamageUpdate() {}
 };
-
 
 __END_AKANTU__
 

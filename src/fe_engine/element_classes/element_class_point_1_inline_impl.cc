@@ -30,7 +30,7 @@
  * @section DESCRIPTION
  *
  * @verbatim
-	  x
+      x
     (0)
  @endverbatim
  *
@@ -45,44 +45,36 @@
  * @f}
  */
 
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_point_1,
-				     _gt_point,
-				     _itp_lagrange_point_1,
-				     _ek_regular,
-				     0,
-				     _git_point,
-				     1);
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_point_1, _gt_point, _itp_lagrange_point_1,
+                                     _ek_regular, 0, _git_point, 1);
 AKANTU_DEFINE_SHAPE(_gt_point, _gst_point);
 
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type>
-inline void
-InterpolationElement<_itp_lagrange_point_1>::computeShapes(__attribute__ ((unused)) const vector_type & natural_coords,
-                                                             vector_type & N) {
+inline void InterpolationElement<_itp_lagrange_point_1>::computeShapes(
+    __attribute__((unused)) const vector_type & natural_coords,
+    vector_type & N) {
   N(0) = 1; /// N1(q_0)
 }
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type, class matrix_type>
-inline void
-InterpolationElement<_itp_lagrange_point_1>::computeDNDS(__attribute__ ((unused)) const vector_type & natural_coords,
-                                                         __attribute__ ((unused)) matrix_type & dnds) {}
-
+inline void InterpolationElement<_itp_lagrange_point_1>::computeDNDS(
+    __attribute__((unused)) const vector_type & natural_coords,
+    __attribute__((unused)) matrix_type & dnds) {}
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void
-InterpolationElement<_itp_lagrange_point_1>::computeSpecialJacobian(__attribute__ ((unused)) const Matrix<Real> & J,
-                                                                    Real & jac){
-   jac = 0.;
+inline void InterpolationElement<_itp_lagrange_point_1>::computeSpecialJacobian(
+    __attribute__((unused)) const Matrix<Real> & J, Real & jac) {
+  jac = 0.;
 }
 
-
-
 /* -------------------------------------------------------------------------- */
-template<>
+template <>
 inline Real
-GeometricalElement<_gt_point>::getInradius(const Matrix<Real> & coord) {
+GeometricalElement<_gt_point>::getInradius(__attribute__((unused))
+                                           const Matrix<Real> & coord) {
   return 0.;
 }

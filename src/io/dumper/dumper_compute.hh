@@ -233,16 +233,15 @@ public:
 
   template <typename output, typename SubFieldCompute, typename return_type1,
             typename return_type2>
-  Field *
-  connectToFunctor(FieldCompute<FieldCompute<SubFieldCompute, return_type1>,
-                                return_type2> * ptr) {
+  Field * connectToFunctor(__attribute__((unused)) FieldCompute<
+      FieldCompute<SubFieldCompute, return_type1>, return_type2> * ptr) {
     throw; //    return new FieldCompute<T,output>(*ptr,func);
     return NULL;
   }
 
   template <typename output, typename SubFieldCompute, typename return_type1,
             typename return_type2, typename return_type3, typename return_type4>
-  Field * connectToFunctor(FieldCompute<
+  Field * connectToFunctor(__attribute__((unused)) FieldCompute<
       FieldCompute<FieldCompute<FieldCompute<SubFieldCompute, return_type1>,
                                 return_type2>,
                    return_type3>,

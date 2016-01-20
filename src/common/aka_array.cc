@@ -41,24 +41,24 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /* Functions ArrayBase                                                       */
 /* -------------------------------------------------------------------------- */
-ArrayBase::ArrayBase(const ID & id) :
-  id(id), allocated_size(0), size(0), nb_component(1), size_of_type(0) {
-}
+ArrayBase::ArrayBase(const ID & id)
+    : id(id), allocated_size(0), size(0), nb_component(1), size_of_type(0) {}
 
 /* -------------------------------------------------------------------------- */
-ArrayBase::~ArrayBase() {
-}
+ArrayBase::~ArrayBase() {}
 
 /* -------------------------------------------------------------------------- */
 void ArrayBase::printself(std::ostream & stream, int indent) const {
   std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
   stream << space << "ArrayBase [" << std::endl;
   stream << space << " + size             : " << size << std::endl;
   stream << space << " + nb component     : " << nb_component << std::endl;
   stream << space << " + allocated size   : " << allocated_size << std::endl;
   Real mem_size = (allocated_size * nb_component * size_of_type) / 1024.;
-  stream << space << " + size of type     : " << size_of_type << "B" << std::endl;
+  stream << space << " + size of type     : " << size_of_type << "B"
+         << std::endl;
   stream << space << " + memory allocated : " << mem_size << "kB" << std::endl;
   stream << space << "]" << std::endl;
 }
@@ -68,49 +68,54 @@ template <> Int Array<Real>::find(const Real & elem) const {
   AKANTU_DEBUG_IN();
   UInt i = 0;
   Real epsilon = std::numeric_limits<Real>::epsilon();
-  for (; (i < size) && (fabs(values[i] - elem) <= epsilon); ++i);
+  for (; (i < size) && (fabs(values[i] - elem) <= epsilon); ++i)
+    ;
 
   AKANTU_DEBUG_OUT();
-  return (i == size) ? -1 : (Int) i;
+  return (i == size) ? -1 : (Int)i;
 }
-
 
 /* -------------------------------------------------------------------------- */
 template <>
-Array<ElementType> & Array<ElementType>::operator*=(__attribute__((unused)) const ElementType & alpha) {
+Array<ElementType> & Array<ElementType>::operator*=(__attribute__((unused))
+                                                    const ElementType & alpha) {
   AKANTU_DEBUG_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
-Array<ElementType> & Array<ElementType>::operator-=(__attribute__((unused)) const Array<ElementType> & vect) {
+Array<ElementType> & Array<ElementType>::
+operator-=(__attribute__((unused)) const Array<ElementType> & vect) {
   AKANTU_DEBUG_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
-Array<ElementType> & Array<ElementType>::operator+=(__attribute__((unused)) const Array<ElementType> & vect) {
+Array<ElementType> & Array<ElementType>::
+operator+=(__attribute__((unused)) const Array<ElementType> & vect) {
   AKANTU_DEBUG_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
-Array<char> & Array<char>::operator*=(__attribute__((unused)) const char & alpha) {
+Array<char> & Array<char>::operator*=(__attribute__((unused))
+                                      const char & alpha) {
   AKANTU_DEBUG_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
-Array<char> & Array<char>::operator-=(__attribute__((unused)) const Array<char> & vect) {
+Array<char> & Array<char>::operator-=(__attribute__((unused))
+                                      const Array<char> & vect) {
   AKANTU_DEBUG_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
-Array<char> & Array<char>::operator+=(__attribute__((unused)) const Array<char> & vect) {
+Array<char> & Array<char>::operator+=(__attribute__((unused))
+                                      const Array<char> & vect) {
   AKANTU_DEBUG_TO_IMPLEMENT();
   return *this;
 }
-
 
 __END_AKANTU__

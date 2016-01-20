@@ -52,7 +52,7 @@
 using namespace akantu;
 using namespace std;
 
-int main(int argc, char *argv[]) {
+int main() {
 
   std::cout << "Testing with type " << ADD_QUOTES(TYPE)
     << " and values " << ADD_QUOTES(VALUE1) << "," << ADD_QUOTES(VALUE2) << "..." << std::endl;

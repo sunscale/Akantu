@@ -37,89 +37,91 @@
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
-
-
 __BEGIN_AKANTU__
 
-class NonLocalNeighborhoodBase : public NeighborhoodBase,
-				 public Parsable{
+class NonLocalNeighborhoodBase : public NeighborhoodBase, public Parsable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  NonLocalNeighborhoodBase(const SolidMechanicsModel & model, 
-			   const ElementTypeMapReal & quad_coordinates,
-			   const ID & id = "non_local_neighborhood",
-			   const MemoryID & memory_id = 0);
+  NonLocalNeighborhoodBase(const SolidMechanicsModel & model,
+                           const ElementTypeMapReal & quad_coordinates,
+                           const ID & id = "non_local_neighborhood",
+                           const MemoryID & memory_id = 0);
   virtual ~NonLocalNeighborhoodBase();
-
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
 public:
-
   /// create grid synchronizer and exchange ghost cells
   virtual void createGridSynchronizer();
 
   /// compute weights, for instance needed for non-local damage computation
-  virtual void computeWeights() {};
+  virtual void computeWeights(){};
 
   /// compute the non-local counter part for a given element type map
-  virtual void weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
-					   ElementTypeMapReal & accumulated,
-					   UInt nb_degree_of_freedom,
-					   const GhostType & ghost_type2) const {};
+  virtual void weightedAverageOnNeighbours(
+      __attribute__((unused)) const ElementTypeMapReal & to_accumulate,
+      __attribute__((unused)) ElementTypeMapReal & accumulated,
+      __attribute__((unused)) UInt nb_degree_of_freedom,
+      __attribute__((unused)) const GhostType & ghost_type2) const {};
 
   /// update the weights for the non-local averaging
-  virtual void updateWeights() {};
+  virtual void updateWeights(){};
 
   /// register a new non-local variable in the neighborhood
-  virtual void registerNonLocalVariable(const ID & id) {};
+  virtual void registerNonLocalVariable(__attribute__((unused))
+                                        const ID & id){};
 
   /// clean up the unneccessary ghosts
   void cleanupExtraGhostElements(std::set<Element> & relevant_ghost_elements);
 
-
 protected:
-
   /// create the grid
   void createGrid();
 
-/* -------------------------------------------------------------------------- */
-/* DataAccessor inherited members                                             */
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* DataAccessor inherited members */
+  /* --------------------------------------------------------------------------
+   */
 public:
+  virtual inline UInt getNbDataForElements(__attribute__((unused))
+                                           const Array<Element> & elements,
+                                           __attribute__((unused))
+                                           SynchronizationTag tag) const {
+    return 0;
+  };
 
-  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-					     SynchronizationTag tag) const {return 0; };
+  virtual inline void
+  packElementData(__attribute__((unused)) CommunicationBuffer & buffer,
+                  __attribute__((unused)) const Array<Element> & elements,
+                  __attribute__((unused)) SynchronizationTag tag) const {};
 
-  virtual inline void packElementData(CommunicationBuffer & buffer,
-  				      const Array<Element> & elements,
-  				      SynchronizationTag tag) const {};
+  virtual inline void
+  unpackElementData(__attribute__((unused)) CommunicationBuffer & buffer,
+                    __attribute__((unused)) const Array<Element> & elements,
+                    __attribute__((unused)) SynchronizationTag tag){};
 
-  virtual inline void unpackElementData(CommunicationBuffer & buffer,
-  					const Array<Element> & elements,
-  					SynchronizationTag tag) {};
-
-/* -------------------------------------------------------------------------- */
-/* Accessors                                                                  */
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* Accessors */
+  /* --------------------------------------------------------------------------
+   */
 public:
-  AKANTU_GET_MACRO(NonLocalVariables, non_local_variables, const std::set<ID> &);
+  AKANTU_GET_MACRO(NonLocalVariables, non_local_variables,
+                   const std::set<ID> &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// list of non-local variables associated to the neighborhood
   std::set<ID> non_local_variables;
 };
 
-
-
 __END_AKANTU__
+
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__ */

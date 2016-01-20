@@ -52,7 +52,8 @@ __BEGIN_AKANTU__
 
 class SolverOptions {
 public:
-  SolverOptions(bool no_option = false) // : no_option(no_option)
+  SolverOptions(
+      __attribute__((unused)) bool no_option = false) // : no_option(no_option)
   {}
 
   virtual ~SolverOptions() {}

@@ -45,18 +45,16 @@ __BEGIN_AKANTU__
 
 /// struct for the possible filter functors
 struct FilterFunctor {
-  enum Type {
-    _node_filter_functor,
-    _element_filter_functor
-  };
+  enum Type { _node_filter_functor, _element_filter_functor };
 };
 
 /// class (functor) for the node filter
 class NodeFilterFunctor : public FilterFunctor {
 public:
-  bool operator()(UInt node) {
+  bool operator()(__attribute__((unused)) UInt node) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
+
 public:
   static const Type type = _node_filter_functor;
 };
@@ -64,9 +62,10 @@ public:
 /// class (functor) for the element filter
 class ElementFilterFunctor : public FilterFunctor {
 public:
-  bool operator()(const Element & element) {
+  bool operator()(__attribute__((unused)) const Element & element) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
+
 public:
   static const Type type = _element_filter_functor;
 };

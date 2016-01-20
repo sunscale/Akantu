@@ -45,7 +45,6 @@ class ModelIOIBarras : public ModelIO {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   ModelIOIBarras(){};
   virtual ~ModelIOIBarras(){};
 
@@ -53,16 +52,12 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// read a model from the file
   virtual void read(const std::string & filename, Model & model);
 
-  /// write a model to a file
-  virtual void write(const std::string & filename, const Model & model){};
-
   /// assign sets of member to an already constructed model
-  virtual void assign_sets(const std::string & filename, StructuralMechanicsModel & model);
-
+  virtual void assign_sets(const std::string & filename,
+                           StructuralMechanicsModel & model);
 };
 
 __END_AKANTU__

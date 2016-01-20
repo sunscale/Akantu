@@ -58,7 +58,7 @@ public:
   DistributedSynchronizer(Mesh & mesh,
                           SynchronizerID id = "distributed_synchronizer",
                           MemoryID memory_id = 0,
-			  const bool register_to_event_manager = true);
+                          const bool register_to_event_manager = true);
 
 public:
   virtual ~DistributedSynchronizer();
@@ -69,22 +69,20 @@ public:
 public:
   /// get a  mesh and a partition and  create the local mesh  and the associated
   /// DistributedSynchronizer
-  static DistributedSynchronizer *
-  createDistributedSynchronizerMesh(Mesh & mesh,
-                                    const MeshPartition * partition,
-                                    UInt root = 0,
-                                    SynchronizerID id = "distributed_synchronizer",
-                                    MemoryID memory_id = 0);
+  static DistributedSynchronizer * createDistributedSynchronizerMesh(
+      Mesh & mesh, const MeshPartition * partition, UInt root = 0,
+      SynchronizerID id = "distributed_synchronizer", MemoryID memory_id = 0);
 
   /* ------------------------------------------------------------------------ */
   /* Inherited from Synchronizer                                              */
   /* ------------------------------------------------------------------------ */
 
   /// asynchronous synchronization of ghosts
-  void asynchronousSynchronize(DataAccessor & data_accessor,SynchronizationTag tag);
+  void asynchronousSynchronize(DataAccessor & data_accessor,
+                               SynchronizationTag tag);
 
   /// wait end of asynchronous synchronization of ghosts
-  void waitEndSynchronize(DataAccessor & data_accessor,SynchronizationTag tag);
+  void waitEndSynchronize(DataAccessor & data_accessor, SynchronizationTag tag);
 
   /// build processor to element corrispondance
   void buildPrankToElement();
@@ -92,31 +90,38 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
   /// mesh event handler onElementsChanged
-  virtual void onElementsChanged(const Array<Element> & old_elements_list,
-				 const Array<Element> & new_elements_list,
-                                 const ElementTypeMapArray<UInt> & new_numbering,
-                                 const ChangedElementsEvent & event);
+  virtual void
+  onElementsChanged(const Array<Element> & old_elements_list,
+                    const Array<Element> & new_elements_list,
+                    const ElementTypeMapArray<UInt> & new_numbering,
+                    const ChangedElementsEvent & event);
 
   /// mesh event handler onRemovedElement
-  virtual void onElementsRemoved(const Array<Element> & element_list,
-                                 const ElementTypeMapArray<UInt> & new_numbering,
-                                 const RemovedElementsEvent & event);
+  virtual void
+  onElementsRemoved(const Array<Element> & element_list,
+                    const ElementTypeMapArray<UInt> & new_numbering,
+                    const RemovedElementsEvent & event);
   /// mesh event handler onNodesAdded
-  virtual void onNodesAdded  (const Array<UInt> & nodes_list,
-                              const NewNodesEvent & event) {};
+  virtual void onNodesAdded(__attribute__((unused))
+                            const Array<UInt> & nodes_list,
+                            __attribute__((unused))
+                            const NewNodesEvent & event){};
 
   /// mesh event handler onRemovedNodes
-  virtual void onNodesRemoved(const Array<UInt> & nodes_list,
-                              const Array<UInt> & new_numbering,
-                              const RemovedNodesEvent & event) {};
+  virtual void
+  onNodesRemoved(__attribute__((unused)) const Array<UInt> & nodes_list,
+                 __attribute__((unused)) const Array<UInt> & new_numbering,
+                 __attribute__((unused)) const RemovedNodesEvent & event){};
 
   /// mesh event handler onElementsAdded
-  virtual void onElementsAdded  (const Array<Element> & elements_list,
-                                 const NewElementsEvent & event) {};
+  virtual void onElementsAdded(__attribute__((unused))
+                               const Array<Element> & elements_list,
+                               __attribute__((unused))
+                               const NewElementsEvent & event){};
 
   /// filter elements of a certain kind and copy them into a new synchronizer
   void filterElementsByKind(DistributedSynchronizer * new_synchronizer,
-			    ElementKind kind);
+                            ElementKind kind);
 
   /// reset send and recv element lists
   void reset();
@@ -133,18 +138,16 @@ public:
   /// renumber the elements in the synchronizer
   void renumberElements(const ElementTypeMapArray<UInt> & new_numbering);
 
-		      
 protected:
   /// fill the nodes type vector
   void fillNodesType(Mesh & mesh);
 
   void fillNodesType(const MeshData & mesh_data,
                      DynamicCommunicationBuffer * buffers,
-                     const std::string & tag_name,
-                     const ElementType & el_type,
+                     const std::string & tag_name, const ElementType & el_type,
                      const Array<UInt> & partition_num);
 
-  template<typename T>
+  template <typename T>
   void fillTagBufferTemplated(const MeshData & mesh_data,
                               DynamicCommunicationBuffer * buffers,
                               const std::string & tag_name,
@@ -154,118 +157,101 @@ protected:
 
   void fillTagBuffer(const MeshData & mesh_data,
                      DynamicCommunicationBuffer * buffers,
-                     const std::string & tag_name,
-                     const ElementType & el_type,
+                     const std::string & tag_name, const ElementType & el_type,
                      const Array<UInt> & partition_num,
                      const CSR<UInt> & ghost_partition);
 
-  template<typename T, typename BufferType>
-  void populateMeshDataTemplated(MeshData & mesh_data,
-                                 BufferType & buffer,
+  template <typename T, typename BufferType>
+  void populateMeshDataTemplated(MeshData & mesh_data, BufferType & buffer,
                                  const std::string & tag_name,
-                                 const ElementType & el_type,
-                                 UInt nb_component,
-                                 UInt nb_local_element,
-                                 UInt nb_ghost_element);
+                                 const ElementType & el_type, UInt nb_component,
+                                 UInt nb_local_element, UInt nb_ghost_element);
 
   template <typename BufferType>
-  void populateMeshData(MeshData & mesh_data,
-                        BufferType & buffer,
+  void populateMeshData(MeshData & mesh_data, BufferType & buffer,
                         const std::string & tag_name,
                         const ElementType & el_type,
-                        const MeshDataTypeCode & type_code,
-                        UInt nb_component,
-                        UInt nb_local_element,
-                        UInt nb_ghost_element);
+                        const MeshDataTypeCode & type_code, UInt nb_component,
+                        UInt nb_local_element, UInt nb_ghost_element);
 
-  /// fill the communications array of a distributedSynchronizer based on a partition array
-  void fillCommunicationScheme(const UInt * partition,
-                               UInt nb_local_element,
-                               UInt nb_ghost_element,
-                               ElementType type);
+  /// fill the communications array of a distributedSynchronizer based on a
+  /// partition array
+  void fillCommunicationScheme(const UInt * partition, UInt nb_local_element,
+                               UInt nb_ghost_element, ElementType type);
 
   /// function that handels the MeshData to be split (root side)
   static void synchronizeTagsSend(DistributedSynchronizer & communicator,
-				  UInt root,
-				  Mesh & mesh,
-				  UInt nb_tags,
-				  const ElementType & type,
-				  const Array<UInt> & partition_num,
-				  const CSR<UInt> & ghost_partition,
-				  UInt nb_local_element,
-				  UInt nb_ghost_element);
+                                  UInt root, Mesh & mesh, UInt nb_tags,
+                                  const ElementType & type,
+                                  const Array<UInt> & partition_num,
+                                  const CSR<UInt> & ghost_partition,
+                                  UInt nb_local_element, UInt nb_ghost_element);
 
   /// function that handles the MeshData to be split (other nodes)
   static void synchronizeTagsRecv(DistributedSynchronizer & communicator,
-				  UInt root,
-				  Mesh & mesh,
-				  UInt nb_tags,
-				  const ElementType & type,
-				  UInt nb_local_element,
-				  UInt nb_ghost_element);
+                                  UInt root, Mesh & mesh, UInt nb_tags,
+                                  const ElementType & type,
+                                  UInt nb_local_element, UInt nb_ghost_element);
 
   /// function that handles the preexisting groups in the mesh
   static void synchronizeElementGroups(DistributedSynchronizer & communicator,
-				       UInt root,
-				       Mesh & mesh,
-				       const ElementType & type,
-				       const Array<UInt> & partition_num,
-				       const CSR<UInt> & ghost_partition,
-				       UInt nb_element);
-
+                                       UInt root, Mesh & mesh,
+                                       const ElementType & type,
+                                       const Array<UInt> & partition_num,
+                                       const CSR<UInt> & ghost_partition,
+                                       UInt nb_element);
 
   /// function that handles the preexisting groups in the mesh
   static void synchronizeElementGroups(DistributedSynchronizer & communicator,
-				       UInt root,
-				       Mesh & mesh,
-				       const ElementType & type);
+                                       UInt root, Mesh & mesh,
+                                       const ElementType & type);
 
-  template<class CommunicationBuffer>
-  static void fillElementGroupsFromBuffer(DistributedSynchronizer & communicator,
-					  Mesh & mesh,
-					  const ElementType & type,
-					  CommunicationBuffer & buffer);
-
-  /// function that handles the preexisting groups in the mesh
-  static void synchronizeNodeGroupsMaster(DistributedSynchronizer & communicator,
-					  UInt root,
-					  Mesh & mesh);
-
+  template <class CommunicationBuffer>
+  static void
+  fillElementGroupsFromBuffer(DistributedSynchronizer & communicator,
+                              Mesh & mesh, const ElementType & type,
+                              CommunicationBuffer & buffer);
 
   /// function that handles the preexisting groups in the mesh
-  static void synchronizeNodeGroupsSlaves(DistributedSynchronizer & communicator,
-					  UInt root,
-					  Mesh & mesh);
+  static void
+  synchronizeNodeGroupsMaster(DistributedSynchronizer & communicator, UInt root,
+                              Mesh & mesh);
 
-  template<class CommunicationBuffer>
+  /// function that handles the preexisting groups in the mesh
+  static void
+  synchronizeNodeGroupsSlaves(DistributedSynchronizer & communicator, UInt root,
+                              Mesh & mesh);
+
+  template <class CommunicationBuffer>
   static void fillNodeGroupsFromBuffer(DistributedSynchronizer & communicator,
-					  Mesh & mesh,
-					  CommunicationBuffer & buffer);
+                                       Mesh & mesh,
+                                       CommunicationBuffer & buffer);
 
   /// substitute elements in the send and recv arrays
-  void substituteElements(const std::map<Element, Element> & old_to_new_elements);
+  void
+  substituteElements(const std::map<Element, Element> & old_to_new_elements);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
-  AKANTU_GET_MACRO(PrankToElement, prank_to_element, const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO(PrankToElement, prank_to_element,
+                   const ElementTypeMapArray<UInt> &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
   enum CommTags {
-    TAG_SIZES        = 0,
+    TAG_SIZES = 0,
     TAG_CONNECTIVITY = 1,
-    TAG_DATA         = 2,
-    TAG_PARTITIONS   = 3,
-    TAG_NB_NODES     = 4,
-    TAG_NODES        = 5,
-    TAG_COORDINATES  = 6,
-    TAG_NODES_TYPE   = 7,
-    TAG_MESH_DATA    = 8,
+    TAG_DATA = 2,
+    TAG_PARTITIONS = 3,
+    TAG_NB_NODES = 4,
+    TAG_NODES = 5,
+    TAG_COORDINATES = 6,
+    TAG_NODES_TYPE = 7,
+    TAG_MESH_DATA = 8,
     TAG_ELEMENT_GROUP = 9,
     TAG_NODE_GROUP = 10,
   };
@@ -288,7 +274,6 @@ protected:
   friend class FacetSynchronizer;
 
   ElementTypeMapArray<UInt> prank_to_element;
-
 };
 
 __END_AKANTU__
@@ -297,6 +282,5 @@ __END_AKANTU__
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 #include "distributed_synchronizer_tmpl.hh"
-
 
 #endif /* __AKANTU_DISTRIBUTED_SYNCHRONIZER_HH__ */

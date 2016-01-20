@@ -194,7 +194,7 @@ template<UInt spatial_dimension>
 void MaterialCohesiveExponential<spatial_dimension>::computeCompressiveTraction(Vector<Real> & tract,
 										const Vector<Real> & normal,
 										Real delta_n,
-										const Vector<Real> & opening) {
+                                                                                __attribute__((unused)) const Vector<Real> & opening) {
   Vector<Real> temp_tract(normal);
 
   if(exp_penalty) {

@@ -77,7 +77,7 @@ void SolverPETSc::destroyInternalData() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolverPETSc::initialize(SolverOptions & options) {
+void SolverPETSc::initialize(__attribute__((unused)) SolverOptions & options) {
   AKANTU_DEBUG_IN();
 
 #if defined(AKANTU_USE_MPI)

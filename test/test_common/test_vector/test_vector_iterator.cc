@@ -43,7 +43,7 @@ using namespace akantu;
 
 #define N 10
 
-int main(int argc, char *argv[]) {
+int main() {
   typedef Array<double> RealArray;
 
   std::cout << "Creating a vector of matrices (2,2)" << std::endl;

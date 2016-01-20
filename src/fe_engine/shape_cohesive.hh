@@ -43,7 +43,7 @@ __BEGIN_AKANTU__
 
 struct CohesiveReduceFunctionMean {
   inline Real operator()(Real u_plus, Real u_minus) {
-    return .5*(u_plus + u_minus);
+    return .5 * (u_plus + u_minus);
   }
 };
 
@@ -53,106 +53,107 @@ struct CohesiveReduceFunctionOpening {
   }
 };
 
-template<>
-class ShapeLagrange<_ek_cohesive> : public ShapeFunctions {
+template <> class ShapeLagrange<_ek_cohesive> : public ShapeFunctions {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ShapeLagrange(const Mesh & mesh,
-		const ID & id = "shape_cohesive",
-		const MemoryID & memory_id = 0);
+  ShapeLagrange(const Mesh & mesh, const ID & id = "shape_cohesive",
+                const MemoryID & memory_id = 0);
 
-  virtual ~ShapeLagrange() { }
+  virtual ~ShapeLagrange() {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   inline void initShapeFunctions(const Array<Real> & nodes,
-				 const Matrix<Real> & integration_points,
-				 const ElementType & type,
-				 const GhostType & ghost_type);
+                                 const Matrix<Real> & integration_points,
+                                 const ElementType & type,
+                                 const GhostType & ghost_type);
 
   /// extract the nodal values and store them per element
   template <ElementType type, class ReduceFunction>
-  void extractNodalToElementField(const Array<Real> & nodal_f,
-				  Array<Real> & elemental_f,
-				  const GhostType & ghost_type = _not_ghost,
-				  const Array<UInt> & filter_elements = empty_filter) const;
+  void extractNodalToElementField(
+      const Array<Real> & nodal_f, Array<Real> & elemental_f,
+      const GhostType & ghost_type = _not_ghost,
+      const Array<UInt> & filter_elements = empty_filter) const;
 
-  /// pre compute all shapes on the element integration points from natural coordinates
+  /// pre compute all shapes on the element integration points from natural
+  /// coordinates
   template <ElementType type>
   void precomputeShapesOnIntegrationPoints(const Array<Real> & nodes,
-				       GhostType ghost_type);
+                                           GhostType ghost_type);
 
-  /// pre compute all shape derivatives on the element integration points from natural coordinates
+  /// pre compute all shape derivatives on the element integration points from
+  /// natural coordinates
   template <ElementType type>
   void precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
-						 GhostType ghost_type);
+                                                     GhostType ghost_type);
 
   /// interpolate nodal values on the integration points
   template <ElementType type, class ReduceFunction>
-  void interpolateOnIntegrationPoints(const Array<Real> &u,
-				  Array<Real> &uq,
-				  UInt nb_degree_of_freedom,
-				  const GhostType ghost_type = _not_ghost,
-				  const Array<UInt> & filter_elements = empty_filter) const;
+  void interpolateOnIntegrationPoints(
+      const Array<Real> & u, Array<Real> & uq, UInt nb_degree_of_freedom,
+      const GhostType ghost_type = _not_ghost,
+      const Array<UInt> & filter_elements = empty_filter) const;
 
   template <ElementType type>
-  void interpolateOnIntegrationPoints(const Array<Real> &u,
-				  Array<Real> &uq,
-				  UInt nb_degree_of_freedom,
-				  const GhostType ghost_type = _not_ghost,
-				  const Array<UInt> & filter_elements = empty_filter) const {
-    interpolateOnIntegrationPoints<type, CohesiveReduceFunctionMean>(u, uq, nb_degree_of_freedom, ghost_type, filter_elements);
+  void interpolateOnIntegrationPoints(
+      const Array<Real> & u, Array<Real> & uq, UInt nb_degree_of_freedom,
+      const GhostType ghost_type = _not_ghost,
+      const Array<UInt> & filter_elements = empty_filter) const {
+    interpolateOnIntegrationPoints<type, CohesiveReduceFunctionMean>(
+        u, uq, nb_degree_of_freedom, ghost_type, filter_elements);
   }
 
-  /// compute the gradient of u on the integration points in the natural coordinates
+  /// compute the gradient of u on the integration points in the natural
+  /// coordinates
   template <ElementType type>
-  void gradientOnIntegrationPoints(const Array<Real> &u,
-			       Array<Real> &nablauq,
-			       UInt nb_degree_of_freedom,
-			       GhostType ghost_type = _not_ghost,
-			       const Array<UInt> & filter_elements = empty_filter) const {
-    variationOnIntegrationPoints<type, CohesiveReduceFunctionMean>(u, nablauq, nb_degree_of_freedom, ghost_type, filter_elements);
+  void gradientOnIntegrationPoints(
+      const Array<Real> & u, Array<Real> & nablauq, UInt nb_degree_of_freedom,
+      GhostType ghost_type = _not_ghost,
+      const Array<UInt> & filter_elements = empty_filter) const {
+    variationOnIntegrationPoints<type, CohesiveReduceFunctionMean>(
+        u, nablauq, nb_degree_of_freedom, ghost_type, filter_elements);
   }
 
   /// compute the gradient of u on the integration points
   template <ElementType type, class ReduceFunction>
-  void variationOnIntegrationPoints(const Array<Real> &u,
-				Array<Real> &nablauq,
-				UInt nb_degree_of_freedom,
-				GhostType ghost_type = _not_ghost,
-				const Array<UInt> & filter_elements = empty_filter) const;
+  void variationOnIntegrationPoints(
+      const Array<Real> & u, Array<Real> & nablauq, UInt nb_degree_of_freedom,
+      GhostType ghost_type = _not_ghost,
+      const Array<UInt> & filter_elements = empty_filter) const;
 
   /// compute the normals to the field u on integration points
   template <ElementType type, class ReduceFunction>
-  void computeNormalsOnIntegrationPoints(const Array<Real> &u,
-				     Array<Real> &normals_u,
-				     GhostType ghost_type = _not_ghost,
-				     const Array<UInt> & filter_elements = empty_filter) const;
+  void computeNormalsOnIntegrationPoints(
+      const Array<Real> & u, Array<Real> & normals_u,
+      GhostType ghost_type = _not_ghost,
+      const Array<UInt> & filter_elements = empty_filter) const;
 
   /// multiply a field by shape functions
   template <ElementType type>
-  void fieldTimesShapes(const Array<Real> & field,
-			Array<Real> & fiedl_times_shapes,
-			GhostType ghost_type) const {
+  void fieldTimesShapes(__attribute__((unused)) const Array<Real> & field,
+                        __attribute__((unused))
+                        Array<Real> & fiedl_times_shapes,
+                        __attribute__((unused)) GhostType ghost_type) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
-
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   /// get a the shapes vector
-  inline const Array<Real> & getShapes(const ElementType & el_type,
-					const GhostType & ghost_type = _not_ghost) const;
+  inline const Array<Real> &
+  getShapes(const ElementType & el_type,
+            const GhostType & ghost_type = _not_ghost) const;
 
   /// get a the shapes derivatives vector
-  inline const Array<Real> & getShapesDerivatives(const ElementType & el_type,
-						   const GhostType & ghost_type = _not_ghost) const;
+  inline const Array<Real> &
+  getShapesDerivatives(const ElementType & el_type,
+                       const GhostType & ghost_type = _not_ghost) const;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -163,7 +164,6 @@ protected:
 
   /// shape functions derivatives for all elements
   ElementTypeMapArray<Real, InterpolationType> shapes_derivatives;
-
 };
 
 // __END_AKANTU__
@@ -171,7 +171,8 @@ protected:
 // __BEGIN_AKANTU__
 
 // template<>
-// class ShapeLagrange<_ek_cohesive> : public ShapeCohesive< ShapeLagrange<_ek_regular> > {
+// class ShapeLagrange<_ek_cohesive> : public ShapeCohesive<
+// ShapeLagrange<_ek_regular> > {
 // public:
 //   ShapeLagrange(const Mesh & mesh,
 // 		const ID & id = "shape_cohesive",
@@ -181,7 +182,6 @@ protected:
 //   virtual ~ShapeLagrange() { };
 // };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
@@ -190,12 +190,11 @@ protected:
 
 /// standard output stream operator
 template <class ShapeFunction>
-inline std::ostream & operator <<(std::ostream & stream, const ShapeCohesive<ShapeFunction> & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const ShapeCohesive<ShapeFunction> & _this) {
   _this.printself(stream);
   return stream;
 }
-
 
 __END_AKANTU__
 

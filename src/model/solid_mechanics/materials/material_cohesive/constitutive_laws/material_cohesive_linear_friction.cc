@@ -71,7 +71,7 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::initMaterial() {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(const Array<Real> & normal,
+void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(__attribute__((unused)) const Array<Real> & normal,
 									ElementType el_type,
 									GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -268,7 +268,7 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::checkDeltaMax(GhostType 
 template<UInt spatial_dimension>
 void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(const ElementType & el_type,
 									       Array<Real> & tangent_matrix,
-									       const Array<Real> & normal,
+                                                                               __attribute__((unused)) const Array<Real> & normal,
 									       GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 

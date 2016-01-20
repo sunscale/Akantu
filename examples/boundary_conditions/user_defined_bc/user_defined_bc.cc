@@ -43,7 +43,7 @@ public:
                                                          amplitude(amp),
                                                          phase(phase) {}
 public:
-  inline void operator()(UInt node,
+  inline void operator()(__attribute__((unused)) UInt node,
                          Vector<bool> & flags,
                          Vector<Real> & primal,
                          const Vector<Real> & coord) const {

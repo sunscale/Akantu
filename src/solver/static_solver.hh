@@ -34,16 +34,15 @@
 #include "aka_common.hh"
 #include "static_communicator.hh"
 
-
 #ifndef __AKANTU_STATIC_SOLVER_HH__
 #define __AKANTU_STATIC_SOLVER_HH__
 
 __BEGIN_AKANTU__
 
 namespace StaticSolverEvent {
-  struct BeforeStaticSolverDestroyEvent {
-    BeforeStaticSolverDestroyEvent() {}
-  };
+struct BeforeStaticSolverDestroyEvent {
+  BeforeStaticSolverDestroyEvent() {}
+};
 }
 
 class StaticSolverEventHandler {
@@ -51,17 +50,19 @@ class StaticSolverEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual ~StaticSolverEventHandler() {};
+  virtual ~StaticSolverEventHandler(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 protected:
-  inline void sendEvent(const StaticSolverEvent::BeforeStaticSolverDestroyEvent & event) {
+  inline void
+  sendEvent(__attribute__((unused))
+            const StaticSolverEvent::BeforeStaticSolverDestroyEvent & event) {
     this->beforeStaticSolverDestroy();
   }
 
-  template<class EventHandler> friend class EventHandlerManager;
+  template <class EventHandler> friend class EventHandlerManager;
 
   /* ------------------------------------------------------------------------ */
   /* Interface                                                                */
@@ -69,8 +70,6 @@ protected:
 public:
   virtual void beforeStaticSolverDestroy() {}
 };
-
-
 
 class StaticSolver : public CommunicatorEventHandler,
                      public EventHandlerManager<StaticSolverEventHandler> {
@@ -93,7 +92,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// initialize what is needed for the compiled solver interfaces
-  void initialize(int & argc, char ** & argv);
+  void initialize(int & argc, char **& argv);
 
   /// finalize what is needed for the compiled solver interfaces
   void finalize();
@@ -108,6 +107,5 @@ private:
 };
 
 __END_AKANTU__
-
 
 #endif /* __AKANTU_STATIC_SOLVER_HH__ */

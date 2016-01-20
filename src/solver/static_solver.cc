@@ -75,11 +75,12 @@ static PetscErrorCode PETScErrorHandler(MPI_Comm, int line, const char * dir,
                      << " - \"" << message << "\"");
 }
 #else
-static PetscErrorCode PETScErrorHandler(MPI_Comm, int line, const char * func,
-                                        const char * dir, const char * file,
-                                        PetscErrorCode number,
-                                        PetscErrorType type,
-                                        const char * message, void *) {
+static PetscErrorCode
+PETScErrorHandler(MPI_Comm, int line, __attribute__((unused)) const char * func,
+                  __attribute__((unused)) const char * dir, const char * file,
+                  PetscErrorCode number,
+                  __attribute__((unused)) PetscErrorType type,
+                  const char * message, void *) {
   AKANTU_DEBUG_ERROR("An error occured in PETSc in file \""
                      << file << ":" << line << "\" - PetscErrorCode " << number
                      << " - \"" << message << "\"");

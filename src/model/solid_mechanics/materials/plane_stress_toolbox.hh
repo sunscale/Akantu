@@ -40,20 +40,19 @@ __BEGIN_AKANTU__
  * Empty class in dimensions different from 2
  * This class is only specialized for 2D in the tmpl file
  */
-template<UInt dim, class ParentMaterial = Material>
+template <UInt dim, class ParentMaterial = Material>
 class PlaneStressToolbox : public ParentMaterial {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  PlaneStressToolbox(SolidMechanicsModel & model, const ID & id = "") : Material(model, id),
-                                                                        ParentMaterial(model, id) {}
-  PlaneStressToolbox(SolidMechanicsModel & model,
-                     UInt spatial_dimension,
-                     const Mesh & mesh,
-                     FEEngine & fe_engine,
-                     const ID & id = "") : Material(model, spatial_dimension, mesh, fe_engine, id),
-                                           ParentMaterial(model, spatial_dimension, mesh, fe_engine, id) {}
+  PlaneStressToolbox(SolidMechanicsModel & model, const ID & id = "")
+      : Material(model, id), ParentMaterial(model, id) {}
+  PlaneStressToolbox(SolidMechanicsModel & model, UInt spatial_dimension,
+                     const Mesh & mesh, FEEngine & fe_engine,
+                     const ID & id = "")
+      : Material(model, spatial_dimension, mesh, fe_engine, id),
+        ParentMaterial(model, spatial_dimension, mesh, fe_engine, id) {}
 
   virtual ~PlaneStressToolbox() {}
 
@@ -61,7 +60,7 @@ protected:
   void initialize();
 
 public:
-  virtual void computeAllCauchyStresses(GhostType ghost_type = _not_ghost){
+  virtual void computeAllCauchyStresses(GhostType ghost_type = _not_ghost) {
     AKANTU_DEBUG_IN();
 
     ParentMaterial::computeAllCauchyStresses(ghost_type);
@@ -69,23 +68,28 @@ public:
     AKANTU_DEBUG_OUT();
   }
 
-  virtual void computeCauchyStressPlaneStress(ElementType el_type, GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
+  virtual void computeCauchyStressPlaneStress(__attribute__((unused))
+                                              ElementType el_type,
+                                              __attribute__((unused))
+                                              GhostType ghost_type) {
+    AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_ERROR("The function \"computeCauchyStressPlaneStress\" can only be used in 2D Plane stress problems, which means that you made a mistake somewhere!! ");
+    AKANTU_DEBUG_ERROR("The function \"computeCauchyStressPlaneStress\" can "
+                       "only be used in 2D Plane stress problems, which means "
+                       "that you made a mistake somewhere!! ");
 
-  AKANTU_DEBUG_OUT();
+    AKANTU_DEBUG_OUT();
   }
 
 protected:
   bool initialize_third_axis_deformation;
 };
 
-#define AKANTU_PLANE_STRESS_TOOL_SPEC(dim)\
-  template<>                                                            \
-  inline PlaneStressToolbox<dim, Material>::PlaneStressToolbox(SolidMechanicsModel & model, \
-                                                               const ID & id) : \
-    Material(model, id) {}                                              \
+#define AKANTU_PLANE_STRESS_TOOL_SPEC(dim)                                     \
+  template <>                                                                  \
+  inline PlaneStressToolbox<dim, Material>::PlaneStressToolbox(                \
+      SolidMechanicsModel & model, const ID & id)                              \
+      : Material(model, id) {}
 
 AKANTU_PLANE_STRESS_TOOL_SPEC(1)
 AKANTU_PLANE_STRESS_TOOL_SPEC(3)
@@ -95,4 +99,3 @@ __END_AKANTU__
 #include "plane_stress_toolbox_tmpl.hh"
 
 #endif /* __AKANTU_PLANE_STRESS_TOOLBOX_HH__ */
-

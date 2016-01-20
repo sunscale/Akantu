@@ -339,11 +339,10 @@ void test_simple_operators() {
 
 
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main() {
   test_constructor();
   test_equal_and_accessors();
   test_simple_operators();
-
 
   return 0;
 }
