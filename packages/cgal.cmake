@@ -31,7 +31,7 @@
 
 package_declare(CGAL EXTERNAL
   DESCRIPTION "Add CGAL support in akantu"
-  COMPILE_FLAGS "-frounding-math"
+  COMPILE_FLAGS CXX -frounding-math
   BOOST_COMPONENTS system
   )
 

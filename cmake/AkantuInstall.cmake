@@ -90,10 +90,10 @@ set(AKANTU_${_real_pkg_name}_INCLUDE_DIR ${_incs})
 ")
   endif()
 
-  _package_get_compile_flags(${_pkg_name} _compile_flags)
+  _package_get_compile_flags(${_pkg_name} CXX _compile_flags)
   if(_compile_flags)
     file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
-set(AKANTU_${_real_pkg_name}_COMPILE_FLAGS ${_compile_flags})
+set(AKANTU_${_real_pkg_name}_COMPILE_CXX_FLAGS ${_compile_flags})
 ")
   endif()
 endforeach()

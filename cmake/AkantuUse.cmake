@@ -44,9 +44,9 @@ function(package_get_libraries pkg libs)
   set(libs ${AKANTU_${_u_pkg}_LIBRARIES} PARENT_SCOPE)
 endfunction()
 
-function(package_get_compile_flags pkg flags)
+function(package_get_compile_flags pkg lang flags)
   string(TOUPPER ${pkg} _u_pkg)
-  set(flags ${AKANTU_${_u_pkg}_COMPILE_FLAGS} PARENT_SCOPE)
+  set(flags ${AKANTU_${_u_pkg}_COMPILE_${lang}_FLAGS} PARENT_SCOPE)
 endfunction()
 
 

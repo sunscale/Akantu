@@ -127,15 +127,22 @@ add_library(akantu ${AKANTU_LIBRARY_SRCS})
 # the repetition is ugly but works for static libraries
 target_link_libraries(akantu  ${AKANTU_EXTERNAL_LIBRARIES} ${AKANTU_EXTERNAL_LIBRARIES})
 
-set_target_properties(akantu PROPERTIES LINK_INTERFACE_MULTIPLICITY 0)
+package_get_all_compilation_flags(CXX _cxx_flags)
+set(AKANTU_CXX_COMPILE_FLAGS "_cxx_flags" CACHE STRING "Extra flags defined by loaded packages" FORCE)
+
+set_target_properties(akantu
+  PROPERTIES
+    ${AKANTU_LIBRARY_PROPERTIES} # this contains the version
+    PUBLIC_HEADER "${AKANTU_LIBRARY_PUBLIC_HDRS}"
+    COMPILE_FLAGS "${_cxx_flags}"
+    LINK_INTERFACE_MULTIPLICITY 2)
+
 package_get_all_extra_dependencies(_extra_target_dependencies)
 if(_extra_target_dependencies)
   # This only adding todo: find a solution for when a dependency was add the is removed...
   add_dependencies(akantu ${_extra_target_dependencies})
 endif()
 
-set_target_properties(akantu PROPERTIES ${AKANTU_LIBRARY_PROPERTIES})
-set_target_properties(akantu PROPERTIES PUBLIC_HEADER "${AKANTU_LIBRARY_PUBLIC_HDRS}")
 
 list(APPEND AKANTU_EXPORT_LIST akantu)
 

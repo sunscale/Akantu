@@ -135,7 +135,7 @@ function(add_extra_mpi_options)
   #list(APPEND _srcs "common/aka_error.cc")
 
   #set_property(SOURCE ${_srcs} PROPERTY COMPILE_FLAGS "${_flags}")
-  package_set_compile_flags(MPI ${_flags})
+  package_set_compile_flags(MPI CXX ${_flags})
 endfunction()
 
 package_on_enabled_script(MPI

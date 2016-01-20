@@ -71,7 +71,7 @@ function(_add_akantu_simulation simulation_name)
         package_get_libraries(${_pkg} _libraries)
         list(APPEND _simulation_LIBRARIES ${_libraries})
 
-        package_get_compile_flags(${_pkg} _flags)
+        package_get_compile_flags(${_pkg} CXX _flags)
         list(APPEND _simulation_COMPILE_FLAGS "${_flags}")
       else()
         message("${simulation_name} use ${_pkg} but Akantu "

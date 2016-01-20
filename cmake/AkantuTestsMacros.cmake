@@ -278,7 +278,7 @@ function(register_test test_name)
         add_executable(${test_name} ${_compile_source})
         set_property(TARGET ${test_name}  APPEND
           PROPERTY INCLUDE_DIRECTORIES ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
-        target_link_libraries(${test_name} akantu ${AKANTU_EXTERNAL_LIBRARIES})
+        target_link_libraries(${test_name} akantu)
 
         if(_register_test_DEPENDS)
           add_dependencies(${test_name} ${_register_test_DEPENDS})

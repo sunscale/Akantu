@@ -31,7 +31,7 @@
 if(AKANTU_CXX11_FLAGS)
   package_declare(core_cxx11 ADVANCED
     DESCRIPTION "C++ 11 additions for Akantu core" DEFAULT ON
-    COMPILE_FLAGS "${AKANTU_CXX11_FLAGS}")
+    COMPILE_FLAGS CXX "${AKANTU_CXX11_FLAGS}")
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.6")
@@ -43,7 +43,7 @@ else()
     DESCRIPTION "C++ 11 additions for Akantu core"
     DEFAULT OFF
     NOT_OPTIONAL
-    COMPILE_FLAGS "")
+    )
 endif()
 
 package_declare_sources(core_cxx11

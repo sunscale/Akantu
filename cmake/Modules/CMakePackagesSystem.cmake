@@ -62,7 +62,7 @@
 #       [DEPENDS <pkg> ...]
 #       [BOOST_COMPONENTS <pkg> ...]
 #       [EXTRA_PACKAGE_OPTIONS <opt> ...]
-#       [COMPILE_FLAGS <flags>]
+#       [COMPILE_FLAGS <lang> <flags>]
 #       [SYSTEM <bool> [ <script_to_compile> ]]
 #       )
 #
@@ -121,9 +121,9 @@
 #     package_get_find_package_extra_options(<pkg> <retval>)
 #
 #.. command:: package_get_compile_flags
-#     package_get_compile_flags(<pkg> <retval>)
+#     package_get_compile_flags(<pkg> <lang> <retval>)
 #.. command:: package_set_compile_flags
-#     package_set_compile_flags(<pkg> <flag1> <flag2> ... <flagn>)
+#     package_set_compile_flags(<pkg> <lang> <flag1> <flag2> ... <flagn>)
 #
 #.. command:: package_get_include_dir
 #     package_get_include_dir(<pkg> <retval>)
@@ -349,15 +349,20 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Compilation flags
 # ------------------------------------------------------------------------------
-function(package_get_compile_flags pkg ret)
+function(package_get_compile_flags pkg lang ret)
   package_get_name(${pkg} _pkg_name)
-  _package_get_compile_flags(${_pkg_name} _tmp)
-  set(${ret} ${_tmp} PARENT_SCOPE)
+  _package_get_compile_flags(${_pkg_name} ${lang} _tmp)
+  set(${ret} "${_tmp}" PARENT_SCOPE)
 endfunction()
 
-function(package_set_compile_flags pkg)
+function(package_set_compile_flags pkg lang)
   package_get_name(${pkg} _pkg_name)
-  _package_set_compile_flags(${_pkg_name} ${ARGN})
+  _package_set_compile_flags(${_pkg_name} ${lang} ${ARGN})
+endfunction()
+
+function(package_unset_compile_flags pkg lang)
+  package_get_name(${pkg} _pkg_name)
+  _package_unset_compile_flags(${_pkg_name} ${lang})
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -596,6 +601,15 @@ function(package_get_all_test_folders TEST_DIRS)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# Get compilation flags
+# ------------------------------------------------------------------------------
+function(package_get_all_compilation_flags LANG FLAGS)
+  _package_get_variable_for_activated(COMPILE_${LANG}_FLAGS _tmp_flags)
+  string(REPLACE ";" " " _flags "${_tmp_flags}")
+  set(${FLAGS} ${_flags} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # Documentation informations
 # ------------------------------------------------------------------------------
 function(package_get_all_documentation_files doc_files)
@@ -667,7 +681,7 @@ endfunction()
 # ------------------------------------------------------------------------------
 function(package_list_packages PACKAGE_FOLDER)
   cmake_parse_arguments(_opt_pkg
-    ""
+    "NO_AUTO_COMPILE_FLAGS"
     "SOURCE_FOLDER;EXTRA_PACKAGES_FOLDER;TEST_FOLDER;MANUAL_FOLDER"
     ""
     ${ARGN})
@@ -702,6 +716,13 @@ function(package_list_packages PACKAGE_FOLDER)
   else()
     set(_manual_folder "doc/manual")
   endif()
+
+  if(_opt_pkg_NO_AUTO_COMPILE_FLAGS)
+    package_set_project_variable(NO_AUTO_COMPILE_FLAGS TRUE)
+  else()
+    package_set_project_variable(NO_AUTO_COMPILE_FLAGS FALSE)
+  endif()
+
 
   get_filename_component(_abs_test_folder ${_test_folder} ABSOLUTE)
   get_filename_component(_abs_manual_folder ${_manual_folder} ABSOLUTE)
@@ -791,7 +812,7 @@ endfunction()
 #                 [DEPENDS <pkg> ...]
 #                 [BOOST_COMPONENTS <pkg> ...]
 #                 [EXTRA_PACKAGE_OPTIONS <opt> ...]
-#                 [COMPILE_FLAGS <flags>]
+#                 [COMPILE_FLAGS <lang> <flags>]
 #                 [SYSTEM <bool> [ <script_to_compile> ]])
 # ------------------------------------------------------------------------------
 function(package_declare pkg)
@@ -896,7 +917,25 @@ function(package_declare pkg)
 
   # register the compilation flags
   if(_opt_pkg_COMPILE_FLAGS)
-    _package_set_compile_flags(${_pkg_name} "${_opt_pkg_COMPILE_FLAGS}")
+    set(_languages C CXX Fortran)
+    cmake_parse_arguments(_compile_flags
+      "" "" "${_languages}"
+      ${_opt_pkg_COMPILE_FLAGS}
+      )
+
+
+    # this is done to maintain backward compatibility
+    if(_compile_flags_UNPARSED_ARGUMENTS)
+      set(_compile_flags_CXX ${_compile_flags_UNPARSED_ARGUMENTS})
+    endif()
+
+    foreach(_lang ${_languages})
+      if(_compile_flags_${_lang})
+        _package_set_compile_flags(${_pkg_name} ${_lang} ${_compile_flags_${_lang}})
+      else()
+        _package_unset_compile_flags(${_pkg_name} ${_lang})
+      endif()
+    endforeach()
   endif()
 
   # set the boost dependencies
