@@ -40,6 +40,10 @@ add_library(locomotive_tools
 
 target_include_directories(locomotive_tools PRIVATE ${AKANTU_INCLUDE_DIRS})
 
+if(AKANTU_EXTRA_CXX_FLAGS)
+  set_target_properties(locomotive_tools PROPERTIES COMPILE_FLAGS ${AKANTU_EXTRA_CXX_FLAGS})
+endif()
+
 register_example(dumper_low_level
   SOURCES dumper_low_level.cc
   USE_PACKAGES IOHelper
