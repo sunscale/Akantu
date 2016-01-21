@@ -384,7 +384,7 @@ DumperIOHelper & Mesh::getGroupDumper(const std::string & dumper_name,
       ElementTypeMapArray<type> & vect, UInt nb_component, UInt dim,           \
       GhostType gt, const type & default_value,                                \
       const bool & flag_nb_elem_multiply, ElementKind element_kind,            \
-      bool size_to_nb_element) const;
+      bool size_to_nb_element) const
 
 AKANTU_INSTANTIATE_INIT(Real);
 AKANTU_INSTANTIATE_INIT(UInt);

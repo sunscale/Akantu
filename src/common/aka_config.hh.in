@@ -56,7 +56,7 @@ namespace akantu {
   std::size_t hash(const T & t) {
     typedef typename @AKANTU_HASH_TYPE@<T> hash_type;
     return hash_type()(t);
-  };
+  }
 }
 
 #define AKANTU_INTEGER_SIZE @AKANTU_INTEGER_SIZE@

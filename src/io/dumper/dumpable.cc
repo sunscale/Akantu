@@ -114,7 +114,7 @@ void Dumpable::addDumpFieldToDumper(__attribute__((unused))
                                     __attribute__((unused))
                                     const std::string & field_id) {
   AKANTU_DEBUG_TO_IMPLEMENT();
-};
+}
 
 /* -------------------------------------------------------------------------- */
 void Dumpable::addDumpFieldExternal(const std::string & field_id,
@@ -172,7 +172,7 @@ void Dumpable::addDumpFieldTensorToDumper(__attribute__((unused))
 /* -------------------------------------------------------------------------- */
 void Dumpable::setDirectory(const std::string & directory) {
   this->setDirectoryToDumper(this->default_dumper, directory);
-};
+}
 
 /* -------------------------------------------------------------------------- */
 void Dumpable::setDirectoryToDumper(const std::string & dumper_name,
@@ -203,20 +203,20 @@ void Dumpable::setTimeStepToDumper(const std::string & dumper_name,
                                    Real time_step) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.setTimeStep(time_step);
-};
+}
 
 /* -------------------------------------------------------------------------- */
 
 void Dumpable::setTextModeToDumper(const std::string & dumper_name) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.getDumper().setMode(iohelper::TEXT);
-};
+}
 
 /* -------------------------------------------------------------------------- */
 void Dumpable::setTextModeToDumper() {
   DumperIOHelper & dumper = this->getDumper(this->default_dumper);
   dumper.getDumper().setMode(iohelper::TEXT);
-};
+}
 
 /* -------------------------------------------------------------------------- */
 

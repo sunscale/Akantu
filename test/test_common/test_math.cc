@@ -35,17 +35,19 @@
 using namespace akantu;
 
 void checkVect(Real * x, Real * xref, UInt n) {
-  Real diff[n];
+  Real * diff = new Real[n];
   for (UInt i = 0; i < n; ++i) {
     diff[i] = xref[i] - x[i];
   }
 
   Real norm = Math::norm(n, diff) / Math::norm(n, xref);
   Real tol = 1e-12;
-  if (norm < tol) {
-    std::cout << "x differs form xref" << std::endl;
+  if (norm > tol) {
+    std::cout << "differs form xref of " << std::scientific << norm << std::endl;
     exit(-1);
   }
+
+  delete [] diff;
 }
 
 /* -------------------------------------------------------------------------- */

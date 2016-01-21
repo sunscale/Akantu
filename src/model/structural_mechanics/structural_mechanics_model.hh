@@ -143,7 +143,7 @@ protected:
 
   /// compute Rotation Matrices
   template <const ElementType type>
-  void computeRotationMatrix(__attribute__((unused)) Array<Real> & rotations){};
+  void computeRotationMatrix(__attribute__((unused)) Array<Real> & rotations) {}
 
   /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
   template <NewmarkBeta::IntegrationSchemeCorrectorType type>

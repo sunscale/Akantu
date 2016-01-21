@@ -359,7 +359,7 @@ inline void Mesh::getBarycenter(UInt element, const ElementType & type,
   UInt * conn_val = getConnectivity(type, ghost_type).storage();
   UInt nb_nodes_per_element = getNbNodesPerElement(type);
 
-  Real local_coord[spatial_dimension * nb_nodes_per_element];
+  Real * local_coord = new Real[spatial_dimension * nb_nodes_per_element];
 
   UInt offset = element * nb_nodes_per_element;
   for (UInt n = 0; n < nb_nodes_per_element; ++n) {
@@ -370,6 +370,8 @@ inline void Mesh::getBarycenter(UInt element, const ElementType & type,
 
   Math::barycenter(local_coord, nb_nodes_per_element, spatial_dimension,
                    barycenter);
+
+  delete [] local_coord;
 }
 
 /* -------------------------------------------------------------------------- */

@@ -382,7 +382,7 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
       read_order = _read_order[akantu_type];
     }
 
-    UInt local_connect[node_per_element];
+    UInt * local_connect = new UInt[node_per_element];
 
     // used if element is written on two lines
     UInt j_last;
@@ -428,6 +428,8 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
 
     diana_element_number_to_elements[index] = elem;
     akantu_number_to_diana_number[elem] = index;
+
+    delete [] local_connect;
   }
 
   AKANTU_DEBUG_OUT();

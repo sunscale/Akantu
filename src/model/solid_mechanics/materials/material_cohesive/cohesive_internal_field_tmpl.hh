@@ -36,50 +36,54 @@
 
 __BEGIN_AKANTU__
 
-template<typename T>
-CohesiveInternalField<T>::CohesiveInternalField(const ID & id, Material & material) :
-  InternalField<T>(id, material, material.getModel().getFEEngine("CohesiveFEEngine"),
-		   dynamic_cast<MaterialCohesive &>(material).getElementFilter()) {
+template <typename T>
+CohesiveInternalField<T>::CohesiveInternalField(const ID & id,
+                                                Material & material)
+    : InternalField<T>(
+          id, material, material.getModel().getFEEngine("CohesiveFEEngine"),
+          dynamic_cast<MaterialCohesive &>(material).getElementFilter()) {
   this->element_kind = _ek_cohesive;
-
 }
 
-template<typename T>
-CohesiveInternalField<T>::~CohesiveInternalField() { };
+template <typename T> CohesiveInternalField<T>::~CohesiveInternalField() {}
 
-template<typename T>
+template <typename T>
 void CohesiveInternalField<T>::initialize(UInt nb_component) {
   this->internalInitialize(nb_component);
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-FacetInternalField<T>::FacetInternalField(const ID & id, Material & material) :
-  InternalField<T>(id, material, material.getModel().getFEEngine("FacetsFEEngine"),
-		   dynamic_cast<MaterialCohesive &>(material).getFacetFilter()) {
+template <typename T>
+FacetInternalField<T>::FacetInternalField(const ID & id, Material & material)
+    : InternalField<T>(
+          id, material, material.getModel().getFEEngine("FacetsFEEngine"),
+          dynamic_cast<MaterialCohesive &>(material).getFacetFilter()) {
   this->spatial_dimension -= 1;
   this->element_kind = _ek_regular;
 }
 
-template<typename T>
-FacetInternalField<T>::~FacetInternalField() { };
+template <typename T> FacetInternalField<T>::~FacetInternalField() {}
 
-template<typename T>
+template <typename T>
 void FacetInternalField<T>::initialize(UInt nb_component) {
   this->internalInitialize(nb_component);
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline void ParsableParamTyped< RandomInternalField<Real, FacetInternalField> >::parseParam(const ParserParameter & in_param) {
+template <>
+inline void
+ParsableParamTyped<RandomInternalField<Real, FacetInternalField> >::parseParam(
+    const ParserParameter & in_param) {
   ParsableParam::parseParam(in_param);
   RandomParameter<Real> r = in_param;
   param.setRandomDistribution(r);
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline void ParsableParamTyped< RandomInternalField<Real, CohesiveInternalField> >::parseParam(const ParserParameter & in_param) {
+template <>
+inline void
+ParsableParamTyped<RandomInternalField<Real, CohesiveInternalField> >::
+    parseParam(const ParserParameter & in_param) {
   ParsableParam::parseParam(in_param);
   RandomParameter<Real> r = in_param;
   param.setRandomDistribution(r);
@@ -88,4 +92,3 @@ inline void ParsableParamTyped< RandomInternalField<Real, CohesiveInternalField>
 __END_AKANTU__
 
 #endif /* __AKANTU_COHESIVE_INTERNAL_FIELD_TMPL_HH__ */
-

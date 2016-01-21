@@ -462,7 +462,7 @@ MPI_Datatype MPITypeWrapper::getMPIDatatype<SCMinMaxLoc<float, int> >() {
   template void StaticCommunicatorMPI::broadcast<T>(T * values, int nb_values, \
                                                     int root);                 \
   template void StaticCommunicatorMPI::allReduce<T>(                           \
-      T * values, int nb_values, const SynchronizerOperation & op);
+      T * values, int nb_values, const SynchronizerOperation & op)
 
 AKANTU_MPI_COMM_INSTANTIATE(Real);
 AKANTU_MPI_COMM_INSTANTIATE(UInt);

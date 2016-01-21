@@ -839,7 +839,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
           sstr_elem >> tag; // number-of-nodes
         }
 
-        UInt local_connect[node_per_element];
+        UInt * local_connect = new UInt [node_per_element];
         for (UInt j = 0; j < node_per_element; ++j) {
           UInt node_index;
           sstr_elem >> node_index;
@@ -852,6 +852,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
           local_connect[read_order[j]] = node_index;
         }
         connectivity->push_back(local_connect);
+        delete [] local_connect;
       }
       my_getline(infile, line); /// the end of block line
     }
