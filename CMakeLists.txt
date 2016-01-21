@@ -89,7 +89,7 @@ define_project_version()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DAKANTU_NDEBUG"
   CACHE STRING "Flags used by the compiler during release builds" FORCE)
 
-add_flags(cxx "-Wall")
+add_flags(cxx "-Wall -Wextra")
 
 #Profiling
 set(CMAKE_CXX_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
