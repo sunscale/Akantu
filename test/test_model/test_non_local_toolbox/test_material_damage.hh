@@ -37,41 +37,34 @@
 
 __BEGIN_AKANTU__
 
-template<UInt dim>
-class TestMaterialDamage : public  MaterialDamage<dim, MaterialElastic>,
-									 public MaterialNonLocal<dim> {
-
-/* -------------------------------------------------------------------------- */
-/* Constructor/Destructor                                                     */
-/* -------------------------------------------------------------------------- */
-
+template <UInt dim>
+class TestMaterialDamage : public MaterialDamage<dim, MaterialElastic>,
+                           public MaterialNonLocal<dim> {
+  /* ------------------------------------------------------------------------ */
+  /* Constructor/Destructor */
+  /* ------------------------------------------------------------------------ */
 public:
-  
   TestMaterialDamage(SolidMechanicsModel & model, const ID & id);
-  virtual ~TestMaterialDamage() {};
+  virtual ~TestMaterialDamage(){};
   typedef MaterialNonLocal<dim> MyNonLocalParent;
 
-/* -------------------------------------------------------------------------- */
-/* Methods                                                                    */
-/* -------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
+  /* Methods */
+  /* ------------------------------------------------------------------------ */
 public:
   void initMaterial();
 
-  //void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
+  // void computeNonLocalStress(ElementType type, GhostType ghost_type =
+  // _not_ghost);
 
-  void computeNonLocalStresses(GhostType ghost_type) {};
-
+  void computeNonLocalStresses(__attribute__((unused)) GhostType ghost_type){};
   void insertQuadsInNeighborhoods(GhostType ghost_type);
 
-protected:
-
-
-/* -------------------------------------------------------------------------- */
-/* Members                                                                   */
-/* -------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
+  /* Members */
+  /* ------------------------------------------------------------------------ */
 private:
-  InternalField<Real> grad_u_nl; 
-
+  InternalField<Real> grad_u_nl;
 };
 
 __END_AKANTU__

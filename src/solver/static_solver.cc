@@ -89,7 +89,8 @@ PETScErrorHandler(MPI_Comm, int line, __attribute__((unused)) const char * func,
 #endif
 
 /* -------------------------------------------------------------------------- */
-void StaticSolver::initialize(int & argc, char **& argv) {
+void StaticSolver::initialize(__attribute__((unused)) int & argc,
+                              __attribute__((unused)) char **& argv) {
   if (this->is_initialized)
     return;
 //  AKANTU_DEBUG_ASSERT(this->is_initialized != true, "The static solver has
