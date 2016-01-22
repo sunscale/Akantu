@@ -44,3 +44,7 @@ package_declare_documentation(python_interface
   "\\end{command}"
   ""
 )
+
+package_declare_documentation_files(python_interface
+  manual-python.tex
+  )
