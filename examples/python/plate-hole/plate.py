@@ -90,8 +90,11 @@ def main():
     #if mesh was not created the calls gmsh to generate it
     if not os.path.isfile(mesh_file):
         import subprocess
-        subprocess.call('gmsh -2 plate.geo {0}'.format(mesh_file),shell=True)
-    
+        ret = subprocess.call('gmsh -2 plate.geo {0}'.format(mesh_file),shell=True)
+        if not ret == 0:
+            raise Exception('execution of GMSH failed: do you have it installed ?')
+
+        
     material_file = 'material.dat'
     spatial_dimension = 2
 
