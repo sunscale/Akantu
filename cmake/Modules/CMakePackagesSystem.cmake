@@ -822,6 +822,10 @@ function(package_declare pkg)
 
   _package_set_sources_folder(${_pkg_name} "${_current_src_folder}")
 
+  _package_variable_unset(SRCS ${_pkg_name})
+  _package_variable_unset(PUBLIC_HEADERS ${_pkg_name})
+  _package_variable_unset(PRIVATE_HEADERS ${_pkg_name})
+
   if(_current_test_folder)
     _package_set_tests_folder(${_pkg_name} "${_current_test_folder}")
   endif()
