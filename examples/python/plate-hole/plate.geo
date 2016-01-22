@@ -1,0 +1,22 @@
+h1 = 0.1;
+h2 = h1;
+Point(1) = {0, 0, 0, h1};
+Point(2) = {4, 0, 0, h2};
+Point(3) = {4, 4, 0, h2};
+Point(4) = {0, 4, 0, h2};
+Point(5) = {1, 0, 0, h1};
+Point(6) = {0, 1, 0, h1};
+Circle(1) = {5, 1, 6};
+Line(2) = {6, 4};
+Line(3) = {4, 3};
+Line(4) = {3, 2};
+Line(5) = {2, 5};
+Line Loop(6) = {-1, -2, -3, -4, -5};
+Plane Surface(7) = {6};
+Physical Surface(8) = {7};
+Physical Line("XBlocked") = {2};
+Physical Line("YBlocked") = {5};
+Physical Line("Traction") = {3};
+
+Physical Point("XBlocked") = {5};
+Physical Point("YBlocked") = {5};
