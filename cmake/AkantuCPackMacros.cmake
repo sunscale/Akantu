@@ -42,7 +42,8 @@ function(generate_cpack_ignore_list ignore_list)
         NOT _path MATCHES "build.*" AND
         NOT _path MATCHES "\\.git.*")
       file(GLOB_RECURSE _second_level "${_path}/*")
-      list(APPEND _all_files ${_second_level})
+      file(GLOB _second_extra_level "${_path}/*")
+      list(APPEND _all_files ${_second_level} ${_second_extra_level})
     endif()
   endforeach()
 
