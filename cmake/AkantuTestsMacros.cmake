@@ -115,9 +115,6 @@
 #]=======================================================================]
 
 set(AKANTU_DRIVER_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_test_driver.sh)
-configure_file(${AKANTU_CMAKE_DIR}/akantu_test_environement.sh.in
-  ${PROJECT_BINARY_DIR}/akantu_test_environement.sh
-  @ONLY)
 
 # ==============================================================================
 macro(add_test_tree dir)

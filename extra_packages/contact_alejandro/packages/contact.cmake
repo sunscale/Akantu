@@ -32,10 +32,23 @@
 
 package_declare(contact
   DESCRIPTION "Use Contact package of Akantu"
-  DEPENDS cpparray implicit optimization)
+  DEPENDS cpparray implicit optimization core_cxx11)
 
 
 package_declare_sources(contact
+  common/aka_point.hh
+  common/aka_ball.cc
+  common/aka_plane.hh
+  common/aka_polytope.hh
+  common/aka_ball.hh
+  common/aka_timer.hh
+  common/aka_tree.hh
+  common/aka_bounding_box.hh
+  common/aka_bounding_box.cc
+  common/aka_geometry.hh
+  common/aka_geometry.cc
+  model/solid_mechanics/solid_mechanics_model_element.hh
+
   #cc files
   contact/discretization.cc
   contact/element.cc

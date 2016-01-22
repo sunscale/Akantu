@@ -36,16 +36,15 @@
 #include "mesh_partition_mesh_data.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
-#  include "dumper_paraview.hh"
+#include "dumper_paraview.hh"
 #include "dumper_elemental_field.hh"
-#endif //AKANTU_USE_IOHELPER
+#endif // AKANTU_USE_IOHELPER
 
 using namespace akantu;
 /* -------------------------------------------------------------------------- */
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
   UInt dim = 2;
@@ -60,53 +59,58 @@ int main(int argc, char *argv[])
   Mesh::type_iterator tit = mesh.firstType(dim, gt);
   Mesh::type_iterator tend = mesh.lastType(dim, gt);
 
-  for(; tit != tend; ++tit) {
+  for (; tit != tend; ++tit) {
     UInt nb_element = mesh.getNbElement(*tit, gt);
     partition.alloc(nb_element, nb_component, *tit, gt);
     Array<UInt> & type_partition_reference = partition(*tit, gt);
-    for(UInt i(0); i < nb_element; ++i) {
-      Real barycenter[dim];
-      mesh.getBarycenter(i, *tit, barycenter, gt);
+    for (UInt i(0); i < nb_element; ++i) {
+      Vector<Real> barycenter(dim);
+      Element element(*tit, i, gt);
+      mesh.getBarycenter(element, barycenter);
+
       Real real_proc = barycenter[0] * nb_partitions;
-      if(std::abs(real_proc - round(real_proc)) < 10*std::numeric_limits<Real>::epsilon()) {
+      if (std::abs(real_proc - round(real_proc)) <
+          10 * std::numeric_limits<Real>::epsilon()) {
         type_partition_reference(i) = round(real_proc);
       } else {
         std::cout << "*";
         type_partition_reference(i) = floor(real_proc);
       }
-      std::cout << "Assigned proc " << type_partition_reference(i) << " to elem " << i << " (type " << *tit << ", barycenter x-coordinate " << barycenter[0] << ")" << std::endl;
+      std::cout << "Assigned proc " << type_partition_reference(i)
+                << " to elem " << i << " (type " << *tit
+                << ", barycenter x-coordinate " << barycenter[0] << ")"
+                << std::endl;
     }
   }
 
-
-  akantu::MeshPartitionMeshData * partitioner = new akantu::MeshPartitionMeshData(mesh, dim);
+  akantu::MeshPartitionMeshData * partitioner =
+      new akantu::MeshPartitionMeshData(mesh, dim);
   partitioner->setPartitionMapping(partition);
   partitioner->partitionate(nb_partitions);
 
   tit = mesh.firstType(dim, gt);
-  for(; tit != tend; ++tit) {
+  for (; tit != tend; ++tit) {
     UInt nb_element = mesh.getNbElement(*tit, gt);
     const Array<UInt> & type_partition_reference = partition(*tit, gt);
     const Array<UInt> & type_partition = partitioner->getPartitions()(*tit, gt);
-    for(UInt i(0); i < nb_element; ++i) {
-      AKANTU_DEBUG_ASSERT(type_partition(i) == type_partition_reference(i), "Incorrect partitioning");
+    for (UInt i(0); i < nb_element; ++i) {
+      AKANTU_DEBUG_ASSERT(type_partition(i) == type_partition_reference(i),
+                          "Incorrect partitioning");
     }
   }
 
-  //#define DEBUG_TEST
+//#define DEBUG_TEST
 
 #ifdef DEBUG_TEST
   DumperParaview dumper("test-mesh-data-partition");
   dumper::Field * field1 =
-    new dumper::ElementalField<UInt>(partitioner->getPartitions(), dim);
-  dumper::Field * field2 =
-    new dumper::ElementalField<UInt>(partition, dim);
+      new dumper::ElementalField<UInt>(partitioner->getPartitions(), dim);
+  dumper::Field * field2 = new dumper::ElementalField<UInt>(partition, dim);
   dumper.registerMesh(mesh, dim);
-  dumper.registerField("partitions"    , field1);
+  dumper.registerField("partitions", field1);
   dumper.registerField("partitions_ref", field2);
   dumper.dump();
 #endif
-
 
   delete partitioner;
 

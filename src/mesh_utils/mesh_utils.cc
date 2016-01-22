@@ -139,9 +139,9 @@ void MeshUtils::buildNode2Elements(const Mesh & mesh, CSR<UInt> & node_to_elem,
   UInt nb_types = type_list.size();
   UInt nb_good_types = 0;
 
-  UInt nb_nodes_per_element[nb_types];
-  UInt * conn_val[nb_types];
-  UInt nb_element[nb_types];
+  Vector<UInt> nb_nodes_per_element(nb_types);
+  UInt ** conn_val = new UInt *[nb_types];
+  Vector<UInt> nb_element(nb_types);
 
   for (it = type_list.begin(); it != type_list.end(); ++it) {
     ElementType type = *it;
@@ -186,7 +186,7 @@ void MeshUtils::buildNode2Elements(const Mesh & mesh, CSR<UInt> & node_to_elem,
     }
 
   node_to_elem.endInsertions();
-
+  delete [] conn_val;
   AKANTU_DEBUG_OUT();
 }
 

@@ -117,9 +117,9 @@ include(AkantuCPackMacros)
 generate_cpack_ignore_list(CPACK_SOURCE_IGNORE_FILES)
 
 # for debug
-#foreach(_file ${CPACK_SOURCE_IGNORE_FILES})
-#  message("IGNORE ${_file}")
-#endforeach()
+foreach(_file ${CPACK_SOURCE_IGNORE_FILES})
+  message("IGNORE ${_file}")
+endforeach()
 
 list(APPEND CPACK_SOURCE_IGNORE_FILES
   "/.*build.*/"  "/CVS/" "/\\\\.svn/" "/\\\\.bzr/" "/\\\\.hg/"

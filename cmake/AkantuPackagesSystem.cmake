@@ -339,6 +339,10 @@ package_add_files_to_package(
   COPYING
   COPYING.lesser
   CTestConfig.cmake
+  cmake/akantu_environement.sh.in
+  cmake/akantu_environement.csh.in
+  cmake/akantu_install_environement.sh.in
+  cmake/akantu_install_environement.csh.in
   cmake/Modules/CMakeFlagsHandling.cmake
   cmake/Modules/CMakePackagesSystem.cmake
   cmake/Modules/CMakePackagesSystemGlobalFunctions.cmake

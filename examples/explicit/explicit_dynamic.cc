@@ -55,7 +55,7 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model.initFull();
+  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass));
 
   time_step = model.getStableTimeStep();
   std::cout << "Time Step = " << time_step * time_factor << "s (" << time_step

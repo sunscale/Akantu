@@ -40,13 +40,12 @@ add_example(implicit             "Example on how to run an implicit simulation" 
 add_example(static               "Example on how to run a static simulation"           PACKAGE implicit)
 add_example(parallel             "Example of how to write a parallel code with Akantu" PACKAGE parallel)
 add_example(cohesive_element     "Cohesive element examples"                           PACKAGE cohesive_element)
-add_example(contact              "Examples on how to use contact within Akantu"        PACKAGE contact)
-add_example(optimization         "Optimization examples"                               PACKAGE optimization)
 add_example(structural_mechanics "Structural mechanics model examples"                 PACKAGE structural_mechanics)
 add_example(heat_transfer        "Example on how to run heat transfer simulation"      PACKAGE heat_transfer)
 add_example(embedded             "Example on how to run embedded model simulation"     PACKAGE embedded)
 
 package_add_files_to_package(
+  examples/README.rst
   cmake/AkantuExampleMacros.cmake
   )
 

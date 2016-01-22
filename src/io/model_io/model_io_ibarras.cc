@@ -6,7 +6,8 @@
  * @date creation: Thu Feb 21 2013
  * @date last modification: Sun Oct 19 2014
  *
- * @brief  Mesh Reader specially created for Wood's Tower analysis performed by the Institute I-Barras
+ * @brief  Mesh Reader specially created for Wood's Tower analysis performed by
+ *the Institute I-Barras
  *
  * @section LICENSE
  *
@@ -30,9 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-
 /* -------------------------------------------------------------------------- */
-
 
 /* -------------------------------------------------------------------------- */
 #include <fstream>
@@ -59,11 +58,12 @@ __BEGIN_AKANTU__
 
 void ModelIOIBarras::read(const std::string & filename, Model & mod) {
 
-  if (! dynamic_cast<StructuralMechanicsModel*>(&mod)){
+  if (!dynamic_cast<StructuralMechanicsModel *>(&mod)) {
     AKANTU_DEBUG_ERROR("");
   }
 
-  StructuralMechanicsModel & model = static_cast<StructuralMechanicsModel&>(mod);
+  StructuralMechanicsModel & model =
+      static_cast<StructuralMechanicsModel &>(mod);
   Mesh * mesh = new Mesh(3);
 
   std::ifstream infile;
@@ -72,8 +72,7 @@ void ModelIOIBarras::read(const std::string & filename, Model & mod) {
   std::string line;
   UInt current_line = 0;
 
-
-  if(!infile.good()) {
+  if (!infile.good()) {
     AKANTU_DEBUG_ERROR("Cannot open file " << filename);
   }
 
@@ -84,12 +83,12 @@ void ModelIOIBarras::read(const std::string & filename, Model & mod) {
   UInt nb_nodes;
   sstr >> nb_nodes;
 
-  UInt spatial_dimension = 3;
+  const UInt spatial_dimension = 3;
   Real coord[spatial_dimension];
-  Real * temp_nodes = new Real[nb_nodes*spatial_dimension];
+  Real * temp_nodes = new Real[nb_nodes * spatial_dimension];
   UInt * connect_to_akantu = new UInt[nb_nodes];
-  std::fill_n(connect_to_akantu ,0, nb_nodes);
-  std::fill_n(temp_nodes ,0., nb_nodes * spatial_dimension);
+  std::fill_n(connect_to_akantu, 0, nb_nodes);
+  std::fill_n(temp_nodes, 0., nb_nodes * spatial_dimension);
   for (UInt i = 0; i < nb_nodes; ++i) {
     UInt offset = i * spatial_dimension;
 
@@ -99,9 +98,9 @@ void ModelIOIBarras::read(const std::string & filename, Model & mod) {
     current_line++;
 
     /// read the coordinates of structural nodes and help nodes
-    for(UInt j = 0; j < spatial_dimension; ++j)
+    for (UInt j = 0; j < spatial_dimension; ++j)
       temp_nodes[offset + j] = coord[j];
-      }
+  }
 
   // Get Connectivities
   std::getline(infile, line);
@@ -111,49 +110,50 @@ void ModelIOIBarras::read(const std::string & filename, Model & mod) {
   sstr_elem >> nb_elements;
 
   mesh->addConnectivityType(_bernoulli_beam_3);
-  Array<UInt> & connectivity = const_cast<Array<UInt> &>(mesh->getConnectivity(_bernoulli_beam_3));
+  Array<UInt> & connectivity =
+      const_cast<Array<UInt> &>(mesh->getConnectivity(_bernoulli_beam_3));
 
   connectivity.resize(nb_elements);
 
   UInt nonodes[2];
-  UInt nb_struct_nodes=1;
-  for (UInt i = 0; i < nb_elements; ++i){
+  UInt nb_struct_nodes = 1;
+  for (UInt i = 0; i < nb_elements; ++i) {
 
     std::getline(infile, line);
     std::stringstream sstr_element(line);
     sstr_element >> nonodes[0] >> nonodes[1];
     current_line++;
 
-
     /// read the connectivities
-    for(UInt j = 0; j < 2; ++j){
+    for (UInt j = 0; j < 2; ++j) {
 
-      if (connect_to_akantu[nonodes[j]-1]==0){
-	  connect_to_akantu[nonodes[j]-1]=nb_struct_nodes;
-	  ++nb_struct_nodes;
+      if (connect_to_akantu[nonodes[j] - 1] == 0) {
+        connect_to_akantu[nonodes[j] - 1] = nb_struct_nodes;
+        ++nb_struct_nodes;
       }
-      connectivity(i,j)=connect_to_akantu[nonodes[j]-1]-1;
+      connectivity(i, j) = connect_to_akantu[nonodes[j] - 1] - 1;
     }
   }
-  nb_struct_nodes-=1;
+  nb_struct_nodes -= 1;
 
   /// read the coordinates of structural nodes
   Array<Real> & nodes = const_cast<Array<Real> &>(mesh->getNodes());
   nodes.resize(nb_struct_nodes);
 
-  for(UInt k = 0; k < nb_nodes; ++k){
-    if (connect_to_akantu[k]!=0){
-      for(UInt j = 0; j < spatial_dimension; ++j)
-	nodes(connect_to_akantu[k]-1,j) = temp_nodes[k*spatial_dimension+j];
+  for (UInt k = 0; k < nb_nodes; ++k) {
+    if (connect_to_akantu[k] != 0) {
+      for (UInt j = 0; j < spatial_dimension; ++j)
+        nodes(connect_to_akantu[k] - 1, j) =
+            temp_nodes[k * spatial_dimension + j];
     }
   }
 
-  //MeshPartitionScotch partition(*mesh, spatial_dimension);
-  //partition.reorder();
+  // MeshPartitionScotch partition(*mesh, spatial_dimension);
+  // partition.reorder();
 
-
-  ///Apply Boundaries
-  model.registerFEEngineObject<StructuralMechanicsModel::MyFEEngineType>("StructuralMechanicsModel", *mesh, spatial_dimension);
+  /// Apply Boundaries
+  model.registerFEEngineObject<StructuralMechanicsModel::MyFEEngineType>(
+      "StructuralMechanicsModel", *mesh, spatial_dimension);
 
   model.initModel();
 
@@ -167,7 +167,7 @@ void ModelIOIBarras::read(const std::string & filename, Model & mod) {
   sstr_nb_boundaries >> nb_boundaries;
   current_line++;
 
-  for (UInt i = 0; i < nb_boundaries; ++i){
+  for (UInt i = 0; i < nb_boundaries; ++i) {
     std::getline(infile, line);
     std::stringstream sstr_boundary(line);
     UInt boundnary_node;
@@ -175,10 +175,10 @@ void ModelIOIBarras::read(const std::string & filename, Model & mod) {
     current_line++;
 
     for (UInt j = 0; j < spatial_dimension; ++j)
-    blocked_dofs(connect_to_akantu[boundnary_node-1]-1 ,j)=true;
+      blocked_dofs(connect_to_akantu[boundnary_node - 1] - 1, j) = true;
   }
 
-  ///Define Materials
+  /// Define Materials
 
   std::getline(infile, line);
   std::stringstream sstr_nb_materials(line);
@@ -186,12 +186,13 @@ void ModelIOIBarras::read(const std::string & filename, Model & mod) {
   sstr_nb_materials >> nb_materials;
   current_line++;
 
-  for (UInt i = 0; i < nb_materials; ++i){
+  for (UInt i = 0; i < nb_materials; ++i) {
 
     std::getline(infile, line);
     std::stringstream sstr_material(line);
     Real material[6];
-    sstr_material >> material[0] >> material[1] >> material[2] >> material[3] >> material[4] >> material[5];
+    sstr_material >> material[0] >> material[1] >> material[2] >> material[3] >>
+        material[4] >> material[5];
     current_line++;
 
     StructuralMaterial mat;
@@ -211,19 +212,19 @@ void ModelIOIBarras::read(const std::string & filename, Model & mod) {
   Array<UInt> & element_material = model.getElementMaterial(_bernoulli_beam_3);
 
   mesh->initNormals();
-  Array<Real> & normals = const_cast<Array<Real> &>(mesh->getNormals(_bernoulli_beam_3));
+  Array<Real> & normals =
+      const_cast<Array<Real> &>(mesh->getNormals(_bernoulli_beam_3));
   normals.resize(nb_elements);
 
-  for (UInt i = 0; i < nb_elements; ++i){
+  for (UInt i = 0; i < nb_elements; ++i) {
 
     std::getline(infile, line);
     std::stringstream sstr_properties(line);
     sstr_properties >> property[0] >> property[1];
     current_line++;
 
-
     /// Assign material
-    element_material(i)=property[0]-1;
+    element_material(i) = property[0] - 1;
 
     /// Compute normals
 
@@ -232,38 +233,38 @@ void ModelIOIBarras::read(const std::string & filename, Model & mod) {
     Real w[3];
     Real n[3];
 
-    if (property[1]==0){
-      for (UInt j = 0; j < spatial_dimension; ++j){
-	x[j] = nodes(connectivity(i,1),j) - nodes(connectivity(i,0),j);
+    if (property[1] == 0) {
+      for (UInt j = 0; j < spatial_dimension; ++j) {
+        x[j] = nodes(connectivity(i, 1), j) - nodes(connectivity(i, 0), j);
       }
       n[0] = x[1];
       n[1] = -x[0];
       n[2] = 0.;
 
-     }
+    }
 
-    else{
-      for (UInt j = 0; j < spatial_dimension; ++j){
-	x[j] = nodes(connectivity(i,1),j) - nodes(connectivity(i,0),j);
-	v[j] = nodes(connectivity(i,1),j) - temp_nodes[(property[1]-1) * spatial_dimension + j];
-	Math::vectorProduct3(x, v, w);
-	Math::vectorProduct3(x, w, n);
-
+    else {
+      for (UInt j = 0; j < spatial_dimension; ++j) {
+        x[j] = nodes(connectivity(i, 1), j) - nodes(connectivity(i, 0), j);
+        v[j] = nodes(connectivity(i, 1), j) -
+               temp_nodes[(property[1] - 1) * spatial_dimension + j];
+        Math::vectorProduct3(x, v, w);
+        Math::vectorProduct3(x, w, n);
       }
     }
 
     Math::normalize3(n);
-    for (UInt j = 0; j < spatial_dimension; ++j){
-      normals(i,j) = n[j];
-      }
+    for (UInt j = 0; j < spatial_dimension; ++j) {
+      normals(i, j) = n[j];
+    }
   }
 
   model.computeRotationMatrix(_bernoulli_beam_3);
   infile.close();
-
 }
 /* -------------------------------------------------------------------------- */
-void ModelIOIBarras::assign_sets(const std::string & filename, StructuralMechanicsModel & model){
+void ModelIOIBarras::assign_sets(const std::string & filename,
+                                 StructuralMechanicsModel & model) {
 
   std::ifstream infile;
   infile.open(filename.c_str());
@@ -271,8 +272,7 @@ void ModelIOIBarras::assign_sets(const std::string & filename, StructuralMechani
   std::string line;
   UInt current_line = 0;
 
-
-  if(!infile.good()) {
+  if (!infile.good()) {
     AKANTU_DEBUG_ERROR("Cannot open file " << filename);
   }
 
@@ -289,22 +289,22 @@ void ModelIOIBarras::assign_sets(const std::string & filename, StructuralMechani
 
   UInt no_element[2];
 
-  for (UInt i = 0; i < nb_sets; ++i){
+  for (UInt i = 0; i < nb_sets; ++i) {
     std::getline(infile, line);
     std::stringstream sstr_set(line);
     sstr_set >> no_element[0];
-    no_element[1]=no_element[0];
+    no_element[1] = no_element[0];
     sstr_set >> no_element[1];
 
-    while (no_element[0]!=0) {
+    while (no_element[0] != 0) {
 
-      for (UInt j = no_element[0]-1 ; j < no_element[1] ; ++j){
-	set_ID(j) = i+1;
+      for (UInt j = no_element[0] - 1; j < no_element[1]; ++j) {
+        set_ID(j) = i + 1;
       }
       std::getline(infile, line);
       std::stringstream sstr_sets(line);
       sstr_sets >> no_element[0];
-      no_element[1]=no_element[0];
+      no_element[1] = no_element[0];
       sstr_sets >> no_element[1];
     }
   }

@@ -31,7 +31,18 @@
 
 package_declare(python_interface
   DESCRIPTION "Akantu's python interface"
-  DEPENDS PythonLibs)
+  DEPENDS PythonLibs core_cxx11)
+
+package_declare_sources(python_interface
+  python/python_functor.cc
+  python/python_functor.hh
+  python/python_functor_inline_impl.cc
+  model/boundary_condition_python_functor.hh
+  model/boundary_condition_python_functor.cc
+  model/solid_mechanics/materials/material_python/material_python.cc
+  model/solid_mechanics/materials/material_python/material_python.hh
+  )
+
 
 package_set_package_system_dependency(python_interface deb-src swig3.0)
 

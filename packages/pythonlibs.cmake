@@ -37,16 +37,6 @@ package_declare(PythonLibs EXTERNAL DESCRIPTION "Akantu's python interface"
   EXTRA_PACKAGE_OPTIONS PREFIX PYTHON FOUND PYTHONLIBS_FOUND
   )
 
-package_declare_sources(Pythonlibs
-  python/python_functor.cc
-  python/python_functor.hh
-  python/python_functor_inline_impl.cc
-  model/boundary_condition_python_functor.hh
-  model/boundary_condition_python_functor.cc
-  model/solid_mechanics/materials/material_python/material_python.cc
-  model/solid_mechanics/materials/material_python/material_python.hh
-  )
-
 package_set_package_system_dependency(PythonLibs deb libpython2.7)
 package_set_package_system_dependency(PythonLibs deb-src libpython2.7-dev)
 

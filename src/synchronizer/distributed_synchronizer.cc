@@ -98,6 +98,8 @@ DistributedSynchronizer::~DistributedSynchronizer() {
 }
 
 /* -------------------------------------------------------------------------- */
+/// TODO check what it would imply to rewrite this creation as a distributed
+/// process
 DistributedSynchronizer *
 DistributedSynchronizer::createDistributedSynchronizerMesh(
     Mesh & mesh, const MeshPartition * partition, UInt root, SynchronizerID id,
@@ -147,13 +149,9 @@ DistributedSynchronizer::createDistributedSynchronizerMesh(
 
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
       UInt nb_element = mesh.getNbElement(*it);
-      UInt nb_local_element[nb_proc];
-      UInt nb_ghost_element[nb_proc];
-      UInt nb_element_to_send[nb_proc];
-
-      memset(nb_local_element, 0, nb_proc * sizeof(UInt));
-      memset(nb_ghost_element, 0, nb_proc * sizeof(UInt));
-      memset(nb_element_to_send, 0, nb_proc * sizeof(UInt));
+      Vector<UInt> nb_local_element(nb_proc, 0);
+      Vector<UInt> nb_ghost_element(nb_proc, 0);
+      Vector<UInt> nb_element_to_send(nb_proc, 0);
 
       /// \todo change this ugly way to avoid a problem if an element
       /// type is present in the mesh but not in the partitions
@@ -181,8 +179,8 @@ DistributedSynchronizer::createDistributedSynchronizerMesh(
       }
 
       /// allocating buffers
-      UInt * buffers[nb_proc];
-      UInt * buffers_tmp[nb_proc];
+      UInt ** buffers = new UInt *[nb_proc];
+      UInt ** buffers_tmp = new UInt *[nb_proc];
       for (UInt p = 0; p < nb_proc; ++p) {
         UInt size =
             nb_nodes_per_element * (nb_local_element[p] + nb_ghost_element[p]);
@@ -266,8 +264,7 @@ DistributedSynchronizer::createDistributedSynchronizerMesh(
       }
 
       /// splitting the partition information to send them to processors
-      UInt count_by_proc[nb_proc];
-      memset(count_by_proc, 0, nb_proc * sizeof(UInt));
+      Vector<UInt> count_by_proc(nb_proc, 0);
       for (UInt el = 0; el < nb_element; ++el) {
         *(buffers_tmp[partition_num(el)]++) = ghost_partition.getNbCols(el);
         UInt i(0);
@@ -316,6 +313,8 @@ DistributedSynchronizer::createDistributedSynchronizerMesh(
         delete[] buffers[p];
       }
 
+      delete [] buffers;
+      delete [] buffers_tmp;
       /* -------------------------------------------------------------------- */
       /// send  data assossiated to the mesh
       /* -------->>>>-TAGS--------------------------------------------------- */
@@ -356,8 +355,8 @@ DistributedSynchronizer::createDistributedSynchronizerMesh(
     std::multimap<UInt, std::pair<UInt, UInt> > nodes_to_proc;
     /// get the list of nodes to send and send them
     Real * local_nodes = NULL;
-    UInt nb_nodes_per_proc[nb_proc];
-    UInt * nodes_per_proc[nb_proc];
+    Vector<UInt> nb_nodes_per_proc(nb_proc);
+    UInt ** nodes_per_proc = new UInt *[nb_proc];
 
     comm.broadcast(&(mesh.nb_global_nodes), 1, root);
 
@@ -415,7 +414,7 @@ DistributedSynchronizer::createDistributedSynchronizerMesh(
            nb_nodes * spatial_dimension * sizeof(Real));
     delete[] local_nodes;
 
-    Array<Int> * nodes_type_per_proc[nb_proc];
+    Array<Int> ** nodes_type_per_proc = new Array<Int> *[nb_proc];
     for (UInt p = 0; p < nb_proc; ++p) {
       nodes_type_per_proc[p] = new Array<Int>(nb_nodes_per_proc[p]);
     }
@@ -482,7 +481,8 @@ DistributedSynchronizer::createDistributedSynchronizerMesh(
         delete[] nodes_per_proc[p];
       delete nodes_type_per_proc[p];
     }
-
+    delete [] nodes_per_proc;
+    delete [] nodes_type_per_proc;
     /* -------->>>>-NODE GROUPS --------------------------------------------- */
     synchronizeNodeGroupsMaster(communicator, root, mesh);
 

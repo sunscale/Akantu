@@ -112,6 +112,17 @@ configure_file(cmake/AkantuConfig.cmake.in "${PROJECT_BINARY_DIR}/AkantuConfig.c
 configure_file(cmake/AkantuConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/AkantuConfigVersion.cmake" @ONLY)
 configure_file(cmake/AkantuUse.cmake "${PROJECT_BINARY_DIR}/AkantuUse.cmake" COPYONLY)
 
+configure_file(cmake/akantu_environement.sh.in ${PROJECT_BINARY_DIR}/akantu_environement.sh  @ONLY)
+configure_file(cmake/akantu_environement.csh.in ${PROJECT_BINARY_DIR}/akantu_environement.csh @ONLY)
+
+
+configure_file(cmake/akantu_install_environement.sh.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.sh  @ONLY)
+configure_file(cmake/akantu_install_environement.csh.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.csh @ONLY)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.sh
+  ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.csh
+  DESTINATION share/akantu${AKANTU_VERSION})
 
 # include(CMakePackageConfigHelpers)
 
