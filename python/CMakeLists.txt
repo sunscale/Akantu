@@ -263,7 +263,7 @@ setup(name='akantu',
 ")
 
   add_custom_target(_akantu ALL
-    COMMAND ${PYTHON_EXECUTABLE} ./setup.py ${_quiet} --no-user-cfg build_ext -inplace
+    COMMAND ${PYTHON_EXECUTABLE} ./setup.py ${_quiet} --no-user-cfg build_ext --inplace
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS ${AKANTU_SWIG_WRAPPERS_CPP} akantu
     COMMENT "Building akantu's python interface"
