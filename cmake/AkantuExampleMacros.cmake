@@ -44,7 +44,7 @@ endfunction()
 function(add_example et_name desc)
   string(TOUPPER ${et_name} upper_name)
 
-  if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${et_name} AND _activated)
+  if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${et_name})
     message(FATAL_ERROR "The folder ${CMAKE_CURRENT_SOURCE_DIR}/${et_name} "
       "that you try to register as an example sub-folder, does not exists.")
   endif()

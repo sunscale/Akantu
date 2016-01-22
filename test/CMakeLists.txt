@@ -57,6 +57,5 @@ add_akantu_test(test_python_interface "Test python interface")
 
 package_add_files_to_package(
   cmake/akantu_test_driver.sh
-  cmake/akantu_test_environement.sh.in
   cmake/AkantuTestsMacros.cmake
   )
