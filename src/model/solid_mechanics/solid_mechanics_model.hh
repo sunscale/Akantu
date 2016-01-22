@@ -6,7 +6,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Jul 27 2010
- * @date last modification: Fri Dec 18 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Model of Solid Mechanics
  *

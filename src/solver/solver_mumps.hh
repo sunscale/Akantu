@@ -4,7 +4,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri Jun 18 2010
- * @date last modification: Fri Oct 16 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Solver class implementation for the mumps solver
  *

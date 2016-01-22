@@ -8,10 +8,10 @@
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Wed Sep 01 2010
- * @date last modification: Tue Dec 08 2015
+ * @date last modification: Fri Jan 22 2016
  *
  * @brief  implementation of a  communicator using a static_communicator for
- *real
+ * real
  * send/receive
  *
  * @section LICENSE

@@ -5,7 +5,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Fri Oct 22 2010
-# @date last modification: Fri Dec 11 2015
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  Set of macros used by akantu cmake files
 #

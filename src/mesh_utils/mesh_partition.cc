@@ -5,7 +5,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Aug 17 2010
- * @date last modification: Sun Oct 19 2014
+ * @date last modification: Fri Jan 22 2016
  *
  * @brief  implementation of common part of all partitioner
  *

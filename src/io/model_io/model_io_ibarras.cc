@@ -4,10 +4,10 @@
  * @author Fabian Barras <fabian.barras@epfl.ch>
  *
  * @date creation: Thu Feb 21 2013
- * @date last modification: Sun Oct 19 2014
+ * @date last modification: Fri Jan 22 2016
  *
  * @brief  Mesh Reader specially created for Wood's Tower analysis performed by
- *the Institute I-Barras
+ * the Institute I-Barras
  *
  * @section LICENSE
  *

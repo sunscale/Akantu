@@ -5,7 +5,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Oct 13 2014
- * @date last modification: Fri Oct 16 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  implementation of the static solver
  *

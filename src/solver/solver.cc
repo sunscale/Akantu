@@ -5,7 +5,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Dec 13 2010
- * @date last modification: Wed Oct 07 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Solver interface class
  *

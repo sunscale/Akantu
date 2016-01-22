@@ -5,7 +5,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Sep 02 2014
- * @date last modification: Tue Dec 08 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Common interface for fields
  *

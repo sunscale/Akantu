@@ -1,6 +1,7 @@
 /**
  * @file   integration_point.hh
  *
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Jun 17 2015
  * @date last modification: Sun Nov 15 2015

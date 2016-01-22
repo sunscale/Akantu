@@ -4,7 +4,7 @@
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  *
  * @date creation: Tue Sep 02 2014
- * @date last modification: Sun Nov 15 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Field that map a function to another field
  *

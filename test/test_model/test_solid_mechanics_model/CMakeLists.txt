@@ -4,7 +4,7 @@
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 #
 # @date creation: Fri Sep 03 2010
-# @date last modification: Mon Dec 07 2015
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  configuratio for SolidMechanicsModel tests
 #

@@ -5,7 +5,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Wed Nov 05 2014
-# @date last modification: Mon Jan 18 2016
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  Set of macros used by akantu to handle the package system
 #

@@ -5,6 +5,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Jan 18 2016
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  macros for examples
 #

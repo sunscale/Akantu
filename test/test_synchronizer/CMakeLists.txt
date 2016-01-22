@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Fri Sep 03 2010
-# @date last modification: Mon Dec 07 2015
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  configuration for synchronizer tests
 #

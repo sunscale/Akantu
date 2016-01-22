@@ -6,7 +6,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue May 13 2014
- * @date last modification: Fri Oct 16 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Solver class implementation for the petsc solver
  *

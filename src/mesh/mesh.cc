@@ -7,7 +7,7 @@
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Fri Jun 18 2010
- * @date last modification: Fri Oct 02 2015
+ * @date last modification: Fri Jan 22 2016
  *
  * @brief  class handling meshes
  *

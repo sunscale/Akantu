@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Wed Oct 17 2012
-# @date last modification: Mon Jan 18 2016
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  Configure the packaging system
 #

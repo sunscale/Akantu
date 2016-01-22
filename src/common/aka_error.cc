@@ -4,7 +4,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Sep 06 2010
- * @date last modification: Mon Nov 16 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  handling of errors
  *

@@ -7,7 +7,7 @@
  * @author Alodie Schneuwly <alodie.schneuwly@epfl.ch>
  *
  * @date creation: Sat Mar 26 2011
- * @date last modification: Thu Nov 19 2015
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  handles diana meshes
  *

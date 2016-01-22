@@ -7,7 +7,7 @@
  * @date last modification: Tue Aug 04 2015
  *
  * @brief  Specialization of the material class for finite deformation
- *neo-hookean material
+ * neo-hookean material
  *
  * @section LICENSE
  *

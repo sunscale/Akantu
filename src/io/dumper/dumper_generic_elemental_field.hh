@@ -5,7 +5,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Sep 02 2014
- * @date last modification: Mon Sep 21 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Generic interface for elemental fields
  *

@@ -1,10 +1,11 @@
 #===============================================================================
 # @file   python_interface.cmake
 #
+# @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Tue Nov 29 2011
-# @date last modification: Mon Jan 18 2016
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  package description for the python interface
 #

@@ -4,8 +4,8 @@
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Mon Nov 28 2011
-# @date last modification: Mon Jan 18 2016
+# @date creation: Mon Jun 14 2010
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  CMake file for the library
 #

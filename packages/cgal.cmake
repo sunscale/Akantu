@@ -5,7 +5,7 @@
 # @author Clement Roux <clement.roux@epfl.ch>
 #
 # @date creation: Thu Feb 19 2015
-# @date last modification: Thu Jan 14 2016
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  package description for CGAL
 #

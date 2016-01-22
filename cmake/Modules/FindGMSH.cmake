@@ -4,6 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Dec 08 2014
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  Find gmsh and delacre the add_mesh macro
 #

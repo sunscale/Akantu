@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Mar 30 2015
-# @date last modification: Wed Nov 11 2015
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  build script for iohelper
 #

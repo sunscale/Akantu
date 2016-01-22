@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Tue Feb 26 2013
-# @date last modification: Wed Dec 16 2015
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  C++11 addition to the core package
 #

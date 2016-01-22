@@ -6,7 +6,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Nov 13 2013
- * @date last modification: Sun Nov 15 2015
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  Implementation of the Dumpable class
  *

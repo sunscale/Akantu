@@ -8,7 +8,7 @@
  * @date last modification: Thu Oct 15 2015
  *
  * @brief  Specialization of the material class for the non-local mazars
- *material
+ * material
  *
  * @section LICENSE
  *

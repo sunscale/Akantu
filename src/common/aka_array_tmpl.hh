@@ -4,7 +4,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Thu Jul 15 2010
- * @date last modification: Fri Nov 06 2015
+ * @date last modification: Fri Jan 22 2016
  *
  * @brief  Inline functions of the classes Array<T> and ArrayBase
  *

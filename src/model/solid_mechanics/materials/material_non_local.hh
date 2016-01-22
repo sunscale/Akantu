@@ -8,7 +8,7 @@
  * @date last modification: Tue Dec 08 2015
  *
  * @brief  Material class that handle the non locality of a law for example
- *damage.
+ * damage.
  *
  * @section LICENSE
  *

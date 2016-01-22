@@ -5,6 +5,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Jan 18 2016
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  macros for examples
 #
@@ -45,6 +46,7 @@ endfunction()
 #===============================================================================
 function(_add_akantu_simulation simulation_name)
   set(multi_variables
+    SCRIPT
     SOURCES
     FILES_TO_COPY
     DEPENDS
@@ -95,32 +97,38 @@ function(_add_akantu_simulation simulation_name)
   string(REGEX REPLACE " +" " " _simulation_COMPILE_FLAGS "${_tmp_flags}")
 
   if(_deps_OK)
-    add_executable(${simulation_name}
-      ${_simulation_UNPARSED_ARGUMENTS} ${_simulation_SOURCES})
+    if(_simulation_UNPARSED_ARGUMENTS OR _simulation_SOURCES)
+      add_executable(${simulation_name}
+        ${_simulation_UNPARSED_ARGUMENTS} ${_simulation_SOURCES})
 
-    target_link_libraries(${simulation_name} akantu ${_simulation_LIBRARIES})
-    target_include_directories(${simulation_name} PRIVATE ${AKANTU_INCLUDE_DIRS} ${_simulation_INCLUDE_DIRS})
+      target_link_libraries(${simulation_name} akantu ${_simulation_LIBRARIES})
+      target_include_directories(${simulation_name} PRIVATE ${AKANTU_INCLUDE_DIRS} ${_simulation_INCLUDE_DIRS})
 
-    if(_simulation_DEPENDS)
-      foreach(_deps ${_simulation_DEPENDS})
-        get_target_property(_type ${_deps} TYPE)
-        if(_type STREQUAL "SHARED_LIBRARY"
-            OR _type STREQUAL "STATIC_LIBRARY")
-          target_link_libraries(${simulation_name} ${_deps})
-        else()
-          add_dependencies(${simulation_name} ${_deps})
-        endif()
-      endforeach()
+      if(_simulation_DEPENDS)
+        foreach(_deps ${_simulation_DEPENDS})
+          get_target_property(_type ${_deps} TYPE)
+          if(_type STREQUAL "SHARED_LIBRARY"
+              OR _type STREQUAL "STATIC_LIBRARY")
+            target_link_libraries(${simulation_name} ${_deps})
+          else()
+            add_dependencies(${simulation_name} ${_deps})
+          endif()
+        endforeach()
+      endif()
+
+      if(_simulation_COMPILE_OPTIONS)
+        set_target_properties(${simulation_name}
+          PROPERTIES COMPILE_DEFINITIONS "${_simulation_COMPILE_OPTIONS}")
+      endif()
+
+      if(_simulation_COMPILE_FLAGS)
+        set_target_properties(${simulation_name}
+          PROPERTIES COMPILE_FLAGS "${_simulation_COMPILE_FLAGS}")
+      endif()
     endif()
 
-    if(_simulation_COMPILE_OPTIONS)
-      set_target_properties(${simulation_name}
-        PROPERTIES COMPILE_DEFINITIONS "${_simulation_COMPILE_OPTIONS}")
-    endif()
-
-    if(_simulation_COMPILE_FLAGS)
-      set_target_properties(${simulation_name}
-        PROPERTIES COMPILE_FLAGS "${_simulation_COMPILE_FLAGS}")
+    if(_simulation_SCRIPT)
+      file(COPY ${_simulation_SCRIPT} DESTINATION .)
     endif()
 
     # copy the needed files to the build folder
@@ -140,13 +148,13 @@ function(_add_akantu_simulation simulation_name)
     endif()
   endif()
 
-
   if(_simulation_LIST_FILES)
     set(_simulation_files)
 
-    foreach(_file ${_simulation_SOURCES} ${_simulation_UNPARSED_ARGUMENTS} ${_simulation_FILES_TO_COPY})
+    foreach(_file ${_simulation_SCRIPT} ${_simulation_SOURCES}
+      ${_simulation_UNPARSED_ARGUMENTS} ${_simulation_FILES_TO_COPY})
       list(APPEND _simulation_files ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
-    endforeach()
+      endforeach()
 
     foreach(_dep ${_simulation_DEPENDS})
       get_target_list_of_associated_files(${_dep} _dep_ressources)

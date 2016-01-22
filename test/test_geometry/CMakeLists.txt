@@ -4,7 +4,7 @@
 # @author Lucas Frerot <lucas.frerot@epfl.ch>
 #
 # @date creation: Fri Sep 03 2010
-# @date last modification: Thu Jan 14 2016
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  configuration for solver tests
 #

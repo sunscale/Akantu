@@ -4,6 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Jan 18 2016
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  configuration implicit tests
 #

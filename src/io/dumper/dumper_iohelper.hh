@@ -7,7 +7,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri Oct 26 2012
- * @date last modification: Fri Apr 17 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Define the akantu dumper interface for IOhelper dumpers
  *

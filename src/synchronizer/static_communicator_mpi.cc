@@ -4,7 +4,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Sun Sep 26 2010
- * @date last modification: Wed Jan 13 2016
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  StaticCommunicatorMPI implementation
  *

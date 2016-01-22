@@ -6,7 +6,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Thu Feb 21 2013
- * @date last modification: Sat Sep 12 2015
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  Specialization of the geometrical types
  *

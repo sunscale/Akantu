@@ -4,7 +4,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Dec 13 2010
- * @date last modification: Fri Oct 16 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  implem of SolverMumps class
  *

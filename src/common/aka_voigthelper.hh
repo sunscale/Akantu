@@ -7,7 +7,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri Dec 20 2013
- * @date last modification: Sun Oct 19 2014
+ * @date last modification: Fri Jan 22 2016
  *
  * @brief  Helper file for Voigt notation
  *

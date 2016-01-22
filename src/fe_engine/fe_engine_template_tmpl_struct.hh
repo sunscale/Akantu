@@ -9,7 +9,7 @@
  * @date last modification: Thu Oct 15 2015
  *
  * @brief  Template implementation of FEEngineTemplate for Structural Element
- *Kinds
+ * Kinds
  *
  * @section LICENSE
  *

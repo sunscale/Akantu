@@ -5,7 +5,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Oct 03 2011
- * @date last modification: Thu Oct 15 2015
+ * @date last modification: Fri Jan 22 2016
  *
  * @brief  implementation of the grid synchronizer
  *

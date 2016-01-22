@@ -5,7 +5,7 @@
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Wed Nov 13 2013
- * @date last modification: Sun Oct 19 2014
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  implementation of the cohesive internal field
  *

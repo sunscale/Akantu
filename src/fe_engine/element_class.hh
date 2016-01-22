@@ -5,7 +5,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri Jun 18 2010
- * @date last modification: Thu Oct 22 2015
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  Declaration of the ElementClass main class and the
  * Integration and Interpolation elements

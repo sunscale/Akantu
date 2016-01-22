@@ -4,7 +4,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri Jun 18 2010
- * @date last modification: Wed Jan 13 2016
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Class handling the parallel communications
  *

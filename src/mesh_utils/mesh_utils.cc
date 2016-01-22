@@ -9,7 +9,7 @@
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Fri Aug 20 2010
- * @date last modification: Sun Nov 15 2015
+ * @date last modification: Fri Jan 22 2016
  *
  * @brief  All mesh utils necessary for various tasks
  *

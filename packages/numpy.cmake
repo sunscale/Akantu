@@ -4,7 +4,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Tue Nov 29 2011
-# @date last modification: Mon Jan 18 2016
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  package description for the python library
 #

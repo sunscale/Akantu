@@ -6,7 +6,7 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Fri Sep 03 2010
-# @date last modification: Mon Jan 18 2016
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  configuration for tests
 #

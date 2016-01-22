@@ -5,7 +5,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri Jun 18 2010
- * @date last modification: Tue Dec 08 2015
+ * @date last modification: Fri Jan 22 2016
  *
  * @brief  Array container for Akantu
  * This container differs from the std::vector from the fact it as 2 dimensions

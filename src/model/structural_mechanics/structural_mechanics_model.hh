@@ -7,10 +7,10 @@
  * @author Damien Spielmann <damien.spielmann@epfl.ch>
  *
  * @date creation: Fri Jul 15 2011
- * @date last modification: Wed Apr 22 2015
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  Particular implementation of the structural elements in the
- *StructuralMechanicsModel
+ * StructuralMechanicsModel
  *
  * @section LICENSE
  *

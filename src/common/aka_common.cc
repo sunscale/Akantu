@@ -5,7 +5,7 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Jun 14 2010
- * @date last modification: Wed Jan 13 2016
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Initialization of global variables
  *

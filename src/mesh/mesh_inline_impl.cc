@@ -7,7 +7,7 @@
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Thu Jul 15 2010
- * @date last modification: Wed Nov 11 2015
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  Implementation of the inline functions of the mesh class
  *

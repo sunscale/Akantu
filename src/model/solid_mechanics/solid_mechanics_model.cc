@@ -11,7 +11,7 @@
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Tue Jul 27 2010
- * @date last modification: Mon Nov 30 2015
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Implementation of the SolidMechanicsModel class
  *
