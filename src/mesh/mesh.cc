@@ -241,17 +241,17 @@ void Mesh::computeBoundingBox() {
   if (this->is_distributed) {
     StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
 
-    Real reduce_bounds[2 * spatial_dimension];
+    Matrix<Real> reduce_bounds(spatial_dimension, 2);
     for (UInt k = 0; k < spatial_dimension; ++k) {
-      reduce_bounds[2 * k] = local_lower_bounds(k);
-      reduce_bounds[2 * k + 1] = -local_upper_bounds(k);
+      reduce_bounds(k, 0) =  local_lower_bounds(k);
+      reduce_bounds(k, 1) = -local_upper_bounds(k);
     }
 
-    comm.allReduce(reduce_bounds, 2 * spatial_dimension, _so_min);
+    comm.allReduce(reduce_bounds.storage(), reduce_bounds.size(), _so_min);
 
     for (UInt k = 0; k < spatial_dimension; ++k) {
-      lower_bounds(k) = reduce_bounds[2 * k];
-      upper_bounds(k) = -reduce_bounds[2 * k + 1];
+      lower_bounds(k) =  reduce_bounds(k, 0);
+      upper_bounds(k) = -reduce_bounds(k, 1);
     }
   } else {
     this->lower_bounds = this->local_lower_bounds;

@@ -593,6 +593,13 @@ template <class T, bool is_scal> Int Array<T, is_scal>::find(T elem[]) const {
 }
 
 /* -------------------------------------------------------------------------- */
+template <class T, bool is_scal>
+template <template <typename> class C>
+inline Int Array<T, is_scal>::find(const C<T> & elem) {
+  return this->find(elem.storage());
+}
+
+/* -------------------------------------------------------------------------- */
 /**
  * copy the content of another array. This overwrites the current content.
  * @param other Array to copy into this array. It has to have the same
