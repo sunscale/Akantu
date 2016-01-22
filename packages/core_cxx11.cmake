@@ -46,22 +46,6 @@ else()
     )
 endif()
 
-package_declare_sources(core_cxx11
-  common/aka_point.hh
-  common/aka_ball.cc
-  common/aka_plane.hh
-  common/aka_polytope.hh
-  common/aka_ball.hh
-  common/aka_timer.hh
-  common/aka_tree.hh
-  common/aka_bounding_box.hh
-  common/aka_bounding_box.cc
-  common/aka_geometry.hh
-  common/aka_geometry.cc
-  model/solid_mechanics/solid_mechanics_model_element.hh
-  )
-
-
 package_declare_documentation(core_cxx11
   "This option activates some features of the C++11 standard. This is usable with GCC>=4.7 or Intel>=13.")
 
