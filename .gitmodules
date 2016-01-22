@@ -13,3 +13,6 @@
 [submodule "extra_packages/phase-field"]
 	path = extra_packages/phase-field
 	url = git@lsmssrv1.epfl.ch:akantu-phase-field.git
+[submodule "extra-packages/contact-alejandro"]
+	path = extra-packages/contact-alejandro
+	url = git@lsmssrv1.epfl.ch:akantu-contact-alejandro.git
