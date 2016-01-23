@@ -4,13 +4,13 @@
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @date creation: Mon Feb 10 2014
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Wed Feb 25 2015
  *
  * @brief  test the function reassign material
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -99,7 +99,7 @@ public:
     Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
     Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
     for(; it != last_type; ++it) {
-      Array<UInt> & el_idx_by_mat = model.getElementIndexByMaterial(*it, ghost_type);
+      Array<UInt> & mat_indexes = model.getMaterialByElement(*it, ghost_type);
       UInt nb_element = mesh.getNbElement(*it, ghost_type);
       Array<Real>::iterator<Vector<Real> > bary = barycenters(*it, ghost_type).begin(spatial_dimension);
       for (UInt elem = 0; elem < nb_element; ++elem, ++bary) {
@@ -110,7 +110,7 @@ public:
   	else
   	  mat_index = model.getMaterialIndex(mat_2_material);
 
-  	if (el_idx_by_mat(elem,0) != mat_index)
+  	if (mat_indexes(elem) != mat_index)
 	  /// wrong material index, make test fail
   	  return false;
 

@@ -3,15 +3,16 @@
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Sun Sep 12 2010
-# @date last modification: Fri Sep 05 2014
+# @date creation: Fri Sep 03 2010
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  configuration for synchronizer tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -35,25 +36,36 @@ add_mesh(test_synchronizer_communication_mesh
 
 register_test(test_synchronizer_communication
   SOURCES test_synchronizer_communication.cc
-  DEPENDENCIES test_synchronizer_communication_mesh
+  DEPENDS test_synchronizer_communication_mesh
   PACKAGE parallel
   )
 
-if(AKANTU_DAMAGE_NON_LOCAL)
-  add_executable(test_grid_synchronizer_check_neighbors test_grid_synchronizer_check_neighbors.cc)
+if(DEFINED AKANTU_DAMAGE_NON_LOCAL)
+  add_executable(test_grid_synchronizer_check_neighbors test_grid_synchronizer_check_neighbors.cc test_grid_tools.hh)
   target_link_libraries(test_grid_synchronizer_check_neighbors akantu)
+  if(AKANTU_EXTRA_CXX_FLAGS)
+    set_target_properties(test_grid_synchronizer_check_neighbors PROPERTIES COMPILE_FLAGS ${AKANTU_EXTRA_CXX_FLAGS})
+  endif()
 endif()
 
 register_test(test_grid_synchronizer
   SOURCES test_grid_synchronizer.cc test_data_accessor.hh
-  DEPENDENCIES test_synchronizer_communication_mesh test_grid_synchronizer_check_neighbors
+  DEPENDS test_synchronizer_communication_mesh test_grid_synchronizer_check_neighbors
   EXTRA_FILES test_grid_synchronizer_check_neighbors.cc test_grid_tools.hh
   PACKAGE damage_non_local
   )
 
 register_test(test_dof_synchronizer
   SOURCES test_dof_synchronizer.cc test_data_accessor.hh
-  FILES_TO_COPY bar.msh)
+  FILES_TO_COPY bar.msh
+  PACKAGE parallel
+  )
+
+register_test(test_dof_synchronizer_communication
+  SOURCES test_dof_synchronizer_communication.cc test_dof_data_accessor.hh
+  DEPENDS test_synchronizer_communication_mesh
+  PACKAGE parallel
+  )
 
 register_test(test_data_distribution
   SOURCES test_data_distribution.cc

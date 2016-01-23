@@ -1,18 +1,19 @@
 /**
  * @file   material_mazars_inline_impl.cc
  *
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Marion Estelle Chambart <marion.chambart@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Apr 06 2011
- * @date last modification: Wed Mar 13 2013
+ * @date last modification: Tue Aug 04 2015
  *
  * @brief  Implementation of the inline functions of the material damage
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -51,7 +52,7 @@ MaterialMazars<spatial_dimension>::computeStressOnQuad(const Matrix<Real> & grad
 
   Ehat = 0.;
   for (UInt i = 0; i < 3; ++i) {
-    Real epsilon_p = std::max(0., Fdiag(i));
+    Real epsilon_p = std::max(Real(0.), Fdiag(i));
     Ehat += epsilon_p * epsilon_p;
   }
   Ehat = sqrt(Ehat);
@@ -115,22 +116,22 @@ MaterialMazars<spatial_dimension>::computeDamageOnQuad(const Real & epsilon_equ,
     sigma_princ(2) = Cdiag*epsilon_princ(2) + this->lambda*(epsilon_princ(1) + epsilon_princ(0));
 
     Vector<Real> sigma_p(3);
-    for (UInt i = 0; i < 3; i++) sigma_p(i) = std::max(0., sigma_princ(i));
-    sigma_p *= 1-dam;
+    for (UInt i = 0; i < 3; i++) sigma_p(i) = std::max(Real(0.), sigma_princ(i));
+    sigma_p *= 1. - dam;
 
     Real trace_p = this->nu / this->E * (sigma_p(0) + sigma_p(1) + sigma_p(2));
 
     Real alpha_t = 0;
     for (UInt i = 0; i < 3; ++i) {
       Real epsilon_t = (1 + this->nu)/this->E * sigma_p(i) - trace_p;
-      Real epsilon_p = std::max(0., epsilon_princ(i));
+      Real epsilon_p = std::max(Real(0.), epsilon_princ(i));
       alpha_t += epsilon_t * epsilon_p;
     }
 
     alpha_t /= epsilon_equ * epsilon_equ;
-    alpha_t = std::min(alpha_t, 1.);
+    alpha_t = std::min(alpha_t, Real(1.));
 
-    Real alpha_c = 1 - alpha_t;
+    Real alpha_c = 1. - alpha_t;
 
     alpha_t = std::pow(alpha_t, beta);
     alpha_c = std::pow(alpha_c, beta);
@@ -139,6 +140,15 @@ MaterialMazars<spatial_dimension>::computeDamageOnQuad(const Real & epsilon_equ,
     damtemp = alpha_t * dam_t + alpha_c * dam_c;
 
     dam = std::max(damtemp, dam);
-    dam = std::min(dam,1.);
+    dam = std::min(dam, Real(1.));
   }
 }
+
+
+/* -------------------------------------------------------------------------- */
+// template<UInt spatial_dimension>
+// inline void MaterialMazars<spatial_dimension>::computeTangentModuliOnQuad(Matrix<Real> & tangent) {
+//   MaterialElastic<spatial_dimension>::computeTangentModuliOnQuad(tangent);
+
+//   tangent *= (1-dam);
+// }

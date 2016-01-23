@@ -1,0 +1,13 @@
+material test_material [
+	 name = mat_1
+	 rho = 1   # density
+	 E   = 1 # young's modulus
+	 nu  = 0    # poisson's ratio
+]
+
+non_local test_region base_wf [
+	  radius = 0.5
+	  weight_function weight_parameter [
+	  update_rate = 1
+	  ]	  
+]	  	  

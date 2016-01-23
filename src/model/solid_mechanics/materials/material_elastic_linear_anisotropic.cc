@@ -5,13 +5,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Sep 25 2013
- * @date last modification: Fri Sep 19 2014
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Anisotropic elastic material
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -80,7 +80,7 @@ MaterialElasticLinearAnisotropic(SolidMechanicsModel & model,
     for (UInt j = start ;  j < this->voigt_h.size ; ++j) {
       std::stringstream param("C");
       param << "C" << i+1 << j+1;
-      this->registerParam(param.str() , this->Cprime(i,j), 0., _pat_parsmod,
+      this->registerParam(param.str() , this->Cprime(i,j), Real(0.), _pat_parsmod,
                           "Coefficient " + param.str());
     }
   }
@@ -245,7 +245,8 @@ void MaterialElasticLinearAnisotropic<spatial_dimension>::computeStress(ElementT
 
 
   // compute the strain rate proportional part if needed
-  bool viscous = this->alpha == 0.; // only works id default value
+  //bool viscous = this->alpha == 0.; // only works if default value
+  bool viscous = false;
   if(viscous) {
     Array<Real> strain_rate(0, spatial_dimension * spatial_dimension,
 			    "strain_rate");
@@ -253,7 +254,7 @@ void MaterialElasticLinearAnisotropic<spatial_dimension>::computeStress(ElementT
     Array<Real> & velocity = this->model->getVelocity();
     const Array<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
 
-    this->model->getFEEngine().gradientOnQuadraturePoints(velocity, strain_rate,
+    this->model->getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate,
 							  spatial_dimension, el_type,
 							  ghost_type, elem_filter);
 
@@ -325,7 +326,7 @@ Real MaterialElasticLinearAnisotropic<spatial_dimension>::getCelerity(__attribut
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialElasticLinearAnisotropic);
+INSTANTIATE_MATERIAL(MaterialElasticLinearAnisotropic);
 
 
 __END_AKANTU__

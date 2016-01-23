@@ -3,14 +3,14 @@
  *
  * @author Damien Spielmann <damien.spielmann@epfl.ch>
  *
- * @date creation: Fri Jul 04 2014
- * @date last modification: Fri Jul 04 2014
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Sun Oct 19 2014
  *
  * @brief  patch test exemple 4.5.5 c.f. modelisation des structures par éléments finis J.-L. Batoz/G Dhatt
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

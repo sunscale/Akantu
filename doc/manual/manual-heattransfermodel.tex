@@ -33,6 +33,7 @@ and the system to solve can be written
 with $\vec{Q}^{\text{ext}}$ the consistent heat generated.
 
 \section{Using the Heat Transfer Model}
+A material file name has to be provided during initialization.
 Currently, the \code{HeatTransferModel} object uses dynamic analysis
 with an explicit time integration scheme.  It can simply be created
 like this
@@ -44,7 +45,7 @@ Then the model object can be initialized with:
 \begin{cpp}
   model.initFull()
 \end{cpp}
-where a material file name has to be provided. This function will load the material
+This function will load the material
 properties, and allocate / initialize the nodes and element \code{Array}s
 More precisely, the heat transfer model contains 4 \code{Arrays}:
 \begin{description}
@@ -56,7 +57,7 @@ More precisely, the heat transfer model contains 4 \code{Arrays}:
 
 \item[blocked\_dofs] contains a Boolean value for each degree of
   freedom specifying whether the degree is blocked or not. A Dirichlet
-  boundary condition can be prescribed by setting the
+  boundary condition ($T_d$) can be prescribed by setting the
   \textbf{blocked\_dofs} value of a degree of freedom to \code{true}.
   The \textbf{temperature} and the \textbf{temperature\_rate} are
   computed for all degrees of freedom where the \textbf{blocked\_dofs}
@@ -92,7 +93,7 @@ distributing the capacity of each element onto its nodes. Therefore, the resulti
 \index{HeatTransferModel!assembleCapacityLumped}
 
 \note{Currently, only the explicit time integration with lumped capacity matrix
-is implemented within \akantu.} \\
+is implemented within \akantu.}
 
 The explicit integration scheme is \index{Forward Euler} \emph{Forward Euler}
 \cite{curnier92a}.

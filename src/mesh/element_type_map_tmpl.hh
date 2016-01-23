@@ -4,15 +4,16 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Aug 31 2011
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Fri Oct 02 2015
  *
  * @brief  implementation of template functions of the ElementTypeMap and
  * ElementTypeMapArray classes
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -159,9 +160,10 @@ ElementTypeMap<Stored, SupportType>::~ElementTypeMap() {
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
 inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(UInt size,
-                                                            UInt nb_component,
-                                                            const SupportType & type,
-                                                            const GhostType & ghost_type) {
+							     UInt nb_component,
+							     const SupportType & type,
+							     const GhostType & ghost_type,
+							     const T & default_value) {
   std::string ghost_id = "";
   if (ghost_type == _ghost) ghost_id = ":ghost";
 
@@ -173,7 +175,7 @@ inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(UInt size,
   if(it == this->getData(ghost_type).end()) {
     std::stringstream sstr; sstr << this->id << ":" << type << ghost_id;
     tmp = &(Memory::alloc<T>(sstr.str(), size,
-			     nb_component, T()));
+			     nb_component, default_value));
     std::stringstream sstrg; sstrg << ghost_type;
     //tmp->setTag(sstrg.str());
     this->getData(ghost_type)[type] = tmp;
@@ -190,10 +192,11 @@ inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(UInt size,
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
 inline void ElementTypeMapArray<T, SupportType>::alloc(UInt size,
-                                                      UInt nb_component,
-                                                      const SupportType & type) {
-  this->alloc(size, nb_component, type, _not_ghost);
-  this->alloc(size, nb_component, type, _ghost);
+						       UInt nb_component,
+						       const SupportType & type,
+						       const T & default_value) {
+  this->alloc(size, nb_component, type, _not_ghost, default_value);
+  this->alloc(size, nb_component, type, _ghost, default_value);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -213,6 +216,20 @@ inline void ElementTypeMapArray<T, SupportType>::free() {
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T, typename SupportType>
+inline void ElementTypeMapArray<T, SupportType>::clear() {
+  for(UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType gt = (GhostType) g;
+
+    DataMap & data = this->getData(gt);
+    typename DataMap::const_iterator it;
+    for(it = data.begin(); it != data.end(); ++it) {
+      it->second->clear();
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -275,6 +292,7 @@ inline void ElementTypeMapArray<T, SupportType>::onElementsRemoved(const Element
       SupportType type = *it;
       if(this->exists(type, gt)){
         const Array<UInt> & renumbering = new_numbering(type, gt);
+	if (renumbering.getSize() == 0) continue;
         Array<T> & vect = this->operator()(type, gt);
         UInt nb_component = vect.getNbComponent();
         Array<T> tmp(renumbering.getSize(), nb_component);
@@ -418,6 +436,22 @@ ElementTypeMap<Stored, SupportType>::lastType(UInt dim, GhostType ghost_type, El
   e = getData(ghost_type).end();
   return typename ElementTypeMap<Stored, SupportType>::type_iterator(e, e, dim, kind);
 }
+
+/* -------------------------------------------------------------------------- */
+
+/// standard output stream operator
+template <class Stored, typename SupportType>
+inline std::ostream & operator <<(std::ostream & stream, const ElementTypeMap<Stored, SupportType> & _this)
+{
+  _this.printself(stream);
+  return stream;
+}
+
+/* -------------------------------------------------------------------------- */
+
+
+
+
 
 __END_AKANTU__
 

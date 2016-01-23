@@ -6,14 +6,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Aug 04 2010
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Wed Nov 18 2015
  *
  * @brief  Implementation of the inline functions of the SolidMechanicsModel class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -95,7 +96,8 @@ inline void SolidMechanicsModel::splitElementByMaterial(const Array<Element> & e
                                                        Array<Element> * elements_per_mat) const {
   ElementType current_element_type = _not_defined;
   GhostType current_ghost_type = _casper;
-  const Array<UInt> * elem_mat = NULL;
+  const Array<UInt> * mat_indexes = NULL;
+  const Array<UInt> * mat_loc_num = NULL;
 
   Array<Element>::const_iterator<Element> it  = elements.begin();
   Array<Element>::const_iterator<Element> end = elements.end();
@@ -105,12 +107,13 @@ inline void SolidMechanicsModel::splitElementByMaterial(const Array<Element> & e
     if(el.type != current_element_type || el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
       current_ghost_type   = el.ghost_type;
-      elem_mat = &element_index_by_material(el.type, el.ghost_type);
+      mat_indexes = &(this->material_index(el.type, el.ghost_type));
+      mat_loc_num = &(this->material_local_numbering(el.type, el.ghost_type));
     }
 
     UInt old_id = el.element;
-    el.element = (*elem_mat)(old_id, 1);
-    elements_per_mat[(*elem_mat)(old_id, 0)].push_back(el);
+    el.element = (*mat_loc_num)(old_id);
+    elements_per_mat[(*mat_indexes)(old_id)].push_back(el);
   }
 }
 
@@ -131,7 +134,7 @@ inline UInt SolidMechanicsModel::getNbDataForElements(const Array<Element> & ele
 
   switch(tag) {
   case _gst_material_id: {
-    size += elements.getSize() * 2 * sizeof(UInt);
+    size += elements.getSize() * sizeof(UInt);
     break;
   }
   case _gst_smm_mass: {
@@ -145,6 +148,11 @@ inline UInt SolidMechanicsModel::getNbDataForElements(const Array<Element> & ele
   case _gst_smm_boundary: {
     // force, displacement, boundary
     size += nb_nodes_per_element * spatial_dimension * (2 * sizeof(Real) + sizeof(bool));
+    break;
+  }
+  case _gst_for_dump: {
+    // displacement, velocity, acceleration, residual, force
+    size += nb_nodes_per_element * spatial_dimension * sizeof(Real) * 5; 
     break;
   }
   default: {  }
@@ -172,7 +180,7 @@ inline void SolidMechanicsModel::packElementData(CommunicationBuffer & buffer,
 
   switch(tag) {
   case _gst_material_id: {
-    packElementalDataHelper(element_index_by_material, buffer, elements, false, getFEEngine());
+    packElementalDataHelper(material_index, buffer, elements, false, getFEEngine());
     break;
   }
   case _gst_smm_mass: {
@@ -181,6 +189,14 @@ inline void SolidMechanicsModel::packElementData(CommunicationBuffer & buffer,
   }
   case _gst_smm_for_gradu: {
     packNodalDataHelper(*displacement, buffer, elements, mesh);
+    break;
+  }
+  case _gst_for_dump: {
+    packNodalDataHelper(*displacement, buffer, elements, mesh);
+    packNodalDataHelper(*velocity, buffer, elements, mesh);
+    packNodalDataHelper(*acceleration, buffer, elements, mesh);
+    packNodalDataHelper(*residual, buffer, elements, mesh);
+    packNodalDataHelper(*force, buffer, elements, mesh);
     break;
   }
   case _gst_smm_boundary: {
@@ -214,7 +230,7 @@ inline void SolidMechanicsModel::unpackElementData(CommunicationBuffer & buffer,
 
   switch(tag) {
   case _gst_material_id: {
-    unpackElementalDataHelper(element_index_by_material, buffer, elements,
+    unpackElementalDataHelper(material_index, buffer, elements,
                              false, getFEEngine());
     break;
   }
@@ -224,6 +240,14 @@ inline void SolidMechanicsModel::unpackElementData(CommunicationBuffer & buffer,
   }
   case _gst_smm_for_gradu: {
     unpackNodalDataHelper(*displacement, buffer, elements, mesh);
+    break;
+  }
+  case _gst_for_dump: {
+    unpackNodalDataHelper(*displacement, buffer, elements, mesh);
+    unpackNodalDataHelper(*velocity, buffer, elements, mesh);
+    unpackNodalDataHelper(*acceleration, buffer, elements, mesh);
+    unpackNodalDataHelper(*residual, buffer, elements, mesh);
+    unpackNodalDataHelper(*force, buffer, elements, mesh);
     break;
   }
   case _gst_smm_boundary: {
@@ -327,19 +351,19 @@ inline void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
   case _gst_smm_uv: {
     Array<Real>::const_vector_iterator it_disp = displacement->begin(spatial_dimension);
     Array<Real>::const_vector_iterator it_velo = velocity->begin(spatial_dimension);
-    buffer << it_disp[index];
-    buffer << it_velo[index];
+    Vector<Real> disp(it_disp[index]); buffer << disp;
+    Vector<Real> velo(it_velo[index]); buffer << velo;
     break;
   }
   case _gst_smm_res: {
     Array<Real>::const_vector_iterator it_res = residual->begin(spatial_dimension);
-    buffer << it_res[index];
+    Vector<Real> resi(it_res[index]); buffer << resi;
     break;
   }
   case _gst_smm_mass: {
     AKANTU_DEBUG_INFO("pack mass of node " << index << " which is " << (*mass)(index,0));
     Array<Real>::const_vector_iterator it_mass = mass->begin(spatial_dimension);
-    buffer << it_mass[index];
+    Vector<Real> mass(it_mass[index]); buffer << mass; 
     break;
   }
   case _gst_for_dump: {
@@ -348,11 +372,11 @@ inline void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
     Array<Real>::const_vector_iterator it_acce = acceleration->begin(spatial_dimension);
     Array<Real>::const_vector_iterator it_resi = residual->begin(spatial_dimension);
     Array<Real>::const_vector_iterator it_forc = force->begin(spatial_dimension);
-    buffer << it_disp[index];
-    buffer << it_velo[index];
-    buffer << it_acce[index];
-    buffer << it_resi[index];
-    buffer << it_forc[index];
+    Vector<Real> disp(it_disp[index]); buffer << disp;
+    Vector<Real> velo(it_velo[index]); buffer << velo;
+    Vector<Real> acce(it_acce[index]); buffer << acce;
+    Vector<Real> resi(it_resi[index]); buffer << resi;
+    Vector<Real> forc(it_forc[index]); buffer << forc;
     break;
   }
   default: {
@@ -373,19 +397,19 @@ inline void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
   case _gst_smm_uv: {
     Array<Real>::vector_iterator it_disp = displacement->begin(spatial_dimension);
     Array<Real>::vector_iterator it_velo = velocity->begin(spatial_dimension);
-    buffer >> it_disp[index];
-    buffer >> it_velo[index];
+    Vector<Real> disp(it_disp[index]); buffer >> disp;
+    Vector<Real> velo(it_velo[index]); buffer >> velo;
     break;
   }
   case _gst_smm_res: {
     Array<Real>::vector_iterator it_res = residual->begin(spatial_dimension);
-    buffer >> it_res[index];
+    Vector<Real> res(it_res[index]); buffer >> res;
     break;
   }
   case _gst_smm_mass: {
     AKANTU_DEBUG_INFO("mass of node " << index << " was " << (*mass)(index,0));
     Array<Real>::vector_iterator it_mass = mass->begin(spatial_dimension);
-    buffer >> it_mass[index];
+    Vector<Real> mass_v(it_mass[index]); buffer >> mass_v;
     AKANTU_DEBUG_INFO("mass of node " << index << " is now " << (*mass)(index,0));
     break;
   }
@@ -395,11 +419,11 @@ inline void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     Array<Real>::vector_iterator it_acce = acceleration->begin(spatial_dimension);
     Array<Real>::vector_iterator it_resi = residual->begin(spatial_dimension);
     Array<Real>::vector_iterator it_forc = force->begin(spatial_dimension);
-    buffer >> it_disp[index];
-    buffer >> it_velo[index];
-    buffer >> it_acce[index];
-    buffer >> it_resi[index];
-    buffer >> it_forc[index];
+    Vector<Real> disp(it_disp[index]); buffer >> disp;
+    Vector<Real> velo(it_velo[index]); buffer >> velo;
+    Vector<Real> acce(it_acce[index]); buffer >> acce;
+    Vector<Real> resi(it_resi[index]); buffer >> resi;
+    Vector<Real> forc(it_forc[index]); buffer >> forc;
     break;
   }
   default: {
@@ -420,9 +444,8 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 template <NewmarkBeta::IntegrationSchemeCorrectorType type>
 void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
-                                bool need_factorize, bool has_profile_changed,
-                                const Array<Real> &rhs) {
-  
+                                bool need_factorize, bool has_profile_changed) {
+
   if(has_profile_changed) {
     this->initJacobianMatrix();
     need_factorize = true;
@@ -455,8 +478,11 @@ void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
       jacobian_matrix->add(*mass_matrix, c);
 
 #if !defined(AKANTU_NDEBUG)
-    if(mass_matrix && AKANTU_DEBUG_TEST(dblDump))
-      mass_matrix->saveMatrix("M.mtx");
+    if(mass_matrix && AKANTU_DEBUG_TEST(dblDump)) {
+      UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+      std::stringstream sstr; sstr << "M" << prank << ".mtx";
+      mass_matrix->saveMatrix(sstr.str());
+    }
 #endif
 
     if(velocity_damping_matrix)
@@ -465,16 +491,23 @@ void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
     jacobian_matrix->applyBoundary(*blocked_dofs, block_val);
 
 #if !defined(AKANTU_NDEBUG)
-    if(AKANTU_DEBUG_TEST(dblDump))
-      jacobian_matrix->saveMatrix("J.mtx");
+    if(AKANTU_DEBUG_TEST(dblDump)) {
+      UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+      std::stringstream sstr; sstr << "J" << prank << ".mtx";
+      jacobian_matrix->saveMatrix(sstr.str());
+    }
 #endif
+
     solver->factorize();
   }
 
-  if (rhs.getSize() != 0)
-    solver->setRHS(rhs);
-  else
-    solver->setRHS(*residual);
+  // if (rhs.getSize() != 0)
+  //  solver->setRHS(rhs);
+  // else
+
+  solver->setOperators();
+
+  solver->setRHS(*residual);
 
   // solve @f[ J \delta w = r @f]
   solver->solve(increment);
@@ -551,12 +584,21 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
     AKANTU_DEBUG_ERROR("The resolution method " << cmethod << " has not been implemented!");
   }
 
-  UInt iter = 0;
+  this->n_iter = 0;
   bool converged = false;
   error = 0.;
   if(criteria == _scc_residual) {
     converged = this->testConvergence<criteria> (tolerance, error);
-    if(converged) return converged;
+    if (converged) {
+      EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
+
+      if(increment_flag && previous_displacement) {
+	this->updateIncrement();
+      }
+
+      if(previous_displacement) previous_displacement->copy(*displacement);
+      return converged;
+    }
   }
 
   do {
@@ -574,9 +616,9 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
     if(criteria == _scc_increment && !converged) this->updateResidual();
     //this->dump();
 
-    iter++;
+    this->n_iter++;
     AKANTU_DEBUG_INFO("[" << criteria << "] Convergence iteration "
-                      << std::setw(std::log10(max_iteration)) << iter
+                      << std::setw(std::log10(max_iteration)) << this->n_iter
                       << ": error " << error << (converged ? " < " : " > ") << tolerance);
 
     switch (cmethod) {
@@ -592,18 +634,25 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
     }
 
 
-  } while (!converged && iter < max_iteration);
+  } while (!converged && this->n_iter < max_iteration);
 
   // this makes sure that you have correct strains and stresses after the solveStep function (e.g., for dumping)
   if(criteria == _scc_increment) this->updateResidual();
 
   if (converged) {
     EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
-  } else if(iter == max_iteration) {
+
+    if(increment_flag && previous_displacement) {
+      this->updateIncrement();
+    }
+
+    if(previous_displacement) previous_displacement->copy(*displacement);
+  } else if(this->n_iter == max_iteration) {
     AKANTU_DEBUG_WARNING("[" << criteria << "] Convergence not reached after "
-                         << std::setw(std::log10(max_iteration)) << iter <<
-                         " iteration" << (iter == 1 ? "" : "s") << "!" << std::endl);
+                         << std::setw(std::log10(max_iteration)) << this->n_iter <<
+                         " iteration" << (this->n_iter == 1 ? "" : "s") << "!" << std::endl);
   }
 
   return converged;
 }
+

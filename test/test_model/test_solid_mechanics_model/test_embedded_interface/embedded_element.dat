@@ -1,0 +1,12 @@
+material reinforcement elastic [
+  name = reinforcement
+  E = 1
+  area = 1
+]
+
+material elastic [
+  name = null
+  rho = 0
+  E = 0
+  nu = 0
+]

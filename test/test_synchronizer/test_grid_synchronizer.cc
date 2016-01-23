@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Fri Nov 25 2011
- * @date last modification: Tue Jun 24 2014
+ * @date creation: Wed Sep 01 2010
+ * @date last modification: Fri Feb 27 2015
  *
  * @brief  test the GridSynchronizer object
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -132,7 +133,7 @@ static void updatePairList(const ElementTypeMapArray<Real> & barycenter,
 int main(int argc, char *argv[]) {
   akantu::initialize(argc, argv);
 
-  Real radius = 0.2;
+  Real radius = 0.001;
 
   Mesh mesh(spatial_dimension);
 
@@ -142,7 +143,7 @@ int main(int argc, char *argv[]) {
   DistributedSynchronizer * dist = NULL;
 
   if(prank == 0) {
-    mesh.read("bar3d.msh");
+    mesh.read("bar.msh");
     MeshPartition * partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
     dist = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
@@ -202,6 +203,10 @@ int main(int argc, char *argv[]) {
 
 
   std::cout << "Pouet 1" << std::endl;
+
+  AKANTU_DEBUG_INFO("Creating TestAccessor");
+  TestAccessor test_accessor(mesh, barycenters);
+  SynchronizerRegistry synch_registry(test_accessor);
 
   GridSynchronizer * grid_communicator = GridSynchronizer::createGridSynchronizer(mesh, grid);
 
@@ -274,9 +279,6 @@ int main(int argc, char *argv[]) {
 
   fout.close();
 
-  AKANTU_DEBUG_INFO("Creating TestAccessor");
-  TestAccessor test_accessor(mesh, barycenters);
-  SynchronizerRegistry synch_registry(test_accessor);
 
   synch_registry.registerSynchronizer(*dist, _gst_smm_mass);
 

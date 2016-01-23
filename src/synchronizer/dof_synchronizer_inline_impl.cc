@@ -1,17 +1,19 @@
 /**
  * @file   dof_synchronizer_inline_impl.cc
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri Jun 17 2011
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Tue Dec 09 2014
  *
  * @brief  DOFSynchronizer inline implementation
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -76,7 +78,7 @@ template<typename T> void DOFSynchronizer::gather(const Array<T> & to_gather, UI
       AKANTU_DEBUG_INFO("Gather - Receiving " << nb_dofs << " from " << p);
       if(nb_dofs) {
 	buffer = new T[nb_dofs];
-	communicator->receive(buffer, nb_dofs, p, 0);
+	static_communicator->receive(buffer, nb_dofs, p, 0);
 
 	T * buffer_tmp = buffer;
 	UInt * remote_dofs = proc_informations[p].dofs.storage();
@@ -90,7 +92,7 @@ template<typename T> void DOFSynchronizer::gather(const Array<T> & to_gather, UI
   } else {
     AKANTU_DEBUG_INFO("Gather - Sending " << nb_local_dofs << " to " << root);
     if(nb_local_dofs)
-      communicator->send(buffer, nb_local_dofs, root, 0);
+      static_communicator->send(buffer, nb_local_dofs, root, 0);
     delete [] buffer;
   }
 
@@ -140,7 +142,7 @@ template<typename T> void DOFSynchronizer::scatter(Array<T> & scattered, UInt ro
 	  *(buffer_tmp++) = to_scatter->storage()[*remote_dofs++];
 	}
 
-	communicator->send(send_buffer, nb_local_dof + nb_needed_dof, p, 0);
+	static_communicator->send(send_buffer, nb_local_dof + nb_needed_dof, p, 0);
 	delete [] send_buffer;
       }
     }
@@ -160,7 +162,7 @@ template<typename T> void DOFSynchronizer::scatter(Array<T> & scattered, UInt ro
     AKANTU_DEBUG_INFO("Scatter - Receiving " << nb_dofs << " from " << root);
     if(nb_local_dofs + nb_needed_dofs) {
       buffer = new T[nb_local_dofs + nb_needed_dofs];
-      communicator->receive(buffer, nb_local_dofs + nb_needed_dofs, root, 0);
+      static_communicator->receive(buffer, nb_local_dofs + nb_needed_dofs, root, 0);
 
 
       T * scattered_val = scattered.storage();
@@ -216,8 +218,8 @@ template<typename T> void DOFSynchronizer::synchronize(Array<T> & dof_vector) co
 
     /// ring blocking communications
     CommunicationRequest * request = NULL;
-    if(nb_slave_dofs  != 0) request = communicator->asyncSend(send_buffer, nb_slave_dofs,  sendto  , 0);
-    if(nb_master_dofs != 0) communicator->receive(recv_buffer, nb_master_dofs, recvfrom, 0);
+    if(nb_slave_dofs  != 0) request = static_communicator->asyncSend(send_buffer, nb_slave_dofs,  sendto  , 0);
+    if(nb_master_dofs != 0) static_communicator->receive(recv_buffer, nb_master_dofs, recvfrom, 0);
 
     for (UInt d = 0; d < nb_master_dofs; ++d) {
       AKANTU_DEBUG_ASSERT(dof_types(master_dofs[d]) >= 0,
@@ -228,8 +230,8 @@ template<typename T> void DOFSynchronizer::synchronize(Array<T> & dof_vector) co
     }
 
     if(nb_slave_dofs != 0) {
-      communicator->wait(request);
-      communicator->freeCommunicationRequest(request);
+      static_communicator->wait(request);
+      static_communicator->freeCommunicationRequest(request);
     }
     delete [] send_buffer;
     delete [] recv_buffer;
@@ -266,8 +268,8 @@ template<template <class> class Op, typename T> void DOFSynchronizer::reduceSync
     }
 
     CommunicationRequest * request = NULL;
-    if(nb_master_dofs != 0) request = communicator->asyncSend(send_buffer, nb_master_dofs, sendto  , 0);
-    if(nb_slave_dofs  != 0) communicator->receive(recv_buffer, nb_slave_dofs,  recvfrom, 0);
+    if(nb_master_dofs != 0) request = static_communicator->asyncSend(send_buffer, nb_master_dofs, sendto  , 0);
+    if(nb_slave_dofs  != 0) static_communicator->receive(recv_buffer, nb_slave_dofs,  recvfrom, 0);
 
     Op<T> oper;
 
@@ -276,8 +278,8 @@ template<template <class> class Op, typename T> void DOFSynchronizer::reduceSync
     }
 
     if(nb_master_dofs != 0) {
-      communicator->wait(request);
-      communicator->freeCommunicationRequest(request);
+      static_communicator->wait(request);
+      static_communicator->freeCommunicationRequest(request);
     }
     delete [] send_buffer;
     delete [] recv_buffer;
@@ -286,4 +288,30 @@ template<template <class> class Op, typename T> void DOFSynchronizer::reduceSync
   synchronize(dof_vector);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFSynchronizer::isPureGhostDOF(UInt n) const {
+  return dof_types.getSize() ? (dof_types(n) == -3) : false;
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFSynchronizer::isLocalOrMasterDOF(UInt n) const {
+  return dof_types.getSize() ? (dof_types(n) == -2) || (dof_types(n) == -1) : true;
+}
+
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFSynchronizer::isLocalDOF(UInt n) const {
+  return dof_types.getSize() ? dof_types(n) == -1 : true;
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFSynchronizer::isMasterDOF(UInt n) const {
+  return dof_types.getSize() ? dof_types(n) == -2 : false;
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFSynchronizer::isSlaveDOF(UInt n) const {
+  return dof_types.getSize() ? dof_types(n) >= 0 : false;
 }

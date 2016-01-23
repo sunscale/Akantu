@@ -1,17 +1,19 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
+# @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Jun 14 2010
-# @date last modification: Mon Sep 15 2014
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  main configuration file
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -40,10 +42,10 @@
 #===============================================================================
 # CMake Project
 #===============================================================================
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 # add this options before PROJECT keyword
-#set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 project(Akantu)
@@ -66,6 +68,7 @@ include(CMakeVersionGenerator)
 include(CMakePackagesSystem)
 include(CMakeFlagsHandling)
 
+include(AkantuPackagesSystem)
 include(AkantuMacros)
 
 #cmake_activate_debug_message()
@@ -75,7 +78,7 @@ include(AkantuMacros)
 #===============================================================================
 # AKANTU version number.  An even minor number corresponds to releases.
 set(AKANTU_MAJOR_VERSION 2)
-set(AKANTU_MINOR_VERSION 2)
+set(AKANTU_MINOR_VERSION 3)
 set(AKANTU_PATCH_VERSION 0)
 define_project_version()
 
@@ -83,39 +86,38 @@ define_project_version()
 # Options
 #===============================================================================
 # Debug
-#option(AKANTU_DEBUG "Compiles akantu with the debug messages" ON)
-#mark_as_advanced(AKANTU_DEBUG)
-
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DAKANTU_NDEBUG"
   CACHE STRING "Flags used by the compiler during release builds" FORCE)
 
 add_flags(cxx "-Wall")
 
-# if(NOT AKANTU_DEBUG)
-#   set(AKANTU_NDEBUG ON)
-# else()
-#   set(AKANTU_NDEBUG OFF)
-# endif()
-
 #Profiling
-set(CMAKE_CXX_FLAGS_PROFILING "-g -pg" CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg" CACHE STRING "Flags used by the linker during profiling builds")
-set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg" CACHE STRING "Flags used by the linker during profiling builds")
-mark_as_advanced(CMAKE_CXX_FLAGS_PROFILING)
-mark_as_advanced(CMAKE_EXE_LINKER_FLAGS_PROFILING)
-mark_as_advanced(CMAKE_SHARED_LINKER_FLAGS_PROFILING)
+set(CMAKE_CXX_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+  CACHE STRING "Flags used by the compiler during profiling builds")
+set(CMAKE_C_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+  CACHE STRING "Flags used by the compiler during profiling builds")
+set(CMAKE_Fortran_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+  CACHE STRING "Flags used by the compiler during profiling builds")
+set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg"
+  CACHE STRING "Flags used by the linker during profiling builds")
+set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg"
+  CACHE STRING "Flags used by the linker during profiling builds")
+mark_as_advanced(
+  CMAKE_CXX_FLAGS_PROFILING
+  CMAKE_C_FLAGS_PROFILING
+  CMAKE_Fortran_FLAGS_PROFILING
+  CMAKE_EXE_LINKER_FLAGS_PROFILING
+  CMAKE_SHARED_LINKER_FLAGS_PROFILING
+  )
 
-include(CMakeDetermineCCompiler)
-cmake_deactivate_debug_message(PackagesSystem)
 #===============================================================================
 # Dependencies
 #===============================================================================
-set(AKANTU_BOOST_COMPONENT)
-set(AKANTU_EXTRA_TARGET_DEPENDENCIES)
-add_all_packages(${PROJECT_SOURCE_DIR}/packages ${PROJECT_SOURCE_DIR}/src)
+declare_akantu_types()
 
-set(Boost_NO_BOOST_CMAKE ON)
-include_boost()
+package_list_packages(${PROJECT_SOURCE_DIR}/packages
+  EXTRA_PACKAGES_FOLDER ${PROJECT_SOURCE_DIR}/extra_packages
+  NO_AUTO_COMPILE_FLAGS)
 
 ## meta option \todo better way to do it when multiple package give enable the
 ## same feature
@@ -151,8 +153,11 @@ endif()
 option(AKANTU_EXAMPLES "Activate examples" OFF)
 option(AKANTU_TESTS "Activate tests" OFF)
 
+include(AkantuTestsMacros)
+include(AkantuExampleMacros)
+
 if(AKANTU_EXAMPLES OR AKANTU_TESTS)
-  include(AkantuTestAndExamples)
+  option(AKANTU_BUILD_ALL_TESTS "Build all tests" ON)
   find_package(GMSH REQUIRED)
 endif()
 
@@ -160,22 +165,30 @@ if(AKANTU_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-if(AKANTU_TESTS)
-  enable_testing()
-  include(CTest)
-  mark_as_advanced(BUILD_TESTING)
-  set(AKANTU_TESTS_EXCLUDE_FILES "" CACHE INTERNAL "")
-  add_subdirectory(test)
-else()
-  set(AKANTU_TESTS_EXCLUDE_FILES "${PROJECT_SOURCE_DIR}/test" CACHE INTERNAL "")
-endif()
+# tests
+add_test_tree(test)
 
+#===============================================================================
+# Python interface
+#===============================================================================
+package_is_activated(python_interface _python_act)
+if(_python_act)
+  if(IS_ABSOLUTE "${CMAKE_INSTALL_PREFIX}")
+    set(AKANTU_PYTHON_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+  else()
+    set(AKANTU_PYTHON_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}")
+  endif()
+  add_subdirectory(python)
+endif()
 
 #===============================================================================
 # Install and Packaging
 #===============================================================================
 include(AkantuInstall)
 
+option(AKANTU_DISABLE_CPACK
+  "This option commands the generation of extra info for the \"make package\" target" ON)
+mark_as_advanced(AKANTU_DISABLE_CPACK)
 if(NOT AKANTU_DISABLE_CPACK)
   include(AkantuCPack)
 endif()

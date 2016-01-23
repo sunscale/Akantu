@@ -5,14 +5,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Feb 15 2011
- * @date last modification: Mon Jun 23 2014
+ * @date last modification: Thu Nov 19 2015
  *
  * @brief  inline function of gauss integrator
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -37,20 +38,6 @@ __END_AKANTU__
 #endif
 
 __BEGIN_AKANTU__
-
-/* -------------------------------------------------------------------------- */
-template <ElementKind kind>
-inline void IntegratorGauss<kind>::initIntegrator(const Array<Real> & nodes,
-						  const ElementType & type,
-						  const GhostType & ghost_type) {
-#define INIT_INTEGRATOR(type)						\
-  computeQuadraturePoints<type>(ghost_type);				\
-  precomputeJacobiansOnQuadraturePoints<type>(nodes, ghost_type);	\
-  checkJacobians<type>(ghost_type);
-
-  AKANTU_BOOST_ALL_ELEMENT_SWITCH(INIT_INTEGRATOR);
-#undef INIT_INTEGRATOR
-}
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
@@ -147,7 +134,6 @@ computeJacobianOnQuadPointsByElement(const Matrix<Real> & node_coords,
 }
 
 /* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 IntegratorGauss<kind>::IntegratorGauss(const Mesh & mesh,
 				       const ID & id,
@@ -180,6 +166,7 @@ void IntegratorGauss<kind>::checkJacobians(const GhostType & ghost_type) const {
 			 << i / nb_quadrature_points << ":"
 			 << type << ":"
 			 << ghost_type << ")");
+
   }
   AKANTU_DEBUG_OUT();
 }
@@ -211,8 +198,6 @@ void IntegratorGauss<kind>::precomputeJacobiansOnQuadraturePoints(const Array<Re
   Array<Real>::vector_iterator jacobians_it =
     jacobians_tmp->begin_reinterpret(nb_quadrature_points, nb_element);
 
-  Vector<Real> weights = GaussIntegrationElement<type>::getWeights();
-
   Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type);
 
@@ -224,7 +209,6 @@ void IntegratorGauss<kind>::precomputeJacobiansOnQuadraturePoints(const Array<Re
     const Matrix<Real> & x = *x_it;
     Vector<Real> & J = *jacobians_it;
     computeJacobianOnQuadPointsByElement<type>(x, J);
-    J *= weights;
   }
 
   // >>>>>> DEBUG CODE >>>>>> //
@@ -237,7 +221,7 @@ void IntegratorGauss<kind>::precomputeJacobiansOnQuadraturePoints(const Array<Re
                                  if(el.ghost_type == ghost_type) {
                                    Array<Real>::vector_iterator jacobians_it =
                                      jacobians(el.type, el.ghost_type).begin(nb_quadrature_points);
-                                   out << " jacobian: " << jacobians_it[el.element];
+                                   out << " jacobian: " << Vector<Real>(jacobians_it[el.element]);
                                  }
                                  return out.str();
                                });
@@ -247,6 +231,32 @@ void IntegratorGauss<kind>::precomputeJacobiansOnQuadraturePoints(const Array<Re
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type>
+void IntegratorGauss<kind>::multiplyJacobiansByWeights(const GhostType & ghost_type) {
+  AKANTU_DEBUG_IN();
+
+  UInt nb_quadrature_points = GaussIntegrationElement<type>::getNbQuadraturePoints();
+  UInt nb_element = this->mesh.getNbElement(type, ghost_type);
+
+
+  Vector<Real> weights = GaussIntegrationElement<type>::getWeights();
+
+  Array<Real>::vector_iterator jacobians_it =
+    this->jacobians(type, ghost_type).begin_reinterpret(nb_quadrature_points, nb_element);
+  Array<Real>::vector_iterator jacobians_end =
+    this->jacobians(type, ghost_type).end_reinterpret(nb_quadrature_points, nb_element);
+
+  for (; jacobians_it != jacobians_end; ++jacobians_it) {
+    Vector<Real> & J = *jacobians_it;
+    J *= weights;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
 
 /* -------------------------------------------------------------------------- */
 #if defined(AKANTU_COHESIVE_ELEMENT)
@@ -301,8 +311,6 @@ void IntegratorGauss<_ek_cohesive>::precomputeJacobiansOnQuadraturePoints(const 
       J(0) = 1;
     else
       computeJacobianOnQuadPointsByElement<type>(x, J);
-
-    J *= weights;
   }
 
   AKANTU_DEBUG_OUT();
@@ -456,3 +464,38 @@ void IntegratorGauss<kind>::integrateOnQuadraturePoints(const Array<Real> & in_f
 
   AKANTU_DEBUG_OUT();
 }
+
+
+/* -------------------------------------------------------------------------- */
+#define INIT_INTEGRATOR(type)						\
+  computeQuadraturePoints<type>(ghost_type);				\
+  precomputeJacobiansOnQuadraturePoints<type>(nodes, ghost_type);	\
+  checkJacobians<type>(ghost_type);                                     \
+  multiplyJacobiansByWeights<type>(ghost_type);
+
+template <>
+inline void IntegratorGauss<_ek_regular>::initIntegrator(const Array<Real> & nodes,
+						  const ElementType & type,
+						  const GhostType & ghost_type) {
+  AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(INIT_INTEGRATOR);
+}
+
+#if defined(AKANTU_COHESIVE_ELEMENT)
+template <>
+inline void IntegratorGauss<_ek_cohesive>::initIntegrator(const Array<Real> & nodes,
+ 						  const ElementType & type,
+ 						  const GhostType & ghost_type) {
+   AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(INIT_INTEGRATOR);
+}
+#endif
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+template <>
+inline void IntegratorGauss<_ek_structural>::initIntegrator(const Array<Real> & nodes,
+							    const ElementType & type,
+							    const GhostType & ghost_type) {
+  AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(INIT_INTEGRATOR);
+}
+#endif
+
+#undef INIT_INTEGRATOR

@@ -2,18 +2,19 @@
  * @file   material_marigo_inline_impl.cc
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Marion Estelle Chambart <marion.chambart@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Thu Feb 02 2012
- * @date last modification: Tue Jun 24 2014
+ * @date creation: Wed Aug 04 2010
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Implementation of the inline functions of the material marigo
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -67,7 +68,7 @@ MaterialMarigo<spatial_dimension>::computeDamageAndStressOnQuad(Matrix<Real> & s
   Real Fd = Y - Ydq - Sd * dam;
 
   if (Fd > 0) dam = (Y - Ydq) / Sd;
-  dam = std::min(dam,1.);
+  dam = std::min(dam, Real(1.));
 
   sigma *= 1-dam;
 }
@@ -80,7 +81,7 @@ inline UInt MaterialMarigo<spatial_dimension>::getNbDataForElements(const Array<
 
   UInt size = 0;
   if(tag == _gst_smm_init_mat) {
-    size += sizeof(Real) * this->getModel().getNbQuadraturePoints(elements);
+    size += sizeof(Real) * this->getModel().getNbIntegrationPoints(elements);
   }
 
   size += MaterialDamage<spatial_dimension>::getNbDataForElements(elements, tag);

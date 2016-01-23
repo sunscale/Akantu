@@ -4,15 +4,16 @@
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Thu Feb 17 2011
-# @date last modification: Tue Aug 19 2014
+# @date creation: Fri Oct 22 2010
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  Set of macros used by akantu cmake files
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -29,80 +30,275 @@
 #
 #===============================================================================
 
-macro(check_for_isnan result)
-  include(CheckFunctionExists)
-  check_function_exists(std::isnan HAVE_STD_ISNAN)
-  if(HAVE_STD_ISNAN)
-    set(result "std::isnan(x)")
-  else()
-    check_function_exists(isnan HAVE_ISNAN)
-    if(HAVE_ISNAN)
-      set(result "(::isnan(x))")
-    else()
-      check_function_exists(_isnan HAVE_ISNAN_MATH_H)
-      if(HAVE_ISNAN_MATH_H)
-        set(result "(_isnan(x))")
-      else()
-        set(result (x == std::numeric_limits<Real>::quiet_NAN()))
-      endif()
-    endif()
-  endif()
-endmacro()
-
 #===============================================================================
-macro(copy_files target_depend)
-  foreach(_file ${ARGN})
-    set(_target ${CMAKE_CURRENT_BINARY_DIR}/${_file})
-    set(_source ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
-    add_custom_command(
-      OUTPUT ${_target}
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_source} ${_target}
-      DEPENDS ${_source}
-      )
-    set(_target_name ${target_depend}_${_file})
-    add_custom_target(${_target_name} DEPENDS ${_target})
-    add_dependencies(${target_depend} ${_target_name})
-  endforeach()
-endmacro()
-
-#===============================================================================
-macro(add_akantu_definitions)
-  foreach(_definition ${AKANTU_DEFINITIONS})
-    add_definitions(-D${_definition})
-  endforeach()
-endmacro()
-
-
-macro(include_boost)
-  set(Boost_LIBRARIES)
-  find_package(Boost REQUIRED)
-  mark_as_advanced(Boost_DIR)
-  if(Boost_FOUND)
-    list(APPEND AKANTU_EXTERNAL_LIB_INCLUDE_DIR ${Boost_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
-  endif()
-  message(STATUS "Looking for Boost liraries")
-  set(AKANTU_BOOST_COMPONENT_ALREADY_DONE)
-  foreach(_comp ${AKANTU_BOOST_COMPONENTS})
-    list(FIND AKANTU_BOOST_COMPONENT_ALREADY_DONE ${_comp} _res)
-    if(_res EQUAL -1)
-      find_package(Boost COMPONENTS ${_comp} QUIET)
-      string(TOUPPER ${_comp} _u_comp)
-      if(Boost_${_u_comp}_FOUND)
-	message(STATUS "   ${_comp}: FOUND")
-	set(AKANTU_BOOST_${_u_comp} TRUE CACHE INTERNAL "" FORCE)
-	list(APPEND Boost_LIBRARIES ${Boost_${_u_comp}_LIBRARY})
-	list(APPEND AKANTU_EXTERNAL_LIBRARIES ${Boost_${_u_comp}_LIBRARY})
-      else()
-	message(STATUS "   ${_comp}: NOT FOUND")
-      endif()
-      list(APPEND AKANTU_BOOST_COMPONENT_ALREADY_DONE ${_comp})
-    endif()
-  endforeach()
-endmacro()
-
 function(set_third_party_shared_libirary_name _var _lib)
-  set(${_var} ${PROJECT_BINARY_DIR}/third-party/lib/${CMAKE_SHARED_LIBRARY_PREFIX}${_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE FILEPATH "" FORCE)
+  set(${_var}
+    ${PROJECT_BINARY_DIR}/third-party/lib/${CMAKE_SHARED_LIBRARY_PREFIX}${_lib}${CMAKE_SHARED_LIBRARY_SUFFIX}
+    CACHE FILEPATH "" FORCE)
 endfunction()
+
+# ==============================================================================
+function(get_target_list_of_associated_files tgt files)
+  get_target_property(_type ${tgt} TYPE)
+  if(_type STREQUAL "SHARED_LIBRARY"
+      OR _type STREQUAL "STATIC_LIBRARY"
+      OR _type STREQUAL "MODULE_LIBRARY"
+      OR _type STREQUAL "EXECUTABLE")
+    get_target_property(_srcs ${tgt} SOURCES)
+    set(_dep_ressources)
+    foreach(_file ${_srcs})
+      list(APPEND _dep_ressources ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
+    endforeach()
+  else()
+    get_target_property(_dep_ressources ${tgt} RESSOURCES)
+  endif()
+
+  set(${files} ${_dep_ressources} PARENT_SCOPE)
+endfunction()
+
+#===============================================================================
+# Generate the list of currently loaded materials
+function(generate_material_list)
+  message(STATUS "Determining the list of recognized materials...")
+
+  package_get_all_include_directories(
+    AKANTU_LIBRARY_INCLUDE_DIRS
+    )
+
+  package_get_all_external_informations(
+    AKANTU_EXTERNAL_INCLUDE_DIR
+    AKANTU_EXTERNAL_LIBRARIES
+    )
+
+  set(_include_dirs ${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
+
+  try_run(_material_list_run _material_list_compile
+    ${CMAKE_BINARY_DIR}
+    ${PROJECT_SOURCE_DIR}/cmake/material_lister.cc
+    CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
+    COMPILE_DEFINITIONS "-DAKANTU_CMAKE_LIST_MATERIALS"
+    COMPILE_OUTPUT_VARIABLE _compile_results
+    RUN_OUTPUT_VARIABLE _result_material_list)
+
+  if(_material_list_compile AND "${_material_list_run}" EQUAL 0)
+    message(STATUS "Materials included in Akantu:")
+    string(REPLACE "\n" ";" _material_list "${_result_material_list}")
+    foreach(_mat ${_material_list})
+      string(REPLACE ":" ";" _mat_key "${_mat}")
+      list(GET _mat_key 0 _key)
+      list(GET _mat_key 1 _class)
+      list(LENGTH _mat_key _l)
+
+      if("${_l}" GREATER 2)
+        list(REMOVE_AT _mat_key 0 1)
+        set(_opt " -- options: [")
+        foreach(_o ${_mat_key})
+          set(_opt "${_opt} ${_o}")
+        endforeach()
+        set(_opt "${_opt} ]")
+      else()
+        set(_opt "")
+      endif()
+
+      message(STATUS "   ${_class} -- key: ${_key}${_opt}")
+    endforeach()
+  else()
+    message(STATUS "Could not determine the list of materials.")
+    message("${_compile_results}")
+  endif()
+endfunction()
+
+#===============================================================================
+# Declare the options for the types and defines the approriate typedefs
+function(declare_akantu_types)
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag (-std=c++11 HAVE_CPP_11)
+  unset(_cpp_11_flag)
+  if(HAVE_CPP_11)
+    set(_cpp_11_flag "-std=c++11")
+  else()
+    check_cxx_compiler_flag (-std=c++0x HAVE_CPP_0X)
+    if(HAVE_CPP_0X)
+      set(_cpp_11_flag "-std=c++0x")
+    endif()
+  endif()
+
+  set(AKANTU_CXX11_FLAGS "${_cpp_11_flag}" CACHE INTERNAL "")
+
+  set(AKANTU_TYPE_FLOAT "double (64bit)" CACHE STRING "Precision force floating point types")
+  mark_as_advanced(AKANTU_TYPE_FLOAT)
+  set_property(CACHE AKANTU_TYPE_FLOAT PROPERTY STRINGS
+    "quadruple (128bit)"
+    "double (64bit)"
+    "float (32bit)"
+    )
+
+  set(AKANTU_TYPE_INTEGER "int (32bit)" CACHE STRING "Size of the integer types")
+  mark_as_advanced(AKANTU_TYPE_INTEGER)
+  set_property(CACHE AKANTU_TYPE_INTEGER PROPERTY STRINGS
+    "int (32bit)"
+    "long int (64bit)"
+    )
+
+  include(CheckTypeSize)
+
+  # ----------------------------------------------------------------------------
+  # Floating point types
+  # ----------------------------------------------------------------------------
+  if(AKANTU_TYPE_FLOAT STREQUAL "float (32bit)")
+    set(AKANTU_FLOAT_TYPE "float" CACHE INTERNAL "")
+    set(AKANTU_FLOAT_SIZE 4 CACHE INTERNAL "")
+  elseif(AKANTU_TYPE_FLOAT STREQUAL "double (64bit)")
+    set(AKANTU_FLOAT_TYPE "double" CACHE INTERNAL "")
+    set(AKANTU_FLOAT_SIZE 8 CACHE INTERNAL "")
+  elseif(AKANTU_TYPE_FLOAT STREQUAL "quadruple (128bit)")
+    check_type_size("long double" LONG_DOUBLE)
+    if(HAVE_LONG_DOUBLE)
+      set(AKANTU_FLOAT_TYPE "long double" CACHE INTERNAL "")
+      set(AKANTU_FLOAT_SIZE 16 CACHE INTERNAL "")
+      message("This feature is not tested and will most probably not compile")
+    else()
+      message(FATAL_ERROR "The type long double is not defined on your system")
+    endif()
+  else()
+    message(FATAL_ERROR "The float type is not defined")
+  endif()
+
+  include(CheckIncludeFileCXX)
+  include(CheckCXXSourceCompiles)
+
+  # ----------------------------------------------------------------------------
+  # Integer types
+  # ----------------------------------------------------------------------------
+  check_include_file_cxx(cstdint HAVE_CSTDINT)
+  if(NOT HAVE_CSTDINT)
+    check_include_file_cxx(stdint.h HAVE_STDINT_H)
+    if(HAVE_STDINT_H)
+      list(APPEND _int_include stdint.h)
+    endif()
+  else()
+    list(APPEND _int_include cstdint)
+  endif()
+
+
+  check_include_file_cxx(cstddef HAVE_CSTDDEF)
+  if(NOT HAVE_CSTDINT)
+    check_include_file_cxx(stddef.h HAVE_STDDEF_H)
+    if(HAVE_STDINT_H)
+      list(APPEND _int_include stddef.h)
+    endif()
+  else()
+    list(APPEND _int_include cstddef)
+  endif()
+
+  if(AKANTU_TYPE_INTEGER STREQUAL "int (32bit)")
+    set(AKANTU_INTEGER_SIZE 4 CACHE INTERNAL "")
+    check_type_size("int" INT)
+    if(INT EQUAL 4)
+      set(AKANTU_SIGNED_INTEGER_TYPE "int" CACHE INTERNAL "")
+      set(AKANTU_UNSIGNED_INTEGER_TYPE "unsigned int" CACHE INTERNAL "")
+    else()
+      check_type_size("int32_t" INT32_T LANGUAGE CXX)
+      if(HAVE_INT32_T)
+        set(AKANTU_SIGNED_INTEGER_TYPE "int32_t" CACHE INTERNAL "")
+        set(AKANTU_UNSIGNED_INTEGER_TYPE "uint32_t" CACHE INTERNAL "")
+        list(APPEND _extra_includes ${_int_include})
+      endif()
+    endif()
+  elseif(AKANTU_TYPE_INTEGER STREQUAL "long int (64bit)")
+    set(AKANTU_INTEGER_SIZE 8 CACHE INTERNAL "")
+    check_type_size("long int" LONG_INT)
+    if(LONG_INT EQUAL 8)
+      set(AKANTU_SIGNED_INTEGER_TYPE "long int" CACHE INTERNAL "")
+      set(AKANTU_UNSIGNED_INTEGER_TYPE "unsigned long int" CACHE INTERNAL "")
+    else()
+      check_type_size("long long int" LONG_LONG_INT)
+      if(HAVE_LONG_LONG_INT AND LONG_LONG_INT EQUAL 8)
+        set(AKANTU_SIGNED_INTEGER_TYPE "long long int" CACHE INTERNAL "")
+        set(AKANTU_UNSIGNED_INTEGER_TYPE "unsigned long long int" CACHE INTERNAL "")
+      else()
+        check_type_size("int64_t" INT64_T)
+        if(HAVE_INT64_T)
+          set(AKANTU_SIGNED_INTEGER_TYPE "int64_t" CACHE INTERNAL "")
+          set(AKANTU_UNSIGNED_INTEGER_TYPE "uint64_t" CACHE INTERNAL "")
+          list(APPEND _extra_includes ${_int_include})
+        endif()
+      endif()
+    endif()
+  else()
+    message(FATAL_ERROR "The integer type is not defined")
+  endif()
+
+  # ----------------------------------------------------------------------------
+  # unordered map type
+  # ----------------------------------------------------------------------------
+  check_include_file_cxx(unordered_map HAVE_UNORDERED_MAP)
+  set(AKANTU_UNORDERED_MAP_IS_CXX11 TRUE CACHE INTERNAL "")
+  if(HAVE_UNORDERED_MAP)
+    list(APPEND _extra_includes unordered_map)
+    set(AKANTU_UNORDERED_MAP_TYPE "std::unordered_map" CACHE INTERNAL "")
+    set(AKANTU_UNORDERED_MAP_NAMESPACE_BEGIN "namespace std {" CACHE INTERNAL "")
+    set(AKANTU_UNORDERED_MAP_NAMESPACE_END "}" CACHE INTERNAL "")
+  else()
+    check_include_file_cxx(tr1/unordered_map HAVE_TR1_UNORDERED_MAP)
+    if(HAVE_TR1_UNORDERED_MAP)
+      list(APPEND _extra_includes tr1/unordered_map)
+      set(AKANTU_UNORDERED_MAP_TYPE "std::tr1::unordered_map" CACHE INTERNAL "")
+      set(AKANTU_UNORDERED_MAP_NAMESPACE_BEGIN "namespace std { namespace tr1 {" CACHE INTERNAL "")
+      set(AKANTU_UNORDERED_MAP_NAMESPACE_END "}}" CACHE INTERNAL "")
+    else()
+      list(APPEND _extra_includes map)
+      set(AKANTU_UNORDERED_MAP_TYPE "std::map" CACHE INTERNAL "")
+      set(AKANTU_UNORDERED_MAP_IS_CXX11 FALSE CACHE INTERNAL "")
+    endif()
+  endif()
+
+  # ----------------------------------------------------------------------------
+  # hash function
+  # ----------------------------------------------------------------------------
+  unset(AKANTU_HASH_TYPE CACHE)
+  check_include_file_cxx(functional HAVE_FUNCTIONAL)
+  set(AKANTU_HASH_IS_CXX11 TRUE CACHE INTERNAL "")
+  if(HAVE_FUNCTIONAL AND AKANTU_CXX11_FLAGS)
+    list(APPEND _extra_includes functional)
+    check_cxx_source_compiles("
+#include <functional>
+template<class T>
+std::size_t hash(const T & t) {
+  typedef typename std::hash<T> hash_type;
+  return hash_type()(t);
+};
+
+int main() { return 0; }
+" HAVE_HASH)
+    if(HAVE_HASH)
+      set(AKANTU_HASH_TYPE "std::hash" CACHE INTERNAL "")
+    endif()
+  endif()
+
+  if(NOT AKANTU_HASH_TYPE)
+    check_include_file_cxx(tr1/functional HAVE_TR1_HASH)
+    if(HAVE_TR1_HASH)
+      list(APPEND _extra_includes tr1/functional)
+      set(AKANTU_HASH_TYPE "std::tr1::hash" CACHE INTERNAL "")
+    else()
+      check_include_file_cxx(boost/functional/hash.hpp HAVE_BOOST_HASH)
+      list(APPEND _extra_includes boost/functional/hash.hpp)
+      set(AKANTU_HASH_TYPE "boost::hash" CACHE INTERNAL "")
+      set(AKANTU_HASH_IS_CXX11 FALSE CACHE INTERNAL "")
+    endif()
+  endif()
+
+
+  # ----------------------------------------------------------------------------
+  # includes
+  # ----------------------------------------------------------------------------
+  foreach(_inc ${_extra_includes})
+    set(_incs "#include <${_inc}>\n${_incs}")
+  endforeach()
+  set(AKANTU_TYPES_EXTRA_INCLUDES ${_incs} CACHE INTERNAL "")
+endfunction()
+
 
 #===============================================================================
 if(__CMAKE_PARSE_ARGUMENTS_INCLUDED)
@@ -165,4 +361,3 @@ function(CMAKE_PARSE_ARGUMENTS prefix _optionNames _singleArgNames _multiArgName
   endforeach(arg_name)
   set(${prefix}_UNPARSED_ARGUMENTS ${${prefix}_UNPARSED_ARGUMENTS} PARENT_SCOPE)
 endfunction(CMAKE_PARSE_ARGUMENTS _options _singleArgs _multiArgs)
-

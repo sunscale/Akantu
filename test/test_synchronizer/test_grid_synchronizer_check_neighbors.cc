@@ -4,13 +4,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Mar 11 2013
- * @date last modification: Mon Jan 20 2014
+ * @date last modification: Fri Feb 27 2015
  *
  * @brief  Test the generation of neighbors list based on a akaentu::Grid
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -37,7 +37,7 @@
 
 using namespace akantu;
 
-const UInt spatial_dimension = 2;
+const UInt spatial_dimension = 3;
 
 #include "test_grid_tools.hh"
 

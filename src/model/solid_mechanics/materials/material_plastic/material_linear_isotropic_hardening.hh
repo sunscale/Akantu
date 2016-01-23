@@ -1,19 +1,22 @@
 /**
  * @file   material_linear_isotropic_hardening.hh
  *
- * @author Lucas Frerot <lucas.frerot@epfl.ch>
- * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
  * @author Ramin Aghababaei <ramin.aghababaei@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Benjamin Paccaud <benjamin.paccaud@epfl.ch>
+ * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Thu Oct 03 2013
- * @date last modification: Mon Apr 07 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Mon Jun 01 2015
  *
  * @brief  Specialization of the material class for isotropic finite deformation linear hardening plasticity
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -52,6 +55,11 @@ class MaterialLinearIsotropicHardening : public MaterialPlastic<spatial_dimensio
 public:
 
   MaterialLinearIsotropicHardening(SolidMechanicsModel & model, const ID & id = "");
+  MaterialLinearIsotropicHardening(SolidMechanicsModel & model,
+                                   UInt dim,
+                                   const Mesh & mesh,
+                                   FEEngine & fe_engine,
+                                   const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -66,6 +74,7 @@ public:
                             GhostType ghost_type = _not_ghost);
 
 protected:
+  /// Infinitesimal deformations
   inline void computeStressOnQuad(const Matrix<Real> & grad_u,
                                   const Matrix<Real> & previous_grad_u,
                                   Matrix<Real> & sigma,
@@ -76,6 +85,18 @@ protected:
                                   const Real & previous_iso_hardening,
                                   const Real & sigma_th,
                                   const Real & previous_sigma_th);
+  /// Finite deformations
+  inline void computeStressOnQuad(const Matrix<Real> & grad_u,
+                                  const Matrix<Real> & previous_grad_u,
+                                  Matrix<Real> & sigma,
+                                  const Matrix<Real> & previous_sigma,
+                                  Matrix<Real> & inelas_strain,
+                                  const Matrix<Real> & previous_inelas_strain,
+                                  Real & iso_hardening,
+                                  const Real & previous_iso_hardening,
+                                  const Real & sigma_th,
+                                  const Real & previous_sigma_th,
+				  const Matrix<Real> & F_tensor);
 
   inline void computeTangentModuliOnQuad(Matrix<Real> & tangent,
                                          const Matrix<Real> & grad_u,

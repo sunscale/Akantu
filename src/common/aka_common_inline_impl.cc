@@ -4,15 +4,16 @@
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Thu Dec 01 2011
- * @date last modification: Wed Jul 23 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  inline implementations of common akantu type descriptions
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -35,69 +36,10 @@
 
 #include <algorithm>
 #include <iomanip>
-
+#include <iostream>
 #include <cctype>
 
 __BEGIN_AKANTU__
-
-/* -------------------------------------------------------------------------- */
-//! standard output stream operator for ElementType
-inline std::ostream & operator <<(std::ostream & stream, ElementType type)
-{
-#define STRINGIFY(type)				\
-  stream << BOOST_PP_STRINGIZE(type)
-
-  switch(type) {
-    BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_CASE_MACRO, \
-                          STRINGIFY,               \
-                          AKANTU_ALL_ELEMENT_TYPE)
-    case _not_defined:       stream << "_not_defined"; break;
-    case _max_element_type:  stream << "_max_element_type"; break;
-  }
-
-
-
-#undef STRINGIFY
-  return stream;
-}
-
-/* -------------------------------------------------------------------------- */
-//! standard output stream operator for ElementType
-inline std::ostream & operator <<(std::ostream & stream, ElementKind kind )
-{
-#define STRINGIFY(kind)				\
-  stream << BOOST_PP_STRINGIZE(kind)
-
-  AKANTU_BOOST_ALL_KIND_SWITCH(STRINGIFY);
-#undef STRINGIFY
-  return stream;
-}
-
-/* -------------------------------------------------------------------------- */
-/// standard output stream operator for InterpolationType
-inline std::ostream & operator <<(std::ostream & stream, InterpolationType type)
-{
-  switch(type)
-    {
-    case _itp_lagrange_point_1        : stream << "_itp_lagrange_point_1"       ; break;
-    case _itp_lagrange_segment_2      : stream << "_itp_lagrange_segment_2"     ; break;
-    case _itp_lagrange_segment_3      : stream << "_itp_lagrange_segment_3"     ; break;
-    case _itp_lagrange_triangle_3     : stream << "_itp_lagrange_triangle_3"    ; break;
-    case _itp_lagrange_triangle_6     : stream << "_itp_lagrange_triangle_6"    ; break;
-    case _itp_lagrange_quadrangle_4   : stream << "_itp_lagrange_quadrangle_4"  ; break;
-    case _itp_serendip_quadrangle_8   : stream << "_itp_serendip_quadrangle_8"  ; break;
-    case _itp_lagrange_tetrahedron_4  : stream << "_itp_lagrange_tetrahedron_4" ; break;
-    case _itp_lagrange_tetrahedron_10 : stream << "_itp_lagrange_tetrahedron_10"; break;
-    case _itp_lagrange_hexahedron_8   : stream << "_itp_lagrange_hexahedron_8"  ; break;
-    case _itp_lagrange_pentahedron_6  : stream << "_itp_lagrange_pentahedron_6" ; break;
-#if defined(AKANTU_STRUCTURAL_MECHANICS)
-    case _itp_bernoulli_beam          : stream << "_itp_bernoulli_beam"         ; break;
-    case _itp_kirchhoff_shell         : stream << "_itp_kirchhoff_shell"        ; break;
-#endif
-    case _itp_not_defined             : stream << "_itp_not_defined"            ; break;
-    }
-  return stream;
-}
 
 /* -------------------------------------------------------------------------- */
 /// standard output stream operator for GhostType
@@ -129,7 +71,8 @@ inline std::ostream & operator <<(std::ostream & stream, SynchronizationTag type
     case _gst_smmc_facets_conn         : stream << "_gst_smmc_facets_conn"        ; break;
     case _gst_smmc_facets_stress       : stream << "_gst_smmc_facets_stress"      ; break;
     case _gst_smmc_damage              : stream << "_gst_smmc_damage"             ; break;
-    case _gst_ce_inserter              : stream << "_gst_ce_inserter"             ; break;
+    case _gst_giu_global_conn          : stream << "_gst_giu_global_conn"         ; break;
+    case _gst_ce_groups                : stream << "_gst_ce_groups"               ; break;
     case _gst_gm_clusters              : stream << "_gst_gm_clusters"             ; break;
     case _gst_htm_capacity             : stream << "_gst_htm_capacity"            ; break;
     case _gst_htm_temperature          : stream << "_gst_htm_temperature"         ; break;
@@ -138,11 +81,15 @@ inline std::ostream & operator <<(std::ostream & stream, SynchronizationTag type
     case _gst_htm_gradient_phi         : stream << "_gst_htm_gradient_phi"        ; break;
     case _gst_mnl_for_average          : stream << "_gst_mnl_for_average"         ; break;
     case _gst_mnl_weight               : stream << "_gst_mnl_weight"              ; break;
+    case _gst_nh_criterion             : stream << "_gst_nh_criterion"            ; break;
     case _gst_test                     : stream << "_gst_test"                    ; break;
+    case _gst_user_1                   : stream << "_gst_user_1"                  ; break;
+    case _gst_user_2                   : stream << "_gst_user_2"                  ; break;
     case _gst_material_id              : stream << "_gst_material_id"             ; break;
     case _gst_for_dump                 : stream << "_gst_for_dump"                ; break;
     case _gst_cf_nodal                 : stream << "_gst_cf_nodal"                ; break;
     case _gst_cf_incr                  : stream << "_gst_cf_incr"                 ; break;
+    case _gst_solver_solution          : stream << "_gst_solver_solution"         ; break;
     }
   return stream;
 }

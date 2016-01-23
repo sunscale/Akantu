@@ -4,15 +4,16 @@
  * @author Marion Estelle Chambart <marion.chambart@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Aug 31 2011
- * @date last modification: Wed Nov 13 2013
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Marigo non-local description
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -47,13 +48,13 @@ __BEGIN_AKANTU__
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension, template <UInt> class WeightFunction = BaseWeightFunction>
-class MaterialMarigoNonLocal : public MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension>, WeightFunction> {
+template<UInt spatial_dimension>
+class MaterialMarigoNonLocal : public MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension> > {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension>, WeightFunction> MaterialMarigoNonLocalParent;
+  typedef MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension> > MaterialMarigoNonLocalParent;
   MaterialMarigoNonLocal(SolidMechanicsModel & model, const ID & id = "");
 
   virtual ~MaterialMarigoNonLocal() {};
@@ -70,6 +71,7 @@ protected:
   void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
+
 private:
 
   /* ------------------------------------------------------------------------ */

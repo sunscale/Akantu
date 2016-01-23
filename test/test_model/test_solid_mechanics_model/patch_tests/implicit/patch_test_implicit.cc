@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Thu Feb 17 2011
- * @date last modification: Fri Jun 13 2014
+ * @date creation: Sat Apr 16 2011
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  patch test for elastic material in solid mechanics model
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -152,10 +153,11 @@ int main(int argc, char *argv[])
   /* ------------------------------------------------------------------------ */
   my_model.solveStep<_scm_newton_raphson_tangent_modified, _scc_residual>(2e-4, 2);
   my_model.getStiffnessMatrix().saveMatrix("clown_matrix.mtx");
+
   /* ------------------------------------------------------------------------ */
   /* Checks                                                                   */
   /* ------------------------------------------------------------------------ */
-  UInt nb_quadrature_points = my_model.getFEEngine().getNbQuadraturePoints(element_type);
+  UInt nb_quadrature_points = my_model.getFEEngine().getNbIntegrationPoints(element_type);
 
   Array<Real> & stress_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getStress(element_type));
   Array<Real> & strain_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getGradU(element_type));
@@ -186,7 +188,7 @@ int main(int argc, char *argv[])
 	std::cerr << "strain error: " << strain_error << " > " << strain_tolerance << std::endl;
 	std::cerr << "strain: " << strain << std::endl
 		  << "prescribed strain: " << presc_strain << std::endl;
-	return EXIT_FAILURE;
+       	return EXIT_FAILURE;
       } else {
 	std::cerr << "strain error: " << strain_error << " < " << strain_tolerance << std::endl;
       }

@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Jan 16 2013
- * @date last modification: Fri Jun 13 2014
+ * @date creation: Sun Sep 26 2010
+ * @date last modification: Tue Jun 30 2015
  *
  * @brief  read a mesh from an abaqus input file
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,6 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "mesh_io.hh"
+#include "mesh_accessor.hh"
 
 #ifndef __AKANTU_MESH_IO_ABAQUS_HH__
 #define __AKANTU_MESH_IO_ABAQUS_HH__
@@ -37,7 +39,7 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-class MeshIOAbaqus : public MeshIO {
+class MeshIOAbaqus : public MeshIO, private MeshAccessor {
 public:
   MeshIOAbaqus();
   virtual ~MeshIOAbaqus();

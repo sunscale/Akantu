@@ -1,23 +1,24 @@
 /**
  * @file   aka_math.cc
  *
- * @author Leonardo Snozzi <leonardo.snozzi@epfl.ch>
- * @author Marion Estelle Chambart <marion.chambart@epfl.ch>
- * @author Peter Spijker <peter.spijker@epfl.ch>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
- * @author Marco Vocialta <marco.vocialta@epfl.ch>
+ * @author Marion Estelle Chambart <marion.chambart@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Leonardo Snozzi <leonardo.snozzi@epfl.ch>
+ * @author Peter Spijker <peter.spijker@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Wed Aug 04 2010
- * @date last modification: Thu Mar 27 2014
+ * @date last modification: Fri May 15 2015
  *
  * @brief  Implementation of the math toolbox
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -179,6 +180,50 @@ void Math::matrix_matrixt(UInt m, UInt n, UInt k,
     A_val += offset_A;
     B_val += offset_B;
     C_val += offset_C;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void Math::compute_tangents(const Array<Real> & normals, Array<Real> & tangents) {
+  AKANTU_DEBUG_IN();
+
+  UInt spatial_dimension  = normals.getNbComponent();
+  UInt tangent_components = spatial_dimension * (spatial_dimension - 1);
+
+  AKANTU_DEBUG_ASSERT(tangent_components == tangents.getNbComponent(),
+		      "Cannot compute the tangents, the storage array for tangents"
+		      << " does not have the good amount of components.");
+
+  UInt nb_normals = normals.getSize();
+  tangents.resize(nb_normals);
+
+  Real * normal_it  = normals .storage();
+  Real * tangent_it = tangents.storage();
+
+  /// compute first tangent
+  for (UInt q = 0; q < nb_normals; ++q) {
+    /// if normal is orthogonal to xy plane, arbitrarly define tangent
+    if ( Math::are_float_equal(Math::norm2(normal_it), 0) )
+      tangent_it[0] = 1;
+    else
+      Math::normal2(normal_it, tangent_it);
+
+    normal_it  += spatial_dimension;
+    tangent_it += tangent_components;
+  }
+
+  /// compute second tangent (3D case)
+  if (spatial_dimension == 3) {
+    normal_it  = normals .storage();
+    tangent_it = tangents.storage();
+
+    for (UInt q = 0; q < nb_normals; ++q) {
+      Math::normal3(normal_it, tangent_it, tangent_it + spatial_dimension);
+      normal_it  += spatial_dimension;
+      tangent_it += tangent_components;
+    }
   }
 
   AKANTU_DEBUG_OUT();

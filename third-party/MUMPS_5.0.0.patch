@@ -1,0 +1,154 @@
+diff -Naur MUMPS_5.0.0/libseq/Makefile MUMPS_5.0.0.shared/libseq/Makefile
+--- MUMPS_5.0.0/libseq/Makefile	2015-02-20 09:20:00.000000000 +0100
++++ MUMPS_5.0.0.shared/libseq/Makefile	2015-03-06 14:23:37.293877000 +0100
+@@ -8,11 +8,15 @@
+ 
+ include ../Makefile.inc
+ 
+-libmpiseq: libmpiseq$(PLAT)$(LIBEXT)
++libmpiseq: libmpiseq$(PLAT)$(LIBEXT) libmpiseq$(PLAT)$(SHLIBEXT)
+ 
+ libmpiseq$(PLAT)$(LIBEXT): mpi.o mpic.o elapse.o
+ 	$(AR)$@ mpi.o mpic.o elapse.o
+ 	$(RANLIB) $@
++
++libmpiseq$(PLAT)$(SHLIBEXT): mpi.o mpic.o elapse.o
++	$(FC) -shared $^ -o libmpiseq$(PLAT)$(SHLIBEXT)
++
+ .f.o:
+ 	$(FC) $(OPTF)              -c $*.f $(OUTF)$*.o
+ .c.o:
+diff -Naur MUMPS_5.0.0/Makefile MUMPS_5.0.0.shared/Makefile
+--- MUMPS_5.0.0/Makefile	2015-02-20 09:19:56.000000000 +0100
++++ MUMPS_5.0.0.shared/Makefile	2015-03-06 14:24:13.083854000 +0100
+@@ -2,14 +2,15 @@
+ #  This file is part of MUMPS 5.0.0, released
+ #  on Fri Feb 20 08:19:56 UTC 2015
+ #
+-topdir = .
+-libdir = $(topdir)/lib
++topdir  = .
++libdir  = $(topdir)/lib
++prefix ?= /usr/local
+ 
+ default:	dexamples
+ 
+ .PHONY: default alllib all c z s d \
+ 	sexamples dexamples cexamples zexamples \
+-	mumps_lib requiredobj libseqneeded clean
++	mumps_lib requiredobj libseqneeded install clean
+ 
+ alllib:		c z s d
+ all:		cexamples zexamples sexamples dexamples
+@@ -51,29 +52,46 @@
+ dexamples:	d
+ 	(cd examples ; $(MAKE) d)
+ 
+-requiredobj: Makefile.inc $(LIBSEQNEEDED) $(libdir)/libpord$(PLAT)$(LIBEXT)
++requiredobj: Makefile.inc $(LIBSEQNEEDED) $(libdir)/libpord$(PLAT)$(LIBEXT) $(libdir)/libpord$(PLAT)$(SHLIBEXT)
+ 
+ # dummy MPI library (sequential version)
+ 
+ libseqneeded:
+ 	(cd libseq; $(MAKE))
++	cp libseq/lib* $(libdir)
+ 
+ # Build the libpord.a library and copy it into $(topdir)/lib
+ $(libdir)/libpord$(PLAT)$(LIBEXT):
+ 	if [ "$(LPORDDIR)" != "" ] ; then \
+ 	  cd $(LPORDDIR); \
+-	  $(MAKE) CC="$(CC)" CFLAGS="$(OPTC)" AR="$(AR)" RANLIB="$(RANLIB)" OUTC="$(OUTC)" LIBEXT=$(LIBEXT); \
++	  $(MAKE) CC="$(CC)" CFLAGS="$(OPTC)" AR="$(AR)" RANLIB="$(RANLIB)" OUTC="$(OUTC)" LIBEXT=$(LIBEXT) PLAT=$(PLAT) SHLIBEXT=$(SHLIBEXT); \
+ 	fi;
+ 	if [ "$(LPORDDIR)" != "" ] ; then \
+ 	  cp $(LPORDDIR)/libpord$(LIBEXT) $@; \
+ 	fi;
+ 
++$(libdir)/libpord$(PLAT)$(SHLIBEXT):
++	if [ "$(LPORDDIR)" != "" ] ; then \
++	  cd $(LPORDDIR); \
++	  $(MAKE) CC="$(CC)" CFLAGS="$(OPTC)" AR="$(AR)" RANLIB="$(RANLIB)" OUTC="$(OUTC)" LIBEXT=$(LIBEXT) PLAT=$(PLAT) SHLIBEXT=$(SHLIBEXT) libpord$(PLAT)$(SHLIBEXT); \
++	fi;
++	if [ "$(LPORDDIR)" != "" ] ; then \
++	  cp $(LPORDDIR)/libpord$(PLAT)$(SHLIBEXT) $@; \
++	fi;
++
++install: alllib
++	-$(MKDIR) $(prefix)/include/
++	-$(MKDIR) $(prefix)/lib/
++	-$(CP) include/* $(prefix)/include/
++	-$(CP) lib/*     $(prefix)/lib/
++
+ clean:
+ 	(cd src; $(MAKE) clean)
+ 	(cd examples; $(MAKE) clean)
+-	(cd $(libdir); $(RM) *$(PLAT)$(LIBEXT))
++	(cd $(libdir); $(RM) *$(PLAT)$(LIBEXT) *$(PLAT)$(SHLIBEXT))
+ 	(cd libseq; $(MAKE) clean)
+ 	if [ "$(LPORDDIR)" != "" ] ; then \
+ 	  cd $(LPORDDIR); $(MAKE) realclean; \
++	  cd $(LPORDDIR); $(MAKE) LIBEXT=$(LIBEXT) PLAT=$(PLAT) SHLIBEXT=$(SHLIBEXT) realclean; \
+         fi;
+ 
+diff -Naur MUMPS_5.0.0/PORD/lib/Makefile MUMPS_5.0.0.shared/PORD/lib/Makefile
+--- MUMPS_5.0.0/PORD/lib/Makefile	2015-02-20 09:19:56.000000000 +0100
++++ MUMPS_5.0.0.shared/PORD/lib/Makefile	2015-03-06 14:23:37.272190000 +0100
+@@ -13,7 +13,7 @@
+ 
+ OBJS = graph.o gbipart.o gbisect.o ddcreate.o ddbisect.o nestdiss.o \
+        multisector.o gelim.o bucket.o tree.o \
+-       symbfac.o interface.o sort.o minpriority.o 
++       symbfac.o interface.o sort.o minpriority.o
+ 
+ # Note: numfac.c read.c mapping.c triangular.c matrix.c kernel.c
+ # were not direcly used by MUMPS and have been removed from the
+@@ -24,12 +24,15 @@
+ .c.o:
+ 	$(CC) $(COPTIONS) -c $*.c $(OUTC)$*.o
+ 
+-libpord$(LIBEXT):$(OBJS)
++libpord$(PLAT)$(LIBEXT):$(OBJS)
+ 	$(AR)$@ $(OBJS)
+ 	$(RANLIB) $@
+ 
++libpord$(PLAT)$(SHLIBEXT): $(OBJS)
++	$(CC) -shared $(OBJS) -o libpord$(PLAT)$(SHLIBEXT)
++
+ clean:
+ 	rm -f *.o
+ 
+ realclean:
+-	rm -f *.o libpord.a
++	rm -f *.o libpord$(PLAT)$(SHLIBEXT) libpord$(PLAT)$(LIBEXT)
+diff -Naur MUMPS_5.0.0/src/Makefile MUMPS_5.0.0.shared/src/Makefile
+--- MUMPS_5.0.0/src/Makefile	2015-02-20 09:19:56.000000000 +0100
++++ MUMPS_5.0.0.shared/src/Makefile	2015-03-06 14:24:22.568979000 +0100
+@@ -24,7 +24,10 @@
+ include $(topdir)/Makefile.inc
+ 
+ mumps_lib:    $(libdir)/libmumps_common$(PLAT)$(LIBEXT) \
+-              $(libdir)/lib$(ARITH)mumps$(PLAT)$(LIBEXT)
++              $(libdir)/libmumps_common$(PLAT)$(SHLIBEXT) \
++              $(libdir)/lib$(ARITH)mumps$(PLAT)$(LIBEXT) \
++              $(libdir)/lib$(ARITH)mumps$(PLAT)$(SHLIBEXT)
++
+ 
+ OBJS_COMMON_MOD = \
+         ana_omp_m.o\
+@@ -161,6 +164,16 @@
+ 	$(AR)$@ $?
+ 	$(RANLIB) $@
+ 
++$(libdir)/libmumps_common$(PLAT)$(SHLIBEXT):	$(OBJS_COMMON_MOD) $(OBJS_COMMON_OTHER)
++	$(FC) -shared $^ -L$(libdir) $(LORDERINGS) $(LIBS) $(LIBBLAS) $(LIBOTHERS) -o $(libdir)/libmumps_common$(PLAT)$(SHLIBEXT)
++
++
++$(libdir)/lib$(ARITH)mumps$(PLAT)$(SHLIBEXT):    $(OBJS_MOD) $(OBJS_OTHER)
++	$(FC) -shared $^ -L$(libdir) -lmumps_common$(PLAT) $(LORDERINGS) $(LIBS) $(LIBBLAS) $(LIBOTHERS) -o $(libdir)/lib$(ARITH)mumps$(PLAT)$(SHLIBEXT)
++
++
++
++
+ # Dependencies between modules:
+ $(ARITH)mumps_load.o:		$(ARITH)mumps_comm_buffer.o \
+ 				$(ARITH)mumps_struc_def.o \

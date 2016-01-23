@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Sun Sep 26 2010
- * @date last modification: Thu Jun 05 2014
+ * @date creation: Mon Aug 09 2010
+ * @date last modification: Thu Aug 06 2015
  *
  * @brief  test of the class SolidMechanicsModel
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -98,8 +99,8 @@ int main(int argc, char *argv[])
     model.updateAcceleration();
     model.explicitCorr();
 
-    akantu::Real epot = model.getPotentialEnergy();
-    akantu::Real ekin = model.getKineticEnergy();
+    akantu::Real epot = model.getEnergy("potential");
+    akantu::Real ekin = model.getEnergy("kinetic");
 
     if(prank == 0) {
       std::cout << s << " " << epot << " " << ekin << " " << epot + ekin

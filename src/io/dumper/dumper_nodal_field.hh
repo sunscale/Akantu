@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Tue Sep 02 2014
- * @date last modification: Tue Sep 02 2014
+ * @date creation: Fri Oct 26 2012
+ * @date last modification: Tue Jan 06 2015
  *
  * @brief  Description of nodal fields
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -31,10 +32,6 @@
 #ifndef __AKANTU_DUMPER_NODAL_FIELD_HH__
 #define __AKANTU_DUMPER_NODAL_FIELD_HH__
 
-
-
-
-
 #include "dumper_field.hh"
 #include <io_helper.hh>
 /* -------------------------------------------------------------------------- */
@@ -44,19 +41,17 @@ __BEGIN_AKANTU_DUMPER__
 
 // This represents a iohelper compatible field
 template<typename T, bool filtered = false,
-	 class Container = Array<T>,class Filter = Array<UInt> >
+	 class Container = Array<T>, class Filter = Array<UInt> >
 class NodalField;
 
 /* -------------------------------------------------------------------------- */
 template<typename T, class Container, class Filter>
 class NodalField<T, false, Container, Filter> : public dumper::Field {
 public:
-
-
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */  
-  
+ 
   /// associated iterator with any nodal field (non filetered)
   class iterator : public iohelper::iterator< T, iterator, Vector<T> > {
   public:

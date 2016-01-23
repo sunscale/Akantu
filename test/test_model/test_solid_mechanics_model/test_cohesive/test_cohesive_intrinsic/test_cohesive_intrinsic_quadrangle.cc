@@ -3,15 +3,16 @@
  *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date creation: Wed Oct 03 2012
- * @date last modification: Fri Sep 19 2014
+ * @date creation: Tue May 08 2012
+ * @date last modification: Thu Dec 11 2014
  *
  * @brief  Intrinsic cohesive elements' test for quadrangles
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -37,8 +38,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
-#include "dumper_paraview.hh"
-#include "dumper_nodal_field.hh" 
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -109,16 +108,13 @@ int main(int argc, char *argv[]) {
   model.addDumpField("stress");
   model.addDumpField("grad_u");
   model.addDumpField("force");
-  model.dump();
 
-  DumperParaview dumper("cohesive_elements_quadrangle");
-  dumper.registerMesh(mesh, spatial_dimension, _not_ghost, _ek_cohesive);
-  dumper::NodalField<Real> * cohesive_displacement =
-    new dumper::NodalField<Real>(model.getDisplacement());
-  
-  cohesive_displacement->setPadding(3);
-  dumper.registerField("displacement", cohesive_displacement);
-  dumper.dump();
+  model.setBaseNameToDumper("cohesive elements", "cohesive_elements_quadrangle");
+  model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
+  model.addDumpFieldToDumper("cohesive elements", "damage");
+
+  model.dump();
+  model.dump("cohesive elements");
 
   /// update displacement
   Array<UInt> elements;
@@ -159,7 +155,7 @@ int main(int argc, char *argv[]) {
 
     if(s % 1 == 0) {
       model.dump();
-      dumper.dump();
+      model.dump("cohesive elements");
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
     }
 

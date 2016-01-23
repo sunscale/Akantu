@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Mon Aug 06 2012
- * @date last modification: Mon Jun 23 2014
+ * @date creation: Thu Jul 15 2010
+ * @date last modification: Thu Aug 06 2015
  *
  * @brief  Test the grid object
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -83,22 +84,22 @@ int main(int argc, char *argv[]) {
 
   Vector<Real> pos(spatial_dimension);
 
-  const SpatialGrid<Element>::CellID & id = grid.getCellID(pos);
+  //  const SpatialGrid<Element>::CellID & id = grid.getCellID(pos);
 
-#if !defined AKANTU_NDEBUG
-  SpatialGrid<Element>::neighbor_cells_iterator nit = grid.beginNeighborCells(id);
-  SpatialGrid<Element>::neighbor_cells_iterator nend = grid.endNeighborCells(id);
-  for(;nit != nend; ++nit) {
-    std::cout << std::endl;
-    const SpatialGrid<Element>::Cell & cell = grid.getCell(*nit);
-    SpatialGrid<Element>::Cell::const_iterator cit = cell.begin();
-    SpatialGrid<Element>::Cell::position_iterator pit = cell.begin_pos();
-    SpatialGrid<Element>::Cell::const_iterator cend = cell.end();
-    for (; cit != cend; ++cit, ++pit) {
-      std::cout << *cit << " " << *pit << std::endl;
-    }
-  }
-#endif
+// #if !defined AKANTU_NDEBUG
+//   SpatialGrid<Element>::neighbor_cells_iterator nit = grid.beginNeighborCells(id);
+//   SpatialGrid<Element>::neighbor_cells_iterator nend = grid.endNeighborCells(id);
+//   for(;nit != nend; ++nit) {
+//     std::cout << std::endl;
+//     const SpatialGrid<Element>::Cell & cell = grid.getCell(*nit);
+//     SpatialGrid<Element>::Cell::const_iterator cit = cell.begin();
+//     SpatialGrid<Element>::Cell::position_iterator pit = cell.begin_pos();
+//     SpatialGrid<Element>::Cell::const_iterator cend = cell.end();
+//     for (; cit != cend; ++cit, ++pit) {
+//       std::cout << *cit << " " << *pit << std::endl;
+//     }
+//   }
+// #endif
 
 
   akantu::finalize();

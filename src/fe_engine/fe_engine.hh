@@ -4,15 +4,16 @@
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Tue Jul 20 2010
- * @date last modification: Mon Jul 07 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Oct 22 2015
  *
  * @brief  FEM class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -40,71 +41,13 @@
 #include "mesh.hh"
 #include "element_class.hh"
 #include "sparse_matrix.hh"
-
+#include "integration_point.hh"
 /* -------------------------------------------------------------------------- */
-namespace akantu {
-  class Integrator;
-  class ShapeFunctions;
-}
-
 __BEGIN_AKANTU__
-
-class QuadraturePoint : public Element {
-public:
-  typedef Vector<Real> position_type;
-public:
-  QuadraturePoint(ElementType type = _not_defined, UInt element = 0,
-		  UInt num_point = 0, GhostType ghost_type = _not_ghost) :
-    Element(type, element, ghost_type), num_point(num_point), global_num(0),
-    position((Real *)NULL, 0) { };
-
-  QuadraturePoint(UInt element, UInt num_point,
-		  UInt global_num,
-		  const position_type & position,
-		  ElementType type,
-		  GhostType ghost_type = _not_ghost) :
-    Element(type, element, ghost_type), num_point(num_point), global_num(global_num),
-    position((Real *)NULL, 0) { this->position.shallowCopy(position); };
-
-  QuadraturePoint(const QuadraturePoint & quad) :
-    Element(quad), num_point(quad.num_point), global_num(quad.global_num), position((Real *) NULL, 0) {
-    position.shallowCopy(quad.position);
-  };
-
-  inline QuadraturePoint & operator=(const QuadraturePoint & q) {
-    if(this != &q) {
-      element    = q.element;
-      type       = q.type;
-      ghost_type = q.ghost_type;
-      num_point  = q.num_point;
-      global_num = q.global_num;
-      position.shallowCopy(q.position);
-    }
-
-    return *this;
-  }
-
-  AKANTU_GET_MACRO(Position, position, const position_type &);
-
-  void setPosition(const position_type & position) {
-    this->position.shallowCopy(position);
-  }
-
-  /// function to print the containt of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const {
-    std::string space;
-    for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
-    stream << space << "QuadraturePoint [";
-    Element::printself(stream, 0);
-    stream << ", " << num_point << "]";
-  }
-
-public:
-  UInt num_point;
-  UInt global_num;
-private:
-  position_type position;
-};
+/* -------------------------------------------------------------------------- */
+class Integrator;
+class ShapeFunctions;
+/* -------------------------------------------------------------------------- */
 
 /**
  * The  generic  FEEngine class  derived  in  a  FEEngineTemplate class  containing  the
@@ -125,9 +68,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// build the profile of the sparse matrix corresponding to the mesh
-  void initSparseMatrixProfile(SparseMatrixType sparse_matrix_type = _unsymmetric);
-
   /// pre-compute all the shape functions, their derivatives and the jacobians
   virtual void initShapeFunctions(const GhostType & ghost_type = _not_ghost) = 0;
 
@@ -162,19 +102,19 @@ public:
 			 const GhostType & ghost_type = _not_ghost,
 			 const Array<UInt> & filter_elements = empty_filter) const = 0;
 
-  /// integrate a scalar value on all elements of type "type"
+  /// integrate a scalar value f on all elements of type "type"
   virtual Real integrate(const Array<Real> & f,
 			 const ElementType & type,
 			 const GhostType & ghost_type = _not_ghost,
 			 const Array<UInt> & filter_elements = empty_filter) const = 0;
 
-  /// integrate f for all quadrature points of type "type" but don't sum over all quadrature points
-  virtual void integrateOnQuadraturePoints(const Array<Real> & f,
-					   Array<Real> &intf,
-					   UInt nb_degree_of_freedom,
-					   const ElementType & type,
-					   const GhostType & ghost_type = _not_ghost,
-					   const Array<UInt> & filter_elements = empty_filter) const = 0;
+  /// integrate f for all integration points of type "type" but don't sum over all integration points
+  virtual void integrateOnIntegrationPoints(const Array<Real> & f,
+					    Array<Real> &intf,
+					    UInt nb_degree_of_freedom,
+					    const ElementType & type,
+					    const GhostType & ghost_type = _not_ghost,
+					    const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// integrate one element scalar value on all elements of type "type"
   virtual Real integrate(const Vector<Real> & f,
@@ -185,9 +125,10 @@ public:
   /* ------------------------------------------------------------------------ */
   /* compatibility with old FEEngine fashion */
   /* ------------------------------------------------------------------------ */
-  /// get the number of quadrature points
-  virtual UInt getNbQuadraturePoints(const ElementType & type,
-				     const GhostType & ghost_type = _not_ghost) const = 0;
+#ifndef SWIG
+  /// get the number of integration points
+  virtual UInt getNbIntegrationPoints(const ElementType & type,
+				      const GhostType & ghost_type = _not_ghost) const = 0;
   /// get the precomputed shapes
   const virtual Array<Real> & getShapes(const ElementType & type,
 					const GhostType & ghost_type = _not_ghost,
@@ -198,59 +139,122 @@ public:
 						   const GhostType & ghost_type = _not_ghost,
 						   UInt id = 0) const = 0;
 
-  /// get quadrature points
-  const virtual Matrix<Real> & getQuadraturePoints(const ElementType & type,
-						   const GhostType & ghost_type = _not_ghost) const = 0;
-
+  /// get integration points
+  const virtual Matrix<Real> & getIntegrationPoints(const ElementType & type,
+						    const GhostType & ghost_type = _not_ghost) const = 0;
+#endif
   /* ------------------------------------------------------------------------ */
   /* Shape method bridges                                                     */
   /* ------------------------------------------------------------------------ */
+  /// Compute the gradient nablauq on the integration points of an element type from nodal values u
   virtual
-  void gradientOnQuadraturePoints(const Array<Real> &u,
-				  Array<Real> &nablauq,
-				  const UInt nb_degree_of_freedom,
-				  const ElementType & type,
-				  const GhostType & ghost_type = _not_ghost,
-                                  const Array<UInt> & filter_elements = empty_filter) const = 0;
+  void gradientOnIntegrationPoints(const Array<Real> &u,
+				   Array<Real> &nablauq,
+				   const UInt nb_degree_of_freedom,
+				   const ElementType & type,
+				   const GhostType & ghost_type = _not_ghost,
+				   const Array<UInt> & filter_elements = empty_filter) const = 0;
 
+  /// Interpolate a nodal field u at the integration points of an element type -> uq
   virtual
-  void interpolateOnQuadraturePoints(const Array<Real> &u,
-				     Array<Real> &uq,
-				     UInt nb_degree_of_freedom,
-				     const ElementType & type,
-				     const GhostType & ghost_type = _not_ghost,
-                                     const Array<UInt> & filter_elements = empty_filter) const = 0;
+  void interpolateOnIntegrationPoints(const Array<Real> &u,
+				      Array<Real> &uq,
+				      UInt nb_degree_of_freedom,
+				      const ElementType & type,
+				      const GhostType & ghost_type = _not_ghost,
+				      const Array<UInt> & filter_elements = empty_filter) const = 0;
 
+  /// Interpolate a nodal field u at the integration points of many element types -> uq
   virtual
-  void interpolateOnQuadraturePoints(const Array<Real> & u,
-				     ElementTypeMapArray<Real> & uq,
-                                     const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+  void interpolateOnIntegrationPoints(const Array<Real> & u,
+				      ElementTypeMapArray<Real> & uq,
+				      const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+
+  /// Compute the interpolation point position in the global coordinates for many element types
+  virtual
+  void computeIntegrationPointsCoordinates(ElementTypeMapArray<Real> & integration_points_coordinates,
+					   const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+
+  /// Compute the interpolation point position in the global coordinates for an element type
+  virtual
+  void computeIntegrationPointsCoordinates(Array<Real> & integration_points_coordinates,
+					  const ElementType & type,
+					  const GhostType & ghost_type = _not_ghost,
+					  const Array<UInt> & filter_elements = empty_filter) const = 0;
+  
+  /// Build pre-computed matrices for interpolation of field form integration points at other given positions (interpolation_points)
+  virtual
+  void initElementalFieldInterpolationFromIntegrationPoints(const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+							    ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+							    ElementTypeMapArray<Real> & integration_points_coordinates_inv_matrices,
+							    const ElementTypeMapArray<UInt> * element_filter) const = 0;
+
+  /// interpolate field at given position (interpolation_points) from given values of this field at integration points (field) 
+  virtual
+  void interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
+						      const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+						      ElementTypeMapArray<Real> & result,
+						      const GhostType ghost_type,
+						      const ElementTypeMapArray<UInt> * element_filter) const = 0;
+
+  /// Interpolate field at given position from given values of this field at integration points (field) 
+  /// using matrices precomputed with initElementalFieldInterplationFromIntegrationPoints
+  virtual
+  void interpolateElementalFieldFromIntegrationPoints(const ElementTypeMapArray<Real> & field,
+						  const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+						  const ElementTypeMapArray<Real> & integration_points_coordinates_inv_matrices,
+						  ElementTypeMapArray<Real> & result,
+						  const GhostType ghost_type,
+						  const ElementTypeMapArray<UInt> * element_filter) const = 0;
+
+  /// interpolate on a phyiscal point inside an element
+  virtual 
+  void interpolate(const Vector<Real> & real_coords, 
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const Element & element) const = 0;
+
+  /// compute the shape on a provided point
+  virtual
+  void computeShapes(const Vector<Real> & real_coords,
+                     UInt elem,
+                     const ElementType & type,
+                     Vector<Real> & shapes,
+                     const GhostType & ghost_type = _not_ghost) const = 0;
+
+  /// compute the shape derivatives on a provided point
+  virtual
+  void computeShapeDerivatives(const Vector<Real> & real__coords,
+                               UInt element,
+                               const ElementType & type,
+                               Matrix<Real> & shape_derivatives,
+                               const GhostType & ghost_type = _not_ghost) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Other methods                                                            */
   /* ------------------------------------------------------------------------ */
 
-  /// pre-compute normals on control points
-  virtual void computeNormalsOnControlPoints(const GhostType & ghost_type = _not_ghost) = 0;
+  /// pre-compute normals on integration points
+  virtual void computeNormalsOnIntegrationPoints(const GhostType & ghost_type = _not_ghost) = 0;
 
-  /// pre-compute normals on control points
-  virtual void computeNormalsOnControlPoints(__attribute__((unused)) const Array<Real> & field,
+  /// pre-compute normals on integration points
+  virtual void computeNormalsOnIntegrationPoints(__attribute__((unused)) const Array<Real> & field,
 					     __attribute__((unused)) const GhostType & ghost_type = _not_ghost) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
-  /// pre-compute normals on control points
-  virtual void computeNormalsOnControlPoints(__attribute__((unused)) const Array<Real> & field,
-					     __attribute__((unused)) Array<Real> & normal,
-					     __attribute__((unused)) const ElementType & type,
-					     __attribute__((unused)) const GhostType & ghost_type = _not_ghost) const {
+  /// pre-compute normals on integration points
+  virtual void computeNormalsOnIntegrationPoints(__attribute__((unused)) const Array<Real> & field,
+						 __attribute__((unused)) Array<Real> & normal,
+						 __attribute__((unused)) const ElementType & type,
+						 __attribute__((unused)) const GhostType & ghost_type = _not_ghost) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
 
 
 
-  /// assemble vectors
+  /// assemble vectors at nodes from elementary vectors
   void assembleArray(const Array<Real> & elementary_vect,
 		      Array<Real> & nodal_values,
 		      const Array<Int> & equation_number,
@@ -292,6 +296,7 @@ public:
 
 #ifdef AKANTU_STRUCTURAL_MECHANICS
 
+  /// assemble a field as a matrix for structural elements (ex. rho to mass matrix)
  virtual  void assembleFieldMatrix(__attribute__ ((unused)) const Array<Real> & field_1,
 				   __attribute__ ((unused)) UInt nb_degree_of_freedom,
 				   __attribute__ ((unused)) SparseMatrix & M,
@@ -302,7 +307,7 @@ public:
 
    AKANTU_DEBUG_TO_IMPLEMENT();
  }
-
+  /// compute shapes function in a matrix for structural elements
   virtual void computeShapesMatrix(__attribute__ ((unused))const ElementType & type,
 				   __attribute__ ((unused))UInt nb_degree_of_freedom,
 				   __attribute__ ((unused))UInt nb_nodes_per_element,
@@ -340,17 +345,21 @@ public:
   /// get the in-radius of an element
   static inline Real getElementInradius(const Matrix<Real> & coord, const ElementType & type);
 
-  /// get the normals on quadrature points
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(NormalsOnQuadPoints, normals_on_quad_points, Real);
+  /// get the normals on integration points
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(NormalsOnIntegrationPoints, normals_on_integration_points, Real);
 
   /// get cohesive element type for a given facet type
   static inline ElementType getCohesiveElementType(const ElementType & type_facet);
 
+  /// get igfem element type for a given regular type
+  static inline Vector<ElementType> getIGFEMElementTypes(const ElementType & type);
+
   /// get the interpolation element associated to an element type
   static inline InterpolationType getInterpolationType(const ElementType & el_type);
 
-
+  /// get the shape function class (probably useless: see getShapeFunction in fe_engine_template.hh)
   virtual const ShapeFunctions & getShapeFunctionsInterface() const = 0;
+  /// get the integrator class (probably useless: see getIntegrator in fe_engine_template.hh)
   virtual const Integrator & getIntegratorInterface() const = 0;
 
   /* ------------------------------------------------------------------------ */
@@ -363,8 +372,8 @@ protected:
   /// the mesh on which all computation are made
   Mesh & mesh;
 
-  /// normals at quadrature points
-  ElementTypeMapArray<Real> normals_on_quad_points;
+  /// normals at integration points
+  ElementTypeMapArray<Real> normals_on_integration_points;
 
 };
 
@@ -381,7 +390,7 @@ inline std::ostream & operator <<(std::ostream & stream, const FEEngine & _this)
 
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const QuadraturePoint & _this)
+inline std::ostream & operator <<(std::ostream & stream, const IntegrationPoint & _this)
 {
   _this.printself(stream);
   return stream;

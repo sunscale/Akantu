@@ -1,15 +1,18 @@
 Yd0 = 94e3
 
-material marigo_non_local remove_wf [
+material marigo_non_local [
          name = concrete
          rho = 3900    # density
          E   = 370e9    # young's modulus
          nu  = 0.22     # poisson's ratio
          Yd  = Yd0 uniform [ 0, 0.1 * Yd0 ]
          Sd  = 2.748e6
-         non_local weight_function [
-                 update_rate  = 10
-                 radius       = 1e-3
-                 damage_limit = 0.99
-         ]
+]
+
+non_local concrete remove_wf [
+	  radius       = 0.15
+	  weight_function weight_parameter [
+	  		  damage_limit = 0.99
+	  		  update_rate  = 10	       
+	  ]	  
 ]

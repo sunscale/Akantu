@@ -5,15 +5,16 @@
  * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Aug 04 2010
- * @date last modification: Tue Sep 16 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Sun Nov 15 2015
  *
  * @brief  Material isotropic elastic
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -61,8 +62,16 @@ private:
 public:
 
   MaterialElastic(SolidMechanicsModel & model, const ID & id = "");
+  MaterialElastic(SolidMechanicsModel & model,
+                  UInt dim,
+                  const Mesh & mesh,
+                  FEEngine & fe_engine,
+                  const ID & id = "");
 
   virtual ~MaterialElastic() {}
+
+protected:
+  void initialize();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -99,7 +108,7 @@ protected:
 				  const Real sigma_th = 0) const;
 
   /// compute the tangent stiffness matrix for an element
-  inline void computeTangentModuliOnQuad(Matrix<Real> & tangent);
+  inline void computeTangentModuliOnQuad(Matrix<Real> & tangent) const;
 
   /// recompute the lame coefficient if E or nu changes
   virtual void updateInternalParameters();
@@ -112,6 +121,14 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /// get first Lame constant
+  AKANTU_GET_MACRO(Lambda, lambda, Real);
+
+  /// get second Lame constant
+  AKANTU_GET_MACRO(Mu, mu, Real);
+
+  /// get bulk modulus
+  AKANTU_GET_MACRO(Kappa, kpa, Real);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

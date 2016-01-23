@@ -2,19 +2,20 @@
  * @file   dumper_iohelper.hh
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+ * @author Dana Christen <dana.christen@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Dana Christen <dana.christen@epfl.ch>
  *
  * @date creation: Fri Oct 26 2012
- * @date last modification: Wed Sep 03 2014
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Define the akantu dumper interface for IOhelper dumpers
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -43,13 +44,18 @@
 #define __AKANTU_DUMPER_IOHELPER_HH__
 /* -------------------------------------------------------------------------- */
 
-
-namespace iohelper { class Dumper; }
-
+namespace iohelper {
+class Dumper;
+}
 
 __BEGIN_AKANTU__
 
-namespace dumper { class Field; class VariableBase;}
+UInt getIOHelperType(ElementType type);
+
+namespace dumper {
+class Field;
+class VariableBase;
+}
 
 class Mesh;
 
@@ -65,34 +71,38 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  
   /// register a given Mesh for the current dumper
-  virtual void registerMesh(const Mesh & mesh, UInt spatial_dimension = _all_dimensions,
-			    const GhostType & ghost_type = _not_ghost,
-			    const ElementKind & element_kind = _ek_not_defined);
+  virtual void registerMesh(const Mesh & mesh,
+                            UInt spatial_dimension = _all_dimensions,
+                            const GhostType & ghost_type = _not_ghost,
+                            const ElementKind & element_kind = _ek_not_defined);
 
   /// register a filtered Mesh (provided filter lists) for the current dumper
-  virtual void registerFilteredMesh(const Mesh & mesh,
-				    const ElementTypeMapArray<UInt> & elements_filter,
-				    const Array<UInt> & nodes_filter,
-				    UInt spatial_dimension = _all_dimensions,
-				    const GhostType & ghost_type = _not_ghost,
-				    const ElementKind & element_kind = _ek_not_defined);
+  virtual void
+  registerFilteredMesh(const Mesh & mesh,
+                       const ElementTypeMapArray<UInt> & elements_filter,
+                       const Array<UInt> & nodes_filter,
+                       UInt spatial_dimension = _all_dimensions,
+                       const GhostType & ghost_type = _not_ghost,
+                       const ElementKind & element_kind = _ek_not_defined);
 
   /// register a Field object identified by name and provided by pointer
   void registerField(const std::string & field_id, dumper::Field * field);
   /// remove the Field identified by name from managed fields
   void unRegisterField(const std::string & field_id);
   /// register a VariableBase object identified by name and provided by pointer
-  void registerVariable(const std::string & variable_id, dumper::VariableBase * variable);
+  void registerVariable(const std::string & variable_id,
+                        dumper::VariableBase * variable);
   /// remove a VariableBase identified by name from managed fields
   void unRegisterVariable(const std::string & variable_id);
 
-  /// request dump: this calls IOHelper dump routine 
+  /// request dump: this calls IOHelper dump routine
   virtual void dump();
-  /// request dump: this first set the current step and then calls IOHelper dump routine 
+  /// request dump: this first set the current step and then calls IOHelper dump
+  /// routine
   virtual void dump(UInt step);
-  /// request dump: this first set the current step and current time and then calls IOHelper dump routine 
+  /// request dump: this first set the current step and current time and then
+  /// calls IOHelper dump routine
   virtual void dump(Real current_time, UInt step);
   /// set the parallel context for IOHeper
   virtual void setParallelContext(bool is_parallel);
@@ -105,7 +115,6 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// direct access to the iohelper::Dumper object
   AKANTU_GET_MACRO(Dumper, *dumper, iohelper::Dumper &)
 
@@ -113,11 +122,9 @@ public:
   void setTimeStep(Real time_step);
 
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Variable wrapper */
-  template<typename T, bool is_scal = is_scalar<T>::value>
-  class Variable;
+  template <typename T, bool is_scal = is_scalar<T>::value> class Variable;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

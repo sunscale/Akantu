@@ -2,15 +2,16 @@
  * @file   dumper_field.hh
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Sep 02 2014
- * @date last modification: Wed Sep 03 2014
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Common interface for fields
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -34,7 +35,6 @@
 #include "dumper_iohelper.hh"
 /* -------------------------------------------------------------------------- */
 
-
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
@@ -44,68 +44,80 @@ class ComputeFunctorInterface;
 class HomogenizerProxy;
 /* -------------------------------------------------------------------------- */
 
-
 /// Field interface
 class Field {
-
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
-
-  Field(): homogeneous(false) {}
-  virtual ~Field() {};
+  Field() : homogeneous(false) {}
+  virtual ~Field(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-
+public:
 #ifdef AKANTU_USE_IOHELPER
   /// register this to the provided dumper
-  virtual void registerToDumper(const std::string & id, 
-				iohelper::Dumper & dumper) = 0;
+  virtual void registerToDumper(const std::string & id,
+                                iohelper::Dumper & dumper) = 0;
 #endif
-  
+
   /// set the number of data per item (used for elements fields at the moment)
-  virtual void setNbData(UInt nb_data){AKANTU_DEBUG_TO_IMPLEMENT();};
+  virtual void setNbData(__attribute__((unused)) UInt nb_data) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  };
 
   /// set the number of data per elem (used for elements fields at the moment)
-  virtual void setNbDataPerElem(const ElementTypeMap<UInt> & nb_data){AKANTU_DEBUG_TO_IMPLEMENT();};
+  virtual void setNbDataPerElem(__attribute__((unused))
+                                const ElementTypeMap<UInt> & nb_data) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  };
 
   /// set the number of data per elem (used for elements fields at the moment)
-  virtual void setNbDataPerElem(UInt nb_data){AKANTU_DEBUG_TO_IMPLEMENT();};
+  virtual void setNbDataPerElem(__attribute__((unused)) UInt nb_data) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  };
 
   /// get the number of components of the hosted field
-  virtual ElementTypeMap<UInt> getNbComponents(){throw;};
+  virtual ElementTypeMap<UInt>
+  getNbComponents(__attribute__((unused)) UInt dim = _all_dimensions,
+                  __attribute__((unused)) GhostType ghost_type = _not_ghost,
+                  __attribute__((unused)) ElementKind kind = _ek_not_defined) {
+    throw;
+  };
 
   /// for connection to a FieldCompute
-  inline virtual Field * connect(FieldComputeProxy & proxy){throw;};
+  inline virtual Field * connect(__attribute__((unused))
+                                 FieldComputeProxy & proxy) {
+    throw;
+  };
 
   /// for connection to a FieldCompute
-  inline virtual ComputeFunctorInterface * connect(HomogenizerProxy & proxy){throw;};
-
+  inline virtual ComputeFunctorInterface * connect(__attribute__((unused))
+                                                   HomogenizerProxy & proxy) {
+    throw;
+  };
 
   /// check if the same quantity of data for all element types
   virtual void checkHomogeneity() = 0;
 
   /// return the dumper name
-  std::string getGroupName(){return group_name;};
+  std::string getGroupName() { return group_name; };
 
   /// return the id of the field
-  std::string getID(){return field_id;};
+  std::string getID() { return field_id; };
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-  
+public:
   /// return the flag to know if the field is homogeneous/contiguous
   virtual bool isHomogeneous() { return homogeneous; }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-  
 protected:
   /// the flag to know if it is homogeneous
   bool homogeneous;
@@ -119,13 +131,7 @@ protected:
 
 /* -------------------------------------------------------------------------- */
 
-
-
-
-
-
 __END_AKANTU_DUMPER__
 __END_AKANTU__
-
 
 #endif /* __AKANTU_DUMPER_FIELD_HH__ */

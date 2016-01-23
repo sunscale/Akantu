@@ -5,13 +5,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Sep 02 2014
- * @date last modification: Wed Sep 03 2014
+ * @date last modification: Fri May 15 2015
  *
  * @brief  Iterators for elemental fields
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -33,17 +33,13 @@
 #define __AKANTU_DUMPER_ELEMENT_ITERATOR_HH__
 /* -------------------------------------------------------------------------- */
 #include "element.hh"
-#include <io_helper.hh>
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
 template<class types, template <class> class final_iterator>
-class element_iterator :
-  public iohelper::iterator<typename types::data_type,
-                            final_iterator<types>,
-                            typename types::return_type> {
+class element_iterator {
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
@@ -106,11 +102,16 @@ public:
 
   ElementType getType() { return *tit; }
 
+  UInt element_type() { return getIOHelperType(*tit); }
+
   Element getCurrentElement(){
     return Element(*tit,array_it.getCurrentIndex());
   }
 
   UInt getNbDataPerElem(const ElementType & type) const {
+    if (!nb_data_per_elem.exists(type, ghost_type))
+      return field(type,ghost_type).getNbComponent();
+    
     return nb_data_per_elem(type,ghost_type);
   }
 

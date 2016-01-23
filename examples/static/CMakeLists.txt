@@ -3,15 +3,16 @@
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Fri Jun 13 2014
-# @date last modification: Fri Jun 13 2014
+# @date creation: Mon Jan 18 2016
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  configuration implicit tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -31,14 +32,9 @@
 #===============================================================================
 
 #===============================================================================
-register_example(static static.cc)
-
 add_mesh(static_mesh square.geo 2 2)
-add_dependencies(static static_mesh)
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/material.dat
-  ${CMAKE_CURRENT_BINARY_DIR}/material.dat
-  COPYONLY
+register_example(static
+  SOURCES static.cc
+  DEPENDS static_mesh
+  FILES_TO_COPY material.dat
   )
-

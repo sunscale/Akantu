@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Nov 13 2013
- * @date last modification: Mon Jun 09 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Implementation of the node group
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -29,19 +30,38 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
 #include "node_group.hh"
+#include "dumpable.hh"
+#include "dumpable_inline_impl.hh"
+#include "mesh.hh"
 
+#if defined(AKANTU_USE_IOHELPER)
+#  include "dumper_paraview.hh"
+#endif
+/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 NodeGroup::NodeGroup(const std::string & name,
-                     const std::string & id,
+		     const Mesh & mesh,
+		     const std::string & id,
                      const MemoryID & memory_id) :
   Memory(id, memory_id),
   name(name),
-  node_group(alloc<UInt>(id + ":nodes", 0, 1)) {
+  node_group(alloc<UInt>(std::string(this->id + ":nodes"), 0, 1))//,
+  // mesh(mesh)
+{
+
+#if defined(AKANTU_USE_IOHELPER)
+  this->registerDumper<DumperParaview>("paraview_"  + name, name, true);
+  this->getDumper().registerField("positions",new dumper::NodalField<Real,true>(
+                                                                    mesh.getNodes(),
+                                                                    0,
+                                                                    0,
+                                                                    &this->getNodes()));
+#endif
+
 }
 
 /* -------------------------------------------------------------------------- */

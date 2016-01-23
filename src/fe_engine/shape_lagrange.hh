@@ -5,14 +5,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Feb 15 2011
- * @date last modification: Fri Jun 13 2014
+ * @date last modification: Thu Nov 05 2015
  *
  * @brief  lagrangian shape functions class
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -39,10 +40,11 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 template<class Shape>
 class ShapeCohesive;
+class ShapeIGFEM;
 
 
 template <ElementKind kind>
-class ShapeLagrange : public ShapeFunctions{
+class ShapeLagrange : public ShapeFunctions {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -57,32 +59,41 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// initialization function for structural elements not yet implemented
   inline void initShapeFunctions(const Array<Real> & nodes,
-				 const Matrix<Real> & control_points,
+				 const Matrix<Real> & integration_points,
 				 const ElementType & type,
 				 const GhostType & ghost_type);
 
-  /// pre compute all shapes on the element control points from natural coordinates
+  /// pre compute all shapes on the element integration points from natural coordinates
   template<ElementType type>
-  void precomputeShapesOnControlPoints(const Array<Real> & nodes,
+  void precomputeShapesOnIntegrationPoints(const Array<Real> & nodes,
 				       GhostType ghost_type);
 
-  /// pre compute all shape derivatives on the element control points from natural coordinates
+  /// pre compute all shape derivatives on the element integration points from natural coordinates
   template <ElementType type>
-  void precomputeShapeDerivativesOnControlPoints(const Array<Real> & nodes,
+  void precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
 						 GhostType ghost_type);
 
-  /// interpolate nodal values on the control points
+  /// interpolate nodal values on the integration points
   template <ElementType type>
-  void interpolateOnControlPoints(const Array<Real> &u,
+  void interpolateOnIntegrationPoints(const Array<Real> &u,
 				  Array<Real> &uq,
 				  UInt nb_degree_of_freedom,
 				  GhostType ghost_type = _not_ghost,
 				  const Array<UInt> & filter_elements = empty_filter) const;
 
-  /// compute the gradient of u on the control points
+  /// interpolate on physical point
   template <ElementType type>
-  void gradientOnControlPoints(const Array<Real> &u,
+  void interpolate(const Vector <Real> & real_coords,
+		   UInt elem,
+		   const Matrix<Real> & nodal_values,
+		   Vector<Real> & interpolated,
+		   const GhostType & ghost_type) const;
+
+  /// compute the gradient of u on the integration points
+  template <ElementType type>
+  void gradientOnIntegrationPoints(const Array<Real> &u,
 			       Array<Real> &nablauq,
 			       UInt nb_degree_of_freedom,
 			       GhostType ghost_type = _not_ghost,
@@ -114,15 +125,22 @@ public:
 		     Vector<Real> & shapes,
 		     const GhostType & ghost_type) const;
 
+  /// compute the shape derivatives on a provided point
+  template <ElementType type>
+  void computeShapeDerivatives(const Matrix<Real> & real_coords,
+		     UInt elem,
+		     Tensor3<Real> & shapes,
+		     const GhostType & ghost_type) const;
+
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
 protected:
-  /// compute the shape derivatives on control points for a given element
+  /// compute the shape derivatives on integration points for a given element
   template <ElementType type>
   inline void computeShapeDerivativesOnCPointsByElement(const Matrix<Real> & node_coords,
 							const Matrix<Real> & natural_coords,
-							Tensor3<Real> & shapesd);
+							Tensor3<Real> & shapesd) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

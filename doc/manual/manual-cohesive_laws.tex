@@ -1,7 +1,8 @@
-\subsection{Cohesive laws}
+\section{Cohesive Constitutive laws}
 \label{sec:cohesive-laws}
 
-\subsubsection{Snozzi-Molinari Law\matlabel{ssect:smm:cl:coh-snozzi}}
+\subsection{Linear Irreversible Law\matlabel{ssect:smm:cl:coh-snozzi}}
+
 \begin{figure}[!hbt]
   \centering
   \subfloat[Linear]{\includegraphics[width=0.4\textwidth]{figures/linear_cohesive_law}}
@@ -89,15 +90,19 @@ The material name of the linear decreasing cohesive law  is
 respective default values are:
 \begin{itemize}
 \item \code{sigma\_c}: 0
+\item \code{delta\_c}: 0
 \item \code{beta}: 0
-\item \code{G\_cI}: 0
-\item \code{G\_cII}: 0
+\item \code{G\_c}: 0
 \item \code{kappa}: 1
 \item \code{penalty}: 0
 \end{itemize}
-A random number generator can be used to assign a random
-$\sigma_\mathrm{c}$ to each facet following a given
-distribution (see Section~\ref{sect:smm:CL}).
+where \code{G\_c} corresponds to $G_\mathrm{c, I}$. A random number
+generator can be used to assign a random $\sigma_\mathrm{c}$ to each
+facet following a given distribution (see
+Section~\ref{sect:smm:CL}). Only one parameter between \code{delta\_c}
+and \code{G\_c} has to be specified. For random $\sigma_\mathrm{c}$
+distributions, the chosen parameter of these two is kept fixed and the
+other one is varied.
 
 The bilinear constitutive law works exactly the same way as the linear
 one, except for the additional parameter \code{delta\_0} that by
@@ -106,7 +111,83 @@ elements and also an example to assign different properties to
 intergranular and transgranular cohesive elements can be found in
 the folder \code{\examplesdir/cohesive\_element/}.
 
-\subsubsection{Exponential Cohesive Law\matlabel{ssect:smm:cl:coh-exponential}}
+
+\subsection{Linear Cohesive Law with Friction\matlabel{ssect:smm:cl:coh-friction}}
+
+This law represents a variation of the linear irreversible cohesive of
+the previous section, which adds friction.  The friction behavior is
+approximated with an elasto-plastic law, which relates the friction
+force to the relative sliding between the two faces of the cohesive
+element.  The slope of the elastic branch is called
+\emph{penalty\_for\_friction}, and is defined by the user, together
+with the friction coefficient, as a material property.  The friction
+contribution evolves with the damage of the cohesive law: it is null
+when the damage is zero, and it becomes maximum when the damage is
+equal to one.  This is done by defining a current value of the
+friction coefficient (mu) that increases linearly with the damage, up
+to the value of the friction coefficient defined by the user.  The
+yielding plateau of the friction law is given by the product of the
+current friction coefficient and the local compression stress acting
+in the cohesive element.  Such an approach is equivalent to a
+node-to-node contact friction. Its accuracy is acceptable only for
+small displacements.
+
+The material name of the linear cohesive law with friction is
+\code{material\_cohesive\_linear\_friction}. Its additional parameters
+with respect to those of the linear cohesive law without friction,
+with the respective default values, are:
+\begin{itemize}
+\item \code{mu}: 0
+\item \code{penalty\_for\_friction}: 0
+\end{itemize}
+
+
+\subsection{Linear Cohesive Law with Fatigue\matlabel{ssect:smm:cl:coh-fatigue}}
+
+This law represents a variation of the linear irreversible cohesive
+law of the previous section, that removes the hypothesis of elastic
+unloading-reloading cycles. With this law, some energy is dissipated
+also during unloading and reloading with hysteresis. The
+implementation follows the work of~\cite{nguyen2001}. During the
+unloading-reloading cycle, the traction increment is computed as
+\begin{equation}
+  \dot{T} =
+  \begin{cases}
+    K^- \, \dot{\delta} & \text{if $\dot{\delta} < 0$} \\
+    K^+ \, \dot{\delta} & \text{if $\dot{\delta} > 0$} \\
+  \end{cases}
+\end{equation}
+where $\dot{\delta}$ and $\dot{T}$ are respectively the effective
+opening displacement and the cohesive traction increments with respect
+to time, while $K^-$ and $K^+$ are respectively the unloading and
+reloading incremental stiffness. The unloading path is linear and
+results in an unloading stiffness
+\begin{equation}
+  K^- = \frac{T_\mathrm{max}}{\delta_\mathrm{max}}
+\end{equation}
+where $T_\mathrm{max}$ and $\delta_\mathrm{max}$ are the maximum
+cohesive traction and the effective opening displacement reached
+during the precedent loading phase. The unloading stiffness remains
+constant during the unloading phase. On the other hand the reloading
+stiffness increment $\dot{K}^+$ is calculated as
+\begin{equation}
+  \dot{K}^+ =
+  \begin{cases}
+    - K^+ \, \dot{\delta} / \delta_\mathrm{f} & \text{if $\dot{\delta}
+      > 0$} \\
+    \left( K^+ - K^- \right) \, \dot{\delta} / \delta_\mathrm{f} &
+    \text{if $\dot{\delta} < 0$}
+  \end{cases}
+\end{equation}
+where $\delta_\mathrm{f}$ is a material parameter (refer
+to~\cite{vocialta15} for more details). During unloading the stiffness
+$K^+$ tends to $K^-$, while during reloading $K^+$ gets decreased at
+every time step. If the cohesive traction during reloading exceeds the
+upper limit given by equation~\eqref{eq:smm:coh:tractions}, it is
+recomputed following the behavior of the linear decreasing cohesive
+law for crack opening.
+
+\subsection{Exponential Cohesive Law\matlabel{ssect:smm:cl:coh-exponential}}
 
 Ortiz and Pandolfi proposed this cohesive law in 1999~\cite{ortiz1999}.  The
 traction-opening equation for this law is as follows:
@@ -134,6 +215,11 @@ where
     \end{array} \right.
 \end{equation}
 
+As regards the behavior in compression, two options are available:
+a contact penalty approach with stiffness following the formulation of
+the exponential law and a contact penalty approach with constant
+stiffness. In the second case, the stiffness is defined as a function
+of the tangent of the exponential law at the origin.
 
 \begin{figure}[!htb]
   \begin{center}

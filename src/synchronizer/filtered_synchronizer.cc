@@ -5,13 +5,13 @@
  * @author Mathilde Radiguet <mathilde.radiguet@epfl.ch>
  *
  * @date creation: Wed Sep 18 2013
- * @date last modification: Mon Aug 25 2014
+ * @date last modification: Sat Jul 11 2015
  *
  * @brief  filtered synchronizer
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

@@ -1,5 +1,5 @@
-\chapter{Elements\index{Elements}}
-\label{chap:elements}
+\section{Elements\index{Elements}}
+\label{sec:elements}
 The base for every Finite-Elements computation is its mesh and the elements that
 are used within that mesh. The element types that can be used depend on the
 mesh, but also on the dimensionality of the problem (1D, 2D or 3D). In \akantu,
@@ -10,9 +10,9 @@ information (shape function, location of Gaussian quadrature points, and so on)
 can be found in Appendix~\ref{app:elements}.
 
 %%%%%%%%%% 1D %%%%%%%%%
-\section{Isoparametric Elements\index{Elements!Isoparametric}}
+\subsection{Isoparametric Elements\index{Elements!Isoparametric}}
 
-\subsection*{1D\index{Elements!1D}}
+\subsubsection*{1D\index{Elements!1D}}
 
 In \akantu, there are two types of isoparametric elements defined in 1D. These
 element types are called \code{\_segment\_2} and \code{\_segment\_3}, and are
@@ -54,7 +54,7 @@ Element type & Order & \# nodes & \# quad. points \\
 \end{table}
 
 %%%%%%%%%% 2D %%%%%%%%%
-\subsection*{2D\index{Elements!2D}}
+\subsubsection*{2D\index{Elements!2D}}
 
 In \akantu, there are four types of isoparametric elements defined in 2D. These
 element types are called \code{\_triangle\_3}, \code{\_triangle\_6},
@@ -111,7 +111,7 @@ Element type & Order & \# nodes & \# quad. points \\
 \end{table}
 
 %%%%%%%%%% 3D %%%%%%%%%
-\subsection*{3D\index{Elements!3D}}
+\subsubsection*{3D\index{Elements!3D}}
 
 In \akantu, there are three types of isoparametric elements defined in 3D. These
 element types are called \code{\_tetrahedron\_4}, \code{\_tetrahedron\_10} and

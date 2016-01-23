@@ -3,15 +3,15 @@
 #
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 #
-# @date creation: Fri Jun 06 2014
-# @date last modification: Fri Jun 06 2014
+# @date creation: Mon Jan 18 2016
 #
 # @brief  configuration for heat transfer example
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,13 +30,10 @@
 #
 #===============================================================================
 
-register_example(explicit_heat_transfer explicit_heat_transfer.cc)
-
 add_mesh(explicit_heat_transfer_mesh square.geo 2 2)
-add_dependencies(explicit_dynamic explicit_heat_transfer_mesh)
+register_example(explicit_heat_transfer
+  SOURCES explicit_heat_transfer.cc
+  DEPENDS explicit_heat_transfer_mesh
+  FILES_TO_COPY material.dat
+  )
 
-
-#===============================================================================
-file(COPY material.dat DESTINATION .)
-
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)

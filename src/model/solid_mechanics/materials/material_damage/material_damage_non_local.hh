@@ -4,14 +4,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Thu Aug 23 2012
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Wed Oct 21 2015
  *
  * @brief  interface for non local damage material
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -39,12 +40,11 @@
 __BEGIN_AKANTU__
 
 template<UInt spatial_dimension,
-         class MaterialDamageLocal,
-	 template <UInt> class WeightFunction = BaseWeightFunction>
+         class MaterialDamageLocal>
 class MaterialDamageNonLocal : public MaterialDamageLocal,
-			       public MaterialNonLocal<spatial_dimension, WeightFunction> {
+			       public MaterialNonLocal<spatial_dimension> {
 public:
-  typedef MaterialNonLocal<spatial_dimension, WeightFunction> MaterialNonLocalParent;
+  typedef MaterialNonLocal<spatial_dimension> MaterialNonLocalParent;
   typedef MaterialDamageLocal MaterialDamageParent;
 
   MaterialDamageNonLocal(SolidMechanicsModel & model, const ID & id)  :
@@ -68,6 +68,8 @@ protected:
     Mesh::type_iterator it = this->model->getFEEngine().getMesh().firstType(spatial_dimension, ghost_type);
     Mesh::type_iterator last_type = this->model->getFEEngine().getMesh().lastType(spatial_dimension, ghost_type);
     for(; it != last_type; ++it) {
+      Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
+      if (elem_filter.getSize() == 0) continue;
       computeNonLocalStress(*it, ghost_type);
     }
 

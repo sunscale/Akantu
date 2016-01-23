@@ -4,14 +4,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Dec 13 2010
- * @date last modification: Fri Jun 13 2014
+ * @date last modification: Mon Dec 08 2014
  *
  * @brief  Specialization of the element_class class for the type _quadrangle_4
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -78,10 +79,10 @@ template <class vector_type>
 inline void
 InterpolationElement<_itp_lagrange_quadrangle_4>::computeShapes(const vector_type & c,
                                                                 vector_type & N) {
-  N(0) = .25 * (1 - c(0)) * (1 - c(1)); /// N1(q_0)
-  N(1) = .25 * (1 + c(0)) * (1 - c(1)); /// N2(q_0)
-  N(2) = .25 * (1 + c(0)) * (1 + c(1)); /// N3(q_0)
-  N(3) = .25 * (1 - c(0)) * (1 + c(1)); /// N4(q_0)
+  N(0) = 1./4. * (1. - c(0)) * (1. - c(1)); /// N1(q_0)
+  N(1) = 1./4. * (1. + c(0)) * (1. - c(1)); /// N2(q_0)
+  N(2) = 1./4. * (1. + c(0)) * (1. + c(1)); /// N3(q_0)
+  N(3) = 1./4. * (1. - c(0)) * (1. + c(1)); /// N4(q_0)
 }
 /* -------------------------------------------------------------------------- */
 template <>
@@ -102,15 +103,15 @@ InterpolationElement<_itp_lagrange_quadrangle_4>::computeDNDS(const vector_type 
    * @f]
    */
 
-  dnds(0, 0) = - .25 * (1 - c(1));
-  dnds(0, 1) =   .25 * (1 - c(1));
-  dnds(0, 2) =   .25 * (1 + c(1));
-  dnds(0, 3) = - .25 * (1 + c(1));
+  dnds(0, 0) = - 1./4. * (1. - c(1));
+  dnds(0, 1) =   1./4. * (1. - c(1));
+  dnds(0, 2) =   1./4. * (1. + c(1));
+  dnds(0, 3) = - 1./4. * (1. + c(1));
 
-  dnds(1, 0) = - .25 * (1 - c(0));
-  dnds(1, 1) = - .25 * (1 + c(0));
-  dnds(1, 2) =   .25 * (1 + c(0));
-  dnds(1, 3) =   .25 * (1 - c(0));
+  dnds(1, 0) = - 1./4. * (1. - c(0));
+  dnds(1, 1) = - 1./4. * (1. + c(0));
+  dnds(1, 2) =   1./4. * (1. + c(0));
+  dnds(1, 3) =   1./4. * (1. - c(0));
 }
 
 /* -------------------------------------------------------------------------- */
