@@ -7,9 +7,6 @@
 [submodule "extra_packages/parallel-cohesive-element"]
 	path = extra_packages/parallel-cohesive-element
 	url = git@lsmssrv1.epfl.ch:akantu-parallel-cohesive.git
-[submodule "extra_packages/traction-at-split-node-contact"]
-	path = extra_packages/traction-at-split-node-contact
-	url = git@lsmssrv1.epfl.ch:akantu-traction-at-split-node-contact.git
 [submodule "extra_packages/students-extra-package"]
 	path = extra_packages/students-extra-package
 	url = git@lsmssrv1.epfl.ch:students-extra-package.git
