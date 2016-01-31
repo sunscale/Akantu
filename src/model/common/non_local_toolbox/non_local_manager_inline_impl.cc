@@ -144,7 +144,7 @@ inline ElementTypeMapReal & NonLocalManager::registerWeightFunctionInternal(cons
 
   std::map<ID, ElementTypeMapReal *>::const_iterator it = this->weight_function_internals.find(field_name);
   if (it == weight_function_internals.end()) {
-    weight_function_internals[field_name] = new ElementTypeMapReal(field_name, id);
+    weight_function_internals[field_name] = new ElementTypeMapReal(field_name, id, memory_id);
   }
 
   return *(weight_function_internals[field_name]);

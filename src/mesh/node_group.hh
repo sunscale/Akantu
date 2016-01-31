@@ -72,6 +72,9 @@ public:
   /// add a node and give the local position through an iterator
   inline const_node_iterator add(UInt node, bool check_for_duplicate = true);
 
+  /// remove a node
+  inline void remove(UInt node);
+
   /// remove duplicated nodes
   void optimize();
 

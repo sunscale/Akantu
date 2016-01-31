@@ -48,7 +48,7 @@ public:
 	     const MemoryID & memory_id = 0) :
     Memory(id, memory_id),
     mesh(mesh),
-    jacobians("jacobians", id) {
+    jacobians("jacobians", id, memory_id) {
     AKANTU_DEBUG_IN();
 
     AKANTU_DEBUG_OUT();

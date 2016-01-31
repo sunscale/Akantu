@@ -112,7 +112,7 @@ inline void Model::registerFEEngineObject(const std::string & name,
 		      << name << " was already created");
 #endif
 
-  std::stringstream sstr; sstr << id << ":fem:" << name;
+  std::stringstream sstr; sstr << id << ":fem:" << name << memory_id;
   fems[name] = new FEEngineClass(mesh, spatial_dimension, sstr.str(), memory_id);
 
   // MeshUtils::buildFacets(fems[name]->getMesh());

@@ -42,7 +42,7 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 FEEngine::FEEngine(Mesh & mesh, UInt element_dimension, ID id, MemoryID memory_id) :
-  Memory(id, memory_id), mesh(mesh), normals_on_integration_points("normals_on_quad_points", id) {
+  Memory(id, memory_id), mesh(mesh), normals_on_integration_points("normals_on_quad_points", id, memory_id) {
   AKANTU_DEBUG_IN();
   this->element_dimension = (element_dimension != _all_dimensions) ?
     element_dimension : mesh.getSpatialDimension();

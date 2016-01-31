@@ -47,8 +47,8 @@ class NonLocalManager : public Memory,
   /* ------------------------------------------------------------------------ */
 public:
   NonLocalManager(SolidMechanicsModel & model,
-                  const ID & id = "non_local_manager",
-                  const MemoryID & memory_id = 0);
+                  const ID & id,
+                  const MemoryID & memory_id);
   virtual ~NonLocalManager();
   typedef std::map<ID, NonLocalNeighborhoodBase *> NeighborhoodMap;
   typedef std::pair<ID, ID> KeyCOO;
@@ -204,8 +204,9 @@ protected:
   struct NonLocalVariable {
     NonLocalVariable(const ID & variable_name, const ID & nl_variable_name,
                      const ID & id, UInt nb_component)
-        : local(variable_name, id), non_local(nl_variable_name, id),
-          nb_component(nb_component) {}
+      : local(variable_name, id, 0),
+	non_local(nl_variable_name, id, 0),
+	nb_component(nb_component) {}
     ElementTypeMapReal local;
     ElementTypeMapReal non_local;
     UInt nb_component;

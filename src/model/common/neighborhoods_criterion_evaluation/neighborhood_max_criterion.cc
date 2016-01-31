@@ -38,8 +38,8 @@ NeighborhoodMaxCriterion::NeighborhoodMaxCriterion(const SolidMechanicsModel & m
 						   const MemoryID & memory_id)  :
   NeighborhoodBase(model, quad_coordinates, id, memory_id),
   Parsable(_st_non_local, id),
-  is_highest("is_highest", id),
-  criterion(criterion_id, id)
+  is_highest("is_highest", id, memory_id),
+  criterion(criterion_id, id, memory_id)
  { 
    
    AKANTU_DEBUG_IN();

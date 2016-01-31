@@ -506,7 +506,9 @@ UInt GroupManager::createClusters(UInt element_dimension,
   ElementTypeMapArray<UInt> * element_to_fragment = NULL;
 
   if (nb_proc > 1 && distributed_synchronizer) {
-    element_to_fragment = new ElementTypeMapArray<UInt>;
+    element_to_fragment = new ElementTypeMapArray<UInt>("element_to_fragment",
+							id,
+							memory_id);
     mesh.initElementTypeMapArray(*element_to_fragment, 1, element_dimension,
 				false, _ek_not_defined, true);
     tmp_cluster_name_prefix = "tmp_" + tmp_cluster_name_prefix;
@@ -528,7 +530,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
 			      distributed_synchronizer);
   }
 
-  ElementTypeMapArray<bool> seen_elements("seen_elements");
+  ElementTypeMapArray<bool> seen_elements("seen_elements", id, memory_id);
   mesh.initElementTypeMapArray(seen_elements, 1, element_dimension,
 			       false, _ek_not_defined, true);
 

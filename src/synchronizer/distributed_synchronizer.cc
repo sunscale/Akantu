@@ -58,7 +58,7 @@ DistributedSynchronizer::DistributedSynchronizer(Mesh & mesh,
 						 const bool register_to_event_manager) :
   Synchronizer(id, memory_id),
   mesh(mesh),
-  prank_to_element("prank_to_element", id)
+  prank_to_element("prank_to_element", id, memory_id)
 {
   AKANTU_DEBUG_IN();
 

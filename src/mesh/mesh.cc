@@ -71,8 +71,8 @@ Mesh::Mesh(UInt spatial_dimension,
   GroupManager(*this, id + ":group_manager", memory_id),
   nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
   created_nodes(true),
-  connectivities("connectivities", id),
-  normals("normals", id),
+  connectivities("connectivities", id, memory_id),
+  normals("normals", id, memory_id),
   spatial_dimension(spatial_dimension),
   types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
   ghost_types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
@@ -85,7 +85,7 @@ Mesh::Mesh(UInt spatial_dimension,
   mesh_facets(NULL) {
   AKANTU_DEBUG_IN();
 
-  this->nodes = &(alloc<Real>(id + ":coordinates", 0, this->spatial_dimension));
+  this->nodes = &(alloc<Real>(id + ":coordinates", memory_id, this->spatial_dimension));
 
   nb_global_nodes = 0;
 
@@ -103,8 +103,8 @@ Mesh::Mesh(UInt spatial_dimension,
   GroupManager(*this, id + ":group_manager", memory_id),
   nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
   created_nodes(false),
-  connectivities("connectivities", id),
-  normals("normals", id),
+  connectivities("connectivities", id, memory_id),
+  normals("normals", id, memory_id),
   spatial_dimension(spatial_dimension),
   types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
   ghost_types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
@@ -134,8 +134,8 @@ Mesh::Mesh(UInt spatial_dimension,
   GroupManager(*this, id + ":group_manager", memory_id),
   nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
   created_nodes(false),
-  connectivities("connectivities", id),
-  normals("normals", id),
+  connectivities("connectivities", id, memory_id),
+  normals("normals", id, memory_id),
   spatial_dimension(spatial_dimension),
   types_offsets(Array<UInt>(_max_element_type + 1, 1)),
   ghost_types_offsets(Array<UInt>(_max_element_type + 1, 1)),

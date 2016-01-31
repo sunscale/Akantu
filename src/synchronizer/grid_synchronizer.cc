@@ -236,7 +236,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(Mesh & mesh,
       AKANTU_DEBUG_INFO("I have prepared " << to_send->size() << " elements to send to processor " << p);
 
       std::stringstream sstr; sstr << "element_per_proc_" << p;
-      element_per_proc[p] = new ElementTypeMapArray<UInt>(sstr.str(), id);
+      element_per_proc[p] = new ElementTypeMapArray<UInt>(sstr.str(), id, memory_id);
       ElementTypeMapArray<UInt> & elempproc = *(element_per_proc[p]);
 
       typename std::set<Element>::iterator elem = to_send->begin();

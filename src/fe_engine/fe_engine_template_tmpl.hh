@@ -605,7 +605,7 @@ inline void FEEngineTemplate<I, S, kind>::initElementalFieldInterpolationFromInt
   
   UInt spatial_dimension = this->mesh.getSpatialDimension();
 
-  ElementTypeMapArray<Real> quadrature_points_coordinates("quadrature_points_coordinates_for_interpolation", getID());
+  ElementTypeMapArray<Real> quadrature_points_coordinates("quadrature_points_coordinates_for_interpolation", getID(), getMemoryID());
   mesh.initElementTypeMapArray(quadrature_points_coordinates, spatial_dimension, spatial_dimension);
   computeIntegrationPointsCoordinates(quadrature_points_coordinates, element_filter);
   shape_functions.initElementalFieldInterpolationFromIntegrationPoints(interpolation_points_coordinates,
@@ -625,8 +625,8 @@ inline void FEEngineTemplate<I, S, kind>::interpolateElementalFieldFromIntegrati
 											 const GhostType ghost_type,
 											 const ElementTypeMapArray<UInt> * element_filter) const {
 
-  ElementTypeMapArray<Real> interpolation_points_coordinates_matrices("interpolation_points_coordinates_matrices"); 
-  ElementTypeMapArray<Real> quad_points_coordinates_inv_matrices("quad_points_coordinates_inv_matrices");
+  ElementTypeMapArray<Real> interpolation_points_coordinates_matrices("interpolation_points_coordinates_matrices", id, memory_id); 
+  ElementTypeMapArray<Real> quad_points_coordinates_inv_matrices("quad_points_coordinates_inv_matrices", id, memory_id);
 
   initElementalFieldInterpolationFromIntegrationPoints(interpolation_points_coordinates,
 						       interpolation_points_coordinates_matrices,

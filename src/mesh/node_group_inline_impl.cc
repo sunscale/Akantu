@@ -58,6 +58,19 @@ inline NodeGroup::const_node_iterator NodeGroup::add(UInt node, bool check_for_d
 }
 
 /* -------------------------------------------------------------------------- */
+inline void NodeGroup::remove(UInt node) {
+  Array<UInt>::iterator<> it = this->node_group.begin();
+  Array<UInt>::iterator<> end = this->node_group.end();
+  AKANTU_DEBUG_ASSERT(it != end, "The node group is empty!!");
+  for (; it != node_group.end(); ++it) {
+    if (*it == node) { 
+      it = node_group.erase(it);
+    }
+  }
+  AKANTU_DEBUG_ASSERT(it != end, "The node was not found!");
+}
+
+/* -------------------------------------------------------------------------- */
 inline UInt NodeGroup::getSize() const {
   return node_group.getSize();
 }

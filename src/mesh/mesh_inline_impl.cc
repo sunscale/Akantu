@@ -49,7 +49,7 @@ inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh) :
 
 /* -------------------------------------------------------------------------- */
 inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh, ID new_numbering_id) :
-  new_numbering(new_numbering_id, mesh.getID()) {
+  new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {
 }
 
 /* -------------------------------------------------------------------------- */
