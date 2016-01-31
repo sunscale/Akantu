@@ -93,6 +93,7 @@ public:
   /// compute max wave celerity
   virtual Real getCelerity(const Element & element) const;
 
+  AKANTU_GET_MACRO(VoigtStiffness, C, Matrix<Real>);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
