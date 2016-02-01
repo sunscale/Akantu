@@ -27,7 +27,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_RVE.hh"
-#include "material_elastic.hh"
+#include "material_damage_iterative.hh"
 #ifdef AKANTU_USE_MUMPS
 #include "solver_mumps.hh"
 #endif
@@ -35,11 +35,14 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-SolidMechanicsModelRVE::SolidMechanicsModelRVE(Mesh & mesh, bool use_RVE_mat_selector, UInt dim, const ID & id, const MemoryID & memory_id) :
+SolidMechanicsModelRVE::SolidMechanicsModelRVE(Mesh & mesh, bool use_RVE_mat_selector,
+					       UInt nb_gel_pockets, UInt dim, 
+					       const ID & id, const MemoryID & memory_id) :
   SolidMechanicsModel(mesh, dim, id, memory_id),
   volume(0.),
   use_RVE_mat_selector(use_RVE_mat_selector),
-  static_communicator_dummy(StaticCommunicator::getStaticCommunicatorDummy()) {
+  static_communicator_dummy(StaticCommunicator::getStaticCommunicatorDummy()),
+  nb_gel_pockets(nb_gel_pockets) {
 
   /// create node groups for PBCs
   mesh.createGroupsFromMeshData<std::string>("physical_names");
@@ -103,8 +106,10 @@ void SolidMechanicsModelRVE::initFull(const ModelOptions & options) {
   this->addDumpFieldVector("displacement");
   this->addDumpField      ("stress"      );
   this->addDumpField      ("grad_u"      );
+  this->addDumpField      ("eigen_grad_u"      );
   this->addDumpField      ("blocked_dofs"      );
   this->addDumpField      ("material_index"      );
+  this->addDumpField      ("damage"      );
 
   this->dump();
 }
@@ -192,6 +197,8 @@ void SolidMechanicsModelRVE::findCornerNodes() {
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelRVE::advanceASR(const Matrix<Real> & prestrain) {
 
+  AKANTU_DEBUG_ASSERT(spatial_dimension == 2, "This is 2D only!");
+
   /// apply the new eigenstrain
   GhostType gt = _not_ghost;
 
@@ -207,10 +214,34 @@ void SolidMechanicsModelRVE::advanceASR(const Matrix<Real> & prestrain) {
       (*prestrain_it) = prestrain;
   }
 
-  /// solve the system for the given boundary conditions
+
+  /// advance the damage
+  MaterialDamageIterative<2> & mat_paste = dynamic_cast<MaterialDamageIterative<2> & >(*this->materials[1]);
+  MaterialDamageIterative<2> & mat_aggregate = dynamic_cast<MaterialDamageIterative<2> & >(*this->materials[0]); 
+  UInt nb_damaged_elements = 0;
+  Real max_eq_stress_aggregate = 0;
+  Real max_eq_stress_paste = 0;
   Real error = 0;
-  bool converged = this->solveStep<_scm_newton_raphson_tangent, _scc_increment>(1e-10, error, 2, false, *static_communicator_dummy);
-  AKANTU_DEBUG_ASSERT(converged, "Did not converge");
+  bool converged = false;
+
+  do {   	
+    
+    converged = this->solveStep<_scm_newton_raphson_tangent, _scc_increment>(1e-10, error, 2, false, *static_communicator_dummy);
+    AKANTU_DEBUG_ASSERT(converged, "Did not converge");
+
+    /// compute damage 
+    max_eq_stress_aggregate = mat_aggregate.getNormMaxEquivalentStress();
+    max_eq_stress_paste = mat_paste.getNormMaxEquivalentStress();
+    
+    nb_damaged_elements = 0;
+    if (max_eq_stress_aggregate > max_eq_stress_paste)
+      nb_damaged_elements = mat_aggregate.updateDamage();
+    else
+      nb_damaged_elements = mat_paste.updateDamage();
+
+  } while (nb_damaged_elements);
+
+  this->dump();
 }
 
 
@@ -353,7 +384,7 @@ void SolidMechanicsModelRVE::initMaterials() {
 
 
     if(is_default_material_selector) delete material_selector;
-    material_selector = new GelMaterialSelector(*this, box_size, "gel", 1, eps);
+    material_selector = new GelMaterialSelector(*this, box_size, "gel", this->nb_gel_pockets, eps);
     is_default_material_selector = false;
   }
 

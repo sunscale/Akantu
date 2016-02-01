@@ -1,12 +1,12 @@
 material elastic [
-   	 name = inclusion
+   	 name = aggregates
    	 rho = 2.7e-9   # density
    	 E   = 10 # young's modulus
    	 nu  = 0    # poisson's ratio
 ]
 
 material elastic [
-   	 name = matrix
+   	 name = paste
    	 rho = 2.7e-9   # density
    	 E   = 1 # young's modulus
    	 nu  = 0    # poisson's ratio

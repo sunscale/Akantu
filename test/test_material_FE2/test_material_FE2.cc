@@ -35,7 +35,6 @@ using namespace akantu;
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
 int main(int argc, char *argv[]) {
-  const ElementType element_type = _triangle_3;
   debug::setDebugLevel(dblWarning);
 
   initialize("material.dat" ,argc, argv);
@@ -85,12 +84,13 @@ int main(int argc, char *argv[]) {
   mesh.createGroupsFromMeshData<std::string>("physical_names"); // creates groups from mesh names
   model.applyBC(BC::Dirichlet::FixedValue(0, _x), "left");
   model.applyBC(BC::Dirichlet::FixedValue(0, _y), "bottom");
-  model.applyBC(BC::Dirichlet::FixedValue(1.e-2, _y), "top");
+  //  model.applyBC(BC::Dirichlet::FixedValue(1.e-2, _y), "top");
 
   model.setBaseName       ("macro_mesh");
   model.addDumpFieldVector("displacement");
   model.addDumpField      ("stress"      );
   model.addDumpField      ("grad_u"      );
+  model.addDumpField      ("eigen_grad_u"      );
   model.addDumpField      ("blocked_dofs"      );
   model.addDumpField      ("material_index"      );
   model.addDumpField      ("material_stiffness"      );
@@ -100,15 +100,23 @@ int main(int argc, char *argv[]) {
   /// solve system
   model.assembleStiffnessMatrix();
   Real error = 0;
-  bool converged= model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-12, error, 2);
+  bool converged= model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-10, error, 2);
+  std::cout << "the error is: " << error << std::endl;
   AKANTU_DEBUG_ASSERT(converged, "Did not converge");
 
   /// simulate the advancement of the reaction
   MaterialFE2<spatial_dimension> & mat = dynamic_cast<MaterialFE2<spatial_dimension> & >(model.getMaterial("FE2_mat"));
   Matrix<Real> current_prestrain(spatial_dimension, spatial_dimension, 0.);
   for (UInt i = 0; i < total_steps; ++i) {
+    model.dump();
     current_prestrain += prestrain_increment;
     mat.advanceASR(current_prestrain);
+    model.dump();
+    /// solve for new displacement at the macro-scale
+    model.assembleStiffnessMatrix();
+    model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-10, error, 2);
+    std::cout << "the error is: " << error << std::endl;
+    AKANTU_DEBUG_ASSERT(converged, "Did not converge");
   }
 
   model.dump();
