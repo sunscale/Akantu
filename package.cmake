@@ -49,6 +49,12 @@ package_declare_sources(extra_materials
   material_damage/material_orthotropic_damage_iterative.cc
   material_damage/material_orthotropic_damage_iterative.hh
   material_damage/material_orthotropic_damage_iterative_inline_impl.cc
+
+  material_FE2/material_FE2.hh
+  material_FE2/material_FE2.cc
+  material_FE2/material_FE2_inline_impl.cc
+  material_FE2/solid_mechanics_model_RVE.hh
+  material_FE2/solid_mechanics_model_RVE.cc
   )
 
 package_declare_material_infos(extra_materials

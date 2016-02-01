@@ -15,4 +15,6 @@
 #
 #===============================================================================
 
-add_akantu_test(test_material_damage "Test the damage materials in the extra-mat. package")
+add_akantu_test(test_material_damage "Test the damage materials in the extra-mat package")
+
+add_akantu_test(test_material_FE2 "Test the FE2 material in the extra-material package")

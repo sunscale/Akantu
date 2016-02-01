@@ -32,6 +32,9 @@
 // plasticity
 #include "material_viscoplastic.hh"
 
+// multi-scale simulations
+#include "material_FE2.hh"
+
 #endif
 
 #if defined(AKANTU_DAMAGE_NON_LOCAL)
@@ -54,6 +57,7 @@
 #define  AKANTU_EXTRA_MATERIAL_LIST                                     \
   ((2, (damage_linear           , MaterialDamageLinear                 ))) \
   ((2, (brittle                 , MaterialBrittle                      ))) \
+  ((2, (material_FE2            , MaterialFE2                      ))) \
   ((2, (damage_iterative        , MaterialDamageIterative              ))) \
   ((2, (vreepeerlings           , MaterialVreePeerlings                ))) \
   ((2, (ve_stiffness_prop       , MaterialStiffnessProportional        ))) \
