@@ -1,16 +1,17 @@
 /**
- * @file mesh_geom_common.hh
+ * @file   mesh_geom_common.hh
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Clement Roux <clement.roux@epfl.ch>
  *
- * @date creation: Wed May 13 2015
- * @date last modification: Wed May 13 2015
+ * @date creation: Fri Jan 04 2013
+ * @date last modification: Thu Jan 14 2016
  *
- * @brief Common file for MeshGeom module
+ * @brief  Common file for MeshGeom module
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

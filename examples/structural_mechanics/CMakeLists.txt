@@ -3,15 +3,16 @@
 #
 # @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Thu Jun 12 2014
-# @date last modification: Thu Jun 12 2014
+# @date creation: Mon Jan 18 2016
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  configuration for structural mechanics example
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -31,10 +32,6 @@
 #===============================================================================
 
 #===============================================================================
-add_mesh(parallel_2d_mesh square_2d.geo 2 1)
-
 register_example(bernoulli_beam_2_exemple
-  bernoulli_beam_2_exemple.cc)
-
-#===============================================================================
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)
+  SOURCES bernoulli_beam_2_exemple.cc
+  )

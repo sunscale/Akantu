@@ -1,14 +1,17 @@
 /**
  * @file   test_petsc_matrix_diagonal.cc
+ *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Wed Apr 22 09:41:14 2015
+ *
+ * @date creation: Mon Oct 13 2014
+ * @date last modification: Fri Jan 15 2016
  *
  * @brief  test the connectivity is correctly represented in the PETScMatrix
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -26,7 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <cstdlib>
+#include <iostream>
+
 /* -------------------------------------------------------------------------- */
 #include "static_communicator.hh"
 #include "aka_common.hh"
@@ -133,7 +137,7 @@ int main(int argc, char *argv[]) {
   }
 
   if(error > Math::getTolerance() ) {
-    std::cout << "error in the stiffness matrix!!!" << std::cout;
+    std::cout << "error in the stiffness matrix!!!" << std::endl;
     finalize();
     return EXIT_FAILURE;
   }

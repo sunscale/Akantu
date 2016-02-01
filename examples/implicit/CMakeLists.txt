@@ -3,15 +3,15 @@
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Fri Feb 24 2012
-# @date last modification: Thu Jun 05 2014
+# @date creation: Mon Jan 18 2016
 #
 # @brief  configuration implicit tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -31,14 +31,10 @@
 #===============================================================================
 
 #===============================================================================
-register_example(implicit_dynamic implicit_dynamic.cc)
-
 add_mesh(implicit_dynamic_mesh beam.geo 3 2)
-add_dependencies(implicit_dynamic implicit_dynamic_mesh)
-
-#===============================================================================
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/material_dynamic.dat
-  ${CMAKE_CURRENT_BINARY_DIR}/material_dynamic.dat
-  COPYONLY
+register_example(implicit_dynamic
+  SOURCES implicit_dynamic.cc
+  DEPENDS implicit_dynamic_mesh
+  FILES_TO_COPY material_dynamic.dat
   )
+

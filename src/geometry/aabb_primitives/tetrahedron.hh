@@ -1,17 +1,17 @@
 /**
  * @file   tetrahedron.hh
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Tue Mar 10 2015
- * @date last modification: Tue Mar 10 2015
+ * @date creation: Fri Feb 27 2015
+ * @date last modification: Thu Jan 14 2016
  *
  * @brief  Tetrahedron classe (geometry) for AABB CGAL algos
  *
  * @section LICENSE
  *
- * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

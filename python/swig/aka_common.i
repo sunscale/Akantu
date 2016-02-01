@@ -1,3 +1,35 @@
+/**
+ * @file   aka_common.i
+ *
+ * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+ * @author Fabian Barras <fabian.barras@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ *
+ * @date creation: Fri Dec 12 2014
+ * @date last modification: Wed Jan 13 2016
+ *
+ * @brief  wrapper to aka_common.hh
+ *
+ * @section LICENSE
+ *
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as  published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 %{
   #include "aka_common.hh"
   #include "aka_csr.hh"
@@ -59,6 +91,11 @@ namespace akantu {
 
 %inline %{
   namespace akantu {
+#if defined(AKANTU_USE_MPI)
+    const int MPI=1;
+#else
+    const int MPI=0;
+#endif
     void _initializeWithArgv(const std::string & input_file, int argc, char *argv[]) {
       initialize(input_file, argc, argv);
     }
@@ -66,9 +103,16 @@ namespace akantu {
 %}
 
 %pythoncode %{
-import sys as _aka_sys
-def initialize(input_file="", argv=_aka_sys.argv):
-  _initializeWithArgv(input_file, argv)
+  import sys as _aka_sys
+  def initialize(input_file="", argv=_aka_sys.argv):
+      if _aka_sys.modules[__name__].MPI == 1:
+         try:
+           from mpi4py import MPI
+         except ImportError:
+           pass
+
+      _initializeWithArgv(input_file, argv)
+
 %}
 
 %include "aka_config.hh"

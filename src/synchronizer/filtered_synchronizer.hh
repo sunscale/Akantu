@@ -4,15 +4,16 @@
  * @author David Simon Kammer <david.kammer@epfl.ch>
  * @author Mathilde Radiguet <mathilde.radiguet@epfl.ch>
  *
- * @date creation: Wed Sep 18 2013
- * @date last modification: Fri Sep 27 2013
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  synchronizer that filters elements from another synchronizer
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

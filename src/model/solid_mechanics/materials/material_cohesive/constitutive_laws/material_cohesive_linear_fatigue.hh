@@ -1,15 +1,19 @@
 /**
  * @file   material_cohesive_linear_fatigue.hh
- * @author Marco Vocialta <marco.vocialta@epfl.ch>
- * @date   Thu Feb 19 14:20:59 2015
  *
- * @brief Linear irreversible cohesive law with dissipative
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
+ *
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Jun 25 2015
+ *
+ * @brief  Linear irreversible cohesive law with dissipative
  * unloading-reloading cycles
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

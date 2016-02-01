@@ -1,16 +1,16 @@
 /**
  * @file   tree_type_helper.hh
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Fri Feb 27 2015
- * @date last modification: Thu Mar 5 2015
+ * @date creation: Fri Jan 04 2013
+ * @date last modification: Thu Jan 14 2016
  *
  * @brief  Converts element types of a mesh to CGAL primitive types
  *
  * @section LICENSE
  *
- * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

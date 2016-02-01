@@ -1,16 +1,16 @@
 #===============================================================================
-# @file   AkantuDetermineCCompiler.cmake
+# @file   CMakeDetermineCCompiler.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date   Thu Aug 02 10:34:06 2012
+# @date creation: Sun Oct 19 2014
 #
 # @brief  CMake file to determine the compiler
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free

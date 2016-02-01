@@ -1,14 +1,16 @@
 /**
  * @file   test_dof_data_accessor.hh
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Thu Nov 20 11:01:28 2014
  *
- * @brief  data accessor class for testing the 
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ *
+ * @date creation: Tue Dec 09 2014
+ *
+ * @brief  data accessor class for testing the
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

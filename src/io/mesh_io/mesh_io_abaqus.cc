@@ -1,16 +1,17 @@
 /**
  * @file   mesh_io_abaqus.cc
  *
+ * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Jan 16 2013
- * @date last modification: Fri Sep 19 2014
+ * @date creation: Fri Jan 04 2013
+ * @date last modification: Fri Dec 11 2015
  *
  * @brief  read a mesh from an abaqus input file
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -59,199 +60,191 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-MeshIOAbaqus::MeshIOAbaqus() {
-}
+MeshIOAbaqus::MeshIOAbaqus() {}
 
 /* -------------------------------------------------------------------------- */
-MeshIOAbaqus::~MeshIOAbaqus() {
-
-}
+MeshIOAbaqus::~MeshIOAbaqus() {}
 
 /* -------------------------------------------------------------------------- */
-namespace spirit  = boost::spirit;
-namespace qi      = boost::spirit::qi;
-namespace ascii   = boost::spirit::ascii;
-namespace lbs     = boost::spirit::qi::labels;
-namespace phx     = boost::phoenix;
+namespace spirit = boost::spirit;
+namespace qi = boost::spirit::qi;
+namespace ascii = boost::spirit::ascii;
+namespace lbs = boost::spirit::qi::labels;
+namespace phx = boost::phoenix;
 
 namespace mesh_io_abaqus_lazy_eval {
-  struct mesh_abaqus_error_handler_
-  {
-    template <typename, typename, typename>
-    struct result { typedef void type; };
+struct mesh_abaqus_error_handler_ {
+  template <typename, typename, typename> struct result { typedef void type; };
 
-    template <typename Iterator>
-    void operator()(qi::info const& what,
-                    Iterator err_pos,
-                    Iterator last) const
-    {
-      AKANTU_EXCEPTION("Error! Expecting "
-                       << what                         // what failed?
-                       << " here: \""
-                       << std::string(err_pos, last)   // iterators to error-pos, end
-                       << "\"");
-    }
+  template <typename Iterator>
+  void operator()(qi::info const & what, Iterator err_pos,
+                  Iterator last) const {
+    AKANTU_EXCEPTION(
+        "Error! Expecting "
+        << what // what failed?
+        << " here: \""
+        << std::string(err_pos, last) // iterators to error-pos, end
+        << "\"");
+  }
+};
+
+struct lazy_element_read_ {
+  template <class Mesh, class ET, class ID, class V, class NodeMap,
+            class ElemMap>
+  struct result {
+    typedef void type;
   };
 
+  template <class Mesh, class ET, class ID, class V, class NodeMap,
+            class ElemMap>
+  void operator()(Mesh & mesh, const ET & type, const ID & id, const V & conn,
+                  const NodeMap & nodes_mapping,
+                  ElemMap & elements_mapping) const {
+    Vector<UInt> tmp_conn(Mesh::getNbNodesPerElement(type));
 
-  struct lazy_element_read_ {
-    template<class Mesh, class ET, class ID, class V, class NodeMap, class ElemMap>
-    struct result { typedef void type; };
+    AKANTU_DEBUG_ASSERT(conn.size() == tmp_conn.size(),
+                        "The nodes in the Abaqus file have too many coordinates"
+                            << " for the mesh you try to fill.");
 
-    template<class Mesh, class ET, class ID, class V, class NodeMap, class ElemMap>
-    void operator()(Mesh & mesh,
-                    const ET & type,
-                    const ID & id,
-                    const V & conn,
-                    const NodeMap & nodes_mapping,
-                    ElemMap & elements_mapping) const {
-      Vector<UInt> tmp_conn(Mesh::getNbNodesPerElement(type));
+    mesh.addConnectivityType(type);
+    Array<UInt> & connectivity = mesh.getConnectivity(type);
 
-      AKANTU_DEBUG_ASSERT(conn.size() == tmp_conn.size(),
-                          "The nodes in the Abaqus file have too many coordinates"
-                          << " for the mesh you try to fill.");
-
-      mesh.addConnectivityType(type);
-      Array<UInt> & connectivity = mesh.getConnectivity(type);
-
-      UInt i = 0;
-      for(typename V::const_iterator it = conn.begin(); it != conn.end(); ++it) {
-        typename NodeMap::const_iterator nit = nodes_mapping.find(*it);
-        AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
-                            "There is an unknown node in the connectivity.");
-        tmp_conn[i++] = nit->second;
-      }
-      Element el(type, connectivity.getSize());
-      elements_mapping[id] = el;
-      connectivity.push_back(tmp_conn);
-    }
-  };
-
-  struct lazy_node_read_ {
-    template<class Mesh, class ID, class V, class Map>
-    struct result { typedef void type; };
-
-    template<class Mesh, class ID, class V, class Map>
-    void operator()(Mesh & mesh,
-                    const ID & id,
-                    const V & pos,
-                    Map & nodes_mapping) const {
-      Vector<Real> tmp_pos(mesh.getSpatialDimension());
-      UInt i = 0;
-      for(typename V::const_iterator it = pos.begin();
-          it != pos.end() || i < mesh.getSpatialDimension();
-          ++it)
-        tmp_pos[i++] = *it;
-
-      nodes_mapping[id] = mesh.getNbNodes();
-      mesh.getNodes().push_back(tmp_pos);
-    }
-  };
-
-  /* ------------------------------------------------------------------------ */
-  struct lazy_element_group_create_ {
-    template<class Mesh, class S> struct result { typedef ElementGroup & type; };
-
-    template<class Mesh, class S>
-    ElementGroup & operator()(Mesh & mesh, const S & name) const {
-      typename Mesh::element_group_iterator eg_it = mesh.element_group_find(name);
-      if(eg_it != mesh.element_group_end()) {
-        return *eg_it->second;
-      } else {
-        return mesh.createElementGroup(name, _all_dimensions);
-      }
-    }
-  };
-
-  struct lazy_add_element_to_group_ {
-    template<class EG, class ID, class Map>
-    struct result { typedef void type; };
-
-    template<class EG, class ID, class Map>
-    void operator()(EG * el_grp,
-                  const ID & element,
-                  const Map & elements_mapping) const {
-      typename Map::const_iterator eit = elements_mapping.find(element);
-      AKANTU_DEBUG_ASSERT(eit != elements_mapping.end(),
-                          "There is an unknown element ("<< element <<") in the in the ELSET "
-                          << el_grp->getName() << ".");
-
-      el_grp->add(eit->second, true, false);
-    }
-  };
-
-  /* ------------------------------------------------------------------------ */
-  struct lazy_node_group_create_ {
-    template<class Mesh, class S> struct result { typedef NodeGroup & type; };
-
-    template<class Mesh, class S>
-    NodeGroup & operator()(Mesh & mesh, const S & name) const {
-      typename Mesh::node_group_iterator ng_it = mesh.node_group_find(name);
-      if(ng_it != mesh.node_group_end()) {
-        return *ng_it->second;
-      } else {
-        return mesh.createNodeGroup(name, mesh.getSpatialDimension());
-      }
-    }
-  };
-
-  struct lazy_add_node_to_group_ {
-    template<class NG, class ID, class Map>
-    struct result { typedef void type; };
-
-    template<class NG, class ID, class Map>
-    void operator()(NG * node_grp,
-                    const ID & node,
-                    const Map & nodes_mapping) const {
-      typename Map::const_iterator nit = nodes_mapping.find(node);
-
+    UInt i = 0;
+    for (typename V::const_iterator it = conn.begin(); it != conn.end(); ++it) {
+      typename NodeMap::const_iterator nit = nodes_mapping.find(*it);
       AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
-                          "There is an unknown node in the in the NSET "
-                          << node_grp->getName() << ".");
-
-      node_grp->add(nit->second, false);
+                          "There is an unknown node in the connectivity.");
+      tmp_conn[i++] = nit->second;
     }
+    Element el(type, connectivity.getSize());
+    elements_mapping[id] = el;
+    connectivity.push_back(tmp_conn);
+  }
+};
+
+struct lazy_node_read_ {
+  template <class Mesh, class ID, class V, class Map> struct result {
+    typedef void type;
   };
 
-  struct lazy_optimize_group_ {
-    template<class G>  struct result { typedef void type; };
-    template<class G> void operator()(G * grp) const {
-      grp->optimize();
+  template <class Mesh, class ID, class V, class Map>
+  void operator()(Mesh & mesh, const ID & id, const V & pos,
+                  Map & nodes_mapping) const {
+    Vector<Real> tmp_pos(mesh.getSpatialDimension());
+    UInt i = 0;
+    for (typename V::const_iterator it = pos.begin();
+         it != pos.end() || i < mesh.getSpatialDimension(); ++it)
+      tmp_pos[i++] = *it;
+
+    nodes_mapping[id] = mesh.getNbNodes();
+    mesh.getNodes().push_back(tmp_pos);
+  }
+};
+
+/* ------------------------------------------------------------------------ */
+struct lazy_element_group_create_ {
+  template <class Mesh, class S> struct result { typedef ElementGroup & type; };
+
+  template <class Mesh, class S>
+  ElementGroup & operator()(Mesh & mesh, const S & name) const {
+    typename Mesh::element_group_iterator eg_it = mesh.element_group_find(name);
+    if (eg_it != mesh.element_group_end()) {
+      return *eg_it->second;
+    } else {
+      return mesh.createElementGroup(name, _all_dimensions);
     }
-  };
+  }
+};
+
+struct lazy_add_element_to_group_ {
+  template <class EG, class ID, class Map> struct result { typedef void type; };
+
+  template <class EG, class ID, class Map>
+  void operator()(EG * el_grp, const ID & element,
+                  const Map & elements_mapping) const {
+    typename Map::const_iterator eit = elements_mapping.find(element);
+    AKANTU_DEBUG_ASSERT(eit != elements_mapping.end(),
+                        "There is an unknown element ("
+                            << element << ") in the in the ELSET "
+                            << el_grp->getName() << ".");
+
+    el_grp->add(eit->second, true, false);
+  }
+};
+
+/* ------------------------------------------------------------------------ */
+struct lazy_node_group_create_ {
+  template <class Mesh, class S> struct result { typedef NodeGroup & type; };
+
+  template <class Mesh, class S>
+  NodeGroup & operator()(Mesh & mesh, const S & name) const {
+    typename Mesh::node_group_iterator ng_it = mesh.node_group_find(name);
+    if (ng_it != mesh.node_group_end()) {
+      return *ng_it->second;
+    } else {
+      return mesh.createNodeGroup(name, mesh.getSpatialDimension());
+    }
+  }
+};
+
+struct lazy_add_node_to_group_ {
+  template <class NG, class ID, class Map> struct result { typedef void type; };
+
+  template <class NG, class ID, class Map>
+  void operator()(NG * node_grp, const ID & node,
+                  const Map & nodes_mapping) const {
+    typename Map::const_iterator nit = nodes_mapping.find(node);
+
+    AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
+                        "There is an unknown node in the in the NSET "
+                            << node_grp->getName() << ".");
+
+    node_grp->add(nit->second, false);
+  }
+};
+
+struct lazy_optimize_group_ {
+  template <class G> struct result { typedef void type; };
+  template <class G> void operator()(G * grp) const { grp->optimize(); }
+};
 }
 
 /* -------------------------------------------------------------------------- */
-template<class Iterator>
-struct AbaqusSkipper : qi::grammar<Iterator> {
-  AbaqusSkipper() : AbaqusSkipper::base_type(skip,
-                                             "abaqus_skipper") {
+template <class Iterator> struct AbaqusSkipper : qi::grammar<Iterator> {
+  AbaqusSkipper() : AbaqusSkipper::base_type(skip, "abaqus_skipper") {
+    /* clang-format off */
     skip
       =   (ascii::space - spirit::eol)
       |   "**" >> *(qi::char_ - spirit::eol) >> spirit::eol
       ;
+    /* clang-format on */
   }
   qi::rule<Iterator> skip;
 };
 
 /* -------------------------------------------------------------------------- */
-template<class Iterator, typename Skipper = AbaqusSkipper<Iterator> >
-struct AbaqusMeshGrammar : qi::grammar<Iterator, void(),
-                                       Skipper> {
+template <class Iterator, typename Skipper = AbaqusSkipper<Iterator> >
+struct AbaqusMeshGrammar : qi::grammar<Iterator, void(), Skipper> {
 public:
-  AbaqusMeshGrammar(Mesh & mesh) : AbaqusMeshGrammar::base_type(start,
-                                                                "abaqus_mesh_reader"),
-                                   mesh(mesh) {
-    phx::function<mesh_io_abaqus_lazy_eval::mesh_abaqus_error_handler_> const error_handler
-      = mesh_io_abaqus_lazy_eval::mesh_abaqus_error_handler_();
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_element_read_> lazy_element_read;
+  AbaqusMeshGrammar(Mesh & mesh)
+      : AbaqusMeshGrammar::base_type(start, "abaqus_mesh_reader"), mesh(mesh) {
+    phx::function<mesh_io_abaqus_lazy_eval::mesh_abaqus_error_handler_> const
+        error_handler = mesh_io_abaqus_lazy_eval::mesh_abaqus_error_handler_();
+    phx::function<mesh_io_abaqus_lazy_eval::lazy_element_read_>
+        lazy_element_read;
     phx::function<mesh_io_abaqus_lazy_eval::lazy_node_read_> lazy_node_read;
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_element_group_create_> lazy_element_group_create;
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_add_element_to_group_> lazy_add_element_to_group;
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_node_group_create_> lazy_node_group_create;
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_add_node_to_group_> lazy_add_node_to_group;
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_optimize_group_> lazy_optimize_group;
+    phx::function<mesh_io_abaqus_lazy_eval::lazy_element_group_create_>
+        lazy_element_group_create;
+    phx::function<mesh_io_abaqus_lazy_eval::lazy_add_element_to_group_>
+        lazy_add_element_to_group;
+    phx::function<mesh_io_abaqus_lazy_eval::lazy_node_group_create_>
+        lazy_node_group_create;
+    phx::function<mesh_io_abaqus_lazy_eval::lazy_add_node_to_group_>
+        lazy_add_node_to_group;
+    phx::function<mesh_io_abaqus_lazy_eval::lazy_optimize_group_>
+        lazy_optimize_group;
 
+    /* clang-format off */
     start
       =  *(
              (qi::char_('*')
@@ -438,26 +431,30 @@ public:
     keyword            .name("abaqus-keyword");
     any_line           .name("abaqus-any-line");
     abaqus_element_type.name("abaqus-element-type");
+
+    /* clang-format on */
   }
 
 public:
-  AKANTU_GET_MACRO(MaterialNames, material_names, const std::vector<std::string> &);
+  AKANTU_GET_MACRO(MaterialNames, material_names,
+                   const std::vector<std::string> &);
 
   /* ------------------------------------------------------------------------ */
   /* Rules                                                                    */
   /* ------------------------------------------------------------------------ */
 private:
-  qi::rule<Iterator, void(),  Skipper> start;
-  qi::rule<Iterator, std::vector<int>(),  Skipper> connectivity;
-  qi::rule<Iterator, std::vector<Real>(),  Skipper> node_position;
-  qi::rule<Iterator, void(),  Skipper> nodes, any_section, header, material;
-  qi::rule<Iterator, void(),  qi::locals<ElementType>, Skipper> elements;
-  qi::rule<Iterator, void(),  qi::locals<ElementGroup *>, Skipper> elements_set;
-  qi::rule<Iterator, void(),  qi::locals<NodeGroup *>, Skipper> nodes_set;
+  qi::rule<Iterator, void(), Skipper> start;
+  qi::rule<Iterator, std::vector<int>(), Skipper> connectivity;
+  qi::rule<Iterator, std::vector<Real>(), Skipper> node_position;
+  qi::rule<Iterator, void(), Skipper> nodes, any_section, header, material;
+  qi::rule<Iterator, void(), qi::locals<ElementType>, Skipper> elements;
+  qi::rule<Iterator, void(), qi::locals<ElementGroup *>, Skipper> elements_set;
+  qi::rule<Iterator, void(), qi::locals<NodeGroup *>, Skipper> nodes_set;
 
-  qi::rule<Iterator, std::string(), Skipper> key, value, option, keyword, any_line;
+  qi::rule<Iterator, std::string(), Skipper> key, value, option, keyword,
+      any_line;
 
-  qi::real_parser< Real, qi::real_policies<Real> > real;
+  qi::real_parser<Real, qi::real_policies<Real> > real;
 
   qi::symbols<char, ElementType> abaqus_element_type;
 
@@ -470,7 +467,7 @@ private:
 
   /// correspondance between the numbering of nodes in the abaqus file and in
   /// the akantu mesh
-  std::map<UInt, UInt>    abaqus_nodes_to_akantu;
+  std::map<UInt, UInt> abaqus_nodes_to_akantu;
 
   /// correspondance between the element number in the abaqus file and the
   /// Element in the akantu mesh
@@ -481,56 +478,53 @@ private:
 };
 /* -------------------------------------------------------------------------- */
 
-
-
 /* -------------------------------------------------------------------------- */
-void MeshIOAbaqus::read(const std::string& filename, Mesh& mesh) {
-  namespace spirit  = boost::spirit;
-  namespace qi      = boost::spirit::qi;
-  namespace lbs     = boost::spirit::qi::labels;
-  namespace ascii   = boost::spirit::ascii;
-  namespace phx     = boost::phoenix;
+void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
+  namespace spirit = boost::spirit;
+  namespace qi = boost::spirit::qi;
+  namespace lbs = boost::spirit::qi::labels;
+  namespace ascii = boost::spirit::ascii;
+  namespace phx = boost::phoenix;
 
   std::ifstream infile;
   infile.open(filename.c_str());
 
-  if(!infile.good()) {
+  if (!infile.good()) {
     AKANTU_DEBUG_ERROR("Cannot open file " << filename);
   }
 
-  std::string storage; // We will read the contents here.
+  std::string storage;             // We will read the contents here.
   infile.unsetf(std::ios::skipws); // No white space skipping!
-  std::copy(std::istream_iterator<char>(infile),
-            std::istream_iterator<char>(),
+  std::copy(std::istream_iterator<char>(infile), std::istream_iterator<char>(),
             std::back_inserter(storage));
 
   typedef std::string::const_iterator iterator_t;
-  typedef AbaqusSkipper    <iterator_t> skipper;
+  typedef AbaqusSkipper<iterator_t> skipper;
   typedef AbaqusMeshGrammar<iterator_t, skipper> grammar;
 
   grammar g(mesh);
   skipper ws;
 
   iterator_t iter = storage.begin();
-  iterator_t end  = storage.end();
+  iterator_t end = storage.end();
 
   qi::phrase_parse(iter, end, g, ws);
 
-  std::vector<std::string>::const_iterator mnit  = g.getMaterialNames().begin();
+  std::vector<std::string>::const_iterator mnit = g.getMaterialNames().begin();
   std::vector<std::string>::const_iterator mnend = g.getMaterialNames().end();
 
   for (; mnit != mnend; ++mnit) {
     Mesh::element_group_iterator eg_it = mesh.element_group_find(*mnit);
     ElementGroup & eg = *eg_it->second;
-    if(eg_it != mesh.element_group_end()) {
-      ElementGroup::type_iterator tit  = eg.firstType();
+    if (eg_it != mesh.element_group_end()) {
+      ElementGroup::type_iterator tit = eg.firstType();
       ElementGroup::type_iterator tend = eg.lastType();
 
       for (; tit != tend; ++tit) {
-        Array<std::string> & abaqus_material
-          = this->getData<std::string>(mesh, "abaqus_material", *tit);
+        Array<std::string> & abaqus_material =
+            this->getData<std::string>(mesh, "abaqus_material", *tit);
 
-        ElementGroup::const_element_iterator eit  = eg.element_begin(*tit);
+        ElementGroup::const_element_iterator eit = eg.element_begin(*tit);
         ElementGroup::const_element_iterator eend = eg.element_end(*tit);
         for (; eit != eend; ++eit) {
           abaqus_material(*eit) = *mnit;
@@ -542,7 +536,5 @@ void MeshIOAbaqus::read(const std::string& filename, Mesh& mesh) {
   this->setNbGlobalNodes(mesh, mesh.getNodes().getSize());
   MeshUtils::fillElementToSubElementsData(mesh);
 }
-
-
 
 __END_AKANTU__

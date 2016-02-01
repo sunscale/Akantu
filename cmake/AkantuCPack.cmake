@@ -4,14 +4,15 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Wed Oct 17 2012
-# @date last modification: Tue May 13 2014
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  Configure the packaging system
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -31,22 +32,25 @@
 set(PACKAGE_FILE_NAME "akantu" CACHE STRING "Name of package to be generated")
 mark_as_advanced(PACKAGE_FILE_NAME)
 
-#set(CPACK_GENERATOR "DEB;TGZ;TBZ2;STGZ;RPM")
+set(CPACK_SOURCE_GENERATOR "TGZ;TBZ2")
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  set(CPACK_GENERATOR "TGZ")
+  set(CPACK_GENERATOR "TGZ;DEB")
 else()
   set(CPACK_GENERATOR "TGZ;NSIS")
 
   package_get_all_external_informations(
     _external_include_dirs
     _external_libraries
-  )
+    )
+
   set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${_external_libraries})
 
   include(InstallRequiredSystemLibraries)
 endif()
 
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "i.86" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "[aA][mM][dD]64")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "i.86" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "[aA][mM][dD]64")
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(_arch "amd64")
   else()
@@ -71,10 +75,14 @@ set(CPACK_PACKAGE_NAME "akantu")
 #set(CMAKE_PACKAGE_ICON "${PROJECT_SOURCE_DIR}/cmake/akantu.ico")
 
 # Debian config package
+package_get_all_package_system_dependency(deb _deb_deps)
+package_get_all_package_system_dependency(deb-src _deb_src_deps)
+
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "nicolas.richart@epfl.ch, guillaume.anciaux@epfl.ch")
 set(CPACK_DEBIAN_PACKAGE_SECTION "Science")
 set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${_arch}" CACHE STRING "Architecture of akantu's package")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "${${_project}_PACKAGE_SYSTEM_DEBIAN_PACKAGE_DEPENDS}")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "${_deb_deps}")
+set(CPACK_DEBIAN_PACKAGE_BUILDS_DEPENDSS "${_deb_src_deps}")
 mark_as_advanced(CPACK_DEBIAN_PACKAGE_ARCHITECTURE)
 # RPM package configuration
 #set(CPACK_RPM_PACKAGE_REQUIRES "${${_project}_PACKAGE_SYSTEM_DEBIAN_PACKAGE_DEPENDS}")
@@ -105,17 +113,17 @@ set(CPACK_COMPONENT_DEV_GROUP "Development")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PACKAGE_FILE_NAME}-${AKANTU_VERSION}-src")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
 
-string(TOUPPER ${PROJECT_NAME} _project)
+include(AkantuCPackMacros)
+generate_cpack_ignore_list(CPACK_SOURCE_IGNORE_FILES)
 
-unset(CPACK_SOURCE_IGNORE_FILES)
-package_get_all_deactivated_packages(_deactivated_packages)
-foreach(_pkg ${_deactivated_packages}})
-  _package_get_filename(${_pkg} _file_name)
-  list(APPEND CPACK_SOURCE_IGNORE_FILES ${_file_name})
+# for debug
+# foreach(_file ${CPACK_SOURCE_IGNORE_FILES})
+#   message("IGNORE ${_file}")
+# endforeach()
 
-  _package_get_source_files(${_pkg} _srcs _pub_hdrs _priv_hdrs)
-  list(APPEND CPACK_SOURCE_IGNORE_FILES ${_srcs} ${_pub_hdrs} ${_priv_hdrs})
-endforeach()
-list(APPEND CPACK_SOURCE_IGNORE_FILES "/.*build.*/;/CVS/;/\\\\.svn/;/\\\\.bzr/;/\\\\.hg/;/\\\\.hgignore;/\\\\.git/;\\\\.swp$;\\\\.#;/#;~")
+list(APPEND CPACK_SOURCE_IGNORE_FILES
+  "/.*build.*/"  "/CVS/" "/\\\\.svn/" "/\\\\.bzr/" "/\\\\.hg/"
+  "/\\\\.hgignore" "/\\\\.git/" "/\\\\.idea/" "\\\\.swp$"
+  "\\\\.#" "/#" "~")
 
 include(CPack)

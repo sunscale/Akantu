@@ -3,14 +3,14 @@
  *
  * @author Fabian Barras <fabian.barras@epfl.ch>
  *
- * @date creation: Wed Jan 16 2013
- * @date last modification: Thu Jun 05 2014
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Sun Oct 19 2014
  *
  * @brief  Test for _bernouilli_beam_3D
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

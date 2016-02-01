@@ -5,13 +5,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Sep 02 2014
- * @date last modification: Tue Sep 02 2014
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Generic interface for elemental fields
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -50,7 +50,7 @@ public:
   // check dumper_type_traits.hh for additional information over these types
   typedef _types types;
   typedef typename types::data_type data_type;
-  typedef typename types::it_type it_type; 
+  typedef typename types::it_type it_type;
   typedef typename types::field_type field_type;
   typedef typename types::array_type array_type;
   typedef typename types::array_iterator array_iterator;

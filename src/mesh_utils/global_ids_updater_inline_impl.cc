@@ -1,14 +1,17 @@
 /**
  * @file   global_ids_updater_inline_impl.cc
+ *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
- * @date   Fri Oct  2 13:33:44 2015
+ *
+ * @date creation: Fri Oct 02 2015
+ * @date last modification: Sun Oct 04 2015
  *
  * @brief  Implementation of the inline functions of GlobalIdsUpdater
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

@@ -1,0 +1,17 @@
+material elastic [
+	 name = bulk
+	 rho = 2.7e-9   # density
+	 E   = 36000	# young's modulus
+	 nu  = 0.2	# poisson's ratio
+]
+
+material cohesive_linear_friction [
+	 name = interface
+	 beta = 1
+	 G_c = 30e-3
+         penalty = 1.0e6
+         sigma_c = 2.0
+	 contact_after_breaking = true
+	 mu = 0.5
+	 penalty_for_friction = 5.0e3
+]

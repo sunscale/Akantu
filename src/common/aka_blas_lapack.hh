@@ -4,13 +4,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Mar 06 2013
- * @date last modification: Tue Jun 24 2014
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  Interface of the Fortran BLAS/LAPACK libraries
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -34,12 +34,8 @@
 #define __AKANTU_AKA_BLAS_LAPACK_HH__
 
 /* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_USE_BLAS) || defined(AKANTU_USE_LAPACK)
-# include "aka_fortran_mangling.hh"
-#endif //AKANTU_USE_BLAS
-
 #ifdef AKANTU_USE_BLAS
+#include "aka_fortran_mangling.hh"
 extern "C" {
 
   /* ------------------------------------------------------------------------ */
@@ -164,6 +160,7 @@ __END_AKANTU__
 
 
 #ifdef AKANTU_USE_LAPACK
+#include "aka_fortran_mangling.hh"
 extern "C" {
   /* ------------------------------------------------------------------------ */
   /* Double general matrix                                                    */

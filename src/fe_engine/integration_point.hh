@@ -1,17 +1,17 @@
 /**
  * @file   integration_point.hh
  *
- * @author 
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: 
- * @date last modification: Mon Oct 19 2015
+ * @date creation: Wed Jun 17 2015
+ * @date last modification: Sun Nov 15 2015
  *
  * @brief  definition of the class IntegrationPoint
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

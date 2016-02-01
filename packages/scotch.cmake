@@ -1,17 +1,18 @@
 #===============================================================================
-# @file   90_scotch.cmake
+# @file   scotch.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Nov 21 2011
-# @date last modification: Thu Jul 10 2014
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  package description for scotch
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -27,6 +28,7 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
+
 package_declare(Scotch EXTERNAL
   DESCRIPTION "Add Scotch support in akantu"
   SYSTEM ON third-party/cmake/scotch.cmake)
@@ -93,3 +95,14 @@ package_declare_documentation(Scotch
 #     set(AKANTU_SCOTCH_NO_EXTERN OFF)
 #   endif()
 # endif()
+
+package_set_package_system_dependency(Scotch deb libscotch)
+package_set_package_system_dependency(Scotch deb-src libscotch-dev)
+
+package_declare_extra_files_to_package(Scotch
+  PROJECT
+    third-party/cmake/scotch.cmake
+    third-party/scotch_5.1.12b.patch
+    third-party/scotch_5.1.12b_make.inc.cmake
+    cmake/Modules/FindScotch.cmake
+  )

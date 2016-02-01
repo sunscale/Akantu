@@ -3,15 +3,16 @@
 #
 # @author Marco Vocialta <marco.vocialta@epfl.ch>
 #
-# @date creation: Tue May 08 2012
-# @date last modification: Fri Jun 21 2013
+# @date creation: Fri Oct 22 2010
+# @date last modification: Thu Jan 14 2016
 #
 # @brief  configuration for cohesive elements tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -37,4 +38,5 @@ add_akantu_test(test_cohesive_intrinsic_impl "test_cohesive_intrinsic_impl")
 add_akantu_test(test_cohesive_1d_element "test_cohesive_1d_element")
 add_akantu_test(test_cohesive_extrinsic_implicit "test_cohesive_extrinsic_implicit")
 add_akantu_test(test_cohesive_insertion "test_cohesive_insertion")
+add_akantu_test(test_cohesive_linear_friction "test_cohesive_linear_friction")
 #===============================================================================

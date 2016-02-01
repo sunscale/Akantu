@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Fri Feb 21 2014
- * @date last modification: Fri Feb 28 2014
+ * @date creation: Mon Jun 14 2010
+ * @date last modification: Sun Oct 19 2014
  *
  * @brief  test the static Math class
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -34,36 +35,39 @@
 using namespace akantu;
 
 void checkVect(Real * x, Real * xref, UInt n) {
-  Real diff[n];
-  for(UInt i = 0; i < n; ++i) {
-    diff[i] = xref[i]- x[i];
+  Real * diff = new Real[n];
+  for (UInt i = 0; i < n; ++i) {
+    diff[i] = xref[i] - x[i];
   }
 
-  Real norm = Math::norm(n, diff)/Math::norm(n, xref);
+  Real norm = Math::norm(n, diff) / Math::norm(n, xref);
   Real tol = 1e-12;
-  AKANTU_DEBUG_ASSERT(norm < tol, "x differs form xref");
+  if (norm > tol) {
+    std::cout << "differs form xref of " << std::scientific << norm << std::endl;
+    exit(-1);
+  }
+
+  delete [] diff;
 }
 
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
-  Real A[3*5] = {  0,   1,  2,
-		   3,   4,  5,
-		   6,   7,  8,
-		   9,  10, 11,
-		   12, 13, 14, };
+int main() {
+  Real A[3 * 5] = {
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+  };
 
-  Real x1[5] = { 0, 1, 2, 3, 4 };
-  Real x2[3] = { 0, 1, 2 };
+  Real x1[5] = {0, 1, 2, 3, 4};
+  Real x2[3] = {0, 1, 2};
 
   Real y1[3];
   Math::matrix_vector(3, 5, A, x1, y1, 1.);
-  Real y1_ref[3] = { 90, 100, 110 };
+  Real y1_ref[3] = {90, 100, 110};
 
   checkVect(y1, y1_ref, 3);
 
   Real y2[5];
   Math::matVectMul<true>(3, 5, 1., A, x2, 0., y2);
-  Real y2_ref[5] = { 5, 14, 23, 32, 41 };
+  Real y2_ref[5] = {5, 14, 23, 32, 41};
 
   checkVect(y2, y2_ref, 5);
 

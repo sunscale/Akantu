@@ -1,13 +1,16 @@
 /**
  * @file   test_material.hh
+ *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Wed Sep 23 17:16:30 2015
+ *
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Wed Nov 25 2015
  *
  * @brief  test material for the non-local neighborhood base test
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -34,40 +37,35 @@
 
 __BEGIN_AKANTU__
 
-template<UInt dim>
+template <UInt dim>
 class TestMaterial : public MaterialDamage<dim, MaterialElastic>,
-		     public MaterialNonLocal<dim>{
-
-/* -------------------------------------------------------------------------- */
-/* Constructor/Destructor                                                     */
-/* -------------------------------------------------------------------------- */
-
+                     public MaterialNonLocal<dim> {
+  /* ------------------------------------------------------------------------ */
+  /* Constructor/Destructor */
+  /* ------------------------------------------------------------------------ */
 public:
-  
   TestMaterial(SolidMechanicsModel & model, const ID & id);
-  virtual ~TestMaterial() {};
+  virtual ~TestMaterial(){};
   typedef MaterialNonLocal<dim> MyNonLocalParent;
   typedef MaterialDamage<dim, MaterialElastic> MyLocalParent;
-/* -------------------------------------------------------------------------- */
-/* Methods                                                                    */
-/* -------------------------------------------------------------------------- */
+
+  /* ------------------------------------------------------------------------ */
+  /* Methods */
+  /* ------------------------------------------------------------------------ */
 public:
   void initMaterial();
 
-  void computeNonLocalStresses(GhostType ghost_type) {};
+  void computeNonLocalStresses(__attribute__((unused)) GhostType ghost_type){};
 
   void insertQuadsInNeighborhoods(GhostType ghost_type);
 
   virtual void registerNeighborhood();
 
-protected:
-
-/* -------------------------------------------------------------------------- */
-/* Members                                                                   */
-/* -------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
+  /* Members */
+  /* ------------------------------------------------------------------------ */
 private:
-  InternalField<Real> grad_u_nl; 
-
+  InternalField<Real> grad_u_nl;
 };
 
 __END_AKANTU__

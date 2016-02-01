@@ -4,14 +4,15 @@
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 #
 # @date creation: Fri Sep 03 2010
-# @date last modification: Thu Mar 27 2014
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  configuratio for SolidMechanicsModel tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -151,8 +152,6 @@ register_test(test_solid_mechanics_model_implicit_dynamic_2d
   )
 
 #===============================================================================
-add_mesh(test_pbc_parallel_mesh square_structured.geo 2 1 OUTPUT square_structured.msh)
-
 register_test(test_solid_mechanics_model_bar_traction2d_structured_pbc
   SOURCES test_solid_mechanics_model_bar_traction2d_structured_pbc.cc
   DEPENDS test_bar_traction_2d_mesh_structured1
@@ -161,6 +160,7 @@ register_test(test_solid_mechanics_model_bar_traction2d_structured_pbc
   PACKAGE core
   )
 
+#add_mesh(test_pbc_parallel_mesh square_structured.geo 2 1 OUTPUT square_structured.msh)
 #register_test(test_solid_mechanics_model_pbc_parallel
 #  SOURCES  test_solid_mechanics_model_pbc_parallel.cc
 #  DEPENDS test_pbc_parallel_mesh

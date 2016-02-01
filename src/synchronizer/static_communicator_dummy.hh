@@ -3,14 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Wed Sep 01 17:57:12 2010
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Wed Jan 13 2016
  *
- * @brief  Class handling the parallel communications
+ * @brief  Dummy communicator to make everything work im sequential
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -147,7 +149,7 @@ public:
   /* ------------------------------------------------------------------------ */
   int getMaxTag() { return std::numeric_limits<int>::max(); }
   int getMinTag() { return 0; }
-  void finalize() {}
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

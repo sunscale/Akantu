@@ -3,15 +3,15 @@
 #
 # @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
 #
-# @date creation: Fri Jun 21 2013
-# @date last modification: Fri Jun 21 2013
+# @date creation: Mon Jan 18 2016
 #
 # @brief  Intrinsic cohesive element configuration
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -31,15 +31,8 @@
 #===============================================================================
 
 add_mesh( cohesive_intrinsic_mesh triangle.geo 2 2)
-
-
 register_example(cohesive_intrinsic
-  cohesive_intrinsic.cc)
+  SOURCES cohesive_intrinsic.cc
+  DEPENDS cohesive_intrinsic_mesh
+  FILES_TO_COPY material.dat)
 
-add_dependencies(cohesive_intrinsic
-  cohesive_intrinsic_mesh)
-
-
- #===============================================================================
-file(COPY material.dat DESTINATION .)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)

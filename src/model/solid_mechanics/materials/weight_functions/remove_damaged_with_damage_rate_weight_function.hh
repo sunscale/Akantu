@@ -1,18 +1,19 @@
 /**
- * @file   remove_damaged_with damage_rate_weight_function.hh
+ * @file   remove_damaged_with_damage_rate_weight_function.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Cyprien Wolff <cyprien.wolff@epfl.ch>
  *
- * @date creation: Fri Apr 13 2012
- * @date last modification: Thu Jun 05 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Removed damaged weight function for non local materials
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

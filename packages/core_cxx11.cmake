@@ -1,16 +1,16 @@
 #===============================================================================
-# @file   00_core_cxx11.cmake
+# @file   core_cxx11.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Mon May 06 2013
-# @date last modification: Thu Jul 03 2014
+# @date creation: Tue Feb 26 2013
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  C++11 addition to the core package
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -31,7 +31,7 @@
 if(AKANTU_CXX11_FLAGS)
   package_declare(core_cxx11 ADVANCED
     DESCRIPTION "C++ 11 additions for Akantu core" DEFAULT ON
-    COMPILE_FLAGS "${AKANTU_CXX11_FLAGS}")
+    COMPILE_FLAGS CXX "${AKANTU_CXX11_FLAGS}")
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.6")
@@ -43,24 +43,8 @@ else()
     DESCRIPTION "C++ 11 additions for Akantu core"
     DEFAULT OFF
     NOT_OPTIONAL
-    COMPILE_FLAGS "")
+    )
 endif()
-
-package_declare_sources(core_cxx11
-  common/aka_point.hh
-  common/aka_ball.cc
-  common/aka_plane.hh
-  common/aka_polytope.hh
-  common/aka_ball.hh
-  common/aka_timer.hh
-  common/aka_tree.hh
-  common/aka_bounding_box.hh
-  common/aka_bounding_box.cc
-  common/aka_geometry.hh
-  common/aka_geometry.cc
-  model/solid_mechanics/solid_mechanics_model_element.hh
-  )
-
 
 package_declare_documentation(core_cxx11
   "This option activates some features of the C++11 standard. This is usable with GCC>=4.7 or Intel>=13.")

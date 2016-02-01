@@ -3,15 +3,16 @@
 #
 # @author Lucas Frerot <lucas.frerot@epfl.ch>
 #
-# @date creation: Fri Feb 27 2015
-# @date last modification: Fri Feb 27 2015
+# @date creation: Fri Sep 03 2010
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  configuration for solver tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -29,9 +30,6 @@
 # @section DESCRIPTION
 #
 #===============================================================================
-
-add_mesh(test_geometry_intersection_triangle_3_mesh triangle_3.geo 2 1)
-add_mesh(test_geometry_intersection_tetrahedron_4_mesh tetrahedron_4.geo 3 1)
 
 register_test(test_geometry_predicates
   SOURCES test_geometry_predicates.cc

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -o errexit
+set -o pipefail
 
 show_help() {
     cat << EOF
@@ -17,6 +18,7 @@ Execute the test in the good configuration according to the options given
                       contains a <nb_proc> this will be used for the different
                       configuration when -p is given
     -w WORKING_DIR    The directory in which to execute the test
+    -E ENVIRONMENT_FILE File to source before running tests
     -h                Print this helps
 EOF
 }
@@ -44,8 +46,9 @@ parallel=
 postprocess_script=
 reference=
 working_dir=
+envi=
 
-while getopts ":n:e:p:s:r:w:h" opt; do
+while getopts ":n:e:E:p:s:r:w:h" opt; do
     case "$opt" in
         n)  name="$OPTARG"
             ;;
@@ -58,6 +61,9 @@ while getopts ":n:e:p:s:r:w:h" opt; do
         r)  reference="$OPTARG"
             ;;
         w)  working_dir="$OPTARG"
+            ;;
+        E)  envi="$OPTARG"
+            echo toto
             ;;
         h)
             show_help
@@ -75,6 +81,10 @@ while getopts ":n:e:p:s:r:w:h" opt; do
             ;;
     esac
 done
+
+if [ -n "${envi}" ]; then
+    source ${envi}
+fi
 
 if [ -z "${name}" -o -z "${executable}" ]; then
     echo "Missing executable or name"

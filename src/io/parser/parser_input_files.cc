@@ -1,17 +1,17 @@
 /**
- * @file   parser.cc
+ * @file   parser_input_files.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Nov 13 2013
- * @date last modification: Fri Sep 05 2014
+ * @date creation: Wed Nov 11 2015
+ * @date last modification: Wed Jan 13 2016
  *
  * @brief  implementation of the parser
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -40,10 +40,11 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-void Parser::parse(const std::string& filename) {
+void Parser::parse(const std::string & filename) {
+  this->clean();
   std::ifstream input(filename.c_str());
 
-  if(!input.good()) {
+  if (!input.good()) {
     AKANTU_EXCEPTION("Could not open file " << filename << "!");
   }
 
@@ -54,29 +55,28 @@ void Parser::parse(const std::string& filename) {
   spirit::istream_iterator fwd_end;
 
   // wrap forward iterator with position iterator, to record the position
-  typedef spirit::classic::position_iterator2<spirit::istream_iterator> pos_iterator_type;
+  typedef spirit::classic::position_iterator2<spirit::istream_iterator>
+      pos_iterator_type;
   pos_iterator_type position_begin(fwd_begin, fwd_end, filename);
   pos_iterator_type position_end;
 
   // parse
   parser::InputFileGrammar<pos_iterator_type> ag(this);
 
-  bool result = qi::phrase_parse(position_begin,
-                                 position_end,
-                                 ag,
-                                 ag.skipper);
+  bool result = qi::phrase_parse(position_begin, position_end, ag, ag.skipper);
 
-  if(!result || position_begin != position_end) {
+  if (!result || position_begin != position_end) {
     spirit::classic::file_position pos = position_begin.get_position();
 
-    AKANTU_EXCEPTION("Parse error [ " << ag.getErrorMessage() << " ]"
-                     << " in file " << filename
-                     << " line " << pos.line
+    AKANTU_EXCEPTION("Parse error [ "
+                     << ag.getErrorMessage() << " ]"
+                     << " in file " << filename << " line " << pos.line
                      << " column " << pos.column << std::endl
-                     << "'" << position_begin.get_currentline() << "'" << std::endl
-                     << std::setw(pos.column) << " " << "^- here");
+                     << "'" << position_begin.get_currentline() << "'"
+                     << std::endl
+                     << std::setw(pos.column) << " "
+                     << "^- here");
   }
-
 
   try {
     DebugLevel dbl = debug::getDebugLevel();
@@ -85,7 +85,8 @@ void Parser::parse(const std::string& filename) {
     debug::setDebugLevel(dbl);
 
     permissive_parser = permissive;
-    AKANTU_DEBUG_INFO("Parser switched permissive mode to " << std::boolalpha << permissive_parser);
+    AKANTU_DEBUG_INFO("Parser switched permissive mode to "
+                      << std::boolalpha << permissive_parser);
   } catch (debug::Exception & e) {
   }
 

@@ -3,14 +3,16 @@
 #
 # @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Tue Jan 5 2016
+# @date creation: Fri Sep 03 2010
+# @date last modification: Wed Jan 06 2016
 #
 # @brief  Python Interface tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -26,12 +28,9 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-package_is_activated(python_interface _python_act)
-if(_python_act)
-    add_test(test_multiple_init 
-      python ${CMAKE_CURRENT_SOURCE_DIR}/test_multiple_init.py ${CMAKE_BINARY_DIR})
-endif()
 
-file(COPY input_test.dat mesh_dcb_2d.geo
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+register_test(test_multiple_init
+  SCRIPT test_multiple_init.py
+  PACKAGE python_interface
+  FILES_TO_COPY input_test.dat mesh_dcb_2d.geo
   )

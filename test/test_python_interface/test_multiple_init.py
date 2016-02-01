@@ -32,29 +32,27 @@
 
 import sys
 import os
-from mpi4py import MPI
-
-comm = MPI.COMM_WORLD
-
-sys.path.append(sys.argv[1]+'/python/')
 import akantu as aka
+
 os.system('gmsh -order 2 -2 -o mesh_dcb_2d.msh mesh_dcb_2d.geo')
-print('First initialisation')
+
 aka.initialize('input_test.dat')
+
+print 'First initialisation'
 mesh = aka.Mesh(2)
 mesh.read('mesh_dcb_2d.msh')
-model = aka.SolidMechanicsModelCohesive(mesh)
-model.initFull(aka.SolidMechanicsModelCohesiveOptions(aka._static))
+model = aka.SolidMechanicsModel(mesh)
+model.initFull(aka.SolidMechanicsModelOptions(aka._static))
 del model
 del mesh
-aka.clear()
-print('Second initialisation')
-aka.initialize('input_test.dat')
+
+print 'Second initialisation'
 mesh = aka.Mesh(2)
 mesh.read('mesh_dcb_2d.msh')
-model = aka.SolidMechanicsModelCohesive(mesh)
-model.initFull(aka.SolidMechanicsModelCohesiveOptions(aka._static))
+model = aka.SolidMechanicsModel(mesh)
+model.initFull(aka.SolidMechanicsModelOptions(aka._static))
 del model
 del mesh
+
 aka.finalize()
-print('All right')
+print 'All right'

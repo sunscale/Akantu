@@ -4,14 +4,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Jun 14 2010
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  common type descriptions for akantu
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -43,7 +44,7 @@
 
 /* -------------------------------------------------------------------------- */
 #define __BEGIN_AKANTU__ namespace akantu {
-#define __END_AKANTU__ };
+#define __END_AKANTU__ }
 /* -------------------------------------------------------------------------- */
 #define __BEGIN_AKANTU_DUMPER__ namespace dumper {
 #define __END_AKANTU_DUMPER__ }
@@ -394,12 +395,13 @@ void initialize(int & argc, char ** & argv);
 /// initialize the static part of akantu and read the global input_file
 void initialize(const std::string & input_file, int & argc, char ** & argv);
 /* -------------------------------------------------------------------------- */
-/// Clean akantu memory. Should be used only before a re-initialize of Akantu.
-/// Otherwise finalize() should be used.
-void clear();
 /// finilize correctly akantu and clean the memory
 void finalize ();
 /* -------------------------------------------------------------------------- */
+/// Read an new input file
+void readInputFile(const std::string & input_file);
+/* -------------------------------------------------------------------------- */
+
 
 /*
  * For intel compiler annoying remark

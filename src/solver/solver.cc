@@ -1,17 +1,19 @@
 /**
  * @file   solver.cc
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Dec 13 2010
- * @date last modification: Wed Nov 13 2013
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Solver interface class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -52,9 +54,10 @@ Solver::Solver(SparseMatrix & matrix,
   synch_registry(NULL) {
   AKANTU_DEBUG_IN();
   StaticSolver::getStaticSolver().registerEventHandler(*this);
-  //createSynchronizerRegistry();
+  // createSynchronizerRegistry();
   this->synch_registry = new SynchronizerRegistry(*this);
-  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(), _gst_solver_solution);
+  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(),
+                                       _gst_solver_solution);
 
   AKANTU_DEBUG_OUT();
 }
@@ -73,17 +76,17 @@ Solver::~Solver() {
 void Solver::beforeStaticSolverDestroy() {
   AKANTU_DEBUG_IN();
 
-  try{
+  try {
     this->destroyInternalData();
-  } catch(...) {}
+  } catch (...) {
+  }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void Solver::createSynchronizerRegistry() {
-  //this->synch_registry = new SynchronizerRegistry(this);
+  // this->synch_registry = new SynchronizerRegistry(this);
 }
-
 
 __END_AKANTU__
