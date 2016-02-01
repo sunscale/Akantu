@@ -230,9 +230,9 @@ void SolidMechanicsModelRVE::advanceASR(const Matrix<Real> & prestrain) {
 
   do {   	
     
-    converged = this->solveStep<_scm_newton_raphson_tangent, _scc_increment>(1e-10, error, 2, false, *static_communicator_dummy);
+    converged = this->solveStep<_scm_newton_raphson_tangent, _scc_increment>(1e-6, error, 2, false, *static_communicator_dummy);
     AKANTU_DEBUG_ASSERT(converged, "Did not converge");
-
+    std::cout << "the error is " << error << std::endl;
     /// compute damage 
     max_eq_stress_aggregate = mat_aggregate.getNormMaxEquivalentStress();
     max_eq_stress_paste = mat_paste.getNormMaxEquivalentStress();
@@ -243,6 +243,7 @@ void SolidMechanicsModelRVE::advanceASR(const Matrix<Real> & prestrain) {
     else
       nb_damaged_elements = mat_paste.updateDamage();
 
+    std::cout << "the number of damaged elements is " << nb_damaged_elements << std::endl;
   } while (nb_damaged_elements);
 
   this->dump();
@@ -350,7 +351,7 @@ void SolidMechanicsModelRVE::performVirtualTesting(const Matrix<Real> & H, Matri
   /// solve system
   this->assembleStiffnessMatrix();
   Real error = 0;
-  bool converged= this->solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-12, error, 2, false, *static_communicator_dummy);
+  bool converged= this->solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-6, error, 2, false, *static_communicator_dummy);
   AKANTU_DEBUG_ASSERT(converged, "Did not converge");
 
   /// get average stress and strain
