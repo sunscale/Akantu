@@ -122,8 +122,9 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 SolverMumps::SolverMumps(SparseMatrix & matrix,
                          const ID & id,
-                         const MemoryID & memory_id) :
-  Solver(matrix, id, memory_id), is_mumps_data_initialized(false), rhs_is_local(true) {
+                         const MemoryID & memory_id,
+			 StaticCommunicator & comm) :
+  Solver(matrix, id, memory_id, comm), is_mumps_data_initialized(false), rhs_is_local(true) {
   AKANTU_DEBUG_IN();
 
 #ifdef AKANTU_USE_MPI

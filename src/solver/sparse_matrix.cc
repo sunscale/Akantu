@@ -43,7 +43,8 @@ __BEGIN_AKANTU__
 SparseMatrix::SparseMatrix(UInt size,
 			   const SparseMatrixType & sparse_matrix_type,
 			   const ID & id,
-			   const MemoryID & memory_id) :
+			   const MemoryID & memory_id,
+			   UInt nb_proc_input) :
   Memory(id, memory_id),
   sparse_matrix_type(sparse_matrix_type),
   size(size),
@@ -51,8 +52,13 @@ SparseMatrix::SparseMatrix(UInt size,
   irn(0,1,"irn"), jcn(0,1,"jcn"), a(0,1,"A"), offset(1) {
   AKANTU_DEBUG_IN();
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  nb_proc = comm.getNbProc();
+  if (nb_proc_input == 0) {
+    StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+    nb_proc = comm.getNbProc();
+  } else {
+    nb_proc = nb_proc_input;
+  }
+
   dof_synchronizer = NULL;
 
   irn_save = NULL;
@@ -157,15 +163,15 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
   }
 
   /// for pbc @todo correct it for parallel
-  if(StaticCommunicator::getStaticCommunicator().getNbProc() == 1) {
+  if(nb_proc == 1) {
     for (UInt i = 0; i < size; ++i) {
       KeyCOO irn_jcn = key(i, i);
       irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
       if(irn_jcn_k_it == irn_jcn_k.end()) {
-        irn_jcn_k[irn_jcn] = nb_non_zero;
-        irn.push_back(i + 1);
-        jcn.push_back(i + 1);
-        nb_non_zero++;
+	irn_jcn_k[irn_jcn] = nb_non_zero;
+	irn.push_back(i + 1);
+	jcn.push_back(i + 1);
+	nb_non_zero++;
       }
     }
   }
@@ -215,10 +221,10 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
 //    Int * jcn_val = jcn.storage();
 //    Int * eq_nb_val = dof_synchronizer->getGlobalDOFEquationNumbers().storage();
 //    Int * eq_nb_rhs_val = dof_synchronizer->getLocalDOFEquationNumbers().storage();
-//    
+//
 //    Array<bool> * nodes_rotated = new Array<bool > (nb_nodes, dim, "nodes_rotated");
 //    nodes_rotated->clear();
-//    
+//
 //    Array<Int> * local_eq_nb_val_node_i = new Array<Int > (1, nb_degree_of_freedom, "local_eq_nb_val_node_i");
 //    local_eq_nb_val_node_i->clear();
 //    Array<Int> * local_eq_nb_val_node_j = new Array<Int > (1, nb_degree_of_freedom, "local_eq_nb_val_node_j");
@@ -236,7 +242,7 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
 //                break;
 //            }
 //        }
-//        
+//
 //        if(constrain_ij){
 //            if(dim==2){
 //                Real Theta=EulerAngles(node_i,0);
@@ -244,7 +250,7 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
 //                Ti(0,1)=-sin(Theta);
 //                Ti(1,1)=cos(Theta);
 //                Ti(1,0)=sin(Theta);
-//                
+//
 //                Theta=EulerAngles(node_j,0);
 //                Tj(0,0)=cos(Theta);
 //                Tj(0,1)=-sin(Theta);
@@ -255,7 +261,7 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
 //                Real Theta_x=EulerAngles(node_i,0);
 //                Real Theta_y=EulerAngles(node_i,1);
 //                Real Theta_z=EulerAngles(node_i,2);
-//                
+//
 //                Ti(0,0)=cos(Theta_y)*cos(Theta_z);
 //                Ti(0,1)=-cos(Theta_y)*sin(Theta_z);
 //                Ti(0,2)=sin(Theta_y);
@@ -265,11 +271,11 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
 //                Ti(2,0)=sin(Theta_x)*sin(Theta_z)-cos(Theta_x)*cos(Theta_z)*sin(Theta_y);
 //                Ti(2,1)=cos(Theta_z)*sin(Theta_x)+cos(Theta_x)*sin(Theta_y)*sin(Theta_z);
 //                Ti(2,2)=cos(Theta_x)*cos(Theta_y);
-//                
+//
 //                Theta_x=EulerAngles(node_j,0);
 //                Theta_y=EulerAngles(node_j,1);
 //                Theta_z=EulerAngles(node_j,2);
-//                
+//
 //                Tj(0,0)=cos(Theta_y)*cos(Theta_z);
 //                Tj(0,1)=-cos(Theta_y)*sin(Theta_z);
 //                Tj(0,2)=sin(Theta_y);
@@ -292,11 +298,11 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
 //                }
 //                small_rhs(j,0)=rhs.storage()[eq_nb_rhs_val[node_i*dim+j]];
 //            }
-//            
+//
 //            Ti_small_matrix.mul < false, false > (Ti, small_matrix);
 //            Ti_small_matrix_Tj.mul < false, true> (Ti_small_matrix, Tj);
 //            Ti_small_rhs.mul<false, false>(Ti, small_rhs);
-//            
+//
 //            /*for (UInt j = 0; j < nb_degree_of_freedom; ++j) {
 //                for (UInt k = 0; k < nb_degree_of_freedom; ++k) {
 //                    KeyCOO jcn_irn = key(local_eq_nb_val_node_i->storage()[j], local_eq_nb_val_node_j->storage()[k]);
@@ -342,7 +348,7 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
 //    AKANTU_DEBUG_ASSERT(norm > Math::getTolerance(), "The normal is not right");
 //    for (UInt j = 0; j < nb_degree_of_freedom; ++j)
 //        Normal.storage()[j] /= norm;
-//    
+//
 //    if (n_zeros == nb_degree_of_freedom - 1) {
 //        UInt nb_nodes = boundary_normal.getSize();
 //        for (UInt i = 0; i < nb_nodes; ++i) {
@@ -423,18 +429,18 @@ void SparseMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
     if (local_eq_num_to_global.find(*jcn_val - 1) == local_eq_num_to_global.end())
       continue;
 
-    
+
     UInt ni = local_eq_num_to_global.find(*irn_val - 1)->second;
     UInt nj = local_eq_num_to_global.find(*jcn_val - 1)->second;
     if(boundary.storage()[ni]  || boundary.storage()[nj]) {
       if (*irn_val != *jcn_val) {
-        *a_val = 0;
+	*a_val = 0;
       } else {
-        if(dof_synchronizer->getDOFTypes()(ni) >= 0) {
-          *a_val = 0;
-        } else {
-          *a_val = block_val;
-        }
+	if(dof_synchronizer->getDOFTypes()(ni) >= 0) {
+	  *a_val = 0;
+	} else {
+	  *a_val = block_val;
+	}
       }
     }
     irn_val++; jcn_val++; a_val++;
@@ -500,8 +506,8 @@ Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat) {
   AKANTU_DEBUG_IN();
 
   // AKANTU_DEBUG_ASSERT((vect.getSize()*vect.getNbComponent() == mat.getSize()) &&
-  // 		      (vect.getNbComponent() == mat.getNbDegreOfFreedom()),
-  // 		      "The size of the matrix and the vector do not match");
+  //		      (vect.getNbComponent() == mat.getNbDegreOfFreedom()),
+  //		      "The size of the matrix and the vector do not match");
 
   const SparseMatrixType & sparse_matrix_type = mat.getSparseMatrixType();
   DOFSynchronizer * dof_synchronizer = mat.getDOFSynchronizerPointer();

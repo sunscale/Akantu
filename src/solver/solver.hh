@@ -72,7 +72,8 @@ public:
 
   Solver(SparseMatrix & matrix,
 	 const ID & id = "solver",
-	 const MemoryID & memory_id = 0);
+	 const MemoryID & memory_id = 0,
+	 StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
   virtual ~Solver();
 

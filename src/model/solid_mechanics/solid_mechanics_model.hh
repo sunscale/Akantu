@@ -216,7 +216,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// initialize the solver and the jacobian_matrix (called by initImplicit)
-  void initSolver(SolverOptions & options = _solver_no_options);
+  virtual void initSolver(SolverOptions & options = _solver_no_options);
 
   /// initialize the stuff for the implicit solver
   void initImplicit(bool            dynamic = false,
@@ -242,7 +242,8 @@ public:
   bool solveStep(Real   tolerance,
 		 Real & error,
 		 UInt   max_iteration = 100,
-		 bool   do_not_factorize = false);
+		 bool   do_not_factorize = false,
+		 StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
 public:
   /**
@@ -252,11 +253,13 @@ public:
    **/
   template <SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
   bool solveStatic(Real tolerance, UInt max_iteration,
-		   bool do_not_factorize = false);
+		   bool do_not_factorize = false,
+		   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
   /// test if the system is converged
   template <SolveConvergenceCriteria criteria>
-  bool testConvergence(Real tolerance, Real & error);
+  bool testConvergence(Real tolerance, Real & error,
+		       StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
   /// test the convergence (norm of increment)
   bool testConvergenceIncrement(Real tolerance) __attribute__((deprecated));

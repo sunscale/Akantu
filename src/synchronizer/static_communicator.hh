@@ -180,6 +180,8 @@ public:
   static StaticCommunicator & getStaticCommunicator(int & argc, char ** & argv,
                                                     CommunicatorType type = _communicator_mpi);
 
+  static StaticCommunicator * getStaticCommunicatorDummy();
+
   static bool isInstantiated() { return is_instantiated; };
 
   int getMaxTag();

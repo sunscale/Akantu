@@ -63,7 +63,8 @@ public:
 
   SolverMumps(SparseMatrix & sparse_matrix,
 	      const ID & id = "solver_mumps",
-	      const MemoryID & memory_id = 0);
+	      const MemoryID & memory_id = 0,
+	      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
   virtual ~SolverMumps();
 

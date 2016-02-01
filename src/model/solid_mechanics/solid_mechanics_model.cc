@@ -99,8 +99,8 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh,
   velocity_damping_matrix(NULL),
   stiffness_matrix(NULL),
   jacobian_matrix(NULL),
-  material_index("material index", id),
-  material_local_numbering("material local numbering", id),
+  material_index("material index", id, memory_id),
+  material_local_numbering("material local numbering", id, memory_id),
   material_selector(new DefaultMaterialSelector(material_index)),
   is_default_material_selector(true),
   integrator(NULL),
@@ -249,7 +249,9 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
 
 #ifdef AKANTU_DAMAGE_NON_LOCAL
   /// create the non-local manager object for non-local damage computations
-  this->non_local_manager = new NonLocalManager(*this);
+  std::stringstream nl_manager_name;
+  nl_manager_name << "NLManager" << this->id;
+  this->non_local_manager = new NonLocalManager(*this, nl_manager_name.str(), this->memory_id);
 #endif
 
   // initialize the materials
@@ -370,7 +372,7 @@ void SolidMechanicsModel::initArrays() {
       material_local_numbering.alloc(nb_element, 1, *it, gt);
     }
   }
-
+ 
   dof_synchronizer = new DOFSynchronizer(mesh, spatial_dimension);
   dof_synchronizer->initLocalDOFEquationNumbers();
   dof_synchronizer->initGlobalDOFEquationNumbers();
@@ -754,9 +756,9 @@ void SolidMechanicsModel::initSolver(__attribute__((unused)) SolverOptions & opt
   delete solver;
   std::stringstream sstr_solv; sstr_solv << id << ":solver";
 #ifdef AKANTU_USE_PETSC
-  solver = new SolverPETSc(*jacobian_matrix, sstr_solv.str());
+  solver = new SolverPETSc(*jacobian_matrix, sstr_solv.str(), memory_id);
 #elif defined(AKANTU_USE_MUMPS)
-  solver = new SolverMumps(*jacobian_matrix, sstr_solv.str());
+  solver = new SolverMumps(*jacobian_matrix, sstr_solv.str(), memory_id);
   dof_synchronizer->initScatterGatherCommunicationScheme();
 #else
   AKANTU_DEBUG_ERROR("You should at least activate one solver.");
@@ -872,7 +874,8 @@ SparseMatrix & SolidMechanicsModel::initVelocityDampingMatrix() {
 
 /* -------------------------------------------------------------------------- */
 template<>
-bool SolidMechanicsModel::testConvergence<_scc_increment>(Real tolerance, Real & error){
+bool SolidMechanicsModel::testConvergence<_scc_increment>(Real tolerance, Real & error,
+							  StaticCommunicator & comm){
   AKANTU_DEBUG_IN();
 
   UInt nb_nodes = displacement->getSize();
@@ -897,7 +900,7 @@ bool SolidMechanicsModel::testConvergence<_scc_increment>(Real tolerance, Real &
     }
   }
 
-  StaticCommunicator::getStaticCommunicator().allReduce(norm, 2, _so_sum);
+  comm.allReduce(norm, 2, _so_sum);
 
   norm[0] = sqrt(norm[0]);
   norm[1] = sqrt(norm[1]);
@@ -926,7 +929,7 @@ bool SolidMechanicsModel::testConvergence<_scc_increment>(Real tolerance, Real &
 
 /* -------------------------------------------------------------------------- */
 template<>
-bool SolidMechanicsModel::testConvergence<_scc_residual>(Real tolerance, Real & norm) {
+bool SolidMechanicsModel::testConvergence<_scc_residual>(Real tolerance, Real & norm, StaticCommunicator & comm) {
   AKANTU_DEBUG_IN();
 
   UInt nb_nodes = residual->getSize();
@@ -952,7 +955,7 @@ bool SolidMechanicsModel::testConvergence<_scc_residual>(Real tolerance, Real & 
     }
   }
 
-  StaticCommunicator::getStaticCommunicator().allReduce(&norm, 1, _so_sum);
+  comm.allReduce(&norm, 1, _so_sum);
 
   norm = sqrt(norm);
 
@@ -965,7 +968,8 @@ bool SolidMechanicsModel::testConvergence<_scc_residual>(Real tolerance, Real & 
 /* -------------------------------------------------------------------------- */
 template<>
 bool SolidMechanicsModel::testConvergence<_scc_residual_mass_wgh>(Real tolerance,
-								  Real & norm) {
+								  Real & norm,
+								  StaticCommunicator & comm) {
   AKANTU_DEBUG_IN();
 
 
@@ -995,7 +999,7 @@ bool SolidMechanicsModel::testConvergence<_scc_residual_mass_wgh>(Real tolerance
     }
   }
 
-  StaticCommunicator::getStaticCommunicator().allReduce(&norm, 1, _so_sum);
+  comm.allReduce(&norm, 1, _so_sum);
 
   norm = sqrt(norm);
 
@@ -1394,7 +1398,7 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
   Array<Element>::const_iterator<Element> it  = element_list.begin();
   Array<Element>::const_iterator<Element> end = element_list.end();
 
-  ElementTypeMapArray<UInt> filter("new_element_filter", this->getID());
+  ElementTypeMapArray<UInt> filter("new_element_filter", this->getID(), this->getMemoryID());
 
   for (UInt el = 0; it != end; ++it, ++el) {
     const Element & elem = *it;
@@ -1531,7 +1535,7 @@ SolidMechanicsModel::flattenInternal(const std::string & field_name,
   std::pair<std::string, ElementKind> key(field_name, kind);
   if (this->registered_internals.count(key) == 0) {
     this->registered_internals[key] =
-        new ElementTypeMapArray<Real>(field_name, this->id);
+      new ElementTypeMapArray<Real>(field_name, this->id, this->memory_id);
   }
 
   ElementTypeMapArray<Real> * internal_flat = this->registered_internals[key];
