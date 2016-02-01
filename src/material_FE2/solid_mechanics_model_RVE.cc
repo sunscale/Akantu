@@ -31,6 +31,10 @@
 #ifdef AKANTU_USE_MUMPS
 #include "solver_mumps.hh"
 #endif
+#ifdef AKANTU_USE_PETSC
+#include "solver_petsc.hh"
+#include "petsc_matrix.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
