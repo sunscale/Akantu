@@ -31,11 +31,12 @@ material material_FE2 [
 	 name = FE2_mat
 	 element_type = _triangle_3
 	 mesh_file = ./periodic_plate.msh
+         nb_gel_pockets = 1
 ]
 
 user parameter [
      mesh_file = ./square.msh
-     total_steps = 0
+     total_steps = 10
      p = 0.00065
      prestrain_increment = [[p, 0],\
                             [0, p]]

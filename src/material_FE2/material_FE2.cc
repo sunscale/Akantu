@@ -37,6 +37,7 @@ MaterialFE2<spatial_dimension>::MaterialFE2(SolidMechanicsModel & model,
 template<UInt spatial_dimension>
 MaterialFE2<spatial_dimension>::~MaterialFE2() {
   for (UInt i = 0; i < RVEs.size(); ++i) {
+    delete meshes[i];
     delete RVEs[i];
   }
 }
@@ -46,6 +47,7 @@ template<UInt dim>
 void MaterialFE2<dim>::initialize() {
   this->registerParam("element_type"      ,el_type, _triangle_3             ,  _pat_parsable | _pat_modifiable, "element type in RVE mesh" );
   this->registerParam("mesh_file"          ,mesh_file                , _pat_parsable | _pat_modifiable, "the mesh file for the RVE");
+  this->registerParam("nb_gel_pockets"          ,nb_gel_pockets                , _pat_parsable | _pat_modifiable, "the number of gel pockets in each RVE");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -58,16 +60,18 @@ void MaterialFE2<spatial_dimension>::initMaterial() {
   UInt nb_integration_points = this->element_filter(this->el_type, _not_ghost).getSize() 
     * this->fem->getNbIntegrationPoints(this->el_type);
   RVEs.resize(nb_integration_points);
+  meshes.resize(nb_integration_points);
 
-  /// create a SolidMechanicsModel on each integration point of the material
+  /// create a Mesh and SolidMechanicsModel on each integration point of the material
   std::vector<SolidMechanicsModelRVE *>::iterator RVE_it = RVEs.begin();
+  std::vector<Mesh *>::iterator mesh_it = meshes.begin();
 
   Array<Real>::matrix_iterator C_it =
     this->C(this->el_type).begin(voigt_h::size, voigt_h::size);
-  for (UInt i = 1; i < nb_integration_points+1; ++RVE_it, ++i, ++C_it) {
-    Mesh mesh(spatial_dimension, "RVE_mesh", i);
-    mesh.read(mesh_file);
-    *RVE_it = new SolidMechanicsModelRVE(mesh, true, _all_dimensions, "SMM_RVE", i); 
+  for (UInt i = 1; i < nb_integration_points+1; ++RVE_it, ++mesh_it, ++i, ++C_it) {
+    *mesh_it = new Mesh(spatial_dimension, "RVE_mesh", i);
+    (*mesh_it)->read(mesh_file);
+    *RVE_it = new SolidMechanicsModelRVE(*(*(mesh_it)), true, this->nb_gel_pockets, _all_dimensions, "SMM_RVE", i); 
     (*RVE_it)->initFull();
     /// compute intial stiffness of the RVE
     (*RVE_it)->homogenizeStiffness(*C_it);

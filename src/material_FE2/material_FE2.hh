@@ -84,6 +84,9 @@ protected:
   /// Underlying RVE at each integration point
   std::vector<SolidMechanicsModelRVE *> RVEs;
 
+  /// Meshes for all RVEs
+  std::vector<Mesh *> meshes;
+
   /// the element type of the associated mesh (this material handles only one type!!)
   ElementType el_type;
   
@@ -92,6 +95,9 @@ protected:
 
   /// Elastic stiffness tensor at each Gauss point (in voigt notation) 
   InternalField<Real> C;
+
+  /// number of gel pockets in each underlying RVE
+  UInt nb_gel_pockets;
 };
 
 /* -------------------------------------------------------------------------- */
