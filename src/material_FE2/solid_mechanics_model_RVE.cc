@@ -288,17 +288,17 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
   Matrix<Real> H(dim, dim, 0.);
 
   /// virtual test 1:
-  H(0,0) = 1;
+  H(0,0) = 0.01;
   this->performVirtualTesting(H, stresses, strains, 0);
 
   /// virtual test 2:
   H.clear();
-  H(1,1) = 1.;
+  H(1,1) = 0.01;
   this->performVirtualTesting(H, stresses, strains, 1);
 
   /// virtual test 3:
   H.clear();
-  H(0,1) = 1.;
+  H(0,1) = 0.01;
   this->performVirtualTesting(H, stresses, strains, 2);
 
   /// compute effective stiffness

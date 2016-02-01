@@ -29,3 +29,21 @@ register_test(test_eigenstrain_homogenization
   DIRECTORIES_TO_CREATE paraview
   PACKAGE extra_materials
   )
+
+add_mesh(homogenized_plate homogenized_plate.geo 2 1)
+register_test(test_elastic_homogenization
+  SOURCES test_elastic_homogenization.cc
+  DEPENDS homogenized_plate
+  FILES_TO_COPY material_orthotropic.dat
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE implicit extra_materials
+  )
+
+add_mesh(periodic_plate periodic_plate.geo 2 1)
+register_test(test_node_selection
+  SOURCES  test_node_selection.cc 
+  DEPENDS periodic_plate
+  FILES_TO_COPY material_test_boundary.dat
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE implicit extra_materials
+  )
