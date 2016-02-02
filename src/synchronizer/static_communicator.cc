@@ -81,6 +81,7 @@ StaticCommunicator::StaticCommunicator(int & argc, char **& argv,
 #ifdef AKANTU_USE_MPI
   }
 #endif
+  this->is_instantiated = true;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -104,7 +105,6 @@ StaticCommunicator::getStaticCommunicator(CommunicatorType type) {
     int nb_args = 0;
     char ** null;
     static_communicator = new StaticCommunicator(nb_args, null, type);
-    is_instantiated = true;
   }
 
 
