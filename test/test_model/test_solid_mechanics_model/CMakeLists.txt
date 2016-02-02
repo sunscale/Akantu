@@ -35,7 +35,6 @@ add_akantu_test(test_materials "test_materials")
 add_akantu_test(patch_tests "patch_tests")
 add_akantu_test(test_cohesive "cohesive_test")
 add_akantu_test(test_embedded_interface "test_embedded_interface")
-add_akantu_test(test_boundary_conditions "test_boundary_conditions")
 
 #===============================================================================
 add_mesh(test_solid_mechanics_model_square_mesh square.geo 2 1)
@@ -96,16 +95,6 @@ register_test(test_solid_mechanics_model_segment_parallel
   FILES_TO_COPY material.dat test_cst_energy.pl
   DIRECTORIES_TO_CREATE paraview
   PACKAGE parallel
-  )
-
-#===============================================================================
-add_mesh(homogenized_plate homogenized_plate.geo 2 1)
-register_test(test_elastic_homogenization
-  SOURCES test_elastic_homogenization.cc
-  DEPENDS homogenized_plate
-  FILES_TO_COPY material_orthotropic.dat
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE implicit extra_materials
   )
 
 #===============================================================================

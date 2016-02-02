@@ -174,6 +174,7 @@ void SolverMumps::initMumpsData() {
   icntl(28) = 0; // automatic choice for analysis analysis
 
   switch (this->parallel_method) {
+  case SolverMumpsOptions::_serial_split:
   case SolverMumpsOptions::_fully_distributed:
     icntl(18) = 3; // fully distributed
 
@@ -217,6 +218,7 @@ void SolverMumps::initialize(SolverOptions & options) {
     this->mumps_data.par = 0; // The host is not part of the computations
   case SolverMumpsOptions::_fully_distributed:
 #ifdef AKANTU_USE_MPI
+    {
     const StaticCommunicatorMPI & mpi_st_comm =
         dynamic_cast<const StaticCommunicatorMPI &>(
             communicator.getRealStaticCommunicator());
@@ -224,10 +226,27 @@ void SolverMumps::initialize(SolverOptions & options) {
         MPI_Comm_c2f(mpi_st_comm.getMPITypeWrapper().getMPICommunicator());
 #endif
     break;
+    }
+  case SolverMumpsOptions::_serial_split:
+#ifdef AKANTU_USE_MPI
+    const StaticCommunicatorMPI & mpi_st_comm =
+        dynamic_cast<const StaticCommunicatorMPI &>(
+            communicator.getRealStaticCommunicator());
+    MPI_Comm mpi_comm = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
+    MPI_Comm new_mpi_comm;
+    Int result = MPI_Comm_split(mpi_comm, communicator.whoAmI(), 0, &new_mpi_comm);
+    AKANTU_DEBUG_ASSERT(result == MPI_SUCCESS, "Error in MPI_split");
+    this->mumps_data.comm_fortran = MPI_Comm_c2f(new_mpi_comm);
+#endif
+    break;
   }
 
   this->mumps_data.sym = 2 * (matrix->getSparseMatrixType() == _symmetric);
-  this->prank = communicator.whoAmI();
+
+  if (this->parallel_method == SolverMumpsOptions::_serial_split)
+    this->prank = 0;
+  else
+    this->prank = communicator.whoAmI();
 
   this->mumps_data.job = _smj_initialize; // initialize
   dmumps_c(&this->mumps_data);
@@ -305,7 +324,8 @@ void SolverMumps::analysis() {
 void SolverMumps::factorize() {
   AKANTU_DEBUG_IN();
 
-  if (parallel_method == SolverMumpsOptions::_fully_distributed)
+  if (parallel_method == SolverMumpsOptions::_fully_distributed ||
+      parallel_method == SolverMumpsOptions::_serial_split)
     this->mumps_data.a_loc = this->matrix->getA().storage();
   else {
     if (prank == 0)
