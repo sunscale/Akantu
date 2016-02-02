@@ -101,7 +101,7 @@ void SolidMechanicsModelRVE::initFull(const ModelOptions & options) {
 
   /// dumping
   std::stringstream base_name;
-  base_name << "RVE_" << this->memory_id - 1;
+  base_name << this->id << this->memory_id - 1;
   this->setBaseName       (base_name.str());
   this->addDumpFieldVector("displacement");
   this->addDumpField      ("stress"      );
@@ -337,6 +337,7 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
   Matrix<Real> eps_inverse(voigt_size, voigt_size);
   eps_inverse.inverse(strains);
   C_macro.mul<false, false>(stresses, eps_inverse);
+
 }
 
 /* -------------------------------------------------------------------------- */

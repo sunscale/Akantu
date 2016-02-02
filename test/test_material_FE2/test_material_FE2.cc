@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
 /* -------------------------------------------------------------------------- */
   /// boundary conditions
   mesh.createGroupsFromMeshData<std::string>("physical_names"); // creates groups from mesh names
-  model.applyBC(BC::Dirichlet::FixedValue(0, _x), "left");
+  model.applyBC(BC::Dirichlet::FixedValue(0, _x), "bottom");
   model.applyBC(BC::Dirichlet::FixedValue(0, _y), "bottom");
   //  model.applyBC(BC::Dirichlet::FixedValue(1.e-2, _y), "top");
 
@@ -100,10 +100,17 @@ int main(int argc, char *argv[]) {
   /// solve system
   model.assembleStiffnessMatrix();
   Real error = 0;
+  std::cout << "first solve step" << std::endl;
   bool converged= model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-10, error, 2);
   std::cout << "the error is: " << error << std::endl;
   AKANTU_DEBUG_ASSERT(converged, "Did not converge");
 
+  std::cout << "second solve step" << std::endl;
+  converged = model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-10, error, 2);
+  std::cout << "the error is: " << error << std::endl;
+  AKANTU_DEBUG_ASSERT(converged, "Did not converge");
+
+  std::cout << "finished solve steps" << std::endl;
   /// simulate the advancement of the reaction
   MaterialFE2<spatial_dimension> & mat = dynamic_cast<MaterialFE2<spatial_dimension> & >(model.getMaterial("FE2_mat"));
   Matrix<Real> current_prestrain(spatial_dimension, spatial_dimension, 0.);
