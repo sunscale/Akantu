@@ -35,6 +35,7 @@ full_redirect() {
        sout="-${nproc}${sout}"
        serr="-${nproc}${serr}"
     fi
+    echo "Run $*"
     (($* | tee "${name}${sout}") 3>&1 1>&2 2>&3 | tee "${name}${serr}") 3>&1 1>&2 2>&3
 
     lastout="${name}${sout}"
@@ -47,14 +48,17 @@ postprocess_script=
 reference=
 working_dir=
 envi=
+parallel_processes="2 4 8"
 
-while getopts ":n:e:E:p:s:r:w:h" opt; do
+while getopts ":n:e:E:p:N:s:r:w:h" opt; do
     case "$opt" in
         n)  name="$OPTARG"
             ;;
         e)  executable="$OPTARG"
             ;;
         p)  parallel="$OPTARG"
+            ;;
+        N)  parallel_processes="$OPTARG"
             ;;
         s)  postprocess_script="$OPTARG"
             ;;
@@ -104,7 +108,7 @@ if [ -z "${parallel}" ]; then
 else
     for i in ${parallel_processes}; do
         echo "Executing the test ${name} for ${i} procs"
-        full_redirect $i ${name}_$i "${parallel_processes}  ${i} ./${executable}"
+        full_redirect $i ${name}_$i "${parallel}  ${i} ./${executable}"
     done
 fi
 

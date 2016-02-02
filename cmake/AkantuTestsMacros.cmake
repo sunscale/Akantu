@@ -206,7 +206,7 @@ function(register_test test_name)
 
   cmake_parse_arguments(_register_test
     "UNSTABLE;PARALLEL"
-    "POSTPROCESS;SCRIPT"
+    "POSTPROCESS;SCRIPT;PARALLEL_LEVEL"
     "${multi_variables}"
     ${ARGN}
     )
@@ -332,6 +332,21 @@ function(register_test test_name)
 
       if(_register_test_PARALLEL)
         list(APPEND _arguments -p "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}")
+        if(_register_test_PARALLEL_LEVEL)
+          set(_procs "${_register_test_PARALLEL_LEVEL}")
+        elseif(CMAKE_VERSION VERSION_GREATER "3.0")
+          include(ProcessorCount)
+          ProcessorCount(N)
+          while(N GREATER 1)
+            set(_procs "${N} ${_procs}")
+            math(EXPR N "${N} / 2")
+          endwhile()
+        endif()
+
+        if(NOT _procs)
+          set(_procs 2)
+        endif()
+        list(APPEND _arguments -N "${_procs}")
       endif()
 
       if(_register_test_POSTPROCESS)
