@@ -95,7 +95,7 @@ public:
   void initialize(int & argc, char **& argv);
 
   /// finalize what is needed for the compiled solver interfaces
-  void finalize();
+  void onCommunicatorFinalize(const StaticCommunicator & communicator);
 
   /* ------------------------------------------------------------------------ */
   /* Members                                                                  */
