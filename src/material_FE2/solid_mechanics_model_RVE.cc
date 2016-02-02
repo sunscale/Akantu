@@ -110,6 +110,10 @@ void SolidMechanicsModelRVE::initFull(const ModelOptions & options) {
   this->addDumpField      ("blocked_dofs"      );
   this->addDumpField      ("material_index"      );
   this->addDumpField      ("damage"      );
+  this->addDumpField      ("Sc");
+  this->addDumpField      ("force");
+  this->addDumpField      ("equivalent_stress");
+  this->addDumpField      ("residual");
 
   this->dump();
 }
