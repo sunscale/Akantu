@@ -50,7 +50,8 @@ StaticSolver::StaticSolver()
 StaticSolver::~StaticSolver() {
   --this->nb_references;
   if (this->nb_references == 0) {
-    StaticCommunicator::getStaticCommunicator().unregisterEventHandler(*this);
+    if(this->is_initialized)
+      StaticCommunicator::getStaticCommunicator().unregisterEventHandler(*this);
     delete this->static_solver;
   }
 }
@@ -109,7 +110,7 @@ void StaticSolver::initialize(__attribute__((unused)) int & argc,
 }
 
 /* -------------------------------------------------------------------------- */
-void StaticSolver::finalize() {
+void StaticSolver::onCommunicatorFinalize(__attribute__((unused)) const StaticCommunicator & communicator) {
   ParentEventHandler::sendEvent(
       StaticSolverEvent::BeforeStaticSolverDestroyEvent());
 
