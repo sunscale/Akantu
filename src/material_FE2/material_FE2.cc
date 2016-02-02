@@ -65,13 +65,18 @@ void MaterialFE2<spatial_dimension>::initMaterial() {
   /// create a Mesh and SolidMechanicsModel on each integration point of the material
   std::vector<SolidMechanicsModelRVE *>::iterator RVE_it = RVEs.begin();
   std::vector<Mesh *>::iterator mesh_it = meshes.begin();
-
+  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+  UInt prank = comm.whoAmI();
   Array<Real>::matrix_iterator C_it =
     this->C(this->el_type).begin(voigt_h::size, voigt_h::size);
   for (UInt i = 1; i < nb_integration_points+1; ++RVE_it, ++mesh_it, ++i, ++C_it) {
-    *mesh_it = new Mesh(spatial_dimension, "RVE_mesh", i);
+    std::stringstream mesh_name;
+    mesh_name << "RVE_mesh_" << prank;
+    std::stringstream rve_name;
+    rve_name << "SMM_RVE_" << prank;
+    *mesh_it = new Mesh(spatial_dimension, mesh_name.str(), i);
     (*mesh_it)->read(mesh_file);
-    *RVE_it = new SolidMechanicsModelRVE(*(*(mesh_it)), true, this->nb_gel_pockets, _all_dimensions, "SMM_RVE", i); 
+    *RVE_it = new SolidMechanicsModelRVE(*(*(mesh_it)), true, this->nb_gel_pockets, _all_dimensions, rve_name.str(), i); 
     (*RVE_it)->initFull();
     /// compute intial stiffness of the RVE
     (*RVE_it)->homogenizeStiffness(*C_it);

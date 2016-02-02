@@ -105,7 +105,7 @@ void SolidMechanicsModelRVE::initFull(const ModelOptions & options) {
 
   /// dumping
   std::stringstream base_name;
-  base_name << "RVE_" << this->memory_id - 1;
+  base_name << this->id << this->memory_id - 1;
   this->setBaseName       (base_name.str());
   this->addDumpFieldVector("displacement");
   this->addDumpField      ("stress"      );
@@ -114,6 +114,10 @@ void SolidMechanicsModelRVE::initFull(const ModelOptions & options) {
   this->addDumpField      ("blocked_dofs"      );
   this->addDumpField      ("material_index"      );
   this->addDumpField      ("damage"      );
+  this->addDumpField      ("Sc");
+  this->addDumpField      ("force");
+  this->addDumpField      ("equivalent_stress");
+  this->addDumpField      ("residual");
 
   this->dump();
 }
@@ -341,6 +345,7 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
   Matrix<Real> eps_inverse(voigt_size, voigt_size);
   eps_inverse.inverse(strains);
   C_macro.mul<false, false>(stresses, eps_inverse);
+
 }
 
 /* -------------------------------------------------------------------------- */
@@ -431,14 +436,13 @@ jacobian_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _unsymme
 #ifdef AKANTU_USE_PETSC
   solver = new SolverPETSc(*jacobian_matrix, sstr_solv.str(), memory_id);
 #elif defined(AKANTU_USE_MUMPS)
-  solver = new SolverMumps(*jacobian_matrix, sstr_solv.str(), memory_id,
-			   *static_communicator_dummy);
+  solver = new SolverMumps(*jacobian_matrix, sstr_solv.str(), memory_id);
   dof_synchronizer->initScatterGatherCommunicationScheme();
 #else
   AKANTU_DEBUG_ERROR("You should at least activate one solver.");
 #endif //AKANTU_USE_MUMPS
 
-  SolverMumpsOptions opt(SolverMumpsOptions::_not_parallel);
+  SolverMumpsOptions opt(SolverMumpsOptions::_serial_split);
 
   if(solver)
     solver->initialize(opt);
