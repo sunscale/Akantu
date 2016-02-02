@@ -4,13 +4,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Thu Apr 03 2014
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Get the commandline options and store them as short, long and others
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -37,25 +37,36 @@
 #ifndef __CPPARGPARSE_HH__
 #define __CPPARGPARSE_HH__
 
+/* -------------------------------------------------------------------------- */
 namespace cppargparse {
 
+/// define the types of the arguments
 enum ArgumentType { _string, _integer, _float, _boolean };
 
+/// Defines how many arguments to expect
 enum ArgumentNargs { _one_if_possible = -1, _at_least_one = -2, _any = -3 };
 
+/// Flags for the parse function of ArgumentParser
 enum ParseFlags {
-  _no_flags = 0x0,
-  _stop_on_not_parsed = 0x1,
-  _remove_parsed = 0x2
+  _no_flags = 0x0,           ///< Default behavior
+  _stop_on_not_parsed = 0x1, ///< Stop on unknown arguments
+  _remove_parsed = 0x2       ///< Remove parsed arguments from argc argv
 };
 
+/// Helps to combine parse flags
 inline ParseFlags operator|(const ParseFlags & a, const ParseFlags & b) {
   ParseFlags tmp = ParseFlags(int(a) | int(b));
   return tmp;
 }
 
+/* -------------------------------------------------------------------------- */
+
+/**
+ * ArgumentParser is a class that mimics the Python argparse module
+ */
 class ArgumentParser {
 public:
+  /// public definition of an argument
   class Argument {
   public:
     Argument() : name(std::string()) {}
@@ -90,10 +101,10 @@ public:
              bool parse_help = true);
 
   /// get the last argc parsed
-  int & getARGC() { return *argc; }
+  int & getArgC() { return *(this->argc); }
 
   /// get the last argv parsed
-  char** & getARGV() { return *argv; }
+  char** & getArgV() { return *(this->argv); }
 
   /// print the content in the stream
   void printself(std::ostream & stream) const;
@@ -121,10 +132,14 @@ public:
   void setParallelContext(int prank, int psize);
 
 public:
+
+  /// Internal class describing the arguments
   class _Argument;
-  template <class T> class ArgumentStorage;
+  /// Stores that value of an argument
+  template<class T> class ArgumentStorage;
 
 private:
+  /// Internal function to be used by the public addArgument
   _Argument & _addArgument(const std::string & name_or_flag,
                            const std::string & description, int nargs,
                            ArgumentType type);
@@ -132,27 +147,31 @@ private:
   void _exit(const std::string & msg = "", int status = 0);
   bool checkType(ArgumentType type, const std::string & value) const;
 
+  /// function to help to print help
   void print_usage_nargs(std::ostream & stream,
                          const _Argument & argument) const;
+  /// function to help to print help
   void print_help_argument(std::ostream & stream,
                            const _Argument & argument) const;
 
 private:
-  typedef std::map<std::string, _Argument *> _Arguments;
+  /// public arguments storage
   typedef std::map<std::string, Argument *> Arguments;
+  /// internal arguments storage
+  typedef std::map<std::string, _Argument *> _Arguments;
+  /// association key argument
   typedef std::map<std::string, _Argument *> ArgumentKeyMap;
+  /// position arguments
   typedef std::vector<_Argument *> PositionalArgument;
 
-  /// internal view of arguments
+  /// internal storage of arguments declared by the user
   _Arguments arguments;
-
-  ArgumentKeyMap key_args;
-
-  /// positional arguments to parse
-  PositionalArgument pos_args;
-
-  /// Success fully parsed arguments
+  /// list of arguments successfully parsed
   Arguments success_parsed;
+  /// keys associated to arguments
+  ArgumentKeyMap key_args;
+  /// positional arguments
+  PositionalArgument pos_args;
 
   /// program name
   std::string program_name;

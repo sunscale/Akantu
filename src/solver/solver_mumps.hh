@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Mon Dec 13 2010
- * @date last modification: Mon Sep 15 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Solver class implementation for the mumps solver
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -90,14 +91,10 @@ private:
   /* ------------------------------------------------------------------------ */
 private:
   /// access the control variable
-  inline Int & icntl(UInt i) {
-    return mumps_data.icntl[i - 1];
-  }
+  inline Int & icntl(UInt i) { return mumps_data.icntl[i - 1]; }
 
   /// access the results info
-  inline Int & info(UInt i) {
-    return mumps_data.info[i - 1];
-  }
+  inline Int & info(UInt i) { return mumps_data.info[i - 1]; }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -140,7 +137,6 @@ private:
     _smj_destroy = -2
   };
 };
-
 
 __END_AKANTU__
 

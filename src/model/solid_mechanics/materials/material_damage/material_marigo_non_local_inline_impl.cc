@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Fri Jun 15 2012
- * @date last modification: Wed Nov 13 2013
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Marigo non-local inline function implementation
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -39,8 +40,8 @@ __END_AKANTU__
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
-MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::MaterialMarigoNonLocal(SolidMechanicsModel & model, const ID & id)  :
+template<UInt spatial_dimension>
+MaterialMarigoNonLocal<spatial_dimension>::MaterialMarigoNonLocal(SolidMechanicsModel & model, const ID & id)  :
   Material(model, id),
   MaterialMarigoNonLocalParent(model, id),
   Y("Y", *this), Ynl("Y non local", *this) {
@@ -48,21 +49,22 @@ MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::MaterialMarigoNonLoca
   this->is_non_local = true;
   this->Y.initialize(1);
   this->Ynl.initialize(1);
+  this->model->getNonLocalManager().registerNonLocalVariable(this->Y.getName(), Ynl.getName(), 1);
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
-void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::initMaterial() {
+template<UInt spatial_dimension>
+void MaterialMarigoNonLocal<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
-  this->registerNonLocalVariable(Y, Ynl, 1);
   MaterialMarigoNonLocalParent::initMaterial();
+  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(Ynl.getName(), this->name);
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
-void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::computeStress(ElementType el_type, GhostType ghost_type) {
+template<UInt spatial_dimension>
+void MaterialMarigoNonLocal<spatial_dimension>::computeStress(ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Real * dam = this->damage(el_type, ghost_type).storage();
@@ -81,8 +83,8 @@ void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::computeStress(El
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension, template <UInt> class WeigthFunction>
-void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::computeNonLocalStress(ElementType type,
+template<UInt spatial_dimension>
+void MaterialMarigoNonLocal<spatial_dimension>::computeNonLocalStress(ElementType type,
 										      GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -100,3 +102,4 @@ void MaterialMarigoNonLocal<spatial_dimension, WeigthFunction>::computeNonLocalS
 
   AKANTU_DEBUG_OUT();
 }
+

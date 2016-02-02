@@ -1,16 +1,17 @@
 /**
  * @file   aabb_primitive.cc
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Clement Roux <clement.roux@epfl.ch>
  *
- * @date creation: Tue Jun 2 2015
- * @date last modification: Tue Jun 2 2015
+ * @date creation: Fri Jan 04 2013
+ * @date last modification: Thu Jan 14 2016
  *
  * @brief  Macro classe (primitive) for AABB CGAL algos
  *
  * @section LICENSE
  *
- * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

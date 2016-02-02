@@ -1,17 +1,18 @@
 /**
  * @file   custom_non_local_test_material.cc
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
- * @date   Sun Mar  1 15:57:50 2015
+ * @date creation: Sun Mar 01 2015
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Custom material to test the non local implementation
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -47,9 +48,17 @@ CustomNonLocalTestMaterial<dim>::CustomNonLocalTestMaterial(SolidMechanicsModel 
   // Initialize the internal field by specifying the number of components
   this->local_damage.initialize(1);
   this->damage.initialize(1);
+  /// register the non-local variable in the manager
+  this->model->getNonLocalManager().registerNonLocalVariable(this->local_damage.getName(), this->damage.getName(), 1);
 
-  // register the variable Ynl, as the non local version of Y
-  this->registerNonLocalVariable(this->local_damage, this->damage, 1);
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+void CustomNonLocalTestMaterial<dim>::initMaterial() {
+  MyElasticParent::initMaterial();
+  MyNonLocalParent::initMaterial();
+  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(damage.getName(), this->name);
 }
 
 /* -------------------------------------------------------------------------- */

@@ -1,17 +1,17 @@
 /**
  * @file   material_reinforcement.cc
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Mar 12 2015
- * @date last modification: Thu Mar 12 2015
+ * @date creation: Wed Mar 25 2015
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Reinforcement material
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -150,13 +150,13 @@ void MaterialReinforcement<dim>::allocBackgroundShapeDerivatives() {
 	ElementTypeMapArray<Real> * shaped_etma = new ElementTypeMapArray<Real>(shaped_id, this->name);
 
 	UInt nb_points = Mesh::getNbNodesPerElement(back_type);
-	UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(int_type);
+	UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbIntegrationPoints(int_type);
 	UInt nb_elements = element_filter(int_type, int_ghost).getSize();
 
         // Alloc the background ElementTypeMapArray
         shaped_etma->alloc(nb_elements * nb_quad_points,
-            dim * nb_points,
-            back_type);
+			   dim * nb_points,
+			   back_type);
 
         // Insert the background ElementTypeMapArray in the interface ElementTypeMap
         shape_derivatives(shaped_etma, int_type, int_ghost);
@@ -263,7 +263,7 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
 
   Array<UInt> & elem_filter = element_filter(type, ghost_type);
   UInt nb_element = elem_filter.getSize();
-  UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(type);
+  UInt nb_quad_points = model->getFEEngine("EmbeddedInterfaceFEEngine").getNbIntegrationPoints(type);
 
   Array<Real> & gradu_vec = gradu_embedded(type, ghost_type);
 
@@ -280,9 +280,9 @@ void MaterialReinforcement<dim>::computeGradU(const ElementType & type, GhostTyp
 
     Array<Real> * disp_per_element = new Array<Real>(0, dim * nodes_per_background_e, "disp_elem");
     FEEngine::extractNodalToElementField(model->getMesh(),
-	model->getDisplacement(),
-	*disp_per_element,
-	*back_it, ghost_type, *background_filter);
+					 model->getDisplacement(),
+					 *disp_per_element,
+					 *back_it, ghost_type, *background_filter);
 
     Array<Real>::matrix_iterator disp_it = disp_per_element->begin(dim, nodes_per_background_e);
     Array<Real>::matrix_iterator disp_end = disp_per_element->end(dim, nodes_per_background_e);
@@ -366,7 +366,7 @@ void MaterialReinforcement<dim>::assembleResidualInterface(const ElementType & i
   Array<UInt> & elem_filter = element_filter(interface_type, ghost_type);
 
   UInt nodes_per_background_e = Mesh::getNbNodesPerElement(background_type);
-  UInt nb_quadrature_points = interface_engine.getNbQuadraturePoints(interface_type, ghost_type);
+  UInt nb_quadrature_points = interface_engine.getNbIntegrationPoints(interface_type, ghost_type);
   UInt nb_element = elem_filter.getSize();
 
   UInt back_dof = dim * nodes_per_background_e;
@@ -435,7 +435,6 @@ void MaterialReinforcement<dim>::assembleResidualInterface(const ElementType & i
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 void MaterialReinforcement<dim>::filterInterfaceBackgroundElements(Array<UInt> & filter,
-
                                                                    const ElementType & type,
                                                                    const ElementType & interface_type,
                                                                    GhostType ghost_type) {
@@ -471,7 +470,7 @@ void MaterialReinforcement<dim>::computeDirectingCosines(const ElementType & typ
   const UInt steel_dof = dim * nb_nodes_per_element;
   const UInt voigt_size = getTangentStiffnessVoigtSize(dim);
   const UInt nb_quad_points =
-    model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(type, ghost_type);
+    model->getFEEngine("EmbeddedInterfaceFEEngine").getNbIntegrationPoints(type, ghost_type);
 
   Array<Real> node_coordinates(this->element_filter(type, ghost_type).getSize(), steel_dof);
 
@@ -544,7 +543,7 @@ void MaterialReinforcement<dim>::assembleStiffnessMatrixInterface(const ElementT
 
   UInt nb_element = elem_filter.getSize();
   UInt nodes_per_background_e = Mesh::getNbNodesPerElement(background_type);
-  UInt nb_quadrature_points = interface_engine.getNbQuadraturePoints(interface_type, ghost_type);
+  UInt nb_quadrature_points = interface_engine.getNbIntegrationPoints(interface_type, ghost_type);
 
   UInt back_dof = dim * nodes_per_background_e;
 
@@ -640,11 +639,11 @@ void MaterialReinforcement<dim>::computeBackgroundShapeDerivatives(const Element
 
     const UInt nb_elements = filter.getSize();
     const UInt nb_nodes = Mesh::getNbNodesPerElement(type);
-    const UInt nb_quad_per_element = interface_engine.getNbQuadraturePoints(*interface_type);
+    const UInt nb_quad_per_element = interface_engine.getNbIntegrationPoints(*interface_type);
 
     Array<Real> quad_pos(nb_quad_per_element * nb_elements, dim, "interface_quad_points");
     quad_pos.resize(nb_quad_per_element * nb_elements);
-    interface_engine.interpolateOnQuadraturePoints(interface_mesh.getNodes(),
+    interface_engine.interpolateOnIntegrationPoints(interface_mesh.getNodes(),
 						   quad_pos, dim, *interface_type,
 						   ghost_type, filter);
 
@@ -702,36 +701,36 @@ Real MaterialReinforcement<dim>::getEnergy(std::string id) {
   return 0;
 }
 
-/* -------------------------------------------------------------------------- */
-template<UInt dim>
-ElementTypeMap<UInt> MaterialReinforcement<dim>::getInternalDataPerElem(const ID & field_name,
-                                                                        const ElementKind & kind,
-                                                                        const ID & fe_engine_id) const {
-  return Material::getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
-}
+// /* -------------------------------------------------------------------------- */
+// template<UInt dim>
+// ElementTypeMap<UInt> MaterialReinforcement<dim>::getInternalDataPerElem(const ID & field_name,
+//                                                                         const ElementKind & kind,
+//                                                                         const ID & fe_engine_id) const {
+//   return Material::getInternalDataPerElem(field_name, kind, "EmbeddedInterfaceFEEngine");
+// }
 
 
-/* -------------------------------------------------------------------------- */
-// Author is Guillaume Anciaux, see material.cc
-template<UInt dim>
-void MaterialReinforcement<dim>::flattenInternal(const std::string & field_id,
-                                                 ElementTypeMapArray<Real> & internal_flat,
-                                                 const GhostType ghost_type,
-                                                 ElementKind element_kind) const {
-  AKANTU_DEBUG_IN();
+// /* -------------------------------------------------------------------------- */
+// // Author is Guillaume Anciaux, see material.cc
+// template<UInt dim>
+// void MaterialReinforcement<dim>::flattenInternal(const std::string & field_id,
+//                                                  ElementTypeMapArray<Real> & internal_flat,
+//                                                  const GhostType ghost_type,
+//                                                  ElementKind element_kind) const {
+//   AKANTU_DEBUG_IN();
 
-  if (field_id == "stress_embedded" || field_id == "inelastic_strain") {
-    Material::flattenInternalIntern(field_id,
-                                    internal_flat,
-                                    1,
-                                    ghost_type,
-                                    _ek_not_defined,
-                                    &(this->element_filter),
-                                    &(this->model->getInterfaceMesh()));
-  }
+//   if (field_id == "stress_embedded" || field_id == "inelastic_strain") {
+//     Material::flattenInternalIntern(field_id,
+//                                     internal_flat,
+//                                     1,
+//                                     ghost_type,
+//                                     _ek_not_defined,
+//                                     &(this->element_filter),
+//                                     &(this->model->getInterfaceMesh()));
+//   }
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
 
 /* -------------------------------------------------------------------------- */

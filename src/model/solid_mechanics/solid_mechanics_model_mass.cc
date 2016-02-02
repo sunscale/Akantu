@@ -4,14 +4,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Oct 05 2010
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Fri Oct 16 2015
  *
  * @brief  function handling mass computation
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -131,7 +132,7 @@ void SolidMechanicsModel::computeRho(Array<Real> & rho, ElementType type,
 
   Array<UInt> & mat_indexes = this->material_index(type, ghost_type);
 
-  UInt nb_quadrature_points = fem.getNbQuadraturePoints(type);
+  UInt nb_quadrature_points = fem.getNbIntegrationPoints(type);
 
   rho.resize(nb_element * nb_quadrature_points);
   Array<Real>::vector_iterator rho_it = rho.begin(spatial_dimension);

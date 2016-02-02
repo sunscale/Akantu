@@ -2,16 +2,18 @@
  * @file   material_plastic.hh
  *
  * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Mon Apr 07 2014
- * @date last modification: Mon Apr 07 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Oct 08 2015
  *
  * @brief  Common interface for plastic materials
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -66,6 +68,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
 
+  /// get the energy specifying the type for the time step
   virtual Real getEnergy(std::string type);
 
   /// Compute the plastic energy
@@ -75,6 +78,8 @@ public:
   virtual void computePotentialEnergy(ElementType el_type, GhostType ghost_type);
 
 protected:
+  
+  /// compute the stress and inelastic strain for the quadrature point
   inline void computeStressAndInelasticStrainOnQuad(const Matrix<Real> & grad_u,
                                                     const Matrix<Real> & previous_grad_u,
                                                     Matrix<Real> & sigma,
@@ -90,7 +95,7 @@ protected:
                                                     const Matrix<Real> & previous_inelas_strain,
                                                     const Matrix<Real> & delta_inelastic_strain) const;
 
-
+  /// get the plastic energy for the time step
   Real getPlasticEnergy();
 
   /* ------------------------------------------------------------------------ */

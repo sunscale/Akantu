@@ -1,15 +1,17 @@
 #===============================================================================
 # @file   blackdynamite.cmake
 #
+# @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date   Tue Nov 29 15:16:35 2011
+# @date creation: Fri Mar 15 2013
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  package description for BlackDynamite support
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
 # Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -26,16 +28,21 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
+
 package_declare(BlackDynamite EXTERNAL
   DESCRIPTION "Use BlackDynamite library"
-  SYSTEM OFF)
+  SYSTEM OFF third-party/cmake/blackdynamite.cmake
+  EXTRA_PACKAGE_OPTIONS FOUND BlackDynamite_FOUND)
 
-
-set(_version 1)
+set(_version master)
 
 package_add_third_party_script_variable(BlackDynamite
   BLACKDYNAMITE_VERSION "${_version}")
 package_add_third_party_script_variable(BlackDynamite
-  BLACKDYNAMITE_GIT "svn+ssh://lsmssrv1.epfl.ch/space/repositories/SimulPack/BlackDynamite")
+  BLACKDYNAMITE_GIT "git@lsmssrv1.epfl.ch:blackdynamite.git")
 package_add_third_party_script_variable(BlackDynamite
   BLACKDYNAMITE_ARCHIVE "blackdynamite-${_version}.tar.gz")
+
+package_declare_extra_files_to_package(BlackDynamite
+  PROJECT third-party/cmake/blackdynamite.cmake
+  )

@@ -3,14 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Fri Jan 13 12:34:54 2012
+ * @date creation: Sun Sep 26 2010
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  Compilation time configuration of Akantu
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -36,8 +38,8 @@
 #define AKANTU_VERSION_MINOR @AKANTU_MINOR_VERSION@
 #define AKANTU_VERSION_PATCH @AKANTU_PATCH_VERSION@
 #define AKANTU_VERSION (AKANTU_VERSION_MAJOR * 100000 \
-			+ AKANTU_VERSION_MINOR * 1000 \
-			+ AKANTU_VERSION_PATCH)
+                        + AKANTU_VERSION_MINOR * 1000 \
+                        + AKANTU_VERSION_PATCH)
 
 @AKANTU_TYPES_EXTRA_INCLUDES@
 namespace akantu {
@@ -50,6 +52,11 @@ namespace akantu {
     typedef typename @AKANTU_UNORDERED_MAP_TYPE@<Key, Ty> type;
   };
 
+  template<class T>
+  std::size_t hash(const T & t) {
+    typedef typename @AKANTU_HASH_TYPE@<T> hash_type;
+    return hash_type()(t);
+  }
 }
 
 #define AKANTU_INTEGER_SIZE @AKANTU_INTEGER_SIZE@
@@ -61,6 +68,7 @@ namespace akantu {
 #define __END_AKANTU_UNORDERED_MAP__ \
   @AKANTU_UNORDERED_MAP_NAMESPACE_END@
 
+#cmakedefine AKANTU_HAS_STRDUP
 
 #cmakedefine AKANTU_USE_BLAS
 #cmakedefine AKANTU_USE_LAPACK
@@ -91,6 +99,7 @@ namespace akantu {
 
 #cmakedefine AKANTU_STRUCTURAL_MECHANICS
 #cmakedefine AKANTU_HEAT_TRANSFER
+#cmakedefine AKANTU_PYTHON_INTERFACE
 
 #cmakedefine AKANTU_COHESIVE_ELEMENT
 #cmakedefine AKANTU_PARALLEL_COHESIVE_ELEMENT

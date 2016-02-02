@@ -1,14 +1,17 @@
 #===============================================================================
-# @file   CMakePackagesSystem.cmake
+# @file   CMakePackagesSystemGlobalFunctions.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
+#
+# @date creation: Sat Jul 18 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  Set of macros used by the package system to set internal variables
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -25,18 +28,26 @@
 #
 #===============================================================================
 
-
 # ==============================================================================
 # Package system meta functions
 # ==============================================================================
-function(package_set_project_variable variable value_in)
+function(package_set_project_variable variable)
   string(TOUPPER ${PROJECT_NAME} _u_project)
-  set(${_u_project}_${variable} ${value_in} CACHE INTERNAL "" FORCE)
+  set(${_u_project}_${variable} "${ARGN}" CACHE INTERNAL "" FORCE)
 endfunction()
 
 function(package_get_project_variable variable value_out)
   string(TOUPPER ${PROJECT_NAME} _u_project)
   set(${value_out} ${${_u_project}_${variable}} PARENT_SCOPE)
+endfunction()
+
+function(package_add_to_project_variable variable)
+  package_get_project_variable(${variable} _tmp_list)
+  list(APPEND _tmp_list ${ARGN})
+  if(_tmp_list)
+    list(REMOVE_DUPLICATES _tmp_list)
+  endif()
+  package_set_project_variable(${variable} ${_tmp_list})
 endfunction()
 
 # ==============================================================================
@@ -64,7 +75,9 @@ endfunction()
 function(_package_add_to_variable variable pkg_name)
   _package_get_variable(${variable} ${pkg_name} _tmp_list)
   list(APPEND _tmp_list ${ARGN})
-  list(REMOVE_DUPLICATES _tmp_list)
+  if(_tmp_list)
+    list(REMOVE_DUPLICATES _tmp_list)
+  endif()
   _package_set_variable(${variable} ${pkg_name} ${_tmp_list})
 endfunction()
 

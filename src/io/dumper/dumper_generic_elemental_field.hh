@@ -5,13 +5,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Sep 02 2014
- * @date last modification: Tue Sep 02 2014
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Generic interface for elemental fields
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -33,7 +33,6 @@
 #define __AKANTU_DUMPER_GENERIC_ELEMENTAL_FIELD_HH__
 /* -------------------------------------------------------------------------- */
 #include "dumper_field.hh"
-#include "dumper_iterator_helper.hh"
 #include "element_type_map_filter.hh"
 #include "dumper_element_iterator.hh"
 #include "dumper_homogenizing_field.hh"
@@ -48,6 +47,7 @@ class GenericElementalField : public Field {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  // check dumper_type_traits.hh for additional information over these types
   typedef _types types;
   typedef typename types::data_type data_type;
   typedef typename types::it_type it_type;

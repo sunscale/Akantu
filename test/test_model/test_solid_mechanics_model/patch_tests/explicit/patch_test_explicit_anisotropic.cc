@@ -1,18 +1,21 @@
 /**
- * @file   patch_test_explicit.cc
+ * @file   patch_test_explicit_anisotropic.cc
  *
+ * @author Till Junge <till.junge@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Cyprien Wolff <cyprien.wolff@epfl.ch>
  *
- * @date   Thu Feb 17 16:05:48 2011
+ * @date creation: Sat Apr 16 2011
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  patch test for elastic material in solid mechanics model
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -235,7 +238,7 @@ int main(int argc, char *argv[])
 
   energy.close();
 
-  UInt nb_quadrature_points = my_model.getFEEngine().getNbQuadraturePoints(TYPE);
+  UInt nb_quadrature_points = my_model.getFEEngine().getNbIntegrationPoints(TYPE);
   Array<Real> & stress_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getStress(element_type));
   Array<Real> & gradu_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getGradU(element_type));
 

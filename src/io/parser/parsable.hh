@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Nov 13 2013
- * @date last modification: Tue Jun 24 2014
+ * @date creation: Thu Aug 09 2012
+ * @date last modification: Thu Dec 17 2015
  *
  * @brief  Interface of parsable objects
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -39,6 +40,7 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
+/// Defines the access modes of parsable parameters
 enum ParamAccessType {
   _pat_internal   = 0x0001,
   _pat_writable   = 0x0010,
@@ -49,6 +51,7 @@ enum ParamAccessType {
 };
 
 
+/// Bit-wise operator between access modes
 inline ParamAccessType operator|(const ParamAccessType & a, const ParamAccessType & b) {
   ParamAccessType tmp = ParamAccessType(UInt(a) | UInt(b));
   return tmp;
@@ -87,15 +90,20 @@ public:
   virtual void printself(std::ostream & stream) const;
 
 protected:
+  /// Returns const instance of templated sub-class ParsableParamTyped
   template<typename T>
   const ParsableParamTyped<T> & getParsableParamTyped() const;
 
+  /// Returns instance of templated sub-class ParsableParamTyped
   template<typename T>
   ParsableParamTyped<T> & getParsableParamTyped();
 
 private:
+  /// Name of parameter
   std::string name;
+  /// Description of parameter
   std::string description;
+  /// Type of access
   ParamAccessType param_type;
 };
 
@@ -121,6 +129,7 @@ public:
 
   virtual void printself(std::ostream & stream) const;
 private:
+  /// Value of parameter
   T & param;
 };
 
@@ -128,6 +137,7 @@ private:
 /* -------------------------------------------------------------------------- */
 /* Parsable Interface                                                         */
 /* -------------------------------------------------------------------------- */
+/// Defines interface for classes to manipulate parsable parameters
 class Parsable {
 public:
   Parsable(const SectionType & section_type,
@@ -135,23 +145,29 @@ public:
   virtual ~Parsable();
 
   /* ------------------------------------------------------------------------ */
+  /// Add parameter to the params map
   template<typename T>
   void registerParam(std::string name, T & variable,
 		     ParamAccessType type,
 		     const std::string description = "");
 
+  /// Add parameter to the params map (with default value)
   template<typename T>
   void registerParam(std::string name, T & variable, T default_value,
 		     ParamAccessType type,
 		     const std::string description = "");
 
+  /// Add subsection to the sub_sections map
   void registerSubSection(const SectionType & type,
 			  const std::string & name,
 			  Parsable & sub_section);
 
   /* ------------------------------------------------------------------------ */
+  /// Set value to a parameter (with possible different type)
   template<typename T, typename V> void setMixed(const std::string & name, const V & value);
+  /// Set value to a parameter
   template<typename T> void set(const std::string & name, const T & value);
+  /// Get value of a parameter
   template<typename T> const T & get(const std::string & name) const;
 protected:
   template<typename T> T & get(const std::string & name);
@@ -170,10 +186,13 @@ public:
 
 private:
   SectionType section_type;
+  /// ID of parsable object
   ID pid;
+  /// Parameters map
   std::map<std::string, ParsableParam *> params;
   typedef std::pair<SectionType, std::string> SubSectionKey;
   typedef std::map<SubSectionKey, Parsable *> SubSections;
+  /// Subsections map
   SubSections sub_sections;
 };
 

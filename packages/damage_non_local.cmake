@@ -1,17 +1,18 @@
 #===============================================================================
-# @file   25_damage_non_local.cmake
+# @file   damage_non_local.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Fri Jun 15 2012
-# @date last modification: Fri Jun 13 2014
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  package description for non-local materials
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -42,13 +43,29 @@ package_declare_sources(damage_non_local
   model/solid_mechanics/materials/material_non_local.hh
   model/solid_mechanics/materials/material_non_local_includes.hh
   model/solid_mechanics/materials/material_non_local_inline_impl.cc
+  model/solid_mechanics/materials/material_non_local.cc
 
-  model/solid_mechanics/materials/weight_function.cc
-  model/solid_mechanics/materials/weight_function.hh
-  model/solid_mechanics/materials/weight_function_tmpl.hh
+  model/solid_mechanics/materials/weight_functions/base_weight_function.hh
+  model/solid_mechanics/materials/weight_functions/base_weight_function_inline_impl.cc
+  model/solid_mechanics/materials/weight_functions/damaged_weight_function.hh
+  model/solid_mechanics/materials/weight_functions/damaged_weight_function_inline_impl.cc
+  model/solid_mechanics/materials/weight_functions/remove_damaged_weight_function.hh
+  model/solid_mechanics/materials/weight_functions/remove_damaged_weight_function_inline_impl.cc
+  model/solid_mechanics/materials/weight_functions/remove_damaged_with_damage_rate_weight_function.hh
+  model/solid_mechanics/materials/weight_functions/remove_damaged_with_damage_rate_weight_function_inline_impl.cc
+  model/solid_mechanics/materials/weight_functions/stress_based_weight_function.hh
+  model/solid_mechanics/materials/weight_functions/stress_based_weight_function.cc
+  model/solid_mechanics/materials/weight_functions/stress_based_weight_function_inline_impl.cc
 
-  synchronizer/grid_synchronizer.cc
-  synchronizer/grid_synchronizer.hh
+  model/common/non_local_toolbox/non_local_manager.hh
+  model/common/non_local_toolbox/non_local_manager.cc
+  model/common/non_local_toolbox/non_local_manager_inline_impl.cc
+  model/common/non_local_toolbox/non_local_neighborhood_base.hh
+  model/common/non_local_toolbox/non_local_neighborhood_base.cc
+  model/common/non_local_toolbox/non_local_neighborhood.hh
+  model/common/non_local_toolbox/non_local_neighborhood_tmpl.hh
+  model/common/non_local_toolbox/non_local_neighborhood_inline_impl.cc
+
   )
 
 package_declare_material_infos(damage_non_local
@@ -63,3 +80,4 @@ package_declare_documentation_files(damage_non_local
 package_declare_documentation(damage_non_local
 "This package activates the non local damage feature of AKANTU"
 "")
+

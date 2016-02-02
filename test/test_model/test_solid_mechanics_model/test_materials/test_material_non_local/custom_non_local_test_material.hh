@@ -1,17 +1,19 @@
 /**
- * @file   custom_non_local_test_material.cc
+ * @file   custom_non_local_test_material.hh
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
- * @date   Sun Mar  1 15:57:50 2015
+ * @date creation: Thu Aug 23 2012
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Custom material to test the non local implementation
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -38,19 +40,15 @@ __BEGIN_AKANTU__
 
 template<UInt dim>
 class CustomNonLocalTestMaterial : public MaterialElastic<dim>,
-                                   public MaterialNonLocal<dim, BaseWeightFunction> {
+                                   public MaterialNonLocal<dim> {
 public:
-  typedef MaterialNonLocal<dim, BaseWeightFunction> MyNonLocalParent;
+  typedef MaterialNonLocal<dim> MyNonLocalParent;
   typedef MaterialElastic<dim> MyElasticParent;
 
   CustomNonLocalTestMaterial(SolidMechanicsModel & model, const ID & id);
 
   /* ------------------------------------------------------------------------ */
-  virtual void initMaterial() {
-    MyElasticParent::initMaterial();
-    MyNonLocalParent::initMaterial();
-  }
-
+  virtual void initMaterial();
 
   void computeNonLocalStress(ElementType el_type, GhostType ghost_type);
   void computeStress(ElementType el_type, GhostType ghost_type);

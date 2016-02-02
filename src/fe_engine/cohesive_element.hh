@@ -1,18 +1,20 @@
 /**
  * @file   cohesive_element.hh
  *
- * @author Marco Vocialta <marco.vocialta@epfl.ch>
+ * @author Mauro Corrado <mauro.corrado@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date creation: Fri Feb 03 2012
- * @date last modification: Fri Jun 13 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Oct 22 2015
  *
- * @brief  Cohesive element class
+ * @brief  Generates the cohesive element structres (defined in element_class.hh)
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -59,6 +61,13 @@ AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_3d_12, _gt_cohesive_3d_12, _itp_l
 				     _ek_cohesive, 3,
 				     _git_triangle, 2);
 
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_3d_8, _gt_cohesive_3d_8, _itp_lagrange_quadrangle_4,
+				     _ek_cohesive, 3,
+				     _git_segment, 1);
+
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_3d_16, _gt_cohesive_3d_16, _itp_serendip_quadrangle_8,
+				     _ek_cohesive, 3,
+				     _git_segment, 2);
 
 __END_AKANTU__
 

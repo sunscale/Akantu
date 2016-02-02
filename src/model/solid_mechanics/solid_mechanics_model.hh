@@ -6,14 +6,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Jul 27 2010
- * @date last modification: Tue Sep 16 2014
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Model of Solid Mechanics
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -35,7 +36,6 @@
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_HH__
 #define __AKANTU_SOLID_MECHANICS_MODEL_HH__
 
-
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */
@@ -56,29 +56,30 @@
 namespace akantu {
   class Material;
   class DumperIOHelper;
+  class NonLocalManager;
 }
 /* -------------------------------------------------------------------------- */
-
 
 __BEGIN_AKANTU__
 
 struct SolidMechanicsModelOptions : public ModelOptions {
-  SolidMechanicsModelOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
-                             bool no_init_materials = false) :
-    analysis_method(analysis_method),
-    no_init_materials(no_init_materials)  {  }
+  SolidMechanicsModelOptions(
+      AnalysisMethod analysis_method = _explicit_lumped_mass,
+      bool no_init_materials = false)
+      : analysis_method(analysis_method), no_init_materials(no_init_materials) {
+  }
   AnalysisMethod analysis_method;
   bool no_init_materials;
 };
 
 extern const SolidMechanicsModelOptions default_solid_mechanics_model_options;
 
-
-class SolidMechanicsModel : public Model,
-                            public DataAccessor,
-                            public MeshEventHandler,
-                            public BoundaryCondition<SolidMechanicsModel>,
-                            public EventHandlerManager<SolidMechanicsModelEventHandler> {
+class SolidMechanicsModel
+    : public Model,
+      public DataAccessor,
+      public MeshEventHandler,
+      public BoundaryCondition<SolidMechanicsModel>,
+      public EventHandlerManager<SolidMechanicsModelEventHandler> {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -86,20 +87,20 @@ class SolidMechanicsModel : public Model,
 public:
   class NewMaterialElementsEvent : public NewElementsEvent {
   public:
-    AKANTU_GET_MACRO_NOT_CONST(MaterialList, material, Array <UInt> &);
-    AKANTU_GET_MACRO(MaterialList, material, const Array <UInt> &);
+    AKANTU_GET_MACRO_NOT_CONST(MaterialList, material, Array<UInt> &);
+    AKANTU_GET_MACRO(MaterialList, material, const Array<UInt> &);
+
   protected:
-    Array <UInt> material;
+    Array<UInt> material;
   };
 
-  typedef FEEngineTemplate <IntegratorGauss, ShapeLagrange> MyFEEngineType;
+  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange> MyFEEngineType;
 
 protected:
-  typedef EventHandlerManager <SolidMechanicsModelEventHandler> EventManager;
+  typedef EventHandlerManager<SolidMechanicsModelEventHandler> EventManager;
 
 public:
-  SolidMechanicsModel(Mesh & mesh,
-                      UInt spatial_dimension = _all_dimensions,
+  SolidMechanicsModel(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
                       const ID & id = "solid_mechanics_model",
                       const MemoryID & memory_id = 0);
 
@@ -110,13 +111,15 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// initialize completely the model
-  virtual void initFull(const ModelOptions & options = default_solid_mechanics_model_options);
+  virtual void initFull(
+      const ModelOptions & options = default_solid_mechanics_model_options);
 
   /// initialize the fem object needed for boundary conditions
   void initFEEngineBoundary();
 
   /// register the tags associated with the parallel synchronizer
-  void initParallel(MeshPartition *partition, DataAccessor *data_accessor = NULL);
+  virtual void initParallel(MeshPartition * partition,
+                            DataAccessor * data_accessor = NULL);
 
   /// allocate all vectors
   virtual void initArrays();
@@ -158,7 +161,8 @@ public:
   void initExplicit(AnalysisMethod analysis_method = _explicit_lumped_mass);
 
   bool isExplicit() {
-    return method == _explicit_lumped_mass || method == _explicit_consistent_mass;
+    return method == _explicit_lumped_mass ||
+           method == _explicit_consistent_mass;
   }
 
   /// initialize the array needed by updateResidual (residual, current_position)
@@ -177,18 +181,19 @@ public:
    * In the case of not lumped mass call solveDynamic<_acceleration_corrector>
    */
   void updateAcceleration();
-
+  /// Update the increment of displacement
   void updateIncrement();
+  /// Copy the actuel displacement into previous displacement
   void updatePreviousDisplacement();
+  /// Save stress and strain through EventManager
   void saveStressAndStrainBeforeDamage();
+  /// Update energies through EventManager
   void updateEnergiesAfterDamage();
 
   /// Solve the system @f[ A x = \alpha b @f] with A a lumped matrix
-  void solveLumped(Array <Real> &       x,
-                   const Array <Real> & A,
-                   const Array <Real> & b,
-                   const Array <bool> & blocked_dofs,
-                   Real                 alpha);
+  void solveLumped(Array<Real> & x, const Array<Real> & A,
+                   const Array<Real> & b, const Array<bool> & blocked_dofs,
+                   Real alpha);
 
   /// explicit integration predictor
   void explicitPred();
@@ -226,10 +231,8 @@ public:
   bool solveStep(Real tolerance, UInt max_iteration = 100);
 
   template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
-  bool solveStep(Real   tolerance,
-                 Real & error,
-                 UInt   max_iteration = 100,
-                 bool   do_not_factorize = false);
+  bool solveStep(Real tolerance, Real & error, UInt max_iteration = 100,
+                 bool do_not_factorize = false);
 
 public:
   /**
@@ -285,9 +288,9 @@ public:
   /* Materials (solid_mechanics_model_material.cc)                            */
   /* ------------------------------------------------------------------------ */
 public:
-  /// registers all the custom materials of a given type present in the input file
-  template <typename M>
-  void registerNewCustomMaterials(const ID & mat_type);
+  /// registers all the custom materials of a given type present in the input
+  /// file
+  template <typename M> void registerNewCustomMaterials(const ID & mat_type);
 
   /// register an empty material of a given type
   template <typename M>
@@ -299,6 +302,11 @@ public:
   /// reassigns materials depending on the material selector
   virtual void reassignMaterial();
 
+  /// apply a constant eigen_grad_u on all quadrature points of a given material
+  virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u,
+                               const ID & material_name,
+                               const GhostType ghost_type = _not_ghost);
+
 protected:
   /// register a material in the dynamic database
   template <typename M>
@@ -308,7 +316,8 @@ protected:
   void instantiateMaterials();
 
   /// set the element_id_by_material and add the elements to the good materials
-  void assignMaterialToElements(const ElementTypeMapArray<UInt> * filter = NULL);
+  void
+  assignMaterialToElements(const ElementTypeMapArray<UInt> * filter = NULL);
 
   /* ------------------------------------------------------------------------ */
   /* Mass (solid_mechanics_model_mass.cc)                                     */
@@ -320,7 +329,6 @@ public:
   /// assemble the mass matrix for consistent mass resolutions
   void assembleMass();
 
-
 protected:
   /// assemble the lumped mass matrix for local and ghost elements
   void assembleMassLumped(GhostType ghost_type);
@@ -329,81 +337,85 @@ protected:
   void assembleMass(GhostType ghost_type);
 
   /// fill a vector of rho
-  void computeRho(Array <Real> & rho,
-                  ElementType    type,
-                  GhostType      ghost_type);
+  void computeRho(Array<Real> & rho, ElementType type, GhostType ghost_type);
 
   /// compute the kinetic energy
   Real getKineticEnergy();
   Real getKineticEnergy(const ElementType & type, UInt index);
 
-  /// compute the external work (for impose displacement, the velocity should be given too)
+  /// compute the external work (for impose displacement, the velocity should be
+  /// given too)
   Real getExternalWork();
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  inline virtual UInt getNbDataForElements(const Array <Element> & elements,
+  inline virtual UInt getNbDataForElements(const Array<Element> & elements,
                                            SynchronizationTag tag) const;
 
-  inline virtual void packElementData(CommunicationBuffer &   buffer,
-                                      const Array <Element> & elements,
-                                      SynchronizationTag      tag) const;
+  inline virtual void packElementData(CommunicationBuffer & buffer,
+                                      const Array<Element> & elements,
+                                      SynchronizationTag tag) const;
 
-  inline virtual void unpackElementData(CommunicationBuffer &   buffer,
-                                        const Array <Element> & elements,
-                                        SynchronizationTag      tag);
+  inline virtual void unpackElementData(CommunicationBuffer & buffer,
+                                        const Array<Element> & elements,
+                                        SynchronizationTag tag);
 
   inline virtual UInt getNbDataToPack(SynchronizationTag tag) const;
   inline virtual UInt getNbDataToUnpack(SynchronizationTag tag) const;
 
-  inline virtual void packData(CommunicationBuffer & buffer,
-                               const UInt            index,
-                               SynchronizationTag    tag) const;
+  inline virtual void packData(CommunicationBuffer & buffer, const UInt index,
+                               SynchronizationTag tag) const;
 
-  inline virtual void unpackData(CommunicationBuffer & buffer,
-                                 const UInt            index,
-                                 SynchronizationTag    tag);
+  inline virtual void unpackData(CommunicationBuffer & buffer, const UInt index,
+                                 SynchronizationTag tag);
 
 protected:
-  inline void splitElementByMaterial(const Array <Element> & elements,
-                                     Array <Element> *       elements_per_mat) const;
+  inline void splitElementByMaterial(const Array<Element> & elements,
+                                     Array<Element> * elements_per_mat) const;
 
   /* ------------------------------------------------------------------------ */
   /* Mesh Event Handler inherited members                                     */
   /* ------------------------------------------------------------------------ */
 protected:
-  virtual void onNodesAdded(const Array <UInt> &  nodes_list,
+  virtual void onNodesAdded(const Array<UInt> & nodes_list,
                             const NewNodesEvent & event);
-  virtual void onNodesRemoved(const Array <UInt> &      element_list,
-                              const Array <UInt> &      new_numbering,
+  virtual void onNodesRemoved(const Array<UInt> & element_list,
+                              const Array<UInt> & new_numbering,
                               const RemovedNodesEvent & event);
-  virtual void onElementsAdded(const Array <Element> &  nodes_list,
+  virtual void onElementsAdded(const Array<Element> & nodes_list,
                                const NewElementsEvent & event);
-  virtual void onElementsRemoved(const Array <Element> &      element_list,
-                                 const ElementTypeMapArray<UInt> &    new_numbering,
-                                 const RemovedElementsEvent & event);
+  virtual void
+  onElementsRemoved(const Array<Element> & element_list,
+                    const ElementTypeMapArray<UInt> & new_numbering,
+                    const RemovedElementsEvent & event);
+
+  virtual void onElementsChanged(
+      __attribute__((unused)) const Array<Element> & old_elements_list,
+      __attribute__((unused)) const Array<Element> & new_elements_list,
+      __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+      __attribute__((unused)) const ChangedElementsEvent & event){};
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface (kept for convenience) and dumper relative functions  */
   /* ------------------------------------------------------------------------ */
 public:
-
-
   virtual void onDump();
 
   //! decide wether a field is a material internal or not
-  bool isInternal(const std::string & field_name, const ElementKind & element_kind);
+  bool isInternal(const std::string & field_name,
+                  const ElementKind & element_kind);
 #ifndef SWIG
   //! give the amount of data per element
-  virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-                                                      const ElementKind & kind);
+  virtual ElementTypeMap<UInt>
+  getInternalDataPerElem(const std::string & field_name,
+                         const ElementKind & kind);
 
   //! flatten a given material internal field
-  ElementTypeMapArray<Real> & flattenInternal(const std::string & field_name,
-                                              const ElementKind & kind,
-                                              const GhostType ghost_type = _not_ghost);
+  ElementTypeMapArray<Real> &
+  flattenInternal(const std::string & field_name, const ElementKind & kind,
+                  const GhostType ghost_type = _not_ghost);
   //! flatten all the registered material internals
   void flattenAllRegisteredInternals(const ElementKind & kind);
 #endif
@@ -415,7 +427,6 @@ public:
   virtual dumper::Field * createNodalFieldBool(const std::string & field_name,
                                                const std::string & group_name,
                                                bool padding_flag);
-
 
   virtual dumper::Field * createElementalField(const std::string & field_name,
                                                const std::string & group_name,
@@ -457,28 +468,28 @@ public:
   AKANTU_SET_MACRO(F_M2A, f_m2a, Real);
 
   /// get the SolidMechanicsModel::displacement vector
-  AKANTU_GET_MACRO(Displacement,    *displacement,           Array <Real> &);
+  AKANTU_GET_MACRO(Displacement, *displacement, Array<Real> &);
 
   /// get the SolidMechanicsModel::previous_displacement vector
-  AKANTU_GET_MACRO(PreviousDisplacement, *previous_displacement, Array <Real> &);
+  AKANTU_GET_MACRO(PreviousDisplacement, *previous_displacement, Array<Real> &);
 
   /// get the SolidMechanicsModel::current_position vector \warn only consistent
   /// after a call to SolidMechanicsModel::updateCurrentPosition
-  AKANTU_GET_MACRO(CurrentPosition, *current_position, const Array <Real> &);
+  AKANTU_GET_MACRO(CurrentPosition, *current_position, const Array<Real> &);
 
   /// get  the SolidMechanicsModel::increment  vector \warn  only  consistent if
   /// SolidMechanicsModel::setIncrementFlagOn has been called before
-  AKANTU_GET_MACRO(Increment,       *increment,              Array <Real> &);
+  AKANTU_GET_MACRO(Increment, *increment, Array<Real> &);
 
   /// get the lumped SolidMechanicsModel::mass vector
-  AKANTU_GET_MACRO(Mass,            *mass,                   Array <Real> &);
+  AKANTU_GET_MACRO(Mass, *mass, Array<Real> &);
 
   /// get the SolidMechanicsModel::velocity vector
-  AKANTU_GET_MACRO(Velocity,        *velocity,               Array <Real> &);
+  AKANTU_GET_MACRO(Velocity, *velocity, Array<Real> &);
 
   /// get    the    SolidMechanicsModel::acceleration    vector,   updated    by
   /// SolidMechanicsModel::updateAcceleration
-  AKANTU_GET_MACRO(Acceleration,    *acceleration,           Array <Real> &);
+  AKANTU_GET_MACRO(Acceleration, *acceleration, Array<Real> &);
 
   /// get the SolidMechanicsModel::force vector (external forces)
   AKANTU_GET_MACRO(Force,           *external_force,         Array <Real> &);
@@ -487,10 +498,11 @@ public:
   AKANTU_GET_MACRO(InternalForce,   *internal_force,         Array <Real> &);
 
   /// get the SolidMechanicsModel::blocked_dofs vector
-  AKANTU_GET_MACRO(BlockedDOFs,     *blocked_dofs,           Array <bool> &);
+  AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
 
   /// get the SolidMechnicsModel::incrementAcceleration vector
-  AKANTU_GET_MACRO(IncrementAcceleration, *increment_acceleration, Array <Real> &);
+  AKANTU_GET_MACRO(IncrementAcceleration, *increment_acceleration,
+                   Array<Real> &);
 
   /// get the value of the SolidMechanicsModel::increment_flag
   AKANTU_GET_MACRO(IncrementFlag, increment_flag, bool);
@@ -511,9 +523,7 @@ public:
   inline UInt getMaterialIndex(const std::string & name) const;
 
   /// give the number of materials
-  inline UInt getNbMaterials() const {
-    return materials.size();
-  }
+  inline UInt getNbMaterials() const { return materials.size(); }
 
   inline void setMaterialSelector(MaterialSelector & selector);
 
@@ -527,7 +537,8 @@ public:
   Real getEnergy(const std::string & energy_id);
 
   /// compute the energy for energy
-  Real getEnergy(const std::string & energy_id, const ElementType & type, UInt index);
+  Real getEnergy(const std::string & energy_id, const ElementType & type,
+                 UInt index);
 
   /**
    * @brief set the SolidMechanicsModel::increment_flag  to on, the activate the
@@ -554,21 +565,29 @@ public:
   // AKANTU_GET_MACRO(Integrator, *integrator, const IntegrationScheme2ndOrder &);
 
   /// get synchronizer
-  AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const DistributedSynchronizer &);
+  AKANTU_GET_MACRO(Synchronizer, *synch_parallel,
+                   const DistributedSynchronizer &);
 
-  AKANTU_GET_MACRO(MaterialByElement, material_index, const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO(MaterialByElement, material_index,
+                   const ElementTypeMapArray<UInt> &);
 
-  /// vectors containing local material element index for each global element index
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialByElement, material_index, UInt);
+  /// vectors containing local material element index for each global element
+  /// index
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialByElement, material_index,
+                                         UInt);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialByElement, material_index, UInt);
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialLocalNumbering, material_local_numbering, UInt);
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering, material_local_numbering, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialLocalNumbering,
+                                         material_local_numbering, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering,
+                                   material_local_numbering, UInt);
 
   /// Get the type of analysis method used
   AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
 
-  template <int dim, class model_type>
-  friend struct ContactData;
+  /// get the non-local manager
+  AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, NonLocalManager &);
+
+  template <int dim, class model_type> friend struct ContactData;
 
   template <int Dim, AnalysisMethod s, ContactResolutionMethod r>
   friend class ContactResolution;
@@ -594,25 +613,25 @@ protected:
   Real f_m2a;
 
   /// displacements array
-  Array <Real> *displacement;
+  Array<Real> * displacement;
 
   /// displacements array at the previous time step (used in finite deformation)
-  Array <Real> *previous_displacement;
+  Array<Real> * previous_displacement;
 
   /// increment of displacement
   Array <Real> *increment;
 
   /// lumped mass array
-  Array <Real> *mass;
+  Array<Real> * mass;
 
   /// velocities array
-  Array <Real> *velocity;
+  Array<Real> * velocity;
 
   /// accelerations array
-  Array <Real> *acceleration;
+  Array<Real> * acceleration;
 
   /// accelerations array
-  Array <Real> *increment_acceleration;
+  Array<Real> * increment_acceleration;
 
   /// external forces array
   Array <Real> *external_force;
@@ -621,38 +640,45 @@ protected:
   Array <Real> *internal_force;
 
   /// array specifing if a degree of freedom is blocked or not
-  Array <bool> *blocked_dofs;
+  Array<bool> * blocked_dofs;
 
   /// array of current position used during update residual
-  Array <Real> *current_position;
+  Array<Real> * current_position;
 
-  // /// mass matrix
-  // SparseMatrix *mass_matrix;
+  /// mass matrix
+  SparseMatrix * mass_matrix;
 
-  // /// velocity damping matrix
-  // SparseMatrix *velocity_damping_matrix;
+  /// velocity damping matrix
+  SparseMatrix * velocity_damping_matrix;
 
-  // /// stiffness matrix
-  // SparseMatrix *stiffness_matrix;
+  /// stiffness matrix
+  SparseMatrix * stiffness_matrix;
 
-  // /// jacobian matrix @f[A = cM + dD + K@f] with @f[c = \frac{1}{\beta \Delta
-  // /// t^2}, d = \frac{\gamma}{\beta \Delta t} @f]
-  // SparseMatrix *jacobian_matrix;
+  /// jacobian matrix @f[A = cM + dD + K@f] with @f[c = \frac{1}{\beta \Delta
+  /// t^2}, d = \frac{\gamma}{\beta \Delta t} @f]
+  SparseMatrix * jacobian_matrix;
 
   /// Arrays containing the material index for each element
   ElementTypeMapArray<UInt> material_index;
 
-  /// Arrays containing the position in the element filter of the material (material's local numbering)
+  /// Arrays containing the position in the element filter of the material
+  /// (material's local numbering)
   ElementTypeMapArray<UInt> material_local_numbering;
 
+#ifdef SWIGPYTHON
+public:
+#endif
   /// list of used materials
-  std::vector <Material *> materials;
+  std::vector<Material *> materials;
 
   /// mapping between material name and material internal id
-  std::map <std::string, UInt> materials_names_to_id;
+  std::map<std::string, UInt> materials_names_to_id;
+#ifdef SWIGPYTHON
+protected:
+#endif
 
   /// class defining of to choose a material
-  MaterialSelector *material_selector;
+  MaterialSelector * material_selector;
 
   /// define if it is the default selector or not
   bool is_default_material_selector;
@@ -667,22 +693,30 @@ protected:
   AnalysisMethod method;
 
   /// internal synchronizer for parallel computations
-  DistributedSynchronizer *synch_parallel;
+  DistributedSynchronizer * synch_parallel;
 
   /// tells if the material are instantiated
   bool are_materials_instantiated;
 
-  /// map a registered internals to be flattened for dump purposes
-  std::map<std::pair<std::string,ElementKind>,ElementTypeMapArray<Real> *> registered_internals;
-};
+  typedef std::map<std::pair<std::string, ElementKind>,
+                   ElementTypeMapArray<Real> *> flatten_internal_map;
 
+  /// map a registered internals to be flattened for dump purposes
+  flatten_internal_map registered_internals;
+
+  /// pointer to non-local manager: For non-local continuum damage computations
+  NonLocalManager * non_local_manager;
+
+  /// pointer to the pbc synchronizer
+  PBCSynchronizer * pbc_synch;
+};
 
 /* -------------------------------------------------------------------------- */
 namespace BC {
-  namespace Neumann {
-    typedef FromHigherDim FromStress;
-    typedef FromSameDim   FromTraction;
-  }
+namespace Neumann {
+  typedef FromHigherDim FromStress;
+  typedef FromSameDim FromTraction;
+}
 }
 
 __END_AKANTU__
@@ -699,13 +733,13 @@ __BEGIN_AKANTU__
 #include "solid_mechanics_model_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator << (std::ostream & stream, const SolidMechanicsModel &_this) {
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const SolidMechanicsModel & _this) {
   _this.printself(stream);
   return stream;
 }
 
 __END_AKANTU__
-
 
 #include "material_selector_tmpl.hh"
 

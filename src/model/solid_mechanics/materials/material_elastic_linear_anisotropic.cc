@@ -5,13 +5,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Sep 25 2013
- * @date last modification: Fri Sep 19 2014
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Anisotropic elastic material
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -254,7 +254,7 @@ void MaterialElasticLinearAnisotropic<spatial_dimension>::computeStress(ElementT
     Array<Real> & velocity = this->model->getVelocity();
     const Array<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
 
-    this->model->getFEEngine().gradientOnQuadraturePoints(velocity, strain_rate,
+    this->model->getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate,
 							  spatial_dimension, el_type,
 							  ghost_type, elem_filter);
 

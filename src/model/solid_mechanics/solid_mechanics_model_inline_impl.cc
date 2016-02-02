@@ -6,14 +6,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Aug 04 2010
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Wed Nov 18 2015
  *
  * @brief  Implementation of the inline functions of the SolidMechanicsModel class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -151,7 +152,7 @@ inline UInt SolidMechanicsModel::getNbDataForElements(const Array<Element> & ele
   }
   case _gst_for_dump: {
     // displacement, velocity, acceleration, residual, force
-    size += nb_nodes_per_element * spatial_dimension * sizeof(Real) * 5; 
+    size += nb_nodes_per_element * spatial_dimension * sizeof(Real) * 5;
     break;
   }
   default: {  }
@@ -362,7 +363,7 @@ inline void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
   case _gst_smm_mass: {
     AKANTU_DEBUG_INFO("pack mass of node " << index << " which is " << (*mass)(index,0));
     Array<Real>::const_vector_iterator it_mass = mass->begin(spatial_dimension);
-    Vector<Real> mass(it_mass[index]); buffer << mass; 
+    Vector<Real> mass(it_mass[index]); buffer << mass;
     break;
   }
   case _gst_for_dump: {

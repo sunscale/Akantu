@@ -1,17 +1,17 @@
 /**
  * @file   material_reinforcement.hh
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Mar 12 2015
- * @date last modification: Thu Mar 12 2015
+ * @date creation: Fri Mar 13 2015
+ * @date last modification: Tue Nov 24 2015
  *
  * @brief  Reinforcement material
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -107,15 +107,15 @@ public:
   /// Compute energy
   virtual Real getEnergy(std::string id);
 
-  virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & field_name,
-                                                      const ElementKind & kind,
-                                                      const ID & fe_engine_id) const;
+  // virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & field_name,
+  //                                                     const ElementKind & kind,
+  //                                                     const ID & fe_engine_id) const;
 
-  /// Reimplementation of Material's function to accomodate for interface mesh
-  virtual void flattenInternal(const std::string & field_id,
-                               ElementTypeMapArray<Real> & internal_flat,
-                               const GhostType ghost_type = _not_ghost,
-                               ElementKind element_kind = _ek_not_defined) const;
+  // /// Reimplementation of Material's function to accomodate for interface mesh
+  // virtual void flattenInternal(const std::string & field_id,
+  //                              ElementTypeMapArray<Real> & internal_flat,
+  //                              const GhostType ghost_type = _not_ghost,
+  //                              ElementKind element_kind = _ek_not_defined) const;
 
   /* ------------------------------------------------------------------------ */
   /* Protected methods                                                        */

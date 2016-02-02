@@ -5,14 +5,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Feb 15 2011
- * @date last modification: Mon Jun 23 2014
+ * @date last modification: Thu Nov 19 2015
  *
  * @brief  inline function of gauss integrator
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -220,7 +221,7 @@ void IntegratorGauss<kind>::precomputeJacobiansOnQuadraturePoints(const Array<Re
                                  if(el.ghost_type == ghost_type) {
                                    Array<Real>::vector_iterator jacobians_it =
                                      jacobians(el.type, el.ghost_type).begin(nb_quadrature_points);
-                                   out << " jacobian: " << jacobians_it[el.element];
+                                   out << " jacobian: " << Vector<Real>(jacobians_it[el.element]);
                                  }
                                  return out.str();
                                });

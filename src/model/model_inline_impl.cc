@@ -2,17 +2,19 @@
  * @file   model_inline_impl.cc
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+ * @author David Simon Kammer <david.kammer@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Aug 25 2010
- * @date last modification: Tue Jul 29 2014
+ * @date last modification: Wed Nov 11 2015
  *
  * @brief  inline implementation of the model class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -32,7 +34,7 @@
 /* -------------------------------------------------------------------------- */
 inline SynchronizerRegistry & Model::getSynchronizerRegistry(){
   AKANTU_DEBUG_ASSERT(synch_registry,"synchronizer registry not initialized:"
-		      << " did you call createSynchronizerRegistry ?");
+                      << " did you call createSynchronizerRegistry ?");
   return  *synch_registry;
 }
 
@@ -57,9 +59,9 @@ inline FEEngineClass & Model::getFEEngineClassBoundary(std::string name) {
     std::stringstream sstr; sstr << id << ":fem_boundary:" << name;
 
     tmp_fem_boundary = new FEEngineClass(it->second->getMesh(),
-				    spatial_dimension-1,
-				    sstr.str(),
-				    memory_id);
+                                    spatial_dimension-1,
+                                    sstr.str(),
+                                    memory_id);
     fems_boundary[name] = tmp_fem_boundary;
   } else {
     tmp_fem_boundary = dynamic_cast<FEEngineClass *>(it_boun->second);
@@ -90,7 +92,7 @@ inline void Model::unRegisterFEEngineObject(const std::string & name){
 
   FEEngineMap::iterator it = fems.find(name);
   AKANTU_DEBUG_ASSERT(it != fems.end(), "FEEngine object with name "
-		      << name << " was not found");
+                      << name << " was not found");
 
   delete((*it).second);
   fems.erase(it);
@@ -102,14 +104,14 @@ inline void Model::unRegisterFEEngineObject(const std::string & name){
 
 template <typename FEEngineClass>
 inline void Model::registerFEEngineObject(const std::string & name,
-				     Mesh & mesh,
-				     UInt spatial_dimension){
+                                     Mesh & mesh,
+                                     UInt spatial_dimension){
   if (fems.size() == 0) default_fem = name;
 
 #ifndef AKANTU_NDEBUG
   FEEngineMap::iterator it = fems.find(name);
   AKANTU_DEBUG_ASSERT(it == fems.end(), "FEEngine object with name "
-		      << name << " was already created");
+                      << name << " was already created");
 #endif
 
   std::stringstream sstr; sstr << id << ":fem:" << name;
@@ -130,7 +132,7 @@ inline FEEngine & Model::getFEEngine(const ID & name) const{
   FEEngineMap::const_iterator it = fems.find(tmp_name);
 
   AKANTU_DEBUG_ASSERT(it != fems.end(),
-		      "The FEEngine " << tmp_name << " is not registered");
+                      "The FEEngine " << tmp_name << " is not registered");
 
   AKANTU_DEBUG_OUT();
   return *(it->second);
@@ -146,9 +148,9 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name){
 
   FEEngineMap::const_iterator it = fems_boundary.find(tmp_name);
   AKANTU_DEBUG_ASSERT(it != fems_boundary.end(),
-		      "The FEEngine boundary  " << tmp_name << " is not registered");
+                      "The FEEngine boundary  " << tmp_name << " is not registered");
   AKANTU_DEBUG_ASSERT(it->second != NULL,
-		      "The FEEngine boundary " << tmp_name << " was not created");
+                      "The FEEngine boundary " << tmp_name << " was not created");
 
   AKANTU_DEBUG_OUT();
   return *(it->second);
@@ -180,15 +182,15 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name){
 // }
 
 /* -------------------------------------------------------------------------- */
-inline UInt Model::getNbQuadraturePoints(const Array<Element> & elements,
-					 const ID & fem_id) const {
+inline UInt Model::getNbIntegrationPoints(const Array<Element> & elements,
+                                         const ID & fem_id) const {
   UInt nb_quad = 0;
   Array<Element>::const_iterator<Element> it  = elements.begin();
   Array<Element>::const_iterator<Element> end = elements.end();
   for (; it != end; ++it) {
     const Element & el = *it;
-    nb_quad += getFEEngine(fem_id).getNbQuadraturePoints(el.type,
-						    el.ghost_type);
+    nb_quad += getFEEngine(fem_id).getNbIntegrationPoints(el.type,
+                                                          el.ghost_type);
   }
   return nb_quad;
 }

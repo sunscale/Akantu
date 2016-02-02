@@ -1,17 +1,17 @@
 /**
  * @file   test_data_accessor.hh
  *
- * @author Marco Vocialta <marco.vocialta@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Thu Apr 11 2013
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Sun Oct 19 2014
  *
  * @brief  Data Accessor class for testing
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

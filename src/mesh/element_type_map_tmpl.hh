@@ -4,15 +4,16 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Aug 31 2011
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Fri Oct 02 2015
  *
  * @brief  implementation of template functions of the ElementTypeMap and
  * ElementTypeMapArray classes
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -219,6 +220,20 @@ inline void ElementTypeMapArray<T, SupportType>::free() {
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
+inline void ElementTypeMapArray<T, SupportType>::clear() {
+  for(UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType gt = (GhostType) g;
+
+    DataMap & data = this->getData(gt);
+    typename DataMap::const_iterator it;
+    for(it = data.begin(); it != data.end(); ++it) {
+      it->second->clear();
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T, typename SupportType>
 inline const Array<T> & ElementTypeMapArray<T, SupportType>::operator()(const SupportType & type,
                                                                        const GhostType & ghost_type) const {
   typename ElementTypeMapArray<T, SupportType>::DataMap::const_iterator it =
@@ -277,6 +292,7 @@ inline void ElementTypeMapArray<T, SupportType>::onElementsRemoved(const Element
       SupportType type = *it;
       if(this->exists(type, gt)){
         const Array<UInt> & renumbering = new_numbering(type, gt);
+	if (renumbering.getSize() == 0) continue;
         Array<T> & vect = this->operator()(type, gt);
         UInt nb_component = vect.getNbComponent();
         Array<T> tmp(renumbering.getSize(), nb_component);

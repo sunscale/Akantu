@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Nov 13 2013
- * @date last modification: Tue Jul 29 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Random internal material parameter
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -39,6 +40,10 @@
 
 __BEGIN_AKANTU__
 
+/**
+ * class for the internal fields of materials with a random
+ * distribution
+ */
 template<typename T,
 	 template<typename> class BaseField = InternalField,
 	 template<typename> class Generator = RandGenerator>
@@ -60,13 +65,17 @@ private:
 public:
   AKANTU_GET_MACRO(RandomParameter, random_parameter, const RandomParameter<T>);
 
+  /// initialize the field to a given number of component
   virtual void initialize(UInt nb_component);
 
+  /// set the field to a given value
   void setDefaultValue(const T & value);
 
+  /// set the specified random distribution to a given parameter
   void setRandomDistribution(const RandomParameter<T> & param);
 
-  virtual void printself(std::ostream & stream, unsigned int indent = 0) const;
+  /// print the content
+  virtual void printself(std::ostream & stream, int indent = 0) const;
 
 protected:
   virtual void setArrayValues(T * begin, T * end);

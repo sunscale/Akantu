@@ -34,19 +34,18 @@
 #include <boost/preprocessor.hpp>
 #include <iostream>
 
-int main(int argc, char *argv[]) {
-#define PRINT_OUT_OPTIONS(r, data, i, elem)	\
+int main(__attribute__((unused)) int argc,
+         __attribute__((unused)) char * argv[]) {
+#define PRINT_OUT_OPTIONS(r, data, i, elem)                                    \
   << ":" << BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, elem))
 
-#define PRINT_OUT(r, data, elem)		\
-  std::cout << BOOST_PP_STRINGIZE(BOOST_PP_ARRAY_ELEM(0, elem)) << ":"	\
-	    << BOOST_PP_STRINGIZE(BOOST_PP_ARRAY_ELEM(1, elem))		\
-    BOOST_PP_IF(BOOST_PP_EQUAL(3, BOOST_PP_ARRAY_SIZE(elem)),		\
-		BOOST_PP_SEQ_FOR_EACH_I(PRINT_OUT_OPTIONS,		\
-					_,				\
-					BOOST_PP_ARRAY_ELEM(2, elem)),	\
-		)							\
-	    << std::endl;
+#define PRINT_OUT(r, data, elem)                                               \
+  std::cout << BOOST_PP_STRINGIZE(BOOST_PP_ARRAY_ELEM(0, elem)) << ":"         \
+            << BOOST_PP_STRINGIZE(BOOST_PP_ARRAY_ELEM(1, elem)) BOOST_PP_IF(   \
+                   BOOST_PP_EQUAL(3, BOOST_PP_ARRAY_SIZE(elem)),               \
+                   BOOST_PP_SEQ_FOR_EACH_I(PRINT_OUT_OPTIONS, _,               \
+                                           BOOST_PP_ARRAY_ELEM(2, elem)), )    \
+            << std::endl;
 
   BOOST_PP_SEQ_FOR_EACH(PRINT_OUT, _, AKANTU_MATERIAL_LIST);
 

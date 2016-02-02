@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Fri Jun 17 2011
- * @date last modification: Thu Jun 05 2014
+ * @date creation: Fri Sep 03 2010
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  test of the fem class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -60,7 +61,7 @@ int main(int argc, char *argv[]) {
   Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
 
   UInt nb_element = my_mesh.getNbElement(type);
-  UInt nb_quadrature_points = fem->getNbQuadraturePoints(type) * nb_element;
+  UInt nb_quadrature_points = fem->getNbIntegrationPoints(type) * nb_element;
 
   Array<Real> val_on_quad(nb_quadrature_points, 2, "val_on_quad");
 
@@ -69,7 +70,7 @@ int main(int argc, char *argv[]) {
     const_val.storage()[i * 2 + 1] = 2.;
   }
 
-  fem->interpolateOnQuadraturePoints(const_val, val_on_quad, 2, type);
+  fem->interpolateOnIntegrationPoints(const_val, val_on_quad, 2, type);
 
   std::cout << "Interpolation of array : " << const_val << std::endl;
   std::cout << "Gives on quads : " << val_on_quad << std::endl;
@@ -77,7 +78,7 @@ int main(int argc, char *argv[]) {
   // interpolate coordinates
   Array<Real> coord_on_quad(nb_quadrature_points, my_mesh.getSpatialDimension(), "coord_on_quad");
 
-  fem->interpolateOnQuadraturePoints(my_mesh.getNodes(),
+  fem->interpolateOnIntegrationPoints(my_mesh.getNodes(),
 				     coord_on_quad,
 				     my_mesh.getSpatialDimension(),
 				     type);

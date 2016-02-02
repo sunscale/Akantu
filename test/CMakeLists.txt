@@ -6,14 +6,15 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Fri Sep 03 2010
-# @date last modification: Thu Jul 03 2014
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  configuration for tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -50,38 +51,11 @@ add_akantu_test(test_solver "Test solver function")
 add_akantu_test(test_io "Test the IO modules")
 add_akantu_test(test_contact "Test the contact part of Akantu")
 add_akantu_test(test_geometry "Test the geometry module of Akantu")
-
 add_akantu_test(test_synchronizer "Test synchronizers")
+add_akantu_test(test_python_interface "Test python interface")
 
 
-
-file(GLOB_RECURSE __all_files "*.*")
-set(_all_files)
-foreach(_file ${__all_files})
-  if("${_file}" MATCHES  "${PROJECT_SOURCE_DIR}/test")
-    file(RELATIVE_PATH __file ${PROJECT_SOURCE_DIR} ${_file})
-    list(APPEND _all_files ${__file})
-  endif()
-endforeach()
-
-file(GLOB_RECURSE __all_files "*CMakeLists.txt")
-foreach(_file ${__all_files})
-  if("${_file}" MATCHES  "${PROJECT_SOURCE_DIR}/test")
-    file(RELATIVE_PATH __file ${PROJECT_SOURCE_DIR} ${_file})
-    list(APPEND _cmakes ${__file})
-  endif()
-endforeach()
-list(APPEND AKANTU_TESTS_FILES ${_cmakes})
-
-foreach(_file ${_all_files})
-  list(FIND AKANTU_TESTS_FILES ${_file} _ret)
-  if(_ret EQUAL -1)
-    list(APPEND AKANTU_TESTS_EXCLUDE_FILES /${_file})
-  endif()
-endforeach()
-
-set(AKANTU_TESTS_EXCLUDE_FILES ${AKANTU_TESTS_EXCLUDE_FILES} PARENT_SCOPE)
-
-#foreach(f ${AKANTU_TESTS_EXCLUDE_FILES})
-#  message(${f})
-#endforeach()
+package_add_files_to_package(
+  cmake/akantu_test_driver.sh
+  cmake/AkantuTestsMacros.cmake
+  )

@@ -1,18 +1,19 @@
 /**
  * @file   element_class_tmpl.hh
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Thomas Menouillard <tmenouillard@stucky.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Jan 16 2013
- * @date last modification: Fri Jun 13 2014
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Thu Oct 22 2015
  *
  * @brief  Implementation of the inline templated function of the element class
  * descriptions
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -210,7 +211,7 @@ template<>
 template <class vector_type>
 inline bool
 GeometricalShapeContains<_gst_prism>::contains(const vector_type & coords) {
-  bool in = ((coords(0) >= -1.) && (coords(0) <= 1.)); // x in segement [-1, 1]
+  bool in = ((coords(0) >= -1.) && (coords(0) <= 1.)); // x in segment [-1, 1]
 
   // y and z in triangle
   in &= ((coords(1) >= 0) && (coords(1) <= 1.));

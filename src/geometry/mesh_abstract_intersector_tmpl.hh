@@ -1,17 +1,19 @@
 /**
- * @file mesh_abstract_intersector_tmpl.hh
+ * @file   mesh_abstract_intersector_tmpl.hh
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Clement Roux <clement.roux@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date creation: Mon Jul 13 2015
- * @date last modification: Mon Jul 13 2015
+ * @date creation: Wed Apr 29 2015
+ * @date last modification: Thu Jan 14 2016
  *
- * @brief General class for intersection computations
+ * @brief  General class for intersection computations
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -40,7 +42,10 @@ __BEGIN_AKANTU__
 
 template<class Query>
 MeshAbstractIntersector<Query>::MeshAbstractIntersector(Mesh & mesh):
-  MeshGeomAbstract(mesh)
+  MeshGeomAbstract(mesh),
+  new_node_per_elem(NULL),
+  intersection_points(NULL),
+  nb_seg_by_el(0)
 {}
 
 template<class Query>
@@ -58,6 +63,22 @@ void MeshAbstractIntersector<Query>::computeIntersectionQueryList(
 
   for (; query_it != query_end ; ++query_it) {
     computeIntersectionQuery(*query_it);
+  }
+  
+  AKANTU_DEBUG_OUT();
+}
+
+template<class Query>
+void MeshAbstractIntersector<Query>::computeMeshQueryListIntersectionPoint(
+  const std::list<Query> & query_list, UInt nb_old_nodes) {
+  AKANTU_DEBUG_IN();
+  
+  typename std::list<Query>::const_iterator
+    query_it = query_list.begin(),
+    query_end = query_list.end();
+
+  for (; query_it != query_end ; ++query_it) {
+    computeMeshQueryIntersectionPoint(*query_it, nb_old_nodes);
   }
   
   AKANTU_DEBUG_OUT();

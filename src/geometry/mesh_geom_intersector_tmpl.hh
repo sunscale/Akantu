@@ -1,17 +1,17 @@
 /**
- * @file mesh_geom_intersector_tmpl.hh
+ * @file   mesh_geom_intersector_tmpl.hh
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
  * @date creation: Wed Apr 29 2015
- * @date last modification: Wed Apr 29 2015
+ * @date last modification: Thu Jan 14 2016
  *
- * @brief General class for intersection computations
+ * @brief  General class for intersection computations
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -36,12 +36,14 @@
 #include "aka_common.hh"
 #include "mesh_geom_intersector.hh"
 
+/* -------------------------------------------------------------------------- */
+
 __BEGIN_AKANTU__
 
 template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
 MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::MeshGeomIntersector(Mesh & mesh) :
-  MeshAbstractIntersector<Query>(mesh),
-  factory(mesh)
+MeshAbstractIntersector<Query>(mesh),
+factory(mesh)
 {}
 
 template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
@@ -49,8 +51,9 @@ MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::~MeshGeomIntersector()
 {}
 
 template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
-void MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::constructData() {
-  factory.constructData();
+void MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::constructData(GhostType ghost_type) {
+  this->intersection_points->resize(0);
+  factory.constructData(ghost_type);
 }
 
 __END_AKANTU__

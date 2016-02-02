@@ -4,13 +4,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Nov 13 2013
- * @date last modification: Wed Nov 13 2013
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Random internal material parameter implementation
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -35,62 +35,59 @@
 
 /* -------------------------------------------------------------------------- */
 
-
 #ifndef __AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH__
 #define __AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH__
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<typename T,
-	 template<typename> class BaseField,
-	 template<typename> class Generator>
-RandomInternalField<T, BaseField, Generator>::RandomInternalField(const ID & id, Material & material) :
-  BaseField<T>(id, material), random_parameter(T()) {
-}
+template <typename T, template <typename> class BaseField,
+          template <typename> class Generator>
+RandomInternalField<T, BaseField, Generator>::RandomInternalField(
+    const ID & id, Material & material)
+    : BaseField<T>(id, material), random_parameter(T()) {}
 
 /* -------------------------------------------------------------------------- */
-template<typename T,
-	 template<typename> class BaseField,
-	 template<typename> class Generator>
-RandomInternalField<T, BaseField, Generator>::~RandomInternalField() {  }
+template <typename T, template <typename> class BaseField,
+          template <typename> class Generator>
+RandomInternalField<T, BaseField, Generator>::~RandomInternalField() {}
 
 /* -------------------------------------------------------------------------- */
-template<typename T,
-	 template<typename> class BaseField,
-	 template<typename> class Generator>
-void RandomInternalField<T, BaseField, Generator>::initialize(UInt nb_component) {
+template <typename T, template <typename> class BaseField,
+          template <typename> class Generator>
+void RandomInternalField<T, BaseField, Generator>::initialize(
+    UInt nb_component) {
   this->internalInitialize(nb_component);
 }
 
 /* ------------------------------------------------------------------------ */
-template<typename T,
-	 template<typename> class BaseField,
-	 template<typename> class Generator>
-void RandomInternalField<T, BaseField, Generator>::setDefaultValue(const T &value) {
+template <typename T, template <typename> class BaseField,
+          template <typename> class Generator>
+void RandomInternalField<T, BaseField, Generator>::setDefaultValue(
+    const T & value) {
   random_parameter.setBaseValue(value);
   this->reset();
 }
 
 /* ------------------------------------------------------------------------ */
-template<typename T,
-	 template<typename> class BaseField,
-	 template<typename> class Generator>
-void RandomInternalField<T, BaseField, Generator>::setRandomDistribution(const RandomParameter<T> & param) {
+template <typename T, template <typename> class BaseField,
+          template <typename> class Generator>
+void RandomInternalField<T, BaseField, Generator>::setRandomDistribution(
+    const RandomParameter<T> & param) {
   random_parameter = param;
   this->reset();
 }
 
 /* ------------------------------------------------------------------------ */
-template<typename T,
-	 template<typename> class BaseField,
-	 template<typename> class Generator>
-void RandomInternalField<T, BaseField, Generator>::printself(std::ostream & stream, unsigned int indent) const {
+template <typename T, template <typename> class BaseField,
+          template <typename> class Generator>
+void RandomInternalField<T, BaseField, Generator>::printself(
+    std::ostream & stream, int indent) const {
   stream << "RandomInternalField [ ";
   random_parameter.printself(stream);
   stream << " ]";
 #if !defined(AKANTU_NDEBUG)
-  if(AKANTU_DEBUG_TEST(dblDump)) {
+  if (AKANTU_DEBUG_TEST(dblDump)) {
     stream << std::endl;
     InternalField<T>::printself(stream, indent);
   }
@@ -98,31 +95,30 @@ void RandomInternalField<T, BaseField, Generator>::printself(std::ostream & stre
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T,
-	 template<typename> class BaseField,
-	 template<typename> class Generator>
-void RandomInternalField<T, BaseField, Generator>::setArrayValues(T * begin, T * end) {
+template <typename T, template <typename> class BaseField,
+          template <typename> class Generator>
+void RandomInternalField<T, BaseField, Generator>::setArrayValues(T * begin,
+                                                                  T * end) {
   random_parameter.template setValues<Generator>(begin, end);
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T,
-	 template<typename> class BaseField,
-	 template<typename> class Generator>
+template <typename T, template <typename> class BaseField,
+          template <typename> class Generator>
 inline RandomInternalField<T, BaseField, Generator>::operator Real() const {
   return random_parameter.getBaseValue();
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline void ParsableParamTyped< RandomInternalField<Real> >::parseParam(const ParserParameter & in_param) {
+template <>
+inline void ParsableParamTyped<RandomInternalField<Real> >::parseParam(
+    const ParserParameter & in_param) {
   ParsableParam::parseParam(in_param);
   RandomParameter<Real> r = in_param;
   param.setRandomDistribution(r);
 }
 
 /* -------------------------------------------------------------------------- */
-
 
 __END_AKANTU__
 

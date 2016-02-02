@@ -4,15 +4,14 @@
  * @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date creation: Fri Jun 21 2013
- * @date last modification: Thu Jun 05 2014
+ * @date creation: Mon Jan 18 2016
  *
  * @brief  Test for cohesive elements
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,15 +29,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-#include <limits>
-#include <fstream>
-#include <iostream>
-
-
-/* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <iostream>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -81,8 +74,6 @@ int main(int argc, char *argv[]) {
       boundary(n, 0) = true;
   }
 
-  model.updateResidual();
-
   model.setBaseName("extrinsic");
   model.addDumpFieldVector("displacement");
   model.addDumpField("velocity"    );
@@ -105,15 +96,11 @@ int main(int argc, char *argv[]) {
     /// update displacement on extreme nodes
     for (UInt n = 0; n < nb_nodes; ++n) {
       if (position(n, 1) > 0.99 || position(n, 1) < -0.99)
-	displacement(n, 1) += disp_update * position(n, 1);
+        displacement(n, 1) += disp_update * position(n, 1);
     }
 
     model.checkCohesiveStress();
-
-    model.explicitPred();
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
+    model.solveStep();
 
     if(s % 10 == 0) {
       model.dump();
@@ -125,17 +112,13 @@ int main(int argc, char *argv[]) {
   Real Ed = model.getEnergy("dissipated");
 
   Real Edt = 200*std::sqrt(2);
-
   std::cout << Ed << " " << Edt << std::endl;
-
   if (Ed < Edt * 0.999 || Ed > Edt * 1.001 || std::isnan(Ed)) {
     std::cout << "The dissipated energy is incorrect" << std::endl;
     return EXIT_FAILURE;
   }
 
-
   finalize();
 
-  std::cout << "OK: test_cohesive_extrinsic was passed!" << std::endl;
   return EXIT_SUCCESS;
 }

@@ -4,14 +4,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Jun 14 2010
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  common type descriptions for akantu
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -43,7 +44,7 @@
 
 /* -------------------------------------------------------------------------- */
 #define __BEGIN_AKANTU__ namespace akantu {
-#define __END_AKANTU__ };
+#define __END_AKANTU__ }
 /* -------------------------------------------------------------------------- */
 #define __BEGIN_AKANTU_DUMPER__ namespace dumper {
 #define __END_AKANTU_DUMPER__ }
@@ -262,8 +263,9 @@ enum SynchronizationTag {
   _gst_smmc_facets_conn, //< synchronization of facet global connectivity
   _gst_smmc_facets_stress, //< synchronization of facets' stress to setup facet synch
   _gst_smmc_damage,      //< synchronization of damage
+  //--- GlobalIdsUpdater tags ---
+  _gst_giu_global_conn, //< synchronization of global connectivities
   //--- CohesiveElementInserter tags ---
-  _gst_ce_inserter,      //< synchronization of global nodes id of newly inserted cohesive elements
   _gst_ce_groups,        //< synchronization of cohesive element insertion depending on facet groups
   //--- GroupManager tags ---
   _gst_gm_clusters,      //< synchronization of clusters
@@ -279,6 +281,8 @@ enum SynchronizationTag {
   //--- Material non local ---
   _gst_mnl_for_average,  //< synchronization of data to average in non local material
   _gst_mnl_weight,       //< synchronization of data for the weight computations
+  //--- NeighborhoodSynchronization tags ---
+  _gst_nh_criterion,
   //--- General tags ---
   _gst_test,             //< Test tag
   _gst_user_1,           //< tag for user simulations
@@ -320,6 +324,15 @@ enum SynchronizerOperation {
   _so_sum,
   _so_min,
   _so_max,
+  _so_prod,
+  _so_land,
+  _so_band,
+  _so_lor,
+  _so_bor,
+  _so_lxor,
+  _so_bxor,
+  _so_min_loc,
+  _so_max_loc,
   _so_null
 };
 
@@ -416,6 +429,10 @@ void initialize(const std::string & input_file, int & argc, char ** & argv);
 /// finilize correctly akantu and clean the memory
 void finalize ();
 /* -------------------------------------------------------------------------- */
+/// Read an new input file
+void readInputFile(const std::string & input_file);
+/* -------------------------------------------------------------------------- */
+
 
 /*
  * For intel compiler annoying remark
@@ -462,5 +479,43 @@ const ParserSection & getUserParser();
 __END_AKANTU__
 
 #include "aka_common_inline_impl.cc"
+
+/* -------------------------------------------------------------------------- */
+
+#if defined(AKANTU_UNORDERED_MAP_IS_CXX11)
+
+__BEGIN_AKANTU_UNORDERED_MAP__
+
+#if AKANTU_INTEGER_SIZE == 4
+#define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b9
+#elif AKANTU_INTEGER_SIZE == 8
+#define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b97f4a7c13LL
+#endif
+
+/**
+ * Hashing function for pairs based on hash_combine from boost The magic number
+ * is coming from the golden number @f[\phi = \frac{1 + \sqrt5}{2}@f]
+ * @f[\frac{2^32}{\phi} = 0x9e3779b9@f]
+ * http://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
+ * http://burtleburtle.net/bob/hash/doobs.html
+ */
+template <typename a, typename b> struct hash< std::pair<a, b> > {
+public:
+  hash() : ah(), bh() {}
+  size_t operator()(const std::pair<a, b> & p) const {
+    size_t seed = ah(p.first);
+    return bh(p.second) + AKANTU_HASH_COMBINE_MAGIC_NUMBER + (seed << 6) +
+           (seed >> 2);
+  }
+
+private:
+  const hash<a> ah;
+  const hash<b> bh;
+};
+
+__END_AKANTU_UNORDERED_MAP__
+
+#endif
+
 
 #endif /* __AKANTU_COMMON_HH__ */

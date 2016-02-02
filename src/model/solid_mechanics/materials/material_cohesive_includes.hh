@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Oct 31 2012
- * @date last modification: Fri Mar 21 2014
+ * @date creation: Sun Sep 26 2010
+ * @date last modification: Tue Jan 12 2016
  *
  * @brief  List of includes for cohesive elements
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -33,6 +34,7 @@
 #include "material_cohesive.hh"
 #include "material_cohesive_linear.hh"
 #include "material_cohesive_linear_fatigue.hh"
+#include "material_cohesive_linear_friction.hh"
 #include "material_cohesive_bilinear.hh"
 #include "material_cohesive_exponential.hh"
 #endif
@@ -40,5 +42,6 @@
 #define AKANTU_COHESIVE_MATERIAL_LIST					\
   ((2, (cohesive_linear, MaterialCohesiveLinear )))			\
   ((2, (cohesive_linear_fatigue, MaterialCohesiveLinearFatigue )))	\
+  ((2, (cohesive_linear_friction, MaterialCohesiveLinearFriction)))	\
   ((2, (cohesive_bilinear      , MaterialCohesiveBilinear     )))	\
   ((2, (cohesive_exponential   , MaterialCohesiveExponential  )))

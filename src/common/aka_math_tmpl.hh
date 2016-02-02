@@ -1,26 +1,27 @@
 /**
  * @file   aka_math_tmpl.hh
  *
- * @author Leonardo Snozzi <leonardo.snozzi@epfl.ch>
  * @author Ramin Aghababaei <ramin.aghababaei@epfl.ch>
- * @author Peter Spijker <peter.spijker@epfl.ch>
- * @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
- * @author Mathilde Radiguet <mathilde.radiguet@epfl.ch>
- * @author Marco Vocialta <marco.vocialta@epfl.ch>
+ * @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
+ * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
+ * @author Mathilde Radiguet <mathilde.radiguet@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Leonardo Snozzi <leonardo.snozzi@epfl.ch>
+ * @author Peter Spijker <peter.spijker@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Wed Aug 04 2010
- * @date last modification: Tue Sep 16 2014
+ * @date last modification: Wed Oct 21 2015
  *
  * @brief  Implementation of the inline functions of the math toolkit
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -704,6 +705,8 @@ inline void Math::vector_3d(const Real * x, const Real * y, Real * res) {
 }
 
 /* -------------------------------------------------------------------------- */
+/// Combined absolute and relative tolerance test proposed in
+/// Real-time collision detection by C. Ericson (2004)
 inline bool Math::are_float_equal(const Real x, const Real y){
   Real abs_max = std::max(std::abs(x), std::abs(y));
   abs_max = std::max(abs_max, Real(1.));

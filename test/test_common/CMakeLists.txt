@@ -3,15 +3,16 @@
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Mon Jul 30 2012
-# @date last modification: Fri Feb 21 2014
+# @date creation: Fri Sep 03 2010
+# @date last modification: Mon Dec 07 2015
 #
 # @brief  configurations for common tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -34,7 +35,7 @@ add_mesh(test_grid_mesh circle.geo 2 1)
 
 register_test(test_csr test_csr.cc PACKAGE core)
 register_test(test_grid test_grid.cc
-  DEPENDENCIES test_grid_mesh
+  DEPENDS test_grid_mesh
   PACKAGE core)
 
 register_test(test_math test_math.cc PACKAGE core)

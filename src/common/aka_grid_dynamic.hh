@@ -1,16 +1,17 @@
 /**
  * @file   aka_grid_dynamic.hh
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Thu Feb 21 2013
- * @date last modification: Fri Mar 21 2014
+ * @date last modification: Sat Sep 26 2015
  *
  * @brief  Grid that is auto balanced
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -73,6 +74,7 @@ public:
   virtual ~SpatialGrid() {};
 
   class neighbor_cells_iterator;
+  class cells_iterator;
 
   class CellID {
   public:
@@ -97,6 +99,7 @@ public:
 
   private:
     friend class neighbor_cells_iterator;
+    friend class cells_iterator;
     Vector<Int> ids;
   };
 
@@ -225,6 +228,38 @@ public:
     Vector<Int> position;
   };
 
+
+  class cells_iterator : private std::iterator<std::forward_iterator_tag, CellID> {
+  public:
+    cells_iterator(typename std::map<CellID, Cell>::const_iterator it) :
+      it(it) { }
+
+    cells_iterator & operator++() {
+      this->it++;
+      return *this;
+    }
+
+
+    cells_iterator operator++(int) {cells_iterator tmp(*this); operator++(); return tmp; };
+
+    bool operator==(const cells_iterator& rhs) const { return it == rhs.it; };
+    bool operator!=(const cells_iterator& rhs) const { return ! operator==(rhs); };
+
+    CellID operator*() const {
+      CellID cur_cell_id(this->it->first);
+      return cur_cell_id;
+    };
+
+  private:
+
+    /// map iterator
+    typename std::map<CellID, Cell>::const_iterator it;
+
+  };
+
+
+
+
 public:
   template<class vector_type>
   Cell & insert(const T & d, const vector_type & position) {
@@ -264,6 +299,19 @@ public:
   inline neighbor_cells_iterator endNeighborCells(const CellID & cell_id) const {
     return neighbor_cells_iterator(cell_id, true);
   }
+
+  inline cells_iterator beginCells() const {
+    typename std::map<CellID, Cell>::const_iterator begin = this->cells.begin();
+    return cells_iterator(begin);
+  }
+
+  inline cells_iterator endCells() const {
+    typename std::map<CellID, Cell>::const_iterator end = this->cells.end();
+    return cells_iterator(end);
+  }
+
+
+
 
 
   template<class vector_type>

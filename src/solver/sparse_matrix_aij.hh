@@ -34,42 +34,6 @@
 #ifndef __AKANTU_SPARSE_MATRIX_AIJ_HH__
 #define __AKANTU_SPARSE_MATRIX_AIJ_HH__
 
-/* -------------------------------------------------------------------------- */
-#if defined(AKANTU_UNORDERED_MAP_IS_CXX11)
-
-__BEGIN_AKANTU_UNORDERED_MAP__
-
-#if AKANTU_INTEGER_SIZE == 4
-#define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b9
-#elif AKANTU_INTEGER_SIZE == 8
-#define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b97f4a7c13LL
-#endif
-
-/**
- * Hashing function for pairs based on hash_combine from boost The magic number
- * is coming from the golden number @f[\phi = \frac{1 + \sqrt5}{2}@f]
- * @f[\frac{2^32}{\phi} = 0x9e3779b9@f]
- * http://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
- * http://burtleburtle.net/bob/hash/doobs.html
- */
-template <typename a, typename b> struct hash<std::pair<a, b> > {
-public:
-  hash() : ah(), bh() {}
-  size_t operator()(const std::pair<a, b> & p) const {
-    size_t seed = ah(p.first);
-    return bh(p.second) + AKANTU_HASH_COMBINE_MAGIC_NUMBER + (seed << 6) +
-           (seed >> 2);
-  }
-
-private:
-  const hash<a> ah;
-  const hash<b> bh;
-};
-
-__END_AKANTU_UNORDERED_MAP__
-
-#endif
-
 __BEGIN_AKANTU__
 
 class SparseMatrixAIJ : public SparseMatrix {

@@ -4,15 +4,16 @@
 # @author David Simon Kammer <david.kammer@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Wed Apr 20 2011
-# @date last modification: Thu Mar 27 2014
+# @date creation: Fri Oct 22 2010
+# @date last modification: Mon Dec 07 2015
 #
 # @brief  configuration for patch tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -36,7 +37,7 @@ add_mesh(test_weight_tetra_mesh colone_tetra.geo 3 1)
 
 register_test(test_weight
   SOURCES colone_weight.cc
-  DEPENDENCIES test_weight_hexa_mesh test_weight_tetra_mesh
+  DEPENDS test_weight_hexa_mesh test_weight_tetra_mesh
   FILES_TO_COPY material_colone.dat
   DIRECTORIES_TO_CREATE paraview/test_weight_hexa paraview/test_weight_tetra
   PACKAGE core

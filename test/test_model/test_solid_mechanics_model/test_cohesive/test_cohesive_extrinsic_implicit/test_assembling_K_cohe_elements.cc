@@ -1,17 +1,18 @@
 /**
- * @file   matrix_assembling_cohesive_elements.cc
+ * @file   test_assembling_K_cohe_elements.cc
  *
- * @author Mauro Corrado
+ * @author Mauro Corrado <mauro.corrado@epfl.ch>
  *
- * @date creation: Thu April 30 2015
+ * @date creation: Fri May 15 2015
+ * @date last modification: Thu Aug 20 2015
  *
  * @brief  Test to check the correct matrix assembling for cohesive elements
- *         with degenerated nodes
+ * with degenerated nodes
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -145,7 +146,7 @@ int main(int argc, char *argv[]) {
     for (UInt j = 0; j < K_test.getSize(); ++j){
       if ((K_test(j,0) == K_verified(i,0)) &&  (K_test(j,1) == K_verified(i,1))){
         if (std::abs(K_verified(i,2)) < tol){
-          if (std::abs(K_verified(j,2)) > tol)
+          if (std::abs(K_test(j,2)) > tol)
             passed = false;
         }else{
           Real ratio = (std::abs(K_test(j,2) - K_verified(i,2))) / (std::abs(K_verified(i,2)));

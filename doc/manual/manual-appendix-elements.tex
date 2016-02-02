@@ -1,6 +1,6 @@
 \chapter{Shape Functions\index{Elements}}
 \label{app:elements}
-Schmatic overview of all the element types defined in \akantu is described in Chapter~\ref{chap:elements}. In this appendix, more detailed information (shape function, location of Gaussian quadrature points, and so on) of each of these types is listed. For each element type, the coordinates of the nodes are given in the isoparametric frame of reference, together with the shape functions (and their derivatives) on these respective nodes. Also all the Gaussian quadrature points within each element are assigned (together with the weight that is applied on these points). The graphical representations of all the element types can be found in Chapter~\ref{chap:elements}.
+Schmatic overview of all the element types defined in \akantu is described in Section~\ref{sec:elements}. In this appendix, more detailed information (shape function, location of Gaussian quadrature points, and so on) of each of these types is listed. For each element type, the coordinates of the nodes are given in the isoparametric frame of reference, together with the shape functions (and their derivatives) on these respective nodes. Also all the Gaussian quadrature points within each element are assigned (together with the weight that is applied on these points). The graphical representations of all the element types can be found in Section~\ref{sec:elements}.
 
 %%%%%%%%%% 1D %%%%%%%%%
 %\section{Isoparametric Elements in 1D\index{Elements!1D}}
@@ -257,15 +257,348 @@ Weight & 1/24 & 1/24 \\
 \end{Element}
 
 \begin{QuadPoints}{lcccc}
-\elemcoortwod  &  \inquadthree{-\invsqrtthree}{-\invsqrtthree}{-\invsqrtthree}  &  \inquadthree{\invsqrtthree}{-\invsqrtthree}{-\invsqrtthree}  
+\elemcoorthreed  &  \inquadthree{-\invsqrtthree}{-\invsqrtthree}{-\invsqrtthree}  &  \inquadthree{\invsqrtthree}{-\invsqrtthree}{-\invsqrtthree}  
                &  \inquadthree{\invsqrtthree}{\invsqrtthree}{-\invsqrtthree}    &  \inquadthree{-\invsqrtthree}{\invsqrtthree}{-\invsqrtthree} \\ 
 \elemline
 Weight & 1 & 1 & 1 & 1 \\
 \elemline
-\elemcoortwod  &  \inquadthree{-\invsqrtthree}{-\invsqrtthree}{\invsqrtthree}   &  \inquadthree{\invsqrtthree}{-\invsqrtthree}{\invsqrtthree}  
+\elemcoorthreed  &  \inquadthree{-\invsqrtthree}{-\invsqrtthree}{\invsqrtthree}   &  \inquadthree{\invsqrtthree}{-\invsqrtthree}{\invsqrtthree}  
                &  \inquadthree{\invsqrtthree}{\invsqrtthree}{\invsqrtthree}     &  \inquadthree{-\invsqrtthree}{\invsqrtthree}{\invsqrtthree} \\ 
 \elemline
 Weight & 1 & 1 & 1 & 1 \\
+\end{QuadPoints}
+
+\subsection{Pentahedron 6\index{Elements!3D!Pentahedron 6}}
+
+\begin{Element}{3D}
+ 1 & \inelemthree{-1}{1}{0} & $\half\left(1-\xi\right)\eta$ 
+                            & \inelemthree{-\half\eta}
+                                          { \half\left(1-\xi\right)}
+                                          {0.0} \\
+\elemline
+ 2 & \inelemthree{-1}{0}{1} & $\half\left(1-\xi\right)\zeta$ 
+                            & \inelemthree{-\half\zeta}
+                                          {0.0}
+                                          {\half\left(1-\xi\right)} \\
+\elemline
+ 3 & \inelemthree{-1}{0}{0} & $\half\left(1-\xi\right)\left(1-\eta-\zeta\right)$ 
+                            & \inelemthree{-\half\left(1-\eta-\zeta\right)}
+                                          {-\half\left(1-\xi\right)}
+                                          {-\half\left(1-\xi\right)} \\
+\elemline
+ 4 & \inelemthree{1}{1}{0}  & $\half\left(1+\xi\right)\eta$ 
+                            & \inelemthree{ \half\eta}
+                                          { \half\left(1+\xi\right)}
+                                          {0.0} \\
+\elemline
+ 5 & \inelemthree{1}{0}{1}  & $\half\left(1+\xi\right)\zeta$ 
+                            & \inelemthree{ \half\zeta}
+                                          {0.0}
+                                          { \half\left(1+\xi\right)} \\
+\elemline
+ 6 & \inelemthree{1}{0}{0}  & $\half\left(1+\xi\right)\left(1-\eta-\zeta\right)$
+                            & \inelemthree{ \half\left(1-\eta-\zeta\right)}
+                                          {-\half\left(1+\xi\right)}
+                                          {-\half\left(1+\xi\right)} \\
+\end{Element}
+
+\begin{QuadPoints}{lcccccc}
+\elemcoorthreed  & \inquadthree{-\invsqrtthree}{0.5}{0.5}
+               & \inquadthree{-\invsqrtthree}{0.0}{0.5}  
+               & \inquadthree{-\invsqrtthree}{0.5}{0.0} 
+               & \inquadthree{\invsqrtthree}{0.5}{0.5}
+               & \inquadthree{\invsqrtthree}{0.0}{0.5}  
+               & \inquadthree{\invsqrtthree}{0.5}{0.0} \\ 
+\elemline
+Weight & 1/6 & 1/6 & 1/6 & 1/6 & 1/6 & 1/6 \\
+\end{QuadPoints}
+
+
+\clearpage
+\subsection{Hexahedron 20\index{Elements!3D!Hexahedron 20}}
+
+\begin{Element_part1}{3D}
+ 1 & \inelemthree{-1}{-1}{-1} & $\eighth\left(1-\xi\right)\left(1-\eta\right)\left(1-\zeta\right)\left(-2-\xi-\eta-\zeta\right)$  \\
+\elemline
+ 2 & \inelemthree{1}{-1}{-1}  & $\eighth\left(1+\xi\right)\left(1-\eta\right)\left(1-\zeta\right)\left(-2+\xi-\eta-\zeta\right)$  \\
+\elemline
+ 3 & \inelemthree{1}{1}{-1}   & $\eighth\left(1+\xi\right)\left(1+\eta\right)\left(1-\zeta\right)\left(-2+\xi+\eta-\zeta\right)$  \\
+\elemline
+ 4 & \inelemthree{-1}{1}{-1}  & $\eighth\left(1-\xi\right)\left(1+\eta\right)\left(1-\zeta\right)\left(-2-\xi+\eta-\zeta\right)$  \\
+\elemline
+ 5 & \inelemthree{-1}{-1}{1}  & $\eighth\left(1-\xi\right)\left(1-\eta\right)\left(1+\zeta\right)\left(-2-\xi-\eta+\zeta\right)$  \\
+\elemline
+ 6 & \inelemthree{1}{-1}{1}   & $\eighth\left(1+\xi\right)\left(1-\eta\right)\left(1+\zeta\right)\left(-2+\xi-\eta+\zeta\right)$  \\
+\elemline
+ 7 & \inelemthree{1}{1}{1}    & $\eighth\left(1+\xi\right)\left(1+\eta\right)\left(1+\zeta\right)\left(-2+\xi+\eta+\zeta\right)$  \\
+\elemline
+ 8 & \inelemthree{-1}{1}{1}   & $\eighth\left(1-\xi\right)\left(1+\eta\right)\left(1+\zeta\right)\left(-2-\xi+\eta+\zeta\right)$  \\
+\elemline
+ 9 & \inelemthree{0}{-1}{-1}  & $\quart\left(1-\xi^{2}\right)\left(1-\eta\right)\left(1-\zeta\right)$ \\
+\elemline
+10 & \inelemthree{1}{0}{-1}   & $\quart\left(1+\xi\right)\left(1-\eta^{2}\right)\left(1-\zeta\right)$ \\
+\elemline
+11 & \inelemthree{0}{1}{-1}   & $\quart\left(1-\xi^{2}\right)\left(1+\eta\right)\left(1-\zeta\right)$ \\
+\elemline
+12 & \inelemthree{-1}{0}{-1}  & $\quart\left(1-\xi\right)\left(1-\eta^{2}\right)\left(1-\zeta\right)$ \\
+\elemline
+13 & \inelemthree{-1}{-1}{0}  & $\quart\left(1-\xi\right)\left(1-\eta\right)\left(1-\zeta^{2}\right)$ \\
+\elemline
+14 & \inelemthree{1}{-1}{0}   & $\quart\left(1+\xi\right)\left(1-\eta\right)\left(1-\zeta^{2}\right)$ \\
+\elemline
+15 & \inelemthree{1}{1}{0}    & $\quart\left(1+\xi\right)\left(1+\eta\right)\left(1-\zeta^{2}\right)$ \\
+\elemline
+16 & \inelemthree{-1}{1}{0}   & $\quart\left(1-\xi\right)\left(1+\eta\right)\left(1-\zeta^{2}\right)$ \\
+\elemline
+ 17 & \inelemthree{0}{-1}{1}  & $\quart\left(1-\xi^{2}\right)\left(1-\eta\right)\left(1+\zeta\right)$ \\
+\elemline
+18 & \inelemthree{1}{0}{1}    & $\quart\left(1+\xi\right)\left(1-\eta^{2}\right)\left(1+\zeta\right)$ \\
+\elemline
+19 & \inelemthree{0}{1}{1}    & $\quart\left(1-\xi^{2}\right)\left(1+\eta\right)\left(1+\zeta\right)$ \\
+\elemline
+20 & \inelemthree{-1}{0}{1}   & $\quart\left(1-\xi\right)\left(1-\eta^{2}\right)\left(1+\zeta\right)$ \\
+
+\end{Element_part1}
+
+\clearpage
+\begin{Element_part2}{3D}
+ 1 & \inelemthree{ \quart\left(\xi+\half\left(\eta+\zeta+1\right)\right)\left(\eta-1\right)\left(\zeta-1\right)}
+                 { \quart\left(\eta+\half\left(\xi+\zeta+1\right)\right)\left(\xi-1\right)\left(\zeta-1\right)}
+                 { \quart\left(\zeta+\half\left(\xi+\eta+1\right)\right)\left(\xi-1\right)\left(\eta-1\right)} \\
+\elemline
+ 2 & \inelemthree{ \quart\left(\xi-\half\left(\eta+\zeta+1\right)\right)\left(\eta-1\right)\left(\zeta-1\right)}
+                 {-\quart\left(\eta-\half\left(\xi-\zeta-1\right)\right)\left(\xi+1\right)\left(\zeta-1\right)}
+                 {-\quart\left(\zeta-\half\left(\xi-\eta-1\right)\right)\left(\xi+1\right)\left(\eta-1\right)} \\
+\elemline
+ 3 & \inelemthree{-\quart\left(\xi+\half\left(\eta-\zeta-1\right)\right)\left(\eta+1\right)\left(\zeta-1\right)}
+                 {-\quart\left(\eta+\half\left(\xi-\zeta-1\right)\right)\left(\xi+1\right)\left(\zeta-1\right)}
+                 { \quart\left(\zeta-\half\left(\xi+\eta-1\right)\right)\left(\xi+1\right)\left(\eta+1\right)} \\
+\elemline
+ 4 & \inelemthree{-\quart\left(\xi-\half\left(\eta-\zeta-1\right)\right)\left(\eta+1\right)\left(\zeta-1\right)}
+                 { \quart\left(\eta-\half\left(\xi+\zeta+1\right)\right)\left(\xi-1\right)\left(\zeta-1\right)}
+                 {-\quart\left(\zeta+\half\left(\xi-\eta+1\right)\right)\left(\xi-1\right)\left(\eta+1\right)} \\
+\elemline
+ 5 & \inelemthree{-\quart\left(\xi+\half\left(\eta-\zeta+1\right)\right)\left(\eta-1\right)\left(\zeta+1\right)}
+                 {-\quart\left(\eta+\half\left(\xi-\zeta+1\right)\right)\left(\xi-1\right)\left(\zeta+1\right)}
+                 { \quart\left(\zeta-\half\left(\xi+\eta+1\right)\right)\left(\xi-1\right)\left(\eta-1\right)} \\
+\elemline
+ 6 & \inelemthree{-\quart\left(\xi-\half\left(\eta-\zeta+1\right)\right)\left(\eta-1\right)\left(\zeta+1\right)}
+                 { \quart\left(\eta-\half\left(\xi+\zeta-1\right)\right)\left(\xi+1\right)\left(\zeta+1\right)}
+                 {-\quart\left(\zeta+\half\left(\xi-\eta-1\right)\right)\left(\xi+1\right)\left(\eta-1\right)} \\
+\elemline
+ 7 & \inelemthree{ \quart\left(\xi+\half\left(\eta+\zeta-1\right)\right)\left(\eta+1\right)\left(\zeta+1\right)}
+                 { \quart\left(\eta+\half\left(\xi+\zeta-1\right)\right)\left(\xi+1\right)\left(\zeta+1\right)}
+                 { \quart\left(\zeta+\half\left(\xi+\eta-1\right)\right)\left(\xi+1\right)\left(\eta+1\right)} \\
+\elemline
+ 8 & \inelemthree{ \quart\left(\xi-\half\left(\eta+\zeta-1\right)\right)\left(\eta+1\right)\left(\zeta+1\right)}
+                 {-\quart\left(\eta-\half\left(\xi-\zeta+1\right)\right)\left(\xi-1\right)\left(\zeta+1\right)}
+                 {-\quart\left(\zeta-\half\left(\xi-\eta+1\right)\right)\left(\xi-1\right)\left(\eta+1\right)} \\
+\elemline
+ 9 & \inelemthree{-\half\xi\left(\eta-1\right)\left(\zeta-1\right)}
+                 {-\quart\left(\xi^{2}-1\right)\left(\zeta-1\right)}
+                 {-\quart\left(\xi^{2}-1\right)\left(\eta-1\right)} \\
+\elemline
+10 & \inelemthree{ \quart\left(\eta^{2}-1\right)\left(\zeta-1\right)}
+                 { \half\eta\left(\xi+1\right)\left(\zeta-1\right)}
+                 { \quart\left(\xi+1\right)\left(\eta^{2}-1\right)} \\
+\elemline
+11 & \inelemthree{ \half\xi\left(\eta+1\right)\left(\zeta-1\right)}
+                 { \quart\left(\xi^{2}-1\right)\left(\zeta-1\right)}
+                 { \quart\left(\xi^{2}-1\right)\left(\eta+1\right)} \\
+\elemline
+12 & \inelemthree{-\quart\left(\eta^{2}-1\right)\left(\zeta-1\right)}
+                 {-\half\eta\left(\xi-1\right)\left(\zeta-1\right)}
+                 {-\quart\left(\xi-1\right)\left(\eta^{2}-1\right)} \\
+\elemline
+13 & \inelemthree{-\quart\left(\eta-1\right)\left(\zeta^{2}-1\right)}
+                 {-\quart\left(\xi-1\right)\left(\zeta^{2}-1\right)}
+                 {-\half\zeta\left(\xi-1\right)\left(\eta-1\right)} \\
+\elemline
+14 & \inelemthree{ \quart\left(\eta-1\right)\left(\zeta^{2}-1\right)}
+                 { \quart\left(\xi+1\right)\left(\zeta^{2}-1\right)}
+                 { \half\zeta\left(\xi+1\right)\left(\eta-1\right)} \\
+\elemline
+15 & \inelemthree{-\quart\left(\eta+1\right)\left(\zeta^{2}-1\right)}
+                 {-\quart\left(\xi+1\right)\left(\zeta^{2}-1\right)}
+                 {-\half\zeta\left(\xi+1\right)\left(\eta+1\right)} \\
+\elemline
+16 & \inelemthree{ \quart\left(\eta+1\right)\left(\zeta^{2}-1\right)}
+                 { \quart\left(\xi-1\right)\left(\zeta^{2}-1\right)}
+                 { \half\zeta\left(\xi-1\right)\left(\eta+1\right)} \\
+\elemline
+ 17 & \inelemthree{ \half\xi\left(\eta-1\right)\left(\zeta+1\right)}
+                  { \quart\left(\xi^{2}-1\right)\left(\zeta+1\right)}
+                  { \quart\left(\xi^{2}-1\right)\left(\eta-1\right)} \\
+\elemline
+18 & \inelemthree{-\quart\left(\eta^{2}-1\right)\left(\zeta+1\right)}
+                 {-\half\eta\left(\xi+1\right)\left(\zeta+1\right)}
+                 {-\quart\left(\xi+1\right)\left(\eta^{2}-1\right)} \\
+\elemline
+19 & \inelemthree{-\half\xi\left(\eta+1\right)\left(\zeta+1\right)}
+                 {-\quart\left(\xi^{2}-1\right)\left(\zeta+1\right)}
+                 {-\quart\left(\xi^{2}-1\right)\left(\eta+1\right)} \\
+\elemline
+20 & \inelemthree{ \quart\left(\eta^{2}-1\right)\left(\zeta+1\right)}
+                 { \half\eta\left(\xi-1\right)\left(\zeta+1\right)}
+                 { \quart\left(\xi-1\right)\left(\eta^{2}-1\right)} \\
+
+\end{Element_part2}
+
+\begin{QuadPoints}{lcccc}
+Coord. \elemcoorthreed & \inquadthree{-\sqrt{\tfrac{3}{5}}}{-\sqrt{\tfrac{3}{5}}} {-\sqrt{\tfrac{3}{5}}} & \inquadthree{-\sqrt{\tfrac{3}{5}}}{-\sqrt{\tfrac{3}{5}}} {0} 
+                     & \inquadthree{-\sqrt{\tfrac{3}{5}}}{-\sqrt{\tfrac{3}{5}}} {\sqrt{\tfrac{3}{5}}} & \inquadthree{-\sqrt{\tfrac{3}{5}}}{0} {-\sqrt{\tfrac{3}{5}}} \\
+\elemline
+Weight & 125/729 & 200/729 & 125/729 & 200/729 \\
+\elemline
+Coord. \elemcoorthreed & \inquadthree{-\sqrt{\tfrac{3}{5}}}{0}{0} & \inquadthree{-\sqrt{\tfrac{3}{5}}}{0}{\sqrt{\tfrac{3}{5}}} 
+                     & \inquadthree{-\sqrt{\tfrac{3}{5}}}{\sqrt{\tfrac{3}{5}}}{-\sqrt{\tfrac{3}{5}}} & \inquadthree{-\sqrt{\tfrac{3}{5}}}{\sqrt{\tfrac{3}{5}}}{0} \\
+\elemline
+Weight & 320/729 & 200/729 & 125/729 & 200/729 \\
+
+\elemline
+Coord. \elemcoorthreed & \inquadthree{-\sqrt{\tfrac{3}{5}}}{\sqrt{\tfrac{3}{5}}}{\sqrt{\tfrac{3}{5}}} & \inquadthree{0}{-\sqrt{\tfrac{3}{5}}}{-\sqrt{\tfrac{3}{5}}} 
+                     & \inquadthree{0}{-\sqrt{\tfrac{3}{5}}}{0} & \inquadthree{0}{-\sqrt{\tfrac{3}{5}}}{\sqrt{\tfrac{3}{5}}} \\
+\elemline
+Weight & 125/729 & 200/729 & 320/729 & 200/729 \\
+
+\elemline
+Coord. \elemcoorthreed & \inquadthree{0}{0}{-\sqrt{\tfrac{3}{5}}} & \inquadthree{0}{0}{0} 
+                     & \inquadthree{0}{0}{\sqrt{\tfrac{3}{5}}} & \inquadthree{0}{\sqrt{\tfrac{3}{5}}}{-\sqrt{\tfrac{3}{5}}} \\
+\elemline
+Weight & 320/729 & 512/729 & 320/729 & 200/729 \\
+
+\elemline
+Coord. \elemcoorthreed & \inquadthree{0}{\sqrt{\tfrac{3}{5}}}{0} & \inquadthree{0}{\sqrt{\tfrac{3}{5}}}{\sqrt{\tfrac{3}{5}}} 
+                     & \inquadthree{\sqrt{\tfrac{3}{5}}}{-\sqrt{\tfrac{3}{5}}}{-\sqrt{\tfrac{3}{5}}} & \inquadthree{\sqrt{\tfrac{3}{5}}}{-\sqrt{\tfrac{3}{5}}}{0} \\
+\elemline
+Weight & 320/729 & 200/729 & 125/729 & 200/729 \\
+
+\elemline
+Coord. \elemcoorthreed & \inquadthree{\sqrt{\tfrac{3}{5}}}{-\sqrt{\tfrac{3}{5}}}{\sqrt{\tfrac{3}{5}}} & \inquadthree{\sqrt{\tfrac{3}{5}}}{0}{-\sqrt{\tfrac{3}{5}}} 
+                     & \inquadthree{\sqrt{\tfrac{3}{5}}}{0}{0} & \inquadthree{\sqrt{\tfrac{3}{5}}}{0}{\sqrt{\tfrac{3}{5}}} \\
+\elemline
+Weight & 125/729 & 200/729 & 320/729 & 200/729 \\
+
+\elemline
+Coord. \elemcoorthreed & \inquadthree{\sqrt{\tfrac{3}{5}}}{\sqrt{\tfrac{3}{5}}}{-\sqrt{\tfrac{3}{5}}} & \inquadthree{\sqrt{\tfrac{3}{5}}}{\sqrt{\tfrac{3}{5}}}{0} 
+                     & \inquadthree{\sqrt{\tfrac{3}{5}}}{\sqrt{\tfrac{3}{5}}}{\sqrt{\tfrac{3}{5}}} & \\
+\elemline
+Weight & 125/729 & 200/729 & 125/729 & \\
+
+\end{QuadPoints}
+
+
+\clearpage
+\subsection{Pentahedron 15\index{Elements!3D!Pentahedron 15}}
+
+\begin{Element_part1}{3D}
+ 1 & \inelemthree{-1}{1}{0}     & $\half\eta\left(1-\xi\right)\left(2\eta-2-\xi\right)$  \\
+\elemline
+ 2 & \inelemthree{-1}{0}{1}     & $\half\zeta\left(1-\xi\right)\left(2\zeta-2-\xi\right)$  \\
+\elemline
+ 3 & \inelemthree{-1}{0}{0}     & $\half\left(\xi-1\right)\left(1-\eta-\zeta\right)\left(\xi+2\eta+2\zeta\right)$  \\
+\elemline
+ 4 & \inelemthree{1}{1}{0}      & $\half\eta\left(1+\xi\right)\left(2\eta-2+\xi\right)$  \\
+\elemline
+ 5 & \inelemthree{1}{0}{1}      & $\half\zeta\left(1+\xi\right)\left(2\zeta-2+\xi\right)$  \\
+\elemline
+ 6 & \inelemthree{1}{0}{0}      & $\half\left(-\xi-1\right)\left(1-\eta-\zeta\right)\left(-\xi+2\eta+2\zeta\right)$  \\
+\elemline
+ 7 & \inelemthree{-1}{0.5}{0.5} & $2\eta\zeta\left(1-\xi\right)$  \\
+\elemline
+ 8 & \inelemthree{-1}{0}{0.5}   & $2\zeta\left(1-\eta-\zeta\right)\left(1-\xi\right)$  \\
+\elemline
+ 9 & \inelemthree{-1}{0.5}{0}   & $2\eta\left(1-\xi\right)\left(1-\eta-\zeta\right)$ \\
+\elemline
+10 & \inelemthree{0}{1}{0}      & $\eta\left(1-\xi^{2}\right)$ \\
+\elemline
+11 & \inelemthree{0}{0}{1}      & $\zeta\left(1-\xi^{2}\right)$ \\
+\elemline
+12 & \inelemthree{0}{0}{0}      & $\left(1-\xi^{2}\right)\left(1-\eta-\zeta\right)$ \\
+\elemline
+13 & \inelemthree{1}{0.5}{0.5}  & $2\eta\zeta\left(1+\xi\right)$ \\
+\elemline
+14 & \inelemthree{1}{0}{0.5}    & $2\zeta\left(1+\xi\right)\left(1-\eta-\zeta\right)$ \\
+\elemline
+15 & \inelemthree{1}{0.5}{0}    & $2\eta\left(1+\xi\right)\left(1-\eta-\zeta\right)$ \\
+
+\end{Element_part1}
+
+\clearpage
+\begin{Element_part2}{3D}
+ 1 & \inelemthree{ \half\eta\left(2\xi-2\eta+1\right)}
+                 {-\half\left(\xi-1\right)\left(4\eta-\xi-2\right)}
+                 { 0.0} \\
+\elemline
+ 2 & \inelemthree{ \half\zeta\left(2\xi-2\zeta+1\right)}
+                 { 0.0}
+                 {-\half\left(\xi-1\right)\left(4\zeta-\xi-2\right)} \\
+\elemline
+ 3 & \inelemthree{-\half\left(2\xi+2\eta+2\zeta-1\right)\left(\eta+\zeta-1\right)}
+                 {-\half\left(\xi-1\right)\left(4\eta+\xi+2\left(2\zeta-1\right)\right)}
+                 {-\half\left(\xi-1\right)\left(4\zeta+\xi+2\left(2\eta-1\right)\right)} \\
+\elemline
+ 4 & \inelemthree{ \half\eta\left(2\xi+2\eta-1\right)}
+                 { \half\left(\xi+1\right)\left(4\eta+\xi-2\right)}
+                 { 0.0} \\
+\elemline
+ 5 & \inelemthree{ \half\zeta\left(2\xi+2\zeta-1\right)}
+                 { 0.0}
+                 { \half\left(\xi+1\right)\left(4\zeta+\xi-2\right)} \\
+\elemline
+ 6 & \inelemthree{-\half\left(\eta+\zeta-1\right)\left(2\xi-2\eta-2\zeta+1\right)}
+                 { \half\left(\xi+1\right)\left(4\eta-\xi+2\left(2\zeta-1\right)\right)}
+                 { \half\left(\xi+1\right)\left(4\zeta-\xi+2\left(2\eta-1\right)\right)} \\
+\elemline
+ 7 & \inelemthree{-2\eta\zeta}
+                 {-2\left(\xi-1\right)\zeta}
+                 {-2\left(\xi-1\right)\eta} \\
+\elemline
+ 8 & \inelemthree{ 2\zeta\left(\eta+\zeta-1\right)}
+                 { 2\zeta-\left(\xi-1\right)}
+                 { 2\left(\xi-1\right)\left(2\zeta+\eta-1\right)} \\
+\elemline
+ 9 & \inelemthree{ 2\eta\left(\eta+\zeta-1\right)}
+                 { 2\left(2\eta+\zeta-1\right)\left(\xi-1\right)}
+                 { 2\eta\left(\xi-1\right)} \\
+\elemline
+10 & \inelemthree{-2\xi\eta}
+                 {-\left(\xi^{2}-1\right)}
+                 { 0.0} \\
+\elemline
+11 & \inelemthree{-2\xi\zeta}
+                 { 0.0}
+                 {-\left(\xi^{2}-1\right)} \\
+\elemline
+12 & \inelemthree{ 2\xi\left(\eta+\zeta-1\right)}
+                 { \left(\xi^{2}-1\right)}
+                 { \left(\xi^{2}-1\right)} \\
+\elemline
+13 & \inelemthree{ 2\eta\zeta}
+                 { 2\zeta\left(\xi+1\right)}
+                 { 2\eta\left(\xi+1\right)} \\
+\elemline
+14 & \inelemthree{-2\zeta\left(\eta+\zeta-1\right)}
+                 {-2\zeta\left(\xi+1\right)}
+                 {-2\left(\xi+1\right)\left(2\zeta+\eta-1\right)} \\
+\elemline
+15 & \inelemthree{-2\eta\left(\eta+\zeta-1\right)}
+                 {-2\left(2\eta+\zeta-1\right)\left(\xi+1\right)}
+                 {-2\eta\left(\xi+1\right)} \\
+
+\end{Element_part2}
+
+\begin{QuadPoints}{lcccc}
+Coord. \elemcoorthreed & \inquadthree{-{\tfrac{1}{\sqrt{3}}}}{\tfrac{1}{3}}{\tfrac{1}{3}} & \inquadthree{-{\tfrac{1}{\sqrt{3}}}}{0.6}{0.2}
+                       & \inquadthree{-{\tfrac{1}{\sqrt{3}}}}{0.2}{0.6} & \inquadthree{-{\tfrac{1}{\sqrt{3}}}}{0.2}{0.2} \\
+\elemline
+Weight & -27/96 & 25/96 & 25/96 & 25/96 \\
+\elemline
+Coord. \elemcoorthreed & \inquadthree{{\tfrac{1}{\sqrt{3}}}}{\tfrac{1}{3}}{\tfrac{1}{3}} & \inquadthree{{\tfrac{1}{\sqrt{3}}}}{0.6}{0.2}
+                       & \inquadthree{{\tfrac{1}{\sqrt{3}}}}{0.2}{0.6} & \inquadthree{{\tfrac{1}{\sqrt{3}}}}{0.2}{0.2} \\
+\elemline
+Weight & -27/96 & 25/96 & 25/96 & 25/96 \\
+
 \end{QuadPoints}
 
 

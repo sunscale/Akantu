@@ -3,15 +3,15 @@
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Wed Sep 01 2010
-# @date last modification: Tue Sep 09 2014
+# @date creation: Fri Oct 24 2014
+# @date last modification: Wed Jan 13 2016
 #
 # @brief  The find_package file for Scotch
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -29,43 +29,20 @@
 #===============================================================================
 
 #===============================================================================
-#if(SCOTCH_DIR)
-#  set(SCOTCH_LIBRARY "NOTFOUND" CACHE INTERNAL "Cleared" FORCE)
-#endif(SCOTCH_DIR)
+if(NOT DEFINED SCOTCH_DIR OR NOT SCOTCH_DIR)
+  set(SCOTCH_DIR "" CACHE PATH "Location of Scotch library.")
+endif()
+mark_as_advanced(SCOTCH_DIR)
 
-find_library(SCOTCH_LIBRARY scotch
-  HINTS ${SCOTCH_DIR}
-  PATH_SUFFIXES src/libscotch lib
-  )
+find_library(SCOTCH_LIBRARY scotch PATHS ${SCOTCH_DIR}/lib)
+find_library(SCOTCH_LIBRARY_ERR scotcherr PATHS ${SCOTCH_DIR}/lib)
+find_library(SCOTCH_LIBRARY_ERREXIT scotcherrexit PATHS ${SCOTCH_DIR}/lib)
+find_library(SCOTCH_LIBRARY_ESMUMPS esmumps PATHS ${SCOTCH_DIR}/lib)
+find_library(SCOTCH_LIBRARY_METIS scotchmetis PATHS ${SCOTCH_DIR}/lib)
+find_library(SCOTCH_LIBRARY_PARMETIS scotchparmetis PATHS ${SCOTCH_DIR}/lib)
 
-find_library(SCOTCH_LIBRARY_ERR scotcherr
-  HINTS ${SCOTCH_DIR}
-  PATH_SUFFIXES src/libscotch lib
-  )
-
-find_library(SCOTCH_LIBRARY_ERREXIT scotcherrexit
-  HINTS ${SCOTCH_DIR}
-  PATH_SUFFIXES src/libscotch lib
-  )
-
-find_library(SCOTCH_LIBRARY_ESMUMPS esmumps
-  HINTS ${SCOTCH_DIR}
-  PATH_SUFFIXES src/libscotch lib
-  )
-
-find_library(SCOTCH_LIBRARY_METIS scotchmetis
-  PATHS ${SCOTCH_DIR}
-  PATH_SUFFIXES src/libscotch lib
-  )
-
-find_library(SCOTCH_LIBRARY_PARMETIS scotchparmetis
-  PATHS ${SCOTCH_DIR}
-  PATH_SUFFIXES src/libscotch lib
-  )
-
-find_path(SCOTCH_INCLUDE_DIR scotch.h
-  HINTS ${SCOTCH_DIR}
-  PATH_SUFFIXES include scotch src/libscotch include/scotch
+find_path(SCOTCH_INCLUDE_DIR scotch.h  PATHS ${SCOTCH_DIR}
+  PATH_SUFFIXES include include/scotch
   )
 
 #===============================================================================
@@ -74,6 +51,7 @@ mark_as_advanced(SCOTCH_LIBRARY
   SCOTCH_LIBRARY_ERREXIT
   SCOTCH_LIBRARY_ESMUMPS
   SCOTCH_LIBRARY_PARMETIS
+  SCOTCH_LIBRARY_METIS
   SCOTCH_INCLUDE_DIR)
 
 set(SCOTCH_LIBRARIES_ALL ${SCOTCH_LIBRARY} ${SCOTCH_LIBRARY_ERR})
@@ -94,14 +72,21 @@ endif()
 set(SCOTCH_LIBRARIES ${SCOTCH_LIBRARIES_ALL} CACHE INTERNAL "Libraries for scotch" FORCE)
 
 #===============================================================================
-if(NOT SCOTCH_FOUND)
-  set(SCOTCH_DIR "" CACHE PATH "Location of Scotch library.")
-  mark_as_advanced(SCOTCH_DIR)
-endif()
-
-#===============================================================================
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Scotch DEFAULT_MSG
-  SCOTCH_LIBRARY SCOTCH_LIBRARY_ERR SCOTCH_INCLUDE_DIR)
-
-
+if(CMAKE_VERSION VERSION_GREATER 2.8.12)
+  if(SCOTCH_INCLUDE_DIR)
+    file(STRINGS ${SCOTCH_INCLUDE_DIR}/scotch.h _versions
+      REGEX "^#define\ +SCOTCH_(VERSION|RELEASE|PATCHLEVEL) .*")
+    foreach(_ver ${_versions})
+      string(REGEX MATCH "SCOTCH_(VERSION|RELEASE|PATCHLEVEL) *([0-9.]+)" _tmp "${_ver}")
+      set(_scotch_${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
+    endforeach()
+    set(SCOTCH_VERSION "${_scotch_VERSION}.${_scotch_PATCHLEVEL}" CACHE INTERNAL "")
+  endif()
+  find_package_handle_standard_args(Scotch
+    REQUIRED_VARS SCOTCH_LIBRARIES SCOTCH_INCLUDE_DIR
+    VERSION_VAR SCOTCH_VERSION)
+else()
+  find_package_handle_standard_args(Scotch DEFAULT_MSG
+    SCOTCH_LIBRARIES SCOTCH_INCLUDE_DIR)
+endif()

@@ -1,14 +1,18 @@
 /**
  * @file   test_structural_mechanics_model_bernoulli_beam_12_10_13.cc
- * @author Fabian Barras <fabian.barras@epfl.ch>
- * @date   Tue Nov 29 09:16:11 2011
  *
- * @brief  
+ * @author Fabian Barras <fabian.barras@epfl.ch>
+ *
+ * @date creation: Fri Apr 13 2012
+ * @date last modification: Sun Oct 19 2014
+ *
+ * @brief  Test for structural elements beam3d
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

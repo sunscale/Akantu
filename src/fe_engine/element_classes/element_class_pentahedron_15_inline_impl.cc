@@ -1,17 +1,19 @@
 /**
  * @file   element_class_pentahedron_15_inline_impl.cc
  *
+ * @author Mauro Corrado <mauro.corrado@epfl.ch>
  * @author Sacha Laffely <sacha.laffely@epfl.ch>
  * @author Damien Scantamburlo <damien.scantamburlo@epfl.ch>
  *
- * @date creation: Wed Mar 19 2015
+ * @date creation: Tue Mar 31 2015
+ * @date last modification: Wed Sep 16 2015
  *
  * @brief  Specialization of the element_class class for the type _pentahedron_15
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (Â©) 2015 EPFL (Ecole Polytechnique FÃ©dÃ©rale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en MÃ©canique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -29,8 +31,8 @@
  * @section DESCRIPTION
  *
  * @verbatim
-
-             /z
+             z
+             ^
              |
              |
              |  1
@@ -42,15 +44,15 @@
            4    2--8--0
           | \  /      /
           |  \11     /
-          13  12    9----------/y
+          13  12    9---------->y
           | /  \   /
           |/    \ /
           5--14--3
          /
         /
        /
-      \x
-
+      v
+     x
        x   y    z
 * N0  -1   1    0
 * N1  -1   0    1
@@ -67,8 +69,7 @@
 * N12  1   0.5  0.5
 * N13  1   0    0.5
 * N14  1   0.5  0
-
-*/
+ */
 
 /* -------------------------------------------------------------------------- */
 AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_pentahedron_15,
@@ -140,7 +141,7 @@ InterpolationElement<_itp_lagrange_pentahedron_15>::computeDNDS(const vector_typ
   dnds(1, 8) =  2.0 * (2 * c(1) + c(2) - 1) * (c(0) - 1);
   dnds(1, 9) = -(c(0) * c(0) - 1);
   dnds(1,10) =  0.0;
-  dnds(1,11) =  (c(0)*c(0) - 1);
+  dnds(1,11) =  (c(0) * c(0) - 1);
   dnds(1,12) =  2.0 * c(2) * (c(0) + 1);
   dnds(1,13) = -2.0 * c(2) * (c(0) + 1);
   dnds(1,14) = -2.0 * (2 * c(1) + c(2) - 1) * (c(0) + 1);

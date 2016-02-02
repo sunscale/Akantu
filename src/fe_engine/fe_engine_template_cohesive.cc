@@ -1,18 +1,19 @@
 /**
  * @file   fe_engine_template_cohesive.cc
  *
- * @author Marco Vocialta <marco.vocialta@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Wed Oct 31 2012
- * @date last modification: Fri Jun 13 2014
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Specialization of the FEEngineTemplate for cohesive element
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -49,7 +50,7 @@ Real FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>::integrate(c
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if(filter_elements != empty_filter) nb_element = filter_elements.getSize();
 
-  UInt nb_quadrature_points  = getNbQuadraturePoints(type);
+  UInt nb_quadrature_points  = getNbIntegrationPoints(type);
 
   AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
 		      "The vector f(" << f.getID()
@@ -87,7 +88,7 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if(filter_elements == filter_elements) nb_element = filter_elements.getSize();
 
-  UInt nb_quadrature_points  = getNbQuadraturePoints(type);
+  UInt nb_quadrature_points  = getNbIntegrationPoints(type);
 
   AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
 		      "The vector f(" << f.getID() << " size " << f.getSize()
@@ -117,7 +118,7 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>
 /* -------------------------------------------------------------------------- */
 template <>
 void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>::
-gradientOnQuadraturePoints(__attribute__((unused)) const Array<Real> &u,
+gradientOnIntegrationPoints(__attribute__((unused)) const Array<Real> &u,
 			   __attribute__((unused)) Array<Real> &nablauq,
 			   __attribute__((unused)) const UInt nb_degree_of_freedom,
 			   __attribute__((unused)) const ElementType & type,
@@ -131,7 +132,7 @@ gradientOnQuadraturePoints(__attribute__((unused)) const Array<Real> &u,
 template<>
 template<>
 void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>::
-computeNormalsOnControlPoints<_cohesive_1d_2>(__attribute__((unused)) const Array<Real> & field,
+computeNormalsOnIntegrationPoints<_cohesive_1d_2>(__attribute__((unused)) const Array<Real> & field,
 					      Array<Real> & normal,
 					      const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();

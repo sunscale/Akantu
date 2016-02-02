@@ -1,19 +1,20 @@
 /**
  * @file   material_cohesive.cc
  *
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Feb 22 2012
- * @date last modification: Tue Jul 29 2014
+ * @date last modification: Tue Jan 12 2016
  *
  * @brief  Specialization of the material class for cohesive elements
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -56,6 +57,7 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
   contact_opening("contact_opening", *this),
   delta_max("delta max", *this),
   use_previous_delta_max(false),
+  use_previous_opening(false),
   damage("damage", *this),
   sigma_c("sigma_c", *this),
   normal(0, spatial_dimension, "normal") {
@@ -79,6 +81,19 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id) :
     this->model->getMeshFacets().initElementTypeMapArray(facet_filter, 1,
 							 spatial_dimension - 1);
 
+  this->reversible_energy.initialize(1                );
+  this->total_energy     .initialize(1                );
+  this->tractions_old    .initialize(spatial_dimension);
+  this->tractions        .initialize(spatial_dimension);
+  this->opening_old      .initialize(spatial_dimension);
+  this->contact_tractions.initialize(spatial_dimension);
+  this->contact_opening  .initialize(spatial_dimension);
+  this->opening          .initialize(spatial_dimension);
+  this->delta_max        .initialize(1                );
+  this->damage           .initialize(1                );
+
+  if (this->model->getIsExtrinsic()) this->sigma_c.initialize(1);
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -93,21 +108,8 @@ MaterialCohesive::~MaterialCohesive() {
 void MaterialCohesive::initMaterial() {
   AKANTU_DEBUG_IN();
   Material::initMaterial();
-
-  this->reversible_energy.initialize(1                );
-  this->total_energy     .initialize(1                );
-  this->tractions_old    .initialize(spatial_dimension);
-  this->tractions        .initialize(spatial_dimension);
-  this->opening_old      .initialize(spatial_dimension);
-  this->contact_tractions.initialize(spatial_dimension);
-  this->contact_opening  .initialize(spatial_dimension);
-  this->opening          .initialize(spatial_dimension);
-  this->delta_max        .initialize(1                );
-  this->damage           .initialize(1                );
-
-  if (model->getIsExtrinsic()) this->sigma_c.initialize(1);
-  if (use_previous_delta_max) delta_max.initializeHistory();
-
+  if (this->use_previous_delta_max) this->delta_max.initializeHistory();
+  if (this->use_previous_opening) this->opening.initializeHistory();
   AKANTU_DEBUG_OUT();
 }
 
@@ -140,7 +142,7 @@ void MaterialCohesive::assembleResidual(GhostType ghost_type) {
 
     UInt size_of_shapes       = shapes.getNbComponent();
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
-    UInt nb_quadrature_points = fem_cohesive->getNbQuadraturePoints(*it, ghost_type);
+    UInt nb_quadrature_points = fem_cohesive->getNbIntegrationPoints(*it, ghost_type);
 
 
     /// compute @f$t_i N_a@f$
@@ -227,7 +229,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
 						ghost_type, _ek_cohesive);
 
   for(; it != last_type; ++it) {
-    UInt nb_quadrature_points = fem_cohesive->getNbQuadraturePoints(*it, ghost_type);
+    UInt nb_quadrature_points = fem_cohesive->getNbIntegrationPoints(*it, ghost_type);
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
 
     const Array<Real> & shapes = fem_cohesive->getShapes(*it, ghost_type);
@@ -277,8 +279,12 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
       A(i, i + spatial_dimension*size_of_shapes) = -1;
     }
 
-    /// compute traction
-    computeTraction(ghost_type);
+    /// compute traction. This call is not necessary for the linear
+    /// cohesive law that, currently, is the only one used for the
+    /// extrinsic approach.
+    if (!model->getIsExtrinsic()){
+      computeTraction(ghost_type);
+    }
 
     /// get the tangent matrix @f$\frac{\partial{(t/\delta)}}{\partial{\delta}} @f$
     Array<Real> * tangent_stiffness_matrix =
@@ -390,7 +396,7 @@ void MaterialCohesive::computeTraction(GhostType ghost_type) {
     UInt nb_element = elem_filter.getSize();
     if (nb_element == 0) continue;
     UInt nb_quadrature_points =
-      nb_element*fem_cohesive->getNbQuadraturePoints(*it, ghost_type);
+      nb_element*fem_cohesive->getNbIntegrationPoints(*it, ghost_type);
 
     normal.resize(nb_quadrature_points);
 
@@ -417,13 +423,13 @@ void MaterialCohesive::computeNormal(const Array<Real> & position,
   AKANTU_DEBUG_IN();
 
   if (type == _cohesive_1d_2)
-    fem_cohesive->computeNormalsOnControlPoints(position,
+    fem_cohesive->computeNormalsOnIntegrationPoints(position,
 						normal,
 						type, ghost_type);
   else {
 #define COMPUTE_NORMAL(type)						\
     fem_cohesive->getShapeFunctions().					\
-      computeNormalsOnControlPoints<type, CohesiveReduceFunctionMean>(position, \
+      computeNormalsOnIntegrationPoints<type, CohesiveReduceFunctionMean>(position, \
 								      normal, \
 								      ghost_type, \
 								      element_filter(type, ghost_type));
@@ -445,7 +451,7 @@ void MaterialCohesive::computeOpening(const Array<Real> & displacement,
 
 #define COMPUTE_OPENING(type)						\
   fem_cohesive->getShapeFunctions().					\
-    interpolateOnControlPoints<type, CohesiveReduceFunctionOpening>(displacement, \
+    interpolateOnIntegrationPoints<type, CohesiveReduceFunctionOpening>(displacement, \
 								    opening, \
 								    spatial_dimension, \
 								    ghost_type, \
@@ -579,7 +585,7 @@ Real MaterialCohesive::getContactEnergy() {
 
   for(; it != last_type; ++it) {
     Array<UInt> & el_filter = element_filter(*it, _not_ghost);
-    UInt nb_quad_per_el = fem_cohesive->getNbQuadraturePoints(*it, _not_ghost);
+    UInt nb_quad_per_el = fem_cohesive->getNbIntegrationPoints(*it, _not_ghost);
     UInt nb_quad_points = el_filter.getSize() * nb_quad_per_el;
     Array<Real> contact_energy(nb_quad_points);
 
@@ -613,17 +619,6 @@ Real MaterialCohesive::getEnergy(std::string type) {
 
   AKANTU_DEBUG_OUT();
   return 0.;
-}
-
-/* -------------------------------------------------------------------------- */
-inline ElementTypeMap<UInt> MaterialCohesive::getInternalDataPerElem(const ID & id,
-							     const ElementKind & element_kind,
-                                                             const ID & fe_engine_id) const {
-  if (element_kind == _ek_cohesive) {
-    return Material::getInternalDataPerElem(id, element_kind, "CohesiveFEEngine");
-  } else {
-    return Material::getInternalDataPerElem(id, element_kind, fe_engine_id);
-  }
 }
 
 /* -------------------------------------------------------------------------- */

@@ -5,14 +5,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Jul 20 2010
- * @date last modification: Fri Jun 13 2014
+ * @date last modification: Fri Dec 11 2015
  *
  * @brief  Implementation of the FEEngine class
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -38,7 +39,7 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 FEEngine::FEEngine(Mesh & mesh, UInt element_dimension, ID id, MemoryID memory_id) :
-  Memory(id, memory_id), mesh(mesh), normals_on_quad_points("normals_on_quad_points", id) {
+  Memory(id, memory_id), mesh(mesh), normals_on_integration_points("normals_on_quad_points", id) {
   AKANTU_DEBUG_IN();
   this->element_dimension = (element_dimension != _all_dimensions) ?
     element_dimension : mesh.getSpatialDimension();

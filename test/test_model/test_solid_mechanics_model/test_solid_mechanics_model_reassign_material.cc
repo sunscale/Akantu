@@ -4,13 +4,13 @@
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @date creation: Mon Feb 10 2014
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Wed Feb 25 2015
  *
  * @brief  test the function reassign material
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

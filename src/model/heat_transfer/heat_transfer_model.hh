@@ -4,18 +4,19 @@
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  * @author Srinivasa Babu Ramisetti <srinivasa.ramisetti@epfl.ch>
- * @author Rui Wang <rui.wang@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Rui Wang <rui.wang@epfl.ch>
  *
  * @date creation: Sun May 01 2011
- * @date last modification: Tue Sep 02 2014
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Model of Heat Transfer
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -278,7 +279,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
-  inline FEEngine & getFEEngineBoundary(std::string name = "");
+  inline FEEngine & getFEEngineBoundary(const std::string & name = "");
 
   AKANTU_GET_MACRO(Density, density, Real);
   AKANTU_GET_MACRO(Capacity, capacity, Real);
@@ -425,6 +426,9 @@ private:
 
   /// analysis method
   AnalysisMethod method;
+
+  /// pointer to the pbc synchronizer
+  PBCSynchronizer * pbc_synch;
 
 };
 

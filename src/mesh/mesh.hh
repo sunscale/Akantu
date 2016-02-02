@@ -3,19 +3,20 @@
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Dana Christen <dana.christen@epfl.ch>
- * @author Marco Vocialta <marco.vocialta@epfl.ch>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Fri Jun 18 2010
- * @date last modification: Fri Sep 05 2014
+ * @date last modification: Thu Jan 14 2016
  *
  * @brief  the class representing the meshes
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -89,7 +90,7 @@ __BEGIN_AKANTU__
 class Mesh : protected Memory,
              public EventHandlerManager<MeshEventHandler>,
              public GroupManager,
-	     public Dumpable {
+             public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -165,13 +166,13 @@ public:
 
   template<typename T>
   void initElementTypeMapArray(ElementTypeMapArray<T> & v,
-			       UInt nb_component,
-			       UInt spatial_dimension,
-			       GhostType ghost_type,
-			       const T & default_value,
-			       const bool & flag_nb_node_per_elem_multiply = false,
-			       ElementKind element_kind = _ek_regular,
-			       bool size_to_nb_element = false) const; /// @todo: think about nicer way to do it
+                               UInt nb_component,
+                               UInt spatial_dimension,
+                               GhostType ghost_type,
+                               const T & default_value,
+                               const bool & flag_nb_node_per_elem_multiply = false,
+                               ElementKind element_kind = _ek_regular,
+                               bool size_to_nb_element = false) const; /// @todo: think about nicer way to do it
 
   /// extract coordinates of nodes from an element
   template<typename T>
@@ -221,8 +222,8 @@ public:
 
   /// get global connectivity array
   void getGlobalConnectivity(ElementTypeMapArray<UInt> & global_connectivity,
-			     UInt dimension,
-			     GhostType ghost_type);
+                             UInt dimension,
+                             GhostType ghost_type);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -246,6 +247,7 @@ public:
 
   /// get the Array of global ids of the nodes (only used in parallel)
   AKANTU_GET_MACRO(GlobalNodesIds, *nodes_global_ids, const Array<UInt> &);
+  AKANTU_GET_MACRO_NOT_CONST(GlobalNodesIds, *nodes_global_ids, Array<UInt> &);
 
   /// get the global id of a node
   inline UInt getNodeGlobalId(UInt local_id) const;
@@ -286,8 +288,8 @@ public:
 
   /// get the number of element for a given ghost_type and a given dimension
   inline UInt getNbElement(const UInt spatial_dimension = _all_dimensions,
-			   const GhostType & ghost_type = _not_ghost,
-			   const ElementKind & kind = _ek_not_defined) const;
+                           const GhostType & ghost_type = _not_ghost,
+                           const ElementKind & kind = _ek_not_defined) const;
 
   /// get the connectivity list either for the elements or the ghost elements
   inline const ConnectivityTypeList & getConnectivityTypeList(const GhostType & ghost_type = _not_ghost) const;
@@ -314,13 +316,13 @@ public:
   /// get a name field associated to the mesh
   template<typename T>
   inline const Array<T> & getData(const std::string & data_name,
-				  const ElementType & el_type,
+                                  const ElementType & el_type,
                                   const GhostType & ghost_type = _not_ghost) const;
 
   /// get a name field associated to the mesh
   template<typename T>
   inline Array<T> & getData(const std::string & data_name,
-			    const ElementType & el_type,
+                            const ElementType & el_type,
                             const GhostType & ghost_type = _not_ghost);
 
   /// register a new ElementalTypeMap in the MeshData
@@ -338,21 +340,21 @@ public:
 
   template <typename T>
   ElementTypeMap<UInt> getNbDataPerElem(ElementTypeMapArray<T> & array,
-					const ElementKind & element_kind);
+                                        const ElementKind & element_kind);
 
   template <typename T>
   dumper::Field * createFieldFromAttachedData(const std::string & field_id,
-					      const std::string & group_name,
-					      const ElementKind & element_kind);
+                                              const std::string & group_name,
+                                              const ElementKind & element_kind);
 
   /// templated getter returning the pointer to data in MeshData (modifiable)
   template<typename T>
   inline Array<T> * getDataPointer(const std::string & data_name,
-				   const ElementType & el_type,
+                                   const ElementType & el_type,
                                    const GhostType & ghost_type = _not_ghost,
                                    UInt nb_component = 1,
-				   bool size_to_nb_element = true,
-				   bool resize_with_parent = false);
+                                   bool size_to_nb_element = true,
+                                   bool resize_with_parent = false);
 
   /// Facets mesh accessor
   AKANTU_GET_MACRO(MeshFacets, *mesh_facets, const Mesh &);
@@ -369,7 +371,7 @@ public:
 #ifndef SWIG
   /// return the dumper from a group and and a dumper name
   DumperIOHelper & getGroupDumper(const std::string & dumper_name, 
-				  const std::string & group_name);
+                                  const std::string & group_name);
 #endif
   /* ------------------------------------------------------------------------ */
   /* Wrappers on ElementClass functions                                       */
@@ -409,6 +411,9 @@ public:
   /// get all the type of the surface element associated to a given element
   static inline VectorProxy<ElementType> getAllFacetTypes(const ElementType & type);
 
+  /// get the number of nodes in the given element list
+  static inline UInt getNbNodesPerElementList(const Array<Element> & elements);
+
   /* ------------------------------------------------------------------------ */
   /* Element type Iterator                                                    */
   /* ------------------------------------------------------------------------ */
@@ -441,6 +446,10 @@ private:
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
   friend class CohesiveElementInserter;
+#endif
+
+#if defined(AKANTU_IGFEM)
+  template<UInt dim> friend class MeshIgfemSphericalGrowingGel;
 #endif
 
   AKANTU_GET_MACRO(NodesPointer, nodes, Array<Real> *);

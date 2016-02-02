@@ -1,16 +1,17 @@
 /**
  * @file   cohesive_element_inserter.hh
  *
+ * @author Fabian Barras <fabian.barras@epfl.ch>
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Wed Dec 04 2013
- * @date last modification: Tue Jul 29 2014
+ * @date last modification: Fri Oct 02 2015
  *
  * @brief  Cohesive element inserter
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -38,6 +39,7 @@
 #include "mesh_utils.hh"
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+#  include "global_ids_updater.hh"
 #  include "facet_synchronizer.hh"
 #endif
 
@@ -88,7 +90,8 @@ public:
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   /// init parallel variables
-  void initParallel(FacetSynchronizer * facet_synchronizer);
+  void initParallel(FacetSynchronizer * facet_synchronizer,
+		    DistributedSynchronizer * distributed_synchronizer);
 #endif
 
 protected:
@@ -174,8 +177,8 @@ private:
   /// facet synchronizer
   FacetSynchronizer * facet_synchronizer;
 
-  /// distributed synchronizer
-  DistributedSynchronizer * distributed_synchronizer;
+  /// global connectivity ids updater
+  GlobalIdsUpdater * global_ids_updater;
 #endif
 };
 

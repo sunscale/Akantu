@@ -1,18 +1,19 @@
 /**
  * @file   dof_synchronizer.cc
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @date creation: Fri Jun 17 2011
- * @date last modification: Thu Mar 27 2014
+ * @date last modification: Wed Oct 21 2015
  *
  * @brief  DOF synchronizing object implementation
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -128,14 +129,14 @@ DOFSynchronizer::DOFSynchronizer(const Mesh & mesh, UInt nb_degree_of_freedom) :
     std::vector<CommunicationRequest *> requests;
     requests.push_back(static_communicator->asyncSend(&nb_master_dofs, 1, sendto, 0));
     if(nb_master_dofs != 0) {
-      AKANTU_DEBUG(dblInfo, "Sending "<< nb_master_dofs << " dofs to " << sendto + 1);
+      AKANTU_DEBUG(dblInfo, "Sending "<< nb_master_dofs << " dofs to " << sendto);
       requests.push_back(static_communicator->asyncSend(send_buffer, nb_master_dofs, sendto, 1));
     }
 
     /// Receive the info and store them as slave nodes 
     static_communicator->receive(&nb_slave_dofs, 1, recvfrom, 0);
     if(nb_slave_dofs != 0) {
-      AKANTU_DEBUG(dblInfo, "Receiving "<< nb_slave_dofs << " dofs from " << recvfrom + 1);
+      AKANTU_DEBUG(dblInfo, "Receiving "<< nb_slave_dofs << " dofs from " << recvfrom);
       proc_informations[recvfrom].slave_dofs.resize(nb_slave_dofs);
       recv_buffer = proc_informations[recvfrom].slave_dofs.storage();
       static_communicator->receive(recv_buffer, nb_slave_dofs, recvfrom, 1);
@@ -148,7 +149,7 @@ DOFSynchronizer::DOFSynchronizer(const Mesh & mesh, UInt nb_degree_of_freedom) :
     static_communicator->waitAll(requests);
     static_communicator->freeCommunicationRequest(requests);
     requests.clear();
-    delete [] send_buffer;
+    delete [] send_buffer;    
   }
 }
 

@@ -3,15 +3,15 @@
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Fri Oct 15 2010
-# @date last modification: Tue Sep 09 2014
+# @date creation: Mon Dec 08 2014
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  Find gmsh and delacre the add_mesh macro
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -66,17 +66,19 @@ macro(ADD_MESH MESH_TARGET GEO_FILE DIM ORDER)
 
     if(EXISTS ${_geo_file})
       add_custom_command(
-	OUTPUT ${_msh_file}
-	DEPENDS ${_geo_file}
-	COMMAND ${GMSH}
-	ARGS -${DIM} -order ${ORDER} -optimize -o ${_msh_file} ${_geo_file} 2>&1 > /dev/null
-	COMMENT "Generating the ${DIM}D mesh ${_r_msh_file} (order ${ORDER}) form the geometry ${_r_geo_file}"
-	)
+        OUTPUT ${_msh_file}
+        DEPENDS ${_geo_file}
+        COMMAND ${GMSH}
+        ARGS -${DIM} -order ${ORDER} -optimize -o ${_msh_file} ${_geo_file} 2>&1 > /dev/null
+        COMMENT "Generating the ${DIM}D mesh ${_r_msh_file} (order ${ORDER}) form the geometry ${_r_geo_file}"
+        )
+
       add_custom_target(${MESH_TARGET}
-	DEPENDS ${_msh_file})
+        DEPENDS ${_msh_file})
       set_target_properties(${MESH_TARGET} PROPERTIES RESSOURCES ${_geo_file})
-      #else(EXISTS ${_geo_file})
-      #  message("File ${_geo_file} not found")
+    else(EXISTS ${_geo_file})
+      message(WARNING
+        "File ${_geo_file} not found for target ${MESH_TARGET}")
     endif(EXISTS ${_geo_file})
   endif(GMSH_FOUND)
 endmacro(ADD_MESH)

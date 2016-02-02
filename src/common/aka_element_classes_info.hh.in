@@ -1,14 +1,18 @@
 /**
- * @file   aka_element_classes_info.hh
+ * @file   aka_element_classes_info.hh.in
+ *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Tue May 19 11:43:07 2015
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ *
+ * @date creation: Sun Jul 19 2015
+ * @date last modification: Fri Oct 16 2015
  *
  * @brief  Declaration of the enums for the element classes
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -58,6 +62,16 @@ enum ElementKind {
   BOOST_PP_SEQ_ENUM(AKANTU_ELEMENT_KIND),
   _ek_not_defined
 };
+
+
+/* -------------------------------------------------------------------------- */
+struct ElementKind_def {
+  typedef ElementKind type;
+  static const type _begin_ = BOOST_PP_SEQ_HEAD(AKANTU_ELEMENT_KIND);
+  static const type _end_   = _ek_not_defined;
+};
+
+typedef safe_enum<ElementKind_def> element_kind_t;
 #else
 enum ElementKind;
 #endif

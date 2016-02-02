@@ -1,17 +1,18 @@
 #===============================================================================
-# @file   85_mumps.cmake
+# @file   mumps.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Nov 21 2011
-# @date last modification: Mon Sep 15 2014
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  package description for mumps support
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -27,6 +28,7 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
+
 package_declare(Mumps EXTERNAL
   DESCRIPTION "Add Mumps support in akantu"
   SYSTEM ON third-party/cmake/mumps.cmake
@@ -47,9 +49,15 @@ package_get_option_name(parallel _par_option)
 if(${_par_option})
   package_set_find_package_extra_options(Mumps ARGS COMPONENTS "parallel")
   package_add_third_party_script_variable(Mumps MUMPS_TYPE "par")
+
+  package_set_package_system_dependency(Mumps deb libmumps)
+  package_set_package_system_dependency(Mumps deb-src libmumps-dev)
 else()
   package_set_find_package_extra_options(Mumps ARGS COMPONENTS "sequential")
   package_add_third_party_script_variable(Mumps MUMPS_TYPE "seq")
+
+  package_set_package_system_dependency(Mumps deb libmumps-seq)
+  package_set_package_system_dependency(Mumps deb-src libmumps-seq-dev)
 endif()
 
 package_use_system(Mumps _use_system)
@@ -85,4 +93,14 @@ package_declare_documentation(Mumps
   "\\end{command}"
   ""
   "If you activate the advanced option AKANTU\\_USE\\_THIRD\\_PARTY\\_MUMPS the make system of akantu can automatically compile MUMPS. For this you will have to download MUMPS from \\url{http://mumps.enseeiht.fr/} or \\url{http://graal.ens-lyon.fr/MUMPS} and place it in \\shellcode{<akantu source>/third-party}"
+  )
+
+package_declare_extra_files_to_package(MUMPS
+  PROJECT
+    third-party/MUMPS_4.10.0_make.inc.cmake
+    third-party/MUMPS_5.0.0.patch
+    third-party/MUMPS_4.10.0.patch
+    third-party/MUMPS_4.9.2_make.inc.cmake
+    third-party/cmake/mumps.cmake
+    cmake/Modules/FindMumps.cmake
   )

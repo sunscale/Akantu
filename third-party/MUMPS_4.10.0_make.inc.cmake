@@ -14,32 +14,32 @@ ORDERINGSC  = $(ORDERINGSF)
 LORDERINGS = $(LMETIS) $(LPORD) $(LSCOTCH)
 IORDERINGSF = $(ISCOTCH)
 IORDERINGSC = $(IMETIS) $(IPORD) $(ISCOTCH)
-RM      = @CMAKE_COMMAND@ -E remove -f
-MKDIR   = @CMAKE_COMMAND@ -E make_directory
+RM      = '@CMAKE_COMMAND@' -E remove -f
+MKDIR   = '@CMAKE_COMMAND@' -E make_directory
 CP      = cp -af
 
 ifeq ($(MUMPS_TYPE),seq)
 # CC : C compiler
-CC      = @CMAKE_C_COMPILER@
+CC      = '@CMAKE_C_COMPILER@'
 # FC : Fortran 90 compiler
-FC      = @CMAKE_Fortran_COMPILER@
+FC      = '@CMAKE_Fortran_COMPILER@'
 # FL : Fortran linker
-FL      = @CMAKE_Fortran_COMPILER@
+FL      = '@CMAKE_Fortran_COMPILER@'
 else
 # CC : C compiler
-CC      = @MPI_C_COMPILER@
+CC      = '@MPI_C_COMPILER@'
 # FC : Fortran 90 compiler
-FC      = @MPI_Fortran_COMPILER@
+FC      = '@MPI_Fortran_COMPILER@'
 # FL : Fortran linker
-FL      = @MPI_Fortran_COMPILER@
+FL      = '@MPI_Fortran_COMPILER@'
 endif
 
 # AR : Archive object in a library
-AR      = @CMAKE_AR@ vr 
+AR      = '@CMAKE_AR@' vr 
 # RANLIB : generate index of an archive file
-RANLIB  = @CMAKE_RANLIB@
+RANLIB  = '@CMAKE_RANLIB@'
 # SCALAP should define the SCALAPACK and  BLACS libraries.
-SCALAP  = @SCALAPACK_LIBRARIES@
+SCALAP  = '@SCALAPACK_LIBRARIES@'
 
 INCPAR  =
 LIBPAR  = $(SCALAP)
@@ -50,7 +50,7 @@ LIBPAR  = $(SCALAP)
 INCSEQ  = -I$(topdir)/libseq
 LIBSEQ  = -L$(topdir)/libseq -lmpiseq$(PLAT)
 LIBBLAS = @MUMPS_BLAS_LIBRARIES@
-LIBOTHERS = -lpthread
+LIBOTHERS = @AKANTU_MUMPS_PTHREAD@
 
 # FORTRAN/C COMPATIBILITY:
 #  Use:
@@ -62,7 +62,7 @@ LIBOTHERS = -lpthread
 #
 #     leave empty if your Fortran compiler does not change the symbols.
 #
-CDEFS = -DAdd_
+CDEFS = @AKANTU_MUMPS_CDEFS@
 #COMPILER OPTIONS
 OPTF    = -O -w -fPIC
 OPTC    = -O -I. -fPIC

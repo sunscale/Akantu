@@ -1,17 +1,18 @@
 /**
  * @file   solver_petsc.hh
  *
- # @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
+ * @author Alejandro M. Aragón <alejandro.aragon@epfl.ch>
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
- * @date   Mon Dec 13 10:48:06 2010
+ * @date creation: Tue May 13 2014
+ * @date last modification: Wed Oct 07 2015
  *
  * @brief  Solver class interface for the petsc solver
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

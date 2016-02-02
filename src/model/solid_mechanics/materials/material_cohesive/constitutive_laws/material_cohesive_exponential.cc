@@ -5,14 +5,15 @@
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Mon Jul 09 2012
- * @date last modification: Fri Mar 21 2014
+ * @date last modification: Tue Aug 04 2015
  *
  * @brief  Exponential irreversible cohesive law of mixed mode loading
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -193,7 +194,7 @@ template<UInt spatial_dimension>
 void MaterialCohesiveExponential<spatial_dimension>::computeCompressiveTraction(Vector<Real> & tract,
 										const Vector<Real> & normal,
 										Real delta_n,
-										const Vector<Real> & opening) {
+                                                                                __attribute__((unused)) const Vector<Real> & opening) {
   Vector<Real> temp_tract(normal);
 
   if(exp_penalty) {

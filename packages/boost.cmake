@@ -3,14 +3,16 @@
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Wed Jan 14 2015
+# @date creation: Fri Sep 03 2010
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  package handling the dependencies to boost
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -27,6 +29,8 @@
 #
 #===============================================================================
 
+set(Boost_NO_BOOST_CMAKE ON CACHE BOOL "" FORCE)
+
 package_declare(Boost EXTERNAL
   NOT_OPTIONAL
   DESCRIPTION "Package handling boost components"
@@ -38,10 +42,27 @@ mark_as_advanced(Boost_DIR)
 package_on_enabled_script(Boost
   "if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER \"4.8\")
   set(_boost_version \${Boost_MAJOR_VERSION}.\${Boost_MINOR_VERSION})
-  if(AKANTU_CORE_CXX11 AND _boost_version VERSION_LESS 1.58)
-    add_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
+  if(AKANTU_CORE_CXX11 AND _boost_version VERSION_LESS 1.58 AND _boost_version VERSION_GREATER 1.53)
+    package_set_compile_flags(Boost CXX -DBOOST_SPIRIT_USE_PHOENIX_V3)
   else()
-    remove_flags(cxx -DBOOST_RESULT_OF_USE_TR1)
+    package_unset_compile_flags(Boost CXX)
   endif()
 endif()
 ")
+
+
+package_declare_documentation(Boost
+  "Akantu uses Boost header only for preprocessor and Spirit"
+  ""
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  "\\begin{command}"
+  "  > sudo apt-get install libboost"
+  "\\end{command}"
+  ""
+)
+
+package_set_package_system_dependency(Boost deb-src libboost-dev)
+
+# only build dependency
+# package_set_package_system_dependency(Boost deb libboost)
+# package_set_package_system_dependency(Boost rmp boost)

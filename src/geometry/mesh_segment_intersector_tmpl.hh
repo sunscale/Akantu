@@ -1,17 +1,19 @@
 /**
- * @file mesh_segment_intersector_tmpl.hh
+ * @file   mesh_segment_intersector_tmpl.hh
  *
- * @author Lucas Frerot
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Clement Roux <clement.roux@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Wed Apr 29 2015
- * @date last modification: Wed Apr 29 2015
+ * @date last modification: Thu Jan 14 2016
  *
- * @brief Computation of mesh intersection with segments
+ * @brief  Computation of mesh intersection with segments
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -45,6 +47,7 @@ MeshSegmentIntersector<dim, type>::MeshSegmentIntersector(Mesh & mesh, Mesh & re
   result_mesh(result_mesh),
   current_physical_name()
 {
+  this->intersection_points = new Array<Real>(0,dim);
   this->constructData();
 }
 
@@ -112,6 +115,12 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(const K::Segmen
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+template<UInt dim, ElementType type>
+void MeshSegmentIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const K::Segment_3 & query,
+									   UInt nb_old_nodes) {
+  AKANTU_DEBUG_ERROR("The method: computeMeshQueryIntersectionPoint has not been implemented in class MeshSegmentIntersector!");
 }
 
 template<UInt dim, ElementType type>

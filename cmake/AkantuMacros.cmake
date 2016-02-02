@@ -4,15 +4,16 @@
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Thu Feb 17 2011
-# @date last modification: Tue Aug 19 2014
+# @date creation: Fri Oct 22 2010
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  Set of macros used by akantu cmake files
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -34,6 +35,25 @@ function(set_third_party_shared_libirary_name _var _lib)
   set(${_var}
     ${PROJECT_BINARY_DIR}/third-party/lib/${CMAKE_SHARED_LIBRARY_PREFIX}${_lib}${CMAKE_SHARED_LIBRARY_SUFFIX}
     CACHE FILEPATH "" FORCE)
+endfunction()
+
+# ==============================================================================
+function(get_target_list_of_associated_files tgt files)
+  get_target_property(_type ${tgt} TYPE)
+  if(_type STREQUAL "SHARED_LIBRARY"
+      OR _type STREQUAL "STATIC_LIBRARY"
+      OR _type STREQUAL "MODULE_LIBRARY"
+      OR _type STREQUAL "EXECUTABLE")
+    get_target_property(_srcs ${tgt} SOURCES)
+    set(_dep_ressources)
+    foreach(_file ${_srcs})
+      list(APPEND _dep_ressources ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
+    endforeach()
+  else()
+    get_target_property(_dep_ressources ${tgt} RESSOURCES)
+  endif()
+
+  set(${files} ${_dep_ressources} PARENT_SCOPE)
 endfunction()
 
 #===============================================================================
@@ -70,14 +90,14 @@ function(generate_material_list)
       list(LENGTH _mat_key _l)
 
       if("${_l}" GREATER 2)
-	list(REMOVE_AT _mat_key 0 1)
-	set(_opt " -- options: [")
-	foreach(_o ${_mat_key})
-	  set(_opt "${_opt} ${_o}")
-	endforeach()
-	set(_opt "${_opt} ]")
+        list(REMOVE_AT _mat_key 0 1)
+        set(_opt " -- options: [")
+        foreach(_o ${_mat_key})
+          set(_opt "${_opt} ${_o}")
+        endforeach()
+        set(_opt "${_opt} ]")
       else()
-	set(_opt "")
+        set(_opt "")
       endif()
 
       message(STATUS "   ${_class} -- key: ${_key}${_opt}")
@@ -91,6 +111,20 @@ endfunction()
 #===============================================================================
 # Declare the options for the types and defines the approriate typedefs
 function(declare_akantu_types)
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag (-std=c++11 HAVE_CPP_11)
+  unset(_cpp_11_flag)
+  if(HAVE_CPP_11)
+    set(_cpp_11_flag "-std=c++11")
+  else()
+    check_cxx_compiler_flag (-std=c++0x HAVE_CPP_0X)
+    if(HAVE_CPP_0X)
+      set(_cpp_11_flag "-std=c++0x")
+    endif()
+  endif()
+
+  set(AKANTU_CXX11_FLAGS "${_cpp_11_flag}" CACHE INTERNAL "")
+
   set(AKANTU_TYPE_FLOAT "double (64bit)" CACHE STRING "Precision force floating point types")
   mark_as_advanced(AKANTU_TYPE_FLOAT)
   set_property(CACHE AKANTU_TYPE_FLOAT PROPERTY STRINGS
@@ -131,7 +165,7 @@ function(declare_akantu_types)
   endif()
 
   include(CheckIncludeFileCXX)
-
+  include(CheckCXXSourceCompiles)
 
   # ----------------------------------------------------------------------------
   # Integer types
@@ -144,6 +178,17 @@ function(declare_akantu_types)
     endif()
   else()
     list(APPEND _int_include cstdint)
+  endif()
+
+
+  check_include_file_cxx(cstddef HAVE_CSTDDEF)
+  if(NOT HAVE_CSTDINT)
+    check_include_file_cxx(stddef.h HAVE_STDDEF_H)
+    if(HAVE_STDINT_H)
+      list(APPEND _int_include stddef.h)
+    endif()
+  else()
+    list(APPEND _int_include cstddef)
   endif()
 
   if(AKANTU_TYPE_INTEGER STREQUAL "int (32bit)")
@@ -195,7 +240,7 @@ function(declare_akantu_types)
     set(AKANTU_UNORDERED_MAP_NAMESPACE_BEGIN "namespace std {" CACHE INTERNAL "")
     set(AKANTU_UNORDERED_MAP_NAMESPACE_END "}" CACHE INTERNAL "")
   else()
-    check_include_file_cxx(unordered_map HAVE_TR1_UNORDERED_MAP)
+    check_include_file_cxx(tr1/unordered_map HAVE_TR1_UNORDERED_MAP)
     if(HAVE_TR1_UNORDERED_MAP)
       list(APPEND _extra_includes tr1/unordered_map)
       set(AKANTU_UNORDERED_MAP_TYPE "std::tr1::unordered_map" CACHE INTERNAL "")
@@ -207,6 +252,43 @@ function(declare_akantu_types)
       set(AKANTU_UNORDERED_MAP_IS_CXX11 FALSE CACHE INTERNAL "")
     endif()
   endif()
+
+  # ----------------------------------------------------------------------------
+  # hash function
+  # ----------------------------------------------------------------------------
+  unset(AKANTU_HASH_TYPE CACHE)
+  check_include_file_cxx(functional HAVE_FUNCTIONAL)
+  set(AKANTU_HASH_IS_CXX11 TRUE CACHE INTERNAL "")
+  if(HAVE_FUNCTIONAL AND AKANTU_CXX11_FLAGS)
+    list(APPEND _extra_includes functional)
+    check_cxx_source_compiles("
+#include <functional>
+template<class T>
+std::size_t hash(const T & t) {
+  typedef typename std::hash<T> hash_type;
+  return hash_type()(t);
+};
+
+int main() { return 0; }
+" HAVE_HASH)
+    if(HAVE_HASH)
+      set(AKANTU_HASH_TYPE "std::hash" CACHE INTERNAL "")
+    endif()
+  endif()
+
+  if(NOT AKANTU_HASH_TYPE)
+    check_include_file_cxx(tr1/functional HAVE_TR1_HASH)
+    if(HAVE_TR1_HASH)
+      list(APPEND _extra_includes tr1/functional)
+      set(AKANTU_HASH_TYPE "std::tr1::hash" CACHE INTERNAL "")
+    else()
+      check_include_file_cxx(boost/functional/hash.hpp HAVE_BOOST_HASH)
+      list(APPEND _extra_includes boost/functional/hash.hpp)
+      set(AKANTU_HASH_TYPE "boost::hash" CACHE INTERNAL "")
+      set(AKANTU_HASH_IS_CXX11 FALSE CACHE INTERNAL "")
+    endif()
+  endif()
+
 
   # ----------------------------------------------------------------------------
   # includes
@@ -279,4 +361,3 @@ function(CMAKE_PARSE_ARGUMENTS prefix _optionNames _singleArgNames _multiArgName
   endforeach(arg_name)
   set(${prefix}_UNPARSED_ARGUMENTS ${${prefix}_UNPARSED_ARGUMENTS} PARENT_SCOPE)
 endfunction(CMAKE_PARSE_ARGUMENTS _options _singleArgs _multiArgs)
-

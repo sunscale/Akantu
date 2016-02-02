@@ -1,17 +1,19 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
+# @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Jun 14 2010
-# @date last modification: Mon Sep 15 2014
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  main configuration file
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -76,7 +78,7 @@ include(AkantuMacros)
 #===============================================================================
 # AKANTU version number.  An even minor number corresponds to releases.
 set(AKANTU_MAJOR_VERSION 2)
-set(AKANTU_MINOR_VERSION 2)
+set(AKANTU_MINOR_VERSION 3)
 set(AKANTU_PATCH_VERSION 0)
 define_project_version()
 
@@ -108,19 +110,14 @@ mark_as_advanced(
   CMAKE_SHARED_LINKER_FLAGS_PROFILING
   )
 
-include(CMakeDetermineCCompiler)
 #===============================================================================
 # Dependencies
 #===============================================================================
-option(AKANTU_PYTHON_INTERFACE "Generates the Akantu Python module" OFF)
-if(AKANTU_PYTHON_INTERFACE)
-  list(APPEND AKANTU_BOOST_COMPONENTS python)
-endif()
-
 declare_akantu_types()
 
 package_list_packages(${PROJECT_SOURCE_DIR}/packages
-  EXTRA_PACKAGES_FOLDER ${PROJECT_SOURCE_DIR}/extra_packages)
+  EXTRA_PACKAGES_FOLDER ${PROJECT_SOURCE_DIR}/extra_packages
+  NO_AUTO_COMPILE_FLAGS)
 
 ## meta option \todo better way to do it when multiple package give enable the
 ## same feature
@@ -157,10 +154,10 @@ option(AKANTU_EXAMPLES "Activate examples" OFF)
 option(AKANTU_TESTS "Activate tests" OFF)
 
 include(AkantuTestsMacros)
-include(AkantuExamplesMacros)
+include(AkantuExampleMacros)
 
 if(AKANTU_EXAMPLES OR AKANTU_TESTS)
-  option(AKANTU_BUILD_ALL_EXAMPLES "Build all examples")
+  option(AKANTU_BUILD_ALL_TESTS "Build all tests" ON)
   find_package(GMSH REQUIRED)
 endif()
 
@@ -168,22 +165,30 @@ if(AKANTU_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-
+# tests
 add_test_tree(test)
+
+#===============================================================================
+# Python interface
+#===============================================================================
+package_is_activated(python_interface _python_act)
+if(_python_act)
+  if(IS_ABSOLUTE "${CMAKE_INSTALL_PREFIX}")
+    set(AKANTU_PYTHON_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+  else()
+    set(AKANTU_PYTHON_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}")
+  endif()
+  add_subdirectory(python)
+endif()
 
 #===============================================================================
 # Install and Packaging
 #===============================================================================
 include(AkantuInstall)
 
+option(AKANTU_DISABLE_CPACK
+  "This option commands the generation of extra info for the \"make package\" target" ON)
+mark_as_advanced(AKANTU_DISABLE_CPACK)
 if(NOT AKANTU_DISABLE_CPACK)
   include(AkantuCPack)
-endif()
-
-#===============================================================================
-# Install and Packaging
-#===============================================================================
-if(AKANTU_PYTHON_INTERFACE)
-  add_subdirectory(python)
-#  add_subdirectory(akantu4py)
 endif()

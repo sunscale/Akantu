@@ -3,15 +3,15 @@
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Mon Nov 21 2011
-# @date last modification: Mon Sep 15 2014
+# @date creation: Mon Mar 30 2015
+# @date last modification: Wed Nov 11 2015
 #
 # @brief  compilation of the third-party MUMPS
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -53,9 +53,8 @@ else()
   set(MUMPS_PREFIX _seq)
 endif()
 
-package_get_option_name(Scotch _scotch_option)
 package_use_system(Scotch _scotch_use_system)
-if(NOT _scotch_use_system AND ${_scotch_option})
+if(NOT _scotch_use_system)
   list(APPEND MUMPS_DEPENDS Scotch)
 endif()
 
@@ -94,17 +93,22 @@ else()
   set(MUMPS_EXTRA_Fortran_FLAGS "")
 endif()
 
-configure_file(${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}_make.inc.cmake
-  ${PROJECT_BINARY_DIR}/third-party/MUMPSmake.inc)
-
 if(CMAKE_VERSION VERSION_GREATER 3.1)
-  set(_extra_options 
-    UPDATE_DISCONNECTED 1
+  set(_extra_options
     DOWNLOAD_NO_PROGRESS 1
     EXCLUDE_FROM_ALL 1
     )
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(AKANTU_MUMPS_CDEFS "-DAdd_ -DWITHOUT_PTHREAD")
+else()
+  set(AKANTU_MUMPS_CDEFS "-DAdd_")
+  set(AKANTU_MUMPS_PTHREAD "-lpthread")
+endif()
+
+configure_file(${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}_make.inc.cmake
+  ${PROJECT_BINARY_DIR}/third-party/MUMPS_make.inc @ONLY)
 
 ExternalProject_Add(MUMPS
   DEPENDS ${MUMPS_DEPENDS}
@@ -113,10 +117,10 @@ ExternalProject_Add(MUMPS
   URL_HASH ${MUMPS_ARCHIVE_HASH_${MUMPS_VERSION}}
   ${_extra_options}
   BUILD_IN_SOURCE 1
-  PATCH_COMMAND patch -p2 < ${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}.patch
-  CONFIGURE_COMMAND cmake -E copy ${PROJECT_BINARY_DIR}/third-party/MUMPSmake.inc Makefile.inc
+  PATCH_COMMAND ${PATCH_COMMAND} -p2 < ${PROJECT_SOURCE_DIR}/third-party/MUMPS_${MUMPS_VERSION}.patch
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/third-party/MUMPS_make.inc Makefile.inc
   BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} d
-  INSTALL_COMMAND prefix=<INSTALL_DIR> ${CMAKE_MAKE_PROGRAM} install
+  INSTALL_COMMAND "${CMAKE_MAKE_PROGRAM}" prefix=<INSTALL_DIR> install
   LOG_DOWNLOAD 1
   LOG_CONFIGURE 1
   LOG_BUILD 1

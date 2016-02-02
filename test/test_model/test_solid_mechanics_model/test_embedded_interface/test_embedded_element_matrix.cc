@@ -1,16 +1,17 @@
 /**
- * @file   test_embedded_interface_model.cc
+ * @file   test_embedded_element_matrix.cc
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date   Thu 19 Mar 2015
+ * @date creation: Wed Mar 25 2015
+ * @date last modification: Wed May 13 2015
  *
  * @brief  test of the class EmbeddedInterfaceModel
  *
  * @section LICENSE
  *
- * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

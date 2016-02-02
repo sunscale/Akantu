@@ -6,13 +6,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Nov 13 2013
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  Implementation of the Dumpable class
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -33,7 +33,6 @@
 #ifndef __AKANTU_DUMPABLE_INLINE_IMPL_HH__
 #define __AKANTU_DUMPABLE_INLINE_IMPL_HH__
 
-
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_elemental_field.hh"
@@ -43,12 +42,12 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<class T>
+template <class T>
 inline void Dumpable::registerDumper(const std::string & dumper_name,
                                      const std::string & file_name,
                                      const bool is_default) {
 
-  if (this->dumpers.find(dumper_name) != this->dumpers.end()){
+  if (this->dumpers.find(dumper_name) != this->dumpers.end()) {
     AKANTU_DEBUG_INFO("Dumper " + dumper_name + "is already registered.");
   }
 
@@ -63,68 +62,66 @@ inline void Dumpable::registerDumper(const std::string & dumper_name,
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
+template <typename T>
 inline void Dumpable::addDumpFieldExternal(const std::string & field_id,
                                            const Array<T> & field) {
-  this->addDumpFieldExternalToDumper<T>(this->default_dumper,
-                                        field_id,
-                                        field);
-};
+  this->addDumpFieldExternalToDumper<T>(this->default_dumper, field_id, field);
+}
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-inline void Dumpable::addDumpFieldExternalToDumper(const std::string & dumper_name,
-                                                   const std::string & field_id,
-                                                   const Array<T> & field) {
+template <typename T>
+inline void
+Dumpable::addDumpFieldExternalToDumper(const std::string & dumper_name,
+                                       const std::string & field_id,
+                                       const Array<T> & field) {
   dumper::Field * field_cont = new dumper::NodalField<T>(field);
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerField(field_id, field_cont);
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
+template <typename T>
 inline void Dumpable::addDumpFieldExternal(const std::string & field_id,
                                            const ElementTypeMapArray<T> & field,
                                            UInt spatial_dimension,
                                            const GhostType & ghost_type,
                                            const ElementKind & element_kind) {
-  this->addDumpFieldExternalToDumper(this->default_dumper,
-                                     field_id,
-                                     field,
-                                     spatial_dimension,
-                                     ghost_type,
+  this->addDumpFieldExternalToDumper(this->default_dumper, field_id, field,
+                                     spatial_dimension, ghost_type,
                                      element_kind);
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-inline void Dumpable::addDumpFieldExternalToDumper(const std::string & dumper_name,
-                                                   const std::string & field_id,
-                                                   const ElementTypeMapArray<T> & field,
-                                                   UInt spatial_dimension,
-                                                   const GhostType & ghost_type,
-                                                   const ElementKind & element_kind) {
-  dumper::Field * field_cont = new dumper::ElementalField<T>(field,
-							     spatial_dimension,
-							     ghost_type,
-							     element_kind);
+template <typename T>
+inline void Dumpable::addDumpFieldExternalToDumper(
+    const std::string & dumper_name, const std::string & field_id,
+    const ElementTypeMapArray<T> & field, UInt spatial_dimension,
+    const GhostType & ghost_type, const ElementKind & element_kind) {
+
+  dumper::Field * field_cont;
+#if defined(AKANTU_IGFEM)
+  if (element_kind == _ek_igfem) {
+    field_cont = new dumper::IGFEMElementalField<T>(field, spatial_dimension,
+                                                    ghost_type, element_kind);
+  } else
+#endif
+    field_cont = new dumper::ElementalField<T>(field, spatial_dimension,
+                                               ghost_type, element_kind);
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerField(field_id, field_cont);
 }
 
-
 /* -------------------------------------------------------------------------- */
-template<class T>
+template <class T>
 inline T & Dumpable::getDumper(const std::string & dumper_name) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
 
   try {
-    T & templated_dumper = dynamic_cast<T & >(dumper);
+    T & templated_dumper = dynamic_cast<T &>(dumper);
     return templated_dumper;
-  }
-  catch (...) {
+  } catch (...) {
     AKANTU_EXCEPTION("Dumper " << dumper_name << " is not of type: "
-                     << debug::demangle(typeid(T).name()));
+                               << debug::demangle(typeid(T).name()));
   }
 }
 

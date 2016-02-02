@@ -2,16 +2,18 @@
 # @file   CMakeLists.txt
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
+# @author Clement Roux <clement.roux@epfl.ch>
 #
-# @date creation: Mon Jan 20 2014
-# @date last modification: Mon Jan 20 2014
+# @date creation: Fri Sep 03 2010
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  configuration for materials tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,30 +32,21 @@
 #
 #===============================================================================
 
-add_mesh(test_material_non_local_mesh_2 mesh.geo 2 2 OUTPUT mesh_2.msh)
 add_mesh(test_material_non_local_mesh mesh.geo 2 1 OUTPUT mesh.msh)
 add_mesh(test_material_damage_non_local_mesh mesh_section_gap.geo 2 1 OUTPUT mesh_section_gap.msh)
-add_mesh(test_two_materials_mesh two_materials.geo 2 1 OUTPUT two_materials.msh)
 
 register_test(test_material_damage_non_local
   SOURCES test_material_damage_non_local.cc
-  DEPENDENCIES test_material_damage_non_local_mesh
+  DEPENDS test_material_damage_non_local_mesh
   FILES_TO_COPY material_damage_non_local.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE damage_non_local
   )
 
-register_test(test_material_damage_non_local_two_materials
-  SOURCES test_material_damage_non_local_two_materials.cc
-  DEPENDENCIES test_two_materials_mesh
-  FILES_TO_COPY two_materials_non_local.dat
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE damage_non_local
-  )
 
 register_test(test_material_non_local
-  SOURCES test_material_non_local.cc custom_non_local_test_material.cc
-  DEPENDENCIES test_material_non_local_mesh
+  SOURCES test_material_non_local.cc custom_non_local_test_material.cc custom_non_local_test_material.hh
+  DEPENDS test_material_non_local_mesh
   FILES_TO_COPY material.dat
   PACKAGE damage_non_local
   )

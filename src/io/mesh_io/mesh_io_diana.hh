@@ -1,19 +1,21 @@
 /**
  * @file   mesh_io_diana.hh
  *
+ * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
- * @author Alodie Schneuwly <alodie.schneuwly@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Alodie Schneuwly <alodie.schneuwly@epfl.ch>
  *
- * @date creation: Sat Mar 26 2011
- * @date last modification: Mon Aug 19 2013
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Nov 19 2015
  *
  * @brief  diana mesh reader description
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -45,12 +47,11 @@
 
 __BEGIN_AKANTU__
 
-class MeshIODiana : public MeshIO , public MeshEventHandler{
+class MeshIODiana : public MeshIO {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MeshIODiana();
   virtual ~MeshIODiana();
 
@@ -59,100 +60,46 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// read a mesh from the file
-  virtual void read(const std::string & filename, Mesh&mesh);
+  virtual void read(const std::string & filename, Mesh & mesh);
 
   /// write a mesh to a file
   virtual void write(const std::string & filename, const Mesh & mesh);
 
-  /// request creation of an element group from data read from Diana file
-  void createElementGroupInMesh(Mesh & mesh, const std::string & group_name);
-  /// request creation of a nodal group from data read from Diana file
-  void createNodeGroupInMesh(Mesh & mesh, const std::string & group_name);
-
 private:
-  std::string readCoordinates(std::ifstream & infile,
-			      Mesh & mesh,
-			      UInt & first_node_number);
+  std::string readCoordinates(std::ifstream & infile, Mesh & mesh,
+                              UInt & first_node_number);
 
-  std::string readElements(std::ifstream & infile,
-			   Mesh & mesh,
-			   UInt first_node_number);
+  std::string readElements(std::ifstream & infile, Mesh & mesh,
+                           UInt first_node_number);
 
-  std::string readGroups(std::ifstream & infile,
-			 UInt first_node_number);
+  std::string readGroups(std::ifstream & infile, Mesh & mesh, UInt first_node_number);
 
-  std::string readConnectivity(std::ifstream & infile,
-			       Mesh & mesh,
-			       UInt first_node_number);
+  std::string readConnectivity(std::ifstream & infile, Mesh & mesh,
+                               UInt first_node_number);
 
-  std::string readMaterialElement(std::ifstream & infile,
-				  Mesh & mesh);
+  std::string readMaterialElement(std::ifstream & infile, Mesh & mesh);
 
   std::string readMaterial(std::ifstream & infile,
-			   const std::string & filename);
+                           const std::string & filename);
 
-  UInt readInterval(std::stringstream & line,
-		    std::set<UInt> & interval);
-
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  UInt readInterval(std::stringstream & line, std::set<UInt> & interval);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
-  const Array<UInt> & getNodeGroup(const std::string & group_name) const {
-    std::map<std::string, Array<UInt> *>::const_iterator it = node_groups.find(group_name);
-    AKANTU_DEBUG_ASSERT(it != node_groups.end(), "There is no nodes group named : " << group_name);
-    return *it->second;
-  }
-
-  const std::vector<Element> & getElementGroup(const std::string & group_name) const {
-    std::map<std::string, std::vector<Element> *>::const_iterator it = element_groups.find(group_name);
-    AKANTU_DEBUG_ASSERT(it != element_groups.end(), "There is no elements group named : " << group_name);
-    return *it->second;
-  }
-
-  std::vector<std::string> getNodeGroupsNames() const {
-    std::vector<std::string> names;
-    std::map<std::string, Array<UInt> *>::const_iterator it;
-    for(it = node_groups.begin(); it != node_groups.end(); ++it)
-      names.push_back(it->first);
-
-    return names;
-  }
-
-  std::vector<std::string> getElementGroupsNames() const {
-    std::vector<std::string> names;
-    std::map<std::string, std::vector<Element> *>::const_iterator it;
-    for(it = element_groups.begin(); it != element_groups.end(); ++it)
-      names.push_back(it->first);
-
-    return names;
-  }
-
-  /* ------------------------------------------------------------------------ */
-  /* Mesh Event Handler inherited members                                     */
-  /* ------------------------------------------------------------------------ */
-protected:
-  virtual void onNodesRemoved(const Array<UInt> & element_list,
-                              const Array<UInt> & new_numbering,
-                              const RemovedNodesEvent & event);
- 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
   std::map<std::string, ElementType> _diana_to_akantu_element_types;
-
   std::map<std::string, std::string> _diana_to_akantu_mat_prop;
 
+  /// order in witch element as to be read, akantu_node_order = _read_order[diana_node_order]
+  std::map<ElementType, UInt *> _read_order;
 
-  std::map<std::string, Array<UInt> *> node_groups;
-  std::map<std::string, std::vector<Element> *> element_groups;
-
-  std::map<UInt,Element> diana_element_number_to_elements;
-  std::map<Element,UInt> akantu_number_to_diana_number;
+  std::map<UInt, Element> diana_element_number_to_elements;
+  std::map<Element, UInt> akantu_number_to_diana_number;
 };
 
 __END_AKANTU__

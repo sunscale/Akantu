@@ -2,18 +2,19 @@
  * @file   material_marigo.cc
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Marion Estelle Chambart <marion.chambart@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Thu Feb 02 2012
- * @date last modification: Fri Mar 21 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Oct 08 2015
  *
  * @brief  Specialization of the material class for the marigo material
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -98,7 +99,6 @@ void MaterialMarigo<spatial_dimension>::computeStress(ElementType el_type,
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
 
 INSTANTIATE_MATERIAL(MaterialMarigo);
 

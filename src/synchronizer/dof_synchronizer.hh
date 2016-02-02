@@ -1,18 +1,19 @@
 /**
  * @file   dof_synchronizer.hh
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @date creation: Fri Jun 17 2011
- * @date last modification: Fri Mar 21 2014
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Synchronize Array of DOFs
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -93,6 +94,7 @@ public:
    * @param gathered Array containing the gathered data, only valid on root processor
    */
   template<typename T>
+  /// Gather the DOF value on the root proccessor
   void gather(const Array<T> & to_gather, UInt root,
 	      Array<T> * gathered = NULL) const;
 
@@ -104,10 +106,11 @@ public:
    * @param to_scatter result of scattered data
    */
   template<typename T>
+  /// Scatter a DOF Array form root to all processors
   void scatter(Array<T> & scattered, UInt root,
 	       const Array<T> * to_scatter = NULL) const;
 
-
+  
   template<typename T> void synchronize(Array<T> & vector) const ;
   template<template <class> class Op, typename T> void reduceSynchronize(Array<T> & vector) const;
 
@@ -152,8 +155,13 @@ public:
   /// say if a node is pure local or master node
   inline bool isLocalOrMasterDOF(UInt n) const;
 
+  /// say if a node is pure local 
   inline bool isLocalDOF(UInt n) const;
+
+  /// say if a node is a master node
   inline bool isMasterDOF(UInt n) const;
+
+  /// say if a node is a slave node
   inline bool isSlaveDOF(UInt n) const;
 
 

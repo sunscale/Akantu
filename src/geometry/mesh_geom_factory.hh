@@ -1,17 +1,18 @@
 /**
  * @file   mesh_geom_factory.hh
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date creation: Thu Feb 26 2015
- * @date last modification: Fri Mar 6 2015
+ * @date creation: Fri Feb 27 2015
+ * @date last modification: Thu Jan 14 2016
  *
  * @brief  Class for constructing the CGAL primitives of a mesh
  *
  * @section LICENSE
  *
- * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -63,7 +64,7 @@ public:
 
 public:
   /// Construct AABB tree for fast intersection computing
-  virtual void constructData();
+  virtual void constructData(GhostType ghost_type = _not_ghost);
 
   /**
    * @brief Construct a primitive and add it to a list of primitives

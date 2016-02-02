@@ -3,15 +3,16 @@
 #
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 #
-# @date creation: Wed Feb 09 2011
-# @date last modification: Tue Nov 06 2012
+# @date creation: Fri Sep 03 2010
+# @date last modification: Mon Dec 07 2015
 #
 # @brief  configuration for pcb tweal test
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -35,7 +36,7 @@ add_mesh(test_pbc_cube_mesh cube.geo 3 1)
 
 register_test(test_pbc_tweak
   SOURCES test_pbc_tweak.cc
-  DEPENDENCIES test_pbc_cube_mesh
+  DEPENDS test_pbc_cube_mesh
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE core

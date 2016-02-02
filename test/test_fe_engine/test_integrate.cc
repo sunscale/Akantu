@@ -3,16 +3,18 @@
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Peter Spijker <peter.spijker@epfl.ch>
  *
- * @date creation: Fri Jun 17 2011
- * @date last modification: Thu Jun 05 2014
+ * @date creation: Fri Sep 03 2010
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  test of the fem class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -61,7 +63,7 @@ int main(int argc, char *argv[]) {
   fem->initShapeFunctions();
 
   UInt nb_element = my_mesh.getNbElement(type);
-  UInt nb_quadrature_points = fem->getNbQuadraturePoints(type) * nb_element;
+  UInt nb_quadrature_points = fem->getNbIntegrationPoints(type) * nb_element;
 
   Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
   Array<Real> val_on_quad(nb_quadrature_points, 2 , "val_on_quad");
@@ -72,7 +74,7 @@ int main(int argc, char *argv[]) {
   }
 
   //interpolate function on quadrature points
-  fem->interpolateOnQuadraturePoints(const_val, val_on_quad, 2, type);
+  fem->interpolateOnIntegrationPoints(const_val, val_on_quad, 2, type);
 
   //integrate function on elements
   akantu::Array<akantu::Real> int_val_on_elem(nb_element, 2, "int_val_on_elem");

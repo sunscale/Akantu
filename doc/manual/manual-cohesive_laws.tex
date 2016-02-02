@@ -1,7 +1,7 @@
-\subsection{Cohesive laws}
+\section{Cohesive Constitutive laws}
 \label{sec:cohesive-laws}
 
-\subsubsection{Linear Irreversible Law\matlabel{ssect:smm:cl:coh-snozzi}}
+\subsection{Linear Irreversible Law\matlabel{ssect:smm:cl:coh-snozzi}}
 
 \begin{figure}[!hbt]
   \centering
@@ -111,7 +111,38 @@ elements and also an example to assign different properties to
 intergranular and transgranular cohesive elements can be found in
 the folder \code{\examplesdir/cohesive\_element/}.
 
-\subsubsection{Linear Cohesive Law with Fatigue\matlabel{ssect:smm:cl:coh-fatigue}}
+
+\subsection{Linear Cohesive Law with Friction\matlabel{ssect:smm:cl:coh-friction}}
+
+This law represents a variation of the linear irreversible cohesive of
+the previous section, which adds friction.  The friction behavior is
+approximated with an elasto-plastic law, which relates the friction
+force to the relative sliding between the two faces of the cohesive
+element.  The slope of the elastic branch is called
+\emph{penalty\_for\_friction}, and is defined by the user, together
+with the friction coefficient, as a material property.  The friction
+contribution evolves with the damage of the cohesive law: it is null
+when the damage is zero, and it becomes maximum when the damage is
+equal to one.  This is done by defining a current value of the
+friction coefficient (mu) that increases linearly with the damage, up
+to the value of the friction coefficient defined by the user.  The
+yielding plateau of the friction law is given by the product of the
+current friction coefficient and the local compression stress acting
+in the cohesive element.  Such an approach is equivalent to a
+node-to-node contact friction. Its accuracy is acceptable only for
+small displacements.
+
+The material name of the linear cohesive law with friction is
+\code{material\_cohesive\_linear\_friction}. Its additional parameters
+with respect to those of the linear cohesive law without friction,
+with the respective default values, are:
+\begin{itemize}
+\item \code{mu}: 0
+\item \code{penalty\_for\_friction}: 0
+\end{itemize}
+
+
+\subsection{Linear Cohesive Law with Fatigue\matlabel{ssect:smm:cl:coh-fatigue}}
 
 This law represents a variation of the linear irreversible cohesive
 law of the previous section, that removes the hypothesis of elastic
@@ -148,14 +179,15 @@ stiffness increment $\dot{K}^+$ is calculated as
     \text{if $\dot{\delta} < 0$}
   \end{cases}
 \end{equation}
-where $\delta_\mathrm{f}$ is a material parameter. During unloading
-the stiffness $K^+$ tends to $K^-$, while during reloading $K^+$ gets
-decreased at every time step. If the cohesive traction during
-reloading exceeds the upper limit given by
-equation~\eqref{eq:smm:coh:tractions}, it is recomputed following the
-behavior of the linear decreasing cohesive law for crack opening.
+where $\delta_\mathrm{f}$ is a material parameter (refer
+to~\cite{vocialta15} for more details). During unloading the stiffness
+$K^+$ tends to $K^-$, while during reloading $K^+$ gets decreased at
+every time step. If the cohesive traction during reloading exceeds the
+upper limit given by equation~\eqref{eq:smm:coh:tractions}, it is
+recomputed following the behavior of the linear decreasing cohesive
+law for crack opening.
 
-\subsubsection{Exponential Cohesive Law\matlabel{ssect:smm:cl:coh-exponential}}
+\subsection{Exponential Cohesive Law\matlabel{ssect:smm:cl:coh-exponential}}
 
 Ortiz and Pandolfi proposed this cohesive law in 1999~\cite{ortiz1999}.  The
 traction-opening equation for this law is as follows:
@@ -183,6 +215,11 @@ where
     \end{array} \right.
 \end{equation}
 
+As regards the behavior in compression, two options are available:
+a contact penalty approach with stiffness following the formulation of
+the exponential law and a contact penalty approach with constant
+stiffness. In the second case, the stiffness is defined as a function
+of the tangent of the exponential law at the origin.
 
 \begin{figure}[!htb]
   \begin{center}

@@ -1,17 +1,19 @@
 /**
- * @file mesh_segment_intersector.hh
+ * @file   mesh_segment_intersector.hh
  *
- * @author Lucas Frerot
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Clement Roux <clement.roux@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Wed Apr 29 2015
- * @date last modification: Wed Apr 29 2015
+ * @date last modification: Thu Jan 14 2016
  *
- * @brief Computation of mesh intersection with segments
+ * @brief  Computation of mesh intersection with segments
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -70,6 +72,9 @@ public:
    * @param query the segment to compute the intersections with the mesh
    */
   virtual void computeIntersectionQuery(const K::Segment_3 & query);
+
+  /// Compute intersection points between the mesh and a query
+  virtual void computeMeshQueryIntersectionPoint(const K::Segment_3 & query, UInt nb_old_nodes);
 
   /// Compute the embedded mesh
   virtual void buildResultFromQueryList(const std::list<K::Segment_3> & query_list);

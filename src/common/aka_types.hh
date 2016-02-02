@@ -4,14 +4,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Thu Feb 17 2011
- * @date last modification: Tue Aug 19 2014
+ * @date last modification: Fri Jan 22 2016
  *
  * @brief  description of the "simple" types
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -32,7 +33,6 @@
 #include "aka_error.hh"
 #include "aka_fwd.hh"
 #include "aka_math.hh"
-#include "aka_array.hh"
 /* -------------------------------------------------------------------------- */
 #include <iomanip>
 /* -------------------------------------------------------------------------- */
@@ -282,7 +282,8 @@ public:
     if (!this->wrapped)
       delete[] this->values;
     this->values = new T[this->_size];
-    memcpy(this->values, src.storage(), this->_size * sizeof(T));
+    memcpy((void *)this->values, (void *)src.storage(),
+           this->_size * sizeof(T));
     this->wrapped = false;
   }
 
@@ -298,7 +299,8 @@ public:
         // this test is not sufficient for Tensor of order higher than 1
         AKANTU_DEBUG_ASSERT(this->_size == src.size(),
                             "Tensors of different size");
-        memcpy(this->values, src.storage(), this->_size * sizeof(T));
+        memcpy((void *)this->values, (void *)src.storage(),
+               this->_size * sizeof(T));
       } else {
         deepCopy(src);
       }
@@ -509,8 +511,8 @@ public:
     return *(this->values + i);
   }
 
-  inline T & operator[](UInt i) { return *(this->values + i); }
-  inline const T & operator[](UInt i) const { return *(this->values + i); }
+  inline T & operator[](UInt i) { return this->operator()(i); }
+  inline const T & operator[](UInt i) const { return this->operator()(i); }
 
   /* ------------------------------------------------------------------------ */
   inline Vector<T> & operator*=(Real x) { return parent::operator*=(x); }
@@ -1066,8 +1068,8 @@ public:
   }
 
   inline MatrixProxy<T> operator[](UInt k) {
-    return Matrix<T>(this->values + k * this->n[0] * this->n[1], this->n[0],
-                     this->n[1]);
+    return MatrixProxy<T>(this->values + k * this->n[0] * this->n[1],
+                          this->n[0], this->n[1]);
   }
 
   inline const MatrixProxy<T> operator[](UInt k) const {

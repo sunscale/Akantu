@@ -4,15 +4,16 @@
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Tue Feb 15 2011
- * @date last modification: Mon Jul 07 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  templated class that calls integration and shape objects
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -43,8 +44,8 @@ class DOFManager;
 }
 
 __BEGIN_AKANTU__
-template <ElementKind k> class AssembleLumpedTemplateHelper;
-template <ElementKind k> class AssembleFieldMatrixHelper;
+template <ElementKind k> struct AssembleLumpedTemplateHelper;
+template <ElementKind k> struct AssembleFieldMatrixHelper;
 
 /* -------------------------------------------------------------------------- */
 template <template <ElementKind> class I, template <ElementKind> class S,
@@ -90,9 +91,9 @@ public:
                          UInt index,
                          const GhostType & ghost_type = _not_ghost) const;
 
-  /// integrate partially around a quadrature point (@f$ intf_q = f_q * J_q *
+  /// integrate partially around an integration point (@f$ intf_q = f_q * J_q *
   /// w_q @f$)
-  void integrateOnQuadraturePoints(
+  void integrateOnIntegrationPoints(
       const Array<Real> & f, Array<Real> & intf, UInt nb_degree_of_freedom,
       const ElementType & type, const GhostType & ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const;
@@ -102,9 +103,9 @@ public:
                    const Matrix<Real> & nodal_values,
                    Vector<Real> & interpolated, const Element & element) const;
 
-  /// get the number of quadrature points
-  UInt getNbQuadraturePoints(const ElementType & type,
-                             const GhostType & ghost_type = _not_ghost) const;
+  /// get the number of integration points
+  UInt getNbIntegrationPoints(const ElementType & type,
+                              const GhostType & ghost_type = _not_ghost) const;
 
   /// get shapes precomputed
   const Array<Real> & getShapes(const ElementType & type,
@@ -117,32 +118,73 @@ public:
                        const GhostType & ghost_type = _not_ghost,
                        UInt id = 0) const;
 
-  /// get quadrature points
+  /// get integration points
   const inline Matrix<Real> &
-  getQuadraturePoints(const ElementType & type,
-                      const GhostType & ghost_type = _not_ghost) const;
+  getIntegrationPoints(const ElementType & type,
+                       const GhostType & ghost_type = _not_ghost) const;
 
   /* ------------------------------------------------------------------------ */
   /* Shape method bridges                                                     */
   /* ------------------------------------------------------------------------ */
 
-  /// compute the gradient of a nodal field on the quadrature points
-  void gradientOnQuadraturePoints(
+  /// compute the gradient of a nodal field on the integration points
+  void gradientOnIntegrationPoints(
       const Array<Real> & u, Array<Real> & nablauq,
       const UInt nb_degree_of_freedom, const ElementType & type,
       const GhostType & ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const;
 
-  /// interpolate a nodal field on the quadrature points
-  void interpolateOnQuadraturePoints(
+  /// interpolate a nodal field on the integration points
+  void interpolateOnIntegrationPoints(
       const Array<Real> & u, Array<Real> & uq, UInt nb_degree_of_freedom,
       const ElementType & type, const GhostType & ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const;
 
-  /// interpolate a nodal field on the quadrature points given a by_element_type
-  void interpolateOnQuadraturePoints(
+  /// interpolate a nodal field on the integration points given a
+  /// by_element_type
+  void interpolateOnIntegrationPoints(
       const Array<Real> & u, ElementTypeMapArray<Real> & uq,
       const ElementTypeMapArray<UInt> * filter_elements = NULL) const;
+
+  /// compute the position of integration points given by an element_type_map
+  /// from nodes position
+  inline void computeIntegrationPointsCoordinates(
+      ElementTypeMapArray<Real> & quadrature_points_coordinates,
+      const ElementTypeMapArray<UInt> * filter_elements = NULL) const;
+
+  /// compute the position of integration points from nodes position
+  inline void computeIntegrationPointsCoordinates(
+      Array<Real> & quadrature_points_coordinates, const ElementType & type,
+      const GhostType & ghost_type = _not_ghost,
+      const Array<UInt> & filter_elements = empty_filter) const;
+
+  /// interpolate field at given position (interpolation_points) from given
+  /// values of this field at integration points (field)
+  inline void interpolateElementalFieldFromIntegrationPoints(
+      const ElementTypeMapArray<Real> & field,
+      const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+      ElementTypeMapArray<Real> & result, const GhostType ghost_type,
+      const ElementTypeMapArray<UInt> * element_filter) const;
+
+  /// Interpolate field at given position from given values of this field at
+  /// integration points (field)
+  /// using matrices precomputed with
+  /// initElementalFieldInterplationFromIntegrationPoints
+  inline void interpolateElementalFieldFromIntegrationPoints(
+      const ElementTypeMapArray<Real> & field,
+      const ElementTypeMapArray<Real> &
+          interpolation_points_coordinates_matrices,
+      const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+      ElementTypeMapArray<Real> & result, const GhostType ghost_type,
+      const ElementTypeMapArray<UInt> * element_filter) const;
+
+  /// Build pre-computed matrices for interpolation of field form integration
+  /// points at other given positions (interpolation_points)
+  inline void initElementalFieldInterpolationFromIntegrationPoints(
+      const ElementTypeMapArray<Real> & interpolation_points_coordinates,
+      ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
+      ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
+      const ElementTypeMapArray<UInt> * element_filter = NULL) const;
 
   /// find natural coords from real coords provided an element
   void inverseMap(const Vector<Real> & real_coords, UInt element,
@@ -171,32 +213,37 @@ public:
   /* Other methods                                                            */
   /* ------------------------------------------------------------------------ */
 
-  /// pre-compute normals on control points
-  void computeNormalsOnControlPoints(const GhostType & ghost_type = _not_ghost);
-  void computeNormalsOnControlPoints(const Array<Real> & field,
-                                     const GhostType & ghost_type = _not_ghost);
-  void computeNormalsOnControlPoints(
+  /// pre-compute normals on integration points
+  void
+  computeNormalsOnIntegrationPoints(const GhostType & ghost_type = _not_ghost);
+  void
+  computeNormalsOnIntegrationPoints(const Array<Real> & field,
+                                    const GhostType & ghost_type = _not_ghost);
+  void computeNormalsOnIntegrationPoints(
       const Array<Real> & field, Array<Real> & normal, const ElementType & type,
       const GhostType & ghost_type = _not_ghost) const;
   template <ElementType type>
-  void computeNormalsOnControlPoints(const Array<Real> & field,
-                                     Array<Real> & normal,
-                                     const GhostType & ghost_type) const;
+  void computeNormalsOnIntegrationPoints(const Array<Real> & field,
+                                         Array<Real> & normal,
+                                         const GhostType & ghost_type) const;
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
+  /// assemble a field as a lumped matrix (ex. rho in lumped mass)
   void assembleFieldLumped(const Array<Real> & field, Array<Real> & lumped,
                            DOFManager & dof_manager, ElementType type,
                            const GhostType & ghost_type = _not_ghost) const;
 
+  /// assemble a field as a matrix (ex. rho to mass matrix)
   void assembleFieldMatrix(const Array<Real> & field, const ID & matrix_id,
                            const ID & dof_id, DOFManager & dof_manager,
                            ElementType type,
-                           const GhostType & ghost_type = _not_ghost) const;
+                           const GhostType & ghost_type) const;
 
 #ifdef AKANTU_STRUCTURAL_MECHANICS
 
+  /// assemble a field as a matrix (ex. rho to mass matrix)
   void assembleFieldMatrix(const Array<Real> & field_1,
                            UInt nb_degree_of_freedom, SparseMatrix & M,
                            Array<Real> * n,
@@ -204,17 +251,24 @@ public:
                            const ElementType & type,
                            const GhostType & ghost_type = _not_ghost) const;
 
-  void computeShapesMatrix(const ElementType & type, UInt nb_degree_of_freedom,
-                           UInt nb_nodes_per_element, Array<Real> * n, UInt id,
-                           UInt degree_to_interpolate, UInt degree_interpolated,
-                           const bool sign,
+  /// compute shapes function in a matrix for structural elements
+  void computeShapesMatrix(__attribute__((unused)) const ElementType & type,
+                           __attribute__((unused)) UInt nb_degree_of_freedom,
+                           __attribute__((unused)) UInt nb_nodes_per_element,
+                           __attribute__((unused)) Array<Real> * n,
+                           __attribute__((unused)) UInt id,
+                           __attribute__((unused)) UInt degree_to_interpolate,
+                           __attribute__((unused)) UInt degree_interpolated,
+                           __attribute__((unused)) const bool sign,
+                           __attribute__((unused))
                            const GhostType & ghost_type = _not_ghost) const;
 #endif
 
 private:
-  friend class AssembleLumpedTemplateHelper<kind>;
-  friend class AssembleFieldMatrixHelper<kind>;
+  friend struct AssembleLumpedTemplateHelper<kind>;
+  friend struct AssembleFieldMatrixHelper<kind>;
 
+  /// templated function to compute the scaling to assemble a lumped matrix
   template <ElementType type>
   void assembleLumpedTemplate(const Array<Real> & field, Array<Real> & lumped,
                               DOFManager & dof_manager,
@@ -234,30 +288,40 @@ private:
                                      DOFManager & dof_manager,
                                      const GhostType & ghost_type) const;
 
+  /// assemble a field as a matrix (ex. rho to mass matrix)
   template <ElementType type>
   void assembleFieldMatrix(const Array<Real> & field, const ID & matrix_id,
                            const ID & dof_id, DOFManager & dof_manager,
                            const GhostType & ghost_type) const;
 
 #ifdef AKANTU_STRUCTURAL_MECHANICS
+
+  /// assemble a field as a matrix for structural elements (ex. rho to mass
+  /// matrix)
   template <ElementType type>
   void assembleFieldMatrix(const Array<Real> & field_1,
                            UInt nb_degree_of_freedom, SparseMatrix & M,
                            Array<Real> * n,
                            ElementTypeMapArray<Real> & rotation_mat,
+                           __attribute__((unused))
                            const GhostType & ghost_type) const;
+
 #endif
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /// get the shape class (probably useless: see getShapeFunction)
   const ShapeFunctions & getShapeFunctionsInterface() const {
     return shape_functions;
   };
+  /// get the shape class
   const Shape & getShapeFunctions() const { return shape_functions; };
 
+  /// get the integrator class (probably useless: see getIntegrator)
   const Integrator & getIntegratorInterface() const { return integrator; };
+  /// get the integrator class
   const Integ & getIntegrator() const { return integrator; };
 
   /* ------------------------------------------------------------------------ */

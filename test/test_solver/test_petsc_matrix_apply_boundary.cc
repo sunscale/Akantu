@@ -1,14 +1,17 @@
 /**
- * @file   test_petsc_matrix_profile.cc
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Wed Jul 30 12:34:08 2014
+ * @file   test_petsc_matrix_apply_boundary.cc
+ *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ *
+ * @date creation: Mon Oct 13 2014
+ * @date last modification: Wed Oct 28 2015
  *
  * @brief  test the applyBoundary method of the PETScMatrix class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -128,9 +131,10 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (std::abs(test_passed) > Math::getTolerance())
+  if (std::abs(test_passed) > Math::getTolerance()) {
+    finalize();
     return EXIT_FAILURE;
-
+  }
   delete communicator;
 
   finalize();

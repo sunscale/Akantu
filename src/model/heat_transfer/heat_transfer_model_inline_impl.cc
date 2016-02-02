@@ -4,15 +4,16 @@
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Srinivasa Babu Ramisetti <srinivasa.ramisetti@epfl.ch>
  *
- * @date creation: Sun May 01 2011
- * @date last modification: Thu Jun 05 2014
+ * @date creation: Fri Aug 20 2010
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Implementation of the inline functions of the HeatTransferModel class
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,7 +31,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-inline FEEngine & HeatTransferModel::getFEEngineBoundary(std::string name) {
+inline FEEngine & HeatTransferModel::getFEEngineBoundary(const std::string & name) {
   return dynamic_cast<FEEngine &>(getFEEngineClassBoundary<MyFEEngineType>(name));
 }
 
@@ -152,7 +153,7 @@ inline UInt HeatTransferModel::getNbDataForElements(const Array<Element> & eleme
     break;
   }
   case _gst_htm_gradient_temperature: {
-    size += getNbQuadraturePoints(elements) * spatial_dimension * sizeof(Real); // temperature gradient
+    size += getNbIntegrationPoints(elements) * spatial_dimension * sizeof(Real); // temperature gradient
     size += nb_nodes_per_element * sizeof(Real); // nodal temperatures
     //    size += spatial_dimension * nb_nodes_per_element * sizeof(Real); // shape derivatives
     break;

@@ -109,8 +109,8 @@ DOFManagerPETSc::DOFManagerPETSc(const Mesh & mesh, const ID & id,
 #endif
 
     cppargparse::ArgumentParser & argparser = getStaticArgumentParser();
-    int & argc = argparser.getARGC();
-    char **& argv = argparser.getARGV();
+    int & argc = argparser.getArgC();
+    char **& argv = argparser.getArgV();
 
     PetscErrorCode petsc_error = PetscInitialize(&argc, &argv, NULL, NULL);
 

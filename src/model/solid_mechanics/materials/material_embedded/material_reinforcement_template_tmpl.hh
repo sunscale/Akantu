@@ -1,17 +1,17 @@
 /**
  * @file   material_reinforcement_template_tmpl.hh
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Mon Mar 16 2015
- * @date last modification: Mon Mar 16 2015
+ * @date creation: Wed Mar 25 2015
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Reinforcement material templated with constitutive law
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -174,7 +174,7 @@ template <UInt dim, class ConstLaw>
 void MaterialReinforcementTemplate<dim, ConstLaw>::computePotentialEnergy(ElementType type,
                                                                           GhostType ghost_type) {
   const UInt nb_elements = this->element_filter(type, ghost_type).getSize();
-  const UInt nb_quad = this->model->getFEEngine("EmbeddedInterfaceFEEngine").getNbQuadraturePoints(type);
+  const UInt nb_quad = this->model->getFEEngine("EmbeddedInterfaceFEEngine").getNbIntegrationPoints(type);
   this->ConstLaw::potential_energy.alloc(nb_quad * nb_elements, 1, type, ghost_type, 0.);
 
   ConstLaw::computePotentialEnergy(type, ghost_type);

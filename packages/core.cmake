@@ -1,18 +1,19 @@
 #===============================================================================
-# @file   00_core.cmake
+# @file   core.cmake
 #
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Mon Nov 21 2011
-# @date last modification: Fri Sep 19 2014
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  package description for core
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -96,7 +97,7 @@ package_declare_sources(core
   fe_engine/integrator_gauss_inline_impl.cc
   fe_engine/interpolation_element.cc
   fe_engine/interpolation_element_tmpl.hh
-  fe_engine/quadrature_point.hh
+  fe_engine/integration_point.hh
   fe_engine/shape_functions.hh
   fe_engine/shape_functions_inline_impl.cc
   fe_engine/shape_lagrange.cc
@@ -106,7 +107,6 @@ package_declare_sources(core
   fe_engine/shape_linked.hh
   fe_engine/shape_linked_inline_impl.cc
   fe_engine/element.hh
-  fe_engine/quadrature_point.hh
 
   io/dumper/dumpable.hh
   io/dumper/dumpable.cc
@@ -115,7 +115,6 @@ package_declare_sources(core
   io/dumper/dumper_field.hh
   io/dumper/dumper_material_padders.hh
   io/dumper/dumper_filtered_connectivity.hh
-  io/dumper/dumper_element_type.hh
   io/dumper/dumper_element_partition.hh
 
   io/mesh_io.cc
@@ -135,8 +134,13 @@ package_declare_sources(core
   io/parser/parsable.hh
   io/parser/parsable_tmpl.hh
   io/parser/parser.cc
+  io/parser/parser_real.cc
+  io/parser/parser_random.cc
+  io/parser/parser_types.cc
+  io/parser/parser_input_files.cc
   io/parser/parser.hh
   io/parser/parser_tmpl.hh
+  io/parser/parser_grammar_tmpl.hh
   io/parser/cppargparse/cppargparse.hh
   io/parser/cppargparse/cppargparse.cc
   io/parser/cppargparse/cppargparse_tmpl.hh
@@ -168,10 +172,13 @@ package_declare_sources(core
   mesh_utils/mesh_partition/mesh_partition_mesh_data.cc
   mesh_utils/mesh_partition/mesh_partition_mesh_data.hh
   mesh_utils/mesh_partition/mesh_partition_scotch.hh
-  mesh_utils/mesh_pbc.cc
+  mesh_utils/mesh_utils_pbc.cc
   mesh_utils/mesh_utils.cc
   mesh_utils/mesh_utils.hh
   mesh_utils/mesh_utils_inline_impl.cc
+  mesh_utils/global_ids_updater.hh
+  mesh_utils/global_ids_updater.cc
+  mesh_utils/global_ids_updater_inline_impl.cc
 
   model/boundary_condition.hh
   model/boundary_condition_functor.hh
@@ -260,6 +267,14 @@ package_declare_sources(core
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.cc
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.hh
 
+  model/common/neighborhood_base.hh
+  model/common/neighborhood_base.cc
+  model/common/neighborhood_base_inline_impl.cc
+
+  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.hh
+  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.cc
+  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion_inline_impl.cc
+ 
   solver/sparse_solver.cc
   solver/sparse_solver.hh
   solver/sparse_solver_inline_impl.cc
@@ -280,7 +295,6 @@ package_declare_sources(core
   synchronizer/dof_synchronizer_inline_impl.cc
   synchronizer/filtered_synchronizer.cc
   synchronizer/filtered_synchronizer.hh
-  synchronizer/mpi_type_wrapper.hh
   synchronizer/pbc_synchronizer.cc
   synchronizer/pbc_synchronizer.hh
   synchronizer/real_static_communicator.hh
@@ -292,6 +306,9 @@ package_declare_sources(core
   synchronizer/synchronizer.hh
   synchronizer/synchronizer_registry.cc
   synchronizer/synchronizer_registry.hh
+  synchronizer/grid_synchronizer.cc
+  synchronizer/grid_synchronizer.hh
+
   )
 
 package_declare_elements(core
@@ -351,10 +368,10 @@ package_declare_elements(core
   _git_pentahedron
   INTERPOLATION_KIND _itk_lagrangian
   FE_ENGINE_LISTS
-  gradient_on_quadrature_points
-  interpolate_on_quadrature_points
+  gradient_on_integration_points
+  interpolate_on_integration_points
   interpolate
-  compute_normals_on_control_points
+  compute_normals_on_integration_points
   inverse_map
   contains
   compute_shapes
@@ -376,6 +393,7 @@ package_declare_documentation_files(core
   manual-introduction.tex
   manual-gettingstarted.tex
   manual-io.tex
+  manual-feengine.tex
   manual-solidmechanicsmodel.tex
   manual-constitutive-laws.tex
   manual-lumping.tex
@@ -471,11 +489,15 @@ package_declare_documentation(core
 
 find_program(READLINK_COMMAND readlink)
 find_program(ADDR2LINE_COMMAND addr2line)
+find_program(PATCH_COMMAND patch)
 mark_as_advanced(READLINK_COMMAND)
 mark_as_advanced(ADDR2LINE_COMMAND)
 
 include(CheckFunctionExists)
 check_function_exists(clock_gettime _clock_gettime)
+
+include(CheckCXXSymbolExists)
+check_cxx_symbol_exists(strdup cstring AKANTU_HAS_STRDUP)
 
 if(NOT _clock_gettime)
   set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY ON  CACHE INTERNAL "" FORCE)
@@ -483,3 +505,9 @@ else()
   set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF CACHE INTERNAL "" FORCE)
 endif()
 
+package_declare_extra_files_to_package(core
+  SOURCES
+    common/aka_element_classes_info.hh.in
+    common/aka_config.hh.in
+    model/solid_mechanics/material_list.hh.in
+  )

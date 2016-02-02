@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Thu Aug 23 2012
- * @date last modification: Mon Jun 02 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Wed Dec 16 2015
  *
  * @brief  Base of Event Handler classes
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -55,14 +56,19 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
+  /// register a new EventHandler to the Manager. The register object
+  /// will then be informed about the events the manager observes.
   void registerEventHandler(EventHandler & event_handler) {
     event_handlers.insert(&event_handler);
   }
 
+  /// unregister a EventHandler object. This object will not be
+  /// notified anymore about the events this manager observes.
   void unregisterEventHandler(EventHandler & event_handler) {
     event_handlers.erase(&event_handler);
   }
 
+  /// Notify all the registered EventHandlers about the event that just occured.
   template<class Event>
   void sendEvent(const Event & event) {
     typename std::set<EventHandler *>::iterator it = event_handlers.begin();

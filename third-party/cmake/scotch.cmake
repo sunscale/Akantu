@@ -1,3 +1,33 @@
+#===============================================================================
+# @file   scotch.cmake
+#
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
+#
+# @date creation: Mon Mar 30 2015
+# @date last modification: Wed Nov 11 2015
+#
+# @brief  build script for scotch
+#
+# @section LICENSE
+#
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+#
+# Akantu is free  software: you can redistribute it and/or  modify it under the
+# terms  of the  GNU Lesser  General Public  License as  published by  the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+# details.
+#
+# You should  have received  a copy  of the GNU  Lesser General  Public License
+# along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+#
+#===============================================================================
+
 if(TARGET Scotch)
   return()
 endif()
@@ -23,20 +53,38 @@ endif()
 
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
-find_package(ZLIB REQUIRED)
+find_package(ZLIB)
 
-if (AKANTU_USE_OBSOLETE_GETTIMEOFDAY)
-  set (SCOTCH_TIMMING_OPTION -DCOMMON_TIMING_OLD)
+#if(ZLIB_FOUND)
+#  set(_zlib_cflags "-DCOMMON_FILE_COMPRESS_GZ -I${ZLIB_INCLUDE_DIR}")
+#  set(_zlib_ldflags "${ZLIB_LIBRARY}")
+#endif()
+
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  if (AKANTU_USE_OBSOLETE_GETTIMEOFDAY)
+    set(_timing_cflags -DCOMMON_TIMING_OLD)
+  endif()
+  set(_system_cflags "-DCOMMON_PTHREAD -DSCOTCH_PTHREAD ${_timing_cflags}")
+  set(_system_ldflags "-lpthread")
+else()
+  set(_system_cflags "-DCOMMON_RANDOM_RAND -DCOMMON_WINDOWS -DCOMMON_STUB_FORK -D'pipe(pfds)=_pipe(pfds,1024,0x8000)'")
 endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  set(SCOTCH_ARCHITECTURE -DIDXSIZE64)
-else()
-  set(SCOTCH_ARCHITECTURE)
+  set(_architecture_cflags -DIDXSIZE64)
 endif()
 
 math(EXPR _n "${AKANTU_INTEGER_SIZE} * 8")
-set(SCOTCH_NUM_SIZE "-DINTSIZE${_n}")
+if(NOT _n EQUAL 32)
+  set(_num_size_cflags "-DINTSIZE${_n}")
+endif()
+
+if(HAVE_STDINT_H)
+  set(_stdint -DHAVE_STDINT_H)
+endif()
+
+set(AKANTU_SCOTCH_CFLAGS "-O3 -w -fPIC -Drestrict=__restrict -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -DSCOTCH_RENAME_PARSER ${_zlib_cflags} ${_system_cflags} ${_architecture_cflags} ${_num_size_cflags} ${_stdint}")
+set(AKANTU_SCOTCH_LDFLAGS "${_zlib_ldflags} ${_system_ldflags} -lm")
 
 set(SCOTCH_DIR ${PROJECT_BINARY_DIR}/third-party)
 configure_file(
@@ -49,8 +97,8 @@ ExternalProject_Add(Scotch
   PREFIX ${SCOTCH_DIR}
   ${_scotch_download_command}
   ${_extra_options}
-  PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}.patch
-  CONFIGURE_COMMAND cmake -E copy ${SCOTCH_DIR}/scotch_make.inc src/Makefile.inc
+  PATCH_COMMAND ${PATCH_COMMAND} -p1 < ${PROJECT_SOURCE_DIR}/third-party/scotch_${SCOTCH_VERSION}.patch
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy ${SCOTCH_DIR}/scotch_make.inc src/Makefile.inc
   BUILD_IN_SOURCE 1
   BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -C src
   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} prefix=<INSTALL_DIR> -C src install

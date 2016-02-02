@@ -2,16 +2,18 @@
  * @file   integrator.hh
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Tue Feb 15 2011
- * @date last modification: Fri Jun 13 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Oct 22 2015
  *
  * @brief  interface for integrator classes
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -61,10 +63,12 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
+  /// empty method
   template <ElementType type>
   inline void precomputeJacobiansOnQuadraturePoints(__attribute__ ((unused))
 						    GhostType ghost_type){}
 
+  /// empty method
   void integrateOnElement(__attribute__ ((unused)) const Array<Real> & f,
 			  __attribute__ ((unused)) Real * intf,
 			  __attribute__ ((unused)) UInt nb_degree_of_freedom,
@@ -91,6 +95,7 @@ public:
     return jacobians(type, ghost_type);
   };
 
+  /// access to the jacobians const
   const Array<Real> & getJacobians(const ElementType & type,
 			      const GhostType & ghost_type = _not_ghost) const {
     return jacobians(type, ghost_type);
@@ -103,6 +108,7 @@ public:
 
 
 protected:
+  /// mesh associated to the integrator
   const Mesh & mesh;
 
   /// jacobians for all elements

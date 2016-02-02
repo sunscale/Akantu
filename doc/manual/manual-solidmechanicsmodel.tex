@@ -124,7 +124,9 @@ $y$-direction are set to zero. Implementing this displacement boundary
 condition is similar to the implementation of initial displacement
 conditions described above. However, in order to impose a displacement
 boundary condition for all time steps, the corresponding nodes need to
-be marked as boundary nodes as shown in the following code:
+be marked as boundary nodes using the function \code{blocked}. While, 
+in order to impose a load on the right side, the nodes are not marked.
+The detail codes are shown as follows:
 
 \begin{cpp}
 Array<bool> & blocked = model.getBlockedDOFs();
@@ -134,10 +136,13 @@ UInt nb_nodes = mesh.getNbNodes();
 
 for (UInt i = 0; i < nb_nodes; ++i) {
   if(Math::are_float_equal(pos(i, 0), 0)) {
-    blocked(i, 0) = true; //block displacement in x-direction
-    blocked(i, 1) = true; //block displacement in y-direction
+    blocked(i, 0) = true; //block dof in x-direction
+    blocked(i, 1) = true; //block dof in y-direction
     disp(i, 0) = 0.; //fixed displacement in x-direction
     disp(i, 1)= 0.; //fixed displacement in y-direction
+  } else if (Math::are_float_equal(pos(i, 10), 0)) {
+    blocked(i, 0) = false; //unblock dof in x-direction
+    forces(i, 0) = 10.; //force in x-direction
   }
 }
 \end{cpp}
@@ -145,8 +150,9 @@ for (UInt i = 0; i < nb_nodes; ++i) {
 \begin{figure}[!htb]
   \centering
   \includegraphics[scale=0.4]{figures/dirichlet}
-  \caption{Beam with fixed support.\label{fig:smm:dirichlet_bc}}
+  \caption{Beam with fixed support and load.\label{fig:smm:dirichlet_bc}}
 \end{figure}
+
 
 For the more advanced approach, one needs the notion of a boundary in
 the mesh. Therefore, the boundary should be created before boundary
@@ -238,6 +244,25 @@ respectively.
   \caption{Plate on movable supports.\label{fig:smm:bc_and_ic}}
 \end{figure}
 
+As it is mentioned in Section \ref{sect:common:groups}, node and
+element groups can be used to assign the boundary conditions. A
+generic example is given below with a Dirichlet boundary condition.
+
+\begin{cpp}
+  // create a node group
+  NodeGroup & node_group = mesh.createNodeGroup("nodes_fix");
+
+  /* 
+  fill the node group with the nodes you want
+  */
+
+  // create an element group using the existing node group
+  mesh.createElementGroupFromNodeGroup("el_fix", "nodes_fix", spatial_dimension-1);
+
+  // boundary condition can be applied using the element group name
+  model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "el_fix");
+\end{cpp}
+
 \subsection{Material Selector\label{sect:smm:materialselector}}
 
 If the user wants to assign different materials to different
@@ -263,7 +288,8 @@ examples below.
 In this example the physical names specified in a GMSH geometry file will by
 used to match the material names in the input file.
 
-Another example would be to use the first (\code{tag\_0}) or the second (\code{tag\_1}) tag associated to each elements in the mesh:
+Another example would be to use the first (\code{tag\_0}) or the second
+(\code{tag\_1}) tag associated to each elements in the mesh:
 
 \begin{cpp}
   MeshDataMaterialSelector<UInt> * mat_selector;
@@ -271,7 +297,9 @@ Another example would be to use the first (\code{tag\_0}) or the second (\code{t
   model.setMaterialSelector(*mat_selector);
 \end{cpp}
 
-where \code{first\_index} (default is 1) is the value of \code{tag\_1} that will be associated to the first material in the material input file. The following values of the tag will be associated with the following materials.
+where \code{first\_index} (default is 1) is the value of \code{tag\_1} that will
+be associated to the first material in the material input file. The following
+values of the tag will be associated with the following materials.
 
 There are four different material selectors pre-defined in
 \akantu. \code{MaterialSelector} and \code{DefaultMaterialSelector} is
@@ -279,12 +307,6 @@ used to assign a material to regular elements by default. For the
 regular elements, as in the example above,
 \code{MeshDataMaterialSelector} can be used to assign different
 materials to different elements. 
-
-For cohesive material, \akantu has a pre-defined material selector to assign 
-the first cohesive material by default to the cohesive elements which is called 
-\code{DefaultMaterialCohesiveSelector} and it inherits its properties from 
-\code{DefaultMaterialSelector}. Multiple cohesive materials can be assigned 
-using mesh data information (for more details, see \ref{intrinsic_insertion}).
 
 Apart from the \akantu's default material selectors, users can always
 develop their own classes in the main code to tackle various
@@ -393,6 +415,47 @@ condition, right: the solution (deformation magnified 50 times)}
   \label{fig:smm:implicit:static_solution}
 \end{figure}
 
+
+\subsection{Static implicit analysis with dynamic insertion of cohesive elements}
+In order to solve problems with the extrinsic cohesive method in the
+static implicit solution scheme, the function \code{solveStepCohesive}
+has to be used:
+\begin{cpp}
+model.solveStepCohesive<_scm_newton_raphson_tangent, _scc_increment>(1e-13, error, 25, false, 1e5, true);
+\end{cpp}
+
+in which the arguments are: tolerance, error, max\_iteration,
+load\_reduction, tol\_increase\_factor, do\_not\_factorize.  This
+function, first applies the Newton-Raphson procedure to solve the
+problem.  Then, it calls the method \code{checkCohesiveStress} to
+check if cohesive elements have to be inserted.  Since the approach is
+implicit, only one element is added, the most stressed one (see
+Section \ref{extrinsic_insertion}).  After insertion, the
+Newton-Raphson procedure is applied again to solve the same
+incremental loading step, with the new inserted cohesive element.  The
+procedure loops in this way since no new cohesive elements have to be
+inserted.  At that point, the solution is saved, and the simulation
+can advance to the next incremental loading step.  In case the
+convergence is not reached, the obtained solution is not saved and the
+simulation return to the main file with the error given by the
+solution saved in the argument of the function \emph{error}.  In this
+way, the user can intervene in the simulation in order to find anyhow
+convergence.  A possibility is, for instance, to reduce the last
+incremental loading step.  The variable \emph{load\_reduction} can be
+used to identify if the load has been already reduced or not.  At the
+same time, with the variable \emph{tol\_increase\_factor} it is
+possible to increase the tolerance by a factor defined by the user in
+the main file, in order to accept a solution even with an error bigger
+than the tolerance set at the beginning.  It is possible to increase
+the tolerance only in the phase of loading reduction, i.e., when
+load\_reduction = true.  A not converged solution is never saved.  In
+case the convergence is not reached even after the loading reduction
+procedure, the displacement field is not updated and remains the one
+of the last converged incremental steps.  Also, cohesive elements are
+inserted only if convergence is reached.  An example of the extrinsic
+cohesive method in the static implicit solution scheme is presented in
+\shellcode{\examplesdir/cohesive\_element/cohesive\_extrinsic\_implicit}.
+
 \section{Dynamic Methods} \label{sect:smm:Dynamic_methods}
 
 Different ways to solve the equations of motion are implemented in the
@@ -500,7 +563,8 @@ are parameters depending on the method used to solve the equations
   \end{tabular}
 \end{center}
 
-%\note{If you want to use the implicit solver \akantu should be compiled at least with one sparse matrix solver such as Mumps\cite{mumps}.}
+% \note{If you want to use the implicit solver \akantu should be compiled at
+% least with one sparse matrix solver such as Mumps\cite{mumps}.}
 
 
 \subsection{Implicit Time Integration}
@@ -628,10 +692,13 @@ wave) needs to travel the characteristic length of the mesh:
 \label{eqn:smm:explicit:stabletime}
 \Delta t_{\st{crit}} = \frac{\Delta x}{c}
 \end{equation}
-where $\Delta x$ is a characteristic length (\eg the inradius in the
-case of linear triangle element) and $c$ is the celerity of the fastest wave in the material. It is generally the compressive
-wave of celerity $c = \sqrt{\frac{2 \mu + \lambda}{\rho}}$, $\mu$ and $\lambda$ are the first and second Lame's coefficients and $\rho$ is the density. However, it is recommended to impose a time step that is smaller than the stable time step, for
-instance, by multiplying the stable time step by a safety factor smaller than one.
+where $\Delta x$ is a characteristic length (\eg the inradius in the case of
+linear triangle element) and $c$ is the celerity of the fastest wave in the
+material. It is generally the compressive wave of celerity
+$c = \sqrt{\frac{2 \mu + \lambda}{\rho}}$, $\mu$ and $\lambda$ are the first and
+second Lame's coefficients and $\rho$ is the density. However, it is recommended
+to impose a time step that is smaller than the stable time step, for instance,
+by multiplying the stable time step by a safety factor smaller than one.
 
 \begin{cpp}
 const Real safety_time_factor = 0.8;
@@ -765,15 +832,18 @@ class MaterialXXX : public Material {
 \end{cpp}
 In the header file the user also needs to declare all the members of the new
 material. These include the parameters that a read from the
-material input file, as well as any other material parameters that will be computed during the simulation and internal variables.\\
-In the following the example of adding a new damage material will be presented. In this
-case the parameters in the material will consist of the Young's modulus, the
-Poisson coefficient, the resistance to damage and the damage threshold. The
-material will then from these values compute its Lam\'{e} coefficients and its
-bulk modulus. Furthermore, the user has to add a new internal variable
-\code{damage} in order to store the amount of damage at each quadrature point in
-each step of the simulation. For this specific material the member declaration
-inside the class will look as follows:
+material input file, as well as any other material parameters that will be
+computed during the simulation and internal variables.
+
+
+In the following the example of adding a new damage material will be
+presented. In this case the parameters in the material will consist of the
+Young's modulus, the Poisson coefficient, the resistance to damage and the
+damage threshold. The material will then from these values compute its Lam\'{e}
+coefficients and its bulk modulus. Furthermore, the user has to add a new
+internal variable \code{damage} in order to store the amount of damage at each
+quadrature point in each step of the simulation. For this specific material the
+member declaration inside the class will look as follows:
 \begin{cpp}
 class LocalMaterialDamage : public Material {
 
@@ -1013,5 +1083,60 @@ model.initMaterials();
 \end{cpp}
 A full example for adding a new damage law can be found in
 \shellcode{\examplesdir/new\_material}.
+
+\subsection{Adding a New Non-Local Constitutive Law}\index{Material!create a new non-local material}
+
+In order to add a new non-local material we first have to add the local constitutive law in \akantu (see above). We can then add the non-local version of the constitutive law by adding the two files (\code{material\_XXX\_non\_local.hh} and \code{material\_XXX\_non\_local.cc}) where \code{XXX} is the name of the corresponding local material. The new law must inherit from the two classes, non-local parent class, such as the \code{MaterialNonLocal} class, and from the local version of the constitutive law, \textit{i.e.} \code{MaterialXXX}. It is therefore necessary to include the interface of those classes in the header file of your custom material and indicate the inheritance in the declaration of the class:
+\begin{cpp}
+/* ---------------------------------------------------------------------- */
+#include "material_non_local.hh" // the non-local parent
+#include "material_XXX.hh"
+/* ---------------------------------------------------------------------- */
+
+#ifndef __AKANTU_MATERIAL_XXX_HH__
+#define __AKANTU_MATERIAL_XXX_HH__
+
+__BEGIN_AKANTU__
+
+class MaterialXXXNonLocal : public MaterialXXX,
+                            public MaterialNonLocal {
+
+/// declare here the interface of your material
+
+};
+\end{cpp}
+As members of the class we only need to add the internal fields to store the non-local quantities, which are obtained from the averaging process:
+\begin{cpp}
+/* -------------------------------------------------------------------------- */
+/* Class members                                                              */
+/* -------------------------------------------------------------------------- *
+protected:
+  InternalField<Real> grad_u_nl;
+\end{cpp}
+The following four functions need to be implemented in the non-local material:
+\begin{cpp}
+  /// initialization of the material
+  void initMaterial();
+  /// loop over all element and invoke stress computation
+  virtual void computeNonLocalStresses(GhostType ghost_type);
+  /// compute stresses after local quantities have been averaged
+  virtual void computeNonLocalStress(ElementType el_type, GhostType ghost_type)
+  /// compute all local quantities
+  void computeStress(ElementType el_type, GhostType ghost_type);
+\end{cpp}
+In the intialization of the non-local material we need to register the local quantity for the averaging process. In our example the internal field \emph{grad\_u\_nl} is the non-local counterpart of the gradient of the displacement field (\emph{grad\_u\_nl}):
+\begin{cpp}
+  void MaterialXXXNonLocal::initMaterial() {
+    MaterialXXX::initMaterial();
+    MaterialNonLocal::initMaterial();
+    /// register the non-local variable in the manager
+    this->model->getNonLocalManager().registerNonLocalVariable(this->grad_u.getName(), this->grad_u_nl.getName(), spatial_dimension * spatial_dimension);
+
+}
+\end{cpp}
+The function to register the non-local variable takes as parameters the name of the local internal field, the name of the non-local counterpart and the number of components of the field we want to average.
+In the \emph{computeStress} we now need to compute all the quantities we want to average. We can then write a loop for the stress computation in the function \emph{computeNonLocalStresses} and then provide the constitutive law on each integration point in the function \emph{computeNonLocalStress}.
+
+
 
 %%% Local Variables: %%% mode: latex %%% TeX-master: "manual" %%% End:

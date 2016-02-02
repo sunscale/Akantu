@@ -1,16 +1,19 @@
 /**
  * @file   test_material_non_local.cc
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Wed Aug 31 11:09:48 2011
+ * @date creation: Wed Aug 31 2011
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  test of the main part of the non local materials
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -87,7 +90,6 @@ int main(int argc, char *argv[]) {
   model.updateResidual();
   model.dump();
 
-  mat.savePairs("pairs");
 
   //Array<Real> & damage = mat.getArray("local_damage", _quadrangle_4);
   Array<Real> & damage = mat.getArray<Real>("local_damage", _triangle_3);

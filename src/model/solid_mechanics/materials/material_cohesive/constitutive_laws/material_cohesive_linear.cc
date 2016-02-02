@@ -1,18 +1,20 @@
 /**
  * @file   material_cohesive_linear.cc
  *
+ * @author Mauro Corrado <mauro.corrado@epfl.ch>
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date creation: Tue May 08 2012
- * @date last modification: Thu Aug 07 2014
+ * @date creation: Wed Feb 22 2012
+ * @date last modification: Thu Jan 14 2016
  *
  * @brief  Linear irreversible cohesive law of mixed mode loading with
  * random stress definition for extrinsic type
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -48,30 +50,32 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
   MaterialCohesive(model,id),
   sigma_c_eff("sigma_c_eff", *this),
   delta_c_eff("delta_c_eff", *this),
-  insertion_stress("insertion_stress", *this) {
+  insertion_stress("insertion_stress", *this),
+  opening_prec("opening_prec", *this),
+  reduction_penalty("reduction_penalty", *this) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("beta"   , beta   , Real(0.) ,
+  this->registerParam("beta", beta, Real(0.),
                       _pat_parsable | _pat_readable,
-                      "Beta parameter"         );
+                      "Beta parameter");
 
-  this->registerParam("G_c"   , G_c   , Real(0.) ,
+  this->registerParam("G_c", G_c, Real(0.),
                       _pat_parsable | _pat_readable,
-                      "Mode I fracture energy" );
+                      "Mode I fracture energy");
 
-  this->registerParam("penalty", penalty, Real(0.) ,
+  this->registerParam("penalty", penalty, Real(0.),
                       _pat_parsable | _pat_readable,
-                      "Penalty coefficient"    );
+                      "Penalty coefficient");
 
-  this->registerParam("volume_s", volume_s, Real(0.) ,
+  this->registerParam("volume_s", volume_s, Real(0.),
                       _pat_parsable | _pat_readable,
                       "Reference volume for sigma_c scaling");
 
-  this->registerParam("m_s", m_s, Real(1.) ,
+  this->registerParam("m_s", m_s, Real(1.),
                       _pat_parsable | _pat_readable,
                       "Weibull exponent for sigma_c scaling");
 
-  this->registerParam("kappa"  , kappa  , Real(1.) ,
+  this->registerParam("kappa", kappa, Real(1.),
                       _pat_parsable | _pat_readable,
                       "Kappa parameter");
 
@@ -83,8 +87,11 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
 		      _pat_parsable | _pat_readable,
 		      "Insertion of cohesive element when stress is high enough just on one quadrature point");
 
-  //  if (!model->isExplicit())
-    use_previous_delta_max = true;
+  this->registerParam("recompute", recompute, false,
+                      _pat_parsable | _pat_modifiable,
+                      "recompute solution");
+
+  this->use_previous_delta_max = true;
 
   AKANTU_DEBUG_OUT();
 }
@@ -108,6 +115,8 @@ void MaterialCohesiveLinear<spatial_dimension>::initMaterial() {
   sigma_c_eff.initialize(1);
   delta_c_eff.initialize(1);
   insertion_stress.initialize(spatial_dimension);
+  opening_prec.initialize(spatial_dimension);
+  reduction_penalty.initialize(1);
 
   if (!Math::are_float_equal(delta_c, 0.))
     delta_c_eff.setDefaultValue(delta_c);
@@ -115,6 +124,7 @@ void MaterialCohesiveLinear<spatial_dimension>::initMaterial() {
     delta_c_eff.setDefaultValue(2 * G_c / sigma_c);
 
   if (model->getIsExtrinsic()) scaleInsertionTraction();
+  opening_prec.initializeHistory();
 
   AKANTU_DEBUG_OUT();
 }
@@ -144,7 +154,7 @@ void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {
       = mesh_facets.getElementToSubelement(type_facet);
 
     UInt nb_facet = facet_to_element.getSize();
-    UInt nb_quad_per_facet = fe_engine_facet.getNbQuadraturePoints(type_facet);
+    UInt nb_quad_per_facet = fe_engine_facet.getNbIntegrationPoints(type_facet);
 
     // iterator to modify sigma_c for all the quadrature points of a facet
     Array<Real>::vector_iterator sigma_c_iterator
@@ -164,7 +174,7 @@ void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {
         if (*elem == ElementNull) continue;
 
         // unit vector for integration in order to obtain the volume
-        UInt nb_quadrature_points = fe_engine.getNbQuadraturePoints(elem->type);
+        UInt nb_quadrature_points = fe_engine.getNbIntegrationPoints(elem->type);
         Vector<Real> unit_vector(nb_quadrature_points, 1);
 
         volume += fe_engine.integrate(unit_vector, elem->type,
@@ -204,6 +214,8 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
     Array<Real> & del_c = delta_c_eff(type_cohesive);
     Array<Real> & ins_stress = insertion_stress(type_cohesive);
     Array<Real> & trac_old = tractions_old(type_cohesive);
+    Array<Real> & open_prec = opening_prec(type_cohesive);
+    Array<bool> & red_penalty = reduction_penalty(type_cohesive);
     const Array<Real> & f_stress = model->getStressOnFacets(type_facet);
     const Array<Real> & sigma_lim = sigma_c(type_facet);
     Real max_ratio = 0.;
@@ -211,10 +223,9 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
     UInt index_filter = 0;
     UInt nn = 0;
 
-
-    UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
+    UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
     UInt nb_facet = f_filter.getSize();
-    if (nb_facet == 0) continue;
+    //  if (nb_facet == 0) continue;
 
     Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
 
@@ -225,7 +236,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
 
     const Array<Real> & tangents = model->getTangents(type_facet);
     const Array<Real> & normals
-      = model->getFEEngine("FacetsFEEngine").getNormalsOnQuadPoints(type_facet);
+      = model->getFEEngine("FacetsFEEngine").getNormalsOnIntegrationPoints(type_facet);
     Array<Real>::const_vector_iterator normal_begin = normals.begin(spatial_dimension);
     Array<Real>::const_vector_iterator tangent_begin = tangents.begin(tangents.getNbComponent());
     Array<Real>::const_matrix_iterator facet_stress_begin =
@@ -306,7 +317,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
         }else{
           Real ratio = final_stress/(*sigma_lim_it);
           if (ratio > max_ratio){
-            std::cout << "ratio = " << ratio << std::endl;
             ++nn;
             max_ratio = ratio;
             index_f = f;
@@ -316,7 +326,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
       }
     }
 
-    /// insertion of only 1 cohesive element in case of implicit approach. The one subjected to the highest stress.
+    /// Insertion of only 1 cohesive element in case of implicit approach. The one subjected to the highest stress.
     if (!model->isExplicit()){
       StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
       Array<Real> abs_max(comm.getNbProc());
@@ -372,13 +382,17 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
     ins_stress.resize(old_nb_quad_points + new_nb_quad_points);
     trac_old.resize(old_nb_quad_points + new_nb_quad_points);
     del_c.resize(old_nb_quad_points + new_nb_quad_points);
+    open_prec.resize(old_nb_quad_points + new_nb_quad_points);
+    red_penalty.resize(old_nb_quad_points + new_nb_quad_points);
 
     for (UInt q = 0; q < new_nb_quad_points; ++q) {
       sig_c_eff(old_nb_quad_points + q) = new_sigmas[q];
       del_c(old_nb_quad_points + q) = new_delta_c[q];
+      red_penalty(old_nb_quad_points + q) = false;
       for (UInt dim = 0; dim < spatial_dimension; ++dim) {
  	ins_stress(old_nb_quad_points + q, dim) = new_normal_traction[q](dim);
  	trac_old(old_nb_quad_points + q, dim) = new_normal_traction[q](dim);
+ 	open_prec(old_nb_quad_points + q, dim) = 0.;
       }
     }
   }
@@ -394,128 +408,87 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
   AKANTU_DEBUG_IN();
 
   /// define iterators
-  Array<Real>::iterator< Vector<Real> > traction_it =
+  Array<Real>::vector_iterator traction_it =
     tractions(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::iterator< Vector<Real> > opening_it =
+  Array<Real>::vector_iterator opening_it =
     opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::iterator< Vector<Real> > contact_traction_it =
+  /// opening_prec is the opening of the previous step in the
+  /// Newton-Raphson loop
+  Array<Real>::vector_iterator opening_prec_it =
+    opening_prec(el_type, ghost_type).begin(spatial_dimension);
+
+  Array<Real>::vector_iterator contact_traction_it =
     contact_tractions(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::iterator< Vector<Real> > contact_opening_it =
+  Array<Real>::vector_iterator contact_opening_it =
     contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::const_iterator< Vector<Real> > normal_it =
+  Array<Real>::const_vector_iterator normal_it =
     normal.begin(spatial_dimension);
 
-  Array<Real>::iterator< Vector<Real> >traction_end =
+  Array<Real>::vector_iterator traction_end =
     tractions(el_type, ghost_type).end(spatial_dimension);
 
-  Array<Real>::iterator<Real>sigma_c_it =
+  Array<Real>::scalar_iterator sigma_c_it =
     sigma_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>delta_max_it =
+  Array<Real>::scalar_iterator delta_max_it =
     delta_max(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>delta_max_prev_it =
+  Array<Real>::scalar_iterator delta_max_prev_it =
     delta_max.previous(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>delta_c_it =
+  Array<Real>::scalar_iterator delta_c_it =
     delta_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>damage_it =
+  Array<Real>::scalar_iterator damage_it =
     damage(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Vector<Real> > insertion_stress_it =
+  Array<Real>::vector_iterator insertion_stress_it =
     insertion_stress(el_type, ghost_type).begin(spatial_dimension);
 
+  Array<bool>::scalar_iterator reduction_penalty_it =
+    reduction_penalty(el_type, ghost_type).begin();
 
-  Real * memory_space = new Real[2*spatial_dimension];
-  Vector<Real> normal_opening(memory_space, spatial_dimension);
-  Vector<Real> tangential_opening(memory_space + spatial_dimension,
-                                  spatial_dimension);
+  Vector<Real> normal_opening(spatial_dimension);
+  Vector<Real> tangential_opening(spatial_dimension);
 
+  if (! this->model->isExplicit())
+    this->delta_max(el_type, ghost_type).copy(this->delta_max.previous(el_type, ghost_type));
+ 
   /// loop on each quadrature point
   for (; traction_it != traction_end;
-       ++traction_it, ++opening_it, ++normal_it, ++sigma_c_it,
-         ++delta_max_it, ++delta_c_it, ++damage_it, ++contact_traction_it,
-         ++insertion_stress_it, ++contact_opening_it, ++delta_max_prev_it) {
+       ++traction_it, ++opening_it, ++opening_prec_it,
+	 ++normal_it, ++sigma_c_it, ++delta_max_it, ++delta_c_it, ++damage_it,
+	 ++contact_traction_it, ++insertion_stress_it, ++contact_opening_it,
+	 ++delta_max_prev_it, ++reduction_penalty_it) {
 
-    if (!model->isExplicit())
-      *delta_max_it = *delta_max_prev_it;
-
-    /// compute normal and tangential opening vectors
-    Real normal_opening_norm = opening_it->dot(*normal_it);
-    normal_opening  = (*normal_it);
-    normal_opening *= normal_opening_norm;
-
-    tangential_opening  = *opening_it;
-    tangential_opening -=  normal_opening;
-
-    Real tangential_opening_norm = tangential_opening.norm();
-
-    /**
-     * compute effective opening displacement
-     * @f$ \delta = \sqrt{
-     * \frac{\beta^2}{\kappa^2} \Delta_t^2 + \Delta_n^2 } @f$
-     */
-    Real delta = tangential_opening_norm * tangential_opening_norm * beta2_kappa2;
-
-    bool penetration = normal_opening_norm < -Math::getTolerance();
-    if (contact_after_breaking == false && Math::are_float_equal(*damage_it, 1.))
-      penetration = false;
-
-    if (penetration) {
-      /// use penalty coefficient in case of penetration
-      *contact_traction_it = normal_opening;
-      *contact_traction_it *= penalty;
-      *contact_opening_it = normal_opening;
-      /// don't consider penetration contribution for delta
-      *opening_it = tangential_opening;
-      normal_opening.clear();
-    }
-    else {
-      delta += normal_opening_norm * normal_opening_norm;
-      contact_traction_it->clear();
-      contact_opening_it->clear();
-    }
-
-    delta = std::sqrt(delta);
-
-    /// update maximum displacement and damage
-    *delta_max_it = std::max(*delta_max_it, delta);
-    *damage_it = std::min(*delta_max_it / *delta_c_it, Real(1.));
-
-    /**
-     * Compute traction @f$ \mathbf{T} = \left(
-     * \frac{\beta^2}{\kappa} \Delta_t \mathbf{t} + \Delta_n
-     * \mathbf{n} \right) \frac{\sigma_c}{\delta} \left( 1-
-     * \frac{\delta}{\delta_c} \right)@f$
-     */
-
-    if (Math::are_float_equal(*damage_it, 1.))
-      traction_it->clear();
-    else if (Math::are_float_equal(*damage_it, 0.)) {
-      if (penetration)
-        traction_it->clear();
-      else
-        *traction_it = *insertion_stress_it;
-    }
-    else {
-      *traction_it  = tangential_opening;
-      *traction_it *= beta2_kappa;
-      *traction_it += normal_opening;
-
-      AKANTU_DEBUG_ASSERT(*delta_max_it != 0.,
-                          "Division by zero, tolerance might be too low");
-
-      *traction_it *= *sigma_c_it / *delta_max_it * (1. - *damage_it);
-
-    }
+    Real normal_opening_norm, tangential_opening_norm;
+    bool penetration;
+    Real current_penalty = 0.;
+    this->computeTractionOnQuad(*traction_it,
+				*delta_max_it,
+				*delta_max_prev_it,
+				*delta_c_it,
+				*insertion_stress_it,
+				*sigma_c_it,
+				*opening_it,
+				*opening_prec_it,
+				*normal_it,
+				normal_opening,
+				tangential_opening,
+				normal_opening_norm,
+				tangential_opening_norm,
+				*damage_it,
+				penetration,
+				*reduction_penalty_it,
+				current_penalty,
+				*contact_traction_it,
+				*contact_opening_it);
   }
 
-  delete [] memory_space;
   AKANTU_DEBUG_OUT();
 }
 
@@ -523,18 +496,33 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(const Array<Real
 template<UInt spatial_dimension>
 void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
-
-  /// This function set a predefined value to the parameter delta_max_prev of the
-  /// elements that have been inserted in the last loading step for which convergence
-  /// has not been reached. This is done before reducing the loading and re-doing the step.
-  /// Otherwise, the updating of delta_max_prev would be done with reference to the
-  /// non-convergent solution.
+  
+  /**
+  * This function set a predefined value to the parameter
+  * delta_max_prev of the elements that have been inserted in the
+  * last loading step for which convergence has not been
+  * reached. This is done before reducing the loading and re-doing
+  * the step.  Otherwise, the updating of delta_max_prev would be
+  * done with reference to the non-convergent solution. In this
+  * function also other variables related to the contact and
+  * friction behavior are correctly set.
+  */
 
   Mesh & mesh = fem_cohesive->getMesh();
   Mesh::type_iterator it = mesh.firstType(spatial_dimension,
 					  ghost_type, _ek_cohesive);
   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension,
 						ghost_type, _ek_cohesive);
+
+  /**
+  * the variable "recompute" is set to true to activate the
+  * procedure that reduce the penalty parameter for
+  * compression. This procedure is set true only during the phase of
+  * load_reduction, that has to be set in the maiin file. The
+  * penalty parameter will be reduced only for the elements having
+  * reduction_penalty = true.
+  */
+  recompute = true;
 
   for(; it != last_type; ++it) {
     Array<UInt> & elem_filter = element_filter(*it, ghost_type);
@@ -545,35 +533,89 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(GhostType ghost_ty
     ElementType el_type = *it;
 
     /// define iterators
-    Array<Real>::iterator<Real>delta_max_it =
+    Array<Real>::scalar_iterator delta_max_it =
       delta_max(el_type, ghost_type).begin();
 
-    Array<Real>::iterator<Real>delta_max_end =
+    Array<Real>::scalar_iterator delta_max_end =
       delta_max(el_type, ghost_type).end();
 
-    Array<Real>::iterator<Real>delta_max_prev_it =
+    Array<Real>::scalar_iterator delta_max_prev_it =
       delta_max.previous(el_type, ghost_type).begin();
 
-    Array<Real>::iterator<Real>delta_c_it =
+    Array<Real>::scalar_iterator delta_c_it =
       delta_c_eff(el_type, ghost_type).begin();
 
+    Array<Real>::vector_iterator opening_prec_it =
+      opening_prec(el_type, ghost_type).begin(spatial_dimension);
+
+    Array<Real>::vector_iterator opening_prec_prev_it =
+      opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
 
     /// loop on each quadrature point
     for (; delta_max_it != delta_max_end;
-         ++delta_max_it, ++delta_max_prev_it, ++delta_c_it) {
+         ++delta_max_it, ++delta_max_prev_it, ++delta_c_it,
+	   ++opening_prec_it, ++opening_prec_prev_it) {
 
       if (*delta_max_prev_it == 0)
-        /// elements inserted in the last step, that has not converged
+        /// elements inserted in the last incremental step, that did
+        /// not converge
         *delta_max_it = *delta_c_it / 1000;
       else
-        /// elements introduced in previous steps, for which a correct
-        /// value of delta_max_prev already exists
+        /// elements introduced in previous incremental steps, for
+        /// which a correct value of delta_max_prev already exists
         *delta_max_it = *delta_max_prev_it;
+
+      /// in case convergence is not reached, set opening_prec to the
+      /// value referred to the previous incremental step
+      *opening_prec_it = *opening_prec_prev_it;
 
     }
   }
 }
 
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void MaterialCohesiveLinear<spatial_dimension>::resetVariables(GhostType ghost_type) {
+  AKANTU_DEBUG_IN();
+
+  /**
+  * This function set the variables "recompute" and
+  * "reduction_penalty" to false. It is called by solveStepCohesive
+  * when convergence is reached. Such variables, in fact, have to be
+  * false at the beginning of a new incremental step.
+  */
+
+  Mesh & mesh = fem_cohesive->getMesh();
+  Mesh::type_iterator it = mesh.firstType(spatial_dimension,
+					  ghost_type, _ek_cohesive);
+  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension,
+						ghost_type, _ek_cohesive);
+  
+  recompute = false;
+
+  for(; it != last_type; ++it) {
+    Array<UInt> & elem_filter = element_filter(*it, ghost_type);
+
+    UInt nb_element = elem_filter.getSize();
+    if (nb_element == 0) continue;
+
+    ElementType el_type = *it;
+
+    Array<bool>::scalar_iterator reduction_penalty_it =
+      reduction_penalty(el_type, ghost_type).begin();
+
+    Array<bool>::scalar_iterator reduction_penalty_end =
+      reduction_penalty(el_type, ghost_type).end();
+
+    /// loop on each quadrature point
+    for (; reduction_penalty_it != reduction_penalty_end;
+	 ++reduction_penalty_it) {
+    
+      *reduction_penalty_it = false;
+    }
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -596,126 +638,74 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(const Ele
   Array<Real>::vector_iterator opening_it =
     opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::iterator<Real>delta_max_it =
+  /// NB: delta_max_it points on delta_max_previous, i.e. the
+  /// delta_max related to the solution of the previous incremental
+  /// step
+  Array<Real>::scalar_iterator delta_max_it =
     delta_max.previous(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>sigma_c_it =
+  Array<Real>::scalar_iterator sigma_c_it =
     sigma_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>delta_c_it =
+  Array<Real>::scalar_iterator delta_c_it =
     delta_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real>damage_it =
+  Array<Real>::scalar_iterator damage_it =
     damage(el_type, ghost_type).begin();
 
-  Array<Real>::iterator< Vector<Real> > contact_opening_it =
+  Array<Real>::vector_iterator contact_opening_it =
     contact_opening(el_type, ghost_type).begin(spatial_dimension);
+
+  Array<bool>::scalar_iterator reduction_penalty_it =
+    reduction_penalty(el_type, ghost_type).begin();
 
   Vector<Real> normal_opening(spatial_dimension);
   Vector<Real> tangential_opening(spatial_dimension);
 
-  Array<Real> tang_output(spatial_dimension,spatial_dimension);
-
   for (; tangent_it != tangent_end;
-       ++tangent_it, ++normal_it, ++opening_it, ++ delta_max_it,
-         ++sigma_c_it, ++delta_c_it, ++damage_it, ++contact_opening_it) {
+       ++tangent_it, ++normal_it, ++opening_it,
+	 ++delta_max_it, ++sigma_c_it, ++delta_c_it, ++damage_it,
+	 ++contact_opening_it, ++reduction_penalty_it) {
 
-    /// compute normal and tangential opening vectors
-    *opening_it += *contact_opening_it;
-    Real normal_opening_norm = opening_it->dot(*normal_it);
-    normal_opening = (*normal_it);
-    normal_opening *= normal_opening_norm;
+    Real normal_opening_norm, tangential_opening_norm;
+    bool penetration;
+    Real current_penalty = 0.;
+    this->computeTangentTractionOnQuad(*tangent_it,
+				       *delta_max_it,
+				       *delta_c_it,
+				       *sigma_c_it,
+				       *opening_it,
+				       *normal_it,
+				       normal_opening,
+				       tangential_opening,
+				       normal_opening_norm,
+				       tangential_opening_norm,
+				       *damage_it,
+				       penetration,
+				       *reduction_penalty_it,
+				       current_penalty,
+				       *contact_opening_it);
 
-    tangential_opening = *opening_it;
-    tangential_opening -= normal_opening;
-
-    Real tangential_opening_norm = tangential_opening.norm();
-    bool penetration = normal_opening_norm < -Math::getTolerance();
-    if (contact_after_breaking == false && Math::are_float_equal(*damage_it, 1.))
-      penetration = false;
-
-    Real derivative = 0;
-    Real t = 0;
-
-    Real delta = tangential_opening_norm * tangential_opening_norm * beta2_kappa2;
-
-    Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
-    n_outer_n.outerProduct(*normal_it, *normal_it);
-
-    if (penetration){
-      /// don't consider penetration contribution for delta
-      *opening_it = tangential_opening;
-      normal_opening_norm = opening_it->dot(*normal_it);
-      normal_opening = (*normal_it);
-      normal_opening *= normal_opening_norm;
-      //      std::cout << "normal opening in case of penetration = " << normal_opening << std::endl;
-
-      /// stiffness in compression given by the penalty parameter
-      *tangent_it += n_outer_n;
-      *tangent_it *= penalty;
-    }
-    else{
-      delta += normal_opening_norm * normal_opening_norm;
-    }
-
-    delta = std::sqrt(delta);
-
-    /// Delta has to be different from 0 to have finite values of tangential stiffness.
-    /// At the element insertion, delta = 0. Therefore, a fictictious value is defined,
-    /// for the evaluation of the first value of K.
-    if (delta < Math::getTolerance())
-      delta = (*delta_c_it)/1000.;
-
-    //if (!penetration){
-    if (delta >= *delta_max_it){
-      derivative = -*sigma_c_it/(delta * delta);
-      t = *sigma_c_it * (1 - delta / *delta_c_it);
-    }	else if (delta < *delta_max_it){
-      Real tmax = *sigma_c_it * (1 - *delta_max_it / *delta_c_it);
-      t = tmax / *delta_max_it * delta;
-    }
-      //    }
-
-
-    /// computation of the derivative of the constitutive law (dT/ddelta)
-    Matrix<Real> I(spatial_dimension, spatial_dimension);
-    I.eye(beta2_kappa);
-    Matrix<Real> nn(n_outer_n);
-    nn *= (1 - beta2_kappa);
-    nn += I;
-    nn *= t/delta;
-    Vector<Real> t_tilde(normal_opening);
-    t_tilde *= (1 - beta2_kappa2);
-    Vector<Real> mm(*opening_it);
-    mm *= beta2_kappa2;
-    t_tilde += mm;
-    Vector<Real> t_hat(normal_opening);
-    t_hat += beta2_kappa * tangential_opening;
-    Matrix<Real> prov(spatial_dimension, spatial_dimension);
-    prov.outerProduct(t_hat, t_tilde);
-    prov *= derivative/delta;
-    prov += nn;
-    *tangent_it += prov;
-
-    /// check if the tangential stiffness matrix is symmetric
-    for (UInt h = 0; h < spatial_dimension; ++h){
-      for (UInt l = h; l < spatial_dimension; ++l){
-        if (l > h){
-          Real k_ls = (*tangent_it)[spatial_dimension*h+l];
-          Real k_us =  (*tangent_it)[spatial_dimension*l+h];
-          //          std::cout << "k_ls = " << k_ls << std::endl;
-          //          std::cout << "k_us = " << k_us << std::endl;
-          if (std::abs(k_ls) > 1e-13 && std::abs(k_us) > 1e-13){
-            Real error = std::abs((k_ls - k_us) / k_us);
-            if (error > 1e-13){
-              std::cout << "non symmetric cohesive matrix" << std::endl;
-              std::cout << "error " << error << std::endl;
-            }
-          }
-        }
-      }
-    }
+    // check if the tangential stiffness matrix is symmetric
+    //    for (UInt h = 0; h < spatial_dimension; ++h){
+    //      for (UInt l = h; l < spatial_dimension; ++l){
+    //        if (l > h){
+    //          Real k_ls = (*tangent_it)[spatial_dimension*h+l];
+    //          Real k_us =  (*tangent_it)[spatial_dimension*l+h];
+    //          //          std::cout << "k_ls = " << k_ls << std::endl;
+    //          //          std::cout << "k_us = " << k_us << std::endl;
+    //          if (std::abs(k_ls) > 1e-13 && std::abs(k_us) > 1e-13){
+    //            Real error = std::abs((k_ls - k_us) / k_us);
+    //            if (error > 1e-10){
+    //	      std::cout << "non symmetric cohesive matrix" << std::endl;
+    //	      //  std::cout << "error " << error << std::endl;
+    //            }
+    //          }
+    //        }
+    //      }
+    //    }
   }
+    
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */

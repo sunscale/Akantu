@@ -1,0 +1,17 @@
+material elastic [
+	 name    = cheese
+	 rho     = 1100
+	 nu      = 0.45
+	 E       = 1e5
+]
+
+user parameters [
+     	spatial_dimension = 2
+	mesh_file 	  = swiss_cheese.msh
+	inner_holes	  = holes
+	outter_crust	  = crust
+	lactostatic_p 	  = 30e3
+	stress		  = [[lactostatic_p,0],[0,lactostatic_p]]
+	max_nb_iterations = 100
+	precision 	  = 1e-9
+]

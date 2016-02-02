@@ -2,16 +2,17 @@
  * @file   element_type_map_filter.hh
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Sep 02 2014
- * @date last modification: Tue Sep 02 2014
+ * @date last modification: Fri Dec 18 2015
  *
  * @brief  Filtered version based on a an akantu::ElementGroup of a
- *akantu::ElementTypeMap
+ * akantu::ElementTypeMap
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -112,16 +113,18 @@ public:
     original_iterator<Shape> origin_it;
     filter_iterator filter_it;
 
+    /// the number of item per element
     UInt nb_item_per_elem;
+    /// counter for every sub element group
     UInt sub_element_counter;
   };
 
-  typedef iterator<Vector<T>> vector_iterator;
+  typedef iterator<Vector<T> > vector_iterator;
 
   typedef Array<T> array_type;
 
   typedef const_iterator<array_type::template const_iterator, Vector<T>,
-                         Array<UInt>::const_iterator<UInt>>
+                         Array<UInt>::const_iterator<UInt> >
       const_vector_iterator;
 
   typedef typename array_type::value_type value_type;
@@ -290,13 +293,13 @@ public:
   inline type_iterator firstType(UInt dim = _all_dimensions,
                                  GhostType ghost_type = _not_ghost,
                                  ElementKind kind = _ek_not_defined) const {
-    return filter.firstType(dim, _not_ghost, kind);
+    return filter.firstType(dim, ghost_type, kind);
   };
 
   inline type_iterator lastType(UInt dim = _all_dimensions,
                                 GhostType ghost_type = _not_ghost,
                                 ElementKind kind = _ek_not_defined) const {
-    return filter.lastType(dim, _not_ghost, kind);
+    return filter.lastType(dim, ghost_type, kind);
   };
 
   ElementTypeMap<UInt>

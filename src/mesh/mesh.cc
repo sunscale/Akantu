@@ -3,18 +3,19 @@
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
- * @author Marco Vocialta <marco.vocialta@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Fri Jun 18 2010
- * @date last modification: Fri Sep 05 2014
+ * @date last modification: Fri Jan 22 2016
  *
  * @brief  class handling meshes
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -45,11 +46,10 @@
 #include "element_group.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
-#  include "dumper_field.hh"
-#  include "dumper_material_internal_field.hh"
+#include "dumper_field.hh"
+#include "dumper_internal_material_field.hh"
 #endif
 /* -------------------------------------------------------------------------- */
-
 
 __BEGIN_AKANTU__
 
@@ -58,31 +58,25 @@ const Element ElementNull(_not_defined, 0);
 /* -------------------------------------------------------------------------- */
 void Element::printself(std::ostream & stream, int indent) const {
   std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
-  stream << space << "Element [" << type << ", " << element << ", " << ghost_type << "]";
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
+  stream << space << "Element [" << type << ", " << element << ", "
+         << ghost_type << "]";
 }
 
-
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension,
-	   const ID & id,
-	   const MemoryID & memory_id) :
-  Memory(id, memory_id),
-  GroupManager(*this, id + ":group_manager", memory_id),
-  nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
-  created_nodes(true),
-  connectivities("connectivities", id),
-  normals("normals", id),
-  spatial_dimension(spatial_dimension),
-  types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
-  ghost_types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
-  lower_bounds(spatial_dimension,0.),
-  upper_bounds(spatial_dimension,0.),
-  size(spatial_dimension, 0.),
-  local_lower_bounds(spatial_dimension,0.),
-  local_upper_bounds(spatial_dimension,0.),
-  mesh_data("mesh_data", id, memory_id),
-  mesh_facets(NULL) {
+Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id)
+    : Memory(id, memory_id),
+      GroupManager(*this, id + ":group_manager", memory_id),
+      nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
+      created_nodes(true), connectivities("connectivities", id),
+      normals("normals", id), spatial_dimension(spatial_dimension),
+      types_offsets(Array<UInt>((UInt)_max_element_type + 1, 1)),
+      ghost_types_offsets(Array<UInt>((UInt)_max_element_type + 1, 1)),
+      lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
+      size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
+      local_upper_bounds(spatial_dimension, 0.),
+      mesh_data("mesh_data", id, memory_id), mesh_facets(NULL) {
   AKANTU_DEBUG_IN();
 
   this->nodes = &(alloc<Real>(id + ":coordinates", 0, this->spatial_dimension));
@@ -95,26 +89,19 @@ Mesh::Mesh(UInt spatial_dimension,
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension,
-           const ID & nodes_id,
-           const ID & id,
-           const MemoryID & memory_id) :
-  Memory(id, memory_id),
-  GroupManager(*this, id + ":group_manager", memory_id),
-  nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
-  created_nodes(false),
-  connectivities("connectivities", id),
-  normals("normals", id),
-  spatial_dimension(spatial_dimension),
-  types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
-  ghost_types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
-  lower_bounds(spatial_dimension,0.),
-  upper_bounds(spatial_dimension,0.),
-  size(spatial_dimension, 0.),
-  local_lower_bounds(spatial_dimension,0.),
-  local_upper_bounds(spatial_dimension,0.),
-  mesh_data("mesh_data", id, memory_id),
-  mesh_facets(NULL) {
+Mesh::Mesh(UInt spatial_dimension, const ID & nodes_id, const ID & id,
+           const MemoryID & memory_id)
+    : Memory(id, memory_id),
+      GroupManager(*this, id + ":group_manager", memory_id),
+      nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
+      created_nodes(false), connectivities("connectivities", id),
+      normals("normals", id), spatial_dimension(spatial_dimension),
+      types_offsets(Array<UInt>((UInt)_max_element_type + 1, 1)),
+      ghost_types_offsets(Array<UInt>((UInt)_max_element_type + 1, 1)),
+      lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
+      size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
+      local_upper_bounds(spatial_dimension, 0.),
+      mesh_data("mesh_data", id, memory_id), mesh_facets(NULL) {
   AKANTU_DEBUG_IN();
 
   this->nodes = &(getArray<Real>(nodes_id));
@@ -126,26 +113,19 @@ Mesh::Mesh(UInt spatial_dimension,
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension,
-           Array<Real> & nodes,
-           const ID & id,
-           const MemoryID & memory_id) :
-  Memory(id, memory_id),
-  GroupManager(*this, id + ":group_manager", memory_id),
-  nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
-  created_nodes(false),
-  connectivities("connectivities", id),
-  normals("normals", id),
-  spatial_dimension(spatial_dimension),
-  types_offsets(Array<UInt>(_max_element_type + 1, 1)),
-  ghost_types_offsets(Array<UInt>(_max_element_type + 1, 1)),
-  lower_bounds(spatial_dimension,0.),
-  upper_bounds(spatial_dimension,0.),
-  size(spatial_dimension, 0.),
-  local_lower_bounds(spatial_dimension,0.),
-  local_upper_bounds(spatial_dimension,0.),
-  mesh_data("mesh_data", id, memory_id),
-  mesh_facets(NULL) {
+Mesh::Mesh(UInt spatial_dimension, Array<Real> & nodes, const ID & id,
+           const MemoryID & memory_id)
+    : Memory(id, memory_id),
+      GroupManager(*this, id + ":group_manager", memory_id),
+      nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
+      created_nodes(false), connectivities("connectivities", id),
+      normals("normals", id), spatial_dimension(spatial_dimension),
+      types_offsets(Array<UInt>(_max_element_type + 1, 1)),
+      ghost_types_offsets(Array<UInt>(_max_element_type + 1, 1)),
+      lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
+      size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
+      local_upper_bounds(spatial_dimension, 0.),
+      mesh_data("mesh_data", id, memory_id), mesh_facets(NULL) {
   AKANTU_DEBUG_IN();
 
   this->nodes = &(nodes);
@@ -161,10 +141,8 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
   AKANTU_DEBUG_IN();
 
   if (!mesh_facets) {
-    mesh_facets = new Mesh(spatial_dimension,
-                           *(this->nodes),
-			   getID()+":"+id,
-                           getMemoryID());
+    mesh_facets = new Mesh(spatial_dimension, *(this->nodes),
+                           getID() + ":" + id, getMemoryID());
 
     mesh_facets->mesh_parent = this;
     mesh_facets->is_mesh_facets = true;
@@ -202,20 +180,24 @@ Mesh::~Mesh() {
 }
 
 /* -------------------------------------------------------------------------- */
-void Mesh::read (const std::string & filename, const MeshIOType & mesh_io_type) {
+void Mesh::read(const std::string & filename, const MeshIOType & mesh_io_type) {
   MeshIO mesh_io;
   mesh_io.read(filename, *this, mesh_io_type);
 
-  type_iterator it   = this->firstType(spatial_dimension, _not_ghost, _ek_not_defined);
-  type_iterator last = this->lastType(spatial_dimension, _not_ghost, _ek_not_defined);
-  if(it == last) AKANTU_EXCEPTION("The mesh contained in the file " << filename
-				  << " does not seem to be of the good dimension."
-				  << " No element of dimension " << spatial_dimension
-				  << " where read.");
+  type_iterator it =
+      this->firstType(spatial_dimension, _not_ghost, _ek_not_defined);
+  type_iterator last =
+      this->lastType(spatial_dimension, _not_ghost, _ek_not_defined);
+  if (it == last)
+    AKANTU_EXCEPTION(
+        "The mesh contained in the file "
+        << filename << " does not seem to be of the good dimension."
+        << " No element of dimension " << spatial_dimension << " where read.");
 }
 
 /* -------------------------------------------------------------------------- */
-void Mesh::write(const std::string & filename, const MeshIOType & mesh_io_type) {
+void Mesh::write(const std::string & filename,
+                 const MeshIOType & mesh_io_type) {
   MeshIO mesh_io;
   mesh_io.write(filename, *this, mesh_io_type);
 }
@@ -223,15 +205,17 @@ void Mesh::write(const std::string & filename, const MeshIOType & mesh_io_type) 
 /* -------------------------------------------------------------------------- */
 void Mesh::printself(std::ostream & stream, int indent) const {
   std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
 
   stream << space << "Mesh [" << std::endl;
   stream << space << " + id                : " << getID() << std::endl;
-  stream << space << " + spatial dimension : " << this->spatial_dimension << std::endl;
+  stream << space << " + spatial dimension : " << this->spatial_dimension
+         << std::endl;
   stream << space << " + nodes [" << std::endl;
-  nodes->printself(stream, indent+2);
+  nodes->printself(stream, indent + 2);
   stream << space << " + connectivities [" << std::endl;
-  connectivities.printself(stream, indent+2);
+  connectivities.printself(stream, indent + 2);
   stream << space << " ]" << std::endl;
 
   GroupManager::printself(stream, indent + 1);
@@ -239,11 +223,11 @@ void Mesh::printself(std::ostream & stream, int indent) const {
 }
 
 /* -------------------------------------------------------------------------- */
-void Mesh::computeBoundingBox(){
+void Mesh::computeBoundingBox() {
   AKANTU_DEBUG_IN();
   for (UInt k = 0; k < spatial_dimension; ++k) {
-    local_lower_bounds(k) =   std::numeric_limits<double>::max();
-    local_upper_bounds(k) = - std::numeric_limits<double>::max();
+    local_lower_bounds(k) = std::numeric_limits<double>::max();
+    local_upper_bounds(k) = -std::numeric_limits<double>::max();
   }
 
   for (UInt i = 0; i < nodes->getSize(); ++i) {
@@ -257,20 +241,19 @@ void Mesh::computeBoundingBox(){
   if (this->is_distributed) {
     StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
 
-    Real reduce_bounds[2 * spatial_dimension];
+    Matrix<Real> reduce_bounds(spatial_dimension, 2);
     for (UInt k = 0; k < spatial_dimension; ++k) {
-      reduce_bounds[2*k    ] =   local_lower_bounds(k);
-      reduce_bounds[2*k + 1] = - local_upper_bounds(k);
+      reduce_bounds(k, 0) =  local_lower_bounds(k);
+      reduce_bounds(k, 1) = -local_upper_bounds(k);
     }
-    
-    comm.allReduce(reduce_bounds, 2 * spatial_dimension, _so_min);
+
+    comm.allReduce(reduce_bounds.storage(), reduce_bounds.size(), _so_min);
 
     for (UInt k = 0; k < spatial_dimension; ++k) {
-      lower_bounds(k) =   reduce_bounds[2*k];
-      upper_bounds(k) = - reduce_bounds[2*k + 1];
+      lower_bounds(k) =  reduce_bounds(k, 0);
+      upper_bounds(k) = -reduce_bounds(k, 1);
     }
-  }
-  else {
+  } else {
     this->lower_bounds = this->local_lower_bounds;
     this->upper_bounds = this->local_upper_bounds;
   }
@@ -281,68 +264,60 @@ void Mesh::computeBoundingBox(){
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
+template <typename T>
 void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
-                                  UInt nb_component,
-                                  UInt dim,
-                                  const bool & flag_nb_node_per_elem_multiply,
-                                  ElementKind element_kind,
-                                  bool size_to_nb_element) const {
+                                   UInt nb_component, UInt dim,
+                                   const bool & flag_nb_node_per_elem_multiply,
+                                   ElementKind element_kind,
+                                   bool size_to_nb_element) const {
   AKANTU_DEBUG_IN();
 
-  for(UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType) g;
+  for (UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType gt = (GhostType)g;
     this->initElementTypeMapArray(vect, nb_component, dim, gt,
-                                 flag_nb_node_per_elem_multiply,
-                                 element_kind, size_to_nb_element);
+                                  flag_nb_node_per_elem_multiply, element_kind,
+                                  size_to_nb_element);
   }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
+template <typename T>
 void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
-				   UInt nb_component,
-				   UInt dim,
-				   GhostType gt,
-				   const bool & flag_nb_node_per_elem_multiply,
-				   ElementKind element_kind,
-				   bool size_to_nb_element) const {
+                                   UInt nb_component, UInt dim, GhostType gt,
+                                   const bool & flag_nb_node_per_elem_multiply,
+                                   ElementKind element_kind,
+                                   bool size_to_nb_element) const {
   AKANTU_DEBUG_IN();
 
-  this->initElementTypeMapArray(vect,
-				nb_component,
-				dim,
-				gt,
-				T(),
-				flag_nb_node_per_elem_multiply,
-				element_kind,
-				size_to_nb_element);
+  this->initElementTypeMapArray(vect, nb_component, dim, gt, T(),
+                                flag_nb_node_per_elem_multiply, element_kind,
+                                size_to_nb_element);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
+template <typename T>
 void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
-				   UInt nb_component,
-				   UInt dim,
-				   GhostType gt,
-				   const T & default_value,
-				   const bool & flag_nb_node_per_elem_multiply,
-				   ElementKind element_kind,
-				   bool size_to_nb_element) const {
+                                   UInt nb_component, UInt dim, GhostType gt,
+                                   const T & default_value,
+                                   const bool & flag_nb_node_per_elem_multiply,
+                                   ElementKind element_kind,
+                                   bool size_to_nb_element) const {
   AKANTU_DEBUG_IN();
 
-  Mesh::type_iterator it  = firstType(dim, gt, element_kind);
+  Mesh::type_iterator it = firstType(dim, gt, element_kind);
   Mesh::type_iterator end = lastType(dim, gt, element_kind);
-  for(; it != end; ++it) {
+  for (; it != end; ++it) {
     ElementType type = *it;
     UInt nb_comp = nb_component;
-    if (flag_nb_node_per_elem_multiply) nb_comp *= Mesh::getNbNodesPerElement(*it);
+    if (flag_nb_node_per_elem_multiply)
+      nb_comp *= Mesh::getNbNodesPerElement(*it);
     UInt size = 0;
-    if (size_to_nb_element) size = this->getNbElement(type, gt);
+    if (size_to_nb_element)
+      size = this->getNbElement(type, gt);
     vect.alloc(size, nb_comp, type, gt, default_value);
   }
   AKANTU_DEBUG_OUT();
@@ -350,19 +325,20 @@ void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
 
 /* -------------------------------------------------------------------------- */
 void Mesh::initNormals() {
-  this->initElementTypeMapArray(normals, spatial_dimension, spatial_dimension, false, _ek_not_defined);
+  this->initElementTypeMapArray(normals, spatial_dimension, spatial_dimension,
+                                false, _ek_not_defined);
 }
 
 /* -------------------------------------------------------------------------- */
-void Mesh::getGlobalConnectivity(ElementTypeMapArray<UInt> & global_connectivity,
-				 UInt dimension,
-				 GhostType ghost_type) {
+void Mesh::getGlobalConnectivity(
+    ElementTypeMapArray<UInt> & global_connectivity, UInt dimension,
+    GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Mesh::type_iterator it  = firstType(dimension, ghost_type);
+  Mesh::type_iterator it = firstType(dimension, ghost_type);
   Mesh::type_iterator end = lastType(dimension, ghost_type);
 
-  for(; it != end; ++it) {
+  for (; it != end; ++it) {
     ElementType type = *it;
 
     Array<UInt> & local_conn = connectivities(type, ghost_type);
@@ -385,40 +361,31 @@ void Mesh::getGlobalConnectivity(ElementTypeMapArray<UInt> & global_connectivity
 
 /* -------------------------------------------------------------------------- */
 
-DumperIOHelper & Mesh::getGroupDumper(const std::string & dumper_name, 
-				      const std::string & group_name){
-  
-  if (group_name == "all") return this->getDumper(dumper_name);
-  else return element_groups[group_name]->getDumper(dumper_name);
+DumperIOHelper & Mesh::getGroupDumper(const std::string & dumper_name,
+                                      const std::string & group_name) {
 
+  if (group_name == "all")
+    return this->getDumper(dumper_name);
+  else
+    return element_groups[group_name]->getDumper(dumper_name);
 }
 
-
-
 /* -------------------------------------------------------------------------- */
-#define AKANTU_INSTANTIATE_INIT(type)					\
-template void Mesh::initElementTypeMapArray<type>(ElementTypeMapArray<type> & vect, \
-						  UInt nb_component,	\
-						  UInt dim,		\
-						  const bool & flag_nb_elem_multiply, \
-						  ElementKind element_kind, \
-						  bool size_to_nb_element) const; \
-template void Mesh::initElementTypeMapArray<type>(ElementTypeMapArray<type> & vect, \
-						  UInt nb_component,	\
-						  UInt dim,		\
-						  GhostType gt,		\
-						  const bool & flag_nb_elem_multiply, \
-						  ElementKind element_kind, \
-						  bool size_to_nb_element) const; \
-template void Mesh::initElementTypeMapArray<type>(ElementTypeMapArray<type> & vect, \
-						  UInt nb_component,	\
-						  UInt dim,		\
-						  GhostType gt,		\
-						  const type & default_value, \
-						  const bool & flag_nb_elem_multiply, \
-						  ElementKind element_kind, \
-						  bool size_to_nb_element) const;
-    
+#define AKANTU_INSTANTIATE_INIT(type)                                          \
+  template void Mesh::initElementTypeMapArray<type>(                           \
+      ElementTypeMapArray<type> & vect, UInt nb_component, UInt dim,           \
+      const bool & flag_nb_elem_multiply, ElementKind element_kind,            \
+      bool size_to_nb_element) const;                                          \
+  template void Mesh::initElementTypeMapArray<type>(                           \
+      ElementTypeMapArray<type> & vect, UInt nb_component, UInt dim,           \
+      GhostType gt, const bool & flag_nb_elem_multiply,                        \
+      ElementKind element_kind, bool size_to_nb_element) const;                \
+  template void Mesh::initElementTypeMapArray<type>(                           \
+      ElementTypeMapArray<type> & vect, UInt nb_component, UInt dim,           \
+      GhostType gt, const type & default_value,                                \
+      const bool & flag_nb_elem_multiply, ElementKind element_kind,            \
+      bool size_to_nb_element) const
+
 AKANTU_INSTANTIATE_INIT(Real);
 AKANTU_INSTANTIATE_INIT(UInt);
 AKANTU_INSTANTIATE_INIT(Int);
@@ -427,20 +394,18 @@ AKANTU_INSTANTIATE_INIT(bool);
 /* -------------------------------------------------------------------------- */
 template <typename T>
 ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & array,
-					    const ElementKind & element_kind){
+                                            const ElementKind & element_kind) {
 
   ElementTypeMap<UInt> nb_data_per_elem;
-  
-  typename ElementTypeMapArray<T>::type_iterator it = 
-    array.firstType(spatial_dimension, _not_ghost,element_kind);
-  typename ElementTypeMapArray<T>::type_iterator last_type = 
-    array.lastType(spatial_dimension, _not_ghost,element_kind);
-  
-  for(; it != last_type; ++it) {
+
+  typename ElementTypeMapArray<T>::type_iterator it =
+      array.firstType(spatial_dimension, _not_ghost, element_kind);
+  typename ElementTypeMapArray<T>::type_iterator last_type =
+      array.lastType(spatial_dimension, _not_ghost, element_kind);
+
+  for (; it != last_type; ++it) {
     UInt nb_elements = this->getNbElement(*it);
-    nb_data_per_elem(*it) = 
-      array(*it).getNbComponent() * 
-      array(*it).getSize();
+    nb_data_per_elem(*it) = array(*it).getNbComponent() * array(*it).getSize();
 
     nb_data_per_elem(*it) /= nb_elements;
   }
@@ -449,61 +414,54 @@ ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & array,
 
 /* -------------------------------------------------------------------------- */
 
-template 
-ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<Real> & array,
-					    const ElementKind & element_kind);
+template ElementTypeMap<UInt>
+Mesh::getNbDataPerElem(ElementTypeMapArray<Real> & array,
+                       const ElementKind & element_kind);
 
-template 
-ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<UInt> & array,
-					    const ElementKind & element_kind);
-
+template ElementTypeMap<UInt>
+Mesh::getNbDataPerElem(ElementTypeMapArray<UInt> & array,
+                       const ElementKind & element_kind);
 
 /* -------------------------------------------------------------------------- */
 
 #ifdef AKANTU_USE_IOHELPER
 
 template <typename T>
-dumper::Field * Mesh::createFieldFromAttachedData(const std::string & field_id,
-						  const std::string & group_name,
-						  const ElementKind & element_kind){
-
+dumper::Field *
+Mesh::createFieldFromAttachedData(const std::string & field_id,
+                                  const std::string & group_name,
+                                  const ElementKind & element_kind) {
 
   dumper::Field * field = NULL;
   ElementTypeMapArray<T> * internal = NULL;
   try {
     internal = &(this->getData<T>(field_id));
-  }
-  catch (...){
+  } catch (...) {
     return NULL;
   }
 
-  ElementTypeMap<UInt> nb_data_per_elem = 
-    this->getNbDataPerElem(*internal,element_kind);
+  ElementTypeMap<UInt> nb_data_per_elem =
+      this->getNbDataPerElem(*internal, element_kind);
 
-  field = 
-    this->createElementalField<T, dumper::InternalMaterialField>(*internal,
-								group_name,
-								this->spatial_dimension,
-								element_kind,
-								nb_data_per_elem);
+  field = this->createElementalField<T, dumper::InternalMaterialField>(
+      *internal, group_name, this->spatial_dimension, element_kind,
+      nb_data_per_elem);
 
   return field;
 }
 
-template dumper::Field * 
+template dumper::Field *
 Mesh::createFieldFromAttachedData<Real>(const std::string & field_id,
-					const std::string & group_name,
-					const ElementKind & element_kind);
+                                        const std::string & group_name,
+                                        const ElementKind & element_kind);
 
-template dumper::Field * 
+template dumper::Field *
 Mesh::createFieldFromAttachedData<UInt>(const std::string & field_id,
-					const std::string & group_name,
-					const ElementKind & element_kind);
-
-
-/* -------------------------------------------------------------------------- */
+                                        const std::string & group_name,
+                                        const ElementKind & element_kind);
 
 #endif
 
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

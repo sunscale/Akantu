@@ -1,17 +1,16 @@
 /**
- * @file test_material_selector.cc
+ * @file   test_material_selector.cc
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
  * @date creation: Fri May 01 2015
- * @date last modification: Fri May 01 2015
  *
- * @brief Test for material selector
+ * @brief  Test for material selector
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

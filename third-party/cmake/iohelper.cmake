@@ -1,3 +1,33 @@
+#===============================================================================
+# @file   iohelper.cmake
+#
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
+#
+# @date creation: Mon Mar 30 2015
+# @date last modification: Tue Jan 19 2016
+#
+# @brief  build script for iohelper
+#
+# @section LICENSE
+#
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+#
+# Akantu is free  software: you can redistribute it and/or  modify it under the
+# terms  of the  GNU Lesser  General Public  License as  published by  the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+# details.
+#
+# You should  have received  a copy  of the GNU  Lesser General  Public License
+# along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+#
+#===============================================================================
+
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/third-party/${IOHELPER_ARCHIVE})
   set(_iohelper_download_command
     GIT_REPOSITORY ${IOHELPER_GIT}
@@ -17,7 +47,7 @@ if(CMAKE_VERSION VERSION_GREATER 3.1)
     )
 endif()
 
-ExternalProject_Add(IOHelper
+ExternalProject_Add(iohelper
   PREFIX ${PROJECT_BINARY_DIR}/third-party
   ${_iohelper_download_command}
   ${_extra_options}
@@ -30,6 +60,11 @@ ExternalProject_Add(IOHelper
   )
 
 set_third_party_shared_libirary_name(IOHELPER_LIBRARIES iohelper)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(_tmp ${IOHELPER_LIBRARIES})
+  set(IOHELPER_LIBRARIES "${_tmp}.a" CACHE FILEPATH "" FORCE)
+endif()
+
 set(IOHELPER_INCLUDE_DIR "${PROJECT_BINARY_DIR}/third-party/include/iohelper" CACHE PATH "IOHelper include directory")
 
 mark_as_advanced(
@@ -37,4 +72,13 @@ mark_as_advanced(
   IOHELPER_INCLUDE_DIR
   )
 
-package_add_extra_dependency(IOHelper IOHelper)
+package_add_extra_dependency(IOHelper iohelper)
+
+install(FILES ${IOHELPER_LIBRARIES}
+  DESTINATION lib
+  COMPONENT lib
+  )
+
+install(DIRECTORY ${IOHELPER_INCLUDE_DIR}
+  DESTINATION include
+  COMPONENT dev)

@@ -1,17 +1,18 @@
 #===============================================================================
-# @file   90_blas.cmake
+# @file   blas.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Fri Oct 19 2012
-# @date last modification: Tue Jun 24 2014
+# @date creation: Tue Oct 16 2012
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  package description for blas support
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,9 +31,18 @@
 
 package_declare(BLAS EXTERNAL
   DESCRIPTION "Use BLAS for arithmetic operations"
-  EXTRA_PACKAGE_OPTIONS LANGUAGE Fortran)
+  EXTRA_PACKAGE_OPTIONS LANGUAGE Fortran
+  SYSTEM ON third-party/cmake/blas.cmake)
 
-set(AKANTU_USE_BLAS_VENDOR "Generic" CACHE STRING "Version of blas to use")
+package_add_third_party_script_variable(BLAS BLAS_ARCHIVE "http://www.netlib.org/blas/blas-3.5.0.tgz")
+package_add_third_party_script_variable(BLAS BLAS_VERSION "3.5.0")
+
+set(_default_blas $ENV{BLA_VENDOR})
+if(NOT _default_blas)
+  set(_default_blas Generic)
+endif()
+
+set(AKANTU_USE_BLAS_VENDOR "${_default_blas}" CACHE STRING "Version of blas to use")
 mark_as_advanced(AKANTU_USE_BLAS_VENDOR)
 set_property(CACHE AKANTU_USE_BLAS_VENDOR PROPERTY STRINGS
   Goto
@@ -69,4 +79,13 @@ package_declare_documentation(BLAS
   "\\begin{command}"
   "  > sudo apt-get install libatlas-base-dev"
   "\\end{command}"
+  )
+
+package_set_package_system_dependency(BLAS deb libblas3)
+package_set_package_system_dependency(BLAS deb-src libblas3)
+
+package_declare_extra_files_to_package(BLAS
+  PROJECT
+    third-party/cmake/blas.cmake
+    third-party/blas_3.5.0_make.inc.cmake
   )

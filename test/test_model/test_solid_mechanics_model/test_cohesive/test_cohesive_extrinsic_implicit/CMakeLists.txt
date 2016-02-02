@@ -3,14 +3,16 @@
 #
 # @author Mauro Corrado <mauro.corrado@epfl.ch>
 #
-# @date   Fri May 01 11:56:18 2015
+# @date creation: Tue Dec 07 2010
+# @date last modification: Tue Jun 16 2015
 #
 # @brief  checking correct assembling of stiffness matrix in case of cohe elems
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -28,7 +30,6 @@
 # @section DESCRIPTION
 #
 #===============================================================================
-
 
 register_test(test_assembling_K_cohe_elements
   SOURCES test_assembling_K_cohe_elements.cc

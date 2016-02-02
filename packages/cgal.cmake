@@ -1,17 +1,18 @@
 #===============================================================================
 # @file   cgal.cmake
 #
-# @author Lucas Frérot <lucas.frerot@epfl.ch>
+# @author Lucas Frerot <lucas.frerot@epfl.ch>
+# @author Clement Roux <clement.roux@epfl.ch>
 #
 # @date creation: Thu Feb 19 2015
-# @date last modification: Mon Mar 2 2015
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  package description for CGAL
 #
 # @section LICENSE
 #
-# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,7 +31,7 @@
 
 package_declare(CGAL EXTERNAL
   DESCRIPTION "Add CGAL support in akantu"
-  COMPILE_FLAGS "-frounding-math"
+  COMPILE_FLAGS CXX -frounding-math
   BOOST_COMPONENTS system
   )
 
@@ -38,7 +39,6 @@ package_declare_sources(CGAL
   geometry/mesh_geom_common.hh
 
   geometry/mesh_geom_abstract.hh
-  geometry/mesh_geom_abstract.cc
 
   geometry/mesh_geom_factory.hh
   geometry/mesh_geom_factory_tmpl.hh
@@ -71,3 +71,5 @@ package_declare_documentation(CGAL
   ""
   "CGAL checks with an assertion that the compilation flag \\shellcode{-frounding-math} is activated, which forbids the use of Valgrind on any code compilated with the package."
   )
+
+package_set_package_system_dependency(CGAL deb-src "libcgal-dev >= 4.5")

@@ -4,13 +4,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Thu Apr 03 2014
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Wed Nov 11 2015
  *
  * @brief  implementation of the ArgumentParser
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -44,6 +44,7 @@
 
 #include <exception>
 #include <stdexcept>
+#include <string.h>
 
 namespace cppargparse {
 
@@ -211,6 +212,16 @@ ArgumentParser::_addArgument(const std::string & name, const std::string & help,
 
   return *arg;
 }
+
+#if not HAVE_STRDUP
+static char * strdup(const char * str) {
+  size_t len = strlen(str);
+  char *x = (char *)malloc(len+1); /* 1 for the null terminator */
+  if(!x) return NULL; /* malloc could not allocate memory */
+  memcpy(x,str,len+1); /* copy the string into the new buffer */
+  return x;
+}
+#endif
 
 /* -------------------------------------------------------------------------- */
 void ArgumentParser::parse(int & argc, char **& argv, int flags,

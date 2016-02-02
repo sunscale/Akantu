@@ -4,14 +4,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Aug 31 2011
- * @date last modification: Tue Sep 02 2014
+ * @date last modification: Fri Oct 02 2015
  *
  * @brief  storage class by element type
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -216,7 +217,7 @@ public:
    */
   ElementTypeMapArray(const ID & id = "by_element_type_array", const ID & parent_id = "no_parent",
                      const MemoryID & memory_id = 0) :
-    parent(), Memory(parent_id + ":" + id, memory_id) {};
+    parent(), Memory(parent_id + ":" + id, memory_id), name(id) {};
 
   /*! allocate memory for a new array
    *  @param size number of tuples of the new array
@@ -267,6 +268,9 @@ public:
   /*! frees all memory related to the data*/
   inline void free();
 
+  /*! set all values in the ElementTypeMap to zero*/
+  inline void clear();
+
   /*! deletes and reorders entries in the stored arrays
    *  @param new_numbering a ElementTypeMapArray of new indices. UInt(-1) indicates
    *         deleted entries. */
@@ -297,9 +301,18 @@ public:
     }
     return nb_components;
   }
+/* -------------------------------------------------------------------------- */
+/* Accesssors                                                                 */
+/* -------------------------------------------------------------------------- */
+public:
+  /// get the name of the internal field
+  AKANTU_GET_MACRO(Name, name, ID);
 
 private:
   ElementTypeMapArray operator=(__attribute__((unused)) const ElementTypeMapArray & other) {};
+
+  /// name of the elment type map: e.g. connectivity, grad_u
+  ID name;
 };
 
 /// to store data Array<Real> by element type
