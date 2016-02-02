@@ -427,14 +427,13 @@ jacobian_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _unsymme
 #ifdef AKANTU_USE_PETSC
   solver = new SolverPETSc(*jacobian_matrix, sstr_solv.str(), memory_id);
 #elif defined(AKANTU_USE_MUMPS)
-  solver = new SolverMumps(*jacobian_matrix, sstr_solv.str(), memory_id,
-			   *static_communicator_dummy);
+  solver = new SolverMumps(*jacobian_matrix, sstr_solv.str(), memory_id);
   dof_synchronizer->initScatterGatherCommunicationScheme();
 #else
   AKANTU_DEBUG_ERROR("You should at least activate one solver.");
 #endif //AKANTU_USE_MUMPS
 
-  SolverMumpsOptions opt(SolverMumpsOptions::_not_parallel);
+  SolverMumpsOptions opt(SolverMumpsOptions::_serial_split);
 
   if(solver)
     solver->initialize(opt);

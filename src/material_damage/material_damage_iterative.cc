@@ -17,7 +17,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "material_damage_iterative.hh"
-#include "solid_mechanics_model.hh"
+#include "solid_mechanics_model_RVE.hh"
 
 __BEGIN_AKANTU__
 
@@ -92,9 +92,12 @@ void MaterialDamageIterative<spatial_dimension>::computeAllStresses(GhostType gh
   MaterialDamage<spatial_dimension>::computeAllStresses(ghost_type);
 
   /// find global Gauss point with highest stress
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
-  comm.allReduce(&norm_max_equivalent_stress, 1, _so_max);
-
+  const SolidMechanicsModelRVE * rve_model = dynamic_cast<const SolidMechanicsModelRVE *>(this->model);
+  if (rve_model == NULL) {
+    /// is no RVE model
+    StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+    comm.allReduce(&norm_max_equivalent_stress, 1, _so_max);
+  }
   AKANTU_DEBUG_OUT();
 }
 
@@ -198,8 +201,12 @@ UInt MaterialDamageIterative<spatial_dimension>::updateDamage() {
       }
     }
   }
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
-  comm.allReduce(&nb_damaged_elements, 1, _so_sum);
+
+  const SolidMechanicsModelRVE * rve_model = dynamic_cast<const SolidMechanicsModelRVE *>(this->model);
+  if (rve_model == NULL) {
+    StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+    comm.allReduce(&nb_damaged_elements, 1, _so_sum);
+  }
   AKANTU_DEBUG_OUT();
   return nb_damaged_elements;
 }
