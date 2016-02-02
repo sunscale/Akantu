@@ -42,9 +42,11 @@ class MaterialFunctor {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  MaterialFunctor(const SolidMechanicsModel & model)
-      : model(model), material_index(model.getMaterialByElement()),
-        spatial_dimension(model.getSpatialDimension()) {}
+  MaterialFunctor(const SolidMechanicsModel & model) :
+    model(model),
+    material_index(model.getMaterialByElement()),
+    nb_data_per_element("nb_data_per_element", model.getID(), model.getMemoryID()),
+    spatial_dimension(model.getSpatialDimension()){}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

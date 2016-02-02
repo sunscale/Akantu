@@ -65,21 +65,29 @@ void Element::printself(std::ostream & stream, int indent) const {
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id),
-      GroupManager(*this, id + ":group_manager", memory_id),
-      nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
-      created_nodes(true), connectivities("connectivities", id),
-      normals("normals", id), spatial_dimension(spatial_dimension),
-      types_offsets(Array<UInt>((UInt)_max_element_type + 1, 1)),
-      ghost_types_offsets(Array<UInt>((UInt)_max_element_type + 1, 1)),
-      lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
-      size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
-      local_upper_bounds(spatial_dimension, 0.),
-      mesh_data("mesh_data", id, memory_id), mesh_facets(NULL) {
+Mesh::Mesh(UInt spatial_dimension,
+	   const ID & id,
+	   const MemoryID & memory_id) :
+  Memory(id, memory_id),
+  GroupManager(*this, id + ":group_manager", memory_id),
+  nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
+  created_nodes(true),
+  connectivities("connectivities", id, memory_id),
+  normals("normals", id, memory_id),
+  spatial_dimension(spatial_dimension),
+  types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
+  ghost_types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
+  lower_bounds(spatial_dimension,0.),
+  upper_bounds(spatial_dimension,0.),
+  size(spatial_dimension, 0.),
+  local_lower_bounds(spatial_dimension,0.),
+  local_upper_bounds(spatial_dimension,0.),
+  mesh_data("mesh_data", id, memory_id),
+  mesh_facets(NULL) {
+
   AKANTU_DEBUG_IN();
 
-  this->nodes = &(alloc<Real>(id + ":coordinates", 0, this->spatial_dimension));
+  this->nodes = &(alloc<Real>(id + ":coordinates", memory_id, this->spatial_dimension));
 
   nb_global_nodes = 0;
 
@@ -89,19 +97,27 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id)
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension, const ID & nodes_id, const ID & id,
-           const MemoryID & memory_id)
-    : Memory(id, memory_id),
-      GroupManager(*this, id + ":group_manager", memory_id),
-      nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
-      created_nodes(false), connectivities("connectivities", id),
-      normals("normals", id), spatial_dimension(spatial_dimension),
-      types_offsets(Array<UInt>((UInt)_max_element_type + 1, 1)),
-      ghost_types_offsets(Array<UInt>((UInt)_max_element_type + 1, 1)),
-      lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
-      size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
-      local_upper_bounds(spatial_dimension, 0.),
-      mesh_data("mesh_data", id, memory_id), mesh_facets(NULL) {
+Mesh::Mesh(UInt spatial_dimension,
+           const ID & nodes_id,
+           const ID & id,
+           const MemoryID & memory_id) :
+  Memory(id, memory_id),
+  GroupManager(*this, id + ":group_manager", memory_id),
+  nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
+  created_nodes(false),
+  connectivities("connectivities", id, memory_id),
+  normals("normals", id, memory_id),
+  spatial_dimension(spatial_dimension),
+  types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
+  ghost_types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
+  lower_bounds(spatial_dimension,0.),
+  upper_bounds(spatial_dimension,0.),
+  size(spatial_dimension, 0.),
+  local_lower_bounds(spatial_dimension,0.),
+  local_upper_bounds(spatial_dimension,0.),
+  mesh_data("mesh_data", id, memory_id),
+  mesh_facets(NULL) {
+
   AKANTU_DEBUG_IN();
 
   this->nodes = &(getArray<Real>(nodes_id));
@@ -113,19 +129,27 @@ Mesh::Mesh(UInt spatial_dimension, const ID & nodes_id, const ID & id,
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension, Array<Real> & nodes, const ID & id,
-           const MemoryID & memory_id)
-    : Memory(id, memory_id),
-      GroupManager(*this, id + ":group_manager", memory_id),
-      nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
-      created_nodes(false), connectivities("connectivities", id),
-      normals("normals", id), spatial_dimension(spatial_dimension),
-      types_offsets(Array<UInt>(_max_element_type + 1, 1)),
-      ghost_types_offsets(Array<UInt>(_max_element_type + 1, 1)),
-      lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
-      size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
-      local_upper_bounds(spatial_dimension, 0.),
-      mesh_data("mesh_data", id, memory_id), mesh_facets(NULL) {
+Mesh::Mesh(UInt spatial_dimension,
+           Array<Real> & nodes,
+           const ID & id,
+           const MemoryID & memory_id) :
+  Memory(id, memory_id),
+  GroupManager(*this, id + ":group_manager", memory_id),
+  nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
+  created_nodes(false),
+  connectivities("connectivities", id, memory_id),
+  normals("normals", id, memory_id),
+  spatial_dimension(spatial_dimension),
+  types_offsets(Array<UInt>(_max_element_type + 1, 1)),
+  ghost_types_offsets(Array<UInt>(_max_element_type + 1, 1)),
+  lower_bounds(spatial_dimension,0.),
+  upper_bounds(spatial_dimension,0.),
+  size(spatial_dimension, 0.),
+  local_lower_bounds(spatial_dimension,0.),
+  local_upper_bounds(spatial_dimension,0.),
+  mesh_data("mesh_data", id, memory_id),
+  mesh_facets(NULL) {
+
   AKANTU_DEBUG_IN();
 
   this->nodes = &(nodes);

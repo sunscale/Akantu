@@ -55,7 +55,9 @@ __BEGIN_AKANTU__
  * @param mesh mesh discretizing the domain we want to analyze 
  * @param nb_degree_of_freedom number of degrees of freedom per node
  */
-DOFSynchronizer::DOFSynchronizer(const Mesh & mesh, UInt nb_degree_of_freedom) :
+DOFSynchronizer::DOFSynchronizer(const Mesh & mesh, UInt nb_degree_of_freedom,
+				 StaticCommunicator & comm) :
+  Synchronizer("synchronizer", 0, comm),
   global_dof_equation_numbers(0, 1, "global_equation_number"),
   local_dof_equation_numbers(0, 1, "local_equation_number"),
   dof_global_ids(0, 1, "global_ids"),

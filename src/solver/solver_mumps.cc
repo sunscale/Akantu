@@ -121,10 +121,11 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-SolverMumps::SolverMumps(SparseMatrix & matrix, const ID & id,
-                         const MemoryID & memory_id)
-    : Solver(matrix, id, memory_id), is_mumps_data_initialized(false),
-      rhs_is_local(true) {
+SolverMumps::SolverMumps(SparseMatrix & matrix,
+                         const ID & id,
+                         const MemoryID & memory_id,
+			 StaticCommunicator & comm) :
+  Solver(matrix, id, memory_id, comm), is_mumps_data_initialized(false), rhs_is_local(true) {
   AKANTU_DEBUG_IN();
 
 #ifdef AKANTU_USE_MPI
@@ -173,6 +174,7 @@ void SolverMumps::initMumpsData() {
   icntl(28) = 0; // automatic choice for analysis analysis
 
   switch (this->parallel_method) {
+  case SolverMumpsOptions::_serial_split:
   case SolverMumpsOptions::_fully_distributed:
     icntl(18) = 3; // fully distributed
 
@@ -216,6 +218,7 @@ void SolverMumps::initialize(SolverOptions & options) {
     this->mumps_data.par = 0; // The host is not part of the computations
   case SolverMumpsOptions::_fully_distributed:
 #ifdef AKANTU_USE_MPI
+    {
     const StaticCommunicatorMPI & mpi_st_comm =
         dynamic_cast<const StaticCommunicatorMPI &>(
             communicator.getRealStaticCommunicator());
@@ -223,10 +226,27 @@ void SolverMumps::initialize(SolverOptions & options) {
         MPI_Comm_c2f(mpi_st_comm.getMPITypeWrapper().getMPICommunicator());
 #endif
     break;
+    }
+  case SolverMumpsOptions::_serial_split:
+#ifdef AKANTU_USE_MPI
+    const StaticCommunicatorMPI & mpi_st_comm =
+        dynamic_cast<const StaticCommunicatorMPI &>(
+            communicator.getRealStaticCommunicator());
+    MPI_Comm mpi_comm = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
+    MPI_Comm new_mpi_comm;
+    Int result = MPI_Comm_split(mpi_comm, communicator.whoAmI(), 0, &new_mpi_comm);
+    AKANTU_DEBUG_ASSERT(result == MPI_SUCCESS, "Error in MPI_split");
+    this->mumps_data.comm_fortran = MPI_Comm_c2f(new_mpi_comm);
+#endif
+    break;
   }
 
   this->mumps_data.sym = 2 * (matrix->getSparseMatrixType() == _symmetric);
-  this->prank = communicator.whoAmI();
+
+  if (this->parallel_method == SolverMumpsOptions::_serial_split)
+    this->prank = 0;
+  else
+    this->prank = communicator.whoAmI();
 
   this->mumps_data.job = _smj_initialize; // initialize
   dmumps_c(&this->mumps_data);
@@ -304,7 +324,8 @@ void SolverMumps::analysis() {
 void SolverMumps::factorize() {
   AKANTU_DEBUG_IN();
 
-  if (parallel_method == SolverMumpsOptions::_fully_distributed)
+  if (parallel_method == SolverMumpsOptions::_fully_distributed ||
+      parallel_method == SolverMumpsOptions::_serial_split)
     this->mumps_data.a_loc = this->matrix->getA().storage();
   else {
     if (prank == 0)
@@ -344,14 +365,19 @@ void SolverMumps::solve(Array<Real> & solution) {
   AKANTU_DEBUG_IN();
 
   this->solve();
+  
+  if (this->parallel_method == SolverMumpsOptions::_serial_split)
+    solution.copy(*(this->rhs), true);
 
-  if (prank == 0) {
-    matrix->getDOFSynchronizer().scatter(solution, 0, this->rhs);
-    //    std::copy(this->rhs->storage(), this->rhs->storage() +
-    //    this->rhs->getSize(), solution.storage());
+  else {
+    if (prank == 0) {
+      matrix->getDOFSynchronizer().scatter(solution, 0, this->rhs);
+      //    std::copy(this->rhs->storage(), this->rhs->storage() +
+      //    this->rhs->getSize(), solution.storage());
 
-  } else {
-    this->matrix->getDOFSynchronizer().scatter(solution, 0);
+    } else {
+      this->matrix->getDOFSynchronizer().scatter(solution, 0);
+    }
   }
 
   AKANTU_DEBUG_OUT();
@@ -362,7 +388,8 @@ void SolverMumps::printError() {
   Int _info_v[2];
   _info_v[0] = info(1);  // to get errors
   _info_v[1] = -info(1); // to get warnings
-  communicator.allReduce(_info_v, 2, _so_min);
+  if (this->parallel_method != SolverMumpsOptions::_serial_split)
+    communicator.allReduce(_info_v, 2, _so_min);
   _info_v[1] = -_info_v[1];
 
   if (_info_v[0] < 0) { // < 0 is an error

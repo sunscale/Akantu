@@ -247,9 +247,8 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
                                            << " elements to send to processor "
                                            << p);
 
-      std::stringstream sstr;
-      sstr << "element_per_proc_" << p;
-      element_per_proc[p] = new ElementTypeMapArray<UInt>(sstr.str(), id);
+      std::stringstream sstr; sstr << "element_per_proc_" << p;
+      element_per_proc[p] = new ElementTypeMapArray<UInt>(sstr.str(), id, memory_id);
       ElementTypeMapArray<UInt> & elempproc = *(element_per_proc[p]);
 
       typename std::set<Element>::iterator elem = to_send->begin();

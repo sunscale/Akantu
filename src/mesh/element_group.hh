@@ -112,6 +112,8 @@ public:
 
   inline void addNode(UInt node_id, bool check_for_duplicate = true);
 
+  inline void removeNode(UInt node_id);
+
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 

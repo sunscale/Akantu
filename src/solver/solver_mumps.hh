@@ -44,7 +44,8 @@ public:
   enum ParallelMethod {
     _not_parallel,
     _fully_distributed,
-    _master_slave_distributed
+    _master_slave_distributed,
+    _serial_split
   };
 
   SolverMumpsOptions(ParallelMethod parallel_method = _fully_distributed)
@@ -60,8 +61,11 @@ class SolverMumps : public Solver {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SolverMumps(SparseMatrix & sparse_matrix, const ID & id = "solver_mumps",
-              const MemoryID & memory_id = 0);
+
+  SolverMumps(SparseMatrix & sparse_matrix,
+	      const ID & id = "solver_mumps",
+	      const MemoryID & memory_id = 0,
+	      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
   virtual ~SolverMumps();
 

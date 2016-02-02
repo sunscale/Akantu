@@ -56,11 +56,15 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-DistributedSynchronizer::DistributedSynchronizer(
-    Mesh & mesh, SynchronizerID id, MemoryID memory_id,
-    const bool register_to_event_manager)
-    : Synchronizer(id, memory_id), mesh(mesh),
-      prank_to_element("prank_to_element", id) {
+DistributedSynchronizer::DistributedSynchronizer(Mesh & mesh,
+						 SynchronizerID id,
+						 MemoryID memory_id,
+						 const bool register_to_event_manager) :
+  Synchronizer(id, memory_id),
+  mesh(mesh),
+  prank_to_element("prank_to_element", id, memory_id)
+{
+
   AKANTU_DEBUG_IN();
 
   nb_proc = static_communicator->getNbProc();

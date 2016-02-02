@@ -2,9 +2,10 @@
 # @file   CMakeLists.txt
 #
 # @author Fabian Barras <fabian.barras@epfl.ch>
+# @author Lucas Frérot <lucas.frerot@epfl.ch>
 #
 # @date creation: Fri Sep 03 2010
-# @date last modification: Wed Jan 06 2016
+# @date last modification: Mon Feb 01 2016
 #
 # @brief  Python Interface tests
 #
@@ -33,4 +34,10 @@ register_test(test_multiple_init
   SCRIPT test_multiple_init.py
   PACKAGE python_interface
   FILES_TO_COPY input_test.dat mesh_dcb_2d.geo
+  )
+
+register_test(test_mesh_interface
+  SCRIPT test_mesh_interface.py
+  PACKAGE python_interface
+  FILES_TO_COPY mesh_dcb_2d.geo
   )

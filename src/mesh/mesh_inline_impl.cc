@@ -47,9 +47,9 @@ inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh)
     : new_numbering(mesh.getNbNodes(), 1, "new_numbering") {}
 
 /* -------------------------------------------------------------------------- */
-inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh,
-                                                  ID new_numbering_id)
-    : new_numbering(new_numbering_id, mesh.getID()) {}
+inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh, ID new_numbering_id) :
+  new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {
+}
 
 /* -------------------------------------------------------------------------- */
 template <>

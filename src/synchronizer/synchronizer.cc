@@ -38,9 +38,10 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-Synchronizer::Synchronizer(SynchronizerID id, MemoryID memory_id) :
+Synchronizer::Synchronizer(SynchronizerID id, MemoryID memory_id,
+			   StaticCommunicator & comm) :
   Memory(id, memory_id),
-  static_communicator(&StaticCommunicator::getStaticCommunicator()) {
+  static_communicator(&comm) {
 
 }
 

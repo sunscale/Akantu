@@ -97,7 +97,6 @@ register_test(test_solid_mechanics_model_segment_parallel
   PACKAGE parallel
   )
 
-
 #===============================================================================
 #register_test(test_solid_mechanics_model_bar_traction2d_mass_not_lumped
 #  SOURCES test_solid_mechanics_model_bar_traction2d_mass_not_lumped.cc

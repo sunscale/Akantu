@@ -51,7 +51,8 @@ class SparseMatrix : protected Memory {
   /* ------------------------------------------------------------------------ */
 public:
   SparseMatrix(UInt size, const SparseMatrixType & sparse_matrix_type,
-               const ID & id = "sparse_matrix", const MemoryID & memory_id = 0);
+               const ID & id = "sparse_matrix", const MemoryID & memory_id = 0,
+	       UInt nb_proc_input = 0);
 
   SparseMatrix(const SparseMatrix & matrix, const ID & id = "sparse_matrix",
                const MemoryID & memory_id = 0);

@@ -61,6 +61,11 @@ inline void ElementGroup::addNode(UInt node_id, bool check_for_duplicate) {
 }
 
 /* -------------------------------------------------------------------------- */
+inline void ElementGroup::removeNode(UInt node_id) {
+  node_group.remove(node_id);
+}
+
+/* -------------------------------------------------------------------------- */
 inline void ElementGroup::addElement(const ElementType & elem_type,
 				    UInt elem_id,
 				    const GhostType & ghost_type) {

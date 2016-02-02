@@ -41,11 +41,17 @@ __BEGIN_AKANTU__
 SolverOptions _solver_no_options(true);
 
 /* -------------------------------------------------------------------------- */
-Solver::Solver(SparseMatrix & matrix, const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), StaticSolverEventHandler(), matrix(&matrix),
-      is_matrix_allocated(false), mesh(NULL),
-      communicator(StaticCommunicator::getStaticCommunicator()), solution(NULL),
-      synch_registry(NULL) {
+Solver::Solver(SparseMatrix & matrix,
+	       const ID & id,
+	       const MemoryID & memory_id,
+	       StaticCommunicator & comm) :
+  Memory(id, memory_id), StaticSolverEventHandler(),
+  matrix(&matrix),
+  is_matrix_allocated(false),
+  mesh(NULL),
+  communicator(comm),
+  solution(NULL),
+  synch_registry(NULL) {
   AKANTU_DEBUG_IN();
   StaticSolver::getStaticSolver().registerEventHandler(*this);
   // createSynchronizerRegistry();

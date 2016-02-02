@@ -69,8 +69,9 @@ public:
   const static Real factors[dim * (dim - (dim - 1) / 2)];
 };
 
-template <UInt dim>
-const UInt VoigtHelper<dim>::size = dim *(dim - (dim - 1) / 2);
+
+template <UInt dim> const UInt VoigtHelper<dim>::size = dim*(dim-(dim-1)/2.);
+
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
