@@ -365,14 +365,19 @@ void SolverMumps::solve(Array<Real> & solution) {
   AKANTU_DEBUG_IN();
 
   this->solve();
+  
+  if (this->parallel_method == SolverMumpsOptions::_serial_split)
+    solution.copy(*(this->rhs), true);
 
-  if (prank == 0) {
-    matrix->getDOFSynchronizer().scatter(solution, 0, this->rhs);
-    //    std::copy(this->rhs->storage(), this->rhs->storage() +
-    //    this->rhs->getSize(), solution.storage());
+  else {
+    if (prank == 0) {
+      matrix->getDOFSynchronizer().scatter(solution, 0, this->rhs);
+      //    std::copy(this->rhs->storage(), this->rhs->storage() +
+      //    this->rhs->getSize(), solution.storage());
 
-  } else {
-    this->matrix->getDOFSynchronizer().scatter(solution, 0);
+    } else {
+      this->matrix->getDOFSynchronizer().scatter(solution, 0);
+    }
   }
 
   AKANTU_DEBUG_OUT();
@@ -383,7 +388,8 @@ void SolverMumps::printError() {
   Int _info_v[2];
   _info_v[0] = info(1);  // to get errors
   _info_v[1] = -info(1); // to get warnings
-  communicator.allReduce(_info_v, 2, _so_min);
+  if (this->parallel_method != SolverMumpsOptions::_serial_split)
+    communicator.allReduce(_info_v, 2, _so_min);
   _info_v[1] = -_info_v[1];
 
   if (_info_v[0] < 0) { // < 0 is an error
