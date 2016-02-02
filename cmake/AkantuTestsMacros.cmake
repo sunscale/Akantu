@@ -328,7 +328,7 @@ function(register_test test_name)
         list(APPEND _arguments -e "${test_name}")
       endif()
 
-      list(APPEND _arguments -E "${PROJECT_BINARY_DIR}/akantu_test_environement.sh")
+      list(APPEND _arguments -E "${PROJECT_BINARY_DIR}/akantu_environement.sh")
 
       if(_register_test_PARALLEL)
         list(APPEND _arguments -p "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}")

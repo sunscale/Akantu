@@ -67,7 +67,6 @@ while getopts ":n:e:E:p:N:s:r:w:h" opt; do
         w)  working_dir="$OPTARG"
             ;;
         E)  envi="$OPTARG"
-            echo toto
             ;;
         h)
             show_help
