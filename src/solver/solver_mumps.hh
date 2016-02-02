@@ -44,7 +44,8 @@ public:
   enum ParallelMethod {
     _not_parallel,
     _fully_distributed,
-    _master_slave_distributed
+    _master_slave_distributed,
+    _serial_split
   };
 
   SolverMumpsOptions(ParallelMethod parallel_method = _fully_distributed)
