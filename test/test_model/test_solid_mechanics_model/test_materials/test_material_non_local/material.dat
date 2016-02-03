@@ -1,0 +1,11 @@
+material custom_non_local_test_material [
+   name = test
+   rho = 1    # density
+   E   = 1    # young's modulus
+   nu  = 0    # poisson's ratio
+]
+
+
+non_local test base_wf [
+	  radius  = 0.4
+]

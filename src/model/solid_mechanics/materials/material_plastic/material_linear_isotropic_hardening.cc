@@ -1,18 +1,20 @@
 /**
  * @file   material_linear_isotropic_hardening.cc
  *
- * @author Lucas Frerot <lucas.frerot@epfl.ch>
- * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
  * @author Ramin Aghababaei <ramin.aghababaei@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Benjamin Paccaud <benjamin.paccaud@epfl.ch>
+ * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Thu Oct 03 2013
- * @date last modification: Fri Jun 13 2014
+ * @date creation: Mon Apr 07 2014
+ * @date last modification: Tue Aug 18 2015
  *
  * @brief  Specialization of the material class for isotropic finite deformation linear hardening plasticity
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -42,9 +44,23 @@ MaterialLinearIsotropicHardening<dim>::MaterialLinearIsotropicHardening(SolidMec
                                                                         const ID & id) :
   Material(model, id), MaterialPlastic<dim>(model, id) {
   AKANTU_DEBUG_IN();
-
+  
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+MaterialLinearIsotropicHardening<spatial_dimension>::MaterialLinearIsotropicHardening(
+  SolidMechanicsModel & model,
+  UInt dim,
+  const Mesh & mesh,
+  FEEngine & fe_engine,
+  const ID & id) :
+
+  Material(model, dim, mesh, fe_engine, id),
+  MaterialPlastic<spatial_dimension>(model, dim, mesh, fe_engine, id)
+{}
+
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -52,7 +68,7 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeStress(ElementT
   AKANTU_DEBUG_IN();
 
   MaterialThermal<spatial_dimension>::computeStress(el_type, ghost_type);
-
+  // infinitesimal and finite deformation
   Array<Real>::iterator<> sigma_th_it =
     this->sigma_th(el_type, ghost_type).begin();
 
@@ -76,35 +92,91 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeStress(ElementT
 
   Array<Real>::iterator<> previous_iso_hardening_it =
     this->iso_hardening.previous(el_type, ghost_type).begin();
+  
 
 
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
-  Matrix<Real> & inelastic_strain_tensor = *inelastic_strain_it;
-  Matrix<Real> & previous_inelastic_strain_tensor = *previous_inelastic_strain_it;
-  Matrix<Real> & previous_grad_u = *previous_gradu_it;
-  Matrix<Real> & previous_sigma = *previous_stress_it;
+  //
+  // Finite Deformations
+  //
+  if (this->finite_deformation) {
+        Array<Real>::matrix_iterator previous_piola_kirchhoff_2_it =
+      this->piola_kirchhoff_2.previous(el_type, ghost_type).begin(spatial_dimension, spatial_dimension);
+    
+    Array<Real>::matrix_iterator green_strain_it =
+      this->green_strain(el_type, ghost_type).begin(spatial_dimension,spatial_dimension);
 
-  computeStressOnQuad(grad_u,
-                      previous_grad_u,
-                      sigma,
-                      previous_sigma,
-                      inelastic_strain_tensor,
-                      previous_inelastic_strain_tensor,
-                      *iso_hardening_it,
-                      *previous_iso_hardening_it,
-                      *sigma_th_it,
-                      *previous_sigma_th_it);
+    
+    MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+
+    Matrix<Real> & inelastic_strain_tensor = *inelastic_strain_it;
+    Matrix<Real> & previous_inelastic_strain_tensor = *previous_inelastic_strain_it;
+    Matrix<Real> & previous_grad_u = *previous_gradu_it;    
+    Matrix<Real> & previous_sigma = *previous_piola_kirchhoff_2_it;
+
+    Matrix<Real> & green_strain = *green_strain_it;
+    this->template gradUToGreenStrain<spatial_dimension>(grad_u, green_strain);
+    Matrix<Real> previous_green_strain(spatial_dimension,spatial_dimension);
+    this->template gradUToGreenStrain<spatial_dimension>(previous_grad_u, previous_green_strain);
+    Matrix<Real> F_tensor(spatial_dimension,spatial_dimension);
+    this->template gradUToF<spatial_dimension>(grad_u,F_tensor);
+  
+    computeStressOnQuad(green_strain,
+			previous_green_strain,
+			sigma,
+			previous_sigma,
+			inelastic_strain_tensor,
+			previous_inelastic_strain_tensor,
+			*iso_hardening_it,
+			*previous_iso_hardening_it,
+			*sigma_th_it,
+			*previous_sigma_th_it,
+			F_tensor);
+
   ++sigma_th_it;
   ++inelastic_strain_it;
   ++iso_hardening_it;
   ++previous_sigma_th_it;
-  ++previous_stress_it;
+  //++previous_stress_it;
   ++previous_gradu_it;
+  ++green_strain_it;
   ++previous_inelastic_strain_it;
   ++previous_iso_hardening_it;
-
+  ++previous_piola_kirchhoff_2_it;
+  
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 
+  } 
+  // Infinitesimal deformations
+  else {
+    MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+
+    Matrix<Real> & inelastic_strain_tensor = *inelastic_strain_it;
+    Matrix<Real> & previous_inelastic_strain_tensor = *previous_inelastic_strain_it;
+    Matrix<Real> & previous_grad_u = *previous_gradu_it;    
+    Matrix<Real> & previous_sigma = *previous_stress_it; 
+
+    computeStressOnQuad(grad_u,
+			previous_grad_u,
+			sigma,
+			previous_sigma,
+			inelastic_strain_tensor,
+			previous_inelastic_strain_tensor,
+			*iso_hardening_it,
+			*previous_iso_hardening_it,
+			*sigma_th_it,
+			*previous_sigma_th_it);
+    ++sigma_th_it;
+    ++inelastic_strain_it;
+    ++iso_hardening_it;
+    ++previous_sigma_th_it;
+    ++previous_stress_it;
+    ++previous_gradu_it;
+    ++previous_inelastic_strain_it;
+    ++previous_iso_hardening_it;
+
+    MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
+  }
+  
   AKANTU_DEBUG_OUT();
 }
 
@@ -139,6 +211,6 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeTangentModuli(_
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialLinearIsotropicHardening);
+INSTANTIATE_MATERIAL(MaterialLinearIsotropicHardening);
 
 __END_AKANTU__

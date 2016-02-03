@@ -5,14 +5,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Jul 20 2010
- * @date last modification: Fri Jun 13 2014
+ * @date last modification: Sat Sep 05 2015
  *
  * @brief  Implementation of the inline functions of the FEEngine Class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -78,6 +79,8 @@ inline ElementType FEEngine::getCohesiveElementType(const ElementType & type_fac
   else if (type_facet == _segment_3) type_cohesive = _cohesive_2d_6;
   else if (type_facet == _triangle_3) type_cohesive = _cohesive_3d_6;
   else if (type_facet == _triangle_6) type_cohesive = _cohesive_3d_12;
+  else if (type_facet == _quadrangle_4) type_cohesive = _cohesive_3d_8;
+  else if (type_facet == _quadrangle_8) type_cohesive = _cohesive_3d_16;
 
   AKANTU_DEBUG_OUT();
   return type_cohesive;
@@ -88,7 +91,22 @@ inline ElementType FEEngine::getCohesiveElementType(__attribute__((unused)) cons
 }
 #endif
 
+/* -------------------------------------------------------------------------- */
+#if defined(AKANTU_IGFEM)
+__END_AKANTU__
+#include "igfem_helper.hh"
+__BEGIN_AKANTU__
 
+inline Vector<ElementType> FEEngine::getIGFEMElementTypes(const ElementType & type) {
+
+#define GET_IGFEM_ELEMENT_TYPES(type) \
+  return IGFEMHelper::getIGFEMElementTypes<type>();
+  
+ AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(GET_IGFEM_ELEMENT_TYPES);
+
+#undef GET_IGFEM_ELEMENT_TYPES
+}
+#endif
 
 /* -------------------------------------------------------------------------- */
 template<typename T>

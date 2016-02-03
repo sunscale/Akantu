@@ -5,14 +5,15 @@
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Mon Jul 09 2012
- * @date last modification: Fri Mar 21 2014
+ * @date last modification: Tue Aug 04 2015
  *
  * @brief  Exponential irreversible cohesive law of mixed mode loading
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -44,12 +45,11 @@ MaterialCohesiveExponential<spatial_dimension>::MaterialCohesiveExponential(Soli
   MaterialCohesive(model,id) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("beta"   , beta   , 0. , _pat_parsable, "Beta parameter"         );
-  this->registerParam("delta_c", delta_c, 0. , _pat_parsable, "Critical displacement"  );
+  this->registerParam("beta"   , beta   , Real(0.) , _pat_parsable, "Beta parameter");
   this->registerParam("exponential_penalty", exp_penalty, true, 
 		      _pat_parsable, "Is contact penalty following the exponential law?"  );
   
-  this->registerParam("contact_tangent", contact_tangent, 1.0, 
+  this->registerParam("contact_tangent", contact_tangent, Real(1.0),
 		      _pat_parsable, "Ratio of contact tangent over the initial exponential tangent"  );
 
   // this->initInternalArray(delta_max, 1, _ek_cohesive);
@@ -194,7 +194,7 @@ template<UInt spatial_dimension>
 void MaterialCohesiveExponential<spatial_dimension>::computeCompressiveTraction(Vector<Real> & tract,
 										const Vector<Real> & normal,
 										Real delta_n,
-										const Vector<Real> & opening) {
+                                                                                __attribute__((unused)) const Vector<Real> & opening) {
   Vector<Real> temp_tract(normal);
 
   if(exp_penalty) {
@@ -358,6 +358,6 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCompressivePenalty(M
 
 }
 
-INSTANSIATE_MATERIAL(MaterialCohesiveExponential);
+INSTANTIATE_MATERIAL(MaterialCohesiveExponential);
 
 __END_AKANTU__

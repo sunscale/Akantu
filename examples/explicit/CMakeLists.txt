@@ -4,15 +4,15 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 # @author Cyprien Wolff <cyprien.wolff@epfl.ch>
 #
-# @date creation: Mon Apr 16 2012
-# @date last modification: Thu Nov 01 2012
+# @date creation: Mon Jan 18 2016
 #
 # @brief  configuration for explicit example
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -31,10 +31,9 @@
 #
 #===============================================================================
 
-register_example(explicit_dynamic explicit_dynamic.cc)
-
 add_mesh(explicit_dynamic_mesh bar.geo 3 1)
-add_dependencies(explicit_dynamic explicit_dynamic_mesh)
 
-#===============================================================================
-file(COPY material.dat DESTINATION .)
+register_example(explicit_dynamic
+  SOURCES explicit_dynamic.cc
+  DEPENDS explicit_dynamic_mesh
+  FILES_TO_COPY material.dat)

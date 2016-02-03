@@ -3,15 +3,14 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Fri Feb 24 2012
- * @date last modification: Thu Jun 05 2014
+ * @date creation: Mon Jan 18 2016
  *
  * @brief  This code refers to the implicit static example from the user manual
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -38,7 +37,7 @@ using namespace akantu;
 #define bar_height 0.01
 
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   const UInt spatial_dimension = 2;
@@ -54,9 +53,9 @@ int main(int argc, char *argv[]) {
 
   model.setBaseName("static");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("force"   );
+  model.addDumpField("force");
   model.addDumpField("residual");
-  model.addDumpField("grad_u"  );
+  model.addDumpField("grad_u");
 
   /// Dirichlet boundary conditions
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "Fixed_x");
@@ -67,9 +66,11 @@ int main(int argc, char *argv[]) {
   model.assembleStiffnessMatrix();
   model.getStiffnessMatrix().saveMatrix("stiffness.mtx");
 
-  bool converged = model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(1e-4, 2);
+  bool converged =
+      model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(
+          1e-4, 2);
 
-  if(!converged)
+  if (!converged)
     AKANTU_DEBUG_ERROR("Did not converged in 1 step");
 
   model.dump();

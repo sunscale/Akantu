@@ -2,18 +2,19 @@
  * @file   material_mazars.cc
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Marion Estelle Chambart <marion.chambart@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Apr 06 2011
- * @date last modification: Mon Feb 10 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Aug 18 2015
  *
  * @brief  Specialization of the material class for the damage material
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -46,12 +47,12 @@ MaterialMazars<spatial_dimension>::MaterialMazars(SolidMechanicsModel & model,
   damage_in_compute_stress(true) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("K0"  , K0  ,         _pat_parsable, "K0");
-  this->registerParam("At"  , At  , 0.8   , _pat_parsable, "At");
-  this->registerParam("Ac"  , Ac  , 1.4   , _pat_parsable, "Ac");
-  this->registerParam("Bc"  , Bc  , 1900. , _pat_parsable, "Bc");
-  this->registerParam("Bt"  , Bt  , 12000., _pat_parsable, "Bt");
-  this->registerParam("beta", beta, 1.06  , _pat_parsable, "beta");
+  this->registerParam("K0"  , K0  ,               _pat_parsable, "K0");
+  this->registerParam("At"  , At  , Real(0.8   ), _pat_parsable, "At");
+  this->registerParam("Ac"  , Ac  , Real(1.4   ), _pat_parsable, "Ac");
+  this->registerParam("Bc"  , Bc  , Real(1900. ), _pat_parsable, "Bc");
+  this->registerParam("Bt"  , Bt  , Real(12000.), _pat_parsable, "Bt");
+  this->registerParam("beta", beta, Real(1.06  ), _pat_parsable, "beta");
 
   this->K0.initialize(1);
 
@@ -78,6 +79,6 @@ void MaterialMazars<spatial_dimension>::computeStress(ElementType el_type,
 }
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialMazars);
+INSTANTIATE_MATERIAL(MaterialMazars);
 
 __END_AKANTU__

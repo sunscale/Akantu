@@ -4,14 +4,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Dec 13 2010
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Mon Nov 16 2015
  *
  * @brief  implementation of the SparseMatrix class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -48,7 +49,7 @@ SparseMatrix::SparseMatrix(UInt size,
   sparse_matrix_type(sparse_matrix_type),
   size(size),
   nb_non_zero(0),
-  irn(0,1,"irn"), jcn(0,1,"jcn"), a(0,1,"A") {
+  irn(0,1,"irn"), jcn(0,1,"jcn"), a(0,1,"A"), offset(1) {
   AKANTU_DEBUG_IN();
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
@@ -71,7 +72,7 @@ SparseMatrix::SparseMatrix(const SparseMatrix & matrix,
   nb_proc(matrix.nb_proc),
   nb_non_zero(matrix.nb_non_zero),
   irn(matrix.irn, true), jcn(matrix.jcn, true), a(matrix.getA(), true),
-  irn_jcn_k(matrix.irn_jcn_k) {
+  irn_jcn_k(matrix.irn_jcn_k), offset(1) {
   AKANTU_DEBUG_IN();
 
   size_save = 0;
@@ -132,11 +133,11 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
 
       for (UInt i = 0; i < size_mat; ++i) {
 	UInt c_irn = local_eq_nb_val[i];
-	if(c_irn < size) {
+	if(c_irn < this->size) {
 	  UInt j_start = (sparse_matrix_type == _symmetric) ? i : 0;
 	  for (UInt j = j_start; j < size_mat; ++j) {
 	    UInt c_jcn = local_eq_nb_val[j];
-	    if(c_jcn < size) {
+	    if(c_jcn < this->size) {
 	      KeyCOO irn_jcn = key(c_irn, c_jcn);
 	      irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
 
@@ -166,6 +167,24 @@ void SparseMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_s
         irn.push_back(i + 1);
         jcn.push_back(i + 1);
         nb_non_zero++;
+      }
+    }
+  }
+  else { // for pbc in parallel
+    for (UInt n=0; n<mesh.getNbNodes(); ++n) {
+      for (UInt d=0; d<nb_degree_of_freedom; ++d) {
+	if (mesh.isLocalOrMasterNode(n)) {
+	  UInt i = mesh.getNodeGlobalId(n) * nb_degree_of_freedom + d;
+
+	  KeyCOO irn_jcn = key(i, i);
+	  irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
+	  if(irn_jcn_k_it == irn_jcn_k.end()) {
+	    irn_jcn_k[irn_jcn] = nb_non_zero;
+	    irn.push_back(i + 1);
+	    jcn.push_back(i + 1);
+	    nb_non_zero++;
+	  }
+	}
       }
     }
   }
@@ -426,68 +445,6 @@ void SparseMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrix::removeBoundary(const Array<bool> & boundary) {
-  AKANTU_DEBUG_IN();
-
-  if(irn_save) delete irn_save;
-  if(jcn_save) delete jcn_save;
-
-  irn_save = new Array<Int>(irn, true);
-  jcn_save = new Array<Int>(jcn, true);
-
-  UInt n = boundary.getSize()*boundary.getNbComponent();
-
-  UInt * perm = new UInt[n];
-
-  size_save = size;
-  size = 0;
-  for (UInt i = 0; i < n; ++i) {
-    if(!boundary.storage()[i]) {
-      perm[i] = size;
-      //      std::cout <<  "perm["<< i <<"] = " << size << std::endl;
-      size++;
-    }
-  }
-
-  for (UInt i = 0; i < nb_non_zero;) {
-    if(boundary.storage()[irn(i) - 1] || boundary.storage()[jcn(i) - 1]) {
-      irn.erase(i);
-      jcn.erase(i);
-      a.erase(i);
-      nb_non_zero--;
-    } else {
-      irn(i) = perm[irn(i) - 1] + 1;
-      jcn(i) = perm[jcn(i) - 1] + 1;
-      i++;
-    }
-  }
-
-  delete [] perm;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SparseMatrix::restoreProfile() {
-  AKANTU_DEBUG_IN();
-
-  irn.resize(irn_save->getSize());
-  jcn.resize(jcn_save->getSize());
-
-  nb_non_zero = irn.getSize();
-  a.resize(nb_non_zero);
-  size = size_save;
-
-  memcpy(irn.storage(), irn_save->storage(), irn.getSize()*sizeof(Int));
-  memcpy(jcn.storage(), jcn_save->storage(), jcn.getSize()*sizeof(Int));
-
-  delete irn_save; irn_save = NULL;
-  delete jcn_save; jcn_save = NULL;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
 void SparseMatrix::saveProfile(const std::string & filename) const {
   AKANTU_DEBUG_IN();
 
@@ -659,6 +616,11 @@ void SparseMatrix::lump(Array<Real> & lumped) {
     dof_synchronizer->reduceSynchronize<AddOperation>(lumped);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseMatrix::clear() {
+  memset(a.storage(), 0, nb_non_zero*sizeof(Real));
 }
 
 __END_AKANTU__

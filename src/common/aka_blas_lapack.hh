@@ -4,13 +4,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Mar 06 2013
- * @date last modification: Tue Jun 24 2014
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  Interface of the Fortran BLAS/LAPACK libraries
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -34,12 +34,8 @@
 #define __AKANTU_AKA_BLAS_LAPACK_HH__
 
 /* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_USE_BLAS) || defined(AKANTU_USE_LAPACK)
-# include "aka_fortran_mangling.hh"
-#endif //AKANTU_USE_BLAS
-
 #ifdef AKANTU_USE_BLAS
+#include "aka_fortran_mangling.hh"
 extern "C" {
 
   /* ------------------------------------------------------------------------ */
@@ -83,11 +79,13 @@ __BEGIN_AKANTU__
 #  pragma GCC diagnostic ignored "-Wunused"
 #endif
 
+/// Wrapper around the S/DDOT BLAS function that returns the dot product of two vectors
 template<typename T>
 inline T aka_dot(int *n, T *x, int *incx, T *y, int *incy) {
   AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name()) << "is not a type recognized, or you didn't activated BLAS in the compilation options!");
 }
 
+/// Wrapper around the S/DGEMV BLAS function that computes matrix-vector product \f$y := \alpha A^{(T)}x + \beta y \f$
 template<typename T>
 inline void aka_gemv(char *trans, int *m, int *n, T *
 		    alpha, T *a, int *lda, T *x, int *incx,
@@ -95,6 +93,7 @@ inline void aka_gemv(char *trans, int *m, int *n, T *
   AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name()) << "is not a type recognized, or you didn't activated BLAS in the compilation options!");
 }
 
+/// Wrapper around the S/DGEMM BLAS function that computes the product of two matrices \f$C := \alpha A^{(T)} B^{(T)} + \beta C \f$
 template<typename T>
 inline void aka_gemm(char *transa, char *transb,
 		    int *m, int *n, int *k,
@@ -161,6 +160,7 @@ __END_AKANTU__
 
 
 #ifdef AKANTU_USE_LAPACK
+#include "aka_fortran_mangling.hh"
 extern "C" {
   /* ------------------------------------------------------------------------ */
   /* Double general matrix                                                    */
@@ -210,6 +210,7 @@ extern "C" {
 
 __BEGIN_AKANTU__
 
+/// Wrapper around the S/DGEEV BLAS function that computes the eigenvalues and eigenvectors of a matrix
 template<typename T>
 inline void aka_geev(char* jobvl, char* jobvr, int* n, T* a,
 		     int* lda, T* wr, T* wi, T* vl, int* ldvl,
@@ -217,6 +218,7 @@ inline void aka_geev(char* jobvl, char* jobvr, int* n, T* a,
   AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name()) << "is not a type recognized, or you didn't activated LAPACK in the compilation options!");
 }
 
+/// Wrapper around the S/DGETRF BLAS function that computes the LU decomposition of a matrix
 template<typename T>
 inline void aka_getrf(int* m, int *n,
 		      T* a, int* lda,
@@ -224,12 +226,14 @@ inline void aka_getrf(int* m, int *n,
   AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name()) << "is not a type recognized, or you didn't activated LAPACK in the compilation options!");
 }
 
+/// Wrapper around the S/DGETRI BLAS function that computes the inverse of a matrix given its LU decomposition
 template<typename T>
 inline void aka_getri(int* n, T* a, int* lda,
 		      int* ipiv, T* work, int* lwork, int* info) {
   AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name()) << "is not a type recognized, or you didn't activated LAPACK in the compilation options!");
 }
 
+/// Wrapper around the S/DGETRS BLAS function that solves \f$A^{(T)}x = b\f$ using LU decomposition
 template<typename T>
 inline void aka_getrs(char *trans, int * n, int * nrhs,
 		      T * A, int * lda, int * ipiv,

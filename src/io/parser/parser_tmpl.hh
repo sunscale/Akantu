@@ -4,13 +4,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Nov 13 2013
- * @date last modification: Tue Jun 24 2014
+ * @date last modification: Wed Apr 22 2015
  *
  * @brief  Implementation of the parser templated methods
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -47,8 +47,8 @@ inline ParserParameter::operator T() const {
 
 /* -------------------------------------------------------------------------- */
 template<>
-inline ParserParameter::operator std::string() const {
-  return value;
+inline ParserParameter::operator const char *() const {
+  return value.c_str();
 }
 
 /* -------------------------------------------------------------------------- */

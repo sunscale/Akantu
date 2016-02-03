@@ -1,0 +1,15 @@
+seed = 1
+
+material elastic [
+	 name = bulk
+	 rho = 2500
+	 E = 42.e9
+	 nu = 0.2
+]
+
+material cohesive_linear [
+	 name = cohesive
+	 beta = 1
+	 G_c = 100
+	 sigma_c = 300e6 uniform [0, 30e6]
+]

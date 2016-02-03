@@ -1,17 +1,18 @@
 /**
  * @file   material_plastic.cc
  *
- * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Apr 07 2014
- * @date last modification: Fri Jun 13 2014
+ * @date last modification: Tue Aug 18 2015
  *
  * @brief  Implemantation of the akantu::MaterialPlastic class
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -45,9 +46,32 @@ MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model,
   plastic_energy("plastic_energy", *this),
   d_plastic_energy("d_plastic_energy", *this) {
   AKANTU_DEBUG_IN();
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
 
-  this->registerParam("h", h, 0., _pat_parsable | _pat_modifiable, "Hardening  modulus");
-  this->registerParam("sigma_y", sigma_y, 0., _pat_parsable | _pat_modifiable, "Yield stress");
+template<UInt spatial_dimension>
+MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model,
+                                                    UInt dim,
+                                                    const Mesh & mesh,
+                                                    FEEngine & fe_engine,
+                                                    const ID & id) :
+  Material(model, dim, mesh, fe_engine, id),
+  MaterialElastic<spatial_dimension>(model, dim, mesh, fe_engine, id),
+  iso_hardening   ("iso_hardening"   , *this, dim, fe_engine, this->element_filter),
+  inelastic_strain("inelastic_strain", *this, dim, fe_engine, this->element_filter),
+  plastic_energy  ("plastic_energy"  , *this, dim, fe_engine, this->element_filter),
+  d_plastic_energy("d_plastic_energy", *this, dim, fe_engine, this->element_filter) {
+  AKANTU_DEBUG_IN();
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+void MaterialPlastic<spatial_dimension>::initialize() {
+  this->registerParam(      "h",       h, Real(0.), _pat_parsable | _pat_modifiable, "Hardening  modulus");
+  this->registerParam("sigma_y", sigma_y, Real(0.), _pat_parsable | _pat_modifiable, "Yield stress");
 
   this->iso_hardening.initialize(1);
   this->iso_hardening.initializeHistory();
@@ -55,27 +79,21 @@ MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model,
   this->plastic_energy.initialize(1);
   this->d_plastic_energy.initialize(1);
 
-  this->finite_deformation            = false;
   this->use_previous_stress           = true;
   this->use_previous_gradu            = true;
   this->use_previous_stress_thermal   = true;
 
-
   this->inelastic_strain.initialize(spatial_dimension * spatial_dimension);
   this->inelastic_strain.initializeHistory();
-
-  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 Real MaterialPlastic<spatial_dimension>::getEnergy(std::string type) {
-  AKANTU_DEBUG_IN();
-
   if (type == "plastic") return getPlasticEnergy();
   else return MaterialElastic<spatial_dimension>::getEnergy(type);
 
-  AKANTU_DEBUG_OUT();
+  return 0.;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -92,8 +110,8 @@ Real MaterialPlastic<spatial_dimension>::getPlasticEnergy() {
 
   for(; it != end; ++it) {
     penergy += this->model->getFEEngine().integrate(plastic_energy(*it, _not_ghost),
-                                               *it, _not_ghost,
-                                               this->element_filter(*it, _not_ghost));
+                                                    *it, _not_ghost,
+                                                    this->element_filter(*it, _not_ghost));
   }
 
   AKANTU_DEBUG_OUT();
@@ -102,7 +120,8 @@ Real MaterialPlastic<spatial_dimension>::getPlasticEnergy() {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-void MaterialPlastic<spatial_dimension>::computePotentialEnergy(ElementType el_type, GhostType ghost_type) {
+void MaterialPlastic<spatial_dimension>::computePotentialEnergy(ElementType el_type,
+                                                                GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   if(ghost_type != _not_ghost) return;
@@ -132,7 +151,7 @@ void MaterialPlastic<spatial_dimension>::computePotentialEnergy(ElementType el_t
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialPlastic<spatial_dimension>::updateEnergies(ElementType el_type,
-                                                        GhostType ghost_type) {
+							GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   MaterialElastic<spatial_dimension>::updateEnergies(el_type, ghost_type);
@@ -179,6 +198,6 @@ void MaterialPlastic<spatial_dimension>::updateEnergies(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 
-INSTANSIATE_MATERIAL(MaterialPlastic);
+INSTANTIATE_MATERIAL(MaterialPlastic);
 
 __END_AKANTU__

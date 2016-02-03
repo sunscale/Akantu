@@ -135,10 +135,9 @@ elseif (PETSC_DIR)
 endif ()
 
 
-message(petsc_conf_rules ${petsc_conf_rules})
-message(petsc_conf_variables ${petsc_conf_variables})
-message(petsc_config_current ${petsc_config_current})
-
+#message(petsc_conf_rules ${petsc_conf_rules})
+#message(petsc_conf_variables ${petsc_conf_variables})
+#message(petsc_config_current ${petsc_config_current})
 
 if (petsc_conf_rules AND petsc_conf_variables AND NOT petsc_config_current)
   petsc_get_version()
@@ -237,11 +236,11 @@ show :
     petsc_join (TS   SNES)
     petsc_join (ALL  TS)
   else ()
-    set (PETSC_LIBRARY_VEC "NOTFOUND" CACHE INTERNAL "Cleared" FORCE) # There is no libpetscvec
     petsc_find_library (SINGLE petsc)
     foreach (pkg SYS VEC MAT DM KSP SNES TS ALL)
       set (PETSC_LIBRARIES_${pkg} "${PETSC_LIBRARY_SINGLE}")
     endforeach ()
+    set (PETSC_LIBRARY_VEC "${PETSC_LIBRARY_SINGLE}" CACHE INTERNAL "Cleared" FORCE) # There is no libpetscvec
   endif ()
   if (PETSC_LIBRARY_TS)
     message (STATUS "Recognized PETSc install with separate libraries for each package")

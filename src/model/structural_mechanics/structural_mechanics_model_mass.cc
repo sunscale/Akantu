@@ -4,13 +4,13 @@
  * @author Sébastien Hartmann <sebastien.hartmann@epfl.ch>
  *
  * @date creation: Mon Jul 07 2014
- * @date last modification: Mon Jul 07 2014
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  function handling mass computation
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -82,7 +82,7 @@ void StructuralMechanicsModel::computeRho(Array<Real> & rho,
   AKANTU_DEBUG_IN();
 
   UInt nb_element = getFEEngine().getMesh().getNbElement(type);
-  UInt nb_quadrature_points = getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quadrature_points = getFEEngine().getNbIntegrationPoints(type);
 
   Array<UInt> & el_mat = element_material(type, ghost_type);
 

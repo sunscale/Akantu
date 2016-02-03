@@ -4,15 +4,16 @@
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Tue Sep 02 2014
- * @date last modification: Tue Sep 02 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Mon Aug 17 2015
  *
  * @brief  description of elemental fields
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -35,6 +36,9 @@
 #include "static_communicator.hh"
 #include "dumper_field.hh"
 #include "dumper_generic_elemental_field.hh"
+#ifdef AKANTU_IGFEM
+#  include "dumper_igfem_elemental_field.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
@@ -45,13 +49,10 @@ template<typename T, template <class> class ret = Vector,bool filtered = false>
 class ElementalField
   : public GenericElementalField<SingleType<T,ret,filtered>,
                                  elemental_field_iterator> {
-
-public:
-
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
-
+public:
   typedef SingleType<T,ret,filtered> types;
   typedef typename types::field_type field_type;
   typedef elemental_field_iterator<types> iterator;
@@ -59,7 +60,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
+public:
   ElementalField(const field_type & field,
                  UInt spatial_dimension = _all_dimensions,
                  GhostType ghost_type = _not_ghost,

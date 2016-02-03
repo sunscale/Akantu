@@ -3,15 +3,16 @@
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Oct 17 2013
- * @date last modification: Thu Apr 03 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Aug 04 2015
  *
  * @brief  Specialization of the material class for the thermal material
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -41,15 +42,36 @@ MaterialThermal<spatial_dimension>::MaterialThermal(SolidMechanicsModel & model,
   sigma_th("sigma_th", *this),
   use_previous_stress_thermal(false) {
   AKANTU_DEBUG_IN();
-
-  this->registerParam("E"      , E      , 0.  , _pat_parsable | _pat_modifiable, "Young's modulus"        );
-  this->registerParam("nu"     , nu     , 0.5 , _pat_parsable | _pat_modifiable, "Poisson's ratio"        );
-  this->registerParam("alpha"  , alpha  , 0.  , _pat_parsable | _pat_modifiable, "Thermal expansion coefficient");
-  this->registerParam("delta_T", delta_T,       _pat_parsable | _pat_modifiable, "Uniform temperature field");
-
-  delta_T.initialize(1);
+  this->initialize();
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+MaterialThermal<spatial_dimension>::MaterialThermal(SolidMechanicsModel & model,
+                                                    UInt dim,
+                                                    const Mesh & mesh,
+                                                    FEEngine & fe_engine,
+                                                    const ID & id) :
+  Material(model, dim, mesh, fe_engine, id),
+  delta_T("delta_T", *this, dim, fe_engine, this->element_filter),
+  sigma_th("sigma_th", *this, dim, fe_engine, this->element_filter),
+  use_previous_stress_thermal(false) {
+  AKANTU_DEBUG_IN();
+  this->initialize();
+  AKANTU_DEBUG_OUT();
+}
+
+template<UInt spatial_dimension>
+void MaterialThermal<spatial_dimension>::initialize() {
+  this->registerParam("E"      , E      , Real(0. ) , _pat_parsable | _pat_modifiable, "Young's modulus"        );
+  this->registerParam("nu"     , nu     , Real(0.5) , _pat_parsable | _pat_modifiable, "Poisson's ratio"        );
+  this->registerParam("alpha"  , alpha  , Real(0. ) , _pat_parsable | _pat_modifiable, "Thermal expansion coefficient");
+  this->registerParam("delta_T", delta_T,             _pat_parsable | _pat_modifiable, "Uniform temperature field");
+
+  delta_T.initialize(1);
+}
+
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -96,6 +118,6 @@ void MaterialThermal<dim>::computeStress(ElementType el_type, GhostType ghost_ty
 /* -------------------------------------------------------------------------- */
 
 
-INSTANSIATE_MATERIAL(MaterialThermal);
+INSTANTIATE_MATERIAL(MaterialThermal);
 
 __END_AKANTU__

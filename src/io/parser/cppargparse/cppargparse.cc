@@ -4,13 +4,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Thu Apr 03 2014
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Wed Nov 11 2015
  *
  * @brief  implementation of the ArgumentParser
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -44,6 +44,7 @@
 
 #include <exception>
 #include <stdexcept>
+#include <string.h>
 
 namespace cppargparse {
 
@@ -61,21 +62,24 @@ static inline std::string to_upper(const std::string & str) {
 /* -------------------------------------------------------------------------- */
 /* ArgumentParser                                                             */
 /* -------------------------------------------------------------------------- */
-  ArgumentParser::ArgumentParser() : external_exit(NULL), prank(0), psize(1) {
+ArgumentParser::ArgumentParser() : external_exit(NULL), prank(0), psize(1) {
   this->addArgument("-h;--help", "show this help message and exit", 0, _boolean, false, true);
 }
 
+/* -------------------------------------------------------------------------- */
 ArgumentParser::~ArgumentParser() {
   for(_Arguments::iterator it = arguments.begin(); it != arguments.end(); ++it) {
     delete it->second;
   }
 }
 
+/* -------------------------------------------------------------------------- */
 void ArgumentParser::setParallelContext(int prank, int psize) {
   this->prank = prank;
   this->psize = psize;
 }
 
+/* -------------------------------------------------------------------------- */
 void ArgumentParser::_exit(const std::string & msg, int status) {
   if(prank == 0) {
     if(msg != "") {
@@ -93,6 +97,7 @@ void ArgumentParser::_exit(const std::string & msg, int status) {
   }
 }
 
+/* -------------------------------------------------------------------------- */
 const ArgumentParser::Argument & ArgumentParser::operator[](const std::string & name) const {
   Arguments::const_iterator it = success_parsed.find(name);
 
@@ -105,7 +110,8 @@ const ArgumentParser::Argument & ArgumentParser::operator[](const std::string & 
 			   + " or to give it a default value");
   }
 }
-  
+
+/* -------------------------------------------------------------------------- */
 bool ArgumentParser::has(const std::string & name) const
 { return (success_parsed.find(name) != success_parsed.end()); }
 
@@ -117,6 +123,8 @@ void ArgumentParser::addArgument(const std::string & name_or_flag,
   _addArgument(name_or_flag, help, nargs, type);
 }
 
+
+/* -------------------------------------------------------------------------- */
 ArgumentParser::_Argument & ArgumentParser::_addArgument(const std::string & name,
 							 const std::string & help,
 							 int nargs,
@@ -192,6 +200,15 @@ ArgumentParser::_Argument & ArgumentParser::_addArgument(const std::string & nam
   return *arg;
 }
 
+#if not HAVE_STRDUP
+static char * strdup(const char * str) {
+  size_t len = strlen(str);
+  char *x = (char *)malloc(len+1); /* 1 for the null terminator */
+  if(!x) return NULL; /* malloc could not allocate memory */
+  memcpy(x,str,len+1); /* copy the string into the new buffer */
+  return x;
+}
+#endif
 
 /* -------------------------------------------------------------------------- */
 void ArgumentParser::parse(int& argc, char**& argv, int flags, bool parse_help) {
@@ -205,7 +222,7 @@ void ArgumentParser::parse(int& argc, char**& argv, int flags, bool parse_help) 
   }
 
   unsigned int current_position = 0;
-  if(this->program_name == "") {
+  if(this->program_name == "" && argc > 0) {
     std::string prog = argvs[current_position];
     const char * c_prog = prog.c_str();
     char * c_prog_tmp = strdup(c_prog);

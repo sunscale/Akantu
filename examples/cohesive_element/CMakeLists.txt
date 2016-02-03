@@ -3,15 +3,15 @@
 #
 # @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
 #
-# @date creation: Fri Jun 21 2013
-# @date last modification: Fri Jun 21 2013
+# @date creation: Tue Jan 12 2016
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  CMakeLists for the cohesive examples
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,4 +30,9 @@
 
 add_example(cohesive_extrinsic "Extrinsic cohesive element" PACKAGE cohesive_element)
 add_example(cohesive_intrinsic "Intrinsic cohesive element" PACKAGE cohesive_element )
-add_example(cohesive_extrinsic_IG_TG "Extrinsic cohesive element with intergranular and transgranular material properties" PACKAGE cohesive_element)
+
+add_example(cohesive_extrinsic_ig_tg
+  "Extrinsic cohesive element with intergranular and transgranular material properties"
+  PACKAGE cohesive_element)
+
+add_example(cohesive_extrinsic_implicit "Extrinsic cohesive element in implicit" PACKAGE cohesive_element)

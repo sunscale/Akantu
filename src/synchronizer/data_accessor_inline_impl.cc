@@ -1,17 +1,18 @@
 /**
  * @file   data_accessor_inline_impl.cc
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Sep 18 2013
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Implementation of the inline functions of the DataAccessor class
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -91,7 +92,7 @@ inline void DataAccessor::packUnpackElementalDataHelper(ElementTypeMapArray<T> &
       current_ghost_type   = el.ghost_type;
       vect = &data_to_pack(el.type, el.ghost_type);
       if(per_quadrature_point_data)
-        nb_quad_per_elem = fem.getNbQuadraturePoints(el.type,
+        nb_quad_per_elem = fem.getNbIntegrationPoints(el.type,
 						     el.ghost_type);
       else nb_quad_per_elem = 1;
       nb_component = vect->getNbComponent();
@@ -105,3 +106,21 @@ inline void DataAccessor::packUnpackElementalDataHelper(ElementTypeMapArray<T> &
       buffer >> data;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+template<typename T, bool pack_helper>
+inline void DataAccessor::packUnpackDOFDataHelper(Array<T> & data,
+						  CommunicationBuffer & buffer,
+						  const Array<UInt> & dofs) {
+  Array<UInt>::const_scalar_iterator it_dof  = dofs.begin();
+  Array<UInt>::const_scalar_iterator end_dof = dofs.end();
+  T * data_ptr = data.storage();
+
+  for (; it_dof != end_dof; ++it_dof) {
+    if(pack_helper)
+      buffer << data_ptr[*it_dof];
+    else
+      buffer >> data_ptr[*it_dof];
+  }
+}
+

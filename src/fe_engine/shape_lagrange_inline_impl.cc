@@ -4,15 +4,16 @@
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Tue Feb 15 2011
- * @date last modification: Fri Jun 13 2014
+ * @date creation: Wed Oct 27 2010
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  ShapeLagrange inline implementation
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -51,16 +52,16 @@ inline const Array<Real> & ShapeLagrange<kind>::getShapesDerivatives(const Eleme
 
 /* -------------------------------------------------------------------------- */
 #define INIT_SHAPE_FUNCTIONS(type)					\
-  setControlPointsByType<type>(control_points, ghost_type);		\
-  precomputeShapesOnControlPoints<type>(nodes, ghost_type);		\
+  setIntegrationPointsByType<type>(integration_points, ghost_type);		\
+  precomputeShapesOnIntegrationPoints<type>(nodes, ghost_type);		\
   if (ElementClass<type>::getNaturalSpaceDimension() ==			\
       mesh.getSpatialDimension() || kind != _ek_regular)		\
-    precomputeShapeDerivativesOnControlPoints<type>(nodes, ghost_type);
+    precomputeShapeDerivativesOnIntegrationPoints<type>(nodes, ghost_type);
 
 template <ElementKind kind>
 inline void
 ShapeLagrange<kind>::initShapeFunctions(const Array<Real> & nodes,
-					const Matrix<Real> & control_points,
+					const Matrix<Real> & integration_points,
 					const ElementType & type,
 					const GhostType & ghost_type) {
   AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(INIT_SHAPE_FUNCTIONS);
@@ -71,7 +72,7 @@ ShapeLagrange<kind>::initShapeFunctions(const Array<Real> & nodes,
 template <>
 inline void
 ShapeLagrange<_ek_structural>::initShapeFunctions(__attribute__((unused)) const Array<Real> & nodes,
-						  __attribute__((unused)) const Matrix<Real> & control_points,
+						  __attribute__((unused)) const Matrix<Real> & integration_points,
 						  __attribute__((unused)) const ElementType & type,
 						  __attribute__((unused)) const GhostType & ghost_type) {
   AKANTU_DEBUG_TO_IMPLEMENT();
@@ -85,7 +86,9 @@ template <ElementType type>
 inline void ShapeLagrange<kind>::
 computeShapeDerivativesOnCPointsByElement(const Matrix<Real> & node_coords,
 					  const Matrix<Real> & natural_coords,
-					  Tensor3<Real> & shapesd) {
+					  Tensor3<Real> & shapesd) const {
+  AKANTU_DEBUG_IN();
+
   // compute dnds
   Tensor3<Real> dnds(node_coords.rows(), node_coords.cols(), natural_coords.cols());
   ElementClass<type>::computeDNDS(natural_coords, dnds);
@@ -95,6 +98,8 @@ computeShapeDerivativesOnCPointsByElement(const Matrix<Real> & node_coords,
 
   // compute shape derivatives
   ElementClass<type>::computeShapeDerivatives(J, dnds, shapesd);
+
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -104,6 +109,8 @@ void ShapeLagrange<kind>::inverseMap(const Vector<Real> & real_coords,
 				     UInt elem,
 				     Vector<Real> & natural_coords,
 				     const GhostType & ghost_type) const{
+
+  AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
   UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
@@ -120,6 +127,8 @@ void ShapeLagrange<kind>::inverseMap(const Vector<Real> & real_coords,
   ElementClass<type>::inverseMap(real_coords,
 				 nodes_coord,
 				 natural_coords);
+
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -139,16 +148,78 @@ bool ShapeLagrange<kind>::contains(const Vector<Real> & real_coords,
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
+void ShapeLagrange<kind>::interpolate(const Vector <Real> & real_coords,
+				      UInt elem,
+				      const Matrix<Real> & nodal_values,
+				      Vector<Real> & interpolated,
+				      const GhostType & ghost_type) const {
+  UInt nb_shapes = ElementClass<type>::getShapeSize();
+  Vector<Real> shapes(nb_shapes);
+  computeShapes<type>(real_coords, elem, shapes, ghost_type);
+  ElementClass<type>::interpolate(nodal_values, shapes, interpolated);
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type>
 void ShapeLagrange<kind>::computeShapes(const Vector<Real> & real_coords,
 				  UInt elem,
 				  Vector<Real> & shapes,
-				  const GhostType & ghost_type) const{
+				  const GhostType & ghost_type) const {
+
+  AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
   Vector<Real> natural_coords(spatial_dimension);
 
   inverseMap<type>(real_coords, elem, natural_coords, ghost_type);
   ElementClass<type>::computeShapes(natural_coords, shapes);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type>
+void ShapeLagrange<kind>::computeShapeDerivatives(const Matrix<Real> & real_coords,
+				  UInt elem,
+				  Tensor3<Real> & shapesd,
+				  const GhostType & ghost_type) const {
+
+  AKANTU_DEBUG_IN();
+
+  UInt spatial_dimension = mesh.getSpatialDimension();
+  UInt nb_points = real_coords.cols();
+  UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
+
+  AKANTU_DEBUG_ASSERT(mesh.getSpatialDimension() == shapesd.size(0) && nb_nodes_per_element == shapesd.size(1),
+      "Shape size doesn't match");
+  AKANTU_DEBUG_ASSERT(nb_points == shapesd.size(2),
+      "Number of points doesn't match shapes size");
+
+  Matrix<Real> natural_coords(spatial_dimension, nb_points);
+
+  // Creates the matrix of natural coordinates
+  for (UInt i = 0 ; i < nb_points ; i++) {
+    Vector<Real> real_point = real_coords(i);
+    Vector<Real> natural_point = natural_coords(i);
+
+    inverseMap<type>(real_point, elem, natural_point, ghost_type);
+  }
+
+
+  UInt * elem_val = mesh.getConnectivity(type, ghost_type).storage();
+  Matrix<Real> nodes_coord(spatial_dimension, nb_nodes_per_element);
+
+  mesh.extractNodalValuesFromElement(mesh.getNodes(),
+				     nodes_coord.storage(),
+				     elem_val + elem*nb_nodes_per_element,
+				     nb_nodes_per_element,
+				     spatial_dimension);
+
+  computeShapeDerivativesOnCPointsByElement<type>(nodes_coord, natural_coords, shapesd);
+
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -167,13 +238,13 @@ ShapeLagrange<kind>::ShapeLagrange(const Mesh & mesh,
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
-void ShapeLagrange<kind>::precomputeShapesOnControlPoints(__attribute__((unused)) const Array<Real> & nodes,
+void ShapeLagrange<kind>::precomputeShapesOnIntegrationPoints(__attribute__((unused)) const Array<Real> & nodes,
 							  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   InterpolationType itp_type = ElementClassProperty<type>::interpolation_type;
 
-  Matrix<Real> & natural_coords = control_points(type, ghost_type);
+  Matrix<Real> & natural_coords = integration_points(type, ghost_type);
   UInt nb_points = natural_coords.cols();
 
   UInt size_of_shapes = ElementClass<type>::getShapeSize();
@@ -201,7 +272,7 @@ void ShapeLagrange<kind>::precomputeShapesOnControlPoints(__attribute__((unused)
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
-void ShapeLagrange<kind>::precomputeShapeDerivativesOnControlPoints(const Array<Real> & nodes, GhostType ghost_type) {
+void ShapeLagrange<kind>::precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   InterpolationType itp_type = ElementClassProperty<type>::interpolation_type;
@@ -211,7 +282,7 @@ void ShapeLagrange<kind>::precomputeShapeDerivativesOnControlPoints(const Array<
 
   UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
   UInt size_of_shapesd      = ElementClass<type>::getShapeDerivativesSize();
-  Matrix<Real> & natural_coords = control_points(type, ghost_type);
+  Matrix<Real> & natural_coords = integration_points(type, ghost_type);
   UInt nb_points = natural_coords.cols();
 
   UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
@@ -245,7 +316,7 @@ void ShapeLagrange<kind>::precomputeShapeDerivativesOnControlPoints(const Array<
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
-void ShapeLagrange<kind>::interpolateOnControlPoints(const Array<Real> &in_u,
+void ShapeLagrange<kind>::interpolateOnIntegrationPoints(const Array<Real> &in_u,
 					       Array<Real> &out_uq,
 					       UInt nb_degree_of_freedom,
 					       GhostType ghost_type,
@@ -262,7 +333,7 @@ void ShapeLagrange<kind>::interpolateOnControlPoints(const Array<Real> &in_u,
   Array<Real> u_el(0, nb_degree_of_freedom * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, in_u, u_el, type, ghost_type, filter_elements);
 
-  this->interpolateElementalFieldOnControlPoints<type>(u_el, out_uq, ghost_type,
+  this->interpolateElementalFieldOnIntegrationPoints<type>(u_el, out_uq, ghost_type,
 						       shapes(itp_type, ghost_type),
 						       filter_elements);
 
@@ -272,7 +343,7 @@ void ShapeLagrange<kind>::interpolateOnControlPoints(const Array<Real> &in_u,
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
-void ShapeLagrange<kind>::gradientOnControlPoints(const Array<Real> &in_u,
+void ShapeLagrange<kind>::gradientOnIntegrationPoints(const Array<Real> &in_u,
 					       Array<Real> &out_nablauq,
 					       UInt nb_degree_of_freedom,
 					       GhostType ghost_type,
@@ -289,7 +360,7 @@ void ShapeLagrange<kind>::gradientOnControlPoints(const Array<Real> &in_u,
   Array<Real> u_el(0, nb_degree_of_freedom * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, in_u, u_el, type, ghost_type, filter_elements);
 
-  this->gradientElementalFieldOnControlPoints<type>(u_el, out_nablauq, ghost_type,
+  this->gradientElementalFieldOnIntegrationPoints<type>(u_el, out_nablauq, ghost_type,
 						    shapes_derivatives(itp_type, ghost_type),
 						    filter_elements);
 
@@ -302,6 +373,8 @@ template <ElementType type>
 void ShapeLagrange<kind>::fieldTimesShapes(const Array<Real> & field,
 					   Array<Real> & field_times_shapes,
 					   GhostType ghost_type) const {
+  AKANTU_DEBUG_IN();
+
   field_times_shapes.resize(field.getSize());
 
   UInt size_of_shapes = ElementClass<type>::getShapeSize();
@@ -319,6 +392,8 @@ void ShapeLagrange<kind>::fieldTimesShapes(const Array<Real> & field,
   for (; it != end; ++it, ++field_it, ++shapes_it) {
     it->mul<false, false>(*field_it, *shapes_it);
   }
+
+  AKANTU_DEBUG_OUT();
 }
 
 

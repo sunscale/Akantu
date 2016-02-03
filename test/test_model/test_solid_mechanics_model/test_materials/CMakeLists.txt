@@ -3,15 +3,16 @@
 #
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 #
-# @date creation: Fri Nov 26 2010
-# @date last modification: Fri Feb 14 2014
+# @date creation: Fri Oct 22 2010
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  configuration for materials tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,34 +31,52 @@
 #
 #===============================================================================
 
-add_mesh(test_local_material_barre_trou_mesh barre_trou.geo 2 2)
+#add_mesh(test_local_material_barre_trou_mesh barre_trou.geo 2 2)
+add_mesh(test_local_material_barre_trou_mesh mesh_section_gap.geo 2 2)
 register_test(test_local_material
   SOURCES  test_local_material.cc local_material_damage.cc
   EXTRA_FILES local_material_damage.hh local_material_damage_inline_impl.cc
-  DEPENDENCIES test_local_material_barre_trou_mesh
+  DEPENDS test_local_material_barre_trou_mesh
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
   )
 
 add_mesh(test_material_thermal_mesh square.geo 2 1)
 register_test(test_material_thermal
   SOURCES test_material_thermal.cc
-  DEPENDENCIES test_material_thermal_mesh
+  DEPENDS test_material_thermal_mesh
   FILES_TO_COPY material_thermal.dat
-)
-#===============================================================================
+  PACKAGE core
+  )
+# ==============================================================================
 add_mesh(test_interpolate_stress_mesh interpolation.geo 3 2)
 register_test(test_interpolate_stress test_interpolate_stress.cc
   FILES_TO_COPY material.dat
-  DEPENDENCIES test_interpolate_stress_mesh
-  DIRECTORIES_TO_CREATE paraview)
+  DEPENDS test_interpolate_stress_mesh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE lapack core
+  )
+
 #===============================================================================
+add_mesh(test_material_orthotropic_square_mesh square.geo 2 1)
+register_test(test_material_orthotropic
+  SOURCES test_material_orthotropic.cc
+  DEPENDS test_material_orthotropic_square_mesh
+  FILES_TO_COPY orthotropic.dat
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE core lapack
+  )
 
-add_akantu_test(test_material_plasticity "test material plasticity"
-  PACKAGE extra_materials)
+#===============================================================================
+register_test(test_material_mazars
+  SOURCES test_material_mazars.cc
+  FILES_TO_COPY material_mazars.dat
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE core
+  )
 
-add_akantu_test(test_material_viscoelastic "test the visco elastic materials"
-  PACKAGE extra_materials)
-
-add_akantu_test(test_material_non_local "test the non-local materials"
-  PACKAGE damage_non_local)
+# ==============================================================================
+add_akantu_test(test_material_viscoelastic "test the visco elastic materials")
+add_akantu_test(test_material_non_local "test the non-local materials")
+add_akantu_test(test_material_elasto_plastic_linear_isotropic_hardening "test the elasto plastic with linear isotropic hardening materials")

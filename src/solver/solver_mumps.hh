@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Mon Dec 13 2010
- * @date last modification: Mon Sep 15 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Solver class implementation for the mumps solver
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -46,24 +47,21 @@ public:
     _master_slave_distributed
   };
 
-  SolverMumpsOptions(ParallelMethod parallel_method = _fully_distributed) :
-    SolverOptions(),
-    parallel_method(parallel_method) { }
+  SolverMumpsOptions(ParallelMethod parallel_method = _fully_distributed)
+      : SolverOptions(), parallel_method(parallel_method) {}
 
 private:
   friend class SolverMumps;
   ParallelMethod parallel_method;
 };
 
-class SolverMumps : public Solver, public CommunicatorEventHandler {
+class SolverMumps : public Solver {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  SolverMumps(SparseMatrix & sparse_matrix,
-	      const ID & id = "solver_mumps",
-	      const MemoryID & memory_id = 0);
+  SolverMumps(SparseMatrix & sparse_matrix, const ID & id = "solver_mumps",
+              const MemoryID & memory_id = 0);
 
   virtual ~SolverMumps();
 
@@ -71,35 +69,31 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// build the profile and do the analysis part
-  void initialize(SolverOptions & options = _solver_no_options);
+  virtual void initialize(SolverOptions & options = _solver_no_options);
 
   void initializeSlave(SolverOptions & options = _solver_no_options);
 
   /// analysis (symbolic facto + permutations)
-  void analysis();
+  virtual void analysis();
 
   /// factorize the matrix
-  void factorize();
+  virtual void factorize();
 
   /// solve the system
-  void solve(Array<Real> & solution);
-  void solve();
+  virtual void solve(Array<Real> & solution);
+  virtual void solve();
 
   void solveSlave();
 
-  virtual void setRHS(const Array<Real> & rhs);
-
-
-  virtual void onCommunicatorFinalize(const StaticCommunicator & communicator);
+  virtual void setRHS(Array<Real> & rhs);
 
 private:
   /// print the error if any happened in mumps
   void printError();
 
   /// clean the mumps info
-  void destroyMumpsData();
+  virtual void destroyInternalData();
 
   /// set internal values;
   void initMumpsData();
@@ -109,20 +103,15 @@ private:
   /* ------------------------------------------------------------------------ */
 private:
   /// access the control variable
-  inline Int & icntl(UInt i) {
-    return mumps_data.icntl[i - 1];
-  }
+  inline Int & icntl(UInt i) { return mumps_data.icntl[i - 1]; }
 
   /// access the results info
-  inline Int & info(UInt i) {
-    return mumps_data.info[i - 1];
-  }
+  inline Int & info(UInt i) { return mumps_data.info[i - 1]; }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// mumps data
   DMUMPS_STRUC_C mumps_data;
 
@@ -150,7 +139,6 @@ private:
     _smj_destroy = -2
   };
 };
-
 
 __END_AKANTU__
 

@@ -3,15 +3,16 @@
  *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date creation: Wed Oct 09 2013
- * @date last modification: Thu Jun 05 2014
+ * @date creation: Tue May 08 2012
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Test for serial extrinsic cohesive elements for tetrahedron
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -85,12 +86,12 @@ int main(int argc, char *argv[]) {
   /// compute quadrature points positions on facets
   const Mesh & mesh_facets = model.getMeshFacets();
   UInt nb_facet = mesh_facets.getNbElement(type_facet);
-  UInt nb_quad_per_facet = model.getFEEngine("FacetsFEEngine").getNbQuadraturePoints(type_facet);
+  UInt nb_quad_per_facet = model.getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
   UInt nb_tot_quad = nb_quad_per_facet * nb_facet;
 
   Array<Real> quad_facets(nb_tot_quad, spatial_dimension);
 
-  model.getFEEngine("FacetsFEEngine").interpolateOnQuadraturePoints(position,
+  model.getFEEngine("FacetsFEEngine").interpolateOnIntegrationPoints(position,
 							  quad_facets,
 							  spatial_dimension,
 							  type_facet);
@@ -101,14 +102,14 @@ int main(int argc, char *argv[]) {
 
 
   /// compute quadrature points position of the elements
-  UInt nb_quad_per_element = model.getFEEngine().getNbQuadraturePoints(type);
+  UInt nb_quad_per_element = model.getFEEngine().getNbIntegrationPoints(type);
   UInt nb_element = mesh.getNbElement(type);
   UInt nb_tot_quad_el = nb_quad_per_element * nb_element;
 
   Array<Real> quad_elements(nb_tot_quad_el, spatial_dimension);
 
 
-  model.getFEEngine().interpolateOnQuadraturePoints(position,
+  model.getFEEngine().interpolateOnIntegrationPoints(position,
 					       quad_elements,
 					       spatial_dimension,
 					       type);
@@ -174,7 +175,7 @@ int main(int argc, char *argv[]) {
 
   /// check insertion stress
   const Array<Real> & normals =
-    model.getFEEngine("FacetsFEEngine").getNormalsOnQuadPoints(type_facet);
+    model.getFEEngine("FacetsFEEngine").getNormalsOnIntegrationPoints(type_facet);
   const Array<Real> & tangents = model.getTangents(type_facet);
   const Array<Real> & sigma_c_eff = mat_cohesive.getInsertionTraction(type_cohesive);
 

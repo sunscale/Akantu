@@ -4,15 +4,16 @@
  * @author David Simon Kammer <david.kammer@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Mon Aug 16 2010
- * @date last modification: Thu Jun 05 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Sep 01 2015
  *
  * @brief  tools to partitionate a mesh
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -74,7 +75,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// defini a partition of the mesh
+  /// define a partition of the mesh
   virtual void partitionate(UInt nb_part,
 			    const EdgeLoadFunctor & edge_load_func = ConstEdgeLoadFunctor(),
 			    const Array<UInt> & pairs = Array<UInt>()) = 0;

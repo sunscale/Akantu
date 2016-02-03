@@ -4,18 +4,19 @@
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  * @author Srinivasa Babu Ramisetti <srinivasa.ramisetti@epfl.ch>
- * @author Rui Wang <rui.wang@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Rui Wang <rui.wang@epfl.ch>
  *
  * @date creation: Sun May 01 2011
- * @date last modification: Tue Sep 02 2014
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Model of Heat Transfer
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -48,7 +49,7 @@
 #include "dumpable.hh"
 #include "parsable.hh"
 #include "solver.hh"
-
+#include "generalized_trapezoidal.hh"
 
 namespace akantu {
   class IntegrationScheme1stOrder;
@@ -108,7 +109,7 @@ public:
   void initSolver(SolverOptions & solver_options);
 
   /// initialize the stuff for the implicit solver
-  void initImplicit(SolverOptions & solver_options = _solver_no_options);
+  void initImplicit(bool dynamic, SolverOptions & solver_options = _solver_no_options);
 
   /// function to print the contain of the class
   virtual void printself(__attribute__ ((unused)) std::ostream & stream,
@@ -123,7 +124,7 @@ public:
   Real getStableTimeStep();
 
   /// compute the heat flux
-  void updateResidual();
+  void updateResidual(bool compute_conductivity = false);
 
   /// calculate the lumped capacity vector for heat transfer problem
   void assembleCapacityLumped();
@@ -134,6 +135,13 @@ public:
   /// update the temperature rate from the increment
   void explicitCorr();
 
+  /// implicit time integration predictor
+  void implicitPred();
+
+  /// implicit time integration corrector
+  void implicitCorr();
+
+  
   /// solve the system in temperature rate  @f$C\delta \dot T = q_{n+1} - C \dot T_{n}@f$
   /// this function needs to be run for dynamics
   void solveExplicitLumped();
@@ -147,33 +155,79 @@ public:
   /* Methods for implicit                                                     */
   /* ------------------------------------------------------------------------ */
 public:
-  /// solve the static equilibrium
-  void solveStatic();
-  //
-  /// assemble the stiffness matrix
-  void assembleStiffnessMatrix();
 
+  /**
+   * solve Kt = q
+   **/
+  void solveStatic();
+
+  /// test if the system is converged
+  template <SolveConvergenceCriteria criteria>
+  bool testConvergence(Real tolerance, Real & error);
+
+  
+    /**
+   * solve a step (predictor + convergence loop + corrector) using the
+   * the given convergence method (see akantu::SolveConvergenceMethod)
+   * and the given convergence criteria (see
+   * akantu::SolveConvergenceCriteria)
+   **/
+  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
+  bool solveStep(Real tolerance, UInt max_iteration = 100);
+
+  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
+  bool solveStep(Real   tolerance,
+		 Real & error,
+		 UInt   max_iteration = 100,
+		 bool   do_not_factorize = false);
+
+  /// assemble the conductivity matrix
+  void assembleConductivityMatrix(bool compute_conductivity = true);
+
+  /// assemble the conductivity matrix
+  void assembleCapacity();
+
+  /// assemble the conductivity matrix
+  void assembleCapacity(GhostType ghost_type);
+
+  /// compute the capacity on quadrature points
+  void computeRho(Array<Real> & rho, ElementType type,
+		  GhostType ghost_type);
+
+
+protected:
+  /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
+  template <GeneralizedTrapezoidal::IntegrationSchemeCorrectorType type>
+  void solve(Array<Real> &increment, Real block_val = 1.,
+             bool need_factorize = true, bool has_profile_changed = false);
+
+  /// computation of the residual for the convergence loop
+  void updateResidualInternal();
+  
 private:
 
   /// compute the heat flux on ghost types
-  void updateResidual(const GhostType & ghost_type);
+  void updateResidual(const GhostType & ghost_type, bool compute_conductivity = false);
 
   /// calculate the lumped capacity vector for heat transfer problem (w ghosttype)
   void assembleCapacityLumped(const GhostType & ghost_type);
 
-  /// assemble the stiffness matrix (w/ ghost type)
+  /// assemble the conductivity matrix (w/ ghost type)
   template <UInt dim>
-  void assembleStiffnessMatrix(const GhostType & ghost_type);
+  void assembleConductivityMatrix(const GhostType & ghost_type,
+				  bool compute_conductivity = true);
 
-  /// assemble the stiffness matrix
+  /// assemble the conductivity matrix
   template <UInt dim>
-  void assembleStiffnessMatrix(const ElementType & type, const GhostType & ghost_type);
+  void assembleConductivityMatrix(const ElementType & type,
+				  const GhostType & ghost_type,
+				  bool compute_conductivity = true);
 
   /// compute the conductivity tensor for each quadrature point in an array
   void computeConductivityOnQuadPoints(const GhostType & ghost_type);
 
   /// compute vector k \grad T for each quadrature point
-  void computeKgradT(const GhostType & ghost_type);
+  void computeKgradT(const GhostType & ghost_type,bool compute_conductivity);
 
   /// compute the thermal energy
   Real computeThermalEnergyByNode();
@@ -217,6 +271,7 @@ public:
   virtual dumper::Field * createElementalField(const std::string & field_name, 
 					       const std::string & group_name,
 					       bool padding_flag,
+					       const UInt & spatial_dimension,
 					       const ElementKind & kind);
 
   /* ------------------------------------------------------------------------ */
@@ -224,7 +279,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
-  inline FEEngine & getFEEngineBoundary(std::string name = "");
+  inline FEEngine & getFEEngineBoundary(const std::string & name = "");
 
   AKANTU_GET_MACRO(Density, density, Real);
   AKANTU_GET_MACRO(Capacity, capacity, Real);
@@ -240,8 +295,8 @@ public:
   AKANTU_GET_MACRO(CapacityLumped, *capacity_lumped, Array<Real>&);
   /// get the boundary vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool>&);
-  /// get stiffness matrix
-  AKANTU_GET_MACRO(StiffnessMatrix, *stiffness_matrix, const SparseMatrix&);
+  /// get conductivity matrix
+  AKANTU_GET_MACRO(ConductivityMatrix, *conductivity_matrix, const SparseMatrix&);
   /// get the external heat rate vector
   AKANTU_GET_MACRO(ExternalHeatRate, *external_heat_rate, Array<Real>&);
   /// get the temperature gradient
@@ -282,6 +337,10 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+
+    /// number of iterations
+  UInt n_iter;
+
   IntegrationScheme1stOrder * integrator;
 
   /// time step
@@ -296,8 +355,11 @@ private:
   /// increment array (@f$\delta \dot T@f$ or @f$\delta T@f$)
   Array<Real> * increment;
 
-  /// stiffness matrix
-  SparseMatrix * stiffness_matrix;
+  /// conductivity matrix
+  SparseMatrix * conductivity_matrix;
+
+  /// capacity matrix
+  SparseMatrix *capacity_matrix;
 
   /// jacobian matrix
   SparseMatrix * jacobian_matrix;
@@ -364,6 +426,9 @@ private:
 
   /// analysis method
   AnalysisMethod method;
+
+  /// pointer to the pbc synchronizer
+  PBCSynchronizer * pbc_synch;
 
 };
 

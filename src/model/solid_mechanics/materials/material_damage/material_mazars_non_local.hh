@@ -4,15 +4,16 @@
  * @author Marion Estelle Chambart <marion.chambart@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Mon Oct 03 2011
- * @date last modification: Thu Mar 27 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Oct 08 2015
  *
  * @brief  Mazars non-local description
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -47,12 +48,12 @@ __BEGIN_AKANTU__
  */
 template<UInt spatial_dimension>
 class MaterialMazarsNonLocal : public MaterialMazars<spatial_dimension>,
-			       public MaterialNonLocal<spatial_dimension, BaseWeightFunction> {
+			       public MaterialNonLocal<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialNonLocal<spatial_dimension, BaseWeightFunction> MaterialNonLocalParent;
+  typedef MaterialNonLocal<spatial_dimension> MaterialNonLocalParent;
 
   MaterialMazarsNonLocal(SolidMechanicsModel & model, const ID & id = "");
 
@@ -73,6 +74,10 @@ public:
   void computeNonLocalStress(Array<Real> & Ehatnl,
 			     ElementType el_type,
 			     GhostType ghost_type = _not_ghost);
+
+protected:
+  /// associate the non-local variables of the material to their neighborhoods
+  virtual void nonLocalVariableToNeighborhood();
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

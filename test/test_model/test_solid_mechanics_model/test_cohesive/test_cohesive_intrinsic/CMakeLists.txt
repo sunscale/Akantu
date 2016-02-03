@@ -3,15 +3,16 @@
 #
 # @author Marco Vocialta <marco.vocialta@epfl.ch>
 #
-# @date creation: Tue May 08 2012
-# @date last modification: Tue Nov 12 2013
+# @date creation: Fri Oct 22 2010
+# @date last modification: Mon Dec 07 2015
 #
 # @brief  test for intrinsic cohesive element configuration
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -37,23 +38,27 @@ add_mesh(test_cohesive_intrinsic_tetrahedron_fragmentation_mesh tetrahedron_full
 
 register_test(test_cohesive_intrinsic
   SOURCES test_cohesive_intrinsic.cc
-  DEPENDENCIES test_cohesive_intrinsic_mesh
-  PACKAGE cohesive_element
+  DEPENDS test_cohesive_intrinsic_mesh
   FILES_TO_COPY material.dat
-  DIRECTORIES_TO_CREATE paraview)
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE cohesive_element
+  )
 
 register_test(test_cohesive_intrinsic_quadrangle
   SOURCES test_cohesive_intrinsic_quadrangle.cc
-  DEPENDENCIES test_cohesive_intrinsic_quadrangle_mesh
-  PACKAGE cohesive_element)
+  DEPENDS test_cohesive_intrinsic_quadrangle_mesh
+  PACKAGE cohesive_element
+  )
 
 register_test(test_cohesive_intrinsic_tetrahedron
   SOURCES test_cohesive_intrinsic_tetrahedron.cc
-  DEPENDENCIES test_cohesive_intrinsic_tetrahedron_mesh
+  DEPENDS test_cohesive_intrinsic_tetrahedron_mesh
   FILES_TO_COPY material_tetrahedron.dat
-  PACKAGE cohesive_element)
+  PACKAGE cohesive_element
+  )
 
 register_test(test_cohesive_intrinsic_tetrahedron_fragmentation
   SOURCES test_cohesive_intrinsic_tetrahedron_fragmentation.cc
-  DEPENDENCIES test_cohesive_intrinsic_tetrahedron_fragmentation_mesh
-  PACKAGE cohesive_element)
+  DEPENDS test_cohesive_intrinsic_tetrahedron_fragmentation_mesh
+  PACKAGE cohesive_element
+  )

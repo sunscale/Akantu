@@ -3,15 +3,15 @@
  *
  * @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
  *
- * @date creation: Mon Apr 16 2012
- * @date last modification: Tue Jun 10 2014
+ * @date creation: Sun Jul 12 2015
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  This code refers to the explicit dynamic example from the user manual
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,13 +30,14 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
-
+/* -------------------------------------------------------------------------- */
 #include <iostream>
+/* -------------------------------------------------------------------------- */
+
 
 using namespace akantu;
 
-
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   const UInt spatial_dimension = 3;
@@ -49,21 +50,21 @@ int main(int argc, char *argv[]) {
   Mesh mesh(spatial_dimension);
   mesh.computeBoundingBox();
 
-
   mesh.read("bar.msh");
 
   SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model.initFull();
+  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass));
 
   time_step = model.getStableTimeStep();
-  std::cout << "Time Step = " << time_step * time_factor << "s ("<< time_step << "s)" << std::endl;
+  std::cout << "Time Step = " << time_step * time_factor << "s (" << time_step
+            << "s)" << std::endl;
   model.setTimeStep(time_step * time_factor);
 
   /// boundary and initial conditions
   Array<Real> & displacement = model.getDisplacement();
-  const Array<Real> & nodes  = mesh.getNodes();
+  const Array<Real> & nodes = mesh.getNodes();
 
   for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
     Real x = nodes(n);
@@ -80,24 +81,22 @@ int main(int argc, char *argv[]) {
 
   model.setBaseName("explicit_dynamic");
   model.addDumpField("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("stress"      );
+  model.addDumpField("stress");
   model.dump();
 
-  for(UInt s = 1; s <= max_steps; ++s) {
+  for (UInt s = 1; s <= max_steps; ++s) {
     model.solveStep();
 
-    Real epot = model.getPotentialEnergy();
-    Real ekin = model.getKineticEnergy();
+    Real epot = model.getEnergy("potential");
+    Real ekin = model.getEnergy("kinetic");
 
-    energy << s << "," << s*time_step << ","
-	   << epot << ","
-	   << ekin << ","
-	   << epot + ekin << ","
-	   << std::endl;
+    energy << s << "," << s * time_step << "," << epot << "," << ekin << ","
+           << epot + ekin << "," << std::endl;
 
-    if(s % 10 == 0) std::cout << "passing step " << s << "/" << max_steps << std::endl;
+    if (s % 10 == 0)
+      std::cout << "passing step " << s << "/" << max_steps << std::endl;
     model.dump();
   }
 

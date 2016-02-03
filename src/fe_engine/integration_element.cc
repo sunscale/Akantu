@@ -1,16 +1,19 @@
 /**
  * @file   integration_element.cc
  *
+ * @author Mauro Corrado <mauro.corrado@epfl.ch>
+ * @author Sébastien Hartmann <sebastien.hartmann@epfl.ch>
+ * @author Thomas Menouillard <tmenouillard@stucky.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Jan 16 2013
- * @date last modification: Mon Jul 07 2014
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Thu Nov 05 2015
  *
- * @brief  Definition of the intagration constants
+ * @brief  Definition of the integration constants
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -60,12 +63,12 @@ template<> Real GaussIntegrationTypeData<_git_segment, 3>::quad_weights[]       
 /* -------------------------------------------------------------------------- */
 template<> UInt GaussIntegrationTypeData<_git_segment, 4>::nb_quadrature_points = 4;
 template<> Real GaussIntegrationTypeData<_git_segment, 4>::quad_positions[]     = {-sqrt((3. + 2.*sqrt(6./5.))/7.),
-										   -sqrt((3. - 2.*sqrt(6./5.))/7.), 
-										   sqrt((3. - 2.*sqrt(6./5.))/7.), 
+										   -sqrt((3. - 2.*sqrt(6./5.))/7.),
+										   sqrt((3. - 2.*sqrt(6./5.))/7.),
 										   sqrt((3. + 2.*sqrt(6./5.))/7.)};
-template<> Real GaussIntegrationTypeData<_git_segment, 4>::quad_weights[]       = {(18. - sqrt(30.))/36., 
-										   (18. + sqrt(30.))/36., 
-										   (18. + sqrt(30.))/36., 
+template<> Real GaussIntegrationTypeData<_git_segment, 4>::quad_weights[]       = {(18. - sqrt(30.))/36.,
+										   (18. + sqrt(30.))/36.,
+										   (18. + sqrt(30.))/36.,
 										   (18. - sqrt(30.))/36.};
 /* -------------------------------------------------------------------------- */
 /* Triangles                                                                  */
@@ -105,16 +108,28 @@ template<> Real GaussIntegrationTypeData<_git_tetrahedron, 2>::quad_weights[]   
 
 
 /* -------------------------------------------------------------------------- */
-/* Tetrahedrons                                                               */
+/* Pentahedrons                                                               */
 /* -------------------------------------------------------------------------- */
 template<> UInt GaussIntegrationTypeData<_git_pentahedron, 1>::nb_quadrature_points = 6;
-template<> Real GaussIntegrationTypeData<_git_pentahedron, 1>::quad_positions[]     = {-1./std::sqrt(3.), 0.5, 0.5,
-										       -1./std::sqrt(3.), 0. , 0.5,
-										       -1./std::sqrt(3.), 0.5, 0.,
-  										        1./std::sqrt(3.), 0.5, 0.5,
-										        1./std::sqrt(3.), 0. , 0.5,
-										        1./std::sqrt(3.), 0.5 ,0.};
-template<> Real GaussIntegrationTypeData<_git_pentahedron, 1>::quad_weights[]       = {1./6, 1./6, 1./6, 
-										       1./6, 1./6, 1./6};
+template<> Real GaussIntegrationTypeData<_git_pentahedron, 1>::quad_positions[]     = {-1./sqrt(3.), 0.5, 0.5,
+										       -1./sqrt(3.), 0. , 0.5,
+										       -1./sqrt(3.), 0.5, 0.,
+  										        1./sqrt(3.), 0.5, 0.5,
+										        1./sqrt(3.), 0. , 0.5,
+										        1./sqrt(3.), 0.5 ,0.};
+template<> Real GaussIntegrationTypeData<_git_pentahedron, 1>::quad_weights[]       = {1./6., 1./6., 1./6.,
+										       1./6., 1./6., 1./6.};
+/* -------------------------------------------------------------------------- */
+template<> UInt GaussIntegrationTypeData<_git_pentahedron, 2>::nb_quadrature_points = 8;
+template<> Real GaussIntegrationTypeData<_git_pentahedron, 2>::quad_positions[]     = {-sqrt(3.)/3., 1./3., 1./3.,
+                                                                                       -sqrt(3.)/3., 0.6 , 0.2,
+                                                                                       -sqrt(3.)/3., 0.2, 0.6,
+                                                                                       -sqrt(3.)/3., 0.2, 0.2,
+                                                                                       sqrt(3.)/3., 1./3., 1./3.,
+                                                                                       sqrt(3.)/3., 0.6 , 0.2,
+                                                                                       sqrt(3.)/3.,  0.2, 0.6,
+                                                                                       sqrt(3.)/3., 0.2, 0.2};
+template<> Real GaussIntegrationTypeData<_git_pentahedron, 2>::quad_weights[]       = {-27./96., 25./96., 25./96., 25./96.,
+                                                                                       -27./96., 25./96., 25./96., 25./96.};
 
 __END_AKANTU__

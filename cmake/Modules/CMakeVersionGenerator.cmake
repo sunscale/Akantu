@@ -4,15 +4,15 @@
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Thu Dec 20 2012
-# @date last modification: Fri Jun 13 2014
+# @date creation: Sun Oct 19 2014
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  Set of macros used by akantu to handle the package system
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -45,24 +45,12 @@ macro(define_project_version)
       set(${_project}_MAJOR_VERSION ${_ver_major})
 
       if("${${_project}_VERSION}" MATCHES "^${_ver_major}\\.([0-9]+)")
-	string(REGEX REPLACE "^${_ver_major}\\.([0-9]+).*" "\\1" _ver_minor "${${_project}_VERSION}")
-	set(${_project}_MINOR_VERSION ${_ver_minor})
-	if("${${_project}_VERSION}" MATCHES "^${_ver_major}\\.${_ver_minor}\\.([0-9a-zA-Z\\-]+)")
-	  string(REGEX REPLACE "^${_ver_major}\\.${_ver_minor}\\.([0-9a-zA-Z\\-]+).*" "\\1" _ver_build "${${_project}_VERSION}")
-	  set(${_project}_BUILD_VERSION ${_ver_build})
-	endif()
-      endif()
-    endif()
-  else()
-    find_package(Subversion)
-
-    if(SUBVERSION_FOUND)
-      subversion_wc_info(${PROJECT_SOURCE_DIR} ${_project} ERROR_QUIET)
-      if(${${_project}_WC_FOUND})
-        set(${_project}_BUILD_VERSION ${${_project}_WC_REVISION})
-        set(${_project}_VERSION
-	  "${${_project}_MAJOR_VERSION}.${${_project}_MINOR_VERSION}.${${_project}_BUILD_VERSION}"
-	  )
+        string(REGEX REPLACE "^${_ver_major}\\.([0-9]+).*" "\\1" _ver_minor "${${_project}_VERSION}")
+        set(${_project}_MINOR_VERSION ${_ver_minor})
+        if("${${_project}_VERSION}" MATCHES "^${_ver_major}\\.${_ver_minor}\\.([0-9a-zA-Z\\-]+)")
+          string(REGEX REPLACE "^${_ver_major}\\.${_ver_minor}\\.([0-9a-zA-Z\\-]+).*" "\\1" _ver_build "${${_project}_VERSION}")
+          set(${_project}_BUILD_VERSION ${_ver_build})
+        endif()
       endif()
     endif()
   # else()

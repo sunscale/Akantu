@@ -5,13 +5,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri May 03 2013
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Thu Nov 05 2015
  *
  * @brief  Stores generic data loaded from the mesh file
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -42,6 +42,7 @@ inline MeshDataTypeCode MeshData::getTypeCode<BOOST_PP_TUPLE_ELEM(2, 1, type)>()
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
+// get the type of the data stored in elemental_data
 template<typename T>
 inline MeshDataTypeCode MeshData::getTypeCode() const {
   AKANTU_DEBUG_ERROR("Type " << debug::demangle(typeid(T).name()) << "not implemented by MeshData.");
@@ -51,7 +52,6 @@ inline MeshDataTypeCode MeshData::getTypeCode() const {
 BOOST_PP_SEQ_FOR_EACH(MESH_DATA_GET_TYPE, void, AKANTU_MESH_DATA_TYPES)
 #undef MESH_DATA_GET_TYPE
 
-/* -------------------------------------------------------------------------- */
 inline MeshDataTypeCode MeshData::getTypeCode(const std::string name) const {
   TypeCodeMap::const_iterator it = typecode_map.find(name);
   if(it == typecode_map.end()) AKANTU_EXCEPTION("No dataset named " << name << " found.");
@@ -59,6 +59,7 @@ inline MeshDataTypeCode MeshData::getTypeCode(const std::string name) const {
 }
 
 /* -------------------------------------------------------------------------- */
+  //  Register new elemental data templated (and alloc data) with check if the name is new
 template<typename T>
 void MeshData::registerElementalData(const std::string & name) {
   ElementalDataMap::iterator it = elemental_data.find(name);
@@ -70,6 +71,7 @@ void MeshData::registerElementalData(const std::string & name) {
 }
 
 /* -------------------------------------------------------------------------- */
+  //  Register new elemental data of a given MeshDataTypeCode with check if the name is new
 #define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)	\
   case BOOST_PP_TUPLE_ELEM(2, 0, elem) : { registerElementalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(name); break; }
 
@@ -81,6 +83,7 @@ inline void MeshData::registerElementalData(const std::string & name, MeshDataTy
 }
 #undef AKANTU_MESH_DATA_CASE_MACRO
 /* -------------------------------------------------------------------------- */
+  /// Register new elemental data (and alloc data)
 template<typename T>
 ElementTypeMapArray<T> * MeshData::allocElementalData(const std::string & name) {
   ElementTypeMapArray<T> * dataset = new ElementTypeMapArray<T>(name, id, memory_id);
@@ -98,6 +101,7 @@ const ElementTypeMapArray<T> & MeshData::getElementalData(const std::string & na
 }
 
 /* -------------------------------------------------------------------------- */
+// Get an existing elemental data
 template<typename T>
 ElementTypeMapArray<T> & MeshData::getElementalData(const std::string & name) {
   ElementalDataMap::iterator it = elemental_data.find(name);
@@ -106,6 +110,7 @@ ElementTypeMapArray<T> & MeshData::getElementalData(const std::string & name) {
 }
 
 /* -------------------------------------------------------------------------- */
+// Get an existing elemental data array for an element type
 template<typename T>
 const Array<T> & MeshData::getElementalDataArray(const std::string & name,
                                                  const ElementType & elem_type,
@@ -117,7 +122,6 @@ const Array<T> & MeshData::getElementalDataArray(const std::string & name,
   return dynamic_cast<const ElementTypeMapArray<T> &>(*(it->second))(elem_type, ghost_type);
 }
 
-/* -------------------------------------------------------------------------- */
 template<typename T>
 Array<T> & MeshData::getElementalDataArray(const std::string & name,
                                            const ElementType & elem_type,
@@ -130,6 +134,7 @@ Array<T> & MeshData::getElementalDataArray(const std::string & name,
 }
 
 /* -------------------------------------------------------------------------- */
+// Get an elemental data array, if it does not exist: allocate it
 template<typename T>
 Array<T> & MeshData::getElementalDataArrayAlloc(const std::string & name,
                                                   const ElementType & elem_type,
@@ -151,11 +156,11 @@ Array<T> & MeshData::getElementalDataArrayAlloc(const std::string & name,
 
 
 /* -------------------------------------------------------------------------- */
-#define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)	\
-  case BOOST_PP_TUPLE_ELEM(2, 0, elem) : { \
+#define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)			\
+  case BOOST_PP_TUPLE_ELEM(2, 0, elem) : {				\
     nb_comp = getNbComponentTemplated<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(name, el_type, ghost_type); \
-    break; \
-  } \
+    break;								\
+  }									\
 
 inline UInt MeshData::getNbComponent(const std::string name, const ElementType & el_type, const GhostType & ghost_type) const {
   TypeCodeMap::const_iterator it = typecode_map.find(name);
@@ -179,6 +184,7 @@ inline UInt MeshData::getNbComponentTemplated(const std::string name, const Elem
 }
 
 /* -------------------------------------------------------------------------- */
+// get the names of the data stored in elemental_data
 #define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)	\
   case BOOST_PP_TUPLE_ELEM(2, 0, elem) : { \
     ElementTypeMapArray<BOOST_PP_TUPLE_ELEM(2, 1, elem)> * dataset; \
@@ -186,7 +192,7 @@ inline UInt MeshData::getNbComponentTemplated(const std::string name, const Elem
     exists = dataset->exists(el_type, ghost_type); \
     break; \
   } \
-
+  
 inline void MeshData::getTagNames(StringVector & tags, const ElementType & el_type, const GhostType & ghost_type) const {
   tags.clear();
   bool exists(false);

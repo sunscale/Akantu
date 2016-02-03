@@ -1,17 +1,19 @@
 /**
  * @file   solver.cc
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Dec 13 2010
- * @date last modification: Wed Nov 13 2013
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Solver interface class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,6 +32,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solver.hh"
+#include "dof_synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -38,13 +41,17 @@ __BEGIN_AKANTU__
 SolverOptions _solver_no_options(true);
 
 /* -------------------------------------------------------------------------- */
-Solver::Solver(SparseMatrix & matrix,
-	       const ID & id,
-	       const MemoryID & memory_id) :
-  Memory(id, memory_id), matrix(&matrix), is_matrix_allocated(false), mesh(NULL),
-  communicator(StaticCommunicator::getStaticCommunicator()){
+Solver::Solver(SparseMatrix & matrix, const ID & id, const MemoryID & memory_id)
+    : Memory(id, memory_id), StaticSolverEventHandler(), matrix(&matrix),
+      is_matrix_allocated(false), mesh(NULL),
+      communicator(StaticCommunicator::getStaticCommunicator()), solution(NULL),
+      synch_registry(NULL) {
   AKANTU_DEBUG_IN();
-
+  StaticSolver::getStaticSolver().registerEventHandler(*this);
+  // createSynchronizerRegistry();
+  this->synch_registry = new SynchronizerRegistry(*this);
+  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(),
+                                       _gst_solver_solution);
 
   AKANTU_DEBUG_OUT();
 }
@@ -53,7 +60,27 @@ Solver::Solver(SparseMatrix & matrix,
 Solver::~Solver() {
   AKANTU_DEBUG_IN();
 
+  this->destroyInternalData();
+  delete synch_registry;
+  StaticSolver::getStaticSolver().unregisterEventHandler(*this);
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void Solver::beforeStaticSolverDestroy() {
+  AKANTU_DEBUG_IN();
+
+  try {
+    this->destroyInternalData();
+  } catch (...) {
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void Solver::createSynchronizerRegistry() {
+  // this->synch_registry = new SynchronizerRegistry(this);
 }
 
 __END_AKANTU__

@@ -1,17 +1,19 @@
 /**
  * @file   mesh_utils_inline_impl.cc
  *
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Fri Aug 20 2010
- * @date last modification: Mon Jun 09 2014
+ * @date last modification: Fri Mar 20 2015
  *
  * @brief  Mesh utils inline functions
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -38,18 +40,14 @@ inline bool MeshUtils::hasElement(const Array<UInt> & connectivity,
   const Vector<UInt> el_nodes(connectivity.storage()
 			      + el.element * nb_nodes_per_element,
 			      nb_nodes_per_element);
+  UInt * el_nodes_end = el_nodes.storage() + nb_nodes_per_element;
 
-  UInt matched_nodes = 0;
+  UInt n = 0;
 
-  for (UInt n = 0; n < nodes.size(); ++n) {
-    if (std::find(el_nodes.storage(),
-		  el_nodes.storage() + nb_nodes_per_element,
-		  nodes[n])
-	!= (el_nodes.storage() + nb_nodes_per_element))
-      ++matched_nodes;
-  }
+  while (n < nodes.size() &&
+	 std::find(el_nodes.storage(), el_nodes_end, nodes[n]) != el_nodes_end) ++n;
 
-  return (matched_nodes == nodes.size());
+  return (n == nodes.size());
 }
 
 /* -------------------------------------------------------------------------- */

@@ -11,30 +11,7 @@ The chosen materials for the simulation have to be specified in the
 mesh file or, as an alternative, they can be assigned using the
 \code{element\_material} vector.  For every material assigned to the
 problem one has to specify the material characteristics (constitutive
-behavior and material properties) in a text file (\eg material.dat) as
-follows:
-\begin{cpp}
-  material %\emph{constitutive\_law}% %\emph{<optional flavor>}% [
-     name = $value$
-     rho = $value$
-     ...
-  ]
-\end{cpp}
-\index{Constitutive\_laws} where \emph{constitutive\_law} is the adopted
-constitutive law, followed by the material properties listed one by line in the
-bracket (\eg \code{name} and density \code{rho}). Some constitutive laws can
-also have an \emph{optional flavor}. For example a non-local constitutive law
-can be flavored by a weight function. The file needs to be loaded in \akantu
-using the \code{initialize} method of \akantu (as shown in
-Section~\ref{sec:writing_main})
-\begin{cpp}
-  initialize("material.dat", argc, argv);
-\end{cpp}
-% or, alternatively, the \code{initFull} method.
-% \begin{cpp}
-%   model.initFull("material.dat");
-% \end{cpp}
-
+behavior and material properties) using the text input file (see \ref{sect:io:material}).\\
 In order to conveniently store values at each quadrature in a material
 point \akantu provides a special data structure, the
 \code{InternalField}. The internal fields are inheriting from the
@@ -43,7 +20,7 @@ initialization, auto-resizing and auto removal of quadrature points.
 
 Sometimes it is also desired to generate random distributions of
 internal parameters. An example might be the critical stress at which the
-material fails. To generate such a field, in the material input file,
+material fails. To generate such a field, in the text input file,
 a random quantity needs be added to the base value:
 \begin{cpp}
   sigma_c = $base$
@@ -58,15 +35,33 @@ that follows the chosen distribution.
 
 The
 \href{http://en.wikipedia.org/wiki/Uniform\_distribution\_(continuous)}{\emph{Uniform}}
-distribution is gives a random values between in $[min, max)$
-
-The \href{http://en.wikipedia.org/wiki/Weibull\_distribution}{\emph{Weibull}}
-distribution is characterized by the following cumulative distribution function:
+distribution is gives a random values between in $[min, max)$. The
+\href{http://en.wikipedia.org/wiki/Weibull\_distribution}{\emph{Weibull}}
+distribution is characterized by the following cumulative distribution
+function:
 \begin{equation}
   F(x) = 1- e^{-\left({x/\lambda}\right)^m}
 \end{equation}
-which depends on  $m$ and $\lambda$, which are the shape parameter and the scale
-parameter.
+which depends on $m$ and $\lambda$, which are the shape parameter and
+the scale parameter. These random distributions are different each
+time the code is executed. In order to obtain always the same one, it
+possible to manually set the \emph{seed} that is the number from which
+these pseudo-random distributions are created. This can be done by
+adding the following line to the input file \emph{outside} the
+material parameters environments:
+\begin{cpp}
+  seed = 1.0
+\end{cpp}
+where the value 1.0 can be substituted with any number. Currently
+\akantu can reproduce always the same distribution when the seed is
+specified \emph{only} in serial. The value of the \emph{seed} can be
+also specified directly in the code (for instance in the main file)
+with the command:
+\begin{cpp}
+  RandGenerator:: seed(1.0)
+\end{cpp}
+The same command, with empty brackets, can be used to check the value
+of the \emph{seed} used in the simulation.
 
 The following sections describe the constitutive models implemented in
 \akantu. In Appendix~\ref{app:material-parameters} a summary of the
@@ -271,7 +266,7 @@ A particular case of anisotropy is when the material basis is orthogonal in whic
   \Gamma &= \frac{1}{1 - \nu_{12} \nu_{21} - \nu_{13} \nu_{31} - \nu_{32} \nu_{23} - 2 \nu_{21} \nu_{32} \nu_{13}}
 \end{align}
 
-The poison ratios follow the rule $\nu_{ij} = \nu_{ji} E_i / E_j$.
+The Poisson ratios follow the rule $\nu_{ij} = \nu_{ji} E_i / E_j$.
 
 \subsection{Neo-Hookean\matlabel{ssect:smm:cl:neohookean}}\index{Material!Neohookean}
 The hyperelastic Neo-Hookean constitutive law results from an
@@ -493,12 +488,16 @@ rupture criterion and $S$ the damage energy.  The non-local version of
 this damage evolution law is constructed by averaging the energy $Y$.
 
 \subsubsection{Mazars\matlabel{ssect:smm:cl:damage-mazars}}
+
 This law introduced by Mazars \cite{mazars84a} is a behavioral model to
-represent damage evolution in concrete. The governing variable in this damage
+represent damage evolution in concrete. This model does not rely on the computation of the tangent stiffness, the damage is directly evaluated from the strain.
+
+The governing variable in this damage
 law is the equivalent strain $\varepsilon_{\st{eq}} =
 \sqrt{<\mat{\varepsilon}>_+:<\mat{\varepsilon}>_+}$, with $<.>_+$ the positive
-part of the tensor.
-The damage the is defined as:
+part of the tensor. This part is defined in the principal coordinates (I, II, III) as $\varepsilon_{\st{eq}} =
+\sqrt{<\mat{\varepsilon_I}>_+^2 + <\mat{\varepsilon_{II}}>_+^2 + <\mat{\varepsilon_{III}}>_+^2}$.
+The damage is defined as:
 \begin{align}
   D &= \alpha_t^\beta D_t + (1-\alpha_t)^\beta D_c\\
   D_t &= 1 - \frac{\kappa_0 (1- A_t)}{\varepsilon_{\st{eq}}} - A_t \exp^{-B_t(\varepsilon_{\st{eq}}-\kappa_0)}\\
@@ -516,11 +515,12 @@ were undamaged.
 The coefficients $A$ and $B$ are the post-peak asymptotic
 value and the decay shape parameters.
 
-\IfFileExists{manual-constitutive-laws-non_local.tex}{\input{manual-constitutive-laws-non_local.tex}}{}
+\IfFileExists{manual-cohesive_laws.tex}{\input{manual-cohesive_laws}}{}
+
+\IfFileExists{manual-constitutive-laws-non_local.tex}{\input{manual-constitutive-laws-non_local}}{}
 
 \IfFileExists{manual-extra_materials.tex}{\input{manual-extra_materials}}{}
 
-\IfFileExists{manual-cohesive_laws.tex}{\input{manual-cohesive_laws}}{}
 
 
 %%% Local Variables:

@@ -4,14 +4,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Jun 14 2010
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  common type descriptions for akantu
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -40,11 +41,10 @@
 /* -------------------------------------------------------------------------- */
 #include <list>
 #include <limits>
-#include <boost/preprocessor.hpp>
 
 /* -------------------------------------------------------------------------- */
 #define __BEGIN_AKANTU__ namespace akantu {
-#define __END_AKANTU__ };
+#define __END_AKANTU__ }
 /* -------------------------------------------------------------------------- */
 #define __BEGIN_AKANTU_DUMPER__ namespace dumper {
 #define __END_AKANTU_DUMPER__ }
@@ -64,17 +64,11 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /* Common types                                                               */
 /* -------------------------------------------------------------------------- */
-
-typedef double Real;
-typedef unsigned int UInt;
-typedef unsigned long long UInt64;
-typedef signed int Int;
-
 typedef std::string ID;
 
-static const Real UINT_INIT_VALUE = 0;
+static const Real UINT_INIT_VALUE = Real(0.);
 #ifdef AKANTU_NDEBUG
-  static const Real REAL_INIT_VALUE = 0;
+  static const Real REAL_INIT_VALUE = Real(0.);
 #else
   static const Real REAL_INIT_VALUE = std::numeric_limits<Real>::quiet_NaN();
 #endif
@@ -85,183 +79,24 @@ static const Real UINT_INIT_VALUE = 0;
 
 typedef UInt MemoryID;
 
-/* -------------------------------------------------------------------------- */
-/* Mesh/FEM/Model types                                                       */
-/* -------------------------------------------------------------------------- */
 
 typedef std::string Surface;
 typedef std::pair<Surface, Surface> SurfacePair;
 typedef std::list< SurfacePair > SurfacePairList;
 
 /* -------------------------------------------------------------------------- */
-
 extern const UInt _all_dimensions;
 
-/// @boost sequence of element to loop on in global tasks
-#define AKANTU_ek_regular_ELEMENT_TYPE		\
-  (_point_1)					\
-  (_segment_2)					\
-  (_segment_3)					\
-  (_triangle_3)					\
-  (_triangle_6)					\
-  (_quadrangle_4)				\
-  (_quadrangle_8)				\
-  (_tetrahedron_4)				\
-  (_tetrahedron_10)				\
-  (_pentahedron_6)				\
-  (_hexahedron_8)
 
-#if defined(AKANTU_STRUCTURAL_MECHANICS)
-#define AKANTU_ek_structural_ELEMENT_TYPE	\
-  (_bernoulli_beam_2)				\
-  (_bernoulli_beam_3)  				\
-  (_kirchhoff_shell)
-#else
-#define AKANTU_ek_structural_ELEMENT_TYPE
-#endif
+/* -------------------------------------------------------------------------- */
+/* Mesh/FEM/Model types                                                       */
+/* -------------------------------------------------------------------------- */
+__END_AKANTU__
 
-#if defined(AKANTU_COHESIVE_ELEMENT)
-#  define AKANTU_ek_cohesive_ELEMENT_TYPE	\
-   (_cohesive_2d_4)				\
-   (_cohesive_2d_6)				\
-   (_cohesive_1d_2)				\
-   (_cohesive_3d_6)				\
-   (_cohesive_3d_12)
-#else
-#  define AKANTU_ek_cohesive_ELEMENT_TYPE
-#endif
+#include "aka_element_classes_info.hh"
 
-#if defined(AKANTU_IGFEM)
-#define AKANTU_ek_igfem_ELEMENT_TYPE		\
-   (_igfem_triangle_3)
-#else
-#define AKANTU_ek_igfem_ELEMENT_TYPE
-#endif
+__BEGIN_AKANTU__
 
-#define AKANTU_ALL_ELEMENT_TYPE			\
-  AKANTU_ek_regular_ELEMENT_TYPE		\
-  AKANTU_ek_cohesive_ELEMENT_TYPE		\
-  AKANTU_ek_structural_ELEMENT_TYPE		\
-  AKANTU_ek_igfem_ELEMENT_TYPE
-
-#define AKANTU_NOT_STRUCTURAL_ELEMENT_TYPE	\
-  AKANTU_ek_regular_ELEMENT_TYPE		\
-  AKANTU_ek_cohesive_ELEMENT_TYPE		\
-  AKANTU_ek_igfem_ELEMENT_TYPE
-
-/// @enum ElementType type of elements
-enum ElementType {
-  _not_defined,
-  _point_1,
-  _segment_2,         ///< first order segment
-  _segment_3,         ///< second order segment
-  _triangle_3,        ///< first order triangle
-  _triangle_6,        ///< second order triangle
-  _tetrahedron_4,     ///< first order tetrahedron
-  _tetrahedron_10,    ///< second order tetrahedron
-  _quadrangle_4,      ///< first order quadrangle
-  _quadrangle_8,      ///< second order quadrangle
-  _hexahedron_8,      ///< first order hexahedron
-  _pentahedron_6,     ///< first order pentahedron
-#if defined (AKANTU_STRUCTURAL_MECHANICS)
-  _bernoulli_beam_2,  ///< Bernoulli beam 2D
-  _bernoulli_beam_3,  ///< Bernoulli beam 3D
-  _kirchhoff_shell,   ///< Kirchhoff shell
-#endif
-
-#if defined(AKANTU_COHESIVE_ELEMENT)
-  _cohesive_2d_4,     ///< first order 2D cohesive
-  _cohesive_2d_6,     ///< second order 2D cohesive
-  _cohesive_1d_2,     ///< first order 1D cohesive
-  _cohesive_3d_6,     ///< first order 3D cohesive
-  _cohesive_3d_12,     ///< second order 3D cohesive
-#endif
-#if defined(AKANTU_IGFEM)
-  _igfem_triangle_3,  ///< first order triangle for IGFEM
-#endif
-  _max_element_type
-};
-
-/// @enum GeometricalType type of element potentially contained in a Mesh
-enum GeometricalType {
-  _gt_point,             ///< point @remark only for some algorithm to be generic like mesh partitioning */
-  _gt_segment_2,         ///< 2 nodes segment
-  _gt_segment_3,         ///< 3 nodes segment
-  _gt_triangle_3,        ///< 3 nodes triangle
-  _gt_triangle_6,        ///< 6 nodes triangle
-  _gt_quadrangle_4,      ///< 4 nodes quadrangle
-  _gt_quadrangle_8,      ///< 8 nodes quadrangle
-  _gt_tetrahedron_4,     ///< 4 nodes tetrahedron
-  _gt_tetrahedron_10,    ///< 10 nodes tetrahedron
-  _gt_hexahedron_8,      ///< 8 nodes hexahedron
-  _gt_pentahedron_6,     ///< 6 nodes pentahedron
-#if defined(AKANTU_COHESIVE_ELEMENT)
-  _gt_cohesive_2d_4,     ///< 4 nodes 2D cohesive
-  _gt_cohesive_2d_6,     ///< 6 nodes 2D cohesive
-  _gt_cohesive_1d_2,     ///< 2 nodes 1D cohesive
-  _gt_cohesive_3d_6,     ///< 6 nodes 3D cohesive
-  _gt_cohesive_3d_12,     ///< 12 nodes 3D cohesive
-#endif
-  _gt_not_defined
-};
-
-/// @enum InterpolationType type of elements
-enum InterpolationType {
-  _itp_lagrange_point_1,           ///< zeroth (!) order lagrangian point (for compatibility purposes)
-  _itp_lagrange_segment_2,         ///< first order lagrangian segment
-  _itp_lagrange_segment_3,         ///< second order lagrangian segment
-  _itp_lagrange_triangle_3,        ///< first order lagrangian triangle
-  _itp_lagrange_triangle_6,        ///< second order lagrangian triangle
-  _itp_lagrange_quadrangle_4,      ///< first order lagrangian quadrangle
-  _itp_serendip_quadrangle_8,      /**< second order serendipian quadrangle
-				      @remark used insted of the 9 node
-				      lagrangian element */
-  _itp_lagrange_tetrahedron_4,     ///< first order lagrangian tetrahedron
-  _itp_lagrange_tetrahedron_10,    ///< second order lagrangian tetrahedron
-  _itp_lagrange_hexahedron_8,      ///< first order lagrangian hexahedron
-  _itp_lagrange_pentahedron_6,      ///< first order lagrangian pentahedron
-#if defined(AKANTU_STRUCTURAL_MECHANICS)
-  _itp_bernoulli_beam,             ///< Bernoulli beam
-  _itp_kirchhoff_shell,            ///< Kirchhoff shell
-#endif
-
-  _itp_not_defined
-};
-
-//! standard output stream operator for ElementType
-inline std::ostream & operator <<(std::ostream & stream, ElementType type);
-
-
-#define AKANTU_REGULAR_KIND      (_ek_regular)
-
-#ifdef AKANTU_COHESIVE_ELEMENT
-#  define AKANTU_COHESIVE_KIND   (_ek_cohesive)
-#else
-#  define AKANTU_COHESIVE_KIND
-#endif
-
-#ifdef AKANTU_STRUCTURAL_MECHANICS
-#  define AKANTU_STRUCTURAL_KIND (_ek_structural)
-#else
-#  define AKANTU_STRUCTURAL_KIND
-#endif
-
-#ifdef AKANTU_IGFEM
-#  define AKANTU_IGFEM_KIND      (_ek_igfem)
-#else
-#  define AKANTU_IGFEM_KIND
-#endif
-
-#define AKANTU_ELEMENT_KIND			\
-  AKANTU_REGULAR_KIND                           \
-  AKANTU_COHESIVE_KIND				\
-  AKANTU_STRUCTURAL_KIND			\
-  AKANTU_IGFEM_KIND
-
-enum ElementKind {
-  BOOST_PP_SEQ_ENUM(AKANTU_ELEMENT_KIND),
-  _ek_not_defined
-};
 
 /// small help to use names for directions
 enum SpacialDirection {
@@ -303,9 +138,6 @@ enum ContactImplementationMethod {
   _uzawa,
   _generalized_newton
 };
-
-
-
 
 /// enum SolveConvergenceMethod different resolution algorithms
 enum SolveConvergenceMethod {
@@ -400,8 +232,10 @@ enum SynchronizationTag {
   _gst_smmc_facets_conn, //< synchronization of facet global connectivity
   _gst_smmc_facets_stress, //< synchronization of facets' stress to setup facet synch
   _gst_smmc_damage,      //< synchronization of damage
+  //--- GlobalIdsUpdater tags ---
+  _gst_giu_global_conn, //< synchronization of global connectivities
   //--- CohesiveElementInserter tags ---
-  _gst_ce_inserter,      //< synchronization of global nodes id of newly inserted cohesive elements
+  _gst_ce_groups,        //< synchronization of cohesive element insertion depending on facet groups
   //--- GroupManager tags ---
   _gst_gm_clusters,      //< synchronization of clusters
   //--- HeatTransfer tags ---
@@ -416,13 +250,19 @@ enum SynchronizationTag {
   //--- Material non local ---
   _gst_mnl_for_average,  //< synchronization of data to average in non local material
   _gst_mnl_weight,       //< synchronization of data for the weight computations
+  //--- NeighborhoodSynchronization tags ---
+  _gst_nh_criterion,
   //--- General tags ---
   _gst_test,             //< Test tag
+  _gst_user_1,           //< tag for user simulations
+  _gst_user_2,           //< tag for user simulations
   _gst_material_id,      //< synchronization of the material ids
   _gst_for_dump,         //< everything that needs to be synch before dump
   //--- Contact & Friction ---
   _gst_cf_nodal,         //< synchronization of disp, velo, and current position
-  _gst_cf_incr           //< synchronization of increment
+  _gst_cf_incr,           //< synchronization of increment
+  ///--- Solver tags ---
+  _gst_solver_solution     //< synchronization of the solution obained with the PETSc solver
 };
 
 /// standard output stream operator for SynchronizationTag
@@ -453,6 +293,15 @@ enum SynchronizerOperation {
   _so_sum,
   _so_min,
   _so_max,
+  _so_prod,
+  _so_land,
+  _so_band,
+  _so_lor,
+  _so_bor,
+  _so_lxor,
+  _so_bxor,
+  _so_min_loc,
+  _so_max_loc,
   _so_null
 };
 
@@ -549,6 +398,10 @@ void initialize(const std::string & input_file, int & argc, char ** & argv);
 /// finilize correctly akantu and clean the memory
 void finalize ();
 /* -------------------------------------------------------------------------- */
+/// Read an new input file
+void readInputFile(const std::string & input_file);
+/* -------------------------------------------------------------------------- */
+
 
 /*
  * For intel compiler annoying remark
@@ -594,104 +447,44 @@ const ParserSection & getUserParser();
 
 __END_AKANTU__
 
-/* -------------------------------------------------------------------------- */
-// BOOST PART: TOUCH ONLY IF YOU KNOW WHAT YOU ARE DOING
-
-#define AKANTU_BOOST_CASE_MACRO(r,macro,type)				\
-  case type : { macro(type); break; }
-
-#define AKANTU_BOOST_LIST_SWITCH(macro1, list1, var)			\
-  do {									\
-    switch(var) {							\
-      BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_CASE_MACRO, macro1, list1)	\
-    default: {								\
-      AKANTU_DEBUG_ERROR("Type (" << var << ") not handled by this function"); \
-    }									\
-    }									\
-  } while(0)
-
-#define AKANTU_BOOST_ELEMENT_SWITCH(macro1, list1)			\
-  AKANTU_BOOST_LIST_SWITCH(macro1, list1, type)
-
-#define AKANTU_BOOST_ALL_ELEMENT_SWITCH(macro)				\
-  AKANTU_BOOST_ELEMENT_SWITCH(macro,					\
-			      AKANTU_ALL_ELEMENT_TYPE)
-
-#define AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(macro)			\
-  AKANTU_BOOST_ELEMENT_SWITCH(macro,					\
-			      AKANTU_ek_regular_ELEMENT_TYPE)
-
-#define AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(macro)			\
-  AKANTU_BOOST_ELEMENT_SWITCH(macro,					\
-			      AKANTU_ek_cohesive_ELEMENT_TYPE)
-
-#define AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(macro)			\
-  AKANTU_BOOST_ELEMENT_SWITCH(macro,					\
-			      AKANTU_ek_structural_ELEMENT_TYPE)
-
-#define AKANTU_BOOST_IGFEM_ELEMENT_SWITCH(macro)			\
-  AKANTU_BOOST_ELEMENT_SWITCH(macro,					\
-			      AKANTU_ek_igfem_ELEMENT_TYPE)
-
-#define AKANTU_BOOST_LIST_MACRO(r, macro, type)	                        \
-  macro(type)
-
-#define AKANTU_BOOST_APPLY_ON_LIST(macro, list)			        \
-  BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_LIST_MACRO, macro, list)
-
-#define AKANTU_BOOST_ALL_ELEMENT_LIST(macro)				\
-  AKANTU_BOOST_APPLY_ON_LIST(macro,					\
-			     AKANTU_ALL_ELEMENT_TYPE)
-
-#define AKANTU_BOOST_REGULAR_ELEMENT_LIST(macro)		        \
-  AKANTU_BOOST_APPLY_ON_LIST(macro,				        \
-			     AKANTU_ek_regular_ELEMENT_TYPE)
-
-#define AKANTU_BOOST_STRUCTURAL_ELEMENT_LIST(macro)			\
-  AKANTU_BOOST_APPLY_ON_LIST(macro,					\
-			     AKANTU_ek_structural_ELEMENT_TYPE)
-
-#define AKANTU_BOOST_COHESIVE_ELEMENT_LIST(macro)			\
-  AKANTU_BOOST_APPLY_ON_LIST(macro,					\
-			     AKANTU_ek_cohesive_ELEMENT_TYPE)
-
-#define AKANTU_BOOST_IGFEM_ELEMENT_LIST(macro)				\
-  AKANTU_BOOST_APPLY_ON_LIST(macro,					\
-			     AKANTU_ek_igfem_ELEMENT_TYPE)
-
-#define AKANTU_GET_ELEMENT_LIST(kind)	                                \
-  AKANTU##kind##_ELEMENT_TYPE
-
-#define AKANTU_BOOST_KIND_ELEMENT_SWITCH(macro, kind)			\
-  AKANTU_BOOST_ELEMENT_SWITCH(macro,					\
-			      AKANTU_GET_ELEMENT_LIST(kind))
-
-// BOOST_PP_SEQ_TO_LIST does not exists in Boost < 1.49
-#define AKANTU_GENERATE_KIND_LIST(seq)                                  \
-  BOOST_PP_TUPLE_TO_LIST(BOOST_PP_SEQ_SIZE(seq),                        \
-                         BOOST_PP_SEQ_TO_TUPLE(seq))
-
-#define AKANTU_ELEMENT_KIND_BOOST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_ELEMENT_KIND)
-
-#define AKANTU_BOOST_ALL_KIND_LIST(macro, list)			        \
-  BOOST_PP_LIST_FOR_EACH(AKANTU_BOOST_LIST_MACRO, macro, list)
-
-#define AKANTU_BOOST_ALL_KIND(macro)					\
-  AKANTU_BOOST_ALL_KIND_LIST(macro, AKANTU_ELEMENT_KIND_BOOST_LIST)
-
-#define AKANTU_BOOST_ALL_KIND_SWITCH(macro)			        \
-  AKANTU_BOOST_LIST_SWITCH(macro,				        \
-			   AKANTU_ELEMENT_KIND,			        \
-			   kind)
-
-/// define kept for compatibility reasons (they are most probably not needed
-/// anymore) \todo check if they can be removed
-#define AKANTU_REGULAR_ELEMENT_TYPE	AKANTU_ek_regular_ELEMENT_TYPE
-#define AKANTU_COHESIVE_ELEMENT_TYPE	AKANTU_ek_cohesive_ELEMENT_TYPE
-#define AKANTU_STRUCTURAL_ELEMENT_TYPE  AKANTU_ek_structural_ELEMENT_TYPE
-#define AKANTU_IGFEM_ELEMENT_TYPE       AKANTU_ek_igfem_ELEMENT_TYPE
-
-
 #include "aka_common_inline_impl.cc"
+
+/* -------------------------------------------------------------------------- */
+
+#if defined(AKANTU_UNORDERED_MAP_IS_CXX11)
+
+__BEGIN_AKANTU_UNORDERED_MAP__
+
+#if AKANTU_INTEGER_SIZE == 4
+#define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b9
+#elif AKANTU_INTEGER_SIZE == 8
+#define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b97f4a7c13LL
+#endif
+
+/**
+ * Hashing function for pairs based on hash_combine from boost The magic number
+ * is coming from the golden number @f[\phi = \frac{1 + \sqrt5}{2}@f]
+ * @f[\frac{2^32}{\phi} = 0x9e3779b9@f]
+ * http://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
+ * http://burtleburtle.net/bob/hash/doobs.html
+ */
+template <typename a, typename b> struct hash< std::pair<a, b> > {
+public:
+  hash() : ah(), bh() {}
+  size_t operator()(const std::pair<a, b> & p) const {
+    size_t seed = ah(p.first);
+    return bh(p.second) + AKANTU_HASH_COMBINE_MAGIC_NUMBER + (seed << 6) +
+           (seed >> 2);
+  }
+
+private:
+  const hash<a> ah;
+  const hash<b> bh;
+};
+
+__END_AKANTU_UNORDERED_MAP__
+
+#endif
+
 
 #endif /* __AKANTU_COMMON_HH__ */

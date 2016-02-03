@@ -4,15 +4,16 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Jun 14 2010
- * @date last modification: Thu Apr 03 2014
+ * @date last modification: Thu Nov 19 2015
  *
  * @brief  initialisation of all global variables
  * to insure the order of creation
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -36,6 +37,7 @@
 #include "aka_random_generator.hh"
 #include "parser.hh"
 #include "cppargparse.hh"
+#include "static_solver.hh"
 
 /* -------------------------------------------------------------------------- */
 #include <iostream>
@@ -77,7 +79,7 @@ namespace debug {
 /// Parser containing the information parsed by the input file given to initFull
 Parser static_parser;
 
-bool Parser::parser_permissive = false;
+bool Parser::permissive_parser = false;
 
 Real Math::tolerance = std::numeric_limits<Real>::epsilon();
 
@@ -89,7 +91,13 @@ template<> long int RandGenerator<Real>::_seed = 0;
 template<> long int RandGenerator<bool>::_seed = 0; // useless just defined due to a template instantiation
 template<> long int RandGenerator<UInt>::_seed = 0;
 template<> long int RandGenerator<Int>::_seed = 0;
+#if not defined(_WIN32)
 template<> long int Rand48Generator<Real>::_seed = 0;
+#endif
+
+/* -------------------------------------------------------------------------- */
+UInt StaticSolver::nb_references = 0;
+StaticSolver * StaticSolver::static_solver = NULL;
 
 /* -------------------------------------------------------------------------- */
 

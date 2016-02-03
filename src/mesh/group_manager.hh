@@ -3,17 +3,18 @@
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Dana Christen <dana.christen@gmail.com>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date creation: Fri May 03 2013
- * @date last modification: Fri Sep 05 2014
+ * @date creation: Wed Nov 13 2013
+ * @date last modification: Mon Nov 16 2015
  *
  * @brief  Stores information relevent to the notion of element and nodes groups.
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -89,6 +90,7 @@ public:
   typedef NodeGroups::const_iterator const_node_group_iterator;
   typedef ElementGroups::const_iterator const_element_group_iterator;
 
+#ifndef SWIG
 #define AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(group_type,       \
 						      function,         \
 						      param_in,         \
@@ -112,6 +114,7 @@ public:
   AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION_NP(element_group, end  );
   AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(element_group, find, const std::string & name, name);
   AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(node_group, find, const std::string & name, name);
+#endif
 
   /* ------------------------------------------------------------------------ */
   /* Clustering filter                                                        */
@@ -129,10 +132,11 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+
   /// create an empty node group
   NodeGroup & createNodeGroup(const std::string & group_name,
 			      bool replace_group = false);
-
+  
   /// create a node group from another node group but filtered
   template <typename T>
   NodeGroup & createFilteredNodeGroup(const std::string & group_name,
@@ -193,8 +197,9 @@ public:
   void synchronizeGroupNames();
 
   /// register an elemental field to the given group name (overloading for ElementalPartionField)
+#ifndef SWIG
   template <typename T, template <bool> class dump_type>
-  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field, 
+  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field,
 					      const std::string & group_name,
 					      UInt spatial_dimension,
 					      const ElementKind & kind,
@@ -202,27 +207,27 @@ public:
 
   /// register an elemental field to the given group name (overloading for ElementalField)
   template <typename T, template <class> class ret_type, template <class,template <class> class,bool> class dump_type>
-  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field, 
+  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field,
 					      const std::string & group_name,
 					      UInt spatial_dimension,
 					      const ElementKind & kind,
 					      ElementTypeMap<UInt> nb_data_per_elem = ElementTypeMap<UInt>());
 
   /// register an elemental field to the given group name (overloading for MaterialInternalField)
-  template <typename T, 
+  template <typename T,
 	    /// type of InternalMaterialField
-	    template<typename T, bool filtered> class dump_type>
-  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field, 
+            template<typename, bool filtered> class dump_type>
+  inline dumper::Field * createElementalField(const ElementTypeMapArray<T> & field,
 					      const std::string & group_name,
 					      UInt spatial_dimension,
 					      const ElementKind & kind,
 					      ElementTypeMap<UInt> nb_data_per_elem);
-  
+
   template <typename type, bool flag, template<class,bool> class ftype>
   inline dumper::Field * createNodalField(const ftype<type,flag> * field,
 					  const std::string & group_name,
 					  UInt padding_size = 0);
-  
+
   template <typename type, bool flag, template<class,bool> class ftype>
   inline dumper::Field * createStridedNodalField(const ftype<type,flag> * field,
 						 const std::string & group_name,
@@ -235,12 +240,12 @@ protected:
 
   /// take a buffer and create the missing groups localy
   void checkAndAddGroups(CommunicationBufferTemplated<true> & buffer);
-  
+
 
 
   /// register an elemental field to the given group name
   template <class dump_type,typename field_type>
-  inline dumper::Field * createElementalField(const field_type & field, 
+  inline dumper::Field * createElementalField(const field_type & field,
 				       const std::string & group_name,
 				       UInt spatial_dimension,
 				       const ElementKind & kind,
@@ -249,13 +254,12 @@ protected:
 
   /// register an elemental field to the given group name
   template <class dump_type,typename field_type>
-  inline dumper::Field * createElementalFilteredField(const field_type & field, 
+  inline dumper::Field * createElementalFilteredField(const field_type & field,
 					       const std::string & group_name,
 					       UInt spatial_dimension,
 					       const ElementKind & kind,
 					       ElementTypeMap<UInt> nb_data_per_elem);
-
-
+#endif
 
   /* ------------------------------------------------------------------------ */
   /* Accessor                                                                 */

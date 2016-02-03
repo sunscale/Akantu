@@ -1,30 +1,70 @@
 \section{Cohesive linear}
 
 \begin{MaterialDesc}{cohesive\_linear}{ssect:smm:cl:coh-snozzi}
-\matparam{sigma\_c}{Real}{Critical stress $\sigma_\mathrm{c}$}
-\matparam{beta}{Real}{$\beta$ parameter}
-\matparam{G\_cI}{Real}{Mode I fracture energy}
-\matparam{G\_cII}{Real}{Mode II fracture energy}
-\matparam{kappa}{Real}{$\kappa$ parameter}
-\matparam{penalty}{Real}{penalty coefficient $\alpha$}
+\matparam{sigma\_c}{Real}{Critical stress $\sigma_\mathrm{c}$}\\
+Either G\_c and kappa or, G\_cI and G\_cII or delta\_c have to be specified
+\matparam{G\_c}{Real}{Mode I fracture energy}
+\matparam{kappa}{Real}{$\kappa = G\_cI / G\_cII$ parameter (default 1)}
+\matparam{G\_cI (G\_cII)}{Real}{Mode I (II) fracture energy}
+\matparam{delta\_c}{Real}{Critical displacement $\delta_\mathrm{c}$}
+\matparam{beta}{Real}{$\beta$ parameter (default 1)}
+\matparam{penalty}{Real}{penalty coefficient for compression $\alpha$ (optional; default 0)}
+\matparam{volume\_s \& m\_s}{Reals}{optional; to adapt statistical distribution following~\cite{Zhou_Molinari_2004}}
+\matparam{contact\_after\_breaking}{bool}{Activation of contact when the elements are fully damaged (default false)}
+\matparam{max\_quad\_stress\_insertion}{bool}{Insertion of cohesive element when stress is high enough just on one quadrature point (default false)}
 \end{MaterialDesc}
 
 \section{Cohesive bilinear}
 
 \begin{MaterialDesc}{cohesive\_bilinear}{ssect:smm:cl:coh-snozzi}
 \matparam{sigma\_c}{Real}{Critical stress $\sigma_\mathrm{c}$}
-\matparam{beta}{Real}{$\beta$ parameter}
-\matparam{G\_cI}{Real}{Mode I fracture energy}
-\matparam{G\_cII}{Real}{Mode II fracture energy}
-\matparam{kappa}{Real}{$\kappa$ parameter}
-\matparam{penalty}{Real}{Penalty coefficient $\alpha$}
-\matparam{delta\_0}{Real}{Elastic limit displacement $\delta_0$}
+\matparam{delta\_0}{Real}{Elastic limit displacement $\delta_0$}\\
+Either G\_c and kappa or, G\_cI and G\_cII or delta\_c have to be specified
+\matparam{G\_c}{Real}{Mode I fracture energy}
+\matparam{kappa}{Real}{$\kappa = G\_cI / G\_cII$ parameter (default 1)}
+\matparam{G\_cI (G\_cII)}{Real}{Mode I (II) fracture energy}
+\matparam{delta\_c}{Real}{Critical displacement $\delta_\mathrm{c}$}
+\matparam{beta}{Real}{$\beta$ parameter (default 1)}
+\matparam{penalty}{Real}{Penalty coefficient for compression $\alpha$ (optional; default 0)} 
+\end{MaterialDesc}
+
+\section{Cohesive linear with friction}
+
+\begin{MaterialDesc}{cohesive\_linear\_friction}{ssect:smm:cl:coh-friction}
+\matparam{sigma\_c}{Real}{Critical stress $\sigma_\mathrm{c}$}\\
+Either G\_c and kappa or, G\_cI and G\_cII or delta\_c have to be specified
+\matparam{G\_c}{Real}{Mode I fracture energy}
+\matparam{kappa}{Real}{$\kappa = G\_cI / G\_cII$ parameter (default 1)}
+\matparam{G\_cI (G\_cII)}{Real}{Mode I (II) fracture energy}
+\matparam{delta\_c}{Real}{Critical displacement $\delta_\mathrm{c}$}
+\matparam{beta}{Real}{$\beta$ parameter (default 1)}
+\matparam{penalty}{Real}{Penalty coefficient for compression $\alpha$ (optional; default 0)}
+\matparam{volume\_s \& m\_s}{Reals}{optional; to adapt statistical distribution following~\cite{Zhou_Molinari_2004}}
+\matparam{contact\_after\_breaking}{bool}{Activation of contact when the elements are fully damaged (default false)}
+\matparam{max\_quad\_stress\_insertion}{bool}{Insertion of cohesive element when stress is high enough just on one quadrature point (default false)}
+\matparam{mu}{Real}{Maximum attainable value of the friction coefficient, $\mu$ (default 0)}
+\matparam{penalty\_for\_friction}{Real}{Penalty parameter for the elasto-plastic friction law (default 0)}
+\end{MaterialDesc}
+
+
+\section{Cohesive linear fatigue}
+
+\begin{MaterialDesc}{cohesive\_linear\_fatigue}{ssect:smm:cl:coh-fatigue}
+\matparam{sigma\_c}{Real}{Critical stress $\sigma_\mathrm{c}$}
+\matparam{delta\_c}{Real}{Critical displacement $\delta_\mathrm{c}$}
+\matparam{beta}{Real}{$\beta$ parameter (default 1)}
+\matparam{G\_c}{Real}{Mode I fracture energy}
+\matparam{kappa}{Real}{$\kappa$ parameter (default 1)}
+\matparam{penalty}{Real}{penalty coefficient $\alpha$ (optional, default 0)}
+\matparam{delta\_f}{Real}{Characteristic opening displacement $\delta_\mathrm{f}$ (see~\cite{vocialta15})}
 \end{MaterialDesc}
 
 \section{Cohesive exponential}
 
 \begin{MaterialDesc}{cohesive\_exponential}{ssect:smm:cl:coh-exponential}
 \matparam{sigma\_c}{Real}{Critical stress $\sigma_\mathrm{c}$}
-\matparam{beta}{Real}{$\beta$ parameter}
-\matparam{delta\_c}{Real}{Critical displacement $\delta_\mathrm{c}$}
+\matparam{delta\_c}{Real}{Displacement at the peak traction $\delta_\mathrm{c}$}
+\matparam{beta}{Real}{$\beta$ parameter (default 1)}
+\matparam{exponential\textunderscore penalty}{Bool}{parameter to activate contact penalty following the exponential law (default true)}
+\matparam{contact\textunderscore tangent}{Real}{ratio of the contact tangent over the initial exponential tangent (to be defined if exponential\textunderscore penalty is false; default 1.0)}
 \end{MaterialDesc}

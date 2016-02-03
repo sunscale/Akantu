@@ -2,16 +2,18 @@
  * @file   test_solid_mechanics_model_bar_traction2d_structured_pbc.cc
  *
  * @author David Simon Kammer <david.kammer@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Thu Dec 22 2011
- * @date last modification: Mon Jun 23 2014
+ * @date last modification: Thu Aug 06 2015
  *
  * @brief  test of pbc class for SolidMechanicsModel
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -110,8 +112,8 @@ int main(int argc, char *argv[])
     model.updateAcceleration();
     model.explicitCorr();
 
-    epot = model.getPotentialEnergy();
-    ekin = model.getKineticEnergy();
+    epot = model.getEnergy("potential");
+    ekin = model.getEnergy("kinetic");
 
     if(s % 20 == 0) model.dump();
 

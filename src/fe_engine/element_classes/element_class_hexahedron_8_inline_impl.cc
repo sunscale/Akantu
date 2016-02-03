@@ -1,17 +1,19 @@
 /**
  * @file   element_class_hexahedron_8_inline_impl.cc
  *
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Peter Spijker <peter.spijker@epfl.ch>
  *
  * @date creation: Mon Mar 14 2011
- * @date last modification: Fri Jun 13 2014
+ * @date last modification: Sat Sep 12 2015
  *
  * @brief  Specialization of the element_class class for the type _hexahedron_8
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -32,18 +34,18 @@
                    \zeta
                     ^
          (-1,1,1)   |     (1,1,1)
-                8---|------7
+                7---|------6
                /|   |     /|
               / |   |    / |
-   (-1,-1,1) 5----------6  | (1,-1,1)
+   (-1,-1,1) 4----------5  | (1,-1,1)
              |  |   |   |  |
              |  |   |   |  |
              |  |   +---|-------> \xi
              |  |  /    |  |
-   (-1,1,-1) |  4-/-----|--3 (1,1,-1)
+   (-1,1,-1) |  3-/-----|--2 (1,1,-1)
              | / /      | /
              |/ /       |/
-             1-/--------2
+             0-/--------1
    (-1,-1,-1) /        (1,-1,-1)
              /
             \eta

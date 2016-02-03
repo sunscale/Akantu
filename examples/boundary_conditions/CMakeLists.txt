@@ -1,17 +1,17 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+# @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
 #
-# @date creation: Fri May 11 2012
-# @date last modification: Thu Nov 01 2012
+# @date creation: Wed Dec 16 2015
+# @date last modification: Mon Jan 18 2016
 #
-# @brief  boundary condition example configuration
+# @brief  CMakeLists for the cohesive examples
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -26,14 +26,7 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
-# @section DESCRIPTION
-#
 #===============================================================================
 
-add_mesh(plate_mesh square.geo 2 1)
-
-register_example(plate plate.cc)
-add_dependencies(plate plate_mesh)
-
-file(COPY material.dat DESTINATION .)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)
+add_example(predefined_bc "Example of predefined boundary condition" PACKAGE core)
+add_example(user_defined_bc "Example of user defined boundary condition" PACKAGE core)

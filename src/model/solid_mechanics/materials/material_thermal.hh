@@ -3,15 +3,16 @@
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Oct 17 2013
- * @date last modification: Thu Apr 03 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Aug 18 2015
  *
  * @brief  Material isotropic thermo-elastic
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -45,8 +46,16 @@ class MaterialThermal : public virtual Material {
 public:
 
   MaterialThermal(SolidMechanicsModel & model, const ID & id = "");
+  MaterialThermal(SolidMechanicsModel & model,
+                  UInt dim,
+                  const Mesh & mesh,
+                  FEEngine & fe_engine,
+                  const ID & id = "");
 
   virtual ~MaterialThermal() {};
+
+protected:
+  void initialize();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

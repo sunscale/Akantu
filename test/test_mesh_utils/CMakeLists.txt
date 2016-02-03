@@ -3,15 +3,16 @@
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Mon Feb 07 2011
-# @date last modification: Tue Nov 06 2012
+# @date creation: Fri Oct 22 2010
+# @date last modification: Fri Sep 18 2015
 #
 # @brief  configuration for MeshUtils tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -34,14 +35,16 @@
 # List of tests
 #===============================================================================
 add_akantu_test(test_mesh_io "Test mesh io object")
-add_akantu_test(test_facet_extraction "Test mesh utils facet extraction")
 add_akantu_test(test_pbc_tweak "Test pbc facilities")
+add_akantu_test(test_buildfacets "Tests for the generation of facets")
+add_akantu_test(test_segment_nodetype "segment_nodetype")
 
 register_test(test_purify_mesh
   SOURCES test_purify_mesh.cc
-  FILES_TO_COPY purify_mesh.msh DESTINATION
+  FILES_TO_COPY purify_mesh.msh
+  PACKAGE core
   )
 
-add_akantu_test(test_mesh_partitionate "Test mesh partition creation" PACKAGE scotch)
+add_akantu_test(test_mesh_partitionate "Test mesh partition creation")
 
 

@@ -5,14 +5,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Aug 04 2010
- * @date last modification: Mon Apr 07 2014
+ * @date last modification: Tue Aug 18 2015
  *
  * @brief  Implementation of the inline functions of the material elastic
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -57,7 +58,7 @@ inline void MaterialElastic<1>::computeStressOnQuad(const Matrix<Real> & grad_u,
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-inline void MaterialElastic<spatial_dimension>::computeTangentModuliOnQuad(Matrix<Real> & tangent) {
+inline void MaterialElastic<spatial_dimension>::computeTangentModuliOnQuad(Matrix<Real> & tangent) const {
   UInt n = tangent.cols();
 
   //Real Ep = E/((1+nu)*(1-2*nu));
@@ -101,7 +102,7 @@ inline void MaterialElastic<dim>::computePotentialEnergyOnQuad(const Matrix<Real
 
 /* -------------------------------------------------------------------------- */
 template<>
-inline void MaterialElastic<1>::computeTangentModuliOnQuad(Matrix<Real> & tangent) {
+inline void MaterialElastic<1>::computeTangentModuliOnQuad(Matrix<Real> & tangent) const {
   tangent(0, 0) = E;
 }
 
