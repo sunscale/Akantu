@@ -43,18 +43,9 @@ def main():
     mesh = aka.Mesh(2)
     mesh.read('mesh_dcb_2d.msh')
 
-    print mesh.getNbElement(aka._segment_2)
-    print mesh.getNbElement(aka._segment_3)
-    print mesh.getNbElement(aka._triangle_3)
-    print mesh.getNbElement(aka._triangle_6)
-    print mesh.getNbElement(aka._quadrangle_4)
-    print mesh.getNbElement(aka._quadrangle_8)
-    print ""
-    print mesh.getNbElement(1)
-    print mesh.getNbElement(2)
     # Tests the getNbElement() function
-    if mesh.getNbElement(aka._quadrangle_8) != mesh.getNbElement(2):
-        print "Number of elements wrong, should be {}".format(mesh.getNbElement(2))
+    if mesh.getNbElement(aka._quadrangle_8) != mesh.getNbElementByDimension(2):
+        print "Number of elements wrong, should be {}".format(mesh.getNbElementByDimension(2))
         return -1
 
     aka.finalize()
