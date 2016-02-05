@@ -66,8 +66,14 @@ namespace akantu {
 
 print_self(Mesh)
 
+// Swig considers enums to be ints, and it creates a conflict with two versions of getNbElement()
+%rename(getNbElementByDimension)
+akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
+                           const GhostType& ghost_type = _not_ghost,
+                           const ElementKind& kind = _ek_not_defined) const;
 
 %extend akantu::Mesh {
+
   void resizeMesh(UInt nb_nodes, UInt nb_element, const ElementType & type) {
     Array<Real> & nodes = const_cast<Array<Real> &>($self->getNodes());
     nodes.resize(nb_nodes);
