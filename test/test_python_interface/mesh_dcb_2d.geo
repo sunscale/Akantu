@@ -21,6 +21,7 @@ Line Loop(10) = {5, 7, 6, -4};
 Plane Surface(11) = {10};
 Physical Surface("bulk") = {9,11};
 Physical Line("coh") = {4};
+Physical Line("edge") = {1};
 Transfinite Surface "*";
 Recombine Surface "*";
 Mesh.SecondOrderIncomplete = 1;

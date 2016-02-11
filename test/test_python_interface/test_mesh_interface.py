@@ -48,6 +48,7 @@ def main():
         print "Number of elements wrong, should be {}".format(mesh.getNbElementByDimension(2))
         return -1
 
+    # TODO test the other functions in Mesh
     aka.finalize()
     return 0
 

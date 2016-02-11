@@ -41,3 +41,8 @@ register_test(test_mesh_interface
   PACKAGE python_interface
   FILES_TO_COPY mesh_dcb_2d.geo
   )
+
+register_test(test_boundary_condition_functors
+  SCRIPT test_boundary_condition_functors.py
+  PACKAGE python_interface
+  FILES_TO_COPY mesh_dcb_2d.geo input_test.dat)
