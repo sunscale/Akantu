@@ -48,3 +48,8 @@ Surface Loop(25) = {24, 14, 16, 20, 22, 18};
 
 
 Volume(26) = {25};
+
+Physical Surface("Bottom") = {20};
+Physical Surface("XMin") = {22};
+Physical Surface("XMax") = {24};
+Physical Volume("vol") = {26};
