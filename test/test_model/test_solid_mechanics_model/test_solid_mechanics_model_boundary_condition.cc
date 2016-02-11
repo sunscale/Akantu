@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
       n_end = nodes.end();
 
     SolidMechanicsModel model(mesh);
-    // model.setPBC(1, 0, 0);
+    model.setPBC(1, 0, 0);
     model.initFull();
 
     Array<Real> & force = model.getForce();
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 
     Real total_force = 0;
     for (; n_it != n_end ; ++n_it) {
-      if (!(force(*n_it, 2) > 0)) {
+      if (!model.isPBCSlaveNode(*n_it) && !(force(*n_it, 2) > 0)) {
         std::cout << "FromTraction" << std::endl;
         return EXIT_FAILURE;
       }
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
     Array<Real> force_traction = force;
     force.set(0.);
 
-    /* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
     /// Testing FromHigherDim functor
     Real stress_ptr[] = {0, 0, 0,
@@ -98,56 +98,53 @@ int main(int argc, char* argv[])
       }
     }
 
-    /* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
-    /// Testing dirichlet BC functor
-    model.applyBC(BC::Dirichlet::FixedValue(13.0, _x), "Bottom");
-    model.applyBC(BC::Dirichlet::FixedValue(13.0, _y), "Bottom");
-    model.applyBC(BC::Dirichlet::FixedValue(13.0, _z), "Bottom");
+    // Testing the periodic boundary conditions
+    const Array<UInt> & xmin_nodes = mesh.getElementGroup("XMin").getNodes();
+    const Array<UInt> & xmax_nodes = mesh.getElementGroup("XMax").getNodes();
+    const Array<bool> & boundary = model.getBlockedDOFs();
 
-    Array<bool> & boundary = model.getBlockedDOFs();
-    Array<Real> & displacement = model.getDisplacement();
-
-    n_it = nodes.begin();
-    for (; n_it != n_end ; ++n_it) {
-      for (UInt i = 0 ; i < 3 ; i++) {
-        if (!boundary(*n_it, i) ||
-            std::abs(displacement(*n_it, i) - 13.0) > Math::getTolerance()) {
-          std::cout << "FixedValue" << std::endl;
-          return EXIT_FAILURE;
+    // Checking boundary on master and slave nodes
+    n_it = xmin_nodes.begin();
+    for (; n_it != xmin_nodes.end() ; ++n_it) {
+      if (!model.isPBCSlaveNode(*n_it)) {
+        for (UInt i = 0 ; i < spatial_dimension ; i++) {
+          if (boundary(*n_it, i)) {
+            std::cout << "PBC XMin : boundary on master node" << std::endl;
+            return EXIT_FAILURE;
+          }
+        }
+      } else {
+        for (UInt i = 0 ; i < spatial_dimension ; i++) {
+          if (!boundary(*n_it, i)) {
+            std::cout << "PBC XMin : no boundary on slave node" << std::endl;
+            return EXIT_FAILURE;
+          }
         }
       }
     }
 
-    /* -------------------------------------------------------------------------- */
-
-    // Testing the periodic boundary conditions
-    const DOFSynchronizer & sync = model.getDOFSynchronizer();
-    const Array<UInt> & xmin_nodes = mesh.getElementGroup("XMin").getNodes();
-    const Array<UInt> & xmax_nodes = mesh.getElementGroup("XMax").getNodes();
-
-    // Checking DOFs and slave nodes
-    n_it = xmin_nodes.begin();
-    for (; n_it != xmin_nodes.end() ; ++n_it) {
-      for (UInt i = 0 ; i < spatial_dimension ; i++)
-        if ((!model.isPBCSlaveNode(*n_it) && sync.isSlaveDOF(*n_it * spatial_dimension + i)) ||
-            (model.isPBCSlaveNode(*n_it) && !sync.isSlaveDOF(*n_it * spatial_dimension + i))) {
-          std::cout << "PBC XMin" << std::endl;
-          return EXIT_FAILURE;
-        }
-    }
-
     n_it = xmax_nodes.begin();
     for (; n_it != xmax_nodes.end() ; ++n_it) {
-      for (UInt i = 0 ; i < spatial_dimension ; i++)
-        if ((!model.isPBCSlaveNode(*n_it) && sync.isSlaveDOF(*n_it * spatial_dimension + i)) ||
-            (model.isPBCSlaveNode(*n_it) && !sync.isSlaveDOF(*n_it * spatial_dimension + i))) {
-          std::cout << "PBC XMax" << std::endl;
-          return EXIT_FAILURE;
+      if (!model.isPBCSlaveNode(*n_it)) {
+        for (UInt i = 0 ; i < spatial_dimension ; i++) {
+          if (boundary(*n_it, i)) {
+            std::cout << "PBC XMax : boundary on master node" << std::endl;
+            return EXIT_FAILURE;
+          }
         }
+      } else {
+        for (UInt i = 0 ; i < spatial_dimension ; i++) {
+          if (!boundary(*n_it, i)) {
+            std::cout << "PBC XMax : no boundary on slave node" << std::endl;
+            return EXIT_FAILURE;
+          }
+        }
+      }
     }
 
-    /* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
     // Checking boundary array
     n_it = xmin_nodes.begin();
@@ -166,6 +163,26 @@ int main(int argc, char* argv[])
           std::cout << "PBC boundary array" << std::endl;
           return EXIT_FAILURE;
         }
+    }
+
+/* -------------------------------------------------------------------------- */
+
+    /// Testing dirichlet BC functor
+    model.applyBC(BC::Dirichlet::FixedValue(13.0, _x), "Bottom");
+    model.applyBC(BC::Dirichlet::FixedValue(13.0, _y), "Bottom");
+    model.applyBC(BC::Dirichlet::FixedValue(13.0, _z), "Bottom");
+
+    Array<Real> & displacement = model.getDisplacement();
+
+    n_it = nodes.begin();
+    for (; n_it != n_end ; ++n_it) {
+      for (UInt i = 0 ; i < 3 ; i++) {
+        if (!boundary(*n_it, i) ||
+            std::abs(displacement(*n_it, i) - 13.0) > Math::getTolerance()) {
+          std::cout << "FixedValue" << std::endl;
+          return EXIT_FAILURE;
+        }
+      }
     }
 
     finalize();
