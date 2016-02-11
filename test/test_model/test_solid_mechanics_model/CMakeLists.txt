@@ -191,7 +191,8 @@ register_test(test_solid_mechanics_model_cube3d_pbc
 
 register_test(test_solid_mechanics_model_boundary_condition
   SOURCES test_solid_mechanics_model_boundary_condition.cc
-  FILES_TO_COPY material.dat cube_physical_names.msh
+  DEPENDS test_cube3d_mesh1
+  FILES_TO_COPY material.dat
   PACKAGE core
   )
 
