@@ -43,6 +43,7 @@ add_example(cohesive_element     "Cohesive element examples"                    
 add_example(structural_mechanics "Structural mechanics model examples"                 PACKAGE structural_mechanics)
 add_example(heat_transfer        "Example on how to run heat transfer simulation"      PACKAGE heat_transfer)
 add_example(python               "Example on how to use the python interface"          PACKAGE python_interface)
+add_example(embedded             "Example on how to run embedded model simulation"     PACKAGE embedded)
 
 package_add_files_to_package(
   examples/README.rst
