@@ -248,22 +248,6 @@ void SolverMumps::initialize(SolverOptions & options) {
   else
     this->prank = communicator.whoAmI();
 
-  /* ------------------------------------------------------------------------ */
-  // Output setup
-  if (AKANTU_DEBUG_TEST(dblTrace)) {
-    icntl(1) = 6;
-    icntl(2) = 2;
-    icntl(3) = 2;
-    icntl(4) = 4;
-  } else {
-    /// No outputs
-    icntl(1) = 6; // error output
-    icntl(2) = 0; // dignostics output
-    icntl(3) = 0; // informations
-    icntl(4) = 0; // no outputs
-  }
-  /* ------------------------------------------------------------------------ */
-
   this->mumps_data.job = _smj_initialize; // initialize
   dmumps_c(&this->mumps_data);
 
@@ -282,6 +266,20 @@ void SolverMumps::initialize(SolverOptions & options) {
 
   this->mumps_data.nz_alloc = 0;
   this->mumps_data.n = size;
+  /* ------------------------------------------------------------------------ */
+  // Output setup
+  if (AKANTU_DEBUG_TEST(dblTrace)) {
+    icntl(1) = 6;
+    icntl(2) = 2;
+    icntl(3) = 2;
+    icntl(4) = 4;
+  } else {
+    /// No outputs
+    icntl(1) = 6; // error output
+    icntl(2) = 0; // dignostics output
+    icntl(3) = 0; // informations
+    icntl(4) = 0; // no outputs
+  }
 
   if (AKANTU_DEBUG_TEST(dblDump)) {
     strcpy(this->mumps_data.write_problem, "mumps_matrix.mtx");
