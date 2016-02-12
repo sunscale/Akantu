@@ -110,11 +110,11 @@ private:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  
+
   AKANTU_GET_MACRO(PETScMatrixWrapper, petsc_matrix_wrapper, PETScMatrixWrapper*);
   AKANTU_GET_MACRO(LocalSize, local_size, Int);
   ///  AKANTU_GET_MACRO(LocalSize, local_size, Int);
-  
+
 
 public:
 
@@ -136,7 +136,7 @@ private:
   /// number of nonzeros in every row of the off-diagonal part
   Array<Int> o_nnz;
 
-  /// the global index of the first local row 
+  /// the global index of the first local row
   Int first_global_index;
 
   /// bool to indicate if the matrix data has been initialized by calling MatCreate

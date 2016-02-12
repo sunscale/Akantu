@@ -365,7 +365,7 @@ void SolverMumps::solve(Array<Real> & solution) {
   AKANTU_DEBUG_IN();
 
   this->solve();
-  
+
   if (this->parallel_method == SolverMumpsOptions::_serial_split)
     solution.copy(*(this->rhs), true);
 
