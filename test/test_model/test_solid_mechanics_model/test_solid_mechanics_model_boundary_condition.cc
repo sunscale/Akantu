@@ -54,13 +54,13 @@ int main(int argc, char* argv[])
 
     SolidMechanicsModel model(mesh);
     model.setPBC(1, 0, 0);
-    model.initFull();
+    model.initFull(SolidMechanicsModelOptions(_static));
 
     Array<Real> & force = model.getForce();
 
     /// Testing FromTraction functor
     Real traction_ptr[] = {0, 0, 1};
-    Vector<Real> surface_traction(traction_ptr, 3);
+    Vector<Real> surface_traction(traction_ptr, spatial_dimension);
     model.applyBC(BC::Neumann::FromTraction(surface_traction), "Bottom");
 
     Real total_force = 0;
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     Real stress_ptr[] = {0, 0, 0,
                          0, 0, 0,
                          0, 0, 1};
-    Matrix<Real> surface_stress(stress_ptr, 3, 3);
+    Matrix<Real> surface_stress(stress_ptr, spatial_dimension, spatial_dimension);
     model.applyBC(BC::Neumann::FromHigherDim(surface_stress), "Bottom");
 
     n_it = nodes.begin();
@@ -146,27 +146,6 @@ int main(int argc, char* argv[])
 
 /* -------------------------------------------------------------------------- */
 
-    // Checking boundary array
-    n_it = xmin_nodes.begin();
-    for (; n_it != xmin_nodes.end() ; ++n_it) {
-      for (UInt i = 0 ; i < spatial_dimension ; i++)
-        if (model.isPBCSlaveNode(*n_it) && !boundary(*n_it, i)) {
-          std::cout << "PBC boundary array" << std::endl;
-          return EXIT_FAILURE;
-        }
-    }
-
-    n_it = xmax_nodes.begin();
-    for (; n_it != xmax_nodes.end() ; ++n_it) {
-      for (UInt i = 0 ; i < spatial_dimension ; i++)
-        if (model.isPBCSlaveNode(*n_it) && !boundary(*n_it, i)) {
-          std::cout << "PBC boundary array" << std::endl;
-          return EXIT_FAILURE;
-        }
-    }
-
-/* -------------------------------------------------------------------------- */
-
     /// Testing dirichlet BC functor
     model.applyBC(BC::Dirichlet::FixedValue(13.0, _x), "Bottom");
     model.applyBC(BC::Dirichlet::FixedValue(13.0, _y), "Bottom");
@@ -176,7 +155,7 @@ int main(int argc, char* argv[])
 
     n_it = nodes.begin();
     for (; n_it != n_end ; ++n_it) {
-      for (UInt i = 0 ; i < 3 ; i++) {
+      for (UInt i = 0 ; i < spatial_dimension ; i++) {
         if (!boundary(*n_it, i) ||
             std::abs(displacement(*n_it, i) - 13.0) > Math::getTolerance()) {
           std::cout << "FixedValue" << std::endl;
@@ -184,6 +163,9 @@ int main(int argc, char* argv[])
         }
       }
     }
+
+/* -------------------------------------------------------------------------- */
+    model.assembleStiffnessMatrix();
 
     finalize();
     return EXIT_SUCCESS;
