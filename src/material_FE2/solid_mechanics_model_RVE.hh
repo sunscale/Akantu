@@ -133,6 +133,9 @@ private:
 
   /// the number of gel pockets inside the RVE
   UInt nb_gel_pockets;
+
+  /// dump counter
+  UInt nb_dumps;
 };
 
 
