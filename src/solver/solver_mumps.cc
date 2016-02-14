@@ -217,8 +217,8 @@ void SolverMumps::initialize(SolverOptions & options) {
   case SolverMumpsOptions::_master_slave_distributed:
     this->mumps_data.par = 0; // The host is not part of the computations
   case SolverMumpsOptions::_fully_distributed:
-#ifdef AKANTU_USE_MPI
     {
+#ifdef AKANTU_USE_MPI
     const StaticCommunicatorMPI & mpi_st_comm =
         dynamic_cast<const StaticCommunicatorMPI &>(
             communicator.getRealStaticCommunicator());
@@ -365,7 +365,7 @@ void SolverMumps::solve(Array<Real> & solution) {
   AKANTU_DEBUG_IN();
 
   this->solve();
-  
+
   if (this->parallel_method == SolverMumpsOptions::_serial_split)
     solution.copy(*(this->rhs), true);
 
