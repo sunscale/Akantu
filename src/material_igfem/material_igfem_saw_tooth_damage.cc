@@ -187,19 +187,44 @@ UInt MaterialIGFEMSawToothDamage<spatial_dimension>::updateDamage() {
       Array<Real> & dam = this->damage(el_type);
       Array<Real>::iterator<Real> dam_it = dam.begin();
 
-      for (; equivalent_stress_it != equivalent_stress_end; ++equivalent_stress_it, ++dam_it, ++sub_mat_it ) {
-
-	/// check if damage occurs
-	if (*equivalent_stress_it >= (1-dam_tolerance)*norm_max_equivalent_stress && *sub_mat_it != 0) {
-	  if (*dam_it < dam_threshold)
-	    *dam_it +=prescribed_dam;
-	  else *dam_it = max_damage;
-	  nb_damaged_elements += 1;
+      /// loop over all the elements of the given type
+      UInt nb_element = this->element_filter(el_type, ghost_type).getSize();
+      UInt nb_quads = this->fem->getNbIntegrationPoints(el_type, ghost_type);
+      bool damage_element = false;
+      for (UInt e = 0; e < nb_element; ++e) {
+	damage_element = false;
+	/// check if damage occurs in the element
+	for (UInt q = 0; q < nb_quads; ++q) {
+	  if (*equivalent_stress_it >= (1-dam_tolerance)*norm_max_equivalent_stress && *sub_mat_it != 0) {	
+	    damage_element = true;
+	  }
+	  ++sub_mat_it;
+	  ++equivalent_stress_it;
 	}
-
+	
+	if (damage_element) {
+	  /// damage the element
+	  sub_mat_it -= nb_quads;
+	  nb_damaged_elements += 1;
+	  for (UInt q = 0; q < nb_quads; ++q) {
+	    if (*sub_mat_it) {
+	      if (*dam_it < dam_threshold)
+		*dam_it +=prescribed_dam;
+	      else *dam_it = max_damage;
+	      ++nb_damaged_elements;
+	    }	      
+	    ++sub_mat_it;
+	    ++dam_it;
+	  }	    
+	}
+	else {
+	  sub_mat_it += nb_quads;
+	  dam_it += nb_quads;
+	}
       }
     }
   }
+
   StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
   comm.allReduce(&nb_damaged_elements, 1, _so_sum);
   AKANTU_DEBUG_OUT();

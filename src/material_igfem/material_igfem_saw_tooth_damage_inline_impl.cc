@@ -33,10 +33,29 @@ UInt MaterialIGFEMSawToothDamage<spatial_dimension>::updateDamage(UInt quad_inde
 
   /// check if damage occurs
   if (equivalent_stress(el_type, ghost_type)(quad_index) >= (1-dam_tolerance) * norm_max_equivalent_stress) {
-    if (dam_on_quad < dam_threshold)
-      dam_on_quad +=prescribed_dam;
-    else dam_on_quad = max_damage;
-    return 1;
+    /// damage the entire sub-element -> get the element index
+    UInt el_index = quad_index / this->element_filter(el_type, ghost_type).getSize();
+    UInt nb_quads = this->fem->getNbIntegrationPoints(el_type, ghost_type);
+    UInt start_idx = el_index * nb_quads;
+    Array<UInt> & sub_mat = this->sub_material(el_type, ghost_type);
+    UInt damaged_quads = 0;
+    if (dam_on_quad < dam_threshold) {
+      for (UInt q = 0; q < nb_quads; ++q, ++start_idx) {
+	if (sub_mat(start_idx)) {
+	  dam(start_idx) +=prescribed_dam;
+	  damaged_quads += 1;
+	}
+      }
+    }
+    else {
+      for (UInt q = 0; q < nb_quads; ++q, ++start_idx) {
+	if (sub_mat(start_idx)) { 
+	  dam(start_idx) += max_damage;
+	  damaged_quads += 1;
+	}
+      }
+    } 
+    return damaged_quads;
   }
 
   return 0;

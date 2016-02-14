@@ -52,7 +52,21 @@ register_test(test_igfem_element_orientation_parallel
 
 register_test(test_ASR_damge
   SOURCES test_ASR_damage.cc
-  FILES_TO_COPY material_ASR.dat 
+  FILES_TO_COPY material_ASR.dat one_inclusion.msh
   DIRECTORIES_TO_CREATE paraview
   PACKAGE IGFEM extra_materials
   )
+
+# register_test(test_igfem_analysis
+#   SOURCES igfem_analysis.cc
+#   FILES_TO_COPY material_el_flipping.dat one_inclusion.msh 
+#   DIRECTORIES_TO_CREATE paraview
+#   PACKAGE IGFEM
+#   )
+# 
+# register_test(test_element_flipping
+#   SOURCES test_element_flipping.cc
+#   FILES_TO_COPY standard_materials.dat
+#   DIRECTORIES_TO_CREATE paraview
+#   PACKAGE IGFEM
+#   )
