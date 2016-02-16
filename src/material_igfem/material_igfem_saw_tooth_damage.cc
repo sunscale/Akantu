@@ -205,20 +205,18 @@ UInt MaterialIGFEMSawToothDamage<spatial_dimension>::updateDamage() {
 	if (damage_element) {
 	  /// damage the element
 	  sub_mat_it -= nb_quads;
-	  nb_damaged_elements += 1;
 	  for (UInt q = 0; q < nb_quads; ++q) {
 	    if (*sub_mat_it) {
 	      if (*dam_it < dam_threshold)
 		*dam_it +=prescribed_dam;
 	      else *dam_it = max_damage;
-	      ++nb_damaged_elements;
+	      nb_damaged_elements += 1;
 	    }	      
 	    ++sub_mat_it;
 	    ++dam_it;
 	  }	    
 	}
 	else {
-	  sub_mat_it += nb_quads;
 	  dam_it += nb_quads;
 	}
       }
