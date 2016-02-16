@@ -28,6 +28,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+/* -------------------------------------------------------------------------- */
+
 
 #ifndef __AKANTU_SOLVER_CALLBACK_HH__
 #define __AKANTU_SOLVER_CALLBACK_HH__
@@ -39,29 +42,27 @@ class SolverCallback {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SolverCallback(DOFManager & dof_manager) : dof_manager(dof_manager) {}
+  SolverCallback() {}
+  virtual ~SolverCallback() {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// callback to assemble the Jacobian Matrix
+  virtual void assembleJacobian() { AKANTU_DEBUG_TO_IMPLEMENT(); }
 
-  /// assemble the residual
-  virtual void assembleResidual() = 0;
-
-  /// assemble the Jacobian matrix
-  virtual void assembleJacobian() = 0;
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
+  /// callback to assemble the residual (rhs)
+  virtual void assembleResidual() { AKANTU_DEBUG_TO_IMPLEMENT(); }
 
   /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
+  /* Dynamic simulations part                                                 */
   /* ------------------------------------------------------------------------ */
-private:
-  DOFManager & dof_manager;
+  /// callback for the predictor (in case of dynamic simulation)
+  virtual void predictor() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+
+  /// callback for the corrector (in case of dynamic simulation)
+  virtual void corrector() { AKANTU_DEBUG_TO_IMPLEMENT(); }
 };
 
 __END_AKANTU__

@@ -87,24 +87,24 @@ void Model::createSynchronizerRegistry(DataAccessor * data_accessor) {
   synch_registry = new SynchronizerRegistry(*data_accessor);
 }
 
-/* -------------------------------------------------------------------------- */
-void Model::setPBC(UInt x, UInt y, UInt z) {
-  mesh.computeBoundingBox();
-  if (x)
-    MeshUtils::computePBCMap(this->mesh, 0, this->pbc_pair);
-  if (y)
-    MeshUtils::computePBCMap(this->mesh, 1, this->pbc_pair);
-  if (z)
-    MeshUtils::computePBCMap(this->mesh, 2, this->pbc_pair);
-}
+// /* -------------------------------------------------------------------------- */
+// void Model::setPBC(UInt x, UInt y, UInt z) {
+//   mesh.computeBoundingBox();
+//   if (x)
+//     MeshUtils::computePBCMap(this->mesh, 0, this->pbc_pair);
+//   if (y)
+//     MeshUtils::computePBCMap(this->mesh, 1, this->pbc_pair);
+//   if (z)
+//     MeshUtils::computePBCMap(this->mesh, 2, this->pbc_pair);
+// }
 
-/* -------------------------------------------------------------------------- */
-void Model::setPBC(SurfacePairList & surface_pairs) {
-  SurfacePairList::iterator s_it;
-  for (s_it = surface_pairs.begin(); s_it != surface_pairs.end(); ++s_it) {
-    MeshUtils::computePBCMap(this->mesh, *s_it, this->pbc_pair);
-  }
-}
+// /* -------------------------------------------------------------------------- */
+// void Model::setPBC(SurfacePairList & surface_pairs) {
+//   SurfacePairList::iterator s_it;
+//   for (s_it = surface_pairs.begin(); s_it != surface_pairs.end(); ++s_it) {
+//     MeshUtils::computePBCMap(this->mesh, *s_it, this->pbc_pair);
+//   }
+// }
 
 /* -------------------------------------------------------------------------- */
 void Model::initPBC() {

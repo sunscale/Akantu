@@ -80,6 +80,7 @@ namespace akantu {
 #cmakedefine AKANTU_USE_PTSCOTCH
 #cmakedefine AKANTU_SCOTCH_NO_EXTERN
 
+#cmakedefine AKANTU_IMPLICIT
 #cmakedefine AKANTU_USE_MUMPS
 #cmakedefine AKANTU_USE_PETSC
 

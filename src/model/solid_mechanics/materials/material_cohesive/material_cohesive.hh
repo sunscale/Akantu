@@ -75,7 +75,7 @@ public:
   void computeTraction(GhostType ghost_type = _not_ghost);
 
   /// assemble residual
-  void assembleResidual(GhostType ghost_type = _not_ghost);
+  void assembleInternalForces(GhostType ghost_type = _not_ghost);
 
   /// compute reversible and total energies by element
   void computeEnergies();

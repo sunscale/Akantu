@@ -1,5 +1,5 @@
 /**
- * @file   non_linear_solver_default.cc
+ * @file   non_linear_solver_newton_raphson.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
@@ -28,16 +28,16 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "non_linear_solver_default.hh"
+#include "non_linear_solver_newton_raphson.hh"
 #include "dof_manager_default.hh"
-#include "non_linear_solver_callback.hh"
+#include "solver_callback.hh"
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolverDefault::NonLinearSolverDefault(
+NonLinearSolverNewtonRaphson::NonLinearSolverNewtonRaphson(
     DOFManagerDefault & dof_manager,
     const NonLinearSolverType & non_linear_solver_type, const ID & id,
     UInt memory_id)
@@ -45,28 +45,24 @@ NonLinearSolverDefault::NonLinearSolverDefault(
       dof_manager(dof_manager),
       solver(dof_manager, "jacobian", id + ":sparse_solver", memory_id),
       convergence_criteria_type(_scc_solution), convergence_criteria(1e-10),
-      max_iterations(10), n_iter(0), error(0.), converged(false) {}
+      max_iterations(10), n_iter(0), error(0.), converged(false) {
+
+  this->supported_type.insert(_nls_newton_raphson_modified);
+  this->supported_type.insert(_nls_newton_raphson);
+  this->supported_type.insert(_nls_linear);
+
+  this->checkIfTypeIsSupported();
+}
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolverDefault::~NonLinearSolverDefault() {}
+NonLinearSolverNewtonRaphson::~NonLinearSolverNewtonRaphson() {}
 
 /* ------------------------------------------------------------------------ */
-void NonLinearSolverDefault::solve() {
-  // EventManager::sendEvent(NonLinearSolver::BeforeNonLinearSolverSolve(method));
-  this->solver_callback->predictor();
+void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
+  solver_callback.predictor();
 
-  switch (this->non_linear_solver_type) {
-  case _nls_linear:
-  case _nls_newton_raphson:
-    break;
-  case _nls_newton_raphson_modified:
-    this->solver_callback->assembleJacobian();
-    break;
-  default:
-    AKANTU_DEBUG_ERROR("The resolution method "
-                       << this->non_linear_solver_type
-                       << " has not been implemented!");
-  }
+  if(this->non_linear_solver_type == _nls_newton_raphson_modified)
+    solver_callback.assembleJacobian();
 
   this->n_iter = 0;
   this->converged = false;
@@ -74,28 +70,30 @@ void NonLinearSolverDefault::solve() {
   if (this->convergence_criteria_type == _scc_residual) {
     this->converged = this->testConvergence(this->dof_manager.getResidual());
 
-    if (this->converged)  return;
+    if (this->converged)
+      return;
   }
 
   do {
     if (this->non_linear_solver_type == _nls_newton_raphson)
-      this->solver_callback->assembleJacobian();
+      solver_callback.assembleJacobian();
 
     this->solver.solve();
 
-    this->solver_callback->corrector();
+    solver_callback.corrector();
 
     // EventManager::sendEvent(NonLinearSolver::AfterSparseSolve(method));
 
     if (this->convergence_criteria_type == _scc_residual) {
-      this->solver_callback->assembleResidual();
+      solver_callback.assembleResidual();
       this->converged = this->testConvergence(this->dof_manager.getResidual());
     } else {
-      this->converged = this->testConvergence(this->dof_manager.getGlobalSolution());
+      this->converged =
+          this->testConvergence(this->dof_manager.getGlobalSolution());
     }
 
     if (this->convergence_criteria_type == _scc_solution && !this->converged)
-      this->solver_callback->assembleResidual();
+      solver_callback.assembleResidual();
     // this->dump();
 
     this->n_iter++;
@@ -110,7 +108,7 @@ void NonLinearSolverDefault::solve() {
   // this makes sure that you have correct strains and stresses after the
   // solveStep function (e.g., for dumping)
   if (this->convergence_criteria_type == _scc_solution)
-    this->solver_callback->assembleResidual();
+    solver_callback.assembleResidual();
 
   if (this->converged) {
     //    EventManager::sendEvent(
@@ -128,11 +126,7 @@ void NonLinearSolverDefault::solve() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLinearSolverDefault::setParameters(
-    const ParserSection & parameters_section) {}
-
-/* -------------------------------------------------------------------------- */
-bool NonLinearSolverDefault::testConvergence(const Array<Real> & array) {
+bool NonLinearSolverNewtonRaphson::testConvergence(const Array<Real> & array) {
   AKANTU_DEBUG_IN();
 
   const Array<bool> & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
@@ -145,8 +139,8 @@ bool NonLinearSolverDefault::testConvergence(const Array<Real> & array) {
   Real norm = 0.;
   for (UInt n = 0; n < nb_degree_of_freedoms; ++n, ++arr_it, ++bld_it) {
     bool is_local_node = this->dof_manager.isLocalOrMasterDOF(n);
-    if(!(*bld_it) && is_local_node) {
-        norm += *arr_it * *arr_it;
+    if (!(*bld_it) && is_local_node) {
+      norm += *arr_it * *arr_it;
     }
   }
 
@@ -154,7 +148,8 @@ bool NonLinearSolverDefault::testConvergence(const Array<Real> & array) {
 
   norm = std::sqrt(norm);
 
-  AKANTU_DEBUG_ASSERT(!Math::isnan(norm), "Something goes wrong in the solve phase");
+  AKANTU_DEBUG_ASSERT(!Math::isnan(norm),
+                      "Something goes wrong in the solve phase");
 
   this->error = norm;
 
@@ -162,7 +157,5 @@ bool NonLinearSolverDefault::testConvergence(const Array<Real> & array) {
 }
 
 /* -------------------------------------------------------------------------- */
-
-
 
 __END_AKANTU__

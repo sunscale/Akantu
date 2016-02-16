@@ -190,10 +190,11 @@ package_declare_sources(core
   model/dof_manager_inline_impl.cc
   model/model_solver.cc
   model/model_solver.hh
-  model/non_linear_solver.hh
   model/non_linear_solver.cc
-  model/non_linear_solver_default.cc
+  model/non_linear_solver.hh
   model/non_linear_solver_default.hh
+  model/non_linear_solver_lumped.cc
+  model/non_linear_solver_lumped.hh
   model/solver_callback.hh
   model/time_step_solver.hh
   model/time_step_solvers/time_step_solver.cc

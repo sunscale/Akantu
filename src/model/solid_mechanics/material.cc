@@ -183,17 +183,17 @@ void Material::savePreviousState() {
  * @param[in] displacements nodes displacements
  * @param[in] ghost_type compute the residual for _ghost or _not_ghost element
  */
-void Material::updateResidual(GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
+// void Material::updateResidual(GhostType ghost_type) {
+//   AKANTU_DEBUG_IN();
 
-  computeAllStresses(ghost_type);
-  assembleResidual(ghost_type);
+//   computeAllStresses(ghost_type);
+//   assembleResidual(ghost_type);
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
-void Material::assembleResidual(GhostType ghost_type) {
+void Material::assembleInternalForces(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = model->getSpatialDimension();
@@ -270,13 +270,13 @@ void Material::assembleResidual(GhostType ghost_type) {
   } else {
     switch (spatial_dimension) {
     case 1:
-      this->assembleResidual<1>(ghost_type);
+      this->assembleInternalForces<1>(ghost_type);
       break;
     case 2:
-      this->assembleResidual<2>(ghost_type);
+      this->assembleInternalForces<2>(ghost_type);
       break;
     case 3:
-      this->assembleResidual<3>(ghost_type);
+      this->assembleInternalForces<3>(ghost_type);
       break;
     }
   }
@@ -766,7 +766,7 @@ void Material::assembleStiffnessMatrixL2(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-template <UInt dim> void Material::assembleResidual(GhostType ghost_type) {
+template <UInt dim> void Material::assembleInternalForces(GhostType ghost_type) {
 
   AKANTU_DEBUG_IN();
 

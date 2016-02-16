@@ -196,10 +196,10 @@ public:
   virtual void initMaterial();
 
   /// compute the residual for this material
-  virtual void updateResidual(GhostType ghost_type = _not_ghost);
+  //  virtual void updateResidual(GhostType ghost_type = _not_ghost);
 
   /// assemble the residual for this material
-  virtual void assembleResidual(GhostType ghost_type);
+  virtual void assembleInternalForces(GhostType ghost_type);
 
   /// save the stress in the previous_stress if needed
   virtual void savePreviousState();
@@ -273,7 +273,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 protected:
   /// assemble the residual
-  template <UInt dim> void assembleResidual(GhostType ghost_type);
+  template <UInt dim> void assembleInternalForces(GhostType ghost_type);
 
   /// Computation of Cauchy stress tensor in the case of finite deformation from
   /// the 2nd Piola-Kirchhoff for a given element type

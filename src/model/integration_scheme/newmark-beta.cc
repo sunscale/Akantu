@@ -210,7 +210,10 @@ void NewmarkBeta::assembleJacobian(const SolutionType & type,
   Real c = this->getAccelerationCoefficient(type, delta_t);
   Real e = this->getDisplacementCoefficient(type, delta_t);
 
-  J.add(K, e);
+  if (!(e == 0.)) { // in explicit this coefficient is exactly 0.
+    J.add(K, e);
+  }
+
   J.add(M, c);
 
   try {

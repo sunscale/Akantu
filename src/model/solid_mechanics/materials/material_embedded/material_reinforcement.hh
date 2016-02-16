@@ -54,18 +54,15 @@ __BEGIN_AKANTU__
  *  -  this->spatial_dimension is always 1
  *  -  the template parameter dim is the dimension of the problem
  */
-template<UInt dim>
-class MaterialReinforcement : virtual public Material {
+template <UInt dim> class MaterialReinforcement : virtual public Material {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   /// Constructor
-  MaterialReinforcement(SolidMechanicsModel & model,
-                        UInt spatial_dimension,
-                        const Mesh & mesh,
-                        FEEngine & fe_engine,
+  MaterialReinforcement(SolidMechanicsModel & model, UInt spatial_dimension,
+                        const Mesh & mesh, FEEngine & fe_engine,
                         const ID & id = "");
 
   /// Destructor
@@ -108,14 +105,18 @@ public:
   virtual Real getEnergy(std::string id);
 
   // virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & field_name,
-  //                                                     const ElementKind & kind,
-  //                                                     const ID & fe_engine_id) const;
+  //                                                     const ElementKind &
+  //                                                     kind,
+  //                                                     const ID &
+  //                                                     fe_engine_id) const;
 
-  // /// Reimplementation of Material's function to accomodate for interface mesh
+  // /// Reimplementation of Material's function to accomodate for interface
+  // mesh
   // virtual void flattenInternal(const std::string & field_id,
   //                              ElementTypeMapArray<Real> & internal_flat,
   //                              const GhostType ghost_type = _not_ghost,
-  //                              ElementKind element_kind = _ek_not_defined) const;
+  //                              ElementKind element_kind = _ek_not_defined)
+  //                              const;
 
   /* ------------------------------------------------------------------------ */
   /* Protected methods                                                        */
@@ -140,7 +141,8 @@ protected:
                                         GhostType ghost_type);
 
   /// Compute the background shape derivatives for a type
-  void computeBackgroundShapeDerivatives(const ElementType & type, GhostType ghost_type);
+  void computeBackgroundShapeDerivatives(const ElementType & type,
+                                         GhostType ghost_type);
 
   /// Filter elements crossed by interface of a type
   void filterInterfaceBackgroundElements(Array<UInt> & filter,
@@ -149,16 +151,18 @@ protected:
                                          GhostType ghost_type);
 
   /// Assemble the residual of one type of element (typically _segment_2)
-  void assembleResidual(const ElementType & type, GhostType ghost_type);
+  void assembleInternalForces(const ElementType & type, GhostType ghost_type);
 
   /// Assemble the residual for a pair of elements
-  void assembleResidualInterface(const ElementType & interface_type,
-                                 const ElementType & background_type,
-                                 GhostType ghost_type);
+  void assembleInternalForcesInterface(const ElementType & interface_type,
+                                       const ElementType & background_type,
+                                       GhostType ghost_type);
 
   // TODO figure out why voigt size is 4 in 2D
-  inline void stressTensorToVoigtVector(const Matrix<Real> & tensor, Vector<Real> & vector);
-  inline void strainTensorToVoigtVector(const Matrix<Real> & tensor, Vector<Real> & vector);
+  inline void stressTensorToVoigtVector(const Matrix<Real> & tensor,
+                                        Vector<Real> & vector);
+  inline void strainTensorToVoigtVector(const Matrix<Real> & tensor,
+                                        Vector<Real> & vector);
 
   /// Compute gradu on the interface quadrature points
   virtual void computeGradU(const ElementType & type, GhostType ghost_type);
@@ -186,8 +190,7 @@ protected:
   Real area;
 
   /// Background mesh shape derivatives
-  ElementTypeMap< ElementTypeMapArray<Real> * > shape_derivatives;
-
+  ElementTypeMap<ElementTypeMapArray<Real> *> shape_derivatives;
 };
 
 #include "material_reinforcement_inline_impl.cc"

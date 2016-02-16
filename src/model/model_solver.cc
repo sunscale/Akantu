@@ -29,6 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "model_solver.hh"
+#include "mesh.hh"
 #include "dof_manager.hh"
 
 #if defined(AKANTU_USE_MPI)
@@ -45,8 +46,18 @@
 
 __BEGIN_AKANTU__
 
+/* -------------------------------------------------------------------------- */
 ModelSolver::ModelSolver(const Mesh & mesh, const ID & id, UInt memory_id)
-    : Parsable(_st_solver, id), dof_manager(NULL) {
+    : Parsable(_st_solver, id), parent_id(id), parent_memory_id(memory_id), mesh(mesh),
+      dof_manager(NULL) {}
+
+/* -------------------------------------------------------------------------- */
+ModelSolver::~ModelSolver() {
+  delete this->dof_manager;
+}
+
+/* -------------------------------------------------------------------------- */
+void ModelSolver::initDOFManager() {
   std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
       sub_sect = getStaticParser().getSubSections(_st_solver);
 
@@ -57,18 +68,23 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id, UInt memory_id)
   const ParserSection & section = *sub_sect.first;
   std::string solver_type = section.getName();
 
+  this->initDOFManager(solver_type);
+}
+
+/* -------------------------------------------------------------------------- */
+void ModelSolver::initDOFManager(const ID & solver_type) {
   if (solver_type == "petsc") {
 #if defined(AKANTU_USE_PETSC)
-    this->dof_manager =
-        new DOFManagerPETSc(mesh, id + ":dof_manager_petsc", memory_id);
+    ID id = this->parent_id + ":dof_manager_petsc";
+    this->dof_manager = new DOFManagerPETSc(this->mesh, id, this->parent_memory_id);
 #else
     AKANTU_EXCEPTION(
         "To use PETSc you have to activate it in the compilations options");
 #endif
   } else if (solver_type == "mumps") {
 #if defined(AKANTU_USE_MUMPS)
-    this->dof_manager =
-        new DOFManagerDefault(mesh, id + ":dof_manager_default", memory_id);
+    ID id = this->parent_id + ":dof_manager_default";
+    this->dof_manager = new DOFManagerDefault(this->mesh, id, this->parent_memory_id);
 #else
     AKANTU_EXCEPTION(
         "To use MUMPS you have to activate it in the compilations options");
@@ -82,68 +98,54 @@ ModelSolver::ModelSolver(const Mesh & mesh, const ID & id, UInt memory_id)
 }
 
 /* -------------------------------------------------------------------------- */
-void ModelSolver::solveStep() {
+void ModelSolver::solveStep(ID solver_id) {
   AKANTU_DEBUG_IN();
 
-  this->solveStep(this->default_time_step_solver_id,
-                  this->default_non_linear_solver_id);
+  if (solver_id == "")
+    solver_id = default_solver_id;
 
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void ModelSolver::solveStep(const ID & time_step_solver_id,
-                            const ID & non_linear_solver_id) {
-  AKANTU_DEBUG_IN();
-
-  std::set<ID>::const_iterator tss_it =
-      time_step_solvers.find(time_step_solver_id);
-  if (tss_it == time_step_solvers.end()) {
-    AKANTU_EXCEPTION("No time step solver was instantiated with this id");
-  }
-
-  std::set<ID>::const_iterator nls_it =
-      time_step_solvers.find(time_step_solver_id);
-  if (tss_it == time_step_solvers.end()) {
-    AKANTU_EXCEPTION("No non linear solver was instantiated with this id");
-  }
-
-  NonLinearSolver & nls =
-      this->dof_manager->getNonLinearSolver(non_linear_solver_id);
-  TimeStepSolver & tss =
-      this->dof_manager->getTimeStepSolver(time_step_solver_id);
-
-  NonLinearSolverCallback & previous_nls_callback = nls.getCallbacks();
-  NonLinearSolverCallback & previous_tss_callback = nls.getCallbacks();
-
-  // set the callbacks of the time step solver to the current model
-  // solver
-  tss.registerCallback(*this);
-
-  // set the callbacks of the non linear solver to the chosen time step solver
-  nls.registerCallback(tss);
+  TimeStepSolver & tss = this->dof_manager->getTimeStepSolver(solver_id);
 
   // make one non linear solve
-  nls.solve();
-
-  /// restores the callbacks
-  nls.registerCallback(previous_nls_callback);
-  tss.registerCallback(previous_tss_callback);
+  tss.solveStep(*this);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void ModelSolver::initTimeStepSolver(
-    const ID & time_step_solver_id, const ID & dof_id,
-    const TimeStepSolverType & time_step_solver_type) {
-  if (this->default_time_step_solver_id == "") {
-    this->default_time_step_solver_id = time_step_solver_id;
+void ModelSolver::getNewSolver(
+    const ID & solver_id, const TimeStepSolverType & time_step_solver_type,
+    const NonLinearSolverType & non_linear_solver_type) {
+  if (this->default_solver_id == "") {
+    this->default_solver_id = solver_id;
   }
 
-  this->dof_manager->getNewTimeStepSolver(time_step_solver_id, dof_id,
-                                          time_step_solver_type);
+  NonLinearSolver & nls = this->dof_manager->getNewNonLinearSolver(
+      solver_id, non_linear_solver_type);
+
+  this->dof_manager->getNewTimeStepSolver(solver_id, time_step_solver_type,
+                                          nls);
 }
+
+/* -------------------------------------------------------------------------- */
+void ModelSolver::setIntegrationScheme(
+    const ID & solver_id, const ID & dof_id,
+    const IntegrationSchemeType & integration_scheme_type) {
+  TimeStepSolver & tss = this->dof_manager->getTimeStepSolver(solver_id);
+
+  tss.setIntegrationScheme(dof_id, integration_scheme_type);
+}
+
+/* -------------------------------------------------------------------------- */
+void ModelSolver::predictor() {}
+/* -------------------------------------------------------------------------- */
+void ModelSolver::corrector() {}
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+// void ModelSolver::setIntegrationScheme(
+//     const ID & solver_id, const ID & dof_id,
+//     const IntegrationSchemeType & integration_scheme_type) {}
 
 /* -------------------------------------------------------------------------- */
 
@@ -432,6 +434,24 @@ void ModelSolver::initTimeStepSolver(
 //     b_val++;
 //     blocked_dofs_val++;
 //   }
+// }
+
+/* -------------------------------------------------------------------------- */
+// void TimeStepSolverDefault::updateAcceleration() {
+//   AKANTU_DEBUG_IN();
+
+//   updateResidualInternal();
+
+//   if (method == _explicit_lumped_mass) {
+//     /* residual = residual_{n+1} - M * acceleration_n therefore
+//        solution = increment acceleration not acceleration */
+//     solveLumped(*increment_acceleration, *mass, *residual, *blocked_dofs,
+//                 f_m2a);
+//   } else if (method == _explicit_consistent_mass) {
+//     solve<NewmarkBeta::_acceleration_corrector>(*increment_acceleration);
+//   }
+
+//   AKANTU_DEBUG_OUT();
 // }
 
 __END_AKANTU__

@@ -31,28 +31,28 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SPARSE_MATRIX_HH__
 #define __AKANTU_SPARSE_MATRIX_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "dof_manager.hh"
-#include "mesh.hh"
+namespace akantu {
+  class DOFManager;
+}
 
 __BEGIN_AKANTU__
 
-class SparseMatrix : protected Memory {
+class SparseMatrix {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SparseMatrix(DOFManager & dof_manager,
-               const MatrixType & matrix_type,
-               const ID & id = "sparse_matrix",
-               const MemoryID & memory_id = 0);
+  SparseMatrix(DOFManager & dof_manager, const MatrixType & matrix_type,
+               const ID & id = "sparse_matrix");
 
-  SparseMatrix(const SparseMatrix & matrix, const ID & id = "sparse_matrix",
-               const MemoryID & memory_id = 0);
+  SparseMatrix(const SparseMatrix & matrix, const ID & id = "sparse_matrix");
 
   virtual ~SparseMatrix();
 
@@ -64,7 +64,7 @@ public:
   virtual void clearProfile();
 
   /// set the matrix to 0
-  virtual void clear();
+  virtual void clear() = 0;
 
   /// add a non-zero element to the profile
   virtual inline UInt addToProfile(UInt i, UInt j) = 0;
@@ -73,28 +73,37 @@ public:
   virtual inline void addToMatrix(UInt i, UInt j, Real value) = 0;
 
   /// save the profil in a file using the MatrixMarket file format
-  virtual void saveProfile(const std::string & filename) const;
+  virtual void saveProfile(const std::string &) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
 
   /// save the matrix in a file using the MatrixMarket file format
-  virtual void saveMatrix(const std::string & filename) const;
-
-  /// copy assuming the profile are the same
-  virtual void copyContent(const SparseMatrix & matrix);
+  virtual void saveMatrix(const std::string &) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  };
 
   /// add matrix assuming the profile are the same
-  virtual void add(const SparseMatrix & matrix, Real alpha);
+  virtual void add(const SparseMatrix & matrix, Real alpha = 1.) = 0;
+
+  /// Equivalent of *gemv in blas
+  virtual void matVecMul(const Array<Real> & x, Array<Real> & y,
+                         Real alpha = 1., Real beta = 0.) const = 0;
 
   /// modify the matrix to "remove" the blocked dof
-  virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
+  virtual void applyBoundary(Real block_val = 1.) = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   /// return the values at potition i, j
-  virtual inline Real operator()(UInt i, UInt j) const { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  virtual inline Real operator()(UInt i, UInt j) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
   /// return the values at potition i, j
-  virtual inline Real & operator()(UInt i, UInt j) { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  virtual inline Real & operator()(UInt i, UInt j) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
 
   AKANTU_GET_MACRO(NbNonZero, nb_non_zero, UInt);
 
@@ -106,8 +115,10 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  ID id;
+
   /// Underlying dof manager
-  DOFManager & dof_manager;
+  DOFManager & _dof_manager;
 
   /// sparce matrix type
   MatrixType matrix_type;
@@ -133,6 +144,5 @@ __END_AKANTU__
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix_inline_impl.cc"
-
 
 #endif /* __AKANTU_SPARSE_MATRIX_HH__ */

@@ -88,9 +88,10 @@ class NewmarkBeta : public IntegrationScheme2ndOrder {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NewmarkBeta(DOFManager & dof_manager, Real alpha, Real beta)
-      : IntegrationScheme2ndOrder(dof_manager), beta(beta), alpha(alpha), k(0.),
-        h(0.){};
+  NewmarkBeta(DOFManager & dof_manager, const ID & dof_id, Real alpha,
+              Real beta)
+      : IntegrationScheme2ndOrder(dof_manager, dof_id), beta(beta),
+        alpha(alpha), k(0.), h(0.){};
 
   ~NewmarkBeta(){};
 
@@ -154,30 +155,30 @@ protected:
  */
 class CentralDifference : public NewmarkBeta {
 public:
-  CentralDifference(DOFManager & dof_manager)
-      : NewmarkBeta(dof_manager, 0., 1. / 2.){};
+  CentralDifference(DOFManager & dof_manager, const ID & dof_id)
+      : NewmarkBeta(dof_manager, dof_id, 0., 1. / 2.){};
 };
 //#include "integration_scheme/central_difference.hh"
 
 /// undamped trapezoidal rule (implicit)
 class TrapezoidalRule2 : public NewmarkBeta {
 public:
-  TrapezoidalRule2(DOFManager & dof_manager)
-      : NewmarkBeta(dof_manager, 1. / 2., 1. / 2.){};
+  TrapezoidalRule2(DOFManager & dof_manager, const ID & dof_id)
+      : NewmarkBeta(dof_manager, dof_id, 1. / 2., 1. / 2.){};
 };
 
 /// Fox-Goodwin rule (implicit)
 class FoxGoodwin : public NewmarkBeta {
 public:
-  FoxGoodwin(DOFManager & dof_manager)
-      : NewmarkBeta(dof_manager, 1. / 6., 1. / 2.){};
+  FoxGoodwin(DOFManager & dof_manager, const ID & dof_id)
+      : NewmarkBeta(dof_manager, dof_id, 1. / 6., 1. / 2.){};
 };
 
 /// Linear acceleration (implicit)
 class LinearAceleration : public NewmarkBeta {
 public:
-  LinearAceleration(DOFManager & dof_manager)
-      : NewmarkBeta(dof_manager, 1. / 3., 1. / 2.){};
+  LinearAceleration(DOFManager & dof_manager, const ID & dof_id)
+      : NewmarkBeta(dof_manager, dof_id, 1. / 3., 1. / 2.){};
 };
 
 /* -------------------------------------------------------------------------- */

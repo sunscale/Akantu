@@ -1,11 +1,11 @@
 /**
- * @file   non_linear_solver.cc
+ * @file   non_linear_solver_linear.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Tue Oct 13 15:34:43 2015
+ * @date   Tue Aug 25 00:57:00 2015
  *
- * @brief  Implementation of the base class NonLinearSolver
+ * @brief  Implementation of the default NonLinearSolver
  *
  * @section LICENSE
  *
@@ -28,33 +28,41 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "non_linear_solver.hh"
+#include "non_linear_solver_linear.hh"
+#include "dof_manager_default.hh"
 #include "solver_callback.hh"
+#include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolver::NonLinearSolver(
-    DOFManager & dof_manager,
+NonLinearSolverLinear::NonLinearSolverLinear(
+    DOFManagerDefault & dof_manager,
     const NonLinearSolverType & non_linear_solver_type, const ID & id,
     UInt memory_id)
-    : Memory(id, memory_id), _dof_manager(dof_manager),
-      non_linear_solver_type(non_linear_solver_type) {}
+    : NonLinearSolver(dof_manager, non_linear_solver_type, id, memory_id),
+      dof_manager(dof_manager),
+      solver(dof_manager, "jacobian", id + ":sparse_solver", memory_id) {
 
-/* -------------------------------------------------------------------------- */
-NonLinearSolver::~NonLinearSolver() {}
-
-/* -------------------------------------------------------------------------- */
-void NonLinearSolver::checkIfTypeIsSupported() {
-  if (this->supported_type.find(this->non_linear_solver_type) ==
-      this->supported_type.end()) {
-    AKANTU_EXCEPTION("The resolution method "
-                     << this->non_linear_solver_type
-                     << " is not implemented in the non linear solver "
-                     << this->id << "!");
-  }
+  this->supported_type.insert(_nls_linear);
+  this->checkIfTypeIsSupported();
 }
+
+/* -------------------------------------------------------------------------- */
+NonLinearSolverLinear::~NonLinearSolverLinear() {}
+
+/* ------------------------------------------------------------------------ */
+void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {
+  solver_callback.predictor();
+
+  solver_callback.assembleResidual();
+  solver_callback.assembleJacobian();
+  this->solver.solve();
+
+  solver_callback.corrector();
+}
+
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

@@ -153,124 +153,140 @@ protected:
   /// register PBC synchronizer
   void registerPBCSynchronizer();
 
+
+  /* ------------------------------------------------------------------------ */
+  /* Solver interface                                                         */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// assembles the stiffness matrix,
+  void assembleStiffnessMatrix();
+  /// assembles the internal forces in the array internal_forces
+  void assembleInternalForces();
+
+private:
+  /// callback for the solver, this adds f_{ext} - f_{int} to the residual
+  virtual void assembleResidual();
+  /// callback for the solver, this assembles the stiffness matrix
+  virtual void assembleJacobian();
+
   /* ------------------------------------------------------------------------ */
   /* Explicit                                                                 */
   /* ------------------------------------------------------------------------ */
-public:
-  /// initialize the stuff for the explicit scheme
-  void initExplicit(AnalysisMethod analysis_method = _explicit_lumped_mass);
+// public:
+//   /// initialize the stuff for the explicit scheme
+//   void initExplicit(AnalysisMethod analysis_method = _explicit_lumped_mass);
 
-  bool isExplicit() {
-    return method == _explicit_lumped_mass ||
-           method == _explicit_consistent_mass;
-  }
+//   bool isExplicit() {
+//     return method == _explicit_lumped_mass ||
+//            method == _explicit_consistent_mass;
+//   }
 
-  /// initialize the array needed by updateResidual (residual, current_position)
-  void initializeUpdateResidualData();
+//   /// initialize the array needed by updateResidual (residual, current_position)
+//   void initializeUpdateResidualData();
 
   /// update the current position vector
   void updateCurrentPosition();
 
-  /// assemble the residual for the explicit scheme
-  virtual void updateResidual(bool need_initialize = true);
+//   /// assemble the residual for the explicit scheme
+//   virtual void updateResidual(bool need_initialize = true);
 
-  /**
-   * \brief compute the acceleration from the residual
-   * this function is the explicit equivalent to solveDynamic in implicit
-   * In the case of lumped mass just divide the residual by the mass
-   * In the case of not lumped mass call solveDynamic<_acceleration_corrector>
-   */
-  void updateAcceleration();
-  /// Update the increment of displacement
-  void updateIncrement();
-  /// Copy the actuel displacement into previous displacement
-  void updatePreviousDisplacement();
-  /// Save stress and strain through EventManager
-  void saveStressAndStrainBeforeDamage();
-  /// Update energies through EventManager
-  void updateEnergiesAfterDamage();
+//   /**
+//    * \brief compute the acceleration from the residual
+//    * this function is the explicit equivalent to solveDynamic in implicit
+//    * In the case of lumped mass just divide the residual by the mass
+//    * In the case of not lumped mass call solveDynamic<_acceleration_corrector>
+//    */
+//   void updateAcceleration();
+//   /// Update the increment of displacement
+//   void updateIncrement();
+//   /// Copy the actuel displacement into previous displacement
+//   void updatePreviousDisplacement();
+//   /// Save stress and strain through EventManager
+//   void saveStressAndStrainBeforeDamage();
+//   /// Update energies through EventManager
+//   void updateEnergiesAfterDamage();
 
-  /// Solve the system @f[ A x = \alpha b @f] with A a lumped matrix
-  void solveLumped(Array<Real> & x, const Array<Real> & A,
-                   const Array<Real> & b, const Array<bool> & blocked_dofs,
-                   Real alpha);
+//   /// Solve the system @f[ A x = \alpha b @f] with A a lumped matrix
+//   void solveLumped(Array<Real> & x, const Array<Real> & A,
+//                    const Array<Real> & b, const Array<bool> & blocked_dofs,
+//                    Real alpha);
 
-  /// explicit integration predictor
-  void explicitPred();
+//   /// explicit integration predictor
+//   void explicitPred();
 
-  /// explicit integration corrector
-  void explicitCorr();
+//   /// explicit integration corrector
+//   void explicitCorr();
 
-public:
-  void solveStep();
+// public:
+//   void solveStep();
 
-  /* ------------------------------------------------------------------------ */
-  /* Implicit                                                                 */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// initialize the solver and the jacobian_matrix (called by initImplicit)
-  void initSolver();
+//   /* ------------------------------------------------------------------------ */
+//   /* Implicit                                                                 */
+//   /* ------------------------------------------------------------------------ */
+// public:
+//   /// initialize the solver and the jacobian_matrix (called by initImplicit)
+//   void initSolver();
 
-  /// initialize the stuff for the implicit solver
-  void initImplicit(bool            dynamic = false);
+//   /// initialize the stuff for the implicit solver
+//   void initImplicit(bool            dynamic = false);
 
-  /// solve Ma = f to get the initial acceleration
-  void initialAcceleration();
+//   /// solve Ma = f to get the initial acceleration
+//   void initialAcceleration();
 
-  /// assemble the stiffness matrix
-  void assembleStiffnessMatrix();
+//   /// assemble the stiffness matrix
+//   void assembleStiffnessMatrix();
 
-public:
-  /**
-   * solve a step (predictor + convergence loop + corrector) using the
-   * the given convergence method (see akantu::SolveConvergenceMethod)
-   * and the given convergence criteria (see
-   * akantu::SolveConvergenceCriteria)
-   **/
-  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
-  bool solveStep(Real tolerance, UInt max_iteration = 100);
+// public:
+//   /**
+//    * solve a step (predictor + convergence loop + corrector) using the
+//    * the given convergence method (see akantu::SolveConvergenceMethod)
+//    * and the given convergence criteria (see
+//    * akantu::SolveConvergenceCriteria)
+//    **/
+//   template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
+//   bool solveStep(Real tolerance, UInt max_iteration = 100);
 
-  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
-  bool solveStep(Real tolerance, Real & error, UInt max_iteration = 100,
-                 bool do_not_factorize = false);
+//   template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
+//   bool solveStep(Real tolerance, Real & error, UInt max_iteration = 100,
+//                  bool do_not_factorize = false);
 
-public:
-  /**
-   * solve Ku = f using the the given convergence method (see
-   * akantu::SolveConvergenceMethod) and the given convergence
-   * criteria (see akantu::SolveConvergenceCriteria)
-   **/
-  template <SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
-  bool solveStatic(Real tolerance, UInt max_iteration,
-                   bool do_not_factorize = false);
+// public:
+//   /**
+//    * solve Ku = f using the the given convergence method (see
+//    * akantu::SolveConvergenceMethod) and the given convergence
+//    * criteria (see akantu::SolveConvergenceCriteria)
+//    **/
+//   template <SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
+//   bool solveStatic(Real tolerance, UInt max_iteration,
+//                    bool do_not_factorize = false);
 
-  /// create and return the velocity damping matrix
-  SparseMatrix & initVelocityDampingMatrix();
+//   /// create and return the velocity damping matrix
+//   SparseMatrix & initVelocityDampingMatrix();
 
-  /// implicit time integration predictor
-  void implicitPred();
+//   /// implicit time integration predictor
+//   void implicitPred();
 
-  /// implicit time integration corrector
-  void implicitCorr();
+//   /// implicit time integration corrector
+//   void implicitCorr();
 
-  /// compute the Cauchy stress on user demand.
-  void computeCauchyStresses();
+//   /// compute the Cauchy stress on user demand.
+//   void computeCauchyStresses();
 
-  // /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
-  // template <NewmarkBeta::IntegrationSchemeCorrectorType type>
-  // void solve(Array<Real> &increment, Real block_val = 1.,
-  //            bool need_factorize = true, bool has_profile_changed = false);
+//   // /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
+//   // template <NewmarkBeta::IntegrationSchemeCorrectorType type>
+//   // void solve(Array<Real> &increment, Real block_val = 1.,
+//   //            bool need_factorize = true, bool has_profile_changed = false);
 
-protected:
-  /// finish the computation of residual to solve in increment
-  void updateResidualInternal();
+// protected:
+//   /// finish the computation of residual to solve in increment
+//   void updateResidualInternal();
 
-  /// compute the support reaction and store it in force
-  void updateSupportReaction();
+//   /// compute the support reaction and store it in force
+//   void updateSupportReaction();
 
-private:
-  /// re-initialize the J matrix (to use if the profile of K changed)
-  void initJacobianMatrix();
+// private:
+//   /// re-initialize the J matrix (to use if the profile of K changed)
+//   void initJacobianMatrix();
 
   /* ------------------------------------------------------------------------ */
   /* Explicit/Implicit                                                        */
@@ -586,11 +602,6 @@ public:
 
   /// get the non-local manager
   AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, NonLocalManager &);
-
-  template <int dim, class model_type> friend struct ContactData;
-
-  template <int Dim, AnalysisMethod s, ContactResolutionMethod r>
-  friend class ContactResolution;
 
 protected:
   friend class Material;

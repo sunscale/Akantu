@@ -101,7 +101,7 @@ void DOFManager::assembleElementalArrayLocalArray(
       conn_it = conn_begin + *filter_it;
 
     for (UInt n = 0, ld = 0; n < nb_nodes_per_element; ++n) {
-      UInt offset_node = (*conn_it)(n) * nb_degree_of_freedom;
+      UInt offset_node = (*conn_it)(n)*nb_degree_of_freedom;
 
       for (UInt d = 0; d < nb_degree_of_freedom; ++d, ++ld) {
         array_assembeled[offset_node + d] += scale_factor * (*elem_it)(ld);
@@ -237,8 +237,113 @@ void DOFManager::splitSolutionPerDOFs() {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+void DOFManager::registerSparseMatrix(const ID & matrix_id,
+                                      SparseMatrix & matrix) {
+  SparseMatricesMap::const_iterator it = this->matrices.find(matrix_id);
+  if (it != this->matrices.end()) {
+    AKANTU_EXCEPTION("The matrix " << matrix_id << " already exists in "
+                                   << this->id);
+  }
+
+  this->matrices[matrix_id] = &matrix;
+}
 
 /* -------------------------------------------------------------------------- */
+/// Get an instance of a new SparseMatrix
+Array<Real> & DOFManager::getNewLumpedMatrix(const ID & id) {
+  ID matrix_id = this->id + ":lumpmtx:" + id;
+  LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(matrix_id);
+  if (it != this->lumped_matrices.end()) {
+    AKANTU_EXCEPTION("The lumped matrix " << matrix_id << " already exists in "
+                                          << this->id);
+  }
 
+  Array<Real> & mtx = this->alloc<Real>(matrix_id, this->local_system_size, 1);
+  this->lumped_matrices[matrix_id] = &mtx;
+  return mtx;
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::registerNonLinearSolver(const ID & non_linear_solver_id,
+                                         NonLinearSolver & non_linear_solver) {
+  NonLinearSolversMap::const_iterator it =
+      this->non_linear_solvers.find(non_linear_solver_id);
+  if (it != this->non_linear_solvers.end()) {
+    AKANTU_EXCEPTION("The non linear solver " << non_linear_solver_id
+                                              << " already exists in "
+                                              << this->id);
+  }
+
+  this->non_linear_solvers[non_linear_solver_id] = &non_linear_solver;
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::registerTimeStepSolver(const ID & time_step_solver_id,
+                                        TimeStepSolver & time_step_solver) {
+  TimeStepSolversMap::const_iterator it =
+      this->time_step_solvers.find(time_step_solver_id);
+  if (it != this->time_step_solvers.end()) {
+    AKANTU_EXCEPTION("The non linear solver " << time_step_solver_id
+                                              << " already exists in "
+                                              << this->id);
+  }
+
+  this->time_step_solvers[time_step_solver_id] = &time_step_solver;
+}
+
+/* -------------------------------------------------------------------------- */
+SparseMatrix & DOFManager::getMatrix(const ID & id) {
+  ID matrix_id = this->id + ":mtx:" + id;
+  SparseMatricesMap::const_iterator it = this->matrices.find(matrix_id);
+  if (it == this->matrices.end()) {
+    AKANTU_EXCEPTION("The matrix " << matrix_id << " does not exists in "
+                                   << this->id);
+  }
+
+  return *(it->second);
+}
+
+/* -------------------------------------------------------------------------- */
+const Array<Real> & DOFManager::getLumpedMatrix(const ID & id) {
+  ID matrix_id = this->id + ":lumpmtx:" + id;
+  LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(matrix_id);
+  if (it == this->lumped_matrices.end()) {
+    AKANTU_EXCEPTION("The lumped matrix " << matrix_id << " does not exists in "
+                                          << this->id);
+  }
+
+  return *(it->second);
+}
+
+/* -------------------------------------------------------------------------- */
+NonLinearSolver & DOFManager::getNonLinearSolver(const ID & id) {
+  ID non_linear_solver_id = this->id + ":nls:" + id;
+  NonLinearSolversMap::const_iterator it =
+      this->non_linear_solvers.find(non_linear_solver_id);
+  if (it == this->non_linear_solvers.end()) {
+    AKANTU_EXCEPTION("The non linear solver " << non_linear_solver_id
+                                              << " does not exists in "
+                                              << this->id);
+  }
+
+  return *(it->second);
+}
+
+/* -------------------------------------------------------------------------- */
+TimeStepSolver & DOFManager::getTimeStepSolver(const ID & id) {
+  ID time_step_solver_id = this->id + ":tss:" + id;
+  TimeStepSolversMap::const_iterator it =
+      this->time_step_solvers.find(time_step_solver_id);
+  if (it == this->time_step_solvers.end()) {
+    AKANTU_EXCEPTION("The non linear solver " << time_step_solver_id
+                                              << " does not exists in "
+                                              << this->id);
+  }
+
+  return *(it->second);
+}
+
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

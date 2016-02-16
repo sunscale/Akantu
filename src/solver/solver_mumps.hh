@@ -80,9 +80,6 @@ private:
   /// print the error if any happened in mumps
   void printError();
 
-  /// clean the mumps info
-  virtual void destroyInternalData();
-
   /// set internal values;
   void initMumpsData();
 
@@ -117,6 +114,12 @@ private:
 
   /// Rank of the current process
   UInt prank;
+
+  /// matrix release at last solve
+  UInt last_profile_release;
+
+  /// matrix release at last solve
+  UInt last_value_release;
 
   /* ------------------------------------------------------------------------ */
   /* Local types                                                              */

@@ -34,6 +34,11 @@
 
 __BEGIN_AKANTU__
 
+/* -------------------------------------------------------------------------- */
+inline bool DOFManagerDefault::isLocalOrMasterDOF(UInt dof_num) {
+  Int dof_type = this->dofs_type(dof_num);
+  return (dof_type == -2) || (dof_type == -1);
+}
 
 /* -------------------------------------------------------------------------- */
 

@@ -35,14 +35,8 @@ package_declare(Mumps EXTERNAL
   )
 
 package_declare_sources(Mumps
-  model/dof_manager_default.hh
-  model/dof_manager_default.cc
-  model/dof_manager_default_inline_impl.cc
   solver/solver_mumps.cc
   solver/solver_mumps.hh
-  solver/sparse_matrix_aij.cc
-  solver/sparse_matrix_aij.hh
-  solver/sparse_matrix_aij_inline_impl.cc
   )
 
 package_get_option_name(parallel _par_option)

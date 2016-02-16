@@ -44,8 +44,8 @@ class IntegrationScheme1stOrder : public IntegrationScheme {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  IntegrationScheme1stOrder(DOFManager & dof_manager)
-      : IntegrationScheme(dof_manager, 1){};
+  IntegrationScheme1stOrder(DOFManager & dof_manager, const ID & dof_id)
+    : IntegrationScheme(dof_manager, dof_id, 1){};
 
   virtual ~IntegrationScheme1stOrder(){};
 
@@ -53,9 +53,14 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void predictor(const ID & dof_id, Real delta_t);
-  virtual void corrector(const SolutionType & type, const ID & dof_id, Real delta_t);
+  /// generic interface of a predictor
+  virtual void predictor(Real delta_t);
+  /// generic interface of a corrector
+  virtual void corrector(const SolutionType & type, Real delta_t);
 
+  /// assemble the residual
+  virtual void assembleResidual(bool is_lumped);
+protected:
   /// generic interface of a predictor of 1st order
   virtual void predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
                          const Array<bool> & boundary) const = 0;

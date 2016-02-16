@@ -32,6 +32,20 @@
 package_declare(implicit META
   DESCRIPTION "Add support for implicit time scheme")
 
+
+package_declare_sources(implicit
+  model/dof_manager_default.hh
+  model/dof_manager_default.cc
+  model/dof_manager_default_inline_impl.cc
+  model/non_linear_solver_linear.cc
+  model/non_linear_solver_linear.hh
+  model/non_linear_solver_newton_raphson.cc
+  model/non_linear_solver_newton_raphson.hh
+  solver/sparse_matrix_aij.cc
+  solver/sparse_matrix_aij.hh
+  solver/sparse_matrix_aij_inline_impl.cc
+  )
+
 set(AKANTU_IMPLICIT_SOLVER "Mumps"
   CACHE STRING "Solver activated in Akantu")
 set_property(CACHE AKANTU_IMPLICIT_SOLVER PROPERTY STRINGS

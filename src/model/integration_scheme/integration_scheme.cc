@@ -34,7 +34,11 @@
 
 __BEGIN_AKANTU__
 
-IntegrationScheme::IntegrationScheme(DOFManager & dof_manager, UInt order)
-    : dof_manager(dof_manager), order(order) {}
+/* -------------------------------------------------------------------------- */
+IntegrationScheme::IntegrationScheme(DOFManager & dof_manager,
+                                     const ID & dof_id, UInt order)
+    : dof_manager(dof_manager), dof_id(dof_id), order(order) {}
+
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

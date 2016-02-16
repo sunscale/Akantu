@@ -31,13 +31,15 @@
 #include "aka_common.hh"
 #include "aka_memory.hh"
 /* -------------------------------------------------------------------------- */
+#include <set>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_NON_LINEAR_SOLVER_HH__
 #define __AKANTU_NON_LINEAR_SOLVER_HH__
 
 namespace akantu {
-  class DOFManager;
-  class NonLinearSolverCallback;
+class DOFManager;
+class SolverCallback;
 }
 
 __BEGIN_AKANTU__
@@ -58,22 +60,10 @@ public:
 public:
   /// solve the system described by the jacobian matrix, and rhs contained in
   /// the dof manager
-  virtual void solve() = 0;
-
-  /// register a callback object for a given dof_id
-  virtual void registerCallback(NonLinearSolverCallback & callbacks);
-
-  /// register a callback object for a given dof_id
-  virtual NonLinearSolverCallback & getCallbacks();
+  virtual void solve(SolverCallback & callback) = 0;
 
 protected:
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// configure the solver from ParserSection
-  virtual void setParameters(const ParserSection & parameters_section);
+  void checkIfTypeIsSupported();
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -82,14 +72,12 @@ private:
   DOFManager & _dof_manager;
 
 protected:
-  /// Set of callbacks to use in the solver for jacobian assembly, residual
-  /// assembly, corrector & predictor if needed
-  NonLinearSolverCallback * solver_callback;
-
   /// type of non linear solver
   NonLinearSolverType non_linear_solver_type;
-};
 
+  /// list of supported non linear solver types
+  std::set<NonLinearSolverType> supported_type;
+};
 
 __END_AKANTU__
 

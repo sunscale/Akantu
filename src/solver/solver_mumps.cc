@@ -131,7 +131,8 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
       rhs(dof_manager.getResidual()), master_rhs_solution(0, 1) {
   AKANTU_DEBUG_IN();
 
-  StaticCommunicator & communicator = StaticCommunicator::getStaticCommunicator();
+  StaticCommunicator & communicator =
+      StaticCommunicator::getStaticCommunicator();
   this->prank = communicator.whoAmI();
 
 #ifdef AKANTU_USE_MPI
@@ -162,13 +163,9 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
     break;
   }
 
-  this->mumps_data.sym = 2 * (matrix.getMatrixType() == _symmetric);
+  this->mumps_data.sym = 2 * (this->matrix.getMatrixType() == _symmetric);
   this->prank = communicator.whoAmI();
 
-  this->mumps_data.job = _smj_initialize; // initialize
-  dmumps_c(&this->mumps_data);
-
-  /* ------------------------------------------------------------------------ */
   /* ------------------------------------------------------------------------ */
   // Output setup
   if (AKANTU_DEBUG_TEST(dblTrace)) {
@@ -184,9 +181,16 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
     icntl(4) = 0; // no outputs
   }
 
+  this->mumps_data.job = _smj_initialize; // initialize
+  dmumps_c(&this->mumps_data);
+
+
   if (AKANTU_DEBUG_TEST(dblDump)) {
     strcpy(this->mumps_data.write_problem, "mumps_matrix.mtx");
   }
+
+  this->last_profile_release = this->matrix.getProfileRelease() - 1;
+  this->last_value_release = this->matrix.getValueRelease() - 1;
 
   AKANTU_DEBUG_OUT();
 }
@@ -216,7 +220,7 @@ void SparseSolverMumps::initMumpsData() {
   // automatic choice for analysis
   icntl(28) = 0;
 
-  UInt size = matrix.getSize();
+  UInt size = this->matrix.getSize();
 
   if (prank == 0) {
     this->master_rhs_solution.resize(size);
@@ -258,8 +262,8 @@ void SparseSolverMumps::initialize() {
   AKANTU_DEBUG_IN();
 
   this->analysis();
-
   //  icntl(14) = 80;
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -304,13 +308,24 @@ void SparseSolverMumps::solve() {
   //   DebugLevel dbl = debug::getDebugLevel();
   //   debug::setDebugLevel(dblError);
 
-  //   matrix.getDOFSynchronizer().gather(this->rhs, 0, this->master_rhs_solution);
+  //   matrix.getDOFSynchronizer().gather(this->rhs, 0,
+  //   this->master_rhs_solution);
 
   //   // reactivate debug messages
   //   debug::setDebugLevel(dbl);
   // } else {
   //   this->matrix.getDOFSynchronizer().gather(this->rhs, 0);
   // }
+
+  if(this->last_profile_release != this->matrix.getProfileRelease()) {
+    this->analysis();
+    this->last_profile_release = this->matrix.getProfileRelease();
+  }
+
+  if (this->last_value_release != this->matrix.getValueRelease()) {
+    this->factorize();
+    this->last_value_release = this->matrix.getValueRelease();
+  }
 
   if (prank == 0)
     this->mumps_data.rhs = this->master_rhs_solution.storage();
@@ -340,10 +355,13 @@ void SparseSolverMumps::printError() {
       icntl(14) += 10;
       if (icntl(14) != 90) {
         // std::cout << "Dynamic memory increase of 10%" << std::endl;
-        AKANTU_DEBUG_WARNING(
-            "MUMPS dynamic memory is insufficient it will be increased of 10%");
-        this->analysis();
-        this->factorize();
+        AKANTU_DEBUG_WARNING("MUMPS dynamic memory is insufficient it will be "
+                             "increased allowed to use 10% more");
+
+        // change releases to force a recompute
+        this->last_value_release--;
+        this->last_profile_release--;
+
         this->solve();
       } else {
         AKANTU_DEBUG_ERROR("The MUMPS workarray is too small INFO(2)="

@@ -30,21 +30,57 @@
 
 /* -------------------------------------------------------------------------- */
 #include "time_step_solver.hh"
+#include "non_linear_solver.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 TimeStepSolver::TimeStepSolver(DOFManager & dof_manager,
-                               const TimeStepSolverType & type, const ID & id,
-                               UInt memory_id)
-    : Memory(id, memory_id), _dof_manager(dof_manager), type(type) {}
+                               const TimeStepSolverType & type,
+                               NonLinearSolver & non_linear_solver,
+                               const ID & id, UInt memory_id)
+    : Memory(id, memory_id), _dof_manager(dof_manager), type(type),
+      solver_callback(NULL), non_linear_solver(non_linear_solver) {}
 
 /* -------------------------------------------------------------------------- */
 TimeStepSolver::~TimeStepSolver() {}
 
 /* -------------------------------------------------------------------------- */
+void TimeStepSolver::predictor() {
+  AKANTU_DEBUG_ASSERT(
+      this->solver_callback != NULL,
+      "This function cannot be called if the solver_callback is not set");
 
+  this->solver_callback->predictor();
+}
+
+/* -------------------------------------------------------------------------- */
+void TimeStepSolver::corrector() {
+  AKANTU_DEBUG_ASSERT(
+      this->solver_callback != NULL,
+      "This function cannot be called if the solver_callback is not set");
+
+  this->solver_callback->corrector();
+}
+
+/* -------------------------------------------------------------------------- */
+void TimeStepSolver::assembleJacobian() {
+  AKANTU_DEBUG_ASSERT(
+      this->solver_callback != NULL,
+      "This function cannot be called if the solver_callback is not set");
+
+  this->solver_callback->assembleJacobian();
+}
+
+/* -------------------------------------------------------------------------- */
+void TimeStepSolver::assembleResidual() {
+  AKANTU_DEBUG_ASSERT(
+      this->solver_callback != NULL,
+      "This function cannot be called if the solver_callback is not set");
+
+  this->solver_callback->assembleResidual();
+}
 
 /* -------------------------------------------------------------------------- */
 

@@ -114,7 +114,7 @@ void MaterialCohesive::initMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
-void MaterialCohesive::assembleResidual(GhostType ghost_type) {
+void MaterialCohesive::assembleInternalForces(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
 #if defined(AKANTU_DEBUG_TOOLS)
@@ -123,7 +123,7 @@ void MaterialCohesive::assembleResidual(GhostType ghost_type) {
 				   tractions);
 #endif
 
-  Array<Real> & residual = const_cast<Array<Real> &>(model->getResidual());
+  Array<Real> & residual = const_cast<Array<Real> &>(model->getInternalForce());
 
   Mesh & mesh = fem_cohesive->getMesh();
   Mesh::type_iterator it = mesh.firstType(spatial_dimension,

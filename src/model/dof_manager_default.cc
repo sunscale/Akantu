@@ -32,6 +32,7 @@
 #include "sparse_matrix_aij.hh"
 #include "time_step_solver_default.hh"
 #include "static_communicator.hh"
+#include "non_linear_solver_default.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -138,42 +139,45 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
     for (UInt d = 0; d < nb_dofs; ++d) {
       UInt local_eq_num = first_dof_id + d;
       dof_data.local_equation_number(d) = local_eq_num;
-      this->global_equation_number(local_eq_num) = first_global_dofs_id + d;
+      UInt global_eq_num = first_global_dofs_id + d;
+      this->global_equation_number(local_eq_num) = global_eq_num;
+
+      this->global_to_local_mapping[global_eq_num] = local_eq_num;
     }
   }
 }
 
 /* -------------------------------------------------------------------------- */
-SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & matrix_id,
+SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & id,
                                                const MatrixType & matrix_type) {
-  std::stringstream sstr;
-  sstr << this->id << ":" << matrix_id;
+  ID matrix_id = this->id + ":mtx:" + id;
   SparseMatrix * sm =
-      new SparseMatrixAIJ(*this, matrix_type, sstr.str(), this->memory_id);
+      new SparseMatrixAIJ(*this, matrix_type, matrix_id);
   this->registerSparseMatrix(matrix_id, *sm);
 
   return *sm;
 }
 
 /* -------------------------------------------------------------------------- */
-SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & matrix_id,
+SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & id,
                                                const ID & matrix_to_copy_id) {
-  std::stringstream sstr;
-  sstr << this->id << ":" << matrix_id;
+
+  ID matrix_id = this->id + ":mtx:" + id;
   SparseMatrixAIJ & sm_to_copy = this->getMatrix(matrix_to_copy_id);
   SparseMatrix * sm =
-      new SparseMatrixAIJ(sm_to_copy, sstr.str(), this->memory_id);
+      new SparseMatrixAIJ(sm_to_copy, matrix_id);
   this->registerSparseMatrix(matrix_id, *sm);
 
   return *sm;
 }
 
 /* -------------------------------------------------------------------------- */
-SparseMatrixAIJ & DOFManagerDefault::getMatrix(const ID & matrix_id) {
+SparseMatrixAIJ & DOFManagerDefault::getMatrix(const ID & id) {
+  ID matrix_id = this->id + ":mtx:" + id;
   AIJMatrixMap::iterator it = this->aij_matrices.find(matrix_id);
 
   if (it == this->aij_matrices.end())
-    AKANTU_EXCEPTION("The matrix " << matrix_id
+    AKANTU_EXCEPTION("The matrix " << id
                                    << " does not exists in the DOFManager "
                                    << this->id);
 
@@ -181,14 +185,47 @@ SparseMatrixAIJ & DOFManagerDefault::getMatrix(const ID & matrix_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-TimeStepSolver & DOFManagerDefault::getNewTimeStepSolver(
-    const ID & time_step_solver_id,
-    const TimeStepSolverType & time_step_solver_type) {
-  std::stringstream sstr;
-  sstr << this->id << ":" << time_step_solver_id;
+NonLinearSolver &
+DOFManagerDefault::getNewNonLinearSolver(const ID & id,
+                                         const NonLinearSolverType & type) {
+  ID non_linear_solver_id = this->id + ":nls:" + id;
+  NonLinearSolver * nls = NULL;
+  switch (type) {
+  case _nls_newton_raphson:
+  case _nls_newton_raphson_modified: {
+    nls = new NonLinearSolverNewtonRaphson(*this, type, non_linear_solver_id,
+                                           this->memory_id);
+    break;
+  }
+  case _nls_linear: {
+    nls = new NonLinearSolverLinear(*this, type, non_linear_solver_id,
+                                    this->memory_id);
+    break;
+  }
+  case _nls_lumped: {
+    nls = new NonLinearSolverLumped(*this, type, non_linear_solver_id,
+                                    this->memory_id);
+    break;
+  }
+  default:
+    AKANTU_EXCEPTION("The asked type of non linear solver is not supported by "
+                     "this dof manager");
+  }
 
-  TimeStepSolver * tss = new TimeStepSolverDefault(*this, time_step_solver_type,
-                                                   sstr.str(), this->memory_id);
+  this->registerNonLinearSolver(non_linear_solver_id, *nls);
+
+  return *nls;
+}
+
+/* -------------------------------------------------------------------------- */
+TimeStepSolver &
+DOFManagerDefault::getNewTimeStepSolver(const ID & id,
+                                        const TimeStepSolverType & type,
+                                        NonLinearSolver & non_linear_solver) {
+  ID time_step_solver_id = this->id + ":tss:" + id;
+
+  TimeStepSolver * tss = new TimeStepSolverDefault(
+      *this, type, non_linear_solver, time_step_solver_id, this->memory_id);
 
   this->registerTimeStepSolver(time_step_solver_id, *tss);
 
@@ -223,10 +260,9 @@ void DOFManagerDefault::getSolutionPerDOFs(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
-void
-DOFManagerDefault::assembleToResidual(const ID & dof_id,
-                                      const Array<Real> & array_to_assemble,
-                                      Real scale_factor) {
+void DOFManagerDefault::assembleToResidual(
+    const ID & dof_id, const Array<Real> & array_to_assemble,
+    Real scale_factor) {
   AKANTU_DEBUG_IN();
 
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
@@ -290,7 +326,7 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 
   UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom;
 
-  Vector<UInt> local_eq_nb(nb_degree_of_freedom * nb_nodes_per_element);
+  Vector<UInt> element_eq_nb(nb_degree_of_freedom * nb_nodes_per_element);
   Array<Real>::const_matrix_iterator el_mat_it =
       elementary_mat.begin(size_mat, size_mat);
 
@@ -299,7 +335,8 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
       conn_it = conn_begin + *filter_it;
 
     this->extractElementEquationNumber(equation_number, *conn_it,
-                                       nb_degree_of_freedom, local_eq_nb);
+                                       nb_degree_of_freedom, element_eq_nb);
+    this->localToGlobalEquationNumber(element_eq_nb);
 
     if (filter_it != NULL)
       ++filter_it;
@@ -308,13 +345,13 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 
     if (A.getMatrixType() == _symmetric)
       if (elemental_matrix_type == _symmetric)
-        this->addSymmetricElementalMatrixToSymmetric(A, *el_mat_it, local_eq_nb,
+        this->addSymmetricElementalMatrixToSymmetric(A, *el_mat_it, element_eq_nb,
                                                      A.getSize());
       else
         this->addUnsymmetricElementalMatrixToSymmetric(
-            A, *el_mat_it, local_eq_nb, A.getSize());
+            A, *el_mat_it, element_eq_nb, A.getSize());
     else
-      this->addElementalMatrixToUnsymmetric(A, *el_mat_it, local_eq_nb,
+      this->addElementalMatrixToUnsymmetric(A, *el_mat_it, element_eq_nb,
                                             A.getSize());
   }
 

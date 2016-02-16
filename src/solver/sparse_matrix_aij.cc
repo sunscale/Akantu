@@ -29,6 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix_aij.hh"
+#include "dof_manager_default.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */
@@ -36,19 +37,17 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-SparseMatrixAIJ::SparseMatrixAIJ(DOFManager & dof_manager,
-                                 const MatrixType & matrix_type, const ID & id,
-                                 const MemoryID & memory_id)
-    : SparseMatrix(dof_manager, matrix_type, id, memory_id),
+SparseMatrixAIJ::SparseMatrixAIJ(DOFManagerDefault & dof_manager,
+                                 const MatrixType & matrix_type, const ID & id)
+    : SparseMatrix(dof_manager, matrix_type, id), dof_manager(dof_manager),
       irn(0, 1, id + ":irn"), jcn(0, 1, id + ":jcn"), a(0, 1, id + ":a"),
       profile_release(0), value_release(0) {}
 
 /* -------------------------------------------------------------------------- */
-SparseMatrixAIJ::SparseMatrixAIJ(const SparseMatrixAIJ & matrix, const ID & id,
-                                 const MemoryID & memory_id)
-    : SparseMatrix(matrix, id, memory_id), irn(matrix.irn, true, id + ":irn"),
-      jcn(matrix.jcn, true, id + ":jcn"), a(matrix.a, true, id + ":a"),
-      profile_release(0), value_release(0) {}
+SparseMatrixAIJ::SparseMatrixAIJ(const SparseMatrixAIJ & matrix, const ID & id)
+    : SparseMatrix(matrix, id), dof_manager(matrix.dof_manager),
+      irn(matrix.irn, true, id + ":irn"), jcn(matrix.jcn, true, id + ":jcn"),
+      a(matrix.a, true, id + ":a"), profile_release(0), value_release(0) {}
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ::~SparseMatrixAIJ() {}
@@ -141,45 +140,38 @@ SparseMatrixAIJ::~SparseMatrixAIJ() {}
 //   AKANTU_DEBUG_OUT();
 // }
 
-// /* --------------------------------------------------------------------------
-// */
-// void SparseMatrixAIJ::applyBoundary(const Array<bool> & boundary,
-//                                     Real block_val) {
-//   AKANTU_DEBUG_IN();
+/* -------------------------------------------------------------------------- */
+void SparseMatrixAIJ::applyBoundary(Real block_val) {
+  AKANTU_DEBUG_IN();
 
-//   const DOFSynchronizer::GlobalEquationNumberMap & local_eq_num_to_global =
-//       dof_synchronizer->getGlobalEquationNumberToLocal();
-//   Int * irn_val = irn.storage();
-//   Int * jcn_val = jcn.storage();
-//   Real * a_val = a.storage();
+  const Array<bool> & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
+  Array<Int>::const_scalar_iterator irn_val = irn.begin();
+  Array<Int>::const_scalar_iterator jcn_val = jcn.begin();
+  Array<Real>::scalar_iterator a_val = a.begin();
 
-//   for (UInt i = 0; i < nb_non_zero; ++i) {
+  for (UInt i = 0; i < nb_non_zero; ++i) {
+    UInt ni = this->dof_manager.globalToLocalEquationNumber(*irn_val - 1);
+    UInt nj = this->dof_manager.globalToLocalEquationNumber(*jcn_val - 1);
+    if (blocked_dofs(ni) || blocked_dofs(nj)) {
+      if (*irn_val != *jcn_val) {
+        *a_val = 0;
+      } else {
+        if (this->dof_manager.isLocalOrMasterDOF(ni)) {
+          *a_val = block_val;
+        } else {
+          *a_val = 0;
+        }
+      }
+    }
+    ++irn_val;
+    ++jcn_val;
+    ++a_val;
+  }
 
-//     /// @todo fix this hack, put here for the implementation of augmented
-//     /// lagrangian contact
-//     if (local_eq_num_to_global.find(*irn_val - 1) ==
-//         local_eq_num_to_global.end())
-//       continue;
-//     if (local_eq_num_to_global.find(*jcn_val - 1) ==
-//         local_eq_num_to_global.end())
-//       continue;
+  this->value_release++;
 
-//     UInt ni = local_eq_num_to_global.find(*irn_val - 1)->second;
-//     UInt nj = local_eq_num_to_global.find(*jcn_val - 1)->second;
-//     if (boundary.storage()[ni] || boundary.storage()[nj]) {
-//       if (*irn_val != *jcn_val) { *a_val = 0; } else {
-//         if (dof_synchronizer->getDOFTypes()(ni) >= 0) { *a_val = 0; } else {
-//           *a_val = block_val;
-//         }
-//       }
-//     }
-//     irn_val++;
-//     jcn_val++;
-//     a_val++;
-//   }
-
-//   AKANTU_DEBUG_OUT();
-// }
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::saveProfile(const std::string & filename) const {
@@ -241,7 +233,7 @@ void SparseMatrixAIJ::saveMatrix(const std::string & filename) const {
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
-                                Real alpha, Real beta) {
+                                Real alpha, Real beta) const {
   AKANTU_DEBUG_IN();
 
   y *= beta;
@@ -284,16 +276,23 @@ void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::add(const SparseMatrix & B, Real alpha) {
-  Array<Real>::scalar_iterator a_it = this->a.storage();
-  Array<Int>::const_scalar_iterator i_it = this->irn.storage();
-  Array<Int>::const_scalar_iterator j_it = this->jcn.storage();
+  Array<Real>::scalar_iterator a_it = this->a.begin();
 
-  for (UInt n = 0; n < this->nb_non_zero; ++n, ++a_it, ++i_it, ++j_it) {
-    const Int & i = *i_it;
-    const Int & j = *j_it;
-    Real & A_ij = *a_it;
-
-    A_ij += alpha * B(i - 1, j - 1);
+  try {
+    const SparseMatrixAIJ & B_aij = dynamic_cast<const SparseMatrixAIJ &>(B);
+    Array<Real>::const_scalar_iterator b_it = B_aij.a.begin();
+    for (UInt n = 0; n < this->nb_non_zero; ++n, ++a_it, ++b_it) {
+       *a_it += alpha * *b_it;
+    }
+  } catch(...) {
+    Array<Int>::const_scalar_iterator i_it = this->irn.begin();
+    Array<Int>::const_scalar_iterator j_it = this->jcn.begin();
+    for (UInt n = 0; n < this->nb_non_zero; ++n, ++a_it, ++i_it, ++j_it) {
+      const Int & i = *i_it;
+      const Int & j = *j_it;
+      Real & A_ij = *a_it;
+      A_ij += alpha * B(i - 1, j - 1);
+    }
   }
 
   this->value_release++;

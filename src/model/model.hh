@@ -88,16 +88,16 @@ public:
   DistributedSynchronizer & createParallelSynch(MeshPartition * partition,
                                                 DataAccessor * data_accessor);
 
-  /// change local equation number so that PBC is assembled properly
-  void changeLocalEquationNumberForPBC(std::map<UInt, UInt> & pbc_pair,
-                                       UInt dimension);
+  // /// change local equation number so that PBC is assembled properly
+  // void changeLocalEquationNumberForPBC(std::map<UInt, UInt> & pbc_pair,
+  //                                      UInt dimension);
   /// function to print the containt of the class
   virtual void printself(__attribute__((unused)) std::ostream & stream,
                          __attribute__((unused)) int indent = 0) const {};
 
-  /// initialize the model for PBC
-  void setPBC(UInt x, UInt y, UInt z);
-  void setPBC(SurfacePairList & surface_pairs);
+  // /// initialize the model for PBC
+  // void setPBC(UInt x, UInt y, UInt z);
+  // void setPBC(SurfacePairList & surface_pairs);
 
   virtual void initPBC();
 
@@ -132,7 +132,7 @@ public:
   AKANTU_GET_MACRO(ID, id, const ID)
 
   /// get the number of surfaces
-  AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
+  AKANTU_GET_MACRO(Mesh, mesh, Mesh &)
 
   /// return the object handling synchronizers
   AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry,

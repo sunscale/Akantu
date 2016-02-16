@@ -30,13 +30,16 @@
 /* -------------------------------------------------------------------------- */
 #include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
+#include <map>
+#include <set>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
 #define __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
 
 namespace akantu {
-  class IntegrationScheme;
-  class DOFManagerDefault;
+class IntegrationScheme;
+class DOFManagerDefault;
 }
 
 __BEGIN_AKANTU__
@@ -47,7 +50,8 @@ class TimeStepSolverDefault : public TimeStepSolver {
   /* ------------------------------------------------------------------------ */
 public:
   TimeStepSolverDefault(DOFManagerDefault & dof_manager,
-                        const TimeStepSolverType & type, const ID & id,
+                        const TimeStepSolverType & type,
+                        NonLinearSolver & non_linear_solver, const ID & id,
                         UInt memory_id);
 
   virtual ~TimeStepSolverDefault();
@@ -56,6 +60,10 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// registers an integration scheme for a given dof
+  void setIntegrationScheme(const ID & dof_id,
+                            const IntegrationSchemeType & type);
+
   /// implementation of the TimeStepSolver::predictor()
   virtual void predictor();
   /// implementation of the TimeStepSolver::corrector()
@@ -66,21 +74,24 @@ public:
   virtual void assembleResidual();
 
   /// implementation of the generic TimeStepSolver::solveStep()
-  virtual void solveStep();
+  virtual void solveStep(SolverCallback & solver_callback);
 
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+  typedef std::map<ID, IntegrationScheme *> DOFsIntegrationSchemes;
+  typedef std::set<ID> DOFsIntegrationSchemesOwner;
+
   /// DOFManager with its real type
   DOFManagerDefault & dof_manager;
 
-  /// Underlying integration scheme
-  IntegrationScheme * integration_scheme;
+  /// Underlying integration scheme per dof, \todo check what happens in dynamic
+  /// in case of coupled equations
+  DOFsIntegrationSchemes integration_schemes;
+
+  /// defines if the solver is owner of the memory or not
+  DOFsIntegrationSchemesOwner integration_schemes_owner;
 
   /// Type of corrector to use
   UInt solution_type;

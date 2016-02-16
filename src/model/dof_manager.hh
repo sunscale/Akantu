@@ -38,11 +38,6 @@
 #ifndef __AKANTU_DOF_MANAGER_HH__
 #define __AKANTU_DOF_MANAGER_HH__
 
-namespace akantu {
-class NonLinearSolverCallback;
-class SparseMatrixAIJ;
-}
-
 __BEGIN_AKANTU__
 
 class DOFManager : protected Memory {
@@ -115,9 +110,6 @@ public:
   //                                         const ID & dof_id_n,
   //                                         const Matrix<Real> & matrix) = 0;
 
-  /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
-
 protected:
   /// splits the solution storage from a global view to the per dof storages
   void splitSolutionPerDOFs();
@@ -133,8 +125,16 @@ protected:
       const Array<UInt> & equation_numbers, const Vector<UInt> & connectivity,
       UInt nb_degree_of_freedom, Vector<UInt> & local_equation_number);
 
+  /// converts local equation numbers to global equation numbers;
+  template <class S> inline void localToGlobalEquationNumber(S & inout);
+
+  /* ------------------------------------------------------------------------ */
   /// register a matrix
   void registerSparseMatrix(const ID & matrix_id, SparseMatrix & matrix);
+
+  /// register a non linear solver instantiated by a derived class
+  void registerNonLinearSolver(const ID & non_linear_solver_id,
+                               NonLinearSolver & non_linear_solver);
 
   /// register a time step solver instantiated by a derived class
   void registerTimeStepSolver(const ID & time_step_solver_id,
@@ -143,18 +143,17 @@ protected:
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
+protected:
+  struct DOFData;
+  inline DOFData & getDOFData(const ID & dof_id);
+  inline const DOFData & getDOFData(const ID & dof_id) const;
+
 public:
   /// get the equation numbers (in local numbering) corresponding to a dof ID
-  Array<UInt> & getLocalEquationNumbers(const ID & dof_id);
-  /// get the equation numbers (in global numbering) corresponding to a dof ID
-  Array<UInt> & getGlobalEquationNumbers(const ID & dof_id);
+  inline const Array<UInt> & getLocalEquationNumbers(const ID & dof_id) const;
 
-  /// get the local equation number corresponding to the global equation number
-
-  /// get the equation numbers (in local numbering) corresponding to a dof ID
-  const Array<UInt> & getLocalEquationNumbers(const ID & dof_id) const;
-  /// get the equation numbers (in global numbering) corresponding to a dof ID
-  const Array<UInt> & getGlobalEquationNumbers(const ID & dof_id) const;
+  /// return the local index of the global equation number
+  inline UInt globalToLocalEquationNumber(UInt global) const;
 
   /// Global number of dofs
   AKANTU_GET_MACRO(SystemSize, this->system_size, UInt);
@@ -162,65 +161,60 @@ public:
   /// Local number of dofs
   AKANTU_GET_MACRO(LocalSystemSize, this->local_system_size, UInt);
 
-  /// Get the solver callback stored in the dof_manager
-  AKANTU_GET_MACRO(SolverCallback, *solver_callback, NonLinearSolverCallback &);
-
   /* ------------------------------------------------------------------------ */
   /* DOFs and derivatives accessors                                          */
   /* ------------------------------------------------------------------------ */
   /// Get a reference to the registered dof array for a given id
-  Array<Real> & getDOFs(const ID & dofs_id);
+  inline Array<Real> & getDOFs(const ID & dofs_id);
 
   /// Get a reference to the registered dof derivatives array for a given id
-  Array<Real> & getDOFsDerivatives(const ID & dofs_id, UInt order);
-
-  // /// Get a reference to the blocked dofs array registered for the given id
-  // Array<bool> & getBlockedDOFs(const ID & dofs_id);
+  inline Array<Real> & getDOFsDerivatives(const ID & dofs_id, UInt order);
 
   /// Get a reference to the blocked dofs array registered for the given id
-  const Array<bool> & getBlockedDOFs(const ID & dofs_id) const;
+  inline const Array<bool> & getBlockedDOFs(const ID & dofs_id) const;
 
   /// Get a reference to the solution array registered for the given id
-  const Array<Real> & getSolution(const ID & dofs_id) const;
-
-  // /// Get a reference to the right hand side array registered for the given
-  // dof
-  // /// id
-  // const Array<Real> & getRHS() const;
+  inline const Array<Real> & getSolution(const ID & dofs_id) const;
 
   /* ------------------------------------------------------------------------ */
   /* Matrices accessors                                                       */
   /* ------------------------------------------------------------------------ */
   /// Get an instance of a new SparseMatrix
   virtual SparseMatrix & getNewMatrix(const ID & matrix_id,
-                                      const MatrixType & matrix_type);
+                                      const MatrixType & matrix_type) = 0;
 
   /// Get an instance of a new SparseMatrix as a copy of the SparseMatrix
   /// matrix_to_copy_id
   virtual SparseMatrix & getNewMatrix(const ID & matrix_id,
-                                      const ID & matrix_to_copy_id);
+                                      const ID & matrix_to_copy_id) = 0;
 
   /// Get the reference of an existing matrix
   SparseMatrix & getMatrix(const ID & matrix_id);
+
+  /// Get an instance of a new lumped matrix
+  virtual Array<Real> & getNewLumpedMatrix(const ID & matrix_id);
+  /// Get the lumped version of a given matrix
+  const Array<Real> & getLumpedMatrix(const ID & matrix_id);
 
   /* ------------------------------------------------------------------------ */
   /* Non linear system solver                                                 */
   /* ------------------------------------------------------------------------ */
   /// Get instance of a non linear solver
-  virtual NonLinearSolver &
-  getNewNonLinearSolver(const ID & nls_solver_id,
-                        const NonLinearSolverType & _non_linear_solver_type);
+  virtual NonLinearSolver & getNewNonLinearSolver(
+      const ID & nls_solver_id,
+      const NonLinearSolverType & _non_linear_solver_type) = 0;
 
   /// get instance of a non linear solver
   virtual NonLinearSolver & getNonLinearSolver(const ID & nls_solver_id);
 
   /* ------------------------------------------------------------------------ */
-  /* TimeStepSolver                                                           */
+  /* Time-Step Solver                                                         */
   /* ------------------------------------------------------------------------ */
   /// Get instance of a time step solver
   virtual TimeStepSolver &
-  getNewTimeStepSolver(const ID & time_step_solver_id, const ID & dof_id,
-                       const TimeStepSolverType & type);
+  getNewTimeStepSolver(const ID & time_step_solver_id,
+                       const TimeStepSolverType & type,
+                       NonLinearSolver & non_linear_solver) = 0;
 
   /// get instance of a time step solver
   virtual TimeStepSolver & getTimeStepSolver(const ID & time_step_solver_id);
@@ -257,11 +251,19 @@ protected:
   /// equation number in global numbering
   Array<UInt> global_equation_number;
 
+  typedef unordered_map<UInt, UInt>::type equation_numbers_map;
+
+  /// dual information of global_equation_number
+  equation_numbers_map global_to_local_mapping;
+
   /// type to store dofs informations
   typedef std::map<ID, DOFData *> DOFStorage;
 
   /// type to store all the matrices
   typedef std::map<ID, SparseMatrix *> SparseMatricesMap;
+
+  /// type to store all the lumped matrices
+  typedef std::map<ID, Array<Real> *> LumpedMatricesMap;
 
   /// type to store all the non linear solver
   typedef std::map<ID, NonLinearSolver *> NonLinearSolversMap;
@@ -275,6 +277,9 @@ protected:
   /// list of sparse matrices that where created
   SparseMatricesMap matrices;
 
+  /// list of lumped matrices
+  LumpedMatricesMap lumped_matrices;
+
   /// non linear solvers storage
   NonLinearSolversMap non_linear_solvers;
 
@@ -283,9 +288,6 @@ protected:
 
   /// reference to the underlying mesh
   const Mesh & mesh;
-
-  /// Solver callback to assemble residual and Jacobian matrix
-  NonLinearSolverCallback * solver_callback;
 
   /// Total number of degrees of freedom (size with the ghosts)
   UInt local_system_size;

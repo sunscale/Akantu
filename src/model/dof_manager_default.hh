@@ -35,9 +35,9 @@
 #define __AKANTU_DOF_MANAGER_DEFAULT_HH__
 
 namespace akantu {
-  class SparseMatrixAIJ;
-  class NonLinearSolverDefault;
-  class TimeStepSolverDefault;
+class SparseMatrixAIJ;
+class NonLinearSolverDefault;
+class TimeStepSolverDefault;
 }
 
 __BEGIN_AKANTU__
@@ -65,15 +65,6 @@ public:
                                   Real scale_factor = 1.);
 
   /**
-   * Assemble elementary values to the global residual array. The dof number is
-   * implicitly considered as conn(el, n) * nb_nodes_per_element + d.
-   * With 0 < n < nb_nodes_per_element and 0 < d < nb_dof_per_node
-   **/
-  virtual void assembleElementalArrayResidual(
-      const ID & dof_id, const Array<Real> & array_to_assemble,
-      const ElementType & type, const GhostType & ghost_type,
-      Real scale_factor = 1.);
-  /**
    * Assemble elementary values to the global matrix. The dof number is
    * implicitly considered as conn(el, n) * nb_nodes_per_element + d.
    * With 0 < n < nb_nodes_per_element and 0 < d < nb_dof_per_node
@@ -86,8 +77,8 @@ public:
 
 protected:
   /// Get the part of the solution corresponding to the dof_id
-  virtual void getSolutionPerDOFs(const ID & dof_id, Array<Real> & solution_array);
-
+  virtual void getSolutionPerDOFs(const ID & dof_id,
+                                  Array<Real> & solution_array);
 
 private:
   /// Add a symmetric matrices to a symmetric sparse matrix
@@ -123,11 +114,21 @@ public:
   /// Get the reference of an existing matrix
   SparseMatrixAIJ & getMatrix(const ID & matrix_id);
 
-  /*------------------------------------------------------------------------- */
-  /// Get an instance of a time step solver
-  virtual TimeStepSolver &
-  getNewTimeStepSolver(const ID & time_step_solver,
-                       const TimeStepSolverType & time_step_solver_type);
+  /* ------------------------------------------------------------------------ */
+  /* Non Linear Solver                                                        */
+  /* ------------------------------------------------------------------------ */
+  /// Get instance of a non linear solver
+  virtual NonLinearSolver &
+  getNewNonLinearSolver(const ID & nls_solver_id,
+                        const NonLinearSolverType & _non_linear_solver_type);
+
+  /* ------------------------------------------------------------------------ */
+  /* Time-Step Solver                                                         */
+  /* ------------------------------------------------------------------------ */
+  /// Get instance of a time step solver
+  TimeStepSolver & getNewTimeStepSolver(const ID & id,
+                                        const TimeStepSolverType & type,
+                                        NonLinearSolver & non_linear_solver);
 
   /* ------------------------------------------------------------------------ */
   /// Get the solution array
@@ -137,7 +138,7 @@ public:
   /// Get the blocked dofs array
   AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
   /// Get the location type of a given dof
-  bool isLocalOrMasterDOF(UInt dof_num);
+  inline bool isLocalOrMasterDOF(UInt dof_num);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

@@ -1,11 +1,12 @@
 /**
- * @file   integration_scheme.hh
+ * @file   non_linear_solver_newton_raphson.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Mon Sep 28 10:43:18 2015
+ * @date   Tue Aug 25 00:48:07 2015
  *
- * @brief  This class is just a base class for the integration schemes
+ * @brief Default implementation of NonLinearSolver, in case no external library
+ * is there to do the job
  *
  * @section LICENSE
  *
@@ -28,72 +29,70 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
+#include "non_linear_solver.hh"
+#include "solver_mumps.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_INTEGRATION_SCHEME_HH__
-#define __AKANTU_INTEGRATION_SCHEME_HH__
+#ifndef __AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH__
+#define __AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH__
 
 namespace akantu {
-class DOFManager;
+  class DOFManagerDefault;
 }
 
 __BEGIN_AKANTU__
 
-class IntegrationScheme {
+class NonLinearSolverNewtonRaphson : public NonLinearSolver {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  enum SolutionType {
-    _displacement = 0,
-    _temperature = 0,
-    _velocity = 1,
-    _temperature_rate = 1,
-    _acceleration = 2,
-  };
-
-  IntegrationScheme(DOFManager & dof_manager, const ID & dof_id, UInt order);
-  virtual ~IntegrationScheme() {}
+  NonLinearSolverNewtonRaphson(DOFManagerDefault & dof_manager,
+                         const NonLinearSolverType & non_linear_solver_type,
+                         const ID & id = "non_linear_solver_newton_raphson",
+                         UInt memory_id = 0);
+  virtual ~NonLinearSolverNewtonRaphson();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// generic interface of a predictor
-  virtual void predictor(Real delta_t) = 0;
+  /// Function that solve the non linear system described by the dof manager and
+  /// the solver callback functions
+  virtual void solve(SolverCallback & solver_callback);
 
-  /// generic interface of a corrector
-  virtual void corrector(const SolutionType & type, Real delta_t) = 0;
-
-  /// assemble the jacobian matrix
-  virtual void assembleJacobian(const SolutionType & type,
-                                Real delta_t) = 0;
-
-  /// assemble the residual
-  virtual void assembleResidual(bool is_lumped) = 0;
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// return the order of the integration scheme
-  UInt getOrder() const;
+protected:
+  /// test the convergence compare norm of array to convergence_criteria
+  bool testConvergence(const Array<Real> & array);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-protected:
-  /// The underlying dofmanager
-  DOFManager & dof_manager;
+private:
+  DOFManagerDefault & dof_manager;
 
-  /// The id of the dof treated by this integration scheme.
-  ID dof_id;
+  /// Sparse solver used for the linear solves
+  SparseSolverMumps solver;
 
-  /// The order of the integrator
-  UInt order;
+  /// Type of convergence criteria
+  SolveConvergenceCriteria convergence_criteria_type;
+
+  /// convergence threshold
+  Real convergence_criteria;
+
+  /// Max number of iterations
+  UInt max_iterations;
+
+  /// Number of iterations at last solve call
+  UInt n_iter;
+
+  /// Convergence error at last solve call
+  Real error;
+
+  /// Did the last call to solve reached convergence
+  bool converged;
 };
 
 __END_AKANTU__
 
-#endif /* __AKANTU_INTEGRATION_SCHEME_HH__ */
+#endif /* __AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH__ */

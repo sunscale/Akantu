@@ -76,7 +76,9 @@ class GeneralizedTrapezoidal : public IntegrationScheme1stOrder {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  GeneralizedTrapezoidal(DOFManager & dof_manager, Real alpha) : IntegrationScheme1stOrder(dof_manager), alpha(alpha){};
+  GeneralizedTrapezoidal(DOFManager & dof_manager, const ID & dof_id,
+                         Real alpha)
+      : IntegrationScheme1stOrder(dof_manager, dof_id), alpha(alpha){};
   virtual ~GeneralizedTrapezoidal(){};
 
   /* ------------------------------------------------------------------------ */
@@ -91,8 +93,7 @@ public:
                          const Array<bool> & blocked_dofs,
                          const Array<Real> & delta) const;
 
-  virtual void assembleJacobian(const SolutionType & type,
-                                Real time_step);
+  virtual void assembleJacobian(const SolutionType & type, Real time_step);
 
 public:
   /// the coeffichent @f{b@f} in the description
@@ -130,7 +131,8 @@ private:
  */
 class ForwardEuler : public GeneralizedTrapezoidal {
 public:
-  ForwardEuler(DOFManager & dof_manager) : GeneralizedTrapezoidal(dof_manager, 0.){};
+  ForwardEuler(DOFManager & dof_manager, const ID & dof_id)
+    : GeneralizedTrapezoidal(dof_manager, dof_id, 0.){};
 };
 
 /**
@@ -138,7 +140,8 @@ public:
  */
 class TrapezoidalRule1 : public GeneralizedTrapezoidal {
 public:
-  TrapezoidalRule1(DOFManager & dof_manager) : GeneralizedTrapezoidal(dof_manager, .5){};
+  TrapezoidalRule1(DOFManager & dof_manager, const ID & dof_id)
+    : GeneralizedTrapezoidal(dof_manager, dof_id, .5){};
 };
 
 /**
@@ -146,7 +149,8 @@ public:
  */
 class BackwardEuler : public GeneralizedTrapezoidal {
 public:
-  BackwardEuler(DOFManager & dof_manager) : GeneralizedTrapezoidal(dof_manager, 1.){};
+  BackwardEuler(DOFManager & dof_manager, const ID & dof_id)
+    : GeneralizedTrapezoidal(dof_manager, dof_id, 1.){};
 };
 
 /* -------------------------------------------------------------------------- */

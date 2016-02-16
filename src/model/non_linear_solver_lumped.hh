@@ -1,11 +1,12 @@
 /**
- * @file   integration_scheme.hh
+ * @file   non_linear_solver_lumped.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Mon Sep 28 10:43:18 2015
+ * @date   Tue Aug 25 00:48:07 2015
  *
- * @brief  This class is just a base class for the integration schemes
+ * @brief Default implementation of NonLinearSolver, in case no external library
+ * is there to do the job
  *
  * @section LICENSE
  *
@@ -28,72 +29,51 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
+#include "non_linear_solver.hh"
+#include "solver_mumps.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_INTEGRATION_SCHEME_HH__
-#define __AKANTU_INTEGRATION_SCHEME_HH__
+#ifndef __AKANTU_NON_LINEAR_SOLVER_LUMPED_HH__
+#define __AKANTU_NON_LINEAR_SOLVER_LUMPED_HH__
 
 namespace akantu {
-class DOFManager;
+  class DOFManagerDefault;
 }
 
 __BEGIN_AKANTU__
 
-class IntegrationScheme {
+class NonLinearSolverLumped : public NonLinearSolver {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  enum SolutionType {
-    _displacement = 0,
-    _temperature = 0,
-    _velocity = 1,
-    _temperature_rate = 1,
-    _acceleration = 2,
-  };
-
-  IntegrationScheme(DOFManager & dof_manager, const ID & dof_id, UInt order);
-  virtual ~IntegrationScheme() {}
+  NonLinearSolverLumped(DOFManagerDefault & dof_manager,
+                         const NonLinearSolverType & non_linear_solver_type,
+                         const ID & id = "non_linear_solver_lumped",
+                         UInt memory_id = 0);
+  virtual ~NonLinearSolverLumped();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// generic interface of a predictor
-  virtual void predictor(Real delta_t) = 0;
+  /// Function that solve the non linear system described by the dof manager and
+  /// the solver callback functions
+  virtual void solve(SolverCallback & solver_callback);
 
-  /// generic interface of a corrector
-  virtual void corrector(const SolutionType & type, Real delta_t) = 0;
-
-  /// assemble the jacobian matrix
-  virtual void assembleJacobian(const SolutionType & type,
-                                Real delta_t) = 0;
-
-  /// assemble the residual
-  virtual void assembleResidual(bool is_lumped) = 0;
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// return the order of the integration scheme
-  UInt getOrder() const;
+  static void solveLumped(const Array<Real> & A,
+                          Array<Real> & x,
+                          const Array<Real> & b,
+                          const Array<bool> & blocked_dofs,
+                          Real alpha);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-protected:
-  /// The underlying dofmanager
-  DOFManager & dof_manager;
-
-  /// The id of the dof treated by this integration scheme.
-  ID dof_id;
-
-  /// The order of the integrator
-  UInt order;
+private:
+  DOFManagerDefault & dof_manager;
 };
 
 __END_AKANTU__
 
-#endif /* __AKANTU_INTEGRATION_SCHEME_HH__ */
+#endif /* __AKANTU_NON_LINEAR_SOLVER_LUMPED_HH__ */

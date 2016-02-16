@@ -42,24 +42,24 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /// Defines the access modes of parsable parameters
 enum ParamAccessType {
-  _pat_internal   = 0x0001,
-  _pat_writable   = 0x0010,
-  _pat_readable   = 0x0100,
+  _pat_internal = 0x0001,
+  _pat_writable = 0x0010,
+  _pat_readable = 0x0100,
   _pat_modifiable = 0x0110, //_pat_readable | _pat_writable,
-  _pat_parsable   = 0x1000,
-  _pat_parsmod    = 0x1110  //< _pat_parsable | _pat_modifiable
+  _pat_parsable = 0x1000,
+  _pat_parsmod = 0x1110 //< _pat_parsable | _pat_modifiable
 };
 
-
 /// Bit-wise operator between access modes
-inline ParamAccessType operator|(const ParamAccessType & a, const ParamAccessType & b) {
+inline ParamAccessType operator|(const ParamAccessType & a,
+                                 const ParamAccessType & b) {
   ParamAccessType tmp = ParamAccessType(UInt(a) | UInt(b));
   return tmp;
 }
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-template<typename T> class ParsableParamTyped;
+template <typename T> class ParsableParamTyped;
 
 /* -------------------------------------------------------------------------- */
 /**
@@ -68,9 +68,10 @@ template<typename T> class ParsableParamTyped;
 class ParsableParam {
 public:
   ParsableParam();
-  ParsableParam(std::string name, std::string description, ParamAccessType param_type);
+  ParsableParam(std::string name, std::string description,
+                ParamAccessType param_type);
 
-  virtual ~ParsableParam() {};
+  virtual ~ParsableParam(){};
   /* ------------------------------------------------------------------------ */
   bool isInternal() const;
   bool isWritable() const;
@@ -80,9 +81,9 @@ public:
   void setAccessType(ParamAccessType ptype);
 
   /* ------------------------------------------------------------------------ */
-  template<typename T, typename V> void set(const V & value);
-  template<typename T> T & get();
-  template<typename T> const T & get() const;
+  template <typename T, typename V> void set(const V & value);
+  template <typename T> T & get();
+  template <typename T> const T & get() const;
 
   virtual void parseParam(const ParserParameter & param);
 
@@ -91,12 +92,11 @@ public:
 
 protected:
   /// Returns const instance of templated sub-class ParsableParamTyped
-  template<typename T>
+  template <typename T>
   const ParsableParamTyped<T> & getParsableParamTyped() const;
 
   /// Returns instance of templated sub-class ParsableParamTyped
-  template<typename T>
-  ParsableParamTyped<T> & getParsableParamTyped();
+  template <typename T> ParsableParamTyped<T> & getParsableParamTyped();
 
 private:
   /// Name of parameter
@@ -111,28 +111,27 @@ private:
 /* Typed Parameter                                                            */
 /* -------------------------------------------------------------------------- */
 /**
- * Type parameter transfering a ParserParameter (string: string) to a typed parameter in the memory of the p
+ * Type parameter transfering a ParserParameter (string: string) to a typed
+ * parameter in the memory of the p
  */
-template<typename T>
-class ParsableParamTyped : public ParsableParam {
+template <typename T> class ParsableParamTyped : public ParsableParam {
 public:
   ParsableParamTyped(std::string name, std::string description,
-		     ParamAccessType param_type, T & param);
+                     ParamAccessType param_type, T & param);
 
   /* ------------------------------------------------------------------------ */
-  template<typename V>
-  void setTyped(const V & value);
+  template <typename V> void setTyped(const V & value);
   T & getTyped();
   const T & getTyped() const;
 
   void parseParam(const ParserParameter & param);
 
   virtual void printself(std::ostream & stream) const;
+
 private:
   /// Value of parameter
   T & param;
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* Parsable Interface                                                         */
@@ -140,37 +139,36 @@ private:
 /// Defines interface for classes to manipulate parsable parameters
 class Parsable {
 public:
-  Parsable(const SectionType & section_type,
-           const ID & id = std::string()) : section_type(section_type), pid(id) {};
+  Parsable(const SectionType & section_type, const ID & id = std::string())
+      : section_type(section_type), pid(id){};
   virtual ~Parsable();
 
   /* ------------------------------------------------------------------------ */
   /// Add parameter to the params map
-  template<typename T>
-  void registerParam(std::string name, T & variable,
-		     ParamAccessType type,
-		     const std::string description = "");
+  template <typename T>
+  void registerParam(std::string name, T & variable, ParamAccessType type,
+                     const std::string description = "");
 
   /// Add parameter to the params map (with default value)
-  template<typename T>
+  template <typename T>
   void registerParam(std::string name, T & variable, T default_value,
-		     ParamAccessType type,
-		     const std::string description = "");
+                     ParamAccessType type, const std::string description = "");
 
   /// Add subsection to the sub_sections map
-  void registerSubSection(const SectionType & type,
-			  const std::string & name,
-			  Parsable & sub_section);
+  void registerSubSection(const SectionType & type, const std::string & name,
+                          Parsable & sub_section);
 
   /* ------------------------------------------------------------------------ */
   /// Set value to a parameter (with possible different type)
-  template<typename T, typename V> void setMixed(const std::string & name, const V & value);
+  template <typename T, typename V>
+  void setMixed(const std::string & name, const V & value);
   /// Set value to a parameter
-  template<typename T> void set(const std::string & name, const T & value);
+  template <typename T> void set(const std::string & name, const T & value);
   /// Get value of a parameter
-  template<typename T> const T & get(const std::string & name) const;
+  template <typename T> const T & get(const std::string & name) const;
+
 protected:
-  template<typename T> T & get(const std::string & name);
+  template <typename T> T & get(const std::string & name);
 
 protected:
   void setParamAccessType(const std::string & name, ParamAccessType ptype);
@@ -199,6 +197,5 @@ private:
 __END_AKANTU__
 
 #include "parsable_tmpl.hh"
-
 
 #endif /* __AKANTU_PARSABLE_HH__ */

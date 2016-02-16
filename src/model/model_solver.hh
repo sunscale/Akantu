@@ -30,8 +30,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "parsable.hh"
-#include "dof_manager.hh"
-#include "non_linear_solver_callback.hh"
+#include "solver_callback.hh"
 /* -------------------------------------------------------------------------- */
 #include <set>
 /* -------------------------------------------------------------------------- */
@@ -39,9 +38,15 @@
 #ifndef __AKANTU_MODEL_SOLVER_HH__
 #define __AKANTU_MODEL_SOLVER_HH__
 
+namespace akantu {
+  class Mesh;
+  class DOFManager;
+  class IntegrationScheme;
+}
+
 __BEGIN_AKANTU__
 
-class ModelSolver : public Parsable, public NonLinearSolverCallback {
+class ModelSolver : public Parsable, public SolverCallback {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -49,32 +54,43 @@ public:
   ModelSolver(const Mesh & mesh, const ID & id, UInt memory_id);
   virtual ~ModelSolver();
 
+  /// initialize the dof manager based on solver type passed in the input file
+  void initDOFManager();
+  /// initialize the dof manager based on the used chosen solver type
+  void initDOFManager(const ID & solver_type);
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// Solve a step, implicit, explicit, static, ... any things based on the
-  /// current configuration
-  void solveStep();
-
   /// solve a step using a given pre instantiated time step solver and
   /// nondynamic linear solver
-  void solveStep(const ID & time_step_solver_id,
-                 const ID & non_linear_solver_id);
+  void solveStep(ID time_step_solver_id = "");
 
   /// Initialize a time solver that can be used afterwards with its id
-  void initTimeStepSolver(const ID & time_step_solver_id, const ID & dof_id,
-                          const TimeStepSolverType & time_step_solver_type);
+  void
+  getNewSolver(const ID & solver_id,
+               const TimeStepSolverType & time_step_solver_type,
+               const NonLinearSolverType & non_linear_solver_type = _nls_auto);
+
+  /// set an integration scheme for a given dof and a given solver
+  void
+  setIntegrationScheme(const ID & solver_id, const ID & dof_id,
+                       const IntegrationSchemeType & integration_scheme_type);
+
+  /// set an externally instantiated integration scheme
+  void setIntegrationScheme(const ID & solver_id, const ID & dof_id,
+                            IntegrationScheme & integration_scheme);
 
   /* ------------------------------------------------------------------------ */
-  /* NonLinearSolverCallback interface                                        */
+  /* SolverCallback interface                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   /// Predictor interface for the callback
-  void predictor();
+  virtual void predictor();
 
   /// Corrector interface for the callback
-  void corrector();
+  virtual void corrector();
 
   /// AssembleResidual interface for the callback
   virtual void assembleResidual() = 0;
@@ -85,27 +101,24 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-protected:
+public:
   DOFManager & getDOFManager() { return *this->dof_manager; }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+  ID parent_id;
+  UInt parent_memory_id;
+
+  /// Underlying mesh
+  const Mesh & mesh;
+
   /// Underlying dof_manager (the brain...)
   DOFManager * dof_manager;
 
-  /// List of instantiated time step solvers
-  std::set<ID> time_step_solvers;
-
   /// Default time step solver to use
-  ID default_time_step_solver_id;
-
-  /// List of instantiated non_linear_solvers
-  std::set<ID> non_linear_solvers;
-
-  /// Default nondynamic linear solver
-  ID default_non_linear_solver_id;
+  ID default_solver_id;
 };
 
 __END_AKANTU__

@@ -31,17 +31,19 @@
 /* -------------------------------------------------------------------------- */
 #include "integration_scheme_1st_order.hh"
 #include "dof_manager.hh"
+#include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-void IntegrationScheme1stOrder::predictor(const ID & dof_id, Real delta_t) {
+void IntegrationScheme1stOrder::predictor(Real delta_t) {
   AKANTU_DEBUG_IN();
 
-  Array<Real> & u = this->dof_manager.getDOFs(dof_id);
-  Array<Real> & u_dot = this->dof_manager.getDOFsDerivatives(dof_id, 1);
-  const Array<bool> & blocked_dofs = this->dof_manager.getBlockedDOFs(dof_id);
+  Array<Real> & u = this->dof_manager.getDOFs(this->dof_id);
+  Array<Real> & u_dot = this->dof_manager.getDOFsDerivatives(this->dof_id, 1);
+  const Array<bool> & blocked_dofs =
+      this->dof_manager.getBlockedDOFs(this->dof_id);
 
   this->predictor(delta_t, u, u_dot, blocked_dofs);
 
@@ -50,14 +52,15 @@ void IntegrationScheme1stOrder::predictor(const ID & dof_id, Real delta_t) {
 
 /* -------------------------------------------------------------------------- */
 void IntegrationScheme1stOrder::corrector(const SolutionType & type,
-                                          const ID & dof_id, Real delta_t) {
+                                          Real delta_t) {
   AKANTU_DEBUG_IN();
 
-  Array<Real> & u = this->dof_manager.getDOFs(dof_id);
-  Array<Real> & u_dot = this->dof_manager.getDOFsDerivatives(dof_id, 1);
+  Array<Real> & u = this->dof_manager.getDOFs(this->dof_id);
+  Array<Real> & u_dot = this->dof_manager.getDOFsDerivatives(this->dof_id, 1);
 
-  const Array<Real> & solution = this->dof_manager.getSolution(dof_id);
-  const Array<bool> & blocked_dofs = this->dof_manager.getBlockedDOFs(dof_id);
+  const Array<Real> & solution = this->dof_manager.getSolution(this->dof_id);
+  const Array<bool> & blocked_dofs =
+      this->dof_manager.getBlockedDOFs(this->dof_id);
 
   this->corrector(type, delta_t, u, u_dot, blocked_dofs, solution);
 
@@ -65,5 +68,32 @@ void IntegrationScheme1stOrder::corrector(const SolutionType & type,
 }
 
 /* -------------------------------------------------------------------------- */
+void IntegrationScheme1stOrder::assembleResidual(bool is_lumped) {
+  AKANTU_DEBUG_IN();
+
+  const Array<Real> & first_derivative =
+      dof_manager.getDOFsDerivatives(this->dof_id, 1);
+  Array<Real> Ctr(first_derivative, true, "Ctr");
+  if(!is_lumped) {
+    const SparseMatrix & C = dof_manager.getMatrix("C");
+    Ctr *= C;
+  } else {
+    const Array<Real> & C = dof_manager.getLumpedMatrix("C");
+
+    UInt nb_dofs = Ctr.getNbComponent() * Ctr.getSize();
+    Array<Real>::scalar_iterator ctr_it = Ctr.begin_reinterpret(nb_dofs);
+    Array<Real>::scalar_iterator ctr_end = Ctr.end_reinterpret(nb_dofs);
+    Array<Real>::const_scalar_iterator c_it = C.begin_reinterpret(nb_dofs);
+
+    for (; ctr_it != ctr_end; ++ctr_it) {
+      *ctr_it *= *c_it;
+    }
+  }
+  dof_manager.assembleToResidual(this->dof_id, Ctr, -1.);
+
+  AKANTU_DEBUG_OUT();
+}
+/* -------------------------------------------------------------------------- */
+
 
 __END_AKANTU__

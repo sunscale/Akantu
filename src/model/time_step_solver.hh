@@ -30,7 +30,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_memory.hh"
 #include "aka_array.hh"
-#include "non_linear_solver_callback.hh"
+#include "solver_callback.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -38,31 +38,45 @@
 #define __AKANTU_TIME_STEP_SOLVER_HH__
 
 namespace akantu {
-  class DOFManager;
+class DOFManager;
+class NonLinearSolver;
 }
 
 __BEGIN_AKANTU__
 
-class TimeStepSolver : public Memory, public NonLinearSolverCallback {
+class TimeStepSolver : public Memory, public SolverCallback {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   TimeStepSolver(DOFManager & dof_manager, const TimeStepSolverType & type,
-                 const ID & id, UInt memory_id);
+                 NonLinearSolver & non_linear_solver, const ID & id,
+                 UInt memory_id);
   virtual ~TimeStepSolver();
 
   /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
+  /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// solves on step
+  virtual void solveStep(SolverCallback & solver_callback) = 0;
 
-  /// register a callback object for a given dof_id
-  virtual void registerCallback(NonLinearSolverCallback & callbacks);
+  /// register an integration scheme for a given dof
+  virtual void setIntegrationScheme(const ID & dof_id,
+                                    const IntegrationSchemeType & type) = 0;
 
-  /// register a callback object for a given dof_id
-  virtual NonLinearSolverCallback & getCallbacks();
-
+  /* ------------------------------------------------------------------------ */
+  /* Solver Callback interface                                                */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// implementation of the SolverCallback::predictor()
+  virtual void predictor();
+  /// implementation of the SolverCallback::corrector()
+  virtual void corrector();
+  /// implementation of the SolverCallback::assembleJacobian()
+  virtual void assembleJacobian();
+  /// implementation of the SolverCallback::assembleResidual()
+  virtual void assembleResidual();
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -71,20 +85,17 @@ protected:
   /// Underlying dof manager containing the dof to treat
   DOFManager & _dof_manager;
 
-  /// The dof to make evolve
-  ID dof_id;
-
   /// Type of solver
   TimeStepSolverType type;
-
-  /// The increment of the dof from @f[ u_{n+1} = u_{n} + inc @f]
-  Array<Real> increment;
 
   /// The time step for this solver
   Real time_step;
 
-  /// NonLinearSolverCallback to use to get the dofs updates
-  NonLinearSolverCallback * callbacks;
+  /// Temporary storage for solver callback
+  SolverCallback * solver_callback;
+
+  /// NonLinearSolver used by this tome step solver
+  NonLinearSolver & non_linear_solver;
 };
 
 __END_AKANTU__

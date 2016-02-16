@@ -29,10 +29,15 @@
 
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix.hh"
+#include "aka_array.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SPARSE_MATRIX_AIJ_HH__
 #define __AKANTU_SPARSE_MATRIX_AIJ_HH__
+
+namespace akantu {
+class DOFManagerDefault;
+}
 
 __BEGIN_AKANTU__
 
@@ -41,12 +46,12 @@ class SparseMatrixAIJ : public SparseMatrix {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SparseMatrixAIJ(DOFManager & dof_manager, const MatrixType & matrix_type,
-                  const ID & id = "sparse_matrix_aij",
-                  const MemoryID & memory_id = 0);
+  SparseMatrixAIJ(DOFManagerDefault & dof_manager,
+                  const MatrixType & matrix_type,
+                  const ID & id = "sparse_matrix_aij");
 
-  SparseMatrixAIJ(const SparseMatrixAIJ & matrix, const ID & id = "sparse_matrix_aij",
-                  const MemoryID & memory_id = 0);
+  SparseMatrixAIJ(const SparseMatrixAIJ & matrix,
+                  const ID & id = "sparse_matrix_aij");
 
   virtual ~SparseMatrixAIJ();
 
@@ -70,7 +75,7 @@ public:
   void resize(UInt size) { this->size = size; }
 
   /// modify the matrix to "remove" the blocked dof
-  virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
+  virtual void applyBoundary(Real block_val = 1.);
 
   /// save the profil in a file using the MatrixMarket file format
   virtual void saveProfile(const std::string & filename) const;
@@ -86,7 +91,7 @@ public:
 
   /// Equivalent of *gemv in blas
   virtual void matVecMul(const Array<Real> & x, Array<Real> & y,
-                         Real alpha = 1., Real beta = 0.);
+                         Real alpha = 1., Real beta = 0.) const;
 
   /* ------------------------------------------------------------------------ */
   /// accessor to A_{ij} - if (i, j) not present it returns 0
@@ -106,6 +111,12 @@ public:
 
   AKANTU_GET_MACRO(A, a, const Array<Real> &);
 
+  /// The release changes at each call of a function that changes the profile,
+  /// it in increasing but could overflow so it should be checked as
+  /// (my_release != release) and not as (my_release < release)
+  AKANTU_GET_MACRO(ProfileRelease, profile_release, UInt);
+  AKANTU_GET_MACRO(ValueRelease, value_release, UInt);
+
 protected:
   typedef std::pair<UInt, UInt> KeyCOO;
   typedef unordered_map<KeyCOO, UInt>::type coordinate_list_map;
@@ -121,6 +132,8 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+  DOFManagerDefault & dof_manager;
+
   /// row indexes
   Array<Int> irn;
 
@@ -132,6 +145,7 @@ private:
 
   /// Profile release
   UInt profile_release;
+
   /// Value release
   UInt value_release;
 

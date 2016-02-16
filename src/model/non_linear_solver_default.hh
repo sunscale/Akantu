@@ -3,10 +3,9 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Tue Aug 25 00:48:07 2015
+ * @date   Tue Feb 16 10:37:01 2016
  *
- * @brief Default implementation of NonLinearSolver, in case no external library
- * is there to do the job
+ * @brief  Include for the default non linear solvers
  *
  * @section LICENSE
  *
@@ -29,76 +28,18 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "non_linear_solver.hh"
-#include "solver_mumps.hh"
+#include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__
 #define __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__
 
-namespace akantu {
-  class DOFManagerDefault;
-}
+#if defined(AKANTU_IMPLICIT)
+#  include "non_linear_solver_newton_raphson.hh"
+#  include "non_linear_solver_linear.hh"
+#endif
 
-__BEGIN_AKANTU__
+#include "non_linear_solver_lumped.hh"
 
-class NonLinearSolverDefault : public NonLinearSolver {
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
-public:
-  NonLinearSolverDefault(DOFManagerDefault & dof_manager,
-                         const NonLinearSolverType & non_linear_solver_type,
-                         const ID & id = "non_linear_solver_default",
-                         UInt memory_id = 0);
-  virtual ~NonLinearSolverDefault();
-
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// Function that solve the non linear system described by the dof manager and
-  /// the solver callback functions
-  void solve();
-
-protected:
-  /// test the convergence compare norm of array to convergence_criteria
-  bool testConvergence(const Array<Real> & array);
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  virtual void setParameters(const ParserSection & parameters_section);
-
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
-private:
-  DOFManagerDefault & dof_manager;
-
-  /// Sparse solver used for the linear solves
-  SparseSolverMumps solver;
-
-  /// Type of convergence criteria
-  SolveConvergenceCriteria convergence_criteria_type;
-
-  /// convergence threshold
-  Real convergence_criteria;
-
-  /// Max number of iterations
-  UInt max_iterations;
-
-  /// Number of iterations at last solve call
-  UInt n_iter;
-
-  /// Convergence error at last solve call
-  Real error;
-
-  /// Did the last call to solve reached convergence
-  bool converged;
-};
-
-__END_AKANTU__
 
 #endif /* __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__ */

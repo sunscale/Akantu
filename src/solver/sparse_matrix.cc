@@ -41,9 +41,8 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 SparseMatrix::SparseMatrix(DOFManager & dof_manager,
-                           const MatrixType & matrix_type, const ID & id,
-                           const MemoryID & memory_id)
-    : Memory(id, memory_id), dof_manager(dof_manager), matrix_type(matrix_type),
+                           const MatrixType & matrix_type, const ID & id)
+    : id(id), _dof_manager(dof_manager), matrix_type(matrix_type),
       size(dof_manager.getSystemSize()), nb_non_zero(0), matrix_release(1) {
   AKANTU_DEBUG_IN();
 
@@ -54,9 +53,8 @@ SparseMatrix::SparseMatrix(DOFManager & dof_manager,
 }
 
 /* -------------------------------------------------------------------------- */
-SparseMatrix::SparseMatrix(const SparseMatrix & matrix, const ID & id,
-                           const MemoryID & memory_id)
-    : Memory(id, memory_id), dof_manager(matrix.dof_manager),
+SparseMatrix::SparseMatrix(const SparseMatrix & matrix, const ID & id)
+    : id(id), _dof_manager(matrix._dof_manager),
       matrix_type(matrix.matrix_type), size(matrix.size),
       nb_proc(matrix.nb_proc), nb_non_zero(matrix.nb_non_zero),
       matrix_release(1) {}
@@ -65,5 +63,12 @@ SparseMatrix::SparseMatrix(const SparseMatrix & matrix, const ID & id,
 SparseMatrix::~SparseMatrix() {}
 
 /* -------------------------------------------------------------------------- */
+Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat) {
+  Array<Real> tmp(vect.getSize(), vect.getNbComponent());
+  mat.matVecMul(vect, tmp);
+
+  vect.copy(tmp);
+  return vect;
+}
 
 __END_AKANTU__
