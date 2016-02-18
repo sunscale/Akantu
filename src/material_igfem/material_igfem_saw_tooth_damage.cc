@@ -210,7 +210,7 @@ UInt MaterialIGFEMSawToothDamage<spatial_dimension>::updateDamage() {
 	      if (*dam_it < dam_threshold)
 		*dam_it +=prescribed_dam;
 	      else *dam_it = max_damage;
-	      ++nb_damaged_elements;
+	      nb_damaged_elements += 1;
 	    }	      
 	    ++sub_mat_it;
 	    ++dam_it;
