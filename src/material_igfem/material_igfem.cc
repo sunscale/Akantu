@@ -315,9 +315,9 @@ void MaterialIGFEM::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u
       UInt sub_element_index = sub_mat_it->first;
 
       ElementTypeMapArray<UInt>::type_iterator it
-	= this->element_filter.firstType(_all_dimensions, _not_ghost, _ek_not_defined);
+	= this->element_filter.firstType(_all_dimensions, ghost_type, _ek_not_defined);
       ElementTypeMapArray<UInt>::type_iterator end
-	= element_filter.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
+	= element_filter.lastType(_all_dimensions, ghost_type, _ek_not_defined);
 
       for(; it != end; ++it) {
 	ElementType type = *it;
