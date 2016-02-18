@@ -47,11 +47,11 @@ __BEGIN_AKANTU__
 
 typedef CGAL::Simple_cartesian<Real> Cartesian;
 
-//typedef CGAL::Quotient<CGAL::MP_Float> NT;
-//typedef CGAL::Spherical_kernel_3<CGAL::Simple_cartesian<NT>, CGAL::Algebraic_kernel_for_spheres_2_3<NT> > Spherical;
-
-typedef CGAL::Lazy_exact_nt<CGAL::Quotient<CGAL::MP_Float> > NT; 
+typedef CGAL::Quotient<CGAL::MP_Float> NT;
 typedef CGAL::Spherical_kernel_3<CGAL::Simple_cartesian<NT>, CGAL::Algebraic_kernel_for_spheres_2_3<NT> > Spherical;
+
+//typedef CGAL::Lazy_exact_nt<CGAL::Quotient<CGAL::MP_Float> > NT; 
+//typedef CGAL::Spherical_kernel_3<CGAL::Simple_cartesian<NT>, CGAL::Algebraic_kernel_for_spheres_2_3<NT> > Spherical;
 
 __END_AKANTU__
 
