@@ -31,6 +31,10 @@
 #ifdef AKANTU_USE_MUMPS
 #include "solver_mumps.hh"
 #endif
+#ifdef AKANTU_USE_PETSC
+#include "solver_petsc.hh"
+#include "petsc_matrix.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
@@ -42,8 +46,9 @@ SolidMechanicsModelRVE::SolidMechanicsModelRVE(Mesh & mesh, bool use_RVE_mat_sel
   volume(0.),
   use_RVE_mat_selector(use_RVE_mat_selector),
   static_communicator_dummy(StaticCommunicator::getStaticCommunicatorDummy()),
-  nb_gel_pockets(nb_gel_pockets) {
-
+  nb_gel_pockets(nb_gel_pockets),
+  nb_dumps(0) {
+  AKANTU_DEBUG_IN();
   /// create node groups for PBCs
   mesh.createGroupsFromMeshData<std::string>("physical_names");
   /// find the four corner nodes of the RVE
@@ -73,6 +78,7 @@ SolidMechanicsModelRVE::SolidMechanicsModelRVE(Mesh & mesh, bool use_RVE_mat_sel
   surface_pairs_list.push_back(surface_pair_1);
   surface_pairs_list.push_back(surface_pair_2);
   this->setPBC(surface_pairs_list);
+ AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -82,6 +88,7 @@ SolidMechanicsModelRVE::~SolidMechanicsModelRVE() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelRVE::initFull(const ModelOptions & options) {
+  AKANTU_DEBUG_IN();
   SolidMechanicsModel::initFull(options);
 
   this->initMaterials();
@@ -116,11 +123,13 @@ void SolidMechanicsModelRVE::initFull(const ModelOptions & options) {
   this->addDumpField      ("residual");
 
   this->dump();
+  this->nb_dumps +=1;
+ AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelRVE::applyBoundaryConditions(const Matrix<Real> & displacement_gradient) {
-
+  AKANTU_DEBUG_IN();
   /// get the position of the nodes
   const Array<Real> & pos = mesh.getNodes();
   /// storage for the coordinates of a given node and the displacement that will be applied
@@ -154,10 +163,12 @@ void SolidMechanicsModelRVE::applyBoundaryConditions(const Matrix<Real> & displa
   appl_disp.mul<false>(displacement_gradient,x);
   (*this->blocked_dofs)(node,0) = true; (*this->displacement)(node,0) = appl_disp(0);
   (*this->blocked_dofs)(node,1) = true; (*this->displacement)(node,1) = appl_disp(1);
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelRVE::findCornerNodes() {
+  AKANTU_DEBUG_IN();
   mesh.computeBoundingBox();
 
   // find corner nodes
@@ -196,11 +207,12 @@ void SolidMechanicsModelRVE::findCornerNodes() {
     if (corner_nodes(i) == UInt(-1))
       AKANTU_DEBUG_ERROR("The corner node " << i + 1 << " wasn't found");
   }
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelRVE::advanceASR(const Matrix<Real> & prestrain) {
-
+  AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT(spatial_dimension == 2, "This is 2D only!");
 
   /// apply the new eigenstrain
@@ -246,13 +258,18 @@ void SolidMechanicsModelRVE::advanceASR(const Matrix<Real> & prestrain) {
     std::cout << "the number of damaged elements is " << nb_damaged_elements << std::endl;
   } while (nb_damaged_elements);
 
-  this->dump();
+  if (this->nb_dumps % 10 == 0) {
+    this->dump();
+    this->nb_dumps += 1;
+  }
+
+  AKANTU_DEBUG_OUT();
 }
 
 
 /* -------------------------------------------------------------------------- */
 Real SolidMechanicsModelRVE::averageTensorField(UInt row_index, UInt col_index, const ID & field_type) {
-
+  AKANTU_DEBUG_IN();
   FEEngine * fem = this->fems["SolidMechanicsFEEngine"];
   Real average = 0;
   GhostType gt = _not_ghost;
@@ -306,11 +323,12 @@ Real SolidMechanicsModelRVE::averageTensorField(UInt row_index, UInt col_index, 
       AKANTU_DEBUG_ERROR("Averaging not implemented for this field!!!");
   }
   return average/this->volume;
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
-
+  AKANTU_DEBUG_IN();
   const UInt dim = 2;
   AKANTU_DEBUG_ASSERT(this->spatial_dimension == dim, "Is only implemented for 2D!!!");
 
@@ -341,12 +359,12 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
   Matrix<Real> eps_inverse(voigt_size, voigt_size);
   eps_inverse.inverse(strains);
   C_macro.mul<false, false>(stresses, eps_inverse);
-
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelRVE::performVirtualTesting(const Matrix<Real> & H, Matrix<Real> & eff_stresses, Matrix<Real> & eff_strains, const UInt test_no) {
-
+  AKANTU_DEBUG_IN();
   this->applyBoundaryConditions(H);
 
   /// solve system
@@ -362,15 +380,17 @@ void SolidMechanicsModelRVE::performVirtualTesting(const Matrix<Real> & H, Matri
   eff_strains(1, test_no) = this->averageTensorField(1,1, "strain");
   eff_stresses(2, test_no) = this->averageTensorField(1,0, "stress");
   eff_strains(2, test_no) = 2. * this->averageTensorField(1,0, "strain");
-
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelRVE::homogenizeEigenGradU(Matrix<Real> & eigen_gradu_macro) {
+  AKANTU_DEBUG_IN();
   eigen_gradu_macro(0,0) = this->averageTensorField(0,0, "eigen_grad_u");
   eigen_gradu_macro(1,1) = this->averageTensorField(1,1, "eigen_grad_u");
   eigen_gradu_macro(0,1) = this->averageTensorField(0,1, "eigen_grad_u");
   eigen_gradu_macro(1,0) = this->averageTensorField(1,0, "eigen_grad_u");
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -401,6 +421,7 @@ void SolidMechanicsModelRVE::initMaterials() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelRVE::initSolver(__attribute__((unused)) SolverOptions & options) {
+ AKANTU_DEBUG_IN();
 #if !defined(AKANTU_USE_MUMPS) && !defined(AKANTU_USE_PETSC)// or other solver in the future \todo add AKANTU_HAS_SOLVER in CMake
   AKANTU_DEBUG_ERROR("You should at least activate one solver.");
 #else
@@ -443,6 +464,7 @@ jacobian_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension, _unsymme
   if(solver)
     solver->initialize(opt);
 #endif //AKANTU_HAS_SOLVER
+ AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */

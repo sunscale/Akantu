@@ -36,10 +36,12 @@ MaterialFE2<spatial_dimension>::MaterialFE2(SolidMechanicsModel & model,
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 MaterialFE2<spatial_dimension>::~MaterialFE2() {
+  AKANTU_DEBUG_IN();
   for (UInt i = 0; i < RVEs.size(); ++i) {
     delete meshes[i];
     delete RVEs[i];
   }
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -53,7 +55,7 @@ void MaterialFE2<dim>::initialize() {
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialFE2<spatial_dimension>::initMaterial() {
-
+  AKANTU_DEBUG_IN();
   Material::initMaterial();
 
   /// compute the number of integration points in this material and resize the RVE vector
@@ -81,16 +83,17 @@ void MaterialFE2<spatial_dimension>::initMaterial() {
     /// compute intial stiffness of the RVE
     (*RVE_it)->homogenizeStiffness(*C_it);
   }
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialFE2<spatial_dimension>::computeStress(ElementType el_type,
 						   GhostType ghost_type) {
+  AKANTU_DEBUG_IN();
   // Wikipedia convention:
   // 2*eps_ij (i!=j) = voigt_eps_I
   // http://en.wikipedia.org/wiki/Voigt_notation
-  AKANTU_DEBUG_IN();
 
   Array<Real>::const_matrix_iterator C_it = this->C(el_type, ghost_type).begin(voigt_h::size, 
 									       voigt_h::size);
@@ -127,6 +130,7 @@ void MaterialFE2<spatial_dimension>::computeStress(ElementType el_type,
   ++C_it;
   
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -151,6 +155,7 @@ void MaterialFE2<spatial_dimension>::computeTangentModuli(const ElementType & el
 template<UInt spatial_dimension>
 void MaterialFE2<spatial_dimension>::advanceASR(const Matrix<Real> & prestrain) {
 
+ AKANTU_DEBUG_IN();
   std::vector<SolidMechanicsModelRVE *>::iterator RVE_it = RVEs.begin();
   std::vector<SolidMechanicsModelRVE *>::iterator RVE_end = RVEs.end();
 
@@ -174,6 +179,7 @@ void MaterialFE2<spatial_dimension>::advanceASR(const Matrix<Real> & prestrain) 
     /// compute the average eigen_grad_u
     (*RVE_it)->homogenizeEigenGradU(*eigen_gradu_it);
   }
+  AKANTU_DEBUG_OUT();
 }
 
 INSTANTIATE_MATERIAL(MaterialFE2);
