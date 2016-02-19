@@ -346,6 +346,10 @@ protected:
   void
   assignMaterialToElements(const ElementTypeMapArray<UInt> * filter = NULL);
 
+  /// reinitialize dof_synchronizer and solver (either in implicit or
+  /// explicit) when cohesive elements are inserted
+  void reinitializeSolver();
+
   /* ------------------------------------------------------------------------ */
   /* Mass (solid_mechanics_model_mass.cc)                                     */
   /* ------------------------------------------------------------------------ */

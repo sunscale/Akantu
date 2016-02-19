@@ -44,9 +44,20 @@ public:
   GlobalIdsUpdater(Mesh & mesh, DistributedSynchronizer * synchronizer) :
     mesh(mesh), synchronizer(synchronizer) {}
 
-  /// function to update the global connectivity of new inserted
-  /// nodes. It must be called after updating the node types.
+  /// function to update and synchronize the global connectivity of
+  /// new inserted nodes. It must be called after updating the node
+  /// types. (It calls in sequence the functions
+  /// updateGlobalIDsLocally and synchronizeGlobalIDs)
   UInt updateGlobalIDs(UInt old_nb_nodes);
+
+  /// function to update the global connectivity (only locally) of new
+  /// inserted nodes. It must be called after updating the node types.
+  UInt updateGlobalIDsLocally(UInt old_nb_nodes);
+
+  /// function to synchronize the global connectivity of new inserted
+  /// nodes among the processors. It must be called after updating the
+  /// node types.
+  void synchronizeGlobalIDs();
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */

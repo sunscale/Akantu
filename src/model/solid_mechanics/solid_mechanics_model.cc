@@ -769,7 +769,7 @@ void SolidMechanicsModel::initSolver(__attribute__((unused))
                                     _symmetric, sstr.str(), memory_id);
 #else
   jacobian_matrix = new SparseMatrix(nb_global_nodes * spatial_dimension,
-                                     _unsymmetric, sstr.str(), memory_id);
+                                     _symmetric, sstr.str(), memory_id);
 #endif // AKANTU_USE PETSC
   jacobian_matrix->buildProfile(mesh, *dof_synchronizer, spatial_dimension);
 
@@ -1468,8 +1468,8 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
     (*mat_it)->onElementsAdded(element_list, event);
   }
 
-  if (method == _explicit_lumped_mass)
-    this->assembleMassLumped();
+  //  if (method == _explicit_lumped_mass)
+  //    this->assembleMassLumped();
 
   AKANTU_DEBUG_OUT();
 }
@@ -1533,7 +1533,7 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
   if (method != _explicit_lumped_mass) {
     this->initSolver();
   }
-
+  
   AKANTU_DEBUG_OUT();
 }
 
@@ -1571,6 +1571,22 @@ void SolidMechanicsModel::onNodesRemoved(__attribute__((unused))
   if (method != _explicit_lumped_mass) {
     this->initSolver();
   }
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::reinitializeSolver() {
+
+  delete dof_synchronizer;
+  dof_synchronizer = new DOFSynchronizer(mesh, spatial_dimension);
+  dof_synchronizer->initLocalDOFEquationNumbers();
+  dof_synchronizer->initGlobalDOFEquationNumbers();
+
+  if (method != _explicit_lumped_mass) {
+    this->initSolver();
+  }
+
+  if (method == _explicit_lumped_mass)
+    this->assembleMassLumped();
 }
 
 /* -------------------------------------------------------------------------- */
