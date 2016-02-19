@@ -58,11 +58,20 @@ UInt CohesiveElementInserter::updateGlobalIDs(NewNodesEvent & node_event) {
   Array<UInt> & doubled_nodes = node_event.getList();
 
   UInt total_nb_new_nodes
-    = global_ids_updater->updateGlobalIDs(doubled_nodes.getSize());
+    = global_ids_updater->updateGlobalIDsLocally(doubled_nodes.getSize());
 
   AKANTU_DEBUG_OUT();
   return total_nb_new_nodes;
 }
+
+void CohesiveElementInserter::synchronizeGlobalIDs(NewNodesEvent & node_event) {
+  AKANTU_DEBUG_IN();
+
+  global_ids_updater->synchronizeGlobalIDs();
+
+  AKANTU_DEBUG_OUT();
+}
+
 
 
 __END_AKANTU__
