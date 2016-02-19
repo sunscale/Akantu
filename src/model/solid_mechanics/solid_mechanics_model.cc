@@ -106,6 +106,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
   this->mesh.registerDumper<DumperParaview>("paraview_all", id, true);
   this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_regular);
 #endif
+
   AKANTU_DEBUG_OUT();
 }
 

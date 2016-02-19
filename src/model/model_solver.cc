@@ -48,13 +48,11 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 ModelSolver::ModelSolver(const Mesh & mesh, const ID & id, UInt memory_id)
-    : Parsable(_st_solver, id), parent_id(id), parent_memory_id(memory_id), mesh(mesh),
-      dof_manager(NULL) {}
+    : Parsable(_st_solver, id), parent_id(id), parent_memory_id(memory_id),
+      mesh(mesh), dof_manager(NULL) {}
 
 /* -------------------------------------------------------------------------- */
-ModelSolver::~ModelSolver() {
-  delete this->dof_manager;
-}
+ModelSolver::~ModelSolver() { delete this->dof_manager; }
 
 /* -------------------------------------------------------------------------- */
 void ModelSolver::initDOFManager() {
@@ -76,7 +74,8 @@ void ModelSolver::initDOFManager(const ID & solver_type) {
   if (solver_type == "petsc") {
 #if defined(AKANTU_USE_PETSC)
     ID id = this->parent_id + ":dof_manager_petsc";
-    this->dof_manager = new DOFManagerPETSc(this->mesh, id, this->parent_memory_id);
+    this->dof_manager =
+        new DOFManagerPETSc(this->mesh, id, this->parent_memory_id);
 #else
     AKANTU_EXCEPTION(
         "To use PETSc you have to activate it in the compilations options");
@@ -84,7 +83,8 @@ void ModelSolver::initDOFManager(const ID & solver_type) {
   } else if (solver_type == "mumps") {
 #if defined(AKANTU_USE_MUMPS)
     ID id = this->parent_id + ":dof_manager_default";
-    this->dof_manager = new DOFManagerDefault(this->mesh, id, this->parent_memory_id);
+    this->dof_manager =
+        new DOFManagerDefault(this->mesh, id, this->parent_memory_id);
 #else
     AKANTU_EXCEPTION(
         "To use MUMPS you have to activate it in the compilations options");
@@ -113,11 +113,23 @@ void ModelSolver::solveStep(ID solver_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-void ModelSolver::getNewSolver(
-    const ID & solver_id, const TimeStepSolverType & time_step_solver_type,
-    const NonLinearSolverType & non_linear_solver_type) {
+void ModelSolver::getNewSolver(const ID & solver_id,
+                               TimeStepSolverType time_step_solver_type,
+                               NonLinearSolverType non_linear_solver_type) {
   if (this->default_solver_id == "") {
     this->default_solver_id = solver_id;
+  }
+
+  if (non_linear_solver_type == _nls_auto) {
+    switch (time_step_solver_type) {
+    case _tsst_dynamic:
+    case _tsst_static:
+      non_linear_solver_type = _nls_newton_raphson;
+      break;
+    case _tsst_dynamic_lumped:
+      non_linear_solver_type = _nls_lumped;
+      break;
+    }
   }
 
   NonLinearSolver & nls = this->dof_manager->getNewNonLinearSolver(

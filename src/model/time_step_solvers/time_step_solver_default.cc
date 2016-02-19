@@ -32,6 +32,7 @@
 #include "dof_manager_default.hh"
 #include "sparse_matrix_aij.hh"
 
+#include "pseudo_time.hh"
 #include "integration_scheme_1st_order.hh"
 #include "integration_scheme_2nd_order.hh"
 /* -------------------------------------------------------------------------- */
@@ -83,6 +84,10 @@ void TimeStepSolverDefault::setIntegrationScheme(
     }
   } else {
     switch (type) {
+    case _ist_pseudo_time: {
+      integration_scheme = new PseudoTime(dof_manager, dof_id);
+      break;
+    }
     case _ist_forward_euler: {
       integration_scheme = new ForwardEuler(dof_manager, dof_id);
       break;

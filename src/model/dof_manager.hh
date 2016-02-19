@@ -31,6 +31,7 @@
 #include "aka_memory.hh"
 #include "non_linear_solver.hh"
 #include "time_step_solver.hh"
+#include "mesh_events.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
 /* -------------------------------------------------------------------------- */
@@ -40,7 +41,7 @@
 
 __BEGIN_AKANTU__
 
-class DOFManager : protected Memory {
+class DOFManager : protected Memory, protected MeshEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

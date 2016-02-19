@@ -139,6 +139,7 @@ enum TimeStepSolverType {
 
 /// Type of integration scheme
 enum IntegrationSchemeType {
+  _ist_pseudo_time,             ///< Pseudo Time
   _ist_forward_euler,           ///< GeneralizedTrapezoidal(0)
   _ist_trapezoidal_rule_1,      ///< GeneralizedTrapezoidal(1/2)
   _ist_backward_euler,          ///< GeneralizedTrapezoidal(1)

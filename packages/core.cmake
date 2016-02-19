@@ -204,16 +204,18 @@ package_declare_sources(core
   model/non_linear_solver_callback.hh
   model/time_step_solvers/time_step_solver_default_solver_callback.hh
 
-  model/integration_scheme/generalized_trapezoidal.hh
   model/integration_scheme/generalized_trapezoidal.cc
-  model/integration_scheme/integration_scheme.hh
+  model/integration_scheme/generalized_trapezoidal.hh
   model/integration_scheme/integration_scheme.cc
-  model/integration_scheme/integration_scheme_1st_order.hh
+  model/integration_scheme/integration_scheme.hh
   model/integration_scheme/integration_scheme_1st_order.cc
-  model/integration_scheme/integration_scheme_2nd_order.hh
+  model/integration_scheme/integration_scheme_1st_order.hh
   model/integration_scheme/integration_scheme_2nd_order.cc
-  model/integration_scheme/newmark-beta.hh
+  model/integration_scheme/integration_scheme_2nd_order.hh
   model/integration_scheme/newmark-beta.cc
+  model/integration_scheme/newmark-beta.hh
+  model/integration_scheme/pseudo_time.cc
+  model/integration_scheme/pseudo_time.hh
   model/model.cc
   model/model.hh
   model/model_inline_impl.cc

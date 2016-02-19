@@ -70,8 +70,8 @@ public:
   /// Initialize a time solver that can be used afterwards with its id
   void
   getNewSolver(const ID & solver_id,
-               const TimeStepSolverType & time_step_solver_type,
-               const NonLinearSolverType & non_linear_solver_type = _nls_auto);
+               TimeStepSolverType time_step_solver_type,
+               NonLinearSolverType non_linear_solver_type = _nls_auto);
 
   /// set an integration scheme for a given dof and a given solver
   void
