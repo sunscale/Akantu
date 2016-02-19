@@ -1632,13 +1632,16 @@ SolidMechanicsModel::flattenInternal(const std::string & field_name,
 
   ElementTypeMapArray<Real> * internal_flat = this->registered_internals[key];
 
-  typedef ElementTypeMapArray<Real>::type_iterator iterator;
-  iterator tit = internal_flat->firstType(spatial_dimension, ghost_type, kind);
-  iterator end = internal_flat->lastType(spatial_dimension, ghost_type, kind);
+  typedef Mesh::type_iterator iterator;
+  iterator tit = this->mesh.firstType(spatial_dimension, ghost_type, kind);
+  iterator end = this->mesh.lastType(spatial_dimension, ghost_type, kind);
 
   for (; tit != end; ++tit) {
     ElementType type = *tit;
-    (*internal_flat)(type, ghost_type).clear();
+    if (internal_flat->exists(type, ghost_type)) {
+      (*internal_flat)(type, ghost_type).clear();
+      (*internal_flat)(type, ghost_type).resize(0);
+    }
   }
 
   for (UInt m = 0; m < materials.size(); ++m) {
