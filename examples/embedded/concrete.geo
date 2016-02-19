@@ -22,3 +22,5 @@ Physical Point("YBlocked") = {1};
 Physical Line("Force") = {4};
 
 Physical Surface("concrete") = {1};
+
+SecondOrderIncomplete=1;
