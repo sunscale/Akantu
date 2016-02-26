@@ -36,21 +36,21 @@
 #ifndef __AKANTU_FWD_HH__
 #define __AKANTU_FWD_HH__
 
-
 namespace cppargparse {
-  class ArgumentParser;
+class ArgumentParser;
 }
 
 namespace akantu {
   // forward declaration
-  template <int dim, class model_type>
-  struct ContactData;
+  template <int dim, class model_type> struct ContactData;
 
-  template<typename T> class Matrix;
-  template<typename T> class Vector;
-  template<typename T> class Tensor3;
+  template <typename T> class Matrix;
+  template <typename T> class Vector;
+  template <typename T> class Tensor3;
 
-  template<typename T, bool is_scal = is_scalar<T>::value > class Array;
+  template <typename T, bool is_scal = is_scalar<T>::value> class Array;
+  template <typename T, typename SupportType = ElementType>
+  class ElementTypeMapArray;
 
   template <class T> class SpatialGrid;
 
@@ -69,6 +69,5 @@ namespace akantu {
   class Mesh;
   class SparseMatrix;
 }
-
 
 #endif /* __AKANTU_FWD_HH__ */

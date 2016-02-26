@@ -29,9 +29,16 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_array.hh"
+#include "element.hh"
+#include "element_type_map.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MESH_EVENTS_HH__
 #define __AKANTU_MESH_EVENTS_HH__
+
+
+__BEGIN_AKANTU__
 
 /// akantu::MeshEvent is the base event for meshes
 template <class Entity> class MeshEvent {
@@ -160,21 +167,21 @@ public:
                               const Array<UInt> & new_numbering,
                               const RemovedNodesEvent & event) = 0;
   /// function to implement to react on  akantu::NewElementsEvent
-  virtual void onElementsAdded(__attribute__((unused))
-                               const Array<Element> & elements_list,
-                               __attribute__((unused))
+  virtual void onElementsAdded(const Array<Element> & elements_list,
                                const NewElementsEvent & event) = 0;
   /// function to implement to react on  akantu::RemovedElementsEvent
-  virtual void onElementsRemoved(
-      __attribute__((unused)) const Array<Element> & elements_list,
-      __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-      __attribute__((unused)) const RemovedElementsEvent & event) = 0;
+  virtual void
+  onElementsRemoved(const Array<Element> & elements_list,
+                    const ElementTypeMapArray<UInt> & new_numbering,
+                    const RemovedElementsEvent & event) = 0;
   /// function to implement to react on  akantu::ChangedElementsEvent
-  virtual void onElementsChanged(
-      __attribute__((unused)) const Array<Element> & old_elements_list,
-      __attribute__((unused)) const Array<Element> & new_elements_list,
-      __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-      __attribute__((unused)) const ChangedElementsEvent & event) = 0;
+  virtual void
+  onElementsChanged(const Array<Element> & old_elements_list,
+                    const Array<Element> & new_elements_list,
+                    const ElementTypeMapArray<UInt> & new_numbering,
+                    const ChangedElementsEvent & event) = 0;
 };
+
+__END_AKANTU__
 
 #endif /* __AKANTU_MESH_EVENTS_HH__ */

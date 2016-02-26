@@ -30,6 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "generalized_trapezoidal.hh"
+#include "mesh.hh"
 #include "aka_array.hh"
 #include "dof_manager.hh"
 #include "sparse_matrix.hh"

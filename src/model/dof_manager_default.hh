@@ -47,7 +47,7 @@ class DOFManagerDefault : public DOFManager {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DOFManagerDefault(const Mesh & mesh, const ID & id = "dof_manager_default",
+  DOFManagerDefault(const ID & id = "dof_manager_default",
                     const MemoryID & memory_id = 0);
   virtual ~DOFManagerDefault();
 
@@ -56,8 +56,8 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// register an array of degree of freedom
-  void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
-                    DOFSupportType & support_type);
+  virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+                            const DOFSupportType & support_type);
 
   /// Assemble an array to the global residual array
   virtual void assembleToResidual(const ID & dof_id,

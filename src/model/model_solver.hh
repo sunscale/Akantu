@@ -51,7 +51,7 @@ class ModelSolver : public Parsable, public SolverCallback {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ModelSolver(const Mesh & mesh, const ID & id, UInt memory_id);
+  ModelSolver(Mesh & mesh, const ID & id, UInt memory_id);
   virtual ~ModelSolver();
 
   /// initialize the dof manager based on solver type passed in the input file
@@ -112,7 +112,7 @@ private:
   UInt parent_memory_id;
 
   /// Underlying mesh
-  const Mesh & mesh;
+  Mesh & mesh;
 
   /// Underlying dof_manager (the brain...)
   DOFManager * dof_manager;

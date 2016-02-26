@@ -91,11 +91,9 @@ inline void DOFManagerDefault::addElementalMatrixToUnsymmetric(
 }
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-DOFManagerDefault::DOFManagerDefault(const Mesh & mesh, const ID & id,
+DOFManagerDefault::DOFManagerDefault(const ID & id,
                                      const MemoryID & memory_id)
-    : DOFManager(mesh, id, memory_id) {}
+    : DOFManager(id, memory_id) {}
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::~DOFManagerDefault() {}
@@ -103,7 +101,7 @@ DOFManagerDefault::~DOFManagerDefault() {}
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::registerDOFs(const ID & dof_id,
                                      Array<Real> & dofs_array,
-                                     DOFSupportType & support_type) {
+                                     const DOFSupportType & support_type) {
   // stores the current numbers of dofs
   UInt local_nb_dofs = this->local_system_size;
   UInt pure_local_nb_dofs = this->pure_local_system_size;
@@ -131,19 +129,16 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
   this->global_equation_number.resize(this->local_system_size);
 
   // set the equation numbers
-  if (support_type == _dst_nodal) {
-    UInt first_dof_id = local_nb_dofs;
+  UInt first_dof_id = local_nb_dofs;
+  dof_data.local_equation_number.resize(nb_dofs);
 
-    dof_data.local_equation_number.resize(nb_dofs);
+  for (UInt d = 0; d < nb_dofs; ++d) {
+    UInt local_eq_num = first_dof_id + d;
+    dof_data.local_equation_number(d) = local_eq_num;
+    UInt global_eq_num = first_global_dofs_id + d;
+    this->global_equation_number(local_eq_num) = global_eq_num;
 
-    for (UInt d = 0; d < nb_dofs; ++d) {
-      UInt local_eq_num = first_dof_id + d;
-      dof_data.local_equation_number(d) = local_eq_num;
-      UInt global_eq_num = first_global_dofs_id + d;
-      this->global_equation_number(local_eq_num) = global_eq_num;
-
-      this->global_to_local_mapping[global_eq_num] = local_eq_num;
-    }
+    this->global_to_local_mapping[global_eq_num] = local_eq_num;
   }
 }
 
@@ -173,15 +168,9 @@ SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & id,
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ & DOFManagerDefault::getMatrix(const ID & id) {
-  ID matrix_id = this->id + ":mtx:" + id;
-  AIJMatrixMap::iterator it = this->aij_matrices.find(matrix_id);
+  SparseMatrix & matrix = DOFManager::getMatrix(id);
 
-  if (it == this->aij_matrices.end())
-    AKANTU_EXCEPTION("The matrix " << id
-                                   << " does not exists in the DOFManager "
-                                   << this->id);
-
-  return *(it->second);
+  return dynamic_cast<SparseMatrixAIJ &>(matrix);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -297,7 +286,7 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 
   UInt nb_element;
   if (ghost_type == _not_ghost) {
-    nb_element = mesh.getNbElement(type);
+    nb_element = this->mesh->getNbElement(type);
   } else {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
@@ -307,7 +296,7 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     nb_element = filter_elements.getSize();
     filter_it = filter_elements.storage();
   } else {
-    nb_element = mesh.getNbElement(type, ghost_type);
+    nb_element = this->mesh->getNbElement(type, ghost_type);
   }
 
   AKANTU_DEBUG_ASSERT(elementary_mat.getSize() == nb_element,
@@ -319,7 +308,7 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
   UInt nb_degree_of_freedom = elementary_mat.getNbComponent() /
                               (nb_nodes_per_element * nb_nodes_per_element);
 
-  const Array<UInt> connectivity = this->mesh.getConnectivity(type, ghost_type);
+  const Array<UInt> connectivity = this->mesh->getConnectivity(type, ghost_type);
   Array<UInt>::const_vector_iterator conn_begin =
       connectivity.begin(nb_nodes_per_element);
   Array<UInt>::const_vector_iterator conn_it = conn_begin;

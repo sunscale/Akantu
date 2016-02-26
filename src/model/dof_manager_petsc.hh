@@ -58,7 +58,7 @@ class DOFManagerPETSc : public DOFManager {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DOFManagerPETSc(const Mesh & mesh, const ID & id = "dof_manager_petsc",
+  DOFManagerPETSc(const ID & id = "dof_manager_petsc",
                   const MemoryID & memory_id = 0);
   virtual ~DOFManagerPETSc();
 

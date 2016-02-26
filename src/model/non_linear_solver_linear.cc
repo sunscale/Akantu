@@ -43,7 +43,7 @@ NonLinearSolverLinear::NonLinearSolverLinear(
     UInt memory_id)
     : NonLinearSolver(dof_manager, non_linear_solver_type, id, memory_id),
       dof_manager(dof_manager),
-      solver(dof_manager, "jacobian", id + ":sparse_solver", memory_id) {
+      solver(dof_manager, "J", id + ":sparse_solver", memory_id) {
 
   this->supported_type.insert(_nls_linear);
   this->checkIfTypeIsSupported();

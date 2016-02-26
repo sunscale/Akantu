@@ -37,58 +37,91 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
-#include <set>
+#include <list>
+#include <algorithm>
 /* -------------------------------------------------------------------------- */
-
 
 __BEGIN_AKANTU__
 
-template<class EventHandler>
-class EventHandlerManager {
+template <class EventHandler> class EventHandlerManager {
+private:
+  typedef std::pair<UInt, EventHandler *> priority_value;
+  typedef std::list<priority_value> priority_list;
+  struct KeyComp {
+    bool operator()(const priority_value & a, const priority_value & b) const {
+      return (a.first < b.first);
+    }
+    bool operator()(const priority_value & a, UInt b) const {
+      return (a.first < b);
+    }
+
+  };
+
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  virtual ~EventHandlerManager(){};
 
-  virtual ~EventHandlerManager() {};
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// register a new EventHandler to the Manager. The register object
   /// will then be informed about the events the manager observes.
-  void registerEventHandler(EventHandler & event_handler) {
-    event_handlers.insert(&event_handler);
+  void registerEventHandler(EventHandler & event_handler, UInt priority = 100) {
+    typename priority_list::iterator it =
+        this->searchEventHandler(event_handler);
+
+    if (it != this->event_handlers.end()) {
+      AKANTU_EXCEPTION("This event handler was already registered");
+    }
+
+    typename priority_list::iterator pos =
+        std::lower_bound(this->event_handlers.begin(),
+                         this->event_handlers.end(), priority, KeyComp());
+
+    this->event_handlers.insert(pos, std::make_pair(priority, &event_handler));
   }
 
   /// unregister a EventHandler object. This object will not be
   /// notified anymore about the events this manager observes.
   void unregisterEventHandler(EventHandler & event_handler) {
-    event_handlers.erase(&event_handler);
+    typename priority_list::iterator it =
+        this->searchEventHandler(event_handler);
+
+    if (it == this->event_handlers.end()) {
+      AKANTU_EXCEPTION("This event handler is not registered");
+    }
+
+    this->event_handlers.erase(it);
   }
 
   /// Notify all the registered EventHandlers about the event that just occured.
-  template<class Event>
-  void sendEvent(const Event & event) {
-    typename std::set<EventHandler *>::iterator it = event_handlers.begin();
-    typename std::set<EventHandler *>::iterator end = event_handlers.end();
-    for(;it != end; ++it)
-      (*it)->sendEvent(event);
+  template <class Event> void sendEvent(const Event & event) {
+    typename priority_list::iterator it = event_handlers.begin();
+    typename priority_list::iterator end = event_handlers.end();
+    for (; it != end; ++it)
+      it->second->sendEvent(event);
   }
 
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
+private:
+  typename priority_list::iterator searchEventHandler(EventHandler & handler) {
+    typename priority_list::iterator it = this->event_handlers.begin();
+    typename priority_list::iterator end = this->event_handlers.end();
+
+    for (; it != end && it->second != &handler; ++it)
+      ;
+
+    return it;
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// list of the event handlers
-  std::set<EventHandler *> event_handlers;
+  priority_list event_handlers;
 };
 
 __END_AKANTU__

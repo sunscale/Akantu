@@ -31,9 +31,10 @@
 #include "aka_memory.hh"
 #include "non_linear_solver.hh"
 #include "time_step_solver.hh"
-#include "mesh_events.hh"
+#include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
+#include <set>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DOF_MANAGER_HH__
@@ -46,7 +47,7 @@ class DOFManager : protected Memory, protected MeshEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DOFManager(const Mesh & mesh, const ID & id = "dof_manager",
+  DOFManager(const ID & id = "dof_manager",
              const MemoryID & memory_id = 0);
   virtual ~DOFManager();
 
@@ -54,16 +55,19 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// register a mesh for dof that have a support type on nodes
+  virtual void registerMesh(Mesh & mesh);
+
   /// register an array of degree of freedom
-  void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
-                    const DOFSupportType & support_type);
+  virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+                            const DOFSupportType & support_type);
 
   /// register an array of derivatives for a particular dof array
-  void registerDOFsDerivative(const ID & dof_id, UInt order,
-                              Array<Real> & dofs_derivative);
+  virtual void registerDOFsDerivative(const ID & dof_id, UInt order,
+                                      Array<Real> & dofs_derivative);
 
   /// register array representing the blocked degree of freedoms
-  void registerBlockedDOFs(const ID & dof_id, Array<bool> & blocked_dofs);
+  virtual void registerBlockedDOFs(const ID & dof_id, Array<bool> & blocked_dofs);
 
   /// Assemble an array to the global residual array
   virtual void assembleToResidual(const ID & dof_id,
@@ -220,9 +224,39 @@ public:
   /// get instance of a time step solver
   virtual TimeStepSolver & getTimeStepSolver(const ID & time_step_solver_id);
 
-  /* ------------------------------------------------------------------------*/
-  /* Class Members                                                           */
-  /* ------------------------------------------------------------------------*/
+  /* ------------------------------------------------------------------------ */
+  /* MeshEventHandler interface                                               */
+  /* ------------------------------------------------------------------------ */
+private:
+  /// fills the nodes_to_elements structure
+  void fillNodesToElements();
+
+public:
+  /// function to implement to react on  akantu::NewNodesEvent
+  virtual void onNodesAdded(const Array<UInt> & nodes_list,
+                            const NewNodesEvent & event);
+  /// function to implement to react on  akantu::RemovedNodesEvent
+  virtual void onNodesRemoved(const Array<UInt> & nodes_list,
+                              const Array<UInt> & new_numbering,
+                              const RemovedNodesEvent & event);
+  /// function to implement to react on  akantu::NewElementsEvent
+  virtual void onElementsAdded(const Array<Element> & elements_list,
+                               const NewElementsEvent & event);
+  /// function to implement to react on  akantu::RemovedElementsEvent
+  virtual void
+  onElementsRemoved(const Array<Element> & elements_list,
+                    const ElementTypeMapArray<UInt> & new_numbering,
+                    const RemovedElementsEvent & event);
+  /// function to implement to react on  akantu::ChangedElementsEvent
+  virtual void
+  onElementsChanged(const Array<Element> & old_elements_list,
+                    const Array<Element> & new_elements_list,
+                    const ElementTypeMapArray<UInt> & new_numbering,
+                    const ChangedElementsEvent & event);
+
+  /* ------------------------------------------------------------------------ */
+  /* Class Members                                                            */
+  /* ------------------------------------------------------------------------ */
 protected:
   /// dof representations in the dof manager
   struct DOFData {
@@ -249,6 +283,12 @@ protected:
     Array<UInt> local_equation_number;
   };
 
+
+  typedef Array< std::set<Element> * > NodesToElementsType;
+
+  /// This info is stored to simplify the dynamic changes
+  NodesToElementsType nodes_to_elements;
+
   /// equation number in global numbering
   Array<UInt> global_equation_number;
 
@@ -257,7 +297,7 @@ protected:
   /// dual information of global_equation_number
   equation_numbers_map global_to_local_mapping;
 
-  /// type to store dofs informations
+  /// type to store dofs information
   typedef std::map<ID, DOFData *> DOFStorage;
 
   /// type to store all the matrices
@@ -288,7 +328,7 @@ protected:
   TimeStepSolversMap time_step_solvers;
 
   /// reference to the underlying mesh
-  const Mesh & mesh;
+  Mesh * mesh;
 
   /// Total number of degrees of freedom (size with the ghosts)
   UInt local_system_size;

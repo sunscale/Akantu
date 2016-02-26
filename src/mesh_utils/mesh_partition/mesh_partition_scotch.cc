@@ -61,6 +61,16 @@ MeshPartitionScotch::MeshPartitionScotch(const Mesh & mesh,
     : MeshPartition(mesh, spatial_dimension, id, memory_id) {
   AKANTU_DEBUG_IN();
 
+// check if the akantu types and Scotch one are consistent
+#if __cplusplus > 199711L
+  static_assert(sizeof(Int) == sizeof(SCOTCH_Num),
+                "The integer type of Akantu does not match the one from Scotch");
+#else
+  AKANTU_DEBUG_ASSERT(
+      sizeof(Int) == sizeof(SCOTCH_Num),
+      "The integer type of Akantu does not match the one from Scotch");
+#endif
+
   AKANTU_DEBUG_OUT();
 }
 

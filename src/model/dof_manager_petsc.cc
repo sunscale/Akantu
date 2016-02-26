@@ -77,9 +77,9 @@ static PetscErrorCode PETScErrorHandler(MPI_Comm, int line, const char * func,
 #endif
 
 /* -------------------------------------------------------------------------- */
-DOFManagerPETSc::DOFManagerPETSc(const Mesh & mesh, const ID & id,
+DOFManagerPETSc::DOFManagerPETSc(const ID & id,
                                  const MemoryID & memory_id)
-    : DOFManager(mesh, id, memory_id) {
+    : DOFManager(id, memory_id) {
 
 // check if the akantu types and PETSc one are consistant
 #if __cplusplus > 199711L

@@ -29,6 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "time_step_solver_default.hh"
+#include "mesh.hh"
 #include "dof_manager_default.hh"
 #include "sparse_matrix_aij.hh"
 

@@ -55,7 +55,7 @@ inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh,
 template <>
 inline void
 Mesh::sendEvent<RemovedElementsEvent>(RemovedElementsEvent & event) {
-  connectivities.onElementsRemoved(event.getNewNumbering());
+  this->connectivities.onElementsRemoved(event.getNewNumbering());
   EventHandlerManager<MeshEventHandler>::sendEvent(event);
 }
 
@@ -63,11 +63,11 @@ Mesh::sendEvent<RemovedElementsEvent>(RemovedElementsEvent & event) {
 template <>
 inline void Mesh::sendEvent<RemovedNodesEvent>(RemovedNodesEvent & event) {
   if (created_nodes)
-    removeNodesFromArray(*nodes, event.getNewNumbering());
+    this->removeNodesFromArray(*nodes, event.getNewNumbering());
   if (nodes_global_ids)
-    removeNodesFromArray(*nodes_global_ids, event.getNewNumbering());
+    this->removeNodesFromArray(*nodes_global_ids, event.getNewNumbering());
   if (nodes_type.getSize() != 0)
-    removeNodesFromArray(nodes_type, event.getNewNumbering());
+    this->removeNodesFromArray(nodes_type, event.getNewNumbering());
 
   EventHandlerManager<MeshEventHandler>::sendEvent(event);
 }
@@ -82,8 +82,10 @@ inline void Mesh::removeNodesFromArray(Array<T> & vect,
   for (UInt i = 0; i < new_numbering.getSize(); ++i) {
     UInt new_i = new_numbering(i);
     if (new_i != UInt(-1)) {
-      memcpy(tmp.storage() + new_i * nb_component,
-             vect.storage() + i * nb_component, nb_component * sizeof(T));
+      T * to_copy = vect.storage() + i * nb_component;
+      std::uninitialized_copy(to_copy,
+                              to_copy + nb_component,
+                              tmp.storage() + new_i * nb_component);
       ++new_nb_nodes;
     }
   }

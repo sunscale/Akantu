@@ -31,17 +31,24 @@
 #include "dof_manager.hh"
 #include "mesh.hh"
 #include "sparse_matrix.hh"
+#include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-DOFManager::DOFManager(const Mesh & mesh, const ID & id,
-                       const MemoryID & memory_id)
-    : Memory(id, memory_id), mesh(mesh) {}
+DOFManager::DOFManager(const ID & id, const MemoryID & memory_id)
+    : Memory(id, memory_id),
+      global_equation_number(0, 1, "global_equation_number"), mesh(NULL),
+      local_system_size(0), pure_local_system_size(0), system_size(0) {}
 
 /* -------------------------------------------------------------------------- */
 DOFManager::~DOFManager() {
+  NodesToElementsType::scalar_iterator nte_it = this->nodes_to_elements.begin();
+  NodesToElementsType::scalar_iterator nte_end = this->nodes_to_elements.end();
+  for (; nte_it != nte_end; ++nte_it)
+    delete *nte_it;
+
   DOFStorage::iterator ds_it = dofs.begin();
   DOFStorage::iterator ds_end = dofs.end();
   for (; ds_it != ds_end; ++ds_it)
@@ -80,7 +87,7 @@ void DOFManager::assembleElementalArrayLocalArray(
     nb_element = filter_elements.getSize();
     filter_it = filter_elements.storage();
   } else {
-    nb_element = mesh.getNbElement(type, ghost_type);
+    nb_element = this->mesh->getNbElement(type, ghost_type);
   }
 
   AKANTU_DEBUG_ASSERT(elementary_vect.getSize() == nb_element,
@@ -88,7 +95,8 @@ void DOFManager::assembleElementalArrayLocalArray(
                           << elementary_vect.getID()
                           << ") has not the good size.");
 
-  const Array<UInt> connectivity = this->mesh.getConnectivity(type, ghost_type);
+  const Array<UInt> connectivity =
+      this->mesh->getConnectivity(type, ghost_type);
   Array<UInt>::const_vector_iterator conn_begin =
       connectivity.begin(nb_nodes_per_element);
   Array<UInt>::const_vector_iterator conn_it = conn_begin;
@@ -127,7 +135,7 @@ void DOFManager::assembleElementalArrayResidual(
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   UInt nb_degree_of_freedom =
       elementary_vect.getNbComponent() / nb_nodes_per_element;
-  Array<Real> array_localy_assembeled(this->mesh.getNbNodes(),
+  Array<Real> array_localy_assembeled(this->mesh->getNbNodes(),
                                       nb_degree_of_freedom);
 
   this->assembleElementalArrayLocalArray(
@@ -137,6 +145,18 @@ void DOFManager::assembleElementalArrayResidual(
   this->assembleToResidual(dof_id, array_localy_assembeled, scale_factor);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::registerMesh(Mesh & mesh) {
+  this->mesh = &mesh;
+  this->mesh->registerEventHandler(*this, 20);
+
+  UInt nb_nodes = this->mesh->getNbNodes();
+  this->nodes_to_elements.resize(nb_nodes);
+  for (UInt n = 0; n < nb_nodes; ++n) {
+    this->nodes_to_elements[n] = new std::set<Element>();
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -153,29 +173,39 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
   dofs_storage->blocked_dofs = NULL;
   dofs_storage->support_type = support_type;
 
+  UInt nb_local_dofs = 0;
+  UInt nb_pure_local = 0;
+
   switch (support_type) {
   case _dst_nodal: {
-    UInt nb_local_dofs = mesh.getNbNodes();
+    nb_local_dofs = this->mesh->getNbNodes();
     AKANTU_DEBUG_ASSERT(
         dofs_array.getSize() == nb_local_dofs,
         "The array of dof is too shot to be associated to nodes.");
 
-    UInt nb_nodes = this->mesh.getNbNodes();
-    UInt nb_pure_local = 0;
+    UInt nb_nodes = this->mesh->getNbNodes();
     for (UInt n = 0; n < nb_nodes; ++n) {
-      nb_pure_local += mesh.isLocalOrMasterNode(n) ? 1 : 0;
+      nb_pure_local += mesh->isLocalOrMasterNode(n) ? 1 : 0;
     }
 
     nb_pure_local *= dofs_array.getNbComponent();
-    this->pure_local_system_size += nb_pure_local;
-    this->system_size += this->mesh.getNbNodes() * dofs_array.getNbComponent();
-
     nb_local_dofs *= dofs_array.getNbComponent();
-    this->local_system_size += nb_local_dofs;
     break;
+  }
+  case _dst_generic: {
+    nb_local_dofs = nb_pure_local = dofs_array.getSize() * dofs_array.getNbComponent();
   }
   default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }
   }
+
+
+  this->pure_local_system_size += nb_pure_local;
+  this->local_system_size += nb_local_dofs;
+
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  comm.allReduce(&nb_pure_local, 1, _so_sum);
+
+  this->system_size += nb_pure_local;
 
   this->dofs[dof_id] = dofs_storage;
 }
@@ -342,6 +372,114 @@ TimeStepSolver & DOFManager::getTimeStepSolver(const ID & id) {
   }
 
   return *(it->second);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::fillNodesToElements() {
+  UInt spatial_dimension = this->mesh->getSpatialDimension();
+  Element e;
+
+  UInt nb_nodes = this->mesh->getNbNodes();
+  for (UInt n = 0; n < nb_nodes; ++n) {
+    this->nodes_to_elements[n]->clear();
+  }
+
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();
+       gt != ghost_type_t::end(); ++gt) {
+    Mesh::type_iterator first =
+        this->mesh->firstType(spatial_dimension, *gt, _ek_not_defined);
+    Mesh::type_iterator last =
+        this->mesh->lastType(spatial_dimension, *gt, _ek_not_defined);
+    e.ghost_type = *gt;
+    for (; first != last; ++first) {
+      ElementType type = *first;
+      e.type = type;
+      e.kind = Mesh::getKind(type);
+      UInt nb_element = this->mesh->getNbElement(type, *gt);
+      Array<UInt>::const_iterator<Vector<UInt> > conn_it =
+          this->mesh->getConnectivity(type, *gt)
+              .begin(Mesh::getNbNodesPerElement(type));
+
+      for (UInt el = 0; el < nb_element; ++el, ++conn_it) {
+        e.element = el;
+        const Vector<UInt> & conn = *conn_it;
+        for (UInt n = 0; n < conn.size(); ++n)
+          nodes_to_elements[conn(n)]->insert(e);
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mesh Events                                                                */
+/* -------------------------------------------------------------------------- */
+void DOFManager::onNodesAdded(const Array<UInt> & nodes_list,
+                              __attribute__((unused))
+                              const NewNodesEvent & event) {
+  Array<UInt>::const_scalar_iterator it = nodes_list.begin();
+  Array<UInt>::const_scalar_iterator end = nodes_list.end();
+
+  UInt nb_nodes = this->mesh->getNbNodes();
+  this->nodes_to_elements.resize(nb_nodes);
+
+  for (; it != end; ++it) {
+    this->nodes_to_elements[*it] = new std::set<Element>();
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::onNodesRemoved(const Array<UInt> & nodes_list,
+                                const Array<UInt> & new_numbering,
+                                __attribute__((unused))
+                                const RemovedNodesEvent & event) {
+  Array<UInt>::const_scalar_iterator it = nodes_list.begin();
+  Array<UInt>::const_scalar_iterator end = nodes_list.end();
+  for (; it != end; ++it) {
+    delete this->nodes_to_elements[*it];
+  }
+
+  this->mesh->removeNodesFromArray(this->nodes_to_elements, new_numbering);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::onElementsAdded(const Array<Element> & elements_list,
+                                 __attribute__((unused))
+                                 const NewElementsEvent & event) {
+  Array<Element>::const_scalar_iterator it = elements_list.begin();
+  Array<Element>::const_scalar_iterator end = elements_list.end();
+
+  for (; it != end; ++it) {
+    const Element & elem = *it;
+    if (this->mesh->getSpatialDimension(elem.type) !=
+        this->mesh->getSpatialDimension())
+      continue;
+
+    const Array<UInt> & conn =
+        this->mesh->getConnectivity(elem.type, elem.ghost_type);
+
+    UInt nb_nodes_per_elem = this->mesh->getNbNodesPerElement(elem.type);
+
+    for (UInt n = 0; n < nb_nodes_per_elem; ++n) {
+      nodes_to_elements[conn(elem.element, n)]->insert(elem);
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::onElementsRemoved(
+    __attribute__((unused)) const Array<Element> & elements_list,
+    __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+    __attribute__((unused)) const RemovedElementsEvent & event) {
+  this->fillNodesToElements();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::onElementsChanged(
+    __attribute__((unused)) const Array<Element> & old_elements_list,
+    __attribute__((unused)) const Array<Element> & new_elements_list,
+    __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
+    __attribute__((unused)) const ChangedElementsEvent & event) {
+  this->fillNodesToElements();
 }
 
 /* -------------------------------------------------------------------------- */

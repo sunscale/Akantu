@@ -1,12 +1,7 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
-#
-# @date creation: Fri Sep 03 2010
-# @date last modification: Sat Sep 26 2015
-#
-# @brief  configuration for model tests
+# @brief  test for the common solvers interface of the models
 #
 # @section LICENSE
 #
@@ -27,14 +22,9 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
-# @section DESCRIPTION
-#
 #===============================================================================
 
-#===============================================================================
-
-add_akantu_test(test_model_solver "Test for the solvers")
-add_akantu_test(test_solid_mechanics_model "Test for the solid mechanics model")
-add_akantu_test(test_heat_transfer_model "Test for the heat transfer model")
-add_akantu_test(test_structural_mechanics_model "Test for the structural mechanics model")
-add_akantu_test(test_non_local_toolbox "Test of the functionalities in the non-local toolbox")
+register_test(test_dof_manager_default
+  SOURCES test_dof_manager_default.cc
+  PACKAGE mumps
+  )
