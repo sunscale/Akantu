@@ -1,17 +1,17 @@
 /**
  * @file   material_reinforcement.hh
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Thu Mar 12 2015
- * @date last modification: Thu Mar 12 2015
+ * @date creation: Fri Mar 13 2015
+ * @date last modification: Tue Nov 24 2015
  *
  * @brief  Reinforcement material
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

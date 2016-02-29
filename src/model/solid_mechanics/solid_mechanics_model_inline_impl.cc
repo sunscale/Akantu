@@ -6,14 +6,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Aug 04 2010
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Wed Nov 18 2015
  *
  * @brief  Implementation of the inline functions of the SolidMechanicsModel class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -529,7 +530,8 @@ void SolidMechanicsModel::solve(Array<Real> &increment, Real block_val,
 /* -------------------------------------------------------------------------- */
 template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
 bool SolidMechanicsModel::solveStatic(Real tolerance, UInt max_iteration,
-				      bool do_not_factorize) {
+				      bool do_not_factorize,
+				      StaticCommunicator & comm) {
 
   AKANTU_DEBUG_INFO("Solving Ku = f");
   AKANTU_DEBUG_ASSERT(stiffness_matrix != NULL,
@@ -538,7 +540,7 @@ bool SolidMechanicsModel::solveStatic(Real tolerance, UInt max_iteration,
   AnalysisMethod analysis_method=method;
   Real error = 0.;
   method=_static;
-  bool converged = this->template solveStep<cmethod, criteria>(tolerance, error, max_iteration, do_not_factorize);
+  bool converged = this->template solveStep<cmethod, criteria>(tolerance, error, max_iteration, do_not_factorize, comm);
   method=analysis_method;
   return converged;
 
@@ -557,7 +559,8 @@ bool SolidMechanicsModel::solveStep(Real tolerance,
 /* -------------------------------------------------------------------------- */
 template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
 bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_iteration,
-				    bool do_not_factorize) {
+				    bool do_not_factorize,
+				    StaticCommunicator & comm) {
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeSolveStepEvent(method));
   this->implicitPred();
   this->updateResidual();
@@ -587,7 +590,7 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
   bool converged = false;
   error = 0.;
   if(criteria == _scc_residual) {
-    converged = this->testConvergence<criteria> (tolerance, error);
+    converged = this->testConvergence<criteria> (tolerance, error, comm);
     if (converged) {
       EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
 
@@ -610,7 +613,7 @@ bool SolidMechanicsModel::solveStep(Real tolerance, Real & error, UInt max_itera
 
     if(criteria == _scc_residual) this->updateResidual();
 
-    converged = this->testConvergence<criteria> (tolerance, error);
+    converged = this->testConvergence<criteria> (tolerance, error, comm);
 
     if(criteria == _scc_increment && !converged) this->updateResidual();
     //this->dump();

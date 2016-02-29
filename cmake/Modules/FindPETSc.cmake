@@ -135,10 +135,9 @@ elseif (PETSC_DIR)
 endif ()
 
 
-message(petsc_conf_rules ${petsc_conf_rules})
-message(petsc_conf_variables ${petsc_conf_variables})
-message(petsc_config_current ${petsc_config_current})
-
+#message(petsc_conf_rules ${petsc_conf_rules})
+#message(petsc_conf_variables ${petsc_conf_variables})
+#message(petsc_config_current ${petsc_config_current})
 
 if (petsc_conf_rules AND petsc_conf_variables AND NOT petsc_config_current)
   petsc_get_version()

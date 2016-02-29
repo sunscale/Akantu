@@ -5,15 +5,16 @@
  * @author David Simon Kammer <david.kammer@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Tue Jul 27 2010
- * @date last modification: Fri Sep 05 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Fri Oct 16 2015
  *
  * @brief  Interface of a model
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -64,13 +65,10 @@ class Model : public Memory {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   typedef Mesh mesh_type;
 
-
-  Model(Mesh& mesh, UInt spatial_dimension = _all_dimensions,
-	const ID & id = "model",
-	const MemoryID & memory_id = 0);
+  Model(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
+        const ID & id = "model", const MemoryID & memory_id = 0);
 
   virtual ~Model();
 
@@ -89,12 +87,14 @@ public:
 
   /// create a parallel synchronizer and distribute the mesh
   DistributedSynchronizer & createParallelSynch(MeshPartition * partition,
-						DataAccessor * data_accessor);
+                                                DataAccessor * data_accessor);
 
   /// change local equation number so that PBC is assembled properly
-  void changeLocalEquationNumberForPBC(std::map<UInt,UInt> & pbc_pair,UInt dimension);
+  void changeLocalEquationNumberForPBC(std::map<UInt, UInt> & pbc_pair,
+                                       UInt dimension);
   /// function to print the containt of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const = 0;
+  virtual void printself(__attribute__((unused)) std::ostream & stream,
+                         __attribute__((unused)) int indent = 0) const {};
 
   /// initialize the model for PBC
   void setPBC(UInt x, UInt y, UInt z);
@@ -111,38 +111,39 @@ public:
   /// Dump the data for a given group
   void dumpGroup(const std::string & group_name);
   void dumpGroup(const std::string & group_name,
-		 const std::string & dumper_name);
+                 const std::string & dumper_name);
   /// Dump the data for all boundaries
   void dumpGroup();
   /// Set the directory for a given group
   void setGroupDirectory(const std::string & directory,
-			 const std::string & group_name);
+                         const std::string & group_name);
   /// Set the directory for all boundaries
   void setGroupDirectory(const std::string & directory);
   /// Set the base name for a given group
   void setGroupBaseName(const std::string & basename,
-			const std::string & group_name);
+                        const std::string & group_name);
   /// Get the internal dumper of a given group
   DumperIOHelper & getGroupDumper(const std::string & group_name);
 
   /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                 */
+  /* Accessors */
   /* ------------------------------------------------------------------------ */
 public:
   /// get id of model
   AKANTU_GET_MACRO(ID, id, const ID)
 
   /// get the number of surfaces
-  AKANTU_GET_MACRO(Mesh, mesh, Mesh&);
+  AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
 
   /// return the object handling equation numbers
   AKANTU_GET_MACRO(DOFSynchronizer, *dof_synchronizer, const DOFSynchronizer &)
 
   /// return the object handling synchronizers
-  AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry, SynchronizerRegistry &)
+  AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry,
+                   SynchronizerRegistry &)
 
   /// synchronize the boundary in case of parallel run
-  virtual void synchronizeBoundaries() {};
+  virtual void synchronizeBoundaries(){};
 
   /// return the fem object associated with a provided name
   inline FEEngine & getFEEngine(const ID & name = "") const;
@@ -151,9 +152,9 @@ public:
   virtual FEEngine & getFEEngineBoundary(const ID & name = "");
 
   /// register a fem object associated with name
-  template <typename FEEngineClass> inline void registerFEEngineObject(const std::string & name,
-							     Mesh & mesh,
-							     UInt spatial_dimension);
+  template <typename FEEngineClass>
+  inline void registerFEEngineObject(const std::string & name, Mesh & mesh,
+                                     UInt spatial_dimension);
   /// unregister a fem object associated with name
   inline void unRegisterFEEngineObject(const std::string & name);
 
@@ -169,7 +170,7 @@ public:
   inline FEEngineClass & getFEEngineClassBoundary(std::string name = "");
 
   /// get the pbc pairs
-  std::map<UInt,UInt> & getPBCPairs(){return pbc_pair;};
+  std::map<UInt, UInt> & getPBCPairs() { return pbc_pair; };
 
   /// returns if node is slave in pbc
   inline bool isPBCSlaveNode(const UInt node) const;
@@ -182,7 +183,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   inline UInt getNbIntegrationPoints(const Array<Element> & elements,
-				    const ID & fem_id = ID()) const;
+                                     const ID & fem_id = ID()) const;
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface (kept for convenience) and dumper relative functions  */
@@ -191,82 +192,91 @@ public:
   void setTextModeToDumper();
 
   virtual void addDumpGroupFieldToDumper(const std::string & field_id,
-					 dumper::Field * field,
-					 DumperIOHelper & dumper);
+                                         dumper::Field * field,
+                                         DumperIOHelper & dumper);
 
   virtual void addDumpField(const std::string & field_id);
 
   virtual void addDumpFieldVector(const std::string & field_id);
 
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
-				    const std::string & field_id);
+                                    const std::string & field_id);
 
   virtual void addDumpFieldVectorToDumper(const std::string & dumper_name,
-					  const std::string & field_id);
+                                          const std::string & field_id);
 
   virtual void addDumpFieldTensorToDumper(const std::string & dumper_name,
-					  const std::string & field_id);
+                                          const std::string & field_id);
 
   virtual void addDumpFieldTensor(const std::string & field_id);
 
   virtual void setBaseName(const std::string & basename);
 
   virtual void setBaseNameToDumper(const std::string & dumper_name,
-				    const std::string & basename);
-
+                                   const std::string & basename);
 
   virtual void addDumpGroupField(const std::string & field_id,
-				 const std::string & group_name);
+                                 const std::string & group_name);
 
   virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
-					 const std::string & field_id,
-					 const std::string & group_name,
-					 const ElementKind & element_kind,
-					 bool padding_flag);
+                                         const std::string & field_id,
+                                         const std::string & group_name,
+                                         const ElementKind & element_kind,
+                                         bool padding_flag);
 
   virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
-					 const std::string & field_id,
-					 const std::string & group_name,
-					 UInt spatial_dimension,
-					 const ElementKind & element_kind,
-					 bool padding_flag);
+                                         const std::string & field_id,
+                                         const std::string & group_name,
+                                         UInt spatial_dimension,
+                                         const ElementKind & element_kind,
+                                         bool padding_flag);
 
   virtual void removeDumpGroupField(const std::string & field_id,
-				    const std::string & group_name);
+                                    const std::string & group_name);
   virtual void removeDumpGroupFieldFromDumper(const std::string & dumper_name,
-					      const std::string & field_id,
-					      const std::string & group_name);
+                                              const std::string & field_id,
+                                              const std::string & group_name);
 
   virtual void addDumpGroupFieldVector(const std::string & field_id,
-				       const std::string & group_name);
+                                       const std::string & group_name);
 
   virtual void addDumpGroupFieldVectorToDumper(const std::string & dumper_name,
-					       const std::string & field_id,
-					       const std::string & group_name);
+                                               const std::string & field_id,
+                                               const std::string & group_name);
 
-  virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
-					       const std::string & group_name,
-					       bool padding_flag){return NULL;}
+  virtual dumper::Field *
+  createNodalFieldReal(__attribute__((unused)) const std::string & field_name,
+                       __attribute__((unused)) const std::string & group_name,
+                       __attribute__((unused)) bool padding_flag) {
+    return NULL;
+  }
 
-  virtual dumper::Field * createNodalFieldUInt(const std::string & field_name,
-					       const std::string & group_name,
-					       bool padding_flag){return NULL;}
+  virtual dumper::Field *
+  createNodalFieldUInt(__attribute__((unused)) const std::string & field_name,
+                       __attribute__((unused)) const std::string & group_name,
+                       __attribute__((unused)) bool padding_flag) {
+    return NULL;
+  }
 
-  virtual dumper::Field * createNodalFieldBool(const std::string & field_name,
-					       const std::string & group_name,
-					       bool padding_flag){return NULL;}
+  virtual dumper::Field *
+  createNodalFieldBool(__attribute__((unused)) const std::string & field_name,
+                       __attribute__((unused)) const std::string & group_name,
+                       __attribute__((unused)) bool padding_flag) {
+    return NULL;
+  }
 
-
-  virtual dumper::Field * createElementalField(const std::string & field_name,
-					       const std::string & group_name,
-					       bool padding_flag,
-					       const UInt & spatial_dimension,
-					       const ElementKind & kind){return NULL;}
-
+  virtual dumper::Field *
+  createElementalField(__attribute__((unused)) const std::string & field_name,
+                       __attribute__((unused)) const std::string & group_name,
+                       __attribute__((unused)) bool padding_flag,
+                       __attribute__((unused)) const UInt & spatial_dimension,
+                       __attribute__((unused)) const ElementKind & kind) {
+    return NULL;
+  }
 
   void setDirectory(const std::string & directory);
   void setDirectoryToDumper(const std::string & dumper_name,
-			    const std::string & directory);
+                            const std::string & directory);
 
   virtual void dump();
 
@@ -296,7 +306,7 @@ protected:
   DOFSynchronizer * dof_synchronizer;
 
   /// pbc pairs
-  std::map<UInt,UInt> pbc_pair;
+  std::map<UInt, UInt> pbc_pair;
 
   /// flag per node to know is pbc slave
   Array<bool> is_pbc_slave_node;
@@ -305,18 +315,16 @@ protected:
   Parser * parser;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "model_inline_impl.cc"
+#if defined(AKANTU_INCLUDE_INLINE_IMPL)
+#include "model_inline_impl.cc"
 #endif
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const Model & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream, const Model & _this) {
   _this.printself(stream);
   return stream;
 }

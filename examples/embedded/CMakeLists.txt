@@ -1,17 +1,17 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Lucas Frérot <lucas.frerot@epfl.ch>
+# @author Lucas Frerot <lucas.frerot@epfl.ch>
 #
-# @date creation: Wed Jul 22 2015
-# @date last modification: Wed Jul 22 2015
+# @date creation: Tue Dec 01 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  configuration for embedded example
 #
 # @section LICENSE
 #
-# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,13 +30,11 @@
 #
 #===============================================================================
 
-register_example(embedded embedded.cc USE CGAL)
-
-add_mesh(concrete_mesh concrete.geo 2 1)
+add_mesh(concrete_mesh concrete.geo 2 2)
 add_mesh(reinforcement_mesh reinforcement.geo 1 1)
-add_dependencies(embedded concrete_mesh)
-add_dependencies(embedded reinforcement_mesh)
 
-#===============================================================================
-file(COPY material.dat DESTINATION .)
+register_example(embedded embedded.cc
+  DEPENDS concrete_mesh reinforcement_mesh
+  USE_PACKAGES CGAL
+  FILES_TO_COPY material.dat)
 

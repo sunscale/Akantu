@@ -3,14 +3,16 @@
 #
 # @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Mon Dec 14 09:07:44 2015
-# 
+# @date creation: Fri Sep 03 2010
+# @date last modification: Mon Jan 18 2016
+#
 # @brief  Tests insertion of cohesive elements
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -28,17 +30,11 @@
 # @section DESCRIPTION
 #
 #===============================================================================
-add_mesh(swiss_cheese swiss_cheese.geo 2 2)
+
+add_mesh(swiss_cheese_mesh swiss_cheese.geo 2 2)
 
 register_example(example_parser
   example_parser.cc
-  USE IOHelper
-  DEPENDS swiss_cheese
-  DIRECTORIES_TO_CREATE paraview
-  )
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/input_file.dat
-  ${CMAKE_CURRENT_BINARY_DIR}/input_file.dat
-  COPYONLY
+  DEPENDS swiss_cheese_mesh
+  FILES_TO_COPY input_file.dat
   )

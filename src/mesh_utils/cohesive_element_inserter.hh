@@ -1,16 +1,17 @@
 /**
  * @file   cohesive_element_inserter.hh
  *
+ * @author Fabian Barras <fabian.barras@epfl.ch>
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Wed Dec 04 2013
- * @date last modification: Tue Jul 29 2014
+ * @date last modification: Fri Oct 02 2015
  *
  * @brief  Cohesive element inserter
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -103,7 +104,11 @@ protected:
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   /// update nodes type and global ids for parallel simulations
+  /// (locally, within each processor)
   UInt updateGlobalIDs(NewNodesEvent & node_event);
+
+  /// synchronize the global ids among the processors in parallel simulations
+  void synchronizeGlobalIDs(NewNodesEvent & node_event);
 
   /// update nodes type
   void updateNodesType(Mesh & mesh, NewNodesEvent & node_event);

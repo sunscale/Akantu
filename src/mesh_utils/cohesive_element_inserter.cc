@@ -4,13 +4,13 @@
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
  * @date creation: Wed Dec 04 2013
- * @date last modification: Tue Jul 29 2014
+ * @date last modification: Sun Oct 04 2015
  *
  * @brief  Cohesive element inserter functions
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -337,7 +337,7 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
     updateNodesType(mesh_facets, node_event);
 
     /// update global ids
-    nb_new_nodes = updateGlobalIDs(node_event);
+    nb_new_nodes = this->updateGlobalIDs(node_event);
 
     /// compute total number of new elements
     StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
@@ -354,6 +354,13 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
     mesh.sendEvent(element_event);
     MeshUtils::resetFacetToDouble(mesh_facets);
   }
+
+#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+  if (mesh.getNodesType().getSize()) {
+    /// update global ids
+    this->synchronizeGlobalIDs(node_event);
+  }
+#endif
 
   return nb_new_elements;
 }

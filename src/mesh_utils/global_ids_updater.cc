@@ -1,14 +1,18 @@
 /**
  * @file   global_ids_updater.cc
+ *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
- * @date   Fri Oct  2 13:44:02 2015
+ *
+ * @date creation: Fri Apr 13 2012
+ * @date last modification: Fri Oct 02 2015
  *
  * @brief  Functions of the GlobalIdsUpdater
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -32,13 +36,21 @@
 __BEGIN_AKANTU__
 
 UInt GlobalIdsUpdater::updateGlobalIDs(UInt old_nb_nodes) {
-  UInt total_nb_new_nodes = MeshUtils::updateLocalMasterGlobalConnectivity(mesh, old_nb_nodes);
+  UInt total_nb_new_nodes = this->updateGlobalIDsLocally(old_nb_nodes);
 
-  synchronizer->computeBufferSize(*this, _gst_giu_global_conn);
-  synchronizer->asynchronousSynchronize(*this, _gst_giu_global_conn);
-  synchronizer->waitEndSynchronize(*this, _gst_giu_global_conn);
-
+  this->synchronizeGlobalIDs();
   return total_nb_new_nodes;
+}
+
+UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt old_nb_nodes) {
+  UInt total_nb_new_nodes = MeshUtils::updateLocalMasterGlobalConnectivity(mesh, old_nb_nodes);
+  return total_nb_new_nodes;
+}
+
+void GlobalIdsUpdater::synchronizeGlobalIDs() {
+  this->synchronizer->computeBufferSize(*this, _gst_giu_global_conn);
+  this->synchronizer->asynchronousSynchronize(*this, _gst_giu_global_conn);
+  this->synchronizer->waitEndSynchronize(*this, _gst_giu_global_conn);
 }
 
 __END_AKANTU__

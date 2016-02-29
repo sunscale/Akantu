@@ -2,15 +2,18 @@
 # @file   CMakeLists.txt
 #
 # @author Fabian Barras <fabian.barras@epfl.ch>
+# @author Lucas Frérot <lucas.frerot@epfl.ch>
 #
-# @date creation: Tue Jan 5 2016
+# @date creation: Fri Sep 03 2010
+# @date last modification: Mon Feb 01 2016
 #
 # @brief  Python Interface tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -32,3 +35,14 @@ register_test(test_multiple_init
   PACKAGE python_interface
   FILES_TO_COPY input_test.dat mesh_dcb_2d.geo
   )
+
+register_test(test_mesh_interface
+  SCRIPT test_mesh_interface.py
+  PACKAGE python_interface
+  FILES_TO_COPY mesh_dcb_2d.geo
+  )
+
+register_test(test_boundary_condition_functors
+  SCRIPT test_boundary_condition_functors.py
+  PACKAGE python_interface
+  FILES_TO_COPY mesh_dcb_2d.geo input_test.dat)

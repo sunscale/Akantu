@@ -4,15 +4,16 @@
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Mon Nov 28 2011
-# @date last modification: Tue Sep 16 2014
+# @date creation: Mon Jun 14 2010
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  CMake file for the library
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -46,6 +47,10 @@ package_get_all_external_informations(
   AKANTU_EXTERNAL_INCLUDE_DIR
   AKANTU_EXTERNAL_LIBRARIES
 )
+
+package_get_all_compilation_flags(CXX _cxx_flags)
+set(AKANTU_EXTRA_CXX_FLAGS "${_cxx_flags}" CACHE STRING "Extra flags defined by loaded packages" FORCE)
+mark_as_advanced(AKANTU_EXTRA_CXX_FLAGS)
 
 #===========================================================================
 # header for blas/lapack (any other fortran libraries)
@@ -110,8 +115,6 @@ set(AKANTU_INCLUDE_DIRS
 
 include_directories(${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
 
-generate_material_list()
-
 if(CMAKE_COMPILER_IS_GNUCXX)
   include(PCHgcc)
   foreach(_header ${AKANTU_COMMON_HDR_TO_PRECOMPILE})
@@ -128,15 +131,19 @@ add_library(akantu ${AKANTU_LIBRARY_SRCS})
 # the repetition is ugly but works for static libraries
 target_link_libraries(akantu  ${AKANTU_EXTERNAL_LIBRARIES} ${AKANTU_EXTERNAL_LIBRARIES})
 
-set_target_properties(akantu PROPERTIES LINK_INTERFACE_MULTIPLICITY 0)
+set_target_properties(akantu
+  PROPERTIES
+    ${AKANTU_LIBRARY_PROPERTIES} # this contains the version
+    PUBLIC_HEADER "${AKANTU_LIBRARY_PUBLIC_HDRS}"
+    COMPILE_FLAGS "${_cxx_flags}"
+    LINK_INTERFACE_MULTIPLICITY 2)
+
 package_get_all_extra_dependencies(_extra_target_dependencies)
 if(_extra_target_dependencies)
   # This only adding todo: find a solution for when a dependency was add the is removed...
   add_dependencies(akantu ${_extra_target_dependencies})
 endif()
 
-set_target_properties(akantu PROPERTIES ${AKANTU_LIBRARY_PROPERTIES})
-set_target_properties(akantu PROPERTIES PUBLIC_HEADER "${AKANTU_LIBRARY_PUBLIC_HDRS}")
 
 list(APPEND AKANTU_EXPORT_LIST akantu)
 
@@ -158,3 +165,6 @@ endif()
 export(TARGETS ${AKANTU_EXPORT_LIST}
   FILE "${CMAKE_BINARY_DIR}/AkantuLibraryDepends.cmake")
 export(PACKAGE Akantu)
+
+# print out the list of materials
+generate_material_list()

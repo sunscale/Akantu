@@ -1,16 +1,19 @@
 /**
  * @file   integration_element.cc
  *
+ * @author Mauro Corrado <mauro.corrado@epfl.ch>
+ * @author Sébastien Hartmann <sebastien.hartmann@epfl.ch>
+ * @author Thomas Menouillard <tmenouillard@stucky.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Jan 16 2013
- * @date last modification: Mon Jul 07 2014
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Thu Nov 05 2015
  *
  * @brief  Definition of the integration constants
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

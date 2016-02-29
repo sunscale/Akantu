@@ -4,13 +4,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue Sep 02 2014
- * @date last modification: Tue Sep 02 2014
+ * @date last modification: Sat Jul 11 2015
  *
  * @brief  Element helper class
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

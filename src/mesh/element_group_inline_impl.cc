@@ -4,14 +4,14 @@
  * @author Dana Christen <dana.christen@gmail.com>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Fri May 03 2013
- * @date last modification: Tue Sep 02 2014
+ * @date creation: Wed Nov 13 2013
+ * @date last modification: Tue Aug 18 2015
  *
  * @brief  Stores information relevent to the notion of domain boundary and surfaces.
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -58,6 +58,11 @@ inline void ElementGroup::add(const ElementType & type, UInt element,
 /* -------------------------------------------------------------------------- */
 inline void ElementGroup::addNode(UInt node_id, bool check_for_duplicate) {
   node_group.add(node_id, check_for_duplicate);
+}
+
+/* -------------------------------------------------------------------------- */
+inline void ElementGroup::removeNode(UInt node_id) {
+  node_group.remove(node_id);
 }
 
 /* -------------------------------------------------------------------------- */

@@ -1,17 +1,19 @@
 /**
  * @file   dof_synchronizer_inline_impl.cc
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri Jun 17 2011
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Tue Dec 09 2014
  *
  * @brief  DOFSynchronizer inline implementation
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

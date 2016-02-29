@@ -1,14 +1,17 @@
 /**
  * @file   neighborhood_max_criterion.cc
+ *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Wed Oct 14 21:31:07 2015
+ *
+ * @date creation: Thu Oct 15 2015
+ * @date last modification: Tue Nov 24 2015
  *
  * @brief  Implementation of class NeighborhoodMaxCriterion
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -38,8 +41,8 @@ NeighborhoodMaxCriterion::NeighborhoodMaxCriterion(const SolidMechanicsModel & m
 						   const MemoryID & memory_id)  :
   NeighborhoodBase(model, quad_coordinates, id, memory_id),
   Parsable(_st_non_local, id),
-  is_highest("is_highest", id),
-  criterion(criterion_id, id)
+  is_highest("is_highest", id, memory_id),
+  criterion(criterion_id, id, memory_id)
  { 
    
    AKANTU_DEBUG_IN();

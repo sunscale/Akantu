@@ -1,16 +1,18 @@
 /**
- * @file   test_cohesive_buildfacets_tetrahedron.cc
+ * @file   test_buildfacets_tetrahedron_10.cc
  *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date   Wed Oct 03 10:20:53 2012
+ * @date creation: Tue May 08 2012
+ * @date last modification: Sat Sep 19 2015
  *
  * @brief  Test for cohesive elements
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

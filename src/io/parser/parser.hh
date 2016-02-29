@@ -4,13 +4,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Nov 13 2013
- * @date last modification: Thu Aug 21 2014
+ * @date last modification: Wed Jan 13 2016
  *
  * @brief  File parser interface
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -124,7 +124,8 @@ public:
   // template <typename T> inline operator Matrix<T>() const;
 
   /// Print parameter info in stream
-  void printself(std::ostream & stream, unsigned int indent = 0) const {
+  void printself(std::ostream & stream,
+                 __attribute__((unused)) unsigned int indent = 0) const {
     stream << name << ": " << value << " (" << dbg_filename << ":" << dbg_line
            << ":" << dbg_column << ")";
   }

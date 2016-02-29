@@ -1,14 +1,17 @@
 /**
  * @file   neighborhood_base_inline_impl.cc
+ *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @date   Mon Sep 21 18:25:31 2015
+ *
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Wed Nov 25 2015
  *
  * @brief  Inline implementation of neighborhood base functions
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

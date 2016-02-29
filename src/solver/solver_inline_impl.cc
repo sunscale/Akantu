@@ -1,14 +1,18 @@
 /**
  * @file   solver_inline_impl.cc
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Thu Nov 13 14:43:41 2014
+ *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ *
+ * @date creation: Mon Dec 13 2010
+ * @date last modification: Wed Oct 07 2015
  *
  * @brief  implementation of solver inline functions
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

@@ -1,17 +1,19 @@
 #===============================================================================
 # @file   embedded.cmake
 #
-# @author Lucas Frérot <lucas.frerot@epfl.ch>
+# @author Lucas Frerot <lucas.frerot@epfl.ch>
+# @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Tue Oct 16 2012
-# @date last modification: Thu Jun 12 2014
+# @date last modification: Mon Dec 14 2015
 #
 # @brief  package descrition for embedded model use
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -54,3 +56,5 @@ package_declare_material_infos(embedded
 package_declare_documentation(embedded
 "This package allows the use of the embedded model in solid mechanics. This package depends on the CGAL package."
 )
+
+#add_example(embedded             "Example on how to run embedded model simulation"     PACKAGE embedded)

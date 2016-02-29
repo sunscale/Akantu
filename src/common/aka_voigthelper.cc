@@ -2,17 +2,17 @@
  * @file   aka_voigthelper.cc
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri Dec 20 2013
- * @date last modification: Fri Sep 19 2014
+ * @date last modification: Sun Oct 19 2014
  *
  * @brief  Voigt indices
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -58,7 +58,7 @@ template <> const UInt VoigtHelper<3>::vec[][2] = {{0, 0},
                                                    {2, 0},
                                                    {1, 0}};
 template <> const Real VoigtHelper<1>::factors[] = {1.};
-template <> const Real VoigtHelper<2>::factors[] = {1., 1., 1., 2.};
+template <> const Real VoigtHelper<2>::factors[] = {1., 1., 2.};
 template <> const Real VoigtHelper<3>::factors[] = {1., 1., 1.,
                                                     2., 2., 2.};
 

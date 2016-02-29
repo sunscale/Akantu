@@ -3,15 +3,15 @@
 #
 # @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
 #
-# @date creation: Fri Jun 21 2013
-# @date last modification: Fri Jun 21 2013
+# @date creation: Wed Dec 16 2015
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  CMakeLists for the cohesive examples
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -28,5 +28,5 @@
 #
 #===============================================================================
 
-add_example(predefined_BC "Example of predefined boundary condition")
-add_example(user_defined_BC "Example of user defined boundary condition" PACKAGE implicit)
+add_example(predefined_bc "Example of predefined boundary condition" PACKAGE core)
+add_example(user_defined_bc "Example of user defined boundary condition" PACKAGE core)

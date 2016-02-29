@@ -1,9 +1,18 @@
-
+material elastic_orthotropic [
+         name = test_mat_1
+         rho  = 3.8328782866680342684   # density in g/mol/A^2
+         E1   = 10 * 9.7874197348334701168   # young's in kcal/mol/A^3
+         E2   = 9.7874197348334701168   # young's in kcal/mol/A^3
+         nu12 = 0.33333333333333333333  # poisson's ratio
+         G12  = 3.6702824005625512938   # shear modulus in kcal/mol/A^3 
+]
 
 material elastic_orthotropic [
-         name = aluminum-film-0K-LJ-orthotropic
+         name = test_mat_2
+	 n1 = [0, 1, 0]
+	 n2 = [-1, 0, 0]
          rho  = 3.8328782866680342684   # density in g/mol/A^2
-         E1   = 9.7874197348334701168   # young's in kcal/mol/A^3
+         E1   = 10 * 9.7874197348334701168   # young's in kcal/mol/A^3
          E2   = 9.7874197348334701168   # young's in kcal/mol/A^3
          nu12 = 0.33333333333333333333  # poisson's ratio
          G12  = 3.6702824005625512938   # shear modulus in kcal/mol/A^3 

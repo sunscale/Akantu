@@ -3,14 +3,15 @@
 #
 # @author Mauro Corrado <mauro.corrado@epfl.ch>
 #
-# @date creation: Tue Jan 07 2016
+# @date creation: Tue Jan 12 2016
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  Example for extrinsic cohesive elements in implicit
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -32,11 +33,7 @@
 add_mesh(cohesive_extrinsic_implicit_mesh dcb_2d.geo 2 2)
 
 register_example(cohesive_extrinsic_implicit
-  cohesive_extrinsic_implicit.cc)
+  SOURCES cohesive_extrinsic_implicit.cc
+  DEPENDS cohesive_extrinsic_implicit_mesh
+  FILES_TO_COPY material.dat)
 
-add_dependencies(cohesive_extrinsic_implicit
-  cohesive_extrinsic_implicit_mesh)
-
- #===============================================================================
-file(COPY material.dat DESTINATION .)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)

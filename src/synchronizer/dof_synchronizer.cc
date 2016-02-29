@@ -1,18 +1,19 @@
 /**
  * @file   dof_synchronizer.cc
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @date creation: Fri Jun 17 2011
- * @date last modification: Thu Mar 27 2014
+ * @date last modification: Wed Oct 21 2015
  *
  * @brief  DOF synchronizing object implementation
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -54,7 +55,9 @@ __BEGIN_AKANTU__
  * @param mesh mesh discretizing the domain we want to analyze 
  * @param nb_degree_of_freedom number of degrees of freedom per node
  */
-DOFSynchronizer::DOFSynchronizer(const Mesh & mesh, UInt nb_degree_of_freedom) :
+DOFSynchronizer::DOFSynchronizer(const Mesh & mesh, UInt nb_degree_of_freedom,
+				 StaticCommunicator & comm) :
+  Synchronizer("synchronizer", 0, comm),
   global_dof_equation_numbers(0, 1, "global_equation_number"),
   local_dof_equation_numbers(0, 1, "local_equation_number"),
   dof_global_ids(0, 1, "global_ids"),

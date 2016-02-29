@@ -1,14 +1,17 @@
 /**
  * @file   dumper_low_level.cc
+ *
  * @author Fabian Barras <fabian.barras@epfl.ch>
- * @date   Thu Jul  2 14:34:41 2015
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ *
+ * @date creation: Mon Aug 17 2015
  *
  * @brief  Example of dumper::DumperIOHelper low-level methods.
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

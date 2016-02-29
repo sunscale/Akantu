@@ -1,15 +1,19 @@
 /**
  * @file   non_local_manager.hh
+ *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @date   Mon Sep 21 14:21:33 2015
+ *
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Classes that manages all the non-local neighborhoods
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -47,8 +51,8 @@ class NonLocalManager : public Memory,
   /* ------------------------------------------------------------------------ */
 public:
   NonLocalManager(SolidMechanicsModel & model,
-                  const ID & id = "non_local_manager",
-                  const MemoryID & memory_id = 0);
+                  const ID & id,
+                  const MemoryID & memory_id);
   virtual ~NonLocalManager();
   typedef std::map<ID, NonLocalNeighborhoodBase *> NeighborhoodMap;
   typedef std::pair<ID, ID> KeyCOO;
@@ -204,8 +208,9 @@ protected:
   struct NonLocalVariable {
     NonLocalVariable(const ID & variable_name, const ID & nl_variable_name,
                      const ID & id, UInt nb_component)
-        : local(variable_name, id), non_local(nl_variable_name, id),
-          nb_component(nb_component) {}
+      : local(variable_name, id, 0),
+	non_local(nl_variable_name, id, 0),
+	nb_component(nb_component) {}
     ElementTypeMapReal local;
     ElementTypeMapReal non_local;
     UInt nb_component;

@@ -1,14 +1,18 @@
 /**
  * @file   petsc_matrix.hh
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Mon Jul 21 14:49:49 2014
+ *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ *
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Fri Aug 21 2015
  *
  * @brief  Interface for PETSc matrices
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -106,11 +110,11 @@ private:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  
+
   AKANTU_GET_MACRO(PETScMatrixWrapper, petsc_matrix_wrapper, PETScMatrixWrapper*);
   AKANTU_GET_MACRO(LocalSize, local_size, Int);
   ///  AKANTU_GET_MACRO(LocalSize, local_size, Int);
-  
+
 
 public:
 
@@ -132,7 +136,7 @@ private:
   /// number of nonzeros in every row of the off-diagonal part
   Array<Int> o_nnz;
 
-  /// the global index of the first local row 
+  /// the global index of the first local row
   Int first_global_index;
 
   /// bool to indicate if the matrix data has been initialized by calling MatCreate

@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Nov 13 2013
- * @date last modification: Mon Jun 09 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Node group definition
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -71,6 +72,9 @@ public:
 
   /// add a node and give the local position through an iterator
   inline const_node_iterator add(UInt node, bool check_for_duplicate = true);
+
+  /// remove a node
+  inline void remove(UInt node);
 
   /// remove duplicated nodes
   void optimize();

@@ -5,13 +5,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri May 03 2013
- * @date last modification: Fri Sep 05 2014
+ * @date last modification: Tue Aug 18 2015
  *
  * @brief  Stores information relevent to the notion of domain boundary and surfaces.
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -111,6 +111,8 @@ public:
 		  bool add_nodes = true, bool check_for_duplicate = true);
 
   inline void addNode(UInt node_id, bool check_for_duplicate = true);
+
+  inline void removeNode(UInt node_id);
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;

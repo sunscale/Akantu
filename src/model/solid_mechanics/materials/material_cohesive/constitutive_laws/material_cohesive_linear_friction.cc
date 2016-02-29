@@ -3,16 +3,16 @@
  *
  * @author Mauro Corrado <mauro.corrado@epfl.ch>
  *
- * @date creation: Tue May 08 2012
- * @date last modification: Thu Nov 19 2015
+ * @date creation: Tue Jan 12 2016
+ * @date last modification: Thu Jan 14 2016
  *
  * @brief  Linear irreversible cohesive law of mixed mode loading with
  * random stress definition for extrinsic type
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -71,7 +71,7 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::initMaterial() {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
-void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(const Array<Real> & normal,
+void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(__attribute__((unused)) const Array<Real> & normal,
 									ElementType el_type,
 									GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -268,7 +268,7 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::checkDeltaMax(GhostType 
 template<UInt spatial_dimension>
 void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(const ElementType & el_type,
 									       Array<Real> & tangent_matrix,
-									       const Array<Real> & normal,
+                                                                               __attribute__((unused)) const Array<Real> & normal,
 									       GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 

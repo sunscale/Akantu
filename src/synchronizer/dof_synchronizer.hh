@@ -1,18 +1,19 @@
 /**
  * @file   dof_synchronizer.hh
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @date creation: Fri Jun 17 2011
- * @date last modification: Fri Mar 21 2014
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Synchronize Array of DOFs
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -59,7 +60,8 @@ class DOFSynchronizer : public Synchronizer {
   /* ------------------------------------------------------------------------ */
 public:
 
-  DOFSynchronizer(const Mesh & mesh, UInt nb_degree_of_freedom);
+  DOFSynchronizer(const Mesh & mesh, UInt nb_degree_of_freedom,
+		  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
   virtual ~DOFSynchronizer();
 
   /* ------------------------------------------------------------------------ */

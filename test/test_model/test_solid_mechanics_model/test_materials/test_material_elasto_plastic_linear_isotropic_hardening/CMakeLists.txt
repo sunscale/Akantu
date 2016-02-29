@@ -3,15 +3,17 @@
 #
 # @author Jaehyun Cho <jaehyun.cho@epfl.ch>
 #
-# @date creation: Fri Aug 3 2015
+# @date creation: Fri Oct 22 2010
+# @date last modification: Mon Dec 07 2015
 #
 # @brief  test for material type elasto plastic linear isotropic hardening using
-#         tension-compression test
+# tension-compression test
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free

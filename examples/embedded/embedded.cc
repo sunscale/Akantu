@@ -1,17 +1,17 @@
 /**
- * @file embedded.cc
+ * @file   embedded.cc
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Wed Jul 22 2015
- * @date last modification: Wed Jul 22 2015
+ * @date creation: Tue Dec 01 2015
+ * @date last modification: Mon Jan 18 2016
  *
- * @brief This code gives an example of a simulation using the embedded model
+ * @brief  This code gives an example of a simulation using the embedded model
  *
  * @section LICENSE
  *
- * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -30,7 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "embedded_interface_model.hh"
-
+/* -------------------------------------------------------------------------- */
 #include <iostream>
 /* -------------------------------------------------------------------------- */
 
@@ -55,7 +55,8 @@ int main(int argc, char * argv[]) {
   // mesh contains only segments, i.e. 1D elements
   try {
     reinforcement_mesh.read("reinforcement.msh");
-  } catch (debug::Exception & e) {}
+  } catch (debug::Exception & e) {
+  }
 
   // Necessary to define physical names as well
   reinforcement_mesh.createGroupsFromMeshData<std::string>("physical_names");
@@ -63,7 +64,6 @@ int main(int argc, char * argv[]) {
   // Model creation
   EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
   model.initFull(EmbeddedInterfaceModelOptions(_static));
-
 
   // Boundary conditions
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "XBlocked");
@@ -78,13 +78,14 @@ int main(int argc, char * argv[]) {
   // Dumping the concrete
   model.setBaseName("concrete");
   model.addDumpFieldVector("displacement");
-  model.addDumpFieldVector("force"       );
-  model.addDumpFieldVector("residual"    );
-  model.addDumpFieldTensor("stress"      );
+  model.addDumpFieldVector("force");
+  model.addDumpFieldVector("residual");
+  model.addDumpFieldTensor("stress");
 
   // Dumping the reinforcement
   model.setBaseNameToDumper("reinforcement", "reinforcement");
-  model.addDumpFieldTensorToDumper("reinforcement", "stress_embedded"); // dumping stress in reinforcement
+  model.addDumpFieldTensorToDumper(
+      "reinforcement", "stress_embedded"); // dumping stress in reinforcement
 
   // Assemble global stiffness matrix
   model.assembleStiffnessMatrix();
@@ -94,10 +95,13 @@ int main(int argc, char * argv[]) {
 
   // Solve
   Real error;
-  bool converged = model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_residual>(1e-6, error, 1);
+  bool converged =
+      model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_residual>(
+          1e-6, error, 1);
 
-  if (!converged)
+  if (!converged) {
     std::cerr << "Model did not converge, error = " << error << std::endl;
+  }
 
   // Dumping model
   model.dump();

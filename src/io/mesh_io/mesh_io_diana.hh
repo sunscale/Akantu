@@ -1,19 +1,21 @@
 /**
  * @file   mesh_io_diana.hh
  *
+ * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
- * @author Alodie Schneuwly <alodie.schneuwly@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Alodie Schneuwly <alodie.schneuwly@epfl.ch>
  *
- * @date creation: Sat Mar 26 2011
- * @date last modification: Mon Aug 19 2013
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Thu Nov 19 2015
  *
  * @brief  diana mesh reader description
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

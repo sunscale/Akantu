@@ -1,14 +1,19 @@
 #===============================================================================
 # @file   pythonlibs.cmake
 #
+# @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
+#
+# @date creation: Fri Sep 03 2010
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  package description for the python library
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -24,6 +29,7 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
+
 set(Python_ADDITIONAL_VERSIONS 2.7)
 
 package_declare(PythonLibs EXTERNAL DESCRIPTION "Akantu's python interface"
@@ -31,12 +37,15 @@ package_declare(PythonLibs EXTERNAL DESCRIPTION "Akantu's python interface"
   EXTRA_PACKAGE_OPTIONS PREFIX PYTHON FOUND PYTHONLIBS_FOUND
   )
 
-package_declare_sources(Pythonlibs
-  python/python_functor.cc
-  python/python_functor.hh
-  python/python_functor_inline_impl.cc
-  model/boundary_condition_python_functor.hh
-  model/boundary_condition_python_functor.cc
-  model/solid_mechanics/materials/material_python/material_python.cc
-  model/solid_mechanics/materials/material_python/material_python.hh
-  )
+package_set_package_system_dependency(PythonLibs deb libpython2.7)
+package_set_package_system_dependency(PythonLibs deb-src libpython2.7-dev)
+
+package_declare_documentation(PythonLibs
+  "This package is a dependency of the python interface"
+  ""
+  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
+  "\\begin{command}"
+  "  > sudo apt-get install libpython2.7-dev"
+  "\\end{command}"
+  ""
+)

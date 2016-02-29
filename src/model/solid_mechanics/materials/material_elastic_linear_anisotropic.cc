@@ -5,13 +5,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Sep 25 2013
- * @date last modification: Fri Sep 19 2014
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Anisotropic elastic material
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -193,6 +193,13 @@ void MaterialElasticLinearAnisotropic<Dim>::rotateCprime() {
     }
   }
 
+#ifndef AKANTU_NDEBUG
+  Matrix<Real> eig_vectors_before(Dim*Dim, Dim * Dim);
+  Matrix<Real> eig_vectors_after(Dim*Dim, Dim * Dim);
+  Vector<Real> eig_val_before(Dim * Dim);
+  Vector<Real> eig_val_after(Dim*Dim);
+  Cprime.eig(eig_val_before, eig_vectors_before);
+#endif
   // create the full rotated matrix
   Matrix<Real> Cfull(Dim*Dim, Dim*Dim);
   Cfull = rotator*Cprime*revrotor;
@@ -202,6 +209,16 @@ void MaterialElasticLinearAnisotropic<Dim>::rotateCprime() {
       this->C(i, j) = Cfull(i, j);
     }
   }
+
+#ifndef AKANTU_NDEBUG
+  Cfull.eig(eig_val_after, eig_vectors_after);
+  AKANTU_DEBUG_ASSERT(eig_val_before.equal(eig_val_after), "The eigenvalues have changed during the rotation");
+  Vector<Real> eigen_vector(Dim * Dim);
+  for(UInt i = 0; i < Dim * Dim; ++i) {
+    eigen_vector = eig_vectors_before(i);
+    AKANTU_DEBUG_ASSERT(eigen_vector.equal(eig_vectors_after(i)), "The eigenvectors have changed during the rotation");
+  }
+#endif
 
 }
 

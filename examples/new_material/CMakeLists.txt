@@ -3,15 +3,16 @@
 #
 # @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
 #
-# @date creation: Fri Apr 20 2012
-# @date last modification: Thu Nov 01 2012
+# @date creation: Mon Jan 18 2016
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  CMakeFile for new material example
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -31,18 +32,16 @@
 #===============================================================================
 
 #===============================================================================
-
 add_mesh(new_local_material_barre_trou_mesh barre_trou.geo 2 2)
 
-register_example(new_local_material local_material_damage.cc new_local_material.cc)
-add_dependencies(new_local_material
-  new_local_material_barre_trou_mesh
+register_example(new_local_material
+  SOURCES
+    local_material_damage.cc
+    local_material_damage.hh
+    local_material_damage_inline_impl.hh
+    new_local_material.cc
+  DEPENDS
+    new_local_material_barre_trou_mesh
+  FILES_TO_COPY
+    material.dat
   )
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/material.dat
-  ${CMAKE_CURRENT_BINARY_DIR}/material.dat
-  COPYONLY
-  )
-
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/paraview)

@@ -1,17 +1,20 @@
 /**
  * @file   material_non_local.hh
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Aug 31 2011
- * @date last modification: Thu Jun 05 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Dec 08 2015
  *
- * @brief  Material class that handle the non locality of a law for example damage.
+ * @brief  Material class that handle the non locality of a law for example
+ * damage.
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -34,7 +37,6 @@
 #include "fe_engine.hh"
 #include "non_local_manager.hh"
 
-
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_MATERIAL_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_NON_LOCAL_HH__
@@ -42,13 +44,11 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-class MaterialNonLocal : public virtual Material {
+template <UInt dim> class MaterialNonLocal : public virtual Material {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialNonLocal(SolidMechanicsModel & model, const ID & id = "");
   virtual ~MaterialNonLocal();
 
@@ -65,8 +65,8 @@ public:
   virtual void insertQuadsInNeighborhoods(GhostType ghost_type = _not_ghost);
 
   /// update the values in the non-local internal fields
-  void updateNonLocalInternals(ElementTypeMapReal & non_local_flattened, const ID & field_id, 
-			       const UInt nb_component);
+  void updateNonLocalInternals(ElementTypeMapReal & non_local_flattened,
+                               const ID & field_id, const UInt nb_component);
   /// constitutive law
   virtual void computeNonLocalStresses(GhostType ghost_type = _not_ghost) = 0;
 
@@ -74,26 +74,24 @@ public:
   virtual void registerNeighborhood();
 
 protected:
-  
-  virtual inline void onElementsAdded(const Array<Element> & element_list,
-				      const NewElementsEvent & event) {
+  virtual inline void onElementsAdded(__attribute__((unused))
+                                      const Array<Element> & element_list,
+                                      __attribute__((unused))
+                                      const NewElementsEvent & event) {
     AKANTU_DEBUG_ERROR("This is a case not taken into account!!!");
   }
-  
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
 #include "material_non_local_inline_impl.cc"
-
 
 __END_AKANTU__
 

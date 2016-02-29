@@ -4,15 +4,16 @@
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
 # @date creation: Wed Oct 17 2012
-# @date last modification: Fri Sep 19 2014
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  Create the files that allows users to link with Akantu in an other
 # cmake project
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -89,10 +90,10 @@ set(AKANTU_${_real_pkg_name}_INCLUDE_DIR ${_incs})
 ")
   endif()
 
-  _package_get_compile_flags(${_pkg_name} _compile_flags)
+  _package_get_compile_flags(${_pkg_name} CXX _compile_flags)
   if(_compile_flags)
     file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
-set(AKANTU_${_real_pkg_name}_COMPILE_FLAGS ${_compile_flags})
+set(AKANTU_${_real_pkg_name}_COMPILE_CXX_FLAGS ${_compile_flags})
 ")
   endif()
 endforeach()
@@ -100,12 +101,28 @@ endforeach()
 file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
 ")
 
+file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
+set(AKANTU_EXTRA_CXX_FLAGS \"${AKANTU_EXTRA_CXX_FLAGS}\")
+")
+
+
 # Create the AkantuConfig.cmake and AkantuConfigVersion files
 get_filename_component(CONF_REL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}" ABSOLUTE)
 configure_file(cmake/AkantuConfig.cmake.in "${PROJECT_BINARY_DIR}/AkantuConfig.cmake" @ONLY)
 configure_file(cmake/AkantuConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/AkantuConfigVersion.cmake" @ONLY)
 configure_file(cmake/AkantuUse.cmake "${PROJECT_BINARY_DIR}/AkantuUse.cmake" COPYONLY)
 
+configure_file(cmake/akantu_environement.sh.in ${PROJECT_BINARY_DIR}/akantu_environement.sh  @ONLY)
+configure_file(cmake/akantu_environement.csh.in ${PROJECT_BINARY_DIR}/akantu_environement.csh @ONLY)
+
+
+configure_file(cmake/akantu_install_environement.sh.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.sh  @ONLY)
+configure_file(cmake/akantu_install_environement.csh.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.csh @ONLY)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.sh
+  ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.csh
+  DESTINATION share/akantu${AKANTU_VERSION})
 
 # include(CMakePackageConfigHelpers)
 
@@ -123,12 +140,12 @@ install(FILES ${PROJECT_BINARY_DIR}/AkantuConfig.cmake
   ${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake
   ${PROJECT_BINARY_DIR}/AkantuConfigVersion.cmake
   ${PROJECT_SOURCE_DIR}/cmake/AkantuUse.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/AkantuSimulationMacros.cmake
   DESTINATION  lib/akantu
   COMPONENT dev)
 
 install(FILES
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindIOHelper.cmake
-  ${PROJECT_SOURCE_DIR}/cmake/Modules/FindQVIEW.cmake
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindMumps.cmake
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindScotch.cmake
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindGMSH.cmake

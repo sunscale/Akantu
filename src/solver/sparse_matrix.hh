@@ -4,15 +4,16 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Mon Dec 13 2010
- * @date last modification: Mon Sep 15 2014
+ * @date last modification: Fri Oct 16 2015
  *
  * @brief  sparse matrix storage class (distributed assembled matrix)
  * This is a COO format (Coordinate List)
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -50,7 +51,8 @@ class SparseMatrix : protected Memory {
   /* ------------------------------------------------------------------------ */
 public:
   SparseMatrix(UInt size, const SparseMatrixType & sparse_matrix_type,
-               const ID & id = "sparse_matrix", const MemoryID & memory_id = 0);
+               const ID & id = "sparse_matrix", const MemoryID & memory_id = 0,
+	       UInt nb_proc_input = 0);
 
   SparseMatrix(const SparseMatrix & matrix, const ID & id = "sparse_matrix",
                const MemoryID & memory_id = 0);

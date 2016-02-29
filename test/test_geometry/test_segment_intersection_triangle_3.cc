@@ -1,18 +1,18 @@
 /**
  * @file   test_segment_intersection_triangle_3.cc
  *
- * @author Lucas Frérot <lucas.frerot@epfl.ch>
- * @author Clement Roux-Langlois <clement.roux@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
+ * @author Clement Roux <clement.roux@epfl.ch>
  *
- * @date creation: Fri Mar 13 2015
- * @date last modification: Tue june 16 2015
+ * @date creation: Fri Feb 27 2015
+ * @date last modification: Thu Jan 14 2016
  *
  * @brief  Tests the interface mesh generation
  *
  * @section LICENSE
  *
- * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

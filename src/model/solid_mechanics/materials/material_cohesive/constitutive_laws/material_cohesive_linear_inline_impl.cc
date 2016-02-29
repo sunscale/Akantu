@@ -1,14 +1,18 @@
 /**
  * @file   material_cohesive_linear_inline_impl.cc
+ *
+ * @author Mauro Corrado <mauro.corrado@epfl.ch>
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
- * @date   Tue Apr 21 14:49:56 2015
+ *
+ * @date creation: Wed Apr 22 2015
+ * @date last modification: Thu Jan 14 2016
  *
  * @brief  Inline functions of the MaterialCohesiveLinear
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -69,7 +73,7 @@ template<UInt dim>
 inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
     Vector<Real> & traction,
     Real & delta_max,
-    const Real & delta_max_prev,
+    __attribute__((unused)) const Real & delta_max_prev,
     const Real & delta_c,
     const Vector<Real> & insertion_stress,
     const Real & sigma_c,

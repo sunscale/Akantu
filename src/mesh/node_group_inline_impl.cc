@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Nov 13 2013
- * @date last modification: Tue Sep 02 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Dec 08 2015
  *
  * @brief  Node group inline function definitions
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -55,6 +56,19 @@ inline NodeGroup::const_node_iterator NodeGroup::add(UInt node, bool check_for_d
     node_group.push_back(node);
     return (node_group.end() - 1);
   }
+}
+
+/* -------------------------------------------------------------------------- */
+inline void NodeGroup::remove(UInt node) {
+  Array<UInt>::iterator<> it = this->node_group.begin();
+  Array<UInt>::iterator<> end = this->node_group.end();
+  AKANTU_DEBUG_ASSERT(it != end, "The node group is empty!!");
+  for (; it != node_group.end(); ++it) {
+    if (*it == node) { 
+      it = node_group.erase(it);
+    }
+  }
+  AKANTU_DEBUG_ASSERT(it != end, "The node was not found!");
 }
 
 /* -------------------------------------------------------------------------- */

@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Mon Dec 13 2010
- * @date last modification: Mon Sep 15 2014
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Tue Jan 19 2016
  *
  * @brief  Solver class implementation for the mumps solver
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -43,12 +44,12 @@ public:
   enum ParallelMethod {
     _not_parallel,
     _fully_distributed,
-    _master_slave_distributed
+    _master_slave_distributed,
+    _serial_split
   };
 
-  SolverMumpsOptions(ParallelMethod parallel_method = _fully_distributed) :
-    SolverOptions(),
-    parallel_method(parallel_method) { }
+  SolverMumpsOptions(ParallelMethod parallel_method = _fully_distributed)
+      : SolverOptions(), parallel_method(parallel_method) {}
 
 private:
   friend class SolverMumps;
@@ -63,7 +64,8 @@ public:
 
   SolverMumps(SparseMatrix & sparse_matrix,
 	      const ID & id = "solver_mumps",
-	      const MemoryID & memory_id = 0);
+	      const MemoryID & memory_id = 0,
+	      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
   virtual ~SolverMumps();
 
@@ -71,7 +73,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// build the profile and do the analysis part
   virtual void initialize(SolverOptions & options = _solver_no_options);
 
@@ -106,20 +107,15 @@ private:
   /* ------------------------------------------------------------------------ */
 private:
   /// access the control variable
-  inline Int & icntl(UInt i) {
-    return mumps_data.icntl[i - 1];
-  }
+  inline Int & icntl(UInt i) { return mumps_data.icntl[i - 1]; }
 
   /// access the results info
-  inline Int & info(UInt i) {
-    return mumps_data.info[i - 1];
-  }
+  inline Int & info(UInt i) { return mumps_data.info[i - 1]; }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// mumps data
   DMUMPS_STRUC_C mumps_data;
 
@@ -147,7 +143,6 @@ private:
     _smj_destroy = -2
   };
 };
-
 
 __END_AKANTU__
 

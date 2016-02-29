@@ -1,14 +1,18 @@
 /**
  * @file   petsc_matrix.cc
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Mon Jul 21 17:40:41 2014
+ *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ *
+ * @date creation: Mon Dec 13 2010
+ * @date last modification: Fri Aug 21 2015
  *
  * @brief  Implementation of PETSc matrix class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -162,7 +166,7 @@ void PETScMatrix::setSize() {
   Array<Int>::scalar_iterator it_eq_nb = local_master_eq_nbs.begin();
 
   /// get the pointer to the global equation number array
-  Int * eq_nb_val = this->dof_synchronizer->getGlobalDOFEquationNumbers().storage();
+  UInt * eq_nb_val = this->dof_synchronizer->getDOFGlobalIDs().storage();
 
   for (UInt i = 0; i <nb_dofs; ++i) {
     if (this->dof_synchronizer->isLocalOrMasterDOF(i) ) {
@@ -383,19 +387,19 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
 
 
 
-  // /// for pbc @todo correct it for parallel
-  // if(StaticCommunicator::getStaticCommunicator().getNbProc() == 1) {
-  //   for (UInt i = 0; i < size; ++i) {
-  //    KeyCOO irn_jcn = key(i, i);
-  //    irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
-  //    if(irn_jcn_k_it == irn_jcn_k.end()) {
-  //      irn_jcn_k[irn_jcn] = nb_non_zero;
-  //      irn.push_back(i + 1);
-  //      jcn.push_back(i + 1);
-  //      nb_non_zero++;
-  //    }
-  //   }
-  // }
+  /// for pbc @todo correct it for parallel
+  if(StaticCommunicator::getStaticCommunicator().getNbProc() == 1) {
+    for (UInt i = 0; i < size; ++i) {
+     KeyCOO irn_jcn = key(i, i);
+     irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
+     if(irn_jcn_k_it == irn_jcn_k.end()) {
+       irn_jcn_k[irn_jcn] = nb_non_zero;
+       irn.push_back(i + 1);
+       jcn.push_back(i + 1);
+       nb_non_zero++;
+     }
+    }
+  }
 
 
 
@@ -448,7 +452,7 @@ void PETScMatrix::buildProfile(const Mesh & mesh, const DOFSynchronizer & dof_sy
  * Method to save the nonzero pattern and the values stored at each position
  * @param filename name of the file in which the information will be stored
  */
-void PETScMatrix::saveMatrix(const std::string & filename) const{
+void PETScMatrix::saveMatrix(const std::string & filename) const {
   AKANTU_DEBUG_IN();
 
   PetscErrorCode ierr;
@@ -603,7 +607,7 @@ void PETScMatrix::applyBoundary(const Array<bool> & boundary, Real block_val) {
   PetscErrorCode ierr;
 
   /// get the global equation numbers to find the rows that need to be zeroed for the blocked dofs
-  Int * eq_nb_val = dof_synchronizer->getGlobalDOFEquationNumbers().storage();
+  UInt * eq_nb_val = dof_synchronizer->getDOFGlobalIDs().storage();
 
   /// every processor calls the MatSetZero() only for his local or master dofs. This assures that not two processors or more try to zero the same row
   UInt nb_component = boundary.getNbComponent();

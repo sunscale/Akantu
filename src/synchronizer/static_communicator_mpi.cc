@@ -4,14 +4,15 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Sun Sep 26 2010
- * @date last modification: Mon Jul 21 2014
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  StaticCommunicatorMPI implementation
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -74,12 +75,18 @@ StaticCommunicatorMPI::StaticCommunicatorMPI(int & argc, char **& argv)
     MPI_Init(&argc, &argv);
   }
 
+  this->is_externaly_initialized = is_initialized;
+
   mpi_data = new MPITypeWrapper(*this);
   mpi_data->setMPICommunicator(MPI_COMM_WORLD);
 }
 
 /* -------------------------------------------------------------------------- */
-StaticCommunicatorMPI::~StaticCommunicatorMPI() { MPI_Finalize(); }
+StaticCommunicatorMPI::~StaticCommunicatorMPI() {
+  if (!this->is_externaly_initialized) {
+    MPI_Finalize();
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -455,7 +462,7 @@ MPI_Datatype MPITypeWrapper::getMPIDatatype<SCMinMaxLoc<float, int> >() {
   template void StaticCommunicatorMPI::broadcast<T>(T * values, int nb_values, \
                                                     int root);                 \
   template void StaticCommunicatorMPI::allReduce<T>(                           \
-      T * values, int nb_values, const SynchronizerOperation & op);
+      T * values, int nb_values, const SynchronizerOperation & op)
 
 AKANTU_MPI_COMM_INSTANTIATE(Real);
 AKANTU_MPI_COMM_INSTANTIATE(UInt);

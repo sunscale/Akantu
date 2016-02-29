@@ -1,16 +1,17 @@
 /**
- * @file   test_cohesive_buildfacets_quadrangle_4.cc
+ * @file   test_buildfacets_quadrangle_4.cc
  *
  * @author Mauro Corrado <mauro.corrado@epfl.ch>
  *
- * @date   Fri Sep 18 10:20:53 2015
+ * @date creation: Fri Sep 18 2015
+ * @date last modification: Sat Sep 19 2015
  *
- * @brief  Test to check the building of the facets. Mesh with quadrangles 
+ * @brief  Test to check the building of the facets. Mesh with quadrangles
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

@@ -1,16 +1,16 @@
 /**
- * @file   parser.cc
+ * @file   parser_random.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Wed Nov 13 2013
- * @date last modification: Fri Sep 05 2014
+ * @date creation: Thu Feb 21 2013
+ * @date last modification: Mon Dec 07 2015
  *
  * @brief  implementation of the parser
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the

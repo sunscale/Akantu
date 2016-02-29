@@ -1,17 +1,17 @@
 /**
- * @file test_embedded_interface_model_prestress.cc
+ * @file   test_embedded_interface_model_prestress.cc
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: mar. avril 28 2015
- * @date last modification: mar. avril 28 2015
+ * @date creation: Tue Apr 28 2015
+ * @date last modification: Thu Oct 15 2015
  *
- * @brief Embedded model test for prestressing (bases on stress norm)
+ * @brief  Embedded model test for prestressing (bases on stress norm)
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

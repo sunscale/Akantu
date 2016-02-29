@@ -1,17 +1,17 @@
 /**
- * @file embedded_interface_intersector.cc
+ * @file   embedded_interface_intersector.cc
  *
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  *
- * @date creation: Wed Apr 29 2015
- * @date last modification: Wed Apr 29 2015
+ * @date creation: Fri May 01 2015
+ * @date last modification: Mon Jan 04 2016
  *
- * @brief Class that loads the interface from mesh and computes intersections
+ * @brief  Class that loads the interface from mesh and computes intersections
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -96,7 +96,7 @@ void EmbeddedInterfaceIntersector::constructData(GhostType ghost_type) {
     K::Segment_3 segment = this->createSegment(el_connectivity);
     name_to_primitives_map[*names_it].push_back(segment);
   }
-  
+
   // Loop over the background types of the mesh
   Mesh::type_iterator
     type_it = this->mesh.firstType(dim, _not_ghost),
@@ -127,7 +127,7 @@ void EmbeddedInterfaceIntersector::constructData(GhostType ghost_type) {
         break;
     }
   }
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -144,11 +144,11 @@ K::Segment_3 EmbeddedInterfaceIntersector::createSegment(const Vector<UInt> & co
     source = new K::Point_3(nodes(connectivity(0), 0), nodes(connectivity(0), 1), nodes(connectivity(0), 2));
     target = new K::Point_3(nodes(connectivity(1), 0), nodes(connectivity(1), 1), nodes(connectivity(1), 2));
   }
-  
+
   K::Segment_3 segment(*source, *target);
   delete source;
   delete target;
-  
+
   AKANTU_DEBUG_OUT();
   return segment;
 }

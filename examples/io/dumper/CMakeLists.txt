@@ -3,14 +3,16 @@
 #
 # @author Fabian Barras <fabian.barras@epfl.ch>
 #
-# @date creation: Fri Aug 14 2015
+# @date creation: Fri Sep 03 2010
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  CMakeLists for DumperIOHelper examples
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -28,24 +30,29 @@
 # @section DESCRIPTION
 #
 #===============================================================================
-add_mesh(swiss_train swiss_train.geo 2 1)
+
+add_mesh(swiss_train_mesh swiss_train.geo 2 1)
 
 add_library(locomotive_tools
   locomotive_tools.cc
   locomotive_tools.hh
   )
 
+target_include_directories(locomotive_tools PRIVATE ${AKANTU_INCLUDE_DIRS})
+
+if(AKANTU_EXTRA_CXX_FLAGS)
+  set_target_properties(locomotive_tools PROPERTIES COMPILE_FLAGS ${AKANTU_EXTRA_CXX_FLAGS})
+endif()
+
 register_example(dumper_low_level
-  dumper_low_level.cc
-  USE IOHelper
-  DEPENDS swiss_train locomotive_tools
-  DIRECTORIES_TO_CREATE paraview
+  SOURCES dumper_low_level.cc
+  USE_PACKAGES IOHelper
+  DEPENDS swiss_train_mesh locomotive_tools
   )
 
 register_example(dumpable_interface
-  dumpable_interface.cc
-  USE IOHelper
-  DEPENDS swiss_train locomotive_tools
-  DIRECTORIES_TO_CREATE paraview
+  SOURCES dumpable_interface.cc
+  USE_PACKAGES IOHelper
+  DEPENDS swiss_train_mesh locomotive_tools
   )
 

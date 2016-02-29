@@ -4,15 +4,16 @@
 # @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Thu Feb 17 2011
-# @date last modification: Tue Aug 19 2014
+# @date creation: Fri Oct 22 2010
+# @date last modification: Tue Jan 19 2016
 #
 # @brief  Set of macros used by akantu cmake files
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -34,6 +35,25 @@ function(set_third_party_shared_libirary_name _var _lib)
   set(${_var}
     ${PROJECT_BINARY_DIR}/third-party/lib/${CMAKE_SHARED_LIBRARY_PREFIX}${_lib}${CMAKE_SHARED_LIBRARY_SUFFIX}
     CACHE FILEPATH "" FORCE)
+endfunction()
+
+# ==============================================================================
+function(get_target_list_of_associated_files tgt files)
+  get_target_property(_type ${tgt} TYPE)
+  if(_type STREQUAL "SHARED_LIBRARY"
+      OR _type STREQUAL "STATIC_LIBRARY"
+      OR _type STREQUAL "MODULE_LIBRARY"
+      OR _type STREQUAL "EXECUTABLE")
+    get_target_property(_srcs ${tgt} SOURCES)
+    set(_dep_ressources)
+    foreach(_file ${_srcs})
+      list(APPEND _dep_ressources ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
+    endforeach()
+  else()
+    get_target_property(_dep_ressources ${tgt} RESSOURCES)
+  endif()
+
+  set(${files} ${_dep_ressources} PARENT_SCOPE)
 endfunction()
 
 #===============================================================================
@@ -92,15 +112,14 @@ endfunction()
 # Declare the options for the types and defines the approriate typedefs
 function(declare_akantu_types)
   include(CheckCXXCompilerFlag)
-  check_cxx_compiler_flag (-std=c++0x HAVE_CPP_0X)
-
+  check_cxx_compiler_flag (-std=c++11 HAVE_CPP_11)
   unset(_cpp_11_flag)
-  if(HAVE_CPP_0X)
-    set(_cpp_11_flag "-std=c++0x")
+  if(HAVE_CPP_11)
+    set(_cpp_11_flag "-std=c++11")
   else()
-    check_cxx_compiler_flag (-std=c++11 HAVE_CPP_11)
-    if(HAVE_CPP_11)
-      set(_cpp_11_flag "-std=c++11")
+    check_cxx_compiler_flag (-std=c++0x HAVE_CPP_0X)
+    if(HAVE_CPP_0X)
+      set(_cpp_11_flag "-std=c++0x")
     endif()
   endif()
 
@@ -342,4 +361,3 @@ function(CMAKE_PARSE_ARGUMENTS prefix _optionNames _singleArgNames _multiArgName
   endforeach(arg_name)
   set(${prefix}_UNPARSED_ARGUMENTS ${${prefix}_UNPARSED_ARGUMENTS} PARENT_SCOPE)
 endfunction(CMAKE_PARSE_ARGUMENTS _options _singleArgs _multiArgs)
-

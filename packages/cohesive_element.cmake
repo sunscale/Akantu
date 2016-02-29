@@ -1,18 +1,20 @@
 #===============================================================================
-# @file   20_cohesive_element.cmake
+# @file   cohesive_element.cmake
 #
-# @author Marco Vocialta <marco.vocialta@epfl.ch>
+# @author Mauro Corrado <mauro.corrado@epfl.ch>
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
+# @author Marco Vocialta <marco.vocialta@epfl.ch>
 #
 # @date creation: Tue Oct 16 2012
-# @date last modification: Tue Sep 02 2014
+# @date last modification: Tue Jan 12 2016
 #
 # @brief  package description for cohesive elements
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free

@@ -1,17 +1,18 @@
 #===============================================================================
-# @file   AkantuTestMacros.cmake
+# @file   AkantuTestsMacros.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date creation: Mon Oct 25 2010
-# @date last modification: Tue Jun 24 2014
+# @date creation: Fri Sep 03 2010
+# @date last modification: Fri Jan 22 2016
 #
 # @brief  macros for tests
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+# Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+# Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -26,6 +27,7 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
+#===============================================================================
 
 #[=======================================================================[.rst:
 #AkantuTestsMacros
@@ -113,9 +115,6 @@
 #]=======================================================================]
 
 set(AKANTU_DRIVER_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_test_driver.sh)
-configure_file(${AKANTU_CMAKE_DIR}/akantu_test_environement.sh.in
-  ${PROJECT_BINARY_DIR}/akantu_test_environement.sh
-  @ONLY)
 
 # ==============================================================================
 macro(add_test_tree dir)
@@ -124,7 +123,6 @@ macro(add_test_tree dir)
     include(CTest)
     mark_as_advanced(BUILD_TESTING)
 
-    set(AKANTU_TESTS_EXCLUDE_FILES "" CACHE INTERNAL "")
 
     set(_akantu_current_parent_test ${dir} CACHE INTERNAL "Current test folder" FORCE)
     set(_akantu_${dir}_tests_count 0 CACHE INTERNAL "" FORCE)
@@ -137,13 +135,15 @@ macro(add_test_tree dir)
     foreach(_dir ${_test_dirs})
       add_subdirectory(${_dir})
     endforeach()
-  else()
-    set(AKANTU_TESTS_EXCLUDE_FILES "${CMAKE_CURRENT_BINARY_DIR}/${dir}" CACHE INTERNAL "")
   endif()
 endmacro()
 
 # ==============================================================================
 function(add_akantu_test dir desc)
+  if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
+    return()
+  endif()
+
   set(_my_parent_dir ${_akantu_current_parent_test})
 
   # initialize variables
@@ -206,7 +206,7 @@ function(register_test test_name)
 
   cmake_parse_arguments(_register_test
     "UNSTABLE;PARALLEL"
-    "POSTPROCESS;SCRIPT"
+    "POSTPROCESS;SCRIPT;PARALLEL_LEVEL"
     "${multi_variables}"
     ${ARGN}
     )
@@ -252,11 +252,8 @@ function(register_test test_name)
     string(TOUPPER ${_akantu_current_parent_test} _u_parent)
 
     if(AKANTU_BUILD_${_u_parent} OR AKANTU_BUILD_ALL_TESTS)
-      set(_test_all_files)
-
       if(_compile_source)
-        message("COMPILE: ${test_name}")
-        # get the include directories for sources in activated directories
+         # get the include directories for sources in activated directories
         package_get_all_include_directories(
           AKANTU_LIBRARY_INCLUDE_DIRS
           )
@@ -269,31 +266,30 @@ function(register_test test_name)
 
         # set the proper includes to build most of the tests
         include_directories(
-          ${AKANTU_INCLUDE_DIRS}
-          ${AKANTU_EXTERNAL_LIB_INCLUDE_DIR}
+          ${PROJECT_BINARY_DIR}/src
+          ${AKANTU_LIBRARY_INCLUDE_DIRS}
+          ${AKANTU_EXTERNAL_INCLUDE_DIR}
           )
 
         # Register the executable to compile
         add_executable(${test_name} ${_compile_source})
         set_property(TARGET ${test_name}  APPEND
           PROPERTY INCLUDE_DIRECTORIES ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
-        target_link_libraries(${test_name} akantu ${AKANTU_EXTERNAL_LIBRARIES})
+        target_link_libraries(${test_name} akantu)
+
+        if(_register_test_DEPENDS)
+          add_dependencies(${test_name} ${_register_test_DEPENDS})
+        endif()
 
         # add the extra compilation options
         if(_register_test_COMPILE_OPTIONS)
           set_target_properties(${test_name}
             PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
         endif()
-
-        # add the different dependencies (meshes, local libraries, ...)
-        foreach(_dep ${_register_test_DEPENDS})
-          add_dependencies(${test_name} ${_dep})
-          get_target_property(_dep_in_ressources ${_dep} RESSOURCES)
-
-          if(_dep_in_ressources)
-            list(APPEND _test_all_files "${_dep_in_ressources}")
-          endif()
-        endforeach()
+        if(AKANTU_EXTRA_CXX_FLAGS)
+          set_target_properties(${test_name}
+            PROPERTIES COMPILE_FLAGS "${AKANTU_EXTRA_CXX_FLAGS}")
+        endif()
       else()
         if(_register_test_UNPARSED_ARGUMENTS AND NOT _register_test_SCRIPT)
           set(_register_test_SCRIPT ${_register_test_UNPARSED_ARGUMENTS})
@@ -304,7 +300,6 @@ function(register_test test_name)
       if(_register_test_FILES_TO_COPY)
         foreach(_file ${_register_test_FILES_TO_COPY})
           file(COPY "${_file}" DESTINATION .)
-          list(APPEND _test_all_files "${CMAKE_CURRENT_SOURCE_DIR}/${_file}")
         endforeach()
       endif()
 
@@ -319,35 +314,39 @@ function(register_test test_name)
         endforeach()
       endif()
 
-      # add the source files in the list of all files
-      foreach(_file ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS} ${_register_test_EXTRA_FILES})
-        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
-          list(APPEND _test_all_files "${CMAKE_CURRENT_SOURCE_DIR}/${_file}")
-        else()
-          message("The file \"${_file}\" registred by the test \"${test_name}\" does not exists")
-        endif()
-      endforeach()
-
-      set(_arguments -n "${test_name}")
       # register the test for ctest
+      set(_arguments -n "${test_name}")
       if(_register_test_SCRIPT)
         file(COPY ${_register_test_SCRIPT}
           FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
           DESTINATION .)
-        list(APPEND _test_all_files "${CMAKE_CURRENT_SOURCE_DIR}/${_register_test_SCRIPT}")
         list(APPEND _arguments -e "${_register_test_SCRIPT}")
       elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
         file(COPY ${test_name}.sh DESTINATION .)
-        list(APPEND _test_all_files "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
         list(APPEND _arguments -e "${test_name}.sh")
       else()
         list(APPEND _arguments -e "${test_name}")
       endif()
 
-      list(APPEND _arguments -E "${PROJECT_BINARY_DIR}/akantu_test_environement.sh")
+      list(APPEND _arguments -E "${PROJECT_BINARY_DIR}/akantu_environement.sh")
 
       if(_register_test_PARALLEL)
         list(APPEND _arguments -p "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}")
+        if(_register_test_PARALLEL_LEVEL)
+          set(_procs "${_register_test_PARALLEL_LEVEL}")
+        elseif(CMAKE_VERSION VERSION_GREATER "3.0")
+          include(ProcessorCount)
+          ProcessorCount(N)
+          while(N GREATER 1)
+            set(_procs "${N} ${_procs}")
+            math(EXPR N "${N} / 2")
+          endwhile()
+        endif()
+
+        if(NOT _procs)
+          set(_procs 2)
+        endif()
+        list(APPEND _arguments -N "${_procs}")
       endif()
 
       if(_register_test_POSTPROCESS)
@@ -362,21 +361,54 @@ function(register_test test_name)
 
       string(REPLACE ";" " " _command "${_arguments}")
 
-      add_test(NAME ${test_name}_run
-        COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments})
+      # register them test
+      add_test(NAME ${test_name}_run COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments})
 
       # add the executable as a dependency of the run
       set_tests_properties(${test_name}_run PROPERTIES DEPENDS ${test_name})
-
-      # clean the list of all files for this test and add them in the total list
-      set(_tmp ${AKANTU_TESTS_FILES})
-      foreach(_file ${_source_file})
-        get_filename_component(_full ${_file} ABSOLUTE)
-        file(RELATIVE_PATH __file ${PROJECT_SOURCE_DIR} ${_full})
-        list(APPEND _tmp "${__file}")
-        list(APPEND _pkg_tmp "${__file}")
-      endforeach()
-      set(AKANTU_TESTS_FILES ${_tmp} CACHE INTERNAL "")
     endif()
   endif()
+
+  set(_test_all_files)
+  # add the source files in the list of all files
+  foreach(_file ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS}
+      ${_register_test_EXTRA_FILES} ${_register_test_SOURCES} ${_register_test_SCRIPT}
+      ${_register_test_POSTPROCESS} ${_register_test_FILES_TO_COPY})
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
+      list(APPEND _test_all_files "${_file}")
+    else()
+      message("The file \"${_file}\" registred by the test \"${test_name}\" does not exists")
+    endif()
+  endforeach()
+
+  # add the different dependencies files (meshes, local libraries, ...)
+  foreach(_dep ${_register_test_DEPENDS})
+    get_target_list_of_associated_files(${_dep} _dep_ressources)
+    if(_dep_ressources)
+      list(APPEND _test_all_files "${_dep_ressources}")
+    endif()
+  endforeach()
+
+  # add estra files to the list of files referenced by a given test
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
+    list(APPEND _test_all_files "${test_name}.sh")
+  endif()
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.verified")
+    list(APPEND _test_all_files "${test_name}.verified")
+  endif()
+  if(_register_test_SCRIPT)
+    list(APPEND _test_all_files "${_register_test_SCRIPT}")
+  endif()
+
+  # clean the list of all files for this test and add them in the total list
+  foreach(_file ${_test_all_files})
+    get_filename_component(_full ${_file} ABSOLUTE)
+    file(RELATIVE_PATH __file ${PROJECT_SOURCE_DIR} ${_full})
+    list(APPEND _tmp "${__file}")
+  endforeach()
+
+  foreach(_pkg ${_register_test_PACKAGE})
+    package_get_name(${_pkg} _pkg_name)
+    _package_add_to_variable(TESTS_FILES ${_pkg_name} ${_tmp})
+  endforeach()
 endfunction()

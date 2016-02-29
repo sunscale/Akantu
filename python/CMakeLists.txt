@@ -3,14 +3,15 @@
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
 #
-# @date   Wed Jul 9 17:22:12 2014
+# @date creation: Fri Dec 12 2014
+# @date last modification: Mon Jan 18 2016
 #
 # @brief  CMake file for the python wrapping of akantu
 #
 # @section LICENSE
 #
-# Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -48,6 +49,7 @@ set(AKANTU_SWIG_MODULES swig/akantu.i)
 
 set(SWIG_REQURIED_VERISON 3.0)
 find_package(SWIG ${SWIG_REQURIED_VERISON})
+find_package(PythonInterp 2.7 REQUIRED)
 mark_as_advanced(SWIG_EXECUTABLE)
 
 package_get_all_include_directories(
@@ -59,7 +61,7 @@ package_get_all_external_informations(
   AKANTU_EXTERNAL_LIBRARIES
 )
 
-include_directories(
+set(_swig_include_dirs
   ${CMAKE_CURRENT_SOURCE_DIR}/swig
   ${AKANTU_LIBRARY_INCLUDE_DIRS}
   ${PROJECT_BINARY_DIR}/src
@@ -68,7 +70,7 @@ include_directories(
 
 include(CMakeParseArguments)
 
-function(swig_generate_dependencies _module _depedencies)
+function(swig_generate_dependencies _module _depedencies _depedencies_out)
   set(_dependencies_script "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/_swig_generate_dependencies.cmake")
   file(WRITE ${_dependencies_script} "
 set(_include_directories ${_include_directories})
@@ -117,7 +119,6 @@ file(APPEND \"\${_dependencies_file}\" \"
   )\")
 ")
 
-  get_directory_property(_include_directories INCLUDE_DIRECTORIES)
   get_filename_component(_module_absolute "${_module}" ABSOLUTE)
   get_filename_component(_module_we "${_module}" NAME_WE)
 
@@ -133,6 +134,8 @@ file(APPEND \"\${_dependencies_file}\" \"
     include(${_dependencies_file})
   endif()
 
+  set(${_depedencies_out} ${_swig_${_module_we}_depends} PARENT_SCOPE)
+
   add_custom_command(OUTPUT ${_dependencies_file}
     COMMAND ${CMAKE_COMMAND}
     -D_module=${_module_absolute}
@@ -147,7 +150,7 @@ file(APPEND \"\${_dependencies_file}\" \"
 endfunction()
 
 function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
-  cmake_parse_arguments(_swig_opt "" "OUTPUT_DIR" "EXTRA_FLAGS" ${ARGN})
+  cmake_parse_arguments(_swig_opt "" "OUTPUT_DIR;DEPENDENCIES" "EXTRA_FLAGS;INCLUDE_DIRECTORIES" ${ARGN})
 
   if(_swig_opt_OUTPUT_DIR)
     set(_output_dir ${_swig_opt_OUTPUT_DIR})
@@ -157,18 +160,22 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
 
   set(_swig_wrappers)
   get_directory_property(_include_directories INCLUDE_DIRECTORIES)
+  list(APPEND _include_directories ${_swig_opt_INCLUDE_DIRECTORIES})
   if(_include_directories)
     string(REPLACE ";" ";-I" _swig_include_directories "${_include_directories}")
   endif()
 
   foreach(_module ${_swig_opt_UNPARSED_ARGUMENTS})
-    swig_generate_dependencies(${_module} _module_dependencies)
+    swig_generate_dependencies(${_module} _module_dependencies _depends_out)
+    if(_swig_opt_DEPENDENCIES)
+      set(${_swig_opt_DEPENDENCIES} ${_depends_out} PARENT_SCOPE)
+    endif()
 
     get_filename_component(_module_absolute "${_module}" ABSOLUTE)
     get_filename_component(_module_path "${_module_absolute}" PATH)
     get_filename_component(_module_name "${_module}" NAME)
     get_filename_component(_module_we "${_module}" NAME_WE)
-    set(_wrapper "${_output_dir}/${_module_we}_wrapper.cc")
+    set(_wrapper "${_output_dir}/${_module_we}_wrapper.cpp")
     set(_extra_wrapper "${_output_dir}/${_module_we}.py")
     set(_extra_wrapper_bin "${CMAKE_CURRENT_BINARY_DIR}/${_module_we}.py")
 
@@ -218,26 +225,77 @@ endfunction()
 
 swig_generate_wrappers(akantu AKANTU_SWIG_WRAPPERS_CPP AKANTU_WRAPPERS_PYTHON
   ${AKANTU_SWIG_MODULES}
-  EXTRA_FLAGS ${AKANTU_SWIG_FLAGS})
+  EXTRA_FLAGS ${AKANTU_SWIG_FLAGS}
+  DEPENDENCIES _deps
+  INCLUDE_DIRECTORIES ${_swig_include_dirs})
 
 if(AKANTU_SWIG_WRAPPERS_CPP)
-  add_library(_akantu MODULE ${AKANTU_SWIG_WRAPPERS_CPP})
-  target_link_libraries(_akantu akantu)
+  string(REPLACE ";" "', '" _ext_files "${AKANTU_SWIG_WRAPPERS_CPP}")
+  string(REPLACE ";" "', '" _inc_dirs "${_swig_include_dirs}")
+  string(STRIP "${AKANTU_EXTRA_CXX_FLAGS}" _tmp_flags)
+  string(REGEX REPLACE " +" "', '" _flags "${_tmp_flags} -Wno-maybe-uninitialized")
 
-  set_target_properties(_akantu PROPERTIES PREFIX "")
+  if(CMAKE_VERBOSE_MAKEFILE)
+    set(_quiet)
+  else()
+    set(_quiet --quiet)
+  endif()
 
-  list(APPEND AKANTU_EXPORT_LIST _akantu)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/setup.py "
+from distutils.core import setup
+from distutils.core import setup, Extension
+import os
 
-  install(TARGETS _akantu
-    EXPORT ${AKANTU_TARGETS_EXPORT}
-    LIBRARY DESTINATION lib COMPONENT python NAMELINK_SKIP # for real systems
-    ARCHIVE DESTINATION lib COMPONENT python
-    RUNTIME DESTINATION bin COMPONENT python # for windows ...
+
+os.environ['CC'] = '${CMAKE_CXX_COMPILER}'
+os.environ['CXX'] = '${CMAKE_CXX_COMPILER}'
+setup(name='akantu',
+      license='LGPLv3',
+      version='${AKANTU_VERSION}',
+      py_modules=['akantu'],
+      ext_modules=[Extension('_akantu', ['${_ext_files}'],
+                             include_dirs=['${_inc_dirs}'],
+                             language='c++',
+                             libraries=['akantu'],
+                             library_dirs=['${PROJECT_BINARY_DIR}/src'],
+                             extra_compile_args=['${_flags}'])],
+      )
+")
+
+  add_custom_target(_akantu ALL
+    COMMAND ${PYTHON_EXECUTABLE} ./setup.py ${_quiet} --no-user-cfg build_ext --inplace
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${AKANTU_SWIG_WRAPPERS_CPP} akantu
+    COMMENT "Building akantu's python interface"
     )
 
-  install(FILES ${AKANTU_WRAPPERS_PYTHON}
-    DESTINATION lib COMPONENT python
-    )
+  set_directory_properties(PROPERTIES
+    ADDITIONAL_MAKE_CLEAN_FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/_akantu${CMAKE_SHARED_MODULE_SUFFIX})
 
+  # add_library(_akantu MODULE ${AKANTU_SWIG_WRAPPERS_CPP})
+  # target_link_libraries(_akantu akantu)
+
+  # set_target_properties(_akantu PROPERTIES PREFIX "")
+
+  # list(APPEND AKANTU_EXPORT_LIST _akantu)
+
+  # install(TARGETS _akantu
+  #   EXPORT ${AKANTU_TARGETS_EXPORT}
+  #   LIBRARY DESTINATION lib COMPONENT python NAMELINK_SKIP # for real systems
+  #   ARCHIVE DESTINATION lib COMPONENT python
+  #   RUNTIME DESTINATION bin COMPONENT python # for windows ...
+  #   )
+
+  # install(FILES ${AKANTU_WRAPPERS_PYTHON}
+  #   DESTINATION lib COMPONENT python
+  #   )
+
+  install(CODE "execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} ./setup.py ${_quiet} install --prefix=${AKANTU_PYTHON_INSTALL_PREFIX}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )"
+    COMPONENT python)
+
+  package_declare_extra_files_to_package(python_interface ${_deps} ${PROJECT_SOURCE_DIR}/python/${AKANTU_SWIG_MODULES})
 endif()
-

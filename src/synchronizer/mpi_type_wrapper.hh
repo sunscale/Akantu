@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Tue Oct 29 2013
- * @date last modification: Tue Oct 29 2013
+ * @date creation: Mon Jun 14 2010
+ * @date last modification: Wed Oct 07 2015
  *
  * @brief  Wrapper on MPI types to have a better separation between libraries
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

@@ -3,14 +3,15 @@
  *
  * @author Fabian Barras <fabian.barras@epfl.ch>
  *
- * @date   Mon Aug 17 14:23:22 2015
+ * @date creation: Mon Aug 17 2015
+ * @date last modification: Mon Jan 18 2016
  *
  * @brief  Common functions for the dumper examples
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -28,8 +29,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_array.hh"
 #include "mesh.hh"
-#include "aka_types.hh"
+/* -------------------------------------------------------------------------- */
+#include "locomotive_tools.hh"
+/* -------------------------------------------------------------------------- */
+
 
 using namespace akantu;
 
@@ -55,10 +60,12 @@ void applyRotation(const Vector<Real> & center, Real angle,
     pos_rel -= center;
     Real radius = pos_rel.norm();
 
-    if (std::abs(radius) < Math::getTolerance()) continue;
+    if (std::abs(radius) < Math::getTolerance())
+      continue;
 
     Real phi_i = std::acos(pos_rel(_x) / radius);
-    if (pos_rel(_y) < 0) phi_i *= -1;
+    if (pos_rel(_y) < 0)
+      phi_i *= -1;
 
     dis(_x) = std::cos(phi_i - angle) * radius - pos_rel(_x);
     dis(_y) = std::sin(phi_i - angle) * radius - pos_rel(_y);
@@ -66,8 +73,7 @@ void applyRotation(const Vector<Real> & center, Real angle,
 }
 
 /* -------------------------------------------------------------------------- */
-void fillColour(const Mesh & mesh,
-                ElementTypeMapArray<UInt> & colour) {
+void fillColour(const Mesh & mesh, ElementTypeMapArray<UInt> & colour) {
   const ElementTypeMapArray<std::string> & phys_data =
       mesh.getData<std::string>("physical_names");
   const Array<std::string> & txt_colour = phys_data(_triangle_3);

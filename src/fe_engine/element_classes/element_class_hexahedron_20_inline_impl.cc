@@ -1,17 +1,19 @@
 /**
  * @file   element_class_hexahedron_20_inline_impl.cc
  *
+ * @author Mauro Corrado <mauro.corrado@epfl.ch>
  * @author Sacha Laffely <sacha.laffely@epfl.ch>
  * @author Damien Scantamburlo <damien.scantamburlo@epfl.ch>
  *
- * @date creation: Wed Mar 19 2015
+ * @date creation: Tue Mar 31 2015
+ * @date last modification: Thu Jul 16 2015
  *
  * @brief  Specialization of the element_class class for the type _hexahedron_20
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (Â©) 2015 EPFL (Ecole Polytechnique FÃ©dÃ©rale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en MÃ©canique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -29,7 +31,6 @@
  * @section DESCRIPTION
  *
  * @verbatim
-
                                    \y
                          \z       /
                          |       /
@@ -48,8 +49,6 @@
              | /              | /
              |/               |/
              0--------8-------1
-
-
        x   y    z
 * N0  -1  -1   -1
 * N1   1  -1   -1
@@ -71,9 +70,7 @@
 * N17  1   0    1
 * N18  0   1    1
 * N19 -1   0    1
-
-*/
-
+ */
 
 /* -------------------------------------------------------------------------- */
 AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_hexahedron_20,

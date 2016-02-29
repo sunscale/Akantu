@@ -1,19 +1,21 @@
 /**
  * @file   mesh_io_diana.cc
  *
+ * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author David Simon Kammer <david.kammer@epfl.ch>
- * @author Alodie Schneuwly <alodie.schneuwly@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Alodie Schneuwly <alodie.schneuwly@epfl.ch>
  *
  * @date creation: Sat Mar 26 2011
- * @date last modification: Thu Mar 27 2014
+ * @date last modification: Thu Jan 21 2016
  *
  * @brief  handles diana meshes
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -380,7 +382,7 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
       read_order = _read_order[akantu_type];
     }
 
-    UInt local_connect[node_per_element];
+    UInt * local_connect = new UInt[node_per_element];
 
     // used if element is written on two lines
     UInt j_last;
@@ -426,6 +428,8 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
 
     diana_element_number_to_elements[index] = elem;
     akantu_number_to_diana_number[elem] = index;
+
+    delete [] local_connect;
   }
 
   AKANTU_DEBUG_OUT();

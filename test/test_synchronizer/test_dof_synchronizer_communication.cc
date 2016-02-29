@@ -1,14 +1,16 @@
 /**
  * @file   test_dof_synchronizer_communication.cc
- * @author Aurelia Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @date   Thu Nov 20 13:40:33 2014
+ *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ *
+ * @date creation: Tue Dec 09 2014
  *
  * @brief  test to synchronize global equation numbers
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

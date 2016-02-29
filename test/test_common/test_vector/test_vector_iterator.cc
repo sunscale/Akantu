@@ -3,15 +3,16 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Mon Jul 30 2012
- * @date last modification: Fri Mar 21 2014
+ * @date creation: Tue Jun 29 2010
+ * @date last modification: Sun Oct 19 2014
  *
  * @brief  test the iterator present in the vector class
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -42,7 +43,7 @@ using namespace akantu;
 
 #define N 10
 
-int main(int argc, char *argv[]) {
+int main() {
   typedef Array<double> RealArray;
 
   std::cout << "Creating a vector of matrices (2,2)" << std::endl;

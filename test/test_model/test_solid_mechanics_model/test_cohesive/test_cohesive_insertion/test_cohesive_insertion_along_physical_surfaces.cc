@@ -1,14 +1,16 @@
 /**
  * @file   test_cohesive_insertion_along_physical_surfaces.cc
- * @author Fabian Barras <fabian.barras@epfl.ch>
- * @date   Fri Aug  7 09:07:44 2015
  *
- * @brief Test intrinsic insertion of cohesive elements along physical surfaces 
+ * @author Fabian Barras <fabian.barras@epfl.ch>
+ *
+ * @date creation: Fri Aug 07 2015
+ *
+ * @brief  Test intrinsic insertion of cohesive elements along physical surfaces
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

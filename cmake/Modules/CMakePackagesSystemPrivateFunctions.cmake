@@ -1,14 +1,17 @@
 #===============================================================================
-# @file   CMakePackagesSystem.cmake
+# @file   CMakePackagesSystemPrivateFunctions.cmake
 #
 # @author Nicolas Richart <nicolas.richart@epfl.ch>
+#
+# @date creation: Sat Jul 18 2015
+# @date last modification: Wed Jan 20 2016
 #
 # @brief  Set of macros used by the package system, internal functions
 #
 # @section LICENSE
 #
-# Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+# (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
 # Akantu is free  software: you can redistribute it and/or  modify it under the
 # terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -237,13 +240,18 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Compilation flags
 # ------------------------------------------------------------------------------
-function(_package_set_compile_flags pkg_name)
-  _package_set_variable(COMPILE_FLAGS ${pkg_name} ${ARGN})
+function(_package_set_compile_flags pkg_name lang)
+  _package_set_variable(COMPILE_${lang}_FLAGS ${pkg_name} ${ARGN})
 endfunction()
 
-function(_package_get_compile_flags pkg_name flags)
-  _package_get_variable(COMPILE_FLAGS ${pkg_name} _flags)
-  set(${flags} ${_flags} PARENT_SCOPE)
+function(_package_unset_compile_flags pkg_name lang)
+  _package_variable_unset(COMPILE_${lang}_FLAGS ${pkg_name})
+endfunction()
+
+function(_package_get_compile_flags pkg_name lang flags)
+  _package_get_variable(COMPILE_${lang}_FLAGS ${pkg_name} _tmp_flags)
+  string(REPLACE ";" " " _flags "${_tmp_flags}")
+  set(${flags} "${_flags}" PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -420,6 +428,21 @@ endfunction()
 
 function(_package_remove_fdependency pkg_name fdep)
   _package_remove_from_variable(FDEPENDENCIES ${pkg_name} ${fdep})
+endfunction()
+
+# ------------------------------------------------------------------------------
+# Exteral package system as apt rpm dependencies
+# ------------------------------------------------------------------------------
+function(_package_set_package_system_dependency pkg system)
+  string(TOUPPER "${_system}" _u_system)
+  _package_set_variable(PACKAGE_SYSTEM_${_u_system} ${_pkg_name} ${ARGN})
+endfunction()
+
+
+function(_package_get_package_system_dependency pkg system var)
+  string(TOUPPER "${_system}" _u_system)
+  _package_get_variable(PACKAGE_SYSTEM_${_u_system} ${_pkg_name} ${_deps})
+  set(${var} ${_deps} PARENT_SCOPE)
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -632,7 +655,8 @@ function(_package_load_dependencies_package pkg_name loading_list)
   endforeach()
 
   # get the compile flags
-  _package_get_compile_flags(${pkg_name} _pkg_comile_flags)
+  _package_get_compile_flags(${pkg_name} CXX _pkg_compile_flags)
+  package_get_project_variable(NO_AUTO_COMPILE_FLAGS _no_auto_compile_flags)
 
   # if package option is on add it in the list
   if(${_pkg_option_name})
@@ -644,13 +668,13 @@ function(_package_load_dependencies_package pkg_name loading_list)
     endif()
 
     #add the comilation flags if needed
-    if(_pkg_comile_flags)
-      add_flags(cxx ${_pkg_comile_flags})
+    if(_pkg_compile_flags AND NOT _no_auto_compile_flags)
+      add_flags(cxx ${_pkg_compile_flags})
     endif()
   else()
     #remove the comilation flags if needed
-    if(_pkg_comile_flags)
-      remove_flags(cxx ${_pkg_comile_flags})
+    if(_pkg_comile_flags AND NOT _no_auto_compile_flags)
+      remove_flags(cxx ${_pkg_compile_flags})
     endif()
   endif()
 endfunction()

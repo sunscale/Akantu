@@ -3,14 +3,16 @@
  *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
  *
- * @date   Wed Jun 13 11:29:49 2012
+ * @date creation: Tue May 08 2012
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  Test for cohesive elements
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
+ * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
+ * Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free

@@ -5,13 +5,13 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Thu Mar 27 2014
- * @date last modification: Thu Jun 05 2014
+ * @date last modification: Thu Oct 15 2015
  *
  * @brief  test the lumping of the mass matrix
  *
  * @section LICENSE
  *
- * Copyright (©) 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
