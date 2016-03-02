@@ -134,7 +134,7 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
   if (penetration) {
     if (this->recompute && reduction_penalty){
       /// the penalty parameter is locally reduced
-      current_penalty = this->penalty / 1000.;
+      current_penalty = this->penalty / 100.;
     }
     else
       current_penalty = this->penalty;
@@ -237,7 +237,7 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
 
   if (penetration){
     if (recompute && reduction_penalty)
-      current_penalty = this->penalty / 1000.;
+      current_penalty = this->penalty / 100.;
     else
       current_penalty = this->penalty;
 

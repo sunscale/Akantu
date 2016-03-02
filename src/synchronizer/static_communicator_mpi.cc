@@ -85,6 +85,7 @@ StaticCommunicatorMPI::StaticCommunicatorMPI(int & argc, char **& argv)
 StaticCommunicatorMPI::~StaticCommunicatorMPI() {
   if (!this->is_externaly_initialized) {
     MPI_Finalize();
+    delete this->mpi_data;
   }
 }
 
