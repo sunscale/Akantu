@@ -62,6 +62,8 @@ package_declare_sources(igfem
   material_igfem/material_igfem_saw_tooth_damage.hh
   material_igfem/material_igfem_saw_tooth_damage.cc
   material_igfem/material_igfem_saw_tooth_damage_inline_impl.cc
+  material_igfem/material_igfem_iterative_stiffness_reduction.hh
+  material_igfem/material_igfem_iterative_stiffness_reduction.cc
 
   material_igfem/igfem_internal_field.hh
   material_igfem/igfem_internal_field_tmpl.hh

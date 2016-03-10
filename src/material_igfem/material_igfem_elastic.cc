@@ -57,7 +57,7 @@ void MaterialIGFEMElastic<dim>::initMaterial() {
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialIGFEMElastic<spatial_dimension>::updateElasticInternals(const Array<Element> & element_list) {
-  const Mesh & mesh = this->model->getMesh();
+
   /// compute the Lamé constants for both sub-materials
   Vector<Real> lambda_per_sub_mat(this->nb_sub_materials);
   Vector<Real> mu_per_sub_mat(this->nb_sub_materials);
@@ -86,7 +86,7 @@ void MaterialIGFEMElastic<spatial_dimension>::updateElasticInternals(const Array
       else
 	AKANTU_DEBUG_ERROR("There is currently no other IGFEM type implemented");
   
-      UInt nb_element = mesh.getNbElement(el_type, ghost_type);
+      UInt nb_element = this->element_filter(el_type, ghost_type).getSize();
       UInt nb_quads = this->fem->getNbIntegrationPoints(el_type);
       /// get pointer to internals for given type
       Real * lambda_ptr = this->lambda(el_type, ghost_type).storage();

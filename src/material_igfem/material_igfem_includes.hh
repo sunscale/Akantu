@@ -18,8 +18,10 @@
 #include "material_igfem.hh"
 #include "material_igfem_elastic.hh"
 #include "material_igfem_saw_tooth_damage.hh"
+#include "material_igfem_iterative_stiffness_reduction.hh"
 #endif
 
 #define AKANTU_IGFEM_MATERIAL_LIST					\
   ((2, (igfem_elastic, MaterialIGFEMElastic )))				\
-  ((2, (igfem_saw_tooth_damage, MaterialIGFEMSawToothDamage)))
+  ((2, (igfem_saw_tooth_damage, MaterialIGFEMSawToothDamage)))		\
+  ((2, (igfem_iterative_stiffness_reduction, MaterialIGFEMIterativeStiffnessReduction)))
