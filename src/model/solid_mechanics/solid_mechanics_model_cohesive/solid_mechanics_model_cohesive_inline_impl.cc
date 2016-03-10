@@ -299,11 +299,11 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
     this->velocity    ->copy(*velocity_tmp);
     this->acceleration->copy(*acceleration_tmp);
 
-    delete displacement_tmp;
-    delete velocity_tmp;
-    delete acceleration_tmp;
-
   }
+
+  delete displacement_tmp;
+  delete velocity_tmp;
+  delete acceleration_tmp;
 
   return insertion_new_element;
 

@@ -36,13 +36,21 @@
 __BEGIN_AKANTU__
 
 UInt GlobalIdsUpdater::updateGlobalIDs(UInt old_nb_nodes) {
-  UInt total_nb_new_nodes = MeshUtils::updateLocalMasterGlobalConnectivity(mesh, old_nb_nodes);
+  UInt total_nb_new_nodes = this->updateGlobalIDsLocally(old_nb_nodes);
 
-  synchronizer->computeBufferSize(*this, _gst_giu_global_conn);
-  synchronizer->asynchronousSynchronize(*this, _gst_giu_global_conn);
-  synchronizer->waitEndSynchronize(*this, _gst_giu_global_conn);
-
+  this->synchronizeGlobalIDs();
   return total_nb_new_nodes;
+}
+
+UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt old_nb_nodes) {
+  UInt total_nb_new_nodes = MeshUtils::updateLocalMasterGlobalConnectivity(mesh, old_nb_nodes);
+  return total_nb_new_nodes;
+}
+
+void GlobalIdsUpdater::synchronizeGlobalIDs() {
+  this->synchronizer->computeBufferSize(*this, _gst_giu_global_conn);
+  this->synchronizer->asynchronousSynchronize(*this, _gst_giu_global_conn);
+  this->synchronizer->waitEndSynchronize(*this, _gst_giu_global_conn);
 }
 
 __END_AKANTU__

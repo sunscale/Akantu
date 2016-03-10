@@ -93,12 +93,11 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
 
   /// compute normal and tangential opening vectors
   normal_opening_norm = opening.dot(normal);
-  
   normal_opening  = normal;
   normal_opening *= normal_opening_norm;
+
   tangential_opening  = opening;
   tangential_opening -= normal_opening;
-
   tangential_opening_norm = tangential_opening.norm();
 
   /**
@@ -108,7 +107,7 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
    */
   Real delta = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
-  penetration = normal_opening_norm < -Math::getTolerance();
+  penetration = normal_opening_norm < 0.0;
   if (this->contact_after_breaking == false && Math::are_float_equal(damage, 1.))
     penetration = false;
 
@@ -127,14 +126,14 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
   opening_prec = opening;
 
   if (!this->model->isExplicit() && !this->recompute)
-    if ((normal_opening_prec_norm * normal_opening_norm) < 0) {
+    if ((normal_opening_prec_norm * normal_opening_norm) < 0.0) {
       reduction_penalty = true;
     }
 
   if (penetration) {
     if (this->recompute && reduction_penalty){
       /// the penalty parameter is locally reduced
-      current_penalty = this->penalty / 1000.;
+      current_penalty = this->penalty / 100.;
     }
     else
       current_penalty = this->penalty;
@@ -208,10 +207,12 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
     Real & current_penalty,
     Vector<Real> & contact_opening) {
 
-  /// During the update of the residual the interpenetrations are
-  /// stored in the array "contact_opening", therefore, in the case
-  /// of penetration, in the array "opening" there are only the
-  /// tangential components.
+  /**
+   * During the update of the residual the interpenetrations are
+   * stored in the array "contact_opening", therefore, in the case
+   * of penetration, in the array "opening" there are only the
+   * tangential components.
+   */
   opening += contact_opening;
 
   /// compute normal and tangential opening vectors
@@ -221,23 +222,23 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
 
   tangential_opening = opening;
   tangential_opening -= normal_opening;
-
   tangential_opening_norm = tangential_opening.norm();
-  penetration = normal_opening_norm < -Math::getTolerance();
+
+  Real delta = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
+
+  penetration = normal_opening_norm < 0.0;
   if (contact_after_breaking == false && Math::are_float_equal(damage, 1.))
     penetration = false;
 
   Real derivative = 0; // derivative = d(t/delta)/ddelta
   Real t = 0;
 
-  Real delta = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
-
   Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
   n_outer_n.outerProduct(normal, normal);
 
   if (penetration){
-    if (recompute && reduction_penalty)
-      current_penalty = this->penalty / 1000.;
+    if (this->recompute && reduction_penalty)
+      current_penalty = this->penalty / 100.;
     else
       current_penalty = this->penalty;
 
@@ -257,10 +258,12 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
 
   delta = std::sqrt(delta);
 
-  /// Delta has to be different from 0 to have finite values of
-  /// tangential stiffness.  At the element insertion, delta =
-  /// 0. Therefore, a fictictious value is defined, for the
-  /// evaluation of the first value of K.
+  /**
+   * Delta has to be different from 0 to have finite values of
+   * tangential stiffness.  At the element insertion, delta =
+   * 0. Therefore, a fictictious value is defined, for the
+   * evaluation of the first value of K.
+   */
   if (delta < Math::getTolerance())
     delta = (delta_c)/1000.;
 
@@ -302,8 +305,16 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
   prov *= derivative/delta;
   prov += nn;
 
+//  Matrix<Real> tmp(spatial_dimension, spatial_dimension);
+//  for (UInt i = 0; i < spatial_dimension; ++i) {
+//    for (UInt j = 0; j < spatial_dimension; ++j) {
+//      tmp(j,i) = prov(i,j);
+//    }
+//  }
+
   Matrix<Real> prov_t = prov.transpose();
   tangent += prov_t;
+  //    tangent += tmp;
 }
 
 /* -------------------------------------------------------------------------- */

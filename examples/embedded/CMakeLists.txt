@@ -30,7 +30,7 @@
 #
 #===============================================================================
 
-add_mesh(concrete_mesh concrete.geo 2 1)
+add_mesh(concrete_mesh concrete.geo 2 2)
 add_mesh(reinforcement_mesh reinforcement.geo 1 1)
 
 register_example(embedded embedded.cc

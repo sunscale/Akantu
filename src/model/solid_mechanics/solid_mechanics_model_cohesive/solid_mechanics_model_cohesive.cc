@@ -178,7 +178,8 @@ void SolidMechanicsModelCohesive::initMaterials() {
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
     if (facet_synchronizer != NULL)
-      inserter->initParallel(facet_synchronizer, synch_parallel);
+      inserter->initParallel(facet_synchronizer, cohesive_distributed_synchronizer);
+    //      inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
     initAutomaticInsertion();
   } else {
@@ -208,7 +209,8 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (facet_synchronizer != NULL)
-    inserter->initParallel(facet_synchronizer, synch_parallel);
+    inserter->initParallel(facet_synchronizer, cohesive_distributed_synchronizer);
+  //    inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
   std::istringstream split(cohesive_surfaces);
   std::string physname;
@@ -258,7 +260,8 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
   }
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (facet_synchronizer != NULL)
-    inserter->initParallel(facet_synchronizer, synch_parallel);
+    inserter->initParallel(facet_synchronizer, cohesive_distributed_synchronizer);
+  //    inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
 
   SolidMechanicsModel::initMaterials();
@@ -595,7 +598,13 @@ UInt SolidMechanicsModelCohesive::checkCohesiveStress() {
   synch_registry->synchronize(_gst_smmc_facets);
 
   /// insert cohesive elements
-  return inserter->insertElements();
+  UInt nb_new_elements = inserter->insertElements();
+
+  if (nb_new_elements > 0) {
+    this->reinitializeSolver();
+  }
+
+  return nb_new_elements;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -620,6 +629,10 @@ void SolidMechanicsModelCohesive::onElementsAdded(
 
   if (is_extrinsic)
     resizeFacetStress();
+  
+///  if (method != _explicit_lumped_mass) {
+///    this->initSolver();
+///  }
 
   AKANTU_DEBUG_OUT();
 }
