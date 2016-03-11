@@ -29,7 +29,7 @@
 #
 #===============================================================================
 
-function(package_is_activated pgk activated)
+function(package_is_activated pkg activated)
   string(TOUPPER ${pkg} _u_pkg)
   set(activated ${AKANTU_HAS_${_u_pkg}} PARENT_SCOPE)
 endfunction()
