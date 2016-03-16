@@ -228,8 +228,8 @@ ShapeLagrange<kind>::ShapeLagrange(const Mesh & mesh,
 				   const ID & id,
 				   const MemoryID & memory_id) :
   ShapeFunctions(mesh, id, memory_id),
-  shapes("shapes_generic", id),
-  shapes_derivatives("shapes_derivatives_generic", id) {
+  shapes("shapes_generic", id, memory_id),
+  shapes_derivatives("shapes_derivatives_generic", id, memory_id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();

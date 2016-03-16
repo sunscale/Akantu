@@ -1358,8 +1358,7 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
   if (el_begin == el_end)
     return;
 
-  ElementTypeMapArray<UInt> material_local_new_numbering(
-      "remove mat filter elem", getID());
+  ElementTypeMapArray<UInt> material_local_new_numbering("remove mat filter elem", getID(), getMemoryID());
 
   Element element;
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
@@ -1463,8 +1462,7 @@ void Material::onElementsRemoved(
     __attribute__((unused)) const RemovedElementsEvent & event) {
   UInt my_num = model->getInternalIndexFromID(getID());
 
-  ElementTypeMapArray<UInt> material_local_new_numbering(
-      "remove mat filter elem", getID());
+  ElementTypeMapArray<UInt> material_local_new_numbering("remove mat filter elem", getID(), getMemoryID());
 
   Array<Element>::const_iterator<Element> el_begin = element_list.begin();
   Array<Element>::const_iterator<Element> el_end = element_list.end();

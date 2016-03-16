@@ -229,6 +229,9 @@ public:
   /// get the id of the mesh
   AKANTU_GET_MACRO(ID, Memory::id, const ID &);
 
+  /// get the id of the mesh
+  AKANTU_GET_MACRO(MemoryID, Memory::memory_id, const MemoryID &);
+
   /// get the spatial dimension of the mesh = number of component of the coordinates
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
 

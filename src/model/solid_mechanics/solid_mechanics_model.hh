@@ -1,4 +1,4 @@
-/**
+n/**
  * @file   solid_mechanics_model.hh
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
@@ -334,6 +334,10 @@ protected:
   /// set the element_id_by_material and add the elements to the good materials
   void
   assignMaterialToElements(const ElementTypeMapArray<UInt> * filter = NULL);
+
+  /// reinitialize dof_synchronizer and solver (either in implicit or
+  /// explicit) when cohesive elements are inserted
+  void reinitializeSolver();
 
   /* ------------------------------------------------------------------------ */
   /* Mass (solid_mechanics_model_mass.cc)                                     */

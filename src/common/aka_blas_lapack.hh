@@ -76,7 +76,7 @@ __BEGIN_AKANTU__
 #  if GCC_VERSION > 40600
 #    pragma GCC diagnostic push
 #  endif
-#  pragma GCC diagnostic ignored "-Wunused"
+#  pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 
 /// Wrapper around the S/DDOT BLAS function that returns the dot product of two vectors
@@ -248,7 +248,7 @@ inline void aka_getrs(char *trans, int * n, int * nrhs,
 #  if GCC_VERSION > 40600
 #    pragma GCC diagnostic pop
 #  else
-#    pragma GCC diagnostic warning "-Wunused"
+#    pragma GCC diagnostic warning "-Wunused-parameter"
 #  endif
 #endif
 

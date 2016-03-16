@@ -98,7 +98,8 @@ class Synchronizer : protected Memory {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Synchronizer(SynchronizerID id = "synchronizer", MemoryID memory_id = 0);
+  Synchronizer(SynchronizerID id = "synchronizer", MemoryID memory_id = 0,
+	       StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
   virtual ~Synchronizer(){};
 

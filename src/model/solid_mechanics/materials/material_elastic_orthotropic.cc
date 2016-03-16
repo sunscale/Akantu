@@ -175,7 +175,7 @@ void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergy(Eleme
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergyByElement(ElementType type, UInt index,
-                                                                         Vector<Real> & epot_on_quad_points) {
+										    Vector<Real> & epot_on_quad_points) {
 
   AKANTU_DEBUG_ASSERT(!this->finite_deformation,"finite deformation not possible in material orthotropic (TO BE IMPLEMENTED)");
 

@@ -59,6 +59,7 @@ register_test(test_dof_synchronizer
   SOURCES test_dof_synchronizer.cc test_data_accessor.hh
   FILES_TO_COPY bar.msh
   PACKAGE parallel
+  PARALLEL
   )
 
 register_test(test_dof_synchronizer_communication

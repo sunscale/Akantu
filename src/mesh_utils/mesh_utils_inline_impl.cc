@@ -51,11 +51,24 @@ inline bool MeshUtils::hasElement(const Array<UInt> & connectivity,
 }
 
 /* -------------------------------------------------------------------------- */
+
+// Deactivating -Wunused-parameter
+#if defined(__INTEL_COMPILER)
+//#pragma warning ( disable : 383 )
+#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
+#elif (defined(__GNUC__) || defined(__GNUG__))
+#  define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#  if GCC_VERSION > 40600
+#    pragma GCC diagnostic push
+#  endif
+#  pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
 inline void MeshUtils::updateElementalConnectivity(Mesh & mesh,
-						   UInt old_node,
-						   UInt new_node,
-						   const std::vector<Element> & element_list,
-						   const std::vector<Element> * facet_list) {
+                                                   UInt old_node,
+                                                   UInt new_node,
+                                                   const std::vector<Element> & element_list,
+                                                   const std::vector<Element> * facet_list) {
   AKANTU_DEBUG_IN();
 
   ElementType el_type = _not_defined;
@@ -133,6 +146,18 @@ inline void MeshUtils::updateElementalConnectivity(Mesh & mesh,
 
   AKANTU_DEBUG_OUT();
 }
+
+// Reactivating -Wunused-parameter
+#if defined(__INTEL_COMPILER)
+//#pragma warning ( disable : 383 )
+#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
+#elif defined(__GNUG__)
+#  if GCC_VERSION > 40600
+#    pragma GCC diagnostic pop
+#  else
+#    pragma GCC diagnostic warning "-Wunused-parameter"
+#  endif
+#endif
 
 /* -------------------------------------------------------------------------- */
 inline bool MeshUtils::removeElementsInVector(const std::vector<Element> & elem_to_remove,

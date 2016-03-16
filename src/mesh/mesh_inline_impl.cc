@@ -47,9 +47,9 @@ inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh)
     : new_numbering(mesh.getNbNodes(), 1, "new_numbering") {}
 
 /* -------------------------------------------------------------------------- */
-inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh,
-                                                  ID new_numbering_id)
-    : new_numbering(new_numbering_id, mesh.getID()) {}
+inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh, ID new_numbering_id) :
+  new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {
+}
 
 /* -------------------------------------------------------------------------- */
 template <>
@@ -344,6 +344,9 @@ inline UInt Mesh::getNbElement(const ElementType & type,
 inline UInt Mesh::getNbElement(const UInt spatial_dimension,
                                const GhostType & ghost_type,
                                const ElementKind & kind) const {
+  AKANTU_DEBUG_ASSERT(spatial_dimension <= 3,
+                      "spatial_dimension is " << spatial_dimension
+                      << " and is greater than 3 !");
   UInt nb_element = 0;
 
   type_iterator it = firstType(spatial_dimension, ghost_type, kind);

@@ -104,7 +104,11 @@ protected:
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   /// update nodes type and global ids for parallel simulations
+  /// (locally, within each processor)
   UInt updateGlobalIDs(NewNodesEvent & node_event);
+
+  /// synchronize the global ids among the processors in parallel simulations
+  void synchronizeGlobalIDs(NewNodesEvent & node_event);
 
   /// update nodes type
   void updateNodesType(Mesh & mesh, NewNodesEvent & node_event);

@@ -58,7 +58,7 @@ template <> const UInt VoigtHelper<3>::vec[][2] = {{0, 0},
                                                    {2, 0},
                                                    {1, 0}};
 template <> const Real VoigtHelper<1>::factors[] = {1.};
-template <> const Real VoigtHelper<2>::factors[] = {1., 1., 1., 2.};
+template <> const Real VoigtHelper<2>::factors[] = {1., 1., 2.};
 template <> const Real VoigtHelper<3>::factors[] = {1., 1., 1.,
                                                     2., 2., 2.};
 

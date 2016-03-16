@@ -57,11 +57,15 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-DistributedSynchronizer::DistributedSynchronizer(
-    Mesh & mesh, SynchronizerID id, MemoryID memory_id,
-    const bool register_to_event_manager)
-    : Synchronizer(id, memory_id), mesh(mesh),
-      prank_to_element("prank_to_element", id) {
+DistributedSynchronizer::DistributedSynchronizer(Mesh & mesh,
+						 SynchronizerID id,
+						 MemoryID memory_id,
+						 const bool register_to_event_manager) :
+  Synchronizer(id, memory_id),
+  mesh(mesh),
+  prank_to_element("prank_to_element", id, memory_id)
+{
+
   AKANTU_DEBUG_IN();
 
   nb_proc = static_communicator->getNbProc();
@@ -358,20 +362,13 @@ void DistributedSynchronizer::waitEndSynchronize(DataAccessor & data_accessor,
                              barycenter_loc.storage(), element.ghost_type);
           Vector<Real> barycenter(spatial_dimension);
           buffer >> barycenter;
-          Real tolerance = Math::getTolerance();
-          Real bary_norm = barycenter.norm();
           for (UInt i = 0; i < spatial_dimension; ++i) {
-            if ((std::abs(barycenter_loc(i)) <= tolerance &&
-                 std::abs(barycenter(i)) <= tolerance) ||
-                (std::abs((barycenter(i) - barycenter_loc(i)) / bary_norm) <=
-                 tolerance))
-              continue;
-            AKANTU_DEBUG_ERROR(
-                "Unpacking an unknown value for the element: "
-                << element << "(barycenter[" << i << "] = " << barycenter_loc(i)
-                << " and buffer[" << i << "] = " << barycenter(i) << ") ["
-                << std::abs((barycenter(i) - barycenter_loc(i)) / bary_norm)
-                << "] - tag: " << tag << " comm_tag[ " << comm_tag << " ]");
+            if (! Math::are_float_equal(barycenter_loc(i), barycenter(i)))
+	      AKANTU_DEBUG_ERROR("Unpacking an unknown value for the element: "
+				 << element << "(barycenter[" << i << "] = " << barycenter_loc(i)
+				 << " and buffer[" << i << "] = " << barycenter(i) << ") ["
+				 << std::abs(barycenter(i) - barycenter_loc(i))
+				 << "] - tag: " << tag << " comm_tag[ " << comm_tag << " ]");
           }
         }
 #endif

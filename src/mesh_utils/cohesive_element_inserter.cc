@@ -337,7 +337,7 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
     updateNodesType(mesh_facets, node_event);
 
     /// update global ids
-    nb_new_nodes = updateGlobalIDs(node_event);
+    nb_new_nodes = this->updateGlobalIDs(node_event);
 
     /// compute total number of new elements
     StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
@@ -354,6 +354,13 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
     mesh.sendEvent(element_event);
     MeshUtils::resetFacetToDouble(mesh_facets);
   }
+
+#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+  if (mesh.getNodesType().getSize()) {
+    /// update global ids
+    this->synchronizeGlobalIDs(node_event);
+  }
+#endif
 
   return nb_new_elements;
 }

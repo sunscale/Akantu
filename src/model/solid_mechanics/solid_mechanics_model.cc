@@ -81,18 +81,28 @@ const SolidMechanicsModelOptions
  * dimension of the problem is assumed to be the on of the mesh
  * @param id an id to identify the model
  */
-SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
-                                         const MemoryID & memory_id)
-    : Model(mesh, dim, id, memory_id), BoundaryCondition<SolidMechanicsModel>(),
-      time_step(NAN), f_m2a(1.0), displacement(NULL),
-      previous_displacement(NULL), increment(NULL), mass(NULL), velocity(NULL),
-      acceleration(NULL), increment_acceleration(NULL), external_force(NULL),
-      internal_force(NULL), blocked_dofs(NULL), current_position(NULL),
-      material_index("material index", id),
-      material_local_numbering("material local numbering", id), materials(0),
-      material_selector(new DefaultMaterialSelector(material_index)),
-      is_default_material_selector(true), increment_flag(false),
-      synch_parallel(NULL), are_materials_instantiated(false) {
+SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh,
+                                         UInt dim,
+                                         const ID & id,
+                                         const MemoryID & memory_id) :
+  Model(mesh, dim, id, memory_id),
+  BoundaryCondition<SolidMechanicsModel>(),
+  time_step(NAN), f_m2a(1.0),
+  mass_matrix(NULL),
+  velocity_damping_matrix(NULL),
+  stiffness_matrix(NULL),
+  jacobian_matrix(NULL),
+  material_index("material index", id, memory_id),
+  material_local_numbering("material local numbering", id, memory_id),
+  material_selector(new DefaultMaterialSelector(material_index)),
+  is_default_material_selector(true),
+  integrator(NULL),
+  increment_flag(false), solver(NULL),
+  synch_parallel(NULL),
+  are_materials_instantiated(false),
+  non_local_manager(NULL),
+  pbc_synch(NULL) {
+
   AKANTU_DEBUG_IN();
 
   this->createSynchronizerRegistry(this);
@@ -210,7 +220,9 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
 
 #ifdef AKANTU_DAMAGE_NON_LOCAL
   /// create the non-local manager object for non-local damage computations
-  this->non_local_manager = new NonLocalManager(*this);
+  std::stringstream nl_manager_name;
+  nl_manager_name << "NLManager" << this->id;
+  this->non_local_manager = new NonLocalManager(*this, nl_manager_name.str(), this->memory_id);
 #endif
 
   // initialize the materials
@@ -1012,7 +1024,7 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
   Array<Element>::const_iterator<Element> it = element_list.begin();
   Array<Element>::const_iterator<Element> end = element_list.end();
 
-  ElementTypeMapArray<UInt> filter("new_element_filter", this->getID());
+  ElementTypeMapArray<UInt> filter("new_element_filter", this->getID(), this->getMemoryID());
 
   for (UInt el = 0; it != end; ++it, ++el) {
     const Element & elem = *it;
@@ -1030,8 +1042,8 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
     (*mat_it)->onElementsAdded(element_list, event);
   }
 
-  if (method == _explicit_lumped_mass)
-    this->assembleMassLumped();
+  //  if (method == _explicit_lumped_mass)
+  //    this->assembleMassLumped();
 
   AKANTU_DEBUG_OUT();
 }
@@ -1119,6 +1131,22 @@ void SolidMechanicsModel::onNodesRemoved(__attribute__((unused))
 }
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::reinitializeSolver() {
+
+  delete dof_synchronizer;
+  dof_synchronizer = new DOFSynchronizer(mesh, spatial_dimension);
+  dof_synchronizer->initLocalDOFEquationNumbers();
+  dof_synchronizer->initGlobalDOFEquationNumbers();
+
+  if (method != _explicit_lumped_mass) {
+    this->initSolver();
+  }
+
+  if (method == _explicit_lumped_mass)
+    this->assembleMassLumped();
+}
+
+/* -------------------------------------------------------------------------- */
 bool SolidMechanicsModel::isInternal(const std::string & field_name,
                                      const ElementKind & element_kind) {
 
@@ -1156,18 +1184,21 @@ SolidMechanicsModel::flattenInternal(const std::string & field_name,
   std::pair<std::string, ElementKind> key(field_name, kind);
   if (this->registered_internals.count(key) == 0) {
     this->registered_internals[key] =
-        new ElementTypeMapArray<Real>(field_name, this->id);
+      new ElementTypeMapArray<Real>(field_name, this->id, this->memory_id);
   }
 
   ElementTypeMapArray<Real> * internal_flat = this->registered_internals[key];
 
-  typedef ElementTypeMapArray<Real>::type_iterator iterator;
-  iterator tit = internal_flat->firstType(spatial_dimension, ghost_type, kind);
-  iterator end = internal_flat->lastType(spatial_dimension, ghost_type, kind);
+  typedef Mesh::type_iterator iterator;
+  iterator tit = this->mesh.firstType(spatial_dimension, ghost_type, kind);
+  iterator end = this->mesh.lastType(spatial_dimension, ghost_type, kind);
 
   for (; tit != end; ++tit) {
     ElementType type = *tit;
-    (*internal_flat)(type, ghost_type).clear();
+    if (internal_flat->exists(type, ghost_type)) {
+      (*internal_flat)(type, ghost_type).clear();
+      (*internal_flat)(type, ghost_type).resize(0);
+    }
   }
 
   for (UInt m = 0; m < materials.size(); ++m) {
