@@ -247,7 +247,7 @@ void Mesh::computeBoundingBox() {
       reduce_bounds(k, 1) = -local_upper_bounds(k);
     }
 
-    comm.allReduce(reduce_bounds.storage(), reduce_bounds.size(), _so_min);
+    comm.allReduce(reduce_bounds, _so_min);
 
     for (UInt k = 0; k < spatial_dimension; ++k) {
       lower_bounds(k) =  reduce_bounds(k, 0);

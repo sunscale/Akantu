@@ -38,9 +38,6 @@
 #define __AKANTU_MESH_HH__
 
 /* -------------------------------------------------------------------------- */
-
-#include "aka_config.hh"
-#include "aka_common.hh"
 #include "aka_memory.hh"
 #include "aka_array.hh"
 #include "element_class.hh"
@@ -256,12 +253,12 @@ public:
   inline UInt getNbGlobalNodes() const;
 
   /// get the nodes type Array
-  AKANTU_GET_MACRO(NodesType, nodes_type, const Array<Int> &);
+  AKANTU_GET_MACRO(NodesType, nodes_type, const Array<NodeType> &);
 
 protected:
-  AKANTU_GET_MACRO_NOT_CONST(NodesType, nodes_type, Array<Int> &);
+  AKANTU_GET_MACRO_NOT_CONST(NodesType, nodes_type, Array<NodeType> &);
 public:
-  inline Int getNodeType(UInt local_id) const;
+  inline NodeType getNodeType(UInt local_id) const;
 
   /// say if a node is a pure ghost node
   inline bool isPureGhostNode(UInt n) const;
@@ -441,7 +438,6 @@ private:
   friend class MeshIOMSHStruct;
   friend class MeshIODiana;
   friend class MeshUtils;
-  friend class DistributedSynchronizer;
   template<class T> friend class SpatialGrid;
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
@@ -458,7 +454,7 @@ private:
   inline Array<UInt> * getNodesGlobalIdsPointer();
 
   /// get a pointer to the nodes_type Array<Int> and create it if necessary
-  inline Array<Int> * getNodesTypePointer();
+  inline Array<NodeType> * getNodesTypePointer();
 
   /// get a pointer to the connectivity Array for the given type and create it if necessary
   inline Array<UInt> * getConnectivityPointer(const ElementType & type,
@@ -488,7 +484,7 @@ private:
 
   /// node type,  -3 pure ghost, -2  master for the  node, -1 normal node,  i in
   /// [0-N] slave node and master is proc i
-  Array<Int> nodes_type;
+  Array<NodeType> nodes_type;
 
   /// global number of nodes;
   UInt nb_global_nodes;

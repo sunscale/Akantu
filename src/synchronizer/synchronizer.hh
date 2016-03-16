@@ -48,6 +48,51 @@
 
 __BEGIN_AKANTU__
 
+/* -------------------------------------------------------------------------- */
+/**
+ * tag = |__________20_________|___8____|_4_|
+ *       |          proc       | num mes| ct|
+ */
+class Tag {
+public:
+  Tag() : tag(0) {}
+  Tag(int val) : tag(val) {}
+
+  operator int() { return int(tag); } // remove the sign bit
+
+  template <typename CommTag>
+  static inline Tag genTag(int proc, UInt msg_count, CommTag tag) {
+    int max_tag = StaticCommunicator::getStaticCommunicator().getMaxTag();
+    int _tag = ((((proc & 0xFFFFF) << 12) + ((msg_count & 0xFF) << 4) +
+                 ((Int)tag & 0xF)));
+    Tag t(max_tag == 0 ? _tag : (_tag % max_tag));
+    return t;
+  }
+
+  virtual void printself(std::ostream & stream,
+                         __attribute__((unused)) int indent = 0) const {
+    stream << (tag >> 12) << ":" << (tag >> 4 & 0xFF) << ":" << (tag & 0xF);
+  }
+
+
+  enum CommTags {
+    _SIZES = 0,
+    _CONNECTIVITY = 1,
+    _DATA = 2,
+    _PARTITIONS = 3,
+    _NB_NODES = 4,
+    _NODES = 5,
+    _COORDINATES = 6,
+    _NODES_TYPE = 7,
+    _MESH_DATA = 8,
+    _ELEMENT_GROUP = 9,
+    _NODE_GROUP = 10,
+  };
+private:
+  int tag;
+};
+/* -------------------------------------------------------------------------- */
+
 class Synchronizer : protected Memory {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -78,40 +123,11 @@ public:
   virtual void computeBufferSize(DataAccessor & data_accessor,
                                  SynchronizationTag tag) = 0;
 
-  /**
-   * tag = |__________20_________|___8____|_4_|
-   *       |          proc       | num mes| ct|
-   */
-  class Tag {
-  public:
-    Tag() : tag(0) {}
-    Tag(int val) : tag(val) {}
-
-    operator int() { return int(tag); } // remove the sign bit
-
-    template <typename CommTag>
-    static inline Tag genTag(int proc, UInt msg_count, CommTag tag) {
-      int max_tag = StaticCommunicator::getStaticCommunicator().getMaxTag();
-      int _tag = ((((proc & 0xFFFFF) << 12) + ((msg_count & 0xFF) << 4) +
-                   ((Int)tag & 0xF)));
-      Tag t(max_tag == 0 ? _tag : (_tag % max_tag));
-      return t;
-    }
-
-    virtual void printself(std::ostream & stream,
-                           __attribute__((unused)) int indent = 0) const {
-      stream << (tag >> 12) << ":" << (tag >> 4 & 0xFF) << ":" << (tag & 0xF);
-    }
-
-  private:
-    int tag;
-  };
-
-
   /// generate the tag from the ID
   template <typename CommTag> inline Tag genTagFromID(CommTag tag) {
     int max_tag = StaticCommunicator::getStaticCommunicator().getMaxTag();
-    int _tag = std::abs((int(hash<std::string>(this->getID())) << 4) + (tag & 0xF));
+    int _tag =
+        std::abs((int(hash<std::string>(this->getID())) << 4) + (tag & 0xF));
     Tag t(max_tag == 0 ? _tag : (_tag % max_tag));
     return t;
   }
@@ -164,7 +180,7 @@ inline std::ostream & operator<<(std::ostream & stream,
 }
 
 inline std::ostream & operator<<(std::ostream & stream,
-                                 const Synchronizer::Tag & _this) {
+                                 const Tag & _this) {
   _this.printself(stream);
   return stream;
 }

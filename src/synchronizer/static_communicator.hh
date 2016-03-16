@@ -38,7 +38,7 @@
 #include "aka_common.hh"
 #include "aka_array.hh"
 #include "aka_event_handler_manager.hh"
-
+#include "communication_buffer.hh"
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
@@ -109,39 +109,88 @@ public:
   /* Point to Point                                                           */
   /* ------------------------------------------------------------------------ */
   template <typename T>
-  inline void send(Array<T> & values, Int receiver, Int tag) {
-    return this->send(values.storage(), values.getSize(), receiver, tag);
-  }
-  template <typename T>
-  inline void send(T * buffer, Int size, Int receiver, Int tag);
-
-  /* ------------------------------------------------------------------------ */
-  template <typename T>
   inline void receive(Array<T> & values, Int sender, Int tag) {
+    return this->receive(values.storage(),
+                         values.getSize() * values.getNbComponent(), sender,
+                         tag);
+  }
+  template <typename T, UInt ndim, class RetType>
+  inline void receive(TensorStorage<T, ndim, RetType> & values, Int sender,
+                      Int tag) {
+    return this->receive(values.storage(), values.size(), sender, tag);
+  }
+  template <bool is_static>
+  inline void receive(CommunicationBufferTemplated<is_static> & values,
+                      Int sender, Int tag) {
     return this->receive(values.storage(), values.getSize(), sender, tag);
   }
+  template <typename T> inline void receive(T & values, Int sender, Int tag) {
+    return this->receive(&values, 1, sender, tag);
+  }
+  /* ------------------------------------------------------------------------ */
   template <typename T>
-  inline void receive(T * buffer, Int size, Int sender, Int tag);
+  inline void send(Array<T> & values, Int receiver, Int tag) {
+    return this->send(values.storage(),
+                      values.getSize() * values.getNbComponent(), receiver,
+                      tag);
+  }
+  template <typename T, UInt ndim, class RetType>
+  inline void send(TensorStorage<T, ndim, RetType> & values, Int receiver,
+                   Int tag) {
+    return this->send(values.storage(), values.size(), receiver, tag);
+  }
+  template <bool is_static>
+  inline void send(CommunicationBufferTemplated<is_static> & values,
+                   Int receiver, Int tag) {
+    return this->send(values.storage(), values.getSize(), receiver, tag);
+  }
+  template <typename T> inline void send(T & values, Int receiver, Int tag) {
+    return this->send(&values, 1, receiver, tag);
+  }
 
   /* ------------------------------------------------------------------------ */
   template <typename T>
   inline CommunicationRequest * asyncSend(Array<T> & values, Int receiver,
                                           Int tag) {
+    return this->asyncSend(values.storage(),
+                           values.getSize() * values.getNbComponent(), receiver,
+                           tag);
+  }
+  template <typename T, UInt ndim, class RetType>
+  inline CommunicationRequest *
+  asyncSend(TensorStorage<T, ndim, RetType> & values, Int receiver, Int tag) {
+    return this->asyncSend(values.storage(), values.size(), receiver, tag);
+  }
+  template <bool is_static>
+  inline CommunicationRequest *
+  asyncSend(CommunicationBufferTemplated<is_static> & values, Int receiver,
+            Int tag) {
     return this->asyncSend(values.storage(), values.getSize(), receiver, tag);
   }
   template <typename T>
-  inline CommunicationRequest * asyncSend(T * buffer, Int size, Int receiver,
-                                          Int tag);
+  inline CommunicationRequest * asyncSend(T & values, Int receiver, Int tag) {
+    return this->asyncSend(&values, 1, receiver, tag);
+  }
 
   /* ------------------------------------------------------------------------ */
   template <typename T>
   inline CommunicationRequest * asyncReceive(Array<T> & values, Int sender,
                                              Int tag) {
+    return this->asyncReceive(values.storage(),
+                              values.getSize() * values.getNbComponent(),
+                              sender, tag);
+  }
+  template <typename T, UInt ndim, class RetType>
+  inline CommunicationRequest *
+  asyncReceive(TensorStorage<T, ndim, RetType> & values, Int sender, Int tag) {
+    return this->asyncReceive(values.storage(), values.size(), sender, tag);
+  }
+  template <bool is_static>
+  inline CommunicationRequest *
+  asyncReceive(CommunicationBufferTemplated<is_static> & values, Int sender,
+               Int tag) {
     return this->asyncReceive(values.storage(), values.getSize(), sender, tag);
   }
-  template <typename T>
-  inline CommunicationRequest * asyncReceive(T * buffer, Int size, Int sender,
-                                             Int tag);
 
   /* ------------------------------------------------------------------------ */
   template <typename T>
@@ -152,56 +201,76 @@ public:
   /* ------------------------------------------------------------------------ */
   template <typename T>
   inline void allReduce(Array<T> & values, const SynchronizerOperation & op) {
-    this->allReduce(values.storage(), values.getSize(), op);
+    this->allReduce(values.storage(),
+                    values.getSize() * values.getNbComponent(), op);
+  }
+  template <typename T, UInt ndim, class RetType>
+  inline void allReduce(TensorStorage<T, ndim, RetType> & values,
+                        const SynchronizerOperation & op) {
+    this->allReduce(values.storage(), values.size(), op);
   }
   template <typename T>
-  inline void allReduce(T * values, int nb_values,
-                        const SynchronizerOperation & op);
+  inline void allReduce(T & values, const SynchronizerOperation & op) {
+    this->allReduce(&values, 1, op);
+  }
 
   /* ------------------------------------------------------------------------ */
   template <typename T> inline void allGather(Array<T> & values) {
-    this->allGather(values.storage(), values.getSize());
+    AKANTU_DEBUG_ASSERT(UInt(this->real_static_communicator->getNbProc()) ==
+                            values.getSize(),
+                        "The array size is not correct");
+    this->allGather(values.storage(), values.getNbComponent());
   }
-  template <typename T> inline void allGather(T * values, int nb_values);
+
+  template <typename T> inline void allGather(Vector<T> & values) {
+    AKANTU_DEBUG_ASSERT(UInt(this->real_static_communicator->getNbProc()) ==
+                            values.size(),
+                        "The array size is not correct");
+    this->allGather(values.storage(), 1);
+  }
 
   /* ------------------------------------------------------------------------ */
-  template <typename T> inline void allGatherV(Array<T> & values) {
-    this->allGatherV(values.storage(), values.getSize());
+  template <typename T>
+  inline void allGatherV(Array<T> & values, Array<Int> sizes) {
+    this->allGatherV(values.storage(), sizes.storage());
   }
-  template <typename T> inline void allGatherV(T * values, int * nb_values);
 
   /* ------------------------------------------------------------------------ */
   template <typename T>
   inline void reduce(Array<T> & values, const SynchronizerOperation & op,
                      int root = 0) {
-    this->reduce(values.storage(), values.getSize(), op, root);
+    this->reduce(values.storage(), values.getSize() * values.getNbComponent(),
+                 op, root);
   }
-
-  template <typename T>
-  inline void reduce(T * values, int nb_values,
-                     const SynchronizerOperation & op, int root = 0);
 
   /* ------------------------------------------------------------------------ */
   template <typename T> inline void gather(Array<T> & values, int root = 0) {
-    this->gather(values.storage(), values.getSize(), root);
+    AKANTU_DEBUG_ASSERT(this->real_static_communicator->getNbProc() ==
+                            values.getSize(),
+                        "The array size is not correct");
+    this->gather(values.storage(), values.getNbComponent(), root);
   }
-
-  template <typename T>
-  inline void gather(T * values, int nb_values, int root = 0);
 
   /* ------------------------------------------------------------------------ */
-  template <typename T> inline void gatherV(Array<T> & values, int root = 0) {
-    this->gatherV(values.storage(), values.getSize(), root);
-  }
   template <typename T>
-  inline void gatherV(T * values, int * nb_values, int root = 0);
+  inline void gatherV(Array<T> & values, Array<Int> sizes, int root = 0) {
+    this->gatherV(values.storage(), sizes.storage(), root);
+  }
 
   /* ------------------------------------------------------------------------ */
   template <typename T> inline void broadcast(Array<T> & values, int root = 0) {
+    this->broadcast(values.storage(),
+                    values.getSize() * values.getNbComponent(), root);
+  }
+  template <bool is_static>
+  inline void broadcast(CommunicationBufferTemplated<is_static> & values,
+                        int root = 0) {
     this->broadcast(values.storage(), values.getSize(), root);
   }
-  template <typename T>
-  inline void broadcast(T * values, int nb_values, int root = 0);
+  template <typename T> inline void broadcast(T & values, int root = 0) {
+    this->broadcast(&values, 1, root);
+  }
+
   /* ------------------------------------------------------------------------ */
   inline void barrier();
 
@@ -216,6 +285,38 @@ public:
   inline void freeCommunicationRequest(CommunicationRequest * request);
   inline void
   freeCommunicationRequest(std::vector<CommunicationRequest *> & requests);
+
+protected:
+  template <typename T>
+  inline void send(T * buffer, Int size, Int receiver, Int tag);
+  template <typename T>
+  inline void receive(T * buffer, Int size, Int sender, Int tag);
+
+  template <typename T>
+  inline CommunicationRequest * asyncSend(T * buffer, Int size, Int receiver,
+                                          Int tag);
+  template <typename T>
+  inline CommunicationRequest * asyncReceive(T * buffer, Int size, Int sender,
+                                             Int tag);
+
+  template <typename T>
+  inline void allReduce(T * values, int nb_values,
+                        const SynchronizerOperation & op);
+
+  template <typename T> inline void allGather(T * values, int nb_values);
+  template <typename T> inline void allGatherV(T * values, int * nb_values);
+
+  template <typename T>
+  inline void reduce(T * values, int nb_values,
+                     const SynchronizerOperation & op, int root = 0);
+  template <typename T>
+  inline void gather(T * values, int nb_values, int root = 0);
+
+  template <typename T>
+  inline void gatherV(T * values, int * nb_values, int root = 0);
+
+  template <typename T>
+  inline void broadcast(T * values, int nb_values, int root = 0);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

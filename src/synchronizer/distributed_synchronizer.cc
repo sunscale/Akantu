@@ -38,14 +38,15 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "distributed_synchronizer.hh"
+#include "element_info_per_processor.hh"
+#include "node_info_per_processor.hh"
 #include "static_communicator.hh"
 #include "mesh_utils.hh"
-#include "mesh_data.hh"
-#include "element_group.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
 #include <iostream>
 #include <algorithm>
+/* -------------------------------------------------------------------------- */
 
 #if defined(AKANTU_DEBUG_TOOLS)
 #include "aka_debug_tools.hh"
@@ -107,22 +108,19 @@ DistributedSynchronizer::createDistributedSynchronizerMesh(
   AKANTU_DEBUG_IN();
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+
   UInt nb_proc = comm.getNbProc();
   UInt my_rank = comm.whoAmI();
 
-  DistributedSynchronizer & communicator =
+  DistributedSynchronizer & synchronizer =
       *(new DistributedSynchronizer(mesh, id, memory_id));
 
   if (nb_proc == 1)
-    return &communicator;
+    return &synchronizer;
 
-  UInt * local_connectivity = NULL;
-  UInt * local_partitions = NULL;
-  Array<UInt> * old_nodes = mesh.getNodesGlobalIdsPointer();
-  old_nodes->resize(0);
-  Array<Real> * nodes = mesh.getNodesPointer();
 
-  UInt spatial_dimension = nodes->getNbComponent();
+  MeshAccessor mesh_accessor(mesh);
+  mesh_accessor.getNodesGlobalIds().resize(0);
 
   mesh.synchronizeGroupNames();
 
@@ -147,344 +145,37 @@ DistributedSynchronizer::createDistributedSynchronizerMesh(
     for (; it != end; ++it) {
       ElementType type = *it;
 
-      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-      UInt nb_element = mesh.getNbElement(*it);
-      Vector<UInt> nb_local_element(nb_proc, 0);
-      Vector<UInt> nb_ghost_element(nb_proc, 0);
-      Vector<UInt> nb_element_to_send(nb_proc, 0);
-
       /// \todo change this ugly way to avoid a problem if an element
       /// type is present in the mesh but not in the partitions
-      const Array<UInt> * tmp_partition_num = NULL;
       try {
-        tmp_partition_num = &partition->getPartition(type, _not_ghost);
+        partition->getPartition(type, _not_ghost);
       } catch (...) {
         continue;
       }
-      const Array<UInt> & partition_num = *tmp_partition_num;
 
-      const CSR<UInt> & ghost_partition =
-          partition->getGhostPartitionCSR()(type, _not_ghost);
-
-      /* -------------------------------------------------------------------- */
-      /// constructing the reordering structures
-      for (UInt el = 0; el < nb_element; ++el) {
-        nb_local_element[partition_num(el)]++;
-        for (CSR<UInt>::const_iterator part = ghost_partition.begin(el);
-             part != ghost_partition.end(el); ++part) {
-          nb_ghost_element[*part]++;
-        }
-        nb_element_to_send[partition_num(el)] +=
-            ghost_partition.getNbCols(el) + 1;
-      }
-
-      /// allocating buffers
-      UInt ** buffers = new UInt *[nb_proc];
-      UInt ** buffers_tmp = new UInt *[nb_proc];
-      for (UInt p = 0; p < nb_proc; ++p) {
-        UInt size =
-            nb_nodes_per_element * (nb_local_element[p] + nb_ghost_element[p]);
-        buffers[p] = new UInt[size];
-        buffers_tmp[p] = buffers[p];
-      }
-
-      /// copying the local connectivity
-      UInt * conn_val = mesh.getConnectivity(type, _not_ghost).storage();
-      for (UInt el = 0; el < nb_element; ++el) {
-        memcpy(buffers_tmp[partition_num(el)],
-               conn_val + el * nb_nodes_per_element,
-               nb_nodes_per_element * sizeof(UInt));
-        buffers_tmp[partition_num(el)] += nb_nodes_per_element;
-      }
-
-      /// copying the connectivity of ghost element
-      for (UInt el = 0; el < nb_element; ++el) {
-        for (CSR<UInt>::const_iterator part = ghost_partition.begin(el);
-             part != ghost_partition.end(el); ++part) {
-          UInt proc = *part;
-          memcpy(buffers_tmp[proc], conn_val + el * nb_nodes_per_element,
-                 nb_nodes_per_element * sizeof(UInt));
-          buffers_tmp[proc] += nb_nodes_per_element;
-        }
-      }
-
-      /// tag info
-      std::vector<std::string> tag_names;
-      mesh.getMeshData().getTagNames(tag_names, type);
-
-      UInt nb_tags = tag_names.size();
-
-      /* -------->>>>-SIZE + CONNECTIVITY------------------------------------ */
-      /// send all connectivity and ghost information to all processors
-      std::vector<CommunicationRequest *> requests;
-      for (UInt p = 0; p < nb_proc; ++p) {
-        if (p != root) {
-          UInt size[5];
-          size[0] = (UInt)type;
-          size[1] = nb_local_element[p];
-          size[2] = nb_ghost_element[p];
-          size[3] = nb_element_to_send[p];
-          size[4] = nb_tags;
-          AKANTU_DEBUG_INFO("Sending connectivities informations to proc "
-                            << p << " TAG("
-                            << Tag::genTag(my_rank, count, TAG_SIZES) << ")");
-          comm.send(size, 5, p, Tag::genTag(my_rank, count, TAG_SIZES));
-
-          AKANTU_DEBUG_INFO("Sending connectivities to proc "
-                            << p << " TAG("
-                            << Tag::genTag(my_rank, count, TAG_CONNECTIVITY)
-                            << ")");
-          requests.push_back(comm.asyncSend(
-              buffers[p], nb_nodes_per_element *
-                              (nb_local_element[p] + nb_ghost_element[p]),
-              p, Tag::genTag(my_rank, count, TAG_CONNECTIVITY)));
-        } else {
-          local_connectivity = buffers[p];
-        }
-      }
-
-      /// create the renumbered connectivity
-      AKANTU_DEBUG_INFO("Renumbering local connectivities");
-      MeshUtils::renumberMeshNodes(mesh, local_connectivity,
-                                   nb_local_element[root],
-                                   nb_ghost_element[root], type, *old_nodes);
-
-      comm.waitAll(requests);
-      comm.freeCommunicationRequest(requests);
-      requests.clear();
-
-      for (UInt p = 0; p < nb_proc; ++p) {
-        delete[] buffers[p];
-      }
-
-      /* -------------------------------------------------------------------- */
-      for (UInt p = 0; p < nb_proc; ++p) {
-        buffers[p] = new UInt[nb_ghost_element[p] + nb_element_to_send[p]];
-        buffers_tmp[p] = buffers[p];
-      }
-
-      /// splitting the partition information to send them to processors
-      Vector<UInt> count_by_proc(nb_proc, 0);
-      for (UInt el = 0; el < nb_element; ++el) {
-        *(buffers_tmp[partition_num(el)]++) = ghost_partition.getNbCols(el);
-        UInt i(0);
-        for (CSR<UInt>::const_iterator part = ghost_partition.begin(el);
-             part != ghost_partition.end(el); ++part, ++i) {
-          *(buffers_tmp[partition_num(el)]++) = *part;
-        }
-      }
-
-      for (UInt el = 0; el < nb_element; ++el) {
-        UInt i(0);
-        for (CSR<UInt>::const_iterator part = ghost_partition.begin(el);
-             part != ghost_partition.end(el); ++part, ++i) {
-          *(buffers_tmp[*part]++) = partition_num(el);
-        }
-      }
-
-      /* -------->>>>-PARTITIONS--------------------------------------------- */
-      /// last data to compute the communication scheme
-      for (UInt p = 0; p < nb_proc; ++p) {
-        if (p != root) {
-          AKANTU_DEBUG_INFO("Sending partition informations to proc "
-                            << p << " TAG("
-                            << Tag::genTag(my_rank, count, TAG_PARTITIONS)
-                            << ")");
-          requests.push_back(comm.asyncSend(
-              buffers[p], nb_element_to_send[p] + nb_ghost_element[p], p,
-              Tag::genTag(my_rank, count, TAG_PARTITIONS)));
-        } else {
-          local_partitions = buffers[p];
-        }
-      }
-
-      if (Mesh::getSpatialDimension(type) == mesh.getSpatialDimension()) {
-        AKANTU_DEBUG_INFO("Creating communications scheme");
-        communicator.fillCommunicationScheme(local_partitions,
-                                             nb_local_element[root],
-                                             nb_ghost_element[root], type);
-      }
-
-      comm.waitAll(requests);
-      comm.freeCommunicationRequest(requests);
-      requests.clear();
-
-      for (UInt p = 0; p < nb_proc; ++p) {
-        delete[] buffers[p];
-      }
-
-      delete [] buffers;
-      delete [] buffers_tmp;
-      /* -------------------------------------------------------------------- */
-      /// send  data assossiated to the mesh
-      /* -------->>>>-TAGS--------------------------------------------------- */
-      synchronizeTagsSend(communicator, root, mesh, nb_tags, type,
-                          partition_num, ghost_partition,
-                          nb_local_element[root], nb_ghost_element[root]);
-
-      /* -------------------------------------------------------------------- */
-      /// send  data assossiated to groups
-      /* -------->>>>-GROUPS------------------------------------------------- */
-      synchronizeElementGroups(communicator, root, mesh, type, partition_num,
-                               ghost_partition, nb_element);
-
+      MasterElementInfoPerProc proc_infos(synchronizer, comm, count, root, mesh, type,
+                                          *partition);
+      proc_infos.synchronizeConnectivities();
+      proc_infos.synchronizePartitions();
+      proc_infos.synchronizeTags();
+      proc_infos.synchronizeGroups();
       ++count;
     }
 
-    /* -------->>>>-SIZE----------------------------------------------------- */
-    for (UInt p = 0; p < nb_proc; ++p) {
-      if (p != root) {
-        UInt size[5];
-        size[0] = (UInt)_not_defined;
-        size[1] = 0;
-        size[2] = 0;
-        size[3] = 0;
-        size[4] = 0;
-        AKANTU_DEBUG_INFO("Sending empty connectivities informations to proc "
-                          << p << " TAG("
-                          << Tag::genTag(my_rank, count, TAG_SIZES) << ")");
-        comm.send(size, 5, p, Tag::genTag(my_rank, count, TAG_SIZES));
-      }
+    { /// Ending the synchronization of elements by sending a stop message
+      MasterElementInfoPerProc proc_infos(synchronizer, comm, count, root, mesh,
+                                          _not_defined, *partition);
+      ++count;
     }
 
-    /* ---------------------------------------------------------------------- */
-    /* ---------------------------------------------------------------------- */
     /**
-     * Nodes coordinate construction and synchronization
+     * Nodes synchronization
      */
-    std::multimap<UInt, std::pair<UInt, UInt> > nodes_to_proc;
-    /// get the list of nodes to send and send them
-    Real * local_nodes = NULL;
-    Vector<UInt> nb_nodes_per_proc(nb_proc);
-    UInt ** nodes_per_proc = new UInt *[nb_proc];
+    MasterNodeInfoPerProc node_proc_infos(synchronizer, comm, count, root, mesh);
 
-    comm.broadcast(&(mesh.nb_global_nodes), 1, root);
-
-    /* --------<<<<-NB_NODES + NODES----------------------------------------- */
-    for (UInt p = 0; p < nb_proc; ++p) {
-      UInt nb_nodes = 0;
-      //      UInt * buffer;
-      if (p != root) {
-        AKANTU_DEBUG_INFO("Receiving number of nodes from proc "
-                          << p << " TAG(" << Tag::genTag(p, 0, TAG_NB_NODES)
-                          << ")");
-        comm.receive(&nb_nodes, 1, p, Tag::genTag(p, 0, TAG_NB_NODES));
-        nodes_per_proc[p] = new UInt[nb_nodes];
-        nb_nodes_per_proc[p] = nb_nodes;
-        AKANTU_DEBUG_INFO("Receiving list of nodes from proc "
-                          << p << " TAG(" << Tag::genTag(p, 0, TAG_NODES)
-                          << ")");
-        comm.receive(nodes_per_proc[p], nb_nodes, p,
-                     Tag::genTag(p, 0, TAG_NODES));
-      } else {
-        nb_nodes = old_nodes->getSize();
-        nb_nodes_per_proc[p] = nb_nodes;
-        nodes_per_proc[p] = old_nodes->storage();
-      }
-
-      /// get the coordinates for the selected nodes
-      Real * nodes_to_send = new Real[nb_nodes * spatial_dimension];
-      Real * nodes_to_send_tmp = nodes_to_send;
-      for (UInt n = 0; n < nb_nodes; ++n) {
-        memcpy(nodes_to_send_tmp,
-               nodes->storage() + spatial_dimension * nodes_per_proc[p][n],
-               spatial_dimension * sizeof(Real));
-        // nodes_to_proc.insert(std::make_pair(buffer[n], std::make_pair(p,
-        // n)));
-        nodes_to_send_tmp += spatial_dimension;
-      }
-
-      /* -------->>>>-COORDINATES-------------------------------------------- */
-      if (p != root) { /// send them for distant processors
-        AKANTU_DEBUG_INFO("Sending coordinates to proc "
-                          << p << " TAG("
-                          << Tag::genTag(my_rank, 0, TAG_COORDINATES) << ")");
-        comm.send(nodes_to_send, nb_nodes * spatial_dimension, p,
-                  Tag::genTag(my_rank, 0, TAG_COORDINATES));
-        delete[] nodes_to_send;
-      } else { /// save them for local processor
-        local_nodes = nodes_to_send;
-      }
-    }
-
-    /// construct the local nodes coordinates
-    UInt nb_nodes = old_nodes->getSize();
-    nodes->resize(nb_nodes);
-    memcpy(nodes->storage(), local_nodes,
-           nb_nodes * spatial_dimension * sizeof(Real));
-    delete[] local_nodes;
-
-    Array<Int> ** nodes_type_per_proc = new Array<Int> *[nb_proc];
-    for (UInt p = 0; p < nb_proc; ++p) {
-      nodes_type_per_proc[p] = new Array<Int>(nb_nodes_per_proc[p]);
-    }
-
-    communicator.fillNodesType(mesh);
-
-    /* --------<<<<-NODES_TYPE-1--------------------------------------------- */
-    for (UInt p = 0; p < nb_proc; ++p) {
-      if (p != root) {
-        AKANTU_DEBUG_INFO("Receiving first nodes types from proc "
-                          << p << " TAG("
-                          << Tag::genTag(my_rank, count, TAG_NODES_TYPE)
-                          << ")");
-        comm.receive(nodes_type_per_proc[p]->storage(), nb_nodes_per_proc[p], p,
-                     Tag::genTag(p, 0, TAG_NODES_TYPE));
-      } else {
-        nodes_type_per_proc[p]->copy(mesh.getNodesType());
-      }
-      for (UInt n = 0; n < nb_nodes_per_proc[p]; ++n) {
-        if ((*nodes_type_per_proc[p])(n) == -2)
-          nodes_to_proc.insert(
-              std::make_pair(nodes_per_proc[p][n], std::make_pair(p, n)));
-      }
-    }
-
-    std::multimap<UInt, std::pair<UInt, UInt> >::iterator it_node;
-    std::pair<std::multimap<UInt, std::pair<UInt, UInt> >::iterator,
-              std::multimap<UInt, std::pair<UInt, UInt> >::iterator> it_range;
-    for (UInt i = 0; i < mesh.nb_global_nodes; ++i) {
-      it_range = nodes_to_proc.equal_range(i);
-      if (it_range.first == nodes_to_proc.end() || it_range.first->first != i)
-        continue;
-
-      UInt node_type = (it_range.first)->second.first;
-      for (it_node = it_range.first; it_node != it_range.second; ++it_node) {
-        UInt proc = it_node->second.first;
-        UInt node = it_node->second.second;
-        if (proc != node_type)
-          nodes_type_per_proc[proc]->storage()[node] = node_type;
-      }
-    }
-
-    /* -------->>>>-NODES_TYPE-2--------------------------------------------- */
-    std::vector<CommunicationRequest *> requests;
-    for (UInt p = 0; p < nb_proc; ++p) {
-      if (p != root) {
-        AKANTU_DEBUG_INFO("Sending nodes types to proc "
-                          << p << " TAG("
-                          << Tag::genTag(my_rank, 0, TAG_NODES_TYPE) << ")");
-        requests.push_back(comm.asyncSend(
-            nodes_type_per_proc[p]->storage(), nb_nodes_per_proc[p], p,
-            Tag::genTag(my_rank, 0, TAG_NODES_TYPE)));
-      } else {
-        mesh.getNodesTypePointer()->copy(*nodes_type_per_proc[p]);
-      }
-    }
-
-    comm.waitAll(requests);
-    comm.freeCommunicationRequest(requests);
-    requests.clear();
-
-    for (UInt p = 0; p < nb_proc; ++p) {
-      if (p != root)
-        delete[] nodes_per_proc[p];
-      delete nodes_type_per_proc[p];
-    }
-    delete [] nodes_per_proc;
-    delete [] nodes_type_per_proc;
-    /* -------->>>>-NODE GROUPS --------------------------------------------- */
-    synchronizeNodeGroupsMaster(communicator, root, mesh);
+    node_proc_infos.synchronizeNodes();
+    node_proc_infos.synchronizeTypes();
+    node_proc_infos.synchronizeGroups();
 
     /* ---------------------------------------------------------------------- */
     /*  Distant (rank != root)                                                */
@@ -493,234 +184,39 @@ DistributedSynchronizer::createDistributedSynchronizerMesh(
     /**
      * connectivity and communications scheme construction on distant processors
      */
-    ElementType type = _not_defined;
     UInt count = 0;
+    bool need_synchronize = true;
     do {
       /* --------<<<<-SIZE--------------------------------------------------- */
-      UInt size[5] = {0};
-      comm.receive(size, 5, root, Tag::genTag(root, count, TAG_SIZES));
+      SlaveElementInfoPerProc proc_infos(synchronizer, comm, count, root, mesh);
+      need_synchronize = proc_infos.needSynchronize();
 
-      type = (ElementType)size[0];
-      UInt nb_local_element = size[1];
-      UInt nb_ghost_element = size[2];
-      UInt nb_element_to_send = size[3];
-      UInt nb_tags = size[4];
-
-      if (type != _not_defined) {
-        UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-        /* --------<<<<-CONNECTIVITY----------------------------------------- */
-        local_connectivity = new UInt[(nb_local_element + nb_ghost_element) *
-                                      nb_nodes_per_element];
-        AKANTU_DEBUG_INFO("Receiving connectivities from proc " << root);
-        comm.receive(local_connectivity,
-                     nb_nodes_per_element *
-                         (nb_local_element + nb_ghost_element),
-                     root, Tag::genTag(root, count, TAG_CONNECTIVITY));
-
-        AKANTU_DEBUG_INFO("Renumbering local connectivities");
-        MeshUtils::renumberMeshNodes(mesh, local_connectivity, nb_local_element,
-                                     nb_ghost_element, type, *old_nodes);
-
-        delete[] local_connectivity;
-
-        /* --------<<<<-PARTITIONS---------------------------------------------
-         */
-        local_partitions = new UInt[nb_element_to_send + nb_ghost_element * 2];
-        AKANTU_DEBUG_INFO("Receiving partition informations from proc "
-                          << root);
-        comm.receive(local_partitions,
-                     nb_element_to_send + nb_ghost_element * 2, root,
-                     Tag::genTag(root, count, TAG_PARTITIONS));
-
-        if (Mesh::getSpatialDimension(type) == mesh.getSpatialDimension()) {
-          AKANTU_DEBUG_INFO("Creating communications scheme");
-          communicator.fillCommunicationScheme(
-              local_partitions, nb_local_element, nb_ghost_element, type);
-        }
-        delete[] local_partitions;
-
-        /* --------<<<<-TAGS------------------------------------------------- */
-        synchronizeTagsRecv(communicator, root, mesh, nb_tags, type,
-                            nb_local_element, nb_ghost_element);
-
-        /* --------<<<<-GROUPS----------------------------------------------- */
-        synchronizeElementGroups(communicator, root, mesh, type);
+      if (need_synchronize) {
+        proc_infos.synchronizeConnectivities();
+        proc_infos.synchronizePartitions();
+        proc_infos.synchronizeTags();
+        proc_infos.synchronizeGroups();
       }
       ++count;
-    } while (type != _not_defined);
+    } while (need_synchronize);
 
     /**
-     * Nodes coordinate construction and synchronization on distant processors
+     * Nodes synchronization
      */
-    comm.broadcast(&(mesh.nb_global_nodes), 1, root);
 
-    /* -------->>>>-NB_NODES + NODES----------------------------------------- */
-    AKANTU_DEBUG_INFO("Sending list of nodes to proc " << root);
-    UInt nb_nodes = old_nodes->getSize();
-    comm.send(&nb_nodes, 1, root, Tag::genTag(my_rank, 0, TAG_NB_NODES));
-    comm.send(old_nodes->storage(), nb_nodes, root,
-              Tag::genTag(my_rank, 0, TAG_NODES));
+    SlaveNodeInfoPerProc node_proc_infos(synchronizer, comm, count, root, mesh);
 
-    /* --------<<<<-COORDINATES---------------------------------------------- */
-    nodes->resize(nb_nodes);
-    AKANTU_DEBUG_INFO("Receiving coordinates from proc " << root);
-    comm.receive(nodes->storage(), nb_nodes * spatial_dimension, root,
-                 Tag::genTag(root, 0, TAG_COORDINATES));
-
-    communicator.fillNodesType(mesh);
-    /* -------->>>>-NODES_TYPE-1--------------------------------------------- */
-    Int * nodes_types = mesh.getNodesTypePointer()->storage();
-    AKANTU_DEBUG_INFO("Sending first nodes types to proc " << root);
-    comm.send(nodes_types, nb_nodes, root,
-              Tag::genTag(my_rank, 0, TAG_NODES_TYPE));
-
-    /* --------<<<<-NODES_TYPE-2--------------------------------------------- */
-    AKANTU_DEBUG_INFO("Receiving nodes types from proc " << root);
-    comm.receive(nodes_types, nb_nodes, root,
-                 Tag::genTag(root, 0, TAG_NODES_TYPE));
-
-    /* --------<<<<-NODE GROUPS --------------------------------------------- */
-    synchronizeNodeGroupsSlaves(communicator, root, mesh);
+    node_proc_infos.synchronizeNodes();
+    node_proc_infos.synchronizeTypes();
+    node_proc_infos.synchronizeGroups();
   }
 
   MeshUtils::fillElementToSubElementsData(mesh);
 
-  mesh.is_distributed = true;
+  mesh_accessor.setDistributed();
 
   AKANTU_DEBUG_OUT();
-  return &communicator;
-}
-
-/* -------------------------------------------------------------------------- */
-void DistributedSynchronizer::fillTagBuffer(
-    const MeshData & mesh_data, DynamicCommunicationBuffer * buffers,
-    const std::string & tag_name, const ElementType & el_type,
-    const Array<UInt> & partition_num, const CSR<UInt> & ghost_partition) {
-#define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, extra_param, elem)          \
-  case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
-    fillTagBufferTemplated<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(                   \
-        mesh_data, buffers, tag_name, el_type, partition_num,                  \
-        ghost_partition);                                                      \
-    break;                                                                     \
-  }
-
-  MeshDataTypeCode data_type_code = mesh_data.getTypeCode(tag_name);
-  switch (data_type_code) {
-    BOOST_PP_SEQ_FOR_EACH(AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA, ,
-                          AKANTU_MESH_DATA_TYPES)
-  default:
-    AKANTU_DEBUG_ERROR("Could not obtain the type of tag" << tag_name << "!");
-    break;
-  }
-#undef AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA
-}
-
-/* -------------------------------------------------------------------------- */
-void DistributedSynchronizer::fillNodesType(Mesh & mesh) {
-  AKANTU_DEBUG_IN();
-
-  UInt nb_nodes = mesh.getNbNodes();
-  Int * nodes_type = mesh.getNodesTypePointer()->storage();
-
-  UInt * nodes_set = new UInt[nb_nodes];
-  std::fill_n(nodes_set, nb_nodes, 0);
-
-  const UInt NORMAL_SET = 1;
-  const UInt GHOST_SET = 2;
-
-  bool * already_seen = new bool[nb_nodes];
-
-  for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
-    UInt set = NORMAL_SET;
-    if (gt == _ghost)
-      set = GHOST_SET;
-
-    std::fill_n(already_seen, nb_nodes, false);
-    Mesh::type_iterator it =
-        mesh.firstType(_all_dimensions, gt, _ek_not_defined);
-    Mesh::type_iterator end =
-        mesh.lastType(_all_dimensions, gt, _ek_not_defined);
-    for (; it != end; ++it) {
-      ElementType type = *it;
-
-      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-      UInt nb_element = mesh.getNbElement(type, gt);
-      Array<UInt>::iterator<Vector<UInt> > conn_it =
-          mesh.getConnectivity(type, gt).begin(nb_nodes_per_element);
-
-      for (UInt e = 0; e < nb_element; ++e, ++conn_it) {
-        Vector<UInt> & conn = *conn_it;
-        for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-          AKANTU_DEBUG_ASSERT(conn(n) < nb_nodes,
-                              "Node " << conn(n)
-                                      << " bigger than number of nodes "
-                                      << nb_nodes);
-          if (!already_seen[conn(n)]) {
-            nodes_set[conn(n)] += set;
-            already_seen[conn(n)] = true;
-          }
-        }
-      }
-    }
-  }
-
-  delete[] already_seen;
-
-  for (UInt i = 0; i < nb_nodes; ++i) {
-    if (nodes_set[i] == NORMAL_SET)
-      nodes_type[i] = -1;
-    else if (nodes_set[i] == GHOST_SET)
-      nodes_type[i] = -3;
-    else if (nodes_set[i] == (GHOST_SET + NORMAL_SET))
-      nodes_type[i] = -2;
-  }
-
-  delete[] nodes_set;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void DistributedSynchronizer::fillCommunicationScheme(const UInt * partition,
-                                                      UInt nb_local_element,
-                                                      UInt nb_ghost_element,
-                                                      ElementType type) {
-  AKANTU_DEBUG_IN();
-
-  Element element;
-  element.type = type;
-  element.kind = Mesh::getKind(type);
-
-  const UInt * part = partition;
-
-  part = partition;
-  for (UInt lel = 0; lel < nb_local_element; ++lel) {
-    UInt nb_send = *part;
-    part++;
-    element.element = lel;
-    element.ghost_type = _not_ghost;
-    for (UInt p = 0; p < nb_send; ++p) {
-      UInt proc = *part;
-      part++;
-
-      AKANTU_DEBUG(dblAccessory, "Must send : " << element << " to proc "
-                                                << proc);
-      (send_element[proc]).push_back(element);
-    }
-  }
-
-  for (UInt gel = 0; gel < nb_ghost_element; ++gel) {
-    UInt proc = *part;
-    part++;
-    element.element = gel;
-    element.ghost_type = _ghost;
-    AKANTU_DEBUG(dblAccessory, "Must recv : " << element << " from proc "
-                                              << proc);
-    recv_element[proc].push_back(element);
-  }
-
-  AKANTU_DEBUG_OUT();
+  return &synchronizer;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -786,7 +282,7 @@ void DistributedSynchronizer::asynchronousSynchronize(
                       << " [ " << comm_tag << ":" << std::hex
                       << int(this->genTagFromID(tag)) << " ]");
     communication.send_requests.push_back(static_communicator->asyncSend(
-        buffer.storage(), ssize, p, this->genTagFromID(tag)));
+        buffer, p, this->genTagFromID(tag)));
   }
 
   AKANTU_DEBUG_ASSERT(communication.recv_requests.size() == 0,
@@ -808,7 +304,7 @@ void DistributedSynchronizer::asynchronousSynchronize(
                       << " [ " << comm_tag << ":" << std::hex
                       << int(this->genTagFromID(tag)) << " ]");
     communication.recv_requests.push_back(static_communicator->asyncReceive(
-        buffer.storage(), rsize, p, this->genTagFromID(tag)));
+        buffer, p, this->genTagFromID(tag)));
   }
 
   AKANTU_DEBUG_OUT();
@@ -1203,451 +699,6 @@ void DistributedSynchronizer::reset() {
 }
 
 /* -------------------------------------------------------------------------- */
-void DistributedSynchronizer::synchronizeTagsSend(
-    DistributedSynchronizer & communicator, UInt root, Mesh & mesh,
-    UInt nb_tags, const ElementType & type, const Array<UInt> & partition_num,
-    const CSR<UInt> & ghost_partition, UInt nb_local_element,
-    UInt nb_ghost_element) {
-  AKANTU_DEBUG_IN();
-
-  static UInt count = 0;
-
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  UInt nb_proc = comm.getNbProc();
-  UInt my_rank = comm.whoAmI();
-
-  if (nb_tags == 0) {
-    AKANTU_DEBUG_OUT();
-    return;
-  }
-
-  UInt mesh_data_sizes_buffer_length;
-  MeshData & mesh_data = mesh.getMeshData();
-
-  /// tag info
-  std::vector<std::string> tag_names;
-  mesh.getMeshData().getTagNames(tag_names, type);
-  // Make sure the tags are sorted (or at least not in random order),
-  // because they come from a map !!
-  std::sort(tag_names.begin(), tag_names.end());
-
-  // Sending information about the tags in mesh_data: name, data type and
-  // number of components of the underlying array associated to the current type
-  DynamicCommunicationBuffer mesh_data_sizes_buffer;
-  std::vector<std::string>::const_iterator names_it = tag_names.begin();
-  std::vector<std::string>::const_iterator names_end = tag_names.end();
-  for (; names_it != names_end; ++names_it) {
-    mesh_data_sizes_buffer << *names_it;
-    mesh_data_sizes_buffer << mesh_data.getTypeCode(*names_it);
-    mesh_data_sizes_buffer << mesh_data.getNbComponent(*names_it, type);
-  }
-
-  mesh_data_sizes_buffer_length = mesh_data_sizes_buffer.getSize();
-  AKANTU_DEBUG_INFO(
-      "Broadcasting the size of the information about the mesh data tags: ("
-      << mesh_data_sizes_buffer_length << ").");
-  comm.broadcast(&mesh_data_sizes_buffer_length, 1, root);
-  AKANTU_DEBUG_INFO(
-      "Broadcasting the information about the mesh data tags, addr "
-      << (void *)mesh_data_sizes_buffer.storage());
-
-  if (mesh_data_sizes_buffer_length != 0)
-    comm.broadcast(mesh_data_sizes_buffer.storage(),
-                   mesh_data_sizes_buffer.getSize(), root);
-
-  if (mesh_data_sizes_buffer_length != 0) {
-    // Sending the actual data to each processor
-    DynamicCommunicationBuffer * buffers =
-        new DynamicCommunicationBuffer[nb_proc];
-    std::vector<std::string>::const_iterator names_it = tag_names.begin();
-    std::vector<std::string>::const_iterator names_end = tag_names.end();
-
-    // Loop over each tag for the current type
-    for (; names_it != names_end; ++names_it) {
-      // Type code of the current tag (i.e. the tag named *names_it)
-      communicator.fillTagBuffer(mesh_data, buffers, *names_it, type,
-                                 partition_num, ghost_partition);
-    }
-
-    std::vector<CommunicationRequest *> requests;
-    for (UInt p = 0; p < nb_proc; ++p) {
-      if (p != root) {
-        AKANTU_DEBUG_INFO("Sending "
-                          << buffers[p].getSize()
-                          << " bytes of mesh data to proc " << p << " TAG("
-                          << Tag::genTag(my_rank, count, TAG_MESH_DATA) << ")");
-
-        requests.push_back(
-            comm.asyncSend(buffers[p].storage(), buffers[p].getSize(), p,
-                           Tag::genTag(my_rank, count, TAG_MESH_DATA)));
-      }
-    }
-
-    names_it = tag_names.begin();
-    // Loop over each tag for the current type
-    for (; names_it != names_end; ++names_it) {
-      // Reinitializing the mesh data on the master
-      communicator.populateMeshData(mesh_data, buffers[root], *names_it, type,
-                                    mesh_data.getTypeCode(*names_it),
-                                    mesh_data.getNbComponent(*names_it, type),
-                                    nb_local_element, nb_ghost_element);
-    }
-
-    comm.waitAll(requests);
-    comm.freeCommunicationRequest(requests);
-    requests.clear();
-    delete[] buffers;
-  }
-
-  ++count;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void DistributedSynchronizer::synchronizeTagsRecv(
-    DistributedSynchronizer & communicator, UInt root, Mesh & mesh,
-    UInt nb_tags, const ElementType & type, UInt nb_local_element,
-    UInt nb_ghost_element) {
-  AKANTU_DEBUG_IN();
-
-  static UInt count = 0;
-
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-
-  if (nb_tags == 0) {
-    AKANTU_DEBUG_OUT();
-    return;
-  }
-
-  /* --------<<<<-TAGS------------------------------------------------- */
-  UInt mesh_data_sizes_buffer_length = 0;
-  CommunicationBuffer mesh_data_sizes_buffer;
-  MeshData & mesh_data = mesh.getMeshData();
-
-  AKANTU_DEBUG_INFO(
-      "Receiving the size of the information about the mesh data tags.");
-  comm.broadcast(&mesh_data_sizes_buffer_length, 1, root);
-
-  if (mesh_data_sizes_buffer_length != 0) {
-    mesh_data_sizes_buffer.resize(mesh_data_sizes_buffer_length);
-    AKANTU_DEBUG_INFO(
-        "Receiving the information about the mesh data tags, addr "
-        << (void *)mesh_data_sizes_buffer.storage());
-    comm.broadcast(mesh_data_sizes_buffer.storage(),
-                   mesh_data_sizes_buffer_length, root);
-    AKANTU_DEBUG_INFO("Size of the information about the mesh data: "
-                      << mesh_data_sizes_buffer_length);
-
-    std::vector<std::string> tag_names;
-    std::vector<MeshDataTypeCode> tag_type_codes;
-    std::vector<UInt> tag_nb_component;
-    tag_names.resize(nb_tags);
-    tag_type_codes.resize(nb_tags);
-    tag_nb_component.resize(nb_tags);
-    CommunicationBuffer mesh_data_buffer;
-    UInt type_code_int;
-    for (UInt i(0); i < nb_tags; ++i) {
-      mesh_data_sizes_buffer >> tag_names[i];
-      mesh_data_sizes_buffer >> type_code_int;
-      tag_type_codes[i] = static_cast<MeshDataTypeCode>(type_code_int);
-      mesh_data_sizes_buffer >> tag_nb_component[i];
-    }
-
-    std::vector<std::string>::const_iterator names_it = tag_names.begin();
-    std::vector<std::string>::const_iterator names_end = tag_names.end();
-
-    CommunicationStatus mesh_data_comm_status;
-    AKANTU_DEBUG_INFO("Checking size of data to receive for mesh data TAG("
-                      << Tag::genTag(root, count, TAG_MESH_DATA) << ")");
-    comm.probe<char>(root, Tag::genTag(root, count, TAG_MESH_DATA),
-                     mesh_data_comm_status);
-    UInt mesh_data_buffer_size(mesh_data_comm_status.getSize());
-    AKANTU_DEBUG_INFO("Receiving "
-                      << mesh_data_buffer_size << " bytes of mesh data TAG("
-                      << Tag::genTag(root, count, TAG_MESH_DATA) << ")");
-    mesh_data_buffer.resize(mesh_data_buffer_size);
-    comm.receive(mesh_data_buffer.storage(), mesh_data_buffer_size, root,
-                 Tag::genTag(root, count, TAG_MESH_DATA));
-
-    // Loop over each tag for the current type
-    UInt k(0);
-    for (; names_it != names_end; ++names_it, ++k) {
-      communicator.populateMeshData(
-          mesh_data, mesh_data_buffer, *names_it, type, tag_type_codes[k],
-          tag_nb_component[k], nb_local_element, nb_ghost_element);
-    }
-  }
-
-  ++count;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <class CommunicationBuffer>
-void DistributedSynchronizer::fillElementGroupsFromBuffer(
-    __attribute__((unused)) DistributedSynchronizer & communicator, Mesh & mesh,
-    const ElementType & type, CommunicationBuffer & buffer) {
-  AKANTU_DEBUG_IN();
-
-  Element el;
-  el.type = type;
-
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    UInt nb_element = mesh.getNbElement(type, *gt);
-    el.ghost_type = *gt;
-
-    for (UInt e = 0; e < nb_element; ++e) {
-      el.element = e;
-
-      std::vector<std::string> element_to_group;
-      buffer >> element_to_group;
-
-      AKANTU_DEBUG_ASSERT(e < mesh.getNbElement(type, *gt),
-                          "The mesh does not have the element " << e);
-
-      std::vector<std::string>::iterator it = element_to_group.begin();
-      std::vector<std::string>::iterator end = element_to_group.end();
-      for (; it != end; ++it) {
-        mesh.getElementGroup(*it).add(el, false, false);
-      }
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void DistributedSynchronizer::synchronizeElementGroups(
-    DistributedSynchronizer & communicator, __attribute__((unused)) UInt root,
-    Mesh & mesh, const ElementType & type, const Array<UInt> & partition_num,
-    const CSR<UInt> & ghost_partition, UInt nb_element) {
-  AKANTU_DEBUG_IN();
-
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-
-  UInt nb_proc = comm.getNbProc();
-  UInt my_rank = comm.whoAmI();
-
-  DynamicCommunicationBuffer * buffers =
-      new DynamicCommunicationBuffer[nb_proc];
-
-  typedef std::vector<std::vector<std::string> > ElementToGroup;
-  ElementToGroup element_to_group;
-  element_to_group.resize(nb_element);
-
-  GroupManager::const_element_group_iterator egi = mesh.element_group_begin();
-  GroupManager::const_element_group_iterator ege = mesh.element_group_end();
-  for (; egi != ege; ++egi) {
-    ElementGroup & eg = *(egi->second);
-
-    std::string name = egi->first;
-
-    ElementGroup::const_element_iterator eit =
-        eg.element_begin(type, _not_ghost);
-    ElementGroup::const_element_iterator eend =
-        eg.element_end(type, _not_ghost);
-    for (; eit != eend; ++eit) {
-      element_to_group[*eit].push_back(name);
-    }
-
-    eit = eg.element_begin(type, _not_ghost);
-    if (eit != eend)
-      const_cast<Array<UInt> &>(eg.getElements(type)).empty();
-  }
-
-  /// preparing the buffers
-  const UInt * part = partition_num.storage();
-
-  /// copying the data, element by element
-  ElementToGroup::const_iterator data_it = element_to_group.begin();
-  ElementToGroup::const_iterator data_end = element_to_group.end();
-  for (; data_it != data_end; ++part, ++data_it) {
-    buffers[*part] << *data_it;
-  }
-
-  data_it = element_to_group.begin();
-  /// copying the data for the ghost element
-  for (UInt el(0); data_it != data_end; ++data_it, ++el) {
-    CSR<UInt>::const_iterator it = ghost_partition.begin(el);
-    CSR<UInt>::const_iterator end = ghost_partition.end(el);
-    for (; it != end; ++it) {
-      UInt proc = *it;
-      buffers[proc] << *data_it;
-    }
-  }
-
-  std::vector<CommunicationRequest *> requests;
-  for (UInt p = 0; p < nb_proc; ++p) {
-    if (p == my_rank)
-      continue;
-    AKANTU_DEBUG_INFO("Sending element groups to proc "
-                      << p << " TAG("
-                      << Tag::genTag(my_rank, p, TAG_ELEMENT_GROUP) << ")");
-    requests.push_back(
-        comm.asyncSend(buffers[p].storage(), buffers[p].getSize(), p,
-                       Tag::genTag(my_rank, p, TAG_ELEMENT_GROUP)));
-  }
-
-  fillElementGroupsFromBuffer(communicator, mesh, type, buffers[my_rank]);
-
-  comm.waitAll(requests);
-  comm.freeCommunicationRequest(requests);
-  requests.clear();
-  delete[] buffers;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void DistributedSynchronizer::synchronizeElementGroups(
-    DistributedSynchronizer & communicator, UInt root, Mesh & mesh,
-    const ElementType & type) {
-  AKANTU_DEBUG_IN();
-
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  UInt my_rank = comm.whoAmI();
-
-  AKANTU_DEBUG_INFO("Receiving element groups from proc "
-                    << root << " TAG("
-                    << Tag::genTag(root, my_rank, TAG_ELEMENT_GROUP) << ")");
-
-  CommunicationStatus status;
-  comm.probe<char>(root, Tag::genTag(root, my_rank, TAG_ELEMENT_GROUP), status);
-
-  CommunicationBuffer buffer(status.getSize());
-  comm.receive(buffer.storage(), buffer.getSize(), root,
-               Tag::genTag(root, my_rank, TAG_ELEMENT_GROUP));
-
-  fillElementGroupsFromBuffer(communicator, mesh, type, buffer);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <class CommunicationBuffer>
-void DistributedSynchronizer::fillNodeGroupsFromBuffer(
-    __attribute__((unused)) DistributedSynchronizer & communicator, Mesh & mesh,
-    CommunicationBuffer & buffer) {
-  AKANTU_DEBUG_IN();
-
-  std::vector<std::vector<std::string> > node_to_group;
-
-  buffer >> node_to_group;
-
-  AKANTU_DEBUG_ASSERT(node_to_group.size() == mesh.getNbGlobalNodes(),
-                      "Not the good amount of nodes where transmitted");
-
-  const Array<UInt> & global_nodes = mesh.getGlobalNodesIds();
-
-  Array<UInt>::const_scalar_iterator nbegin = global_nodes.begin();
-  Array<UInt>::const_scalar_iterator nit = global_nodes.begin();
-  Array<UInt>::const_scalar_iterator nend = global_nodes.end();
-
-  for (; nit != nend; ++nit) {
-    std::vector<std::string>::iterator it = node_to_group[*nit].begin();
-    std::vector<std::string>::iterator end = node_to_group[*nit].end();
-
-    for (; it != end; ++it) {
-      mesh.getNodeGroup(*it).add(nit - nbegin, false);
-    }
-  }
-
-  GroupManager::const_node_group_iterator ngi = mesh.node_group_begin();
-  GroupManager::const_node_group_iterator nge = mesh.node_group_end();
-  for (; ngi != nge; ++ngi) {
-    NodeGroup & ng = *(ngi->second);
-    ng.optimize();
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void DistributedSynchronizer::synchronizeNodeGroupsMaster(
-    DistributedSynchronizer & communicator, __attribute__((unused)) UInt root, Mesh & mesh) {
-  AKANTU_DEBUG_IN();
-
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-
-  UInt nb_proc = comm.getNbProc();
-  UInt my_rank = comm.whoAmI();
-
-  UInt nb_total_nodes = mesh.getNbGlobalNodes();
-
-  DynamicCommunicationBuffer buffer;
-
-  typedef std::vector<std::vector<std::string> > NodeToGroup;
-  NodeToGroup node_to_group;
-  node_to_group.resize(nb_total_nodes);
-
-  GroupManager::const_node_group_iterator ngi = mesh.node_group_begin();
-  GroupManager::const_node_group_iterator nge = mesh.node_group_end();
-  for (; ngi != nge; ++ngi) {
-    NodeGroup & ng = *(ngi->second);
-
-    std::string name = ngi->first;
-
-    NodeGroup::const_node_iterator nit = ng.begin();
-    NodeGroup::const_node_iterator nend = ng.end();
-    for (; nit != nend; ++nit) {
-      node_to_group[*nit].push_back(name);
-    }
-
-    nit = ng.begin();
-    if (nit != nend)
-      ng.empty();
-  }
-
-  buffer << node_to_group;
-
-  std::vector<CommunicationRequest *> requests;
-  for (UInt p = 0; p < nb_proc; ++p) {
-    if (p == my_rank)
-      continue;
-    AKANTU_DEBUG_INFO("Sending node groups to proc "
-                      << p << " TAG(" << Tag::genTag(my_rank, p, TAG_NODE_GROUP)
-                      << ")");
-    requests.push_back(comm.asyncSend(buffer.storage(), buffer.getSize(), p,
-                                      Tag::genTag(my_rank, p, TAG_NODE_GROUP)));
-  }
-
-  fillNodeGroupsFromBuffer(communicator, mesh, buffer);
-
-  comm.waitAll(requests);
-  comm.freeCommunicationRequest(requests);
-  requests.clear();
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void DistributedSynchronizer::synchronizeNodeGroupsSlaves(
-    DistributedSynchronizer & communicator, UInt root, Mesh & mesh) {
-  AKANTU_DEBUG_IN();
-
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  UInt my_rank = comm.whoAmI();
-
-  AKANTU_DEBUG_INFO("Receiving node groups from proc "
-                    << root << " TAG("
-                    << Tag::genTag(root, my_rank, TAG_NODE_GROUP) << ")");
-
-  CommunicationStatus status;
-  comm.probe<char>(root, Tag::genTag(root, my_rank, TAG_NODE_GROUP), status);
-
-  CommunicationBuffer buffer(status.getSize());
-  comm.receive(buffer.storage(), buffer.getSize(), root,
-               Tag::genTag(root, my_rank, TAG_NODE_GROUP));
-
-  fillNodeGroupsFromBuffer(communicator, mesh, buffer);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
 void DistributedSynchronizer::removeElements(
     const Array<Element> & element_to_remove) {
   AKANTU_DEBUG_IN();
@@ -1689,8 +740,7 @@ void DistributedSynchronizer::removeElements(
     AKANTU_DEBUG_INFO("Sending a message of size "
                       << list.getSize() << " to proc " << p << " TAG("
                       << this->genTagFromID(0) << ")");
-    isend_requests.push_back(comm.asyncSend(list.storage(), list.getSize(), p,
-                                            this->genTagFromID(0)));
+    isend_requests.push_back(comm.asyncSend(list, p, this->genTagFromID(0)));
 
     list.erase(list.getSize() - 1);
 
@@ -1729,7 +779,7 @@ void DistributedSynchronizer::removeElements(
                       << status.getSize() - 1
                       << " elements) no longer needed by proc " << p << " TAG("
                       << this->genTagFromID(0) << ")");
-    comm.receive(list.storage(), list.getSize(), p, this->genTagFromID(0));
+    comm.receive(list, p, this->genTagFromID(0));
 
     if (list.getSize() == 1 && list(0) == 0)
       continue;

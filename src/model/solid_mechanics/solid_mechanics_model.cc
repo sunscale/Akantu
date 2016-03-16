@@ -776,7 +776,7 @@ Real SolidMechanicsModel::getStableTimeStep() {
   Real min_dt = getStableTimeStep(_not_ghost);
 
   /// reduction min over all processors
-  StaticCommunicator::getStaticCommunicator().allReduce(&min_dt, 1, _so_min);
+  StaticCommunicator::getStaticCommunicator().allReduce(min_dt, _so_min);
 
   AKANTU_DEBUG_OUT();
   return min_dt;
@@ -860,7 +860,7 @@ Real SolidMechanicsModel::getKineticEnergy() {
     ekin += mv2;
   }
 
-  StaticCommunicator::getStaticCommunicator().allReduce(&ekin, 1, _so_sum);
+  StaticCommunicator::getStaticCommunicator().allReduce(ekin, _so_sum);
 
   AKANTU_DEBUG_OUT();
   return ekin * .5;
@@ -934,7 +934,7 @@ Real SolidMechanicsModel::getExternalWork() {
     }
   }
 
-  StaticCommunicator::getStaticCommunicator().allReduce(&work, 1, _so_sum);
+  StaticCommunicator::getStaticCommunicator().allReduce(work, _so_sum);
 
   if (this->method != _static)
     work *= this->time_step;
@@ -959,7 +959,7 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id) {
   }
 
   /// reduction sum over all processors
-  StaticCommunicator::getStaticCommunicator().allReduce(&energy, 1, _so_sum);
+  StaticCommunicator::getStaticCommunicator().allReduce(energy, _so_sum);
 
   AKANTU_DEBUG_OUT();
   return energy;

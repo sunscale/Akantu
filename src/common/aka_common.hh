@@ -130,6 +130,13 @@ enum NonLinearSolverType {
              ///model::getNewSolver
 };
 
+/// Define the node/dof type
+enum NodeType {
+  _nt_pure_gost = -3,
+  _nt_master = -2,
+  _nt_normal = -1,
+};
+
 /// Type of time stepping solver
 enum TimeStepSolverType {
   _tsst_static,         ///< Static solution

@@ -83,8 +83,7 @@ inline void Mesh::removeNodesFromArray(Array<T> & vect,
     UInt new_i = new_numbering(i);
     if (new_i != UInt(-1)) {
       T * to_copy = vect.storage() + i * nb_component;
-      std::uninitialized_copy(to_copy,
-                              to_copy + nb_component,
+      std::uninitialized_copy(to_copy, to_copy + nb_component,
                               tmp.storage() + new_i * nb_component);
       ++new_nb_nodes;
     }
@@ -184,11 +183,11 @@ inline Array<UInt> * Mesh::getNodesGlobalIdsPointer() {
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<Int> * Mesh::getNodesTypePointer() {
+inline Array<NodeType> * Mesh::getNodesTypePointer() {
   AKANTU_DEBUG_IN();
   if (nodes_type.getSize() == 0) {
     nodes_type.resize(nodes->getSize());
-    nodes_type.set(-1);
+    nodes_type.set(_nt_normal);
   }
   AKANTU_DEBUG_OUT();
   return &nodes_type;
@@ -373,7 +372,7 @@ inline void Mesh::getBarycenter(UInt element, const ElementType & type,
   Math::barycenter(local_coord, nb_nodes_per_element, spatial_dimension,
                    barycenter);
 
-  delete [] local_coord;
+  delete[] local_coord;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -543,23 +542,24 @@ inline void Mesh::addConnectivityType(const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isPureGhostNode(UInt n) const {
-  return nodes_type.getSize() ? (nodes_type(n) == -3) : false;
+  return nodes_type.getSize() ? (nodes_type(n) == _nt_pure_gost) : false;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isLocalOrMasterNode(UInt n) const {
-  return nodes_type.getSize() ? (nodes_type(n) == -2) || (nodes_type(n) == -1)
-                              : true;
+  return nodes_type.getSize()
+             ? (nodes_type(n) == _nt_master) || (nodes_type(n) == _nt_normal)
+             : true;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isLocalNode(UInt n) const {
-  return nodes_type.getSize() ? nodes_type(n) == -1 : true;
+  return nodes_type.getSize() ? nodes_type(n) == _nt_normal : true;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isMasterNode(UInt n) const {
-  return nodes_type.getSize() ? nodes_type(n) == -2 : false;
+  return nodes_type.getSize() ? nodes_type(n) == _nt_master : false;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -568,8 +568,8 @@ inline bool Mesh::isSlaveNode(UInt n) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline Int Mesh::getNodeType(UInt local_id) const {
-  return nodes_type.getSize() ? nodes_type(local_id) : -1;
+inline NodeType Mesh::getNodeType(UInt local_id) const {
+  return nodes_type.getSize() ? nodes_type(local_id) : _nt_normal;
 }
 
 /* -------------------------------------------------------------------------- */

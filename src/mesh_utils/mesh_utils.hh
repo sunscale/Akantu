@@ -95,7 +95,7 @@ public:
 
   /// take the local_connectivity array as the array of local and ghost
   /// connectivity, renumber the nodes and set the connectivity of the mesh
-  static void renumberMeshNodes(Mesh & mesh, UInt * local_connectivities,
+  static void renumberMeshNodes(Mesh & mesh, Array<UInt> & local_connectivities,
                                 UInt nb_local_element, UInt nb_ghost_element,
                                 ElementType type, Array<UInt> & old_nodes);
 
@@ -163,7 +163,7 @@ private:
 
   /// function used by all the renumbering functions
   static void
-  renumberNodesInConnectivity(UInt * list_nodes, UInt nb_nodes,
+  renumberNodesInConnectivity(Array<UInt> & list_nodes, UInt nb_nodes,
                               std::map<UInt, UInt> & renumbering_map);
 
   /// update facet_to_subfacet

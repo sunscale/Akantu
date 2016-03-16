@@ -34,7 +34,6 @@
 
 /* -------------------------------------------------------------------------- */
 
-
 #ifndef __AKANTU_REAL_STATIC_COMMUNICATOR_HH__
 #define __AKANTU_REAL_STATIC_COMMUNICATOR_HH__
 
@@ -50,6 +49,7 @@ public:
 
   AKANTU_GET_MACRO(Source, source, UInt);
   AKANTU_GET_MACRO(Destination, destination, UInt);
+
 private:
   UInt source;
   UInt destination;
@@ -60,15 +60,16 @@ private:
 /* -------------------------------------------------------------------------- */
 class CommunicationStatus {
 public:
-  CommunicationStatus() : source(0), size(0), tag(0) {};
+  CommunicationStatus() : source(0), size(0), tag(0){};
 
   AKANTU_GET_MACRO(Source, source, Int);
-  AKANTU_GET_MACRO(Size,   size, UInt);
-  AKANTU_GET_MACRO(Tag,    tag, Int);
+  AKANTU_GET_MACRO(Size, size, UInt);
+  AKANTU_GET_MACRO(Tag, tag, Int);
 
   AKANTU_SET_MACRO(Source, source, Int);
-  AKANTU_SET_MACRO(Size,   size, UInt);
-  AKANTU_SET_MACRO(Tag,    tag, Int);
+  AKANTU_SET_MACRO(Size, size, UInt);
+  AKANTU_SET_MACRO(Tag, tag, Int);
+
 private:
   Int source;
   UInt size;
@@ -77,8 +78,7 @@ private:
 
 /* -------------------------------------------------------------------------- */
 /// Datatype to pack pairs for MPI_{MIN,MAX}LOC
-template<typename T1, typename T2>
-struct SCMinMaxLoc {
+template <typename T1, typename T2> struct SCMinMaxLoc {
   T1 min_max;
   T2 loc;
 };
@@ -90,17 +90,20 @@ class StaticCommunicator;
 /* -------------------------------------------------------------------------- */
 class RealStaticCommunicator {
 public:
-  RealStaticCommunicator(__attribute__ ((unused)) int & argc,
-			 __attribute__ ((unused)) char ** & argv) {
+  RealStaticCommunicator(__attribute__((unused)) int & argc,
+                         __attribute__((unused)) char **& argv) {
     prank = -1;
     psize = -1;
   };
-  virtual ~RealStaticCommunicator() { };
+  virtual ~RealStaticCommunicator(){};
 
   friend class StaticCommunicator;
+
+  Int getNbProc() { return this->psize; }
+  Int whoAmI() { return this->prank; }
+
 protected:
   Int prank;
-
   Int psize;
 };
 

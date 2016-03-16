@@ -513,6 +513,8 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
   std::vector<std::string>::const_iterator mnit = g.getMaterialNames().begin();
   std::vector<std::string>::const_iterator mnend = g.getMaterialNames().end();
 
+  MeshAccessor mesh_accessor(mesh);
+
   for (; mnit != mnend; ++mnit) {
     Mesh::element_group_iterator eg_it = mesh.element_group_find(*mnit);
     ElementGroup & eg = *eg_it->second;
@@ -522,7 +524,7 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
 
       for (; tit != tend; ++tit) {
         Array<std::string> & abaqus_material =
-            this->getData<std::string>(mesh, "abaqus_material", *tit);
+            mesh_accessor.getData<std::string>("abaqus_material", *tit);
 
         ElementGroup::const_element_iterator eit = eg.element_begin(*tit);
         ElementGroup::const_element_iterator eend = eg.element_end(*tit);
@@ -533,7 +535,7 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
     }
   }
 
-  this->setNbGlobalNodes(mesh, mesh.getNodes().getSize());
+  mesh_accessor.setNbGlobalNodes(mesh.getNodes().getSize());
   MeshUtils::fillElementToSubElementsData(mesh);
 }
 

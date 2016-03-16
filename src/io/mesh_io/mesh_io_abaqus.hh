@@ -39,7 +39,7 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-class MeshIOAbaqus : public MeshIO, private MeshAccessor {
+class MeshIOAbaqus : public MeshIO {
 public:
   MeshIOAbaqus();
   virtual ~MeshIOAbaqus();

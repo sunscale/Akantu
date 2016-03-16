@@ -55,10 +55,11 @@ public:
   StaticCommunicatorDummy(__attribute__((unused)) int & argc,
                           __attribute__((unused)) char **& argv)
       : RealStaticCommunicator(argc, argv) {
-    prank = 0;
-    psize = 1;
-  };
-  virtual ~StaticCommunicatorDummy(){};
+    this->prank = 0;
+    this->psize = 1;
+  }
+
+  virtual ~StaticCommunicatorDummy() {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -98,21 +99,19 @@ public:
 
   bool testRequest(__attribute__((unused)) CommunicationRequest * request) {
     return true;
-  };
+  }
 
-  void wait(__attribute__((unused)) CommunicationRequest * request){};
-
+  void wait(__attribute__((unused)) CommunicationRequest * request) {}
   void waitAll(__attribute__((unused))
-               std::vector<CommunicationRequest *> & requests){};
+               std::vector<CommunicationRequest *> & requests) {}
 
-  void barrier(){};
+  void barrier() {}
 
   template <typename T>
-  void reduce(__attribute__ ((unused)) T * values,
-	      __attribute__ ((unused)) int nb_values,
-	      __attribute__ ((unused)) const SynchronizerOperation & op,
-	      __attribute__ ((unused)) int root) {}
-
+  void reduce(__attribute__((unused)) T * values,
+              __attribute__((unused)) int nb_values,
+              __attribute__((unused)) const SynchronizerOperation & op,
+              __attribute__((unused)) int root) {}
 
   template <typename T>
   void allReduce(__attribute__((unused)) T * values,

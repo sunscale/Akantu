@@ -73,8 +73,10 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
 
   UInt spatial_dimension = mesh.getSpatialDimension();
 
-  Real * bounding_boxes = new Real[2 * spatial_dimension * nb_proc];
-  Real * my_bounding_box = bounding_boxes + 2 * spatial_dimension * my_rank;
+  Vector<Real> bounding_boxes(2 * spatial_dimension * nb_proc);
+  Vector<Real> my_bounding_box(bounding_boxes.storage() +
+                                   2 * spatial_dimension * my_rank,
+                               2 * spatial_dimension);
 
   // mesh.getLocalLowerBounds(my_bounding_box);
   // mesh.getLocalUpperBounds(my_bounding_box + spatial_dimension);
@@ -91,7 +93,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
   AKANTU_DEBUG_INFO(
       "Exchange of bounding box to detect the overlapping regions.");
 
-  comm.allGather(bounding_boxes, spatial_dimension * 2);
+  comm.allGather(bounding_boxes);
 
   bool * intersects_proc = new bool[nb_proc];
   std::fill_n(intersects_proc, nb_proc, true);
@@ -111,7 +113,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
     if (p == my_rank)
       continue;
 
-    Real * proc_bounding_box = bounding_boxes + 2 * spatial_dimension * p;
+    Real * proc_bounding_box = bounding_boxes.storage() + 2 * spatial_dimension * p;
 
     bool intersects = false;
     Int * first_cell_p = first_cells + p * spatial_dimension;
@@ -287,7 +289,6 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
 
   delete[] first_cells;
   delete[] last_cells;
-  delete[] bounding_boxes;
 
   AKANTU_DEBUG_INFO("I have finished to compute intersection,"
                     << " no it's time to communicate with my neighbors");
@@ -296,6 +297,8 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
    * Sending loop, sends the connectivity asynchronously to all concerned proc
    */
   std::vector<CommunicationRequest *> isend_requests;
+  UInt * space = new UInt[2*nb_proc*_max_element_type];
+  UInt offset = 0;
   for (UInt p = 0; p < nb_proc; ++p) {
     if (p == my_rank)
       continue;
@@ -310,7 +313,8 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
       UInt count = 0;
       for (; it_type != last_type; ++it_type) {
         Array<UInt> & conn = elempproc(*it_type, _not_ghost);
-        UInt info[2];
+        Vector<UInt> info(space + offset, 2);
+       offset += 2;
         info[0] = (UInt)*it_type;
         info[1] = conn.getSize() * conn.getNbComponent();
 
@@ -321,20 +325,21 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
                                     << ")");
 
         isend_requests.push_back(
-            comm.asyncSend(info, 2, p, Tag::genTag(my_rank, count, SIZE_TAG)));
+            comm.asyncSend(info, p, Tag::genTag(my_rank, count, SIZE_TAG)));
         if (info[1] != 0)
           isend_requests.push_back(
-              comm.asyncSend<UInt>(conn.storage(), info[1], p,
+              comm.asyncSend<UInt>(conn, p,
                                    Tag::genTag(my_rank, count, DATA_TAG)));
 
         ++count;
       }
 
-      UInt info[2];
+      Vector<UInt> info(space + offset, 2);
+      offset += 2;
       info[0] = (UInt)_not_defined;
       info[1] = 0;
       isend_requests.push_back(
-          comm.asyncSend(info, 2, p, Tag::genTag(my_rank, count, SIZE_TAG)));
+          comm.asyncSend(info, p, Tag::genTag(my_rank, count, SIZE_TAG)));
     }
   }
 
@@ -343,8 +348,8 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
    */
   Array<UInt> & global_nodes_ids =
       const_cast<Array<UInt> &>(mesh.getGlobalNodesIds());
-  Array<Int> & nodes_type =
-      const_cast<Array<Int> &>(const_cast<const Mesh &>(mesh).getNodesType());
+  Array<NodeType> & nodes_type =
+      const_cast<Array<NodeType> &>(const_cast<const Mesh &>(mesh).getNodesType());
   std::vector<CommunicationRequest *> isend_nodes_requests;
   Vector<UInt> nb_nodes_to_recv(nb_proc);
   UInt nb_total_nodes_to_recv = 0;
@@ -365,8 +370,8 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
     if (intersects_proc[p]) {
       ElementType type = _not_defined;
       do {
-        UInt info[2] = {0};
-        comm.receive(info, 2, p, Tag::genTag(p, count, SIZE_TAG));
+        Vector<UInt> info(2);
+        comm.receive(info, p, Tag::genTag(p, count, SIZE_TAG));
 
         type = (ElementType)info[0];
         if (type != _not_defined) {
@@ -377,7 +382,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
           Array<UInt> tmp_conn(nb_element, nb_nodes_per_element);
           tmp_conn.clear();
           if (info[1] != 0)
-            comm.receive<UInt>(tmp_conn.storage(), info[1], p,
+            comm.receive<UInt>(tmp_conn, p,
                                Tag::genTag(p, count, DATA_TAG));
 
           AKANTU_DEBUG_INFO("I will receive "
@@ -407,7 +412,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
 
               if (ln == UInt(-1)) {
                 global_nodes_ids.push_back(gn);
-                nodes_type.push_back(-3); // pure ghost node
+                nodes_type.push_back(_nt_pure_gost); // pure ghost node
                 ln = nb_current_nodes;
 
                 new_nodes.getList().push_back(ln);
@@ -449,7 +454,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
       ask_nodes.push_back(UInt(-1));
 
       isend_nodes_requests.push_back(
-          comm.asyncSend(ask_nodes.storage(), ask_nodes.getSize(), p,
+          comm.asyncSend(ask_nodes, p,
                          Tag::genTag(my_rank, 0, ASK_NODES_TAG)));
       nb_nodes_to_recv(p) = ask_nodes.getSize() - 1;
       nb_total_nodes_to_recv += nb_nodes_to_recv(p);
@@ -458,6 +463,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
 
   comm.waitAll(isend_requests);
   comm.freeCommunicationRequest(isend_requests);
+  delete [] space;
 
   for (UInt p = 0; p < nb_proc; ++p) {
     if (element_per_proc[p])
@@ -496,7 +502,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
                       << p << " (communication tag : "
                       << Tag::genTag(p, 0, ASK_NODES_TAG) << ")");
 
-    comm.receive(asked_nodes.storage(), nb_nodes_to_send, p,
+    comm.receive(asked_nodes, p,
                  Tag::genTag(p, 0, ASK_NODES_TAG));
 
     nb_nodes_to_send--;
@@ -520,7 +526,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
                         << Tag::genTag(p, 0, SEND_NODES_TAG) << ")");
 
       isend_coordinates_requests.push_back(comm.asyncSend(
-          nodes_to_send.storage(), nb_nodes_to_send * spatial_dimension, p,
+          nodes_to_send, p,
           Tag::genTag(my_rank, 0, SEND_NODES_TAG)));
     }
 #if not defined(AKANTU_NDEBUG)
@@ -542,8 +548,9 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
                         << " (communication tag : "
                         << Tag::genTag(p, 0, SEND_NODES_TAG) << ")");
 
-      comm.receive(nodes.storage() + nb_nodes * spatial_dimension,
-                   nb_nodes_to_recv(p) * spatial_dimension, p,
+      Vector<Real> nodes_to_recv(nodes.storage() + nb_nodes * spatial_dimension,
+        nb_nodes_to_recv(p) * spatial_dimension);
+      comm.receive(nodes_to_recv, p,
                    Tag::genTag(p, 0, SEND_NODES_TAG));
       nb_nodes += nb_nodes_to_recv(p);
     }

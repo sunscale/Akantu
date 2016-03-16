@@ -293,6 +293,7 @@ package_declare_sources(core
   synchronizer/distributed_synchronizer.cc
   synchronizer/distributed_synchronizer.hh
   synchronizer/distributed_synchronizer_tmpl.hh
+
   synchronizer/dof_synchronizer.cc
   synchronizer/dof_synchronizer.hh
   synchronizer/dof_synchronizer_inline_impl.cc
@@ -311,7 +312,13 @@ package_declare_sources(core
   synchronizer/synchronizer_registry.hh
   synchronizer/grid_synchronizer.cc
   synchronizer/grid_synchronizer.hh
-
+  synchronizer/element_info_per_processor.cc
+  synchronizer/element_info_per_processor.hh
+  synchronizer/element_info_per_processor_tmpl.hh
+  synchronizer/master_element_info_per_processor.cc
+  synchronizer/slave_element_info_per_processor.cc
+  synchronizer/node_info_per_processor.cc
+  synchronizer/node_info_per_processor.hh
   )
 
 package_declare_elements(core

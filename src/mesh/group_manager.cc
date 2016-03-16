@@ -288,7 +288,7 @@ public:
     /// find starting index to renumber local clusters
     Array<UInt> nb_cluster_per_proc(nb_proc);
     nb_cluster_per_proc(rank) = nb_cluster;
-    comm.allGather(nb_cluster_per_proc.storage(), 1);
+    comm.allGather(nb_cluster_per_proc);
 
     starting_index = std::accumulate(nb_cluster_per_proc.begin(),
 				     nb_cluster_per_proc.begin() + rank,
@@ -308,7 +308,7 @@ public:
 				  // 2**31 pairs, but due to a all gatherv after
 				  // it must be int to match MPI interfaces
     nb_pairs(rank) = distant_ids.size();
-    comm.allGather(nb_pairs.storage(), 1);
+    comm.allGather(nb_pairs);
 
     UInt total_nb_pairs = std::accumulate(nb_pairs.begin(), nb_pairs.end(), 0);
 
@@ -328,7 +328,7 @@ public:
 
     /// communicate pairs to all processors
     nb_pairs *= 2;
-    comm.allGatherV(total_pairs.storage(), nb_pairs.storage());
+    comm.allGatherV(total_pairs, nb_pairs);
 
     /// renumber clusters
 
@@ -919,19 +919,19 @@ void GroupManager::synchronizeGroupNames() {
   AKANTU_DEBUG_IN();
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  UInt nb_proc = comm.getNbProc();
-  UInt my_rank = comm.whoAmI();
+  Int nb_proc = comm.getNbProc();
+  Int my_rank = comm.whoAmI();
 
   if(nb_proc == 1) return;
 
   if(my_rank == 0) {
-    for (UInt p = 1; p < nb_proc; ++p) {
+    for (Int p = 1; p < nb_proc; ++p) {
       CommunicationStatus status;
       comm.probe<char>(p, p, status);
       AKANTU_DEBUG_INFO("Got " << printMemorySize<char>(status.getSize()) << " from proc " << p);
 
       CommunicationBuffer recv_buffer(status.getSize());
-      comm.receive(recv_buffer.storage(), recv_buffer.getSize(), p, p);
+      comm.receive(recv_buffer, p, p);
 
       this->checkAndAddGroups(recv_buffer);
     }
@@ -941,24 +941,24 @@ void GroupManager::synchronizeGroupNames() {
 
     UInt buffer_size = comm_buffer.getSize();
 
-    comm.broadcast(&buffer_size, 1, 0);
+    comm.broadcast(buffer_size, 0);
 
     AKANTU_DEBUG_INFO("Initiating broadcast with " << printMemorySize<char>(comm_buffer.getSize()));
-    comm.broadcast(comm_buffer.storage(), buffer_size, 0);
+    comm.broadcast(comm_buffer, 0);
 
   } else {
     DynamicCommunicationBuffer comm_buffer;
     this->fillBufferWithGroupNames(comm_buffer);
 
     AKANTU_DEBUG_INFO("Sending " << printMemorySize<char>(comm_buffer.getSize()) << " to proc " << 0);
-    comm.send(comm_buffer.storage(), comm_buffer.getSize(), 0, my_rank);
+    comm.send(comm_buffer, 0, my_rank);
 
     UInt buffer_size = 0;
-    comm.broadcast(&buffer_size, 1, 0);
+    comm.broadcast(buffer_size, 0);
 
     AKANTU_DEBUG_INFO("Receiving broadcast with " << printMemorySize<char>(comm_buffer.getSize()));
     CommunicationBuffer recv_buffer(buffer_size);
-    comm.broadcast(recv_buffer.storage(), recv_buffer.getSize(), 0);
+    comm.broadcast(recv_buffer, 0);
 
     this->checkAndAddGroups(recv_buffer);
   }

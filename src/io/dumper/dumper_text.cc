@@ -67,7 +67,7 @@ void DumperText::registerMesh(const Mesh & mesh,
   UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
   if (nb_proc > 1) {
     registerField("nodes_type",
-                  new dumper::NodalField<Int>(mesh.getNodesType()));
+                  new dumper::NodalField<NodeType>(mesh.getNodesType()));
   }
 }
 
@@ -86,7 +86,7 @@ void DumperText::registerFilteredMesh(
   // in parallel we need node type
   UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
   if (nb_proc > 1) {
-    registerField("nodes_type", new dumper::NodalField<Int, true>(
+    registerField("nodes_type", new dumper::NodalField<NodeType, true>(
                                     mesh.getNodesType(), 0, 0, &nodes_filter));
   }
 }

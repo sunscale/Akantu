@@ -140,8 +140,6 @@ public:
 
 protected:
   /// fill the nodes type vector
-  void fillNodesType(Mesh & mesh);
-
   void fillNodesType(const MeshData & mesh_data,
                      DynamicCommunicationBuffer * buffers,
                      const std::string & tag_name, const ElementType & el_type,
@@ -160,24 +158,6 @@ protected:
                      const std::string & tag_name, const ElementType & el_type,
                      const Array<UInt> & partition_num,
                      const CSR<UInt> & ghost_partition);
-
-  template <typename T, typename BufferType>
-  void populateMeshDataTemplated(MeshData & mesh_data, BufferType & buffer,
-                                 const std::string & tag_name,
-                                 const ElementType & el_type, UInt nb_component,
-                                 UInt nb_local_element, UInt nb_ghost_element);
-
-  template <typename BufferType>
-  void populateMeshData(MeshData & mesh_data, BufferType & buffer,
-                        const std::string & tag_name,
-                        const ElementType & el_type,
-                        const MeshDataTypeCode & type_code, UInt nb_component,
-                        UInt nb_local_element, UInt nb_ghost_element);
-
-  /// fill the communications array of a distributedSynchronizer based on a
-  /// partition array
-  void fillCommunicationScheme(const UInt * partition, UInt nb_local_element,
-                               UInt nb_ghost_element, ElementType type);
 
   /// function that handels the MeshData to be split (root side)
   static void synchronizeTagsSend(DistributedSynchronizer & communicator,
@@ -205,12 +185,6 @@ protected:
   static void synchronizeElementGroups(DistributedSynchronizer & communicator,
                                        UInt root, Mesh & mesh,
                                        const ElementType & type);
-
-  template <class CommunicationBuffer>
-  static void
-  fillElementGroupsFromBuffer(DistributedSynchronizer & communicator,
-                              Mesh & mesh, const ElementType & type,
-                              CommunicationBuffer & buffer);
 
   /// function that handles the preexisting groups in the mesh
   static void
@@ -241,26 +215,13 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
-  enum CommTags {
-    TAG_SIZES = 0,
-    TAG_CONNECTIVITY = 1,
-    TAG_DATA = 2,
-    TAG_PARTITIONS = 3,
-    TAG_NB_NODES = 4,
-    TAG_NODES = 5,
-    TAG_COORDINATES = 6,
-    TAG_NODES_TYPE = 7,
-    TAG_MESH_DATA = 8,
-    TAG_ELEMENT_GROUP = 9,
-    TAG_NODE_GROUP = 10,
-  };
-
 protected:
   /// reference to the underlying mesh
   Mesh & mesh;
 
   std::map<SynchronizationTag, Communication> communications;
+
+  friend class ElementInfoPerProc;
 
   /// list of element to send to proc p
   Array<Element> * send_element;

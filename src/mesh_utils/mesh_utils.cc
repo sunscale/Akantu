@@ -569,7 +569,7 @@ void MeshUtils::buildFacetsDimension(
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshUtils::renumberMeshNodes(Mesh & mesh, UInt * local_connectivities,
+void MeshUtils::renumberMeshNodes(Mesh & mesh, Array<UInt> & local_connectivities,
                                   UInt nb_local_element, UInt nb_ghost_element,
                                   ElementType type,
                                   Array<UInt> & old_nodes_numbers) {
@@ -599,13 +599,13 @@ void MeshUtils::renumberMeshNodes(Mesh & mesh, UInt * local_connectivities,
   /// copy the renumbered connectivity to the right place
   Array<UInt> * local_conn = mesh.getConnectivityPointer(type);
   local_conn->resize(nb_local_element);
-  memcpy(local_conn->storage(), local_connectivities,
+  memcpy(local_conn->storage(), local_connectivities.storage(),
          nb_local_element * nb_nodes_per_element * sizeof(UInt));
 
   Array<UInt> * ghost_conn = mesh.getConnectivityPointer(type, _ghost);
   ghost_conn->resize(nb_ghost_element);
   memcpy(ghost_conn->storage(),
-         local_connectivities + nb_local_element * nb_nodes_per_element,
+         local_connectivities.storage() + nb_local_element * nb_nodes_per_element,
          nb_ghost_element * nb_nodes_per_element * sizeof(UInt));
 
   AKANTU_DEBUG_OUT();
@@ -613,10 +613,10 @@ void MeshUtils::renumberMeshNodes(Mesh & mesh, UInt * local_connectivities,
 
 /* -------------------------------------------------------------------------- */
 void MeshUtils::renumberNodesInConnectivity(
-    UInt * list_nodes, UInt nb_nodes, std::map<UInt, UInt> & renumbering_map) {
+    Array<UInt> & list_nodes, UInt nb_nodes, std::map<UInt, UInt> & renumbering_map) {
   AKANTU_DEBUG_IN();
 
-  UInt * connectivity = list_nodes;
+  UInt * connectivity = list_nodes.storage();
   UInt new_node_num = renumbering_map.size();
   for (UInt n = 0; n < nb_nodes; ++n, ++connectivity) {
     UInt & node = *connectivity;
@@ -655,10 +655,9 @@ void MeshUtils::purifyMesh(Mesh & mesh) {
       ElementType type(*it);
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
-      const Array<UInt> & connectivity_vect =
+      Array<UInt> & connectivity =
           mesh.getConnectivity(type, ghost_type);
-      UInt nb_element(connectivity_vect.getSize());
-      UInt * connectivity = connectivity_vect.storage();
+      UInt nb_element(connectivity.getSize());
 
       renumberNodesInConnectivity(
           connectivity, nb_element * nb_nodes_per_element, renumbering_map);
@@ -2198,7 +2197,7 @@ UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh,
   for (UInt n = 0; n < old_nb_nodes; ++n)
     if (mesh.isLocalOrMasterNode(n))
       ++old_local_master_nodes(rank);
-  comm.allGather(old_local_master_nodes.storage(), 1);
+  comm.allGather(old_local_master_nodes);
   UInt old_global_nodes =
       std::accumulate(old_local_master_nodes.storage(),
                       old_local_master_nodes.storage() + nb_proc, 0);
@@ -2209,7 +2208,7 @@ UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh,
     if (mesh.isLocalOrMasterNode(n))
       ++local_master_nodes(rank);
 
-  comm.allGather(local_master_nodes.storage(), 1);
+  comm.allGather(local_master_nodes);
 
   /// update global number of nodes
   UInt total_nb_new_nodes = std::accumulate(

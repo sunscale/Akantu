@@ -293,3 +293,8 @@ UInt getIOHelperType(ElementType type) {
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU__
+
+namespace iohelper {
+  template<>
+  DataType getDataType<akantu::NodeType>() { return _int; }
+}
