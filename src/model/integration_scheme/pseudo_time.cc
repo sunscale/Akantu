@@ -59,13 +59,10 @@ void PseudoTime::corrector(const SolutionType & type, Real delta_t) {
   Array<bool>::const_scalar_iterator blocked_dofs_it =
       blocked_dofs.begin_reinterpret(nb_degree_of_freedom);
 
-  for (; u_it != u_end; ++u_it) {
+  for (; u_it != u_end; ++u_it, ++delta_it, ++blocked_dofs_it) {
     if (!(*blocked_dofs_it)) {
       *u_it += *delta_it;
     }
-    ++u_it;
-    ++delta_it;
-    ++blocked_dofs_it;
   }
 }
 

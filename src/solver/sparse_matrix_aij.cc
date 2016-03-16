@@ -300,7 +300,7 @@ void SparseMatrixAIJ::add(const SparseMatrix & B, Real alpha) {
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::clear() {
-  memset(a.storage(), 0, nb_non_zero * sizeof(Real));
+  a.set(0.);
 
   this->value_release++;
 }

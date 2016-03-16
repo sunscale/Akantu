@@ -160,6 +160,9 @@ void DOFManager::registerMesh(Mesh & mesh) {
 }
 
 /* -------------------------------------------------------------------------- */
+DOFManager::DOFData::DOFData() : solution(0, 1, "solution") { }
+
+/* -------------------------------------------------------------------------- */
 void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
                               const DOFSupportType & support_type) {
   DOFStorage::iterator it = this->dofs.find(dof_id);
@@ -185,7 +188,7 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
 
     UInt nb_nodes = this->mesh->getNbNodes();
     for (UInt n = 0; n < nb_nodes; ++n) {
-      nb_pure_local += mesh->isLocalOrMasterNode(n) ? 1 : 0;
+      nb_pure_local += this->mesh->isLocalOrMasterNode(n) ? 1 : 0;
     }
 
     nb_pure_local *= dofs_array.getNbComponent();
@@ -193,17 +196,18 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
     break;
   }
   case _dst_generic: {
-    nb_local_dofs = nb_pure_local = dofs_array.getSize() * dofs_array.getNbComponent();
+    nb_local_dofs = nb_pure_local =
+        dofs_array.getSize() * dofs_array.getNbComponent();
+    break;
   }
   default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }
   }
-
 
   this->pure_local_system_size += nb_pure_local;
   this->local_system_size += nb_local_dofs;
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  comm.allReduce(&nb_pure_local, 1, _so_sum);
+  comm.allReduce(nb_pure_local, _so_sum);
 
   this->system_size += nb_pure_local;
 
@@ -257,13 +261,20 @@ void DOFManager::registerBlockedDOFs(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManager::clearJacobian() {
+  this->getMatrix("J").clear();
+}
+
+/* -------------------------------------------------------------------------- */
 void DOFManager::splitSolutionPerDOFs() {
   DOFStorage::iterator it = this->dofs.begin();
   DOFStorage::iterator end = this->dofs.end();
 
   for (; it != end; ++it) {
     DOFData & dof_data = *it->second;
-    this->getSolutionPerDOFs(it->first, *dof_data.solution);
+    dof_data.solution.resize(dof_data.dof->getSize() *
+                             dof_data.dof->getNbComponent());
+    this->getSolutionPerDOFs(it->first, dof_data.solution);
   }
 }
 

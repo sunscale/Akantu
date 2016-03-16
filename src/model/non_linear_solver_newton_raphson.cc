@@ -144,7 +144,7 @@ bool NonLinearSolverNewtonRaphson::testConvergence(const Array<Real> & array) {
     }
   }
 
-  StaticCommunicator::getStaticCommunicator().allReduce(&norm, 1, _so_sum);
+  StaticCommunicator::getStaticCommunicator().allReduce(norm, _so_sum);
 
   norm = std::sqrt(norm);
 

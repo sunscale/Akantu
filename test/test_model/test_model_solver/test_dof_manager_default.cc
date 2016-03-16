@@ -42,9 +42,13 @@ public:
       : dof_manager(dof_manager),
         K(dynamic_cast<SparseMatrixAIJ &>(
             dof_manager.getNewMatrix("K", _symmetric))),
-        dispacement(3, 1), blocked(3, 1), forces(3, 1) {
+        dispacement(3, 1, "disp"), blocked(3, 1), forces(3, 1) {
     dof_manager.registerDOFs("disp", dispacement, _dst_generic);
     dof_manager.registerBlockedDOFs("disp", blocked);
+
+    dispacement.set(0.);
+    forces.set(0.);
+    blocked.set(false);
 
     forces(2, _x) = F;
     blocked(0, _x) = true;
@@ -63,7 +67,7 @@ public:
     K(0, 1) = -1.;
     K(1, 2) = -1.;
   }
-  void assembleResidual() { dof_manager.assembleToResidual("disp", force); }
+  void assembleResidual() { dof_manager.assembleToResidual("disp", forces); }
 
   void predictor() {}
   void corrector() {}
@@ -81,14 +85,21 @@ int main(int argc, char * argv[]) {
   DOFManagerDefault dof_manager("test_dof_manager");
   MySolverCallback callback(10., dof_manager);
 
-  dof_manager.getNewMatrix("J", _symmetric);
+  dof_manager.getNewMatrix("J", "K");
 
   NonLinearSolver & nls =
       dof_manager.getNewNonLinearSolver("my_nls", _nls_linear);
   TimeStepSolver & tss =
       dof_manager.getNewTimeStepSolver("my_tss", _tsst_static, nls);
-
+  tss.setIntegrationScheme("disp", _ist_pseudo_time);
   tss.solveStep(callback);
+
+  Array<Real>::const_scalar_iterator disp_it = callback.dispacement.begin();
+  Array<Real>::const_scalar_iterator force_it = callback.forces.begin();
+  Array<bool>::const_scalar_iterator blocked_it = callback.blocked.begin();
+  for (; disp_it != callback.dispacement.end(); ++disp_it, ++force_it, ++blocked_it) {
+    std::cout << *disp_it << " " << *force_it << " " <<  *blocked_it << std::endl;
+  }
 
   finalize();
   return EXIT_SUCCESS;

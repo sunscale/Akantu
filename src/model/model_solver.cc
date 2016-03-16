@@ -48,8 +48,8 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 ModelSolver::ModelSolver(Mesh & mesh, const ID & id, UInt memory_id)
-    : Parsable(_st_solver, id), parent_id(id), parent_memory_id(memory_id),
-      mesh(mesh), dof_manager(NULL) {}
+    : Parsable(_st_solver, id), SolverCallback(), parent_id(id),
+      parent_memory_id(memory_id), mesh(mesh), dof_manager(NULL) {}
 
 /* -------------------------------------------------------------------------- */
 ModelSolver::~ModelSolver() { delete this->dof_manager; }
@@ -74,8 +74,7 @@ void ModelSolver::initDOFManager(const ID & solver_type) {
   if (solver_type == "petsc") {
 #if defined(AKANTU_USE_PETSC)
     ID id = this->parent_id + ":dof_manager_petsc";
-    this->dof_manager =
-        new DOFManagerPETSc(id, this->parent_memory_id);
+    this->dof_manager = new DOFManagerPETSc(id, this->parent_memory_id);
 #else
     AKANTU_EXCEPTION(
         "To use PETSc you have to activate it in the compilations options");
@@ -83,8 +82,7 @@ void ModelSolver::initDOFManager(const ID & solver_type) {
   } else if (solver_type == "mumps") {
 #if defined(AKANTU_USE_MUMPS)
     ID id = this->parent_id + ":dof_manager_default";
-    this->dof_manager =
-        new DOFManagerDefault(id, this->parent_memory_id);
+    this->dof_manager = new DOFManagerDefault(id, this->parent_memory_id);
 #else
     AKANTU_EXCEPTION(
         "To use MUMPS you have to activate it in the compilations options");
@@ -97,6 +95,7 @@ void ModelSolver::initDOFManager(const ID & solver_type) {
   }
 
   this->dof_manager->registerMesh(mesh);
+  this->setDOFManager(*this->dof_manager);
 }
 
 /* -------------------------------------------------------------------------- */

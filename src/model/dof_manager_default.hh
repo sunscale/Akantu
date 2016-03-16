@@ -76,6 +76,21 @@ public:
       const Array<UInt> & filter_elements);
 
 protected:
+  /// Assemble an array to the global residual array
+  template<typename T>
+  void assembleToGlobalArray(const ID & dof_id,
+                             const Array<T> & array_to_assemble,
+                             Array<T> & global_array,
+                             T scale_factor);
+
+public:
+  /// clear the residual
+  virtual void clearResidual();
+
+  /// update the global dofs vector
+  virtual void updateGlobalBlockedDofs();
+
+protected:
   /// Get the part of the solution corresponding to the dof_id
   virtual void getSolutionPerDOFs(const ID & dof_id,
                                   Array<Real> & solution_array);

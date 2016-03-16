@@ -116,7 +116,7 @@ inline Array<Real> & DOFManager::getDOFsDerivatives(const ID & dofs_id,
 
 /* -------------------------------------------------------------------------- */
 inline const Array<Real> & DOFManager::getSolution(const ID & dofs_id) const {
-  return *(this->getDOFData(dofs_id).solution);
+  return this->getDOFData(dofs_id).solution;
 }
 
 /* -------------------------------------------------------------------------- */

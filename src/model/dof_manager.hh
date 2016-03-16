@@ -115,11 +115,17 @@ public:
   //                                         const ID & dof_id_n,
   //                                         const Matrix<Real> & matrix) = 0;
 
-protected:
+  /// sets the residual to 0
+  virtual void clearResidual() = 0;
+
+  /// sets the jacobian matrix to 0
+  virtual void clearJacobian();
+
   /// splits the solution storage from a global view to the per dof storages
   void splitSolutionPerDOFs();
 
-  /// minimum fonctionality to implement per derived version of the DOFManager
+protected:
+  /// minimum functionality to implement per derived version of the DOFManager
   /// to allow the splitSolutionPerDOFs function to work
   virtual void getSolutionPerDOFs(const ID & dof_id,
                                   Array<Real> & solution_array) = 0;
@@ -260,6 +266,8 @@ public:
 protected:
   /// dof representations in the dof manager
   struct DOFData {
+    DOFData();
+
     /// DOF support type (nodal, general) this is needed to determine how the
     /// dof are shared among processors
     DOFSupportType support_type;
@@ -271,7 +279,7 @@ protected:
     Array<bool> * blocked_dofs;
 
     /// Solution associated to the dof
-    Array<Real> * solution;
+    Array<Real> solution;
 
     /* ---------------------------------------------------------------------- */
     /* data for dynamic simulations                                           */

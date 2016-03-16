@@ -91,12 +91,40 @@ inline void DOFManagerDefault::addElementalMatrixToUnsymmetric(
 }
 
 /* -------------------------------------------------------------------------- */
-DOFManagerDefault::DOFManagerDefault(const ID & id,
-                                     const MemoryID & memory_id)
-    : DOFManager(id, memory_id) {}
+DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
+    : DOFManager(id, memory_id), residual(0, 1, std::string(id + ":residual")),
+      global_solution(0, 1, std::string(id + ":global_solution")),
+      global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
+      dofs_type(0, 1, std::string(id + ":dofs_type")) {}
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::~DOFManagerDefault() {}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+void DOFManagerDefault::assembleToGlobalArray(
+    const ID & dof_id, const Array<T> & array_to_assemble,
+    Array<T> & global_array, T scale_factor) {
+  AKANTU_DEBUG_IN();
+  const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
+
+  UInt nb_degree_of_freedoms =
+      array_to_assemble.getSize() * array_to_assemble.getNbComponent();
+
+  AKANTU_DEBUG_ASSERT(equation_number.getSize() == nb_degree_of_freedoms,
+                      "The array to assemble does not have a correct size."
+                          << " (" << array_to_assemble.getID() << ")");
+
+  typename Array<T>::const_scalar_iterator arr_it =
+      array_to_assemble.begin_reinterpret(nb_degree_of_freedoms);
+  Array<UInt>::const_scalar_iterator equ_it = equation_number.begin();
+
+  for (UInt d = 0; d < nb_degree_of_freedoms; ++d, ++arr_it, ++equ_it) {
+    global_array(*equ_it) += scale_factor * (*arr_it);
+  }
+
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::registerDOFs(const ID & dof_id,
@@ -131,23 +159,38 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
   // set the equation numbers
   UInt first_dof_id = local_nb_dofs;
   dof_data.local_equation_number.resize(nb_dofs);
+  this->dofs_type.resize(local_system_size);
 
   for (UInt d = 0; d < nb_dofs; ++d) {
     UInt local_eq_num = first_dof_id + d;
     dof_data.local_equation_number(d) = local_eq_num;
     UInt global_eq_num = first_global_dofs_id + d;
     this->global_equation_number(local_eq_num) = global_eq_num;
-
     this->global_to_local_mapping[global_eq_num] = local_eq_num;
+    switch (support_type) {
+    case _dst_nodal: {
+      UInt node = d / dof_data.dof->getNbComponent();
+      this->dofs_type(local_eq_num) = this->mesh->getNodeType(node);
+      break;
+    }
+    case _dst_generic: {
+      this->dofs_type(local_eq_num) = _nt_normal;
+      break;
+    }
+    default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }
+    }
   }
+
+  this->residual.resize(this->local_system_size);
+  this->global_solution.resize(this->local_system_size);
+  this->global_blocked_dofs.resize(this->local_system_size);
 }
 
 /* -------------------------------------------------------------------------- */
 SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & id,
                                                const MatrixType & matrix_type) {
   ID matrix_id = this->id + ":mtx:" + id;
-  SparseMatrix * sm =
-      new SparseMatrixAIJ(*this, matrix_type, matrix_id);
+  SparseMatrix * sm = new SparseMatrixAIJ(*this, matrix_type, matrix_id);
   this->registerSparseMatrix(matrix_id, *sm);
 
   return *sm;
@@ -159,8 +202,7 @@ SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & id,
 
   ID matrix_id = this->id + ":mtx:" + id;
   SparseMatrixAIJ & sm_to_copy = this->getMatrix(matrix_to_copy_id);
-  SparseMatrix * sm =
-      new SparseMatrixAIJ(sm_to_copy, matrix_id);
+  SparseMatrix * sm = new SparseMatrixAIJ(sm_to_copy, matrix_id);
   this->registerSparseMatrix(matrix_id, *sm);
 
   return *sm;
@@ -222,27 +264,41 @@ DOFManagerDefault::getNewTimeStepSolver(const ID & id,
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManagerDefault::clearResidual() {
+  this->residual.resize(this->local_system_size);
+  this->residual.clear();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::updateGlobalBlockedDofs() {
+  DOFStorage::iterator it = this->dofs.begin();
+  DOFStorage::iterator end = this->dofs.end();
+
+  this->global_blocked_dofs.resize(this->local_system_size);
+  this->global_blocked_dofs.clear();
+
+  for (; it != end; ++it) {
+    DOFData & dof_data = *it->second;
+    this->assembleToGlobalArray(it->first, *dof_data.blocked_dofs,
+                                this->global_blocked_dofs, true);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 void DOFManagerDefault::getSolutionPerDOFs(const ID & dof_id,
                                            Array<Real> & solution_array) {
   AKANTU_DEBUG_IN();
 
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
 
-  UInt nb_degree_of_freedoms =
-      solution_array.getSize() * solution_array.getNbComponent();
-
-  AKANTU_DEBUG_ASSERT(
-      equation_number.getSize() == nb_degree_of_freedoms,
-      "The array to get the solution does not have a correct size."
-          << " (" << solution_array.getID() << ")");
+  UInt nb_degree_of_freedoms = equation_number.getSize();
+  solution_array.resize(nb_degree_of_freedoms);
 
   Real * sol_it = solution_array.storage();
   UInt * equ_it = equation_number.storage();
 
-  Array<Real> solution;
-
   for (UInt d = 0; d < nb_degree_of_freedoms; ++d, ++sol_it, ++equ_it) {
-    (*sol_it) = solution(*equ_it);
+    (*sol_it) = this->global_solution(*equ_it);
   }
 
   AKANTU_DEBUG_OUT();
@@ -254,21 +310,8 @@ void DOFManagerDefault::assembleToResidual(
     Real scale_factor) {
   AKANTU_DEBUG_IN();
 
-  const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
-
-  UInt nb_degree_of_freedoms =
-      array_to_assemble.getSize() * array_to_assemble.getNbComponent();
-
-  AKANTU_DEBUG_ASSERT(equation_number.getSize() == nb_degree_of_freedoms,
-                      "The array to assemble does not have a correct size."
-                          << " (" << array_to_assemble.getID() << ")");
-
-  Real * arr_it = array_to_assemble.storage();
-  UInt * equ_it = equation_number.storage();
-
-  for (UInt d = 0; d < nb_degree_of_freedoms; ++d, ++arr_it, ++equ_it) {
-    residual(*equ_it) += scale_factor * (*arr_it);
-  }
+  this->assembleToGlobalArray(dof_id, array_to_assemble, this->residual,
+                              scale_factor);
 
   AKANTU_DEBUG_OUT();
 }
@@ -308,7 +351,8 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
   UInt nb_degree_of_freedom = elementary_mat.getNbComponent() /
                               (nb_nodes_per_element * nb_nodes_per_element);
 
-  const Array<UInt> connectivity = this->mesh->getConnectivity(type, ghost_type);
+  const Array<UInt> connectivity =
+      this->mesh->getConnectivity(type, ghost_type);
   Array<UInt>::const_vector_iterator conn_begin =
       connectivity.begin(nb_nodes_per_element);
   Array<UInt>::const_vector_iterator conn_it = conn_begin;
@@ -334,8 +378,8 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 
     if (A.getMatrixType() == _symmetric)
       if (elemental_matrix_type == _symmetric)
-        this->addSymmetricElementalMatrixToSymmetric(A, *el_mat_it, element_eq_nb,
-                                                     A.getSize());
+        this->addSymmetricElementalMatrixToSymmetric(
+            A, *el_mat_it, element_eq_nb, A.getSize());
       else
         this->addUnsymmetricElementalMatrixToSymmetric(
             A, *el_mat_it, element_eq_nb, A.getSize());

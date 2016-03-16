@@ -83,6 +83,9 @@ private:
   /// set internal values;
   void initMumpsData();
 
+  /// set the level of verbosity of mumps based on the debug level of akantu
+  void setOutputLevel();
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -105,6 +108,9 @@ private:
 
   /// Right hand side per processors
   const Array<Real> & rhs;
+
+  /// solution vector per processors
+  Array<Real> & solution;
 
   /// Full right hand side on the master processors and solution after solve
   Array<Real> master_rhs_solution;

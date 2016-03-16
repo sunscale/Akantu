@@ -35,6 +35,10 @@
 #ifndef __AKANTU_SOLVER_CALLBACK_HH__
 #define __AKANTU_SOLVER_CALLBACK_HH__
 
+namespace akantu {
+  class DOFManager;
+}
+
 __BEGIN_AKANTU__
 
 class SolverCallback {
@@ -42,18 +46,22 @@ class SolverCallback {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SolverCallback() {}
-  virtual ~SolverCallback() {}
+  explicit SolverCallback(DOFManager & dof_manager);
+  explicit SolverCallback();
+  /* ------------------------------------------------------------------------ */
+  virtual ~SolverCallback();
 
+protected:
+  void setDOFManager(DOFManager & dof_manager);
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// callback to assemble the Jacobian Matrix
-  virtual void assembleJacobian() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  virtual void assembleJacobian();
 
   /// callback to assemble the residual (rhs)
-  virtual void assembleResidual() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  virtual void assembleResidual();
 
   /* ------------------------------------------------------------------------ */
   /* Dynamic simulations part                                                 */
@@ -63,6 +71,10 @@ public:
 
   /// callback for the corrector (in case of dynamic simulation)
   virtual void corrector() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+
+protected:
+  /// DOFManager prefixed to avoid collision in multiple inheritance cases
+  DOFManager * sc_dof_manager;
 };
 
 __END_AKANTU__

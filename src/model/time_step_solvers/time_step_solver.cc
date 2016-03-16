@@ -40,8 +40,9 @@ TimeStepSolver::TimeStepSolver(DOFManager & dof_manager,
                                const TimeStepSolverType & type,
                                NonLinearSolver & non_linear_solver,
                                const ID & id, UInt memory_id)
-    : Memory(id, memory_id), _dof_manager(dof_manager), type(type),
-      solver_callback(NULL), non_linear_solver(non_linear_solver) {}
+    : Memory(id, memory_id), SolverCallback(dof_manager),
+      _dof_manager(dof_manager), type(type), solver_callback(NULL),
+      non_linear_solver(non_linear_solver) {}
 
 /* -------------------------------------------------------------------------- */
 TimeStepSolver::~TimeStepSolver() {}

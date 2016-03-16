@@ -1,11 +1,11 @@
 /**
- * @file   non_linear_solver.cc
+ * @file   solver_callback.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date   Tue Oct 13 15:34:43 2015
+ * @date   Wed Mar  2 12:47:17 2016
  *
- * @brief  Implementation of the base class NonLinearSolver
+ * @brief  Default behavior of solver_callbacks
  *
  * @section LICENSE
  *
@@ -28,32 +28,34 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "non_linear_solver.hh"
 #include "solver_callback.hh"
-/* -------------------------------------------------------------------------- */
+#include "dof_manager.hh"
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolver::NonLinearSolver(
-    DOFManager & dof_manager,
-    const NonLinearSolverType & non_linear_solver_type, const ID & id,
-    UInt memory_id)
-    : Memory(id, memory_id), _dof_manager(dof_manager),
-      non_linear_solver_type(non_linear_solver_type) {}
+SolverCallback::SolverCallback(DOFManager & dof_manager)
+    : sc_dof_manager(&dof_manager) {}
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolver::~NonLinearSolver() {}
+SolverCallback::SolverCallback() : sc_dof_manager(NULL) {}
 
 /* -------------------------------------------------------------------------- */
-void NonLinearSolver::checkIfTypeIsSupported() {
-  if (this->supported_type.find(this->non_linear_solver_type) ==
-      this->supported_type.end()) {
-    AKANTU_EXCEPTION("The resolution method "
-                     << this->non_linear_solver_type
-                     << " is not implemented in the non linear solver "
-                     << this->id << "!");
-  }
+SolverCallback::~SolverCallback() {}
+
+/* -------------------------------------------------------------------------- */
+void SolverCallback::setDOFManager(DOFManager & dof_manager) {
+  this->sc_dof_manager = &dof_manager;
+}
+
+/* -------------------------------------------------------------------------- */
+void SolverCallback::assembleJacobian() {
+  this->sc_dof_manager->clearJacobian();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolverCallback::assembleResidual() {
+  this->sc_dof_manager->clearResidual();
 }
 
 /* -------------------------------------------------------------------------- */

@@ -128,7 +128,8 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
                                      const MemoryID & memory_id)
     : SparseSolver(dof_manager, matrix_id, id, memory_id),
       dof_manager(dof_manager), matrix(dof_manager.getMatrix(matrix_id)),
-      rhs(dof_manager.getResidual()), master_rhs_solution(0, 1) {
+      rhs(dof_manager.getResidual()), solution(dof_manager.getGlobalSolution()),
+      master_rhs_solution(0, 1) {
   AKANTU_DEBUG_IN();
 
   StaticCommunicator & communicator =
@@ -166,24 +167,11 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
   this->mumps_data.sym = 2 * (this->matrix.getMatrixType() == _symmetric);
   this->prank = communicator.whoAmI();
 
-  /* ------------------------------------------------------------------------ */
-  // Output setup
-  if (AKANTU_DEBUG_TEST(dblTrace)) {
-    icntl(1) = 6;
-    icntl(2) = 2;
-    icntl(3) = 2;
-    icntl(4) = 4;
-  } else {
-    /// No outputs
-    icntl(1) = 6; // error output
-    icntl(2) = 0; // dignostics output
-    icntl(3) = 0; // informations
-    icntl(4) = 0; // no outputs
-  }
-
   this->mumps_data.job = _smj_initialize; // initialize
   dmumps_c(&this->mumps_data);
 
+  /* ------------------------------------------------------------------------ */
+  this->setOutputLevel();
 
   if (AKANTU_DEBUG_TEST(dblDump)) {
     strcpy(this->mumps_data.write_problem, "mumps_matrix.mtx");
@@ -203,6 +191,33 @@ SparseSolverMumps::~SparseSolverMumps() {
   dmumps_c(&this->mumps_data);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseSolverMumps::setOutputLevel() {
+  // Output setup
+  icntl(1) = 0; // error output
+  icntl(2) = 0; // dignostics output
+  icntl(3) = 0; // informations
+  icntl(4) = 0;
+
+#if !defined(AKANTU_NDEBUG)
+  DebugLevel dbg_lvl = debug::debugger.getDebugLevel();
+
+  icntl(1) = (dbg_lvl >= dblWarning) ? 6 : 0;
+  icntl(3) = (dbg_lvl >= dblInfo) ? 6 : 0;
+  icntl(2) = (dbg_lvl >= dblTrace) ? 6 : 0;
+
+  if (dbg_lvl >= dblDump) {
+    icntl(4) = 4;
+  } else if (dbg_lvl >= dblTrace) {
+    icntl(4) = 3;
+  } else if (dbg_lvl >= dblInfo) {
+    icntl(4) = 2;
+  } else if (dbg_lvl >= dblWarning) {
+    icntl(4) = 1;
+  }
+#endif
 }
 
 /* -------------------------------------------------------------------------- */
@@ -303,21 +318,18 @@ void SparseSolverMumps::factorize() {
 void SparseSolverMumps::solve() {
   AKANTU_DEBUG_IN();
 
+  this->setOutputLevel();
+
+  this->dof_manager.updateGlobalBlockedDofs();
+  this->matrix.applyBoundary();
+
   // if (prank == 0) {
-  //   // deactivate debug messages
-  //   DebugLevel dbl = debug::getDebugLevel();
-  //   debug::setDebugLevel(dblError);
-
-  //   matrix.getDOFSynchronizer().gather(this->rhs, 0,
-  //   this->master_rhs_solution);
-
-  //   // reactivate debug messages
-  //   debug::setDebugLevel(dbl);
+  //   matrix.getDOFSynchronizer().gather(this->rhs, 0, this->master_rhs_solution);
   // } else {
   //   this->matrix.getDOFSynchronizer().gather(this->rhs, 0);
   // }
 
-  if(this->last_profile_release != this->matrix.getProfileRelease()) {
+  if (this->last_profile_release != this->matrix.getProfileRelease()) {
     this->analysis();
     this->last_profile_release = this->matrix.getProfileRelease();
   }
@@ -335,15 +347,22 @@ void SparseSolverMumps::solve() {
 
   this->printError();
 
+  // if (prank == 0) {
+  //   matrix.getDOFSynchronizer().scatter(this->solution, 0, this->master_rhs_solution);
+  // } else {
+  //   this->matrix.getDOFSynchronizer().gather(this->solution, 0);
+  // }
+  this->dof_manager.splitSolutionPerDOFs();
+
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::printError() {
-  Int _info_v[2];
+  Vector<Int> _info_v(2);
   _info_v[0] = info(1);  // to get errors
   _info_v[1] = -info(1); // to get warnings
-  StaticCommunicator::getStaticCommunicator().allReduce(_info_v, 2, _so_min);
+  StaticCommunicator::getStaticCommunicator().allReduce(_info_v, _so_min);
   _info_v[1] = -_info_v[1];
 
   if (_info_v[0] < 0) { // < 0 is an error

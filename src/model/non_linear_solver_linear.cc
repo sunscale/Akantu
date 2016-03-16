@@ -58,6 +58,7 @@ void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {
 
   solver_callback.assembleResidual();
   solver_callback.assembleJacobian();
+
   this->solver.solve();
 
   solver_callback.corrector();
