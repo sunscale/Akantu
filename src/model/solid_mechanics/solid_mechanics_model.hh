@@ -1,4 +1,4 @@
-n/**
+/**
  * @file   solid_mechanics_model.hh
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>

@@ -60,8 +60,7 @@ class DOFSynchronizer : public Synchronizer {
   /* ------------------------------------------------------------------------ */
 public:
 
-  DOFSynchronizer(const Mesh & mesh, UInt nb_degree_of_freedom,
-		  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
+  DOFSynchronizer(const Mesh & mesh, UInt nb_degree_of_freedom);
   virtual ~DOFSynchronizer();
 
   /* ------------------------------------------------------------------------ */

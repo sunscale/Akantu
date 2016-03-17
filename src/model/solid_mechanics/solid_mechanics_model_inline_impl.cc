@@ -1,4 +1,4 @@
-n/**
+/**
  * @file   solid_mechanics_model_inline_impl.cc
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>

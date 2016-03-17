@@ -96,8 +96,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh,
   material_local_numbering("material local numbering", id, memory_id),
   material_selector(new DefaultMaterialSelector(material_index)),
   is_default_material_selector(true),
-  integrator(NULL),
-  increment_flag(false), solver(NULL),
+  increment_flag(false),
   synch_parallel(NULL),
   are_materials_instantiated(false),
   non_local_manager(NULL),
@@ -1128,22 +1127,6 @@ void SolidMechanicsModel::onNodesRemoved(__attribute__((unused))
   // if (method != _explicit_lumped_mass) {
   //   this->initSolver();
   // }
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::reinitializeSolver() {
-
-  delete dof_synchronizer;
-  dof_synchronizer = new DOFSynchronizer(mesh, spatial_dimension);
-  dof_synchronizer->initLocalDOFEquationNumbers();
-  dof_synchronizer->initGlobalDOFEquationNumbers();
-
-  if (method != _explicit_lumped_mass) {
-    this->initSolver();
-  }
-
-  if (method == _explicit_lumped_mass)
-    this->assembleMassLumped();
 }
 
 /* -------------------------------------------------------------------------- */

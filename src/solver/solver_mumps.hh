@@ -1,4 +1,4 @@
-n/**
+/**
  * @file   sparse_solver_mumps.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
