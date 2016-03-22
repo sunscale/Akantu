@@ -27,6 +27,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "material_igfem_iterative_stiffness_reduction.hh"
+#include "material_iterative_stiffness_reduction.hh"
 #include <math.h>
 
 __BEGIN_AKANTU__
@@ -41,23 +42,36 @@ MaterialIGFEMIterativeStiffnessReduction<spatial_dimension>::MaterialIGFEMIterat
   reduction_step("damage_step", *this),
   D("tangent", *this),
   Gf(0.),
-  el_h(0.),
+  crack_band_width(0.),
   max_reductions(0),
   reduction_constant(0.) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("Gf",                  Gf,                  _pat_parsable, "fracture energy");
-  this->registerParam("element_size",                  el_h,                  _pat_parsable, "element size");
-  this->registerParam("max_reductions",                  max_reductions, UInt(10),                  _pat_parsable | _pat_modifiable, "max reductions");
-  this->registerParam("reduction_constant",                  reduction_constant, 2.,                  _pat_parsable | _pat_modifiable, "reduction constant");
-
   this->eps_u.initialize(1);
   this->D.initialize(1);
   this->reduction_step.initialize(1);
-
+                                        
   this->internals_to_transfer.push_back("ultimate_strain");
   this->internals_to_transfer.push_back("tangent");
 
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt dim>
+void MaterialIGFEMIterativeStiffnessReduction<dim>::initMaterial() {
+  AKANTU_DEBUG_IN();
+
+  MaterialIGFEMSawToothDamage<dim>::initMaterial();
+
+  /// get the parameters for the sub-material that can be damaged
+  ID mat_name = this->sub_material_names[1];
+  const MaterialIterativeStiffnessReduction<dim> & mat = dynamic_cast<MaterialIterativeStiffnessReduction<dim> & >(this->model->getMaterial(mat_name)); 
+  this->crack_band_width = mat.getCrackBandWidth();
+  this->max_reductions = mat.getMaxReductions();
+  this->reduction_constant = mat.getReductionConstant();
+  this->Gf = mat.getFractureEnergy();
+ 
   AKANTU_DEBUG_OUT();
 }
 
@@ -117,8 +131,8 @@ UInt MaterialIGFEMIterativeStiffnessReduction<spatial_dimension>::updateDamage()
     /// update the damage only on non-ghosts elements! Doesn't make sense to update on ghost.
     GhostType ghost_type = _not_ghost;;
 
-    Mesh::type_iterator it = this->model->getFEEngine().getMesh().firstType(spatial_dimension, ghost_type);
-    Mesh::type_iterator last_type = this->model->getFEEngine().getMesh().lastType(spatial_dimension, ghost_type);
+    Mesh::type_iterator it = this->model->getFEEngine().getMesh().firstType(spatial_dimension, ghost_type, _ek_igfem);
+    Mesh::type_iterator last_type = this->model->getFEEngine().getMesh().lastType(spatial_dimension, ghost_type, _ek_igfem);
 
     /// get the Young's modulus of the damageable sub-material 
     ID mat_name = this->sub_material_names[1];
@@ -129,8 +143,8 @@ UInt MaterialIGFEMIterativeStiffnessReduction<spatial_dimension>::updateDamage()
       ElementType el_type = *it;
 
       /// get iterators on the needed internal fields
-      Array<UInt> & sub_mat = this->sub_material(el_type, ghost_type);
-      Array<UInt>::iterator<UInt> sub_mat_it = sub_mat.begin();
+      const Array<UInt> & sub_mat = this->sub_material(el_type, ghost_type);
+      Array<UInt>::const_scalar_iterator sub_mat_it = sub_mat.begin();
       Array<Real>::const_scalar_iterator equivalent_stress_it = this->equivalent_stress(el_type, ghost_type).begin();
       Array<Real>::const_scalar_iterator equivalent_stress_end = this->equivalent_stress(el_type, ghost_type).end();
       Array<Real>::scalar_iterator dam_it = this->damage(el_type, ghost_type).begin();
@@ -218,13 +232,18 @@ void MaterialIGFEMIterativeStiffnessReduction<spatial_dimension>::onElementsAdde
       UInt nb_element = this->element_filter(el_type, ghost_type).getSize();
       UInt nb_quads = this->fem->getNbIntegrationPoints(el_type);
       UInt * sub_mat_ptr = this->sub_material(el_type, ghost_type).storage();
-      for (UInt q = 0; q < nb_element * nb_quads; ++q, ++sub_mat_ptr) {
-	if (*sub_mat_ptr)
-	  for (UInt i = 0; i < this->max_reductions; ++i) {
-	    val = 1 - (1./std::pow(this->reduction_constant, i));
-	    if (Math::are_float_equal(val, *dam_it))
-	      *reduction_it = i;
+      for (UInt q = 0; q < nb_element * nb_quads; ++q, ++sub_mat_ptr, ++dam_it, ++reduction_it) {
+	if (*sub_mat_ptr) { 
+	  if (Math::are_float_equal(*dam_it, this->max_damage))
+	    *reduction_it = this->max_reductions;
+	  else {
+	    for (UInt i = 0; i < this->max_reductions; ++i) {
+	      val = 1 - (1./std::pow(this->reduction_constant, i));
+	      if (Math::are_float_equal(val, *dam_it))
+		*reduction_it = i;
+	    }
 	  }
+	}
       }
     }
   }

@@ -14,6 +14,7 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "material_igfem_saw_tooth_damage.hh"
+#include "material_damage_iterative.hh"
 
 __BEGIN_AKANTU__
 
@@ -26,11 +27,6 @@ MaterialIGFEMSawToothDamage<dim>::MaterialIGFEMSawToothDamage(SolidMechanicsMode
   equivalent_stress("equivalent_stress", *this),
   norm_max_equivalent_stress(0) {
   AKANTU_DEBUG_IN();
-
-  this->registerParam("prescribed_dam",      prescribed_dam, 0.1, _pat_parsable | _pat_modifiable, "increase of damage in every step" );
-  this->registerParam("dam_threshold",       dam_threshold,  0.8,  _pat_parsable | _pat_modifiable, "damage threshold at which damage damage will be set to 1" );
-  this->registerParam("dam_tolerance",       dam_tolerance,  0.01,  _pat_parsable | _pat_modifiable, "damage tolerance to decide if quadrature point will be damageed" );
-  this->registerParam("max_damage",       max_damage,  0.99999,  _pat_parsable | _pat_modifiable, "maximum damage value" );
 
   this->Sc.initialize(1);
   this->equivalent_stress.initialize(1);
@@ -50,6 +46,14 @@ void MaterialIGFEMSawToothDamage<dim>::initMaterial() {
 
   Parent::initMaterial();
 
+  /// get the parameters for the sub-material that can be damaged
+  ID mat_name = this->sub_material_names[1];
+  const MaterialDamageIterative<dim> & mat = dynamic_cast<MaterialDamageIterative<dim> & >(this->model->getMaterial(mat_name)); 
+  this->prescribed_dam = mat.getPrescribedDamage();
+  this->dam_threshold = mat.getDamageThreshold();
+  this->dam_tolerance = mat.getDamageTolerance();
+  this->max_damage = mat.getMaximumDamage();
+ 
   AKANTU_DEBUG_OUT();
 }
 

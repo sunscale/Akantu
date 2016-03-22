@@ -57,6 +57,27 @@ register_test(test_ASR_damge
   PACKAGE IGFEM extra_materials
   )
 
+register_test(test_material_igfem_iterative_stiffness_reduction
+  SOURCES test_material_igfem_iterative_stiffness_reduction.cc
+  FILES_TO_COPY material_stiffness_reduction.dat regular_mesh.msh igfem_mesh.msh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE IGFEM implicit extra_materials
+  )
+
+register_test(test_material_igfem_iterative_stiffness_reduction_damage_step_transfer
+  SOURCES test_material_igfem_iterative_stiffness_reduction_damage_step_transfer.cc
+  FILES_TO_COPY material_stiffness_reduction_2.dat test_damage_transfer.msh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE IGFEM implicit extra_materials
+  )
+
+register_test(test_material_igfem_iterative_stiffness_reduction_parallel
+  SOURCES test_material_igfem_iterative_stiffness_reduction_parallel.cc
+  FILES_TO_COPY material_stiffness_reduction_2.dat test_damage_transfer.msh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE IGFEM implicit extra_materials
+  )
+
 # register_test(test_igfem_analysis
 #   SOURCES igfem_analysis.cc
 #   FILES_TO_COPY material_el_flipping.dat one_inclusion.msh 

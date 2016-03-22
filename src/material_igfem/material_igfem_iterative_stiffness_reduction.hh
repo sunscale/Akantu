@@ -60,6 +60,9 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
+  /// set the material parameters
+  virtual void initMaterial();
+
   ///compute the equivalent stress on each Gauss point (i.e. the max prinicpal stress) and normalize it by the tensile stiffness
   virtual void computeNormalizedEquivalentStress(const Array<Real> & grad_u,
 						 ElementType el_type, GhostType ghost_type = _not_ghost);
@@ -83,19 +86,19 @@ public:
 protected:
 
   /// the ultimate strain
-  InternalField<Real> eps_u;
+  IGFEMInternalField<Real> eps_u;
 
   /// the reduction
-  InternalField<UInt> reduction_step;
+  IGFEMInternalField<UInt> reduction_step;
 
   /// the tangent of the tensile stress-strain softening
-  InternalField<Real> D;
+  IGFEMInternalField<Real> D;
 
   /// fracture energy
   Real Gf;
 
-  /// element size for normalization of fracture energy
-  Real el_h;
+  /// crack band width for normalization of fracture energy
+  Real crack_band_width;
 
   /// the number of total reductions steps until complete failure
   UInt max_reductions;

@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
   Math::setTolerance(1e-14);
 
   /// geometry of IGFEM interface: circular inclusion
-  Real radius_inclusion = 0.801;
+  Real radius_inclusion = 0.401;
   Vector<Real> center(spatial_dimension, 0.);
   /// @todo: Simplify this: need to create two type of spheres:
   /// one for the geometry and one for the material selector
@@ -317,9 +317,6 @@ int main(int argc, char *argv[]) {
 
   /// output the displacement in parallel
   outputArray(mesh, model.getDisplacement());
-
-  if (prank == 0)
-    std::cout << "Total number of nodes: " << mesh.getNbGlobalNodes() << std::endl;
 
   finalize();
   return EXIT_SUCCESS;
