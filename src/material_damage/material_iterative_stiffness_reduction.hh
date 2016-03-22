@@ -78,11 +78,6 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
 
-   AKANTU_GET_MACRO(CrackBandWidth, crack_band_width, Real);
-   AKANTU_GET_MACRO(MaxReductions, max_reductions, UInt);
-   AKANTU_GET_MACRO(ReductionConstant, reduction_constant, Real);
-   AKANTU_GET_MACRO(FractureEnergy, Gf, Real);
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

@@ -33,7 +33,7 @@ MaterialDamageIterative<spatial_dimension>::MaterialDamageIterative(SolidMechani
   AKANTU_DEBUG_IN();
 
   this->registerParam("Sc",                  Sc,                  _pat_parsable, "critical stress threshold");
-  this->registerParam("prescribed_dam",      prescribed_dam, 0.1, _pat_parsable | _pat_modifiable, "increase of damage in every step" );
+  this->registerParam("prescribed_dam",      prescribed_dam, 0.1, _pat_parsable | _pat_modifiable, "prescribed damage" );
   this->registerParam("dam_threshold",       dam_threshold,  0.8,  _pat_parsable | _pat_modifiable, "damage threshold at which damage damage will be set to 1" );
   this->registerParam("dam_tolerance",       dam_tolerance,  0.01,  _pat_parsable | _pat_modifiable, "damage tolerance to decide if quadrature point will be damageed" );
   this->registerParam("max_damage",       max_damage,  0.99999,  _pat_parsable | _pat_modifiable, "maximum damage value" );

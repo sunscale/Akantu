@@ -87,10 +87,6 @@ protected:
 public:
   /// get max normalized equivalent stress
   AKANTU_GET_MACRO(NormMaxEquivalentStress, norm_max_equivalent_stress, Real);
-  AKANTU_GET_MACRO(PrescribedDamage, prescribed_dam, Real);
-  AKANTU_GET_MACRO(DamageThreshold, dam_threshold, Real);
-  AKANTU_GET_MACRO(DamageTolerance, dam_tolerance, Real);
-  AKANTU_GET_MACRO(MaximumDamage, max_damage, Real);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

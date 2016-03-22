@@ -96,8 +96,7 @@ int main(int argc, char *argv[]) {
   Real error;
   bool converged = false;
   UInt nb_damaged_elements = 0;
-  Real max_eq_stress = 0;
-  Real E = material.getYoungsModulus();
+  Real E = material.getParam<Real>("E");
   std::cout << std::setprecision(12);
   const Array<Real> & damage = material.getInternal<Real>("damage")(element_type, _not_ghost);
   const Array<Real> & Sc = material.getInternal<Real>("Sc")(element_type, _not_ghost);
