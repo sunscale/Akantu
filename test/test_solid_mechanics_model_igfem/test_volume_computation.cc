@@ -207,8 +207,10 @@ int main(int argc, char *argv[]) {
   Real volume_inside = total_igfem_volume - volume_outside;
 
 
+  Math::setTolerance(1.e-8);
   if (!Math::are_float_equal(volume_material_damage, 0.5) || !Math::are_float_equal(volume_material_elastic, 0.25)
-      || !Math::are_float_equal(volume_inside, 0.1) || !Math::are_float_equal(volume_outside, (0.15))) {
+      || !Math::are_float_equal(volume_outside, 0.1) || !Math::are_float_equal(volume_inside, (0.15))) {
+    std::cout << "the test failed!!!" << std::endl;
     finalize();
     return EXIT_FAILURE;
   }
