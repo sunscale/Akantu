@@ -86,7 +86,6 @@ register_test(test_solver_petsc
 
 register_test(test_solver_petsc_parallel
   SOURCES test_solver_petsc.cc
-  FILES_TO_COPY test_solver_petsc_parallel.sh
   DEPENDS test_solver_petsc_mesh
   PACKAGE petsc
   )
