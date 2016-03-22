@@ -53,7 +53,7 @@ public:
   virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
 
   /// update internal field damage
-  UInt updateDamage();
+  virtual UInt updateDamage();
 
   UInt updateDamage(UInt quad_index, const Real eq_stress, const ElementType & el_type, const GhostType & ghost_type);
 
@@ -68,8 +68,8 @@ protected:
   virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   ///compute the equivalent stress on each Gauss point (i.e. the max prinicpal stress) and normalize it by the tensile strength
-  void computeNormalizedEquivalentStress(const Array<Real> & grad_u,
-                                         ElementType el_type, GhostType ghost_type = _not_ghost);
+  virtual void computeNormalizedEquivalentStress(const Array<Real> & grad_u,
+						 ElementType el_type, GhostType ghost_type = _not_ghost);
 
   /// find max normalized equivalent stress
   void findMaxNormalizedEquivalentStress(ElementType el_type, GhostType ghost_type = _not_ghost);
@@ -87,6 +87,10 @@ protected:
 public:
   /// get max normalized equivalent stress
   AKANTU_GET_MACRO(NormMaxEquivalentStress, norm_max_equivalent_stress, Real);
+  AKANTU_GET_MACRO(PrescribedDamage, prescribed_dam, Real);
+  AKANTU_GET_MACRO(DamageThreshold, dam_threshold, Real);
+  AKANTU_GET_MACRO(DamageTolerance, dam_tolerance, Real);
+  AKANTU_GET_MACRO(MaximumDamage, max_damage, Real);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

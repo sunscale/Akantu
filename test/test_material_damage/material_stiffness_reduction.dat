@@ -1,0 +1,12 @@
+material iterative_stiffness_reduction [
+	 name = test_mat_2
+	 rho = 2.7e-9   # density
+	 E   = 60e9 # young's modulus
+	 nu  = 0.3    # poisson's ratio
+	 Sc = 5.7e6
+	 prescribed_dam = 0.1
+	 max_damage = 0.9999
+	 Gf = 160
+	 crack_band_width  = 1
+	 max_reductions = 10	 
+]

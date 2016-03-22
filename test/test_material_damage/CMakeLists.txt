@@ -15,6 +15,7 @@
 #
 
 #===============================================================================
+add_mesh(single_agg energy_study.geo 2 1)
 
 register_test(test_material_damage_iterative
   SOURCES test_material_damage_iterative.cc
@@ -43,4 +44,20 @@ register_test(test_material_damage_iterative_non_local_parallel
   DIRECTORIES_TO_CREATE paraview
   PACKAGE extra_materials_non_local
   )
+
+register_test(test_material_iterative_stiffness_reduction
+  SOURCES test_material_iterative_stiffness_reduction.cc
+  FILES_TO_COPY material_stiffness_reduction.dat two_elements.msh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE extra_materials
+  )
+
+# register_test(test_material_iterative_stiffness_reduction_energy
+#   SOURCES test_material_iterative_stiffness_reduction_energy.cc
+#   DEPENDS single_agg
+#   FILES_TO_COPY concrete.dat
+#   DIRECTORIES_TO_CREATE paraview
+#   PACKAGE extra_materials
+#   )
+
 
