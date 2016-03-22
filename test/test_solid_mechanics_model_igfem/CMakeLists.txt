@@ -78,6 +78,13 @@ register_test(test_material_igfem_iterative_stiffness_reduction_parallel
   PACKAGE IGFEM implicit extra_materials
   )
 
+register_test(test_material_igfem_iterative_stiffness_reduction_tangent_transfer
+  SOURCES test_material_igfem_iterative_stiffness_reduction_tangent_transfer.cc
+  FILES_TO_COPY material_stiffness_reduction_weibull.dat test_damage_transfer.msh
+  DIRECTORIES_TO_CREATE paraview
+  PACKAGE IGFEM implicit extra_materials
+  )
+
 # register_test(test_igfem_analysis
 #   SOURCES igfem_analysis.cc
 #   FILES_TO_COPY material_el_flipping.dat one_inclusion.msh 
