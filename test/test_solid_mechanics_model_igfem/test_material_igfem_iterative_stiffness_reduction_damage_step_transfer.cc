@@ -301,7 +301,7 @@ int main(int argc, char *argv[]) {
   Array<Real>::const_scalar_iterator new_dam_it = new_dam_igfem.begin();
   Array<Real>::const_scalar_iterator old_dam_it = old_damage.begin();
   step_it = reduction_step_igfem.begin();
-  UInt reduction_constant = material.getReductionConstant();
+  UInt reduction_constant = material.getParam<Real>("reduction_constant");
 
   for (UInt e = 0; e < nb_igfem_elements; ++e) {
     for (UInt q = 0; q < nb_quads; ++q, ++sub_it, ++step_it, ++new_dam_it, ++old_dam_it) {

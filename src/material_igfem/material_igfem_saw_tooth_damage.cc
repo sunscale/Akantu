@@ -14,7 +14,6 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "material_igfem_saw_tooth_damage.hh"
-#include "material_damage_iterative.hh"
 
 __BEGIN_AKANTU__
 
@@ -48,11 +47,11 @@ void MaterialIGFEMSawToothDamage<dim>::initMaterial() {
 
   /// get the parameters for the sub-material that can be damaged
   ID mat_name = this->sub_material_names[1];
-  const MaterialDamageIterative<dim> & mat = dynamic_cast<MaterialDamageIterative<dim> & >(this->model->getMaterial(mat_name)); 
-  this->prescribed_dam = mat.getPrescribedDamage();
-  this->dam_threshold = mat.getDamageThreshold();
-  this->dam_tolerance = mat.getDamageTolerance();
-  this->max_damage = mat.getMaximumDamage();
+  const Material & mat = this->model->getMaterial(mat_name); 
+  this->prescribed_dam = mat.getParam<Real>("prescribed_dam");
+  this->dam_threshold = mat.getParam<Real>("dam_threshold");
+  this->dam_tolerance = mat.getParam<Real>("dam_tolerance");
+  this->max_damage = mat.getParam<Real>("max_damage");
  
   AKANTU_DEBUG_OUT();
 }

@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
   Array<Real>::const_scalar_iterator Sc_it = Sc.begin();
   const Array<Real> & D = material.getInternal<Real>("tangent")(_triangle_3, _not_ghost);
   Array<Real>::const_scalar_iterator D_it = D.begin();
-  Real E = material.getYoungsModulus();
+  Real E = material.getParam<Real>("E");
   Real Gf = 20.;
   Real ultimate_strain = 0;
   Real crack_band_width = 0.25;

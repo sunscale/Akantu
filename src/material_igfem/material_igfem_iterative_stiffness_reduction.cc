@@ -27,7 +27,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "material_igfem_iterative_stiffness_reduction.hh"
-#include "material_iterative_stiffness_reduction.hh"
 #include <math.h>
 
 __BEGIN_AKANTU__
@@ -66,11 +65,11 @@ void MaterialIGFEMIterativeStiffnessReduction<dim>::initMaterial() {
 
   /// get the parameters for the sub-material that can be damaged
   ID mat_name = this->sub_material_names[1];
-  const MaterialIterativeStiffnessReduction<dim> & mat = dynamic_cast<MaterialIterativeStiffnessReduction<dim> & >(this->model->getMaterial(mat_name)); 
-  this->crack_band_width = mat.getCrackBandWidth();
-  this->max_reductions = mat.getMaxReductions();
-  this->reduction_constant = mat.getReductionConstant();
-  this->Gf = mat.getFractureEnergy();
+  const Material & mat = this->model->getMaterial(mat_name); 
+  this->crack_band_width = mat.getParam<Real>("crack_band_width");
+  this->max_reductions = mat.getParam<UInt>("max_reductions");
+  this->reduction_constant = mat.getParam<Real>("reduction_constant");
+  this->Gf = mat.getParam<Real>("Gf");
  
   AKANTU_DEBUG_OUT();
 }
@@ -136,7 +135,8 @@ UInt MaterialIGFEMIterativeStiffnessReduction<spatial_dimension>::updateDamage()
 
     /// get the Young's modulus of the damageable sub-material 
     ID mat_name = this->sub_material_names[1];
-    Real E = dynamic_cast<MaterialElastic<spatial_dimension> & >(this->model->getMaterial(mat_name)).getYoungsModulus();
+
+    Real E = this->model->getMaterial(mat_name).template getParam<Real>("E");
     
     /// loop over all the elements
     for(; it != last_type; ++it) {
