@@ -65,7 +65,7 @@ public:
   /// get the intersection_points array
   AKANTU_GET_MACRO(IntersectionPoints, intersection_points, const Array<Real> *);
   /// get the nb_seg_by_el UInt
-  AKANTU_GET_MACRO(NbSegByEl, nb_seg_by_el, const UInt);
+  AKANTU_GET_MACRO(NbSegByEl, nb_seg_by_el, UInt);
 
   /**
    * @brief Compute the intersection with a query object
