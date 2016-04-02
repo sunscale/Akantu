@@ -136,7 +136,7 @@ namespace akantu {
           ;
 
         variable
-          =   key [ lbs::_val = phx::bind(&eval_param, lbs::_1, section, lbs::_val) ]
+          =   key [ lbs::_val = phx::bind(&eval_param, lbs::_1, section) ]
           ;
 
         key
@@ -315,7 +315,7 @@ namespace akantu {
     struct VectorGrammar : qi::grammar<Iterator, parsable_vector(), Skipper> {
       VectorGrammar(const ParserSection & section) : VectorGrammar::base_type(start,
                                                                             "vector_algebraic_grammar"),
-                                                    number(section) {
+						     number(section) {
 
         start
           =   '[' > vector > ']'
