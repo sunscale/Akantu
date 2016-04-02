@@ -72,142 +72,88 @@ namespace ascii = boost::spirit::ascii;
 namespace lbs = boost::spirit::qi::labels;
 namespace phx = boost::phoenix;
 
-namespace mesh_io_abaqus_lazy_eval {
-struct mesh_abaqus_error_handler_ {
-  template <typename, typename, typename> struct result { typedef void type; };
+/* -------------------------------------------------------------------------- */
+void element_read(Mesh & mesh, const ElementType & type, UInt id, const std::vector<Int> & conn,
+                  const std::map<UInt, UInt> & nodes_mapping,
+                  std::map<UInt, Element> & elements_mapping) {
+  Vector<UInt> tmp_conn(Mesh::getNbNodesPerElement(type));
 
-  template <typename Iterator>
-  void operator()(qi::info const & what, Iterator err_pos,
-                  Iterator last) const {
-    AKANTU_EXCEPTION(
-        "Error! Expecting "
-        << what // what failed?
-        << " here: \""
-        << std::string(err_pos, last) // iterators to error-pos, end
-        << "\"");
-  }
-};
+  AKANTU_DEBUG_ASSERT(conn.size() == tmp_conn.size(),
+		      "The nodes in the Abaqus file have too many coordinates"
+		      << " for the mesh you try to fill.");
 
-struct lazy_element_read_ {
-  template <class Mesh, class ET, class ID, class V, class NodeMap,
-            class ElemMap>
-  struct result {
-    typedef void type;
-  };
+  mesh.addConnectivityType(type);
+  Array<UInt> & connectivity = mesh.getConnectivity(type);
 
-  template <class Mesh, class ET, class ID, class V, class NodeMap,
-            class ElemMap>
-  void operator()(Mesh & mesh, const ET & type, const ID & id, const V & conn,
-                  const NodeMap & nodes_mapping,
-                  ElemMap & elements_mapping) const {
-    Vector<UInt> tmp_conn(Mesh::getNbNodesPerElement(type));
-
-    AKANTU_DEBUG_ASSERT(conn.size() == tmp_conn.size(),
-                        "The nodes in the Abaqus file have too many coordinates"
-                            << " for the mesh you try to fill.");
-
-    mesh.addConnectivityType(type);
-    Array<UInt> & connectivity = mesh.getConnectivity(type);
-
-    UInt i = 0;
-    for (typename V::const_iterator it = conn.begin(); it != conn.end(); ++it) {
-      typename NodeMap::const_iterator nit = nodes_mapping.find(*it);
-      AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
-                          "There is an unknown node in the connectivity.");
-      tmp_conn[i++] = nit->second;
-    }
-    Element el(type, connectivity.getSize());
-    elements_mapping[id] = el;
-    connectivity.push_back(tmp_conn);
-  }
-};
-
-struct lazy_node_read_ {
-  template <class Mesh, class ID, class V, class Map> struct result {
-    typedef void type;
-  };
-
-  template <class Mesh, class ID, class V, class Map>
-  void operator()(Mesh & mesh, const ID & id, const V & pos,
-                  Map & nodes_mapping) const {
-    Vector<Real> tmp_pos(mesh.getSpatialDimension());
-    UInt i = 0;
-    for (typename V::const_iterator it = pos.begin();
-         it != pos.end() || i < mesh.getSpatialDimension(); ++it)
-      tmp_pos[i++] = *it;
-
-    nodes_mapping[id] = mesh.getNbNodes();
-    mesh.getNodes().push_back(tmp_pos);
-  }
-};
-
-/* ------------------------------------------------------------------------ */
-struct lazy_element_group_create_ {
-  template <class Mesh, class S> struct result { typedef ElementGroup & type; };
-
-  template <class Mesh, class S>
-  ElementGroup & operator()(Mesh & mesh, const S & name) const {
-    typename Mesh::element_group_iterator eg_it = mesh.element_group_find(name);
-    if (eg_it != mesh.element_group_end()) {
-      return *eg_it->second;
-    } else {
-      return mesh.createElementGroup(name, _all_dimensions);
-    }
-  }
-};
-
-struct lazy_add_element_to_group_ {
-  template <class EG, class ID, class Map> struct result { typedef void type; };
-
-  template <class EG, class ID, class Map>
-  void operator()(EG * el_grp, const ID & element,
-                  const Map & elements_mapping) const {
-    typename Map::const_iterator eit = elements_mapping.find(element);
-    AKANTU_DEBUG_ASSERT(eit != elements_mapping.end(),
-                        "There is an unknown element ("
-                            << element << ") in the in the ELSET "
-                            << el_grp->getName() << ".");
-
-    el_grp->add(eit->second, true, false);
-  }
-};
-
-/* ------------------------------------------------------------------------ */
-struct lazy_node_group_create_ {
-  template <class Mesh, class S> struct result { typedef NodeGroup & type; };
-
-  template <class Mesh, class S>
-  NodeGroup & operator()(Mesh & mesh, const S & name) const {
-    typename Mesh::node_group_iterator ng_it = mesh.node_group_find(name);
-    if (ng_it != mesh.node_group_end()) {
-      return *ng_it->second;
-    } else {
-      return mesh.createNodeGroup(name, mesh.getSpatialDimension());
-    }
-  }
-};
-
-struct lazy_add_node_to_group_ {
-  template <class NG, class ID, class Map> struct result { typedef void type; };
-
-  template <class NG, class ID, class Map>
-  void operator()(NG * node_grp, const ID & node,
-                  const Map & nodes_mapping) const {
-    typename Map::const_iterator nit = nodes_mapping.find(node);
-
+  UInt i = 0;
+  for (std::vector<Int>::const_iterator it = conn.begin(); it != conn.end(); ++it) {
+    std::map<UInt, UInt>::const_iterator nit = nodes_mapping.find(*it);
     AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
-                        "There is an unknown node in the in the NSET "
-                            << node_grp->getName() << ".");
-
-    node_grp->add(nit->second, false);
+			"There is an unknown node in the connectivity.");
+    tmp_conn[i++] = nit->second;
   }
-};
-
-struct lazy_optimize_group_ {
-  template <class G> struct result { typedef void type; };
-  template <class G> void operator()(G * grp) const { grp->optimize(); }
-};
+  Element el(type, connectivity.getSize());
+  elements_mapping[id] = el;
+  connectivity.push_back(tmp_conn);
 }
+
+
+void node_read(Mesh & mesh, UInt id, const std::vector<Real> & pos,
+	       std::map<UInt, UInt> & nodes_mapping) {
+  Vector<Real> tmp_pos(mesh.getSpatialDimension());
+  UInt i = 0;
+  for (std::vector<Real>::const_iterator it = pos.begin();
+       it != pos.end() || i < mesh.getSpatialDimension(); ++it)
+    tmp_pos[i++] = *it;
+
+  nodes_mapping[id] = mesh.getNbNodes();
+  mesh.getNodes().push_back(tmp_pos);
+}
+
+
+/* ------------------------------------------------------------------------ */
+void add_element_to_group(ElementGroup * el_grp, UInt element,
+			  const std::map<UInt, Element> & elements_mapping) {
+  std::map<UInt, Element>::const_iterator eit = elements_mapping.find(element);
+  AKANTU_DEBUG_ASSERT(eit != elements_mapping.end(),
+		      "There is an unknown element ("
+		      << element << ") in the in the ELSET "
+		      << el_grp->getName() << ".");
+
+  el_grp->add(eit->second, true, false);
+}
+
+ElementGroup * element_group_create(Mesh & mesh, const ID & name) {
+  Mesh::element_group_iterator eg_it = mesh.element_group_find(name);
+  if (eg_it != mesh.element_group_end()) {
+    return eg_it->second;
+  } else {
+    return &mesh.createElementGroup(name, _all_dimensions);
+  }
+}
+
+NodeGroup * node_group_create(Mesh & mesh, const ID & name) {
+  Mesh::node_group_iterator ng_it = mesh.node_group_find(name);
+  if (ng_it != mesh.node_group_end()) {
+    return ng_it->second;
+  } else {
+    return &mesh.createNodeGroup(name, mesh.getSpatialDimension());
+  }
+}
+
+void add_node_to_group(NodeGroup * node_grp, UInt node,
+		       const std::map<UInt, UInt> & nodes_mapping) {
+  std::map<UInt, UInt>::const_iterator nit = nodes_mapping.find(node);
+
+  AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
+		      "There is an unknown node in the in the NSET "
+		      << node_grp->getName() << ".");
+  
+  node_grp->add(nit->second, false);
+}
+
+void optimize_group(NodeGroup * grp) { grp->optimize(); }
+void optimize_element_group(ElementGroup * grp) { grp->optimize(); }
 
 /* -------------------------------------------------------------------------- */
 template <class Iterator> struct AbaqusSkipper : qi::grammar<Iterator> {
@@ -228,21 +174,6 @@ struct AbaqusMeshGrammar : qi::grammar<Iterator, void(), Skipper> {
 public:
   AbaqusMeshGrammar(Mesh & mesh)
       : AbaqusMeshGrammar::base_type(start, "abaqus_mesh_reader"), mesh(mesh) {
-    phx::function<mesh_io_abaqus_lazy_eval::mesh_abaqus_error_handler_> const
-        error_handler = mesh_io_abaqus_lazy_eval::mesh_abaqus_error_handler_();
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_element_read_>
-        lazy_element_read;
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_node_read_> lazy_node_read;
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_element_group_create_>
-        lazy_element_group_create;
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_add_element_to_group_>
-        lazy_add_element_to_group;
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_node_group_create_>
-        lazy_node_group_create;
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_add_node_to_group_>
-        lazy_add_node_to_group;
-    phx::function<mesh_io_abaqus_lazy_eval::lazy_optimize_group_>
-        lazy_optimize_group;
 
     /* clang-format off */
     start
@@ -272,10 +203,11 @@ public:
       =   *(qi::char_(',') >> option)
            >> spirit::eol
            >> *( (qi::int_
-                  > node_position) [ lazy_node_read(phx::ref(mesh),
-                                                    lbs::_1,
-                                                    lbs::_2,
-                                                    phx::ref(abaqus_nodes_to_akantu)) ]
+                  > node_position) [ phx::bind(&node_read,
+						 phx::ref(mesh),
+						 lbs::_1,
+						 lbs::_2,
+						 phx::ref(abaqus_nodes_to_akantu)) ]
                   >> spirit::eol
                )
       ;
@@ -289,12 +221,13 @@ public:
           )
           >> spirit::eol
           >> *(  (qi::int_
-                  > connectivity) [ lazy_element_read(phx::ref(mesh),
-                                                     lbs::_a,
-                                                     lbs::_1,
-                                                     lbs::_2,
-                                                     phx::cref(abaqus_nodes_to_akantu),
-                                                     phx::ref(abaqus_elements_to_akantu)) ]
+                  > connectivity) [ phx::bind(&element_read,
+						phx::ref(mesh),
+						lbs::_a,
+						lbs::_1,
+						lbs::_2,
+						phx::cref(abaqus_nodes_to_akantu),
+						phx::ref(abaqus_elements_to_akantu)) ]
                  >> spirit::eol
                )
       ;
@@ -303,21 +236,24 @@ public:
       =   (
              (
                 (  qi::char_(',') >> qi::no_case[ qi::lit("elset") ] >> '='
-                   >> value [ lbs::_a = &lazy_element_group_create(phx::ref(mesh), lbs::_1) ]
+                   >> value [ lbs::_a = phx::bind<ElementGroup *>(&element_group_create,
+								    phx::ref(mesh),
+								    lbs::_1) ]
                 )
              ^  *(qi::char_(',') >> option)
              )
              >> spirit::eol
              >> qi::skip
                   (qi::char_(',') | qi::space)
-                  [ +(qi::int_ [ lazy_add_element_to_group(lbs::_a,
-                                                           lbs::_1,
-                                                           phx::cref(abaqus_elements_to_akantu)
-                                                          )
+	     [ +(qi::int_ [ phx::bind(&add_element_to_group,
+					lbs::_a,
+					lbs::_1,
+					phx::cref(abaqus_elements_to_akantu)
+					)
                                ]
                      )
                  ]
-          ) [ lazy_optimize_group(lbs::_a) ]
+	   ) [ phx::bind(&optimize_element_group, lbs::_a) ]
       ;
 
     nodes_set
@@ -325,21 +261,22 @@ public:
              (
                 (  qi::char_(',')
                    >> qi::no_case[ qi::lit("nset") ] >> '='
-                   >> value [ lbs::_a = &lazy_node_group_create(phx::ref(mesh), lbs::_1) ]
+                   >> value [ lbs::_a = phx::bind<NodeGroup *>(&node_group_create, phx::ref(mesh), lbs::_1) ]
                 )
              ^  *(qi::char_(',') >> option)
              )
              >> spirit::eol
              >> qi::skip
                  (qi::char_(',') | qi::space)
-                 [ +(qi::int_ [ lazy_add_node_to_group(lbs::_a,
-                                                       lbs::_1,
-                                                       phx::cref(abaqus_nodes_to_akantu)
-                                                       )
+	         [ +(qi::int_ [ phx::bind(&add_node_to_group,
+					    lbs::_a,
+					    lbs::_1,
+					    phx::cref(abaqus_nodes_to_akantu)
+					   )
                               ]
                     )
                  ]
-           ) [ lazy_optimize_group(lbs::_a) ]
+           ) [ phx::bind(&optimize_group, lbs::_a) ]
       ;
 
     material
@@ -413,8 +350,10 @@ public:
       ("C3D10" , _tetrahedron_10)
       ("DC3D10", _tetrahedron_10);
 
+#if !defined(AKANTU_NDEBUG) && defined(AKANTU_CORE_CXX_11)
     qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
-
+#endif
+    
     start              .name("abaqus-start-rule");
     connectivity       .name("abaqus-connectivity");
     node_position      .name("abaqus-nodes-position");
