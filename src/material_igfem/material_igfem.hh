@@ -106,7 +106,7 @@ public:
 
 protected:
 
-  const UInt nb_sub_materials = 2;
+  const UInt nb_sub_materials;
 
   /// pointer to the solid mechanics model for igfem elements
   SolidMechanicsModelIGFEM * model;

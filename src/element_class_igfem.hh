@@ -257,10 +257,10 @@ public:
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, _ek_igfem, ElementKind);
-  static const ElementType getP1ElementType(){AKANTU_DEBUG_TO_IMPLEMENT();};
+  static ElementType getP1ElementType(){AKANTU_DEBUG_TO_IMPLEMENT();};
   static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension, ElementClassProperty<element_type>::spatial_dimension, UInt);
-  static const ElementType & getFacetType(UInt t = 0) { AKANTU_DEBUG_TO_IMPLEMENT(); }
-  static const ElementType * getFacetTypeInternal() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  static ElementType & getFacetType(UInt t = 0) { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  static ElementType * getFacetTypeInternal() { AKANTU_DEBUG_TO_IMPLEMENT(); }
 private:
   /// Type of the facet elements
   ///  static ElementType facet_type[];

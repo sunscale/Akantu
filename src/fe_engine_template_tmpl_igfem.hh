@@ -40,11 +40,11 @@ inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem>::initSha
 #define INIT(_type)							\
     do { 								\
       const Matrix<Real> & all_quads =					\
-	integrator.template getQuadraturePoints<_type>(ghost_type);	\
-      const Matrix<Real> & quads_1 =						\
-	integrator.template getQuadraturePoints<ElementClassProperty<_type>::sub_element_type_1>(ghost_type); \
-      const Matrix<Real> & quads_2 =						\
-	integrator.template getQuadraturePoints<ElementClassProperty<_type>::sub_element_type_2>(ghost_type); \
+	integrator.getQuadraturePoints<_type>(ghost_type);		\
+      const Matrix<Real> & quads_1 =					\
+	integrator.getQuadraturePoints<ElementClassProperty<_type>::sub_element_type_1>(ghost_type); \
+      const Matrix<Real> & quads_2 =					\
+	integrator.getQuadraturePoints<ElementClassProperty<_type>::sub_element_type_2>(ghost_type); \
       shape_functions.initShapeFunctions(nodes,				\
 					 all_quads,			\
 					 quads_1,			\
