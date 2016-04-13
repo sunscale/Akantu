@@ -34,15 +34,18 @@
 using namespace akantu;
 
 /**
- *   =\o---o---o-> F
+ *   =\o-----o-----o-> F
+ *     |           |
+ *     |---- L ----|
  */
 class MySolverCallback : public SolverCallback {
 public:
-  MySolverCallback(Real F, DOFManagerDefault & dof_manager)
+  MySolverCallback(Real F, DOFManagerDefault & dof_manager, UInt nb_dofs = 3)
       : dof_manager(dof_manager),
         K(dynamic_cast<SparseMatrixAIJ &>(
             dof_manager.getNewMatrix("K", _symmetric))),
-        dispacement(3, 1, "disp"), blocked(3, 1), forces(3, 1) {
+        dispacement(nb_dofs, 1, "disp"), blocked(nb_dofs, 1),
+        forces(nb_dofs, 1), nb_dofs(nb_dofs) {
     dof_manager.registerDOFs("disp", dispacement, _dst_generic);
     dof_manager.registerBlockedDOFs("disp", blocked);
 
@@ -50,23 +53,27 @@ public:
     forces.set(0.);
     blocked.set(false);
 
-    forces(2, _x) = F;
+    forces(nb_dofs - 1, _x) = F;
     blocked(0, _x) = true;
 
-    K.addToProfile(0, 0);
-    K.addToProfile(0, 1);
-    K.addToProfile(1, 1);
-    K.addToProfile(1, 2);
-    K.addToProfile(2, 2);
+    for (UInt i = 0; i < nb_dofs; ++i)
+      K.addToProfile(i, i);
+    for (UInt i = 0; i < nb_dofs - 1; ++i)
+      K.addToProfile(i, i + 1);
   }
 
   void assembleJacobian() {
-    K(0, 0) = 1.;
-    K(1, 1) = 2.;
-    K(2, 2) = 1.;
-    K(0, 1) = -1.;
-    K(1, 2) = -1.;
+    for (UInt i = 1; i < nb_dofs - 1; ++i)
+      K(i, i) = 2;
+    for (UInt i = 0; i < nb_dofs - 1; ++i)
+      K(i, i + 1) = -1;
+
+    K(0, 0) = K(nb_dofs - 1, nb_dofs - 1) = 1;
+
+    // K *= 1 / L_{el}
+    K *= nb_dofs - 1;
   }
+
   void assembleResidual() { dof_manager.assembleToResidual("disp", forces); }
 
   void predictor() {}
@@ -77,13 +84,15 @@ public:
   Array<Real> dispacement;
   Array<bool> blocked;
   Array<Real> forces;
+
+  UInt nb_dofs;
 };
 
 int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
   DOFManagerDefault dof_manager("test_dof_manager");
-  MySolverCallback callback(10., dof_manager);
+  MySolverCallback callback(10., dof_manager, 11);
 
   dof_manager.getNewMatrix("J", "K");
 
@@ -94,11 +103,19 @@ int main(int argc, char * argv[]) {
   tss.setIntegrationScheme("disp", _ist_pseudo_time);
   tss.solveStep(callback);
 
+  dof_manager.getMatrix("K").saveMatrix("K_dof_manager_default.mtx");
+
   Array<Real>::const_scalar_iterator disp_it = callback.dispacement.begin();
   Array<Real>::const_scalar_iterator force_it = callback.forces.begin();
   Array<bool>::const_scalar_iterator blocked_it = callback.blocked.begin();
-  for (; disp_it != callback.dispacement.end(); ++disp_it, ++force_it, ++blocked_it) {
-    std::cout << *disp_it << " " << *force_it << " " <<  *blocked_it << std::endl;
+  std::cout << std::setw(8) << "disp"
+            << " " << std::setw(8) << "force"
+            << " " << std::setw(8) << "blocked" << std::endl;
+
+  for (; disp_it != callback.dispacement.end();
+       ++disp_it, ++force_it, ++blocked_it) {
+    std::cout << std::setw(8) << *disp_it << " " << std::setw(8) << *force_it
+              << " " << std::setw(8) << std::boolalpha << *blocked_it << std::endl;
   }
 
   finalize();

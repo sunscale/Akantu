@@ -31,7 +31,7 @@
 #include "aka_memory.hh"
 #include "aka_array.hh"
 #include "solver_callback.hh"
-
+#include "integration_scheme.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_TIME_STEP_SOLVER_HH__
@@ -62,8 +62,10 @@ public:
   virtual void solveStep(SolverCallback & solver_callback) = 0;
 
   /// register an integration scheme for a given dof
-  virtual void setIntegrationScheme(const ID & dof_id,
-                                    const IntegrationSchemeType & type) = 0;
+  virtual void
+  setIntegrationScheme(const ID & dof_id, const IntegrationSchemeType & type,
+                       IntegrationScheme::SolutionType
+                           solution_type = IntegrationScheme::_not_defined) = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Solver Callback interface                                                */
@@ -77,6 +79,13 @@ public:
   virtual void assembleJacobian();
   /// implementation of the SolverCallback::assembleResidual()
   virtual void assembleResidual();
+
+  /* ------------------------------------------------------------------------ */
+  /* Accessor                                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  AKANTU_GET_MACRO(TimeStep, time_step, Real);
+  AKANTU_SET_MACRO(TimeStep, time_step, Real);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

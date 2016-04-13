@@ -323,6 +323,7 @@ void SparseSolverMumps::solve() {
   this->dof_manager.updateGlobalBlockedDofs();
   this->matrix.applyBoundary();
 
+  this->master_rhs_solution.copy(this->dof_manager.getResidual());
   // if (prank == 0) {
   //   matrix.getDOFSynchronizer().gather(this->rhs, 0, this->master_rhs_solution);
   // } else {
@@ -339,19 +340,22 @@ void SparseSolverMumps::solve() {
     this->last_value_release = this->matrix.getValueRelease();
   }
 
-  if (prank == 0)
+  if (prank == 0) {
     this->mumps_data.rhs = this->master_rhs_solution.storage();
+  }
 
   this->mumps_data.job = _smj_solve; // solve
   dmumps_c(&this->mumps_data);
 
   this->printError();
 
+  this->dof_manager.getGlobalSolution().copy(this->master_rhs_solution);
   // if (prank == 0) {
   //   matrix.getDOFSynchronizer().scatter(this->solution, 0, this->master_rhs_solution);
   // } else {
   //   this->matrix.getDOFSynchronizer().gather(this->solution, 0);
   // }
+
   this->dof_manager.splitSolutionPerDOFs();
 
   AKANTU_DEBUG_OUT();

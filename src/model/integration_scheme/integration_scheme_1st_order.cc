@@ -73,27 +73,16 @@ void IntegrationScheme1stOrder::assembleResidual(bool is_lumped) {
 
   const Array<Real> & first_derivative =
       dof_manager.getDOFsDerivatives(this->dof_id, 1);
-  Array<Real> Ctr(first_derivative, true, "Ctr");
-  if(!is_lumped) {
-    const SparseMatrix & C = dof_manager.getMatrix("C");
-    Ctr *= C;
+  if (!is_lumped) {
+    this->dof_manager.assembleMatMulVectToResidual(this->dof_id, "C",
+                                                   first_derivative, -1);
   } else {
-    const Array<Real> & C = dof_manager.getLumpedMatrix("C");
-
-    UInt nb_dofs = Ctr.getNbComponent() * Ctr.getSize();
-    Array<Real>::scalar_iterator ctr_it = Ctr.begin_reinterpret(nb_dofs);
-    Array<Real>::scalar_iterator ctr_end = Ctr.end_reinterpret(nb_dofs);
-    Array<Real>::const_scalar_iterator c_it = C.begin_reinterpret(nb_dofs);
-
-    for (; ctr_it != ctr_end; ++ctr_it) {
-      *ctr_it *= *c_it;
-    }
+    this->dof_manager.assembleLumpedMatMulVectToResidual(this->dof_id, "C",
+                                                         first_derivative, -1);
   }
-  dof_manager.assembleToResidual(this->dof_id, Ctr, -1.);
 
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */
-
 
 __END_AKANTU__

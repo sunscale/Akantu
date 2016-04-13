@@ -29,6 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "time_step_solver.hh"
+#include "integration_scheme.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
 #include <set>
@@ -38,7 +39,6 @@
 #define __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
 
 namespace akantu {
-class IntegrationScheme;
 class DOFManagerDefault;
 }
 
@@ -62,7 +62,9 @@ public:
 public:
   /// registers an integration scheme for a given dof
   void setIntegrationScheme(const ID & dof_id,
-                            const IntegrationSchemeType & type);
+                            const IntegrationSchemeType & type,
+                            IntegrationScheme::SolutionType solution_type =
+                                IntegrationScheme::_not_defined);
 
   /// implementation of the TimeStepSolver::predictor()
   virtual void predictor();
@@ -81,6 +83,8 @@ public:
   /* ------------------------------------------------------------------------ */
 private:
   typedef std::map<ID, IntegrationScheme *> DOFsIntegrationSchemes;
+  typedef std::map<ID, IntegrationScheme::SolutionType>
+      DOFsIntegrationSchemesSolutionTypes;
   typedef std::set<ID> DOFsIntegrationSchemesOwner;
 
   /// DOFManager with its real type
@@ -94,7 +98,7 @@ private:
   DOFsIntegrationSchemesOwner integration_schemes_owner;
 
   /// Type of corrector to use
-  UInt solution_type;
+  DOFsIntegrationSchemesSolutionTypes solution_types;
 
   /// define if the mass matrix is lumped or not
   bool is_mass_lumped;

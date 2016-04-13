@@ -37,15 +37,14 @@
 #include "synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
-
-
+namespace akantu {
+  class Mesh;
+}
 
 #ifndef __AKANTU_DOF_SYNCHRONIZER_HH__
 #define __AKANTU_DOF_SYNCHRONIZER_HH__
 
 __BEGIN_AKANTU__
-
-class Mesh;
 
 template<typename T>
 class AddOperation {

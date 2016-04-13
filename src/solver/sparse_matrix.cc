@@ -64,11 +64,19 @@ SparseMatrix::~SparseMatrix() {}
 
 /* -------------------------------------------------------------------------- */
 Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat) {
-  Array<Real> tmp(vect.getSize(), vect.getNbComponent());
+  Array<Real> tmp(vect.getSize(), vect.getNbComponent(), 0.);
   mat.matVecMul(vect, tmp);
 
   vect.copy(tmp);
   return vect;
 }
+
+/* -------------------------------------------------------------------------- */
+void SparseMatrix::add(const SparseMatrix & B, Real alpha) {
+  B.addMeTo(*this, alpha);
+}
+
+/* -------------------------------------------------------------------------- */
+
 
 __END_AKANTU__

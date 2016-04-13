@@ -70,7 +70,7 @@ public:
   virtual inline UInt addToProfile(UInt i, UInt j) = 0;
 
   /// assemble a local matrix in the sparse one
-  virtual inline void addToMatrix(UInt i, UInt j, Real value) = 0;
+  virtual void addToMatrix(UInt i, UInt j, Real value) = 0;
 
   /// save the profil in a file using the MatrixMarket file format
   virtual void saveProfile(const std::string &) const {
@@ -82,8 +82,11 @@ public:
     AKANTU_DEBUG_TO_IMPLEMENT();
   };
 
-  /// add matrix assuming the profile are the same
-  virtual void add(const SparseMatrix & matrix, Real alpha = 1.) = 0;
+  /// multiply the matrix by a coefficient
+  virtual void mul(Real alpha) = 0;
+
+  /// add matrices
+  virtual void add(const SparseMatrix & matrix, Real alpha = 1.);
 
   /// Equivalent of *gemv in blas
   virtual void matVecMul(const Array<Real> & x, Array<Real> & y,
@@ -91,6 +94,13 @@ public:
 
   /// modify the matrix to "remove" the blocked dof
   virtual void applyBoundary(Real block_val = 1.) = 0;
+
+  /// operator *=
+  SparseMatrix & operator*=(Real alpha) { this->mul(alpha); return *this; }
+
+protected:
+  /// This is the revert of add B += \alpha * *this;
+  virtual void addMeTo(SparseMatrix & B, Real alpha) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

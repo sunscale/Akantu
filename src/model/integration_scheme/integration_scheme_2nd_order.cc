@@ -76,33 +76,23 @@ void IntegrationScheme2ndOrder::assembleResidual(bool is_lumped) {
 
   try {
     const Array<Real> & first_derivative =
-        dof_manager.getDOFsDerivatives(this->dof_id, 1);
-    Array<Real> Cv(first_derivative, true, "Cv");
-    const SparseMatrix & C = dof_manager.getMatrix("C");
-    Cv *= C;
-    dof_manager.assembleToResidual(this->dof_id, Cv, -1.);
+        this->dof_manager.getDOFsDerivatives(this->dof_id, 1);
+
+    this->dof_manager.assembleMatMulVectToResidual(this->dof_id, "C",
+                                                   first_derivative, -1);
   } catch (...) {
   }
 
   const Array<Real> & second_derivative =
-      dof_manager.getDOFsDerivatives(this->dof_id, 2);
-  Array<Real> Ma(second_derivative, true, "Ma");
+      this->dof_manager.getDOFsDerivatives(this->dof_id, 2);
+
   if (!is_lumped) {
-    const SparseMatrix & M = dof_manager.getMatrix("M");
-    Ma *= M;
+    this->dof_manager.assembleMatMulVectToResidual(this->dof_id, "M",
+                                                   second_derivative, -1);
   } else {
-    const Array<Real> & M = dof_manager.getLumpedMatrix("M");
-
-    UInt nb_dofs = Ma.getNbComponent() * Ma.getSize();
-    Array<Real>::scalar_iterator ma_it = Ma.begin_reinterpret(nb_dofs);
-    Array<Real>::scalar_iterator ma_end = Ma.end_reinterpret(nb_dofs);
-    Array<Real>::const_scalar_iterator m_it = M.begin_reinterpret(nb_dofs);
-
-    for (; ma_it != ma_end; ++ma_it) {
-      *ma_it *= *m_it;
-    }
+    this->dof_manager.assembleLumpedMatMulVectToResidual(this->dof_id, "M",
+                                                         second_derivative, -1);
   }
-  dof_manager.assembleToResidual(this->dof_id, Ma, -1.);
 
   AKANTU_DEBUG_OUT();
 }

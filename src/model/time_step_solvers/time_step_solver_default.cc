@@ -60,7 +60,8 @@ TimeStepSolverDefault::TimeStepSolverDefault(
 
 /* -------------------------------------------------------------------------- */
 void TimeStepSolverDefault::setIntegrationScheme(
-    const ID & dof_id, const IntegrationSchemeType & type) {
+    const ID & dof_id, const IntegrationSchemeType & type,
+    IntegrationScheme::SolutionType solution_type) {
   if (this->integration_schemes.find(dof_id) !=
       this->integration_schemes.end()) {
     AKANTU_EXCEPTION("Their DOFs "
@@ -127,6 +128,8 @@ void TimeStepSolverDefault::setIntegrationScheme(
   }
 
   this->integration_schemes[dof_id] = integration_scheme;
+  this->solution_types[dof_id] = solution_type;
+
   this->integration_schemes_owner.insert(dof_id);
 }
 
@@ -197,8 +200,11 @@ void TimeStepSolverDefault::corrector() {
 
   for (; integration_scheme_it != integration_scheme_end;
        ++integration_scheme_it) {
+    IntegrationScheme::SolutionType solution_type =
+        this->solution_types[integration_scheme_it->first];
+
     integration_scheme_it->second->corrector(
-        IntegrationScheme::SolutionType(this->solution_type), this->time_step);
+        solution_type, this->time_step);
   }
 
   AKANTU_DEBUG_OUT();
@@ -217,8 +223,11 @@ void TimeStepSolverDefault::assembleJacobian() {
 
   for (; integration_scheme_it != integration_scheme_end;
        ++integration_scheme_it) {
-    integration_scheme_it->second->assembleJacobian(
-        IntegrationScheme::SolutionType(this->solution_type), this->time_step);
+    IntegrationScheme::SolutionType solution_type =
+        this->solution_types[integration_scheme_it->first];
+
+    integration_scheme_it->second->assembleJacobian(solution_type,
+                                                    this->time_step);
   }
 
   AKANTU_DEBUG_OUT();

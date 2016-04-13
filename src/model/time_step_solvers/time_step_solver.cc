@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 #include "time_step_solver.hh"
 #include "non_linear_solver.hh"
+#include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -41,7 +42,7 @@ TimeStepSolver::TimeStepSolver(DOFManager & dof_manager,
                                NonLinearSolver & non_linear_solver,
                                const ID & id, UInt memory_id)
     : Memory(id, memory_id), SolverCallback(dof_manager),
-      _dof_manager(dof_manager), type(type), solver_callback(NULL),
+      _dof_manager(dof_manager), type(type), time_step(0.), solver_callback(NULL),
       non_linear_solver(non_linear_solver) {}
 
 /* -------------------------------------------------------------------------- */
@@ -71,6 +72,7 @@ void TimeStepSolver::assembleJacobian() {
       this->solver_callback != NULL,
       "This function cannot be called if the solver_callback is not set");
 
+  this->_dof_manager.clearJacobian();
   this->solver_callback->assembleJacobian();
 }
 
@@ -80,6 +82,7 @@ void TimeStepSolver::assembleResidual() {
       this->solver_callback != NULL,
       "This function cannot be called if the solver_callback is not set");
 
+  this->_dof_manager.clearResidual();
   this->solver_callback->assembleResidual();
 }
 

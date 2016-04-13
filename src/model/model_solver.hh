@@ -31,6 +31,7 @@
 #include "aka_common.hh"
 #include "parsable.hh"
 #include "solver_callback.hh"
+#include "integration_scheme.hh"
 /* -------------------------------------------------------------------------- */
 #include <set>
 /* -------------------------------------------------------------------------- */
@@ -39,9 +40,9 @@
 #define __AKANTU_MODEL_SOLVER_HH__
 
 namespace akantu {
-  class Mesh;
-  class DOFManager;
-  class IntegrationScheme;
+class Mesh;
+class DOFManager;
+class TimeStepSolver;
 }
 
 __BEGIN_AKANTU__
@@ -65,22 +66,25 @@ public:
 public:
   /// solve a step using a given pre instantiated time step solver and
   /// nondynamic linear solver
-  void solveStep(ID time_step_solver_id = "");
+  void solveStep(const ID & solver_id = "");
 
   /// Initialize a time solver that can be used afterwards with its id
-  void
-  getNewSolver(const ID & solver_id,
-               TimeStepSolverType time_step_solver_type,
-               NonLinearSolverType non_linear_solver_type = _nls_auto);
+  void getNewSolver(const ID & solver_id,
+                    TimeStepSolverType time_step_solver_type,
+                    NonLinearSolverType non_linear_solver_type = _nls_auto);
 
   /// set an integration scheme for a given dof and a given solver
   void
   setIntegrationScheme(const ID & solver_id, const ID & dof_id,
-                       const IntegrationSchemeType & integration_scheme_type);
+                       const IntegrationSchemeType & integration_scheme_type,
+                       IntegrationScheme::SolutionType solution_type =
+                           IntegrationScheme::_not_defined);
 
   /// set an externally instantiated integration scheme
   void setIntegrationScheme(const ID & solver_id, const ID & dof_id,
-                            IntegrationScheme & integration_scheme);
+                            IntegrationScheme & integration_scheme,
+                            IntegrationScheme::SolutionType solution_type =
+                                IntegrationScheme::_not_defined);
 
   /* ------------------------------------------------------------------------ */
   /* SolverCallback interface                                                 */
@@ -103,6 +107,15 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   DOFManager & getDOFManager() { return *this->dof_manager; }
+
+  /// get the time step of a given solver
+  Real getTimeStep(const ID & solver_id = "") const;
+  /// set the time step of a given solver
+  void setTimeStep(Real time_step, const ID & solver_id = "");
+
+private:
+  TimeStepSolver & getSolver(const ID & solver_id);
+  const TimeStepSolver & getSolver(const ID & solver_id) const;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

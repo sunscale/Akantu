@@ -49,7 +49,8 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 ModelSolver::ModelSolver(Mesh & mesh, const ID & id, UInt memory_id)
     : Parsable(_st_solver, id), SolverCallback(), parent_id(id),
-      parent_memory_id(memory_id), mesh(mesh), dof_manager(NULL) {}
+      parent_memory_id(memory_id), mesh(mesh), dof_manager(NULL),
+      default_solver_id("") {}
 
 /* -------------------------------------------------------------------------- */
 ModelSolver::~ModelSolver() { delete this->dof_manager; }
@@ -99,14 +100,31 @@ void ModelSolver::initDOFManager(const ID & solver_type) {
 }
 
 /* -------------------------------------------------------------------------- */
-void ModelSolver::solveStep(ID solver_id) {
+TimeStepSolver & ModelSolver::getSolver(const ID & solver_id) {
+  ID tmp_solver_id = solver_id;
+  if (tmp_solver_id == "")
+    tmp_solver_id = this->default_solver_id;
+
+  TimeStepSolver & tss = this->dof_manager->getTimeStepSolver(tmp_solver_id);
+  return tss;
+}
+
+/* -------------------------------------------------------------------------- */
+const TimeStepSolver & ModelSolver::getSolver(const ID & solver_id) const {
+  ID tmp_solver_id = solver_id;
+  if (solver_id == "")
+    tmp_solver_id = this->default_solver_id;
+
+  const TimeStepSolver & tss =
+      this->dof_manager->getTimeStepSolver(tmp_solver_id);
+  return tss;
+}
+
+/* -------------------------------------------------------------------------- */
+void ModelSolver::solveStep(const ID & solver_id) {
   AKANTU_DEBUG_IN();
 
-  if (solver_id == "")
-    solver_id = default_solver_id;
-
-  TimeStepSolver & tss = this->dof_manager->getTimeStepSolver(solver_id);
-
+  TimeStepSolver & tss = this->getSolver(solver_id);
   // make one non linear solve
   tss.solveStep(*this);
 
@@ -141,12 +159,27 @@ void ModelSolver::getNewSolver(const ID & solver_id,
 }
 
 /* -------------------------------------------------------------------------- */
+Real ModelSolver::getTimeStep(const ID & solver_id) const {
+  const TimeStepSolver & tss = this->getSolver(solver_id);
+
+  return tss.getTimeStep();
+}
+
+/* -------------------------------------------------------------------------- */
+void ModelSolver::setTimeStep(Real time_step, const ID & solver_id) {
+  TimeStepSolver & tss = this->getSolver(solver_id);
+
+  return tss.setTimeStep(time_step);
+}
+
+/* -------------------------------------------------------------------------- */
 void ModelSolver::setIntegrationScheme(
     const ID & solver_id, const ID & dof_id,
-    const IntegrationSchemeType & integration_scheme_type) {
+    const IntegrationSchemeType & integration_scheme_type,
+    IntegrationScheme::SolutionType solution_type) {
   TimeStepSolver & tss = this->dof_manager->getTimeStepSolver(solver_id);
 
-  tss.setIntegrationScheme(dof_id, integration_scheme_type);
+  tss.setIntegrationScheme(dof_id, integration_scheme_type, solution_type);
 }
 
 /* -------------------------------------------------------------------------- */

@@ -28,3 +28,13 @@ register_test(test_dof_manager_default
   SOURCES test_dof_manager_default.cc
   PACKAGE mumps
   )
+
+register_test(test_model_solver
+  SOURCES test_model_solver.cc
+  PACKAGE mumps
+  )
+
+register_test(test_model_solver_dynamic
+  SOURCES test_model_solver_dynamic.cc
+  PACKAGE mumps
+  )

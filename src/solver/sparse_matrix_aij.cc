@@ -52,94 +52,6 @@ SparseMatrixAIJ::SparseMatrixAIJ(const SparseMatrixAIJ & matrix, const ID & id)
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ::~SparseMatrixAIJ() {}
 
-// /* --------------------------------------------------------------------------
-// */
-// void SparseMatrixAIJ::buildProfile(const Mesh & mesh,
-//                                    const DOFSynchronizer & dof_synchronizer,
-//                                    UInt nb_degree_of_freedom) {
-//   AKANTU_DEBUG_IN();
-
-//   // if(irn_jcn_to_k) delete irn_jcn_to_k;
-//   // irn_jcn_to_k = new std::map<std::pair<UInt, UInt>, UInt>;
-//   clearProfile();
-
-//   this->dof_synchronizer = &const_cast<DOFSynchronizer &>(dof_synchronizer);
-
-//   coordinate_list_map::iterator irn_jcn_k_it;
-
-//   Int * eq_nb_val = dof_synchronizer.getGlobalDOFEquationNumbers().storage();
-
-//   Mesh::type_iterator it =
-//       mesh.firstType(mesh.getSpatialDimension(), _not_ghost,
-//       _ek_not_defined);
-//   Mesh::type_iterator end =
-//       mesh.lastType(mesh.getSpatialDimension(), _not_ghost, _ek_not_defined);
-//   for (; it != end; ++it) {
-//     UInt nb_element = mesh.getNbElement(*it);
-//     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
-//     UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom;
-
-//     UInt * conn_val = mesh.getConnectivity(*it, _not_ghost).storage();
-//     Int * local_eq_nb_val =
-//         new Int[nb_degree_of_freedom * nb_nodes_per_element];
-
-//     for (UInt e = 0; e < nb_element; ++e) {
-//       Int * tmp_local_eq_nb_val = local_eq_nb_val;
-//       for (UInt i = 0; i < nb_nodes_per_element; ++i) {
-//         UInt n = conn_val[i];
-//         for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
-//           *tmp_local_eq_nb_val++ = eq_nb_val[n * nb_degree_of_freedom + d];
-//         }
-//         // memcpy(tmp_local_eq_nb_val, eq_nb_val + n * nb_degree_of_freedom,
-//         // nb_degree_of_freedom * sizeof(Int));
-//         // tmp_local_eq_nb_val += nb_degree_of_freedom;
-//       }
-
-//       for (UInt i = 0; i < size_mat; ++i) {
-//         UInt c_irn = local_eq_nb_val[i];
-//         if (c_irn < this->size) {
-//           UInt j_start = (sparse_matrix_type == _symmetric) ? i : 0;
-//           for (UInt j = j_start; j < size_mat; ++j) {
-//             UInt c_jcn = local_eq_nb_val[j];
-//             if (c_jcn < this->size) {
-//               KeyCOO irn_jcn = key(c_irn, c_jcn);
-//               irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
-
-//               if (irn_jcn_k_it == irn_jcn_k.end()) {
-//                 irn_jcn_k[irn_jcn] = nb_non_zero;
-//                 irn.push_back(c_irn + 1);
-//                 jcn.push_back(c_jcn + 1);
-//                 nb_non_zero++;
-//               }
-//             }
-//           }
-//         }
-//       }
-//       conn_val += nb_nodes_per_element;
-//     }
-
-//     delete[] local_eq_nb_val;
-//   }
-
-//   /// for pbc @todo correct it for parallel
-//   if (StaticCommunicator::getStaticCommunicator().getNbProc() == 1) {
-//     for (UInt i = 0; i < size; ++i) {
-//       KeyCOO irn_jcn = key(i, i);
-//       irn_jcn_k_it = irn_jcn_k.find(irn_jcn);
-//       if (irn_jcn_k_it == irn_jcn_k.end()) {
-//         irn_jcn_k[irn_jcn] = nb_non_zero;
-//         irn.push_back(i + 1);
-//         jcn.push_back(i + 1);
-//         nb_non_zero++;
-//       }
-//     }
-//   }
-
-//   a.resize(nb_non_zero);
-
-//   AKANTU_DEBUG_OUT();
-// }
-
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::applyBoundary(Real block_val) {
   AKANTU_DEBUG_IN();
@@ -245,8 +157,8 @@ void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
   Array<Real>::scalar_iterator y_it = y.storage();
 
   for (UInt k = 0; k < this->nb_non_zero; ++k, ++i_it, ++j_it, ++a_it) {
-    const Int & i = *i_it;
-    const Int & j = *j_it;
+    Int i = *i_it - 1;
+    Int j = *j_it - 1;
     const Real & A = *a_it;
 
     y_it[i] += alpha * A * x_it[j];
@@ -275,26 +187,31 @@ void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrixAIJ::add(const SparseMatrix & B, Real alpha) {
-  Array<Real>::scalar_iterator a_it = this->a.begin();
-
-  try {
-    const SparseMatrixAIJ & B_aij = dynamic_cast<const SparseMatrixAIJ &>(B);
-    Array<Real>::const_scalar_iterator b_it = B_aij.a.begin();
-    for (UInt n = 0; n < this->nb_non_zero; ++n, ++a_it, ++b_it) {
-       *a_it += alpha * *b_it;
-    }
-  } catch(...) {
-    Array<Int>::const_scalar_iterator i_it = this->irn.begin();
-    Array<Int>::const_scalar_iterator j_it = this->jcn.begin();
-    for (UInt n = 0; n < this->nb_non_zero; ++n, ++a_it, ++i_it, ++j_it) {
-      const Int & i = *i_it;
-      const Int & j = *j_it;
-      Real & A_ij = *a_it;
-      A_ij += alpha * B(i - 1, j - 1);
-    }
+template<class MatrixType>
+void SparseMatrixAIJ::addMeToTemplated(MatrixType & B, Real alpha) const {
+  Array<Int>::const_scalar_iterator i_it = this->irn.begin();
+  Array<Int>::const_scalar_iterator j_it = this->jcn.begin();
+  Array<Real>::const_scalar_iterator a_it = this->a.begin();
+  for (UInt n = 0; n < this->nb_non_zero; ++n, ++a_it, ++i_it, ++j_it) {
+    const Int & i = *i_it;
+    const Int & j = *j_it;
+    const Real & A_ij = *a_it;
+    B.addToMatrix(i - 1, j - 1, alpha * A_ij);
   }
+}
 
+/* -------------------------------------------------------------------------- */
+void SparseMatrixAIJ::addMeTo(SparseMatrix & B, Real alpha) const {
+  if(SparseMatrixAIJ * B_aij = dynamic_cast<SparseMatrixAIJ *>(&B)) {
+    this->addMeToTemplated<SparseMatrixAIJ>(*B_aij, alpha);
+  } else {
+    //    this->addMeToTemplated<SparseMatrix>(*this, alpha);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseMatrixAIJ::mul(Real alpha) {
+  this->a *= alpha;
   this->value_release++;
 }
 

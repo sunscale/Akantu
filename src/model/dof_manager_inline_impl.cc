@@ -106,12 +106,12 @@ inline Array<Real> & DOFManager::getDOFsDerivatives(const ID & dofs_id,
                                                     UInt order) {
   std::vector<Array<Real> *> & derivatives =
       this->getDOFData(dofs_id).dof_derivatives;
-  if (order >= derivatives.size())
+  if (order > derivatives.size())
     AKANTU_EXCEPTION("No derivatives of order " << order << " present in "
                                                 << this->id << " for dof "
                                                 << dofs_id);
 
-  return *derivatives[order];
+  return *derivatives[order - 1];
 }
 
 /* -------------------------------------------------------------------------- */

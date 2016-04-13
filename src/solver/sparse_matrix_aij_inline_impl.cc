@@ -37,6 +37,7 @@ inline UInt SparseMatrixAIJ::addToProfile(UInt i, UInt j) {
   KeyCOO jcn_irn = this->key(i, j);
 
   coordinate_list_map::iterator it = this->irn_jcn_k.find(jcn_irn);
+
   if (!(it == this->irn_jcn_k.end())) return it->second;
 
   if(i + 1 > this->size) this->size = i + 1;
@@ -74,14 +75,9 @@ inline void SparseMatrixAIJ::clearProfile() {
 
 /* -------------------------------------------------------------------------- */
 inline void SparseMatrixAIJ::addToMatrix(UInt i, UInt j, Real value) {
-  KeyCOO jcn_irn = this->key(i, j);
-  coordinate_list_map::iterator irn_jcn_k_it = this->irn_jcn_k.find(jcn_irn);
+  UInt idx = this->addToProfile(i, j);
 
-  AKANTU_DEBUG_ASSERT(irn_jcn_k_it != this->irn_jcn_k.end(),
-                      "Couple (i,j) = (" << i << "," << j
-                                         << ") does not exist in the profile");
-
-  this->a(irn_jcn_k_it->second) += value;
+  this->a(idx) += value;
 
   this->value_release++;
 }

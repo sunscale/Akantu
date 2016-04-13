@@ -46,6 +46,7 @@ class IntegrationScheme {
   /* ------------------------------------------------------------------------ */
 public:
   enum SolutionType {
+    _not_defined = -1,
     _displacement = 0,
     _temperature = 0,
     _velocity = 1,

@@ -44,8 +44,8 @@ DOFManager::DOFManager(const ID & id, const MemoryID & memory_id)
 
 /* -------------------------------------------------------------------------- */
 DOFManager::~DOFManager() {
-  NodesToElementsType::scalar_iterator nte_it = this->nodes_to_elements.begin();
-  NodesToElementsType::scalar_iterator nte_end = this->nodes_to_elements.end();
+  NodesToElements::scalar_iterator nte_it = this->nodes_to_elements.begin();
+  NodesToElements::scalar_iterator nte_end = this->nodes_to_elements.end();
   for (; nte_it != nte_end; ++nte_it)
     delete *nte_it;
 
@@ -126,7 +126,7 @@ void DOFManager::assembleElementalArrayLocalArray(
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::assembleElementalArrayResidual(
+void DOFManager::assembleElementalArrayToResidual(
     const ID & dof_id, const Array<Real> & elementary_vect,
     const ElementType & type, const GhostType & ghost_type, Real scale_factor,
     const Array<UInt> & filter_elements) {
@@ -137,6 +137,8 @@ void DOFManager::assembleElementalArrayResidual(
       elementary_vect.getNbComponent() / nb_nodes_per_element;
   Array<Real> array_localy_assembeled(this->mesh->getNbNodes(),
                                       nb_degree_of_freedom);
+
+  array_localy_assembeled.clear();
 
   this->assembleElementalArrayLocalArray(
       elementary_vect, array_localy_assembeled, type, ghost_type, scale_factor,
@@ -160,7 +162,7 @@ void DOFManager::registerMesh(Mesh & mesh) {
 }
 
 /* -------------------------------------------------------------------------- */
-DOFManager::DOFData::DOFData() : solution(0, 1, "solution") { }
+DOFManager::DOFData::DOFData() : solution(0, 1, "solution") {}
 
 /* -------------------------------------------------------------------------- */
 void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
@@ -261,9 +263,7 @@ void DOFManager::registerBlockedDOFs(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::clearJacobian() {
-  this->getMatrix("J").clear();
-}
+void DOFManager::clearJacobian() { this->getMatrix("J").clear(); }
 
 /* -------------------------------------------------------------------------- */
 void DOFManager::splitSolutionPerDOFs() {
@@ -338,7 +338,7 @@ SparseMatrix & DOFManager::getMatrix(const ID & id) {
   ID matrix_id = this->id + ":mtx:" + id;
   SparseMatricesMap::const_iterator it = this->matrices.find(matrix_id);
   if (it == this->matrices.end()) {
-    AKANTU_EXCEPTION("The matrix " << matrix_id << " does not exists in "
+    AKANTU_SILENT_EXCEPTION("The matrix " << matrix_id << " does not exists in "
                                    << this->id);
   }
 
@@ -350,7 +350,7 @@ const Array<Real> & DOFManager::getLumpedMatrix(const ID & id) {
   ID matrix_id = this->id + ":lumpmtx:" + id;
   LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(matrix_id);
   if (it == this->lumped_matrices.end()) {
-    AKANTU_EXCEPTION("The lumped matrix " << matrix_id << " does not exists in "
+    AKANTU_SILENT_EXCEPTION("The lumped matrix " << matrix_id << " does not exists in "
                                           << this->id);
   }
 

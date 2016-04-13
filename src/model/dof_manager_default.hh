@@ -75,17 +75,31 @@ public:
       const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
       const Array<UInt> & filter_elements);
 
+  /// multiply a vector by a matrix and assemble the result to the residual
+  virtual void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
+                                            const Array<Real> x,
+                                            Real scale_factor = 1);
+
+  /// multiply a vector by a lumped matrix and assemble the result to the
+  /// residual
+  virtual void assembleLumpedMatMulVectToResidual(const ID & dof_id,
+                                                  const ID & A_id,
+                                                  const Array<Real> x,
+                                                  Real scale_factor = 1);
+
 protected:
   /// Assemble an array to the global residual array
-  template<typename T>
+  template <typename T>
   void assembleToGlobalArray(const ID & dof_id,
                              const Array<T> & array_to_assemble,
-                             Array<T> & global_array,
-                             T scale_factor);
+                             Array<T> & global_array, T scale_factor);
 
 public:
   /// clear the residual
   virtual void clearResidual();
+
+  /// clear the jacobian matrix
+  virtual void clearJacobian();
 
   /// update the global dofs vector
   virtual void updateGlobalBlockedDofs();
@@ -113,6 +127,7 @@ private:
                                        const Vector<UInt> & equation_numbers,
                                        UInt max_size);
 
+  void addToProfile(const ID & matrix_id, const ID & dof_id);
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -162,6 +177,11 @@ private:
   typedef std::map<ID, SparseMatrixAIJ *> AIJMatrixMap;
   typedef std::map<ID, NonLinearSolverDefault *> DefaultNonLinearSolversMap;
   typedef std::map<ID, TimeStepSolverDefault *> DefaultTimeStepSolversMap;
+
+  typedef std::set<std::pair<ID, ID> > DOFToMatrixProfile;
+
+  /// contains the the dofs that where added to the profile of a given matrix.
+  DOFToMatrixProfile matrix_profiled_dofs;
 
   /// rhs to the system of equation corresponding to the residual linked to the
   /// different dofs

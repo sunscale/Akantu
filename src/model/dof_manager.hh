@@ -47,8 +47,7 @@ class DOFManager : protected Memory, protected MeshEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DOFManager(const ID & id = "dof_manager",
-             const MemoryID & memory_id = 0);
+  DOFManager(const ID & id = "dof_manager", const MemoryID & memory_id = 0);
   virtual ~DOFManager();
 
   /* ------------------------------------------------------------------------ */
@@ -67,7 +66,8 @@ public:
                                       Array<Real> & dofs_derivative);
 
   /// register array representing the blocked degree of freedoms
-  virtual void registerBlockedDOFs(const ID & dof_id, Array<bool> & blocked_dofs);
+  virtual void registerBlockedDOFs(const ID & dof_id,
+                                   Array<bool> & blocked_dofs);
 
   /// Assemble an array to the global residual array
   virtual void assembleToResidual(const ID & dof_id,
@@ -91,7 +91,7 @@ public:
    * implicitly considered as conn(el, n) * nb_nodes_per_element + d.
    * With 0 < n < nb_nodes_per_element and 0 < d < nb_dof_per_node
    **/
-  virtual void assembleElementalArrayResidual(
+  virtual void assembleElementalArrayToResidual(
       const ID & dof_id, const Array<Real> & elementary_vect,
       const ElementType & type, const GhostType & ghost_type,
       Real scale_factor = 1.,
@@ -105,9 +105,21 @@ public:
   virtual void assembleElementalMatricesToMatrix(
       const ID & matrix_id, const ID & dof_id,
       const Array<Real> & elementary_mat, const ElementType & type,
-      const GhostType & ghost_type,
+      const GhostType & ghost_type = _not_ghost,
       const MatrixType & elemental_matrix_type = _symmetric,
       const Array<UInt> & filter_elements = empty_filter) = 0;
+
+  /// multiply a vector by a matrix and assemble the result to the residual
+  virtual void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
+                                            const Array<Real> x,
+                                            Real scale_factor = 1) = 0;
+
+  /// multiply a vector by a lumped matrix and assemble the result to the
+  /// residual
+  virtual void assembleLumpedMatMulVectToResidual(const ID & dof_id,
+                                                  const ID & A_id,
+                                                  const Array<Real> x,
+                                                  Real scale_factor = 1) = 0;
 
   /// notation fully defined yet...
   // virtual void assemblePreassembledMatrix(const ID & matrix_id,
@@ -119,7 +131,7 @@ public:
   virtual void clearResidual() = 0;
 
   /// sets the jacobian matrix to 0
-  virtual void clearJacobian();
+  virtual void clearJacobian() = 0;
 
   /// splits the solution storage from a global view to the per dof storages
   void splitSolutionPerDOFs();
@@ -291,11 +303,10 @@ protected:
     Array<UInt> local_equation_number;
   };
 
-
-  typedef Array< std::set<Element> * > NodesToElementsType;
+  typedef Array<std::set<Element> *> NodesToElements;
 
   /// This info is stored to simplify the dynamic changes
-  NodesToElementsType nodes_to_elements;
+  NodesToElements nodes_to_elements;
 
   /// equation number in global numbering
   Array<UInt> global_equation_number;

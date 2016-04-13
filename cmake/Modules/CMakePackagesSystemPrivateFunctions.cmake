@@ -877,7 +877,7 @@ function(_package_check_files_registered)
   endif()
 
   set(_not_registerd_files)
-  # check only sources files ine the source folders
+  # check only sources files in the source folders
   foreach(_src_folder ${ARGN})
     foreach(_file ${_all_src_files})
       if("${_file}" MATCHES  "${_src_folder}")

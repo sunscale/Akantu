@@ -43,7 +43,7 @@ NonLinearSolverNewtonRaphson::NonLinearSolverNewtonRaphson(
     UInt memory_id)
     : NonLinearSolver(dof_manager, non_linear_solver_type, id, memory_id),
       dof_manager(dof_manager),
-      solver(dof_manager, "jacobian", id + ":sparse_solver", memory_id),
+      solver(dof_manager, "J", id + ":sparse_solver", memory_id),
       convergence_criteria_type(_scc_solution), convergence_criteria(1e-10),
       max_iterations(10), n_iter(0), error(0.), converged(false) {
 
@@ -61,11 +61,14 @@ NonLinearSolverNewtonRaphson::~NonLinearSolverNewtonRaphson() {}
 void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
   solver_callback.predictor();
 
+  solver_callback.assembleResidual();
+
   if(this->non_linear_solver_type == _nls_newton_raphson_modified)
     solver_callback.assembleJacobian();
 
   this->n_iter = 0;
   this->converged = false;
+
 
   if (this->convergence_criteria_type == _scc_residual) {
     this->converged = this->testConvergence(this->dof_manager.getResidual());
@@ -118,8 +121,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
                              << "] Convergence not reached after "
                              << std::setw(std::log10(this->max_iterations))
                              << this->n_iter << " iteration"
-                             << (this->n_iter == 1 ? "" : "s") << "!"
-                             << std::endl);
+                             << (this->n_iter == 1 ? "" : "s") << "!");
   }
 
   return;
@@ -149,7 +151,7 @@ bool NonLinearSolverNewtonRaphson::testConvergence(const Array<Real> & array) {
   norm = std::sqrt(norm);
 
   AKANTU_DEBUG_ASSERT(!Math::isnan(norm),
-                      "Something goes wrong in the solve phase");
+                      "Something went wrong in the solve phase");
 
   this->error = norm;
 

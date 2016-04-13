@@ -270,6 +270,11 @@ void DOFManagerDefault::clearResidual() {
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManagerDefault::clearJacobian() {
+  this->getMatrix("J").clear();
+}
+
+/* -------------------------------------------------------------------------- */
 void DOFManagerDefault::updateGlobalBlockedDofs() {
   DOFStorage::iterator it = this->dofs.begin();
   DOFStorage::iterator end = this->dofs.end();
@@ -317,12 +322,47 @@ void DOFManagerDefault::assembleToResidual(
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManagerDefault::assembleMatMulVectToResidual(const ID & dof_id,
+                                                     const ID & A_id,
+                                                     const Array<Real> x,
+                                                     Real scale_factor) {
+  SparseMatrixAIJ & A = this->getMatrix(A_id);
+  Array<Real> global_x(this->local_system_size, 1, 0.);
+
+  this->assembleToGlobalArray(dof_id, x, global_x, 1.);
+
+  A.matVecMul(global_x, this->residual, scale_factor, 1.);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::assembleLumpedMatMulVectToResidual(const ID & dof_id,
+                                                           const ID & A_id,
+                                                           const Array<Real> x,
+                                                           Real scale_factor) {
+  const Array<Real> & A = this->getLumpedMatrix(A_id);
+
+  Array<Real> global_x(this->local_system_size, 1, 0.);
+  this->assembleToGlobalArray(dof_id, x, global_x, scale_factor);
+
+  Array<Real>::const_scalar_iterator A_it = A.begin();
+  Array<Real>::const_scalar_iterator A_end = A.end();
+  Array<Real>::const_scalar_iterator x_it = global_x.begin();
+  Array<Real>::scalar_iterator r_it = this->residual.begin();
+
+  for (; A_it != A_end; ++A_it, ++x_it, ++r_it) {
+    *r_it += *A_it * *x_it;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 void DOFManagerDefault::assembleElementalMatricesToMatrix(
     const ID & matrix_id, const ID & dof_id, const Array<Real> & elementary_mat,
     const ElementType & type, const GhostType & ghost_type,
     const MatrixType & elemental_matrix_type,
     const Array<UInt> & filter_elements) {
   AKANTU_DEBUG_IN();
+
+  this->addToProfile(matrix_id, dof_id);
 
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
   SparseMatrixAIJ & A = this->getMatrix(matrix_id);
@@ -348,8 +388,10 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
                           << ") has not the good size.");
 
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-  UInt nb_degree_of_freedom = elementary_mat.getNbComponent() /
-                              (nb_nodes_per_element * nb_nodes_per_element);
+
+  UInt nb_degree_of_freedom = this->getDOFs(dof_id).getNbComponent();
+  // UInt nb_degree_of_freedom = elementary_mat.getNbComponent() /
+  //                             (nb_nodes_per_element * nb_nodes_per_element);
 
   const Array<UInt> connectivity =
       this->mesh->getConnectivity(type, ghost_type);
@@ -387,6 +429,73 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
       this->addElementalMatrixToUnsymmetric(A, *el_mat_it, element_eq_nb,
                                             A.getSize());
   }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id) {
+  AKANTU_DEBUG_IN();
+
+  const DOFData & dof_data = this->getDOFData(dof_id);
+
+  if (dof_data.support_type != _dst_nodal)
+    return;
+
+  std::pair<ID, ID> mat_dof = std::make_pair(matrix_id, dof_id);
+  if (this->matrix_profiled_dofs.find(mat_dof) !=
+      this->matrix_profiled_dofs.end())
+    return;
+
+  UInt nb_degree_of_freedom_per_node = dof_data.dof->getNbComponent();
+
+  const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
+
+  SparseMatrixAIJ & A = this->getMatrix(matrix_id);
+
+  // if(irn_jcn_to_k) delete irn_jcn_to_k;
+  // irn_jcn_to_k = new std::map<std::pair<UInt, UInt>, UInt>;
+  //  A.clearProfile();
+
+  UInt size = A.getSize();
+
+  Mesh::type_iterator it = this->mesh->firstType(
+      this->mesh->getSpatialDimension(), _not_ghost, _ek_not_defined);
+  Mesh::type_iterator end = this->mesh->lastType(
+      this->mesh->getSpatialDimension(), _not_ghost, _ek_not_defined);
+  for (; it != end; ++it) {
+    UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
+
+    const Array<UInt> & connectivity =
+        this->mesh->getConnectivity(*it, _not_ghost);
+    Array<UInt>::const_vector_iterator cit =
+        connectivity.begin(nb_nodes_per_element);
+    Array<UInt>::const_vector_iterator cend =
+        connectivity.end(nb_nodes_per_element);
+
+    UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom_per_node;
+    Vector<UInt> element_eq_nb(size_mat);
+
+    for (; cit != cend; ++cit) {
+      this->extractElementEquationNumber(
+          equation_number, *cit, nb_degree_of_freedom_per_node, element_eq_nb);
+      this->localToGlobalEquationNumber(element_eq_nb);
+
+      for (UInt i = 0; i < size_mat; ++i) {
+        UInt c_irn = element_eq_nb(i);
+        if (c_irn < size) {
+          for (UInt j = 0; j < size_mat; ++j) {
+            UInt c_jcn = element_eq_nb(j);
+            if (c_jcn < size) {
+              A.addToProfile(c_irn, c_jcn);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  this->matrix_profiled_dofs.insert(mat_dof);
 
   AKANTU_DEBUG_OUT();
 }

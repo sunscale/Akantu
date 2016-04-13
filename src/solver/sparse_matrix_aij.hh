@@ -28,15 +28,16 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "sparse_matrix.hh"
+#include "aka_common.hh"
 #include "aka_array.hh"
+#include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SPARSE_MATRIX_AIJ_HH__
 #define __AKANTU_SPARSE_MATRIX_AIJ_HH__
 
 namespace akantu {
-class DOFManagerDefault;
+  class DOFManagerDefault;
 }
 
 __BEGIN_AKANTU__
@@ -86,8 +87,11 @@ public:
   /// copy assuming the profile are the same
   virtual void copyContent(const SparseMatrix & matrix);
 
-  /// add matrix assuming the profile are the same
-  virtual void add(const SparseMatrix & matrix, Real alpha);
+  /// multiply the matrix by a scalar
+  void mul(Real alpha);
+
+  /// add matrix *this += B
+  //virtual void add(const SparseMatrix & matrix, Real alpha);
 
   /// Equivalent of *gemv in blas
   virtual void matVecMul(const Array<Real> & x, Array<Real> & y,
@@ -100,6 +104,15 @@ public:
   /// accessor to A_{ij} - if (i, j) not present it fails, (i, j) should be
   /// first added to the profile
   inline Real & operator()(UInt i, UInt j);
+
+protected:
+  /// This is the revert of add B += \alpha * *this;
+  virtual void addMeTo(SparseMatrix & B, Real alpha) const;
+
+private:
+  /// This is just to inline the addToMatrix function
+  template<class MatrixType>
+  void addMeToTemplated(MatrixType & B, Real alpha) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
