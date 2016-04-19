@@ -66,11 +66,11 @@ if(_blas_activated OR _lapack_activated)
 
   include(FortranCInterface)
   FortranCInterface_HEADER(
-    ${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh
+    "${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh"
     MACRO_NAMESPACE "AKA_FC_")
   mark_as_advanced(CDEFS)
   list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
-    ${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh)
+    "${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh")
 endif()
 
 
@@ -90,9 +90,10 @@ configure_file(common/aka_config.hh.in
   "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
 
 list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
-  ${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh
-  ${CMAKE_CURRENT_BINARY_DIR}/material_list.hh)
-list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
+  "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh"
+  "${CMAKE_CURRENT_BINARY_DIR}/aka_element_classes_info.hh"
+  "${CMAKE_CURRENT_BINARY_DIR}/material_list.hh")
+list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}")
 
 #===========================================================================
 # header precompilation
