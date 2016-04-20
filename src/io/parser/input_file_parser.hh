@@ -34,10 +34,11 @@
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix.hpp>
-#include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_fusion.hpp>	 	
+#include <boost/spirit/include/phoenix_operator.hpp>	 	
+#include <boost/spirit/include/phoenix_bind.hpp>	 	
 #include <boost/variant/recursive_variant.hpp>
-//#include <boost/foreach.hpp>
 
 #ifndef __AKANTU_INPUT_FILE_PARSER_HH__
 #define __AKANTU_INPUT_FILE_PARSER_HH__
@@ -119,10 +120,6 @@ struct InputFileGrammar
   InputFileGrammar(ParserSection * sect)
       : InputFileGrammar::base_type(start, "input_file_grammar"),
         parent_section(sect) {
-    // phx::function<lazy_create_parameter_<Iterator> > lazy_create_parameter =
-    //     lazy_create_parameter_<Iterator>(error_message);
-    // phx::function<lazy_create_subsection_> lazy_create_subsection;
-    // phx::function<lazy_concatenate_> lazy_concatenate;
 
     /* clang-format off */
     start
@@ -262,6 +259,7 @@ private:
   ParserSection * parent_section;
 };
 }
+
 
 __END_AKANTU__
 
