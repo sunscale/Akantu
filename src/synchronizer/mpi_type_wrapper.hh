@@ -43,7 +43,7 @@ __BEGIN_AKANTU__
 
 class MPITypeWrapper {
 public:
-  MPITypeWrapper(StaticCommunicatorMPI & static_comm) : static_comm(static_comm) {
+  MPITypeWrapper(StaticCommunicatorMPI & static_comm) : static_comm(static_comm), max_tag(0) {
   }
 
   template<typename T>
@@ -57,6 +57,12 @@ public:
 
     static_comm.setRank(prank);
     static_comm.setSize(psize);
+
+    int flag;
+    int *value;
+    MPI_Comm_get_attr(comm, MPI_TAG_UB, &value, &flag);
+    AKANTU_DEBUG_ASSERT(flag, "No attribute MPI_TAG_UB.");
+    this->max_tag = *value;
   }
 
   inline MPI_Comm getMPICommunicator() const {
@@ -67,10 +73,14 @@ public:
     return synchronizer_operation_to_mpi_op[op];
   }
 
+
+  inline int getMaxTag() const { return this->max_tag; }
 private:
   StaticCommunicatorMPI & static_comm;
 
   MPI_Comm communicator;
+
+  int max_tag;
 
   static MPI_Op synchronizer_operation_to_mpi_op[_so_null + 1];
 };
