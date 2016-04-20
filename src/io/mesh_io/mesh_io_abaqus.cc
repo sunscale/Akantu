@@ -41,20 +41,22 @@
 #include "element_group.hh"
 #include "node_group.hh"
 
-/* -------------------------------------------------------------------------- */
-//#define BOOST_SPIRIT_USE_PHOENIX_V3 1
-//#define BOOST_RESULT_OF_USE_TR1
 
+#if defined(__INTEL_COMPILER)
+//#pragma warning ( disable : 383 )
+#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
+#elif (defined(__GNUC__) || defined(__GNUG__))
+#  define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#  if GCC_VERSION > 40600
+#    pragma GCC diagnostic push
+#  endif
+#  pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#endif
+
+/* -------------------------------------------------------------------------- */
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
-// #include <boost/spirit/include/phoenix_core.hpp>
-// #include <boost/spirit/include/phoenix_fusion.hpp>
-// #include <boost/spirit/include/phoenix_object.hpp>
-// #include <boost/spirit/include/phoenix_container.hpp>
-// #include <boost/spirit/include/phoenix_operator.hpp>
-// #include <boost/spirit/include/phoenix_bind.hpp>
-// #include <boost/spirit/include/phoenix_stl.hpp>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
