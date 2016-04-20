@@ -106,7 +106,12 @@ endif()
 if (MUMPS_FOUND AND NOT TARGET MUMPS::common)
   set(MUMPS_LIBRARIES_ALL ${MUMPS_LIBRARY_DMUMPS})
 
-  if(MUMPS_LIBRARY_COMMON MATCHES ".*mumps_common.*${CMAKE_STATIC_LIBRARY_SUFFIX}")
+  include(CheckFortranFunctionExists)
+  set(CMAKE_REQUIRED_LIBRARIES ${MUMPS_LIBRARIES_ALL})
+  check_fortran_function_exists("blacs_gridinit" MUMPS_DOES_NOT_NEED_SCALAPACK)
+  set(CMAKE_REQUIRED_LIBRARIES)
+
+  if(NOT MUMPS_DOES_NOT_NEED_SCALAPACK OR MUMPS_LIBRARY_COMMON MATCHES ".*mumps_common.*${CMAKE_STATIC_LIBRARY_SUFFIX}")
     # Assuming mumps was compiled as a static library
     set(MUMPS_LIBRARY_TYPE STATIC CACHE INTERNAL "" FORCE)
 

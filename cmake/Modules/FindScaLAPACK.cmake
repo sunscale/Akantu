@@ -46,8 +46,15 @@ find_package_handle_standard_args(ScaLAPACK DEFAULT_MSG
 
 if(SCALAPACK_FOUND AND NOT TARGET ScaLAPACK)
   set(SCALAPACK_LIBRARIES_ALL ${SCALAPACK_LIBRARY})
+
+  include(CheckFortranFunctionExists)
+  set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARIES_ALL})
+  check_fortran_function_exists("blacs_gridinit" SCALAPACK_DOES_NOT_NEED_BLACS)
+  set(CMAKE_REQUIRED_LIBRARIES)
+
+
   set(_blacs_dep)
-  if(SCALAPACK_LIBRARY MATCHES ".*scalapack.*${CMAKE_STATIC_LIBRARY_SUFFIX}")
+  if(NOT SCALAPACK_DOES_NOT_NEED_BLACS)
     # Assuming scalapack was compiled as a static library
     set(SCALAPACK_LIBRARY_TYPE STATIC CACHE INTERNAL "" FORCE)
 
