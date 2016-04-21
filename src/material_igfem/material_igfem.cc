@@ -22,6 +22,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 MaterialIGFEM::MaterialIGFEM(SolidMechanicsModel & model, const ID & id) :
   Material(model, id),
+  nb_sub_materials(2),
   sub_material("sub_material", *this),
   name_sub_mat_1(""),
   name_sub_mat_2("") {
