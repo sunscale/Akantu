@@ -39,15 +39,17 @@ package_declare_sources(Mumps
   solver/solver_mumps.hh
   )
 
+set(_mumps_float_type ${AKANTU_FLOAT_TYPE})
+
 package_get_option_name(parallel _par_option)
 if(${_par_option})
-  package_set_find_package_extra_options(Mumps ARGS COMPONENTS "parallel")
+  package_set_find_package_extra_options(Mumps ARGS COMPONENTS "parallel" ${_mumps_float_type})
   package_add_third_party_script_variable(Mumps MUMPS_TYPE "par")
 
   package_set_package_system_dependency(Mumps deb libmumps)
   package_set_package_system_dependency(Mumps deb-src libmumps-dev)
 else()
-  package_set_find_package_extra_options(Mumps ARGS COMPONENTS "sequential")
+  package_set_find_package_extra_options(Mumps ARGS COMPONENTS "sequential" ${_mumps_float_type})
   package_add_third_party_script_variable(Mumps MUMPS_TYPE "seq")
 
   package_set_package_system_dependency(Mumps deb libmumps-seq)

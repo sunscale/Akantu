@@ -29,15 +29,9 @@
 #===============================================================================
 
 find_library(SCALAPACK_LIBRARY NAME scalapack
-  HINTS ${SCALAPACK_DIR} PATH_SUFFIXES lib)
+  PATHS "${SCALAPACK_DIR}" ENV SCALAPACK_DIR PATH_SUFFIXES lib)
 
 mark_as_advanced(SCALAPACK_LIBRARY)
-
-#===============================================================================
-if(NOT SCALAPACK_FOUND)
-  set(SCALAPACK_DIR "" CACHE PATH "Prefix of MUMPS library.")
-  mark_as_advanced(SCALAPACK_DIR)
-endif()
 
 #===============================================================================
 include(FindPackageHandleStandardArgs)
@@ -59,11 +53,11 @@ if(SCALAPACK_FOUND AND NOT TARGET ScaLAPACK)
     set(SCALAPACK_LIBRARY_TYPE STATIC CACHE INTERNAL "" FORCE)
 
     find_library(BLACS_LIBRARY_C NAME blacsC
-      HINTS ${SCALAPACK_DIR} PATH_SUFFIXES lib)
+      PATHS "${SCALAPACK_DIR}" ENV SCALAPACK_DIR PATH_SUFFIXES lib)
     find_library(BLACS_LIBRARY_F77 NAME blacsF77
-      HINTS ${SCALAPACK_DIR} PATH_SUFFIXES lib)
+      PATHS "${SCALAPACK_DIR}" ENV SCALAPACK_DIR PATH_SUFFIXES lib)
     find_library(BLACS_LIBRARY NAME blacs
-      HINTS ${SCALAPACK_DIR} PATH_SUFFIXES lib)
+      PATHS "${SCALAPACK_DIR}" ENV SCALAPACK_DIR PATH_SUFFIXES lib)
 
     mark_as_advanced(
       BLACS_LIBRARY_C
@@ -119,5 +113,5 @@ if(SCALAPACK_FOUND AND NOT TARGET ScaLAPACK)
     IMPORTED_LINK_INTERFACE_LANGUAGES "C Fortran"
     INTERFACE_LINK_LIBRARIES          "${_blacs_dep}")
 
-  set(SCALAPACK_LIBRARIES ${SCALAPACK_LIBRARIES_ALL} CACHE INTERNAL "Libraries for ScaLAPACK" FORCE)
+  set(SCALAPACK_LIBRARIES ScaLAPACK CACHE INTERNAL "Libraries for ScaLAPACK" FORCE)
 endif()
