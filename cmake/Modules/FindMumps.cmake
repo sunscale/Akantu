@@ -149,77 +149,80 @@ set(_mumps_dep_comp_Scotch_ptscotch COMPONENTS esmumps)
 set(_mumps_potential_dependencies mumps_common pord BLAS ScaLAPACK MPI
   Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS)
 
-if(MUMPS_LIBRARIES_ALL)
-  if(MUMPS_LIBRARY_${_u_first_precision}MUMPS MATCHES ".*${_first_precision}mumps.*${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    # Assuming mumps was compiled as a static library
-    set(MUMPS_LIBRARY_TYPE STATIC CACHE INTERNAL "" FORCE)
+if(MUMPS_LIBRARY_${_u_first_precision}MUMPS MATCHES ".*${_first_precision}mumps.*${CMAKE_STATIC_LIBRARY_SUFFIX}")
+  # Assuming mumps was compiled as a static library
+  set(MUMPS_LIBRARY_TYPE STATIC CACHE INTERNAL "" FORCE)
 
-    if (CMAKE_Fortran_COMPILER MATCHES ".*gfortran")
-      set(_compiler_specific gfortran)
-    elseif (CMAKE_Fortran_COMPILER MATCHES ".*ifort")
-      set(_compiler_specific ifcore)
-    endif()
+  if (CMAKE_Fortran_COMPILER MATCHES ".*gfortran")
+    set(_compiler_specific gfortran)
+  elseif (CMAKE_Fortran_COMPILER MATCHES ".*ifort")
+    set(_compiler_specific ifcore)
+  else()
+    message("Compiler ${CMAKE_Fortran_COMPILER} is not known, you will probably "
+      "have to add semething instead of this message to be able to test mumps "
+      "install")
+  endif()
+else()
+  set(MUMPS_LIBRARY_TYPE SHARED CACHE INTERNAL "" FORCE)
+endif()
+
+try_compile(_mumps_compiles "${_mumps_test_dir}" SOURCES "${_mumps_test_dir}/mumps_test_code.c"
+  CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MUMPS_INCLUDE_DIR}"
+  LINK_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${_compiler_specific}
+  OUTPUT_VARIABLE _out)
+
+foreach(_pdep ${_mumps_potential_dependencies})
+  if(_mumps_compiles)
+    break()
   endif()
 
-  try_compile(_mumps_compiles "${_mumps_test_dir}" SOURCES "${_mumps_test_dir}/mumps_test_code.c"
-    CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MUMPS_INCLUDE_DIR}"
-    LINK_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${_compiler_specific}
-    OUTPUT_VARIABLE _out)
+  if(_out MATCHES "${_mumps_dep_symbol_${_pdep}}")
+    if(_pdep STREQUAL "mumps_common")
+      find_library(MUMPS_LIBRARY_COMMON mumps_common${MUMPS_PREFIX}
+        PATHS "${MUMPS_DIR}"
+        ENV MUMPS_DIR
+        PATH_SUFFIXES lib
+        )
 
-  foreach(_pdep ${_mumps_potential_dependencies})
-    if(_mumps_compiles)
-      break()
-    endif()
-
-    if(_out MATCHES "${_mumps_dep_symbol_${_pdep}}")
-      if(_pdep STREQUAL "mumps_common")
-        find_library(MUMPS_LIBRARY_COMMON mumps_common${MUMPS_PREFIX}
-          PATHS "${MUMPS_DIR}"
-          ENV MUMPS_DIR
-          PATH_SUFFIXES lib
-          )
-
-        if(NOT TARGET MUMPS::common)
-          add_library(MUMPS::common ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
-        endif()
-        set_target_properties(MUMPS::common PROPERTIES
-          IMPORTED_LOCATION                 "${MUMPS_LIBRARY_COMMON}"
-          INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
-          IMPORTED_LINK_INTERFACE_LANGUAGES "C;Fortran")
-        list(APPEND _mumps_interface_link MUMPS::common)
-      elseif(_pdep STREQUAL "pord")
-        find_library(MUMPS_LIBRARY_PORD pord${MUMPS_PREFIX}
-          PATHS "${MUMPS_DIR}"
-          ENV MUMPS_DIR
-          PATH_SUFFIXES lib
-          )
-        if(NOT TARGET MUMPS::pord)
-          add_library(MUMPS::pord   ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
-        endif()
-        #TODO adapt it for windows and dlls (check FindGSL as an example)
-        set_target_properties(MUMPS::pord PROPERTIES
-          IMPORTED_LOCATION                 "${MUMPS_LIBRARY_PORD}"
-          INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
-          IMPORTED_LINK_INTERFACE_LANGUAGES "C")
-        list(APPEND _mumps_interface_link MUMPS::pord)
-      elseif(_pdep MATCHES "Scotch")
-        find_package(Scotch REQUIRED ${_mumps_dep_comp_${_pdep}})
-        list(APPEND _mumps_interface_link ${${_mumps_dep_link_${_pdep}}})
-      else()
-        find_package(${_pdep} REQUIRED)
-        list(APPEND _mumps_interface_link ${${_mumps_dep_link_${_pdep}}})
+      if(NOT TARGET MUMPS::common)
+        add_library(MUMPS::common ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
       endif()
-
-      list(APPEND MUMPS_LIBRARIES_ALL ${${_mumps_dep_link_${_pdep}}})
-
-      try_compile(_mumps_compiles "${_mumps_test_dir}" SOURCES "${_mumps_test_dir}/mumps_test_code.c"
-        CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MUMPS_INCLUDE_DIR}"
-        LINK_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${_compiler_specific}
-        OUTPUT_VARIABLE _out)
-
+      set_target_properties(MUMPS::common PROPERTIES
+        IMPORTED_LOCATION                 "${MUMPS_LIBRARY_COMMON}"
+        INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
+        IMPORTED_LINK_INTERFACE_LANGUAGES "C;Fortran")
+      list(APPEND _mumps_interface_link MUMPS::common)
+    elseif(_pdep STREQUAL "pord")
+      find_library(MUMPS_LIBRARY_PORD pord${MUMPS_PREFIX}
+        PATHS "${MUMPS_DIR}"
+        ENV MUMPS_DIR
+        PATH_SUFFIXES lib
+        )
+      if(NOT TARGET MUMPS::pord)
+        add_library(MUMPS::pord   ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
+      endif()
+      #TODO adapt it for windows and dlls (check FindGSL as an example)
+      set_target_properties(MUMPS::pord PROPERTIES
+        IMPORTED_LOCATION                 "${MUMPS_LIBRARY_PORD}"
+        INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
+        IMPORTED_LINK_INTERFACE_LANGUAGES "C")
+      list(APPEND _mumps_interface_link MUMPS::pord)
+    elseif(_pdep MATCHES "Scotch")
+      find_package(Scotch REQUIRED ${_mumps_dep_comp_${_pdep}})
+      list(APPEND _mumps_interface_link ${${_mumps_dep_link_${_pdep}}})
+    else()
+      find_package(${_pdep} REQUIRED)
+      list(APPEND _mumps_interface_link ${${_mumps_dep_link_${_pdep}}})
     endif()
-  endforeach()
-endif()
+
+    list(APPEND MUMPS_LIBRARIES_ALL ${${_mumps_dep_link_${_pdep}}})
+
+    try_compile(_mumps_compiles "${_mumps_test_dir}" SOURCES "${_mumps_test_dir}/mumps_test_code.c"
+      CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MUMPS_INCLUDE_DIR}"
+      LINK_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${_compiler_specific}
+      OUTPUT_VARIABLE _out)
+  endif()
+endforeach()
 
 set(MUMPS_LIBRARIES_ALL)
 foreach(_precision ${MUMPS_PRECISIONS})
