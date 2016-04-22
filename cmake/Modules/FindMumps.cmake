@@ -65,8 +65,8 @@ list(GET MUMPS_PRECISIONS 0 _first_precision)
 string(TOUPPER "${_first_precision}" _u_first_precision)
 
 set(_mumps_test_dir "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}")
-file(WRITE "${_mumps_test_dir}/mumps_test_code.c" "
-#include <${_first_precision}mumps_c.h>
+file(WRITE "${_mumps_test_dir}/mumps_test_code.c"
+  "#include <${_first_precision}mumps_c.h>
 
 int main() {
   ${_u_first_precision}MUMPS_STRUC_C mumps_data;
@@ -173,50 +173,50 @@ if(MUMPS_LIBRARIES_ALL)
 
     if(_out MATCHES "${_mumps_dep_symbol_${_pdep}}")
       if(_pdep STREQUAL "mumps_common")
-	find_library(MUMPS_LIBRARY_COMMON mumps_common${MUMPS_PREFIX}
-	  PATHS "${MUMPS_DIR}"
-	  ENV MUMPS_DIR
-	  PATH_SUFFIXES lib
-	  )
+        find_library(MUMPS_LIBRARY_COMMON mumps_common${MUMPS_PREFIX}
+          PATHS "${MUMPS_DIR}"
+          ENV MUMPS_DIR
+          PATH_SUFFIXES lib
+          )
 
-	if(NOT TARGET MUMPS::common)
-	  add_library(MUMPS::common ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
-	endif()
-	set_target_properties(MUMPS::common PROPERTIES
-	  IMPORTED_LOCATION                 "${MUMPS_LIBRARY_COMMON}"
-	  INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
-	  IMPORTED_LINK_INTERFACE_LANGUAGES "C;Fortran")
-	list(APPEND _mumps_interface_link MUMPS::common)
+        if(NOT TARGET MUMPS::common)
+          add_library(MUMPS::common ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
+        endif()
+        set_target_properties(MUMPS::common PROPERTIES
+          IMPORTED_LOCATION                 "${MUMPS_LIBRARY_COMMON}"
+          INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
+          IMPORTED_LINK_INTERFACE_LANGUAGES "C;Fortran")
+        list(APPEND _mumps_interface_link MUMPS::common)
       elseif(_pdep STREQUAL "pord")
-	find_library(MUMPS_LIBRARY_PORD pord${MUMPS_PREFIX}
-	  PATHS "${MUMPS_DIR}"
-	  ENV MUMPS_DIR
-	  PATH_SUFFIXES lib
-	  )
-	if(NOT TARGET MUMPS::pord)
-	  add_library(MUMPS::pord   ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
-	endif()
-	#TODO adapt it for windows and dlls (check FindGSL as an example)
-	set_target_properties(MUMPS::pord PROPERTIES
-	  IMPORTED_LOCATION                 "${MUMPS_LIBRARY_PORD}"
-	  INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
-	  IMPORTED_LINK_INTERFACE_LANGUAGES "C")
-	list(APPEND _mumps_interface_link MUMPS::pord)
+        find_library(MUMPS_LIBRARY_PORD pord${MUMPS_PREFIX}
+          PATHS "${MUMPS_DIR}"
+          ENV MUMPS_DIR
+          PATH_SUFFIXES lib
+          )
+        if(NOT TARGET MUMPS::pord)
+          add_library(MUMPS::pord   ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
+        endif()
+        #TODO adapt it for windows and dlls (check FindGSL as an example)
+        set_target_properties(MUMPS::pord PROPERTIES
+          IMPORTED_LOCATION                 "${MUMPS_LIBRARY_PORD}"
+          INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
+          IMPORTED_LINK_INTERFACE_LANGUAGES "C")
+        list(APPEND _mumps_interface_link MUMPS::pord)
       elseif(_pdep MATCHES "Scotch")
-	find_package(Scotch REQUIRED ${_mumps_dep_comp_${_pdep}})
-	list(APPEND _mumps_interface_link ${${_mumps_dep_link_${_pdep}}})
+        find_package(Scotch REQUIRED ${_mumps_dep_comp_${_pdep}})
+        list(APPEND _mumps_interface_link ${${_mumps_dep_link_${_pdep}}})
       else()
-	find_package(${_pdep} REQUIRED)
-	list(APPEND _mumps_interface_link ${${_mumps_dep_link_${_pdep}}})
+        find_package(${_pdep} REQUIRED)
+        list(APPEND _mumps_interface_link ${${_mumps_dep_link_${_pdep}}})
       endif()
 
       list(APPEND MUMPS_LIBRARIES_ALL ${${_mumps_dep_link_${_pdep}}})
-      
+
       try_compile(_mumps_compiles "${_mumps_test_dir}" SOURCES "${_mumps_test_dir}/mumps_test_code.c"
-	CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MUMPS_INCLUDE_DIR}"
-	LINK_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${_compiler_specific}
-	OUTPUT_VARIABLE _out)
-      
+        CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MUMPS_INCLUDE_DIR}"
+        LINK_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${_compiler_specific}
+        OUTPUT_VARIABLE _out)
+
     endif()
   endforeach()
 endif()

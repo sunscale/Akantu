@@ -81,6 +81,13 @@ try_compile(_scotch_compiles "${_scotch_test_dir}" SOURCES "${_scotch_test_dir}/
 
 get_filename_component(_scotch_hint "${SCOTCH_LIBRARY}" DIRECTORY)
 
+if(SCOTCH_LIBRARY MATCHES ".*scotch.*${CMAKE_STATIC_LIBRARY_SUFFIX}")
+  # Assuming scotch was compiled as a static library
+  set(SCOTCH_LIBRARY_TYPE STATIC CACHE INTERNAL "" FORCE)
+else()
+  set(SCOTCH_LIBRARY_TYPE SHARED CACHE INTERNAL "" FORCE)
+endif()
+
 if(NOT _scotch_compiles)
   if(_out MATCHES "SCOTCH_errorPrint")
     find_library(SCOTCH_LIBRARY_ERR scotcherr
@@ -88,25 +95,18 @@ if(NOT _scotch_compiles)
     find_library(SCOTCH_LIBRARY_ERREXIT scotcherrexit
       HINTS ${_scotch_hint})
 
-    if(SCOTCH_LIBRARY MATCHES ".*scotch.*${CMAKE_STATIC_LIBRARY_SUFFIX}")
-      # Assuming scotch was compiled as a static library
-      set(SCOTCH_LIBRARY_TYPE STATIC CACHE INTERNAL "" FORCE)
-    else()
-      set(SCOTCH_LIBRARY_TYPE SHARED CACHE INTERNAL "" FORCE)
-    endif()
-
     if(NOT TARGET Scotch::err)
       add_library(Scotch::err ${SCOTCH_LIBRARY_TYPE} IMPORTED GLOBAL)
     endif()
     if(NOT TARGET Scotch::errexit)
       add_library(Scotch::errexit ${SCOTCH_LIBRARY_TYPE} IMPORTED GLOBAL)
     endif()
-    
+
     set_target_properties(Scotch::errexit PROPERTIES
       IMPORTED_LOCATION                 "${SCOTCH_LIBRARY_ERREXIT}"
       INTERFACE_INCLUDE_DIRECTORIES     "${SCOTCH_INCLUDE_DIR}"
       IMPORTED_LINK_INTERFACE_LANGUAGES "C")
-    
+
     set_target_properties(Scotch::err PROPERTIES
       IMPORTED_LOCATION                 "${SCOTCH_LIBRARY_ERR}"
       INTERFACE_INCLUDE_DIRECTORIES     "${SCOTCH_INCLUDE_DIR}"
@@ -147,7 +147,7 @@ if("${Scotch_FIND_COMPONENTS}" MATCHES "esmumps")
     INTERFACE_INCLUDE_DIRECTORIES     "${SCOTCH_INCLUDE_DIR}"
     IMPORTED_LINK_INTERFACE_LANGUAGES "C")
 
-  
+
   mark_as_advanced(SCOTCH_LIBRARY_ESMUMPS)
 endif()
 
@@ -161,7 +161,7 @@ if("${Scotch_FIND_COMPONENTS}" MATCHES "metis")
     IMPORTED_LOCATION                 "${SCOTCH_LIBRARY_METIS}"
     INTERFACE_INCLUDE_DIRECTORIES     "${SCOTCH_INCLUDE_DIR}"
     IMPORTED_LINK_INTERFACE_LANGUAGES "C")
-  
+
   mark_as_advanced(SCOTCH_LIBRARY_METIS)
 endif()
 
@@ -196,7 +196,7 @@ int main() {
 ")
 
   find_package(MPI REQUIRED)
-  
+
   find_library(SCOTCH_LIBRARY_PTSCOTCH ptscotch HINTS ${_scotch_hint})
 
   try_compile(_scotch_compiles "${_scotch_test_dir}" SOURCES "${_scotch_test_dir}/ptscotch_test_code.c"
@@ -235,7 +235,7 @@ int main() {
       IMPORTED_LOCATION                 "${SCOTCH_LIBRARY_ESMUMPS}"
       INTERFACE_INCLUDE_DIRECTORIES     "${SCOTCH_INCLUDE_DIR}"
       IMPORTED_LINK_INTERFACE_LANGUAGES "C")
-    
+
     mark_as_advanced(SCOTCH_LIBRARY_PTESMUMPS)
   endif()
 
