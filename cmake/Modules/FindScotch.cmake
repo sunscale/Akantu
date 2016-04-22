@@ -74,6 +74,8 @@ else()
     SCOTCH_LIBRARY SCOTCH_INCLUDE_DIR)
 endif()
 
+set(SCOTCH_LIBRARIES_ALL ${SCOTCH_LIBRARY})
+
 try_compile(_scotch_compiles "${_scotch_test_dir}" SOURCES "${_scotch_test_dir}/scotch_test_code.c"
   CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${SCOTCH_INCLUDE_DIR}"
   LINK_LIBRARIES ${SCOTCH_LIBRARY}
@@ -116,6 +118,8 @@ if(NOT _scotch_compiles)
     mark_as_advanced(SCOTCH_LIBRARY_ERR
       SCOTCH_LIBRARY_ERREXIT)
 
+    list(APPEND SCOTCH_LIBRARIES_ALL ${SCOTCH_LIBRARY_ERR} ${SCOTCH_LIBRARY_ERREXIT})
+
     set(_scotch_link_lib INTERFACE_LINK_LIBRARIES "Scotch::err")
   endif()
 endif()
@@ -129,7 +133,7 @@ set_target_properties(Scotch::scotch PROPERTIES
   IMPORTED_LINK_INTERFACE_LANGUAGES "C"
   ${_scotch_link_lib})
 
-set(SCOTCH_LIBRARIES Scotch::scotch CACHE INTERNAL "Libraries for Scotch" FORCE)
+set(SCOTCH_LIBRARIES ${SCOTCH_LIBRARIES_ALL} CACHE INTERNAL "Libraries for Scotch" FORCE)
 
 mark_as_advanced(SCOTCH_LIBRARY
   SCOTCH_INCLUDE_DIR
@@ -219,7 +223,7 @@ int main() {
     IMPORTED_LINK_INTERFACE_LANGUAGES "C"
     ${_scotch_link_lib})
 
-  set(PTSCOTCH_LIBRARIES Scotch::ptscotch CACHE INTERNAL "Libraries for PT-Scotch" FORCE)
+  set(PTSCOTCH_LIBRARIES ${SCOTCH_LIBRARY_PTSCOTCH} ${SCOTCH_LIBRARIES} CACHE INTERNAL "Libraries for PT-Scotch" FORCE)
 
   mark_as_advanced(SCOTCH_LIBRARY_PTSCOTCH
     PTSCOTCH_LIBRARIES)
@@ -238,5 +242,4 @@ int main() {
 
     mark_as_advanced(SCOTCH_LIBRARY_PTESMUMPS)
   endif()
-
 endif()

@@ -92,6 +92,8 @@ foreach(_precision ${MUMPS_PRECISIONS})
     )
   mark_as_advanced(MUMPS_LIBRARY_${_u_precision}MUMPS)
   list(APPEND _mumps_required_vars MUMPS_LIBRARY_${_u_precision}MUMPS)
+
+  list(APPEND MUMPS_LIBRARIES_ALL ${MUMPS_LIBRARY_${_u_precision}MUMPS})
 endforeach()
 
 #===============================================================================
@@ -117,10 +119,8 @@ else()
   find_package_handle_standard_args(Mumps DEFAULT_MSG
     ${_mumps_required_vars} MUMPS_INCLUDE_DIR)
 endif()
+
 #===============================================================================
-
-list(APPEND MUMPS_LIBRARIES_ALL ${MUMPS_LIBRARY_${_u_first_precision}MUMPS})
-
 set(_mumps_dep_symbol_BLAS ${_first_precision}gemm)
 set(_mumps_dep_symbol_ScaLAPACK numroc)
 set(_mumps_dep_symbol_MPI mpi_send)
@@ -148,6 +148,7 @@ set(_mumps_dep_comp_Scotch_ptscotch COMPONENTS esmumps)
 
 set(_mumps_potential_dependencies mumps_common pord BLAS ScaLAPACK MPI
   Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS)
+#===============================================================================
 
 if(MUMPS_LIBRARY_${_u_first_precision}MUMPS MATCHES ".*${_first_precision}mumps.*${CMAKE_STATIC_LIBRARY_SUFFIX}")
   # Assuming mumps was compiled as a static library
@@ -224,7 +225,6 @@ foreach(_pdep ${_mumps_potential_dependencies})
   endif()
 endforeach()
 
-set(MUMPS_LIBRARIES_ALL)
 foreach(_precision ${MUMPS_PRECISIONS})
   string(TOUPPER "${_precision}" _u_precision)
   set(_target MUMPS::${_precision}mumps)
@@ -236,8 +236,6 @@ foreach(_precision ${MUMPS_PRECISIONS})
     INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
     IMPORTED_LINK_INTERFACE_LANGUAGES "C;Fortran"
     INTERFACE_LINK_LIBRARIES          "${_mumps_interface_link}")
-
-  list(APPEND MUMPS_LIBRARIES_ALL ${_target})
 endforeach()
 
 set(MUMPS_LIBRARIES ${MUMPS_LIBRARIES_ALL} CACHE INTERNAL "" FORCE)
