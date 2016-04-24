@@ -29,7 +29,7 @@
 #
 #===============================================================================
 
-set(AKANTU_INCLUDE_DIR
+set(AKANTU_INCLUDE_DIRS
   "@AKANTU_INCLUDE_DIRS@"
   )
 

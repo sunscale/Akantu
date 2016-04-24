@@ -31,22 +31,22 @@
 
 function(package_is_activated pkg activated)
   string(TOUPPER ${pkg} _u_pkg)
-  set(activated ${AKANTU_HAS_${_u_pkg}} PARENT_SCOPE)
+  set(${activated} ${AKANTU_HAS_${_u_pkg}} PARENT_SCOPE)
 endfunction()
 
 function(package_get_include_dir pkg include_dir)
   string(TOUPPER ${pkg} _u_pkg)
-  set(include_dir ${AKANTU_${_u_pkg}_INCLUDE_DIR} PARENT_SCOPE)
+  set(${include_dir} ${AKANTU_${_u_pkg}_INCLUDE_DIR} PARENT_SCOPE)
 endfunction()
 
 function(package_get_libraries pkg libs)
   string(TOUPPER ${pkg} _u_pkg)
-  set(libs ${AKANTU_${_u_pkg}_LIBRARIES} PARENT_SCOPE)
+  set(${libs} ${AKANTU_${_u_pkg}_LIBRARIES} PARENT_SCOPE)
 endfunction()
 
 function(package_get_compile_flags pkg lang flags)
   string(TOUPPER ${pkg} _u_pkg)
-  set(flags ${AKANTU_${_u_pkg}_COMPILE_${lang}_FLAGS} PARENT_SCOPE)
+  set(${flags} ${AKANTU_${_u_pkg}_COMPILE_${lang}_FLAGS} PARENT_SCOPE)
 endfunction()
 
 
