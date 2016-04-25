@@ -48,16 +48,17 @@ class MyModel : public ModelSolver {
 public:
   MyModel(Real F, Mesh & mesh)
       : ModelSolver(mesh, "model_solver", 0),
-        dispacement(mesh.getNbNodes(), 1, "disp"),
+        displacement(mesh.getNbNodes(), 1, "disp"),
         velocity(mesh.getNbNodes(), 1, "velo"),
         acceleration(mesh.getNbNodes(), 1, "accel"),
         blocked(mesh.getNbNodes(), 1, "blocked"),
-        forces(mesh.getNbNodes(), 1, "force_ext"), mesh(mesh),
+        forces(mesh.getNbNodes(), 1, "force_ext"),
+        internal_forces(mesh.getNbNodes(), 1, "force_int"), mesh(mesh),
         nb_dofs(mesh.getNbNodes()), E(1.), A(1.), rho(1.) {
 
     this->initDOFManager("mumps");
 
-    this->getDOFManager().registerDOFs("disp", dispacement, _dst_nodal);
+    this->getDOFManager().registerDOFs("disp", displacement, _dst_nodal);
     this->getDOFManager().registerDOFsDerivative("disp", 1, velocity);
     this->getDOFManager().registerDOFsDerivative("disp", 2, acceleration);
 
@@ -67,18 +68,54 @@ public:
     this->getDOFManager().getNewMatrix("M", "K");
     this->getDOFManager().getNewMatrix("J", "K");
 
-    this->assembleMass();
+    this->getDOFManager().getNewLumpedMatrix("M");
 
-    dispacement.set(0.);
+    this->assembleLumpedMass();
+    this->assembleMass();
+    this->assembleJacobian();
+
+    displacement.set(0.);
     velocity.set(0.);
     acceleration.set(0.);
 
     forces.set(0.);
     blocked.set(false);
 
-    forces(nb_dofs - 1, _x) = F;
+    //    forces(nb_dofs - 1, _x) = F;
+    displacement(nb_dofs - 1, _x) = 1;
     blocked(0, _x) = true;
   }
+
+  void assembleLumpedMass() {
+    Array<Real> & M = this->getDOFManager().getLumpedMatrix("M");
+    M.clear();
+
+    Array<Real> m_all_el(this->nb_dofs - 1, 2);
+    Array<Real>::vector_iterator m_it = m_all_el.begin(2);
+
+    Array<UInt>::const_vector_iterator cit =
+        this->mesh.getConnectivity(_segment_2).begin(2);
+    Array<UInt>::const_vector_iterator cend =
+        this->mesh.getConnectivity(_segment_2).end(2);
+
+    for (; cit != cend; ++cit, ++m_it) {
+      const Vector<UInt> & conn = *cit;
+      UInt n1 = conn(0);
+      UInt n2 = conn(1);
+
+      Real p1 = this->mesh.getNodes()(n1, _x);
+      Real p2 = this->mesh.getNodes()(n2, _x);
+
+      Real L = std::abs(p2 - p1);
+
+      Real M_n = rho * A * L / 2.;
+      (*m_it)(0) = (*m_it)(1) = M_n;
+    }
+
+    this->getDOFManager().assembleElementalArrayLocalArray(
+        m_all_el, M, _segment_2, _not_ghost);
+  }
+
 
   void assembleMass() {
     SparseMatrix & M = this->getDOFManager().getMatrix("M");
@@ -145,16 +182,24 @@ public:
 
   void assembleResidual() {
     this->getDOFManager().assembleToResidual("disp", forces);
+    this->getDOFManager().assembleMatMulVectToResidual("disp", "K",
+                                                       this->displacement,
+                                                       -1);
+  }
 
-    Array<Real> forces_internal_el(this->nb_dofs - 1, 2);
-    Array<Real>::vector_iterator f_it = forces_internal_el.begin(2);
 
+
+  Real getPotentialEnergy() {
+    // return (1./2. * this->mulVectMatVect(this->displacement, this->getDOFManager().getMatrix("K"),
+    //                                      this->displacement));
+
+    Real res = 0;
     Array<UInt>::const_vector_iterator cit =
         this->mesh.getConnectivity(_segment_2).begin(2);
     Array<UInt>::const_vector_iterator cend =
         this->mesh.getConnectivity(_segment_2).end(2);
 
-    for (; cit != cend; ++cit, ++f_it) {
+    for (; cit != cend; ++cit) {
       const Vector<UInt> & conn = *cit;
       UInt n1 = conn(0);
       UInt n2 = conn(1);
@@ -163,29 +208,56 @@ public:
 
       Real L = std::abs(p2 - p1);
 
-      Real u1 = this->dispacement(n1, _x);
-      Real u2 = this->dispacement(n2, _x);
+      Real u1 = this->displacement(n1, _x);
+      Real u2 = this->displacement(n2, _x);
 
-      Real f_n = E * A / L * (u1 - u2);
+      Real strain = (u2 - u1) / L;
 
-      Vector<Real> & f = *f_it;
-
-      f(0) = -f_n;
-      f(1) =  f_n;
+      res += strain * E * strain;
     }
 
-    this->getDOFManager().assembleElementalArrayToResidual(
-        "disp", forces_internal_el, _segment_2, _not_ghost, -1.);
+    return res / 2.;
+  }
+
+  Real getKineticEnergy() {
+    // return (1./2. * this->mulVectMatVect(this->velocity, this->getDOFManager().getMatrix("K"),
+    //                                      this->velocity));
+    Real res = 0;
+    Array<Real> &m = this->getDOFManager().getLumpedMatrix("M");
+    Array<Real>::const_scalar_iterator it  = velocity.begin();
+    Array<Real>::const_scalar_iterator end = velocity.end();
+    Array<Real>::const_scalar_iterator m_it = m.begin();
+
+    for (; it != end; ++it, ++m_it) {
+      res += *m_it * *it * *it;
+    }
+    return res / 2.;
+  }
+
+  Real mulVectMatVect(const Array<Real> & x, const SparseMatrix & A, const Array<Real> & y) {
+    Array<Real> Ay(this->nb_dofs);
+    A.matVecMul(y, Ay);
+    Real res = 0.;
+
+    Array<Real>::const_scalar_iterator it  = Ay.begin();
+    Array<Real>::const_scalar_iterator end = Ay.end();
+    Array<Real>::const_scalar_iterator x_it = x.begin();
+
+    for (; it != end; ++it, ++x_it) {
+      res += *x_it * *it;
+    }
+    return res;
   }
 
   void predictor() {}
   void corrector() {}
 
-  Array<Real> dispacement;
+  Array<Real> displacement;
   Array<Real> velocity;
   Array<Real> acceleration;
   Array<bool> blocked;
   Array<Real> forces;
+  Array<Real> internal_forces;
 
 private:
   Mesh & mesh;
@@ -197,29 +269,40 @@ private:
 int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
-  UInt nb_nodes = 11;
+  UInt nb_nodes = 21;
   UInt max_steps = 500;
-  Real time_step = .1;
+  Real time_step = 0.01;
   Mesh mesh(1);
 
   genMesh(mesh, nb_nodes);
 
   MyModel model(10., mesh);
 
-  model.getNewSolver("dynamic", _tsst_dynamic, _nls_newton_raphson);
-  model.setIntegrationScheme("dynamic", "disp", _ist_trapezoidal_rule_2,
-                             IntegrationScheme::_displacement);
+  //  model.getNewSolver("dynamic", _tsst_dynamic, _nls_newton_raphson);
+  //  model.setIntegrationScheme("dynamic", "disp", _ist_trapezoidal_rule_2,
+  //                             IntegrationScheme::_displacement);
+  model.getNewSolver("dynamic", _tsst_dynamic, _nls_lumped);
+  model.setIntegrationScheme("dynamic", "disp", _ist_central_difference,
+                             IntegrationScheme::_acceleration);
+
   model.setTimeStep(time_step);
 
-  const Array<Real> & disp = model.dispacement;
-  std::cout << std::setw(8) << "time"
-            << ", " << std::setw(8) << "disp" << std::endl;
+  const Array<Real> & disp = model.displacement;
+  std::cout << std::setw(8) << "time" << ", "
+            << std::setw(8) << "disp" << ", "
+            << std::setw(8) << "epot" << ", "
+            << std::setw(8) << "ekin" << std::endl;
 
   for (UInt i = 1; i < max_steps + 1; ++i) {
     model.solveStep();
 
-    std::cout << std::setw(8) << time_step * i << ", " << std::setw(8)
-              << disp(nb_nodes - 1, _x) << std::endl;
+
+    Real epot = model.getPotentialEnergy();
+    Real ekin = model.getKineticEnergy();
+    std::cout << std::setw(8) << time_step * i << ", "
+              << std::setw(8) << disp(nb_nodes - 1, _x) << ", "
+              << std::setw(8) << epot << ", "
+              << std::setw(8) << ekin << std::endl;
   }
 
   finalize();

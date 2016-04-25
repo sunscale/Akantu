@@ -346,7 +346,7 @@ SparseMatrix & DOFManager::getMatrix(const ID & id) {
 }
 
 /* -------------------------------------------------------------------------- */
-const Array<Real> & DOFManager::getLumpedMatrix(const ID & id) {
+Array<Real> & DOFManager::getLumpedMatrix(const ID & id) {
   ID matrix_id = this->id + ":lumpmtx:" + id;
   LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(matrix_id);
   if (it == this->lumped_matrices.end()) {
@@ -356,6 +356,19 @@ const Array<Real> & DOFManager::getLumpedMatrix(const ID & id) {
 
   return *(it->second);
 }
+
+/* -------------------------------------------------------------------------- */
+const Array<Real> & DOFManager::getLumpedMatrix(const ID & id) const {
+  ID matrix_id = this->id + ":lumpmtx:" + id;
+  LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(matrix_id);
+  if (it == this->lumped_matrices.end()) {
+    AKANTU_SILENT_EXCEPTION("The lumped matrix " << matrix_id << " does not exists in "
+                                          << this->id);
+  }
+
+  return *(it->second);
+}
+
 
 /* -------------------------------------------------------------------------- */
 NonLinearSolver & DOFManager::getNonLinearSolver(const ID & id) {

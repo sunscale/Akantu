@@ -217,7 +217,9 @@ public:
   /// Get an instance of a new lumped matrix
   virtual Array<Real> & getNewLumpedMatrix(const ID & matrix_id);
   /// Get the lumped version of a given matrix
-  const Array<Real> & getLumpedMatrix(const ID & matrix_id);
+  const Array<Real> & getLumpedMatrix(const ID & matrix_id) const;
+  /// Get the lumped version of a given matrix
+  Array<Real> & getLumpedMatrix(const ID & matrix_id);
 
   /* ------------------------------------------------------------------------ */
   /* Non linear system solver                                                 */
