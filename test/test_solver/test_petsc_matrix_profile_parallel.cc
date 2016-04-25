@@ -117,12 +117,14 @@ int main(int argc, char *argv[]) {
   /// save the profile
   K_petsc.saveMatrix("profile_parallel.txt");
   /// print the matrix to screen
-  std::ifstream profile;
-  profile.open("profile_parallel.txt");
-  std::string current_line;
-  while(getline(profile, current_line))
-    std::cout << current_line << std::endl;
-  profile.close();
+  if(prank == 0) {
+    std::ifstream profile;
+    profile.open("profile_parallel.txt");
+    std::string current_line;
+    while(getline(profile, current_line))
+      std::cout << current_line << std::endl;
+    profile.close();
+  }
 
   delete communicator;
 

@@ -385,7 +385,7 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
     UInt * local_connect = new UInt[node_per_element];
 
     // used if element is written on two lines
-    UInt j_last;
+    UInt j_last = 0;
 
     for (UInt j = 0; j < node_per_element; ++j) {
       UInt node_index;

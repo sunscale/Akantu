@@ -1,0 +1,7 @@
+/* Note: The "MS" section flags are to remove duplicates.  */
+__asm__(
+    ".pushsection \".debug_gdb_scripts\", \"MS\",@progbits,1\n"
+    ".byte 1 /* Python */\n"
+    " .asciz \"@PROJECT_BINARY_DIR@/libakantu-gdb.py\"\n"
+    ".popsection\n"
+        );

@@ -226,6 +226,8 @@ iohelper::ElemType getIOHelperType() {
 }
 
 template <>
+iohelper::ElemType getIOHelperType<_point_1>() { return iohelper::POINT_SET; }
+template <>
 iohelper::ElemType getIOHelperType<_segment_2>() { return iohelper::LINE1; }
 template <>
 iohelper::ElemType getIOHelperType<_segment_3>() { return iohelper::LINE2; }

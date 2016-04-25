@@ -369,19 +369,19 @@ protected:
 #include "element_class_tmpl.hh"
 
 /* -------------------------------------------------------------------------- */
-#include "element_classes/element_class_point_1_inline_impl.cc"
-#include "element_classes/element_class_segment_2_inline_impl.cc"
-#include "element_classes/element_class_segment_3_inline_impl.cc"
-#include "element_classes/element_class_triangle_3_inline_impl.cc"
-#include "element_classes/element_class_triangle_6_inline_impl.cc"
-#include "element_classes/element_class_tetrahedron_4_inline_impl.cc"
-#include "element_classes/element_class_tetrahedron_10_inline_impl.cc"
-#include "element_classes/element_class_quadrangle_4_inline_impl.cc"
-#include "element_classes/element_class_quadrangle_8_inline_impl.cc"
-#include "element_classes/element_class_hexahedron_8_inline_impl.cc"
-#include "element_classes/element_class_hexahedron_20_inline_impl.cc"
-#include "element_classes/element_class_pentahedron_6_inline_impl.cc"
-#include "element_classes/element_class_pentahedron_15_inline_impl.cc"
+#include "element_class_point_1_inline_impl.cc"
+#include "element_class_segment_2_inline_impl.cc"
+#include "element_class_segment_3_inline_impl.cc"
+#include "element_class_triangle_3_inline_impl.cc"
+#include "element_class_triangle_6_inline_impl.cc"
+#include "element_class_tetrahedron_4_inline_impl.cc"
+#include "element_class_tetrahedron_10_inline_impl.cc"
+#include "element_class_quadrangle_4_inline_impl.cc"
+#include "element_class_quadrangle_8_inline_impl.cc"
+#include "element_class_hexahedron_8_inline_impl.cc"
+#include "element_class_hexahedron_20_inline_impl.cc"
+#include "element_class_pentahedron_6_inline_impl.cc"
+#include "element_class_pentahedron_15_inline_impl.cc"
 
 __END_AKANTU__
 

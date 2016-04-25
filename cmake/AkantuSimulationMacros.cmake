@@ -93,6 +93,9 @@ function(_add_akantu_simulation simulation_name)
   package_get_compile_flags(BOOST CXX _flags)
   list(APPEND _simulation_COMPILE_FLAGS "${_flags}")
 
+  package_get_include_dir(BOOST _inc_dir)
+  list(APPEND _simulation_INCLUDE_DIRS ${_inc_dir})
+
   string(REPLACE ";" " " _tmp_flags "${_simulation_COMPILE_FLAGS}")
   string(REGEX REPLACE " +" " " _simulation_COMPILE_FLAGS "${_tmp_flags}")
 

@@ -66,11 +66,11 @@ if(_blas_activated OR _lapack_activated)
 
   include(FortranCInterface)
   FortranCInterface_HEADER(
-    ${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh
+    "${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh"
     MACRO_NAMESPACE "AKA_FC_")
   mark_as_advanced(CDEFS)
   list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
-    ${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh)
+    "${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh")
 endif()
 
 
@@ -90,9 +90,10 @@ configure_file(common/aka_config.hh.in
   "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
 
 list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
-  ${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh
-  ${CMAKE_CURRENT_BINARY_DIR}/material_list.hh)
-list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
+  "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh"
+  "${CMAKE_CURRENT_BINARY_DIR}/aka_element_classes_info.hh"
+  "${CMAKE_CURRENT_BINARY_DIR}/material_list.hh")
+list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}")
 
 #===========================================================================
 # header precompilation
@@ -121,6 +122,42 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     add_pch_rule(${_header} AKANTU_LIBRARY_SRCS)
   endforeach()
 elseif(CMAKE_COMPILER_IS_GNUCXX)
+endif()
+
+#===============================================================================
+# Debug infos
+#===============================================================================
+set(AKANTU_GDB_DIR ${PROJECT_SOURCE_DIR}/cmake)
+if(UNIX)
+  string(TOUPPER "${CMAKE_BUILD_TYPE}" _u_build_type)
+  if(_u_build_type STREQUAL "DEBUG" OR _u_build_type STREQUAL "RELWITHDEBINFO")
+    configure_file(${PROJECT_SOURCE_DIR}/cmake/libakantu-gdb.py.in
+      "${PROJECT_BINARY_DIR}/libakantu-gdb.py"
+      @ONLY)
+    configure_file(${PROJECT_SOURCE_DIR}/cmake/akantu-debug.cc.in
+      "${PROJECT_BINARY_DIR}/akantu-debug.cc" @ONLY)
+
+    list(APPEND AKANTU_LIBRARY_SRCS ${PROJECT_BINARY_DIR}/akantu-debug.cc)
+  endif()
+else()
+  find_program(GDB_EXECUTABLE gdb)
+
+  if(GDB_EXECUTABLE)
+    execute_process(COMMAND
+      ${GDB_EXECUTABLE} --batch -x "${PROJECT_SOURCE_DIR}/cmake/gdb_python_path"
+      OUTPUT_VARIABLE AKANTU_PYTHON_GDB_DIR
+      ERROR_QUIET
+      RESULT_VARIABLE _res)
+
+    if(_res EQUAL 0 AND UNIX)
+      set(GDB_USER_CONFIG $ENV{HOME}/.gdb/auto-load)
+      file(MAKE_DIRECTORY ${GDB_USER_CONFIG})
+
+      configure_file(${PROJECT_SOURCE_DIR}/cmake/libakantu-gdb.py.in
+        "${GDB_USER_CONFIG}/${CMAKE_SHARED_LIBRARY_PREFIX}akantu${CMAKE_SHARED_LIBRARY_SUFFIX}.${AKANTU_VERSION}-gdb.py"
+        @ONLY)
+    endif()
+  endif()
 endif()
 
 #===============================================================================

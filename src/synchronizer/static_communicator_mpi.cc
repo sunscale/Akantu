@@ -373,7 +373,9 @@ void StaticCommunicatorMPI::broadcast(T * values, int nb_values, int root) {
 }
 
 /* -------------------------------------------------------------------------- */
-int StaticCommunicatorMPI::getMaxTag() { return MPI_TAG_UB; }
+int StaticCommunicatorMPI::getMaxTag() {
+  return this->mpi_data->getMaxTag(); 
+}
 
 /* -------------------------------------------------------------------------- */
 int StaticCommunicatorMPI::getMinTag() { return 0; }

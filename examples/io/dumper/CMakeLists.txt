@@ -38,7 +38,8 @@ add_library(locomotive_tools
   locomotive_tools.hh
   )
 
-target_include_directories(locomotive_tools PRIVATE ${AKANTU_INCLUDE_DIRS})
+package_get_include_dir(BOOST _inc_dir)
+target_include_directories(locomotive_tools PRIVATE ${AKANTU_INCLUDE_DIRS} ${_inc_dir})
 
 if(AKANTU_EXTRA_CXX_FLAGS)
   set_target_properties(locomotive_tools PROPERTIES COMPILE_FLAGS ${AKANTU_EXTRA_CXX_FLAGS})
