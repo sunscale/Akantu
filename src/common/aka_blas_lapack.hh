@@ -43,6 +43,7 @@ extern "C" {
   /* ------------------------------------------------------------------------ */
   //LEVEL 1
   double AKA_FC_GLOBAL(ddot, DDOT)(int *, double *, int *, double *, int *);
+  void AKA_FC_GLOBAL(daxpy, DAXPY)(int *, double *, double *, int *, double *, int *);
 
   //LEVEL 2
   void AKA_FC_GLOBAL(dgemv, DGEMV)(char *, int *, int *, double *, double *, int *,
@@ -56,6 +57,8 @@ extern "C" {
   /* ------------------------------------------------------------------------ */
   //LEVEL 1
   float AKA_FC_GLOBAL(sdot, SDOT)(int *, float *, int *, float *, int *);
+  void AKA_FC_GLOBAL(saxpy, SAXPY)(int *, float *, float *, int *, float *, int *);
+
   //LEVEL 2
   void AKA_FC_GLOBAL(sgemv, SGEMV)(char *, int *, int *, float *, float *, int *,
                                    float *, int *, float *, float *, int *);
@@ -85,6 +88,12 @@ inline T aka_dot(int *n, T *x, int *incx, T *y, int *incy) {
   AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name()) << "is not a type recognized, or you didn't activated BLAS in the compilation options!");
 }
 
+/// Wrapper around the S/DAXPY BLAS function that computes \f$y := \alpha x + y\f$
+template<typename T>
+inline void aka_axpy(int *n, T *alpha, T *x, int *incx, T *y, int *incy) {
+  AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name()) << "is not a type recognized, or you didn't activated BLAS in the compilation options!");
+}
+
 /// Wrapper around the S/DGEMV BLAS function that computes matrix-vector product \f$y := \alpha A^{(T)}x + \beta y \f$
 template<typename T>
 inline void aka_gemv(char *trans, int *m, int *n, T *
@@ -107,6 +116,11 @@ inline void aka_gemm(char *transa, char *transb,
 template<>
 inline double aka_dot<double>(int *n, double *x, int *incx, double *y, int *incy) {
   return AKA_FC_GLOBAL(ddot, DDOT)(n, x, incx, y, incy);
+}
+
+template<>
+inline void aka_axpy(int *n, double *alpha, double *x, int *incx, double *y, int *incy) {
+  return AKA_FC_GLOBAL(daxpy, DAXPY)(n, alpha, x, incx, y, incy);
 }
 
 template<>
@@ -133,6 +147,11 @@ inline void aka_gemm<double>(char *transa, char *transb,
 template<>
 inline float aka_dot<float>(int *n, float *x, int *incx, float *y, int *incy) {
   return AKA_FC_GLOBAL(sdot, SDOT)(n, x, incx, y, incy);
+}
+
+template<>
+inline void aka_axpy(int *n, float *alpha, float *x, int *incx, float *y, int *incy) {
+  return AKA_FC_GLOBAL(daxpy, DAXPY)(n, alpha, x, incx, y, incy);
 }
 
 template<>

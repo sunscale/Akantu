@@ -366,6 +366,16 @@ public:
     return *(static_cast<RetType *>(this));
   }
 
+  /// Y = \alpha X + Y
+  inline RetType & aXplusY(const TensorStorage & other, const T & alpha = 1.) {
+    AKANTU_DEBUG_ASSERT(
+        _size == other.size(),
+        "The two tensors do not have the same size, they cannot be subtracted");
+
+    Math::aXplusY(this->_size, alpha, other.storage(), this->storage());
+    return *(static_cast<RetType *>(this));
+  }
+
   /* ------------------------------------------------------------------------ */
   T * storage() const { return values; }
   UInt size() const { return _size; }
