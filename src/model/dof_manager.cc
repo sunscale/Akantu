@@ -101,19 +101,21 @@ void DOFManager::assembleElementalArrayLocalArray(
       connectivity.begin(nb_nodes_per_element);
   Array<UInt>::const_vector_iterator conn_it = conn_begin;
 
-  UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom;
-  Array<Real>::const_vector_iterator elem_it = elementary_vect.begin(size_mat);
+  Array<Real>::const_matrix_iterator elem_it =
+      elementary_vect.begin(nb_degree_of_freedom, nb_nodes_per_element);
 
   for (UInt el = 0; el < nb_element; ++el, ++elem_it) {
     if (filter_it != NULL)
       conn_it = conn_begin + *filter_it;
 
-    for (UInt n = 0, ld = 0; n < nb_nodes_per_element; ++n) {
-      UInt offset_node = (*conn_it)(n)*nb_degree_of_freedom;
-
-      for (UInt d = 0; d < nb_degree_of_freedom; ++d, ++ld) {
-        array_assembeled[offset_node + d] += scale_factor * (*elem_it)(ld);
-      }
+    const Vector<UInt> & conn = *conn_it;
+    const Matrix<Real> & elemental_val = *elem_it;
+    for (UInt n = 0; n < nb_nodes_per_element; ++n) {
+      UInt offset_node = conn(n) * nb_degree_of_freedom;
+      Vector<Real> assemble(array_assembeled.storage() + offset_node,
+                            nb_degree_of_freedom);
+      Vector<Real> elem_val = elemental_val(n);
+      assemble.aXplusY(elem_val, scale_factor);
     }
 
     if (filter_it != NULL)
@@ -144,7 +146,7 @@ void DOFManager::assembleElementalArrayToResidual(
       elementary_vect, array_localy_assembeled, type, ghost_type, scale_factor,
       filter_elements);
 
-  this->assembleToResidual(dof_id, array_localy_assembeled, scale_factor);
+  this->assembleToResidual(dof_id, array_localy_assembeled, 1);
 
   AKANTU_DEBUG_OUT();
 }
@@ -339,7 +341,7 @@ SparseMatrix & DOFManager::getMatrix(const ID & id) {
   SparseMatricesMap::const_iterator it = this->matrices.find(matrix_id);
   if (it == this->matrices.end()) {
     AKANTU_SILENT_EXCEPTION("The matrix " << matrix_id << " does not exists in "
-                                   << this->id);
+                                          << this->id);
   }
 
   return *(it->second);
@@ -350,8 +352,8 @@ Array<Real> & DOFManager::getLumpedMatrix(const ID & id) {
   ID matrix_id = this->id + ":lumpmtx:" + id;
   LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(matrix_id);
   if (it == this->lumped_matrices.end()) {
-    AKANTU_SILENT_EXCEPTION("The lumped matrix " << matrix_id << " does not exists in "
-                                          << this->id);
+    AKANTU_SILENT_EXCEPTION("The lumped matrix "
+                            << matrix_id << " does not exists in " << this->id);
   }
 
   return *(it->second);
@@ -362,13 +364,12 @@ const Array<Real> & DOFManager::getLumpedMatrix(const ID & id) const {
   ID matrix_id = this->id + ":lumpmtx:" + id;
   LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(matrix_id);
   if (it == this->lumped_matrices.end()) {
-    AKANTU_SILENT_EXCEPTION("The lumped matrix " << matrix_id << " does not exists in "
-                                          << this->id);
+    AKANTU_SILENT_EXCEPTION("The lumped matrix "
+                            << matrix_id << " does not exists in " << this->id);
   }
 
   return *(it->second);
 }
-
 
 /* -------------------------------------------------------------------------- */
 NonLinearSolver & DOFManager::getNonLinearSolver(const ID & id) {
