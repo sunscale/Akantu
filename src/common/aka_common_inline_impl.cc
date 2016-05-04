@@ -34,10 +34,12 @@
  *
  */
 
+/* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <cctype>
+/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
@@ -96,12 +98,24 @@ inline std::ostream & operator <<(std::ostream & stream, SynchronizationTag type
 
 /* -------------------------------------------------------------------------- */
 /// standard output stream operator for SolveConvergenceCriteria
-inline std::ostream & operator <<(std::ostream & stream, SolveConvergenceCriteria criteria)
+inline std::ostream & operator <<(std::ostream & stream, const SolveConvergenceCriteria & criteria)
 {
   switch(criteria) {
   case _scc_residual : stream << "_scc_residual" ; break;
-  case _scc_solution: stream << "_scc_increment"; break;
+  case _scc_solution: stream << "_scc_solution"; break;
   case _scc_residual_mass_wgh: stream << "_scc_residual_mass_wgh"; break;
+  }
+  return stream;
+}
+
+inline std::istream & operator >>(std::istream & stream, SolveConvergenceCriteria & criteria) {
+  std::string str;
+  stream >> str;
+  if(str == "_scc_residual") criteria =  _scc_residual;
+  else if (str == "_scc_solution") criteria = _scc_solution;
+  else if(str == "_scc_residual_mass_wgh") criteria = _scc_residual_mass_wgh;
+  else {
+    stream.setstate(std::ios::failbit);
   }
   return stream;
 }

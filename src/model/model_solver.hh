@@ -113,6 +113,13 @@ public:
   /// set the time step of a given solver
   void setTimeStep(Real time_step, const ID & solver_id = "");
 
+  /// set the parameter 'param' of the solver 'solver_id'
+  template<typename T>
+  void set(const ID & param, const T & value, const ID & solver_id = "");
+
+  /// get the parameter 'param' of the solver 'solver_id'
+  const Parameter & get(const ID & param, const ID & solver_id = "") const;
+
 private:
   TimeStepSolver & getSolver(const ID & solver_id);
   const TimeStepSolver & getSolver(const ID & solver_id) const;

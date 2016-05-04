@@ -30,6 +30,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_memory.hh"
+#include "parameter_registry.hh"
 /* -------------------------------------------------------------------------- */
 #include <set>
 /* -------------------------------------------------------------------------- */
@@ -44,7 +45,7 @@ class SolverCallback;
 
 __BEGIN_AKANTU__
 
-class NonLinearSolver : Memory {
+class NonLinearSolver : Memory, public ParameterRegistry {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -78,6 +79,17 @@ protected:
   /// list of supported non linear solver types
   std::set<NonLinearSolverType> supported_type;
 };
+
+namespace debug {
+  class NLSNotConvergedException : public Exception {
+  public:
+    NLSNotConvergedException(Real threshold, UInt niter)
+        : Exception("The non linear solver did not converge."),
+          threshold(threshold), niter(niter) {}
+    Real threshold;
+    UInt niter;
+  };
+}
 
 __END_AKANTU__
 

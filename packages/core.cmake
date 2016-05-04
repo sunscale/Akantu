@@ -145,6 +145,10 @@ package_declare_sources(core
   io/parser/cppargparse/cppargparse.cc
   io/parser/cppargparse/cppargparse_tmpl.hh
 
+  io/parser/parameter_registry.cc
+  io/parser/parameter_registry.hh
+  io/parser/parameter_registry_tmpl.hh
+
   mesh/element_group.cc
   mesh/element_group.hh
   mesh/element_group_inline_impl.cc
@@ -190,6 +194,7 @@ package_declare_sources(core
   model/dof_manager_inline_impl.cc
   model/model_solver.cc
   model/model_solver.hh
+  model/model_solver_tmpl.hh
   model/non_linear_solver.cc
   model/non_linear_solver.hh
   model/non_linear_solver_default.hh

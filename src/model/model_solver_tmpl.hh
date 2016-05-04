@@ -1,19 +1,16 @@
 /**
- * @file   parsable_tmpl.hh
+ * @file   model_solver_tmpl.hh
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Thu Aug 09 2012
- * @date last modification: Fri Mar 27 2015
+ * @date   Fri Apr 29 17:16:33 2016
  *
- * @brief  implementation of the templated part of ParsableParam Parsable and
- * ParsableParamTyped
+ * @brief
  *
  * @section LICENSE
  *
- * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
- * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
- * Solides)
+ * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
  * terms  of the  GNU Lesser  General Public  License as  published by  the Free
@@ -31,8 +28,27 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "time_step_solver.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_MODEL_SOLVER_TMPL_HH__
+#define __AKANTU_MODEL_SOLVER_TMPL_HH__
 
 __BEGIN_AKANTU__
 
+template<typename T>
+void ModelSolver::set(const ID & param, const T & value, const ID & solver_id) {
+  TimeStepSolver & solver = this->getSolver(solver_id);
+  solver.setParam(param, value);
+}
+
+
+inline Parameter ModelSolver::get(const ID & param, const ID & solver_id) {
+  TimeStepSolver & solver = this->getSolver(solver_id);
+  return solver.getParam(param);
+}
+
 
 __END_AKANTU__
+
+#endif /* __AKANTU_MODEL_SOLVER_TMPL_HH__ */

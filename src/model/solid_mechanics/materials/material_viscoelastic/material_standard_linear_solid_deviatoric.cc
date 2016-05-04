@@ -47,9 +47,9 @@ MaterialStandardLinearSolidDeviatoric<spatial_dimension>::MaterialStandardLinear
 
   AKANTU_DEBUG_IN();
 
-  this->registerParam("Eta",  eta,   Real(1.), ParamAccessType(_pat_parsable | _pat_modifiable), "Viscosity");
-  this->registerParam("Ev",   Ev,    Real(1.), ParamAccessType(_pat_parsable | _pat_modifiable), "Stiffness of the viscous element");
-  this->registerParam("Einf", E_inf, Real(1.), ParamAccessType(_pat_readable), "Stiffness of the elastic element");
+  this->registerParam("Eta",  eta,   Real(1.), _pat_parsable | _pat_modifiable, "Viscosity");
+  this->registerParam("Ev",   Ev,    Real(1.), _pat_parsable | _pat_modifiable, "Stiffness of the viscous element");
+  this->registerParam("Einf", E_inf, Real(1.), _pat_readable, "Stiffness of the elastic element");
 
   UInt stress_size = spatial_dimension * spatial_dimension;
 

@@ -32,6 +32,7 @@
 #include "aka_array.hh"
 #include "solver_callback.hh"
 #include "integration_scheme.hh"
+#include "parameter_registry.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_TIME_STEP_SOLVER_HH__
@@ -44,7 +45,7 @@ class NonLinearSolver;
 
 __BEGIN_AKANTU__
 
-class TimeStepSolver : public Memory, public SolverCallback {
+class TimeStepSolver : public Memory, public ParameterRegistry, public SolverCallback {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

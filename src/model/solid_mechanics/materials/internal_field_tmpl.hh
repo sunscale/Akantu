@@ -303,9 +303,9 @@ void InternalField<T>::printself(std::ostream & stream, int indent) const {
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void ParsableParamTyped<InternalField<Real> >::parseParam(
+inline void ParameterTyped<InternalField<Real> >::setAuto(
     const ParserParameter & in_param) {
-  ParsableParam::parseParam(in_param);
+  Parameter::setAuto(in_param);
   Real r = in_param;
   param.setDefaultValue(r);
 }

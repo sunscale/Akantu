@@ -43,15 +43,27 @@ NonLinearSolverNewtonRaphson::NonLinearSolverNewtonRaphson(
     UInt memory_id)
     : NonLinearSolver(dof_manager, non_linear_solver_type, id, memory_id),
       dof_manager(dof_manager),
-      solver(dof_manager, "J", id + ":sparse_solver", memory_id),
-      convergence_criteria_type(_scc_solution), convergence_criteria(1e-10),
-      max_iterations(10), n_iter(0), error(0.), converged(false) {
+      solver(dof_manager, "J", id + ":sparse_solver", memory_id), n_iter(0),
+      error(0.), converged(false) {
 
   this->supported_type.insert(_nls_newton_raphson_modified);
   this->supported_type.insert(_nls_newton_raphson);
   this->supported_type.insert(_nls_linear);
 
   this->checkIfTypeIsSupported();
+
+  this->registerParam("threshold", convergence_criteria, 1e-10, _pat_writable,
+                      "Threshold to consider results as converged");
+  this->registerParam("convergence_type", convergence_criteria_type,
+                      _scc_solution, _pat_writable,
+                      "Type of convergence criteria");
+  this->registerParam("max_iterations", max_iterations, UInt(10), _pat_writable,
+                      "Max number of iterations");
+  this->registerParam("error", error, _pat_readable, "Last reached error");
+  this->registerParam("nb_iterations", n_iter, _pat_readable,
+                      "Last reached number of iterations");
+  this->registerParam("converged", converged, _pat_readable,
+                      "Did last solve converged");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -63,12 +75,11 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
 
   solver_callback.assembleResidual();
 
-  if(this->non_linear_solver_type == _nls_newton_raphson_modified)
+  if (this->non_linear_solver_type == _nls_newton_raphson_modified)
     solver_callback.assembleJacobian();
 
   this->n_iter = 0;
   this->converged = false;
-
 
   if (this->convergence_criteria_type == _scc_residual) {
     this->converged = this->testConvergence(this->dof_manager.getResidual());
@@ -117,6 +128,9 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
     //    EventManager::sendEvent(
     //   SolidMechanicsModelEvent::AfterNonLinearSolverSolves(method));
   } else if (this->n_iter == this->max_iterations) {
+    AKANTU_CUSTOM_EXCEPTION(debug::NLSNotConvergedException(
+        this->convergence_criteria, this->n_iter));
+
     AKANTU_DEBUG_WARNING("[" << this->convergence_criteria_type
                              << "] Convergence not reached after "
                              << std::setw(std::log10(this->max_iterations))

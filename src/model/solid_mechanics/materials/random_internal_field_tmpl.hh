@@ -111,9 +111,9 @@ inline RandomInternalField<T, BaseField, Generator>::operator Real() const {
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void ParsableParamTyped<RandomInternalField<Real> >::parseParam(
+inline void ParameterTyped<RandomInternalField<Real> >::setAuto(
     const ParserParameter & in_param) {
-  ParsableParam::parseParam(in_param);
+  Parameter::setAuto(in_param);
   RandomParameter<Real> r = in_param;
   param.setRandomDistribution(r);
 }

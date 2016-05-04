@@ -271,10 +271,9 @@ inline void Material::unpackElementData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T>
-inline const T & Material::getParam(const ID & param) const {
+inline const Parameter & Material::getParam(const ID & param) const {
   try {
-    return get<T>(param);
+    return get(param);
   } catch (...) {
     AKANTU_EXCEPTION("No parameter " << param << " in the material "
                                      << getID());

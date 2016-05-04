@@ -111,10 +111,10 @@ public:
         this->getMaterialFromGlobalIndex(global_element_id);
     bool plane_strain = true;
     if (spatial_dimension == 2)
-      plane_strain = !material.getParam<bool>("Plane_Stress");
+      plane_strain = !((bool) material.getParam("Plane_Stress"));
 
     if (plane_strain) {
-      Real nu = material.getParam<Real>("nu");
+      Real nu = material.getParam("nu");
       for (UInt d = 0; d < nb_data; ++d) {
         stress(2, 2 + 3 * d) =
             nu * (stress(0, 0 + 3 * d) + stress(1, 1 + 3 * d));
@@ -146,10 +146,10 @@ public:
     Matrix<Real> strain = this->pad(in, nb_data);
     const Material & material =
         this->getMaterialFromGlobalIndex(global_element_id);
-    bool plane_stress = material.getParam<bool>("Plane_Stress");
+    bool plane_stress = material.getParam("Plane_Stress");
 
     if (plane_stress) {
-      Real nu = material.getParam<Real>("nu");
+      Real nu = material.getParam("nu");
       for (UInt d = 0; d < nb_data; ++d) {
         strain(2, 2 + 3 * d) =
             nu / (nu - 1) * (strain(0, 0 + 3 * d) + strain(1, 1 + 3 * d));
