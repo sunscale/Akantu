@@ -233,9 +233,12 @@ public:
                            const GhostType & ghost_type = _not_ghost) const;
 
   /// assemble a field as a matrix (ex. rho to mass matrix)
-  void assembleFieldMatrix(const Array<Real> & field, UInt nb_degree_of_freedom,
-                           SparseMatrix & matrix, ElementType type,
-                           const GhostType & ghost_type = _not_ghost) const;
+  template<class Functor>
+  void assembleFieldMatrix(Functor field_funct,
+                           UInt nb_degree_of_freedom,
+                           SparseMatrix & matrix,
+                           ElementType type,
+                           const GhostType & ghost_type) const;
 
 #ifdef AKANTU_STRUCTURAL_MECHANICS
 
@@ -288,8 +291,9 @@ private:
                                      const GhostType & ghost_type) const;
 
   /// assemble a field as a matrix (ex. rho to mass matrix)
-  template <ElementType type>
-  void assembleFieldMatrix(const Array<Real> & field, UInt nb_degree_of_freedom,
+  template <class Functor, ElementType type>
+  void assembleFieldMatrix(Functor & field_funct,
+                           UInt nb_degree_of_freedom,
                            SparseMatrix & matrix,
                            const GhostType & ghost_type) const;
 

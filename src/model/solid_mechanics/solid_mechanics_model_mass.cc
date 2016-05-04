@@ -103,23 +103,38 @@ void SolidMechanicsModel::assembleMass() {
   AKANTU_DEBUG_OUT();
 }
 
+class ComputeRhoFunctor {
+public:
+  ComputeRhoFunctor(const SolidMechanicsModel & model) : model(model){};
+
+  void operator()(Matrix<Real> & rho, const Element & element,
+                  __attribute__((unused)) const Matrix<Real> quad_coords) const {
+    const Array<UInt> & mat_indexes =
+        model.getMaterialByElement(element.type, element.ghost_type);
+    Real mat_rho =
+      model.getMaterial(mat_indexes(element.element)).getParam<Real>("rho");
+    rho.set(mat_rho);
+  }
+
+private:
+  const SolidMechanicsModel & model;
+};
+
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
 
-  Array<Real> rho_1(0,1);
-  //UInt nb_element;
-  mass_matrix->clear();
+  ComputeRhoFunctor compute_rho(*this);
 
   Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
   for(; it != end; ++it) {
     ElementType type = *it;
-
-    computeRho(rho_1, type, ghost_type);
-    fem.assembleFieldMatrix(rho_1, spatial_dimension, *mass_matrix, type, ghost_type);
+    
+    //computeRho(compute_rho, type, ghost_type);
+    fem.assembleFieldMatrix(compute_rho, spatial_dimension, *mass_matrix, type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -145,7 +160,8 @@ void SolidMechanicsModel::computeRho(Array<Real> & rho,
 
   /// compute @f$ rho @f$ for each nodes of each element
   for (UInt el = 0; el < nb_element; ++el) {
-    Real mat_rho = mat_val[mat_indexes(el)]->getParam<Real>("rho"); /// here rho is constant in an element
+    /// here rho is constant in an element
+    Real mat_rho = mat_val[mat_indexes(el)]->getParam<Real>("rho");
 
     for (UInt n = 0; n < nb_quadrature_points; ++n) {
       *rho_1_val++ = mat_rho;

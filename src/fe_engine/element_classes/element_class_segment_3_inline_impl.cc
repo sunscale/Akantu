@@ -62,7 +62,7 @@
 
 /* -------------------------------------------------------------------------- */
 AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_segment_3, _gt_segment_3, _itp_lagrange_segment_3, _ek_regular, 1,
-				     _git_segment, 2);
+                                     _git_segment, 3);
 
 AKANTU_DEFINE_SHAPE(_gt_segment_3, _gst_square);
 

@@ -42,11 +42,14 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-FEEngine::FEEngine(Mesh & mesh, UInt element_dimension, ID id, MemoryID memory_id) :
-  Memory(id, memory_id), mesh(mesh), normals_on_integration_points("normals_on_quad_points", id, memory_id) {
+FEEngine::FEEngine(Mesh & mesh, UInt element_dimension, ID id,
+                   MemoryID memory_id)
+    : Memory(id, memory_id), mesh(mesh),
+      normals_on_integration_points("normals_on_quad_points", id, memory_id) {
   AKANTU_DEBUG_IN();
-  this->element_dimension = (element_dimension != _all_dimensions) ?
-    element_dimension : mesh.getSpatialDimension();
+  this->element_dimension = (element_dimension != _all_dimensions)
+                                ? element_dimension
+                                : mesh.getSpatialDimension();
 
   init();
 
@@ -54,9 +57,7 @@ FEEngine::FEEngine(Mesh & mesh, UInt element_dimension, ID id, MemoryID memory_i
 }
 
 /* -------------------------------------------------------------------------- */
-void FEEngine::init() {
-
-}
+void FEEngine::init() {}
 
 /* -------------------------------------------------------------------------- */
 FEEngine::~FEEngine() {
@@ -256,11 +257,13 @@ void FEEngine::assembleMatrix(const Array<Real> & elementary_mat,
 /* -------------------------------------------------------------------------- */
 void FEEngine::printself(std::ostream & stream, int indent) const {
   std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
 
   stream << space << "FEEngine [" << std::endl;
   stream << space << " + id                : " << id << std::endl;
-  stream << space << " + element dimension : " << element_dimension << std::endl;
+  stream << space << " + element dimension : " << element_dimension
+         << std::endl;
 
   stream << space << " + mesh [" << std::endl;
   mesh.printself(stream, indent + 2);

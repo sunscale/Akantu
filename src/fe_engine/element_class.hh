@@ -48,8 +48,8 @@ template <ElementType element_type> struct ElementClassProperty {
   static const InterpolationType interpolation_type = _itp_not_defined;
   static const ElementKind element_kind = _ek_regular;
   static const UInt spatial_dimension = 0;
-  static const GaussIntergrationType gauss_integration_type = _git_not_defined;
-  static const UInt minimal_integration_order = 0;
+  static const GaussIntegrationType gauss_integration_type = _git_not_defined;
+  static const UInt polynomial_degree = 0;
 };
 
 /// Macro to generate the element class structures for different element types
@@ -61,9 +61,9 @@ template <ElementType element_type> struct ElementClassProperty {
     static const InterpolationType interpolation_type = interp_type;           \
     static const ElementKind element_kind = elem_kind;                         \
     static const UInt spatial_dimension = sp;                                  \
-    static const GaussIntergrationType gauss_integration_type =                \
+    static const GaussIntegrationType gauss_integration_type =                \
         gauss_int_type;                                                        \
-    static const UInt minimal_integration_order = min_int_order;               \
+    static const UInt polynomial_degree = min_int_order;                       \
   }
 
 /* -------------------------------------------------------------------------- */
@@ -249,18 +249,16 @@ public:
 /* -------------------------------------------------------------------------- */
 /* Integration                                                                */
 /* -------------------------------------------------------------------------- */
-template <GaussIntergrationType git_class, UInt max_order>
+template <GaussIntegrationType git_class, UInt nb_points>
 struct GaussIntegrationTypeData {
   /// quadrature points in natural coordinates
   static Real quad_positions[];
   /// weights for the Gauss integration
   static Real quad_weights[];
-  /// Number of quadrature points per element
-  static UInt nb_quadrature_points;
 };
 
 template <ElementType type,
-          UInt order = ElementClassProperty<type>::minimal_integration_order>
+          UInt n = ElementClassProperty<type>::polynomial_degree>
 class GaussIntegrationElement {
 public:
   static UInt getNbQuadraturePoints();
@@ -366,9 +364,13 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
+__END_AKANTU__
+
 #include "element_class_tmpl.hh"
 
+
 /* -------------------------------------------------------------------------- */
+__BEGIN_AKANTU__
 #include "element_class_point_1_inline_impl.cc"
 #include "element_class_segment_2_inline_impl.cc"
 #include "element_class_segment_3_inline_impl.cc"
@@ -382,8 +384,9 @@ protected:
 #include "element_class_hexahedron_20_inline_impl.cc"
 #include "element_class_pentahedron_6_inline_impl.cc"
 #include "element_class_pentahedron_15_inline_impl.cc"
-
 __END_AKANTU__
+
+/* -------------------------------------------------------------------------- */
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 #include "element_class_structural.hh"
