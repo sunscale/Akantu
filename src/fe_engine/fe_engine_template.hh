@@ -236,7 +236,8 @@ public:
                            const GhostType & ghost_type = _not_ghost) const;
 
   /// assemble a field as a matrix (ex. rho to mass matrix)
-  void assembleFieldMatrix(const Array<Real> & field, const ID & matrix_id,
+  template<class Functor>
+  void assembleFieldMatrix(Functor field_funct, const ID & matrix_id,
                            const ID & dof_id, DOFManager & dof_manager,
                            ElementType type,
                            const GhostType & ghost_type) const;
@@ -289,8 +290,8 @@ private:
                                      const GhostType & ghost_type) const;
 
   /// assemble a field as a matrix (ex. rho to mass matrix)
-  template <ElementType type>
-  void assembleFieldMatrix(const Array<Real> & field, const ID & matrix_id,
+  template <class Functor, ElementType type>
+  void assembleFieldMatrix(Functor field_funct, const ID & matrix_id,
                            const ID & dof_id, DOFManager & dof_manager,
                            const GhostType & ghost_type) const;
 

@@ -109,9 +109,9 @@ enum GeometricalShapeType {
 };
 
 /* -------------------------------------------------------------------------- */
-/// @enum GaussIntergrationType classes of types using common
+/// @enum GaussIntegrationType classes of types using common
 /// description of the gauss point position and weights
-enum GaussIntergrationType {
+enum GaussIntegrationType {
   _git_not_defined,
   @AKANTU_GAUSS_INTEGRATION_TYPES_ENUM@
 };
