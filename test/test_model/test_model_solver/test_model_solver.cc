@@ -156,7 +156,7 @@ int main(int argc, char * argv[]) {
 
   MyModel model(10., mesh);
 
-  model.getNewSolver("static", _tsst_static, _nls_newton_raphson);
+  model.getNewSolver("static", _tsst_static, _nls_linear);
   model.setIntegrationScheme("static", "disp", _ist_pseudo_time);
 
   model.solveStep();
