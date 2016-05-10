@@ -84,12 +84,12 @@ template<> Real GaussIntegrationTypeData<_git_triangle, 4>::quad_positions[]    
                                                                                     1./3., 1./3.};
 template<> Real GaussIntegrationTypeData<_git_triangle, 4>::quad_weights[]       = {25./(24.*4.), 25./(24.*4.), 25./(24.*4.), -27/(24.*4.)};
 /* -------------------------------------------------------------------------- */
- /// I give up I cannot find a way to get rational values for this so I sadly
- /// have to type the pre-computed values at a given precision
-static const Real tri_6_a = 0.445948490915965;
-static const Real tri_6_b = 0.091576213509771;
-static const Real tri_6_w1 = 0.054975871827661;
-static const Real tri_6_w2 = 0.111690794839005;
+/// Found those one in the TrigGaussRuleInfo from mathematica and matched them to the code aster values
+/// http://www.colorado.edu/engineering/CAS/courses.d/AFEM.d/AFEM.AppI.d/AFEM.AppI.pdf
+static const Real tri_6_a = (8. - std::sqrt(10.) + std::sqrt(38.-44.*std::sqrt(2./5.)))/18.;
+static const Real tri_6_b = (8. - std::sqrt(10.) - std::sqrt(38.-44.*std::sqrt(2./5.)))/18.;
+static const Real tri_6_w1 = (620. - std::sqrt(213125. - 53320.*std::sqrt(10.)))/7440.;
+static const Real tri_6_w2 = (620. + std::sqrt(213125. - 53320.*std::sqrt(10.)))/7440.;
 template<> Real GaussIntegrationTypeData<_git_triangle, 6>::quad_positions[]     = {tri_6_b, tri_6_b,
                                                                                     1. - 2. * tri_6_b, tri_6_b,
                                                                                     tri_6_b, 1. - 2. * tri_6_b,
