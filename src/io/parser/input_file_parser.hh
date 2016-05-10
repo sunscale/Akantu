@@ -35,9 +35,9 @@
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_fusion.hpp>	 	
-#include <boost/spirit/include/phoenix_operator.hpp>	 	
-#include <boost/spirit/include/phoenix_bind.hpp>	 	
+#include <boost/spirit/include/phoenix_fusion.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_bind.hpp>
 #include <boost/variant/recursive_variant.hpp>
 
 #ifndef __AKANTU_INPUT_FILE_PARSER_HH__
@@ -52,71 +52,69 @@ namespace phx = boost::phoenix;
 __BEGIN_AKANTU__
 
 namespace parser {
-  struct error_handler_ {
-    template <typename, typename, typename, typename> struct result {
-      typedef void type;
-    };
-
-    template <typename Iterator>
-    void operator()(qi::info const & what, Iterator err_pos,
-		    __attribute__((unused)) Iterator first,
-		    __attribute__((unused)) Iterator last) const {
-      spirit::classic::file_position pos = err_pos.get_position();
-
-      AKANTU_EXCEPTION("Parse error [ "
-		       << "Expecting " << what << " instead of \"" << *err_pos
-		       << "\" ]"
-		       << " in file " << pos.file << " line " << pos.line
-		       << " column " << pos.column << std::endl
-		       << "'" << err_pos.get_currentline() << "'" << std::endl
-		       << std::setw(pos.column) << " "
-		       << "^- here");
-    }
-
-  private:
+struct error_handler_ {
+  template <typename, typename, typename, typename> struct result {
+    typedef void type;
   };
 
-  static ParserSection & create_subsection(const SectionType & type,
-					   const std::string & name,
-					   const boost::optional<std::string> & option,
-					   ParserSection & sect) {
-    std::string opt = "";
-    if (option) opt = *option;
-    
-    ParserSection sect_tmp(name, type, opt, sect);
-    return sect.addSubSection(sect_tmp);
+  template <typename Iterator>
+  void operator()(qi::info const & what, Iterator err_pos,
+                  __attribute__((unused)) Iterator first,
+                  __attribute__((unused)) Iterator last) const {
+    spirit::classic::file_position pos = err_pos.get_position();
+
+    AKANTU_EXCEPTION("Parse error [ "
+                     << "Expecting " << what << " instead of \"" << *err_pos
+                     << "\" ]"
+                     << " in file " << pos.file << " line " << pos.line
+                     << " column " << pos.column << std::endl
+                     << "'" << err_pos.get_currentline() << "'" << std::endl
+                     << std::setw(pos.column) << " "
+                     << "^- here");
   }
 
-  
-  template <typename Iter>
-  static bool create_parameter(boost::iterator_range<Iter> & rng,
-			       std::string & value,
-			       ParserSection & sect) {
-    try {
-      std::string name(rng.begin(), rng.end());
-      name = trim(name);
-      spirit::classic::file_position pos = rng.begin().get_position();
+private:
+};
 
-      ParserParameter param_tmp(name, value, sect);
-      param_tmp.setDebugInfo(pos.file, pos.line, pos.column);
-      sect.addParameter(param_tmp);
-    } catch (debug::Exception & e) {
-      return false;
-    }
-    return true;
+static ParserSection &
+create_subsection(const SectionType & type, const std::string & name,
+                  const boost::optional<std::string> & option,
+                  ParserSection & sect) {
+  std::string opt = "";
+  if (option)
+    opt = *option;
+
+  ParserSection sect_tmp(name, type, opt, sect);
+  return sect.addSubSection(sect_tmp);
+}
+
+template <typename Iter>
+static bool create_parameter(boost::iterator_range<Iter> & rng,
+                             std::string & value, ParserSection & sect) {
+  try {
+    std::string name(rng.begin(), rng.end());
+    name = trim(name);
+    spirit::classic::file_position pos = rng.begin().get_position();
+
+    ParserParameter param_tmp(name, value, sect);
+    param_tmp.setDebugInfo(pos.file, pos.line, pos.column);
+    sect.addParameter(param_tmp);
+  } catch (debug::Exception & e) {
+    return false;
   }
+  return true;
+}
 
-  static std::string concatenate(const std::string & t1, const std::string & t2) {
-    return (t1 + t2);
-  }
-
+static std::string concatenate(const std::string & t1, const std::string & t2) {
+  return (t1 + t2);
+}
 
 /* ---------------------------------------------------------------------- */
 /* Grammars definitions                                                   */
 /* ---------------------------------------------------------------------- */
 template <class Iterator>
 struct InputFileGrammar
-    : qi::grammar<Iterator, void(), typename Skipper<Iterator>::type> {
+  : qi::grammar<Iterator, void(), typename Skipper<Iterator>::type> {
   InputFileGrammar(ParserSection * sect)
       : InputFileGrammar::base_type(start, "input_file_grammar"),
         parent_section(sect) {
@@ -138,10 +136,10 @@ struct InputFileGrammar
               qi::raw[key]
           >> '='
           > value
-	   ) [ lbs::_pass = phx::bind(&create_parameter<Iterator>,
-				      lbs::_1,
-				      lbs::_2,
-				      *lbs::_r1) ]
+           ) [ lbs::_pass = phx::bind(&create_parameter<Iterator>,
+                                      lbs::_1,
+                                      lbs::_2,
+                                      *lbs::_r1) ]
       ;
 
     section
@@ -152,11 +150,11 @@ struct InputFileGrammar
                    section_name
                    > -section_option
                ]
-	   ) [ lbs::_a = &phx::bind(&create_subsection,
-				    lbs::_1,
-				    phx::at_c<0>(lbs::_2),
-				    phx::at_c<1>(lbs::_2),
-				    *lbs::_r1) ]
+           ) [ lbs::_a = &phx::bind(&create_subsection,
+                                    lbs::_1,
+                                    phx::at_c<0>(lbs::_2),
+                                    phx::at_c<1>(lbs::_2),
+                                    *lbs::_r1) ]
           > '['
           > mini_section(lbs::_a)
           > ']'
@@ -176,9 +174,9 @@ struct InputFileGrammar
 
     value
       =   (
-	   mono_line_value          [ lbs::_a = phx::bind(&concatenate, lbs::_a, lbs::_1) ]
+           mono_line_value          [ lbs::_a = phx::bind(&concatenate, lbs::_a, lbs::_1) ]
         > *(
-	    '\\' > mono_line_value  [ lbs::_a = phx::bind(&concatenate, lbs::_a, lbs::_1) ]
+            '\\' > mono_line_value  [ lbs::_a = phx::bind(&concatenate, lbs::_a, lbs::_1) ]
            )
           ) [ lbs::_val = lbs::_a ]
       ;
@@ -195,7 +193,7 @@ struct InputFileGrammar
       |     "#" >> *(qi::char_ - spirit::eol)
       ;
 
-    /* clang-format on */
+/* clang-format on */
 
 #define AKANTU_SECTION_TYPE_ADD(r, data, elem)                                 \
   (BOOST_PP_STRINGIZE(elem), AKANTU_SECTION_TYPES_PREFIX(elem))
@@ -222,10 +220,10 @@ struct InputFileGrammar
 
 #if !defined AKANTU_NDEBUG
     if (AKANTU_DEBUG_TEST(dblDebug)) {
-      //	qi::debug(section);
+      //        qi::debug(section);
       qi::debug(section_name);
       qi::debug(section_option);
-      //	qi::debug(mini_section);
+      //        qi::debug(mini_section);
       //	qi::debug(entry);
       qi::debug(key);
       qi::debug(value);
@@ -259,7 +257,6 @@ private:
   ParserSection * parent_section;
 };
 }
-
 
 __END_AKANTU__
 
