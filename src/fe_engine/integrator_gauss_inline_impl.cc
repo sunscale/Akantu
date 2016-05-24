@@ -122,12 +122,21 @@ IntegratorGauss<kind, IntegrationOrderFunctor>::getNbIntegrationPoints(
   return quadrature_points(type, ghost_type).cols();
 }
 
+/* -------------------------------------------------------------------------- */
 template <ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type, UInt polynomial_degree>
 inline Matrix<Real>
 IntegratorGauss<kind, IntegrationOrderFunctor>::getIntegrationPoints() const {
   return GaussIntegrationElement<type,
                                  polynomial_degree>::getQuadraturePoints();
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind, class IntegrationOrderFunctor>
+template <ElementType type, UInt polynomial_degree>
+inline Vector<Real>
+IntegratorGauss<kind, IntegrationOrderFunctor>::getIntegrationWeights() const {
+  return GaussIntegrationElement<type, polynomial_degree>::getWeights();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -285,13 +294,8 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::
                                           const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_quadrature_points =
-      GaussIntegrationElement<type>::getNbQuadraturePoints();
-
-  UInt nb_element = mesh.getNbElement(type, ghost_type);
-
   Array<Real> & jacobians_tmp =
-      jacobians.alloc(nb_element * nb_quadrature_points, 1, type, ghost_type);
+      jacobians.alloc(0, 1, type, ghost_type);
 
   this->computeJacobiansOnIntegrationPoints<type>(
       nodes, quadrature_points(type, ghost_type), jacobians_tmp, ghost_type);
@@ -333,13 +337,16 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
     const Array<Real> & jacobians, UInt nb_element) const {
   AKANTU_DEBUG_IN();
 
+  intf.resize(nb_element);
+  if(nb_element == 0) return;
+
   UInt nb_points = jacobians.getSize() / nb_element;
 
   Array<Real>::const_matrix_iterator J_it;
   Array<Real>::matrix_iterator inte_it;
   Array<Real>::const_matrix_iterator f_it;
 
-  intf.resize(nb_element);
+
   f_it = in_f.begin_reinterpret(nb_degree_of_freedom, nb_points, nb_element);
   inte_it = intf.begin_reinterpret(nb_degree_of_freedom, 1, nb_element);
   J_it = jacobians.begin_reinterpret(nb_points, 1, nb_element);
@@ -406,6 +413,22 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind, class IntegrationOrderFunctor>
+template <ElementType type, UInt polynomial_degree>
+Real IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
+    const Array<Real> & in_f, const GhostType & ghost_type) const {
+  AKANTU_DEBUG_IN();
+
+  Array<Real> intfv(0, 1);
+  integrate<type, polynomial_degree>(in_f, intfv, 1, ghost_type);
+
+  Real res = Math::reduce(intfv);
+
+  AKANTU_DEBUG_OUT();
+  return res;
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type>
 Real IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
     const Array<Real> & in_f, const GhostType & ghost_type,
@@ -419,31 +442,10 @@ Real IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
   Array<Real> intfv(0, 1);
   integrate<type>(in_f, intfv, 1, ghost_type, filter_elements);
 
-  UInt nb_values = intfv.getSize();
-  if (nb_values == 0)
-    return 0.;
-
-  UInt nb_values_to_sum = nb_values >> 1;
-
-  std::sort(intfv.begin(), intfv.end());
-
-  // as long as the half is not empty
-  while (nb_values_to_sum) {
-    UInt remaining = (nb_values - 2 * nb_values_to_sum);
-    if (remaining)
-      intfv(nb_values - 2) += intfv(nb_values - 1);
-
-    // sum to consecutive values and store the sum in the first half
-    for (UInt i = 0; i < nb_values_to_sum; ++i) {
-      intfv(i) = intfv(2 * i) + intfv(2 * i + 1);
-    }
-
-    nb_values = nb_values_to_sum;
-    nb_values_to_sum >>= 1;
-  }
+  Real res = Math::reduce(intfv);
 
   AKANTU_DEBUG_OUT();
-  return intfv(0);
+  return res;
 }
 
 /* -------------------------------------------------------------------------- */

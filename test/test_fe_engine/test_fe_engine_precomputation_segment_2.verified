@@ -59,8 +59,8 @@ FEEngineTemplate [
         + id             : my_fem:shapes_generic:_itp_lagrange_segment_2
         + size           : 10
         + nb_component   : 2
-        + allocated size : 10
-        + memory size    : 160.00Byte
+        + allocated size : 2000
+        + memory size    : 31.25KiByte
         + values         : {{0.5, 0.5}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 0.5}, {0.5, 0.5}}
        ]
          ]
@@ -71,8 +71,8 @@ FEEngineTemplate [
         + id             : my_fem:shapes_derivatives_generic:_itp_lagrange_segment_2
         + size           : 10
         + nb_component   : 2
-        + allocated size : 10
-        + memory size    : 160.00Byte
+        + allocated size : 2000
+        + memory size    : 31.25KiByte
         + values         : {{-10, 10}, {-10, 10}, {-10, 10}, {-10, 10}, {-10, 10}, {-10, 10}, {-10, 10}, {-10, 10}, {-10, 10}, {-10, 10}}
        ]
          ]
@@ -87,8 +87,8 @@ FEEngineTemplate [
         + id             : my_fem:jacobians:_segment_2
         + size           : 10
         + nb_component   : 1
-        + allocated size : 10
-        + memory size    : 80.00Byte
+        + allocated size : 2000
+        + memory size    : 15.62KiByte
         + values         : {{0.1}, {0.1}, {0.1}, {0.1}, {0.1}, {0.1}, {0.1}, {0.1}, {0.1}, {0.1}}
        ]
          ]

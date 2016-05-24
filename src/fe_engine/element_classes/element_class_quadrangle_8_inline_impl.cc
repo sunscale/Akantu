@@ -30,9 +30,9 @@
  * @section DESCRIPTION
  *
  * @verbatim
-	      \eta
-   	       ^
-	       |
+              \eta
+               ^
+               |
    (-1,1)    (0,1)   (1,1)
        x-------x-------x
        |       |       |
@@ -46,7 +46,7 @@
        |       |       |
        x-------x-------x
    (-1,-1)   (0,-1)  (1,-1)
-	       |
+               |
  @endverbatim
  *
  * @subsection shapes Shape functions
@@ -86,40 +86,39 @@
  */
 
 /* -------------------------------------------------------------------------- */
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_quadrangle_8, _gt_quadrangle_8, _itp_serendip_quadrangle_8, _ek_regular, 2,
-				     _git_segment, 2);
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_quadrangle_8, _gt_quadrangle_8,
+                                     _itp_serendip_quadrangle_8, _ek_regular, 2,
+                                     _git_segment, 3);
 
 AKANTU_DEFINE_SHAPE(_gt_quadrangle_8, _gst_square);
 
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type>
-inline void
-InterpolationElement<_itp_serendip_quadrangle_8>::computeShapes(const vector_type & c,
-                                                                vector_type & N) {
+inline void InterpolationElement<_itp_serendip_quadrangle_8>::computeShapes(
+    const vector_type & c, vector_type & N) {
 
   /// Natural coordinates
-  const Real xi  = c(0);
+  const Real xi = c(0);
   const Real eta = c(1);
 
-  N(0) = .25 * (1 - xi) * (1 - eta) * (- 1 - xi - eta);
-  N(1) = .25 * (1 + xi) * (1 - eta) * (- 1 + xi - eta);
-  N(2) = .25 * (1 + xi) * (1 + eta) * (- 1 + xi + eta);
-  N(3) = .25 * (1 - xi) * (1 + eta) * (- 1 - xi + eta);
-  N(4) =  .5 * (1 - xi * xi) * (1 - eta      );
-  N(5) =  .5 * (1 + xi     ) * (1 - eta * eta);
-  N(6) =  .5 * (1 - xi * xi) * (1 + eta      );
-  N(7) =  .5 * (1 - xi     ) * (1 - eta * eta);
+  N(0) = .25 * (1 - xi) * (1 - eta) * (-1 - xi - eta);
+  N(1) = .25 * (1 + xi) * (1 - eta) * (-1 + xi - eta);
+  N(2) = .25 * (1 + xi) * (1 + eta) * (-1 + xi + eta);
+  N(3) = .25 * (1 - xi) * (1 + eta) * (-1 - xi + eta);
+  N(4) = .5 * (1 - xi * xi) * (1 - eta);
+  N(5) = .5 * (1 + xi) * (1 - eta * eta);
+  N(6) = .5 * (1 - xi * xi) * (1 + eta);
+  N(7) = .5 * (1 - xi) * (1 - eta * eta);
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type, class matrix_type>
-inline void
-InterpolationElement<_itp_serendip_quadrangle_8>::computeDNDS(const vector_type & c,
-                                                              matrix_type & dnds) {
+inline void InterpolationElement<_itp_serendip_quadrangle_8>::computeDNDS(
+    const vector_type & c, matrix_type & dnds) {
 
-  const Real xi  = c(0);
+  const Real xi = c(0);
   const Real eta = c(1);
 
   /// dN/dxi
@@ -127,24 +126,24 @@ InterpolationElement<_itp_serendip_quadrangle_8>::computeDNDS(const vector_type 
   dnds(0, 1) = .25 * (1 - eta) * (2 * xi - eta);
   dnds(0, 2) = .25 * (1 + eta) * (2 * xi + eta);
   dnds(0, 3) = .25 * (1 + eta) * (2 * xi - eta);
-  dnds(0, 4) = - xi * (1 - eta);
-  dnds(0, 5) =   .5 * (1 - eta * eta);
-  dnds(0, 6) = - xi * (1 + eta);
-  dnds(0, 7) = - .5 * (1 - eta * eta);
+  dnds(0, 4) = -xi * (1 - eta);
+  dnds(0, 5) = .5 * (1 - eta * eta);
+  dnds(0, 6) = -xi * (1 + eta);
+  dnds(0, 7) = -.5 * (1 - eta * eta);
 
   /// dN/deta
   dnds(1, 0) = .25 * (1 - xi) * (2 * eta + xi);
   dnds(1, 1) = .25 * (1 + xi) * (2 * eta - xi);
   dnds(1, 2) = .25 * (1 + xi) * (2 * eta + xi);
   dnds(1, 3) = .25 * (1 - xi) * (2 * eta - xi);
-  dnds(1, 4) = -  .5 * (1 - xi * xi);
-  dnds(1, 5) = - eta * (1 + xi);
-  dnds(1, 6) =    .5 * (1 - xi * xi);
-  dnds(1, 7) = - eta * (1 - xi);
+  dnds(1, 4) = -.5 * (1 - xi * xi);
+  dnds(1, 5) = -eta * (1 + xi);
+  dnds(1, 6) = .5 * (1 - xi * xi);
+  dnds(1, 7) = -eta * (1 - xi);
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
+template <>
 inline Real
 GeometricalElement<_gt_quadrangle_8>::getInradius(const Matrix<Real> & coord) {
   Real a, b, h;
@@ -180,8 +179,8 @@ GeometricalElement<_gt_quadrangle_8>::getInradius(const Matrix<Real> & coord) {
 /* -------------------------------------------------------------------------- */
 template <>
 inline void
-InterpolationElement<_itp_serendip_quadrangle_8>::computeSpecialJacobian(const Matrix<Real> & J,
-                                                                         Real & jac){
+InterpolationElement<_itp_serendip_quadrangle_8>::computeSpecialJacobian(
+    const Matrix<Real> & J, Real & jac) {
   Vector<Real> vprod(J.cols());
   Matrix<Real> Jt(J.transpose(), true);
   vprod.crossProduct(Jt(0), Jt(1));

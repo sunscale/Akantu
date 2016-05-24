@@ -144,8 +144,8 @@ static const Real tet_15_a = (7. + std::sqrt(15.))/34.;
 static const Real tet_15_b = (13. - 3. * std::sqrt(15.))/34.;
 static const Real tet_15_c = (7. - std::sqrt(15.))/34.;
 static const Real tet_15_d = (13. + 3. * std::sqrt(15.))/34.;
-static const Real tet_15_e = (5. - std::sqrt(15.))/20;
-static const Real tet_15_f = (5. + std::sqrt(15.))/20;
+static const Real tet_15_e = (5. - std::sqrt(15.))/20.;
+static const Real tet_15_f = (5. + std::sqrt(15.))/20.;
 static const Real tet_15_w1 = (2665. - 14. * std::sqrt(15.))/226800.;
 static const Real tet_15_w2 = (2665. + 14. * std::sqrt(15.))/226800.;
 static const Real tet_15_w3 = 5./567.;
@@ -154,14 +154,16 @@ template<> Real GaussIntegrationTypeData<_git_tetrahedron, 15>::quad_positions[]
                                                                                        tet_15_a, tet_15_a, tet_15_b,
                                                                                        tet_15_a, tet_15_b, tet_15_a,
                                                                                        tet_15_b, tet_15_a, tet_15_a,
+
                                                                                        tet_15_c, tet_15_c, tet_15_c,
                                                                                        tet_15_c, tet_15_c, tet_15_d,
                                                                                        tet_15_c, tet_15_d, tet_15_c,
                                                                                        tet_15_d, tet_15_c, tet_15_c,
+
                                                                                        tet_15_e, tet_15_e, tet_15_f,
                                                                                        tet_15_e, tet_15_f, tet_15_e,
                                                                                        tet_15_f, tet_15_e, tet_15_e,
-                                                                                       tet_15_e, tet_15_f, tet_15_f,
+
                                                                                        tet_15_e, tet_15_f, tet_15_f,
                                                                                        tet_15_f, tet_15_e, tet_15_f,
                                                                                        tet_15_f, tet_15_f, tet_15_e};
@@ -169,5 +171,68 @@ template<> Real GaussIntegrationTypeData<_git_tetrahedron, 15>::quad_weights[]  
                                                                                        tet_15_w1, tet_15_w1, tet_15_w1, tet_15_w1,
                                                                                        tet_15_w2, tet_15_w2, tet_15_w2, tet_15_w2,
                                                                                        tet_15_w3, tet_15_w3, tet_15_w3, tet_15_w3, tet_15_w3, tet_15_w3};
+
+/* -------------------------------------------------------------------------- */
+/* Pentahedrons                                                               */
+/* -------------------------------------------------------------------------- */
+template<> Real GaussIntegrationTypeData<_git_pentahedron, 6>::quad_positions[]     = {-1./sqrt(3.), 0.5, 0.5,
+                                                                                       -1./sqrt(3.), 0. , 0.5,
+                                                                                       -1./sqrt(3.), 0.5, 0.,
+                                                                                        1./sqrt(3.), 0.5, 0.5,
+                                                                                        1./sqrt(3.), 0. , 0.5,
+                                                                                        1./sqrt(3.), 0.5 ,0.};
+template<> Real GaussIntegrationTypeData<_git_pentahedron, 6>::quad_weights[]       = {1./6., 1./6., 1./6.,
+                                                                                       1./6., 1./6., 1./6.};
+/* -------------------------------------------------------------------------- */
+template<> Real GaussIntegrationTypeData<_git_pentahedron, 8>::quad_positions[]     = {-sqrt(3.)/3., 1./3., 1./3.,
+                                                                                       -sqrt(3.)/3.,   0.6,   0.2,
+                                                                                       -sqrt(3.)/3.,   0.2,   0.6,
+                                                                                       -sqrt(3.)/3.,   0.2,   0.2,
+                                                                                        sqrt(3.)/3., 1./3., 1./3.,
+                                                                                        sqrt(3.)/3.,   0.6,   0.2,
+                                                                                        sqrt(3.)/3.,   0.2,   0.6,
+                                                                                        sqrt(3.)/3.,   0.2,   0.2};
+template<> Real GaussIntegrationTypeData<_git_pentahedron, 8>::quad_weights[]       = {-27./96., 25./96., 25./96., 25./96.,
+                                                                                       -27./96., 25./96., 25./96., 25./96.};
+/* -------------------------------------------------------------------------- */
+static const Real pent_21_x = std::sqrt(3./5.);
+static const Real pent_21_a = (6. + std::sqrt(15.)) / 21.;
+static const Real pent_21_b = (6. - std::sqrt(15.)) / 21.;
+
+static const Real pent_21_w1_1 = 5./9.;
+static const Real pent_21_w2_1 = 8./9.;
+static const Real pent_21_w1_2 = (155. + std::sqrt(15.))/2400.;
+static const Real pent_21_w2_2 = (155. - std::sqrt(15.))/2400.;
+template<> Real GaussIntegrationTypeData<_git_pentahedron, 21>::quad_positions[]    = {- pent_21_x,             1./3.,             1./3.,
+                                                                                       - pent_21_x,         pent_21_a,         pent_21_a,
+                                                                                       - pent_21_x, 1. - 2.*pent_21_a,         pent_21_a,
+                                                                                       - pent_21_x,         pent_21_a, 1. - 2.*pent_21_a,
+                                                                                       - pent_21_x,         pent_21_b,         pent_21_b,
+                                                                                       - pent_21_x, 1. - 2.*pent_21_b,         pent_21_b,
+                                                                                       - pent_21_x,         pent_21_b, 1. - 2.*pent_21_b,
+                                                                                                0.,             1./3.,             1./3.,
+                                                                                                0.,         pent_21_a,         pent_21_a,
+                                                                                                0., 1. - 2.*pent_21_a,         pent_21_a,
+                                                                                                0.,         pent_21_a, 1. - 2.*pent_21_a,
+                                                                                                0.,         pent_21_b,         pent_21_b,
+                                                                                                0., 1. - 2.*pent_21_b,         pent_21_b,
+                                                                                                0.,         pent_21_b, 1. - 2.*pent_21_b,
+                                                                                         pent_21_x,             1./3.,             1./3.,
+                                                                                         pent_21_x,         pent_21_a,         pent_21_a,
+                                                                                         pent_21_x, 1. - 2.*pent_21_a,         pent_21_a,
+                                                                                         pent_21_x,         pent_21_a, 1. - 2.*pent_21_a,
+                                                                                         pent_21_x,         pent_21_b,         pent_21_b,
+                                                                                         pent_21_x, 1. - 2.*pent_21_b,         pent_21_b,
+                                                                                         pent_21_x,         pent_21_b, 1. - 2.*pent_21_b};
+template<> Real GaussIntegrationTypeData<_git_pentahedron, 21>::quad_weights[]      = {pent_21_w1_1 * 9. / 80.,
+                                                                                       pent_21_w1_1*pent_21_w1_2, pent_21_w1_1*pent_21_w1_2, pent_21_w1_1*pent_21_w1_2,
+                                                                                       pent_21_w1_1*pent_21_w2_2, pent_21_w1_1*pent_21_w2_2, pent_21_w1_1*pent_21_w2_2,
+                                                                                       pent_21_w2_1 * 9. / 80.,
+                                                                                       pent_21_w1_2*pent_21_w1_2, pent_21_w1_2*pent_21_w1_2, pent_21_w1_2*pent_21_w1_2,
+                                                                                       pent_21_w1_2*pent_21_w2_2, pent_21_w1_2*pent_21_w2_2, pent_21_w1_2*pent_21_w2_2,
+                                                                                       pent_21_w1_1 * 9. / 80.,
+                                                                                       pent_21_w1_1*pent_21_w1_2, pent_21_w1_1*pent_21_w1_2, pent_21_w1_1*pent_21_w1_2,
+                                                                                       pent_21_w1_1*pent_21_w2_2, pent_21_w1_1*pent_21_w2_2, pent_21_w1_1*pent_21_w2_2};
+
 
 __END_AKANTU__

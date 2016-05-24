@@ -40,26 +40,25 @@
 #include <set>
 #include "aka_common.hh"
 #include "element_type_map.hh"
-//#include "dumpable.hh"
+/* -------------------------------------------------------------------------- */
+#include <set>
+/* -------------------------------------------------------------------------- */
+
+namespace akantu {
+  class ElementGroup;
+  class NodeGroup;
+  class Mesh;
+  class Element;
+  class DistributedSynchronizer;
+  template <bool> class CommunicationBufferTemplated;
+  namespace dumper {
+    class Field;
+  }
+}
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-class FEM;
-class ElementGroup;
-class NodeGroup;
-class Mesh;
-class Element;
-class DistributedSynchronizer;
-template<bool> class CommunicationBufferTemplated;
-
-namespace dumper {
-  class Field;
-}
-/* -------------------------------------------------------------------------- */
-
-
-
 class GroupManager {
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */

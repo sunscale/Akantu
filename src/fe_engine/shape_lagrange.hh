@@ -90,6 +90,12 @@ public:
       GhostType ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const;
 
+  template <ElementType type>
+  void interpolateOnIntegrationPoints(
+    const Array<Real> & in_u, Array<Real> & out_uq, UInt nb_degree_of_freedom,
+    const Array<Real> & shapes, GhostType ghost_type = _not_ghost,
+    const Array<UInt> & filter_elements = empty_filter) const;
+
   /// interpolate on physical point
   template <ElementType type>
   void interpolate(const Vector<Real> & real_coords, UInt elem,

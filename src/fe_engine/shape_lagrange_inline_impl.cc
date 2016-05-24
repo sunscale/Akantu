@@ -274,17 +274,12 @@ void ShapeLagrange<kind>::precomputeShapesOnIntegrationPoints(
   Matrix<Real> & natural_coords = integration_points(type, ghost_type);
   UInt size_of_shapes = ElementClass<type>::getShapeSize();
 
-  UInt nb_quadrature_points =
-    GaussIntegrationElement<type>::getNbQuadraturePoints();
-
-  UInt nb_element = mesh.getNbElement(type, ghost_type);
-  
   Array<Real> & shapes_tmp =
-      shapes.alloc(nb_element*nb_quadrature_points,
+      shapes.alloc(0,
                    size_of_shapes, itp_type, ghost_type);
 
-  this->computeShapesOnIntegrationPoints<type>(nodes, natural_coords, shapes_tmp,
-                                               ghost_type);
+  this->computeShapesOnIntegrationPoints<type>(nodes, natural_coords,
+                                               shapes_tmp, ghost_type);
   AKANTU_DEBUG_OUT();
 }
 
@@ -342,18 +337,35 @@ void ShapeLagrange<kind>::precomputeShapeDerivativesOnIntegrationPoints(
 
   UInt size_of_shapesd = ElementClass<type>::getShapeDerivativesSize();
 
-  UInt nb_quadrature_points =
-    GaussIntegrationElement<type>::getNbQuadraturePoints();
-
-  UInt nb_element = mesh.getNbElement(type, ghost_type);
-
-  
   Array<Real> & shapes_derivatives_tmp =
-      shapes_derivatives.alloc(nb_element*nb_quadrature_points,
+      shapes_derivatives.alloc(0,
                                size_of_shapesd, itp_type, ghost_type);
 
-  this->computeShapeDerivativesOnIntegrationPoints<type>(nodes, natural_coords,
-                                                         shapes_derivatives_tmp, ghost_type);
+  this->computeShapeDerivativesOnIntegrationPoints<type>(
+      nodes, natural_coords, shapes_derivatives_tmp, ghost_type);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type>
+void ShapeLagrange<kind>::interpolateOnIntegrationPoints(
+    const Array<Real> & in_u, Array<Real> & out_uq, UInt nb_degree_of_freedom,
+    const Array<Real> & shapes, GhostType ghost_type,
+    const Array<UInt> & filter_elements) const {
+  AKANTU_DEBUG_IN();
+
+  UInt nb_nodes_per_element =
+      ElementClass<type>::getNbNodesPerInterpolationElement();
+
+  Array<Real> u_el(0, nb_degree_of_freedom * nb_nodes_per_element);
+  FEEngine::extractNodalToElementField(mesh, in_u, u_el, type, ghost_type,
+                                       filter_elements);
+
+  this->interpolateElementalFieldOnIntegrationPoints<type>(
+      u_el, out_uq, ghost_type, shapes, filter_elements);
 
   AKANTU_DEBUG_OUT();
 }
@@ -371,15 +383,9 @@ void ShapeLagrange<kind>::interpolateOnIntegrationPoints(
                       "No shapes for the type "
                           << shapes.printType(itp_type, ghost_type));
 
-  UInt nb_nodes_per_element =
-      ElementClass<type>::getNbNodesPerInterpolationElement();
-
-  Array<Real> u_el(0, nb_degree_of_freedom * nb_nodes_per_element);
-  FEEngine::extractNodalToElementField(mesh, in_u, u_el, type, ghost_type,
-                                       filter_elements);
-
-  this->interpolateElementalFieldOnIntegrationPoints<type>(
-      u_el, out_uq, ghost_type, shapes(itp_type, ghost_type), filter_elements);
+  this->interpolateOnIntegrationPoints<type>(in_u, out_uq, nb_degree_of_freedom,
+                                             shapes(itp_type, ghost_type),
+                                             ghost_type, filter_elements);
 
   AKANTU_DEBUG_OUT();
 }

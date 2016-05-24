@@ -93,11 +93,12 @@ public:
       ElementTypeMapArray<Real> & result, const GhostType ghost_type,
       const ElementTypeMapArray<UInt> * element_filter) const;
 
+protected:
   /// interpolate nodal values stored by element on the integration points
   template <ElementType type>
   void interpolateElementalFieldOnIntegrationPoints(
       const Array<Real> & u_el, Array<Real> & uq, GhostType ghost_type,
-      const Array<Real> & shapes, const Array<UInt> & filter_elements) const;
+      const Array<Real> & shapes, const Array<UInt> & filter_elements = empty_filter) const;
 
   /// gradient of nodal values stored by element on the control points
   template <ElementType type>

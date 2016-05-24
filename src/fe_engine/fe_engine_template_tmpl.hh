@@ -1095,9 +1095,8 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
       mesh.getNodes(), integration_points, shapes, ghost_type);
 
   Array<Real> integration_points_pos(vect_size, mesh.getSpatialDimension());
-  shape_functions.template interpolateElementalFieldOnIntegrationPoints<type>(
-      mesh.getNodes(), integration_points_pos, ghost_type, shapes,
-      empty_filter);
+  shape_functions.template interpolateOnIntegrationPoints<type>(
+      mesh.getNodes(), integration_points_pos, mesh.getSpatialDimension(), shapes, ghost_type, empty_filter);
 
   Array<Real> * modified_shapes =
       new Array<Real>(vect_size, lmat_size * nb_degree_of_freedom);
