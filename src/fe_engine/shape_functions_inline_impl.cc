@@ -514,8 +514,9 @@ inline void ShapeFunctions::interpolateElementalFieldOnIntegrationPoints(
     const Array<Real> & u_el, Array<Real> & uq, GhostType ghost_type,
     const Array<Real> & shapes, const Array<UInt> & filter_elements) const {
   UInt nb_element;
-  UInt nb_points = integration_points(type, ghost_type).cols();
   UInt nb_nodes_per_element = ElementClass<type>::getShapeSize();
+
+  UInt nb_points = shapes.getSize() / mesh.getNbElement(type, ghost_type);
   UInt nb_degree_of_freedom = u_el.getNbComponent() / nb_nodes_per_element;
 
   Array<Real>::const_matrix_iterator N_it;

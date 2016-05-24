@@ -86,6 +86,10 @@ public:
                  UInt nb_degree_of_freedom,
                  const GhostType & ghost_type) const;
 
+  /// integrate scalar field in_f
+  template <ElementType type, UInt polynomial_degree>
+  Real integrate(const Array<Real> & in_f, const GhostType & ghost_type = _not_ghost) const;
+
   /// integrate partially around a quadrature point (@f$ intf_q = f_q * J_q *
   /// w_q @f$)
   template <ElementType type>
@@ -104,6 +108,7 @@ public:
   UInt getNbIntegrationPoints(const GhostType & ghost_type) const;
 
   template <ElementType type, UInt n> Matrix<Real> getIntegrationPoints() const;
+  template <ElementType type, UInt n> Vector<Real> getIntegrationWeights() const;
 
 protected:
   template <ElementType type>
@@ -147,7 +152,7 @@ public:
   template <ElementType type>
   void computeJacobianOnQuadPointsByElement(
       const Matrix<Real> & node_coords,
-      const Matrix<Real> & integratation_points, Vector<Real> & jacobians) const;
+      const Matrix<Real> & integration_points, Vector<Real> & jacobians) const;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

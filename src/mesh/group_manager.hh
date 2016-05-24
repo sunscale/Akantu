@@ -47,7 +47,6 @@
 
 
 namespace akantu {
-  class FEM;
   class ElementGroup;
   class NodeGroup;
   class Mesh;

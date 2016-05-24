@@ -123,12 +123,22 @@ inline UInt IntegratorGauss<kind>::getNbIntegrationPoints(
   return quadrature_points(type, ghost_type).cols();
 }
 
+/* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type, UInt polynomial_degree>
 inline Matrix<Real> IntegratorGauss<kind>::getIntegrationPoints() const {
   return GaussIntegrationElement<type,
                                  polynomial_degree>::getQuadraturePoints();
 }
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type, UInt polynomial_degree>
+inline Vector<Real> IntegratorGauss<kind>::getIntegrationWeights() const {
+  return GaussIntegrationElement<type,
+                                 polynomial_degree>::getWeights();
+}
+
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
@@ -341,6 +351,7 @@ void IntegratorGauss<kind>::integrate(const Array<Real> & in_f,
   intf.resize(nb_element);
   f_it = in_f.begin_reinterpret(nb_degree_of_freedom, nb_points, nb_element);
   inte_it = intf.begin_reinterpret(nb_degree_of_freedom, 1, nb_element);
+  J_it = jacobians.begin_reinterpret(nb_points, 1, nb_element);
 
   for (UInt el = 0; el < nb_element; ++el, ++J_it, ++f_it, ++inte_it) {
     const Matrix<Real> & f = *f_it;
@@ -405,6 +416,23 @@ void IntegratorGauss<kind>::integrate(const Array<Real> & in_f,
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
+template <ElementType type, UInt polynomial_degree>
+Real IntegratorGauss<kind>::integrate(
+    const Array<Real> & in_f, const GhostType & ghost_type) const {
+  AKANTU_DEBUG_IN();
+
+  Array<Real> intfv(0, 1);
+  integrate<type, polynomial_degree>(in_f, intfv, 1, ghost_type);
+
+  Real res = Math::reduce(intfv);
+
+  AKANTU_DEBUG_OUT();
+  return res;
+}
+
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
 template <ElementType type>
 Real IntegratorGauss<kind>::integrate(
     const Array<Real> & in_f, const GhostType & ghost_type,
@@ -418,31 +446,10 @@ Real IntegratorGauss<kind>::integrate(
   Array<Real> intfv(0, 1);
   integrate<type>(in_f, intfv, 1, ghost_type, filter_elements);
 
-  UInt nb_values = intfv.getSize();
-  if (nb_values == 0)
-    return 0.;
-
-  UInt nb_values_to_sum = nb_values >> 1;
-
-  std::sort(intfv.begin(), intfv.end());
-
-  // as long as the half is not empty
-  while (nb_values_to_sum) {
-    UInt remaining = (nb_values - 2 * nb_values_to_sum);
-    if (remaining)
-      intfv(nb_values - 2) += intfv(nb_values - 1);
-
-    // sum to consecutive values and store the sum in the first half
-    for (UInt i = 0; i < nb_values_to_sum; ++i) {
-      intfv(i) = intfv(2 * i) + intfv(2 * i + 1);
-    }
-
-    nb_values = nb_values_to_sum;
-    nb_values_to_sum >>= 1;
-  }
+  Real res = Math::reduce(intfv);
 
   AKANTU_DEBUG_OUT();
-  return intfv(0);
+  return res;
 }
 
 /* -------------------------------------------------------------------------- */
