@@ -97,7 +97,8 @@ DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
     : DOFManager(id, memory_id), residual(0, 1, std::string(id + ":residual")),
       global_solution(0, 1, std::string(id + ":global_solution")),
       global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
-      dofs_type(0, 1, std::string(id + ":dofs_type")) {}
+      dofs_type(0, 1, std::string(id + ":dofs_type")),
+      data_cache(0, 1, std::string(id + ":data_cache_array"){}
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::~DOFManagerDefault() {}
@@ -369,7 +370,7 @@ void DOFManagerDefault::assembleMatMulVectToResidual(const ID & dof_id,
 
   this->assembleToGlobalArray(dof_id, x, this->data_cache, 1.);
 
-  A.matVecMul(global_x, this->residual, scale_factor, 1.);
+  A.matVecMul(this->data_cache, this->residual, scale_factor, 1.);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -385,7 +386,7 @@ void DOFManagerDefault::assembleLumpedMatMulVectToResidual(const ID & dof_id,
 
   Array<Real>::const_scalar_iterator A_it = A.begin();
   Array<Real>::const_scalar_iterator A_end = A.end();
-  Array<Real>::const_scalar_iterator x_it = global_x.begin();
+  Array<Real>::const_scalar_iterator x_it = this->data_cache.begin();
   Array<Real>::scalar_iterator r_it = this->residual.begin();
 
   for (; A_it != A_end; ++A_it, ++x_it, ++r_it) {
