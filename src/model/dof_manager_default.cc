@@ -37,7 +37,6 @@
 #include <numeric>
 /* -------------------------------------------------------------------------- */
 
-
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
@@ -273,8 +272,13 @@ void DOFManagerDefault::clearResidual() {
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::clearJacobian() {
-  this->getMatrix("J").clear();
+void DOFManagerDefault::clearMatrix(const ID & mtx) {
+  this->getMatrix(mtx).clear();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::clearLumpedMatrix(const ID & mtx) {
+  this->getLumpedMatrix(mtx).clear();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -293,22 +297,40 @@ void DOFManagerDefault::updateGlobalBlockedDofs() {
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::getSolutionPerDOFs(const ID & dof_id,
-                                           Array<Real> & solution_array) {
+void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
+                                        const Array<Real> & global_array,
+                                        Array<Real> & local_array) const {
   AKANTU_DEBUG_IN();
 
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
 
   UInt nb_degree_of_freedoms = equation_number.getSize();
-  solution_array.resize(nb_degree_of_freedoms);
+  local_array.resize(nb_degree_of_freedoms / local_array.getNbComponent());
 
-  Real * sol_it = solution_array.storage();
-  UInt * equ_it = equation_number.storage();
+  Array<Real>::scalar_iterator loc_it =
+      local_array.begin_reinterpret(nb_degree_of_freedoms);
+  Array<UInt>::const_scalar_iterator equ_it = equation_number.begin();
 
-  for (UInt d = 0; d < nb_degree_of_freedoms; ++d, ++sol_it, ++equ_it) {
-    (*sol_it) = this->global_solution(*equ_it);
+  for (UInt d = 0; d < nb_degree_of_freedoms; ++d, ++loc_it, ++equ_it) {
+    (*loc_it) = global_array(*equ_it);
   }
 
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::getSolutionPerDOFs(const ID & dof_id,
+                                           Array<Real> & solution_array) {
+  AKANTU_DEBUG_IN();
+  this->getArrayPerDOFs(dof_id, this->global_solution, solution_array);
+  AKANTU_DEBUG_OUT();
+}
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::getLumpedMatrixPerDOFs(const ID & dof_id,
+                                               const ID & lumped_mtx,
+                                               Array<Real> & lumped) {
+  AKANTU_DEBUG_IN();
+  this->getArrayPerDOFs(dof_id, this->getLumpedMatrix(lumped_mtx), lumped);
   AKANTU_DEBUG_OUT();
 }
 
@@ -325,14 +347,27 @@ void DOFManagerDefault::assembleToResidual(
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManagerDefault::assembleToLumpedMatrix(
+    const ID & dof_id, const Array<Real> & array_to_assemble,
+    const ID & lumped_mtx, Real scale_factor) {
+  AKANTU_DEBUG_IN();
+
+  Array<Real> & lumped = this->getLumpedMatrix(lumped_mtx);
+  this->assembleToGlobalArray(dof_id, array_to_assemble, lumped, scale_factor);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 void DOFManagerDefault::assembleMatMulVectToResidual(const ID & dof_id,
                                                      const ID & A_id,
-                                                     const Array<Real> x,
+                                                     const Array<Real> & x,
                                                      Real scale_factor) {
   SparseMatrixAIJ & A = this->getMatrix(A_id);
-  Array<Real> global_x(this->local_system_size, 1, 0.);
+  this->data_cache.resize(this->local_system_size);
+  this->data_cache.clear();
 
-  this->assembleToGlobalArray(dof_id, x, global_x, 1.);
+  this->assembleToGlobalArray(dof_id, x, this->data_cache, 1.);
 
   A.matVecMul(global_x, this->residual, scale_factor, 1.);
 }
@@ -340,12 +375,13 @@ void DOFManagerDefault::assembleMatMulVectToResidual(const ID & dof_id,
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::assembleLumpedMatMulVectToResidual(const ID & dof_id,
                                                            const ID & A_id,
-                                                           const Array<Real> x,
+                                                           const Array<Real> & x,
                                                            Real scale_factor) {
   const Array<Real> & A = this->getLumpedMatrix(A_id);
 
-  Array<Real> global_x(this->local_system_size, 1, 0.);
-  this->assembleToGlobalArray(dof_id, x, global_x, scale_factor);
+  this->data_cache.resize(this->local_system_size);
+  this->data_cache.clear();
+  this->assembleToGlobalArray(dof_id, x, this->data_cache, scale_factor);
 
   Array<Real>::const_scalar_iterator A_it = A.begin();
   Array<Real>::const_scalar_iterator A_end = A.end();
@@ -353,7 +389,7 @@ void DOFManagerDefault::assembleLumpedMatMulVectToResidual(const ID & dof_id,
   Array<Real>::scalar_iterator r_it = this->residual.begin();
 
   for (; A_it != A_end; ++A_it, ++x_it, ++r_it) {
-    *r_it += *A_it * *x_it;
+    *r_it += *A_it ** x_it;
   }
 }
 
@@ -396,7 +432,7 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
   // UInt nb_degree_of_freedom = elementary_mat.getNbComponent() /
   //                             (nb_nodes_per_element * nb_nodes_per_element);
 
-  const Array<UInt> connectivity =
+  const Array<UInt> & connectivity =
       this->mesh->getConnectivity(type, ghost_type);
   Array<UInt>::const_vector_iterator conn_begin =
       connectivity.begin(nb_nodes_per_element);

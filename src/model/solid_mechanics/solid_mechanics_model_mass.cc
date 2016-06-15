@@ -43,15 +43,24 @@ void SolidMechanicsModel::assembleMassLumped() {
 
   UInt nb_nodes = mesh.getNbNodes();
 
-  if (!mass) {
+  if (this->mass == NULL) {
     std::stringstream sstr_mass;
     sstr_mass << id << ":mass";
     mass = &(alloc<Real>(sstr_mass.str(), nb_nodes, spatial_dimension, 0));
-  } else
+  } else {
     mass->clear();
+  }
+
+  if(!this->getDOFManager().hasLumpedMatrix("M")) {
+    this->getDOFManager().getNewLumpedMatrix("M");
+  }
+
+  this->getDOFManager().clearLumpedMatrix("M");
 
   assembleMassLumped(_not_ghost);
   assembleMassLumped(_ghost);
+
+  this->getDOFManager().getLumpedMatrixPerDOFs("displacement", "M", *(this->mass));
 
   /// for not connected nodes put mass to one in order to avoid
   /// wrong range in paraview
@@ -81,7 +90,8 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
 
     computeRho(rho, type, ghost_type);
 
-    fem.assembleFieldLumped(rho, *mass, type, ghost_type);
+    fem.assembleFieldLumped(rho, "M", "displacement",
+                            this->getDOFManager(), type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -91,7 +101,11 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
 void SolidMechanicsModel::assembleMass() {
   AKANTU_DEBUG_IN();
 
-  this->getDOFManager().getNewMatrix("mass", "jacobian");
+  if(!this->getDOFManager().hasMatrix("M")) {
+    this->getDOFManager().getNewMatrix("M", "J");
+  }
+
+  this->getDOFManager().clearMatrix("M");
   assembleMass(_not_ghost);
 
   AKANTU_DEBUG_OUT();
@@ -126,7 +140,7 @@ void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
   Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
   for (; it != end; ++it) {
     ElementType type = *it;
-    fem.assembleFieldMatrix(compute_rho, "mass", "displacement",
+    fem.assembleFieldMatrix(compute_rho, "M", "displacement",
                             this->getDOFManager(), type, ghost_type);
   }
 
@@ -156,7 +170,7 @@ void SolidMechanicsModel::computeRho(Array<Real> & rho, ElementType type,
     Real mat_rho = mat_val[mat_indexes(el)]->getParam("rho");
 
     for (UInt n = 0; n < nb_quadrature_points; ++n, ++rho_it) {
-      *rho_it = mat_rho;
+      (*rho_it).set(mat_rho);
     }
   }
 

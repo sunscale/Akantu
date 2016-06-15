@@ -806,16 +806,16 @@ void FEEngineTemplate<I, S, kind>::computeNormalsOnIntegrationPoints(
 template <ElementKind kind> struct AssembleLumpedTemplateHelper {};
 
 #define ASSEMBLE_LUMPED(type)                                                  \
-  fem.template assembleLumpedTemplate<type>(                                   \
-      field_1, nb_degree_of_freedom, lumped, equation_number, ghost_type)
+  fem.template assembleLumpedTemplate<type>(field_1, lumped, dof_id,           \
+                                            dof_manager, ghost_type)
 
 #define AKANTU_SPECIALIZE_ASSEMBLE_HELPER(kind)                                \
   template <> struct AssembleLumpedTemplateHelper<kind> {                      \
     template <template <ElementKind> class I, template <ElementKind> class S,  \
               ElementKind k>                                                   \
     static void call(const FEEngineTemplate<I, S, k> & fem,                    \
-                     const Array<Real> & field_1, UInt nb_degree_of_freedom,   \
-                     Array<Real> & lumped, const Array<Int> & equation_number, \
+                     const Array<Real> & field_1, const ID & lumped,           \
+                     const ID & dof_id, DOFManager & dof_manager,              \
                      ElementType type, const GhostType & ghost_type) {         \
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(ASSEMBLE_LUMPED, kind);                 \
     }                                                                          \
@@ -830,12 +830,13 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_ASSEMBLE_HELPER)
 template <template <ElementKind> class I, template <ElementKind> class S,
           ElementKind kind>
 void FEEngineTemplate<I, S, kind>::assembleFieldLumped(
-    const Array<Real> & field, Array<Real> & lumped, DOFManager & dof_manager,
-    ElementType type, const GhostType & ghost_type) const {
+    const Array<Real> & field, const ID & lumped, const ID & dof_id,
+    DOFManager & dof_manager, ElementType type,
+    const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
-  AssembleLumpedTemplateHelper<kind>::call(*this, field, lumped, dof_manager,
-                                           type, ghost_type);
+  AssembleLumpedTemplateHelper<kind>::call(*this, field, lumped, dof_id,
+                                           dof_manager, type, ghost_type);
 
   AKANTU_DEBUG_OUT();
 }
@@ -853,7 +854,7 @@ template <ElementKind kind> struct AssembleFieldMatrixHelper {};
 #define AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER(kind)                   \
   template <> struct AssembleFieldMatrixHelper<kind> {                         \
     template <template <ElementKind> class I, template <ElementKind> class S,  \
-              ElementKind k, class Functor>                             \
+              ElementKind k, class Functor>                                    \
     static void call(const FEEngineTemplate<I, S, k> & fem,                    \
                      Functor field_funct, const ID & matrix_id,                \
                      const ID & dof_id, DOFManager & dof_manager,              \
@@ -886,10 +887,10 @@ template <template <ElementKind> class I, template <ElementKind> class S,
           ElementKind kind>
 template <ElementType type>
 void FEEngineTemplate<I, S, kind>::assembleLumpedTemplate(
-    const Array<Real> & field, Array<Real> & lumped, DOFManager & dof_manager,
-    const GhostType & ghost_type) const {
+    const Array<Real> & field, const ID & lumped, const ID & dof_id,
+    DOFManager & dof_manager, const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
-  this->template assembleLumpedRowSum<type>(field, lumped, dof_manager,
+  this->template assembleLumpedRowSum<type>(field, lumped, dof_id, dof_manager,
                                             ghost_type);
   AKANTU_DEBUG_OUT();
 }
@@ -903,8 +904,8 @@ template <template <ElementKind> class I, template <ElementKind> class S,
           ElementKind kind>
 template <ElementType type>
 void FEEngineTemplate<I, S, kind>::assembleLumpedRowSum(
-    const Array<Real> & field, Array<Real> & lumped, DOFManager & dof_manager,
-    const GhostType & ghost_type) const {
+    const Array<Real> & field, const ID & lumped, const ID & dof_id,
+    DOFManager & dof_manager, const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
   UInt shapes_size = ElementClass<type>::getShapeSize();
@@ -915,7 +916,6 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedRowSum(
 
   shape_functions.template fieldTimesShapes<type>(field, *field_times_shapes,
                                                   ghost_type);
-  delete field;
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   Array<Real> * int_field_times_shapes = new Array<Real>(
@@ -927,8 +927,8 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedRowSum(
 
   delete field_times_shapes;
 
-  dof_manager.assembleElementalArrayLocalArray(*int_field_times_shapes, lumped,
-                                               type, ghost_type);
+  dof_manager.assembleElementalArrayToLumpedMatrix(
+      dof_id, *int_field_times_shapes, lumped, type, ghost_type);
 
   delete int_field_times_shapes;
 
@@ -943,8 +943,8 @@ template <template <ElementKind> class I, template <ElementKind> class S,
           ElementKind kind>
 template <ElementType type>
 void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(
-    const Array<Real> & field, Array<Real> & lumped, DOFManager & dof_manager,
-    const GhostType & ghost_type) const {
+    const Array<Real> & field, const ID & lumped, const ID & dof_id,
+    DOFManager & dof_manager, const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
   const ElementType & type_p1 = ElementClass<type>::getP1ElementType();
@@ -1032,8 +1032,8 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(
   }
   delete int_field;
 
-  dof_manager.assembleElementalArrayLocalArray(*lumped_per_node, lumped, type,
-                                               ghost_type);
+  dof_manager.assembleElementalArrayToLumpedMatrix(dof_id, *lumped_per_node,
+                                                   lumped, type, ghost_type);
   delete lumped_per_node;
 
   AKANTU_DEBUG_OUT();
@@ -1072,7 +1072,8 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
 
   Array<Real> integration_points_pos(vect_size, mesh.getSpatialDimension());
   shape_functions.template interpolateOnIntegrationPoints<type>(
-      mesh.getNodes(), integration_points_pos, mesh.getSpatialDimension(), shapes, ghost_type, empty_filter);
+      mesh.getNodes(), integration_points_pos, mesh.getSpatialDimension(),
+      shapes, ghost_type, empty_filter);
 
   Array<Real> * modified_shapes =
       new Array<Real>(vect_size, lmat_size * nb_degree_of_freedom);
@@ -1517,10 +1518,10 @@ template <>
 template <>
 inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
     assembleLumpedTemplate<_triangle_6>(const Array<Real> & field,
-                                        Array<Real> & lumped,
+                                        const ID & lumped, const ID & dof_id,
                                         DOFManager & dof_manager,
                                         const GhostType & ghost_type) const {
-  assembleLumpedDiagonalScaling<_triangle_6>(field, lumped, dof_manager,
+  assembleLumpedDiagonalScaling<_triangle_6>(field, lumped, dof_id, dof_manager,
                                              ghost_type);
 }
 
@@ -1529,10 +1530,10 @@ template <>
 template <>
 inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
     assembleLumpedTemplate<_tetrahedron_10>(
-        const Array<Real> & field, Array<Real> & lumped,
+        const Array<Real> & field, const ID & lumped, const ID & dof_id,
         DOFManager & dof_manager, const GhostType & ghost_type) const {
-  assembleLumpedDiagonalScaling<_tetrahedron_10>(field, lumped, dof_manager,
-                                                 ghost_type);
+  assembleLumpedDiagonalScaling<_tetrahedron_10>(field, lumped, dof_id,
+                                                 dof_manager, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1540,11 +1541,11 @@ template <>
 template <>
 inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
     assembleLumpedTemplate<_quadrangle_8>(const Array<Real> & field,
-                                          Array<Real> & lumped,
+                                          const ID & lumped, const ID & dof_id,
                                           DOFManager & dof_manager,
                                           const GhostType & ghost_type) const {
-  assembleLumpedDiagonalScaling<_quadrangle_8>(field, lumped, dof_manager,
-                                               ghost_type);
+  assembleLumpedDiagonalScaling<_quadrangle_8>(field, lumped, dof_id,
+                                               dof_manager, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1552,11 +1553,11 @@ template <>
 template <>
 inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
     assembleLumpedTemplate<_hexahedron_20>(const Array<Real> & field,
-                                           Array<Real> & lumped,
+                                           const ID & lumped, const ID & dof_id,
                                            DOFManager & dof_manager,
                                            const GhostType & ghost_type) const {
-  assembleLumpedDiagonalScaling<_hexahedron_20>(field, lumped, dof_manager,
-                                                ghost_type);
+  assembleLumpedDiagonalScaling<_hexahedron_20>(field, lumped, dof_id,
+                                                dof_manager, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1564,10 +1565,10 @@ template <>
 template <>
 inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
     assembleLumpedTemplate<_pentahedron_15>(
-        const Array<Real> & field, Array<Real> & lumped,
+        const Array<Real> & field, const ID & lumped, const ID & dof_id,
         DOFManager & dof_manager, const GhostType & ghost_type) const {
-  assembleLumpedDiagonalScaling<_pentahedron_15>(field, lumped, dof_manager,
-                                                 ghost_type);
+  assembleLumpedDiagonalScaling<_pentahedron_15>(field, lumped, dof_id,
+                                                 dof_manager, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */

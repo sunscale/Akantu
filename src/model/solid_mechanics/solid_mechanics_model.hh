@@ -136,6 +136,9 @@ public:
   /// init PBC synchronizer
   void initPBC();
 
+  /// initialize a new solver and sets it as the default one to use
+  void initNewSolver(const AnalysisMethod & method);
+
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
@@ -169,6 +172,11 @@ private:
   /// callback for the solver, this assembles the stiffness matrix
   virtual void assembleJacobian();
 
+  /// callback for the solver, this is called at beginning of solve
+  virtual void predictor();
+  /// callback for the solver, this is called at end of solve
+  virtual void corrector();
+
   /* ------------------------------------------------------------------------ */
   /* Explicit                                                                 */
   /* ------------------------------------------------------------------------ */
@@ -197,11 +205,14 @@ private:
 //    * In the case of not lumped mass call solveDynamic<_acceleration_corrector>
 //    */
 //   void updateAcceleration();
-//   /// Update the increment of displacement
-//   void updateIncrement();
-//   /// Copy the actuel displacement into previous displacement
-//   void updatePreviousDisplacement();
-//   /// Save stress and strain through EventManager
+
+  /// Update the increment of displacement
+  void updateIncrement();
+
+  /// Copy the actuel displacement into previous displacement
+  void updatePreviousDisplacement();
+
+  //   /// Save stress and strain through EventManager
 //   void saveStressAndStrainBeforeDamage();
 //   /// Update energies through EventManager
 //   void updateEnergiesAfterDamage();
@@ -474,12 +485,14 @@ public:
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
 
   /// get the current value of the time step
-  AKANTU_GET_MACRO(TimeStep, time_step, Real);
+  // AKANTU_GET_MACRO(TimeStep, time_step, Real);
+
   /// set the value of the time step
-  void setTimeStep(Real time_step);
+  virtual void setTimeStep(Real time_step, const ID & solver_id = "");
+  /// void setTimeStep(Real time_step);
 
   /// return the of iterations done in the last solveStep
-  AKANTU_GET_MACRO(NumberIter, n_iter, UInt);
+  // AKANTU_GET_MACRO(NumberIter, n_iter, UInt);
 
   /// get the value of the conversion from forces/ mass to acceleration
   AKANTU_GET_MACRO(F_M2A, f_m2a, Real);
@@ -499,7 +512,7 @@ public:
 
   /// get  the SolidMechanicsModel::increment  vector \warn  only  consistent if
   /// SolidMechanicsModel::setIncrementFlagOn has been called before
-  AKANTU_GET_MACRO(Increment, *increment, Array<Real> &);
+  AKANTU_GET_MACRO(Increment, *displacement_increment, Array<Real> &);
 
   /// get the lumped SolidMechanicsModel::mass vector
   AKANTU_GET_MACRO(Mass, *mass, Array<Real> &);
@@ -521,8 +534,8 @@ public:
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
 
   /// get the SolidMechnicsModel::incrementAcceleration vector
-  AKANTU_GET_MACRO(IncrementAcceleration, *increment_acceleration,
-                   Array<Real> &);
+  // AKANTU_GET_MACRO(IncrementAcceleration, *increment_acceleration,
+  //                  Array<Real> &);
 
   /// get the value of the SolidMechanicsModel::increment_flag
   AKANTU_GET_MACRO(IncrementFlag, increment_flag, bool);
@@ -619,10 +632,10 @@ protected:
   /* ------------------------------------------------------------------------ */
 protected:
   /// number of iterations
-  UInt n_iter;
+  // UInt n_iter;
 
   /// time step
-  Real time_step;
+  //  Real time_step;
 
   /// conversion coefficient form force/mass to acceleration
   Real f_m2a;
@@ -634,7 +647,7 @@ protected:
   Array<Real> * previous_displacement;
 
   /// increment of displacement
-  Array <Real> *increment;
+  Array <Real> *displacement_increment;
 
   /// lumped mass array
   Array<Real> * mass;
@@ -646,7 +659,7 @@ protected:
   Array<Real> * acceleration;
 
   /// accelerations array
-  Array<Real> * increment_acceleration;
+  //Array<Real> * increment_acceleration;
 
   /// external forces array
   Array <Real> *external_force;

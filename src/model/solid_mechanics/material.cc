@@ -263,7 +263,7 @@ void Material::assembleInternalForces(GhostType ghost_type) {
 
         /// assemble
         model->getDOFManager().assembleElementalArrayLocalArray(*int_sigma_dphi_dx, internal_force,
-                                                                *it, ghost_type, -1, elem_filter);
+                                                                *it, ghost_type, 1, elem_filter);
         delete int_sigma_dphi_dx;
       }
     }
@@ -853,7 +853,7 @@ template <UInt dim> void Material::assembleInternalForces(GhostType ghost_type) 
     delete bt_s;
 
     model->getDOFManager().assembleElementalArrayLocalArray(*r_e, internal_force,
-                                                            *it, ghost_type, -1, elem_filter);
+                                                            *it, ghost_type, 1, elem_filter);
     delete r_e;
   }
   AKANTU_DEBUG_OUT();

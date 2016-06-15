@@ -34,6 +34,10 @@
 #include "dof_manager.hh"
 #include "sparse_matrix.hh"
 
+#ifndef EXPLICIT
+#define EXPLICIT true
+#endif
+
 using namespace akantu;
 
 class MyModel;
@@ -325,11 +329,11 @@ int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
   UInt nb_nodes = 201;
-  UInt max_steps = 5000;
+  UInt max_steps = 2000;
   Real time_step = 0.001;
   Mesh mesh(1);
   Real F = 9.81;
-  bool _explicit = false;
+  bool _explicit = EXPLICIT;
 
   genMesh(mesh, nb_nodes);
 

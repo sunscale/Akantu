@@ -168,21 +168,45 @@ void TimeStepSolverDefault::predictor() {
 
   for (; integration_scheme_it != integration_scheme_end;
        ++integration_scheme_it) {
+    ID dof_id = integration_scheme_it->first;
+    Array<Real> * previous = NULL;
+
+    UInt dof_array_comp = this->dof_manager.getDOFs(dof_id).getNbComponent();
+
+    if (this->dof_manager.hasPreviousDOFs(dof_id)) {
+      this->dof_manager.savePreviousDOFs(dof_id);
+    } else {
+      if (this->dof_manager.hasDOFsIncrement(dof_id)) {
+        previous = new Array<Real>(this->dof_manager.getDOFs(dof_id));
+      }
+    }
+
+    /// integrator predictor
     integration_scheme_it->second->predictor(this->time_step);
+
+    /// computing the increment of dof if needed
+    if (this->dof_manager.hasDOFsIncrement(dof_id)) {
+      Array<Real> & increment = this->dof_manager.getDOFsIncrement(dof_id);
+      Array<Real>::vector_iterator incr_it = increment.begin(dof_array_comp);
+      Array<Real>::vector_iterator incr_end = increment.end(dof_array_comp);
+      Array<Real>::const_vector_iterator dof_it =
+          this->dof_manager.getDOFs(dof_id).begin(dof_array_comp);
+      Array<Real>::const_vector_iterator prev_dof_it;
+
+      if (this->dof_manager.hasPreviousDOFs(dof_id)) {
+        prev_dof_it = this->dof_manager.getPreviousDOFs(dof_id).begin(dof_array_comp);
+      } else {
+        prev_dof_it = previous->begin(dof_array_comp);
+      }
+
+      for (; incr_it != incr_end; ++incr_it) {
+        *incr_it = *dof_it;
+        *incr_it -= *prev_dof_it;
+      }
+
+      delete previous;
+    }
   }
-
-  // UInt nb_degree_of_freedom = u.getSize() * u.getNbComponent();
-
-  // Array<Real>::scalar_iterator incr_it =
-  //     increment.begin_reinterpret(nb_degree_of_freedom);
-  // Array<Real>::const_scalar_iterator u_it =
-  //     u.begin_reinterpret(nb_degree_of_freedom);
-  // Array<Real>::const_scalar_iterator u_end =
-  //     u.end_reinterpret(nb_degree_of_freedom);
-
-  // for (; u_it != u_end; ++u_it, ++incr_it) {
-  //   *incr_it = *u_it - *incr_it;
-  // }
 
   AKANTU_DEBUG_OUT();
 }
@@ -203,8 +227,7 @@ void TimeStepSolverDefault::corrector() {
     IntegrationScheme::SolutionType solution_type =
         this->solution_types[integration_scheme_it->first];
 
-    integration_scheme_it->second->corrector(
-        solution_type, this->time_step);
+    integration_scheme_it->second->corrector(solution_type, this->time_step);
   }
 
   AKANTU_DEBUG_OUT();

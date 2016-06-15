@@ -40,11 +40,16 @@
 #include "mesh.hh"
 #include "element_class.hh"
 #include "integration_point.hh"
+
+/* -------------------------------------------------------------------------- */
+namespace akantu {
+  class Integrator;
+  class ShapeFunctions;
+  class DOFManager;
+}
+
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
-/* -------------------------------------------------------------------------- */
-class Integrator;
-class ShapeFunctions;
 /* -------------------------------------------------------------------------- */
 
 /**
@@ -271,7 +276,9 @@ public:
 
   /// assemble a field as a lumped matrix (ex. rho in lumped mass)
   virtual void assembleFieldLumped(__attribute__ ((unused)) const Array<Real> & field,
-                                   __attribute__ ((unused)) Array<Real> & lumped,
+                                   __attribute__ ((unused)) const ID & lumped,
+                                   __attribute__ ((unused)) const ID & dof_id,
+                                   __attribute__ ((unused)) DOFManager & dof_manager,
                                    __attribute__ ((unused)) ElementType type,
                                    __attribute__ ((unused)) const GhostType & ghost_type) const {
     AKANTU_DEBUG_TO_IMPLEMENT();

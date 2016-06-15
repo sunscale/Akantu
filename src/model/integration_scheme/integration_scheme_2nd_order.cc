@@ -74,13 +74,12 @@ void IntegrationScheme2ndOrder::corrector(const SolutionType & type,
 void IntegrationScheme2ndOrder::assembleResidual(bool is_lumped) {
   AKANTU_DEBUG_IN();
 
-  try {
+  if (this->dof_manager.hasMatrix("C")) {
     const Array<Real> & first_derivative =
         this->dof_manager.getDOFsDerivatives(this->dof_id, 1);
 
     this->dof_manager.assembleMatMulVectToResidual(this->dof_id, "C",
                                                    first_derivative, -1);
-  } catch (...) {
   }
 
   const Array<Real> & second_derivative =

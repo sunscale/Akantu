@@ -152,6 +152,31 @@ void DOFManager::assembleElementalArrayToResidual(
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManager::assembleElementalArrayToLumpedMatrix(
+    const ID & dof_id, const Array<Real> & elementary_vect,
+    const ID & lumped_mtx, const ElementType & type,
+    const GhostType & ghost_type, Real scale_factor,
+    const Array<UInt> & filter_elements) {
+  AKANTU_DEBUG_IN();
+
+  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+  UInt nb_degree_of_freedom =
+      elementary_vect.getNbComponent() / nb_nodes_per_element;
+  Array<Real> array_localy_assembeled(this->mesh->getNbNodes(),
+                                      nb_degree_of_freedom);
+
+  array_localy_assembeled.clear();
+
+  this->assembleElementalArrayLocalArray(
+      elementary_vect, array_localy_assembeled, type, ghost_type, scale_factor,
+      filter_elements);
+
+  this->assembleToLumpedMatrix(dof_id, array_localy_assembeled, lumped_mtx, 1);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 void DOFManager::registerMesh(Mesh & mesh) {
   this->mesh = &mesh;
   this->mesh->registerEventHandler(*this, 20);
@@ -164,7 +189,9 @@ void DOFManager::registerMesh(Mesh & mesh) {
 }
 
 /* -------------------------------------------------------------------------- */
-DOFManager::DOFData::DOFData() : solution(0, 1, "solution") {}
+DOFManager::DOFData::DOFData()
+    : support_type(_dst_generic), dof(NULL), blocked_dofs(NULL),
+      increment(NULL), previous(NULL), solution(0, 1, "solution") {}
 
 /* -------------------------------------------------------------------------- */
 void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
@@ -219,16 +246,33 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::registerDOFsDerivative(const ID & dof_id, UInt order,
-                                        Array<Real> & dofs_derivative) {
-  DOFStorage::iterator it = this->dofs.find(dof_id);
+void DOFManager::registerDOFsPrevious(const ID & dof_id, Array<Real> & array) {
+  DOFData & dof = this->getDOFData(dof_id);
 
-  if (it == this->dofs.end()) {
-    AKANTU_EXCEPTION("The dof array corresponding to this derivatives has not "
-                     << "been registered yet");
+  if (dof.previous != NULL) {
+    AKANTU_EXCEPTION("The previous dofs array for "
+                     << dof_id << " has already been registered");
   }
 
-  DOFData & dof = *it->second;
+  dof.previous = &array;
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::registerDOFsIncrement(const ID & dof_id, Array<Real> & array) {
+  DOFData & dof = this->getDOFData(dof_id);
+
+  if (dof.increment != NULL) {
+    AKANTU_EXCEPTION("The dofs increment array for "
+                     << dof_id << " has already been registered");
+  }
+
+  dof.increment = &array;
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::registerDOFsDerivative(const ID & dof_id, UInt order,
+                                        Array<Real> & dofs_derivative) {
+  DOFData & dof = this->getDOFData(dof_id);
   std::vector<Array<Real> *> & derivatives = dof.dof_derivatives;
 
   if (derivatives.size() < order) {
@@ -247,14 +291,7 @@ void DOFManager::registerDOFsDerivative(const ID & dof_id, UInt order,
 /* -------------------------------------------------------------------------- */
 void DOFManager::registerBlockedDOFs(const ID & dof_id,
                                      Array<bool> & blocked_dofs) {
-  DOFStorage::iterator it = this->dofs.find(dof_id);
-
-  if (it == this->dofs.end()) {
-    AKANTU_EXCEPTION("The dof array corresponding to this derivatives has not "
-                     << "been registered yet");
-  }
-
-  DOFData & dof = *it->second;
+  DOFData & dof = this->getDOFData(dof_id);
 
   if (dof.blocked_dofs != NULL) {
     AKANTU_EXCEPTION("The blocked dofs array for "
@@ -263,9 +300,6 @@ void DOFManager::registerBlockedDOFs(const ID & dof_id,
 
   dof.blocked_dofs = &blocked_dofs;
 }
-
-/* -------------------------------------------------------------------------- */
-void DOFManager::clearJacobian() { this->getMatrix("J").clear(); }
 
 /* -------------------------------------------------------------------------- */
 void DOFManager::splitSolutionPerDOFs() {
@@ -295,7 +329,7 @@ void DOFManager::registerSparseMatrix(const ID & matrix_id,
 /* -------------------------------------------------------------------------- */
 /// Get an instance of a new SparseMatrix
 Array<Real> & DOFManager::getNewLumpedMatrix(const ID & id) {
-  ID matrix_id = this->id + ":lumpmtx:" + id;
+  ID matrix_id = this->id + ":lumped_mtx:" + id;
   LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(matrix_id);
   if (it != this->lumped_matrices.end()) {
     AKANTU_EXCEPTION("The lumped matrix " << matrix_id << " already exists in "
@@ -348,8 +382,15 @@ SparseMatrix & DOFManager::getMatrix(const ID & id) {
 }
 
 /* -------------------------------------------------------------------------- */
+bool DOFManager::hasMatrix(const ID & id) const {
+  ID mtx_id = this->id + ":mtx:" + id;
+  SparseMatricesMap::const_iterator it = this->matrices.find(mtx_id);
+  return it != this->matrices.end();
+}
+
+/* -------------------------------------------------------------------------- */
 Array<Real> & DOFManager::getLumpedMatrix(const ID & id) {
-  ID matrix_id = this->id + ":lumpmtx:" + id;
+  ID matrix_id = this->id + ":lumped_mtx:" + id;
   LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(matrix_id);
   if (it == this->lumped_matrices.end()) {
     AKANTU_SILENT_EXCEPTION("The lumped matrix "
@@ -361,7 +402,7 @@ Array<Real> & DOFManager::getLumpedMatrix(const ID & id) {
 
 /* -------------------------------------------------------------------------- */
 const Array<Real> & DOFManager::getLumpedMatrix(const ID & id) const {
-  ID matrix_id = this->id + ":lumpmtx:" + id;
+  ID matrix_id = this->id + ":lumped_mtx:" + id;
   LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(matrix_id);
   if (it == this->lumped_matrices.end()) {
     AKANTU_SILENT_EXCEPTION("The lumped matrix "
@@ -369,6 +410,13 @@ const Array<Real> & DOFManager::getLumpedMatrix(const ID & id) const {
   }
 
   return *(it->second);
+}
+
+/* -------------------------------------------------------------------------- */
+bool DOFManager::hasLumpedMatrix(const ID & id) const {
+  ID mtx_id = this->id + ":lumped_mtx:" + id;
+  LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(mtx_id);
+  return it != this->lumped_matrices.end();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -386,6 +434,14 @@ NonLinearSolver & DOFManager::getNonLinearSolver(const ID & id) {
 }
 
 /* -------------------------------------------------------------------------- */
+bool DOFManager::hasNonLinearSolver(const ID & id) const {
+  ID solver_id = this->id + ":nls:" + id;
+  NonLinearSolversMap::const_iterator it =
+      this->non_linear_solvers.find(solver_id);
+  return it != this->non_linear_solvers.end();
+}
+
+/* -------------------------------------------------------------------------- */
 TimeStepSolver & DOFManager::getTimeStepSolver(const ID & id) {
   ID time_step_solver_id = this->id + ":tss:" + id;
   TimeStepSolversMap::const_iterator it =
@@ -397,6 +453,14 @@ TimeStepSolver & DOFManager::getTimeStepSolver(const ID & id) {
   }
 
   return *(it->second);
+}
+
+/* -------------------------------------------------------------------------- */
+bool DOFManager::hasTimeStepSolver(const ID & solver_id) const {
+  ID time_step_solver_id = this->id + ":tss:" + solver_id;
+  TimeStepSolversMap::const_iterator it =
+      this->time_step_solvers.find(time_step_solver_id);
+  return it != this->time_step_solvers.end();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -433,6 +497,11 @@ void DOFManager::fillNodesToElements() {
       }
     }
   }
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::savePreviousDOFs(const ID & dofs_id) {
+  this->getPreviousDOFs(dofs_id).copy(this->getDOFs(dofs_id));
 }
 
 /* -------------------------------------------------------------------------- */

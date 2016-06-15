@@ -50,7 +50,7 @@ void SolverCallback::setDOFManager(DOFManager & dof_manager) {
 
 /* -------------------------------------------------------------------------- */
 void SolverCallback::assembleJacobian() {
-  this->sc_dof_manager->clearJacobian();
+  this->sc_dof_manager->clearMatrix("J");
 }
 
 /* -------------------------------------------------------------------------- */

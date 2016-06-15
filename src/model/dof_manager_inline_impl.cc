@@ -102,6 +102,26 @@ inline Array<Real> & DOFManager::getDOFs(const ID & dofs_id) {
 }
 
 /* -------------------------------------------------------------------------- */
+inline Array<Real> & DOFManager::getPreviousDOFs(const ID & dofs_id) {
+  return *(this->getDOFData(dofs_id).previous);
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFManager::hasPreviousDOFs(const ID & dofs_id) const {
+  return (this->getDOFData(dofs_id).previous != NULL);
+}
+
+/* -------------------------------------------------------------------------- */
+inline Array<Real> & DOFManager::getDOFsIncrement(const ID & dofs_id) {
+  return *(this->getDOFData(dofs_id).increment);
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFManager::hasDOFsIncrement(const ID & dofs_id) const {
+  return (this->getDOFData(dofs_id).increment != NULL);
+}
+
+/* -------------------------------------------------------------------------- */
 inline Array<Real> & DOFManager::getDOFsDerivatives(const ID & dofs_id,
                                                     UInt order) {
   std::vector<Array<Real> *> & derivatives =

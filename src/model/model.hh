@@ -169,7 +169,7 @@ public:
   std::map<UInt, UInt> & getPBCPairs() { return pbc_pair; };
 
   /// returns if node is slave in pbc
-  inline bool isPBCSlaveNode(const UInt node) const { throw; }
+  inline bool isPBCSlaveNode(const UInt node) const { return false; /* TODO repair PBC*/ }
 
   /// returns the array of pbc slave nodes (boolean information)
   AKANTU_GET_MACRO(IsPBCSlaveNode, is_pbc_slave_node, const Array<bool> &)

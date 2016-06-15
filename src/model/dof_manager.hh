@@ -61,6 +61,14 @@ public:
   virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
                             const DOFSupportType & support_type);
 
+  /// register an array of previous values of the degree of freedom
+  virtual void registerDOFsPrevious(const ID & dof_id,
+                                    Array<Real> & dofs_array);
+
+  /// register an array of increment of degree of freedom
+  virtual void registerDOFsIncrement(const ID & dof_id,
+                                     Array<Real> & dofs_array);
+
   /// register an array of derivatives for a particular dof array
   virtual void registerDOFsDerivative(const ID & dof_id, UInt order,
                                       Array<Real> & dofs_derivative);
@@ -73,6 +81,12 @@ public:
   virtual void assembleToResidual(const ID & dof_id,
                                   const Array<Real> & array_to_assemble,
                                   Real scale_factor = 1.) = 0;
+
+  /// Assemble an array to the global lumped matrix array
+  virtual void assembleToLumpedMatrix(const ID & dof_id,
+                                      const Array<Real> & array_to_assemble,
+                                      const ID & lumped_mtx,
+                                      Real scale_factor = 1.) = 0;
 
   /**
    * Assemble elementary values to a local array of the size nb_nodes *
@@ -98,6 +112,16 @@ public:
       const Array<UInt> & filter_elements = empty_filter);
 
   /**
+   * Assemble elementary values to a global array corresponding to a lumped
+   * matrix
+   */
+  virtual void assembleElementalArrayToLumpedMatrix(
+      const ID & dof_id, const Array<Real> & elementary_vect,
+      const ID & lumped_mtx, const ElementType & type,
+      const GhostType & ghost_type, Real scale_factor = 1.,
+      const Array<UInt> & filter_elements = empty_filter);
+
+  /**
    * Assemble elementary values to the global residual array. The dof number is
    * implicitly considered as conn(el, n) * nb_nodes_per_element + d.  With 0 <
    * n < nb_nodes_per_element and 0 < d < nb_dof_per_node
@@ -111,14 +135,14 @@ public:
 
   /// multiply a vector by a matrix and assemble the result to the residual
   virtual void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
-                                            const Array<Real> x,
+                                            const Array<Real> & x,
                                             Real scale_factor = 1) = 0;
 
   /// multiply a vector by a lumped matrix and assemble the result to the
   /// residual
   virtual void assembleLumpedMatMulVectToResidual(const ID & dof_id,
                                                   const ID & A_id,
-                                                  const Array<Real> x,
+                                                  const Array<Real> & x,
                                                   Real scale_factor = 1) = 0;
 
   /// notation fully defined yet...
@@ -129,12 +153,18 @@ public:
 
   /// sets the residual to 0
   virtual void clearResidual() = 0;
-
-  /// sets the jacobian matrix to 0
-  virtual void clearJacobian() = 0;
+  /// sets the matrix to 0
+  virtual void clearMatrix(const ID & mtx) = 0;
+  /// sets the lumped matrix to 0
+  virtual void clearLumpedMatrix(const ID & mtx) = 0;
 
   /// splits the solution storage from a global view to the per dof storages
   void splitSolutionPerDOFs();
+
+  /// extract a lumped matrix part corresponding to a given dof
+  virtual void getLumpedMatrixPerDOFs(const ID & dof_id,
+                                      const ID & lumped_mtx,
+                                      Array<Real> & lumped) = 0;
 
 protected:
   /// minimum functionality to implement per derived version of the DOFManager
@@ -142,6 +172,7 @@ protected:
   virtual void getSolutionPerDOFs(const ID & dof_id,
                                   Array<Real> & solution_array) = 0;
 
+protected:
   /// fill a Vector with the equation numbers corresponding to the given
   /// connectivity
   inline void extractElementEquationNumber(
@@ -196,6 +227,22 @@ public:
   /// Get a reference to the blocked dofs array registered for the given id
   inline const Array<bool> & getBlockedDOFs(const ID & dofs_id) const;
 
+  /// Get a reference to the registered dof increment array for a given id
+  inline Array<Real> & getDOFsIncrement(const ID & dofs_id);
+
+  /// Does the dof has a increment array
+  inline bool hasDOFsIncrement(const ID & dofs_id) const;
+
+  /// Does the dof has a previous array
+  inline Array<Real> & getPreviousDOFs(const ID & dofs_id);
+
+  /// Get a reference to the registered dof array for previous step values a
+  /// given id
+  inline bool hasPreviousDOFs(const ID & dofs_id) const;
+
+  /// saves the values from dofs to previous dofs
+  virtual void savePreviousDOFs(const ID & dofs_id);
+
   /// Get a reference to the solution array registered for the given id
   inline const Array<Real> & getSolution(const ID & dofs_id) const;
 
@@ -214,12 +261,18 @@ public:
   /// Get the reference of an existing matrix
   SparseMatrix & getMatrix(const ID & matrix_id);
 
+  /// check if the given matrix exists
+  bool hasMatrix(const ID & matrix_id) const;
+
   /// Get an instance of a new lumped matrix
   virtual Array<Real> & getNewLumpedMatrix(const ID & matrix_id);
   /// Get the lumped version of a given matrix
   const Array<Real> & getLumpedMatrix(const ID & matrix_id) const;
   /// Get the lumped version of a given matrix
   Array<Real> & getLumpedMatrix(const ID & matrix_id);
+
+  /// check if the given matrix exists
+  bool hasLumpedMatrix(const ID & matrix_id) const;
 
   /* ------------------------------------------------------------------------ */
   /* Non linear system solver                                                 */
@@ -232,6 +285,9 @@ public:
   /// get instance of a non linear solver
   virtual NonLinearSolver & getNonLinearSolver(const ID & nls_solver_id);
 
+  /// check if the given solver exists
+  bool hasNonLinearSolver(const ID & solver_id) const;
+
   /* ------------------------------------------------------------------------ */
   /* Time-Step Solver                                                         */
   /* ------------------------------------------------------------------------ */
@@ -243,6 +299,9 @@ public:
 
   /// get instance of a time step solver
   virtual TimeStepSolver & getTimeStepSolver(const ID & time_step_solver_id);
+
+  /// check if the given solver exists
+  bool hasTimeStepSolver(const ID & solver_id) const;
 
   /* ------------------------------------------------------------------------ */
   /* MeshEventHandler interface                                               */
@@ -291,6 +350,12 @@ protected:
 
     /// Blocked degree of freedoms array
     Array<bool> * blocked_dofs;
+
+    /// Degree of freedoms increment
+    Array<Real> * increment;
+
+    /// Degree of freedoms at previous step
+    Array<Real> * previous;
 
     /// Solution associated to the dof
     Array<Real> solution;
@@ -359,6 +424,10 @@ protected:
 
   /// Total number of degrees of freedom
   UInt system_size;
+
+  /// Memory cache, this is an array to keep the temporary memory needed for
+  /// some operations, it is meant to be resized or cleared when needed
+  Array<Real> data_cache;
 };
 
 __END_AKANTU__

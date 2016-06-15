@@ -64,6 +64,11 @@ public:
                                   const Array<Real> & array_to_assemble,
                                   Real scale_factor = 1.);
 
+  /// Assemble an array to the global lumped matrix array
+  virtual void assembleToLumpedMatrix(const ID & dof_id,
+                                      const Array<Real> & array_to_assemble,
+                                      const ID & lumped_mtx,
+                                      Real scale_factor = 1.);
   /**
    * Assemble elementary values to the global matrix. The dof number is
    * implicitly considered as conn(el, n) * nb_nodes_per_element + d.
@@ -77,14 +82,14 @@ public:
 
   /// multiply a vector by a matrix and assemble the result to the residual
   virtual void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
-                                            const Array<Real> x,
+                                            const Array<Real> & x,
                                             Real scale_factor = 1);
 
   /// multiply a vector by a lumped matrix and assemble the result to the
   /// residual
   virtual void assembleLumpedMatMulVectToResidual(const ID & dof_id,
                                                   const ID & A_id,
-                                                  const Array<Real> x,
+                                                  const Array<Real> & x,
                                                   Real scale_factor = 1);
 
 protected:
@@ -97,17 +102,29 @@ protected:
 public:
   /// clear the residual
   virtual void clearResidual();
-
-  /// clear the jacobian matrix
-  virtual void clearJacobian();
+  /// sets the matrix to 0
+  virtual void clearMatrix(const ID & mtx);
+  /// sets the lumped matrix to 0
+  virtual void clearLumpedMatrix(const ID & mtx);
 
   /// update the global dofs vector
   virtual void updateGlobalBlockedDofs();
 
 protected:
+  /// Get local part of an array corresponding to a given dofdata
+  virtual void getArrayPerDOFs(const ID & dof_id,
+                               const Array<Real> & global_array,
+                               Array<Real> & local_array) const;
+
   /// Get the part of the solution corresponding to the dof_id
   virtual void getSolutionPerDOFs(const ID & dof_id,
                                   Array<Real> & solution_array);
+
+public:
+  /// extract a lumped matrix part corresponding to a given dof
+  virtual void getLumpedMatrixPerDOFs(const ID & dof_id,
+                                      const ID & lumped_mtx,
+                                      Array<Real> & lumped);
 
 private:
   /// Add a symmetric matrices to a symmetric sparse matrix

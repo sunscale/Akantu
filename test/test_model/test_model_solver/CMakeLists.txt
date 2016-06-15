@@ -34,7 +34,14 @@ register_test(test_model_solver
   PACKAGE mumps
   )
 
-register_test(test_model_solver_dynamic
+register_test(test_model_solver_dynamic_explicit
   SOURCES test_model_solver_dynamic.cc
   PACKAGE mumps
+  COMPILE_OPTIONS "EXPLICIT=true"
+  )
+
+register_test(test_model_solver_dynamic_implicit
+  SOURCES test_model_solver_dynamic.cc
+  PACKAGE mumps
+  COMPILE_OPTIONS "EXPLICIT=false"
   )

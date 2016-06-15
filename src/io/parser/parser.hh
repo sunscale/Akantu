@@ -40,10 +40,10 @@
 
 __BEGIN_AKANTU__
 
-#define AKANTU_SECTION_TYPES                                            \
-  (global)(material)(model)(mesh)(heat)(contact)(friction)              \
-  (embedded_interface)(rules)(non_local)(user)(solver)(neighborhood)    \
-  (not_defined)
+#define AKANTU_SECTION_TYPES                                                   \
+  (global)(material)(model)(mesh)(heat)(contact)(friction)(                    \
+      embedded_interface)(rules)(non_local)(user)(solver)(neighborhood)(       \
+      not_defined)
 
 #define AKANTU_SECTION_TYPES_PREFIX(elem) BOOST_PP_CAT(_st_, elem)
 
@@ -167,6 +167,7 @@ public:
   /// Iterator on sections
   class const_section_iterator {
   public:
+    const_section_iterator() {}
     const_section_iterator(const const_section_iterator & other)
         : it(other.it) {}
     const_section_iterator(const const_section_iterator_ & it) : it(it) {}
@@ -345,6 +346,21 @@ public:
       }
     }
     return it->second;
+  }
+
+  /* ------------------------------------------------------------------------ */
+  /// Get parameter within specified context, with a default value in case the
+  /// parameter does not exists
+  template <class T>
+  const T getParameter(
+      const std::string & name, const T & default_value,
+      ParserParameterSearchCxt search_ctx = _ppsc_current_scope) const {
+    try {
+      T tmp = this->getParameter(name, search_ctx);
+      return tmp;
+    } catch (debug::Exception &) {
+      return default_value;
+    }
   }
 
   /* ------------------------------------------------------------------------ */

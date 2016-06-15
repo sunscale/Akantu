@@ -60,19 +60,38 @@ void ModelSolver::initDOFManager() {
   std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
       sub_sect = getStaticParser().getSubSections(_st_solver);
 
-  if (sub_sect.first != sub_sect.second) {
-    AKANTU_EXCEPTION("More than on solver section present in the input file");
+  ID solver_type = "", default_solver_type = "";
+
+#if defined(AKANTU_USE_MUMPS)
+  default_solver_type = "mumps";
+#elif defined(AKANTU_USE_PETSC)
+  default_solver_type = "petsc";
+#else
+  default_solver_type = "explicit";
+#endif
+
+
+  Parser::const_section_iterator it;
+  for(it = sub_sect.first; it != sub_sect.second && solver_type == ""; ++it) {
+    if(it->getName() == this->parent_id) {
+      const ParserSection & section = *it;
+      solver_type = section.getParameter("type", default_solver_type);
+    }
   }
 
-  const ParserSection & section = *sub_sect.first;
-  std::string solver_type = section.getName();
+  if (solver_type == "") {
+    solver_type = default_solver_type;
+  }
 
   this->initDOFManager(solver_type);
 }
 
 /* -------------------------------------------------------------------------- */
 void ModelSolver::initDOFManager(const ID & solver_type) {
-  if (solver_type == "petsc") {
+  if (solver_type == "explicit") {
+    ID id = this->parent_id + ":dof_manager_default";
+    this->dof_manager = new DOFManagerDefault(id, this->parent_memory_id);
+  } else if (solver_type == "petsc") {
 #if defined(AKANTU_USE_PETSC)
     ID id = this->parent_id + ":dof_manager_petsc";
     this->dof_manager = new DOFManagerPETSc(id, this->parent_memory_id);
@@ -118,6 +137,23 @@ const TimeStepSolver & ModelSolver::getSolver(const ID & solver_id) const {
   const TimeStepSolver & tss =
       this->dof_manager->getTimeStepSolver(tmp_solver_id);
   return tss;
+}
+
+/* -------------------------------------------------------------------------- */
+bool ModelSolver::hasSolver(const ID & solver_id) const {
+  ID tmp_solver_id = solver_id;
+  if (solver_id == "")
+    tmp_solver_id = this->default_solver_id;
+
+  return this->dof_manager->hasTimeStepSolver(tmp_solver_id);
+}
+
+/* -------------------------------------------------------------------------- */
+void ModelSolver::setDefaultSolver(const ID & solver_id) {
+  AKANTU_DEBUG_ASSERT(
+      this->hasSolver(solver_id),
+      "Cannot set the default solver to a solver that does not exists");
+  this->default_solver_id = solver_id;
 }
 
 /* -------------------------------------------------------------------------- */

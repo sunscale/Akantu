@@ -231,19 +231,19 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
   /// assemble a field as a lumped matrix (ex. rho in lumped mass)
-  void assembleFieldLumped(const Array<Real> & field, Array<Real> & lumped,
-                           DOFManager & dof_manager, ElementType type,
+  void assembleFieldLumped(const Array<Real> & field, const ID & lumped,
+                           const ID & dof_id, DOFManager & dof_manager,
+                           ElementType type,
                            const GhostType & ghost_type = _not_ghost) const;
 
   /// assemble a field as a matrix (ex. rho to mass matrix)
-  template<class Functor>
+  template <class Functor>
   void assembleFieldMatrix(Functor field_funct, const ID & matrix_id,
                            const ID & dof_id, DOFManager & dof_manager,
                            ElementType type,
                            const GhostType & ghost_type) const;
 
 #ifdef AKANTU_STRUCTURAL_MECHANICS
-
   /// assemble a field as a matrix (ex. rho to mass matrix)
   void assembleFieldMatrix(const Array<Real> & field_1,
                            UInt nb_degree_of_freedom, SparseMatrix & M,
@@ -271,21 +271,21 @@ private:
 
   /// templated function to compute the scaling to assemble a lumped matrix
   template <ElementType type>
-  void assembleLumpedTemplate(const Array<Real> & field, Array<Real> & lumped,
-                              DOFManager & dof_manager,
+  void assembleLumpedTemplate(const Array<Real> & field, const ID & lumped,
+                              const ID & dof_id, DOFManager & dof_manager,
                               const GhostType & ghost_type) const;
 
   /// @f$ \tilde{M}_{i} = \sum_j M_{ij} = \sum_j \int \rho \varphi_i \varphi_j
   /// dV = \int \rho \varphi_i dV @f$
   template <ElementType type>
-  void assembleLumpedRowSum(const Array<Real> & field, Array<Real> & lumped,
-                            DOFManager & dof_manager,
+  void assembleLumpedRowSum(const Array<Real> & field, const ID & lumped,
+                            const ID & dof_id, DOFManager & dof_manager,
                             const GhostType & ghost_type) const;
 
   /// @f$ \tilde{M}_{i} = c * M_{ii} = \int_{V_e} \rho dV @f$
   template <ElementType type>
   void assembleLumpedDiagonalScaling(const Array<Real> & field,
-                                     Array<Real> & lumped,
+                                     const ID & lumped, const ID & dof_id,
                                      DOFManager & dof_manager,
                                      const GhostType & ghost_type) const;
 

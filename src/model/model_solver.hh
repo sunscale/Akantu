@@ -111,14 +111,20 @@ public:
   /// get the time step of a given solver
   Real getTimeStep(const ID & solver_id = "") const;
   /// set the time step of a given solver
-  void setTimeStep(Real time_step, const ID & solver_id = "");
+  virtual void setTimeStep(Real time_step, const ID & solver_id = "");
 
   /// set the parameter 'param' of the solver 'solver_id'
-  template<typename T>
+  template <typename T>
   void set(const ID & param, const T & value, const ID & solver_id = "");
 
   /// get the parameter 'param' of the solver 'solver_id'
   const Parameter & get(const ID & param, const ID & solver_id = "") const;
+
+  /// answer to the question "does the solver exists ?"
+  bool hasSolver(const ID & solver_id) const;
+
+  /// changes the current default solver
+  void setDefaultSolver(const ID & solver_id);
 
 private:
   TimeStepSolver & getSolver(const ID & solver_id);

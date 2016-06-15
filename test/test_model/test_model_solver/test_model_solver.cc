@@ -149,6 +149,8 @@ private:
 int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
+  std::cout << std::setprecision(7);
+
   UInt nb_nodes = 11;
   Mesh mesh(1);
 
