@@ -367,8 +367,8 @@ void DOFManagerDefault::assembleMatMulVectToResidual(const ID & dof_id,
   SparseMatrixAIJ & A = this->getMatrix(A_id);
 
   //Array<Real> data_cache(this->local_system_size, 1, 0.);
-  this->data_cache.clear();
   this->data_cache.resize(this->local_system_size);
+  this->data_cache.clear();
 
   this->assembleToGlobalArray(dof_id, x, data_cache, 1.);
 
@@ -382,8 +382,8 @@ void DOFManagerDefault::assembleLumpedMatMulVectToResidual(
   const Array<Real> & A = this->getLumpedMatrix(A_id);
 
   //  Array<Real> data_cache(this->local_system_size, 1, 0.);
-  this->data_cache.clear();
   this->data_cache.resize(this->local_system_size);
+  this->data_cache.clear();
 
   this->assembleToGlobalArray(dof_id, x, data_cache, scale_factor);
 

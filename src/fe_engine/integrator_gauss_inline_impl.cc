@@ -379,7 +379,7 @@ void IntegratorGauss<kind>::integrate(
   const Array<Real> & jac_loc = jacobians(type, ghost_type);
   if (filter_elements != empty_filter) {
     UInt nb_element = filter_elements.getSize();
-    Array<Real> * filtered_J = new Array<Real>(0, jac_loc.getNbComponent());
+    Array<Real> * filtered_J = new Array<Real>(nb_element, jac_loc.getNbComponent());
     FEEngine::filterElementalData(mesh, jac_loc, *filtered_J, type, ghost_type,
                                   filter_elements);
     this->integrate(in_f, intf, nb_degree_of_freedom, *filtered_J, nb_element);
@@ -500,7 +500,7 @@ void IntegratorGauss<kind>::integrateOnIntegrationPoints(
   if (filter_elements != empty_filter) {
 
     UInt nb_element = filter_elements.getSize();
-    Array<Real> * filtered_J = new Array<Real>(0, jac_loc.getNbComponent());
+    Array<Real> * filtered_J = new Array<Real>(nb_element, jac_loc.getNbComponent());
     FEEngine::filterElementalData(mesh, jac_loc, *filtered_J, type, ghost_type,
                                   filter_elements);
 

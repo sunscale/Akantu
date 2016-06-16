@@ -504,7 +504,7 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
     computeTangentModuli(type, *tangent_stiffness_matrix, ghost_type);
 
     Array<Real> * shapesd_filtered =
-        new Array<Real>(0, dim * nb_nodes_per_element, "filtered shapesd");
+        new Array<Real>(nb_element, dim * nb_nodes_per_element, "filtered shapesd");
 
     FEEngine::filterElementalData(fem->getMesh(), shapes_derivatives,
                                   *shapesd_filtered, type, ghost_type,
@@ -788,7 +788,7 @@ template <UInt dim> void Material::assembleInternalForces(GhostType ghost_type) 
     UInt nb_quadrature_points = fem->getNbIntegrationPoints(*it, ghost_type);
 
     Array<Real> * shapesd_filtered =
-        new Array<Real>(0, size_of_shapes_derivatives, "filtered shapesd");
+        new Array<Real>(nb_element, size_of_shapes_derivatives, "filtered shapesd");
 
     FEEngine::filterElementalData(mesh, shapes_derivatives, *shapesd_filtered,
                                   *it, ghost_type, elem_filter);
@@ -922,7 +922,7 @@ void Material::computeAllStressesFromTangentModuli(const ElementType & type,
     computeTangentModuli(type, *tangent_moduli_tensors, ghost_type);
 
     Array<Real> * shapesd_filtered =
-        new Array<Real>(0, dim * nb_nodes_per_element, "filtered shapesd");
+        new Array<Real>(nb_element, dim * nb_nodes_per_element, "filtered shapesd");
 
     FEEngine::filterElementalData(fem->getMesh(), shapes_derivatives,
                                   *shapesd_filtered, type, ghost_type,

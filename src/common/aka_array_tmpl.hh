@@ -90,11 +90,7 @@ inline const T & Array<T, is_scal>::operator[](UInt i) const {
  */
 template <class T, bool is_scal>
 inline void Array<T, is_scal>::push_back(const T & value) {
-  UInt pos = size;
-
-  resizeUnitialized(size + 1);
-
-  std::uninitialized_fill_n(values + pos * nb_component, nb_component, value);
+  resizeUnitialized(size + 1, true, value);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -106,7 +102,7 @@ template <class T, bool is_scal>
 inline void Array<T, is_scal>::push_back(const T new_elem[]) {
   UInt pos = size;
 
-  resizeUnitialized(size + 1);
+  resizeUnitialized(size + 1, false);
 
   T * tmp = values + nb_component * pos;
   std::uninitialized_copy(new_elem, new_elem + nb_component, tmp);
@@ -126,7 +122,7 @@ inline void Array<T, is_scal>::push_back(const C<T> & new_elem) {
           << ") as not a size compatible with the Array (nb_component="
           << nb_component << ").");
   UInt pos = size;
-  resizeUnitialized(size + 1);
+  resizeUnitialized(size + 1, false);
 
   T * tmp = values + nb_component * pos;
   std::uninitialized_copy(new_elem.storage(), new_elem.storage() + nb_component,
@@ -143,7 +139,7 @@ inline void
 Array<T, is_scal>::push_back(const Array<T, is_scal>::iterator<Ret> & it) {
   UInt pos = size;
 
-  resizeUnitialized(size + 1);
+  resizeUnitialized(size + 1, false);
 
   T * tmp = values + nb_component * pos;
   T * new_elem = it.data();
@@ -432,22 +428,16 @@ void Array<T, is_scal>::allocate(UInt size, UInt nb_component) {
  * size increases, the new tuples are filled with zeros
  * @param new_size new number of tuples contained in the array */
 template <class T, bool is_scal> void Array<T, is_scal>::resize(UInt new_size) {
-  UInt old_size = size;
+  resizeUnitialized(new_size, !is_scal);
+}
 
-  T * old_values = values;
-  if (new_size < size) {
-    for (UInt i = new_size * nb_component; i < size * nb_component; ++i) {
-      T * obj = old_values + i;
-      obj->~T();
-    }
-  }
-
-  resizeUnitialized(new_size);
-
-  T val = T();
-  if (size > old_size)
-    std::uninitialized_fill(values + old_size * nb_component,
-                            values + size * nb_component, val);
+/* -------------------------------------------------------------------------- */
+/**
+ * change the size of the array and allocate or free memory if needed. If the
+ * size increases, the new tuples are filled with zeros
+ * @param new_size new number of tuples contained in the array */
+template <class T, bool is_scal> void Array<T, is_scal>::resize(UInt new_size, const T & val) {
+  this->resizeUnitialized(new_size, true, val);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -455,15 +445,25 @@ template <class T, bool is_scal> void Array<T, is_scal>::resize(UInt new_size) {
  * change the size of the array and allocate or free memory if needed.
  * @param new_size new number of tuples contained in the array */
 template <class T, bool is_scal>
-void Array<T, is_scal>::resizeUnitialized(UInt new_size) {
+void Array<T, is_scal>::resizeUnitialized(UInt new_size, bool fill, const T & val) {
   //  AKANTU_DEBUG_IN();
   // free some memory
   if (new_size <= allocated_size) {
+    if (!is_scal) {
+      T * old_values = values;
+      if (new_size < size) {
+        for (UInt i = new_size * nb_component; i < size * nb_component; ++i) {
+          T * obj = old_values + i;
+          obj->~T();
+        }
+      }
+    }
+
     if (allocated_size - new_size > AKANTU_MIN_ALLOCATION) {
       AKANTU_DEBUG(dblAccessory,
                    "Freeing " << printMemorySize<T>((allocated_size - size) *
                                                     nb_component) << " (" << id
-                              << ")");
+                   << ")");
 
       // Normally there are no allocation problem when reducing an array
       T * tmp_ptr = static_cast<T *>(
@@ -478,38 +478,38 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size) {
       values = tmp_ptr;
       allocated_size = new_size;
     }
+  } else {
+    // allocate more memory
+    UInt size_to_alloc = (new_size - allocated_size < AKANTU_MIN_ALLOCATION)
+        ? allocated_size + AKANTU_MIN_ALLOCATION
+        : new_size;
 
-    size = new_size;
+    T * tmp_ptr = static_cast<T *>(
+        realloc(values, size_to_alloc * nb_component * sizeof(T)));
+    AKANTU_DEBUG_ASSERT(tmp_ptr != NULL, "Cannot allocate " << printMemorySize<T>(
+                            size_to_alloc * nb_component));
+    if (tmp_ptr == NULL) {
+      AKANTU_DEBUG_ERROR("Cannot allocate more data ("
+                         << id << ")"
+                         << " [current allocated size : " << allocated_size
+                         << " | "
+                         << "requested size : " << new_size << "]");
+    }
 
-    //    AKANTU_DEBUG_OUT();
-    return;
+    AKANTU_DEBUG(dblAccessory,
+                 "Allocating " << printMemorySize<T>(
+                     (size_to_alloc - allocated_size) * nb_component));
+
+    allocated_size = size_to_alloc;
+    values = tmp_ptr;
   }
 
-  // allocate more memory
-  UInt size_to_alloc = (new_size - allocated_size < AKANTU_MIN_ALLOCATION)
-                           ? allocated_size + AKANTU_MIN_ALLOCATION
-                           : new_size;
-
-  T * tmp_ptr = static_cast<T *>(
-      realloc(values, size_to_alloc * nb_component * sizeof(T)));
-  AKANTU_DEBUG_ASSERT(tmp_ptr != NULL, "Cannot allocate " << printMemorySize<T>(
-                                           size_to_alloc * nb_component));
-  if (tmp_ptr == NULL) {
-    AKANTU_DEBUG_ERROR("Cannot allocate more data ("
-                       << id << ")"
-                       << " [current allocated size : " << allocated_size
-                       << " | "
-                       << "requested size : " << new_size << "]");
+  if (fill && this->size < new_size) {
+    std::uninitialized_fill(values + size * nb_component,
+                            values + new_size * nb_component, val);
   }
 
-  AKANTU_DEBUG(dblAccessory,
-               "Allocating " << printMemorySize<T>(
-                   (size_to_alloc - allocated_size) * nb_component));
-
-  allocated_size = size_to_alloc;
   size = new_size;
-  values = tmp_ptr;
-
   //  AKANTU_DEBUG_OUT();
 }
 

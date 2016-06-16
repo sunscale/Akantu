@@ -97,21 +97,24 @@ void DOFManager::assembleElementalArrayLocalArray(
 
   const Array<UInt> & connectivity =
       this->mesh->getConnectivity(type, ghost_type);
-  Array<UInt>::const_vector_iterator conn_begin =
-      connectivity.begin(nb_nodes_per_element);
-  Array<UInt>::const_vector_iterator conn_it = conn_begin;
+  // Array<UInt>::const_vector_iterator conn_begin =
+  //     connectivity.begin(nb_nodes_per_element);
+  // Array<UInt>::const_vector_iterator conn_it = conn_begin;
 
   Array<Real>::const_matrix_iterator elem_it =
       elementary_vect.begin(nb_degree_of_freedom, nb_nodes_per_element);
 
   for (UInt el = 0; el < nb_element; ++el, ++elem_it) {
-    if (filter_it != NULL)
-      conn_it = conn_begin + *filter_it;
+    UInt element = el;
+    if (filter_it != NULL) {
+      //conn_it = conn_begin + *filter_it;
+      element = *filter_it;
+    }
 
-    const Vector<UInt> & conn = *conn_it;
+    //const Vector<UInt> & conn = *conn_it;
     const Matrix<Real> & elemental_val = *elem_it;
     for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-      UInt offset_node = conn(n) * nb_degree_of_freedom;
+      UInt offset_node = connectivity(element, n) * nb_degree_of_freedom;
       Vector<Real> assemble(array_assembeled.storage() + offset_node,
                             nb_degree_of_freedom);
       Vector<Real> elem_val = elemental_val(n);
@@ -120,8 +123,8 @@ void DOFManager::assembleElementalArrayLocalArray(
 
     if (filter_it != NULL)
       ++filter_it;
-    else
-      ++conn_it;
+    //    else
+    //      ++conn_it;
   }
 
   AKANTU_DEBUG_OUT();

@@ -280,6 +280,9 @@ public:
   /// change the size of the Array
   virtual void resize(UInt size);
 
+  /// change the size of the Array and initialize the values
+  virtual void resize(UInt size, const T & val);
+
   /// change the number of components by interlacing data
   /// @param multiplicator number of interlaced components add
   /// @param block_size blocks of data in the array
@@ -321,8 +324,8 @@ protected:
   /// perform the allocation for the constructors
   void allocate(UInt size, UInt nb_component = 1);
 
-  /// resize without initializing the memory
-  void resizeUnitialized(UInt new_size);
+  /// resize initializing with uninitialized_fill if fill is set
+  void resizeUnitialized(UInt new_size, bool fill, const T & val = T());
 
   /* ------------------------------------------------------------------------ */
   /* Operators                                                                */

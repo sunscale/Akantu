@@ -1110,24 +1110,24 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
   UInt nb_nodes = mesh.getNbNodes();
 
   if (displacement)
-    displacement->resize(nb_nodes);
+    displacement->resize(nb_nodes, 0.);
   if (mass)
-    mass->resize(nb_nodes);
+    mass->resize(nb_nodes, 0.);
   if (velocity)
-    velocity->resize(nb_nodes);
+    velocity->resize(nb_nodes, 0.);
   if (acceleration)
-    acceleration->resize(nb_nodes);
+    acceleration->resize(nb_nodes, 0.);
   if (external_force)
-    external_force->resize(nb_nodes);
+    external_force->resize(nb_nodes, 0.);
   if (internal_force)
-    internal_force->resize(nb_nodes);
+    internal_force->resize(nb_nodes, 0.);
   if (blocked_dofs)
-    blocked_dofs->resize(nb_nodes);
+    blocked_dofs->resize(nb_nodes, 0.);
 
   if (previous_displacement)
-    previous_displacement->resize(nb_nodes);
+    previous_displacement->resize(nb_nodes, 0.);
   if (displacement_increment)
-    displacement_increment->resize(nb_nodes);
+    displacement_increment->resize(nb_nodes, 0.);
 
   std::vector<Material *>::iterator mat_it;
   for (mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
