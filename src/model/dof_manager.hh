@@ -424,10 +424,6 @@ protected:
 
   /// Total number of degrees of freedom
   UInt system_size;
-
-  /// Memory cache, this is an array to keep the temporary memory needed for
-  /// some operations, it is meant to be resized or cleared when needed
-  Array<Real> data_cache;
 };
 
 __END_AKANTU__

@@ -219,6 +219,10 @@ private:
 
   /// Map of the different time step solvers stored with there real type
   DefaultTimeStepSolversMap default_time_step_solver_map;
+
+  /// Memory cache, this is an array to keep the temporary memory needed for
+  /// some operations, it is meant to be resized or cleared when needed
+  Array<Real> data_cache;
 };
 
 __END_AKANTU__

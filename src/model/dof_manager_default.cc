@@ -98,7 +98,7 @@ DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
       global_solution(0, 1, std::string(id + ":global_solution")),
       global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
       dofs_type(0, 1, std::string(id + ":dofs_type")),
-      data_cache(0, 1, std::string(id + ":data_cache_array"){}
+      data_cache(0, 1, std::string(id + ":data_cache_array")) {}
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::~DOFManagerDefault() {}
@@ -365,28 +365,31 @@ void DOFManagerDefault::assembleMatMulVectToResidual(const ID & dof_id,
                                                      const Array<Real> & x,
                                                      Real scale_factor) {
   SparseMatrixAIJ & A = this->getMatrix(A_id);
-  this->data_cache.resize(this->local_system_size);
+
+  //Array<Real> data_cache(this->local_system_size, 1, 0.);
   this->data_cache.clear();
+  this->data_cache.resize(this->local_system_size);
 
-  this->assembleToGlobalArray(dof_id, x, this->data_cache, 1.);
+  this->assembleToGlobalArray(dof_id, x, data_cache, 1.);
 
-  A.matVecMul(this->data_cache, this->residual, scale_factor, 1.);
+  A.matVecMul(data_cache, this->residual, scale_factor, 1.);
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::assembleLumpedMatMulVectToResidual(const ID & dof_id,
-                                                           const ID & A_id,
-                                                           const Array<Real> & x,
-                                                           Real scale_factor) {
+void DOFManagerDefault::assembleLumpedMatMulVectToResidual(
+    const ID & dof_id, const ID & A_id, const Array<Real> & x,
+    Real scale_factor) {
   const Array<Real> & A = this->getLumpedMatrix(A_id);
 
-  this->data_cache.resize(this->local_system_size);
+  //  Array<Real> data_cache(this->local_system_size, 1, 0.);
   this->data_cache.clear();
-  this->assembleToGlobalArray(dof_id, x, this->data_cache, scale_factor);
+  this->data_cache.resize(this->local_system_size);
+
+  this->assembleToGlobalArray(dof_id, x, data_cache, scale_factor);
 
   Array<Real>::const_scalar_iterator A_it = A.begin();
   Array<Real>::const_scalar_iterator A_end = A.end();
-  Array<Real>::const_scalar_iterator x_it = this->data_cache.begin();
+  Array<Real>::const_scalar_iterator x_it = data_cache.begin();
   Array<Real>::scalar_iterator r_it = this->residual.begin();
 
   for (; A_it != A_end; ++A_it, ++x_it, ++r_it) {

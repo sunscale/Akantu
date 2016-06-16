@@ -1591,9 +1591,9 @@ inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
   normal.resize(nb_element * nb_points);
   Array<Real>::matrix_iterator normals_on_quad =
       normal.begin_reinterpret(spatial_dimension, nb_points, nb_element);
-  Array<std::vector<Element> > segments =
+  const Array< std::vector<Element> > & segments =
       mesh.getElementToSubelement(type, ghost_type);
-  Array<Real> coords = mesh.getNodes();
+  const Array<Real> & coords = mesh.getNodes();
 
   const Mesh * mesh_segment;
   if (mesh.isMeshFacets())
@@ -1610,7 +1610,7 @@ inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular>::
 
     Real normal_value = 1;
     if (nb_segment == 1) {
-      Element segment = segments(elem)[0];
+      const Element & segment = segments(elem)[0];
       const Array<UInt> & segment_connectivity =
           mesh_segment->getConnectivity(segment.type, segment.ghost_type);
       // const Vector<UInt> & segment_points =

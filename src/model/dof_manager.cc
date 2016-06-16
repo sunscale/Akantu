@@ -95,7 +95,7 @@ void DOFManager::assembleElementalArrayLocalArray(
                           << elementary_vect.getID()
                           << ") has not the good size.");
 
-  const Array<UInt> connectivity =
+  const Array<UInt> & connectivity =
       this->mesh->getConnectivity(type, ghost_type);
   Array<UInt>::const_vector_iterator conn_begin =
       connectivity.begin(nb_nodes_per_element);
