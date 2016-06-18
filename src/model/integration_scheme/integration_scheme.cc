@@ -41,4 +41,51 @@ IntegrationScheme::IntegrationScheme(DOFManager & dof_manager,
 
 /* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
+// /// standard output stream operator for SolutionType
+// std::ostream & operator<<(std::ostream & stream,
+//                           const IntegrationScheme::SolutionType & type) {
+//   switch (type) {
+//   case IntegrationScheme::_displacement:
+//     stream << "displacement";
+//     break;
+//   case IntegrationScheme::_temperature:
+//     stream << "temperature";
+//     break;
+//   case IntegrationScheme::_velocity:
+//     stream << "velocity";
+//     break;
+//   case IntegrationScheme::_temperature_rate:
+//     stream << "temperature_rate";
+//     break;
+//   case IntegrationScheme::_acceleration:
+//     stream << "acceleration";
+//     break;
+//   }
+//   return stream;
+// }
+
+/* -------------------------------------------------------------------------- */
+/// standard input stream operator for SolutionType
+std::istream & operator>>(std::istream & stream,
+                          IntegrationScheme::SolutionType & type) {
+  std::string str;
+  stream >> str;
+  if (str == "displacement")
+    type = IntegrationScheme::_displacement;
+  else if (str == "temperature")
+    type = IntegrationScheme::_temperature;
+  else if (str == "velocity")
+    type = IntegrationScheme::_velocity;
+  else if (str == "temperature_rate")
+    type = IntegrationScheme::_temperature_rate;
+  else if (str == "acceleration")
+    type = IntegrationScheme::_acceleration;
+  else {
+    stream.setstate(std::ios::failbit);
+  }
+
+  return stream;
+}
+
 __END_AKANTU__

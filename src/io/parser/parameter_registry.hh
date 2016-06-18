@@ -151,7 +151,7 @@ public:
 
   /// Add parameter to the params map (with default value)
   template <typename T>
-  void registerParam(std::string name, T & variable, T default_value,
+  void registerParam(std::string name, T & variable, const T & default_value,
                      ParameterAccessType type, const std::string description = "");
 
   /*------------------------------------------------------------------------- */

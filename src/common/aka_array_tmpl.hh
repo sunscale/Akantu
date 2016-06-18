@@ -436,7 +436,8 @@ template <class T, bool is_scal> void Array<T, is_scal>::resize(UInt new_size) {
  * change the size of the array and allocate or free memory if needed. If the
  * size increases, the new tuples are filled with zeros
  * @param new_size new number of tuples contained in the array */
-template <class T, bool is_scal> void Array<T, is_scal>::resize(UInt new_size, const T & val) {
+template <class T, bool is_scal>
+void Array<T, is_scal>::resize(UInt new_size, const T & val) {
   this->resizeUnitialized(new_size, true, val);
 }
 
@@ -445,7 +446,8 @@ template <class T, bool is_scal> void Array<T, is_scal>::resize(UInt new_size, c
  * change the size of the array and allocate or free memory if needed.
  * @param new_size new number of tuples contained in the array */
 template <class T, bool is_scal>
-void Array<T, is_scal>::resizeUnitialized(UInt new_size, bool fill, const T & val) {
+void Array<T, is_scal>::resizeUnitialized(UInt new_size, bool fill,
+                                          const T & val) {
   //  AKANTU_DEBUG_IN();
   // free some memory
   if (new_size <= allocated_size) {
@@ -463,31 +465,38 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size, bool fill, const T & va
       AKANTU_DEBUG(dblAccessory,
                    "Freeing " << printMemorySize<T>((allocated_size - size) *
                                                     nb_component) << " (" << id
-                   << ")");
+                              << ")");
 
       // Normally there are no allocation problem when reducing an array
-      T * tmp_ptr = static_cast<T *>(
-          realloc(values, new_size * nb_component * sizeof(T)));
-      if (new_size != 0 && tmp_ptr == NULL) {
-        AKANTU_DEBUG_ERROR("Cannot free data ("
+      if(new_size == 0) {
+        free(values);
+        values = NULL;
+      } else {
+        T * tmp_ptr = static_cast<T *>(
+            realloc(values, new_size * nb_component * sizeof(T)));
+
+        if (tmp_ptr == NULL) {
+          AKANTU_EXCEPTION("Cannot free data ("
                            << id << ")"
                            << " [current allocated size : " << allocated_size
                            << " | "
                            << "requested size : " << new_size << "]");
+        }
+        values = tmp_ptr;
       }
-      values = tmp_ptr;
       allocated_size = new_size;
     }
   } else {
     // allocate more memory
     UInt size_to_alloc = (new_size - allocated_size < AKANTU_MIN_ALLOCATION)
-        ? allocated_size + AKANTU_MIN_ALLOCATION
-        : new_size;
+                             ? allocated_size + AKANTU_MIN_ALLOCATION
+                             : new_size;
 
     T * tmp_ptr = static_cast<T *>(
         realloc(values, size_to_alloc * nb_component * sizeof(T)));
-    AKANTU_DEBUG_ASSERT(tmp_ptr != NULL, "Cannot allocate " << printMemorySize<T>(
-                            size_to_alloc * nb_component));
+    AKANTU_DEBUG_ASSERT(
+        tmp_ptr != NULL,
+        "Cannot allocate " << printMemorySize<T>(size_to_alloc * nb_component));
     if (tmp_ptr == NULL) {
       AKANTU_DEBUG_ERROR("Cannot allocate more data ("
                          << id << ")"

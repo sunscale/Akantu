@@ -30,7 +30,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_memory.hh"
-#include "parameter_registry.hh"
+#include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 #include <set>
 /* -------------------------------------------------------------------------- */
@@ -45,7 +45,7 @@ class SolverCallback;
 
 __BEGIN_AKANTU__
 
-class NonLinearSolver : Memory, public ParameterRegistry {
+class NonLinearSolver : Memory, public Parsable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

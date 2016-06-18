@@ -74,25 +74,26 @@
 __BEGIN_AKANTU_DEBUG__
 
 static void printBacktraceAndExit(int sig) {
-  printBacktrace(sig);
+  if (debugger.printBacktrace())
+    printBacktrace(sig);
   debugger.exit(-50);
 }
 
 /* ------------------------------------------------------------------------ */
 void initSignalHandler() {
-#if not defined(_WIN32)
-  struct sigaction action;
+// #if not defined(_WIN32)
+//   struct sigaction action;
 
-  action.sa_handler = &printBacktraceAndExit;
-  sigemptyset(&(action.sa_mask));
-  action.sa_flags = SA_RESETHAND;
+//   action.sa_handler = &printBacktraceAndExit;
+//   sigemptyset(&(action.sa_mask));
+//   action.sa_flags = SA_RESETHAND;
 
-  sigaction(SIGSEGV, &action, NULL);
-  sigaction(SIGABRT, &action, NULL);
-#else
+//   sigaction(SIGSEGV, &action, NULL);
+//   sigaction(SIGABRT, &action, NULL);
+// #else
   std::signal(SIGSEGV, &printBacktraceAndExit);
   std::signal(SIGABRT, &printBacktraceAndExit);
-#endif
+//#endif
 }
 
 /* ------------------------------------------------------------------------ */

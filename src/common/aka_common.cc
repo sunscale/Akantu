@@ -86,6 +86,9 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
     infile = input_file;
 
   debug::setDebugLevel(dblError);
+  int dbl_level = static_argparser["aka_debug_level"];
+  debug::setDebugLevel(DebugLevel(dbl_level));
+  debug::debugger.printBacktrace(static_argparser["aka_print_backtrace"]);
 
   if ("" != infile) {
     readInputFile(infile);
@@ -97,10 +100,6 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   } catch (debug::Exception &) {
     seed = time(NULL);
   }
-
-  int dbl_level = static_argparser["aka_debug_level"];
-  debug::setDebugLevel(DebugLevel(dbl_level));
-  debug::debugger.printBacktrace(static_argparser["aka_print_backtrace"]);
 
   seed *= (comm.whoAmI() + 1);
 #if not defined(_WIN32)

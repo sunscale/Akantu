@@ -192,6 +192,7 @@ namespace debug {
     }
 
     void printBacktrace(bool on_off) { this->print_backtrace = on_off; }
+    bool printBacktrace() { return this->print_backtrace; }
 
   private:
     std::string parallel_context;

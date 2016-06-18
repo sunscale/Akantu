@@ -48,7 +48,7 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 ModelSolver::ModelSolver(Mesh & mesh, const ID & id, UInt memory_id)
-    : Parsable(_st_solver, id), SolverCallback(), parent_id(id),
+    : Parsable(_st_model_solver, id), SolverCallback(), parent_id(id),
       parent_memory_id(memory_id), mesh(mesh), dof_manager(NULL),
       default_solver_id("") {}
 
@@ -58,32 +58,32 @@ ModelSolver::~ModelSolver() { delete this->dof_manager; }
 /* -------------------------------------------------------------------------- */
 void ModelSolver::initDOFManager() {
   std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
-      sub_sect = getStaticParser().getSubSections(_st_solver);
+      sub_sect = getStaticParser().getSubSections(_st_model_solver);
 
-  ID solver_type = "", default_solver_type = "";
+  // default without external solver activated at compilation same as mumps that
+  // is the historical solver but with only the lumped solver
+  ID solver_type = "explicit";
 
 #if defined(AKANTU_USE_MUMPS)
-  default_solver_type = "mumps";
+  solver_type = "mumps";
 #elif defined(AKANTU_USE_PETSC)
-  default_solver_type = "petsc";
-#else
-  default_solver_type = "explicit";
+  solver_type = "petsc";
 #endif
 
-
+  const ParserSection * section = NULL;
   Parser::const_section_iterator it;
-  for(it = sub_sect.first; it != sub_sect.second && solver_type == ""; ++it) {
-    if(it->getName() == this->parent_id) {
-      const ParserSection & section = *it;
-      solver_type = section.getParameter("type", default_solver_type);
+  for (it = sub_sect.first; it != sub_sect.second && section == NULL; ++it) {
+    if (it->getName() == this->parent_id) {
+      section = &(*it);
+      solver_type = section->getOption(solver_type);
     }
   }
 
-  if (solver_type == "") {
-    solver_type = default_solver_type;
+  if (section) {
+    this->initDOFManager(*section, solver_type);
+  } else {
+    this->initDOFManager(solver_type);
   }
-
-  this->initDOFManager(solver_type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -116,6 +116,73 @@ void ModelSolver::initDOFManager(const ID & solver_type) {
 
   this->dof_manager->registerMesh(mesh);
   this->setDOFManager(*this->dof_manager);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T> static T getOptionToType(std::string & opt_str) {
+  std::stringstream sstr(opt_str);
+  T opt;
+  sstr >> opt;
+
+  return opt;
+}
+
+/* -------------------------------------------------------------------------- */
+void ModelSolver::initDOFManager(const ParserSection & section,
+                                 const ID & solver_type) {
+  this->initDOFManager(solver_type);
+  std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
+      sub_sect = section.getSubSections(_st_time_step_solver);
+
+  Parser::const_section_iterator it;
+  for (it = sub_sect.first; it != sub_sect.second; ++it) {
+    ID solver_id = it->getName();
+    std::string str = it->getOption();
+    TimeStepSolverType tss_type =
+        it->getParameter("type", this->getDefaultSolverType());
+    ModelSolverOptions tss_options = this->getDefaultSolverOptions(tss_type);
+
+    std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
+        sub_solvers_sect = it->getSubSections(_st_non_linear_solver);
+    Parser::const_section_iterator sub_it;
+    UInt nb_non_linear_solver_section =
+        it->getNbSubSections(_st_non_linear_solver);
+
+    NonLinearSolverType nls_type = tss_options.non_linear_solver_type;
+
+    if (nb_non_linear_solver_section == 1) {
+      const ParserSection & nls_section = *(sub_solvers_sect.second);
+      nls_type =
+          nls_section.getParameter("type", tss_options.non_linear_solver_type);
+    } else if (nb_non_linear_solver_section > 0) {
+      AKANTU_EXCEPTION("More than one non linear solver are provided for the "
+                       "time step solver "
+                       << solver_id);
+    }
+
+    this->getNewSolver(solver_id, tss_type, nls_type);
+    if (nb_non_linear_solver_section == 1) {
+      const ParserSection & nls_section = *(sub_solvers_sect.first);
+      this->dof_manager->getNonLinearSolver(solver_id)
+          .parseSection(nls_section);
+    }
+
+    std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
+        sub_integrator_sect = it->getSubSections(_st_integration_scheme);
+
+    for (sub_it = sub_integrator_sect.first;
+         sub_it != sub_integrator_sect.second; ++sub_it) {
+      const ParserSection & is_section = *sub_it;
+      const ID & dof_id = is_section.getName();
+
+      IntegrationSchemeType it_type =
+          it->getParameter("type", tss_options.integration_scheme_type[dof_id]);
+
+      IntegrationScheme::SolutionType s_type = is_section.getParameter(
+          "solution_type", tss_options.solution_type[dof_id]);
+      this->setIntegrationScheme(solver_id, dof_id, it_type, s_type);
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -187,6 +254,8 @@ void ModelSolver::getNewSolver(const ID & solver_id,
     }
   }
 
+  this->initSolver(time_step_solver_type, non_linear_solver_type);
+
   NonLinearSolver & nls = this->dof_manager->getNewNonLinearSolver(
       solver_id, non_linear_solver_type);
 
@@ -223,6 +292,16 @@ void ModelSolver::predictor() {}
 /* -------------------------------------------------------------------------- */
 void ModelSolver::corrector() {}
 /* -------------------------------------------------------------------------- */
+TimeStepSolverType ModelSolver::getDefaultSolverType() const {
+  return _tsst_dynamic_lumped;
+}
+/* -------------------------------------------------------------------------- */
+ModelSolverOptions
+ModelSolver::getDefaultSolverOptions(const TimeStepSolverType & type) const {
+  ModelSolverOptions options;
+  options.non_linear_solver_type = _nls_auto;
+  return options;
+}
 
 /* -------------------------------------------------------------------------- */
 // void ModelSolver::setIntegrationScheme(

@@ -43,6 +43,7 @@ __BEGIN_AKANTU__
 #define AKANTU_SECTION_TYPES                                                   \
   (global)(material)(model)(mesh)(heat)(contact)(friction)(                    \
       embedded_interface)(rules)(non_local)(user)(solver)(neighborhood)(       \
+      time_step_solver)(non_linear_solver)(model_solver)(integration_scheme)(  \
       not_defined)
 
 #define AKANTU_SECTION_TYPES_PREFIX(elem) BOOST_PP_CAT(_st_, elem)
@@ -186,6 +187,7 @@ public:
     bool operator!=(const const_section_iterator & other) const {
       return it != other.it;
     }
+
     const_section_iterator & operator++() {
       ++it;
       return *this;
@@ -320,6 +322,15 @@ public:
     }
   }
 
+  /// Get number of subsections of certain type
+  UInt getNbSubSections(SectionType type = _st_not_defined) const {
+    if (type != _st_not_defined) {
+      return this->sub_sections_by_type.count(type);
+    } else {
+      return this->sub_sections_by_type.size();
+    }
+  }
+
   /// Get begin and end iterators on parameters
   std::pair<const_parameter_iterator, const_parameter_iterator>
   getParameters() const {
@@ -402,7 +413,9 @@ public:
   /// Get section type
   const SectionType & getType() const { return type; }
   /// Get section option
-  const std::string & getOption() const { return option; }
+  const std::string & getOption(const std::string & def = "") const {
+    return option != "" ? option : def;
+  }
 
 protected:
   void setParent(const ParserSection & sect) { parent_section = &sect; }

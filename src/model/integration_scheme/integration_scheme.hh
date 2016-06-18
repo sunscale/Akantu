@@ -68,8 +68,7 @@ public:
   virtual void corrector(const SolutionType & type, Real delta_t) = 0;
 
   /// assemble the jacobian matrix
-  virtual void assembleJacobian(const SolutionType & type,
-                                Real delta_t) = 0;
+  virtual void assembleJacobian(const SolutionType & type, Real delta_t) = 0;
 
   /// assemble the residual
   virtual void assembleResidual(bool is_lumped) = 0;
@@ -94,6 +93,13 @@ protected:
   /// The order of the integrator
   UInt order;
 };
+
+/* -------------------------------------------------------------------------- */
+// std::ostream & operator<<(std::ostream & stream,
+//                           const IntegrationScheme::SolutionType & type);
+std::istream & operator>>(std::istream & stream,
+                          IntegrationScheme::SolutionType & type);
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__
 

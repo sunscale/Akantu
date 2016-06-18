@@ -43,6 +43,7 @@ namespace akantu {
 class Mesh;
 class DOFManager;
 class TimeStepSolver;
+struct ModelSolverOptions;
 }
 
 __BEGIN_AKANTU__
@@ -60,6 +61,13 @@ public:
   /// initialize the dof manager based on the used chosen solver type
   void initDOFManager(const ID & solver_type);
 
+protected:
+  /// initialize the dof manager based on the used chosen solver type
+  void initDOFManager(const ParserSection & section, const ID & solver_type);
+
+  /// Callback for the model to instantiate the matricees when needed
+  virtual void initSolver(TimeStepSolverType time_step_solver_type,
+                          NonLinearSolverType non_linear_solver_type) {};
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -106,6 +114,14 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /// Default time step solver to instantiate for this model
+  virtual TimeStepSolverType getDefaultSolverType() const;
+
+  /// Default configurations for a given time step solver
+  virtual ModelSolverOptions
+  getDefaultSolverOptions(const TimeStepSolverType & type) const;
+
+  /// get access to the internal dof manager
   DOFManager & getDOFManager() { return *this->dof_manager; }
 
   /// get the time step of a given solver
@@ -145,6 +161,12 @@ private:
 
   /// Default time step solver to use
   ID default_solver_id;
+};
+
+struct ModelSolverOptions {
+  NonLinearSolverType non_linear_solver_type;
+  std::map<ID, IntegrationSchemeType> integration_scheme_type;
+  std::map<ID, IntegrationScheme::SolutionType> solution_type;
 };
 
 __END_AKANTU__

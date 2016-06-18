@@ -222,7 +222,7 @@ void ParameterRegistry::registerParam(std::string name, T & variable,
 /* -------------------------------------------------------------------------- */
 template <typename T>
 void ParameterRegistry::registerParam(std::string name, T & variable,
-                                      T default_value, ParameterAccessType type,
+                                      const T & default_value, ParameterAccessType type,
                                       const std::string description) {
   variable = default_value;
   registerParam(name, variable, type, description);
