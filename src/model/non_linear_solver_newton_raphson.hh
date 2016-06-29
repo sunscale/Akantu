@@ -91,6 +91,9 @@ private:
 
   /// Did the last call to solve reached convergence
   bool converged;
+
+  /// Force a re-computation of the jacobian matrix
+  bool force_linear_recompute;
 };
 
 __END_AKANTU__

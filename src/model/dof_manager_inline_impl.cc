@@ -70,6 +70,13 @@ inline UInt DOFManager::globalToLocalEquationNumber(UInt global) const {
 
   return it->second;
 }
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFManager::hasDOFs(const ID & dof_id) const {
+  DOFStorage::const_iterator it = this->dofs.find(dof_id);
+  return it != this->dofs.end();
+}
+
 /* -------------------------------------------------------------------------- */
 inline DOFManager::DOFData & DOFManager::getDOFData(const ID & dof_id) {
   DOFStorage::iterator it = this->dofs.find(dof_id);
@@ -126,12 +133,20 @@ inline Array<Real> & DOFManager::getDOFsDerivatives(const ID & dofs_id,
                                                     UInt order) {
   std::vector<Array<Real> *> & derivatives =
       this->getDOFData(dofs_id).dof_derivatives;
-  if (order > derivatives.size())
+  if ((order > derivatives.size()) || (derivatives[order - 1] == NULL))
     AKANTU_EXCEPTION("No derivatives of order " << order << " present in "
                                                 << this->id << " for dof "
                                                 << dofs_id);
 
   return *derivatives[order - 1];
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFManager::hasDOFsDerivatives(const ID & dofs_id,
+                                           UInt order) const{
+  const std::vector<Array<Real> *> & derivatives =
+      this->getDOFData(dofs_id).dof_derivatives;
+  return ((order < derivatives.size()) && (derivatives[order - 1] != NULL));
 }
 
 /* -------------------------------------------------------------------------- */

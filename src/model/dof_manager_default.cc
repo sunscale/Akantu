@@ -97,8 +97,11 @@ DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
     : DOFManager(id, memory_id), residual(0, 1, std::string(id + ":residual")),
       global_solution(0, 1, std::string(id + ":global_solution")),
       global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
+      previous_global_blocked_dofs(
+          0, 1, std::string(id + ":previous_global_blocked_dofs")),
       dofs_type(0, 1, std::string(id + ":dofs_type")),
-      data_cache(0, 1, std::string(id + ":data_cache_array")) {}
+      data_cache(0, 1, std::string(id + ":data_cache_array")),
+      jacobian_release(0) {}
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::~DOFManagerDefault() {}
@@ -287,6 +290,7 @@ void DOFManagerDefault::updateGlobalBlockedDofs() {
   DOFStorage::iterator it = this->dofs.begin();
   DOFStorage::iterator end = this->dofs.end();
 
+  this->previous_global_blocked_dofs.copy(this->global_blocked_dofs);
   this->global_blocked_dofs.resize(this->local_system_size);
   this->global_blocked_dofs.clear();
 
@@ -366,7 +370,7 @@ void DOFManagerDefault::assembleMatMulVectToResidual(const ID & dof_id,
                                                      Real scale_factor) {
   SparseMatrixAIJ & A = this->getMatrix(A_id);
 
-  //Array<Real> data_cache(this->local_system_size, 1, 0.);
+  // Array<Real> data_cache(this->local_system_size, 1, 0.);
   this->data_cache.resize(this->local_system_size);
   this->data_cache.clear();
 
@@ -544,5 +548,27 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id) {
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManagerDefault::applyBoundary() {
+  this->updateGlobalBlockedDofs();
+  SparseMatrixAIJ & J = this->getMatrix("J");
+
+  if (this->jacobian_release == J.getValueRelease()) {
+    Array<bool>::const_scalar_iterator it = global_blocked_dofs.begin();
+    Array<bool>::const_scalar_iterator end = global_blocked_dofs.end();
+
+    Array<bool>::const_scalar_iterator pit = previous_global_blocked_dofs.begin();
+
+    for (; it != end && *it == *pit; ++it, ++pit);
+
+    if(it != end) J.applyBoundary();
+  } else {
+    J.applyBoundary();
+  }
+
+  this->jacobian_release = J.getValueRelease();
+}
+
+/* -------------------------------------------------------------------------- */
+
 
 __END_AKANTU__

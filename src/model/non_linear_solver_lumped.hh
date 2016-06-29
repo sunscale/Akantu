@@ -72,6 +72,9 @@ public:
   /* ------------------------------------------------------------------------ */
 private:
   DOFManagerDefault & dof_manager;
+
+  /// Coefficient to apply between x and A^{-1} b
+  Real alpha;
 };
 
 __END_AKANTU__

@@ -118,12 +118,13 @@ void TimeStepSolverDefault::setIntegrationScheme(
       integration_scheme = new LinearAceleration(dof_manager, dof_id);
       break;
     }
-    // Write a c++11 version of the constructor with initializer list that
-    // contains the arguments for the integration scheme
-    case _ist_generalized_trapezoidal:
+    case _ist_generalized_trapezoidal: {
+      integration_scheme = new GeneralizedTrapezoidal(dof_manager, dof_id);
+      break;
+    }
     case _ist_newmark_beta:
-      AKANTU_EXCEPTION(
-          "This time step solvers cannot be created with this constructor");
+      integration_scheme = new NewmarkBeta(dof_manager, dof_id);
+      break;
     }
   }
 
@@ -133,6 +134,11 @@ void TimeStepSolverDefault::setIntegrationScheme(
   this->integration_schemes_owner.insert(dof_id);
 }
 
+/* -------------------------------------------------------------------------- */
+bool TimeStepSolverDefault::hasIntegrationScheme(const ID & dof_id) const {
+  return this->integration_schemes.find(dof_id) !=
+         this->integration_schemes.end();
+}
 /* -------------------------------------------------------------------------- */
 TimeStepSolverDefault::~TimeStepSolverDefault() {
   DOFsIntegrationSchemesOwner::iterator it =
@@ -194,7 +200,8 @@ void TimeStepSolverDefault::predictor() {
       Array<Real>::const_vector_iterator prev_dof_it;
 
       if (this->dof_manager.hasPreviousDOFs(dof_id)) {
-        prev_dof_it = this->dof_manager.getPreviousDOFs(dof_id).begin(dof_array_comp);
+        prev_dof_it =
+            this->dof_manager.getPreviousDOFs(dof_id).begin(dof_array_comp);
       } else {
         prev_dof_it = previous->begin(dof_array_comp);
       }

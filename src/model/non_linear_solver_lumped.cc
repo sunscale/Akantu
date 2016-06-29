@@ -45,6 +45,9 @@ NonLinearSolverLumped::NonLinearSolverLumped(
       dof_manager(dof_manager) {
   this->supported_type.insert(_nls_lumped);
   this->checkIfTypeIsSupported();
+
+  this->registerParam("b_a2x", this->alpha, 1., _pat_parsmod,
+                      "Conversion coefficient between x and A^{-1} b");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -68,7 +71,6 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
   // alpha is the conversion factor from from force/mass to acceleration needed
   // in model coupled with atomistic \todo find a way to define alpha per dof
   // type
-  Real alpha = 1.;
 
   this->solveLumped(A, x, b, blocked_dofs, alpha);
   this->dof_manager.splitSolutionPerDOFs();
@@ -77,8 +79,7 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLinearSolverLumped::solveLumped(const Array<Real> & A,
-                                        Array<Real> & x,
+void NonLinearSolverLumped::solveLumped(const Array<Real> & A, Array<Real> & x,
                                         const Array<Real> & b,
                                         const Array<bool> & blocked_dofs,
                                         Real alpha) {

@@ -52,18 +52,21 @@ NonLinearSolverNewtonRaphson::NonLinearSolverNewtonRaphson(
 
   this->checkIfTypeIsSupported();
 
-  this->registerParam("threshold", convergence_criteria, 1e-10, _pat_writable,
+  this->registerParam("threshold", convergence_criteria, 1e-10, _pat_parsmod,
                       "Threshold to consider results as converged");
   this->registerParam("convergence_type", convergence_criteria_type,
-                      _scc_solution, _pat_writable,
+                      _scc_solution, _pat_parsmod,
                       "Type of convergence criteria");
-  this->registerParam("max_iterations", max_iterations, UInt(10), _pat_writable,
+  this->registerParam("max_iterations", max_iterations, UInt(10), _pat_parsmod,
                       "Max number of iterations");
   this->registerParam("error", error, _pat_readable, "Last reached error");
   this->registerParam("nb_iterations", n_iter, _pat_readable,
                       "Last reached number of iterations");
   this->registerParam("converged", converged, _pat_readable,
                       "Did last solve converged");
+  this->registerParam("force_linear_recompute", force_linear_recompute, true,
+                      _pat_modifiable,
+                      "Force reassembly of the jacobian matrix");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -75,8 +78,12 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
 
   solver_callback.assembleResidual();
 
-  if (this->non_linear_solver_type == _nls_newton_raphson_modified)
+  if (this->non_linear_solver_type == _nls_newton_raphson_modified ||
+      (this->non_linear_solver_type == _nls_linear &&
+       this->force_linear_recompute)) {
     solver_callback.assembleJacobian();
+    this->force_linear_recompute = false;
+  }
 
   this->n_iter = 0;
   this->converged = false;

@@ -88,10 +88,8 @@ class NewmarkBeta : public IntegrationScheme2ndOrder {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NewmarkBeta(DOFManager & dof_manager, const ID & dof_id, Real alpha,
-              Real beta)
-      : IntegrationScheme2ndOrder(dof_manager, dof_id), beta(beta),
-        alpha(alpha), k(0.), h(0.){};
+  NewmarkBeta(DOFManager & dof_manager, const ID & dof_id, Real alpha = 0.,
+              Real beta = 0.);
 
   ~NewmarkBeta(){};
 
@@ -137,13 +135,13 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
   /// the @f$\beta@f$ parameter
-  const Real beta;
+  Real beta;
 
   /// the @f$\alpha@f$ parameter
-  const Real alpha;
+  Real alpha;
 
-  const Real k;
-  const Real h;
+  Real k;
+  Real h;
 };
 
 /**

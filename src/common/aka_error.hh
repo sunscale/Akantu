@@ -330,6 +330,7 @@ namespace debug {
     Except & nc_ex = const_cast<Except &>(ex);
     nc_ex.setFile(file);
     nc_ex.setLine(line);
+
     throw ex;
   }
 }

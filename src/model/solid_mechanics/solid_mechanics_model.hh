@@ -142,6 +142,11 @@ public:
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
+protected:
+  /// allocate an array if needed
+  template <typename T>
+  void allocNodalField(Array<T> *& array, UInt nb_component, const ID & name);
+
   /* ------------------------------------------------------------------------ */
   /* PBC                                                                      */
   /* ------------------------------------------------------------------------ */

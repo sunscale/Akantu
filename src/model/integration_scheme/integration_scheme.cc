@@ -37,7 +37,8 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 IntegrationScheme::IntegrationScheme(DOFManager & dof_manager,
                                      const ID & dof_id, UInt order)
-    : dof_manager(dof_manager), dof_id(dof_id), order(order) {}
+    : Parsable(_st_integration_scheme, dof_id),
+      dof_manager(dof_manager), dof_id(dof_id), order(order) {}
 
 /* -------------------------------------------------------------------------- */
 

@@ -320,8 +320,7 @@ void SparseSolverMumps::solve() {
 
   this->setOutputLevel();
 
-  this->dof_manager.updateGlobalBlockedDofs();
-  this->matrix.applyBoundary();
+  this->dof_manager.applyBoundary();
 
   this->master_rhs_solution.copy(this->dof_manager.getResidual());
   // if (prank == 0) {

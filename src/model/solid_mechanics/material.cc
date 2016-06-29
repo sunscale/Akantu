@@ -555,7 +555,7 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
 
     delete bt_d_b;
 
-    model->getDOFManager().assembleElementalMatricesToMatrix("stiffness", "displacements", *K_e,
+    model->getDOFManager().assembleElementalMatricesToMatrix("K", "displacement", *K_e,
                                                             type, ghost_type, _symmetric,
                                                             elem_filter);
     delete K_e;
@@ -649,7 +649,7 @@ void Material::assembleStiffnessMatrixNL(const ElementType & type,
 
   delete bt_s_b;
 
-  model->getDOFManager().assembleElementalMatricesToMatrix("stiffness", "displacements", *K_e,
+  model->getDOFManager().assembleElementalMatricesToMatrix("K", "displacement", *K_e,
                                                            type, ghost_type, _symmetric,
                                                            elem_filter);
 
@@ -757,7 +757,7 @@ void Material::assembleStiffnessMatrixL2(const ElementType & type,
 
   delete bt_d_b;
 
-  model->getDOFManager().assembleElementalMatricesToMatrix("stiffness", "displacements", *K_e,
+  model->getDOFManager().assembleElementalMatricesToMatrix("K", "displacement", *K_e,
                                                             type, ghost_type, _symmetric,
                                                             elem_filter);
   delete K_e;

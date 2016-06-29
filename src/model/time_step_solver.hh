@@ -68,6 +68,8 @@ public:
                        IntegrationScheme::SolutionType
                            solution_type = IntegrationScheme::_not_defined) = 0;
 
+  /// replies if a integration scheme has been set
+  virtual bool hasIntegrationScheme(const ID & dof_id) const = 0;
   /* ------------------------------------------------------------------------ */
   /* Solver Callback interface                                                */
   /* ------------------------------------------------------------------------ */

@@ -65,6 +65,7 @@ public:
                             const IntegrationSchemeType & type,
                             IntegrationScheme::SolutionType solution_type =
                                 IntegrationScheme::_not_defined);
+  virtual bool hasIntegrationScheme(const ID & dof_id) const;
 
   /// implementation of the TimeStepSolver::predictor()
   virtual void predictor();

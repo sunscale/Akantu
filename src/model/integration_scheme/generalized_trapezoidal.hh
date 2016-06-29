@@ -77,8 +77,8 @@ class GeneralizedTrapezoidal : public IntegrationScheme1stOrder {
   /* ------------------------------------------------------------------------ */
 public:
   GeneralizedTrapezoidal(DOFManager & dof_manager, const ID & dof_id,
-                         Real alpha)
-      : IntegrationScheme1stOrder(dof_manager, dof_id), alpha(alpha){};
+                         Real alpha = 0);
+
   virtual ~GeneralizedTrapezoidal(){};
 
   /* ------------------------------------------------------------------------ */
@@ -120,7 +120,7 @@ public:
   /* ------------------------------------------------------------------------ */
 private:
   /// the @f$\alpha@f$ parameter
-  const Real alpha;
+  Real alpha;
 };
 
 /* -------------------------------------------------------------------------- */

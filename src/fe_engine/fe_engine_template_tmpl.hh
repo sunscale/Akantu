@@ -1057,6 +1057,7 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
   UInt lmat_size = nb_degree_of_freedom * shapes_size;
   UInt nb_element = mesh.getNbElement(type, ghost_type);
 
+  // \int N * N  so degree 2 * degree of N
   const UInt polynomial_degree =
       2 * ElementClassProperty<type>::polynomial_degree;
 
@@ -1081,13 +1082,13 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
   Array<Real> * local_mat = new Array<Real>(vect_size, lmat_size * lmat_size);
 
   Array<Real>::matrix_iterator mshapes_it =
-      modified_shapes->begin(lmat_size, nb_degree_of_freedom);
+      modified_shapes->begin(nb_degree_of_freedom, lmat_size);
   Array<Real>::const_vector_iterator shapes_it = shapes.begin(shapes_size);
 
   for (UInt q = 0; q < vect_size; ++q, ++mshapes_it, ++shapes_it) {
     for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
       for (UInt s = 0; s < shapes_size; ++s) {
-        (*mshapes_it)(s * nb_degree_of_freedom + d, d) = (*shapes_it)(s);
+        (*mshapes_it)(d, s * nb_degree_of_freedom + d) = (*shapes_it)(s);
       }
     }
   }
@@ -1106,18 +1107,22 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
     field_funct(*field_c_it, el, *pos_it);
   }
 
-  mshapes_it = modified_shapes->begin(lmat_size, nb_degree_of_freedom);
+  mshapes_it = modified_shapes->begin(nb_degree_of_freedom, lmat_size);
   Array<Real>::matrix_iterator lmat = local_mat->begin(lmat_size, lmat_size);
-  Array<Real>::const_matrix_iterator field_it =
-      field.begin_reinterpret(nb_degree_of_freedom, 1, field.getSize());
+  Array<Real>::const_vector_iterator field_it =
+      field.begin_reinterpret(nb_degree_of_freedom, field.getSize());
 
   for (UInt q = 0; q < vect_size; ++q, ++lmat, ++mshapes_it, ++field_it) {
+    const Vector<Real> & rho = *field_it;
+    const Matrix<Real> & N = *mshapes_it;
     Matrix<Real> & mat = *lmat;
-    const Matrix<Real> & f_mat = *field_it;
-    Matrix<Real> f_times_mat(lmat_size, nb_degree_of_freedom);
 
-    f_times_mat.mul<false, true>(f_mat, *mshapes_it);
-    mat.mul<false, true>(*mshapes_it, f_times_mat);
+    Matrix<Real> Nt = N.transpose();
+    for (UInt d = 0; d < Nt.cols(); ++d) {
+      Nt(d) *= rho(d);
+    }
+
+    mat.mul<false, false>(Nt, N);
   }
 
   delete modified_shapes;

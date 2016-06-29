@@ -57,6 +57,7 @@ void SparseMatrixAIJ::applyBoundary(Real block_val) {
   AKANTU_DEBUG_IN();
 
   const Array<bool> & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
+
   Array<Int>::const_scalar_iterator irn_val = irn.begin();
   Array<Int>::const_scalar_iterator jcn_val = jcn.begin();
   Array<Real>::scalar_iterator a_val = a.begin();

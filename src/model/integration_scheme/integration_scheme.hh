@@ -29,6 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_INTEGRATION_SCHEME_HH__
@@ -40,7 +41,7 @@ class DOFManager;
 
 __BEGIN_AKANTU__
 
-class IntegrationScheme {
+class IntegrationScheme : public Parsable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

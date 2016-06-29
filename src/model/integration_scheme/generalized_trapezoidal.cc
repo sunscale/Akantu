@@ -39,6 +39,14 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
+GeneralizedTrapezoidal::GeneralizedTrapezoidal(DOFManager & dof_manager,
+                                               const ID & dof_id, Real alpha)
+    : IntegrationScheme1stOrder(dof_manager, dof_id), alpha(alpha) {
+
+  this->registerParam("alpha", this->alpha, alpha, _pat_parsmod, "The alpha parameter");
+}
+
+/* -------------------------------------------------------------------------- */
 void GeneralizedTrapezoidal::predictor(Real delta_t, Array<Real> & u,
                                        Array<Real> & u_dot,
                                        const Array<bool> & blocked_dofs) const {
@@ -87,9 +95,8 @@ void GeneralizedTrapezoidal::corrector(const SolutionType & type, Real delta_t,
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */
-Real
-GeneralizedTrapezoidal::getTemperatureCoefficient(const SolutionType & type,
-                                                  Real delta_t) const {
+Real GeneralizedTrapezoidal::getTemperatureCoefficient(
+    const SolutionType & type, Real delta_t) const {
   switch (type) {
   case _temperature:
     return 1.;
@@ -103,9 +110,8 @@ GeneralizedTrapezoidal::getTemperatureCoefficient(const SolutionType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-Real
-GeneralizedTrapezoidal::getTemperatureRateCoefficient(const SolutionType & type,
-                                                      Real delta_t) const {
+Real GeneralizedTrapezoidal::getTemperatureRateCoefficient(
+    const SolutionType & type, Real delta_t) const {
   switch (type) {
   case _temperature:
     return 1. / (alpha * delta_t);
@@ -139,8 +145,8 @@ void GeneralizedTrapezoidal::allCorrector(Real delta_t, Array<Real> & u,
 
   for (UInt dof = 0; dof < nb_degree_of_freedom; dof++) {
     if (!(*blocked_dofs_val)) {
-      *u_val += e * *delta_val;
-      *u_dot_val += d * *delta_val;
+      *u_val += e ** delta_val;
+      *u_dot_val += d ** delta_val;
     }
     u_val++;
     u_dot_val++;

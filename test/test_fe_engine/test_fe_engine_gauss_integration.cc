@@ -89,8 +89,8 @@ static Vector<Real> integrate_poly(UInt poly_degree, FEM & fem) {
   Matrix<Real> integration_points =
       fem.getIntegrator().getIntegrationPoints<type, degree>();
 
-  Vector<Real> integration_weights =
-      fem.getIntegrator().getIntegrationWeights<type, degree>();
+  // Vector<Real> integration_weights =
+  //     fem.getIntegrator().getIntegrationWeights<type, degree>();
 
   // for (UInt i = 0; i < integration_points.cols(); ++i) {
   //   std::cout << "q(" << i << ") = " << Vector<Real>(integration_points(i))

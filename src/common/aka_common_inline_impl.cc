@@ -91,6 +91,9 @@ inline std::istream & operator>>(std::istream & stream,
   else if (str == "dynamic_lumped")
     type = _tsst_dynamic_lumped;
   else {
+    AKANTU_DEBUG_ERROR("The type "
+                       << str << " is not a recognized TimeStepSolverType");
+
     stream.setstate(std::ios::failbit);
   }
 
@@ -210,6 +213,8 @@ inline std::istream & operator>>(std::istream & stream,
   else if (str == "generalized_trapezoidal")
     type = _ist_generalized_trapezoidal;
   else {
+    AKANTU_DEBUG_ERROR("The type "
+                       << str << " is not a recognized IntegrationSchemeType");
     stream.setstate(std::ios::failbit);
   }
   return stream;

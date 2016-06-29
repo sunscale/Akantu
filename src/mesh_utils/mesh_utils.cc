@@ -2236,6 +2236,122 @@ UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh,
 }
 
 /* -------------------------------------------------------------------------- */
+// Deactivating -Wunused-parameter
+#if defined(__INTEL_COMPILER)
+//#pragma warning ( disable : 383 )
+#elif defined(__clang__) // test clang to be sure that when we test for gnu it
+                         // is only gnu
+#elif(defined(__GNUC__) || defined(__GNUG__))
+#define GCC_VERSION                                                            \
+  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#if GCC_VERSION > 40600
+#pragma GCC diagnostic push
+#endif
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
+/* -------------------------------------------------------------------------- */
+void MeshUtils::updateElementalConnectivity(
+    Mesh & mesh, UInt old_node, UInt new_node,
+    const std::vector<Element> & element_list,
+    const std::vector<Element> * facet_list) {
+  AKANTU_DEBUG_IN();
+
+  ElementType el_type = _not_defined;
+  GhostType gt_type = _casper;
+  Array<UInt> * conn_elem = NULL;
+#if defined(AKANTU_COHESIVE_ELEMENT)
+  const Array<Element> * cohesive_facets = NULL;
+#endif
+  UInt nb_nodes_per_element = 0;
+  UInt * n_update = NULL;
+
+  for (UInt el = 0; el < element_list.size(); ++el) {
+    const Element & elem = element_list[el];
+    if (elem.type == _not_defined)
+      continue;
+
+    if (elem.type != el_type || elem.ghost_type != gt_type) {
+      el_type = elem.type;
+      gt_type = elem.ghost_type;
+      conn_elem = &mesh.getConnectivity(el_type, gt_type);
+      nb_nodes_per_element = conn_elem->getNbComponent();
+#if defined(AKANTU_COHESIVE_ELEMENT)
+      if (elem.kind == _ek_cohesive)
+        cohesive_facets =
+            &mesh.getMeshFacets().getSubelementToElement(el_type, gt_type);
+#endif
+    }
+
+#if defined(AKANTU_COHESIVE_ELEMENT)
+    if (elem.kind == _ek_cohesive) {
+
+      AKANTU_DEBUG_ASSERT(
+          facet_list != NULL,
+          "Provide a facet list in order to update cohesive elements");
+
+      /// loop over cohesive element's facets
+      for (UInt f = 0, n = 0; f < 2; ++f, n += nb_nodes_per_element / 2) {
+        const Element & facet = (*cohesive_facets)(elem.element, f);
+
+        /// skip facets if not present in the list
+        if (std::find(facet_list->begin(), facet_list->end(), facet) ==
+            facet_list->end())
+          continue;
+
+        n_update = std::find(
+            conn_elem->storage() + elem.element * nb_nodes_per_element + n,
+            conn_elem->storage() + elem.element * nb_nodes_per_element + n +
+                nb_nodes_per_element / 2,
+            old_node);
+
+        AKANTU_DEBUG_ASSERT(n_update !=
+                                conn_elem->storage() +
+                                    elem.element * nb_nodes_per_element + n +
+                                    nb_nodes_per_element / 2,
+                            "Node not found in current element");
+
+        /// update connectivity
+        *n_update = new_node;
+      }
+    } else {
+#endif
+      n_update =
+          std::find(conn_elem->storage() + elem.element * nb_nodes_per_element,
+                    conn_elem->storage() + elem.element * nb_nodes_per_element +
+                        nb_nodes_per_element,
+                    old_node);
+
+      AKANTU_DEBUG_ASSERT(n_update !=
+                              conn_elem->storage() +
+                                  elem.element * nb_nodes_per_element +
+                                  nb_nodes_per_element,
+                          "Node not found in current element");
+
+      /// update connectivity
+      *n_update = new_node;
+#if defined(AKANTU_COHESIVE_ELEMENT)
+    }
+#endif
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+// Reactivating -Wunused-parameter
+#if defined(__INTEL_COMPILER)
+//#pragma warning ( disable : 383 )
+#elif defined(__clang__) // test clang to be sure that when we test for gnu it
+                         // is only gnu
+#elif defined(__GNUG__)
+#if GCC_VERSION > 40600
+#pragma GCC diagnostic pop
+#else
+#pragma GCC diagnostic warning "-Wunused-parameter"
+#endif
+#endif
+/* -------------------------------------------------------------------------- */
+
 
 __END_AKANTU__
 

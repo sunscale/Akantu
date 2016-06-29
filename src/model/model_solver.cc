@@ -119,7 +119,7 @@ void ModelSolver::initDOFManager(const ID & solver_type) {
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T> static T getOptionToType(std::string & opt_str) {
+template <typename T> static T getOptionToType(const std::string & opt_str) {
   std::stringstream sstr(opt_str);
   T opt;
   sstr >> opt;
@@ -137,6 +137,7 @@ void ModelSolver::initDOFManager(const ParserSection & section,
   Parser::const_section_iterator it;
   for (it = sub_sect.first; it != sub_sect.second; ++it) {
     ID solver_id = it->getName();
+
     std::string str = it->getOption();
     TimeStepSolverType tss_type =
         it->getParameter("type", this->getDefaultSolverType());
@@ -151,9 +152,8 @@ void ModelSolver::initDOFManager(const ParserSection & section,
     NonLinearSolverType nls_type = tss_options.non_linear_solver_type;
 
     if (nb_non_linear_solver_section == 1) {
-      const ParserSection & nls_section = *(sub_solvers_sect.second);
-      nls_type =
-          nls_section.getParameter("type", tss_options.non_linear_solver_type);
+      const ParserSection & nls_section = *(sub_solvers_sect.first);
+      nls_type = getOptionToType<NonLinearSolverType>(nls_section.getName());
     } else if (nb_non_linear_solver_section > 0) {
       AKANTU_EXCEPTION("More than one non linear solver are provided for the "
                        "time step solver "
@@ -175,13 +175,29 @@ void ModelSolver::initDOFManager(const ParserSection & section,
       const ParserSection & is_section = *sub_it;
       const ID & dof_id = is_section.getName();
 
-      IntegrationSchemeType it_type =
-          it->getParameter("type", tss_options.integration_scheme_type[dof_id]);
+      IntegrationSchemeType it_type = is_section.getParameter(
+          "type", tss_options.integration_scheme_type[dof_id]);
 
       IntegrationScheme::SolutionType s_type = is_section.getParameter(
           "solution_type", tss_options.solution_type[dof_id]);
       this->setIntegrationScheme(solver_id, dof_id, it_type, s_type);
     }
+
+    std::map<ID, IntegrationSchemeType>::const_iterator it =
+        tss_options.integration_scheme_type.begin();
+    std::map<ID, IntegrationSchemeType>::const_iterator end =
+        tss_options.integration_scheme_type.end();
+    for (; it != end; ++it) {
+      if (!this->hasIntegrationScheme(solver_id, it->first)) {
+        this->setIntegrationScheme(solver_id, it->first, it->second,
+                                   tss_options.solution_type[it->first]);
+      }
+    }
+  }
+
+  if (section.hasParameter("default_solver")) {
+    ID default_solver = section.getParameter("default_solver");
+    this->setDefaultSolver(default_solver);
   }
 }
 
@@ -288,13 +304,28 @@ void ModelSolver::setIntegrationScheme(
 }
 
 /* -------------------------------------------------------------------------- */
+bool ModelSolver::hasDefaultSolver() const {
+  return (this->default_solver_id != "");
+}
+
+/* -------------------------------------------------------------------------- */
+bool ModelSolver::hasIntegrationScheme(const ID & solver_id,
+                                       const ID & dof_id) const {
+  TimeStepSolver & tss = this->dof_manager->getTimeStepSolver(solver_id);
+  return tss.hasIntegrationScheme(dof_id);
+}
+
+/* -------------------------------------------------------------------------- */
 void ModelSolver::predictor() {}
+
 /* -------------------------------------------------------------------------- */
 void ModelSolver::corrector() {}
+
 /* -------------------------------------------------------------------------- */
 TimeStepSolverType ModelSolver::getDefaultSolverType() const {
   return _tsst_dynamic_lumped;
 }
+
 /* -------------------------------------------------------------------------- */
 ModelSolverOptions
 ModelSolver::getDefaultSolverOptions(const TimeStepSolverType & type) const {

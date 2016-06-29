@@ -39,6 +39,17 @@
 
 __BEGIN_AKANTU__
 
+/* -------------------------------------------------------------------------- */
+NewmarkBeta::NewmarkBeta(DOFManager & dof_manager, const ID & dof_id,
+                         Real alpha, Real beta)
+    : IntegrationScheme2ndOrder(dof_manager, dof_id), beta(beta), alpha(alpha),
+      k(0.), h(0.){
+
+  this->registerParam("alpha", this->alpha, alpha, _pat_parsmod, "The alpha parameter");
+  this->registerParam("beta", this->beta, beta, _pat_parsmod, "The beta parameter");
+}
+
+/* -------------------------------------------------------------------------- */
 /*
  * @f$ \tilde{u_{n+1}} = u_{n} +  \Delta t \dot{u}_n + \frac{\Delta t^2}{2}
  * \ddot{u}_n @f$
@@ -183,9 +194,9 @@ void NewmarkBeta::allCorrector(Real delta_t, Array<Real> & u,
 
   for (UInt dof = 0; dof < nb_degree_of_freedom; dof++) {
     if (!(*blocked_dofs_val)) {
-      *u_val += e * *delta_val;
-      *u_dot_val += d * *delta_val;
-      *u_dot_dot_val += c * *delta_val;
+      *u_val += e ** delta_val;
+      *u_dot_val += d ** delta_val;
+      *u_dot_dot_val += c ** delta_val;
     }
     u_val++;
     u_dot_val++;
@@ -198,8 +209,7 @@ void NewmarkBeta::allCorrector(Real delta_t, Array<Real> & u,
 }
 
 /* -------------------------------------------------------------------------- */
-void NewmarkBeta::assembleJacobian(const SolutionType & type,
-                                   Real delta_t) {
+void NewmarkBeta::assembleJacobian(const SolutionType & type, Real delta_t) {
   AKANTU_DEBUG_IN();
 
   SparseMatrix & J = this->dof_manager.getMatrix("J");

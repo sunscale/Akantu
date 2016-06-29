@@ -221,8 +221,14 @@ public:
   /// Get a reference to the registered dof array for a given id
   inline Array<Real> & getDOFs(const ID & dofs_id);
 
+  /// are the dofs registered
+  inline bool hasDOFs(const ID & dofs_id) const;
+
   /// Get a reference to the registered dof derivatives array for a given id
   inline Array<Real> & getDOFsDerivatives(const ID & dofs_id, UInt order);
+
+  /// Does the dof has derivatives
+  inline bool hasDOFsDerivatives(const ID & dofs_id, UInt order) const;
 
   /// Get a reference to the blocked dofs array registered for the given id
   inline const Array<bool> & getBlockedDOFs(const ID & dofs_id) const;

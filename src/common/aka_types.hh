@@ -89,7 +89,8 @@ template <typename T, UInt ndim, class RetType> class TensorStorage;
 
 /**
  * @class TensorProxy aka_types.hh
- * @desc The TensorProxy class is a proxy class to the TensorStorage it handles the
+ * @desc The TensorProxy class is a proxy class to the TensorStorage it handles
+ * the
  * wrapped case. That is to say if an accessor should give access to a Tensor
  * wrapped on some data, like the Array<T>::iterator they can return a
  * TensorProxy that will be automatically transformed as a TensorStorage wrapped
@@ -113,7 +114,11 @@ protected:
 
   inline TensorProxy(const TensorStorage<T, ndim, RetType> & other);
 
+  typedef typename RetType::proxy RetTypeProxy;
+
 public:
+  operator RetType() { return RetType(static_cast<RetTypeProxy &>(*this)); }
+
   UInt size(UInt i) const {
     AKANTU_DEBUG_ASSERT(i < ndim, "This tensor has only " << ndim
                                                           << " dimensions, not "
@@ -130,7 +135,7 @@ public:
 
   T * storage() const { return values; }
 
-  inline TensorProxy & operator=(const RetType & src) {
+  inline RetTypeProxy & operator=(const RetType & src) {
     AKANTU_DEBUG_ASSERT(
         src.size() == this->size(),
         "You are trying to copy two tensors with different sizes");
@@ -138,12 +143,22 @@ public:
     return *this;
   }
 
-  inline TensorProxy & operator=(const TensorProxy & src) {
+  inline RetTypeProxy & operator=(const RetTypeProxy & src) {
     AKANTU_DEBUG_ASSERT(
         src.size() == this->size(),
         "You are trying to copy two tensors with different sizes");
     memcpy(this->values, src.storage(), this->size() * sizeof(T));
     return *this;
+  }
+
+  template <typename O> inline RetTypeProxy & operator*=(const O & o) {
+    RetType(*this) *= o;
+    return static_cast<RetTypeProxy &>(*this);
+  }
+
+  template <typename O> inline RetTypeProxy & operator/=(const O & o) {
+    RetType(*this) /= o;
+    return static_cast<RetTypeProxy &>(*this);
   }
 
 protected:
@@ -160,15 +175,6 @@ public:
   VectorProxy(T * data, UInt n) : parent(data, n, 0, 0) {}
   VectorProxy(const VectorProxy & src) : parent(src) {}
   VectorProxy(const Vector<T> & src) : parent(src) {}
-  VectorProxy & operator=(const type & src) {
-    parent::operator=(src);
-    return *this;
-  }
-  VectorProxy & operator=(const VectorProxy & src) {
-    parent::operator=(src);
-    return *this;
-  }
-
   T & operator()(UInt index) { return this->values[index]; };
   const T & operator()(UInt index) const { return this->values[index]; };
 };
@@ -181,14 +187,6 @@ public:
   MatrixProxy(T * data, UInt m, UInt n) : parent(data, m, n, 0) {}
   MatrixProxy(const MatrixProxy & src) : parent(src) {}
   MatrixProxy(const type & src) : parent(src) {}
-  MatrixProxy & operator=(const type & src) {
-    parent::operator=(src);
-    return *this;
-  }
-  MatrixProxy & operator=(const MatrixProxy & src) {
-    parent::operator=(src);
-    return *this;
-  }
 };
 
 template <typename T>
@@ -200,14 +198,6 @@ public:
   Tensor3Proxy(T * data, UInt m, UInt n, UInt k) : parent(data, m, n, k) {}
   Tensor3Proxy(const Tensor3Proxy & src) : parent(src) {}
   Tensor3Proxy(const Tensor3<T> & src) : parent(src) {}
-  Tensor3Proxy & operator=(const type & src) {
-    parent::operator=(src);
-    return *this;
-  }
-  Tensor3Proxy & operator=(const Tensor3Proxy & src) {
-    parent::operator=(src);
-    return *this;
-  }
 };
 
 /* -------------------------------------------------------------------------- */
@@ -527,7 +517,6 @@ public:
   /* ------------------------------------------------------------------------ */
   inline Vector<T> & operator*=(Real x) { return parent::operator*=(x); }
   inline Vector<T> & operator/=(Real x) { return parent::operator/=(x); }
-
   /* ------------------------------------------------------------------------ */
   inline Vector<T> & operator*=(const Vector<T> & vect) {
     T * a = this->storage();

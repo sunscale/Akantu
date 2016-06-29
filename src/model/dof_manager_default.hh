@@ -110,6 +110,9 @@ public:
   /// update the global dofs vector
   virtual void updateGlobalBlockedDofs();
 
+  /// apply boundary conditions to jacobian matrix
+  void applyBoundary();
+
 protected:
   /// Get local part of an array corresponding to a given dofdata
   virtual void getArrayPerDOFs(const ID & dof_id,
@@ -122,8 +125,7 @@ protected:
 
 public:
   /// extract a lumped matrix part corresponding to a given dof
-  virtual void getLumpedMatrixPerDOFs(const ID & dof_id,
-                                      const ID & lumped_mtx,
+  virtual void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
                                       Array<Real> & lumped);
 
 private:
@@ -184,6 +186,9 @@ public:
   AKANTU_GET_MACRO_NOT_CONST(Residual, residual, Array<Real> &);
   /// Get the blocked dofs array
   AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
+  /// Get the blocked dofs array
+  AKANTU_GET_MACRO(PreviousGlobalBlockedDOFs, previous_global_blocked_dofs,
+                   const Array<bool> &);
   /// Get the location type of a given dof
   inline bool isLocalOrMasterDOF(UInt dof_num);
 
@@ -211,6 +216,10 @@ private:
   /// different dofs
   Array<bool> global_blocked_dofs;
 
+  /// blocked degree of freedom in the system equation corresponding to the
+  /// different dofs
+  Array<bool> previous_global_blocked_dofs;
+
   /// define the dofs type, local, shared, ghost
   Array<Int> dofs_type;
 
@@ -223,6 +232,9 @@ private:
   /// Memory cache, this is an array to keep the temporary memory needed for
   /// some operations, it is meant to be resized or cleared when needed
   Array<Real> data_cache;
+
+  /// Release at last apply boundary on jacobian
+  UInt jacobian_release;
 };
 
 __END_AKANTU__

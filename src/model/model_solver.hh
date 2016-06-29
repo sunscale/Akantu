@@ -142,6 +142,12 @@ public:
   /// changes the current default solver
   void setDefaultSolver(const ID & solver_id);
 
+  /// is a default solver defined
+  bool hasDefaultSolver() const;
+
+  /// is an integration scheme set for a given solver and a given dof
+  bool hasIntegrationScheme(const ID & solver_id, const ID & dof_id) const;
+
 private:
   TimeStepSolver & getSolver(const ID & solver_id);
   const TimeStepSolver & getSolver(const ID & solver_id) const;
