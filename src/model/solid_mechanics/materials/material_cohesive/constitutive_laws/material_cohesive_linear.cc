@@ -92,7 +92,7 @@ MaterialCohesiveLinear<spatial_dimension>::MaterialCohesiveLinear(SolidMechanics
                       "recompute solution");
 
   this->use_previous_delta_max = true;
-
+  
   AKANTU_DEBUG_OUT();
 }
 
@@ -224,6 +224,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
     UInt nn = 0;
 
     UInt nb_quad_facet = model->getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
+    UInt nb_quad_cohesive = model->getFEEngine("CohesiveFEEngine").getNbIntegrationPoints(type_cohesive);
     UInt nb_facet = f_filter.getSize();
     //  if (nb_facet == 0) continue;
 
@@ -349,10 +350,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(bool check_only) 
 	  //  normal_traction.begin_reinterpret(nb_quad_facet, spatial_dimension, nb_facet);
 	  Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
 
-	  for (UInt q = 0; q < nb_quad_facet; ++q) {
-
-	    //  Vector<Real> ins_s(normal_traction_it[index_f].storage() + q * spatial_dimension,
-	    //            spatial_dimension);
+	  for (UInt q = 0; q < nb_quad_cohesive; ++q) {
 
 	    Real new_sigma = (sigma_lim_it[index_f]);
             Vector<Real> normal_traction_vec(spatial_dimension, 0.0);
