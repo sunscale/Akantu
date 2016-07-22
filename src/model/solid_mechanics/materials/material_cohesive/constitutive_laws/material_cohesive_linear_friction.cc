@@ -93,8 +93,8 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(__attrib
   Array<Real>::vector_iterator opening_prec_it =
     this->opening_prec(el_type, ghost_type).begin(spatial_dimension);
 
-  /// opening_prec_prev is the opening (opening + penetration) refer to
-  /// the convergence of the previous incremental step
+  /// opening_prec_prev is the opening (opening + penetration)
+  /// referred to the convergence of the previous incremental step
   Array<Real>::vector_iterator opening_prec_prev_it =
     this->opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
 
@@ -143,6 +143,8 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(__attrib
   if (! this->model->isExplicit())
     this->delta_max(el_type, ghost_type).copy(this->delta_max.previous(el_type, ghost_type));
  
+  //  std::cout<< "NEW LOOOOOOOOOOOOOOOOOOOOOP " << std::endl;
+
   /// loop on each quadrature point
   for (; traction_it != traction_end;
        ++traction_it, ++opening_it, ++opening_prec_prev_it, ++opening_prec_it, 
@@ -179,30 +181,32 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(__attrib
 
       /// the friction coefficient mu increases with the damage. It
       /// equals the maximum value when damage = 1.
-      Real damage = std::min(*delta_max_prev_it / *delta_c_it, Real(1.));
-      Real mu = mu_max * damage;
+      //      Real damage = std::min(*delta_max_prev_it / *delta_c_it, Real(1.));
+      Real mu = mu_max; // * damage;
 
       /// the definition of tau_max refers to the opening
       /// (penetration) of the previous incremental step
-      Real normal_opening_prev_norm = opening_prec_prev_it->dot(*normal_it);
-      Vector<Real> normal_opening_prev = (*normal_it);
-      normal_opening_prev *= normal_opening_prev_norm;
+      Real normal_opening_prev_norm = std::min(opening_prec_prev_it->dot(*normal_it), Real(0.));
 
-      Real tau_max = mu * current_penalty * (normal_opening_prev.norm());
+      //      Vector<Real> normal_opening_prev = (*normal_it);
+      //      normal_opening_prev *= normal_opening_prev_norm;
+
+      Real tau_max = mu * current_penalty * (std::abs(normal_opening_prev_norm));
       Real delta_sliding_norm = std::abs(tangential_opening_norm - *res_sliding_prev_it);
 
       /// tau is the norm of the friction force, acting tangentially to the surface
       Real tau = std::min(friction_penalty * delta_sliding_norm, tau_max);
-      if ((tangential_opening_norm - *res_sliding_it) < 0.0)
+
+      if ((tangential_opening_norm - *res_sliding_prev_it) < 0.0)
 	tau = -tau;
 
       /// from tau get the x and y components of friction, to be added in the force vector
-      Vector<Real> tangent(spatial_dimension);
-      tangent = tangential_opening / tangential_opening_norm;
-      *friction_force_it = tau * tangent;
+      Vector<Real> tangent_unit_vector(spatial_dimension);
+      tangent_unit_vector = tangential_opening / tangential_opening_norm;
+      *friction_force_it = tau * tangent_unit_vector;
       
       /// update residual_sliding
-      *res_sliding_it = tangential_opening_norm - (tau / friction_penalty);
+      *res_sliding_it = tangential_opening_norm - (std::abs(tau) / friction_penalty);
 
     } else {
 
@@ -342,14 +346,14 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(c
 				       *contact_opening_it);
 
     if (penetration) {
-      Real damage = std::min(*delta_max_it / *delta_c_it, Real(1.));
-      Real mu = mu_max * damage;
+      //      Real damage = std::min(*delta_max_it / *delta_c_it, Real(1.));
+      Real mu = mu_max; // * damage;
 
-      Real normal_opening_prev_norm = opening_prec_prev_it->dot(*normal_it);
-      Vector<Real> normal_opening_prev = (*normal_it);
-      normal_opening_prev *= normal_opening_prev_norm;
+      Real normal_opening_prev_norm = std::min(opening_prec_prev_it->dot(*normal_it), Real(0.));
+      //      Vector<Real> normal_opening_prev = (*normal_it);
+      //      normal_opening_prev *= normal_opening_prev_norm;
 
-      Real tau_max = mu * current_penalty * normal_opening_prev.norm();
+      Real tau_max = mu * current_penalty * (std::abs(normal_opening_prev_norm));
       Real delta_sliding_norm = std::abs(tangential_opening_norm - *res_sliding_prev_it);
 
       // tau is the norm of the friction force, acting tangentially to the surface
