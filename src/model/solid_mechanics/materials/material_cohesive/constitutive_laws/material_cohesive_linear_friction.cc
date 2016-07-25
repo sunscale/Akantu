@@ -77,6 +77,7 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(__attrib
   AKANTU_DEBUG_IN();
 
   residual_sliding.resize();
+  friction_force.resize();
 
   /// define iterators
   Array<Real>::vector_iterator traction_it =
@@ -143,8 +144,6 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(__attrib
   if (! this->model->isExplicit())
     this->delta_max(el_type, ghost_type).copy(this->delta_max.previous(el_type, ghost_type));
  
-  //  std::cout<< "NEW LOOOOOOOOOOOOOOOOOOOOOP " << std::endl;
-
   /// loop on each quadrature point
   for (; traction_it != traction_end;
        ++traction_it, ++opening_it, ++opening_prec_prev_it, ++opening_prec_it, 
