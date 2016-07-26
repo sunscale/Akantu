@@ -276,7 +276,9 @@ void CohesiveElementInserter::insertIntrinsicElements(std::string physname,
 
       UInt e = *el_it;
       mesh.getBarycenter(e, type_facet, bary_physgroup.storage(), ghost_type); 	
+#ifndef AKANTU_NDEBUG       
       bool find_a_partner = false;
+#endif
       norm_bary = bary_physgroup.norm();
       Array<UInt> & material_id = (*phys_data)(type_facet, ghost_type);
 
@@ -296,7 +298,9 @@ void CohesiveElementInserter::insertIntrinsicElements(std::string physname,
 	  
 	if (coord_in_limit == spatial_dimension) {
 	  f_insertion(f) = true;
+#ifndef AKANTU_NDEBUG 	 
 	  find_a_partner = true;
+#endif
 	  group_facet.add(type_facet, f, ghost_type,false);
 	  material_id(f) = material_index;
 	  break;
