@@ -45,7 +45,7 @@ MaterialCohesiveExponential<spatial_dimension>::MaterialCohesiveExponential(Soli
   MaterialCohesive(model,id) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("beta"   , beta   , Real(0.),
+  this->registerParam("beta", beta, Real(0.),
 		      _pat_parsable,
 		      "Beta parameter");
 
@@ -73,8 +73,7 @@ void MaterialCohesiveExponential<spatial_dimension>::initMaterial() {
   if ((exp_penalty) && (contact_tangent != 1)){
 
     contact_tangent = 1;
-    AKANTU_DEBUG_WARNING("The parsed paramter <contact_tangent> is forced to 1.0 when the
-contact penalty follows the exponential law");
+    AKANTU_DEBUG_WARNING("The parsed paramter <contact_tangent> is forced to 1.0 when the contact penalty follows the exponential law");
   }
 
   AKANTU_DEBUG_OUT();
@@ -290,8 +289,7 @@ void MaterialCohesiveExponential<spatial_dimension>::computeTangentTraction(cons
       computeCompressivePenalty(*tangent_it, *normal_it, normal_opening_norm);
 
     }
-    else computeCoupledTangent(*tangent_it, *traction_it, *normal_it, delta, 
-					 *opening_it, *delta_max_it);
+    else computeCoupledTangent(*tangent_it, *normal_it, delta, *opening_it, *delta_max_it);
 
   }
 
