@@ -98,27 +98,17 @@ int main(int argc, char *argv[]) {
 	UInt inserted_elements;
 
 	inserted_elements = model.getMaterial(surfaces_name[i]).getElementFilter()(*it,*gt).getSize();
-	AKANTU_DEBUG_ASSERT((expected_insertion == inserted_elements),
-			    std::endl << "!!! Mismatch in insertion of surface named " 
-			    << surfaces_name[i] << " in proc n° " << prank
-			    << " --> " << inserted_elements << " inserted elements of type " << ghost_str  
-			    << " out of " 
-			    << expected_insertion << std::endl);
+	if (expected_insertion != inserted_elements) { 
+	  std::cerr << std::endl << "!!! Mismatch in insertion of surface named " 
+		    << surfaces_name[i] << " in proc n° " << prank
+		    << " --> " << inserted_elements << " inserted elements of type " << ghost_str  
+		    << " out of " 
+		    << expected_insertion << std::endl;
+	  return EXIT_FAILURE;
+	}
       }      
     }
   }
-
-  /*std::string paraview_folder = "paraview/test_intrinsic_insertion_along_physical_surfaces/"; 
-  model.setDirectory(paraview_folder);
-  model.setBaseName("bulk");
-  model.addDumpField("partitions");
-  model.dump();
-  model.setDirectoryToDumper("cohesive elements", paraview_folder);
-  model.setBaseNameToDumper("cohesive elements", "one_cohesive_element");
-  model.addDumpFieldToDumper("cohesive elements", "partitions");
-  model.addDumpFieldToDumper("cohesive elements", "material_index");
-  model.dump("cohesive elements");
-  */
 
   model.assembleStiffnessMatrix();
 
