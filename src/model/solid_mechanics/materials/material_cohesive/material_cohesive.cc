@@ -279,12 +279,12 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
       A(i, i + spatial_dimension*size_of_shapes) = -1;
     }
 
-    /// compute traction. This call is not necessary for the linear
-    /// cohesive law that, currently, is the only one used for the
-    /// extrinsic approach.
-    if (!model->getIsExtrinsic()){
-      computeTraction(ghost_type);
-    }
+    // compute traction. This call is not necessary for the linear
+    // cohesive law that, currently, is the only one used for the
+    // extrinsic approach.
+    //    if (!model->getIsExtrinsic()){
+    //  computeTraction(ghost_type);
+    //}
 
     /// get the tangent matrix @f$\frac{\partial{(t/\delta)}}{\partial{\delta}} @f$
     Array<Real> * tangent_stiffness_matrix =
