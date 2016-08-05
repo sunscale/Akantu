@@ -186,7 +186,7 @@ void CohesiveElementInserter::setLimit(SpacialDirection axis,
 }
 
 /* -------------------------------------------------------------------------- */
-void CohesiveElementInserter::insertIntrinsicElements() {
+UInt CohesiveElementInserter::insertIntrinsicElements() {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
@@ -228,9 +228,9 @@ void CohesiveElementInserter::insertIntrinsicElements() {
     }
   }
 
-  insertElements();
-
   AKANTU_DEBUG_OUT();
+  
+  return insertElements();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -348,6 +348,7 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
     comm.allReduce(&nb_new_elements, 1, _so_sum);
   }
 #endif
+
 
   if (nb_new_nodes > 0)
     mesh.sendEvent(node_event);
