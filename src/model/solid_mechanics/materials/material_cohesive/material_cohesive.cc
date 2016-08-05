@@ -294,6 +294,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
 
     //    Array<Real> * normal = new Array<Real>(nb_element * nb_quadrature_points, spatial_dimension, "normal");
     normal.resize(nb_quadrature_points);
+    model->updateCurrentPosition();
     computeNormal(model->getCurrentPosition(), normal, *it, ghost_type);
 
     /// compute openings @f$\mathbf{\delta}@f$
@@ -401,6 +402,7 @@ void MaterialCohesive::computeTraction(GhostType ghost_type) {
     normal.resize(nb_quadrature_points);
 
     /// compute normals @f$\mathbf{n}@f$
+    model->updateCurrentPosition();
     computeNormal(model->getCurrentPosition(), normal, *it, ghost_type);
 
     /// compute openings @f$\mathbf{\delta}@f$
