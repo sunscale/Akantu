@@ -237,6 +237,10 @@ protected:
 public:
   AKANTU_GET_MACRO(PrankToElement, prank_to_element,
                    const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO(SendElement, send_element,
+                   const Array<Element> *);
+  AKANTU_GET_MACRO(ReceiveElement, recv_element,
+                   const Array<Element> *);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

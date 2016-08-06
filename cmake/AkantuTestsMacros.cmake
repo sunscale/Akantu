@@ -351,6 +351,9 @@ function(register_test test_name)
 
       if(_register_test_POSTPROCESS)
         list(APPEND _arguments -s "${_register_test_POSTPROCESS}")
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${_register_test_POSTPROCESS} 
+	  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+	  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
       endif()
 
       list(APPEND _arguments -w "${CMAKE_CURRENT_BINARY_DIR}")
