@@ -8,7 +8,7 @@ Element type: _triangle_3, not_ghost: 4 in the mesh of processor 2
 Element no 0 3 4 5 
 Element no 1 0 5 4 
 Element no 2 0 1 5 
-Element no 3 3 5 1 
+Element no 3 1 3 5 
 
 Element type: _segment_2, ghost: 1 in the mesh of processor 2
 Element no 0 2 0 
@@ -20,8 +20,8 @@ Element no 2 7 6 4
 Element no 3 0 8 9 
 Element no 4 0 9 10 
 Element no 5 0 2 8 
-Element no 6 1 10 11 
-Element no 7 0 10 1 
+Element no 6 0 10 1 
+Element no 7 1 10 11 
 Nodes are also partionated and new node types are defined:
 Number of nodes: 12
 Node # 0, x-coord: 0.5, y-coord: 0, of type: 0
@@ -85,7 +85,7 @@ Element no 4 4 7
 Element no 5 0 8 
 Element no 6 9 0 
 Element no 7 10 0 
-Element no 8 1 10 
+Element no 8 10 1 
 Element no 9 11 1 
 The distributed synchronizer of solid mechanics model is used to synchronize fields with ghost element:
 From processor 2 to processor 0
@@ -127,7 +127,7 @@ Element type: _triangle_3, not_ghost: 4 in the mesh of processor 2
 Element no 0 3 4 5 
 Element no 1 0 5 4 
 Element no 2 0 1 5 
-Element no 3 3 5 1 
+Element no 3 1 3 5 
 
 Element type: _cohesive_2d_4, ghost: 1 in the mesh of processor 2
 Element no 0 2 0 2 12 
@@ -142,8 +142,8 @@ Element no 2 7 6 4
 Element no 3 12 8 9 
 Element no 4 12 9 10 
 Element no 5 12 2 8 
-Element no 6 13 10 11 
-Element no 7 12 10 13 
+Element no 6 12 10 13 
+Element no 7 13 10 11 
 Node list after insertion: (Total number of nodes 14)
 Number of nodes: 14
 Node # 0, x-coord: 0.5, y-coord: 0, of type: 0
@@ -175,7 +175,7 @@ Global nodes ID:
 9 8
 10 11
 11 5
-12 14
+12 13
 13 15
 
 Solid mechanics model cohesive has its own distributed synchronizer to handle ghost cohesive element:
@@ -220,8 +220,8 @@ Local dof 20, global id: 22
 Local dof 21, global id: 23
 Local dof 22, global id: 10
 Local dof 23, global id: 11
-Local dof 24, global id: 28
-Local dof 25, global id: 29
+Local dof 24, global id: 26
+Local dof 25, global id: 27
 Local dof 26, global id: 30
 Local dof 27, global id: 31
 

@@ -30,7 +30,6 @@
 #===============================================================================
 
 add_mesh(3d_spherical_inclusion_parallel 3d_spherical_inclusion.geo 3 2)
-add_mesh(2d_basic_interface 2d_basic_interface.geo 2 1)
 
 register_test(test_cohesive_parallel_insertion_along_physical_surfaces
   SOURCES test_cohesive_parallel_insertion_along_physical_surfaces.cc
@@ -44,8 +43,8 @@ register_test(test_cohesive_parallel_intrinsic_implicit_insertion
   POSTPROCESS verify_insertion.sh 
   PARALLEL_LEVEL "2 4"
   SOURCES test_cohesive_parallel_intrinsic_implicit_insertion.cc
-  DEPENDS 2d_basic_interface
   FILES_TO_COPY input_file_iii.dat
+  2d_basic_interface.msh
   output_dir_verified
   PACKAGE parallel_cohesive_element
   DIRECTORIES_TO_CREATE output_dir  

@@ -14,9 +14,9 @@ Element no 0 0 1
 Element no 1 2 0 
 
 Element type: _triangle_3, ghost: 8 in the mesh of processor 1
-Element no 0 6 2 7 
-Element no 1 0 8 7 
-Element no 2 0 9 8 
+Element no 0 0 6 7 
+Element no 1 8 2 7 
+Element no 2 0 9 6 
 Element no 3 0 7 2 
 Element no 4 0 1 9 
 Element no 5 10 11 4 
@@ -30,9 +30,9 @@ Node # 2, x-coord: 0, y-coord: 0, of type: 0
 Node # 3, x-coord: 0.25, y-coord: -0.25, of type: -1
 Node # 4, x-coord: 0.5, y-coord: -0.5, of type: -2
 Node # 5, x-coord: 0, y-coord: -0.5, of type: -1
-Node # 6, x-coord: 0, y-coord: 0.5, of type: -3
+Node # 6, x-coord: 0.5, y-coord: 0.5, of type: -3
 Node # 7, x-coord: 0.25, y-coord: 0.25, of type: -3
-Node # 8, x-coord: 0.5, y-coord: 0.5, of type: -3
+Node # 8, x-coord: 0, y-coord: 0.5, of type: -3
 Node # 9, x-coord: 0.75, y-coord: 0.25, of type: -3
 Node # 10, x-coord: 1, y-coord: -0.5, of type: -3
 Node # 11, x-coord: 0.75, y-coord: -0.25, of type: -3
@@ -48,9 +48,9 @@ Global nodes ID:
 3 12
 4 8
 5 2
-6 1
+6 7
 7 10
-8 7
+8 1
 9 9
 10 5
 11 11
@@ -78,10 +78,10 @@ Element type: _point_1, ghost: 0 in the mesh of processor 1
 
 Element type: _segment_2, ghost: 10 in the mesh of processor 1
 Element no 0 2 0 
-Element no 1 6 2 
-Element no 2 2 7 
-Element no 3 0 8 
-Element no 4 7 0 
+Element no 1 0 6 
+Element no 2 7 0 
+Element no 3 8 2 
+Element no 4 2 7 
 Element no 5 0 9 
 Element no 6 0 1 
 Element no 7 11 4 
@@ -136,9 +136,9 @@ Element no 0 0 1
 Element no 1 2 0 
 
 Element type: _triangle_3, ghost: 8 in the mesh of processor 1
-Element no 0 6 2 7 
-Element no 1 0 8 7 
-Element no 2 0 9 8 
+Element no 0 0 6 7 
+Element no 1 8 2 7 
+Element no 2 0 9 6 
 Element no 3 0 7 2 
 Element no 4 0 1 9 
 Element no 5 10 11 4 
@@ -152,9 +152,9 @@ Node # 2, x-coord: 0, y-coord: 0, of type: 0
 Node # 3, x-coord: 0.25, y-coord: -0.25, of type: -1
 Node # 4, x-coord: 0.5, y-coord: -0.5, of type: -2
 Node # 5, x-coord: 0, y-coord: -0.5, of type: -1
-Node # 6, x-coord: 0, y-coord: 0.5, of type: -3
+Node # 6, x-coord: 0.5, y-coord: 0.5, of type: -3
 Node # 7, x-coord: 0.25, y-coord: 0.25, of type: -3
-Node # 8, x-coord: 0.5, y-coord: 0.5, of type: -3
+Node # 8, x-coord: 0, y-coord: 0.5, of type: -3
 Node # 9, x-coord: 0.75, y-coord: 0.25, of type: -3
 Node # 10, x-coord: 1, y-coord: -0.5, of type: -3
 Node # 11, x-coord: 0.75, y-coord: -0.25, of type: -3
@@ -169,14 +169,14 @@ Global nodes ID:
 3 12
 4 8
 5 2
-6 1
+6 7
 7 10
-8 7
+8 1
 9 9
 10 5
 11 11
-12 13
-13 14
+12 14
+13 13
 
 Solid mechanics model cohesive has its own distributed synchronizer to handle ghost cohesive element:
 From processor 1 to processor 0
@@ -206,20 +206,20 @@ Local dof 8, global id: 16
 Local dof 9, global id: 17
 Local dof 10, global id: 4
 Local dof 11, global id: 5
-Local dof 12, global id: 2
-Local dof 13, global id: 3
+Local dof 12, global id: 14
+Local dof 13, global id: 15
 Local dof 14, global id: 20
 Local dof 15, global id: 21
-Local dof 16, global id: 14
-Local dof 17, global id: 15
+Local dof 16, global id: 2
+Local dof 17, global id: 3
 Local dof 18, global id: 18
 Local dof 19, global id: 19
 Local dof 20, global id: 10
 Local dof 21, global id: 11
 Local dof 22, global id: 22
 Local dof 23, global id: 23
-Local dof 24, global id: 26
-Local dof 25, global id: 27
-Local dof 26, global id: 28
-Local dof 27, global id: 29
+Local dof 24, global id: 28
+Local dof 25, global id: 29
+Local dof 26, global id: 26
+Local dof 27, global id: 27
 

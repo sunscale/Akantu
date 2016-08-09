@@ -6,8 +6,8 @@ Element type: _segment_2, not_ghost: 0 in the mesh of processor 3
 Element type: _triangle_3, not_ghost: 4 in the mesh of processor 3
 Element no 0 3 4 5 
 Element no 1 0 5 4 
-Element no 2 1 4 3 
-Element no 3 0 4 1 
+Element no 2 0 4 1 
+Element no 3 1 4 3 
 
 Element type: _segment_2, ghost: 2 in the mesh of processor 3
 Element no 0 0 1 
@@ -18,7 +18,7 @@ Element no 0 0 6 7
 Element no 1 0 8 6 
 Element no 2 0 7 2 
 Element no 3 0 1 8 
-Element no 4 9 8 1 
+Element no 4 1 9 8 
 Element no 5 0 10 5 
 Element no 6 0 2 10 
 Element no 7 11 5 10 
@@ -70,7 +70,7 @@ Element no 0 3 4
 Element no 1 4 5 
 Element no 2 5 3 
 Element no 3 4 0 
-Element no 4 1 4 
+Element no 4 4 1 
 Element no 5 3 1 
 
 Element type: _point_1, ghost: 0 in the mesh of processor 3
@@ -91,7 +91,7 @@ The distributed synchronizer of solid mechanics model is used to synchronize fie
 From processor 3 to processor 0
  Sending element(s): 
 Element [_triangle_3, 1, not_ghost]
-Element [_triangle_3, 3, not_ghost]
+Element [_triangle_3, 2, not_ghost]
  Receiving element(s): 
 Element [_triangle_3, 0, ghost]
 Element [_triangle_3, 2, ghost]
@@ -99,7 +99,7 @@ From processor 3 to processor 1
  Sending element(s): 
 Element [_triangle_3, 0, not_ghost]
 Element [_triangle_3, 1, not_ghost]
-Element [_triangle_3, 3, not_ghost]
+Element [_triangle_3, 2, not_ghost]
  Receiving element(s): 
 Element [_triangle_3, 5, ghost]
 Element [_triangle_3, 6, ghost]
@@ -124,8 +124,8 @@ Element type: _segment_2, not_ghost: 0 in the mesh of processor 3
 Element type: _triangle_3, not_ghost: 4 in the mesh of processor 3
 Element no 0 3 4 5 
 Element no 1 13 5 4 
-Element no 2 12 4 3 
-Element no 3 13 4 12 
+Element no 2 13 4 12 
+Element no 3 12 4 3 
 
 Element type: _cohesive_2d_4, ghost: 2 in the mesh of processor 3
 Element no 0 0 1 13 12 
@@ -140,7 +140,7 @@ Element no 0 0 6 7
 Element no 1 0 8 6 
 Element no 2 0 7 2 
 Element no 3 0 1 8 
-Element no 4 9 8 1 
+Element no 4 1 9 8 
 Element no 5 13 10 5 
 Element no 6 13 2 10 
 Element no 7 11 5 10 
@@ -176,7 +176,7 @@ Global nodes ID:
 10 12
 11 2
 12 15
-13 14
+13 13
 
 Solid mechanics model cohesive has its own distributed synchronizer to handle ghost cohesive element:
 From processor 3 to processor 0
@@ -220,6 +220,6 @@ Local dof 22, global id: 4
 Local dof 23, global id: 5
 Local dof 24, global id: 30
 Local dof 25, global id: 31
-Local dof 26, global id: 28
-Local dof 27, global id: 29
+Local dof 26, global id: 26
+Local dof 27, global id: 27
 

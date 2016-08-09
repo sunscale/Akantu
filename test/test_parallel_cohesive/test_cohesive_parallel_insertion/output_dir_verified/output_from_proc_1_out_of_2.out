@@ -8,11 +8,11 @@ Element type: _triangle_3, not_ghost: 8 in the mesh of processor 1
 Element no 0 3 4 5 
 Element no 1 0 5 4 
 Element no 2 0 1 5 
-Element no 3 3 5 1 
+Element no 3 1 3 5 
 Element no 4 6 7 8 
 Element no 5 0 8 7 
-Element no 6 1 7 6 
-Element no 7 0 7 1 
+Element no 6 0 7 1 
+Element no 7 1 7 6 
 
 Element type: _segment_2, ghost: 1 in the mesh of processor 1
 Element no 0 2 0 
@@ -84,7 +84,7 @@ Element no 7 6 7
 Element no 8 7 8 
 Element no 9 8 6 
 Element no 10 7 0 
-Element no 11 1 7 
+Element no 11 7 1 
 Element no 12 6 1 
 
 Element type: _point_1, ghost: 0 in the mesh of processor 1
@@ -107,7 +107,7 @@ Element [_triangle_3, 1, not_ghost]
 Element [_triangle_3, 2, not_ghost]
 Element [_triangle_3, 4, not_ghost]
 Element [_triangle_3, 5, not_ghost]
-Element [_triangle_3, 7, not_ghost]
+Element [_triangle_3, 6, not_ghost]
  Receiving element(s): 
 Element [_triangle_3, 0, ghost]
 Element [_triangle_3, 1, ghost]
@@ -129,11 +129,11 @@ Element type: _triangle_3, not_ghost: 8 in the mesh of processor 1
 Element no 0 3 4 5 
 Element no 1 0 5 4 
 Element no 2 0 1 5 
-Element no 3 3 5 1 
+Element no 3 1 3 5 
 Element no 4 6 7 8 
 Element no 5 13 8 7 
-Element no 6 14 7 6 
-Element no 7 13 7 14 
+Element no 6 13 7 14 
+Element no 7 14 7 6 
 
 Element type: _cohesive_2d_4, ghost: 1 in the mesh of processor 1
 Element no 0 2 0 2 13 
@@ -181,7 +181,7 @@ Global nodes ID:
 10 1
 11 12
 12 2
-13 14
+13 13
 14 15
 
 Solid mechanics model cohesive has its own distributed synchronizer to handle ghost cohesive element:
@@ -220,8 +220,8 @@ Local dof 22, global id: 24
 Local dof 23, global id: 25
 Local dof 24, global id: 4
 Local dof 25, global id: 5
-Local dof 26, global id: 28
-Local dof 27, global id: 29
+Local dof 26, global id: 26
+Local dof 27, global id: 27
 Local dof 28, global id: 30
 Local dof 29, global id: 31
 
