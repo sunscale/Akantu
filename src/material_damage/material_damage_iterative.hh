@@ -63,9 +63,6 @@ public:
   virtual void onBeginningSolveStep(const AnalysisMethod & method) { };
 
   virtual void onEndSolveStep(const AnalysisMethod & method) { };
-protected:
-  /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   ///compute the equivalent stress on each Gauss point (i.e. the max prinicpal stress) and normalize it by the tensile strength
   virtual void computeNormalizedEquivalentStress(const Array<Real> & grad_u,
@@ -74,6 +71,9 @@ protected:
   /// find max normalized equivalent stress
   void findMaxNormalizedEquivalentStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
+protected:
+  /// constitutive law for all element of a type
+  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma,
                                            Real & dam);
@@ -81,12 +81,27 @@ protected:
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
+
+  inline UInt getNbDataForElements(const Array<Element> & elements,
+                                   SynchronizationTag tag) const;
+
+  inline void packElementData(CommunicationBuffer & buffer,
+                              const Array<Element> & elements,
+                              SynchronizationTag tag) const;
+
+  inline void unpackElementData(CommunicationBuffer & buffer,
+                                const Array<Element> & elements,
+                                SynchronizationTag tag);
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   /// get max normalized equivalent stress
   AKANTU_GET_MACRO(NormMaxEquivalentStress, norm_max_equivalent_stress, Real);
+
+ /// get a non-const reference to the max normalized equivalent stress
+  AKANTU_GET_MACRO_NOT_CONST(NormMaxEquivalentStress, norm_max_equivalent_stress, Real &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
