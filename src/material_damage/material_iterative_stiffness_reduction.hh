@@ -86,9 +86,6 @@ protected:
   /// the ultimate strain
   InternalField<Real> eps_u;
 
-  /// the reduction
-  InternalField<UInt> reduction_step;
-
   /// the tangent of the tensile stress-strain softening
   InternalField<Real> D;
 
@@ -97,9 +94,6 @@ protected:
 
   /// crack_band_width for normalization of fracture energy
   Real crack_band_width;
-
-  /// the number of total reductions steps until complete failure
-  UInt max_reductions;
 
   /// the reduction constant (denoated by a in the paper of rots)
   Real reduction_constant;

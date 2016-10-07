@@ -39,22 +39,18 @@ MaterialIterativeStiffnessReduction<spatial_dimension>::MaterialIterativeStiffne
   Material(model, id),
   MaterialDamageIterative<spatial_dimension>(model, id),
   eps_u("ultimate_strain", *this),
-  reduction_step("damage_step", *this),
   D("tangent", *this),
   Gf(0.),
   crack_band_width(0.),
-  max_reductions(0),
   reduction_constant(0.) {
   AKANTU_DEBUG_IN();
 
   this->registerParam("Gf",                  Gf,                  _pat_parsable | _pat_modifiable, "fracture energy");
   this->registerParam("crack_band_width",                  crack_band_width,                  _pat_parsable | _pat_modifiable, "crack_band_width");
-  this->registerParam("max_reductions",                  max_reductions, UInt(10),                  _pat_parsable | _pat_modifiable, "max reductions");
   this->registerParam("reduction_constant",                  reduction_constant, 2.,                  _pat_parsable | _pat_modifiable, "reduction constant");
 
   this->eps_u.initialize(1);
   this->D.initialize(1);
-  this->reduction_step.initialize(1);
 
 
   AKANTU_DEBUG_OUT();

@@ -28,7 +28,9 @@ MaterialDamageIterative<spatial_dimension>::MaterialDamageIterative(SolidMechani
   Material(model, id),
   MaterialDamage<spatial_dimension>(model, id),
   Sc("Sc", *this),
+  reduction_step("damage_step", *this),
   equivalent_stress("equivalent_stress", *this),
+  max_reductions(0),
   norm_max_equivalent_stress(0) {
   AKANTU_DEBUG_IN();
 
@@ -37,12 +39,13 @@ MaterialDamageIterative<spatial_dimension>::MaterialDamageIterative(SolidMechani
   this->registerParam("dam_threshold",       dam_threshold,  0.8,  _pat_parsable | _pat_modifiable, "damage threshold at which damage damage will be set to 1" );
   this->registerParam("dam_tolerance",       dam_tolerance,  0.01,  _pat_parsable | _pat_modifiable, "damage tolerance to decide if quadrature point will be damageed" );
   this->registerParam("max_damage",       max_damage,  0.99999,  _pat_parsable | _pat_modifiable, "maximum damage value" );
-
+  this->registerParam("max_reductions",                  max_reductions, UInt(10),                  _pat_parsable | _pat_modifiable, "max reductions");
 
   this->use_previous_stress          = true;
   this->use_previous_gradu           = true;
   this->Sc.initialize(1);
   this->equivalent_stress.initialize(1);
+  this->reduction_step.initialize(1);
 
   AKANTU_DEBUG_OUT();
 }
@@ -187,17 +190,24 @@ UInt MaterialDamageIterative<spatial_dimension>::updateDamage() {
       Array<Real>::const_iterator<Real> equivalent_stress_end = e_stress.end();
       Array<Real> & dam = this->damage(el_type);
       Array<Real>::iterator<Real> dam_it = dam.begin();
+      Array<UInt>::scalar_iterator reduction_it = this->reduction_step(el_type, ghost_type).begin();
 
-      for (; equivalent_stress_it != equivalent_stress_end; ++equivalent_stress_it, ++dam_it ) {
+      for (; equivalent_stress_it != equivalent_stress_end; ++equivalent_stress_it, ++dam_it,++reduction_it ) {
 
 	/// check if damage occurs
 	if (*equivalent_stress_it >= (1-dam_tolerance)*norm_max_equivalent_stress) {
-	  if (*dam_it < dam_threshold)
-	    *dam_it +=prescribed_dam;
-	  else *dam_it = max_damage;
+	  /// check if this element can still be damaged
+	  if (*reduction_it == this->max_reductions)
+	    continue;
+	  *reduction_it += 1;
+	  if (*reduction_it == this->max_reductions) {
+	    *dam_it = max_damage;
+	  }
+	  else {
+	    *dam_it += prescribed_dam;
+	  }
 	  nb_damaged_elements += 1;
 	}
-
       }
     }
   }

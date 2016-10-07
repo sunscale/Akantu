@@ -63,9 +63,6 @@ public:
   virtual void onBeginningSolveStep(const AnalysisMethod & method) { };
 
   virtual void onEndSolveStep(const AnalysisMethod & method) { };
-protected:
-  /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   ///compute the equivalent stress on each Gauss point (i.e. the max prinicpal stress) and normalize it by the tensile strength
   virtual void computeNormalizedEquivalentStress(const Array<Real> & grad_u,
@@ -74,6 +71,9 @@ protected:
   /// find max normalized equivalent stress
   void findMaxNormalizedEquivalentStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
+protected:
+  /// constitutive law for all element of a type
+  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma,
                                            Real & dam);
@@ -96,8 +96,14 @@ protected:
   /// resistance to damage
   RandomInternalField<Real> Sc;
 
+  /// the reduction
+  InternalField<UInt> reduction_step;
+
   /// internal field to store equivalent stress on each Gauss point
   InternalField<Real> equivalent_stress;
+
+  /// the number of total reductions steps until complete failure
+  UInt max_reductions;
 
   /// damage increment
   Real prescribed_dam;
