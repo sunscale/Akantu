@@ -42,3 +42,39 @@ UInt MaterialDamageIterative<spatial_dimension>::updateDamage(UInt quad_index, c
 }
 
 /* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+inline UInt MaterialDamageIterative<spatial_dimension>::getNbDataForElements(const Array<Element> & elements,
+									     SynchronizationTag tag) const {
+
+  if (tag == _gst_user_2) {
+    return sizeof(Real) * this->getModel().getNbIntegrationPoints(elements);
+  }
+
+  return MaterialDamage<spatial_dimension>::getNbDataForElements(elements, tag);
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+inline void MaterialDamageIterative<spatial_dimension>::packElementData(CommunicationBuffer & buffer,
+									const Array<Element> & elements,
+									SynchronizationTag tag) const {
+  if (tag == _gst_user_2) {
+    this->packElementDataHelper(this->damage, buffer, elements);
+  }
+
+  return MaterialDamage<spatial_dimension>::packElementData(buffer, elements, tag);
+}
+
+/* -------------------------------------------------------------------------- */
+template<UInt spatial_dimension>
+inline void MaterialDamageIterative<spatial_dimension>::unpackElementData(CommunicationBuffer & buffer,
+									  const Array<Element> & elements,
+									  SynchronizationTag tag) {
+  if (tag == _gst_user_2) {
+    this->unpackElementDataHelper(this->damage, buffer, elements);
+  }
+
+  return MaterialDamage<spatial_dimension>::unpackElementData(buffer, elements, tag);
+}
+
+/* -------------------------------------------------------------------------- */

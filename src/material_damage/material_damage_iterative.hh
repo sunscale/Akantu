@@ -81,12 +81,27 @@ protected:
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
+
+  inline UInt getNbDataForElements(const Array<Element> & elements,
+                                   SynchronizationTag tag) const;
+
+  inline void packElementData(CommunicationBuffer & buffer,
+                              const Array<Element> & elements,
+                              SynchronizationTag tag) const;
+
+  inline void unpackElementData(CommunicationBuffer & buffer,
+                                const Array<Element> & elements,
+                                SynchronizationTag tag);
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   /// get max normalized equivalent stress
   AKANTU_GET_MACRO(NormMaxEquivalentStress, norm_max_equivalent_stress, Real);
+
+ /// get a non-const reference to the max normalized equivalent stress
+  AKANTU_GET_MACRO_NOT_CONST(NormMaxEquivalentStress, norm_max_equivalent_stress, Real &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
