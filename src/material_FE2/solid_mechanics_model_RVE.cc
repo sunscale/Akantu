@@ -108,7 +108,7 @@ void SolidMechanicsModelRVE::initFull(const ModelOptions & options) {
 
   /// dumping
   std::stringstream base_name;
-  base_name << this->id << this->memory_id - 1;
+  base_name << this->id; // << this->memory_id - 1;
   this->setBaseName       (base_name.str());
   this->addDumpFieldVector("displacement");
   this->addDumpField      ("stress"      );
@@ -529,7 +529,7 @@ void SolidMechanicsModelRVE::fillCracks(ElementTypeMapReal & saved_damage) {
   GhostType gt = _not_ghost;
   for (UInt m = 0; m < this->getNbMaterials(); ++m) {
     Material & mat = this->getMaterial(m); 
-    if (mat.getName() == "gel")
+    if (mat.getName() == "gel" || mat.getName() == "FE2_mat")
       continue;
     const Real E = mat.getParam<Real>("E");
     InternalField<Real> & damage = mat.getInternal<Real>("damage");
@@ -558,7 +558,7 @@ void SolidMechanicsModelRVE::drainCracks(const ElementTypeMapReal & saved_damage
   GhostType gt = _not_ghost; 
   for (UInt m = 0; m < this->getNbMaterials(); ++m) {
     Material & mat = this->getMaterial(m); 
-    if (mat.getName() == "gel")
+    if (mat.getName() == "gel" || mat.getName() == "FE2_mat")
       continue;
     else {
       InternalField<Real> & damage = mat.getInternal<Real>("damage");
