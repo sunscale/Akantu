@@ -110,6 +110,8 @@ private:
   /// perform virtual testing
   void performVirtualTesting(const Matrix<Real> & H, Matrix<Real> & eff_stresses, Matrix<Real> & eff_strains, const UInt test_no);
 
+  void fillCracks(ElementTypeMapReal & saved_damage);
+  void drainCracks(const ElementTypeMapReal & saved_damage);
   /* ------------------------------------------------------------------------ */
   /* Members                                                                    */
   /* ------------------------------------------------------------------------ */
@@ -179,66 +181,37 @@ public:
     nb_gel_pockets(nb_gel_pockets),
     nb_placed_gel_pockets(0),
     box_size(box_size) {
- 
     Mesh & mesh = this->model.getMesh();
     UInt spatial_dimension = model.getSpatialDimension();
-
-    const Vector<Real> & lower_bounds = mesh.getLowerBounds();
-    const Vector<Real> & upper_bounds = mesh.getUpperBounds();
-
-    Vector<Real> gcenter(spatial_dimension);
-    for (UInt i = 0; i < spatial_dimension; ++i) {
-      gcenter[i] = (upper_bounds[i] + lower_bounds[i]) / 2.;
-    }
-
-    Real grid_box_size = upper_bounds[0] - lower_bounds[0];
-    Real grid_spacing = grid_box_size/7;
-    Vector<Real> gspacing(spatial_dimension, grid_spacing);
-
-    SpatialGrid<Element> grid(spatial_dimension, gspacing, gcenter);
-
-
     ElementType type = _triangle_3;
     GhostType ghost_type = _not_ghost;
     UInt nb_element = mesh.getNbElement(type, ghost_type);
     Element el;
     el.type = type;
     el.ghost_type = ghost_type;
-    Array<Real> barycenter(0,2);
+    Array<Real> barycenter(0,spatial_dimension);
     barycenter.resize(nb_element);
     Array<Real>::vector_iterator bary_it = barycenter.begin(spatial_dimension);
     for (UInt elem = 0; elem < nb_element; ++bary_it, ++elem) {
       mesh.getBarycenter(elem, type, bary_it->storage(), ghost_type);
-      el.element = elem;
-      grid.insert(el, *bary_it);
     }
 
     /// generate the gel pockets
     srand(0.);
-    Vector<Real> center(model.getSpatialDimension());
-    for (UInt i = 0; i < this->nb_gel_pockets; ++i) {
-      center.clear();
-      center(0) = -box_size/2. + (box_size) * ((Real) rand() / (RAND_MAX));
-      center(1) = -box_size/2. + (box_size) * ((Real) rand() / (RAND_MAX));
-      Real min_dist = box_size;
-      el.element = 0;
-      bary_it = barycenter.begin(spatial_dimension);
-      /// find cell in which current bary center lies
-      SpatialGrid<Element>::CellID cell_id = grid.getCellID(center);
-      SpatialGrid<Element>::Cell::const_iterator first_el =
-	grid.beginCell(cell_id);
-      SpatialGrid<Element>::Cell::const_iterator last_el =
-	grid.endCell(cell_id);
-      /// loop over all the elements in that cell
-      for (;first_el != last_el; ++first_el){
-	const Element & elem = *first_el;
-	Vector<Real> bary = bary_it[elem.element];
-	if (center.distance(bary) <= min_dist) {
-	  min_dist = center.distance(bary);
-	  el.element = elem.element;
-	}
-      }
+    Vector<Real> center(spatial_dimension);
+    UInt placed_gel_pockets = 0;
+    std::set<int> checked_baries;
+    while (placed_gel_pockets != nb_gel_pockets) {
+      /// get a random bary center
+      UInt bary_id = rand() % nb_element;
+      if (checked_baries.find(bary_id) != checked_baries.end())
+	continue;
+      checked_baries.insert(bary_id);
+      el.element = bary_id;
+      if (MeshDataMaterialSelector<std::string>::operator()(el) == 1)
+	continue; /// element belongs to paste
       gel_pockets.push_back(el);
+      placed_gel_pockets += 1;
     }
   }
 

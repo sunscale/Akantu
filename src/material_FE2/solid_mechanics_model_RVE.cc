@@ -252,16 +252,18 @@ void SolidMechanicsModelRVE::advanceASR(const Matrix<Real> & prestrain) {
     nb_damaged_elements = 0;
     if (max_eq_stress_aggregate > max_eq_stress_paste)
       nb_damaged_elements = mat_aggregate.updateDamage();
-    else
+    else if (max_eq_stress_aggregate < max_eq_stress_paste)
       nb_damaged_elements = mat_paste.updateDamage();
+    else
+      nb_damaged_elements = (mat_paste.updateDamage() + mat_aggregate.updateDamage()); 
 
     std::cout << "the number of damaged elements is " << nb_damaged_elements << std::endl;
   } while (nb_damaged_elements);
 
   if (this->nb_dumps % 10 == 0) {
     this->dump();
-    this->nb_dumps += 1;
   }
+  this->nb_dumps += 1;
 
   AKANTU_DEBUG_OUT();
 }
@@ -341,6 +343,13 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
   Matrix<Real> strains(voigt_size, voigt_size, 0.);
   Matrix<Real> H(dim, dim, 0.);
 
+  /// save the damage state before fillin up cracks
+  ElementTypeMapReal saved_damage("saved_damage");
+  mesh.initElementTypeMapArray(saved_damage, 1, spatial_dimension, false, _ek_regular, true);
+  saved_damage.clear();
+  /// fill the cracks for the tension test
+  this->fillCracks(saved_damage);
+  
   /// virtual test 1:
   H(0,0) = 0.01;
   this->performVirtualTesting(H, stresses, strains, 0);
@@ -355,6 +364,8 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
   H(0,1) = 0.01;
   this->performVirtualTesting(H, stresses, strains, 2);
 
+  /// drain cracks
+  this->drainCracks(saved_damage);
   /// compute effective stiffness
   Matrix<Real> eps_inverse(voigt_size, voigt_size);
   eps_inverse.inverse(strains);
@@ -510,5 +521,64 @@ void SolidMechanicsModelRVE::initArrays() {
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModelRVE::fillCracks(ElementTypeMapReal & saved_damage) {
+  const Material & mat_gel = this->getMaterial("gel");
+  const Real E_gel = mat_gel.getParam<Real>("E");
+  Real E_homogenized = 0.;
+  GhostType gt = _not_ghost;
+  for (UInt m = 0; m < this->getNbMaterials(); ++m) {
+    Material & mat = this->getMaterial(m); 
+    if (mat.getName() == "gel")
+      continue;
+    const Real E = mat.getParam<Real>("E");
+    InternalField<Real> & damage = mat.getInternal<Real>("damage");
+    Mesh::type_iterator it =
+      mesh.firstType(spatial_dimension, gt, _ek_regular);
+    Mesh::type_iterator end =
+      mesh.lastType(spatial_dimension, gt, _ek_regular);
+    for (; it != end; ++it) {
+      const ElementType element_type = *it;
+      const Array<UInt> & elem_filter = mat.getElementFilter(element_type, gt);
+      if (!elem_filter.getSize())
+	continue;
+      Array<Real> & damage_vec = damage(element_type, gt);
+      Array<Real> & saved_damage_vec = saved_damage(element_type, gt);
+      for (UInt i = 0; i < damage_vec.getSize(); ++i) {
+	saved_damage_vec(elem_filter(i)) = damage_vec(i);
+	E_homogenized = (E_gel - E) * damage_vec(i) + E;
+	damage_vec(i) = 1. -(E_homogenized/E);
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModelRVE::drainCracks(const ElementTypeMapReal & saved_damage) {
+  GhostType gt = _not_ghost; 
+  for (UInt m = 0; m < this->getNbMaterials(); ++m) {
+    Material & mat = this->getMaterial(m); 
+    if (mat.getName() == "gel")
+      continue;
+    else {
+      InternalField<Real> & damage = mat.getInternal<Real>("damage");
+      Mesh::type_iterator it =
+	mesh.firstType(spatial_dimension, gt, _ek_regular);
+      Mesh::type_iterator end =
+	mesh.lastType(spatial_dimension, gt, _ek_regular);
+      for (; it != end; ++it) {
+	const ElementType element_type = *it;
+	const Array<UInt> & elem_filter = mat.getElementFilter(element_type, gt);
+	if (!elem_filter.getSize())
+	  continue;
+	Array<Real> & damage_vec = damage(element_type, gt);
+	const Array<Real> & saved_damage_vec = saved_damage(element_type, gt);
+	for (UInt i = 0; i < damage_vec.getSize(); ++i) {
+	  damage_vec(i) = saved_damage_vec(elem_filter(i));
+	}
+      }
+    }
+  }
+}
 
 __END_AKANTU__
