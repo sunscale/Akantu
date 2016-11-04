@@ -260,10 +260,10 @@ void SolidMechanicsModelRVE::advanceASR(const Matrix<Real> & prestrain) {
     std::cout << "the number of damaged elements is " << nb_damaged_elements << std::endl;
   } while (nb_damaged_elements);
 
-  if (this->nb_dumps % 10 == 0) {
-    this->dump();
-  }
-  this->nb_dumps += 1;
+  // if (this->nb_dumps % 10 == 0) {
+  this->dump();
+    //}
+    //this->nb_dumps += 1;
 
   AKANTU_DEBUG_OUT();
 }
@@ -348,7 +348,7 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
   mesh.initElementTypeMapArray(saved_damage, 1, spatial_dimension, false, _ek_regular, true);
   saved_damage.clear();
   /// fill the cracks for the tension test
-  this->fillCracks(saved_damage);
+  //  this->fillCracks(saved_damage);
   
   /// virtual test 1:
   H(0,0) = 0.01;
@@ -365,7 +365,7 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
   this->performVirtualTesting(H, stresses, strains, 2);
 
   /// drain cracks
-  this->drainCracks(saved_damage);
+  //this->drainCracks(saved_damage);
   /// compute effective stiffness
   Matrix<Real> eps_inverse(voigt_size, voigt_size);
   eps_inverse.inverse(strains);
