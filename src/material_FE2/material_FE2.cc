@@ -173,11 +173,12 @@ void MaterialFE2<spatial_dimension>::advanceASR(const Matrix<Real> & prestrain) 
     /// advance the ASR in every RVE
     (*RVE_it)->advanceASR(prestrain);
 
+    /// compute the average eigen_grad_u
+    (*RVE_it)->homogenizeEigenGradU(*eigen_gradu_it);
+
     /// compute the new effective stiffness of the RVE
     (*RVE_it)->homogenizeStiffness(*C_it);
 
-    /// compute the average eigen_grad_u
-    (*RVE_it)->homogenizeEigenGradU(*eigen_gradu_it);
   }
   AKANTU_DEBUG_OUT();
 }

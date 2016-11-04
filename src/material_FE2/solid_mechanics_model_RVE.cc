@@ -260,10 +260,10 @@ void SolidMechanicsModelRVE::advanceASR(const Matrix<Real> & prestrain) {
     std::cout << "the number of damaged elements is " << nb_damaged_elements << std::endl;
   } while (nb_damaged_elements);
 
-  // if (this->nb_dumps % 10 == 0) {
-  this->dump();
-    //}
-    //this->nb_dumps += 1;
+  if (this->nb_dumps % 10 == 0) {
+    this->dump();
+  }
+  this->nb_dumps += 1;
 
   AKANTU_DEBUG_OUT();
 }
@@ -337,6 +337,21 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
   /// apply three independent loading states to determine C
   /// 1. eps_el = (1;0;0) 2. eps_el = (0,1,0) 3. eps_el = (0,0,0.5)
 
+  /// clear the eigenstrain
+  GhostType gt = _not_ghost;
+  Mesh::type_iterator it  = mesh.firstType(dim, gt, _ek_not_defined);
+  Mesh::type_iterator end = mesh.lastType(dim, gt, _ek_not_defined);
+  Matrix<Real> zero_eigengradu(dim, dim, 0.);
+  for(; it != end; ++it) {
+    const ElementType element_type = *it;
+    Array<Real> & prestrain_vect = const_cast<Array<Real> &>(this->getMaterial("gel").getInternal<Real>("eigen_grad_u")(element_type, gt));
+    Array<Real>::iterator< Matrix<Real> > prestrain_it = prestrain_vect.begin(spatial_dimension, spatial_dimension);
+    Array<Real>::iterator< Matrix<Real> > prestrain_end = prestrain_vect.end(spatial_dimension, spatial_dimension);
+
+    for (; prestrain_it != prestrain_end; ++prestrain_it) 
+      (*prestrain_it) = zero_eigengradu;
+  }
+
   /// storage for results of 3 different loading states
   UInt voigt_size = VoigtHelper<dim>::size;
   Matrix<Real> stresses(voigt_size, voigt_size, 0.);
@@ -382,6 +397,7 @@ void SolidMechanicsModelRVE::performVirtualTesting(const Matrix<Real> & H, Matri
   this->assembleStiffnessMatrix();
   Real error = 0;
   bool converged= this->solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-6, error, 2, false, *static_communicator_dummy);
+  std::cout << "error in tension test " << error << std::endl;
   AKANTU_DEBUG_ASSERT(converged, "Did not converge");
 
   /// get average stress and strain
