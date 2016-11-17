@@ -128,6 +128,9 @@ public:
   /// insert intrinsic cohesive elements
   void insertIntrinsicElements();
 
+  // synchronize facets physical data before insertion along physical surfaces 
+  void synchronizeInsertionData();
+
   template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
   bool solveStepCohesive(Real tolerance,
                          Real & error,
