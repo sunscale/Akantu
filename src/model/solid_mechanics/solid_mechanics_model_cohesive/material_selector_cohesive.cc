@@ -86,9 +86,10 @@ UInt MeshDataMaterialCohesiveSelector::operator()(const Element &element) {
         cohesive_el_to_facet(element.element, third_dimension);
     UInt material_id =
         material_index(facet.type, facet.ghost_type)(facet.element);
-    return material_id;
+    UInt fallback_id = MaterialSelector::operator()(element);
+    
+    return std::max(material_id,fallback_id);
   }
-
   else
     return MeshDataMaterialSelector<std::string>::operator()(element);
 }
