@@ -93,8 +93,7 @@ function(_add_akantu_simulation simulation_name)
   package_get_compile_flags(BOOST CXX _flags)
   list(APPEND _simulation_COMPILE_FLAGS "${_flags}")
 
-  package_get_include_dir(BOOST _inc_dir)
-  list(APPEND _simulation_INCLUDE_DIRS ${_inc_dir})
+  package_get_include_dir(BOOST _boost_include_dir)
 
   string(REPLACE ";" " " _tmp_flags "${_simulation_COMPILE_FLAGS}")
   string(REGEX REPLACE " +" " " _simulation_COMPILE_FLAGS "${_tmp_flags}")
@@ -105,7 +104,7 @@ function(_add_akantu_simulation simulation_name)
         ${_simulation_UNPARSED_ARGUMENTS} ${_simulation_SOURCES})
 
       target_link_libraries(${simulation_name} akantu ${_simulation_LIBRARIES})
-      target_include_directories(${simulation_name} PRIVATE ${AKANTU_INCLUDE_DIRS} ${_simulation_INCLUDE_DIRS})
+      target_include_directories(${simulation_name} PRIVATE ${AKANTU_INCLUDE_DIRS} ${_boost_include_dir} ${_simulation_INCLUDE_DIRS})
 
       if(_simulation_DEPENDS)
         foreach(_deps ${_simulation_DEPENDS})

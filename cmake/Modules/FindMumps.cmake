@@ -75,7 +75,6 @@ int main() {
 }
 ")
 
-
 find_path(MUMPS_INCLUDE_DIR ${_first_precision}mumps_c.h
   PATHS "${MUMPS_DIR}"
   ENV MUMPS_DIR
@@ -132,6 +131,10 @@ set(_mumps_dep_symbol_pord SPACE_ordering)
 set(_mumps_dep_symbol_METIS metis_nodend)
 set(_mumps_dep_symbol_ParMETIS ParMETIS_V3_NodeND)
 
+ # added for fucking macosx that cannot fail at link
+set(_mumps_run_dep_symbol_mumps_common mumps_fac_descband)
+set(_mumps_run_dep_symbol_MPI mpi_abort)
+
 set(_mumps_dep_link_BLAS BLAS_LIBRARIES)
 set(_mumps_dep_link_ScaLAPACK SCALAPACK_LIBRARIES)
 set(_mumps_dep_link_MPI MPI_Fortran_LIBRARIES)
@@ -167,17 +170,18 @@ else()
   set(MUMPS_LIBRARY_TYPE SHARED CACHE INTERNAL "" FORCE)
 endif()
 
-try_compile(_mumps_compiles "${_mumps_test_dir}" SOURCES "${_mumps_test_dir}/mumps_test_code.c"
+try_run(_mumps_run _mumps_compiles "${_mumps_test_dir}" "${_mumps_test_dir}/mumps_test_code.c"
   CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MUMPS_INCLUDE_DIR}"
   LINK_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${_compiler_specific}
-  OUTPUT_VARIABLE _out)
+  RUN_OUTPUT_VARIABLE _run
+  COMPILE_OUTPUT_VARIABLE _out)
 
 foreach(_pdep ${_mumps_potential_dependencies})
-  if(_mumps_compiles)
+  if(_mumps_compiles AND NOT _mumps_run STREQUAL "FAILED_TO_RUN")
     break()
   endif()
-
-  if(_out MATCHES "${_mumps_dep_symbol_${_pdep}}")
+  
+  if(_out MATCHES "${_mumps_dep_symbol_${_pdep}}" OR (DEFINED _mumps_run_dep_symbol_${_pdep} AND _run MATCHES "${_mumps_run_dep_symbol_${_pdep}}"))
     if(_pdep STREQUAL "mumps_common")
       find_library(MUMPS_LIBRARY_COMMON mumps_common${MUMPS_PREFIX}
         PATHS "${MUMPS_DIR}"
@@ -218,10 +222,11 @@ foreach(_pdep ${_mumps_potential_dependencies})
 
     list(APPEND MUMPS_LIBRARIES_ALL ${${_mumps_dep_link_${_pdep}}})
 
-    try_compile(_mumps_compiles "${_mumps_test_dir}" SOURCES "${_mumps_test_dir}/mumps_test_code.c"
+    try_run(_mumps_run _mumps_compiles "${_mumps_test_dir}" "${_mumps_test_dir}/mumps_test_code.c"
       CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MUMPS_INCLUDE_DIR}"
       LINK_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${_compiler_specific}
-      OUTPUT_VARIABLE _out)
+      RUN_OUTPUT_VARIABLE _run
+      COMPILE_OUTPUT_VARIABLE _out)
   endif()
 endforeach()
 
