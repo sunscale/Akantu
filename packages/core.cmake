@@ -370,6 +370,7 @@ package_declare_documentation_files(core
   manual.tex
   manual-macros.sty
   manual-titlepages.tex
+  manual-authors.tex
   manual-introduction.tex
   manual-gettingstarted.tex
   manual-io.tex
