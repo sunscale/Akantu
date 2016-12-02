@@ -81,19 +81,8 @@ static void printBacktraceAndExit(int sig) {
 
 /* ------------------------------------------------------------------------ */
 void initSignalHandler() {
-// #if not defined(_WIN32)
-//   struct sigaction action;
-
-//   action.sa_handler = &printBacktraceAndExit;
-//   sigemptyset(&(action.sa_mask));
-//   action.sa_flags = SA_RESETHAND;
-
-//   sigaction(SIGSEGV, &action, NULL);
-//   sigaction(SIGABRT, &action, NULL);
-// #else
   std::signal(SIGSEGV, &printBacktraceAndExit);
   std::signal(SIGABRT, &printBacktraceAndExit);
-//#endif
 }
 
 /* ------------------------------------------------------------------------ */

@@ -31,12 +31,13 @@ register_test(test_dof_manager_default
 
 register_test(test_model_solver
   SOURCES test_model_solver.cc
+  SCRIPT  test_model_solver.py
   PACKAGE mumps
   )
 
 register_test(test_model_solver_dynamic_explicit
   SOURCES test_model_solver_dynamic.cc
-  PACKAGE mumps
+  PACKAGE core
   COMPILE_OPTIONS "EXPLICIT=true"
   )
 

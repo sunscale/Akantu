@@ -1,18 +1,16 @@
 /**
- * @file   distributed_synchronizer_tmpl.hh
+ * @file   mesh_accessor.cc
  *
- * @author Dana Christen <dana.christen@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Tue May 07 2013
- * @date last modification: Sun Oct 19 2014
+ * @date   Fri Sep 23 11:53:44 2016
  *
- * @brief  Implementation of the templated function of the
- *DistributedSynchronizer
+ * @brief Implementation of the accessor (the only class that should be "friend"
+ * with a mesh)
  *
  * @section LICENSE
  *
- * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
+ * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -31,12 +29,18 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_DISTRIBUTED_SYNCHRONIZER_TMPL_HH__
-#define __AKANTU_DISTRIBUTED_SYNCHRONIZER_TMPL_HH__
+#include "mesh_accessor.hh"
+//#include "node_synchronizer.hh"
+/* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
+NodeSynchronizer & MeshAccessor::getNodeSynchronizer() {
+  return *this->_mesh.node_synchronizer;
+}
 
-__END_AKANTU__
+ElementSynchronizer & MeshAccessor::getElementSynchronizer() {
+  return *this->_mesh.element_synchronizer;
+}
 
-#endif /* __AKANTU_DISTRIBUTED_SYNCHRONIZER_TMPL_HH__ */
+}  // akantu

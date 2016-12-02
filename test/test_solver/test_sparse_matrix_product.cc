@@ -35,7 +35,7 @@
 #include "aka_common.hh"
 #include "mesh.hh"
 #include "mesh_partition_scotch.hh"
-#include "distributed_synchronizer.hh"
+#include "element_synchronizer.hh"
 #include "sparse_matrix.hh"
 #include "dof_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
@@ -66,10 +66,10 @@ int main(int argc, char *argv[])
     std::cout << "Partitioning mesh..." << std::endl;
     partition = new akantu::MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
-    DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
+    ElementSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
     delete partition;
   } else {
-    DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
+    ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
 
   UInt nb_nodes = mesh.getNbNodes();

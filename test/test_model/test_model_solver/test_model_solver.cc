@@ -28,12 +28,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "model_solver.hh"
+#include "dof_manager.hh"
 #include "mesh.hh"
 #include "mesh_accessor.hh"
-#include "dof_manager.hh"
+#include "model_solver.hh"
 #include "sparse_matrix.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <fstream>
+/* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
@@ -51,8 +53,8 @@ public:
   MyModel(Real F, Mesh & mesh)
       : ModelSolver(mesh, "model_solver", 0),
         dispacement(mesh.getNbNodes(), 1, "disp"),
-        blocked(mesh.getNbNodes(), 1), forces(mesh.getNbNodes(), 1),
-        mesh(mesh), nb_dofs(mesh.getNbNodes()), EA(1.) {
+        blocked(mesh.getNbNodes(), 1), forces(mesh.getNbNodes(), 1), mesh(mesh),
+        nb_dofs(mesh.getNbNodes()), EA(1.) {
 
     this->initDOFManager("mumps");
 
@@ -74,14 +76,16 @@ public:
     K.clear();
 
     Matrix<Real> k(2, 2);
-    k(0, 0) = k(1, 1) =  1;
+    k(0, 0) = k(1, 1) = 1;
     k(0, 1) = k(1, 0) = -1;
 
     Array<Real> k_all_el(this->nb_dofs - 1, 4);
     Array<Real>::matrix_iterator k_it = k_all_el.begin(2, 2);
 
-    Array<UInt>::const_vector_iterator cit = this->mesh.getConnectivity(_segment_2).begin(2);
-    Array<UInt>::const_vector_iterator cend = this->mesh.getConnectivity(_segment_2).end(2);
+    Array<UInt>::const_vector_iterator cit =
+      this->mesh.getConnectivity(_segment_2).begin(2);
+    Array<UInt>::const_vector_iterator cend =
+        this->mesh.getConnectivity(_segment_2).end(2);
 
     for (; cit != cend; ++cit, ++k_it) {
       const Vector<UInt> & conn = *cit;
@@ -97,7 +101,8 @@ public:
       k_el = k;
       k_el *= EA / L;
     }
-    this->getDOFManager().assembleElementalMatricesToMatrix("K", "disp", k_all_el, _segment_2);
+    this->getDOFManager().assembleElementalMatricesToMatrix(
+        "K", "disp", k_all_el, _segment_2);
   }
 
   void assembleResidual() {
@@ -106,8 +111,10 @@ public:
     Array<Real> forces_internal_el(this->nb_dofs - 1, 2);
     Array<Real>::vector_iterator f_it = forces_internal_el.begin(2);
 
-    Array<UInt>::const_vector_iterator cit = this->mesh.getConnectivity(_segment_2).begin(2);
-    Array<UInt>::const_vector_iterator cend = this->mesh.getConnectivity(_segment_2).end(2);
+    Array<UInt>::const_vector_iterator cit =
+        this->mesh.getConnectivity(_segment_2).begin(2);
+    Array<UInt>::const_vector_iterator cend =
+        this->mesh.getConnectivity(_segment_2).end(2);
 
     for (; cit != cend; ++cit, ++f_it) {
       const Vector<UInt> & conn = *cit;
@@ -125,11 +132,12 @@ public:
 
       Vector<Real> & f = *f_it;
 
-      f(0) = - f_n;
-      f(1) =   f_n;
+      f(0) = -f_n;
+      f(1) = f_n;
     }
 
-    this->getDOFManager().assembleElementalArrayToResidual("disp", forces_internal_el, _segment_2, _not_ghost, -1.);
+    this->getDOFManager().assembleElementalArrayToResidual(
+        "disp", forces_internal_el, _segment_2, _not_ghost, -1.);
   }
 
   void predictor() {}
@@ -193,14 +201,20 @@ void printResults(MyModel & model) {
   Array<Real>::const_scalar_iterator disp_it = model.dispacement.begin();
   Array<Real>::const_scalar_iterator force_it = model.forces.begin();
   Array<bool>::const_scalar_iterator blocked_it = model.blocked.begin();
-  std::cout << std::setw(8) << "disp"
-            << " " << std::setw(8) << "force"
-            << " " << std::setw(8) << "blocked" << std::endl;
 
+  std::ofstream output("disp.csv");
+  output << "node"
+         << ", " << std::setw(8) << "disp"
+         << ", " << std::setw(8) << "force"
+         << ", " << std::setw(8) << "blocked" << std::endl;
+
+  UInt node = 0;
   for (; disp_it != model.dispacement.end();
-       ++disp_it, ++force_it, ++blocked_it) {
-    std::cout << std::setw(8) << *disp_it << " " << std::setw(8) << *force_it
-              << " " << std::setw(8) << std::boolalpha << *blocked_it
-              << std::endl;
+       ++disp_it, ++force_it, ++blocked_it, ++node) {
+    output << node << ", "
+           << std::setw(8) << *disp_it << ", "
+           << std::setw(8) << *force_it << ", "
+           << std::setw(8) << *blocked_it
+           << std::endl;
   }
 }

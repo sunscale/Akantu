@@ -34,6 +34,11 @@
 /* -------------------------------------------------------------------------- */
 #include "model.hh"
 #include "element_group.hh"
+#include "synchronizer_registry.hh"
+#include "data_accessor.hh"
+#include "static_communicator.hh"
+#include "element_synchronizer.hh"
+/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
@@ -43,7 +48,6 @@ Model::Model(Mesh& mesh, UInt dim, const ID & id,
   Memory(id, memory_id), ModelSolver(mesh, id, memory_id),
   mesh(mesh),
   spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension() : dim),
-  synch_registry(NULL),
   is_pbc_slave_node(0,1,"is_pbc_slave_node") ,
   parser(&getStaticParser()) {
   AKANTU_DEBUG_IN();
@@ -65,8 +69,6 @@ Model::~Model() {
       delete it->second;
   }
 
-  delete synch_registry;
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -81,30 +83,6 @@ void Model::initFull(__attribute__((unused)) const ModelOptions & options) {
 
   AKANTU_DEBUG_OUT();
 }
-
-/* -------------------------------------------------------------------------- */
-void Model::createSynchronizerRegistry(DataAccessor * data_accessor) {
-  synch_registry = new SynchronizerRegistry(*data_accessor);
-}
-
-// /* -------------------------------------------------------------------------- */
-// void Model::setPBC(UInt x, UInt y, UInt z) {
-//   mesh.computeBoundingBox();
-//   if (x)
-//     MeshUtils::computePBCMap(this->mesh, 0, this->pbc_pair);
-//   if (y)
-//     MeshUtils::computePBCMap(this->mesh, 1, this->pbc_pair);
-//   if (z)
-//     MeshUtils::computePBCMap(this->mesh, 2, this->pbc_pair);
-// }
-
-// /* -------------------------------------------------------------------------- */
-// void Model::setPBC(SurfacePairList & surface_pairs) {
-//   SurfacePairList::iterator s_it;
-//   for (s_it = surface_pairs.begin(); s_it != surface_pairs.end(); ++s_it) {
-//     MeshUtils::computePBCMap(this->mesh, *s_it, this->pbc_pair);
-//   }
-// }
 
 /* -------------------------------------------------------------------------- */
 void Model::initPBC() {
@@ -133,30 +111,6 @@ void Model::initPBC() {
 #endif
     ++it;
   }
-}
-
-/* -------------------------------------------------------------------------- */
-DistributedSynchronizer &
-Model::createParallelSynch(MeshPartition * partition,
-                           __attribute__((unused))
-                           DataAccessor * data_accessor) {
-  AKANTU_DEBUG_IN();
-  /* ------------------------------------------------------------------------ */
-  /* Parallel initialization                                                  */
-  /* ------------------------------------------------------------------------ */
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  Int prank = comm.whoAmI();
-
-  DistributedSynchronizer * synch = NULL;
-  if (prank == 0)
-    synch = DistributedSynchronizer::createDistributedSynchronizerMesh(
-        getFEEngine().getMesh(), partition);
-  else
-    synch = DistributedSynchronizer::createDistributedSynchronizerMesh(
-        getFEEngine().getMesh(), NULL);
-
-  AKANTU_DEBUG_OUT();
-  return *synch;
 }
 
 /* -------------------------------------------------------------------------- */

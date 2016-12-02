@@ -140,16 +140,16 @@ int main(int argc, char *argv[]) {
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
-  DistributedSynchronizer * dist = NULL;
+  ElementSynchronizer * dist = NULL;
 
   if(prank == 0) {
     mesh.read("bar.msh");
     MeshPartition * partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
-    dist = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
+    dist = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
     delete partition;
   } else {
-    dist = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
+    dist = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
 
   mesh.computeBoundingBox();

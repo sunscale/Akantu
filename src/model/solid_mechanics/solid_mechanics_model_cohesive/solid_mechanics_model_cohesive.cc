@@ -63,7 +63,7 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   facet_synchronizer = NULL;
   facet_stress_synchronizer = NULL;
-  cohesive_distributed_synchronizer = NULL;
+  cohesive_element_synchronizer = NULL;
   global_connectivity = NULL;
 #endif
 
@@ -88,7 +88,7 @@ SolidMechanicsModelCohesive::~SolidMechanicsModelCohesive() {
   delete inserter;
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  delete cohesive_distributed_synchronizer;
+  delete cohesive_element_synchronizer;
   delete facet_synchronizer;
   delete facet_stress_synchronizer;
 #endif
@@ -178,7 +178,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
     if (facet_synchronizer != NULL)
-      inserter->initParallel(facet_synchronizer, cohesive_distributed_synchronizer);
+      inserter->initParallel(facet_synchronizer, cohesive_element_synchronizer);
     //      inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
     initAutomaticInsertion();
@@ -209,7 +209,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (facet_synchronizer != NULL)
-    inserter->initParallel(facet_synchronizer, cohesive_distributed_synchronizer);
+    inserter->initParallel(facet_synchronizer, cohesive_element_synchronizer);
   //    inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
   std::istringstream split(cohesive_surfaces);
@@ -260,7 +260,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
   }
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (facet_synchronizer != NULL)
-    inserter->initParallel(facet_synchronizer, cohesive_distributed_synchronizer);
+    inserter->initParallel(facet_synchronizer, cohesive_element_synchronizer);
   //    inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
 
@@ -619,8 +619,8 @@ void SolidMechanicsModelCohesive::onElementsAdded(
   SolidMechanicsModel::onElementsAdded(element_list, event);
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (cohesive_distributed_synchronizer != NULL)
-    cohesive_distributed_synchronizer->computeAllBufferSizes(*this);
+  if (cohesive_element_synchronizer != NULL)
+    cohesive_element_synchronizer->computeAllBufferSizes(*this);
 #endif
 
   /// update shape functions

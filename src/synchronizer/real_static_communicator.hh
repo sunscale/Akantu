@@ -40,10 +40,10 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-class CommunicationRequest {
+class InternalCommunicationRequest {
 public:
-  CommunicationRequest(UInt source, UInt dest);
-  virtual ~CommunicationRequest();
+  InternalCommunicationRequest(UInt source, UInt dest);
+  virtual ~InternalCommunicationRequest();
 
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
@@ -55,6 +55,31 @@ private:
   UInt destination;
   UInt id;
   static UInt counter;
+};
+
+/* -------------------------------------------------------------------------- */
+class CommunicationRequest {
+public:
+  CommunicationRequest(InternalCommunicationRequest * request = NULL)
+      : request(request) {}
+  CommunicationRequest(const CommunicationRequest & request) = default;
+
+  void free() {
+    delete request;
+    request = NULL;
+  }
+
+  void printself(std::ostream & stream, int indent = 0) const {
+    request->printself(stream, indent);
+  };
+
+  UInt getSource() { return request->getSource(); }
+  UInt getDestination() { return request->getDestination(); }
+
+  InternalCommunicationRequest * getInternal() { return request; }
+
+private:
+  InternalCommunicationRequest * request;
 };
 
 /* -------------------------------------------------------------------------- */

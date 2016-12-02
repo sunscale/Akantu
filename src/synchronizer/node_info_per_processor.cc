@@ -29,20 +29,22 @@
 
 /* -------------------------------------------------------------------------- */
 #include "node_info_per_processor.hh"
-#include "distributed_synchronizer.hh"
-#include "static_communicator.hh"
 #include "node_group.hh"
+#include "node_synchronizer.hh"
+#include "static_communicator.hh"
+/* -------------------------------------------------------------------------- */
+#include <algorithm>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-NodeInfoPerProc::NodeInfoPerProc(DistributedSynchronizer & synchronizer,
-                                 StaticCommunicator & communicator,
-                                 UInt message_cnt, UInt root, Mesh & mesh)
-    : MeshAccessor(mesh), synchronizer(synchronizer), comm(communicator),
-      rank(comm.whoAmI()), nb_proc(comm.getNbProc()), root(root), mesh(mesh),
-      spatial_dimension(mesh.getSpatialDimension()),
+NodeInfoPerProc::NodeInfoPerProc(NodeSynchronizer & synchronizer,
+                                 UInt message_cnt, UInt root)
+    : MeshAccessor(synchronizer.getMesh()), synchronizer(synchronizer),
+      comm(synchronizer.getCommunicator()), rank(comm.whoAmI()),
+      nb_proc(comm.getNbProc()), root(root), mesh(synchronizer.getMesh()),
+      spatial_dimension(synchronizer.getMesh().getSpatialDimension()),
       message_count(message_cnt) {}
 
 /* -------------------------------------------------------------------------- */
@@ -146,13 +148,72 @@ void NodeInfoPerProc::fillNodesType() {
 }
 
 /* -------------------------------------------------------------------------- */
+void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
+  AKANTU_DEBUG_IN();
+
+  Communications<UInt> & communications =
+      this->synchronizer.getCommunications();
+
+  { // send schemes
+    Array<UInt>::const_vector_iterator it =
+        master_info.begin_reinterpret(2, master_info.getSize() / 2);
+    Array<UInt>::const_vector_iterator end =
+        master_info.end_reinterpret(2, master_info.getSize() / 2);
+
+    std::map<UInt, Array<UInt> > send_array_per_proc;
+
+    for (; it != end; ++it) {
+      const Vector<UInt> & send_info = *it;
+
+      send_array_per_proc[send_info(0)].push_back(send_info(1));
+    }
+
+    for (auto send_schemes : send_array_per_proc) {
+      auto scheme = communications.createSendScheme(send_schemes.first);
+
+      auto sends = send_schemes.second;
+      std::sort(sends.begin(), sends.end());
+      std::transform(sends.begin(), sends.end(), sends.begin(),
+                     [this](UInt g) -> UInt { return mesh.getNodeLocalId(g); });
+      scheme.copy(sends);
+    }
+  }
+
+  { // receive schemes
+    const Array<NodeType> & nodes_type = this->getNodesType();
+
+    std::map<UInt, Array<UInt> > recv_array_per_proc;
+
+    UInt node = 0;
+    for (auto node_type : nodes_type) {
+      if (Int(node_type) >= 0) {
+        recv_array_per_proc[node_type] = mesh.getNodeGlobalId(node);
+      }
+      ++node;
+    }
+
+    for (auto recv_schemes : recv_array_per_proc) {
+      auto scheme = communications.createRecvScheme(recv_schemes.first);
+
+      auto recvs = recv_schemes.second;
+      std::sort(recvs.begin(), recvs.end());
+      std::transform(recvs.begin(), recvs.end(), recvs.begin(),
+                     [this](UInt g) -> UInt { return mesh.getNodeLocalId(g); });
+
+      scheme.copy(recvs);
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-MasterNodeInfoPerProc::MasterNodeInfoPerProc(
-    DistributedSynchronizer & synchronizer, StaticCommunicator & communicator,
-    UInt message_cnt, UInt root, Mesh & mesh)
-    : NodeInfoPerProc(synchronizer, communicator, message_cnt, root, mesh) {
+MasterNodeInfoPerProc::MasterNodeInfoPerProc(NodeSynchronizer & synchronizer,
+                                             UInt message_cnt, UInt root)
+    : NodeInfoPerProc(synchronizer, message_cnt, root) {
   UInt nb_global_nodes = this->mesh.getNbGlobalNodes();
   this->comm.broadcast(nb_global_nodes, this->root);
 }
@@ -222,9 +283,13 @@ void MasterNodeInfoPerProc::synchronizeNodes() {
 
 /* -------------------------------------------------------------------------- */
 void MasterNodeInfoPerProc::synchronizeTypes() {
+  //           <global_id,     <proc, local_id> >
   std::multimap<UInt, std::pair<UInt, UInt> > nodes_to_proc;
 
   std::vector<Array<NodeType> > nodes_type_per_proc(nb_proc);
+
+  // arrays containing pairs of (proc, node)
+  std::vector<Array<UInt> > nodes_to_send_per_proc(nb_proc);
   for (UInt p = 0; p < nb_proc; ++p) {
     nodes_type_per_proc[p].resize(nb_nodes_per_proc(p));
   }
@@ -233,10 +298,11 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
 
   for (UInt p = 0; p < nb_proc; ++p) {
     if (p != root) {
-      AKANTU_DEBUG_INFO("Receiving first nodes types from proc "
-                        << p << " TAG("
-                        << Tag::genTag(this->rank, this->message_count,
-                                       Tag::_NODES_TYPE) << ")");
+      AKANTU_DEBUG_INFO(
+          "Receiving first nodes types from proc "
+          << p << " TAG("
+          << Tag::genTag(this->rank, this->message_count, Tag::_NODES_TYPE)
+          << ")");
       comm.receive(nodes_type_per_proc[p], p,
                    Tag::genTag(p, 0, Tag::_NODES_TYPE));
     } else {
@@ -265,28 +331,45 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
     for (it_node = it_range.first; it_node != it_range.second; ++it_node) {
       UInt proc = it_node->second.first;
       UInt node = it_node->second.second;
-      if (proc != master_proc)
+      if (proc != master_proc) {
         nodes_type_per_proc[proc](node) = NodeType(master_proc);
+      } else {
+        nodes_to_send_per_proc[master_proc].push_back(proc);
+        nodes_to_send_per_proc[master_proc].push_back(i);
+      }
     }
   }
 
-  std::vector<CommunicationRequest *> requests;
+  std::vector<CommunicationRequest> requests_send_type;
+  std::vector<CommunicationRequest> requests_send_master_info;
   for (UInt p = 0; p < nb_proc; ++p) {
     if (p != root) {
       AKANTU_DEBUG_INFO("Sending nodes types to proc "
                         << p << " TAG("
                         << Tag::genTag(this->rank, 0, Tag::_NODES_TYPE) << ")");
-      requests.push_back(
+      requests_send_type.push_back(
           comm.asyncSend(nodes_type_per_proc[p], p,
                          Tag::genTag(this->rank, 0, Tag::_NODES_TYPE)));
+
+      AKANTU_DEBUG_INFO("Sending nodes master info to proc "
+                        << p << " TAG("
+                        << Tag::genTag(this->rank, 1, Tag::_NODES_TYPE) << ")");
+      requests_send_master_info.push_back(
+          comm.asyncSend(nodes_to_send_per_proc[p], p,
+                         Tag::genTag(this->rank, 1, Tag::_NODES_TYPE)));
     } else {
       this->getNodesType().copy(nodes_type_per_proc[p]);
+
+      this->fillCommunicationScheme(nodes_to_send_per_proc[root]);
     }
   }
 
-  comm.waitAll(requests);
-  comm.freeCommunicationRequest(requests);
-  requests.clear();
+  comm.waitAll(requests_send_type);
+  comm.freeCommunicationRequest(requests_send_type);
+  requests_send_type.clear();
+
+  comm.waitAll(requests_send_master_info);
+  comm.freeCommunicationRequest(requests_send_master_info);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -321,7 +404,7 @@ void MasterNodeInfoPerProc::synchronizeGroups() {
 
   buffer << node_to_group;
 
-  std::vector<CommunicationRequest *> requests;
+  std::vector<CommunicationRequest> requests;
   for (UInt p = 0; p < nb_proc; ++p) {
     if (p == this->rank)
       continue;
@@ -345,10 +428,9 @@ void MasterNodeInfoPerProc::synchronizeGroups() {
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-SlaveNodeInfoPerProc::SlaveNodeInfoPerProc(
-    DistributedSynchronizer & synchronizer, StaticCommunicator & communicator,
-    UInt message_cnt, UInt root, Mesh & mesh)
-    : NodeInfoPerProc(synchronizer, communicator, message_cnt, root, mesh) {
+SlaveNodeInfoPerProc::SlaveNodeInfoPerProc(NodeSynchronizer & synchronizer,
+                                           UInt message_cnt, UInt root)
+    : NodeInfoPerProc(synchronizer, message_cnt, root) {
   UInt nb_global_nodes = 0;
   comm.broadcast(nb_global_nodes, root);
   this->setNbGlobalNodes(nb_global_nodes);
@@ -381,6 +463,16 @@ void SlaveNodeInfoPerProc::synchronizeTypes() {
 
   AKANTU_DEBUG_INFO("Receiving nodes types from proc " << root);
   comm.receive(nodes_types, root, Tag::genTag(root, 0, Tag::_NODES_TYPE));
+
+  AKANTU_DEBUG_INFO("Receiving nodes master info from proc "
+                    << root
+                    << " Tag: " << Tag::genTag(root, 1, Tag::_NODES_TYPE));
+  CommunicationStatus status;
+  comm.probe<UInt>(root, Tag::genTag(root, 1, Tag::_NODES_TYPE), status);
+  Array<UInt> nodes_master_info(status.getSize() * 2);
+  comm.receive(nodes_master_info, root, Tag::genTag(root, 1, Tag::_NODES_TYPE));
+
+  this->fillCommunicationScheme(nodes_master_info);
 }
 
 /* -------------------------------------------------------------------------- */

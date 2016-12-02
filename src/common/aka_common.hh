@@ -131,7 +131,7 @@ enum NonLinearSolverType {
 };
 
 /// Define the node/dof type
-enum NodeType {
+enum NodeType : Int {
   _nt_pure_gost = -3,
   _nt_master = -2,
   _nt_normal = -1,

@@ -44,19 +44,19 @@ __BEGIN_AKANTU__
 bool StaticCommunicator::is_instantiated = false;
 StaticCommunicator * StaticCommunicator::static_communicator = NULL;
 
-UInt CommunicationRequest::counter = 0;
+UInt InternalCommunicationRequest::counter = 0;
 
 /* -------------------------------------------------------------------------- */
-CommunicationRequest::CommunicationRequest(UInt source, UInt dest)
+InternalCommunicationRequest::InternalCommunicationRequest(UInt source, UInt dest)
     : source(source), destination(dest) {
   this->id = counter++;
 }
 
 /* -------------------------------------------------------------------------- */
-CommunicationRequest::~CommunicationRequest() {}
+InternalCommunicationRequest::~InternalCommunicationRequest() {}
 
 /* -------------------------------------------------------------------------- */
-void CommunicationRequest::printself(std::ostream & stream, int indent) const {
+void InternalCommunicationRequest::printself(std::ostream & stream, int indent) const {
   std::string space;
   for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
     ;

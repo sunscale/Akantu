@@ -31,18 +31,19 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
+#include "aka_common.hh"
 #include "aka_math.hh"
 #include "aka_random_generator.hh"
-#include "parser.hh"
 #include "cppargparse.hh"
+#include "parser.hh"
+#include "communication_tag.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 #include <limits>
 /* -------------------------------------------------------------------------- */
 #if defined(AKANTU_DEBUG_TOOLS)
-#  include "aka_debug_tools.hh"
+#include "aka_debug_tools.hh"
 #endif
 
 __BEGIN_AKANTU__
@@ -55,22 +56,23 @@ __BEGIN_AKANTU__
 /* error.hpp variables                                                        */
 /* -------------------------------------------------------------------------- */
 namespace debug {
-  /// standard output for debug messages
-  std::ostream *_akantu_debug_cout = &std::cerr;
+/// standard output for debug messages
+std::ostream * _akantu_debug_cout = &std::cerr;
 
-  /// standard output for normal messages
-  std::ostream & _akantu_cout = std::cout;
+/// standard output for normal messages
+std::ostream & _akantu_cout = std::cout;
 
-  /// parallel context used in debug messages
-  std::string _parallel_context = "";
+/// parallel context used in debug messages
+std::string _parallel_context = "";
 
-  Debugger debugger;
+Debugger debugger;
 
 #if defined(AKANTU_DEBUG_TOOLS)
-  DebugElementManager element_manager;
+DebugElementManager element_manager;
 #endif
 }
 
+/* -------------------------------------------------------------------------- */
 /// Paser for commandline arguments
 ::cppargparse::ArgumentParser static_argparser;
 
@@ -78,21 +80,24 @@ namespace debug {
 Parser static_parser;
 
 bool Parser::permissive_parser = false;
-
+/* -------------------------------------------------------------------------- */
 Real Math::tolerance = std::numeric_limits<Real>::epsilon();
-
+/* -------------------------------------------------------------------------- */
 const UInt _all_dimensions = UInt(-1);
-
+/* -------------------------------------------------------------------------- */
 const Array<UInt> empty_filter(0, 1, "empty_filter");
-
-template<> long int RandGenerator<Real>::_seed = 0;
-template<> long int RandGenerator<bool>::_seed = 0; // useless just defined due to a template instantiation
-template<> long int RandGenerator<UInt>::_seed = 0;
-template<> long int RandGenerator<Int>::_seed = 0;
+/* -------------------------------------------------------------------------- */
+template <> long int RandGenerator<Real>::_seed = 0;
+template <>
+long int RandGenerator<bool>::_seed =
+    0; // useless just defined due to a template instantiation
+template <> long int RandGenerator<UInt>::_seed = 0;
+template <> long int RandGenerator<Int>::_seed = 0;
 #if not defined(_WIN32)
-template<> long int Rand48Generator<Real>::_seed = 0;
+template <> long int Rand48Generator<Real>::_seed = 0;
 #endif
-
+/* -------------------------------------------------------------------------- */
+int Tag::max_tag = 0;
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

@@ -38,9 +38,10 @@ namespace akantu {
 class SparseMatrixAIJ;
 class NonLinearSolverDefault;
 class TimeStepSolverDefault;
+class DOFSynchronizer;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class DOFManagerDefault : public DOFManager {
   /* ------------------------------------------------------------------------ */
@@ -55,6 +56,9 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// register a mesh for dof that have a support type on nodes
+  virtual void registerMesh(Mesh & mesh);
+
   /// register an array of degree of freedom
   virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
                             const DOFSupportType & support_type);
@@ -122,6 +126,12 @@ protected:
   /// Get the part of the solution corresponding to the dof_id
   virtual void getSolutionPerDOFs(const ID & dof_id,
                                   Array<Real> & solution_array);
+
+  /// fill a Vector with the equation numbers corresponding to the given
+  /// connectivity
+  inline void extractElementEquationNumber(
+      const Array<UInt> & equation_numbers, const Vector<UInt> & connectivity,
+      UInt nb_degree_of_freedom, Vector<UInt> & local_equation_number);
 
 public:
   /// extract a lumped matrix part corresponding to a given dof
@@ -192,15 +202,40 @@ public:
   /// Get the location type of a given dof
   inline bool isLocalOrMasterDOF(UInt dof_num);
 
+  /// get the equation numbers (in local numbering) corresponding to a dof ID
+  inline const Array<UInt> & getLocalEquationNumbers(const ID & dof_id) const;
+
+  /// return the local index of the global equation number
+  inline UInt globalToLocalEquationNumber(UInt global) const;
+
+  /// converts local equation numbers to global equation numbers;
+  template <class S> inline void localToGlobalEquationNumber(S & inout);
+
+  /// get the array of dof types (use only if you know what you do...)
+  inline Int getDOFType(UInt local_id) const;
+
+  /// get the array of dof types (use only if you know what you do...)
+  inline const Array<UInt> & getDOFsAssociatedNodes(const ID & dof_id) const;
+
+protected:
+  virtual DOFData & getNewDOFData(const ID & dof_id);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
+protected:
+  struct DOFDataDefault : public DOFData {
+    DOFDataDefault(const ID & dof_id);
+
+    /// associated node for _dst_nodal dofs only
+    Array<UInt> associated_nodes;
+  };
+
   typedef std::map<ID, SparseMatrixAIJ *> AIJMatrixMap;
   typedef std::map<ID, NonLinearSolverDefault *> DefaultNonLinearSolversMap;
   typedef std::map<ID, TimeStepSolverDefault *> DefaultTimeStepSolversMap;
 
-  typedef std::set<std::pair<ID, ID> > DOFToMatrixProfile;
+  typedef std::set<std::pair<ID, ID>> DOFToMatrixProfile;
 
   /// contains the the dofs that where added to the profile of a given matrix.
   DOFToMatrixProfile matrix_profiled_dofs;
@@ -235,9 +270,20 @@ private:
 
   /// Release at last apply boundary on jacobian
   UInt jacobian_release;
+
+  /// equation number in global numbering
+  Array<UInt> global_equation_number;
+
+  typedef unordered_map<UInt, UInt>::type equation_numbers_map;
+
+  /// dual information of global_equation_number
+  equation_numbers_map global_to_local_mapping;
+
+  /// synchronizer to maintain coherency in dof fields
+  DOFSynchronizer * synchronizer;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "dof_manager_default_inline_impl.cc"
 

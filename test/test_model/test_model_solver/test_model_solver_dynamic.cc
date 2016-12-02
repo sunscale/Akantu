@@ -28,11 +28,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "model_solver.hh"
+#include "dof_manager.hh"
 #include "mesh.hh"
 #include "mesh_accessor.hh"
-#include "dof_manager.hh"
+#include "model_solver.hh"
 #include "sparse_matrix.hh"
+/* -------------------------------------------------------------------------- */
+#include <fstream>
+/* -------------------------------------------------------------------------- */
 
 #ifndef EXPLICIT
 #define EXPLICIT true
@@ -60,7 +63,7 @@ public:
         internal_forces(mesh.getNbNodes(), 1, "force_int"), mesh(mesh),
         nb_dofs(mesh.getNbNodes()), E(1.), A(1.), rho(1.), lumped(lumped) {
 
-    this->initDOFManager("mumps");
+    this->initDOFManager();
 
     this->getDOFManager().registerDOFs("disp", displacement, _dst_nodal);
     this->getDOFManager().registerDOFsDerivative("disp", 1, velocity);
@@ -332,7 +335,7 @@ int main(int argc, char * argv[]) {
   UInt max_steps = 2000;
   Real time_step = 0.001;
   Mesh mesh(1);
-  Real F = 9.81;
+  Real F = -9.81;
   bool _explicit = EXPLICIT;
 
   genMesh(mesh, nb_nodes);
@@ -355,31 +358,64 @@ int main(int argc, char * argv[]) {
   const Array<Real> & velo = model.velocity;
   const Array<Real> & reac = model.internal_forces;
 
-  std::cout << std::setw(8) << "time"
-            << ", " << std::setw(8) << "disp"
-            << ", " << std::setw(8) << "velo"
-            << ", " << std::setw(8) << "reac"
-            << ", " << std::setw(8) << "wext"
-            << ", " << std::setw(8) << "epot"
-            << ", " << std::setw(8) << "ekin" << std::endl;
+#if EXPLICIT == true
+  std::ofstream output("output_dynamic_explicit.csv");
+#else
+  std::ofstream output("output_dynamic_implicit.csv");
+#endif
+  output << std::setw(8) << "time"
+         << "," << std::setw(8) << "disp"
+         << "," << std::setw(8) << "velo"
+         << "," << std::setw(8) << "reac"
+         << "," << std::setw(8) << "wext"
+         << "," << std::setw(8) << "epot"
+         << "," << std::setw(8) << "ekin"
+         << "," << std::setw(8) << "total"
+         << std::endl;
 
-  Real wext =0;
+  Real wext = 0;
 
+  Real epot = model.getPotentialEnergy();
+  Real ekin = model.getKineticEnergy();
+  Real einit = ekin +  epot;
+  output << std::setw(8) << 0.
+         << "," << std::setw(8) << disp(nb_nodes - 1, _x)
+         << "," << std::setw(8) << velo(nb_nodes - 1, _x)
+         << "," << std::setw(8) << (-reac(0, _x))
+         << "," << std::setw(8) << wext
+         << "," << std::setw(8) << epot
+         << "," << std::setw(8) << ekin
+         << "," << std::setw(8) << (ekin + epot - wext - einit)
+         << std::endl;
+#if EXPLICIT == false
+  NonLinearSolver & solver = model.getDOFManager().getNonLinearSolver("dynamic");
+#endif
   for (UInt i = 1; i < max_steps + 1; ++i) {
     model.solveStep();
 
+#if EXPLICIT == false
+    UInt nb_iter = solver.get("nb_iterations");
+    Real error = solver.get("error");
+    bool converged = solver.get("converged");
+
+    std::cout << error << " " << nb_iter << " -> " << converged << std::endl;
+#endif
+
     wext += F * velo(nb_nodes - 1, 0) * time_step;
-    Real epot = model.getPotentialEnergy();
-    Real ekin = model.getKineticEnergy();
-    std::cout << std::setw(8) << time_step * i << ", "
-              << std::setw(8) << disp(nb_nodes - 1, _x) << ", "
-              << std::setw(8) << velo(nb_nodes - 1, _x) << ", "
-              << std::setw(8) << (-reac(0, _x)) << ", "
-              << std::setw(8) << wext << ", "
-              << std::setw(8) << epot << ", "
-              << std::setw(8) << ekin << std::endl;
+    epot = model.getPotentialEnergy();
+    ekin = model.getKineticEnergy();
+    output << std::setw(8) << time_step * i
+           << "," << std::setw(8) << disp(nb_nodes - 1, _x)
+           << "," << std::setw(8) << velo(nb_nodes - 1, _x)
+           << "," << std::setw(8) << (-reac(0, _x))
+           << "," << std::setw(8) << wext
+           << "," << std::setw(8) << epot
+           << "," << std::setw(8) << ekin
+           << "," << std::setw(8) << (ekin + epot - wext - einit)
+           << std::endl;
   }
 
+  output.close();
   finalize();
   return EXIT_SUCCESS;
 }

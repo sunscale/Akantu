@@ -35,7 +35,7 @@
 #include "mesh_partition_scotch.hh"
 #include "mesh_io.hh"
 #include "static_communicator.hh"
-#include "distributed_synchronizer.hh"
+#include "element_synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
   /* ------------------------------------------------------------------------ */
   /* Parallel initialization                                                  */
   /* ------------------------------------------------------------------------ */
-  DistributedSynchronizer * communicator;
+  ElementSynchronizer * communicator;
   MeshPartition * partition;
 
   if(prank == 0) {
@@ -70,10 +70,10 @@ int main(int argc, char *argv[])
     std::cout << "Partitioning mesh..." << std::endl;
     partition = new akantu::MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
-    communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
+    communicator = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
     delete partition;
   } else {
-    communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
+    communicator = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
 
   UInt nb_nodes = mesh.getNbNodes();

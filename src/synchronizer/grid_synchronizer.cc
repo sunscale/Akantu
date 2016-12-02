@@ -47,7 +47,7 @@ __BEGIN_AKANTU__
 GridSynchronizer::GridSynchronizer(Mesh & mesh, const ID & id,
                                    MemoryID memory_id,
                                    const bool register_to_event_manager)
-    : DistributedSynchronizer(mesh, id, memory_id, register_to_event_manager) {
+    : ElementSynchronizer(mesh, id, memory_id, register_to_event_manager) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -248,7 +248,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
       AKANTU_DEBUG_INFO("I have prepared " << to_send->size()
                                            << " elements to send to processor "
                                            << p);
-
+      auto scheme = communicator.getCommunications().createSendScheme(p);
       std::stringstream sstr; sstr << "element_per_proc_" << p;
       element_per_proc[p] = new ElementTypeMapArray<UInt>(sstr.str(), id, memory_id);
       ElementTypeMapArray<UInt> & elempproc = *(element_per_proc[p]);
@@ -277,7 +277,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
         }
 
         elempproc(type).push_back(global_connect);
-        communicator.send_element[p].push_back(*elem);
+        scheme.push_back(*elem);
       }
 
       delete to_send;
@@ -295,7 +295,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
   /**
    * Sending loop, sends the connectivity asynchronously to all concerned proc
    */
-  std::vector<CommunicationRequest *> isend_requests;
+  std::vector<CommunicationRequest> isend_requests;
   UInt * space = new UInt[2*nb_proc*_max_element_type];
   UInt offset = 0;
   for (UInt p = 0; p < nb_proc; ++p) {
@@ -349,7 +349,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
       const_cast<Array<UInt> &>(mesh.getGlobalNodesIds());
   Array<NodeType> & nodes_type =
       const_cast<Array<NodeType> &>(const_cast<const Mesh &>(mesh).getNodesType());
-  std::vector<CommunicationRequest *> isend_nodes_requests;
+  std::vector<CommunicationRequest> isend_nodes_requests;
   Vector<UInt> nb_nodes_to_recv(nb_proc);
   UInt nb_total_nodes_to_recv = 0;
   UInt nb_current_nodes = global_nodes_ids.getSize();
@@ -364,6 +364,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
     if (p == my_rank)
       continue;
 
+    auto scheme = communicator.getCommunications().createRecvScheme(p);
     Array<UInt> & ask_nodes = ask_nodes_per_proc[p];
     UInt count = 0;
     if (intersects_proc[p]) {
@@ -438,7 +439,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
               new_elements.getList().push_back(element);
             }
 
-            communicator.recv_element[p].push_back(element);
+            scheme.push_back(element);
           }
         }
         count++;
@@ -476,7 +477,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
   Array<Real> & nodes = const_cast<Array<Real> &>(mesh.getNodes());
   UInt nb_nodes = nodes.getSize();
 
-  std::vector<CommunicationRequest *> isend_coordinates_requests;
+  std::vector<CommunicationRequest> isend_coordinates_requests;
   Array<Real> * nodes_to_send_per_proc = new Array<Real>[nb_proc];
   for (UInt p = 0; p < nb_proc; ++p) {
     if (p == my_rank || !intersects_proc[p])

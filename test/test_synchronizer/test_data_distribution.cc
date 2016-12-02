@@ -30,7 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "distributed_synchronizer.hh"
+#include "element_synchronizer.hh"
 #include "mesh_partition_mesh_data.hh"
 #include "element_group.hh"
 
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
-  DistributedSynchronizer *communicator_a, *communicator_b;
+  ElementSynchronizer *communicator_a, *communicator_b;
   if(prank == 0) {
     mesh_group_before.read("data_split.msh");
     mesh_group_after .read("data_split.msh");
@@ -77,12 +77,12 @@ int main(int argc, char *argv[]) {
     MeshPartitionScotch * partition = new MeshPartitionScotch(mesh_group_after, spatial_dimension);
     partition->partitionate(psize);
 
-    communicator_a = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh_group_after , partition);
-    communicator_b = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh_group_before, partition);
+    communicator_a = ElementSynchronizer::createDistributedSynchronizerMesh(mesh_group_after , partition);
+    communicator_b = ElementSynchronizer::createDistributedSynchronizerMesh(mesh_group_before, partition);
     delete partition;
   } else {
-    communicator_a = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh_group_after , NULL);
-    communicator_b = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh_group_before, NULL);
+    communicator_a = ElementSynchronizer::createDistributedSynchronizerMesh(mesh_group_after , NULL);
+    communicator_b = ElementSynchronizer::createDistributedSynchronizerMesh(mesh_group_before, NULL);
   }
 
   mesh_group_after.createGroupsFromMeshData<std::string>("physical_names");

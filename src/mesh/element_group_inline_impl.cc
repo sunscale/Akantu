@@ -7,7 +7,8 @@
  * @date creation: Wed Nov 13 2013
  * @date last modification: Tue Aug 18 2015
  *
- * @brief  Stores information relevent to the notion of domain boundary and surfaces.
+ * @brief Stores information relevent to the notion of domain boundary and
+ * surfaces.
  *
  * @section LICENSE
  *
@@ -29,8 +30,12 @@
  *
  */
 
-__BEGIN_AKANTU__
+/* -------------------------------------------------------------------------- */
+#include "mesh.hh"
+/* -------------------------------------------------------------------------- */
 
+
+__BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 inline void ElementGroup::add(const Element & el, bool add_nodes, 

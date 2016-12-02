@@ -168,7 +168,7 @@ void SolidMechanicsModel::assignMaterialToElements(
   }
 
   // synchronize the element material arrays
-  synch_registry->synchronize(_gst_material_id);
+  this->synchronize(_gst_material_id);
 
   /// fill the element filters of the materials using the element_material
   /// arrays
@@ -224,7 +224,7 @@ void SolidMechanicsModel::initMaterials() {
     (*mat_it)->initMaterial();
   }
 
-  synch_registry->synchronize(_gst_smm_init_mat);
+  this->synchronize(_gst_smm_init_mat);
 
   // initialize mass
   switch (method) {

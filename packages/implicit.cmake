@@ -34,16 +34,10 @@ package_declare(implicit META
 
 
 package_declare_sources(implicit
-  model/dof_manager_default.hh
-  model/dof_manager_default.cc
-  model/dof_manager_default_inline_impl.cc
   model/non_linear_solver_linear.cc
   model/non_linear_solver_linear.hh
   model/non_linear_solver_newton_raphson.cc
   model/non_linear_solver_newton_raphson.hh
-  solver/sparse_matrix_aij.cc
-  solver/sparse_matrix_aij.hh
-  solver/sparse_matrix_aij_inline_impl.cc
   )
 
 set(AKANTU_IMPLICIT_SOLVER "Mumps"
@@ -55,9 +49,9 @@ set_property(CACHE AKANTU_IMPLICIT_SOLVER PROPERTY STRINGS
   )
 
 if(AKANTU_IMPLICIT_SOLVER MATCHES "Mumps")
-  package_add_dependencies(implicit Mumps scotch)
+  package_add_dependencies(implicit Mumps)
 else()
-  package_remove_dependencies(implicit Mumps scotch)
+  package_remove_dependencies(implicit Mumps)
 endif()
 
 if(AKANTU_IMPLICIT_SOLVER MATCHES "PETSc")
@@ -65,8 +59,6 @@ if(AKANTU_IMPLICIT_SOLVER MATCHES "PETSc")
 else()
   package_remove_dependency(implicit PETSc)
 endif()
-
-
 
 package_declare_documentation(implicit
   "This package activates the sparse solver necessary to solve implicitely static/dynamic"

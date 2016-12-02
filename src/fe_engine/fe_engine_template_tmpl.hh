@@ -1419,7 +1419,8 @@ template <ElementKind kind> struct GetShapesDerivativesHelper {
   static const Array<Real> &
   call(__attribute__((unused)) const S<k> & shape_functions,
        __attribute__((unused)) const ElementType & type,
-       __attribute__((unused)) const GhostType & ghost_type, UInt id) {
+       __attribute__((unused)) const GhostType & ghost_type,
+       __attribute__((unused)) UInt id) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 };

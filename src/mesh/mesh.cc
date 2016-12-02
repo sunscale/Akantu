@@ -38,12 +38,15 @@
 #include "aka_config.hh"
 
 /* -------------------------------------------------------------------------- */
-#include "mesh.hh"
-#include "group_manager_inline_impl.cc"
-#include "mesh_io.hh"
 #include "element_class.hh"
+#include "group_manager_inline_impl.cc"
+#include "mesh.hh"
+#include "mesh_io.hh"
+/* -------------------------------------------------------------------------- */
+#include "element_synchronizer.hh"
+#include "mesh_utils_distribution.hh"
+#include "node_synchronizer.hh"
 #include "static_communicator.hh"
-#include "element_group.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_field.hh"
@@ -51,7 +54,7 @@
 #endif
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 const Element ElementNull(_not_defined, 0);
 
@@ -65,99 +68,61 @@ void Element::printself(std::ostream & stream, int indent) const {
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension,
-	   const ID & id,
-	   const MemoryID & memory_id) :
-  Memory(id, memory_id),
-  GroupManager(*this, id + ":group_manager", memory_id),
-  nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
-  created_nodes(true),
-  connectivities("connectivities", id, memory_id),
-  normals("normals", id, memory_id),
-  spatial_dimension(spatial_dimension),
-  types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
-  ghost_types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
-  lower_bounds(spatial_dimension,0.),
-  upper_bounds(spatial_dimension,0.),
-  size(spatial_dimension, 0.),
-  local_lower_bounds(spatial_dimension,0.),
-  local_upper_bounds(spatial_dimension,0.),
-  mesh_data("mesh_data", id, memory_id),
-  mesh_facets(NULL) {
-
+Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
+           StaticCommunicator & communicator)
+    : Memory(id, memory_id),
+      GroupManager(*this, id + ":group_manager", memory_id), nodes(NULL),
+      nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
+      nb_global_nodes(0), created_nodes(true),
+      connectivities("connectivities", id, memory_id),
+      normals("normals", id, memory_id), spatial_dimension(spatial_dimension),
+      types_offsets(Array<UInt>((UInt)_max_element_type + 1, 1)),
+      ghost_types_offsets(Array<UInt>((UInt)_max_element_type + 1, 1)),
+      lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
+      size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
+      local_upper_bounds(spatial_dimension, 0.),
+      mesh_data("mesh_data", id, memory_id), mesh_facets(NULL),
+      mesh_parent(NULL), is_mesh_facets(false), is_distributed(false),
+      communicator(&communicator), element_synchronizer(NULL),
+      node_synchronizer(NULL) {
   AKANTU_DEBUG_IN();
-
-  this->nodes = &(alloc<Real>(id + ":coordinates", memory_id, this->spatial_dimension));
-
-  nb_global_nodes = 0;
-
-  init();
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension,
-           const ID & nodes_id,
-           const ID & id,
-           const MemoryID & memory_id) :
-  Memory(id, memory_id),
-  GroupManager(*this, id + ":group_manager", memory_id),
-  nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
-  created_nodes(false),
-  connectivities("connectivities", id, memory_id),
-  normals("normals", id, memory_id),
-  spatial_dimension(spatial_dimension),
-  types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
-  ghost_types_offsets(Array<UInt>((UInt) _max_element_type + 1, 1)),
-  lower_bounds(spatial_dimension,0.),
-  upper_bounds(spatial_dimension,0.),
-  size(spatial_dimension, 0.),
-  local_lower_bounds(spatial_dimension,0.),
-  local_upper_bounds(spatial_dimension,0.),
-  mesh_data("mesh_data", id, memory_id),
-  mesh_facets(NULL) {
-
+Mesh::Mesh(UInt spatial_dimension, StaticCommunicator & communicator,
+           const ID & id, const MemoryID & memory_id)
+    : Mesh(spatial_dimension, id, memory_id, communicator) {
   AKANTU_DEBUG_IN();
-
-  this->nodes = &(getArray<Real>(nodes_id));
-  nb_global_nodes = nodes->getSize();
-
-  init();
-
+  this->nodes =
+      &(alloc<Real>(id + ":coordinates", memory_id, spatial_dimension));
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension,
-           Array<Real> & nodes,
-           const ID & id,
-           const MemoryID & memory_id) :
-  Memory(id, memory_id),
-  GroupManager(*this, id + ":group_manager", memory_id),
-  nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
-  created_nodes(false),
-  connectivities("connectivities", id, memory_id),
-  normals("normals", id, memory_id),
-  spatial_dimension(spatial_dimension),
-  types_offsets(Array<UInt>(_max_element_type + 1, 1)),
-  ghost_types_offsets(Array<UInt>(_max_element_type + 1, 1)),
-  lower_bounds(spatial_dimension,0.),
-  upper_bounds(spatial_dimension,0.),
-  size(spatial_dimension, 0.),
-  local_lower_bounds(spatial_dimension,0.),
-  local_upper_bounds(spatial_dimension,0.),
-  mesh_data("mesh_data", id, memory_id),
-  mesh_facets(NULL) {
+Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id)
+    : Mesh(spatial_dimension, StaticCommunicator::getStaticCommunicator(), id,
+           memory_id) {}
 
-  AKANTU_DEBUG_IN();
+/* -------------------------------------------------------------------------- */
+Mesh::Mesh(UInt spatial_dimension, const ID & nodes_id, const ID & id,
+           const MemoryID & memory_id)
+    : Mesh(spatial_dimension, id, memory_id,
+           StaticCommunicator::getStaticCommunicator()) {
+  this->nodes = &(this->getArray<Real>(nodes_id));
+  this->nb_global_nodes = this->nodes->getSize();
+  this->computeBoundingBox();
+}
 
-  this->nodes = &(nodes);
-  nb_global_nodes = nodes.getSize();
-
-  init();
-
-  AKANTU_DEBUG_OUT();
+/* -------------------------------------------------------------------------- */
+Mesh::Mesh(UInt spatial_dimension, Array<Real> & nodes, const ID & id,
+           const MemoryID & memory_id)
+    : Mesh(spatial_dimension, id, memory_id,
+           StaticCommunicator::getStaticCommunicator()) {
+  this->nodes = &nodes;
+  this->nb_global_nodes = this->nodes->getSize();
+  this->computeBoundingBox();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -184,14 +149,6 @@ void Mesh::defineMeshParent(const Mesh & mesh) {
   this->is_mesh_facets = true;
 
   AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void Mesh::init() {
-  this->is_mesh_facets = false;
-  this->mesh_parent = NULL;
-  this->is_distributed = false;
-  //  computeBoundingBox();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -267,14 +224,14 @@ void Mesh::computeBoundingBox() {
 
     Matrix<Real> reduce_bounds(spatial_dimension, 2);
     for (UInt k = 0; k < spatial_dimension; ++k) {
-      reduce_bounds(k, 0) =  local_lower_bounds(k);
+      reduce_bounds(k, 0) = local_lower_bounds(k);
       reduce_bounds(k, 1) = -local_upper_bounds(k);
     }
 
     comm.allReduce(reduce_bounds, _so_min);
 
     for (UInt k = 0; k < spatial_dimension; ++k) {
-      lower_bounds(k) =  reduce_bounds(k, 0);
+      lower_bounds(k) = reduce_bounds(k, 0);
       upper_bounds(k) = -reduce_bounds(k, 1);
     }
   } else {
@@ -487,5 +444,47 @@ Mesh::createFieldFromAttachedData<UInt>(const std::string & field_id,
 #endif
 
 /* -------------------------------------------------------------------------- */
+void Mesh::distribute() {
+  this->distribute(StaticCommunicator::getStaticCommunicator());
+}
 
-__END_AKANTU__
+/* -------------------------------------------------------------------------- */
+void Mesh::distribute(StaticCommunicator & communicator) {
+  AKANTU_DEBUG_ASSERT(is_distributed == false,
+                      "This mesh is already distribute");
+  this->communicator = &communicator;
+
+  Int psize = this->communicator->getNbProc();
+  Int prank = this->communicator->whoAmI();
+
+  this->element_synchronizer =
+      new ElementSynchronizer(*this, this->getID() + ":element_synchronizer",
+                              this->getMemoryID(), true, communicator);
+
+  this->node_synchronizer =
+      new NodeSynchronizer(*this, this->getID() + ":node_synchronizer",
+                           this->getMemoryID(), true, communicator);
+
+#ifdef AKANTU_USE_SCOTCH
+  if (prank == 0) {
+    MeshPartitionScotch partition(*this, spatial_dimension);
+    partition.partitionate(psize);
+
+    MeshUtilsDistribution::distributeMeshCentralized(*this, partition);
+  } else {
+    MeshUtilsDistribution::distributeMeshCentralized(*this, 0);
+  }
+#else
+  if(!(psize == 1)) {
+    AKANTU_DEBUG_ERROR(
+        "Cannot distribute a mesh without a partitioning tool");
+  }
+#endif
+
+  this->is_distributed = true;
+  this->computeBoundingBox();
+}
+
+/* -------------------------------------------------------------------------- */
+
+} // akantu

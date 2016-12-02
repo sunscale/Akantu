@@ -73,12 +73,12 @@ public:
   virtual void addToMatrix(UInt i, UInt j, Real value) = 0;
 
   /// save the profil in a file using the MatrixMarket file format
-  virtual void saveProfile(const std::string &) const {
+  virtual void saveProfile(__attribute__((unused)) const std::string &) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
   /// save the matrix in a file using the MatrixMarket file format
-  virtual void saveMatrix(const std::string &) const {
+  virtual void saveMatrix(__attribute__((unused)) const std::string &) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   };
 
@@ -107,11 +107,13 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   /// return the values at potition i, j
-  virtual inline Real operator()(UInt i, UInt j) const {
+  virtual inline Real operator()(__attribute__((unused)) UInt i,
+                                 __attribute__((unused)) UInt j) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
   /// return the values at potition i, j
-  virtual inline Real & operator()(UInt i, UInt j) {
+  virtual inline Real & operator()(__attribute__((unused)) UInt i,
+                                   __attribute__((unused)) UInt j) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
@@ -142,7 +144,7 @@ protected:
   /// number of non zero element
   UInt nb_non_zero;
 
-  /// matrix definition releasez
+  /// matrix definition release
   UInt matrix_release;
 };
 

@@ -38,22 +38,17 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-Synchronizer::Synchronizer(SynchronizerID id, MemoryID memory_id,
-			   StaticCommunicator & comm) :
-  Memory(id, memory_id),
-  static_communicator(&comm) {
+Synchronizer::Synchronizer(const ID & id, MemoryID memory_id,
+                           StaticCommunicator & comm)
+    : Memory(id, memory_id), communicator(comm) {
+  int max_tag = comm.getMaxTag();
 
+  this->hash_id = hash<std::string>(this->getID());
+  if (max_tag != 0)
+    this->hash_id = this->hash_id % max_tag;
+
+  this->nb_proc = communicator.getNbProc();
+  this->rank = communicator.whoAmI();
 }
-
-/* -------------------------------------------------------------------------- */
-void Synchronizer::synchronize(DataAccessor & data_accessor,
-			       SynchronizationTag tag) {
-  AKANTU_DEBUG_IN();
-  asynchronousSynchronize(data_accessor,tag);
-  waitEndSynchronize(data_accessor,tag);
-  AKANTU_DEBUG_OUT();
-}
-/* -------------------------------------------------------------------------- */
-
 
 __END_AKANTU__

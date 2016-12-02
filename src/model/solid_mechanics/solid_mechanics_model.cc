@@ -37,26 +37,28 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_math.hh"
-#include "aka_common.hh"
 #include "solid_mechanics_model.hh"
+#include "aka_common.hh"
+#include "aka_math.hh"
 
-#include "group_manager_inline_impl.cc"
 #include "element_group.hh"
+#include "group_manager_inline_impl.cc"
 #include "static_communicator.hh"
+#include "element_synchronizer.hh"
+#include "synchronizer_registry.hh"
 
 #include "sparse_matrix.hh"
 
 #include "dumpable_inline_impl.hh"
 #ifdef AKANTU_USE_IOHELPER
+#include "dumper_element_partition.hh"
+#include "dumper_elemental_field.hh"
 #include "dumper_field.hh"
-#include "dumper_paraview.hh"
 #include "dumper_homogenizing_field.hh"
 #include "dumper_internal_material_field.hh"
-#include "dumper_elemental_field.hh"
-#include "dumper_material_padders.hh"
-#include "dumper_element_partition.hh"
 #include "dumper_iohelper.hh"
+#include "dumper_material_padders.hh"
+#include "dumper_paraview.hh"
 #endif
 
 #ifdef AKANTU_DAMAGE_NON_LOCAL
@@ -96,10 +98,9 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
       material_selector(new DefaultMaterialSelector(material_index)),
       is_default_material_selector(true), increment_flag(false),
       synch_parallel(NULL), are_materials_instantiated(false),
-      non_local_manager(NULL), pbc_synch(NULL) {
+      non_local_manager(NULL) { //, pbc_synch(NULL) {
   AKANTU_DEBUG_IN();
 
-  this->createSynchronizerRegistry(this);
   this->registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh,
                                                spatial_dimension);
 
@@ -109,6 +110,8 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
   this->mesh.registerDumper<DumperParaview>("paraview_all", id, true);
   this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_regular);
 #endif
+
+  this->initDOFManager();
 
   AKANTU_DEBUG_OUT();
 }
@@ -142,7 +145,7 @@ SolidMechanicsModel::~SolidMechanicsModel() {
   non_local_manager = NULL;
 #endif
 
-  delete pbc_synch;
+//  delete pbc_synch;
 
   AKANTU_DEBUG_OUT();
 }
@@ -176,8 +179,6 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
       dynamic_cast<const SolidMechanicsModelOptions &>(options);
 
   this->method = smm_options.analysis_method;
-
-  this->initDOFManager();
 
   // initialize the vectors
   this->initArrays();
@@ -214,7 +215,7 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
 }
 
 /* -------------------------------------------------------------------------- */
-TimeStepSolverType SolidMechanicsModel::getDefaultSolverType() {
+TimeStepSolverType SolidMechanicsModel::getDefaultSolverType() const {
   return _tsst_dynamic_lumped;
 }
 
@@ -295,7 +296,8 @@ void SolidMechanicsModel::initNewSolver(const AnalysisMethod & method) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-void SolidMechanicsModel::allocNodalField(Array<T> *& array, UInt nb_component,
+void SolidMechanicsModel::allocNodalField(Array<T> *& array,
+                                          __attribute__((unused)) UInt nb_component,
                                           const ID & name) {
   if (array == NULL) {
     UInt nb_nodes = mesh.getNbNodes();
@@ -309,7 +311,7 @@ void SolidMechanicsModel::allocNodalField(Array<T> *& array, UInt nb_component,
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initSolver(
     TimeStepSolverType time_step_solver_type,
-    NonLinearSolverType non_linear_solver_type) {
+    __attribute__((unused)) NonLinearSolverType non_linear_solver_type) {
   DOFManager & dof_manager = this->getDOFManager();
 
   /* ------------------------------------------------------------------------ */
@@ -357,22 +359,22 @@ void SolidMechanicsModel::initSolver(
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::initParallel(MeshPartition * partition,
-                                       DataAccessor * data_accessor) {
-  AKANTU_DEBUG_IN();
+// void SolidMechanicsModel::initParallel(MeshPartition & partition,
+//                                        DataAccessor<Element> * data_accessor) {
+//   AKANTU_DEBUG_IN();
 
-  if (data_accessor == NULL)
-    data_accessor = this;
-  synch_parallel = &createParallelSynch(partition, data_accessor);
+//   if (data_accessor == NULL)
+//     data_accessor = this;
+//   synch_parallel = &createParallelSynch(partition, *data_accessor);
 
-  synch_registry->registerSynchronizer(*synch_parallel, _gst_material_id);
-  synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_mass);
-  synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_stress);
-  synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_boundary);
-  synch_registry->registerSynchronizer(*synch_parallel, _gst_for_dump);
+//   synch_registry->registerSynchronizer(*synch_parallel, _gst_material_id);
+//   synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_mass);
+//   synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_stress);
+//   synch_registry->registerSynchronizer(*synch_parallel, _gst_smm_boundary);
+//   synch_registry->registerSynchronizer(*synch_parallel, _gst_for_dump);
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initFEEngineBoundary() {
@@ -460,31 +462,31 @@ void SolidMechanicsModel::initModel() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::initPBC() {
-  Model::initPBC();
-  registerPBCSynchronizer();
+// void SolidMechanicsModel::initPBC() {
+//   Model::initPBC();
+//   registerPBCSynchronizer();
 
-  // as long as there are ones on the diagonal of the matrix, we can put
-  // boudandary true for slaves
-  std::map<UInt, UInt>::iterator it = pbc_pair.begin();
-  std::map<UInt, UInt>::iterator end = pbc_pair.end();
-  UInt dim = mesh.getSpatialDimension();
-  while (it != end) {
-    for (UInt i = 0; i < dim; ++i)
-      (*blocked_dofs)((*it).first, i) = true;
-    ++it;
-  }
-}
+//   // as long as there are ones on the diagonal of the matrix, we can put
+//   // boudandary true for slaves
+//   std::map<UInt, UInt>::iterator it = pbc_pair.begin();
+//   std::map<UInt, UInt>::iterator end = pbc_pair.end();
+//   UInt dim = mesh.getSpatialDimension();
+//   while (it != end) {
+//     for (UInt i = 0; i < dim; ++i)
+//       (*blocked_dofs)((*it).first, i) = true;
+//     ++it;
+//   }
+// }
 
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::registerPBCSynchronizer() {
-  pbc_synch = new PBCSynchronizer(pbc_pair);
-  synch_registry->registerSynchronizer(*pbc_synch, _gst_smm_uv);
-  synch_registry->registerSynchronizer(*pbc_synch, _gst_smm_mass);
-  synch_registry->registerSynchronizer(*pbc_synch, _gst_smm_res);
-  synch_registry->registerSynchronizer(*pbc_synch, _gst_for_dump);
-  //  changeLocalEquationNumberForPBC(pbc_pair, mesh.getSpatialDimension());
-}
+// /* -------------------------------------------------------------------------- */
+// void SolidMechanicsModel::registerPBCSynchronizer() {
+//   pbc_synch = new PBCSynchronizer(pbc_pair);
+//   synch_registry->registerSynchronizer(*pbc_synch, _gst_smm_uv);
+//   synch_registry->registerSynchronizer(*pbc_synch, _gst_smm_mass);
+//   synch_registry->registerSynchronizer(*pbc_synch, _gst_smm_res);
+//   synch_registry->registerSynchronizer(*pbc_synch, _gst_for_dump);
+//   //  changeLocalEquationNumberForPBC(pbc_pair, mesh.getSpatialDimension());
+// }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::assembleResidual() {
@@ -541,7 +543,7 @@ void SolidMechanicsModel::assembleInternalForces() {
   /* assembling the forces internal */
   // communicate the stress
   AKANTU_DEBUG_INFO("Send data for residual assembly");
-  synch_registry->asynchronousSynchronize(_gst_smm_stress);
+  this->asynchronousSynchronize(_gst_smm_stress);
 
   AKANTU_DEBUG_INFO("Assemble residual for local elements");
   for (mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
@@ -551,7 +553,7 @@ void SolidMechanicsModel::assembleInternalForces() {
 
   AKANTU_DEBUG_INFO("Wait distant stresses");
   // finalize communications
-  synch_registry->waitEndSynchronize(_gst_smm_stress);
+  this->waitEndSynchronize(_gst_smm_stress);
 
   AKANTU_DEBUG_INFO("Assemble residual for ghost elements");
   for (mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
@@ -610,8 +612,8 @@ void SolidMechanicsModel::updateCurrentPosition() {
 //                                            *this->external_force);
 
 //   // start synchronization
-//   synch_registry->asynchronousSynchronize(_gst_smm_uv);
-//   synch_registry->waitEndSynchronize(_gst_smm_uv);
+//   this->asynchronousSynchronize(_gst_smm_uv);
+//   this->waitEndSynchronize(_gst_smm_uv);
 
 //   this->updateCurrentPosition();
 
@@ -626,8 +628,8 @@ void SolidMechanicsModel::updateCurrentPosition() {
 // void SolidMechanicsModel::computeStresses() {
 //   if (isExplicit()) {
 //     // start synchronization
-//     synch_registry->asynchronousSynchronize(_gst_smm_uv);
-//     synch_registry->waitEndSynchronize(_gst_smm_uv);
+//     this->asynchronousSynchronize(_gst_smm_uv);
+//     this->waitEndSynchronize(_gst_smm_uv);
 
 //     // compute stresses on all local elements for each materials
 //     std::vector<Material *>::iterator mat_it;
@@ -812,26 +814,36 @@ void SolidMechanicsModel::updatePreviousDisplacement() {
 }
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::updateDataForNonLocalCriterion(
+    ElementTypeMapReal & criterion) {
+  const ID field_name = criterion.getName();
+  for (UInt m = 0; m < this->getNbMaterials(); ++m) {
+    const Material & material = this->getMaterial(m);
+    if (material.isInternal<Real>(field_name, _ek_regular))
+      for (UInt g = _not_ghost; g <= _ghost; ++g) {
+        GhostType ghost_type = (GhostType)g;
+        material.flattenInternal(field_name, criterion, ghost_type,
+                                 _ek_regular);
+      }
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
 /* Information                                                                */
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::synchronizeBoundaries() {
   AKANTU_DEBUG_IN();
-  AKANTU_DEBUG_ASSERT(synch_registry,
-                      "Synchronizer registry was not initialized."
-                          << " Did you call initParallel?");
-  synch_registry->synchronize(_gst_smm_boundary);
+  this->synchronize(_gst_smm_boundary);
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::synchronizeResidual() {
   AKANTU_DEBUG_IN();
-  AKANTU_DEBUG_ASSERT(synch_registry,
-                      "Synchronizer registry was not initialized."
-                          << " Did you call initPBC?");
-  synch_registry->synchronize(_gst_smm_res);
+  this->synchronize(_gst_smm_res);
   AKANTU_DEBUG_OUT();
 }
 
@@ -1418,7 +1430,7 @@ SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
 dumper::Field *
 SolidMechanicsModel::createNodalFieldBool(const std::string & field_name,
                                           const std::string & group_name,
-                                          bool padding_flag) {
+                                          __attribute__((unused)) bool padding_flag) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
   uint_nodal_fields["blocked_dofs"] = blocked_dofs;

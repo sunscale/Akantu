@@ -89,27 +89,14 @@ define_project_version()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DAKANTU_NDEBUG"
   CACHE STRING "Flags used by the compiler during release builds" FORCE)
 
-add_flags(cxx "-Wall")
+#add_flags(cxx "-Wall -Wextra -pedantic -Werror")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  add_flags(cxx "-Wall -Wextra -pedantic")
+else()
+  add_flags(cxx "-Wall")
+endif()
 
-#Profiling
-set(CMAKE_CXX_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
-  CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_C_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
-  CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_Fortran_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
-  CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg"
-  CACHE STRING "Flags used by the linker during profiling builds")
-set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg"
-  CACHE STRING "Flags used by the linker during profiling builds")
-mark_as_advanced(
-  CMAKE_CXX_FLAGS_PROFILING
-  CMAKE_C_FLAGS_PROFILING
-  CMAKE_Fortran_FLAGS_PROFILING
-  CMAKE_EXE_LINKER_FLAGS_PROFILING
-  CMAKE_SHARED_LINKER_FLAGS_PROFILING
-  )
-
+include(AkantuExtraCompilationProfiles)
 #===============================================================================
 # Dependencies
 #===============================================================================

@@ -29,10 +29,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+/* -------------------------------------------------------------------------- */
 // Boost
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
+/* -------------------------------------------------------------------------- */
+
 
 #ifndef __AKANTU_ALGEBRAIC_PARSER_HH__
 #define __AKANTU_ALGEBRAIC_PARSER_HH__
@@ -353,7 +357,7 @@ namespace parser {
   };
 
   /* ---------------------------------------------------------------------- */
-  static bool vector_eval(const ID & a, const ParserSection & section,
+  static inline bool vector_eval(const ID & a, const ParserSection & section,
                           parsable_vector & result) {
     std::string value = section.getParameter(a, _ppsc_current_and_parent_scope);
     std::string::const_iterator b = value.begin();

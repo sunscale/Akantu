@@ -34,6 +34,11 @@
 #ifndef __AKANTU_MESH_ACCESSOR_HH__
 #define __AKANTU_MESH_ACCESSOR_HH__
 
+namespace akantu {
+class NodeSynchronizer;
+class ElementSynchronizer;
+}  // akantu
+
 __BEGIN_AKANTU__
 
 class MeshAccessor {
@@ -108,6 +113,12 @@ public:
   }
 
   MeshData & getMeshData() { return this->_mesh.getMeshData(); }
+
+  /// get the node synchonizer
+  NodeSynchronizer & getNodeSynchronizer();
+
+  /// get the element synchonizer
+  ElementSynchronizer & getElementSynchronizer();
 
 private:
   Mesh & _mesh;

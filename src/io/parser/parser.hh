@@ -409,11 +409,11 @@ public:
   /* --------------------------------------------------------------------------
    */
   /// Get section name
-  const std::string & getName() const { return name; }
+  const std::string getName() const { return name; }
   /// Get section type
-  const SectionType & getType() const { return type; }
+  SectionType getType() const { return type; }
   /// Get section option
-  const std::string & getOption(const std::string & def = "") const {
+  const std::string getOption(const std::string & def = "") const {
     return option != "" ? option : def;
   }
 

@@ -29,7 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "element_info_per_processor.hh"
-#include "distributed_synchronizer.hh"
+#include "element_synchronizer.hh"
 #include "static_communicator.hh"
 #include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
@@ -42,9 +42,9 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 SlaveElementInfoPerProc::SlaveElementInfoPerProc(
-    DistributedSynchronizer & synchronizer, StaticCommunicator & communicator,
-    UInt message_cnt, UInt root, Mesh & mesh)
-    : ElementInfoPerProc(synchronizer, communicator, message_cnt, root, mesh, _not_defined) {
+    ElementSynchronizer & synchronizer,
+    UInt message_cnt, UInt root)
+    : ElementInfoPerProc(synchronizer, message_cnt, root, _not_defined) {
 
   Vector<UInt> size(5);
   comm.receive(size, this->root, Tag::genTag(this->root, this->message_count, Tag::_SIZES));

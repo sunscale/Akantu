@@ -29,9 +29,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_memory.hh"
+#include "mesh.hh"
 #include "non_linear_solver.hh"
 #include "time_step_solver.hh"
-#include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
 #include <set>
@@ -47,7 +47,8 @@ class DOFManager : protected Memory, protected MeshEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DOFManager(const ID & id = "dof_manager", const MemoryID & memory_id = 0);
+  DOFManager(const ID & id = "dof_manager",
+             const MemoryID & memory_id = 0);
   virtual ~DOFManager();
 
   /* ------------------------------------------------------------------------ */
@@ -162,8 +163,7 @@ public:
   void splitSolutionPerDOFs();
 
   /// extract a lumped matrix part corresponding to a given dof
-  virtual void getLumpedMatrixPerDOFs(const ID & dof_id,
-                                      const ID & lumped_mtx,
+  virtual void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
                                       Array<Real> & lumped) = 0;
 
 protected:
@@ -173,15 +173,6 @@ protected:
                                   Array<Real> & solution_array) = 0;
 
 protected:
-  /// fill a Vector with the equation numbers corresponding to the given
-  /// connectivity
-  inline void extractElementEquationNumber(
-      const Array<UInt> & equation_numbers, const Vector<UInt> & connectivity,
-      UInt nb_degree_of_freedom, Vector<UInt> & local_equation_number);
-
-  /// converts local equation numbers to global equation numbers;
-  template <class S> inline void localToGlobalEquationNumber(S & inout);
-
   /* ------------------------------------------------------------------------ */
   /// register a matrix
   void registerSparseMatrix(const ID & matrix_id, SparseMatrix & matrix);
@@ -197,29 +188,24 @@ protected:
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-protected:
-  struct DOFData;
-  inline DOFData & getDOFData(const ID & dof_id);
-  inline const DOFData & getDOFData(const ID & dof_id) const;
-
 public:
-  /// get the equation numbers (in local numbering) corresponding to a dof ID
-  inline const Array<UInt> & getLocalEquationNumbers(const ID & dof_id) const;
-
-  /// return the local index of the global equation number
-  inline UInt globalToLocalEquationNumber(UInt global) const;
-
   /// Global number of dofs
   AKANTU_GET_MACRO(SystemSize, this->system_size, UInt);
 
   /// Local number of dofs
   AKANTU_GET_MACRO(LocalSystemSize, this->local_system_size, UInt);
 
+  /// Retrieve all the registered DOFs
+  std::vector<ID> getDOFIDs() const;
+
   /* ------------------------------------------------------------------------ */
   /* DOFs and derivatives accessors                                          */
   /* ------------------------------------------------------------------------ */
   /// Get a reference to the registered dof array for a given id
   inline Array<Real> & getDOFs(const ID & dofs_id);
+
+  /// Get the support type of a given dof
+  inline DOFSupportType getSupportType(const ID & dofs_id) const;
 
   /// are the dofs registered
   inline bool hasDOFs(const ID & dofs_id) const;
@@ -310,6 +296,9 @@ public:
   bool hasTimeStepSolver(const ID & solver_id) const;
 
   /* ------------------------------------------------------------------------ */
+  AKANTU_GET_MACRO(Mesh, *mesh, const Mesh &);
+
+  /* ------------------------------------------------------------------------ */
   /* MeshEventHandler interface                                               */
   /* ------------------------------------------------------------------------ */
 private:
@@ -339,13 +328,25 @@ public:
                     const ElementTypeMapArray<UInt> & new_numbering,
                     const ChangedElementsEvent & event);
 
+protected:
+  struct DOFData;
+  inline DOFData & getDOFData(const ID & dof_id);
+  inline const DOFData & getDOFData(const ID & dof_id) const;
+  template <class _DOFData>
+  inline _DOFData & getDOFDataTyped(const ID & dof_id);
+  template <class _DOFData>
+  inline const _DOFData & getDOFDataTyped(const ID & dof_id) const;
+
+  virtual DOFData & getNewDOFData(const ID & dof_id);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
   /// dof representations in the dof manager
   struct DOFData {
-    DOFData();
+    DOFData(const ID & dof_id);
+    virtual ~DOFData();
 
     /// DOF support type (nodal, general) this is needed to determine how the
     /// dof are shared among processors
@@ -366,28 +367,20 @@ protected:
     /// Solution associated to the dof
     Array<Real> solution;
 
+    /// local numbering equation numbers
+    Array<UInt> local_equation_number;
+
     /* ---------------------------------------------------------------------- */
     /* data for dynamic simulations                                           */
     /* ---------------------------------------------------------------------- */
     /// Degree of freedom derivatives arrays
     std::vector<Array<Real> *> dof_derivatives;
-
-    /// local numbering equation numbers
-    Array<UInt> local_equation_number;
   };
 
   typedef Array<std::set<Element> *> NodesToElements;
 
   /// This info is stored to simplify the dynamic changes
   NodesToElements nodes_to_elements;
-
-  /// equation number in global numbering
-  Array<UInt> global_equation_number;
-
-  typedef unordered_map<UInt, UInt>::type equation_numbers_map;
-
-  /// dual information of global_equation_number
-  equation_numbers_map global_to_local_mapping;
 
   /// type to store dofs information
   typedef std::map<ID, DOFData *> DOFStorage;

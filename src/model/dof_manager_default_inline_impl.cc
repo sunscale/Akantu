@@ -28,6 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "dof_manager_default.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_CC__
 #define __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_CC__
@@ -38,6 +40,55 @@ __BEGIN_AKANTU__
 inline bool DOFManagerDefault::isLocalOrMasterDOF(UInt dof_num) {
   Int dof_type = this->dofs_type(dof_num);
   return (dof_type == -2) || (dof_type == -1);
+}
+
+/* -------------------------------------------------------------------------- */
+inline const Array<UInt> &
+DOFManagerDefault::getLocalEquationNumbers(const ID & dof_id) const {
+  return this->getDOFData(dof_id).local_equation_number;
+}
+
+inline const Array<UInt> &
+DOFManagerDefault::getDOFsAssociatedNodes(const ID & dof_id) const {
+  const DOFDataDefault & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
+  return dof_data.associated_nodes;
+}
+/* -------------------------------------------------------------------------- */
+inline void DOFManagerDefault::extractElementEquationNumber(
+    const Array<UInt> & equation_numbers, const Vector<UInt> & connectivity,
+    UInt nb_degree_of_freedom, Vector<UInt> & element_equation_number) {
+  for (UInt i = 0, ld = 0; i < connectivity.size(); ++i) {
+    UInt n = connectivity(i);
+    for (UInt d = 0; d < nb_degree_of_freedom; ++d, ++ld) {
+      element_equation_number(ld) =
+          equation_numbers(n * nb_degree_of_freedom + d);
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <class S>
+inline void DOFManagerDefault::localToGlobalEquationNumber(S & inout) {
+  for (UInt i = 0; i < inout.size(); ++i) {
+    inout(i) = this->global_equation_number(inout(i));
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template<>
+inline void DOFManagerDefault::localToGlobalEquationNumber<UInt>(UInt & inout) {
+  inout = this->global_equation_number(inout);
+}
+
+/* -------------------------------------------------------------------------- */
+inline UInt DOFManagerDefault::globalToLocalEquationNumber(UInt global) const {
+  equation_numbers_map::const_iterator it =
+      this->global_to_local_mapping.find(global);
+  AKANTU_DEBUG_ASSERT(it != this->global_to_local_mapping.end(),
+                      "This global equation number "
+                          << global << " does not exists in " << this->id);
+
+  return it->second;
 }
 
 /* -------------------------------------------------------------------------- */

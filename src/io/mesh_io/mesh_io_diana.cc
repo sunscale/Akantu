@@ -145,6 +145,8 @@ inline void my_getline(std::ifstream & infile, std::string & line) {
 void MeshIODiana::read(const std::string & filename, Mesh & mesh) {
   AKANTU_DEBUG_IN();
 
+  MeshAccessor mesh_accessor(mesh);
+
   std::ifstream infile;
   infile.open(filename.c_str());
 
@@ -177,7 +179,7 @@ void MeshIODiana::read(const std::string & filename, Mesh & mesh) {
   }
   infile.close();
 
-  mesh.nb_global_nodes = mesh.nodes->getSize();
+  mesh_accessor.setNbGlobalNodes(mesh.getNbNodes());
 
   MeshUtils::fillElementToSubElementsData(mesh);
 
@@ -195,7 +197,9 @@ std::string MeshIODiana::readCoordinates(std::ifstream & infile, Mesh & mesh,
                                          UInt & first_node_number) {
   AKANTU_DEBUG_IN();
 
-  Array<Real> & nodes = const_cast<Array<Real> &>(mesh.getNodes());
+  MeshAccessor mesh_accessor(mesh);
+
+  Array<Real> & nodes = mesh_accessor.getNodes();
 
   std::string line;
 
@@ -350,6 +354,7 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
                                           UInt first_node_number) {
   AKANTU_DEBUG_IN();
 
+  MeshAccessor mesh_accessor(mesh);
   Int index;
   std::string lline;
 
@@ -375,7 +380,7 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
     if (akantu_type == _not_defined) continue;
 
     if (akantu_type != akantu_type_old) {
-      connectivity = mesh.getConnectivityPointer(akantu_type);
+      connectivity = &(mesh_accessor.getConnectivity(akantu_type));
 
       node_per_element = connectivity->getNbComponent();
       akantu_type_old = akantu_type;

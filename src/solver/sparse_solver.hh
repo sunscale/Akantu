@@ -31,30 +31,28 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_memory.hh"
+//#include "data_accessor.hh"
+#include "parsable.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SOLVER_HH__
 #define __AKANTU_SOLVER_HH__
 
-/* -------------------------------------------------------------------------- */
-#include "data_accessor.hh"
-#include "parsable.hh"
-/* -------------------------------------------------------------------------- */
-
+namespace akantu {
 enum SolverParallelMethod {
   _not_parallel,
   _fully_distributed,
   _master_slave_distributed
 };
 
-namespace akantu {
-  class DOFManager;
+class DOFManager;
 }
 
 __BEGIN_AKANTU__
 
 class SparseSolver : protected Memory,
-                     public Parsable,
-                     public DataAccessor {
+                     public Parsable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

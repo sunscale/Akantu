@@ -234,8 +234,8 @@ Material::convertToGlobalPoint(const IntegrationPoint & local_point) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt Material::getNbDataForElements(const Array<Element> & elements,
-                                           SynchronizationTag tag) const {
+inline UInt Material::getNbData(const Array<Element> & elements,
+                                const SynchronizationTag & tag) const {
   if (tag == _gst_smm_stress) {
     return (this->isFiniteDeformation() ? 3 : 1) * spatial_dimension *
            spatial_dimension * sizeof(Real) *
@@ -245,9 +245,9 @@ inline UInt Material::getNbDataForElements(const Array<Element> & elements,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Material::packElementData(CommunicationBuffer & buffer,
-                                      const Array<Element> & elements,
-                                      SynchronizationTag tag) const {
+inline void Material::packData(CommunicationBuffer & buffer,
+                               const Array<Element> & elements,
+                               const SynchronizationTag & tag) const {
   if (tag == _gst_smm_stress) {
     if (this->isFiniteDeformation()) {
       packElementDataHelper(piola_kirchhoff_2, buffer, elements);
@@ -258,9 +258,9 @@ inline void Material::packElementData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Material::unpackElementData(CommunicationBuffer & buffer,
-                                        const Array<Element> & elements,
-                                        SynchronizationTag tag) {
+inline void Material::unpackData(CommunicationBuffer & buffer,
+                                 const Array<Element> & elements,
+                                 const SynchronizationTag & tag) {
   if (tag == _gst_smm_stress) {
     if (this->isFiniteDeformation()) {
       unpackElementDataHelper(piola_kirchhoff_2, buffer, elements);
@@ -344,8 +344,8 @@ inline void Material::unregisterInternal<bool>(InternalField<bool> & vect) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline bool Material::isInternal(const ID & id,
-                                 const ElementKind & element_kind) const {
+inline bool Material::isInternal(__attribute__((unused)) const ID & id,
+                                 __attribute__((unused)) const ElementKind & element_kind) const {
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
@@ -429,8 +429,8 @@ void Material::flattenInternal(const std::string & field_id,
     UInt nb_data_per_quad = internal_field.getNbComponent();
 
     if (!internal_flat.exists(type, ghost_type)) {
-      internal_flat.alloc(nb_element_dst * nb_quad_per_elem,
-                          nb_data_per_quad, type, ghost_type);
+      internal_flat.alloc(nb_element_dst * nb_quad_per_elem, nb_data_per_quad,
+                          type, ghost_type);
     }
 
     if (nb_element_src == 0)

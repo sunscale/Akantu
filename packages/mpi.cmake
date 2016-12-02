@@ -119,7 +119,9 @@ function(add_extra_mpi_options)
 
     package_is_activated(core_cxx11 _act)
     if(_act)
-      set( _flags "${_flags} -Wno-literal-suffix")
+      if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        set( _flags "${_flags} -Wno-literal-suffix")
+      endif()
     endif()
   endif()
 

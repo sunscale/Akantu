@@ -28,7 +28,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "element_info_per_processor.hh"
 #include "element_group.hh"
+#include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH__
@@ -41,7 +43,7 @@ template <typename T, typename BufferType>
 void ElementInfoPerProc::fillMeshDataTemplated(BufferType & buffer,
                                                const std::string & tag_name) {
 
-  AKANTU_DEBUG_ASSERT(mesh.getNbElement(this->type) == nb_local_element,
+  AKANTU_DEBUG_ASSERT(this->mesh.getNbElement(this->type) == nb_local_element,
                       "Did not got enought informations for the tag "
                           << tag_name << " and the element type " << this->type
                           << ":"

@@ -40,9 +40,8 @@
 #include "real_static_communicator.hh"
 
 /* -------------------------------------------------------------------------- */
-
 #include <vector>
-
+#include <cstring>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -77,19 +76,19 @@ public:
                __attribute__((unused)) Int tag) {}
 
   template <typename T>
-  CommunicationRequest * asyncSend(__attribute__((unused)) T * buffer,
+  CommunicationRequest asyncSend(__attribute__((unused)) T * buffer,
                                    __attribute__((unused)) Int size,
                                    __attribute__((unused)) Int receiver,
                                    __attribute__((unused)) Int tag) {
-    return new CommunicationRequest(0, 0);
+    return (new InternalCommunicationRequest(0, 0));
   }
 
   template <typename T>
-  CommunicationRequest * asyncReceive(__attribute__((unused)) T * buffer,
+  CommunicationRequest asyncReceive(__attribute__((unused)) T * buffer,
                                       __attribute__((unused)) Int size,
                                       __attribute__((unused)) Int sender,
                                       __attribute__((unused)) Int tag) {
-    return new CommunicationRequest(0, 0);
+    return (new InternalCommunicationRequest(0, 0));
   }
 
   template <typename T>
@@ -97,13 +96,16 @@ public:
                     __attribute__((unused)) Int tag,
                     __attribute__((unused)) CommunicationStatus & status) {}
 
-  bool testRequest(__attribute__((unused)) CommunicationRequest * request) {
+  bool testRequest(__attribute__((unused)) CommunicationRequest request) {
     return true;
   }
 
-  void wait(__attribute__((unused)) CommunicationRequest * request) {}
+  void wait(__attribute__((unused)) CommunicationRequest request) {}
   void waitAll(__attribute__((unused))
-               std::vector<CommunicationRequest *> & requests) {}
+               std::vector<CommunicationRequest> & requests) {}
+  UInt waitAny(__attribute__((unused))
+               std::vector<CommunicationRequest> & requests) { return UInt(-1); }
+
 
   void barrier() {}
 
@@ -130,6 +132,14 @@ public:
   inline void gather(__attribute__((unused)) T * values,
                      __attribute__((unused)) int nb_values,
                      __attribute__((unused)) int root = 0) {}
+
+  template <typename T>
+  inline void gather(T * values,
+                     int nb_values,
+                     T * gathered,
+                     __attribute__((unused)) int nb_gathered) {
+    std::memcpy(gathered, values, nb_values);
+  }
 
   template <typename T>
   inline void gatherV(__attribute__((unused)) T * values,

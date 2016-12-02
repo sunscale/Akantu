@@ -36,7 +36,7 @@
 #define __AKANTU_FILTERED_SYNCHRONIZER_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "distributed_synchronizer.hh"
+#include "element_synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
@@ -48,7 +48,7 @@ public:
 };
 
 /* -------------------------------------------------------------------------- */
-class FilteredSynchronizer : public DistributedSynchronizer {
+class FilteredSynchronizer : public ElementSynchronizer {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -65,12 +65,12 @@ public:
 public:
   /// get another synchronizer and filter its elements using a functor
   static FilteredSynchronizer * 
-  createFilteredSynchronizer(const DistributedSynchronizer & d_synchronizer,
+  createFilteredSynchronizer(const ElementSynchronizer & d_synchronizer,
 			     SynchElementFilter & filter);
 
 protected:
   /// set up the synchronizer
-  void setupSynchronizer(const DistributedSynchronizer & d_synchronizer,
+  void setupSynchronizer(const ElementSynchronizer & d_synchronizer,
 			 SynchElementFilter & filter);
   /// push source elements into destination elements through the filter
   void updateElementList(Array<Element> * source_elements,

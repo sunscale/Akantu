@@ -227,7 +227,7 @@ protected:
   }
 
 protected:
-  TensorStorage(const TensorStorage & src) {}
+  TensorStorage(const TensorStorage & src) = delete;
 
 public:
   TensorStorage(const TensorStorage & src, bool deep_copy)
@@ -634,7 +634,7 @@ public:
     stream << "]";
   }
 
-  friend class ::akantu::Array<T>;
+//  friend class ::akantu::Array<T>;
 };
 
 typedef Vector<Real> RVector;

@@ -136,8 +136,8 @@ void FragmentManager::buildFragments(Real damage_limit) {
   AKANTU_DEBUG_IN();
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  DistributedSynchronizer * cohesive_synchronizer
-    = const_cast<DistributedSynchronizer *>(model.getCohesiveSynchronizer());
+  ElementSynchronizer * cohesive_synchronizer
+    = const_cast<ElementSynchronizer *>(model.getCohesiveSynchronizer());
 
   if (cohesive_synchronizer) {
     cohesive_synchronizer->computeBufferSize(model, _gst_smmc_damage);
@@ -146,8 +146,8 @@ void FragmentManager::buildFragments(Real damage_limit) {
   }
 #endif
 
-  DistributedSynchronizer & synchronizer
-    = const_cast<DistributedSynchronizer &>(model.getSynchronizer());
+  ElementSynchronizer & synchronizer
+    = const_cast<ElementSynchronizer &>(model.getSynchronizer());
 
   Mesh & mesh_facets = const_cast<Mesh &>(mesh.getMeshFacets());
 

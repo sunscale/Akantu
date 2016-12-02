@@ -38,68 +38,24 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_memory.hh"
-#include "data_accessor.hh"
-#include "real_static_communicator.hh"
 #include "static_communicator.hh"
-
 /* -------------------------------------------------------------------------- */
 #include <map>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-/**
- * tag = |__________20_________|___8____|_4_|
- *       |          proc       | num mes| ct|
- */
-class Tag {
-public:
-  Tag() : tag(0) {}
-  Tag(int val) : tag(val) {}
-
-  operator int() { return int(tag); } // remove the sign bit
-
-  template <typename CommTag>
-  static inline Tag genTag(int proc, UInt msg_count, CommTag tag) {
-    int max_tag = StaticCommunicator::getStaticCommunicator().getMaxTag();
-    int _tag = ((((proc & 0xFFFFF) << 12) + ((msg_count & 0xFF) << 4) +
-                 ((Int)tag & 0xF)));
-    Tag t(max_tag == 0 ? _tag : (_tag % max_tag));
-    return t;
-  }
-
-  virtual void printself(std::ostream & stream,
-                         __attribute__((unused)) int indent = 0) const {
-    stream << (tag >> 12) << ":" << (tag >> 4 & 0xFF) << ":" << (tag & 0xF);
-  }
-
-
-  enum CommTags {
-    _SIZES = 0,
-    _CONNECTIVITY = 1,
-    _DATA = 2,
-    _PARTITIONS = 3,
-    _NB_NODES = 4,
-    _NODES = 5,
-    _COORDINATES = 6,
-    _NODES_TYPE = 7,
-    _MESH_DATA = 8,
-    _ELEMENT_GROUP = 9,
-    _NODE_GROUP = 10,
-  };
-private:
-  int tag;
-};
+/* Base class for synchronizers                                               */
 /* -------------------------------------------------------------------------- */
-
 class Synchronizer : protected Memory {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Synchronizer(SynchronizerID id = "synchronizer", MemoryID memory_id = 0,
-	       StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
+  Synchronizer(
+      const ID & id = "synchronizer", MemoryID memory_id = 0,
+      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
   virtual ~Synchronizer(){};
 
@@ -110,67 +66,52 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// synchronize ghosts
-  void synchronize(DataAccessor & data_accessor, SynchronizationTag tag);
+  template<class DataAccessor>
+  void synchronize(DataAccessor & data_accessor,
+                   const SynchronizationTag & tag);
 
   /// asynchronous synchronization of ghosts
-  virtual void asynchronousSynchronize(DataAccessor & data_accessor,
-                                       SynchronizationTag tag) = 0;
+  template<class DataAccessor>
+  void asynchronousSynchronize(DataAccessor & data_accessor,
+                               const SynchronizationTag & tag);
 
   /// wait end of asynchronous synchronization of ghosts
-  virtual void waitEndSynchronize(DataAccessor & data_accessor,
-                                  SynchronizationTag tag) = 0;
+  template<class DataAccessor>
+  void waitEndSynchronize(DataAccessor & data_accessor,
+                                  const SynchronizationTag & tag);
 
   /// compute buffer size for a given tag and data accessor
-  virtual void computeBufferSize(DataAccessor & data_accessor,
-                                 SynchronizationTag tag) = 0;
+  template<class DataAccessor>
+  void computeBufferSize(DataAccessor & data_accessor,
+                         const SynchronizationTag & tag);
 
-  /// generate the tag from the ID
-  template <typename CommTag> inline Tag genTagFromID(CommTag tag) {
-    int max_tag = StaticCommunicator::getStaticCommunicator().getMaxTag();
-    int _tag =
-        std::abs((int(hash<std::string>(this->getID())) << 4) + (tag & 0xF));
-    Tag t(max_tag == 0 ? _tag : (_tag % max_tag));
-    return t;
-  }
-
-protected:
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  AKANTU_GET_MACRO(Communicator, communicator, StaticCommunicator &);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  class Communication {
-  public:
-    void resize(UInt size) {
-      send_buffer.resize(size);
-      recv_buffer.resize(size);
-      size_to_send.resize(size);
-      size_to_receive.resize(size);
-    }
-
-  public:
-    /// size of data to send to each processor
-    std::vector<UInt> size_to_send;
-    /// size of data to recv to each processor
-    std::vector<UInt> size_to_receive;
-    std::vector<CommunicationBuffer> send_buffer;
-    std::vector<CommunicationBuffer> recv_buffer;
-
-    std::vector<CommunicationRequest *> send_requests;
-    std::vector<CommunicationRequest *> recv_requests;
-  };
-
   /// id of the synchronizer
   SynchronizerID id;
+
+  /// hashed version of the id
+  int hash_id;
 
   /// message counter per tag
   std::map<SynchronizationTag, UInt> tag_counter;
 
   /// the static memory instance
-  StaticCommunicator * static_communicator;
+  StaticCommunicator & communicator;
+
+  /// nb processors in the communicator
+  UInt nb_proc;
+
+  /// rank in the communicator
+  UInt rank;
 };
 
 /// standard output stream operator
@@ -180,12 +121,8 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-inline std::ostream & operator<<(std::ostream & stream,
-                                 const Tag & _this) {
-  _this.printself(stream);
-  return stream;
-}
+} // akantu
 
-__END_AKANTU__
+#include "synchronizer_tmpl.hh"
 
 #endif /* __AKANTU_SYNCHRONIZER_HH__ */

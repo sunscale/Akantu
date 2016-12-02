@@ -678,6 +678,9 @@ static void my_getline(std::ifstream & infile, std::string & str) {
 
 /* -------------------------------------------------------------------------- */
 void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
+
+  MeshAccessor mesh_accessor(mesh);
+
   std::ifstream infile;
   infile.open(filename.c_str());
 
@@ -741,9 +744,9 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
       sstr >> nb_nodes;
       current_line++;
 
-      Array<Real> & nodes = const_cast<Array<Real> &>(mesh.getNodes());
+      Array<Real> & nodes = mesh_accessor.getNodes();
       nodes.resize(nb_nodes);
-      mesh.nb_global_nodes = nb_nodes;
+      mesh_accessor.setNbGlobalNodes(nb_nodes);
 
       UInt index;
       Real coord[3];
@@ -802,7 +805,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
         }
 
         if (akantu_type != akantu_type_old) {
-          connectivity = mesh.getConnectivityPointer(akantu_type);
+          connectivity = &mesh_accessor.getConnectivity(akantu_type);
           //          connectivity->resize(0);
 
           node_per_element = connectivity->getNbComponent();

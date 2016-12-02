@@ -36,9 +36,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
+#include <cctype>
 #include <iomanip>
 #include <iostream>
-#include <cctype>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -369,7 +369,8 @@ inline std::string trim(const std::string & to_trim) {
                             std::not1(std::ptr_fun<int, int>(isspace))));
   // right trim
   trimed.erase(std::find_if(trimed.rbegin(), trimed.rend(),
-                            std::not1(std::ptr_fun<int, int>(isspace))).base(),
+                            std::not1(std::ptr_fun<int, int>(isspace)))
+                   .base(),
                trimed.end());
   return trimed;
 }
@@ -384,7 +385,9 @@ __BEGIN_AKANTU__
 template <typename T> std::string printMemorySize(UInt size) {
   Real real_size = size * sizeof(T);
 
-  UInt mult = (std::log(real_size) / std::log(2)) / 10;
+  UInt mult = 0;
+  if (real_size != 0)
+    mult = (std::log(real_size) / std::log(2)) / 10;
 
   std::stringstream sstr;
 

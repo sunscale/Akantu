@@ -38,27 +38,23 @@
 
 __BEGIN_AKANTU__
 
-class NeighborhoodMaxCriterion : public NeighborhoodBase,
-				 public Parsable{
+class NeighborhoodMaxCriterion : public NeighborhoodBase, public Parsable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  NeighborhoodMaxCriterion(const SolidMechanicsModel & model, 
-			   const ElementTypeMapReal & quad_coordinates,
-			   const ID & criterion_id,
-			   const ID & id = "neighborhood_max_criterion",
-			   const MemoryID & memory_id = 0);
+  NeighborhoodMaxCriterion(Model & model,
+                           const ElementTypeMapReal & quad_coordinates,
+                           const ID & criterion_id,
+                           const ID & id = "neighborhood_max_criterion",
+                           const MemoryID & memory_id = 0);
   virtual ~NeighborhoodMaxCriterion();
-
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
 public:
-
   /// initialize the neighborhood
   virtual void initNeighborhood();
 
@@ -69,9 +65,9 @@ public:
   void findMaxQuads(std::vector<IntegrationPoint> & max_quads);
 
 protected:
-
   /// remove unneccessary ghost elements
-  void cleanupExtraGhostElements(const ElementTypeMap<UInt> & nb_ghost_protected);
+  void
+  cleanupExtraGhostElements(const ElementTypeMap<UInt> & nb_ghost_protected);
 
   /// insert the quadrature points in the grid
   void insertAllQuads(const GhostType & ghost_type);
@@ -79,46 +75,43 @@ protected:
   /// compare criterion with neighbors
   void checkNeighbors(const GhostType & ghost_type);
 
-/* -------------------------------------------------------------------------- */
-/* DataAccessor inherited members                                             */
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* DataAccessor inherited members */
+  /* --------------------------------------------------------------------------
+   */
 public:
-
   virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-					   SynchronizationTag tag) const;
+                                           SynchronizationTag tag) const;
 
   virtual inline void packElementData(CommunicationBuffer & buffer,
-				      const Array<Element> & elements,
-				      SynchronizationTag tag) const;
- 
+                                      const Array<Element> & elements,
+                                      SynchronizationTag tag) const;
+
   virtual inline void unpackElementData(CommunicationBuffer & buffer,
-					const Array<Element> & elements,
-					SynchronizationTag tag);
+                                        const Array<Element> & elements,
+                                        SynchronizationTag tag);
 
-/* -------------------------------------------------------------------------- */
-/* Accessors                                                                  */
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* Accessors */
+  /* --------------------------------------------------------------------------
+   */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// a boolean to store the information if a quad has the max
   /// criterion in the neighborhood
   ElementTypeMapArray<bool> is_highest;
 
   /// an element type map to store the flattened internal of the criterion
   ElementTypeMapReal criterion;
-
 };
 
 __END_AKANTU__
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
 #include "neighborhood_max_criterion_inline_impl.cc"
 
 #endif /* __AKANTU_NEIGHBORHOOD_MAX_CRITERION_BASE_HH__ */

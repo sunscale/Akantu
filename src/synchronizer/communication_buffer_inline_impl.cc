@@ -31,9 +31,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
+template <bool is_static>
 inline void CommunicationBufferTemplated<is_static>::packResize(UInt size) {
-  if(!is_static) {
+  if (!is_static) {
     char * values = buffer.storage();
     buffer.resize(buffer.getSize() + size);
     ptr_pack = buffer.storage() + (ptr_pack - values);
@@ -42,28 +42,30 @@ inline void CommunicationBufferTemplated<is_static>::packResize(UInt size) {
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
-template<typename T>
-inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is_static>::operator<< (const T & to_pack) {
+template <bool is_static>
+template <typename T>
+inline CommunicationBufferTemplated<is_static> &
+CommunicationBufferTemplated<is_static>::operator<<(const T & to_pack) {
   packResize(sizeof(T));
   T * tmp = reinterpret_cast<T *>(ptr_pack);
-  AKANTU_DEBUG_ASSERT(buffer.storage() + buffer.getSize() >= ptr_pack + sizeof(T),
-		      "Packing too much data in the CommunicationBufferTemplated");
+  AKANTU_DEBUG_ASSERT(
+      buffer.storage() + buffer.getSize() >= ptr_pack + sizeof(T),
+      "Packing too much data in the CommunicationBufferTemplated");
   *tmp = to_pack;
   ptr_pack += sizeof(T);
   return *this;
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
-template<typename T>
-inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is_static>::operator>> (T & to_unpack) {
+template <bool is_static>
+template <typename T>
+inline CommunicationBufferTemplated<is_static> &
+CommunicationBufferTemplated<is_static>::operator>>(T & to_unpack) {
   T * tmp = reinterpret_cast<T *>(ptr_unpack);
   to_unpack = *tmp;
   ptr_unpack += sizeof(T);
   return *this;
 }
-
 
 /* -------------------------------------------------------------------------- */
 /* Specialization                                                             */
@@ -74,22 +76,25 @@ inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is
  */
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
-template<typename T>
-inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is_static>::operator<< (const Vector<T> & to_pack) {
+template <bool is_static>
+template <typename T>
+inline CommunicationBufferTemplated<is_static> &
+CommunicationBufferTemplated<is_static>::operator<<(const Vector<T> & to_pack) {
   UInt size = to_pack.size() * sizeof(T);
   packResize(size);
-  AKANTU_DEBUG_ASSERT(buffer.storage() + buffer.getSize() >= ptr_pack + size,
-		      "Packing too much data in the CommunicationBufferTemplated");
+  AKANTU_DEBUG_ASSERT(
+      buffer.storage() + buffer.getSize() >= ptr_pack + size,
+      "Packing too much data in the CommunicationBufferTemplated");
   memcpy(ptr_pack, to_pack.storage(), size);
   ptr_pack += size;
   return *this;
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
-template<typename T>
-inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is_static>::operator>> (Vector<T> & to_unpack) {
+template <bool is_static>
+template <typename T>
+inline CommunicationBufferTemplated<is_static> &
+CommunicationBufferTemplated<is_static>::operator>>(Vector<T> & to_unpack) {
   UInt size = to_unpack.size() * sizeof(T);
   memcpy(to_unpack.storage(), ptr_unpack, size);
   ptr_unpack += size;
@@ -101,51 +106,55 @@ inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is
  */
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
-template<typename T>
-inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is_static>::operator<< (const Matrix<T> & to_pack) {
+template <bool is_static>
+template <typename T>
+inline CommunicationBufferTemplated<is_static> &
+CommunicationBufferTemplated<is_static>::operator<<(const Matrix<T> & to_pack) {
   UInt size = to_pack.size() * sizeof(Real);
   packResize(size);
-  AKANTU_DEBUG_ASSERT(buffer.storage() + buffer.getSize() >= ptr_pack + size,
-		      "Packing too much data in the CommunicationBufferTemplated");
+  AKANTU_DEBUG_ASSERT(
+      buffer.storage() + buffer.getSize() >= ptr_pack + size,
+      "Packing too much data in the CommunicationBufferTemplated");
   memcpy(ptr_pack, to_pack.storage(), size);
   ptr_pack += size;
   return *this;
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
-template<typename T>
-inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is_static>::operator>> (Matrix<T> & to_unpack) {
+template <bool is_static>
+template <typename T>
+inline CommunicationBufferTemplated<is_static> &
+CommunicationBufferTemplated<is_static>::operator>>(Matrix<T> & to_unpack) {
   UInt size = to_unpack.size() * sizeof(Real);
   memcpy(to_unpack.storage(), ptr_unpack, size);
   ptr_unpack += size;
   return *this;
 }
 
-
-
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
-template<typename T>
-inline void CommunicationBufferTemplated<is_static>::packIterable (T & to_pack) {
+template <bool is_static>
+template <typename T>
+inline void CommunicationBufferTemplated<is_static>::packIterable(T & to_pack) {
   UInt size = to_pack.size();
   operator<<(size);
-  typename T::const_iterator it  = to_pack.begin();
+  typename T::const_iterator it = to_pack.begin();
   typename T::const_iterator end = to_pack.end();
-  for(;it != end; ++it) operator<<(*it);
+  for (; it != end; ++it)
+    operator<<(*it);
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
-template<typename T>
-inline void CommunicationBufferTemplated<is_static>::unpackIterable (T & to_unpack) {
+template <bool is_static>
+template <typename T>
+inline void
+CommunicationBufferTemplated<is_static>::unpackIterable(T & to_unpack) {
   UInt size;
   operator>>(size);
   to_unpack.resize(size);
-  typename T::iterator it  = to_unpack.begin();
+  typename T::iterator it = to_unpack.begin();
   typename T::iterator end = to_unpack.end();
-  for(;it != end; ++it) operator>>(*it);
+  for (; it != end; ++it)
+    operator>>(*it);
 }
 
 /**
@@ -153,17 +162,21 @@ inline void CommunicationBufferTemplated<is_static>::unpackIterable (T & to_unpa
  */
 /* -------------------------------------------------------------------------- */
 
-template<bool is_static>
-template<typename T>
-inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is_static>::operator<< (const std::vector<T> & to_pack) {
+template <bool is_static>
+template <typename T>
+inline CommunicationBufferTemplated<is_static> &
+CommunicationBufferTemplated<is_static>::
+operator<<(const std::vector<T> & to_pack) {
   packIterable(to_pack);
   return *this;
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
-template<typename T>
-inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is_static>::operator>> (std::vector<T> & to_unpack) {
+template <bool is_static>
+template <typename T>
+inline CommunicationBufferTemplated<is_static> &
+CommunicationBufferTemplated<is_static>::
+operator>>(std::vector<T> & to_unpack) {
   unpackIterable(to_unpack);
   return *this;
 }
@@ -173,31 +186,35 @@ inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is
  */
 /* -------------------------------------------------------------------------- */
 
-template<bool is_static>
-inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is_static>::operator<< (const std::string & to_pack) {
+template <bool is_static>
+inline CommunicationBufferTemplated<is_static> &
+CommunicationBufferTemplated<is_static>::
+operator<<(const std::string & to_pack) {
   packIterable(to_pack);
   return *this;
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
-inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is_static>::operator>> (std::string & to_unpack) {
+template <bool is_static>
+inline CommunicationBufferTemplated<is_static> &
+CommunicationBufferTemplated<is_static>::operator>>(std::string & to_unpack) {
   unpackIterable(to_unpack);
   return *this;
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
-template<typename T> inline std::string
+template <bool is_static>
+template <typename T>
+inline std::string
 CommunicationBufferTemplated<is_static>::extractStream(UInt block_size) {
   std::stringstream str;
-  T * ptr = reinterpret_cast<T*>(buffer.storage());
-  UInt sz = buffer.getSize()/sizeof(T);
-  UInt sz_block = block_size/sizeof(T);
+  T * ptr = reinterpret_cast<T *>(buffer.storage());
+  UInt sz = buffer.getSize() / sizeof(T);
+  UInt sz_block = block_size / sizeof(T);
 
   UInt n_block = 0;
   for (UInt i = 0; i < sz; ++i) {
-    if (i% sz_block == 0) {
+    if (i % sz_block == 0) {
       str << std::endl << n_block << " ";
       ++n_block;
     }
@@ -208,9 +225,9 @@ CommunicationBufferTemplated<is_static>::extractStream(UInt block_size) {
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
+template <bool is_static>
 inline void CommunicationBufferTemplated<is_static>::resize(UInt size) {
-  if(!is_static) {
+  if (!is_static) {
     buffer.resize(0);
   } else {
     buffer.resize(size);
@@ -222,27 +239,29 @@ inline void CommunicationBufferTemplated<is_static>::resize(UInt size) {
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
+template <bool is_static>
 inline void CommunicationBufferTemplated<is_static>::clear() {
   buffer.clear();
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool is_static>
+template <bool is_static>
 inline void CommunicationBufferTemplated<is_static>::reset() {
   ptr_pack = buffer.storage();
   ptr_unpack = buffer.storage();
 }
 
 /* -------------------------------------------------------------------------- */
-//template<bool is_static>
-//inline CommunicationBufferTemplated<is_static> & CommunicationBufferTemplated<is_static>::packMeshData (const MeshData & to_pack, const ElementType & type) {
+// template<bool is_static>
+// inline CommunicationBufferTemplated<is_static> &
+// CommunicationBufferTemplated<is_static>::packMeshData (const MeshData &
+// to_pack, const ElementType & type) {
 
-  //UInt size = to_pack.size();
-  //operator<<(size);
-  //typename std::vector<T>::iterator it  = to_pack.begin();
-  //typename std::vector<T>::iterator end = to_pack.end();
-  //for(;it != end; ++it) operator<<(*it);
-  //return *this;
+// UInt size = to_pack.size();
+// operator<<(size);
+// typename std::vector<T>::iterator it  = to_pack.begin();
+// typename std::vector<T>::iterator end = to_pack.end();
+// for(;it != end; ++it) operator<<(*it);
+// return *this;
 
 //}

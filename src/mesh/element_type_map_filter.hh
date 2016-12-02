@@ -49,8 +49,8 @@ template <typename T> class ArrayFilter {
 public:
   /// standard iterator
   template <typename R = T> class iterator {
-    inline bool operator!=(iterator<R> & other) { throw; };
-    inline bool operator==(iterator<R> & other) { throw; };
+    inline bool operator!=(__attribute__((unused)) iterator<R> & other) { throw; };
+    inline bool operator==(__attribute__((unused)) iterator<R> & other) { throw; };
 
     inline iterator<R> & operator++() { throw; };
     inline T operator*() {

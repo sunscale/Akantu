@@ -28,48 +28,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "dof_manager.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DOF_MANAGER_INLINE_IMPL_CC__
 #define __AKANTU_DOF_MANAGER_INLINE_IMPL_CC__
 
 __BEGIN_AKANTU__
-
-/* -------------------------------------------------------------------------- */
-inline void DOFManager::extractElementEquationNumber(
-    const Array<UInt> & equation_numbers, const Vector<UInt> & connectivity,
-    UInt nb_degree_of_freedom, Vector<UInt> & element_equation_number) {
-  for (UInt i = 0, ld = 0; i < connectivity.size(); ++i) {
-    UInt n = connectivity(i);
-    for (UInt d = 0; d < nb_degree_of_freedom; ++d, ++ld) {
-      element_equation_number(ld) =
-          equation_numbers(n * nb_degree_of_freedom + d);
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-template <class S>
-inline void DOFManager::localToGlobalEquationNumber(S & inout) {
-  for (UInt i = 0; i < inout.size(); ++i) {
-    inout(i) = this->global_equation_number(inout(i));
-  }
-}
-
-template<>
-inline void DOFManager::localToGlobalEquationNumber<UInt>(UInt & inout) {
-  inout = this->global_equation_number(inout);
-}
-
-/* -------------------------------------------------------------------------- */
-inline UInt DOFManager::globalToLocalEquationNumber(UInt global) const {
-  equation_numbers_map::const_iterator it =
-      this->global_to_local_mapping.find(global);
-  AKANTU_DEBUG_ASSERT(it != this->global_to_local_mapping.end(),
-                      "This global equation number "
-                          << global << " does not exists in " << this->id);
-
-  return it->second;
-}
 
 /* -------------------------------------------------------------------------- */
 inline bool DOFManager::hasDOFs(const ID & dof_id) const {
@@ -98,14 +63,25 @@ const DOFManager::DOFData & DOFManager::getDOFData(const ID & dof_id) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline const Array<UInt> &
-DOFManager::getLocalEquationNumbers(const ID & dof_id) const {
-  return this->getDOFData(dof_id).local_equation_number;
+template <class _DOFData>
+inline _DOFData & DOFManager::getDOFDataTyped(const ID & dof_id) {
+  return dynamic_cast<_DOFData &>(this->getDOFData(dof_id));
 }
 
 /* -------------------------------------------------------------------------- */
+template <class _DOFData>
+inline const _DOFData & DOFManager::getDOFDataTyped(const ID & dof_id) const {
+  return dynamic_cast<const _DOFData &>(this->getDOFData(dof_id));
+}
+/* -------------------------------------------------------------------------- */
 inline Array<Real> & DOFManager::getDOFs(const ID & dofs_id) {
   return *(this->getDOFData(dofs_id).dof);
+}
+
+
+/* -------------------------------------------------------------------------- */
+inline DOFSupportType DOFManager::getSupportType(const ID & dofs_id) const {
+  return this->getDOFData(dofs_id).support_type;
 }
 
 /* -------------------------------------------------------------------------- */

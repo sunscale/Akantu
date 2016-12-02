@@ -51,7 +51,7 @@ namespace akantu {
   class NodeGroup;
   class Mesh;
   class Element;
-  class DistributedSynchronizer;
+  class ElementSynchronizer;
   template <bool> class CommunicationBufferTemplated;
   namespace dumper {
     class Field;
@@ -177,7 +177,7 @@ public:
   UInt createClusters(UInt element_dimension,
                       std::string cluster_name_prefix = "cluster",
                       const ClusteringFilter & filter = ClusteringFilter(),
-                      DistributedSynchronizer * distributed_synchronizer = NULL,
+                      ElementSynchronizer * element_synchronizer = NULL,
                       Mesh * mesh_facets = NULL);
 
   /// Create an ElementGroup based on a NodeGroup

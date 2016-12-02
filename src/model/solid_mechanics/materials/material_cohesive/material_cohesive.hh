@@ -128,7 +128,7 @@ protected:
                      ElementType type, GhostType ghost_type);
 
   /// compute the opening
-  void computeOpening(const Array<Real> & displacement, Array<Real> & normal,
+  void computeOpening(const Array<Real> & displacement, Array<Real> & opening,
                       ElementType type, GhostType ghost_type);
 
   template <ElementType type>

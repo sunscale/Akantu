@@ -40,10 +40,11 @@ PseudoTime::PseudoTime(DOFManager & dof_manager, const ID & dof_id)
     : IntegrationScheme(dof_manager, dof_id, 0) {}
 
 /* -------------------------------------------------------------------------- */
-void PseudoTime::predictor(Real delta_t) {}
+void PseudoTime::predictor(__attribute__((unused)) Real delta_t) {}
 
 /* -------------------------------------------------------------------------- */
-void PseudoTime::corrector(const SolutionType & type, Real delta_t) {
+void PseudoTime::corrector(__attribute__((unused)) const SolutionType & type,
+                           __attribute__((unused)) Real delta_t) {
   Array<Real> & u = this->dof_manager.getDOFs(this->dof_id);
   const Array<Real> & delta = this->dof_manager.getSolution(this->dof_id);
   const Array<bool> & blocked_dofs =
@@ -67,7 +68,8 @@ void PseudoTime::corrector(const SolutionType & type, Real delta_t) {
 }
 
 /* -------------------------------------------------------------------------- */
-void PseudoTime::assembleJacobian(const SolutionType & type, Real delta_t) {
+void PseudoTime::assembleJacobian(__attribute__((unused)) const SolutionType & type,
+                                  __attribute__((unused)) Real delta_t) {
   SparseMatrix & J = this->dof_manager.getMatrix("J");
   const SparseMatrix & K = this->dof_manager.getMatrix("K");
 
@@ -75,7 +77,7 @@ void PseudoTime::assembleJacobian(const SolutionType & type, Real delta_t) {
 }
 
 /* -------------------------------------------------------------------------- */
-void PseudoTime::assembleResidual(bool is_lumped) {}
+void PseudoTime::assembleResidual(__attribute__((unused)) bool is_lumped) {}
 
 /* -------------------------------------------------------------------------- */
 

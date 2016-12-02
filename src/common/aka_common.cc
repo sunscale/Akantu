@@ -38,6 +38,8 @@
 
 #include "parser.hh"
 #include "cppargparse.hh"
+
+#include "communication_tag.hh"
 /* -------------------------------------------------------------------------- */
 #include <ctime>
 /* -------------------------------------------------------------------------- */
@@ -59,6 +61,9 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   StaticMemory::getStaticMemory();
   StaticCommunicator & comm =
       StaticCommunicator::getStaticCommunicator(argc, argv);
+
+  Tag::setMaxTag(comm.getMaxTag());
+
   debug::debugger.setParallelContext(comm.whoAmI(), comm.getNbProc());
   debug::initSignalHandler();
 

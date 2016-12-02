@@ -35,11 +35,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
 #include "aka_common.hh"
 #include "mesh.hh"
 #include "aka_csr.hh"
-#include "distributed_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 
 #include <vector>
@@ -80,13 +78,13 @@ public:
   /// the mesh_facets for element of dimension from_dimension to to_dimension
   static void buildAllFacets(const Mesh & mesh, Mesh & mesh_facets,
                              UInt from_dimension, UInt to_dimension,
-                             DistributedSynchronizer * synchronizer = NULL);
+                             ElementSynchronizer * synchronizer = NULL);
 
   /// build all the facets elements: boundary and internals and store them in
   /// the mesh_facets
   static void buildAllFacets(const Mesh & mesh, Mesh & mesh_facets,
                              UInt to_dimension = 0,
-                             DistributedSynchronizer * synchronizer = NULL);
+                             ElementSynchronizer * synchronizer = NULL);
 
   /// build facets for a given spatial dimension
   static void buildFacetsDimension(
@@ -148,7 +146,7 @@ public:
 
   /// associate a node type to each segment in the mesh
   static void buildSegmentToNodeType(const Mesh & mesh, Mesh & mesh_facets,
-                                     DistributedSynchronizer * synchronizer);
+                                     ElementSynchronizer * synchronizer);
 
   /// update local and master global connectivity when new nodes are added
   static UInt updateLocalMasterGlobalConnectivity(Mesh & mesh,

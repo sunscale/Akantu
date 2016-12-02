@@ -31,6 +31,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "filtered_synchronizer.hh"
+/* -------------------------------------------------------------------------- */
+#include <map>
 
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
@@ -38,7 +40,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 FilteredSynchronizer::FilteredSynchronizer(Mesh & mesh, SynchronizerID id,
                                            MemoryID memory_id)
-    : DistributedSynchronizer(mesh, id, memory_id) {
+    : ElementSynchronizer(mesh, id, memory_id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -46,8 +48,7 @@ FilteredSynchronizer::FilteredSynchronizer(Mesh & mesh, SynchronizerID id,
 
 /* -------------------------------------------------------------------------- */
 FilteredSynchronizer * FilteredSynchronizer::createFilteredSynchronizer(
-    const DistributedSynchronizer & d_synchronizer,
-    SynchElementFilter & filter) {
+    const ElementSynchronizer & d_synchronizer, SynchElementFilter & filter) {
   AKANTU_DEBUG_IN();
 
   FilteredSynchronizer & f_synchronizer = *(new FilteredSynchronizer(
@@ -62,104 +63,79 @@ FilteredSynchronizer * FilteredSynchronizer::createFilteredSynchronizer(
 
 /* -------------------------------------------------------------------------- */
 void FilteredSynchronizer::setupSynchronizer(
-    const DistributedSynchronizer & d_synchronizer,
-    SynchElementFilter & filter) {
+    const ElementSynchronizer & d_synchronizer, SynchElementFilter & filter) {
   AKANTU_DEBUG_IN();
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  std::vector<CommunicationRequest> isend_requests;
+  std::map<UInt, Array<UInt> > keep_element_recv;
 
-  Array<Element> * d_send_element = d_synchronizer.send_element;
-  Array<Element> * d_recv_element = d_synchronizer.recv_element;
+  auto rs_it = d_synchronizer.communications.begin_recv_scheme();
+  auto rs_end = d_synchronizer.communications.end_recv_scheme();
 
-  std::vector<CommunicationRequest *> isend_requests;
+  // Filter the recv list and communicate it to the sender processor
+  for (; rs_it != rs_end; ++rs_it) {
+    auto scheme = rs_it->second;
+    auto proc = rs_it->first;
 
-  Array<UInt> ** keep_element_recv = new Array<UInt> * [this->nb_proc];
+    Array<UInt> & keep_element = keep_element_recv[proc];
+    auto new_scheme = this->communications.createRecvScheme(proc);
 
-  // loop over procs
-  for (UInt p = 0; p < this->nb_proc; ++p) {
-    keep_element_recv[p] = NULL;
-    if (p == this->rank)
-      continue;
-
-    // access the element for this proc
-    const Array<Element> & unfiltered_elements = d_recv_element[p];
-    Array<Element> & filtered_elements = recv_element[p];
-
-    if (unfiltered_elements.getSize() == 0)
-      continue;
-
-    keep_element_recv[p] = new Array<UInt>(0, 1, "keep_element_recv");
-
-    // iterator to loop over all source elements
-    Array<Element>::const_iterator<Element> it = unfiltered_elements.begin();
-    Array<Element>::const_iterator<Element> end = unfiltered_elements.end();
-
-    // if filter accepts this element, push it into the destination elements
-    for (UInt el = 0; it != end; ++it, ++el) {
-      const Element & element = *it;
+    UInt el_pos = 0;
+    for (auto element : scheme) {
       if (filter(element)) {
-        filtered_elements.push_back(element);
-        keep_element_recv[p]->push_back(el);
+        new_scheme.push_back(element);
+        keep_element.push_back(el_pos);
       }
+      ++el_pos;
     }
 
-    keep_element_recv[p]->push_back(-1); // just to be sure to send
-                                         // something due to some shitty
-                                         // MPI implementation who do not
-                                         // know what to do with a 0 size
-                                         // send
+    keep_element.push_back(-1); // just to be sure to send
+                                // something due to some shitty
+                                // MPI implementation who do not
+                                // know what to do with a 0 size
+                                // send
 
-    AKANTU_DEBUG_INFO("I have " << keep_element_recv[p]->getSize() - 1
+    Tag tag = Tag::genTag(this->rank, 0, RECEIVE_LIST_TAG);
+    AKANTU_DEBUG_INFO("I have " << keep_element.getSize() - 1
                                 << " elements to still receive from processor "
-                                << p << " (communication tag : "
-                                << Tag::genTag(this->rank, 0, RECEIVE_LIST_TAG)
+                                << proc << " (communication tag : " << tag
                                 << ")");
-
-    isend_requests.push_back(
-        comm.asyncSend<UInt>(*keep_element_recv[p], p,
-                             Tag::genTag(this->rank, 0, RECEIVE_LIST_TAG)));
+    isend_requests.push_back(communicator.asyncSend(keep_element, proc, tag));
   }
 
-  for (UInt p = 0; p < this->nb_proc; ++p) {
-    if (p == this->rank)
-      continue;
+  auto ss_it = d_synchronizer.communications.begin_send_scheme();
+  auto ss_end = d_synchronizer.communications.end_send_scheme();
 
-    const Array<Element> & unfiltered_elements = d_send_element[p];
-    Array<Element> & filtered_elements = send_element[p];
+  // Receive the element to remove from the sender scheme
+  for (; ss_it != ss_end; ++ss_it) {
+    auto scheme = rs_it->second;
+    auto proc = rs_it->first;
 
-    if (unfiltered_elements.getSize() == 0)
-      continue;
+    auto new_scheme = this->communications.createSendScheme(proc);
 
+    Tag tag = Tag::genTag(proc, 0, RECEIVE_LIST_TAG);
     AKANTU_DEBUG_INFO("Waiting list of elements to keep from processor "
-                      << p << " (communication tag : "
-                      << Tag::genTag(p, 0, RECEIVE_LIST_TAG) << ")");
+                      << proc << " (communication tag : " << tag << ")");
 
     CommunicationStatus status;
-    comm.probe<UInt>(p, Tag::genTag(p, 0, RECEIVE_LIST_TAG), status);
+    communicator.probe<UInt>(proc, tag, status);
 
-    Array<UInt> keep_element(status.getSize(), 1, "keep_element_snd");
+    Array<UInt> keep_element(status.getSize());
 
     AKANTU_DEBUG_INFO("I have "
                       << keep_element.getSize() - 1
-                      << " elements to keep in my send list to processor " << p
-                      << " (communication tag : "
-                      << Tag::genTag(p, 0, RECEIVE_LIST_TAG) << ")");
+                      << " elements to keep in my send list to processor "
+                      << proc << " (communication tag : " << tag << ")");
 
-    comm.receive(keep_element, p,
-                 Tag::genTag(p, 0, RECEIVE_LIST_TAG));
+    communicator.receive(keep_element, proc, tag);
 
     for (UInt i = 0; i < keep_element.getSize() - 1; ++i) {
-      filtered_elements.push_back(unfiltered_elements(keep_element(i)));
+      new_scheme.push_back(scheme(keep_element(i)));
     }
   }
 
-  comm.waitAll(isend_requests);
-  comm.freeCommunicationRequest(isend_requests);
-
-  for (UInt p = 0; p < this->nb_proc; ++p) {
-    delete keep_element_recv[p];
-  }
-  delete[] keep_element_recv;
+  communicator.waitAll(isend_requests);
+  communicator.freeCommunicationRequest(isend_requests);
 
   AKANTU_DEBUG_OUT();
 }

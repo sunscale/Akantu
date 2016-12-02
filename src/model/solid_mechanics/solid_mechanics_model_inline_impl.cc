@@ -118,8 +118,8 @@ inline void SolidMechanicsModel::splitElementByMaterial(const Array<Element> & e
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt SolidMechanicsModel::getNbDataForElements(const Array<Element> & elements,
-                                                     SynchronizationTag tag) const {
+inline UInt SolidMechanicsModel::getNbData(const Array<Element> & elements,
+                                           const SynchronizationTag & tag) const {
   AKANTU_DEBUG_IN();
 
   UInt size = 0;
@@ -163,7 +163,7 @@ inline UInt SolidMechanicsModel::getNbDataForElements(const Array<Element> & ele
     this->splitElementByMaterial(elements, elements_per_mat);
 
     for (UInt i = 0; i < materials.size(); ++i) {
-      size += materials[i]->getNbDataForElements(elements_per_mat[i], tag);
+      size += materials[i]->getNbData(elements_per_mat[i], tag);
     }
     delete [] elements_per_mat;
   }
@@ -173,14 +173,14 @@ inline UInt SolidMechanicsModel::getNbDataForElements(const Array<Element> & ele
 }
 
 /* -------------------------------------------------------------------------- */
-inline void SolidMechanicsModel::packElementData(CommunicationBuffer & buffer,
-                                                const Array<Element> & elements,
-                                                SynchronizationTag tag) const {
+inline void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
+                                          const Array<Element> & elements,
+                                          const SynchronizationTag & tag) const {
   AKANTU_DEBUG_IN();
 
   switch(tag) {
   case _gst_material_id: {
-    packElementalDataHelper(material_index, buffer, elements, false, getFEEngine());
+    this->packElementalDataHelper(material_index, buffer, elements, false, getFEEngine());
     break;
   }
   case _gst_smm_mass: {
@@ -214,7 +214,7 @@ inline void SolidMechanicsModel::packElementData(CommunicationBuffer & buffer,
     splitElementByMaterial(elements, elements_per_mat);
 
     for (UInt i = 0; i < materials.size(); ++i) {
-      materials[i]->packElementData(buffer, elements_per_mat[i], tag);
+      materials[i]->packData(buffer, elements_per_mat[i], tag);
     }
 
     delete [] elements_per_mat;
@@ -223,9 +223,9 @@ inline void SolidMechanicsModel::packElementData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void SolidMechanicsModel::unpackElementData(CommunicationBuffer & buffer,
-                                                  const Array<Element> & elements,
-                                                  SynchronizationTag tag) {
+inline void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
+                                            const Array<Element> & elements,
+                                            const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
   switch(tag) {
@@ -265,7 +265,7 @@ inline void SolidMechanicsModel::unpackElementData(CommunicationBuffer & buffer,
     splitElementByMaterial(elements, elements_per_mat);
 
     for (UInt i = 0; i < materials.size(); ++i) {
-      materials[i]->unpackElementData(buffer, elements_per_mat[i], tag);
+      materials[i]->unpackData(buffer, elements_per_mat[i], tag);
     }
 
     delete [] elements_per_mat;
@@ -276,7 +276,8 @@ inline void SolidMechanicsModel::unpackElementData(CommunicationBuffer & buffer,
 
 
 /* -------------------------------------------------------------------------- */
-inline UInt SolidMechanicsModel::getNbDataToPack(SynchronizationTag tag) const {
+inline UInt SolidMechanicsModel::getNbData(const Array<UInt> & dofs,
+                                           const SynchronizationTag & tag) const {
   AKANTU_DEBUG_IN();
 
   UInt size = 0;
@@ -305,78 +306,36 @@ inline UInt SolidMechanicsModel::getNbDataToPack(SynchronizationTag tag) const {
   }
 
   AKANTU_DEBUG_OUT();
-  return size;
+  return size * dofs.getSize();
 }
 
-/* -------------------------------------------------------------------------- */
-inline UInt SolidMechanicsModel::getNbDataToUnpack(SynchronizationTag tag) const {
-  AKANTU_DEBUG_IN();
-
-  UInt size = 0;
-  //  UInt nb_nodes = mesh.getNbNodes();
-
-  switch(tag) {
-  case _gst_smm_uv: {
-    size += sizeof(Real) * spatial_dimension * 2;
-    break;
-  }
-  case _gst_smm_res: {
-    size += sizeof(Real) * spatial_dimension;
-    break;
-  }
-  case _gst_smm_mass: {
-    size += sizeof(Real) * spatial_dimension;
-    break;
-  }
-  case _gst_for_dump: {
-    size += sizeof(Real) * spatial_dimension * 5;
-    break;
-  }
-  default: {
-    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
-  }
-  }
-
-  AKANTU_DEBUG_OUT();
-  return size;
-}
 
 /* -------------------------------------------------------------------------- */
 inline void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
-                                         const UInt index,
-                                         SynchronizationTag tag) const {
+                                          const Array<UInt> & dofs,
+                                          const SynchronizationTag & tag) const {
   AKANTU_DEBUG_IN();
 
   switch(tag) {
   case _gst_smm_uv: {
-    Array<Real>::const_vector_iterator it_disp = displacement->begin(spatial_dimension);
-    Array<Real>::const_vector_iterator it_velo = velocity->begin(spatial_dimension);
-    Vector<Real> disp(it_disp[index]); buffer << disp;
-    Vector<Real> velo(it_velo[index]); buffer << velo;
+    packDOFDataHelper(*displacement, buffer, dofs);
+    packDOFDataHelper(*velocity    , buffer, dofs);
     break;
   }
   case _gst_smm_res: {
-    Array<Real>::const_vector_iterator it_res = internal_force->begin(spatial_dimension);
-    Vector<Real> resi(it_res[index]); buffer << resi;
+    packDOFDataHelper(*internal_force, buffer, dofs);
     break;
   }
   case _gst_smm_mass: {
-    AKANTU_DEBUG_INFO("pack mass of node " << index << " which is " << (*mass)(index,0));
-    Array<Real>::const_vector_iterator it_mass = mass->begin(spatial_dimension);
-    Vector<Real> mass(it_mass[index]); buffer << mass;
+    packDOFDataHelper(*mass, buffer, dofs);
     break;
   }
   case _gst_for_dump: {
-    Array<Real>::const_vector_iterator it_disp = displacement->begin(spatial_dimension);
-    Array<Real>::const_vector_iterator it_velo = velocity->begin(spatial_dimension);
-    Array<Real>::const_vector_iterator it_acce = acceleration->begin(spatial_dimension);
-    Array<Real>::const_vector_iterator it_resi = internal_force->begin(spatial_dimension);
-    Array<Real>::const_vector_iterator it_forc = external_force->begin(spatial_dimension);
-    Vector<Real> disp(it_disp[index]); buffer << disp;
-    Vector<Real> velo(it_velo[index]); buffer << velo;
-    Vector<Real> acce(it_acce[index]); buffer << acce;
-    Vector<Real> resi(it_resi[index]); buffer << resi;
-    Vector<Real> forc(it_forc[index]); buffer << forc;
+    packDOFDataHelper(*displacement  , buffer, dofs);
+    packDOFDataHelper(*velocity      , buffer, dofs);
+    packDOFDataHelper(*acceleration  , buffer, dofs);
+    packDOFDataHelper(*internal_force, buffer, dofs);
+    packDOFDataHelper(*external_force, buffer, dofs);
     break;
   }
   default: {
@@ -389,41 +348,31 @@ inline void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
 
 /* -------------------------------------------------------------------------- */
 inline void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
-                                           const UInt index,
-                                           SynchronizationTag tag) {
+                                            const Array<UInt> & dofs,
+                                            const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
+
 
   switch(tag) {
   case _gst_smm_uv: {
-    Array<Real>::vector_iterator it_disp = displacement->begin(spatial_dimension);
-    Array<Real>::vector_iterator it_velo = velocity->begin(spatial_dimension);
-    Vector<Real> disp(it_disp[index]); buffer >> disp;
-    Vector<Real> velo(it_velo[index]); buffer >> velo;
+    unpackDOFDataHelper(*displacement, buffer, dofs);
+    unpackDOFDataHelper(*velocity    , buffer, dofs);
     break;
   }
   case _gst_smm_res: {
-    Array<Real>::vector_iterator it_res = internal_force->begin(spatial_dimension);
-    Vector<Real> res(it_res[index]); buffer >> res;
+    unpackDOFDataHelper(*internal_force, buffer, dofs);
     break;
   }
   case _gst_smm_mass: {
-    AKANTU_DEBUG_INFO("mass of node " << index << " was " << (*mass)(index,0));
-    Array<Real>::vector_iterator it_mass = mass->begin(spatial_dimension);
-    Vector<Real> mass_v(it_mass[index]); buffer >> mass_v;
-    AKANTU_DEBUG_INFO("mass of node " << index << " is now " << (*mass)(index,0));
+    unpackDOFDataHelper(*mass, buffer, dofs);
     break;
   }
   case _gst_for_dump: {
-    Array<Real>::vector_iterator it_disp = displacement->begin(spatial_dimension);
-    Array<Real>::vector_iterator it_velo = velocity->begin(spatial_dimension);
-    Array<Real>::vector_iterator it_acce = acceleration->begin(spatial_dimension);
-    Array<Real>::vector_iterator it_resi = internal_force->begin(spatial_dimension);
-    Array<Real>::vector_iterator it_forc = external_force->begin(spatial_dimension);
-    Vector<Real> disp(it_disp[index]); buffer >> disp;
-    Vector<Real> velo(it_velo[index]); buffer >> velo;
-    Vector<Real> acce(it_acce[index]); buffer >> acce;
-    Vector<Real> resi(it_resi[index]); buffer >> resi;
-    Vector<Real> forc(it_forc[index]); buffer >> forc;
+    unpackDOFDataHelper(*displacement  , buffer, dofs);
+    unpackDOFDataHelper(*velocity      , buffer, dofs);
+    unpackDOFDataHelper(*acceleration  , buffer, dofs);
+    unpackDOFDataHelper(*internal_force, buffer, dofs);
+    unpackDOFDataHelper(*external_force, buffer, dofs);
     break;
   }
   default: {

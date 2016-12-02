@@ -31,8 +31,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "parser.hh"
 #include "aka_error.hh"
+#include "parser.hh"
 /* -------------------------------------------------------------------------- */
 #include <string>
 /* -------------------------------------------------------------------------- */
@@ -103,7 +103,8 @@ template <typename T, typename V> void Parameter::set(const V & value) {
 }
 
 /* ------------------------------------------------------------------------ */
-inline void Parameter::setAuto(const ParserParameter & value) {
+inline void Parameter::setAuto(__attribute__((unused))
+                               const ParserParameter & value) {
   if (!(isParsable()))
     AKANTU_CUSTOM_EXCEPTION(
         debug::ParameterAccessRightException(name, "parsable"));
@@ -155,7 +156,8 @@ inline void ParameterTyped<T>::setAuto(const ParserParameter & value) {
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void ParameterTyped<std::string>::setAuto(const ParserParameter & value) {
+inline void
+ParameterTyped<std::string>::setAuto(const ParserParameter & value) {
   Parameter::setAuto(value);
   param = value.getValue();
 }
@@ -163,7 +165,7 @@ inline void ParameterTyped<std::string>::setAuto(const ParserParameter & value) 
 /* -------------------------------------------------------------------------- */
 template <>
 inline void
-ParameterTyped<Vector<Real> >::setAuto(const ParserParameter & in_param) {
+ParameterTyped<Vector<Real>>::setAuto(const ParserParameter & in_param) {
   Parameter::setAuto(in_param);
   Vector<Real> tmp = in_param;
   for (UInt i = 0; i < param.size(); ++i) {
@@ -174,7 +176,7 @@ ParameterTyped<Vector<Real> >::setAuto(const ParserParameter & in_param) {
 /* -------------------------------------------------------------------------- */
 template <>
 inline void
-ParameterTyped<Matrix<Real> >::setAuto(const ParserParameter & in_param) {
+ParameterTyped<Matrix<Real>>::setAuto(const ParserParameter & in_param) {
   Parameter::setAuto(in_param);
   Matrix<Real> tmp = in_param;
   for (UInt i = 0; i < param.rows(); ++i) {
@@ -222,7 +224,8 @@ void ParameterRegistry::registerParam(std::string name, T & variable,
 /* -------------------------------------------------------------------------- */
 template <typename T>
 void ParameterRegistry::registerParam(std::string name, T & variable,
-                                      const T & default_value, ParameterAccessType type,
+                                      const T & default_value,
+                                      ParameterAccessType type,
                                       const std::string description) {
   variable = default_value;
   registerParam(name, variable, type, description);
@@ -254,8 +257,7 @@ void ParameterRegistry::set(const std::string & name, const T & value) {
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T>
-T & ParameterRegistry::get(const std::string & name) {
+template <typename T> T & ParameterRegistry::get(const std::string & name) {
   Parameters::iterator it = params.find(name);
   if (it == params.end()) {
     if (consisder_sub) {

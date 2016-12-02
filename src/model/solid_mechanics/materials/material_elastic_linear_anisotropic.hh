@@ -53,15 +53,14 @@ __BEGIN_AKANTU__
  *   - rho  : density (default: 0)
  *   - C_ij  : entry on the stiffness
  */
-template<UInt Dim>
+template <UInt Dim>
 class MaterialElasticLinearAnisotropic : public virtual Material {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  MaterialElasticLinearAnisotropic(SolidMechanicsModel & model, const ID & id = "",
-                                   bool symmetric = true);
+  MaterialElasticLinearAnisotropic(SolidMechanicsModel & model,
+                                   const ID & id = "", bool symmetric = true);
 
   ~MaterialElasticLinearAnisotropic();
 
@@ -69,20 +68,19 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   virtual void initMaterial();
 
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  virtual void computeStress(ElementType el_type,
+                             GhostType ghost_type = _not_ghost);
 
   /// compute the tangent stiffness matrix for an element type
   void computeTangentModuli(const ElementType & el_type,
-			    Array<Real> & tangent_matrix,
-			    GhostType ghost_type = _not_ghost);
-
-
+                            Array<Real> & tangent_matrix,
+                            GhostType ghost_type = _not_ghost);
 
   virtual void updateInternalParameters();
+
 protected:
   // compute C from Cprime
   void rotateCprime();
@@ -101,8 +99,9 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
   const static VoigtHelper<Dim> voigt_h;
+
   /// direction matrix and vectors
-  std::vector<Vector<Real>*>  dir_vecs;
+  std::vector<Vector<Real> *> dir_vecs;
 
   Matrix<Real> rot_mat;
   /// Elastic stiffness tensor in material frame and full vectorised notation
@@ -115,7 +114,6 @@ protected:
 
   /// viscous proportion
   Real alpha;
-
 };
 __END_AKANTU__
 

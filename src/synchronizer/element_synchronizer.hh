@@ -1,5 +1,5 @@
 /**
- * @file   distributed_synchronizer.hh
+ * @file   element_synchronizer.hh
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Dana Christen <dana.christen@epfl.ch>
@@ -35,56 +35,49 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_DISTRIBUTED_SYNCHRONIZER_HH__
-#define __AKANTU_DISTRIBUTED_SYNCHRONIZER_HH__
+#ifndef __AKANTU_ELEMENT_SYNCHRONIZER_HH__
+#define __AKANTU_ELEMENT_SYNCHRONIZER_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
-#include "synchronizer.hh"
-#include "mesh.hh"
+#include "aka_common.hh"
 #include "mesh_partition.hh"
-#include "communication_buffer.hh"
+#include "synchronizer_impl.hh"
+
+namespace akantu {
+class Mesh;
+}
 
 /* -------------------------------------------------------------------------- */
+namespace akantu {
 
-__BEGIN_AKANTU__
-
-class DistributedSynchronizer : public Synchronizer, public MeshEventHandler {
+class ElementSynchronizer : public SynchronizerImpl<Element>,
+                            public MeshEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DistributedSynchronizer(Mesh & mesh,
-                          SynchronizerID id = "distributed_synchronizer",
-                          MemoryID memory_id = 0,
-                          const bool register_to_event_manager = true);
+  ElementSynchronizer(
+      Mesh & mesh, const ID & id = "element_synchronizer",
+      MemoryID memory_id = 0, const bool register_to_event_manager = true,
+      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
 public:
-  virtual ~DistributedSynchronizer();
+  virtual ~ElementSynchronizer();
 
+  friend class ElementInfoPerProc;
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// get a  mesh and a partition and  create the local mesh  and the associated
-  /// DistributedSynchronizer
-  static DistributedSynchronizer * createDistributedSynchronizerMesh(
+  /// ElementSynchronizer
+  static ElementSynchronizer * createElementSynchronizer(
       Mesh & mesh, const MeshPartition * partition, UInt root = 0,
-      SynchronizerID id = "distributed_synchronizer", MemoryID memory_id = 0);
+      SynchronizerID id = "element_synchronizer", MemoryID memory_id = 0);
 
   /* ------------------------------------------------------------------------ */
-  /* Inherited from Synchronizer                                              */
-  /* ------------------------------------------------------------------------ */
-
-  /// asynchronous synchronization of ghosts
-  void asynchronousSynchronize(DataAccessor & data_accessor,
-                               SynchronizationTag tag);
-
-  /// wait end of asynchronous synchronization of ghosts
-  void waitEndSynchronize(DataAccessor & data_accessor, SynchronizationTag tag);
-
-  /// build processor to element corrispondance
+  /// build processor to element correspondence
   void buildPrankToElement();
 
   virtual void printself(std::ostream & stream, int indent = 0) const;
@@ -120,17 +113,11 @@ public:
                                const NewElementsEvent & event){};
 
   /// filter elements of a certain kind and copy them into a new synchronizer
-  void filterElementsByKind(DistributedSynchronizer * new_synchronizer,
+  void filterElementsByKind(ElementSynchronizer * new_synchronizer,
                             ElementKind kind);
 
   /// reset send and recv element lists
   void reset();
-
-  /// compute buffer size for a given tag and data accessor
-  void computeBufferSize(DataAccessor & data_accessor, SynchronizationTag tag);
-
-  /// recalculate buffer sizes for all tags
-  void computeAllBufferSizes(DataAccessor & data_accessor);
 
   /// remove elements from the synchronizer without renumbering them
   void removeElements(const Array<Element> & element_to_remove);
@@ -160,21 +147,21 @@ protected:
                      const CSR<UInt> & ghost_partition);
 
   /// function that handels the MeshData to be split (root side)
-  static void synchronizeTagsSend(DistributedSynchronizer & communicator,
-                                  UInt root, Mesh & mesh, UInt nb_tags,
+  static void synchronizeTagsSend(ElementSynchronizer & communicator, UInt root,
+                                  Mesh & mesh, UInt nb_tags,
                                   const ElementType & type,
                                   const Array<UInt> & partition_num,
                                   const CSR<UInt> & ghost_partition,
                                   UInt nb_local_element, UInt nb_ghost_element);
 
   /// function that handles the MeshData to be split (other nodes)
-  static void synchronizeTagsRecv(DistributedSynchronizer & communicator,
-                                  UInt root, Mesh & mesh, UInt nb_tags,
+  static void synchronizeTagsRecv(ElementSynchronizer & communicator, UInt root,
+                                  Mesh & mesh, UInt nb_tags,
                                   const ElementType & type,
                                   UInt nb_local_element, UInt nb_ghost_element);
 
   /// function that handles the preexisting groups in the mesh
-  static void synchronizeElementGroups(DistributedSynchronizer & communicator,
+  static void synchronizeElementGroups(ElementSynchronizer & communicator,
                                        UInt root, Mesh & mesh,
                                        const ElementType & type,
                                        const Array<UInt> & partition_num,
@@ -182,22 +169,20 @@ protected:
                                        UInt nb_element);
 
   /// function that handles the preexisting groups in the mesh
-  static void synchronizeElementGroups(DistributedSynchronizer & communicator,
+  static void synchronizeElementGroups(ElementSynchronizer & communicator,
                                        UInt root, Mesh & mesh,
                                        const ElementType & type);
 
   /// function that handles the preexisting groups in the mesh
-  static void
-  synchronizeNodeGroupsMaster(DistributedSynchronizer & communicator, UInt root,
-                              Mesh & mesh);
+  static void synchronizeNodeGroupsMaster(ElementSynchronizer & communicator,
+                                          UInt root, Mesh & mesh);
 
   /// function that handles the preexisting groups in the mesh
-  static void
-  synchronizeNodeGroupsSlaves(DistributedSynchronizer & communicator, UInt root,
-                              Mesh & mesh);
+  static void synchronizeNodeGroupsSlaves(ElementSynchronizer & communicator,
+                                          UInt root, Mesh & mesh);
 
   template <class CommunicationBuffer>
-  static void fillNodeGroupsFromBuffer(DistributedSynchronizer & communicator,
+  static void fillNodeGroupsFromBuffer(ElementSynchronizer & communicator,
                                        Mesh & mesh,
                                        CommunicationBuffer & buffer);
 
@@ -206,11 +191,26 @@ protected:
   substituteElements(const std::map<Element, Element> & old_to_new_elements);
 
   /* ------------------------------------------------------------------------ */
+  /* Sanity checks                                                            */
+  /* ------------------------------------------------------------------------ */
+  virtual UInt sanityCheckDataSize(const Array<Element> & elements,
+                                   const SynchronizationTag & tag) const;
+  /* ------------------------------------------------------------------------ */
+  virtual void
+  packSanityCheckData(CommunicationDescriptor<Element> & comm_desc) const;
+  /* ------------------------------------------------------------------------ */
+  virtual void
+  unpackSanityCheckData(CommunicationDescriptor<Element> & comm_desc) const;
+
+  /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   AKANTU_GET_MACRO(PrankToElement, prank_to_element,
                    const ElementTypeMapArray<UInt> &);
+
+  AKANTU_GET_MACRO(Mesh, mesh, const Mesh &);
+  AKANTU_GET_MACRO_NOT_CONST(Mesh, mesh, Mesh &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -219,29 +219,13 @@ protected:
   /// reference to the underlying mesh
   Mesh & mesh;
 
-  std::map<SynchronizationTag, Communication> communications;
-
-  friend class ElementInfoPerProc;
-
-  /// list of element to send to proc p
-  Array<Element> * send_element;
-  /// list of element to receive from proc p
-  Array<Element> * recv_element;
-
-  UInt nb_proc;
-  UInt rank;
-
   friend class FilteredSynchronizer;
   friend class FacetSynchronizer;
 
   ElementTypeMapArray<UInt> prank_to_element;
 };
 
-__END_AKANTU__
-
 /* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-#include "distributed_synchronizer_tmpl.hh"
+}
 
-#endif /* __AKANTU_DISTRIBUTED_SYNCHRONIZER_HH__ */
+#endif /* __AKANTU_ELEMENT_SYNCHRONIZER_HH__ */

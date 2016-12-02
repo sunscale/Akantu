@@ -29,24 +29,25 @@
 
 /* -------------------------------------------------------------------------- */
 #include "element_info_per_processor.hh"
-#include "distributed_synchronizer.hh"
+#include "element_synchronizer.hh"
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
-#include <map>
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <map>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-ElementInfoPerProc::ElementInfoPerProc(DistributedSynchronizer & synchronizer,
-                                       StaticCommunicator & communicator,
-                                       UInt message_cnt, UInt root, Mesh & mesh,
+ElementInfoPerProc::ElementInfoPerProc(ElementSynchronizer & synchronizer,
+                                       UInt message_cnt, UInt root,
                                        ElementType type)
-    : MeshAccessor(mesh), synchronizer(synchronizer), comm(communicator),
-      rank(communicator.whoAmI()), nb_proc(communicator.getNbProc()),
-      root(root), type(type), mesh(mesh),message_count(message_cnt) {}
+    : MeshAccessor(synchronizer.getMesh()), synchronizer(synchronizer),
+      rank(synchronizer.getCommunicator().whoAmI()),
+      nb_proc(synchronizer.getCommunicator().getNbProc()), root(root),
+      type(type), message_count(message_cnt), mesh(synchronizer.getMesh()),
+      comm(synchronizer.getCommunicator()) {}
 
 /* -------------------------------------------------------------------------- */
 void ElementInfoPerProc::fillCommunicationScheme(
@@ -57,28 +58,48 @@ void ElementInfoPerProc::fillCommunicationScheme(
   element.type = this->type;
   element.kind = Mesh::getKind(this->type);
 
-  Array<UInt>::const_scalar_iterator part = partition.begin();
-  for (UInt lel = 0; lel < nb_local_element; ++lel, ++part) {
-    UInt nb_send = *part;
-    element.element = lel;
-    element.ghost_type = _not_ghost;
-    for (UInt p = 0; p < nb_send; ++p, ++part) {
-      UInt proc = *part;
+  Communications<Element> & communications =
+      this->synchronizer.getCommunications();
 
-      AKANTU_DEBUG(dblAccessory, "Must send : " << element << " to proc "
-                                                << proc);
-      (synchronizer.send_element[proc]).push_back(element);
+  { // send schemes
+    std::map<UInt, Array<Element> > send_array_per_proc;
+    Array<UInt>::const_scalar_iterator part = partition.begin();
+    for (UInt lel = 0; lel < nb_local_element; ++lel, ++part) {
+      UInt nb_send = *part;
+      element.element = lel;
+      element.ghost_type = _not_ghost;
+      for (UInt p = 0; p < nb_send; ++p, ++part) {
+        UInt proc = *part;
+
+        AKANTU_DEBUG(dblAccessory, "Must send : " << element << " to proc "
+                     << proc);
+        send_array_per_proc[proc].push_back(element);
+      }
+    }
+
+    for (auto send_schemes : send_array_per_proc) {
+      auto scheme = communications.createSendScheme(send_schemes.first);
+      scheme.copy(send_schemes.second);
     }
   }
 
-  part = partition.begin();
-  for (UInt gel = 0; gel < nb_ghost_element; ++gel, ++part) {
-    UInt proc = *part;
-    element.element = gel;
-    element.ghost_type = _ghost;
-    AKANTU_DEBUG(dblAccessory, "Must recv : " << element << " from proc "
-                                              << proc);
-    synchronizer.recv_element[proc].push_back(element);
+  {
+    std::map<UInt, Array<Element> > recv_array_per_proc;
+    Array<UInt>::const_scalar_iterator part = partition.begin();
+
+    for (UInt gel = 0; gel < nb_ghost_element; ++gel, ++part) {
+      UInt proc = *part;
+      element.element = gel;
+      element.ghost_type = _ghost;
+      AKANTU_DEBUG(dblAccessory, "Must recv : " << element << " from proc "
+                   << proc);
+      recv_array_per_proc[proc].push_back(element);
+    }
+
+    for (auto recv_schemes : recv_array_per_proc) {
+      auto scheme = communications.createRecvScheme(recv_schemes.first);
+      scheme.copy(recv_schemes.second);
+    }
   }
 
   AKANTU_DEBUG_OUT();

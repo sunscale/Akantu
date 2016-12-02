@@ -33,8 +33,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "material_damage.hh"
 #include "material.hh"
+#include "material_damage.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_MARIGO_HH__
@@ -50,22 +50,20 @@ __BEGIN_AKANTU__
  *   - Sd  : (default: 5000)
  *   - Ydrandomness  : (default:0)
  */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 class MaterialMarigo : public MaterialDamage<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialMarigo(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialMarigo() {};
+  virtual ~MaterialMarigo(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   void initMaterial();
 
   virtual void updateInternalParameters();
@@ -75,43 +73,35 @@ public:
 
 protected:
   /// constitutive law for a given quadrature point
-  inline void computeStressOnQuad(Matrix<Real> & grad_u,
-				  Matrix<Real> & sigma,
-				  Real & dam,
-				  Real & Y,
-				  Real & Ydq);
+  inline void computeStressOnQuad(Matrix<Real> & grad_u, Matrix<Real> & sigma,
+                                  Real & dam, Real & Y, Real & Ydq);
 
-  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma,
-					   Real & dam,
-					   Real & Y,
-					   Real & Ydq);
+  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma, Real & dam,
+                                           Real & Y, Real & Ydq);
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
 public:
+  inline virtual UInt getNbData(const Array<Element> & elements,
+                                const SynchronizationTag & tag) const;
 
-  inline virtual UInt getNbDataForElements(const Array<Element> & elements,
-					   SynchronizationTag tag) const;
+  inline virtual void packData(CommunicationBuffer & buffer,
+                               const Array<Element> & elements,
+                               const SynchronizationTag & tag) const;
 
-  inline virtual void packElementData(CommunicationBuffer & buffer,
-				      const Array<Element> & elements,
-				      SynchronizationTag tag) const;
-
-  inline virtual void unpackElementData(CommunicationBuffer & buffer,
-					const Array<Element> & elements,
-					SynchronizationTag tag);
+  inline virtual void unpackData(CommunicationBuffer & buffer,
+                                 const Array<Element> & elements,
+                                 const SynchronizationTag & tag);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// resistance to damage
   RandomInternalField<Real> Yd;
 
@@ -127,12 +117,8 @@ protected:
   bool yc_limit;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
+__END_AKANTU__
 
 #include "material_marigo_inline_impl.cc"
-
-__END_AKANTU__
 
 #endif /* __AKANTU_MATERIAL_MARIGO_HH__ */

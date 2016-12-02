@@ -64,10 +64,9 @@ public:
   template <typename T> void receive(T * buffer, Int size, Int sender, Int tag);
 
   template <typename T>
-  CommunicationRequest * asyncSend(T * buffer, Int size, Int receiver, Int tag);
+  CommunicationRequest asyncSend(T * buffer, Int size, Int receiver, Int tag);
   template <typename T>
-  CommunicationRequest * asyncReceive(T * buffer, Int size, Int sender,
-                                      Int tag);
+  CommunicationRequest asyncReceive(T * buffer, Int size, Int sender, Int tag);
 
   template <typename T>
   void probe(Int sender, Int tag, CommunicationStatus & status);
@@ -76,14 +75,18 @@ public:
   template <typename T> void allGatherV(T * values, int * nb_values);
 
   template <typename T> void gather(T * values, int nb_values, int root);
+  template <typename T>
+  void gather(T * values, int nb_values, T * gathered, int nb_gathered = 0);
+
   template <typename T> void gatherV(T * values, int * nb_values, int root);
 
   template <typename T> void broadcast(T * values, int nb_values, int root);
 
-  bool testRequest(CommunicationRequest * request);
+  bool testRequest(CommunicationRequest request);
 
-  void wait(CommunicationRequest * request);
-  void waitAll(std::vector<CommunicationRequest *> & requests);
+  void wait(CommunicationRequest request);
+  void waitAll(std::vector<CommunicationRequest> & requests);
+  UInt waitAny(std::vector<CommunicationRequest> & requests);
 
   void barrier();
 

@@ -1153,17 +1153,18 @@ void Material::interpolateStressOnFacets(
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-const Array<T> & Material::getArray(const ID & vect_id,
-                                    const ElementType & type,
-                                    const GhostType & ghost_type) const {
+const Array<T> & Material::getArray(__attribute__((unused)) const ID & vect_id,
+                                    __attribute__((unused)) const ElementType & type,
+                                    __attribute__((unused)) const GhostType & ghost_type) const {
   AKANTU_DEBUG_TO_IMPLEMENT();
   return NULL;
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-Array<T> & Material::getArray(const ID & vect_id, const ElementType & type,
-                              const GhostType & ghost_type) {
+Array<T> & Material::getArray(__attribute__((unused)) const ID & vect_id,
+                              __attribute__((unused)) const ElementType & type,
+                              __attribute__((unused)) const GhostType & ghost_type) {
   AKANTU_DEBUG_TO_IMPLEMENT();
   return NULL;
 }

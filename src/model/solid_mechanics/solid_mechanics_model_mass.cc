@@ -71,7 +71,7 @@ void SolidMechanicsModel::assembleMassLumped() {
       mass_values[i] = 1.;
   }
 
-  synch_registry->synchronize(_gst_smm_mass);
+  this->synchronize(_gst_smm_mass);
   AKANTU_DEBUG_OUT();
 }
 

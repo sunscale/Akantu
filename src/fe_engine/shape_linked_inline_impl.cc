@@ -32,8 +32,10 @@
 
 template <ElementKind kind>
 inline void ShapeLinked<kind>::initShapeFunctions(
-    const Array<Real> & nodes, const Matrix<Real> & integration_points,
-    const ElementType & type, const GhostType & ghost_type) {
+    __attribute__((unused)) const Array<Real> & nodes,
+    __attribute__((unused)) const Matrix<Real> & integration_points,
+    __attribute__((unused)) const ElementType & type,
+    __attribute__((unused)) const GhostType & ghost_type) {
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
@@ -280,7 +282,7 @@ void ShapeLinked<kind>::gradientOnIntegrationPoints(
     UInt nb_degree_of_freedom, const GhostType & ghost_type,
     const Array<UInt> & filter_elements, bool accumulate, UInt id_shape,
     UInt num_degre_of_freedom_to_interpolate,
-    UInt num_degre_of_freedom_interpolated) const {
+    __attribute__((unused)) UInt num_degre_of_freedom_interpolated) const {
   AKANTU_DEBUG_IN();
 
   Array<Real> * shapesd_loc = shapes_derivatives(type, ghost_type)[id_shape];

@@ -39,7 +39,7 @@ __BEGIN_AKANTU__
 
 CohesiveElementInserter::CohesiveElementInserter(Mesh & mesh,
 						 bool is_extrinsic,
-						 DistributedSynchronizer * synchronizer,
+						 ElementSynchronizer * synchronizer,
 						 const ID & id) :
   id(id),
   mesh(mesh),

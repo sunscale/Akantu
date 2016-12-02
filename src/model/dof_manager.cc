@@ -32,6 +32,7 @@
 #include "mesh.hh"
 #include "sparse_matrix.hh"
 #include "mesh_utils.hh"
+#include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -39,7 +40,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFManager(const ID & id, const MemoryID & memory_id)
     : Memory(id, memory_id),
-      global_equation_number(0, 1, "global_equation_number"), mesh(NULL),
+      mesh(NULL),
       local_system_size(0), pure_local_system_size(0), system_size(0) {}
 
 /* -------------------------------------------------------------------------- */
@@ -68,6 +69,15 @@ DOFManager::~DOFManager() {
   TimeStepSolversMap::iterator tss_end = time_step_solvers.end();
   for (; tss_it != tss_end; ++tss_it)
     delete tss_it->second;
+}
+
+/* -------------------------------------------------------------------------- */
+std::vector<ID> DOFManager::getDOFIDs() const {
+  std::vector<ID> keys;
+  for(auto dof_data: this->dofs)
+    keys.push_back(dof_data.first);
+
+  return keys;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -192,9 +202,20 @@ void DOFManager::registerMesh(Mesh & mesh) {
 }
 
 /* -------------------------------------------------------------------------- */
-DOFManager::DOFData::DOFData()
+DOFManager::DOFData::DOFData(const ID & dof_id)
     : support_type(_dst_generic), dof(NULL), blocked_dofs(NULL),
-      increment(NULL), previous(NULL), solution(0, 1, "solution") {}
+      increment(NULL), previous(NULL), solution(0, 1, dof_id + ":solution"),
+      local_equation_number(0,1,dof_id + ":local_equation_number") {}
+
+/* -------------------------------------------------------------------------- */
+DOFManager::DOFData::~DOFData() {}
+
+/* -------------------------------------------------------------------------- */
+DOFManager::DOFData & DOFManager::getNewDOFData(const ID & dof_id) {
+  DOFData * dofs_storage = new DOFData(dof_id);
+  this->dofs[dof_id] = dofs_storage;
+  return *dofs_storage;
+}
 
 /* -------------------------------------------------------------------------- */
 void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
@@ -205,10 +226,9 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
     AKANTU_EXCEPTION("This dof array has already been registered");
   }
 
-  DOFData * dofs_storage = new DOFData();
-  dofs_storage->dof = &dofs_array;
-  dofs_storage->blocked_dofs = NULL;
-  dofs_storage->support_type = support_type;
+  DOFData & dofs_storage = this->getNewDOFData(dof_id);
+  dofs_storage.dof = &dofs_array;
+  dofs_storage.support_type = support_type;
 
   UInt nb_local_dofs = 0;
   UInt nb_pure_local = 0;
@@ -244,8 +264,6 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
   comm.allReduce(nb_pure_local, _so_sum);
 
   this->system_size += nb_pure_local;
-
-  this->dofs[dof_id] = dofs_storage;
 }
 
 /* -------------------------------------------------------------------------- */

@@ -29,8 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
+#include "aka_common.hh"
 
 #if defined(AKANTU_USE_CXX11)
 #define __CONST_EXPR constexpr
@@ -147,32 +147,47 @@ private:
 template <typename T> class Rand48Generator {
   /* ------------------------------------------------------------------------ */
 public:
-  inline T operator()() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  inline T operator()();
 
   /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const {
-    stream << "Rand48Generator [seed=" << seed << "]";
-  }
+  virtual void printself(std::ostream & stream, int indent = 0) const;
 
   /* ------------------------------------------------------------------------ */
 public:
-  static void seed(long int s) {
-    _seed = s;
-    srand48(_seed);
-  }
-  static long int seed() { return _seed; }
+  static void seed(long int s);
+  static long int seed();
 
-  static __CONST_EXPR T min() { return 0.; }
-  static __CONST_EXPR T max() { return 1.; }
+  static __CONST_EXPR T min();
+  static __CONST_EXPR T max();
 
   /* ------------------------------------------------------------------------ */
 private:
   static long int _seed;
 };
+/* -------------------------------------------------------------------------- */
+
+template <typename T> inline T Rand48Generator<T>::operator()() {
+  AKANTU_DEBUG_TO_IMPLEMENT();
+}
 
 template <> inline double Rand48Generator<double>::operator()() {
   return drand48();
 }
+
+template <typename T>
+void Rand48Generator<T>::printself(std::ostream & stream,
+                                   __attribute__((unused)) int indent) const {
+  stream << "Rand48Generator [seed=" << seed << "]";
+}
+
+template <typename T> void Rand48Generator<T>::seed(long int s) {
+  _seed = s;
+  srand48(_seed);
+}
+template <typename T> long int Rand48Generator<T>::seed() { return _seed; }
+template <typename T> __CONST_EXPR T Rand48Generator<T>::min() { return 0.; }
+template <typename T> __CONST_EXPR T Rand48Generator<T>::max() { return 1.; }
+
 #endif
 /* -------------------------------------------------------------------------- */
 template <typename T> class RandGenerator {
@@ -269,7 +284,7 @@ public:
 #define AKANTU_RANDOM_DISTRIBUTION_TYPE_NEW(r, data, elem)                     \
   else if (type == AKANTU_RANDOM_DISTRIBUTION_TYPES_PREFIX(                    \
                        BOOST_PP_TUPLE_ELEM(2, 0, elem))) {                     \
-    typedef BOOST_PP_TUPLE_ELEM(2, 1, elem) <T> Dist;                          \
+    typedef BOOST_PP_TUPLE_ELEM(2, 1, elem)<T> Dist;                           \
     distribution = new Dist(*static_cast<Dist *>(other.distribution));         \
   }
 

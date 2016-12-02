@@ -47,7 +47,7 @@ int main(__attribute__((unused)) int argc,
                                            BOOST_PP_ARRAY_ELEM(2, elem)), )    \
             << std::endl;
 
-  BOOST_PP_SEQ_FOR_EACH(PRINT_OUT, _, AKANTU_MATERIAL_LIST);
+  BOOST_PP_SEQ_FOR_EACH(PRINT_OUT, "toto", AKANTU_MATERIAL_LIST);
 
   return 0;
 }

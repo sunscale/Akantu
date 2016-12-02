@@ -66,7 +66,10 @@ package_declare_sources(core
   common/aka_types.hh
   common/aka_visitor.hh
   common/aka_voigthelper.hh
+  common/aka_voigthelper_tmpl.hh
   common/aka_voigthelper.cc
+  common/aka_warning.hh
+  common/aka_warning_restore.hh
 
   fe_engine/element_class.cc
   fe_engine/element_class.hh
@@ -162,6 +165,7 @@ package_declare_sources(core
   mesh/mesh.cc
   mesh/mesh.hh
   mesh/mesh_accessor.hh
+  mesh/mesh_accessor.cc
   mesh/mesh_events.hh
   mesh/mesh_filter.hh
   mesh/mesh_data.cc
@@ -180,6 +184,9 @@ package_declare_sources(core
   mesh_utils/mesh_utils_pbc.cc
   mesh_utils/mesh_utils.cc
   mesh_utils/mesh_utils.hh
+  mesh_utils/mesh_utils_distribution.cc
+  mesh_utils/mesh_utils_distribution.hh
+  mesh_utils/mesh_utils.hh
   mesh_utils/mesh_utils_inline_impl.cc
   mesh_utils/global_ids_updater.hh
   mesh_utils/global_ids_updater.cc
@@ -192,6 +199,9 @@ package_declare_sources(core
 
   model/dof_manager.cc
   model/dof_manager.hh
+  model/dof_manager_default.cc
+  model/dof_manager_default.hh
+  model/dof_manager_default_inline_impl.cc
   model/dof_manager_inline_impl.cc
   model/model_solver.cc
   model/model_solver.hh
@@ -284,48 +294,56 @@ package_declare_sources(core
   model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.hh
   model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.cc
   model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion_inline_impl.cc
- 
+
   solver/sparse_solver.cc
   solver/sparse_solver.hh
   solver/sparse_solver_inline_impl.cc
   solver/sparse_matrix.cc
   solver/sparse_matrix.hh
   solver/sparse_matrix_inline_impl.cc
+  solver/sparse_matrix_aij.cc
+  solver/sparse_matrix_aij.hh
+  solver/sparse_matrix_aij_inline_impl.cc
 
+  synchronizer/communication_descriptor_tmpl.hh
+  synchronizer/communications_tmpl.hh
   synchronizer/communication_buffer.hh
   synchronizer/communication_buffer_inline_impl.cc
+  synchronizer/communication_descriptor.hh
+  synchronizer/communication_tag.hh
+  synchronizer/communications.hh
   synchronizer/data_accessor.cc
   synchronizer/data_accessor.hh
-  synchronizer/data_accessor_inline_impl.cc
-  synchronizer/distributed_synchronizer.cc
-  synchronizer/distributed_synchronizer.hh
-  synchronizer/distributed_synchronizer_tmpl.hh
-
+  synchronizer/element_synchronizer.cc
+  synchronizer/element_synchronizer.hh
+  synchronizer/node_synchronizer.cc
+  synchronizer/node_synchronizer.hh
   synchronizer/dof_synchronizer.cc
   synchronizer/dof_synchronizer.hh
   synchronizer/dof_synchronizer_inline_impl.cc
+  synchronizer/element_info_per_processor.cc
+  synchronizer/element_info_per_processor.hh
+  synchronizer/element_info_per_processor_tmpl.hh
   synchronizer/filtered_synchronizer.cc
   synchronizer/filtered_synchronizer.hh
-  synchronizer/pbc_synchronizer.cc
-  synchronizer/pbc_synchronizer.hh
+  synchronizer/grid_synchronizer.cc
+  synchronizer/grid_synchronizer.hh
+  synchronizer/master_element_info_per_processor.cc
+  synchronizer/node_info_per_processor.cc
+  synchronizer/node_info_per_processor.hh
   synchronizer/real_static_communicator.hh
+  synchronizer/slave_element_info_per_processor.cc
   synchronizer/static_communicator.cc
   synchronizer/static_communicator.hh
   synchronizer/static_communicator_dummy.hh
   synchronizer/static_communicator_inline_impl.hh
   synchronizer/synchronizer.cc
   synchronizer/synchronizer.hh
+  synchronizer/synchronizer_impl.hh
+  synchronizer/synchronizer_impl_tmpl.hh
   synchronizer/synchronizer_registry.cc
   synchronizer/synchronizer_registry.hh
-  synchronizer/grid_synchronizer.cc
-  synchronizer/grid_synchronizer.hh
-  synchronizer/element_info_per_processor.cc
-  synchronizer/element_info_per_processor.hh
-  synchronizer/element_info_per_processor_tmpl.hh
-  synchronizer/master_element_info_per_processor.cc
-  synchronizer/slave_element_info_per_processor.cc
-  synchronizer/node_info_per_processor.cc
-  synchronizer/node_info_per_processor.hh
+  synchronizer/synchronizer_tmpl.hh
   )
 
 package_declare_elements(core
@@ -528,3 +546,7 @@ package_declare_extra_files_to_package(core
     common/aka_config.hh.in
     model/solid_mechanics/material_list.hh.in
   )
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  package_set_compile_flags(core CXX "-Wno-undefined-var-template")
+endif()

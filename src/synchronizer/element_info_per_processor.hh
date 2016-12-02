@@ -39,7 +39,7 @@
 #define __AKANTU_ELEMENT_INFO_PER_PROCESSOR_HH__
 
 namespace akantu {
-class DistributedSynchronizer;
+class ElementSynchronizer;
 class StaticCommunicator;
 class MeshPartition;
 }
@@ -49,9 +49,8 @@ __BEGIN_AKANTU__
 
 class ElementInfoPerProc : protected MeshAccessor {
 public:
-  ElementInfoPerProc(DistributedSynchronizer & synchronizer,
-                     StaticCommunicator & communicator, UInt message_cnt,
-                     UInt root, Mesh & mesh, ElementType type);
+  ElementInfoPerProc(ElementSynchronizer & synchronizer, UInt message_cnt,
+                     UInt root, ElementType type);
 
   virtual void synchronizeConnectivities() = 0;
   virtual void synchronizePartitions() = 0;
@@ -71,16 +70,14 @@ protected:
   void fillMeshData(BufferType & buffer, const std::string & tag_name);
 
 protected:
-  DistributedSynchronizer & synchronizer;
+  ElementSynchronizer & synchronizer;
 
-  StaticCommunicator & comm;
   UInt rank;
   UInt nb_proc;
 
   UInt root;
 
   ElementType type;
-  Mesh & mesh;
 
   UInt nb_tags;
   UInt nb_nodes_per_element;
@@ -90,14 +87,16 @@ protected:
   UInt nb_ghost_element;
 
   UInt message_count;
+  Mesh & mesh;
+  StaticCommunicator & comm;
 };
 
 /* -------------------------------------------------------------------------- */
 class MasterElementInfoPerProc : protected ElementInfoPerProc {
 public:
-  MasterElementInfoPerProc(DistributedSynchronizer & synchronizer,
-                           StaticCommunicator & communicator, UInt message_cnt,
-                           UInt root, Mesh & mesh, ElementType type,
+  MasterElementInfoPerProc(ElementSynchronizer & synchronizer,
+                           UInt message_cnt,
+                           UInt root, ElementType type,
                            const MeshPartition & partition);
 
   void synchronizeConnectivities();
@@ -123,9 +122,9 @@ private:
 /* -------------------------------------------------------------------------- */
 class SlaveElementInfoPerProc : protected ElementInfoPerProc {
 public:
-  SlaveElementInfoPerProc(DistributedSynchronizer & synchronizer,
-                          StaticCommunicator & communicator, UInt message_cnt,
-                          UInt root, Mesh & mesh);
+  SlaveElementInfoPerProc(ElementSynchronizer & synchronizer,
+                          UInt message_cnt,
+                          UInt root);
 
   void synchronizeConnectivities();
   void synchronizePartitions();

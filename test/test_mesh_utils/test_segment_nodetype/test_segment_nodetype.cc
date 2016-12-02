@@ -30,7 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "mesh_utils.hh"
-#include "distributed_synchronizer.hh"
+#include "element_synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
@@ -44,18 +44,18 @@ int main(int argc, char * argv[]) {
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
-  DistributedSynchronizer * dist = NULL;
+  ElementSynchronizer * dist = NULL;
 
   // partition the mesh
   if (prank == 0) {
     mesh.read("mesh.msh");
     MeshPartitionScotch partition(mesh, spatial_dimension);
     partition.partitionate(psize);
-    dist = DistributedSynchronizer::createDistributedSynchronizerMesh(
+    dist = ElementSynchronizer::createDistributedSynchronizerMesh(
         mesh, &partition);
   } else {
     dist =
-        DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
+        ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
 
   // compute the node types for each segment

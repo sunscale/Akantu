@@ -1,9 +1,6 @@
 /**
  * @file   data_accessor.hh
  *
- * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
- * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @author David Simon Kammer <david.kammer@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Wed Sep 01 2010
@@ -33,239 +30,170 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
+#include "aka_common.hh"
+#include "communication_buffer.hh"
+#include "element.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DATA_ACCESSOR_HH__
 #define __AKANTU_DATA_ACCESSOR_HH__
 
+namespace akantu {
+class FEEngine;
+} // akantu
 
-/* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "mesh.hh"
-#include "fe_engine.hh"
-#include "communication_buffer.hh"
-/* -------------------------------------------------------------------------- */
+namespace akantu {
+
+class DataAccessorBase {
+public:
+  DataAccessorBase() {}
+  virtual ~DataAccessorBase() {}
+};
 
 
-__BEGIN_AKANTU__
-
-class DataAccessor {
+template <class T> class DataAccessor : public virtual DataAccessorBase {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  DataAccessor();
-  virtual ~DataAccessor();
+  DataAccessor() {}
+  virtual ~DataAccessor() {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /**
-   * @brief get  the number of  data to exchange  for a given akantu::Element  and a
+   * @brief get  the number of  data to exchange  for a given array of T
+   * (elements or dofs) and a given akantu::SynchronizationTag
+   */
+  virtual UInt getNbData(const Array<T> & elements,
+                         const SynchronizationTag & tag) const = 0;
+
+  /**
+   * @brief pack the data for a given array of T (elements or dofs) and a given
+   * akantu::SynchronizationTag
+   */
+  virtual void packData(CommunicationBuffer & buffer, const Array<T> & element,
+                        const SynchronizationTag & tag) const = 0;
+
+  /**
+   * @brief unpack the data for a given array of T (elements or dofs) and a
    * given akantu::SynchronizationTag
    */
-  virtual UInt getNbDataForElements(__attribute__((unused)) const Array<Element> & elements,
-				    __attribute__((unused)) SynchronizationTag tag) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
+  virtual void unpackData(CommunicationBuffer & buffer,
+                          const Array<T> & element,
+                          const SynchronizationTag & tag) = 0;
+};
 
-  /**
-   * @brief get  the number of  data to exchange  for a given degree of freedom  and a
-   * given akantu::SynchronizationTag
-   */
-  virtual UInt getNbDataForDOFs(__attribute__((unused)) const Array<UInt> & dofs,
-                                __attribute__((unused)) SynchronizationTag tag) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
-  /**
-   * @brief get  the number of  data to send  for a given
-   * akantu::SynchronizationTag
-   */
-  virtual UInt getNbDataToPack(__attribute__((unused)) SynchronizationTag tag) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
-  /**
-   * @brief get the number of data  to receive for a given
-   * akantu::SynchronizationTag
-   */
-  virtual UInt getNbDataToUnpack(__attribute__((unused)) SynchronizationTag tag) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
-  /**
-   * @brief   pack  the   data  for   a  given   akantu::Element  and   a  given
-   * akantu::SynchronizationTag
-   */
-  virtual void packElementData(__attribute__((unused)) CommunicationBuffer & buffer,
-                               __attribute__((unused)) const Array<Element> & element,
-                               __attribute__((unused)) SynchronizationTag tag) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
-  /**
-   * @brief   pack  the   data  for   a  given  index  and   a  given
-   * akantu::SynchronizationTag
-   */
-  virtual void packData(__attribute__((unused)) CommunicationBuffer & buffer,
-                        __attribute__((unused)) const UInt index,
-                        __attribute__((unused)) SynchronizationTag tag) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
-  /**
-   * @brief   pack  the   data  for the dofs  and   a  given
-   * akantu::SynchronizationTag
-   */
-  virtual void packDOFData(__attribute__((unused)) CommunicationBuffer & buffer,
-                           __attribute__((unused)) const Array<UInt> & dofs,
-                           __attribute__((unused)) SynchronizationTag tag) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
-  /**
-   * @brief   unpack  the   data  for   a  given   akantu::Element  and   a  given
-   * akantu::SynchronizationTag
-   */
-  virtual void unpackElementData(__attribute__((unused)) CommunicationBuffer & buffer,
-                                 __attribute__((unused)) const Array<Element> & element,
-                                 __attribute__((unused)) SynchronizationTag tag) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
-  /**
-   * @brief   unpack  the   data  for   a  given  index  and   a  given
-   * akantu::SynchronizationTag
-   */
-  virtual void unpackData(__attribute__((unused)) CommunicationBuffer & buffer,
-                          __attribute__((unused)) const UInt index,
-                          __attribute__((unused)) SynchronizationTag tag) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
-  /**
-   * @brief   unpack  the   data  for the dofs  and   a  given
-   * akantu::SynchronizationTag
-   */
-  virtual void unpackDOFData(__attribute__((unused)) CommunicationBuffer & buffer,
-                             __attribute__((unused)) const Array<UInt> & dofs,
-                             __attribute__((unused)) SynchronizationTag tag) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
+/* -------------------------------------------------------------------------- */
+/* Specialization                                                             */
+/* -------------------------------------------------------------------------- */
+template <> class DataAccessor<Element> : public virtual DataAccessorBase {
 public:
-  template<typename T>
-  static inline void packNodalDataHelper(const Array<T> & data,
-                                         CommunicationBuffer & buffer,
-                                         const Array<Element> & elements,
-                                         const Mesh & mesh) {
-    packUnpackNodalDataHelper<T, true>(const_cast<Array<T> &>(data), 
-                                       buffer,
-                                       elements,
-                                       mesh);
+  DataAccessor() {}
+  virtual ~DataAccessor() {}
+
+  virtual UInt getNbData(const Array<Element> & elements,
+                         const SynchronizationTag & tag) const = 0;
+  virtual void packData(CommunicationBuffer & buffer,
+                        const Array<Element> & element,
+                        const SynchronizationTag & tag) const = 0;
+  virtual void unpackData(CommunicationBuffer & buffer,
+                          const Array<Element> & element,
+                          const SynchronizationTag & tag) = 0;
+
+  /* ------------------------------------------------------------------------ */
+public:
+  template <typename T, bool pack_helper>
+  static void
+  packUnpackNodalDataHelper(Array<T> & data, CommunicationBuffer & buffer,
+                            const Array<Element> & elements, const Mesh & mesh);
+
+  /* ------------------------------------------------------------------------ */
+  template <typename T, bool pack_helper>
+  static void packUnpackElementalDataHelper(
+      ElementTypeMapArray<T> & data_to_pack, CommunicationBuffer & buffer,
+      const Array<Element> & element, bool per_quadrature_point_data,
+      const FEEngine & fem);
+
+  /* ------------------------------------------------------------------------ */
+  template <typename T>
+  static void
+  packNodalDataHelper(const Array<T> & data, CommunicationBuffer & buffer,
+                      const Array<Element> & elements, const Mesh & mesh) {
+    packUnpackNodalDataHelper<T, true>(const_cast<Array<T> &>(data), buffer,
+                                       elements, mesh);
   }
 
-  template<typename T>
-  static inline void unpackNodalDataHelper(Array<T> & data,
-                                           CommunicationBuffer & buffer,
-                                           const Array<Element> & elements,
-                                           const Mesh & mesh) {
-    packUnpackNodalDataHelper<T, false>(data, 
-                                        buffer,
-                                        elements,
-                                        mesh);
+  template <typename T>
+  static inline void
+  unpackNodalDataHelper(Array<T> & data, CommunicationBuffer & buffer,
+                        const Array<Element> & elements, const Mesh & mesh) {
+    packUnpackNodalDataHelper<T, false>(data, buffer, elements, mesh);
   }
 
-  template<typename T, bool pack_helper>
-  static inline void packUnpackNodalDataHelper(Array<T> & data,
-                                               CommunicationBuffer & buffer,
-                                               const Array<Element> & elements,
-                                               const Mesh & mesh);
-
-  template<typename T, bool pack_helper>
-  static inline void packUnpackElementalDataHelper(ElementTypeMapArray<T> & data_to_pack,
-                                                   CommunicationBuffer & buffer,
-                                                   const Array<Element> & element,
-                                                   bool per_quadrature_point_data,
-                                                   const FEEngine & fem);
-  template<typename T>
-  static inline void packElementalDataHelper(const ElementTypeMapArray<T> & data_to_pack,
-                                             CommunicationBuffer & buffer,
-                                             const Array<Element> & elements,
-                                             bool per_quadrature_point,
-                                             const FEEngine & fem) {
-    packUnpackElementalDataHelper<T, true>(const_cast<ElementTypeMapArray<T> &>(data_to_pack),
-                                           buffer,
-                                           elements,
-                                           per_quadrature_point,
-                                           fem);
+  /* ------------------------------------------------------------------------ */
+  template <typename T>
+  static inline void
+  packElementalDataHelper(const ElementTypeMapArray<T> & data_to_pack,
+                          CommunicationBuffer & buffer,
+                          const Array<Element> & elements,
+                          bool per_quadrature_point, const FEEngine & fem) {
+    packUnpackElementalDataHelper<T, true>(
+        const_cast<ElementTypeMapArray<T> &>(data_to_pack), buffer, elements,
+        per_quadrature_point, fem);
   }
 
-  template<typename T>
-  static inline void unpackElementalDataHelper(ElementTypeMapArray<T> & data_to_unpack,
-                                        CommunicationBuffer & buffer,
-                                        const Array<Element> & elements,
-                                        bool per_quadrature_point,
-                                        const FEEngine & fem) {
-    packUnpackElementalDataHelper<T, false>(data_to_unpack,
-                                            buffer,
-                                            elements,
-                                            per_quadrature_point,
-                                            fem);
+  template <typename T>
+  static inline void
+  unpackElementalDataHelper(ElementTypeMapArray<T> & data_to_unpack,
+                            CommunicationBuffer & buffer,
+                            const Array<Element> & elements,
+                            bool per_quadrature_point, const FEEngine & fem) {
+    packUnpackElementalDataHelper<T, false>(data_to_unpack, buffer, elements,
+                                            per_quadrature_point, fem);
   }
+};
 
-  template<typename T, bool pack_helper>
-  static inline void packUnpackDOFDataHelper(Array<T> & data,
-                                             CommunicationBuffer & buffer,
-                                             const Array<UInt> & dofs);
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+template <> class DataAccessor<UInt> : public virtual DataAccessorBase {
+public:
+  DataAccessor() {}
+  virtual ~DataAccessor() {}
 
-  template<typename T>
+  virtual UInt getNbData(const Array<UInt> & elements,
+                         const SynchronizationTag & tag) const = 0;
+  virtual void packData(CommunicationBuffer & buffer,
+                        const Array<UInt> & element,
+                        const SynchronizationTag & tag) const = 0;
+  virtual void unpackData(CommunicationBuffer & buffer,
+                          const Array<UInt> & element,
+                          const SynchronizationTag & tag) = 0;
+  /* ------------------------------------------------------------------------ */
+public:
+  template <typename T, bool pack_helper>
+  static void packUnpackDOFDataHelper(Array<T> & data,
+                                      CommunicationBuffer & buffer,
+                                      const Array<UInt> & dofs);
+
+  template <typename T>
   static inline void packDOFDataHelper(const Array<T> & data_to_pack,
                                        CommunicationBuffer & buffer,
                                        const Array<UInt> & dofs) {
     packUnpackDOFDataHelper<T, true>(const_cast<Array<T> &>(data_to_pack),
-                                     buffer,
-                                     dofs);
+                                     buffer, dofs);
   }
 
-  template<typename T>
+  template <typename T>
   static inline void unpackDOFDataHelper(Array<T> & data_to_unpack,
-                                  CommunicationBuffer & buffer,
-                                  const Array<UInt> & dofs) {
-    packUnpackDOFDataHelper<T, false>(data_to_unpack,
-                                      buffer,
-                                      dofs);
+                                         CommunicationBuffer & buffer,
+                                         const Array<UInt> & dofs) {
+    packUnpackDOFDataHelper<T, false>(data_to_unpack, buffer, dofs);
   }
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
-private:
-
 };
 
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#include "data_accessor_inline_impl.cc"
-
-// /// standard output stream operator
-// inline std::ostream & operator <<(std::ostream & stream, const DataAccessor & _this)
-// {
-//   _this.printself(stream);
-//   return stream;
-// }
-
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DATA_ACCESSOR_HH__ */

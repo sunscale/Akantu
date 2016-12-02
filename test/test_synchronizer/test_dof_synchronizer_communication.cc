@@ -31,7 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "distributed_synchronizer.hh"
+#include "element_synchronizer.hh"
 #include "dof_synchronizer.hh"
 #include "synchronizer_registry.hh"
 #include "mesh.hh"
@@ -66,16 +66,16 @@ int main(int argc, char *argv[])
     while(wait);
   }
 
-  DistributedSynchronizer * communicator = NULL;
+  ElementSynchronizer * communicator = NULL;
   if(prank == 0) {
     mesh.read("cube.msh");
 
     MeshPartition * partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
-    communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
+    communicator = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
     delete partition;
   } else {
-    communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
+    communicator = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
 
 /* -------------------------------------------------------------------------- */

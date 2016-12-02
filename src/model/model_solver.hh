@@ -29,9 +29,10 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "integration_scheme.hh"
 #include "parsable.hh"
 #include "solver_callback.hh"
-#include "integration_scheme.hh"
+#include "synchronizer_registry.hh"
 /* -------------------------------------------------------------------------- */
 #include <set>
 /* -------------------------------------------------------------------------- */
@@ -48,7 +49,9 @@ struct ModelSolverOptions;
 
 __BEGIN_AKANTU__
 
-class ModelSolver : public Parsable, public SolverCallback {
+class ModelSolver : public Parsable,
+                    public SolverCallback,
+                    public SynchronizerRegistry {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -66,8 +69,9 @@ protected:
   void initDOFManager(const ParserSection & section, const ID & solver_type);
 
   /// Callback for the model to instantiate the matricees when needed
-  virtual void initSolver(TimeStepSolverType time_step_solver_type,
-                          NonLinearSolverType non_linear_solver_type) {};
+  virtual void initSolver(__attribute__((unused)) TimeStepSolverType time_step_solver_type,
+                          __attribute__((unused)) NonLinearSolverType non_linear_solver_type) {
+  }
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */

@@ -581,6 +581,12 @@ inline UInt Mesh::getNodeGlobalId(UInt local_id) const {
 }
 
 /* -------------------------------------------------------------------------- */
+inline UInt Mesh::getNodeLocalId(UInt global_id) const {
+  AKANTU_DEBUG_ASSERT(nodes_global_ids != NULL, "The global ids are note set.");
+  return nodes_global_ids->find(global_id);
+}
+
+/* -------------------------------------------------------------------------- */
 inline UInt Mesh::getNbGlobalNodes() const {
   return nodes_global_ids ? nb_global_nodes : nodes->getSize();
 }

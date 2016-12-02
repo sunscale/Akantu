@@ -54,7 +54,7 @@ public:
 
   CohesiveElementInserter(Mesh & mesh,
 			  bool is_extrinsic = false,
-			  DistributedSynchronizer * synchronizer = NULL,
+			  ElementSynchronizer * synchronizer = NULL,
 			  const ID & id = "cohesive_element_inserter");
 
   virtual ~CohesiveElementInserter();
@@ -91,7 +91,7 @@ public:
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   /// init parallel variables
   void initParallel(FacetSynchronizer * facet_synchronizer,
-		    DistributedSynchronizer * distributed_synchronizer);
+		    ElementSynchronizer * element_synchronizer);
 #endif
 
 protected:

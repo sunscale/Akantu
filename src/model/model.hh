@@ -30,29 +30,28 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+#include "aka_memory.hh"
+#include "fe_engine.hh"
+#include "mesh.hh"
+#include "mesh_partition.hh"
+#include "mesh_utils.hh"
+#include "model_solver.hh"
+#include "parser.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MODEL_HH__
 #define __AKANTU_MODEL_HH__
 
-/* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "aka_memory.hh"
-#include "mesh.hh"
-#include "fe_engine.hh"
-#include "mesh_utils.hh"
-#include "synchronizer_registry.hh"
-#include "distributed_synchronizer.hh"
-#include "static_communicator.hh"
-#include "mesh_partition.hh"
-#include "dof_synchronizer.hh"
-#include "pbc_synchronizer.hh"
-#include "parser.hh"
-#include "model_solver.hh"
-/* -------------------------------------------------------------------------- */
+namespace akantu {
+class SynchronizerRegistry;
+class DataAccessorBase;
+template <class Entity> class DataAccessor;
+} // akantu
 
-__BEGIN_AKANTU__
+/* -------------------------------------------------------------------------- */
+namespace akantu {
 
 struct ModelOptions {
   virtual ~ModelOptions() {}
@@ -65,9 +64,8 @@ class Model : public Memory, public ModelSolver {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Model(Mesh& mesh, UInt spatial_dimension = _all_dimensions,
-        const ID & id = "model",
-        const MemoryID & memory_id = 0);
+  Model(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
+        const ID & id = "model", const MemoryID & memory_id = 0);
 
   virtual ~Model();
 
@@ -80,13 +78,6 @@ public:
   virtual void initFull(const ModelOptions & options);
 
   virtual void initModel() = 0;
-
-  /// create the synchronizer registry object
-  void createSynchronizerRegistry(DataAccessor * data_accessor);
-
-  /// create a parallel synchronizer and distribute the mesh
-  DistributedSynchronizer & createParallelSynch(MeshPartition * partition,
-                                                DataAccessor * data_accessor);
 
   // /// change local equation number so that PBC is assembled properly
   // void changeLocalEquationNumberForPBC(std::map<UInt, UInt> & pbc_pair,
@@ -125,6 +116,14 @@ public:
   DumperIOHelper & getGroupDumper(const std::string & group_name);
 
   /* ------------------------------------------------------------------------ */
+  /* Function for non local capabilities                                      */
+  /* ------------------------------------------------------------------------ */
+  virtual void updateDataForNonLocalCriterion(__attribute__((unused))
+                                              ElementTypeMapReal & criterion) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
+  /* ------------------------------------------------------------------------ */
   /* Accessors */
   /* ------------------------------------------------------------------------ */
 public:
@@ -133,10 +132,6 @@ public:
 
   /// get the number of surfaces
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &)
-
-  /// return the object handling synchronizers
-  AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry,
-                   SynchronizerRegistry &)
 
   /// synchronize the boundary in case of parallel run
   virtual void synchronizeBoundaries(){};
@@ -169,7 +164,9 @@ public:
   std::map<UInt, UInt> & getPBCPairs() { return pbc_pair; };
 
   /// returns if node is slave in pbc
-  inline bool isPBCSlaveNode(const UInt node) const { return false; /* TODO repair PBC*/ }
+  inline bool isPBCSlaveNode(const UInt node) const {
+    return false; /* TODO repair PBC*/
+  }
 
   /// returns the array of pbc slave nodes (boolean information)
   AKANTU_GET_MACRO(IsPBCSlaveNode, is_pbc_slave_node, const Array<bool> &)
@@ -295,9 +292,6 @@ protected:
   /// default fem object
   std::string default_fem;
 
-  /// synchronizer registry
-  SynchronizerRegistry * synch_registry;
-
   /// pbc pairs
   std::map<UInt, UInt> pbc_pair;
 
@@ -308,20 +302,14 @@ protected:
   Parser * parser;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
-#include "model_inline_impl.cc"
-#endif
-
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream, const Model & _this) {
   _this.printself(stream);
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
+
+#include "model_inline_impl.cc"
 
 #endif /* __AKANTU_MODEL_HH__ */

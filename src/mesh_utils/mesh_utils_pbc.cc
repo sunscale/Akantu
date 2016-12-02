@@ -33,8 +33,9 @@
 /* -------------------------------------------------------------------------- */
 #include <map>
 /* -------------------------------------------------------------------------- */
-#include "mesh_utils.hh"
 #include "element_group.hh"
+#include "mesh_accessor.hh"
+#include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -43,88 +44,85 @@ __BEGIN_AKANTU__
 /// class that sorts a set of nodes of same coordinates in 'dir' direction
 class CoordinatesComparison {
 public:
-  CoordinatesComparison (const UInt dimension,
-			 const UInt dirx, const UInt diry,
-			 Real normalization,
-			 Real tolerance,
-			 Real * coords):
-    dim(dimension),dir_x(dirx),dir_y(diry),normalization(normalization),
-    tolerance(tolerance),coordinates(coords){}
+  CoordinatesComparison(const UInt dimension, const UInt dir_1, const UInt dir_2,
+                        Real normalization, Real tolerance)
+      : dim(dimension), dir_1(dir_1), dir_2(dir_2), normalization(normalization),
+        tolerance(tolerance) {}
   // answers the question whether n2 is larger or equal to n1
-  bool operator() (UInt n1, UInt n2){
-    Real p1_x = coordinates[dim*n1+dir_x];
-    Real p2_x = coordinates[dim*n2+dir_x];
-    Real diff_x = p1_x - p2_x;
-    if (dim == 2 || std::abs(diff_x)/normalization > tolerance)
-      return diff_x > 0.0 ? false : true;
-    else if (dim > 2){
-      Real p1_y = coordinates[dim*n1+dir_y];
-      Real p2_y = coordinates[dim*n2+dir_y];
-      Real diff_y = p1_y - p2_y;
-      return diff_y > 0 ? false : true;
+  bool operator()(const Vector<Real> & n1, const Vector<Real> & n2) {
+    Real diff = n1(dir_1) - n2(dir_1);;
+    if (dim == 2 || std::abs(diff) / normalization > tolerance)
+      return diff > 0. ? false : true;
+    else if (dim > 2) {
+      diff = n1(dir_2) - n2(dir_2);;
+       return diff > 0 ? false : true;
     }
     return true;
   }
+
 private:
   UInt dim;
-  UInt dir_x;
-  UInt dir_y;
+  UInt dir_1;
+  UInt dir_2;
   Real normalization;
   Real tolerance;
-  Real * coordinates;
 };
 
 /* -------------------------------------------------------------------------- */
-void MeshUtils::computePBCMap(const Mesh & mymesh,
-			      const UInt dir,
-			      std::map<UInt,UInt> & pbc_pair){
+void MeshUtils::computePBCMap(const Mesh & mesh, const UInt dir,
+                              std::map<UInt, UInt> & pbc_pair) {
   Array<UInt> selected_left;
   Array<UInt> selected_right;
 
-  Real * coords = mymesh.nodes->storage();
-  const UInt nb_nodes = mymesh.nodes->getSize();
-  const UInt dim = mymesh.getSpatialDimension();
+  const UInt dim = mesh.getSpatialDimension();
+  Array<Real>::const_vector_iterator it = mesh.getNodes().begin(dim);
+  Array<Real>::const_vector_iterator end = mesh.getNodes().end(dim);
 
-  if (dim <= dir) return;
+  if (dim <= dir)
+    return;
 
-  AKANTU_DEBUG_INFO("min " << mymesh.lower_bounds[dir]);
-  AKANTU_DEBUG_INFO("max " << mymesh.upper_bounds[dir]);
+  const Vector<Real> & lower_bounds = mesh.getLowerBounds();
+  const Vector<Real> & upper_bounds = mesh.getUpperBounds();
 
-  for (UInt i = 0; i < nb_nodes; ++i) {
-    AKANTU_DEBUG_TRACE("treating " << coords[dim*i+dir]);
-    if(Math::are_float_equal(coords[dim*i+dir], mymesh.lower_bounds[dir])){
-      AKANTU_DEBUG_TRACE("pushing node " << i << " on the left side");
-      selected_left.push_back(i);
-    }
-    else if(Math::are_float_equal(coords[dim*i+dir], mymesh.upper_bounds[dir])){
-      selected_right.push_back(i);
-      AKANTU_DEBUG_TRACE("pushing node " << i << " on the right side");
+  AKANTU_DEBUG_INFO("min " << lower_bounds(dir));
+  AKANTU_DEBUG_INFO("max " << upper_bounds(dir));
+
+  for (UInt node = 0; it != end; ++it, ++node) {
+    const Vector<Real> & coords = *it;
+    AKANTU_DEBUG_TRACE("treating " << coords(dir));
+    if (Math::are_float_equal(coords(dir), lower_bounds(dir))) {
+      AKANTU_DEBUG_TRACE("pushing node " << node << " on the left side");
+      selected_left.push_back(node);
+    } else if (Math::are_float_equal(coords(dir), upper_bounds(dir))) {
+      selected_right.push_back(node);
+      AKANTU_DEBUG_TRACE("pushing node " << node << " on the right side");
     }
   }
 
-  AKANTU_DEBUG_INFO("found " << selected_left.getSize() << " and " << selected_right.getSize()
-	       << " nodes at each boundary for direction " << dir);
+  AKANTU_DEBUG_INFO(
+      "found " << selected_left.getSize() << " and " << selected_right.getSize()
+               << " nodes at each boundary for direction " << dir);
 
   // match pairs
-  MeshUtils::matchPBCPairs(mymesh, dir, selected_left, selected_right, pbc_pair);
-
+  MeshUtils::matchPBCPairs(mesh, dir, selected_left, selected_right, pbc_pair);
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshUtils::computePBCMap(const Mesh & mymesh,
-			      const SurfacePair & surface_pair,
-			      std::map<UInt,UInt> & pbc_pair) {
+void MeshUtils::computePBCMap(const Mesh & mesh,
+                              const SurfacePair & surface_pair,
+                              std::map<UInt, UInt> & pbc_pair) {
 
   Array<UInt> selected_first;
   Array<UInt> selected_second;
 
   // find nodes on surfaces
-  const ElementGroup & first_surf = mymesh.getElementGroup(surface_pair.first);
-  const ElementGroup & second_surf = mymesh.getElementGroup(surface_pair.second);
+  const ElementGroup & first_surf = mesh.getElementGroup(surface_pair.first);
+  const ElementGroup & second_surf = mesh.getElementGroup(surface_pair.second);
 
   // if this surface pair is not on this proc
   if (first_surf.getNbNodes() == 0 || second_surf.getNbNodes() == 0) {
-    AKANTU_DEBUG_WARNING("computePBCMap has at least one surface without any nodes. I will ignore it.");
+    AKANTU_DEBUG_WARNING("computePBCMap has at least one surface without any "
+                         "nodes. I will ignore it.");
     return;
   }
 
@@ -133,13 +131,13 @@ void MeshUtils::computePBCMap(const Mesh & mymesh,
   selected_second.copy(second_surf.getNodeGroup().getNodes());
 
   // coordinates
-  const Array<Real> & coords = mymesh.getNodes();
-  const UInt dim = mymesh.getSpatialDimension();
+  const Array<Real> & coords = mesh.getNodes();
+  const UInt dim = mesh.getSpatialDimension();
 
   // variables to find min and max of surfaces
   Real first_max[3], first_min[3];
   Real second_max[3], second_min[3];
-  for (UInt i=0; i<dim; ++i) {
+  for (UInt i = 0; i < dim; ++i) {
     first_min[i] = std::numeric_limits<Real>::max();
     second_min[i] = std::numeric_limits<Real>::max();
     first_max[i] = -std::numeric_limits<Real>::max();
@@ -148,19 +146,21 @@ void MeshUtils::computePBCMap(const Mesh & mymesh,
 
   // find min and max of surface nodes
   for (Array<UInt>::scalar_iterator it = selected_first.begin();
-       it != selected_first.end();
-       ++it) {
-    for (UInt i=0; i<dim; ++i) {
-      if (first_min[i] > coords(*it,i)) first_min[i] = coords(*it,i);
-      if (first_max[i] < coords(*it,i)) first_max[i] = coords(*it,i);
+       it != selected_first.end(); ++it) {
+    for (UInt i = 0; i < dim; ++i) {
+      if (first_min[i] > coords(*it, i))
+        first_min[i] = coords(*it, i);
+      if (first_max[i] < coords(*it, i))
+        first_max[i] = coords(*it, i);
     }
   }
   for (Array<UInt>::scalar_iterator it = selected_second.begin();
-       it != selected_second.end();
-       ++it) {
-    for (UInt i=0; i<dim; ++i) {
-      if (second_min[i] > coords(*it,i)) second_min[i] = coords(*it,i);
-      if (second_max[i] < coords(*it,i)) second_max[i] = coords(*it,i);
+       it != selected_second.end(); ++it) {
+    for (UInt i = 0; i < dim; ++i) {
+      if (second_min[i] > coords(*it, i))
+        second_min[i] = coords(*it, i);
+      if (second_max[i] < coords(*it, i))
+        second_max[i] = coords(*it, i);
     }
   }
 
@@ -169,7 +169,7 @@ void MeshUtils::computePBCMap(const Mesh & mymesh,
 #ifndef AKANTU_NDEBUG
   Int second_dir = -2;
 #endif
-  for (UInt i=0; i<dim; ++i) {
+  for (UInt i = 0; i < dim; ++i) {
     if (Math::are_float_equal(first_min[i], first_max[i])) {
       first_dir = i;
     }
@@ -180,65 +180,64 @@ void MeshUtils::computePBCMap(const Mesh & mymesh,
 #endif
   }
 
-  AKANTU_DEBUG_ASSERT(first_dir == second_dir, "Surface pair has not same direction. Surface "
-		      << surface_pair.first << " dir=" << first_dir << " ; Surface "
-		      << surface_pair.second << " dir=" << second_dir);
+  AKANTU_DEBUG_ASSERT(first_dir == second_dir,
+                      "Surface pair has not same direction. Surface "
+                          << surface_pair.first << " dir=" << first_dir
+                          << " ; Surface " << surface_pair.second
+                          << " dir=" << second_dir);
   UInt dir = first_dir;
 
   // match pairs
   if (first_min[dir] < second_min[dir])
-    MeshUtils::matchPBCPairs(mymesh, dir, selected_first, selected_second, pbc_pair);
+    MeshUtils::matchPBCPairs(mesh, dir, selected_first, selected_second,
+                             pbc_pair);
   else
-    MeshUtils::matchPBCPairs(mymesh, dir, selected_second, selected_first, pbc_pair);
+    MeshUtils::matchPBCPairs(mesh, dir, selected_second, selected_first,
+                             pbc_pair);
 }
 
-
 /* -------------------------------------------------------------------------- */
-void MeshUtils::matchPBCPairs(const Mesh & mymesh,
-			      const UInt dir,
-			      Array<UInt> & selected_left,
-			      Array<UInt> & selected_right,
-			      std::map<UInt,UInt> & pbc_pair) {
+void MeshUtils::matchPBCPairs(const Mesh & mesh, const UInt dir,
+                              Array<UInt> & selected_left,
+                              Array<UInt> & selected_right,
+                              std::map<UInt, UInt> & pbc_pair) {
 
-
-  // tolerance is that large because most meshers generate points coordinates 
+  // tolerance is that large because most meshers generate points coordinates
   // with single precision only (it is the case of GMSH for instance)
   Real tolerance = 1e-7;
-  Real * coords = mymesh.nodes->storage();
-  const UInt dim = mymesh.getSpatialDimension();
-  Real normalization = mymesh.upper_bounds[dir]-mymesh.lower_bounds[dir];
+  const UInt dim = mesh.getSpatialDimension();
+  Real normalization = mesh.getUpperBounds()(dir) - mesh.getLowerBounds()(dir);
 
-  AKANTU_DEBUG_ASSERT(std::abs(normalization) > Math::getTolerance(), 
-		      "In matchPBCPairs: The normalization is zero. "
-		      << "Did you compute the bounding box of the mesh?");
+  AKANTU_DEBUG_ASSERT(std::abs(normalization) > Math::getTolerance(),
+                      "In matchPBCPairs: The normalization is zero. "
+                          << "Did you compute the bounding box of the mesh?");
 
-  UInt dir_x = UInt(-1) ,dir_y = UInt(-1);
+  UInt odir_1 = UInt(-1), odir_2 = UInt(-1);
 
-  if (dim == 3){
-    if (dir == 0){
-      dir_x = 1;dir_y = 2;
+  if (dim == 3) {
+    if (dir == _x) {
+      odir_1 = _y;
+      odir_2 = _z;
+    } else if (dir == _y) {
+      odir_1 = _x;
+      odir_2 = _z;
+    } else if (dir == _z) {
+      odir_1 = _x;
+      odir_2 = _y;
     }
-    else if (dir == 1){
-      dir_x = 0;dir_y = 2;
-    }
-    else if (dir == 2){
-      dir_x = 0;dir_y = 1;
-    }
-  }
-  else if (dim == 2){
-    if (dir == 0){
-      dir_x = 1;
-    }
-    else if (dir == 1){
-      dir_x = 0;
+  } else if (dim == 2) {
+    if (dir == _x) {
+      odir_1 = _y;
+    } else if (dir == _y) {
+      odir_1 = _x;
     }
   }
 
-  CoordinatesComparison compare_nodes(dim,dir_x,dir_y,normalization,tolerance,coords);
+  CoordinatesComparison compare_nodes(dim, odir_1, odir_2, normalization,
+                                      tolerance);
 
-  std::sort(selected_left.begin(),selected_left.end(),compare_nodes);
-  std::sort(selected_right.begin(),selected_right.end(),compare_nodes);
-
+  std::sort(selected_left.begin(), selected_left.end(), compare_nodes);
+  std::sort(selected_right.begin(), selected_right.end(), compare_nodes);
 
   Array<UInt>::scalar_iterator it_left = selected_left.begin();
   Array<UInt>::scalar_iterator end_left = selected_left.end();
@@ -246,51 +245,47 @@ void MeshUtils::matchPBCPairs(const Mesh & mymesh,
   Array<UInt>::scalar_iterator it_right = selected_right.begin();
   Array<UInt>::scalar_iterator end_right = selected_right.end();
 
-  while ((it_left != end_left) && (it_right != end_right) ){
+  Array<Real>::const_vector_iterator nit = mesh.getNodes().begin(dim);
+
+  while ((it_left != end_left) && (it_right != end_right)) {
     UInt i1 = *it_left;
     UInt i2 = *it_right;
 
-    AKANTU_DEBUG_TRACE("do I pair? " << i1 << "("
-		      << coords[dim*i1] << "," << coords[dim*i1+1] << ","
-		       << coords[dim*i1+2]
-		      << ") with"
-		      << i2 << "("
-		      << coords[dim*i2] << "," << coords[dim*i2+1] << ","
-		       << coords[dim*i2+2]
-		      << ") in direction " << dir);
+    Vector<Real> coords1 = nit[i1];
+    Vector<Real> coords2 = nit[i2];
 
+    AKANTU_DEBUG_TRACE("do I pair? " << i1 << "(" << coords1 << ") with" << i2
+                                     << "(" << coords2 << ") in direction "
+                                     << dir);
 
     Real dx = 0.0;
     Real dy = 0.0;
-    if (dim >= 2) dx = coords[dim*i1 + dir_x] - coords[dim*i2 + dir_x];
-    if (dim == 3) dy = coords[dim*i1 + dir_y] - coords[dim*i2 + dir_y];
+    if (dim >= 2)
+      dx = coords1(odir_1) - coords2(odir_1);
+    if (dim == 3)
+      dy = coords1(odir_2) - coords2(odir_2);
 
-    if (fabs(dx*dx+dy*dy)/normalization < tolerance) {
-      //then i match these pairs
-      if (pbc_pair.count(i2)){
-	i2 = pbc_pair[i2];
+    if (std::abs(dx * dx + dy * dy) / normalization < tolerance) {
+      // then i match these pairs
+      if (pbc_pair.count(i2)) {
+        i2 = pbc_pair[i2];
       }
       pbc_pair[i1] = i2;
 
-      AKANTU_DEBUG_TRACE("pairing " << i1 << "("
-			 << coords[dim*i1] << "," << coords[dim*i1+1] << ","
-			 << coords[dim*i1+2]
-			 << ") with"
-			 << i2 << "("
-			 << coords[dim*i2] << "," << coords[dim*i2+1] << ","
-			 << coords[dim*i2+2]
-			 << ") in direction " << dir);
+      AKANTU_DEBUG_TRACE("pairing "
+                         << i1 << "(" << coords1
+                         << ") with" << i2 << "(" << coords2
+                         << ") in direction " << dir);
       ++it_left;
       ++it_right;
-    } else if (compare_nodes(i1, i2)) {
+    } else if (compare_nodes(coords1, coords2)) {
       ++it_left;
     } else {
       ++it_right;
     }
-
   }
-  AKANTU_DEBUG_INFO("found " <<  pbc_pair.size() << " pairs for direction " << dir);
-
+  AKANTU_DEBUG_INFO("found " << pbc_pair.size() << " pairs for direction "
+                             << dir);
 }
 
 __END_AKANTU__

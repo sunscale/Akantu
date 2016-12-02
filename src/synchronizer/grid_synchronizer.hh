@@ -31,11 +31,10 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "distributed_synchronizer.hh"
+#include "element_synchronizer.hh"
 #include "synchronizer_registry.hh"
 
 /* -------------------------------------------------------------------------- */
-
 
 #ifndef __AKANTU_GRID_SYNCHRONIZER_HH__
 #define __AKANTU_GRID_SYNCHRONIZER_HH__
@@ -43,59 +42,57 @@
 __BEGIN_AKANTU__
 
 class Mesh;
-template<class T>
-class SpatialGrid;
+template <class T> class SpatialGrid;
 
-class GridSynchronizer : public DistributedSynchronizer {
+class GridSynchronizer : public ElementSynchronizer {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 protected:
-  GridSynchronizer(Mesh & mesh, const ID & id = "grid_synchronizer", MemoryID memory_id = 0,
-		   const bool register_to_event_manager = true);
+  GridSynchronizer(Mesh & mesh, const ID & id = "grid_synchronizer",
+                   MemoryID memory_id = 0,
+                   const bool register_to_event_manager = true);
 
 public:
-  virtual ~GridSynchronizer() { };
+  virtual ~GridSynchronizer(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-   /**
-   *Create the Grid Synchronizer:
-   *Compute intersection and send info to neighbours that will be stored in ghosts elements
-   */
+  /**
+  *Create the Grid Synchronizer:
+  *Compute intersection and send info to neighbours that will be stored in
+  *ghosts elements
+  */
   template <class E>
   static GridSynchronizer *
-  createGridSynchronizer(Mesh & mesh,
-			 const SpatialGrid<E> & grid,
-			 SynchronizerID id = "grid_synchronizer",
-			 SynchronizerRegistry * synch_registry = NULL,
-			 const std::set<SynchronizationTag> & tags_to_register = std::set<SynchronizationTag>(),
-			 MemoryID memory_id = 0, const bool register_to_event_manager = true);
-
+  createGridSynchronizer(Mesh & mesh, const SpatialGrid<E> & grid,
+                         SynchronizerID id = "grid_synchronizer",
+                         SynchronizerRegistry * synch_registry = NULL,
+                         const std::set<SynchronizationTag> & tags_to_register =
+                             std::set<SynchronizationTag>(),
+                         MemoryID memory_id = 0,
+                         const bool register_to_event_manager = true);
 
 protected:
   /// Define the tags that will be used in the send and receive instructions
   enum CommTags {
-    SIZE_TAG        = 0,
-    DATA_TAG        = 1,
-    ASK_NODES_TAG   = 2,
-    SEND_NODES_TAG  = 3
+    SIZE_TAG = 0,
+    DATA_TAG = 1,
+    ASK_NODES_TAG = 2,
+    SEND_NODES_TAG = 3
   };
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
 };
-
 
 __END_AKANTU__
 

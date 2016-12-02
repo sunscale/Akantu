@@ -43,14 +43,14 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_types.hh"
-#include "model.hh"
-#include "data_accessor.hh"
-#include "mesh.hh"
-#include "dumpable.hh"
 #include "boundary_condition.hh"
+#include "data_accessor.hh"
+#include "dumpable.hh"
 #include "integrator_gauss.hh"
-#include "shape_lagrange.hh"
 #include "material_selector.hh"
+#include "mesh.hh"
+#include "model.hh"
+#include "shape_lagrange.hh"
 #include "solid_mechanics_model_event_handler.hh"
 /* -------------------------------------------------------------------------- */
 namespace akantu {
@@ -76,7 +76,8 @@ extern const SolidMechanicsModelOptions default_solid_mechanics_model_options;
 
 class SolidMechanicsModel
     : public Model,
-      public DataAccessor,
+      public DataAccessor<Element>,
+      public DataAccessor<UInt>,
       public MeshEventHandler,
       public BoundaryCondition<SolidMechanicsModel>,
       public EventHandlerManager<SolidMechanicsModelEventHandler> {
@@ -118,8 +119,8 @@ public:
   void initFEEngineBoundary();
 
   /// register the tags associated with the parallel synchronizer
-  virtual void initParallel(MeshPartition * partition,
-                            DataAccessor * data_accessor = NULL);
+  // virtual void initParallel(MeshPartition * partition,
+  //                           DataAccessor<Element> * data_accessor = NULL);
 
   /// allocate all vectors
   virtual void initArrays();
@@ -134,7 +135,7 @@ public:
   virtual void initModel();
 
   /// init PBC synchronizer
-  void initPBC();
+  // void initPBC();
 
   /// initialize a new solver and sets it as the default one to use
   void initNewSolver(const AnalysisMethod & method);
@@ -159,7 +160,7 @@ public:
 
 protected:
   /// register PBC synchronizer
-  void registerPBCSynchronizer();
+  //  void registerPBCSynchronizer();
 
   /* ------------------------------------------------------------------------ */
   /* Solver interface                                                         */
@@ -187,7 +188,7 @@ private:
 
 protected:
   /* ------------------------------------------------------------------------ */
-  virtual TimeStepSolverType getDefaultSolverType();
+  virtual TimeStepSolverType getDefaultSolverType() const;
   /* ------------------------------------------------------------------------ */
   virtual ModelSolverOptions
   getDefaultSolverOptions(const TimeStepSolverType & type) const;
@@ -327,8 +328,7 @@ protected:
   //   void initJacobianMatrix();
 
   /* ------------------------------------------------------------------------ */
-  /* Explicit/Implicit                                                        */
-  /* ------------------------------------------------------------------------ */
+  virtual void updateDataForNonLocalCriterion(ElementTypeMapReal & criterion);
 
 public:
   /// Update the stresses for the computation of the residual of the Stiffness
@@ -409,25 +409,27 @@ protected:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  inline virtual UInt getNbDataForElements(const Array<Element> & elements,
-                                           SynchronizationTag tag) const;
+  inline virtual UInt getNbData(const Array<Element> & elements,
+                                const SynchronizationTag & tag) const;
 
-  inline virtual void packElementData(CommunicationBuffer & buffer,
-                                      const Array<Element> & elements,
-                                      SynchronizationTag tag) const;
+  inline virtual void packData(CommunicationBuffer & buffer,
+                               const Array<Element> & elements,
+                               const SynchronizationTag & tag) const;
 
-  inline virtual void unpackElementData(CommunicationBuffer & buffer,
-                                        const Array<Element> & elements,
-                                        SynchronizationTag tag);
+  inline virtual void unpackData(CommunicationBuffer & buffer,
+                                 const Array<Element> & elements,
+                                 const SynchronizationTag & tag);
 
-  inline virtual UInt getNbDataToPack(SynchronizationTag tag) const;
-  inline virtual UInt getNbDataToUnpack(SynchronizationTag tag) const;
+  inline virtual UInt getNbData(const Array<UInt> & dofs,
+                                const SynchronizationTag & tag) const;
 
-  inline virtual void packData(CommunicationBuffer & buffer, const UInt index,
-                               SynchronizationTag tag) const;
+  inline virtual void packData(CommunicationBuffer & buffer,
+                               const Array<UInt> & dofs,
+                               const SynchronizationTag & tag) const;
 
-  inline virtual void unpackData(CommunicationBuffer & buffer, const UInt index,
-                                 SynchronizationTag tag);
+  inline virtual void unpackData(CommunicationBuffer & buffer,
+                                 const Array<UInt> & dofs,
+                                 const SynchronizationTag & tag);
 
 protected:
   inline void splitElementByMaterial(const Array<Element> & elements,
@@ -628,8 +630,7 @@ public:
   // &);
 
   /// get synchronizer
-  AKANTU_GET_MACRO(Synchronizer, *synch_parallel,
-                   const DistributedSynchronizer &);
+  AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const ElementSynchronizer &);
 
   AKANTU_GET_MACRO(MaterialByElement, material_index,
                    const ElementTypeMapArray<UInt> &);
@@ -751,13 +752,14 @@ protected:
   AnalysisMethod method;
 
   /// internal synchronizer for parallel computations
-  DistributedSynchronizer * synch_parallel;
+  ElementSynchronizer * synch_parallel;
 
   /// tells if the material are instantiated
   bool are_materials_instantiated;
 
   typedef std::map<std::pair<std::string, ElementKind>,
-                   ElementTypeMapArray<Real> *> flatten_internal_map;
+                   ElementTypeMapArray<Real> *>
+      flatten_internal_map;
 
   /// map a registered internals to be flattened for dump purposes
   flatten_internal_map registered_internals;
@@ -766,7 +768,7 @@ protected:
   NonLocalManager * non_local_manager;
 
   /// pointer to the pbc synchronizer
-  PBCSynchronizer * pbc_synch;
+  // PBCSynchronizer * pbc_synch;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -782,13 +784,13 @@ __END_AKANTU__
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-#include "parser.hh"
 #include "material.hh"
+#include "parser.hh"
 
 __BEGIN_AKANTU__
 
-#include "solid_mechanics_model_tmpl.hh"
 #include "solid_mechanics_model_inline_impl.cc"
+#include "solid_mechanics_model_tmpl.hh"
 
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream,

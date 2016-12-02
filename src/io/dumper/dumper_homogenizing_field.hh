@@ -42,8 +42,8 @@ __BEGIN_AKANTU_DUMPER__
 
 template <typename type>
 inline type typeConverter(const type & input,
-                          Vector<typename type::value_type> & res,
-                          UInt nb_data) {
+                          __attribute__((unused)) Vector<typename type::value_type> & res,
+                          __attribute__((unused)) UInt nb_data) {
 
   throw;
   return input;

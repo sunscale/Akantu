@@ -29,15 +29,15 @@
 
 /* -------------------------------------------------------------------------- */
 #include "model_solver.hh"
-#include "mesh.hh"
 #include "dof_manager.hh"
+#include "mesh.hh"
 
 #if defined(AKANTU_USE_MPI)
 #include "mpi_type_wrapper.hh"
 #endif
-#if defined(AKANTU_USE_MUMPS)
+
 #include "dof_manager_default.hh"
-#endif
+
 #if defined(AKANTU_USE_PETSC)
 #include "dof_manager_petsc.hh"
 #endif
@@ -163,8 +163,8 @@ void ModelSolver::initDOFManager(const ParserSection & section,
     this->getNewSolver(solver_id, tss_type, nls_type);
     if (nb_non_linear_solver_section == 1) {
       const ParserSection & nls_section = *(sub_solvers_sect.first);
-      this->dof_manager->getNonLinearSolver(solver_id)
-          .parseSection(nls_section);
+      this->dof_manager->getNonLinearSolver(solver_id).parseSection(
+          nls_section);
     }
 
     std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
@@ -328,7 +328,8 @@ TimeStepSolverType ModelSolver::getDefaultSolverType() const {
 
 /* -------------------------------------------------------------------------- */
 ModelSolverOptions
-ModelSolver::getDefaultSolverOptions(const TimeStepSolverType & type) const {
+ModelSolver::getDefaultSolverOptions(__attribute__((unused))
+                                     const TimeStepSolverType & type) const {
   ModelSolverOptions options;
   options.non_linear_solver_type = _nls_auto;
   return options;

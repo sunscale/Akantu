@@ -69,10 +69,9 @@ protected:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
+protected:
   DOFManager & _dof_manager;
 
-protected:
   /// type of non linear solver
   NonLinearSolverType non_linear_solver_type;
 

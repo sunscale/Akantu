@@ -30,18 +30,26 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "static_communicator.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_STATIC_COMMUNICATOR_INLINE_IMPL_HH__
+#define __AKANTU_STATIC_COMMUNICATOR_INLINE_IMPL_HH__
+
+namespace akantu {
+
+/* -------------------------------------------------------------------------- */
 inline void
-StaticCommunicator::freeCommunicationRequest(CommunicationRequest * request) {
-  if (request)
-    delete request;
+StaticCommunicator::freeCommunicationRequest(CommunicationRequest request) {
+  request.free();
 }
 
 /* -------------------------------------------------------------------------- */
 inline void StaticCommunicator::freeCommunicationRequest(
-    std::vector<CommunicationRequest *> & requests) {
-  std::vector<CommunicationRequest *>::iterator it;
+    std::vector<CommunicationRequest> & requests) {
+  std::vector<CommunicationRequest>::iterator it;
   for (it = requests.begin(); it != requests.end(); ++it) {
-    delete (*it);
+    it->free();
   }
 }
 
@@ -93,7 +101,7 @@ inline void StaticCommunicator::receive(T * buffer, Int size, Int sender,
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline CommunicationRequest *
+inline CommunicationRequest
 StaticCommunicator::asyncSend(T * buffer, Int size, Int receiver, Int tag) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(
       asyncSend(buffer, size, receiver, tag), 1);
@@ -101,7 +109,7 @@ StaticCommunicator::asyncSend(T * buffer, Int size, Int receiver, Int tag) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline CommunicationRequest *
+inline CommunicationRequest
 StaticCommunicator::asyncReceive(T * buffer, Int size, Int sender, Int tag) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(
       asyncReceive(buffer, size, sender, tag), 1);
@@ -153,6 +161,14 @@ inline void StaticCommunicator::gather(T * values, int nb_values, int root) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
+inline void StaticCommunicator::gather(T * values, int nb_values, T * gathered,
+                                       int nb_gathered) {
+  AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(
+      gather(values, nb_values, gathered, nb_gathered), 0);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
 inline void StaticCommunicator::gatherV(T * values, int * nb_values, int root) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(gatherV(values, nb_values, root),
                                              0);
@@ -171,19 +187,25 @@ inline void StaticCommunicator::barrier() {
 }
 
 /* -------------------------------------------------------------------------- */
-inline bool StaticCommunicator::testRequest(CommunicationRequest * request) {
+inline bool StaticCommunicator::testRequest(CommunicationRequest request) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(testRequest(request), 1);
 }
 
 /* -------------------------------------------------------------------------- */
-inline void StaticCommunicator::wait(CommunicationRequest * request) {
+inline void StaticCommunicator::wait(CommunicationRequest request) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(wait(request), 0);
 }
 
 /* -------------------------------------------------------------------------- */
 inline void
-StaticCommunicator::waitAll(std::vector<CommunicationRequest *> & requests) {
+StaticCommunicator::waitAll(std::vector<CommunicationRequest> & requests) {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(waitAll(requests), 0);
+}
+
+/* -------------------------------------------------------------------------- */
+inline UInt
+StaticCommunicator::waitAny(std::vector<CommunicationRequest> & requests) {
+  AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(waitAny(requests), 1);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -199,3 +221,7 @@ inline int StaticCommunicator::getMinTag() {
 #if defined(__INTEL_COMPILER)
 #pragma warning(pop)
 #endif // defined(__INTEL_COMPILER)
+
+}  // akantu
+
+#endif /* __AKANTU_STATIC_COMMUNICATOR_INLINE_IMPL_HH__ */

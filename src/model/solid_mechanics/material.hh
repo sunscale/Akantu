@@ -38,10 +38,13 @@
 #include "parser.hh"
 #include "parsable.hh"
 #include "data_accessor.hh"
+#include "integration_point.hh"
+/* -------------------------------------------------------------------------- */
 #include "internal_field.hh"
 #include "random_internal_field.hh"
+/* -------------------------------------------------------------------------- */
+#include "mesh_events.hh"
 #include "solid_mechanics_model_event_handler.hh"
-
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_HH__
@@ -62,7 +65,7 @@ __BEGIN_AKANTU__
  * - implement the following methods:
  * \code
  *  virtual Real getStableTimeStep(Real h, const Element & element =
- *ElementNull);
+ * ElementNull);
  *
  *  virtual void computeStress(ElementType el_type,
  *                             GhostType ghost_type = _not_ghost);
@@ -75,7 +78,7 @@ __BEGIN_AKANTU__
  */
 
 class Material : public Memory,
-                 public DataAccessor,
+                 public DataAccessor<Element>,
                  public Parsable,
                  public MeshEventHandler,
                  protected SolidMechanicsModelEventHandler {
@@ -356,16 +359,16 @@ protected:
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-                                           SynchronizationTag tag) const;
+  virtual inline UInt getNbData(const Array<Element> & elements,
+                                const SynchronizationTag & tag) const;
 
-  virtual inline void packElementData(CommunicationBuffer & buffer,
-                                      const Array<Element> & elements,
-                                      SynchronizationTag tag) const;
+  virtual inline void packData(CommunicationBuffer & buffer,
+                               const Array<Element> & elements,
+                               const SynchronizationTag & tag) const;
 
-  virtual inline void unpackElementData(CommunicationBuffer & buffer,
-                                        const Array<Element> & elements,
-                                        SynchronizationTag tag);
+  virtual inline void unpackData(CommunicationBuffer & buffer,
+                                 const Array<Element> & elements,
+                                 const SynchronizationTag & tag);
 
   template <typename T>
   inline void packElementDataHelper(const ElementTypeMapArray<T> & data_to_pack,
@@ -652,3 +655,5 @@ __END_AKANTU__
   template class mat_name<3>
 
 #endif /* __AKANTU_MATERIAL_HH__ */
+
+//  LocalWords:  ElementNull

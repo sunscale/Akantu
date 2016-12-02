@@ -134,7 +134,7 @@ public:
 public:
 
   /// Internal class describing the arguments
-  class _Argument;
+  struct _Argument;
   /// Stores that value of an argument
   template<class T> class ArgumentStorage;
 

@@ -29,10 +29,11 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_manager_default.hh"
-#include "sparse_matrix_aij.hh"
-#include "time_step_solver_default.hh"
-#include "static_communicator.hh"
 #include "non_linear_solver_default.hh"
+#include "sparse_matrix_aij.hh"
+#include "static_communicator.hh"
+#include "time_step_solver_default.hh"
+#include "dof_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #include <numeric>
 /* -------------------------------------------------------------------------- */
@@ -101,10 +102,14 @@ DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
           0, 1, std::string(id + ":previous_global_blocked_dofs")),
       dofs_type(0, 1, std::string(id + ":dofs_type")),
       data_cache(0, 1, std::string(id + ":data_cache_array")),
-      jacobian_release(0) {}
+      jacobian_release(0),
+      global_equation_number(0, 1, "global_equation_number"),
+      synchronizer(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
-DOFManagerDefault::~DOFManagerDefault() {}
+DOFManagerDefault::~DOFManagerDefault() {
+  delete synchronizer;
+}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -133,6 +138,26 @@ void DOFManagerDefault::assembleToGlobalArray(
 }
 
 /* -------------------------------------------------------------------------- */
+DOFManagerDefault::DOFDataDefault::DOFDataDefault(const ID & dof_id)
+    : DOFData(dof_id), associated_nodes(0, 1, dof_id + "associated_nodes") {}
+
+/* -------------------------------------------------------------------------- */
+DOFManager::DOFData & DOFManagerDefault::getNewDOFData(const ID & dof_id) {
+  DOFDataDefault * dofs_storage = new DOFDataDefault(dof_id);
+  this->dofs[dof_id] = dofs_storage;
+  return *dofs_storage;
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::registerMesh(Mesh & mesh) {
+  DOFManager::registerMesh(mesh);
+
+  delete synchronizer;
+  synchronizer = new DOFSynchronizer(*this, this->id + ":dof_synchronizer",
+                                     this->memory_id, mesh.getCommunicator());
+}
+
+/* -------------------------------------------------------------------------- */
 void DOFManagerDefault::registerDOFs(const ID & dof_id,
                                      Array<Real> & dofs_array,
                                      const DOFSupportType & support_type) {
@@ -158,18 +183,24 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
   // nb local dofs to account for
   UInt nb_dofs = this->local_system_size - local_nb_dofs;
 
-  DOFData & dof_data = *dofs[dof_id];
+  DOFDataDefault & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
 
   this->global_equation_number.resize(this->local_system_size);
 
   // set the equation numbers
   UInt first_dof_id = local_nb_dofs;
   dof_data.local_equation_number.resize(nb_dofs);
+
+  if (support_type == _dst_nodal) {
+    dof_data.associated_nodes.resize(nb_dofs);
+  }
+
   this->dofs_type.resize(local_system_size);
 
   for (UInt d = 0; d < nb_dofs; ++d) {
     UInt local_eq_num = first_dof_id + d;
     dof_data.local_equation_number(d) = local_eq_num;
+
     UInt global_eq_num = first_global_dofs_id + d;
     this->global_equation_number(local_eq_num) = global_eq_num;
     this->global_to_local_mapping[global_eq_num] = local_eq_num;
@@ -177,6 +208,7 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
     case _dst_nodal: {
       UInt node = d / dof_data.dof->getNbComponent();
       this->dofs_type(local_eq_num) = this->mesh->getNodeType(node);
+      dof_data.associated_nodes(d) = node;
       break;
     }
     case _dst_generic: {
@@ -190,6 +222,9 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
   this->residual.resize(this->local_system_size);
   this->global_solution.resize(this->local_system_size);
   this->global_blocked_dofs.resize(this->local_system_size);
+
+  if(this->synchronizer)
+    this->synchronizer->registerDOFs(dof_id);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -228,6 +263,7 @@ DOFManagerDefault::getNewNonLinearSolver(const ID & id,
   ID non_linear_solver_id = this->id + ":nls:" + id;
   NonLinearSolver * nls = NULL;
   switch (type) {
+#if defined(AKANTU_IMPLICIT)
   case _nls_newton_raphson:
   case _nls_newton_raphson_modified: {
     nls = new NonLinearSolverNewtonRaphson(*this, type, non_linear_solver_id,
@@ -239,6 +275,7 @@ DOFManagerDefault::getNewNonLinearSolver(const ID & id,
                                     this->memory_id);
     break;
   }
+#endif
   case _nls_lumped: {
     nls = new NonLinearSolverLumped(*this, type, non_linear_solver_id,
                                     this->memory_id);
@@ -397,7 +434,7 @@ void DOFManagerDefault::assembleLumpedMatMulVectToResidual(
   Array<Real>::scalar_iterator r_it = this->residual.begin();
 
   for (; A_it != A_end; ++A_it, ++x_it, ++r_it) {
-    *r_it += *A_it ** x_it;
+    *r_it += *A_it * *x_it;
   }
 }
 
@@ -556,11 +593,14 @@ void DOFManagerDefault::applyBoundary() {
     Array<bool>::const_scalar_iterator it = global_blocked_dofs.begin();
     Array<bool>::const_scalar_iterator end = global_blocked_dofs.end();
 
-    Array<bool>::const_scalar_iterator pit = previous_global_blocked_dofs.begin();
+    Array<bool>::const_scalar_iterator pit =
+        previous_global_blocked_dofs.begin();
 
-    for (; it != end && *it == *pit; ++it, ++pit);
+    for (; it != end && *it == *pit; ++it, ++pit)
+      ;
 
-    if(it != end) J.applyBoundary();
+    if (it != end)
+      J.applyBoundary();
   } else {
     J.applyBoundary();
   }
@@ -569,6 +609,5 @@ void DOFManagerDefault::applyBoundary() {
 }
 
 /* -------------------------------------------------------------------------- */
-
 
 __END_AKANTU__

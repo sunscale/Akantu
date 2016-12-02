@@ -36,7 +36,7 @@
 #define __AKANTU_NODE_INFO_PER_PROCESSOR_HH__
 
 namespace akantu {
-class DistributedSynchronizer;
+class NodeSynchronizer;
 class StaticCommunicator;
 }
 
@@ -46,20 +46,22 @@ __BEGIN_AKANTU__
 
 class NodeInfoPerProc : protected MeshAccessor {
 public:
-  NodeInfoPerProc(DistributedSynchronizer & synchronizer,
-                  StaticCommunicator & communicator, UInt message_cnt,
-                  UInt root, Mesh & mesh);
+  NodeInfoPerProc(NodeSynchronizer & synchronizer,
+                  UInt message_cnt,
+                  UInt root);
 
   virtual void synchronizeNodes() = 0;
   virtual void synchronizeTypes() = 0;
   virtual void synchronizeGroups() = 0;
 
 protected:
-template <class CommunicationBuffer>
+  template <class CommunicationBuffer>
   void fillNodeGroupsFromBuffer(CommunicationBuffer & buffer);
   void fillNodesType();
+
+  void fillCommunicationScheme(const Array<UInt> &);
 protected:
-  DistributedSynchronizer & synchronizer;
+  NodeSynchronizer & synchronizer;
   StaticCommunicator & comm;
   UInt rank;
   UInt nb_proc;
@@ -75,9 +77,9 @@ protected:
 /* -------------------------------------------------------------------------- */
 class MasterNodeInfoPerProc : protected NodeInfoPerProc {
 public:
-  MasterNodeInfoPerProc(DistributedSynchronizer & synchronizer,
-                        StaticCommunicator & communicator, UInt message_cnt,
-                        UInt root, Mesh & mesh);
+  MasterNodeInfoPerProc(NodeSynchronizer & synchronizer,
+                        UInt message_cnt,
+                        UInt root);
 
   void synchronizeNodes();
   void synchronizeTypes();
@@ -92,9 +94,9 @@ private:
 /* -------------------------------------------------------------------------- */
 class SlaveNodeInfoPerProc : protected NodeInfoPerProc {
 public:
-  SlaveNodeInfoPerProc(DistributedSynchronizer & synchronizer,
-                       StaticCommunicator & communicator, UInt message_cnt,
-                       UInt root, Mesh & mesh);
+  SlaveNodeInfoPerProc(NodeSynchronizer & synchronizer,
+                       UInt message_cnt,
+                       UInt root);
 
   void synchronizeNodes();
   void synchronizeTypes();
@@ -104,7 +106,5 @@ private:
 };
 
 __END_AKANTU__
-
-#include "node_info_per_processor.hh"
 
 #endif /* __AKANTU_NODE_INFO_PER_PROCESSOR_HH__ */

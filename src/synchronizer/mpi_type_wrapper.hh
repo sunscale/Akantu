@@ -30,7 +30,6 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifdef AKANTU_USE_MPI
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )
 #elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
@@ -40,7 +39,9 @@
 #    pragma GCC diagnostic ignored "-Wliteral-suffix"
 #  endif
 #endif
+
 #  include <mpi.h>
+
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )
 #elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
@@ -49,7 +50,7 @@
 #    pragma GCC diagnostic pop
 #  endif
 #endif
-#endif
+
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "static_communicator_mpi.hh"

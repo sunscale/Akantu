@@ -29,18 +29,23 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "neighborhood_max_criterion.hh"
+#include "model.hh"
+/* -------------------------------------------------------------------------- */
+
 #ifndef __AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_CC__
 #define __AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline UInt NeighborhoodMaxCriterion::getNbDataForElements(const Array<Element> & elements,
-							   SynchronizationTag tag) const {
+inline UInt
+NeighborhoodMaxCriterion::getNbDataForElements(const Array<Element> & elements,
+                                               SynchronizationTag tag) const {
   UInt nb_quadrature_points = this->model.getNbIntegrationPoints(elements);
   UInt size = 0;
 
-  if(tag == _gst_nh_criterion) {
+  if (tag == _gst_nh_criterion) {
     size += sizeof(Real) * nb_quadrature_points;
   }
 
@@ -48,33 +53,29 @@ inline UInt NeighborhoodMaxCriterion::getNbDataForElements(const Array<Element> 
 }
 
 /* -------------------------------------------------------------------------- */
-inline void NeighborhoodMaxCriterion::packElementData(CommunicationBuffer & buffer,
-						      const Array<Element> & elements,
-						      SynchronizationTag tag) const {
-  if(tag == _gst_nh_criterion) {
-    this->packElementalDataHelper(criterion,
-				  buffer, elements,true, this->model.getFEEngine());
-
+inline void
+NeighborhoodMaxCriterion::packElementData(CommunicationBuffer & buffer,
+                                          const Array<Element> & elements,
+                                          SynchronizationTag tag) const {
+  if (tag == _gst_nh_criterion) {
+    this->packElementalDataHelper(criterion, buffer, elements, true,
+                                  this->model.getFEEngine());
   }
-
 }
 
 /* -------------------------------------------------------------------------- */
-inline void NeighborhoodMaxCriterion::unpackElementData(CommunicationBuffer & buffer,
-							const Array<Element> & elements,
-							SynchronizationTag tag) {
-  if(tag == _gst_nh_criterion) {
-    this->unpackElementalDataHelper(criterion,
-				    buffer, elements, true, this->model.getFEEngine());
-
+inline void
+NeighborhoodMaxCriterion::unpackElementData(CommunicationBuffer & buffer,
+                                            const Array<Element> & elements,
+                                            SynchronizationTag tag) {
+  if (tag == _gst_nh_criterion) {
+    this->unpackElementalDataHelper(criterion, buffer, elements, true,
+                                    this->model.getFEEngine());
   }
-
 }
 
 /* -------------------------------------------------------------------------- */
 
-
-
-__END_AKANTU__
+}  // akantu
 
 #endif /* __AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_CC__ */

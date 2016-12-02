@@ -29,7 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "element_info_per_processor.hh"
-#include "distributed_synchronizer.hh"
+#include "element_synchronizer.hh"
 #include "static_communicator.hh"
 #include "element_group.hh"
 #include "mesh_utils.hh"
@@ -43,11 +43,9 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 MasterElementInfoPerProc::MasterElementInfoPerProc(
-    DistributedSynchronizer & synchronizer, StaticCommunicator & communicator,
-    UInt message_cnt, UInt root, Mesh & mesh, ElementType type,
+    ElementSynchronizer & synchronizer, UInt message_cnt, UInt root, ElementType type,
     const MeshPartition & partition)
-    : ElementInfoPerProc(synchronizer, communicator, message_cnt, root, mesh,
-                         type),
+    : ElementInfoPerProc(synchronizer, message_cnt, root, type),
       partition(partition), all_nb_local_element(nb_proc, 0),
       all_nb_ghost_element(nb_proc, 0), all_nb_element_to_send(nb_proc, 0) {
   Vector<UInt> size(5);
@@ -151,7 +149,7 @@ void MasterElementInfoPerProc::synchronizeConnectivities() {
 #endif
 
   /// send all connectivity and ghost information to all processors
-  std::vector<CommunicationRequest *> requests;
+  std::vector<CommunicationRequest> requests;
   for (UInt p = 0; p < this->nb_proc; ++p) {
     if (p != this->root) {
       AKANTU_DEBUG_INFO("Sending connectivities to proc "
@@ -214,7 +212,7 @@ void MasterElementInfoPerProc::synchronizePartitions() {
   }
 #endif
 
-  std::vector<CommunicationRequest *> requests;
+  std::vector<CommunicationRequest> requests;
   /// last data to compute the communication scheme
   for (UInt p = 0; p < this->nb_proc; ++p) {
     if (p != this->root) {
@@ -294,7 +292,7 @@ void MasterElementInfoPerProc::synchronizeTags() {
       this->fillTagBuffer(buffers, *names_it);
     }
 
-    std::vector<CommunicationRequest *> requests;
+    std::vector<CommunicationRequest> requests;
     for (UInt p = 0; p < nb_proc; ++p) {
       if (p != root) {
         AKANTU_DEBUG_INFO("Sending "
@@ -455,7 +453,7 @@ void MasterElementInfoPerProc::synchronizeGroups() {
     }
   }
 
-  std::vector<CommunicationRequest *> requests;
+  std::vector<CommunicationRequest> requests;
   for (UInt p = 0; p < this->nb_proc; ++p) {
     if (p == this->rank)
       continue;

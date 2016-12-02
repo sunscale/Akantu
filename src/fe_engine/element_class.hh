@@ -107,8 +107,7 @@ public:
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension, spatial_dimension, UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(NbNodesPerElement, nb_nodes_per_element,
-                                    UInt);
+  static AKANTU_GET_MACRO_NOT_CONST(NbNodesPerElement, nb_nodes_per_element, UInt);
   static AKANTU_GET_MACRO_NOT_CONST(NbFacetTypes, nb_facet_types, UInt);
   static inline UInt getNbFacetsPerElement(UInt t);
   static inline UInt getNbFacetsPerElement();
