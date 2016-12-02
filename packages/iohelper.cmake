@@ -38,7 +38,7 @@ set(_version "master")
 package_add_third_party_script_variable(IOHelper
   IOHELPER_VERSION ${_version})
 package_add_third_party_script_variable(IOHelper
-  IOHELPER_GIT "https://git.epfl.ch/repo/iohelper.git")
+  IOHELPER_GIT "https://c4science.ch/diffusion/IOHELPER/iohelper.git")
 package_add_third_party_script_variable(Scotch
   IOHELPER_ARCHIVE "iohelper_${_version}.tar.gz")
 

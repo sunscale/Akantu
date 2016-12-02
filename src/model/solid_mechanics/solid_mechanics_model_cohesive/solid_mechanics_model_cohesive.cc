@@ -221,21 +221,32 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
     insertElementsFromMeshData(physname);
   }
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_synchronizer != NULL) {
-    facet_synchronizer->asynchronousSynchronize(*inserter, _gst_ce_groups);
-    facet_synchronizer->waitEndSynchronize(*inserter, _gst_ce_groups);
-  }
-#endif
+  synchronizeInsertionData();
 
   SolidMechanicsModel::initMaterials();
 
   if (is_default_material_selector)
     delete material_selector;
   material_selector = new MeshDataMaterialCohesiveSelector(*this);
-  inserter->insertElements();
+ 
+  UInt nb_new_elements = inserter->insertElements();
+  if (nb_new_elements > 0) {
+    this->reinitializeSolver();
+  }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModelCohesive::synchronizeInsertionData() {
+
+#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
+  if (facet_synchronizer != NULL) {
+    facet_synchronizer->asynchronousSynchronize(*inserter, _gst_ce_groups);
+    facet_synchronizer->waitEndSynchronize(*inserter, _gst_ce_groups);
+  }
+#endif
+  
 }
 
 /* -------------------------------------------------------------------------- */
@@ -334,7 +345,10 @@ void SolidMechanicsModelCohesive::limitInsertion(BC::Axis axis,
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::insertIntrinsicElements() {
   AKANTU_DEBUG_IN();
-  inserter->insertIntrinsicElements();
+  UInt nb_new_elements = inserter->insertIntrinsicElements();
+  if (nb_new_elements > 0) {
+    this->reinitializeSolver();
+  }
   AKANTU_DEBUG_OUT();
 }
 

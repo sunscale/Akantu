@@ -143,12 +143,13 @@ option(AKANTU_TESTS "Activate tests" OFF)
 include(AkantuTestsMacros)
 include(AkantuExampleMacros)
 
-if(AKANTU_EXAMPLES OR AKANTU_TESTS)
+if(AKANTU_TESTS)
   option(AKANTU_BUILD_ALL_TESTS "Build all tests" ON)
   find_package(GMSH REQUIRED)
 endif()
 
 if(AKANTU_EXAMPLES)
+  find_package(GMSH REQUIRED)
   add_subdirectory(examples)
 endif()
 

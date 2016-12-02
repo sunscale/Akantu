@@ -62,7 +62,7 @@ namespace akantu {
 
 }
 
-%include "sparse_matrix.hh"
+%include "sparse_matrix.i"
 %include "fe_engine.hh"
 
 %rename(FreeBoundaryDirichlet) akantu::BC::Dirichlet::FreeBoundary;

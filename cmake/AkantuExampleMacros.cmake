@@ -45,43 +45,59 @@ endfunction()
 function(add_example et_name desc)
   string(TOUPPER ${et_name} upper_name)
 
-  if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${et_name})
-    message(FATAL_ERROR "The folder ${CMAKE_CURRENT_SOURCE_DIR}/${et_name} "
-      "that you try to register as an example sub-folder, does not exists.")
+  if(NOT _build_all_ex)
+    option(AKANTU_BUILD_ALL_EXAMPLES "Activate all examples" OFF)
+    set( _build_all_ex TRUE)
   endif()
 
-  cmake_parse_arguments(_manage_example
-    ""
-    ""
-    "PACKAGE"
-    ${ARGN}
-    )
+  option(AKANTU_BUILD_EXAMPLES_${upper_name} ${desc} OFF)
 
-  if(_manage_example_PACKAGE)
-    set(_act TRUE)
-    foreach(_pkg ${_manage_example_PACKAGE})
-      package_is_activated(${_pkg} _activated)
-      if(NOT _activated)
-        set(_act FALSE)
-      endif()
-    endforeach()
+  if(AKANTU_BUILD_ALL_EXAMPLES)
+    mark_as_advanced(FORCE AKANTU_BUILD_EXAMPLES_${upper_name})
   else()
-    message(SEND_ERROR "Examples should be associated to a package")
+    mark_as_advanced(CLEAR AKANTU_BUILD_EXAMPLES_${upper_name})
   endif()
 
-  if(${_act})
-    if(DEFINED _add_examples_pkg)
-      set(_save_add_examples_pkg ${_add_examples_pkg})
+  if(AKANTU_BUILD_EXAMPLES_${upper_name} OR AKANTU_BUILD_ALL_EXAMPLES)
+
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${et_name})
+      message(FATAL_ERROR "The folder ${CMAKE_CURRENT_SOURCE_DIR}/${et_name} "
+	"that you try to register as an example sub-folder, does not exists.")
     endif()
-    list(GET _manage_example_PACKAGE 0 _pkg)
-    set(_add_examples_pkg ${_pkg})
 
-    add_subdirectory(${et_name})
+    cmake_parse_arguments(_manage_example
+      ""
+      ""
+      "PACKAGE"
+      ${ARGN}
+      )
 
-    unset(_add_examples_pkg)
-    if(DEFINED _save_add_examples_pkg)
-      set(_add_examples_pkg ${_save_add_examples_pkg})
-      unset(_save_add_examples_pkg)
+    if(_manage_example_PACKAGE)
+      set(_act TRUE)
+      foreach(_pkg ${_manage_example_PACKAGE})
+	package_is_activated(${_pkg} _activated)
+	if(NOT _activated)
+          set(_act FALSE)
+	endif()
+      endforeach()
+    else()
+      message(SEND_ERROR "Examples should be associated to a package")
+    endif()
+
+    if(_act)
+      if(DEFINED _add_examples_pkg)
+	set(_save_add_examples_pkg ${_add_examples_pkg})
+      endif()
+      list(GET _manage_example_PACKAGE 0 _pkg)
+      set(_add_examples_pkg ${_pkg})
+
+      add_subdirectory(${et_name})
+
+      unset(_add_examples_pkg)
+      if(DEFINED _save_add_examples_pkg)
+	set(_add_examples_pkg ${_save_add_examples_pkg})
+	unset(_save_add_examples_pkg)
+      endif()
     endif()
   endif()
 endfunction()

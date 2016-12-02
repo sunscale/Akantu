@@ -72,6 +72,8 @@ void MaterialReinforcement<dim>::initialize(SolidMechanicsModel & a_model) {
   this->registerParam("pre_stress", pre_stress, _pat_parsable | _pat_modifiable,
                       "Uniform pre-stress");
 
+  this->unregisterInternal(this->stress);
+
   // Fool the AvgHomogenizingFunctor
   // stress.initialize(dim * dim);
 

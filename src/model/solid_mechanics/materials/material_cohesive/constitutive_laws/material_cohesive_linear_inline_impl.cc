@@ -137,7 +137,7 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
     }
     else
       current_penalty = this->penalty;
-      
+
     /// use penalty coefficient in case of penetration
     contact_traction = normal_opening;
     contact_traction *= current_penalty;
@@ -227,7 +227,7 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
   Real delta = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
   penetration = normal_opening_norm < 0.0;
-  if (contact_after_breaking == false && Math::are_float_equal(damage, 1.))
+  if (this->contact_after_breaking == false && Math::are_float_equal(damage, 1.))
     penetration = false;
 
   Real derivative = 0; // derivative = d(t/delta)/ddelta
@@ -250,7 +250,6 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
     normal_opening_norm = opening.dot(normal);
     normal_opening = normal;
     normal_opening *= normal_opening_norm;
-
   }
   else{
     delta += normal_opening_norm * normal_opening_norm;
@@ -265,7 +264,7 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
    * evaluation of the first value of K.
    */
   if (delta < Math::getTolerance())
-    delta = (delta_c)/1000.;
+    delta = delta_c / 1000.;
 
   if (delta >= delta_max){
     if (delta <= delta_c){
@@ -305,16 +304,8 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
   prov *= derivative/delta;
   prov += nn;
 
-//  Matrix<Real> tmp(spatial_dimension, spatial_dimension);
-//  for (UInt i = 0; i < spatial_dimension; ++i) {
-//    for (UInt j = 0; j < spatial_dimension; ++j) {
-//      tmp(j,i) = prov(i,j);
-//    }
-//  }
-
   Matrix<Real> prov_t = prov.transpose();
   tangent += prov_t;
-  //    tangent += tmp;
 }
 
 /* -------------------------------------------------------------------------- */

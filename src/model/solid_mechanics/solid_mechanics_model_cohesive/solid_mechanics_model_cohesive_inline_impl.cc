@@ -180,7 +180,8 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
      * tolerance. This is done only after loading reduction
      * (load_reduction = true).
      */
-    if (load_reduction && (error < tolerance * tol_increase_factor)) converged = true;
+    //    if (load_reduction && (error < tolerance * tol_increase_factor)) converged = true;
+    if ((error < tolerance * tol_increase_factor)) converged = true;
 
     if (converged) {
       // EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));

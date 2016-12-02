@@ -186,7 +186,7 @@ void CohesiveElementInserter::setLimit(SpacialDirection axis,
 }
 
 /* -------------------------------------------------------------------------- */
-void CohesiveElementInserter::insertIntrinsicElements() {
+UInt CohesiveElementInserter::insertIntrinsicElements() {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
@@ -228,9 +228,9 @@ void CohesiveElementInserter::insertIntrinsicElements() {
     }
   }
 
-  insertElements();
-
   AKANTU_DEBUG_OUT();
+  
+  return insertElements();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -276,7 +276,9 @@ void CohesiveElementInserter::insertIntrinsicElements(std::string physname,
 
       UInt e = *el_it;
       mesh.getBarycenter(e, type_facet, bary_physgroup.storage(), ghost_type); 	
+#ifndef AKANTU_NDEBUG       
       bool find_a_partner = false;
+#endif
       norm_bary = bary_physgroup.norm();
       Array<UInt> & material_id = (*phys_data)(type_facet, ghost_type);
 
@@ -296,7 +298,9 @@ void CohesiveElementInserter::insertIntrinsicElements(std::string physname,
 	  
 	if (coord_in_limit == spatial_dimension) {
 	  f_insertion(f) = true;
+#ifndef AKANTU_NDEBUG 	 
 	  find_a_partner = true;
+#endif
 	  group_facet.add(type_facet, f, ghost_type,false);
 	  material_id(f) = material_index;
 	  break;
@@ -344,6 +348,7 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
     comm.allReduce(&nb_new_elements, 1, _so_sum);
   }
 #endif
+
 
   if (nb_new_nodes > 0)
     mesh.sendEvent(node_event);

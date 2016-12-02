@@ -547,8 +547,9 @@ inline void ShapeFunctions::interpolateElementalFieldOnIntegrationPoints(
     const Matrix<Real> & u = *u_it;
     const Matrix<Real> & N = *N_it;
     Matrix<Real> & inter_u = *inter_u_it;
-
+    
     inter_u.mul<false, false>(u, N);
+    
   }
 
   delete filtered_N;

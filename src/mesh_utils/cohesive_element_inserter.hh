@@ -71,7 +71,7 @@ public:
   void setLimit(SpacialDirection axis, Real first_limit, Real second_limit);
 
   /// insert intrinsic cohesive elements in a predefined range
-  void insertIntrinsicElements();
+  UInt insertIntrinsicElements();
 
   /// preset insertion of intrinsic cohesive elements along 
   /// a predefined group of facet and assign them a defined material index.
