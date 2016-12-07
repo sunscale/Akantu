@@ -98,10 +98,10 @@ void DOFSynchronizer::registerDOFs(const ID & dof_id) {
          &equation_numbers](const_scheme_iterator it, const_scheme_iterator end,
                             const CommunicationSendRecv & sr) -> void {
       for (; it != end; ++it) {
-        auto scheme = communications.createScheme(it->first, sr);
+        auto & scheme = communications.createScheme(it->first, sr);
 
-        auto node_scheme = it->second;
-        for (auto node : node_scheme) {
+        const auto & node_scheme = it->second;
+        for (auto & node : node_scheme) {
           auto an_begin = associated_nodes.begin();
           auto an_it = an_begin;
           auto an_end = associated_nodes.begin();
@@ -122,20 +122,20 @@ void DOFSynchronizer::registerDOFs(const ID & dof_id) {
                 UInt l = dof_manager.globalToLocalEquationNumber(g);
                 return l;
               });
-          for (auto leqnum : global_dofs_per_node) {
+          for (auto & leqnum : global_dofs_per_node) {
             scheme.push_back(leqnum);
           }
         }
       }
     };
 
-    const_scheme_iterator nss_it = node_communications.begin_send_scheme();
-    const_scheme_iterator nss_end = node_communications.end_send_scheme();
+    auto nss_it = node_communications.begin_send_scheme();
+    auto nss_end = node_communications.end_send_scheme();
 
     transcode_node_to_global_dof_scheme(nss_it, nss_end, _send);
 
-    const_scheme_iterator nrs_it = node_communications.begin_recv_scheme();
-    const_scheme_iterator nrs_end = node_communications.end_recv_scheme();
+    auto nrs_it = node_communications.begin_recv_scheme();
+    auto nrs_end = node_communications.end_recv_scheme();
 
     transcode_node_to_global_dof_scheme(nrs_it, nrs_end, _recv);
   }

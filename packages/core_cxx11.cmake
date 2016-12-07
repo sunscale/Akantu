@@ -28,24 +28,3 @@
 #
 #===============================================================================
 
-if(AKANTU_CXX11_FLAGS)
-  package_declare(core_cxx11 ADVANCED
-    DESCRIPTION "C++ 11 additions for Akantu core" DEFAULT ON
-    COMPILE_FLAGS CXX "${AKANTU_CXX11_FLAGS}")
-
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.6")
-      set(AKANTU_CORE_CXX11 OFF CACHE BOOL "C++ 11 additions for Akantu core - not supported by the selected compiler" FORCE)
-    endif()
-  endif()
-else()
-  package_declare(core_cxx11 ADVANCED
-    DESCRIPTION "C++ 11 additions for Akantu core"
-    DEFAULT OFF
-    NOT_OPTIONAL
-    )
-endif()
-
-package_declare_documentation(core_cxx11
-  "This option activates some features of the C++11 standard. This is usable with GCC>=4.7 or Intel>=13.")
-

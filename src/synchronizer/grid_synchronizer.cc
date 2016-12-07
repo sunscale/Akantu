@@ -248,7 +248,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
       AKANTU_DEBUG_INFO("I have prepared " << to_send->size()
                                            << " elements to send to processor "
                                            << p);
-      auto scheme = communicator.getCommunications().createSendScheme(p);
+      auto & scheme = communicator.getCommunications().createSendScheme(p);
       std::stringstream sstr; sstr << "element_per_proc_" << p;
       element_per_proc[p] = new ElementTypeMapArray<UInt>(sstr.str(), id, memory_id);
       ElementTypeMapArray<UInt> & elempproc = *(element_per_proc[p]);
@@ -364,7 +364,7 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
     if (p == my_rank)
       continue;
 
-    auto scheme = communicator.getCommunications().createRecvScheme(p);
+    auto & scheme = communicator.getCommunications().createRecvScheme(p);
     Array<UInt> & ask_nodes = ask_nodes_per_proc[p];
     UInt count = 0;
     if (intersects_proc[p]) {

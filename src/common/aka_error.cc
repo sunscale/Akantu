@@ -301,7 +301,7 @@ void Debugger::printMessage(const std::string & prefix,
     clock_gettime(CLOCK_REALTIME_COARSE, &time);
     double timestamp = time.tv_sec * 1e6 + time.tv_nsec * 1e-3; /*in us*/
 #endif
-    *(cout) << parallel_context << "{" << (unsigned int)timestamp << "} "
+    *(cout) << parallel_context << "{" << (size_t) timestamp << "} "
             << prefix << " " << info << std::endl;
   }
 }

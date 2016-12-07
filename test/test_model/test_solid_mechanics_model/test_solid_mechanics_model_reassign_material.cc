@@ -29,66 +29,69 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "static_communicator.hh"
-#include "solid_mechanics_model.hh"
-#include "material.hh"
 #include "aka_grid_dynamic.hh"
+#include "material.hh"
+#include "solid_mechanics_model.hh"
+#include "static_communicator.hh"
 using namespace akantu;
-
 
 class StraightInterfaceMaterialSelector : public MaterialSelector {
 public:
   StraightInterfaceMaterialSelector(SolidMechanicsModel & model,
-				    const std::string & mat_1_material,
-				    const std::string & mat_2_material,
-				    bool & horizontal,
-				    Real & pos_interface) :
-    model(model),
-    mat_1_material(mat_1_material),
-    mat_2_material(mat_2_material), 
-    horizontal(horizontal), 
-    pos_interface(pos_interface) {
+                                    const std::string & mat_1_material,
+                                    const std::string & mat_2_material,
+                                    bool & horizontal, Real & pos_interface)
+      : model(model), mat_1_material(mat_1_material),
+        mat_2_material(mat_2_material), horizontal(horizontal),
+        pos_interface(pos_interface) {
     Mesh & mesh = model.getMesh();
     UInt spatial_dimension = mesh.getSpatialDimension();
 
     /// store barycenters of all elements
-    mesh.initElementTypeMapArray(barycenters, spatial_dimension, spatial_dimension);
+    mesh.initElementTypeMapArray(barycenters, spatial_dimension,
+                                 spatial_dimension);
 
-    for (ghost_type_t::iterator gt = ghost_type_t::begin(); gt != ghost_type_t::end(); ++gt) {
+    for (ghost_type_t::iterator gt = ghost_type_t::begin();
+         gt != ghost_type_t::end(); ++gt) {
       GhostType ghost_type = *gt;
       Element e;
       e.ghost_type = ghost_type;
 
       Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-      Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
-      for(; it != last_type; ++it) {
-	UInt nb_element = mesh.getNbElement(*it, ghost_type);
-	e.type = *it;
-	Array<Real> & barycenter = barycenters(*it, ghost_type);
-	barycenter.resize(nb_element);
+      Mesh::type_iterator last_type =
+          mesh.lastType(spatial_dimension, ghost_type);
+      for (; it != last_type; ++it) {
+        UInt nb_element = mesh.getNbElement(*it, ghost_type);
+        e.type = *it;
+        Array<Real> & barycenter = barycenters(*it, ghost_type);
+        barycenter.resize(nb_element);
 
-	Array<Real>::iterator< Vector<Real> > bary_it = barycenter.begin(spatial_dimension);
-	for (UInt elem = 0; elem < nb_element; ++elem) {
-	  e.element = elem;
-	  mesh.getBarycenter(e, *bary_it);
-	  ++bary_it;
-	}
+        Array<Real>::iterator<Vector<Real>> bary_it =
+            barycenter.begin(spatial_dimension);
+        for (UInt elem = 0; elem < nb_element; ++elem) {
+          e.element = elem;
+          mesh.getBarycenter(e, *bary_it);
+          ++bary_it;
+        }
       }
     }
   }
 
   UInt operator()(const Element & elem) {
     UInt spatial_dimension = model.getSpatialDimension();
-    const Vector<Real> & bary = barycenters(elem.type, elem.ghost_type).begin(spatial_dimension)[elem.element];
- 
-    /// check for a given element on which side of the material interface plane the bary center lies and assign corresponding material
+    const Vector<Real> & bary = barycenters(elem.type, elem.ghost_type)
+                                    .begin(spatial_dimension)[elem.element];
+
+    /// check for a given element on which side of the material interface plane
+    /// the bary center lies and assign corresponding material
     if (bary(!horizontal) < pos_interface) {
-      return model.getMaterialIndex(mat_1_material);;
+      return model.getMaterialIndex(mat_1_material);
+      ;
     }
-    return model.getMaterialIndex(mat_2_material);;
-   
+    return model.getMaterialIndex(mat_2_material);
+    ;
   }
-  
+
   bool isConditonVerified() {
 
     /// check if material has been (re)-assigned correctly
@@ -97,24 +100,25 @@ public:
     GhostType ghost_type = _not_ghost;
 
     Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-    Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
-    for(; it != last_type; ++it) {
+    Mesh::type_iterator last_type =
+        mesh.lastType(spatial_dimension, ghost_type);
+    for (; it != last_type; ++it) {
       Array<UInt> & mat_indexes = model.getMaterialByElement(*it, ghost_type);
       UInt nb_element = mesh.getNbElement(*it, ghost_type);
-      Array<Real>::iterator<Vector<Real> > bary = barycenters(*it, ghost_type).begin(spatial_dimension);
+      Array<Real>::iterator<Vector<Real>> bary =
+          barycenters(*it, ghost_type).begin(spatial_dimension);
       for (UInt elem = 0; elem < nb_element; ++elem, ++bary) {
-	/// compare element_index_by material to material index that should be assigned due to the geometry of the interface
-  	UInt mat_index;
-  	if ((*bary)(!horizontal) < pos_interface)
-  	  mat_index = model.getMaterialIndex(mat_1_material);
-  	else
-  	  mat_index = model.getMaterialIndex(mat_2_material);
+        /// compare element_index_by material to material index that should be
+        /// assigned due to the geometry of the interface
+        UInt mat_index;
+        if ((*bary)(!horizontal) < pos_interface)
+          mat_index = model.getMaterialIndex(mat_1_material);
+        else
+          mat_index = model.getMaterialIndex(mat_2_material);
 
-  	if (mat_indexes(elem) != mat_index)
-	  /// wrong material index, make test fail
-  	  return false;
-
-
+        if (mat_indexes(elem) != mat_index)
+          /// wrong material index, make test fail
+          return false;
       }
     }
     return true;
@@ -136,11 +140,10 @@ protected:
   Real pos_interface;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
 
   bool test_passed;
 
@@ -153,14 +156,15 @@ int main(int argc, char *argv[]) {
 
   UInt spatial_dimension = 3;
 
-  akantu::StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+  akantu::StaticCommunicator & comm =
+      akantu::StaticCommunicator::getStaticCommunicator();
   akantu::Int psize = comm.getNbProc();
   akantu::Int prank = comm.whoAmI();
 
   Mesh mesh(spatial_dimension);
 
   akantu::MeshPartition * partition = NULL;
-  if(prank == 0) {
+  if (prank == 0) {
     /// creation mesh
     mesh.read("cube_two_materials.msh");
 
@@ -173,9 +177,11 @@ int main(int argc, char *argv[]) {
   model.initParallel(partition);
   delete partition;
 
-  /// assign the two different materials using the StraightInterfaceMaterialSelector
+  /// assign the two different materials using the
+  /// StraightInterfaceMaterialSelector
   StraightInterfaceMaterialSelector * mat_selector;
-  mat_selector = new StraightInterfaceMaterialSelector(model, "mat_1", "mat_2", horizontal, pos_interface);
+  mat_selector = new StraightInterfaceMaterialSelector(
+      model, "mat_1", "mat_2", horizontal, pos_interface);
 
   model.setMaterialSelector(*mat_selector);
   model.initFull(SolidMechanicsModelOptions(_static));
@@ -207,11 +213,10 @@ int main(int argc, char *argv[]) {
 
   finalize();
 
-  if(prank == 0)
+  if (prank == 0)
     std::cout << "OK: test passed!" << std::endl;
-  
+
   return EXIT_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
-

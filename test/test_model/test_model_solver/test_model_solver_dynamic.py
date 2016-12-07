@@ -30,7 +30,6 @@ fig, ax = plt.subplots()
 x = np.arange(Ne+1) * L / Ne        # x-array
 line, = ax.plot(x, trusses.u)
 
-
 def animate(i):
     solver.solveStep()
     line.set_ydata(trusses.u)  # update the data

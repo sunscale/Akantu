@@ -47,9 +47,9 @@ inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh)
     : new_numbering(mesh.getNbNodes(), 1, "new_numbering") {}
 
 /* -------------------------------------------------------------------------- */
-inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh, ID new_numbering_id) :
-  new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {
-}
+inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh,
+                                                  ID new_numbering_id)
+    : new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {}
 
 /* -------------------------------------------------------------------------- */
 template <>
@@ -223,10 +223,10 @@ Mesh::getConnectivityPointer(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<std::vector<Element> > *
+inline Array<std::vector<Element>> *
 Mesh::getElementToSubelementPointer(const ElementType & type,
                                     const GhostType & ghost_type) {
-  Array<std::vector<Element> > * tmp = getDataPointer<std::vector<Element> >(
+  Array<std::vector<Element>> * tmp = getDataPointer<std::vector<Element>>(
       "element_to_subelement", type, ghost_type, 1, true);
   return tmp;
 }
@@ -242,19 +242,19 @@ Mesh::getSubelementToElementPointer(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline const Array<std::vector<Element> > &
+inline const Array<std::vector<Element>> &
 Mesh::getElementToSubelement(const ElementType & type,
                              const GhostType & ghost_type) const {
-  return getData<std::vector<Element> >("element_to_subelement", type,
-                                        ghost_type);
+  return getData<std::vector<Element>>("element_to_subelement", type,
+                                       ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<std::vector<Element> > &
+inline Array<std::vector<Element>> &
 Mesh::getElementToSubelement(const ElementType & type,
                              const GhostType & ghost_type) {
-  return getData<std::vector<Element> >("element_to_subelement", type,
-                                        ghost_type);
+  return getData<std::vector<Element>>("element_to_subelement", type,
+                                       ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -346,7 +346,7 @@ inline UInt Mesh::getNbElement(const UInt spatial_dimension,
                                const ElementKind & kind) const {
   AKANTU_DEBUG_ASSERT(spatial_dimension <= 3,
                       "spatial_dimension is " << spatial_dimension
-                      << " and is greater than 3 !");
+                                              << " and is greater than 3 !");
   UInt nb_element = 0;
 
   type_iterator it = firstType(spatial_dimension, ghost_type, kind);
@@ -613,6 +613,33 @@ inline UInt Mesh::getNbNodesPerElementList(const Array<Element> & elements) {
 
   return nb_nodes;
 }
+
+/* -------------------------------------------------------------------------- */
+inline Mesh & Mesh::getMeshFacets() {
+  if (!this->mesh_facets)
+    AKANTU_EXCEPTION(
+        "No facet mesh is defined yet! check the buildFacets functions");
+
+  return *this->mesh_facets;
+}
+
+/* -------------------------------------------------------------------------- */
+inline const Mesh & Mesh::getMeshFacets() const {
+  if (!this->mesh_facets)
+    AKANTU_EXCEPTION(
+        "No facet mesh is defined yet! check the buildFacets functions");
+
+  return *this->mesh_facets;
+}
+/* -------------------------------------------------------------------------- */
+inline const Mesh & Mesh::getMeshParent() const {
+  if (!this->mesh_parent)
+    AKANTU_EXCEPTION(
+        "No parent mesh is defined! This is only valid in a mesh_facets");
+
+  return *this->mesh_parent;
+}
+
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

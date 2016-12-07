@@ -74,7 +74,7 @@ DOFManager::~DOFManager() {
 /* -------------------------------------------------------------------------- */
 std::vector<ID> DOFManager::getDOFIDs() const {
   std::vector<ID> keys;
-  for(auto dof_data: this->dofs)
+  for(const auto & dof_data: this->dofs)
     keys.push_back(dof_data.first);
 
   return keys;

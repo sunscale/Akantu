@@ -126,15 +126,15 @@ enum NonLinearSolverType {
   _nls_newton_raphson,          ///< Regular Newton-Raphson
   _nls_newton_raphson_modified, ///< Newton-Raphson with initial tangent
   _nls_lumped,                  ///< Case of lumped mass or equivalent matrix
-  _nls_auto, ///< This will take a default value that make sense in case of
-             ///model::getNewSolver
+  _nls_auto                     ///< This will take a default value that make sense in case of
+                                ///  model::getNewSolver
 };
 
 /// Define the node/dof type
 enum NodeType : Int {
   _nt_pure_gost = -3,
   _nt_master = -2,
-  _nt_normal = -1,
+  _nt_normal = -1
 };
 
 /// Type of time stepping solver
@@ -156,8 +156,8 @@ enum IntegrationSchemeType {
   _ist_linear_acceleration,     ///< NewmarkBeta(1/3, 1/2)
   _ist_newmark_beta,            ///< generic NewmarkBeta with user defined
                                 /// alpha and beta
-  _ist_generalized_trapezoidal, ///< generic GeneralizedTrapezoidal with user
-                                /// defined alpha
+  _ist_generalized_trapezoidal  ///< generic GeneralizedTrapezoidal with user
+                                ///  defined alpha
 };
 
 /// enum SolveConvergenceCriteria different convergence criteria

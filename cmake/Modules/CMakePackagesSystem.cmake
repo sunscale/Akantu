@@ -64,6 +64,8 @@
 #       [EXTRA_PACKAGE_OPTIONS <opt> ...]
 #       [COMPILE_FLAGS <lang> <flags>]
 #       [SYSTEM <bool> [ <script_to_compile> ]]
+#       [FEATURES_PUBLIC <feature> ...]
+#       [FEATURES_PRIVATE <feature> ...]
 #       )
 #
 #.. command:: package_declare_sources
@@ -179,6 +181,10 @@
 #     package_get_all_deactivated_packages(<deactivated_list>)
 #.. command:: package_get_all_packages
 #     package_get_all_packages(<packages_list>)
+#.. command:: package_get_all_features_public
+#     package_get_all_features_public(<features>)
+#.. command:: package_get_all_features_private
+#     package_get_all_features_private(<features>)
 #
 #
 #.. command:: package_set_package_system_dependency(<pkg> <system> <dep1>
@@ -674,6 +680,19 @@ function(package_get_all_packages packages_list)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# List all the needed features
+# ------------------------------------------------------------------------------
+function(package_get_all_features_public features)
+  _package_get_variable_for_activated(FEATURES_PUBLIC _tmp)
+  set(${features} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+function(package_get_all_features_private features)
+  _package_get_variable_for_activated(FEATURES_PRIVATE _tmp)
+  set(${features} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # Callbacks
 # ------------------------------------------------------------------------------
 function(package_on_enabled_script pkg script)
@@ -827,7 +846,9 @@ endfunction()
 #                 [BOOST_COMPONENTS <pkg> ...]
 #                 [EXTRA_PACKAGE_OPTIONS <opt> ...]
 #                 [COMPILE_FLAGS <lang> <flags>]
-#                 [SYSTEM <bool> [ <script_to_compile> ]])
+#                 [SYSTEM <bool> [ <script_to_compile> ]]
+#                 [FEATURES_PUBLIC <feature> ...]
+#                 [FEATURES_PRIVATE <feature> ...])
 # ------------------------------------------------------------------------------
 function(package_declare pkg)
   package_get_name(${pkg} _pkg_name)
@@ -853,10 +874,26 @@ function(package_declare pkg)
   list(REMOVE_DUPLICATES _tmp_pkg_list)
   package_set_project_variable(ALL_PACKAGES_LIST ${_tmp_pkg_list})
 
+  set(_options
+    EXTERNAL
+    NOT_OPTIONAL
+    META
+    ADVANCED)
+  set(_one_valued_options
+    DEFAULT
+    DESCRIPTION)
+  set(_multi_valued_options
+    DEPENDS
+    EXTRA_PACKAGE_OPTIONS
+    COMPILE_FLAGS BOOST_COMPONENTS
+    SYSTEM
+    FEATURES_PUBLIC
+    FEATURES_PRIVATE)
+
   cmake_parse_arguments(_opt_pkg
-    "EXTERNAL;NOT_OPTIONAL;META;ADVANCED"
-    "DEFAULT;DESCRIPTION"
-    "DEPENDS;EXTRA_PACKAGE_OPTIONS;COMPILE_FLAGS;BOOST_COMPONENTS;SYSTEM"
+    "${_options}"
+    "${_one_valued_options}"
+    "${_multi_valued_options}"
     ${ARGN})
 
   if(_opt_pkg_UNPARSED_ARGUMENTS)
@@ -961,6 +998,13 @@ function(package_declare pkg)
     _package_set_boost_component_needed(${_pkg_name} "${_opt_pkg_BOOST_COMPONENTS}")
   endif()
 
+  if(_opt_pkg_FEATURES_PUBLIC)
+    _package_set_variable(FEATURES_PUBLIC ${_pkg_name} "${_opt_pkg_FEATURES_PUBLIC}")
+  endif()
+
+  if(_opt_pkg_FEATURES_PRIVATE)
+    _package_set_variable(FEATURES_PRIVATE ${_pkg_name} "${_opt_pkg_FEATURES_PRIVATE}")
+  endif()
 endfunction()
 
 # ------------------------------------------------------------------------------

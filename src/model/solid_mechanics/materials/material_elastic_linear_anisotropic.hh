@@ -98,7 +98,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  const static VoigtHelper<Dim> voigt_h;
+  typedef VoigtHelper<Dim> voigt_h;
 
   /// direction matrix and vectors
   std::vector<Vector<Real> *> dir_vecs;

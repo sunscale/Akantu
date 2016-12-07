@@ -123,7 +123,14 @@ int main(int argc, char *argv[])
   /// declaration of model
   SolidMechanicsModel  my_model(my_mesh);
   /// model initialization
-  my_model.initFull(SolidMechanicsModelOptions(_static));
+
+  my_model.getNewSolver("static", _tsst_static, _nls_newton_raphson_modified);
+  my_model.getNonLinearSolver("static").set("threshold", 2e-4);
+  my_model.getNonLinearSolver("static").set("max_iterations", 2U);
+  my_model.getNonLinearSolver("static").set("convergence_type", _scc_residual);
+
+  // model.setDefaultIntegrationScheme("static");
+  my_model.initFull();
 
   const Array<Real> & coordinates = my_mesh.getNodes();
   Array<Real> & displacement = my_model.getDisplacement();
@@ -136,15 +143,15 @@ int main(int argc, char *argv[])
   for(GroupManager::const_element_group_iterator it(my_mesh.element_group_begin());
       it != my_mesh.element_group_end(); ++it) {
     for(ElementGroup::const_node_iterator nodes_it(it->second->node_begin());
-	nodes_it!= it->second->node_end(); ++nodes_it) {
+        nodes_it!= it->second->node_end(); ++nodes_it) {
       UInt n(*nodes_it);
       std::cout << "Node " << *nodes_it << std::endl;
       for (UInt i = 0; i < dim; ++i) {
-	displacement(n, i) = alpha[i][0];
-	for (UInt j = 0; j < dim; ++j) {
-	  displacement(n, i) += alpha[i][j + 1] * coordinates(n, j);
-	}
-	boundary(n, i) = true;
+        displacement(n, i) = alpha[i][0];
+        for (UInt j = 0; j < dim; ++j) {
+          displacement(n, i) += alpha[i][j + 1] * coordinates(n, j);
+        }
+        boundary(n, i) = true;
       }
     }
   }
@@ -161,12 +168,12 @@ int main(int argc, char *argv[])
   for (; eigengradu_it != eigengradu_end; ++eigengradu_it) {
     for (UInt i = 0; i < dim; ++i)
       for (UInt j = 0; j < dim; ++j)
-	(*eigengradu_it)(i,j) += prescribed_eigengradu(i,j);
+        (*eigengradu_it)(i,j) += prescribed_eigengradu(i,j);
   }
   /* ------------------------------------------------------------------------ */
   /* Static solve                                                             */
   /* ------------------------------------------------------------------------ */
-  my_model.solveStep<_scm_newton_raphson_tangent_modified, _scc_residual>(2e-4, 2);
+  my_model.solveStep();
 
   /* ------------------------------------------------------------------------ */
   /* Checks                                                                   */
@@ -194,7 +201,7 @@ int main(int argc, char *argv[])
     if(stress_error > stress_tolerance) {
       std::cerr << "stress error: " << stress_error << " > " << stress_tolerance << std::endl;
       std::cerr << "stress: " << stress << std::endl
-		<< "prescribed stress: " << presc_stress << std::endl;
+                << "prescribed stress: " << presc_stress << std::endl;
       return EXIT_FAILURE;
     } else {
       std::cerr << "stress error: " << stress_error << " < " << stress_tolerance << std::endl;

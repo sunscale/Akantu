@@ -44,6 +44,7 @@ namespace akantu {
 class Mesh;
 class DOFManager;
 class TimeStepSolver;
+class NonLinearSolver;
 struct ModelSolverOptions;
 }
 
@@ -151,6 +152,12 @@ public:
 
   /// is an integration scheme set for a given solver and a given dof
   bool hasIntegrationScheme(const ID & solver_id, const ID & dof_id) const;
+
+  TimeStepSolver & getTimeStepSolver(const ID & solver_id = "");
+  NonLinearSolver & getNonLinearSolver(const ID & solver_id = "");
+
+  const TimeStepSolver & getTimeStepSolver(const ID & solver_id = "") const;
+  const NonLinearSolver & getNonLinearSolver(const ID & solver_id = "") const;
 
 private:
   TimeStepSolver & getSolver(const ID & solver_id);

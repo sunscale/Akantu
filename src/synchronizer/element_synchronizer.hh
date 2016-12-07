@@ -80,8 +80,6 @@ public:
   /// build processor to element correspondence
   void buildPrankToElement();
 
-  virtual void printself(std::ostream & stream, int indent = 0) const;
-
   /// mesh event handler onElementsChanged
   virtual void
   onElementsChanged(const Array<Element> & old_elements_list,
@@ -208,10 +206,6 @@ protected:
 public:
   AKANTU_GET_MACRO(PrankToElement, prank_to_element,
                    const ElementTypeMapArray<UInt> &);
-  AKANTU_GET_MACRO(SendElement, send_element,
-                   const Array<Element> *);
-  AKANTU_GET_MACRO(ReceiveElement, recv_element,
-                   const Array<Element> *);
 
   AKANTU_GET_MACRO(Mesh, mesh, const Mesh &);
   AKANTU_GET_MACRO_NOT_CONST(Mesh, mesh, Mesh &);

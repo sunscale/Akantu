@@ -376,11 +376,11 @@ public:
                  bool resize_with_parent = false);
 
   /// Facets mesh accessor
-  AKANTU_GET_MACRO(MeshFacets, *mesh_facets, const Mesh &);
-  AKANTU_GET_MACRO_NOT_CONST(MeshFacets, *mesh_facets, Mesh &);
+  inline const Mesh & getMeshFacets() const;
+  inline Mesh & getMeshFacets();
 
   /// Parent mesh accessor
-  AKANTU_GET_MACRO(MeshParent, *mesh_parent, const Mesh &);
+  inline const Mesh & getMeshParent() const;
 
   inline bool isMeshFacets() const { return this->is_mesh_facets; }
 

@@ -28,11 +28,11 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
 #include "aka_array.hh"
-#include "solver_callback.hh"
+#include "aka_memory.hh"
 #include "integration_scheme.hh"
 #include "parameter_registry.hh"
+#include "solver_callback.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_TIME_STEP_SOLVER_HH__
@@ -45,7 +45,9 @@ class NonLinearSolver;
 
 __BEGIN_AKANTU__
 
-class TimeStepSolver : public Memory, public ParameterRegistry, public SolverCallback {
+class TimeStepSolver : public Memory,
+                       public ParameterRegistry,
+                       public SolverCallback {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -65,8 +67,8 @@ public:
   /// register an integration scheme for a given dof
   virtual void
   setIntegrationScheme(const ID & dof_id, const IntegrationSchemeType & type,
-                       IntegrationScheme::SolutionType
-                           solution_type = IntegrationScheme::_not_defined) = 0;
+                       IntegrationScheme::SolutionType solution_type =
+                       IntegrationScheme::_not_defined) = 0;
 
   /// replies if a integration scheme has been set
   virtual bool hasIntegrationScheme(const ID & dof_id) const = 0;
@@ -89,6 +91,10 @@ public:
 public:
   AKANTU_GET_MACRO(TimeStep, time_step, Real);
   AKANTU_SET_MACRO(TimeStep, time_step, Real);
+
+  AKANTU_GET_MACRO(NonLinearSolver, non_linear_solver, const NonLinearSolver &);
+  AKANTU_GET_MACRO_NOT_CONST(NonLinearSolver, non_linear_solver,
+                             NonLinearSolver &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

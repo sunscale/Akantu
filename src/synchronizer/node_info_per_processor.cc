@@ -168,10 +168,10 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
       send_array_per_proc[send_info(0)].push_back(send_info(1));
     }
 
-    for (auto send_schemes : send_array_per_proc) {
-      auto scheme = communications.createSendScheme(send_schemes.first);
+    for (auto & send_schemes : send_array_per_proc) {
+      auto & scheme = communications.createSendScheme(send_schemes.first);
 
-      auto sends = send_schemes.second;
+      auto & sends = send_schemes.second;
       std::sort(sends.begin(), sends.end());
       std::transform(sends.begin(), sends.end(), sends.begin(),
                      [this](UInt g) -> UInt { return mesh.getNodeLocalId(g); });
@@ -185,17 +185,17 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
     std::map<UInt, Array<UInt> > recv_array_per_proc;
 
     UInt node = 0;
-    for (auto node_type : nodes_type) {
+    for (auto & node_type : nodes_type) {
       if (Int(node_type) >= 0) {
         recv_array_per_proc[node_type] = mesh.getNodeGlobalId(node);
       }
       ++node;
     }
 
-    for (auto recv_schemes : recv_array_per_proc) {
-      auto scheme = communications.createRecvScheme(recv_schemes.first);
+    for (auto & recv_schemes : recv_array_per_proc) {
+      auto & scheme = communications.createRecvScheme(recv_schemes.first);
 
-      auto recvs = recv_schemes.second;
+      auto & recvs = recv_schemes.second;
       std::sort(recvs.begin(), recvs.end());
       std::transform(recvs.begin(), recvs.end(), recvs.begin(),
                      [this](UInt g) -> UInt { return mesh.getNodeLocalId(g); });

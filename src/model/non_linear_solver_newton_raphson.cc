@@ -162,7 +162,7 @@ bool NonLinearSolverNewtonRaphson::testConvergence(const Array<Real> & array) {
   Real norm = 0.;
   for (UInt n = 0; n < nb_degree_of_freedoms; ++n, ++arr_it, ++bld_it) {
     bool is_local_node = this->dof_manager.isLocalOrMasterDOF(n);
-    if (!(*bld_it) && is_local_node) {
+    if ((*bld_it == 0) && is_local_node) {
       norm += *arr_it * *arr_it;
     }
   }

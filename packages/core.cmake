@@ -30,7 +30,12 @@
 #
 #===============================================================================
 
-package_declare(core NOT_OPTIONAL DESCRIPTION "core package for Akantu")
+package_declare(core NOT_OPTIONAL
+  DESCRIPTION "core package for Akantu"
+  FEATURES_PUBLIC cxx_strong_enums cxx_defaulted_functions cxx_deleted_functions
+  FEATURES_PRIVATE cxx_auto_type cxx_lambdas cxx_nullptr
+                   cxx_delegated_constructors cxx_range_for
+  )
 
 package_declare_sources(core
   common/aka_array.cc
@@ -547,6 +552,25 @@ package_declare_extra_files_to_package(core
     model/solid_mechanics/material_list.hh.in
   )
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 3.9)
   package_set_compile_flags(core CXX "-Wno-undefined-var-template")
+endif()
+
+if(DEFINED AKANTU_CXX11_FLAGS)
+  package_declare(core_cxx11 NOT_OPTIONAL
+    DESCRIPTION "C++ 11 additions for Akantu core"
+    COMPILE_FLAGS CXX "${AKANTU_CXX11_FLAGS}")
+
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.6")
+      set(AKANTU_CORE_CXX11 OFF CACHE BOOL "C++ 11 additions for Akantu core - not supported by the selected compiler" FORCE)
+    endif()
+  endif()
+
+  package_declare_documentation(core_cxx11
+    "This option activates some features of the C++11 standard. This is usable with GCC>=4.7 or Intel>=13.")
+else()
+  if(CMAKE_VERSION VERSION_LESS 3.1)
+    message(FATAL_ERROR "Since version 3.0 Akantu requires at least c++11 capable compiler")
+  endif()
 endif()

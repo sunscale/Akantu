@@ -77,8 +77,8 @@ void ElementInfoPerProc::fillCommunicationScheme(
       }
     }
 
-    for (auto send_schemes : send_array_per_proc) {
-      auto scheme = communications.createSendScheme(send_schemes.first);
+    for (auto & send_schemes : send_array_per_proc) {
+      auto & scheme = communications.createSendScheme(send_schemes.first);
       scheme.copy(send_schemes.second);
     }
   }
@@ -96,8 +96,8 @@ void ElementInfoPerProc::fillCommunicationScheme(
       recv_array_per_proc[proc].push_back(element);
     }
 
-    for (auto recv_schemes : recv_array_per_proc) {
-      auto scheme = communications.createRecvScheme(recv_schemes.first);
+    for (auto & recv_schemes : recv_array_per_proc) {
+      auto & scheme = communications.createRecvScheme(recv_schemes.first);
       scheme.copy(recv_schemes.second);
     }
   }

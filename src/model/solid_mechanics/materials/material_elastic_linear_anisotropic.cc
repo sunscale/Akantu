@@ -39,15 +39,12 @@
 
 __BEGIN_AKANTU__
 
-template <UInt dim>
-const VoigtHelper<dim> MaterialElasticLinearAnisotropic<dim>::voigt_h;
-
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 MaterialElasticLinearAnisotropic<dim>::MaterialElasticLinearAnisotropic(
     SolidMechanicsModel & model, const ID & id, bool symmetric)
     : Material(model, id), rot_mat(dim, dim), Cprime(dim * dim, dim * dim),
-      C(this->voigt_h.size, this->voigt_h.size), eigC(this->voigt_h.size),
+      C(voigt_h::size, voigt_h::size), eigC(voigt_h::size),
       symmetric(symmetric), alpha(0) {
   AKANTU_DEBUG_IN();
 
@@ -67,12 +64,12 @@ MaterialElasticLinearAnisotropic<dim>::MaterialElasticLinearAnisotropic(
                         "Direction of tertiary material axis");
   }
 
-  for (UInt i = 0; i < this->voigt_h.size; ++i) {
+  for (UInt i = 0; i < voigt_h::size; ++i) {
     UInt start = 0;
     if (this->symmetric) {
       start = i;
     }
-    for (UInt j = start; j < this->voigt_h.size; ++j) {
+    for (UInt j = start; j < voigt_h::size; ++j) {
       std::stringstream param("C");
       param << "C" << i + 1 << j + 1;
       this->registerParam(param.str(), this->Cprime(i, j), Real(0.),
@@ -109,8 +106,8 @@ template <UInt dim>
 void MaterialElasticLinearAnisotropic<dim>::updateInternalParameters() {
   Material::updateInternalParameters();
   if (this->symmetric) {
-    for (UInt i = 0; i < this->voigt_h.size; ++i) {
-      for (UInt j = i + 1; j < this->voigt_h.size; ++j) {
+    for (UInt i = 0; i < voigt_h::size; ++i) {
+      for (UInt j = i + 1; j < voigt_h::size; ++j) {
         this->Cprime(j, i) = this->Cprime(i, j);
       }
     }
@@ -122,14 +119,14 @@ void MaterialElasticLinearAnisotropic<dim>::updateInternalParameters() {
 /* -------------------------------------------------------------------------- */
 template <UInt Dim> void MaterialElasticLinearAnisotropic<Dim>::rotateCprime() {
   // start by filling the empty parts fo Cprime
-  UInt diff = Dim * Dim - this->voigt_h.size;
-  for (UInt i = this->voigt_h.size; i < Dim * Dim; ++i) {
+  UInt diff = Dim * Dim - voigt_h::size;
+  for (UInt i = voigt_h::size; i < Dim * Dim; ++i) {
     for (UInt j = 0; j < Dim * Dim; ++j) {
       this->Cprime(i, j) = this->Cprime(i - diff, j);
     }
   }
   for (UInt i = 0; i < Dim * Dim; ++i) {
-    for (UInt j = this->voigt_h.size; j < Dim * Dim; ++j) {
+    for (UInt j = voigt_h::size; j < Dim * Dim; ++j) {
       this->Cprime(i, j) = this->Cprime(i, j - diff);
     }
   }
@@ -175,8 +172,8 @@ template <UInt Dim> void MaterialElasticLinearAnisotropic<Dim>::rotateCprime() {
     for (UInt j = 0; j < Dim; ++j) {
       for (UInt k = 0; k < Dim; ++k) {
         for (UInt l = 0; l < Dim; ++l) {
-          UInt I = this->voigt_h.mat[i][j];
-          UInt J = this->voigt_h.mat[k][l];
+          UInt I = voigt_h::mat[i][j];
+          UInt J = voigt_h::mat[k][l];
           rotator(I, J) = this->rot_mat(k, i) * this->rot_mat(l, j);
           revrotor(I, J) = this->rot_mat(i, k) * this->rot_mat(j, l);
         }
@@ -188,8 +185,8 @@ template <UInt Dim> void MaterialElasticLinearAnisotropic<Dim>::rotateCprime() {
   Matrix<Real> Cfull(Dim * Dim, Dim * Dim);
   Cfull = rotator * Cprime * revrotor;
 
-  for (UInt i = 0; i < this->voigt_h.size; ++i) {
-    for (UInt j = 0; j < this->voigt_h.size; ++j) {
+  for (UInt i = 0; i < voigt_h::size; ++i) {
+    for (UInt j = 0; j < voigt_h::size; ++j) {
       this->C(i, j) = Cfull(i, j);
     }
   }
@@ -213,8 +210,8 @@ void MaterialElasticLinearAnisotropic<dim>::computeStress(
 
   // create array for strains and stresses of all dof of all gauss points
   // for efficient computation of stress
-  Matrix<Real> voigt_strains(this->voigt_h.size, nb_quad_pts);
-  Matrix<Real> voigt_stresses(this->voigt_h.size, nb_quad_pts);
+  Matrix<Real> voigt_strains(voigt_h::size, nb_quad_pts);
+  Matrix<Real> voigt_stresses(voigt_h::size, nb_quad_pts);
 
   // copy strains
   Matrix<Real> strain(dim, dim);
@@ -222,10 +219,10 @@ void MaterialElasticLinearAnisotropic<dim>::computeStress(
   for (UInt q = 0; gradu_it != gradu_end; ++gradu_it, ++q) {
     Matrix<Real> & grad_u = *gradu_it;
 
-    for (UInt I = 0; I < this->voigt_h.size; ++I) {
-      Real voigt_factor = this->voigt_h.factors[I];
-      UInt i = this->voigt_h.vec[I][0];
-      UInt j = this->voigt_h.vec[I][1];
+    for (UInt I = 0; I < voigt_h::size; ++I) {
+      Real voigt_factor = voigt_h::factors[I];
+      UInt i = voigt_h::vec[I][0];
+      UInt j = voigt_h::vec[I][1];
 
       voigt_strains(I, q) = voigt_factor * (grad_u(i, j) + grad_u(j, i)) / 2.;
     }
@@ -250,10 +247,10 @@ void MaterialElasticLinearAnisotropic<dim>::computeStress(
     for (UInt q = 0; gradu_dot_it != gradu_dot_end; ++gradu_dot_it, ++q) {
       Matrix<Real> & grad_u_dot = *gradu_dot_it;
 
-      for (UInt I = 0; I < this->voigt_h.size; ++I) {
-        Real voigt_factor = this->voigt_h.factors[I];
-        UInt i = this->voigt_h.vec[I][0];
-        UInt j = this->voigt_h.vec[I][1];
+      for (UInt I = 0; I < voigt_h::size; ++I) {
+        Real voigt_factor = voigt_h::factors[I];
+        UInt i = voigt_h::vec[I][0];
+        UInt j = voigt_h::vec[I][1];
 
         voigt_strains(I, q) = this->alpha * voigt_factor *
                               (grad_u_dot(i, j) + grad_u_dot(j, i)) / 2.;
@@ -274,9 +271,9 @@ void MaterialElasticLinearAnisotropic<dim>::computeStress(
   for (UInt q = 0; stress_it != stress_end; ++stress_it, ++q) {
     Matrix<Real> & stress = *stress_it;
 
-    for (UInt I = 0; I < this->voigt_h.size; ++I) {
-      UInt i = this->voigt_h.vec[I][0];
-      UInt j = this->voigt_h.vec[I][1];
+    for (UInt I = 0; I < voigt_h::size; ++I) {
+      UInt i = voigt_h::vec[I][0];
+      UInt j = voigt_h::vec[I][1];
       stress(i, j) = stress(j, i) = voigt_stresses(I, q);
     }
   }

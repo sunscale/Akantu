@@ -175,6 +175,18 @@ set_target_properties(akantu
     COMPILE_FLAGS "${_cxx_flags}"
     LINK_INTERFACE_MULTIPLICITY 2)
 
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.1)
+  package_get_all_features_public(_public_features)
+  if(_public_features)
+    target_compile_features(akantu  PUBLIC ${_public_features})
+  endif()
+
+  package_get_all_features_public(_private_features)
+  if(_private_features)
+    target_compile_features(akantu PRIVATE ${_private_features})
+  endif()
+endif()
+
 package_get_all_extra_dependencies(_extra_target_dependencies)
 if(_extra_target_dependencies)
   # This only adding todo: find a solution for when a dependency was add the is removed...

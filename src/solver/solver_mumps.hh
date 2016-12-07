@@ -133,7 +133,7 @@ private:
 private:
   SolverParallelMethod parallel_method;
 
-  bool rhs_is_local;
+  // bool rhs_is_local;
 
   enum SolverMumpsJob {
     _smj_initialize = -1,

@@ -74,14 +74,14 @@ void FilteredSynchronizer::setupSynchronizer(
 
   // Filter the recv list and communicate it to the sender processor
   for (; rs_it != rs_end; ++rs_it) {
-    auto scheme = rs_it->second;
-    auto proc = rs_it->first;
+    const auto & scheme = rs_it->second;
+    auto & proc = rs_it->first;
 
     Array<UInt> & keep_element = keep_element_recv[proc];
-    auto new_scheme = this->communications.createRecvScheme(proc);
+    auto & new_scheme = this->communications.createRecvScheme(proc);
 
     UInt el_pos = 0;
-    for (auto element : scheme) {
+    for (const auto & element : scheme) {
       if (filter(element)) {
         new_scheme.push_back(element);
         keep_element.push_back(el_pos);
@@ -108,10 +108,10 @@ void FilteredSynchronizer::setupSynchronizer(
 
   // Receive the element to remove from the sender scheme
   for (; ss_it != ss_end; ++ss_it) {
-    auto scheme = rs_it->second;
-    auto proc = rs_it->first;
+    const auto & scheme = rs_it->second;
+    auto & proc = rs_it->first;
 
-    auto new_scheme = this->communications.createSendScheme(proc);
+    auto & new_scheme = this->communications.createSendScheme(proc);
 
     Tag tag = Tag::genTag(proc, 0, RECEIVE_LIST_TAG);
     AKANTU_DEBUG_INFO("Waiting list of elements to keep from processor "

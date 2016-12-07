@@ -454,10 +454,7 @@ void Mesh::distribute(StaticCommunicator & communicator) {
                       "This mesh is already distribute");
   this->communicator = &communicator;
 
-  Int psize = this->communicator->getNbProc();
-  Int prank = this->communicator->whoAmI();
-
-  this->element_synchronizer =
+    this->element_synchronizer =
       new ElementSynchronizer(*this, this->getID() + ":element_synchronizer",
                               this->getMemoryID(), true, communicator);
 
@@ -465,7 +462,9 @@ void Mesh::distribute(StaticCommunicator & communicator) {
       new NodeSynchronizer(*this, this->getID() + ":node_synchronizer",
                            this->getMemoryID(), true, communicator);
 
+  Int psize = this->communicator->getNbProc();
 #ifdef AKANTU_USE_SCOTCH
+  Int prank = this->communicator->whoAmI();
   if (prank == 0) {
     MeshPartitionScotch partition(*this, spatial_dimension);
     partition.partitionate(psize);

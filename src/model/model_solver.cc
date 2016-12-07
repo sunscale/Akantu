@@ -58,7 +58,7 @@ ModelSolver::~ModelSolver() { delete this->dof_manager; }
 /* -------------------------------------------------------------------------- */
 void ModelSolver::initDOFManager() {
   std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
-      sub_sect = getStaticParser().getSubSections(_st_model_solver);
+    sub_sect = getStaticParser().getSubSections(_st_model_solver);
 
   // default without external solver activated at compilation same as mumps that
   // is the historical solver but with only the lumped solver
@@ -132,7 +132,7 @@ void ModelSolver::initDOFManager(const ParserSection & section,
                                  const ID & solver_type) {
   this->initDOFManager(solver_type);
   std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
-      sub_sect = section.getSubSections(_st_time_step_solver);
+    sub_sect = section.getSubSections(_st_time_step_solver);
 
   Parser::const_section_iterator it;
   for (it = sub_sect.first; it != sub_sect.second; ++it) {
@@ -140,14 +140,14 @@ void ModelSolver::initDOFManager(const ParserSection & section,
 
     std::string str = it->getOption();
     TimeStepSolverType tss_type =
-        it->getParameter("type", this->getDefaultSolverType());
+      it->getParameter("type", this->getDefaultSolverType());
     ModelSolverOptions tss_options = this->getDefaultSolverOptions(tss_type);
 
     std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
-        sub_solvers_sect = it->getSubSections(_st_non_linear_solver);
+      sub_solvers_sect = it->getSubSections(_st_non_linear_solver);
     Parser::const_section_iterator sub_it;
     UInt nb_non_linear_solver_section =
-        it->getNbSubSections(_st_non_linear_solver);
+      it->getNbSubSections(_st_non_linear_solver);
 
     NonLinearSolverType nls_type = tss_options.non_linear_solver_type;
 
@@ -168,7 +168,7 @@ void ModelSolver::initDOFManager(const ParserSection & section,
     }
 
     std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
-        sub_integrator_sect = it->getSubSections(_st_integration_scheme);
+      sub_integrator_sect = it->getSubSections(_st_integration_scheme);
 
     for (sub_it = sub_integrator_sect.first;
          sub_it != sub_integrator_sect.second; ++sub_it) {
@@ -184,9 +184,9 @@ void ModelSolver::initDOFManager(const ParserSection & section,
     }
 
     std::map<ID, IntegrationSchemeType>::const_iterator it =
-        tss_options.integration_scheme_type.begin();
+      tss_options.integration_scheme_type.begin();
     std::map<ID, IntegrationSchemeType>::const_iterator end =
-        tss_options.integration_scheme_type.end();
+      tss_options.integration_scheme_type.end();
     for (; it != end; ++it) {
       if (!this->hasIntegrationScheme(solver_id, it->first)) {
         this->setIntegrationScheme(solver_id, it->first, it->second,
@@ -220,6 +220,27 @@ const TimeStepSolver & ModelSolver::getSolver(const ID & solver_id) const {
   const TimeStepSolver & tss =
       this->dof_manager->getTimeStepSolver(tmp_solver_id);
   return tss;
+}
+
+/* -------------------------------------------------------------------------- */
+TimeStepSolver & ModelSolver::getTimeStepSolver(const ID & solver_id) {
+  return this->getSolver(solver_id);
+}
+
+/* -------------------------------------------------------------------------- */
+const TimeStepSolver &
+ModelSolver::getTimeStepSolver(const ID & solver_id) const {
+  return this->getSolver(solver_id);
+}
+
+/* -------------------------------------------------------------------------- */
+NonLinearSolver & ModelSolver::getNonLinearSolver(const ID & solver_id) {
+  return this->getSolver(solver_id).getNonLinearSolver();
+}
+/* -------------------------------------------------------------------------- */
+const NonLinearSolver &
+ModelSolver::getNonLinearSolver(const ID & solver_id) const {
+  return this->getSolver(solver_id).getNonLinearSolver();
 }
 
 /* -------------------------------------------------------------------------- */

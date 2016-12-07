@@ -105,9 +105,9 @@ public:
     Array<Real>::vector_iterator m_it = m_all_el.begin(2);
 
     Array<UInt>::const_vector_iterator cit =
-        this->mesh.getConnectivity(_segment_2).begin(2);
+      this->mesh.getConnectivity(_segment_2).begin(2);
     Array<UInt>::const_vector_iterator cend =
-        this->mesh.getConnectivity(_segment_2).end(2);
+      this->mesh.getConnectivity(_segment_2).end(2);
 
     for (; cit != cend; ++cit, ++m_it) {
       const Vector<UInt> & conn = *cit;
@@ -135,9 +135,9 @@ public:
     Array<Real>::matrix_iterator m_it = m_all_el.begin(2, 2);
 
     Array<UInt>::const_vector_iterator cit =
-        this->mesh.getConnectivity(_segment_2).begin(2);
+      this->mesh.getConnectivity(_segment_2).begin(2);
     Array<UInt>::const_vector_iterator cend =
-        this->mesh.getConnectivity(_segment_2).end(2);
+      this->mesh.getConnectivity(_segment_2).end(2);
 
     Matrix<Real> m(2, 2);
     m(0, 0) = m(1, 1) = 2;
@@ -183,9 +183,9 @@ public:
     Array<Real>::matrix_iterator k_it = k_all_el.begin(2, 2);
 
     Array<UInt>::const_vector_iterator cit =
-        this->mesh.getConnectivity(_segment_2).begin(2);
+      this->mesh.getConnectivity(_segment_2).begin(2);
     Array<UInt>::const_vector_iterator cend =
-        this->mesh.getConnectivity(_segment_2).end(2);
+      this->mesh.getConnectivity(_segment_2).end(2);
 
     for (; cit != cend; ++cit, ++k_it) {
       const Vector<UInt> & conn = *cit;
@@ -212,9 +212,9 @@ public:
     Array<Real>::vector_iterator f_it = forces_internal_el.begin(2);
 
     Array<UInt>::const_vector_iterator cit =
-        this->mesh.getConnectivity(_segment_2).begin(2);
+      this->mesh.getConnectivity(_segment_2).begin(2);
     Array<UInt>::const_vector_iterator cend =
-        this->mesh.getConnectivity(_segment_2).end(2);
+      this->mesh.getConnectivity(_segment_2).end(2);
 
     for (; cit != cend; ++cit, ++f_it) {
       const Vector<UInt> & conn = *cit;
@@ -251,9 +251,9 @@ public:
                                  this->displacement);
     } else {
       Array<UInt>::const_vector_iterator cit =
-          this->mesh.getConnectivity(_segment_2).begin(2);
+        this->mesh.getConnectivity(_segment_2).begin(2);
       Array<UInt>::const_vector_iterator cend =
-          this->mesh.getConnectivity(_segment_2).end(2);
+        this->mesh.getConnectivity(_segment_2).end(2);
 
       for (; cit != cend; ++cit) {
         const Vector<UInt> & conn = *cit;
@@ -358,64 +358,73 @@ int main(int argc, char * argv[]) {
   const Array<Real> & velo = model.velocity;
   const Array<Real> & reac = model.internal_forces;
 
-#if EXPLICIT == true
-  std::ofstream output("output_dynamic_explicit.csv");
-#else
-  std::ofstream output("output_dynamic_implicit.csv");
-#endif
-  output << std::setw(8) << "time"
-         << "," << std::setw(8) << "disp"
-         << "," << std::setw(8) << "velo"
-         << "," << std::setw(8) << "reac"
-         << "," << std::setw(8) << "wext"
-         << "," << std::setw(8) << "epot"
-         << "," << std::setw(8) << "ekin"
-         << "," << std::setw(8) << "total"
-         << std::endl;
+// #if EXPLICIT == true
+//   std::ofstream output("output_dynamic_explicit.csv");
+// #else
+//   std::ofstream output("output_dynamic_implicit.csv");
+// #endif
+
+  std::cout << std::setw(8) << "time"
+            << "," << std::setw(8) << "disp"
+            << "," << std::setw(8) << "velo"
+            << "," << std::setw(8) << "reac"
+            << "," << std::setw(8) << "wext"
+            << "," << std::setw(8) << "epot"
+            << "," << std::setw(8) << "ekin"
+            << "," << std::setw(8) << "total"
+            << std::endl;
 
   Real wext = 0;
 
   Real epot = model.getPotentialEnergy();
   Real ekin = model.getKineticEnergy();
   Real einit = ekin +  epot;
-  output << std::setw(8) << 0.
-         << "," << std::setw(8) << disp(nb_nodes - 1, _x)
-         << "," << std::setw(8) << velo(nb_nodes - 1, _x)
-         << "," << std::setw(8) << (-reac(0, _x))
-         << "," << std::setw(8) << wext
-         << "," << std::setw(8) << epot
-         << "," << std::setw(8) << ekin
-         << "," << std::setw(8) << (ekin + epot - wext - einit)
-         << std::endl;
+  std::cout << std::setw(8) << 0.
+            << "," << std::setw(8) << disp(nb_nodes - 1, _x)
+            << "," << std::setw(8) << velo(nb_nodes - 1, _x)
+            << "," << std::setw(8) << (-reac(0, _x))
+            << "," << std::setw(8) << wext
+            << "," << std::setw(8) << epot
+            << "," << std::setw(8) << ekin
+            << "," << std::setw(8) << (ekin + epot - wext - einit)
+            << std::endl;
+
 #if EXPLICIT == false
-  NonLinearSolver & solver = model.getDOFManager().getNonLinearSolver("dynamic");
+  // NonLinearSolver & solver =
+  //   model.getDOFManager().getNonLinearSolver("dynamic");
 #endif
+
   for (UInt i = 1; i < max_steps + 1; ++i) {
     model.solveStep();
 
-#if EXPLICIT == false
-    UInt nb_iter = solver.get("nb_iterations");
-    Real error = solver.get("error");
-    bool converged = solver.get("converged");
-
-    std::cout << error << " " << nb_iter << " -> " << converged << std::endl;
-#endif
+// #if EXPLICIT == false
+    //     UInt nb_iter = solver.get("nb_iterations");
+//     Real error = solver.get("error");
+//     bool converged = solver.get("converged");
+//     std::cout << error << " " << nb_iter << " -> " << converged << std::endl;
+// #endif
 
     wext += F * velo(nb_nodes - 1, 0) * time_step;
     epot = model.getPotentialEnergy();
     ekin = model.getKineticEnergy();
-    output << std::setw(8) << time_step * i
-           << "," << std::setw(8) << disp(nb_nodes - 1, _x)
-           << "," << std::setw(8) << velo(nb_nodes - 1, _x)
-           << "," << std::setw(8) << (-reac(0, _x))
-           << "," << std::setw(8) << wext
-           << "," << std::setw(8) << epot
-           << "," << std::setw(8) << ekin
-           << "," << std::setw(8) << (ekin + epot - wext - einit)
-           << std::endl;
+    Real etot = ekin + epot - wext - einit;
+
+    std::cout << std::setw(8) << time_step * i
+              << "," << std::setw(8) << disp(nb_nodes - 1, _x)
+              << "," << std::setw(8) << velo(nb_nodes - 1, _x)
+              << "," << std::setw(8) << (-reac(0, _x))
+              << "," << std::setw(8) << wext
+              << "," << std::setw(8) << epot
+              << "," << std::setw(8) << ekin
+              << "," << std::setw(8) << (etot)
+              << std::endl;
+
+    if (std::abs(etot) > 1e-7) {
+      AKANTU_DEBUG_ERROR("The total energy of the system is not conserved!");
+    }
   }
 
-  output.close();
+  // output.close();
   finalize();
   return EXIT_SUCCESS;
 }

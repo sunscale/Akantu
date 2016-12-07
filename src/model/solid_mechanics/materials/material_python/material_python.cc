@@ -98,16 +98,15 @@ void MaterialPython::computeStress(ElementType el_type, GhostType ghost_type) {
 
   typedef Array<Real>::iterator<Real> it_type;
   std::vector<it_type> its;
-  for (auto i : this->internals) {
-    its.push_back((*i)(el_type, ghost_type).begin());
+  for (auto & internal : this->internals) {
+    its.push_back((*internal)(el_type, ghost_type).begin());
   }
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
   computeStress(grad_u, sigma, its);
 
-  for (auto b : its)
-    ++(*b);
+  for (auto &  : its) ++(*b);
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 
@@ -140,8 +139,7 @@ void MaterialPython::computeTangentModuli(const ElementType & el_type,
 }
 
 /* -------------------------------------------------------------------------- */
-Real MaterialPython::getPushWaveSpeed(__attribute__((unused))
-                                      const Element & element) const {
+Real MaterialPython::getPushWaveSpeed(const Element &) const {
   return this->callFunctor<Real>("getPushWaveSpeed");
 }
 

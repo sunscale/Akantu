@@ -104,23 +104,23 @@ enum InterpolationType;
 /// @enum GeometricalShapeType types of shapes to define the contains
 /// function in the element classes
 enum GeometricalShapeType {
-  _gst_not_defined,
   @AKANTU_GEOMETRICAL_SHAPES_ENUM@
+  _gst_not_defined
 };
 
 /* -------------------------------------------------------------------------- */
 /// @enum GaussIntegrationType classes of types using common
 /// description of the gauss point position and weights
 enum GaussIntegrationType {
-  _git_not_defined,
   @AKANTU_GAUSS_INTEGRATION_TYPES_ENUM@
+  _git_not_defined
 };
 
 /* -------------------------------------------------------------------------- */
 /// @enum InterpolationKind the family of interpolation types
 enum InterpolationKind {
-  _itk_not_defined,
   @AKANTU_INTERPOLATION_KIND_ENUM@
+  _itk_not_defined
 };
 
 /* -------------------------------------------------------------------------- */

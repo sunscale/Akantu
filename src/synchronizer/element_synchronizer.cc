@@ -78,9 +78,6 @@ ElementSynchronizer::~ElementSynchronizer() {
 }
 
 /* -------------------------------------------------------------------------- */
-void ElementSynchronizer::printself(std::ostream & stream, int indent) const {}
-
-/* -------------------------------------------------------------------------- */
 void ElementSynchronizer::substituteElements(
     const std::map<Element, Element> & old_to_new_elements) {
   // substitute old elements with new ones
@@ -362,7 +359,7 @@ void ElementSynchronizer::renumberElements(
 
 /* -------------------------------------------------------------------------- */
 UInt ElementSynchronizer::sanityCheckDataSize(
-    const Array<Element> & elements, const SynchronizationTag & tag) const {
+    const Array<Element> & elements, const SynchronizationTag &) const {
   return (elements.getSize() * mesh.getSpatialDimension() * sizeof(Real) +
           sizeof(SynchronizationTag));
 }

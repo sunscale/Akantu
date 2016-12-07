@@ -267,8 +267,8 @@ void DOFSynchronizer::synchronize(Array<T> & dof_vector) const {
   auto rs_end = this->communications.end_recv_scheme();
 
   for (; rs_it != rs_end; ++rs_it) {
-    auto scheme = rs_it->second;
-    auto proc = rs_it->first;
+    const auto & scheme = rs_it->second;
+    auto & proc = rs_it->first;
 
     recv_buffers.emplace_back(
         {scheme.getSize() * dof_vector.getNbComponent() * sizeof(T)});
@@ -281,15 +281,15 @@ void DOFSynchronizer::synchronize(Array<T> & dof_vector) const {
   auto ss_end = this->communications.end_send_scheme();
 
   for (; ss_it != ss_end; ++ss_it) {
-    auto scheme = ss_it->second;
-    auto proc = rs_it->first;
+    const auto & scheme = ss_it->second;
+    auto & proc = rs_it->first;
 
     send_buffers.emplace_back(
         {scheme.getSize() * dof_vector.getNbComponent() * sizeof(T)});
     CommunicationBuffer & buffer = send_buffers.back();
 
     auto data_it = dof_vector.begin(dof_vector.getNbComponent());
-    for (auto dof : scheme) {
+    for (const auto & dof : scheme) {
       buffer << data_it[dof];
     }
 
@@ -303,9 +303,9 @@ void DOFSynchronizer::synchronize(Array<T> & dof_vector) const {
     CommunicationBuffer & buffer = recv_buffers[ready];
 
     UInt proc = req.getSource();
-    auto scheme = this->communications.getRecvScheme(proc);
+    const auto & scheme = this->communications.getRecvScheme(proc);
     auto data_it = dof_vector.begin(dof_vector.getNbComponent());
-    for (auto dof : scheme) {
+    for (const auto & dof : scheme) {
       Vector<Real> vect = data_it[dof];
       buffer >> vect;
     }
@@ -335,8 +335,8 @@ void DOFSynchronizer::reduceSynchronize(Array<T> & dof_vector) const {
   auto rs_end = this->communications.end_send_scheme();
 
   for (; rs_it != rs_end; ++rs_it) {
-    auto scheme = rs_it->second;
-    auto proc = rs_it->first;
+    const auto & scheme = rs_it->second;
+    const auto & proc = rs_it->first;
 
     recv_buffers.emplace_back(
         {scheme.getSize() * dof_vector.getNbComponent() * sizeof(T)});
@@ -349,15 +349,15 @@ void DOFSynchronizer::reduceSynchronize(Array<T> & dof_vector) const {
   auto ss_end = this->communications.end_recv_scheme();
 
   for (; ss_it != ss_end; ++ss_it) {
-    auto scheme = ss_it->second;
-    auto proc = ss_it->first;
+    const auto & scheme = ss_it->second;
+    const auto & proc = ss_it->first;
 
     send_buffers.emplace_back(
         {scheme.getSize() * dof_vector.getNbComponent() * sizeof(T)});
     CommunicationBuffer & buffer = send_buffers.back();
 
     auto data_it = dof_vector.begin(dof_vector.getNbComponent());
-    for (auto dof : scheme) {
+    for (const auto & dof : scheme) {
       buffer << data_it[dof];
     }
 
@@ -373,11 +373,11 @@ void DOFSynchronizer::reduceSynchronize(Array<T> & dof_vector) const {
     CommunicationBuffer & buffer = recv_buffers[ready];
 
     UInt proc = req.getSource();
-    auto scheme = this->communications.getRecvScheme(proc);
+    const auto & scheme = this->communications.getRecvScheme(proc);
     auto data_it = dof_vector.begin(dof_vector.getNbComponent());
 
     Vector<Real> recv(dof_vector.getNbComponent());
-    for (auto dof : scheme) {
+    for (const auto & dof : scheme) {
       Vector<Real> vect = data_it[dof];
       buffer >> recv;
 
