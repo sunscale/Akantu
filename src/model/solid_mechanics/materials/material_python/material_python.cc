@@ -73,6 +73,7 @@ void MaterialPython::registerInternals() {
     std::stringstream sstr;
     sstr << "PythonInternal" << i;
     this->internals[i] = new InternalField<Real>(internal_names[i], *this);
+    std::cerr << " alloc array " << internal_names[i] << " " << this->internals[i] << std::endl;
     this->internals[i]->initialize(1);
   }
 }
@@ -98,7 +99,7 @@ void MaterialPython::computeStress(ElementType el_type, GhostType ghost_type) {
 
   typedef Array<Real>::iterator<Real> it_type;
   std::vector<it_type> its;
-  for (auto i : this->internals) {
+  for (auto & i : this->internals) {
     its.push_back((*i)(el_type, ghost_type).begin());
   }
 
@@ -106,8 +107,8 @@ void MaterialPython::computeStress(ElementType el_type, GhostType ghost_type) {
 
   computeStress(grad_u, sigma, its);
 
-  for (auto b : its)
-    ++(*b);
+  for (auto & b : its)
+    ++b;
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 
@@ -120,7 +121,7 @@ void MaterialPython::computeStress(Matrix<Real> & grad_u, Matrix<Real> & sigma,
                                    std::vector<it_type> & internal_iterators) {
 
   std::vector<Real> inputs;
-  for (auto i : internal_iterators) {
+  for (auto & i : internal_iterators) {
     inputs.push_back(*i);
   }
   this->callFunctor<void>("computeStress", grad_u, sigma, inputs);
