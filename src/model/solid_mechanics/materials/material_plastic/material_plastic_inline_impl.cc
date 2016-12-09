@@ -30,40 +30,46 @@
  */
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-inline void
-MaterialPlastic<dim>::computeStressAndInelasticStrainOnQuad(const Matrix<Real> & delta_grad_u,
-                                                            Matrix<Real> & sigma,
-                                                            const Matrix<Real> & previous_sigma,
-                                                            Matrix<Real> & inelastic_strain,
-                                                            const Matrix<Real> & previous_inelastic_strain,
-                                                            const Matrix<Real> & delta_inelastic_strain) const {
+#ifndef MATERIAL_PLASTIC_INLINE_IMPL_H
+#define MATERIAL_PLASTIC_INLINE_IMPL_H
+
+#include "material_plastic.hh"
+
+namespace akantu {
+
+template <UInt dim>
+inline void MaterialPlastic<dim>::computeStressAndInelasticStrainOnQuad(
+    const Matrix<Real> & delta_grad_u, Matrix<Real> & sigma,
+    const Matrix<Real> & previous_sigma, Matrix<Real> & inelastic_strain,
+    const Matrix<Real> & previous_inelastic_strain,
+    const Matrix<Real> & delta_inelastic_strain) const {
   Matrix<Real> grad_u_elastic(dim, dim);
   grad_u_elastic.copy(delta_grad_u);
   grad_u_elastic -= delta_inelastic_strain;
-
   Matrix<Real> sigma_elastic(dim, dim);
   MaterialElastic<dim>::computeStressOnQuad(grad_u_elastic, sigma_elastic);
   sigma.copy(previous_sigma);
   sigma += sigma_elastic;
-
   inelastic_strain.copy(previous_inelastic_strain);
   inelastic_strain += delta_inelastic_strain;
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-inline void
-MaterialPlastic<dim>::computeStressAndInelasticStrainOnQuad(const Matrix<Real> & grad_u,
-                                                            const Matrix<Real> & previous_grad_u,
-                                                            Matrix<Real> & sigma,
-                                                            const Matrix<Real> & previous_sigma,
-                                                            Matrix<Real> & inelastic_strain,
-                                                            const Matrix<Real> & previous_inelastic_strain,
-                                                            const Matrix<Real> & delta_inelastic_strain) const {
-   Matrix<Real> delta_grad_u(grad_u);
-   delta_grad_u -= previous_grad_u;
+template <UInt dim>
+inline void MaterialPlastic<dim>::computeStressAndInelasticStrainOnQuad(
+    const Matrix<Real> & grad_u, const Matrix<Real> & previous_grad_u,
+    Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
+    Matrix<Real> & inelastic_strain,
+    const Matrix<Real> & previous_inelastic_strain,
+    const Matrix<Real> & delta_inelastic_strain) const {
+  Matrix<Real> delta_grad_u(grad_u);
+  delta_grad_u -= previous_grad_u;
 
-   computeStressAndInelasticStrainOnQuad(delta_grad_u, sigma, previous_sigma,
-                                         inelastic_strain, previous_inelastic_strain, delta_inelastic_strain);
+  computeStressAndInelasticStrainOnQuad(
+      delta_grad_u, sigma, previous_sigma, inelastic_strain,
+      previous_inelastic_strain, delta_inelastic_strain);
 }
+
+} // Akantu
+
+#endif /* MATERIAL_PLASTIC_INLINE_IMPL_H */
