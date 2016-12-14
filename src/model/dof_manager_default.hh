@@ -115,13 +115,16 @@ public:
   virtual void updateGlobalBlockedDofs();
 
   /// apply boundary conditions to jacobian matrix
-  void applyBoundary();
+  virtual void applyBoundary();
+
+  virtual void getEquationsNumbers(const ID & dof_id,
+                                   Array<UInt> & equation_numbers);
 
 protected:
   /// Get local part of an array corresponding to a given dofdata
-  virtual void getArrayPerDOFs(const ID & dof_id,
-                               const Array<Real> & global_array,
-                               Array<Real> & local_array) const;
+  template <typename T>
+  void getArrayPerDOFs(const ID & dof_id, const Array<T> & global_array,
+                       Array<T> & local_array) const;
 
   /// Get the part of the solution corresponding to the dof_id
   virtual void getSolutionPerDOFs(const ID & dof_id,
@@ -156,7 +159,8 @@ private:
                                        const Vector<UInt> & equation_numbers,
                                        UInt max_size);
 
-  void addToProfile(const ID & matrix_id, const ID & dof_id);
+  void addToProfile(const ID & matrix_id, const ID & dof_id,
+                    const ElementType & type, const GhostType & ghost_type);
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -235,7 +239,9 @@ protected:
   typedef std::map<ID, NonLinearSolverDefault *> DefaultNonLinearSolversMap;
   typedef std::map<ID, TimeStepSolverDefault *> DefaultTimeStepSolversMap;
 
-  typedef std::set<std::pair<ID, ID>> DOFToMatrixProfile;
+  typedef std::map<std::pair<ID, ID>,
+                   std::vector<std::pair<ElementType,
+                                         GhostType>>> DOFToMatrixProfile;
 
   /// contains the the dofs that where added to the profile of a given matrix.
   DOFToMatrixProfile matrix_profiled_dofs;

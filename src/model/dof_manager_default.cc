@@ -29,11 +29,11 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_manager_default.hh"
+#include "dof_synchronizer.hh"
 #include "non_linear_solver_default.hh"
 #include "sparse_matrix_aij.hh"
 #include "static_communicator.hh"
 #include "time_step_solver_default.hh"
-#include "dof_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #include <numeric>
 /* -------------------------------------------------------------------------- */
@@ -107,9 +107,7 @@ DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
       synchronizer(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
-DOFManagerDefault::~DOFManagerDefault() {
-  delete synchronizer;
-}
+DOFManagerDefault::~DOFManagerDefault() { delete synchronizer; }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -223,7 +221,7 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
   this->global_solution.resize(this->local_system_size);
   this->global_blocked_dofs.resize(this->local_system_size);
 
-  if(this->synchronizer)
+  if (this->synchronizer)
     this->synchronizer->registerDOFs(dof_id);
 }
 
@@ -339,9 +337,10 @@ void DOFManagerDefault::updateGlobalBlockedDofs() {
 }
 
 /* -------------------------------------------------------------------------- */
+template <typename T>
 void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
-                                        const Array<Real> & global_array,
-                                        Array<Real> & local_array) const {
+                                        const Array<T> & global_array,
+                                        Array<T> & local_array) const {
   AKANTU_DEBUG_IN();
 
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
@@ -349,14 +348,21 @@ void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
   UInt nb_degree_of_freedoms = equation_number.getSize();
   local_array.resize(nb_degree_of_freedoms / local_array.getNbComponent());
 
-  Array<Real>::scalar_iterator loc_it =
-      local_array.begin_reinterpret(nb_degree_of_freedoms);
-  Array<UInt>::const_scalar_iterator equ_it = equation_number.begin();
+  auto loc_it = local_array.begin_reinterpret(nb_degree_of_freedoms);
+  auto equ_it = equation_number.begin();
 
   for (UInt d = 0; d < nb_degree_of_freedoms; ++d, ++loc_it, ++equ_it) {
     (*loc_it) = global_array(*equ_it);
   }
 
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::getEquationsNumbers(const ID & dof_id,
+                                            Array<UInt> & equation_numbers) {
+  AKANTU_DEBUG_IN();
+  this->getArrayPerDOFs(dof_id, this->global_equation_number, equation_numbers);
   AKANTU_DEBUG_OUT();
 }
 
@@ -446,7 +452,7 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     const Array<UInt> & filter_elements) {
   AKANTU_DEBUG_IN();
 
-  this->addToProfile(matrix_id, dof_id);
+  this->addToProfile(matrix_id, dof_id, type, ghost_type);
 
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
   SparseMatrixAIJ & A = this->getMatrix(matrix_id);
@@ -518,7 +524,9 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id) {
+void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
+                                     const ElementType & type,
+                                     const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   const DOFData & dof_data = this->getDOFData(dof_id);
@@ -526,9 +534,13 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id) {
   if (dof_data.support_type != _dst_nodal)
     return;
 
-  std::pair<ID, ID> mat_dof = std::make_pair(matrix_id, dof_id);
-  if (this->matrix_profiled_dofs.find(mat_dof) !=
-      this->matrix_profiled_dofs.end())
+  auto mat_dof = std::make_pair(matrix_id, dof_id);
+  auto type_pair = std::make_pair(type, ghost_type);
+
+  auto prof_it = this->matrix_profiled_dofs.find(mat_dof);
+  if (prof_it != this->matrix_profiled_dofs.end() &&
+      std::find(prof_it->second.begin(), prof_it->second.end(), type_pair) !=
+      prof_it->second.end())
     return;
 
   UInt nb_degree_of_freedom_per_node = dof_data.dof->getNbComponent();
@@ -537,49 +549,36 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id) {
 
   SparseMatrixAIJ & A = this->getMatrix(matrix_id);
 
-  // if(irn_jcn_to_k) delete irn_jcn_to_k;
-  // irn_jcn_to_k = new std::map<std::pair<UInt, UInt>, UInt>;
-  //  A.clearProfile();
-
   UInt size = A.getSize();
 
-  Mesh::type_iterator it = this->mesh->firstType(
-      this->mesh->getSpatialDimension(), _not_ghost, _ek_not_defined);
-  Mesh::type_iterator end = this->mesh->lastType(
-      this->mesh->getSpatialDimension(), _not_ghost, _ek_not_defined);
-  for (; it != end; ++it) {
-    UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
+  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
-    const Array<UInt> & connectivity =
-        this->mesh->getConnectivity(*it, _not_ghost);
-    Array<UInt>::const_vector_iterator cit =
-        connectivity.begin(nb_nodes_per_element);
-    Array<UInt>::const_vector_iterator cend =
-        connectivity.end(nb_nodes_per_element);
+  const auto & connectivity = this->mesh->getConnectivity(type, ghost_type);
+  auto cit = connectivity.begin(nb_nodes_per_element);
+  auto cend = connectivity.end(nb_nodes_per_element);
 
-    UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom_per_node;
-    Vector<UInt> element_eq_nb(size_mat);
+  UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom_per_node;
+  Vector<UInt> element_eq_nb(size_mat);
 
-    for (; cit != cend; ++cit) {
-      this->extractElementEquationNumber(
-          equation_number, *cit, nb_degree_of_freedom_per_node, element_eq_nb);
-      this->localToGlobalEquationNumber(element_eq_nb);
+  for (; cit != cend; ++cit) {
+    this->extractElementEquationNumber(
+        equation_number, *cit, nb_degree_of_freedom_per_node, element_eq_nb);
+    this->localToGlobalEquationNumber(element_eq_nb);
 
-      for (UInt i = 0; i < size_mat; ++i) {
-        UInt c_irn = element_eq_nb(i);
-        if (c_irn < size) {
-          for (UInt j = 0; j < size_mat; ++j) {
-            UInt c_jcn = element_eq_nb(j);
-            if (c_jcn < size) {
-              A.addToProfile(c_irn, c_jcn);
-            }
+    for (UInt i = 0; i < size_mat; ++i) {
+      UInt c_irn = element_eq_nb(i);
+      if (c_irn < size) {
+        for (UInt j = 0; j < size_mat; ++j) {
+          UInt c_jcn = element_eq_nb(j);
+          if (c_jcn < size) {
+            A.addToProfile(c_irn, c_jcn);
           }
         }
       }
     }
   }
 
-  this->matrix_profiled_dofs.insert(mat_dof);
+  this->matrix_profiled_dofs[mat_dof].push_back(type_pair);
 
   AKANTU_DEBUG_OUT();
 }

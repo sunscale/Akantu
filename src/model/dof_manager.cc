@@ -30,8 +30,8 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
 #include "mesh.hh"
-#include "sparse_matrix.hh"
 #include "mesh_utils.hh"
+#include "sparse_matrix.hh"
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -39,9 +39,8 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFManager(const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id),
-      mesh(NULL),
-      local_system_size(0), pure_local_system_size(0), system_size(0) {}
+    : Memory(id, memory_id), mesh(NULL), local_system_size(0),
+      pure_local_system_size(0), system_size(0) {}
 
 /* -------------------------------------------------------------------------- */
 DOFManager::~DOFManager() {
@@ -72,9 +71,14 @@ DOFManager::~DOFManager() {
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManager::getEquationsNumbers(const ID &, Array<UInt> &) {
+  AKANTU_DEBUG_TO_IMPLEMENT();
+}
+
+/* -------------------------------------------------------------------------- */
 std::vector<ID> DOFManager::getDOFIDs() const {
   std::vector<ID> keys;
-  for(const auto & dof_data: this->dofs)
+  for (const auto & dof_data : this->dofs)
     keys.push_back(dof_data.first);
 
   return keys;
@@ -117,11 +121,11 @@ void DOFManager::assembleElementalArrayLocalArray(
   for (UInt el = 0; el < nb_element; ++el, ++elem_it) {
     UInt element = el;
     if (filter_it != NULL) {
-      //conn_it = conn_begin + *filter_it;
+      // conn_it = conn_begin + *filter_it;
       element = *filter_it;
     }
 
-    //const Vector<UInt> & conn = *conn_it;
+    // const Vector<UInt> & conn = *conn_it;
     const Matrix<Real> & elemental_val = *elem_it;
     for (UInt n = 0; n < nb_nodes_per_element; ++n) {
       UInt offset_node = connectivity(element, n) * nb_degree_of_freedom;
@@ -205,7 +209,7 @@ void DOFManager::registerMesh(Mesh & mesh) {
 DOFManager::DOFData::DOFData(const ID & dof_id)
     : support_type(_dst_generic), dof(NULL), blocked_dofs(NULL),
       increment(NULL), previous(NULL), solution(0, 1, dof_id + ":solution"),
-      local_equation_number(0,1,dof_id + ":local_equation_number") {}
+      local_equation_number(0, 1, dof_id + ":local_equation_number") {}
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFData::~DOFData() {}
@@ -506,9 +510,9 @@ void DOFManager::fillNodesToElements() {
       e.type = type;
       e.kind = Mesh::getKind(type);
       UInt nb_element = this->mesh->getNbElement(type, *gt);
-      Array<UInt>::const_iterator<Vector<UInt> > conn_it =
-          this->mesh->getConnectivity(type, *gt)
-              .begin(Mesh::getNbNodesPerElement(type));
+      Array<UInt>::const_iterator<Vector<UInt>> conn_it =
+          this->mesh->getConnectivity(type, *gt).begin(
+              Mesh::getNbNodesPerElement(type));
 
       for (UInt el = 0; el < nb_element; ++el, ++conn_it) {
         e.element = el;
