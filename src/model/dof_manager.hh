@@ -189,6 +189,11 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /// Get the equation numbers corresponding to a dof_id. This might be used to
+  /// access the matrix.
+  virtual void getEquationsNumbers(const ID & dof_id,
+                                   Array<UInt> & equation_numbers);
+
   /// Global number of dofs
   AKANTU_GET_MACRO(SystemSize, this->system_size, UInt);
 

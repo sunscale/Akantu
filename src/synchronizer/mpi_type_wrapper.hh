@@ -32,23 +32,25 @@
 /* -------------------------------------------------------------------------- */
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )
-#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
+#elif defined(__clang__) // test clang to be sure that when we test for gnu it
+                         // is only gnu
 #elif (defined(__GNUC__) || defined(__GNUG__))
-#  if __cplusplus > 199711L
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wliteral-suffix"
-#  endif
+#if __cplusplus > 199711L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wliteral-suffix"
+#endif
 #endif
 
-#  include <mpi.h>
+#include <mpi.h>
 
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )
-#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
+#elif defined(__clang__) // test clang to be sure that when we test for gnu it
+                         // is only gnu
 #elif (defined(__GNUC__) || defined(__GNUG__))
-#  if __cplusplus > 199711L
-#    pragma GCC diagnostic pop
-#  endif
+#if __cplusplus > 199711L
+#pragma GCC diagnostic pop
+#endif
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -63,11 +65,10 @@ __BEGIN_AKANTU__
 
 class MPITypeWrapper {
 public:
-  MPITypeWrapper(StaticCommunicatorMPI & static_comm) : static_comm(static_comm), max_tag(0) {
-  }
+  MPITypeWrapper(StaticCommunicatorMPI & static_comm)
+      : static_comm(static_comm), communicator(MPI_COMM_WORLD), max_tag(0) {}
 
-  template<typename T>
-  static inline MPI_Datatype getMPIDatatype();
+  template <typename T> static inline MPI_Datatype getMPIDatatype();
 
   inline void setMPICommunicator(MPI_Comm comm) {
     communicator = comm;
@@ -79,22 +80,20 @@ public:
     static_comm.setSize(psize);
 
     int flag;
-    int *value;
+    int * value;
     MPI_Comm_get_attr(comm, MPI_TAG_UB, &value, &flag);
     AKANTU_DEBUG_ASSERT(flag, "No attribute MPI_TAG_UB.");
     this->max_tag = *value;
   }
 
-  inline MPI_Comm getMPICommunicator() const {
-    return communicator;
-  }
+  inline MPI_Comm getMPICommunicator() const { return communicator; }
 
   static MPI_Op getMPISynchronizerOperation(const SynchronizerOperation & op) {
     return synchronizer_operation_to_mpi_op[op];
   }
 
-
   inline int getMaxTag() const { return this->max_tag; }
+
 private:
   StaticCommunicatorMPI & static_comm;
 
