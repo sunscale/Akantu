@@ -175,7 +175,7 @@ set_target_properties(akantu
     COMPILE_FLAGS "${_cxx_flags}"
     LINK_INTERFACE_MULTIPLICITY 2)
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.1)
+if(NOT CMAKE_VERSION VERSION_LESS 3.1)
   package_get_all_features_public(_public_features)
   if(_public_features)
     target_compile_features(akantu  PUBLIC ${_public_features})

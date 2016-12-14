@@ -552,7 +552,7 @@ package_declare_extra_files_to_package(core
     model/solid_mechanics/material_list.hh.in
   )
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 3.9)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.9))
   package_set_compile_flags(core CXX "-Wno-undefined-var-template")
 endif()
 
