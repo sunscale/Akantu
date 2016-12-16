@@ -30,6 +30,7 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager_default.hh"
 #include "dof_synchronizer.hh"
+#include "element_group.hh"
 #include "non_linear_solver_default.hh"
 #include "sparse_matrix_aij.hh"
 #include "static_communicator.hh"
@@ -156,38 +157,35 @@ void DOFManagerDefault::registerMesh(Mesh & mesh) {
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::registerDOFs(const ID & dof_id,
-                                     Array<Real> & dofs_array,
-                                     const DOFSupportType & support_type) {
-  // stores the current numbers of dofs
-  UInt local_nb_dofs = this->local_system_size;
-  UInt pure_local_nb_dofs = this->pure_local_system_size;
-
-  // update or create the dof_data
-  DOFManager::registerDOFs(dof_id, dofs_array, support_type);
-
+void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
+                                             UInt nb_pure_local_dofs) {
   // Count the number of pure local dofs per proc
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   UInt prank = comm.whoAmI();
   UInt psize = comm.getNbProc();
 
   Array<UInt> nb_dofs_per_proc(psize);
-  nb_dofs_per_proc(prank) = this->pure_local_system_size - pure_local_nb_dofs;
+  nb_dofs_per_proc(prank) = nb_pure_local_dofs;
   comm.allGather(nb_dofs_per_proc);
 
   UInt first_global_dofs_id = std::accumulate(
       nb_dofs_per_proc.begin(), nb_dofs_per_proc.begin() + prank, 0);
 
-  // nb local dofs to account for
-  UInt nb_dofs = this->local_system_size - local_nb_dofs;
-
   DOFDataDefault & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
+  const DOFSupportType & support_type = dof_data.support_type;
+  const ID & group = dof_data.group_support;
 
+  dof_data.local_equation_number.resize(nb_dofs);
   this->global_equation_number.resize(this->local_system_size);
 
   // set the equation numbers
-  UInt first_dof_id = local_nb_dofs;
-  dof_data.local_equation_number.resize(nb_dofs);
+  UInt first_dof_id = this->local_system_size - nb_dofs;
+
+  const Array<UInt> * support_nodes = nullptr;
+  if (group != "mesh") {
+    support_nodes =
+        &this->mesh->getElementGroup(group).getNodeGroup().getNodes();
+  }
 
   if (support_type == _dst_nodal) {
     dof_data.associated_nodes.resize(nb_dofs);
@@ -205,6 +203,10 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
     switch (support_type) {
     case _dst_nodal: {
       UInt node = d / dof_data.dof->getNbComponent();
+
+      if (support_nodes)
+        node = (*support_nodes)(node);
+
       this->dofs_type(local_eq_num) = this->mesh->getNodeType(node);
       dof_data.associated_nodes(d) = node;
       break;
@@ -223,6 +225,42 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
 
   if (this->synchronizer)
     this->synchronizer->registerDOFs(dof_id);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::registerDOFs(const ID & dof_id,
+                                     Array<Real> & dofs_array,
+                                     const DOFSupportType & support_type) {
+  // stores the current numbers of dofs
+  UInt nb_dofs_old = this->local_system_size;
+  UInt nb_pure_local_dofs_old = this->pure_local_system_size;
+
+  // update or create the dof_data
+  DOFManager::registerDOFs(dof_id, dofs_array, support_type);
+
+  UInt nb_dofs = this->local_system_size - nb_dofs_old;
+  UInt nb_pure_local_dofs =
+      this->pure_local_system_size - nb_pure_local_dofs_old;
+
+  this->registerDOFsInternal(dof_id, nb_dofs, nb_pure_local_dofs);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::registerDOFs(const ID & dof_id,
+                                     Array<Real> & dofs_array,
+                                     const ID & group_support) {
+  // stores the current numbers of dofs
+  UInt nb_dofs_old = this->local_system_size;
+  UInt nb_pure_local_dofs_old = this->pure_local_system_size;
+
+  // update or create the dof_data
+  DOFManager::registerDOFs(dof_id, dofs_array, group_support);
+
+  UInt nb_dofs = this->local_system_size - nb_dofs_old;
+  UInt nb_pure_local_dofs =
+      this->pure_local_system_size - nb_pure_local_dofs_old;
+
+  this->registerDOFsInternal(dof_id, nb_dofs, nb_pure_local_dofs);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -454,6 +492,8 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 
   this->addToProfile(matrix_id, dof_id, type, ghost_type);
 
+  DOFData & dof_data = this->getDOFData(dof_id);
+
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
   SparseMatrixAIJ & A = this->getMatrix(matrix_id);
 
@@ -464,12 +504,19 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
-  UInt * filter_it = NULL;
+  UInt * filter_it = nullptr;
   if (filter_elements != empty_filter) {
     nb_element = filter_elements.getSize();
     filter_it = filter_elements.storage();
   } else {
-    nb_element = this->mesh->getNbElement(type, ghost_type);
+    if (dof_data.group_support != "mesh") {
+      const Array<UInt> & group_elements =
+        this->mesh->getElementGroup(dof_data.group_support).getElements(type, ghost_type);
+      nb_element = group_elements.getSize();
+      filter_it = group_elements.storage();
+    } else {
+      nb_element = this->mesh->getNbElement(type, ghost_type);
+    }
   }
 
   AKANTU_DEBUG_ASSERT(elementary_mat.getSize() == nb_element,
@@ -479,15 +526,12 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
-  UInt nb_degree_of_freedom = this->getDOFs(dof_id).getNbComponent();
-  // UInt nb_degree_of_freedom = elementary_mat.getNbComponent() /
-  //                             (nb_nodes_per_element * nb_nodes_per_element);
+  UInt nb_degree_of_freedom = dof_data.dof->getNbComponent();
 
   const Array<UInt> & connectivity =
       this->mesh->getConnectivity(type, ghost_type);
-  Array<UInt>::const_vector_iterator conn_begin =
-      connectivity.begin(nb_nodes_per_element);
-  Array<UInt>::const_vector_iterator conn_it = conn_begin;
+  auto conn_begin = connectivity.begin(nb_nodes_per_element);
+  auto conn_it = conn_begin;
 
   UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom;
 
@@ -496,17 +540,15 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
       elementary_mat.begin(size_mat, size_mat);
 
   for (UInt e = 0; e < nb_element; ++e, ++el_mat_it) {
-    if (filter_it != NULL)
+    if (filter_it)
       conn_it = conn_begin + *filter_it;
 
     this->extractElementEquationNumber(equation_number, *conn_it,
                                        nb_degree_of_freedom, element_eq_nb);
     this->localToGlobalEquationNumber(element_eq_nb);
 
-    if (filter_it != NULL)
-      ++filter_it;
-    else
-      ++conn_it;
+    if (filter_it) ++filter_it;
+    else ++conn_it;
 
     if (A.getMatrixType() == _symmetric)
       if (elemental_matrix_type == _symmetric)
@@ -540,7 +582,7 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
   auto prof_it = this->matrix_profiled_dofs.find(mat_dof);
   if (prof_it != this->matrix_profiled_dofs.end() &&
       std::find(prof_it->second.begin(), prof_it->second.end(), type_pair) !=
-      prof_it->second.end())
+          prof_it->second.end())
     return;
 
   UInt nb_degree_of_freedom_per_node = dof_data.dof->getNbComponent();
@@ -554,16 +596,31 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
   const auto & connectivity = this->mesh->getConnectivity(type, ghost_type);
-  auto cit = connectivity.begin(nb_nodes_per_element);
-  auto cend = connectivity.end(nb_nodes_per_element);
+  auto cbegin = connectivity.begin(nb_nodes_per_element);
+  auto cit = cbegin;
+
+  UInt nb_elements = connectivity.getSize();
+  UInt * ge_it = nullptr;
+  if (dof_data.group_support != "mesh") {
+    const Array<UInt> & group_elements =
+        this->mesh->getElementGroup(dof_data.group_support)
+            .getElements(type, ghost_type);
+    ge_it = group_elements.storage();
+    nb_elements = group_elements.getSize();
+  }
 
   UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom_per_node;
   Vector<UInt> element_eq_nb(size_mat);
 
-  for (; cit != cend; ++cit) {
+  for (UInt e = 0; e < nb_elements; ++e) {
+    if (ge_it)  cit = cbegin + *ge_it;
+
     this->extractElementEquationNumber(
         equation_number, *cit, nb_degree_of_freedom_per_node, element_eq_nb);
     this->localToGlobalEquationNumber(element_eq_nb);
+
+    if (ge_it) ++ge_it;
+    else  ++cit;
 
     for (UInt i = 0; i < size_mat; ++i) {
       UInt c_irn = element_eq_nb(i);

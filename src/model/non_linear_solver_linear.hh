@@ -64,7 +64,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
+protected:
   DOFManagerDefault & dof_manager;
 
   /// Sparse solver used for the linear solves

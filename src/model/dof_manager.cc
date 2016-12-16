@@ -29,8 +29,10 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
+#include "element_group.hh"
 #include "mesh.hh"
 #include "mesh_utils.hh"
+#include "node_group.hh"
 #include "sparse_matrix.hh"
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
@@ -207,8 +209,9 @@ void DOFManager::registerMesh(Mesh & mesh) {
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFData::DOFData(const ID & dof_id)
-    : support_type(_dst_generic), dof(NULL), blocked_dofs(NULL),
-      increment(NULL), previous(NULL), solution(0, 1, dof_id + ":solution"),
+    : support_type(_dst_generic), group_support("mesh"), dof(NULL),
+      blocked_dofs(NULL), increment(NULL), previous(NULL),
+      solution(0, 1, dof_id + ":solution"),
       local_equation_number(0, 1, dof_id + ":local_equation_number") {}
 
 /* -------------------------------------------------------------------------- */
@@ -216,37 +219,51 @@ DOFManager::DOFData::~DOFData() {}
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFData & DOFManager::getNewDOFData(const ID & dof_id) {
+  DOFStorage::iterator it = this->dofs.find(dof_id);
+  if (it != this->dofs.end()) {
+    AKANTU_EXCEPTION("This dof array has already been registered");
+  }
+
   DOFData * dofs_storage = new DOFData(dof_id);
   this->dofs[dof_id] = dofs_storage;
   return *dofs_storage;
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
-                              const DOFSupportType & support_type) {
-  DOFStorage::iterator it = this->dofs.find(dof_id);
-
-  if (it != this->dofs.end()) {
-    AKANTU_EXCEPTION("This dof array has already been registered");
-  }
-
-  DOFData & dofs_storage = this->getNewDOFData(dof_id);
+void DOFManager::registerDOFsInternal(const ID & dof_id,
+                                      Array<Real> & dofs_array) {
+  DOFData & dofs_storage = this->getDOFData(dof_id);
   dofs_storage.dof = &dofs_array;
-  dofs_storage.support_type = support_type;
 
   UInt nb_local_dofs = 0;
   UInt nb_pure_local = 0;
 
+  const DOFSupportType &support_type = dofs_storage.support_type;
+
   switch (support_type) {
   case _dst_nodal: {
-    nb_local_dofs = this->mesh->getNbNodes();
+    UInt nb_nodes = 0;
+    const ID & group = dofs_storage.group_support;
+
+    NodeGroup * node_group = NULL;
+    if (group == "mesh") {
+      nb_nodes = this->mesh->getNbNodes();
+    } else {
+      node_group = &this->mesh->getElementGroup(group).getNodeGroup();
+      nb_nodes = node_group->getSize();
+    }
+
+    nb_local_dofs = nb_nodes;
     AKANTU_DEBUG_ASSERT(
         dofs_array.getSize() == nb_local_dofs,
         "The array of dof is too shot to be associated to nodes.");
 
-    UInt nb_nodes = this->mesh->getNbNodes();
     for (UInt n = 0; n < nb_nodes; ++n) {
-      nb_pure_local += this->mesh->isLocalOrMasterNode(n) ? 1 : 0;
+      UInt node = n;
+      if (node_group)
+        node = node_group->getNodes()(n);
+
+      nb_pure_local += this->mesh->isLocalOrMasterNode(node) ? 1 : 0;
     }
 
     nb_pure_local *= dofs_array.getNbComponent();
@@ -268,6 +285,26 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
   comm.allReduce(nb_pure_local, _so_sum);
 
   this->system_size += nb_pure_local;
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+                              const DOFSupportType & support_type) {
+  DOFData & dofs_storage = this->getNewDOFData(dof_id);
+  dofs_storage.support_type = support_type;
+
+  this->registerDOFsInternal(dof_id, dofs_array);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+                              const ID & support_group) {
+  DOFData & dofs_storage = this->getNewDOFData(dof_id);
+  dofs_storage.support_type = _dst_nodal;
+  dofs_storage.group_support = support_group;
+
+  this->registerDOFsInternal(dof_id, dofs_array);
+
 }
 
 /* -------------------------------------------------------------------------- */

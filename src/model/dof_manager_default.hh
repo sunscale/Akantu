@@ -59,9 +59,19 @@ public:
   /// register a mesh for dof that have a support type on nodes
   virtual void registerMesh(Mesh & mesh);
 
+private:
+  void registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
+                            UInt nb_pure_local_dofs);
+
+public:
   /// register an array of degree of freedom
   virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
                             const DOFSupportType & support_type);
+
+  /// the dof as an implied type of _dst_nodal and is defined only on a subset
+  /// of nodes
+  virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+                            const ID & group_support);
 
   /// Assemble an array to the global residual array
   virtual void assembleToResidual(const ID & dof_id,
@@ -240,8 +250,8 @@ protected:
   typedef std::map<ID, TimeStepSolverDefault *> DefaultTimeStepSolversMap;
 
   typedef std::map<std::pair<ID, ID>,
-                   std::vector<std::pair<ElementType,
-                                         GhostType>>> DOFToMatrixProfile;
+                   std::vector<std::pair<ElementType, GhostType>>>
+      DOFToMatrixProfile;
 
   /// contains the the dofs that where added to the profile of a given matrix.
   DOFToMatrixProfile matrix_profiled_dofs;

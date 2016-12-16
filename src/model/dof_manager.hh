@@ -47,8 +47,7 @@ class DOFManager : protected Memory, protected MeshEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DOFManager(const ID & id = "dof_manager",
-             const MemoryID & memory_id = 0);
+  DOFManager(const ID & id = "dof_manager", const MemoryID & memory_id = 0);
   virtual ~DOFManager();
 
   /* ------------------------------------------------------------------------ */
@@ -58,9 +57,19 @@ public:
   /// register a mesh for dof that have a support type on nodes
   virtual void registerMesh(Mesh & mesh);
 
+private:
+  /// common function to help registering dofs
+  void registerDOFsInternal(const ID & dof_id, Array<Real> & dofs_array);
+
+public:
   /// register an array of degree of freedom
   virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
                             const DOFSupportType & support_type);
+
+  /// the dof as an implied type of _dst_nodal and is defined only on a subset
+  /// of nodes
+  virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+                            const ID & group_support);
 
   /// register an array of previous values of the degree of freedom
   virtual void registerDOFsPrevious(const ID & dof_id,
@@ -356,6 +365,8 @@ protected:
     /// DOF support type (nodal, general) this is needed to determine how the
     /// dof are shared among processors
     DOFSupportType support_type;
+
+    ID group_support;
 
     /// Degree of freedom array
     Array<Real> * dof;
