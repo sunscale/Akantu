@@ -146,12 +146,8 @@ protected:
 
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
+__END_AKANTU__
 
 #include "material_elastic_inline_impl.cc"
-
-__END_AKANTU__
 
 #endif /* __AKANTU_MATERIAL_ELASTIC_HH__ */

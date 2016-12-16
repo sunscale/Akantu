@@ -31,6 +31,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "material_elastic.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_CC__
+#define __AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_CC__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
@@ -108,3 +115,7 @@ inline void
 MaterialElastic<1>::computeTangentModuliOnQuad(Matrix<Real> & tangent) const {
   tangent(0, 0) = E;
 }
+
+} // akantu
+
+#endif /* __AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_CC__ */
