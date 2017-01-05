@@ -34,6 +34,7 @@
 /* -------------------------------------------------------------------------- */
 #include <numpy/arrayobject.h>
 #include "integration_point.hh"
+#include <typeinfo>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -41,7 +42,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 
 template <typename T> inline int PythonFunctor::getPythonDataTypeCode() const {
-  AKANTU_EXCEPTION("undefined type");
+  AKANTU_EXCEPTION("undefined type: " << typeid(T).name());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -109,6 +110,20 @@ PythonFunctor::convertToPython(const std::vector<T> & array) const {
   PyArrayObject * res = (PyArrayObject *)obj;
   return (PyObject *)res;
 }
+/* -------------------------------------------------------------------------- */
+template <typename T>
+inline PyObject *
+PythonFunctor::convertToPython(const std::vector<Array<T> *> & array) const {
+
+  PyObject * res = PyDict_New();
+
+  for (auto a : array){
+    PyObject * obj = this->convertToPython(*a);
+    PyObject * name = this->convertToPython(a->getID());
+    PyDict_SetItem(res, name, obj);
+  }
+  return (PyObject *)res;
+}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -117,6 +132,17 @@ PyObject * PythonFunctor::convertToPython(const Vector<T> & array) const {
   npy_intp dims[1] = {array.size()};
   PyObject * obj =
       PyArray_SimpleNewFromData(1, dims, data_typecode, array.storage());
+  PyArrayObject * res = (PyArrayObject *)obj;
+  return (PyObject *)res;
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+PyObject * PythonFunctor::convertToPython(const Array<T> & array) const {
+  int data_typecode = getPythonDataTypeCode<T>();
+  npy_intp dims[2] = {array.getSize(), array.getNbComponent()};
+  PyObject * obj =
+      PyArray_SimpleNewFromData(2, dims, data_typecode, array.storage());
   PyArrayObject * res = (PyArrayObject *)obj;
   return (PyObject *)res;
 }

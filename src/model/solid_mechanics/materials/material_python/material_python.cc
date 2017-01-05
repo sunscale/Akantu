@@ -73,7 +73,8 @@ void MaterialPython::registerInternals() {
     std::stringstream sstr;
     sstr << "PythonInternal" << i;
     this->internals[i] = new InternalField<Real>(internal_names[i], *this);
-    std::cerr << " alloc array " << internal_names[i] << " " << this->internals[i] << std::endl;
+    std::cerr << " alloc array " << internal_names[i] << " "
+              << this->internals[i] << std::endl;
     this->internals[i]->initialize(1);
   }
 }
@@ -84,12 +85,6 @@ void MaterialPython::initMaterial() {
 
   Material::initMaterial();
 
-  // initInternalArray(this->damage, 1);
-  // resizeInternalArray(this->damage);
-
-  // lambda = nu * E / ((1 + nu) * (1 - 2*nu));
-  // mu     = E / (2 * (1 + nu));
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -97,21 +92,16 @@ void MaterialPython::initMaterial() {
 void MaterialPython::computeStress(ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  typedef Array<Real>::iterator<Real> it_type;
-  std::vector<it_type> its;
-  for (auto & i : this->internals) {
-    its.push_back((*i)(el_type, ghost_type).begin());
+  std::vector<Array<Real> *> internal_arrays;
+  for (auto & i : this->internals){
+    auto & array  = (*i)(el_type, ghost_type);
+    internal_arrays.push_back(&array);
   }
-
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
-
-  computeStress(grad_u, sigma, its);
-
-  for (auto & b : its)
-    ++b;
-
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
-
+  
+  this->callFunctor<void>("computeStress",
+                          this->gradu(el_type, ghost_type),
+                          this->stress(el_type, ghost_type),
+                          internal_arrays);
   AKANTU_DEBUG_OUT();
 }
 
@@ -124,12 +114,53 @@ void MaterialPython::computeStress(Matrix<Real> & grad_u, Matrix<Real> & sigma,
   for (auto & i : internal_iterators) {
     inputs.push_back(*i);
   }
-  this->callFunctor<void>("computeStress", grad_u, sigma, inputs);
+
 
   for (UInt i = 0; i < inputs.size(); ++i) {
     *internal_iterators[i] = inputs[i];
   }
 }
+/* -------------------------------------------------------------------------- */
+// void MaterialPython::computeStress(ElementType el_type, GhostType ghost_type)
+// {
+//   AKANTU_DEBUG_IN();
+
+//   typedef Array<Real>::iterator<Real> it_type;
+//   std::vector<it_type> its;
+//   for (auto & i : this->internals) {
+//     its.push_back((*i)(el_type, ghost_type).begin());
+//   }
+
+//   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+
+//   computeStress(grad_u, sigma, its);
+
+//   for (auto & b : its)
+//     ++b;
+
+//   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
+
+//   AKANTU_DEBUG_OUT();
+// }
+
+// /* --------------------------------------------------------------------------
+// */
+// template <typename it_type>
+// void MaterialPython::computeStress(Matrix<Real> & grad_u, Matrix<Real> &
+// sigma,
+//                                    std::vector<it_type> & internal_iterators)
+//                                    {
+
+//   std::vector<Real> inputs;
+//   for (auto & i : internal_iterators) {
+//     inputs.push_back(*i);
+//   }
+//   this->callFunctor<void>("computeStress", grad_u, sigma, inputs);
+
+//   for (UInt i = 0; i < inputs.size(); ++i) {
+//     *internal_iterators[i] = inputs[i];
+//   }
+// }
 
 /* -------------------------------------------------------------------------- */
 void MaterialPython::computeTangentModuli(const ElementType & el_type,
