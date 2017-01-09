@@ -286,6 +286,13 @@ inline Real PythonFunctor::convertToAkantu<Real>(PyObject * python_obj) const {
     AKANTU_EXCEPTION("cannot convert object to float");
   return PyFloat_AsDouble(python_obj);
 }
+/* -------------------------------------------------------------------------- */
+template <>
+inline UInt PythonFunctor::convertToAkantu<UInt>(PyObject * python_obj) const {
+  if (!PyInt_Check(python_obj))
+    AKANTU_EXCEPTION("cannot convert object to integer");
+  return PyInt_AsLong(python_obj);
+}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>

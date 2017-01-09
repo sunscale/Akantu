@@ -67,6 +67,15 @@ void MaterialPython::registerInternals() {
   std::vector<std::string> internal_names =
       this->callFunctor<std::vector<std::string> >("registerInternals");
 
+  std::vector<UInt> internal_sizes;
+
+  try {
+    internal_sizes =
+      this->callFunctor<std::vector<UInt> >("registerInternalSizes");
+  }catch(...){
+    internal_sizes.assign(internal_names.size(), 1);
+  }
+
   this->internals.resize(internal_names.size());
 
   for (UInt i = 0; i < internal_names.size(); ++i) {
@@ -75,7 +84,8 @@ void MaterialPython::registerInternals() {
     this->internals[i] = new InternalField<Real>(internal_names[i], *this);
     std::cerr << " alloc array " << internal_names[i] << " "
               << this->internals[i] << std::endl;
-    this->internals[i]->initialize(1);
+
+    this->internals[i]->initialize(internal_sizes[i]);
   }
 }
 
@@ -93,15 +103,13 @@ void MaterialPython::computeStress(ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   std::vector<Array<Real> *> internal_arrays;
-  for (auto & i : this->internals){
-    auto & array  = (*i)(el_type, ghost_type);
+  for (auto & i : this->internals) {
+    auto & array = (*i)(el_type, ghost_type);
     internal_arrays.push_back(&array);
   }
-  
-  this->callFunctor<void>("computeStress",
-                          this->gradu(el_type, ghost_type),
-                          this->stress(el_type, ghost_type),
-                          internal_arrays);
+
+  this->callFunctor<void>("computeStress", this->gradu(el_type, ghost_type),
+                          this->stress(el_type, ghost_type), internal_arrays);
   AKANTU_DEBUG_OUT();
 }
 
@@ -114,7 +122,6 @@ void MaterialPython::computeStress(Matrix<Real> & grad_u, Matrix<Real> & sigma,
   for (auto & i : internal_iterators) {
     inputs.push_back(*i);
   }
-
 
   for (UInt i = 0; i < inputs.size(); ++i) {
     *internal_iterators[i] = inputs[i];
