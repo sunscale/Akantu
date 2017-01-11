@@ -294,6 +294,17 @@ int main() { return 0; }
     endif()
   endif()
 
+  include(CheckFunctionExists)
+  check_function_exists(clock_gettime _clock_gettime)
+
+  include(CheckCXXSymbolExists)
+  check_cxx_symbol_exists(strdup cstring AKANTU_HAS_STRDUP)
+
+  if(NOT _clock_gettime)
+    set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY ON  CACHE INTERNAL "" FORCE)
+  else()
+    set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF CACHE INTERNAL "" FORCE)
+  endif()
 
   # ----------------------------------------------------------------------------
   # includes
