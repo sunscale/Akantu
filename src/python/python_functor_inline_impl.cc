@@ -32,17 +32,32 @@
 #define __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__
 
 /* -------------------------------------------------------------------------- */
-#include <numpy/arrayobject.h>
 #include "integration_point.hh"
+#include <numpy/arrayobject.h>
 #include <typeinfo>
+#include <cxxabi.h>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
+inline std::string demangle(const char* name) {
+
+    int status = -4; // some arbitrary value to eliminate the compiler warning
+
+    // enable c++11 by passing the flag -std=c++11 to g++
+    std::unique_ptr<char, void(*)(void*)> res {
+        abi::__cxa_demangle(name, NULL, NULL, &status),
+        std::free
+    };
+
+    return (status==0) ? res.get() : name ;
+}
+
+/* -------------------------------------------------------------------------- */
 
 template <typename T> inline int PythonFunctor::getPythonDataTypeCode() const {
-  AKANTU_EXCEPTION("undefined type: " << typeid(T).name());
+  AKANTU_EXCEPTION("undefined type: " << demangle(typeid(T).name()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -75,7 +90,8 @@ template <> inline int PythonFunctor::getPythonDataTypeCode<double>() const {
 template <typename T>
 PyObject * PythonFunctor::convertToPython(__attribute__((unused))
                                           const T & akantu_object) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_DEBUG_ERROR(__func__ << " : not implemented yet !" << std::endl << demangle(typeid(T).name())
+                     << "\n*************************************************\n\n\n");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -117,10 +133,25 @@ PythonFunctor::convertToPython(const std::vector<Array<T> *> & array) const {
 
   PyObject * res = PyDict_New();
 
-  for (auto a : array){
+  for (auto a : array) {
     PyObject * obj = this->convertToPython(*a);
     PyObject * name = this->convertToPython(a->getID());
     PyDict_SetItem(res, name, obj);
+  }
+  return (PyObject *)res;
+}
+/* -------------------------------------------------------------------------- */
+
+template <typename T1, typename T2>
+inline PyObject *
+PythonFunctor::convertToPython(const std::map<T1, T2> & map) const {
+
+  PyObject * res = PyDict_New();
+
+  for (auto a : map) {
+    PyObject * key = this->convertToPython(a.first);
+    PyObject * value = this->convertToPython(a.second);
+    PyDict_SetItem(res, key, value);
   }
   return (PyObject *)res;
 }
@@ -145,6 +176,11 @@ PyObject * PythonFunctor::convertToPython(const Array<T> & array) const {
       PyArray_SimpleNewFromData(2, dims, data_typecode, array.storage());
   PyArrayObject * res = (PyArrayObject *)obj;
   return (PyObject *)res;
+}
+/* -------------------------------------------------------------------------- */
+template <typename T>
+PyObject * PythonFunctor::convertToPython(Array<T> * array) const {
+  return this->convertToPython(*array);
 }
 
 /* -------------------------------------------------------------------------- */

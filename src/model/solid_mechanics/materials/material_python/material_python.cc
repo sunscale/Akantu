@@ -49,12 +49,12 @@ MaterialPython::MaterialPython(SolidMechanicsModel & model, PyObject * obj,
   std::vector<std::string> param_names =
       this->callFunctor<std::vector<std::string> >("registerParam");
 
-  this->local_params.resize(param_names.size());
+  //this->local_params.resize(param_names.size());
 
   for (UInt i = 0; i < param_names.size(); ++i) {
     std::stringstream sstr;
     sstr << "PythonParameter" << i;
-    this->registerParam(param_names[i], local_params[i], 0., _pat_parsable,
+    this->registerParam(param_names[i], local_params[param_names[i]], 0., _pat_parsable,
                         sstr.str());
   }
 
@@ -76,16 +76,16 @@ void MaterialPython::registerInternals() {
     internal_sizes.assign(internal_names.size(), 1);
   }
 
-  this->internals.resize(internal_names.size());
+  //this->internals.resize(internal_names.size());
 
   for (UInt i = 0; i < internal_names.size(); ++i) {
     std::stringstream sstr;
     sstr << "PythonInternal" << i;
-    this->internals[i] = new InternalField<Real>(internal_names[i], *this);
+    this->internals[internal_names[i]] = new InternalField<Real>(internal_names[i], *this);
     std::cerr << " alloc array " << internal_names[i] << " "
-              << this->internals[i] << std::endl;
+              << this->internals[internal_names[i]] << std::endl;
 
-    this->internals[i]->initialize(internal_sizes[i]);
+    this->internals[internal_names[i]]->initialize(internal_sizes[i]);
   }
 }
 
@@ -102,10 +102,11 @@ void MaterialPython::initMaterial() {
 void MaterialPython::computeStress(ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  std::vector<Array<Real> *> internal_arrays;
+  std::map<std::string, Array<Real> *> internal_arrays;
   for (auto & i : this->internals) {
-    auto & array = (*i)(el_type, ghost_type);
-    internal_arrays.push_back(&array);
+    auto & array = (*i.second)(el_type, ghost_type);
+    auto & name = i.first;
+    internal_arrays[name] = &array;
   }
 
   this->callFunctor<void>("computeStress", this->gradu(el_type, ghost_type),
