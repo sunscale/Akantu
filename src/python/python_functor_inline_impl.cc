@@ -41,23 +41,9 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-inline std::string demangle(const char* name) {
-
-    int status = -4; // some arbitrary value to eliminate the compiler warning
-
-    // enable c++11 by passing the flag -std=c++11 to g++
-    std::unique_ptr<char, void(*)(void*)> res {
-        abi::__cxa_demangle(name, NULL, NULL, &status),
-        std::free
-    };
-
-    return (status==0) ? res.get() : name ;
-}
-
-/* -------------------------------------------------------------------------- */
 
 template <typename T> inline int PythonFunctor::getPythonDataTypeCode() const {
-  AKANTU_EXCEPTION("undefined type: " << demangle(typeid(T).name()));
+  AKANTU_EXCEPTION("undefined type: " << debug::demangle(typeid(T).name()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -90,7 +76,8 @@ template <> inline int PythonFunctor::getPythonDataTypeCode<double>() const {
 template <typename T>
 PyObject * PythonFunctor::convertToPython(__attribute__((unused))
                                           const T & akantu_object) const {
-  AKANTU_DEBUG_ERROR(__func__ << " : not implemented yet !" << std::endl << demangle(typeid(T).name())
+  AKANTU_DEBUG_ERROR(__func__ << " : not implemented yet !"
+		     << std::endl << debug::demangle(typeid(T).name())
                      << "\n*************************************************\n\n\n");
 }
 
