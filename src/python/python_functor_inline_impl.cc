@@ -35,7 +35,6 @@
 #include "integration_point.hh"
 #include <numpy/arrayobject.h>
 #include <typeinfo>
-#include <cxxabi.h>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -76,9 +75,10 @@ template <> inline int PythonFunctor::getPythonDataTypeCode<double>() const {
 template <typename T>
 PyObject * PythonFunctor::convertToPython(__attribute__((unused))
                                           const T & akantu_object) const {
-  AKANTU_DEBUG_ERROR(__func__ << " : not implemented yet !"
-		     << std::endl << debug::demangle(typeid(T).name())
-                     << "\n*************************************************\n\n\n");
+  AKANTU_DEBUG_ERROR(
+      __func__ << " : not implemented yet !" << std::endl
+               << debug::demangle(typeid(T).name())
+               << "\n*************************************************\n\n\n");
 }
 
 /* -------------------------------------------------------------------------- */
