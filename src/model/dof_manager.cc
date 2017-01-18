@@ -1,3 +1,4 @@
+
 /**
  * @file   dof_manager.cc
  *
@@ -35,9 +36,11 @@
 #include "node_group.hh"
 #include "sparse_matrix.hh"
 #include "static_communicator.hh"
+#include "non_linear_solver.hh"
+#include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFManager(const ID & id, const MemoryID & memory_id)
@@ -272,7 +275,7 @@ void DOFManager::registerDOFsInternal(const ID & dof_id,
   }
   case _dst_generic: {
     nb_local_dofs = nb_pure_local =
-        dofs_array.getSize() * dofs_array.getNbComponent();
+      dofs_array.getSize() * dofs_array.getNbComponent();
     break;
   }
   default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }
@@ -640,4 +643,4 @@ void DOFManager::onElementsChanged(
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

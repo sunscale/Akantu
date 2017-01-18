@@ -309,6 +309,7 @@ package_declare_sources(core
   solver/sparse_matrix_aij.cc
   solver/sparse_matrix_aij.hh
   solver/sparse_matrix_aij_inline_impl.cc
+  solver/terms_to_assemble.hh
 
   synchronizer/communication_descriptor_tmpl.hh
   synchronizer/communications_tmpl.hh

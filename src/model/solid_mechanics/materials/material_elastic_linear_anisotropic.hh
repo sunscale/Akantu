@@ -81,6 +81,10 @@ public:
 
   virtual void updateInternalParameters();
 
+  virtual bool hasStiffnessMatrixChanged() {
+    return (! was_stiffness_assembled);
+  }
+
 protected:
   // compute C from Cprime
   void rotateCprime();
@@ -110,10 +114,14 @@ protected:
   Matrix<Real> C;
   /// eigenvalues of stiffness tensor
   Vector<Real> eigC;
+
   bool symmetric;
 
   /// viscous proportion
   Real alpha;
+
+  /// defines if the stiffness was computed
+  bool was_stiffness_assembled;
 };
 __END_AKANTU__
 

@@ -30,8 +30,6 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_memory.hh"
 #include "mesh.hh"
-#include "non_linear_solver.hh"
-#include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
 #include <set>
@@ -40,7 +38,14 @@
 #ifndef __AKANTU_DOF_MANAGER_HH__
 #define __AKANTU_DOF_MANAGER_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
+class TermsToAssemble;
+class NonLinearSolver;
+class TimeStepSolver;
+class SparseMatrix;
+}
+
+namespace akantu {
 
 class DOFManager : protected Memory, protected MeshEventHandler {
   /* ------------------------------------------------------------------------ */
@@ -155,11 +160,11 @@ public:
                                                   const Array<Real> & x,
                                                   Real scale_factor = 1) = 0;
 
-  /// notation fully defined yet...
-  // virtual void assemblePreassembledMatrix(const ID & matrix_id,
-  //                                         const ID & dof_id_m,
-  //                                         const ID & dof_id_n,
-  //                                         const Matrix<Real> & matrix) = 0;
+  /// assemble coupling terms between to dofs
+  virtual void assemblePreassembledMatrix(const ID & dof_id_m,
+                                          const ID & dof_id_n,
+                                          const ID & matrix_id,
+                                          const TermsToAssemble & terms) = 0;
 
   /// sets the residual to 0
   virtual void clearResidual() = 0;
@@ -359,7 +364,8 @@ protected:
 protected:
   /// dof representations in the dof manager
   struct DOFData {
-    DOFData(const ID & dof_id);
+    DOFData() = delete;
+    explicit DOFData(const ID & dof_id);
     virtual ~DOFData();
 
     /// DOF support type (nodal, general) this is needed to determine how the
@@ -441,7 +447,7 @@ protected:
   UInt system_size;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "dof_manager_inline_impl.cc"
 

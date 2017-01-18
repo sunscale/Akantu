@@ -174,8 +174,8 @@ int main(int argc, char * argv[]) {
 
   /// model creation
   SolidMechanicsModel model(mesh);
-  model.initParallel(partition);
-  delete partition;
+  //model.initParallel(partition);
+  //delete partition;
 
   /// assign the two different materials using the
   /// StraightInterfaceMaterialSelector

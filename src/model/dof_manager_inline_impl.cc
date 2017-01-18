@@ -34,7 +34,7 @@
 #ifndef __AKANTU_DOF_MANAGER_INLINE_IMPL_CC__
 #define __AKANTU_DOF_MANAGER_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline bool DOFManager::hasDOFs(const ID & dof_id) const {
@@ -137,6 +137,7 @@ DOFManager::getBlockedDOFs(const ID & dofs_id) const {
 }
 
 /* -------------------------------------------------------------------------- */
-__END_AKANTU__
+
+} // akantu
 
 #endif /* __AKANTU_DOF_MANAGER_INLINE_IMPL_CC__ */

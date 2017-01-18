@@ -29,6 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_manager_default.hh"
+#include "solver_callback.hh"
+#include "time_step_solver.hh"
 #include "sparse_matrix_aij.hh"
 
 using namespace akantu;

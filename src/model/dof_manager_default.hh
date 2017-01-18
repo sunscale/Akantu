@@ -106,6 +106,12 @@ public:
                                                   const Array<Real> & x,
                                                   Real scale_factor = 1);
 
+  /// assemble coupling terms between to dofs
+  virtual void assemblePreassembledMatrix(const ID & dof_id_m,
+                                          const ID & dof_id_n,
+                                          const ID & matrix_id,
+                                          const TermsToAssemble & terms);
+
 protected:
   /// Assemble an array to the global residual array
   template <typename T>

@@ -35,6 +35,7 @@
 #include "aka_grid_dynamic.hh"
 #include "mesh.hh"
 #include "fe_engine.hh"
+#include "integration_point.hh"
 #include "static_communicator.hh"
 #include "mesh_io.hh"
 #include <iostream>

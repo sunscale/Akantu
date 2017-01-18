@@ -1,3 +1,4 @@
+
 /**
  * @file   sparse_matrix.hh
  *
@@ -39,10 +40,11 @@
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-  class DOFManager;
+class DOFManager;
+class TermsToAssemble;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class SparseMatrix {
   /* ------------------------------------------------------------------------ */
@@ -150,7 +152,7 @@ protected:
 
 Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
 
-__END_AKANTU__
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

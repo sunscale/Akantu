@@ -30,6 +30,9 @@
 /* -------------------------------------------------------------------------- */
 #include "model_solver.hh"
 #include "dof_manager.hh"
+#include "non_linear_solver.hh"
+#include "time_step_solver.hh"
+
 #include "mesh.hh"
 
 #if defined(AKANTU_USE_MPI)

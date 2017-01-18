@@ -31,12 +31,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+#include "fe_engine.hh"
+#include "integration_point.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_BOUNDARY_CONDITION_FUNCTOR_HH__
 #define __AKANTU_BOUNDARY_CONDITION_FUNCTOR_HH__
 
-#include "aka_common.hh"
-#include "fe_engine.hh"
+/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
@@ -56,7 +59,7 @@ namespace Dirichlet {
   class DirichletFunctor : public Functor {
   protected:
     DirichletFunctor() : axis(_x) {}
-    DirichletFunctor(Axis ax) : axis(ax) {}
+    explicit DirichletFunctor(Axis ax) : axis(ax) {}
 
   public:
     void operator()(__attribute__((unused)) UInt node,
@@ -76,7 +79,7 @@ namespace Dirichlet {
   /* ---------------------------------------------------------------------- */
   class FlagOnly : public DirichletFunctor {
   public:
-    FlagOnly(Axis ax = _x) : DirichletFunctor(ax) {}
+    explicit FlagOnly(Axis ax = _x) : DirichletFunctor(ax) {}
 
   public:
     inline void operator()(UInt node, Vector<bool> & flags,
@@ -87,7 +90,7 @@ namespace Dirichlet {
   /* ---------------------------------------------------------------------- */
   class FreeBoundary : public DirichletFunctor {
   public:
-    FreeBoundary(Axis ax = _x) : DirichletFunctor(ax) {}
+    explicit FreeBoundary(Axis ax = _x) : DirichletFunctor(ax) {}
 
   public:
     inline void operator()(UInt node, Vector<bool> & flags,
@@ -150,7 +153,7 @@ namespace Neumann {
   /* ---------------------------------------------------------------------- */
   class FromHigherDim : public NeumannFunctor {
   public:
-    FromHigherDim(const Matrix<Real> & mat) : bc_data(mat) {}
+    explicit FromHigherDim(const Matrix<Real> & mat) : bc_data(mat) {}
     virtual ~FromHigherDim() {}
 
   public:
@@ -165,7 +168,7 @@ namespace Neumann {
   /* ---------------------------------------------------------------------- */
   class FromSameDim : public NeumannFunctor {
   public:
-    FromSameDim(const Vector<Real> & vec) : bc_data(vec) {}
+    explicit FromSameDim(const Vector<Real> & vec) : bc_data(vec) {}
     virtual ~FromSameDim() {}
 
   public:

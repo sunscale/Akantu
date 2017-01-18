@@ -33,6 +33,8 @@
 /* -------------------------------------------------------------------------- */
 
 #include "solid_mechanics_model.hh"
+#include "non_linear_solver.hh"
+
 
 using namespace akantu;
 

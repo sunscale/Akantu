@@ -29,8 +29,15 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
+#include "fe_engine.hh"
+#include "mesh.hh"
+#include "element_class.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_FE_ENGINE_INLINE_IMPL_CC__
+#define __AKANTU_FE_ENGINE_INLINE_IMPL_CC__
+
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
@@ -207,3 +214,5 @@ void FEEngine::filterElementalData(const Mesh & mesh, const Array<T> & elem_f,
 }
 
 __END_AKANTU__
+
+#endif /* __AKANTU_FE_ENGINE_INLINE_IMPL_CC__ */

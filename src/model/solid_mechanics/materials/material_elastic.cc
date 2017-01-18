@@ -44,7 +44,7 @@ __BEGIN_AKANTU__
 template <UInt dim>
 MaterialElastic<dim>::MaterialElastic(SolidMechanicsModel & model,
                                       const ID & id)
-    : Material(model, id), Parent(model, id) {
+    : Material(model, id), Parent(model, id), was_stiffness_assembled(false) {
   AKANTU_DEBUG_IN();
   this->initialize();
   AKANTU_DEBUG_OUT();
@@ -57,7 +57,7 @@ MaterialElastic<dim>::MaterialElastic(SolidMechanicsModel & model,
                                       const Mesh & mesh, FEEngine & fe_engine,
                                       const ID & id)
     : Material(model, dim, mesh, fe_engine, id),
-      Parent(model, dim, mesh, fe_engine, id) {
+      Parent(model, dim, mesh, fe_engine, id), was_stiffness_assembled(false) {
   AKANTU_DEBUG_IN();
   this->initialize();
   AKANTU_DEBUG_OUT();
@@ -91,6 +91,8 @@ template <UInt dim> void MaterialElastic<dim>::updateInternalParameters() {
   this->mu = this->E / (2 * (1 + this->nu));
 
   this->kpa = this->lambda + 2. / 3. * this->mu;
+
+  this->was_stiffness_assembled = false;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -104,6 +106,8 @@ template <> void MaterialElastic<2>::updateInternalParameters() {
     this->lambda = this->nu * this->E / ((1 + this->nu) * (1 - this->nu));
 
   this->kpa = this->lambda + 2. / 3. * this->mu;
+
+  this->was_stiffness_assembled = false;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -155,6 +159,8 @@ void MaterialElastic<spatial_dimension>::computeTangentModuli(
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_matrix);
   this->computeTangentModuliOnQuad(tangent);
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END;
+
+  this->was_stiffness_assembled = true;
 
   AKANTU_DEBUG_OUT();
 }

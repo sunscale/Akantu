@@ -40,7 +40,7 @@
 #ifndef __AKANTU_MATERIAL_ELASTIC_HH__
 #define __AKANTU_MATERIAL_ELASTIC_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material elastic isotropic
@@ -50,23 +50,22 @@ __BEGIN_AKANTU__
  *   - nu  : Poisson's ratio (default: 1/2)
  *   - Plane_Stress : if 0: plane strain, else: plane stress (default: 0)
  */
-template<UInt spatial_dimension>
-class MaterialElastic : public PlaneStressToolbox< spatial_dimension,
-                                                   MaterialThermal<spatial_dimension> > {
+template <UInt spatial_dimension>
+class MaterialElastic
+  : public PlaneStressToolbox<spatial_dimension,
+                              MaterialThermal<spatial_dimension>> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef  PlaneStressToolbox< spatial_dimension,
-                               MaterialThermal<spatial_dimension> > Parent;
-public:
+  typedef PlaneStressToolbox<spatial_dimension,
+                             MaterialThermal<spatial_dimension>>
+  Parent;
 
+public:
   MaterialElastic(SolidMechanicsModel & model, const ID & id = "");
-  MaterialElastic(SolidMechanicsModel & model,
-                  UInt dim,
-                  const Mesh & mesh,
-                  FEEngine & fe_engine,
-                  const ID & id = "");
+  MaterialElastic(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
+                  FEEngine & fe_engine, const ID & id = "");
 
   virtual ~MaterialElastic() {}
 
@@ -77,23 +76,24 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   virtual void initMaterial();
 
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  virtual void computeStress(ElementType el_type,
+                             GhostType ghost_type = _not_ghost);
 
   /// compute the tangent stiffness matrix for an element type
   virtual void computeTangentModuli(const ElementType & el_type,
-				    Array<Real> & tangent_matrix,
-				    GhostType ghost_type = _not_ghost);
+                                    Array<Real> & tangent_matrix,
+                                    GhostType ghost_type = _not_ghost);
 
   /// compute the elastic potential energy
   virtual void computePotentialEnergy(ElementType el_type,
-				      GhostType ghost_type = _not_ghost);
+                                      GhostType ghost_type = _not_ghost);
 
-  virtual void computePotentialEnergyByElement(ElementType type, UInt index,
-					       Vector<Real> & epot_on_quad_points);
+  virtual void
+  computePotentialEnergyByElement(ElementType type, UInt index,
+                                  Vector<Real> & epot_on_quad_points);
 
   /// compute the p-wave speed in the material
   virtual Real getPushWaveSpeed(const Element & element) const;
@@ -104,8 +104,8 @@ public:
 protected:
   /// constitutive law for a given quadrature point
   inline void computeStressOnQuad(const Matrix<Real> & grad_u,
-				  Matrix<Real> & sigma,
-				  const Real sigma_th = 0) const;
+                                  Matrix<Real> & sigma,
+                                  const Real sigma_th = 0) const;
 
   /// compute the tangent stiffness matrix for an element
   inline void computeTangentModuliOnQuad(Matrix<Real> & tangent) const;
@@ -114,8 +114,12 @@ protected:
   virtual void updateInternalParameters();
 
   static inline void computePotentialEnergyOnQuad(const Matrix<Real> & grad_u,
-						  const Matrix<Real> & sigma,
-						  Real & epot);
+                                                  const Matrix<Real> & sigma,
+                                                  Real & epot);
+
+  virtual bool hasStiffnessMatrixChanged() {
+    return (! was_stiffness_assembled);
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -134,7 +138,6 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// First Lamé coefficient
   Real lambda;
 
@@ -144,9 +147,11 @@ protected:
   /// Bulk modulus
   Real kpa;
 
+  /// defines if the stiffness was computed
+  bool was_stiffness_assembled;
 };
 
-__END_AKANTU__
+}  // akantu
 
 #include "material_elastic_inline_impl.cc"
 

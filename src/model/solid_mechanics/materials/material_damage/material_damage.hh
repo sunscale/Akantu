@@ -40,31 +40,32 @@
 #define __AKANTU_MATERIAL_DAMAGE_HH__
 
 __BEGIN_AKANTU__
-template<UInt spatial_dimension, template<UInt> class Parent = MaterialElastic>
+template <UInt spatial_dimension,
+          template <UInt> class Parent = MaterialElastic>
 class MaterialDamage : public Parent<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialDamage(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialDamage() {};
+  virtual ~MaterialDamage(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   virtual void initMaterial();
 
   /// compute the tangent stiffness matrix for an element type
   virtual void computeTangentModuli(const ElementType & el_type,
-			    Array<Real> & tangent_matrix,
-			    GhostType ghost_type = _not_ghost);
+                                    Array<Real> & tangent_matrix,
+                                    GhostType ghost_type = _not_ghost);
+  virtual bool hasStiffnessMatrixChanged() { return true; }
 
 protected:
-  /// update the dissipated energy, must be called after the stress have been computed
+  /// update the dissipated energy, must be called after the stress have been
+  /// computed
   virtual void updateEnergies(ElementType el_type, GhostType ghost_type);
 
   /// compute the tangent stiffness matrix for a given quadrature point
@@ -74,7 +75,6 @@ protected:
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -101,9 +101,9 @@ protected:
   /// dissipated energy
   InternalField<Real> dissipated_energy;
 
-  /// contain the current value of @f$ \int_0^{\epsilon}\sigma(\omega)d\omega @f$ the dissipated energy
+  /// contain the current value of @f$ \int_0^{\epsilon}\sigma(\omega)d\omega
+  /// @f$ the dissipated energy
   InternalField<Real> int_sigma;
-
 };
 
 __END_AKANTU__

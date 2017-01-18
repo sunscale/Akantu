@@ -493,6 +493,11 @@ public:
   virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u,
                                const GhostType = _not_ghost);
 
+  /// specify if the matrix need to be recomputed for this material
+  virtual bool hasStiffnessMatrixChanged() {
+    return true;
+  }
+
 protected:
   bool isInit() const { return is_init; }
 

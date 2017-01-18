@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
+#include "aka_common.hh"
 #include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -37,7 +37,8 @@
 #define __AKANTU_SPARSE_MATRIX_AIJ_HH__
 
 namespace akantu {
-  class DOFManagerDefault;
+class DOFManagerDefault;
+class TermsToAssemble;
 }
 
 __BEGIN_AKANTU__
@@ -91,7 +92,7 @@ public:
   void mul(Real alpha);
 
   /// add matrix *this += B
-  //virtual void add(const SparseMatrix & matrix, Real alpha);
+  // virtual void add(const SparseMatrix & matrix, Real alpha);
 
   /// Equivalent of *gemv in blas
   virtual void matVecMul(const Array<Real> & x, Array<Real> & y,
@@ -111,7 +112,7 @@ protected:
 
 private:
   /// This is just to inline the addToMatrix function
-  template<class MatrixType>
+  template <class MatrixType>
   void addMeToTemplated(MatrixType & B, Real alpha) const;
 
   /* ------------------------------------------------------------------------ */

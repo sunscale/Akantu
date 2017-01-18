@@ -295,7 +295,7 @@ public:
 
   Real mulVectMatVect(const Array<Real> & x, const SparseMatrix & A,
                       const Array<Real> & y) {
-    Array<Real> Ay(this->nb_dofs);
+    Array<Real> Ay(this->nb_dofs, 1, 0.);
     A.matVecMul(y, Ay);
     Real res = 0.;
 
@@ -339,6 +339,8 @@ int main(int argc, char * argv[]) {
   bool _explicit = EXPLICIT;
 
   genMesh(mesh, nb_nodes);
+
+  mesh.distribute();
 
   MyModel model(F, mesh, _explicit);
 

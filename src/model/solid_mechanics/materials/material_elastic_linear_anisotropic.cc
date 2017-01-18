@@ -45,7 +45,7 @@ MaterialElasticLinearAnisotropic<dim>::MaterialElasticLinearAnisotropic(
     SolidMechanicsModel & model, const ID & id, bool symmetric)
     : Material(model, id), rot_mat(dim, dim), Cprime(dim * dim, dim * dim),
       C(voigt_h::size, voigt_h::size), eigC(voigt_h::size),
-      symmetric(symmetric), alpha(0) {
+      symmetric(symmetric), alpha(0), was_stiffness_assembled(false) {
   AKANTU_DEBUG_IN();
 
   this->dir_vecs.push_back(new Vector<Real>(dim));
@@ -114,6 +114,8 @@ void MaterialElasticLinearAnisotropic<dim>::updateInternalParameters() {
   }
   this->rotateCprime();
   this->C.eig(this->eigC);
+
+  this->was_stiffness_assembled = false;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -291,6 +293,8 @@ void MaterialElasticLinearAnisotropic<dim>::computeTangentModuli(
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_matrix);
   tangent.copy(this->C);
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END;
+
+  this->was_stiffness_assembled = true;
 
   AKANTU_DEBUG_OUT();
 }

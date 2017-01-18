@@ -133,7 +133,7 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
   AKANTU_DEBUG_IN();
 
   StaticCommunicator & communicator =
-      StaticCommunicator::getStaticCommunicator();
+    StaticCommunicator::getStaticCommunicator();
   this->prank = communicator.whoAmI();
 
 #ifdef AKANTU_USE_MPI

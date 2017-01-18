@@ -29,13 +29,13 @@
 
 /* -------------------------------------------------------------------------- */
 #include "time_step_solver_default.hh"
-#include "mesh.hh"
 #include "dof_manager_default.hh"
-#include "sparse_matrix_aij.hh"
-
-#include "pseudo_time.hh"
 #include "integration_scheme_1st_order.hh"
 #include "integration_scheme_2nd_order.hh"
+#include "mesh.hh"
+#include "non_linear_solver.hh"
+#include "pseudo_time.hh"
+#include "sparse_matrix_aij.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -128,6 +128,8 @@ void TimeStepSolverDefault::setIntegrationScheme(
     }
   }
 
+  AKANTU_DEBUG_ASSERT(integration_scheme != nullptr,
+                      "No integration scheme was found for the provided types");
   this->integration_schemes[dof_id] = integration_scheme;
   this->solution_types[dof_id] = solution_type;
 

@@ -1,3 +1,5 @@
+
+
 /**
  * @file   material.cc
  *
@@ -35,8 +37,6 @@
 /* -------------------------------------------------------------------------- */
 #include "material.hh"
 #include "solid_mechanics_model.hh"
-#include "sparse_matrix.hh"
-#include "dof_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__

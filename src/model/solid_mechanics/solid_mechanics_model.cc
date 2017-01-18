@@ -386,27 +386,6 @@ void SolidMechanicsModel::initFEEngineBoundary() {
   fem_boundary.computeNormalsOnIntegrationPoints(_ghost);
 }
 
-/* -------------------------------------------------------------------------- */
-// void SolidMechanicsModel::initExplicit(AnalysisMethod analysis_method) {
-//   AKANTU_DEBUG_IN();
-
-//   // in case of switch from implicit to explicit
-//   if (!this->isExplicit())
-//     method = analysis_method;
-
-//   // if (integrator) delete integrator;
-//   // integrator = new CentralDifference();
-
-//   UInt nb_nodes = acceleration->getSize();
-//   UInt nb_degree_of_freedom = acceleration->getNbComponent();
-
-//   std::stringstream sstr;
-//   sstr << id << ":increment_acceleration";
-//   increment_acceleration =
-//       &(alloc<Real>(sstr.str(), nb_nodes, nb_degree_of_freedom, Real()));
-
-//   AKANTU_DEBUG_OUT();
-// }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initArraysPreviousDisplacment() {
@@ -570,12 +549,23 @@ void SolidMechanicsModel::assembleStiffnessMatrix() {
 
   AKANTU_DEBUG_INFO("Assemble the new stiffness matrix.");
 
-  this->getDOFManager().getMatrix("K").clear();
+  // Check if materials need to recompute the matrix
+  bool need_to_reassemble = false;
 
-  // call compute stiffness matrix on each local elements
   std::vector<Material *>::iterator mat_it;
   for (mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    (*mat_it)->assembleStiffnessMatrix(_not_ghost);
+    need_to_reassemble |= (*mat_it)->hasStiffnessMatrixChanged();
+  }
+
+
+  if(need_to_reassemble) {
+    this->getDOFManager().getMatrix("K").clear();
+
+    // call compute stiffness matrix on each local elements
+    std::vector<Material *>::iterator mat_it;
+    for (mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+      (*mat_it)->assembleStiffnessMatrix(_not_ghost);
+    }
   }
 
   AKANTU_DEBUG_OUT();

@@ -35,6 +35,7 @@
 #include "sparse_matrix_aij.hh"
 #include "static_communicator.hh"
 #include "time_step_solver_default.hh"
+#include "terms_to_assemble.hh"
 /* -------------------------------------------------------------------------- */
 #include <numeric>
 /* -------------------------------------------------------------------------- */
@@ -152,15 +153,17 @@ void DOFManagerDefault::registerMesh(Mesh & mesh) {
   DOFManager::registerMesh(mesh);
 
   delete synchronizer;
-  synchronizer = new DOFSynchronizer(*this, this->id + ":dof_synchronizer",
-                                     this->memory_id, mesh.getCommunicator());
+  if(mesh.isDistributed())
+    synchronizer = new DOFSynchronizer(*this, this->id + ":dof_synchronizer",
+                                       this->memory_id, mesh.getCommunicator());
+  else synchronizer = nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
                                              UInt nb_pure_local_dofs) {
   // Count the number of pure local dofs per proc
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  StaticCommunicator & comm = mesh->getCommunicator();
   UInt prank = comm.whoAmI();
   UInt psize = comm.getNbProc();
 
@@ -178,13 +181,13 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
   dof_data.local_equation_number.resize(nb_dofs);
   this->global_equation_number.resize(this->local_system_size);
 
-  // set the equation numbers
+// set the equation numbers
   UInt first_dof_id = this->local_system_size - nb_dofs;
 
   const Array<UInt> * support_nodes = nullptr;
   if (group != "mesh") {
     support_nodes =
-        &this->mesh->getElementGroup(group).getNodeGroup().getNodes();
+      &this->mesh->getElementGroup(group).getNodeGroup().getNodes();
   }
 
   if (support_type == _dst_nodal) {
@@ -563,6 +566,22 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::assemblePreassembledMatrix(const ID & dof_id_m,
+                                                   const ID & dof_id_n,
+                                                   const ID & matrix_id,
+                                                   const TermsToAssemble & terms) {
+  const Array<UInt> & equation_number_m = this->getLocalEquationNumbers(dof_id_m);
+  const Array<UInt> & equation_number_n = this->getLocalEquationNumbers(dof_id_n);
+  SparseMatrixAIJ & A = this->getMatrix(matrix_id);
+
+  for(const auto& term : terms) {
+    A.addToMatrix(equation_number_m(term.i()),
+                  equation_number_n(term.j()),
+                  term);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
