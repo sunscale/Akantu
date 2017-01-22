@@ -83,7 +83,11 @@ namespace akantu {
   %ignore SolidMechanicsModel::getSynchronizer;
 
   %ignore Dumpable::registerExternalDumper;
-
+  %ignore Material::onNodesAdded;
+  %ignore Material::onNodesRemoved;
+  %ignore Material::onElementsAdded;
+  %ignore Material::onElementsRemoved;
+  %ignore Material::onElementsChanged;
 }
 
 %template(SolidMechanicsBoundaryCondition) akantu::BoundaryCondition<akantu::SolidMechanicsModel>;
@@ -92,6 +96,7 @@ namespace akantu {
 
 print_self(SolidMechanicsModel)
 
+%include "material.hh"
 %include "solid_mechanics_model.hh"
 
 %extend akantu::SolidMechanicsModel {
