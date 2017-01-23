@@ -49,13 +49,12 @@ MaterialPython::MaterialPython(SolidMechanicsModel & model, PyObject * obj,
   std::vector<std::string> param_names =
       this->callFunctor<std::vector<std::string> >("registerParam");
 
-  //this->local_params.resize(param_names.size());
-
   for (UInt i = 0; i < param_names.size(); ++i) {
     std::stringstream sstr;
     sstr << "PythonParameter" << i;
     this->registerParam(param_names[i], local_params[param_names[i]], 0., _pat_parsable,
                         sstr.str());
+
   }
 
   AKANTU_DEBUG_OUT();
@@ -75,8 +74,6 @@ void MaterialPython::registerInternals() {
   }catch(...){
     internal_sizes.assign(internal_names.size(), 1);
   }
-
-  //this->internals.resize(internal_names.size());
 
   for (UInt i = 0; i < internal_names.size(); ++i) {
     std::stringstream sstr;
@@ -109,8 +106,13 @@ void MaterialPython::computeStress(ElementType el_type, GhostType ghost_type) {
     internal_arrays[name] = &array;
   }
 
+  auto params = local_params;
+  params["rho"] = this->rho;
+  
   this->callFunctor<void>("computeStress", this->gradu(el_type, ghost_type),
-                          this->stress(el_type, ghost_type), internal_arrays);
+                          this->stress(el_type, ghost_type),
+                          internal_arrays,
+                          params);
   AKANTU_DEBUG_OUT();
 }
 
@@ -182,7 +184,11 @@ void MaterialPython::computeTangentModuli(const ElementType & el_type,
 /* -------------------------------------------------------------------------- */
 Real MaterialPython::getPushWaveSpeed(__attribute__((unused))
                                       const Element & element) const {
-  return this->callFunctor<Real>("getPushWaveSpeed");
+
+  auto params = local_params;
+  params["rho"] = this->rho;
+
+  return this->callFunctor<Real>("getPushWaveSpeed", params);
 }
 
 __END_AKANTU__

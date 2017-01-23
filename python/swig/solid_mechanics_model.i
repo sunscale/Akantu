@@ -36,7 +36,7 @@
   #include "boundary_condition.hh"
   #include "boundary_condition_functor.hh"
   #include "boundary_condition_python_functor.hh"
-
+  #include "material_selector.hh"
   #include "material_python.hh"
 %}
 
@@ -100,6 +100,14 @@ print_self(SolidMechanicsModel)
 %include "solid_mechanics_model.hh"
 
 %extend akantu::SolidMechanicsModel {
+
+  /* ------------------------------------------------------------------------ */
+  void setPhysicalNamesMaterialSelector(){
+    akantu::MeshDataMaterialSelector<std::string> * selector = new
+      akantu::MeshDataMaterialSelector<std::string>("physical_names", *self);
+    self->setMaterialSelector(*selector);
+  }
+  
   /* ------------------------------------------------------------------------ */
   bool testConvergenceSccRes(Real tolerance) {
     Real error = 0;
