@@ -88,7 +88,7 @@ protected:
 
   UInt message_count;
   Mesh & mesh;
-  StaticCommunicator & comm;
+  const StaticCommunicator & comm;
 };
 
 /* -------------------------------------------------------------------------- */

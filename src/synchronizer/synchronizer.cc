@@ -39,7 +39,7 @@ __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 Synchronizer::Synchronizer(const ID & id, MemoryID memory_id,
-                           StaticCommunicator & comm)
+                           const StaticCommunicator & comm)
     : Memory(id, memory_id), communicator(comm) {
   int max_tag = comm.getMaxTag();
 

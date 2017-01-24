@@ -64,7 +64,7 @@ CommunicationRequest & CommunicationDescriptor<Entity>::getRequest() {
 
 /* -------------------------------------------------------------------------- */
 template <class Entity> void CommunicationDescriptor<Entity>::freeRequest() {
-  StaticCommunicator & comm = communications.getCommunicator();
+  const StaticCommunicator & comm = communications.getCommunicator();
   comm.testRequest(communication.request);
   comm.freeCommunicationRequest(communication.request);
 

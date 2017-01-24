@@ -59,7 +59,7 @@ public:
   DOFSynchronizer(
       DOFManagerDefault & dof_manager, const ID & id = "dof_synchronizer",
       MemoryID memory_id = 0,
-      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
+      const StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
   virtual ~DOFSynchronizer();
 
   virtual void registerDOFs(const ID & dof_id);

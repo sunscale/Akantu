@@ -459,7 +459,8 @@ public:
   AKANTU_GET_MACRO(NodeSynchronizer, *node_synchronizer,
                    const NodeSynchronizer &);
 
-  AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator &);
+  //AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator &);
+  AKANTU_GET_MACRO(Communicator, *communicator, const StaticCommunicator &);
   /* ------------------------------------------------------------------------ */
   /* Private methods for friends                                              */
   /* ------------------------------------------------------------------------ */

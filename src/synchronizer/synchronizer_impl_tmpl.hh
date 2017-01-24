@@ -40,7 +40,7 @@ namespace akantu {
 template <class Entity>
 SynchronizerImpl<Entity>::SynchronizerImpl(const ID & id,
                                            MemoryID memory_id,
-                                           StaticCommunicator & comm)
+                                           const StaticCommunicator & comm)
     : Synchronizer(id, memory_id, comm), communications(comm) {}
 
 /* -------------------------------------------------------------------------- */

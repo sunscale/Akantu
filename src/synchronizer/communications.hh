@@ -107,7 +107,7 @@ public:
   void initializeCommunication(const SynchronizationTag & tag, UInt proc, UInt size,
                                const CommunicationSendRecv & sr);
 public:
-  Communications(StaticCommunicator & communicator);
+  Communications(const StaticCommunicator & communicator);
   /* ------------------------------------------------------------------------ */
   iterator begin_send(const SynchronizationTag & tag);
   iterator end_send(const SynchronizationTag & tag);
@@ -127,7 +127,7 @@ public:
   bool hasPendingRecv(const SynchronizationTag & tag) const;
   bool hasPendingSend(const SynchronizationTag & tag) const;
 
-  StaticCommunicator & getCommunicator() const;
+  const StaticCommunicator & getCommunicator() const;
 
   /* ------------------------------------------------------------------------ */
   iterator waitAnyRecv(const SynchronizationTag & tag);
@@ -176,7 +176,7 @@ protected:
   CommunicationsPerTags communications[2];
   std::map<SynchronizationTag, UInt> comm_counter;
   std::map<SynchronizationTag, UInt> pending_communications[2];
-  StaticCommunicator & communicator;
+  const StaticCommunicator & communicator;
 };
 
 } // akantu

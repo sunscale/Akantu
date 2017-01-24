@@ -55,7 +55,7 @@ class Synchronizer : protected Memory {
 public:
   Synchronizer(
       const ID & id = "synchronizer", MemoryID memory_id = 0,
-      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
+      const StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
   virtual ~Synchronizer(){};
 
@@ -89,7 +89,7 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  AKANTU_GET_MACRO(Communicator, communicator, StaticCommunicator &);
+  AKANTU_GET_MACRO(Communicator, communicator, const StaticCommunicator &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -105,7 +105,7 @@ protected:
   std::map<SynchronizationTag, UInt> tag_counter;
 
   /// the static memory instance
-  StaticCommunicator & communicator;
+  const StaticCommunicator & communicator;
 
   /// nb processors in the communicator
   UInt nb_proc;

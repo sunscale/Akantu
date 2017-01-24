@@ -31,9 +31,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "mesh.hh"
+#include "dof_manager.hh"
 #include "sparse_solver.hh"
 #include "dof_synchronizer.hh"
-
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -42,7 +43,7 @@ __BEGIN_AKANTU__
 SparseSolver::SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
                            const ID & id, const MemoryID & memory_id)
   : Memory(id, memory_id), Parsable(_st_solver, id),
-      _dof_manager(dof_manager), matrix_id(matrix_id) {
+    _dof_manager(dof_manager), matrix_id(matrix_id), communicator(dof_manager.getMesh().getCommunicator()) {
   AKANTU_DEBUG_IN();
 
   // createSynchronizerRegistry();

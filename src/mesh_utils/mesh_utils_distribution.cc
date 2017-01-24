@@ -49,7 +49,7 @@ namespace MeshUtilsDistribution {
         mesh_accessor.getElementSynchronizer();
     NodeSynchronizer & node_synchronizer = mesh_accessor.getNodeSynchronizer();
 
-    StaticCommunicator & comm = element_synchronizer.getCommunicator();
+    const StaticCommunicator & comm = element_synchronizer.getCommunicator();
 
     UInt nb_proc = comm.getNbProc();
     UInt my_rank = comm.whoAmI();
@@ -121,7 +121,7 @@ namespace MeshUtilsDistribution {
         mesh_accessor.getElementSynchronizer();
     NodeSynchronizer & node_synchronizer = mesh_accessor.getNodeSynchronizer();
 
-    StaticCommunicator & comm = element_synchronizer.getCommunicator();
+    const StaticCommunicator & comm = element_synchronizer.getCommunicator();
 
     UInt nb_proc = comm.getNbProc();
 

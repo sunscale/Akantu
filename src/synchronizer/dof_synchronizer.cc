@@ -57,7 +57,7 @@ __BEGIN_AKANTU__
  * constructor sets up this information.
  */
 DOFSynchronizer::DOFSynchronizer(DOFManagerDefault & dof_manager, const ID & id,
-                                 MemoryID memory_id, StaticCommunicator & comm)
+                                 MemoryID memory_id, const StaticCommunicator & comm)
     : SynchronizerImpl<UInt>(id, memory_id, comm), root(0),
       dof_manager(dof_manager),
       slave_receive_dofs(0, 1, "dofs-to-receive-from-master"),

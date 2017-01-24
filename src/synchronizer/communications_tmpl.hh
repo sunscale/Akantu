@@ -273,7 +273,7 @@ void Communications<Entity>::initializeCommunication(
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-Communications<Entity>::Communications(StaticCommunicator & communicator)
+Communications<Entity>::Communications(const StaticCommunicator & communicator)
     : communicator(communicator) {}
 
 /* ---------------------------------------------------------------------- */
@@ -400,7 +400,7 @@ bool Communications<Entity>::hasPendingSend(
 }
 
 template <class Entity>
-StaticCommunicator & Communications<Entity>::getCommunicator() const {
+const StaticCommunicator & Communications<Entity>::getCommunicator() const {
   return communicator;
 }
 

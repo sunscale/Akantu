@@ -163,7 +163,7 @@ void DOFManagerDefault::registerMesh(Mesh & mesh) {
 void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
                                              UInt nb_pure_local_dofs) {
   // Count the number of pure local dofs per proc
-  StaticCommunicator & comm = mesh->getCommunicator();
+  const StaticCommunicator & comm = mesh->getCommunicator();
   UInt prank = comm.whoAmI();
   UInt psize = comm.getNbProc();
 

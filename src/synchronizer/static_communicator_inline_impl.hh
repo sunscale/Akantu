@@ -39,14 +39,14 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline void
-StaticCommunicator::freeCommunicationRequest(CommunicationRequest request) {
+inline void StaticCommunicator::freeCommunicationRequest(
+    CommunicationRequest request) const {
   request.free();
 }
 
 /* -------------------------------------------------------------------------- */
 inline void StaticCommunicator::freeCommunicationRequest(
-    std::vector<CommunicationRequest> & requests) {
+    std::vector<CommunicationRequest> & requests) const {
   std::vector<CommunicationRequest>::iterator it;
   for (it = requests.begin(); it != requests.end(); ++it) {
     it->free();
@@ -76,17 +76,17 @@ inline void StaticCommunicator::freeCommunicationRequest(
       BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_REAL_COMMUNICATOR_CALL,               \
                             (ret, (call, BOST_PP_NIL)),                        \
                             AKANTU_COMMUNICATOR_LIST_ALL)                      \
-    default:                                                                   \
-      StaticCommunicatorDummy * comm =                                         \
-          static_cast<StaticCommunicatorDummy *>(real_static_communicator);    \
-      BOOST_PP_IF(ret, return comm->call, comm->call);                         \
-    }                                                                          \
+    default:                                                            \
+        StaticCommunicatorDummy * comm =                                \
+        static_cast<StaticCommunicatorDummy *>(real_static_communicator); \
+      BOOST_PP_IF(ret, return comm->call, comm->call);                  \
+    }                                                                   \
   } while (0)
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline void StaticCommunicator::send(T * buffer, Int size, Int receiver,
-                                     Int tag) {
+                                     Int tag) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(send(buffer, size, receiver, tag),
                                              0);
 }
@@ -94,15 +94,16 @@ inline void StaticCommunicator::send(T * buffer, Int size, Int receiver,
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline void StaticCommunicator::receive(T * buffer, Int size, Int sender,
-                                        Int tag) {
+                                        Int tag) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(receive(buffer, size, sender, tag),
                                              0);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline CommunicationRequest
-StaticCommunicator::asyncSend(T * buffer, Int size, Int receiver, Int tag) {
+inline CommunicationRequest StaticCommunicator::asyncSend(T * buffer, Int size,
+                                                          Int receiver,
+                                                          Int tag) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(
       asyncSend(buffer, size, receiver, tag), 1);
 }
@@ -110,7 +111,8 @@ StaticCommunicator::asyncSend(T * buffer, Int size, Int receiver, Int tag) {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline CommunicationRequest
-StaticCommunicator::asyncReceive(T * buffer, Int size, Int sender, Int tag) {
+StaticCommunicator::asyncReceive(T * buffer, Int size, Int sender,
+                                 Int tag) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(
       asyncReceive(buffer, size, sender, tag), 1);
 }
@@ -118,7 +120,7 @@ StaticCommunicator::asyncReceive(T * buffer, Int size, Int sender, Int tag) {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline void StaticCommunicator::probe(Int sender, Int tag,
-                                      CommunicationStatus & status) {
+                                      CommunicationStatus & status) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(
       template probe<T>(sender, tag, status), 0);
 }
@@ -127,34 +129,36 @@ inline void StaticCommunicator::probe(Int sender, Int tag,
 template <typename T>
 inline void StaticCommunicator::reduce(T * values, int nb_values,
                                        const SynchronizerOperation & op,
-                                       int root) {
+                                       int root) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(
       reduce(values, nb_values, op, root), 0);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline void StaticCommunicator::allReduce(T * values, int nb_values,
-                                          const SynchronizerOperation & op) {
+inline void
+StaticCommunicator::allReduce(T * values, int nb_values,
+                              const SynchronizerOperation & op) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(allReduce(values, nb_values, op),
                                              0);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline void StaticCommunicator::allGather(T * values, int nb_values) {
+inline void StaticCommunicator::allGather(T * values, int nb_values) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(allGather(values, nb_values), 0);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline void StaticCommunicator::allGatherV(T * values, int * nb_values) {
+inline void StaticCommunicator::allGatherV(T * values, int * nb_values) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(allGatherV(values, nb_values), 0);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline void StaticCommunicator::gather(T * values, int nb_values, int root) {
+inline void StaticCommunicator::gather(T * values, int nb_values,
+                                       int root) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(gather(values, nb_values, root),
                                              0);
 }
@@ -162,59 +166,62 @@ inline void StaticCommunicator::gather(T * values, int nb_values, int root) {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline void StaticCommunicator::gather(T * values, int nb_values, T * gathered,
-                                       int nb_gathered) {
+                                       int nb_gathered) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(
       gather(values, nb_values, gathered, nb_gathered), 0);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline void StaticCommunicator::gatherV(T * values, int * nb_values, int root) {
+inline void StaticCommunicator::gatherV(T * values, int * nb_values,
+                                        int root) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(gatherV(values, nb_values, root),
                                              0);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline void StaticCommunicator::broadcast(T * values, int nb_values, int root) {
+inline void StaticCommunicator::broadcast(T * values, int nb_values,
+                                          int root) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(broadcast(values, nb_values, root),
                                              0);
 }
 
 /* -------------------------------------------------------------------------- */
-inline void StaticCommunicator::barrier() {
+inline void StaticCommunicator::barrier() const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(barrier(), 0);
 }
 
 /* -------------------------------------------------------------------------- */
-inline bool StaticCommunicator::testRequest(CommunicationRequest request) {
+inline bool
+StaticCommunicator::testRequest(CommunicationRequest request) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(testRequest(request), 1);
 }
 
 /* -------------------------------------------------------------------------- */
-inline void StaticCommunicator::wait(CommunicationRequest request) {
+inline void StaticCommunicator::wait(CommunicationRequest request) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(wait(request), 0);
 }
 
 /* -------------------------------------------------------------------------- */
-inline void
-StaticCommunicator::waitAll(std::vector<CommunicationRequest> & requests) {
+inline void StaticCommunicator::waitAll(
+    std::vector<CommunicationRequest> & requests) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(waitAll(requests), 0);
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt
-StaticCommunicator::waitAny(std::vector<CommunicationRequest> & requests) {
+inline UInt StaticCommunicator::waitAny(
+    std::vector<CommunicationRequest> & requests) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(waitAny(requests), 1);
 }
 
 /* -------------------------------------------------------------------------- */
-inline int StaticCommunicator::getMaxTag() {
+inline int StaticCommunicator::getMaxTag() const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(getMaxTag(), 1);
 }
 
 /* -------------------------------------------------------------------------- */
-inline int StaticCommunicator::getMinTag() {
+inline int StaticCommunicator::getMinTag() const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(getMinTag(), 1);
 }
 
@@ -222,6 +229,6 @@ inline int StaticCommunicator::getMinTag() {
 #pragma warning(pop)
 #endif // defined(__INTEL_COMPILER)
 
-}  // akantu
+} // akantu
 
 #endif /* __AKANTU_STATIC_COMMUNICATOR_INLINE_IMPL_HH__ */

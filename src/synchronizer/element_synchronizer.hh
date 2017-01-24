@@ -60,7 +60,7 @@ public:
   ElementSynchronizer(
       Mesh & mesh, const ID & id = "element_synchronizer",
       MemoryID memory_id = 0, const bool register_to_event_manager = true,
-      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
+      const StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
 
 public:
   virtual ~ElementSynchronizer();

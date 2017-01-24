@@ -40,6 +40,7 @@
 #define __AKANTU_SOLVER_HH__
 
 namespace akantu {
+class StaticCommunicator;
 enum SolverParallelMethod {
   _not_parallel,
   _fully_distributed,
@@ -108,6 +109,9 @@ protected:
 
   /// How to parallelize the solve
   SolverParallelMethod parallel_method;
+
+  /// Communicator used by the solver
+  const StaticCommunicator & communicator;
 };
 
 __END_AKANTU__

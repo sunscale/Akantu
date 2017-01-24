@@ -62,7 +62,7 @@ protected:
   void fillCommunicationScheme(const Array<UInt> &);
 protected:
   NodeSynchronizer & synchronizer;
-  StaticCommunicator & comm;
+  const StaticCommunicator & comm;
   UInt rank;
   UInt nb_proc;
   UInt root;

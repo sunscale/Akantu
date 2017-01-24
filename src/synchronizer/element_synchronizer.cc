@@ -58,7 +58,7 @@ namespace akantu {
 ElementSynchronizer::ElementSynchronizer(Mesh & mesh, const ID & id,
                                          MemoryID memory_id,
                                          const bool register_to_event_manager,
-                                         StaticCommunicator & comm)
+                                         const StaticCommunicator & comm)
     : SynchronizerImpl<Element>(id, memory_id, comm), mesh(mesh),
       prank_to_element("prank_to_element", id, memory_id) {
 
