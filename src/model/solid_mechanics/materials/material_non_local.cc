@@ -34,8 +34,8 @@
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
-template <UInt DIM>
-MaterialNonLocal<DIM>::MaterialNonLocal(SolidMechanicsModel & model,
+template <UInt dim>
+MaterialNonLocal<dim>::MaterialNonLocal(SolidMechanicsModel & model,
                                         const ID & id)
     : Material(model, id) {
   AKANTU_DEBUG_IN();
@@ -47,30 +47,26 @@ MaterialNonLocal<DIM>::MaterialNonLocal(SolidMechanicsModel & model,
 }
 
 /* -------------------------------------------------------------------------- */
-template <UInt spatial_dimension>
-MaterialNonLocal<spatial_dimension>::~MaterialNonLocal() {}
+template <UInt dim>
+MaterialNonLocal<dim>::~MaterialNonLocal() {}
 
 /* -------------------------------------------------------------------------- */
-template <UInt spatial_dimension>
-void MaterialNonLocal<spatial_dimension>::initMaterial() {
+template <UInt dim>
+void MaterialNonLocal<dim>::initMaterial() {
   this->registerNeighborhood();
   this->insertQuadsInNeighborhoods(_not_ghost);
 }
 
 /* -------------------------------------------------------------------------- */
-template <UInt spatial_dimension>
-void MaterialNonLocal<spatial_dimension>::insertQuadsInNeighborhoods(
+template <UInt dim>
+void MaterialNonLocal<dim>::insertQuadsInNeighborhoods(
     GhostType ghost_type) {
 
   NonLocalManager & manager = this->model->getNonLocalManager();
-  UInt _spatial_dimension = this->model->getSpatialDimension();
-  AKANTU_DEBUG_ASSERT(_spatial_dimension == spatial_dimension,
-                      "This assert was inserted because the current variable "
-                      "shadows a template parameter: cannot know which to use");
 
   InternalField<Real> quadrature_points_coordinates(
       "quadrature_points_coordinates_tmp_nl", *this);
-  quadrature_points_coordinates.initialize(spatial_dimension);
+  quadrature_points_coordinates.initialize(dim);
 
   /// intialize quadrature point object
   IntegrationPoint q;
@@ -78,9 +74,9 @@ void MaterialNonLocal<spatial_dimension>::insertQuadsInNeighborhoods(
   q.kind = _ek_regular;
 
   Mesh::type_iterator it = this->element_filter.firstType(
-      spatial_dimension, ghost_type, _ek_regular);
+      dim, ghost_type, _ek_regular);
   Mesh::type_iterator last_type =
-      this->element_filter.lastType(spatial_dimension, ghost_type, _ek_regular);
+    this->element_filter.lastType(dim, ghost_type, _ek_regular);
   for (; it != last_type; ++it) {
     q.type = *it;
     const Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
@@ -95,7 +91,7 @@ void MaterialNonLocal<spatial_dimension>::insertQuadsInNeighborhoods(
       this->model->getFEEngine().computeIntegrationPointsCoordinates(
           quads, *it, ghost_type, elem_filter);
 
-      Array<Real>::const_vector_iterator quad = quads.begin(spatial_dimension);
+      Array<Real>::const_vector_iterator quad = quads.begin(dim);
       UInt * elem = elem_filter.storage();
 
       for (UInt e = 0; e < nb_element; ++e) {
@@ -113,8 +109,8 @@ void MaterialNonLocal<spatial_dimension>::insertQuadsInNeighborhoods(
 }
 
 /* -------------------------------------------------------------------------- */
-template <UInt spatial_dimension>
-void MaterialNonLocal<spatial_dimension>::updateNonLocalInternals(
+template <UInt dim>
+void MaterialNonLocal<dim>::updateNonLocalInternals(
     ElementTypeMapReal & non_local_flattened, const ID & field_id,
     const UInt nb_component) {
 
@@ -123,9 +119,9 @@ void MaterialNonLocal<spatial_dimension>::updateNonLocalInternals(
     GhostType ghost_type = *g;
     /// loop over all types in the material
     typedef ElementTypeMapArray<UInt>::type_iterator iterator;
-    iterator it = this->element_filter.firstType(spatial_dimension, ghost_type,
+    iterator it = this->element_filter.firstType(dim, ghost_type,
                                                  _ek_regular);
-    iterator last_type = this->element_filter.lastType(spatial_dimension,
+    iterator last_type = this->element_filter.lastType(dim,
                                                        ghost_type, _ek_regular);
     for (; it != last_type; ++it) {
       ElementType el_type = *it;
@@ -152,15 +148,15 @@ void MaterialNonLocal<spatial_dimension>::updateNonLocalInternals(
 }
 
 /* -------------------------------------------------------------------------- */
-template <UInt spatial_dimension>
-void MaterialNonLocal<spatial_dimension>::updateResidual(__attribute__((unused))
+template <UInt dim>
+void MaterialNonLocal<dim>::updateResidual(__attribute__((unused))
                                                          GhostType ghost_type) {
   AKANTU_EXCEPTION("this method has not been implemented");
 }
 
 /* -------------------------------------------------------------------------- */
-template <UInt spatial_dimension>
-void MaterialNonLocal<spatial_dimension>::registerNeighborhood() {
+template <UInt dim>
+void MaterialNonLocal<dim>::registerNeighborhood() {
   this->model->getNonLocalManager().registerNeighborhood(this->name,
                                                          this->name);
 }

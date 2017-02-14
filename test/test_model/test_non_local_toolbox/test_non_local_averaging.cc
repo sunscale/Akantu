@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
   model.setMaterialSelector(*mat_selector);
 
   /// model initialization changed to use our material
-  model.initFull(SolidMechanicsModelOptions(_static, true));
+  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass, true));
   model.registerNewCustomMaterials< TestMaterial<spatial_dimension> >("test_material");
   model.initMaterials();
   /// dump material index in paraview

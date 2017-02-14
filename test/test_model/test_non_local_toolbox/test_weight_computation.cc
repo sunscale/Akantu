@@ -29,15 +29,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
-#include "test_material.hh"
+#include "dumper_paraview.hh"
 #include "non_local_manager.hh"
 #include "non_local_neighborhood.hh"
-#include "dumper_paraview.hh"
+#include "solid_mechanics_model.hh"
+#include "test_material.hh"
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize("material_weight_computation.dat", argc, argv);
 
   // some configuration variables
@@ -48,28 +48,31 @@ int main(int argc, char *argv[]) {
   mesh.read("plate.msh");
 
   /// model creation
-  SolidMechanicsModel  model(mesh);
- 
+  SolidMechanicsModel model(mesh);
+
   /// model initialization changed to use our material
-  model.initFull(SolidMechanicsModelOptions(_static, true));
-  model.registerNewCustomMaterials< TestMaterial<spatial_dimension> >("test_material");
+  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass, true));
+  model.registerNewCustomMaterials<TestMaterial<spatial_dimension> >(
+      "test_material");
   model.initMaterials();
   /// dump material index in paraview
   model.addDumpField("material_index");
   model.dump();
 
   /// save the weights in a file
-  NonLocalNeighborhood<BaseWeightFunction> & neighborhood = dynamic_cast<NonLocalNeighborhood<BaseWeightFunction> &> (model.getNonLocalManager().getNeighborhood("test_region"));
+  NonLocalNeighborhood<BaseWeightFunction> & neighborhood =
+    dynamic_cast<NonLocalNeighborhood<BaseWeightFunction> &>(
+        model.getNonLocalManager().getNeighborhood("test_region"));
 
   neighborhood.saveWeights("weights");
   /// print results to screen for validation
   std::ifstream weights;
   weights.open("weights.0");
   std::string current_line;
-  while(getline(weights, current_line))
+  while (getline(weights, current_line))
     std::cout << current_line << std::endl;
   weights.close();
   finalize();
-  
+
   return EXIT_SUCCESS;
 }
