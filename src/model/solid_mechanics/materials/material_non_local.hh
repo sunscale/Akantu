@@ -74,7 +74,12 @@ public:
   virtual void registerNeighborhood();
 
 protected:
-  virtual inline void onElementsAdded(
+  virtual inline void onElementsAdded(const Array<Element> &,
+                                      const NewElementsEvent &) {
+  }
+
+protected:
+};
 
 __END_AKANTU__
 
