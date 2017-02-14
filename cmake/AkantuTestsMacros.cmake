@@ -66,6 +66,7 @@
 #      [EXTRA_FILES <filnames>...]
 #      [UNSABLE]
 #      [PARALLEL]
+#      [PARALLEL_LEVEL <procs>...]
 #      )
 #
 #  This function defines a test ``<test_name>_run`` this test could be of
@@ -111,6 +112,10 @@
 #    This specifies that this test should be run in parallel. It will generate a
 #    series of test for different number of processors. This automaticaly adds a
 #    dependency to the package ``AKANTU_PARALLEL``
+#
+#  ``PARALLEL_LEVEL``
+#    This defines the different processor numbers to use, if not defined the
+#    macro tries to determine it in a "clever" way
 #
 #]=======================================================================]
 
@@ -351,9 +356,9 @@ function(register_test test_name)
 
       if(_register_test_POSTPROCESS)
         list(APPEND _arguments -s "${_register_test_POSTPROCESS}")
-	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${_register_test_POSTPROCESS} 
-	  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-	  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+        file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${_register_test_POSTPROCESS} 
+          FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+          DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
       endif()
 
       list(APPEND _arguments -w "${CMAKE_CURRENT_BINARY_DIR}")
