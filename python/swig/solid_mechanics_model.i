@@ -96,8 +96,9 @@ namespace akantu {
 
 print_self(SolidMechanicsModel)
 
-%include "material.hh"
+%include "material.i"
 %include "solid_mechanics_model.hh"
+
 
 %extend akantu::SolidMechanicsModel {
 
