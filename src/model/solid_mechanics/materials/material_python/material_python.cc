@@ -52,9 +52,8 @@ MaterialPython::MaterialPython(SolidMechanicsModel & model, PyObject * obj,
   for (UInt i = 0; i < param_names.size(); ++i) {
     std::stringstream sstr;
     sstr << "PythonParameter" << i;
-    this->registerParam(param_names[i], local_params[param_names[i]], 0., _pat_parsable,
-                        sstr.str());
-
+    this->registerParam(param_names[i], local_params[param_names[i]], 0.,
+                        _pat_parsable, sstr.str());
   }
 
   AKANTU_DEBUG_OUT();
@@ -70,20 +69,26 @@ void MaterialPython::registerInternals() {
 
   try {
     internal_sizes =
-      this->callFunctor<std::vector<UInt> >("registerInternalSizes");
-  }catch(...){
+        this->callFunctor<std::vector<UInt> >("registerInternalSizes");
+  } catch (...) {
     internal_sizes.assign(internal_names.size(), 1);
   }
 
   for (UInt i = 0; i < internal_names.size(); ++i) {
     std::stringstream sstr;
     sstr << "PythonInternal" << i;
-    this->internals[internal_names[i]] = new InternalField<Real>(internal_names[i], *this);
-    std::cerr << " alloc array " << internal_names[i] << " "
-              << this->internals[internal_names[i]] << std::endl;
+    this->internals[internal_names[i]] =
+        new InternalField<Real>(internal_names[i], *this);
+    AKANTU_DEBUG_INFO("alloc internal " << internal_names[i] << " "
+                      << this->internals[internal_names[i]]);
 
     this->internals[internal_names[i]]->initialize(internal_sizes[i]);
   }
+
+  // making an internal with the quadrature points coordinates
+  this->internals["quad_coordinates"] = new InternalField<Real>("quad_coordinates", *this);
+  auto && coords = *this->internals["quad_coordinates"];
+  coords.initialize(this->getSpatialDimension());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -92,6 +97,9 @@ void MaterialPython::initMaterial() {
 
   Material::initMaterial();
 
+  auto && coords = *this->internals["quad_coordinates"];
+  this->model->getFEEngine().computeIntegrationPointsCoordinates(coords,
+                                                                 &this->element_filter);
   AKANTU_DEBUG_OUT();
 }
 
@@ -108,10 +116,9 @@ void MaterialPython::computeStress(ElementType el_type, GhostType ghost_type) {
 
   auto params = local_params;
   params["rho"] = this->rho;
-  
+
   this->callFunctor<void>("computeStress", this->gradu(el_type, ghost_type),
-                          this->stress(el_type, ghost_type),
-                          internal_arrays,
+                          this->stress(el_type, ghost_type), internal_arrays,
                           params);
   AKANTU_DEBUG_OUT();
 }
@@ -177,8 +184,19 @@ void MaterialPython::computeTangentModuli(const ElementType & el_type,
                                           Array<Real> & tangent_matrix,
                                           GhostType ghost_type) {
 
-  this->callFunctor<void>("computeTangentModuli", el_type, tangent_matrix,
-                          ghost_type);
+  std::map<std::string, Array<Real> *> internal_arrays;
+  for (auto & i : this->internals) {
+    auto & array = (*i.second)(el_type, ghost_type);
+    auto & name = i.first;
+    internal_arrays[name] = &array;
+  }
+
+  auto params = local_params;
+  params["rho"] = this->rho;
+
+  this->callFunctor<void>("computeTangentModuli",
+                          this->gradu(el_type, ghost_type), tangent_matrix,
+                          internal_arrays, params);
 }
 
 /* -------------------------------------------------------------------------- */
