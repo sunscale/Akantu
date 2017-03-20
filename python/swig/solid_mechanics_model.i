@@ -48,7 +48,7 @@ namespace akantu {
   %ignore SolidMechanicsModel::initPBC;
 
 
-  %ignore SolidMechanicsModel::initExplicit;
+  ignore SolidMechanicsModel::initExplicit;
   %ignore SolidMechanicsModel::isExplicit;
   %ignore SolidMechanicsModel::updateCurrentPosition;
   %ignore SolidMechanicsModel::updateAcceleration;
