@@ -97,16 +97,16 @@ protected:
   Real R;
 
   /// maximum normal displacement
-  CohesiveInternalField<Real> delta_nt_max;
+  CohesiveInternalField<Real> delta_n_max;
 
   /// maximum tangential displacement
-  CohesiveInternalField<Real> delta_st_max;
+  CohesiveInternalField<Real> delta_t_max;
 
   /// damage associated to normal tractions 
-  CohesiveInternalField<Real> damage_nt;
+  CohesiveInternalField<Real> damage_n;
 
   /// damage associated to shear tractions 
-  CohesiveInternalField<Real> damage_st;
+  CohesiveInternalField<Real> damage_t;
 
 };
 

@@ -91,7 +91,8 @@ package_declare_sources(core
   fe_engine/fe_engine_template.hh
   fe_engine/fe_engine_template_tmpl.hh
   fe_engine/geometrical_element.cc
-  fe_engine/integration_element.cc
+  fe_engine/gauss_integration.cc
+  fe_engine/gauss_integration_tmpl.hh
   fe_engine/integrator.hh
   fe_engine/integrator_gauss.hh
   fe_engine/integrator_gauss_inline_impl.cc

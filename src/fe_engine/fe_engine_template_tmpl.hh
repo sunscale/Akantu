@@ -333,7 +333,7 @@ Real FEEngineTemplate<I, S, kind>::integrate(
 template <ElementKind kind> struct IntegrateOnIntegrationPointsHelper {};
 
 #define INTEGRATE(type)                                                        \
-  integrator.template integrateOnQuadraturePoints<type>(                       \
+  integrator.template integrateOnIntegrationPoints<type>(                      \
       f, intf, nb_degree_of_freedom, ghost_type, filter_elements);
 
 #define AKANTU_SPECIALIZE_INTEGRATE_ON_INTEGRATION_POINTS_HELPER(kind)         \
@@ -555,7 +555,8 @@ inline void FEEngineTemplate<I, S, kind>::
   UInt spatial_dimension = this->mesh.getSpatialDimension();
 
   ElementTypeMapArray<Real> quadrature_points_coordinates(
-							  "quadrature_points_coordinates_for_interpolation", getID(), getMemoryID());
+      "quadrature_points_coordinates_for_interpolation", getID(),
+      getMemoryID());
   mesh.initElementTypeMapArray(quadrature_points_coordinates, spatial_dimension,
                                spatial_dimension);
   computeIntegrationPointsCoordinates(quadrature_points_coordinates,
@@ -578,9 +579,9 @@ FEEngineTemplate<I, S, kind>::interpolateElementalFieldFromIntegrationPoints(
     const ElementTypeMapArray<UInt> * element_filter) const {
 
   ElementTypeMapArray<Real> interpolation_points_coordinates_matrices(
-								      "interpolation_points_coordinates_matrices", id, memory_id);
+      "interpolation_points_coordinates_matrices", id, memory_id);
   ElementTypeMapArray<Real> quad_points_coordinates_inv_matrices(
-								 "quad_points_coordinates_inv_matrices", id, memory_id);
+      "quad_points_coordinates_inv_matrices", id, memory_id);
 
   initElementalFieldInterpolationFromIntegrationPoints(
       interpolation_points_coordinates,
@@ -779,7 +780,7 @@ void FEEngineTemplate<I, S, kind>::computeNormalsOnIntegrationPoints(
   FEEngine::extractNodalToElementField(mesh, field, f_el, type, ghost_type);
 
   const Matrix<Real> & quads =
-      integrator.template getQuadraturePoints<type>(ghost_type);
+      integrator.template getIntegrationPoints<type>(ghost_type);
 
   Array<Real>::matrix_iterator f_it =
       f_el.begin(spatial_dimension, nb_nodes_per_element);
@@ -847,19 +848,19 @@ void FEEngineTemplate<I, S, kind>::assembleFieldLumped(
 template <ElementKind kind> struct AssembleFieldMatrixHelper {};
 
 #define ASSEMBLE_MATRIX(type)                                                  \
-  fem.template assembleFieldMatrix<type>(field_1, nb_degree_of_freedom,        \
-                                         matrix, ghost_type)
+  fem.template assembleFieldMatrix<Functor, type>(                             \
+      field_funct, nb_degree_of_freedom, matrix, ghost_type)
 
 #define AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER(kind)                   \
   template <> struct AssembleFieldMatrixHelper<kind> {                         \
     template <template <ElementKind> class I, template <ElementKind> class S,  \
-              ElementKind k>                                                   \
-    static void call(const FEEngineTemplate<I, S, k> & fem,                    \
-                     const Array<Real> & field_1, UInt nb_degree_of_freedom,   \
-                     SparseMatrix & matrix, ElementType type,                  \
-                     const GhostType & ghost_type) {                           \
-      AKANTU_BOOST_KIND_ELEMENT_SWITCH(ASSEMBLE_MATRIX, kind);                 \
-    }                                                                          \
+              ElementKind k, class Functor>                             \
+    static void call(const FEEngineTemplate<I, S, k> & fem,             \
+                     Functor field_funct, UInt nb_degree_of_freedom,    \
+                     SparseMatrix & matrix,                             \
+                     ElementType type, const GhostType & ghost_type) {  \
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(ASSEMBLE_MATRIX, kind);          \
+    }                                                                   \
   };
 
 AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER)
@@ -869,13 +870,14 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER)
 
 template <template <ElementKind> class I, template <ElementKind> class S,
           ElementKind kind>
+template <class Functor>
 void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
-    const Array<Real> & field_1, UInt nb_degree_of_freedom,
-    SparseMatrix & matrix, ElementType type,
+    Functor field_funct, UInt nb_degree_of_freedom, SparseMatrix & matrix,
+    ElementType type,
     const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
-  AssembleFieldMatrixHelper<kind>::call(*this, field_1, nb_degree_of_freedom,
-                                        matrix, type, ghost_type);
+  AssembleFieldMatrixHelper<kind>::template call(
+      *this, field_funct, nb_degree_of_freedom, matrix, type, ghost_type);
 
   AKANTU_DEBUG_OUT();
 }
@@ -957,7 +959,7 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(
   UInt nb_nodes_per_element_p1 = Mesh::getNbNodesPerElement(type_p1);
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   UInt nb_quadrature_points =
-      integrator.template getQuadraturePoints<type>(ghost_type).cols();
+      integrator.template getIntegrationPoints<type>(ghost_type).cols();
 
   UInt nb_element = field_1.getSize() / nb_quadrature_points;
   Vector<Real> nodal_factor(nb_nodes_per_element);
@@ -1051,17 +1053,33 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(
  */
 template <template <ElementKind> class I, template <ElementKind> class S,
           ElementKind kind>
-template <ElementType type>
+template <class Functor, ElementType type>
 void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
-    const Array<Real> & field_1, UInt nb_degree_of_freedom,
+    Functor & field_funct, UInt nb_degree_of_freedom,
     SparseMatrix & matrix, const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
-  UInt vect_size = field_1.getSize();
   UInt shapes_size = ElementClass<type>::getShapeSize();
   UInt lmat_size = nb_degree_of_freedom * shapes_size;
+  UInt nb_element = mesh.getNbElement(type, ghost_type);
 
-  const Array<Real> & shapes = shape_functions.getShapes(type, ghost_type);
+  const UInt polynomial_degree =
+      2 * ElementClassProperty<type>::polynomial_degree;
+
+  Matrix<Real> integration_points =
+      integrator.template getIntegrationPoints<type, polynomial_degree>();
+
+  UInt nb_integration_points = integration_points.cols();
+  UInt vect_size = nb_integration_points * nb_element;
+
+  Array<Real> shapes(0, shapes_size);
+  shape_functions.template computeShapesOnIntegrationPoints<type>(
+      mesh.getNodes(), integration_points, shapes, ghost_type);
+
+  Array<Real> integration_points_pos(vect_size, mesh.getSpatialDimension());
+  shape_functions.template interpolateElementalFieldOnIntegrationPoints<type>(
+      mesh.getNodes(), integration_points_pos, ghost_type, shapes, empty_filter);
+
   Array<Real> * modified_shapes =
       new Array<Real>(vect_size, lmat_size * nb_degree_of_freedom);
   modified_shapes->clear();
@@ -1079,9 +1097,23 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
     }
   }
 
+  Array<Real> field(vect_size, nb_degree_of_freedom);
+  Array<Real>::matrix_iterator field_c_it = field.begin_reinterpret(
+      nb_degree_of_freedom, nb_integration_points, nb_element);
+  Array<Real>::const_matrix_iterator pos_it =
+      integration_points_pos.begin_reinterpret(
+          mesh.getSpatialDimension(), nb_integration_points, nb_element);
+  Element el;
+  el.type = type, el.ghost_type = ghost_type;
+
+  for (el.element = 0; el.element < nb_element;
+       ++el.element, ++field_c_it, ++pos_it) {
+    field_funct(*field_c_it, el, *pos_it);
+  }
+
   mshapes_it = modified_shapes->begin(lmat_size, nb_degree_of_freedom);
   Array<Real>::matrix_iterator lmat = local_mat->begin(lmat_size, lmat_size);
-  Array<Real>::const_scalar_iterator field_val = field_1.begin();
+  Array<Real>::const_scalar_iterator field_val = field.begin();
 
   for (UInt q = 0; q < vect_size; ++q, ++lmat, ++mshapes_it, ++field_val) {
     (*lmat).mul<false, true>(*mshapes_it, *mshapes_it, *field_val);
@@ -1089,12 +1121,10 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
 
   delete modified_shapes;
 
-  UInt nb_element = mesh.getNbElement(type, ghost_type);
   Array<Real> * int_field_times_shapes =
       new Array<Real>(nb_element, lmat_size * lmat_size, "inte_rho_x_shapes");
-  integrator.template integrate<type>(*local_mat, *int_field_times_shapes,
-                                      lmat_size * lmat_size, ghost_type,
-                                      empty_filter);
+  this->integrator.template integrate<type, polynomial_degree>(
+      *local_mat, *int_field_times_shapes, lmat_size * lmat_size, ghost_type);
   delete local_mat;
 
   assembleMatrix(*int_field_times_shapes, matrix, nb_degree_of_freedom, type,
@@ -1315,8 +1345,7 @@ inline void FEEngineTemplate<I, S, kind>::computeShapeDerivatives(
 template <ElementKind kind> struct GetNbIntegrationPointsHelper {};
 
 #define GET_NB_INTEGRATION_POINTS(type)                                        \
-  nb_quad_points =                                                             \
-      integrator.template getQuadraturePoints<type>(ghost_type).cols();
+  nb_quad_points = integrator.template getNbIntegrationPoints<type>(ghost_type);
 
 #define AKANTU_SPECIALIZE_GET_NB_INTEGRATION_POINTS_HELPER(kind)               \
   template <> struct GetNbIntegrationPointsHelper<kind> {                      \
@@ -1426,7 +1455,7 @@ inline const Array<Real> & FEEngineTemplate<I, S, kind>::getShapesDerivatives(
 template <ElementKind kind> struct GetIntegrationPointsHelper {};
 
 #define GET_INTEGRATION_POINTS(type)                                           \
-  ret = &(integrator.template getQuadraturePoints<type>(ghost_type));
+  ret = &(integrator.template getIntegrationPoints<type>(ghost_type));
 
 #define AKANTU_SPECIALIZE_GET_INTEGRATION_POINTS_HELPER(kind)                  \
   template <> struct GetIntegrationPointsHelper<kind> {                        \

@@ -104,8 +104,8 @@ void MaterialCohesiveLinear<spatial_dimension>::initMaterial() {
   MaterialCohesive::initMaterial();
 
   /// compute scalars
-  beta2_kappa2 = beta * beta/kappa/kappa;
-  beta2_kappa  = beta * beta/kappa;
+  beta2_kappa2 = beta * beta / kappa / kappa;
+  beta2_kappa  = beta * beta / kappa;
 
   if (Math::are_float_equal(beta, 0))
     beta2_inv = 0;

@@ -87,7 +87,7 @@
 
 /* -------------------------------------------------------------------------- */
 AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_quadrangle_8, _gt_quadrangle_8, _itp_serendip_quadrangle_8, _ek_regular, 2,
-				     _git_segment, 3);
+				     _git_segment, 2);
 
 AKANTU_DEFINE_SHAPE(_gt_quadrangle_8, _gst_square);
 

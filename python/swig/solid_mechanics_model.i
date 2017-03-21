@@ -48,7 +48,7 @@ namespace akantu {
   %ignore SolidMechanicsModel::initPBC;
 
 
-  %ignore SolidMechanicsModel::initExplicit;
+  ignore SolidMechanicsModel::initExplicit;
   %ignore SolidMechanicsModel::isExplicit;
   %ignore SolidMechanicsModel::updateCurrentPosition;
   %ignore SolidMechanicsModel::updateAcceleration;
@@ -96,8 +96,9 @@ namespace akantu {
 
 print_self(SolidMechanicsModel)
 
-%include "material.hh"
+%include "material.i"
 %include "solid_mechanics_model.hh"
+
 
 %extend akantu::SolidMechanicsModel {
 

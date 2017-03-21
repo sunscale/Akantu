@@ -46,10 +46,11 @@ MaterialCohesiveLinearUncoupled<spatial_dimension>
 ::MaterialCohesiveLinearUncoupled(SolidMechanicsModel & model,
 				  const ID & id) :
   MaterialCohesiveLinear<spatial_dimension>(model,id),
-  delta_nt_max("delta_nt_max", *this),
-  delta_st_max("delta_st_max", *this),
-  damage_nt("damage_nt", *this),
-  damage_st("damage_st", *this){
+  delta_n_max("delta_n_max", *this),
+  delta_t_max("delta_t_max", *this),
+  damage_n("damage_n", *this),
+  damage_t("damage_t", *this){
+
   AKANTU_DEBUG_IN();
 
   this->registerParam("roughness", R, Real(1.),
@@ -66,13 +67,13 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::initMaterial() {
 
   MaterialCohesiveLinear<spatial_dimension>::initMaterial();
 
-  delta_nt_max.initialize(1);
-  delta_st_max.initialize(1);
-  damage_nt.initialize(1);
-  damage_st.initialize(1);
+  delta_n_max.initialize(1);
+  delta_t_max.initialize(1);
+  damage_n.initialize(1);
+  damage_t.initialize(1);
   
-  delta_nt_max.initializeHistory();
-  delta_st_max.initializeHistory();
+  delta_n_max.initializeHistory();
+  delta_t_max.initializeHistory();
 
   AKANTU_DEBUG_OUT();
 }
@@ -84,14 +85,17 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(const A
                                                                 GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  delta_nt_max.resize();
-  delta_st_max.resize();
-  damage_nt.resize();
-  damage_st.resize();
+  delta_n_max.resize();
+  delta_t_max.resize();
+  damage_n.resize();
+  damage_t.resize();
   
   /// define iterators
   Array<Real>::vector_iterator traction_it =
     this->tractions(el_type, ghost_type).begin(spatial_dimension);
+
+  Array<Real>::vector_iterator traction_end =
+    this->tractions(el_type, ghost_type).end(spatial_dimension);
 
   Array<Real>::vector_iterator opening_it =
     this->opening(el_type, ghost_type).begin(spatial_dimension);
@@ -110,32 +114,23 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(const A
   Array<Real>::const_vector_iterator normal_it =
     this->normal.begin(spatial_dimension);
 
-  Array<Real>::vector_iterator traction_end =
-    this->tractions(el_type, ghost_type).end(spatial_dimension);
-
   Array<Real>::scalar_iterator sigma_c_it =
     this->sigma_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator delta_nt_max_it =
-    this->delta_nt_max(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator delta_n_max_it =
+    delta_n_max(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator delta_st_max_it =
-    this->delta_st_max(el_type, ghost_type).begin();
-
-  Array<Real>::scalar_iterator delta_nt_max_prev_it =
-    this->delta_nt_max.previous(el_type, ghost_type).begin();
-
-  Array<Real>::scalar_iterator delta_st_max_prev_it =
-    this->delta_st_max.previous(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator delta_t_max_it =
+    delta_t_max(el_type, ghost_type).begin();
 
   Array<Real>::scalar_iterator delta_c_it =
     this->delta_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator damage_nt_it =
-    this->damage_nt(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator damage_n_it =
+    damage_n(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator damage_st_it =
-    this->damage_st(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator damage_t_it =
+    damage_t(el_type, ghost_type).begin();
 
   Array<Real>::vector_iterator insertion_stress_it =
     this->insertion_stress(el_type, ghost_type).begin(spatial_dimension);
@@ -146,60 +141,62 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(const A
   Vector<Real> normal_opening(spatial_dimension);
   Vector<Real> tangential_opening(spatial_dimension);
 
-  if (! this->model->isExplicit()){
-    this->delta_nt_max(el_type, ghost_type).copy(this->delta_nt_max.previous(el_type, ghost_type));
-    this->delta_st_max(el_type, ghost_type).copy(this->delta_st_max.previous(el_type, ghost_type));
+  if (!this->model->isExplicit()){
+    this->delta_n_max(el_type, ghost_type).copy(this->delta_n_max.previous(el_type, ghost_type));
+    this->delta_t_max(el_type, ghost_type).copy(this->delta_t_max.previous(el_type, ghost_type));
   }
   
   /// loop on each quadrature point
   for (; traction_it != traction_end;
-       ++traction_it, ++opening_it, ++opening_prec_it,
-	 ++normal_it, ++sigma_c_it, ++delta_c_it, ++delta_nt_max_it, 
-	 ++delta_st_max_it, ++damage_nt_it, ++damage_st_it,
-	 ++contact_traction_it, ++contact_opening_it, ++insertion_stress_it,
-	 ++reduction_penalty_it) {
+       ++traction_it, ++opening_it, ++opening_prec_it, 
+	 ++contact_traction_it, ++contact_opening_it, ++normal_it,
+	 ++sigma_c_it, ++delta_n_max_it, ++delta_t_max_it,
+	 ++delta_c_it, ++damage_n_it, ++damage_t_it,
+	 ++insertion_stress_it, ++reduction_penalty_it) {
 
     Real normal_opening_norm, tangential_opening_norm;
     bool penetration;
     Real current_penalty = 0.;
-    Real delta_c_s = this->kappa / this->beta * (*delta_c_it);
-    Real delta_c_s2_R2 = delta_c_s * delta_c_s / (R * R);
+    Real delta_c2_R2 = *delta_c_it * (*delta_c_it) / R / R;
     
     /// compute normal and tangential opening vectors
     normal_opening_norm = opening_it->dot(*normal_it);
     Vector<Real> normal_opening  = *normal_it;
     normal_opening *= normal_opening_norm;
 
+    //    std::cout<< "normal_opening_norm = " << normal_opening_norm <<std::endl;
+
     Vector<Real> tangential_opening  = *opening_it;
     tangential_opening -= normal_opening;
     tangential_opening_norm = tangential_opening.norm();
   
     /// compute effective opening displacement
-    Real delta_nt = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
-    Real delta_st = tangential_opening_norm * tangential_opening_norm;
+    Real delta_n = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
+    Real delta_t = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
     penetration = normal_opening_norm < 0.0;
-    //    if (this->contact_after_breaking == false && Math::are_float_equal(damage, 1.))
-    //  penetration = false;
+    if (this->contact_after_breaking == false && Math::are_float_equal(*damage_n_it, 1.))
+      penetration = false;
 
     /** 
-     * if during the convergence loop a cohesive element continues to
+     * If during the convergence loop a cohesive element continues to
      * jumps from penetration to opening, and convergence is not
      * reached, its penalty parameter will be reduced in the
-     * recomputation of the same incremental step. recompute is set
+     * recomputation of the same incremental step. Recompute is set
      * equal to true when convergence is not reached in the
      * solveStepCohesive function and the execution of the program
      * goes back to the main file where the variable load_reduction
      * is set equal to true.
      */
     Real normal_opening_prec_norm = opening_prec_it->dot(*normal_it);
-    *opening_prec_it = *opening_it;
-
-    if (!this->model->isExplicit() && !this->recompute)
-      if ((normal_opening_prec_norm * normal_opening_norm) < 0.0) {
+    //    Vector<Real> normal_opening_prec  = *normal_it;
+    //    normal_opening_prec *= normal_opening_prec_norm;
+    if (!this->model->isExplicit())  // && !this->recompute)
+      if ((normal_opening_prec_norm * normal_opening_norm) < 0.0)
 	*reduction_penalty_it = true;
-      }
 
+    *opening_prec_it = *opening_it;
+    
     if (penetration) {
       if (this->recompute && *reduction_penalty_it){
 	/// the penalty parameter is locally reduced
@@ -219,66 +216,63 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(const A
 
     }
     else {
-      delta_nt += normal_opening_norm * normal_opening_norm;
-      delta_st += normal_opening_norm * normal_opening_norm * delta_c_s2_R2;
+      delta_n += normal_opening_norm * normal_opening_norm;
+      delta_t += normal_opening_norm * normal_opening_norm * delta_c2_R2;
       contact_traction_it->clear();
       contact_opening_it->clear();
     }
 
-    delta_nt = std::sqrt(delta_nt);
-    delta_st = std::sqrt(delta_st);
+    delta_n = std::sqrt(delta_n);
+    delta_t = std::sqrt(delta_t);
 
     /// update maximum displacement and damage
-    *delta_nt_max_it = std::max(*delta_nt_max_it, delta_nt);
-    *damage_nt_it = std::min(*delta_nt_max_it / *delta_c_it, Real(1.));
+    *delta_n_max_it = std::max(*delta_n_max_it, delta_n);
+    *damage_n_it = std::min(*delta_n_max_it / *delta_c_it, Real(1.));
 
-    *delta_st_max_it = std::max(*delta_st_max_it, delta_st);
-    *damage_st_it = std::min(*delta_st_max_it / delta_c_s, Real(1.));
+    *delta_t_max_it = std::max(*delta_t_max_it, delta_t);
+    *damage_t_it = std::min(*delta_t_max_it / *delta_c_it, Real(1.));
 
-    /**
-     * Compute traction @f$ \mathbf{T} = \left(
-     * \frac{\beta^2}{\kappa} \Delta_t \mathbf{t} + \Delta_n
-     * \mathbf{n} \right) \frac{\sigma_c}{\delta} \left( 1-
-     * \frac{\delta}{\delta_c} \right)@f$
-     */
-
-    Vector<Real> traction_n(spatial_dimension);
-    Vector<Real> traction_s(spatial_dimension);
+    Vector<Real> normal_traction(spatial_dimension);
+    Vector<Real> shear_traction(spatial_dimension);
 
     /// NORMAL TRACTIONS
-    if (Math::are_float_equal(*damage_nt_it, 1.))
-      traction_n.clear();
-    else if (Math::are_float_equal(*damage_nt_it, 0.)) {
+    if (Math::are_float_equal(*damage_n_it, 1.))
+      normal_traction.clear();
+    else if (Math::are_float_equal(*damage_n_it, 0.)) {
       if (penetration)
-	traction_n.clear();
+	normal_traction.clear();
       else
-	traction_n = *insertion_stress_it;
+	normal_traction = *insertion_stress_it;
     }
     else {
-      traction_n = normal_opening;
+      // the following formulation holds both in loading and in
+      // unloading-reloading
+      normal_traction = normal_opening;
 
-      AKANTU_DEBUG_ASSERT(*delta_nt_max_it != 0.,
+      AKANTU_DEBUG_ASSERT(*delta_n_max_it != 0.,
 			  "Division by zero, tolerance might be too low");
 
-      traction_n *= *sigma_c_it / (*delta_nt_max_it) * (1. - *damage_nt_it);
+      normal_traction *= *sigma_c_it / (*delta_n_max_it) * (1. - *damage_n_it);
     }
 
     /// SHEAR TRACTIONS
-    if (Math::are_float_equal(*damage_st_it, 1.))
-      traction_s.clear();
-    else if (Math::are_float_equal(*damage_st_it, 0.)) {
-      traction_s.clear();
+    if (Math::are_float_equal(*damage_t_it, 1.))
+      shear_traction.clear();
+    else if (Math::are_float_equal(*damage_t_it, 0.)) {
+      shear_traction.clear();
     }
     else {
-      traction_s = tangential_opening;
+      shear_traction = tangential_opening;
 
-      AKANTU_DEBUG_ASSERT(*delta_st_max_it != 0.,
+      AKANTU_DEBUG_ASSERT(*delta_t_max_it != 0.,
 			  "Division by zero, tolerance might be too low");
 
-      traction_s *= *sigma_c_it * this->beta / (*delta_st_max_it) * (1. - *damage_st_it);
+      shear_traction *= this->beta2_kappa;
+      shear_traction *= *sigma_c_it / (*delta_t_max_it) * (1. - *damage_t_it);
     }
 
-    *traction_it = traction_n + traction_s;
+    *traction_it = normal_traction;
+    *traction_it += shear_traction;
 
   }
 
@@ -309,9 +303,9 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::checkDeltaMax(GhostType
 
   /**
   * the variable "recompute" is set to true to activate the
-  * procedure that reduce the penalty parameter for
-  * compression. This procedure is set true only during the phase of
-  * load_reduction, that has to be set in the maiin file. The
+  * procedure that reduces the penalty parameter for
+  * compression. This procedure is available only during the phase of
+  * load_reduction, that has to be set in the main file. The
   * penalty parameter will be reduced only for the elements having
   * reduction_penalty = true.
   */
@@ -325,21 +319,23 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::checkDeltaMax(GhostType
 
     ElementType el_type = *it;
 
+    //    std::cout << "element type: " << el_type << std::endl;
+
     /// define iterators
-    Array<Real>::scalar_iterator delta_nt_max_it =
-      delta_nt_max(el_type, ghost_type).begin();
+    Array<Real>::scalar_iterator delta_n_max_it =
+      delta_n_max(el_type, ghost_type).begin();
 
-    Array<Real>::scalar_iterator delta_nt_max_end =
-      delta_nt_max(el_type, ghost_type).end();
+    Array<Real>::scalar_iterator delta_n_max_end =
+      delta_n_max(el_type, ghost_type).end();
 
-    Array<Real>::scalar_iterator delta_nt_max_prev_it =
-      delta_nt_max.previous(el_type, ghost_type).begin();
+    Array<Real>::scalar_iterator delta_n_max_prev_it =
+      delta_n_max.previous(el_type, ghost_type).begin();
 
-    Array<Real>::scalar_iterator delta_st_max_it =
-      delta_st_max(el_type, ghost_type).begin();
+    Array<Real>::scalar_iterator delta_t_max_it =
+      delta_t_max(el_type, ghost_type).begin();
 
-    Array<Real>::scalar_iterator delta_st_max_prev_it =
-      delta_st_max.previous(el_type, ghost_type).begin();
+    Array<Real>::scalar_iterator delta_t_max_prev_it =
+      delta_t_max.previous(el_type, ghost_type).begin();
 
     Array<Real>::scalar_iterator delta_c_it =
      this-> delta_c_eff(el_type, ghost_type).begin();
@@ -350,25 +346,31 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::checkDeltaMax(GhostType
     Array<Real>::vector_iterator opening_prec_prev_it =
       this->opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
 
+  Int it = 0;
+
     /// loop on each quadrature point
-    for (; delta_nt_max_it != delta_nt_max_end;
-         ++delta_nt_max_it, ++delta_st_max_it, ++delta_c_it,
-	   ++delta_nt_max_prev_it, ++delta_st_max_prev_it, 
+    for (; delta_n_max_it != delta_n_max_end;
+         ++delta_n_max_it, ++delta_t_max_it, ++delta_c_it,
+	   ++delta_n_max_prev_it, ++delta_t_max_prev_it, 
 	   ++opening_prec_it, ++opening_prec_prev_it) {
 
-      if (*delta_nt_max_prev_it == 0)
+      ++it;
+
+      if (*delta_n_max_prev_it == 0){
         /// elements inserted in the last incremental step, that did
         /// not converge
-        *delta_nt_max_it = *delta_c_it / 1000;
+        *delta_n_max_it = *delta_c_it / 1000.;
+      }
       else
         /// elements introduced in previous incremental steps, for
         /// which a correct value of delta_max_prev already exists
-        *delta_nt_max_it = *delta_nt_max_prev_it;
+        *delta_n_max_it = *delta_n_max_prev_it;
 
-      if (*delta_st_max_prev_it == 0)
-        *delta_st_max_it = *delta_c_it * this->kappa / this->beta / 1000;
+      if (*delta_t_max_prev_it == 0){
+        *delta_t_max_it = *delta_c_it * this->kappa / this->beta / 1000.;
+      }
       else
-        *delta_st_max_it = *delta_st_max_prev_it;
+        *delta_t_max_it = *delta_t_max_prev_it;
 
       /// in case convergence is not reached, set opening_prec to the
       /// value referred to the previous incremental step
@@ -393,7 +395,7 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
     tangent_matrix.end(spatial_dimension, spatial_dimension);
 
   Array<Real>::const_vector_iterator normal_it =
-    normal.begin(spatial_dimension);
+    this->normal.begin(spatial_dimension);
 
   Array<Real>::vector_iterator opening_it =
     this->opening(el_type, ghost_type).begin(spatial_dimension);
@@ -401,11 +403,11 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
   /// NB: delta_max_it points on delta_max_previous, i.e. the
   /// delta_max related to the solution of the previous incremental
   /// step
-  Array<Real>::scalar_iterator delta_nt_max_it =
-   this->delta_nt_max.previous(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator delta_n_max_it =
+    delta_n_max.previous(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator delta_st_max_it =
-    this->delta_st_max.previous(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator delta_t_max_it =
+    delta_t_max.previous(el_type, ghost_type).begin();
 
   Array<Real>::scalar_iterator sigma_c_it =
     this->sigma_c_eff(el_type, ghost_type).begin();
@@ -413,8 +415,8 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
   Array<Real>::scalar_iterator delta_c_it =
     this->delta_c_eff(el_type, ghost_type).begin();
 
-  //  Array<Real>::scalar_iterator damage_it =
-  //    damage(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator damage_n_it =
+    damage_n(el_type, ghost_type).begin();
 
   Array<Real>::vector_iterator contact_opening_it =
     this->contact_opening(el_type, ghost_type).begin(spatial_dimension);
@@ -427,14 +429,13 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
 
   for (; tangent_it != tangent_end;
        ++tangent_it, ++normal_it, ++opening_it, ++sigma_c_it,
-	 ++delta_c_it, ++delta_nt_max_it, ++delta_st_max_it,
+	 ++delta_c_it, ++delta_n_max_it, ++delta_t_max_it, ++damage_n_it,
 	 ++contact_opening_it, ++reduction_penalty_it) {
 
     Real normal_opening_norm, tangential_opening_norm;
     bool penetration;
     Real current_penalty = 0.;
-    Real delta_c_s = this->kappa / this->beta * (*delta_c_it);
-    Real delta_c_s2_R2 = delta_c_s * delta_c_s / (R * R);
+    Real delta_c2_R2 = *delta_c_it * (*delta_c_it) / R / R;
 
     /**
      * During the update of the residual the interpenetrations are
@@ -453,17 +454,15 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
     tangential_opening -= normal_opening;
     tangential_opening_norm = tangential_opening.norm();
 
-    Real delta_nt = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
-    Real delta_st = tangential_opening_norm * tangential_opening_norm;
+    Real delta_n = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
+    Real delta_t = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
     penetration = normal_opening_norm < 0.0;
-    //    if (this->contact_after_breaking == false && Math::are_float_equal(damage, 1.))
-    //  penetration = false;
+    if (this->contact_after_breaking == false && Math::are_float_equal(*damage_n_it, 1.))
+      penetration = false;
 
     Real derivative = 0; // derivative = d(t/delta)/ddelta
-    Real t = 0;
-    //    Matrix<Real> tangent_n(spatial_dimension, spatial_dimension);
-    //    Matrix<Real> tangent_s(spatial_dimension, spatial_dimension);
+    Real T = 0;
     
     /// TANGENT STIFFNESS FOR NORMAL TRACTIONS
     Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
@@ -483,10 +482,10 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
       normal_opening.clear();
     }
     else{
-      delta_nt += normal_opening_norm * normal_opening_norm;
-      delta_nt = std::sqrt(delta_nt);
+      delta_n += normal_opening_norm * normal_opening_norm;
+      delta_n = std::sqrt(delta_n);
 
-      delta_st += normal_opening_norm * normal_opening_norm * delta_c_s2_R2;
+      delta_t += normal_opening_norm * normal_opening_norm * delta_c2_R2;
       
       /**
        * Delta has to be different from 0 to have finite values of
@@ -494,45 +493,51 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
        * 0. Therefore, a fictictious value is defined, for the
        * evaluation of the first value of K.
        */
-      if (delta_nt < Math::getTolerance())
-	delta_nt = *delta_c_it / 1000.;
+      if (delta_n < Math::getTolerance())
+	delta_n = *delta_c_it / 1000.;
 
-      if (delta_nt >= *delta_nt_max_it){
-	if (delta_nt <= *delta_c_it){
-	  derivative = - (*sigma_c_it) / (delta_nt * delta_nt);
-	  t = *sigma_c_it * (1 - delta_nt / *delta_c_it);
+      // loading
+      if (delta_n >= *delta_n_max_it){
+	if (delta_n <= *delta_c_it){
+	  derivative = - (*sigma_c_it) / (delta_n * delta_n);
+	  T = *sigma_c_it * (1 - delta_n / *delta_c_it);
 	} else {
 	  derivative = 0.;
-	  t = 0.;
+	  T = 0.;
 	}
-      } else if (delta_nt < *delta_nt_max_it){
-	Real tmax = *sigma_c_it * (1 - *delta_nt_max_it / *delta_c_it);
-	t = tmax / *delta_nt_max_it * delta_nt;
+	// unloading-reloading
+      } else if (delta_n < *delta_n_max_it){
+	Real T_max = *sigma_c_it * (1 - *delta_n_max_it / *delta_c_it);
+	derivative = 0.;
+	T = T_max / *delta_n_max_it * delta_n;
       }
 
       /// computation of the derivative of the constitutive law (dT/ddelta)
       Matrix<Real> nn(n_outer_n);
-      nn *= t / delta_nt;
+      nn *= T / delta_n;
 
-      Vector<Real> t_tilde(normal_opening);
-      t_tilde *= (1. - this->beta2_kappa2);
+      Vector<Real> Delta_tilde(normal_opening);
+      Delta_tilde *= (1. - this->beta2_kappa2);
       Vector<Real> mm(*opening_it);
       mm *= this->beta2_kappa2;
-      t_tilde += mm;
+      Delta_tilde += mm;
 
-      Vector<Real> t_hat(normal_opening);
+      Vector<Real> Delta_hat(normal_opening);
       Matrix<Real> prov(spatial_dimension, spatial_dimension);
-      prov.outerProduct(t_hat, t_tilde);
-      prov *= derivative / delta_nt;
+      prov.outerProduct(Delta_hat, Delta_tilde);
+      prov *= derivative / delta_n;
       prov += nn;
 
-      *tangent_it = prov.transpose();
+      Matrix<Real> prov_t = prov.transpose();
+
+      *tangent_it = prov_t;
     }
 
     derivative = 0.;
-    t = 0.;
+    T = 0.;
+
     /// TANGENT STIFFNESS FOR SHEAR TRACTIONS
-    delta_st = std::sqrt(delta_st);
+    delta_t = std::sqrt(delta_t);
 
     /**
      * Delta has to be different from 0 to have finite values of
@@ -540,20 +545,23 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
      * 0. Therefore, a fictictious value is defined, for the
      * evaluation of the first value of K.
      */
-    if (delta_st < Math::getTolerance())
-      delta_st = delta_c_s / 1000.;
+    if (delta_t < Math::getTolerance())
+      delta_t = *delta_c_it / 1000.;
 
-    if (delta_st >= *delta_st_max_it){
-      if (delta_st <= delta_c_s){
-	derivative = - this->beta * (*sigma_c_it) / (delta_st * delta_st);
-	t = this->beta * (*sigma_c_it) * (1 - delta_st / delta_c_s);
+    // loading
+    if (delta_t >= *delta_t_max_it){
+      if (delta_t <= *delta_c_it){
+	derivative = - (*sigma_c_it) / (delta_t * delta_t);
+	T = *sigma_c_it * (1 - delta_t / *delta_c_it);
       } else {
 	derivative = 0.;
-	t = 0.;
+	T = 0.;
       }
-    } else if (delta_st < *delta_st_max_it){
-      Real tmax = this->beta * (*sigma_c_it) * (1 - *delta_st_max_it / delta_c_s);
-      t = tmax / *delta_st_max_it * delta_st;
+      // unloading-reloading
+    } else if (delta_t < *delta_t_max_it){
+      Real T_max = *sigma_c_it * (1 - *delta_t_max_it / *delta_c_it);
+      derivative = 0.;
+      T = T_max / *delta_t_max_it * delta_t;
     }
 
     /// computation of the derivative of the constitutive law (dT/ddelta)
@@ -561,20 +569,23 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
     I.eye();
     Matrix<Real> nn(n_outer_n);
     I -= nn;
-    I *= t / delta_st;
+    I *= T / delta_t;
     
-    Vector<Real> t_tilde(normal_opening);
-    t_tilde *= (delta_c_s2_R2 - 1.);
+    Vector<Real> Delta_tilde(normal_opening);
+    Delta_tilde *= (delta_c2_R2 - this->beta2_kappa2);
     Vector<Real> mm(*opening_it);
-    t_tilde += mm;
+    mm *= this->beta2_kappa2;
+    Delta_tilde += mm;
 
-    Vector<Real> t_hat(tangential_opening);
+    Vector<Real> Delta_hat(tangential_opening);
+    Delta_hat *= this->beta2_kappa;
     Matrix<Real> prov(spatial_dimension, spatial_dimension);
-    prov.outerProduct(t_hat, t_tilde);
-    prov *= derivative / delta_st;
+    prov.outerProduct(Delta_hat, Delta_tilde);
+    prov *= derivative / delta_t;
     prov += I;
 
     Matrix<Real> prov_t = prov.transpose();
+
     *tangent_it += prov_t;
   }
     
