@@ -39,7 +39,8 @@
 
 __BEGIN_AKANTU__
 
-template <ElementKind kind> class IntegratorGauss : public Integrator {
+template <ElementKind kind, class IntegrationOrderFunctor>
+class IntegratorGauss : public Integrator {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -53,9 +54,12 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  inline void initIntegrator(const Array<Real> & nodes,
+  void initIntegrator(const Array<Real> & nodes,
                              const ElementType & type,
                              const GhostType & ghost_type);
+
+  template <ElementType type>
+  void initIntegrator(const Array<Real> & nodes, const GhostType & ghost_type);
 
   /// integrate f on the element "elem" of type "type"
   template <ElementType type>
@@ -81,10 +85,8 @@ public:
 
   /// integrate a field without using the pre-computed values
   template <ElementType type, UInt polynomial_degree>
-  void integrate(const Array<Real> & in_f,
-                 Array<Real> & intf,
-                 UInt nb_degree_of_freedom,
-                 const GhostType & ghost_type) const;
+  void integrate(const Array<Real> & in_f, Array<Real> & intf,
+                 UInt nb_degree_of_freedom, const GhostType & ghost_type) const;
 
   /// integrate partially around a quadrature point (@f$ intf_q = f_q * J_q *
   /// w_q @f$)
@@ -133,10 +135,11 @@ protected:
   /// internal integrate partially around a quadrature point (@f$ intf_q = f_q *
   /// J_q *
   /// w_q @f$)
-  void
-  integrateOnIntegrationPoints(const Array<Real> & in_f, Array<Real> & intf,
-                               UInt nb_degree_of_freedom,
-                               const Array<Real> & jacobians, UInt nb_element) const;
+  void integrateOnIntegrationPoints(const Array<Real> & in_f,
+                                    Array<Real> & intf,
+                                    UInt nb_degree_of_freedom,
+                                    const Array<Real> & jacobians,
+                                    UInt nb_element) const;
 
   void integrate(const Array<Real> & in_f, Array<Real> & intf,
                  UInt nb_degree_of_freedom, const Array<Real> & jacobians,
@@ -147,7 +150,8 @@ public:
   template <ElementType type>
   void computeJacobianOnQuadPointsByElement(
       const Matrix<Real> & node_coords,
-      const Matrix<Real> & integratation_points, Vector<Real> & jacobians) const;
+      const Matrix<Real> & integratation_points,
+      Vector<Real> & jacobians) const;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -163,14 +167,9 @@ private:
   ElementTypeMap<Matrix<Real> > quadrature_points;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
-#include "integrator_gauss_inline_impl.cc"
-#endif
 
 __END_AKANTU__
+
+#include "integrator_gauss_inline_impl.cc"
 
 #endif /* __AKANTU_INTEGRATOR_GAUSS_HH__ */

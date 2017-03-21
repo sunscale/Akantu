@@ -8,7 +8,8 @@
  * @date creation: Fri Jun 18 2010
  * @date last modification: Thu Oct 22 2015
  *
- * @brief  Generates the cohesive element structres (defined in element_class.hh)
+ * @brief  Generates the cohesive element structres (defined in
+ * element_class.hh)
  *
  * @section LICENSE
  *
@@ -41,33 +42,50 @@
 
 __BEGIN_AKANTU__
 
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_2d_4, _gt_cohesive_2d_4, _itp_lagrange_segment_2,
-				     _ek_cohesive, 2,
-				     _git_segment, 2);
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_2d_4, _gt_cohesive_2d_4,
+                                     _itp_lagrange_segment_2, _ek_cohesive, 2,
+                                     _git_segment, 2);
 
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_2d_6, _gt_cohesive_2d_6, _itp_lagrange_segment_3,
-				     _ek_cohesive, 2,
-				     _git_segment, 3);
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_2d_6, _gt_cohesive_2d_6,
+                                     _itp_lagrange_segment_3, _ek_cohesive, 2,
+                                     _git_segment, 3);
 
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_1d_2, _gt_cohesive_1d_2, _itp_lagrange_point_1,
-				     _ek_cohesive, 1,
-				     _git_point, 1);
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_1d_2, _gt_cohesive_1d_2,
+                                     _itp_lagrange_point_1, _ek_cohesive, 1,
+                                     _git_point, 1);
 
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_3d_6, _gt_cohesive_3d_6, _itp_lagrange_triangle_3,
-				     _ek_cohesive, 3,
-				     _git_triangle, 2);
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_3d_6, _gt_cohesive_3d_6,
+                                     _itp_lagrange_triangle_3, _ek_cohesive, 3,
+                                     _git_triangle, 2);
 
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_3d_12, _gt_cohesive_3d_12, _itp_lagrange_triangle_6,
-				     _ek_cohesive, 3,
-				     _git_triangle, 3);
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_3d_12, _gt_cohesive_3d_12,
+                                     _itp_lagrange_triangle_6, _ek_cohesive, 3,
+                                     _git_triangle, 3);
 
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_3d_8, _gt_cohesive_3d_8, _itp_lagrange_quadrangle_4,
-				     _ek_cohesive, 3,
-				     _git_segment, 2);
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_3d_8, _gt_cohesive_3d_8,
+                                     _itp_lagrange_quadrangle_4, _ek_cohesive,
+                                     3, _git_segment, 2);
 
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_3d_16, _gt_cohesive_3d_16, _itp_serendip_quadrangle_8,
-				     _ek_cohesive, 3,
-				     _git_segment, 3);
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_3d_16, _gt_cohesive_3d_16,
+                                     _itp_serendip_quadrangle_8, _ek_cohesive,
+                                     3, _git_segment, 3);
+
+template <ElementType> struct CohesiveFacetProperty {
+  static const ElementType cohesive_type = _not_defined;
+};
+
+#define AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(ftype, ctype)                    \
+  template <> struct CohesiveFacetProperty<ftype> {                            \
+    static const ElementType cohesive_type = ctype;                            \
+  }
+
+AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_point_1, _cohesive_1d_2);
+AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_segment_2, _cohesive_2d_4);
+AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_segment_3, _cohesive_2d_6);
+AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_triangle_3, _cohesive_3d_6);
+AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_triangle_6, _cohesive_3d_12);
+AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_quadrangle_4, _cohesive_3d_8);
+AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_quadrangle_8, _cohesive_3d_16);
 
 __END_AKANTU__
 

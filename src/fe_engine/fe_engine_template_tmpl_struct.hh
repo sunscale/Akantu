@@ -39,11 +39,10 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 template <>
 inline const Array<Real> &
-FEEngineTemplate<IntegratorGauss, ShapeLinked,
-                 _ek_structural>::getShapesDerivatives(const ElementType & type,
-                                                       const GhostType &
-                                                           ghost_type,
-                                                       UInt id) const {
+FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural,
+                 DefaultIntegrationOrderFunctor>::
+    getShapesDerivatives(const ElementType & type, const GhostType & ghost_type,
+                         UInt id) const {
 
   AKANTU_DEBUG_IN();
   const Array<Real> * ret = NULL;
@@ -60,9 +59,11 @@ FEEngineTemplate<IntegratorGauss, ShapeLinked,
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline const Array<Real> &
-FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>::getShapes(
-    const ElementType & type, const GhostType & ghost_type, UInt id) const {
+inline const Array<Real> & FEEngineTemplate<
+    IntegratorGauss, ShapeLinked, _ek_structural,
+    DefaultIntegrationOrderFunctor>::getShapes(const ElementType & type,
+                                               const GhostType & ghost_type,
+                                               UInt id) const {
   AKANTU_DEBUG_IN();
   const Array<Real> * ret = NULL;
 
@@ -78,7 +79,8 @@ FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>::getShapes(
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>::
+inline void FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural,
+                             DefaultIntegrationOrderFunctor>::
     assembleFieldMatrix(const Array<Real> & field_1, UInt nb_degree_of_freedom,
                         SparseMatrix & M, Array<Real> * n,
                         ElementTypeMapArray<Real> & rotation_mat,
@@ -100,23 +102,19 @@ inline void FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>::
 
 /* -------------------------------------------------------------------------- */
 template <template <ElementKind> class I, template <ElementKind> class S,
-          ElementKind kind>
+          ElementKind kind, DefaultIntegrationOrderFunctor>
 inline void FEEngineTemplate<I, S, kind>::computeShapesMatrix(
-    __attribute__((unused)) const ElementType & type,
-    __attribute__((unused)) UInt nb_degree_of_freedom,
-    __attribute__((unused)) UInt nb_nodes_per_element,
-    __attribute__((unused)) Array<Real> * n, __attribute__((unused)) UInt id,
-    __attribute__((unused)) UInt degree_to_interpolate,
-    __attribute__((unused)) UInt degree_interpolated,
-    __attribute__((unused)) const bool sign,
-    __attribute__((unused)) const GhostType & ghost_type) const {
+    const ElementType &, UInt, UInt, Array<Real> *,
+    __attribute__((unused)) UInt, UInt, UInt, const bool,
+    const GhostType &) const {
 
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>::
+inline void FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural,
+                             DefaultIntegrationOrderFunctor>::
     computeShapesMatrix(const ElementType & type, UInt nb_degree_of_freedom,
                         UInt nb_nodes_per_element, Array<Real> * n, UInt id,
                         UInt degree_to_interpolate, UInt degree_interpolated,
@@ -159,7 +157,8 @@ inline void FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>::
 /* -------------------------------------------------------------------------- */
 template <>
 template <ElementType type>
-inline void FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>::
+inline void FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural,
+                             DefaultIntegrationOrderFunctor>::
     assembleFieldMatrix(const Array<Real> & field_1, UInt nb_degree_of_freedom,
                         SparseMatrix & M, Array<Real> * n,
                         ElementTypeMapArray<Real> & rotation_mat,
@@ -217,14 +216,14 @@ inline void FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>::
 }
 
 /* -------------------------------------------------------------------------- */
-template <template <ElementKind> class I, template <ElementKind> class S,
-          ElementKind kind>
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type>
-inline void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
+inline void
+FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
     const Array<Real> & field_1, UInt nb_degree_of_freedom, SparseMatrix & M,
     Array<Real> * n, ElementTypeMapArray<Real> & rotation_mat,
     const GhostType & ghost_type) const {
-
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 

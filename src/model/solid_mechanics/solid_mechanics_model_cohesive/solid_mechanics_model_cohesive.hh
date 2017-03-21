@@ -34,37 +34,59 @@
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__
 #define __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__
 
-#include "solid_mechanics_model.hh"
-#include "solid_mechanics_model_event_handler.hh"
 #include "cohesive_element_inserter.hh"
 #include "material_selector_cohesive.hh"
+#include "solid_mechanics_model.hh"
+#include "solid_mechanics_model_event_handler.hh"
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-#  include "facet_synchronizer.hh"
-#  include "facet_stress_synchronizer.hh"
+#include "facet_stress_synchronizer.hh"
+#include "facet_synchronizer.hh"
 #endif
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
+struct FacetsCohesiveIntegrationOrderFunctor {
+  template <ElementType type, ElementType cohesive_type =
+                                  CohesiveFacetProperty<type>::cohesive_type>
+  struct _helper {
+    static constexpr int get() {
+      return ElementClassProperty<cohesive_type>::polynomial_degree;
+    }
+  };
+
+  template <ElementType type> struct _helper<type, _not_defined> {
+    static constexpr int get() {
+      return ElementClassProperty<type>::polynomial_degree;
+    }
+  };
+
+  template <ElementType type> static inline constexpr int getOrder() {
+    return _helper<type>::get();
+  }
+};
+
+/* -------------------------------------------------------------------------- */
 struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
-  SolidMechanicsModelCohesiveOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
-				     bool extrinsic = false,
-				     bool no_init_materials = false) :
-    SolidMechanicsModelOptions(analysis_method, no_init_materials),
-    extrinsic(extrinsic) {}
+  SolidMechanicsModelCohesiveOptions(
+      AnalysisMethod analysis_method = _explicit_lumped_mass,
+      bool extrinsic = false, bool no_init_materials = false)
+      : SolidMechanicsModelOptions(analysis_method, no_init_materials),
+        extrinsic(extrinsic) {}
   bool extrinsic;
 };
 
-extern const SolidMechanicsModelCohesiveOptions default_solid_mechanics_model_cohesive_options;
+extern const SolidMechanicsModelCohesiveOptions
+    default_solid_mechanics_model_cohesive_options;
 
 /* -------------------------------------------------------------------------- */
 /* Solid Mechanics Model for Cohesive elements                                */
 /* -------------------------------------------------------------------------- */
 
 class SolidMechanicsModelCohesive : public SolidMechanicsModel,
-                                    public SolidMechanicsModelEventHandler{
+                                    public SolidMechanicsModelEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -73,16 +95,21 @@ public:
   public:
     AKANTU_GET_MACRO_NOT_CONST(OldNodesList, old_nodes, Array<UInt> &);
     AKANTU_GET_MACRO(OldNodesList, old_nodes, const Array<UInt> &);
+
   protected:
     Array<UInt> old_nodes;
   };
 
-  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive> MyFEEngineCohesiveType;
+  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>
+      MyFEEngineCohesiveType;
+  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular,
+                           FacetsCohesiveIntegrationOrderFunctor>
+      MyFEEngineFacetType;
 
   SolidMechanicsModelCohesive(Mesh & mesh,
-			      UInt spatial_dimension = _all_dimensions,
-			      const ID & id = "solid_mechanics_model_cohesive",
-			      const MemoryID & memory_id = 0);
+                              UInt spatial_dimension = _all_dimensions,
+                              const ID & id = "solid_mechanics_model_cohesive",
+                              const MemoryID & memory_id = 0);
 
   virtual ~SolidMechanicsModelCohesive();
 
@@ -108,7 +135,8 @@ public:
   void interpolateStress();
 
   /// initialize the cohesive model
-  void initFull(const ModelOptions & options = default_solid_mechanics_model_cohesive_options);
+  void initFull(const ModelOptions & options =
+                    default_solid_mechanics_model_cohesive_options);
 
   /// initialize the model
   void initModel();
@@ -128,29 +156,27 @@ public:
   /// insert intrinsic cohesive elements
   void insertIntrinsicElements();
 
-  // synchronize facets physical data before insertion along physical surfaces 
+  // synchronize facets physical data before insertion along physical surfaces
   void synchronizeInsertionData();
 
-  template<SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
-  bool solveStepCohesive(Real tolerance,
-                         Real & error,
-                         UInt max_iteration = 100,
+  template <SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
+  bool solveStepCohesive(Real tolerance, Real & error, UInt max_iteration = 100,
                          bool load_reduction = false,
-			 Real tol_increase_factor = 1.0,
+                         Real tol_increase_factor = 1.0,
                          bool do_not_factorize = false);
 
   /// initialize stress interpolation
   void initStressInterpolation();
 
 private:
-
-  /// initialize cohesive material with intrinsic insertion (by default) 
+  /// initialize cohesive material with intrinsic insertion (by default)
   void initIntrinsicCohesiveMaterials(UInt cohesive_index);
 
-  ///  initialize cohesive material with intrinsic insertion (if physical surfaces are precised) 
+  ///  initialize cohesive material with intrinsic insertion (if physical
+  ///  surfaces are precised)
   void initIntrinsicCohesiveMaterials(std::string cohesive_surfaces);
 
-  /// insert cohesive elements along a given physical surface of the mesh 
+  /// insert cohesive elements along a given physical surface of the mesh
   void insertElementsFromMeshData(std::string physical_name);
 
   /// initialize completely the model for extrinsic elements
@@ -170,11 +196,10 @@ private:
   /* ------------------------------------------------------------------------ */
 
 protected:
-
-  virtual void onNodesAdded  (const Array<UInt> & nodes_list,
-			      const NewNodesEvent & event);
-  virtual void onElementsAdded  (const Array<Element> & nodes_list,
-				 const NewElementsEvent & event);
+  virtual void onNodesAdded(const Array<UInt> & nodes_list,
+                            const NewNodesEvent & event);
+  virtual void onElementsAdded(const Array<Element> & nodes_list,
+                               const NewElementsEvent & event);
 
   /* ------------------------------------------------------------------------ */
   /* SolidMechanicsModelEventHandler inherited members                        */
@@ -186,20 +211,18 @@ public:
   /* Dumpable interface                                                       */
   /* ------------------------------------------------------------------------ */
 public:
-
   virtual void onDump();
 
   virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
-					 const std::string & field_id,
-					 const std::string & group_name,
-					 const ElementKind & element_kind,
-					 bool padding_flag);
+                                         const std::string & field_id,
+                                         const std::string & group_name,
+                                         const ElementKind & element_kind,
+                                         bool padding_flag);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// get facet mesh
   AKANTU_GET_MACRO(MeshFacets, mesh.getMeshFacets(), const Mesh &);
 
@@ -213,13 +236,15 @@ public:
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(FacetMaterial, facet_material, UInt);
 
   /// get facet material
-  AKANTU_GET_MACRO(FacetMaterial, facet_material, const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO(FacetMaterial, facet_material,
+                   const ElementTypeMapArray<UInt> &);
 
   /// @todo THIS HAS TO BE CHANGED
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Tangents, tangents, Real);
 
   /// get element inserter
-  AKANTU_GET_MACRO_NOT_CONST(ElementInserter, *inserter, CohesiveElementInserter &);
+  AKANTU_GET_MACRO_NOT_CONST(ElementInserter, *inserter,
+                             CohesiveElementInserter &);
 
   /// get is_extrinsic boolean
   AKANTU_GET_MACRO(IsExtrinsic, is_extrinsic, bool);
@@ -228,7 +253,6 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// @todo store tangents when normals are computed:
   ElementTypeMapArray<Real> tangents;
 
@@ -246,17 +270,15 @@ private:
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
 #include "solid_mechanics_model_cohesive_parallel.hh"
 #endif
-
 };
 
 /* -------------------------------------------------------------------------- */
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const SolidMechanicsModelCohesive & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const SolidMechanicsModelCohesive & _this) {
   _this.printself(stream);
   return stream;
 }
-
 
 __END_AKANTU__
 

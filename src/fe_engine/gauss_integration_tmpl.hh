@@ -42,6 +42,10 @@ template <GaussIntegrationType type, UInt n> struct GaussIntegrationNbPoints {
   static const UInt nb_points = -1;
 };
 
+template <UInt n> struct GaussIntegrationNbPoints<_git_not_defined, n> {
+  static const UInt nb_points = 0;
+};
+
 template <UInt n> struct GaussIntegrationNbPoints<_git_point, n> {
   static const UInt nb_points = 1;
 };
@@ -72,6 +76,8 @@ DECLARE_GAUSS_NB_POINTS(_git_tetrahedron, 2, 4);
 DECLARE_GAUSS_NB_POINTS(_git_tetrahedron, 3, 5);
 DECLARE_GAUSS_NB_POINTS(_git_tetrahedron, 4, 15);
 DECLARE_GAUSS_NB_POINTS(_git_tetrahedron, 5, 15);
+DECLARE_GAUSS_NB_POINTS_PENT(_git_pentahedron, 0, 0,
+                             0); // order 3 in x, order 2 in y and z
 DECLARE_GAUSS_NB_POINTS_PENT(_git_pentahedron, 1, 3,
                              2); // order 3 in x, order 2 in y and z
 DECLARE_GAUSS_NB_POINTS_PENT(_git_pentahedron, 2, 3,
@@ -120,6 +126,7 @@ template <GaussIntegrationType type, UInt dimension, UInt n>
 struct GaussIntegrationTypeDataHelper {
   typedef GaussIntegrationNbPoints<type, n> git_np;
   typedef GaussIntegrationTypeData<type, git_np::nb_points> git_data;
+  // If it fails here it means the git_type is not defined
   typedef typename GaussIntegrationTypeMissingData<
       type, n, git_np::nb_points>::value git_missing;
 

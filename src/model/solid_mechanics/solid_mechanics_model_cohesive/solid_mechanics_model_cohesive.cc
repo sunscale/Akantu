@@ -322,8 +322,8 @@ void SolidMechanicsModelCohesive::initModel() {
   getFEEngine("CohesiveFEEngine").initShapeFunctions(_not_ghost);
   getFEEngine("CohesiveFEEngine").initShapeFunctions(_ghost);
 
-  registerFEEngineObject<MyFEEngineType>("FacetsFEEngine", mesh.getMeshFacets(),
-                                         spatial_dimension - 1);
+  registerFEEngineObject<MyFEEngineFacetType>("FacetsFEEngine", mesh.getMeshFacets(),
+                                              spatial_dimension - 1);
 
   if (is_extrinsic) {
     getFEEngine("FacetsFEEngine").initShapeFunctions(_not_ghost);

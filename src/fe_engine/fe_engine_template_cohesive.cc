@@ -40,32 +40,33 @@ __BEGIN_AKANTU__
 /* compatibility functions */
 /* -------------------------------------------------------------------------- */
 template <>
-Real FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>::integrate(const Array<Real> & f,
-									       const ElementType & type,
-									       const GhostType & ghost_type,
-									       const Array<UInt> & filter_elements) const{
+Real FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
+                      DefaultIntegrationOrderFunctor>::
+    integrate(const Array<Real> & f, const ElementType & type,
+              const GhostType & ghost_type,
+              const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
 #ifndef AKANTU_NDEBUG
   UInt nb_element = mesh.getNbElement(type, ghost_type);
-  if(filter_elements != empty_filter) nb_element = filter_elements.getSize();
+  if (filter_elements != empty_filter)
+    nb_element = filter_elements.getSize();
 
-  UInt nb_quadrature_points  = getNbIntegrationPoints(type);
+  UInt nb_quadrature_points = getNbIntegrationPoints(type);
 
   AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
-		      "The vector f(" << f.getID()
-		      << ") has not the good size.");
+                      "The vector f(" << f.getID()
+                                      << ") has not the good size.");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == 1,
-		      "The vector f(" << f.getID()
-		      << ") has not the good number of component.");
+                      "The vector f("
+                          << f.getID()
+                          << ") has not the good number of component.");
 #endif
 
   Real integral = 0.;
 
-#define INTEGRATE(type)						\
-  integral = integrator. integrate<type>(f,			\
-					 ghost_type,		\
-					 filter_elements);
+#define INTEGRATE(type)                                                        \
+  integral = integrator.integrate<type>(f, ghost_type, filter_elements);
 
   AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(INTEGRATE);
 #undef INTEGRATE
@@ -76,40 +77,40 @@ Real FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>::integrate(c
 
 /* -------------------------------------------------------------------------- */
 template <>
-void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>
-::integrate(const Array<Real> & f,
-	    Array<Real> &intf,
-	    UInt nb_degree_of_freedom,
-	    const ElementType & type,
-	    const GhostType & ghost_type,
-	    const Array<UInt> & filter_elements) const{
+void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
+                      DefaultIntegrationOrderFunctor>::
+    integrate(const Array<Real> & f, Array<Real> & intf,
+              UInt nb_degree_of_freedom, const ElementType & type,
+              const GhostType & ghost_type,
+              const Array<UInt> & filter_elements) const {
 
 #ifndef AKANTU_NDEBUG
   UInt nb_element = mesh.getNbElement(type, ghost_type);
-  if(filter_elements == filter_elements) nb_element = filter_elements.getSize();
+  if (filter_elements == filter_elements)
+    nb_element = filter_elements.getSize();
 
-  UInt nb_quadrature_points  = getNbIntegrationPoints(type);
+  UInt nb_quadrature_points = getNbIntegrationPoints(type);
 
   AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
-		      "The vector f(" << f.getID() << " size " << f.getSize()
-		      << ") has not the good size (" << nb_element << ").");
-  AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom ,
-		      "The vector f(" << f.getID()
-		      << ") has not the good number of component.");
+                      "The vector f(" << f.getID() << " size " << f.getSize()
+                                      << ") has not the good size ("
+                                      << nb_element << ").");
+  AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom,
+                      "The vector f("
+                          << f.getID()
+                          << ") has not the good number of component.");
   AKANTU_DEBUG_ASSERT(intf.getNbComponent() == nb_degree_of_freedom,
-		      "The vector intf(" << intf.getID()
-		      << ") has not the good number of component.");
+                      "The vector intf("
+                          << intf.getID()
+                          << ") has not the good number of component.");
   AKANTU_DEBUG_ASSERT(intf.getSize() == nb_element,
-		      "The vector intf(" << intf.getID()
-		      << ") has not the good size.");
+                      "The vector intf(" << intf.getID()
+                                         << ") has not the good size.");
 #endif
 
-#define INTEGRATE(type)					\
-  integrator. integrate<type>(f,			\
-			      intf,			\
-			      nb_degree_of_freedom,	\
-			      ghost_type,		\
-			      filter_elements);
+#define INTEGRATE(type)                                                        \
+  integrator.integrate<type>(f, intf, nb_degree_of_freedom, ghost_type,        \
+                             filter_elements);
 
   AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(INTEGRATE);
 #undef INTEGRATE
@@ -117,27 +118,27 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>
 
 /* -------------------------------------------------------------------------- */
 template <>
-void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>::
-gradientOnIntegrationPoints(__attribute__((unused)) const Array<Real> &u,
-			   __attribute__((unused)) Array<Real> &nablauq,
-			   __attribute__((unused)) const UInt nb_degree_of_freedom,
-			   __attribute__((unused)) const ElementType & type,
-			   __attribute__((unused)) const GhostType & ghost_type,
-			   __attribute__((unused)) const Array<UInt> & filter_elements) const {
+void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
+                      DefaultIntegrationOrderFunctor>::
+    gradientOnIntegrationPoints(const Array<Real> &, Array<Real> &, const UInt,
+                                const ElementType &, const GhostType &,
+                                const Array<UInt> &) const {
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
-
 /* -------------------------------------------------------------------------- */
-template<>
-template<>
-void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>::
-computeNormalsOnIntegrationPoints<_cohesive_1d_2>(__attribute__((unused)) const Array<Real> & field,
-					      Array<Real> & normal,
-					      const GhostType & ghost_type) const {
+template <>
+template <>
+void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
+                      DefaultIntegrationOrderFunctor>::
+    computeNormalsOnIntegrationPoints<_cohesive_1d_2>(
+        const Array<Real> &, Array<Real> & normal,
+        const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_ASSERT(mesh.getSpatialDimension() == 1, "Mesh dimension must be 1 to compute normals on 1D cohesive elements!");
+  AKANTU_DEBUG_ASSERT(
+      mesh.getSpatialDimension() == 1,
+      "Mesh dimension must be 1 to compute normals on 1D cohesive elements!");
   const ElementType type = _cohesive_1d_2;
   const ElementType facet_type = Mesh::getFacetType(type);
 
@@ -145,9 +146,9 @@ computeNormalsOnIntegrationPoints<_cohesive_1d_2>(__attribute__((unused)) const 
   normal.resize(nb_element);
 
   Array<Element> & facets =
-    mesh.getMeshFacets().getSubelementToElement(type, ghost_type);
+      mesh.getMeshFacets().getSubelementToElement(type, ghost_type);
   Array<std::vector<Element> > & segments =
-    mesh.getMeshFacets().getElementToSubelement(facet_type, ghost_type);
+      mesh.getMeshFacets().getElementToSubelement(facet_type, ghost_type);
 
   Real values[2];
 
@@ -162,13 +163,12 @@ computeNormalsOnIntegrationPoints<_cohesive_1d_2>(__attribute__((unused)) const 
     Real difference = values[0] - values[1];
 
     AKANTU_DEBUG_ASSERT(difference != 0.,
-			"Error in normal computation for cohesive elements");
+                        "Error in normal computation for cohesive elements");
 
     normal(elem) = difference / std::abs(difference);
   }
 
   AKANTU_DEBUG_OUT();
 }
-
 
 __END_AKANTU__

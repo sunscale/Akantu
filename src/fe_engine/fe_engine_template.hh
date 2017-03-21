@@ -43,15 +43,22 @@ __BEGIN_AKANTU__
 template <ElementKind k> struct AssembleLumpedTemplateHelper;
 template <ElementKind k> struct AssembleFieldMatrixHelper;
 
+struct DefaultIntegrationOrderFunctor {
+  template <ElementType type> static inline constexpr int getOrder() {
+    return ElementClassProperty<type>::polynomial_degree;
+  }
+};
+
 /* -------------------------------------------------------------------------- */
-template <template <ElementKind> class I, template <ElementKind> class S,
-          ElementKind kind = _ek_regular>
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind = _ek_regular,
+          class IntegrationOrderFunctor = DefaultIntegrationOrderFunctor>
 class FEEngineTemplate : public FEEngine {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef I<kind> Integ;
+  typedef I<kind, IntegrationOrderFunctor> Integ;
   typedef S<kind> Shape;
 
   FEEngineTemplate(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
@@ -233,11 +240,9 @@ public:
                            const GhostType & ghost_type = _not_ghost) const;
 
   /// assemble a field as a matrix (ex. rho to mass matrix)
-  template<class Functor>
-  void assembleFieldMatrix(Functor field_funct,
-                           UInt nb_degree_of_freedom,
-                           SparseMatrix & matrix,
-                           ElementType type,
+  template <class Functor>
+  void assembleFieldMatrix(Functor field_funct, UInt nb_degree_of_freedom,
+                           SparseMatrix & matrix, ElementType type,
                            const GhostType & ghost_type) const;
 
 #ifdef AKANTU_STRUCTURAL_MECHANICS
@@ -292,8 +297,7 @@ private:
 
   /// assemble a field as a matrix (ex. rho to mass matrix)
   template <class Functor, ElementType type>
-  void assembleFieldMatrix(Functor & field_funct,
-                           UInt nb_degree_of_freedom,
+  void assembleFieldMatrix(Functor & field_funct, UInt nb_degree_of_freedom,
                            SparseMatrix & matrix,
                            const GhostType & ghost_type) const;
 
