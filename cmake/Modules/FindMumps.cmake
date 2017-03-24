@@ -242,11 +242,9 @@ ${_u_first_precision}MUMPS_STRUC_C id;
     set(_retry_compile TRUE)
     # trying only as long as we add dependencies to avoid inifinte loop in case of an unkown dependency
     while (_retry_compile)
-      message("COMPILED FAILS outputs: \n${_out}")
       set(_retry_compile FALSE)
       foreach(_pdep ${_mumps_potential_dependencies})
         if(_out MATCHES "${_mumps_dep_symbol_${_pdep}}")
-          message("MISSING ${_pdep}")
           mumps_add_dependency(${_pdep})
           list(APPEND _libraries_all ${${_mumps_dep_link_${_pdep}}})
           set(_retry_compile TRUE)
