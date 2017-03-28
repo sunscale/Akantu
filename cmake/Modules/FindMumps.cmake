@@ -35,7 +35,6 @@ endif()
 #===============================================================================
 enable_language(Fortran)
 
-
 set(MUMPS_PRECISIONS)
 set(MUMPS_PLAT)
 foreach(_comp ${Mumps_FIND_COMPONENTS})
@@ -167,6 +166,7 @@ endfunction()
 
 function(mumps_find_dependencies)
   set(_libraries_all ${MUMPS_LIBRARIES_ALL})
+  set(_include_dirs ${MUMPS_INCLUDE_DIR})
 
   set(_mumps_test_dir "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}")
   file(READ ${CMAKE_CURRENT_LIST_DIR}/CheckFindMumps.c _output)
@@ -186,8 +186,11 @@ ${_u_first_precision}MUMPS_STRUC_C id;
     file(APPEND "${_mumps_test_dir}/mumps_test_code.c"
       "// #undef MUMPS_SEQ
 ")
+        find_package(MPI REQUIRED)
+    list(APPEND _compiler_specific ${MPI_C_LIBRARIES})
+    list(APPEND _include_dirs ${MPI_C_INCLUDE_PATH} ${MPI_INCLUDE_DIR})
   endif()
-  
+
   file(APPEND "${_mumps_test_dir}/mumps_test_code.c" "${_output}")
 
   #===============================================================================
@@ -225,66 +228,44 @@ ${_u_first_precision}MUMPS_STRUC_C id;
     Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS)
   #===============================================================================
 
-  set(_include_dirs ${MUMPS_INCLUDE_DIR})
-  if(NOT MUMPS_PLAT STREQUAL _seq)
-    find_package(MPI REQUIRED)
-    list(APPEND _compiler_specific ${MPI_C_LIBRARIES})
-    list(APPEND _include_dirs ${MPI_INCLUDE_DIR})
-  endif()
+  set(_retry_try_run TRUE)
 
-  try_run(_mumps_run _mumps_compiles "${_mumps_test_dir}" "${_mumps_test_dir}/mumps_test_code.c"
-    CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
-    LINK_LIBRARIES ${_libraries_all} ${_compiler_specific}
-    RUN_OUTPUT_VARIABLE _run
-    COMPILE_OUTPUT_VARIABLE _out)
+  # trying only as long as we add dependencies to avoid inifinte loop in case of an unkown dependency
+  while (_retry_try_run)
+    try_run(_mumps_run _mumps_compiles "${_mumps_test_dir}" "${_mumps_test_dir}/mumps_test_code.c"
+      CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
+      LINK_LIBRARIES ${_libraries_all} ${_compiler_specific}
+      RUN_OUTPUT_VARIABLE _run
+      COMPILE_OUTPUT_VARIABLE _out)
 
-  if(NOT _mumps_compiles)
-    set(_retry_compile TRUE)
-    # trying only as long as we add dependencies to avoid inifinte loop in case of an unkown dependency
-    while (_retry_compile)
-      set(_retry_compile FALSE)
-      foreach(_pdep ${_mumps_potential_dependencies})
-        if(_out MATCHES "${_mumps_dep_symbol_${_pdep}}")
-          mumps_add_dependency(${_pdep})
-          list(APPEND _libraries_all ${${_mumps_dep_link_${_pdep}}})
-          set(_retry_compile TRUE)
-        endif()
-      endforeach()
+    set(_retry_compile FALSE)
+    #message("COMPILATION outputs: \n${_out} \n RUN OUTPUT \n${_run}")
+    if(_mumps_compiles AND NOT (_mumps_run STREQUAL "FAILED_TO_RUN"))
+      break()
+    endif()
 
-      try_run(_mumps_run _mumps_compiles "${_mumps_test_dir}" "${_mumps_test_dir}/mumps_test_code.c"
-        CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
-        LINK_LIBRARIES ${_libraries_all} ${_compiler_specific}
-        RUN_OUTPUT_VARIABLE _run
-        COMPILE_OUTPUT_VARIABLE _out)
-
-      if(_mumps_compiles)
-        set(_retry_compile FALSE)
+    foreach(_pdep ${_mumps_potential_dependencies})
+      #message("CHECKING ${_pdep}")
+      set(_add_pdep FALSE)
+      if (NOT _mumps_compiles AND
+          _out MATCHES "${_mumps_dep_symbol_${_pdep}}")
+        set(_add_pdep TRUE)
+        #message("NEED COMPILE ${_pdep}")
+      elseif(_mumps_run STREQUAL "FAILED_TO_RUN" AND
+          DEFINED _mumps_run_dep_symbol_${_pdep} AND
+          _run MATCHES "${_mumps_run_dep_symbol_${_pdep}}")
+        set(_add_pdep TRUE)
+        #message("NEED RUN ${_pdep}")
       endif()
-    endwhile()
-  endif()
 
-  if(_mumps_run STREQUAL "FAILED_TO_RUN")
-    set(_one_dep_found TRUE)
+      if(_add_pdep)
+        mumps_add_dependency(${_pdep})
+        list(APPEND _libraries_all ${${_mumps_dep_link_${_pdep}}})
+        set(_retry_try_run TRUE)
+      endif()
+    endforeach()
+  endwhile()
 
-    while(_one_dep_found)
-      set(_one_dep_found FALSE)
-
-      foreach(_pdep ${_mumps_potential_dependencies})
-        if(DEFINED _mumps_run_dep_symbol_${_pdep} AND _run MATCHES "${_mumps_run_dep_symbol_${_pdep}}")
-          mumps_add_dependency(${_pdep})
-          list(APPEND _libraries_all ${${_mumps_dep_link_${_pdep}}})
-          set(_one_dep_found TRUE)
-        endif()
-      endforeach()
-
-      try_run(_mumps_run _mumps_compiles "${_mumps_test_dir}" "${_mumps_test_dir}/mumps_test_code.c"
-        CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
-        LINK_LIBRARIES ${_libraries_all} ${_compiler_specific}
-        RUN_OUTPUT_VARIABLE _run
-        COMPILE_OUTPUT_VARIABLE _out)
-    endwhile()
-  endif()
-  
   if(APPLE)
     # in doubt add some stuff because mumps was perhaps badly compiled
     mumps_add_dependency(pord)
