@@ -19,68 +19,72 @@ __END_AKANTU__
 
 #include "fe_engine.hh"
 #if defined(AKANTU_DEBUG_TOOLS)
-#  include "aka_debug_tools.hh"
+#include "aka_debug_tools.hh"
 #endif
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-#define INIT_INTEGRATOR(type)						\
-  computeQuadraturePoints<type>(ghost_type);				\
-  precomputeJacobiansOnQuadraturePoints<type>(nodes, ghost_type);	\
+#define INIT_INTEGRATOR(type)                                                  \
+  computeQuadraturePoints<type>(ghost_type);                                   \
+  precomputeJacobiansOnQuadraturePoints<type>(nodes, ghost_type);              \
   checkJacobians<type>(ghost_type);
 
-inline void IntegratorGauss<_ek_igfem>::initIntegrator(const Array<Real> & nodes,
-						       const ElementType & type,
-						       const GhostType & ghost_type) {
+template <class IOF>
+inline void
+IntegratorGauss<_ek_igfem, IOF>::initIntegrator(const Array<Real> & nodes,
+                                                const ElementType & type,
+                                                const GhostType & ghost_type) {
   AKANTU_BOOST_IGFEM_ELEMENT_SWITCH(INIT_INTEGRATOR);
 }
 
 #undef INIT_INTEGRATOR
 
 /* -------------------------------------------------------------------------- */
+template <class IOF>
 template <ElementType type>
-inline UInt IntegratorGauss<_ek_igfem>::getNbQuadraturePoints() const {
+inline UInt IntegratorGauss<_ek_igfem, IOF>::getNbIntegrationPoints(
+    const GhostType &) const {
   const ElementType sub_type_1 = ElementClassProperty<type>::sub_element_type_1;
   const ElementType sub_type_2 = ElementClassProperty<type>::sub_element_type_2;
-  UInt nb_quad_points_sub_1 = GaussIntegrationElement<sub_type_1>::getNbQuadraturePoints();
-  UInt nb_quad_points_sub_2 = GaussIntegrationElement<sub_type_2>::getNbQuadraturePoints();
+  UInt nb_quad_points_sub_1 =
+      GaussIntegrationElement<sub_type_1>::getNbQuadraturePoints();
+  UInt nb_quad_points_sub_2 =
+      GaussIntegrationElement<sub_type_2>::getNbQuadraturePoints();
   return (nb_quad_points_sub_1 + nb_quad_points_sub_2);
 }
 
 /* -------------------------------------------------------------------------- */
+template <class IOF>
 template <ElementType type>
-inline void IntegratorGauss<_ek_igfem>::integrateOnElement(const Array<Real> & f,
-							   Real * intf,
-							   UInt nb_degree_of_freedom,
-							   const UInt elem,
-							   const GhostType & ghost_type) const {
+inline void IntegratorGauss<_ek_igfem, IOF>::integrateOnElement(
+    const Array<Real> & f, Real * intf, UInt nb_degree_of_freedom,
+    const UInt elem, const GhostType & ghost_type) const {
 
   Array<Real> & jac_loc = jacobians(type, ghost_type);
 
-  UInt nb_quadrature_points = getNbQuadraturePoints<type>();
-  AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom ,
-  		      "The vector f do not have the good number of component.");
+  UInt nb_quadrature_points = getNbIntegrationPoints<type>();
+  AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom,
+                      "The vector f do not have the good number of component.");
 
-  Real * f_val    = f.storage() + elem * f.getNbComponent();
-  Real * jac_val  = jac_loc.storage() + elem * nb_quadrature_points;
+  Real * f_val = f.storage() + elem * f.getNbComponent();
+  Real * jac_val = jac_loc.storage() + elem * nb_quadrature_points;
 
   integrate(f_val, jac_val, intf, nb_degree_of_freedom, nb_quadrature_points);
 }
 
-
 /* -------------------------------------------------------------------------- */
+template <class IOF>
 template <ElementType type>
-inline Real IntegratorGauss<_ek_igfem>::integrate(const Vector<Real> & in_f,
-						  UInt index,
-						  const GhostType & ghost_type) const {
+inline Real IntegratorGauss<_ek_igfem, IOF>::integrate(
+    const Vector<Real> & in_f, UInt index, const GhostType & ghost_type) const {
   const Array<Real> & jac_loc = jacobians(type, ghost_type);
 
-  UInt nb_quadrature_points = getNbQuadraturePoints<type>();
-  AKANTU_DEBUG_ASSERT(in_f.size() == nb_quadrature_points ,
-  		      "The vector f do not have nb_quadrature_points entries.");
+  UInt nb_quadrature_points = getNbIntegrationPoints<type>();
+  AKANTU_DEBUG_ASSERT(in_f.size() == nb_quadrature_points,
+                      "The vector f do not have nb_quadrature_points entries.");
 
-  Real * jac_val  = jac_loc.storage() + index * nb_quadrature_points;
+  Real * jac_val = jac_loc.storage() + index * nb_quadrature_points;
   Real intf;
 
   integrate(in_f.storage(), jac_val, &intf, 1, nb_quadrature_points);
@@ -89,14 +93,15 @@ inline Real IntegratorGauss<_ek_igfem>::integrate(const Vector<Real> & in_f,
   return 0.;
 }
 
-
 /* -------------------------------------------------------------------------- */
-inline void IntegratorGauss<_ek_igfem>::integrate(Real *f, Real *jac, Real * inte,
-						  UInt nb_degree_of_freedom,
-						  UInt nb_quadrature_points) const {
+template <class IOF>
+inline void
+IntegratorGauss<_ek_igfem, IOF>::integrate(Real * f, Real * jac, Real * inte,
+                                           UInt nb_degree_of_freedom,
+                                           UInt nb_quadrature_points) const {
   memset(inte, 0, nb_degree_of_freedom * sizeof(Real));
 
-  Real *cjac = jac;
+  Real * cjac = jac;
   for (UInt q = 0; q < nb_quadrature_points; ++q) {
     for (UInt dof = 0; dof < nb_degree_of_freedom; ++dof) {
       inte[dof] += *f * *cjac;
@@ -106,23 +111,26 @@ inline void IntegratorGauss<_ek_igfem>::integrate(Real *f, Real *jac, Real * int
   }
 }
 
-
-
-
 /* -------------------------------------------------------------------------- */
+template <class IOF>
 template <ElementType type>
-inline const Matrix<Real> & IntegratorGauss<_ek_igfem>::getQuadraturePoints(const GhostType & ghost_type) const {
-  AKANTU_DEBUG_ASSERT(quadrature_points.exists(type, ghost_type),
-  		      "Quadrature points for type "
-  		      << quadrature_points.printType(type, ghost_type)
-  		      << " have not been initialized."
-  		      << " Did you use 'computeQuadraturePoints' function ?");
+inline const Matrix<Real> &
+IntegratorGauss<_ek_igfem, IOF>::getIntegrationPoints(
+    const GhostType & ghost_type) const {
+  AKANTU_DEBUG_ASSERT(
+      quadrature_points.exists(type, ghost_type),
+      "Quadrature points for type "
+          << quadrature_points.printType(type, ghost_type)
+          << " have not been initialized."
+          << " Did you use 'computeQuadraturePoints' function ?");
   return quadrature_points(type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
+template <class IOF>
 template <ElementType type>
-inline void IntegratorGauss<_ek_igfem>::computeQuadraturePoints(const GhostType & ghost_type) {
+inline void IntegratorGauss<_ek_igfem, IOF>::computeQuadraturePoints(
+    const GhostType & ghost_type) {
   /// typedef for the two subelement_types and the parent element type
   const ElementType sub_type_1 = ElementClassProperty<type>::sub_element_type_1;
   const ElementType sub_type_2 = ElementClassProperty<type>::sub_element_type_2;
@@ -134,30 +142,32 @@ inline void IntegratorGauss<_ek_igfem>::computeQuadraturePoints(const GhostType 
   quads_sub_2 = GaussIntegrationElement<sub_type_2>::getQuadraturePoints();
 
   /// store all quad points for the current type
-  UInt nb_quad_points_sub_1 = GaussIntegrationElement<sub_type_1>::getNbQuadraturePoints();
-  UInt nb_quad_points_sub_2 = GaussIntegrationElement<sub_type_2>::getNbQuadraturePoints();
+  UInt nb_quad_points_sub_1 =
+      GaussIntegrationElement<sub_type_1>::getNbQuadraturePoints();
+  UInt nb_quad_points_sub_2 =
+      GaussIntegrationElement<sub_type_2>::getNbQuadraturePoints();
 
-  UInt spatial_dimension    = mesh.getSpatialDimension();
+  UInt spatial_dimension = mesh.getSpatialDimension();
 
   Matrix<Real> & quads = quadrature_points(type, ghost_type);
-  quads = Matrix<Real>(spatial_dimension, nb_quad_points_sub_1 + nb_quad_points_sub_2);
+  quads = Matrix<Real>(spatial_dimension,
+                       nb_quad_points_sub_1 + nb_quad_points_sub_2);
 
-
-  Matrix<Real> quads_1(quads.storage(),
-		       quads.rows(), nb_quad_points_sub_1);
+  Matrix<Real> quads_1(quads.storage(), quads.rows(), nb_quad_points_sub_1);
   quads_1 = quads_sub_1;
 
   Matrix<Real> quads_2(quads.storage() + quads.rows() * nb_quad_points_sub_1,
-		       quads.rows(), nb_quad_points_sub_2);
+                       quads.rows(), nb_quad_points_sub_2);
 
   quads_2 = quads_sub_2;
 }
 
 /* -------------------------------------------------------------------------- */
+template <class IOF>
 template <ElementType type>
-inline void IntegratorGauss<_ek_igfem>::
-computeJacobianOnQuadPointsByElement(const Matrix<Real> & node_coords,
-				     Vector<Real> & jacobians) {
+inline void
+IntegratorGauss<_ek_igfem, IOF>::computeJacobianOnQuadPointsByElement(
+    const Matrix<Real> & node_coords, Vector<Real> & jacobians) {
 
   /// optimize: get the matrix from the ElementTypeMap
   Matrix<Real> quad = GaussIntegrationElement<type>::getQuadraturePoints();
@@ -165,89 +175,99 @@ computeJacobianOnQuadPointsByElement(const Matrix<Real> & node_coords,
   ElementClass<type>::computeJacobian(quad, node_coords, jacobians);
 }
 
-
 /* -------------------------------------------------------------------------- */
-inline IntegratorGauss<_ek_igfem>::IntegratorGauss(const Mesh & mesh,
-				       const ID & id,
-				       const MemoryID & memory_id) :
-  Integrator(mesh, id, memory_id) {
+template <class IOF>
+inline IntegratorGauss<_ek_igfem, IOF>::IntegratorGauss(
+    const Mesh & mesh, const ID & id, const MemoryID & memory_id)
+    : Integrator(mesh, id, memory_id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
+template <class IOF>
 template <ElementType type>
-inline void IntegratorGauss<_ek_igfem>::checkJacobians(const GhostType & ghost_type) const {
+inline void IntegratorGauss<_ek_igfem, IOF>::checkJacobians(
+    const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
   /// typedef for the two subelement_types and the parent element type
   const ElementType sub_type_1 = ElementClassProperty<type>::sub_element_type_1;
   const ElementType sub_type_2 = ElementClassProperty<type>::sub_element_type_2;
-  UInt nb_quad_points_sub_1 = GaussIntegrationElement<sub_type_1>::getNbQuadraturePoints();
-  UInt nb_quad_points_sub_2 = GaussIntegrationElement<sub_type_2>::getNbQuadraturePoints();
+  UInt nb_quad_points_sub_1 =
+      GaussIntegrationElement<sub_type_1>::getNbQuadraturePoints();
+  UInt nb_quad_points_sub_2 =
+      GaussIntegrationElement<sub_type_2>::getNbQuadraturePoints();
   UInt nb_quadrature_points = nb_quad_points_sub_1 + nb_quad_points_sub_2;
 
   UInt nb_element;
 
-  nb_element = mesh.getConnectivity(type,ghost_type).getSize();
+  nb_element = mesh.getConnectivity(type, ghost_type).getSize();
 
   Real * jacobians_val = jacobians(type, ghost_type).storage();
 
-  for (UInt i = 0; i < nb_element*nb_quadrature_points; ++i,++jacobians_val){
-    if(*jacobians_val < 0)
-      AKANTU_DEBUG_ERROR("Negative jacobian computed,"
-			 << " possible problem in the element node ordering (Quadrature Point "
-			 << i % nb_quadrature_points << ":"
-			 << i / nb_quadrature_points << ":"
-			 << type << ":"
-			 << ghost_type << ")");
+  for (UInt i = 0; i < nb_element * nb_quadrature_points;
+       ++i, ++jacobians_val) {
+    if (*jacobians_val < 0)
+      AKANTU_DEBUG_ERROR(
+          "Negative jacobian computed,"
+          << " possible problem in the element node ordering (Quadrature Point "
+          << i % nb_quadrature_points << ":" << i / nb_quadrature_points << ":"
+          << type << ":" << ghost_type << ")");
   }
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
+template <class IOF>
 template <ElementType type>
-inline void IntegratorGauss<_ek_igfem>::precomputeJacobiansOnQuadraturePoints(const Array<Real> & nodes,
-									      const GhostType & ghost_type) {
+inline void
+IntegratorGauss<_ek_igfem, IOF>::precomputeJacobiansOnQuadraturePoints(
+    const Array<Real> & nodes, const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   /// typedef for the two subelement_types and the parent element type
   const ElementType sub_type_1 = ElementClassProperty<type>::sub_element_type_1;
   const ElementType sub_type_2 = ElementClassProperty<type>::sub_element_type_2;
 
-  UInt spatial_dimension    = mesh.getSpatialDimension();
+  UInt spatial_dimension = mesh.getSpatialDimension();
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   /// get the number of nodes for the subelements and the parent element
-  UInt nb_nodes_sub_1 = ElementClass<sub_type_1>::getNbNodesPerInterpolationElement(); 
-  UInt nb_nodes_sub_2 = ElementClass<sub_type_2>::getNbNodesPerInterpolationElement();
-  UInt nb_quadrature_points_sub_1 = GaussIntegrationElement<sub_type_1>::getNbQuadraturePoints();
-  UInt nb_quadrature_points_sub_2 = GaussIntegrationElement<sub_type_2>::getNbQuadraturePoints();
-  UInt nb_quadrature_points = nb_quadrature_points_sub_1 + nb_quadrature_points_sub_2;
+  UInt nb_nodes_sub_1 =
+      ElementClass<sub_type_1>::getNbNodesPerInterpolationElement();
+  UInt nb_nodes_sub_2 =
+      ElementClass<sub_type_2>::getNbNodesPerInterpolationElement();
+  UInt nb_quadrature_points_sub_1 =
+      GaussIntegrationElement<sub_type_1>::getNbQuadraturePoints();
+  UInt nb_quadrature_points_sub_2 =
+      GaussIntegrationElement<sub_type_2>::getNbQuadraturePoints();
+  UInt nb_quadrature_points =
+      nb_quadrature_points_sub_1 + nb_quadrature_points_sub_2;
 
-  UInt nb_element = mesh.getNbElement(type,ghost_type);
+  UInt nb_element = mesh.getNbElement(type, ghost_type);
 
   Array<Real> * jacobians_tmp;
-  if(!jacobians.exists(type, ghost_type))
-    jacobians_tmp = &jacobians.alloc(nb_element*nb_quadrature_points,
-                                     1,
-                                     type,
+  if (!jacobians.exists(type, ghost_type))
+    jacobians_tmp = &jacobians.alloc(nb_element * nb_quadrature_points, 1, type,
                                      ghost_type);
   else {
     jacobians_tmp = &jacobians(type, ghost_type);
-    jacobians_tmp->resize(nb_element*nb_quadrature_points);
+    jacobians_tmp->resize(nb_element * nb_quadrature_points);
   }
 
   Array<Real>::vector_iterator jacobians_it =
-    jacobians_tmp->begin_reinterpret(nb_quadrature_points, nb_element);
+      jacobians_tmp->begin_reinterpret(nb_quadrature_points, nb_element);
 
-  Vector<Real> weights_sub_1 = GaussIntegrationElement<sub_type_1>::getWeights();
-  Vector<Real> weights_sub_2 = GaussIntegrationElement<sub_type_2>::getWeights();
+  Vector<Real> weights_sub_1 =
+      GaussIntegrationElement<sub_type_1>::getWeights();
+  Vector<Real> weights_sub_2 =
+      GaussIntegrationElement<sub_type_2>::getWeights();
 
   Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type);
 
-  Array<Real>::const_matrix_iterator x_it = x_el.begin(spatial_dimension,
-						       nb_nodes_per_element);
+  Array<Real>::const_matrix_iterator x_it =
+      x_el.begin(spatial_dimension, nb_nodes_per_element);
 
   //  Matrix<Real> local_coord(spatial_dimension, nb_nodes_per_element);
   for (UInt elem = 0; elem < nb_element; ++elem, ++jacobians_it, ++x_it) {
@@ -267,7 +287,7 @@ inline void IntegratorGauss<_ek_igfem>::precomputeJacobiansOnQuadraturePoints(co
     computeJacobianOnQuadPointsByElement<sub_type_2>(sub_2_coords, J_sub_2);
     J_sub_1 *= weights_sub_1;
     J_sub_2 *= weights_sub_2;
-    
+
     /// copy results into the jacobian vector for this element
     for (UInt i = 0; i < nb_quadrature_points_sub_1; ++i) {
       J(i) = J_sub_1(i);
@@ -276,24 +296,22 @@ inline void IntegratorGauss<_ek_igfem>::precomputeJacobiansOnQuadraturePoints(co
     for (UInt i = 0; i < nb_quadrature_points_sub_2; ++i) {
       J(i + nb_quadrature_points_sub_1) = J_sub_2(i);
     }
-
   }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
+template <class IOF>
 template <ElementType type>
-inline void IntegratorGauss<_ek_igfem>::integrate(const Array<Real> & in_f,
-						  Array<Real> &intf,
-						  UInt nb_degree_of_freedom,
-						  const GhostType & ghost_type,
-						  const Array<UInt> & filter_elements) const {
+inline void IntegratorGauss<_ek_igfem, IOF>::integrate(
+    const Array<Real> & in_f, Array<Real> & intf, UInt nb_degree_of_freedom,
+    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(jacobians.exists(type, ghost_type),
-		      "No jacobians for the type "
-		      << jacobians.printType(type, ghost_type));
+                      "No jacobians for the type "
+                          << jacobians.printType(type, ghost_type));
 
   const Matrix<Real> & quads = quadrature_points(type, ghost_type);
 
@@ -307,20 +325,21 @@ inline void IntegratorGauss<_ek_igfem>::integrate(const Array<Real> & in_f,
 
   UInt nb_element;
   Array<Real> * filtered_J = NULL;
-  if(filter_elements != empty_filter) {
+  if (filter_elements != empty_filter) {
     nb_element = filter_elements.getSize();
     filtered_J = new Array<Real>(0, jac_loc.getNbComponent());
-    FEEngine::filterElementalData(mesh, jac_loc, *filtered_J, type, ghost_type, filter_elements);
+    FEEngine::filterElementalData(mesh, jac_loc, *filtered_J, type, ghost_type,
+                                  filter_elements);
     const Array<Real> & cfiltered_J = *filtered_J; // \todo temporary patch
     J_it = cfiltered_J.begin_reinterpret(nb_points, 1, nb_element);
   } else {
-    nb_element = mesh.getNbElement(type,ghost_type);
+    nb_element = mesh.getNbElement(type, ghost_type);
     J_it = jac_loc.begin_reinterpret(nb_points, 1, nb_element);
   }
 
   intf.resize(nb_element);
 
-  f_it    = in_f.begin_reinterpret(nb_degree_of_freedom, nb_points, nb_element);
+  f_it = in_f.begin_reinterpret(nb_degree_of_freedom, nb_points, nb_element);
   inte_it = intf.begin_reinterpret(nb_degree_of_freedom, 1, nb_element);
 
   for (UInt el = 0; el < nb_element; ++el, ++J_it, ++f_it, ++inte_it) {
@@ -336,37 +355,38 @@ inline void IntegratorGauss<_ek_igfem>::integrate(const Array<Real> & in_f,
   AKANTU_DEBUG_OUT();
 }
 
-
 /* -------------------------------------------------------------------------- */
+template <class IOF>
 template <ElementType type>
-inline Real IntegratorGauss<_ek_igfem>::integrate(const Array<Real> & in_f,
-				      const GhostType & ghost_type,
-				      const Array<UInt> & filter_elements) const {
+inline Real IntegratorGauss<_ek_igfem, IOF>::integrate(
+    const Array<Real> & in_f, const GhostType & ghost_type,
+    const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(jacobians.exists(type, ghost_type),
-		      "No jacobians for the type "
-		      << jacobians.printType(type, ghost_type));
+                      "No jacobians for the type "
+                          << jacobians.printType(type, ghost_type));
 
   Array<Real> intfv(0, 1);
   integrate<type>(in_f, intfv, 1, ghost_type, filter_elements);
 
   UInt nb_values = intfv.getSize();
-  if(nb_values == 0) return 0.;
+  if (nb_values == 0)
+    return 0.;
 
   UInt nb_values_to_sum = nb_values >> 1;
 
   std::sort(intfv.begin(), intfv.end());
 
-
   // as long as the half is not empty
-  while(nb_values_to_sum) {
-    UInt remaining = (nb_values - 2*nb_values_to_sum);
-    if(remaining)  intfv(nb_values - 2) += intfv(nb_values - 1);
+  while (nb_values_to_sum) {
+    UInt remaining = (nb_values - 2 * nb_values_to_sum);
+    if (remaining)
+      intfv(nb_values - 2) += intfv(nb_values - 1);
 
     // sum to consecutive values and store the sum in the first half
     for (UInt i = 0; i < nb_values_to_sum; ++i) {
-      intfv(i) = intfv(2*i) + intfv(2*i + 1);
+      intfv(i) = intfv(2 * i) + intfv(2 * i + 1);
     }
 
     nb_values = nb_values_to_sum;
@@ -378,17 +398,16 @@ inline Real IntegratorGauss<_ek_igfem>::integrate(const Array<Real> & in_f,
 }
 
 /* -------------------------------------------------------------------------- */
+template <class IOF>
 template <ElementType type>
-inline void IntegratorGauss<_ek_igfem>::integrateOnQuadraturePoints(const Array<Real> & in_f,
-								    Array<Real> &intf,
-								    UInt nb_degree_of_freedom,
-								    const GhostType & ghost_type,
-								    const Array<UInt> & filter_elements) const {
+inline void IntegratorGauss<_ek_igfem, IOF>::integrateOnIntegrationPoints(
+    const Array<Real> & in_f, Array<Real> & intf, UInt nb_degree_of_freedom,
+    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(jacobians.exists(type, ghost_type),
-		      "No jacobians for the type "
-		      << jacobians.printType(type, ghost_type));
+                      "No jacobians for the type "
+                          << jacobians.printType(type, ghost_type));
 
   UInt nb_element;
   const Matrix<Real> & quads = quadrature_points(type, ghost_type);
@@ -402,19 +421,20 @@ inline void IntegratorGauss<_ek_igfem>::integrateOnQuadraturePoints(const Array<
   Array<Real>::const_vector_iterator f_it;
 
   Array<Real> * filtered_J = NULL;
-  if(filter_elements != empty_filter) {
+  if (filter_elements != empty_filter) {
     nb_element = filter_elements.getSize();
     filtered_J = new Array<Real>(0, jac_loc.getNbComponent());
-    FEEngine::filterElementalData(mesh, jac_loc, *filtered_J, type, ghost_type, filter_elements);
+    FEEngine::filterElementalData(mesh, jac_loc, *filtered_J, type, ghost_type,
+                                  filter_elements);
     J_it = filtered_J->begin();
   } else {
-    nb_element = mesh.getNbElement(type,ghost_type);
+    nb_element = mesh.getNbElement(type, ghost_type);
     J_it = jac_loc.begin();
   }
 
-  intf.resize(nb_element*nb_points);
+  intf.resize(nb_element * nb_points);
 
-  f_it    = in_f.begin(nb_degree_of_freedom);
+  f_it = in_f.begin(nb_degree_of_freedom);
   inte_it = intf.begin(nb_degree_of_freedom);
 
   for (UInt el = 0; el < nb_element; ++el, ++J_it, ++f_it, ++inte_it) {

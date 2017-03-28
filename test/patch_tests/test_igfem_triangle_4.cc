@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
   std::cout << "Error: " << L2_error << std::endl;
   if (L2_error > 1e-14) {
     finalize();
-    std::cout << "The patch test did not pass!!!!" << std::cout;
+    std::cout << "The patch test did not pass!!!!" << std::endl;
     return EXIT_FAILURE;
   }
 
