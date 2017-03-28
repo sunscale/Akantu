@@ -38,10 +38,14 @@
 #include "integrator.hh"
 #include "shape_functions.hh"
 /* -------------------------------------------------------------------------- */
+#include <type_traits>
+/* -------------------------------------------------------------------------- */
+
 
 __BEGIN_AKANTU__
-template <ElementKind k> struct AssembleLumpedTemplateHelper;
-template <ElementKind k> struct AssembleFieldMatrixHelper;
+template <ElementKind> struct AssembleLumpedTemplateHelper;
+template <ElementKind> struct AssembleFieldMatrixHelper;
+template <ElementKind, typename> struct AssembleFieldMatrixStructHelper;
 
 struct DefaultIntegrationOrderFunctor {
   template <ElementType type> static inline constexpr int getOrder() {
@@ -256,21 +260,21 @@ public:
                            const GhostType & ghost_type = _not_ghost) const;
 
   /// compute shapes function in a matrix for structural elements
-  void computeShapesMatrix(__attribute__((unused)) const ElementType & type,
-                           __attribute__((unused)) UInt nb_degree_of_freedom,
-                           __attribute__((unused)) UInt nb_nodes_per_element,
-                           __attribute__((unused)) Array<Real> * n,
-                           __attribute__((unused)) UInt id,
-                           __attribute__((unused)) UInt degree_to_interpolate,
-                           __attribute__((unused)) UInt degree_interpolated,
-                           __attribute__((unused)) const bool sign,
-                           __attribute__((unused))
+  void computeShapesMatrix(const ElementType & type,
+                           UInt nb_degree_of_freedom,
+                           UInt nb_nodes_per_element,
+                           Array<Real> * n,
+                           UInt id,
+                           UInt degree_to_interpolate,
+                           UInt degree_interpolated,
+                           const bool sign,
                            const GhostType & ghost_type = _not_ghost) const;
 #endif
 
 private:
   friend struct AssembleLumpedTemplateHelper<kind>;
   friend struct AssembleFieldMatrixHelper<kind>;
+  friend struct AssembleFieldMatrixStructHelper<kind, void>;
 
   /// templated function to compute the scaling to assemble a lumped matrix
   template <ElementType type>

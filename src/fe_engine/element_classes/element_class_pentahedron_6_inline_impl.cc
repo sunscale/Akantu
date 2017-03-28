@@ -62,60 +62,57 @@
  */
 
 /* -------------------------------------------------------------------------- */
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_pentahedron_6,
-				     _gt_pentahedron_6,
-				     _itp_lagrange_pentahedron_6,
-				     _ek_regular,
-				     3,
-				     _git_pentahedron,
-				     1);
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_pentahedron_6, _gt_pentahedron_6,
+                                     _itp_lagrange_pentahedron_6, _ek_regular,
+                                     3, _git_pentahedron, 1);
 
-AKANTU_DEFINE_SHAPE(_gt_pentahedron_6, _gst_prism);
+template <> struct GeometricalShape<_gt_pentahedron_6> {
+  static const GeometricalShapeType shape = _gst_prism;
+};
+// AKANTU_DEFINE_SHAPE(_gt_pentahedron_6, _gst_prism);
 
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type>
-inline void
-InterpolationElement<_itp_lagrange_pentahedron_6>::computeShapes(const vector_type & c,
-								 vector_type & N) {
+inline void InterpolationElement<_itp_lagrange_pentahedron_6>::computeShapes(
+    const vector_type & c, vector_type & N) {
   /// Natural coordinates
-  N(0) =  0.5*c(1)*(1-c(0));           // N1(q)
-  N(1) =  0.5*c(2)*(1-c(0));           // N2(q)
-  N(2) =  0.5*(1-c(1)-c(2))*(1-c(0));  // N3(q)
-  N(3) =  0.5*c(1)*(1+c(0));           // N4(q)
-  N(4) =  0.5*c(2)*(1+c(0));           // N5(q)
-  N(5) =  0.5*(1-c(1)-c(2))*(1+c(0));  // N6(q)
+  N(0) = 0.5 * c(1) * (1 - c(0));              // N1(q)
+  N(1) = 0.5 * c(2) * (1 - c(0));              // N2(q)
+  N(2) = 0.5 * (1 - c(1) - c(2)) * (1 - c(0)); // N3(q)
+  N(3) = 0.5 * c(1) * (1 + c(0));              // N4(q)
+  N(4) = 0.5 * c(2) * (1 + c(0));              // N5(q)
+  N(5) = 0.5 * (1 - c(1) - c(2)) * (1 + c(0)); // N6(q)
 }
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type, class matrix_type>
-inline void
-InterpolationElement<_itp_lagrange_pentahedron_6>::computeDNDS(const vector_type & c,
-                                                              matrix_type & dnds) {
-  dnds(0, 0) = -0.5*c(1);
-  dnds(0, 1) = -0.5*c(2);
-  dnds(0, 2) = -0.5*(1-c(1)-c(2));
-  dnds(0, 3) =  0.5*c(1);
-  dnds(0, 4) =  0.5*c(2);
-  dnds(0, 5) =  0.5*(1-c(1)-c(2));
+inline void InterpolationElement<_itp_lagrange_pentahedron_6>::computeDNDS(
+    const vector_type & c, matrix_type & dnds) {
+  dnds(0, 0) = -0.5 * c(1);
+  dnds(0, 1) = -0.5 * c(2);
+  dnds(0, 2) = -0.5 * (1 - c(1) - c(2));
+  dnds(0, 3) = 0.5 * c(1);
+  dnds(0, 4) = 0.5 * c(2);
+  dnds(0, 5) = 0.5 * (1 - c(1) - c(2));
 
-  dnds(1, 0) =  0.5*(1-c(0));
-  dnds(1, 1) =  0.0;
-  dnds(1, 2) = -0.5*(1-c(0));
-  dnds(1, 3) =  0.5*(1+c(0));
-  dnds(1, 4) =  0.0;
-  dnds(1, 5) = -0.5*(1+c(0));
- 
-  dnds(2, 0) =  0.0;
-  dnds(2, 1) =  0.5*(1-c(0));
-  dnds(2, 2) = -0.5*(1-c(0));
-  dnds(2, 3) =  0.0;
-  dnds(2, 4) =  0.5*(1+c(0));
-  dnds(2, 5) = -0.5*(1+c(0));
+  dnds(1, 0) = 0.5 * (1 - c(0));
+  dnds(1, 1) = 0.0;
+  dnds(1, 2) = -0.5 * (1 - c(0));
+  dnds(1, 3) = 0.5 * (1 + c(0));
+  dnds(1, 4) = 0.0;
+  dnds(1, 5) = -0.5 * (1 + c(0));
+
+  dnds(2, 0) = 0.0;
+  dnds(2, 1) = 0.5 * (1 - c(0));
+  dnds(2, 2) = -0.5 * (1 - c(0));
+  dnds(2, 3) = 0.0;
+  dnds(2, 4) = 0.5 * (1 + c(0));
+  dnds(2, 5) = -0.5 * (1 + c(0));
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
+template <>
 inline Real
 GeometricalElement<_gt_pentahedron_6>::getInradius(const Matrix<Real> & coord) {
   Vector<Real> u0 = coord(0);
@@ -127,9 +124,9 @@ GeometricalElement<_gt_pentahedron_6>::getInradius(const Matrix<Real> & coord) {
   Real b = u1.distance(u2);
   Real c = u2.distance(u3);
   Real d = u3.distance(u0);
-  Real s = (a+b+c)/2;
-  Real A = std::sqrt(s*(s-a)*(s-b)*(s-c));
-  Real ra = 2*s/A;
+  Real s = (a + b + c) / 2;
+  Real A = std::sqrt(s * (s - a) * (s - b) * (s - c));
+  Real ra = 2 * s / A;
   Real p = std::min(ra, d);
 
   return p;

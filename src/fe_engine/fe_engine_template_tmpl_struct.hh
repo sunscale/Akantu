@@ -78,32 +78,48 @@ inline const Array<Real> & FEEngineTemplate<
 }
 
 /* -------------------------------------------------------------------------- */
-template <>
-inline void FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural,
-                             DefaultIntegrationOrderFunctor>::
-    assembleFieldMatrix(const Array<Real> & field_1, UInt nb_degree_of_freedom,
-                        SparseMatrix & M, Array<Real> * n,
-                        ElementTypeMapArray<Real> & rotation_mat,
-                        const ElementType & type,
-                        const GhostType & ghost_type) const {
+template <ElementKind kind, typename = void>
+struct AssembleFieldMatrixStructHelper {};
+
+template <ElementKind kind>
+struct AssembleFieldMatrixStructHelper<
+    kind, typename std::enable_if<kind == _ek_structural>::type> {
+  template <template <ElementKind, class> class I,
+            template <ElementKind> class S, ElementKind k, class IOF>
+  static void call(const FEEngineTemplate<I, S, k, IOF> & fem,
+                   const Array<Real> & field_1, UInt nb_degree_of_freedom,
+                   SparseMatrix & M, Array<Real> * n,
+                   ElementTypeMapArray<Real> & rotation_mat,
+                   const ElementType & type, const GhostType & ghost_type) {
+#define ASSEMBLE_MATRIX(type)                                                  \
+  fem.template assembleFieldMatrix<type>(field_1, nb_degree_of_freedom, M, n,  \
+                                         rotation_mat, ghost_type)
+
+    AKANTU_BOOST_KIND_ELEMENT_SWITCH(ASSEMBLE_MATRIX, _ek_structural);
+#undef ASSEMBLE_MATRIX
+  }
+};
+
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind, class IntegrationOrderFunctor>
+inline void
+FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
+    const Array<Real> & field_1, UInt nb_degree_of_freedom, SparseMatrix & M,
+    Array<Real> * n, ElementTypeMapArray<Real> & rotation_mat,
+    const ElementType & type, const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
-#define ASSEMBLE_MATRIX(type)                                                  \
-  assembleFieldMatrix<type>(field_1, nb_degree_of_freedom, M, n, rotation_mat, \
-                            ghost_type)
-
-  AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(ASSEMBLE_MATRIX);
-  ;
-
-#undef ASSEMBLE_MATRIX
+  AssembleFieldMatrixStructHelper<kind>::template call(
+      *this, field_1, nb_degree_of_freedom, M, n, rotation_mat, type,
+      ghost_type);
 
   AKANTU_DEBUG_OUT();
 }
-
 /* -------------------------------------------------------------------------- */
-template <template <ElementKind> class I, template <ElementKind> class S,
-          ElementKind kind, DefaultIntegrationOrderFunctor>
-inline void FEEngineTemplate<I, S, kind>::computeShapesMatrix(
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind, class IntegrationOrderFunctor>
+inline void
+FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeShapesMatrix(
     const ElementType &, UInt, UInt, Array<Real> *,
     __attribute__((unused)) UInt, UInt, UInt, const bool,
     const GhostType &) const {

@@ -368,7 +368,6 @@ __END_AKANTU__
 
 #include "element_class_tmpl.hh"
 
-
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 #include "element_class_point_1_inline_impl.cc"
