@@ -38,6 +38,7 @@ register_test(test_synchronizer_communication
   SOURCES test_synchronizer_communication.cc
   DEPENDS test_synchronizer_communication_mesh
   PACKAGE parallel
+  PARALLEL
   )
 
 # if(DEFINED AKANTU_DAMAGE_NON_LOCAL)

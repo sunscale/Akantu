@@ -247,7 +247,7 @@ public:
 
     this->assembleResidual(_not_ghost);
 
-   this->synchronize(_gst_user_1);
+    this->synchronize(_gst_user_1);
 
     this->getDOFManager().assembleToResidual("disp", internal_forces, -1.);
   }

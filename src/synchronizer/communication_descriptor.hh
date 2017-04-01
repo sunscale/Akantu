@@ -109,6 +109,9 @@ public:
   /// get the communication scheme
   Array<Entity> & getScheme();
 
+  /// reset the buffer before pack or after unpack
+  void resetBuffer();
+
   /// pack data for entities in the buffer
   void packData(DataAccessor<Entity> & accessor);
 

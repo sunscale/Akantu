@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "synchronizer_impl.hh"
 #include "mesh_events.hh"
+#include "synchronizer_impl.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_NODE_SYNCHRONIZER_HH__
@@ -37,7 +37,8 @@
 
 namespace akantu {
 
-class NodeSynchronizer : public MeshEventHandler, public SynchronizerImpl<UInt> {
+class NodeSynchronizer : public MeshEventHandler,
+                         public SynchronizerImpl<UInt> {
 public:
   NodeSynchronizer(
       Mesh & mesh, const ID & id = "element_synchronizer",
@@ -49,27 +50,21 @@ public:
   friend class NodeInfoPerProc;
 
   /// function to implement to react on  akantu::NewNodesEvent
-  virtual void onNodesAdded(__attribute__((unused)) const Array<UInt> & nodes_list,
-                            __attribute__((unused)) const NewNodesEvent & event) {}
+  virtual void onNodesAdded(const Array<UInt> &, const NewNodesEvent &) {}
   /// function to implement to react on  akantu::RemovedNodesEvent
-  virtual void onNodesRemoved(__attribute__((unused)) const Array<UInt> & nodes_list,
-                              __attribute__((unused)) const Array<UInt> & new_numbering,
-                              __attribute__((unused)) const RemovedNodesEvent & event) {}
+  virtual void onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
+                              const RemovedNodesEvent &) {}
   /// function to implement to react on  akantu::NewElementsEvent
-  virtual void onElementsAdded(__attribute__((unused)) const Array<Element> & elements_list,
-                               __attribute__((unused)) const NewElementsEvent & event) {}
+  virtual void onElementsAdded(const Array<Element> &,
+                               const NewElementsEvent &) {}
   /// function to implement to react on  akantu::RemovedElementsEvent
-  virtual void
-  onElementsRemoved(__attribute__((unused)) const Array<Element> & elements_list,
-                    __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-                    __attribute__((unused)) const RemovedElementsEvent & event) {}
+  virtual void onElementsRemoved(const Array<Element> &,
+                                 const ElementTypeMapArray<UInt> &,
+                                 const RemovedElementsEvent &) {}
   /// function to implement to react on  akantu::ChangedElementsEvent
-  virtual void
-  onElementsChanged(__attribute__((unused)) const Array<Element> & old_elements_list,
-                    __attribute__((unused)) const Array<Element> & new_elements_list,
-                    __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-                    __attribute__((unused)) const ChangedElementsEvent & event) {}
-
+  virtual void onElementsChanged(const Array<Element> &, const Array<Element> &,
+                                 const ElementTypeMapArray<UInt> &,
+                                 const ChangedElementsEvent &) {}
 
 public:
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
@@ -78,6 +73,6 @@ protected:
   Mesh & mesh;
 };
 
-}  // akantu
+} // akantu
 
 #endif /* __AKANTU_NODE_SYNCHRONIZER_HH__ */

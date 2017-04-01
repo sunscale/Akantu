@@ -213,7 +213,7 @@ void Communications<Entity>::incrementPending(
 template <class Entity>
 void Communications<Entity>::decrementPending(
     const SynchronizationTag & tag, const CommunicationSendRecv & sr) {
-  ++(pending_communications[sr][tag]);
+  --(pending_communications[sr][tag]);
 }
 
 template <class Entity>

@@ -77,6 +77,11 @@ Array<Entity> & CommunicationDescriptor<Entity>::getScheme() {
   return scheme;
 }
 
+template <class Entity>
+void CommunicationDescriptor<Entity>::resetBuffer() {
+  this->communication.buffer().reset();
+}
+
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 void CommunicationDescriptor<Entity>::packData(

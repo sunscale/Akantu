@@ -57,8 +57,8 @@ void SynchronizerImpl<Entity>::asynchronousSynchronizeImpl(
   if (this->communications.hasPendingRecv(tag)) {
     AKANTU_CUSTOM_EXCEPTION_INFO(
         debug::CommunicationException(),
-        "There must be some pending receive communications."
-            << " Tag is " << tag);
+        "There must still be some pending receive communications."
+        << " Tag is " << tag << " Cannot start new ones");
   }
 
   auto recv_it = this->communications.begin_recv(tag);
@@ -80,6 +80,7 @@ void SynchronizerImpl<Entity>::asynchronousSynchronizeImpl(
   auto send_end = communications.end_send(tag);
   for (; send_it != send_end; ++send_it) {
     auto comm_desc = *send_it;
+    comm_desc.resetBuffer();
 
 #ifndef AKANTU_NDEBUG
     this->packSanityCheckData(comm_desc);
@@ -115,6 +116,7 @@ void SynchronizerImpl<Entity>::waitEndSynchronizeImpl(
 #endif
 
     comm_desc.unpackData(data_accessor);
+    comm_desc.resetBuffer();
     comm_desc.freeRequest();
   }
 
