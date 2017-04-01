@@ -77,9 +77,9 @@ void MeshUtils::buildNode2Elements(const Mesh & mesh,
     for (; first != last; ++first) {
       ElementType type = *first;
       UInt nb_element = mesh.getNbElement(type, *gt);
-      Array<UInt>::const_iterator<Vector<UInt> > conn_it =
-          mesh.getConnectivity(type, *gt).begin(
-              Mesh::getNbNodesPerElement(type));
+      Array<UInt>::const_iterator<Vector<UInt>> conn_it =
+        mesh.getConnectivity(type, *gt).begin(
+            Mesh::getNbNodesPerElement(type));
 
       for (UInt el = 0; el < nb_element; ++el, ++conn_it)
         for (UInt n = 0; n < conn_it->size(); ++n)
@@ -106,9 +106,9 @@ void MeshUtils::buildNode2Elements(const Mesh & mesh,
       e.type = type;
       e.kind = Mesh::getKind(type);
       UInt nb_element = mesh.getNbElement(type, *gt);
-      Array<UInt>::const_iterator<Vector<UInt> > conn_it =
-          mesh.getConnectivity(type, *gt).begin(
-              Mesh::getNbNodesPerElement(type));
+      Array<UInt>::const_iterator<Vector<UInt>> conn_it =
+        mesh.getConnectivity(type, *gt).begin(
+            Mesh::getNbNodesPerElement(type));
 
       for (UInt el = 0; el < nb_element; ++el, ++conn_it) {
         e.element = el;
@@ -315,7 +315,8 @@ void MeshUtils::buildFacetsDimension(
   const Mesh * mesh_facets_parent = nullptr;
   try {
     mesh_facets_parent = &mesh_facets.getMeshParent();
-  } catch(...) {}
+  } catch (...) {
+  }
 
   mesh_facets.defineMeshParent(mesh);
   MeshAccessor mesh_accessor(mesh_facets);
@@ -374,7 +375,7 @@ void MeshUtils::buildFacetsDimension(
         ElementType facet_type = facet_types(ft);
         UInt nb_element = mesh.getNbElement(type, ghost_type);
 
-        Array<std::vector<Element> > * element_to_subelement =
+        Array<std::vector<Element>> * element_to_subelement =
           &mesh_facets.getElementToSubelement(facet_type, ghost_type);
         Array<UInt> * connectivity_facets =
           &mesh_facets.getConnectivity(facet_type, ghost_type);
@@ -570,7 +571,7 @@ void MeshUtils::buildFacetsDimension(
   }
 
   // restore the parent of mesh_facet
-  if(mesh_facets_parent)
+  if (mesh_facets_parent)
     mesh_facets.defineMeshParent(*mesh_facets_parent);
 
   AKANTU_DEBUG_OUT();
@@ -608,12 +609,12 @@ void MeshUtils::renumberMeshNodes(Mesh & mesh,
   MeshAccessor mesh_accessor(mesh);
 
   /// copy the renumbered connectivity to the right place
-  Array<UInt> & local_conn = mesh.getConnectivity(type);
+  Array<UInt> & local_conn = mesh_accessor.getConnectivity(type);
   local_conn.resize(nb_local_element);
   memcpy(local_conn.storage(), local_connectivities.storage(),
          nb_local_element * nb_nodes_per_element * sizeof(UInt));
 
-  Array<UInt> & ghost_conn = mesh.getConnectivity(type, _ghost);
+  Array<UInt> & ghost_conn = mesh_accessor.getConnectivity(type, _ghost);
   ghost_conn.resize(nb_ghost_element);
   memcpy(ghost_conn.storage(), local_connectivities.storage() +
                                    nb_local_element * nb_nodes_per_element,
@@ -747,7 +748,7 @@ void MeshUtils::doubleNodes(Mesh & mesh, const std::vector<UInt> & old_nodes,
   position.resize(new_nb_nodes);
   doubled_nodes.resize(new_nb_doubled_nodes);
 
-  Array<Real>::iterator<Vector<Real> > position_begin =
+  Array<Real>::iterator<Vector<Real>> position_begin =
       position.begin(spatial_dimension);
 
   for (UInt n = 0; n < old_nodes.size(); ++n) {
@@ -794,7 +795,7 @@ void MeshUtils::doubleFacet(Mesh & mesh, Mesh & mesh_facets,
       const UInt nb_subfacet_per_facet =
           Mesh::getNbFacetsPerElement(type_facet);
       GhostType gt_subfacet = _casper;
-      Array<std::vector<Element> > * f_to_subfacet = NULL;
+      Array<std::vector<Element>> * f_to_subfacet = NULL;
 
       Array<Element> & subfacet_to_facet =
           mesh_facets.getSubelementToElement(type_facet, gt_facet);
@@ -812,9 +813,9 @@ void MeshUtils::doubleFacet(Mesh & mesh, Mesh & mesh_facets,
       UInt new_facet = old_nb_facet - 1;
       Element new_facet_el(type_facet, 0, gt_facet);
 
-      Array<Element>::iterator<Vector<Element> > subfacet_to_facet_begin =
+      Array<Element>::iterator<Vector<Element>> subfacet_to_facet_begin =
           subfacet_to_facet.begin(nb_subfacet_per_facet);
-      Array<UInt>::iterator<Vector<UInt> > conn_facet_begin =
+      Array<UInt>::iterator<Vector<UInt>> conn_facet_begin =
           conn_facet.begin(nb_nodes_per_facet);
 
       for (UInt facet = 0; facet < nb_facet_to_double; ++facet) {
@@ -893,7 +894,7 @@ UInt MeshUtils::updateFacetToDouble(
       Array<UInt> & f_to_double =
           mesh_facets.getData<UInt>("facet_to_double", type_facet, gt_facet);
 
-      Array<std::vector<Element> > & element_to_facet =
+      Array<std::vector<Element>> & element_to_facet =
           mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
       ElementType el_type = _not_defined;
@@ -982,13 +983,13 @@ void MeshUtils::resetFacetToDouble(Mesh & mesh_facets) {
       ElementType type = *it;
       mesh_facets.getDataPointer<UInt>("facet_to_double", type, gt, 1, false);
 
-      mesh_facets.getDataPointer<std::vector<Element> >(
+      mesh_facets.getDataPointer<std::vector<Element>>(
           "facets_to_subfacet_double", type, gt, 1, false);
 
-      mesh_facets.getDataPointer<std::vector<Element> >(
+      mesh_facets.getDataPointer<std::vector<Element>>(
           "elements_to_subfacet_double", type, gt, 1, false);
 
-      mesh_facets.getDataPointer<std::vector<Element> >(
+      mesh_facets.getDataPointer<std::vector<Element>>(
           "subfacets_to_subsubfacet_double", type, gt, 1, false);
     }
   }
@@ -1033,9 +1034,9 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
 
       Array<UInt> * conn_subfacet = NULL;
       Array<UInt> * sf_to_double = NULL;
-      Array<std::vector<Element> > * sf_to_subfacet_double = NULL;
-      Array<std::vector<Element> > * f_to_subfacet_double = NULL;
-      Array<std::vector<Element> > * el_to_subfacet_double = NULL;
+      Array<std::vector<Element>> * sf_to_subfacet_double = NULL;
+      Array<std::vector<Element>> * f_to_subfacet_double = NULL;
+      Array<std::vector<Element>> * el_to_subfacet_double = NULL;
 
       UInt nb_subfacet = Mesh::getNbFacetsPerElement(type_facet);
 
@@ -1051,7 +1052,7 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
       Array<Element> & subfacet_to_facet =
           mesh_facets.getSubelementToElement(type_facet, gt_facet);
 
-      Array<std::vector<Element> > & element_to_facet =
+      Array<std::vector<Element>> & element_to_facet =
           mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
       Array<Element> * subsubfacet_to_subfacet = NULL;
@@ -1066,7 +1067,7 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
         subfacet_list = new std::vector<Element>;
 
       /// map to filter subfacets
-      Array<std::vector<Element> > * facet_to_subfacet = NULL;
+      Array<std::vector<Element>> * facet_to_subfacet = NULL;
 
       /// this is used to make sure that both new and old facets are
       /// checked
@@ -1104,12 +1105,12 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
                     "facet_to_double", type_subfacet, gt_subfacet);
 
                 f_to_subfacet_double =
-                    &mesh_facets.getData<std::vector<Element> >(
+                    &mesh_facets.getData<std::vector<Element>>(
                         "facets_to_subfacet_double", type_subfacet,
                         gt_subfacet);
 
                 el_to_subfacet_double =
-                    &mesh_facets.getData<std::vector<Element> >(
+                    &mesh_facets.getData<std::vector<Element>>(
                         "elements_to_subfacet_double", type_subfacet,
                         gt_subfacet);
 
@@ -1135,17 +1136,17 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
                       "facet_to_double", type_subsubfacet, gt_subsubfacet);
 
                   sf_to_subfacet_double =
-                      &mesh_facets.getData<std::vector<Element> >(
+                      &mesh_facets.getData<std::vector<Element>>(
                           "subfacets_to_subsubfacet_double", type_subsubfacet,
                           gt_subsubfacet);
 
                   f_to_subfacet_double =
-                      &mesh_facets.getData<std::vector<Element> >(
+                      &mesh_facets.getData<std::vector<Element>>(
                           "facets_to_subfacet_double", type_subsubfacet,
                           gt_subsubfacet);
 
                   el_to_subfacet_double =
-                      &mesh_facets.getData<std::vector<Element> >(
+                      &mesh_facets.getData<std::vector<Element>>(
                           "elements_to_subfacet_double", type_subsubfacet,
                           gt_subsubfacet);
 
@@ -1247,7 +1248,7 @@ void MeshUtils::updateCohesiveData(Mesh & mesh, Mesh & mesh_facets,
           mesh.getConnectivityPointer(type_cohesive, gt_facet);
       UInt nb_nodes_per_facet = Mesh::getNbNodesPerElement(type_facet);
 
-      Array<std::vector<Element> > & element_to_facet =
+      Array<std::vector<Element>> & element_to_facet =
           mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
       UInt old_nb_cohesive_elements = conn_cohesive->getSize();
@@ -1329,7 +1330,7 @@ void MeshUtils::doublePointFacet(Mesh & mesh, Mesh & mesh_facets,
 
       Array<UInt> & conn_facet =
           mesh_facets.getConnectivity(type_facet, gt_facet);
-      Array<std::vector<Element> > & element_to_facet =
+      Array<std::vector<Element>> & element_to_facet =
           mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
       const Array<UInt> & f_to_double =
@@ -1403,18 +1404,18 @@ void MeshUtils::updateQuadraticSegments(Mesh & mesh, Mesh & mesh_facets,
 
   Array<UInt> & conn_facet = mesh_facets.getConnectivity(type_facet, gt_facet);
 
-  Array<std::vector<Element> > & element_to_facet =
+  Array<std::vector<Element>> & element_to_facet =
       mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
   /// this ones matter only for segments in 3D
-  Array<std::vector<Element> > * el_to_subfacet_double = NULL;
-  Array<std::vector<Element> > * f_to_subfacet_double = NULL;
+  Array<std::vector<Element>> * el_to_subfacet_double = NULL;
+  Array<std::vector<Element>> * f_to_subfacet_double = NULL;
 
   if (third_dim_segments) {
-    el_to_subfacet_double = &mesh_facets.getData<std::vector<Element> >(
+    el_to_subfacet_double = &mesh_facets.getData<std::vector<Element>>(
         "elements_to_subfacet_double", type_facet, gt_facet);
 
-    f_to_subfacet_double = &mesh_facets.getData<std::vector<Element> >(
+    f_to_subfacet_double = &mesh_facets.getData<std::vector<Element>>(
         "facets_to_subfacet_double", type_facet, gt_facet);
   }
 
@@ -1477,12 +1478,12 @@ void MeshUtils::updateSubfacetToFacet(Mesh & mesh_facets,
   UInt old_nb_subfacet = mesh_facets.getNbElement(type_subfacet, gt_subfacet) -
                          nb_subfacet_to_double;
 
-  Array<std::vector<Element> > * facet_list = NULL;
+  Array<std::vector<Element>> * facet_list = NULL;
   if (facet_mode)
-    facet_list = &mesh_facets.getData<std::vector<Element> >(
+    facet_list = &mesh_facets.getData<std::vector<Element>>(
         "facets_to_subfacet_double", type_subfacet, gt_subfacet);
   else
-    facet_list = &mesh_facets.getData<std::vector<Element> >(
+    facet_list = &mesh_facets.getData<std::vector<Element>>(
         "subfacets_to_subsubfacet_double", type_subfacet, gt_subfacet);
 
   Element old_subfacet_el(type_subfacet, 0, gt_subfacet);
@@ -1534,16 +1535,16 @@ void MeshUtils::updateFacetToSubfacet(Mesh & mesh_facets,
       mesh_facets.getData<UInt>("facet_to_double", type_subfacet, gt_subfacet);
   UInt nb_subfacet_to_double = sf_to_double.getSize();
 
-  Array<std::vector<Element> > & facet_to_subfacet =
+  Array<std::vector<Element>> & facet_to_subfacet =
       mesh_facets.getElementToSubelement(type_subfacet, gt_subfacet);
 
-  Array<std::vector<Element> > * facet_to_subfacet_double = NULL;
+  Array<std::vector<Element>> * facet_to_subfacet_double = NULL;
 
   if (facet_mode) {
-    facet_to_subfacet_double = &mesh_facets.getData<std::vector<Element> >(
+    facet_to_subfacet_double = &mesh_facets.getData<std::vector<Element>>(
         "facets_to_subfacet_double", type_subfacet, gt_subfacet);
   } else {
-    facet_to_subfacet_double = &mesh_facets.getData<std::vector<Element> >(
+    facet_to_subfacet_double = &mesh_facets.getData<std::vector<Element>>(
         "subfacets_to_subsubfacet_double", type_subfacet, gt_subfacet);
   }
 
@@ -1616,18 +1617,18 @@ void MeshUtils::doubleSubfacet(Mesh & mesh, Mesh & mesh_facets,
       }
 
       /// update facet and element connectivity
-      Array<std::vector<Element> > & f_to_subfacet_double =
-          mesh_facets.getData<std::vector<Element> >(
-              "facets_to_subfacet_double", type_subfacet, gt_subfacet);
+      Array<std::vector<Element>> & f_to_subfacet_double =
+          mesh_facets.getData<std::vector<Element>>("facets_to_subfacet_double",
+                                                    type_subfacet, gt_subfacet);
 
-      Array<std::vector<Element> > & el_to_subfacet_double =
-          mesh_facets.getData<std::vector<Element> >(
+      Array<std::vector<Element>> & el_to_subfacet_double =
+          mesh_facets.getData<std::vector<Element>>(
               "elements_to_subfacet_double", type_subfacet, gt_subfacet);
 
-      Array<std::vector<Element> > * sf_to_subfacet_double = NULL;
+      Array<std::vector<Element>> * sf_to_subfacet_double = NULL;
 
       if (spatial_dimension == 3)
-        sf_to_subfacet_double = &mesh_facets.getData<std::vector<Element> >(
+        sf_to_subfacet_double = &mesh_facets.getData<std::vector<Element>>(
             "subfacets_to_subsubfacet_double", type_subfacet, gt_subfacet);
 
       for (UInt sf = 0; sf < nb_subfacet_to_double; ++sf) {
@@ -1693,7 +1694,7 @@ void MeshUtils::flipFacets(
     const Array<UInt> & g_connectivity =
         global_connectivity(type_facet, gt_facet);
 
-    Array<std::vector<Element> > & el_to_f =
+    Array<std::vector<Element>> & el_to_f =
         mesh_facets.getElementToSubelement(type_facet, gt_facet);
     Array<Element> & subfacet_to_facet =
         mesh_facets.getSubelementToElement(type_facet, gt_facet);
@@ -1708,13 +1709,13 @@ void MeshUtils::flipFacets(
     Array<UInt> & global_conn_tmp =
         global_connectivity_tmp(type_facet, gt_facet);
 
-    Array<UInt>::iterator<Vector<UInt> > conn_it =
+    Array<UInt>::iterator<Vector<UInt>> conn_it =
         connectivity.begin(nb_nodes_per_facet);
-    Array<UInt>::iterator<Vector<UInt> > gconn_tmp_it =
+    Array<UInt>::iterator<Vector<UInt>> gconn_tmp_it =
         global_conn_tmp.begin(nb_nodes_per_facet);
-    Array<UInt>::const_iterator<Vector<UInt> > conn_glob_it =
+    Array<UInt>::const_iterator<Vector<UInt>> conn_glob_it =
         g_connectivity.begin(nb_nodes_per_facet);
-    Array<Element>::iterator<Vector<Element> > subf_to_f =
+    Array<Element>::iterator<Vector<Element>> subf_to_f =
         subfacet_to_facet.begin(nb_subfacet_per_facet);
 
     UInt * conn_tmp_pointer = new UInt[nb_nodes_per_facet];
@@ -1862,14 +1863,14 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
       for (; tit != tend; ++tit) {
         facet_element.type = *tit;
 
-        Array<std::vector<Element> > & element_to_subelement =
+        Array<std::vector<Element>> & element_to_subelement =
             mesh.getElementToSubelement(*tit, *git);
 
         const Array<UInt> & connectivity = mesh.getConnectivity(*tit, *git);
 
-        Array<UInt>::const_iterator<Vector<UInt> > fit =
+        Array<UInt>::const_iterator<Vector<UInt>> fit =
             connectivity.begin(mesh.getNbNodesPerElement(*tit));
-        Array<UInt>::const_iterator<Vector<UInt> > fend =
+        Array<UInt>::const_iterator<Vector<UInt>> fend =
             connectivity.end(mesh.getNbNodesPerElement(*tit));
 
         UInt fid = 0;
@@ -1910,7 +1911,8 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
           for (UInt ce = 0; ce < connected_elements.size(); ++ce) {
             Element & elem = connected_elements[ce];
             Array<Element> & subelement_to_element =
-                mesh_accessor.getSubelementToElement(elem.type, elem.ghost_type);
+                mesh_accessor.getSubelementToElement(elem.type,
+                                                     elem.ghost_type);
 
             UInt f(0);
             for (; f < mesh.getNbFacetsPerElement(elem.type) &&
@@ -1969,7 +1971,7 @@ bool MeshUtils::findElementsAroundSubfacet(
   ElementType current_subfacet_type = _not_defined;
   GhostType current_subfacet_ghost_type = _casper;
 
-  const Array<std::vector<Element> > * element_to_facet = NULL;
+  const Array<std::vector<Element>> * element_to_facet = NULL;
 
   const Element * opposing_el = NULL;
 
@@ -2118,7 +2120,7 @@ void MeshUtils::buildSegmentToNodeType(const Mesh & mesh, Mesh & mesh_facets,
           "segment_to_nodetype", type, ghost_type));
 
       std::set<Element> connected_elements;
-      const Array<std::vector<Element> > & segment_to_2Delement =
+      const Array<std::vector<Element>> & segment_to_2Delement =
           mesh_facets.getElementToSubelement(type, ghost_type);
 
       // loop over segments

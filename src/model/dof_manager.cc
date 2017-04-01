@@ -44,8 +44,17 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFManager(const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), mesh(NULL), local_system_size(0),
-      pure_local_system_size(0), system_size(0) {}
+    : Memory(id, memory_id), mesh(nullptr), local_system_size(0),
+      pure_local_system_size(0), system_size(0),
+      communicator(StaticCommunicator::getStaticCommunicator()) {}
+
+/* -------------------------------------------------------------------------- */
+DOFManager::DOFManager(Mesh & mesh, const ID & id, const MemoryID & memory_id)
+    : Memory(id, memory_id), mesh(&mesh), local_system_size(0),
+      pure_local_system_size(0), system_size(0),
+      communicator(mesh.getCommunicator()) {
+  this->registerMesh();
+}
 
 /* -------------------------------------------------------------------------- */
 DOFManager::~DOFManager() {
@@ -199,8 +208,7 @@ void DOFManager::assembleElementalArrayToLumpedMatrix(
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::registerMesh(Mesh & mesh) {
-  this->mesh = &mesh;
+void DOFManager::registerMesh() {
   this->mesh->registerEventHandler(*this, 20);
 
   UInt nb_nodes = this->mesh->getNbNodes();

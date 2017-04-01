@@ -31,7 +31,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <memory>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_REAL_STATIC_COMMUNICATOR_HH__
@@ -60,26 +61,41 @@ private:
 /* -------------------------------------------------------------------------- */
 class CommunicationRequest {
 public:
-  CommunicationRequest(InternalCommunicationRequest * request = NULL)
-      : request(request) {}
-  CommunicationRequest(const CommunicationRequest & request) = default;
+  CommunicationRequest(
+      std::shared_ptr<InternalCommunicationRequest> request = nullptr)
+      : request(std::move(request)) {}
 
-  void free() {
-    delete request;
-    request = NULL;
-  }
+  // CommunicationRequest(CommunicationRequest & other)
+  //     : request(std::move(other.request)) {}
+
+  // CommunicationRequest(CommunicationRequest && other)
+  //     : request(std::move(other.request)) {}
+
+  // CommunicationRequest & operator=(CommunicationRequest & other) {
+  //   request = std::move(other.request);
+  //   return *this;
+  // }
+
+  // CommunicationRequest & operator=(CommunicationRequest && other) {
+  //   request = std::move(other.request);
+  //   return *this;
+  // }
+
+  virtual void free() { request.reset(); }
 
   void printself(std::ostream & stream, int indent = 0) const {
     request->printself(stream, indent);
   };
 
-  UInt getSource() { return request->getSource(); }
-  UInt getDestination() { return request->getDestination(); }
+  UInt getSource() const { return request->getSource(); }
+  UInt getDestination() const { return request->getDestination(); }
 
-  InternalCommunicationRequest * getInternal() { return request; }
+  bool isFreed() const { return request.get() == nullptr; }
+
+  InternalCommunicationRequest & getInternal() { return *request; }
 
 private:
-  InternalCommunicationRequest * request;
+  std::shared_ptr<InternalCommunicationRequest> request;
 };
 
 /* -------------------------------------------------------------------------- */

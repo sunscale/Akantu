@@ -72,7 +72,7 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
            StaticCommunicator & communicator)
     : Memory(id, memory_id),
       GroupManager(*this, id + ":group_manager", memory_id), nodes(NULL),
-      nodes_global_ids(NULL), nodes_type(0, 1, id + ":nodes_type"),
+      nodes_global_ids(nullptr), nodes_type(0, 1, id + ":nodes_type"),
       nb_global_nodes(0), created_nodes(true),
       connectivities("connectivities", id, memory_id),
       normals("normals", id, memory_id), spatial_dimension(spatial_dimension),
@@ -81,10 +81,10 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
       lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
       size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
       local_upper_bounds(spatial_dimension, 0.),
-      mesh_data("mesh_data", id, memory_id), mesh_facets(NULL),
-      mesh_parent(NULL), is_mesh_facets(false), is_distributed(false),
-      communicator(&communicator), element_synchronizer(NULL),
-      node_synchronizer(NULL) {
+      mesh_data("mesh_data", id, memory_id), mesh_facets(nullptr),
+      mesh_parent(nullptr), is_mesh_facets(false), is_distributed(false),
+      communicator(&communicator), element_synchronizer(nullptr),
+      node_synchronizer(nullptr) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -156,6 +156,9 @@ Mesh::~Mesh() {
   AKANTU_DEBUG_IN();
 
   delete mesh_facets;
+
+  delete element_synchronizer;
+  delete node_synchronizer;
 
   AKANTU_DEBUG_OUT();
 }
@@ -413,12 +416,12 @@ Mesh::createFieldFromAttachedData(const std::string & field_id,
                                   const std::string & group_name,
                                   const ElementKind & element_kind) {
 
-  dumper::Field * field = NULL;
-  ElementTypeMapArray<T> * internal = NULL;
+  dumper::Field * field = nullptr;
+  ElementTypeMapArray<T> * internal = nullptr;
   try {
     internal = &(this->getData<T>(field_id));
   } catch (...) {
-    return NULL;
+    return nullptr;
   }
 
   ElementTypeMap<UInt> nb_data_per_elem =
@@ -454,13 +457,13 @@ void Mesh::distribute(StaticCommunicator & communicator) {
                       "This mesh is already distribute");
   this->communicator = &communicator;
 
-    this->element_synchronizer =
-      new ElementSynchronizer(*this, this->getID() + ":element_synchronizer",
-                              this->getMemoryID(), true, communicator);
+  this->element_synchronizer =
+    new ElementSynchronizer(*this, this->getID() + ":element_synchronizer",
+                            this->getMemoryID(), true, communicator);
 
   this->node_synchronizer =
-      new NodeSynchronizer(*this, this->getID() + ":node_synchronizer",
-                           this->getMemoryID(), true, communicator);
+    new NodeSynchronizer(*this, this->getID() + ":node_synchronizer",
+                         this->getMemoryID(), true, communicator);
 
   Int psize = this->communicator->getNbProc();
 #ifdef AKANTU_USE_SCOTCH
@@ -469,7 +472,7 @@ void Mesh::distribute(StaticCommunicator & communicator) {
     MeshPartitionScotch partition(*this, spatial_dimension);
     partition.partitionate(psize);
 
-    MeshUtilsDistribution::distributeMeshCentralized(*this, partition);
+    MeshUtilsDistribution::distributeMeshCentralized(*this, 0, partition);
   } else {
     MeshUtilsDistribution::distributeMeshCentralized(*this, 0);
   }

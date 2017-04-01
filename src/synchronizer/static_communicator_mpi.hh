@@ -82,9 +82,9 @@ public:
 
   template <typename T> void broadcast(T * values, int nb_values, int root);
 
-  bool testRequest(CommunicationRequest request);
+  bool testRequest(CommunicationRequest & request);
 
-  void wait(CommunicationRequest request);
+  void wait(CommunicationRequest & request);
   void waitAll(std::vector<CommunicationRequest> & requests);
   UInt waitAny(std::vector<CommunicationRequest> & requests);
 

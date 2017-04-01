@@ -38,8 +38,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-SynchronizerImpl<Entity>::SynchronizerImpl(const ID & id,
-                                           MemoryID memory_id,
+SynchronizerImpl<Entity>::SynchronizerImpl(const ID & id, MemoryID memory_id,
                                            const StaticCommunicator & comm)
     : Synchronizer(id, memory_id, comm), communications(comm) {}
 
@@ -49,22 +48,23 @@ void SynchronizerImpl<Entity>::asynchronousSynchronizeImpl(
     DataAccessor<Entity> & data_accessor, const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
-  if (!communications.hasCommunication(tag))
-    computeBufferSize(data_accessor, tag);
+  if (!this->communications.hasCommunication(tag))
+    this->computeBufferSize(data_accessor, tag);
+
+  this->communications.incrementCounter(tag);
 
   // Posting the receive -------------------------------------------------------
-  if (communications.hasPendingRecv(tag)) {
+  if (this->communications.hasPendingRecv(tag)) {
     AKANTU_CUSTOM_EXCEPTION_INFO(
         debug::CommunicationException(),
         "There must be some pending receive communications."
             << " Tag is " << tag);
   }
 
-  typedef typename Communications<Entity>::iterator iterator;
-  iterator recv_it = communications.begin_recv(tag);
-  iterator recv_end = communications.end_recv(tag);
+  auto recv_it = this->communications.begin_recv(tag);
+  auto recv_end = this->communications.end_recv(tag);
   for (; recv_it != recv_end; ++recv_it) {
-    CommunicationDescriptor<Entity> comm_desc = *recv_it;
+    auto comm_desc = *recv_it;
     comm_desc.postRecv(this->hash_id);
   }
 
@@ -76,10 +76,10 @@ void SynchronizerImpl<Entity>::asynchronousSynchronizeImpl(
             << " Tag is " << tag);
   }
 
-  iterator send_it = communications.begin_send(tag);
-  iterator send_end = communications.end_send(tag);
+  auto send_it = communications.begin_send(tag);
+  auto send_end = communications.end_send(tag);
   for (; send_it != send_end; ++send_it) {
-    CommunicationDescriptor<Entity> comm_desc = *send_it;
+    auto comm_desc = *send_it;
 
 #ifndef AKANTU_NDEBUG
     this->packSanityCheckData(comm_desc);
@@ -98,16 +98,18 @@ void SynchronizerImpl<Entity>::waitEndSynchronizeImpl(
     DataAccessor<Entity> & data_accessor, const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
-  if (!communications.hasPendingRecv(tag))
+#ifndef AKANTU_NDEBUG
+  if (!this->communications.hasPendingRecv(tag) && nb_proc > 1)
     AKANTU_CUSTOM_EXCEPTION_INFO(debug::CommunicationException(),
-                                 "No communication with the tag \""
-                                     << tag << "\" started");
+                                 "No pending communication with the tag \""
+                                     << tag);
+#endif
 
-  typedef typename Communications<Entity>::iterator iterator;
-  iterator recv_it;
-  iterator recv_end = communications.end_recv(tag);
-  while ((recv_it = communications.waitAnyRecv(tag)) != recv_end) {
-    CommunicationDescriptor<Entity> comm_desc = *recv_it;
+  auto recv_end = this->communications.end_recv(tag);
+  decltype(recv_end) recv_it;
+
+  while ((recv_it = this->communications.waitAnyRecv(tag)) != recv_end) {
+    auto comm_desc = *recv_it;
 #ifndef AKANTU_NDEBUG
     this->unpackSanityCheckData(comm_desc);
 #endif
@@ -116,8 +118,8 @@ void SynchronizerImpl<Entity>::waitEndSynchronizeImpl(
     comm_desc.freeRequest();
   }
 
-  communications.waitAllSend(tag);
-  communications.freeSendRequests(tag);
+  this->communications.waitAllSend(tag);
+  this->communications.freeSendRequests(tag);
 
   AKANTU_DEBUG_OUT();
 }
@@ -130,7 +132,7 @@ void SynchronizerImpl<Entity>::computeAllBufferSizes(
   auto end = this->communications.end_tag();
 
   for (; it != end; ++it) {
-    SynchronizationTag tag = *it;
+    auto tag = *it;
     this->computeBufferSize(data_accessor, tag);
   }
 }
@@ -141,40 +143,42 @@ void SynchronizerImpl<Entity>::computeBufferSizeImpl(
     DataAccessor<Entity> & data_accessor, const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
-  typedef typename Communications<Entity>::scheme_iterator scheme_iterator;
-  typedef typename Communications<Entity>::Scheme Scheme;
-  scheme_iterator recv_it = communications.begin_recv_scheme();
-  scheme_iterator recv_end = communications.end_recv_scheme();
+  this->communications.initializeCommunications(tag);
+  AKANTU_DEBUG_ASSERT(communications.hasCommunication(tag) == true,
+                      "Communications where not properly initialized");
+
+  auto recv_it = this->communications.begin_recv_scheme();
+  auto recv_end = this->communications.end_recv_scheme();
   for (; recv_it != recv_end; ++recv_it) {
-    UInt proc = recv_it->first;
-    Scheme & scheme = recv_it->second;
+    auto proc = recv_it->first;
+    auto & scheme = recv_it->second;
     UInt srecv = 0;
 #ifndef AKANTU_NDEBUG
-    srecv += sanityCheckDataSize(scheme, tag);
+    srecv += this->sanityCheckDataSize(scheme, tag);
 #endif
     srecv += data_accessor.getNbData(scheme, tag);
     AKANTU_DEBUG_INFO("I have " << srecv << "(" << printMemorySize<char>(srecv)
                                 << " - " << scheme.getSize()
                                 << " element(s)) data to receive from " << proc
                                 << " for tag " << tag);
-    communications.initializeRecvCommunication(tag, proc, srecv);
+    this->communications.setRecvCommunicationSize(tag, proc, srecv);
   }
 
-  scheme_iterator send_it = communications.begin_send_scheme();
-  scheme_iterator send_end = communications.end_send_scheme();
+  auto send_it = this->communications.begin_send_scheme();
+  auto send_end = this->communications.end_send_scheme();
   for (; send_it != send_end; ++send_it) {
-    UInt proc = send_it->first;
-    Scheme & scheme = send_it->second;
+    auto proc = send_it->first;
+    auto & scheme = send_it->second;
     UInt ssend = 0;
 #ifndef AKANTU_NDEBUG
-    ssend += sanityCheckDataSize(scheme, tag);
+    ssend += this->sanityCheckDataSize(scheme, tag);
 #endif
     ssend += data_accessor.getNbData(scheme, tag);
     AKANTU_DEBUG_INFO("I have " << ssend << "(" << printMemorySize<char>(ssend)
                                 << " - " << scheme.getSize()
                                 << " element(s)) data to send to " << proc
                                 << " for tag " << tag);
-    communications.initializeSendCommunication(tag, proc, ssend);
+    this->communications.setSendCommunicationSize(tag, proc, ssend);
   }
 
   AKANTU_DEBUG_OUT();
@@ -183,20 +187,19 @@ void SynchronizerImpl<Entity>::computeBufferSizeImpl(
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 UInt SynchronizerImpl<Entity>::sanityCheckDataSize(
-    __attribute__((unused)) const Array<Entity> & elements,
-    __attribute__((unused)) const SynchronizationTag & tag) const {
+    const Array<Entity> &, const SynchronizationTag &) const {
   return 0;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-void SynchronizerImpl<Entity>::packSanityCheckData(__attribute__((
-    unused)) CommunicationDescriptor<Entity> & comm_desc) const {}
+void SynchronizerImpl<Entity>::packSanityCheckData(
+    CommunicationDescriptor<Entity> &) const {}
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-void SynchronizerImpl<Entity>::unpackSanityCheckData(__attribute__((
-    unused)) CommunicationDescriptor<Entity> & comm_desc) const {}
+void SynchronizerImpl<Entity>::unpackSanityCheckData(
+    CommunicationDescriptor<Entity> &) const {}
 
 /* -------------------------------------------------------------------------- */
 } // akantu

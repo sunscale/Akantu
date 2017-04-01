@@ -38,6 +38,7 @@
 #include "aka_array.hh"
 
 /* -------------------------------------------------------------------------- */
+using namespace akantu;
 
 int main() {
   int def_value[3];
@@ -46,7 +47,7 @@ int main() {
   def_value[2] = 30;
 
   std::cout << "Creating a vector" << std::endl;
-  akantu::Array<int> int_vect(10, 3, def_value, "test1");
+  Array<int> int_vect(10, 3, def_value, "test1");
 
   for (unsigned int i = 5; i < int_vect.getSize(); ++i) {
     for (unsigned int j = 0; j < int_vect.getNbComponent(); ++j) {
@@ -56,10 +57,10 @@ int main() {
 
   std::cerr << int_vect;
 
-  int new_elem[3];
-  new_elem[0] = 1;
-  new_elem[1] = 2;
-  new_elem[2] = 3;
+  Vector<int> new_elem(3);
+  new_elem(0) = 1;
+  new_elem(1) = 2;
+  new_elem(2) = 3;
   std::cout << "Testing push_back" << std::endl;
   int_vect.push_back(new_elem);
 

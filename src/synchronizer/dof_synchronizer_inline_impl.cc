@@ -162,7 +162,7 @@ void DOFSynchronizer::scatter(Array<T> & scattered,
                       "The array to scatter does not have the correct size");
 
   if (this->nb_proc == 1) {
-    scattered.copy(*to_scatter, true);
+    scattered.copy(to_scatter, true);
     AKANTU_DEBUG_OUT();
     return;
   }
@@ -270,10 +270,10 @@ void DOFSynchronizer::synchronize(Array<T> & dof_vector) const {
     const auto & scheme = rs_it->second;
     auto & proc = rs_it->first;
 
-    recv_buffers.emplace_back(
-        {scheme.getSize() * dof_vector.getNbComponent() * sizeof(T)});
+    UInt buffer_size = scheme.getSize() * dof_vector.getNbComponent() * sizeof(T);
+    recv_buffers.emplace_back(buffer_size);
     recv_requests.push_back(communicator.asyncReceive(
-        recv_buffers.back(), proc,
+                                recv_buffers.back(), proc,
         Tag::genTag(this->rank, 0, Tag::_SYNCHRONIZE, this->hash_id)));
   }
 
@@ -284,8 +284,8 @@ void DOFSynchronizer::synchronize(Array<T> & dof_vector) const {
     const auto & scheme = ss_it->second;
     auto & proc = rs_it->first;
 
-    send_buffers.emplace_back(
-        {scheme.getSize() * dof_vector.getNbComponent() * sizeof(T)});
+    UInt buffer_size = scheme.getSize() * dof_vector.getNbComponent() * sizeof(T);
+    send_buffers.emplace_back(buffer_size);
     CommunicationBuffer & buffer = send_buffers.back();
 
     auto data_it = dof_vector.begin(dof_vector.getNbComponent());

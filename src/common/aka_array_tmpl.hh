@@ -98,15 +98,15 @@ inline void Array<T, is_scal>::push_back(const T & value) {
  * append a tuple to the array
  * @param new_elem a C-array containing the values to be copied to the end of
  * the array */
-template <class T, bool is_scal>
-inline void Array<T, is_scal>::push_back(const T new_elem[]) {
-  UInt pos = size;
+// template <class T, bool is_scal>
+// inline void Array<T, is_scal>::push_back(const T new_elem[]) {
+//   UInt pos = size;
 
-  resizeUnitialized(size + 1, false);
+//   resizeUnitialized(size + 1, false);
 
-  T * tmp = values + nb_component * pos;
-  std::uninitialized_copy(new_elem, new_elem + nb_component, tmp);
-}
+//   T * tmp = values + nb_component * pos;
+//   std::uninitialized_copy(new_elem, new_elem + nb_component, tmp);
+// }
 
 /* -------------------------------------------------------------------------- */
 /**
@@ -284,7 +284,21 @@ inline void Array<T, is_scal>::set(const C<T> & vm) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Functions Array<T, is_scal>                                               */
+template <class T, bool is_scal>
+void Array<T, is_scal>::append(const Array<T> & other) {
+  AKANTU_DEBUG_ASSERT(
+      nb_component == other.nb_component,
+      "Cannot append an array with a different number of component");
+  UInt old_size = this->size;
+  this->resizeUnitialized(this->size + other.getSize(), false);
+
+  T * tmp = values + nb_component * old_size;
+  std::uninitialized_copy(
+      other.storage(), other.storage() + other.getSize() * nb_component, tmp);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Functions Array<T, is_scal>                                                */
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 Array<T, is_scal>::Array(UInt size, UInt nb_component, const ID & id)
@@ -464,11 +478,11 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size, bool fill,
     if (allocated_size - new_size > AKANTU_MIN_ALLOCATION) {
       AKANTU_DEBUG(dblAccessory,
                    "Freeing " << printMemorySize<T>((allocated_size - size) *
-                                                    nb_component) << " (" << id
-                              << ")");
+                                                    nb_component)
+                              << " (" << id << ")");
 
       // Normally there are no allocation problem when reducing an array
-      if(new_size == 0) {
+      if (new_size == 0) {
         free(values);
         values = NULL;
       } else {

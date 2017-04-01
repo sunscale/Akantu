@@ -511,13 +511,14 @@ GridSynchronizer * GridSynchronizer::createGridSynchronizer(
 
     Array<Real> & nodes_to_send = nodes_to_send_per_proc[p];
     nodes_to_send.extendComponentsInterlaced(spatial_dimension, 1);
+    auto it = nodes.begin(spatial_dimension);
     for (UInt n = 0; n < nb_nodes_to_send; ++n) {
       UInt ln = global_nodes_ids.find(asked_nodes(n));
       AKANTU_DEBUG_ASSERT(ln != UInt(-1), "The node ["
-                                              << asked_nodes(n)
-                                              << "] requested by proc " << p
-                                              << " was not found locally!");
-      nodes_to_send.push_back(nodes.storage() + ln * spatial_dimension);
+                          << asked_nodes(n)
+                          << "] requested by proc " << p
+                          << " was not found locally!");
+      nodes_to_send.push_back(it + ln);
     }
 
     if (nb_nodes_to_send != 0) {

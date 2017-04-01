@@ -66,6 +66,7 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
 
   debug::debugger.setParallelContext(comm.whoAmI(), comm.getNbProc());
   debug::initSignalHandler();
+  debug::setDebugLevel(dblError);
 
   static_argparser.setParallelContext(comm.whoAmI(), comm.getNbProc());
   static_argparser.setExternalExitFunction(debug::exit);
@@ -75,7 +76,7 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
       "--aka_debug_level",
       std::string("Akantu's overall debug level") +
           std::string(" (0: error, 1: exceptions, 4: warnings, 5: info, ..., "
-                      "100: dump,") +
+                      "100: dump") +
           std::string(" more info on levels can be foind in aka_error.hh)"),
       1, cppargparse::_integer, int(dblWarning));
 
@@ -90,9 +91,6 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   if (infile == "")
     infile = input_file;
 
-  debug::setDebugLevel(dblError);
-  int dbl_level = static_argparser["aka_debug_level"];
-  debug::setDebugLevel(DebugLevel(dbl_level));
   debug::debugger.printBacktrace(static_argparser["aka_print_backtrace"]);
 
   if ("" != infile) {
@@ -111,6 +109,10 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   Rand48Generator<Real>::seed(seed);
 #endif
   RandGenerator<Real>::seed(seed);
+
+  int dbl_level = static_argparser["aka_debug_level"];
+  debug::setDebugLevel(DebugLevel(dbl_level));
+
   AKANTU_DEBUG_INFO("Random seed set to " << seed);
 
   AKANTU_DEBUG_OUT();

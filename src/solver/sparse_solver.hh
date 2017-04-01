@@ -34,13 +34,13 @@
 #include "aka_memory.hh"
 //#include "data_accessor.hh"
 #include "parsable.hh"
+#include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SOLVER_HH__
 #define __AKANTU_SOLVER_HH__
 
 namespace akantu {
-class StaticCommunicator;
 enum SolverParallelMethod {
   _not_parallel,
   _fully_distributed,
@@ -53,7 +53,8 @@ class DOFManager;
 __BEGIN_AKANTU__
 
 class SparseSolver : protected Memory,
-                     public Parsable {
+                     public Parsable,
+                     public CommunicatorEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -86,7 +87,9 @@ public:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  // inline virtual UInt getNbDataForDOFs(const Array<UInt> & dofs,
+  virtual void onCommunicatorFinalize();
+
+// inline virtual UInt getNbDataForDOFs(const Array<UInt> & dofs,
   //                                      SynchronizationTag tag) const;
 
   // inline virtual void packDOFData(CommunicationBuffer & buffer,

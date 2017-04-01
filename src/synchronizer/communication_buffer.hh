@@ -45,11 +45,12 @@ class CommunicationBufferTemplated {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  CommunicationBufferTemplated(UInt size = 0) : buffer(size, 1) {
+  explicit CommunicationBufferTemplated(UInt size) : buffer(size, 1) {
     ptr_pack = buffer.storage();
     ptr_unpack = buffer.storage();
   };
+
+  CommunicationBufferTemplated() : CommunicationBufferTemplated(0) {}
 
   virtual ~CommunicationBufferTemplated() {};
 

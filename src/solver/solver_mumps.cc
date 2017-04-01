@@ -129,11 +129,9 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
     : SparseSolver(dof_manager, matrix_id, id, memory_id),
       dof_manager(dof_manager), matrix(dof_manager.getMatrix(matrix_id)),
       rhs(dof_manager.getResidual()), solution(dof_manager.getGlobalSolution()),
-      master_rhs_solution(0, 1) {
+      master_rhs_solution(0, 1), is_initialized(false) {
   AKANTU_DEBUG_IN();
 
-  StaticCommunicator & communicator =
-    StaticCommunicator::getStaticCommunicator();
   this->prank = communicator.whoAmI();
 
 #ifdef AKANTU_USE_MPI
@@ -167,15 +165,14 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
   this->mumps_data.sym = 2 * (this->matrix.getMatrixType() == _symmetric);
   this->prank = communicator.whoAmI();
 
+  this->setOutputLevel();
+
   this->mumps_data.job = _smj_initialize; // initialize
   dmumps_c(&this->mumps_data);
 
-  /* ------------------------------------------------------------------------ */
   this->setOutputLevel();
 
-  if (AKANTU_DEBUG_TEST(dblDump)) {
-    strcpy(this->mumps_data.write_problem, "mumps_matrix.mtx");
-  }
+  this->is_initialized = true;
 
   this->last_profile_release = this->matrix.getProfileRelease() - 1;
   this->last_value_release = this->matrix.getValueRelease() - 1;
@@ -187,11 +184,24 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
 SparseSolverMumps::~SparseSolverMumps() {
   AKANTU_DEBUG_IN();
 
-  this->mumps_data.job = _smj_destroy; // destroy
-  dmumps_c(&this->mumps_data);
-
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+void SparseSolverMumps::destroyInternalData() {
+  if(this->is_initialized) {
+    this->mumps_data.job = _smj_destroy; // destroy
+    dmumps_c(&this->mumps_data);
+    this->is_initialized = false;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseSolverMumps::checkInitialized() {
+  if(!this->is_initialized)
+    AKANTU_EXCEPTION("You cannot use an un/de-initialized mumps solver");
+}
+
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::setOutputLevel() {
@@ -203,6 +213,10 @@ void SparseSolverMumps::setOutputLevel() {
 
 #if !defined(AKANTU_NDEBUG)
   DebugLevel dbg_lvl = debug::debugger.getDebugLevel();
+
+  if (AKANTU_DEBUG_TEST(dblDump)) {
+    strcpy(this->mumps_data.write_problem, "mumps_matrix.mtx");
+  }
 
   icntl(1) = (dbg_lvl >= dblWarning) ? 6 : 0;
   icntl(3) = (dbg_lvl >= dblInfo) ? 6 : 0;
@@ -288,6 +302,7 @@ void SparseSolverMumps::analysis() {
 
   initMumpsData();
 
+  this->checkInitialized();
   this->mumps_data.job = _smj_analyze; // analyze
   dmumps_c(&this->mumps_data);
 
@@ -306,6 +321,7 @@ void SparseSolverMumps::factorize() {
       this->mumps_data.a = this->matrix.getA().storage();
   }
 
+  this->checkInitialized();
   this->mumps_data.job = _smj_factorize; // factorize
   dmumps_c(&this->mumps_data);
 
@@ -321,6 +337,11 @@ void SparseSolverMumps::solve() {
   this->setOutputLevel();
 
   this->dof_manager.applyBoundary();
+
+  if (AKANTU_DEBUG_TEST(dblDump)) {
+    std::stringstream sstr;  sstr << prank << ".mtx";
+    this->matrix.saveMatrix("solver_mumps" + sstr.str());
+  }
 
   this->master_rhs_solution.copy(this->dof_manager.getResidual());
   // if (prank == 0) {
@@ -343,12 +364,14 @@ void SparseSolverMumps::solve() {
     this->mumps_data.rhs = this->master_rhs_solution.storage();
   }
 
+  this->checkInitialized();
   this->mumps_data.job = _smj_solve; // solve
   dmumps_c(&this->mumps_data);
 
   this->printError();
 
-  this->dof_manager.getGlobalSolution().copy(this->master_rhs_solution);
+  this->dof_manager.setGlobalSolution(this->master_rhs_solution);
+
   // if (prank == 0) {
   //   matrix.getDOFSynchronizer().scatter(this->solution, 0, this->master_rhs_solution);
   // } else {

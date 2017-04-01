@@ -52,7 +52,7 @@ __BEGIN_AKANTU__
           ((_tc_std_vector_element, std::vector<Element>)) \
 
 #define AKANTU_MESH_DATA_TUPLE_FIRST_ELEM(s, data, elem) BOOST_PP_TUPLE_ELEM(2, 0, elem)
-enum MeshDataTypeCode {
+enum MeshDataTypeCode : int {
   BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(AKANTU_MESH_DATA_TUPLE_FIRST_ELEM, , AKANTU_MESH_DATA_TYPES)),
   _tc_unknown
 };

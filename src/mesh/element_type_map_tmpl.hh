@@ -31,112 +31,126 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "element_type_map.hh"
+#include "mesh.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__
 #define __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-/* ElementTypeMap                                                              */
+/* ElementTypeMap */
 /* -------------------------------------------------------------------------- */
-template<class Stored, typename SupportType>
-inline std::string ElementTypeMap<Stored, SupportType>::printType(const SupportType & type,
-                                                                 const GhostType & ghost_type) {
-  std::stringstream sstr; sstr << "(" << ghost_type << ":" << type << ")";
+template <class Stored, typename SupportType>
+inline std::string
+ElementTypeMap<Stored, SupportType>::printType(const SupportType & type,
+                                               const GhostType & ghost_type) {
+  std::stringstream sstr;
+  sstr << "(" << ghost_type << ":" << type << ")";
   return sstr.str();
 }
 
 /* -------------------------------------------------------------------------- */
-template<class Stored, typename SupportType>
-inline bool ElementTypeMap<Stored, SupportType>::exists(const SupportType & type, const GhostType & ghost_type) const {
-  return this->getData(ghost_type).find(type) != this->getData(ghost_type).end();
+template <class Stored, typename SupportType>
+inline bool ElementTypeMap<Stored, SupportType>::exists(
+    const SupportType & type, const GhostType & ghost_type) const {
+  return this->getData(ghost_type).find(type) !=
+         this->getData(ghost_type).end();
 }
 
 /* -------------------------------------------------------------------------- */
-template<class Stored, typename SupportType>
-inline const Stored & ElementTypeMap<Stored, SupportType>::operator()(const SupportType & type,
-                                                                     const GhostType & ghost_type) const {
-  typename DataMap::const_iterator it =
-    this->getData(ghost_type).find(type);
+template <class Stored, typename SupportType>
+inline const Stored & ElementTypeMap<Stored, SupportType>::
+operator()(const SupportType & type, const GhostType & ghost_type) const {
+  typename DataMap::const_iterator it = this->getData(ghost_type).find(type);
 
-  if(it == this->getData(ghost_type).end())
-    AKANTU_EXCEPTION("No element of type "
-                     << ElementTypeMap::printType(type, ghost_type)
-                     << " in this ElementTypeMap<"
-                     << debug::demangle(typeid(Stored).name()) << "> class");
+  if (it == this->getData(ghost_type).end())
+    AKANTU_SILENT_EXCEPTION("No element of type "
+                            << ElementTypeMap::printType(type, ghost_type)
+                            << " in this ElementTypeMap<"
+                            << debug::demangle(typeid(Stored).name())
+                            << "> class");
   return it->second;
 }
 
 /* -------------------------------------------------------------------------- */
-template<class Stored, typename SupportType>
-inline Stored & ElementTypeMap<Stored, SupportType>::operator()(const SupportType & type,
-							       const GhostType & ghost_type) {
+template <class Stored, typename SupportType>
+inline Stored & ElementTypeMap<Stored, SupportType>::
+operator()(const SupportType & type, const GhostType & ghost_type) {
   return this->getData(ghost_type)[type];
 }
 
 /* -------------------------------------------------------------------------- */
-template<class Stored, typename SupportType>
-inline Stored & ElementTypeMap<Stored, SupportType>::operator()(const Stored & insert,
-                                                               const SupportType & type,
-                                                               const GhostType & ghost_type) {
-  typename DataMap::iterator it =
-    this->getData(ghost_type).find(type);
+template <class Stored, typename SupportType>
+inline Stored & ElementTypeMap<Stored, SupportType>::
+operator()(const Stored & insert, const SupportType & type,
+           const GhostType & ghost_type) {
+  typename DataMap::iterator it = this->getData(ghost_type).find(type);
 
-  if(it != this->getData(ghost_type).end()) {
-    AKANTU_EXCEPTION("Element of type "
-                     << ElementTypeMap::printType(type, ghost_type)
-                     << " already in this ElementTypeMap<"
-                     << debug::demangle(typeid(Stored).name()) << "> class");
+  if (it != this->getData(ghost_type).end()) {
+    AKANTU_SILENT_EXCEPTION("Element of type "
+                            << ElementTypeMap::printType(type, ghost_type)
+                            << " already in this ElementTypeMap<"
+                            << debug::demangle(typeid(Stored).name())
+                            << "> class");
   } else {
     DataMap & data = this->getData(ghost_type);
     const std::pair<typename DataMap::iterator, bool> & res =
-      data.insert(std::pair<ElementType, Stored>(type, insert));
+        data.insert(std::pair<ElementType, Stored>(type, insert));
     it = res.first;
   }
 
   return it->second;
 }
 
-
 /* -------------------------------------------------------------------------- */
-template<class Stored, typename SupportType>
+template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::DataMap &
 ElementTypeMap<Stored, SupportType>::getData(GhostType ghost_type) {
-  if(ghost_type == _not_ghost) return data;
-  else return ghost_data;
+  if (ghost_type == _not_ghost)
+    return data;
+  else
+    return ghost_data;
 }
 
 /* -------------------------------------------------------------------------- */
-template<class Stored, typename SupportType>
+template <class Stored, typename SupportType>
 inline const typename ElementTypeMap<Stored, SupportType>::DataMap &
 ElementTypeMap<Stored, SupportType>::getData(GhostType ghost_type) const {
-  if(ghost_type == _not_ghost) return data;
-  else return ghost_data;
+  if (ghost_type == _not_ghost)
+    return data;
+  else
+    return ghost_data;
 }
 
 /* -------------------------------------------------------------------------- */
 /// Works only if stored is a pointer to a class with a printself method
-template<class Stored, typename SupportType>
-void ElementTypeMap<Stored, SupportType>::printself(std::ostream & stream, int indent) const {
+template <class Stored, typename SupportType>
+void ElementTypeMap<Stored, SupportType>::printself(std::ostream & stream,
+                                                    int indent) const {
   std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
 
-  stream << space << "ElementTypeMap<" << debug::demangle(typeid(Stored).name()) << "> [" << std::endl;
-  for(UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType) g;
+  stream << space << "ElementTypeMap<" << debug::demangle(typeid(Stored).name())
+         << "> [" << std::endl;
+  for (UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType gt = (GhostType)g;
 
     const DataMap & data = getData(gt);
     typename DataMap::const_iterator it;
-    for(it = data.begin(); it != data.end(); ++it) {
-      stream << space << space << ElementTypeMap::printType(it->first, gt) << std::endl;
+    for (it = data.begin(); it != data.end(); ++it) {
+      stream << space << space << ElementTypeMap::printType(it->first, gt)
+             << std::endl;
     }
   }
   stream << space << "]" << std::endl;
 }
 
 /* -------------------------------------------------------------------------- */
-template<class Stored, typename SupportType>
+template <class Stored, typename SupportType>
 ElementTypeMap<Stored, SupportType>::ElementTypeMap() {
   AKANTU_DEBUG_IN();
 
@@ -150,38 +164,38 @@ ElementTypeMap<Stored, SupportType>::ElementTypeMap() {
 }
 
 /* -------------------------------------------------------------------------- */
-template<class Stored, typename SupportType>
-ElementTypeMap<Stored, SupportType>::~ElementTypeMap() {
-
-}
+template <class Stored, typename SupportType>
+ElementTypeMap<Stored, SupportType>::~ElementTypeMap() {}
 
 /* -------------------------------------------------------------------------- */
 /* ElementTypeMapArray                                                        */
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
-inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(UInt size,
-							     UInt nb_component,
-							     const SupportType & type,
-							     const GhostType & ghost_type,
-							     const T & default_value) {
+inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(
+    UInt size, UInt nb_component, const SupportType & type,
+    const GhostType & ghost_type, const T & default_value) {
   std::string ghost_id = "";
-  if (ghost_type == _ghost) ghost_id = ":ghost";
+  if (ghost_type == _ghost)
+    ghost_id = ":ghost";
 
   Array<T> * tmp;
 
   typename ElementTypeMapArray<T, SupportType>::DataMap::iterator it =
-    this->getData(ghost_type).find(type);
+      this->getData(ghost_type).find(type);
 
-  if(it == this->getData(ghost_type).end()) {
-    std::stringstream sstr; sstr << this->id << ":" << type << ghost_id;
-    tmp = &(Memory::alloc<T>(sstr.str(), size,
-			     nb_component, default_value));
-    std::stringstream sstrg; sstrg << ghost_type;
-    //tmp->setTag(sstrg.str());
+  if (it == this->getData(ghost_type).end()) {
+    std::stringstream sstr;
+    sstr << this->id << ":" << type << ghost_id;
+    tmp = &(Memory::alloc<T>(sstr.str(), size, nb_component, default_value));
+    std::stringstream sstrg;
+    sstrg << ghost_type;
+    // tmp->setTag(sstrg.str());
     this->getData(ghost_type)[type] = tmp;
   } else {
-    AKANTU_DEBUG_INFO("The vector " << this->id << this->printType(type, ghost_type)
-		      << " already exists, it is resized instead of allocated.");
+    AKANTU_DEBUG_INFO(
+        "The vector "
+        << this->id << this->printType(type, ghost_type)
+        << " already exists, it is resized instead of allocated.");
     tmp = it->second;
     it->second->resize(size);
   }
@@ -191,10 +205,10 @@ inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(UInt size,
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
-inline void ElementTypeMapArray<T, SupportType>::alloc(UInt size,
-						       UInt nb_component,
-						       const SupportType & type,
-						       const T & default_value) {
+inline void
+ElementTypeMapArray<T, SupportType>::alloc(UInt size, UInt nb_component,
+                                           const SupportType & type,
+                                           const T & default_value) {
   this->alloc(size, nb_component, type, _not_ghost, default_value);
   this->alloc(size, nb_component, type, _ghost, default_value);
 }
@@ -204,12 +218,12 @@ template <typename T, typename SupportType>
 inline void ElementTypeMapArray<T, SupportType>::free() {
   AKANTU_DEBUG_IN();
 
-  for(UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType) g;
+  for (UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType gt = (GhostType)g;
 
     DataMap & data = this->getData(gt);
     typename DataMap::const_iterator it;
-    for(it = data.begin(); it != data.end(); ++it) {
+    for (it = data.begin(); it != data.end(); ++it) {
       dealloc(it->second->getID());
     }
     data.clear();
@@ -221,12 +235,12 @@ inline void ElementTypeMapArray<T, SupportType>::free() {
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
 inline void ElementTypeMapArray<T, SupportType>::clear() {
-  for(UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType) g;
+  for (UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType gt = (GhostType)g;
 
     DataMap & data = this->getData(gt);
     typename DataMap::const_iterator it;
-    for(it = data.begin(); it != data.end(); ++it) {
+    for (it = data.begin(); it != data.end(); ++it) {
       it->second->clear();
     }
   }
@@ -234,48 +248,52 @@ inline void ElementTypeMapArray<T, SupportType>::clear() {
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
-inline const Array<T> & ElementTypeMapArray<T, SupportType>::operator()(const SupportType & type,
-                                                                       const GhostType & ghost_type) const {
+inline const Array<T> & ElementTypeMapArray<T, SupportType>::
+operator()(const SupportType & type, const GhostType & ghost_type) const {
   typename ElementTypeMapArray<T, SupportType>::DataMap::const_iterator it =
-    this->getData(ghost_type).find(type);
+      this->getData(ghost_type).find(type);
 
-  if(it == this->getData(ghost_type).end())
-    AKANTU_EXCEPTION("No element of type "
-                     << ElementTypeMapArray::printType(type, ghost_type)
-                     << " in this const ElementTypeMapArray<"
-                     << debug::demangle(typeid(T).name()) << "> class(\""
-                     << this->id << "\")");
+  if (it == this->getData(ghost_type).end())
+    AKANTU_SILENT_EXCEPTION("No element of type "
+                            << ElementTypeMapArray::printType(type, ghost_type)
+                            << " in this const ElementTypeMapArray<"
+                            << debug::demangle(typeid(T).name()) << "> class(\""
+                            << this->id << "\")");
   return *(it->second);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
-inline Array<T> & ElementTypeMapArray<T, SupportType>::operator()(const SupportType & type,
-                                                                 const GhostType & ghost_type) {
+inline Array<T> & ElementTypeMapArray<T, SupportType>::
+operator()(const SupportType & type, const GhostType & ghost_type) {
   typename ElementTypeMapArray<T, SupportType>::DataMap::iterator it =
-    this->getData(ghost_type).find(type);
+      this->getData(ghost_type).find(type);
 
-  if(it == this->getData(ghost_type).end())
-    AKANTU_EXCEPTION("No element of type "
-                     << ElementTypeMapArray::printType(type, ghost_type)
-                     << " in this ElementTypeMapArray<"
-                     << debug::demangle(typeid(T).name()) << "> class (\""
-                     << this->id << "\")");
+  if (it == this->getData(ghost_type).end())
+    AKANTU_SILENT_EXCEPTION("No element of type "
+                            << ElementTypeMapArray::printType(type, ghost_type)
+                            << " in this ElementTypeMapArray<"
+                            << debug::demangle(typeid(T).name())
+                            << "> class (\"" << this->id << "\")");
 
   return *(it->second);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
-inline void ElementTypeMapArray<T, SupportType>::setArray(const SupportType & type,
-                                                         const GhostType & ghost_type,
-                                                         const Array<T> & vect) {
+inline void
+ElementTypeMapArray<T, SupportType>::setArray(const SupportType & type,
+                                              const GhostType & ghost_type,
+                                              const Array<T> & vect) {
   typename ElementTypeMapArray<T, SupportType>::DataMap::iterator it =
-    this->getData(ghost_type).find(type);
+      this->getData(ghost_type).find(type);
 
-  if(AKANTU_DEBUG_TEST(dblWarning) && it != this->getData(ghost_type).end() && it->second != &vect) {
-    AKANTU_DEBUG_WARNING("The Array " << this->printType(type, ghost_type)
-                         << " is already registred, this call can lead to a memory leak.");
+  if (AKANTU_DEBUG_TEST(dblWarning) && it != this->getData(ghost_type).end() &&
+      it->second != &vect) {
+    AKANTU_DEBUG_WARNING(
+        "The Array "
+        << this->printType(type, ghost_type)
+        << " is already registred, this call can lead to a memory leak.");
   }
 
   this->getData(ghost_type)[type] = &(const_cast<Array<T> &>(vect));
@@ -283,26 +301,29 @@ inline void ElementTypeMapArray<T, SupportType>::setArray(const SupportType & ty
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
-inline void ElementTypeMapArray<T, SupportType>::onElementsRemoved(const ElementTypeMapArray<UInt> & new_numbering) {
-  for(UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType) g;
-    ElementTypeMapArray<UInt>::type_iterator it  = new_numbering.firstType(_all_dimensions, gt, _ek_not_defined);
-    ElementTypeMapArray<UInt>::type_iterator end = new_numbering.lastType(_all_dimensions, gt, _ek_not_defined);
+inline void ElementTypeMapArray<T, SupportType>::onElementsRemoved(
+    const ElementTypeMapArray<UInt> & new_numbering) {
+  for (UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType gt = (GhostType)g;
+    ElementTypeMapArray<UInt>::type_iterator it =
+        new_numbering.firstType(_all_dimensions, gt, _ek_not_defined);
+    ElementTypeMapArray<UInt>::type_iterator end =
+        new_numbering.lastType(_all_dimensions, gt, _ek_not_defined);
     for (; it != end; ++it) {
       SupportType type = *it;
-      if(this->exists(type, gt)){
+      if (this->exists(type, gt)) {
         const Array<UInt> & renumbering = new_numbering(type, gt);
-	if (renumbering.getSize() == 0) continue;
+        if (renumbering.getSize() == 0)
+          continue;
         Array<T> & vect = this->operator()(type, gt);
         UInt nb_component = vect.getNbComponent();
         Array<T> tmp(renumbering.getSize(), nb_component);
         UInt new_size = 0;
         for (UInt i = 0; i < vect.getSize(); ++i) {
           UInt new_i = renumbering(i);
-          if(new_i != UInt(-1)) {
+          if (new_i != UInt(-1)) {
             memcpy(tmp.storage() + new_i * nb_component,
-                   vect.storage() + i *nb_component,
-                   nb_component * sizeof(T));
+                   vect.storage() + i * nb_component, nb_component * sizeof(T));
             ++new_size;
           }
         }
@@ -314,19 +335,23 @@ inline void ElementTypeMapArray<T, SupportType>::onElementsRemoved(const Element
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T, typename SupportType>
-void ElementTypeMapArray<T, SupportType>::printself(std::ostream & stream, int indent) const {
+template <typename T, typename SupportType>
+void ElementTypeMapArray<T, SupportType>::printself(std::ostream & stream,
+                                                    int indent) const {
   std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
 
-  stream << space << "ElementTypeMapArray<" << debug::demangle(typeid(T).name()) << "> [" << std::endl;
-  for(UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType) g;
+  stream << space << "ElementTypeMapArray<" << debug::demangle(typeid(T).name())
+         << "> [" << std::endl;
+  for (UInt g = _not_ghost; g <= _ghost; ++g) {
+    GhostType gt = (GhostType)g;
 
     const DataMap & data = this->getData(gt);
     typename DataMap::const_iterator it;
-    for(it = data.begin(); it != data.end(); ++it) {
-      stream << space << space << ElementTypeMapArray::printType(it->first, gt) << " [" << std::endl;
+    for (it = data.begin(); it != data.end(); ++it) {
+      stream << space << space << ElementTypeMapArray::printType(it->first, gt)
+             << " [" << std::endl;
       it->second->printself(stream, indent + 3);
       stream << space << space << " ]" << std::endl;
     }
@@ -334,28 +359,28 @@ void ElementTypeMapArray<T, SupportType>::printself(std::ostream & stream, int i
   stream << space << "]" << std::endl;
 }
 
-
 /* -------------------------------------------------------------------------- */
 /* SupportType Iterator                                                       */
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-ElementTypeMap<Stored, SupportType>::type_iterator::type_iterator(DataMapIterator & list_begin,
-                                                                 DataMapIterator & list_end,
-                                                                 UInt dim, ElementKind ek) :
-  list_begin(list_begin), list_end(list_end), dim(dim), kind(ek) {
-}
-
+ElementTypeMap<Stored, SupportType>::type_iterator::type_iterator(
+    DataMapIterator & list_begin, DataMapIterator & list_end, UInt dim,
+    ElementKind ek)
+    : list_begin(list_begin), list_end(list_end), dim(dim), kind(ek) {}
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-ElementTypeMap<Stored, SupportType>::type_iterator::type_iterator(const type_iterator & it) :
-  list_begin(it.list_begin), list_end(it.list_end), dim(it.dim), kind(it.kind) {
-}
+ElementTypeMap<Stored, SupportType>::type_iterator::type_iterator(
+    const type_iterator & it)
+    : list_begin(it.list_begin), list_end(it.list_end), dim(it.dim),
+      kind(it.kind) {}
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-typename ElementTypeMap<Stored, SupportType>::type_iterator & ElementTypeMap<Stored, SupportType>::type_iterator::operator=(const type_iterator & it) {
-  if(this != &it) {
+typename ElementTypeMap<Stored, SupportType>::type_iterator &
+ElementTypeMap<Stored, SupportType>::type_iterator::
+operator=(const type_iterator & it) {
+  if (this != &it) {
     list_begin = it.list_begin;
     list_end = it.list_end;
     dim = it.dim;
@@ -366,34 +391,35 @@ typename ElementTypeMap<Stored, SupportType>::type_iterator & ElementTypeMap<Sto
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::type_iterator::reference
-ElementTypeMap<Stored, SupportType>::type_iterator::operator*() {
+    ElementTypeMap<Stored, SupportType>::type_iterator::operator*() {
   return list_begin->first;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::type_iterator::reference
-ElementTypeMap<Stored, SupportType>::type_iterator::operator*() const {
+    ElementTypeMap<Stored, SupportType>::type_iterator::operator*() const {
   return list_begin->first;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::type_iterator &
-ElementTypeMap<Stored, SupportType>::type_iterator::operator++() {
+    ElementTypeMap<Stored, SupportType>::type_iterator::operator++() {
   ++list_begin;
-  while((list_begin != list_end) &&
-	(((dim != _all_dimensions) && (dim != Mesh::getSpatialDimension(list_begin->first))) ||
-	 ((kind != _ek_not_defined) && (kind != Mesh::getKind(list_begin->first)))
-	 )
-	)
+  while ((list_begin != list_end) &&
+         (((dim != _all_dimensions) &&
+           (dim != Mesh::getSpatialDimension(list_begin->first))) ||
+          ((kind != _ek_not_defined) &&
+           (kind != Mesh::getKind(list_begin->first)))))
     ++list_begin;
   return *this;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-typename ElementTypeMap<Stored, SupportType>::type_iterator ElementTypeMap<Stored, SupportType>::type_iterator::operator++(int) {
+typename ElementTypeMap<Stored, SupportType>::type_iterator
+    ElementTypeMap<Stored, SupportType>::type_iterator::operator++(int) {
   type_iterator tmp(*this);
   operator++();
   return tmp;
@@ -401,58 +427,61 @@ typename ElementTypeMap<Stored, SupportType>::type_iterator ElementTypeMap<Store
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-inline bool ElementTypeMap<Stored, SupportType>::type_iterator::operator==(const type_iterator & other) const {
+inline bool ElementTypeMap<Stored, SupportType>::type_iterator::
+operator==(const type_iterator & other) const {
   return this->list_begin == other.list_begin;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-inline bool ElementTypeMap<Stored, SupportType>::type_iterator::operator!=(const type_iterator & other) const {
+inline bool ElementTypeMap<Stored, SupportType>::type_iterator::
+operator!=(const type_iterator & other) const {
   return this->list_begin != other.list_begin;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::type_iterator
-ElementTypeMap<Stored, SupportType>::firstType(UInt dim, GhostType ghost_type, ElementKind kind) const {
-  typename DataMap::const_iterator b,e;
+ElementTypeMap<Stored, SupportType>::firstType(UInt dim, GhostType ghost_type,
+                                               ElementKind kind) const {
+  typename DataMap::const_iterator b, e;
   b = getData(ghost_type).begin();
   e = getData(ghost_type).end();
 
   // loop until the first valid type
-  while((b != e) &&
-	(((dim != _all_dimensions) && (dim != Mesh::getSpatialDimension(b->first))) ||
-	 ((kind != _ek_not_defined) && (kind != Mesh::getKind(b->first)))))
+  while ((b != e) &&
+         (((dim != _all_dimensions) &&
+           (dim != Mesh::getSpatialDimension(b->first))) ||
+          ((kind != _ek_not_defined) && (kind != Mesh::getKind(b->first)))))
     ++b;
 
-  return typename ElementTypeMap<Stored, SupportType>::type_iterator(b, e, dim, kind);
+  return typename ElementTypeMap<Stored, SupportType>::type_iterator(b, e, dim,
+                                                                     kind);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::type_iterator
-ElementTypeMap<Stored, SupportType>::lastType(UInt dim, GhostType ghost_type, ElementKind kind) const {
+ElementTypeMap<Stored, SupportType>::lastType(UInt dim, GhostType ghost_type,
+                                              ElementKind kind) const {
   typename DataMap::const_iterator e;
   e = getData(ghost_type).end();
-  return typename ElementTypeMap<Stored, SupportType>::type_iterator(e, e, dim, kind);
+  return typename ElementTypeMap<Stored, SupportType>::type_iterator(e, e, dim,
+                                                                     kind);
 }
 
 /* -------------------------------------------------------------------------- */
 
 /// standard output stream operator
 template <class Stored, typename SupportType>
-inline std::ostream & operator <<(std::ostream & stream, const ElementTypeMap<Stored, SupportType> & _this)
-{
+inline std::ostream &
+operator<<(std::ostream & stream,
+           const ElementTypeMap<Stored, SupportType> & _this) {
   _this.printself(stream);
   return stream;
 }
 
 /* -------------------------------------------------------------------------- */
-
-
-
-
-
-__END_AKANTU__
+}
 
 #endif /* __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__ */

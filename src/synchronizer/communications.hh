@@ -104,10 +104,10 @@ public:
   void resetSchemes(const CommunicationSendRecv & sr);
 
   /* ------------------------------------------------------------------------ */
-  void initializeCommunication(const SynchronizationTag & tag, UInt proc, UInt size,
-                               const CommunicationSendRecv & sr);
+  void setCommunicationSize(const SynchronizationTag & tag, UInt proc, UInt size,
+                            const CommunicationSendRecv & sr);
 public:
-  Communications(const StaticCommunicator & communicator);
+  explicit Communications(const StaticCommunicator & communicator);
   /* ------------------------------------------------------------------------ */
   iterator begin_send(const SynchronizationTag & tag);
   iterator end_send(const SynchronizationTag & tag);
@@ -122,7 +122,8 @@ public:
 
   /* ------------------------------------------------------------------------ */
   bool hasCommunication(const SynchronizationTag & tag) const;
-  UInt incrementCounter(const SynchronizationTag & tag);
+  void incrementCounter(const SynchronizationTag & tag);
+  UInt getCounter(const SynchronizationTag & tag) const;
 
   bool hasPendingRecv(const SynchronizationTag & tag) const;
   bool hasPendingSend(const SynchronizationTag & tag) const;
@@ -166,10 +167,12 @@ public:
   /* ------------------------------------------------------------------------ */
   void resetSchemes();
   /* ------------------------------------------------------------------------ */
-  void initializeSendCommunication(const SynchronizationTag & tag, UInt proc,
-                                   UInt size);
-  void initializeRecvCommunication(const SynchronizationTag & tag, UInt proc,
-                                   UInt size);
+  void setSendCommunicationSize(const SynchronizationTag & tag, UInt proc,
+                                UInt size);
+  void setRecvCommunicationSize(const SynchronizationTag & tag, UInt proc,
+                                UInt size);
+
+  void initializeCommunications(const SynchronizationTag & tag);
 
 protected:
   CommunicationSchemes schemes[2];

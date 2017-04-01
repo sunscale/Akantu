@@ -86,6 +86,13 @@ private:
   /// set the level of verbosity of mumps based on the debug level of akantu
   void setOutputLevel();
 
+protected:
+  /// de-initialize the internal data
+  virtual void destroyInternalData();
+
+  /// check if initialized and except if it is not the case
+  void checkInitialized();
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -126,6 +133,9 @@ private:
 
   /// matrix release at last solve
   UInt last_value_release;
+
+  /// check if the solver data are initialized
+  bool is_initialized;
 
   /* ------------------------------------------------------------------------ */
   /* Local types                                                              */

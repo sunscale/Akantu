@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "element_info_per_processor.hh"
 #include "element_group.hh"
+#include "element_info_per_processor.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -41,7 +41,8 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 template <typename T, typename BufferType>
 void ElementInfoPerProc::fillMeshDataTemplated(BufferType & buffer,
-                                               const std::string & tag_name) {
+                                               const std::string & tag_name,
+                                               UInt nb_component) {
 
   AKANTU_DEBUG_ASSERT(this->mesh.getNbElement(this->type) == nb_local_element,
                       "Did not got enought informations for the tag "
@@ -51,10 +52,10 @@ void ElementInfoPerProc::fillMeshDataTemplated(BufferType & buffer,
                           << " Got " << nb_local_element << " values, expected "
                           << mesh.getNbElement(this->type));
   MeshData & mesh_data = this->getMeshData();
-
-  UInt nb_component = mesh_data.getNbComponent(tag_name, this->type);
+  mesh_data.registerElementalData<T>(tag_name);
   Array<T> & data = mesh_data.getElementalDataArrayAlloc<T>(
       tag_name, this->type, _not_ghost, nb_component);
+
   data.resize(nb_local_element);
   /// unpacking the data, element by element
   for (UInt i(0); i < nb_local_element; ++i) {
@@ -71,7 +72,6 @@ void ElementInfoPerProc::fillMeshDataTemplated(BufferType & buffer,
                           << " Got " << nb_ghost_element << " values, expected "
                           << mesh.getNbElement(this->type, _ghost));
 
-  mesh_data.registerElementalData<T>(tag_name);
   Array<T> & data_ghost = mesh_data.getElementalDataArrayAlloc<T>(
       tag_name, this->type, _ghost, nb_component);
   data_ghost.resize(nb_ghost_element);
@@ -87,15 +87,15 @@ void ElementInfoPerProc::fillMeshDataTemplated(BufferType & buffer,
 /* -------------------------------------------------------------------------- */
 template <typename BufferType>
 void ElementInfoPerProc::fillMeshData(BufferType & buffer,
-                                      const std::string & tag_name) {
+                                      const std::string & tag_name,
+                                      const MeshDataTypeCode & type_code,
+                                      UInt nb_component) {
 #define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, extra_param, elem)          \
   case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
-    fillMeshDataTemplated<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(buffer, tag_name);  \
+    fillMeshDataTemplated<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(buffer, tag_name,   \
+                                                           nb_component);      \
     break;                                                                     \
   }
-
-  MeshData & mesh_data = this->getMeshData();
-  MeshDataTypeCode type_code = mesh_data.getTypeCode(tag_name);
 
   switch (type_code) {
     BOOST_PP_SEQ_FOR_EACH(AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA, ,

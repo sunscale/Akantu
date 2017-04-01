@@ -177,6 +177,9 @@ inline Array<UInt> * Mesh::getNodesGlobalIdsPointer() {
     std::stringstream sstr;
     sstr << getID() << ":nodes_global_ids";
     nodes_global_ids = &(alloc<UInt>(sstr.str(), nodes->getSize(), 1));
+    for(UInt i = 0; i < nodes->getSize(); ++i) {
+      (*nodes_global_ids)(i) = i;
+    }
   }
   AKANTU_DEBUG_OUT();
   return nodes_global_ids;
@@ -333,6 +336,7 @@ Mesh::registerData(const std::string & data_name) {
 inline UInt Mesh::getNbElement(const ElementType & type,
                                const GhostType & ghost_type) const {
   try {
+
     const Array<UInt> & conn = connectivities(type, ghost_type);
     return conn.getSize();
   } catch (...) {
@@ -344,7 +348,7 @@ inline UInt Mesh::getNbElement(const ElementType & type,
 inline UInt Mesh::getNbElement(const UInt spatial_dimension,
                                const GhostType & ghost_type,
                                const ElementKind & kind) const {
-  AKANTU_DEBUG_ASSERT(spatial_dimension <= 3,
+  AKANTU_DEBUG_ASSERT(spatial_dimension <= 3 || spatial_dimension == UInt(-1),
                       "spatial_dimension is " << spatial_dimension
                                               << " and is greater than 3 !");
   UInt nb_element = 0;

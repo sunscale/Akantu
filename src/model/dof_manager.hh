@@ -53,14 +53,15 @@ class DOFManager : protected Memory, protected MeshEventHandler {
   /* ------------------------------------------------------------------------ */
 public:
   DOFManager(const ID & id = "dof_manager", const MemoryID & memory_id = 0);
+  DOFManager(Mesh & mesh, const ID & id = "dof_manager", const MemoryID & memory_id = 0);
   virtual ~DOFManager();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:
+protected:
   /// register a mesh for dof that have a support type on nodes
-  virtual void registerMesh(Mesh & mesh);
+  virtual void registerMesh();
 
 private:
   /// common function to help registering dofs
@@ -315,7 +316,16 @@ public:
   bool hasTimeStepSolver(const ID & solver_id) const;
 
   /* ------------------------------------------------------------------------ */
-  AKANTU_GET_MACRO(Mesh, *mesh, const Mesh &);
+  const Mesh & getMesh() {
+    if (mesh) {
+      return *mesh;
+    } else {
+      AKANTU_EXCEPTION("No mesh registered in this dof manager");
+    }
+  }
+
+  /* ------------------------------------------------------------------------ */
+  AKANTU_GET_MACRO(Communicator, communicator, const StaticCommunicator &);
 
   /* ------------------------------------------------------------------------ */
   /* MeshEventHandler interface                                               */
@@ -445,6 +455,10 @@ protected:
 
   /// Total number of degrees of freedom
   UInt system_size;
+
+  /// Communicator used for this manager, should be the same as in the mesh if a
+  /// mesh is registered
+  const StaticCommunicator & communicator;
 };
 
 } // akantu

@@ -30,24 +30,24 @@
 /* -------------------------------------------------------------------------- */
 #include "element_info_per_processor.hh"
 #include "element_synchronizer.hh"
-#include "static_communicator.hh"
 #include "mesh_utils.hh"
+#include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
-#include <map>
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <map>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 SlaveElementInfoPerProc::SlaveElementInfoPerProc(
-    ElementSynchronizer & synchronizer,
-    UInt message_cnt, UInt root)
+    ElementSynchronizer & synchronizer, UInt message_cnt, UInt root)
     : ElementInfoPerProc(synchronizer, message_cnt, root, _not_defined) {
 
   Vector<UInt> size(5);
-  comm.receive(size, this->root, Tag::genTag(this->root, this->message_count, Tag::_SIZES));
+  comm.receive(size, this->root,
+               Tag::genTag(this->root, this->message_count, Tag::_SIZES));
 
   this->type = (ElementType)size[0];
   this->nb_local_element = size[1];
@@ -55,7 +55,8 @@ SlaveElementInfoPerProc::SlaveElementInfoPerProc(
   this->nb_element_to_receive = size[3];
   this->nb_tags = size[4];
 
-  this->nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+  if (this->type != _not_defined)
+    this->nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -71,8 +72,9 @@ void SlaveElementInfoPerProc::synchronizeConnectivities() {
       this->nb_nodes_per_element);
 
   AKANTU_DEBUG_INFO("Receiving connectivities from proc " << root);
-  comm.receive(local_connectivity, this->root,
-               Tag::genTag(this->root, this->message_count, Tag::_CONNECTIVITY));
+  comm.receive(
+      local_connectivity, this->root,
+      Tag::genTag(this->root, this->message_count, Tag::_CONNECTIVITY));
 
   Array<UInt> & old_nodes = this->getNodesGlobalIds();
   AKANTU_DEBUG_INFO("Renumbering local connectivities");
@@ -142,13 +144,16 @@ void SlaveElementInfoPerProc::synchronizeTags() {
 
     CommunicationStatus mesh_data_comm_status;
     AKANTU_DEBUG_INFO("Checking size of data to receive for mesh data TAG("
-                      << Tag::genTag(root, this->message_count, Tag::_MESH_DATA) << ")");
-    comm.probe<char>(root, Tag::genTag(root, this->message_count, Tag::_MESH_DATA),
+                      << Tag::genTag(root, this->message_count, Tag::_MESH_DATA)
+                      << ")");
+    comm.probe<char>(root,
+                     Tag::genTag(root, this->message_count, Tag::_MESH_DATA),
                      mesh_data_comm_status);
     UInt mesh_data_buffer_size(mesh_data_comm_status.getSize());
     AKANTU_DEBUG_INFO("Receiving "
                       << mesh_data_buffer_size << " bytes of mesh data TAG("
-                      << Tag::genTag(root, this->message_count, Tag::_MESH_DATA) << ")");
+                      << Tag::genTag(root, this->message_count, Tag::_MESH_DATA)
+                      << ")");
     mesh_data_buffer.resize(mesh_data_buffer_size);
     comm.receive(mesh_data_buffer, root,
                  Tag::genTag(root, this->message_count, Tag::_MESH_DATA));
@@ -156,7 +161,8 @@ void SlaveElementInfoPerProc::synchronizeTags() {
     // Loop over each tag for the current type
     UInt k(0);
     for (; names_it != names_end; ++names_it, ++k) {
-      this->fillMeshData(mesh_data_buffer, *names_it);
+      this->fillMeshData(mesh_data_buffer, *names_it, tag_type_codes[k],
+                         tag_nb_component[k]);
     }
   }
 
@@ -175,7 +181,8 @@ void SlaveElementInfoPerProc::synchronizeGroups() {
                     << Tag::genTag(root, my_rank, Tag::_ELEMENT_GROUP) << ")");
 
   CommunicationStatus status;
-  comm.probe<char>(root, Tag::genTag(root, my_rank, Tag::_ELEMENT_GROUP), status);
+  comm.probe<char>(root, Tag::genTag(root, my_rank, Tag::_ELEMENT_GROUP),
+                   status);
 
   CommunicationBuffer buffer(status.getSize());
   comm.receive(buffer, root, Tag::genTag(root, my_rank, Tag::_ELEMENT_GROUP));

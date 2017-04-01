@@ -43,13 +43,16 @@ __BEGIN_AKANTU__
 SparseSolver::SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
                            const ID & id, const MemoryID & memory_id)
   : Memory(id, memory_id), Parsable(_st_solver, id),
-    _dof_manager(dof_manager), matrix_id(matrix_id), communicator(dof_manager.getMesh().getCommunicator()) {
+    _dof_manager(dof_manager), matrix_id(matrix_id), communicator(dof_manager.getCommunicator()) {
   AKANTU_DEBUG_IN();
 
   // createSynchronizerRegistry();
   // this->synch_registry = new SynchronizerRegistry(*this);
   //  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(),
   //  _gst_solver_solution);
+
+  // OK this is fishy...
+  const_cast<StaticCommunicator &>(this->communicator).registerEventHandler(*this);
 
   AKANTU_DEBUG_OUT();
 }
@@ -59,7 +62,6 @@ SparseSolver::~SparseSolver() {
   AKANTU_DEBUG_IN();
 
   this->destroyInternalData();
-  //  delete synch_registry;
 
   AKANTU_DEBUG_OUT();
 }
@@ -79,6 +81,10 @@ void SparseSolver::beforeStaticSolverDestroy() {
 /* -------------------------------------------------------------------------- */
 void SparseSolver::createSynchronizerRegistry() {
   // this->synch_registry = new SynchronizerRegistry(this);
+}
+
+void SparseSolver::onCommunicatorFinalize() {
+  this->destroyInternalData();
 }
 
 __END_AKANTU__

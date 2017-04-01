@@ -44,7 +44,8 @@ template <class Entity> class Communications<Entity>::iterator {
 public:
   iterator() : communications(NULL) {}
   iterator(scheme_iterator scheme_it, communication_iterator comm_it,
-           Communications<Entity> & communications, const SynchronizationTag & tag)
+           Communications<Entity> & communications,
+           const SynchronizationTag & tag)
       : scheme_it(scheme_it), comm_it(comm_it), communications(&communications),
         tag(tag) {}
 
@@ -67,8 +68,9 @@ public:
   CommunicationDescriptor<Entity> operator*() {
     AKANTU_DEBUG_ASSERT(
         scheme_it->first == comm_it->first,
-        "The to iterators are not in phase, something wrong"
-            << " happened, time to take out your favorite debugger");
+        "The two iterators are not in phase, something wrong"
+            << " happened, time to take out your favorite debugger ("
+            << scheme_it->first << " != " << comm_it->first << ")");
     return CommunicationDescriptor<Entity>(comm_it->second, scheme_it->second,
                                            *communications, tag,
                                            scheme_it->first);
@@ -112,8 +114,8 @@ template <class Entity>
 typename Communications<Entity>::CommunicationPerProcs &
 Communications<Entity>::getCommunications(const SynchronizationTag & tag,
                                           const CommunicationSendRecv & sr) {
-  CommunicationsPerTags::iterator comm_it = communications[sr].find(tag);
-  if (comm_it == communications[sr].end())
+  auto comm_it = this->communications[sr].find(tag);
+  if (comm_it == this->communications[sr].end())
     AKANTU_CUSTOM_EXCEPTION_INFO(
         debug::CommunicationException(),
         "No known communications for the tag: " << tag);
@@ -126,9 +128,10 @@ UInt Communications<Entity>::getPending(
     const SynchronizationTag & tag, const CommunicationSendRecv & sr) const {
   const std::map<SynchronizationTag, UInt> & pending =
       pending_communications[sr];
-  std::map<SynchronizationTag, UInt>::const_iterator it = pending.find(tag);
-  AKANTU_DEBUG_ASSERT(it != pending.end(),
-                      "Pending communications are not initialized!");
+  auto it = pending.find(tag);
+
+  if (it == pending.end())
+    return 0;
   return it->second;
 }
 
@@ -144,7 +147,7 @@ template <class Entity>
 typename Communications<Entity>::iterator
 Communications<Entity>::begin(const SynchronizationTag & tag,
                               const CommunicationSendRecv & sr) {
-  CommunicationPerProcs & comms = this->getCommunications(tag, sr);
+  auto & comms = this->getCommunications(tag, sr);
   return iterator(this->schemes[sr].begin(), comms.begin(), *this, tag);
 }
 
@@ -152,7 +155,7 @@ template <class Entity>
 typename Communications<Entity>::iterator
 Communications<Entity>::end(const SynchronizationTag & tag,
                             const CommunicationSendRecv & sr) {
-  CommunicationPerProcs & comms = this->getCommunications(tag, sr);
+  auto & comms = this->getCommunications(tag, sr);
   return iterator(this->schemes[sr].end(), comms.end(), *this, tag);
 }
 
@@ -161,24 +164,24 @@ template <class Entity>
 typename Communications<Entity>::iterator
 Communications<Entity>::waitAny(const SynchronizationTag & tag,
                                 const CommunicationSendRecv & sr) {
-  CommunicationPerProcs & comms = this->getCommunications(tag, sr);
-  CommunicationPerProcs::iterator it = comms.begin();
-  CommunicationPerProcs::iterator end = comms.end();
+  auto & comms = this->getCommunications(tag, sr);
+  auto it = comms.begin();
+  auto end = comms.end();
 
   std::vector<CommunicationRequest> requests;
 
   for (; it != end; ++it) {
-    requests.push_back(it->second.request);
+    auto & request = it->second.request();
+    if(!request.isFreed())
+      requests.push_back(request);
   }
 
   UInt req_id = communicator.waitAny(requests);
   if (req_id != UInt(-1)) {
-    CommunicationRequest & request = requests[req_id];
-    UInt proc =
-        sr == _recv ? request.getSource() : request.getDestination();
+    auto & request = requests[req_id];
+    UInt proc = sr == _recv ? request.getSource() : request.getDestination();
 
-    return iterator(this->schemes[sr].find(proc),
-                    comms.find(proc), *this, tag);
+    return iterator(this->schemes[sr].find(proc), comms.find(proc), *this, tag);
   } else {
     return this->end(tag, sr);
   }
@@ -186,17 +189,16 @@ Communications<Entity>::waitAny(const SynchronizationTag & tag,
 
 /* ---------------------------------------------------------------------- */
 template <class Entity>
-void
-Communications<Entity>::waitAll(const SynchronizationTag & tag,
-                                const CommunicationSendRecv & sr) {
-  CommunicationPerProcs & comms = this->getCommunications(tag, sr);
-  CommunicationPerProcs::iterator it = comms.begin();
-  CommunicationPerProcs::iterator end = comms.end();
+void Communications<Entity>::waitAll(const SynchronizationTag & tag,
+                                     const CommunicationSendRecv & sr) {
+  auto & comms = this->getCommunications(tag, sr);
+  auto it = comms.begin();
+  auto end = comms.end();
 
   std::vector<CommunicationRequest> requests;
 
   for (; it != end; ++it) {
-    requests.push_back(it->second.request);
+    requests.push_back(it->second.request());
   }
 
   communicator.waitAll(requests);
@@ -231,12 +233,13 @@ typename Communications<Entity>::Scheme &
 Communications<Entity>::createScheme(UInt proc,
                                      const CommunicationSendRecv & sr) {
   scheme_iterator it = schemes[sr].find(proc);
-  if (it != schemes[sr].end()) {
-    AKANTU_CUSTOM_EXCEPTION_INFO(debug::CommunicationException(),
-                                 "Communication scheme("
-                                     << sr
-                                     << ") already created for proc: " << proc);
-  }
+  // if (it != schemes[sr].end()) {
+  //   AKANTU_CUSTOM_EXCEPTION_INFO(debug::CommunicationException(),
+  //                                "Communication scheme("
+  //                                    << sr
+  //                                    << ") already created for proc: " <<
+  //                                    proc);
+  // }
   return schemes[sr][proc];
 }
 
@@ -251,24 +254,37 @@ void Communications<Entity>::resetSchemes(const CommunicationSendRecv & sr) {
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-void Communications<Entity>::initializeCommunication(
+void Communications<Entity>::setCommunicationSize(
     const SynchronizationTag & tag, UInt proc, UInt size,
     const CommunicationSendRecv & sr) {
   // accessor that creates if it does not exists
-  CommunicationsPerTags & comms = communications[sr];
-  CommunicationPerProcs & comms_per_tag = comms[tag];
-  Communication & comm = comms_per_tag[proc];
-  comm.size = size;
-  comm.type = sr;
+  auto & comms = this->communications[sr];
+  auto & comms_per_tag = comms[tag];
 
-  if (comm_counter.find(tag) == comm_counter.end()) {
-    comm_counter[tag] = 0;
+  comms_per_tag[proc].resize(size);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
+void Communications<Entity>::initializeCommunications(
+    const SynchronizationTag & tag) {
+
+  for (auto t = send_recv_t::begin(); t != send_recv_t::end(); ++t) {
+    pending_communications[*t].insert(std::make_pair(tag, 0));
+
+    auto & comms = this->communications[*t];
+    auto & comms_per_tag =
+        comms.insert(std::make_pair(tag, CommunicationPerProcs()))
+            .first->second;
+
+    for (auto pair : this->schemes[*t]) {
+      comms_per_tag.emplace(std::piecewise_construct,
+                            std::forward_as_tuple(pair.first),
+                            std::forward_as_tuple(*t));
+    }
   }
 
-  if (pending_communications[sr].find(tag) ==
-      pending_communications[sr].end()) {
-    pending_communications[sr][tag] = 0;
-  }
+  comm_counter.insert(std::make_pair(tag, 0));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -367,7 +383,7 @@ Communications<Entity>::end_recv_scheme() const {
   return this->schemes[_recv].end();
 }
 
-/* ---------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 template <class Entity>
 bool Communications<Entity>::hasCommunication(
     const SynchronizationTag & tag) const {
@@ -375,15 +391,26 @@ bool Communications<Entity>::hasCommunication(
 }
 
 template <class Entity>
-UInt Communications<Entity>::incrementCounter(const SynchronizationTag & tag) {
-  std::map<SynchronizationTag, UInt>::iterator it = comm_counter.find(tag);
+void Communications<Entity>::incrementCounter(const SynchronizationTag & tag) {
+  auto it = comm_counter.find(tag);
   if (it == comm_counter.end()) {
     AKANTU_CUSTOM_EXCEPTION_INFO(
         debug::CommunicationException(),
-        "No known communications for the tags: " << tag);
+        "No counter initialized in communications for the tags: " << tag);
   }
 
   ++(it->second);
+}
+
+template <class Entity>
+UInt Communications<Entity>::getCounter(const SynchronizationTag & tag) const {
+  auto it = comm_counter.find(tag);
+  if (it == comm_counter.end()) {
+    AKANTU_CUSTOM_EXCEPTION_INFO(
+        debug::CommunicationException(),
+        "No counter initialized in communications for the tags: " << tag);
+  }
+
   return it->second;
 }
 
@@ -460,27 +487,27 @@ template <class Entity> void Communications<Entity>::resetSchemes() {
 template <class Entity>
 const typename Communications<Entity>::Scheme &
 Communications<Entity>::getSendScheme(UInt proc) const {
-  return this->schemes[_send].find(proc)->seconf;
+  return this->schemes[_send].find(proc)->second;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 const typename Communications<Entity>::Scheme &
 Communications<Entity>::getRecvScheme(UInt proc) const {
-  return this->schemes[_recv].find(proc)->seconf;
+  return this->schemes[_recv].find(proc)->second;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-void Communications<Entity>::initializeSendCommunication(
+void Communications<Entity>::setSendCommunicationSize(
     const SynchronizationTag & tag, UInt proc, UInt size) {
-  initializeCommunication(tag, proc, size, _send);
+  this->setCommunicationSize(tag, proc, size, _send);
 }
 
 template <class Entity>
-void Communications<Entity>::initializeRecvCommunication(
+void Communications<Entity>::setRecvCommunicationSize(
     const SynchronizationTag & tag, UInt proc, UInt size) {
-  initializeCommunication(tag, proc, size, _send);
+  this->setCommunicationSize(tag, proc, size, _recv);
 }
 
 } // akantu

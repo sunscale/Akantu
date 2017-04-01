@@ -456,6 +456,8 @@ public:
 
   AKANTU_GET_MACRO(ElementSynchronizer, *element_synchronizer,
                    const ElementSynchronizer &);
+  AKANTU_GET_MACRO_NOT_CONST(ElementSynchronizer, *element_synchronizer,
+                   ElementSynchronizer &);
   AKANTU_GET_MACRO(NodeSynchronizer, *node_synchronizer,
                    const NodeSynchronizer &);
 

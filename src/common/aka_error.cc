@@ -310,7 +310,7 @@ void Debugger::printMessage(const std::string & prefix,
 void Debugger::setDebugLevel(const DebugLevel & level) { this->level = level; }
 
 /* ------------------------------------------------------------------------ */
-const DebugLevel & Debugger::getDebugLevel() const { return level; }
+const DebugLevel & Debugger::getDebugLevel() const { return this->level; }
 
 /* ------------------------------------------------------------------------ */
 void Debugger::setLogFile(const std::string & filename) {

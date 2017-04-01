@@ -202,16 +202,15 @@ void printResults(MyModel & model) {
   Array<Real>::const_scalar_iterator force_it = model.forces.begin();
   Array<bool>::const_scalar_iterator blocked_it = model.blocked.begin();
 
-  std::ofstream output("disp.csv");
-  output << "node"
-         << ", " << std::setw(8) << "disp"
-         << ", " << std::setw(8) << "force"
-         << ", " << std::setw(8) << "blocked" << std::endl;
+  std::cout << "node"
+            << ", " << std::setw(8) << "disp"
+            << ", " << std::setw(8) << "force"
+            << ", " << std::setw(8) << "blocked" << std::endl;
 
   UInt node = 0;
   for (; disp_it != model.dispacement.end();
        ++disp_it, ++force_it, ++blocked_it, ++node) {
-    output << node << ", "
+    std::cout << node << ", "
            << std::setw(8) << *disp_it << ", "
            << std::setw(8) << *force_it << ", "
            << std::setw(8) << *blocked_it

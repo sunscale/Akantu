@@ -69,7 +69,7 @@ __BEGIN_AKANTU__
 class RealStaticCommunicator;
 
 struct FinalizeCommunicatorEvent {
-  FinalizeCommunicatorEvent(const StaticCommunicator & comm)
+  explicit FinalizeCommunicatorEvent(const StaticCommunicator & comm)
       : communicator(comm) {}
   const StaticCommunicator & communicator;
 };
@@ -77,13 +77,11 @@ struct FinalizeCommunicatorEvent {
 class CommunicatorEventHandler {
 public:
   virtual ~CommunicatorEventHandler() {}
-  virtual void onCommunicatorFinalize(__attribute__((unused))
-                                      const StaticCommunicator & communicator) {
-  }
+  virtual void onCommunicatorFinalize() { }
 
 private:
-  inline void sendEvent(const FinalizeCommunicatorEvent & event) {
-    onCommunicatorFinalize(event.communicator);
+  inline void sendEvent(const FinalizeCommunicatorEvent &) {
+    onCommunicatorFinalize();
   }
 
   template <class EventHandler> friend class EventHandlerManager;
@@ -314,13 +312,13 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Request handling                                                         */
   /* ------------------------------------------------------------------------ */
-  inline bool testRequest(CommunicationRequest request) const;
+  inline bool testRequest(CommunicationRequest & request) const;
 
-  inline void wait(CommunicationRequest request) const;
+  inline void wait(CommunicationRequest & request) const;
   inline void waitAll(std::vector<CommunicationRequest> & requests) const;
   inline UInt waitAny(std::vector<CommunicationRequest> & requests) const;
 
-  inline void freeCommunicationRequest(CommunicationRequest request) const;
+  inline void freeCommunicationRequest(CommunicationRequest & request) const;
   inline void
   freeCommunicationRequest(std::vector<CommunicationRequest> & requests) const;
 

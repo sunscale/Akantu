@@ -28,23 +28,23 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "element_group.hh"
 #include "element_info_per_processor.hh"
 #include "element_synchronizer.hh"
-#include "static_communicator.hh"
-#include "element_group.hh"
 #include "mesh_utils.hh"
+#include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
-#include <map>
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <map>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 MasterElementInfoPerProc::MasterElementInfoPerProc(
-    ElementSynchronizer & synchronizer, UInt message_cnt, UInt root, ElementType type,
-    const MeshPartition & partition)
+    ElementSynchronizer & synchronizer, UInt message_cnt, UInt root,
+    ElementType type, const MeshPartition & partition)
     : ElementInfoPerProc(synchronizer, message_cnt, root, type),
       partition(partition), all_nb_local_element(nb_proc, 0),
       all_nb_ghost_element(nb_proc, 0), all_nb_element_to_send(nb_proc, 0) {
@@ -81,10 +81,11 @@ MasterElementInfoPerProc::MasterElementInfoPerProc(
         size(1) = this->all_nb_local_element[p];
         size(2) = this->all_nb_ghost_element[p];
         size(3) = this->all_nb_element_to_send[p];
-        AKANTU_DEBUG_INFO("Sending connectivities informations to proc "
-                          << p << " TAG("
-                          << Tag::genTag(this->rank, this->message_count,
-                                         Tag::_SIZES) << ")");
+        AKANTU_DEBUG_INFO(
+            "Sending connectivities informations to proc "
+            << p << " TAG("
+            << Tag::genTag(this->rank, this->message_count, Tag::_SIZES)
+            << ")");
         comm.send(size, p,
                   Tag::genTag(this->rank, this->message_count, Tag::_SIZES));
       } else {
@@ -95,10 +96,11 @@ MasterElementInfoPerProc::MasterElementInfoPerProc(
   } else {
     for (UInt p = 0; p < this->nb_proc; ++p) {
       if (p != this->root) {
-        AKANTU_DEBUG_INFO("Sending empty connectivities informations to proc "
-                          << p << " TAG("
-                          << Tag::genTag(this->rank, this->message_count,
-                                         Tag::_SIZES) << ")");
+        AKANTU_DEBUG_INFO(
+            "Sending empty connectivities informations to proc "
+            << p << " TAG("
+            << Tag::genTag(this->rank, this->message_count, Tag::_SIZES)
+            << ")");
         comm.send(size, p,
                   Tag::genTag(this->rank, this->message_count, Tag::_SIZES));
       }
@@ -113,28 +115,33 @@ void MasterElementInfoPerProc::synchronizeConnectivities() {
   const CSR<UInt> & ghost_partition =
       this->partition.getGhostPartitionCSR()(this->type, _not_ghost);
 
-  std::vector<Array<UInt> > buffers(this->nb_proc);
+  std::vector<Array<UInt>> buffers(this->nb_proc);
+
+  auto conn_it = this->mesh.getConnectivity(this->type, _not_ghost)
+                     .begin(this->nb_nodes_per_element);
+  auto conn_end = this->mesh.getConnectivity(this->type, _not_ghost)
+                      .end(this->nb_nodes_per_element);
 
   /// copying the local connectivity
-  Array<UInt>::const_vector_iterator conn_it =
-      this->mesh.getConnectivity(this->type, _not_ghost)
-          .begin(this->nb_nodes_per_element);
-  Array<UInt>::const_vector_iterator conn_end =
-      this->mesh.getConnectivity(this->type, _not_ghost)
-          .end(this->nb_nodes_per_element);
-
-  for (UInt el = 0; conn_it != conn_end; ++conn_it, ++el) {
-    buffers[partition_num(el)].push_back(*conn_it);
+  auto part_it = partition_num.begin();
+  for (; conn_it != conn_end; ++conn_it, ++part_it) {
+    const auto & conn = *conn_it;
+    for (UInt i = 0; i < conn.size(); ++i) {
+      buffers[*part_it].push_back(conn[i]);
+    }
   }
 
   /// copying the connectivity of ghost element
   conn_it = this->mesh.getConnectivity(this->type, _not_ghost)
                 .begin(this->nb_nodes_per_element);
   for (UInt el = 0; conn_it != conn_end; ++el, ++conn_it) {
-    for (CSR<UInt>::const_iterator part = ghost_partition.begin(el);
-         part != ghost_partition.end(el); ++part) {
+    for (auto part = ghost_partition.begin(el); part != ghost_partition.end(el);
+         ++part) {
       UInt proc = *part;
-      buffers[proc].push_back(*conn_it);
+      const Vector<UInt> & conn = *conn_it;
+      for (UInt i = 0; i < conn.size(); ++i) {
+        buffers[proc].push_back(conn[i]);
+      }
     }
   }
 
@@ -152,10 +159,11 @@ void MasterElementInfoPerProc::synchronizeConnectivities() {
   std::vector<CommunicationRequest> requests;
   for (UInt p = 0; p < this->nb_proc; ++p) {
     if (p != this->root) {
-      AKANTU_DEBUG_INFO("Sending connectivities to proc "
-                        << p << " TAG("
-                        << Tag::genTag(this->rank, this->message_count,
-                                       Tag::_CONNECTIVITY) << ")");
+      AKANTU_DEBUG_INFO(
+          "Sending connectivities to proc "
+          << p << " TAG("
+          << Tag::genTag(this->rank, this->message_count, Tag::_CONNECTIVITY)
+          << ")");
       requests.push_back(comm.asyncSend(
           buffers[p], p,
           Tag::genTag(this->rank, this->message_count, Tag::_CONNECTIVITY)));
@@ -180,7 +188,7 @@ void MasterElementInfoPerProc::synchronizePartitions() {
   const CSR<UInt> & ghost_partition =
       this->partition.getGhostPartitionCSR()(this->type, _not_ghost);
 
-  std::vector<Array<UInt> > buffers;
+  std::vector<Array<UInt>> buffers(this->partition.getNbPartition());
 
   /// splitting the partition information to send them to processors
   Vector<UInt> count_by_proc(nb_proc, 0);
@@ -216,10 +224,11 @@ void MasterElementInfoPerProc::synchronizePartitions() {
   /// last data to compute the communication scheme
   for (UInt p = 0; p < this->nb_proc; ++p) {
     if (p != this->root) {
-      AKANTU_DEBUG_INFO("Sending partition informations to proc "
-                        << p << " TAG("
-                        << Tag::genTag(this->rank, this->message_count,
-                                       Tag::_PARTITIONS) << ")");
+      AKANTU_DEBUG_INFO(
+          "Sending partition informations to proc "
+          << p << " TAG("
+          << Tag::genTag(this->rank, this->message_count, Tag::_PARTITIONS)
+          << ")");
       requests.push_back(comm.asyncSend(
           buffers[p], p,
           Tag::genTag(this->rank, this->message_count, Tag::_PARTITIONS)));
@@ -299,7 +308,8 @@ void MasterElementInfoPerProc::synchronizeTags() {
                           << buffers[p].getSize()
                           << " bytes of mesh data to proc " << p << " TAG("
                           << Tag::genTag(this->rank, this->message_count,
-                                         Tag::_MESH_DATA) << ")");
+                                         Tag::_MESH_DATA)
+                          << ")");
 
         requests.push_back(comm.asyncSend(
             buffers[p], p,
@@ -311,7 +321,9 @@ void MasterElementInfoPerProc::synchronizeTags() {
     // Loop over each tag for the current type
     for (; names_it != names_end; ++names_it) {
       // Reinitializing the mesh data on the master
-      this->fillMeshData(buffers[root], *names_it);
+      this->fillMeshData(buffers[root], *names_it,
+                         mesh_data.getTypeCode(*names_it),
+                         mesh_data.getNbComponent(*names_it, type));
     }
 
     comm.waitAll(requests);
@@ -401,7 +413,7 @@ void MasterElementInfoPerProc::synchronizeGroups() {
   DynamicCommunicationBuffer * buffers =
       new DynamicCommunicationBuffer[nb_proc];
 
-  typedef std::vector<std::vector<std::string> > ElementToGroup;
+  typedef std::vector<std::vector<std::string>> ElementToGroup;
   ElementToGroup element_to_group;
   element_to_group.resize(nb_element);
 
@@ -425,12 +437,10 @@ void MasterElementInfoPerProc::synchronizeGroups() {
       const_cast<Array<UInt> &>(eg.getElements(type)).empty();
   }
 
-
   const Array<UInt> & partition_num =
       this->partition.getPartition(this->type, _not_ghost);
   const CSR<UInt> & ghost_partition =
       this->partition.getGhostPartitionCSR()(this->type, _not_ghost);
-
 
   /// preparing the buffers
   const UInt * part = partition_num.storage();

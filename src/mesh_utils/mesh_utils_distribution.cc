@@ -43,7 +43,8 @@ namespace akantu {
 
 namespace MeshUtilsDistribution {
   /* ------------------------------------------------------------------------ */
-  void distributeMeshCentralized(Mesh & mesh, const MeshPartition & partition) {
+  void distributeMeshCentralized(Mesh & mesh, UInt,
+                                 const MeshPartition & partition) {
     MeshAccessor mesh_accessor(mesh);
     ElementSynchronizer & element_synchronizer =
         mesh_accessor.getElementSynchronizer();
@@ -54,10 +55,18 @@ namespace MeshUtilsDistribution {
     UInt nb_proc = comm.getNbProc();
     UInt my_rank = comm.whoAmI();
 
+    mesh_accessor.setNbGlobalNodes(mesh.getNbNodes());
     mesh_accessor.getNodesGlobalIds().resize(0);
 
-    if (nb_proc == 1)
+    if (nb_proc == 1) {
+      UInt nb_nodes = mesh.getNbGlobalNodes();
+      mesh_accessor.getNodesGlobalIds().resize(nb_nodes);
+      auto gids = mesh_accessor.getNodesGlobalIds();
+      for(UInt n = 0; n < nb_nodes; ++n) {
+        gids(n) = n ;
+      }
       return;
+    }
 
     AKANTU_DEBUG_ASSERT(
         partition.getNbPartition() == nb_proc,

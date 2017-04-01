@@ -842,20 +842,19 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
           sstr_elem >> tag; // number-of-nodes
         }
 
-        UInt * local_connect = new UInt [node_per_element];
+        Vector<UInt> local_connect(node_per_element);
         for (UInt j = 0; j < node_per_element; ++j) {
           UInt node_index;
           sstr_elem >> node_index;
 
           AKANTU_DEBUG_ASSERT(node_index <= last_node_number,
                               "Node number not in range : line "
-                                  << current_line);
+                              << current_line);
 
           node_index -= first_node_number;
-          local_connect[read_order[j]] = node_index;
+          local_connect(read_order[j]) = node_index;
         }
         connectivity->push_back(local_connect);
-        delete [] local_connect;
       }
       my_getline(infile, line); /// the end of block line
     }

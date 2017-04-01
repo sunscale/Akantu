@@ -204,14 +204,14 @@ std::string MeshIODiana::readCoordinates(std::ifstream & infile, Mesh & mesh,
   std::string line;
 
   UInt index;
-  Real coord[3];
+  Vector<Real> coord(3);
 
   do {
     my_getline(infile, line);
     if ("'ELEMENTS'" == line) break;
 
     std::stringstream sstr_node(line);
-    sstr_node >> index >> coord[0] >> coord[1] >> coord[2];
+    sstr_node >> index >> coord(0) >> coord(1) >> coord(2);
 
     first_node_number = first_node_number < index ? first_node_number : index;
 
@@ -387,7 +387,7 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
       read_order = _read_order[akantu_type];
     }
 
-    UInt * local_connect = new UInt[node_per_element];
+    Vector<UInt> local_connect(node_per_element);
 
     // used if element is written on two lines
     UInt j_last = 0;
@@ -405,7 +405,7 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
       }
 
       node_index -= first_node_number;
-      local_connect[read_order[j]] = node_index;
+      local_connect(read_order[j]) = node_index;
       j_last = j;
     }
 
@@ -422,7 +422,7 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
         sstr_elem >> node_index;
 
         node_index -= first_node_number;
-        local_connect[read_order[j]] = node_index;
+        local_connect(read_order[j]) = node_index;
       }
     }
 
@@ -433,8 +433,6 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
 
     diana_element_number_to_elements[index] = elem;
     akantu_number_to_diana_number[elem] = index;
-
-    delete [] local_connect;
   }
 
   AKANTU_DEBUG_OUT();
@@ -471,10 +469,10 @@ std::string MeshIODiana::readMaterialElement(std::ifstream & infile,
     UInt mat;
     while (true) {
       std::stringstream sstr_intervals_elements(line);
-      UInt id[2];
+      Vector<UInt> id(2);
       char temp;
       while (sstr_intervals_elements.good()) {
-        sstr_intervals_elements >> id[0] >> temp >> id[1]; // >> "/" >> mat;
+        sstr_intervals_elements >> id(0) >> temp >> id(1); // >> "/" >> mat;
         if (!sstr_intervals_elements.fail()) temp_id.push_back(id);
       }
       if (sstr_intervals_elements.fail()) {

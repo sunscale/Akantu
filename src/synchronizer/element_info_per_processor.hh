@@ -30,9 +30,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "mesh_accessor.hh"
 #include "communication_buffer.hh"
 #include "mesh.hh"
+#include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_ELEMENT_INFO_PER_PROCESSOR_HH__
@@ -64,10 +64,12 @@ protected:
   void fillElementGroupsFromBuffer(CommunicationBuffer & buffer);
 
   template <typename T, typename BufferType>
-  void fillMeshDataTemplated(BufferType & buffer, const std::string & tag_name);
+  void fillMeshDataTemplated(BufferType & buffer, const std::string & tag_name,
+                             UInt nb_component);
 
   template <typename BufferType>
-  void fillMeshData(BufferType & buffer, const std::string & tag_name);
+  void fillMeshData(BufferType & buffer, const std::string & tag_name,
+                    const MeshDataTypeCode & type_code, UInt nb_component);
 
 protected:
   ElementSynchronizer & synchronizer;
@@ -94,8 +96,7 @@ protected:
 /* -------------------------------------------------------------------------- */
 class MasterElementInfoPerProc : protected ElementInfoPerProc {
 public:
-  MasterElementInfoPerProc(ElementSynchronizer & synchronizer,
-                           UInt message_cnt,
+  MasterElementInfoPerProc(ElementSynchronizer & synchronizer, UInt message_cnt,
                            UInt root, ElementType type,
                            const MeshPartition & partition);
 
@@ -122,8 +123,7 @@ private:
 /* -------------------------------------------------------------------------- */
 class SlaveElementInfoPerProc : protected ElementInfoPerProc {
 public:
-  SlaveElementInfoPerProc(ElementSynchronizer & synchronizer,
-                          UInt message_cnt,
+  SlaveElementInfoPerProc(ElementSynchronizer & synchronizer, UInt message_cnt,
                           UInt root);
 
   void synchronizeConnectivities();

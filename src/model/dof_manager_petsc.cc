@@ -103,9 +103,9 @@ DOFManagerPETSc::DOFManagerPETSc(const ID & id,
         dynamic_cast<const StaticCommunicatorMPI &>(
             comm.getRealStaticCommunicator());
 
-    this->communicator = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
+    this->mpi_communicator = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
 #else
-    this->communicator = PETSC_COMM_SELF;
+    this->mpi_communicator = PETSC_COMM_SELF;
 #endif
 
     cppargparse::ArgumentParser & argparser = getStaticArgumentParser();

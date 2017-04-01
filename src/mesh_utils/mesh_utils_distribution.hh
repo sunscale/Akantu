@@ -40,11 +40,11 @@ class MeshPartition;
 } // akantu
 
 namespace akantu {
-
 namespace MeshUtilsDistribution {
-  /// Master call to distribute a mesh in a centralized manner
-  void distributeMeshCentralized(Mesh & mesh,
-                                        const MeshPartition & partition);
+  /// Master call to distribute a mesh in a centralized manner (the UInt is just
+  /// to avoid some shitty access from the slave...)
+  void distributeMeshCentralized(Mesh & mesh, UInt,
+                                 const MeshPartition & partition);
   /// Slave call to distribute a mesh in a centralized manner
   void distributeMeshCentralized(Mesh & mesh, UInt root);
 } // MeshUtilsDistribution

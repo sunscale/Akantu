@@ -34,8 +34,8 @@
 #include "non_linear_solver_default.hh"
 #include "sparse_matrix_aij.hh"
 #include "static_communicator.hh"
-#include "time_step_solver_default.hh"
 #include "terms_to_assemble.hh"
+#include "time_step_solver_default.hh"
 /* -------------------------------------------------------------------------- */
 #include <numeric>
 /* -------------------------------------------------------------------------- */
@@ -98,6 +98,7 @@ inline void DOFManagerDefault::addElementalMatrixToUnsymmetric(
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
     : DOFManager(id, memory_id), residual(0, 1, std::string(id + ":residual")),
+      global_residual(nullptr),
       global_solution(0, 1, std::string(id + ":global_solution")),
       global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
       previous_global_blocked_dofs(
@@ -109,7 +110,25 @@ DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
       synchronizer(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
-DOFManagerDefault::~DOFManagerDefault() { delete synchronizer; }
+DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
+                                     const MemoryID & memory_id)
+    : DOFManager(mesh, id, memory_id),
+      residual(0, 1, std::string(id + ":residual")), global_residual(nullptr),
+      global_solution(0, 1, std::string(id + ":global_solution")),
+      global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
+      previous_global_blocked_dofs(
+          0, 1, std::string(id + ":previous_global_blocked_dofs")),
+      dofs_type(0, 1, std::string(id + ":dofs_type")),
+      data_cache(0, 1, std::string(id + ":data_cache_array")),
+      jacobian_release(0),
+      global_equation_number(0, 1, "global_equation_number"),
+      synchronizer(nullptr) {}
+
+/* -------------------------------------------------------------------------- */
+DOFManagerDefault::~DOFManagerDefault() {
+  delete this->synchronizer;
+  delete this->global_residual;
+}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -149,27 +168,37 @@ DOFManager::DOFData & DOFManagerDefault::getNewDOFData(const ID & dof_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::registerMesh(Mesh & mesh) {
-  DOFManager::registerMesh(mesh);
+void DOFManagerDefault::registerMesh() {
+  DOFManager::registerMesh();
 
   delete synchronizer;
-  if(mesh.isDistributed())
-    synchronizer = new DOFSynchronizer(*this, this->id + ":dof_synchronizer",
-                                       this->memory_id, mesh.getCommunicator());
-  else synchronizer = nullptr;
+  if (this->mesh->isDistributed())
+    synchronizer =
+        new DOFSynchronizer(*this, this->id + ":dof_synchronizer",
+                            this->memory_id, this->mesh->getCommunicator());
+  else
+    synchronizer = nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
                                              UInt nb_pure_local_dofs) {
   // Count the number of pure local dofs per proc
-  const StaticCommunicator & comm = mesh->getCommunicator();
-  UInt prank = comm.whoAmI();
-  UInt psize = comm.getNbProc();
+  const StaticCommunicator * comm = nullptr;
+  UInt prank = 0;
+  UInt psize = 1;
+
+  if (mesh) {
+    comm = &mesh->getCommunicator();
+    prank = comm->whoAmI();
+    psize = comm->getNbProc();
+  } else {
+    comm = &(StaticCommunicator::getStaticCommunicator());
+  }
 
   Array<UInt> nb_dofs_per_proc(psize);
   nb_dofs_per_proc(prank) = nb_pure_local_dofs;
-  comm.allGather(nb_dofs_per_proc);
+  comm->allGather(nb_dofs_per_proc);
 
   UInt first_global_dofs_id = std::accumulate(
       nb_dofs_per_proc.begin(), nb_dofs_per_proc.begin() + prank, 0);
@@ -181,16 +210,16 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
   dof_data.local_equation_number.resize(nb_dofs);
   this->global_equation_number.resize(this->local_system_size);
 
-// set the equation numbers
+  // set the equation numbers
   UInt first_dof_id = this->local_system_size - nb_dofs;
 
   const Array<UInt> * support_nodes = nullptr;
-  if (group != "mesh") {
-    support_nodes =
-      &this->mesh->getElementGroup(group).getNodeGroup().getNodes();
-  }
-
   if (support_type == _dst_nodal) {
+    if (group != "mesh") {
+      support_nodes =
+          &this->mesh->getElementGroup(group).getNodeGroup().getNodes();
+    }
+
     dof_data.associated_nodes.resize(nb_dofs);
   }
 
@@ -514,7 +543,8 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
   } else {
     if (dof_data.group_support != "mesh") {
       const Array<UInt> & group_elements =
-        this->mesh->getElementGroup(dof_data.group_support).getElements(type, ghost_type);
+          this->mesh->getElementGroup(dof_data.group_support)
+              .getElements(type, ghost_type);
       nb_element = group_elements.getSize();
       filter_it = group_elements.storage();
     } else {
@@ -550,8 +580,10 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
                                        nb_degree_of_freedom, element_eq_nb);
     this->localToGlobalEquationNumber(element_eq_nb);
 
-    if (filter_it) ++filter_it;
-    else ++conn_it;
+    if (filter_it)
+      ++filter_it;
+    else
+      ++conn_it;
 
     if (A.getMatrixType() == _symmetric)
       if (elemental_matrix_type == _symmetric)
@@ -569,17 +601,17 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::assemblePreassembledMatrix(const ID & dof_id_m,
-                                                   const ID & dof_id_n,
-                                                   const ID & matrix_id,
-                                                   const TermsToAssemble & terms) {
-  const Array<UInt> & equation_number_m = this->getLocalEquationNumbers(dof_id_m);
-  const Array<UInt> & equation_number_n = this->getLocalEquationNumbers(dof_id_n);
+void DOFManagerDefault::assemblePreassembledMatrix(
+    const ID & dof_id_m, const ID & dof_id_n, const ID & matrix_id,
+    const TermsToAssemble & terms) {
+  const Array<UInt> & equation_number_m =
+      this->getLocalEquationNumbers(dof_id_m);
+  const Array<UInt> & equation_number_n =
+      this->getLocalEquationNumbers(dof_id_n);
   SparseMatrixAIJ & A = this->getMatrix(matrix_id);
 
-  for(const auto& term : terms) {
-    A.addToMatrix(equation_number_m(term.i()),
-                  equation_number_n(term.j()),
+  for (const auto & term : terms) {
+    A.addToMatrix(equation_number_m(term.i()), equation_number_n(term.j()),
                   term);
   }
 }
@@ -632,14 +664,17 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
   Vector<UInt> element_eq_nb(size_mat);
 
   for (UInt e = 0; e < nb_elements; ++e) {
-    if (ge_it)  cit = cbegin + *ge_it;
+    if (ge_it)
+      cit = cbegin + *ge_it;
 
     this->extractElementEquationNumber(
         equation_number, *cit, nb_degree_of_freedom_per_node, element_eq_nb);
     this->localToGlobalEquationNumber(element_eq_nb);
 
-    if (ge_it) ++ge_it;
-    else  ++cit;
+    if (ge_it)
+      ++ge_it;
+    else
+      ++cit;
 
     for (UInt i = 0; i < size_mat; ++i) {
       UInt c_irn = element_eq_nb(i);
@@ -681,6 +716,37 @@ void DOFManagerDefault::applyBoundary() {
   }
 
   this->jacobian_release = J.getValueRelease();
+}
+
+/* -------------------------------------------------------------------------- */
+const Array<Real> & DOFManagerDefault::getResidual() {
+  if (this->synchronizer) {
+    if (not this->global_residual) {
+      if (this->synchronizer->getCommunicator().whoAmI() == 0) {
+        this->global_residual =
+            new Array<Real>(this->system_size, 1, "global_residual");
+      } else {
+        this->global_residual = new Array<Real>(0, 1, "global_residual");
+      }
+    }
+
+    this->synchronizer->gather(this->residual, *this->global_residual);
+    return *this->global_residual;
+  } else {
+    return this->residual;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::setGlobalSolution(const Array<Real> & solution) {
+  if (this->synchronizer) {
+    this->synchronizer->scatter(this->global_solution, solution);
+  } else {
+    AKANTU_DEBUG_ASSERT(solution.getSize() == this->global_solution.getSize(),
+                        "Sequential call to this function needs the solution "
+                        "to be the same size as the global_solution");
+    this->global_solution.copy(solution);
+  }
 }
 
 /* -------------------------------------------------------------------------- */

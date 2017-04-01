@@ -50,6 +50,8 @@ class DOFManagerDefault : public DOFManager {
 public:
   DOFManagerDefault(const ID & id = "dof_manager_default",
                     const MemoryID & memory_id = 0);
+  DOFManagerDefault(Mesh & mesh, const ID & id = "dof_manager_default",
+                    const MemoryID & memory_id = 0);
   virtual ~DOFManagerDefault();
 
   /* ------------------------------------------------------------------------ */
@@ -57,7 +59,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// register a mesh for dof that have a support type on nodes
-  virtual void registerMesh(Mesh & mesh);
+  virtual void registerMesh();
 
 private:
   void registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
@@ -212,10 +214,13 @@ public:
   /* ------------------------------------------------------------------------ */
   /// Get the solution array
   AKANTU_GET_MACRO_NOT_CONST(GlobalSolution, global_solution, Array<Real> &);
+  /// Set the global solution array
+  void setGlobalSolution(const Array<Real> & solution);
   /// Get the residual array
-  AKANTU_GET_MACRO_NOT_CONST(Residual, residual, Array<Real> &);
+  const Array<Real> & getResidual();
+
   /// Get the blocked dofs array
-  AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
+    AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
   /// Get the blocked dofs array
   AKANTU_GET_MACRO(PreviousGlobalBlockedDOFs, previous_global_blocked_dofs,
                    const Array<bool> &);
@@ -257,7 +262,7 @@ protected:
 
   typedef std::map<std::pair<ID, ID>,
                    std::vector<std::pair<ElementType, GhostType>>>
-      DOFToMatrixProfile;
+  DOFToMatrixProfile;
 
   /// contains the the dofs that where added to the profile of a given matrix.
   DOFToMatrixProfile matrix_profiled_dofs;
@@ -265,6 +270,10 @@ protected:
   /// rhs to the system of equation corresponding to the residual linked to the
   /// different dofs
   Array<Real> residual;
+
+  /// rhs used only on root proc in case of parallel computing, this is the full
+  /// gathered rhs array
+  Array<Real> * global_residual;
 
   /// solution of the system of equation corresponding to the different dofs
   Array<Real> global_solution;

@@ -40,7 +40,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline void StaticCommunicator::freeCommunicationRequest(
-    CommunicationRequest request) const {
+    CommunicationRequest & request) const {
   request.free();
 }
 
@@ -194,12 +194,12 @@ inline void StaticCommunicator::barrier() const {
 
 /* -------------------------------------------------------------------------- */
 inline bool
-StaticCommunicator::testRequest(CommunicationRequest request) const {
+StaticCommunicator::testRequest(CommunicationRequest & request) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(testRequest(request), 1);
 }
 
 /* -------------------------------------------------------------------------- */
-inline void StaticCommunicator::wait(CommunicationRequest request) const {
+inline void StaticCommunicator::wait(CommunicationRequest & request) const {
   AKANTU_BOOST_REAL_COMMUNICATOR_SELECT_CALL(wait(request), 0);
 }
 

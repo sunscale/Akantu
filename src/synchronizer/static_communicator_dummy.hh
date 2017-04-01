@@ -40,8 +40,8 @@
 #include "real_static_communicator.hh"
 
 /* -------------------------------------------------------------------------- */
-#include <vector>
 #include <cstring>
+#include <vector>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -51,8 +51,7 @@ class StaticCommunicatorDummy : public RealStaticCommunicator {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  StaticCommunicatorDummy(__attribute__((unused)) int & argc,
-                          __attribute__((unused)) char **& argv)
+  StaticCommunicatorDummy(int & argc, char **& argv)
       : RealStaticCommunicator(argc, argv) {
     this->prank = 0;
     this->psize = 1;
@@ -64,92 +63,46 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  template <typename T>
-  void
-  send(__attribute__((unused)) T * buffer, __attribute__((unused)) Int size,
-       __attribute__((unused)) Int receiver, __attribute__((unused)) Int tag) {}
+  template <typename T> void send(T *, Int, Int, Int) {}
+  template <typename T> void receive(T *, Int, Int, Int) {}
 
-  template <typename T>
-  void receive(__attribute__((unused)) T * buffer,
-               __attribute__((unused)) Int size,
-               __attribute__((unused)) Int sender,
-               __attribute__((unused)) Int tag) {}
-
-  template <typename T>
-  CommunicationRequest asyncSend(__attribute__((unused)) T * buffer,
-                                   __attribute__((unused)) Int size,
-                                   __attribute__((unused)) Int receiver,
-                                   __attribute__((unused)) Int tag) {
-    return (new InternalCommunicationRequest(0, 0));
+  template <typename T> CommunicationRequest asyncSend(T *, Int, Int, Int) {
+    return std::shared_ptr<InternalCommunicationRequest>(
+        new InternalCommunicationRequest(0, 0));
   }
 
-  template <typename T>
-  CommunicationRequest asyncReceive(__attribute__((unused)) T * buffer,
-                                      __attribute__((unused)) Int size,
-                                      __attribute__((unused)) Int sender,
-                                      __attribute__((unused)) Int tag) {
-    return (new InternalCommunicationRequest(0, 0));
+  template <typename T> CommunicationRequest asyncReceive(T *, Int, Int, Int) {
+    return std::shared_ptr<InternalCommunicationRequest>(
+        new InternalCommunicationRequest(0, 0));
   }
 
-  template <typename T>
-  inline void probe(__attribute__((unused)) Int sender,
-                    __attribute__((unused)) Int tag,
-                    __attribute__((unused)) CommunicationStatus & status) {}
+  template <typename T> inline void probe(Int, Int, CommunicationStatus &) {}
 
-  bool testRequest(__attribute__((unused)) CommunicationRequest request) {
-    return true;
-  }
+  bool testRequest(CommunicationRequest &) { return true; }
 
-  void wait(__attribute__((unused)) CommunicationRequest request) {}
-  void waitAll(__attribute__((unused))
-               std::vector<CommunicationRequest> & requests) {}
-  UInt waitAny(__attribute__((unused))
-               std::vector<CommunicationRequest> & requests) { return UInt(-1); }
-
+  void wait(CommunicationRequest &) {}
+  void waitAll(std::vector<CommunicationRequest> &) {}
+  UInt waitAny(std::vector<CommunicationRequest> &) { return UInt(-1); }
 
   void barrier() {}
 
   template <typename T>
-  void reduce(__attribute__((unused)) T * values,
-              __attribute__((unused)) int nb_values,
-              __attribute__((unused)) const SynchronizerOperation & op,
-              __attribute__((unused)) int root) {}
+  void reduce(T *, int, const SynchronizerOperation &, int) {}
 
   template <typename T>
-  void allReduce(__attribute__((unused)) T * values,
-                 __attribute__((unused)) int nb_values,
-                 __attribute__((unused)) const SynchronizerOperation & op) {}
+  void allReduce(T *, int, const SynchronizerOperation &) {}
 
-  template <typename T>
-  inline void allGather(__attribute__((unused)) T * values,
-                        __attribute__((unused)) int nb_values) {}
+  template <typename T> inline void allGather(T *, int) {}
+  template <typename T> inline void allGatherV(T *, int *) {}
 
+  template <typename T> inline void gather(T *, int, int = 0) {}
   template <typename T>
-  inline void allGatherV(__attribute__((unused)) T * values,
-                         __attribute__((unused)) int * nb_values) {}
-
-  template <typename T>
-  inline void gather(__attribute__((unused)) T * values,
-                     __attribute__((unused)) int nb_values,
-                     __attribute__((unused)) int root = 0) {}
-
-  template <typename T>
-  inline void gather(T * values,
-                     int nb_values,
-                     T * gathered,
-                     __attribute__((unused)) int nb_gathered) {
+  inline void gather(T * values, int nb_values, T * gathered, int) {
     std::memcpy(gathered, values, nb_values);
   }
 
-  template <typename T>
-  inline void gatherV(__attribute__((unused)) T * values,
-                      __attribute__((unused)) int * nb_values,
-                      __attribute__((unused)) int root = 0) {}
-
-  template <typename T>
-  inline void broadcast(__attribute__((unused)) T * values,
-                        __attribute__((unused)) int nb_values,
-                        __attribute__((unused)) int root = 0) {}
+  template <typename T> inline void gatherV(T *, int *, int = 0) {}
+  template <typename T> inline void broadcast(T *, int, int = 0) {}
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

@@ -47,28 +47,28 @@ CommunicationDescriptor<Entity>::CommunicationDescriptor(
     : communication(communication), scheme(scheme),
       communications(communications), tag(tag), proc(proc),
       rank(communications.getCommunicator().whoAmI()) {
-  counter = communications.incrementCounter(tag);
+  counter = communications.getCounter(tag);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 CommunicationBuffer & CommunicationDescriptor<Entity>::getBuffer() {
-  return communication.buffer;
+  return communication.buffer();
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 CommunicationRequest & CommunicationDescriptor<Entity>::getRequest() {
-  return communication.request;
+  return communication.request();
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity> void CommunicationDescriptor<Entity>::freeRequest() {
   const StaticCommunicator & comm = communications.getCommunicator();
-  comm.testRequest(communication.request);
-  comm.freeCommunicationRequest(communication.request);
+  comm.testRequest(communication.request());
+  comm.freeCommunicationRequest(communication.request());
 
-  communications.decrementPending(tag, communication.type);
+  communications.decrementPending(tag, communication.type());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -82,9 +82,9 @@ template <class Entity>
 void CommunicationDescriptor<Entity>::packData(
     DataAccessor<Entity> & accessor) {
   AKANTU_DEBUG_ASSERT(
-      communication.type == _send,
+      communication.type() == _send,
       "Cannot pack data on communication that is not of type _send");
-  accessor.packData(communication.buffer, scheme, tag);
+  accessor.packData(communication.buffer(), scheme, tag);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -92,53 +92,53 @@ template <class Entity>
 void CommunicationDescriptor<Entity>::unpackData(
     DataAccessor<Entity> & accessor) {
   AKANTU_DEBUG_ASSERT(
-      communication.type == _recv,
+      communication.type() == _recv,
       "Cannot unpack data from communication that is not of type _recv");
-  accessor.unpackData(communication.buffer, scheme, tag);
+  accessor.unpackData(communication.buffer(), scheme, tag);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 void CommunicationDescriptor<Entity>::postSend(int hash_id) {
-  AKANTU_DEBUG_ASSERT(communication.type == _send,
+  AKANTU_DEBUG_ASSERT(communication.type() == _send,
                       "Cannot send a communication that is not of type _send");
   Tag comm_tag = Tag::genTag(rank, counter, tag, hash_id);
-  AKANTU_DEBUG_ASSERT(communication.buffer.getPackedSize() ==
-                          communication.size,
+  AKANTU_DEBUG_ASSERT(communication.buffer().getPackedSize() ==
+                          communication.size(),
                       "a problem have been introduced with "
                           << "false sent sizes declaration "
-                          << communication.buffer.getPackedSize()
-                          << " != " << communication.size);
+                          << communication.buffer().getPackedSize()
+                          << " != " << communication.size());
 
   AKANTU_DEBUG_INFO("Posting send to proc " << proc << " (tag: " << tag << " - "
-                                            << communication.size
+                                            << communication.size()
                                             << " data to send) "
                                             << " [ " << comm_tag << " ]");
 
-  CommunicationRequest & request = communication.request;
-  request = communications.getCommunicator().asyncSend(communication.buffer,
+  CommunicationRequest & request = communication.request();
+  request = communications.getCommunicator().asyncSend(communication.buffer(),
                                                        proc, comm_tag);
-  communications.incrementPending(tag, communication.type);
+  communications.incrementPending(tag, communication.type());
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 void CommunicationDescriptor<Entity>::postRecv(int hash_id) {
-  AKANTU_DEBUG_ASSERT(
-      communication.type == _send,
-      "Cannot receive data for communication that is not of type _recv");
-  communication.buffer.resize(communication.size);
+  AKANTU_DEBUG_ASSERT(communication.type() == _recv,
+                      "Cannot receive data for communication ("
+                          << communication.type()
+                          << ")that is not of type _recv");
 
   Tag comm_tag = Tag::genTag(proc, counter, tag, hash_id);
-  AKANTU_DEBUG_INFO("Posting receive from proc " << proc << " (tag: " << tag
-                                                 << " - " << communication.size
-                                                 << " data to receive) "
-                                                 << " [ " << comm_tag << " ]");
+  AKANTU_DEBUG_INFO("Posting receive from proc "
+                    << proc << " (tag: " << tag << " - " << communication.size()
+                    << " data to receive) "
+                    << " [ " << comm_tag << " ]");
 
-  CommunicationRequest & request = communication.request;
-  request = communications.getCommunicator().asyncReceive(communication.buffer,
-                                                          proc, comm_tag);
-  communications.incrementPending(tag, communication.type);
+  CommunicationRequest & request = communication.request();
+  request = communications.getCommunicator().asyncReceive(
+      communication.buffer(), proc, comm_tag);
+  communications.incrementPending(tag, communication.type());
 }
 
 } // akantu

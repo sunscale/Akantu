@@ -47,23 +47,17 @@ MPI_Op MPITypeWrapper::synchronizer_operation_to_mpi_op[_so_null + 1] = {
 class CommunicationRequestMPI : public InternalCommunicationRequest {
 public:
   CommunicationRequestMPI(UInt source, UInt dest);
-  ~CommunicationRequestMPI();
-  MPI_Request * getMPIRequest() { return request; };
+  MPI_Request & getMPIRequest() { return *request; };
 
 private:
-  MPI_Request * request;
+  std::unique_ptr<MPI_Request> request;
 };
 
 /* -------------------------------------------------------------------------- */
 /* Implementation                                                             */
 /* -------------------------------------------------------------------------- */
 CommunicationRequestMPI::CommunicationRequestMPI(UInt source, UInt dest)
-    : InternalCommunicationRequest(source, dest) {
-  request = new MPI_Request;
-}
-
-/* -------------------------------------------------------------------------- */
-CommunicationRequestMPI::~CommunicationRequestMPI() { delete request; }
+    : InternalCommunicationRequest(source, dest), request(new MPI_Request) {}
 
 /* -------------------------------------------------------------------------- */
 StaticCommunicatorMPI::StaticCommunicatorMPI(int & argc, char **& argv)
@@ -126,14 +120,14 @@ CommunicationRequest StaticCommunicatorMPI::asyncSend(T * buffer, Int size,
       new CommunicationRequestMPI(prank, receiver);
   MPI_Datatype type = MPITypeWrapper::getMPIDatatype<T>();
 
+  MPI_Request & req = request->getMPIRequest();
 #if !defined(AKANTU_NDEBUG)
   int ret =
 #endif
-      MPI_Isend(buffer, size, type, receiver, tag, communicator,
-                request->getMPIRequest());
+      MPI_Isend(buffer, size, type, receiver, tag, communicator, &req);
 
   AKANTU_DEBUG_ASSERT(ret == MPI_SUCCESS, "Error in MPI_Isend.");
-  return request;
+  return std::shared_ptr<InternalCommunicationRequest>(request);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -145,14 +139,14 @@ CommunicationRequest StaticCommunicatorMPI::asyncReceive(T * buffer, Int size,
       new CommunicationRequestMPI(sender, prank);
   MPI_Datatype type = MPITypeWrapper::getMPIDatatype<T>();
 
+  MPI_Request & req = request->getMPIRequest();
 #if !defined(AKANTU_NDEBUG)
   int ret =
 #endif
-      MPI_Irecv(buffer, size, type, sender, tag, communicator,
-                request->getMPIRequest());
+      MPI_Irecv(buffer, size, type, sender, tag, communicator, &req);
 
   AKANTU_DEBUG_ASSERT(ret == MPI_SUCCESS, "Error in MPI_Irecv.");
-  return request;
+  return std::shared_ptr<InternalCommunicationRequest>(request);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -177,33 +171,33 @@ void StaticCommunicatorMPI::probe(Int sender, Int tag,
 }
 
 /* -------------------------------------------------------------------------- */
-bool StaticCommunicatorMPI::testRequest(CommunicationRequest request) {
+bool StaticCommunicatorMPI::testRequest(CommunicationRequest & request) {
   MPI_Status status;
   int flag;
-  CommunicationRequestMPI * req_mpi =
-      static_cast<CommunicationRequestMPI *>(request.getInternal());
-  MPI_Request * req = req_mpi->getMPIRequest();
+  CommunicationRequestMPI & req_mpi =
+      dynamic_cast<CommunicationRequestMPI &>(request.getInternal());
+  MPI_Request & req = req_mpi.getMPIRequest();
 
 #if !defined(AKANTU_NDEBUG)
   int ret =
 #endif
-      MPI_Test(req, &flag, &status);
+      MPI_Test(&req, &flag, &status);
 
   AKANTU_DEBUG_ASSERT(ret == MPI_SUCCESS, "Error in MPI_Test.");
   return (flag != 0);
 }
 
 /* -------------------------------------------------------------------------- */
-void StaticCommunicatorMPI::wait(CommunicationRequest request) {
+void StaticCommunicatorMPI::wait(CommunicationRequest & request) {
   MPI_Status status;
-  CommunicationRequestMPI * req_mpi =
-      static_cast<CommunicationRequestMPI *>(request.getInternal());
-  MPI_Request * req = req_mpi->getMPIRequest();
+  CommunicationRequestMPI & req_mpi =
+      dynamic_cast<CommunicationRequestMPI &>(request.getInternal());
+  MPI_Request & req = req_mpi.getMPIRequest();
 
 #if !defined(AKANTU_NDEBUG)
   int ret =
 #endif
-      MPI_Wait(req, &status);
+      MPI_Wait(&req, &status);
 
   AKANTU_DEBUG_ASSERT(ret == MPI_SUCCESS, "Error in MPI_Wait.");
 }
@@ -214,14 +208,14 @@ void StaticCommunicatorMPI::waitAll(
   MPI_Status status;
   std::vector<CommunicationRequest>::iterator it;
   for (it = requests.begin(); it != requests.end(); ++it) {
-    MPI_Request * req =
-        static_cast<CommunicationRequestMPI *>(it->getInternal())
-            ->getMPIRequest();
+    MPI_Request & req =
+        dynamic_cast<CommunicationRequestMPI &>(it->getInternal())
+            .getMPIRequest();
 
 #if !defined(AKANTU_NDEBUG)
     int ret =
 #endif
-        MPI_Wait(req, &status);
+        MPI_Wait(&req, &status);
 
     AKANTU_DEBUG_ASSERT(ret == MPI_SUCCESS, "Error in MPI_Wait.");
   }
@@ -235,7 +229,7 @@ UInt StaticCommunicatorMPI::waitAny(
   std::vector<MPI_Request> reqs(requests.size());
   UInt r = 0;
   for (it = requests.begin(); it != requests.end(); ++it, ++r) {
-    reqs[r] = *static_cast<CommunicationRequestMPI *>(it->getInternal())
+    reqs[r] = static_cast<CommunicationRequestMPI *>(&it->getInternal())
                   ->getMPIRequest();
   }
 
@@ -243,7 +237,7 @@ UInt StaticCommunicatorMPI::waitAny(
 #if !defined(AKANTU_NDEBUG)
   int ret =
 #endif
-    MPI_Waitany(requests.size(), reqs.data(), &pos, &status);
+      MPI_Waitany(requests.size(), reqs.data(), &pos, &status);
   AKANTU_DEBUG_ASSERT(ret == MPI_SUCCESS, "Error in MPI_Wait.");
 
   if (pos != MPI_UNDEFINED) {
@@ -480,12 +474,12 @@ MPI_Datatype MPITypeWrapper::getMPIDatatype<unsigned long long int>() {
 }
 
 template <>
-MPI_Datatype MPITypeWrapper::getMPIDatatype<SCMinMaxLoc<double, int> >() {
+MPI_Datatype MPITypeWrapper::getMPIDatatype<SCMinMaxLoc<double, int>>() {
   return MPI_DOUBLE_INT;
 }
 
 template <>
-MPI_Datatype MPITypeWrapper::getMPIDatatype<SCMinMaxLoc<float, int> >() {
+MPI_Datatype MPITypeWrapper::getMPIDatatype<SCMinMaxLoc<float, int>>() {
   return MPI_FLOAT_INT;
 }
 
@@ -510,8 +504,8 @@ MPI_Datatype MPITypeWrapper::getMPIDatatype<SCMinMaxLoc<float, int> >() {
                                                      int * nb_values);         \
   template void StaticCommunicatorMPI::gather<T>(T * values, int nb_values,    \
                                                  int root);                    \
-  template void StaticCommunicatorMPI::gather<T>(T * values, int nb_values,    \
-                                                 T * gathered, int nb_gathered); \
+  template void StaticCommunicatorMPI::gather<T>(                              \
+      T * values, int nb_values, T * gathered, int nb_gathered);               \
   template void StaticCommunicatorMPI::gatherV<T>(T * values, int * nb_values, \
                                                   int root);                   \
   template void StaticCommunicatorMPI::broadcast<T>(T * values, int nb_values, \
@@ -525,29 +519,29 @@ AKANTU_MPI_COMM_INSTANTIATE(Int);
 AKANTU_MPI_COMM_INSTANTIATE(char);
 AKANTU_MPI_COMM_INSTANTIATE(NodeType);
 
-template void StaticCommunicatorMPI::send<SCMinMaxLoc<Real, int> >(
+template void StaticCommunicatorMPI::send<SCMinMaxLoc<Real, int>>(
     SCMinMaxLoc<Real, int> * buffer, Int size, Int receiver, Int tag);
-template void StaticCommunicatorMPI::receive<SCMinMaxLoc<Real, int> >(
+template void StaticCommunicatorMPI::receive<SCMinMaxLoc<Real, int>>(
     SCMinMaxLoc<Real, int> * buffer, Int size, Int sender, Int tag);
 template CommunicationRequest
-StaticCommunicatorMPI::asyncSend<SCMinMaxLoc<Real, int> >(
+StaticCommunicatorMPI::asyncSend<SCMinMaxLoc<Real, int>>(
     SCMinMaxLoc<Real, int> * buffer, Int size, Int receiver, Int tag);
 template CommunicationRequest
-StaticCommunicatorMPI::asyncReceive<SCMinMaxLoc<Real, int> >(
+StaticCommunicatorMPI::asyncReceive<SCMinMaxLoc<Real, int>>(
     SCMinMaxLoc<Real, int> * buffer, Int size, Int sender, Int tag);
-template void StaticCommunicatorMPI::probe<SCMinMaxLoc<Real, int> >(
+template void StaticCommunicatorMPI::probe<SCMinMaxLoc<Real, int>>(
     Int sender, Int tag, CommunicationStatus & status);
-template void StaticCommunicatorMPI::allGather<SCMinMaxLoc<Real, int> >(
+template void StaticCommunicatorMPI::allGather<SCMinMaxLoc<Real, int>>(
     SCMinMaxLoc<Real, int> * values, int nb_values);
-template void StaticCommunicatorMPI::allGatherV<SCMinMaxLoc<Real, int> >(
+template void StaticCommunicatorMPI::allGatherV<SCMinMaxLoc<Real, int>>(
     SCMinMaxLoc<Real, int> * values, int * nb_values);
-template void StaticCommunicatorMPI::gather<SCMinMaxLoc<Real, int> >(
+template void StaticCommunicatorMPI::gather<SCMinMaxLoc<Real, int>>(
     SCMinMaxLoc<Real, int> * values, int nb_values, int root);
-template void StaticCommunicatorMPI::gatherV<SCMinMaxLoc<Real, int> >(
+template void StaticCommunicatorMPI::gatherV<SCMinMaxLoc<Real, int>>(
     SCMinMaxLoc<Real, int> * values, int * nb_values, int root);
-template void StaticCommunicatorMPI::broadcast<SCMinMaxLoc<Real, int> >(
+template void StaticCommunicatorMPI::broadcast<SCMinMaxLoc<Real, int>>(
     SCMinMaxLoc<Real, int> * values, int nb_values, int root);
-template void StaticCommunicatorMPI::allReduce<SCMinMaxLoc<Real, int> >(
+template void StaticCommunicatorMPI::allReduce<SCMinMaxLoc<Real, int>>(
     SCMinMaxLoc<Real, int> * values, int nb_values,
     const SynchronizerOperation & op);
 

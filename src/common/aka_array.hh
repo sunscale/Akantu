@@ -265,7 +265,8 @@ public:
   /// append a tuple of size nb_component containing value
   inline void push_back(const_reference value);
   /// append a vector
-  inline void push_back(const value_type new_elem[]);
+  //inline void push_back(const value_type new_elem[]);
+
   /// append a Vector or a Matrix
   template <template <typename> class C>
   inline void push_back(const C<T> & new_elem);
@@ -308,6 +309,9 @@ public:
   /// set all tuples of the array to a given vector or matrix
   /// @param vm Matrix or Vector to fill the array with
   template <template <typename> class C> inline void set(const C<T> & vm);
+
+  /// Append the content of the other array to the current one
+  void append(const Array<T> & other);
 
   /// copy another Array in the current Array, the no_sanity_check allows you to
   /// force the copy in cases where you know what you do with two non matching

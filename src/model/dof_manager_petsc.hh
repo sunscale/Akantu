@@ -60,6 +60,9 @@ class DOFManagerPETSc : public DOFManager {
 public:
   DOFManagerPETSc(const ID & id = "dof_manager_petsc",
                   const MemoryID & memory_id = 0);
+  DOFManagerPETSc(Mesh & mesh, const ID & id = "dof_manager_petsc",
+                  const MemoryID & memory_id = 0);
+
   virtual ~DOFManagerPETSc();
 
   /* ------------------------------------------------------------------------ */
@@ -158,7 +161,7 @@ private:
   ISLocalToGlobalMapping is_ltog;
 
   /// Communicator associated to PETSc
-  MPI_Comm communicator;
+  MPI_Comm mpi_communicator;
 
   /// Static handler for petsc to know if it was initialized or not
   static UInt petsc_dof_manager_instances;

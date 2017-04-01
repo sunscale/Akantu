@@ -73,7 +73,7 @@ public:
 
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-protected:
+
   /// Register a different data accessor.
   void registerDataAccessor(DataAccessorBase & data_accessor);
 

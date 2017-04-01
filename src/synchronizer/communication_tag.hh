@@ -45,7 +45,7 @@ public:
   Tag(int val) : tag(val), hash(0) {}
   Tag(int val, int hash) : tag(val), hash(hash) {}
 
-  operator int() { return int(max_tag == 0 ? tag : (tag % max_tag)); }
+  operator int() const { return int(max_tag == 0 ? tag : (uint32_t(tag) % max_tag)); }
 
   /// generates a tag
   template <typename CommTag>
@@ -65,14 +65,15 @@ public:
     return t;
   }
 
-  virtual void printself(std::ostream & stream,
-                         __attribute__((unused)) int indent = 0) const {
+  virtual void printself(std::ostream & stream, int) const {
     int t = tag;
     if (hash != 0)
       t = t ^ hash;
-    stream << (t >> 12) << ":" << (t >> 4 & 0xFF) << ":" << (t & 0xF);
+    stream << (t >> 12) << ":" << (t >> 4 & 0xFF) << ":" << (t & 0xF)
+           << " -> " << std::hex << "0x"<< int(*this);
     if (hash != 0)
-      stream << "{" << hash << "}";
+      stream << " {0x" << hash << "}";
+    stream << " [0x" << this->max_tag << "]";
   }
 
   enum CommTags : int {
@@ -106,7 +107,7 @@ private:
 
 /* -------------------------------------------------------------------------- */
 inline std::ostream & operator<<(std::ostream & stream, const Tag & _this) {
-  _this.printself(stream);
+  _this.printself(stream, 0);
   return stream;
 }
 
