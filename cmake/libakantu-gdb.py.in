@@ -4,5 +4,5 @@ import sys
 libdir = '@AKANTU_GDB_DIR@'
 sys.path.append(libdir)
 
-import libakantu.v2
+import libakantu.v3
 

@@ -40,7 +40,7 @@ class AkantuPrinter(object):
 
 if __use_gdb_pp__:
     __akantu_pretty_printers__ = \
-        gdb.printing.RegexpCollectionPrettyPrinter("libakantu-v2")
+        gdb.printing.RegexpCollectionPrettyPrinter("libakantu-v3")
 else:
     class AkantuPrettyPrinters(object):
         def __init__(self, name):
@@ -62,7 +62,7 @@ else:
 
             return None
 
-    __akantu_pretty_printers__ = AkantuPrettyPrinters("libakantu-v2")
+    __akantu_pretty_printers__ = AkantuPrettyPrinters("libakantu-v3")
 
 
 def register_pretty_printer(pretty_printer):
@@ -73,6 +73,36 @@ def register_pretty_printer(pretty_printer):
                                            pretty_printer)
 
     return pretty_printer
+
+@register_pretty_printer
+class AkaArrayPrinter(AkantuPrinter):
+    """Pretty printer for akantu::Array<T>"""
+    regex = re.compile('^akantu::Array<(.*), (true|false)>$')
+    name = 'akantu::Array'
+
+    def __init__(self, value):
+        self.typename = self.get_basic_type(value)
+        self.value = value
+        self.ptr = self.value['values']
+        self.size = int(self.value['size'])
+        self.nb_component = int(self.value['nb_component'])
+
+    def display_hint(self):
+        return 'array'
+
+    def to_string(self):
+        m = self.regex.search(self.typename)
+        return 'Array<{0}>({1}, {2}) stored at {3}'.format(
+            m.group(1), self.size, self.nb_component, self.ptr)
+
+    def children(self):
+        _ptr = self.ptr
+        for i in range(self.size):
+            _values = ["{0}".format((_ptr + j).dereference())
+                       for j in range(self.nb_component)]
+            _ptr = _ptr + self.nb_component
+            yield ('[{0}]'.format(i),
+                   '[{0}]'.format(', '.join(_values)))
 
 
 # @register_pretty_printer
@@ -112,7 +142,6 @@ class AkaTensorPrinter(AkantuPrinter):
     def children(self):
         yield ('values', self.pretty_print())
         yield ('wrapped', self.value['wrapped'])
-
 
 @register_pretty_printer
 class AkaVectorPrinter(AkaTensorPrinter):
