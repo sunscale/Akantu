@@ -102,7 +102,8 @@ class AkaArrayPrinter(AkantuPrinter):
                        for j in range(self.nb_component)]
             _ptr = _ptr + self.nb_component
             yield ('[{0}]'.format(i),
-                   '[{0}]'.format(', '.join(_values)))
+                   ('{0}' if self.nb_component == 1 else '[{0}]').format(
+                       ', '.join(_values)))
 
 
 # @register_pretty_printer
