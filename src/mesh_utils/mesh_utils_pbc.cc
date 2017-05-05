@@ -45,17 +45,23 @@ __BEGIN_AKANTU__
 class CoordinatesComparison {
 public:
   CoordinatesComparison(const UInt dimension, const UInt dir_1, const UInt dir_2,
-                        Real normalization, Real tolerance)
-      : dim(dimension), dir_1(dir_1), dir_2(dir_2), normalization(normalization),
-        tolerance(tolerance) {}
+                        Real normalization, Real tolerance, const Array<Real> & coords)
+    : dim(dimension), dir_1(dir_1), dir_2(dir_2), normalization(normalization),
+      tolerance(tolerance), coords_it(coords.begin(dim)) {}
   // answers the question whether n2 is larger or equal to n1
-  bool operator()(const Vector<Real> & n1, const Vector<Real> & n2) {
-    Real diff = n1(dir_1) - n2(dir_1);;
+  bool operator()(const UInt n1, const UInt n2) {
+    Vector<Real> coords_n1 = coords_it[n1];
+    Vector<Real> coords_n2 = coords_it[n2];
+    return this->operator()(coords_n1, coords_n2);
+  }
+
+  bool operator()(const Vector<Real> & coords_n1, const Vector<Real> & coords_n2) {
+    Real diff = coords_n1(dir_1) - coords_n2(dir_1);;
     if (dim == 2 || std::abs(diff) / normalization > tolerance)
       return diff > 0. ? false : true;
     else if (dim > 2) {
-      diff = n1(dir_2) - n2(dir_2);;
-       return diff > 0 ? false : true;
+      diff = coords_n1(dir_2) - coords_n2(dir_2);;
+      return diff > 0 ? false : true;
     }
     return true;
   }
@@ -66,6 +72,7 @@ private:
   UInt dir_2;
   Real normalization;
   Real tolerance;
+  const Array<Real>::const_vector_iterator coords_it;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -234,7 +241,7 @@ void MeshUtils::matchPBCPairs(const Mesh & mesh, const UInt dir,
   }
 
   CoordinatesComparison compare_nodes(dim, odir_1, odir_2, normalization,
-                                      tolerance);
+                                      tolerance, mesh.getNodes());
 
   std::sort(selected_left.begin(), selected_left.end(), compare_nodes);
   std::sort(selected_right.begin(), selected_right.end(), compare_nodes);
