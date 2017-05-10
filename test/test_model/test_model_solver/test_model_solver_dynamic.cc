@@ -360,8 +360,9 @@ public:
     Array<Real>::const_scalar_iterator end = Ay.end();
     Array<Real>::const_scalar_iterator x_it = x.begin();
 
-    for (; it != end; ++it, ++x_it) {
-      res += *x_it * *it;
+    for (UInt node = 0; it != end; ++it, ++x_it, ++node) {
+      if (mesh.isLocalOrMasterNode(node))
+        res += *x_it * *it;
     }
 
     StaticCommunicator::getStaticCommunicator().allReduce(res, _so_sum);
@@ -502,10 +503,10 @@ int main(int argc, char * argv[]) {
       std::cerr << error << " " << nb_iter << " -> " << converged << std::endl;
 #endif
 
-    epot = model.getPotentialEnergy();
-    ekin = model.getKineticEnergy();
+    epot  = model.getPotentialEnergy();
+    ekin  = model.getKineticEnergy();
     wext += model.getExternalWorkIncrement();
-    etot = ekin + epot - wext - einit;
+    etot  = ekin + epot - wext - einit;
     if (prank == 0) {
       std::cout << std::setw(14) << time_step * i
                 << "," << std::setw(14) << wext
