@@ -35,6 +35,7 @@
 #include "aka_math.hh"
 /* -------------------------------------------------------------------------- */
 #include <iomanip>
+#include <initializer_list>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_AKA_TYPES_HH__
@@ -478,11 +479,17 @@ public:
 
 public:
   Vector() : parent() {}
-  Vector(UInt n, const T & def = T()) : parent(n, 0, 0, def) {}
+  explicit Vector(UInt n, const T & def = T()) : parent(n, 0, 0, def) {}
   Vector(T * data, UInt n) : parent(data, n, 0, 0) {}
   Vector(const Vector & src, bool deep_copy = true) : parent(src, deep_copy) {}
   Vector(const VectorProxy<T> & src) : parent(src) {}
 
+  Vector(std::initializer_list<T> list) : parent(list.size(), 0, 0, T()) {
+    UInt i = 0;
+    for(auto val : list) {
+      operator()(i++) = val;
+    }
+  }
 public:
   virtual ~Vector(){};
 
@@ -615,6 +622,7 @@ public:
 
   /* ------------------------------------------------------------------------ */
   inline bool operator==(const Vector<T> & v) const { return equal(v); }
+  inline bool operator!=(const Vector<T> & v) const { return ! operator==(v); }
   inline bool operator<(const Vector<T> & v) const { return compare(v) == -1; }
   inline bool operator>(const Vector<T> & v) const { return compare(v) == 1; }
 
@@ -667,6 +675,27 @@ public:
   Matrix(T * data, UInt m, UInt n) : parent(data, m, n, 0) {}
   Matrix(const Matrix & src, bool deep_copy = true) : parent(src, deep_copy) {}
   Matrix(const MatrixProxy<T> & src) : parent(src) {}
+  Matrix(std::initializer_list<std::initializer_list<T>> list) {
+    std::size_t n = 0;
+    std::size_t m = list.size();
+    for(auto row : list) {
+      n = std::max(n, row.size());
+    }
+
+    DimHelper<2>::setDims(m, n, 0, this->n);
+    this->computeSize();
+    this->values = new T[this->_size];
+    this->set(0);
+
+    UInt i = 0, j = 0;
+    for(auto row : list) {
+      for(auto val : row) {
+        at(i, j++) = val;
+      }
+      ++i;
+      j = 0;
+    }
+  }
 
   virtual ~Matrix() {}
   /* ------------------------------------------------------------------------ */

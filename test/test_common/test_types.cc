@@ -32,12 +32,11 @@
 #include "aka_common.hh"
 #include "aka_types.hh"
 
-#include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 using namespace akantu;
-
 
 const Real tolerance = 1e-15;
 
@@ -58,55 +57,55 @@ struct size_error : std::runtime_error {
 };
 
 struct data_error : std::runtime_error {
-  data_error(const std::string & msg, UInt i) : std::runtime_error(msg), index(i) {}
+  data_error(const std::string & msg, UInt i)
+      : std::runtime_error(msg), index(i) {}
   UInt index;
 };
 
-
-template<class type>
-void compare_storages_with_ref(const type & a, Real * ref, UInt size, UInt line, const std::string & txt) {
-  std::cout << std::setw(3) << (testcounter++) << ": " << std::setw(10) << txt << " - " << a
-	    << " - wrapped: " << std::boolalpha << a.isWrapped() << std::endl;
+template <class type>
+void compare_storages_with_ref(const type & a, Real * ref, UInt size, UInt line,
+                               const std::string & txt) {
+  std::cout << std::setw(3) << (testcounter++) << ": " << std::setw(10) << txt
+            << " - " << a << " - wrapped: " << std::boolalpha << a.isWrapped()
+            << std::endl;
 
   if (a.size() != size)
     throw size_error("the size is not correct " + itoa(a.size()) +
-		     " instead of " + itoa(size) +
-		     " [Test at line: " + itoa(line) + "]");
+                     " instead of " + itoa(size) + " [Test at line: " +
+                     itoa(line) + "]");
 
   Real * a_ptr = a.storage();
   for (UInt i = 0; i < a.size(); ++i) {
     if (!((std::abs(a_ptr[i]) < tolerance && std::abs(ref[i]) < tolerance) ||
-	std::abs((a_ptr[i] - ref[i])/ a_ptr[i]) < tolerance)) {
+          std::abs((a_ptr[i] - ref[i]) / a_ptr[i]) < tolerance)) {
       std::stringstream txt;
       txt << " std::abs(" << a_ptr[i] << " - " << ref[i]
-	  << " [= " << std::abs(a_ptr[i] - ref[i]) << "] ) > " << tolerance;
+          << " [= " << std::abs(a_ptr[i] - ref[i]) << "] ) > " << tolerance;
       throw data_error("storage differs at index " + itoa(i) +
-		       " [Test at line: " + itoa(line) + "]" + txt.str(),
-		       i);
+                           " [Test at line: " + itoa(line) + "]" + txt.str(),
+                       i);
     }
   }
 
   if (a_ptr == ref && !a.isWrapped())
-    throw wrap_error("the storage should be wrapped but it is not [Test at line: " + itoa(line) + "]");
-  if (a_ptr != ref &&  a.isWrapped())
-    throw wrap_error("the storage should not be wrapped but it is [Test at line: " + itoa(line) + "]");
+    throw wrap_error(
+        "the storage should be wrapped but it is not [Test at line: " +
+        itoa(line) + "]");
+  if (a_ptr != ref && a.isWrapped())
+    throw wrap_error(
+        "the storage should not be wrapped but it is [Test at line: " +
+        itoa(line) + "]");
 }
 
-#define COMPARE(a, aref, txt)						\
-  compare_storages_with_ref(a,						\
-			    aref,					\
-			    sizeof(aref)/sizeof(aref[0]),		\
-			    __LINE__,					\
-			    txt)
-#define COMPARE_STORAGE(a, aref, txt)					\
-  compare_storages_with_ref(a,						\
-			    aref.storage(),				\
-			    aref.size(),				\
-			    __LINE__,					\
-			    txt)
+#define COMPARE(a, aref, txt)                                                  \
+  compare_storages_with_ref(a, aref, sizeof(aref) / sizeof(aref[0]), __LINE__, \
+                            txt)
+#define COMPARE_STORAGE(a, aref, txt)                                          \
+  compare_storages_with_ref(a, aref.storage(), aref.size(), __LINE__, txt)
 
 const UInt ref_size = 10;
 
+// clang-format off
 /* -------------------------------------------------------------------------- */
 void test_constructor() {
   std::cout << "=== Test constructors ===" << std::endl;
@@ -115,6 +114,8 @@ void test_constructor() {
   Real ref3[ref_size] = { 23.1594, 79.6184, 77.9052, 47.9922, 12.8674, 37.1445, 64.8991, 80.3364, 98.4064, 73.7858 };
 
   std::cout << "--  Vectors: " << std::endl;
+  Vector<Real> v0 =  { 23.1594, 79.6184, 77.9052, 47.9922, 12.8674, 37.1445, 64.8991, 80.3364, 98.4064, 73.7858 };
+                           ;          COMPARE        (    v0,   ref3, "init_list" );
   Vector<Real> v1(ref_size);          COMPARE        (    v1,   ref1, "normal"    );
   Vector<Real> v2(ref_size, 1563.58); COMPARE        (    v2,   ref2, "defval"    );
   Vector<Real> v3(ref3, ref_size);    COMPARE        (    v3,   ref3, "wrapped"   );
@@ -131,6 +132,12 @@ void test_constructor() {
 
   /* ------------------------------------------------------------------------ */
   std::cout << "--  Matrices: " << std::endl;
+  Matrix<Real> m0  = {{23.1594, 37.1445},
+                      {79.6184, 64.8991},
+                      {77.9052, 80.3364},
+                      {47.9922, 98.4064},
+                      {12.8674, 73.7858}};
+                                      COMPARE        (    m0, ref3  , "init_list" );
   Matrix<Real> m1(5, 2);              COMPARE        (    m1, ref1  , "normal"    );
   Matrix<Real> m1t(2, 5);             COMPARE        (   m1t, ref1  , "tnormal"   );
   Matrix<Real> m2(5, 2, 1563.58);     COMPARE        (    m2, ref2  , "defval"    );
@@ -336,7 +343,7 @@ void test_simple_operators() {
   Matrix<Real> m8 = mref; m8 += mmod;    COMPARE(m8, ref_p_mod, "m1 += m2");
   Matrix<Real> m9 = mref; m9 -= mmod;    COMPARE(m9, ref_m_mod, "m1 -= m2");
 }
-
+// clang-format on
 
 /* -------------------------------------------------------------------------- */
 int main() {
