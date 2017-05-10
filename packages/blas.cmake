@@ -45,25 +45,26 @@ endif()
 set(AKANTU_USE_BLAS_VENDOR "${_default_blas}" CACHE STRING "Version of blas to use")
 mark_as_advanced(AKANTU_USE_BLAS_VENDOR)
 set_property(CACHE AKANTU_USE_BLAS_VENDOR PROPERTY STRINGS
-  Goto
+  ACML
+  ACML_GPU
+  ACML_MP
   ATLAS
-  PhiPACK
+  Apple
   CXML
   DXML
-  SunPerf
-  SCSL
-  SGIMATH
+  Generic
+  Goto
   IBMESSL
+  Intel
   Intel10_32
   Intel10_64lp
   Intel10_64lp_seq
-  Intel
-  ACML
-  ACML_MP
-  ACML_GPU
-  Apple
   NAS
-  Generic
+  OpenBLAS
+  PhiPACK
+  SCSL
+  SGIMATH
+  SunPerf
   )
 
 set(ENV{BLA_VENDOR} ${AKANTU_USE_BLAS_VENDOR})
