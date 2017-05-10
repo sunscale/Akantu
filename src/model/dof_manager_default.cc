@@ -31,6 +31,7 @@
 #include "dof_manager_default.hh"
 #include "dof_synchronizer.hh"
 #include "element_group.hh"
+#include "node_synchronizer.hh"
 #include "non_linear_solver_default.hh"
 #include "sparse_matrix_aij.hh"
 #include "static_communicator.hh"
@@ -38,6 +39,7 @@
 #include "time_step_solver_default.hh"
 /* -------------------------------------------------------------------------- */
 #include <numeric>
+#include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -107,7 +109,7 @@ DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
       data_cache(0, 1, std::string(id + ":data_cache_array")),
       jacobian_release(0),
       global_equation_number(0, 1, "global_equation_number"),
-      synchronizer(nullptr) {}
+      first_global_dof_id(0), synchronizer(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
@@ -122,7 +124,12 @@ DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
       data_cache(0, 1, std::string(id + ":data_cache_array")),
       jacobian_release(0),
       global_equation_number(0, 1, "global_equation_number"),
-      synchronizer(nullptr) {}
+      first_global_dof_id(0), synchronizer(nullptr) {
+  if (this->mesh->isDistributed())
+    this->synchronizer =
+        new DOFSynchronizer(*this, this->id + ":dof_synchronizer",
+                            this->memory_id, this->mesh->getCommunicator());
+}
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::~DOFManagerDefault() {
@@ -168,17 +175,74 @@ DOFManager::DOFData & DOFManagerDefault::getNewDOFData(const ID & dof_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::registerMesh() {
-  DOFManager::registerMesh();
+class GlobalDOFInfoDataAccessor : public DataAccessor<UInt> {
+public:
+  typedef
+      typename std::unordered_map<UInt, std::vector<UInt>>::size_type size_type;
 
-  delete synchronizer;
-  if (this->mesh->isDistributed())
-    synchronizer =
-        new DOFSynchronizer(*this, this->id + ":dof_synchronizer",
-                            this->memory_id, this->mesh->getCommunicator());
-  else
-    synchronizer = nullptr;
-}
+  GlobalDOFInfoDataAccessor() = default;
+
+  void addDOFToNode(UInt node, UInt dof) { dofs_per_node[node].push_back(dof); }
+  UInt getNthDOFForNode(UInt nth_dof, UInt node) const {
+    return dofs_per_node.find(node)->second[nth_dof];
+  }
+
+  virtual UInt getNbData(const Array<UInt> & nodes,
+                         const SynchronizationTag & tag) const {
+    if (tag == _gst_size) {
+      return nodes.getSize() * sizeof(size_type);
+    }
+
+    if (tag == _gst_update) {
+      UInt total_size = 0;
+      for (auto node : nodes) {
+        auto it = dofs_per_node.find(node);
+        if (it != dofs_per_node.end())
+          total_size += CommunicationBuffer::sizeInBuffer(it->second);
+      }
+      return total_size;
+    }
+
+    return 0;
+  }
+
+  virtual void packData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
+                        const SynchronizationTag & tag) const {
+    for (auto node : nodes) {
+      auto it = dofs_per_node.find(node);
+      if (tag == _gst_size) {
+        if (it != dofs_per_node.end()) {
+          buffer << it->second.size();
+        } else {
+          buffer << 0;
+        }
+      } else if (tag == _gst_update) {
+         if (it != dofs_per_node.end())
+           buffer << it->second;
+      }
+    }
+  }
+
+  virtual void unpackData(CommunicationBuffer & buffer,
+                          const Array<UInt> & nodes,
+                          const SynchronizationTag & tag) {
+    for (auto node : nodes) {
+      auto it = dofs_per_node.find(node);
+      if (tag == _gst_size) {
+        size_type size;
+        buffer >> size;
+        if(size != 0)
+          dofs_per_node[node].resize(size);
+      } else if (tag == _gst_update) {
+        if (it != dofs_per_node.end())
+          buffer >> it->second;
+      }
+    }
+  }
+
+protected:
+  std::unordered_map<UInt, std::vector<UInt>> dofs_per_node;
+};
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
@@ -196,21 +260,27 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
     comm = &(StaticCommunicator::getStaticCommunicator());
   }
 
-  Array<UInt> nb_dofs_per_proc(psize);
-  nb_dofs_per_proc(prank) = nb_pure_local_dofs;
-  comm->allGather(nb_dofs_per_proc);
-
-  UInt first_global_dofs_id = std::accumulate(
-      nb_dofs_per_proc.begin(), nb_dofs_per_proc.begin() + prank, 0);
-
+  // access the relevant data to update
   DOFDataDefault & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
   const DOFSupportType & support_type = dof_data.support_type;
   const ID & group = dof_data.group_support;
 
-  dof_data.local_equation_number.resize(nb_dofs);
-  this->global_equation_number.resize(this->local_system_size);
+  GlobalDOFInfoDataAccessor data_accessor;
 
-  // set the equation numbers
+  // resize all relevant arrays
+  this->residual.resize(this->local_system_size);
+  this->dofs_type.resize(local_system_size);
+  this->global_solution.resize(this->local_system_size);
+  this->global_blocked_dofs.resize(this->local_system_size);
+  this->global_equation_number.resize(this->local_system_size);
+  dof_data.local_equation_number.resize(nb_dofs);
+
+  // determine the first local/global dof id to use
+  Array<UInt> nb_dofs_per_proc(psize);
+  nb_dofs_per_proc(prank) = nb_pure_local_dofs;
+  comm->allGather(nb_dofs_per_proc);
+  this->first_global_dof_id += std::accumulate(
+      nb_dofs_per_proc.begin(), nb_dofs_per_proc.begin() + prank, 0);
   UInt first_dof_id = this->local_system_size - nb_dofs;
 
   const Array<UInt> * support_nodes = nullptr;
@@ -223,15 +293,14 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
     dof_data.associated_nodes.resize(nb_dofs);
   }
 
-  this->dofs_type.resize(local_system_size);
-
+  // update per dof info
   for (UInt d = 0; d < nb_dofs; ++d) {
     UInt local_eq_num = first_dof_id + d;
     dof_data.local_equation_number(d) = local_eq_num;
 
-    UInt global_eq_num = first_global_dofs_id + d;
-    this->global_equation_number(local_eq_num) = global_eq_num;
-    this->global_to_local_mapping[global_eq_num] = local_eq_num;
+    bool is_local_dof = true;
+
+    // determine the dof type
     switch (support_type) {
     case _dst_nodal: {
       UInt node = d / dof_data.dof->getNbComponent();
@@ -241,6 +310,12 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
 
       this->dofs_type(local_eq_num) = this->mesh->getNodeType(node);
       dof_data.associated_nodes(d) = node;
+
+      is_local_dof = this->mesh->isLocalOrMasterNode(node);
+
+      if (is_local_dof) {
+        data_accessor.addDOFToNode(node, first_global_dof_id);
+      }
       break;
     }
     case _dst_generic: {
@@ -249,12 +324,38 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
     }
     default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }
     }
+
+    // update global id for local dofs
+    if (is_local_dof) {
+      this->global_equation_number(local_eq_num) = this->first_global_dof_id;
+      this->global_to_local_mapping[this->first_global_dof_id] = local_eq_num;
+      ++this->first_global_dof_id;
+    } else {
+      this->global_equation_number(local_eq_num) = 0;
+    }
   }
 
-  this->residual.resize(this->local_system_size);
-  this->global_solution.resize(this->local_system_size);
-  this->global_blocked_dofs.resize(this->local_system_size);
+  if (support_type == _dst_nodal) {
+    auto & node_synchronizer = this->mesh->getNodeSynchronizer();
+    node_synchronizer.synchronizeOnce(data_accessor, _gst_size);
+    node_synchronizer.synchronizeOnce(data_accessor, _gst_update);
 
+    std::vector<UInt> counters(nb_dofs);
+
+    for (UInt d = 0; d < nb_dofs; ++d) {
+      UInt local_eq_num = first_dof_id + d;
+      if (this->isSlaveDOF(local_eq_num)) {
+        UInt node = d / dof_data.dof->getNbComponent();
+
+        UInt dof_count = counters[node]++;
+        UInt global_dof_id = data_accessor.getNthDOFForNode(dof_count, node);
+
+        this->global_equation_number(local_eq_num) = global_dof_id;
+        this->global_to_local_mapping[global_dof_id] = local_eq_num;
+      }
+    }
+  }
+  // update the synchronizer if needed
   if (this->synchronizer)
     this->synchronizer->registerDOFs(dof_id);
 }
@@ -719,18 +820,19 @@ void DOFManagerDefault::applyBoundary() {
 }
 
 /* -------------------------------------------------------------------------- */
-const Array<Real> & DOFManagerDefault::getResidual() {
+const Array<Real> & DOFManagerDefault::getGlobalResidual() {
   if (this->synchronizer) {
     if (not this->global_residual) {
-      if (this->synchronizer->getCommunicator().whoAmI() == 0) {
-        this->global_residual =
-            new Array<Real>(this->system_size, 1, "global_residual");
-      } else {
-        this->global_residual = new Array<Real>(0, 1, "global_residual");
-      }
+      this->global_residual = new Array<Real>(0, 1, "global_residual");
     }
 
-    this->synchronizer->gather(this->residual, *this->global_residual);
+    if (this->synchronizer->getCommunicator().whoAmI() == 0) {
+      this->global_residual->resize(this->system_size);
+      this->synchronizer->gather(this->residual, *this->global_residual);
+    } else {
+      this->synchronizer->gather(this->residual);
+    }
+
     return *this->global_residual;
   } else {
     return this->residual;
@@ -738,9 +840,16 @@ const Array<Real> & DOFManagerDefault::getResidual() {
 }
 
 /* -------------------------------------------------------------------------- */
+const Array<Real> & DOFManagerDefault::getResidual() { return this->residual; }
+
+/* -------------------------------------------------------------------------- */
 void DOFManagerDefault::setGlobalSolution(const Array<Real> & solution) {
   if (this->synchronizer) {
-    this->synchronizer->scatter(this->global_solution, solution);
+    if (this->synchronizer->getCommunicator().whoAmI() == 0) {
+      this->synchronizer->scatter(this->global_solution, solution);
+    } else {
+      this->synchronizer->scatter(this->global_solution);
+    }
   } else {
     AKANTU_DEBUG_ASSERT(solution.getSize() == this->global_solution.getSize(),
                         "Sequential call to this function needs the solution "
@@ -752,3 +861,5 @@ void DOFManagerDefault::setGlobalSolution(const Array<Real> & solution) {
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU__
+
+//  LocalWords:  dof dofs

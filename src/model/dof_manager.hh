@@ -59,10 +59,6 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-protected:
-  /// register a mesh for dof that have a support type on nodes
-  virtual void registerMesh();
-
 private:
   /// common function to help registering dofs
   void registerDOFsInternal(const ID & dof_id, Array<Real> & dofs_array);

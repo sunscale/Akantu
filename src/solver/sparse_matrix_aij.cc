@@ -159,8 +159,8 @@ void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
   Array<Real>::scalar_iterator y_it = y.storage();
 
   for (UInt k = 0; k < this->nb_non_zero; ++k, ++i_it, ++j_it, ++a_it) {
-    Int i = *i_it - 1;
-    Int j = *j_it - 1;
+    Int i = this->dof_manager.globalToLocalEquationNumber(*i_it - 1);
+    Int j = this->dof_manager.globalToLocalEquationNumber(*j_it - 1);
     const Real & A = *a_it;
 
     y_it[i] += alpha * A * x_it[j];

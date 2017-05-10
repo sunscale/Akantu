@@ -53,7 +53,13 @@ DOFManager::DOFManager(Mesh & mesh, const ID & id, const MemoryID & memory_id)
     : Memory(id, memory_id), mesh(&mesh), local_system_size(0),
       pure_local_system_size(0), system_size(0),
       communicator(mesh.getCommunicator()) {
-  this->registerMesh();
+  this->mesh->registerEventHandler(*this, 20);
+
+  UInt nb_nodes = this->mesh->getNbNodes();
+  this->nodes_to_elements.resize(nb_nodes);
+  for (UInt n = 0; n < nb_nodes; ++n) {
+    this->nodes_to_elements[n] = new std::set<Element>();
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -205,17 +211,6 @@ void DOFManager::assembleElementalArrayToLumpedMatrix(
   this->assembleToLumpedMatrix(dof_id, array_localy_assembeled, lumped_mtx, 1);
 
   AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void DOFManager::registerMesh() {
-  this->mesh->registerEventHandler(*this, 20);
-
-  UInt nb_nodes = this->mesh->getNbNodes();
-  this->nodes_to_elements.resize(nb_nodes);
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    this->nodes_to_elements[n] = new std::set<Element>();
-  }
 }
 
 /* -------------------------------------------------------------------------- */

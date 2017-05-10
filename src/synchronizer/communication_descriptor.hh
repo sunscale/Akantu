@@ -113,7 +113,7 @@ public:
   void resetBuffer();
 
   /// pack data for entities in the buffer
-  void packData(DataAccessor<Entity> & accessor);
+  void packData(const DataAccessor<Entity> & accessor);
 
   /// unpack data for entities from the buffer
   void unpackData(DataAccessor<Entity> & accessor);

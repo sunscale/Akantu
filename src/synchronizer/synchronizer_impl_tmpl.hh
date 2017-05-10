@@ -44,8 +44,81 @@ SynchronizerImpl<Entity>::SynchronizerImpl(const ID & id, MemoryID memory_id,
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
+void SynchronizerImpl<Entity>::synchronizeOnceImpl(
+    DataAccessor<Entity> & data_accessor,
+    const SynchronizationTag & tag) const {
+  AKANTU_DEBUG_IN();
+
+  // no need to synchronize
+  if (this->nb_proc == 1) {
+    AKANTU_DEBUG_OUT();
+    return;
+  }
+
+  typedef std::vector<CommunicationRequest> CommunicationRequests;
+  typedef std::map<UInt, CommunicationBuffer> CommunicationBuffers;
+
+  CommunicationRequests send_requests, recv_requests;
+  CommunicationBuffers send_buffers, recv_buffers;
+
+  auto postComm = [&](const CommunicationSendRecv & sr,
+                      CommunicationBuffers & buffers,
+                      CommunicationRequests & requests) -> void {
+    auto sit = this->communications.begin_scheme(sr);
+    auto send = this->communications.end_scheme(sr);
+
+    for (; sit != send; ++sit) {
+      const auto & scheme = sit->second;
+      auto & proc = sit->first;
+
+      auto & buffer = buffers[proc];
+      UInt buffer_size = data_accessor.getNbData(scheme, tag);
+      buffer.resize(buffer_size);
+
+      if (sr == _recv) {
+        requests.push_back(communicator.asyncReceive(
+            buffer, proc,
+            Tag::genTag(this->rank, 0, Tag::_SYNCHRONIZE, this->hash_id)));
+      } else {
+        data_accessor.packData(buffer, scheme, tag);
+        send_requests.push_back(communicator.asyncSend(
+            buffer, proc,
+            Tag::genTag(proc, 0, Tag::_SYNCHRONIZE, this->hash_id)));
+      }
+    }
+  };
+
+  // post the receive requests
+  postComm(_recv, recv_buffers, recv_requests);
+
+  // send the data
+  postComm(_send, send_buffers, send_requests);
+
+  // treat the receive requests
+  UInt request_ready;
+  while ((request_ready = communicator.waitAny(recv_requests)) != UInt(-1)) {
+    CommunicationRequest & req = recv_requests[request_ready];
+    UInt proc = req.getSource();
+
+    CommunicationBuffer & buffer = recv_buffers[proc];
+    const auto & scheme = this->communications.getRecvScheme(proc);
+
+    data_accessor.unpackData(buffer, scheme, tag);
+
+    recv_requests.erase(recv_requests.begin() + request_ready);
+  }
+
+  communicator.waitAll(send_requests);
+  communicator.freeCommunicationRequest(send_requests);
+  communicator.freeCommunicationRequest(recv_requests);
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
 void SynchronizerImpl<Entity>::asynchronousSynchronizeImpl(
-    DataAccessor<Entity> & data_accessor, const SynchronizationTag & tag) {
+    const DataAccessor<Entity> & data_accessor,
+    const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
   if (!this->communications.hasCommunication(tag))
@@ -58,7 +131,7 @@ void SynchronizerImpl<Entity>::asynchronousSynchronizeImpl(
     AKANTU_CUSTOM_EXCEPTION_INFO(
         debug::CommunicationException(),
         "There must still be some pending receive communications."
-        << " Tag is " << tag << " Cannot start new ones");
+            << " Tag is " << tag << " Cannot start new ones");
   }
 
   auto recv_it = this->communications.begin_recv(tag);
@@ -100,8 +173,10 @@ void SynchronizerImpl<Entity>::waitEndSynchronizeImpl(
   AKANTU_DEBUG_IN();
 
 #ifndef AKANTU_NDEBUG
-  if (!this->communications.hasPendingRecv(tag) && nb_proc > 1)
-    AKANTU_CUSTOM_EXCEPTION_INFO(debug::CommunicationException(),
+  if (this->communications.begin_recv(tag) !=
+      this->communications.end_recv(tag) &&
+      !this->communications.hasPendingRecv(tag))
+      AKANTU_CUSTOM_EXCEPTION_INFO(debug::CommunicationException(),
                                  "No pending communication with the tag \""
                                      << tag);
 #endif
@@ -129,7 +204,7 @@ void SynchronizerImpl<Entity>::waitEndSynchronizeImpl(
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 void SynchronizerImpl<Entity>::computeAllBufferSizes(
-    DataAccessor<Entity> & data_accessor) {
+    const DataAccessor<Entity> & data_accessor) {
   auto it = this->communications.begin_tag();
   auto end = this->communications.end_tag();
 
@@ -142,7 +217,8 @@ void SynchronizerImpl<Entity>::computeAllBufferSizes(
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 void SynchronizerImpl<Entity>::computeBufferSizeImpl(
-    DataAccessor<Entity> & data_accessor, const SynchronizationTag & tag) {
+    const DataAccessor<Entity> & data_accessor,
+    const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
   this->communications.initializeCommunications(tag);

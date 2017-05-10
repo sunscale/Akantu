@@ -113,12 +113,6 @@ private:
   /// AIJ Matrix, usualy the jacobian matrix
   SparseMatrixAIJ & matrix;
 
-  /// Right hand side per processors
-  const Array<Real> & rhs;
-
-  /// solution vector per processors
-  Array<Real> & solution;
-
   /// Full right hand side on the master processors and solution after solve
   Array<Real> master_rhs_solution;
 

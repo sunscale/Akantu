@@ -41,6 +41,20 @@ register_test(test_synchronizer_communication
   PARALLEL
   )
 
+register_test(test_node_synchronizer
+  SOURCES test_node_synchronizer.cc
+  DEPENDS test_synchronizer_communication_mesh
+  PACKAGE parallel
+  PARALLEL
+  )
+
+register_test(test_dof_synchronizer
+  SOURCES test_dof_synchronizer.cc test_data_accessor.hh
+  FILES_TO_COPY bar.msh
+  PACKAGE parallel
+  PARALLEL
+  )
+
 # if(DEFINED AKANTU_DAMAGE_NON_LOCAL)
 #   add_executable(test_grid_synchronizer_check_neighbors test_grid_synchronizer_check_neighbors.cc test_grid_tools.hh)
 #   target_link_libraries(test_grid_synchronizer_check_neighbors akantu)
@@ -54,13 +68,6 @@ register_test(test_synchronizer_communication
 #   DEPENDS test_synchronizer_communication_mesh test_grid_synchronizer_check_neighbors
 #   EXTRA_FILES test_grid_synchronizer_check_neighbors.cc test_grid_tools.hh
 #   PACKAGE damage_non_local
-#   )
-
-# register_test(test_dof_synchronizer
-#   SOURCES test_dof_synchronizer.cc test_data_accessor.hh
-#   FILES_TO_COPY bar.msh
-#   PACKAGE parallel
-#   PARALLEL
 #   )
 
 # register_test(test_dof_synchronizer_communication

@@ -57,10 +57,6 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:
-  /// register a mesh for dof that have a support type on nodes
-  virtual void registerMesh();
-
 private:
   void registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
                             UInt nb_pure_local_dofs);
@@ -216,16 +212,23 @@ public:
   AKANTU_GET_MACRO_NOT_CONST(GlobalSolution, global_solution, Array<Real> &);
   /// Set the global solution array
   void setGlobalSolution(const Array<Real> & solution);
+
+  /// Get the global residual array across processors
+  const Array<Real> & getGlobalResidual();
+
   /// Get the residual array
   const Array<Real> & getResidual();
 
   /// Get the blocked dofs array
-    AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
+  AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
   /// Get the blocked dofs array
   AKANTU_GET_MACRO(PreviousGlobalBlockedDOFs, previous_global_blocked_dofs,
                    const Array<bool> &);
   /// Get the location type of a given dof
   inline bool isLocalOrMasterDOF(UInt dof_num);
+
+  /// Answer to the question is a dof a slave dof ?
+  inline bool isSlaveDOF(UInt dof_num);
 
   /// get the equation numbers (in local numbering) corresponding to a dof ID
   inline const Array<UInt> & getLocalEquationNumbers(const ID & dof_id) const;
@@ -241,6 +244,9 @@ public:
 
   /// get the array of dof types (use only if you know what you do...)
   inline const Array<UInt> & getDOFsAssociatedNodes(const ID & dof_id) const;
+
+  /// access the internal dof_synchronizer
+  AKANTU_GET_MACRO_NOT_CONST(Synchronizer, *synchronizer, DOFSynchronizer &);
 
 protected:
   virtual DOFData & getNewDOFData(const ID & dof_id);
@@ -309,6 +315,9 @@ protected:
 
   /// dual information of global_equation_number
   equation_numbers_map global_to_local_mapping;
+
+  /// accumulator to know what would be the next global id to use
+  UInt first_global_dof_id;
 
   /// synchronizer to maintain coherency in dof fields
   DOFSynchronizer * synchronizer;

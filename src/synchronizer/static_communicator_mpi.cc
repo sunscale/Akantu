@@ -225,10 +225,9 @@ void StaticCommunicatorMPI::waitAll(
 UInt StaticCommunicatorMPI::waitAny(
     std::vector<CommunicationRequest> & requests) {
   MPI_Status status;
-  std::vector<CommunicationRequest>::iterator it;
   std::vector<MPI_Request> reqs(requests.size());
   UInt r = 0;
-  for (it = requests.begin(); it != requests.end(); ++it, ++r) {
+  for (auto it = requests.begin(); it != requests.end(); ++it, ++r) {
     reqs[r] = static_cast<CommunicationRequestMPI *>(&it->getInternal())
                   ->getMPIRequest();
   }
@@ -483,6 +482,11 @@ MPI_Datatype MPITypeWrapper::getMPIDatatype<SCMinMaxLoc<float, int>>() {
   return MPI_FLOAT_INT;
 }
 
+template <>
+MPI_Datatype MPITypeWrapper::getMPIDatatype<bool>() {
+  return MPI_CXX_BOOL;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Template instantiation                                                     */
 /* -------------------------------------------------------------------------- */
@@ -513,6 +517,7 @@ MPI_Datatype MPITypeWrapper::getMPIDatatype<SCMinMaxLoc<float, int>>() {
   template void StaticCommunicatorMPI::allReduce<T>(                           \
       T * values, int nb_values, const SynchronizerOperation & op)
 
+AKANTU_MPI_COMM_INSTANTIATE(bool);
 AKANTU_MPI_COMM_INSTANTIATE(Real);
 AKANTU_MPI_COMM_INSTANTIATE(UInt);
 AKANTU_MPI_COMM_INSTANTIATE(Int);

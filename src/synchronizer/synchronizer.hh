@@ -53,9 +53,9 @@ class Synchronizer : protected Memory {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Synchronizer(
-      const ID & id = "synchronizer", MemoryID memory_id = 0,
-      const StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
+  Synchronizer(const ID & id = "synchronizer", MemoryID memory_id = 0,
+               const StaticCommunicator & comm =
+                   StaticCommunicator::getStaticCommunicator());
 
   virtual ~Synchronizer(){};
 
@@ -65,24 +65,29 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// synchronize ghosts without state
+  template <class DataAccessor>
+  void synchronizeOnce(DataAccessor & data_accessor,
+                       const SynchronizationTag & tag) const;
+
   /// synchronize ghosts
-  template<class DataAccessor>
+  template <class DataAccessor>
   void synchronize(DataAccessor & data_accessor,
                    const SynchronizationTag & tag);
 
   /// asynchronous synchronization of ghosts
-  template<class DataAccessor>
-  void asynchronousSynchronize(DataAccessor & data_accessor,
+  template <class DataAccessor>
+  void asynchronousSynchronize(const DataAccessor & data_accessor,
                                const SynchronizationTag & tag);
 
   /// wait end of asynchronous synchronization of ghosts
-  template<class DataAccessor>
+  template <class DataAccessor>
   void waitEndSynchronize(DataAccessor & data_accessor,
-                                  const SynchronizationTag & tag);
+                          const SynchronizationTag & tag);
 
   /// compute buffer size for a given tag and data accessor
-  template<class DataAccessor>
-  void computeBufferSize(DataAccessor & data_accessor,
+  template <class DataAccessor>
+  void computeBufferSize(const DataAccessor & data_accessor,
                          const SynchronizationTag & tag);
 
   /* ------------------------------------------------------------------------ */

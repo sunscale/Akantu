@@ -39,9 +39,13 @@
 #include <cctype>
 #include <iomanip>
 #include <iostream>
-/* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
 
-__BEGIN_AKANTU__
+/* -------------------------------------------------------------------------- */
+#ifndef __AKANTU_AKA_COMMON_INLINE_IMPL_CC__
+#define __AKANTU_AKA_COMMON_INLINE_IMPL_CC__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /// standard output stream operator for GhostType
@@ -225,6 +229,15 @@ inline std::istream & operator>>(std::istream & stream,
 inline std::ostream & operator<<(std::ostream & stream,
                                  SynchronizationTag type) {
   switch (type) {
+  case _gst_whatever:
+    stream << "_gst_whatever";
+    break;
+  case _gst_update:
+    stream << "_gst_update";
+    break;
+  case _gst_size:
+    stream << "_gst_size";
+    break;
   case _gst_smm_mass:
     stream << "_gst_smm_mass";
     break;
@@ -438,4 +451,6 @@ template <typename T> std::string printMemorySize(UInt size) {
   return sstr.str();
 }
 
-__END_AKANTU__
+} // akantu
+
+#endif /* __AKANTU_AKA_COMMON_INLINE_IMPL_CC__ */

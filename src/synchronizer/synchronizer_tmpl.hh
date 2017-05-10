@@ -29,9 +29,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh"
+#include "data_accessor.hh"
 #include "synchronizer.hh"
 #include "synchronizer_impl.hh"
-#include "data_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SYNCHRONIZER_TMPL_HH__
@@ -39,18 +39,32 @@
 
 namespace akantu {
 
+template <class DataAccessorT>
+void Synchronizer::synchronizeOnce(DataAccessorT & data_accessor,
+                                   const SynchronizationTag & tag) const {
+  if (const auto * synch_el =
+          dynamic_cast<const SynchronizerImpl<Element> *>(this)) {
+    synch_el->synchronizeOnceImpl(
+        dynamic_cast<DataAccessor<Element> &>(data_accessor), tag);
+  } else if (const auto * synch_dof =
+                 dynamic_cast<const SynchronizerImpl<UInt> *>(this)) {
+    synch_dof->synchronizeOnceImpl(
+        dynamic_cast<DataAccessor<UInt> &>(data_accessor), tag);
+  } else {
+    AKANTU_EXCEPTION("You synchronizer is not of a known type");
+  }
+}
+
 /// synchronize ghosts
-template<class DataAccessorT>
+template <class DataAccessorT>
 void Synchronizer::synchronize(DataAccessorT & data_accessor,
                                const SynchronizationTag & tag) {
-  if (SynchronizerImpl<Element> * synch_el =
-          dynamic_cast<SynchronizerImpl<Element> *>(this)) {
+  if (auto * synch_el = dynamic_cast<SynchronizerImpl<Element> *>(this)) {
     synch_el->synchronizeImpl(
-        dynamic_cast< DataAccessor<Element> &>(data_accessor), tag);
-  } else if (SynchronizerImpl<UInt> * synch_dof =
-                 dynamic_cast<SynchronizerImpl<UInt> *>(this)) {
+        dynamic_cast<DataAccessor<Element> &>(data_accessor), tag);
+  } else if (auto * synch_dof = dynamic_cast<SynchronizerImpl<UInt> *>(this)) {
     synch_dof->synchronizeImpl(
-        dynamic_cast< DataAccessor<UInt> &>(data_accessor), tag);
+        dynamic_cast<DataAccessor<UInt> &>(data_accessor), tag);
   } else {
     AKANTU_EXCEPTION("You synchronizer is not of a known type");
   }
@@ -58,16 +72,14 @@ void Synchronizer::synchronize(DataAccessorT & data_accessor,
 
 /* -------------------------------------------------------------------------- */
 template <class DataAccessorT>
-void Synchronizer::asynchronousSynchronize(DataAccessorT & data_accessor,
+void Synchronizer::asynchronousSynchronize(const DataAccessorT & data_accessor,
                                            const SynchronizationTag & tag) {
-  if (SynchronizerImpl<Element> * synch_el =
-          dynamic_cast<SynchronizerImpl<Element> *>(this)) {
+  if (auto * synch_el = dynamic_cast<SynchronizerImpl<Element> *>(this)) {
     synch_el->asynchronousSynchronizeImpl(
-        dynamic_cast< DataAccessor<Element> &>(data_accessor), tag);
-  } else if (SynchronizerImpl<UInt> * synch_dof =
-                 dynamic_cast<SynchronizerImpl<UInt> *>(this)) {
+        dynamic_cast<const DataAccessor<Element> &>(data_accessor), tag);
+  } else if (auto * synch_dof = dynamic_cast<SynchronizerImpl<UInt> *>(this)) {
     synch_dof->asynchronousSynchronizeImpl(
-        dynamic_cast< DataAccessor<UInt> &>(data_accessor), tag);
+        dynamic_cast<const DataAccessor<UInt> &>(data_accessor), tag);
   } else {
     AKANTU_EXCEPTION("You synchronizer is not of a known type");
   }
@@ -77,14 +89,12 @@ void Synchronizer::asynchronousSynchronize(DataAccessorT & data_accessor,
 template <class DataAccessorT>
 void Synchronizer::waitEndSynchronize(DataAccessorT & data_accessor,
                                       const SynchronizationTag & tag) {
-  if (SynchronizerImpl<Element> * synch_el =
-          dynamic_cast<SynchronizerImpl<Element> *>(this)) {
+  if (auto * synch_el = dynamic_cast<SynchronizerImpl<Element> *>(this)) {
     synch_el->waitEndSynchronizeImpl(
-        dynamic_cast< DataAccessor<Element> &>(data_accessor), tag);
-  } else if (SynchronizerImpl<UInt> * synch_dof =
-                 dynamic_cast<SynchronizerImpl<UInt> *>(this)) {
+        dynamic_cast<DataAccessor<Element> &>(data_accessor), tag);
+  } else if (auto * synch_dof = dynamic_cast<SynchronizerImpl<UInt> *>(this)) {
     synch_dof->waitEndSynchronizeImpl(
-        dynamic_cast< DataAccessor<UInt> &>(data_accessor), tag);
+        dynamic_cast<DataAccessor<UInt> &>(data_accessor), tag);
   } else {
     AKANTU_EXCEPTION("You synchronizer is not of a known type");
   }
@@ -92,16 +102,14 @@ void Synchronizer::waitEndSynchronize(DataAccessorT & data_accessor,
 
 /// compute buffer size for a given tag and data accessor
 template <class DataAccessorT>
-void Synchronizer::computeBufferSize(DataAccessorT & data_accessor,
+void Synchronizer::computeBufferSize(const DataAccessorT & data_accessor,
                                      const SynchronizationTag & tag) {
-  if (SynchronizerImpl<Element> * synch_el =
-          dynamic_cast<SynchronizerImpl<Element> *>(this)) {
+  if (auto * synch_el = dynamic_cast<SynchronizerImpl<Element> *>(this)) {
     synch_el->computeBufferSizeImpl(
-        dynamic_cast< DataAccessor<Element> &>(data_accessor), tag);
-  } else if (SynchronizerImpl<UInt> * synch_dof =
-                 dynamic_cast<SynchronizerImpl<UInt> *>(this)) {
+        dynamic_cast<const DataAccessor<Element> &>(data_accessor), tag);
+  } else if (auto * synch_dof = dynamic_cast<SynchronizerImpl<UInt> *>(this)) {
     synch_dof->computeBufferSizeImpl(
-        dynamic_cast< DataAccessor<UInt> &>(data_accessor), tag);
+        dynamic_cast<const DataAccessor<UInt> &>(data_accessor), tag);
   } else {
     AKANTU_EXCEPTION("You synchronizer is not of a known type");
   }

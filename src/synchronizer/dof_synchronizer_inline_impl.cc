@@ -32,6 +32,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "communication_buffer.hh"
+#include "data_accessor.hh"
 #include "dof_manager_default.hh"
 #include "dof_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
@@ -45,9 +46,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-void DOFSynchronizer::gather(const Array<T> & to_gather,
-                             Array<T> & gathered) {
-  if (dof_changed)
+void DOFSynchronizer::gather(const Array<T> & to_gather, Array<T> & gathered) {
+  if (this->hasChanged())
     initScatterGatherCommunicationScheme();
 
   AKANTU_DEBUG_ASSERT(this->rank == UInt(this->root),
@@ -67,59 +67,74 @@ void DOFSynchronizer::gather(const Array<T> & to_gather,
 
   std::map<UInt, CommunicationBuffer> buffers;
   std::vector<CommunicationRequest> requests;
-  for (UInt p = 1; p < nb_proc; ++p) {
-    CommunicationBuffer & buffer = buffers[nb_proc];
-    const Array<UInt> & receive_dofs =
-        this->master_receive_dofs.find(p)->second;
+  for (UInt p = 0; p < this->nb_proc; ++p) {
+    if (p == UInt(this->root))
+      continue;
+
+    auto receive_it = this->master_receive_dofs.find(p);
+    AKANTU_DEBUG_ASSERT(receive_it != this->master_receive_dofs.end(),
+                        "Could not find the receive list for dofs of proc "
+                            << p);
+    const Array<UInt> & receive_dofs = receive_it->second;
+    if (receive_dofs.getSize() == 0)
+      continue;
+
+    CommunicationBuffer & buffer = buffers[p];
+
     buffer.resize(receive_dofs.getSize() * to_gather.getNbComponent() *
                   sizeof(T));
+
+    AKANTU_DEBUG_INFO(
+        "Preparing to receive data for "
+        << receive_dofs.getSize() << " dofs from processor " << p << " "
+        << Tag::genTag(p, this->root, Tag::_GATHER, this->hash_id));
+
     requests.push_back(communicator.asyncReceive(
-        buffer, p, Tag::genTag(p, 0, Tag::_GATHER, this->hash_id)));
+        buffer, p, Tag::genTag(p, this->root, Tag::_GATHER, this->hash_id)));
   }
 
-  for (UInt p = 0; p < nb_proc; ++p) {
-    auto data_it = to_gather.begin(to_gather.getNbComponent());
+  auto data_gathered_it = gathered.begin(to_gather.getNbComponent());
 
-    if (p == this->rank) {
-      auto gdata_it = gathered.begin(to_gather.getNbComponent());
-      auto it = slave_receive_dofs.begin();
-      auto end = slave_receive_dofs.end();
-      for (; it != end; ++it) {
-        Vector<T> svect = data_it[*it];
+  { // copy master data
+    auto data_to_gather_it = to_gather.begin(to_gather.getNbComponent());
+    for (auto local_dof : slave_receive_dofs) {
+      UInt global_dof = local_dof;
+      dof_manager.localToGlobalEquationNumber(global_dof);
 
-        UInt global_dof = *it;
-        dof_manager.localToGlobalEquationNumber(global_dof);
-        Vector<T> dvect = gdata_it[global_dof];
-        dvect = svect;
-      }
-      continue;
+      Vector<T> dof_data_gathered = data_gathered_it[local_dof];
+      Vector<T> dof_data_to_gather = data_to_gather_it[global_dof];
+      dof_data_gathered = dof_data_to_gather;
     }
-    UInt rr = communicator.waitAny(requests);
+  }
 
+  UInt rr = UInt(-1);
+  while ((rr = communicator.waitAny(requests)) != UInt(-1)) {
     CommunicationRequest & request = requests[rr];
     UInt sender = request.getSource();
+
+    AKANTU_DEBUG_ASSERT(this->master_receive_dofs.find(sender) !=
+                                this->master_receive_dofs.end() &&
+                            buffers.find(sender) != buffers.end(),
+                        "Missing infos concerning proc " << sender);
 
     const Array<UInt> & receive_dofs =
         this->master_receive_dofs.find(sender)->second;
     CommunicationBuffer & buffer = buffers[sender];
 
-    auto it = receive_dofs.begin();
-    auto end = receive_dofs.end();
-    for (; it != end; ++it) {
-      Vector<T> vect = data_it[*it];
-      buffer >> vect;
+    for (auto global_dof : receive_dofs) {
+      Vector<T> dof_data = data_gathered_it[global_dof];
+      buffer >> dof_data;
     }
-  }
 
-  communicator.freeCommunicationRequest(requests);
+    requests.erase(requests.begin() + rr);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T>
-void DOFSynchronizer::gather(const Array<T> & to_gather) {
+template <typename T> void DOFSynchronizer::gather(const Array<T> & to_gather) {
   AKANTU_DEBUG_IN();
 
-  if (dof_changed)
+  if (this->hasChanged())
     initScatterGatherCommunicationScheme();
 
   AKANTU_DEBUG_ASSERT(this->rank != UInt(this->root),
@@ -128,16 +143,23 @@ void DOFSynchronizer::gather(const Array<T> & to_gather) {
                           this->dof_manager.getLocalSystemSize(),
                       "The array to gather does not have the correct size");
 
+  if (this->slave_receive_dofs.getSize() == 0) {
+    AKANTU_DEBUG_OUT();
+    return;
+  }
   CommunicationBuffer buffer(this->slave_receive_dofs.getSize() *
                              to_gather.getNbComponent() * sizeof(T));
 
   auto data_it = to_gather.begin(to_gather.getNbComponent());
-  auto it = this->slave_receive_dofs.begin();
-  auto end = this->slave_receive_dofs.end();
-
-  for (; it != end; ++it) {
-    buffer << data_it[*it];
+  for (auto dof : this->slave_receive_dofs) {
+    Vector<T> data = data_it[dof];
+    buffer << data;
   }
+
+  AKANTU_DEBUG_INFO("Gathering data for "
+                    << to_gather.getSize() << " dofs on processor "
+                    << this->root << " "
+                    << Tag::genTag(this->rank, 0, Tag::_GATHER, this->hash_id));
 
   communicator.send(buffer, this->root,
                     Tag::genTag(this->rank, 0, Tag::_GATHER, this->hash_id));
@@ -151,7 +173,7 @@ void DOFSynchronizer::scatter(Array<T> & scattered,
                               const Array<T> & to_scatter) {
   AKANTU_DEBUG_IN();
 
-  if (dof_changed)
+  if (this->hasChanged())
     initScatterGatherCommunicationScheme();
   AKANTU_DEBUG_ASSERT(this->rank == UInt(this->root),
                       "This function cannot be called on a slave processor");
@@ -171,58 +193,58 @@ void DOFSynchronizer::scatter(Array<T> & scattered,
   std::vector<CommunicationRequest> requests;
 
   for (UInt p = 0; p < nb_proc; ++p) {
-    auto data_it = to_scatter.begin(to_scatter.getNbComponent());
+    auto data_to_scatter_it = to_scatter.begin(to_scatter.getNbComponent());
 
     if (p == this->rank) {
-      auto gdata_it = scattered.begin(to_scatter.getNbComponent());
-      auto it = slave_receive_dofs.begin();
-      auto end = slave_receive_dofs.end();
-      for (; it != end; ++it) {
-        UInt global_dof = *it;
+      auto data_scattered_it = scattered.begin(to_scatter.getNbComponent());
+
+      // copy the data for the local processor
+      for (auto local_dof : slave_receive_dofs) {
+        auto global_dof = local_dof;
         dof_manager.localToGlobalEquationNumber(global_dof);
 
-        Vector<T> svect = data_it[global_dof];
-        Vector<T> dvect = gdata_it[*it];
-        dvect = svect;
+        Vector<T> dof_data_to_scatter = data_to_scatter_it[global_dof];
+        Vector<T> dof_data_scattered = data_scattered_it[local_dof];
+        dof_data_scattered = dof_data_to_scatter;
       }
+
+      continue;
     }
 
-    UInt rr = communicator.waitAny(requests);
-
-    CommunicationRequest & request = requests[rr];
-    UInt sender = request.getSource();
-
     const Array<UInt> & receive_dofs =
-        this->master_receive_dofs.find(sender)->second;
-    CommunicationBuffer & buffer = buffers[sender];
+        this->master_receive_dofs.find(p)->second;
 
+    // prepare the send buffer
+    CommunicationBuffer & buffer = buffers[p];
     buffer.resize(receive_dofs.getSize() * scattered.getNbComponent() *
                   sizeof(T));
 
-    auto it = receive_dofs.begin();
-    auto end = receive_dofs.end();
-    for (; it != end; ++it) {
-      Vector<T> vect = data_it[*it];
-      buffer << vect;
-
-      requests.push_back(communicator.asyncSend(
-          buffer, p, Tag::genTag(p, 0, Tag::_SCATTER, this->hash_id)));
+    // pack the data
+    for (auto global_dof : receive_dofs) {
+      Vector<T> dof_data_to_scatter = data_to_scatter_it[global_dof];
+      buffer << dof_data_to_scatter;
     }
+
+    // send the data
+    requests.push_back(communicator.asyncSend(
+        buffer, p, Tag::genTag(p, 0, Tag::_SCATTER, this->hash_id)));
   }
 
+  // wait a clean communications
+  communicator.waitAll(requests);
   communicator.freeCommunicationRequest(requests);
 
-  // \todo copy local data
-
+  // synchronize slave and ghost nodes
   synchronize(scattered);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T>
-void DOFSynchronizer::scatter(Array<T> & scattered) {
-  if (dof_changed)
+template <typename T> void DOFSynchronizer::scatter(Array<T> & scattered) {
+  AKANTU_DEBUG_IN();
+
+  if (this->hasChanged())
     this->initScatterGatherCommunicationScheme();
   AKANTU_DEBUG_ASSERT(this->rank != UInt(this->root),
                       "This function cannot be called on the root processor");
@@ -230,90 +252,37 @@ void DOFSynchronizer::scatter(Array<T> & scattered) {
                           this->dof_manager.getLocalSystemSize(),
                       "The scattered array does not have the correct size");
 
+  // prepare the data
+  auto data_scattered_it = scattered.begin(scattered.getNbComponent());
   CommunicationBuffer buffer(this->slave_receive_dofs.getSize() *
                              scattered.getNbComponent() * sizeof(T));
 
+  // receive the data
   communicator.receive(
       buffer, this->root,
       Tag::genTag(this->rank, 0, Tag::_SCATTER, this->hash_id));
 
-  auto data_it = scattered.begin(scattered.getNbComponent());
-  auto it = this->slave_receive_dofs.begin();
-  auto end = this->slave_receive_dofs.end();
-
-  for (; it != end; ++it) {
-    Vector<T> vect = data_it[*it];
-    buffer >> vect;
+  // unpack the data
+  for (auto local_dof : slave_receive_dofs) {
+    Vector<T> dof_data_scattered = data_scattered_it[local_dof];
+    buffer >> dof_data_scattered;
   }
 
-  synchronize(scattered);
   // synchronize the ghosts
+  synchronize(scattered);
+
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-void DOFSynchronizer::synchronize(Array<T> & dof_vector) const {
+void DOFSynchronizer::synchronize(Array<T> & dof_values_to_synchronize) const {
   AKANTU_DEBUG_IN();
 
-  if (this->nb_proc == 1) {
-    AKANTU_DEBUG_OUT();
-    return;
-  }
+  SimpleUIntDataAccessor<T> data_accessor(dof_values_to_synchronize, _gst_whatever);
+  this->synchronizeOnce(data_accessor, _gst_whatever);
 
-  std::vector<CommunicationRequest> send_requests, recv_requests;
-  std::vector<CommunicationBuffer> send_buffers, recv_buffers;
 
-  auto rs_it = this->communications.begin_recv_scheme();
-  auto rs_end = this->communications.end_recv_scheme();
-
-  for (; rs_it != rs_end; ++rs_it) {
-    const auto & scheme = rs_it->second;
-    auto & proc = rs_it->first;
-
-    UInt buffer_size = scheme.getSize() * dof_vector.getNbComponent() * sizeof(T);
-    recv_buffers.emplace_back(buffer_size);
-    recv_requests.push_back(communicator.asyncReceive(
-                                recv_buffers.back(), proc,
-        Tag::genTag(this->rank, 0, Tag::_SYNCHRONIZE, this->hash_id)));
-  }
-
-  auto ss_it = this->communications.begin_send_scheme();
-  auto ss_end = this->communications.end_send_scheme();
-
-  for (; ss_it != ss_end; ++ss_it) {
-    const auto & scheme = ss_it->second;
-    auto & proc = rs_it->first;
-
-    UInt buffer_size = scheme.getSize() * dof_vector.getNbComponent() * sizeof(T);
-    send_buffers.emplace_back(buffer_size);
-    CommunicationBuffer & buffer = send_buffers.back();
-
-    auto data_it = dof_vector.begin(dof_vector.getNbComponent());
-    for (const auto & dof : scheme) {
-      buffer << data_it[dof];
-    }
-
-    send_requests.push_back(communicator.asyncSend(
-        buffer, proc, Tag::genTag(proc, 0, Tag::_SYNCHRONIZE, this->hash_id)));
-  }
-
-  UInt ready;
-  while ((ready = communicator.waitAny(recv_requests)) != UInt(-1)) {
-    CommunicationRequest & req = recv_requests[ready];
-    CommunicationBuffer & buffer = recv_buffers[ready];
-
-    UInt proc = req.getSource();
-    const auto & scheme = this->communications.getRecvScheme(proc);
-    auto data_it = dof_vector.begin(dof_vector.getNbComponent());
-    for (const auto & dof : scheme) {
-      Vector<Real> vect = data_it[dof];
-      buffer >> vect;
-    }
-  }
-
-  communicator.waitAll(send_requests);
-  communicator.freeCommunicationRequest(send_requests);
-  communicator.freeCommunicationRequest(recv_requests);
   AKANTU_DEBUG_OUT();
 }
 
@@ -322,74 +291,8 @@ template <template <class> class Op, typename T>
 void DOFSynchronizer::reduceSynchronize(Array<T> & dof_vector) const {
   AKANTU_DEBUG_IN();
 
-  if (nb_proc == 1) {
-    AKANTU_DEBUG_OUT();
-    return;
-  }
-
-  std::vector<CommunicationRequest> send_requests, recv_requests;
-  std::vector<CommunicationBuffer> send_buffers, recv_buffers;
-
-  /// Same as synchronize but using send schemes as receive ones and vise versa
-  auto rs_it = this->communications.begin_send_scheme();
-  auto rs_end = this->communications.end_send_scheme();
-
-  for (; rs_it != rs_end; ++rs_it) {
-    const auto & scheme = rs_it->second;
-    const auto & proc = rs_it->first;
-
-    recv_buffers.emplace_back(
-        {scheme.getSize() * dof_vector.getNbComponent() * sizeof(T)});
-    recv_requests.push_back(communicator.asyncReceive(
-        recv_buffers.back(), proc,
-        Tag::genTag(this->rank, 0, Tag::_SYNCHRONIZE, this->hash_id)));
-  }
-
-  auto ss_it = this->communications.begin_recv_scheme();
-  auto ss_end = this->communications.end_recv_scheme();
-
-  for (; ss_it != ss_end; ++ss_it) {
-    const auto & scheme = ss_it->second;
-    const auto & proc = ss_it->first;
-
-    send_buffers.emplace_back(
-        {scheme.getSize() * dof_vector.getNbComponent() * sizeof(T)});
-    CommunicationBuffer & buffer = send_buffers.back();
-
-    auto data_it = dof_vector.begin(dof_vector.getNbComponent());
-    for (const auto & dof : scheme) {
-      buffer << data_it[dof];
-    }
-
-    send_requests.push_back(communicator.asyncSend(
-        buffer, proc, Tag::genTag(proc, 0, Tag::_SYNCHRONIZE, this->hash_id)));
-  }
-
-  Op<Vector<T> > oper;
-
-  UInt ready;
-  while ((ready = communicator.waitAny(recv_requests)) != UInt(-1)) {
-    CommunicationRequest & req = recv_requests[ready];
-    CommunicationBuffer & buffer = recv_buffers[ready];
-
-    UInt proc = req.getSource();
-    const auto & scheme = this->communications.getRecvScheme(proc);
-    auto data_it = dof_vector.begin(dof_vector.getNbComponent());
-
-    Vector<Real> recv(dof_vector.getNbComponent());
-    for (const auto & dof : scheme) {
-      Vector<Real> vect = data_it[dof];
-      buffer >> recv;
-
-      oper(vect, recv);
-    }
-  }
-
-  communicator.waitAll(send_requests);
-  communicator.freeCommunicationRequest(send_requests);
-  communicator.freeCommunicationRequest(recv_requests);
-
-  synchronize(dof_vector);
+  ReduceUIntDataAccessor<Op, T> data_accessor(dof_vector, _gst_whatever);
+  this->synchronizeOnce(data_accessor, _gst_whatever);
 
   AKANTU_DEBUG_OUT();
 }

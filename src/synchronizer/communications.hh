@@ -56,7 +56,7 @@ protected:
   typedef std::map<SynchronizationTag, CommunicationPerProcs>
       CommunicationsPerTags;
   typedef std::map<UInt, Scheme> CommunicationSchemes;
-  typedef std::map<UInt, std::vector<CommunicationRequest> > Request;
+  typedef std::map<UInt, std::vector<CommunicationRequest>> Request;
 
   friend class CommunicationDescriptor<Entity>;
 
@@ -91,7 +91,7 @@ public:
 
   /* ------------------------------------------------------------------------ */
   void waitAll(const SynchronizationTag & tag,
-                   const CommunicationSendRecv & sr);
+               const CommunicationSendRecv & sr);
   void incrementPending(const SynchronizationTag & tag,
                         const CommunicationSendRecv & sr);
   void decrementPending(const SynchronizationTag & tag,
@@ -104,8 +104,9 @@ public:
   void resetSchemes(const CommunicationSendRecv & sr);
 
   /* ------------------------------------------------------------------------ */
-  void setCommunicationSize(const SynchronizationTag & tag, UInt proc, UInt size,
-                            const CommunicationSendRecv & sr);
+  void setCommunicationSize(const SynchronizationTag & tag, UInt proc,
+                            UInt size, const CommunicationSendRecv & sr);
+
 public:
   explicit Communications(const StaticCommunicator & communicator);
   /* ------------------------------------------------------------------------ */
@@ -140,21 +141,23 @@ public:
   void freeSendRequests(const SynchronizationTag & tag);
   void freeRecvRequests(const SynchronizationTag & tag);
 
-    /* ------------------------------------------------------------------------ */
-  const_scheme_iterator begin_send_scheme() const;
-  const_scheme_iterator end_send_scheme() const;
-
   /* ------------------------------------------------------------------------ */
-  const_scheme_iterator begin_recv_scheme() const;
-  const_scheme_iterator end_recv_scheme() const;
+  scheme_iterator begin_scheme(const CommunicationSendRecv & sr);
+  scheme_iterator end_scheme(const CommunicationSendRecv & sr);
+  const_scheme_iterator begin_scheme(const CommunicationSendRecv & sr) const;
+  const_scheme_iterator end_scheme(const CommunicationSendRecv & sr) const;
 
   /* ------------------------------------------------------------------------ */
   scheme_iterator begin_send_scheme();
   scheme_iterator end_send_scheme();
+  const_scheme_iterator begin_send_scheme() const;
+  const_scheme_iterator end_send_scheme() const;
 
   /* ------------------------------------------------------------------------ */
   scheme_iterator begin_recv_scheme();
   scheme_iterator end_recv_scheme();
+  const_scheme_iterator begin_recv_scheme() const;
+  const_scheme_iterator end_recv_scheme() const;
 
   /* ------------------------------------------------------------------------ */
   Scheme & createSendScheme(UInt proc);

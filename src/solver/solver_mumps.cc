@@ -128,7 +128,6 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
                                      const MemoryID & memory_id)
     : SparseSolver(dof_manager, matrix_id, id, memory_id),
       dof_manager(dof_manager), matrix(dof_manager.getMatrix(matrix_id)),
-      rhs(dof_manager.getResidual()), solution(dof_manager.getGlobalSolution()),
       master_rhs_solution(0, 1), is_initialized(false) {
   AKANTU_DEBUG_IN();
 
@@ -313,7 +312,9 @@ void SparseSolverMumps::analysis() {
 void SparseSolverMumps::factorize() {
   AKANTU_DEBUG_IN();
 
-  this->mumps_data.rhs = this->rhs.storage();
+  // should be null on slaves
+  // this->mumps_data.rhs = this->master_rhs_solution.storage();
+
   if (parallel_method == _fully_distributed)
     this->mumps_data.a_loc = this->matrix.getA().storage();
   else {
@@ -343,7 +344,7 @@ void SparseSolverMumps::solve() {
     this->matrix.saveMatrix("solver_mumps" + sstr.str());
   }
 
-  this->master_rhs_solution.copy(this->dof_manager.getResidual());
+  this->master_rhs_solution.copy(this->dof_manager.getGlobalResidual());
   // if (prank == 0) {
   //   matrix.getDOFSynchronizer().gather(this->rhs, 0, this->master_rhs_solution);
   // } else {

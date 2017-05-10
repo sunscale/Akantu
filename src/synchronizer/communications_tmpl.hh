@@ -232,7 +232,7 @@ template <class Entity>
 typename Communications<Entity>::Scheme &
 Communications<Entity>::createScheme(UInt proc,
                                      const CommunicationSendRecv & sr) {
-  scheme_iterator it = schemes[sr].find(proc);
+  // scheme_iterator it = schemes[sr].find(proc);
   // if (it != schemes[sr].end()) {
   //   AKANTU_CUSTOM_EXCEPTION_INFO(debug::CommunicationException(),
   //                                "Communication scheme("
@@ -334,53 +334,79 @@ Communications<Entity>::end_tag() {
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 typename Communications<Entity>::scheme_iterator
+Communications<Entity>::begin_scheme(const CommunicationSendRecv & sr) {
+  return this->schemes[sr].begin();
+}
+
+template <class Entity>
+typename Communications<Entity>::scheme_iterator
+Communications<Entity>::end_scheme(const CommunicationSendRecv & sr) {
+  return this->schemes[sr].end();
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
+typename Communications<Entity>::const_scheme_iterator
+Communications<Entity>::begin_scheme(const CommunicationSendRecv & sr) const {
+  return this->schemes[sr].begin();
+}
+
+template <class Entity>
+typename Communications<Entity>::const_scheme_iterator
+Communications<Entity>::end_scheme(const CommunicationSendRecv & sr) const {
+  return this->schemes[sr].end();
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
+typename Communications<Entity>::scheme_iterator
 Communications<Entity>::begin_send_scheme() {
-  return this->schemes[_send].begin();
+  return this->begin_scheme(_send);
 }
 
 template <class Entity>
 typename Communications<Entity>::scheme_iterator
 Communications<Entity>::end_send_scheme() {
-  return this->schemes[_send].end();
+  return this->end_scheme(_send);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 typename Communications<Entity>::const_scheme_iterator
 Communications<Entity>::begin_send_scheme() const {
-  return this->schemes[_send].begin();
+  return this->begin_scheme(_send);
 }
 
 template <class Entity>
 typename Communications<Entity>::const_scheme_iterator
 Communications<Entity>::end_send_scheme() const {
-  return this->schemes[_send].end();
+  return this->end_scheme(_send);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 typename Communications<Entity>::scheme_iterator
 Communications<Entity>::begin_recv_scheme() {
-  return this->schemes[_recv].begin();
+  return this->begin_scheme(_recv);
 }
 
 template <class Entity>
 typename Communications<Entity>::scheme_iterator
 Communications<Entity>::end_recv_scheme() {
-  return this->schemes[_recv].end();
+  return this->end_scheme(_recv);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 typename Communications<Entity>::const_scheme_iterator
 Communications<Entity>::begin_recv_scheme() const {
-  return this->schemes[_recv].begin();
+  return this->begin_scheme(_recv);
 }
 
 template <class Entity>
 typename Communications<Entity>::const_scheme_iterator
 Communications<Entity>::end_recv_scheme() const {
-  return this->schemes[_recv].end();
+  return this->end_scheme(_recv);
 }
 
 /* ------------------------------------------------------------------------ */

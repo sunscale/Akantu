@@ -52,9 +52,13 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// synchronous synchronization without state
+  virtual void synchronizeOnceImpl(DataAccessor<Entity> & data_accessor,
+                                   const SynchronizationTag & tag) const;
+
   /// asynchronous synchronization of ghosts
   virtual void
-  asynchronousSynchronizeImpl(DataAccessor<Entity> & data_accessor,
+  asynchronousSynchronizeImpl(const DataAccessor<Entity> & data_accessor,
                               const SynchronizationTag & tag);
 
   /// wait end of asynchronous synchronization of ghosts
@@ -62,10 +66,10 @@ public:
                                       const SynchronizationTag & tag);
 
   /// compute all buffer sizes
-  virtual void computeAllBufferSizes(DataAccessor<Entity> & data_accessor);
+  virtual void computeAllBufferSizes(const DataAccessor<Entity> & data_accessor);
 
   /// compute buffer size for a given tag and data accessor
-  virtual void computeBufferSizeImpl(DataAccessor<Entity> & data_accessor,
+  virtual void computeBufferSizeImpl(const DataAccessor<Entity> & data_accessor,
                                      const SynchronizationTag & tag);
 
   /* ------------------------------------------------------------------------ */

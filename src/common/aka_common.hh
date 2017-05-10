@@ -41,7 +41,14 @@
 /* -------------------------------------------------------------------------- */
 #include <list>
 #include <limits>
+#include <type_traits>
 
+#if __cplusplus < 201402L
+namespace std {
+template< bool B, class T = void >
+using enable_if_t = typename enable_if<B,T>::type;
+}
+#endif
 /* -------------------------------------------------------------------------- */
 #define __BEGIN_AKANTU__ namespace akantu {
 #define __END_AKANTU__ }
@@ -184,6 +191,11 @@ enum CommunicatorType { _communicator_mpi, _communicator_dummy };
 
 /// @enum SynchronizationTag type of synchronizations
 enum SynchronizationTag {
+  //--- Generic tags ---
+  _gst_whatever,
+  _gst_update,
+  _gst_size,
+
   //--- SolidMechanicsModel tags ---
   _gst_smm_mass,      ///< synchronization of the SolidMechanicsModel.mass
   _gst_smm_for_gradu, ///< synchronization of the

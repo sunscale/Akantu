@@ -52,6 +52,21 @@ public:
 
   CommunicationBufferTemplated() : CommunicationBufferTemplated(0) {}
 
+  CommunicationBufferTemplated(const CommunicationBufferTemplated & other) {
+    buffer = other.buffer;
+    ptr_pack = buffer.storage();
+    ptr_unpack = buffer.storage();
+  }
+
+  CommunicationBufferTemplated & operator=(const CommunicationBufferTemplated & other) {
+    if (this != &other) {
+      buffer = other.buffer;
+      ptr_pack = buffer.storage();
+      ptr_unpack = buffer.storage();
+    }
+    return *this;
+  }
+
   virtual ~CommunicationBufferTemplated() {};
 
   /* ------------------------------------------------------------------------ */
@@ -127,6 +142,16 @@ private:
   /* Accessor                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  template <typename T>
+  static inline UInt sizeInBuffer(const T & data);
+  template <typename T>
+  static inline UInt sizeInBuffer(const Vector<T> & data);
+  template <typename T>
+  static inline UInt sizeInBuffer(const Matrix<T> & data);
+  template <typename T>
+  static inline UInt sizeInBuffer(const std::vector<T> & data);
+  static inline UInt sizeInBuffer(const std::string & data);
+
   /// return the size in bytes of the stored values
   inline UInt getPackedSize(){ return ptr_pack - buffer.storage(); };
   /// return the size in bytes of data left to be unpacked

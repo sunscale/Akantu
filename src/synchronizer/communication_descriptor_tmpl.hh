@@ -85,7 +85,7 @@ void CommunicationDescriptor<Entity>::resetBuffer() {
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 void CommunicationDescriptor<Entity>::packData(
-    DataAccessor<Entity> & accessor) {
+    const DataAccessor<Entity> & accessor) {
   AKANTU_DEBUG_ASSERT(
       communication.type() == _send,
       "Cannot pack data on communication that is not of type _send");

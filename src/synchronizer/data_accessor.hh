@@ -50,7 +50,6 @@ public:
   virtual ~DataAccessorBase() {}
 };
 
-
 template <class T> class DataAccessor : public virtual DataAccessorBase {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -193,6 +192,89 @@ public:
     packUnpackDOFDataHelper<T, false>(data_to_unpack, buffer, dofs);
   }
 };
+
+/* -------------------------------------------------------------------------- */
+template <typename T> class AddOperation {
+public:
+  inline T operator()(T & a, T & b) { return a + b; };
+};
+
+template <typename T> class IdentityOperation {
+public:
+  inline T & operator()(T &, T & b) { return b; };
+};
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+template <template <class> class Op, class T>
+class ReduceUIntDataAccessor : public virtual DataAccessor<UInt> {
+  /* ------------------------------------------------------------------------ */
+  /* Constructors/Destructors                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  ReduceUIntDataAccessor(Array<T> & data, const SynchronizationTag & tag)
+      : data(data), tag(tag) {}
+
+  virtual ~ReduceUIntDataAccessor() {}
+
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
+  /* ------------------------------------------------------------------------ */
+  virtual UInt getNbData(const Array<UInt> & elements,
+                         const SynchronizationTag & tag) const {
+    if (tag != this->tag)
+      return 0;
+
+    Vector<T> tmp(data.getNbComponent());
+    return elements.getSize() * CommunicationBuffer::sizeInBuffer(tmp);
+  }
+
+  /* ------------------------------------------------------------------------ */
+  virtual void packData(CommunicationBuffer & buffer,
+                        const Array<UInt> & elements,
+                        const SynchronizationTag & tag) const {
+    if (tag != this->tag)
+      return;
+
+    auto data_it = data.begin(data.getNbComponent());
+    for (auto el : elements) {
+      buffer << Vector<T>(data_it[el]);
+    }
+  }
+
+  /* ------------------------------------------------------------------------ */
+  virtual void unpackData(CommunicationBuffer & buffer,
+                          const Array<UInt> & elements,
+                          const SynchronizationTag & tag) {
+    if (tag != this->tag)
+      return;
+
+    auto data_it = data.begin(data.getNbComponent());
+    for (auto el : elements) {
+      Vector<T> unpacked(data.getNbComponent());
+      Vector<T> vect(data_it[el]);
+      buffer >> unpacked;
+
+      vect = oper(vect, unpacked);
+    }
+  }
+
+protected:
+  /// data to (un)pack
+  Array<T> & data;
+
+  /// Tag to consider
+  SynchronizationTag tag;
+
+  /// reduction operator
+  Op<Vector<T>> oper;
+};
+
+/* -------------------------------------------------------------------------- */
+template <class T>
+using SimpleUIntDataAccessor = ReduceUIntDataAccessor<IdentityOperation, T>;
 
 } // akantu
 

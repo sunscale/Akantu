@@ -67,13 +67,15 @@ public:
 
   virtual void printself(std::ostream & stream, int) const {
     int t = tag;
+    stream << "TAG(";
     if (hash != 0)
       t = t ^ hash;
     stream << (t >> 12) << ":" << (t >> 4 & 0xFF) << ":" << (t & 0xF)
            << " -> " << std::hex << "0x"<< int(*this);
     if (hash != 0)
-      stream << " {0x" << hash << "}";
+      stream << " {hash: 0x" << hash << "}";
     stream << " [0x" << this->max_tag << "]";
+    stream << ")";
   }
 
   enum CommTags : int {

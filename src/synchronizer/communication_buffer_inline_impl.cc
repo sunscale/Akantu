@@ -32,6 +32,44 @@
 
 /* -------------------------------------------------------------------------- */
 template <bool is_static>
+template <typename T>
+inline UInt CommunicationBufferTemplated<is_static>::sizeInBuffer(const T &) {
+  return sizeof(T);
+}
+
+template <bool is_static>
+template <typename T>
+inline UInt
+CommunicationBufferTemplated<is_static>::sizeInBuffer(const Vector<T> & data) {
+  UInt size = data.size() * sizeof(T);
+  return size;
+}
+
+template <bool is_static>
+template <typename T>
+inline UInt
+CommunicationBufferTemplated<is_static>::sizeInBuffer(const Matrix<T> & data) {
+  UInt size = data.size() * sizeof(T);
+  return size;
+}
+
+template <bool is_static>
+template <typename T>
+inline UInt CommunicationBufferTemplated<is_static>::sizeInBuffer(
+    const std::vector<T> & data) {
+  UInt size = data.size() * sizeof(T) + sizeof(size_t);
+  return size;
+}
+
+template <bool is_static>
+inline UInt CommunicationBufferTemplated<is_static>::sizeInBuffer(
+    const std::string & data) {
+  UInt size = data.size() * sizeof(std::string::value_type) + sizeof(size_t);
+  return size;
+}
+
+/* -------------------------------------------------------------------------- */
+template <bool is_static>
 inline void CommunicationBufferTemplated<is_static>::packResize(UInt size) {
   if (!is_static) {
     char * values = buffer.storage();
@@ -46,13 +84,14 @@ template <bool is_static>
 template <typename T>
 inline CommunicationBufferTemplated<is_static> &
 CommunicationBufferTemplated<is_static>::operator<<(const T & to_pack) {
-  packResize(sizeof(T));
+  UInt size = sizeInBuffer(to_pack);
+  packResize(size);
   T * tmp = reinterpret_cast<T *>(ptr_pack);
   AKANTU_DEBUG_ASSERT(
-      buffer.storage() + buffer.getSize() >= ptr_pack + sizeof(T),
+      (buffer.storage() + buffer.getSize()) >= (ptr_pack + size),
       "Packing too much data in the CommunicationBufferTemplated");
   *tmp = to_pack;
-  ptr_pack += sizeof(T);
+  ptr_pack += size;
   return *this;
 }
 
@@ -61,9 +100,13 @@ template <bool is_static>
 template <typename T>
 inline CommunicationBufferTemplated<is_static> &
 CommunicationBufferTemplated<is_static>::operator>>(T & to_unpack) {
+  UInt size = sizeInBuffer(to_unpack);
   T * tmp = reinterpret_cast<T *>(ptr_unpack);
+  AKANTU_DEBUG_ASSERT(
+      (buffer.storage() + buffer.getSize()) >= (ptr_unpack + size),
+      "Unpacking too much data in the CommunicationBufferTemplated");
   to_unpack = *tmp;
-  ptr_unpack += sizeof(T);
+  ptr_unpack += size;
   return *this;
 }
 
@@ -80,10 +123,10 @@ template <bool is_static>
 template <typename T>
 inline CommunicationBufferTemplated<is_static> &
 CommunicationBufferTemplated<is_static>::operator<<(const Vector<T> & to_pack) {
-  UInt size = to_pack.size() * sizeof(T);
+  UInt size = sizeInBuffer(to_pack);
   packResize(size);
   AKANTU_DEBUG_ASSERT(
-      buffer.storage() + buffer.getSize() >= ptr_pack + size,
+      (buffer.storage() + buffer.getSize()) >= (ptr_pack + size),
       "Packing too much data in the CommunicationBufferTemplated");
   memcpy(ptr_pack, to_pack.storage(), size);
   ptr_pack += size;
@@ -95,7 +138,10 @@ template <bool is_static>
 template <typename T>
 inline CommunicationBufferTemplated<is_static> &
 CommunicationBufferTemplated<is_static>::operator>>(Vector<T> & to_unpack) {
-  UInt size = to_unpack.size() * sizeof(T);
+  UInt size = sizeInBuffer(to_unpack);
+  AKANTU_DEBUG_ASSERT(
+      (buffer.storage() + buffer.getSize()) >= (ptr_unpack + size),
+      "Unpacking too much data in the CommunicationBufferTemplated");
   memcpy(to_unpack.storage(), ptr_unpack, size);
   ptr_unpack += size;
   return *this;
@@ -110,10 +156,10 @@ template <bool is_static>
 template <typename T>
 inline CommunicationBufferTemplated<is_static> &
 CommunicationBufferTemplated<is_static>::operator<<(const Matrix<T> & to_pack) {
-  UInt size = to_pack.size() * sizeof(Real);
+  UInt size = sizeInBuffer(to_pack);
   packResize(size);
   AKANTU_DEBUG_ASSERT(
-      buffer.storage() + buffer.getSize() >= ptr_pack + size,
+      (buffer.storage() + buffer.getSize()) >= (ptr_pack + size),
       "Packing too much data in the CommunicationBufferTemplated");
   memcpy(ptr_pack, to_pack.storage(), size);
   ptr_pack += size;
@@ -125,7 +171,10 @@ template <bool is_static>
 template <typename T>
 inline CommunicationBufferTemplated<is_static> &
 CommunicationBufferTemplated<is_static>::operator>>(Matrix<T> & to_unpack) {
-  UInt size = to_unpack.size() * sizeof(Real);
+  UInt size = sizeInBuffer(to_unpack);
+  AKANTU_DEBUG_ASSERT(
+      (buffer.storage() + buffer.getSize()) >= (ptr_unpack + size),
+      "Unpacking too much data in the CommunicationBufferTemplated");
   memcpy(to_unpack.storage(), ptr_unpack, size);
   ptr_unpack += size;
   return *this;
@@ -135,8 +184,7 @@ CommunicationBufferTemplated<is_static>::operator>>(Matrix<T> & to_unpack) {
 template <bool is_static>
 template <typename T>
 inline void CommunicationBufferTemplated<is_static>::packIterable(T & to_pack) {
-  UInt size = to_pack.size();
-  operator<<(size);
+  operator<<(size_t(to_pack.size()));
   typename T::const_iterator it = to_pack.begin();
   typename T::const_iterator end = to_pack.end();
   for (; it != end; ++it)
@@ -148,7 +196,7 @@ template <bool is_static>
 template <typename T>
 inline void
 CommunicationBufferTemplated<is_static>::unpackIterable(T & to_unpack) {
-  UInt size;
+  size_t size;
   operator>>(size);
   to_unpack.resize(size);
   typename T::iterator it = to_unpack.begin();

@@ -104,15 +104,16 @@ void DOFSynchronizer::registerDOFs(const ID & dof_id) {
         for (auto & node : node_scheme) {
           auto an_begin = associated_nodes.begin();
           auto an_it = an_begin;
-          auto an_end = associated_nodes.begin();
+          auto an_end = associated_nodes.end();
 
           std::vector<UInt> global_dofs_per_node;
           while ((an_it = std::find(an_it, an_end, node)) != an_end) {
-            UInt pos = an_it - an_end;
+            UInt pos = an_it - an_begin;
             UInt local_eq_num = equation_numbers(pos);
             UInt global_eq_num = local_eq_num;
             dof_manager.localToGlobalEquationNumber(global_eq_num);
             global_dofs_per_node.push_back(global_eq_num);
+            ++an_it;
           }
 
           std::sort(global_dofs_per_node.begin(), global_dofs_per_node.end());
@@ -174,32 +175,42 @@ void DOFSynchronizer::initScatterGatherCommunicationScheme() {
 
     std::vector<CommunicationRequest> requests;
     for (UInt p = 0; p < nb_proc; ++p) {
-      if (p == UInt(this->root)) {
+      if (p == UInt(this->root))
         continue;
-      }
-      Array<UInt> & receive_per_proc = master_receive_dofs[nb_proc];
+
+      Array<UInt> & receive_per_proc = master_receive_dofs[p];
       receive_per_proc.resize(nb_dof_per_proc(p));
-      requests.push_back(communicator.asyncReceive(
-          receive_per_proc, p,
-          Tag::genTag(p, 0, Tag::_GATHER_INITIALIZATION, this->hash_id)));
+      if(nb_dof_per_proc(p) != 0)
+        requests.push_back(communicator.asyncReceive(
+                               receive_per_proc, p,
+                               Tag::genTag(p, 0, Tag::_GATHER_INITIALIZATION, this->hash_id)));
     }
 
     communicator.waitAll(requests);
     communicator.freeCommunicationRequest(requests);
   } else {
-    communicator.gather(dofs_to_send.getSize(), 0);
+    communicator.gather(dofs_to_send.getSize(), this->root);
     AKANTU_DEBUG(dblDebug, "I have " << nb_dofs << " dofs ("
                                      << dofs_to_send.getSize()
                                      << " to send to master proc");
 
-    communicator.send(
-        dofs_to_send, 0,
-        Tag::genTag(this->rank, 0, Tag::_GATHER_INITIALIZATION, this->hash_id));
+    if(dofs_to_send.getSize() != 0)
+      communicator.send(
+          dofs_to_send, this->root,
+          Tag::genTag(this->rank, 0, Tag::_GATHER_INITIALIZATION, this->hash_id));
   }
 
   dof_changed = false;
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+bool DOFSynchronizer::hasChanged() {
+  communicator.allReduce(dof_changed, _so_lor);
+  return dof_changed;
+}
+
+/* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

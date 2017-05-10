@@ -52,7 +52,7 @@ template <class CommunicationBuffer>
 void NodeInfoPerProc::fillNodeGroupsFromBuffer(CommunicationBuffer & buffer) {
   AKANTU_DEBUG_IN();
 
-  std::vector<std::vector<std::string> > node_to_group;
+  std::vector<std::vector<std::string>> node_to_group;
 
   buffer >> node_to_group;
 
@@ -155,12 +155,10 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
       this->synchronizer.getCommunications();
 
   { // send schemes
-    Array<UInt>::const_vector_iterator it =
-        master_info.begin_reinterpret(2, master_info.getSize() / 2);
-    Array<UInt>::const_vector_iterator end =
-        master_info.end_reinterpret(2, master_info.getSize() / 2);
+    auto it = master_info.begin_reinterpret(2, master_info.getSize() / 2);
+    auto end = master_info.end_reinterpret(2, master_info.getSize() / 2);
 
-    std::map<UInt, Array<UInt> > send_array_per_proc;
+    std::map<UInt, Array<UInt>> send_array_per_proc;
 
     for (; it != end; ++it) {
       const Vector<UInt> & send_info = *it;
@@ -182,12 +180,12 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
   { // receive schemes
     const Array<NodeType> & nodes_type = this->getNodesType();
 
-    std::map<UInt, Array<UInt> > recv_array_per_proc;
+    std::map<UInt, Array<UInt>> recv_array_per_proc;
 
     UInt node = 0;
     for (auto & node_type : nodes_type) {
       if (Int(node_type) >= 0) {
-        recv_array_per_proc[node_type] = mesh.getNodeGlobalId(node);
+        recv_array_per_proc[node_type].push_back(mesh.getNodeGlobalId(node));
       }
       ++node;
     }
@@ -235,15 +233,13 @@ void MasterNodeInfoPerProc::synchronizeNodes() {
     if (p != root) {
       nodes_to_send = new Array<Real>(0, spatial_dimension);
       AKANTU_DEBUG_INFO("Receiving number of nodes from proc "
-                        << p << " TAG(" << Tag::genTag(p, 0, Tag::_NB_NODES)
-                        << ")");
+                        << p << " " << Tag::genTag(p, 0, Tag::_NB_NODES));
       comm.receive(nb_nodes, p, Tag::genTag(p, 0, Tag::_NB_NODES));
       nodespp.resize(nb_nodes);
       this->nb_nodes_per_proc(p) = nb_nodes;
 
       AKANTU_DEBUG_INFO("Receiving list of nodes from proc "
-                        << p << " TAG(" << Tag::genTag(p, 0, Tag::_NODES)
-                        << ")");
+                        << p << " " << Tag::genTag(p, 0, Tag::_NODES));
       comm.receive(nodespp, p, Tag::genTag(p, 0, Tag::_NODES));
     } else {
       Array<UInt> & local_ids = this->getNodesGlobalIds();
@@ -263,9 +259,8 @@ void MasterNodeInfoPerProc::synchronizeNodes() {
 
     if (p != root) { /// send them for distant processors
       AKANTU_DEBUG_INFO("Sending coordinates to proc "
-                        << p << " TAG("
-                        << Tag::genTag(this->rank, 0, Tag::_COORDINATES)
-                        << ")");
+                        << p << " "
+                        << Tag::genTag(this->rank, 0, Tag::_COORDINATES));
       comm.send(*nodes_to_send, p,
                 Tag::genTag(this->rank, 0, Tag::_COORDINATES));
       delete nodes_to_send;
@@ -279,12 +274,11 @@ void MasterNodeInfoPerProc::synchronizeNodes() {
 /* -------------------------------------------------------------------------- */
 void MasterNodeInfoPerProc::synchronizeTypes() {
   //           <global_id,     <proc, local_id> >
-  std::multimap<UInt, std::pair<UInt, UInt> > nodes_to_proc;
-
-  std::vector<Array<NodeType> > nodes_type_per_proc(nb_proc);
+  std::multimap<UInt, std::pair<UInt, UInt>> nodes_to_proc;
+  std::vector<Array<NodeType>> nodes_type_per_proc(nb_proc);
 
   // arrays containing pairs of (proc, node)
-  std::vector<Array<UInt> > nodes_to_send_per_proc(nb_proc);
+  std::vector<Array<UInt>> nodes_to_send_per_proc(nb_proc);
   for (UInt p = 0; p < nb_proc; ++p) {
     nodes_type_per_proc[p].resize(nb_nodes_per_proc(p));
   }
@@ -292,66 +286,67 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
   this->fillNodesType();
 
   for (UInt p = 0; p < nb_proc; ++p) {
-    Array<NodeType> & nodes_type = nodes_type_per_proc[p];
+    auto & nodes_types = nodes_type_per_proc[p];
     if (p != root) {
       AKANTU_DEBUG_INFO(
           "Receiving first nodes types from proc "
-          << p << " TAG("
-          << Tag::genTag(this->rank, this->message_count, Tag::_NODES_TYPE)
-          << ")");
-      comm.receive(nodes_type, p,
-                   Tag::genTag(p, 0, Tag::_NODES_TYPE));
+          << p << " "
+          << Tag::genTag(this->rank, this->message_count, Tag::_NODES_TYPE));
+      comm.receive(nodes_types, p, Tag::genTag(p, 0, Tag::_NODES_TYPE));
     } else {
-      nodes_type.copy(this->getNodesType());
+      nodes_types.copy(this->getNodesType());
     }
 
-    for (UInt n = 0; n < nb_nodes_per_proc(p); ++n) {
-      if (nodes_type_per_proc[p](n) == _nt_master)
-        nodes_to_proc.insert(
-            std::make_pair(nodes_per_proc[p](n), std::make_pair(p, n)));
+    // stack all processors claiming to be master for a node
+    for (UInt local_node = 0; local_node < nb_nodes_per_proc(p); ++local_node) {
+      if (nodes_types(local_node) == _nt_master) {
+        UInt global_node = nodes_per_proc[p](local_node);
+        nodes_to_proc.insert(std::make_pair(global_node, std::make_pair(p, local_node)));
+      }
     }
   }
 
-  typedef std::multimap<UInt, std::pair<UInt, UInt> >::iterator
-      node_to_proc_iterator;
-
-  node_to_proc_iterator it_node;
-  std::pair<node_to_proc_iterator, node_to_proc_iterator> it_range;
-
   for (UInt i = 0; i < mesh.getNbGlobalNodes(); ++i) {
-    it_range = nodes_to_proc.equal_range(i);
+    auto it_range = nodes_to_proc.equal_range(i);
     if (it_range.first == nodes_to_proc.end() || it_range.first->first != i)
       continue;
 
+    // pick the first processor out of the multi-map as the actual master
     UInt master_proc = (it_range.first)->second.first;
-    for (it_node = it_range.first; it_node != it_range.second; ++it_node) {
+    for (auto it_node = it_range.first; it_node != it_range.second; ++it_node) {
       UInt proc = it_node->second.first;
       UInt node = it_node->second.second;
       if (proc != master_proc) {
+        // store the info on all the slaves for a given master
         nodes_type_per_proc[proc](node) = NodeType(master_proc);
-      } else {
         nodes_to_send_per_proc[master_proc].push_back(proc);
         nodes_to_send_per_proc[master_proc].push_back(i);
       }
     }
   }
 
+
   std::vector<CommunicationRequest> requests_send_type;
   std::vector<CommunicationRequest> requests_send_master_info;
   for (UInt p = 0; p < nb_proc; ++p) {
     if (p != root) {
       AKANTU_DEBUG_INFO("Sending nodes types to proc "
-                        << p << " TAG("
-                        << Tag::genTag(this->rank, 0, Tag::_NODES_TYPE) << ")");
+                        << p << " "
+                        << Tag::genTag(this->rank, 0, Tag::_NODES_TYPE));
       requests_send_type.push_back(
           comm.asyncSend(nodes_type_per_proc[p], p,
                          Tag::genTag(this->rank, 0, Tag::_NODES_TYPE)));
 
+      auto & nodes_to_send = nodes_to_send_per_proc[p];
+
+      /// push back an element to avoid a send of size 0
+      nodes_to_send.push_back(-1);
+
       AKANTU_DEBUG_INFO("Sending nodes master info to proc "
-                        << p << " TAG("
-                        << Tag::genTag(this->rank, 1, Tag::_NODES_TYPE) << ")");
+                        << p << " "
+                        << Tag::genTag(this->rank, 1, Tag::_NODES_TYPE));
       requests_send_master_info.push_back(
-          comm.asyncSend(nodes_to_send_per_proc[p], p,
+          comm.asyncSend(nodes_to_send, p,
                          Tag::genTag(this->rank, 1, Tag::_NODES_TYPE)));
     } else {
       this->getNodesType().copy(nodes_type_per_proc[p]);
@@ -376,7 +371,7 @@ void MasterNodeInfoPerProc::synchronizeGroups() {
 
   DynamicCommunicationBuffer buffer;
 
-  typedef std::vector<std::vector<std::string> > NodeToGroup;
+  typedef std::vector<std::vector<std::string>> NodeToGroup;
   NodeToGroup node_to_group;
   node_to_group.resize(nb_total_nodes);
 
@@ -405,8 +400,8 @@ void MasterNodeInfoPerProc::synchronizeGroups() {
     if (p == this->rank)
       continue;
     AKANTU_DEBUG_INFO("Sending node groups to proc "
-                      << p << " TAG("
-                      << Tag::genTag(this->rank, p, Tag::_NODE_GROUP) << ")");
+                      << p << " "
+                      << Tag::genTag(this->rank, p, Tag::_NODE_GROUP));
     requests.push_back(comm.asyncSend(
         buffer, p, Tag::genTag(this->rank, p, Tag::_NODE_GROUP)));
   }
@@ -434,7 +429,9 @@ SlaveNodeInfoPerProc::SlaveNodeInfoPerProc(NodeSynchronizer & synchronizer,
 
 /* -------------------------------------------------------------------------- */
 void SlaveNodeInfoPerProc::synchronizeNodes() {
-  AKANTU_DEBUG_INFO("Sending list of nodes to proc " << root);
+  AKANTU_DEBUG_INFO("Sending list of nodes to proc "
+                    << root << " " << Tag::genTag(this->rank, 0, Tag::_NB_NODES)
+                    << " " << Tag::genTag(this->rank, 0, Tag::_NODES));
   Array<UInt> & local_ids = this->getNodesGlobalIds();
   Array<Real> & nodes = this->getNodes();
 
@@ -444,7 +441,8 @@ void SlaveNodeInfoPerProc::synchronizeNodes() {
 
   /* --------<<<<-COORDINATES---------------------------------------------- */
   nodes.resize(nb_nodes);
-  AKANTU_DEBUG_INFO("Receiving coordinates from proc " << root);
+  AKANTU_DEBUG_INFO("Receiving coordinates from proc "
+                    << root << " " << Tag::genTag(root, 0, Tag::_COORDINATES));
   comm.receive(nodes, root, Tag::genTag(root, 0, Tag::_COORDINATES));
 }
 
@@ -454,19 +452,27 @@ void SlaveNodeInfoPerProc::synchronizeTypes() {
 
   Array<NodeType> & nodes_types = this->getNodesType();
 
-  AKANTU_DEBUG_INFO("Sending first nodes types to proc " << root);
+  AKANTU_DEBUG_INFO("Sending first nodes types to proc "
+                    << root << ""
+                    << Tag::genTag(this->rank, 0, Tag::_NODES_TYPE));
   comm.send(nodes_types, root, Tag::genTag(this->rank, 0, Tag::_NODES_TYPE));
 
-  AKANTU_DEBUG_INFO("Receiving nodes types from proc " << root);
+  AKANTU_DEBUG_INFO("Receiving nodes types from proc "
+                    << root << " " << Tag::genTag(root, 0, Tag::_NODES_TYPE));
   comm.receive(nodes_types, root, Tag::genTag(root, 0, Tag::_NODES_TYPE));
 
+
   AKANTU_DEBUG_INFO("Receiving nodes master info from proc "
-                    << root
-                    << " Tag: " << Tag::genTag(root, 1, Tag::_NODES_TYPE));
+                    << root << " " << Tag::genTag(root, 1, Tag::_NODES_TYPE));
   CommunicationStatus status;
   comm.probe<UInt>(root, Tag::genTag(root, 1, Tag::_NODES_TYPE), status);
-  Array<UInt> nodes_master_info(status.getSize() * 2);
-  comm.receive(nodes_master_info, root, Tag::genTag(root, 1, Tag::_NODES_TYPE));
+
+  Array<UInt> nodes_master_info(status.getSize());
+
+  comm.receive(nodes_master_info, root,
+               Tag::genTag(root, 1, Tag::_NODES_TYPE));
+
+  nodes_master_info.resize(nodes_master_info.getSize() - 1);
 
   this->fillCommunicationScheme(nodes_master_info);
 }
@@ -476,8 +482,8 @@ void SlaveNodeInfoPerProc::synchronizeGroups() {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_INFO("Receiving node groups from proc "
-                    << root << " TAG("
-                    << Tag::genTag(root, this->rank, Tag::_NODE_GROUP) << ")");
+                    << root << " "
+                    << Tag::genTag(root, this->rank, Tag::_NODE_GROUP));
 
   CommunicationStatus status;
   comm.probe<char>(root, Tag::genTag(root, this->rank, Tag::_NODE_GROUP),

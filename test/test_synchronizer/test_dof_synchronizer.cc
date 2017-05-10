@@ -32,199 +32,119 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "dof_synchronizer.hh"
-#include "mesh_partition_scotch.hh"
-#include "mesh_io.hh"
-#include "static_communicator.hh"
 #include "element_synchronizer.hh"
+#include "mesh_io.hh"
+#include "mesh_partition_scotch.hh"
+#include "static_communicator.hh"
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
-#  include "io_helper.hh"
-#endif //AKANTU_USE_IOHELPER
+#include "io_helper.hh"
+#endif // AKANTU_USE_IOHELPER
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   const UInt spatial_dimension = 2;
 
   initialize(argc, argv);
 
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
-  Int psize = comm.getNbProc();
+  StaticCommunicator & comm =
+      akantu::StaticCommunicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   Mesh mesh(spatial_dimension);
 
-  /* ------------------------------------------------------------------------ */
-  /* Parallel initialization                                                  */
-  /* ------------------------------------------------------------------------ */
-  ElementSynchronizer * communicator;
-  MeshPartition * partition;
+  if (prank == 0)
+    mesh.read("bar.msh");
+  mesh.distribute();
 
-  if(prank == 0) {
-    MeshIOMSH mesh_io;
-    mesh_io.read("bar.msh", mesh);
-
-    std::cout << "Partitioning mesh..." << std::endl;
-    partition = new akantu::MeshPartitionScotch(mesh, spatial_dimension);
-    partition->partitionate(psize);
-    communicator = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
-    delete partition;
-  } else {
-    communicator = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
-  }
+  DOFManagerDefault dof_manager(mesh, "test_dof_manager");
 
   UInt nb_nodes = mesh.getNbNodes();
 
-  Array<Real> dof_vector(nb_nodes, spatial_dimension, "Test vector");
-
-  std::cout << "Initializing the synchronizer" << std::endl;
-  DOFSynchronizer dof_synchronizer(mesh, spatial_dimension);
-
-
   /* ------------------------------------------------------------------------ */
-  /* test the sznchroniyation                                                 */
+  /* test the synchronization                                                 */
   /* ------------------------------------------------------------------------ */
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    UInt gn = mesh.getNodeGlobalId(n);
-    for (UInt d = 0; d < spatial_dimension; ++d) {
-      if(mesh.isMasterNode(n))     dof_vector(n,d) = gn*spatial_dimension + d;
-      else if(mesh.isLocalNode(n)) dof_vector(n,d) = - (double) (gn*spatial_dimension + d);
-      else if(mesh.isSlaveNode(n)) dof_vector(n,d) = NAN;
-      else dof_vector(n,d) = -NAN;
-    }
-  }
+  Array<Real> test_synchronize(nb_nodes, spatial_dimension, "Test vector");
+  dof_manager.registerDOFs("test_synchronize", test_synchronize, _dst_nodal);
+
+  auto & equation_number =
+      dof_manager.getLocalEquationNumbers("test_synchronize");
+
+  DOFSynchronizer & dof_synchronizer = dof_manager.getSynchronizer();
 
   std::cout << "Synchronizing a dof vector" << std::endl;
-  dof_synchronizer.synchronize(dof_vector);
 
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    UInt gn = mesh.getNodeGlobalId(n);
-    for (UInt d = 0; d < spatial_dimension; ++d) {
-      if(!((mesh.isMasterNode(n) && dof_vector(n,d) == (gn*spatial_dimension + d)) ||
-	   (mesh.isLocalNode(n) && dof_vector(n,d) == - (double) (gn*spatial_dimension + d)) ||
-	   (mesh.isSlaveNode(n) && dof_vector(n,d) == (gn*spatial_dimension + d)) ||
-	   (mesh.isPureGhostNode(n))
-	   )
-	 )
-	{
-	  debug::setDebugLevel(dblTest);
-	  std::cout << "prank : " << prank << " (node " << gn*spatial_dimension + d << "[" << n * spatial_dimension + d << "]) - "
-		    << (mesh.isMasterNode(n) && dof_vector(n,d) == (gn*spatial_dimension + d)) << " "
-		    << (mesh.isLocalNode(n) && dof_vector(n,d) == - (double) (gn*spatial_dimension + d)) << " "
-		    << (mesh.isSlaveNode(n) && dof_vector(n,d) == (gn*spatial_dimension + d)) << " "
-		    << (mesh.isPureGhostNode(n)) << std::endl;
-	  std::cout << dof_vector << dof_synchronizer.getDOFGlobalIDs() << dof_synchronizer.getDOFTypes() << std::endl;
-	  debug::setDebugLevel(dblDebug);
-	  return EXIT_FAILURE;
-	}
+  Array<Int> local_data_array(dof_manager.getLocalSystemSize(), 2);
+  auto it_data = local_data_array.begin(2);
+
+  for (UInt local_dof = 0; local_dof < dof_manager.getLocalSystemSize();
+       ++local_dof) {
+    UInt equ_number = equation_number(local_dof);
+    Vector<Int> val;
+    if (dof_manager.isLocalOrMasterDOF(equ_number)) {
+      UInt global_dof = local_dof;
+      dof_manager.localToGlobalEquationNumber(global_dof);
+      val = {0, 1};
+      val += global_dof * 2;
+    } else {
+      val = {-1, -1};
     }
+
+    Vector<Int> data = it_data[local_dof];
+    data = val;
   }
 
+  dof_synchronizer.synchronize(local_data_array);
 
-  /* ------------------------------------------------------------------------ */
-  /* test the reduce operation                                                */
-  /* ------------------------------------------------------------------------ */
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    for (UInt d = 0; d < spatial_dimension; ++d) {
-      if(mesh.isMasterNode(n))     dof_vector(n,d) = 1;
-      else if(mesh.isLocalNode(n)) dof_vector(n,d) = -300;
-      else if(mesh.isSlaveNode(n)) dof_vector(n,d) = 2;
-      else dof_vector(n,d) = -500;
-    }
-  }
+  auto test_data = [&]() -> void {
+    auto it_data = local_data_array.begin(2);
+    for (UInt local_dof = 0; local_dof < dof_manager.getLocalSystemSize();
+         ++local_dof) {
+      UInt equ_number = equation_number(local_dof);
 
-  std::cout << "Reducing a dof vector" << std::endl;
-  dof_synchronizer.reduceSynchronize<AddOperation>(dof_vector);
+      Vector<Int> exp_val;
 
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    for (UInt d = 0; d < spatial_dimension; ++d) {
-      if(!((mesh.isMasterNode(n) && dof_vector(n,d) >= 3) ||
-	   (mesh.isLocalNode(n) && dof_vector(n,d) == -300) ||
-	   (mesh.isSlaveNode(n) && dof_vector(n,d) >= 3) ||
-	   (mesh.isPureGhostNode(n) && dof_vector(n,d) == -500)
-	   )
-	 )
-	{
-	  debug::setDebugLevel(dblTest);
-	  std::cout << dof_vector
-		    << dof_synchronizer.getDOFGlobalIDs()
-		    << dof_synchronizer.getDOFTypes() << std::endl;
-	  debug::setDebugLevel(dblDebug);
-	  return EXIT_FAILURE;
-	}
-    }
-  }
+      UInt global_dof = local_dof;
+      dof_manager.localToGlobalEquationNumber(global_dof);
 
-  /* ------------------------------------------------------------------------ */
-  /* test the gather/scatter                                                  */
-  /* ------------------------------------------------------------------------ */
-  dof_vector.clear();
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    UInt gn = mesh.getNodeGlobalId(n);
-    for (UInt d = 0; d < spatial_dimension; ++d) {
-      if(mesh.isMasterNode(n))     dof_vector(n,d) = gn * spatial_dimension + d;
-      else if(mesh.isLocalNode(n)) dof_vector(n,d) = - (double) (gn * spatial_dimension + d);
-      else if(mesh.isSlaveNode(n)) dof_vector(n,d) = NAN;
-      else dof_vector(n,d) = -NAN;
-    }
-  }
+      if (dof_manager.isLocalOrMasterDOF(equ_number) ||
+          dof_manager.isSlaveDOF(equ_number)) {
+        exp_val = {0, 1};
+        exp_val += global_dof * 2;
+      } else {
+        exp_val = {-1, -1};
+      }
 
-  std::cout << "Initializing the gather/scatter information" << std::endl;
-  dof_synchronizer.initScatterGatherCommunicationScheme();
-
-  std::cout << "Gathering on proc 0" << std::endl;
-  if(prank == 0) {
-    UInt nb_global_nodes = mesh.getNbGlobalNodes();
-    Array<Real> gathered(nb_global_nodes, spatial_dimension, "gathered information");
-    dof_synchronizer.gather(dof_vector, 0, &gathered);
-    for (UInt n = 0; n < nb_nodes; ++n) {
-      for (UInt d = 0; d < spatial_dimension; ++d) {
-	if(std::abs(gathered(n,d)) != n * spatial_dimension + d) {
-	  debug::setDebugLevel(dblTest);
-	  std::cout << gathered << std::endl;
-	  std::cout << dof_vector
-		    << dof_synchronizer.getDOFGlobalIDs()
-		    << dof_synchronizer.getDOFTypes() << std::endl;
-	  debug::setDebugLevel(dblDebug);
-	  return EXIT_FAILURE;
-	}
+      Vector<Int> val = it_data[local_dof];
+      if (exp_val != val) {
+        std::cerr << "Failed !" << prank << " DOF: " << global_dof << " - l"
+                  << local_dof << " value:" << val << " expected: " << exp_val
+                  << std::endl;
+        exit(1);
       }
     }
+  };
+
+  test_data();
+
+  if (prank == 0) {
+    Array<Int> test_gathered(dof_manager.getSystemSize(), 2);
+    dof_synchronizer.gather(local_data_array, test_gathered);
+
+    local_data_array.set(-1);
+    dof_synchronizer.scatter(local_data_array, test_gathered);
   } else {
-    dof_synchronizer.gather(dof_vector, 0);
+    dof_synchronizer.gather(local_data_array);
+
+    local_data_array.set(-1);
+    dof_synchronizer.scatter(local_data_array);
   }
 
-  dof_vector.clear();
-  std::cout << "Scattering from proc 0" << std::endl;
-  if(prank == 0) {
-    UInt nb_global_nodes = mesh.getNbGlobalNodes();
-    Array<Real> to_scatter(nb_global_nodes, spatial_dimension, "to scatter information");
-    for (UInt d = 0; d < nb_global_nodes * spatial_dimension; ++d) {
-      to_scatter.storage()[d] = d;
-    }
-    dof_synchronizer.scatter(dof_vector, 0, &to_scatter);
-  } else {
-    dof_synchronizer.scatter(dof_vector, 0);
-  }
+  test_data();
 
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    UInt gn = mesh.getNodeGlobalId(n);
-    for (UInt d = 0; d < spatial_dimension; ++d) {
-      if(!mesh.isPureGhostNode(n) && !(dof_vector(n,d) == (gn * spatial_dimension + d))) {
-	debug::setDebugLevel(dblTest);
-	std::cout << dof_vector
-		  << dof_synchronizer.getDOFGlobalIDs()
-		  << dof_synchronizer.getDOFTypes() << std::endl;
-	debug::setDebugLevel(dblDebug);
-	return EXIT_FAILURE;
-      }
-    }
-  }
-
-  delete communicator;
   finalize();
 
   return 0;

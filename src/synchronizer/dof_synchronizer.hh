@@ -46,11 +46,6 @@ class DOFManagerDefault;
 
 namespace akantu {
 
-template <typename T> class AddOperation {
-public:
-  inline T operator()(T & b, T & a) { return a + b; };
-};
-
 class DOFSynchronizer : public SynchronizerImpl<UInt> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -76,7 +71,7 @@ public:
 
   /// Scatter a DOF Array form root to all processors
   template <typename T>
-  void scatter(Array<T> & scattered, const Array<T> & to_scatters);
+  void scatter(Array<T> & scattered, const Array<T> & to_scatter);
 
   /// Scatter a DOF Array form root to all processors
   template <typename T> void scatter(Array<T> & scattered);
@@ -87,6 +82,9 @@ public:
   void reduceSynchronize(Array<T> & vector) const;
 
 protected:
+  /// check if dof changed set on at least one processor
+  bool hasChanged();
+
   /// init the scheme for scatter and gather operation, need extra memory
   void initScatterGatherCommunicationScheme();
 
