@@ -248,6 +248,9 @@ public:
   /// access the internal dof_synchronizer
   AKANTU_GET_MACRO_NOT_CONST(Synchronizer, *synchronizer, DOFSynchronizer &);
 
+  /// access the internal dof_synchronizer
+  bool hasSynchronizer() const { return synchronizer != nullptr; }
+
 protected:
   virtual DOFData & getNewDOFData(const ID & dof_id);
 
@@ -268,7 +271,7 @@ protected:
 
   typedef std::map<std::pair<ID, ID>,
                    std::vector<std::pair<ElementType, GhostType>>>
-  DOFToMatrixProfile;
+      DOFToMatrixProfile;
 
   /// contains the the dofs that where added to the profile of a given matrix.
   DOFToMatrixProfile matrix_profiled_dofs;

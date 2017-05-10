@@ -100,7 +100,6 @@
 #endif
 
 #include "solver_mumps.hh"
-#include "dof_synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
 // static std::ostream & operator <<(std::ostream & stream, const DMUMPS_STRUC_C

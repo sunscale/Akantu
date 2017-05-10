@@ -34,7 +34,6 @@
 #include "mesh.hh"
 #include "dof_manager.hh"
 #include "sparse_solver.hh"
-#include "dof_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__

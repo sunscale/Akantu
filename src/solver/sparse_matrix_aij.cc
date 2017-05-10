@@ -31,6 +31,7 @@
 #include "sparse_matrix_aij.hh"
 #include "dof_manager_default.hh"
 #include "terms_to_assemble.hh"
+#include "dof_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */
@@ -169,8 +170,8 @@ void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
       y_it[j] += alpha * A * x_it[i];
   }
 
-  //  if (dof_synchronizer)
-  //  dof_synchronizer->reduceSynchronize<AddOperation>(vect);
+  if (this->dof_manager.hasSynchronizer())
+    this->dof_manager.getSynchronizer().reduceSynchronize<AddOperation>(y);
 
   AKANTU_DEBUG_OUT();
 }
