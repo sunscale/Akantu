@@ -76,8 +76,8 @@ register_test(test_dof_synchronizer
 #   PACKAGE parallel
 #   )
 
-# register_test(test_data_distribution
-#   SOURCES test_data_distribution.cc
-#   FILES_TO_COPY data_split.msh
-#   PACKAGE parallel
-#   )
+register_test(test_data_distribution
+  SOURCES test_data_distribution.cc
+  FILES_TO_COPY data_split.msh
+  PACKAGE parallel
+  )

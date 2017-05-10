@@ -62,11 +62,13 @@ namespace MeshUtilsDistribution {
       UInt nb_nodes = mesh.getNbGlobalNodes();
       mesh_accessor.getNodesGlobalIds().resize(nb_nodes);
       auto gids = mesh_accessor.getNodesGlobalIds();
-      for(UInt n = 0; n < nb_nodes; ++n) {
-        gids(n) = n ;
+      for (UInt n = 0; n < nb_nodes; ++n) {
+        gids(n) = n;
       }
       return;
     }
+
+    mesh.synchronizeGroupNames();
 
     AKANTU_DEBUG_ASSERT(
         partition.getNbPartition() == nb_proc,
@@ -139,8 +141,11 @@ namespace MeshUtilsDistribution {
     if (nb_proc == 1)
       return;
 
+    mesh.synchronizeGroupNames();
+
     /**
-     * connectivity and communications scheme construction on distant processors
+     * connectivity and communications scheme construction on distant
+     * processors
      */
     UInt count = 0;
     bool need_synchronize = true;

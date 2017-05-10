@@ -47,7 +47,7 @@ ElementInfoPerProc::ElementInfoPerProc(ElementSynchronizer & synchronizer,
       rank(synchronizer.getCommunicator().whoAmI()),
       nb_proc(synchronizer.getCommunicator().getNbProc()), root(root),
       type(type), message_count(message_cnt), mesh(synchronizer.getMesh()),
-      comm(synchronizer.getCommunicator()) {}
+      comm(synchronizer.getCommunicator()) { }
 
 /* -------------------------------------------------------------------------- */
 void ElementInfoPerProc::fillCommunicationScheme(

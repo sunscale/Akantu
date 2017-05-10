@@ -498,7 +498,8 @@ int main(int argc, char * argv[]) {
     UInt nb_iter = solver.get("nb_iterations");
     Real error = solver.get("error");
     bool converged = solver.get("converged");
-    std::cout << error << " " << nb_iter << " -> " << converged << std::endl;
+    if(prank == 0)
+      std::cerr << error << " " << nb_iter << " -> " << converged << std::endl;
 #endif
 
     epot = model.getPotentialEnergy();
