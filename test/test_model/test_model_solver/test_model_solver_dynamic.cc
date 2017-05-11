@@ -490,13 +490,15 @@ int main(int argc, char * argv[]) {
 #if EXPLICIT == false
   NonLinearSolver & solver =
     model.getDOFManager().getNonLinearSolver("dynamic");
+
+  solver.set("max_iterations", 2);
 #endif
 
   for (UInt i = 1; i < max_steps + 1; ++i) {
     model.solveStep();
 
 #if EXPLICIT == false
-    UInt nb_iter = solver.get("nb_iterations");
+    int nb_iter = solver.get("nb_iterations");
     Real error = solver.get("error");
     bool converged = solver.get("converged");
     if(prank == 0)
