@@ -81,10 +81,10 @@ private:
   Real convergence_criteria;
 
   /// Max number of iterations
-  UInt max_iterations;
+  int max_iterations;
 
   /// Number of iterations at last solve call
-  UInt n_iter;
+  int n_iter;
 
   /// Convergence error at last solve call
   Real error;

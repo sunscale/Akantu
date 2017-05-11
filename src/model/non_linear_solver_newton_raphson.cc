@@ -57,7 +57,7 @@ NonLinearSolverNewtonRaphson::NonLinearSolverNewtonRaphson(
   this->registerParam("convergence_type", convergence_criteria_type,
                       _scc_solution, _pat_parsmod,
                       "Type of convergence criteria");
-  this->registerParam("max_iterations", max_iterations, UInt(10), _pat_parsmod,
+  this->registerParam("max_iterations", max_iterations, 10, _pat_parsmod,
                       "Max number of iterations");
   this->registerParam("error", error, _pat_readable, "Last reached error");
   this->registerParam("nb_iterations", n_iter, _pat_readable,

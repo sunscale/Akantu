@@ -94,11 +94,10 @@ template <typename T> ParameterTyped<T> & Parameter::getParameterTyped() {
 
 /* ------------------------------------------------------------------------ */
 template <typename T, typename V> void Parameter::set(const V & value) {
-  ParameterTyped<T> & typed_param = getParameterTyped<T>();
   if (!(isWritable()))
     AKANTU_CUSTOM_EXCEPTION(
         debug::ParameterAccessRightException(name, "writable"));
-
+  ParameterTyped<T> & typed_param = getParameterTyped<T>();
   typed_param.setTyped(value);
 }
 
@@ -112,11 +111,10 @@ inline void Parameter::setAuto(__attribute__((unused))
 
 /* -------------------------------------------------------------------------- */
 template <typename T> const T & Parameter::get() const {
-  const ParameterTyped<T> & typed_param = getParameterTyped<T>();
   if (!(isReadable()))
     AKANTU_CUSTOM_EXCEPTION(
         debug::ParameterAccessRightException(name, "readable"));
-
+  const ParameterTyped<T> & typed_param = getParameterTyped<T>();
   return typed_param.getTyped();
 }
 
