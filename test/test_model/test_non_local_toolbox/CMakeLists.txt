@@ -68,6 +68,6 @@ register_test(test_pair_computation
   SOURCES test_pair_computation.cc test_material_damage.hh test_material_damage.cc
   FILES_TO_COPY material_remove_damage.dat pair_test.msh
   PARALLEL
-  PARALLEL_LEVEL 1;2
+  PARALLEL_LEVEL 1 2
   PACKAGE damage_non_local
   )
