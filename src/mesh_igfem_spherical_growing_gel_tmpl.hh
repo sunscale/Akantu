@@ -499,7 +499,7 @@ void MeshIgfemSphericalGrowingGel<dim>::updateNodeType(const Array<UInt> & nodes
   }
 
   AKANTU_DEBUG_ASSERT(std::accumulate(checked_node.begin(), checked_node.end(), 0)
-		      == checked_node.getSize(),
+		      == Int(checked_node.getSize()),
 		      "Not all new nodes were assigned a node type");
 }
 
