@@ -65,13 +65,13 @@ public:
   inline void clearProfile();
 
   /// add a non-zero element
-  virtual UInt addToProfile(UInt i, UInt j);
+  virtual inline UInt addToProfile(UInt i, UInt j);
 
   /// set the matrix to 0
   virtual void clear();
 
   /// assemble a local matrix in the sparse one
-  inline void addToMatrix(UInt i, UInt j, Real value);
+  virtual inline void addToMatrix(UInt i, UInt j, Real value);
 
   /// set the size of the matrix
   void resize(UInt size) { this->size = size; }
@@ -130,7 +130,7 @@ public:
   /// (my_release != release) and not as (my_release < release)
   AKANTU_GET_MACRO(ProfileRelease, profile_release, UInt);
   AKANTU_GET_MACRO(ValueRelease, value_release, UInt);
-
+  virtual UInt getRelease() const { return value_release; }
 protected:
   typedef std::pair<UInt, UInt> KeyCOO;
   typedef unordered_map<KeyCOO, UInt>::type coordinate_list_map;

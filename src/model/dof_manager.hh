@@ -235,6 +235,9 @@ public:
   /// Get a reference to the blocked dofs array registered for the given id
   inline const Array<bool> & getBlockedDOFs(const ID & dofs_id) const;
 
+  /// Does the dof has a blocked array
+  inline bool hasBlockedDOFs(const ID & dofs_id) const;
+
   /// Get a reference to the registered dof increment array for a given id
   inline Array<Real> & getDOFsIncrement(const ID & dofs_id);
 

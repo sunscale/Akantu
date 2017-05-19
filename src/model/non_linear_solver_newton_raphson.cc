@@ -156,13 +156,13 @@ bool NonLinearSolverNewtonRaphson::testConvergence(const Array<Real> & array) {
 
   UInt nb_degree_of_freedoms = array.getSize();
 
-  Array<Real>::const_scalar_iterator arr_it = array.begin();
-  Array<bool>::const_scalar_iterator bld_it = blocked_dofs.begin();
+  auto arr_it = array.begin();
+  auto bld_it = blocked_dofs.begin();
 
   Real norm = 0.;
   for (UInt n = 0; n < nb_degree_of_freedoms; ++n, ++arr_it, ++bld_it) {
     bool is_local_node = this->dof_manager.isLocalOrMasterDOF(n);
-    if ((*bld_it == 0) && is_local_node) {
+    if ((! *bld_it) && is_local_node) {
       norm += *arr_it * *arr_it;
     }
   }

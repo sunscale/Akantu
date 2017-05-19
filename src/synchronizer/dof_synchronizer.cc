@@ -57,10 +57,11 @@ __BEGIN_AKANTU__
  * constructor sets up this information.
  */
 DOFSynchronizer::DOFSynchronizer(DOFManagerDefault & dof_manager, const ID & id,
-                                 MemoryID memory_id, const StaticCommunicator & comm)
+                                 MemoryID memory_id,
+                                 const StaticCommunicator & comm)
     : SynchronizerImpl<UInt>(id, memory_id, comm), root(0),
       dof_manager(dof_manager),
-      slave_receive_dofs(0, 1, "dofs-to-receive-from-master"),
+      root_dofs(0, 1, "dofs-to-receive-from-master"),
       dof_changed(true) {
   std::vector<ID> dof_ids = dof_manager.getDOFIDs();
 
@@ -77,7 +78,8 @@ DOFSynchronizer::~DOFSynchronizer() {}
 
 /* -------------------------------------------------------------------------- */
 void DOFSynchronizer::registerDOFs(const ID & dof_id) {
-  if(this->nb_proc == 1) return;
+  if (this->nb_proc == 1)
+    return;
 
   typedef Communications<UInt>::const_scheme_iterator const_scheme_iterator;
 
@@ -110,19 +112,19 @@ void DOFSynchronizer::registerDOFs(const ID & dof_id) {
           while ((an_it = std::find(an_it, an_end, node)) != an_end) {
             UInt pos = an_it - an_begin;
             UInt local_eq_num = equation_numbers(pos);
-            UInt global_eq_num = local_eq_num;
-            dof_manager.localToGlobalEquationNumber(global_eq_num);
+            UInt global_eq_num =
+                dof_manager.localToGlobalEquationNumber(local_eq_num);
             global_dofs_per_node.push_back(global_eq_num);
             ++an_it;
           }
 
           std::sort(global_dofs_per_node.begin(), global_dofs_per_node.end());
-          std::transform(
-              global_dofs_per_node.begin(), global_dofs_per_node.end(),
-              global_dofs_per_node.begin(), [this](UInt g) -> UInt {
-                UInt l = dof_manager.globalToLocalEquationNumber(g);
-                return l;
-              });
+          std::transform(global_dofs_per_node.begin(),
+                         global_dofs_per_node.end(),
+                         global_dofs_per_node.begin(), [this](UInt g) -> UInt {
+                           UInt l = dof_manager.globalToLocalEquationNumber(g);
+                           return l;
+                         });
           for (auto & leqnum : global_dofs_per_node) {
             scheme.push_back(leqnum);
           }
@@ -149,22 +151,24 @@ void DOFSynchronizer::initScatterGatherCommunicationScheme() {
   AKANTU_DEBUG_IN();
 
   if (this->nb_proc == 1) {
+    dof_changed = false;
     AKANTU_DEBUG_OUT();
     return;
   }
 
   UInt nb_dofs = dof_manager.getLocalSystemSize();
 
-  this->slave_receive_dofs.clear();
+  this->root_dofs.clear();
   this->master_receive_dofs.clear();
 
   Array<UInt> dofs_to_send;
   for (UInt n = 0; n < nb_dofs; ++n) {
     if (dof_manager.isLocalOrMasterDOF(n)) {
-      this->slave_receive_dofs.push_back(n);
+      auto & receive_per_proc = master_receive_dofs[this->root];
+      UInt global_dof = dof_manager.localToGlobalEquationNumber(n);
 
-      UInt global_dof = n;
-      dof_manager.localToGlobalEquationNumber(global_dof);
+      root_dofs.push_back(n);
+      receive_per_proc.push_back(global_dof);
       dofs_to_send.push_back(global_dof);
     }
   }
@@ -178,12 +182,12 @@ void DOFSynchronizer::initScatterGatherCommunicationScheme() {
       if (p == UInt(this->root))
         continue;
 
-      Array<UInt> & receive_per_proc = master_receive_dofs[p];
+      auto & receive_per_proc = master_receive_dofs[p];
       receive_per_proc.resize(nb_dof_per_proc(p));
-      if(nb_dof_per_proc(p) != 0)
+      if (nb_dof_per_proc(p) != 0)
         requests.push_back(communicator.asyncReceive(
-                               receive_per_proc, p,
-                               Tag::genTag(p, 0, Tag::_GATHER_INITIALIZATION, this->hash_id)));
+            receive_per_proc, p,
+            Tag::genTag(p, 0, Tag::_GATHER_INITIALIZATION, this->hash_id)));
     }
 
     communicator.waitAll(requests);
@@ -194,10 +198,10 @@ void DOFSynchronizer::initScatterGatherCommunicationScheme() {
                                      << dofs_to_send.getSize()
                                      << " to send to master proc");
 
-    if(dofs_to_send.getSize() != 0)
-      communicator.send(
-          dofs_to_send, this->root,
-          Tag::genTag(this->rank, 0, Tag::_GATHER_INITIALIZATION, this->hash_id));
+    if (dofs_to_send.getSize() != 0)
+      communicator.send(dofs_to_send, this->root,
+                        Tag::genTag(this->rank, 0, Tag::_GATHER_INITIALIZATION,
+                                    this->hash_id));
   }
 
   dof_changed = false;

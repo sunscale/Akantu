@@ -31,7 +31,6 @@
 #include "integration_scheme.hh"
 /* -------------------------------------------------------------------------- */
 
-
 #ifndef __AKANTU_PSEUDO_TIME_HH__
 #define __AKANTU_PSEUDO_TIME_HH__
 
@@ -56,11 +55,14 @@ public:
   virtual void corrector(const SolutionType & type, Real delta_t);
 
   /// assemble the jacobian matrix
-  virtual void assembleJacobian(const SolutionType & type,
-                                Real delta_t);
+  virtual void assembleJacobian(const SolutionType & type, Real delta_t);
 
   /// assemble the residual
   virtual void assembleResidual(bool is_lumped);
+
+protected:
+  /// last release of K matrix
+  UInt k_release;
 };
 
 __END_AKANTU__

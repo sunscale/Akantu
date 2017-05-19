@@ -95,8 +95,8 @@ private:
   /// information on the dofs
   DOFManagerDefault & dof_manager;
 
-  /// Dofs received from master proc (only on slaves)
-  Array<UInt> slave_receive_dofs;
+  /// dofs from root
+  Array<UInt> root_dofs;
 
   /// Dofs received from slaves proc (only on master)
   std::map<UInt, Array<UInt>> master_receive_dofs;

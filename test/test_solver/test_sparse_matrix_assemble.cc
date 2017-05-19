@@ -40,21 +40,24 @@
 #include "dof_synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
+using namespace akantu;
 
 int main(int argc, char *argv[]) {
-  akantu::initialize(argc, argv);
+  initialize(argc, argv);
 
-  akantu::UInt spatial_dimension = 2;
-  akantu::Mesh mesh(spatial_dimension);
-  akantu::MeshIOMSH mesh_io;
-  mesh_io.read("triangle.msh", mesh);
+  UInt spatial_dimension = 2;
+  Mesh mesh(spatial_dimension);
+  mesh.read("triangle.msh");
 
-  akantu::UInt nb_nodes = mesh.getNbNodes();
-  akantu::SparseMatrix sparse_matrix(nb_nodes * spatial_dimension, akantu::_symmetric);
+  UInt nb_nodes = mesh.getNbNodes();
 
-  akantu::DOFSynchronizer dof_synchronizer(mesh, spatial_dimension);
-  dof_synchronizer.initGlobalDOFEquationNumbers();
-  sparse_matrix.buildProfile(mesh, dof_synchronizer, spatial_dimension);
+
+  DOFManagerDefault dof_manager(mesh, "test_dof_manager");
+
+  Array<Real> test_synchronize(nb_nodes, spatial_dimension, "Test vector");
+  dof_manager.registerDOFs("test_synchronize", test_synchronize, _dst_nodal);
+
+  auto & A = dof_manager.getNewMatrix("A", _symmetric);
 
   // const akantu::Mesh::ConnectivityTypeList & type_list = mesh.getConnectivityTypeList();
   // akantu::Mesh::ConnectivityTypeList::const_iterator it;
@@ -74,9 +77,9 @@ int main(int argc, char *argv[]) {
   //   }
   // }
 
-  sparse_matrix.saveMatrix("matrix.mtx");
+  A.saveMatrix("matrix.mtx");
 
-  akantu::finalize();
+  finalize();
 
   return EXIT_SUCCESS;
 }

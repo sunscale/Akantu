@@ -121,6 +121,12 @@ public:
 private:
   /// the @f$\alpha@f$ parameter
   Real alpha;
+
+  /// last release of M matrix
+  UInt m_release;
+
+  /// last release of K matrix
+  UInt k_release;
 };
 
 /* -------------------------------------------------------------------------- */

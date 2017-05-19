@@ -73,17 +73,8 @@ inline void DOFManagerDefault::extractElementEquationNumber(
 }
 
 /* -------------------------------------------------------------------------- */
-template <class S>
-inline void DOFManagerDefault::localToGlobalEquationNumber(S & inout) {
-  for (UInt i = 0; i < inout.size(); ++i) {
-    inout(i) = this->global_equation_number(inout(i));
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-template<>
-inline void DOFManagerDefault::localToGlobalEquationNumber<UInt>(UInt & inout) {
-  inout = this->global_equation_number(inout);
+inline UInt DOFManagerDefault::localToGlobalEquationNumber(UInt local) const {
+  return this->global_equation_number(local);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -98,7 +89,12 @@ inline UInt DOFManagerDefault::globalToLocalEquationNumber(UInt global) const {
 }
 
 /* -------------------------------------------------------------------------- */
+inline Int DOFManagerDefault::getDOFType(UInt local_id) const {
+  return this->dofs_type(local_id);
+}
+/* -------------------------------------------------------------------------- */
+
 
 __END_AKANTU__
 
-#endif /* __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_CC__ */
+#endif /* __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_CC_ */

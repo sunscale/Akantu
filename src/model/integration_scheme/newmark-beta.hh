@@ -142,6 +142,15 @@ protected:
 
   Real k;
   Real h;
+
+  /// last release of M matrix
+  UInt m_release;
+
+  /// last release of K matrix
+  UInt k_release;
+
+  /// last release of C matrix
+  UInt c_release;
 };
 
 /**

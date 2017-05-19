@@ -65,8 +65,6 @@ public:
   /// build the profile and do the analysis part
   virtual void initialize();
 
-  //  void initializeSlave(SolverOptions & options = _solver_no_options);
-
   /// analysis (symbolic facto + permutations)
   virtual void analysis();
 
@@ -74,11 +72,17 @@ public:
   virtual void factorize();
 
   /// solve the system
+  virtual void solve(Array<Real> & x, const Array<Real> & b);
+
+  /// solve using residual and solution from the dof_manager
   virtual void solve();
 
 private:
   /// print the error if any happened in mumps
   void printError();
+
+  /// solve the system with master_rhs_solution as b and x
+  void solveInternal();
 
   /// set internal values;
   void initMumpsData();

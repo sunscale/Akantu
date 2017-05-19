@@ -30,7 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "non_linear_solver.hh"
-#include "solver_mumps.hh"
+#include "sparse_solver_mumps.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_NON_LINEAR_SOLVER_LINEAR_HH__

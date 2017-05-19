@@ -29,149 +29,49 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
+#include "dof_synchronizer.hh"
 #include "mesh.hh"
 #include "mesh_accessor.hh"
 #include "model_solver.hh"
 #include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
+#include "test_model_solver_my_model.hh"
+/* -------------------------------------------------------------------------- */
 #include <fstream>
+#include <cmath>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-class MyModel;
 static void genMesh(Mesh & mesh, UInt nb_nodes);
-static void printResults(MyModel & model);
+static void printResults(MyModel & model, UInt nb_nodes);
 
-/**
- *   =\o-----o-----o-> F
- *     |           |
- *     |---- L ----|
- */
-class MyModel : public ModelSolver {
-public:
-  MyModel(Real F, Mesh & mesh)
-      : ModelSolver(mesh, "model_solver", 0),
-        dispacement(mesh.getNbNodes(), 1, "disp"),
-        blocked(mesh.getNbNodes(), 1), forces(mesh.getNbNodes(), 1), mesh(mesh),
-        nb_dofs(mesh.getNbNodes()), EA(1.) {
-
-    this->initDOFManager("mumps");
-
-    this->getDOFManager().registerDOFs("disp", dispacement, _dst_nodal);
-    this->getDOFManager().registerBlockedDOFs("disp", blocked);
-    this->getDOFManager().getNewMatrix("K", _symmetric);
-    this->getDOFManager().getNewMatrix("J", "K");
-
-    dispacement.set(0.);
-    forces.set(0.);
-    blocked.set(false);
-
-    forces(nb_dofs - 1, _x) = F;
-    blocked(0, _x) = true;
-  }
-
-  void assembleJacobian() {
-    SparseMatrix & K = this->getDOFManager().getMatrix("K");
-    K.clear();
-
-    Matrix<Real> k(2, 2);
-    k(0, 0) = k(1, 1) = 1;
-    k(0, 1) = k(1, 0) = -1;
-
-    Array<Real> k_all_el(this->nb_dofs - 1, 4);
-    Array<Real>::matrix_iterator k_it = k_all_el.begin(2, 2);
-
-    Array<UInt>::const_vector_iterator cit =
-      this->mesh.getConnectivity(_segment_2).begin(2);
-    Array<UInt>::const_vector_iterator cend =
-        this->mesh.getConnectivity(_segment_2).end(2);
-
-    for (; cit != cend; ++cit, ++k_it) {
-      const Vector<UInt> & conn = *cit;
-      UInt n1 = conn(0);
-      UInt n2 = conn(1);
-
-      Real p1 = this->mesh.getNodes()(n1, _x);
-      Real p2 = this->mesh.getNodes()(n2, _x);
-
-      Real L = std::abs(p2 - p1);
-
-      Matrix<Real> & k_el = *k_it;
-      k_el = k;
-      k_el *= EA / L;
-    }
-    this->getDOFManager().assembleElementalMatricesToMatrix(
-        "K", "disp", k_all_el, _segment_2);
-  }
-
-  void assembleResidual() {
-    this->getDOFManager().assembleToResidual("disp", forces);
-
-    Array<Real> forces_internal_el(this->nb_dofs - 1, 2);
-    Array<Real>::vector_iterator f_it = forces_internal_el.begin(2);
-
-    Array<UInt>::const_vector_iterator cit =
-        this->mesh.getConnectivity(_segment_2).begin(2);
-    Array<UInt>::const_vector_iterator cend =
-        this->mesh.getConnectivity(_segment_2).end(2);
-
-    for (; cit != cend; ++cit, ++f_it) {
-      const Vector<UInt> & conn = *cit;
-      UInt n1 = conn(0);
-      UInt n2 = conn(1);
-      Real p1 = this->mesh.getNodes()(n1, _x);
-      Real p2 = this->mesh.getNodes()(n2, _x);
-
-      Real L = std::abs(p2 - p1);
-
-      Real u1 = this->dispacement(n1, _x);
-      Real u2 = this->dispacement(n2, _x);
-
-      Real f_n = EA / L * (u1 - u2);
-
-      Vector<Real> & f = *f_it;
-
-      f(0) = -f_n;
-      f(1) = f_n;
-    }
-
-    this->getDOFManager().assembleElementalArrayToResidual(
-        "disp", forces_internal_el, _segment_2, _not_ghost, -1.);
-  }
-
-  void predictor() {}
-  void corrector() {}
-
-  Array<Real> dispacement;
-  Array<bool> blocked;
-  Array<Real> forces;
-
-private:
-  Mesh & mesh;
-  UInt nb_dofs;
-  Real EA;
-};
+Real F = -10;
 
 /* -------------------------------------------------------------------------- */
 int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
+  UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+
   std::cout << std::setprecision(7);
 
-  UInt nb_nodes = 11;
+  UInt global_nb_nodes = 11;
   Mesh mesh(1);
 
-  genMesh(mesh, nb_nodes);
+  if (prank == 0)
+    genMesh(mesh, global_nb_nodes);
 
-  MyModel model(10., mesh);
+  mesh.distribute();
 
-  model.getNewSolver("static", _tsst_static, _nls_linear);
+  MyModel model(F, mesh, false);
+
+  model.getNewSolver("static", _tsst_static, _nls_newton_raphson);
   model.setIntegrationScheme("static", "disp", _ist_pseudo_time);
 
   model.solveStep();
 
-  printResults(model);
+  printResults(model, global_nb_nodes);
 
   finalize();
   return EXIT_SUCCESS;
@@ -197,23 +97,45 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
 }
 
 /* -------------------------------------------------------------------------- */
-void printResults(MyModel & model) {
-  Array<Real>::const_scalar_iterator disp_it = model.dispacement.begin();
-  Array<Real>::const_scalar_iterator force_it = model.forces.begin();
-  Array<bool>::const_scalar_iterator blocked_it = model.blocked.begin();
+void printResults(MyModel & model, UInt nb_nodes) {
+  UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+  auto & sync = dynamic_cast<DOFManagerDefault &>(model.getDOFManager())
+    .getSynchronizer();
 
-  std::cout << "node"
-            << ", " << std::setw(8) << "disp"
-            << ", " << std::setw(8) << "force"
-            << ", " << std::setw(8) << "blocked" << std::endl;
+  if (prank == 0) {
+    Array<Real> global_displacement(nb_nodes);
+    Array<Real> global_forces(nb_nodes);
+    Array<bool> global_blocked(nb_nodes);
 
-  UInt node = 0;
-  for (; disp_it != model.dispacement.end();
-       ++disp_it, ++force_it, ++blocked_it, ++node) {
-    std::cout << node << ", "
-           << std::setw(8) << *disp_it << ", "
-           << std::setw(8) << *force_it << ", "
-           << std::setw(8) << *blocked_it
-           << std::endl;
+    sync.gather(model.forces, global_forces);
+
+    auto force_it = global_forces.begin();
+    bool a = std::abs(global_forces(nb_nodes - 1) - F) > 1e-10;
+    while(a) {}
+
+    sync.gather(model.displacement, global_displacement);
+    sync.gather(model.blocked, global_blocked);
+
+    auto disp_it = global_displacement.begin();
+    auto blocked_it = global_blocked.begin();
+
+    std::cout << "node"
+              << ", " << std::setw(8) << "disp"
+              << ", " << std::setw(8) << "force"
+              << ", " << std::setw(8) << "blocked" << std::endl;
+
+    UInt node = 0;
+    for (; disp_it != global_displacement.end();
+         ++disp_it, ++force_it, ++blocked_it, ++node) {
+      std::cout << node << ", " << std::setw(8) << *disp_it << ", "
+                << std::setw(8) << *force_it << ", " << std::setw(8)
+                << *blocked_it << std::endl;
+
+      std::cout << std::flush;
+    }
+  } else {
+    sync.gather(model.forces);
+    sync.gather(model.displacement);
+    sync.gather(model.blocked);
   }
 }

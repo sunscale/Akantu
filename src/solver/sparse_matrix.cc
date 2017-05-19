@@ -32,9 +32,9 @@
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */
+#include "dof_manager.hh"
 #include "sparse_matrix.hh"
 #include "static_communicator.hh"
-#include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -43,10 +43,10 @@ __BEGIN_AKANTU__
 SparseMatrix::SparseMatrix(DOFManager & dof_manager,
                            const MatrixType & matrix_type, const ID & id)
     : id(id), _dof_manager(dof_manager), matrix_type(matrix_type),
-      size(dof_manager.getSystemSize()), nb_non_zero(0), matrix_release(1) {
+      size(dof_manager.getSystemSize()), nb_non_zero(0) {
   AKANTU_DEBUG_IN();
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = _dof_manager.getCommunicator();
   this->nb_proc = comm.getNbProc();
 
   AKANTU_DEBUG_OUT();
@@ -54,10 +54,9 @@ SparseMatrix::SparseMatrix(DOFManager & dof_manager,
 
 /* -------------------------------------------------------------------------- */
 SparseMatrix::SparseMatrix(const SparseMatrix & matrix, const ID & id)
-    : id(id), _dof_manager(matrix._dof_manager),
-      matrix_type(matrix.matrix_type), size(matrix.size),
-      nb_proc(matrix.nb_proc), nb_non_zero(matrix.nb_non_zero),
-      matrix_release(1) {}
+    : SparseMatrix(matrix._dof_manager, matrix.matrix_type, id) {
+  nb_non_zero = matrix.nb_non_zero;
+}
 
 /* -------------------------------------------------------------------------- */
 SparseMatrix::~SparseMatrix() {}
@@ -77,6 +76,5 @@ void SparseMatrix::add(const SparseMatrix & B, Real alpha) {
 }
 
 /* -------------------------------------------------------------------------- */
-
 
 __END_AKANTU__

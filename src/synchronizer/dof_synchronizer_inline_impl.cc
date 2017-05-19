@@ -97,12 +97,11 @@ void DOFSynchronizer::gather(const Array<T> & to_gather, Array<T> & gathered) {
 
   { // copy master data
     auto data_to_gather_it = to_gather.begin(to_gather.getNbComponent());
-    for (auto local_dof : slave_receive_dofs) {
-      UInt global_dof = local_dof;
-      dof_manager.localToGlobalEquationNumber(global_dof);
+    for (auto local_dof : root_dofs) {
+      UInt global_dof = dof_manager.localToGlobalEquationNumber(local_dof);
 
-      Vector<T> dof_data_gathered = data_gathered_it[local_dof];
-      Vector<T> dof_data_to_gather = data_to_gather_it[global_dof];
+      Vector<T> dof_data_gathered = data_gathered_it[global_dof];
+      Vector<T> dof_data_to_gather = data_to_gather_it[local_dof];
       dof_data_gathered = dof_data_to_gather;
     }
   }
@@ -143,15 +142,15 @@ template <typename T> void DOFSynchronizer::gather(const Array<T> & to_gather) {
                           this->dof_manager.getLocalSystemSize(),
                       "The array to gather does not have the correct size");
 
-  if (this->slave_receive_dofs.getSize() == 0) {
+  if (this->root_dofs.getSize() == 0) {
     AKANTU_DEBUG_OUT();
     return;
   }
-  CommunicationBuffer buffer(this->slave_receive_dofs.getSize() *
+  CommunicationBuffer buffer(this->root_dofs.getSize() *
                              to_gather.getNbComponent() * sizeof(T));
 
   auto data_it = to_gather.begin(to_gather.getNbComponent());
-  for (auto dof : this->slave_receive_dofs) {
+  for (auto dof : this->root_dofs) {
     Vector<T> data = data_it[dof];
     buffer << data;
   }
@@ -199,9 +198,8 @@ void DOFSynchronizer::scatter(Array<T> & scattered,
       auto data_scattered_it = scattered.begin(to_scatter.getNbComponent());
 
       // copy the data for the local processor
-      for (auto local_dof : slave_receive_dofs) {
-        auto global_dof = local_dof;
-        dof_manager.localToGlobalEquationNumber(global_dof);
+      for (auto local_dof : root_dofs) {
+        auto global_dof = dof_manager.localToGlobalEquationNumber(local_dof);
 
         Vector<T> dof_data_to_scatter = data_to_scatter_it[global_dof];
         Vector<T> dof_data_scattered = data_scattered_it[local_dof];
@@ -254,7 +252,7 @@ template <typename T> void DOFSynchronizer::scatter(Array<T> & scattered) {
 
   // prepare the data
   auto data_scattered_it = scattered.begin(scattered.getNbComponent());
-  CommunicationBuffer buffer(this->slave_receive_dofs.getSize() *
+  CommunicationBuffer buffer(this->root_dofs.getSize() *
                              scattered.getNbComponent() * sizeof(T));
 
   // receive the data
@@ -263,7 +261,7 @@ template <typename T> void DOFSynchronizer::scatter(Array<T> & scattered) {
       Tag::genTag(this->rank, 0, Tag::_SCATTER, this->hash_id));
 
   // unpack the data
-  for (auto local_dof : slave_receive_dofs) {
+  for (auto local_dof : root_dofs) {
     Vector<T> dof_data_scattered = data_scattered_it[local_dof];
     buffer >> dof_data_scattered;
   }
@@ -279,9 +277,9 @@ template <typename T>
 void DOFSynchronizer::synchronize(Array<T> & dof_values_to_synchronize) const {
   AKANTU_DEBUG_IN();
 
-  SimpleUIntDataAccessor<T> data_accessor(dof_values_to_synchronize, _gst_whatever);
+  SimpleUIntDataAccessor<T> data_accessor(dof_values_to_synchronize,
+                                          _gst_whatever);
   this->synchronizeOnce(data_accessor, _gst_whatever);
-
 
   AKANTU_DEBUG_OUT();
 }

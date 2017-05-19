@@ -43,10 +43,12 @@ __BEGIN_AKANTU__
 NewmarkBeta::NewmarkBeta(DOFManager & dof_manager, const ID & dof_id,
                          Real alpha, Real beta)
     : IntegrationScheme2ndOrder(dof_manager, dof_id), beta(beta), alpha(alpha),
-      k(0.), h(0.){
+      k(0.), h(0.), m_release(0), k_release(0), c_release(0) {
 
-  this->registerParam("alpha", this->alpha, alpha, _pat_parsmod, "The alpha parameter");
-  this->registerParam("beta", this->beta, beta, _pat_parsmod, "The beta parameter");
+  this->registerParam("alpha", this->alpha, alpha, _pat_parsmod,
+                      "The alpha parameter");
+  this->registerParam("beta", this->beta, beta, _pat_parsmod,
+                      "The beta parameter");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -194,9 +196,9 @@ void NewmarkBeta::allCorrector(Real delta_t, Array<Real> & u,
 
   for (UInt dof = 0; dof < nb_degree_of_freedom; dof++) {
     if (!(*blocked_dofs_val)) {
-      *u_val += e ** delta_val;
-      *u_dot_val += d ** delta_val;
-      *u_dot_dot_val += c ** delta_val;
+      *u_val += e * *delta_val;
+      *u_dot_val += d * *delta_val;
+      *u_dot_dot_val += c * *delta_val;
     }
     u_val++;
     u_dot_val++;
@@ -217,6 +219,21 @@ void NewmarkBeta::assembleJacobian(const SolutionType & type, Real delta_t) {
   const SparseMatrix & M = this->dof_manager.getMatrix("M");
   const SparseMatrix & K = this->dof_manager.getMatrix("K");
 
+  bool does_j_need_update = false;
+  does_j_need_update |= M.getRelease() != m_release;
+  does_j_need_update |= K.getRelease() != k_release;
+  if (this->dof_manager.hasMatrix("C")) {
+    const SparseMatrix & C = this->dof_manager.getMatrix("C");
+    does_j_need_update |= C.getRelease() != c_release;
+  }
+
+  if (!does_j_need_update) {
+    AKANTU_DEBUG_OUT();
+    return;
+  }
+
+  J.clear();
+
   Real c = this->getAccelerationCoefficient(type, delta_t);
   Real e = this->getDisplacementCoefficient(type, delta_t);
 
@@ -226,11 +243,14 @@ void NewmarkBeta::assembleJacobian(const SolutionType & type, Real delta_t) {
 
   J.add(M, c);
 
-  try {
+  m_release = M.getRelease();
+  k_release = K.getRelease();
+
+  if (this->dof_manager.hasMatrix("C")) {
     Real d = this->getVelocityCoefficient(type, delta_t);
     const SparseMatrix & C = this->dof_manager.getMatrix("C");
     J.add(C, d);
-  } catch (debug::Exception &) {
+    c_release = C.getRelease();
   }
 
   AKANTU_DEBUG_OUT();

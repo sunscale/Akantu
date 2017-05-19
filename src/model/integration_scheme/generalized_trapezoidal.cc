@@ -167,11 +167,24 @@ void GeneralizedTrapezoidal::assembleJacobian(const SolutionType & type,
   const SparseMatrix & M = this->dof_manager.getMatrix("M");
   const SparseMatrix & K = this->dof_manager.getMatrix("K");
 
+  bool does_j_need_update = false;
+  does_j_need_update |= M.getRelease() != m_release;
+  does_j_need_update |= K.getRelease() != k_release;
+  if (!does_j_need_update) {
+    AKANTU_DEBUG_OUT();
+    return;
+  }
+
+  J.clear();
+
   Real c = this->getTemperatureRateCoefficient(type, delta_t);
   Real e = this->getTemperatureCoefficient(type, delta_t);
 
   J.add(M, e);
   J.add(K, c);
+
+  m_release = M.getRelease();
+  k_release = K.getRelease();
 
   AKANTU_DEBUG_OUT();
 }

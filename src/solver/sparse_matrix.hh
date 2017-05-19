@@ -69,7 +69,7 @@ public:
   virtual void clear() = 0;
 
   /// add a non-zero element to the profile
-  virtual inline UInt addToProfile(UInt i, UInt j) = 0;
+  virtual UInt addToProfile(UInt i, UInt j) = 0;
 
   /// assemble a local matrix in the sparse one
   virtual void addToMatrix(UInt i, UInt j, Real value) = 0;
@@ -125,6 +125,8 @@ public:
 
   AKANTU_GET_MACRO(MatrixType, matrix_type, const MatrixType &);
 
+  virtual UInt getRelease() const = 0;
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -145,9 +147,6 @@ protected:
 
   /// number of non zero element
   UInt nb_non_zero;
-
-  /// matrix definition release
-  UInt matrix_release;
 };
 
 Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);

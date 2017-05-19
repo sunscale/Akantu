@@ -74,7 +74,7 @@ void TimeStepSolver::assembleJacobian() {
       this->solver_callback != NULL,
       "This function cannot be called if the solver_callback is not set");
 
-  this->_dof_manager.clearMatrix("J");
+  //  this->_dof_manager.clearMatrix("J");
   this->solver_callback->assembleJacobian();
 }
 

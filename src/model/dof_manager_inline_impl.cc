@@ -137,6 +137,11 @@ DOFManager::getBlockedDOFs(const ID & dofs_id) const {
 }
 
 /* -------------------------------------------------------------------------- */
+inline bool DOFManager::hasBlockedDOFs(const ID & dofs_id) const {
+  return (this->getDOFData(dofs_id).blocked_dofs != nullptr);
+}
+
+/* -------------------------------------------------------------------------- */
 
 } // akantu
 

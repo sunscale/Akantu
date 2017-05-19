@@ -129,7 +129,7 @@ public:
   virtual void updateGlobalBlockedDofs();
 
   /// apply boundary conditions to jacobian matrix
-  virtual void applyBoundary();
+  virtual void applyBoundary(const ID & matrix_id = "J");
 
   virtual void getEquationsNumbers(const ID & dof_id,
                                    Array<UInt> & equation_numbers);
@@ -213,11 +213,11 @@ public:
   /// Set the global solution array
   void setGlobalSolution(const Array<Real> & solution);
 
-  /// Get the global residual array across processors
+  /// Get the global residual array across processors (SMP call)
   const Array<Real> & getGlobalResidual();
 
   /// Get the residual array
-  const Array<Real> & getResidual();
+  const Array<Real> & getResidual() const;
 
   /// Get the blocked dofs array
   AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
@@ -237,7 +237,7 @@ public:
   inline UInt globalToLocalEquationNumber(UInt global) const;
 
   /// converts local equation numbers to global equation numbers;
-  template <class S> inline void localToGlobalEquationNumber(S & inout);
+  inline UInt localToGlobalEquationNumber(UInt local) const;
 
   /// get the array of dof types (use only if you know what you do...)
   inline Int getDOFType(UInt local_id) const;

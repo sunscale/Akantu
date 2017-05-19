@@ -43,13 +43,13 @@ SparseMatrixAIJ::SparseMatrixAIJ(DOFManagerDefault & dof_manager,
                                  const MatrixType & matrix_type, const ID & id)
     : SparseMatrix(dof_manager, matrix_type, id), dof_manager(dof_manager),
       irn(0, 1, id + ":irn"), jcn(0, 1, id + ":jcn"), a(0, 1, id + ":a"),
-      profile_release(0), value_release(0) {}
+      profile_release(1), value_release(1) {}
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ::SparseMatrixAIJ(const SparseMatrixAIJ & matrix, const ID & id)
     : SparseMatrix(matrix, id), dof_manager(matrix.dof_manager),
       irn(matrix.irn, true, id + ":irn"), jcn(matrix.jcn, true, id + ":jcn"),
-      a(matrix.a, true, id + ":a"), profile_release(0), value_release(0) {}
+      a(matrix.a, true, id + ":a"), profile_release(1), value_release(1) {}
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ::~SparseMatrixAIJ() {}

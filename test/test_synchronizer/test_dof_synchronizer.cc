@@ -85,8 +85,7 @@ int main(int argc, char * argv[]) {
     UInt equ_number = equation_number(local_dof);
     Vector<Int> val;
     if (dof_manager.isLocalOrMasterDOF(equ_number)) {
-      UInt global_dof = local_dof;
-      dof_manager.localToGlobalEquationNumber(global_dof);
+      UInt global_dof = dof_manager.localToGlobalEquationNumber(local_dof);
       val = {0, 1};
       val += global_dof * 2;
     } else {
@@ -107,8 +106,7 @@ int main(int argc, char * argv[]) {
 
       Vector<Int> exp_val;
 
-      UInt global_dof = local_dof;
-      dof_manager.localToGlobalEquationNumber(global_dof);
+      UInt global_dof = dof_manager.localToGlobalEquationNumber(local_dof);
 
       if (dof_manager.isLocalOrMasterDOF(equ_number) ||
           dof_manager.isSlaveDOF(equ_number)) {

@@ -86,11 +86,10 @@ inline CommunicationBufferTemplated<is_static> &
 CommunicationBufferTemplated<is_static>::operator<<(const T & to_pack) {
   UInt size = sizeInBuffer(to_pack);
   packResize(size);
-  T * tmp = reinterpret_cast<T *>(ptr_pack);
   AKANTU_DEBUG_ASSERT(
       (buffer.storage() + buffer.getSize()) >= (ptr_pack + size),
       "Packing too much data in the CommunicationBufferTemplated");
-  *tmp = to_pack;
+  memcpy(ptr_pack, reinterpret_cast<const char *>(&to_pack), size);
   ptr_pack += size;
   return *this;
 }
@@ -101,11 +100,16 @@ template <typename T>
 inline CommunicationBufferTemplated<is_static> &
 CommunicationBufferTemplated<is_static>::operator>>(T & to_unpack) {
   UInt size = sizeInBuffer(to_unpack);
-  T * tmp = reinterpret_cast<T *>(ptr_unpack);
+
+  alignas(alignof(T)) std::array<char, sizeof(T)> aligned_ptr;
+  memcpy(aligned_ptr.data(), ptr_unpack, size);
+
+  T * tmp = reinterpret_cast<T *>(aligned_ptr.data());
   AKANTU_DEBUG_ASSERT(
       (buffer.storage() + buffer.getSize()) >= (ptr_unpack + size),
       "Unpacking too much data in the CommunicationBufferTemplated");
   to_unpack = *tmp;
+  // memcpy(reinterpret_cast<char *>(&to_unpack), ptr_unpack, size);
   ptr_unpack += size;
   return *this;
 }

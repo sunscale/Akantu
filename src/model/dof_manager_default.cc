@@ -217,8 +217,8 @@ public:
           buffer << 0;
         }
       } else if (tag == _gst_update) {
-         if (it != dofs_per_node.end())
-           buffer << it->second;
+        if (it != dofs_per_node.end())
+          buffer << it->second;
       }
     }
   }
@@ -231,7 +231,7 @@ public:
       if (tag == _gst_size) {
         size_type size;
         buffer >> size;
-        if(size != 0)
+        if (size != 0)
           dofs_per_node[node].resize(size);
       } else if (tag == _gst_update) {
         if (it != dofs_per_node.end())
@@ -272,6 +272,7 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
   this->dofs_type.resize(local_system_size);
   this->global_solution.resize(this->local_system_size);
   this->global_blocked_dofs.resize(this->local_system_size);
+  this->previous_global_blocked_dofs.resize(this->local_system_size);
   this->global_equation_number.resize(this->local_system_size);
   dof_data.local_equation_number.resize(nb_dofs);
 
@@ -501,6 +502,8 @@ void DOFManagerDefault::updateGlobalBlockedDofs() {
   this->global_blocked_dofs.clear();
 
   for (; it != end; ++it) {
+    if (!this->hasBlockedDOFs(it->first)) continue;
+
     DOFData & dof_data = *it->second;
     this->assembleToGlobalArray(it->first, *dof_data.blocked_dofs,
                                 this->global_blocked_dofs, true);
@@ -679,7 +682,11 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 
     this->extractElementEquationNumber(equation_number, *conn_it,
                                        nb_degree_of_freedom, element_eq_nb);
-    this->localToGlobalEquationNumber(element_eq_nb);
+    std::transform(element_eq_nb.storage(),
+                   element_eq_nb.storage() + element_eq_nb.size(),
+                   element_eq_nb.storage(), [&](UInt & local) -> UInt {
+                     return this->localToGlobalEquationNumber(local);
+                   });
 
     if (filter_it)
       ++filter_it;
@@ -770,7 +777,11 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
 
     this->extractElementEquationNumber(
         equation_number, *cit, nb_degree_of_freedom_per_node, element_eq_nb);
-    this->localToGlobalEquationNumber(element_eq_nb);
+    std::transform(element_eq_nb.storage(),
+                   element_eq_nb.storage() + element_eq_nb.size(),
+                   element_eq_nb.storage(), [&](UInt & local) -> UInt {
+                     return this->localToGlobalEquationNumber(local);
+                   });
 
     if (ge_it)
       ++ge_it;
@@ -796,9 +807,9 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::applyBoundary() {
+void DOFManagerDefault::applyBoundary(const ID & matrix_id) {
   this->updateGlobalBlockedDofs();
-  SparseMatrixAIJ & J = this->getMatrix("J");
+  SparseMatrixAIJ & J = this->getMatrix(matrix_id);
 
   if (this->jacobian_release == J.getValueRelease()) {
     Array<bool>::const_scalar_iterator it = global_blocked_dofs.begin();
@@ -840,7 +851,9 @@ const Array<Real> & DOFManagerDefault::getGlobalResidual() {
 }
 
 /* -------------------------------------------------------------------------- */
-const Array<Real> & DOFManagerDefault::getResidual() { return this->residual; }
+const Array<Real> & DOFManagerDefault::getResidual() const {
+  return this->residual;
+}
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::setGlobalSolution(const Array<Real> & solution) {

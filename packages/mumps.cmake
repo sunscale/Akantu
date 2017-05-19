@@ -35,8 +35,8 @@ package_declare(Mumps EXTERNAL
   )
 
 package_declare_sources(Mumps
-  solver/solver_mumps.cc
-  solver/solver_mumps.hh
+  solver/sparse_solver_mumps.cc
+  solver/sparse_solver_mumps.hh
   )
 
 

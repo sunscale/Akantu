@@ -93,13 +93,14 @@
 #include "aka_common.hh"
 #include "dof_manager_default.hh"
 #include "sparse_matrix_aij.hh"
+#include "dof_synchronizer.hh"
 
 #if defined(AKANTU_USE_MPI)
 #include "static_communicator_mpi.hh"
 #include "mpi_type_wrapper.hh"
 #endif
 
-#include "solver_mumps.hh"
+#include "sparse_solver_mumps.hh"
 
 /* -------------------------------------------------------------------------- */
 // static std::ostream & operator <<(std::ostream & stream, const DMUMPS_STRUC_C
@@ -150,9 +151,9 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
     const StaticCommunicatorMPI & mpi_st_comm =
         dynamic_cast<const StaticCommunicatorMPI &>(
             communicator.getRealStaticCommunicator());
-
+    MPI_Comm mpi_comm = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
     this->mumps_data.comm_fortran =
-        MPI_Comm_c2f(mpi_st_comm.getMPITypeWrapper().getMPICommunicator());
+        MPI_Comm_c2f(mpi_comm);
 #else
     AKANTU_DEBUG_ERROR(
         "You cannot use parallel method to solve without activating MPI");
@@ -331,28 +332,51 @@ void SparseSolverMumps::factorize() {
 }
 
 /* -------------------------------------------------------------------------- */
+void SparseSolverMumps::solve(Array<Real> & x, const Array<Real> & b) {
+  auto & synch = this->dof_manager.getSynchronizer();
+
+  if (this->prank == 0) {
+    this->master_rhs_solution.resize(this->dof_manager.getSystemSize());
+    synch.gather(b, this->master_rhs_solution);
+  } else {
+    synch.gather(b);
+  }
+
+  this->solveInternal();
+
+  if (this->prank == 0) {
+    synch.scatter(x, this->master_rhs_solution);
+  } else {
+    synch.scatter(x);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 void SparseSolverMumps::solve() {
+  this->master_rhs_solution.copy(this->dof_manager.getGlobalResidual());
+
+  this->solveInternal();
+
+  this->dof_manager.setGlobalSolution(this->master_rhs_solution);
+
+  this->dof_manager.splitSolutionPerDOFs();
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseSolverMumps::solveInternal() {
   AKANTU_DEBUG_IN();
 
   this->setOutputLevel();
 
-  this->dof_manager.applyBoundary();
-
-  if (AKANTU_DEBUG_TEST(dblDump)) {
-    std::stringstream sstr;  sstr << prank << ".mtx";
-    this->matrix.saveMatrix("solver_mumps" + sstr.str());
-  }
-
-  this->master_rhs_solution.copy(this->dof_manager.getGlobalResidual());
-  // if (prank == 0) {
-  //   matrix.getDOFSynchronizer().gather(this->rhs, 0, this->master_rhs_solution);
-  // } else {
-  //   this->matrix.getDOFSynchronizer().gather(this->rhs, 0);
-  // }
-
   if (this->last_profile_release != this->matrix.getProfileRelease()) {
     this->analysis();
     this->last_profile_release = this->matrix.getProfileRelease();
+  }
+
+  this->dof_manager.applyBoundary(this->matrix_id);
+  if (AKANTU_DEBUG_TEST(dblDump)) {
+    std::stringstream sstr;  sstr << prank << ".mtx";
+    this->matrix.saveMatrix("solver_mumps" + sstr.str());
   }
 
   if (this->last_value_release != this->matrix.getValueRelease()) {
@@ -369,16 +393,6 @@ void SparseSolverMumps::solve() {
   dmumps_c(&this->mumps_data);
 
   this->printError();
-
-  this->dof_manager.setGlobalSolution(this->master_rhs_solution);
-
-  // if (prank == 0) {
-  //   matrix.getDOFSynchronizer().scatter(this->solution, 0, this->master_rhs_solution);
-  // } else {
-  //   this->matrix.getDOFSynchronizer().gather(this->solution, 0);
-  // }
-
-  this->dof_manager.splitSolutionPerDOFs();
 
   AKANTU_DEBUG_OUT();
 }
