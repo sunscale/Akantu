@@ -3,12 +3,12 @@
 using namespace akantu;
 
 int main(int argc, char *argv[]) {
-  initialize("test.dat", argc, argv);
+  initialize("test_multi_material_elastic.dat", argc, argv);
 
   UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
 
-  mesh.read("test.msh");
+  mesh.read("test_multi_material_elastic.msh");
   mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   SolidMechanicsModel model(mesh);
