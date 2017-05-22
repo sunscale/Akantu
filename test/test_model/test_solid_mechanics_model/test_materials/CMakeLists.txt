@@ -73,7 +73,7 @@ register_test(test_material_mazars
   SOURCES test_material_mazars.cc
   FILES_TO_COPY material_mazars.dat
   DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
+  PACKAGE core lapack
   )
 
 # ==============================================================================
