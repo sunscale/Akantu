@@ -1131,7 +1131,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
 
   mshapes_it = modified_shapes->begin(lmat_size, nb_degree_of_freedom);
   Array<Real>::matrix_iterator lmat = local_mat->begin(lmat_size, lmat_size);
-  Array<Real>::const_scalar_iterator field_val = field.begin();
+  Real * field_val = field.storage();
 
   for (UInt q = 0; q < vect_size; ++q, ++lmat, ++mshapes_it, ++field_val) {
     (*lmat).mul<false, true>(*mshapes_it, *mshapes_it, *field_val);
