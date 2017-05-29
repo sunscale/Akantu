@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
     ultimate_strain = 2. * Gf / (*Sc_it * crack_band_width);
     D_exact = *Sc_it / (ultimate_strain - (*Sc_it/E));
     if (!Math::are_float_equal(*D_it, D_exact)) {
-      std::cout << "error in the tangent or ultimate strain" << std::cout;
+      std::cout << "error in the tangent or ultimate strain" << std::endl;
       finalize();
       return EXIT_FAILURE;
     }
