@@ -57,6 +57,7 @@ int main(int argc, char *argv[]) {
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "left");
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "bottom");
 
+  std::cout.precision(4);
   for (UInt i = 0 ; i < steps ; ++i) {
     model.applyBC(BC::Dirichlet::FixedValue(i * u_increment, _x), "right");
     model.solveStatic<_scm_newton_raphson_tangent, _scc_increment>(1e-6, 300);

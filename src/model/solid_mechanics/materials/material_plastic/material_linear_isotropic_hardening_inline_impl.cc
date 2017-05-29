@@ -46,10 +46,6 @@ inline void MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(
     const Matrix<Real> & previous_inelastic_strain, Real & iso_hardening,
     const Real & previous_iso_hardening, const Real & sigma_th,
     const Real & previous_sigma_th) {
-  // Infinitesimal plasticity
-  Real dp = 0.0;
-  Real d_dp = 0.0;
-  UInt n = 0;
 
   Real delta_sigma_th = sigma_th - previous_sigma_th;
 
@@ -62,49 +58,33 @@ inline void MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(
                                             delta_sigma_th);
   sigma_tr += previous_sigma;
 
-  // Compute deviatoric trial stress,  sigma_tr_dev
-  Matrix<Real> sigma_tr_dev(sigma_tr);
-  sigma_tr_dev -= Matrix<Real>::eye(dim, sigma_tr.trace() / 3.0);
+  // We need a full stress tensor, otherwise the VM stress is messed up
+  Matrix<Real> sigma_tr_dev(3, 3, 0);
+  for (UInt i = 0 ; i < dim ; ++i)
+    for (UInt j = 0 ; j < dim ; ++j)
+      sigma_tr_dev(i, j) = sigma_tr(i, j);
+
+  sigma_tr_dev -= Matrix<Real>::eye(3, sigma_tr.trace() / 3.0);
 
   // Compute effective deviatoric trial stress
   Real s = sigma_tr_dev.doubleDot(sigma_tr_dev);
   Real sigma_tr_dev_eff = std::sqrt(3. / 2. * s);
 
-  // In 1D Von-Mises stress is the stress
-  if (dim == 1)
-    sigma_tr_dev_eff = sigma_tr(0, 0);
-
-  const Real iso_hardening_t = previous_iso_hardening;
-  iso_hardening = iso_hardening_t;
-
-  // Loop for correcting stress based on yield function
   bool initial_yielding =
       ((sigma_tr_dev_eff - iso_hardening - this->sigma_y) > 0);
 
-  while (initial_yielding &&
-         std::abs(sigma_tr_dev_eff - iso_hardening - this->sigma_y) >
-             Math::getTolerance()) {
-    d_dp = (sigma_tr_dev_eff - 3. * this->mu * dp - iso_hardening -
-            this->sigma_y) /
-           (3. * this->mu + this->h);
+  Real dp = (initial_yielding) ?
+    (sigma_tr_dev_eff - this->sigma_y - previous_iso_hardening) / (3*this->mu + this->h):0;
 
-    dp = dp + d_dp;
-    iso_hardening = iso_hardening_t + this->h * dp;
-    ++n;
+  iso_hardening = previous_iso_hardening + this->h * dp;
 
-    if (d_dp < 1e-5) {
-      break;
-    } else if (n > 50) {
-      AKANTU_DEBUG_WARNING("Isotropic hardening convergence failed");
-      break;
-    }
-  }
-
-  // Update internal variable
+  // Compute inelastic strain (ignore last components in 1-2D)
   Matrix<Real> delta_inelastic_strain(dim, dim, 0.);
   if (std::abs(sigma_tr_dev_eff) >
       sigma_tr_dev.norm<L_inf>() * Math::getTolerance()) {
-    delta_inelastic_strain.copy(sigma_tr_dev);
+    for (UInt i = 0 ; i < dim ; ++i)
+      for (UInt j = 0 ; j < dim ; ++j)
+	delta_inelastic_strain(i, j) = sigma_tr_dev(i, j);
     delta_inelastic_strain *= 3. / 2. * dp / sigma_tr_dev_eff;
   }
 
