@@ -28,16 +28,19 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_random_generator.hh"
 #include "dof_manager.hh"
 #include "dof_synchronizer.hh"
 #include "mesh.hh"
 #include "mesh_accessor.hh"
 #include "model_solver.hh"
+#include "non_linear_solver_newton_raphson.hh"
 #include "sparse_matrix.hh"
+#include "sparse_solver_mumps.hh"
+
 /* -------------------------------------------------------------------------- */
 #include "test_model_solver_my_model.hh"
 /* -------------------------------------------------------------------------- */
-#include <fstream>
 #include <cmath>
 /* -------------------------------------------------------------------------- */
 
@@ -56,20 +59,44 @@ int main(int argc, char * argv[]) {
 
   std::cout << std::setprecision(7);
 
-  UInt global_nb_nodes = 11;
+  UInt global_nb_nodes = 100;
   Mesh mesh(1);
 
-  if (prank == 0)
+  RandGenerator<Real>::seed(1);
+
+  if (prank == 0) {
     genMesh(mesh, global_nb_nodes);
+  }
+
+  std::cout << prank << RandGenerator<Real>::seed() << std::endl;
 
   mesh.distribute();
 
   MyModel model(F, mesh, false);
 
+  UInt node = 0;
+  for (auto pos : mesh.getNodes()) {
+    std::cout << prank << " " << node << " pos: " << pos << " ["
+              << mesh.getNodeGlobalId(node) << "] " << mesh.getNodeType(node)
+              << " -- " << model.forces(node) << " " << model.blocked(node)
+              << std::endl;
+    ++node;
+  }
+
   model.getNewSolver("static", _tsst_static, _nls_newton_raphson);
   model.setIntegrationScheme("static", "disp", _ist_pseudo_time);
 
+  NonLinearSolver & solver =
+      model.getDOFManager().getNonLinearSolver("static");
+  solver.set("max_iterations", 2);
+
+
   model.solveStep();
+
+  dynamic_cast<NonLinearSolverNewtonRaphson &>(
+      model.getDOFManager().getNonLinearSolver("static"))
+      .getSolver()
+      .analysis();
 
   printResults(model, global_nb_nodes);
 
@@ -108,14 +135,10 @@ void printResults(MyModel & model, UInt nb_nodes) {
     Array<bool> global_blocked(nb_nodes);
 
     sync.gather(model.forces, global_forces);
-
-    auto force_it = global_forces.begin();
-    bool a = std::abs(global_forces(nb_nodes - 1) - F) > 1e-10;
-    while(a) {}
-
     sync.gather(model.displacement, global_displacement);
     sync.gather(model.blocked, global_blocked);
 
+    auto force_it = global_forces.begin();
     auto disp_it = global_displacement.begin();
     auto blocked_it = global_blocked.begin();
 

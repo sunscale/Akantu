@@ -37,6 +37,7 @@
 #include "mesh_partition_scotch.hh"
 #include "sparse_matrix_aij.hh"
 #include "sparse_solver_mumps.hh"
+#include "terms_to_assemble.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 /* -------------------------------------------------------------------------- */
@@ -51,7 +52,7 @@ void genMesh(Mesh & mesh, UInt nb_nodes);
 int main(int argc, char * argv[]) {
   initialize(argc, argv);
   const UInt spatial_dimension = 1;
-  const UInt nb_global_dof = 100;
+  const UInt nb_global_dof = 11;
   StaticCommunicator & comm =
       akantu::StaticCommunicator::getStaticCommunicator();
   // Int psize = comm.getNbProc();
@@ -59,11 +60,21 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  if (prank == 0)
+  if (prank == 0) {
     genMesh(mesh, nb_global_dof);
+    RandGenerator<Real>::seed(1496137735);
+  } else {
+    RandGenerator<Real>::seed(2992275470);
+  }
 
   mesh.distribute();
-
+  UInt node = 0;
+  for (auto pos : mesh.getNodes()) {
+    std::cout << prank << " " << node << " pos: " << pos << " ["
+              << mesh.getNodeGlobalId(node) << "] " << mesh.getNodeType(node)
+              << std::endl;
+    ++node;
+  }
   UInt nb_nodes = mesh.getNbNodes();
 
   DOFManagerDefault dof_manager(mesh, "test_dof_manager");
@@ -71,19 +82,22 @@ int main(int argc, char * argv[]) {
   Array<Real> x(nb_nodes);
   dof_manager.registerDOFs("x", x, _dst_nodal);
 
-  Array<UInt> local_equation_number(nb_nodes);
-  dof_manager.getEquationsNumbers("x", local_equation_number);
+  Array<UInt> global_equation_number(nb_nodes);
+  dof_manager.getEquationsNumbers("x", global_equation_number);
 
   auto & A = dof_manager.getNewMatrix("A", _symmetric);
 
   Array<Real> b(nb_nodes);
+  TermsToAssemble terms;
 
   for (UInt i = 0; i < nb_nodes; ++i) {
     if (dof_manager.isLocalOrMasterDOF(i)) {
-      UInt eqn = local_equation_number(i);
-      A.addToMatrix(eqn, eqn, 1. / (eqn+1));
+      UInt gi = global_equation_number(i);
+      terms(i, i) = 1. / (1. + gi);
     }
   }
+
+  dof_manager.assemblePreassembledMatrix("x", "x", "A", terms);
 
   std::stringstream str;
   str << "Matrix_" << prank << ".mtx";
@@ -109,8 +123,11 @@ int main(int argc, char * argv[]) {
     debug::setDebugLevel(dblWarning);
 
     UInt d = 1.;
-    for(auto x : x_gathered) {
-      if ( std::abs(x - d)/d > 1e-15 ) AKANTU_EXCEPTION("Error in the solution");
+    for (auto x : x_gathered) {
+      if (std::abs(x - d) / d > 1e-15)
+        AKANTU_EXCEPTION("Error in the solution: " << x << " != " << d << " ["
+                                                   << (std::abs(x - d) / d)
+                                                   << "].");
       ++d;
     }
   } else {

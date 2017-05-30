@@ -233,6 +233,9 @@ public:
   /// get the equation numbers (in local numbering) corresponding to a dof ID
   inline const Array<UInt> & getLocalEquationNumbers(const ID & dof_id) const;
 
+  /// tells if the dof manager knows about a global dof
+  bool hasGlobalEquationNumber(UInt global) const;
+
   /// return the local index of the global equation number
   inline UInt globalToLocalEquationNumber(UInt global) const;
 

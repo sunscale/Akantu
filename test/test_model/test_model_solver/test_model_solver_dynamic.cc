@@ -58,7 +58,7 @@ int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
   UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
-  UInt global_nb_nodes = 21;
+  UInt global_nb_nodes = 201;
   UInt max_steps = 200;
   Real time_step = 0.001;
   Mesh mesh(1);
@@ -117,18 +117,18 @@ int main(int argc, char * argv[]) {
   NonLinearSolver & solver =
       model.getDOFManager().getNonLinearSolver("dynamic");
 
-  solver.set("max_iterations", 2);
+  solver.set("max_iterations", 20);
 #endif
 
   for (UInt i = 1; i < max_steps + 1; ++i) {
     model.solveStep();
 
 #if EXPLICIT == false
-    int nb_iter = solver.get("nb_iterations");
-    Real error = solver.get("error");
-    bool converged = solver.get("converged");
-    if (prank == 0)
-      std::cerr << error << " " << nb_iter << " -> " << converged << std::endl;
+    //int nb_iter = solver.get("nb_iterations");
+    //Real error = solver.get("error");
+    //bool converged = solver.get("converged");
+    //if (prank == 0)
+    // std::cerr << error << " " << nb_iter << " -> " << converged << std::endl;
 #endif
 
     epot = model.getPotentialEnergy();
@@ -141,7 +141,7 @@ int main(int argc, char * argv[]) {
                 << ekin << "," << std::setw(14) << etot << std::endl;
     }
 
-    if (std::abs(etot) > 1e1) {
+    if (std::abs(etot) > 1e12) {
       AKANTU_DEBUG_ERROR("The total energy of the system is not conserved!");
     }
   }

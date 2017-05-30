@@ -61,6 +61,8 @@ public:
   /// the solver callback functions
   virtual void solve(SolverCallback & solver_callback);
 
+  AKANTU_GET_MACRO_NOT_CONST(Solver, solver, SparseSolverMumps &);
+  AKANTU_GET_MACRO(Solver, solver, const SparseSolverMumps &);
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

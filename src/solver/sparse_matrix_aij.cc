@@ -30,8 +30,8 @@
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix_aij.hh"
 #include "dof_manager_default.hh"
-#include "terms_to_assemble.hh"
 #include "dof_synchronizer.hh"
+#include "terms_to_assemble.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */
@@ -58,32 +58,26 @@ SparseMatrixAIJ::~SparseMatrixAIJ() {}
 void SparseMatrixAIJ::applyBoundary(Real block_val) {
   AKANTU_DEBUG_IN();
 
-  const Array<bool> & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
+  // clang-format off
+  const auto & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
 
-  Array<Int>::const_scalar_iterator irn_val = irn.begin();
-  Array<Int>::const_scalar_iterator jcn_val = jcn.begin();
-  Array<Real>::scalar_iterator a_val = a.begin();
+  auto irn_it = irn.begin();
+  auto jcn_it = jcn.begin();
+  auto a_it   = a.begin();
+  auto a_end  = a.end();
 
-  for (UInt i = 0; i < nb_non_zero; ++i) {
-    UInt ni = this->dof_manager.globalToLocalEquationNumber(*irn_val - 1);
-    UInt nj = this->dof_manager.globalToLocalEquationNumber(*jcn_val - 1);
+  for (;a_it != a_end; ++a_it, ++irn_it, ++jcn_it) {
+    UInt ni = this->dof_manager.globalToLocalEquationNumber(*irn_it - 1);
+    UInt nj = this->dof_manager.globalToLocalEquationNumber(*jcn_it - 1);
     if (blocked_dofs(ni) || blocked_dofs(nj)) {
-      if (*irn_val != *jcn_val) {
-        *a_val = 0;
-      } else {
-        if (this->dof_manager.isLocalOrMasterDOF(ni)) {
-          *a_val = block_val;
-        } else {
-          *a_val = 0;
-        }
-      }
+      *a_it = *irn_it != *jcn_it                       ? 0.
+            : this->dof_manager.isLocalOrMasterDOF(ni) ? block_val
+            :                                            0.;
     }
-    ++irn_val;
-    ++jcn_val;
-    ++a_val;
   }
 
   this->value_release++;
+  // clang-format on
 
   AKANTU_DEBUG_OUT();
 }
@@ -95,15 +89,13 @@ void SparseMatrixAIJ::saveProfile(const std::string & filename) const {
   std::ofstream outfile;
   outfile.open(filename.c_str());
 
+  UInt m = this->size;
   outfile << "%%MatrixMarket matrix coordinate pattern";
-
   if (this->matrix_type == _symmetric)
     outfile << " symmetric";
   else
     outfile << " general";
   outfile << std::endl;
-
-  UInt m = this->size;
   outfile << m << " " << m << " " << this->nb_non_zero << std::endl;
 
   for (UInt i = 0; i < this->nb_non_zero; ++i) {
@@ -120,27 +112,28 @@ void SparseMatrixAIJ::saveProfile(const std::string & filename) const {
 void SparseMatrixAIJ::saveMatrix(const std::string & filename) const {
   AKANTU_DEBUG_IN();
 
+  // open and set the properties of the stream
   std::ofstream outfile;
+  outfile.open(filename.c_str());
   outfile.precision(std::numeric_limits<Real>::digits10);
 
-  outfile.open(filename.c_str());
-
+  // write header
   outfile << "%%MatrixMarket matrix coordinate real";
-
   if (this->matrix_type == _symmetric)
     outfile << " symmetric";
   else
     outfile << " general";
   outfile << std::endl;
-
   outfile << this->size << " " << this->size << " " << this->nb_non_zero
           << std::endl;
 
+  // write content
   for (UInt i = 0; i < this->nb_non_zero; ++i) {
     outfile << this->irn(i) << " " << this->jcn(i) << " " << this->a(i)
             << std::endl;
   }
 
+  // time to end
   outfile.close();
 
   AKANTU_DEBUG_OUT();
@@ -153,13 +146,14 @@ void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
 
   y *= beta;
 
-  Array<Int>::const_scalar_iterator i_it = this->irn.storage();
-  Array<Int>::const_scalar_iterator j_it = this->jcn.storage();
-  Array<Real>::const_scalar_iterator a_it = this->a.storage();
-  Array<Real>::const_scalar_iterator x_it = x.storage();
-  Array<Real>::scalar_iterator y_it = y.storage();
+  auto i_it = this->irn.begin();
+  auto j_it = this->jcn.begin();
+  auto a_it = this->a.begin();
+  auto a_end = this->a.end();
+  auto x_it = x.begin();
+  auto y_it = y.begin();
 
-  for (UInt k = 0; k < this->nb_non_zero; ++k, ++i_it, ++j_it, ++a_it) {
+  for (; a_it != a_end; ++i_it, ++j_it, ++a_it) {
     Int i = this->dof_manager.globalToLocalEquationNumber(*i_it - 1);
     Int j = this->dof_manager.globalToLocalEquationNumber(*j_it - 1);
     const Real & A = *a_it;
@@ -190,22 +184,25 @@ void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
 }
 
 /* -------------------------------------------------------------------------- */
-template<class MatrixType>
+template <class MatrixType>
 void SparseMatrixAIJ::addMeToTemplated(MatrixType & B, Real alpha) const {
-  Array<Int>::const_scalar_iterator i_it = this->irn.begin();
-  Array<Int>::const_scalar_iterator j_it = this->jcn.begin();
-  Array<Real>::const_scalar_iterator a_it = this->a.begin();
-  for (UInt n = 0; n < this->nb_non_zero; ++n, ++a_it, ++i_it, ++j_it) {
+  auto i_it = this->irn.begin();
+  auto j_it = this->jcn.begin();
+  auto a_it = this->a.begin();
+  auto a_end = this->a.end();
+
+  for (; a_it != a_end; ++a_it, ++i_it, ++j_it) {
     const Int & i = *i_it;
     const Int & j = *j_it;
     const Real & A_ij = *a_it;
+
     B.addToMatrix(i - 1, j - 1, alpha * A_ij);
   }
 }
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::addMeTo(SparseMatrix & B, Real alpha) const {
-  if(SparseMatrixAIJ * B_aij = dynamic_cast<SparseMatrixAIJ *>(&B)) {
+  if (SparseMatrixAIJ * B_aij = dynamic_cast<SparseMatrixAIJ *>(&B)) {
     this->addMeToTemplated<SparseMatrixAIJ>(*B_aij, alpha);
   } else {
     //    this->addMeToTemplated<SparseMatrix>(*this, alpha);

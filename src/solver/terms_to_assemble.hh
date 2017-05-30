@@ -48,11 +48,19 @@ public:
 
   class TermToAssemble {
   public:
-    TermToAssemble(UInt i, UInt j) : _i(i), _j(j) {}
-    inline void operator+=(Real val) { this->val = val; }
-    inline operator Real() const  { return val; }
+    TermToAssemble(UInt i, UInt j) : _i(i), _j(j), val(0.) {}
+    inline TermToAssemble & operator=(Real val) {
+      this->val = val;
+      return *this;
+    }
+    inline TermToAssemble operator+=(Real val) {
+      this->val += val;
+      return *this;
+    }
+    inline operator Real() const { return val; }
     inline UInt i() const { return _i; }
     inline UInt j() const { return _j; }
+
   private:
     UInt _i, _j;
     Real val;
@@ -72,6 +80,7 @@ public:
   /* ------------------------------------------------------------------------ */
 private:
   typedef std::vector<TermToAssemble> TermsContainer;
+
 public:
   typedef TermsContainer::const_iterator const_terms_iterator;
 

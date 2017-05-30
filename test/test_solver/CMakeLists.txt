@@ -57,6 +57,7 @@ register_test(test_sparse_matrix_product
 register_test(test_sparse_solver_mumps
   SOURCES test_sparse_solver_mumps.cc
   PACKAGE mumps
+  PARALLEL
   )
 
 register_test(test_petsc_matrix_profile

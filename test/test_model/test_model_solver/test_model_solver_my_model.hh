@@ -49,9 +49,9 @@ namespace akantu {
 class MyModel : public ModelSolver, public DataAccessor<Element> {
 public:
   MyModel(Real F, Mesh & mesh, bool lumped)
-      : ModelSolver(mesh, "model_solver", 0), mesh(mesh),
+      : ModelSolver(mesh, "model_solver", 0),
         nb_dofs(mesh.getNbNodes()), nb_elements(mesh.getNbElement()), E(1.),
-        A(1.), rho(1.), lumped(lumped), displacement(nb_dofs, 1, "disp"),
+        A(1.), rho(1.), lumped(lumped), mesh(mesh), displacement(nb_dofs, 1, "disp"),
         velocity(nb_dofs, 1, "velo"), acceleration(nb_dofs, 1, "accel"),
         blocked(nb_dofs, 1, "blocked"), forces(nb_dofs, 1, "force_ext"),
         internal_forces(nb_dofs, 1, "force_int"),
@@ -88,7 +88,7 @@ public:
 
     UInt global_nb_nodes = mesh.getNbGlobalNodes();
     for (UInt n = 0; n < nb_dofs; ++n) {
-      if (mesh.getGlobalNodesIds()(n) == (global_nb_nodes - 1))
+      if (mesh.getNodeGlobalId(n) == (global_nb_nodes - 1))
         forces(n, _x) = F;
 
       if (mesh.getGlobalNodesIds()(n) == 0)
@@ -237,30 +237,30 @@ public:
 
     this->getDOFManager().assembleToResidual("disp", internal_forces, -1.);
 
-    auto & comm = StaticCommunicator::getStaticCommunicator();
-    const auto & dof_manager_default =
-      dynamic_cast<DOFManagerDefault &>(this->getDOFManager());
-    const auto & residual = dof_manager_default.getResidual();
-    int prank = comm.whoAmI();
-    int psize = comm.getNbProc();
+    // auto & comm = StaticCommunicator::getStaticCommunicator();
+    // const auto & dof_manager_default =
+    //   dynamic_cast<DOFManagerDefault &>(this->getDOFManager());
+    // const auto & residual = dof_manager_default.getResidual();
+    // int prank = comm.whoAmI();
+    // int psize = comm.getNbProc();
 
-    for (int p = 0; p < psize; ++p) {
-      if (prank == p) {
-        UInt local_dof = 0;
-        for (auto res : residual) {
-          UInt global_dof = dof_manager_default.localToGlobalEquationNumber(local_dof);
-          std::cout << local_dof << " [" << global_dof << " - "
-                    << dof_manager_default.getDOFType(local_dof) << "]: " << res
-                    << std::endl;
-          ++local_dof;
-        }
-        std::cout << std::flush;
-      }
-      comm.barrier();
-    }
+    // for (int p = 0; p < psize; ++p) {
+    //   if (prank == p) {
+    //     UInt local_dof = 0;
+    //     for (auto res : residual) {
+    //       UInt global_dof = dof_manager_default.localToGlobalEquationNumber(local_dof);
+    //       std::cout << local_dof << " [" << global_dof << " - "
+    //                 << dof_manager_default.getDOFType(local_dof) << "]: " << res
+    //                 << std::endl;
+    //       ++local_dof;
+    //     }
+    //     std::cout << std::flush;
+    //   }
+    //   comm.barrier();
+    // }
 
-    comm.barrier();
-    if(prank == 0) std::cout << "===========================" << std::endl;
+    // comm.barrier();
+    // if(prank == 0) std::cout << "===========================" << std::endl;
   }
 
   void assembleResidual(const GhostType & ghost_type) {
@@ -417,7 +417,6 @@ public:
   }
 
 private:
-  Mesh & mesh;
   UInt nb_dofs;
   UInt nb_elements;
   Real E, A, rho;
@@ -425,6 +424,7 @@ private:
   bool lumped;
 
 public:
+  Mesh & mesh;
   Array<Real> displacement;
   Array<Real> velocity;
   Array<Real> acceleration;

@@ -56,7 +56,8 @@ DOFManagerDefault::getLocalEquationNumbers(const ID & dof_id) const {
 
 inline const Array<UInt> &
 DOFManagerDefault::getDOFsAssociatedNodes(const ID & dof_id) const {
-  const DOFDataDefault & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
+  const DOFDataDefault & dof_data =
+      this->getDOFDataTyped<DOFDataDefault>(dof_id);
   return dof_data.associated_nodes;
 }
 /* -------------------------------------------------------------------------- */
@@ -78,9 +79,14 @@ inline UInt DOFManagerDefault::localToGlobalEquationNumber(UInt local) const {
 }
 
 /* -------------------------------------------------------------------------- */
+inline bool DOFManagerDefault::hasGlobalEquationNumber(UInt global) const {
+  auto it = this->global_to_local_mapping.find(global);
+  return (it != this->global_to_local_mapping.end());
+}
+
+/* -------------------------------------------------------------------------- */
 inline UInt DOFManagerDefault::globalToLocalEquationNumber(UInt global) const {
-  equation_numbers_map::const_iterator it =
-      this->global_to_local_mapping.find(global);
+  auto it = this->global_to_local_mapping.find(global);
   AKANTU_DEBUG_ASSERT(it != this->global_to_local_mapping.end(),
                       "This global equation number "
                           << global << " does not exists in " << this->id);
@@ -93,7 +99,6 @@ inline Int DOFManagerDefault::getDOFType(UInt local_id) const {
   return this->dofs_type(local_id);
 }
 /* -------------------------------------------------------------------------- */
-
 
 __END_AKANTU__
 

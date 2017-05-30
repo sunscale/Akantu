@@ -317,6 +317,7 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
       if (is_local_dof) {
         data_accessor.addDOFToNode(node, first_global_dof_id);
       }
+
       break;
     }
     case _dst_generic: {
@@ -502,7 +503,8 @@ void DOFManagerDefault::updateGlobalBlockedDofs() {
   this->global_blocked_dofs.clear();
 
   for (; it != end; ++it) {
-    if (!this->hasBlockedDOFs(it->first)) continue;
+    if (!this->hasBlockedDOFs(it->first))
+      continue;
 
     DOFData & dof_data = *it->second;
     this->assembleToGlobalArray(it->first, *dof_data.blocked_dofs,
@@ -719,8 +721,9 @@ void DOFManagerDefault::assemblePreassembledMatrix(
   SparseMatrixAIJ & A = this->getMatrix(matrix_id);
 
   for (const auto & term : terms) {
-    A.addToMatrix(equation_number_m(term.i()), equation_number_n(term.j()),
-                  term);
+    UInt gi = this->localToGlobalEquationNumber(equation_number_m(term.i()));
+    UInt gj = this->localToGlobalEquationNumber(equation_number_n(term.j()));
+    A.addToMatrix(gi, gj, term);
   }
 }
 

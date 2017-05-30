@@ -61,6 +61,9 @@ public:
   /// the solver callback functions
   virtual void solve(SolverCallback & solver_callback);
 
+  AKANTU_GET_MACRO_NOT_CONST(Solver, solver, SparseSolverMumps &);
+  AKANTU_GET_MACRO(Solver, solver, const SparseSolverMumps &);
+
 protected:
   /// test the convergence compare norm of array to convergence_criteria
   bool testConvergence(const Array<Real> & array);
