@@ -89,11 +89,7 @@ int main(int argc, char *argv[])
   energy << "id,epot,ekin,tot" << std::endl;
 
   for(akantu::UInt s = 0; s < max_steps; ++s) {
-    model.explicitPred();
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
-
+    model.solveStep();
 
     epot = model.getEnergy("potential");
     ekin = model.getEnergy("kinetic");

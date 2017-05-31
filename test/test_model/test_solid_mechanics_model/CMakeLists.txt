@@ -141,13 +141,13 @@ register_test(test_solid_mechanics_model_implicit_dynamic_2d
   )
 
 #===============================================================================
-register_test(test_solid_mechanics_model_bar_traction2d_structured_pbc
-  SOURCES test_solid_mechanics_model_bar_traction2d_structured_pbc.cc
-  DEPENDS test_bar_traction_2d_mesh_structured1
-  FILES_TO_COPY material.dat test_cst_energy.pl
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
-  )
+# register_test(test_solid_mechanics_model_bar_traction2d_structured_pbc
+#   SOURCES test_solid_mechanics_model_bar_traction2d_structured_pbc.cc
+#   DEPENDS test_bar_traction_2d_mesh_structured1
+#   FILES_TO_COPY material.dat test_cst_energy.pl
+#   DIRECTORIES_TO_CREATE paraview
+#   PACKAGE core
+#   )
 
 #add_mesh(test_pbc_parallel_mesh square_structured.geo 2 1 OUTPUT square_structured.msh)
 #register_test(test_solid_mechanics_model_pbc_parallel
@@ -179,22 +179,22 @@ register_test(test_solid_mechanics_model_cube3d_tetra10
   PACKAGE core
   )
 
-register_test(test_solid_mechanics_model_cube3d_pbc
-  SOURCES test_solid_mechanics_model_cube3d_pbc.cc
-  DEPENDS test_cube3d_mesh_structured
-  FILES_TO_COPY  material.dat
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
-  )
+# register_test(test_solid_mechanics_model_cube3d_pbc
+#   SOURCES test_solid_mechanics_model_cube3d_pbc.cc
+#   DEPENDS test_cube3d_mesh_structured
+#   FILES_TO_COPY  material.dat
+#   DIRECTORIES_TO_CREATE paraview
+#   PACKAGE core
+#   )
 
 #add_mesh(test_solid_mechanics_model_boundary_condition_mesh cube_physical_names.geo 3 1)
 
-register_test(test_solid_mechanics_model_boundary_condition
-  SOURCES test_solid_mechanics_model_boundary_condition.cc
-  DEPENDS test_cube3d_mesh1
-  FILES_TO_COPY material.dat
-  PACKAGE core
-  )
+# register_test(test_solid_mechanics_model_boundary_condition
+#   SOURCES test_solid_mechanics_model_boundary_condition.cc
+#   DEPENDS test_cube3d_mesh1
+#   FILES_TO_COPY material.dat
+#   PACKAGE core
+#   )
 
 #===============================================================================
 add_mesh(test_cube3d_two_mat_mesh cube_two_materials.geo 3 1)

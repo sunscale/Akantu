@@ -37,58 +37,57 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
+
+using namespace akantu;
 
 int main(int argc, char *argv[]) {
-  akantu::initialize("material.dat", argc, argv);
-  akantu::UInt spatial_dimension = 2;
-  akantu::UInt max_steps = 10000;
-  akantu::Real time_factor = 0.2;
+  initialize("material.dat", argc, argv);
+  UInt spatial_dimension = 2;
+  UInt max_steps = 10000;
+  Real time_factor = 0.2;
 
-  akantu::Real epot, ekin;
+  Real epot, ekin;
 
-  akantu::Mesh mesh(spatial_dimension);
+  Mesh mesh(spatial_dimension);
   mesh.read("bar_structured1.msh");
 
-  akantu::SolidMechanicsModel * model = new akantu::SolidMechanicsModel(mesh);
+  SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model->initFull();
+  model.initFull();
 
-  std::cout << model->getMaterial(0) << std::endl;
+  std::cout << model.getMaterial(0) << std::endl;
 
   /// boundary conditions
-  akantu::Real eps = 1e-16;
-  for (akantu::UInt i = 0; i < mesh.getNbNodes(); ++i) {
+  Real eps = 1e-16;
+  for (UInt i = 0; i < mesh.getNbNodes(); ++i) {
     if(mesh.getNodes()(i) >= 9)
-      model->getDisplacement()(i) = (model->getFEEngine().getMesh().getNodes()(i) - 9) / 100. ;
+      model.getDisplacement()(i) = (model.getFEEngine().getMesh().getNodes()(i) - 9) / 100. ;
 
     if(mesh.getNodes()(i) <= eps)
-	model->getBlockedDOFs()(i) = true;
+	model.getBlockedDOFs()(i) = true;
 
     if(mesh.getNodes()(i, 1) <= eps ||
        mesh.getNodes()(i, 1) >= 1 - eps ) {
-      model->getBlockedDOFs()(i, 1) = true;
+      model.getBlockedDOFs()(i, 1) = true;
     }
   }
 
-  akantu::Real time_step = model->getStableTimeStep() * time_factor;
+  Real time_step = model.getStableTimeStep() * time_factor;
   std::cout << "Time Step = " << time_step << "s" << std::endl;
-  model->setTimeStep(time_step);
+  model.setTimeStep(time_step);
 
   std::ofstream energy;
   energy.open("energy_bar_2d_structured.csv");
   energy << "id,epot,ekin,tot" << std::endl;
 
 
-  for(akantu::UInt s = 1; s <= max_steps; ++s) {
-    model->explicitPred();
+  for(UInt s = 1; s <= max_steps; ++s) {
+    model.solveStep();
 
-    model->updateResidual();
-    model->updateAcceleration();
-    model->explicitCorr();
-
-    epot = model->getEnergy("potential");
-    ekin = model->getEnergy("kinetic");
+    epot = model.getEnergy("potential");
+    ekin = model.getEnergy("kinetic");
 
     std::cerr << "passing step " << s << "/" << max_steps << std::endl;
     energy << s << "," << epot << "," << ekin << "," << epot + ekin

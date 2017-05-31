@@ -32,11 +32,13 @@
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-#include <limits>
 #include <fstream>
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
+#include "static_communicator.hh"
+/* -------------------------------------------------------------------------- */
 
 #define bar_length 1
 #define bar_height 1
@@ -44,8 +46,7 @@
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   debug::setDebugLevel(dblWarning);
   initialize("material.dat", argc, argv);
 
@@ -54,55 +55,51 @@ int main(int argc, char *argv[])
   Mesh mesh(spatial_dimension);
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
-  MeshPartition * partition = NULL;
-  if(prank == 0) {
+  if (prank == 0)
     mesh.read("square_implicit2.msh");
-    partition = new MeshPartitionScotch(mesh, spatial_dimension);
-    //   partition->reorder();
-    partition->partitionate(psize);
-  }
+  mesh.distribute();
+
   SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model.initParallel(partition);
-  delete partition;
-
   model.initFull(SolidMechanicsModelOptions(_static));
 
-  if (prank == 0) std::cout << model.getMaterial("steel") << std::endl;
+  if (prank == 0)
+    std::cout << model.getMaterial("steel") << std::endl;
 
   /// boundary conditions
-  const  Array<Real> & position = mesh.getNodes();
+  const Array<Real> & position = mesh.getNodes();
   Array<bool> & boundary = model.getBlockedDOFs();
   Array<Real> & displacment = model.getDisplacement();
 
   UInt nb_nodes = model.getFEEngine().getMesh().getNbNodes();
   for (UInt n = 0; n < nb_nodes; ++n) {
-    if(position(n,0) < Math::getTolerance()) boundary(n,0) = true;
-    if(position(n,1) < Math::getTolerance()) boundary(n,1) = true;
+    if (position(n, 0) < Math::getTolerance())
+      boundary(n, 0) = true;
+    if (position(n, 1) < Math::getTolerance())
+      boundary(n, 1) = true;
 
-    if(std::abs(position(n,0) - bar_length) < Math::getTolerance()) {
-      boundary(n,0) = true;
-      displacment(n,0) = 0.1;
+    if (std::abs(position(n, 0) - bar_length) < Math::getTolerance()) {
+      boundary(n, 0) = true;
+      displacment(n, 0) = 0.1;
     }
   }
 
   model.setBaseName("implicit_2d");
   model.addDumpField("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("force"       );
-  model.addDumpField("residual"    );
-  model.addDumpField("stress"      );
-  model.addDumpField("strain"      );
+  model.addDumpField("force");
+  model.addDumpField("residual");
+  model.addDumpField("stress");
+  model.addDumpField("strain");
 
-  model.updateResidual();
   model.dump();
 
-  model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(1e-3, 100);
+  model.solveStep();
+
   model.dump();
 
   finalize();

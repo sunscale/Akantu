@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
   model.dump();
 
-  model.solveStep<_scm_newton_raphson_tangent_modified, _scc_residual>(1e-1, 10);
+  model.solveStep();
 
   model.dump();
 

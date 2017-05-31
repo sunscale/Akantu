@@ -45,7 +45,6 @@ int main(int argc, char* argv[])
 
     Mesh mesh(spatial_dimension, "mesh_names");
     mesh.read("cube1.msh");
-    mesh.createGroupsFromMeshData<std::string>("physical_names");
 
     const Array<UInt> & nodes = mesh.getElementGroup("Bottom").getNodes();
     Array<UInt>::const_scalar_iterator

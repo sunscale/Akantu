@@ -76,11 +76,7 @@ int main(int argc, char *argv[])
   model.dump();
 
   for(UInt s = 0; s < max_steps; ++s) {
-    model.explicitPred();
-
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
+    model.solveStep();
 
     epot  = model.getEnergy("potential");
     ekin  = model.getEnergy("kinetic");

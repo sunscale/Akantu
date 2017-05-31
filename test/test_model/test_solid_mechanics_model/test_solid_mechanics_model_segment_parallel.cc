@@ -30,88 +30,81 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <limits>
 #include <fstream>
-
+#include <limits>
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
-
+#include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[])
-{
-  akantu::UInt spatial_dimension = 1;
-  akantu::UInt max_steps = 10000;
-  akantu::Real time_factor = 0.2;
 
-  akantu::initialize("material.dat", argc, argv);
+using namespace akantu;
 
-  akantu::Mesh mesh(spatial_dimension);
-  akantu::StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
-  akantu::Int psize = comm.getNbProc();
-  akantu::Int prank = comm.whoAmI();
+int main(int argc, char * argv[]) {
+  UInt spatial_dimension = 1;
+  UInt max_steps = 10000;
+  Real time_factor = 0.2;
 
-  akantu::debug::setDebugLevel(akantu::dblInfo);
+  initialize("material.dat", argc, argv);
 
-  akantu::MeshPartition * partition = NULL;
-  if(prank == 0) {
-    mesh.read("segment.msh");
-    partition = new akantu::MeshPartitionScotch(mesh, spatial_dimension);
-    partition->partitionate(psize);
-  }
+  Mesh mesh(spatial_dimension);
+  StaticCommunicator & comm =
+      StaticCommunicator::getStaticCommunicator();
+    Int prank = comm.whoAmI();
 
+  debug::setDebugLevel(dblInfo);
 
-  akantu::SolidMechanicsModel model(mesh);
-  model.initParallel(partition);
+  if (prank == 0) mesh.read("segment.msh");
+
+  mesh.distribute();
+
+  SolidMechanicsModel model(mesh);
 
   /// model initialization
   model.initFull();
 
   std::cout << model.getMaterial(0) << std::endl;
 
-  model.assembleMassLumped();
-
   model.setBaseName("segment_parallel");
   model.addDumpField("displacement");
-  model.addDumpField("mass"        );
-  model.addDumpField("velocity"    );
+  model.addDumpField("mass");
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("force"       );
-  model.addDumpField("residual"    );
-  model.addDumpField("stress"      );
-  model.addDumpField("strain"      );
+  model.addDumpField("force");
+  model.addDumpField("residual");
+  model.addDumpField("stress");
+  model.addDumpField("strain");
 
   /// boundary conditions
-  for (akantu::UInt i = 0; i < mesh.getNbNodes(); ++i) {
-    model.getDisplacement().storage()[spatial_dimension*i] = model.getFEEngine().getMesh().getNodes().storage()[i] / 100. ;
+  for (UInt i = 0; i < mesh.getNbNodes(); ++i) {
+    model.getDisplacement().storage()[spatial_dimension * i] =
+        model.getFEEngine().getMesh().getNodes().storage()[i] / 100.;
 
-    if(model.getFEEngine().getMesh().getNodes().storage()[spatial_dimension*i] <= 1e-15)
+    if (model.getFEEngine().getMesh().getNodes().storage()[spatial_dimension *
+                                                           i] <= 1e-15)
       model.getBlockedDOFs().storage()[i] = true;
   }
 
-  akantu::Real time_step = model.getStableTimeStep() * time_factor;
+  Real time_step = model.getStableTimeStep() * time_factor;
   std::cout << "Time Step = " << time_step << "s" << std::endl;
   model.setTimeStep(time_step);
 
-  for(akantu::UInt s = 1; s <= max_steps; ++s) {
-    model.explicitPred();
+  for (UInt s = 1; s <= max_steps; ++s) {
+    model.solveStep();
 
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
+    Real epot = model.getEnergy("potential");
+    Real ekin = model.getEnergy("kinetic");
 
-    akantu::Real epot = model.getEnergy("potential");
-    akantu::Real ekin = model.getEnergy("kinetic");
-
-    if(prank == 0) {
+    if (prank == 0) {
       std::cout << s << " " << epot << " " << ekin << " " << epot + ekin
-		<< std::endl;
+                << std::endl;
     }
 
     model.dump();
-    if(s % 10 == 0) std::cerr << "passing step " << s << "/" << max_steps << std::endl;
+    if (s % 10 == 0)
+      std::cerr << "passing step " << s << "/" << max_steps << std::endl;
   }
 
-  akantu::finalize();
+  finalize();
 
   return EXIT_SUCCESS;
 }
