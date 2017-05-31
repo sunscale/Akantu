@@ -46,7 +46,7 @@
 #include "aka_debug_tools.hh"
 #endif
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /** \todo write function to get this
  *   values from the environment or a config file
@@ -71,6 +71,10 @@ Debugger debugger;
 DebugElementManager element_manager;
 #endif
 }
+
+/* -------------------------------------------------------------------------- */
+/// list of ghost iterable types
+ghost_type_t ghost_types(_casper);
 
 /* -------------------------------------------------------------------------- */
 /// Paser for commandline arguments
@@ -100,4 +104,4 @@ template <> long int Rand48Generator<Real>::_seed = 0;
 int Tag::max_tag = 0;
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+}  // akantu
