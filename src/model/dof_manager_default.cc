@@ -337,7 +337,7 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
     }
   }
 
-  if (support_type == _dst_nodal) {
+  if (support_type == _dst_nodal && this->synchronizer) {
     auto & node_synchronizer = this->mesh->getNodeSynchronizer();
     node_synchronizer.synchronizeOnce(data_accessor, _gst_size);
     node_synchronizer.synchronizeOnce(data_accessor, _gst_update);
