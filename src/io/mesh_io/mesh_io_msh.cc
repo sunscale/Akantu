@@ -871,6 +871,8 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
   this->constructPhysicalNames("tag_0", mesh);
 
+  mesh.createGroupsFromMeshData<std::string>("physical_names");
+
   MeshUtils::fillElementToSubElementsData(mesh);
 }
 
