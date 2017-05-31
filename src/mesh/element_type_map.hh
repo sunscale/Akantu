@@ -144,6 +144,32 @@ public:
     ElementKind kind;
   };
 
+  /// helper class to use in range for constructions
+  class ElementTypesIteratorHelper {
+  public:
+    using Container = ElementTypeMap<Stored, SupportType>;
+    using iterator = typename Container::type_iterator;
+
+    ElementTypesIteratorHelper(const Container & container,
+                               UInt dim = _all_dimensions,
+                               GhostType ghost_type = _not_ghost,
+                               ElementKind kind = _ek_regular)
+        : container(container), dim(dim), ghost_type(ghost_type), kind(kind) {}
+    iterator begin() { return container.firstType(dim, ghost_type, kind); }
+    iterator end() { return container.lastType(dim, ghost_type, kind); }
+
+  private:
+    const Container & container;
+    UInt dim;
+    GhostType ghost_type;
+    ElementKind kind;
+  };
+
+  /// method to create the helper class to use in range for constructs
+  ElementTypesIteratorHelper elementTypes(UInt dim = _all_dimensions,
+                                          GhostType ghost_type = _not_ghost,
+                                          ElementKind kind = _ek_regular) const;
+
   /*! Get an iterator to the beginning of a subset datamap. This method expects
    *  the SupportType to be ElementType.
    *  @param dim optional: iterate over data of dimension dim (e.g. when

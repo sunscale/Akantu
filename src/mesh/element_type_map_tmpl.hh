@@ -441,6 +441,15 @@ operator!=(const type_iterator & other) const {
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
+typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
+ElementTypeMap<Stored, SupportType>::elementTypes(UInt dim,
+                                                  GhostType ghost_type,
+                                                  ElementKind kind) const {
+  return ElementTypesIteratorHelper(*this, dim, ghost_type, kind);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::type_iterator
 ElementTypeMap<Stored, SupportType>::firstType(UInt dim, GhostType ghost_type,
                                                ElementKind kind) const {

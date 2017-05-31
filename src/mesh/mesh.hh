@@ -92,8 +92,8 @@ class Mesh : protected Memory,
 private:
   /// default constructor used for chaining, the last parameter is just to
   /// differentiate constructors
-  Mesh(UInt spatial_dimension, const ID & id,
-       const MemoryID & memory_id, StaticCommunicator & communicator);
+  Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
+       StaticCommunicator & communicator);
 
 public:
   /// constructor that create nodes coordinates array
@@ -441,6 +441,14 @@ public:
   /* Element type Iterator                                                    */
   /* ------------------------------------------------------------------------ */
   typedef ElementTypeMapArray<UInt, ElementType>::type_iterator type_iterator;
+  typedef ElementTypeMapArray<UInt, ElementType>::ElementTypesIteratorHelper
+      ElementTypesIteratorHelper;
+
+  inline ElementTypesIteratorHelper
+  elementTypes(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+               ElementKind kind = _ek_regular) const {
+    return connectivities.elementTypes(dim, ghost_type, kind);
+  }
 
   inline type_iterator firstType(UInt dim = _all_dimensions,
                                  GhostType ghost_type = _not_ghost,
@@ -457,13 +465,14 @@ public:
   AKANTU_GET_MACRO(ElementSynchronizer, *element_synchronizer,
                    const ElementSynchronizer &);
   AKANTU_GET_MACRO_NOT_CONST(ElementSynchronizer, *element_synchronizer,
-                   ElementSynchronizer &);
+                             ElementSynchronizer &);
   AKANTU_GET_MACRO(NodeSynchronizer, *node_synchronizer,
                    const NodeSynchronizer &);
   AKANTU_GET_MACRO_NOT_CONST(NodeSynchronizer, *node_synchronizer,
-                   NodeSynchronizer &);
+                             NodeSynchronizer &);
 
-  //AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator &);
+  // AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator
+  // &);
   AKANTU_GET_MACRO(Communicator, *communicator, const StaticCommunicator &);
   /* ------------------------------------------------------------------------ */
   /* Private methods for friends                                              */
@@ -471,13 +480,13 @@ public:
 private:
   friend class MeshAccessor;
 
-//#if defined(AKANTU_COHESIVE_ELEMENT)
-//  friend class CohesiveElementInserter;
-//#endif
+  //#if defined(AKANTU_COHESIVE_ELEMENT)
+  //  friend class CohesiveElementInserter;
+  //#endif
 
-//#if defined(AKANTU_IGFEM)
-//  template <UInt dim> friend class MeshIgfemSphericalGrowingGel;
-//#endif
+  //#if defined(AKANTU_IGFEM)
+  //  template <UInt dim> friend class MeshIgfemSphericalGrowingGel;
+  //#endif
 
   AKANTU_GET_MACRO(NodesPointer, nodes, Array<Real> *);
 
@@ -597,7 +606,7 @@ inline std::ostream & operator<<(std::ostream & stream, const Mesh & _this) {
   return stream;
 }
 
-}  // akantu
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 /* Inline functions                                                           */

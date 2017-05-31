@@ -148,11 +148,8 @@ inline void Mesh::updateTypesOffsets(const GhostType & ghost_type) {
   Array<UInt> & types_offsets = *types_offsets_ptr;
 
   types_offsets.clear();
-  type_iterator it = firstType(_all_dimensions, ghost_type, _ek_not_defined);
-  type_iterator last = lastType(_all_dimensions, ghost_type, _ek_not_defined);
-
-  for (; it != last; ++it)
-    types_offsets(*it) = connectivities(*it, ghost_type).getSize();
+  for (auto type : elementTypes(_all_dimensions, ghost_type, _ek_not_defined))
+    types_offsets(type) = connectivities(type, ghost_type).getSize();
 
   for (UInt t = _not_defined + 1; t < _max_element_type; ++t)
     types_offsets(t) += types_offsets(t - 1);
@@ -177,7 +174,7 @@ inline Array<UInt> * Mesh::getNodesGlobalIdsPointer() {
     std::stringstream sstr;
     sstr << getID() << ":nodes_global_ids";
     nodes_global_ids = &(alloc<UInt>(sstr.str(), nodes->getSize(), 1));
-    for(UInt i = 0; i < nodes->getSize(); ++i) {
+    for (UInt i = 0; i < nodes->getSize(); ++i) {
       (*nodes_global_ids)(i) = i;
     }
   }
@@ -353,10 +350,8 @@ inline UInt Mesh::getNbElement(const UInt spatial_dimension,
                                               << " and is greater than 3 !");
   UInt nb_element = 0;
 
-  type_iterator it = firstType(spatial_dimension, ghost_type, kind);
-  type_iterator last = lastType(spatial_dimension, ghost_type, kind);
-  for (; it != last; ++it)
-    nb_element += getNbElement(*it, ghost_type);
+  for (auto type : elementTypes(spatial_dimension, ghost_type, kind))
+    nb_element += getNbElement(type, ghost_type);
 
   return nb_element;
 }

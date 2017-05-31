@@ -292,13 +292,10 @@ void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
                                    bool size_to_nb_element) const {
   AKANTU_DEBUG_IN();
 
-  Mesh::type_iterator it = firstType(dim, gt, element_kind);
-  Mesh::type_iterator end = lastType(dim, gt, element_kind);
-  for (; it != end; ++it) {
-    ElementType type = *it;
+  for (auto type : elementTypes(dim, gt, element_kind)) {
     UInt nb_comp = nb_component;
     if (flag_nb_node_per_elem_multiply)
-      nb_comp *= Mesh::getNbNodesPerElement(*it);
+      nb_comp *= Mesh::getNbNodesPerElement(type);
     UInt size = 0;
     if (size_to_nb_element)
       size = this->getNbElement(type, gt);
@@ -319,12 +316,7 @@ void Mesh::getGlobalConnectivity(
     GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Mesh::type_iterator it = firstType(dimension, ghost_type);
-  Mesh::type_iterator end = lastType(dimension, ghost_type);
-
-  for (; it != end; ++it) {
-    ElementType type = *it;
-
+  for (auto type : elementTypes(dimension, ghost_type)) {
     Array<UInt> & local_conn = connectivities(type, ghost_type);
     Array<UInt> & g_connectivity = global_connectivity(type, ghost_type);
 
@@ -377,22 +369,20 @@ AKANTU_INSTANTIATE_INIT(bool);
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & array,
+ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & arrays,
                                             const ElementKind & element_kind) {
 
   ElementTypeMap<UInt> nb_data_per_elem;
 
-  typename ElementTypeMapArray<T>::type_iterator it =
-      array.firstType(spatial_dimension, _not_ghost, element_kind);
-  typename ElementTypeMapArray<T>::type_iterator last_type =
-      array.lastType(spatial_dimension, _not_ghost, element_kind);
 
-  for (; it != last_type; ++it) {
-    UInt nb_elements = this->getNbElement(*it);
-    nb_data_per_elem(*it) = array(*it).getNbComponent() * array(*it).getSize();
+  for (auto type : elementTypes(spatial_dimension, _not_ghost, element_kind)) {
+    UInt nb_elements = this->getNbElement(type);
+    auto & array = arrays(type);
 
-    nb_data_per_elem(*it) /= nb_elements;
+    nb_data_per_elem(type) = array.getNbComponent() * array.getSize();
+    nb_data_per_elem(type) /= nb_elements;
   }
+
   return nb_data_per_elem;
 }
 
