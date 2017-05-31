@@ -141,7 +141,7 @@ int main(int argc, char * argv[]) {
                 << ekin << "," << std::setw(14) << etot << std::endl;
     }
 
-    if (std::abs(etot) > 1e12) {
+    if (std::abs(etot) > 1e-1) {
       AKANTU_DEBUG_ERROR("The total energy of the system is not conserved!");
     }
   }
