@@ -53,7 +53,7 @@ TimeStepSolverDefault::TimeStepSolverDefault(
     this->is_mass_lumped = true;
     break;
   case _tsst_static:
-    /// initialize a static time solver for allback dofs
+    /// initialize a static time solver for callback dofs
     break;
   }
 }
