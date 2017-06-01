@@ -30,9 +30,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
 #include "material.hh"
 #include "model_solver.hh"
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -51,7 +51,7 @@ void SolidMechanicsModel::assembleMassLumped() {
     mass->clear();
   }
 
-  if(!this->getDOFManager().hasLumpedMatrix("M")) {
+  if (!this->getDOFManager().hasLumpedMatrix("M")) {
     this->getDOFManager().getNewLumpedMatrix("M");
   }
 
@@ -60,16 +60,28 @@ void SolidMechanicsModel::assembleMassLumped() {
   assembleMassLumped(_not_ghost);
   assembleMassLumped(_ghost);
 
-  this->getDOFManager().getLumpedMatrixPerDOFs("displacement", "M", *(this->mass));
+  this->getDOFManager().getLumpedMatrixPerDOFs("displacement", "M",
+                                               *(this->mass));
 
-  /// for not connected nodes put mass to one in order to avoid
-  /// wrong range in paraview
-  Real * mass_values = mass->storage();
-  for (UInt i = 0; i < nb_nodes; ++i) {
-    if (fabs(mass_values[i]) < std::numeric_limits<Real>::epsilon() ||
-        Math::isnan(mass_values[i]))
-      mass_values[i] = 1.;
+/// for not connected nodes put mass to one in order to avoid
+#if !defined(AKANTU_NDEBUG)
+  bool has_unconnected_nodes = false;
+  auto mass_it =
+      mass->begin_reinterpret(mass->getSize() * mass->getNbComponent());
+  auto mass_end =
+      mass->end_reinterpret(mass->getSize() * mass->getNbComponent());
+  for (; mass_it != mass_end; ++mass_it) {
+    if (std::abs(*mass_it) < std::numeric_limits<Real>::epsilon() ||
+        Math::isnan(*mass_it)) {
+      has_unconnected_nodes = true;
+      break;
+    }
   }
+
+  if(has_unconnected_nodes)
+    AKANTU_DEBUG_WARNING("There are nodes that seem to not be connected to any "
+                         "elements, beware that they have lumped mass of 0.");
+#endif
 
   this->synchronize(_gst_smm_mass);
   AKANTU_DEBUG_OUT();
@@ -90,8 +102,8 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
 
     computeRho(rho, type, ghost_type);
 
-    fem.assembleFieldLumped(rho, "M", "displacement",
-                            this->getDOFManager(), type, ghost_type);
+    fem.assembleFieldLumped(rho, "M", "displacement", this->getDOFManager(),
+                            type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -101,7 +113,7 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
 void SolidMechanicsModel::assembleMass() {
   AKANTU_DEBUG_IN();
 
-  if(!this->getDOFManager().hasMatrix("M")) {
+  if (!this->getDOFManager().hasMatrix("M")) {
     this->getDOFManager().getNewMatrix("M", "J");
   }
 
@@ -113,10 +125,11 @@ void SolidMechanicsModel::assembleMass() {
 
 class ComputeRhoFunctor {
 public:
-  ComputeRhoFunctor(const SolidMechanicsModel & model) : model(model){};
+  explicit ComputeRhoFunctor(const SolidMechanicsModel & model) : model(model){};
 
-  void operator()(Matrix<Real> & rho, const Element & element,
-                  __attribute__((unused)) const Matrix<Real> quad_coords) const {
+  void
+  operator()(Matrix<Real> & rho, const Element & element,
+             __attribute__((unused)) const Matrix<Real> quad_coords) const {
     const Array<UInt> & mat_indexes =
         model.getMaterialByElement(element.type, element.ghost_type);
     Real mat_rho =

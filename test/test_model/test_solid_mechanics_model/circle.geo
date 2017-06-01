@@ -14,3 +14,6 @@ Circle(4) = {4, 5, 1};
 Line Loop(5) = {2, 3, 4, 1};
 
 Plane Surface(6) = {5};
+
+Physical Line(1) = { 2, 3, 4, 1 } ;
+Physical Surface(1) = { 6 };

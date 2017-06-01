@@ -687,6 +687,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
   std::string line;
   UInt first_node_number = std::numeric_limits<UInt>::max(),
        last_node_number = 0, file_format = 1, current_line = 0;
+  bool has_physical_names = false;
 
   if (!infile.good()) {
     AKANTU_DEBUG_ERROR("Cannot open file " << filename);
@@ -713,6 +714,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
     /// read the physical names
     if (line == "$PhysicalNames") {
+      has_physical_names = true;
       my_getline(infile, line); /// the format line
       std::stringstream sstr(line);
 
@@ -871,7 +873,8 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
   this->constructPhysicalNames("tag_0", mesh);
 
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
+  if (has_physical_names)
+    mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   MeshUtils::fillElementToSubElementsData(mesh);
 }

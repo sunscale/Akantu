@@ -37,8 +37,7 @@
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   akantu::initialize("material.dat", argc, argv);
   UInt max_steps = 10000;
   Real epot, ekin, wext = 0;
@@ -60,7 +59,7 @@ int main(int argc, char *argv[])
   model.assembleMassLumped();
 
   // Boundary condition (Neumann)
-  Matrix<Real> stress(2,2);
+  Matrix<Real> stress(2, 2);
   stress.eye(Real(1e3));
   model.applyBC(BC::Neumann::FromHigherDim(stress), "boundary_0");
 
@@ -68,28 +67,26 @@ int main(int argc, char *argv[])
   model.addDumpFieldVector("displacement");
   model.addDumpFieldVector("external_force");
   model.addDumpFieldVector("internal_force");
-  model.addDumpField("mass"        );
-  model.addDumpField("velocity"    );
+  model.addDumpField("mass");
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("stress"      );
-  model.addDumpField("strain"      );
+  model.addDumpField("stress");
+  model.addDumpField("strain");
   model.dump();
 
-  for(UInt s = 0; s < max_steps; ++s) {
+  for (UInt s = 0; s < max_steps; ++s) {
     model.solveStep();
 
-    epot  = model.getEnergy("potential");
-    ekin  = model.getEnergy("kinetic");
+    epot = model.getEnergy("potential");
+    ekin = model.getEnergy("kinetic");
     wext += model.getEnergy("external work");
 
-    std::cout << s << "," << epot << "," << ekin << "," << wext << "," << epot + ekin - wext
-	      << std::endl;
+    std::cout << s << "," << epot << "," << ekin << "," << wext << ","
+              << epot + ekin - wext << std::endl;
 
-    if(s % 100 == 0) model.dump();
+    if (s % 100 == 0)
+      model.dump();
   }
 
   return EXIT_SUCCESS;
 }
-
-
-

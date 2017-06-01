@@ -38,7 +38,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
-#include "aka_common.hh"
 #include "aka_math.hh"
 
 #include "element_group.hh"
@@ -65,10 +64,7 @@
 #include "non_local_manager.hh"
 #endif
 /* -------------------------------------------------------------------------- */
-#include <cmath>
-/* -------------------------------------------------------------------------- */
 
-/* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 
 const SolidMechanicsModelOptions
@@ -318,6 +314,8 @@ void SolidMechanicsModel::initSolver(
   /* ------------------------------------------------------------------------ */
   // for alloc type of solvers
   this->allocNodalField(this->displacement, spatial_dimension, "displacement");
+  this->allocNodalField(this->displacement_increment, spatial_dimension,
+                        "displacement_increment");
   this->allocNodalField(this->internal_force, spatial_dimension,
                         "internal_force");
   this->allocNodalField(this->external_force, spatial_dimension,
@@ -330,6 +328,8 @@ void SolidMechanicsModel::initSolver(
   if (!dof_manager.hasDOFs("displacement")) {
     dof_manager.registerDOFs("displacement", *this->displacement, _dst_nodal);
     dof_manager.registerBlockedDOFs("displacement", *this->blocked_dofs);
+    dof_manager.registerDOFsIncrement("displacement",
+                                      *this->displacement_increment);
   }
 
   /* ------------------------------------------------------------------------ */
@@ -902,23 +902,25 @@ Real SolidMechanicsModel::getKineticEnergy() {
   UInt nb_nodes = mesh.getNbNodes();
 
   if (this->getDOFManager().hasLumpedMatrix("M")) {
-    Array<Real> M(nb_nodes, spatial_dimension);
-    this->getDOFManager().getLumpedMatrixPerDOFs("displacement", "M", M);
-    auto m_it = M.begin(spatial_dimension);
-    auto m_end = M.end(spatial_dimension);
+    auto m_it = this->mass->begin(spatial_dimension);
+    auto m_end = this->mass->end(spatial_dimension);
     auto v_it = this->velocity->begin(spatial_dimension);
 
     for (UInt n = 0; m_it != m_end; ++n, ++m_it, ++v_it) {
+      const Vector<Real> & v = *v_it;
+      const Vector<Real> & m = *m_it;
+
       Real mv2 = 0;
       bool is_local_node = mesh.isLocalOrMasterNode(n);
       // bool is_not_pbc_slave_node = !isPBCSlaveNode(n);
       bool count_node = is_local_node; // && is_not_pbc_slave_node;
       if (count_node) {
         for (UInt i = 0; i < spatial_dimension; ++i) {
-          Real v = (*v_it)(i);
-          mv2 += v * v * (*m_it)(i);
+          if (m(i) > std::numeric_limits<Real>::epsilon())
+            mv2 += v(i) * v(i) * m(i);
         }
       }
+
       ekin += mv2;
     }
   } else if (this->getDOFManager().hasMatrix("M")) {
@@ -977,37 +979,37 @@ Real SolidMechanicsModel::getKineticEnergy(const ElementType & type,
 Real SolidMechanicsModel::getExternalWork() {
   AKANTU_DEBUG_IN();
 
-  Real * incr_or_velo = NULL;
+  auto incr_or_velo_it = this->velocity->begin(spatial_dimension);
   if (this->method == _static) {
-    incr_or_velo = this->displacement_increment->storage();
-  } else {
-    incr_or_velo = this->velocity->storage();
+    incr_or_velo_it = this->displacement_increment->begin(spatial_dimension);
   }
-  Real * forc = external_force->storage();
-  Real * resi = internal_force->storage();
-  bool * boun = blocked_dofs->storage();
+
+  auto ext_force_it = external_force->begin(spatial_dimension);
+  auto int_force_it = internal_force->begin(spatial_dimension);
+  auto boun_it = blocked_dofs->begin(spatial_dimension);
 
   Real work = 0.;
 
   UInt nb_nodes = this->mesh.getNbNodes();
 
-  for (UInt n = 0; n < nb_nodes; ++n) {
+  for (UInt n = 0; n < nb_nodes;
+       ++n, ++ext_force_it, ++int_force_it, ++boun_it, ++incr_or_velo_it) {
+    const auto & int_force = *int_force_it;
+    const auto & ext_force = *ext_force_it;
+    const auto & boun = *boun_it;
+    const auto & incr_or_velo = *incr_or_velo_it;
+
     bool is_local_node = this->mesh.isLocalOrMasterNode(n);
-    bool is_not_pbc_slave_node = !this->isPBCSlaveNode(n);
-    bool count_node = is_local_node && is_not_pbc_slave_node;
+    // bool is_not_pbc_slave_node = !this->isPBCSlaveNode(n);
+    bool count_node = is_local_node; // && is_not_pbc_slave_node;
 
-    for (UInt i = 0; i < this->spatial_dimension; ++i) {
-      if (count_node) {
-        if (*boun)
-          work -= *resi * *incr_or_velo;
+    if (count_node) {
+      for (UInt i = 0; i < this->spatial_dimension; ++i) {
+        if (boun(i))
+          work -= int_force(i) * incr_or_velo(i);
         else
-          work += *forc * *incr_or_velo;
+          work += ext_force(i) * incr_or_velo(i);
       }
-
-      ++incr_or_velo;
-      ++forc;
-      ++resi;
-      ++boun;
     }
   }
 
