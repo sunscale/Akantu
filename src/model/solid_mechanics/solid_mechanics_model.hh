@@ -629,8 +629,8 @@ public:
   // AKANTU_GET_MACRO(Integrator, *integrator, const IntegrationScheme2ndOrder
   // &);
 
-  /// get synchronizer
-  AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const ElementSynchronizer &);
+  // /// get synchronizer
+  // AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const ElementSynchronizer &);
 
   AKANTU_GET_MACRO(MaterialByElement, material_index,
                    const ElementTypeMapArray<UInt> &);
@@ -728,7 +728,7 @@ protected:
 public:
 #endif
   /// list of used materials
-  std::vector<Material *> materials;
+  std::vector<std::unique_ptr<Material>> materials;
 
   /// mapping between material name and material internal id
   std::map<std::string, UInt> materials_names_to_id;
@@ -750,9 +750,6 @@ protected:
 
   /// analysis method check the list in akantu::AnalysisMethod
   AnalysisMethod method;
-
-  /// internal synchronizer for parallel computations
-  ElementSynchronizer * synch_parallel;
 
   /// tells if the material are instantiated
   bool are_materials_instantiated;

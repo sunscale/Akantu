@@ -46,8 +46,6 @@
 
 namespace akantu {
 class SynchronizerRegistry;
-class DataAccessorBase;
-template <class Entity> class DataAccessor;
 } // akantu
 
 /* -------------------------------------------------------------------------- */
@@ -164,7 +162,8 @@ public:
   std::map<UInt, UInt> & getPBCPairs() { return pbc_pair; };
 
   /// returns if node is slave in pbc
-  inline bool isPBCSlaveNode(const UInt node) const {
+  inline bool isPBCSlaveNode(const UInt) const {
+    throw;
     return false; /* TODO repair PBC*/
   }
 

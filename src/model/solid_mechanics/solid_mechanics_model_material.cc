@@ -31,9 +31,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
-#include "material_list.hh"
 #include "aka_math.hh"
+#include "material_list.hh"
+#include "solid_mechanics_model.hh"
 #ifdef AKANTU_DAMAGE_NON_LOCAL
 #include "non_local_manager.hh"
 #endif
@@ -65,7 +65,8 @@ __BEGIN_AKANTU__
 #define AKANTU_INTANTIATE_MATERIAL_BY_DIM(dim, elem)                           \
   BOOST_PP_IF(BOOST_PP_EQUAL(3, BOOST_PP_ARRAY_SIZE(elem)),                    \
               AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL,                          \
-              AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL)(dim, elem)
+              AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL)                       \
+  (dim, elem)
 
 #define AKANTU_INTANTIATE_MATERIAL(elem)                                       \
   switch (spatial_dimension) {                                                 \
@@ -127,32 +128,30 @@ void SolidMechanicsModel::instantiateMaterials() {
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::assignMaterialToElements(
     const ElementTypeMapArray<UInt> * filter) {
-  Material ** mat_val = &(materials.at(0));
 
   Element element;
   element.ghost_type = _not_ghost;
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, _not_ghost, _ek_not_defined);
-  Mesh::type_iterator end =
-      mesh.lastType(spatial_dimension, _not_ghost, _ek_not_defined);
+
+  auto element_types =
+      mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined);
   if (filter != NULL) {
-    it = filter->firstType(spatial_dimension, _not_ghost, _ek_not_defined);
-    end = filter->lastType(spatial_dimension, _not_ghost, _ek_not_defined);
+    element_types =
+      filter->elementTypes(spatial_dimension, _not_ghost, _ek_not_defined);
   }
 
   // Fill the element material array from the material selector
-  for (; it != end; ++it) {
-    UInt nb_element = mesh.getNbElement(*it, _not_ghost);
+  for (auto type : element_types) {
+    UInt nb_element = mesh.getNbElement(type, _not_ghost);
 
     const Array<UInt> * filter_array = NULL;
     if (filter != NULL) {
-      filter_array = &((*filter)(*it, _not_ghost));
+      filter_array = &((*filter)(type, _not_ghost));
       nb_element = filter_array->getSize();
     }
 
-    element.type = *it;
+    element.type = type;
     element.kind = mesh.getKind(element.type);
-    Array<UInt> & mat_indexes = material_index(*it, _not_ghost);
+    Array<UInt> & mat_indexes = material_index(type, _not_ghost);
     for (UInt el = 0; el < nb_element; ++el) {
       if (filter != NULL)
         element.element = (*filter_array)(el);
@@ -172,27 +171,26 @@ void SolidMechanicsModel::assignMaterialToElements(
 
   /// fill the element filters of the materials using the element_material
   /// arrays
-  for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
-    it = mesh.firstType(spatial_dimension, gt, _ek_not_defined);
-    end = mesh.lastType(spatial_dimension, gt, _ek_not_defined);
+  for (auto ghost_type : ghost_types) {
+    element_types =
+        mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined);
 
     if (filter != NULL) {
-      it = filter->firstType(spatial_dimension, gt, _ek_not_defined);
-      end = filter->lastType(spatial_dimension, gt, _ek_not_defined);
+      element_types =
+          filter->elementTypes(spatial_dimension, ghost_type, _ek_not_defined);
     }
 
-    for (; it != end; ++it) {
-      UInt nb_element = mesh.getNbElement(*it, gt);
+    for (auto type : element_types) {
+      UInt nb_element = mesh.getNbElement(type, ghost_type);
 
       const Array<UInt> * filter_array = NULL;
       if (filter != NULL) {
-        filter_array = &((*filter)(*it, gt));
+        filter_array = &((*filter)(type, ghost_type));
         nb_element = filter_array->getSize();
       }
 
-      Array<UInt> & mat_indexes = material_index(*it, gt);
-      Array<UInt> & mat_local_num = material_local_numbering(*it, gt);
+      Array<UInt> & mat_indexes = material_index(type, ghost_type);
+      Array<UInt> & mat_local_num = material_local_numbering(type, ghost_type);
       for (UInt el = 0; el < nb_element; ++el) {
         UInt element;
 
@@ -202,7 +200,8 @@ void SolidMechanicsModel::assignMaterialToElements(
           element = el;
 
         UInt mat_index = mat_indexes(element);
-        UInt index = mat_val[mat_index]->addElement(*it, element, gt);
+        UInt index =
+            materials[mat_index]->addElement(type, element, ghost_type);
         mat_local_num(element) = index;
       }
     }
@@ -218,10 +217,9 @@ void SolidMechanicsModel::initMaterials() {
 
   this->assignMaterialToElements();
 
-  std::vector<Material *>::iterator mat_it;
-  for (mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+  for (auto & material : materials) {
     /// init internals properties
-    (*mat_it)->initMaterial();
+    material->initMaterial();
   }
 
   this->synchronize(_gst_smm_init_mat);
@@ -243,9 +241,8 @@ void SolidMechanicsModel::initMaterials() {
   }
 
   // initialize the previous displacement array if at least on material needs it
-  for (mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    Material & mat = **mat_it;
-    if (mat.isFiniteDeformation() || mat.isInelasticDeformation()) {
+  for (auto & material : materials) {
+    if (material->isFiniteDeformation() || material->isInelasticDeformation()) {
       initArraysPreviousDisplacment();
       break;
     }
@@ -261,13 +258,13 @@ void SolidMechanicsModel::initMaterials() {
 Int SolidMechanicsModel::getInternalIndexFromID(const ID & id) const {
   AKANTU_DEBUG_IN();
 
-  std::vector<Material *>::const_iterator first = materials.begin();
-  std::vector<Material *>::const_iterator last = materials.end();
+  auto it = materials.begin();
+  auto end = materials.end();
 
-  for (; first != last; ++first)
-    if ((*first)->getID() == id) {
+  for (; it != end; ++it)
+    if ((*it)->getID() == id) {
       AKANTU_DEBUG_OUT();
-      return (first - materials.begin());
+      return (it - materials.begin());
     }
 
   AKANTU_DEBUG_OUT();
@@ -278,21 +275,15 @@ Int SolidMechanicsModel::getInternalIndexFromID(const ID & id) const {
 void SolidMechanicsModel::reassignMaterial() {
   AKANTU_DEBUG_IN();
 
-  std::vector<Array<Element> > element_to_add(materials.size());
-  std::vector<Array<Element> > element_to_remove(materials.size());
+  std::vector<Array<Element>> element_to_add(materials.size());
+  std::vector<Array<Element>> element_to_remove(materials.size());
 
   Element element;
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
+  for (auto ghost_type : ghost_types) {
     element.ghost_type = ghost_type;
 
-    Mesh::type_iterator it =
-        mesh.firstType(spatial_dimension, ghost_type, _ek_not_defined);
-    Mesh::type_iterator end =
-        mesh.lastType(spatial_dimension, ghost_type, _ek_not_defined);
-    for (; it != end; ++it) {
-      ElementType type = *it;
+    for (auto type :
+         mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
       element.type = type;
       element.kind = Mesh::getKind(type);
 
@@ -313,9 +304,8 @@ void SolidMechanicsModel::reassignMaterial() {
     }
   }
 
-  std::vector<Material *>::iterator mat_it;
   UInt mat_index = 0;
-  for (mat_it = materials.begin(); mat_it != materials.end();
+  for (auto mat_it = materials.begin(); mat_it != materials.end();
        ++mat_it, ++mat_index) {
     (*mat_it)->removeElements(element_to_remove[mat_index]);
     (*mat_it)->addElements(element_to_add[mat_index]);
@@ -332,10 +322,9 @@ void SolidMechanicsModel::applyEigenGradU(
   AKANTU_DEBUG_ASSERT(prescribed_eigen_grad_u.size() ==
                           spatial_dimension * spatial_dimension,
                       "The prescribed grad_u is not of the good size");
-  std::vector<Material *>::iterator mat_it;
-  for (mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    if ((*mat_it)->getName() == material_name)
-      (*mat_it)->applyEigenGradU(prescribed_eigen_grad_u, ghost_type);
+  for (auto & material : materials) {
+    if (material->getName() == material_name)
+      material->applyEigenGradU(prescribed_eigen_grad_u, ghost_type);
   }
 }
 

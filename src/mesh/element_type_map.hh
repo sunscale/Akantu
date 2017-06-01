@@ -34,8 +34,8 @@
 #ifndef __AKANTU_ELEMENT_TYPE_MAP_HH__
 #define __AKANTU_ELEMENT_TYPE_MAP_HH__
 
-#include "aka_common.hh"
 #include "aka_array.hh"
+#include "aka_common.hh"
 #include "aka_memory.hh"
 
 __BEGIN_AKANTU__
@@ -154,12 +154,17 @@ public:
                                UInt dim = _all_dimensions,
                                GhostType ghost_type = _not_ghost,
                                ElementKind kind = _ek_regular)
-        : container(container), dim(dim), ghost_type(ghost_type), kind(kind) {}
-    iterator begin() { return container.firstType(dim, ghost_type, kind); }
-    iterator end() { return container.lastType(dim, ghost_type, kind); }
+        : container(std::cref(container)), dim(dim), ghost_type(ghost_type), kind(kind) {}
+
+    ElementTypesIteratorHelper(const ElementTypesIteratorHelper &) = default;
+    ElementTypesIteratorHelper & operator=(const ElementTypesIteratorHelper &) = default;
+    ElementTypesIteratorHelper & operator=(ElementTypesIteratorHelper &&) = default;
+
+    iterator begin() { return container.get().firstType(dim, ghost_type, kind); }
+    iterator end() { return container.get().lastType(dim, ghost_type, kind); }
 
   private:
-    const Container & container;
+    std::reference_wrapper<const Container> container;
     UInt dim;
     GhostType ghost_type;
     ElementKind kind;
