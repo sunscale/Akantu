@@ -77,10 +77,8 @@ int main(int argc, char * argv[]) {
   Mesh mesh(spatial_dimension);
 
   const auto & comm = StaticCommunicator::getStaticCommunicator();
-  Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
-  MeshPartition * partition = NULL;
   if (prank == 0) {
     mesh.read("beam_2d_quad.msh");
   }
@@ -154,8 +152,8 @@ int main(int argc, char * argv[]) {
   model.addDumpField("displacement");
   model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("force");
-  model.addDumpField("residual");
+  model.addDumpField("external_force");
+  model.addDumpField("internal_force");
   model.addDumpField("stress");
   model.addDumpField("strain");
 

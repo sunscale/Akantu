@@ -69,8 +69,8 @@ int main(int argc, char *argv[]) {
   model.addDumpField      ("mass"        );
   model.addDumpField      ("velocity"    );
   model.addDumpField      ("acceleration");
-  model.addDumpFieldVector("force"       );
-  model.addDumpField      ("residual"    );
+  model.addDumpFieldVector("external_force");
+  model.addDumpFieldVector("internal_force");
   model.addDumpField      ("stress"      );
   model.addDumpField      ("grad_u"      );
   model.dump();

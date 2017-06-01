@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
   model.addDumpField("mass"        );
   model.addDumpField("velocity"    );
   model.addDumpField("acceleration");
-  model.addDumpField("force"       );
-  model.addDumpField("residual"    );
+  model.addDumpField("external_force");
+  model.addDumpField("internal_force");
   model.addDumpField("stress"      );
   model.addDumpField("grad_u"      );
   model.addDumpField("element_index_by_material");

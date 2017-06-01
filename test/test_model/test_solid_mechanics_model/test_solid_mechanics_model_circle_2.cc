@@ -66,8 +66,8 @@ int main(int argc, char *argv[])
 
   model.setBaseName("circle2");
   model.addDumpFieldVector("displacement");
-  model.addDumpFieldVector("force"       );
-  model.addDumpFieldVector("residual"    );
+  model.addDumpFieldVector("external_force");
+  model.addDumpFieldVector("internal_force");
   model.addDumpField("mass"        );
   model.addDumpField("velocity"    );
   model.addDumpField("acceleration");

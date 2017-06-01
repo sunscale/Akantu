@@ -59,12 +59,12 @@ int main(int argc, char *argv[]) {
 
   for (UInt i = 0 ; i < steps ; ++i) {
     model.applyBC(BC::Dirichlet::FixedValue(i * u_increment, _x), "right");
-    model.solveStatic<_scm_newton_raphson_tangent, _scc_increment>(1e-6, 300);
-    model.updateResidual();
+    model.solveStep();
+
     Real strainxx = i * u_increment / 10.;
 
     const Array<UInt> & edge_nodes = mesh.getElementGroup("right").getNodes();
-    Array<Real> & residual = model.getResidual();
+    Array<Real> & residual = model.getInternalForce();
     Real reaction = 0;
 
     for (UInt n = 0 ; n < edge_nodes.getSize() ; n++) {

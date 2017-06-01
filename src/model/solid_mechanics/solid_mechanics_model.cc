@@ -1366,9 +1366,16 @@ SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
   real_nodal_fields["mass"] = this->mass;
   real_nodal_fields["velocity"] = this->velocity;
   real_nodal_fields["acceleration"] = this->acceleration;
-  real_nodal_fields["force"] = this->external_force;
+  real_nodal_fields["external_force"] = this->external_force;
   real_nodal_fields["internal_force"] = this->internal_force;
   real_nodal_fields["increment"] = this->displacement_increment;
+
+  if (field_name == "force") {
+    AKANTU_EXCEPTION("The 'force' field has been renamed in 'external_force'");
+  } else if (field_name == "residual") {
+    AKANTU_EXCEPTION(
+        "The 'residual' field has been replaced by 'internal_force'");
+  }
 
   dumper::Field * field = NULL;
   if (padding_flag)

@@ -80,8 +80,8 @@ int main(int argc, char *argv[])
   model.addDumpFieldVector("displacement");
   model.addDumpField("velocity"    );
   model.addDumpField("acceleration");
-  model.addDumpField("force"       );
-  model.addDumpField("residual"    );
+  model.addDumpFieldVector("external_force");
+  model.addDumpFieldVector("internal_force");
   model.addDumpField("damage"      );
   model.addDumpField("stress"      );
   model.addDumpField("strain"      );
