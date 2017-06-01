@@ -97,7 +97,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
       material_local_numbering("material local numbering", id, memory_id),
       material_selector(new DefaultMaterialSelector(material_index)),
       is_default_material_selector(true), increment_flag(false),
-      synch_parallel(NULL), are_materials_instantiated(false),
+      are_materials_instantiated(false),
       non_local_manager(NULL) { //, pbc_synch(NULL) {
   AKANTU_DEBUG_IN();
 
@@ -113,6 +113,17 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
 
   this->initDOFManager();
 
+  this->registerDataAccessor(*this);
+
+  if (this->mesh.isDistributed()) {
+    auto & synchronizer = this->mesh.getElementSynchronizer();
+    this->registerSynchronizer(synchronizer, _gst_material_id);
+    this->registerSynchronizer(synchronizer, _gst_smm_mass);
+    this->registerSynchronizer(synchronizer, _gst_smm_stress);
+    this->registerSynchronizer(synchronizer, _gst_smm_boundary);
+    this->registerSynchronizer(synchronizer, _gst_for_dump);
+  }
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -126,8 +137,6 @@ SolidMechanicsModel::~SolidMechanicsModel() {
   }
 
   materials.clear();
-
-  delete synch_parallel;
 
   if (is_default_material_selector) {
     delete material_selector;

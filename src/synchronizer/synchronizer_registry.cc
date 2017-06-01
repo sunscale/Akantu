@@ -38,7 +38,7 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-SynchronizerRegistry::SynchronizerRegistry() {
+SynchronizerRegistry::SynchronizerRegistry() : data_accessor(nullptr) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
