@@ -1,0 +1,4 @@
+Checks:          'modernize-*'
+AnalyzeTemporaryDtors: false
+HeaderFilterRegex: '.*'
+FormatStyle:     file

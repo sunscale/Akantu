@@ -70,6 +70,7 @@ include(CMakeFlagsHandling)
 
 include(AkantuPackagesSystem)
 include(AkantuMacros)
+include(AkantuCleaning)
 
 #cmake_activate_debug_message()
 

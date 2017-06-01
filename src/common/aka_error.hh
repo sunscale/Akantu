@@ -213,7 +213,7 @@ namespace debug {
     std::stringstream _dbg_s_info;                                             \
     _dbg_s_info << _sstr;                                                      \
     _str = _dbg_s_info.str();                                                  \
-  } while (0)
+  } while (false)
 
 /* -------------------------------------------------------------------------- */
 #define AKANTU_EXCEPTION(info) AKANTU_EXCEPTION_(info, false)
@@ -228,7 +228,7 @@ namespace debug {
     _dbg_loc << AKANTU_LOCATION;                                               \
     ::akantu::debug::debugger.throwException(                                  \
         _dbg_str.str(), __FILE__, __LINE__, silent, _dbg_loc.str());           \
-  } while (0)
+  } while (false)
 
 #define AKANTU_CUSTOM_EXCEPTION_INFO(ex, info)                                 \
   do {                                                                         \
@@ -236,12 +236,12 @@ namespace debug {
     _dbg_str << info;                                                          \
     ::akantu::debug::debugger.throwCustomException(ex, _dbg_str.str(),         \
                                                    __FILE__, __LINE__);        \
-  } while (0)
+  } while (false)
 
 #define AKANTU_CUSTOM_EXCEPTION(ex)                                            \
   do {                                                                         \
     ::akantu::debug::debugger.throwCustomException(ex, __FILE__, __LINE__);    \
-  } while (0)
+  } while (false)
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_NDEBUG
@@ -268,7 +268,7 @@ namespace debug {
     std::string _dbg_str;                                                      \
     AKANTU_STRINGSTREAM_IN(_dbg_str, info << " " << AKANTU_LOCATION);          \
     ::akantu::debug::debugger.printMessage(pref, level, _dbg_str);             \
-  } while (0)
+  } while (false)
 
 #define AKANTU_DEBUG_TEST(level) (::akantu::debug::debugger.testLevel(level))
 
@@ -295,13 +295,13 @@ namespace debug {
                                                             << info);          \
       ::akantu::debug::debugger.exit(EXIT_FAILURE);                            \
     }                                                                          \
-  } while (0)
+  } while (false)
 
 #define AKANTU_DEBUG_ERROR(info)                                               \
   do {                                                                         \
     AKANTU_DEBUG_("!!! ", ::akantu::dblError, info);                           \
     ::akantu::debug::debugger.exit(EXIT_FAILURE);                              \
-  } while (0)
+  } while (false)
 
 #define AKANTU_DEBUG_TO_IMPLEMENT()                                            \
   AKANTU_DEBUG_ERROR(__func__ << " : not implemented yet !")

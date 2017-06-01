@@ -217,3 +217,5 @@ export(PACKAGE Akantu)
 
 # print out the list of materials
 generate_material_list()
+
+register_target_to_tidy(akantu)
