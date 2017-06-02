@@ -42,7 +42,7 @@ mark_as_advanced(Boost_DIR)
 package_on_enabled_script(Boost
   "if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER \"4.8\")
   set(_boost_version \${Boost_MAJOR_VERSION}.\${Boost_MINOR_VERSION})
-  if(AKANTU_CORE_CXX11 AND _boost_version VERSION_LESS 1.58 AND _boost_version VERSION_GREATER 1.53)
+  if(_boost_version VERSION_LESS 1.58 AND _boost_version VERSION_GREATER 1.53)
     package_set_compile_flags(Boost CXX -DBOOST_SPIRIT_USE_PHOENIX_V3)
   else()
     package_unset_compile_flags(Boost CXX)

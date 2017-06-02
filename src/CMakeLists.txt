@@ -173,7 +173,7 @@ set_target_properties(akantu
     ${AKANTU_LIBRARY_PROPERTIES} # this contains the version
     PUBLIC_HEADER "${AKANTU_LIBRARY_PUBLIC_HDRS}"
     COMPILE_FLAGS "${_cxx_flags}"
-    LINK_INTERFACE_MULTIPLICITY 2)
+    CXX_STANDARD 14)
 
 if(NOT CMAKE_VERSION VERSION_LESS 3.1)
   package_get_all_features_public(_public_features)

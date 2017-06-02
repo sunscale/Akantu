@@ -32,12 +32,6 @@
 #include "aka_array.hh"
 #include "aka_common.hh"
 
-#if defined(AKANTU_USE_CXX11)
-#define __CONST_EXPR constexpr
-#else
-#define __CONST_EXPR
-#endif
-
 #ifndef __AKANTU_AKA_RANDOM_GENERATOR_HH__
 #define __AKANTU_AKA_RANDOM_GENERATOR_HH__
 
@@ -157,8 +151,8 @@ public:
   static void seed(long int s);
   static long int seed();
 
-  static __CONST_EXPR T min();
-  static __CONST_EXPR T max();
+  static constexpr T min();
+  static constexpr T max();
 
   /* ------------------------------------------------------------------------ */
 private:
@@ -185,8 +179,8 @@ template <typename T> void Rand48Generator<T>::seed(long int s) {
   srand48(_seed);
 }
 template <typename T> long int Rand48Generator<T>::seed() { return _seed; }
-template <typename T> __CONST_EXPR T Rand48Generator<T>::min() { return 0.; }
-template <typename T> __CONST_EXPR T Rand48Generator<T>::max() { return 1.; }
+template <typename T> constexpr T Rand48Generator<T>::min() { return 0.; }
+template <typename T> constexpr T Rand48Generator<T>::max() { return 1.; }
 
 #endif
 /* -------------------------------------------------------------------------- */
@@ -209,8 +203,8 @@ public:
   }
   static long int seed() { return _seed; }
 
-  static __CONST_EXPR T min() { return 0.; }
-  static __CONST_EXPR T max() { return RAND_MAX; }
+  static constexpr T min() { return 0.; }
+  static constexpr T max() { return RAND_MAX; }
 
   /* ------------------------------------------------------------------------ */
 private:
@@ -271,7 +265,7 @@ BOOST_PP_SEQ_FOR_EACH(AKANTU_RANDOM_DISTRIBUTION_TYPE_GET_TYPE, _,
 /* -------------------------------------------------------------------------- */
 template <typename T> class RandomParameter {
 public:
-  RandomParameter(T base_value)
+  explicit RandomParameter(T base_value)
       : base_value(base_value), type(_rdt_not_defined), distribution(NULL) {}
 
   template <template <typename> class Distribution>

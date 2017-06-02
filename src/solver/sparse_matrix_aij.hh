@@ -32,6 +32,8 @@
 #include "aka_common.hh"
 #include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
+#include <unordered_map>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SPARSE_MATRIX_AIJ_HH__
 #define __AKANTU_SPARSE_MATRIX_AIJ_HH__
@@ -132,8 +134,8 @@ public:
   AKANTU_GET_MACRO(ValueRelease, value_release, UInt);
   virtual UInt getRelease() const { return value_release; }
 protected:
-  typedef std::pair<UInt, UInt> KeyCOO;
-  typedef unordered_map<KeyCOO, UInt>::type coordinate_list_map;
+  using KeyCOO = std::pair<UInt, UInt>;
+  using coordinate_list_map = std::unordered_map<KeyCOO, UInt>;
 
   /// get the pair corresponding to (i, j)
   inline KeyCOO key(UInt i, UInt j) const {

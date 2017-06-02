@@ -146,11 +146,6 @@ public:
   /// function that computes the bounding box (fills xmin, xmax)
   void computeBoundingBox();
 
-#ifdef AKANTU_CORE_CXX11
-  /// translate the mesh by the given amount in x[, y[, z]] directions
-  template <typename... Args> void translate(Args... params);
-#endif
-
   /// init a by-element-type real vector with provided ids
   template <typename T>
   void

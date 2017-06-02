@@ -32,10 +32,11 @@
 
 /* -------------------------------------------------------------------------- */
 #include "synchronizer.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <functional>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Synchronizer::Synchronizer(const ID & id, MemoryID memory_id,
@@ -43,7 +44,7 @@ Synchronizer::Synchronizer(const ID & id, MemoryID memory_id,
     : Memory(id, memory_id), communicator(comm) {
   int max_tag = comm.getMaxTag();
 
-  this->hash_id = hash<std::string>(this->getID());
+  this->hash_id = std::hash<std::string>()(this->getID());
   if (max_tag != 0)
     this->hash_id = this->hash_id % max_tag;
 
@@ -51,4 +52,4 @@ Synchronizer::Synchronizer(const ID & id, MemoryID memory_id,
   this->rank = communicator.whoAmI();
 }
 
-__END_AKANTU__
+} // akantu

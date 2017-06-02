@@ -47,26 +47,20 @@ namespace akantu {
   typedef @AKANTU_SIGNED_INTEGER_TYPE@ Int;
   typedef @AKANTU_UNSIGNED_INTEGER_TYPE@ UInt;
 
-  template<class Key, class Ty>
-  struct unordered_map {
-    typedef typename @AKANTU_UNORDERED_MAP_TYPE@<Key, Ty> type;
-  };
+  // template<class Key, class Ty>
+  // struct unordered_map {
+  //   typedef typename @AKANTU_UNORDERED_MAP_TYPE@<Key, Ty> type;
+  // };
 
-  template<class T>
-  std::size_t hash(const T & t) {
-    typedef typename @AKANTU_HASH_TYPE@<T> hash_type;
-    return hash_type()(t);
-  }
+  // template<class T>
+  // std::size_t hash(const T & t) {
+  //   typedef typename @AKANTU_HASH_TYPE@<T> hash_type;
+  //   return hash_type()(t);
+  // }
 }
 
 #define AKANTU_INTEGER_SIZE @AKANTU_INTEGER_SIZE@
 #define AKANTU_FLOAT_SIZE @AKANTU_FLOAT_SIZE@
-
-#cmakedefine AKANTU_UNORDERED_MAP_IS_CXX11
-#define __BEGIN_AKANTU_UNORDERED_MAP__ \
-  @AKANTU_UNORDERED_MAP_NAMESPACE_BEGIN@
-#define __END_AKANTU_UNORDERED_MAP__ \
-  @AKANTU_UNORDERED_MAP_NAMESPACE_END@
 
 #cmakedefine AKANTU_HAS_STRDUP
 
@@ -109,13 +103,6 @@ namespace akantu {
 
 #cmakedefine AKANTU_USE_CGAL
 #cmakedefine AKANTU_EMBEDDED
-
-// BOOST Section
-#cmakedefine AKANTU_BOOST_CHRONO
-#cmakedefine AKANTU_BOOST_SYSTEM
-
-// Experimental part
-#cmakedefine AKANTU_CORE_CXX11
 
 // Debug tools
 //#cmakedefine AKANTU_NDEBUG

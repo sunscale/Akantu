@@ -35,6 +35,9 @@
 #include "mesh_utils.hh"
 #include "aka_types.hh"
 /* -------------------------------------------------------------------------- */
+#include <unordered_map>
+/* -------------------------------------------------------------------------- */
+
 
 __BEGIN_AKANTU__
 
@@ -147,7 +150,7 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
   edge_loads.resize(2 * dxadj(nb_total_element));
 
   /// weight map to determine adjacency
-  unordered_map<UInt, UInt>::type weight_map;
+  std::unordered_map<UInt, UInt> weight_map;
 
   for (UInt t = 0, linerized_el = 0; t < nb_good_types; ++t) {
     for (UInt el = 0; el < nb_element[t]; ++el, ++linerized_el) {
@@ -160,8 +163,7 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
           if (current_el <= linerized_el)
             break;
 
-          unordered_map<UInt, UInt>::type::iterator it_w;
-          it_w = weight_map.find(current_el);
+          auto it_w = weight_map.find(current_el);
 
           if (it_w == weight_map.end()) {
             weight_map[current_el] = 1;
@@ -171,8 +173,7 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
         }
       }
       /// each element with a weight of the size of a facet are adjacent
-      unordered_map<UInt, UInt>::type::iterator it_w;
-      for (it_w = weight_map.begin(); it_w != weight_map.end(); ++it_w) {
+      for (auto it_w = weight_map.begin(); it_w != weight_map.end(); ++it_w) {
         if (it_w->second == magic_number[t]) {
           UInt adjacent_el = it_w->first;
 

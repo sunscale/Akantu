@@ -30,6 +30,8 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
+#include <unordered_map>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DOF_MANAGER_DEFAULT_HH__
 #define __AKANTU_DOF_MANAGER_DEFAULT_HH__
@@ -225,10 +227,10 @@ public:
   AKANTU_GET_MACRO(PreviousGlobalBlockedDOFs, previous_global_blocked_dofs,
                    const Array<bool> &);
   /// Get the location type of a given dof
-  inline bool isLocalOrMasterDOF(UInt dof_num);
+  inline bool isLocalOrMasterDOF(UInt local_dof_num);
 
   /// Answer to the question is a dof a slave dof ?
-  inline bool isSlaveDOF(UInt dof_num);
+  inline bool isSlaveDOF(UInt local_dof_num);
 
   /// get the equation numbers (in local numbering) corresponding to a dof ID
   inline const Array<UInt> & getLocalEquationNumbers(const ID & dof_id) const;
@@ -317,7 +319,7 @@ protected:
   /// equation number in global numbering
   Array<UInt> global_equation_number;
 
-  typedef unordered_map<UInt, UInt>::type equation_numbers_map;
+  using equation_numbers_map = std::unordered_map<UInt, UInt>;
 
   /// dual information of global_equation_number
   equation_numbers_map global_to_local_mapping;

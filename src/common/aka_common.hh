@@ -413,15 +413,13 @@ __END_AKANTU__
 
 /* -------------------------------------------------------------------------- */
 
-#if defined(AKANTU_UNORDERED_MAP_IS_CXX11)
-
-__BEGIN_AKANTU_UNORDERED_MAP__
 #if AKANTU_INTEGER_SIZE == 4
 #define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b9
 #elif AKANTU_INTEGER_SIZE == 8
 #define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b97f4a7c13LL
 #endif
 
+namespace std {
 /**
  * Hashing function for pairs based on hash_combine from boost The magic number
  * is coming from the golden number @f[\phi = \frac{1 + \sqrt5}{2}@f]
@@ -443,8 +441,7 @@ private:
   const hash<b> bh;
 };
 
-__END_AKANTU_UNORDERED_MAP__
+} //std
 
-#endif
 
 #endif /* __AKANTU_COMMON_HH__ */

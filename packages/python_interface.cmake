@@ -32,7 +32,7 @@
 
 package_declare(python_interface
   DESCRIPTION "Akantu's python interface"
-  DEPENDS PythonLibs core_cxx11)
+  DEPENDS PythonLibs)
 
 package_declare_sources(python_interface
   python/python_functor.cc

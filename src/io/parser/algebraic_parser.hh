@@ -169,7 +169,6 @@ namespace parser {
         ("sqrt"  , &std::sqrt  )
         ("tan"   , &std::tan   )
         ("tanh"  , &std::tanh  )
-#if defined(AKANTU_CORE_CXX11 )
         ("acosh" , &std::acosh )
         ("asinh" , &std::asinh )
         ("atanh" , &std::atanh )
@@ -184,7 +183,6 @@ namespace parser {
         ("trunc" , &std::trunc )
         ("round" , &std::round )
         //      ("crbt"  , &std::crbt  )
-#endif
         ;
 
       binary_function.add
@@ -193,12 +191,10 @@ namespace parser {
         ("max"  , &parser::my_max)
         ("atan2", &std::atan2    )
         ("fmod" , &std::fmod     )
-#if defined(AKANTU_CORE_CXX11)
         ("hypot", &std::hypot    )
-#endif
           ;
 
-#if !defined(AKANTU_NDEBUG) && defined(AKANTU_CORE_CXX_11)
+#if !defined(AKANTU_NDEBUG)
       phx::function<algebraic_error_handler_> const error_handler = algebraic_error_handler_();
       qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
 #endif

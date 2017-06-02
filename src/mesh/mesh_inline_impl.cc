@@ -94,23 +94,6 @@ inline void Mesh::removeNodesFromArray(Array<T> & vect,
 }
 
 /* -------------------------------------------------------------------------- */
-#ifdef AKANTU_CORE_CXX11
-template <typename... Args> inline void Mesh::translate(Args... params) {
-  // check that the number of parameters corresponds to the dimension
-  AKANTU_DEBUG_ASSERT(sizeof...(Args) <= spatial_dimension,
-                      "Number of arguments greater than dimension.");
-
-  // unpack parameters
-  Real s[] = {params...};
-
-  Array<Real> & nodes = getNodes();
-  for (UInt i = 0; i < nodes.getSize(); ++i)
-    for (UInt k = 0; k < sizeof...(Args); ++k)
-      nodes(i, k) += s[k];
-}
-#endif
-
-/* -------------------------------------------------------------------------- */
 inline UInt Mesh::elementToLinearized(const Element & elem) const {
   AKANTU_DEBUG_ASSERT(elem.type < _max_element_type &&
                           elem.element < types_offsets.storage()[elem.type + 1],

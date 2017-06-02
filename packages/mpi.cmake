@@ -117,11 +117,9 @@ function(add_extra_mpi_options)
   elseif(MPI_ID STREQUAL "OpenMPI")
     set(_flags "-DOMPI_SKIP_MPICXX")
 
-    package_is_activated(core_cxx11 _act)
-    if(_act)
-      if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        set( _flags "${_flags} -Wno-literal-suffix")
-      endif()
+
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      set( _flags "${_flags} -Wno-literal-suffix")
     endif()
   endif()
 
