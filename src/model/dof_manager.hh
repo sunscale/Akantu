@@ -186,15 +186,15 @@ protected:
 protected:
   /* ------------------------------------------------------------------------ */
   /// register a matrix
-  void registerSparseMatrix(const ID & matrix_id, SparseMatrix & matrix);
+  SparseMatrix & registerSparseMatrix(const ID & matrix_id, std::unique_ptr<SparseMatrix> & matrix);
 
   /// register a non linear solver instantiated by a derived class
-  void registerNonLinearSolver(const ID & non_linear_solver_id,
-                               NonLinearSolver & non_linear_solver);
+  NonLinearSolver & registerNonLinearSolver(const ID & non_linear_solver_id,
+                               std::unique_ptr<NonLinearSolver> & non_linear_solver);
 
   /// register a time step solver instantiated by a derived class
-  void registerTimeStepSolver(const ID & time_step_solver_id,
-                              TimeStepSolver & time_step_solver);
+  TimeStepSolver & registerTimeStepSolver(const ID & time_step_solver_id,
+                              std::unique_ptr<TimeStepSolver> & time_step_solver);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -408,25 +408,25 @@ protected:
     std::vector<Array<Real> *> dof_derivatives;
   };
 
-  typedef Array<std::set<Element> *> NodesToElements;
+  using NodesToElements = std::vector<std::unique_ptr<std::set<Element>>>;
 
   /// This info is stored to simplify the dynamic changes
   NodesToElements nodes_to_elements;
 
   /// type to store dofs information
-  typedef std::map<ID, DOFData *> DOFStorage;
+  using DOFStorage = std::map<ID, std::unique_ptr<DOFData>>;
 
   /// type to store all the matrices
-  typedef std::map<ID, SparseMatrix *> SparseMatricesMap;
+  using SparseMatricesMap = std::map<ID, std::unique_ptr<SparseMatrix>>;
 
   /// type to store all the lumped matrices
-  typedef std::map<ID, Array<Real> *> LumpedMatricesMap;
+  using LumpedMatricesMap = std::map<ID, std::unique_ptr<Array<Real>>>;
 
   /// type to store all the non linear solver
-  typedef std::map<ID, NonLinearSolver *> NonLinearSolversMap;
+  using NonLinearSolversMap = std::map<ID, std::unique_ptr<NonLinearSolver>>;
 
   /// type to store all the time step solver
-  typedef std::map<ID, TimeStepSolver *> TimeStepSolversMap;
+  using TimeStepSolversMap = std::map<ID, std::unique_ptr<TimeStepSolver>>;
 
   /// store a reference to the dof arrays
   DOFStorage dofs;

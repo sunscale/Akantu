@@ -39,10 +39,11 @@
 #include "time_step_solver_default.hh"
 /* -------------------------------------------------------------------------- */
 #include <numeric>
+#include <memory>
 #include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline void DOFManagerDefault::addSymmetricElementalMatrixToSymmetric(
@@ -169,9 +170,8 @@ DOFManagerDefault::DOFDataDefault::DOFDataDefault(const ID & dof_id)
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFData & DOFManagerDefault::getNewDOFData(const ID & dof_id) {
-  DOFDataDefault * dofs_storage = new DOFDataDefault(dof_id);
-  this->dofs[dof_id] = dofs_storage;
-  return *dofs_storage;
+  this->dofs[dof_id] = std::make_unique<DOFDataDefault>(dof_id);
+  return *this->dofs[dof_id];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -337,6 +337,7 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
     }
   }
 
+  // synchronize the global numbering for slaves
   if (support_type == _dst_nodal && this->synchronizer) {
     auto & node_synchronizer = this->mesh->getNodeSynchronizer();
     node_synchronizer.synchronizeOnce(data_accessor, _gst_size);
@@ -402,10 +403,8 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
 SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & id,
                                                const MatrixType & matrix_type) {
   ID matrix_id = this->id + ":mtx:" + id;
-  SparseMatrix * sm = new SparseMatrixAIJ(*this, matrix_type, matrix_id);
-  this->registerSparseMatrix(matrix_id, *sm);
-
-  return *sm;
+  std::unique_ptr<SparseMatrix> sm = std::make_unique<SparseMatrixAIJ>(*this, matrix_type, matrix_id);
+  return this->registerSparseMatrix(matrix_id, sm);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -414,10 +413,8 @@ SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & id,
 
   ID matrix_id = this->id + ":mtx:" + id;
   SparseMatrixAIJ & sm_to_copy = this->getMatrix(matrix_to_copy_id);
-  SparseMatrix * sm = new SparseMatrixAIJ(sm_to_copy, matrix_id);
-  this->registerSparseMatrix(matrix_id, *sm);
-
-  return *sm;
+  std::unique_ptr<SparseMatrix> sm = std::make_unique<SparseMatrixAIJ>(sm_to_copy, matrix_id);
+  return this->registerSparseMatrix(matrix_id, sm);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -432,23 +429,23 @@ NonLinearSolver &
 DOFManagerDefault::getNewNonLinearSolver(const ID & id,
                                          const NonLinearSolverType & type) {
   ID non_linear_solver_id = this->id + ":nls:" + id;
-  NonLinearSolver * nls = NULL;
+  std::unique_ptr<NonLinearSolver> nls;
   switch (type) {
 #if defined(AKANTU_IMPLICIT)
   case _nls_newton_raphson:
   case _nls_newton_raphson_modified: {
-    nls = new NonLinearSolverNewtonRaphson(*this, type, non_linear_solver_id,
+    nls = std::make_unique<NonLinearSolverNewtonRaphson>(*this, type, non_linear_solver_id,
                                            this->memory_id);
     break;
   }
   case _nls_linear: {
-    nls = new NonLinearSolverLinear(*this, type, non_linear_solver_id,
+    nls = std::make_unique<NonLinearSolverLinear>(*this, type, non_linear_solver_id,
                                     this->memory_id);
     break;
   }
 #endif
   case _nls_lumped: {
-    nls = new NonLinearSolverLumped(*this, type, non_linear_solver_id,
+    nls = std::make_unique<NonLinearSolverLumped>(*this, type, non_linear_solver_id,
                                     this->memory_id);
     break;
   }
@@ -457,9 +454,7 @@ DOFManagerDefault::getNewNonLinearSolver(const ID & id,
                      "this dof manager");
   }
 
-  this->registerNonLinearSolver(non_linear_solver_id, *nls);
-
-  return *nls;
+  return this->registerNonLinearSolver(non_linear_solver_id, nls);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -469,12 +464,10 @@ DOFManagerDefault::getNewTimeStepSolver(const ID & id,
                                         NonLinearSolver & non_linear_solver) {
   ID time_step_solver_id = this->id + ":tss:" + id;
 
-  TimeStepSolver * tss = new TimeStepSolverDefault(
+  std::unique_ptr<TimeStepSolver> tss = std::make_unique<TimeStepSolverDefault>(
       *this, type, non_linear_solver, time_step_solver_id, this->memory_id);
 
-  this->registerTimeStepSolver(time_step_solver_id, *tss);
-
-  return *tss;
+  return this->registerTimeStepSolver(time_step_solver_id, tss);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -628,9 +621,12 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     const Array<UInt> & filter_elements) {
   AKANTU_DEBUG_IN();
 
-  this->addToProfile(matrix_id, dof_id, type, ghost_type);
-
   DOFData & dof_data = this->getDOFData(dof_id);
+
+  AKANTU_DEBUG_ASSERT(dof_data.support_type == _dst_nodal,
+                      "This function applies only on Nodal dofs");
+
+  this->addToProfile(matrix_id, dof_id, type, ghost_type);
 
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
   SparseMatrixAIJ & A = this->getMatrix(matrix_id);
@@ -811,7 +807,6 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::applyBoundary(const ID & matrix_id) {
-  this->updateGlobalBlockedDofs();
   SparseMatrixAIJ & J = this->getMatrix(matrix_id);
 
   if (this->jacobian_release == J.getValueRelease()) {
@@ -826,6 +821,8 @@ void DOFManagerDefault::applyBoundary(const ID & matrix_id) {
 
     if (it != end)
       J.applyBoundary();
+
+    previous_global_blocked_dofs.copy(global_blocked_dofs);
   } else {
     J.applyBoundary();
   }
@@ -876,6 +873,6 @@ void DOFManagerDefault::setGlobalSolution(const Array<Real> & solution) {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 //  LocalWords:  dof dofs

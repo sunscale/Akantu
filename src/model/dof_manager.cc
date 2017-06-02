@@ -39,6 +39,8 @@
 #include "non_linear_solver.hh"
 #include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
+#include <memory>
+/* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
@@ -58,37 +60,12 @@ DOFManager::DOFManager(Mesh & mesh, const ID & id, const MemoryID & memory_id)
   UInt nb_nodes = this->mesh->getNbNodes();
   this->nodes_to_elements.resize(nb_nodes);
   for (UInt n = 0; n < nb_nodes; ++n) {
-    this->nodes_to_elements[n] = new std::set<Element>();
+    this->nodes_to_elements[n] = std::make_unique<std::set<Element>>();
   }
 }
 
 /* -------------------------------------------------------------------------- */
-DOFManager::~DOFManager() {
-  NodesToElements::scalar_iterator nte_it = this->nodes_to_elements.begin();
-  NodesToElements::scalar_iterator nte_end = this->nodes_to_elements.end();
-  for (; nte_it != nte_end; ++nte_it)
-    delete *nte_it;
-
-  DOFStorage::iterator ds_it = dofs.begin();
-  DOFStorage::iterator ds_end = dofs.end();
-  for (; ds_it != ds_end; ++ds_it)
-    delete ds_it->second;
-
-  SparseMatricesMap::iterator sm_it = matrices.begin();
-  SparseMatricesMap::iterator sm_end = matrices.end();
-  for (; sm_it != sm_end; ++sm_it)
-    delete sm_it->second;
-
-  NonLinearSolversMap::iterator nls_it = non_linear_solvers.begin();
-  NonLinearSolversMap::iterator nls_end = non_linear_solvers.end();
-  for (; nls_it != nls_end; ++nls_it)
-    delete nls_it->second;
-
-  TimeStepSolversMap::iterator tss_it = time_step_solvers.begin();
-  TimeStepSolversMap::iterator tss_end = time_step_solvers.end();
-  for (; tss_it != tss_end; ++tss_it)
-    delete tss_it->second;
-}
+DOFManager::~DOFManager() = default;
 
 /* -------------------------------------------------------------------------- */
 void DOFManager::getEquationsNumbers(const ID &, Array<UInt> &) {
@@ -230,8 +207,8 @@ DOFManager::DOFData & DOFManager::getNewDOFData(const ID & dof_id) {
     AKANTU_EXCEPTION("This dof array has already been registered");
   }
 
-  DOFData * dofs_storage = new DOFData(dof_id);
-  this->dofs[dof_id] = dofs_storage;
+  std::unique_ptr<DOFData> dofs_storage = std::make_unique<DOFData>(dof_id);
+  this->dofs[dof_id] = std::move(dofs_storage);
   return *dofs_storage;
 }
 
@@ -383,15 +360,17 @@ void DOFManager::splitSolutionPerDOFs() {
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::registerSparseMatrix(const ID & matrix_id,
-                                      SparseMatrix & matrix) {
+SparseMatrix & DOFManager::registerSparseMatrix(const ID & matrix_id,
+                                                std::unique_ptr<SparseMatrix> & matrix) {
   SparseMatricesMap::const_iterator it = this->matrices.find(matrix_id);
   if (it != this->matrices.end()) {
     AKANTU_EXCEPTION("The matrix " << matrix_id << " already exists in "
                                    << this->id);
   }
 
-  this->matrices[matrix_id] = &matrix;
+  SparseMatrix & ret = *matrix;
+  this->matrices[matrix_id] = std::move(matrix);
+  return ret;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -404,14 +383,14 @@ Array<Real> & DOFManager::getNewLumpedMatrix(const ID & id) {
                                           << this->id);
   }
 
-  Array<Real> & mtx = this->alloc<Real>(matrix_id, this->local_system_size, 1);
-  this->lumped_matrices[matrix_id] = &mtx;
-  return mtx;
+  auto mtx = std::make_unique<Array<Real>>(this->local_system_size, 1, matrix_id);
+  this->lumped_matrices[matrix_id] = std::move(mtx);
+  return * this->lumped_matrices[matrix_id];
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::registerNonLinearSolver(const ID & non_linear_solver_id,
-                                         NonLinearSolver & non_linear_solver) {
+NonLinearSolver & DOFManager::registerNonLinearSolver(const ID & non_linear_solver_id,
+                                         std::unique_ptr<NonLinearSolver> & non_linear_solver) {
   NonLinearSolversMap::const_iterator it =
       this->non_linear_solvers.find(non_linear_solver_id);
   if (it != this->non_linear_solvers.end()) {
@@ -420,12 +399,15 @@ void DOFManager::registerNonLinearSolver(const ID & non_linear_solver_id,
                                               << this->id);
   }
 
-  this->non_linear_solvers[non_linear_solver_id] = &non_linear_solver;
+  NonLinearSolver & ret = *non_linear_solver;
+  this->non_linear_solvers[non_linear_solver_id] = std::move(non_linear_solver);
+
+  return ret;
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::registerTimeStepSolver(const ID & time_step_solver_id,
-                                        TimeStepSolver & time_step_solver) {
+TimeStepSolver & DOFManager::registerTimeStepSolver(const ID & time_step_solver_id,
+                                        std::unique_ptr<TimeStepSolver> & time_step_solver) {
   TimeStepSolversMap::const_iterator it =
       this->time_step_solvers.find(time_step_solver_id);
   if (it != this->time_step_solvers.end()) {
@@ -434,7 +416,9 @@ void DOFManager::registerTimeStepSolver(const ID & time_step_solver_id,
                                               << this->id);
   }
 
-  this->time_step_solvers[time_step_solver_id] = &time_step_solver;
+  TimeStepSolver & ret = *time_step_solver;
+  this->time_step_solvers[time_step_solver_id] = std::move(time_step_solver);
+  return ret;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -585,22 +569,29 @@ void DOFManager::onNodesAdded(const Array<UInt> & nodes_list,
   this->nodes_to_elements.resize(nb_nodes);
 
   for (; it != end; ++it) {
-    this->nodes_to_elements[*it] = new std::set<Element>();
+    this->nodes_to_elements[*it] = std::make_unique<std::set<Element>>();
   }
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::onNodesRemoved(const Array<UInt> & nodes_list,
+void DOFManager::onNodesRemoved(const Array<UInt> &,
                                 const Array<UInt> & new_numbering,
-                                __attribute__((unused))
-                                const RemovedNodesEvent & event) {
-  Array<UInt>::const_scalar_iterator it = nodes_list.begin();
-  Array<UInt>::const_scalar_iterator end = nodes_list.end();
-  for (; it != end; ++it) {
-    delete this->nodes_to_elements[*it];
+                                const RemovedNodesEvent &) {
+  std::vector<std::unique_ptr<std::set<Element>>> tmp(nodes_to_elements.size());
+
+  auto it = nodes_to_elements.begin();
+
+  UInt new_nb_nodes = 0;
+  for (auto new_i : new_numbering) {
+    if (new_i != UInt(-1)) {
+      tmp[new_i] = std::move(*it);
+      ++new_nb_nodes;
+    }
+    ++it;
   }
 
-  this->mesh->removeNodesFromArray(this->nodes_to_elements, new_numbering);
+  tmp.resize(new_nb_nodes);
+  std::move(tmp.begin(), tmp.end(), nodes_to_elements.begin());
 }
 
 /* -------------------------------------------------------------------------- */
