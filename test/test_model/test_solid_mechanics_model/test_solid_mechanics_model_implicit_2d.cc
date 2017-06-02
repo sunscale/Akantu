@@ -38,6 +38,7 @@
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
 #include "static_communicator.hh"
+#include "non_linear_solver.hh"
 /* -------------------------------------------------------------------------- */
 
 #define bar_length 1
@@ -48,7 +49,7 @@ using namespace akantu;
 /* -------------------------------------------------------------------------- */
 int main(int argc, char * argv[]) {
   debug::setDebugLevel(dblWarning);
-  initialize("material.dat", argc, argv);
+  initialize("material_implicit.dat", argc, argv);
 
   UInt spatial_dimension = 2;
 
@@ -58,7 +59,7 @@ int main(int argc, char * argv[]) {
   Int prank = comm.whoAmI();
 
   if (prank == 0)
-    mesh.read("square_implicit2.msh");
+    mesh.read("square_implicit1.msh");
   mesh.distribute();
 
   SolidMechanicsModel model(mesh);
@@ -89,8 +90,7 @@ int main(int argc, char * argv[]) {
 
   model.setBaseName("implicit_2d");
   model.addDumpField("displacement");
-  model.addDumpField("velocity");
-  model.addDumpField("acceleration");
+  model.addDumpField("blocked_dofs");
   model.addDumpField("external_force");
   model.addDumpField("internal_force");
   model.addDumpField("stress");
@@ -98,7 +98,11 @@ int main(int argc, char * argv[]) {
 
   model.dump();
 
-  model.solveStep();
+  try {
+    model.solveStep();
+  } catch(const debug::NLSNotConvergedException & ex) {
+    std::cerr << "Tried " << ex.niter << " iterations reached error of " << ex.error<< std::endl;
+  }
 
   model.dump();
 

@@ -122,7 +122,7 @@ register_test(test_solid_mechanics_model_implicit_1d
 register_test(test_solid_mechanics_model_implicit_2d
   SOURCES test_solid_mechanics_model_implicit_2d.cc
   DEPENDS test_implicit_mesh1 test_implicit_mesh2
-  FILES_TO_COPY material.dat
+  FILES_TO_COPY material_implicit.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE implicit
   )

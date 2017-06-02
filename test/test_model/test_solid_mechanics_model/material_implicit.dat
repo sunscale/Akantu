@@ -1,0 +1,18 @@
+material elastic [
+	 name = steel
+	 rho = 7800   # density
+	 E   = 2.1e11 # young's modulus
+	 nu  = 0.0    # poisson's ratio
+]
+
+model_solver solid_mechanics_model [
+	time_step_solver static [
+		type = static
+		non_linear_solver static [
+			type = newton_raphson_modified
+                        max_iterations = 100
+                        threshold = 1e-3
+                        convergence_type = solution
+		]
+        ]
+]
