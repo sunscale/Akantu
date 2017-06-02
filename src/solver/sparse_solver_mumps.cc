@@ -92,12 +92,12 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "dof_manager_default.hh"
-#include "sparse_matrix_aij.hh"
 #include "dof_synchronizer.hh"
+#include "sparse_matrix_aij.hh"
 
 #if defined(AKANTU_USE_MPI)
-#include "static_communicator_mpi.hh"
 #include "mpi_type_wrapper.hh"
+#include "static_communicator_mpi.hh"
 #endif
 
 #include "sparse_solver_mumps.hh"
@@ -152,8 +152,7 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
         dynamic_cast<const StaticCommunicatorMPI &>(
             communicator.getRealStaticCommunicator());
     MPI_Comm mpi_comm = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
-    this->mumps_data.comm_fortran =
-        MPI_Comm_c2f(mpi_comm);
+    this->mumps_data.comm_fortran = MPI_Comm_c2f(mpi_comm);
 #else
     AKANTU_DEBUG_ERROR(
         "You cannot use parallel method to solve without activating MPI");
@@ -188,7 +187,7 @@ SparseSolverMumps::~SparseSolverMumps() {
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::destroyInternalData() {
-  if(this->is_initialized) {
+  if (this->is_initialized) {
     this->mumps_data.job = _smj_destroy; // destroy
     dmumps_c(&this->mumps_data);
     this->is_initialized = false;
@@ -197,10 +196,9 @@ void SparseSolverMumps::destroyInternalData() {
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::checkInitialized() {
-  if(!this->is_initialized)
+  if (!this->is_initialized)
     AKANTU_EXCEPTION("You cannot use an un/de-initialized mumps solver");
 }
-
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::setOutputLevel() {
@@ -373,9 +371,9 @@ void SparseSolverMumps::solveInternal() {
     this->last_profile_release = this->matrix.getProfileRelease();
   }
 
-  this->dof_manager.applyBoundary(this->matrix_id);
   if (AKANTU_DEBUG_TEST(dblDump)) {
-    std::stringstream sstr;  sstr << prank << ".mtx";
+    std::stringstream sstr;
+    sstr << prank << ".mtx";
     this->matrix.saveMatrix("solver_mumps" + sstr.str());
   }
 

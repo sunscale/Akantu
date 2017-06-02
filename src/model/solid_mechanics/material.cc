@@ -296,26 +296,22 @@ void Material::computeAllStresses(GhostType ghost_type) {
 
   UInt spatial_dimension = model->getSpatialDimension();
 
-  Mesh::type_iterator it =
-      fem->getMesh().firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type =
-      fem->getMesh().lastType(spatial_dimension, ghost_type);
+  for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
+    Array<UInt> & elem_filter = element_filter(type, ghost_type);
 
-  for (; it != last_type; ++it) {
-    Array<UInt> & elem_filter = element_filter(*it, ghost_type);
     if (elem_filter.getSize() == 0)
       continue;
-    Array<Real> & gradu_vect = gradu(*it, ghost_type);
+    Array<Real> & gradu_vect = gradu(type, ghost_type);
 
     /// compute @f$\nabla u@f$
     fem->gradientOnIntegrationPoints(model->getDisplacement(), gradu_vect,
-                                     spatial_dimension, *it, ghost_type,
+                                     spatial_dimension, type, ghost_type,
                                      elem_filter);
 
-    gradu_vect -= eigengradu(*it, ghost_type);
+    gradu_vect -= eigengradu(type, ghost_type);
 
     /// compute @f$\mathbf{\sigma}_q@f$ from @f$\nabla u@f$
-    computeStress(*it, ghost_type);
+    computeStress(type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -329,25 +325,19 @@ void Material::computeAllCauchyStresses(GhostType ghost_type) {
                                           "computed if you are working in "
                                           "finite deformation.");
 
-  // resizeInternalArray(stress);
-
-  Mesh::type_iterator it =
-      fem->getMesh().firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type =
-      fem->getMesh().lastType(spatial_dimension, ghost_type);
-
-  for (; it != last_type; ++it)
+  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     switch (spatial_dimension) {
     case 1:
-      this->computeCauchyStress<1>(*it, ghost_type);
+      this->computeCauchyStress<1>(type, ghost_type);
       break;
     case 2:
-      this->computeCauchyStress<2>(*it, ghost_type);
+      this->computeCauchyStress<2>(type, ghost_type);
       break;
     case 3:
-      this->computeCauchyStress<3>(*it, ghost_type);
+      this->computeCauchyStress<3>(type, ghost_type);
       break;
     }
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -393,21 +383,16 @@ void Material::setToSteadyState(GhostType ghost_type) {
 
   UInt spatial_dimension = model->getSpatialDimension();
 
-  Mesh::type_iterator it =
-      fem->getMesh().firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type =
-      fem->getMesh().lastType(spatial_dimension, ghost_type);
-
-  for (; it != last_type; ++it) {
-    Array<UInt> & elem_filter = element_filter(*it, ghost_type);
-    Array<Real> & gradu_vect = gradu(*it, ghost_type);
+  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
+    Array<UInt> & elem_filter = element_filter(type, ghost_type);
+    Array<Real> & gradu_vect = gradu(type, ghost_type);
 
     /// compute @f$\nabla u@f$
     fem->gradientOnIntegrationPoints(displacement, gradu_vect,
-                                     spatial_dimension, *it, ghost_type,
+                                     spatial_dimension, type, ghost_type,
                                      elem_filter);
 
-    setToSteadyState(*it, ghost_type);
+    setToSteadyState(type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -426,41 +411,37 @@ void Material::assembleStiffnessMatrix(GhostType ghost_type) {
 
   UInt spatial_dimension = model->getSpatialDimension();
 
-  Mesh::type_iterator it =
-      element_filter.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type =
-      element_filter.lastType(spatial_dimension, ghost_type);
-  for (; it != last_type; ++it) {
+  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     if (finite_deformation) {
       switch (spatial_dimension) {
       case 1: {
-        assembleStiffnessMatrixNL<1>(*it, ghost_type);
-        assembleStiffnessMatrixL2<1>(*it, ghost_type);
+        assembleStiffnessMatrixNL<1>(type, ghost_type);
+        assembleStiffnessMatrixL2<1>(type, ghost_type);
         break;
       }
       case 2: {
-        assembleStiffnessMatrixNL<2>(*it, ghost_type);
-        assembleStiffnessMatrixL2<2>(*it, ghost_type);
+        assembleStiffnessMatrixNL<2>(type, ghost_type);
+        assembleStiffnessMatrixL2<2>(type, ghost_type);
         break;
       }
       case 3: {
-        assembleStiffnessMatrixNL<3>(*it, ghost_type);
-        assembleStiffnessMatrixL2<3>(*it, ghost_type);
+        assembleStiffnessMatrixNL<3>(type, ghost_type);
+        assembleStiffnessMatrixL2<3>(type, ghost_type);
         break;
       }
       }
     } else {
       switch (spatial_dimension) {
       case 1: {
-        assembleStiffnessMatrix<1>(*it, ghost_type);
+        assembleStiffnessMatrix<1>(type, ghost_type);
         break;
       }
       case 2: {
-        assembleStiffnessMatrix<2>(*it, ghost_type);
+        assembleStiffnessMatrix<2>(type, ghost_type);
         break;
       }
       case 3: {
-        assembleStiffnessMatrix<3>(*it, ghost_type);
+        assembleStiffnessMatrix<3>(type, ghost_type);
         break;
       }
       }
@@ -773,25 +754,23 @@ template <UInt dim> void Material::assembleInternalForces(GhostType ghost_type) 
   Array<Real> & internal_force = model->getInternalForce();
 
   Mesh & mesh = fem->getMesh();
-  Mesh::type_iterator it = element_filter.firstType(dim, ghost_type);
-  Mesh::type_iterator last_type = element_filter.lastType(dim, ghost_type);
-  for (; it != last_type; ++it) {
+  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     const Array<Real> & shapes_derivatives =
-        fem->getShapesDerivatives(*it, ghost_type);
+        fem->getShapesDerivatives(type, ghost_type);
 
-    Array<UInt> & elem_filter = element_filter(*it, ghost_type);
+    Array<UInt> & elem_filter = element_filter(type, ghost_type);
     if (elem_filter.getSize() == 0)
       continue;
     UInt size_of_shapes_derivatives = shapes_derivatives.getNbComponent();
     UInt nb_element = elem_filter.getSize();
-    UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
-    UInt nb_quadrature_points = fem->getNbIntegrationPoints(*it, ghost_type);
+    UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+    UInt nb_quadrature_points = fem->getNbIntegrationPoints(type, ghost_type);
 
     Array<Real> * shapesd_filtered =
         new Array<Real>(nb_element, size_of_shapes_derivatives, "filtered shapesd");
 
     FEEngine::filterElementalData(mesh, shapes_derivatives, *shapesd_filtered,
-                                  *it, ghost_type, elem_filter);
+                                  type, ghost_type, elem_filter);
 
     Array<Real>::matrix_iterator shapes_derivatives_filtered_it =
         shapesd_filtered->begin(dim, nb_nodes_per_element);
@@ -807,13 +786,13 @@ template <UInt dim> void Material::assembleInternalForces(GhostType ghost_type) 
         new Array<Real>(nb_element * nb_quadrature_points, bt_s_size, "B^t*S");
 
     Array<Real>::matrix_iterator grad_u_it =
-        this->gradu(*it, ghost_type).begin(dim, dim);
+        this->gradu(type, ghost_type).begin(dim, dim);
 
     Array<Real>::matrix_iterator grad_u_end =
-        this->gradu(*it, ghost_type).end(dim, dim);
+        this->gradu(type, ghost_type).end(dim, dim);
 
     Array<Real>::matrix_iterator stress_it =
-        this->piola_kirchhoff_2(*it, ghost_type).begin(dim, dim);
+        this->piola_kirchhoff_2(type, ghost_type).begin(dim, dim);
 
     shapes_derivatives_filtered_it =
         shapesd_filtered->begin(dim, nb_nodes_per_element);
@@ -848,12 +827,12 @@ template <UInt dim> void Material::assembleInternalForces(GhostType ghost_type) 
     /// compute @f$ k_e = \int_e \mathbf{B}^t * \mathbf{D} * \mathbf{B}@f$
     Array<Real> * r_e = new Array<Real>(nb_element, bt_s_size, "r_e");
 
-    fem->integrate(*bt_s, *r_e, bt_s_size, *it, ghost_type, elem_filter);
+    fem->integrate(*bt_s, *r_e, bt_s_size, type, ghost_type, elem_filter);
 
     delete bt_s;
 
     model->getDOFManager().assembleElementalArrayLocalArray(*r_e, internal_force,
-                                                            *it, ghost_type, 1, elem_filter);
+                                                            type, ghost_type, 1, elem_filter);
     delete r_e;
   }
   AKANTU_DEBUG_OUT();
@@ -865,22 +844,18 @@ void Material::computeAllStressesFromTangentModuli(GhostType ghost_type) {
 
   UInt spatial_dimension = model->getSpatialDimension();
 
-  Mesh::type_iterator it =
-      element_filter.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type =
-      element_filter.lastType(spatial_dimension, ghost_type);
-  for (; it != last_type; ++it) {
+  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     switch (spatial_dimension) {
     case 1: {
-      computeAllStressesFromTangentModuli<1>(*it, ghost_type);
+      computeAllStressesFromTangentModuli<1>(type, ghost_type);
       break;
     }
     case 2: {
-      computeAllStressesFromTangentModuli<2>(*it, ghost_type);
+      computeAllStressesFromTangentModuli<2>(type, ghost_type);
       break;
     }
     case 3: {
-      computeAllStressesFromTangentModuli<3>(*it, ghost_type);
+      computeAllStressesFromTangentModuli<3>(type, ghost_type);
       break;
     }
     }
@@ -983,20 +958,15 @@ void Material::computeAllStressesFromTangentModuli(const ElementType & type,
 void Material::computePotentialEnergyByElements() {
   AKANTU_DEBUG_IN();
 
-  Mesh::type_iterator it = element_filter.firstType(spatial_dimension);
-  Mesh::type_iterator last_type = element_filter.lastType(spatial_dimension);
-  for (; it != last_type; ++it) {
-    computePotentialEnergy(*it);
+  for(auto type : element_filter.elementTypes(spatial_dimension, _not_ghost)) {
+    computePotentialEnergy(type);
   }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void Material::computePotentialEnergy(__attribute__((unused))
-                                      ElementType el_type,
-                                      __attribute__((unused))
-                                      GhostType ghost_type) {
+void Material::computePotentialEnergy(ElementType, GhostType) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -1010,12 +980,9 @@ Real Material::getPotentialEnergy() {
   computePotentialEnergyByElements();
 
   /// integrate the potential energy for each type of elements
-  Mesh::type_iterator it = element_filter.firstType(spatial_dimension);
-  Mesh::type_iterator last_type = element_filter.lastType(spatial_dimension);
-  for (; it != last_type; ++it) {
-
-    epot += fem->integrate(potential_energy(*it, _not_ghost), *it, _not_ghost,
-                           element_filter(*it, _not_ghost));
+  for(auto type : element_filter.elementTypes(spatial_dimension, _not_ghost)) {
+    epot += fem->integrate(potential_energy(type, _not_ghost), type, _not_ghost,
+                           element_filter(type, _not_ghost));
   }
 
   AKANTU_DEBUG_OUT();
@@ -1088,14 +1055,7 @@ void Material::interpolateStressOnFacets(
   const Mesh & mesh = this->model->getMesh();
   const Mesh & mesh_facets = mesh.getMeshFacets();
 
-  Mesh::type_iterator it =
-      this->element_filter.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last =
-      this->element_filter.lastType(spatial_dimension, ghost_type);
-
-  for (; it != last; ++it) {
-
-    ElementType type = *it;
+  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     Array<UInt> & elem_fil = element_filter(type, ghost_type);
     Array<Real> & by_elem_res = by_elem_result(type, ghost_type);
     UInt nb_element = elem_fil.getSize();

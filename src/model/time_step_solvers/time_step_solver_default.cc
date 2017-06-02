@@ -169,52 +169,18 @@ void TimeStepSolverDefault::predictor() {
 
   TimeStepSolver::predictor();
 
-  DOFsIntegrationSchemes::iterator integration_scheme_it =
-      this->integration_schemes.begin();
-  DOFsIntegrationSchemes::iterator integration_scheme_end =
-      this->integration_schemes.end();
+  IntegrationScheme * integration_scheme;
+  ID dof_id;
 
-  for (; integration_scheme_it != integration_scheme_end;
-       ++integration_scheme_it) {
-    ID dof_id = integration_scheme_it->first;
-    Array<Real> * previous = NULL;
-
-    UInt dof_array_comp = this->dof_manager.getDOFs(dof_id).getNbComponent();
+  for(auto & pair : this->integration_schemes) {
+    std::tie(dof_id, integration_scheme) = pair;
 
     if (this->dof_manager.hasPreviousDOFs(dof_id)) {
       this->dof_manager.savePreviousDOFs(dof_id);
-    } else {
-      if (this->dof_manager.hasDOFsIncrement(dof_id)) {
-        previous = new Array<Real>(this->dof_manager.getDOFs(dof_id));
-      }
     }
 
     /// integrator predictor
-    integration_scheme_it->second->predictor(this->time_step);
-
-    /// computing the increment of dof if needed
-    if (this->dof_manager.hasDOFsIncrement(dof_id)) {
-      Array<Real> & increment = this->dof_manager.getDOFsIncrement(dof_id);
-      Array<Real>::vector_iterator incr_it = increment.begin(dof_array_comp);
-      Array<Real>::vector_iterator incr_end = increment.end(dof_array_comp);
-      Array<Real>::const_vector_iterator dof_it =
-          this->dof_manager.getDOFs(dof_id).begin(dof_array_comp);
-      Array<Real>::const_vector_iterator prev_dof_it;
-
-      if (this->dof_manager.hasPreviousDOFs(dof_id)) {
-        prev_dof_it =
-            this->dof_manager.getPreviousDOFs(dof_id).begin(dof_array_comp);
-      } else {
-        prev_dof_it = previous->begin(dof_array_comp);
-      }
-
-      for (; incr_it != incr_end; ++incr_it) {
-        *incr_it = *dof_it;
-        *incr_it -= *prev_dof_it;
-      }
-
-      delete previous;
-    }
+    integration_scheme->predictor(this->time_step);
   }
 
   AKANTU_DEBUG_OUT();
@@ -226,17 +192,37 @@ void TimeStepSolverDefault::corrector() {
 
   TimeStepSolver::corrector();
 
-  DOFsIntegrationSchemes::iterator integration_scheme_it =
-      this->integration_schemes.begin();
-  DOFsIntegrationSchemes::iterator integration_scheme_end =
-      this->integration_schemes.end();
+  IntegrationScheme * integration_scheme;
+  ID dof_id;
 
-  for (; integration_scheme_it != integration_scheme_end;
-       ++integration_scheme_it) {
-    IntegrationScheme::SolutionType solution_type =
-        this->solution_types[integration_scheme_it->first];
+  for(auto & pair : this->integration_schemes) {
+    std::tie(dof_id, integration_scheme) = pair;
 
-    integration_scheme_it->second->corrector(solution_type, this->time_step);
+    const auto & solution_type = this->solution_types[dof_id];
+    integration_scheme->corrector(solution_type, this->time_step);
+
+    /// computing the increment of dof if needed
+    if (this->dof_manager.hasDOFsIncrement(dof_id)) {
+      if (!this->dof_manager.hasPreviousDOFs(dof_id)) {
+        AKANTU_DEBUG_WARNING("In order to compute the increment of "
+                             << dof_id << " a 'previous' has to be registered");
+        continue;
+      }
+
+      Array<Real> & increment = this->dof_manager.getDOFsIncrement(dof_id);
+      Array<Real> & previous = this->dof_manager.getPreviousDOFs(dof_id);
+
+      UInt dof_array_comp = this->dof_manager.getDOFs(dof_id).getNbComponent();
+
+      auto prev_dof_it = previous.begin(dof_array_comp);
+      auto incr_it = increment.begin(dof_array_comp);
+      auto incr_end = increment.end(dof_array_comp);
+
+      increment.copy(this->dof_manager.getDOFs(dof_id));
+      for (; incr_it != incr_end; ++incr_it, ++prev_dof_it) {
+        *incr_it -= *prev_dof_it;
+      }
+    }
   }
 
   AKANTU_DEBUG_OUT();
@@ -248,19 +234,19 @@ void TimeStepSolverDefault::assembleJacobian() {
 
   TimeStepSolver::assembleJacobian();
 
-  DOFsIntegrationSchemes::iterator integration_scheme_it =
-      this->integration_schemes.begin();
-  DOFsIntegrationSchemes::iterator integration_scheme_end =
-      this->integration_schemes.end();
+  IntegrationScheme * integration_scheme;
+  ID dof_id;
 
-  for (; integration_scheme_it != integration_scheme_end;
-       ++integration_scheme_it) {
-    IntegrationScheme::SolutionType solution_type =
-        this->solution_types[integration_scheme_it->first];
+  for(auto & pair : this->integration_schemes) {
+    std::tie(dof_id, integration_scheme) = pair;
 
-    integration_scheme_it->second->assembleJacobian(solution_type,
-                                                    this->time_step);
+    const auto & solution_type = this->solution_types[dof_id];
+
+    integration_scheme->assembleJacobian(solution_type,
+                                         this->time_step);
   }
+
+  this->dof_manager.applyBoundary("J");
 
   AKANTU_DEBUG_OUT();
 }
@@ -271,14 +257,12 @@ void TimeStepSolverDefault::assembleResidual() {
 
   TimeStepSolver::assembleResidual();
 
-  DOFsIntegrationSchemes::iterator integration_scheme_it =
-      this->integration_schemes.begin();
-  DOFsIntegrationSchemes::iterator integration_scheme_end =
-      this->integration_schemes.end();
+  IntegrationScheme * integration_scheme;
+  ID dof_id;
 
-  for (; integration_scheme_it != integration_scheme_end;
-       ++integration_scheme_it) {
-    integration_scheme_it->second->assembleResidual(this->is_mass_lumped);
+  for(auto & pair : this->integration_schemes) {
+    std::tie(dof_id, integration_scheme) = pair;
+    integration_scheme->assembleResidual(this->is_mass_lumped);
   }
 
   AKANTU_DEBUG_OUT();
