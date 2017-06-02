@@ -82,11 +82,12 @@ protected:
 namespace debug {
   class NLSNotConvergedException : public Exception {
   public:
-    NLSNotConvergedException(Real threshold, UInt niter)
+    NLSNotConvergedException(Real threshold, UInt niter, Real error)
         : Exception("The non linear solver did not converge."),
-          threshold(threshold), niter(niter) {}
+          threshold(threshold), niter(niter), error(error) {}
     Real threshold;
     UInt niter;
+    Real error;
   };
 }
 

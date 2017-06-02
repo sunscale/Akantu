@@ -44,25 +44,23 @@ void PseudoTime::predictor(Real) {}
 
 /* -------------------------------------------------------------------------- */
 void PseudoTime::corrector(const SolutionType &, Real) {
-  Array<Real> & u = this->dof_manager.getDOFs(this->dof_id);
-  const Array<Real> & delta = this->dof_manager.getSolution(this->dof_id);
+  Array<Real> & us = this->dof_manager.getDOFs(this->dof_id);
+  const Array<Real> & deltas = this->dof_manager.getSolution(this->dof_id);
   const Array<bool> & blocked_dofs =
       this->dof_manager.getBlockedDOFs(this->dof_id);
 
-  UInt nb_nodes = u.getSize();
-  UInt nb_degree_of_freedom = u.getNbComponent() * nb_nodes;
+  UInt nb_degree_of_freedom = deltas.getSize();
 
-  Array<Real>::scalar_iterator u_it = u.begin_reinterpret(nb_degree_of_freedom);
-  Array<Real>::scalar_iterator u_end = u.end_reinterpret(nb_degree_of_freedom);
-  Array<Real>::const_scalar_iterator delta_it =
-      delta.begin_reinterpret(nb_degree_of_freedom);
-  Array<bool>::const_scalar_iterator blocked_dofs_it =
-      blocked_dofs.begin_reinterpret(nb_degree_of_freedom);
+  auto u_it = us.begin_reinterpret(nb_degree_of_freedom);
+  auto bld_it = blocked_dofs.begin_reinterpret(nb_degree_of_freedom);
 
-  for (; u_it != u_end; ++u_it, ++delta_it, ++blocked_dofs_it) {
-    if (!(*blocked_dofs_it)) {
-      *u_it += *delta_it;
-    }
+  for (const auto & delta : deltas) {
+    const auto & bld = *bld_it;
+    auto & u = *u_it;
+    if (! bld)  u += delta;
+
+    ++u_it;
+    ++bld_it;
   }
 }
 
@@ -82,7 +80,6 @@ void PseudoTime::assembleJacobian(const SolutionType &, Real) {
 
 /* -------------------------------------------------------------------------- */
 void PseudoTime::assembleResidual(bool) {}
-
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

@@ -55,6 +55,7 @@ NonLinearSolverLumped::~NonLinearSolverLumped() {}
 
 /* ------------------------------------------------------------------------ */
 void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
+  this->dof_manager.updateGlobalBlockedDofs();
   solver_callback.predictor();
 
   const Array<Real> & A = this->dof_manager.getLumpedMatrix("M");

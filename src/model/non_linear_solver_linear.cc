@@ -54,6 +54,8 @@ NonLinearSolverLinear::~NonLinearSolverLinear() {}
 
 /* ------------------------------------------------------------------------ */
 void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {
+  this->dof_manager.updateGlobalBlockedDofs();
+
   solver_callback.predictor();
 
   solver_callback.assembleResidual();

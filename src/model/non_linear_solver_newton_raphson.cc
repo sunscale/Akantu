@@ -74,6 +74,8 @@ NonLinearSolverNewtonRaphson::~NonLinearSolverNewtonRaphson() {}
 
 /* ------------------------------------------------------------------------ */
 void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
+  this->dof_manager.updateGlobalBlockedDofs();
+
   solver_callback.predictor();
 
   solver_callback.assembleResidual();
@@ -136,7 +138,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
     //   SolidMechanicsModelEvent::AfterNonLinearSolverSolves(method));
   } else if (this->n_iter == this->max_iterations) {
     AKANTU_CUSTOM_EXCEPTION(debug::NLSNotConvergedException(
-        this->convergence_criteria, this->n_iter));
+                                this->convergence_criteria, this->n_iter, this->error));
 
     AKANTU_DEBUG_WARNING("[" << this->convergence_criteria_type
                              << "] Convergence not reached after "
