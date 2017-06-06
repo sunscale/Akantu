@@ -126,7 +126,7 @@ public:
   virtual void initArrays();
 
   /// allocate all vectors
-  void initArraysPreviousDisplacment();
+  //void initArraysPreviousDisplacment();
 
   /// initialize all internal arrays for materials
   virtual void initMaterials();
@@ -226,10 +226,10 @@ protected:
   //   void updateAcceleration();
 
   /// Update the increment of displacement
-  void updateIncrement();
+  // void updateIncrement();
 
-  /// Copy the actuel displacement into previous displacement
-  void updatePreviousDisplacement();
+  // /// Copy the actuel displacement into previous displacement
+  // void updatePreviousDisplacement();
 
   //   /// Save stress and strain through EventManager
   //   void saveStressAndStrainBeforeDamage();
@@ -606,7 +606,7 @@ public:
    * @brief set the SolidMechanicsModel::increment_flag  to on, the activate the
    * update of the SolidMechanicsModel::increment vector
    */
-  void setIncrementFlagOn();
+  //void setIncrementFlagOn();
 
   // /// get the stiffness matrix
   // AKANTU_GET_MACRO(StiffnessMatrix, *stiffness_matrix, SparseMatrix &);

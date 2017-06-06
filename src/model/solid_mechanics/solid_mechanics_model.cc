@@ -203,11 +203,10 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
     this->initMaterials();
   }
 
-  if (increment_flag)
-    this->initBC(*this, *displacement, *displacement_increment,
-                 *external_force);
-  else
-    this->initBC(*this, *displacement, *external_force);
+  // if (increment_flag)
+  this->initBC(*this, *displacement, *displacement_increment, *external_force);
+  // else
+  // this->initBC(*this, *displacement, *external_force);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -314,6 +313,8 @@ void SolidMechanicsModel::initSolver(
   /* ------------------------------------------------------------------------ */
   // for alloc type of solvers
   this->allocNodalField(this->displacement, spatial_dimension, "displacement");
+  this->allocNodalField(this->previous_displacement, spatial_dimension,
+                        "previous_displacement");
   this->allocNodalField(this->displacement_increment, spatial_dimension,
                         "displacement_increment");
   this->allocNodalField(this->internal_force, spatial_dimension,
@@ -330,6 +331,8 @@ void SolidMechanicsModel::initSolver(
     dof_manager.registerBlockedDOFs("displacement", *this->blocked_dofs);
     dof_manager.registerDOFsIncrement("displacement",
                                       *this->displacement_increment);
+    dof_manager.registerDOFsPrevious("displacement",
+                                     *this->previous_displacement);
   }
 
   /* ------------------------------------------------------------------------ */
@@ -389,20 +392,20 @@ void SolidMechanicsModel::initFEEngineBoundary() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::initArraysPreviousDisplacment() {
-  AKANTU_DEBUG_IN();
+// void SolidMechanicsModel::initArraysPreviousDisplacment() {
+//   AKANTU_DEBUG_IN();
 
-  this->setIncrementFlagOn();
-  if (not this->previous_displacement) {
-    this->allocNodalField(this->previous_displacement, spatial_dimension,
-                          "previous_displacement");
+//   this->setIncrementFlagOn();
+//   if (not this->previous_displacement) {
+//     this->allocNodalField(this->previous_displacement, spatial_dimension,
+//                           "previous_displacement");
 
-    this->getDOFManager().registerDOFsPrevious("displacement",
-                                               *this->previous_displacement);
-  }
+//     this->getDOFManager().registerDOFsPrevious("displacement",
+//                                                *this->previous_displacement);
+//   }
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 /**
@@ -760,35 +763,35 @@ void SolidMechanicsModel::updateCurrentPosition() {
 // }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::updateIncrement() {
-  AKANTU_DEBUG_IN();
+// void SolidMechanicsModel::updateIncrement() {
+//   AKANTU_DEBUG_IN();
 
-  auto incr_it = this->displacement_increment->begin(spatial_dimension);
-  auto incr_end = this->displacement_increment->end(spatial_dimension);
-  auto disp_it = this->displacement->begin(spatial_dimension);
-  auto prev_disp_it = this->previous_displacement->begin(spatial_dimension);
+//   auto incr_it = this->displacement_increment->begin(spatial_dimension);
+//   auto incr_end = this->displacement_increment->end(spatial_dimension);
+//   auto disp_it = this->displacement->begin(spatial_dimension);
+//   auto prev_disp_it = this->previous_displacement->begin(spatial_dimension);
 
-  for (; incr_it != incr_end; ++incr_it) {
-    *incr_it = *disp_it;
-    *incr_it -= *prev_disp_it;
-  }
+//   for (; incr_it != incr_end; ++incr_it) {
+//     *incr_it = *disp_it;
+//     *incr_it -= *prev_disp_it;
+//   }
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::updatePreviousDisplacement() {
-  AKANTU_DEBUG_IN();
+// /* --------------------------------------------------------------------------
+// */ void SolidMechanicsModel::updatePreviousDisplacement() {
+//   AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_ASSERT(
-      previous_displacement,
-      "The previous displacement has to be initialized."
-          << " Are you working with Finite or Ineslactic deformations?");
+//   AKANTU_DEBUG_ASSERT(
+//       previous_displacement,
+//       "The previous displacement has to be initialized."
+//           << " Are you working with Finite or Ineslactic deformations?");
 
-  previous_displacement->copy(*displacement);
+//   previous_displacement->copy(*displacement);
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::updateDataForNonLocalCriterion(
@@ -823,21 +826,21 @@ void SolidMechanicsModel::synchronizeResidual() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::setIncrementFlagOn() {
-  AKANTU_DEBUG_IN();
+// void SolidMechanicsModel::setIncrementFlagOn() {
+//   AKANTU_DEBUG_IN();
 
-  if (!displacement_increment) {
-    this->allocNodalField(displacement_increment, spatial_dimension,
-                          "displacement_increment");
+//   if (!displacement_increment) {
+//     this->allocNodalField(displacement_increment, spatial_dimension,
+//                           "displacement_increment");
 
-    this->getDOFManager().registerDOFsIncrement("displacement",
-                                                *this->displacement_increment);
-  }
+//     this->getDOFManager().registerDOFsIncrement("displacement",
+//                                                 *this->displacement_increment);
+//   }
 
-  increment_flag = true;
+//   increment_flag = true;
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 Real SolidMechanicsModel::getStableTimeStep() {

@@ -241,12 +241,12 @@ void SolidMechanicsModel::initMaterials() {
   }
 
   // initialize the previous displacement array if at least on material needs it
-  for (auto & material : materials) {
-    if (material->isFiniteDeformation() || material->isInelasticDeformation()) {
-      initArraysPreviousDisplacment();
-      break;
-    }
-  }
+  // for (auto & material : materials) {
+  //   if (material->isFiniteDeformation() || material->isInelasticDeformation()) {
+  //     initArraysPreviousDisplacment();
+  //     break;
+  //   }
+  // }
 
 #ifdef AKANTU_DAMAGE_NON_LOCAL
   /// initialize the non-local manager for non-local computations
