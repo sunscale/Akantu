@@ -163,19 +163,11 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  akantu::MeshPartition * partition = NULL;
-  if (prank == 0) {
-    /// creation mesh
-    mesh.read("cube_two_materials.msh");
-
-    partition = new akantu::MeshPartitionScotch(mesh, spatial_dimension);
-    partition->partitionate(psize);
-  }
+  if (prank == 0)     mesh.read("cube_two_materials.msh");
+  mesh.distribute();
 
   /// model creation
   SolidMechanicsModel model(mesh);
-  //model.initParallel(partition);
-  //delete partition;
 
   /// assign the two different materials using the
   /// StraightInterfaceMaterialSelector
