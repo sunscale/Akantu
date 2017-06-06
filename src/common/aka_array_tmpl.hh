@@ -32,12 +32,15 @@
 /* -------------------------------------------------------------------------- */
 /* Inline Functions Array<T>                                                 */
 /* -------------------------------------------------------------------------- */
-
-__END_AKANTU__
-
+#include "aka_array.hh"
+/* -------------------------------------------------------------------------- */
 #include <memory>
+/* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+#ifndef __AKANTU_AKA_ARRAY_TMPL_HH__
+#define __AKANTU_AKA_ARRAY_TMPL_HH__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
@@ -486,7 +489,7 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size, bool fill,
         free(values);
         values = NULL;
       } else {
-        T * tmp_ptr = static_cast<T *>(
+        auto * tmp_ptr = static_cast<T *>(
             realloc(values, new_size * nb_component * sizeof(T)));
 
         if (tmp_ptr == NULL) {
@@ -506,7 +509,7 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size, bool fill,
                              ? allocated_size + AKANTU_MIN_ALLOCATION
                              : new_size;
 
-    T * tmp_ptr = static_cast<T *>(
+    auto * tmp_ptr = static_cast<T *>(
         realloc(values, size_to_alloc * nb_component * sizeof(T)));
     AKANTU_DEBUG_ASSERT(
         tmp_ptr != NULL,
@@ -736,19 +739,19 @@ template <class T, bool is_scal>
 template <class R, class IR, bool is_r_scal>
 class Array<T, is_scal>::iterator_internal {
 public:
-  typedef R value_type;
-  typedef R * pointer;
-  typedef R & reference;
-  typedef typename R::proxy proxy;
-  typedef const typename R::proxy const_proxy;
-  typedef const R & const_reference;
-  typedef IR internal_value_type;
-  typedef IR * internal_pointer;
-  typedef std::ptrdiff_t difference_type;
-  typedef std::random_access_iterator_tag iterator_category;
+  using value_type = R;
+  using pointer = R *;
+  using reference = R &;
+  using proxy = typename R::proxy;
+  using const_proxy = const typename R::proxy;
+  using const_reference = const R &;
+  using internal_value_type = IR;
+  using internal_pointer = IR *;
+  using difference_type = std::ptrdiff_t;
+  using iterator_category = std::random_access_iterator_tag;
 
 public:
-  iterator_internal() : _offset(0), initial(NULL), ret(NULL), ret_ptr(NULL){};
+  iterator_internal() : initial(NULL), ret(NULL), ret_ptr(NULL){};
 
   iterator_internal(pointer_type data, UInt _offset)
       : _offset(_offset), initial(data), ret(NULL), ret_ptr(data) {
@@ -866,7 +869,7 @@ public:
   inline difference_type offset() const { return _offset; }
 
 protected:
-  UInt _offset;
+  UInt _offset{0};
   pointer_type initial;
   internal_pointer ret;
   pointer_type ret_ptr;
@@ -880,14 +883,14 @@ template <class T, bool is_scal>
 template <class R, class IR>
 class Array<T, is_scal>::iterator_internal<R, IR, true> {
 public:
-  typedef R value_type;
-  typedef R * pointer;
-  typedef R & reference;
-  typedef const R & const_reference;
-  typedef IR internal_value_type;
-  typedef IR * internal_pointer;
-  typedef std::ptrdiff_t difference_type;
-  typedef std::random_access_iterator_tag iterator_category;
+  using value_type = R;
+  using pointer = R *;
+  using reference = R &;
+  using const_reference = const R &;
+  using internal_value_type = IR;
+  using internal_pointer = IR *;
+  using difference_type = std::ptrdiff_t;
+  using iterator_category = std::random_access_iterator_tag;
 
 public:
   iterator_internal(pointer data = NULL,
@@ -900,7 +903,7 @@ public:
     }
   }
 
-  virtual ~iterator_internal(){};
+  virtual ~iterator_internal() = default;
 
   inline iterator_internal & operator=(const iterator_internal & it) {
     if (this != &it) {
@@ -1363,7 +1366,7 @@ Array<T, is_scal>::end() const {
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 inline typename Array<T, is_scal>::scalar_iterator
-Array<T, is_scal>::begin_reinterpret(UInt new_size) {
+Array<T, is_scal>::begin_reinterpret(__attribute__((unused)) UInt new_size) {
   AKANTU_DEBUG_ASSERT(new_size == this->nb_component * this->size,
                       "The new values for size ("
                           << new_size
@@ -1381,13 +1384,14 @@ Array<T, is_scal>::end_reinterpret(UInt new_size) {
                           << new_size
                           << ") is not compatible with the one of this array("
                           << this->size << "," << this->nb_component << ")");
-  return scalar_iterator(values + size);
+  return scalar_iterator(values + new_size);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 inline typename Array<T, is_scal>::const_scalar_iterator
-Array<T, is_scal>::begin_reinterpret(UInt new_size) const {
+Array<T, is_scal>::begin_reinterpret(__attribute__((unused))
+                                     UInt new_size) const {
   AKANTU_DEBUG_ASSERT(new_size == this->nb_component * this->size,
                       "The new values for size ("
                           << new_size
@@ -1405,7 +1409,7 @@ Array<T, is_scal>::end_reinterpret(UInt new_size) const {
                           << new_size
                           << ") is not compatible with the one of this array("
                           << this->size << "," << this->nb_component << ")");
-  return const_scalar_iterator(values + size);
+  return const_scalar_iterator(values + new_size);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1414,11 +1418,11 @@ template <typename R>
 class Array<T, is_scal>::const_iterator : public iterator_internal<const R, R> {
 public:
   typedef iterator_internal<const R, R> parent;
-  typedef typename parent::value_type value_type;
-  typedef typename parent::pointer pointer;
-  typedef typename parent::reference reference;
-  typedef typename parent::difference_type difference_type;
-  typedef typename parent::iterator_category iterator_category;
+  using value_type = typename parent::value_type;
+  using pointer = typename parent::pointer;
+  using reference = typename parent::reference;
+  using difference_type = typename parent::difference_type;
+  using iterator_category = typename parent::iterator_category;
 
 public:
   const_iterator() : parent(){};
@@ -1457,16 +1461,16 @@ public:
 // #else
 template <class T, class R, bool issame = is_same<T, R>::value>
 struct ConstConverterIteratorHelper {
-  typedef typename Array<T>::template const_iterator<R> const_iterator;
-  typedef typename Array<T>::template iterator<R> iterator;
+  using const_iterator = typename Array<T>::template const_iterator<R>;
+  using iterator = typename Array<T>::template iterator<R>;
   static inline const_iterator convert(const iterator & it) {
     return const_iterator(new R(*it, false));
   }
 };
 
 template <class T, class R> struct ConstConverterIteratorHelper<T, R, true> {
-  typedef typename Array<T>::template const_iterator<R> const_iterator;
-  typedef typename Array<T>::template iterator<R> iterator;
+  using const_iterator = typename Array<T>::template const_iterator<R>;
+  using iterator = typename Array<T>::template iterator<R>;
   static inline const_iterator convert(const iterator & it) {
     return const_iterator(it.data(), it.offset());
   }
@@ -1476,12 +1480,12 @@ template <class T, bool is_scal>
 template <typename R>
 class Array<T, is_scal>::iterator : public iterator_internal<R> {
 public:
-  typedef iterator_internal<R> parent;
-  typedef typename parent::value_type value_type;
-  typedef typename parent::pointer pointer;
-  typedef typename parent::reference reference;
-  typedef typename parent::difference_type difference_type;
-  typedef typename parent::iterator_category iterator_category;
+  using parent = iterator_internal<R>;
+  using value_type = typename parent::value_type;
+  using pointer = typename parent::pointer;
+  using reference = typename parent::reference;
+  using difference_type = typename parent::difference_type;
+  using iterator_category = typename parent::iterator_category;
 
 public:
   iterator() : parent(){};
@@ -1523,7 +1527,7 @@ public:
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 template <typename R>
-inline Array<T, is_scal>::iterator<R>
+inline typename Array<T, is_scal>::template iterator<R>
 Array<T, is_scal>::erase(const iterator<R> & it) {
   T * curr = it.data();
   UInt pos = (curr - values) / nb_component;
@@ -1532,4 +1536,7 @@ Array<T, is_scal>::erase(const iterator<R> & it) {
   return --rit;
 }
 
-// #endif
+
+} // akantu
+
+#endif /* __AKANTU_AKA_ARRAY_TMPL_HH__ */

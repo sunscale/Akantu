@@ -66,12 +66,12 @@ enum ElementKind {
 
 /* -------------------------------------------------------------------------- */
 struct ElementKind_def {
-  typedef ElementKind type;
+  using type = ElementKind;
   static const type _begin_ = BOOST_PP_SEQ_HEAD(AKANTU_ELEMENT_KIND);
   static const type _end_   = _ek_not_defined;
 };
 
-typedef safe_enum<ElementKind_def> element_kind_t;
+using element_kind_t = safe_enum<ElementKind_def> ;
 #else
 enum ElementKind;
 #endif

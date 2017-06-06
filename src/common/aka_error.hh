@@ -38,6 +38,7 @@
 #include <ostream>
 #include <sstream>
 #include <typeinfo>
+#include <utility>
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
@@ -98,21 +99,21 @@ namespace debug {
     /* Constructors/Destructors                                               */
     /* ---------------------------------------------------------------------- */
   protected:
-    Exception(std::string info = "") : _info(info), _file(""), _line(0) {}
+    Exception(std::string info = "") : _info(std::move(info)), _file("") {}
 
   public:
     //! full constructor
     Exception(std::string info, std::string file, unsigned int line)
-        : _info(info), _file(file), _line(line) {}
+        : _info(std::move(info)), _file(std::move(file)), _line(line) {}
 
     //! destructor
-    virtual ~Exception() throw(){};
+    ~Exception() throw() override = default;
 
     /* ---------------------------------------------------------------------- */
     /*  Methods */
     /* ---------------------------------------------------------------------- */
   public:
-    virtual const char * what() const throw() { return _info.c_str(); }
+    const char * what() const throw() override { return _info.c_str(); }
 
     virtual const char * info() const throw() {
       std::stringstream stream;
@@ -136,7 +137,7 @@ namespace debug {
     std::string _file;
 
     /// ligne it is thrown from
-    unsigned int _line;
+    unsigned int _line{0};
   };
 
   /// standard output stream operator
@@ -316,7 +317,7 @@ namespace debug {
                                       const std::string & info,
                                       const std::string & file,
                                       unsigned int line) const throw(Except) {
-    Except & nc_ex = const_cast<Except &>(ex);
+    auto & nc_ex = const_cast<Except &>(ex);
     nc_ex.setInfo(info);
     nc_ex.setFile(file);
     nc_ex.setLine(line);
@@ -327,7 +328,7 @@ namespace debug {
   void Debugger::throwCustomException(const Except & ex,
                                       const std::string & file,
                                       unsigned int line) const throw(Except) {
-    Except & nc_ex = const_cast<Except &>(ex);
+    auto & nc_ex = const_cast<Except &>(ex);
     nc_ex.setFile(file);
     nc_ex.setLine(line);
 

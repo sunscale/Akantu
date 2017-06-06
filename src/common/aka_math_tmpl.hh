@@ -267,14 +267,14 @@ template <typename T> inline void Math::matrixEig(UInt n, T * A, T * d, T * V) {
   // A^t. Asking for the left eigenvectors of A^t will give the transposed right
   // eigenvectors of A so in the C++ code the right eigenvectors.
   char jobvl;
-  if (V != NULL)
+  if (V != nullptr)
     jobvl = 'V'; // compute left  eigenvectors
   else
     jobvl = 'N'; // compute left  eigenvectors
 
   char jobvr('N'); // compute right eigenvectors
 
-  T * di = new T[n]; // imaginary part of the eigenvalues
+  auto * di = new T[n]; // imaginary part of the eigenvalues
 
   int info;
   int N = n;
@@ -282,14 +282,14 @@ template <typename T> inline void Math::matrixEig(UInt n, T * A, T * d, T * V) {
   T wkopt;
   int lwork = -1;
   // query and allocate the optimal workspace
-  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, V, &N, NULL, &N, &wkopt, &lwork,
-              &info);
+  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, V, &N, nullptr, &N, &wkopt,
+              &lwork, &info);
 
   lwork = int(wkopt);
-  T * work = new T[lwork];
+  auto * work = new T[lwork];
   // solve the eigenproblem
-  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, V, &N, NULL, &N, work, &lwork,
-              &info);
+  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, V, &N, nullptr, &N, work,
+              &lwork, &info);
 
   AKANTU_DEBUG_ASSERT(
       info == 0,
@@ -357,9 +357,9 @@ template <UInt n> inline Real Math::det(const Real * mat) {
 template <typename T> inline T Math::det(UInt n, const T * A) {
   int N = n;
   int info;
-  int * ipiv = new int[N + 1];
+  auto * ipiv = new int[N + 1];
 
-  T * LU = new T[N * N];
+  auto * LU = new T[N * N];
   std::copy(A, A + N * N, LU);
 
   // LU factorization of A
@@ -467,9 +467,9 @@ template <UInt n> inline void Math::inv(const Real * A, Real * Ainv) {
 template <typename T> inline void Math::inv(UInt n, const T * A, T * invA) {
   int N = n;
   int info;
-  int * ipiv = new int[N + 1];
+  auto * ipiv = new int[N + 1];
   int lwork = N * N;
-  T * work = new T[lwork];
+  auto * work = new T[lwork];
 
   std::copy(A, A + n * n, invA);
 
@@ -493,8 +493,8 @@ template <typename T>
 inline void Math::solve(UInt n, const T * A, T * x, const T * b) {
   int N = n;
   int info;
-  int * ipiv = new int[N];
-  T * lu_A = new T[N * N];
+  auto * ipiv = new int[N];
+  auto * lu_A = new T[N * N];
 
   std::copy(A, A + N * N, lu_A);
 

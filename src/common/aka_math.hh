@@ -43,6 +43,8 @@
 #define __AKANTU_AKA_MATH_H__
 
 /* -------------------------------------------------------------------------- */
+#include <utility>
+
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
@@ -116,7 +118,7 @@ public:
   /// solve @f$ A x = \Lambda x @f$ and return d and V such as @f$ A V[i:] =
   /// d[i] V[i:]@f$
   template <typename T>
-  static void matrixEig(UInt n, T * A, T * d, T * V = NULL);
+  static void matrixEig(UInt n, T * A, T * d, T * V = nullptr);
 
   /// determinent of a 2x2 matrix
   static inline Real det2(const Real * mat);
@@ -267,7 +269,7 @@ public:
   };
 
   struct NewtonRaphsonFunctor {
-    NewtonRaphsonFunctor(const std::string & name) : name(name) {}
+    NewtonRaphsonFunctor(std::string name) : name(std::move(name)) {}
     virtual Real f(Real x) const = 0;
     virtual Real f_prime(Real x) const = 0;
     std::string name;

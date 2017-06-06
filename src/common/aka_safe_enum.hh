@@ -39,7 +39,8 @@ namespace akantu {
 /// Safe enumerated type
 template<typename def, typename inner = typename def::type>
 class safe_enum : public def {
-  typedef typename def::type type;
+  using type = typename def::type;
+
 public:
   explicit safe_enum(type v) : val(v) {}
   inner underlying() const { return val; }

@@ -31,6 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include <memory>
+#include <utility>
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
@@ -41,11 +42,12 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /* Functions ArrayBase                                                       */
 /* -------------------------------------------------------------------------- */
-ArrayBase::ArrayBase(const ID & id)
-    : id(id), allocated_size(0), size(0), nb_component(1), size_of_type(0) {}
+ArrayBase::ArrayBase(ID id)
+    : id(std::move(id)), allocated_size(0), size(0), nb_component(1),
+      size_of_type(0) {}
 
 /* -------------------------------------------------------------------------- */
-ArrayBase::~ArrayBase() {}
+ArrayBase::~ArrayBase() = default;
 
 /* -------------------------------------------------------------------------- */
 void ArrayBase::printself(std::ostream & stream, int indent) const {

@@ -115,7 +115,7 @@ protected:
 
   inline TensorProxy(const TensorStorage<T, ndim, RetType> & other);
 
-  typedef typename RetType::proxy RetTypeProxy;
+  using RetTypeProxy = typename RetType::proxy;
 
 public:
   operator RetType() { return RetType(static_cast<RetTypeProxy &>(*this)); }
@@ -170,7 +170,7 @@ protected:
 /* -------------------------------------------------------------------------- */
 template <typename T> class VectorProxy : public TensorProxy<T, 1, Vector<T> > {
   typedef TensorProxy<T, 1, Vector<T> > parent;
-  typedef Vector<T> type;
+  using type = Vector<T>;
 
 public:
   VectorProxy(T * data, UInt n) : parent(data, n, 0, 0) {}
@@ -182,7 +182,7 @@ public:
 
 template <typename T> class MatrixProxy : public TensorProxy<T, 2, Matrix<T> > {
   typedef TensorProxy<T, 2, Matrix<T> > parent;
-  typedef Matrix<T> type;
+  using type = Matrix<T>;
 
 public:
   MatrixProxy(T * data, UInt m, UInt n) : parent(data, m, n, 0) {}
@@ -193,7 +193,7 @@ public:
 template <typename T>
 class Tensor3Proxy : public TensorProxy<T, 3, Tensor3<T> > {
   typedef TensorProxy<T, 3, Tensor3<T> > parent;
-  typedef Tensor3<T> type;
+  using type = Tensor3<T>;
 
 public:
   Tensor3Proxy(T * data, UInt m, UInt n, UInt k) : parent(data, m, n, k) {}
@@ -206,7 +206,7 @@ public:
 /* -------------------------------------------------------------------------- */
 template <typename T, UInt ndim, class RetType> class TensorStorage {
 public:
-  typedef T value_type;
+  using value_type = T;
 
 protected:
   template <class TensorType> void copySize(const TensorType & src) {
@@ -215,7 +215,7 @@ protected:
     this->_size = src.size();
   }
 
-  TensorStorage() : values(NULL), wrapped(false) {
+  TensorStorage() : values(NULL) {
     for (UInt d = 0; d < ndim; ++d)
       this->n[d] = 0;
     _size = 0;
@@ -456,7 +456,7 @@ protected:
   UInt n[ndim];
   UInt _size;
   T * values;
-  bool wrapped;
+  bool wrapped{false};
 };
 
 template <typename T, UInt ndim, class RetType>
@@ -474,8 +474,8 @@ template <typename T> class Vector : public TensorStorage<T, 1, Vector<T> > {
   typedef TensorStorage<T, 1, Vector<T> > parent;
 
 public:
-  typedef typename parent::value_type value_type;
-  typedef VectorProxy<T> proxy;
+  using value_type = typename parent::value_type;
+  using proxy = VectorProxy<T>;
 
 public:
   Vector() : parent() {}
@@ -491,7 +491,7 @@ public:
     }
   }
 public:
-  virtual ~Vector(){};
+  ~Vector() override = default;
 
   /* ------------------------------------------------------------------------ */
   inline Vector & operator=(const Vector & src) {
@@ -645,7 +645,7 @@ public:
 //  friend class ::akantu::Array<T>;
 };
 
-typedef Vector<Real> RVector;
+using RVector = Vector<Real>;
 
 /* ------------------------------------------------------------------------ */
 template <>
@@ -666,8 +666,8 @@ template <typename T> class Matrix : public TensorStorage<T, 2, Matrix<T> > {
   typedef TensorStorage<T, 2, Matrix<T> > parent;
 
 public:
-  typedef typename parent::value_type value_type;
-  typedef MatrixProxy<T> proxy;
+  using value_type = typename parent::value_type;
+  using proxy = MatrixProxy<T>;
 
 public:
   Matrix() : parent() {}
@@ -697,7 +697,7 @@ public:
     }
   }
 
-  virtual ~Matrix() {}
+  virtual ~Matrix() = default;
   /* ------------------------------------------------------------------------ */
   inline Matrix & operator=(const Matrix & src) {
     parent::operator=(src);
@@ -1034,8 +1034,8 @@ template <typename T> class Tensor3 : public TensorStorage<T, 3, Tensor3<T> > {
   typedef TensorStorage<T, 3, Tensor3<T> > parent;
 
 public:
-  typedef typename parent::value_type value_type;
-  typedef Tensor3Proxy<T> proxy;
+  using value_type = typename parent::value_type;
+  using proxy = Tensor3Proxy<T>;
 
 public:
   Tensor3() : parent(){};

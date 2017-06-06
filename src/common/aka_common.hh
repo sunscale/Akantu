@@ -71,7 +71,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 /* Common types                                                               */
 /* -------------------------------------------------------------------------- */
-typedef std::string ID;
+using ID = std::string;
 
 #ifdef AKANTU_NDEBUG
 static const Real REAL_INIT_VALUE = Real(0.);
@@ -83,11 +83,11 @@ static const Real REAL_INIT_VALUE = std::numeric_limits<Real>::quiet_NaN();
 /* Memory types                                                               */
 /* -------------------------------------------------------------------------- */
 
-typedef UInt MemoryID;
+using MemoryID = UInt;
 
-typedef std::string Surface;
+using Surface = std::string;
 typedef std::pair<Surface, Surface> SurfacePair;
-typedef std::list<SurfacePair> SurfacePairList;
+using SurfacePairList = std::list<SurfacePair>;
 
 /* -------------------------------------------------------------------------- */
 extern const UInt _all_dimensions;
@@ -184,7 +184,7 @@ enum MatrixType { _unsymmetric, _symmetric };
 /* Ghosts handling                                                            */
 /* -------------------------------------------------------------------------- */
 
-typedef ID SynchronizerID;
+using SynchronizerID = ID;
 
 /// @enum CommunicatorType type of communication method to use
 enum CommunicatorType { _communicator_mpi, _communicator_dummy };
@@ -269,12 +269,12 @@ enum GhostType {
 
 /* -------------------------------------------------------------------------- */
 struct GhostType_def {
-  typedef GhostType type;
+  using type = GhostType;
   static const type _begin_ = _not_ghost;
   static const type _end_ = _casper;
 };
 
-typedef safe_enum<GhostType_def> ghost_type_t;
+using ghost_type_t = safe_enum<GhostType_def>;
 extern ghost_type_t ghost_types;
 
 /// standard output stream operator for GhostType

@@ -44,7 +44,7 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// class that afford to store vectors in static memory
 class ArrayBase {
@@ -52,7 +52,7 @@ class ArrayBase {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ArrayBase(const ID & id = "");
+  ArrayBase(ID id = "");
 
   virtual ~ArrayBase();
 
@@ -95,19 +95,16 @@ protected:
   ID id;
 
   /// the size allocated
-  UInt allocated_size;
+  UInt allocated_size{0};
 
   /// the size used
-  UInt size;
+  UInt size{0};
 
   /// number of components
-  UInt nb_component;
+  UInt nb_component{1};
 
   /// size of the stored type
-  UInt size_of_type;
-
-  // /// User defined tag
-  // std::string tag;
+  UInt size_of_type{0};
 };
 
 /* -------------------------------------------------------------------------- */
@@ -118,10 +115,10 @@ template <typename T, bool is_scal> class Array : public ArrayBase {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef T value_type;
-  typedef value_type & reference;
-  typedef value_type * pointer_type;
-  typedef const value_type & const_reference;
+  using value_type = T;
+  using reference = value_type &;
+  using pointer_type = value_type *;
+  using const_reference = const value_type &;
 
   /// Allocation of a new vector
   inline Array(UInt size = 0, UInt nb_component = 1, const ID & id = "");
@@ -143,7 +140,7 @@ public:
   Array(const std::vector<value_type> & vect);
 #endif
 
-  virtual inline ~Array();
+  inline ~Array() override;
 
   Array & operator=(const Array & a) {
     /// this is to let STL allocate and copy arrays in the case of
@@ -170,26 +167,25 @@ public:
   /* ------------------------------------------------------------------------ */
 
   /// iterator for Array of nb_component = 1
-  typedef iterator<T> scalar_iterator;
+  using scalar_iterator = iterator<T>;
   /// const_iterator for Array of nb_component = 1
-  typedef const_iterator<T> const_scalar_iterator;
+  using const_scalar_iterator = const_iterator<T>;
 
   /// iterator rerturning Vectors of size n  on entries of Array with
   /// nb_component = n
-  typedef iterator<Vector<T> > vector_iterator;
+  using vector_iterator = iterator<Vector<T>>;
   /// const_iterator rerturning Vectors of n size on entries of Array with
   /// nb_component = n
-  typedef const_iterator<Vector<T> > const_vector_iterator;
+  using const_vector_iterator = const_iterator<Vector<T>>;
 
   /// iterator rerturning Matrices of size (m, n) on entries of Array with
   /// nb_component = m*n
-  typedef iterator<Matrix<T> > matrix_iterator;
+  using matrix_iterator = iterator<Matrix<T>>;
   /// const iterator rerturning Matrices of size (m, n) on entries of Array with
   /// nb_component = m*n
-  typedef const_iterator<Matrix<T> > const_matrix_iterator;
+  using const_matrix_iterator = const_iterator<Matrix<T>>;
 
   /* ------------------------------------------------------------------------ */
-
   /// Get an iterator that behaves like a pointer T * to the first entry
   inline scalar_iterator begin();
   /// Get an iterator that behaves like a pointer T * to the end of the Array
@@ -199,13 +195,17 @@ public:
   /// Get a const_iterator to the end of an Array of scalar
   inline const_scalar_iterator end() const;
 
-  /// Get a scalar_iterator on the beginning of the Array considered of shape (new_size)
+  /// Get a scalar_iterator on the beginning of the Array considered of shape
+  /// (new_size)
   inline scalar_iterator begin_reinterpret(UInt new_size);
-  /// Get a scalar_iterator on the end of the Array considered of shape (new_size)
+  /// Get a scalar_iterator on the end of the Array considered of shape
+  /// (new_size)
   inline scalar_iterator end_reinterpret(UInt new_size);
-  /// Get a const_scalar_iterator on the beginning of the Array considered of shape (new_size)
+  /// Get a const_scalar_iterator on the beginning of the Array considered of
+  /// shape (new_size)
   inline const_scalar_iterator begin_reinterpret(UInt new_size) const;
-  /// Get a const_scalar_iterator on the end of the Array considered of shape (new_size)
+  /// Get a const_scalar_iterator on the end of the Array considered of shape
+  /// (new_size)
   inline const_scalar_iterator end_reinterpret(UInt new_size) const;
 
   /* ------------------------------------------------------------------------ */
@@ -265,7 +265,7 @@ public:
   /// append a tuple of size nb_component containing value
   inline void push_back(const_reference value);
   /// append a vector
-  //inline void push_back(const value_type new_elem[]);
+  // inline void push_back(const value_type new_elem[]);
 
   /// append a Vector or a Matrix
   template <template <typename> class C>
@@ -322,7 +322,7 @@ public:
   T * storage() const { return values; };
 
   /// function to print the containt of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
 protected:
   /// perform the allocation for the constructors
@@ -365,14 +365,6 @@ protected:
   T * values; // /!\ very dangerous
 };
 
-#include "aka_array_tmpl.hh"
-
-__END_AKANTU__
-
-#include "aka_types.hh"
-
-__BEGIN_AKANTU__
-
 /* -------------------------------------------------------------------------- */
 /* Inline Functions Array<T, is_scal>                                         */
 /* -------------------------------------------------------------------------- */
@@ -392,6 +384,9 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
+
+#include "aka_array_tmpl.hh"
+#include "aka_types.hh"
 
 #endif /* __AKANTU_VECTOR_HH__ */

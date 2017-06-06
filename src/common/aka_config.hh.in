@@ -43,21 +43,10 @@
 
 @AKANTU_TYPES_EXTRA_INCLUDES@
 namespace akantu {
-  typedef @AKANTU_FLOAT_TYPE@ Real;
-  typedef @AKANTU_SIGNED_INTEGER_TYPE@ Int;
-  typedef @AKANTU_UNSIGNED_INTEGER_TYPE@ UInt;
-
-  // template<class Key, class Ty>
-  // struct unordered_map {
-  //   typedef typename @AKANTU_UNORDERED_MAP_TYPE@<Key, Ty> type;
-  // };
-
-  // template<class T>
-  // std::size_t hash(const T & t) {
-  //   typedef typename @AKANTU_HASH_TYPE@<T> hash_type;
-  //   return hash_type()(t);
-  // }
-}
+using Real = @AKANTU_FLOAT_TYPE@;
+using Int = @AKANTU_SIGNED_INTEGER_TYPE@;
+using UInt = @AKANTU_UNSIGNED_INTEGER_TYPE@;
+} // akantu
 
 #define AKANTU_INTEGER_SIZE @AKANTU_INTEGER_SIZE@
 #define AKANTU_FLOAT_SIZE @AKANTU_FLOAT_SIZE@
