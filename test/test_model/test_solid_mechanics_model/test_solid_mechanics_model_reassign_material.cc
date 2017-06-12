@@ -156,10 +156,9 @@ int main(int argc, char * argv[]) {
 
   UInt spatial_dimension = 3;
 
-  akantu::StaticCommunicator & comm =
-      akantu::StaticCommunicator::getStaticCommunicator();
-  akantu::Int psize = comm.getNbProc();
-  akantu::Int prank = comm.whoAmI();
+  StaticCommunicator & comm =
+    StaticCommunicator::getStaticCommunicator();
+  Int prank = comm.whoAmI();
 
   Mesh mesh(spatial_dimension);
 
@@ -178,10 +177,6 @@ int main(int argc, char * argv[]) {
   model.setMaterialSelector(*mat_selector);
   model.initFull(SolidMechanicsModelOptions(_static));
   MeshUtils::buildFacets(mesh);
-  // model.setBaseName("test_reassign_material");
-  // model.addDumpField("element_index_by_material");
-  // model.addDumpField("partitions");
-  // model.dump();
 
   /// check if different materials have been assigned correctly
   test_passed = mat_selector->isConditonVerified();

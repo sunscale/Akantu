@@ -33,9 +33,6 @@
 #include <cmath>
 #include "material_neohookean.hh"
 
-using std::cout;
-using std::endl;
-
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 inline void MaterialNeohookean<dim>::computeDeltaStressOnQuad(

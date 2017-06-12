@@ -150,8 +150,8 @@ void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
   auto j_it = this->jcn.begin();
   auto a_it = this->a.begin();
   auto a_end = this->a.end();
-  auto x_it = x.begin();
-  auto y_it = y.begin();
+  auto x_it = x.begin_reinterpret(x.getSize() * x.getNbComponent());
+  auto y_it = y.begin_reinterpret(x.getSize() * x.getNbComponent());
 
   for (; a_it != a_end; ++i_it, ++j_it, ++a_it) {
     Int i = this->dof_manager.globalToLocalEquationNumber(*i_it - 1);

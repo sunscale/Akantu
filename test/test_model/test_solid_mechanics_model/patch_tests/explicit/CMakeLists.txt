@@ -37,7 +37,7 @@ macro(register_patch_test_anisotropic name )
   register_test(patch_test_explicit_anisotropic
     SOURCES patch_test_explicit_anisotropic.cc
     FILES_TO_COPY ../data/_tetrahedron_4.msh ${_mat}
-    PACKAGE core
+    PACKAGE core lapack
     )
 endmacro()
 

@@ -258,32 +258,28 @@ void MeshUtils::buildFacets(Mesh & mesh) {
 
 /* -------------------------------------------------------------------------- */
 void MeshUtils::buildAllFacets(const Mesh & mesh, Mesh & mesh_facets,
-                               UInt to_dimension,
-                               ElementSynchronizer * synchronizer) {
+                               UInt to_dimension) {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
 
-  buildAllFacets(mesh, mesh_facets, spatial_dimension, to_dimension,
-                 synchronizer);
+  buildAllFacets(mesh, mesh_facets, spatial_dimension, to_dimension);
 
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */
 void MeshUtils::buildAllFacets(const Mesh & mesh, Mesh & mesh_facets,
-                               UInt from_dimension, UInt to_dimension,
-                               ElementSynchronizer * synchronizer) {
+                               UInt from_dimension, UInt to_dimension) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(
       mesh_facets.isMeshFacets(),
       "The mesh_facets should be initialized with initMeshFacets");
 
-  const ElementTypeMapArray<UInt> * prank_to_element = NULL;
+  const ElementTypeMapArray<UInt> * prank_to_element = nullptr;
 
-  if (synchronizer) {
-    synchronizer->buildPrankToElement();
-    prank_to_element = &synchronizer->getPrankToElement();
+  if (mesh.isDistributed()) {
+    prank_to_element = &(mesh.getElementSynchronizer().getPrankToElement());
   }
 
   /// generate facets
@@ -2098,12 +2094,13 @@ bool MeshUtils::findElementsAroundSubfacet(
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshUtils::buildSegmentToNodeType(const Mesh & mesh, Mesh & mesh_facets,
-                                       ElementSynchronizer * synchronizer) {
-  buildAllFacets(mesh, mesh_facets, 1, synchronizer);
+void MeshUtils::buildSegmentToNodeType(const Mesh & mesh, Mesh & mesh_facets) {
+  buildAllFacets(mesh, mesh_facets, 1);
+
   UInt spatial_dimension = mesh.getSpatialDimension();
+
   const ElementTypeMapArray<UInt> & element_to_rank =
-      synchronizer->getPrankToElement();
+    mesh.getElementSynchronizer().getPrankToElement();
   Int local_rank = StaticCommunicator::getStaticCommunicator().whoAmI();
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();

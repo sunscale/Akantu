@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
   model.assembleMassLumped();
 
-  model.updateResidual();
+  model.assembleInternalForces();
   model.getMaterial(0).setToSteadyState();
 
   std::stringstream filename_sstr;
@@ -83,13 +83,13 @@ int main(int argc, char *argv[])
   Material & mat = model.getMaterial(0);
   const Array<Real> & stress = mat.getStress(element_type);
 
-  Real Eta  = mat.getParam<Real>("Eta");
-  Real EV   = mat.getParam<Real>("Ev");
-  Real Einf = mat.getParam<Real>("Einf");
-  Real E0   = mat.getParam<Real>("E");
+  Real Eta  = mat.get("Eta");
+  Real EV   = mat.get("Ev");
+  Real Einf = mat.get("Einf");
+  Real E0   = mat.get("E");
   
-  Real kpa = mat.getParam<Real>("kapa");
-  Real mu  = mat.getParam<Real>("mu");
+  Real kpa = mat.get("kapa");
+  Real mu  = mat.get("mu");
 
   Real gamma = EV/E0;
   Real gammainf = Einf/E0;
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
     }
 
     // compute stress
-    model.updateResidual();
+    model.assembleInternalForces();
 
     // print output
     if(s % out_interval == 0) {

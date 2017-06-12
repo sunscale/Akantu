@@ -69,13 +69,13 @@ protected:
 public:
 
   /// get the energy specifying the type for the time step
-  virtual Real getEnergy(std::string type);
+  Real getEnergy(std::string type) override;
 
   /// Compute the plastic energy
   virtual void updateEnergies(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   /// Compute the true potential energy
-  virtual void computePotentialEnergy(ElementType el_type, GhostType ghost_type);
+  void computePotentialEnergy(ElementType el_type, GhostType ghost_type) override;
 
 protected:
   

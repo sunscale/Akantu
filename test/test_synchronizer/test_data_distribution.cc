@@ -55,8 +55,6 @@ int main(int argc, char * argv[]) {
     mesh_group_before.read("data_split.msh");
     mesh_group_after.read("data_split.msh");
 
-    mesh_group_before.createGroupsFromMeshData<std::string>("physical_names");
-
     mesh_group_before.registerData<UInt>("global_id");
     mesh_group_after.registerData<UInt>("global_id");
 
@@ -82,8 +80,6 @@ int main(int argc, char * argv[]) {
 
   RandGenerator<Real>::seed(1);
   mesh_group_after.distribute();
-
-  mesh_group_after.createGroupsFromMeshData<std::string>("physical_names");
 
   if (prank == 0)
     std::cout << mesh_group_after;

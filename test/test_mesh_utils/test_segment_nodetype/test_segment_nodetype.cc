@@ -29,8 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "mesh_utils.hh"
 #include "element_synchronizer.hh"
+#include "mesh_utils.hh"
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
@@ -44,42 +44,32 @@ int main(int argc, char * argv[]) {
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
-  ElementSynchronizer * dist = NULL;
 
   // partition the mesh
   if (prank == 0) {
     mesh.read("mesh.msh");
-    MeshPartitionScotch partition(mesh, spatial_dimension);
-    partition.partitionate(psize);
-    dist = ElementSynchronizer::createDistributedSynchronizerMesh(
-        mesh, &partition);
-  } else {
-    dist =
-        ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
+
+  mesh.distribute();
 
   // compute the node types for each segment
   Mesh mesh_facets(mesh.initMeshFacets());
-  MeshUtils::buildSegmentToNodeType(mesh, mesh_facets, dist);
+  MeshUtils::buildSegmentToNodeType(mesh, mesh_facets);
 
   // verify that the number of segments per node type makes sense
   std::map<Int, UInt> nb_facets_per_nodetype;
   UInt nb_segments = 0;
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
-
+  for (auto ghost_type : ghost_types) {
     const Array<Int> & segment_to_nodetype =
         mesh_facets.getData<Int>("segment_to_nodetype", _segment_2, ghost_type);
 
     // count the number of segments per node type
-    for (UInt s = 0; s < segment_to_nodetype.getSize(); ++s) {
-      if (nb_facets_per_nodetype.find(segment_to_nodetype(s)) ==
-          nb_facets_per_nodetype.end())
-        nb_facets_per_nodetype[segment_to_nodetype(s)] = 1;
+    for (auto & stn : segment_to_nodetype) {
+      if (nb_facets_per_nodetype.find(stn) == nb_facets_per_nodetype.end())
+        nb_facets_per_nodetype[stn] = 1;
       else
-        ++nb_facets_per_nodetype[segment_to_nodetype(s)];
+        ++nb_facets_per_nodetype[stn];
     }
     nb_segments += segment_to_nodetype.getSize();
   }

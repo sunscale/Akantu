@@ -79,24 +79,24 @@ public:
   virtual void initMaterial();
 
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type,
-                             GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                             GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
-  virtual void computeTangentModuli(const ElementType & el_type,
-                                    Array<Real> & tangent_matrix,
-                                    GhostType ghost_type = _not_ghost);
+  void computeTangentModuli(const ElementType & el_type,
+                            Array<Real> & tangent_matrix,
+                            GhostType ghost_type = _not_ghost) override;
 
   /// compute the elastic potential energy
-  virtual void computePotentialEnergy(ElementType el_type,
-                                      GhostType ghost_type = _not_ghost);
+  void computePotentialEnergy(ElementType el_type,
+                              GhostType ghost_type = _not_ghost) override;
 
   virtual void
   computePotentialEnergyByElement(ElementType type, UInt index,
                                   Vector<Real> & epot_on_quad_points);
 
   /// compute the p-wave speed in the material
-  virtual Real getPushWaveSpeed(const Element & element) const;
+  Real getPushWaveSpeed(const Element & element) const override;
 
   /// compute the s-wave speed in the material
   virtual Real getShearWaveSpeed(const Element & element) const;

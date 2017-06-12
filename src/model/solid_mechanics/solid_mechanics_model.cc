@@ -798,12 +798,13 @@ void SolidMechanicsModel::updateDataForNonLocalCriterion(
     ElementTypeMapReal & criterion) {
   const ID field_name = criterion.getName();
   for (auto & material : materials) {
-    if (material->isInternal<Real>(field_name, _ek_regular))
-      for (UInt g = _not_ghost; g <= _ghost; ++g) {
-        GhostType ghost_type = (GhostType)g;
-        material->flattenInternal(field_name, criterion, ghost_type,
-                                  _ek_regular);
-      }
+    if (!material->isInternal<Real>(field_name, _ek_regular))
+      continue;
+
+    for (auto ghost_type : ghost_types) {
+      material->flattenInternal(field_name, criterion, ghost_type,
+                                _ek_regular);
+    }
   }
 }
 
@@ -812,18 +813,18 @@ void SolidMechanicsModel::updateDataForNonLocalCriterion(
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::synchronizeBoundaries() {
-  AKANTU_DEBUG_IN();
-  this->synchronize(_gst_smm_boundary);
-  AKANTU_DEBUG_OUT();
-}
+// void SolidMechanicsModel::synchronizeBoundaries() {
+//   AKANTU_DEBUG_IN();
+//   this->synchronize(_gst_smm_boundary);
+//   AKANTU_DEBUG_OUT();
+// }
 
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::synchronizeResidual() {
-  AKANTU_DEBUG_IN();
-  this->synchronize(_gst_smm_res);
-  AKANTU_DEBUG_OUT();
-}
+// /* -------------------------------------------------------------------------- */
+// void SolidMechanicsModel::synchronizeResidual() {
+//   AKANTU_DEBUG_IN();
+//   this->synchronize(_gst_smm_res);
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 // void SolidMechanicsModel::setIncrementFlagOn() {

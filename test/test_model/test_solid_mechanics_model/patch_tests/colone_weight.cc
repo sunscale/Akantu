@@ -32,18 +32,17 @@
 
 /* -------------------------------------------------------------------------- */
 
-
 /* -------------------------------------------------------------------------- */
-#include <limits>
 #include <fstream>
 #include <iostream>
+#include <limits>
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   // chose if you use hexahedron elements
   bool use_hexa = false;
 
@@ -51,16 +50,15 @@ int main(int argc, char *argv[]) {
   std::stringstream output;
   std::stringstream energy_file;
   akantu::ElementType type;
-   UInt vel_damping_interval;
+  UInt vel_damping_interval;
 
   if (use_hexa) {
     type = akantu::_hexahedron_8;
     mesh_file << "colone_hexa.msh";
     output << "paraview/test_weight_hexa";
     energy_file << "energy_hexa.csv";
-    vel_damping_interval =4;
-  }
-  else {
+    vel_damping_interval = 4;
+  } else {
     type = akantu::_tetrahedron_4;
     mesh_file << "colone_tetra.msh";
     output << "paraview/test_weight_tetra";
@@ -84,7 +82,8 @@ int main(int argc, char *argv[]) {
   akantu::UInt nb_nodes = mesh.getNbNodes();
   akantu::UInt nb_element = mesh.getNbElement(type);
 
-  std::cout << "Nb nodes : " << nb_nodes << " - nb elements : " << nb_element << std::endl;
+  std::cout << "Nb nodes : " << nb_nodes << " - nb elements : " << nb_element
+            << std::endl;
 
   /// model initialization
   model.initFull();
@@ -94,41 +93,40 @@ int main(int argc, char *argv[]) {
   model.assembleMassLumped();
 
   /// boundary conditions
-  const akantu::Array<Real> & position = model.getFEEngine().getMesh().getNodes();
+  const akantu::Array<Real> & position =
+      model.getFEEngine().getMesh().getNodes();
   akantu::Array<bool> & boundary = model.getBlockedDOFs();
   akantu::Array<Real> & force = model.getForce();
   const akantu::Array<Real> & mass = model.getMass();
 
   akantu::Real z_min = position(0, 2);
   for (unsigned int i = 0; i < nb_nodes; ++i) {
-    if(position(i, 2) < z_min)
+    if (position(i, 2) < z_min)
       z_min = position(i, 2);
   }
 
   akantu::Real eps = 1e-13;
   for (akantu::UInt i = 0; i < nb_nodes; ++i) {
-    if(fabs(position(i, 2) - z_min) <= eps)
-      boundary(i,2) = true;
+    if (fabs(position(i, 2) - z_min) <= eps)
+      boundary(i, 2) = true;
     else
-      force(i,2) = -mass(i,0) * 9.81;
+      force(i, 2) = -mass(i, 0) * 9.81;
   }
 
   akantu::Real time_step = model.getStableTimeStep() * time_factor;
   std::cout << "Time Step = " << time_step << "s" << std::endl;
   model.setTimeStep(time_step);
 
-  model.updateResidual();
-
   model.setBaseName("colonne_weight");
   model.addDumpField("displacement");
-  model.addDumpField("mass"        );
-  model.addDumpField("velocity"    );
+  model.addDumpField("mass");
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
   model.addDumpField("external_force");
   model.addDumpField("internal_force");
-  model.addDumpField("damage"      );
-  model.addDumpField("stress"      );
-  model.addDumpField("strain"      );
+  model.addDumpField("damage");
+  model.addDumpField("stress");
+  model.addDumpField("strain");
   model.dump();
 
   akantu::Array<Real> & velocity = model.getVelocity();
@@ -137,28 +135,26 @@ int main(int argc, char *argv[]) {
   energy.open(energy_file.str().c_str());
   energy << "id,epot,ekin,tot" << std::endl;
 
-  for(akantu::UInt s = 1; s <= max_steps; ++s) {
-
-    model.explicitPred();
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
+  for (akantu::UInt s = 1; s <= max_steps; ++s) {
+    model.solveStep();
 
     akantu::Real epot = model.getEnergy("potential");
     akantu::Real ekin = model.getEnergy("kinetic");
     energy << s << "," << epot << "," << ekin << "," << epot + ekin
-	   << std::endl;
+           << std::endl;
 
     if (s % vel_damping_interval == 0) {
       for (akantu::UInt i = 0; i < nb_nodes; ++i) {
-	velocity(i, 0) *= 0.9;
-	velocity(i, 1) *= 0.9;
-	velocity(i, 2) *= 0.9;
+        velocity(i, 0) *= 0.9;
+        velocity(i, 1) *= 0.9;
+        velocity(i, 2) *= 0.9;
       }
     }
 
-    if(s % 1 == 0) model.dump();
-    if(s % 10 == 0) std::cout << "passing step " << s << "/" << max_steps << std::endl;
+    if (s % 1 == 0)
+      model.dump();
+    if (s % 10 == 0)
+      std::cout << "passing step " << s << "/" << max_steps << std::endl;
   }
 
   akantu::finalize();

@@ -30,10 +30,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
 #include "solid_mechanics_model.hh"
+#include "non_linear_solver.hh"
+/* -------------------------------------------------------------------------- */
 #include <iostream>
-
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -49,10 +49,12 @@ int main(int argc, char *argv[]) {
 
   Mesh mesh(spatial_dimension);
   mesh.read("test_material_elasto_plastic_linear_isotropic_hardening.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   SolidMechanicsModel model(mesh);
   model.initFull(SolidMechanicsModelOptions(_static));
+
+  model.getNonLinearSolver("static").set("max_iterations", 300);
+  model.getNonLinearSolver("static").set("threshold", 1e-6);
 
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "left");
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "bottom");

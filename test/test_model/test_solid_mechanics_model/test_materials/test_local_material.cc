@@ -37,22 +37,20 @@
 #include <iostream>
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
 #include "local_material_damage.hh"
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   akantu::initialize("material.dat", argc, argv);
   UInt max_steps = 1100;
-  
+
   const UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   mesh.read("mesh_section_gap.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
-
+  
   SolidMechanicsModel model(mesh);
 
   /// model initialization
@@ -61,7 +59,7 @@ int main(int argc, char *argv[])
   model.initMaterials();
 
   Real time_step = model.getStableTimeStep();
-  model.setTimeStep(time_step/2.5);
+  model.setTimeStep(time_step / 2.5);
 
   model.assembleMassLumped();
 
@@ -72,66 +70,50 @@ int main(int argc, char *argv[])
   // model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "Fixed");
 
   // Boundary condition (Neumann)
-  Matrix<Real> stress(2,2);
+  Matrix<Real> stress(2, 2);
   stress.eye(7e5);
   model.applyBC(BC::Neumann::FromHigherDim(stress), "Traction");
 
-  /*model.setBaseName("damage_local");
-  model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
-  model.addDumpField("acceleration");
-  model.addDumpFieldVector("external_force");
-  model.addDumpFieldVector("internal_force");
-  model.addDumpField("damage"      );
-  model.addDumpField("stress"      );
-  model.addDumpField("strain"      );
-  model.dump();*/
-
-  for(UInt s = 0; s < max_steps; ++s) {
-    if(s < 100){
-    // Boundary condition (Neumann)
+  for (UInt s = 0; s < max_steps; ++s) {
+    if (s < 100) {
+      // Boundary condition (Neumann)
       stress.eye(7e5);
-    model.applyBC(BC::Neumann::FromHigherDim(stress), "Traction");
+      model.applyBC(BC::Neumann::FromHigherDim(stress), "Traction");
     }
 
     model.solveStep();
-
-    /*epot = model.getPotentialEnergy();
-    ekin = model.getKineticEnergy();
-
-    if(s % 10 == 0) std::cout << s << " " << epot << " " << ekin << " " << epot + ekin
-	      << std::endl;
-
-    if(s % 10 == 0) std::cout << "Step " << s+1 << "/" << max_steps <<std::endl;
-    if(s % 10 == 0) model.dump();*/
   }
 
   const Vector<Real> & lower_bounds = mesh.getLowerBounds();
   const Vector<Real> & upper_bounds = mesh.getUpperBounds();
   Real L = upper_bounds(0) - lower_bounds(0);
 
-  const ElementTypeMapArray<UInt> & filter =  model.getMaterial(0).getElementFilter();
-  ElementTypeMapArray<UInt>::type_iterator it = filter.firstType(spatial_dimension);
-  ElementTypeMapArray<UInt>::type_iterator end = filter.lastType(spatial_dimension);
+  const ElementTypeMapArray<UInt> & filter =
+      model.getMaterial(0).getElementFilter();
+  ElementTypeMapArray<UInt>::type_iterator it =
+      filter.firstType(spatial_dimension);
+  ElementTypeMapArray<UInt>::type_iterator end =
+      filter.lastType(spatial_dimension);
   Vector<Real> barycenter(spatial_dimension);
   bool is_fully_damaged = false;
-  for(; it != end; ++it) {
+  for (; it != end; ++it) {
     UInt nb_elem = mesh.getNbElement(*it);
     const UInt nb_gp = model.getFEEngine().getNbIntegrationPoints(*it);
-    Array<Real> & material_damage_array = model.getMaterial(0).getArray<Real>("damage", *it);
+    Array<Real> & material_damage_array =
+        model.getMaterial(0).getArray<Real>("damage", *it);
     UInt cpt = 0;
-    for(UInt nel = 0; nel < nb_elem ; ++nel){
-      if (material_damage_array(cpt,0) > 0.9){
-	is_fully_damaged = true;
-	mesh.getBarycenter(nel,*it,barycenter.storage());
-	if( (std::abs(barycenter(0)-(L/2)) < (L/10) ) ) {
-	  return EXIT_FAILURE;
-	}
+    for (UInt nel = 0; nel < nb_elem; ++nel) {
+      if (material_damage_array(cpt, 0) > 0.9) {
+        is_fully_damaged = true;
+        mesh.getBarycenter(nel, *it, barycenter.storage());
+        if ((std::abs(barycenter(0) - (L / 2)) < (L / 10))) {
+          return EXIT_FAILURE;
+        }
       }
       cpt += nb_gp;
     }
   }
-  if(!is_fully_damaged)
+  if (!is_fully_damaged)
     return EXIT_FAILURE;
 
   akantu::finalize();

@@ -474,6 +474,7 @@ void Mesh::distribute(StaticCommunicator & communicator) {
 #endif
 
   this->is_distributed = true;
+  this->element_synchronizer->buildPrankToElement();
   this->computeBoundingBox();
 }
 

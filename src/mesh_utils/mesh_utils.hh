@@ -77,19 +77,17 @@ public:
   /// build all the facets elements: boundary and internals and store them in
   /// the mesh_facets for element of dimension from_dimension to to_dimension
   static void buildAllFacets(const Mesh & mesh, Mesh & mesh_facets,
-                             UInt from_dimension, UInt to_dimension,
-                             ElementSynchronizer * synchronizer = NULL);
+                             UInt from_dimension, UInt to_dimension);
 
   /// build all the facets elements: boundary and internals and store them in
   /// the mesh_facets
   static void buildAllFacets(const Mesh & mesh, Mesh & mesh_facets,
-                             UInt to_dimension = 0,
-                             ElementSynchronizer * synchronizer = NULL);
+                             UInt to_dimension = 0);
 
   /// build facets for a given spatial dimension
   static void buildFacetsDimension(
       const Mesh & mesh, Mesh & mesh_facets, bool boundary_only, UInt dimension,
-      const ElementTypeMapArray<UInt> * prank_to_element = NULL);
+      const ElementTypeMapArray<UInt> * prank_to_element = nullptr);
 
   /// take the local_connectivity array as the array of local and ghost
   /// connectivity, renumber the nodes and set the connectivity of the mesh
@@ -135,7 +133,7 @@ public:
       const Element & starting_element, const Element & end_facet,
       const Vector<UInt> & subfacet_connectivity,
       std::vector<Element> & elem_list, std::vector<Element> & facet_list,
-      std::vector<Element> * subfacet_list = NULL);
+      std::vector<Element> * subfacet_list = nullptr);
 
   /// function to check if a node belongs to a given element
   static inline bool hasElement(const Array<UInt> & connectivity,
@@ -145,8 +143,7 @@ public:
   static void resetFacetToDouble(Mesh & mesh_facets);
 
   /// associate a node type to each segment in the mesh
-  static void buildSegmentToNodeType(const Mesh & mesh, Mesh & mesh_facets,
-                                     ElementSynchronizer * synchronizer);
+  static void buildSegmentToNodeType(const Mesh & mesh, Mesh & mesh_facets);
 
   /// update local and master global connectivity when new nodes are added
   static UInt updateLocalMasterGlobalConnectivity(Mesh & mesh,

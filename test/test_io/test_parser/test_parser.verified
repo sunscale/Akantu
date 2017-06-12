@@ -14,19 +14,19 @@ Section(_st_global) global [
  Subsections [
   Section(_st_material) elastic opt1 [
    Parameters [
-    + E: 1 (input_file.dat:5:6)
-    + X135: 1 + 3* debug_level  (input_file.dat:6:6)
-    + a: c (input_file.dat:11:6)
-    + name: toto (input_file.dat:4:6)
-    + yop: yop (input_file.dat:9:6)
+    + E: 1 (input_file.dat:5:9)
+    + X135: 1 + 3* debug_level  (input_file.dat:6:9)
+    + a: c (input_file.dat:11:9)
+    + name: toto (input_file.dat:4:9)
+    + yop: yop (input_file.dat:9:9)
    ]
    Subsections [
     Section(_st_rules) material [
      Parameters [
-      + E: 1 (input_file.dat:15:11)
-      + X135: 1 + 1  (input_file.dat:16:11)
-      + name: toto (input_file.dat:14:11)
-      + yop: yop (input_file.dat:18:11)
+      + E: 1 (input_file.dat:15:17)
+      + X135: 1 + 1  (input_file.dat:16:17)
+      + name: toto (input_file.dat:14:17)
+      + yop: yop (input_file.dat:18:17)
      ]
     ]
 

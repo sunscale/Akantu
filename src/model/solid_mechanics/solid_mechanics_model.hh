@@ -57,7 +57,7 @@ namespace akantu {
 class Material;
 class DumperIOHelper;
 class NonLocalManager;
-}
+} // namespace akantu
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -112,8 +112,8 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// initialize completely the model
-  virtual void initFull(
-      const ModelOptions & options = default_solid_mechanics_model_options);
+  void initFull(
+      const ModelOptions & options = default_solid_mechanics_model_options) override;
 
   /// initialize the fem object needed for boundary conditions
   void initFEEngineBoundary();
@@ -126,7 +126,7 @@ public:
   virtual void initArrays();
 
   /// allocate all vectors
-  //void initArraysPreviousDisplacment();
+  // void initArraysPreviousDisplacment();
 
   /// initialize all internal arrays for materials
   virtual void initMaterials();
@@ -156,7 +156,7 @@ public:
   //  void changeEquationNumberforPBC(std::map <UInt, UInt> & pbc_pair);
 
   /// synchronize Residual for output
-  void synchronizeResidual();
+  // void synchronizeResidual();
 
 protected:
   /// register PBC synchronizer
@@ -167,31 +167,32 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   /// assembles the stiffness matrix,
-  void assembleStiffnessMatrix();
+  virtual void assembleStiffnessMatrix();
   /// assembles the internal forces in the array internal_forces
-  void assembleInternalForces();
+  virtual void assembleInternalForces();
 
-private:
+protected:
   /// callback for the solver, this adds f_{ext} - f_{int} to the residual
-  virtual void assembleResidual();
+  void assembleResidual() override;
+
   /// callback for the solver, this assembles the stiffness matrix
-  virtual void assembleJacobian();
+  void assembleJacobian() override;
 
   /// callback for the solver, this is called at beginning of solve
-  virtual void predictor();
+  void predictor() override;
   /// callback for the solver, this is called at end of solve
-  virtual void corrector();
+  void corrector() override;
 
   /// Callback for the model to instantiate the matricees when needed
-  virtual void initSolver(TimeStepSolverType time_step_solver_type,
-                          NonLinearSolverType non_linear_solver_type);
+  void initSolver(TimeStepSolverType time_step_solver_type,
+                  NonLinearSolverType non_linear_solver_type) override;
 
 protected:
   /* ------------------------------------------------------------------------ */
-  virtual TimeStepSolverType getDefaultSolverType() const;
+  TimeStepSolverType getDefaultSolverType() const override;
   /* ------------------------------------------------------------------------ */
-  virtual ModelSolverOptions
-  getDefaultSolverOptions(const TimeStepSolverType & type) const;
+  ModelSolverOptions
+  getDefaultSolverOptions(const TimeStepSolverType & type) const override;
 
   /* ------------------------------------------------------------------------ */
   /* Explicit                                                                 */
@@ -328,15 +329,15 @@ protected:
   //   void initJacobianMatrix();
 
   /* ------------------------------------------------------------------------ */
-  virtual void updateDataForNonLocalCriterion(ElementTypeMapReal & criterion);
+  void updateDataForNonLocalCriterion(ElementTypeMapReal & criterion) override;
 
-public:
+//public:
   /// Update the stresses for the computation of the residual of the Stiffness
   /// matrix in the case of finite deformation
-  void computeStresses();
+  //void computeStresses();
 
   /// synchronize the ghost element boundaries values
-  void synchronizeBoundaries();
+  // void synchronizeBoundaries();
 
   /* ------------------------------------------------------------------------ */
   /* Materials (solid_mechanics_model_material.cc)                            */
@@ -409,27 +410,25 @@ protected:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  inline virtual UInt getNbData(const Array<Element> & elements,
-                                const SynchronizationTag & tag) const;
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  inline virtual void packData(CommunicationBuffer & buffer,
-                               const Array<Element> & elements,
-                               const SynchronizationTag & tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  inline virtual void unpackData(CommunicationBuffer & buffer,
-                                 const Array<Element> & elements,
-                                 const SynchronizationTag & tag);
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
-  inline virtual UInt getNbData(const Array<UInt> & dofs,
-                                const SynchronizationTag & tag) const;
+  inline UInt getNbData(const Array<UInt> & dofs,
+                        const SynchronizationTag & tag) const override;
 
-  inline virtual void packData(CommunicationBuffer & buffer,
-                               const Array<UInt> & dofs,
-                               const SynchronizationTag & tag) const;
+  inline void packData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
+                       const SynchronizationTag & tag) const override;
 
-  inline virtual void unpackData(CommunicationBuffer & buffer,
-                                 const Array<UInt> & dofs,
-                                 const SynchronizationTag & tag);
+  inline void unpackData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
+                         const SynchronizationTag & tag) override;
 
 protected:
   inline void splitElementByMaterial(const Array<Element> & elements,
@@ -439,23 +438,20 @@ protected:
   /* Mesh Event Handler inherited members                                     */
   /* ------------------------------------------------------------------------ */
 protected:
-  virtual void onNodesAdded(const Array<UInt> & nodes_list,
-                            const NewNodesEvent & event);
-  virtual void onNodesRemoved(const Array<UInt> & element_list,
-                              const Array<UInt> & new_numbering,
-                              const RemovedNodesEvent & event);
-  virtual void onElementsAdded(const Array<Element> & nodes_list,
-                               const NewElementsEvent & event);
-  virtual void
-  onElementsRemoved(const Array<Element> & element_list,
-                    const ElementTypeMapArray<UInt> & new_numbering,
-                    const RemovedElementsEvent & event);
+  void onNodesAdded(const Array<UInt> & nodes_list,
+                    const NewNodesEvent & event) override;
+  void onNodesRemoved(const Array<UInt> & element_list,
+                      const Array<UInt> & new_numbering,
+                      const RemovedNodesEvent & event) override;
+  void onElementsAdded(const Array<Element> & nodes_list,
+                       const NewElementsEvent & event) override;
+  void onElementsRemoved(const Array<Element> & element_list,
+                         const ElementTypeMapArray<UInt> & new_numbering,
+                         const RemovedElementsEvent & event) override;
 
-  virtual void onElementsChanged(
-      __attribute__((unused)) const Array<Element> & old_elements_list,
-      __attribute__((unused)) const Array<Element> & new_elements_list,
-      __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-      __attribute__((unused)) const ChangedElementsEvent & event){};
+  void onElementsChanged(const Array<Element> &, const Array<Element> &,
+                         const ElementTypeMapArray<UInt> &,
+                         const ChangedElementsEvent &) override{};
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface (kept for convenience) and dumper relative functions  */
@@ -480,19 +476,19 @@ public:
   void flattenAllRegisteredInternals(const ElementKind & kind);
 #endif
 
-  virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
+  dumper::Field * createNodalFieldReal(const std::string & field_name,
                                                const std::string & group_name,
-                                               bool padding_flag);
+                                               bool padding_flag) override;
 
-  virtual dumper::Field * createNodalFieldBool(const std::string & field_name,
+  dumper::Field * createNodalFieldBool(const std::string & field_name,
                                                const std::string & group_name,
-                                               bool padding_flag);
+                                               bool padding_flag) override;
 
-  virtual dumper::Field * createElementalField(const std::string & field_name,
+  dumper::Field * createElementalField(const std::string & field_name,
                                                const std::string & group_name,
                                                bool padding_flag,
                                                const UInt & spatial_dimension,
-                                               const ElementKind & kind);
+                                               const ElementKind & kind) override;
 
   virtual void dump(const std::string & dumper_name);
 
@@ -500,7 +496,7 @@ public:
 
   virtual void dump(const std::string & dumper_name, Real time, UInt step);
 
-  virtual void dump();
+  void dump() override;
 
   virtual void dump(UInt step);
 
@@ -517,7 +513,7 @@ public:
   // AKANTU_GET_MACRO(TimeStep, time_step, Real);
 
   /// set the value of the time step
-  virtual void setTimeStep(Real time_step, const ID & solver_id = "");
+  void setTimeStep(Real time_step, const ID & solver_id = "") override;
   /// void setTimeStep(Real time_step);
 
   /// return the of iterations done in the last solveStep
@@ -606,7 +602,7 @@ public:
    * @brief set the SolidMechanicsModel::increment_flag  to on, the activate the
    * update of the SolidMechanicsModel::increment vector
    */
-  //void setIncrementFlagOn();
+  // void setIncrementFlagOn();
 
   // /// get the stiffness matrix
   // AKANTU_GET_MACRO(StiffnessMatrix, *stiffness_matrix, SparseMatrix &);
@@ -630,7 +626,8 @@ public:
   // &);
 
   // /// get synchronizer
-  // AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const ElementSynchronizer &);
+  // AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const ElementSynchronizer
+  // &);
 
   AKANTU_GET_MACRO(MaterialByElement, material_index,
                    const ElementTypeMapArray<UInt> &);
@@ -773,8 +770,8 @@ namespace BC {
 namespace Neumann {
   typedef FromHigherDim FromStress;
   typedef FromSameDim FromTraction;
-}
-}
+} // namespace Neumann
+} // namespace BC
 
 __END_AKANTU__
 

@@ -184,19 +184,12 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
     if ((error < tolerance * tol_increase_factor)) converged = true;
 
     if (converged) {
-      // EventManager::sendEvent(SolidMechanicsModelEvent::AfterSolveStepEvent(method));
-      // !!! add sendEvent to call computeCauchyStress !!!!
-     
-      if (prank==0){
-        std::cout << "Error after convergence: " << error << std::endl;
-        std::cout << "no. of iterations: " << iter << std::endl;
-      }
+      
     } else if(iter == max_iteration) {
       if (prank==0){
         AKANTU_DEBUG_WARNING("[" << criteria << "] Convergence not reached after "
                              << std::setw(std::log10(max_iteration)) << iter <<
                              " iteration" << (iter == 1 ? "" : "s") << "!" << std::endl);
-        std::cout << "Error after NON convergence: " << error << std::endl;
       }
     }
 
@@ -235,8 +228,6 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
           insertion_new_element = false;
         } else {
           insertion_new_element = true;
-          if (prank==0)
-            std::cout << "No. cohesive elements inserted = " << new_cohesive_elements << std::endl;
         }
       }
     }

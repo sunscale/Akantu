@@ -483,8 +483,9 @@ Mesh::getFacetLocalConnectivity(const ElementType & type, UInt t) {
 #undef GET_FACET_CON
 
   AKANTU_DEBUG_OUT();
-  return Matrix<UInt>(); // This avoid a compilation warning but will certainly
-                         // also cause a segfault if reached
+  return MatrixProxy<UInt>(
+      nullptr, 0, 0); // This avoid a compilation warning but will certainly
+  // also cause a segfault if reached
 }
 
 /* -------------------------------------------------------------------------- */

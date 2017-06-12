@@ -33,12 +33,13 @@
 #include <iostream>
 
 /* -------------------------------------------------------------------------- */
+#include "non_linear_solver.hh"
 #include "solid_mechanics_model.hh"
-
 /* -------------------------------------------------------------------------- */
+
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   debug::setDebugLevel(dblWarning);
   initialize("material_thermal.dat", argc, argv);
 
@@ -74,12 +75,18 @@ int main(int argc, char *argv[]) {
   model.addDumpField("stress");
   model.addDumpField("delta_T");
 
-  model.solveStatic<_scm_newton_raphson_tangent_modified, _scc_increment>(1e-10, 2);
+  auto & solver = model.getNonLinearSolver("static");
+  solver.set("max_iterations", 2);
+  solver.set("threshold", 1e-10);
+
+  model.solveStep();
 
   for (UInt i = 0; i < mesh.getNbNodes(); ++i) {
-    if (Math::are_float_equal(pos(i, 0), max(0)) && Math::are_float_equal(pos(i, 1), max(1))) {
-      if (!Math::are_float_equal(disp(i, 0), 1.0) || !Math::are_float_equal(disp(i, 1), 1.0)) {
-	AKANTU_DEBUG_ERROR("Test not passed");
+    if (Math::are_float_equal(pos(i, 0), max(0)) &&
+        Math::are_float_equal(pos(i, 1), max(1))) {
+      if (!Math::are_float_equal(disp(i, 0), 1.0) ||
+          !Math::are_float_equal(disp(i, 1), 1.0)) {
+        AKANTU_DEBUG_ERROR("Test not passed");
         return EXIT_FAILURE;
       }
     }
@@ -92,6 +99,3 @@ int main(int argc, char *argv[]) {
   std::cout << "Test passed" << std::endl;
   return EXIT_SUCCESS;
 }
-
-
-

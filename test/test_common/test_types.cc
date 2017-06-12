@@ -228,10 +228,10 @@ void test_equal_and_accessors() {
   Vector<Real> vs(store, 10);
   VectorProxy<Real> vp3(vs);
   vp3 = vref1;
-  try { COMPARE_STORAGE(vs, vref1, "vp_equal_v"); } catch(wrap_error &) {}
+  try { COMPARE(vref1, store, "vp_equal_v"); } catch(wrap_error &) {}
 
   Vector<Real> vref3(vm);
-  VectorProxy<Real> vp4(vref3);
+  VectorProxy<Real> vp4 = vref3;
   vp3 = vp4;
   try { COMPARE(vs, mod, "vp_equal_vp"); } catch(wrap_error &) {}
 

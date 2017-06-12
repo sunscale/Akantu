@@ -68,20 +68,11 @@ int main(int argc, char * argv[]) {
     genMesh(mesh, global_nb_nodes);
   }
 
-  std::cout << prank << RandGenerator<Real>::seed() << std::endl;
+  //std::cout << prank << RandGenerator<Real>::seed() << std::endl;
 
   mesh.distribute();
 
   MyModel model(F, mesh, false);
-
-  UInt node = 0;
-  for (auto pos : mesh.getNodes()) {
-    std::cout << prank << " " << node << " pos: " << pos << " ["
-              << mesh.getNodeGlobalId(node) << "] " << mesh.getNodeType(node)
-              << " -- " << model.forces(node) << " " << model.blocked(node)
-              << std::endl;
-    ++node;
-  }
 
   model.getNewSolver("static", _tsst_static, _nls_newton_raphson);
   model.setIntegrationScheme("static", "disp", _ist_pseudo_time);

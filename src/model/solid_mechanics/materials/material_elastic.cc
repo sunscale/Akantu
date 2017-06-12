@@ -37,7 +37,6 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
@@ -151,9 +150,7 @@ void MaterialElastic<spatial_dimension>::computeStress(ElementType el_type,
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialElastic<spatial_dimension>::computeTangentModuli(
-    __attribute__((unused)) const ElementType & el_type,
-    Array<Real> & tangent_matrix,
-    __attribute__((unused)) GhostType ghost_type) {
+    const ElementType & el_type, Array<Real> & tangent_matrix, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_matrix);
@@ -168,14 +165,14 @@ void MaterialElastic<spatial_dimension>::computeTangentModuli(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 Real MaterialElastic<spatial_dimension>::getPushWaveSpeed(
-    __attribute__((unused)) const Element & element) const {
+    const Element &) const {
   return sqrt((lambda + 2 * mu) / this->rho);
 }
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 Real MaterialElastic<spatial_dimension>::getShearWaveSpeed(
-    __attribute__((unused)) const Element & element) const {
+    const Element &) const {
   return sqrt(mu / this->rho);
 }
 
@@ -190,8 +187,8 @@ void MaterialElastic<spatial_dimension>::computePotentialEnergy(
 
   if (ghost_type != _not_ghost)
     return;
-  Array<Real>::scalar_iterator epot =
-      this->potential_energy(el_type, ghost_type).begin();
+
+  auto epot = this->potential_energy(el_type, ghost_type).begin();
 
   if (!this->finite_deformation) {
     MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
@@ -219,16 +216,15 @@ void MaterialElastic<spatial_dimension>::computePotentialEnergy(
 template <UInt spatial_dimension>
 void MaterialElastic<spatial_dimension>::computePotentialEnergyByElement(
     ElementType type, UInt index, Vector<Real> & epot_on_quad_points) {
-  Array<Real>::matrix_iterator gradu_it =
+  auto gradu_it = this->gradu(type).begin(spatial_dimension, spatial_dimension);
+  auto gradu_end =
       this->gradu(type).begin(spatial_dimension, spatial_dimension);
-  Array<Real>::matrix_iterator gradu_end =
-      this->gradu(type).begin(spatial_dimension, spatial_dimension);
-  Array<Real>::matrix_iterator stress_it =
+  auto stress_it =
       this->stress(type).begin(spatial_dimension, spatial_dimension);
 
   if (this->finite_deformation)
-    stress_it = this->piola_kirchhoff_2(type)
-                    .begin(spatial_dimension, spatial_dimension);
+    stress_it = this->piola_kirchhoff_2(type).begin(spatial_dimension,
+                                                    spatial_dimension);
 
   UInt nb_quadrature_points =
       this->model->getFEEngine().getNbIntegrationPoints(type);

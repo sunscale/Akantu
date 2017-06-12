@@ -518,7 +518,7 @@ UInt GroupManager::createClusters(
     mesh_facets->defineMeshParent(mesh);
 
     MeshUtils::buildAllFacets(mesh, *mesh_facets, element_dimension,
-                              element_dimension - 1, element_synchronizer);
+                              element_dimension - 1);
   }
 
   ElementTypeMapArray<bool> seen_elements("seen_elements", id, memory_id);
