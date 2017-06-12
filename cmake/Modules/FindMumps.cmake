@@ -158,7 +158,7 @@ function(mumps_add_dependency _pdep)
       INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
       IMPORTED_LINK_INTERFACE_LANGUAGES "C")
   elseif(_pdep MATCHES "Scotch")
-    find_package(Scotch REQUIRED ${_mumps_dep_comp_${_pdep}})
+    find_package(Scotch REQUIRED ${ARGN})
   else()
     find_package(${_pdep} REQUIRED)
   endif()
@@ -222,7 +222,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
   set(_mumps_dep_link_ParMETIS PARMETIS_LIBRARY)
 
   set(_mumps_dep_comp_Scotch_ptscotch COMPONENTS ptscotch)
-  set(_mumps_dep_comp_Scotch_ptscotch COMPONENTS esmumps)
+  set(_mumps_dep_comp_Scotch_esmumps COMPONENTS esmumps)
 
   set(_mumps_potential_dependencies mumps_common pord BLAS ScaLAPACK MPI
     Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS)
@@ -259,7 +259,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
       endif()
 
       if(_add_pdep)
-        mumps_add_dependency(${_pdep})
+        mumps_add_dependency(${_pdep} ${_mumps_dep_comp_${_pdep}})
         list(APPEND _libraries_all ${${_mumps_dep_link_${_pdep}}})
         set(_retry_try_run TRUE)
       endif()
