@@ -198,7 +198,7 @@ template <typename T> class VectorProxy : public TensorProxy<T, 1, Vector<T>> {
 
 public:
   VectorProxy(T * data, UInt n) : parent(data, n, 0, 0) {}
-  template <class Other> VectorProxy(Other & src) : parent(src) {}
+  template <class Other> explicit VectorProxy(Other & src) : parent(src) {}
 
   /* ---------------------------------------------------------------------- */
   template <class Other>
@@ -223,7 +223,7 @@ template <typename T> class MatrixProxy : public TensorProxy<T, 2, Matrix<T>> {
 
 public:
   MatrixProxy(T * data, UInt m, UInt n) : parent(data, m, n, 0) {}
-  template <class Other> MatrixProxy(Other & src) : parent(src) {}
+  template <class Other> explicit MatrixProxy(Other & src) : parent(src) {}
 
   /* ---------------------------------------------------------------------- */
   template <class Other>
