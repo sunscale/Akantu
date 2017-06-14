@@ -66,10 +66,7 @@ int main(int argc, char * argv[]) {
   std::map<Int, UInt> nb_facets_per_nodetype;
   UInt nb_segments = 0;
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
-
+  for (auto ghost_type : ghost_types) {
     const Array<Int> & segment_to_nodetype =
         mesh_facets.getData<Int>("segment_to_nodetype", _segment_2, ghost_type);
 

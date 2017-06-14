@@ -43,7 +43,7 @@
 
 using namespace akantu;
 
-const UInt spatial_dimension = 3;
+const UInt spatial_dimension = 2;
 
 typedef std::map<std::pair<Element, Element>, Real> pair_list;
 
@@ -255,7 +255,8 @@ int main(int argc, char *argv[]) {
   }
 
   std::string file = "neighbors_ref";
-  std::stringstream sstrf; sstrf << file << "_" << prank;
+  std::stringstream sstrf; sstrf << file << "_" << psize << "_" << prank;
+
   file = sstrf.str();
 
   std::ofstream nout;
