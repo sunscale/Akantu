@@ -30,16 +30,16 @@
  *
  */
 
-#include "aka_common.hh"
 #include "aka_voigthelper.hh"
+#include "aka_common.hh"
 
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-
+/* clang-format off */
 template <> const UInt VoigtHelper<1>::mat[][1] = {{0}};
 template <> const UInt VoigtHelper<2>::mat[][2] = {{0, 2},
-						   {3, 1}};
+                                                   {3, 1}};
 template <> const UInt VoigtHelper<3>::mat[][3] = {{0, 5, 4},
                                                    {8, 1, 3},
                                                    {7, 6, 2}};
@@ -62,6 +62,5 @@ template <> const Real VoigtHelper<2>::factors[] = {1., 1., 2.};
 template <> const Real VoigtHelper<3>::factors[] = {1., 1., 1.,
                                                     2., 2., 2.};
 
-
+/* clang-format on */
 __END_AKANTU__
-

@@ -549,9 +549,9 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
-  inline void solve(Matrix<T> & A, const Vector<T> & b) {
+  inline void solve(const Matrix<T> & A, const Vector<T> & b) {
     AKANTU_DEBUG_ASSERT(
-        this->size() == A.rows() && this->_size = A.cols(),
+        this->size() == A.rows() && this->_size == A.cols(),
         "The size of the solution vector mismatches the size of the matrix");
     AKANTU_DEBUG_ASSERT(
         this->_size == b._size,

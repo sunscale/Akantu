@@ -52,10 +52,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#if defined(AKANTU_USE_OBSOLETE_GETTIMEOFDAY)
-#include <sys/time.h>
+#if defined(AKANTU_CORE_CXX11)
+#  include <chrono>
+#elif defined(AKANTU_USE_OBSOLETE_GETTIMEOFDAY)
+#  include <sys/time.h>
 #else
-#include <time.h>
+#  include <time.h>
 #endif
 
 #ifdef AKANTU_USE_MPI
@@ -113,8 +115,8 @@ std::string demangle(const char * symbol) {
 }
 
 /* ------------------------------------------------------------------------ */
-#if (defined(READLINK_COMMAND) || defined(ADDR2LINK_COMMAND)) &&               \
-    (not defined(_WIN32))
+#if (defined(READLINK_COMMAND) || defined(ADDR2LINK_COMMAND)) &&        \
+  (not defined(_WIN32))
 std::string exec(std::string cmd) {
   FILE * pipe = popen(cmd.c_str(), "r");
   if (!pipe)
@@ -302,7 +304,11 @@ void Debugger::printMessage(const std::string & prefix,
                             const DebugLevel & level,
                             const std::string & info) const {
   if (this->level >= level) {
-#if defined(AKANTU_USE_OBSOLETE_GETTIMEOFDAY)
+#if defined(AKANTU_CORE_CXX11)
+    double timestamp = std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(
+        std::chrono::system_clock::now().time_since_epoch()
+      ).count();
+#elif defined(AKANTU_USE_OBSOLETE_GETTIMEOFDAY)
     struct timeval time;
     gettimeofday(&time, NULL);
     double timestamp = time.tv_sec * 1e6 + time.tv_usec; /*in us*/

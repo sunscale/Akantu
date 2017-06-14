@@ -66,12 +66,11 @@ public:
   // array of matrix indices ij as function of vector index I
   const static UInt vec[dim * dim][2];
   // factors to multiply the strain by for voigt notation
-  const static Real factors[dim * (dim - (dim - 1) / 2)];
+  const static Real factors[((dim * (dim - 1)) / 2 + dim)];
 };
 
-
-template <UInt dim> const UInt VoigtHelper<dim>::size = dim*(dim-(dim-1)/2.);
-
+template <UInt dim>
+const UInt VoigtHelper<dim>::size = ((dim * (dim - 1)) / 2 + dim);
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
