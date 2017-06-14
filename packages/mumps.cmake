@@ -39,7 +39,6 @@ package_declare_sources(Mumps
   solver/sparse_solver_mumps.hh
   )
 
-
 set(_mumps_float_type ${AKANTU_FLOAT_TYPE})
 
 if(AKANTU_FLOAT_TYPE STREQUAL "float" OR

@@ -36,7 +36,7 @@
   #include "boundary_condition.hh"
   #include "boundary_condition_functor.hh"
   #include "boundary_condition_python_functor.hh"
-
+  #include "material_selector.hh"
   #include "material_python.hh"
 %}
 
@@ -48,7 +48,7 @@ namespace akantu {
   %ignore SolidMechanicsModel::initPBC;
 
 
-  %ignore SolidMechanicsModel::initExplicit;
+  ignore SolidMechanicsModel::initExplicit;
   %ignore SolidMechanicsModel::isExplicit;
   %ignore SolidMechanicsModel::updateCurrentPosition;
   %ignore SolidMechanicsModel::updateAcceleration;
@@ -83,7 +83,11 @@ namespace akantu {
   %ignore SolidMechanicsModel::getSynchronizer;
 
   %ignore Dumpable::registerExternalDumper;
-
+  %ignore Material::onNodesAdded;
+  %ignore Material::onNodesRemoved;
+  %ignore Material::onElementsAdded;
+  %ignore Material::onElementsRemoved;
+  %ignore Material::onElementsChanged;
 }
 
 %template(SolidMechanicsBoundaryCondition) akantu::BoundaryCondition<akantu::SolidMechanicsModel>;
@@ -92,9 +96,19 @@ namespace akantu {
 
 print_self(SolidMechanicsModel)
 
+%include "material.i"
 %include "solid_mechanics_model.hh"
 
+
 %extend akantu::SolidMechanicsModel {
+
+  /* ------------------------------------------------------------------------ */
+  void setPhysicalNamesMaterialSelector(){
+    akantu::MeshDataMaterialSelector<std::string> * selector = new
+      akantu::MeshDataMaterialSelector<std::string>("physical_names", *self);
+    self->setMaterialSelector(*selector);
+  }
+  
   /* ------------------------------------------------------------------------ */
   bool testConvergenceSccRes(Real tolerance) {
     Real error = 0;

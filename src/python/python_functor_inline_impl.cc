@@ -32,8 +32,9 @@
 #define __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__
 
 /* -------------------------------------------------------------------------- */
-#include <numpy/arrayobject.h>
 #include "integration_point.hh"
+#include <numpy/arrayobject.h>
+#include <typeinfo>
 /* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
@@ -41,7 +42,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 
 template <typename T> inline int PythonFunctor::getPythonDataTypeCode() const {
-  AKANTU_EXCEPTION("undefined type");
+  AKANTU_EXCEPTION("undefined type: " << debug::demangle(typeid(T).name()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -74,7 +75,10 @@ template <> inline int PythonFunctor::getPythonDataTypeCode<double>() const {
 template <typename T>
 PyObject * PythonFunctor::convertToPython(__attribute__((unused))
                                           const T & akantu_object) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_DEBUG_ERROR(
+      __func__ << " : not implemented yet !" << std::endl
+               << debug::demangle(typeid(T).name())
+               << "\n*************************************************\n\n\n");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -109,6 +113,35 @@ PythonFunctor::convertToPython(const std::vector<T> & array) const {
   PyArrayObject * res = (PyArrayObject *)obj;
   return (PyObject *)res;
 }
+/* -------------------------------------------------------------------------- */
+template <typename T>
+inline PyObject *
+PythonFunctor::convertToPython(const std::vector<Array<T> *> & array) const {
+
+  PyObject * res = PyDict_New();
+
+  for (auto a : array) {
+    PyObject * obj = this->convertToPython(*a);
+    PyObject * name = this->convertToPython(a->getID());
+    PyDict_SetItem(res, name, obj);
+  }
+  return (PyObject *)res;
+}
+/* -------------------------------------------------------------------------- */
+
+template <typename T1, typename T2>
+inline PyObject *
+PythonFunctor::convertToPython(const std::map<T1, T2> & map) const {
+
+  PyObject * res = PyDict_New();
+
+  for (auto a : map) {
+    PyObject * key = this->convertToPython(a.first);
+    PyObject * value = this->convertToPython(a.second);
+    PyDict_SetItem(res, key, value);
+  }
+  return (PyObject *)res;
+}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -119,6 +152,22 @@ PyObject * PythonFunctor::convertToPython(const Vector<T> & array) const {
       PyArray_SimpleNewFromData(1, dims, data_typecode, array.storage());
   PyArrayObject * res = (PyArrayObject *)obj;
   return (PyObject *)res;
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+PyObject * PythonFunctor::convertToPython(const Array<T> & array) const {
+  int data_typecode = getPythonDataTypeCode<T>();
+  npy_intp dims[2] = {array.getSize(), array.getNbComponent()};
+  PyObject * obj =
+      PyArray_SimpleNewFromData(2, dims, data_typecode, array.storage());
+  PyArrayObject * res = (PyArrayObject *)obj;
+  return (PyObject *)res;
+}
+/* -------------------------------------------------------------------------- */
+template <typename T>
+PyObject * PythonFunctor::convertToPython(Array<T> * array) const {
+  return this->convertToPython(*array);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -259,6 +308,13 @@ inline Real PythonFunctor::convertToAkantu<Real>(PyObject * python_obj) const {
   if (!PyFloat_Check(python_obj))
     AKANTU_EXCEPTION("cannot convert object to float");
   return PyFloat_AsDouble(python_obj);
+}
+/* -------------------------------------------------------------------------- */
+template <>
+inline UInt PythonFunctor::convertToAkantu<UInt>(PyObject * python_obj) const {
+  if (!PyInt_Check(python_obj))
+    AKANTU_EXCEPTION("cannot convert object to integer");
+  return PyInt_AsLong(python_obj);
 }
 
 /* -------------------------------------------------------------------------- */

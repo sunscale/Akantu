@@ -1,0 +1,13 @@
+material elastic [
+	 name = weak
+	 rho = 1.
+	 nu = 0.
+	 E = 1.
+]
+
+material elastic [
+	 name = strong
+	 rho = 1.
+	 nu = 0.
+	 E = 2.
+]

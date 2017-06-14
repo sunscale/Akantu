@@ -1409,10 +1409,8 @@ void Material::resizeInternals() {
 }
 
 /* -------------------------------------------------------------------------- */
-void Material::onElementsAdded(__attribute__((unused))
-                               const Array<Element> & element_list,
-                               __attribute__((unused))
-                               const NewElementsEvent & event) {
+void Material::onElementsAdded(const Array<Element> &,
+                               const NewElementsEvent &) {
   this->resizeInternals();
 }
 

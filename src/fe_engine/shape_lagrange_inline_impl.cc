@@ -275,14 +275,14 @@ void ShapeLagrange<kind>::precomputeShapesOnIntegrationPoints(
   UInt size_of_shapes = ElementClass<type>::getShapeSize();
 
   Array<Real> & shapes_tmp =
-      shapes.alloc(0, size_of_shapes, itp_type, ghost_type);
+      shapes.alloc(0,
+                   size_of_shapes, itp_type, ghost_type);
 
   this->computeShapesOnIntegrationPoints<type>(nodes, natural_coords,
                                                shapes_tmp, ghost_type);
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
@@ -338,7 +338,8 @@ void ShapeLagrange<kind>::precomputeShapeDerivativesOnIntegrationPoints(
   UInt size_of_shapesd = ElementClass<type>::getShapeDerivativesSize();
 
   Array<Real> & shapes_derivatives_tmp =
-      shapes_derivatives.alloc(0, size_of_shapesd, itp_type, ghost_type);
+      shapes_derivatives.alloc(0,
+                               size_of_shapesd, itp_type, ghost_type);
 
   this->computeShapeDerivativesOnIntegrationPoints<type>(
       nodes, natural_coords, shapes_derivatives_tmp, ghost_type);

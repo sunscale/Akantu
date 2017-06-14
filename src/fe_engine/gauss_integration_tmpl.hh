@@ -42,6 +42,10 @@ template <GaussIntegrationType type, UInt n> struct GaussIntegrationNbPoints {
 
 };
 
+template <UInt n> struct GaussIntegrationNbPoints<_git_not_defined, n> {
+  static const UInt nb_points = 0;
+};
+
 template <UInt n> struct GaussIntegrationNbPoints<_git_point, n> {
   static const UInt nb_points = 1;
 };
@@ -72,12 +76,6 @@ DECLARE_GAUSS_NB_POINTS(_git_tetrahedron, 2, 4);
 DECLARE_GAUSS_NB_POINTS(_git_tetrahedron, 3, 5);
 DECLARE_GAUSS_NB_POINTS(_git_tetrahedron, 4, 15);
 DECLARE_GAUSS_NB_POINTS(_git_tetrahedron, 5, 15);
-//DECLARE_GAUSS_NB_POINTS(_git_pentahedron, 1, 6); // order 3 in x, order 2 in y and z
-//DECLARE_GAUSS_NB_POINTS(_git_pentahedron, 2, 6); // order 3 in x, order 2 in y and z
-//DECLARE_GAUSS_NB_POINTS(_git_pentahedron, 3, 8); // order 3 in x, order 3 in y and z
-//DECLARE_GAUSS_NB_POINTS(_git_pentahedron, 4, 21);// order 5 in x, order 5 in y and z
-//DECLARE_GAUSS_NB_POINTS(_git_pentahedron, 5, 21);// order 5 in x, order 5 in y and z
-
 DECLARE_GAUSS_NB_POINTS_PENT(_git_pentahedron, 1, 3,
                              2); // order 3 in x, order 2 in y and z
 DECLARE_GAUSS_NB_POINTS_PENT(_git_pentahedron, 2, 3,

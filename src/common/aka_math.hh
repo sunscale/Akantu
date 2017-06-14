@@ -256,6 +256,10 @@ public:
   /// array is modified
   static Real reduce(Array<Real> & array);
 
+  /// reduce all the values of an array, the summation is done in place and the
+  /// array is modified
+  static Real reduce(Array<Real> & array);
+
   class NewtonRaphson {
   public:
     NewtonRaphson(Real tolerance, Real max_iteration)

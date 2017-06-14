@@ -39,7 +39,12 @@ endfunction()
 
 # ==============================================================================
 function(get_target_list_of_associated_files tgt files)
-  get_target_property(_type ${tgt} TYPE)
+  if(TARGET ${tgt})
+    get_target_property(_type ${tgt} TYPE)
+  else()
+    set(_type ${tgt}-NOTFOUND)
+  endif()
+
   if(_type STREQUAL "SHARED_LIBRARY"
       OR _type STREQUAL "STATIC_LIBRARY"
       OR _type STREQUAL "MODULE_LIBRARY"
@@ -49,7 +54,7 @@ function(get_target_list_of_associated_files tgt files)
     foreach(_file ${_srcs})
       list(APPEND _dep_ressources ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
     endforeach()
-  else()
+  elseif(_type)
     get_target_property(_dep_ressources ${tgt} RESSOURCES)
   endif()
 

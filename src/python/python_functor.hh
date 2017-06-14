@@ -33,14 +33,15 @@
 #define __AKANTU_PYTHON_FUNCTOR_HH__
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include <vector>
+#include <map>
 #include <Python.h>
+#include <vector>
 /* -------------------------------------------------------------------------- */
 __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 
-
 class PythonFunctor {
-
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -49,51 +50,62 @@ class PythonFunctor {
 public:
   PythonFunctor(PyObject * obj);
 
-
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
 protected:
-
   /// call the python functor
-  PyObject * callFunctor(PyObject * functor,
-			 PyObject * args,
-			 PyObject * kwargs) const;
+  PyObject * callFunctor(PyObject * functor, PyObject * args,
+                         PyObject * kwargs) const;
 
   /// call the python functor from variadic types
   template <typename return_type, typename... Params>
   return_type callFunctor(const std::string & functor_name,
-			  Params&... parameters) const;
+                          Params &... parameters) const;
 
   /// empty function to cose the recursive template loop
-  inline void packArguments(std::vector<PyObject*> & pArgs) const;
-  
+  inline void packArguments(std::vector<PyObject *> & pArgs) const;
+
   /// get the python function object
   inline PyObject * getPythonFunction(const std::string & functor_name) const;
 
-
   /// variadic template for unknown number of arguments to unpack
-  template<typename T, typename... Args>
-  inline void packArguments(std::vector<PyObject*> & pArgs,
-			    T & p,
-			    Args&...params) const;
+  template <typename T, typename... Args>
+  inline void packArguments(std::vector<PyObject *> & pArgs, T & p,
+                            Args &... params) const;
 
-  /// convert an akantu object to python 
+  /// convert an akantu object to python
   template <typename T>
-  inline PyObject *convertToPython(const T & akantu_obj) const;
+  inline PyObject * convertToPython(const T & akantu_obj) const;
 
-  /// convert a stl vector to python 
+  /// convert a stl vector to python
   template <typename T>
-  inline PyObject *convertToPython(const std::vector<T> & akantu_obj) const;
+  inline PyObject * convertToPython(const std::vector<T> & akantu_obj) const;
 
-  /// convert an akantu vector to python 
+  /// convert a stl vector to python
   template <typename T>
-  inline PyObject *convertToPython(const Vector<T> & akantu_obj) const;
+  inline PyObject * convertToPython(const std::vector<Array<T> *> & akantu_obj) const;
 
-  /// convert a akantu matrix to python 
+  /// convert a stl vector to python
+  template <typename T1, typename T2>
+  inline PyObject * convertToPython(const std::map<T1, T2> & akantu_obj) const;
+  
+  /// convert an akantu vector to python
   template <typename T>
-  inline PyObject *convertToPython(const Matrix<T> & akantu_obj) const;
+  inline PyObject * convertToPython(const Vector<T> & akantu_obj) const;
+
+  /// convert an akantu vector to python
+  template <typename T>
+  inline PyObject * convertToPython(const Array<T> & akantu_obj) const;
+
+  /// convert an akantu vector to python
+  template <typename T>
+  inline PyObject * convertToPython(Array<T> * akantu_obj) const;
+
+  /// convert a akantu matrix to python
+  template <typename T>
+  inline PyObject * convertToPython(const Matrix<T> & akantu_obj) const;
 
   /// convert a python object to an akantu object
   template <typename return_type>
@@ -103,18 +115,14 @@ protected:
   template <typename T>
   inline std::vector<T> convertListToAkantu(PyObject * python_obj) const;
 
-  
   /// returns the numpy data type code
-  template <typename T>
-  inline int getPythonDataTypeCode() const;
+  template <typename T> inline int getPythonDataTypeCode() const;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 
-  
   PyObject * python_obj;
-
 };
 /* -------------------------------------------------------------------------- */
 __END_AKANTU__
@@ -122,6 +130,5 @@ __END_AKANTU__
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include "python_functor_inline_impl.cc"
 /* -------------------------------------------------------------------------- */
-
 
 #endif /* __AKANTU_PYTHON_FUNCTOR_HH__ */

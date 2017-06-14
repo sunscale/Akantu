@@ -945,22 +945,34 @@ void HeatTransferModel::assembleCapacity() {
 }
 
 /* -------------------------------------------------------------------------- */
+class ComputeRhoFunctor {
+public:
+  ComputeRhoFunctor(const HeatTransferModel & model) : model(model){};
+
+  void operator()(Matrix<Real> & rho, const Element &,
+                  const Matrix<Real> &) const {
+    rho.set(model.getCapacity());
+  }
+
+private:
+  const HeatTransferModel & model;
+};
+
+/* -------------------------------------------------------------------------- */
 void HeatTransferModel::assembleCapacity(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
 
-  Array<Real> rho_1(0, 1);
-  // UInt nb_element;
-  capacity_matrix->clear();
+  ComputeRhoFunctor rho_functor(*this);
+
 
   Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
   for (; it != end; ++it) {
     ElementType type = *it;
 
-    computeRho(rho_1, type, ghost_type);
-    fem.assembleFieldMatrix(rho_1, 1, *capacity_matrix, type, ghost_type);
+    fem.assembleFieldMatrix(rho_functor, 1, *capacity_matrix, type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();

@@ -113,8 +113,8 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
 
-  std::vector<Real> local_params;
-  std::vector<InternalField<Real> *> internals;  
+  std::map<std::string, Real> local_params;
+  std::map<std::string, InternalField<Real> *> internals;
 };
 
 __END_AKANTU__

@@ -190,7 +190,7 @@ ArgumentParser::_addArgument(const std::string & name, const std::string & help,
   } else {
     arg->name = tmp_keys[0];
     pos_args.push_back(arg);
-    arg->required = true;
+    arg->required = (nargs != _one_if_possible);
     arg->is_positional = true;
   }
 

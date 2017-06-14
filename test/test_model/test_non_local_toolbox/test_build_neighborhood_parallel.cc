@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
   model.dump();
 
   /// model initialization changed to use our material
-  model.initFull(SolidMechanicsModelOptions(_static, true));
+  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass, true));
   model.registerNewCustomMaterials< TestMaterial<spatial_dimension> >("test_material");
   model.initMaterials();
   /// dump the ghost elements after ghosts for non-local have been added

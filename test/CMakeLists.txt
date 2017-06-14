@@ -59,3 +59,8 @@ package_add_files_to_package(
   cmake/akantu_test_driver.sh
   cmake/AkantuTestsMacros.cmake
   )
+
+package_is_activated(parallel _is_parallel)
+if (_is_parallel)
+  option(AKANTU_TESTS_ALWAYS_USE_MPI "Defines if sequential tests should also use MPIEXEC" FALSE)
+endif()

@@ -134,9 +134,9 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "material_plastic_inline_impl.cc"
 
 
 __END_AKANTU__
 
+#include "material_plastic_inline_impl.cc"
 #endif /* __AKANTU_MATERIAL_PLASTIC_HH__ */

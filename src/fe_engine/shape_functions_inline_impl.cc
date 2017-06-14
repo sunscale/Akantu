@@ -526,7 +526,7 @@ inline void ShapeFunctions::interpolateElementalFieldOnIntegrationPoints(
   Array<Real> * filtered_N = NULL;
   if (filter_elements != empty_filter) {
     nb_element = filter_elements.getSize();
-    filtered_N = new Array<Real>(nb_element, shapes.getNbComponent());
+    filtered_N = new Array<Real>(0, shapes.getNbComponent());
     FEEngine::filterElementalData(mesh, shapes, *filtered_N, type, ghost_type,
                                   filter_elements);
     N_it = filtered_N->begin_reinterpret(nb_nodes_per_element, nb_points,
@@ -577,7 +577,7 @@ void ShapeFunctions::gradientElementalFieldOnIntegrationPoints(
   Array<Real> * filtered_B = NULL;
   if (filter_elements != empty_filter) {
     nb_element = filter_elements.getSize();
-    filtered_B = new Array<Real>(nb_element, shapes_derivatives.getNbComponent());
+    filtered_B = new Array<Real>(0, shapes_derivatives.getNbComponent());
     FEEngine::filterElementalData(mesh, shapes_derivatives, *filtered_B, type,
                                   ghost_type, filter_elements);
     B_it = filtered_B->begin(element_dimension, nb_nodes_per_element);

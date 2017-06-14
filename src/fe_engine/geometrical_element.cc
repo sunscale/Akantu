@@ -30,10 +30,13 @@
  *
  */
 
+/* -------------------------------------------------------------------------- */
 #include "element_class.hh"
+/* -------------------------------------------------------------------------- */
 
 __BEGIN_AKANTU__
 
+/* clang-format off */
 /* -------------------------------------------------------------------------- */
 template<> UInt GeometricalElement<_gt_not_defined>::spatial_dimension          = 0;
 template<> UInt GeometricalElement<_gt_not_defined>::nb_nodes_per_element       = 0;
@@ -200,6 +203,7 @@ template<> UInt * GeometricalElement<_gt_hexahedron_20>::facet_connectivity[]  =
 template<> UInt * GeometricalElement<_gt_pentahedron_6>::facet_connectivity[]  = { &facet_connectivity_vect[0], &facet_connectivity_vect[2*3] };
 template<> UInt * GeometricalElement<_gt_pentahedron_15>::facet_connectivity[] = { &facet_connectivity_vect[0], &facet_connectivity_vect[2*6] };
 
+/* clang-format on */
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU__

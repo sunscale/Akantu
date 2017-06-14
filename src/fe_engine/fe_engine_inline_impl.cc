@@ -76,29 +76,18 @@ FEEngine::getInterpolationType(const ElementType & type) {
 /// @todo rewrite this function in order to get the cohesive element
 /// type directly from the facet
 #if defined(AKANTU_COHESIVE_ELEMENT)
-inline ElementType
-FEEngine::getCohesiveElementType(const ElementType & type_facet) {
+inline ElementType FEEngine::getCohesiveElementType(const ElementType & type) {
   AKANTU_DEBUG_IN();
 
-  ElementType type_cohesive = _not_defined;
+  ElementType ctype;
+#define GET_COHESIVE_TYPE(type)                                                \
+  ctype = CohesiveFacetProperty<type>::cohesive_type;
 
-  if (type_facet == _point_1)
-    type_cohesive = _cohesive_1d_2;
-  else if (type_facet == _segment_2)
-    type_cohesive = _cohesive_2d_4;
-  else if (type_facet == _segment_3)
-    type_cohesive = _cohesive_2d_6;
-  else if (type_facet == _triangle_3)
-    type_cohesive = _cohesive_3d_6;
-  else if (type_facet == _triangle_6)
-    type_cohesive = _cohesive_3d_12;
-  else if (type_facet == _quadrangle_4)
-    type_cohesive = _cohesive_3d_8;
-  else if (type_facet == _quadrangle_8)
-    type_cohesive = _cohesive_3d_16;
+  AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_COHESIVE_TYPE);
+#undef GET_COHESIVE_TYPE
 
   AKANTU_DEBUG_OUT();
-  return type_cohesive;
+  return ctype;
 }
 #else
 inline ElementType

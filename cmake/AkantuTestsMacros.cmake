@@ -66,6 +66,7 @@
 #      [EXTRA_FILES <filnames>...]
 #      [UNSABLE]
 #      [PARALLEL]
+#      [PARALLEL_LEVEL <procs>...]
 #      )
 #
 #  This function defines a test ``<test_name>_run`` this test could be of
@@ -111,6 +112,10 @@
 #    This specifies that this test should be run in parallel. It will generate a
 #    series of test for different number of processors. This automaticaly adds a
 #    dependency to the package ``AKANTU_PARALLEL``
+#
+#  ``PARALLEL_LEVEL``
+#    This defines the different processor numbers to use, if not defined the
+#    macro tries to determine it in a "clever" way
 #
 #]=======================================================================]
 
@@ -201,15 +206,15 @@ endfunction()
 # ==============================================================================
 function(register_test test_name)
    set(multi_variables
-    SOURCES FILES_TO_COPY DEPENDS DIRECTORIES_TO_CREATE COMPILE_OPTIONS EXTRA_FILES PACKAGE
-    )
+     SOURCES FILES_TO_COPY DEPENDS DIRECTORIES_TO_CREATE COMPILE_OPTIONS EXTRA_FILES PACKAGE PARALLEL_LEVEL
+     )
 
-  cmake_parse_arguments(_register_test
-    "UNSTABLE;PARALLEL"
-    "POSTPROCESS;SCRIPT;PARALLEL_LEVEL"
-    "${multi_variables}"
-    ${ARGN}
-    )
+   cmake_parse_arguments(_register_test
+     "UNSTABLE;PARALLEL"
+     "POSTPROCESS;SCRIPT"
+     "${multi_variables}"
+     ${ARGN}
+     )
 
   if(NOT _register_test_PACKAGE)
     message(FATAL_ERROR "No reference package was defined for the test"
@@ -330,15 +335,23 @@ function(register_test test_name)
 
       list(APPEND _arguments -E "${PROJECT_BINARY_DIR}/akantu_environement.sh")
 
+      package_is_activated(parallel _is_parallel)
+
+      if(_is_parallel AND AKANTU_TESTS_ALWAYS_USE_MPI AND NOT _register_test_PARALLEL)
+        set(_register_test_PARALLEL TRUE)
+        set(_register_test_PARALLEL_LEVEL 1)
+      endif()
+
       if(_register_test_PARALLEL)
         list(APPEND _arguments -p "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}")
         if(_register_test_PARALLEL_LEVEL)
           set(_procs "${_register_test_PARALLEL_LEVEL}")
         elseif(CMAKE_VERSION VERSION_GREATER "3.0")
+          set(_procs)
           include(ProcessorCount)
           ProcessorCount(N)
           while(N GREATER 1)
-            set(_procs "${N} ${_procs}")
+            list(APPEND _procs ${N})
             math(EXPR N "${N} / 2")
           endwhile()
         endif()
@@ -346,14 +359,13 @@ function(register_test test_name)
         if(NOT _procs)
           set(_procs 2)
         endif()
-        list(APPEND _arguments -N "${_procs}")
       endif()
 
       if(_register_test_POSTPROCESS)
         list(APPEND _arguments -s "${_register_test_POSTPROCESS}")
-	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${_register_test_POSTPROCESS} 
-	  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-	  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+        file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${_register_test_POSTPROCESS} 
+          FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+          DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
       endif()
 
       list(APPEND _arguments -w "${CMAKE_CURRENT_BINARY_DIR}")
@@ -365,10 +377,18 @@ function(register_test test_name)
       string(REPLACE ";" " " _command "${_arguments}")
 
       # register them test
-      add_test(NAME ${test_name}_run COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments})
+      if(_procs)
+        foreach(p ${_procs})
+          add_test(NAME ${test_name}_${p}_run COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments} -N ${p})
+          # add the executable as a dependency of the run
+          set_tests_properties(${test_name}_${p}_run PROPERTIES DEPENDS ${test_name})
+        endforeach()
+      else()
+        add_test(NAME ${test_name}_run COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments})
+        # add the executable as a dependency of the run
+        set_tests_properties(${test_name}_run PROPERTIES DEPENDS ${test_name})
+      endif()
 
-      # add the executable as a dependency of the run
-      set_tests_properties(${test_name}_run PROPERTIES DEPENDS ${test_name})
     endif()
   endif()
 

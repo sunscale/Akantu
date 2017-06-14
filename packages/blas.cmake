@@ -39,12 +39,13 @@ package_add_third_party_script_variable(BLAS BLAS_VERSION "3.5.0")
 
 set(_default_blas $ENV{BLA_VENDOR})
 if(NOT _default_blas)
-  set(_default_blas Generic)
+  set(_default_blas All)
 endif()
 
 set(AKANTU_USE_BLAS_VENDOR "${_default_blas}" CACHE STRING "Version of blas to use")
 mark_as_advanced(AKANTU_USE_BLAS_VENDOR)
 set_property(CACHE AKANTU_USE_BLAS_VENDOR PROPERTY STRINGS
+  All
   ACML
   ACML_GPU
   ACML_MP

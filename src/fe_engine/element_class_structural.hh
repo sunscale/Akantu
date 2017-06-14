@@ -113,9 +113,8 @@ protected:
     static const ElementType parent_element_type = parent_el_type;             \
     static const ElementKind element_kind = elem_kind;                         \
     static const UInt spatial_dimension = sp;                                  \
-    static const GaussIntergrationType gauss_integration_type =                \
-        gauss_int_type;                                                        \
-    static const UInt minimal_integration_order = min_int_order;               \
+    static const GaussIntegrationType gauss_integration_type = gauss_int_type; \
+    static const UInt polynomial_degree = min_int_order;                       \
   }
 
 /* -------------------------------------------------------------------------- */
@@ -129,9 +128,11 @@ class ElementClass<element_type, _ek_structural>
           ElementClassProperty<element_type>::interpolation_type> {
 protected:
   typedef GeometricalElement<
-      ElementClassProperty<element_type>::geometrical_type> geometrical_element;
-  typedef InterpolationElement<ElementClassProperty<
-      element_type>::interpolation_type> interpolation_element;
+      ElementClassProperty<element_type>::geometrical_type>
+      geometrical_element;
+  typedef InterpolationElement<
+      ElementClassProperty<element_type>::interpolation_type>
+      interpolation_element;
   typedef ElementClass<ElementClassProperty<element_type>::parent_element_type>
       parent_element;
 

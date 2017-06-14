@@ -71,8 +71,9 @@ int main(int argc, char* argv[])
       total_force += force(*n_it, 2);
     }
 
+    Math::setTolerance(1e-14);
     if (!Math::are_float_equal(total_force, 1)) {
-      std::cout << "Force balance" << std::endl;
+      std::cout << "Force balance " << total_force << " != 1" << std::endl;
       return EXIT_FAILURE;
     }
 

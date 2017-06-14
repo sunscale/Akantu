@@ -38,7 +38,7 @@
 __BEGIN_AKANTU__
 
 /* -------------------------------------------------------------------------- */
-
+/* clang-format off */
 template <> const UInt VoigtHelper<1>::mat[][1] = {{0}};
 template <> const UInt VoigtHelper<2>::mat[][2] = {{0, 2},
                                                    {3, 1}};
@@ -64,5 +64,5 @@ template <> const Real VoigtHelper<2>::factors[] = {1., 1., 2.};
 template <> const Real VoigtHelper<3>::factors[] = {1., 1., 1.,
                                                     2., 2., 2.};
 
-
+/* clang-format on */
 __END_AKANTU__

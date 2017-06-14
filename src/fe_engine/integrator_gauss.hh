@@ -39,7 +39,8 @@
 
 __BEGIN_AKANTU__
 
-template <ElementKind kind> class IntegratorGauss : public Integrator {
+template <ElementKind kind, class IntegrationOrderFunctor>
+class IntegratorGauss : public Integrator {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -69,7 +70,12 @@ public:
                  UInt nb_degree_of_freedom, const GhostType & ghost_type,
                  const Array<UInt> & filter_elements) const;
 
-  /// integrate one element scalar value on all elements of type "type"
+  /// integrate scalar field in_f
+  template <ElementType type, UInt polynomial_degree>
+  Real integrate(const Array<Real> & in_f, const GhostType & ghost_type = _not_ghost) const;
+
+  /// integrate partially around a quadrature point (@f$ intf_q = f_q * J_q *
+  /// w_q @f$)
   template <ElementType type>
   Real integrate(const Vector<Real> & in_f, UInt index,
                  const GhostType & ghost_type) const;
@@ -81,10 +87,8 @@ public:
 
   /// integrate a field without using the pre-computed values
   template <ElementType type, UInt polynomial_degree>
-  void integrate(const Array<Real> & in_f,
-                 Array<Real> & intf,
-                 UInt nb_degree_of_freedom,
-                 const GhostType & ghost_type) const;
+  void integrate(const Array<Real> & in_f, Array<Real> & intf,
+                 UInt nb_degree_of_freedom, const GhostType & ghost_type) const;
 
   /// integrate scalar field in_f
   template <ElementType type, UInt polynomial_degree>
@@ -168,14 +172,9 @@ private:
   ElementTypeMap<Matrix<Real> > quadrature_points;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
-#include "integrator_gauss_inline_impl.cc"
-#endif
 
 __END_AKANTU__
+
+#include "integrator_gauss_inline_impl.cc"
 
 #endif /* __AKANTU_INTEGRATOR_GAUSS_HH__ */

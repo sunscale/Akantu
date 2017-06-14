@@ -27,7 +27,6 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
 set(_MUMPS_COMPONENTS "sequential" "parallel" "double" "float" "complex_double" "complex_float")
 
 if(NOT Mumps_FIND_COMPONENTS)
@@ -37,6 +36,7 @@ endif()
 enable_language(Fortran)
 
 set(MUMPS_PRECISIONS)
+set(MUMPS_PLAT)
 foreach(_comp ${Mumps_FIND_COMPONENTS})
   if("${_comp}" STREQUAL "sequential")
     set(MUMPS_PLAT _seq) #default plat on debian based distribution
@@ -63,18 +63,6 @@ endif()
 list(GET MUMPS_PRECISIONS 0 _first_precision)
 
 string(TOUPPER "${_first_precision}" _u_first_precision)
-
-set(_mumps_test_dir "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}")
-file(WRITE "${_mumps_test_dir}/mumps_test_code.c"
-  "#include <${_first_precision}mumps_c.h>
-
-int main() {
-  ${_u_first_precision}MUMPS_STRUC_C mumps_data;
-  ${_first_precision}mumps_c(&mumps_data);
-  return 0;
-}
-")
-
 
 find_path(MUMPS_INCLUDE_DIR ${_first_precision}mumps_c.h
   PATHS "${MUMPS_DIR}"
@@ -111,44 +99,15 @@ if(CMAKE_VERSION VERSION_GREATER 2.8.12)
 
   find_package_handle_standard_args(Mumps
     REQUIRED_VARS
-      ${_mumps_required_vars}
-      MUMPS_INCLUDE_DIR
+    ${_mumps_required_vars}
+    MUMPS_INCLUDE_DIR
     VERSION_VAR
-      MUMPS_VERSION)
+    MUMPS_VERSION)
 else()
   find_package_handle_standard_args(Mumps DEFAULT_MSG
     ${_mumps_required_vars} MUMPS_INCLUDE_DIR)
 endif()
 
-#===============================================================================
-set(_mumps_dep_symbol_BLAS ${_first_precision}gemm)
-set(_mumps_dep_symbol_ScaLAPACK numroc)
-set(_mumps_dep_symbol_MPI mpi_send)
-set(_mumps_dep_symbol_Scotch scotchfstratinit)
-set(_mumps_dep_symbol_Scotch_ptscotch scotchfdgraphexit)
-set(_mumps_dep_symbol_Scotch_esmumps esmumps)
-set(_mumps_dep_symbol_mumps_common mumps_abort)
-set(_mumps_dep_symbol_pord SPACE_ordering)
-set(_mumps_dep_symbol_METIS metis_nodend)
-set(_mumps_dep_symbol_ParMETIS ParMETIS_V3_NodeND)
-
-set(_mumps_dep_link_BLAS BLAS_LIBRARIES)
-set(_mumps_dep_link_ScaLAPACK SCALAPACK_LIBRARIES)
-set(_mumps_dep_link_MPI MPI_Fortran_LIBRARIES)
-set(_mumps_dep_link_Scotch SCOTCH_LIBRARIES)
-set(_mumps_dep_link_Scotch_ptscotch SCOTCH_LIBRARY_PTSCOTCH)
-set(_mumps_dep_link_Scotch_esmumps SCOTCH_LIBRARY_ESMUMPS)
-set(_mumps_dep_link_mumps_common MUMPS_LIBRARY_COMMON)
-set(_mumps_dep_link_pord MUMPS_LIBRARY_PORD)
-set(_mumps_dep_link_METIS METIS_LIBRARY)
-set(_mumps_dep_link_ParMETIS PARMETIS_LIBRARY)
-
-set(_mumps_dep_comp_Scotch_ptscotch COMPONENTS ptscotch)
-set(_mumps_dep_comp_Scotch_ptscotch COMPONENTS esmumps)
-
-set(_mumps_potential_dependencies mumps_common pord BLAS ScaLAPACK MPI
-  Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS)
-#===============================================================================
 
 if(MUMPS_LIBRARY_${_u_first_precision}MUMPS MATCHES ".*${_first_precision}mumps.*${CMAKE_STATIC_LIBRARY_SUFFIX}")
   # Assuming mumps was compiled as a static library
@@ -167,63 +126,156 @@ else()
   set(MUMPS_LIBRARY_TYPE SHARED CACHE INTERNAL "" FORCE)
 endif()
 
-try_compile(_mumps_compiles "${_mumps_test_dir}" SOURCES "${_mumps_test_dir}/mumps_test_code.c"
-  CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MUMPS_INCLUDE_DIR}"
-  LINK_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${_compiler_specific}
-  OUTPUT_VARIABLE _out)
 
-foreach(_pdep ${_mumps_potential_dependencies})
-  if(_mumps_compiles)
-    break()
-  endif()
+function(mumps_add_dependency _pdep)
+  if(_pdep STREQUAL "mumps_common")
+    find_library(MUMPS_LIBRARY_COMMON mumps_common${MUMPS_PREFIX}
+      PATHS "${MUMPS_DIR}"
+      ENV MUMPS_DIR
+      PATH_SUFFIXES lib
+      )
 
-  if(_out MATCHES "${_mumps_dep_symbol_${_pdep}}")
-    if(_pdep STREQUAL "mumps_common")
-      find_library(MUMPS_LIBRARY_COMMON mumps_common${MUMPS_PREFIX}
-        PATHS "${MUMPS_DIR}"
-        ENV MUMPS_DIR
-        PATH_SUFFIXES lib
-        )
-
-      if(NOT TARGET MUMPS::common)
-        add_library(MUMPS::common ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
-      endif()
-      set_target_properties(MUMPS::common PROPERTIES
-        IMPORTED_LOCATION                 "${MUMPS_LIBRARY_COMMON}"
-        INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
-        IMPORTED_LINK_INTERFACE_LANGUAGES "C;Fortran")
-      list(APPEND _mumps_interface_link MUMPS::common)
-    elseif(_pdep STREQUAL "pord")
-      find_library(MUMPS_LIBRARY_PORD pord${MUMPS_PREFIX}
-        PATHS "${MUMPS_DIR}"
-        ENV MUMPS_DIR
-        PATH_SUFFIXES lib
-        )
-      if(NOT TARGET MUMPS::pord)
-        add_library(MUMPS::pord   ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
-      endif()
-      #TODO adapt it for windows and dlls (check FindGSL as an example)
-      set_target_properties(MUMPS::pord PROPERTIES
-        IMPORTED_LOCATION                 "${MUMPS_LIBRARY_PORD}"
-        INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
-        IMPORTED_LINK_INTERFACE_LANGUAGES "C")
-      list(APPEND _mumps_interface_link MUMPS::pord)
-    elseif(_pdep MATCHES "Scotch")
-      find_package(Scotch REQUIRED ${_mumps_dep_comp_${_pdep}})
-      list(APPEND _mumps_interface_link ${${_mumps_dep_link_${_pdep}}})
-    else()
-      find_package(${_pdep} REQUIRED)
-      list(APPEND _mumps_interface_link ${${_mumps_dep_link_${_pdep}}})
+    if(NOT TARGET MUMPS::common)
+      add_library(MUMPS::common ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
+    endif()
+    set_target_properties(MUMPS::common PROPERTIES
+      IMPORTED_LOCATION                 "${MUMPS_LIBRARY_COMMON}"
+      INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
+      IMPORTED_LINK_INTERFACE_LANGUAGES "C;Fortran")
+  elseif(_pdep STREQUAL "pord")
+    find_library(MUMPS_LIBRARY_PORD pord${MUMPS_PREFIX}
+      PATHS "${MUMPS_DIR}"
+      ENV MUMPS_DIR
+      PATH_SUFFIXES lib
+      )
+    if(NOT TARGET MUMPS::pord)
+      add_library(MUMPS::pord   ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
     endif()
 
-    list(APPEND MUMPS_LIBRARIES_ALL ${${_mumps_dep_link_${_pdep}}})
-
-    try_compile(_mumps_compiles "${_mumps_test_dir}" SOURCES "${_mumps_test_dir}/mumps_test_code.c"
-      CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${MUMPS_INCLUDE_DIR}"
-      LINK_LIBRARIES ${MUMPS_LIBRARIES_ALL} ${_compiler_specific}
-      OUTPUT_VARIABLE _out)
+    #TODO adapt it for windows and dlls (check FindGSL as an example)
+    set_target_properties(MUMPS::pord PROPERTIES
+      IMPORTED_LOCATION                 "${MUMPS_LIBRARY_PORD}"
+      INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
+      IMPORTED_LINK_INTERFACE_LANGUAGES "C")
+  elseif(_pdep MATCHES "Scotch")
+    find_package(Scotch REQUIRED ${ARGN})
+  else()
+    find_package(${_pdep} REQUIRED)
   endif()
-endforeach()
+endfunction()
+
+function(mumps_find_dependencies)
+  set(_libraries_all ${MUMPS_LIBRARIES_ALL})
+  set(_include_dirs ${MUMPS_INCLUDE_DIR})
+
+  set(_mumps_test_dir "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}")
+  file(READ ${CMAKE_CURRENT_LIST_DIR}/CheckFindMumps.c _output)
+  file(WRITE "${_mumps_test_dir}/mumps_test_code.c"
+    "#include <${_first_precision}mumps_c.h>
+${_u_first_precision}MUMPS_STRUC_C id;
+
+#define mumps_c ${_first_precision}mumps_c
+#define Real ${_u_first_precision}MUMPS_REAL
+")
+
+  if(MUMPS_PLAT STREQUAL _seq)
+    file(APPEND "${_mumps_test_dir}/mumps_test_code.c"
+      "#define MUMPS_SEQ
+")
+  else()
+    file(APPEND "${_mumps_test_dir}/mumps_test_code.c"
+      "// #undef MUMPS_SEQ
+")
+        find_package(MPI REQUIRED)
+    list(APPEND _compiler_specific ${MPI_C_LIBRARIES})
+    list(APPEND _include_dirs ${MPI_C_INCLUDE_PATH} ${MPI_INCLUDE_DIR})
+  endif()
+
+  file(APPEND "${_mumps_test_dir}/mumps_test_code.c" "${_output}")
+
+  #===============================================================================
+  set(_mumps_dep_symbol_BLAS ${_first_precision}gemm)
+  set(_mumps_dep_symbol_ScaLAPACK numroc)
+  set(_mumps_dep_symbol_MPI mpi_send)
+  set(_mumps_dep_symbol_Scotch SCOTCH_graphInit)
+  set(_mumps_dep_symbol_Scotch_ptscotch scotchfdgraphexit)
+  set(_mumps_dep_symbol_Scotch_esmumps esmumps)
+  set(_mumps_dep_symbol_mumps_common mumps_abort)
+  set(_mumps_dep_symbol_pord SPACE_ordering)
+  set(_mumps_dep_symbol_METIS metis_nodend)
+  set(_mumps_dep_symbol_ParMETIS ParMETIS_V3_NodeND)
+
+  # added for fucking macosx that cannot fail at link
+  set(_mumps_run_dep_symbol_mumps_common mumps_fac_descband)
+  set(_mumps_run_dep_symbol_MPI mpi_bcast)
+  set(_mumps_run_dep_symbol_ScaLAPACK idamax)
+
+  set(_mumps_dep_link_BLAS BLAS_LIBRARIES)
+  set(_mumps_dep_link_ScaLAPACK SCALAPACK_LIBRARIES)
+  set(_mumps_dep_link_MPI MPI_Fortran_LIBRARIES)
+  set(_mumps_dep_link_Scotch SCOTCH_LIBRARIES)
+  set(_mumps_dep_link_Scotch_ptscotch SCOTCH_LIBRARY_PTSCOTCH)
+  set(_mumps_dep_link_Scotch_esmumps SCOTCH_LIBRARY_ESMUMPS)
+  set(_mumps_dep_link_mumps_common MUMPS_LIBRARY_COMMON)
+  set(_mumps_dep_link_pord MUMPS_LIBRARY_PORD)
+  set(_mumps_dep_link_METIS METIS_LIBRARY)
+  set(_mumps_dep_link_ParMETIS PARMETIS_LIBRARY)
+
+  set(_mumps_dep_comp_Scotch_ptscotch COMPONENTS ptscotch)
+  set(_mumps_dep_comp_Scotch_esmumps COMPONENTS esmumps)
+
+  set(_mumps_potential_dependencies mumps_common pord BLAS ScaLAPACK MPI
+    Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS)
+  #===============================================================================
+
+  set(_retry_try_run TRUE)
+
+  # trying only as long as we add dependencies to avoid inifinte loop in case of an unkown dependency
+  while (_retry_try_run)
+    try_run(_mumps_run _mumps_compiles "${_mumps_test_dir}" "${_mumps_test_dir}/mumps_test_code.c"
+      CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
+      LINK_LIBRARIES ${_libraries_all} ${_compiler_specific}
+      RUN_OUTPUT_VARIABLE _run
+      COMPILE_OUTPUT_VARIABLE _out)
+
+    set(_retry_compile FALSE)
+    #message("COMPILATION outputs: \n${_out} \n RUN OUTPUT \n${_run}")
+    if(_mumps_compiles AND NOT (_mumps_run STREQUAL "FAILED_TO_RUN"))
+      break()
+    endif()
+
+    foreach(_pdep ${_mumps_potential_dependencies})
+      #message("CHECKING ${_pdep}")
+      set(_add_pdep FALSE)
+      if (NOT _mumps_compiles AND
+          _out MATCHES "${_mumps_dep_symbol_${_pdep}}")
+        set(_add_pdep TRUE)
+        #message("NEED COMPILE ${_pdep}")
+      elseif(_mumps_run STREQUAL "FAILED_TO_RUN" AND
+          DEFINED _mumps_run_dep_symbol_${_pdep} AND
+          _run MATCHES "${_mumps_run_dep_symbol_${_pdep}}")
+        set(_add_pdep TRUE)
+        #message("NEED RUN ${_pdep}")
+      endif()
+
+      if(_add_pdep)
+        mumps_add_dependency(${_pdep} ${_mumps_dep_comp_${_pdep}})
+        list(APPEND _libraries_all ${${_mumps_dep_link_${_pdep}}})
+        set(_retry_try_run TRUE)
+      endif()
+    endforeach()
+  endwhile()
+
+  if(APPLE)
+    # in doubt add some stuff because mumps was perhaps badly compiled
+    mumps_add_dependency(pord)
+    list(APPEND _libraries_all ${${_mumps_dep_link_pord}})
+  endif()
+
+  set(MUMPS_LIBRARIES_ALL ${_libraries_all} PARENT_SCOPE)
+endfunction()
+
+mumps_find_dependencies()
 
 foreach(_precision ${MUMPS_PRECISIONS})
   string(TOUPPER "${_precision}" _u_precision)
@@ -237,5 +289,6 @@ foreach(_precision ${MUMPS_PRECISIONS})
     IMPORTED_LINK_INTERFACE_LANGUAGES "C;Fortran"
     INTERFACE_LINK_LIBRARIES          "${_mumps_interface_link}")
 endforeach()
+
 
 set(MUMPS_LIBRARIES ${MUMPS_LIBRARIES_ALL} CACHE INTERNAL "" FORCE)

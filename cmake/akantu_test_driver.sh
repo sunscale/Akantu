@@ -48,7 +48,7 @@ postprocess_script=
 reference=
 working_dir=
 envi=
-parallel_processes="2 4 8"
+parallel_processes="2"
 
 while getopts ":n:e:E:p:N:s:r:w:h" opt; do
     case "$opt" in
@@ -105,15 +105,16 @@ if [ -z "${parallel}" ]; then
     echo "Executing the test ${name}"
     full_redirect 0 ${name} "./${executable}"
 else
-    for i in ${parallel_processes}; do
-        echo "Executing the test ${name} for ${i} procs"
-        full_redirect $i ${name}_$i "${parallel}  ${i} ./${executable}"
-    done
+  #for i in ${parallel_processes}; do
+  i=${parallel_processes}
+  echo "Executing the test ${name} for ${i} procs"
+  full_redirect $i ${name}_$i "${parallel}  ${i} ./${executable}"
+  #done
 fi
 
 if [ -n "${postprocess_script}" ]; then
-    echo "Executing the test ${name} post-processing"
-    full_redirect 0 ${name}_pp ./${postprocess_script}
+  echo "Executing the test ${name} post-processing"
+  full_redirect 0 ${name}_pp ./${postprocess_script}
 fi
 
 if [ -n "${reference}" ]; then

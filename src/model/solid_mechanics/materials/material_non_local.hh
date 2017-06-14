@@ -74,24 +74,12 @@ public:
   virtual void registerNeighborhood();
 
 protected:
-  virtual inline void onElementsAdded(__attribute__((unused))
-                                      const Array<Element> & element_list,
-                                      __attribute__((unused))
-                                      const NewElementsEvent & event) {
-    AKANTU_DEBUG_ERROR("This is a case not taken into account!!!");
+  virtual inline void onElementsAdded(const Array<Element> &,
+                                      const NewElementsEvent &) {
   }
 
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
 protected:
 };
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#include "material_non_local_inline_impl.cc"
 
 __END_AKANTU__
 

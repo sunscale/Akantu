@@ -431,6 +431,7 @@ package_declare_documentation_files(core
   manual.tex
   manual-macros.sty
   manual-titlepages.tex
+  manual-authors.tex
   manual-introduction.tex
   manual-gettingstarted.tex
   manual-io.tex
@@ -533,18 +534,6 @@ find_program(ADDR2LINE_COMMAND addr2line)
 find_program(PATCH_COMMAND patch)
 mark_as_advanced(READLINK_COMMAND)
 mark_as_advanced(ADDR2LINE_COMMAND)
-
-include(CheckFunctionExists)
-check_function_exists(clock_gettime _clock_gettime)
-
-include(CheckCXXSymbolExists)
-check_cxx_symbol_exists(strdup cstring AKANTU_HAS_STRDUP)
-
-if(NOT _clock_gettime)
-  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY ON  CACHE INTERNAL "" FORCE)
-else()
-  set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF CACHE INTERNAL "" FORCE)
-endif()
 
 package_declare_extra_files_to_package(core
   SOURCES

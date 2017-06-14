@@ -73,10 +73,18 @@ register_test(test_material_mazars
   SOURCES test_material_mazars.cc
   FILES_TO_COPY material_mazars.dat
   DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
+  PACKAGE core lapack
   )
 
 # ==============================================================================
 add_akantu_test(test_material_viscoelastic "test the visco elastic materials")
 add_akantu_test(test_material_non_local "test the non-local materials")
 add_akantu_test(test_material_elasto_plastic_linear_isotropic_hardening "test the elasto plastic with linear isotropic hardening materials")
+
+# ==============================================================================
+add_mesh(test_multi_material_elastic_mesh test_multi_material_elastic.geo 2 1)
+register_test(test_multi_material_elastic
+  SOURCES test_multi_material_elastic.cc
+  FILES_TO_COPY test_multi_material_elastic.dat
+  DEPENDS test_multi_material_elastic_mesh
+  PACKAGE implicit)
