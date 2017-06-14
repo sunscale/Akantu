@@ -46,11 +46,13 @@ void outputArray(const Mesh & mesh, const Array<Real> & array) {
   }
 
   comm.allReduce(solution.storage(), solution.getSize() * solution.getNbComponent(), _so_sum);
-
+  std::cout << std::fixed;
+  std::cout << std::setprecision(6);
   if (prank == 0) {
     Array<Real>::const_vector_iterator sol_it = solution.begin(spatial_dimension);
     for (UInt n = 0; n < nb_global_nodes; ++n, ++sol_it)
-      std::cout << *sol_it << std::endl;
+      // Print absolute values to avoid parasite negative sign in machine precision zeros
+      std::cout << std::abs((*sol_it)(0)) << "," << std::abs((*sol_it)(1)) << std::endl;
   }
 }
 

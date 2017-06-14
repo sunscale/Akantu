@@ -33,7 +33,7 @@ register_test(test_eigenstrain
   SOURCES test_eigenstrain.cc
   FILES_TO_COPY material_damage.dat fine_mesh.msh 
   DIRECTORIES_TO_CREATE paraview
-  PACKAGE IGFEM 
+  PACKAGE IGFEM extra_materials
   )
 
 register_test(test_igfem_element_orientation
