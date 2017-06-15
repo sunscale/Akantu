@@ -33,11 +33,20 @@ find_program(GMSH gmsh
 
 mark_as_advanced(GMSH)
 
+if (GMSH)
+  execute_process(COMMAND ${GMSH} --version
+    ERROR_VARIABLE GMSH_VERSION
+    ERROR_STRIP_TRAILING_WHITESPACE)
+endif()
+
 find_package(PackageHandleStandardArgs)
 find_package_handle_standard_args(GMSH DEFAULT_MSG GMSH)
+  find_package_handle_standard_args(GMSH
+    REQUIRED_VARS GMSH
+    VERSION_VAR GMSH_VERSION)
 
 #===============================================================================
-macro(ADD_MESH MESH_TARGET GEO_FILE DIM ORDER)
+function(ADD_MESH MESH_TARGET GEO_FILE DIM ORDER)
   if(GMSH_FOUND)
     set(arguments
       ${MESH_TARGET} ${GEO_FILE} ${DIM} ${ORDER}
@@ -64,12 +73,16 @@ macro(ADD_MESH MESH_TARGET GEO_FILE DIM ORDER)
       set(_r_msh_file "${_msh_file.msh}")
     endif(ADD_MESH_OUTPUT)
 
+    if(GMSH_VERSION VERSION_LESS 3.0.0)
+      set(OPTIMIZE -optimize)
+    endif()
+
     if(EXISTS ${_geo_file})
       add_custom_command(
         OUTPUT ${_msh_file}
         DEPENDS ${_geo_file}
         COMMAND ${GMSH}
-        ARGS -${DIM} -order ${ORDER} -optimize -o ${_msh_file} ${_geo_file} 2>&1 > /dev/null
+        ARGS -${DIM} -order ${ORDER} ${OPTIMIZE} -o ${_msh_file} ${_geo_file} 2>&1 > /dev/null
         COMMENT "Generating the ${DIM}D mesh ${_r_msh_file} (order ${ORDER}) form the geometry ${_r_geo_file}"
         )
 
@@ -81,4 +94,4 @@ macro(ADD_MESH MESH_TARGET GEO_FILE DIM ORDER)
         "File ${_geo_file} not found for target ${MESH_TARGET}")
     endif(EXISTS ${_geo_file})
   endif(GMSH_FOUND)
-endmacro(ADD_MESH)
+endfunction(ADD_MESH)
