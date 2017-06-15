@@ -96,6 +96,8 @@ template<> long int Rand48Generator<Real>::_seed = 0;
 #endif
 
 /* -------------------------------------------------------------------------- */
+ghost_type_t ghost_types(_casper);
+/* -------------------------------------------------------------------------- */
 UInt StaticSolver::nb_references = 0;
 StaticSolver * StaticSolver::static_solver = NULL;
 

@@ -283,6 +283,7 @@ struct GhostType_def {
 };
 
 typedef safe_enum<GhostType_def> ghost_type_t;
+extern ghost_type_t ghost_types;
 
 /// standard output stream operator for GhostType
 inline std::ostream & operator <<(std::ostream & stream, GhostType type);

@@ -58,7 +58,7 @@ public:
   public:
     iterator(type v) : it(v) { }
     void operator++() { ++it; }
-    safe_enum operator*() { return static_cast<type>(it); }
+    safe_enum operator*() { return safe_enum(static_cast<type>(it)); }
     bool operator!=(iterator const & it) { return it.it != this->it; }
   private:
     int it;
