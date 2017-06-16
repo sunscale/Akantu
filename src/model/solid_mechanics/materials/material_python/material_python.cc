@@ -162,5 +162,3 @@ Real MaterialPython::getPushWaveSpeed(const Element &) const {
 }
 
 }  // akantu
-
-__END_AKANTU__
