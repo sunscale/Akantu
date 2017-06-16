@@ -33,7 +33,6 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 #include <typeinfo>
-#include <map>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__
