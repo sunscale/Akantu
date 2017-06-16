@@ -69,7 +69,8 @@ int main(int argc, char *argv[]) {
   delete partition;
 
   /// model initialization changed to use our material
-  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass, true));
+  model.initFull(_no_init_materials = true);
+
   model.registerNewCustomMaterials< CustomNonLocalTestMaterial<spatial_dimension> >("custom_non_local_test_material");
   model.initMaterials();
 

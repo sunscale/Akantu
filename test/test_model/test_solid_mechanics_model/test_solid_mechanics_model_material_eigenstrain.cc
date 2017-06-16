@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
   /// declaration of model
   SolidMechanicsModel  model(mesh);
   /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
   //model.getNewSolver("static", _tsst_static, _nls_newton_raphson_modified);
   auto & solver = model.getNonLinearSolver("static");

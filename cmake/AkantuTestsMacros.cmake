@@ -278,8 +278,10 @@ function(register_test test_name)
 
         # Register the executable to compile
         add_executable(${test_name} ${_compile_source})
-        set_property(TARGET ${test_name}  APPEND
-          PROPERTY INCLUDE_DIRECTORIES ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
+        #set_target_properties(${test_name} PROPERTIES CXX_STANDARD 14)
+
+        target_include_directories(${test_name}
+          PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
         target_link_libraries(${test_name} akantu)
 
         if(_register_test_DEPENDS)

@@ -159,11 +159,11 @@ public:
   // synchronize facets physical data before insertion along physical surfaces
   void synchronizeInsertionData();
 
-  template <SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
-  bool solveStepCohesive(Real tolerance, Real & error, UInt max_iteration = 100,
-                         bool load_reduction = false,
-                         Real tol_increase_factor = 1.0,
-                         bool do_not_factorize = false);
+  // template <SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
+  // bool solveStepCohesive(Real tolerance, Real & error, UInt max_iteration = 100,
+  //                        bool load_reduction = false,
+  //                        Real tol_increase_factor = 1.0,
+  //                        bool do_not_factorize = false);
 
   /// initialize stress interpolation
   void initStressInterpolation();

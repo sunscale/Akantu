@@ -123,7 +123,7 @@ int main(int argc, char * argv[]) {
   /// declaration of model
   SolidMechanicsModel model(mesh);
   /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
   const Array<Real> & coordinates = mesh.getNodes();
   Array<Real> & displacement = model.getDisplacement();

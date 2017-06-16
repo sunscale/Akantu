@@ -32,8 +32,8 @@
 
 package_declare(core NOT_OPTIONAL
   DESCRIPTION "core package for Akantu"
-  FEATURES_PUBLIC cxx_strong_enums cxx_defaulted_functions cxx_deleted_functions
-  FEATURES_PRIVATE cxx_auto_type cxx_lambdas cxx_nullptr
+  FEATURES_PUBLIC cxx_strong_enums cxx_defaulted_functions cxx_deleted_functions cxx_auto_type cxx_decltype_auto
+  FEATURES_PRIVATE cxx_lambdas cxx_nullptr
                    cxx_delegated_constructors cxx_range_for
   )
 
@@ -61,6 +61,7 @@ package_declare_sources(core
   common/aka_memory.cc
   common/aka_memory.hh
   common/aka_memory_inline_impl.cc
+  common/aka_named_argument.hh
   common/aka_random_generator.hh
   common/aka_safe_enum.hh
   common/aka_static_memory.cc

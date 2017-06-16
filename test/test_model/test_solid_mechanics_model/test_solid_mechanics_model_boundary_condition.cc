@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 
     SolidMechanicsModel model(mesh);
     model.setPBC(1, 0, 0);
-    model.initFull(SolidMechanicsModelOptions(_static));
+    model.initFull(_analysis_method = _static);
 
     Array<Real> & force = model.getForce();
 

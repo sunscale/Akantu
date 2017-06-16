@@ -42,6 +42,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "aka_named_argument.hh"
 #include "aka_types.hh"
 #include "boundary_condition.hh"
 #include "data_accessor.hh"
@@ -62,12 +63,21 @@ class NonLocalManager;
 
 __BEGIN_AKANTU__
 
+DECLARE_NAMED_ARGUMENT(analysis_method);
+DECLARE_NAMED_ARGUMENT(no_init_materials);
+
 struct SolidMechanicsModelOptions : public ModelOptions {
-  SolidMechanicsModelOptions(
-      AnalysisMethod analysis_method = _explicit_lumped_mass,
-      bool no_init_materials = false)
+  SolidMechanicsModelOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
+                             bool no_init_materials = false)
       : analysis_method(analysis_method), no_init_materials(no_init_materials) {
   }
+
+  template <typename... pack>
+  SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack)
+      : SolidMechanicsModelOptions(
+          OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
+          OPTIONAL_NAMED_ARG(no_init_materials, false)) {}
+
   AnalysisMethod analysis_method;
   bool no_init_materials;
 };
@@ -111,9 +121,13 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  template <typename P, typename T, typename... pack>
+  void initFull(named_argument::param_t<P, T &&> && first, pack &&... _pack) {
+    this->initFull(SolidMechanicsModelOptions{use_named_args, first, _pack...});
+  }
+
   /// initialize completely the model
-  void initFull(
-      const ModelOptions & options = default_solid_mechanics_model_options) override;
+  void initFull(const ModelOptions & options = SolidMechanicsModelOptions()) override;
 
   /// initialize the fem object needed for boundary conditions
   void initFEEngineBoundary();
@@ -331,10 +345,10 @@ protected:
   /* ------------------------------------------------------------------------ */
   void updateDataForNonLocalCriterion(ElementTypeMapReal & criterion) override;
 
-//public:
+  // public:
   /// Update the stresses for the computation of the residual of the Stiffness
   /// matrix in the case of finite deformation
-  //void computeStresses();
+  // void computeStresses();
 
   /// synchronize the ghost element boundaries values
   // void synchronizeBoundaries();
@@ -477,18 +491,18 @@ public:
 #endif
 
   dumper::Field * createNodalFieldReal(const std::string & field_name,
-                                               const std::string & group_name,
-                                               bool padding_flag) override;
+                                       const std::string & group_name,
+                                       bool padding_flag) override;
 
   dumper::Field * createNodalFieldBool(const std::string & field_name,
-                                               const std::string & group_name,
-                                               bool padding_flag) override;
+                                       const std::string & group_name,
+                                       bool padding_flag) override;
 
   dumper::Field * createElementalField(const std::string & field_name,
-                                               const std::string & group_name,
-                                               bool padding_flag,
-                                               const UInt & spatial_dimension,
-                                               const ElementKind & kind) override;
+                                       const std::string & group_name,
+                                       bool padding_flag,
+                                       const UInt & spatial_dimension,
+                                       const ElementKind & kind) override;
 
   virtual void dump(const std::string & dumper_name);
 

@@ -49,7 +49,7 @@ int main(int argc, char * argv[]) {
   mesh.read("square.msh");
 
   SolidMechanicsModel model(mesh);
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
   mesh.computeBoundingBox();
   const Vector<Real> & min = mesh.getLowerBounds();

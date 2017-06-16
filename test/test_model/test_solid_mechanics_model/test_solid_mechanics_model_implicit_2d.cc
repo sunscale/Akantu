@@ -65,7 +65,7 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
   if (prank == 0)
     std::cout << model.getMaterial("steel") << std::endl;

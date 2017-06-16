@@ -54,7 +54,7 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass, true));
+  model.initFull(_no_init_materials = true);
   model.registerNewCustomMaterials<LocalMaterialDamage>("local_damage");
   model.initMaterials();
 

@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModel model(mesh);
 
   /// model initialization changed to use our material
-  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass, true));
+  model.initFull(_no_init_materials = true);
   model.registerNewCustomMaterials<TestMaterial<spatial_dimension> >(
       "test_material");
   model.initMaterials();

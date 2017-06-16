@@ -54,8 +54,11 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  void initIntegrator(const Array<Real> & nodes, const ElementType & type,
+                      const GhostType & ghost_type);
+
+  template <ElementType type>
   inline void initIntegrator(const Array<Real> & nodes,
-                             const ElementType & type,
                              const GhostType & ghost_type);
 
   /// integrate f on the element "elem" of type "type"
@@ -72,7 +75,8 @@ public:
 
   /// integrate scalar field in_f
   template <ElementType type, UInt polynomial_degree>
-  Real integrate(const Array<Real> & in_f, const GhostType & ghost_type = _not_ghost) const;
+  Real integrate(const Array<Real> & in_f,
+                 const GhostType & ghost_type = _not_ghost) const;
 
   /// integrate partially around a quadrature point (@f$ intf_q = f_q * J_q *
   /// w_q @f$)
@@ -89,10 +93,6 @@ public:
   template <ElementType type, UInt polynomial_degree>
   void integrate(const Array<Real> & in_f, Array<Real> & intf,
                  UInt nb_degree_of_freedom, const GhostType & ghost_type) const;
-
-  /// integrate scalar field in_f
-  template <ElementType type, UInt polynomial_degree>
-  Real integrate(const Array<Real> & in_f, const GhostType & ghost_type = _not_ghost) const;
 
   /// integrate partially around a quadrature point (@f$ intf_q = f_q * J_q *
   /// w_q @f$)
@@ -112,7 +112,8 @@ public:
   UInt getNbIntegrationPoints(const GhostType & ghost_type) const;
 
   template <ElementType type, UInt n> Matrix<Real> getIntegrationPoints() const;
-  template <ElementType type, UInt n> Vector<Real> getIntegrationWeights() const;
+  template <ElementType type, UInt n>
+  Vector<Real> getIntegrationWeights() const;
 
 protected:
   template <ElementType type>
@@ -142,10 +143,11 @@ protected:
   /// internal integrate partially around a quadrature point (@f$ intf_q = f_q *
   /// J_q *
   /// w_q @f$)
-  void
-  integrateOnIntegrationPoints(const Array<Real> & in_f, Array<Real> & intf,
-                               UInt nb_degree_of_freedom,
-                               const Array<Real> & jacobians, UInt nb_element) const;
+  void integrateOnIntegrationPoints(const Array<Real> & in_f,
+                                    Array<Real> & intf,
+                                    UInt nb_degree_of_freedom,
+                                    const Array<Real> & jacobians,
+                                    UInt nb_element) const;
 
   void integrate(const Array<Real> & in_f, Array<Real> & intf,
                  UInt nb_degree_of_freedom, const Array<Real> & jacobians,
@@ -154,9 +156,10 @@ protected:
 public:
   /// compute the jacobians on quad points for a given element
   template <ElementType type>
-  void computeJacobianOnQuadPointsByElement(
-      const Matrix<Real> & node_coords,
-      const Matrix<Real> & integration_points, Vector<Real> & jacobians) const;
+  void
+  computeJacobianOnQuadPointsByElement(const Matrix<Real> & node_coords,
+                                       const Matrix<Real> & integration_points,
+                                       Vector<Real> & jacobians) const;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -169,9 +172,8 @@ protected:
 
 private:
   /// ElementTypeMap of the quadrature points
-  ElementTypeMap<Matrix<Real> > quadrature_points;
+  ElementTypeMap<Matrix<Real>> quadrature_points;
 };
-
 
 __END_AKANTU__
 

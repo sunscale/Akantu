@@ -144,7 +144,7 @@ int main(int argc, char * argv[]) {
   /// declaration of model
   SolidMechanicsModel model(my_mesh);
   /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass));
+  model.initFull();
 
   std::cout << model.getMaterial(0) << std::endl;
   Real time_step = model.getStableTimeStep() / 5.;

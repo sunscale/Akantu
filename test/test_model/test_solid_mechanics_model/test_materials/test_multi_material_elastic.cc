@@ -1,4 +1,5 @@
 #include <solid_mechanics_model.hh>
+#include "non_linear_solver.hh"
 
 using namespace akantu;
 
@@ -16,7 +17,7 @@ int main(int argc, char *argv[]) {
   MeshDataMaterialSelector<std::string> mat_sel("physical_names", model);
   model.setMaterialSelector(mat_sel);
 
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
   model.applyBC(BC::Dirichlet::FlagOnly(_y), "ground");
   model.applyBC(BC::Dirichlet::FlagOnly(_x), "corner");
@@ -33,11 +34,12 @@ int main(int argc, char *argv[]) {
   model.addDumpField("grad_u");
 
   //model.dump();
-  model.assembleStiffnessMatrix();
-  model.solveStatic<_scm_newton_raphson_tangent_not_computed, _scc_residual>(1e-8, 1);
+  auto & solver = model.getNonLinearSolver("static");
+  solver.set("max_iterations", 1);
+  solver.set("threshold", 1e-8);
+  solver.set("convergence_type", _scc_residual);
+
   //model.dump();
-
-
 
   std::map<std::string, Matrix<Real>> ref_strain;
   ref_strain["strong"] = Matrix<Real>(spatial_dimension, spatial_dimension, 0.);

@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
   mesh.read("test_material_elasto_plastic_linear_isotropic_hardening.msh");
 
   SolidMechanicsModel model(mesh);
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
   model.getNonLinearSolver("static").set("max_iterations", 300);
   model.getNonLinearSolver("static").set("threshold", 1e-6);

@@ -88,7 +88,7 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_implicit_dynamic));
+  model.initFull(_analysis_method = _implicit_dynamic);
   Material & mat = model.getMaterial(0);
   mat.setParam("E", E);
   mat.setParam("rho", rho);

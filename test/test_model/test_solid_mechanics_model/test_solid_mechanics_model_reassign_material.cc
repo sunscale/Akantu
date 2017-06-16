@@ -175,7 +175,7 @@ int main(int argc, char * argv[]) {
       model, "mat_1", "mat_2", horizontal, pos_interface);
 
   model.setMaterialSelector(*mat_selector);
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
   MeshUtils::buildFacets(mesh);
 
   /// check if different materials have been assigned correctly

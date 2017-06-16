@@ -67,9 +67,6 @@
 
 __BEGIN_AKANTU__
 
-const SolidMechanicsModelOptions
-    default_solid_mechanics_model_options(_explicit_lumped_mass, false);
-
 /* -------------------------------------------------------------------------- */
 /**
  * A solid mechanics model need a mesh  and a dimension to be created. the model

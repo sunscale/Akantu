@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   mesh.read("segment1.msh");
 
   SolidMechanicsModel model(mesh);
-  model.initFull( SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
   std::cout << model.getMaterial(0) << std::endl;
 

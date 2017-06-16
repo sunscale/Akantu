@@ -825,9 +825,9 @@ template <ElementKind kind> struct AssembleLumpedTemplateHelper {};
 
 #define AKANTU_SPECIALIZE_ASSEMBLE_HELPER(kind)                                \
   template <> struct AssembleLumpedTemplateHelper<kind> {                      \
-    template <template <ElementKind> class I, template <ElementKind> class S,  \
-              ElementKind k>                                                   \
-    static void call(const FEEngineTemplate<I, S, k> & fem,                    \
+    template <template <ElementKind, class> class I,                           \
+              template <ElementKind> class S, ElementKind k, class IOF>        \
+    static void call(const FEEngineTemplate<I, S, k, IOF> & fem,               \
                      const Array<Real> & field_1, const ID & lumped,           \
                      const ID & dof_id, DOFManager & dof_manager,              \
                      ElementType type, const GhostType & ghost_type) {         \
@@ -841,9 +841,9 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_ASSEMBLE_HELPER)
 #undef ASSEMBLE_LUMPED
 
 /* -------------------------------------------------------------------------- */
-template <template <ElementKind> class I, template <ElementKind> class S,
-          ElementKind kind>
-void FEEngineTemplate<I, S, kind>::assembleFieldLumped(
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind, class IOF>
+void FEEngineTemplate<I, S, kind, IOF>::assembleFieldLumped(
     const Array<Real> & field, const ID & lumped, const ID & dof_id,
     DOFManager & dof_manager, ElementType type,
     const GhostType & ghost_type) const {
@@ -867,9 +867,10 @@ template <ElementKind kind> struct AssembleFieldMatrixHelper {};
 
 #define AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER(kind)                   \
   template <> struct AssembleFieldMatrixHelper<kind> {                         \
-    template <template <ElementKind> class I, template <ElementKind> class S,  \
-              ElementKind k, class Functor>                                    \
-    static void call(const FEEngineTemplate<I, S, k> & fem,                    \
+    template <template <ElementKind, class> class I,                           \
+              template <ElementKind> class S, ElementKind k, class IOF,        \
+              class Functor>                                                   \
+    static void call(const FEEngineTemplate<I, S, k, IOF> & fem,               \
                      Functor field_funct, const ID & matrix_id,                \
                      const ID & dof_id, DOFManager & dof_manager,              \
                      ElementType type, const GhostType & ghost_type) {         \
@@ -882,10 +883,10 @@ AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER)
 #undef AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER
 #undef ASSEMBLE_MATRIX
 
-template <template <ElementKind> class I, template <ElementKind> class S,
-          ElementKind kind>
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind, class IOF>
 template <class Functor>
-void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
+void FEEngineTemplate<I, S, kind, IOF>::assembleFieldMatrix(
     Functor field_funct, const ID & matrix_id, const ID & dof_id,
     DOFManager & dof_manager, ElementType type,
     const GhostType & ghost_type) const {
@@ -900,9 +901,10 @@ void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
 template <template <ElementKind, class> class I, template <ElementKind> class S,
           ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type>
-void FEEngineTemplate<I, S, kind>::assembleLumpedTemplate(
-    const Array<Real> & field, const ID & lumped, const ID & dof_id,
-    DOFManager & dof_manager, const GhostType & ghost_type) const {
+void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
+    assembleLumpedTemplate(const Array<Real> & field, const ID & lumped,
+                           const ID & dof_id, DOFManager & dof_manager,
+                           const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
   this->template assembleLumpedRowSum<type>(field, lumped, dof_id, dof_manager,
                                             ghost_type);
@@ -917,9 +919,10 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedTemplate(
 template <template <ElementKind, class> class I, template <ElementKind> class S,
           ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type>
-void FEEngineTemplate<I, S, kind>::assembleLumpedRowSum(
-    const Array<Real> & field, const ID & lumped, const ID & dof_id,
-    DOFManager & dof_manager, const GhostType & ghost_type) const {
+void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
+    assembleLumpedRowSum(const Array<Real> & field, const ID & lumped,
+                         const ID & dof_id, DOFManager & dof_manager,
+                         const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
   UInt shapes_size = ElementClass<type>::getShapeSize();
@@ -956,9 +959,10 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedRowSum(
 template <template <ElementKind, class> class I, template <ElementKind> class S,
           ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type>
-void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(
-    const Array<Real> & field, const ID & lumped, const ID & dof_id,
-    DOFManager & dof_manager, const GhostType & ghost_type) const {
+void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
+    assembleLumpedDiagonalScaling(const Array<Real> & field, const ID & lumped,
+                                  const ID & dof_id, DOFManager & dof_manager,
+                                  const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
   const ElementType & type_p1 = ElementClass<type>::getP1ElementType();
@@ -984,16 +988,20 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(
   if (type == _tetrahedron_10)
     ASSIGN_WEIGHT_TO_NODES(1. / 32., 7. / 48.);
   if (type == _quadrangle_8)
-    ASSIGN_WEIGHT_TO_NODES(3. / 76., 16. / 76.); /** coeff. derived by scaling
-              * the diagonal terms of the corresponding
-              * consistent mass computed with 3x3 gauss points;
-              * coeff. are (1./36., 8./36.) for 2x2 gauss points */
+    ASSIGN_WEIGHT_TO_NODES(
+        3. / 76.,
+        16. / 76.); /** coeff. derived by scaling
+                     * the diagonal terms of the corresponding
+                     * consistent mass computed with 3x3 gauss points;
+                     * coeff. are (1./36., 8./36.) for 2x2 gauss points */
   if (type == _hexahedron_20)
-    ASSIGN_WEIGHT_TO_NODES(7. / 248., 16. / 248.); /** coeff. derived by scaling
-                * the diagonal terms of the corresponding
-                * consistent mass computed with 3x3x3 gauss points;
-                                                    * coeff. are (1./40.,
-                * 1./15.) for 2x2x2 gauss points */
+    ASSIGN_WEIGHT_TO_NODES(
+        7. / 248.,
+        16. / 248.); /** coeff. derived by scaling
+                      * the diagonal terms of the corresponding
+                      * consistent mass computed with 3x3x3 gauss points;
+                      * coeff. are (1./40.,
+                      * 1./15.) for 2x2x2 gauss points */
   if (type == _pentahedron_15) {
     // coefficients derived by scaling the diagonal terms of the corresponding
     // consistent mass computed with 8 gauss points;
@@ -1058,10 +1066,10 @@ void FEEngineTemplate<I, S, kind>::assembleLumpedDiagonalScaling(
  * @f$ \tilde{M}_{i} = \sum_j M_{ij} = \sum_j \int \rho \varphi_i \varphi_j dV =
  * \int \rho \varphi_i dV @f$
  */
-template <template <ElementKind> class I, template <ElementKind> class S,
-          ElementKind kind>
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind, class IntegrationOrderFunctor>
 template <class Functor, ElementType type>
-void FEEngineTemplate<I, S, kind>::assembleFieldMatrix(
+void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
     Functor field_funct, const ID & matrix_id, const ID & dof_id,
     DOFManager & dof_manager, const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
@@ -1618,7 +1626,7 @@ inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular,
   normal.resize(nb_element * nb_points);
   Array<Real>::matrix_iterator normals_on_quad =
       normal.begin_reinterpret(spatial_dimension, nb_points, nb_element);
-  const Array< std::vector<Element> > & segments =
+  const Array<std::vector<Element>> & segments =
       mesh.getElementToSubelement(type, ghost_type);
   const Array<Real> & coords = mesh.getNodes();
 
