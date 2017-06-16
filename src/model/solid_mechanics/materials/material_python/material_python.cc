@@ -33,15 +33,12 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MaterialPython::MaterialPython(SolidMechanicsModel & model, PyObject * obj,
                                const ID & id)
-    :
-
-      Material(model, id),
-      PythonFunctor(obj) {
+    : Material(model, id), PythonFunctor(obj) {
   AKANTU_DEBUG_IN();
 
   this->registerInternals();
@@ -61,7 +58,6 @@ MaterialPython::MaterialPython(SolidMechanicsModel & model, PyObject * obj,
 
 /* -------------------------------------------------------------------------- */
 void MaterialPython::registerInternals() {
-
   std::vector<std::string> internal_names =
       this->callFunctor<std::vector<std::string> >("registerInternals");
 
@@ -80,13 +76,14 @@ void MaterialPython::registerInternals() {
     this->internals[internal_names[i]] =
         new InternalField<Real>(internal_names[i], *this);
     AKANTU_DEBUG_INFO("alloc internal " << internal_names[i] << " "
-                      << this->internals[internal_names[i]]);
+                                        << this->internals[internal_names[i]]);
 
     this->internals[internal_names[i]]->initialize(internal_sizes[i]);
   }
 
   // making an internal with the quadrature points coordinates
-  this->internals["quad_coordinates"] = new InternalField<Real>("quad_coordinates", *this);
+  this->internals["quad_coordinates"] =
+      new InternalField<Real>("quad_coordinates", *this);
   auto && coords = *this->internals["quad_coordinates"];
   coords.initialize(this->getSpatialDimension());
 }
@@ -98,8 +95,8 @@ void MaterialPython::initMaterial() {
   Material::initMaterial();
 
   auto && coords = *this->internals["quad_coordinates"];
-  this->model->getFEEngine().computeIntegrationPointsCoordinates(coords,
-                                                                 &this->element_filter);
+  this->model->getFEEngine().computeIntegrationPointsCoordinates(
+      coords, &this->element_filter);
   AKANTU_DEBUG_OUT();
 }
 
@@ -127,7 +124,6 @@ void MaterialPython::computeStress(ElementType el_type, GhostType ghost_type) {
 template <typename it_type>
 void MaterialPython::computeStress(Matrix<Real> & grad_u, Matrix<Real> & sigma,
                                    std::vector<it_type> & internal_iterators) {
-
   std::vector<Real> inputs;
   for (auto & i : internal_iterators) {
     inputs.push_back(*i);
@@ -137,53 +133,11 @@ void MaterialPython::computeStress(Matrix<Real> & grad_u, Matrix<Real> & sigma,
     *internal_iterators[i] = inputs[i];
   }
 }
-/* -------------------------------------------------------------------------- */
-// void MaterialPython::computeStress(ElementType el_type, GhostType ghost_type)
-// {
-//   AKANTU_DEBUG_IN();
-
-//   typedef Array<Real>::iterator<Real> it_type;
-//   std::vector<it_type> its;
-//   for (auto & i : this->internals) {
-//     its.push_back((*i)(el_type, ghost_type).begin());
-//   }
-
-//   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
-
-//   computeStress(grad_u, sigma, its);
-
-//   for (auto & b : its)
-//     ++b;
-
-//   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
-
-//   AKANTU_DEBUG_OUT();
-// }
-
-// /* --------------------------------------------------------------------------
-// */
-// template <typename it_type>
-// void MaterialPython::computeStress(Matrix<Real> & grad_u, Matrix<Real> &
-// sigma,
-//                                    std::vector<it_type> & internal_iterators)
-//                                    {
-
-//   std::vector<Real> inputs;
-//   for (auto & i : internal_iterators) {
-//     inputs.push_back(*i);
-//   }
-//   this->callFunctor<void>("computeStress", grad_u, sigma, inputs);
-
-//   for (UInt i = 0; i < inputs.size(); ++i) {
-//     *internal_iterators[i] = inputs[i];
-//   }
-// }
 
 /* -------------------------------------------------------------------------- */
 void MaterialPython::computeTangentModuli(const ElementType & el_type,
                                           Array<Real> & tangent_matrix,
                                           GhostType ghost_type) {
-
   std::map<std::string, Array<Real> *> internal_arrays;
   for (auto & i : this->internals) {
     auto & array = (*i.second)(el_type, ghost_type);
@@ -200,13 +154,13 @@ void MaterialPython::computeTangentModuli(const ElementType & el_type,
 }
 
 /* -------------------------------------------------------------------------- */
-Real MaterialPython::getPushWaveSpeed(__attribute__((unused))
-                                      const Element & element) const {
-
+Real MaterialPython::getPushWaveSpeed(const Element &) const {
   auto params = local_params;
   params["rho"] = this->rho;
 
   return this->callFunctor<Real>("getPushWaveSpeed", params);
 }
+
+}  // akantu
 
 __END_AKANTU__

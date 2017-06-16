@@ -27,20 +27,20 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-#ifndef __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__
-#define __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__
-
 /* -------------------------------------------------------------------------- */
 #include "integration_point.hh"
+
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 #include <typeinfo>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+#ifndef __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__
+#define __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-
 template <typename T> inline int PythonFunctor::getPythonDataTypeCode() const {
   AKANTU_EXCEPTION("undefined type: " << debug::demangle(typeid(T).name()));
 }
@@ -73,12 +73,10 @@ template <> inline int PythonFunctor::getPythonDataTypeCode<double>() const {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-PyObject * PythonFunctor::convertToPython(__attribute__((unused))
-                                          const T & akantu_object) const {
+PyObject * PythonFunctor::convertToPython(const T &) const {
   AKANTU_DEBUG_ERROR(
       __func__ << " : not implemented yet !" << std::endl
-               << debug::demangle(typeid(T).name())
-               << "\n*************************************************\n\n\n");
+      << debug::demangle(typeid(T).name()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -211,12 +209,6 @@ PythonFunctor::getPythonFunction(const std::string & functor_name) const {
   if (!PyInstance_Check(this->python_obj))
     AKANTU_EXCEPTION("Python object is not an instance");
 
-  // if (!PyDict_Check(this->python_obj))
-  //   AKANTU_EXCEPTION("Python object is not a dictionary");
-
-  // PyObject * keys = PyDict_Keys(dict);
-  // PyObject_Print(keys, stdout, Py_PRINT_RAW);
-
   PyObject * pFunctor =
       PyObject_GetAttrString(this->python_obj, functor_name.c_str());
   if (!pFunctor)
@@ -258,16 +250,6 @@ return_type PythonFunctor::callFunctor(const std::string & functor_name,
   PyObject * pFunctor = getPythonFunction(functor_name);
   PyObject * res = this->callFunctor(pFunctor, pArgs, kwargs);
 
-  // for (auto a: arg_vector) {
-  //   // if (PyDict_Check(a)){
-  //   //   PyObject* values = PyDict_Values(a);
-  //   //   UInt sz = PyList_GET_SIZE(values);
-  //   //   for (UInt i = 0; i < sz; ++i) {
-  //   // 	Py_XDECREF(PyList_GetItem(values,i));
-  //   //   }
-  //   // }
-  //   // Py_XDECREF(a);
-  // }
   Py_XDECREF(pArgs);
   Py_XDECREF(kwargs);
 
@@ -332,6 +314,6 @@ PythonFunctor::convertListToAkantu(PyObject * python_obj) const {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__ */
