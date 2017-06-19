@@ -47,7 +47,7 @@
 
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 
 template <typename T, bool is_scal> class Array;
@@ -286,6 +286,6 @@ private:
 
 #include "aka_math_tmpl.hh"
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_AKA_MATH_H__ */

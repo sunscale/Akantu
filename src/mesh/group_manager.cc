@@ -50,7 +50,7 @@
 #include <sstream>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 GroupManager::GroupManager(const Mesh & mesh, const ID & id,
@@ -1025,4 +1025,4 @@ NodeGroup & GroupManager::getNodeGroup(const std::string & name) {
   return *(it->second);
 }
 
-__END_AKANTU__
+} // akantu

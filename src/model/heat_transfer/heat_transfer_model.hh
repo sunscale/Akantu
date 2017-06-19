@@ -55,7 +55,7 @@ namespace akantu {
   class IntegrationScheme1stOrder;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 struct HeatTransferModelOptions : public ModelOptions {
   HeatTransferModelOptions(AnalysisMethod analysis_method = _explicit_lumped_capacity ) : analysis_method(analysis_method) {}
@@ -449,7 +449,7 @@ inline std::ostream & operator <<(std::ostream & stream, const HeatTransferModel
 }
 
 
-__END_AKANTU__
+} // akantu
 
 
 

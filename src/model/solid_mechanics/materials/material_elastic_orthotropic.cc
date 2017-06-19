@@ -38,7 +38,7 @@
 #include "solid_mechanics_model.hh"
 #include <algorithm>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt Dim>
@@ -210,4 +210,4 @@ void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergyByElem
 
 INSTANTIATE_MATERIAL(MaterialElasticOrthotropic);
 
-__END_AKANTU__
+} // akantu

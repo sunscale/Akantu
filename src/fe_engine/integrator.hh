@@ -37,7 +37,7 @@
 #include "aka_memory.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 class Integrator : protected Memory {
   /* ------------------------------------------------------------------------ */
@@ -124,6 +124,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_INTEGRATOR_HH__ */

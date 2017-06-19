@@ -40,7 +40,7 @@
 #ifndef __AKANTU_MATERIAL_MARIGO_HH__
 #define __AKANTU_MATERIAL_MARIGO_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material marigo
@@ -117,7 +117,7 @@ protected:
   bool yc_limit;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "material_marigo_inline_impl.cc"
 

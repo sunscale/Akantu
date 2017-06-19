@@ -33,7 +33,7 @@
 #ifndef __AKANTU_PLANE_STRESS_TOOLBOX_TMPL_HH__
 #define __AKANTU_PLANE_STRESS_TOOLBOX_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class ParentMaterial>
@@ -169,6 +169,6 @@ inline PlaneStressToolbox<2, Material>::PlaneStressToolbox(
                       "Is plane stress");
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_PLANE_STRESS_TOOLBOX_TMPL_HH__ */

@@ -35,7 +35,7 @@
 #include "aka_common.hh"
 #include "cohesive_element.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<> UInt GeometricalElement<_gt_cohesive_2d_4>::spatial_dimension    = 2;
@@ -147,4 +147,4 @@ template<> ElementType ElementClass<_cohesive_3d_16>::p1_type      = _cohesive_3
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

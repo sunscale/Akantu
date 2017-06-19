@@ -38,7 +38,7 @@
 #include "sparse_matrix_aij.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 TimeStepSolverDefault::TimeStepSolverDefault(
@@ -270,4 +270,4 @@ void TimeStepSolverDefault::assembleResidual() {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

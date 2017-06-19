@@ -46,7 +46,7 @@
 #include "algebraic_parser.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 RandomParameter<Real> Parser::parseRandomParameter(const std::string & value, const ParserSection & section) {
@@ -66,4 +66,4 @@ RandomParameter<Real> Parser::parseRandomParameter(const std::string & value, co
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

@@ -39,7 +39,7 @@ namespace akantu {
 class DOFManager;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class IntegrationScheme : public Parsable {
   /* ------------------------------------------------------------------------ */
@@ -102,6 +102,6 @@ std::istream & operator>>(std::istream & stream,
                           IntegrationScheme::SolutionType & type);
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_INTEGRATION_SCHEME_HH__ */

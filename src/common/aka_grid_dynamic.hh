@@ -43,7 +43,7 @@
 #ifndef __AKANTU_AKA_GRID_DYNAMIC_HH__
 #define __AKANTU_AKA_GRID_DYNAMIC_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class Mesh;
 
@@ -408,9 +408,9 @@ inline std::ostream & operator <<(std::ostream & stream, const SpatialGrid<T> & 
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 #include "mesh.hh"
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
@@ -500,7 +500,7 @@ void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
 // #endif
 }
 
-__END_AKANTU__
+} // akantu
 
 
 

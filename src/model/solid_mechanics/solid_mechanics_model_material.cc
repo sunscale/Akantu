@@ -39,7 +39,7 @@
 #endif
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 #define AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL(dim, elem)                   \
@@ -330,4 +330,4 @@ void SolidMechanicsModel::applyEigenGradU(
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

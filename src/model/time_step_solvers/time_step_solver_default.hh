@@ -42,7 +42,7 @@ namespace akantu {
 class DOFManagerDefault;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class TimeStepSolverDefault : public TimeStepSolver {
   /* ------------------------------------------------------------------------ */
@@ -105,6 +105,6 @@ private:
   bool is_mass_lumped;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__ */

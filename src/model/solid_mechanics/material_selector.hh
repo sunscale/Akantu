@@ -40,7 +40,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class SolidMechanicsModel;
 
@@ -142,6 +142,6 @@ public:
                            UInt first_index = 1);
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_SELECTOR_HH__ */

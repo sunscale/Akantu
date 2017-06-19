@@ -36,7 +36,7 @@
 #ifndef __AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_CC__
 #define __AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
@@ -127,6 +127,6 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_CC__ */

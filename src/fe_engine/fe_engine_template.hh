@@ -46,7 +46,7 @@ namespace akantu {
 class DOFManager;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 template <ElementKind> struct AssembleLumpedTemplateHelper;
 template <ElementKind> struct AssembleFieldMatrixHelper;
 template <ElementKind, typename> struct AssembleFieldMatrixStructHelper;
@@ -344,7 +344,7 @@ private:
   Shape shape_functions;
 };
 
-__END_AKANTU__
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

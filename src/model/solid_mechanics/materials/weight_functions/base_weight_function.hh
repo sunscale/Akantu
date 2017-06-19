@@ -47,7 +47,7 @@
 #ifndef __AKANTU_BASE_WEIGHT_FUNCTION_HH__
 #define __AKANTU_BASE_WEIGHT_FUNCTION_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /*  Normal weight function                                                    */
@@ -166,7 +166,7 @@ inline std::ostream & operator <<(std::ostream & stream,
 #  include "base_weight_function_inline_impl.cc"
 #endif
 
-__END_AKANTU__
+} // akantu
 /* -------------------------------------------------------------------------- */
 /* Include all other weight function types                                    */
 /* -------------------------------------------------------------------------- */

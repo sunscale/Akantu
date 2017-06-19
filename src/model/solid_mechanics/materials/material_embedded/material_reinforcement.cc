@@ -34,7 +34,7 @@
 #include "aka_voigthelper.hh"
 #include "material_reinforcement.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
@@ -781,4 +781,4 @@ INSTANTIATE_MATERIAL(MaterialReinforcement);
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

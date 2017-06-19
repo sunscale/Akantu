@@ -34,7 +34,7 @@
 #include "material_selector_cohesive.hh"
 #include "solid_mechanics_model_cohesive.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 DefaultMaterialCohesiveSelector::DefaultMaterialCohesiveSelector(
@@ -94,4 +94,4 @@ UInt MeshDataMaterialCohesiveSelector::operator()(const Element &element) {
     return MeshDataMaterialSelector<std::string>::operator()(element);
 }
 
-__END_AKANTU__
+} // akantu

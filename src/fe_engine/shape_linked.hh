@@ -37,7 +37,7 @@
 #ifndef __AKANTU_SHAPE_LINKED_HH__
 #define __AKANTU_SHAPE_LINKED_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <ElementKind kind>
 class ShapeLinked : public ShapeFunctions {
@@ -156,6 +156,6 @@ private:
 // }
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_SHAPE_LINKED_HH__ */

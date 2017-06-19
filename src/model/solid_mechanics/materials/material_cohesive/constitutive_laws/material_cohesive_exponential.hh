@@ -43,7 +43,7 @@
 /* -------------------------------------------------------------------------- */
 
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Cohesive material Exponential damage
@@ -123,6 +123,6 @@ protected:
 // #include "material_cohesive_exponential_inline_impl.cc"
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_EXPONENTIAL_HH__ */

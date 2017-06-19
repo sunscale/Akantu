@@ -38,7 +38,7 @@
 #ifndef __AKANTU_RANDOM_INTERNAL_FIELD_HH__
 #define __AKANTU_RANDOM_INTERNAL_FIELD_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * class for the internal fields of materials with a random
@@ -104,6 +104,6 @@ inline std::ostream & operator <<(std::ostream & stream, const RandomInternalFie
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_RANDOM_INTERNAL_FIELD_HH__ */

@@ -33,7 +33,7 @@
 #include <boost/preprocessor.hpp>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* Element Types                                                              */
@@ -194,6 +194,6 @@ enum InterpolationKind {
 /* -------------------------------------------------------------------------- */
 @AKANTU_FE_ENGINE_LISTS@
 
-__END_AKANTU__
+} // akantu
 
 #include "aka_element_classes_info_inline_impl.cc"

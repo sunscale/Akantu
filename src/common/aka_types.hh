@@ -42,7 +42,7 @@
 #ifndef __AKANTU_AKA_TYPES_HH__
 #define __AKANTU_AKA_TYPES_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 enum NormType { L_1 = 1, L_2 = 2, L_inf = UInt(-1) };
 
@@ -1231,6 +1231,6 @@ Matrix<T> operator-(const Matrix<T> & a, const Matrix<T> & b) {
   return r;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_AKA_TYPES_HH__ */

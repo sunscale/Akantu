@@ -32,7 +32,7 @@
 #ifndef __AKANTU_GAUSS_INTEGRATION_TMPL_HH__
 #define __AKANTU_GAUSS_INTEGRATION_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* GaussIntegrationElement                                                    */
@@ -266,6 +266,6 @@ UInt GaussIntegrationElement<element_type, n>::getNbQuadraturePoints() {
   return data_helper::getNbQuadraturePoints();
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_GAUSS_INTEGRATION_TMPL_HH__ */

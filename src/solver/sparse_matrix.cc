@@ -37,7 +37,7 @@
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SparseMatrix::SparseMatrix(DOFManager & dof_manager,
@@ -77,4 +77,4 @@ void SparseMatrix::add(const SparseMatrix & B, Real alpha) {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

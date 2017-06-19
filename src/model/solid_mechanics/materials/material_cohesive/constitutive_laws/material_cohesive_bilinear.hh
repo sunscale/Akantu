@@ -38,7 +38,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Cohesive material bilinear
@@ -108,6 +108,6 @@ protected:
 //#include "material_cohesive_elastic_inline_impl.cc"
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_BILINEAR_HH__ */

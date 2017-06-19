@@ -37,7 +37,7 @@
 #include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NewmarkBeta::NewmarkBeta(DOFManager & dof_manager, const ID & dof_id,
@@ -257,4 +257,4 @@ void NewmarkBeta::assembleJacobian(const SolutionType & type, Real delta_t) {
 }
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

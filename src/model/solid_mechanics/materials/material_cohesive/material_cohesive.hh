@@ -50,7 +50,7 @@ namespace akantu {
 class SolidMechanicsModelCohesive;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MaterialCohesive : public Material {
   /* ------------------------------------------------------------------------ */
@@ -259,7 +259,7 @@ protected:
 
 #include "material_cohesive_inline_impl.cc"
 
-__END_AKANTU__
+} // akantu
 
 #include "cohesive_internal_field_tmpl.hh"
 

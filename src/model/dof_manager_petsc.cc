@@ -40,7 +40,7 @@
 #include <petscsys.h>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 #if not defined(PETSC_CLANGUAGE_CXX)
 /// small hack to use the c binding of petsc when the cxx binding does notation
@@ -393,4 +393,4 @@ void DOFManagerPETSc::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

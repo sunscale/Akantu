@@ -37,7 +37,7 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
@@ -252,4 +252,4 @@ void MaterialElastic<spatial_dimension>::computePotentialEnergyByElement(
 
 INSTANTIATE_MATERIAL(MaterialElastic);
 
-__END_AKANTU__
+} // akantu

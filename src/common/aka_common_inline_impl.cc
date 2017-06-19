@@ -388,11 +388,11 @@ inline std::string trim(const std::string & to_trim) {
   return trimed;
 }
 
-__END_AKANTU__
+} // akantu
 
 #include <cmath>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename T> std::string printMemorySize(UInt size) {

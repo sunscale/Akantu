@@ -38,7 +38,7 @@
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_CC__
 #define __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 
 
@@ -301,7 +301,7 @@ bool SolidMechanicsModelCohesive::solveStepCohesive(Real tolerance,
 
 }
 
-__END_AKANTU__
+} // akantu
 
 #if defined (AKANTU_PARALLEL_COHESIVE_ELEMENT)
 #  include "solid_mechanics_model_cohesive_parallel_inline_impl.cc"

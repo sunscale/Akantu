@@ -37,7 +37,7 @@
 #include <map>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 ElementInfoPerProc::ElementInfoPerProc(ElementSynchronizer & synchronizer,
@@ -108,4 +108,4 @@ void ElementInfoPerProc::fillCommunicationScheme(
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

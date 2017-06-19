@@ -59,7 +59,7 @@
 #include <boost/spirit/include/phoenix.hpp>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MeshIOAbaqus::MeshIOAbaqus() {}
@@ -480,4 +480,4 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
   MeshUtils::fillElementToSubElementsData(mesh);
 }
 
-__END_AKANTU__
+} // akantu

@@ -49,7 +49,7 @@ namespace lbs = boost::spirit::qi::labels;
 namespace ascii = boost::spirit::ascii;
 namespace phx = boost::phoenix;
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 namespace parser {
 struct error_handler_ {
@@ -258,6 +258,6 @@ private:
 };
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_INPUT_FILE_PARSER_HH__ */

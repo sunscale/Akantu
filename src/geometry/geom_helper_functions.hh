@@ -40,7 +40,7 @@
 
 #include "mesh_geom_common.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// Fuzzy compare of two points
 template <class Point>
@@ -98,7 +98,7 @@ protected:
   const K::Segment_3 segment;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif // _AKANTU_GEOM_HELPER_FUNCTIONS_HH__
 

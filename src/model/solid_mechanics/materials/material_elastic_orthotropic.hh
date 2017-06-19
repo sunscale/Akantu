@@ -40,7 +40,7 @@
 #ifndef __AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH__
 #define __AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Orthotropic elastic material
@@ -144,6 +144,6 @@ protected:
 };
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH__ */

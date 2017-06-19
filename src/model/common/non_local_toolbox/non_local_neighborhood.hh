@@ -45,7 +45,7 @@ namespace akantu {
   class TestWeightFunction;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 
 template<class WeightFunction = BaseWeightFunction>
@@ -119,7 +119,7 @@ private:
 
 };
 
-__END_AKANTU__
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 /* Implementation of template functions                                       */

@@ -37,7 +37,7 @@
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* GeometricalElement                                                         */
@@ -507,4 +507,4 @@ inline void ElementClass<type, kind>::inverseMap(
   }
 }
 
-__END_AKANTU__
+} // akantu

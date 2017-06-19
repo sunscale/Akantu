@@ -38,7 +38,7 @@
 
 using std::sqrt;
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<> ElementType ElementClass<_not_defined>::p1_type       = _not_defined;
@@ -83,4 +83,4 @@ template<> ElementType ElementClass<_pentahedron_6>::facet_type[] = { _triangle_
 template<> ElementType ElementClass<_pentahedron_15>::p1_type      = _pentahedron_6;
 template<> ElementType ElementClass<_pentahedron_15>::facet_type[] = { _triangle_6, _quadrangle_8 };
 /* -------------------------------------------------------------------------- */
-__END_AKANTU__
+} // akantu

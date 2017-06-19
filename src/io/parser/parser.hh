@@ -38,7 +38,7 @@
 #ifndef __AKANTU_PARSER_HH__
 #define __AKANTU_PARSER_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 #define AKANTU_SECTION_TYPES                                                   \
   (global)(material)(model)(mesh)(heat)(contact)(friction)(                    \
@@ -490,7 +490,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #include "parser_tmpl.hh"
 

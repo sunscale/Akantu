@@ -38,7 +38,7 @@
 #include "structural_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class ModelIOIBarras : public ModelIO {
   /* ------------------------------------------------------------------------ */
@@ -60,6 +60,6 @@ public:
                            StructuralMechanicsModel & model);
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MODEL_IO_IBARRAS_HH__ */

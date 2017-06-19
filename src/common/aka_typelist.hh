@@ -35,7 +35,7 @@
 
 #include "aka_common.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 struct Empty_type {};
 class Null_type {};
@@ -179,6 +179,6 @@ public:
     enum { value = (temp == -1 ? -1 : 1 + temp) };
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_TYPELIST_HH__ */

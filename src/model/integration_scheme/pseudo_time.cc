@@ -33,7 +33,7 @@
 #include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 PseudoTime::PseudoTime(DOFManager & dof_manager, const ID & dof_id)
@@ -82,4 +82,4 @@ void PseudoTime::assembleJacobian(const SolutionType &, Real) {
 void PseudoTime::assembleResidual(bool) {}
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

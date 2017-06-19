@@ -41,7 +41,7 @@
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NonLocalManager : public Memory,
                         public Parsable,
@@ -278,7 +278,7 @@ protected:
   DummyDataAccessor dummy_accessor;
 };
 
-__END_AKANTU__
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

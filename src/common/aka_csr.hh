@@ -38,7 +38,7 @@
 #ifndef __AKANTU_AKA_CSR_HH__
 #define __AKANTU_AKA_CSR_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * This class  can be  used to  store the structure  of a  sparse matrix  or for
@@ -254,6 +254,6 @@ private:
 //   return stream;
 // }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_AKA_CSR_HH__ */

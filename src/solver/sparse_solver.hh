@@ -50,7 +50,7 @@ enum SolverParallelMethod {
 class DOFManager;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class SparseSolver : protected Memory,
                      public Parsable,
@@ -117,6 +117,6 @@ protected:
   const StaticCommunicator & communicator;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_SOLVER_HH__ */

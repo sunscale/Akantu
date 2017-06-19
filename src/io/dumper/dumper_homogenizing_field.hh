@@ -35,7 +35,7 @@
 #include "dumper_compute.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 
 /* -------------------------------------------------------------------------- */
@@ -212,6 +212,6 @@ HomogenizerProxy::createHomogenizer(Field & field) {
 // */
 
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_HOMOGENIZING_FIELD_HH__ */

@@ -40,7 +40,7 @@
 #ifndef __AKANTU_MESH_INLINE_IMPL_CC__
 #define __AKANTU_MESH_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh)
@@ -625,6 +625,6 @@ inline const Mesh & Mesh::getMeshParent() const {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_INLINE_IMPL_CC__ */

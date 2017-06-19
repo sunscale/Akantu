@@ -38,7 +38,7 @@
 #include <map>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SlaveElementInfoPerProc::SlaveElementInfoPerProc(
@@ -194,4 +194,4 @@ void SlaveElementInfoPerProc::synchronizeGroups() {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

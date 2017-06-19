@@ -39,7 +39,7 @@
 #ifndef __AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 
@@ -94,6 +94,6 @@ private:
 
 #include "material_marigo_non_local_inline_impl.cc"
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH__ */

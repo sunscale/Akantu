@@ -34,7 +34,7 @@
 /* -------------------------------------------------------------------------- */
 #include "dumper_elemental_field.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 
 /* -------------------------------------------------------------------------- */
@@ -72,6 +72,6 @@ public:
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__ */

@@ -37,7 +37,7 @@
 #include <algorithm>
 #include <sstream>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
@@ -310,4 +310,4 @@ Real MaterialElasticLinearAnisotropic<dim>::getCelerity(
 
 INSTANTIATE_MATERIAL(MaterialElasticLinearAnisotropic);
 
-__END_AKANTU__
+} // akantu

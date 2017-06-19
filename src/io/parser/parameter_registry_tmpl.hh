@@ -37,7 +37,7 @@
 #include <string>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 namespace debug {
 class ParameterException : public Exception {
@@ -298,4 +298,4 @@ const Parameter & ParameterRegistry::get(const std::string & name) const {
   return param;
 }
 
-__END_AKANTU__
+} // akantu

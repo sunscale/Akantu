@@ -40,7 +40,7 @@ namespace akantu {
   class DOFManagerDefault;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NonLinearSolverNewtonRaphson : public NonLinearSolver {
   /* ------------------------------------------------------------------------ */
@@ -99,6 +99,6 @@ private:
   bool force_linear_recompute;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH__ */

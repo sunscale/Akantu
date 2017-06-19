@@ -38,7 +38,7 @@
 #ifndef AKANTU_PARSER_GRAMMAR_TMPL_HH
 #define AKANTU_PARSER_GRAMMAR_TMPL_HH
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 namespace qi = boost::spirit::qi;
 
@@ -76,6 +76,6 @@ namespace parser {
   };
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif //AKANTU_PARSER_GRAMMAR_TMPL_HH

@@ -37,7 +37,7 @@
 #include "material_linear_isotropic_hardening.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
@@ -200,4 +200,4 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeTangentModuli(
 
 INSTANTIATE_MATERIAL(MaterialLinearIsotropicHardening);
 
-__END_AKANTU__
+} // akantu

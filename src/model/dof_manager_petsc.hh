@@ -49,7 +49,7 @@ extern int aka_PETScError(int ierr);
 #ifndef __AKANTU_DOF_MANAGER_PETSC_HH__
 #define __AKANTU_DOF_MANAGER_PETSC_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class SparseMatrixPETSc;
 
@@ -167,6 +167,6 @@ private:
   static UInt petsc_dof_manager_instances;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DOF_MANAGER_PETSC_HH__ */

@@ -39,7 +39,7 @@
 #include "mesh_geom_common.hh"
 #include "tree_type_helper.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<UInt dim, ElementType type>
 MeshSegmentIntersector<dim, type>::MeshSegmentIntersector(Mesh & mesh, Mesh & result_mesh):
@@ -264,7 +264,7 @@ void MeshSegmentIntersector<dim, type>::computeSegments(const std::list<result_t
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_MESH_SEGMENT_INTERSECTOR_TMPL_HH__
 

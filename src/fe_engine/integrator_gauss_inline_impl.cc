@@ -35,7 +35,7 @@
 #include "aka_debug_tools.hh"
 #endif
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind, class IntegrationOrderFunctor>
@@ -558,4 +558,4 @@ inline void IntegratorGauss<kind, IntegrationOrderFunctor>::initIntegrator(
   GaussIntegratorInitHelper<kind>::call(*this, nodes, type, ghost_type);
 }
 
-__END_AKANTU__
+} // akantu

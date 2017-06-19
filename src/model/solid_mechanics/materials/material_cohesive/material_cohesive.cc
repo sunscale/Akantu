@@ -39,7 +39,7 @@
 #include "solid_mechanics_model_cohesive.hh"
 #include "sparse_matrix.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id)
@@ -613,4 +613,4 @@ void MaterialCohesive::computeNormal(const Array<Real> & position,
     }
 
 /* -------------------------------------------------------------------------- */
-    __END_AKANTU__
+    } // akantu

@@ -38,7 +38,7 @@
 #include "aka_common.hh"
 #include "aka_memory.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <class Stored, typename SupportType = ElementType>
 class ElementTypeMap;
@@ -363,6 +363,6 @@ typedef ElementTypeMapArray<UInt, ElementType> ElementTypeMapUInt;
 typedef std::map<std::string, Array<UInt> *> UIntDataMap;
 typedef ElementTypeMap<UIntDataMap, ElementType> ElementTypeMapUIntDataMap;
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_ELEMENT_TYPE_MAP_HH__ */

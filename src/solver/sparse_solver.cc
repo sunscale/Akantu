@@ -36,7 +36,7 @@
 #include "sparse_solver.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SparseSolver::SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
@@ -86,4 +86,4 @@ void SparseSolver::onCommunicatorFinalize() {
   this->destroyInternalData();
 }
 
-__END_AKANTU__
+} // akantu

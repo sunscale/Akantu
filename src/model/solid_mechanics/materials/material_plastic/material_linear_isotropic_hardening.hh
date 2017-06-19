@@ -42,7 +42,7 @@
 #ifndef __AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH__
 #define __AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material plastic with a linear evolution of the yielding stress
@@ -116,6 +116,6 @@ private:
 /* -------------------------------------------------------------------------- */
 #include "material_linear_isotropic_hardening_inline_impl.cc"
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH__ */

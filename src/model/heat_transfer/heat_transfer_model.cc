@@ -59,7 +59,7 @@
 #endif
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 const HeatTransferModelOptions
     default_heat_transfer_model_options(_explicit_lumped_capacity);
@@ -1279,4 +1279,4 @@ dumper::Field * HeatTransferModel::createNodalFieldReal(
 
 #endif
 
-__END_AKANTU__
+} // akantu

@@ -42,7 +42,7 @@
 #ifndef __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__
 #define __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * General linear anisotropic elastic material
@@ -123,6 +123,6 @@ protected:
   /// defines if the stiffness was computed
   bool was_stiffness_assembled;
 };
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__ */

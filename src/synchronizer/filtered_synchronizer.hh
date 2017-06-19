@@ -39,7 +39,7 @@
 #include "element_synchronizer.hh"
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class SynchElementFilter {
@@ -96,6 +96,6 @@ private:
   
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_FILTERED_SYNCHRONIZER_HH__ */

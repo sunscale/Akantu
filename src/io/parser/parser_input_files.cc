@@ -48,7 +48,7 @@
 #include <fstream>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 void Parser::parse(const std::string & filename) {
@@ -102,7 +102,7 @@ void Parser::parse(const std::string & filename) {
   input.close();
 }
 
-__END_AKANTU__
+} // akantu
 
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )

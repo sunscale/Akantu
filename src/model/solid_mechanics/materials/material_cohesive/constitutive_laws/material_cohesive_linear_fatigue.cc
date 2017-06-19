@@ -31,7 +31,7 @@
 /* -------------------------------------------------------------------------- */
 #include "material_cohesive_linear_fatigue.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
@@ -293,4 +293,4 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
 INSTANTIATE_MATERIAL(MaterialCohesiveLinearFatigue);
 
 
-__END_AKANTU__
+} // akantu

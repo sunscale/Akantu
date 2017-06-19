@@ -33,7 +33,7 @@
 #ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_CC__
 #define __AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 template<class WeightFunction>
 inline UInt NonLocalNeighborhood<WeightFunction>::getNbDataForElements(const Array<Element> & elements,
@@ -90,6 +90,6 @@ inline void NonLocalNeighborhood<WeightFunction>::unpackElementData(Communicatio
   this->weight_function->unpackElementData(buffer, elements, tag);
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_CC__ */

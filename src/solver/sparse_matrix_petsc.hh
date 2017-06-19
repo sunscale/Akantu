@@ -45,7 +45,7 @@ namespace akantu {
   class DOFManagerPETSc;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 
 class SparseMatrixPETSc : public SparseMatrix {
@@ -137,6 +137,6 @@ private:
   bool is_petsc_matrix_initialized;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_PETSC_MATRIX_HH__ */

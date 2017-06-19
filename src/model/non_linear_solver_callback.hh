@@ -32,7 +32,7 @@
 #ifndef __AKANTU_NON_LINEAR_SOLVER_CALLBACK_HH__
 #define __AKANTU_NON_LINEAR_SOLVER_CALLBACK_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NonLinearSolverCallback {
   /* ------------------------------------------------------------------------ */
@@ -55,7 +55,7 @@ public:
   virtual void corrector() { AKANTU_DEBUG_TO_IMPLEMENT(); }
 };
 
-__END_AKANTU__
+} // akantu
 
 
 #endif /* __AKANTU_NON_LINEAR_SOLVER_CALLBACK_HH__ */

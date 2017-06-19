@@ -36,7 +36,7 @@
 #include "shape_linked.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 /* -------------------------------------------------------------------------- */
@@ -79,4 +79,4 @@ ShapeLinked<_ek_structural>::~ShapeLinked() {
 }
 #endif
 
-__END_AKANTU__
+} // akantu

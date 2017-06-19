@@ -49,7 +49,7 @@
 
 
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MaterialPython : public Material, PythonFunctor {
   /* ------------------------------------------------------------------------ */
@@ -117,7 +117,7 @@ protected:
   std::map<std::string, InternalField<Real> *> internals;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_PYTHON_HH__ */
 

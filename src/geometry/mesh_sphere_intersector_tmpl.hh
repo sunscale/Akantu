@@ -42,7 +42,7 @@
 #include "mesh_sphere_intersector.hh"
 #include "static_communicator.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<UInt dim, ElementType type>
 MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
@@ -191,6 +191,6 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_MESH_SPHERE_INTERSECTOR_TMPL_HH__

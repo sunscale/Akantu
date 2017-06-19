@@ -61,7 +61,7 @@ class NonLocalManager;
 } // namespace akantu
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 DECLARE_NAMED_ARGUMENT(analysis_method);
 DECLARE_NAMED_ARGUMENT(no_init_materials);
@@ -787,7 +787,7 @@ namespace Neumann {
 } // namespace Neumann
 } // namespace BC
 
-__END_AKANTU__
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
@@ -795,7 +795,7 @@ __END_AKANTU__
 #include "material.hh"
 #include "parser.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 #include "solid_mechanics_model_inline_impl.cc"
 #include "solid_mechanics_model_tmpl.hh"
@@ -807,7 +807,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #include "material_selector_tmpl.hh"
 

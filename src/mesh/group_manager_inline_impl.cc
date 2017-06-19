@@ -39,7 +39,7 @@
 #include "dumper_nodal_field.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 
@@ -202,6 +202,6 @@ GroupManager::createStridedNodalField(const ftype<type, flag> * field,
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif

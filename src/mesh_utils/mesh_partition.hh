@@ -42,7 +42,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MeshPartition : protected Memory {
   /* ------------------------------------------------------------------------ */
@@ -141,7 +141,7 @@ protected:
 
 };
 
-__END_AKANTU__
+} // akantu
 
 #ifdef AKANTU_USE_SCOTCH
 #include "mesh_partition_scotch.hh"

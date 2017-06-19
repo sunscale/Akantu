@@ -44,7 +44,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 const SolidMechanicsModelCohesiveOptions
     default_solid_mechanics_model_cohesive_options(_explicit_lumped_mass, false,
@@ -791,4 +791,4 @@ void SolidMechanicsModelCohesive::onDump() {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

@@ -38,7 +38,7 @@
 #include <Python.h>
 #include <vector>
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 
 class PythonFunctor {
@@ -125,7 +125,7 @@ protected:
   PyObject * python_obj;
 };
 /* -------------------------------------------------------------------------- */
-__END_AKANTU__
+} // akantu
 /* -------------------------------------------------------------------------- */
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include "python_functor_inline_impl.cc"

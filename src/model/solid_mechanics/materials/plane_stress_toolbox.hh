@@ -34,7 +34,7 @@
 #ifndef __AKANTU_PLANE_STRESS_TOOLBOX_HH__
 #define __AKANTU_PLANE_STRESS_TOOLBOX_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Empty class in dimensions different from 2
@@ -94,7 +94,7 @@ protected:
 AKANTU_PLANE_STRESS_TOOL_SPEC(1)
 AKANTU_PLANE_STRESS_TOOL_SPEC(3)
 
-__END_AKANTU__
+} // akantu
 
 #include "plane_stress_toolbox_tmpl.hh"
 

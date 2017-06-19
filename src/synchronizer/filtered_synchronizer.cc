@@ -35,7 +35,7 @@
 #include <map>
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 FilteredSynchronizer::FilteredSynchronizer(Mesh & mesh, SynchronizerID id,
@@ -171,4 +171,4 @@ void FilteredSynchronizer::updateElementList(
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

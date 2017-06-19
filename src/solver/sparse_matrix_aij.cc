@@ -36,7 +36,7 @@
 #include <fstream>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ::SparseMatrixAIJ(DOFManagerDefault & dof_manager,
@@ -222,4 +222,4 @@ void SparseMatrixAIJ::clear() {
   this->value_release++;
 }
 
-__END_AKANTU__
+} // akantu

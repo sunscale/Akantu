@@ -35,7 +35,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 MeshIOMSHStruct::MeshIOMSHStruct() : MeshIOMSH() {
   canReadSurface      = true;
@@ -76,5 +76,5 @@ void MeshIOMSHStruct::read(const std::string & filename, Mesh & mesh) {
 }
 
 
-__END_AKANTU__
+} // akantu
 

@@ -43,7 +43,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// Here, we know what kernel we have to use
 typedef Spherical SK;
@@ -98,7 +98,7 @@ protected:
 
 };
  
-__END_AKANTU__
+} // akantu
 
 #include "mesh_sphere_intersector_tmpl.hh"
 

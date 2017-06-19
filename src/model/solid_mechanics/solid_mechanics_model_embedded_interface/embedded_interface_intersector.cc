@@ -45,7 +45,7 @@
 #define INTERFACE_INTERSECTOR_CASE_2D(type) INTERFACE_INTERSECTOR_CASE(2, type)
 #define INTERFACE_INTERSECTOR_CASE_3D(type) INTERFACE_INTERSECTOR_CASE(3, type)
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 EmbeddedInterfaceIntersector::EmbeddedInterfaceIntersector(Mesh & mesh, const Mesh & primitive_mesh) :
   MeshGeomAbstract(mesh),
@@ -153,7 +153,7 @@ K::Segment_3 EmbeddedInterfaceIntersector::createSegment(const Vector<UInt> & co
   return segment;
 }
 
-__END_AKANTU__
+} // akantu
 
 #undef INTERFACE_INTERSECTOR_CASE
 #undef INTERFACE_INTERSECTOR_CASE_2D

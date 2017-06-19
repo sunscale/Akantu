@@ -41,7 +41,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 void Math::matrix_vector(UInt m, UInt n, const Array<Real> & A,
@@ -248,4 +248,4 @@ Real Math::reduce(Array<Real> & array) {
   return array(0);
 }
 
-__END_AKANTU__
+} // akantu

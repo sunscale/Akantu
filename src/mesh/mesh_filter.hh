@@ -37,7 +37,7 @@
 #include "element.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* Filter Functors                                                            */
@@ -70,6 +70,6 @@ public:
   static const Type type = _element_filter_functor;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_FILTER_HH__ */

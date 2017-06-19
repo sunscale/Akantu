@@ -42,7 +42,7 @@
 #ifndef __AKANTU_NODE_GROUP_HH__
 #define __AKANTU_NODE_GROUP_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NodeGroup : public Memory, public Dumpable {
   /* ------------------------------------------------------------------------ */
@@ -124,7 +124,7 @@ inline std::ostream & operator <<(std::ostream & stream, const NodeGroup & _this
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

@@ -45,7 +45,7 @@
 #endif
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 struct FacetsCohesiveIntegrationOrderFunctor {
@@ -280,7 +280,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #include "solid_mechanics_model_cohesive_inline_impl.cc"
 

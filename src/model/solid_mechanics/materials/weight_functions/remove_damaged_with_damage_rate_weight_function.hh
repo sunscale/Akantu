@@ -36,7 +36,7 @@
 #ifndef __AKANTU_REMOVE_DAMAGED_WITH_DAMAGE_RATE_WEIGHT_FUNCTION_HH__
 #define __AKANTU_REMOVE_DAMAGED_WITH_DAMAGE_RATE_WEIGHT_FUNCTION_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 /* Remove damaged with damage rate weight function                                             */
 /* -------------------------------------------------------------------------- */
@@ -77,6 +77,6 @@ private:
 #  include "remove_damaged_with_damage_rate_weight_function_inline_impl.cc"
 #endif
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_REMOVE_DAMAGED_WITH_DAMAGE_WEIGHT_FUNCTION_HH__ */

@@ -39,7 +39,7 @@
 #ifndef __AKANTU_GRID_SYNCHRONIZER_HH__
 #define __AKANTU_GRID_SYNCHRONIZER_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class Mesh;
 template <class T> class SpatialGrid;
@@ -94,6 +94,6 @@ public:
 private:
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_GRID_SYNCHRONIZER_HH__ */

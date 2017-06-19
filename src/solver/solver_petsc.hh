@@ -44,7 +44,7 @@ namespace akantu {
   class DOFManagerPETSc;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class SolverPETSc : public SparseSolver {
 
@@ -177,6 +177,6 @@ private:
 //   }
 // };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_SOLVER_PETSC_HH__ */

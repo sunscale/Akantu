@@ -37,7 +37,7 @@
 #ifndef __AKANTU_INTERNAL_FIELD_HH__
 #define __AKANTU_INTERNAL_FIELD_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class Material;
 class FEEngine;
@@ -252,6 +252,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_INTERNAL_FIELD_HH__ */

@@ -36,7 +36,7 @@
 #ifndef __AKANTU_MESH_IO_ABAQUS_HH__
 #define __AKANTU_MESH_IO_ABAQUS_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class MeshIOAbaqus : public MeshIO {
@@ -55,6 +55,6 @@ private:
   std::map<std::string, ElementType> _abaqus_to_akantu_element_types;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_IO_ABAQUS_HH__ */

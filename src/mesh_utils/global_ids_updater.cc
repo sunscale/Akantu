@@ -36,7 +36,7 @@
 /* -------------------------------------------------------------------------- */
 
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 UInt GlobalIdsUpdater::updateGlobalIDs(UInt old_nb_nodes) {
   UInt total_nb_new_nodes = this->updateGlobalIDsLocally(old_nb_nodes);
@@ -56,4 +56,4 @@ void GlobalIdsUpdater::synchronizeGlobalIDs() {
   this->synchronizer->waitEndSynchronize(*this, _gst_giu_global_conn);
 }
 
-__END_AKANTU__
+} // akantu

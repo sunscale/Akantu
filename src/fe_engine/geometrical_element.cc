@@ -34,7 +34,7 @@
 #include "element_class.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* clang-format off */
 /* -------------------------------------------------------------------------- */
@@ -206,4 +206,4 @@ template<> UInt * GeometricalElement<_gt_pentahedron_15>::facet_connectivity[] =
 /* clang-format on */
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

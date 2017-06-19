@@ -42,7 +42,7 @@ namespace akantu {
 class SparseMatrix;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class IntegrationScheme2ndOrder : public IntegrationScheme {
   /* ------------------------------------------------------------------------ */
@@ -97,7 +97,7 @@ protected:
 private:
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "newmark-beta.hh"
 

@@ -33,7 +33,7 @@
 #include "non_local_neighborhood_base.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(const SolidMechanicsModel & model,
@@ -110,4 +110,4 @@ void NonLocalNeighborhoodBase::cleanupExtraGhostElements(std::set<Element> & rel
   this->grid_synchronizer->removeElements(ghosts_to_erase);
 }
 
-__END_AKANTU__
+} // akantu

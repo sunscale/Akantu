@@ -30,7 +30,7 @@
  *
  */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <InterpolationType interpolation_type>
@@ -257,4 +257,4 @@ public:
 #include "element_classes/element_class_bernoulli_beam_inline_impl.cc"
 #include "element_classes/element_class_kirchhoff_shell_inline_impl.cc"
 
-__END_AKANTU__
+} // akantu

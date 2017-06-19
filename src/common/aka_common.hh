@@ -50,8 +50,8 @@ using enable_if_t = typename enable_if<B,T>::type;
 }
 #endif
 /* -------------------------------------------------------------------------- */
-#define __BEGIN_AKANTU__ namespace akantu {
-#define __END_AKANTU__ }
+#define namespace akantu { namespace akantu {
+#define } // akantu }
 /* -------------------------------------------------------------------------- */
 #define __BEGIN_AKANTU_DUMPER__ namespace dumper {
 #define __END_AKANTU_DUMPER__ }
@@ -66,7 +66,7 @@ using enable_if_t = typename enable_if<B,T>::type;
 #include "aka_safe_enum.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* Common types                                                               */
@@ -95,11 +95,11 @@ extern const UInt _all_dimensions;
 /* -------------------------------------------------------------------------- */
 /* Mesh/FEM/Model types                                                       */
 /* -------------------------------------------------------------------------- */
-__END_AKANTU__
+} // akantu
 
 #include "aka_element_classes_info.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// small help to use names for directions
 enum SpacialDirection { _x = 0, _y = 1, _z = 2 };
@@ -392,11 +392,11 @@ inline std::string trim(const std::string & to_trim);
 template <typename T> std::string printMemorySize(UInt size);
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #include "aka_fwd.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// get access to the internal argument parser
 cppargparse::ArgumentParser & getStaticArgumentParser();
@@ -407,7 +407,7 @@ Parser & getStaticParser();
 /// get access to the user part of the internal input file parser
 const ParserSection & getUserParser();
 
-__END_AKANTU__
+} // akantu
 
 #include "aka_common_inline_impl.cc"
 

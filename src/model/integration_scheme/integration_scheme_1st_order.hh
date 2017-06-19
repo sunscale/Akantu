@@ -37,7 +37,7 @@
 #ifndef __AKANTU_INTEGRATION_SCHEME_1ST_ORDER_HH__
 #define __AKANTU_INTEGRATION_SCHEME_1ST_ORDER_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class IntegrationScheme1stOrder : public IntegrationScheme {
   /* ------------------------------------------------------------------------ */
@@ -86,7 +86,7 @@ protected:
 private:
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "generalized_trapezoidal.hh"
 

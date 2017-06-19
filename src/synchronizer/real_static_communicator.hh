@@ -38,7 +38,7 @@
 #ifndef __AKANTU_REAL_STATIC_COMMUNICATOR_HH__
 #define __AKANTU_REAL_STATIC_COMMUNICATOR_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class InternalCommunicationRequest {
@@ -148,6 +148,6 @@ protected:
   Int psize;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_REAL_STATIC_COMMUNICATOR_HH__ */

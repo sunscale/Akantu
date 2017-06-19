@@ -43,7 +43,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<class T>
 class CircularArray : protected Array<T> {
@@ -131,7 +131,7 @@ inline std::ostream & operator <<(std::ostream & stream, const CircularArray<T> 
 
 
 
-__END_AKANTU__
+} // akantu
 
 
 

@@ -120,7 +120,7 @@
 //   return stream;
 // }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
@@ -438,4 +438,4 @@ void SparseSolverMumps::printError() {
   }
 }
 
-__END_AKANTU__
+} // akantu

@@ -48,7 +48,7 @@ namespace iohelper {
 class Dumper;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 UInt getIOHelperType(ElementType type);
 
@@ -153,6 +153,6 @@ protected:
   bool time_activated;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_IOHELPER_HH__ */

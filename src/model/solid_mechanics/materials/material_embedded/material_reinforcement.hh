@@ -41,7 +41,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * @brief Material used to represent embedded reinforcements
@@ -195,6 +195,6 @@ protected:
 
 #include "material_reinforcement_inline_impl.cc"
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_MATERIAL_REINFORCEMENT_HH__

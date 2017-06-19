@@ -38,7 +38,7 @@
 #include "dumper_iohelper.hh"
 #include <set>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class Dumpable {
   /* ------------------------------------------------------------------------ */
@@ -190,6 +190,6 @@ private:
   std::string default_dumper;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPABLE_IOHELPER_HH__ */

@@ -41,7 +41,7 @@
 #include "solid_mechanics_model_cohesive.hh"
 #include "sparse_matrix.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
@@ -698,4 +698,4 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(
 
 INSTANTIATE_MATERIAL(MaterialCohesiveLinear);
 
-__END_AKANTU__
+} // akantu

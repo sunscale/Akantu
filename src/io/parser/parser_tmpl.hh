@@ -30,7 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -103,4 +103,4 @@ inline ParserParameter::operator RandomParameter<Real>() const {
 
 
 
-__END_AKANTU__
+} // akantu

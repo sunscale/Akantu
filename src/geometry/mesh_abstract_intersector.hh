@@ -40,7 +40,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * @brief Class used to perform intersections on a mesh and construct output data
@@ -101,7 +101,7 @@ protected:
   const UInt nb_seg_by_el;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "mesh_abstract_intersector_tmpl.hh"
 

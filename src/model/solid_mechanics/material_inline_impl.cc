@@ -38,7 +38,7 @@
 #ifndef __AKANTU_MATERIAL_INLINE_IMPL_CC__
 #define __AKANTU_MATERIAL_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline UInt Material::addElement(const ElementType & type, UInt element,
@@ -456,6 +456,6 @@ void Material::flattenInternal(const std::string & field_id,
   }
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_INLINE_IMPL_CC__ */

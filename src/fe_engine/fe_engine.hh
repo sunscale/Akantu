@@ -49,7 +49,7 @@ class Element;
 }
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 
 /**
@@ -377,7 +377,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #include "fe_engine_inline_impl.cc"
 #include "fe_engine_template.hh"

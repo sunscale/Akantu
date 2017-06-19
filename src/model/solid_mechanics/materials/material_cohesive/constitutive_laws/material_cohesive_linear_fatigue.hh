@@ -40,7 +40,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Linear irreversible cohesive law with dissipative
@@ -131,6 +131,6 @@ private:
   Real fatigue_ratio;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_LINEAR_FATIGUE_HH__ */

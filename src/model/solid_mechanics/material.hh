@@ -56,7 +56,7 @@ class Model;
 class SolidMechanicsModel;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Interface of all materials
@@ -583,7 +583,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #include "material_inline_impl.cc"
 

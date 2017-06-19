@@ -30,14 +30,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
-__END_AKANTU__
+} // akantu
 
 #if defined(AKANTU_DEBUG_TOOLS)
 #include "aka_debug_tools.hh"
 #include <string>
 #endif
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>

@@ -36,7 +36,7 @@
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NeighborhoodMaxCriterion : public NeighborhoodBase, public Parsable {
   /* ------------------------------------------------------------------------ */
@@ -110,7 +110,7 @@ protected:
   ElementTypeMapReal criterion;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "neighborhood_max_criterion_inline_impl.cc"
 

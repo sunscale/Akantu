@@ -43,7 +43,7 @@
 #include <CGAL/Algebraic_kernel_for_spheres_2_3.h>
 #include <CGAL/Lazy_exact_nt.h>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 typedef CGAL::Simple_cartesian<Real> Cartesian;
 
@@ -53,6 +53,6 @@ typedef CGAL::Spherical_kernel_3<CGAL::Simple_cartesian<NT>, CGAL::Algebraic_ker
 //typedef CGAL::Lazy_exact_nt<CGAL::Quotient<CGAL::MP_Float> > NT; 
 //typedef CGAL::Spherical_kernel_3<CGAL::Simple_cartesian<NT>, CGAL::Algebraic_kernel_for_spheres_2_3<NT> > Spherical;
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_MESH_GEOM_COMMON_HH__

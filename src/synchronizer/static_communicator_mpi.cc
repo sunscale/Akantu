@@ -38,7 +38,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 MPI_Op MPITypeWrapper::synchronizer_operation_to_mpi_op[_so_null + 1] = {
     MPI_SUM, MPI_MIN,  MPI_MAX,  MPI_PROD,   MPI_LAND,   MPI_BAND,   MPI_LOR,
@@ -554,4 +554,4 @@ template void StaticCommunicatorMPI::allReduce<SCMinMaxLoc<Real, int>>(
 AKANTU_MPI_COMM_INSTANTIATE(int);
 #endif
 
-__END_AKANTU__
+} // akantu

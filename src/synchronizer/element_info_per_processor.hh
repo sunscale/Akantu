@@ -45,7 +45,7 @@ class MeshPartition;
 }
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 class ElementInfoPerProc : protected MeshAccessor {
 public:
@@ -137,7 +137,7 @@ private:
   UInt nb_element_to_receive;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "element_info_per_processor_tmpl.hh"
 

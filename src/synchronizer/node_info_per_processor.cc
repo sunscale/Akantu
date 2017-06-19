@@ -36,7 +36,7 @@
 #include <algorithm>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NodeInfoPerProc::NodeInfoPerProc(NodeSynchronizer & synchronizer,
@@ -497,4 +497,4 @@ void SlaveNodeInfoPerProc::synchronizeGroups() {
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

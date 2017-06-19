@@ -32,7 +32,7 @@
 /* -------------------------------------------------------------------------- */
 #include "material_thermal.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -120,4 +120,4 @@ void MaterialThermal<dim>::computeStress(ElementType el_type, GhostType ghost_ty
 
 INSTANTIATE_MATERIAL(MaterialThermal);
 
-__END_AKANTU__
+} // akantu

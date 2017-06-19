@@ -37,7 +37,7 @@
 #include "dumper_element_iterator.hh"
 #include "dumper_homogenizing_field.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
@@ -219,6 +219,6 @@ protected:
 #include "dumper_generic_elemental_field_tmpl.hh"
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU_DUMPER__ __END_AKANTU__
+__END_AKANTU_DUMPER__ } // akantu
 
 #endif /* __AKANTU_DUMPER_GENERIC_ELEMENTAL_FIELD_HH__ */

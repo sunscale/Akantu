@@ -35,7 +35,7 @@
 #include "material_standard_linear_solid_deviatoric.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -296,4 +296,4 @@ Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getEnergy(std::st
 
 INSTANTIATE_MATERIAL(MaterialStandardLinearSolidDeviatoric);
 
-__END_AKANTU__
+} // akantu

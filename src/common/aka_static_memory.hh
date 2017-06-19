@@ -47,7 +47,7 @@
 #include <map>
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 typedef std::map<ID, ArrayBase *> ArrayMap;
 typedef std::map<MemoryID, ArrayMap> MemoryMap;
@@ -152,6 +152,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_STATIC_MEMORY_HH__ */

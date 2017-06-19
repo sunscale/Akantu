@@ -34,7 +34,7 @@
 #ifndef __AKANTU_COHESIVE_INTERNAL_FIELD_TMPL_HH__
 #define __AKANTU_COHESIVE_INTERNAL_FIELD_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <typename T>
 CohesiveInternalField<T>::CohesiveInternalField(const ID & id,
@@ -89,6 +89,6 @@ ParsableParamTyped<RandomInternalField<Real, CohesiveInternalField> >::
   param.setRandomDistribution(r);
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_COHESIVE_INTERNAL_FIELD_TMPL_HH__ */

@@ -36,7 +36,7 @@
 #include "sparse_matrix.hh"
 #include "dof_synchronizer.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -362,4 +362,4 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCompressivePenalty(M
 
 INSTANTIATE_MATERIAL(MaterialCohesiveExponential);
 
-__END_AKANTU__
+} // akantu

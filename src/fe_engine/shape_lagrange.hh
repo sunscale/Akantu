@@ -35,7 +35,7 @@
 
 #include "shape_functions.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class Shape> class ShapeCohesive;
@@ -180,6 +180,6 @@ protected:
 /* -------------------------------------------------------------------------- */
 #include "shape_lagrange_inline_impl.cc"
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_SHAPE_LAGRANGE_HH__ */

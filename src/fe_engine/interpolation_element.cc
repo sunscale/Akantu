@@ -32,7 +32,7 @@
 #include "element_class.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* Structural elements                                                        */
@@ -45,4 +45,4 @@ template<> const UInt InterpolationElement<_itp_bernoulli_beam>::nb_shape_deriva
 template<> const UInt InterpolationElement<_itp_kirchhoff_shell>::nb_shape_derivatives = 7;
 #endif
  
-__END_AKANTU__
+} // akantu

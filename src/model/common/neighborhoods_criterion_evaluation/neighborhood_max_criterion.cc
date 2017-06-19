@@ -33,7 +33,7 @@
 #include "grid_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NeighborhoodMaxCriterion::NeighborhoodMaxCriterion(
@@ -309,4 +309,4 @@ void NeighborhoodMaxCriterion::cleanupExtraGhostElements(
                           remove_elem);
 }
 
-__END_AKANTU__
+} // akantu

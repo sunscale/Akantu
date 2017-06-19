@@ -47,7 +47,7 @@
 #define __AKANTU_MESH_UTILS_HH__
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MeshUtils {
 
@@ -240,5 +240,5 @@ private:
 /* -------------------------------------------------------------------------- */
 #include "mesh_utils_inline_impl.cc"
 
-__END_AKANTU__
+} // akantu
 #endif /* __AKANTU_MESH_UTILS_HH__ */

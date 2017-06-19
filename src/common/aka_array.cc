@@ -37,7 +37,7 @@
 #include "aka_common.hh"
 #include "aka_array.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* Functions ArrayBase                                                       */
@@ -120,4 +120,4 @@ Array<char> & Array<char>::operator+=(__attribute__((unused))
   return *this;
 }
 
-__END_AKANTU__
+} // akantu

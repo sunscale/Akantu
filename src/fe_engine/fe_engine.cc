@@ -35,7 +35,7 @@
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 FEEngine::FEEngine(Mesh & mesh, UInt element_dimension, ID id,
@@ -82,4 +82,4 @@ void FEEngine::printself(std::ostream & stream, int indent) const {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

@@ -36,7 +36,7 @@
 #include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 GeneralizedTrapezoidal::GeneralizedTrapezoidal(DOFManager & dof_manager,
@@ -189,4 +189,4 @@ void GeneralizedTrapezoidal::assembleJacobian(const SolutionType & type,
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

@@ -34,7 +34,7 @@
 #include "material_plastic.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -200,4 +200,4 @@ void MaterialPlastic<spatial_dimension>::updateEnergies(ElementType el_type,
 
 INSTANTIATE_MATERIAL(MaterialPlastic);
 
-__END_AKANTU__
+} // akantu

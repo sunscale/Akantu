@@ -39,7 +39,7 @@
 #include "parser.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 ParserSection::~ParserSection() { this->clean(); }
@@ -95,4 +95,4 @@ void ParserSection::printself(std::ostream & stream,
   stream << space << "]" << std::endl;
 }
 
-__END_AKANTU__
+} // akantu

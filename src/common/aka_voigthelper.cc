@@ -35,7 +35,7 @@
 #include "aka_voigthelper.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* clang-format off */
@@ -65,4 +65,4 @@ template <> const Real VoigtHelper<3>::factors[] = {1., 1., 1.,
                                                     2., 2., 2.};
 
 /* clang-format on */
-__END_AKANTU__
+} // akantu

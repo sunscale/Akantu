@@ -58,7 +58,7 @@ namespace akantu {
   }
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class GroupManager {
@@ -291,6 +291,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_GROUP_MANAGER_HH__ */

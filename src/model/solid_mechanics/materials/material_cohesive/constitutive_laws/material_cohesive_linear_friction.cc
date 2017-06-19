@@ -33,7 +33,7 @@
 #include "material_cohesive_linear_friction.hh"
 #include "solid_mechanics_model_cohesive.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -398,4 +398,4 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(c
 
 INSTANTIATE_MATERIAL(MaterialCohesiveLinearFriction);
 
-__END_AKANTU__
+} // akantu

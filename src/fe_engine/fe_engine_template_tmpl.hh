@@ -37,7 +37,7 @@
 #include "aka_common.hh"
 #include "dof_manager.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <template <ElementKind, class> class I, template <ElementKind> class S,
@@ -1538,12 +1538,12 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::printself(
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #include "integrator_gauss.hh"
 #include "shape_lagrange.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <>
@@ -1668,4 +1668,4 @@ inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular,
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

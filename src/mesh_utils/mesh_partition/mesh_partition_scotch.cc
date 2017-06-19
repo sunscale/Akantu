@@ -52,7 +52,7 @@ extern "C" {
 #include <ptscotch.h>
 #endif // AKANTU_USE_PTSCOTCH
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MeshPartitionScotch::MeshPartitionScotch(const Mesh & mesh,
@@ -475,4 +475,4 @@ void MeshPartitionScotch::reorder() {
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

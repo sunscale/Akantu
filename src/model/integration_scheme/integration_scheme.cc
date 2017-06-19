@@ -32,7 +32,7 @@
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 IntegrationScheme::IntegrationScheme(DOFManager & dof_manager,
@@ -89,4 +89,4 @@ std::istream & operator>>(std::istream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu

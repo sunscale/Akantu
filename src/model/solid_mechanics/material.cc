@@ -39,7 +39,7 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Material::Material(SolidMechanicsModel & model, const ID & id)
@@ -1625,4 +1625,4 @@ void Material::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u,
   }
 }
 
-__END_AKANTU__
+} // akantu

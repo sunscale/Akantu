@@ -39,7 +39,7 @@ namespace akantu {
   class DOFManager;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class SolverCallback {
   /* ------------------------------------------------------------------------ */
@@ -77,7 +77,7 @@ protected:
   DOFManager * sc_dof_manager;
 };
 
-__END_AKANTU__
+} // akantu
 
 
 #endif /* __AKANTU_SOLVER_CALLBACK_HH__ */

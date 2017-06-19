@@ -38,7 +38,7 @@
 #include "mesh_io.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MeshIOMSH : public MeshIO {
   /* ------------------------------------------------------------------------ */
@@ -110,6 +110,6 @@ protected:
 };
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_IO_MSH_HH__ */

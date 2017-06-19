@@ -38,7 +38,7 @@
 #ifndef __AKANTU_PARSABLE_HH__
 #define __AKANTU_PARSABLE_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* Parsable Interface                                                         */
@@ -69,7 +69,7 @@ private:
   SubSections sub_sections;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "parsable_tmpl.hh"
 

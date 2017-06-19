@@ -166,7 +166,7 @@
 // #include <boost/spirit/include/phoenix_stl.hpp>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /*   Methods Implentations                                                    */
@@ -978,4 +978,4 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

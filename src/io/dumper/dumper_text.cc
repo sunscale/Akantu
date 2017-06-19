@@ -36,7 +36,7 @@
 #include "mesh.hh"
 #include "static_communicator.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 DumperText::DumperText(const std::string & basename,
@@ -110,4 +110,4 @@ void DumperText::setPrecision(UInt prec) {
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

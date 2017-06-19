@@ -34,7 +34,7 @@
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 TimeStepSolver::TimeStepSolver(DOFManager & dof_manager,
@@ -90,4 +90,4 @@ void TimeStepSolver::assembleResidual() {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

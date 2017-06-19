@@ -36,7 +36,7 @@
 #ifndef __AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH__
 #define __AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename BufferType>
@@ -144,6 +144,6 @@ void ElementInfoPerProc::fillElementGroupsFromBuffer(
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH__ */

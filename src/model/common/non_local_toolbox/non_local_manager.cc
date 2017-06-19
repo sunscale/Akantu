@@ -39,7 +39,7 @@
 #include <numeric>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NonLocalManager::NonLocalManager(SolidMechanicsModel & model, const ID & id,
@@ -697,4 +697,4 @@ void NonLocalManager::removeIntegrationPointsFromMap(
   }
 }
 
-__END_AKANTU__
+} // akantu

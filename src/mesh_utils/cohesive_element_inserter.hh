@@ -44,7 +44,7 @@
 #endif
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 class CohesiveElementInserter : public DataAccessor {
   /* ------------------------------------------------------------------------ */
@@ -203,7 +203,7 @@ inline std::ostream & operator <<(std::ostream & stream, const CohesiveElementIn
 }
 
 
-__END_AKANTU__
+} // akantu
 
 
 #endif /* __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__ */

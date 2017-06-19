@@ -39,7 +39,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 
 class ComputeFunctorInterface {
@@ -267,6 +267,6 @@ FieldCompute<SubFieldCompute, return_type>::connect(FieldComputeProxy & proxy) {
 
 /* -------------------------------------------------------------------------- */
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_COMPUTE_HH__ */

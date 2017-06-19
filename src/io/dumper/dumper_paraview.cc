@@ -37,7 +37,7 @@
 #include "static_communicator.hh"
 #include <fstream>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 DumperParaview::DumperParaview(const std::string & filename,
 			       const std::string & directory,
@@ -64,4 +64,4 @@ void DumperParaview::setBaseName(const std::string & basename) {
   static_cast<iohelper::DumperParaview*>(dumper)->setVTUSubDirectory(filename + "-VTU");
 }
 
-__END_AKANTU__
+} // akantu

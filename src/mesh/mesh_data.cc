@@ -32,7 +32,7 @@
 #include "mesh.hh"
 #include "mesh_data.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 MeshData::MeshData(const ID & _id, const ID & parent_id, const MemoryID & mem_id)
   : Memory(parent_id + ":" + _id, mem_id) {
@@ -45,5 +45,5 @@ MeshData::~MeshData() {
   }
 }
 
-__END_AKANTU__
+} // akantu
 

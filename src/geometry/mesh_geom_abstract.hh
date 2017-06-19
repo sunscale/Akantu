@@ -39,7 +39,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// Abstract class for mesh geometry operations
 class MeshGeomAbstract {
@@ -60,6 +60,6 @@ protected:
   Mesh & mesh;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_MESH_GEOM_ABSTRACT_HH__

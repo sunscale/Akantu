@@ -35,7 +35,7 @@
 #include <algorithm>
 #include <functional>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 FragmentManager::FragmentManager(SolidMechanicsModelCohesive & model,
@@ -647,4 +647,4 @@ void FragmentManager::createDumpDataArray(Array<T> & data,
 }
 
 
-__END_AKANTU__
+} // akantu

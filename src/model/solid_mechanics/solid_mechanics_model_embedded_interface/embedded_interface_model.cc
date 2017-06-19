@@ -42,7 +42,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 const EmbeddedInterfaceModelOptions
   default_embedded_interface_model_options(_explicit_lumped_mass, false, false);
@@ -206,5 +206,5 @@ void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumpe
 #endif
 }
 
-__END_AKANTU__
+} // akantu
 

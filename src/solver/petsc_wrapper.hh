@@ -42,7 +42,7 @@
 #include <petscis.h>
 #include <petscksp.h>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 struct PETScMatrixWrapper {
@@ -72,6 +72,6 @@ extern int aka_PETScError(int ierr);
   } while (0)
 #endif
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_PETSC_WRAPPER_HH__ */

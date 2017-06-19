@@ -42,7 +42,7 @@ namespace akantu {
   class ParserParameter;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /// Defines the access modes of parsable parameters
@@ -188,7 +188,7 @@ protected:
   bool consisder_sub;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "parameter_registry_tmpl.hh"
 

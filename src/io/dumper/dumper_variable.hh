@@ -33,7 +33,7 @@
 #define __AKANTU_DUMPER_IOHELPER_TMPL_VARIABLE_HH__
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
@@ -113,6 +113,6 @@ protected:
 };
 
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_IOHELPER_TMPL_VARIABLE_HH__ */

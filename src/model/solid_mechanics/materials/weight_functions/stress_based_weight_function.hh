@@ -35,7 +35,7 @@
 #ifndef __AKANTU_STRESS_BASED_WEIGHT_FUNCTION_HH__
 #define __AKANTU_STRESS_BASED_WEIGHT_FUNCTION_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 /* Stress Based Weight                                                         */
 /* -------------------------------------------------------------------------- */
@@ -99,6 +99,6 @@ private:
 #  include "stress_based_weight_function_inline_impl.cc"
 #endif
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_STRESS_BASED_WEIGHT_FUNCTION_HH__ */

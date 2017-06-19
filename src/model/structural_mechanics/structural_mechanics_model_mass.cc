@@ -34,7 +34,7 @@
 #include "material.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 
@@ -97,4 +97,4 @@ void StructuralMechanicsModel::computeRho(Array<Real> & rho,
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

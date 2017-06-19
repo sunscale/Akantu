@@ -39,7 +39,7 @@
 #ifndef __AKANTU_SHAPE_COHESIVE_HH__
 #define __AKANTU_SHAPE_COHESIVE_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 struct CohesiveReduceFunctionMean {
   inline Real operator()(Real u_plus, Real u_minus) {
@@ -166,9 +166,9 @@ protected:
   ElementTypeMapArray<Real, InterpolationType> shapes_derivatives;
 };
 
-// __END_AKANTU__
+// } // akantu
 // #include "shape_lagrange.hh"
-// __BEGIN_AKANTU__
+// namespace akantu {
 
 // template<>
 // class ShapeLagrange<_ek_cohesive> : public ShapeCohesive<
@@ -196,6 +196,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_SHAPE_COHESIVE_HH__ */

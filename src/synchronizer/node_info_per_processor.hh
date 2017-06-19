@@ -42,7 +42,7 @@ class StaticCommunicator;
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NodeInfoPerProc : protected MeshAccessor {
 public:
@@ -105,6 +105,6 @@ public:
 private:
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_NODE_INFO_PER_PROCESSOR_HH__ */

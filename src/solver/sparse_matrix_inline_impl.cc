@@ -30,10 +30,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 inline void SparseMatrix::clearProfile() {
   this->nb_non_zero = 0;
 }
 
-__END_AKANTU__
+} // akantu

@@ -41,7 +41,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Cohesive material linear with friction force
@@ -107,6 +107,6 @@ protected:
   CohesiveInternalField<Real> friction_force;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_LINEAR_FRICTION_HH__ */

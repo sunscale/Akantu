@@ -44,7 +44,7 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class StaticCommunicatorDummy : public RealStaticCommunicator {
   /* ------------------------------------------------------------------------ */
@@ -117,6 +117,6 @@ public:
   /* ------------------------------------------------------------------------ */
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_STATIC_COMMUNICATOR_DUMMY_HH__ */

@@ -30,7 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "stress_based_weight_function.hh"
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 StressBasedWeightFunction::StressBasedWeightFunction(NonLocalManager & manager) :
   BaseWeightFunction(manager, "stress_based")
@@ -114,4 +114,4 @@ void StressBasedWeightFunction::updatePrincipalStress(__attribute__((unused)) Gh
 //   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

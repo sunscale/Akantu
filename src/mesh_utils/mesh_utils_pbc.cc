@@ -38,7 +38,7 @@
 #include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /// class that sorts a set of nodes of same coordinates in 'dir' direction
@@ -295,4 +295,4 @@ void MeshUtils::matchPBCPairs(const Mesh & mesh, const UInt dir,
                              << dir);
 }
 
-__END_AKANTU__
+} // akantu

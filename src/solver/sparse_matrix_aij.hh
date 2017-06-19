@@ -43,7 +43,7 @@ class DOFManagerDefault;
 class TermsToAssemble;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class SparseMatrixAIJ : public SparseMatrix {
   /* ------------------------------------------------------------------------ */
@@ -171,7 +171,7 @@ private:
   coordinate_list_map irn_jcn_k;
 };
 
-__END_AKANTU__
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

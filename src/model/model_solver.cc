@@ -47,7 +47,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 ModelSolver::ModelSolver(Mesh & mesh, const ID & id, UInt memory_id)
@@ -670,4 +670,4 @@ ModelSolver::getDefaultSolverOptions(__attribute__((unused))
 //   AKANTU_DEBUG_OUT();
 // }
 
-__END_AKANTU__
+} // akantu

@@ -61,7 +61,7 @@
 #ifndef __AKANTU_MPI_TYPE_WRAPPER_HH__
 #define __AKANTU_MPI_TYPE_WRAPPER_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MPITypeWrapper {
 public:
@@ -104,6 +104,6 @@ private:
   static MPI_Op synchronizer_operation_to_mpi_op[_so_null + 1];
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MPI_TYPE_WRAPPER_HH__ */

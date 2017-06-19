@@ -40,7 +40,7 @@ namespace akantu {
   class DOFManagerDefault;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NonLinearSolverLinear : public NonLinearSolver {
   /* ------------------------------------------------------------------------ */
@@ -73,6 +73,6 @@ protected:
   SparseSolverMumps solver;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_NON_LINEAR_SOLVER_LINEAR_HH__ */

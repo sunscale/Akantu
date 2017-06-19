@@ -37,7 +37,7 @@
 #include <fstream>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 NeighborhoodBase::NeighborhoodBase(Model & model,
                                    const ElementTypeMapReal & quad_coordinates,
@@ -311,4 +311,4 @@ void NeighborhoodBase::onElementsRemoved(
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

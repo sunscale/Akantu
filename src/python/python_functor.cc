@@ -33,7 +33,7 @@
 #include "python_functor.hh"
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */  
 
 PythonFunctor::PythonFunctor(PyObject * obj):python_obj(obj){
@@ -77,4 +77,4 @@ PyObject * PythonFunctor::callFunctor(PyObject * functor,
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

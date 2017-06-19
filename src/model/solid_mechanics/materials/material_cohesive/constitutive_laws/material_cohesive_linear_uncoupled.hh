@@ -40,7 +40,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Cohesive material linear with two different laws for mode I and
@@ -110,6 +110,6 @@ protected:
 
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_LINEAR_UNCOUPLED_HH__ */

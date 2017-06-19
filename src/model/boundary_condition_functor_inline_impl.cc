@@ -50,7 +50,7 @@
       "The dual vector and coordinates vector given to"                        \
           << " the boundary condition functor have different sizes!");
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 namespace BC {
 namespace Dirichlet {
@@ -136,4 +136,4 @@ namespace Neumann {
 } // end namespace Neumann
 } // end namespace BC
 
-__END_AKANTU__
+} // akantu

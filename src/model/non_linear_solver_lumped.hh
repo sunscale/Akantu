@@ -40,7 +40,7 @@ namespace akantu {
   class DOFManagerDefault;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NonLinearSolverLumped : public NonLinearSolver {
   /* ------------------------------------------------------------------------ */
@@ -77,6 +77,6 @@ private:
   Real alpha;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_NON_LINEAR_SOLVER_LUMPED_HH__ */

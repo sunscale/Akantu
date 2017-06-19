@@ -40,7 +40,7 @@
 #ifndef __AKANTU_MATERIAL_MAZARS_HH__
 #define __AKANTU_MATERIAL_MAZARS_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material Mazars
@@ -124,6 +124,6 @@ protected:
 
 #include "material_mazars_inline_impl.cc"
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_MAZARS_HH__ */

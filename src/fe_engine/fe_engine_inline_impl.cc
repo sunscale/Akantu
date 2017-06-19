@@ -38,7 +38,7 @@
 #ifndef __AKANTU_FE_ENGINE_INLINE_IMPL_CC__
 #define __AKANTU_FE_ENGINE_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline Real FEEngine::getElementInradius(const Matrix<Real> & coord,
@@ -99,9 +99,9 @@ FEEngine::getCohesiveElementType(__attribute__((unused))
 
 /* -------------------------------------------------------------------------- */
 #if defined(AKANTU_IGFEM)
-__END_AKANTU__
+} // akantu
 #include "igfem_helper.hh"
-__BEGIN_AKANTU__
+namespace akantu {
 
 inline Vector<ElementType>
 FEEngine::getIGFEMElementTypes(const ElementType & type) {
@@ -202,6 +202,6 @@ void FEEngine::filterElementalData(const Mesh & mesh, const Array<T> & elem_f,
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_FE_ENGINE_INLINE_IMPL_CC__ */

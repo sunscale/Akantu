@@ -64,7 +64,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class RealStaticCommunicator;
 
@@ -410,7 +410,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #include "static_communicator_inline_impl.hh"
 

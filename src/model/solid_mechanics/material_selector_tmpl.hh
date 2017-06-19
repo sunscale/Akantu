@@ -34,7 +34,7 @@
 #ifndef __AKANTU_MATERIAL_SELECTOR_TMPL_HH__
 #define __AKANTU_MATERIAL_SELECTOR_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<typename T>
@@ -65,6 +65,6 @@ inline UInt ElementDataMaterialSelector<UInt>::operator() (const Element & eleme
   }
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_SELECTOR_TMPL_HH__ */

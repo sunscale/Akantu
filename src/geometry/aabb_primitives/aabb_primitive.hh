@@ -41,7 +41,7 @@
 
 #include "mesh_geom_common.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * This macro defines a class that is used in the CGAL AABB tree algorithm.
@@ -85,6 +85,6 @@ AKANTU_AABB_CLASS(Line_arc, Spherical);
 
 #undef AKANTU_AABB_CLASS
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_AABB_PRIMITIVE_HH__

@@ -42,7 +42,7 @@
 /* -------------------------------------------------------------------------- */
 #include <vector>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MPITypeWrapper;
 
@@ -126,6 +126,6 @@ private:
 
 #include "static_communicator_mpi_inline_impl.hh"
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_STATIC_COMMUNICATOR_MPI_HH__ */

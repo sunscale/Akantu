@@ -47,7 +47,7 @@ class GridSynchronizer;
 class RemovedElementsEvent;
 } // akantu
 
-__BEGIN_AKANTU__
+namespace akantu {
 class NeighborhoodBase : public Memory,
                          public DataAccessor<Element>,
                          public SynchronizerRegistry {
@@ -144,7 +144,7 @@ protected:
   const UInt spatial_dimension;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "neighborhood_base_inline_impl.cc"
 

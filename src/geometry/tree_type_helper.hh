@@ -45,7 +45,7 @@
 #include <CGAL/AABB_traits.h>
 #include <CGAL/AABB_tree.h>
 
-__BEGIN_AKANTU__
+namespace akantu {
   
 /* -------------------------------------------------------------------------- */
 
@@ -106,6 +106,6 @@ TREE_TYPE_HELPER_MACRO(Triangle, Cartesian::Segment_3, Cartesian);
 
 #undef TREE_TYPE_HELPER_MACRO
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_TREE_TYPE_HELPER_HH__

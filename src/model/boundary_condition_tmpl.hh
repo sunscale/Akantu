@@ -33,7 +33,7 @@
 #include "element_group.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename ModelType>
@@ -267,4 +267,4 @@ BoundaryCondition<ModelType>::applyBC(const FunctorType & func,
   TemplateFunctionWrapper<FunctorType>::applyBC(func, element_group, *this);
 }
 
-__END_AKANTU__
+} // akantu

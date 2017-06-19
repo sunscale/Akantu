@@ -39,7 +39,7 @@
 /* -------------------------------------------------------------------------- */
 
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MeshPartition::MeshPartition(const Mesh & mesh, UInt spatial_dimension,
@@ -438,4 +438,4 @@ void MeshPartition::restoreConnectivity() {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

@@ -39,7 +39,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MeshPartitionMeshData::MeshPartitionMeshData(const Mesh & mesh,
@@ -138,4 +138,4 @@ void MeshPartitionMeshData::setPartitionMappingFromMeshData(
   partition_mapping = &(mesh.getData<UInt>(data_name));
 }
 
-__END_AKANTU__
+} // akantu

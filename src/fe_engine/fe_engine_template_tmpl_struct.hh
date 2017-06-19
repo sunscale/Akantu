@@ -34,7 +34,7 @@
 /* -------------------------------------------------------------------------- */
 #include "shape_linked.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <>
@@ -243,4 +243,4 @@ FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
-__END_AKANTU__
+} // akantu

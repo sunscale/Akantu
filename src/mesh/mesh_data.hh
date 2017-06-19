@@ -41,7 +41,7 @@
 #include <string>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 #define AKANTU_MESH_DATA_TYPES     \
           ((_tc_int,  Int))        \
@@ -138,7 +138,7 @@ private:
 #include "mesh_data_tmpl.hh"
 #undef AKANTU_MESH_DATA_TUPLE_FIRST_ELEM
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_DATA_HH__ */
 

@@ -44,7 +44,7 @@ namespace akantu {
 }
 
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class SparseSolverMumps : public SparseSolver {
   /* ------------------------------------------------------------------------ */
@@ -155,6 +155,6 @@ private:
   };
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_SOLVER_MUMPS_HH__ */

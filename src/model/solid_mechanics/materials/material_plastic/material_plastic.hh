@@ -38,7 +38,7 @@
 #ifndef __AKANTU_MATERIAL_PLASTIC_HH__
 #define __AKANTU_MATERIAL_PLASTIC_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Parent class for the plastic constitutive laws
@@ -136,7 +136,7 @@ protected:
 
 
 
-__END_AKANTU__
+} // akantu
 
 #include "material_plastic_inline_impl.cc"
 #endif /* __AKANTU_MATERIAL_PLASTIC_HH__ */

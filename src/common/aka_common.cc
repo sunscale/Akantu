@@ -44,7 +44,7 @@
 #include <ctime>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 void initialize(int & argc, char **& argv) {
@@ -152,4 +152,4 @@ const ParserSection & getUserParser() {
   return *(static_parser.getSubSections(_st_user).first);
 }
 
-__END_AKANTU__
+} // akantu

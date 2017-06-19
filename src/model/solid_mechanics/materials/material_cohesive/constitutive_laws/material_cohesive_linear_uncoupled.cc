@@ -38,7 +38,7 @@
 #include "material_cohesive_linear_uncoupled.hh"
 #include "solid_mechanics_model_cohesive.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -596,4 +596,4 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
 
 INSTANTIATE_MATERIAL(MaterialCohesiveLinearUncoupled);
 
-__END_AKANTU__
+} // akantu

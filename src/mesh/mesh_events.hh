@@ -38,7 +38,7 @@
 #define __AKANTU_MESH_EVENTS_HH__
 
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// akantu::MeshEvent is the base event for meshes
 template <class Entity> class MeshEvent {
@@ -182,6 +182,6 @@ public:
                     const ChangedElementsEvent & event) = 0;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_EVENTS_HH__ */

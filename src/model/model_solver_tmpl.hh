@@ -34,7 +34,7 @@
 #ifndef __AKANTU_MODEL_SOLVER_TMPL_HH__
 #define __AKANTU_MODEL_SOLVER_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<typename T>
 void ModelSolver::set(const ID & param, const T & value, const ID & solver_id) {
@@ -49,6 +49,6 @@ inline Parameter ModelSolver::get(const ID & param, const ID & solver_id) {
 }
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MODEL_SOLVER_TMPL_HH__ */

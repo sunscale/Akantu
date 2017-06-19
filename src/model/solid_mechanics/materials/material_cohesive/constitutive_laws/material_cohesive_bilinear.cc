@@ -33,7 +33,7 @@
 #include "material_cohesive_bilinear.hh"
 #include "solid_mechanics_model_cohesive.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -208,4 +208,4 @@ void MaterialCohesiveBilinear<spatial_dimension>::computeTraction(const Array<Re
 INSTANTIATE_MATERIAL(MaterialCohesiveBilinear);
 
 
-__END_AKANTU__
+} // akantu

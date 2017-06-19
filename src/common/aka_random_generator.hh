@@ -35,7 +35,7 @@
 #ifndef __AKANTU_AKA_RANDOM_GENERATOR_HH__
 #define __AKANTU_AKA_RANDOM_GENERATOR_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* List of available distributions                                            */
@@ -371,6 +371,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_AKA_RANDOM_GENERATOR_HH__ */

@@ -38,7 +38,7 @@
 #endif
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 bool StaticCommunicator::is_instantiated = false;
@@ -130,4 +130,4 @@ StaticCommunicator * StaticCommunicator::getStaticCommunicatorDummy() {
 }
 
 
-__END_AKANTU__
+} // akantu

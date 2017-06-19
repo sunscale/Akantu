@@ -39,7 +39,7 @@
 #include <map>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MasterElementInfoPerProc::MasterElementInfoPerProc(
@@ -487,4 +487,4 @@ void MasterElementInfoPerProc::synchronizeGroups() {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

@@ -33,7 +33,7 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MaterialPython::MaterialPython(SolidMechanicsModel & model, PyObject * obj,
@@ -209,4 +209,4 @@ Real MaterialPython::getPushWaveSpeed(__attribute__((unused))
   return this->callFunctor<Real>("getPushWaveSpeed", params);
 }
 
-__END_AKANTU__
+} // akantu

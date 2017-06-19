@@ -39,7 +39,7 @@
 #ifndef __AKANTU_MATERIAL_MAZARS_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_MAZARS_NON_LOCAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material Mazars Non local
@@ -98,6 +98,6 @@ private:
 
 //#include "material_mazars_non_local_inline_impl.cc"
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_MAZARS_NON_LOCAL_HH__ */

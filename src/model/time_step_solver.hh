@@ -43,7 +43,7 @@ class DOFManager;
 class NonLinearSolver;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class TimeStepSolver : public Memory,
                        public ParameterRegistry,
@@ -116,6 +116,6 @@ protected:
   NonLinearSolver & non_linear_solver;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_TIME_STEP_SOLVER_HH__ */

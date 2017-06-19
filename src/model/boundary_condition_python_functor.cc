@@ -33,7 +33,7 @@
 #include "boundary_condition_python_functor.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 
 namespace BC {
@@ -62,5 +62,5 @@ namespace BC {
 }//end namespace BC
 
 
-__END_AKANTU__
+} // akantu
 

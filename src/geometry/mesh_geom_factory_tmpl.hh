@@ -41,7 +41,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<UInt dim, ElementType type, class Primitive, class Kernel>
 MeshGeomFactory<dim, type, Primitive, Kernel>::MeshGeomFactory(Mesh & mesh) :
@@ -254,6 +254,6 @@ inline void MeshGeomFactory<3, _tetrahedron_4, Triangle<Cartesian>, Cartesian>::
   list.push_back(t4);
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_MESH_GEOM_FACTORY_TMPL_HH__

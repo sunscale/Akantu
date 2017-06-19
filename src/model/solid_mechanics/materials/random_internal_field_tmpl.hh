@@ -38,7 +38,7 @@
 #ifndef __AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH__
 #define __AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename T, template <typename> class BaseField,
@@ -120,6 +120,6 @@ inline void ParameterTyped<RandomInternalField<Real> >::setAuto(
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH__ */

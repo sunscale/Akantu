@@ -30,11 +30,11 @@
  *
  */
 
-__END_AKANTU__
+} // akantu
 
 #include "fe_engine.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>

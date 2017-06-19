@@ -39,7 +39,7 @@
 #ifndef __AKANTU_MATERIAL_NEOHOOKEAN_HH__
 #define __AKANTU_MATERIAL_NEOHOOKEAN_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material elastic isotropic
@@ -166,6 +166,6 @@ protected:
 
 #include "material_neohookean_inline_impl.cc"
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_NEOHOOKEAN_HH__ */

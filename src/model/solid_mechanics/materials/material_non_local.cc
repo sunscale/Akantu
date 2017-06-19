@@ -32,7 +32,7 @@
 /* -------------------------------------------------------------------------- */
 #include "material_non_local.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 MaterialNonLocal<dim>::MaterialNonLocal(SolidMechanicsModel & model,
@@ -165,4 +165,4 @@ void MaterialNonLocal<dim>::registerNeighborhood() {
 
 INSTANTIATE_MATERIAL(MaterialNonLocal);
 
-__END_AKANTU__
+} // akantu

@@ -35,7 +35,7 @@
 #include "synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SynchronizerRegistry::SynchronizerRegistry() : data_accessor(nullptr) {
@@ -136,4 +136,4 @@ void SynchronizerRegistry::printself(std::ostream & stream, int indent) const {
   stream << space << "]" << std::endl;
 }
 
-__END_AKANTU__
+} // akantu

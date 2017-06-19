@@ -41,7 +41,7 @@
 #include <algorithm>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <class EventHandler> class EventHandlerManager {
 private:
@@ -124,6 +124,6 @@ private:
   priority_list event_handlers;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_AKA_EVENT_HANDLER_MANAGER_HH__ */

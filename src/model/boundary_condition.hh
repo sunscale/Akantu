@@ -42,7 +42,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <class ModelType>
 class BoundaryCondition {
@@ -98,7 +98,7 @@ private:
   Array<Real> * primal_increment;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "boundary_condition_tmpl.hh"
 

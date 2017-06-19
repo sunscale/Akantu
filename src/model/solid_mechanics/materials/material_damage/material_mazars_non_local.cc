@@ -35,7 +35,7 @@
 #include "material_mazars_non_local.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
@@ -145,4 +145,4 @@ void MaterialMazarsNonLocal<
 
 INSTANTIATE_MATERIAL(MaterialMazarsNonLocal);
 
-__END_AKANTU__
+} // akantu

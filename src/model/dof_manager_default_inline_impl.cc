@@ -34,7 +34,7 @@
 #ifndef __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_CC__
 #define __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline bool DOFManagerDefault::isLocalOrMasterDOF(UInt dof_num) {
@@ -100,6 +100,6 @@ inline Int DOFManagerDefault::getDOFType(UInt local_id) const {
 }
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_CC_ */

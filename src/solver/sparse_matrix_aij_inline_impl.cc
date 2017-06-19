@@ -31,7 +31,7 @@
 #ifndef __AKANTU_SPARSE_MATRIX_AIJ_INLINE_IMPL_CC__
 #define __AKANTU_SPARSE_MATRIX_AIJ_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 inline UInt SparseMatrixAIJ::addToProfile(UInt i, UInt j) {
   KeyCOO jcn_irn = this->key(i, j);
@@ -106,6 +106,6 @@ inline Real & SparseMatrixAIJ::operator()(UInt i, UInt j) {
   return this->a(irn_jcn_k_it->second);
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_SPARSE_MATRIX_AIJ_INLINE_IMPL_CC__ */

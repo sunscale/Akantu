@@ -46,7 +46,7 @@
 #include "algebraic_parser.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Vector<Real> Parser::parseVector(const std::string & value, const ParserSection & section) {
@@ -66,4 +66,4 @@ Matrix<Real> Parser::parseMatrix(const std::string & value, const ParserSection 
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

@@ -31,7 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline NodeGroup::const_node_iterator NodeGroup::begin() const {
@@ -99,4 +99,4 @@ void NodeGroup::applyNodeFilter(T & filter) {
 }
 
 
-__END_AKANTU__
+} // akantu

@@ -44,7 +44,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class Memory {
   /* ------------------------------------------------------------------------ */
@@ -110,6 +110,6 @@ protected:
 #include "aka_memory_inline_impl.cc"
 #endif
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MEMORY_HH__ */

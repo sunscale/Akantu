@@ -34,7 +34,7 @@
 #define __AKANTU_BY_ELEMENT_TYPE_FILTER_HH__
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* ArrayFilter                                                                */
@@ -330,6 +330,6 @@ protected:
   Array<UInt> empty_filter;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_BY_ELEMENT_TYPE_FILTER_HH__ */

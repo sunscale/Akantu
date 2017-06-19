@@ -34,7 +34,7 @@
 #ifndef __AKANTU_PSEUDO_TIME_HH__
 #define __AKANTU_PSEUDO_TIME_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class PseudoTime : public IntegrationScheme {
   /* ------------------------------------------------------------------------ */
@@ -65,6 +65,6 @@ protected:
   UInt k_release;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_PSEUDO_TIME_HH__ */

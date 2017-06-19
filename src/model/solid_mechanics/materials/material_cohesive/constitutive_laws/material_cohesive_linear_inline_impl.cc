@@ -35,7 +35,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
@@ -309,7 +309,7 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
 }
 
 /* -------------------------------------------------------------------------- */
-__END_AKANTU__
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 #endif //__AKANTU_MATERIAL_COHESIVE_LINEAR_INLINE_IMPL_CC__

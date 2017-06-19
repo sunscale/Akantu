@@ -39,7 +39,7 @@
 
 #include "integration_scheme_1st_order.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * The two differentiate equation (thermal and kinematic) are :
@@ -161,6 +161,6 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_GENERALIZED_TRAPEZOIDAL_HH__ */

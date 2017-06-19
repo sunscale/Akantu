@@ -37,7 +37,7 @@
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NonLocalNeighborhoodBase : public NeighborhoodBase, public Parsable {
   /* ------------------------------------------------------------------------ */
@@ -122,6 +122,6 @@ protected:
   std::set<ID> non_local_variables;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__ */

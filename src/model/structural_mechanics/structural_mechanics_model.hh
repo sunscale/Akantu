@@ -53,7 +53,7 @@ namespace akantu {
 class SparseMatrix;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 struct StructuralMaterial {
   Real E;
@@ -387,6 +387,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_STRUCTURAL_MECHANICS_MODEL_HH__ */

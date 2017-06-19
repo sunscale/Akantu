@@ -39,7 +39,7 @@ class NodeSynchronizer;
 class ElementSynchronizer;
 }  // akantu
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MeshAccessor {
   /* ------------------------------------------------------------------------ */
@@ -124,6 +124,6 @@ private:
   Mesh & _mesh;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_ACCESSOR_HH__ */

@@ -32,7 +32,7 @@
 #include "parameter_registry.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 Parameter::Parameter() : name(""), description(""), param_type(_pat_internal) {}
 
@@ -149,4 +149,4 @@ void ParameterRegistry::setParameterAccessType(const std::string & name,
   param.setAccessType(ptype);
 }
 
-__END_AKANTU__
+} // akantu

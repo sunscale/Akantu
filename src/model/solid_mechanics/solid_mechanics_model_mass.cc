@@ -35,7 +35,7 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::assembleMassLumped() {
@@ -187,4 +187,4 @@ void SolidMechanicsModel::computeRho(Array<Real> & rho, ElementType type,
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

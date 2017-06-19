@@ -40,7 +40,7 @@
 #include "element_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Model::Model(Mesh& mesh, UInt dim, const ID & id,
@@ -339,4 +339,4 @@ void Model::setTextModeToDumper() { mesh.setTextModeToDumper(); }
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

@@ -39,7 +39,7 @@
 #ifndef __AKANTU_COHESIVE_ELEMENT_HH__
 #define __AKANTU_COHESIVE_ELEMENT_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_cohesive_2d_4, _gt_cohesive_2d_4,
                                      _itp_lagrange_segment_2, _ek_cohesive, 2,
@@ -86,6 +86,6 @@ AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_triangle_6, _cohesive_3d_12);
 AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_quadrangle_4, _cohesive_3d_8);
 AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_quadrangle_8, _cohesive_3d_16);
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_COHESIVE_ELEMENT_HH__ */

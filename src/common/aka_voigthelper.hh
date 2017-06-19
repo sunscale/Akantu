@@ -38,7 +38,7 @@
 #include "aka_common.hh"
 #include "aka_types.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim> class VoigtHelper {
@@ -70,7 +70,7 @@ public:
   const static Real factors[((dim * (dim - 1)) / 2 + dim)];
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "aka_voigthelper_tmpl.hh"
 

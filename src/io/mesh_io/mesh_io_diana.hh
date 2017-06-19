@@ -45,7 +45,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MeshIODiana : public MeshIO {
   /* ------------------------------------------------------------------------ */
@@ -102,6 +102,6 @@ private:
   std::map<Element, UInt> akantu_number_to_diana_number;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_IO_DIANA_HH__ */

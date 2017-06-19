@@ -35,7 +35,7 @@
 #include "material_mazars.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -81,4 +81,4 @@ void MaterialMazars<spatial_dimension>::computeStress(ElementType el_type,
 
 INSTANTIATE_MATERIAL(MaterialMazars);
 
-__END_AKANTU__
+} // akantu

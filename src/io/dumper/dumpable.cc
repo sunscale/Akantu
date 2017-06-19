@@ -37,7 +37,7 @@
 
 #include <io_helper.hh>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Dumpable::Dumpable() : default_dumper("") {}
@@ -280,6 +280,6 @@ std::string Dumpable::getDefaultDumperName() const {
   return this->default_dumper;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif

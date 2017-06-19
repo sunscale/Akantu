@@ -41,7 +41,7 @@
 #ifndef __AKANTU_MATERIAL_STANDARD_LINEAR_SOLID_DEVIATORIC_HH__
 #define __AKANTU_MATERIAL_STANDARD_LINEAR_SOLID_DEVIATORIC_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material standard linear solid deviatoric
@@ -130,7 +130,7 @@ private:
   InternalField<Real> dissipated_energy;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_STANDARD_LINEAR_SOLID_DEVIATORIC_HH__ */
 

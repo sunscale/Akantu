@@ -52,7 +52,7 @@
 #endif
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 const StructuralMechanicsModelOptions
     default_structural_mechanics_model_options(_static);
@@ -1222,4 +1222,4 @@ dumper::Field * StructuralMechanicsModel::createElementalField(
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

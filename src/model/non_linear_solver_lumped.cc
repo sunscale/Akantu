@@ -34,7 +34,7 @@
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NonLinearSolverLumped::NonLinearSolverLumped(
@@ -100,4 +100,4 @@ void NonLinearSolverLumped::solveLumped(const Array<Real> & A, Array<Real> & x,
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

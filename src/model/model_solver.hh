@@ -48,7 +48,7 @@ class NonLinearSolver;
 struct ModelSolverOptions;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class ModelSolver : public Parsable,
                     public SolverCallback,
@@ -186,6 +186,6 @@ struct ModelSolverOptions {
   std::map<ID, IntegrationScheme::SolutionType> solution_type;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MODEL_SOLVER_HH__ */

@@ -35,7 +35,7 @@
 #include "material_marigo.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -103,4 +103,4 @@ void MaterialMarigo<spatial_dimension>::computeStress(ElementType el_type,
 INSTANTIATE_MATERIAL(MaterialMarigo);
 
 
-__END_AKANTU__
+} // akantu

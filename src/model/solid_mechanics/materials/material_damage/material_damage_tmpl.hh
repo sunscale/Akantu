@@ -37,7 +37,7 @@
 #include "material_damage.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, template<UInt> class Parent>
@@ -170,4 +170,4 @@ Real MaterialDamage<spatial_dimension, Parent>::getEnergy(std::string type) {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

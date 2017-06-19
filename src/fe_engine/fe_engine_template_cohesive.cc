@@ -34,7 +34,7 @@
 #include "fe_engine_template.hh"
 #include "shape_cohesive.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* compatibility functions */
@@ -171,4 +171,4 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

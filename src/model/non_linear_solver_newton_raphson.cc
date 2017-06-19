@@ -34,7 +34,7 @@
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NonLinearSolverNewtonRaphson::NonLinearSolverNewtonRaphson(
@@ -183,4 +183,4 @@ bool NonLinearSolverNewtonRaphson::testConvergence(const Array<Real> & array) {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

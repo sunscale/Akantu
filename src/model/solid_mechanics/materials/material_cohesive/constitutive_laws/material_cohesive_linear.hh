@@ -42,7 +42,7 @@
 /* -------------------------------------------------------------------------- */
 
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Cohesive material linear damage for extrinsic case
@@ -209,7 +209,7 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #include "material_cohesive_linear_inline_impl.cc"
 

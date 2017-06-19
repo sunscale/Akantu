@@ -38,7 +38,7 @@ namespace akantu {
   class SolidMechanicsModelCohesive;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 #ifndef __AKANTU_MATERIAL_SELECTOR_COHESIVE_HH__
 #define __AKANTU_MATERIAL_SELECTOR_COHESIVE_HH__
@@ -73,4 +73,4 @@ protected:
 
 #endif /* __AKANTU_MATERIAL_SELECTOR_COHESIVE_HH__ */
 
-__END_AKANTU__
+} // akantu

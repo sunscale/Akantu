@@ -31,7 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 #define STRINGIFY(type)				\
   stream << BOOST_PP_STRINGIZE(type)
@@ -93,4 +93,4 @@ inline std::ostream & operator <<(std::ostream & stream, InterpolationType type)
 
 #undef STRINGIFY
 
-__END_AKANTU__
+} // akantu

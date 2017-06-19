@@ -40,7 +40,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MeshPartitionMeshData : public MeshPartition {
 
@@ -93,6 +93,6 @@ private:
 /* -------------------------------------------------------------------------- */
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_PARTITION_MESH_DATA_HH__ */

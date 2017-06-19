@@ -35,7 +35,7 @@
 
 #include "aka_typelist.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 ///////////////////////////////////////////////////////////////////////////
 // visitor class template, adapted from the Andrei Alexandrescu's 
@@ -170,6 +170,6 @@ public:
     }
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_VISITOR_HH__ */

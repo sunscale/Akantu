@@ -48,7 +48,7 @@ class Mesh;
 class Element;
 }  // akantu
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class ElementGroup : private Memory, public Dumpable {
@@ -180,7 +180,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #include "element.hh"
 #include "element_group_inline_impl.cc"

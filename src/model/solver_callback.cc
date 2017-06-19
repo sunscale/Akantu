@@ -31,7 +31,7 @@
 #include "solver_callback.hh"
 #include "dof_manager.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SolverCallback::SolverCallback(DOFManager & dof_manager)
@@ -60,4 +60,4 @@ void SolverCallback::assembleResidual() {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

@@ -34,7 +34,7 @@
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NonLinearSolverLinear::NonLinearSolverLinear(
@@ -68,4 +68,4 @@ void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

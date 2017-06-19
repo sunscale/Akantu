@@ -43,7 +43,7 @@ class DOFManager;
 class SolverCallback;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NonLinearSolver : Memory, public Parsable {
   /* ------------------------------------------------------------------------ */
@@ -91,6 +91,6 @@ namespace debug {
   };
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_NON_LINEAR_SOLVER_HH__ */

@@ -39,7 +39,7 @@
 #include "boundary_condition_functor.hh"
 #include "python_functor.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 
 namespace BC {
@@ -111,6 +111,6 @@ namespace BC {
 }//end namespace BC
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_BOUNDARY_CONDITION_PYTHON_FUNCTOR_HH__ */

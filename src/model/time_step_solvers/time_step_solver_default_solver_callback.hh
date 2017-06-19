@@ -34,7 +34,7 @@
 #ifndef __AKANTU_TIME_STEP_SOLVER_DEFAULT_SOLVER_CALLBACK_HH__
 #define __AKANTU_TIME_STEP_SOLVER_DEFAULT_SOLVER_CALLBACK_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class TimeStepSolverCallback : public NonLinearSolverCallback {
   /* ------------------------------------------------------------------------ */
@@ -57,7 +57,7 @@ public:
   virtual void corrector();
 };
 
-__END_AKANTU__
+} // akantu
 
 
 #endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_SOLVER_CALLBACK_HH__ */

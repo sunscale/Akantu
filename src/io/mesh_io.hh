@@ -40,7 +40,7 @@
 #include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MeshIO {
   /* ------------------------------------------------------------------------ */
@@ -105,7 +105,7 @@ inline std::ostream & operator<<(std::ostream & stream, const MeshIO & _this) {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #include "mesh_io_msh.hh"
 #include "mesh_io_diana.hh"

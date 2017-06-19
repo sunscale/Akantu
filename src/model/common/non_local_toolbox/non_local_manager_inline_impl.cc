@@ -38,7 +38,7 @@
 #ifndef __AKANTU_NON_LOCAL_MANAGER_INLINE_IMPL_CC__
 #define __AKANTU_NON_LOCAL_MANAGER_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline void NonLocalManager::insertQuad(const IntegrationPoint & quad,
@@ -243,6 +243,6 @@ inline void NonLocalManager::unpackElementData(CommunicationBuffer & buffer,
       it->second->local, buffer, elements, true, this->model.getFEEngine());
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_NON_LOCAL_MANAGER_INLINE_IMPL_CC__ */

@@ -35,7 +35,7 @@
 #include <petscsys.h>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 #if not defined(PETSC_CLANGUAGE_CXX)
 int aka_PETScError(int ierr) {
@@ -401,4 +401,4 @@ void SparseMatrixPETSc::clear() {
   MatZeroEntries(this->mat);
 }
 
-__END_AKANTU__
+} // akantu

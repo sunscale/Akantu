@@ -37,7 +37,7 @@
 #include "integrator.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <ElementKind kind, class IntegrationOrderFunctor>
 class IntegratorGauss : public Integrator {
@@ -175,7 +175,7 @@ private:
   ElementTypeMap<Matrix<Real>> quadrature_points;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "integrator_gauss_inline_impl.cc"
 

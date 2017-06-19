@@ -35,7 +35,7 @@
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_EVENT_HANDLER_HH__
 #define __AKANTU_SOLID_MECHANICS_MODEL_EVENT_HANDLER_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// akantu::SolidMechanicsModelEvent is the base event for model
 namespace SolidMechanicsModelEvent {
@@ -122,6 +122,6 @@ public:
   virtual void onDamageUpdate() {}
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_EVENT_HANDLER_HH__ */

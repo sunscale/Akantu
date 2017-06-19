@@ -39,7 +39,7 @@
 #ifndef __AKANTU_ELEMENT_CLASS_HH__
 #define __AKANTU_ELEMENT_CLASS_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /// default element class structure
@@ -363,13 +363,13 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
-__END_AKANTU__
+} // akantu
 
 #include "element_class_tmpl.hh"
 
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 #include "element_class_point_1_inline_impl.cc"
 #include "element_class_segment_2_inline_impl.cc"
 #include "element_class_segment_3_inline_impl.cc"
@@ -383,7 +383,7 @@ __BEGIN_AKANTU__
 #include "element_class_hexahedron_20_inline_impl.cc"
 #include "element_class_pentahedron_6_inline_impl.cc"
 #include "element_class_pentahedron_15_inline_impl.cc"
-__END_AKANTU__
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 

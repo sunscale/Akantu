@@ -38,7 +38,7 @@
 #ifndef __AKANTU_COMMUNICATION_BUFFER_HH__
 #define __AKANTU_COMMUNICATION_BUFFER_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<bool is_static = true>
 class CommunicationBufferTemplated {
@@ -188,6 +188,6 @@ typedef CommunicationBufferTemplated<true> CommunicationBuffer;
 typedef CommunicationBufferTemplated<false> DynamicCommunicationBuffer;
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_COMMUNICATION_BUFFER_HH__ */

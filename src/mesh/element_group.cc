@@ -46,7 +46,7 @@
 #if defined(AKANTU_USE_IOHELPER)
 #  include "dumper_paraview.hh"
 #endif
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 ElementGroup::ElementGroup(const std::string & group_name,
                            const Mesh & mesh,
@@ -198,4 +198,4 @@ void ElementGroup::fillFromNodeGroup() {
 /* -------------------------------------------------------------------------- */
 
 
-__END_AKANTU__
+} // akantu

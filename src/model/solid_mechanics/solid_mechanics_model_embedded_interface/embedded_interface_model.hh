@@ -43,7 +43,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// Options for the EmbeddedInterfaceModel
 struct EmbeddedInterfaceModelOptions : SolidMechanicsModelOptions {
@@ -162,6 +162,6 @@ public:
   {}
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_EMBEDDED_INTERFACE_MODEL_HH__

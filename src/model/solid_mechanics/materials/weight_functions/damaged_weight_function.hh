@@ -36,7 +36,7 @@
 #ifndef __AKANTU_DAMAGED_WEIGHT_FUNCTION_HH__
 #define __AKANTU_DAMAGED_WEIGHT_FUNCTION_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /*  Damage weight function                                                    */
@@ -78,6 +78,6 @@ private:
 #  include "damaged_weight_function_inline_impl.cc"
 #endif
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DAMAGED_WEIGHT_FUNCTION_HH__ */

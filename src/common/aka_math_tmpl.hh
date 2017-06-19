@@ -38,7 +38,7 @@
  *
  */
 
-__END_AKANTU__
+} // akantu
 
 #include <cmath>
 #include <cstring>
@@ -46,7 +46,7 @@ __END_AKANTU__
 
 #include "aka_blas_lapack.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline void Math::matrix_vector(UInt im, UInt in, Real * A, Real * x, Real * y,

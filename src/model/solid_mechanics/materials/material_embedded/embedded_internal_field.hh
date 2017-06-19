@@ -37,7 +37,7 @@
 #ifndef __AKANTU_EMBEDDED_INTERNAL_FIELD_HH__
 #define __AKANTU_EMBEDDED_INTERNAL_FIELD_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class Material;
 class FEEngine;
@@ -78,6 +78,6 @@ inline void ParsableParamTyped< EmbeddedInternalField<Real> >::parseParam(const 
   param.setDefaultValue(r);
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_EMBEDDED_INTERNAL_FIELD_HH__

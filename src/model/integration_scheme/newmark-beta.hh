@@ -42,7 +42,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * The three differentiate equations (dynamic and cinematic) are :
@@ -190,6 +190,6 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_NEWMARK_BETA_HH__ */

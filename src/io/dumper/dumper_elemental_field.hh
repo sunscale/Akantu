@@ -40,7 +40,7 @@
 #  include "dumper_igfem_elemental_field.hh"
 #endif
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
@@ -75,6 +75,6 @@ public:
 
 
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_ELEMENTAL_FIELD_HH__ */

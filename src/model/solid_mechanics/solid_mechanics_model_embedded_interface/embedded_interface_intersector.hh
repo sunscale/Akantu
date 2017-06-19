@@ -40,7 +40,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 typedef Cartesian K;
 
@@ -86,6 +86,6 @@ protected:
 
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_EMBEDDED_INTERFACE_INTERSECTOR_HH__

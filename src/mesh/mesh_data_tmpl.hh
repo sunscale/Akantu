@@ -29,7 +29,7 @@
  *
  */
 
-__END_AKANTU__
+} // akantu
 
 #include <iostream>
 
@@ -39,7 +39,7 @@ inline MeshDataTypeCode MeshData::getTypeCode<BOOST_PP_TUPLE_ELEM(2, 1, type)>()
   return BOOST_PP_TUPLE_ELEM(2, 0, type); \
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 // get the type of the data stored in elemental_data

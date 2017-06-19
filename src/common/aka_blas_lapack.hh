@@ -72,7 +72,7 @@ void AKA_FC_GLOBAL(sgemm, SGEMM)(char *, char *, int *, int *, int *, float *,
 }
 #endif
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 #define AKANTU_WARNING_IGNORE_UNUSED_PARAMETER
 #include "aka_warning.hh"
@@ -181,7 +181,7 @@ inline void aka_gemm<float>(char * transa, char * transb, int * m, int * n,
 
 #endif
 
-__END_AKANTU__
+} // akantu
 
 #ifdef AKANTU_USE_LAPACK
 #include "aka_fortran_mangling.hh"
@@ -233,7 +233,7 @@ void AKA_FC_GLOBAL(sgetrs, SGETRS)(char * trans, int * n, int * nrhs, float * A,
 }
 #endif // AKANTU_USE_LAPACK
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// Wrapper around the S/DGEEV BLAS function that computes the eigenvalues and
 /// eigenvectors of a matrix
@@ -338,6 +338,6 @@ inline void aka_getrs<float>(char * trans, int * n, int * nrhs, float * A,
 }
 #endif
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_AKA_BLAS_LAPACK_HH__ */

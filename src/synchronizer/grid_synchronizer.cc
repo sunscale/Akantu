@@ -42,7 +42,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 GridSynchronizer::GridSynchronizer(Mesh & mesh, const ID & id,
@@ -600,4 +600,4 @@ template GridSynchronizer * GridSynchronizer::createGridSynchronizer<Element>(
     const std::set<SynchronizationTag> & tags_to_register, MemoryID memory_id,
     const bool register_to_event_manager);
 
-__END_AKANTU__
+} // akantu

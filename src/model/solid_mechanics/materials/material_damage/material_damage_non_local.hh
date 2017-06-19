@@ -37,7 +37,7 @@
 #ifndef __AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <UInt spatial_dimension, class MaterialDamageLocal>
 class MaterialDamageNonLocal : public MaterialDamageLocal,
@@ -103,6 +103,6 @@ public:
   }
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH__ */

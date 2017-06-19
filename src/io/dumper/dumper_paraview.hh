@@ -37,7 +37,7 @@
 #include "dumper_iohelper.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class DumperParaview : public DumperIOHelper {
   /* ------------------------------------------------------------------------ */
@@ -69,6 +69,6 @@ private:
 };
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_PARAVIEW_HH__ */

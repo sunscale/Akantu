@@ -40,7 +40,7 @@
 #ifndef __AKANTU_SHAPE_FUNCTIONS_HH__
 #define __AKANTU_SHAPE_FUNCTIONS_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class ShapeFunctions : protected Memory {
@@ -184,6 +184,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_SHAPE_FUNCTIONS_HH__ */

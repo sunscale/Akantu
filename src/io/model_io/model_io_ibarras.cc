@@ -50,7 +50,7 @@
 /* -------------------------------------------------------------------------- */
 #include <stdio.h>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /*   Methods Implentations                                                    */
@@ -310,4 +310,4 @@ void ModelIOIBarras::assign_sets(const std::string & filename,
   }
 }
 
-__END_AKANTU__
+} // akantu

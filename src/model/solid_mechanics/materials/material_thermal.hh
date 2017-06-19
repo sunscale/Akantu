@@ -37,7 +37,7 @@
 #ifndef __AKANTU_MATERIAL_THERMAL_HH__
 #define __AKANTU_MATERIAL_THERMAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 template<UInt spatial_dimension>
 class MaterialThermal : public virtual Material {
   /* ------------------------------------------------------------------------ */
@@ -101,6 +101,6 @@ protected:
   bool use_previous_stress_thermal;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_THERMAL_HH__ */

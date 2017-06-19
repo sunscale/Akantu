@@ -41,7 +41,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 namespace BC {
@@ -190,7 +190,7 @@ namespace Neumann {
 } // end namespace Neumann
 } // end namespace BC
 
-__END_AKANTU__
+} // akantu
 
 #include "boundary_condition_functor_inline_impl.cc"
 

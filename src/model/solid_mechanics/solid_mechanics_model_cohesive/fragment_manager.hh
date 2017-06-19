@@ -36,7 +36,7 @@
 #include "group_manager.hh"
 #include "solid_mechanics_model_cohesive.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 
@@ -169,6 +169,6 @@ private:
 
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_FRAGMENT_MANAGER_HH__ */

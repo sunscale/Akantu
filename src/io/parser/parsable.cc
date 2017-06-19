@@ -33,7 +33,7 @@
 #include "aka_random_generator.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Parsable::Parsable(const SectionType & section_type, const ID & id)
@@ -108,4 +108,4 @@ void Parsable::parseSubSection(const ParserSection & section) {
                          << key.first << "," << key.second << "> in " << pid);
 }
 
-__END_AKANTU__
+} // akantu

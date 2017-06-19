@@ -33,7 +33,7 @@
 #include "material_neohookean.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
@@ -289,4 +289,4 @@ Real MaterialNeohookean<spatial_dimension>::getShearWaveSpeed(
 
 INSTANTIATE_MATERIAL(MaterialNeohookean);
 
-__END_AKANTU__
+} // akantu

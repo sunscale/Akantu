@@ -34,7 +34,7 @@
 #define __AKANTU_MESH_IO_MSH_STRUCT_HH__
 
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 
 class MeshIOMSHStruct : public MeshIOMSH {
@@ -51,6 +51,6 @@ public:
 };
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_IO_MSH_STRUCT_HH__ */

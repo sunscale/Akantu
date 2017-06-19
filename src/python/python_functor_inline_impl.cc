@@ -37,7 +37,7 @@
 #include <typeinfo>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 
@@ -332,6 +332,6 @@ PythonFunctor::convertListToAkantu(PyObject * python_obj) const {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__ */

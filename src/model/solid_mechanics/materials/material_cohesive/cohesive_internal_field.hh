@@ -35,7 +35,7 @@
 #ifndef __AKANTU_COHESIVE_INTERNAL_FIELD_HH__
 #define __AKANTU_COHESIVE_INTERNAL_FIELD_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// internal field class for cohesive materials
 template<typename T>
@@ -65,6 +65,6 @@ public:
   void initialize(UInt nb_component);
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_COHESIVE_INTERNAL_FIELD_HH__ */

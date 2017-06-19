@@ -36,7 +36,7 @@
 #include <io_helper.hh>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 
 // This represents a iohelper compatible field
@@ -235,6 +235,6 @@ private:
 
  
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu
 /* -------------------------------------------------------------------------- */
 #endif /* __AKANTU_DUMPER_NODAL_FIELD_HH__ */

@@ -38,7 +38,7 @@
 #include "model.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 
 
@@ -77,6 +77,6 @@ private:
   
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MODEL_IO_HH__ */

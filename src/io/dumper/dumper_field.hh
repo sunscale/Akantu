@@ -35,7 +35,7 @@
 #include "dumper_iohelper.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 class FieldComputeProxy;
@@ -132,6 +132,6 @@ protected:
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_FIELD_HH__ */

@@ -42,7 +42,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// Here, we know what kernel we have to use
 typedef Cartesian K;
@@ -96,7 +96,7 @@ protected:
   std::string current_physical_name;
 };
  
-__END_AKANTU__
+} // akantu
 
 #include "mesh_segment_intersector_tmpl.hh"
 

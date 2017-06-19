@@ -45,7 +45,7 @@
 #include "dumper_igfem_connectivity.hh"
 #endif
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 DumperIOHelper::DumperIOHelper() : count(0), time_activated(false) {}
@@ -294,7 +294,7 @@ UInt getIOHelperType(ElementType type) {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 namespace iohelper {
   template<>

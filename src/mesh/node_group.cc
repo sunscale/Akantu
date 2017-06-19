@@ -40,7 +40,7 @@
 #endif
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NodeGroup::NodeGroup(const std::string & name,
@@ -108,4 +108,4 @@ void NodeGroup::printself(std::ostream & stream, int indent) const {
 }
 
 
-__END_AKANTU__
+} // akantu

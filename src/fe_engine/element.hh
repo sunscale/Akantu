@@ -31,7 +31,7 @@
 #ifndef __AKANTU_ELEMENT_HH__
 #define __AKANTU_ELEMENT_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* Element                                                                    */
@@ -122,6 +122,6 @@ struct CompElementLess {
   }
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_ELEMENT_HH__ */

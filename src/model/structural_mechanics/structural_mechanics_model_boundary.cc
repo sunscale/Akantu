@@ -36,7 +36,7 @@
 #include "structural_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<>
@@ -219,4 +219,4 @@ void StructuralMechanicsModel::transferNMatrixToSymVoigtNMatrix<_kirchhoff_shell
 /* -------------------------------------------------------------------------- */
 
 
-__END_AKANTU__
+} // akantu

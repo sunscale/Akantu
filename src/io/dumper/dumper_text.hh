@@ -38,7 +38,7 @@
 #include <io_helper.hh>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class DumperText : public DumperIOHelper {
   /* ------------------------------------------------------------------------ */
@@ -83,6 +83,6 @@ public:
 private:
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_TEXT_HH__ */

@@ -32,7 +32,7 @@
 #include "solver_callback.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NonLinearSolver::NonLinearSolver(
@@ -63,4 +63,4 @@ void NonLinearSolver::checkIfTypeIsSupported() {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

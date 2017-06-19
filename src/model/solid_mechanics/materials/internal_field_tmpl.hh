@@ -35,7 +35,7 @@
 #ifndef __AKANTU_INTERNAL_FIELD_TMPL_HH__
 #define __AKANTU_INTERNAL_FIELD_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -315,6 +315,6 @@ template <typename T> inline InternalField<T>::operator T() const {
   return default_value;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_INTERNAL_FIELD_TMPL_HH__ */

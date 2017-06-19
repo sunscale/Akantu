@@ -33,7 +33,7 @@
 #include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 void IntegrationScheme2ndOrder::predictor(Real delta_t) {
@@ -97,4 +97,4 @@ void IntegrationScheme2ndOrder::assembleResidual(bool is_lumped) {
 }
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

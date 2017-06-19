@@ -37,7 +37,7 @@
 #define __AKANTU_DUMPABLE_DUMMY_HH__
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 #pragma GCC diagnostic push
@@ -247,6 +247,6 @@ private:
 
 #pragma GCC diagnostic pop
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPABLE_DUMMY_HH__ */

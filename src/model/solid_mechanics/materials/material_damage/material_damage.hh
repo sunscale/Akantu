@@ -39,7 +39,7 @@
 #ifndef __AKANTU_MATERIAL_DAMAGE_HH__
 #define __AKANTU_MATERIAL_DAMAGE_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 template <UInt spatial_dimension,
           template <UInt> class Parent = MaterialElastic>
 class MaterialDamage : public Parent<spatial_dimension> {
@@ -106,7 +106,7 @@ protected:
   InternalField<Real> int_sigma;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "material_damage_tmpl.hh"
 

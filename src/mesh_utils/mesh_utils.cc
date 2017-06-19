@@ -46,7 +46,7 @@
 #include <set>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 void MeshUtils::buildNode2Elements(const Mesh & mesh,
@@ -2364,6 +2364,6 @@ void MeshUtils::updateElementalConnectivity(
 #endif
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 //  LocalWords:  ElementType

@@ -35,7 +35,7 @@
 #include "element_group.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 CohesiveElementInserter::CohesiveElementInserter(Mesh & mesh,
 						 bool is_extrinsic,
@@ -435,4 +435,4 @@ void CohesiveElementInserter::printself(std::ostream & stream, int indent) const
 
 
 
-__END_AKANTU__
+} // akantu

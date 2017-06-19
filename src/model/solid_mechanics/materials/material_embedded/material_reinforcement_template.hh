@@ -40,7 +40,7 @@
 #include "material_elastic.hh"
 #include "material_linear_isotropic_hardening.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * @brief Implementation of MaterialReinforcement with 1D constitutive law
@@ -103,7 +103,7 @@ protected:
 
 #include "material_reinforcement_template_tmpl.hh"
 
-__END_AKANTU__
+} // akantu
 
 
 #endif // __AKANTU_MATERIAL_REINFORCEMENT_TEMPLATE_HH__

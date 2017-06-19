@@ -41,7 +41,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MeshPartitionScotch : public MeshPartition {
   /* ------------------------------------------------------------------------ */
@@ -76,6 +76,6 @@ private:
 
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_PARTITION_SCOTCH_HH__ */

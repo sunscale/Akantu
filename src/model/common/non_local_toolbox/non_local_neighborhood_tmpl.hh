@@ -36,7 +36,7 @@
 #ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_TMPL_HH__
 #define __AKANTU_NON_LOCAL_NEIGHBORHOOD_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<class WeightFunction>
@@ -281,6 +281,6 @@ void NonLocalNeighborhood<WeightFunction>::registerNonLocalVariable(const ID & i
 }
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_TMPL__ */

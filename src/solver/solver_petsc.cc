@@ -40,7 +40,7 @@
 //#include <petscsys.h>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SolverPETSc::SolverPETSc(DOFManagerPETSc & dof_manager, const ID & matrix_id,
@@ -1104,4 +1104,4 @@ void SolverPETSc::setOperators() {
 // //  AKANTU_DEBUG_OUT();
 // //}
 
-__END_AKANTU__
+} // akantu

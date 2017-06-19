@@ -37,7 +37,7 @@
 #include "aka_static_memory.hh"
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 bool StaticMemory::is_instantiated = false;
 StaticMemory * StaticMemory::single_static_memory = NULL;
@@ -153,4 +153,4 @@ void StaticMemory::printself(std::ostream & stream, int indent) const{
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
