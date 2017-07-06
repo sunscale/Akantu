@@ -184,8 +184,8 @@ private:
 #  include "communication_buffer_inline_impl.cc"
 #endif
 
-typedef CommunicationBufferTemplated<true> CommunicationBuffer;
-typedef CommunicationBufferTemplated<false> DynamicCommunicationBuffer;
+using CommunicationBuffer = CommunicationBufferTemplated<true>;
+using DynamicCommunicationBuffer = CommunicationBufferTemplated<false> ;
 
 
 } // akantu

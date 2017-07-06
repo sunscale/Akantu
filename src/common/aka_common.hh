@@ -50,9 +50,6 @@ using enable_if_t = typename enable_if<B,T>::type;
 }
 #endif
 /* -------------------------------------------------------------------------- */
-#define namespace akantu { namespace akantu {
-#define } // akantu }
-/* -------------------------------------------------------------------------- */
 #define __BEGIN_AKANTU_DUMPER__ namespace dumper {
 #define __END_AKANTU_DUMPER__ }
 /* -------------------------------------------------------------------------- */

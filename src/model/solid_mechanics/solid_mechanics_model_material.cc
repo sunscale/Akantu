@@ -69,7 +69,7 @@ namespace akantu {
   (dim, elem)
 
 #define AKANTU_INTANTIATE_MATERIAL(elem)                                       \
-  switch (spatial_dimension) {                                                 \
+  switch (Model::spatial_dimension) {                                          \
   case 1: {                                                                    \
     AKANTU_INTANTIATE_MATERIAL_BY_DIM(1, elem);                                \
     break;                                                                     \
@@ -133,10 +133,10 @@ void SolidMechanicsModel::assignMaterialToElements(
   element.ghost_type = _not_ghost;
 
   auto element_types =
-      mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined);
+      mesh.elementTypes(Model::spatial_dimension, _not_ghost, _ek_not_defined);
   if (filter != NULL) {
-    element_types =
-      filter->elementTypes(spatial_dimension, _not_ghost, _ek_not_defined);
+    element_types = filter->elementTypes(Model::spatial_dimension, _not_ghost,
+                                         _ek_not_defined);
   }
 
   // Fill the element material array from the material selector
@@ -172,12 +172,12 @@ void SolidMechanicsModel::assignMaterialToElements(
   /// fill the element filters of the materials using the element_material
   /// arrays
   for (auto ghost_type : ghost_types) {
-    element_types =
-        mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined);
+    element_types = mesh.elementTypes(Model::spatial_dimension, ghost_type,
+                                      _ek_not_defined);
 
     if (filter != NULL) {
-      element_types =
-          filter->elementTypes(spatial_dimension, ghost_type, _ek_not_defined);
+      element_types = filter->elementTypes(Model::spatial_dimension, ghost_type,
+                                           _ek_not_defined);
     }
 
     for (auto type : element_types) {
@@ -240,17 +240,18 @@ void SolidMechanicsModel::initMaterials() {
     break;
   }
 
-  // initialize the previous displacement array if at least on material needs it
-  // for (auto & material : materials) {
-  //   if (material->isFiniteDeformation() || material->isInelasticDeformation()) {
-  //     initArraysPreviousDisplacment();
-  //     break;
-  //   }
-  // }
+// initialize the previous displacement array if at least on material needs it
+// for (auto & material : materials) {
+//   if (material->isFiniteDeformation() || material->isInelasticDeformation())
+//   {
+//     initArraysPreviousDisplacment();
+//     break;
+//   }
+// }
 
 #ifdef AKANTU_DAMAGE_NON_LOCAL
   /// initialize the non-local manager for non-local computations
-  this->non_local_manager->init();
+  this->initializeNonLocal();
 #endif
 }
 
@@ -282,8 +283,8 @@ void SolidMechanicsModel::reassignMaterial() {
   for (auto ghost_type : ghost_types) {
     element.ghost_type = ghost_type;
 
-    for (auto type :
-         mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
+    for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type,
+                                       _ek_not_defined)) {
       element.type = type;
       element.kind = Mesh::getKind(type);
 
@@ -320,7 +321,7 @@ void SolidMechanicsModel::applyEigenGradU(
     const GhostType ghost_type) {
 
   AKANTU_DEBUG_ASSERT(prescribed_eigen_grad_u.size() ==
-                          spatial_dimension * spatial_dimension,
+                          Model::spatial_dimension * Model::spatial_dimension,
                       "The prescribed grad_u is not of the good size");
   for (auto & material : materials) {
     if (material->getName() == material_name)

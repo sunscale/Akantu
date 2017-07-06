@@ -123,22 +123,9 @@ public:
 
     iterator end() { return data.end(); }
     const_iterator end() const { return data.end(); }
-
-// #if not defined(AKANTU_NDEBUG)
-//     Cell & add(const T & d, const Vector<Real> & pos) {
-//       data.push_back(d); positions.push_back(pos); return *this;
-//     }
-//     typedef typename std::vector< Vector<Real> >::const_iterator position_iterator;
-//     position_iterator begin_pos() const { return positions.begin(); }
-//     position_iterator end_pos() const { return positions.end(); }
-// #endif
-
   private:
     CellID id;
     std::vector<T> data;
-// #if not defined(AKANTU_NDEBUG)
-//     std::vector< Vector<Real> > positions;
-// #endif
   };
 
 private:
@@ -151,7 +138,7 @@ public:
     if(it != cells.end()) return it->second;
     else return empty_cell;
   }
-
+  
   typename Cell::iterator beginCell(const CellID & cell_id) {
     typename cells_container::iterator it = cells.find(cell_id);
     if(it != cells.end()) return it->second.begin();

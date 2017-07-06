@@ -43,7 +43,7 @@ namespace akantu {
 inline Material & SolidMechanicsModel::getMaterial(UInt mat_index) {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT(mat_index < materials.size(),
-                     "The model " << id << " has no material no "<< mat_index);
+                      "The model " << id << " has no material no "<< mat_index);
   AKANTU_DEBUG_OUT();
   return *materials[mat_index];
 }
@@ -146,21 +146,21 @@ inline UInt SolidMechanicsModel::getNbData(const Array<Element> & elements,
     break;
   }
   case _gst_smm_mass: {
-    size += nb_nodes_per_element * sizeof(Real) * spatial_dimension; // mass vector
+    size += nb_nodes_per_element * sizeof(Real) * Model::spatial_dimension; // mass vector
     break;
   }
   case _gst_smm_for_gradu: {
-    size += nb_nodes_per_element * spatial_dimension * sizeof(Real); // displacement
+    size += nb_nodes_per_element * Model::spatial_dimension * sizeof(Real); // displacement
    break;
   }
   case _gst_smm_boundary: {
     // force, displacement, boundary
-    size += nb_nodes_per_element * spatial_dimension * (2 * sizeof(Real) + sizeof(bool));
+    size += nb_nodes_per_element * Model::spatial_dimension * (2 * sizeof(Real) + sizeof(bool));
     break;
   }
   case _gst_for_dump: {
     // displacement, velocity, acceleration, residual, force
-    size += nb_nodes_per_element * spatial_dimension * sizeof(Real) * 5;
+    size += nb_nodes_per_element * Model::spatial_dimension * sizeof(Real) * 5;
     break;
   }
   default: {  }
@@ -293,19 +293,19 @@ inline UInt SolidMechanicsModel::getNbData(const Array<UInt> & dofs,
 
   switch(tag) {
   case _gst_smm_uv: {
-    size += sizeof(Real) * spatial_dimension * 2;
+    size += sizeof(Real) * Model::spatial_dimension * 2;
     break;
   }
   case _gst_smm_res: {
-    size += sizeof(Real) * spatial_dimension;
+    size += sizeof(Real) * Model::spatial_dimension;
     break;
   }
   case _gst_smm_mass: {
-    size += sizeof(Real) * spatial_dimension;
+    size += sizeof(Real) * Model::spatial_dimension;
     break;
   }
   case _gst_for_dump: {
-    size += sizeof(Real) * spatial_dimension * 5;
+    size += sizeof(Real) * Model::spatial_dimension * 5;
     break;
   }
   default: {

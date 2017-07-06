@@ -77,7 +77,7 @@ struct FinalizeCommunicatorEvent {
 class CommunicatorEventHandler {
 public:
   virtual ~CommunicatorEventHandler() {}
-  virtual void onCommunicatorFinalize() { }
+  virtual void onCommunicatorFinalize() {}
 
 private:
   inline void sendEvent(const FinalizeCommunicatorEvent &) {
@@ -163,6 +163,12 @@ public:
                            tag);
   }
   template <typename T>
+  inline CommunicationRequest asyncSend(std::vector<T> & values, Int receiver,
+                                        Int tag) const {
+    return this->asyncSend(values.data(), values.size(), receiver, tag);
+  }
+
+  template <typename T>
   inline CommunicationRequest asyncSend(Vector<T> & values, Int receiver,
                                         Int tag) const {
     return this->asyncSend(values.storage(), values.size(), receiver, tag);
@@ -244,8 +250,15 @@ public:
   template <typename T> inline void allGather(Vector<T> & values) const {
     AKANTU_DEBUG_ASSERT(UInt(this->real_static_communicator->getNbProc()) ==
                             values.size(),
-                        "The array size is not correct");
+                        "The vector size is not correct");
     this->allGather(values.storage(), 1);
+  }
+
+  template <typename T> inline void allGather(Tensor3<T> & values) const {
+    AKANTU_DEBUG_ASSERT(UInt(this->real_static_communicator->getNbProc()) ==
+                            values.size(2),
+                        "The tensor size is not correct");
+    this->allGather(values.storage(), values.size(0) * values.size(1));
   }
 
   /* ------------------------------------------------------------------------ */
@@ -410,7 +423,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #include "static_communicator_inline_impl.hh"
 

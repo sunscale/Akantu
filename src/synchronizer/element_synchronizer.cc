@@ -55,27 +55,32 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-ElementSynchronizer::ElementSynchronizer(Mesh & mesh, const ID & id,
-                                         MemoryID memory_id,
-                                         const bool register_to_event_manager,
-                                         const StaticCommunicator & comm)
+ElementSynchronizer::ElementSynchronizer(Mesh & mesh,
+                                         const StaticCommunicator & comm,
+                                         const ID & id, MemoryID memory_id,
+                                         bool register_to_event_manager,
+                                         UInt event_priority)
     : SynchronizerImpl<Element>(id, memory_id, comm), mesh(mesh),
       prank_to_element("prank_to_element", id, memory_id) {
 
   AKANTU_DEBUG_IN();
 
   if (register_to_event_manager)
-    this->mesh.registerEventHandler(*this);
+    this->mesh.registerEventHandler(*this, event_priority);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-ElementSynchronizer::~ElementSynchronizer() {
-  AKANTU_DEBUG_IN();
+ElementSynchronizer::ElementSynchronizer(Mesh & mesh,
+                                         const ID & id, MemoryID memory_id,
+                                         bool register_to_event_manager,
+                                         UInt event_priority)
+    : ElementSynchronizer(mesh, mesh.getCommunicator(), id, memory_id,
+                          register_to_event_manager, event_priority) {}
 
-  AKANTU_DEBUG_OUT();
-}
+/* -------------------------------------------------------------------------- */
+ElementSynchronizer::~ElementSynchronizer() = default;
 
 /* -------------------------------------------------------------------------- */
 void ElementSynchronizer::substituteElements(
@@ -141,23 +146,10 @@ void ElementSynchronizer::buildPrankToElement() {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
-  mesh.initElementTypeMapArray(prank_to_element, 1, spatial_dimension, false,
-                               _ek_not_defined, true);
-
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, _not_ghost, _ek_not_defined);
-
-  Mesh::type_iterator end =
-      mesh.lastType(spatial_dimension, _not_ghost, _ek_not_defined);
-
-  /// assign prank to all not ghost elements
-  for (; it != end; ++it) {
-    UInt nb_element = mesh.getNbElement(*it);
-    Array<UInt> & prank_to_el = prank_to_element(*it);
-    for (UInt el = 0; el < nb_element; ++el) {
-      prank_to_el(el) = rank;
-    }
-  }
+  prank_to_element.initialize(mesh, _spatial_dimension = spatial_dimension,
+                              _element_kind = _ek_not_defined,
+                              _with_nb_element = true,
+                              _default_value = rank);
 
   /// assign prank to all ghost elements
   Communications<Element>::scheme_iterator recv_it =
@@ -165,14 +157,12 @@ void ElementSynchronizer::buildPrankToElement() {
   Communications<Element>::scheme_iterator recv_end =
       communications.end_recv_scheme();
   for (; recv_it != recv_end; ++recv_it) {
-    Array<Element> & recv = recv_it->second;
-    UInt proc = recv_it->first;
-    Array<Element>::const_scalar_iterator it = recv.begin();
-    Array<Element>::const_scalar_iterator end = recv.end();
-    for (; it != end; ++it) {
-      const Element & el = *it;
-      Array<UInt> & prank_to_el = prank_to_element(el.type, el.ghost_type);
-      prank_to_el(el.element) = proc;
+    auto & recv = recv_it->second;
+    auto proc = recv_it->first;
+
+    for (auto & element : recv) {
+      auto & prank_to_el = prank_to_element(element.type, element.ghost_type);
+      prank_to_el(element.element) = proc;
     }
   }
 
@@ -245,7 +235,7 @@ void ElementSynchronizer::removeElements(
   AKANTU_DEBUG_IN();
 
   std::vector<CommunicationRequest> send_requests;
-  std::map<UInt, Array<UInt> > list_of_elements_per_proc;
+  std::map<UInt, Array<UInt>> list_of_elements_per_proc;
 
   auto filter_list = [](const Array<UInt> & keep, Array<Element> & list) {
     Array<Element> new_list;
@@ -423,4 +413,4 @@ void ElementSynchronizer::unpackSanityCheckData(
 }
 
 /* -------------------------------------------------------------------------- */
-}
+} // namespace akantu

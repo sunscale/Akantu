@@ -247,67 +247,131 @@ void Mesh::computeBoundingBox() {
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
-template <typename T>
-void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
-                                   UInt nb_component, UInt dim,
-                                   const bool & flag_nb_node_per_elem_multiply,
-                                   ElementKind element_kind,
-                                   bool size_to_nb_element) const {
-  AKANTU_DEBUG_IN();
+// /* --------------------------------------------------------------------------
+// */ template <typename T> void
+// Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
+//                                    UInt nb_component, UInt dim, GhostType gt,
+//                                    const T & default_value,
+//                                    const bool &
+//                                    flag_nb_node_per_elem_multiply,
+//                                    ElementKind element_kind,
+//                                    bool size_to_nb_element) const {
+//   AKANTU_DEBUG_IN();
 
-  for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
-    this->initElementTypeMapArray(vect, nb_component, dim, gt,
-                                  flag_nb_node_per_elem_multiply, element_kind,
-                                  size_to_nb_element);
-  }
+//   for (auto type : elementTypes(dim, gt, element_kind)) {
+//     // determines the number of component
+//     UInt nb_comp = nb_component;
+//     if (flag_nb_node_per_elem_multiply)
+//       nb_comp *= Mesh::getNbNodesPerElement(type);
 
-  AKANTU_DEBUG_OUT();
-}
+//     // determines the size
+//     UInt size = 0;
+//     if (size_to_nb_element)
+//       size = this->getNbElement(type, gt);
 
-/* -------------------------------------------------------------------------- */
-template <typename T>
-void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
-                                   UInt nb_component, UInt dim, GhostType gt,
-                                   const bool & flag_nb_node_per_elem_multiply,
-                                   ElementKind element_kind,
-                                   bool size_to_nb_element) const {
-  AKANTU_DEBUG_IN();
+//     // allocate
+//     if (not vect.exists(type, gt))
+//       vect.alloc(size, nb_comp, type, gt, default_value);
+//   }
+//   AKANTU_DEBUG_OUT();
+// }
 
-  this->initElementTypeMapArray(vect, nb_component, dim, gt, T(),
-                                flag_nb_node_per_elem_multiply, element_kind,
-                                size_to_nb_element);
+// /* --------------------------------------------------------------------------
+// */ template <typename T> void
+// Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
+//                                    UInt nb_component, UInt dim,
+//                                    const bool &
+//                                    flag_nb_node_per_elem_multiply,
+//                                    ElementKind element_kind,
+//                                    bool size_to_nb_element) const {
+//   AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_OUT();
-}
+//   for (auto ghost_type : ghost_types) {
+//     this->initElementTypeMapArray(vect, nb_component, dim, ghost_types,
+//                                   flag_nb_node_per_elem_multiply,
+//                                   element_kind, size_to_nb_element);
+//   }
 
-/* -------------------------------------------------------------------------- */
-template <typename T>
-void Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
-                                   UInt nb_component, UInt dim, GhostType gt,
-                                   const T & default_value,
-                                   const bool & flag_nb_node_per_elem_multiply,
-                                   ElementKind element_kind,
-                                   bool size_to_nb_element) const {
-  AKANTU_DEBUG_IN();
+//   AKANTU_DEBUG_OUT();
+// }
 
-  for (auto type : elementTypes(dim, gt, element_kind)) {
-    UInt nb_comp = nb_component;
-    if (flag_nb_node_per_elem_multiply)
-      nb_comp *= Mesh::getNbNodesPerElement(type);
-    UInt size = 0;
-    if (size_to_nb_element)
-      size = this->getNbElement(type, gt);
-    vect.alloc(size, nb_comp, type, gt, default_value);
-  }
-  AKANTU_DEBUG_OUT();
-}
+// /* --------------------------------------------------------------------------
+// */ template <typename T> void
+// Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
+//                                    UInt nb_component, UInt dim, GhostType gt,
+//                                    const bool &
+//                                    flag_nb_node_per_elem_multiply,
+//                                    ElementKind element_kind,
+//                                    bool size_to_nb_element) const {
+//   AKANTU_DEBUG_IN();
+
+//   this->initElementTypeMapArray(vect, nb_component, dim, gt, T(),
+//                                 flag_nb_node_per_elem_multiply, element_kind,
+//                                 size_to_nb_element);
+
+//   AKANTU_DEBUG_OUT();
+// }
+
+// /* --------------------------------------------------------------------------
+// */ template <typename T> void
+// Mesh::initElementTypeMapArray(ElementTypeMapArray<T> & vect,
+//                                    UInt nb_component, UInt dim, GhostType gt,
+//                                    const T & default_value,
+//                                    const bool &
+//                                    flag_nb_node_per_elem_multiply,
+//                                    ElementKind element_kind,
+//                                    bool size_to_nb_element) const {
+//   AKANTU_DEBUG_IN();
+
+//   for (auto type : elementTypes(dim, gt, element_kind)) {
+//     // determines the number of component
+//     UInt nb_comp = nb_component;
+//     if (flag_nb_node_per_elem_multiply)
+//       nb_comp *= Mesh::getNbNodesPerElement(type);
+
+//     // determines the size
+//     UInt size = 0;
+//     if (size_to_nb_element)
+//       size = this->getNbElement(type, gt);
+
+//     // allocate
+//     if (not vect.exists(type, gt))
+//       vect.alloc(size, nb_comp, type, gt, default_value);
+//   }
+//   AKANTU_DEBUG_OUT();
+// }
+
+// /* --------------------------------------------------------------------------
+// */
+/*
+#define AKANTU_INSTANTIATE_INIT(type)                                   \
+   template void Mesh::initElementTypeMapArray<type>( \
+       ElementTypeMapArray<type> & vect, UInt nb_component, UInt dim, \
+       const bool & flag_nb_elem_multiply, ElementKind element_kind, \
+       bool size_to_nb_element) const; \
+   template void Mesh::initElementTypeMapArray<type>( \
+       ElementTypeMapArray<type> & vect, UInt nb_component, UInt dim, \
+       GhostType gt, const bool & flag_nb_elem_multiply, \
+       ElementKind element_kind, bool size_to_nb_element) const; \
+   template void Mesh::initElementTypeMapArray<type>( \
+       ElementTypeMapArray<type> & vect, UInt nb_component, UInt dim, \
+       GhostType gt, const type & default_value, \
+       const bool & flag_nb_elem_multiply, ElementKind element_kind, \ bool
+size_to_nb_element) const
+*/
+// AKANTU_INSTANTIATE_INIT(Real);
+// AKANTU_INSTANTIATE_INIT(UInt);
+// AKANTU_INSTANTIATE_INIT(Int);
+// AKANTU_INSTANTIATE_INIT(bool);
 
 /* -------------------------------------------------------------------------- */
 void Mesh::initNormals() {
-  this->initElementTypeMapArray(normals, spatial_dimension, spatial_dimension,
-                                false, _ek_not_defined);
+  normals.initialize(*this, _nb_component = spatial_dimension,
+                     _spatial_dimension = spatial_dimension,
+                     _element_kind = _ek_not_defined);
+  // this->initElementTypeMapArray(normals, spatial_dimension,
+  // spatial_dimension,
+  //                               false, _ek_not_defined);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -347,33 +411,11 @@ DumperIOHelper & Mesh::getGroupDumper(const std::string & dumper_name,
 }
 
 /* -------------------------------------------------------------------------- */
-#define AKANTU_INSTANTIATE_INIT(type)                                          \
-  template void Mesh::initElementTypeMapArray<type>(                           \
-      ElementTypeMapArray<type> & vect, UInt nb_component, UInt dim,           \
-      const bool & flag_nb_elem_multiply, ElementKind element_kind,            \
-      bool size_to_nb_element) const;                                          \
-  template void Mesh::initElementTypeMapArray<type>(                           \
-      ElementTypeMapArray<type> & vect, UInt nb_component, UInt dim,           \
-      GhostType gt, const bool & flag_nb_elem_multiply,                        \
-      ElementKind element_kind, bool size_to_nb_element) const;                \
-  template void Mesh::initElementTypeMapArray<type>(                           \
-      ElementTypeMapArray<type> & vect, UInt nb_component, UInt dim,           \
-      GhostType gt, const type & default_value,                                \
-      const bool & flag_nb_elem_multiply, ElementKind element_kind,            \
-      bool size_to_nb_element) const
-
-AKANTU_INSTANTIATE_INIT(Real);
-AKANTU_INSTANTIATE_INIT(UInt);
-AKANTU_INSTANTIATE_INIT(Int);
-AKANTU_INSTANTIATE_INIT(bool);
-
-/* -------------------------------------------------------------------------- */
 template <typename T>
 ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & arrays,
                                             const ElementKind & element_kind) {
 
   ElementTypeMap<UInt> nb_data_per_elem;
-
 
   for (auto type : elementTypes(spatial_dimension, _not_ghost, element_kind)) {
     UInt nb_elements = this->getNbElement(type);
@@ -448,12 +490,11 @@ void Mesh::distribute(StaticCommunicator & communicator) {
   this->communicator = &communicator;
 
   this->element_synchronizer =
-    new ElementSynchronizer(*this, this->getID() + ":element_synchronizer",
-                            this->getMemoryID(), true, communicator);
+      new ElementSynchronizer(*this, this->getID() + ":element_synchronizer",
+                              this->getMemoryID(), true);
 
-  this->node_synchronizer =
-    new NodeSynchronizer(*this, this->getID() + ":node_synchronizer",
-                         this->getMemoryID(), true, communicator);
+  this->node_synchronizer = new NodeSynchronizer(
+      *this, this->getID() + ":node_synchronizer", this->getMemoryID(), true);
 
   Int psize = this->communicator->getNbProc();
 #ifdef AKANTU_USE_SCOTCH
@@ -467,9 +508,8 @@ void Mesh::distribute(StaticCommunicator & communicator) {
     MeshUtilsDistribution::distributeMeshCentralized(*this, 0);
   }
 #else
-  if(!(psize == 1)) {
-    AKANTU_DEBUG_ERROR(
-        "Cannot distribute a mesh without a partitioning tool");
+  if (!(psize == 1)) {
+    AKANTU_DEBUG_ERROR("Cannot distribute a mesh without a partitioning tool");
   }
 #endif
 
@@ -480,4 +520,4 @@ void Mesh::distribute(StaticCommunicator & communicator) {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

@@ -491,6 +491,133 @@ operator<<(std::ostream & stream,
 }
 
 /* -------------------------------------------------------------------------- */
+class ElementTypeMapArrayInializer {
+public:
+  ElementTypeMapArrayInializer(UInt spatial_dimension = _all_dimensions,
+                               UInt nb_component = 1,
+                               const GhostType & ghost_type = _not_ghost,
+                               const ElementKind & element_kind = _ek_regular)
+      : spatial_dimension(spatial_dimension), nb_component(nb_component),
+        ghost_type(ghost_type), element_kind(element_kind) {}
+
+  const GhostType & ghostType() const { return ghost_type; }
+
+protected:
+  UInt spatial_dimension;
+  UInt nb_component;
+  GhostType ghost_type;
+  ElementKind element_kind;
+};
+
+/* -------------------------------------------------------------------------- */
+class MeshElementTypeMapArrayInializer : public ElementTypeMapArrayInializer {
+public:
+  MeshElementTypeMapArrayInializer(
+      const Mesh & mesh, UInt spatial_dimension = _all_dimensions,
+      UInt nb_component = 1, const GhostType & ghost_type = _not_ghost,
+      const ElementKind & element_kind = _ek_regular,
+      bool with_nb_element = false, bool with_nb_nodes_per_element = false)
+      : ElementTypeMapArrayInializer(spatial_dimension, nb_component,
+                                     ghost_type, element_kind),
+        mesh(mesh), with_nb_element(with_nb_element),
+        with_nb_nodes_per_element(with_nb_nodes_per_element) {}
+
+  decltype(auto) elementTypes() const {
+    return mesh.elementTypes(this->spatial_dimension, this->ghost_type,
+                             this->element_kind);
+  }
+
+  virtual UInt size(const ElementType & type) const {
+    if (with_nb_element)
+      return mesh.getNbElement(type, this->ghost_type);
+
+    return 0;
+  }
+
+  UInt nbComponent(const ElementType & type) const {
+    if (with_nb_nodes_per_element)
+      return (this->nb_component * mesh.getNbNodesPerElement(type));
+
+    return this->nb_component;
+  }
+
+protected:
+  const Mesh & mesh;
+  bool with_nb_element;
+  bool with_nb_nodes_per_element;
+};
+
+/* -------------------------------------------------------------------------- */
+class FEEngineElementTypeMapArrayInializer
+    : public MeshElementTypeMapArrayInializer {
+public:
+  FEEngineElementTypeMapArrayInializer(
+      const FEEngine & fe_engine, UInt spatial_dimension = _all_dimensions,
+      UInt nb_component = 1, const GhostType & ghost_type = _not_ghost,
+      const ElementKind & element_kind = _ek_regular);
+
+  UInt size(const ElementType & type) const override;
+
+protected:
+  const FEEngine & fe_engine;
+};
+
+/* -------------------------------------------------------------------------- */
+template <typename T, typename SupportType>
+template <class Func>
+void ElementTypeMapArray<T, SupportType>::initialize(const Func & f,
+                                                     const T & default_value) {
+  for (auto & type : f.elementTypes()) {
+    if (not this->exists(type, f.ghostType()))
+      this->alloc(f.size(type), f.nbComponent(type), type, f.ghostType(),
+                  default_value);
+  }
 }
+
+/* -------------------------------------------------------------------------- */
+template <typename T, typename SupportType>
+template <typename... pack>
+void ElementTypeMapArray<T, SupportType>::initialize(const Mesh & mesh,
+                                                     pack &&... _pack) {
+  GhostType requested_ghost_type = OPTIONAL_NAMED_ARG(ghost_type, _casper);
+  bool all_ghost_types = requested_ghost_type == _casper;
+
+  for (auto ghost_type : ghost_types) {
+    if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
+      continue;
+
+    this->initialize(MeshElementTypeMapArrayInializer(
+                         mesh, OPTIONAL_NAMED_ARG(nb_component, 1),
+                         OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
+                         ghost_type,
+                         OPTIONAL_NAMED_ARG(element_kind, _ek_regular),
+                         OPTIONAL_NAMED_ARG(with_nb_element, false),
+                         OPTIONAL_NAMED_ARG(with_nb_nodes_per_element, false)),
+                     OPTIONAL_NAMED_ARG(default_value, T()));
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T, typename SupportType>
+template <typename... pack>
+void ElementTypeMapArray<T, SupportType>::initialize(const FEEngine & fe_engine,
+                                                     pack &&... _pack) {
+  bool all_ghost_types = OPTIONAL_NAMED_ARG(all_ghost_types, true);
+  GhostType requested_ghost_type = OPTIONAL_NAMED_ARG(ghost_type, _not_ghost);
+
+  for (auto ghost_type : ghost_types) {
+    if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
+      continue;
+
+    this->initialize(FEEngineElementTypeMapArrayInializer(
+                         fe_engine,
+                         OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
+                         OPTIONAL_NAMED_ARG(nb_component, 1), ghost_type,
+                         OPTIONAL_NAMED_ARG(element_kind, _ek_regular)),
+                     OPTIONAL_NAMED_ARG(default_value, T()));
+  }
+}
+
+} // namespace akantu
 
 #endif /* __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__ */

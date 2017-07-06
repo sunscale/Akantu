@@ -30,13 +30,17 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_array.hh"
+#include "aka_memory.hh"
+#include "aka_named_argument.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_ELEMENT_TYPE_MAP_HH__
 #define __AKANTU_ELEMENT_TYPE_MAP_HH__
 
-#include "aka_array.hh"
-#include "aka_common.hh"
-#include "aka_memory.hh"
+namespace akantu {
+class FEEngine;
+} // namespace akantu
 
 namespace akantu {
 
@@ -154,13 +158,18 @@ public:
                                UInt dim = _all_dimensions,
                                GhostType ghost_type = _not_ghost,
                                ElementKind kind = _ek_regular)
-        : container(std::cref(container)), dim(dim), ghost_type(ghost_type), kind(kind) {}
+        : container(std::cref(container)), dim(dim), ghost_type(ghost_type),
+          kind(kind) {}
 
     ElementTypesIteratorHelper(const ElementTypesIteratorHelper &) = default;
-    ElementTypesIteratorHelper & operator=(const ElementTypesIteratorHelper &) = default;
-    ElementTypesIteratorHelper & operator=(ElementTypesIteratorHelper &&) = default;
+    ElementTypesIteratorHelper &
+    operator=(const ElementTypesIteratorHelper &) = default;
+    ElementTypesIteratorHelper &
+    operator=(ElementTypesIteratorHelper &&) = default;
 
-    iterator begin() { return container.get().firstType(dim, ghost_type, kind); }
+    iterator begin() {
+      return container.get().firstType(dim, ghost_type, kind);
+    }
     iterator end() { return container.get().lastType(dim, ghost_type, kind); }
 
   private:
@@ -335,11 +344,28 @@ public:
     }
     return nb_components;
   }
-  /* --------------------------------------------------------------------------
-   */
-  /* Accesssors */
-  /* --------------------------------------------------------------------------
-   */
+
+  /* ------------------------------------------------------------------------ */
+  /* more evolved allocators                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// initialize the arrays in accordance to a functor
+  template <class Func>
+  void initialize(const Func & f, const T & default_value = T());
+
+  /// initialize with sizes and number of components in accordance of a mesh
+  /// content
+  template <typename... pack>
+  void initialize(const Mesh & mesh, pack &&... _pack);
+
+  /// initialize with sizes and number of components in accordance of a fe
+  /// engine content (aka integration points)
+  template <typename... pack>
+  void initialize(const FEEngine & fe_engine, pack &&... _pack);
+
+  /* ------------------------------------------------------------------------ */
+  /* Accesssors                                                               */
+  /* ------------------------------------------------------------------------ */
 public:
   /// get the name of the internal field
   AKANTU_GET_MACRO(Name, name, ID);
@@ -363,6 +389,6 @@ typedef ElementTypeMapArray<UInt, ElementType> ElementTypeMapUInt;
 typedef std::map<std::string, Array<UInt> *> UIntDataMap;
 typedef ElementTypeMap<UIntDataMap, ElementType> ElementTypeMapUIntDataMap;
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_ELEMENT_TYPE_MAP_HH__ */

@@ -46,7 +46,8 @@ void SolidMechanicsModel::assembleMassLumped() {
   if (this->mass == NULL) {
     std::stringstream sstr_mass;
     sstr_mass << id << ":mass";
-    mass = &(alloc<Real>(sstr_mass.str(), nb_nodes, spatial_dimension, 0));
+    mass =
+        &(alloc<Real>(sstr_mass.str(), nb_nodes, Model::spatial_dimension, 0));
   } else {
     mass->clear();
   }
@@ -78,7 +79,7 @@ void SolidMechanicsModel::assembleMassLumped() {
     }
   }
 
-  if(has_unconnected_nodes)
+  if (has_unconnected_nodes)
     AKANTU_DEBUG_WARNING("There are nodes that seem to not be connected to any "
                          "elements, beware that they have lumped mass of 0.");
 #endif
@@ -93,13 +94,9 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
 
   FEEngine & fem = getFEEngine();
 
-  Array<Real> rho(0, spatial_dimension);
+  Array<Real> rho(0, Model::spatial_dimension);
 
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
-  for (; it != end; ++it) {
-    ElementType type = *it;
-
+  for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
     computeRho(rho, type, ghost_type);
 
     fem.assembleFieldLumped(rho, "M", "displacement", this->getDOFManager(),
@@ -125,10 +122,12 @@ void SolidMechanicsModel::assembleMass() {
 
 class ComputeRhoFunctor {
 public:
-  explicit ComputeRhoFunctor(const SolidMechanicsModel & model) : model(model){};
+  explicit ComputeRhoFunctor(const SolidMechanicsModel & model)
+      : model(model){};
 
-  void operator()(Matrix<Real> & rho, const Element & element,
-                  __attribute__((unused)) const Matrix<Real> quad_coords) const {
+  void
+  operator()(Matrix<Real> & rho, const Element & element,
+             __attribute__((unused)) const Matrix<Real> quad_coords) const {
     const Array<UInt> & mat_indexes =
         model.getMaterialByElement(element.type, element.ghost_type);
     Real mat_rho =
@@ -148,10 +147,7 @@ void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
 
   ComputeRhoFunctor compute_rho(*this);
 
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
-  for (; it != end; ++it) {
-    ElementType type = *it;
+  for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
     fem.assembleFieldMatrix(compute_rho, "M", "displacement",
                             this->getDOFManager(), type, ghost_type);
   }
@@ -172,7 +168,7 @@ void SolidMechanicsModel::computeRho(Array<Real> & rho, ElementType type,
   UInt nb_quadrature_points = fem.getNbIntegrationPoints(type);
 
   rho.resize(nb_element * nb_quadrature_points);
-  Array<Real>::vector_iterator rho_it = rho.begin(spatial_dimension);
+  Array<Real>::vector_iterator rho_it = rho.begin(Model::spatial_dimension);
 
   /// compute @f$ rho @f$ for each nodes of each element
   for (UInt el = 0; el < nb_element; ++el) {
@@ -187,4 +183,4 @@ void SolidMechanicsModel::computeRho(Array<Real> & rho, ElementType type,
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu

@@ -739,8 +739,8 @@ public:
     this->set(0);
 
     UInt i = 0, j = 0;
-    for (auto row : list) {
-      for (auto val : row) {
+    for (auto & row : list) {
+      for (auto & val : row) {
         at(i, j++) = val;
       }
       ++i;

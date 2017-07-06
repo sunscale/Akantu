@@ -64,8 +64,11 @@ void CohesiveElementInserter::init(bool is_extrinsic) {
   MeshUtils::resetFacetToDouble(mesh_facets);
 
   /// initialize facet insertion array
-  mesh_facets.initElementTypeMapArray(
-      insertion_facets, 1, spatial_dimension - 1, false, _ek_regular, true);
+  insertion_facets.initialize(mesh_facets,
+                              _spatial_dimension = (spatial_dimension - 1),
+                              _with_nb_element = true);
+  // mesh_facets.initElementTypeMapArray(
+  //     insertion_facets, 1, spatial_dimension - 1, false, _ek_regular, true);
 
   /// init insertion limits
   for (UInt dim = 0; dim < spatial_dimension; ++dim) {
@@ -74,7 +77,10 @@ void CohesiveElementInserter::init(bool is_extrinsic) {
   }
 
   if (is_extrinsic) {
-    mesh_facets.initElementTypeMapArray(check_facets, 1, spatial_dimension - 1);
+    check_facets.initialize(mesh_facets,
+                            _spatial_dimension = spatial_dimension - 1);
+    // mesh_facets.initElementTypeMapArray(check_facets, 1, spatial_dimension -
+    // 1);
     initFacetsCheck();
   }
 
@@ -246,8 +252,11 @@ void CohesiveElementInserter::insertIntrinsicElements(std::string physname,
     phys_data = &(mesh_facets.getData<UInt>("physical_names"));
   } catch (...) {
     phys_data = &(mesh_facets.registerData<UInt>("physical_names"));
-    mesh_facets.initElementTypeMapArray(*phys_data, 1, spatial_dimension - 1,
-                                        false, _ek_regular, true);
+    phys_data->initialize(mesh_facets,
+                          _spatial_dimension = spatial_dimension - 1,
+                          _with_nb_element = true);
+    // mesh_facets.initElementTypeMapArray(*phys_data, 1, spatial_dimension - 1,
+    //                                     false, _ek_regular, true);
   }
   Vector<Real> bary_facet(spatial_dimension);
   mesh_facets.createElementGroup(physname);
@@ -439,4 +448,4 @@ void CohesiveElementInserter::printself(std::ostream & stream,
   stream << space << "]" << std::endl;
 }
 
-} // akantu
+} // namespace akantu

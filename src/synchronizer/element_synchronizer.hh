@@ -57,10 +57,16 @@ class ElementSynchronizer : public SynchronizerImpl<Element>,
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ElementSynchronizer(
-      Mesh & mesh, const ID & id = "element_synchronizer",
-      MemoryID memory_id = 0, const bool register_to_event_manager = true,
-      const StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
+  ElementSynchronizer(Mesh & mesh, const StaticCommunicator & comm,
+                      const ID & id = "element_synchronizer",
+                      MemoryID memory_id = 0,
+                      bool register_to_event_manager = true,
+                      UInt event_priority = 100);
+
+  ElementSynchronizer(Mesh & mesh, const ID & id = "element_synchronizer",
+                      MemoryID memory_id = 0,
+                      bool register_to_event_manager = true,
+                      UInt event_priority = 100);
 
 public:
   virtual ~ElementSynchronizer();
@@ -70,12 +76,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// get a  mesh and a partition and  create the local mesh  and the associated
-  /// ElementSynchronizer
-  static ElementSynchronizer * createElementSynchronizer(
-      Mesh & mesh, const MeshPartition * partition, UInt root = 0,
-      SynchronizerID id = "element_synchronizer", MemoryID memory_id = 0);
-
   /* ------------------------------------------------------------------------ */
   /// build processor to element correspondence
   void buildPrankToElement();
@@ -224,6 +224,6 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
-}
+} // namespace akantu
 
 #endif /* __AKANTU_ELEMENT_SYNCHRONIZER_HH__ */

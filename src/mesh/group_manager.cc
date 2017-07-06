@@ -497,8 +497,12 @@ UInt GroupManager::createClusters(UInt element_dimension,
   if (nb_proc > 1 && mesh.isDistributed()) {
     element_to_fragment =
         new ElementTypeMapArray<UInt>("element_to_fragment", id, memory_id);
-    mesh.initElementTypeMapArray(*element_to_fragment, 1, element_dimension,
-                                 false, _ek_not_defined, true);
+
+    element_to_fragment->initialize(mesh, _nb_component = element_dimension,
+                                    _element_kind = _ek_not_defined,
+                                    _with_nb_element = true);
+    // mesh.initElementTypeMapArray(*element_to_fragment, 1, element_dimension,
+    //                              false, _ek_not_defined, true);
     tmp_cluster_name_prefix = "tmp_" + tmp_cluster_name_prefix;
   }
 
@@ -516,8 +520,11 @@ UInt GroupManager::createClusters(UInt element_dimension,
   }
 
   ElementTypeMapArray<bool> seen_elements("seen_elements", id, memory_id);
-  mesh.initElementTypeMapArray(seen_elements, 1, element_dimension, false,
-                               _ek_not_defined, true);
+  seen_elements.initialize(mesh, _nb_component = element_dimension,
+                            _element_kind = _ek_not_defined,
+                            _with_nb_element = true);
+  // mesh.initElementTypeMapArray(seen_elements, 1, element_dimension, false,
+  //                              _ek_not_defined, true);
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {
@@ -1019,4 +1026,4 @@ NodeGroup & GroupManager::getNodeGroup(const std::string & name) {
   return *(it->second);
 }
 
-} // akantu
+} // namespace akantu

@@ -81,28 +81,35 @@ namespace named_argument {
       a pack of param_t (_type is retrieved instead)
       This and get_at should be refactored.
   */
-  template <int pos, typename T> struct get_required {
-    static_assert(pos >= 0, " Missing required parameter, check the value of T "
-                            "in get_required<pos, T>");
+  template <int pos, int curr> struct get_at {
+    static_assert(pos >= 0, "Required parameter");
 
-    template <typename... types>
-    static decltype(auto) get(std::tuple<types &...> && t) {
-      return std::forward<decltype(std::get<pos>(t)._value)>(
-          std::get<pos>(t)._value);
+    template <typename head, typename... tail>
+    static decltype(auto) get(head &&, tail &&... t) {
+      return get_at<pos, curr + 1>::get(std::forward<tail>(t)...);
+    }
+  };
+
+  template <int pos> struct get_at<pos, pos> {
+    static_assert(pos >= 0, "Required parameter");
+
+    template <typename head, typename... tail>
+    static decltype(auto) get(head && h, tail &&...) {
+      return std::forward<typename head::_type>(h._value);
     }
   };
 
   // Optional version
-  template <int pos> struct get_optional {
-    template <typename T, typename... types>
-    static decltype(auto) get(T &&, std::tuple<types &...> && t) {
-      return get_required<pos, T>::get(std::forward<decltype(t)>(t));
+  template <int pos, int curr> struct get_optional {
+    template <typename T, typename... pack>
+    static decltype(auto) get(T &&, pack &&... _pack) {
+      return get_at<pos, curr>::get(std::forward<pack>(_pack)...);
     }
   };
 
-  template <> struct get_optional<-1> {
-    template <typename T, typename... types>
-    static decltype(auto) get(T && _default, std::tuple<types &...> &&) {
+  template <int curr> struct get_optional<-1, curr> {
+    template <typename T, typename... pack>
+    static decltype(auto) get(T && _default, pack &&...) {
       return std::forward<T>(_default);
     }
   };
@@ -110,19 +117,17 @@ namespace named_argument {
 } // namespace named_argument
 
 // CONVENIENCE MACROS FOR CLASS DESIGNERS ==========
-#define TAG_OF_ARGUMENT(name) p_##name
-#define TAG_OF_ARGUMENT_WNS(name) named_argument::TAG_OF_ARGUMENT(name)
+#define TAG_OF_ARGUMENT(_name) p_##_name
+#define TAG_OF_ARGUMENT_WNS(_name) named_argument::TAG_OF_ARGUMENT(_name)
 
-#define REQUIRED_NAMED_ARG(name)                                               \
-  named_argument::get_required<                                                \
-      named_argument::type_at<TAG_OF_ARGUMENT_WNS(name), pack...>::_pos,       \
-      TAG_OF_ARGUMENT_WNS(                                                     \
-          name)>::get(std::forward_as_tuple<pack...>(_pack...))
-
-#define OPTIONAL_NAMED_ARG(name, _defaultVal)                                  \
+#define REQUIRED_NAMED_ARG(_name)                                              \
+  named_argument::get_at<                                                      \
+      named_argument::type_at<TAG_OF_ARGUMENT_WNS(_name), pack...>::_pos,      \
+      0>::get(std::forward<pack>(_pack)...)
+#define OPTIONAL_NAMED_ARG(_name, _defaultVal)                                 \
   named_argument::get_optional<                                                \
-      named_argument::type_at<TAG_OF_ARGUMENT_WNS(name), pack...>::_pos>::     \
-      get(_defaultVal, std::forward_as_tuple<pack...>(_pack...))
+      named_argument::type_at<TAG_OF_ARGUMENT_WNS(_name), pack...>::_pos,      \
+      0>::get(_defaultVal, std::forward<pack>(_pack)...)
 
 #define DECLARE_NAMED_ARGUMENT(name)                                           \
   namespace named_argument {                                                   \
@@ -133,82 +138,21 @@ namespace named_argument {
 #define CREATE_NAMED_ARGUMENT(name)                                            \
   named_argument::param_proxy<TAG_OF_ARGUMENT_WNS(name)> _##name
 
-// FULL EXAMPLE ====================================
-// step 1) generate tags you need
-// namespace {
-// CREATE_TAG(title);
-// CREATE_TAG(h);
-// CREATE_TAG(w);
-// CREATE_TAG(posx);
-// CREATE_TAG(posy);
-// CREATE_TAG(handle);
-// } // namespace
+DECLARE_NAMED_ARGUMENT(all_ghost_types);
+DECLARE_NAMED_ARGUMENT(default_value);
+DECLARE_NAMED_ARGUMENT(element_kind);
+DECLARE_NAMED_ARGUMENT(ghost_type);
+DECLARE_NAMED_ARGUMENT(nb_component);
+DECLARE_NAMED_ARGUMENT(with_nb_element);
+DECLARE_NAMED_ARGUMENT(with_nb_nodes_per_element);
+DECLARE_NAMED_ARGUMENT(spatial_dimension);
 
-// // step 2) use tags/proxies in your class
-// class window {
-// public:
-//   // classic constructor
-//   window(string pTitle, int pH, int pW, int pPosx, int pPosy, int &
-//   pHandle)
-//       : title(move(pTitle)), h(pH), w(pW), posx(pPosx), posy(pPosy),
-//         handle(pHandle) {}
+DECLARE_NAMED_ARGUMENT(analysis_method);
+DECLARE_NAMED_ARGUMENT(no_init_materials);
 
-//   // constructor using proxies (e.g. _title = "title")
-//   template <typename... pack>
-//   window(use_named_t, pack &&... _pack)
-//       : window{REQUIRED_NAME(title),   // required
-//                OPTIONAL_NAME(h, 100),  // optional
-//                OPTIONAL_NAME(w, 400),  // optional
-//                OPTIONAL_NAME(posx, 0), // optional
-//                OPTIONAL_NAME(posy, 0), // optional
-//                REQUIRED_NAME(handle)}  // required
-//   {}
-
-//   // constructor using tags (e.g. __title, "title")
-//   template <typename... pack>
-//   window(use_tags_t, pack &&... _pack)
-//       : window{REQUIRED_TAG(title),   // required
-//                OPTIONAL_TAG(h, 100),  // optional
-//                OPTIONAL_TAG(w, 400),  // optional
-//                OPTIONAL_TAG(posx, 0), // optional
-//                OPTIONAL_TAG(posy, 0), // optional
-//                REQUIRED_TAG(handle)}  // required
-//   {}
-
-//   friend ostream & operator<<(ostream & os, const window &);
-
-// private:
-//   string title;
-//   int h, w;
-//   int posx, posy;
-//   int & handle;
-// };
-
-// ostream & operator<<(ostream & os, const window & w) {
-//   os << "WINDOW: " << w.title << " (" << w.h << "x" << w.w << "), at " <<
-//   w.posx
-//      << "," << w.posy << "->" << w.handle;
-//   return os;
-// }
-
-// int main() {
-//   int i = 5;
-//   {
-//     window w{use_tags, __title, "Title", __h, 10, __w, 100, __handle, i};
-//     cout << w << endl;
-//   }
-
-//   {
-//     window w{use_named, _h = 10, _title = "Title", _handle = i, _w = 100};
-//     cout << w << endl;
-//   }
-
-//   {
-//     window w{"Title", 10, 400, 0, 0, i};
-//     cout << w << endl;
-//   }
-// }
-
+#if defined(AKANTU_COHESIVE_ELEMENT)
+DECLARE_NAMED_ARGUMENT(is_extrinsic);
+#endif
 } // namespace akantu
 
 #endif /* __AKANTU_AKA_NAMED_ARGUMENT_HH__ */

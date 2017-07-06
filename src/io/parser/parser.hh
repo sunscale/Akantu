@@ -40,11 +40,29 @@
 
 namespace akantu {
 
-#define AKANTU_SECTION_TYPES                                                   \
-  (global)(material)(model)(mesh)(heat)(contact)(friction)(                    \
-      embedded_interface)(rules)(non_local)(user)(solver)(neighborhood)(       \
-      time_step_solver)(non_linear_solver)(model_solver)(integration_scheme)(  \
-      not_defined)
+// clang-format off
+#define AKANTU_SECTION_TYPES                                            \
+  (global)                                                              \
+  (material)                                                            \
+  (model)                                                               \
+  (mesh)                                                                \
+  (heat)                                                                \
+  (contact)                                                             \
+  (friction)                                                            \
+  (embedded_interface)                                                  \
+  (rules)                                                               \
+  (non_local)                                                           \
+  (user)                                                                \
+  (solver)                                                              \
+  (neighborhoods)                                                       \
+  (neighborhood)                                                        \
+  (time_step_solver)                                                    \
+  (non_linear_solver)                                                   \
+  (model_solver)                                                        \
+  (integration_scheme)                                                  \
+  (weight_function)                                                     \
+  (not_defined)
+// clang-format on
 
 #define AKANTU_SECTION_TYPES_PREFIX(elem) BOOST_PP_CAT(_st_, elem)
 

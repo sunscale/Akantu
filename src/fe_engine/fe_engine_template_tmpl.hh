@@ -567,8 +567,11 @@ inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
   ElementTypeMapArray<Real> quadrature_points_coordinates(
       "quadrature_points_coordinates_for_interpolation", getID(),
       getMemoryID());
-  mesh.initElementTypeMapArray(quadrature_points_coordinates, spatial_dimension,
-                               spatial_dimension);
+
+  quadrature_points_coordinates.initialize(
+      *this, _nb_component = spatial_dimension,
+      _spatial_dimension = spatial_dimension);
+
   computeIntegrationPointsCoordinates(quadrature_points_coordinates,
                                       element_filter);
   shape_functions.initElementalFieldInterpolationFromIntegrationPoints(

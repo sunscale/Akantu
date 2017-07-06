@@ -84,6 +84,15 @@ ghost_type_t ghost_types(_casper);
 /* -------------------------------------------------------------------------- */
 use_named_args_t use_named_args;
 
+CREATE_NAMED_ARGUMENT(all_ghost_types);
+CREATE_NAMED_ARGUMENT(default_value);
+CREATE_NAMED_ARGUMENT(element_kind);
+CREATE_NAMED_ARGUMENT(ghost_type);
+CREATE_NAMED_ARGUMENT(nb_component);
+CREATE_NAMED_ARGUMENT(spatial_dimension);
+CREATE_NAMED_ARGUMENT(with_nb_element);
+CREATE_NAMED_ARGUMENT(with_nb_nodes_per_element);
+
 CREATE_NAMED_ARGUMENT(analysis_method);
 CREATE_NAMED_ARGUMENT(no_init_materials);
 
