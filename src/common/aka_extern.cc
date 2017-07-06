@@ -40,6 +40,9 @@
 #include "cppargparse.hh"
 #include "parser.hh"
 #include "solid_mechanics_model.hh"
+#if defined(AKANTU_COHESIVE_ELEMENT)
+#include "solid_mechanics_model_cohesive.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 #include <limits>
@@ -83,6 +86,10 @@ use_named_args_t use_named_args;
 
 CREATE_NAMED_ARGUMENT(analysis_method);
 CREATE_NAMED_ARGUMENT(no_init_materials);
+
+#if defined(AKANTU_COHESIVE_ELEMENT)
+CREATE_NAMED_ARGUMENT(is_extrinsic);
+#endif
 
 /* -------------------------------------------------------------------------- */
 /// Paser for commandline arguments

@@ -296,8 +296,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
             stress_check.storage(), stress_check.storage() + nb_quad_facet);
 
       if (final_stress > (*sigma_lim_it - tolerance)) {
-
-        if (model->isExplicit()) {
+        if (model->isDefaultSolverExplicit()) {
           f_insertion(facet) = true;
 
           if (!check_only) {
@@ -339,11 +338,11 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
 
     /// Insertion of only 1 cohesive element in case of implicit approach. The
     /// one subjected to the highest stress.
-    if (!model->isExplicit()) {
+    if (!model->isDefaultSolverExplicit()) {
       StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
       Array<Real> abs_max(comm.getNbProc());
       abs_max(comm.whoAmI()) = max_ratio;
-      comm.allGather(abs_max.storage(), 1);
+      comm.allGather(abs_max);
 
       Array<Real>::scalar_iterator it =
           std::max_element(abs_max.begin(), abs_max.end());
@@ -463,7 +462,7 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(
   Vector<Real> normal_opening(spatial_dimension);
   Vector<Real> tangential_opening(spatial_dimension);
 
-  if (!this->model->isExplicit())
+  if (!this->model->isDefaultSolverExplicit())
     this->delta_max(el_type, ghost_type)
         .copy(this->delta_max.previous(el_type, ghost_type));
 

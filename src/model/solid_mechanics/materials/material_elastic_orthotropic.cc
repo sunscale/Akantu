@@ -189,7 +189,7 @@ void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergyByElem
     this->stress(type).begin(spatial_dimension,
                              spatial_dimension);
 
-  UInt nb_quadrature_points = this->model->getFEEngine().getNbIntegrationPoints(type);
+  UInt nb_quadrature_points = this->fem.getNbIntegrationPoints(type);
 
   gradu_it  += index*nb_quadrature_points;
   gradu_end += (index+1)*nb_quadrature_points;

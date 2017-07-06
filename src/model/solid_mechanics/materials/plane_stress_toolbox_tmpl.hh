@@ -79,10 +79,7 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
-  virtual void computeThirdAxisDeformation(__attribute__((unused))
-                                           ElementType el_type,
-                                           __attribute__((unused))
-                                           GhostType ghost_type) {}
+  virtual void computeThirdAxisDeformation(ElementType, GhostType) {}
 
   /// Computation of Cauchy stress tensor in the case of finite deformation
   virtual void computeAllCauchyStresses(GhostType ghost_type = _not_ghost) {
@@ -96,10 +93,9 @@ public:
 
       // resizeInternalArray(stress);
 
-      Mesh::type_iterator it =
-          this->model->getFEEngine().getMesh().firstType(2, ghost_type);
+      Mesh::type_iterator it = this->fem.getMesh().firstType(2, ghost_type);
       Mesh::type_iterator last_type =
-          this->model->getFEEngine().getMesh().lastType(2, ghost_type);
+          this->fem.getMesh().lastType(2, ghost_type);
 
       for (; it != last_type; ++it)
         this->computeCauchyStressPlaneStress(*it, ghost_type);
@@ -135,7 +131,7 @@ protected:
 template <class ParentMaterial>
 inline PlaneStressToolbox<2, ParentMaterial>::PlaneStressToolbox(
     SolidMechanicsModel & model, const ID & id)
-    : Material(model, id), ParentMaterial(model, id),
+    : ParentMaterial(model, id),
       third_axis_deformation("third_axis_deformation", *this),
       plane_stress(false), initialize_third_axis_deformation(false) {
 
@@ -148,8 +144,7 @@ template <class ParentMaterial>
 inline PlaneStressToolbox<2, ParentMaterial>::PlaneStressToolbox(
     SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
     FEEngine & fe_engine, const ID & id)
-    : Material(model, dim, mesh, fe_engine, id),
-      ParentMaterial(model, dim, mesh, fe_engine, id),
+    : ParentMaterial(model, dim, mesh, fe_engine, id),
       third_axis_deformation("third_axis_deformation", *this, dim, fe_engine,
                              this->element_filter),
       plane_stress(false), initialize_third_axis_deformation(false) {
@@ -169,6 +164,6 @@ inline PlaneStressToolbox<2, Material>::PlaneStressToolbox(
                       "Is plane stress");
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_PLANE_STRESS_TOOLBOX_TMPL_HH__ */

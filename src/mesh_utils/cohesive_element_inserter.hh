@@ -34,28 +34,25 @@
 #define __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__
 
 /* -------------------------------------------------------------------------- */
-#include <numeric>
 #include "data_accessor.hh"
 #include "mesh_utils.hh"
+#include <numeric>
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-#  include "global_ids_updater.hh"
-#  include "facet_synchronizer.hh"
+#include "facet_synchronizer.hh"
+#include "global_ids_updater.hh"
 #endif
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-class CohesiveElementInserter : public DataAccessor {
+class CohesiveElementInserter : public DataAccessor<Element> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  CohesiveElementInserter(Mesh & mesh,
-			  bool is_extrinsic = false,
-			  ElementSynchronizer * synchronizer = NULL,
-			  const ID & id = "cohesive_element_inserter");
+  CohesiveElementInserter(Mesh & mesh, bool is_extrinsic = false,
+                          const ID & id = "cohesive_element_inserter");
 
   virtual ~CohesiveElementInserter();
 
@@ -63,7 +60,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// init function
   void init(bool is_extrinsic);
 
@@ -73,9 +69,9 @@ public:
   /// insert intrinsic cohesive elements in a predefined range
   UInt insertIntrinsicElements();
 
-  /// preset insertion of intrinsic cohesive elements along 
+  /// preset insertion of intrinsic cohesive elements along
   /// a predefined group of facet and assign them a defined material index.
-  /// insertElement() method has to be called to finalize insertion. 
+  /// insertElement() method has to be called to finalize insertion.
   void insertIntrinsicElements(std::string physname, UInt material_index);
 
   /// insert extrinsic cohesive elements (returns the number of new
@@ -91,11 +87,10 @@ public:
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   /// init parallel variables
   void initParallel(FacetSynchronizer * facet_synchronizer,
-		    ElementSynchronizer * element_synchronizer);
+                    ElementSynchronizer * element_synchronizer);
 #endif
 
 protected:
-
   /// init facets check
   void initFacetsCheck();
 
@@ -114,38 +109,48 @@ protected:
   void updateNodesType(Mesh & mesh, NewNodesEvent & node_event);
 
   /// functions for parallel communications
-  inline UInt getNbDataForElements(const Array<Element> & elements,
-				   SynchronizationTag tag) const;
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  inline void packElementData(CommunicationBuffer & buffer,
-			      const Array<Element> & elements,
-			      SynchronizationTag tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  inline void unpackElementData(CommunicationBuffer & buffer,
-				const Array<Element> & elements,
-				SynchronizationTag tag);
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
-  template<bool pack_mode>
-  inline void packUnpackGlobalConnectivity(CommunicationBuffer & buffer,
-					   const Array<Element> & elements) const;
+  template <bool pack_mode>
+  inline void
+  packUnpackGlobalConnectivity(CommunicationBuffer & buffer,
+                               const Array<Element> & elements) const;
 
-  template<bool pack_mode>
-  inline void packUnpackGroupedInsertionData(CommunicationBuffer & buffer,
-					     const Array<Element> & elements) const;
+  template <bool pack_mode>
+  inline void
+  packUnpackGroupedInsertionData(CommunicationBuffer & buffer,
+                                 const Array<Element> & elements) const;
+#else
+  /// functions for parallel communications
+  inline UInt getNbData(const Array<Element> &,
+                        const SynchronizationTag &) const override {
+    return 0;
+  }
+
+  inline void packData(CommunicationBuffer &, const Array<Element> &,
+                       const SynchronizationTag &) const override {}
+
+  inline void unpackData(CommunicationBuffer &, const Array<Element> &,
+                         const SynchronizationTag &) override {}
 #endif
-
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  AKANTU_GET_MACRO_NOT_CONST(InsertionFacetsByElement, insertion_facets,
+                             ElementTypeMapArray<bool> &);
 
-  AKANTU_GET_MACRO_NOT_CONST(InsertionFacetsByElement,
-			     insertion_facets,
-			     ElementTypeMapArray<bool> &);
-
-  AKANTU_GET_MACRO(InsertionFacetsByElement,
-		   insertion_facets,
-		   const ElementTypeMapArray<bool> &);
+  AKANTU_GET_MACRO(InsertionFacetsByElement, insertion_facets,
+                   const ElementTypeMapArray<bool> &);
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(InsertionFacets, insertion_facets, bool);
 
@@ -158,7 +163,6 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// object id
   ID id;
 
@@ -174,7 +178,8 @@ private:
   /// limits for element insertion
   Array<Real> insertion_limits;
 
-  /// vector containing facets in which extrinsic cohesive elements can be inserted
+  /// vector containing facets in which extrinsic cohesive elements can be
+  /// inserted
   ElementTypeMapArray<bool> check_facets;
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
@@ -186,24 +191,21 @@ private:
 #endif
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-#  include "cohesive_element_inserter_inline_impl.cc"
+#include "cohesive_element_inserter_inline_impl.cc"
 #endif
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const CohesiveElementInserter & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const CohesiveElementInserter & _this) {
   _this.printself(stream);
   return stream;
 }
 
-
 } // akantu
-
 
 #endif /* __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__ */

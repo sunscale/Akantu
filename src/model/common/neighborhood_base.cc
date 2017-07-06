@@ -43,8 +43,8 @@ NeighborhoodBase::NeighborhoodBase(Model & model,
                                    const ElementTypeMapReal & quad_coordinates,
                                    const ID & id, const MemoryID & memory_id)
     : Memory(id, memory_id), model(model), neighborhood_radius(0.),
-      spatial_grid(NULL), is_creating_grid(false), grid_synchronizer(NULL),
-      quad_coordinates(quad_coordinates),
+      spatial_grid(nullptr), is_creating_grid(false),
+      grid_synchronizer(nullptr), quad_coordinates(quad_coordinates),
       spatial_dimension(this->model.getMesh().getSpatialDimension()) {
 
   AKANTU_DEBUG_IN();
@@ -55,19 +55,11 @@ NeighborhoodBase::NeighborhoodBase(Model & model,
 }
 
 /* -------------------------------------------------------------------------- */
-NeighborhoodBase::~NeighborhoodBase() {
-  AKANTU_DEBUG_IN();
+NeighborhoodBase::~NeighborhoodBase() = default;
 
-  delete spatial_grid;
-  delete grid_synchronizer;
-
-  AKANTU_DEBUG_OUT();
-}
-
-// /* --------------------------------------------------------------------------
-// */
-// void NeighborhoodBase::createSynchronizerRegistry(DataAccessor *
-// data_accessor){
+/* -------------------------------------------------------------------------- */
+// void NeighborhoodBase::createSynchronizerRegistry(
+//     DataAccessor<Element> * data_accessor) {
 //   this->synch_registry = new SynchronizerRegistry(*data_accessor);
 // }
 
@@ -96,7 +88,7 @@ void NeighborhoodBase::createGrid() {
                        this->neighborhood_radius * safety_factor);
 
   spatial_grid =
-      new SpatialGrid<IntegrationPoint>(spatial_dimension, spacing, center);
+    std::make_unique<SpatialGrid<IntegrationPoint>>(spatial_dimension, spacing, center);
 
   AKANTU_DEBUG_OUT();
 }
@@ -270,17 +262,16 @@ void NeighborhoodBase::saveNeighborCoords(const std::string & filename) const {
 void NeighborhoodBase::onElementsRemoved(
     const Array<Element> & element_list,
     const ElementTypeMapArray<UInt> & new_numbering,
-    __attribute__((unused)) const RemovedElementsEvent & event) {
+    const RemovedElementsEvent & event) {
   AKANTU_DEBUG_IN();
 
   FEEngine & fem = this->model.getFEEngine();
   UInt nb_quad = 0;
   // Change the pairs in new global numbering
-  for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-    GhostType ghost_type2 = (GhostType)gt;
+  for(auto ghost_type2 : ghost_types) {
 
-    PairList::iterator first_pair = pair_list[ghost_type2].begin();
-    PairList::iterator last_pair = pair_list[ghost_type2].end();
+    auto first_pair = pair_list[ghost_type2].begin();
+    auto last_pair = pair_list[ghost_type2].end();
 
     for (; first_pair != last_pair; ++first_pair) {
       IntegrationPoint & q1 = first_pair->first;
@@ -306,9 +297,10 @@ void NeighborhoodBase::onElementsRemoved(
       }
     }
   }
+
   this->grid_synchronizer->onElementsRemoved(element_list, new_numbering,
                                              event);
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu

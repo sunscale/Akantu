@@ -45,10 +45,10 @@ class Model;
 template <class T> class SpatialGrid;
 class GridSynchronizer;
 class RemovedElementsEvent;
-} // akantu
+} // namespace akantu
 
 namespace akantu {
-class NeighborhoodBase : public Memory,
+class NeighborhoodBase : protected Memory,
                          public DataAccessor<Element>,
                          public SynchronizerRegistry {
   /* ------------------------------------------------------------------------ */
@@ -61,7 +61,7 @@ public:
                    const MemoryID & memory_id = 0);
   virtual ~NeighborhoodBase();
 
-  typedef std::vector<std::pair<IntegrationPoint, IntegrationPoint> > PairList;
+  typedef std::vector<std::pair<IntegrationPoint, IntegrationPoint>> PairList;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -75,8 +75,8 @@ public:
   // void createSynchronizerRegistry(DataAccessor * data_accessor);
 
   /// initialize the material computed parameter
-  inline void insertQuad(const IntegrationPoint & quad,
-                         const Vector<Real> & coords);
+  inline void insertIntegrationPoint(const IntegrationPoint & quad,
+                                     const Vector<Real> & coords);
 
   /// create the pairs of quadrature points
   void updatePairList();
@@ -91,20 +91,17 @@ public:
   virtual void createGridSynchronizer() = 0;
 
   /// inherited function from MeshEventHandler
-  virtual void
-  onElementsRemoved(const Array<Element> & element_list,
-                    const ElementTypeMapArray<UInt> & new_numbering,
-                    const RemovedElementsEvent & event);
+  virtual void onElementsRemoved(const Array<Element> & element_list,
+                                 const ElementTypeMapArray<UInt> & new_numbering,
+                                 const RemovedElementsEvent & event) ;
 
 protected:
   /// create the grid
   void createGrid();
 
-  /* --------------------------------------------------------------------------
-   */
-  /* Accessors */
-  /* --------------------------------------------------------------------------
-   */
+  /* ------------------------------------------------------------------------ */
+  /* Accessors                                                                */
+  /* ------------------------------------------------------------------------ */
 public:
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
   AKANTU_GET_MACRO(Model, model, const Model &);
@@ -130,12 +127,12 @@ protected:
   PairList pair_list[2];
 
   /// the regular grid to construct/update the pair lists
-  SpatialGrid<IntegrationPoint> * spatial_grid;
+  std::unique_ptr<SpatialGrid<IntegrationPoint>> spatial_grid;
 
   bool is_creating_grid;
 
   /// the grid synchronizer for parallel computations
-  GridSynchronizer * grid_synchronizer;
+  std::unique_ptr<GridSynchronizer> grid_synchronizer;
 
   /// the quadrature point positions
   const ElementTypeMapArray<Real> & quad_coordinates;
@@ -144,7 +141,7 @@ protected:
   const UInt spatial_dimension;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "neighborhood_base_inline_impl.cc"
 

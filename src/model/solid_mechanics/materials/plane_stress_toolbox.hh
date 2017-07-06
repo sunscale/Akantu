@@ -35,6 +35,12 @@
 #define __AKANTU_PLANE_STRESS_TOOLBOX_HH__
 
 namespace akantu {
+class SolidMechanicsModel;
+class FEEngine;
+}  // akantu
+
+
+namespace akantu {
 
 /**
  * Empty class in dimensions different from 2
@@ -47,12 +53,11 @@ class PlaneStressToolbox : public ParentMaterial {
   /* ------------------------------------------------------------------------ */
 public:
   PlaneStressToolbox(SolidMechanicsModel & model, const ID & id = "")
-      : Material(model, id), ParentMaterial(model, id) {}
+      : ParentMaterial(model, id) {}
   PlaneStressToolbox(SolidMechanicsModel & model, UInt spatial_dimension,
                      const Mesh & mesh, FEEngine & fe_engine,
                      const ID & id = "")
-      : Material(model, spatial_dimension, mesh, fe_engine, id),
-        ParentMaterial(model, spatial_dimension, mesh, fe_engine, id) {}
+      : ParentMaterial(model, spatial_dimension, mesh, fe_engine, id) {}
 
   virtual ~PlaneStressToolbox() {}
 
@@ -94,7 +99,7 @@ protected:
 AKANTU_PLANE_STRESS_TOOL_SPEC(1)
 AKANTU_PLANE_STRESS_TOOL_SPEC(3)
 
-} // akantu
+} // namespace akantu
 
 #include "plane_stress_toolbox_tmpl.hh"
 

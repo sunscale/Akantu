@@ -79,7 +79,7 @@ protected:
 public:
   /// solve a step using a given pre instantiated time step solver and
   /// nondynamic linear solver
-  void solveStep(const ID & solver_id = "");
+  virtual void solveStep(const ID & solver_id = "");
 
   /// Initialize a time solver that can be used afterwards with its id
   void getNewSolver(const ID & solver_id,

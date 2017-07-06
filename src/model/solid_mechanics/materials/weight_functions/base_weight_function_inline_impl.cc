@@ -28,31 +28,44 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "base_weight_function.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_BASE_WEIGHT_FUNCTION_INLINE_IMPL_CC__
+#define __AKANTU_BASE_WEIGHT_FUNCTION_INLINE_IMPL_CC__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline void BaseWeightFunction::init() {
   /// compute R^2 for a given non-local radius
-  this->R2 = this->R *this-> R;
+  this->R2 = this->R * this->R;
 }
 
 /* -------------------------------------------------------------------------- */
 inline void BaseWeightFunction::setRadius(Real radius) {
   /// set the non-local radius and update R^2 accordingly
-  this->R = radius; 
+  this->R = radius;
   this->R2 = this->R * this->R;
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real BaseWeightFunction:: operator()(Real r,
-					    const __attribute__((unused)) IntegrationPoint & q1,
-					    const __attribute__((unused)) IntegrationPoint & q2) {
-  /// initialize the weight
+inline Real BaseWeightFunction::
+operator()(Real r, const IntegrationPoint &,
+           const IntegrationPoint &) {
+
+/// initialize the weight
   Real w = 0;
-  /// compute weight for given r 
-  if(r <= this->R) {
-    Real alpha = (1. - r*r / this->R2);
+  /// compute weight for given r
+  if (r <= this->R) {
+    Real alpha = (1. - r * r / this->R2);
     w = alpha * alpha;
     // *weight = 1 - sqrt(r / radius);
   }
+
   return w;
 }
+
+} // akantu
+#endif /* __AKANTU_BASE_WEIGHT_FUNCTION_INLINE_IMPL_CC__ */

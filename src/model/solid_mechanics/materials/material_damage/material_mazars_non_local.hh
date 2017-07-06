@@ -46,34 +46,34 @@ namespace akantu {
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension>
-class MaterialMazarsNonLocal : public MaterialMazars<spatial_dimension>,
-			       public MaterialNonLocal<spatial_dimension> {
+template <UInt spatial_dimension>
+class MaterialMazarsNonLocal
+    : public MaterialNonLocal<spatial_dimension,
+                              MaterialMazars<spatial_dimension>> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialNonLocal<spatial_dimension> MaterialNonLocalParent;
+  using MaterialNonLocalParent = MaterialNonLocal<spatial_dimension,
+                                                  MaterialMazars<spatial_dimension>>;
 
   MaterialMazarsNonLocal(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialMazarsNonLocal() {};
+  virtual ~MaterialMazarsNonLocal(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   void initMaterial();
 
   /// constitutive law for all element of a type
   void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   /// constitutive law
-  void computeNonLocalStresses(GhostType ghost_type = _not_ghost);
-  void computeNonLocalStress(Array<Real> & Ehatnl,
-			     ElementType el_type,
-			     GhostType ghost_type = _not_ghost);
+  void computeNonLocalStresses(GhostType ghost_type = _not_ghost) override;
+  void computeNonLocalStress(Array<Real> & Ehatnl, ElementType el_type,
+                             GhostType ghost_type = _not_ghost);
 
 protected:
   /// associate the non-local variables of the material to their neighborhoods
@@ -83,7 +83,6 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -92,12 +91,6 @@ private:
   InternalField<Real> Ehat;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-//#include "material_mazars_non_local_inline_impl.cc"
-
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_MAZARS_NON_LOCAL_HH__ */

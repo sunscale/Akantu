@@ -30,6 +30,14 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_SOLID_MECHANICS_MODEL_TMPL_HH__
+#define __AKANTU_SOLID_MECHANICS_MODEL_TMPL_HH__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename M>
@@ -105,4 +113,8 @@ void SolidMechanicsModel::registerNewCustomMaterials(const ID & mat_type) {
     }
   }
 }
+
 /* -------------------------------------------------------------------------- */
+} // akantu
+
+#endif /* __AKANTU_SOLID_MECHANICS_MODEL_TMPL_HH__ */

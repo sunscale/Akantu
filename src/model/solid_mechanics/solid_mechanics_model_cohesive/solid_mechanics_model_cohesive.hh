@@ -68,6 +68,8 @@ struct FacetsCohesiveIntegrationOrderFunctor {
   }
 };
 
+DECLARE_NAMED_ARGUMENT(is_extrinsic);
+
 /* -------------------------------------------------------------------------- */
 struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
   SolidMechanicsModelCohesiveOptions(
@@ -75,11 +77,16 @@ struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
       bool extrinsic = false, bool no_init_materials = false)
       : SolidMechanicsModelOptions(analysis_method, no_init_materials),
         extrinsic(extrinsic) {}
+
+  template <typename... pack>
+  SolidMechanicsModelCohesiveOptions(use_named_args_t, pack &&... _pack)
+      : SolidMechanicsModelOptions(
+            OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
+            OPTIONAL_NAMED_ARG(is_extrinsic, false),
+            OPTIONAL_NAMED_ARG(no_init_materials, false)) {}
+
   bool extrinsic;
 };
-
-extern const SolidMechanicsModelCohesiveOptions
-    default_solid_mechanics_model_cohesive_options;
 
 /* -------------------------------------------------------------------------- */
 /* Solid Mechanics Model for Cohesive elements                                */
@@ -121,7 +128,7 @@ public:
   void setTimeStep(Real time_step);
 
   /// assemble the residual for the explicit scheme
-  virtual void updateResidual(bool need_initialize = true);
+  virtual void assembleInternalForces();
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
@@ -135,8 +142,12 @@ public:
   void interpolateStress();
 
   /// initialize the cohesive model
-  void initFull(const ModelOptions & options =
-                    default_solid_mechanics_model_cohesive_options);
+  void initFull(const ModelOptions & options = SolidMechanicsModelCohesiveOptions());
+
+  template <typename P, typename T, typename... pack>
+  void initFull(named_argument::param_t<P, T &&> && first, pack &&... _pack) {
+    this->initFull(SolidMechanicsModelCohesiveOptions{use_named_args, first, _pack...});
+  }
 
   /// initialize the model
   void initModel();

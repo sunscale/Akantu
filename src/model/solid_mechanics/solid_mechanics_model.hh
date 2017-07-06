@@ -51,6 +51,7 @@
 #include "material_selector.hh"
 #include "mesh.hh"
 #include "model.hh"
+#include "non_local_manager.hh"
 #include "shape_lagrange.hh"
 #include "solid_mechanics_model_event_handler.hh"
 /* -------------------------------------------------------------------------- */
@@ -63,20 +64,18 @@ class NonLocalManager;
 
 namespace akantu {
 
-DECLARE_NAMED_ARGUMENT(analysis_method);
-DECLARE_NAMED_ARGUMENT(no_init_materials);
-
 struct SolidMechanicsModelOptions : public ModelOptions {
-  SolidMechanicsModelOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
-                             bool no_init_materials = false)
+  SolidMechanicsModelOptions(
+      AnalysisMethod analysis_method = _explicit_lumped_mass,
+      bool no_init_materials = false)
       : analysis_method(analysis_method), no_init_materials(no_init_materials) {
   }
 
   template <typename... pack>
   SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack)
       : SolidMechanicsModelOptions(
-          OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
-          OPTIONAL_NAMED_ARG(no_init_materials, false)) {}
+            OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
+            OPTIONAL_NAMED_ARG(no_init_materials, false)) {}
 
   AnalysisMethod analysis_method;
   bool no_init_materials;
@@ -88,8 +87,8 @@ class SolidMechanicsModel
     : public Model,
       public DataAccessor<Element>,
       public DataAccessor<UInt>,
-      public MeshEventHandler,
       public BoundaryCondition<SolidMechanicsModel>,
+      public NonLocalManager,
       public EventHandlerManager<SolidMechanicsModelEventHandler> {
 
   /* ------------------------------------------------------------------------ */
@@ -127,7 +126,8 @@ public:
   }
 
   /// initialize completely the model
-  void initFull(const ModelOptions & options = SolidMechanicsModelOptions()) override;
+  void initFull(
+      const ModelOptions & options = SolidMechanicsModelOptions()) override;
 
   /// initialize the fem object needed for boundary conditions
   void initFEEngineBoundary();
@@ -146,7 +146,7 @@ public:
   virtual void initMaterials();
 
   /// initialize the model
-  virtual void initModel();
+  void initModel() override;
 
   /// init PBC synchronizer
   // void initPBC();
@@ -155,12 +155,12 @@ public:
   void initNewSolver(const AnalysisMethod & method);
 
   /// function to print the containt of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
 protected:
   /// allocate an array if needed
   template <typename T>
-  void allocNodalField(Array<T> *& array, UInt nb_component, const ID & name);
+  void allocNodalField(Array<T> *& array, const ID & name);
 
   /* ------------------------------------------------------------------------ */
   /* PBC                                                                      */
@@ -216,15 +216,17 @@ protected:
   //   void initExplicit(AnalysisMethod analysis_method =
   //   _explicit_lumped_mass);
 
-  //   bool isExplicit() {
-  //     return method == _explicit_lumped_mass ||
-  //            method == _explicit_consistent_mass;
-  //   }
+public:
+  bool isDefaultSolverExplicit() {
+    return method == _explicit_lumped_mass ||
+           method == _explicit_consistent_mass;
+  }
 
   //   /// initialize the array needed by updateResidual (residual,
   //   current_position)
   //   void initializeUpdateResidualData();
 
+protected:
   /// update the current position vector
   void updateCurrentPosition();
 
@@ -343,8 +345,6 @@ protected:
   //   void initJacobianMatrix();
 
   /* ------------------------------------------------------------------------ */
-  void updateDataForNonLocalCriterion(ElementTypeMapReal & criterion) override;
-
   // public:
   /// Update the stresses for the computation of the residual of the Stiffness
   /// matrix in the case of finite deformation
@@ -390,7 +390,7 @@ protected:
 
   /// reinitialize dof_synchronizer and solver (either in implicit or
   /// explicit) when cohesive elements are inserted
-  void reinitializeSolver();
+  //void reinitializeSolver();
 
   /* ------------------------------------------------------------------------ */
   /* Mass (solid_mechanics_model_mass.cc)                                     */
@@ -419,6 +419,27 @@ protected:
   /// compute the external work (for impose displacement, the velocity should be
   /// given too)
   Real getExternalWork();
+
+  /* ------------------------------------------------------------------------ */
+  /* NonLocalManager inherited members                                        */
+  /* ------------------------------------------------------------------------ */
+protected:
+  void updateDataForNonLocalCriterion(ElementTypeMapReal & criterion) override;
+
+  void computeNonLocalStresses(const GhostType & ghost_type) override;
+
+  void
+  insertIntegrationPointsInNeighborhoods(const GhostType & ghost_type) override;
+
+  /// update the values of the non local internal
+  void updateLocalInternal(ElementTypeMapReal & internal_flat,
+                           const GhostType & ghost_type,
+                           const ElementKind & kind) override;
+
+  /// copy the results of the averaging in the materials
+  void updateNonLocalInternal(ElementTypeMapReal & internal_flat,
+                              const GhostType & ghost_type,
+                              const ElementKind & kind) override;
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
@@ -521,7 +542,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// return the dimension of the system space
-  AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
+  AKANTU_GET_MACRO(SpatialDimension, Model::spatial_dimension, UInt);
 
   /// get the current value of the time step
   // AKANTU_GET_MACRO(TimeStep, time_step, Real);
@@ -547,7 +568,7 @@ public:
 
   /// get the SolidMechanicsModel::current_position vector \warn only consistent
   /// after a call to SolidMechanicsModel::updateCurrentPosition
-  AKANTU_GET_MACRO(CurrentPosition, *current_position, const Array<Real> &);
+  const Array<Real> & getCurrentPosition();
 
   /// get  the SolidMechanicsModel::increment  vector \warn  only  consistent if
   /// SolidMechanicsModel::setIncrementFlagOn has been called before
@@ -659,9 +680,6 @@ public:
   /// Get the type of analysis method used
   AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
 
-  /// get the non-local manager
-  AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, NonLocalManager &);
-
 protected:
   friend class Material;
 
@@ -684,6 +702,7 @@ protected:
 
   /// displacements array
   Array<Real> * displacement;
+  UInt displacement_release{0};
 
   /// displacements array at the previous time step (used in finite deformation)
   Array<Real> * previous_displacement;
@@ -714,6 +733,7 @@ protected:
 
   /// array of current position used during update residual
   Array<Real> * current_position;
+  UInt current_position_release{0};
 
   /// mass matrix
   SparseMatrix * mass_matrix;
@@ -772,33 +792,17 @@ protected:
   /// map a registered internals to be flattened for dump purposes
   flatten_internal_map registered_internals;
 
-  /// pointer to non-local manager: For non-local continuum damage computations
-  NonLocalManager * non_local_manager;
-
   /// pointer to the pbc synchronizer
   // PBCSynchronizer * pbc_synch;
 };
 
 /* -------------------------------------------------------------------------- */
 namespace BC {
-namespace Neumann {
-  typedef FromHigherDim FromStress;
-  typedef FromSameDim FromTraction;
-} // namespace Neumann
+  namespace Neumann {
+    typedef FromHigherDim FromStress;
+    typedef FromSameDim FromTraction;
+  } // namespace Neumann
 } // namespace BC
-
-} // akantu
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-#include "material.hh"
-#include "parser.hh"
-
-namespace akantu {
-
-#include "solid_mechanics_model_inline_impl.cc"
-#include "solid_mechanics_model_tmpl.hh"
 
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream,
@@ -807,7 +811,16 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
+
+/* -------------------------------------------------------------------------- */
+/* inline functions                                                           */
+/* -------------------------------------------------------------------------- */
+#include "material.hh"
+#include "parser.hh"
+
+#include "solid_mechanics_model_inline_impl.cc"
+#include "solid_mechanics_model_tmpl.hh"
 
 #include "material_selector_tmpl.hh"
 

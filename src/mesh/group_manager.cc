@@ -35,11 +35,11 @@
 /* -------------------------------------------------------------------------- */
 #include "group_manager.hh"
 #include "aka_csr.hh"
+#include "data_accessor.hh"
+#include "element_group.hh"
+#include "element_synchronizer.hh"
 #include "mesh.hh"
 #include "mesh_utils.hh"
-#include "data_accessor.hh"
-#include "element_synchronizer.hh"
-#include "element_group.hh"
 #include "node_group.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
@@ -62,13 +62,13 @@ GroupManager::GroupManager(const Mesh & mesh, const ID & id,
 
 /* -------------------------------------------------------------------------- */
 GroupManager::~GroupManager() {
-  ElementGroups::iterator eit = element_groups.begin();
-  ElementGroups::iterator eend = element_groups.end();
+  auto eit = element_groups.begin();
+  auto eend = element_groups.end();
   for (; eit != eend; ++eit)
     delete (eit->second);
 
-  NodeGroups::iterator nit = node_groups.begin();
-  NodeGroups::iterator nend = node_groups.end();
+  auto nit = node_groups.begin();
+  auto nend = node_groups.end();
   for (; nit != nend; ++nit)
     delete (nit->second);
 }
@@ -78,7 +78,7 @@ NodeGroup & GroupManager::createNodeGroup(const std::string & group_name,
                                           bool replace_group) {
   AKANTU_DEBUG_IN();
 
-  NodeGroups::iterator it = node_groups.find(group_name);
+  auto it = node_groups.find(group_name);
 
   if (it != node_groups.end()) {
     if (replace_group) {
@@ -147,7 +147,7 @@ ElementGroup & GroupManager::createElementGroup(const std::string & group_name,
   NodeGroup & new_node_group =
       createNodeGroup(group_name + "_nodes", replace_group);
 
-  ElementGroups::iterator it = element_groups.find(group_name);
+  auto it = element_groups.find(group_name);
 
   if (it != element_groups.end()) {
     if (replace_group) {
@@ -181,8 +181,8 @@ void GroupManager::destroyElementGroup(const std::string & group_name,
                                        bool destroy_node_group) {
   AKANTU_DEBUG_IN();
 
-  ElementGroups::iterator eit = element_groups.find(group_name);
-  ElementGroups::iterator eend = element_groups.end();
+  auto eit = element_groups.find(group_name);
+  auto eend = element_groups.end();
   if (eit != eend) {
     if (destroy_node_group)
       destroyNodeGroup(eit->second->getNodeGroup().getName());
@@ -197,8 +197,8 @@ void GroupManager::destroyElementGroup(const std::string & group_name,
 void GroupManager::destroyAllElementGroups(bool destroy_node_groups) {
   AKANTU_DEBUG_IN();
 
-  ElementGroups::iterator eit = element_groups.begin();
-  ElementGroups::iterator eend = element_groups.end();
+  auto eit = element_groups.begin();
+  auto eend = element_groups.end();
   for (; eit != eend; ++eit) {
     if (destroy_node_groups)
       destroyNodeGroup(eit->second->getNodeGroup().getName());
@@ -256,19 +256,18 @@ ElementGroup & GroupManager::createFilteredElementGroup(
 
 /* -------------------------------------------------------------------------- */
 class ClusterSynchronizer : public DataAccessor<Element> {
-  typedef std::set<std::pair<UInt, UInt> > DistantIDs;
+  using DistantIDs = std::set<std::pair<UInt, UInt>>;
 
 public:
   ClusterSynchronizer(GroupManager & group_manager, UInt element_dimension,
                       std::string cluster_name_prefix,
                       ElementTypeMapArray<UInt> & element_to_fragment,
-                      ElementSynchronizer & element_synchronizer,
+                      const ElementSynchronizer & element_synchronizer,
                       UInt nb_cluster)
       : group_manager(group_manager), element_dimension(element_dimension),
         cluster_name_prefix(cluster_name_prefix),
         element_to_fragment(element_to_fragment),
-        element_synchronizer(element_synchronizer),
-        nb_cluster(nb_cluster) {}
+        element_synchronizer(element_synchronizer), nb_cluster(nb_cluster) {}
 
   UInt synchronize() {
     StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
@@ -288,9 +287,7 @@ public:
                         nb_cluster_per_proc.end(), starting_index);
 
     /// create the local to distant cluster pairs with neighbors
-    element_synchronizer.computeBufferSize(*this, _gst_gm_clusters);
-    element_synchronizer.asynchronousSynchronize(*this, _gst_gm_clusters);
-    element_synchronizer.waitEndSynchronize(*this, _gst_gm_clusters);
+    element_synchronizer.synchronizeOnce(*this, _gst_gm_clusters);
 
     /// count total number of pairs
     Array<int> nb_pairs(nb_proc); // This is potentially a bug for more than
@@ -307,12 +304,10 @@ public:
 
     Array<UInt> total_pairs(total_nb_pairs, 2);
 
-    DistantIDs::iterator ids_it = distant_ids.begin();
-    DistantIDs::iterator ids_end = distant_ids.end();
-
-    for (; ids_it != ids_end; ++ids_it, ++local_pair_index) {
-      total_pairs(local_pair_index, 0) = ids_it->first;
-      total_pairs(local_pair_index, 1) = ids_it->second;
+    for (auto & ids : distant_ids) {
+      total_pairs(local_pair_index, 0) = ids.first;
+      total_pairs(local_pair_index, 1) = ids.second;
+      ++local_pair_index;
     }
 
     /// communicate pairs to all processors
@@ -322,7 +317,7 @@ public:
     /// renumber clusters
 
     /// generate fragment list
-    std::vector<std::set<UInt> > global_clusters;
+    std::vector<std::set<UInt>> global_clusters;
     UInt total_nb_cluster = 0;
 
     Array<bool> is_fragment_in_cluster(global_nb_fragment, 1, false);
@@ -398,8 +393,7 @@ public:
 
         std::stringstream tmp_sstr;
         tmp_sstr << "tmp_" << cluster_name_prefix << "_" << local_index;
-        GroupManager::element_group_iterator eg_it =
-            group_manager.element_group_find(tmp_sstr.str());
+        auto eg_it = group_manager.element_group_find(tmp_sstr.str());
 
         AKANTU_DEBUG_ASSERT(eg_it != group_manager.element_group_end(),
                             "Temporary fragment \"" << tmp_sstr.str()
@@ -470,7 +464,7 @@ private:
   UInt element_dimension;
   std::string cluster_name_prefix;
   ElementTypeMapArray<UInt> & element_to_fragment;
-  ElementSynchronizer & element_synchronizer;
+  const ElementSynchronizer & element_synchronizer;
 
   UInt nb_cluster;
   DistantIDs distant_ids;
@@ -489,18 +483,18 @@ UInt GroupManager::createBoundaryGroupFromGeometry() {
 /* -------------------------------------------------------------------------- */
 //// \todo if needed element list construction can be optimized by
 //// templating the filter class
-UInt GroupManager::createClusters(
-    UInt element_dimension, std::string cluster_name_prefix,
-    const GroupManager::ClusteringFilter & filter,
-    ElementSynchronizer * element_synchronizer, Mesh * mesh_facets) {
+UInt GroupManager::createClusters(UInt element_dimension,
+                                  std::string cluster_name_prefix,
+                                  const GroupManager::ClusteringFilter & filter,
+                                  Mesh * mesh_facets) {
   AKANTU_DEBUG_IN();
 
   UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
   std::string tmp_cluster_name_prefix = cluster_name_prefix;
 
-  ElementTypeMapArray<UInt> * element_to_fragment = NULL;
+  ElementTypeMapArray<UInt> * element_to_fragment = nullptr;
 
-  if (nb_proc > 1 && element_synchronizer) {
+  if (nb_proc > 1 && mesh.isDistributed()) {
     element_to_fragment =
         new ElementTypeMapArray<UInt>("element_to_fragment", id, memory_id);
     mesh.initElementTypeMapArray(*element_to_fragment, 1, element_dimension,
@@ -621,7 +615,7 @@ UInt GroupManager::createClusters(
           element_to_add.pop();
 
           /// if parallel, store cluster index per element
-          if (nb_proc > 1 && element_synchronizer)
+          if (nb_proc > 1 && mesh.isDistributed())
             (*element_to_fragment)(el.type, el.ghost_type)(el.element) =
                 nb_cluster - 1;
 
@@ -676,10 +670,10 @@ UInt GroupManager::createClusters(
     }
   }
 
-  if (nb_proc > 1 && element_synchronizer) {
+  if (nb_proc > 1 && mesh.isDistributed()) {
     ClusterSynchronizer cluster_synchronizer(
         *this, element_dimension, cluster_name_prefix, *element_to_fragment,
-        *element_synchronizer, nb_cluster);
+        this->mesh.getElementSynchronizer(), nb_cluster);
     nb_cluster = cluster_synchronizer.synchronize();
     delete element_to_fragment;
   }
@@ -758,7 +752,7 @@ void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
 
       UInt nb_nodes_per_element = mesh.getNbNodesPerElement(el.type);
 
-      Array<UInt>::const_iterator<Vector<UInt> > cit =
+      Array<UInt>::const_iterator<Vector<UInt>> cit =
           mesh.getConnectivity(*type_it, *gt).begin(nb_nodes_per_element);
 
       for (UInt e(0); e < nb_element; ++e, ++cit) {

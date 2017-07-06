@@ -43,7 +43,7 @@ namespace akantu {
 template <UInt dim>
 MaterialLinearIsotropicHardening<dim>::MaterialLinearIsotropicHardening(
     SolidMechanicsModel & model, const ID & id)
-    : Material(model, id), MaterialPlastic<dim>(model, id) {
+    : MaterialPlastic<dim>(model, id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -55,10 +55,7 @@ MaterialLinearIsotropicHardening<spatial_dimension>::
     MaterialLinearIsotropicHardening(SolidMechanicsModel & model, UInt dim,
                                      const Mesh & mesh, FEEngine & fe_engine,
                                      const ID & id)
-    :
-
-      Material(model, dim, mesh, fe_engine, id),
-      MaterialPlastic<spatial_dimension>(model, dim, mesh, fe_engine, id) {}
+    :  MaterialPlastic<spatial_dimension>(model, dim, mesh, fe_engine, id) {}
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>

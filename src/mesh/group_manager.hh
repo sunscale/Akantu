@@ -66,8 +66,8 @@ class GroupManager {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef std::map<std::string, ElementGroup *> ElementGroups;
-  typedef std::map<std::string, NodeGroup *> NodeGroups;
+  using ElementGroups =  std::map<std::string, ElementGroup *> ;
+  using NodeGroups = std::map<std::string, NodeGroup *> ;
 
 public:
   typedef std::set<ElementType> GroupManagerTypeSet;
@@ -175,8 +175,7 @@ public:
   UInt createClusters(UInt element_dimension,
                       std::string cluster_name_prefix = "cluster",
                       const ClusteringFilter & filter = ClusteringFilter(),
-                      ElementSynchronizer * element_synchronizer = NULL,
-                      Mesh * mesh_facets = NULL);
+                      Mesh * mesh_facets = nullptr);
 
   /// Create an ElementGroup based on a NodeGroup
   void createElementGroupFromNodeGroup(const std::string & name,

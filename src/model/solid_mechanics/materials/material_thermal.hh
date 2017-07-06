@@ -39,7 +39,7 @@
 
 namespace akantu {
 template<UInt spatial_dimension>
-class MaterialThermal : public virtual Material {
+class MaterialThermal : public Material {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

@@ -30,6 +30,14 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_SOLID_MECHANICS_MODEL_INLINE_IMPL_CC__
+#define __AKANTU_SOLID_MECHANICS_MODEL_INLINE_IMPL_CC__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline Material & SolidMechanicsModel::getMaterial(UInt mat_index) {
@@ -384,3 +392,6 @@ inline void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
+} // akantu
+
+#endif /* __AKANTU_SOLID_MECHANICS_MODEL_INLINE_IMPL_CC__ */

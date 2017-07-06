@@ -125,7 +125,7 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
   Real normal_opening_prec_norm = opening_prec.dot(normal);
   opening_prec = opening;
 
-  if (!this->model->isExplicit() && !this->recompute)
+  if (!this->model->isDefaultSolverExplicit() && !this->recompute)
     if ((normal_opening_prec_norm * normal_opening_norm) < 0.0) {
       reduction_penalty = true;
     }

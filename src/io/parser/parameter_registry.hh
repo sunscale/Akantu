@@ -37,9 +37,8 @@
 #ifndef __AKANTU_PARAMETER_REGISTRY_HH__
 #define __AKANTU_PARAMETER_REGISTRY_HH__
 
-
 namespace akantu {
-  class ParserParameter;
+class ParserParameter;
 }
 
 namespace akantu {
@@ -57,7 +56,7 @@ enum ParameterAccessType {
 
 /// Bit-wise operator between access modes
 inline ParameterAccessType operator|(const ParameterAccessType & a,
-                                 const ParameterAccessType & b) {
+                                     const ParameterAccessType & b) {
   ParameterAccessType tmp = ParameterAccessType(UInt(a) | UInt(b));
   return tmp;
 }
@@ -94,8 +93,7 @@ public:
 
 protected:
   /// Returns const instance of templated sub-class ParameterTyped
-  template <typename T>
-  const ParameterTyped<T> & getParameterTyped() const;
+  template <typename T> const ParameterTyped<T> & getParameterTyped() const;
 
   /// Returns instance of templated sub-class ParameterTyped
   template <typename T> ParameterTyped<T> & getParameterTyped();
@@ -119,7 +117,7 @@ private:
 template <typename T> class ParameterTyped : public Parameter {
 public:
   ParameterTyped(std::string name, std::string description,
-                     ParameterAccessType param_type, T & param);
+                 ParameterAccessType param_type, T & param);
 
   /* ------------------------------------------------------------------------ */
   template <typename V> void setTyped(const V & value);
@@ -152,7 +150,8 @@ public:
   /// Add parameter to the params map (with default value)
   template <typename T>
   void registerParam(std::string name, T & variable, const T & default_value,
-                     ParameterAccessType type, const std::string description = "");
+                     ParameterAccessType type,
+                     const std::string description = "");
 
   /*------------------------------------------------------------------------- */
 protected:
@@ -163,8 +162,10 @@ public:
   /// Set value to a parameter (with possible different type)
   template <typename T, typename V>
   void setMixed(const std::string & name, const V & value);
+
   /// Set value to a parameter
   template <typename T> void set(const std::string & name, const T & value);
+
   /// Get value of a parameter
   inline const Parameter & get(const std::string & name) const;
 
@@ -172,9 +173,11 @@ protected:
   template <typename T> T & get(const std::string & name);
 
 protected:
-  void setParameterAccessType(const std::string & name, ParameterAccessType ptype);
+  void setParameterAccessType(const std::string & name,
+                              ParameterAccessType ptype);
   /* ------------------------------------------------------------------------ */
   virtual void printself(std::ostream & stream, int indent) const;
+
 protected:
   /// Parameters map
   typedef std::map<std::string, Parameter *> Parameters;

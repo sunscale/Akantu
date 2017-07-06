@@ -182,16 +182,16 @@ inline Element
 Material::convertToLocalElement(const Element & global_element) const {
   UInt ge = global_element.element;
 #ifndef AKANTU_NDEBUG
-  UInt model_mat_index = this->model->getMaterialByElement(
+  UInt model_mat_index = this->model.getMaterialByElement(
       global_element.type, global_element.ghost_type)(ge);
 
-  UInt mat_index = this->model->getMaterialIndex(this->name);
+  UInt mat_index = this->model.getMaterialIndex(this->name);
   AKANTU_DEBUG_ASSERT(model_mat_index == mat_index,
                       "Conversion of a global  element in a local element for "
                       "the wrong material "
                           << this->name << std::endl);
 #endif
-  UInt le = this->model->getMaterialLocalNumbering(
+  UInt le = this->model.getMaterialLocalNumbering(
       global_element.type, global_element.ghost_type)(ge);
 
   Element tmp_quad(global_element.type, le, global_element.ghost_type,
@@ -214,7 +214,7 @@ Material::convertToGlobalElement(const Element & local_element) const {
 /* -------------------------------------------------------------------------- */
 inline IntegrationPoint
 Material::convertToLocalPoint(const IntegrationPoint & global_point) const {
-  const FEEngine & fem = this->model->getFEEngine();
+  const FEEngine & fem = this->model.getFEEngine();
   UInt nb_quad = fem.getNbIntegrationPoints(global_point.type);
   Element el =
       this->convertToLocalElement(static_cast<const Element &>(global_point));
@@ -225,7 +225,7 @@ Material::convertToLocalPoint(const IntegrationPoint & global_point) const {
 /* -------------------------------------------------------------------------- */
 inline IntegrationPoint
 Material::convertToGlobalPoint(const IntegrationPoint & local_point) const {
-  const FEEngine & fem = this->model->getFEEngine();
+  const FEEngine & fem = this->model.getFEEngine();
   UInt nb_quad = fem.getNbIntegrationPoints(local_point.type);
   Element el =
       this->convertToGlobalElement(static_cast<const Element &>(local_point));
@@ -298,7 +298,7 @@ inline void Material::packElementDataHelper(
     const ElementTypeMapArray<T> & data_to_pack, CommunicationBuffer & buffer,
     const Array<Element> & elements, const ID & fem_id) const {
   DataAccessor::packElementalDataHelper<T>(data_to_pack, buffer, elements, true,
-                                           model->getFEEngine(fem_id));
+                                           model.getFEEngine(fem_id));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -307,7 +307,7 @@ inline void Material::unpackElementDataHelper(
     ElementTypeMapArray<T> & data_to_unpack, CommunicationBuffer & buffer,
     const Array<Element> & elements, const ID & fem_id) {
   DataAccessor::unpackElementalDataHelper<T>(data_to_unpack, buffer, elements,
-                                             true, model->getFEEngine(fem_id));
+                                             true, model.getFEEngine(fem_id));
 }
 
 /* -------------------------------------------------------------------------- */

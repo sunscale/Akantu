@@ -29,52 +29,49 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "group_manager.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_FRAGMENT_MANAGER_HH__
 #define __AKANTU_FRAGMENT_MANAGER_HH__
 
-#include "group_manager.hh"
-#include "solid_mechanics_model_cohesive.hh"
+namespace akantu {
+class SolidMechanicsModelCohesive;
+}
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-
 class FragmentManager : public GroupManager {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  FragmentManager(SolidMechanicsModelCohesive & model,
-		  bool dump_data = true,
-		  const ID & id = "fragment_manager",
-		  const MemoryID & memory_id = 0);
+  FragmentManager(SolidMechanicsModelCohesive & model, bool dump_data = true,
+                  const ID & id = "fragment_manager",
+                  const MemoryID & memory_id = 0);
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// store mass density per integration point
   void storeMassDensityPerIntegrationPoint();
 
   /// integrate an elemental field multiplied by density on global
   /// fragments
   void integrateFieldOnFragments(ElementTypeMapArray<Real> & field,
-				 Array<Real> & output);
+                                 Array<Real> & output);
 
   /// compute fragments' mass
   void computeMass();
 
   /// create dump data for a single array
   template <typename T>
-  void createDumpDataArray(Array<T> & data,
-			   std::string name,
-			   bool fragment_index_output = false);
+  void createDumpDataArray(Array<T> & data, std::string name,
+                           bool fragment_index_output = false);
 
 public:
-
   /// build fragment list (cohesive elements are considered broken if
   /// damage >= damage_limit)
   void buildFragments(Real damage_limit = 1.);
@@ -99,7 +96,6 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// get number of fragments
   AKANTU_GET_MACRO(NbFragment, global_nb_fragment, UInt);
 
@@ -116,17 +112,17 @@ public:
   AKANTU_GET_MACRO(MomentsOfInertia, inertia_moments, const Array<Real> &);
 
   /// get fragments' principal directions
-  AKANTU_GET_MACRO(PrincipalDirections, principal_directions, const Array<Real> &);
+  AKANTU_GET_MACRO(PrincipalDirections, principal_directions,
+                   const Array<Real> &);
 
   /// get number of elements per fragment
-  AKANTU_GET_MACRO(NbElementsPerFragment,
-		   nb_elements_per_fragment, const Array<UInt> &);
+  AKANTU_GET_MACRO(NbElementsPerFragment, nb_elements_per_fragment,
+                   const Array<UInt> &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// local_fragment index
   Array<UInt> fragment_index;
 
@@ -166,7 +162,6 @@ private:
 
   /// dump data
   bool dump_data;
-
 };
 
 } // akantu

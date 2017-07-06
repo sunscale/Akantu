@@ -236,10 +236,10 @@ void MaterialElasticLinearAnisotropic<dim>::computeStress(
   if (viscous) {
     Array<Real> strain_rate(0, dim * dim, "strain_rate");
 
-    Array<Real> & velocity = this->model->getVelocity();
+    Array<Real> & velocity = this->model.getVelocity();
     const Array<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
 
-    this->model->getFEEngine().gradientOnIntegrationPoints(
+    this->fem.gradientOnIntegrationPoints(
         velocity, strain_rate, dim, el_type, ghost_type, elem_filter);
 
     Array<Real>::matrix_iterator gradu_dot_it = strain_rate.begin(dim, dim);

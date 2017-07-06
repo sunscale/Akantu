@@ -48,32 +48,35 @@ namespace akantu {
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension>
-class MaterialMarigoNonLocal : public MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension> > {
+template <UInt spatial_dimension>
+class MaterialMarigoNonLocal
+    : public MaterialDamageNonLocal<spatial_dimension,
+                                    MaterialMarigo<spatial_dimension>> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension> > MaterialMarigoNonLocalParent;
+  typedef MaterialDamageNonLocal<spatial_dimension,
+                                 MaterialMarigo<spatial_dimension>>
+      MaterialMarigoNonLocalParent;
   MaterialMarigoNonLocal(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialMarigoNonLocal() {};
+  virtual ~MaterialMarigoNonLocal(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   void initMaterial();
 
 protected:
   /// constitutive law
   void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
-  void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
+  void computeNonLocalStress(ElementType type,
+                             GhostType ghost_type = _not_ghost);
 
 private:
-
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -88,12 +91,8 @@ private:
   InternalField<Real> Ynl;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
+} // namespace akantu
 
 #include "material_marigo_non_local_inline_impl.cc"
-
-} // akantu
 
 #endif /* __AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH__ */

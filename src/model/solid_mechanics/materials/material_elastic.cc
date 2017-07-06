@@ -43,7 +43,7 @@ namespace akantu {
 template <UInt dim>
 MaterialElastic<dim>::MaterialElastic(SolidMechanicsModel & model,
                                       const ID & id)
-    : Material(model, id), Parent(model, id), was_stiffness_assembled(false) {
+    : Parent(model, id), was_stiffness_assembled(false) {
   AKANTU_DEBUG_IN();
   this->initialize();
   AKANTU_DEBUG_OUT();
@@ -55,8 +55,7 @@ MaterialElastic<dim>::MaterialElastic(SolidMechanicsModel & model,
                                       __attribute__((unused)) UInt a_dim,
                                       const Mesh & mesh, FEEngine & fe_engine,
                                       const ID & id)
-    : Material(model, dim, mesh, fe_engine, id),
-      Parent(model, dim, mesh, fe_engine, id), was_stiffness_assembled(false) {
+    : Parent(model, dim, mesh, fe_engine, id), was_stiffness_assembled(false) {
   AKANTU_DEBUG_IN();
   this->initialize();
   AKANTU_DEBUG_OUT();
@@ -227,7 +226,7 @@ void MaterialElastic<spatial_dimension>::computePotentialEnergyByElement(
                                                     spatial_dimension);
 
   UInt nb_quadrature_points =
-      this->model->getFEEngine().getNbIntegrationPoints(type);
+      this->fem.getNbIntegrationPoints(type);
 
   gradu_it += index * nb_quadrature_points;
   gradu_end += (index + 1) * nb_quadrature_points;

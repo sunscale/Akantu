@@ -40,7 +40,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 MaterialStandardLinearSolidDeviatoric<spatial_dimension>::MaterialStandardLinearSolidDeviatoric(SolidMechanicsModel & model, const ID & id)  :
-  Material(model, id), MaterialElastic<spatial_dimension>(model, id),
+  MaterialElastic<spatial_dimension>(model, id),
   stress_dev("stress_dev", *this),
   history_integral("history_integral", *this),
   dissipated_energy("dissipated_energy", *this) {
@@ -129,7 +129,7 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::computeStress(Ele
 
   Matrix<Real> s(spatial_dimension, spatial_dimension);
 
-  Real dt = this->model->getTimeStep();
+  Real dt = this->model.getTimeStep();
   Real exp_dt_tau = exp( -dt/tau );
   Real exp_dt_tau_2 = exp( -.5*dt/tau );
 
@@ -200,7 +200,7 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::updateDissipatedE
   Matrix<Real> epsilon_d(spatial_dimension, spatial_dimension);
   Matrix<Real> epsilon_v(spatial_dimension, spatial_dimension);
 
-  Real dt = this->model->getTimeStep();
+  Real dt = this->model.getTimeStep();
 
   Real gamma_v   = Ev / this->E;
   Real alpha = 1. / (2. * this->mu * gamma_v);
@@ -248,15 +248,11 @@ Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getDissipatedEner
   AKANTU_DEBUG_IN();
 
   Real de = 0.;
-  const Mesh & mesh = this->model->getFEEngine().getMesh();
 
   /// integrate the dissipated energy for each type of elements
-  Mesh::type_iterator it  = mesh.firstType(spatial_dimension, _not_ghost);
-  Mesh::type_iterator end = mesh.lastType(spatial_dimension, _not_ghost);
-
-  for(; it != end; ++it) {
-    de += this->model->getFEEngine().integrate(dissipated_energy(*it, _not_ghost), *it,
-					  _not_ghost, this->element_filter(*it, _not_ghost));
+  for(auto & type : this->element_filter.elementTypes(spatial_dimension, _not_ghost)) {
+    de += this->fem.integrate(dissipated_energy(type, _not_ghost), type,
+                              _not_ghost, this->element_filter(type, _not_ghost));
   }
 
   AKANTU_DEBUG_OUT();
@@ -268,12 +264,12 @@ template<UInt spatial_dimension>
 Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getDissipatedEnergy(ElementType type, UInt index) const {
   AKANTU_DEBUG_IN();
 
-  UInt nb_quadrature_points = this->model->getFEEngine().getNbIntegrationPoints(type);
+  UInt nb_quadrature_points = this->fem.getNbIntegrationPoints(type);
   Array<Real>::const_vector_iterator it = this->dissipated_energy(type, _not_ghost).begin(nb_quadrature_points);
   UInt gindex = (this->element_filter(type, _not_ghost))(index);
 
   AKANTU_DEBUG_OUT();
-  return this->model->getFEEngine().integrate(it[index], type, gindex);
+  return this->fem.integrate(it[index], type, gindex);
 }
 
 /* -------------------------------------------------------------------------- */

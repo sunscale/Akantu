@@ -30,19 +30,11 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "aka_types.hh"
-#include "parsable.hh"
-#include <cmath>
-#if defined(AKANTU_DEBUG_TOOLS)
-#include "aka_debug_tools.hh"
-#include <string>
-#endif
+#include "data_accessor.hh"
+#include "model.hh"
 #include "non_local_manager.hh"
-
+#include "parsable.hh"
 /* -------------------------------------------------------------------------- */
-#include <vector>
-#include "material_damage.hh"
 
 #ifndef __AKANTU_BASE_WEIGHT_FUNCTION_HH__
 #define __AKANTU_BASE_WEIGHT_FUNCTION_HH__
@@ -52,30 +44,30 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 /*  Normal weight function                                                    */
 /* -------------------------------------------------------------------------- */
-class BaseWeightFunction : public Parsable {
+class BaseWeightFunction : public Parsable, public DataAccessor<Element> {
 public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  BaseWeightFunction(NonLocalManager & manager, const std::string & type = "base") :
-    Parsable(_st_weight_function, "weight_function:" + type),
-    manager(manager),
-    type(type), 
-    spatial_dimension(manager.getModel().getSpatialDimension()) {
-    this->registerParam("update_rate"  , update_rate, 1U  ,
-			_pat_parsmod, "Update frequency");    
+  BaseWeightFunction(NonLocalManager & manager,
+                     const std::string & type = "base")
+      : Parsable(_st_weight_function, "weight_function:" + type),
+        manager(manager), type(type),
+        spatial_dimension(manager.getModel().getMesh().getSpatialDimension()) {
+    this->registerParam("update_rate", update_rate, 1U, _pat_parsmod,
+                        "Update frequency");
   }
 
   virtual ~BaseWeightFunction() {}
 
-  /* -------------------------------------------------------------------------- */
-  /* Methods                                                                    */
-  /* -------------------------------------------------------------------------- */
-  /// initialize the weight function 
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+  /// initialize the weight function
   virtual inline void init();
 
   /// update the internal parameters
-  virtual void updateInternals() {};
+  virtual void updateInternals(){};
 
   /* ------------------------------------------------------------------------ */
   /// set the non-local radius
@@ -83,22 +75,24 @@ public:
 
   /* ------------------------------------------------------------------------ */
   /// compute the weight for a given distance between two quadrature points
-  inline Real operator()(Real r,
-                         const __attribute__((unused)) IntegrationPoint & q1,
-                         const __attribute__((unused)) IntegrationPoint & q2);
+  inline Real operator()(Real r, const IntegrationPoint & q1,
+                         const IntegrationPoint & q2);
 
   /// print function
-  void printself(std::ostream & stream, int indent = 0) const {
+  void printself(std::ostream & stream, int indent = 0) const override {
     std::string space;
-    for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+    for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+      ;
     stream << space << "WeightFunction " << type << " [" << std::endl;
     Parsable::printself(stream, indent);
     stream << space << "]" << std::endl;
   }
 
-  /* -------------------------------------------------------------------------- */
-  /* Accessors                                                                  */
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* Accessors */
+  /* --------------------------------------------------------------------------
+   */
 
 public:
   /// get the radius
@@ -107,26 +101,23 @@ public:
   UInt getUpdateRate() { return update_rate; }
 
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 
-  virtual UInt getNbDataForElements(__attribute__((unused)) const Array<Element> & elements,
-                                    __attribute__((unused)) SynchronizationTag tag) const {
+  UInt getNbData(const Array<Element> &,
+                 const SynchronizationTag &) const override {
     return 0;
   }
 
-  virtual inline void packElementData(__attribute__((unused)) CommunicationBuffer & buffer,
-                                      __attribute__((unused)) const Array<Element> & elements,
-                                      __attribute__((unused)) SynchronizationTag tag) const {}
+  inline void packData(CommunicationBuffer &, const Array<Element> &,
+                       const SynchronizationTag &) const override {}
 
-  virtual inline void unpackElementData(__attribute__((unused)) CommunicationBuffer & buffer,
-                                        __attribute__((unused)) const Array<Element> & elements,
-                                        __attribute__((unused)) SynchronizationTag tag) {}
+  inline void unpackData(CommunicationBuffer &, const Array<Element> &,
+                         const SynchronizationTag &) override {}
 
   /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                  */
+  /* Accessors */
   /* ------------------------------------------------------------------------ */
 public:
   AKANTU_GET_MACRO(Type, type, const ID &);
@@ -150,34 +141,29 @@ protected:
   /// name of the type of weight function
   const std::string type;
 
-  /// the spatial dimension 
+  /// the spatial dimension
   UInt spatial_dimension;
 };
 
-inline std::ostream & operator <<(std::ostream & stream,
-                                  const BaseWeightFunction & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const BaseWeightFunction & _this) {
   _this.printself(stream);
   return stream;
 }
 
+} // namespace akantu
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "base_weight_function_inline_impl.cc"
-#endif
+#include "base_weight_function_inline_impl.cc"
 
-} // akantu
 /* -------------------------------------------------------------------------- */
 /* Include all other weight function types                                    */
 /* -------------------------------------------------------------------------- */
-#  include "damaged_weight_function.hh"
-#  include "remove_damaged_weight_function.hh"
-#  include "remove_damaged_with_damage_rate_weight_function.hh"
-#  include "stress_based_weight_function.hh"
-
-
-
+#if defined(AKANTU_DAMAGE_NON_LOCAL)
+#include "damaged_weight_function.hh"
+#include "remove_damaged_weight_function.hh"
+#include "remove_damaged_with_damage_rate_weight_function.hh"
+#include "stress_based_weight_function.hh"
+#endif
 /* -------------------------------------------------------------------------- */
-
 
 #endif /* __AKANTU_BASE_WEIGHT_FUNCTION_HH__ */

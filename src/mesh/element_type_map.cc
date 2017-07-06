@@ -1,17 +1,15 @@
 /**
- * @file   neighborhood_base_inline_impl.cc
+ * @file   element_type_map.cc
  *
- * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Nicolas Richart
  *
- * @date creation: Thu Feb 21 2013
- * @date last modification: Wed Nov 25 2015
+ * @date creation  Tue Jun 27 2017
  *
- * @brief  Inline implementation of neighborhood base functions
+ * @brief A Documented file.
  *
  * @section LICENSE
  *
- * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
+ * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
@@ -28,23 +26,25 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "aka_grid_dynamic.hh"
-#include "neighborhood_base.hh"
+#include "mesh.hh"
+#include "fe_engine.hh"
 /* -------------------------------------------------------------------------- */
-
-#ifndef __AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_CC__
-#define __AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_CC__
 
 namespace akantu {
 
-inline void
-NeighborhoodBase::insertIntegrationPoint(const IntegrationPoint & quad,
-                                         const Vector<Real> & coords) {
-  this->spatial_grid->insert(quad, coords);
+FEEngineElementTypeMapArrayInializer::FEEngineElementTypeMapArrayInializer(
+      const FEEngine & fe_engine, UInt spatial_dimension,
+      UInt nb_component, const GhostType & ghost_type,
+      const ElementKind & element_kind)
+      : MeshElementTypeMapArrayInializer(fe_engine.getMesh(), spatial_dimension,
+                                         nb_component, ghost_type, element_kind,
+                                         true, false),
+        fe_engine(fe_engine) {}
+
+UInt FEEngineElementTypeMapArrayInializer::size(const ElementType & type) const {
+  return MeshElementTypeMapArrayInializer::size(type) *
+    fe_engine.getNbIntegrationPoints(type, this->ghost_type);
 }
 
-} // namespace akantu
-
-#endif /* __AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_CC__ */
+}  // akantu

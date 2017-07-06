@@ -37,41 +37,45 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model, const ID & id) :
-  Material(model, id),
-  MaterialElastic<spatial_dimension>(model, id),
-  iso_hardening("iso_hardening", *this),
-  inelastic_strain("inelastic_strain", *this),
-  plastic_energy("plastic_energy", *this),
-  d_plastic_energy("d_plastic_energy", *this) {
+template <UInt spatial_dimension>
+MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model,
+                                                    const ID & id)
+    : MaterialElastic<spatial_dimension>(model, id),
+      iso_hardening("iso_hardening", *this),
+      inelastic_strain("inelastic_strain", *this),
+      plastic_energy("plastic_energy", *this),
+      d_plastic_energy("d_plastic_energy", *this) {
   AKANTU_DEBUG_IN();
   this->initialize();
   AKANTU_DEBUG_OUT();
 }
 
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 MaterialPlastic<spatial_dimension>::MaterialPlastic(SolidMechanicsModel & model,
-                                                    UInt dim,
-                                                    const Mesh & mesh,
+                                                    UInt dim, const Mesh & mesh,
                                                     FEEngine & fe_engine,
-                                                    const ID & id) :
-  Material(model, dim, mesh, fe_engine, id),
-  MaterialElastic<spatial_dimension>(model, dim, mesh, fe_engine, id),
-  iso_hardening   ("iso_hardening"   , *this, dim, fe_engine, this->element_filter),
-  inelastic_strain("inelastic_strain", *this, dim, fe_engine, this->element_filter),
-  plastic_energy  ("plastic_energy"  , *this, dim, fe_engine, this->element_filter),
-  d_plastic_energy("d_plastic_energy", *this, dim, fe_engine, this->element_filter) {
+                                                    const ID & id)
+    : MaterialElastic<spatial_dimension>(model, dim, mesh, fe_engine, id),
+      iso_hardening("iso_hardening", *this, dim, fe_engine,
+                    this->element_filter),
+      inelastic_strain("inelastic_strain", *this, dim, fe_engine,
+                       this->element_filter),
+      plastic_energy("plastic_energy", *this, dim, fe_engine,
+                     this->element_filter),
+      d_plastic_energy("d_plastic_energy", *this, dim, fe_engine,
+                       this->element_filter) {
   AKANTU_DEBUG_IN();
   this->initialize();
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 void MaterialPlastic<spatial_dimension>::initialize() {
-  this->registerParam(      "h",       h, Real(0.), _pat_parsable | _pat_modifiable, "Hardening  modulus");
-  this->registerParam("sigma_y", sigma_y, Real(0.), _pat_parsable | _pat_modifiable, "Yield stress");
+  this->registerParam("h", h, Real(0.), _pat_parsable | _pat_modifiable,
+                      "Hardening  modulus");
+  this->registerParam("sigma_y", sigma_y, Real(0.),
+                      _pat_parsable | _pat_modifiable, "Yield stress");
 
   this->iso_hardening.initialize(1);
   this->iso_hardening.initializeHistory();
@@ -79,39 +83,37 @@ void MaterialPlastic<spatial_dimension>::initialize() {
   this->plastic_energy.initialize(1);
   this->d_plastic_energy.initialize(1);
 
-  this->use_previous_stress           = true;
-  this->use_previous_gradu            = true;
-  this->use_previous_stress_thermal   = true;
+  this->use_previous_stress = true;
+  this->use_previous_gradu = true;
+  this->use_previous_stress_thermal = true;
 
   this->inelastic_strain.initialize(spatial_dimension * spatial_dimension);
   this->inelastic_strain.initializeHistory();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 Real MaterialPlastic<spatial_dimension>::getEnergy(std::string type) {
-  if (type == "plastic") return getPlasticEnergy();
-  else return MaterialElastic<spatial_dimension>::getEnergy(type);
+  if (type == "plastic")
+    return getPlasticEnergy();
+  else
+    return MaterialElastic<spatial_dimension>::getEnergy(type);
 
   return 0.;
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 Real MaterialPlastic<spatial_dimension>::getPlasticEnergy() {
   AKANTU_DEBUG_IN();
 
   Real penergy = 0.;
 
-  const Mesh & mesh = this->model->getFEEngine().getMesh();
-
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, _not_ghost);
-  Mesh::type_iterator end = mesh.lastType(spatial_dimension, _not_ghost);
-
-  for(; it != end; ++it) {
-    penergy += this->model->getFEEngine().integrate(plastic_energy(*it, _not_ghost),
-                                                    *it, _not_ghost,
-                                                    this->element_filter(*it, _not_ghost));
+  for (auto & type :
+       this->element_filter.elementTypes(spatial_dimension, _not_ghost)) {
+    penergy +=
+        this->fem.integrate(plastic_energy(type, _not_ghost), type, _not_ghost,
+                            this->element_filter(type, _not_ghost));
   }
 
   AKANTU_DEBUG_OUT();
@@ -119,17 +121,20 @@ Real MaterialPlastic<spatial_dimension>::getPlasticEnergy() {
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialPlastic<spatial_dimension>::computePotentialEnergy(ElementType el_type,
-                                                                GhostType ghost_type) {
+template <UInt spatial_dimension>
+void MaterialPlastic<spatial_dimension>::computePotentialEnergy(
+    ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  if(ghost_type != _not_ghost) return;
+  if (ghost_type != _not_ghost)
+    return;
 
-  Array<Real>::scalar_iterator epot = this->potential_energy(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator epot =
+      this->potential_energy(el_type, ghost_type).begin();
 
-   Array<Real>::const_iterator< Matrix<Real> > inelastic_strain_it
-     = this->inelastic_strain(el_type, ghost_type).begin(spatial_dimension, spatial_dimension);
+  Array<Real>::const_iterator<Matrix<Real>> inelastic_strain_it =
+      this->inelastic_strain(el_type, ghost_type)
+          .begin(spatial_dimension, spatial_dimension);
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
@@ -137,7 +142,8 @@ void MaterialPlastic<spatial_dimension>::computePotentialEnergy(ElementType el_t
   elastic_strain.copy(grad_u);
   elastic_strain -= *inelastic_strain_it;
 
-  MaterialElastic<spatial_dimension>::computePotentialEnergyOnQuad(elastic_strain, sigma, *epot);
+  MaterialElastic<spatial_dimension>::computePotentialEnergyOnQuad(
+      elastic_strain, sigma, *epot);
 
   ++epot;
   ++inelastic_strain_it;
@@ -147,30 +153,31 @@ void MaterialPlastic<spatial_dimension>::computePotentialEnergy(ElementType el_t
   AKANTU_DEBUG_OUT();
 }
 
-
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 void MaterialPlastic<spatial_dimension>::updateEnergies(ElementType el_type,
-							GhostType ghost_type) {
+                                                        GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   MaterialElastic<spatial_dimension>::updateEnergies(el_type, ghost_type);
 
   Array<Real>::iterator<> pe_it =
-    this->plastic_energy(el_type, ghost_type).begin();
+      this->plastic_energy(el_type, ghost_type).begin();
 
   Array<Real>::iterator<> wp_it =
-    this->d_plastic_energy(el_type, ghost_type).begin();
+      this->d_plastic_energy(el_type, ghost_type).begin();
 
-  Array<Real>::iterator< Matrix<Real> > inelastic_strain_it =
-    this->inelastic_strain(el_type, ghost_type).begin(spatial_dimension, spatial_dimension);
+  Array<Real>::iterator<Matrix<Real>> inelastic_strain_it =
+      this->inelastic_strain(el_type, ghost_type)
+          .begin(spatial_dimension, spatial_dimension);
 
-  Array<Real>::iterator< Matrix<Real> > previous_inelastic_strain_it =
-    this->inelastic_strain.previous(el_type, ghost_type).begin(spatial_dimension, spatial_dimension);
+  Array<Real>::iterator<Matrix<Real>> previous_inelastic_strain_it =
+      this->inelastic_strain.previous(el_type, ghost_type)
+          .begin(spatial_dimension, spatial_dimension);
 
   Array<Real>::matrix_iterator previous_sigma =
-    this->stress.previous(el_type, ghost_type).begin(spatial_dimension, spatial_dimension);
-
+      this->stress.previous(el_type, ghost_type)
+          .begin(spatial_dimension, spatial_dimension);
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
@@ -192,7 +199,6 @@ void MaterialPlastic<spatial_dimension>::updateEnergies(ElementType el_type,
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -200,4 +206,4 @@ void MaterialPlastic<spatial_dimension>::updateEnergies(ElementType el_type,
 
 INSTANTIATE_MATERIAL(MaterialPlastic);
 
-} // akantu
+} // namespace akantu

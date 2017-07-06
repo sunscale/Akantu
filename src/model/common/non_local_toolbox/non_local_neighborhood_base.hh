@@ -28,15 +28,18 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
-#define __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
 /* -------------------------------------------------------------------------- */
 #include "neighborhood_base.hh"
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
+#ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
+#define __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
+
+namespace akantu {
+class Model;
+}
+/* -------------------------------------------------------------------------- */
 namespace akantu {
 
 class NonLocalNeighborhoodBase : public NeighborhoodBase, public Parsable {
@@ -44,7 +47,7 @@ class NonLocalNeighborhoodBase : public NeighborhoodBase, public Parsable {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NonLocalNeighborhoodBase(const SolidMechanicsModel & model,
+  NonLocalNeighborhoodBase(Model & model,
                            const ElementTypeMapReal & quad_coordinates,
                            const ID & id = "non_local_neighborhood",
                            const MemoryID & memory_id = 0);
@@ -53,27 +56,25 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-
 public:
   /// create grid synchronizer and exchange ghost cells
-  virtual void createGridSynchronizer();
+  void createGridSynchronizer() override;
 
   /// compute weights, for instance needed for non-local damage computation
   virtual void computeWeights(){};
 
-  /// compute the non-local counter part for a given element type map
-  virtual void weightedAverageOnNeighbours(
-      __attribute__((unused)) const ElementTypeMapReal & to_accumulate,
-      __attribute__((unused)) ElementTypeMapReal & accumulated,
-      __attribute__((unused)) UInt nb_degree_of_freedom,
-      __attribute__((unused)) const GhostType & ghost_type2) const {};
+  // compute the non-local counter part for a given element type map
+  virtual void
+  weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
+                              ElementTypeMapReal & accumulated,
+                              UInt nb_degree_of_freedom,
+                              const GhostType & ghost_type2) const = 0;
 
   /// update the weights for the non-local averaging
-  virtual void updateWeights(){};
+  virtual void updateWeights() = 0;
 
   /// register a new non-local variable in the neighborhood
-  virtual void registerNonLocalVariable(__attribute__((unused))
-                                        const ID & id){};
+  virtual void registerNonLocalVariable(const ID & id);
 
   /// clean up the unneccessary ghosts
   void cleanupExtraGhostElements(std::set<Element> & relevant_ghost_elements);
@@ -88,22 +89,16 @@ protected:
   /* --------------------------------------------------------------------------
    */
 public:
-  virtual inline UInt getNbDataForElements(__attribute__((unused))
-                                           const Array<Element> & elements,
-                                           __attribute__((unused))
-                                           SynchronizationTag tag) const {
+  inline UInt getNbData(const Array<Element> &,
+                        const SynchronizationTag &) const override {
     return 0;
-  };
+  }
 
-  virtual inline void
-  packElementData(__attribute__((unused)) CommunicationBuffer & buffer,
-                  __attribute__((unused)) const Array<Element> & elements,
-                  __attribute__((unused)) SynchronizationTag tag) const {};
+  inline void packData(CommunicationBuffer &, const Array<Element> &,
+                       const SynchronizationTag &) const override {}
 
-  virtual inline void
-  unpackElementData(__attribute__((unused)) CommunicationBuffer & buffer,
-                    __attribute__((unused)) const Array<Element> & elements,
-                    __attribute__((unused)) SynchronizationTag tag){};
+  inline void unpackData(CommunicationBuffer &, const Array<Element> &,
+                         const SynchronizationTag &) override {}
 
   /* --------------------------------------------------------------------------
    */
@@ -122,6 +117,6 @@ protected:
   std::set<ID> non_local_variables;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__ */

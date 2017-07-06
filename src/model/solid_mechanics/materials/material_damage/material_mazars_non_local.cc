@@ -41,8 +41,7 @@ namespace akantu {
 template <UInt spatial_dimension>
 MaterialMazarsNonLocal<spatial_dimension>::MaterialMazarsNonLocal(
     SolidMechanicsModel & model, const ID & id)
-    : Material(model, id), MaterialMazars<spatial_dimension>(model, id),
-      MaterialNonLocalParent(model, id), Ehat("epsilon_equ", *this) {
+    : MaterialNonLocalParent(model, id), Ehat("epsilon_equ", *this) {
   AKANTU_DEBUG_IN();
 
   this->is_non_local = true;
@@ -59,7 +58,7 @@ MaterialMazarsNonLocal<spatial_dimension>::MaterialMazarsNonLocal(
 template <UInt spatial_dimension>
 void MaterialMazarsNonLocal<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
-  MaterialMazars<spatial_dimension>::initMaterial();
+
   MaterialNonLocalParent::initMaterial();
 
   AKANTU_DEBUG_OUT();

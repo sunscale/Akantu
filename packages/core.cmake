@@ -32,10 +32,10 @@
 
 package_declare(core NOT_OPTIONAL
   DESCRIPTION "core package for Akantu"
-  FEATURES_PUBLIC cxx_strong_enums cxx_defaulted_functions cxx_deleted_functions cxx_auto_type cxx_decltype_auto
-  FEATURES_PRIVATE cxx_lambdas cxx_nullptr
-                   cxx_delegated_constructors cxx_range_for
-  )
+  FEATURES_PUBLIC cxx_strong_enums cxx_defaulted_functions cxx_deleted_functions
+  cxx_auto_type cxx_decltype_auto
+  FEATURES_PRIVATE cxx_lambdas cxx_nullptr cxx_delegated_constructors
+  cxx_range_for )
 
 package_declare_sources(core
   common/aka_array.cc
@@ -162,6 +162,7 @@ package_declare_sources(core
   mesh/element_group.cc
   mesh/element_group.hh
   mesh/element_group_inline_impl.cc
+  mesh/element_type_map.cc
   mesh/element_type_map.hh
   mesh/element_type_map_tmpl.hh
   mesh/element_type_map_filter.hh
@@ -202,6 +203,21 @@ package_declare_sources(core
   model/boundary_condition_functor.hh
   model/boundary_condition_functor_inline_impl.cc
   model/boundary_condition_tmpl.hh
+
+  model/common/neighborhood_base.hh
+  model/common/neighborhood_base.cc
+  model/common/neighborhood_base_inline_impl.cc
+  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.hh
+  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.cc
+  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion_inline_impl.cc
+  model/common/non_local_toolbox/non_local_manager.hh
+  model/common/non_local_toolbox/non_local_manager.cc
+  model/common/non_local_toolbox/non_local_manager_inline_impl.cc
+  model/common/non_local_toolbox/non_local_neighborhood_base.hh
+  model/common/non_local_toolbox/non_local_neighborhood_base.cc
+  model/common/non_local_toolbox/non_local_neighborhood.hh
+  model/common/non_local_toolbox/non_local_neighborhood_tmpl.hh
+  model/common/non_local_toolbox/non_local_neighborhood_inline_impl.cc
 
   model/dof_manager.cc
   model/dof_manager.hh
@@ -293,13 +309,10 @@ package_declare_sources(core
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.cc
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.hh
 
-  model/common/neighborhood_base.hh
-  model/common/neighborhood_base.cc
-  model/common/neighborhood_base_inline_impl.cc
-
-  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.hh
-  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.cc
-  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion_inline_impl.cc
+  model/solid_mechanics/materials/material_non_local.hh
+  model/solid_mechanics/materials/material_non_local_tmpl.hh
+  model/solid_mechanics/materials/material_non_local_includes.hh
+  model/solid_mechanics/materials/material_non_local_inline_impl.cc
 
   solver/sparse_solver.cc
   solver/sparse_solver.hh
@@ -335,6 +348,7 @@ package_declare_sources(core
   synchronizer/filtered_synchronizer.hh
   synchronizer/grid_synchronizer.cc
   synchronizer/grid_synchronizer.hh
+  synchronizer/grid_synchronizer_tmpl.hh
   synchronizer/master_element_info_per_processor.cc
   synchronizer/node_info_per_processor.cc
   synchronizer/node_info_per_processor.hh

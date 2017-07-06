@@ -1,3 +1,4 @@
+
 /**
  * @file   material.hh
  *
@@ -32,13 +33,11 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "aka_memory.hh"
 #include "aka_voigthelper.hh"
-#include "parser.hh"
-#include "parsable.hh"
 #include "data_accessor.hh"
 #include "integration_point.hh"
+#include "parsable.hh"
+#include "parser.hh"
 /* -------------------------------------------------------------------------- */
 #include "internal_field.hh"
 #include "random_internal_field.hh"
@@ -54,7 +53,7 @@
 namespace akantu {
 class Model;
 class SolidMechanicsModel;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -281,8 +280,7 @@ protected:
   /// Computation of Cauchy stress tensor in the case of finite deformation from
   /// the 2nd Piola-Kirchhoff for a given element type
   template <UInt dim>
-  void computeCauchyStress(__attribute__((unused)) ElementType el_type,
-                           __attribute__((unused))
+  void computeCauchyStress(ElementType el_type,
                            GhostType ghost_type = _not_ghost);
 
   /// Computation the Cauchy stress the 2nd Piola-Kirchhoff and the deformation
@@ -387,14 +385,9 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /* ------------------------------------------------------------------------ */
-  virtual void onNodesAdded(__attribute__((unused))
-                            const Array<UInt> & nodes_list,
-                            __attribute__((unused))
-                            const NewNodesEvent & event){};
-  virtual void
-  onNodesRemoved(__attribute__((unused)) const Array<UInt> & nodes_list,
-                 __attribute__((unused)) const Array<UInt> & new_numbering,
-                 __attribute__((unused)) const RemovedNodesEvent & event){};
+  virtual void onNodesAdded(const Array<UInt> &, const NewNodesEvent &){};
+  virtual void onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
+                              const RemovedNodesEvent &){};
 
   virtual void onElementsAdded(const Array<Element> & element_list,
                                const NewElementsEvent & event);
@@ -404,11 +397,9 @@ public:
                     const ElementTypeMapArray<UInt> & new_numbering,
                     const RemovedElementsEvent & event);
 
-  virtual void onElementsChanged(
-      __attribute__((unused)) const Array<Element> & old_elements_list,
-      __attribute__((unused)) const Array<Element> & new_elements_list,
-      __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-      __attribute__((unused)) const ChangedElementsEvent & event){};
+  virtual void onElementsChanged(const Array<Element> &, const Array<Element> &,
+                                 const ElementTypeMapArray<UInt> &,
+                                 const ChangedElementsEvent &){};
 
   /* ------------------------------------------------------------------------ */
   /* SolidMechanicsModelEventHandler inherited members                        */
@@ -426,7 +417,7 @@ public:
 public:
   AKANTU_GET_MACRO(Name, name, const std::string &);
 
-  AKANTU_GET_MACRO(Model, *model, const SolidMechanicsModel &)
+  AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &)
 
   AKANTU_GET_MACRO(ID, Memory::getID(), const ID &);
   AKANTU_GET_MACRO(Rho, rho, Real);
@@ -455,7 +446,7 @@ public:
   AKANTU_GET_MACRO(Stress, stress, const ElementTypeMapArray<Real> &);
   AKANTU_GET_MACRO(ElementFilter, element_filter,
                    const ElementTypeMapArray<UInt> &);
-  AKANTU_GET_MACRO(FEEngine, *fem, FEEngine &);
+  AKANTU_GET_MACRO(FEEngine, fem, FEEngine &);
 
   bool isNonLocal() const { return is_non_local; }
 
@@ -494,9 +485,7 @@ public:
                                const GhostType = _not_ghost);
 
   /// specify if the matrix need to be recomputed for this material
-  virtual bool hasStiffnessMatrixChanged() {
-    return true;
-  }
+  virtual bool hasStiffnessMatrixChanged() { return true; }
 
 protected:
   bool isInit() const { return is_init; }
@@ -514,7 +503,7 @@ protected:
 
 protected:
   /// Link to the fem object in the model
-  FEEngine * fem;
+  FEEngine & fem;
 
   /// Finite deformation
   bool finite_deformation;
@@ -526,7 +515,7 @@ protected:
   std::string name;
 
   /// The model to witch the material belong
-  SolidMechanicsModel * model;
+  SolidMechanicsModel & model;
 
   /// density : rho
   Real rho;
@@ -583,7 +572,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #include "material_inline_impl.cc"
 
@@ -607,7 +596,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   this->stress(el_type, ghost_type)                                            \
       .resize(this->gradu(el_type, ghost_type).getSize());                     \
                                                                                \
-  Array<Real>::iterator<Matrix<Real> > stress_it =                             \
+  Array<Real>::iterator<Matrix<Real>> stress_it =                              \
       this->stress(el_type, ghost_type)                                        \
           .begin(this->spatial_dimension, this->spatial_dimension);            \
                                                                                \
@@ -620,7 +609,7 @@ inline std::ostream & operator<<(std::ostream & stream,
                                                                                \
   for (; gradu_it != gradu_end; ++gradu_it, ++stress_it) {                     \
     Matrix<Real> & __attribute__((unused)) grad_u = *gradu_it;                 \
-  Matrix<Real> & __attribute__((unused)) sigma = *stress_it
+    Matrix<Real> & __attribute__((unused)) sigma = *stress_it
 
 #define MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END }
 
@@ -649,7 +638,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   for (; gradu_it != gradu_end; ++gradu_it, ++sigma_it, ++tangent_it) {        \
     Matrix<Real> & __attribute__((unused)) grad_u = *gradu_it;                 \
     Matrix<Real> & __attribute__((unused)) sigma_tensor = *sigma_it;           \
-  Matrix<Real> & tangent = *tangent_it
+    Matrix<Real> & tangent = *tangent_it
 
 #define MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END }
 
