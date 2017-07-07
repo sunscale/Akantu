@@ -29,9 +29,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <limits>
 #include <fstream>
 #include <iostream>
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
@@ -39,7 +39,7 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   //  debug::setDebugLevel(dblDump);
@@ -57,24 +57,24 @@ int main(int argc, char *argv[]) {
   model.initFull();
   model.insertIntrinsicElements();
 
-  Real time_step = model.getStableTimeStep()*0.8;
+  Real time_step = model.getStableTimeStep() * 0.8;
   model.setTimeStep(time_step);
   //  std::cout << "Time step: " << time_step << std::endl;
 
   model.assembleMassLumped();
 
-  model.updateResidual();
+  model.assembleInternalForces();
 
   model.setBaseName("intrinsic_tetrahedron_fragmentation");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("residual"    );
+  model.addDumpField("internal_force");
   model.addDumpField("stress");
   model.addDumpField("grad_u");
 
   model.setBaseNameToDumper("cohesive elements",
-			    "cohesive_elements_tetrahedron_fragmentation");
+                            "cohesive_elements_tetrahedron_fragmentation");
   model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
   model.addDumpFieldToDumper("cohesive elements", "damage");
 
@@ -91,7 +91,6 @@ int main(int argc, char *argv[]) {
   Array<Real> & displacement = model.getDisplacement();
   Array<bool> update(nb_nodes);
 
-
   for (UInt s = 0; s < max_steps; ++s) {
     Real increment = s / 10.;
     update.clear();
@@ -99,13 +98,13 @@ int main(int argc, char *argv[]) {
     for (UInt el = 0; el < nb_element; ++el) {
       mesh.getBarycenter(el, type, bary);
       for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-	UInt node = connectivity(el, n);
-	if (!update(node)) {
-	  for (UInt dim = 0; dim < spatial_dimension; ++dim) {
-	    displacement(node, dim) = increment * bary[dim];
-	    update(node) = true;
-	  }
-	}
+        UInt node = connectivity(el, n);
+        if (!update(node)) {
+          for (UInt dim = 0; dim < spatial_dimension; ++dim) {
+            displacement(node, dim) = increment * bary[dim];
+            update(node) = true;
+          }
+        }
       }
     }
 
@@ -124,6 +123,7 @@ int main(int argc, char *argv[]) {
   }
 
   finalize();
-  std::cout << "OK: test_cohesive_intrinsic_tetrahedron was passed!" << std::endl;
+  std::cout << "OK: test_cohesive_intrinsic_tetrahedron was passed!"
+            << std::endl;
   return EXIT_SUCCESS;
 }

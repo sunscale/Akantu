@@ -35,7 +35,7 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   const UInt max_steps = 2000;
@@ -46,9 +46,10 @@ int main(int argc, char *argv[]) {
   mesh.read("bar.msh");
 
   SolidMechanicsModelCohesive model(mesh);
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(
+      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
 
-  Real time_step = model.getStableTimeStep()*0.01;
+  Real time_step = model.getStableTimeStep() * 0.01;
   model.setTimeStep(time_step);
   std::cout << "Time step: " << time_step << std::endl;
 
@@ -64,34 +65,24 @@ int main(int argc, char *argv[]) {
   UInt nb_nodes = mesh.getNbNodes();
 
   for (UInt n = 0; n < nb_nodes; ++n)
-    velocity(n) = strain_rate * (position(n) - (posx_max + posx_min) /2.);
+    velocity(n) = strain_rate * (position(n) - (posx_max + posx_min) / 2.);
 
   /// boundary conditions
   Array<bool> & boundary = model.getBlockedDOFs();
   Array<Real> & displacement = model.getDisplacement();
   Real disp_increment = strain_rate * (posx_max - posx_min) / 2. * time_step;
 
-  for(UInt node = 0; node < mesh.getNbNodes(); ++node) {
-    if(Math::are_float_equal(position(node), posx_min)) {      // left side
+  for (UInt node = 0; node < mesh.getNbNodes(); ++node) {
+    if (Math::are_float_equal(position(node), posx_min)) { // left side
       boundary(node) = true;
     }
-    if(Math::are_float_equal(position(node), posx_max)) {      // right side
+    if (Math::are_float_equal(position(node), posx_max)) { // right side
       boundary(node) = true;
     }
   }
 
-
   model.synchronizeBoundaries();
-  model.updateResidual();
-
-  // model.setBaseName("extrinsic_parallel");
-  // model.addDumpFieldVector("displacement");
-  // model.addDumpField("velocity"    );
-  // model.addDumpField("acceleration");
-  // model.addDumpField("residual"    );
-  // model.addDumpField("stress");
-  // model.addDumpField("strain");
-  // model.dump();
+  model.assembleInternalForces();
 
   for (UInt s = 1; s <= max_steps; ++s) {
 
@@ -102,19 +93,17 @@ int main(int argc, char *argv[]) {
 
     if (s % 10 == 0) {
       std::cout << "passing step " << s << "/" << max_steps
-		<< ", number of cohesive elemets:"
-		<< nb_cohesive_elements << std::endl;
-
-      //      model.dump();
+                << ", number of cohesive elemets:" << nb_cohesive_elements
+                << std::endl;
     }
 
     /// update external work and boundary conditions
     for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
-      if(Math::are_float_equal(position(n), posx_min))      // left side
-    	displacement(n) -= disp_increment;
+      if (Math::are_float_equal(position(n), posx_min)) // left side
+        displacement(n) -= disp_increment;
 
-      if(Math::are_float_equal(position(n), posx_max))      // right side
-    	displacement(n) += disp_increment;
+      if (Math::are_float_equal(position(n), posx_max)) // right side
+        displacement(n) += disp_increment;
     }
   }
 

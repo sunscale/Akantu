@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
   Array<Real> & pos = mesh.getNodes();
   Array<Real> & disp = model.getDisplacement();
   Array<bool> & boun = model.getBlockedDOFs();
-  const Array<Real> & residual = model.getResidual();
+  const Array<Real> & residual = model.getInternalForce();
   Array<Real> & cohe_opening = const_cast<Array<Real> &>(model.getMaterial("interface").getInternal<Real>("opening")(type));
   Array<Real> & friction_force = const_cast<Array<Real> &>(model.getMaterial("interface").getInternal<Real>("friction_force")(type));
 

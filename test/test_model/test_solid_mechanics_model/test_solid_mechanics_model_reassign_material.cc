@@ -48,12 +48,10 @@ public:
     UInt spatial_dimension = mesh.getSpatialDimension();
 
     /// store barycenters of all elements
-    mesh.initElementTypeMapArray(barycenters, spatial_dimension,
-                                 spatial_dimension);
+    barycenters.initialize(mesh, _spatial_dimension = spatial_dimension,
+                                 _nb_component = spatial_dimension);
 
-    for (ghost_type_t::iterator gt = ghost_type_t::begin();
-         gt != ghost_type_t::end(); ++gt) {
-      GhostType ghost_type = *gt;
+    for (auto  ghost_type : ghost_types) {
       Element e;
       e.ghost_type = ghost_type;
 

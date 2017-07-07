@@ -98,16 +98,16 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  model.updateResidual();
+  model.assembleInternalForces();
 
   model.setBaseName("intrinsic_quadrangle");
   model.addDumpFieldVector("displacement");
   model.addDumpField("velocity"    );
   model.addDumpField("acceleration");
-  model.addDumpField("residual"    );
+  model.addDumpField("internal_force"    );
   model.addDumpField("stress");
   model.addDumpField("grad_u");
-  model.addDumpField("force");
+  model.addDumpField("external_force");
 
   model.setBaseNameToDumper("cohesive elements", "cohesive_elements_quadrangle");
   model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
@@ -145,11 +145,7 @@ int main(int argc, char *argv[]) {
 
   /// Main loop
   for (UInt s = 1; s <= max_steps; ++s) {
-
-    model.explicitPred();
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
+    model.solveStep();
 
     updateDisplacement(model, elements, type, increment);
 

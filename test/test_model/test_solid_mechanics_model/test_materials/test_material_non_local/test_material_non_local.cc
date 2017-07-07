@@ -48,25 +48,16 @@ int main(int argc, char *argv[]) {
   Mesh mesh(spatial_dimension);
 
   StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
-  Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
   // mesh creation and read
-  MeshPartition * partition;
   if(prank == 0) {
     mesh.read("mesh.msh");
-
-    /// partition the mesh
-    partition = new MeshPartitionScotch(mesh, spatial_dimension);
-    partition->partitionate(psize);
-  } else {
-    partition = NULL;
   }
+  mesh.distribute();
 
   /// model creation
   SolidMechanicsModel  model(mesh);
-  model.initParallel(partition);
-  delete partition;
 
   /// model initialization changed to use our material
   model.initFull(_no_init_materials = true);
@@ -81,14 +72,16 @@ int main(int argc, char *argv[]) {
   // Setting up the dumpers + first dump
   model.setBaseName("non_local_material");
   model.addDumpFieldVector("displacement");
-  model.addDumpFieldVector("force"       );
+  model.addDumpFieldVector("external_force");
+  model.addDumpFieldVector("internal_force");
   model.addDumpField("partitions"   );
   model.addDumpField("stress"      );
   model.addDumpField("stress"      );
   model.addDumpField("local_damage");
   model.addDumpField("damage"      );
 
-  model.updateResidual();
+
+  model.assembleInternalForces();
   model.dump();
 
 
@@ -103,7 +96,7 @@ int main(int argc, char *argv[]) {
     damage(g) = 1.;
   }
 
-  model.updateResidual();
+  model.assembleInternalForces();
   model.dump();
 
   akantu::finalize();

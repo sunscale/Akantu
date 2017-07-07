@@ -90,28 +90,6 @@ int main(int argc, char *argv[]) {
     velocity(n, 1) = loading_rate * position(n, 1);
   }
 
-  model.updateResidual();
-
-  model.setBaseName("extrinsic");
-  model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
-  model.addDumpField("acceleration");
-  model.addDumpField("residual"    );
-  model.addDumpFieldTensor("stress");
-  model.addDumpField("strain");
-  model.addDumpField("damage");
-  model.addDumpFieldToDumper("cohesive elements", "damage");
-  model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
-  model.dump();
-  model.dump("cohesive elements");
-
-  // std::ofstream edis("edis.txt");
-  // std::ofstream erev("erev.txt");
-
-  //  Array<Real> & residual = model.getResidual();
-
-  //  const Array<Real> & stress = model.getMaterial(0).getStress(type);
-
   /// Main loop
   for (UInt s = 1; s <= max_steps; ++s) {
 
@@ -125,27 +103,9 @@ int main(int argc, char *argv[]) {
     model.solveStep();
 
     if(s % 100 == 0) {
-      model.dump();
-      model.dump("cohesive elements");
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
     }
-
-
-    // Real Ed = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getDissipatedEnergy();
-    // Real Er = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getReversibleEnergy();
-
-    // edis << s << " "
-    // 	 << Ed << std::endl;
-
-    // erev << s << " "
-    // 	 << Er << std::endl;
-
   }
-
-  // edis.close();
-  // erev.close();
-
-  //  mesh.write("mesh_final.msh");
 
   model.dump();
   Real Ed = model.getEnergy("dissipated");

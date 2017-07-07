@@ -30,20 +30,21 @@
  *
  */
 
-#include "material_non_local.hh"
+/* -------------------------------------------------------------------------- */
 #include "material_elastic.hh"
+#include "material_non_local.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __CUSTOM_NON_LOCAL_TEST_MATERIAL_HH__
 #define __CUSTOM_NON_LOCAL_TEST_MATERIAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
-template<UInt dim>
-class CustomNonLocalTestMaterial : public MaterialElastic<dim>,
-                                   public MaterialNonLocal<dim> {
+template <UInt dim>
+class CustomNonLocalTestMaterial
+    : public MaterialNonLocal<dim, MaterialElastic<dim>> {
 public:
-  typedef MaterialNonLocal<dim> MyNonLocalParent;
-  typedef MaterialElastic<dim> MyElasticParent;
+  using MyNonLocalParent = MaterialNonLocal<dim, MaterialElastic<dim>>;
 
   CustomNonLocalTestMaterial(SolidMechanicsModel & model, const ID & id);
 
@@ -54,14 +55,15 @@ public:
   void computeStress(ElementType el_type, GhostType ghost_type);
 
 protected:
-
   /* ------------------------------------------------------------------------ */
   void computeNonLocalStresses(GhostType ghost_type) {
     AKANTU_DEBUG_IN();
 
-    Mesh::type_iterator it = this->model->getFEEngine().getMesh().firstType(dim, ghost_type);
-    Mesh::type_iterator last_type = this->model->getFEEngine().getMesh().lastType(dim, ghost_type);
-    for(; it != last_type; ++it) {
+    Mesh::type_iterator it =
+        this->model.getFEEngine().getMesh().firstType(dim, ghost_type);
+    Mesh::type_iterator last_type =
+        this->model.getFEEngine().getMesh().lastType(dim, ghost_type);
+    for (; it != last_type; ++it) {
       computeNonLocalStress(*it, ghost_type);
     }
 
@@ -69,35 +71,13 @@ protected:
   }
 
 public:
-  /* ------------------------------------------------------------------------ */
-  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-					   SynchronizationTag tag) const {
-    return MyNonLocalParent::getNbDataForElements(elements, tag) +
-      MyElasticParent::getNbDataForElements(elements, tag);
-  }
-  virtual inline void packElementData(CommunicationBuffer & buffer,
-				      const Array<Element> & elements,
-				      SynchronizationTag tag) const {
-    MyNonLocalParent::packElementData(buffer, elements, tag);
-    MyElasticParent::packElementData(buffer, elements, tag);
-  }
+  void setDamage(Real dam) { this->local_damage.setDefaultValue(dam); }
 
-  virtual inline void unpackElementData(CommunicationBuffer & buffer,
-				 const Array<Element> & elements,
-				 SynchronizationTag tag) {
-    MyNonLocalParent::unpackElementData(buffer, elements, tag);
-    MyElasticParent::unpackElementData(buffer, elements, tag);
-  }
-
-
-  void setDamage(Real dam) {
-    this->local_damage.setDefaultValue(dam);
-  }
 protected:
   InternalField<Real> local_damage;
   InternalField<Real> damage;
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __CUSTOM_NON_LOCAL_TEST_MATERIAL_HH__ */

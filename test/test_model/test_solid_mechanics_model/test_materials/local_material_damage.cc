@@ -35,22 +35,22 @@
 #include "local_material_damage.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 LocalMaterialDamage::LocalMaterialDamage(SolidMechanicsModel & model,
-					 const ID & id)  :
-  Material(model, id),
-  damage("damage", *this) {
+                                         const ID & id)
+    : Material(model, id), damage("damage", *this) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("E"           , E           , 0.   , _pat_parsable, "Young's modulus"        );
-  this->registerParam("nu"          , nu          , 0.5  , _pat_parsable, "Poisson's ratio"        );
-  this->registerParam("lambda"      , lambda             , _pat_readable, "First Lamé coefficient" );
-  this->registerParam("mu"          , mu                 , _pat_readable, "Second Lamé coefficient");
-  this->registerParam("kapa"        , kpa                , _pat_readable, "Bulk coefficient"       );
-  this->registerParam("Yd"          , Yd          ,   50., _pat_parsmod);
-  this->registerParam("Sd"          , Sd          , 5000., _pat_parsmod);
+  this->registerParam("E", E, 0., _pat_parsable, "Young's modulus");
+  this->registerParam("nu", nu, 0.5, _pat_parsable, "Poisson's ratio");
+  this->registerParam("lambda", lambda, _pat_readable,
+                      "First Lamé coefficient");
+  this->registerParam("mu", mu, _pat_readable, "Second Lamé coefficient");
+  this->registerParam("kapa", kpa, _pat_readable, "Bulk coefficient");
+  this->registerParam("Yd", Yd, 50., _pat_parsmod);
+  this->registerParam("Sd", Sd, 5000., _pat_parsmod);
 
   damage.initialize(1);
 
@@ -62,15 +62,16 @@ void LocalMaterialDamage::initMaterial() {
   AKANTU_DEBUG_IN();
   Material::initMaterial();
 
-  lambda = nu * E / ((1 + nu) * (1 - 2*nu));
-  mu     = E / (2 * (1 + nu));
-  kpa    = lambda + 2./3. * mu;
+  lambda = nu * E / ((1 + nu) * (1 - 2 * nu));
+  mu = E / (2 * (1 + nu));
+  kpa = lambda + 2. / 3. * mu;
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void LocalMaterialDamage::computeStress(ElementType el_type, GhostType ghost_type) {
+void LocalMaterialDamage::computeStress(ElementType el_type,
+                                        GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Real * dam = damage(el_type, ghost_type).storage();
@@ -86,12 +87,14 @@ void LocalMaterialDamage::computeStress(ElementType el_type, GhostType ghost_typ
 }
 
 /* -------------------------------------------------------------------------- */
-void LocalMaterialDamage::computePotentialEnergy(ElementType el_type, GhostType ghost_type) {
+void LocalMaterialDamage::computePotentialEnergy(ElementType el_type,
+                                                 GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Material::computePotentialEnergy(el_type, ghost_type);
 
-  if(ghost_type != _not_ghost) return;
+  if (ghost_type != _not_ghost)
+    return;
   Real * epot = potential_energy(el_type).storage();
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
@@ -104,4 +107,4 @@ void LocalMaterialDamage::computePotentialEnergy(ElementType el_type, GhostType 
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // namespace akantu

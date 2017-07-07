@@ -30,24 +30,23 @@
 
 /* -------------------------------------------------------------------------- */
 #include "material_damage.hh"
-#include "material_non_local.hh"
+#include "material_damage_non_local.hh"
 
 #ifndef __TEST_MATERIAL_HH__
 #define __TEST_MATERIAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <UInt dim>
-class TestMaterial : public MaterialDamage<dim, MaterialElastic>,
-                     public MaterialNonLocal<dim> {
+class TestMaterial : public MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>> {
   /* ------------------------------------------------------------------------ */
   /* Constructor/Destructor */
   /* ------------------------------------------------------------------------ */
 public:
+  using Parent = MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>>;
+
   TestMaterial(SolidMechanicsModel & model, const ID & id);
   virtual ~TestMaterial(){};
-  typedef MaterialNonLocal<dim> MyNonLocalParent;
-  typedef MaterialDamage<dim, MaterialElastic> MyLocalParent;
 
   /* ------------------------------------------------------------------------ */
   /* Methods */
@@ -55,7 +54,7 @@ public:
 public:
   void initMaterial();
 
-  void computeNonLocalStresses(__attribute__((unused)) GhostType ghost_type){};
+  void computeNonLocalStresses(GhostType){};
 
   void insertQuadsInNeighborhoods(GhostType ghost_type);
 
@@ -68,6 +67,6 @@ private:
   InternalField<Real> grad_u_nl;
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __TEST_MATERIAL_HH__ */

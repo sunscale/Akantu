@@ -29,9 +29,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <limits>
-#include "solid_mechanics_model_cohesive.hh"
 #include "material_cohesive_linear_fatigue.hh"
+#include "solid_mechanics_model_cohesive.hh"
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
 
@@ -41,11 +41,11 @@ using namespace akantu;
 // fatigue cohesive law
 class MaterialFatigue {
 public:
-  MaterialFatigue(Real delta_f, Real sigma_c, Real delta_c) :
-    delta_f(delta_f), sigma_c(sigma_c), delta_c(delta_c),
-    delta_prec(0), traction(sigma_c), delta_max(0),
-    stiff_plus(std::numeric_limits<Real>::max()),
-    tolerance(Math::getTolerance()) {};
+  MaterialFatigue(Real delta_f, Real sigma_c, Real delta_c)
+      : delta_f(delta_f), sigma_c(sigma_c), delta_c(delta_c), delta_prec(0),
+        traction(sigma_c), delta_max(0),
+        stiff_plus(std::numeric_limits<Real>::max()),
+        tolerance(Math::getTolerance()){};
 
   Real computeTraction(Real delta) {
     if (delta - delta_c > -tolerance)
@@ -56,18 +56,18 @@ public:
       Real delta_dot = delta - delta_prec;
 
       if (delta_dot > -tolerance) {
-	stiff_plus *= 1 - delta_dot / delta_f;
-	traction += stiff_plus * delta_dot;
-	Real max_traction = sigma_c * (1 - delta / delta_c);
+        stiff_plus *= 1 - delta_dot / delta_f;
+        traction += stiff_plus * delta_dot;
+        Real max_traction = sigma_c * (1 - delta / delta_c);
 
-	if (traction - max_traction > -tolerance || delta_max < tolerance) {
-	  traction = max_traction;
-	  stiff_plus = traction / delta;
-	}
+        if (traction - max_traction > -tolerance || delta_max < tolerance) {
+          traction = max_traction;
+          stiff_plus = traction / delta;
+        }
       } else {
-	Real stiff_minus = traction / delta_prec;
-	stiff_plus += (stiff_plus - stiff_minus) * delta_dot / delta_f;
-	traction += stiff_minus * delta_dot;
+        Real stiff_minus = traction / delta_prec;
+        stiff_plus += (stiff_plus - stiff_minus) * delta_dot / delta_f;
+        traction += stiff_minus * delta_dot;
       }
     }
 
@@ -91,7 +91,7 @@ void imposeOpening(SolidMechanicsModelCohesive &, Real);
 void arange(Array<Real> &, Real, Real, Real);
 
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material_fatigue.dat", argc, argv);
 
   Math::setTolerance(1e-13);
@@ -104,19 +104,23 @@ int main(int argc, char *argv[]) {
 
   // init stuff
   const ElementType type_facet = Mesh::getFacetType(type);
-  const ElementType type_cohesive = FEEngine::getCohesiveElementType(type_facet);
+  const ElementType type_cohesive =
+      FEEngine::getCohesiveElementType(type_facet);
 
   SolidMechanicsModelCohesive model(mesh);
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(
+      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
 
-  MaterialCohesiveLinearFatigue<2> & numerical_material
-    = dynamic_cast<MaterialCohesiveLinearFatigue<2> &>(model.getMaterial("cohesive"));
+  MaterialCohesiveLinearFatigue<2> & numerical_material =
+      dynamic_cast<MaterialCohesiveLinearFatigue<2> &>(
+          model.getMaterial("cohesive"));
 
-  Real delta_f = numerical_material.getParam<Real>("delta_f");
-  Real delta_c = numerical_material.getParam<Real>("delta_c");
+  Real delta_f = numerical_material.getParam("delta_f");
+  Real delta_c = numerical_material.getParam("delta_c");
   Real sigma_c = 1;
 
-  const Array<Real> & traction_array = numerical_material.getTraction(type_cohesive);
+  const Array<Real> & traction_array =
+      numerical_material.getTraction(type_cohesive);
 
   MaterialFatigue theoretical_material(delta_f, sigma_c, delta_c);
 
@@ -133,7 +137,7 @@ int main(int argc, char *argv[]) {
   for (UInt n = 0; n < mesh.getNbNodes(); ++n)
     displacement(n, 0) = position(n, 0) * strain;
 
-  model.updateResidual();
+  model.assembleInternalForces();
   // model.dump();
 
   // insert cohesive elements
@@ -144,7 +148,7 @@ int main(int argc, char *argv[]) {
 
   Array<Real> openings;
 
-  arange(openings,   0, 0.5, increment);
+  arange(openings, 0, 0.5, increment);
   arange(openings, 0.5, 0.1, increment);
   arange(openings, 0.1, 0.7, increment);
   arange(openings, 0.7, 0.3, increment);
@@ -162,18 +166,19 @@ int main(int argc, char *argv[]) {
 
     // compute numerical traction
     imposeOpening(model, openings(i));
-    model.updateResidual();
+    model.assembleInternalForces();
     // model.dump();
     Real numerical_traction = traction_array(0, 0);
 
     // compute theoretical traction
-    Real theoretical_traction = theoretical_material.computeTraction(openings(i));
+    Real theoretical_traction =
+        theoretical_material.computeTraction(openings(i));
 
     // test traction
     if (std::abs(numerical_traction - theoretical_traction) > 1e-13)
-      AKANTU_DEBUG_ERROR("The numerical traction " << numerical_traction
-    			 << " and theoretical traction " << theoretical_traction
-    			 << " are not coincident");
+      AKANTU_DEBUG_ERROR("The numerical traction "
+                         << numerical_traction << " and theoretical traction "
+                         << theoretical_traction << " are not coincident");
 
     // edis << model.getEnergy("dissipated") << std::endl;
   }
@@ -212,13 +217,13 @@ void imposeOpening(SolidMechanicsModelCohesive & model, Real opening) {
     for (UInt el = 0; el < nb_element; ++el) {
       mesh.getBarycenter(el, type, barycenter.storage());
       if (barycenter(0) > 1) {
-	for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-	  UInt node = connectivity(el, n);
-	  if (!update(node)) {
-	    displacement(node, 0) = opening + position(node, 0);
-	    update(node) = true;
-	  }
-	}
+        for (UInt n = 0; n < nb_nodes_per_element; ++n) {
+          UInt node = connectivity(el, n);
+          if (!update(node)) {
+            displacement(node, 0) = opening + position(node, 0);
+            update(node) = true;
+          }
+        }
       }
     }
   }
@@ -227,10 +232,12 @@ void imposeOpening(SolidMechanicsModelCohesive & model, Real opening) {
 /* -------------------------------------------------------------------------- */
 void arange(Array<Real> & openings, Real begin, Real end, Real increment) {
   if (begin < end) {
-    for (Real opening = begin; opening < end - increment / 2.; opening += increment)
+    for (Real opening = begin; opening < end - increment / 2.;
+         opening += increment)
       openings.push_back(opening);
   } else {
-    for (Real opening = begin; opening > end + increment / 2.; opening -= increment)
+    for (Real opening = begin; opening > end + increment / 2.;
+         opening -= increment)
       openings.push_back(opening);
   }
 }

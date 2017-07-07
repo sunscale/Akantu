@@ -31,10 +31,9 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include <limits>
 #include <fstream>
 #include <iostream>
-
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
@@ -42,7 +41,7 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   const UInt spatial_dimension = 2;
@@ -54,11 +53,12 @@ int main(int argc, char *argv[]) {
   SolidMechanicsModelCohesive model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(
+      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
   model.limitInsertion(_y, -0.05, 0.05);
   model.updateAutomaticInsertion();
 
-  Real time_step = model.getStableTimeStep()*0.05;
+  Real time_step = model.getStableTimeStep() * 0.05;
   model.setTimeStep(time_step);
   //  std::cout << "Time step: " << time_step << std::endl;
 
@@ -81,35 +81,7 @@ int main(int argc, char *argv[]) {
       boundary(n, 0) = true;
   }
 
-  model.updateResidual();
-
-  // iohelper::ElemType paraview_type = iohelper::QUAD2;
-  // UInt nb_element = mesh.getNbElement(type);
-
-  // /// initialize the paraview output
-  // iohelper::DumperParaview dumper;
-  // dumper.SetMode(iohelper::TEXT);
-  // dumper.SetPoints(mesh.getNodes().storage(),
-  // 		   spatial_dimension, mesh.getNbNodes(), "explicit");
-  // dumper.SetConnectivity((int *)mesh.getConnectivity(type).storage(),
-  // 			 paraview_type, nb_element, iohelper::C_MODE);
-  // dumper.AddNodeDataField(model.getDisplacement().storage(),
-  // 			  spatial_dimension, "displacements");
-  // dumper.AddNodeDataField(model.getVelocity().storage(),
-  // 			  spatial_dimension, "velocity");
-  // dumper.AddNodeDataField(model.getAcceleration().storage(),
-  // 			  spatial_dimension, "acceleration");
-  // dumper.AddNodeDataField(model.getResidual().storage(),
-  // 			  spatial_dimension, "forces");
-  // dumper.AddElemDataField(model.getMaterial(0).getStrain(type).storage(),
-  // 			  spatial_dimension*spatial_dimension, "strain");
-  // dumper.AddElemDataField(model.getMaterial(0).getStress(type).storage(),
-  // 			  spatial_dimension*spatial_dimension, "stress");
-  // dumper.SetEmbeddedValue("displacements", 1);
-  // dumper.SetEmbeddedValue("forces", 1);
-  // dumper.SetPrefix("paraview/");
-  // dumper.Init();
-  // dumper.Dump();
+  model.assembleInternalForces();
 
   /// initial conditions
   Real loading_rate = 0.2;
@@ -118,71 +90,23 @@ int main(int argc, char *argv[]) {
     velocity(n, 1) = loading_rate * position(n, 1);
   }
 
-  // std::ofstream edis("edis.txt");
-  // std::ofstream erev("erev.txt");
-
-  //  Array<Real> & residual = model.getResidual();
-
-  //  const Array<Real> & stress = model.getMaterial(0).getStress(type);
-
-
   /// Main loop
   for (UInt s = 1; s <= max_steps; ++s) {
 
     /// update displacement on extreme nodes
     for (UInt n = 0; n < nb_nodes; ++n) {
       if (position(n, 1) > 0.99 || position(n, 1) < -0.99)
-	displacement(n, 1) += disp_update * position(n, 1);
+        displacement(n, 1) += disp_update * position(n, 1);
     }
 
     model.checkCohesiveStress();
 
-    model.explicitPred();
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
+    model.solveStep();
 
-    if(s % 1 == 0) {
-
-      // dumper.SetPoints(mesh.getNodes().storage(),
-      // 		       spatial_dimension, mesh.getNbNodes(), "explicit");
-      // dumper.SetConnectivity((int *)mesh.getConnectivity(type).storage(),
-      // 			     paraview_type, nb_element, iohelper::C_MODE);
-      // dumper.AddNodeDataField(model.getDisplacement().storage(),
-      // 			      spatial_dimension, "displacements");
-      // dumper.AddNodeDataField(model.getVelocity().storage(),
-      // 			      spatial_dimension, "velocity");
-      // dumper.AddNodeDataField(model.getAcceleration().storage(),
-      // 			      spatial_dimension, "acceleration");
-      // dumper.AddNodeDataField(model.getResidual().storage(),
-      // 			      spatial_dimension, "forces");
-      // dumper.AddElemDataField(model.getMaterial(0).getStrain(type).storage(),
-      // 			      spatial_dimension*spatial_dimension, "strain");
-      // dumper.AddElemDataField(model.getMaterial(0).getStress(type).storage(),
-      // 			      spatial_dimension*spatial_dimension, "stress");
-      // dumper.SetEmbeddedValue("displacements", 1);
-      // dumper.SetEmbeddedValue("forces", 1);
-      // dumper.SetPrefix("paraview/");
-      // dumper.Init();
-      // dumper.Dump();
-
+    if (s % 1 == 0) {
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
     }
-
-
-    // Real Ed = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getDissipatedEnergy();
-    // Real Er = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getReversibleEnergy();
-
-    // edis << s << " "
-    // 	 << Ed << std::endl;
-
-    // erev << s << " "
-    // 	 << Er << std::endl;
-
   }
-
-  // edis.close();
-  // erev.close();
 
   mesh.write("mesh_final.msh");
 
@@ -199,6 +123,7 @@ int main(int argc, char *argv[]) {
 
   finalize();
 
-  std::cout << "OK: test_cohesive_extrinsic_quadrangle was passed!" << std::endl;
+  std::cout << "OK: test_cohesive_extrinsic_quadrangle was passed!"
+            << std::endl;
   return EXIT_SUCCESS;
 }

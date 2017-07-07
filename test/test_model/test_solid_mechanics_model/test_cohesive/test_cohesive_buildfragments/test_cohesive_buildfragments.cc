@@ -31,22 +31,21 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include <limits>
 #include <fstream>
 #include <iostream>
-
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model_cohesive.hh"
-#include "material_cohesive.hh"
 #include "fragment_manager.hh"
+#include "material_cohesive.hh"
+#include "solid_mechanics_model_cohesive.hh"
 
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
-  initialize("material.dat",argc, argv);
+int main(int argc, char * argv[]) {
+  initialize("material.dat", argc, argv);
 
   Math::setTolerance(1e-14);
 
@@ -56,7 +55,7 @@ int main(int argc, char *argv[]) {
   ElementType type = _quadrangle_4;
 
   Real L = 0.03;
-  Real theoretical_mass = L * L/20. * 2500;
+  Real theoretical_mass = L * L / 20. * 2500;
 
   ElementType type_facet = Mesh::getFacetType(type);
   ElementType type_cohesive = FEEngine::getCohesiveElementType(type_facet);
@@ -68,9 +67,10 @@ int main(int argc, char *argv[]) {
   SolidMechanicsModelCohesive model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(
+      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
 
-  Real time_step = model.getStableTimeStep()*0.05;
+  Real time_step = model.getStableTimeStep() * 0.05;
   model.setTimeStep(time_step);
   //  std::cout << "Time step: " << time_step << std::endl;
 
@@ -91,22 +91,12 @@ int main(int argc, char *argv[]) {
   model.applyBC(BC::Dirichlet::FixedValue(0, _x), "Left_side");
   model.applyBC(BC::Dirichlet::FixedValue(0, _x), "Right_side");
 
-  model.updateResidual();
-
-  model.setBaseName("extrinsic");
-  model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
-  model.addDumpField("acceleration");
-  model.addDumpField("residual"    );
-  model.addDumpField("stress");
-  model.addDumpField("strain");
-  model.dump();
-
   UInt cohesive_index = 1;
 
-  UInt nb_quad_per_facet = model.getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
-  MaterialCohesive & mat_cohesive
-    = dynamic_cast<MaterialCohesive&>(model.getMaterial(cohesive_index));
+  UInt nb_quad_per_facet =
+      model.getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
+  MaterialCohesive & mat_cohesive =
+      dynamic_cast<MaterialCohesive &>(model.getMaterial(cohesive_index));
   const Array<Real> & damage = mat_cohesive.getDamage(type_cohesive);
 
   FragmentManager fragment_manager(model, false);
@@ -117,16 +107,15 @@ int main(int argc, char *argv[]) {
 
     model.checkCohesiveStress();
 
-    model.explicitPred();
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
+    model.solveStep();
 
     /// apply boundary conditions
-    model.applyBC(BC::Dirichlet::IncrementValue(-disp_increment, _x), "Left_side");
-    model.applyBC(BC::Dirichlet::IncrementValue( disp_increment, _x), "Right_side");
+    model.applyBC(BC::Dirichlet::IncrementValue(-disp_increment, _x),
+                  "Left_side");
+    model.applyBC(BC::Dirichlet::IncrementValue(disp_increment, _x),
+                  "Right_side");
 
-    if(s % 1 == 0) {
+    if (s % 1 == 0) {
       //      model.dump();
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
 
@@ -139,31 +128,31 @@ int main(int argc, char *argv[]) {
 
       UInt nb_fragment = 1;
       for (UInt el = 0; el < nb_cohesive_elements; ++el) {
-	UInt q = 0;
-	while (q < nb_quad_per_facet &&
-	       Math::are_float_equal(damage(el*nb_quad_per_facet + q), 1)) ++q;
+        UInt q = 0;
+        while (q < nb_quad_per_facet &&
+               Math::are_float_equal(damage(el * nb_quad_per_facet + q), 1))
+          ++q;
 
-	if (q == nb_quad_per_facet) {
-	  ++nb_fragment;
-	}
+        if (q == nb_quad_per_facet) {
+          ++nb_fragment;
+        }
       }
 
       if (nb_fragment != nb_fragment_num) {
-	std::cout << "The number of fragments is wrong!" << std::endl;
-	return EXIT_FAILURE;
+        std::cout << "The number of fragments is wrong!" << std::endl;
+        return EXIT_FAILURE;
       }
 
       /// check mass computation
       Real total_mass = 0.;
       for (UInt frag = 0; frag < nb_fragment_num; ++frag) {
-	total_mass += fragment_mass(frag);
+        total_mass += fragment_mass(frag);
       }
 
       if (!Math::are_float_equal(theoretical_mass, total_mass)) {
-	std::cout << "The fragments' mass is wrong!" << std::endl;
-	return EXIT_FAILURE;
+        std::cout << "The fragments' mass is wrong!" << std::endl;
+        return EXIT_FAILURE;
       }
-
     }
   }
 

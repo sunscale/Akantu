@@ -40,8 +40,7 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   debug::setDebugLevel(dblWarning);
 
   akantu::initialize("material_damage_non_local.dat", argc, argv);
@@ -59,14 +58,14 @@ int main(int argc, char *argv[])
   model.initFull();
 
   Real time_step = model.getStableTimeStep();
-  model.setTimeStep(time_step/2.5);
+  model.setTimeStep(time_step / 2.5);
 
   std::cout << model << std::endl;
 
   model.applyBC(BC::Dirichlet::FixedValue(0.0), "Fixed");
 
   // Boundary condition (Neumann)
-  Matrix<Real> stress(2,2);
+  Matrix<Real> stress(2, 2);
   stress.eye(5e8);
   model.applyBC(BC::Neumann::FromHigherDim(stress), "Traction");
 
@@ -82,40 +81,41 @@ int main(int argc, char *argv[])
   model.addDumpField("strain"      );
   model.dump();*/
 
-  for(UInt s = 0; s < max_steps; ++s) {
-    model.explicitPred();
+  for (UInt s = 0; s < max_steps; ++s) {
+    model.solveStep();
 
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
-
-    //if(s % 100 == 0) std::cout << "Step " << s+1 << "/" << max_steps <<std::endl;
-    //if(s % 100 == 0) model.dump();
+    // if(s % 100 == 0) std::cout << "Step " << s+1 << "/" << max_steps
+    // <<std::endl;  if(s % 100 == 0) model.dump();
   }
-  
+
   const Vector<Real> & lower_bounds = mesh.getLowerBounds();
   const Vector<Real> & upper_bounds = mesh.getUpperBounds();
   Real L = upper_bounds(0) - lower_bounds(0);
   Real H = upper_bounds(1) - lower_bounds(1);
 
-  const ElementTypeMapArray<UInt> & filter =  model.getMaterial(0).getElementFilter();
-  ElementTypeMapArray<UInt>::type_iterator it = filter.firstType(spatial_dimension);
-  ElementTypeMapArray<UInt>::type_iterator end = filter.lastType(spatial_dimension);
+  const ElementTypeMapArray<UInt> & filter =
+      model.getMaterial(0).getElementFilter();
+  ElementTypeMapArray<UInt>::type_iterator it =
+      filter.firstType(spatial_dimension);
+  ElementTypeMapArray<UInt>::type_iterator end =
+      filter.lastType(spatial_dimension);
   Vector<Real> barycenter(spatial_dimension);
-  for(; it != end; ++it) {
+  for (; it != end; ++it) {
     UInt nb_elem = mesh.getNbElement(*it);
     const UInt nb_gp = model.getFEEngine().getNbIntegrationPoints(*it);
-    Array<Real> & material_damage_array = model.getMaterial(0).getArray<Real>("damage", *it);
+    Array<Real> & material_damage_array =
+        model.getMaterial(0).getArray<Real>("damage", *it);
     UInt cpt = 0;
-    for(UInt nel = 0; nel < nb_elem ; ++nel){
-      mesh.getBarycenter(nel,*it,barycenter.storage());
-      if( (std::abs(barycenter(0)-(L/2)+0.025)<0.025)
-	  && (std::abs(barycenter(1)-(H/2)+0.025)<0.025) ) {
-	if (material_damage_array(cpt,0) < 0.9){
-	  //	  std::cout << "barycenter(0) = " << barycenter(0) << ", barycenter(1) = " 
-	  //	    << barycenter(1)  <<std::endl;
-	  return EXIT_FAILURE;
-	}
+    for (UInt nel = 0; nel < nb_elem; ++nel) {
+      mesh.getBarycenter(nel, *it, barycenter.storage());
+      if ((std::abs(barycenter(0) - (L / 2) + 0.025) < 0.025) &&
+          (std::abs(barycenter(1) - (H / 2) + 0.025) < 0.025)) {
+        if (material_damage_array(cpt, 0) < 0.9) {
+          //	  std::cout << "barycenter(0) = " << barycenter(0) << ",
+          //barycenter(1) = "
+          //	    << barycenter(1)  <<std::endl;
+          return EXIT_FAILURE;
+        }
       }
       cpt += nb_gp;
     }

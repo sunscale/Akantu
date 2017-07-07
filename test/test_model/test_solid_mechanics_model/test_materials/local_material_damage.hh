@@ -39,45 +39,45 @@
 #ifndef __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__
 #define __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class LocalMaterialDamage : public Material {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   LocalMaterialDamage(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~LocalMaterialDamage() {};
+  virtual ~LocalMaterialDamage(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   void initMaterial();
 
   /// constitutive law for all element of a type
   void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   /// constitutive law for a given quadrature point
-  inline void computeStressOnQuad(Matrix<Real> & grad_u,
-				  Matrix<Real> & sigma,
-				  Real & damage);
+  inline void computeStressOnQuad(Matrix<Real> & grad_u, Matrix<Real> & sigma,
+                                  Real & damage);
 
   /// compute tangent stiffness
-  virtual void computeTangentStiffness(__attribute__ ((unused)) const ElementType & el_type,
-				       __attribute__ ((unused)) Array<Real> & tangent_matrix,
-				       __attribute__ ((unused)) GhostType ghost_type = _not_ghost) {};
+  virtual void computeTangentStiffness(__attribute__((unused))
+                                       const ElementType & el_type,
+                                       __attribute__((unused))
+                                       Array<Real> & tangent_matrix,
+                                       __attribute__((unused))
+                                       GhostType ghost_type = _not_ghost){};
 
   /// compute the potential energy for all elements
-  void computePotentialEnergy(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computePotentialEnergy(ElementType el_type,
+                              GhostType ghost_type = _not_ghost);
 
   /// compute the potential energy for on element
   inline void computePotentialEnergyOnQuad(Matrix<Real> & grad_u,
-					   Matrix<Real> & sigma,
-					   Real & epot);
+                                           Matrix<Real> & sigma, Real & epot);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -91,8 +91,8 @@ public:
   /* ------------------------------------------------------------------------ */
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Damage, damage, Real);
-private:
 
+private:
   /// the young modulus
   Real E;
 
@@ -116,7 +116,6 @@ private:
 
   /// damage internal variable
   InternalField<Real> damage;
-
 };
 
 /* -------------------------------------------------------------------------- */
@@ -124,6 +123,6 @@ private:
 /* -------------------------------------------------------------------------- */
 #include "local_material_damage_inline_impl.cc"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__ */
