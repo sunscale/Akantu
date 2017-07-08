@@ -99,8 +99,4 @@ inline ParserParameter::operator RandomParameter<Real>() const {
   return Parser::parseRandomParameter(value, *parent_section);
 }
 
-
-
-
-
 } // akantu

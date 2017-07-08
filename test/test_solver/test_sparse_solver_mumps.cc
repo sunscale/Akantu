@@ -62,9 +62,9 @@ int main(int argc, char * argv[]) {
 
   if (prank == 0) {
     genMesh(mesh, nb_global_dof);
-    RandGenerator<Real>::seed(1496137735);
+    RandomGenerator<UInt>::seed(1496137735);
   } else {
-    RandGenerator<Real>::seed(2992275470);
+    RandomGenerator<UInt>::seed(2992275470);
   }
 
   mesh.distribute();

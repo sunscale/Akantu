@@ -30,7 +30,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh"
-#include "aka_common.hh"
+/* -------------------------------------------------------------------------- */
+#include <random>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_AKA_RANDOM_GENERATOR_HH__
 #define __AKANTU_AKA_RANDOM_GENERATOR_HH__
@@ -40,8 +42,20 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 /* List of available distributions                                            */
 /* -------------------------------------------------------------------------- */
-#define AKANTU_RANDOM_DISTRIBUTION_TYPES                                       \
-  ((uniform, UniformDistribution))((weibull, WeibullDistribution))
+// clang-format off
+#define AKANTU_RANDOM_DISTRIBUTION_TYPES                \
+  ((uniform      , std::uniform_real_distribution ))    \
+  ((exponential  , std::exponential_distribution  ))    \
+  ((gamma        , std::gamma_distribution        ))    \
+  ((weibull      , std::weibull_distribution      ))    \
+  ((extreme_value, std::extreme_value_distribution))    \
+  ((normal       , std::normal_distribution       ))    \
+  ((lognormal    , std::lognormal_distribution    ))    \
+  ((chi_squared  , std::chi_squared_distribution  ))    \
+  ((cauchy       , std::cauchy_distribution       ))    \
+  ((fisher_f     , std::fisher_f_distribution     ))    \
+  ((student_t    , std::student_t_distribution    ))
+// clang-format on
 
 #define AKANTU_RANDOM_DISTRIBUTION_TYPES_PREFIX(elem) BOOST_PP_CAT(_rdt_, elem)
 #define AKANTU_RANDOM_DISTRIBUTION_PREFIX(s, data, elem)                       \
@@ -54,144 +68,15 @@ enum RandomDistributionType {
 };
 
 /* -------------------------------------------------------------------------- */
-/* Distribution                                                               */
-/* -------------------------------------------------------------------------- */
-/// Empty base to be able to store a distribution
-template <typename T> class RandomDistributionBase {
-public:
-  virtual ~RandomDistributionBase() {}
-  virtual void printself(std::ostream & stream, int indent = 0) const = 0;
-};
-
-/* -------------------------------------------------------------------------- */
-/* Uniform distribution                                                       */
-/* -------------------------------------------------------------------------- */
-template <typename T>
-class UniformDistribution : public RandomDistributionBase<T> {
-public:
-  UniformDistribution(T min = T(0.), T max = T(1.)) : min(min), max(max){};
-
-  /* ------------------------------------------------------------------------ */
-  template <template <class> class RandomGenerator>
-  T operator()(RandomGenerator<T> & generator) {
-    T x = generator() / (RandomGenerator<T>::max() - RandomGenerator<T>::min());
-    return (x * (max - min) + min);
-  }
-
-  virtual void setParams(std::string value) {
-    std::stringstream sstr(value);
-    sstr >> min;
-    sstr >> max;
-  }
-
-  /// function to print the contain of the class
-  virtual void printself(std::ostream & stream,
-                         __attribute__((unused)) int indent = 0) const {
-    stream << "Uniform [ min=" << min << ", max=" << max << " ]";
-  };
-
-  /* ------------------------------------------------------------------------ */
-private:
-  T min;
-  T max;
-};
-
-/* -------------------------------------------------------------------------- */
-/* Weibull distribution                                                       */
-/* -------------------------------------------------------------------------- */
-template <typename T>
-class WeibullDistribution : public RandomDistributionBase<T> {
-public:
-  WeibullDistribution(T scale, T shape) : m(shape), lambda(scale){};
-
-  /* ------------------------------------------------------------------------ */
-  template <template <class> class RandomGenerator>
-  T operator()(RandomGenerator<T> & generator) {
-    T x = generator() / (RandomGenerator<T>::max() - RandomGenerator<T>::min());
-    T e = T(1) / m;
-    return lambda * std::pow(-std::log(1. - x), e);
-  }
-
-  virtual void setParams(std::string value) {
-    std::stringstream sstr(value);
-    sstr >> m;
-    sstr >> lambda;
-  }
-
-  /// function to print the contain of the class
-  virtual void printself(std::ostream & stream,
-                         __attribute__((unused)) int indent = 0) const {
-    stream << "Weibull [ shape=" << m << ", scale=" << lambda << "]";
-  }
-
-  /* ------------------------------------------------------------------------ */
-private:
-  /// shape parameter or Weibull modulus
-  T m;
-  /// scale parameter
-  T lambda;
-};
-
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
 /* Generator                                                                  */
 /* -------------------------------------------------------------------------- */
-#if not defined(_WIN32)
-template <typename T> class Rand48Generator {
+template <typename T> class RandomGenerator {
   /* ------------------------------------------------------------------------ */
 public:
-  inline T operator()();
+  inline T operator()() { return generator(); }
 
   /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
-
-  /* ------------------------------------------------------------------------ */
-public:
-  static void seed(long int s);
-  static long int seed();
-
-  static constexpr T min();
-  static constexpr T max();
-
-  /* ------------------------------------------------------------------------ */
-private:
-  static long int _seed;
-};
-/* -------------------------------------------------------------------------- */
-
-template <typename T> inline T Rand48Generator<T>::operator()() {
-  AKANTU_DEBUG_TO_IMPLEMENT();
-}
-
-template <> inline double Rand48Generator<double>::operator()() {
-  return drand48();
-}
-
-template <typename T>
-void Rand48Generator<T>::printself(std::ostream & stream,
-                                   __attribute__((unused)) int indent) const {
-  stream << "Rand48Generator [seed=" << seed << "]";
-}
-
-template <typename T> void Rand48Generator<T>::seed(long int s) {
-  _seed = s;
-  srand48(_seed);
-}
-template <typename T> long int Rand48Generator<T>::seed() { return _seed; }
-template <typename T> constexpr T Rand48Generator<T>::min() { return 0.; }
-template <typename T> constexpr T Rand48Generator<T>::max() { return 1.; }
-
-#endif
-/* -------------------------------------------------------------------------- */
-template <typename T> class RandGenerator {
-  /* ------------------------------------------------------------------------ */
-public:
-  inline T operator()() { return rand(); }
-
-  /// function to print the contain of the class
-  virtual void printself(std::ostream & stream,
-                         __attribute__((unused)) int indent = 0) const {
+  virtual void printself(std::ostream & stream, int) const {
     stream << "RandGenerator [seed=" << _seed << "]";
   }
 
@@ -199,16 +84,17 @@ public:
 public:
   static void seed(long int s) {
     _seed = s;
-    srand(_seed);
+    generator.seed(_seed);
   }
   static long int seed() { return _seed; }
 
-  static constexpr T min() { return 0.; }
-  static constexpr T max() { return RAND_MAX; }
+  static constexpr T min() { return generator.min(); }
+  static constexpr T max() { return generator.max(); }
 
   /* ------------------------------------------------------------------------ */
 private:
   static long int _seed;
+  static std::default_random_engine generator;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -240,15 +126,15 @@ inline std::ostream & operator<<(std::ostream & stream,
 /* -------------------------------------------------------------------------- */
 /* Some Helper                                                                */
 /* -------------------------------------------------------------------------- */
-template <typename T, template <typename> class Distribution>
-class RandomDistributionTypeHelper {
+template <typename T, class Distribution> class RandomDistributionTypeHelper {
   enum { value = _rdt_not_defined };
 };
 
 /* -------------------------------------------------------------------------- */
 #define AKANTU_RANDOM_DISTRIBUTION_TYPE_GET_TYPE(r, data, elem)                \
   template <typename T>                                                        \
-  struct RandomDistributionTypeHelper<T, BOOST_PP_TUPLE_ELEM(2, 1, elem)> {    \
+      struct RandomDistributionTypeHelper<T, BOOST_PP_TUPLE_ELEM(2, 1, elem) < \
+                                                 T>> {                         \
     enum {                                                                     \
       value = AKANTU_RANDOM_DISTRIBUTION_TYPES_PREFIX(                         \
           BOOST_PP_TUPLE_ELEM(2, 0, elem))                                     \
@@ -261,87 +147,86 @@ BOOST_PP_SEQ_FOR_EACH(AKANTU_RANDOM_DISTRIBUTION_TYPE_GET_TYPE, _,
 #undef AKANTU_RANDOM_DISTRIBUTION_TYPE_GET_TYPE
 
 /* -------------------------------------------------------------------------- */
+template <class T> class RandomDistribution {
+public:
+  virtual T operator()(RandomGenerator<UInt> & gen) = 0;
+  virtual std::unique_ptr<RandomDistribution<T>> make_unique() const = 0;
+  virtual void printself(std::ostream & stream, int = 0) const = 0;
+};
+
+template <class T, class Distribution>
+class RandomDistributionProxy : public RandomDistribution<T> {
+public:
+  explicit RandomDistributionProxy(Distribution dist)
+      : distribution(std::move(dist)) {}
+
+  T operator()(RandomGenerator<UInt> & gen) override {
+    return distribution(gen);
+  }
+
+  std::unique_ptr<RandomDistribution<T>> make_unique() const override {
+    return std::make_unique<RandomDistributionProxy<T, Distribution>>(
+        distribution);
+  }
+
+  void printself(std::ostream & stream, int = 0) const override {
+    stream << RandomDistributionTypeHelper<T, Distribution>::value << " [ "
+           << distribution << " ]";
+  }
+
+private:
+  Distribution distribution;
+};
+
+/* -------------------------------------------------------------------------- */
 /* RandomParameter                                                            */
 /* -------------------------------------------------------------------------- */
 template <typename T> class RandomParameter {
 public:
-  explicit RandomParameter(T base_value)
-      : base_value(base_value), type(_rdt_not_defined), distribution(NULL) {}
-
-  template <template <typename> class Distribution>
-  RandomParameter(T base_value, const Distribution<T> & distribution)
+  template <class Distribution>
+  explicit RandomParameter(T base_value, Distribution dist)
       : base_value(base_value),
-        type((RandomDistributionType)
-                 RandomDistributionTypeHelper<T, Distribution>::value),
-        distribution(new Distribution<T>(distribution)) {}
+        type(RandomDistributionType(
+            RandomDistributionTypeHelper<T, Distribution>::value)),
+        distribution_proxy(
+            std::make_unique<RandomDistributionProxy<T, Distribution>>(
+                std::move(dist))) {}
 
-#define AKANTU_RANDOM_DISTRIBUTION_TYPE_NEW(r, data, elem)                     \
-  else if (type == AKANTU_RANDOM_DISTRIBUTION_TYPES_PREFIX(                    \
-                       BOOST_PP_TUPLE_ELEM(2, 0, elem))) {                     \
-    typedef BOOST_PP_TUPLE_ELEM(2, 1, elem)<T> Dist;                           \
-    distribution = new Dist(*static_cast<Dist *>(other.distribution));         \
-  }
+  explicit RandomParameter(T base_value)
+      : base_value(base_value),
+        type(RandomDistributionType(
+            RandomDistributionTypeHelper<
+                T, std::uniform_real_distribution<T>>::value)),
+        distribution_proxy(
+            std::make_unique<
+                RandomDistributionProxy<T, std::uniform_real_distribution<T>>>(
+                std::uniform_real_distribution<T>(0., 0.))) {}
 
   RandomParameter(const RandomParameter & other)
-      : base_value(other.base_value), type(other.type) {
-    if (type == _rdt_not_defined)
-      distribution = NULL;
-    BOOST_PP_SEQ_FOR_EACH(AKANTU_RANDOM_DISTRIBUTION_TYPE_NEW, _,
-                          AKANTU_RANDOM_DISTRIBUTION_TYPES)
+      : base_value(other.base_value), type(other.type),
+        distribution_proxy(other.distribution_proxy->make_unique()) {}
+
+  RandomParameter & operator=(const RandomParameter & other) {
+    distribution_proxy = other.distribution_proxy->make_unique();
+    base_value = other.base_value;
+    type = other.type;
+    return *this;
   }
 
   inline void setBaseValue(const T & value) { this->base_value = value; }
   inline T getBaseValue() const { return this->base_value; }
 
-  RandomParameter & operator=(const RandomParameter & other) {
-    if (this != &other) {
-      base_value = other.base_value;
-      type = other.type;
-      delete distribution;
-      if (type == _rdt_not_defined)
-        distribution = NULL;
-      BOOST_PP_SEQ_FOR_EACH(AKANTU_RANDOM_DISTRIBUTION_TYPE_NEW, _,
-                            AKANTU_RANDOM_DISTRIBUTION_TYPES)
-    }
-    return *this;
-  }
-#undef AKANTU_RANDOM_DISTRIBUTION_TYPE_NEW
-
-/* ------------------------------------------------------------------------ */
-#define AKANTU_RANDOM_DISTRIBUTION_TYPE_SET(r, data, elem)                     \
-  else if (type == AKANTU_RANDOM_DISTRIBUTION_TYPES_PREFIX(                    \
-                       BOOST_PP_TUPLE_ELEM(2, 0, elem))) {                     \
-    this->set<BOOST_PP_TUPLE_ELEM(2, 1, elem), Generator>(it, end);            \
-  }
-
   template <template <typename> class Generator, class iterator>
   void setValues(iterator it, iterator end) {
-    if (type == _rdt_not_defined) {
-      for (; it != end; ++it)
-        *it = this->base_value;
-    }
-    BOOST_PP_SEQ_FOR_EACH(AKANTU_RANDOM_DISTRIBUTION_TYPE_SET, _,
-                          AKANTU_RANDOM_DISTRIBUTION_TYPES)
+    RandomGenerator<UInt> gen;
+    for (; it != end; ++it)
+      *it = this->base_value + (*distribution_proxy)(gen);
   }
-
-#undef AKANTU_RANDOM_DISTRIBUTION_TYPE_SET
 
   virtual void printself(std::ostream & stream,
                          __attribute__((unused)) int indent = 0) const {
     stream << base_value;
-    if (type != _rdt_not_defined)
-      stream << " " << *distribution;
-  }
-
-private:
-  template <template <typename> class Distribution,
-            template <typename> class Generator, class iterator>
-  void set(iterator it, iterator end) {
-    typedef Distribution<T> Dist;
-    Dist & dist = *(static_cast<Dist *>(this->distribution));
-    Generator<T> gen;
-    for (; it != end; ++it)
-      *it = this->base_value + dist(gen);
+    stream << " " << *distribution_proxy;
   }
 
 private:
@@ -351,14 +236,14 @@ private:
   /// Random distribution type
   RandomDistributionType type;
 
-  /// Random distribution to use
-  RandomDistributionBase<T> * distribution;
+  /// Proxy to store a std random distribution
+  std::unique_ptr<RandomDistribution<T>> distribution_proxy;
 };
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline std::ostream & operator<<(std::ostream & stream,
-                                 RandomDistributionBase<T> & _this) {
+                                 RandomDistribution<T> & _this) {
   _this.printself(stream);
   return stream;
 }

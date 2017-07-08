@@ -75,10 +75,10 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  RandGenerator<Real>::seed(1);
+  RandomGenerator<UInt>::seed(1);
   mesh_group_before.distribute();
 
-  RandGenerator<Real>::seed(1);
+  RandomGenerator<UInt>::seed(1);
   mesh_group_after.distribute();
 
   if (prank == 0)
