@@ -142,6 +142,6 @@ template <UInt spatial_dimension>
 void MaterialMazarsNonLocal<
     spatial_dimension>::nonLocalVariableToNeighborhood() {}
 
-INSTANTIATE_MATERIAL(MaterialMazarsNonLocal);
+INSTANTIATE_MATERIAL(mazars_non_local, MaterialMazarsNonLocal);
 
 } // akantu

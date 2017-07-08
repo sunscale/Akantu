@@ -67,7 +67,7 @@ public:
   void computeWeights();
 
   /// save the pair of weights in a file
-  void saveWeights(const std::string & filename) const;
+  void saveWeights(const std::string & filename) const override;
 
   /// compute the non-local counter part for a given element type map
   // compute the non-local counter part for a given element type map

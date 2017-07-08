@@ -81,6 +81,6 @@ void CustomNonLocalTestMaterial<dim>::computeNonLocalStress(
 
 /* -------------------------------------------------------------------------- */
 // Instantiate the material for the 3 dimensions
-INSTANTIATE_MATERIAL(CustomNonLocalTestMaterial);
+INSTANTIATE_MATERIAL(custom_non_local_test_material, CustomNonLocalTestMaterial);
 /* -------------------------------------------------------------------------- */
 } // namespace akantu

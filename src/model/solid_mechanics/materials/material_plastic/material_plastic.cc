@@ -204,6 +204,6 @@ void MaterialPlastic<spatial_dimension>::updateEnergies(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(MaterialPlastic);
+INSTANTIATE_MATERIAL_ONLY(MaterialPlastic);
 
 } // namespace akantu

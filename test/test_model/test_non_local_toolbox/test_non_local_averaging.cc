@@ -58,9 +58,8 @@ int main(int argc, char *argv[]) {
   model.setMaterialSelector(*mat_selector);
 
   /// model initialization changed to use our material
-  model.initFull(_no_init_materials = true);
-  model.registerNewCustomMaterials< TestMaterial<spatial_dimension> >("test_material");
-  model.initMaterials();
+  model.initFull();
+  
   /// dump material index in paraview
   model.addDumpField("material_index");
   model.addDumpField("grad_u");
@@ -84,7 +83,7 @@ int main(int argc, char *argv[]) {
   }
 
   /// compute the non-local strains
-  model.getNonLocalManager().computeAllNonLocalStresses();
+  model.assembleInternalForces();
   model.dump();
 
   /// verify the result: non-local averaging over constant field must
@@ -92,11 +91,11 @@ int main(int argc, char *argv[]) {
   Real test_result = 0.;
   Matrix<Real> difference(spatial_dimension, spatial_dimension, 0.);
   for (UInt m = 0; m < model.getNbMaterials(); ++m) {
-    MaterialNonLocal<spatial_dimension> & mat = dynamic_cast<MaterialNonLocal<spatial_dimension> & >(model.getMaterial(m));
-    Array<Real> & grad_u_nl = const_cast<Array<Real> &> (mat.getInternal<Real>("grad_u non local")(element_type, ghost_type));
+    auto & mat = model.getMaterial(m);
+    Array<Real> & grad_u_nl = mat.getInternal<Real>("grad_u non local")(element_type, ghost_type);
 
-    Array<Real>::iterator< Matrix<Real> > grad_u_nl_it = grad_u_nl.begin(spatial_dimension, spatial_dimension);
-    Array<Real>::iterator< Matrix<Real> > grad_u_nl_end = grad_u_nl.end(spatial_dimension, spatial_dimension);
+    auto grad_u_nl_it = grad_u_nl.begin(spatial_dimension, spatial_dimension);
+    auto grad_u_nl_end = grad_u_nl.end(spatial_dimension, spatial_dimension);
     for (; grad_u_nl_it != grad_u_nl_end; ++grad_u_nl_it) {
       difference = (*grad_u_nl_it) - applied_strain;
       test_result += difference.norm<L_2>();

@@ -72,18 +72,16 @@ struct FacetsCohesiveIntegrationOrderFunctor {
 struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
   SolidMechanicsModelCohesiveOptions(
       AnalysisMethod analysis_method = _explicit_lumped_mass,
-      bool extrinsic = false, bool no_init_materials = false)
-      : SolidMechanicsModelOptions(analysis_method, no_init_materials),
-        extrinsic(extrinsic) {}
+      bool extrinsic = false)
+      : SolidMechanicsModelOptions(analysis_method), extrinsic(extrinsic) {}
 
   template <typename... pack>
   SolidMechanicsModelCohesiveOptions(use_named_args_t, pack &&... _pack)
       : SolidMechanicsModelOptions(
             OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
-            OPTIONAL_NAMED_ARG(is_extrinsic, false),
-            OPTIONAL_NAMED_ARG(no_init_materials, false)) {}
+            OPTIONAL_NAMED_ARG(is_extrinsic, false)) {}
 
-  bool extrinsic;
+  bool extrinsic{false};
 };
 
 /* -------------------------------------------------------------------------- */
@@ -140,11 +138,13 @@ public:
   void interpolateStress();
 
   /// initialize the cohesive model
-  void initFull(const ModelOptions & options = SolidMechanicsModelCohesiveOptions());
+  void
+  initFull(const ModelOptions & options = SolidMechanicsModelCohesiveOptions());
 
   template <typename P, typename T, typename... pack>
   void initFull(named_argument::param_t<P, T &&> && first, pack &&... _pack) {
-    this->initFull(SolidMechanicsModelCohesiveOptions{use_named_args, first, _pack...});
+    this->initFull(
+        SolidMechanicsModelCohesiveOptions{use_named_args, first, _pack...});
   }
 
   /// initialize the model
@@ -168,8 +168,9 @@ public:
   // synchronize facets physical data before insertion along physical surfaces
   void synchronizeInsertionData();
 
-  // template <SolveConvergenceMethod cmethod, SolveConvergenceCriteria criteria>
-  // bool solveStepCohesive(Real tolerance, Real & error, UInt max_iteration = 100,
+  // template <SolveConvergenceMethod cmethod, SolveConvergenceCriteria
+  // criteria> bool solveStepCohesive(Real tolerance, Real & error, UInt
+  // max_iteration = 100,
   //                        bool load_reduction = false,
   //                        Real tol_increase_factor = 1.0,
   //                        bool do_not_factorize = false);
@@ -289,7 +290,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #include "solid_mechanics_model_cohesive_inline_impl.cc"
 

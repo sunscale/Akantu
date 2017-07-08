@@ -51,10 +51,8 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModel model(mesh);
 
   /// model initialization changed to use our material
-  model.initFull(_no_init_materials = true);
-  model.registerNewCustomMaterials<TestMaterial<spatial_dimension> >(
-      "test_material");
-  model.initMaterials();
+  model.initFull();
+
   /// dump material index in paraview
   model.addDumpField("material_index");
   model.dump();
@@ -62,7 +60,7 @@ int main(int argc, char * argv[]) {
   /// save the weights in a file
   NonLocalNeighborhood<BaseWeightFunction> & neighborhood =
     dynamic_cast<NonLocalNeighborhood<BaseWeightFunction> &>(
-        model.getNonLocalManager().getNeighborhood("test_region"));
+        model.getNeighborhood("test_region"));
 
   neighborhood.saveWeights("weights");
   /// print results to screen for validation

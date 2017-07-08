@@ -308,6 +308,6 @@ Real MaterialElasticLinearAnisotropic<dim>::getCelerity(
 
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(MaterialElasticLinearAnisotropic);
+INSTANTIATE_MATERIAL(elastic_anisotropic, MaterialElasticLinearAnisotropic);
 
 } // akantu

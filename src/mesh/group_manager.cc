@@ -498,7 +498,8 @@ UInt GroupManager::createClusters(UInt element_dimension,
     element_to_fragment =
         new ElementTypeMapArray<UInt>("element_to_fragment", id, memory_id);
 
-    element_to_fragment->initialize(mesh, _nb_component = element_dimension,
+    element_to_fragment->initialize(mesh, _nb_component = 1,
+                                    _spatial_dimension = element_dimension,
                                     _element_kind = _ek_not_defined,
                                     _with_nb_element = true);
     // mesh.initElementTypeMapArray(*element_to_fragment, 1, element_dimension,
@@ -520,7 +521,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
   }
 
   ElementTypeMapArray<bool> seen_elements("seen_elements", id, memory_id);
-  seen_elements.initialize(mesh, _nb_component = element_dimension,
+  seen_elements.initialize(mesh, _spatial_dimension = element_dimension,
                             _element_kind = _ek_not_defined,
                             _with_nb_element = true);
   // mesh.initElementTypeMapArray(seen_elements, 1, element_dimension, false,

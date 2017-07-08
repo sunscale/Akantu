@@ -586,14 +586,14 @@ void ElementTypeMapArray<T, SupportType>::initialize(const Mesh & mesh,
     if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
       continue;
 
-    this->initialize(MeshElementTypeMapArrayInializer(
-                         mesh, OPTIONAL_NAMED_ARG(nb_component, 1),
-                         OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
-                         ghost_type,
-                         OPTIONAL_NAMED_ARG(element_kind, _ek_regular),
-                         OPTIONAL_NAMED_ARG(with_nb_element, false),
-                         OPTIONAL_NAMED_ARG(with_nb_nodes_per_element, false)),
-                     OPTIONAL_NAMED_ARG(default_value, T()));
+    this->initialize(
+        MeshElementTypeMapArrayInializer(
+            mesh, OPTIONAL_NAMED_ARG(nb_component, 1),
+            OPTIONAL_NAMED_ARG(spatial_dimension, mesh.getSpatialDimension()),
+            ghost_type, OPTIONAL_NAMED_ARG(element_kind, _ek_regular),
+            OPTIONAL_NAMED_ARG(with_nb_element, false),
+            OPTIONAL_NAMED_ARG(with_nb_nodes_per_element, false)),
+        OPTIONAL_NAMED_ARG(default_value, T()));
   }
 }
 

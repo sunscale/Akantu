@@ -30,14 +30,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <iostream>
-
-/* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
+#include <fstream>
+/* -------------------------------------------------------------------------- */
+
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize("material.dat", argc, argv);
   UInt max_steps = 1000;
   Real epot, ekin;
@@ -52,33 +53,33 @@ int main(int argc, char *argv[]) {
   model.initFull();
 
   Real time_step = model.getStableTimeStep();
-  model.setTimeStep(time_step/10.);
+  model.setTimeStep(time_step / 10.);
 
   model.assembleMassLumped();
 
   std::cout << model << std::endl;
 
   // Boundary condition (Neumann)
-  Matrix<Real> stress(2,2);
+  Matrix<Real> stress(2, 2);
   stress.eye(Real(1e3));
   model.applyBC(BC::Neumann::FromHigherDim(stress), "boundary_0");
 
-  model.setBaseName       ("square"      );
+  model.setBaseName("square");
   model.addDumpFieldVector("displacement");
-  model.addDumpField      ("mass"        );
-  model.addDumpField      ("velocity"    );
-  model.addDumpField      ("acceleration");
+  model.addDumpField("mass");
+  model.addDumpField("velocity");
+  model.addDumpField("acceleration");
   model.addDumpFieldVector("external_force");
   model.addDumpFieldVector("internal_force");
-  model.addDumpField      ("stress"      );
-  model.addDumpField      ("strain"      );
+  model.addDumpField("stress");
+  model.addDumpField("strain");
   model.dump();
 
   std::ofstream energy;
   energy.open("energy.csv");
   energy << "id,epot,ekin,tot" << std::endl;
 
-  for(UInt s = 0; s < max_steps; ++s) {
+  for (UInt s = 0; s < max_steps; ++s) {
     model.solveStep();
 
     epot = model.getEnergy("potential");
@@ -86,9 +87,10 @@ int main(int argc, char *argv[]) {
 
     std::cerr << "passing step " << s << "/" << max_steps << std::endl;
     energy << s << "," << epot << "," << ekin << "," << epot + ekin
-	   << std::endl;
+           << std::endl;
 
-    if(s % 100 == 0) model.dump();
+    if (s % 100 == 0)
+      model.dump();
   }
 
   energy.close();

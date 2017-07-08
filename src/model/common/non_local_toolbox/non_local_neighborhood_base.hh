@@ -73,6 +73,9 @@ public:
   /// update the weights for the non-local averaging
   virtual void updateWeights() = 0;
 
+  /// update the weights for the non-local averaging
+  virtual void saveWeights(const std::string & ) const { AKANTU_DEBUG_TO_IMPLEMENT(); }
+
   /// register a new non-local variable in the neighborhood
   virtual void registerNonLocalVariable(const ID & id);
 

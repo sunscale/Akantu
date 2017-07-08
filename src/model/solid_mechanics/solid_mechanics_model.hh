@@ -30,59 +30,43 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "boundary_condition.hh"
+#include "data_accessor.hh"
+#include "model.hh"
+#include "non_local_manager.hh"
+#include "solid_mechanics_model_event_handler.hh"
+/* -------------------------------------------------------------------------- */
+#include "integrator_gauss.hh"
+#include "shape_lagrange.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_HH__
 #define __AKANTU_SOLID_MECHANICS_MODEL_HH__
 
-/* -------------------------------------------------------------------------- */
-#include <fstream>
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "aka_named_argument.hh"
-#include "aka_types.hh"
-#include "boundary_condition.hh"
-#include "data_accessor.hh"
-#include "dumpable.hh"
-#include "integrator_gauss.hh"
-#include "material_selector.hh"
-#include "mesh.hh"
-#include "model.hh"
-#include "non_local_manager.hh"
-#include "shape_lagrange.hh"
-#include "solid_mechanics_model_event_handler.hh"
-/* -------------------------------------------------------------------------- */
 namespace akantu {
 class Material;
+class MaterialSelector;
 class DumperIOHelper;
 class NonLocalManager;
 } // namespace akantu
-/* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
 namespace akantu {
 
 struct SolidMechanicsModelOptions : public ModelOptions {
   SolidMechanicsModelOptions(
-      AnalysisMethod analysis_method = _explicit_lumped_mass,
-      bool no_init_materials = false)
-      : analysis_method(analysis_method), no_init_materials(no_init_materials) {
-  }
+      AnalysisMethod analysis_method = _explicit_lumped_mass);
 
   template <typename... pack>
-  SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack)
-      : SolidMechanicsModelOptions(
-            OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
-            OPTIONAL_NAMED_ARG(no_init_materials, false)) {}
+  SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack);
 
   AnalysisMethod analysis_method;
   bool no_init_materials;
 };
 
-extern const SolidMechanicsModelOptions default_solid_mechanics_model_options;
-
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 class SolidMechanicsModel
     : public Model,
       public DataAccessor<Element>,
@@ -104,10 +88,10 @@ public:
     Array<UInt> material;
   };
 
-  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange> MyFEEngineType;
+  using MyFEEngineType = FEEngineTemplate<IntegratorGauss, ShapeLagrange>;
 
 protected:
-  typedef EventHandlerManager<SolidMechanicsModelEventHandler> EventManager;
+  using EventManager = EventHandlerManager<SolidMechanicsModelEventHandler>;
 
 public:
   SolidMechanicsModel(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
@@ -359,14 +343,13 @@ protected:
 public:
   /// registers all the custom materials of a given type present in the input
   /// file
-  template <typename M> void registerNewCustomMaterials(const ID & mat_type);
+  // template <typename M> void registerNewCustomMaterials(const ID & mat_type);
 
   /// register an empty material of a given type
-  template <typename M>
-  Material & registerNewEmptyMaterial(const std::string & name);
-
-  // /// Use a UIntData in the mesh to specify the material to use per element
-  // void setMaterialIDsFromIntData(const std::string & data_name);
+  Material & registerNewMaterial(const ID & mat_name, const ID & mat_type,
+                                 const ID & opt_param);
+  // /// Use a UIntData in the mesh to specify the material to use per
+  // element void setMaterialIDsFromIntData(const std::string & data_name);
 
   /// reassigns materials depending on the material selector
   virtual void reassignMaterial();
@@ -378,7 +361,6 @@ public:
 
 protected:
   /// register a material in the dynamic database
-  template <typename M>
   Material & registerNewMaterial(const ParserSection & mat_section);
 
   /// read the material files to instantiate all the materials
@@ -390,7 +372,7 @@ protected:
 
   /// reinitialize dof_synchronizer and solver (either in implicit or
   /// explicit) when cohesive elements are inserted
-  //void reinitializeSolver();
+  // void reinitializeSolver();
 
   /* ------------------------------------------------------------------------ */
   /* Mass (solid_mechanics_model_mass.cc)                                     */

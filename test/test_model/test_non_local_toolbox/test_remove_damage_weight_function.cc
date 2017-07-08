@@ -57,10 +57,7 @@ int main(int argc, char * argv[]) {
   model.setMaterialSelector(*mat_selector);
 
   /// model initialization changed to use our material
-  model.initFull(_no_init_materials = true);
-  model.registerNewCustomMaterials<TestMaterialDamage<spatial_dimension> >(
-      "test_material");
-  model.initMaterials();
+  model.initFull();
   /// dump material index in paraview
   model.addDumpField("material_index");
   model.addDumpField("grad_u");
@@ -100,15 +97,15 @@ int main(int argc, char * argv[]) {
   }
 
   /// compute the non-local strains
-  model.getNonLocalManager().computeAllNonLocalStresses();
+  model.assembleInternalForces();
   model.dump();
   /// save the weights in a file
   NonLocalNeighborhood<RemoveDamagedWeightFunction> & neighborhood_1 =
       dynamic_cast<NonLocalNeighborhood<RemoveDamagedWeightFunction> &>(
-          model.getNonLocalManager().getNeighborhood("mat_1"));
+          model.getNeighborhood("mat_1"));
   NonLocalNeighborhood<RemoveDamagedWeightFunction> & neighborhood_2 =
       dynamic_cast<NonLocalNeighborhood<RemoveDamagedWeightFunction> &>(
-          model.getNonLocalManager().getNeighborhood("mat_2"));
+          model.getNeighborhood("mat_2"));
   neighborhood_1.saveWeights("before_0");
   neighborhood_2.saveWeights("before_1");
   for (UInt n = 0; n < 2; ++n) {
@@ -142,7 +139,7 @@ int main(int argc, char * argv[]) {
   }
 
   /// compute the non-local strains
-  model.getNonLocalManager().computeAllNonLocalStresses();
+  model.assembleInternalForces();
   neighborhood_1.saveWeights("after_0");
   neighborhood_2.saveWeights("after_1");
   for (UInt n = 0; n < 2; ++n) {
@@ -167,9 +164,8 @@ int main(int argc, char * argv[]) {
                                               spatial_dimension, 0.);
   for (UInt m = 0; m < model.getNbMaterials(); ++m) {
     difference_in_damaged_elements.clear();
-    MaterialNonLocal<spatial_dimension> & mat =
-        dynamic_cast<MaterialNonLocal<spatial_dimension> &>(
-            model.getMaterial(m));
+    auto & mat =
+            model.getMaterial(m);
     Array<Real> & grad_u_nl = const_cast<Array<Real> &>(
         mat.getInternal<Real>("grad_u non local")(element_type, ghost_type));
 

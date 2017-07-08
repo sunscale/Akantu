@@ -29,17 +29,13 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-#include <iostream>
-
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <fstream>
 /* -------------------------------------------------------------------------- */
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   akantu::initialize("material.dat", argc, argv);
   akantu::UInt max_steps = 1000;
   akantu::Real epot, ekin;
@@ -54,44 +50,44 @@ int main(int argc, char *argv[])
   model.initFull();
 
   akantu::Real time_step = model.getStableTimeStep();
-  model.setTimeStep(time_step/10.);
+  model.setTimeStep(time_step / 10.);
 
   model.assembleMassLumped();
 
   std::cout << model << std::endl;
 
-
   /// boundary conditions
   akantu::Real eps = 1e-2;
   akantu::UInt nb_nodes = model.getFEEngine().getMesh().getNbNodes();
   for (akantu::UInt i = 0; i < nb_nodes; ++i) {
-    model.getDisplacement().storage()[3*i] = model.getFEEngine().getMesh().getNodes().storage()[3*i] / 100.;
+    model.getDisplacement().storage()[3 * i] =
+        model.getFEEngine().getMesh().getNodes().storage()[3 * i] / 100.;
 
-    if(model.getFEEngine().getMesh().getNodes().storage()[3*i] <= eps) {
-      model.getBlockedDOFs().storage()[3*i    ] = true;
+    if (model.getFEEngine().getMesh().getNodes().storage()[3 * i] <= eps) {
+      model.getBlockedDOFs().storage()[3 * i] = true;
     }
 
-    if(model.getFEEngine().getMesh().getNodes().storage()[3*i + 1] <= eps) {
-      model.getBlockedDOFs().storage()[3*i + 1] = true;
+    if (model.getFEEngine().getMesh().getNodes().storage()[3 * i + 1] <= eps) {
+      model.getBlockedDOFs().storage()[3 * i + 1] = true;
     }
   }
   //  model.getDisplacement().storage()[1] = 0.1;
   model.setBaseName("cube3d_t10");
   model.addDumpField("displacement");
-  model.addDumpField("mass"        );
-  model.addDumpField("velocity"    );
+  model.addDumpField("mass");
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
   model.addDumpField("external_force");
   model.addDumpField("internal_force");
-  model.addDumpField("stress"      );
-  model.addDumpField("strain"      );
+  model.addDumpField("stress");
+  model.addDumpField("strain");
   model.dump();
 
   std::ofstream energy;
   energy.open("energy.csv");
   energy << "id,epot,ekin,tot" << std::endl;
 
-  for(akantu::UInt s = 0; s < max_steps; ++s) {
+  for (akantu::UInt s = 0; s < max_steps; ++s) {
     model.solveStep();
 
     epot = model.getEnergy("potential");
@@ -99,9 +95,10 @@ int main(int argc, char *argv[])
 
     std::cerr << "passing step " << s << "/" << max_steps << std::endl;
     energy << s << "," << epot << "," << ekin << "," << epot + ekin
-	   << std::endl;
+           << std::endl;
 
-    if(s % 10 == 0) model.dump();
+    if (s % 10 == 0)
+      model.dump();
   }
 
   energy.close();

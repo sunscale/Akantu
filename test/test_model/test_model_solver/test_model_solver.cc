@@ -62,7 +62,7 @@ int main(int argc, char * argv[]) {
   UInt global_nb_nodes = 100;
   Mesh mesh(1);
 
-  RandGenerator<Real>::seed(1);
+  RandomGenerator<UInt>::seed(1);
 
   if (prank == 0) {
     genMesh(mesh, global_nb_nodes);

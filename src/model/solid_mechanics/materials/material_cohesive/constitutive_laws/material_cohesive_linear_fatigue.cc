@@ -290,7 +290,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
 
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(MaterialCohesiveLinearFatigue);
+INSTANTIATE_MATERIAL(cohesive_linear_fatigue, MaterialCohesiveLinearFatigue);
 
 
 } // akantu

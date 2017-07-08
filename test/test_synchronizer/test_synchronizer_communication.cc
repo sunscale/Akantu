@@ -77,8 +77,7 @@ int main(int argc, char * argv[]) {
 
   /// compute barycenter for each facet
   ElementTypeMapArray<Real> barycenters("barycenters", "", 0);
-  mesh.initElementTypeMapArray(barycenters, spatial_dimension,
-                               spatial_dimension);
+  barycenters.initialize(mesh, _nb_component = spatial_dimension);
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {

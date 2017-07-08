@@ -60,10 +60,7 @@ int main(int argc, char *argv[]) {
   SolidMechanicsModel  model(mesh);
 
   /// model initialization changed to use our material
-  model.initFull(_no_init_materials = true);
-
-  model.registerNewCustomMaterials< CustomNonLocalTestMaterial<spatial_dimension> >("custom_non_local_test_material");
-  model.initMaterials();
+  model.initFull();
 
   CustomNonLocalTestMaterial<spatial_dimension> & mat = dynamic_cast<CustomNonLocalTestMaterial<spatial_dimension> &>(model.getMaterial("test"));
 
@@ -88,10 +85,10 @@ int main(int argc, char *argv[]) {
   //Array<Real> & damage = mat.getArray("local_damage", _quadrangle_4);
   Array<Real> & damage = mat.getArray<Real>("local_damage", _triangle_3);
 
-  RandGenerator<UInt> gen;
+  RandomGenerator<UInt> gen;
 
   for (UInt i = 0; i < 1; ++i) {
-    UInt g = (gen() / Real(RandGenerator<UInt>::max() - RandGenerator<UInt>::min()))  * damage.getSize();
+    UInt g = (gen() / Real(RandomGenerator<UInt>::max() - RandomGenerator<UInt>::min()))  * damage.getSize();
     std::cout << prank << " -> " << g << std::endl;
     damage(g) = 1.;
   }

@@ -53,6 +53,7 @@ package_declare_sources(core
   common/aka_error.hh
   common/aka_event_handler_manager.hh
   common/aka_extern.cc
+  common/aka_factory.hh
   common/aka_fwd.hh
   common/aka_grid_dynamic.hh
   common/aka_math.cc
@@ -271,6 +272,7 @@ package_declare_sources(core
   model/solid_mechanics/solid_mechanics_model.cc
   model/solid_mechanics/solid_mechanics_model.hh
   model/solid_mechanics/solid_mechanics_model_inline_impl.cc
+  model/solid_mechanics/solid_mechanics_model_io.cc
   model/solid_mechanics/solid_mechanics_model_mass.cc
   model/solid_mechanics/solid_mechanics_model_material.cc
   model/solid_mechanics/solid_mechanics_model_tmpl.hh

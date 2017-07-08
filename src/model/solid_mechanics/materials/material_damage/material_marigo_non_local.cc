@@ -1,5 +1,5 @@
 /**
- * @file   material_marigo_non_local_inline_impl.cc
+ * @file   material_marigo_non_local.cc
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
@@ -33,14 +33,6 @@
 #include "material_marigo_non_local.hh"
 #include "non_local_neighborhood_base.hh"
 /* -------------------------------------------------------------------------- */
-#if defined(AKANTU_DEBUG_TOOLS)
-#include "aka_debug_tools.hh"
-#include <string>
-#endif
-/* -------------------------------------------------------------------------- */
-
-#ifndef __AKANTU_MATERIAL_MARIGO_NON_LOCAL_INLINE_IMPL_CC__
-#define __AKANTU_MATERIAL_MARIGO_NON_LOCAL_INLINE_IMPL_CC__
 
 namespace akantu {
 
@@ -109,6 +101,6 @@ void MaterialMarigoNonLocal<spatial_dimension>::computeNonLocalStress(
   AKANTU_DEBUG_OUT();
 }
 
-} // namespace akantu
+INSTANTIATE_MATERIAL(marigo_non_local, MaterialMarigoNonLocal);
 
-#endif /* __AKANTU_MATERIAL_MARIGO_NON_LOCAL_INLINE_IMPL_CC__ */
+} // namespace akantu

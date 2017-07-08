@@ -55,9 +55,8 @@ int main(int argc, char *argv[]) {
   model.setMaterialSelector(*mat_selector);
  
   /// model initialization changed to use our material
-  model.initFull(_no_init_materials = true);
-  model.registerNewCustomMaterials< TestMaterial<spatial_dimension> >("test_material");
-  model.initMaterials();
+  model.initFull();
+  
   /// dump material index in paraview
   model.addDumpField("material_index");
   model.dump();

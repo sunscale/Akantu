@@ -50,13 +50,18 @@ int main(int argc, char * argv[]) {
   const UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   mesh.read("mesh_section_gap.msh");
-  
+
   SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model.initFull(_no_init_materials = true);
-  model.registerNewCustomMaterials<LocalMaterialDamage>("local_damage");
-  model.initMaterials();
+  MaterialFactory::getInstance().registerAllocator(
+      "local_damage",
+      [](UInt, const ID &, SolidMechanicsModel & model,
+         const ID & id) -> std::unique_ptr<Material> {
+        return std::make_unique<LocalMaterialDamage>(model, id);
+      });
+
+  model.initFull();
 
   Real time_step = model.getStableTimeStep();
   model.setTimeStep(time_step / 2.5);

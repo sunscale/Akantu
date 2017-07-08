@@ -53,14 +53,13 @@
 
 namespace akantu {
 
-/** \todo write function to get this
- *   values from the environment or a config file
- */
-
 /* -------------------------------------------------------------------------- */
 /* error.hpp variables                                                        */
 /* -------------------------------------------------------------------------- */
 namespace debug {
+  /** \todo write function to get this
+   *   values from the environment or a config file
+   */
   /// standard output for debug messages
   std::ostream * _akantu_debug_cout = &std::cerr;
 
@@ -119,16 +118,8 @@ const UInt _all_dimensions = UInt(-1);
 const Array<UInt> empty_filter(0, 1, "empty_filter");
 
 /* -------------------------------------------------------------------------- */
-template <> long int RandGenerator<Real>::_seed = 0;
-template <>
-long int RandGenerator<bool>::_seed =
-    0; // useless just defined due to a template instantiation
-template <> long int RandGenerator<UInt>::_seed = 0;
-template <> long int RandGenerator<Int>::_seed = 0;
-#if not defined(_WIN32)
-template <> long int Rand48Generator<Real>::_seed = 0;
-#endif
-
+template <> long int RandomGenerator<UInt>::_seed = 5489u;
+template <> std::default_random_engine RandomGenerator<UInt>::generator(5489u);
 /* -------------------------------------------------------------------------- */
 int Tag::max_tag = 0;
 

@@ -95,7 +95,7 @@ namespace named_argument {
 
     template <typename head, typename... tail>
     static decltype(auto) get(head && h, tail &&...) {
-      return std::forward<typename head::_type>(h._value);
+      return std::forward<decltype(h._value)>(h._value);
     }
   };
 

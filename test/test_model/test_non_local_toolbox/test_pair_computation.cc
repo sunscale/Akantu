@@ -35,7 +35,7 @@
 #include "test_material_damage.hh"
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
-typedef std::vector<std::pair<IntegrationPoint, IntegrationPoint> > PairList;
+typedef std::vector<std::pair<IntegrationPoint, IntegrationPoint>> PairList;
 
 /* -------------------------------------------------------------------------- */
 void computePairs(SolidMechanicsModel & model, PairList * pair_list);
@@ -46,24 +46,18 @@ int main(int argc, char * argv[]) {
   const UInt spatial_dimension = 2;
 
   StaticCommunicator & comm =
-    akantu::StaticCommunicator::getStaticCommunicator();
-  Int psize = comm.getNbProc();
+      akantu::StaticCommunicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   // mesh creation and read
   Mesh mesh(spatial_dimension);
-  akantu::MeshPartition * partition = NULL;
   if (prank == 0) {
     mesh.read("pair_test.msh");
-    /// partition the mesh
-    partition = new MeshPartitionScotch(mesh, spatial_dimension);
-    partition->partitionate(psize);
   }
+  mesh.distribute();
 
   /// model creation
   SolidMechanicsModel model(mesh);
-  model.initParallel(partition);
-  delete partition;
 
   /// creation of material selector
   MeshDataMaterialSelector<std::string> * mat_selector;
@@ -72,10 +66,8 @@ int main(int argc, char * argv[]) {
   model.setMaterialSelector(*mat_selector);
 
   /// model initialization changed to use our material
-  model.initFull(_no_init_materials = true);
-  model.registerNewCustomMaterials<TestMaterialDamage<spatial_dimension> >(
-      "test_material");
-  model.initMaterials();
+  model.initFull();
+
   /// dump material index in paraview
   model.addDumpField("material_index");
   model.dump();
@@ -84,11 +76,8 @@ int main(int argc, char * argv[]) {
   PairList pair_list[2];
   computePairs(model, pair_list);
 
-  NonLocalManager & manager = model.getNonLocalManager();
-  const PairList * pairs_mat_1 =
-      manager.getNeighborhood("mat_1").getPairLists();
-  const PairList * pairs_mat_2 =
-      manager.getNeighborhood("mat_2").getPairLists();
+  const PairList * pairs_mat_1 = model.getNeighborhood("mat_1").getPairLists();
+  const PairList * pairs_mat_2 = model.getNeighborhood("mat_2").getPairLists();
 
   /// compare the number of pairs
   UInt nb_not_ghost_pairs_grid = pairs_mat_1[0].size() + pairs_mat_2[0].size();
@@ -160,8 +149,9 @@ void computePairs(SolidMechanicsModel & model, PairList * pair_list) {
   UInt spatial_dimension = model.getSpatialDimension();
   /// compute the quadrature points
   ElementTypeMapReal quad_coords("quad_coords");
-  mesh.initElementTypeMapArray(quad_coords, spatial_dimension,
-                               spatial_dimension, false, _ek_regular, true);
+  quad_coords.initialize(mesh, _nb_component = spatial_dimension,
+                         _spatial_dimension = spatial_dimension,
+                         _with_nb_element = true);
   model.getFEEngine().computeIntegrationPointsCoordinates(quad_coords);
 
   /// loop in a n^2 way over all the quads to generate the pairs

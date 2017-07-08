@@ -35,9 +35,8 @@
 #include "data_accessor.hh"
 #include "mesh.hh"
 
+using namespace akantu;
 /* -------------------------------------------------------------------------- */
-
-__BEGIN_AKANTU__
 
 class TestAccessor : public DataAccessor<Element> {
   /* ------------------------------------------------------------------------ */
@@ -131,5 +130,3 @@ inline void TestAccessor::unpackData(CommunicationBuffer & buffer,
     }
   }
 }
-
-__END_AKANTU__

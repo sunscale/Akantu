@@ -381,6 +381,6 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(
 }
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(MaterialCohesiveLinearFriction);
+INSTANTIATE_MATERIAL(cohesive_linear_friction, MaterialCohesiveLinearFriction);
 
 } // akantu

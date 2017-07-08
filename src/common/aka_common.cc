@@ -105,10 +105,7 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   }
 
   seed *= (comm.whoAmI() + 1);
-#if not defined(_WIN32)
-  Rand48Generator<Real>::seed(seed);
-#endif
-  RandGenerator<Real>::seed(seed);
+  RandomGenerator<UInt>::seed(seed);
 
   int dbl_level = static_argparser["aka_debug_level"];
   debug::setDebugLevel(DebugLevel(dbl_level));

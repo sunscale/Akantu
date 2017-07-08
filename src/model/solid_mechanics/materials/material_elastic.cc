@@ -249,6 +249,6 @@ void MaterialElastic<spatial_dimension>::computePotentialEnergyByElement(
 
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(MaterialElastic);
+INSTANTIATE_MATERIAL(elastic, MaterialElastic);
 
 } // akantu

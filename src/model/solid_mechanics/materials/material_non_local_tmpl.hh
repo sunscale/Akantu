@@ -63,6 +63,8 @@ void MaterialNonLocal<dim, LocalParent>::insertIntegrationPointsInNeighborhoods(
   q.ghost_type = ghost_type;
   q.kind = _ek_regular;
 
+  auto & neighborhood = this->model.getNeighborhood(this->name);
+
   for (auto & type :
        this->element_filter.elementTypes(dim, ghost_type, _ek_regular)) {
     q.type = type;
@@ -84,8 +86,7 @@ void MaterialNonLocal<dim, LocalParent>::insertIntegrationPointsInNeighborhoods(
         for (UInt nq = 0; nq < nb_quad; ++nq) {
           q.num_point = nq;
           q.global_num = q.element * nb_quad + nq;
-          this->model.getNeighborhood(this->name)
-              .insertIntegrationPoint(q, quads(nq));
+          neighborhood.insertIntegrationPoint(q, quads(nq));
         }
       }
     }

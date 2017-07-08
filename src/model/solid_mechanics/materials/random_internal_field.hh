@@ -46,7 +46,7 @@ namespace akantu {
  */
 template<typename T,
 	 template<typename> class BaseField = InternalField,
-	 template<typename> class Generator = RandGenerator>
+	 template<typename> class Generator = RandomGenerator>
 class RandomInternalField : public BaseField<T> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */

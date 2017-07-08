@@ -195,6 +195,6 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeTangentModuli(
 
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(MaterialLinearIsotropicHardening);
+INSTANTIATE_MATERIAL(plastic_linear_isotropic_hardening, MaterialLinearIsotropicHardening);
 
 } // akantu

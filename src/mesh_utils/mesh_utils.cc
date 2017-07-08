@@ -1688,17 +1688,12 @@ void MeshUtils::flipFacets(
     UInt nb_nodes_per_P1_facet =
         Mesh::getNbNodesPerElement(Mesh::getP1ElementType(type_facet));
 
-    auto & global_conn_tmp =
-        global_connectivity_tmp(type_facet, gt_facet);
+    auto & global_conn_tmp = global_connectivity_tmp(type_facet, gt_facet);
 
-    auto conn_it =
-        connectivity.begin(nb_nodes_per_facet);
-    auto gconn_tmp_it =
-        global_conn_tmp.begin(nb_nodes_per_facet);
-    auto conn_glob_it =
-        g_connectivity.begin(nb_nodes_per_facet);
-    auto subf_to_f =
-        subfacet_to_facet.begin(nb_subfacet_per_facet);
+    auto conn_it = connectivity.begin(nb_nodes_per_facet);
+    auto gconn_tmp_it = global_conn_tmp.begin(nb_nodes_per_facet);
+    auto conn_glob_it = g_connectivity.begin(nb_nodes_per_facet);
+    auto subf_to_f = subfacet_to_facet.begin(nb_subfacet_per_facet);
 
     UInt * conn_tmp_pointer = new UInt[nb_nodes_per_facet];
     Vector<UInt> conn_tmp(conn_tmp_pointer, nb_nodes_per_facet);
@@ -1786,7 +1781,8 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
   UInt spatial_dimension = mesh.getSpatialDimension();
   ElementTypeMapArray<Real> barycenters("barycenter_tmp", mesh.getID(),
                                         mesh.getMemoryID());
-  barycenters.initialize(mesh, _nb_component = spatial_dimension);
+  barycenters.initialize(mesh, _nb_component = spatial_dimension,
+                         _spatial_dimension = _all_dimensions);
   // mesh.initElementTypeMapArray(barycenters, spatial_dimension,
   // _all_dimensions);
 

@@ -353,6 +353,6 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCompressivePenalty(
   tangent += n_outer_n;
 }
 
-INSTANTIATE_MATERIAL(MaterialCohesiveExponential);
+INSTANTIATE_MATERIAL(cohesive_exponential, MaterialCohesiveExponential);
 
 } // akantu

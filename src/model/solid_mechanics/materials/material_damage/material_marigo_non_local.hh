@@ -93,6 +93,4 @@ private:
 
 } // namespace akantu
 
-#include "material_marigo_non_local_inline_impl.cc"
-
 #endif /* __AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH__ */

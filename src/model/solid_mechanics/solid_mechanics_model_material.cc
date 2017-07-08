@@ -31,8 +31,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_factory.hh"
 #include "aka_math.hh"
-#include "material_list.hh"
+//#include "material_list.hh"
 #include "solid_mechanics_model.hh"
 #ifdef AKANTU_DAMAGE_NON_LOCAL
 #include "non_local_manager.hh"
@@ -42,72 +43,54 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL(dim, elem)                   \
-  registerNewMaterial<BOOST_PP_ARRAY_ELEM(1, elem) < dim>> (section)
+Material &
+SolidMechanicsModel::registerNewMaterial(const ParserSection & section) {
+  std::string mat_name;
+  std::string mat_type = section.getName();
+  std::string opt_param = section.getOption();
 
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL_EACH(r, data, i, elem)          \
-  BOOST_PP_EXPR_IF(BOOST_PP_NOT_EQUAL(0, i), else)                             \
-  if (opt_param == BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, elem))) {      \
-    registerNewMaterial<BOOST_PP_ARRAY_ELEM(1, data) <                         \
-                            BOOST_PP_ARRAY_ELEM(0, data),                      \
-                        BOOST_PP_SEQ_ENUM(BOOST_PP_TUPLE_ELEM(2, 1, elem))>>   \
-        (section);                                                             \
+  try {
+    std::string tmp = section.getParameter("name");
+    mat_name = tmp; /** this can seam weird, but there is an ambiguous operator
+                     * overload that i couldn't solve. @todo remove the
+                     * weirdness of this code
+                     */
+  } catch (debug::Exception &) {
+    AKANTU_DEBUG_ERROR(
+        "A material of type \'"
+        << mat_type << "\' in the input file has been defined without a name!");
   }
+  Material & mat = this->registerNewMaterial(mat_name, mat_type, opt_param);
 
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL(dim, elem)                      \
-  BOOST_PP_SEQ_FOR_EACH_I(AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL_EACH,         \
-                          (2, (dim, BOOST_PP_ARRAY_ELEM(1, elem))),            \
-                          BOOST_PP_ARRAY_ELEM(2, elem))                        \
-  else {                                                                       \
-    AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL(dim, elem);                      \
-  }
+  mat.parseSection(section);
 
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM(dim, elem)                           \
-  BOOST_PP_IF(BOOST_PP_EQUAL(3, BOOST_PP_ARRAY_SIZE(elem)),                    \
-              AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL,                          \
-              AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL)                       \
-  (dim, elem)
+  return mat;
+}
 
-#define AKANTU_INTANTIATE_MATERIAL(elem)                                       \
-  switch (Model::spatial_dimension) {                                          \
-  case 1: {                                                                    \
-    AKANTU_INTANTIATE_MATERIAL_BY_DIM(1, elem);                                \
-    break;                                                                     \
-  }                                                                            \
-  case 2: {                                                                    \
-    AKANTU_INTANTIATE_MATERIAL_BY_DIM(2, elem);                                \
-    break;                                                                     \
-  }                                                                            \
-  case 3: {                                                                    \
-    AKANTU_INTANTIATE_MATERIAL_BY_DIM(3, elem);                                \
-    break;                                                                     \
-  }                                                                            \
-  }
+/* -------------------------------------------------------------------------- */
+Material & SolidMechanicsModel::registerNewMaterial(const ID & mat_name,
+                                                    const ID & mat_type,
+                                                    const ID & opt_param) {
+  AKANTU_DEBUG_ASSERT(materials_names_to_id.find(mat_name) ==
+                          materials_names_to_id.end(),
+                      "A material with this name '"
+                          << mat_name << "' has already been registered. "
+                          << "Please use unique names for materials");
 
-#define AKANTU_INTANTIATE_MATERIAL_IF(elem)                                    \
-  if (mat_type == BOOST_PP_STRINGIZE(BOOST_PP_ARRAY_ELEM(0, elem))) {          \
-    AKANTU_INTANTIATE_MATERIAL(elem);                                          \
-  }
+  UInt mat_count = materials.size();
+  materials_names_to_id[mat_name] = mat_count;
 
-#define AKANTU_INTANTIATE_OTHER_MATERIAL(r, data, elem)                        \
-  else AKANTU_INTANTIATE_MATERIAL_IF(elem)
+  std::stringstream sstr_mat;
+  sstr_mat << this->id << ":" << mat_count << ":" << mat_type;
+  ID mat_id = sstr_mat.str();
 
-#define AKANTU_INSTANTIATE_MATERIALS()                                         \
-  do {                                                                         \
-    AKANTU_INTANTIATE_MATERIAL_IF(BOOST_PP_SEQ_HEAD(AKANTU_MATERIAL_LIST))     \
-    BOOST_PP_SEQ_FOR_EACH(AKANTU_INTANTIATE_OTHER_MATERIAL, _,                 \
-                          BOOST_PP_SEQ_TAIL(AKANTU_MATERIAL_LIST))             \
-    else {                                                                     \
-      if (getStaticParser().isPermissive())                                    \
-        AKANTU_DEBUG_INFO("Malformed material file "                           \
-                          << ": unknown material type '" << mat_type << "'");  \
-      else                                                                     \
-        AKANTU_DEBUG_WARNING("Malformed material file "                        \
-                             << ": unknown material type " << mat_type         \
-                             << ". This is perhaps a user"                     \
-                             << " defined material ?");                        \
-    }                                                                          \
-  } while (0)
+  std::unique_ptr<Material> material = MaterialFactory::getInstance().allocate(
+      mat_type, Model::spatial_dimension, opt_param, *this, mat_id);
+
+  materials.push_back(std::move(material));
+
+  return *(materials.back());
+}
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::instantiateMaterials() {
@@ -117,9 +100,7 @@ void SolidMechanicsModel::instantiateMaterials() {
   Parser::const_section_iterator it = sub_sect.first;
   for (; it != sub_sect.second; ++it) {
     const ParserSection & section = *it;
-    std::string mat_type = section.getName();
-    std::string opt_param = section.getOption();
-    AKANTU_INSTANTIATE_MATERIALS();
+    registerNewMaterial(section);
   }
 
   are_materials_instantiated = true;
@@ -331,4 +312,4 @@ void SolidMechanicsModel::applyEigenGradU(
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

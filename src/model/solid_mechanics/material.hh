@@ -33,6 +33,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_factory.hh"
 #include "aka_voigthelper.hh"
 #include "data_accessor.hh"
 #include "integration_point.hh"
@@ -643,11 +644,37 @@ inline std::ostream & operator<<(std::ostream & stream,
 #define MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END }
 
 /* -------------------------------------------------------------------------- */
-#define INSTANTIATE_MATERIAL(mat_name)                                         \
+namespace akantu {
+using MaterialFactory =
+    Factory<Material, UInt, const ID &, SolidMechanicsModel &, const ID &>;
+} // namespace akantu
+
+#define INSTANTIATE_MATERIAL_ONLY(mat_name)                                    \
   template class mat_name<1>;                                                  \
   template class mat_name<2>;                                                  \
   template class mat_name<3>
 
-#endif /* __AKANTU_MATERIAL_HH__ */
+#define MATERIAL_DEFAULT_PER_DIM_ALLOCATOR(id, mat_name)                       \
+  [](UInt dim, const ID &, SolidMechanicsModel & model,                        \
+     const ID & id) -> std::unique_ptr<Material> {                             \
+    switch (dim) {                                                             \
+    case 1:                                                                    \
+      return std::make_unique<mat_name<1>>(model, id);                         \
+    case 2:                                                                    \
+      return std::make_unique<mat_name<2>>(model, id);                         \
+    case 3:                                                                    \
+      return std::make_unique<mat_name<3>>(model, id);                         \
+    default:                                                                   \
+      AKANTU_EXCEPTION("The dimension "                                        \
+                       << dim << "is not a valid dimension for the material "  \
+                       << #id);                                                \
+    }                                                                          \
+  }
 
-//  LocalWords:  ElementNull
+#define INSTANTIATE_MATERIAL(id, mat_name)                                     \
+  INSTANTIATE_MATERIAL_ONLY(mat_name);                                         \
+  static bool material_is_alocated_##id =                                      \
+      MaterialFactory::getInstance().registerAllocator(                        \
+          #id, MATERIAL_DEFAULT_PER_DIM_ALLOCATOR(id, mat_name))
+
+#endif /* __AKANTU_MATERIAL_HH__ */

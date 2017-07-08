@@ -35,15 +35,17 @@
 #ifndef __TEST_MATERIAL_HH__
 #define __TEST_MATERIAL_HH__
 
-namespace akantu {
+using namespace akantu;
 
 template <UInt dim>
-class TestMaterial : public MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>> {
+class TestMaterial
+    : public MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>> {
   /* ------------------------------------------------------------------------ */
   /* Constructor/Destructor */
   /* ------------------------------------------------------------------------ */
 public:
-  using Parent = MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>>;
+  using Parent =
+      MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>>;
 
   TestMaterial(SolidMechanicsModel & model, const ID & id);
   virtual ~TestMaterial(){};
@@ -52,13 +54,11 @@ public:
   /* Methods */
   /* ------------------------------------------------------------------------ */
 public:
-  void initMaterial();
+  void initMaterial() final;
 
-  void computeNonLocalStresses(GhostType){};
+  void computeNonLocalStress(ElementType, GhostType) final{};
 
-  void insertQuadsInNeighborhoods(GhostType ghost_type);
-
-  virtual void registerNeighborhood();
+  void computeNonLocalStresses(GhostType) final{};
 
   /* ------------------------------------------------------------------------ */
   /* Members */
@@ -66,7 +66,5 @@ public:
 private:
   InternalField<Real> grad_u_nl;
 };
-
-} // namespace akantu
 
 #endif /* __TEST_MATERIAL_HH__ */

@@ -77,6 +77,6 @@ void MaterialMazars<spatial_dimension>::computeStress(ElementType el_type,
 }
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(MaterialMazars);
+INSTANTIATE_MATERIAL(mazars, MaterialMazars);
 
 } // namespace akantu

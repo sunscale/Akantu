@@ -27,90 +27,34 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "test_material_damage.hh"
-
-__BEGIN_AKANTU__
+/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-TestMaterialDamage<dim>::TestMaterialDamage(SolidMechanicsModel & model, const ID & id) :
-  Material(model, id),
-  MaterialDamage<dim>(model, id),
-  MyNonLocalParent(model, id),
-  grad_u_nl("grad_u non local", *this) {
+template <UInt dim>
+TestMaterialDamage<dim>::TestMaterialDamage(SolidMechanicsModel & model,
+                                            const ID & id)
+    : Parent(model, id), grad_u_nl("grad_u non local", *this) {
   this->is_non_local = true;
-  this->grad_u_nl.initialize(dim*dim);
-  this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), dim*dim);
-
- }
+  this->grad_u_nl.initialize(dim * dim);
+  this->model.registerNonLocalVariable(this->gradu.getName(),
+                                       grad_u_nl.getName(), dim * dim);
+}
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 void TestMaterialDamage<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
 
   MaterialDamage<spatial_dimension>::initMaterial();
-  MyNonLocalParent::initMaterial();
-  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), this->name);
+  Parent::initMaterial();
+  this->model.getNeighborhood(this->name)
+      .registerNonLocalVariable(grad_u_nl.getName());
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void TestMaterialDamage<spatial_dimension>::insertQuadsInNeighborhoods(GhostType ghost_type) {
-
-  /// this function will add all the quadrature points to the same
-  /// default neighborhood instead of using one neighborhood per
-  /// material
-  NonLocalManager & manager = this->model->getNonLocalManager();
-  InternalField<Real> quadrature_points_coordinates("quadrature_points_coordinates_tmp_nl", *this);
-  quadrature_points_coordinates.initialize(spatial_dimension);
-
-  /// intialize quadrature point object
-  IntegrationPoint q;
-  q.ghost_type = ghost_type;
-  q.kind = _ek_regular;
-
-  Mesh::type_iterator it = this->element_filter.firstType(spatial_dimension, ghost_type, _ek_regular);
-  Mesh::type_iterator last_type = this->element_filter.lastType(spatial_dimension, ghost_type, _ek_regular);
-  for(; it != last_type; ++it) {
-    q.type = *it;
-    const Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
-    UInt nb_element  = elem_filter.getSize();
-    if(nb_element) {
-      UInt nb_quad = this->fem->getNbIntegrationPoints(*it, ghost_type);
-      UInt nb_tot_quad = nb_quad * nb_element;
-      
-      Array<Real> & quads = quadrature_points_coordinates(*it, ghost_type);
-      quads.resize(nb_tot_quad);
-
-      this->model->getFEEngine().computeIntegrationPointsCoordinates(quads, *it, ghost_type, elem_filter);
-      
-      Array<Real>::const_vector_iterator quad = quads.begin(spatial_dimension);
-      UInt * elem = elem_filter.storage();
-
-      for (UInt e = 0; e < nb_element; ++e) {
-	q.element = *elem;
-	for (UInt nq = 0; nq < nb_quad; ++nq) {
-	  q.num_point = nq;
-	  q.global_num = q.element * nb_quad + nq;
-	  manager.insertQuad(q, *quad, this->name);
-	  ++quad;
-	}
-	++elem;
-      }
-    }
-  }
-}
-
-
-/* -------------------------------------------------------------------------- */
 // Instantiate the material for the 3 dimensions
-INSTANTIATE_MATERIAL(TestMaterialDamage);
+INSTANTIATE_MATERIAL(test_material, TestMaterialDamage);
 /* -------------------------------------------------------------------------- */
-
-__END_AKANTU__
-
-

@@ -45,18 +45,17 @@
 #include <set>
 /* -------------------------------------------------------------------------- */
 
-
 namespace akantu {
-  class ElementGroup;
-  class NodeGroup;
-  class Mesh;
-  class Element;
-  class ElementSynchronizer;
-  template <bool> class CommunicationBufferTemplated;
-  namespace dumper {
-    class Field;
-  }
+class ElementGroup;
+class NodeGroup;
+class Mesh;
+class Element;
+class ElementSynchronizer;
+template <bool> class CommunicationBufferTemplated;
+namespace dumper {
+  class Field;
 }
+} // namespace akantu
 
 namespace akantu {
 
@@ -66,8 +65,8 @@ class GroupManager {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-  using ElementGroups =  std::map<std::string, ElementGroup *> ;
-  using NodeGroups = std::map<std::string, NodeGroup *> ;
+  using ElementGroups = std::map<std::string, ElementGroup *>;
+  using NodeGroups = std::map<std::string, NodeGroup *>;
 
 public:
   typedef std::set<ElementType> GroupManagerTypeSet;
@@ -192,7 +191,7 @@ public:
 /// ElementalPartionField)
 #ifndef SWIG
   template <typename T, template <bool> class dump_type>
-  inline dumper::Field * createElementalField(
+  dumper::Field * createElementalField(
       const ElementTypeMapArray<T> & field, const std::string & group_name,
       UInt spatial_dimension, const ElementKind & kind,
       ElementTypeMap<UInt> nb_data_per_elem = ElementTypeMap<UInt>());
@@ -201,7 +200,7 @@ public:
   /// ElementalField)
   template <typename T, template <class> class ret_type,
             template <class, template <class> class, bool> class dump_type>
-  inline dumper::Field * createElementalField(
+  dumper::Field * createElementalField(
       const ElementTypeMapArray<T> & field, const std::string & group_name,
       UInt spatial_dimension, const ElementKind & kind,
       ElementTypeMap<UInt> nb_data_per_elem = ElementTypeMap<UInt>());
@@ -211,22 +210,22 @@ public:
   template <typename T,
             /// type of InternalMaterialField
             template <typename, bool filtered> class dump_type>
-  inline dumper::Field *
-  createElementalField(const ElementTypeMapArray<T> & field,
-                       const std::string & group_name, UInt spatial_dimension,
-                       const ElementKind & kind,
-                       ElementTypeMap<UInt> nb_data_per_elem);
+  dumper::Field * createElementalField(const ElementTypeMapArray<T> & field,
+                                       const std::string & group_name,
+                                       UInt spatial_dimension,
+                                       const ElementKind & kind,
+                                       ElementTypeMap<UInt> nb_data_per_elem);
 
   template <typename type, bool flag, template <class, bool> class ftype>
-  inline dumper::Field * createNodalField(const ftype<type, flag> * field,
+  dumper::Field * createNodalField(const ftype<type, flag> * field,
+                                   const std::string & group_name,
+                                   UInt padding_size = 0);
+
+  template <typename type, bool flag, template <class, bool> class ftype>
+  dumper::Field * createStridedNodalField(const ftype<type, flag> * field,
                                           const std::string & group_name,
-                                          UInt padding_size = 0);
-
-  template <typename type, bool flag, template <class, bool> class ftype>
-  inline dumper::Field *
-  createStridedNodalField(const ftype<type, flag> * field,
-                          const std::string & group_name, UInt size,
-                          UInt stride, UInt padding_size);
+                                          UInt size, UInt stride,
+                                          UInt padding_size);
 
 protected:
   /// fill a buffer with all the group names
@@ -290,6 +289,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_GROUP_MANAGER_HH__ */

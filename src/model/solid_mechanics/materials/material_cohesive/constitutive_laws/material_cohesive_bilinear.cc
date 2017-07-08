@@ -205,7 +205,7 @@ void MaterialCohesiveBilinear<spatial_dimension>::computeTraction(const Array<Re
 
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(MaterialCohesiveBilinear);
+INSTANTIATE_MATERIAL(cohesive_bilinear, MaterialCohesiveBilinear);
 
 
 } // akantu

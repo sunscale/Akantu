@@ -47,8 +47,7 @@
 namespace akantu {
 
 const SolidMechanicsModelCohesiveOptions
-    default_solid_mechanics_model_cohesive_options(_explicit_lumped_mass, false,
-                                                   false);
+    default_solid_mechanics_model_cohesive_options(_explicit_lumped_mass, false);
 
 /* -------------------------------------------------------------------------- */
 
