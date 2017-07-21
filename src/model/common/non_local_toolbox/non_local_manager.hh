@@ -33,6 +33,7 @@
 #include "communication_buffer.hh"
 #include "data_accessor.hh"
 #include "mesh_events.hh"
+#include "non_local_manager_callback.hh"
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
@@ -55,7 +56,9 @@ class FEEngine;
 
 namespace akantu {
 
-class NonLocalManager : protected MeshEventHandler, public Parsable {
+class NonLocalManager : protected Memory,
+                        public MeshEventHandler,
+                        public Parsable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -66,28 +69,25 @@ public:
       std::map<ID, std::unique_ptr<NonLocalNeighborhoodBase>>;
 
   /* ------------------------------------------------------------------------ */
-  /* Interface                                                                */
-  /* -----------------------------------------------------------------------  */
-protected:
-  virtual void
-  insertIntegrationPointsInNeighborhoods(const GhostType & ghost_type) = 0;
-
-  /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* -----------------------------------------------------------------------  */
 public:
   /// register a new internal needed for the weight computations
-  ElementTypeMapReal &
-  registerWeightFunctionInternal(const ID & field_name);
+  ElementTypeMapReal & registerWeightFunctionInternal(const ID & field_name);
 
   /// register a non-local variable
   void registerNonLocalVariable(const ID & variable_name,
-                                const ID & nl_variable_name,
-                                UInt nb_component);
+                                const ID & nl_variable_name, UInt nb_component);
 
   /// register non-local neighborhood
   inline void registerNeighborhood(const ID & neighborhood,
                                    const ID & weight_func_id);
+
+  void registerNonLocalManagerCallback(
+      std::shared_ptr<NonLocalManagerCallback> & callback);
+
+  /// average the internals and compute the non-local stresses
+  virtual void computeAllNonLocalStresses();
 
 protected:
   /// initialize the non-local manager: compute pair lists and weights for all
@@ -106,27 +106,12 @@ protected:
   /// average the non-local variables
   void averageInternals(const GhostType & ghost_type = _not_ghost);
 
-  /// average the internals and compute the non-local stresses
-  virtual void computeAllNonLocalStresses();
-
-  virtual void computeNonLocalStresses(const GhostType & ghost_type) = 0;
-
   /// update the flattened version of the weight function internals
   void updateWeightFunctionInternals();
 
 protected:
   /// create a new neighborhood for a given domain ID
   void createNeighborhood(const ID & weight_func, const ID & neighborhood);
-
-  /// update the values of the non local internal
-  virtual void updateLocalInternal(ElementTypeMapReal & internal_flat,
-                                   const GhostType & ghost_type,
-                                   const ElementKind & kind) = 0;
-
-  /// copy the results of the averaging in the materials
-  virtual void updateNonLocalInternal(ElementTypeMapReal & internal_flat,
-                                      const GhostType & ghost_type,
-                                      const ElementKind & kind) = 0;
 
   /// set the values of the jacobians
   void setJacobians(const FEEngine & fe_engine, const ElementKind & kind);
@@ -286,8 +271,8 @@ protected:
 
   DummyDataAccessor dummy_accessor;
 
-  ID _id;
-  UInt parent_memory_id;
+  /* ------------------------------------------------------------------------ */
+  std::shared_ptr<NonLocalManagerCallback> callback;
 };
 
 } // namespace akantu

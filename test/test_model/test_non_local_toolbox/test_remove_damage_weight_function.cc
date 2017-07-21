@@ -102,10 +102,10 @@ int main(int argc, char * argv[]) {
   /// save the weights in a file
   NonLocalNeighborhood<RemoveDamagedWeightFunction> & neighborhood_1 =
       dynamic_cast<NonLocalNeighborhood<RemoveDamagedWeightFunction> &>(
-          model.getNeighborhood("mat_1"));
+          model.getNonLocalManager().getNeighborhood("mat_1"));
   NonLocalNeighborhood<RemoveDamagedWeightFunction> & neighborhood_2 =
       dynamic_cast<NonLocalNeighborhood<RemoveDamagedWeightFunction> &>(
-          model.getNeighborhood("mat_2"));
+          model.getNonLocalManager().getNeighborhood("mat_2"));
   neighborhood_1.saveWeights("before_0");
   neighborhood_2.saveWeights("before_1");
   for (UInt n = 0; n < 2; ++n) {

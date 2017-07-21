@@ -63,7 +63,8 @@ void MaterialNonLocal<dim, LocalParent>::insertIntegrationPointsInNeighborhoods(
   q.ghost_type = ghost_type;
   q.kind = _ek_regular;
 
-  auto & neighborhood = this->model.getNeighborhood(this->name);
+  auto & neighborhood =
+      this->model.getNonLocalManager().getNeighborhood(this->name);
 
   for (auto & type :
        this->element_filter.elementTypes(dim, ghost_type, _ek_regular)) {
@@ -127,7 +128,7 @@ void MaterialNonLocal<dim, LocalParent>::updateNonLocalInternals(
 /* -------------------------------------------------------------------------- */
 template <UInt dim, class LocalParent>
 void MaterialNonLocal<dim, LocalParent>::registerNeighborhood() {
-  this->model.registerNeighborhood(this->name, this->name);
+  this->model.getNonLocalManager().registerNeighborhood(this->name, this->name);
 }
 
 } // namespace akantu

@@ -45,14 +45,14 @@ CustomNonLocalTestMaterial<dim>::CustomNonLocalTestMaterial(
   this->local_damage.initialize(1);
   this->damage.initialize(1);
   /// register the non-local variable in the manager
-  this->model.registerNonLocalVariable(this->local_damage.getName(),
+  this->model.getNonLocalManager().registerNonLocalVariable(this->local_damage.getName(),
                                        this->damage.getName(), 1);
 }
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim> void CustomNonLocalTestMaterial<dim>::initMaterial() {
   MyNonLocalParent::initMaterial();
-  this->model.getNeighborhood(this->name).registerNonLocalVariable(damage.getName());
+  this->model.getNonLocalManager().getNeighborhood(this->name).registerNonLocalVariable(damage.getName());
 }
 
 /* -------------------------------------------------------------------------- */

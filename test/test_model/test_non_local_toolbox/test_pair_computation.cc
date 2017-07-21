@@ -60,10 +60,8 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModel model(mesh);
 
   /// creation of material selector
-  MeshDataMaterialSelector<std::string> * mat_selector;
-  mat_selector =
-      new MeshDataMaterialSelector<std::string>("physical_names", model);
-  model.setMaterialSelector(*mat_selector);
+  MeshDataMaterialSelector<std::string> mat_selector("physical_names", model);
+  model.setMaterialSelector(mat_selector);
 
   /// model initialization changed to use our material
   model.initFull();
@@ -76,8 +74,8 @@ int main(int argc, char * argv[]) {
   PairList pair_list[2];
   computePairs(model, pair_list);
 
-  const PairList * pairs_mat_1 = model.getNeighborhood("mat_1").getPairLists();
-  const PairList * pairs_mat_2 = model.getNeighborhood("mat_2").getPairLists();
+  const PairList * pairs_mat_1 = model.getNonLocalManager().getNeighborhood("mat_1").getPairLists();
+  const PairList * pairs_mat_2 = model.getNonLocalManager().getNeighborhood("mat_2").getPairLists();
 
   /// compare the number of pairs
   UInt nb_not_ghost_pairs_grid = pairs_mat_1[0].size() + pairs_mat_2[0].size();
@@ -94,7 +92,6 @@ int main(int argc, char * argv[]) {
   }
 
   for (UInt i = 0; i < pairs_mat_1[0].size(); ++i) {
-    std::pair<IntegrationPoint, IntegrationPoint> p = (pairs_mat_1[0])[i];
     PairList::const_iterator it = std::find(
         pair_list[0].begin(), pair_list[0].end(), (pairs_mat_1[0])[i]);
     if (it == pair_list[0].end()) {
@@ -105,7 +102,6 @@ int main(int argc, char * argv[]) {
   }
 
   for (UInt i = 0; i < pairs_mat_2[0].size(); ++i) {
-    std::pair<IntegrationPoint, IntegrationPoint> p = (pairs_mat_2[0])[i];
     PairList::const_iterator it = std::find(
         pair_list[0].begin(), pair_list[0].end(), (pairs_mat_2[0])[i]);
     if (it == pair_list[0].end()) {
@@ -116,7 +112,6 @@ int main(int argc, char * argv[]) {
   }
 
   for (UInt i = 0; i < pairs_mat_1[1].size(); ++i) {
-    std::pair<IntegrationPoint, IntegrationPoint> p = (pairs_mat_1[1])[i];
     PairList::const_iterator it = std::find(
         pair_list[1].begin(), pair_list[1].end(), (pairs_mat_1[1])[i]);
     if (it == pair_list[1].end()) {
@@ -127,7 +122,6 @@ int main(int argc, char * argv[]) {
   }
 
   for (UInt i = 0; i < pairs_mat_2[1].size(); ++i) {
-    std::pair<IntegrationPoint, IntegrationPoint> p = (pairs_mat_2[1])[i];
     PairList::const_iterator it = std::find(
         pair_list[1].begin(), pair_list[1].end(), (pairs_mat_2[1])[i]);
     if (it == pair_list[1].end()) {

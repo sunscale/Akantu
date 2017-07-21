@@ -55,14 +55,14 @@ class NonLocalManager;
 namespace akantu {
 
 struct SolidMechanicsModelOptions : public ModelOptions {
-  SolidMechanicsModelOptions(
+  explicit SolidMechanicsModelOptions(
       AnalysisMethod analysis_method = _explicit_lumped_mass);
 
   template <typename... pack>
   SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack);
 
   AnalysisMethod analysis_method;
-  bool no_init_materials;
+  //bool no_init_materials;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -72,7 +72,8 @@ class SolidMechanicsModel
       public DataAccessor<Element>,
       public DataAccessor<UInt>,
       public BoundaryCondition<SolidMechanicsModel>,
-      public NonLocalManager,
+      public NonLocalManagerCallback,
+      public MeshEventHandler,
       public EventHandlerManager<SolidMechanicsModelEventHandler> {
 
   /* ------------------------------------------------------------------------ */
@@ -662,6 +663,8 @@ public:
   /// Get the type of analysis method used
   AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
 
+  /// Access the non_local_manager interface
+  AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, NonLocalManager &);
 protected:
   friend class Material;
 
@@ -773,6 +776,9 @@ protected:
 
   /// map a registered internals to be flattened for dump purposes
   flatten_internal_map registered_internals;
+
+  /// non local manager
+  std::unique_ptr<NonLocalManager> non_local_manager;
 
   /// pointer to the pbc synchronizer
   // PBCSynchronizer * pbc_synch;

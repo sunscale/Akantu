@@ -33,7 +33,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_factory.hh"
 #include "aka_math.hh"
-//#include "material_list.hh"
+#include "material_non_local.hh"
 #include "solid_mechanics_model.hh"
 #ifdef AKANTU_DAMAGE_NON_LOCAL
 #include "non_local_manager.hh"
@@ -221,18 +221,21 @@ void SolidMechanicsModel::initMaterials() {
     break;
   }
 
-// initialize the previous displacement array if at least on material needs it
-// for (auto & material : materials) {
-//   if (material->isFiniteDeformation() || material->isInelasticDeformation())
-//   {
-//     initArraysPreviousDisplacment();
-//     break;
-//   }
-// }
-
 #ifdef AKANTU_DAMAGE_NON_LOCAL
-  /// initialize the non-local manager for non-local computations
-  this->initializeNonLocal();
+  bool has_non_local_materials = false;
+  for (auto & material : materials) {
+    try {
+      dynamic_cast<MaterialNonLocalInterface &>(*material);
+      has_non_local_materials = true;
+    } catch (std::bad_cast &) {
+    }
+  }
+
+  if (has_non_local_materials) {
+    /// initialize the non-local manager for non-local computations
+    this->non_local_manager = std::make_unique<NonLocalManager>(
+        *this, id + ":non_local_manager", memory_id);
+  }
 #endif
 }
 

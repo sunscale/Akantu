@@ -44,28 +44,14 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 NonLocalManager::NonLocalManager(Model & model, const ID & id,
                                  const MemoryID & memory_id)
-    : Parsable(_st_neighborhoods, id),
+    : Memory(id, memory_id), Parsable(_st_neighborhoods, id),
       spatial_dimension(model.getMesh().getSpatialDimension()), model(model),
       integration_points_positions("integration_points_positions", id,
                                    memory_id),
       volumes("volumes", id, memory_id), compute_stress_calls(0),
-      dummy_registry(nullptr), dummy_grid(nullptr), _id(id),
-      parent_memory_id(memory_id) {
+      dummy_registry(nullptr), dummy_grid(nullptr) {
   Mesh & mesh = this->model.getMesh();
   mesh.registerEventHandler(*this);
-
-  /// initialize the element type map array
-  /// it will be resized to nb_quad * nb_element during the computation of
-  /// coords
-  integration_points_positions.initialize(
-      mesh, _nb_component = spatial_dimension,
-      _spatial_dimension = spatial_dimension, _with_nb_element = true);
-  // mesh.initElementTypeMapArray(integration_points_positions,
-  // _spatial_dimension,
-  //                              _spatial_dimension, false, _ek_regular, true);
-  volumes.initialize(this->model.getFEEngine(),
-                     _spatial_dimension = spatial_dimension);
-  // this->initElementTypeMap(1, volumes, this->model.getFEEngine());
 
   /// parse the neighborhood information from the input file
   const Parser & parser = getStaticParser();
@@ -80,11 +66,48 @@ NonLocalManager::NonLocalManager(Model & model, const ID & id,
     this->weight_function_types[name] = section;
   }
 
-  // this->registerDataAccessor();
+  this->initializeNonLocal();
 }
 
 /* -------------------------------------------------------------------------- */
 NonLocalManager::~NonLocalManager() = default;
+
+/* -------------------------------------------------------------------------- */
+void NonLocalManager::registerNonLocalManagerCallback(
+    std::shared_ptr<NonLocalManagerCallback> & callback) {
+  this->callback = callback;
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLocalManager::initializeNonLocal() {
+  volumes.initialize(this->model.getFEEngine(),
+                     _spatial_dimension = spatial_dimension);
+
+  this->callback->insertIntegrationPointsInNeighborhoods(_not_ghost);
+
+  /// store the number of current ghost elements for each type in the mesh
+  ElementTypeMap<UInt> nb_ghost_protected;
+  Mesh & mesh = this->model.getMesh();
+  for (auto type : mesh.elementTypes(spatial_dimension, _ghost))
+    nb_ghost_protected(mesh.getNbElement(type, _ghost), type, _ghost);
+
+  /// exchange the missing ghosts for the non-local neighborhoods
+  this->createNeighborhoodSynchronizers();
+
+  /// insert the ghost quadrature points of the non-local materials into the
+  /// non-local neighborhoods
+  this->callback->insertIntegrationPointsInNeighborhoods(_ghost);
+
+  FEEngine & fee = this->model.getFEEngine();
+  this->updatePairLists();
+
+  /// cleanup the unneccessary ghost elements
+  this->cleanupExtraGhostElements(nb_ghost_protected);
+  this->setJacobians(fee, _ek_regular);
+
+  this->initNonLocalVariables();
+  this->computeWeights();
+}
 
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::setJacobians(const FEEngine & fe_engine,
@@ -108,7 +131,7 @@ void NonLocalManager::createNeighborhood(const ID & weight_func,
   const ID weight_func_type = section.getOption();
   /// create new neighborhood for given ID
   std::stringstream sstr;
-  sstr << _id << ":neighborhood:" << neighborhood_id;
+  sstr << id << ":neighborhood:" << neighborhood_id;
 
   if (weight_func_type == "base_wf")
     neighborhoods[neighborhood_id] =
@@ -223,31 +246,13 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
       it->second->createGridSynchronizer();
     } else {
       std::stringstream sstr;
-      sstr << this->_id << ":" << neighborhood_id << ":grid_synchronizer";
+      sstr << this->id << ":" << neighborhood_id << ":grid_synchronizer";
       dummy_synchronizers[neighborhood_id] = std::make_unique<GridSynchronizer>(
-          this->model.getMesh(), *dummy_grid, sstr.str(),
-          this->parent_memory_id, false);
+          this->model.getMesh(), *dummy_grid, sstr.str(), this->memory_id,
+          false);
     }
   }
 }
-
-/* -------------------------------------------------------------------------- */
-// void NonLocalManager::flattenInternal(ElementTypeMapReal &, const GhostType
-// &,
-//                                       const ElementKind &) {
-//   /// this should go in the model to make the non local manager independent
-//   of
-//   /// the storage of the model for internals
-//   throw;
-
-//   // const ID field_name = internal_flat.getName();
-//   // for (UInt m = 0; m < this->non_local_materials.size(); ++m) {
-//   //   Material & material = *(this->non_local_materials[m]);
-//   //   if (material.isInternal<Real>(field_name, kind))
-//   //     material.flattenInternal(field_name, internal_flat, ghost_type,
-//   kind);
-//   // }
-// }
 
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::averageInternals(const GhostType & ghost_type) {
@@ -265,34 +270,6 @@ void NonLocalManager::averageInternals(const GhostType & ghost_type) {
           non_local_var.nb_component, ghost_type);
     }
   }
-}
-
-/* -------------------------------------------------------------------------- */
-void NonLocalManager::initializeNonLocal() {
-  this->insertIntegrationPointsInNeighborhoods(_not_ghost);
-
-  /// store the number of current ghost elements for each type in the mesh
-  ElementTypeMap<UInt> nb_ghost_protected;
-  Mesh & mesh = this->model.getMesh();
-  for (auto type : mesh.elementTypes(spatial_dimension, _ghost))
-    nb_ghost_protected(mesh.getNbElement(type, _ghost), type, _ghost);
-
-  /// exchange the missing ghosts for the non-local neighborhoods
-  this->createNeighborhoodSynchronizers();
-
-  /// insert the ghost quadrature points of the non-local materials into the
-  /// non-local neighborhoods
-  this->insertIntegrationPointsInNeighborhoods(_ghost);
-
-  FEEngine & fee = this->model.getFEEngine();
-  this->updatePairLists();
-
-  /// cleanup the unneccessary ghost elements
-  this->cleanupExtraGhostElements(nb_ghost_protected);
-  this->setJacobians(fee, _ek_regular);
-
-  this->initNonLocalVariables();
-  this->computeWeights();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -320,6 +297,10 @@ void NonLocalManager::computeWeights() {
 void NonLocalManager::updatePairLists() {
   AKANTU_DEBUG_IN();
 
+  integration_points_positions.initialize(
+      this->model.getFEEngine(), _nb_component = spatial_dimension,
+      _spatial_dimension = spatial_dimension);
+
   /// compute the position of the quadrature points
   this->model.getFEEngine().computeIntegrationPointsCoordinates(
       integration_points_positions);
@@ -341,7 +322,7 @@ void NonLocalManager::registerNonLocalVariable(const ID & variable_name,
 
   if (non_local_variable_it == non_local_variables.end())
     non_local_variables[nl_variable_name] = std::make_unique<NonLocalVariable>(
-        variable_name, nl_variable_name, this->_id, nb_component);
+        variable_name, nl_variable_name, this->id, nb_component);
 
   AKANTU_DEBUG_OUT();
 }
@@ -355,8 +336,8 @@ NonLocalManager::registerWeightFunctionInternal(const ID & field_name) {
   auto it = this->weight_function_internals.find(field_name);
   if (it == weight_function_internals.end()) {
     weight_function_internals[field_name] =
-        std::make_unique<ElementTypeMapReal>(field_name, this->_id,
-                                             this->parent_memory_id);
+        std::make_unique<ElementTypeMapReal>(field_name, this->id,
+                                             this->memory_id);
   }
 
   return *(weight_function_internals[field_name]);
@@ -370,7 +351,7 @@ void NonLocalManager::updateWeightFunctionInternals() {
     auto & internals = *pair.second;
     internals.clear();
     for (auto ghost_type : ghost_types)
-      this->updateLocalInternal(internals, ghost_type, _ek_regular);
+      this->callback->updateLocalInternal(internals, ghost_type, _ek_regular);
   }
 }
 
@@ -382,73 +363,8 @@ void NonLocalManager::initNonLocalVariables() {
     variable.non_local.initialize(this->model.getFEEngine(),
                                   _nb_component = variable.nb_component,
                                   _spatial_dimension = spatial_dimension);
-    // this->initElementTypeMap(variable.nb_component, variable.non_local,
-    //                          this->model.getFEEngine());
   }
 }
-
-/* -------------------------------------------------------------------------- */
-// void NonLocalManager::initElementTypeMapArray(UInt nb_component,
-//                                               ElementTypeMapReal &
-//                                               element_map, const FEEngine &
-//                                               fee, const ElementKind el_kind)
-//                                               {
-//   Mesh & mesh = this->model.getMesh();
-//   /// need to resize the arrays
-//   for (auto gt : ghost_types) {
-//     for (auto el_type : mesh.elementTypes(spatial_dimension, gt, el_kind)) {
-//       UInt nb_element = mesh.getNbElement(el_type, gt);
-//       UInt nb_quads = fee.getNbIntegrationPoints(el_type, gt);
-//       if (!element_map.exists(el_type, gt)) {
-//         element_map.alloc(nb_element * nb_quads, nb_component, el_type, gt);
-//       }
-//     }
-//   }
-// }
-
-/* -------------------------------------------------------------------------- */
-// void NonLocalManager::distributeInternals(ElementKind) {
-//   // this is model dependent should be in the model...
-//   throw;
-
-//   /// loop over all the non-local variables and copy back their values into
-//   the
-//   /// materials
-//   // for (auto & pair : non_local_variables) {
-//   //   auto & non_local_var = *pair.second;
-
-//   //   const ID field_name = non_local_var->non_local.getName();
-//   //   /// loop over all the materials
-//   //   for (UInt m = 0; m < this->non_local_materials.size(); ++m) {
-//   //     if (this->non_local_materials[m]->isInternal<Real>(field_name,
-//   kind))
-
-//   //       switch (spatial_dimension) {
-//   //       case 1:
-//   //         dynamic_cast<MaterialNonLocal<1>
-//   //         &>(*(this->non_local_materials[m]))
-//   //             .updateNonLocalInternals(non_local_var->non_local,
-//   field_name,
-//   //                                      non_local_var->nb_component);
-//   //         break;
-//   //       case 2:
-//   //         dynamic_cast<MaterialNonLocal<2>
-//   //         &>(*(this->non_local_materials[m]))
-//   //             .updateNonLocalInternals(non_local_var->non_local,
-//   field_name,
-//   //                                      non_local_var->nb_component);
-//   //         break;
-//   //       case 3:
-//   //         dynamic_cast<MaterialNonLocal<3>
-//   //         &>(*(this->non_local_materials[m]))
-//   //             .updateNonLocalInternals(non_local_var->non_local,
-//   field_name,
-//   //                                      non_local_var->nb_component);
-//   //         break;
-//   //       }
-//   //   }
-//   // }
-// }
 
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::computeAllNonLocalStresses() {
@@ -459,28 +375,12 @@ void NonLocalManager::computeAllNonLocalStresses() {
     variable.local.clear();
     variable.non_local.clear();
     for (auto ghost_type : ghost_types) {
-      this->updateLocalInternal(variable.local, ghost_type, _ek_regular);
+      this->callback->updateLocalInternal(variable.local, ghost_type,
+                                          _ek_regular);
     }
   }
 
   this->volumes.clear();
-  /// loop over all the neighborhoods and compute intiate the
-  /// exchange of the non-local_variables
-  // std::set<ID>::const_iterator global_neighborhood_it =
-  // global_neighborhoods.begin();
-  // NeighborhoodMap::iterator it;
-  // for(; global_neighborhood_it != global_neighborhoods.end();
-  // ++global_neighborhood_it) {
-  //   it = neighborhoods.find(*global_neighborhood_it);
-  //   if (it != neighborhoods.end())
-  //     it->second->getSynchronizerRegistry().asynchronousSynchronize(_gst_mnl_for_average);
-  //     else
-  // 	dummy_synchronizers[*global_neighborhood_it]->asynchronousSynchronize(dummy_accessor,
-  // _gst_mnl_for_average);
-  // }
-
-  // NeighborhoodMap::iterator neighborhood_it = neighborhoods.begin();
-  // NeighborhoodMap::iterator neighborhood_end = neighborhoods.end();
 
   for (auto & pair : neighborhoods) {
     auto & neighborhood = *pair.second;
@@ -490,19 +390,6 @@ void NonLocalManager::computeAllNonLocalStresses() {
   this->averageInternals(_not_ghost);
 
   AKANTU_DEBUG_INFO("Wait distant non local stresses");
-
-  /// loop over all the neighborhoods and block until all non-local
-  /// variables have been exchanged
-  // global_neighborhood_it = global_neighborhoods.begin();
-  // for(; global_neighborhood_it != global_neighborhoods.end();
-  // ++global_neighborhood_it) {
-  //   it = neighborhoods.find(*global_neighborhood_it);
-  //   if (it != neighborhoods.end())
-  //     it->second->getSynchronizerRegistry().waitEndSynchronize(_gst_mnl_for_average);
-  //   else
-  //     dummy_synchronizers[*global_neighborhood_it]->waitEndSynchronize(dummy_accessor,
-  //     _gst_mnl_for_average);
-  // }
 
   for (auto & pair : neighborhoods) {
     auto & neighborhood = *pair.second;
@@ -515,11 +402,12 @@ void NonLocalManager::computeAllNonLocalStresses() {
   for (auto & pair : non_local_variables) {
     auto & variable = *pair.second;
     for (auto ghost_type : ghost_types) {
-      this->updateNonLocalInternal(variable.non_local, ghost_type, _ek_regular);
+      this->callback->updateNonLocalInternal(variable.non_local, ghost_type,
+                                             _ek_regular);
     }
   }
 
-  this->computeNonLocalStresses(_not_ghost);
+  this->callback->computeNonLocalStresses(_not_ghost);
 
   ++this->compute_stress_calls;
 }

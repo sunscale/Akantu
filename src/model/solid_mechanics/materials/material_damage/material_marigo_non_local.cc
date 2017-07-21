@@ -40,13 +40,14 @@ namespace akantu {
 template <UInt spatial_dimension>
 MaterialMarigoNonLocal<spatial_dimension>::MaterialMarigoNonLocal(
     SolidMechanicsModel & model, const ID & id)
-    : MaterialMarigoNonLocalParent(model, id),
-      Y("Y", *this), Ynl("Y non local", *this) {
+    : MaterialMarigoNonLocalParent(model, id), Y("Y", *this),
+      Ynl("Y non local", *this) {
   AKANTU_DEBUG_IN();
   this->is_non_local = true;
   this->Y.initialize(1);
   this->Ynl.initialize(1);
-  this->model.registerNonLocalVariable(this->Y.getName(), Ynl.getName(), 1);
+  this->model.getNonLocalManager()
+      .registerNonLocalVariable(this->Y.getName(), Ynl.getName(), 1);
   AKANTU_DEBUG_OUT();
 }
 
@@ -55,7 +56,9 @@ template <UInt spatial_dimension>
 void MaterialMarigoNonLocal<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
   MaterialMarigoNonLocalParent::initMaterial();
-  this->model.getNeighborhood(this->name).registerNonLocalVariable(Ynl.getName());
+  this->model.getNonLocalManager()
+      .getNeighborhood(this->name)
+      .registerNonLocalVariable(Ynl.getName());
   AKANTU_DEBUG_OUT();
 }
 

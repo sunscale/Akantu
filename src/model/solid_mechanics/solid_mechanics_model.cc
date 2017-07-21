@@ -68,8 +68,7 @@ namespace akantu {
 SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
                                          const MemoryID & memory_id)
     : Model(mesh, dim, id, memory_id), BoundaryCondition<SolidMechanicsModel>(),
-      NonLocalManager(*this, id + ":non_local_manager", memory_id), f_m2a(1.0),
-      displacement(nullptr), previous_displacement(nullptr),
+      f_m2a(1.0), displacement(nullptr), previous_displacement(nullptr),
       displacement_increment(nullptr), mass(nullptr), velocity(nullptr),
       acceleration(nullptr), external_force(nullptr), internal_force(nullptr),
       blocked_dofs(nullptr), current_position(nullptr), mass_matrix(nullptr),
@@ -171,9 +170,9 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
     this->instantiateMaterials();
   }
 
-  if (!smm_options.no_init_materials) {
-    this->initMaterials();
-  }
+  //if (!smm_options.no_init_materials) {
+  this->initMaterials();
+  //}
 
   // if (increment_flag)
   this->initBC(*this, *displacement, *displacement_increment, *external_force);
@@ -290,6 +289,9 @@ void SolidMechanicsModel::initSolver(
   this->allocNodalField(this->blocked_dofs, "blocked_dofs");
   this->allocNodalField(this->current_position, "current_position");
 
+  // initialize the current positions
+  this->current_position->copy(this->mesh.getNodes());
+
   /* ------------------------------------------------------------------------ */
   if (!dof_manager.hasDOFs("displacement")) {
     dof_manager.registerDOFs("displacement", *this->displacement, _dst_nodal);
@@ -354,22 +356,6 @@ void SolidMechanicsModel::initFEEngineBoundary() {
   fem_boundary.computeNormalsOnIntegrationPoints(_not_ghost);
   fem_boundary.computeNormalsOnIntegrationPoints(_ghost);
 }
-
-/* -------------------------------------------------------------------------- */
-// void SolidMechanicsModel::initArraysPreviousDisplacment() {
-//   AKANTU_DEBUG_IN();
-
-//   this->setIncrementFlagOn();
-//   if (not this->previous_displacement) {
-//     this->allocNodalField(this->previous_displacement, spatial_dimension,
-//                           "previous_displacement");
-
-//     this->getDOFManager().registerDOFsPrevious("displacement",
-//                                                *this->previous_displacement);
-//   }
-
-//   AKANTU_DEBUG_OUT();
-// }
 
 /* -------------------------------------------------------------------------- */
 /**
@@ -481,7 +467,8 @@ void SolidMechanicsModel::assembleInternalForces() {
 #ifdef AKANTU_DAMAGE_NON_LOCAL
   /* ------------------------------------------------------------------------ */
   /* Computation of the non local part */
-  this->computeAllNonLocalStresses();
+  if(this->non_local_manager)
+    this->non_local_manager->computeAllNonLocalStresses();
 #endif
 
   // communicate the stresses
@@ -1249,7 +1236,8 @@ void SolidMechanicsModel::updateNonLocalInternal(
   for (auto & mat : materials) {
     try {
       auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
-      mat_non_local.updateNonLocalInternals(internal_flat, field_name, ghost_type, kind);
+      mat_non_local.updateNonLocalInternals(internal_flat, field_name,
+                                            ghost_type, kind);
     } catch (std::bad_cast &) {
     }
   }
