@@ -77,6 +77,7 @@ package_declare_sources(core
   common/aka_voigthelper.cc
   common/aka_warning.hh
   common/aka_warning_restore.hh
+  common/aka_zip.hh
 
   fe_engine/element_class.cc
   fe_engine/element_class.hh
