@@ -366,8 +366,6 @@ protected:
 } // akantu
 
 #include "element_class_tmpl.hh"
-
-
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 #include "element_class_point_1_inline_impl.cc"
@@ -386,6 +384,9 @@ namespace akantu {
 } // akantu
 
 /* -------------------------------------------------------------------------- */
+#if defined(AKANTU_COHESIVE_ELEMENT)
+#include "cohesive_element.hh"
+#endif
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 #include "element_class_structural.hh"

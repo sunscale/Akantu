@@ -392,6 +392,12 @@ protected:
   /// assemble the mass matrix for either _ghost or _not_ghost elements
   void assembleMass(GhostType ghost_type);
 
+  /// assemble the lumped mass only for a given list of nodes
+  void assembleMassLumped(const Array<UInt> & node_list);
+
+  /// assemble the lumped mass only for a given list of nodes
+  void assembleMass(const Array<UInt> & node_list);
+
   /// fill a vector of rho
   void computeRho(Array<Real> & rho, ElementType type, GhostType ghost_type);
 

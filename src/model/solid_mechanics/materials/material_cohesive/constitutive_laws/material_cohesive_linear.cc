@@ -344,7 +344,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
       abs_max(comm.whoAmI()) = max_ratio;
       comm.allGather(abs_max);
 
-      Array<Real>::scalar_iterator it =
+      auto it =
           std::max_element(abs_max.begin(), abs_max.end());
       Int pos = it - abs_max.begin();
 
@@ -416,47 +416,47 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(
   AKANTU_DEBUG_IN();
 
   /// define iterators
-  Array<Real>::vector_iterator traction_it =
+  auto traction_it =
       tractions(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator opening_it =
+  auto opening_it =
       opening(el_type, ghost_type).begin(spatial_dimension);
 
   /// opening_prec is the opening of the previous step in the
   /// Newton-Raphson loop
-  Array<Real>::vector_iterator opening_prec_it =
+  auto opening_prec_it =
       opening_prec(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator contact_traction_it =
+  auto contact_traction_it =
       contact_tractions(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator contact_opening_it =
+  auto contact_opening_it =
       contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::const_vector_iterator normal_it =
+  auto normal_it =
       normal.begin(spatial_dimension);
 
-  Array<Real>::vector_iterator traction_end =
+  auto traction_end =
       tractions(el_type, ghost_type).end(spatial_dimension);
 
-  Array<Real>::scalar_iterator sigma_c_it =
+  auto sigma_c_it =
       sigma_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator delta_max_it =
+  auto delta_max_it =
       delta_max(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator delta_max_prev_it =
+  auto delta_max_prev_it =
       delta_max.previous(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator delta_c_it =
+  auto delta_c_it =
       delta_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator damage_it = damage(el_type, ghost_type).begin();
+  auto damage_it = damage(el_type, ghost_type).begin();
 
-  Array<Real>::vector_iterator insertion_stress_it =
+  auto insertion_stress_it =
       insertion_stress(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<bool>::scalar_iterator reduction_penalty_it =
+  auto reduction_penalty_it =
       reduction_penalty(el_type, ghost_type).begin();
 
   Vector<Real> normal_opening(spatial_dimension);
@@ -530,22 +530,22 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(
     ElementType el_type = *it;
 
     /// define iterators
-    Array<Real>::scalar_iterator delta_max_it =
+    auto delta_max_it =
         delta_max(el_type, ghost_type).begin();
 
-    Array<Real>::scalar_iterator delta_max_end =
+    auto delta_max_end =
         delta_max(el_type, ghost_type).end();
 
-    Array<Real>::scalar_iterator delta_max_prev_it =
+    auto delta_max_prev_it =
         delta_max.previous(el_type, ghost_type).begin();
 
-    Array<Real>::scalar_iterator delta_c_it =
+    auto delta_c_it =
         delta_c_eff(el_type, ghost_type).begin();
 
-    Array<Real>::vector_iterator opening_prec_it =
+    auto opening_prec_it =
         opening_prec(el_type, ghost_type).begin(spatial_dimension);
 
-    Array<Real>::vector_iterator opening_prec_prev_it =
+    auto opening_prec_prev_it =
         opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
 
     /// loop on each quadrature point
@@ -599,10 +599,10 @@ void MaterialCohesiveLinear<spatial_dimension>::resetVariables(
 
     ElementType el_type = *it;
 
-    Array<bool>::scalar_iterator reduction_penalty_it =
+    auto reduction_penalty_it =
         reduction_penalty(el_type, ghost_type).begin();
 
-    Array<bool>::scalar_iterator reduction_penalty_end =
+    auto reduction_penalty_end =
         reduction_penalty(el_type, ghost_type).end();
 
     /// loop on each quadrature point
@@ -622,36 +622,36 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(
   AKANTU_DEBUG_IN();
 
   /// define iterators
-  Array<Real>::matrix_iterator tangent_it =
+  auto tangent_it =
       tangent_matrix.begin(spatial_dimension, spatial_dimension);
 
-  Array<Real>::matrix_iterator tangent_end =
+  auto tangent_end =
       tangent_matrix.end(spatial_dimension, spatial_dimension);
 
-  Array<Real>::const_vector_iterator normal_it =
+  auto normal_it =
       normal.begin(spatial_dimension);
 
-  Array<Real>::vector_iterator opening_it =
+  auto opening_it =
       opening(el_type, ghost_type).begin(spatial_dimension);
 
   /// NB: delta_max_it points on delta_max_previous, i.e. the
   /// delta_max related to the solution of the previous incremental
   /// step
-  Array<Real>::scalar_iterator delta_max_it =
+  auto delta_max_it =
       delta_max.previous(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator sigma_c_it =
+  auto sigma_c_it =
       sigma_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator delta_c_it =
+  auto delta_c_it =
       delta_c_eff(el_type, ghost_type).begin();
 
-  Array<Real>::scalar_iterator damage_it = damage(el_type, ghost_type).begin();
+  auto damage_it = damage(el_type, ghost_type).begin();
 
-  Array<Real>::vector_iterator contact_opening_it =
+  auto contact_opening_it =
       contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<bool>::scalar_iterator reduction_penalty_it =
+  auto reduction_penalty_it =
       reduction_penalty(el_type, ghost_type).begin();
 
   Vector<Real> normal_opening(spatial_dimension);

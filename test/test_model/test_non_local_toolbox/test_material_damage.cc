@@ -38,7 +38,7 @@ TestMaterialDamage<dim>::TestMaterialDamage(SolidMechanicsModel & model,
     : Parent(model, id), grad_u_nl("grad_u non local", *this) {
   this->is_non_local = true;
   this->grad_u_nl.initialize(dim * dim);
-  this->model.registerNonLocalVariable(this->gradu.getName(),
+  this->model.getNonLocalManager().registerNonLocalVariable(this->gradu.getName(),
                                        grad_u_nl.getName(), dim * dim);
 }
 
@@ -49,7 +49,7 @@ void TestMaterialDamage<spatial_dimension>::initMaterial() {
 
   MaterialDamage<spatial_dimension>::initMaterial();
   Parent::initMaterial();
-  this->model.getNeighborhood(this->name)
+  this->model.getNonLocalManager().getNeighborhood(this->name)
       .registerNonLocalVariable(grad_u_nl.getName());
   AKANTU_DEBUG_OUT();
 }

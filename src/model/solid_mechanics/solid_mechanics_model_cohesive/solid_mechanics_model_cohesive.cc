@@ -33,21 +33,22 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
+#include "aka_zip.hh"
 #include "dumpable_inline_impl.hh"
 #include "material_cohesive.hh"
 #include "shape_cohesive.hh"
-#include <algorithm>
-
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_paraview.hh"
 #endif
-
+/* -------------------------------------------------------------------------- */
+#include <algorithm>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 const SolidMechanicsModelCohesiveOptions
-    default_solid_mechanics_model_cohesive_options(_explicit_lumped_mass, false);
+    default_solid_mechanics_model_cohesive_options(_explicit_lumped_mass,
+                                                   false);
 
 /* -------------------------------------------------------------------------- */
 
@@ -69,7 +70,7 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
   delete material_selector;
   material_selector = new DefaultMaterialCohesiveSelector(*this);
 
-  this->registerEventHandler(*this);
+  this->registerEventHandler(*this, _ehp_solid_mechanics_model_cohesive);
 
 #if defined(AKANTU_USE_IOHELPER)
   this->mesh.registerDumper<DumperParaview>("cohesive elements", id);
@@ -227,7 +228,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
     delete material_selector;
   material_selector = new MeshDataMaterialCohesiveSelector(*this);
 
-  //UInt nb_new_elements =
+  // UInt nb_new_elements =
   inserter->insertElements();
   // if (nb_new_elements > 0) {
   //   this->reinitializeSolver();
@@ -345,7 +346,7 @@ void SolidMechanicsModelCohesive::limitInsertion(BC::Axis axis,
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::insertIntrinsicElements() {
   AKANTU_DEBUG_IN();
-  //UInt nb_new_elements =
+  // UInt nb_new_elements =
   inserter->insertIntrinsicElements();
   // if (nb_new_elements > 0) {
   //   this->reinitializeSolver();
@@ -435,13 +436,15 @@ void SolidMechanicsModelCohesive::initStressInterpolation() {
   /// element-facet quadrature points data structure
   ElementTypeMapArray<Real> elements_quad_facets("elements_quad_facets", id);
 
-  elements_quad_facets.initialize(mesh, _nb_component = Model::spatial_dimension,
-                                  _spatial_dimension = Model::spatial_dimension);
-  // mesh.initElementTypeMapArray(elements_quad_facets, Model::spatial_dimension,
+  elements_quad_facets.initialize(
+      mesh, _nb_component = Model::spatial_dimension,
+      _spatial_dimension = Model::spatial_dimension);
+  // mesh.initElementTypeMapArray(elements_quad_facets,
+  // Model::spatial_dimension,
   //                              Model::spatial_dimension);
 
   for (auto elem_gt : ghost_types) {
-    for(auto & type : mesh.elementTypes(Model::spatial_dimension, elem_gt)) {
+    for (auto & type : mesh.elementTypes(Model::spatial_dimension, elem_gt)) {
       UInt nb_element = mesh.getNbElement(type, elem_gt);
       if (nb_element == 0)
         continue;
@@ -627,10 +630,6 @@ void SolidMechanicsModelCohesive::onElementsAdded(
     cohesive_element_synchronizer->computeAllBufferSizes(*this);
 #endif
 
-  /// update shape functions
-  getFEEngine("CohesiveFEEngine").initShapeFunctions(_not_ghost);
-  getFEEngine("CohesiveFEEngine").initShapeFunctions(_ghost);
-
   if (is_extrinsic)
     resizeFacetStress();
 
@@ -642,43 +641,53 @@ void SolidMechanicsModelCohesive::onElementsAdded(
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::onNodesAdded(
-    const Array<UInt> & doubled_nodes, const NewNodesEvent & event) {
+void SolidMechanicsModelCohesive::onNodesAdded(const Array<UInt> & new_nodes,
+                                               const NewNodesEvent & event) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_new_nodes = doubled_nodes.getSize();
-  Array<UInt> nodes_list(nb_new_nodes);
+  // Array<UInt> nodes_list(nb_new_nodes);
 
-  for (UInt n = 0; n < nb_new_nodes; ++n)
-    nodes_list(n) = doubled_nodes(n, 1);
+  // for (UInt n = 0; n < nb_new_nodes; ++n)
+  //   nodes_list(n) = doubled_nodes(n, 1);
+  SolidMechanicsModel::onNodesAdded(new_nodes, event);
 
-  SolidMechanicsModel::onNodesAdded(nodes_list, event);
+  UInt new_node, old_node;
 
-  for (UInt n = 0; n < nb_new_nodes; ++n) {
+  try {
+    const auto & cohesive_event =
+        dynamic_cast<const CohesiveNewNodesEvent &>(event);
+    const auto & old_nodes = cohesive_event.getOldNodesList();
 
-    UInt old_node = doubled_nodes(n, 0);
-    UInt new_node = doubled_nodes(n, 1);
+    auto copy = [this, &new_node, &old_node](auto & arr) {
+      for (UInt s = 0; s < spatial_dimension; ++s) {
+        arr(new_node, s) = arr(old_node, s);
+      }
+    };
 
-    for (UInt dim = 0; dim < Model::spatial_dimension; ++dim) {
-      (*displacement)(new_node, dim) = (*displacement)(old_node, dim);
-      (*velocity)(new_node, dim) = (*velocity)(old_node, dim);
-      (*acceleration)(new_node, dim) = (*acceleration)(old_node, dim);
-      (*blocked_dofs)(new_node, dim) = (*blocked_dofs)(old_node, dim);
+    for (auto pair : zip(new_nodes, old_nodes)) {
+      std::tie(new_node, old_node) = pair;
+
+      copy(*displacement);
+      copy(*velocity);
+      copy(*acceleration);
+      copy(*blocked_dofs);
 
       if (current_position)
-        (*current_position)(new_node, dim) = (*current_position)(old_node, dim);
-
-      // if (increment_acceleration)
-      //   (*increment_acceleration)(new_node, dim) =
-      //       (*increment_acceleration)(old_node, dim);
-
-      // if (increment)
-      //   (*increment)(new_node, dim) = (*increment)(old_node, dim);
+        copy(*current_position);
 
       if (previous_displacement)
-        (*previous_displacement)(new_node, dim) =
-            (*previous_displacement)(old_node, dim);
+        copy(*previous_displacement);
     }
+
+    // if (this->getDOFManager().hasMatrix("M")) {
+    //   this->assembleMass(old_nodes);
+    // }
+
+    // if (this->getDOFManager().hasLumpedMatrix("M")) {
+    //   this->assembleMassLumped(old_nodes);
+    // }
+
+  } catch (std::bad_cast &) {
   }
 
   AKANTU_DEBUG_OUT();
@@ -760,9 +769,9 @@ void SolidMechanicsModelCohesive::addDumpGroupFieldToDumper(
   } else if (dumper_name == "facets") {
     spatial_dimension = Model::spatial_dimension - 1;
   }
-  SolidMechanicsModel::addDumpGroupFieldToDumper(
-      dumper_name, field_id, group_name, spatial_dimension,
-      _element_kind, padding_flag);
+  SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, field_id,
+                                                 group_name, spatial_dimension,
+                                                 _element_kind, padding_flag);
 
   AKANTU_DEBUG_OUT();
 }

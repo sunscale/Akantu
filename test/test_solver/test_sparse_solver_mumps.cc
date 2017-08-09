@@ -82,8 +82,7 @@ int main(int argc, char * argv[]) {
   Array<Real> x(nb_nodes);
   dof_manager.registerDOFs("x", x, _dst_nodal);
 
-  Array<UInt> global_equation_number(nb_nodes);
-  dof_manager.getEquationsNumbers("x", global_equation_number);
+  const auto & local_equation_number = dof_manager.getEquationsNumbers("x");
 
   auto & A = dof_manager.getNewMatrix("A", _symmetric);
 
@@ -92,7 +91,8 @@ int main(int argc, char * argv[]) {
 
   for (UInt i = 0; i < nb_nodes; ++i) {
     if (dof_manager.isLocalOrMasterDOF(i)) {
-      UInt gi = global_equation_number(i);
+      auto li = local_equation_number(i);
+      auto gi = dof_manager.localToGlobalEquationNumber(li);
       terms(i, i) = 1. / (1. + gi);
     }
   }

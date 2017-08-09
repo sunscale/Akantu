@@ -77,9 +77,7 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<
     Array<bool>::vector_iterator flags_iter =
         boundary_flags.begin(boundary_flags.getNbComponent());
 
-    for (ElementGroup::const_node_iterator nodes_it(group.node_begin());
-         nodes_it != group.node_end(); ++nodes_it) {
-      UInt n = *nodes_it;
+    for (auto  n : group.getNodeGroup()) {
       Vector<bool> flag(flags_iter[n]);
       Vector<Real> primal(primal_iter[n]);
       Vector<Real> coords(coords_iter[n]);

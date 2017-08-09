@@ -430,7 +430,7 @@ void SolidMechanicsModel::assembleResidual() {
   this->getDOFManager().assembleToResidual("displacement",
                                            *this->external_force, 1);
   this->getDOFManager().assembleToResidual("displacement",
-                                           *this->internal_force, -1);
+                                           *this->internal_force, 1);
 
   AKANTU_DEBUG_OUT();
 }
@@ -1080,8 +1080,10 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
   AKANTU_DEBUG_IN();
   UInt nb_nodes = mesh.getNbNodes();
 
-  if (displacement)
+  if (displacement) {
     displacement->resize(nb_nodes, 0.);
+    ++displacement_release;
+  }
   if (mass)
     mass->resize(nb_nodes, 0.);
   if (velocity)

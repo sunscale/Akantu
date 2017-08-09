@@ -58,8 +58,10 @@ Material::Material(SolidMechanicsModel & model, const ID & id)
 
   /// for each connectivity types allocate the element filer array of the
   /// material
-  element_filter.initialize(model.getMesh(), _spatial_dimension = spatial_dimension);
-  // model.getMesh().initElementTypeMapArray(element_filter, 1, spatial_dimension,
+  element_filter.initialize(model.getMesh(),
+                            _spatial_dimension = spatial_dimension);
+  // model.getMesh().initElementTypeMapArray(element_filter, 1,
+  // spatial_dimension,
   //                                         false, _ek_regular);
 
   this->initialize();
@@ -200,7 +202,8 @@ void Material::assembleInternalForces(GhostType ghost_type) {
 
   if (!finite_deformation) {
 
-    Array<Real> & internal_force = const_cast<Array<Real> &>(model.getInternalForce());
+    Array<Real> & internal_force =
+        const_cast<Array<Real> &>(model.getInternalForce());
 
     Mesh & mesh = fem.getMesh();
     Mesh::type_iterator it =
@@ -216,8 +219,7 @@ void Material::assembleInternalForces(GhostType ghost_type) {
 
         UInt size_of_shapes_derivatives = shapes_derivatives.getNbComponent();
         UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
-        UInt nb_quadrature_points =
-            fem.getNbIntegrationPoints(*it, ghost_type);
+        UInt nb_quadrature_points = fem.getNbIntegrationPoints(*it, ghost_type);
 
         /// compute @f$\sigma \frac{\partial \varphi}{\partial X}@f$ by
         /// @f$\mathbf{B}^t \mathbf{\sigma}_q@f$
@@ -257,13 +259,13 @@ void Material::assembleInternalForces(GhostType ghost_type) {
             "int_sigma_x_dphi_/_dX");
 
         fem.integrate(*sigma_dphi_dx, *int_sigma_dphi_dx,
-                       size_of_shapes_derivatives, *it, ghost_type,
-                       elem_filter);
+                      size_of_shapes_derivatives, *it, ghost_type, elem_filter);
         delete sigma_dphi_dx;
 
         /// assemble
-        model.getDOFManager().assembleElementalArrayLocalArray(*int_sigma_dphi_dx, internal_force,
-                                                                *it, ghost_type, 1, elem_filter);
+        model.getDOFManager().assembleElementalArrayLocalArray(
+            *int_sigma_dphi_dx, internal_force, *it, ghost_type, -1,
+            elem_filter);
         delete int_sigma_dphi_dx;
       }
     }
@@ -296,7 +298,8 @@ void Material::computeAllStresses(GhostType ghost_type) {
 
   UInt spatial_dimension = model.getSpatialDimension();
 
-  for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
+  for (const auto & type :
+       element_filter.elementTypes(spatial_dimension, ghost_type)) {
     Array<UInt> & elem_filter = element_filter(type, ghost_type);
 
     if (elem_filter.getSize() == 0)
@@ -305,8 +308,8 @@ void Material::computeAllStresses(GhostType ghost_type) {
 
     /// compute @f$\nabla u@f$
     fem.gradientOnIntegrationPoints(model.getDisplacement(), gradu_vect,
-                                     spatial_dimension, type, ghost_type,
-                                     elem_filter);
+                                    spatial_dimension, type, ghost_type,
+                                    elem_filter);
 
     gradu_vect -= eigengradu(type, ghost_type);
 
@@ -325,7 +328,7 @@ void Material::computeAllCauchyStresses(GhostType ghost_type) {
                                           "computed if you are working in "
                                           "finite deformation.");
 
-  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     switch (spatial_dimension) {
     case 1:
       this->computeCauchyStress<1>(type, ghost_type);
@@ -383,14 +386,13 @@ void Material::setToSteadyState(GhostType ghost_type) {
 
   UInt spatial_dimension = model.getSpatialDimension();
 
-  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     Array<UInt> & elem_filter = element_filter(type, ghost_type);
     Array<Real> & gradu_vect = gradu(type, ghost_type);
 
     /// compute @f$\nabla u@f$
-    fem.gradientOnIntegrationPoints(displacement, gradu_vect,
-                                     spatial_dimension, type, ghost_type,
-                                     elem_filter);
+    fem.gradientOnIntegrationPoints(displacement, gradu_vect, spatial_dimension,
+                                    type, ghost_type, elem_filter);
 
     setToSteadyState(type, ghost_type);
   }
@@ -411,7 +413,7 @@ void Material::assembleStiffnessMatrix(GhostType ghost_type) {
 
   UInt spatial_dimension = model.getSpatialDimension();
 
-  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     if (finite_deformation) {
       switch (spatial_dimension) {
       case 1: {
@@ -460,8 +462,8 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
   Array<UInt> & elem_filter = element_filter(type, ghost_type);
   if (elem_filter.getSize()) {
 
-    const Array<Real> & shapes_derivatives = fem.getShapesDerivatives(type,
-                                                                       ghost_type);
+    const Array<Real> & shapes_derivatives =
+        fem.getShapesDerivatives(type, ghost_type);
 
     Array<Real> & gradu_vect = gradu(type, ghost_type);
 
@@ -472,7 +474,7 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
     gradu_vect.resize(nb_quadrature_points * nb_element);
 
     fem.gradientOnIntegrationPoints(model.getDisplacement(), gradu_vect, dim,
-                                     type, ghost_type, elem_filter);
+                                    type, ghost_type, elem_filter);
 
     UInt tangent_size = getTangentStiffnessVoigtSize(dim);
 
@@ -484,8 +486,8 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
 
     computeTangentModuli(type, *tangent_stiffness_matrix, ghost_type);
 
-    Array<Real> * shapesd_filtered =
-        new Array<Real>(nb_element, dim * nb_nodes_per_element, "filtered shapesd");
+    Array<Real> * shapesd_filtered = new Array<Real>(
+        nb_element, dim * nb_nodes_per_element, "filtered shapesd");
 
     FEEngine::filterElementalData(fem.getMesh(), shapes_derivatives,
                                   *shapesd_filtered, type, ghost_type,
@@ -532,13 +534,12 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
         new Array<Real>(nb_element, bt_d_b_size * bt_d_b_size, "K_e");
 
     fem.integrate(*bt_d_b, *K_e, bt_d_b_size * bt_d_b_size, type, ghost_type,
-                   elem_filter);
+                  elem_filter);
 
     delete bt_d_b;
 
-    model.getDOFManager().assembleElementalMatricesToMatrix("K", "displacement", *K_e,
-                                                            type, ghost_type, _symmetric,
-                                                            elem_filter);
+    model.getDOFManager().assembleElementalMatricesToMatrix(
+        "K", "displacement", *K_e, type, ghost_type, _symmetric, elem_filter);
     delete K_e;
   }
   AKANTU_DEBUG_OUT();
@@ -550,7 +551,8 @@ void Material::assembleStiffnessMatrixNL(const ElementType & type,
                                          GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  const Array<Real> & shapes_derivatives = fem.getShapesDerivatives(type, ghost_type);
+  const Array<Real> & shapes_derivatives =
+      fem.getShapesDerivatives(type, ghost_type);
 
   Array<UInt> & elem_filter = element_filter(type, ghost_type);
   // Array<Real> & gradu_vect = delta_gradu(type, ghost_type);
@@ -619,20 +621,16 @@ void Material::assembleStiffnessMatrixNL(const ElementType & type,
   delete shapes_derivatives_filtered;
 
   /// compute @f$ k_e = \int_e \mathbf{B}^t * \mathbf{D} * \mathbf{B}@f$
-  Array<Real> * K_e = new Array<Real > (nb_element,
-                                        bt_s_b_size * bt_s_b_size,
-                                        "K_e");
+  Array<Real> * K_e =
+      new Array<Real>(nb_element, bt_s_b_size * bt_s_b_size, "K_e");
 
-  fem.integrate(*bt_s_b, *K_e,
-                            bt_s_b_size * bt_s_b_size,
-                            type, ghost_type,
-                            elem_filter);
+  fem.integrate(*bt_s_b, *K_e, bt_s_b_size * bt_s_b_size, type, ghost_type,
+                elem_filter);
 
   delete bt_s_b;
 
-  model.getDOFManager().assembleElementalMatricesToMatrix("K", "displacement", *K_e,
-                                                           type, ghost_type, _symmetric,
-                                                           elem_filter);
+  model.getDOFManager().assembleElementalMatricesToMatrix(
+      "K", "displacement", *K_e, type, ghost_type, _symmetric, elem_filter);
 
   delete K_e;
 
@@ -645,7 +643,8 @@ void Material::assembleStiffnessMatrixL2(const ElementType & type,
                                          GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  const Array<Real> & shapes_derivatives = fem.getShapesDerivatives(type, ghost_type);
+  const Array<Real> & shapes_derivatives =
+      fem.getShapesDerivatives(type, ghost_type);
 
   Array<UInt> & elem_filter = element_filter(type, ghost_type);
   Array<Real> & gradu_vect = gradu(type, ghost_type);
@@ -657,7 +656,7 @@ void Material::assembleStiffnessMatrixL2(const ElementType & type,
   gradu_vect.resize(nb_quadrature_points * nb_element);
 
   fem.gradientOnIntegrationPoints(model.getDisplacement(), gradu_vect, dim,
-                                   type, ghost_type, elem_filter);
+                                  type, ghost_type, elem_filter);
 
   UInt tangent_size = getTangentStiffnessVoigtSize(dim);
 
@@ -734,27 +733,27 @@ void Material::assembleStiffnessMatrixL2(const ElementType & type,
       new Array<Real>(nb_element, bt_d_b_size * bt_d_b_size, "K_e");
 
   fem.integrate(*bt_d_b, *K_e, bt_d_b_size * bt_d_b_size, type, ghost_type,
-                 elem_filter);
+                elem_filter);
 
   delete bt_d_b;
 
-  model.getDOFManager().assembleElementalMatricesToMatrix("K", "displacement", *K_e,
-                                                            type, ghost_type, _symmetric,
-                                                            elem_filter);
+  model.getDOFManager().assembleElementalMatricesToMatrix(
+      "K", "displacement", *K_e, type, ghost_type, _symmetric, elem_filter);
   delete K_e;
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template <UInt dim> void Material::assembleInternalForces(GhostType ghost_type) {
+template <UInt dim>
+void Material::assembleInternalForces(GhostType ghost_type) {
 
   AKANTU_DEBUG_IN();
 
   Array<Real> & internal_force = model.getInternalForce();
 
   Mesh & mesh = fem.getMesh();
-  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     const Array<Real> & shapes_derivatives =
         fem.getShapesDerivatives(type, ghost_type);
 
@@ -766,8 +765,8 @@ template <UInt dim> void Material::assembleInternalForces(GhostType ghost_type) 
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
     UInt nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
 
-    Array<Real> * shapesd_filtered =
-        new Array<Real>(nb_element, size_of_shapes_derivatives, "filtered shapesd");
+    Array<Real> * shapesd_filtered = new Array<Real>(
+        nb_element, size_of_shapes_derivatives, "filtered shapesd");
 
     FEEngine::filterElementalData(mesh, shapes_derivatives, *shapesd_filtered,
                                   type, ghost_type, elem_filter);
@@ -831,8 +830,8 @@ template <UInt dim> void Material::assembleInternalForces(GhostType ghost_type) 
 
     delete bt_s;
 
-    model.getDOFManager().assembleElementalArrayLocalArray(*r_e, internal_force,
-                                                            type, ghost_type, 1, elem_filter);
+    model.getDOFManager().assembleElementalArrayLocalArray(
+        *r_e, internal_force, type, ghost_type, -1., elem_filter);
     delete r_e;
   }
   AKANTU_DEBUG_OUT();
@@ -844,7 +843,7 @@ void Material::computeAllStressesFromTangentModuli(GhostType ghost_type) {
 
   UInt spatial_dimension = model.getSpatialDimension();
 
-  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     switch (spatial_dimension) {
     case 1: {
       computeAllStressesFromTangentModuli<1>(type, ghost_type);
@@ -885,7 +884,7 @@ void Material::computeAllStressesFromTangentModuli(const ElementType & type,
     Array<Real> & disp = model.getDisplacement();
 
     fem.gradientOnIntegrationPoints(disp, gradu_vect, dim, type, ghost_type,
-                                     elem_filter);
+                                    elem_filter);
 
     UInt tangent_moduli_size = getTangentStiffnessVoigtSize(dim);
 
@@ -896,8 +895,8 @@ void Material::computeAllStressesFromTangentModuli(const ElementType & type,
     tangent_moduli_tensors->clear();
     computeTangentModuli(type, *tangent_moduli_tensors, ghost_type);
 
-    Array<Real> * shapesd_filtered =
-        new Array<Real>(nb_element, dim * nb_nodes_per_element, "filtered shapesd");
+    Array<Real> * shapesd_filtered = new Array<Real>(
+        nb_element, dim * nb_nodes_per_element, "filtered shapesd");
 
     FEEngine::filterElementalData(fem.getMesh(), shapes_derivatives,
                                   *shapesd_filtered, type, ghost_type,
@@ -958,7 +957,7 @@ void Material::computeAllStressesFromTangentModuli(const ElementType & type,
 void Material::computePotentialEnergyByElements() {
   AKANTU_DEBUG_IN();
 
-  for(auto type : element_filter.elementTypes(spatial_dimension, _not_ghost)) {
+  for (auto type : element_filter.elementTypes(spatial_dimension, _not_ghost)) {
     computePotentialEnergy(type);
   }
 
@@ -980,9 +979,9 @@ Real Material::getPotentialEnergy() {
   computePotentialEnergyByElements();
 
   /// integrate the potential energy for each type of elements
-  for(auto type : element_filter.elementTypes(spatial_dimension, _not_ghost)) {
+  for (auto type : element_filter.elementTypes(spatial_dimension, _not_ghost)) {
     epot += fem.integrate(potential_energy(type, _not_ghost), type, _not_ghost,
-                           element_filter(type, _not_ghost));
+                          element_filter(type, _not_ghost));
   }
 
   AKANTU_DEBUG_OUT();
@@ -1055,12 +1054,11 @@ void Material::interpolateStressOnFacets(
   const Mesh & mesh = this->model.getMesh();
   const Mesh & mesh_facets = mesh.getMeshFacets();
 
-  for(auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     Array<UInt> & elem_fil = element_filter(type, ghost_type);
     Array<Real> & by_elem_res = by_elem_result(type, ghost_type);
     UInt nb_element = elem_fil.getSize();
-    UInt nb_element_full =
-        this->model.getMesh().getNbElement(type, ghost_type);
+    UInt nb_element_full = this->model.getMesh().getNbElement(type, ghost_type);
     UInt nb_interpolation_points_per_elem =
         by_elem_res.getSize() / nb_element_full;
 
@@ -1071,7 +1069,7 @@ void Material::interpolateStressOnFacets(
     UInt nb_quad_per_facet =
         nb_interpolation_points_per_elem / nb_facet_per_elem;
     Element element_for_comparison(type, 0, ghost_type);
-    const Array<std::vector<Element> > * element_to_facet = NULL;
+    const Array<std::vector<Element>> * element_to_facet = NULL;
     GhostType current_ghost_type = _casper;
     Array<Real> * result_vec = NULL;
 
@@ -1113,9 +1111,10 @@ void Material::interpolateStressOnFacets(
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-const Array<T> & Material::getArray(__attribute__((unused)) const ID & vect_id,
-                                    __attribute__((unused)) const ElementType & type,
-                                    __attribute__((unused)) const GhostType & ghost_type) const {
+const Array<T> &
+Material::getArray(__attribute__((unused)) const ID & vect_id,
+                   __attribute__((unused)) const ElementType & type,
+                   __attribute__((unused)) const GhostType & ghost_type) const {
   AKANTU_DEBUG_TO_IMPLEMENT();
   return NULL;
 }
@@ -1124,7 +1123,8 @@ const Array<T> & Material::getArray(__attribute__((unused)) const ID & vect_id,
 template <typename T>
 Array<T> & Material::getArray(__attribute__((unused)) const ID & vect_id,
                               __attribute__((unused)) const ElementType & type,
-                              __attribute__((unused)) const GhostType & ghost_type) {
+                              __attribute__((unused))
+                              const GhostType & ghost_type) {
   AKANTU_DEBUG_TO_IMPLEMENT();
   return NULL;
 }
@@ -1319,7 +1319,8 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
   if (el_begin == el_end)
     return;
 
-  ElementTypeMapArray<UInt> material_local_new_numbering("remove mat filter elem", getID(), getMemoryID());
+  ElementTypeMapArray<UInt> material_local_new_numbering(
+      "remove mat filter elem", getID(), getMemoryID());
 
   Element element;
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
@@ -1421,7 +1422,8 @@ void Material::onElementsRemoved(
     __attribute__((unused)) const RemovedElementsEvent & event) {
   UInt my_num = model.getInternalIndexFromID(getID());
 
-  ElementTypeMapArray<UInt> material_local_new_numbering("remove mat filter elem", getID(), getMemoryID());
+  ElementTypeMapArray<UInt> material_local_new_numbering(
+      "remove mat filter elem", getID(), getMemoryID());
 
   Array<Element>::const_iterator<Element> el_begin = element_list.begin();
   Array<Element>::const_iterator<Element> el_end = element_list.end();
@@ -1625,4 +1627,4 @@ void Material::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u,
   }
 }
 
-} // akantu
+} // namespace akantu

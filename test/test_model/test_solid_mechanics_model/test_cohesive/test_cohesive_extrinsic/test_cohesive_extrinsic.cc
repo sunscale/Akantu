@@ -31,9 +31,9 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include <limits>
 #include <fstream>
 #include <iostream>
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
@@ -41,7 +41,7 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   debug::setDebugLevel(dblWarning);
@@ -55,12 +55,24 @@ int main(int argc, char *argv[]) {
   SolidMechanicsModelCohesive model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(
+      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
 
   model.limitInsertion(_y, -0.30, -0.20);
   model.updateAutomaticInsertion();
 
-  Real time_step = model.getStableTimeStep()*0.05;
+  mesh.setBaseName("test_cohesive_extrinsic");
+  model.addDumpFieldVector("displacement");
+  model.addDumpField("mass");
+  model.addDumpField("velocity");
+  model.addDumpField("acceleration");
+  model.addDumpField("external_force");
+  model.addDumpField("internal_force");
+  model.addDumpField("grad_u");
+  model.dump();
+
+
+  Real time_step = model.getStableTimeStep() * 0.05;
   model.setTimeStep(time_step);
   std::cout << "Time step: " << time_step << std::endl;
 
@@ -96,20 +108,19 @@ int main(int argc, char *argv[]) {
     /// update displacement on extreme nodes
     for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
       if (position(n, 1) > 0.99 || position(n, 1) < -0.99)
-    	displacement(n, 1) += disp_update * position(n, 1);
+        displacement(n, 1) += disp_update * position(n, 1);
     }
 
     model.checkCohesiveStress();
     model.solveStep();
 
-    if(s % 100 == 0) {
+    if (s % 100 == 0) {
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
     }
+    model.dump();
   }
 
-  model.dump();
   Real Ed = model.getEnergy("dissipated");
-
   Real Edt = 200 * std::sqrt(2);
 
   std::cout << Ed << " " << Edt << std::endl;

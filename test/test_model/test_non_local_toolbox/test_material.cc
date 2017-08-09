@@ -38,7 +38,7 @@ TestMaterial<dim>::TestMaterial(SolidMechanicsModel & model, const ID & id)
     : Parent(model, id), grad_u_nl("grad_u non local", *this) {
   this->is_non_local = true;
   this->grad_u_nl.initialize(dim * dim);
-  this->model.registerNonLocalVariable(
+  this->model.getNonLocalManager().registerNonLocalVariable(
       this->gradu.getName(), grad_u_nl.getName(), dim * dim);
 }
 
@@ -49,7 +49,7 @@ void TestMaterial<spatial_dimension>::initMaterial() {
 
   Parent::initMaterial();
 
-  this->model.getNeighborhood("test_region")
+  this->model.getNonLocalManager().getNeighborhood("test_region")
       .registerNonLocalVariable(grad_u_nl.getName());
 
   AKANTU_DEBUG_OUT();

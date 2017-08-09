@@ -155,8 +155,8 @@ void FragmentManager::buildFragments(Real damage_limit) {
 
   /// generate fragments
   global_nb_fragment =
-      createClusters(spatial_dimension, fragment_prefix,
-                     CohesiveElementFilter(model, damage_limit), &mesh_facets);
+    createClusters(spatial_dimension, mesh_facets, fragment_prefix,
+                     CohesiveElementFilter(model, damage_limit));
 
   nb_fragment = getNbElementGroups(spatial_dimension);
   fragment_index.resize(nb_fragment);
@@ -572,46 +572,37 @@ void FragmentManager::createDumpDataArray(Array<T> & data, std::string name,
   if (data.getSize() == 0)
     return;
 
-  typedef typename Array<T>::vector_iterator data_iterator;
   Mesh & mesh_not_const = const_cast<Mesh &>(mesh);
 
   UInt spatial_dimension = mesh.getSpatialDimension();
   UInt nb_component = data.getNbComponent();
   UInt * fragment_index_it = fragment_index.storage();
 
-  data_iterator data_begin = data.begin(nb_component);
+  auto data_begin = data.begin(nb_component);
 
   /// loop over fragments
-  for (const_element_group_iterator it(element_group_begin());
+  for (auto it = element_group_begin();
        it != element_group_end(); ++it, ++fragment_index_it) {
 
-    const ElementGroup & fragment = *(it->second);
+    const auto & fragment = *(it->second);
 
     /// loop over cluster types
-    ElementGroup::type_iterator type_it = fragment.firstType(spatial_dimension);
-    ElementGroup::type_iterator type_end = fragment.lastType(spatial_dimension);
-
-    for (; type_it != type_end; ++type_it) {
-      ElementType type = *type_it;
-
+    for (auto & type : fragment.elementTypes(spatial_dimension)) {
       /// init mesh data
-      Array<T> * mesh_data = mesh_not_const.getDataPointer<T>(
+      auto & mesh_data = mesh_not_const.getDataPointer<T>(
           name, type, _not_ghost, nb_component);
 
-      data_iterator mesh_data_begin = mesh_data->begin(nb_component);
-
-      ElementGroup::const_element_iterator el_it = fragment.element_begin(type);
-      ElementGroup::const_element_iterator el_end = fragment.element_end(type);
+      auto mesh_data_begin = mesh_data.begin(nb_component);
 
       /// fill mesh data
       if (fragment_index_output) {
-        for (; el_it != el_end; ++el_it) {
-          Vector<T> md_tmp(mesh_data_begin[*el_it]);
+        for (const auto & elem : fragment.getElements(type)) {
+          Vector<T> md_tmp(mesh_data_begin[elem]);
           md_tmp(0) = *fragment_index_it;
         }
       } else {
-        for (; el_it != el_end; ++el_it) {
-          Vector<T> md_tmp(mesh_data_begin[*el_it]);
+        for (const auto & elem : fragment.getElements(type)) {
+          Vector<T> md_tmp(mesh_data_begin[elem]);
           md_tmp = data_begin[*fragment_index_it];
         }
       }
