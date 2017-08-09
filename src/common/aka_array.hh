@@ -52,7 +52,7 @@ class ArrayBase {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ArrayBase(ID id = "");
+  explicit ArrayBase(ID id = "");
 
   virtual ~ArrayBase();
 
@@ -121,7 +121,7 @@ public:
   using const_reference = const value_type &;
 
   /// Allocation of a new vector
-  inline Array(UInt size = 0, UInt nb_component = 1, const ID & id = "");
+  explicit inline Array(UInt size = 0, UInt nb_component = 1, const ID & id = "");
 
   /// Allocation of a new vector with a default value
   Array(UInt size, UInt nb_component, const value_type def_values[],
@@ -137,7 +137,7 @@ public:
 
 #ifndef SWIG
   /// Copy constructor (deep copy)
-  Array(const std::vector<value_type> & vect);
+  explicit Array(const std::vector<value_type> & vect);
 #endif
 
   inline ~Array() override;
@@ -278,6 +278,9 @@ public:
   /// ask Nico, clarify
   template <typename R> inline iterator<R> erase(const iterator<R> & it);
 
+  /// changes the allocated size but not the size
+  virtual void reserve(UInt size);
+
   /// change the size of the Array
   virtual void resize(UInt size);
 
@@ -293,9 +296,11 @@ public:
 
   /// search elem in the vector, return  the position of the first occurrence or
   /// -1 if not found
-  Int find(const_reference elem)
-      const; /// @see Array::find(const_reference elem) const
+  Int find(const_reference elem) const;
+
+  /// @see Array::find(const_reference elem) const
   Int find(T elem[]) const;
+
   /// @see Array::find(const_reference elem) const
   template <template <typename> class C> inline Int find(const C<T> & elem);
 

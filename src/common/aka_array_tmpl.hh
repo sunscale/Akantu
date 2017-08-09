@@ -440,6 +440,13 @@ void Array<T, is_scal>::allocate(UInt size, UInt nb_component) {
 }
 
 /* -------------------------------------------------------------------------- */
+template <class T, bool is_scal> void Array<T, is_scal>::reserve(UInt new_size) {
+  UInt tmp_size = this->size;
+  resizeUnitialized(new_size, false);
+  this->size = tmp_size;
+}
+
+/* -------------------------------------------------------------------------- */
 /**
  * change the size of the array and allocate or free memory if needed. If the
  * size increases, the new tuples are filled with zeros
