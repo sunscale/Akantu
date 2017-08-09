@@ -222,6 +222,7 @@ package_declare_sources(core
   model/common/non_local_toolbox/non_local_manager.hh
   model/common/non_local_toolbox/non_local_manager.cc
   model/common/non_local_toolbox/non_local_manager_inline_impl.cc
+  model/common/non_local_toolbox/non_local_manager_callback.hh
   model/common/non_local_toolbox/non_local_neighborhood_base.hh
   model/common/non_local_toolbox/non_local_neighborhood_base.cc
   model/common/non_local_toolbox/non_local_neighborhood.hh

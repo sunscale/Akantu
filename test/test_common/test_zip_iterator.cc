@@ -80,7 +80,7 @@ int main() {
   }
 
   for (auto pair : zip(a, b)) {
-    std::cout << std::get<0>(pair) << " " << std::get<0>(pair) << std::endl;
+    std::cout << std::get<0>(pair) << " " << std::get<1>(pair) << std::endl;
     std::get<0>(pair) *= 10;
   }
 
