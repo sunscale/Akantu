@@ -52,14 +52,16 @@ public:
   template <typename E>
   GridSynchronizer(Mesh & mesh, const SpatialGrid<E> & grid,
                    const ID & id = "grid_synchronizer", MemoryID memory_id = 0,
-                   const bool register_to_event_manager = true, UInt event_priority = 100);
+                   const bool register_to_event_manager = true,
+                   EventHandlerPriority event_priority = _ehp_synchronizer);
 
   template <typename E>
   GridSynchronizer(Mesh & mesh, const SpatialGrid<E> & grid,
                    SynchronizerRegistry & synchronizer_registry,
                    const std::set<SynchronizationTag> & tags_to_register,
                    const ID & id = "grid_synchronizer", MemoryID memory_id = 0,
-                   const bool register_to_event_manager = true, UInt event_priority = 100);
+                   const bool register_to_event_manager = true,
+                   EventHandlerPriority event_priority = _ehp_synchronizer);
 
   virtual ~GridSynchronizer() = default;
 
@@ -72,7 +74,7 @@ private:
    *Compute intersection and send info to neighbours that will be stored in
    *ghosts elements
    */
-  template<typename E>
+  template <typename E>
   void createGridSynchronizer(const SpatialGrid<E> & grid);
 
 protected:

@@ -198,6 +198,12 @@ public:
                               values.getSize() * values.getNbComponent(),
                               sender, tag);
   }
+  template <typename T>
+  inline CommunicationRequest asyncReceive(std::vector<T> & values, Int sender,
+                                           Int tag) const {
+    return this->asyncReceive(values.data(), values.size(), sender, tag);
+  }
+
   template <typename T, UInt ndim, class RetType>
   inline CommunicationRequest
   asyncReceive(TensorStorage<T, ndim, RetType> & values, Int sender,

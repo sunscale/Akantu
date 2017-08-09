@@ -38,8 +38,8 @@
 #include "terms_to_assemble.hh"
 #include "time_step_solver_default.hh"
 /* -------------------------------------------------------------------------- */
-#include <numeric>
 #include <memory>
+#include <numeric>
 #include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
@@ -127,16 +127,12 @@ DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
       global_equation_number(0, 1, "global_equation_number"),
       first_global_dof_id(0), synchronizer(nullptr) {
   if (this->mesh->isDistributed())
-    this->synchronizer =
-        new DOFSynchronizer(*this, this->id + ":dof_synchronizer",
-                            this->memory_id, this->mesh->getCommunicator());
+    this->synchronizer = std::make_unique<DOFSynchronizer>(
+        *this, this->id + ":dof_synchronizer", this->memory_id, communicator);
 }
 
 /* -------------------------------------------------------------------------- */
-DOFManagerDefault::~DOFManagerDefault() {
-  delete this->synchronizer;
-  delete this->global_residual;
-}
+DOFManagerDefault::~DOFManagerDefault() = default;
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -247,117 +243,27 @@ protected:
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
                                              UInt nb_pure_local_dofs) {
-  // Count the number of pure local dofs per proc
-  const StaticCommunicator * comm = nullptr;
-  UInt prank = 0;
-  UInt psize = 1;
-
-  if (mesh) {
-    comm = &mesh->getCommunicator();
-    prank = comm->whoAmI();
-    psize = comm->getNbProc();
-  } else {
-    comm = &(StaticCommunicator::getStaticCommunicator());
-  }
+  // auto prank = this->communicator.whoAmI();
+  // auto psize = this->communicator.getNbProc();
 
   // access the relevant data to update
-  DOFDataDefault & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
-  const DOFSupportType & support_type = dof_data.support_type;
-  const ID & group = dof_data.group_support;
+  auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
+  const auto & support_type = dof_data.support_type;
 
-  GlobalDOFInfoDataAccessor data_accessor;
+  const auto & group = dof_data.group_support;
 
-  // resize all relevant arrays
-  this->residual.resize(this->local_system_size);
-  this->dofs_type.resize(local_system_size);
-  this->global_solution.resize(this->local_system_size);
-  this->global_blocked_dofs.resize(this->local_system_size);
-  this->previous_global_blocked_dofs.resize(this->local_system_size);
-  this->global_equation_number.resize(this->local_system_size);
-  dof_data.local_equation_number.resize(nb_dofs);
+  if (support_type == _dst_nodal and group != "__mesh__") {
+    auto & support_nodes =
+        this->mesh->getElementGroup(group).getNodeGroup().getNodes();
+    this->updateDOFsData(
+        dof_data, nb_dofs, nb_pure_local_dofs,
+        [&support_nodes](UInt node) -> UInt { return support_nodes[node]; });
+  } else {
 
-  // determine the first local/global dof id to use
-  Array<UInt> nb_dofs_per_proc(psize);
-  nb_dofs_per_proc(prank) = nb_pure_local_dofs;
-  comm->allGather(nb_dofs_per_proc);
-  this->first_global_dof_id += std::accumulate(
-      nb_dofs_per_proc.begin(), nb_dofs_per_proc.begin() + prank, 0);
-  UInt first_dof_id = this->local_system_size - nb_dofs;
-
-  const Array<UInt> * support_nodes = nullptr;
-  if (support_type == _dst_nodal) {
-    if (group != "mesh") {
-      support_nodes =
-          &this->mesh->getElementGroup(group).getNodeGroup().getNodes();
-    }
-
-    dof_data.associated_nodes.resize(nb_dofs);
+    this->updateDOFsData(dof_data, nb_dofs, nb_pure_local_dofs,
+                         [](UInt node) -> UInt { return node; });
   }
 
-  // update per dof info
-  for (UInt d = 0; d < nb_dofs; ++d) {
-    UInt local_eq_num = first_dof_id + d;
-    dof_data.local_equation_number(d) = local_eq_num;
-
-    bool is_local_dof = true;
-
-    // determine the dof type
-    switch (support_type) {
-    case _dst_nodal: {
-      UInt node = d / dof_data.dof->getNbComponent();
-
-      if (support_nodes)
-        node = (*support_nodes)(node);
-
-      this->dofs_type(local_eq_num) = this->mesh->getNodeType(node);
-      dof_data.associated_nodes(d) = node;
-
-      is_local_dof = this->mesh->isLocalOrMasterNode(node);
-
-      if (is_local_dof) {
-        data_accessor.addDOFToNode(node, first_global_dof_id);
-      }
-
-      break;
-    }
-    case _dst_generic: {
-      this->dofs_type(local_eq_num) = _nt_normal;
-      break;
-    }
-    default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }
-    }
-
-    // update global id for local dofs
-    if (is_local_dof) {
-      this->global_equation_number(local_eq_num) = this->first_global_dof_id;
-      this->global_to_local_mapping[this->first_global_dof_id] = local_eq_num;
-      ++this->first_global_dof_id;
-    } else {
-      this->global_equation_number(local_eq_num) = 0;
-    }
-  }
-
-  // synchronize the global numbering for slaves
-  if (support_type == _dst_nodal && this->synchronizer) {
-    auto & node_synchronizer = this->mesh->getNodeSynchronizer();
-    node_synchronizer.synchronizeOnce(data_accessor, _gst_size);
-    node_synchronizer.synchronizeOnce(data_accessor, _gst_update);
-
-    std::vector<UInt> counters(nb_dofs);
-
-    for (UInt d = 0; d < nb_dofs; ++d) {
-      UInt local_eq_num = first_dof_id + d;
-      if (this->isSlaveDOF(local_eq_num)) {
-        UInt node = d / dof_data.dof->getNbComponent();
-
-        UInt dof_count = counters[node]++;
-        UInt global_dof_id = data_accessor.getNthDOFForNode(dof_count, node);
-
-        this->global_equation_number(local_eq_num) = global_dof_id;
-        this->global_to_local_mapping[global_dof_id] = local_eq_num;
-      }
-    }
-  }
   // update the synchronizer if needed
   if (this->synchronizer)
     this->synchronizer->registerDOFs(dof_id);
@@ -403,7 +309,8 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
 SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & id,
                                                const MatrixType & matrix_type) {
   ID matrix_id = this->id + ":mtx:" + id;
-  std::unique_ptr<SparseMatrix> sm = std::make_unique<SparseMatrixAIJ>(*this, matrix_type, matrix_id);
+  std::unique_ptr<SparseMatrix> sm =
+      std::make_unique<SparseMatrixAIJ>(*this, matrix_type, matrix_id);
   return this->registerSparseMatrix(matrix_id, sm);
 }
 
@@ -413,7 +320,8 @@ SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & id,
 
   ID matrix_id = this->id + ":mtx:" + id;
   SparseMatrixAIJ & sm_to_copy = this->getMatrix(matrix_to_copy_id);
-  std::unique_ptr<SparseMatrix> sm = std::make_unique<SparseMatrixAIJ>(sm_to_copy, matrix_id);
+  std::unique_ptr<SparseMatrix> sm =
+      std::make_unique<SparseMatrixAIJ>(sm_to_copy, matrix_id);
   return this->registerSparseMatrix(matrix_id, sm);
 }
 
@@ -434,19 +342,19 @@ DOFManagerDefault::getNewNonLinearSolver(const ID & id,
 #if defined(AKANTU_IMPLICIT)
   case _nls_newton_raphson:
   case _nls_newton_raphson_modified: {
-    nls = std::make_unique<NonLinearSolverNewtonRaphson>(*this, type, non_linear_solver_id,
-                                           this->memory_id);
+    nls = std::make_unique<NonLinearSolverNewtonRaphson>(
+        *this, type, non_linear_solver_id, this->memory_id);
     break;
   }
   case _nls_linear: {
-    nls = std::make_unique<NonLinearSolverLinear>(*this, type, non_linear_solver_id,
-                                    this->memory_id);
+    nls = std::make_unique<NonLinearSolverLinear>(
+        *this, type, non_linear_solver_id, this->memory_id);
     break;
   }
 #endif
   case _nls_lumped: {
-    nls = std::make_unique<NonLinearSolverLumped>(*this, type, non_linear_solver_id,
-                                    this->memory_id);
+    nls = std::make_unique<NonLinearSolverLumped>(
+        *this, type, non_linear_solver_id, this->memory_id);
     break;
   }
   default:
@@ -528,12 +436,12 @@ void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::getEquationsNumbers(const ID & dof_id,
-                                            Array<UInt> & equation_numbers) {
-  AKANTU_DEBUG_IN();
-  this->getArrayPerDOFs(dof_id, this->global_equation_number, equation_numbers);
-  AKANTU_DEBUG_OUT();
-}
+// void DOFManagerDefault::getEquationsNumbers(const ID & dof_id,
+//                                             Array<UInt> & equation_numbers) {
+//   AKANTU_DEBUG_IN();
+//   this->getArrayPerDOFs(dof_id, this->global_equation_number,
+//   equation_numbers); AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::getSolutionPerDOFs(const ID & dof_id,
@@ -643,7 +551,7 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     nb_element = filter_elements.getSize();
     filter_it = filter_elements.storage();
   } else {
-    if (dof_data.group_support != "mesh") {
+    if (dof_data.group_support != "__mesh__") {
       const Array<UInt> & group_elements =
           this->mesh->getElementGroup(dof_data.group_support)
               .getElements(type, ghost_type);
@@ -759,7 +667,7 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
 
   UInt nb_elements = connectivity.getSize();
   UInt * ge_it = nullptr;
-  if (dof_data.group_support != "mesh") {
+  if (dof_data.group_support != "__mesh__") {
     const Array<UInt> & group_elements =
         this->mesh->getElementGroup(dof_data.group_support)
             .getElements(type, ghost_type);
@@ -834,7 +742,8 @@ void DOFManagerDefault::applyBoundary(const ID & matrix_id) {
 const Array<Real> & DOFManagerDefault::getGlobalResidual() {
   if (this->synchronizer) {
     if (not this->global_residual) {
-      this->global_residual = new Array<Real>(0, 1, "global_residual");
+      this->global_residual =
+          std::make_unique<Array<Real>>(0, 1, "global_residual");
     }
 
     if (this->synchronizer->getCommunicator().whoAmI() == 0) {
@@ -872,7 +781,137 @@ void DOFManagerDefault::setGlobalSolution(const Array<Real> & solution) {
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManagerDefault::onNodesAdded(const Array<UInt> & nodes_list,
+                                     const NewNodesEvent & event) {
+  DOFManager::onNodesAdded(nodes_list, event);
 
-} // akantu
+  if (this->synchronizer)
+    this->synchronizer->onNodesAdded(nodes_list);
+}
+
+/* -------------------------------------------------------------------------- */
+std::pair<UInt, UInt>
+DOFManagerDefault::updateNodalDOFs(const ID & dof_id,
+                                   const Array<UInt> & nodes_list) {
+  UInt nb_new_local_dofs, nb_new_pure_local;
+  std::tie(nb_new_local_dofs, nb_new_pure_local) =
+      DOFManager::updateNodalDOFs(dof_id, nodes_list);
+
+  auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
+  updateDOFsData(dof_data, nb_new_local_dofs, nb_new_pure_local,
+                 [&nodes_list](UInt pos) -> UInt { return nodes_list[pos]; });
+
+  return std::make_pair(nb_new_local_dofs, nb_new_pure_local);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::updateDOFsData(DOFDataDefault & dof_data,
+                                       UInt nb_new_local_dofs,
+                                       UInt nb_new_pure_local,
+                                       std::function<UInt(UInt)> getNode) {
+  auto prank = this->communicator.whoAmI();
+  auto psize = this->communicator.getNbProc();
+
+  // access the relevant data to update
+  const auto & support_type = dof_data.support_type;
+
+  GlobalDOFInfoDataAccessor data_accessor;
+
+  // resize all relevant arrays
+  this->residual.resize(this->local_system_size);
+  this->dofs_type.resize(this->local_system_size);
+  this->global_solution.resize(this->local_system_size);
+  this->global_blocked_dofs.resize(this->local_system_size);
+  this->previous_global_blocked_dofs.resize(this->local_system_size);
+  this->global_equation_number.resize(this->local_system_size);
+
+  for (auto & lumped_matrix : lumped_matrices)
+    lumped_matrix.second->resize(this->local_system_size);
+
+  dof_data.local_equation_number.reserve(
+      dof_data.local_equation_number.getSize() + nb_new_local_dofs);
+
+  // determine the first local/global dof id to use
+  Array<UInt> nb_dofs_per_proc(psize);
+  nb_dofs_per_proc(prank) = nb_new_pure_local;
+  this->communicator.allGather(nb_dofs_per_proc);
+
+  this->first_global_dof_id += std::accumulate(
+      nb_dofs_per_proc.begin(), nb_dofs_per_proc.begin() + prank, 0);
+  UInt first_dof_id = this->local_system_size - nb_new_local_dofs;
+
+  if (support_type == _dst_nodal) {
+    dof_data.associated_nodes.reserve(dof_data.associated_nodes.getSize() +
+                                      nb_new_local_dofs);
+  }
+
+  // update per dof info
+  for (UInt d = 0; d < nb_new_local_dofs; ++d) {
+    UInt local_eq_num = first_dof_id + d;
+    dof_data.local_equation_number.push_back(local_eq_num);
+
+    bool is_local_dof = true;
+
+    // determine the dof type
+    switch (support_type) {
+    case _dst_nodal: {
+      UInt node = getNode(d / dof_data.dof->getNbComponent());
+
+      this->dofs_type(local_eq_num) = this->mesh->getNodeType(node);
+      dof_data.associated_nodes.push_back(node);
+
+      is_local_dof = this->mesh->isLocalOrMasterNode(node);
+
+      if (is_local_dof) {
+        data_accessor.addDOFToNode(node, first_global_dof_id);
+      }
+
+      break;
+    }
+    case _dst_generic: {
+      this->dofs_type(local_eq_num) = _nt_normal;
+      break;
+    }
+    default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }
+    }
+
+    // update global id for local dofs
+    if (is_local_dof) {
+      this->global_equation_number(local_eq_num) = this->first_global_dof_id;
+      this->global_to_local_mapping[this->first_global_dof_id] = local_eq_num;
+      ++this->first_global_dof_id;
+    } else {
+      this->global_equation_number(local_eq_num) = 0;
+    }
+  }
+
+  // synchronize the global numbering for slaves
+  if (support_type == _dst_nodal && this->synchronizer) {
+    auto nb_dofs_per_node = dof_data.dof->getNbComponent();
+
+    auto & node_synchronizer = this->mesh->getNodeSynchronizer();
+    node_synchronizer.synchronizeOnce(data_accessor, _gst_size);
+    node_synchronizer.synchronizeOnce(data_accessor, _gst_update);
+
+    std::vector<UInt> counters(nb_new_local_dofs / nb_dofs_per_node);
+
+    for (UInt d = 0; d < nb_new_local_dofs; ++d) {
+      UInt local_eq_num = first_dof_id + d;
+      if (not this->isSlaveDOF(local_eq_num))
+        continue;
+
+      UInt node = d / nb_dofs_per_node;
+      UInt dof_count = counters[node]++;
+      node = getNode(node);
+
+      UInt global_dof_id = data_accessor.getNthDOFForNode(dof_count, node);
+
+      this->global_equation_number(local_eq_num) = global_dof_id;
+      this->global_to_local_mapping[global_dof_id] = local_eq_num;
+    }
+  }
+}
+
+} // namespace akantu
 
 //  LocalWords:  dof dofs

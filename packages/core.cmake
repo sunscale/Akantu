@@ -95,11 +95,13 @@ package_declare_sources(core
   fe_engine/element_classes/element_class_tetrahedron_4_inline_impl.cc
   fe_engine/element_classes/element_class_triangle_3_inline_impl.cc
   fe_engine/element_classes/element_class_triangle_6_inline_impl.cc
+  fe_engine/element_type_conversion.hh
 
   fe_engine/fe_engine.cc
   fe_engine/fe_engine.hh
   fe_engine/fe_engine_inline_impl.cc
   fe_engine/fe_engine_template.hh
+  fe_engine/fe_engine_template_tmpl_field.hh
   fe_engine/fe_engine_template_tmpl.hh
   fe_engine/geometrical_element.cc
   fe_engine/gauss_integration.cc
@@ -111,7 +113,11 @@ package_declare_sources(core
   fe_engine/interpolation_element_tmpl.hh
   fe_engine/integration_point.hh
   fe_engine/shape_functions.hh
+  fe_engine/shape_functions.cc
   fe_engine/shape_functions_inline_impl.cc
+  fe_engine/shape_lagrange_base.cc
+  fe_engine/shape_lagrange_base.hh
+  fe_engine/shape_lagrange_base_inline_impl.cc
   fe_engine/shape_lagrange.cc
   fe_engine/shape_lagrange.hh
   fe_engine/shape_lagrange_inline_impl.cc

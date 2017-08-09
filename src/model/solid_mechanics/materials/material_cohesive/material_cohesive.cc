@@ -73,8 +73,9 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id)
   //     this->element_filter, 1, spatial_dimension, false, _ek_cohesive);
 
   if (this->model->getIsExtrinsic())
-    this->element_filter.initialize(this->model->getMeshFacets(),
-                                    _spatial_dimension = spatial_dimension - 1);
+    this->facet_filter.initialize(this->model->getMeshFacets(),
+                                  _spatial_dimension = spatial_dimension - 1,
+                                  _element_kind = _ek_regular);
   // this->model->getMeshFacets().initElementTypeMapArray(facet_filter, 1,
   //                                                      spatial_dimension -
   //                                                      1);
@@ -195,7 +196,7 @@ void MaterialCohesive::assembleInternalForces(GhostType ghost_type) {
 
     /// assemble
     model->getDOFManager().assembleElementalArrayLocalArray(
-        *int_t_N_val, internal_force, type, ghost_type, 1, elem_filter);
+        *int_t_N, internal_force, type, ghost_type, 1, elem_filter);
 
     delete int_t_N;
   }
@@ -372,32 +373,28 @@ void MaterialCohesive::computeTraction(GhostType ghost_type) {
                                    "Cohesive Openings", opening);
 #endif
 
-  Mesh & mesh = fem_cohesive->getMesh();
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, ghost_type, _ek_cohesive);
-  Mesh::type_iterator last_type =
-      mesh.lastType(spatial_dimension, ghost_type, _ek_cohesive);
-
-  for (; it != last_type; ++it) {
-    Array<UInt> & elem_filter = element_filter(*it, ghost_type);
+  for (auto & type : element_filter.elementTypes(spatial_dimension, ghost_type,
+                                                 _ek_cohesive)) {
+    Array<UInt> & elem_filter = element_filter(type, ghost_type);
 
     UInt nb_element = elem_filter.getSize();
     if (nb_element == 0)
       continue;
+
     UInt nb_quadrature_points =
-        nb_element * fem_cohesive->getNbIntegrationPoints(*it, ghost_type);
+        nb_element * fem_cohesive->getNbIntegrationPoints(type, ghost_type);
 
     normal.resize(nb_quadrature_points);
 
     /// compute normals @f$\mathbf{n}@f$
-    computeNormal(model->getCurrentPosition(), normal, *it, ghost_type);
+    computeNormal(model->getCurrentPosition(), normal, type, ghost_type);
 
     /// compute openings @f$\mathbf{\delta}@f$
-    computeOpening(model->getDisplacement(), opening(*it, ghost_type), *it,
+    computeOpening(model->getDisplacement(), opening(type, ghost_type), type,
                    ghost_type);
 
     /// compute traction @f$\mathbf{t}@f$
-    computeTraction(normal, *it, ghost_type);
+    computeTraction(normal, type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -447,37 +444,26 @@ void MaterialCohesive::computeOpening(const Array<Real> & displacement,
 void MaterialCohesive::computeEnergies() {
   AKANTU_DEBUG_IN();
 
-  Mesh & mesh = fem_cohesive->getMesh();
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, _not_ghost, _ek_cohesive);
-  Mesh::type_iterator last_type =
-      mesh.lastType(spatial_dimension, _not_ghost, _ek_cohesive);
+  Vector<Real> b(spatial_dimension);
+  Vector<Real> h(spatial_dimension);
 
-  Real * memory_space = new Real[2 * spatial_dimension];
-  Vector<Real> b(memory_space, spatial_dimension);
-  Vector<Real> h(memory_space + spatial_dimension, spatial_dimension);
+  for (auto & type : element_filter.elementTypes(spatial_dimension, _not_ghost,
+                                                 _ek_cohesive)) {
+    auto erev = reversible_energy(type, _not_ghost).begin();
+    auto etot = total_energy(type, _not_ghost).begin();
+    auto traction_it = tractions(type, _not_ghost).begin(spatial_dimension);
+    auto traction_old_it =
+        tractions_old(type, _not_ghost).begin(spatial_dimension);
+    auto opening_it = opening(type, _not_ghost).begin(spatial_dimension);
+    auto opening_old_it =
+        opening_old(type, _not_ghost).begin(spatial_dimension);
 
-  for (; it != last_type; ++it) {
-    Array<Real>::iterator<Real> erev =
-        reversible_energy(*it, _not_ghost).begin();
-    Array<Real>::iterator<Real> etot = total_energy(*it, _not_ghost).begin();
-    Array<Real>::vector_iterator traction_it =
-        tractions(*it, _not_ghost).begin(spatial_dimension);
-    Array<Real>::vector_iterator traction_old_it =
-        tractions_old(*it, _not_ghost).begin(spatial_dimension);
-    Array<Real>::vector_iterator opening_it =
-        opening(*it, _not_ghost).begin(spatial_dimension);
-    Array<Real>::vector_iterator opening_old_it =
-        opening_old(*it, _not_ghost).begin(spatial_dimension);
-
-    Array<Real>::vector_iterator traction_end =
-        tractions(*it, _not_ghost).end(spatial_dimension);
+    auto traction_end = tractions(type, _not_ghost).end(spatial_dimension);
 
     /// loop on each quadrature point
     for (; traction_it != traction_end; ++traction_it, ++traction_old_it,
                                         ++opening_it, ++opening_old_it, ++erev,
                                         ++etot) {
-
       /// trapezoidal integration
       b = *opening_it;
       b -= *opening_old_it;
@@ -490,14 +476,12 @@ void MaterialCohesive::computeEnergies() {
     }
   }
 
-  delete[] memory_space;
-
   /// update old values
-  it = mesh.firstType(spatial_dimension, _not_ghost, _ek_cohesive);
   GhostType ghost_type = _not_ghost;
-  for (; it != last_type; ++it) {
-    tractions_old(*it, ghost_type).copy(tractions(*it, ghost_type));
-    opening_old(*it, ghost_type).copy(opening(*it, ghost_type));
+  for (auto & type : element_filter.elementTypes(spatial_dimension, _not_ghost,
+                                                 _ek_cohesive)) {
+    tractions_old(type, ghost_type).copy(tractions(type, ghost_type));
+    opening_old(type, ghost_type).copy(opening(type, ghost_type));
   }
 
   AKANTU_DEBUG_OUT();
@@ -509,16 +493,11 @@ Real MaterialCohesive::getReversibleEnergy() {
   Real erev = 0.;
 
   /// integrate reversible energy for each type of elements
-  Mesh & mesh = fem_cohesive->getMesh();
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, _not_ghost, _ek_cohesive);
-  Mesh::type_iterator last_type =
-      mesh.lastType(spatial_dimension, _not_ghost, _ek_cohesive);
-
-  for (; it != last_type; ++it) {
+  for (auto & type : element_filter.elementTypes(spatial_dimension, _not_ghost,
+                                                 _ek_cohesive)) {
     erev +=
-        fem_cohesive->integrate(reversible_energy(*it, _not_ghost), *it,
-                                _not_ghost, element_filter(*it, _not_ghost));
+        fem_cohesive->integrate(reversible_energy(type, _not_ghost), type,
+                                _not_ghost, element_filter(type, _not_ghost));
   }
 
   AKANTU_DEBUG_OUT();
@@ -531,17 +510,12 @@ Real MaterialCohesive::getDissipatedEnergy() {
   Real edis = 0.;
 
   /// integrate dissipated energy for each type of elements
-  Mesh & mesh = fem_cohesive->getMesh();
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, _not_ghost, _ek_cohesive);
-  Mesh::type_iterator last_type =
-      mesh.lastType(spatial_dimension, _not_ghost, _ek_cohesive);
-
-  for (; it != last_type; ++it) {
-    Array<Real> dissipated_energy(total_energy(*it, _not_ghost));
-    dissipated_energy -= reversible_energy(*it, _not_ghost);
-    edis += fem_cohesive->integrate(dissipated_energy, *it, _not_ghost,
-                                    element_filter(*it, _not_ghost));
+  for (auto & type : element_filter.elementTypes(spatial_dimension, _not_ghost,
+                                                 _ek_cohesive)) {
+    Array<Real> dissipated_energy(total_energy(type, _not_ghost));
+    dissipated_energy -= reversible_energy(type, _not_ghost);
+    edis += fem_cohesive->integrate(dissipated_energy, type, _not_ghost,
+                                    element_filter(type, _not_ghost));
   }
 
   AKANTU_DEBUG_OUT();
@@ -554,31 +528,29 @@ Real MaterialCohesive::getContactEnergy() {
   Real econ = 0.;
 
   /// integrate contact energy for each type of elements
-  Mesh & mesh = fem_cohesive->getMesh();
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, _not_ghost, _ek_cohesive);
-  Mesh::type_iterator last_type =
-      mesh.lastType(spatial_dimension, _not_ghost, _ek_cohesive);
+  for (auto & type : element_filter.elementTypes(spatial_dimension, _not_ghost,
+                                                 _ek_cohesive)) {
 
-  for (; it != last_type; ++it) {
-    Array<UInt> & el_filter = element_filter(*it, _not_ghost);
-    UInt nb_quad_per_el = fem_cohesive->getNbIntegrationPoints(*it, _not_ghost);
+    auto & el_filter = element_filter(type, _not_ghost);
+    UInt nb_quad_per_el =
+        fem_cohesive->getNbIntegrationPoints(type, _not_ghost);
     UInt nb_quad_points = el_filter.getSize() * nb_quad_per_el;
     Array<Real> contact_energy(nb_quad_points);
 
-    Array<Real>::vector_iterator contact_traction_it =
-        contact_tractions(*it, _not_ghost).begin(spatial_dimension);
-    Array<Real>::vector_iterator contact_opening_it =
-        contact_opening(*it, _not_ghost).begin(spatial_dimension);
+    auto contact_traction_it =
+        contact_tractions(type, _not_ghost).begin(spatial_dimension);
+    auto contact_opening_it =
+        contact_opening(type, _not_ghost).begin(spatial_dimension);
 
     /// loop on each quadrature point
-    for (UInt el = 0; el < nb_quad_points;
-         ++contact_traction_it, ++contact_opening_it, ++el) {
+    for (UInt q = 0; q < nb_quad_points;
+         ++contact_traction_it, ++contact_opening_it, ++q) {
 
-      contact_energy(el) = .5 * contact_traction_it->dot(*contact_opening_it);
+      contact_energy(q) = .5 * contact_traction_it->dot(*contact_opening_it);
     }
 
-    econ += fem_cohesive->integrate(contact_energy, *it, _not_ghost, el_filter);
+    econ +=
+        fem_cohesive->integrate(contact_energy, type, _not_ghost, el_filter);
   }
 
   AKANTU_DEBUG_OUT();

@@ -37,6 +37,23 @@
 
 namespace akantu {
 
+class ComputeRhoFunctor {
+public:
+  explicit ComputeRhoFunctor(const SolidMechanicsModel & model)
+      : model(model){};
+
+  void operator()(Matrix<Real> & rho, const Element & element) const {
+    const Array<UInt> & mat_indexes =
+        model.getMaterialByElement(element.type, element.ghost_type);
+    Real mat_rho =
+        model.getMaterial(mat_indexes(element.element)).getParam("rho");
+    rho.set(mat_rho);
+  }
+
+private:
+  const SolidMechanicsModel & model;
+};
+
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::assembleMassLumped() {
   AKANTU_DEBUG_IN();
@@ -89,24 +106,6 @@ void SolidMechanicsModel::assembleMassLumped() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
-
-  FEEngine & fem = getFEEngine();
-
-  Array<Real> rho(0, Model::spatial_dimension);
-
-  for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
-    computeRho(rho, type, ghost_type);
-
-    fem.assembleFieldLumped(rho, "M", "displacement", this->getDOFManager(),
-                            type, ghost_type);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::assembleMass() {
   AKANTU_DEBUG_IN();
 
@@ -120,31 +119,26 @@ void SolidMechanicsModel::assembleMass() {
   AKANTU_DEBUG_OUT();
 }
 
-class ComputeRhoFunctor {
-public:
-  explicit ComputeRhoFunctor(const SolidMechanicsModel & model)
-      : model(model){};
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
+  AKANTU_DEBUG_IN();
 
-  void
-  operator()(Matrix<Real> & rho, const Element & element,
-             __attribute__((unused)) const Matrix<Real> quad_coords) const {
-    const Array<UInt> & mat_indexes =
-        model.getMaterialByElement(element.type, element.ghost_type);
-    Real mat_rho =
-        model.getMaterial(mat_indexes(element.element)).getParam("rho");
-    rho.set(mat_rho);
+  MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
+  ComputeRhoFunctor compute_rho(*this);
+
+  for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
+    fem.assembleFieldLumped(compute_rho, "M", "displacement",
+                            this->getDOFManager(), type, ghost_type);
   }
 
-private:
-  const SolidMechanicsModel & model;
-};
+  AKANTU_DEBUG_OUT();
+}
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
-
   ComputeRhoFunctor compute_rho(*this);
 
   for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
@@ -156,29 +150,19 @@ void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::computeRho(Array<Real> & rho, ElementType type,
-                                     GhostType ghost_type) {
+void SolidMechanicsModel::assembleMassLumped(const Array<UInt> &) {
   AKANTU_DEBUG_IN();
 
-  FEEngine & fem = this->getFEEngine();
-  UInt nb_element = fem.getMesh().getNbElement(type, ghost_type);
+  assembleMassLumped();
 
-  Array<UInt> & mat_indexes = this->material_index(type, ghost_type);
+  AKANTU_DEBUG_OUT();
+}
 
-  UInt nb_quadrature_points = fem.getNbIntegrationPoints(type);
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::assembleMass(const Array<UInt> &) {
+  AKANTU_DEBUG_IN();
 
-  rho.resize(nb_element * nb_quadrature_points);
-  Array<Real>::vector_iterator rho_it = rho.begin(Model::spatial_dimension);
-
-  /// compute @f$ rho @f$ for each nodes of each element
-  for (UInt el = 0; el < nb_element; ++el) {
-    /// here rho is constant in an element
-    Real mat_rho = this->materials[mat_indexes(el)]->getParam("rho");
-
-    for (UInt n = 0; n < nb_quadrature_points; ++n, ++rho_it) {
-      (*rho_it).set(mat_rho);
-    }
-  }
+  assembleMass();
 
   AKANTU_DEBUG_OUT();
 }

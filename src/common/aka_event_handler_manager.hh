@@ -37,15 +37,15 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
-#include <list>
 #include <algorithm>
+#include <list>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 template <class EventHandler> class EventHandlerManager {
 private:
-  typedef std::pair<UInt, EventHandler *> priority_value;
+  typedef std::pair<EventHandlerPriority, EventHandler *> priority_value;
   typedef std::list<priority_value> priority_list;
   struct KeyComp {
     bool operator()(const priority_value & a, const priority_value & b) const {
@@ -54,7 +54,6 @@ private:
     bool operator()(const priority_value & a, UInt b) const {
       return (a.first < b);
     }
-
   };
 
   /* ------------------------------------------------------------------------ */
@@ -69,15 +68,15 @@ public:
 public:
   /// register a new EventHandler to the Manager. The register object
   /// will then be informed about the events the manager observes.
-  void registerEventHandler(EventHandler & event_handler, UInt priority = 100) {
-    typename priority_list::iterator it =
-        this->searchEventHandler(event_handler);
+  void registerEventHandler(EventHandler & event_handler,
+                            EventHandlerPriority priority = _ehp_highest) {
+    auto it = this->searchEventHandler(event_handler);
 
     if (it != this->event_handlers.end()) {
       AKANTU_EXCEPTION("This event handler was already registered");
     }
 
-    typename priority_list::iterator pos =
+    auto pos =
         std::lower_bound(this->event_handlers.begin(),
                          this->event_handlers.end(), priority, KeyComp());
 
@@ -87,8 +86,7 @@ public:
   /// unregister a EventHandler object. This object will not be
   /// notified anymore about the events this manager observes.
   void unregisterEventHandler(EventHandler & event_handler) {
-    typename priority_list::iterator it =
-        this->searchEventHandler(event_handler);
+    auto it = this->searchEventHandler(event_handler);
 
     if (it == this->event_handlers.end()) {
       AKANTU_EXCEPTION("This event handler is not registered");
@@ -99,16 +97,14 @@ public:
 
   /// Notify all the registered EventHandlers about the event that just occured.
   template <class Event> void sendEvent(const Event & event) {
-    typename priority_list::iterator it = event_handlers.begin();
-    typename priority_list::iterator end = event_handlers.end();
-    for (; it != end; ++it)
-      it->second->sendEvent(event);
+    for (auto & pair : this->event_handlers)
+      pair.second->sendEvent(event);
   }
 
 private:
   typename priority_list::iterator searchEventHandler(EventHandler & handler) {
-    typename priority_list::iterator it = this->event_handlers.begin();
-    typename priority_list::iterator end = this->event_handlers.end();
+    auto it = this->event_handlers.begin();
+    auto end = this->event_handlers.end();
 
     for (; it != end && it->second != &handler; ++it)
       ;
@@ -124,6 +120,6 @@ private:
   priority_list event_handlers;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_AKA_EVENT_HANDLER_MANAGER_HH__ */

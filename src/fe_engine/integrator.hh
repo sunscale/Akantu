@@ -83,6 +83,13 @@ public:
   };
 
   /* ------------------------------------------------------------------------ */
+public:
+  virtual void onElementsAdded(const Array<Element> &) {}
+  virtual void onElementsRemoved(const Array<Element> &,
+                                 const ElementTypeMapArray<UInt> & new_numbering) {
+    jacobians.onElementsRemoved(new_numbering);
+  }
+  /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
@@ -99,10 +106,11 @@ public:
     return jacobians(type, ghost_type);
   };
 
+  AKANTU_GET_MACRO(Jacobians, jacobians, const ElementTypeMapArray<Real> &);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-
 protected:
   /// mesh associated to the integrator
   const Mesh & mesh;
@@ -124,6 +132,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_INTEGRATOR_HH__ */

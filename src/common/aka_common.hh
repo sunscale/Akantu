@@ -111,6 +111,20 @@ enum MeshIOType {
   _miot_abaqus       ///< Abaqus mesh format
 };
 
+/// enum MeshEventHandlerPriority defines relative order of execution of events
+enum EventHandlerPriority {
+  _ehp_highest = 0,
+  _ehp_mesh = 5,
+  _ehp_fe_engine = 9,
+  _ehp_synchronizer = 10,
+  _ehp_dof_manager = 20,
+  _ehp_solid_mechanics_model_cohesive = 94,
+  _ehp_solid_mechanics_model = 95,
+  _ehp_non_local_manager = 100,
+  _ehp_lowest = 100
+};
+
+
 /// enum AnalysisMethod type of solving method used to solve the equation of
 /// motion
 enum AnalysisMethod {

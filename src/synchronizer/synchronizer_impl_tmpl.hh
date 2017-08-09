@@ -101,16 +101,17 @@ void SynchronizerImpl<Entity>::synchronizeOnceImpl(
     UInt proc = req.getSource();
 
     CommunicationBuffer & buffer = recv_buffers[proc];
-    const auto & scheme = this->communications.getRecvScheme(proc);
+    const auto & scheme = this->communications.getScheme(proc, _recv);
 
     data_accessor.unpackData(buffer, scheme, tag);
 
+    req.free();
     recv_requests.erase(recv_requests.begin() + request_ready);
   }
 
   communicator.waitAll(send_requests);
   communicator.freeCommunicationRequest(send_requests);
-  communicator.freeCommunicationRequest(recv_requests);
+  //communicator.freeCommunicationRequest(recv_requests);
   AKANTU_DEBUG_OUT();
 }
 

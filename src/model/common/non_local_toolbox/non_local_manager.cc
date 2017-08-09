@@ -51,7 +51,7 @@ NonLocalManager::NonLocalManager(Model & model, const ID & id,
       volumes("volumes", id, memory_id), compute_stress_calls(0),
       dummy_registry(nullptr), dummy_grid(nullptr) {
   Mesh & mesh = this->model.getMesh();
-  mesh.registerEventHandler(*this);
+  mesh.registerEventHandler(*this, _ehp_non_local_manager);
 
   /// parse the neighborhood information from the input file
   const Parser & parser = getStaticParser();

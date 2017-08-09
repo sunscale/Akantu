@@ -1,0 +1,123 @@
+/**
+ * @file   shape_lagrange_base.cc
+ *
+ * @author Nicolas Richart
+ *
+ * @date creation  Thu Jul 27 2017
+ *
+ * @section LICENSE
+ *
+ * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as  published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+/* -------------------------------------------------------------------------- */
+#include "shape_lagrange_base.hh"
+/* -------------------------------------------------------------------------- */
+
+namespace akantu {
+
+ShapeLagrangeBase::ShapeLagrangeBase(const Mesh & mesh,
+                                     const ElementKind & kind, const ID & id,
+                                     const MemoryID & memory_id)
+    : ShapeFunctions(mesh, id, memory_id),
+      shapes("shapes_generic", id, memory_id),
+      shapes_derivatives("shapes_derivatives_generic", id, memory_id),
+      _kind(kind) {}
+
+/* -------------------------------------------------------------------------- */
+ShapeLagrangeBase::~ShapeLagrangeBase() = default;
+
+/* -------------------------------------------------------------------------- */
+void ShapeLagrangeBase::computeShapesOnIntegrationPoints(
+    const Array<Real> & nodes, const Matrix<Real> & integration_points,
+    Array<Real> & shapes, const ElementType & type,
+    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
+#define AKANTU_COMPUTE_SHAPES(type)                                            \
+  this->computeShapesOnIntegrationPoints<type>(                                \
+      nodes, integration_points, shapes, ghost_type, filter_elements)
+
+#define AKANTU_LAGRANGE_ELEMENT_TYPE                                           \
+  AKANTU_ek_regular_ELEMENT_TYPE AKANTU_ek_cohesive_ELEMENT_TYPE
+
+  AKANTU_BOOST_ELEMENT_SWITCH(AKANTU_COMPUTE_SHAPES,
+                              AKANTU_LAGRANGE_ELEMENT_TYPE);
+
+#undef AKANTU_COMPUTE_SHAPES
+  //#undef AKANTU_LAGRANGE_ELEMENT_TYPE
+}
+
+/* -------------------------------------------------------------------------- */
+void ShapeLagrangeBase::onElementsAdded(const Array<Element> & new_elements) {
+  AKANTU_DEBUG_IN();
+  const auto & nodes = mesh.getNodes();
+
+  for (auto elements_range : MeshElementsByTypes(new_elements)) {
+    auto type = elements_range.getType();
+    auto ghost_type = elements_range.getGhostType();
+
+    if (mesh.getKind(type) != _kind)
+      continue;
+
+    auto & elements = elements_range.getElements();
+
+    auto itp_type = FEEngine::getInterpolationType(type);
+
+    if (not this->shapes_derivatives.exists(itp_type, ghost_type)) {
+      auto size_of_shapesd = this->getShapeDerivativesSize(type);
+      this->shapes_derivatives.alloc(0, size_of_shapesd, itp_type, ghost_type);
+    }
+
+    if (not shapes.exists(itp_type, ghost_type)) {
+      auto size_of_shapes = this->getShapeSize(type);
+      this->shapes.alloc(0, size_of_shapes, itp_type, ghost_type);
+    }
+
+    const auto & natural_coords = integration_points(type, ghost_type);
+    computeShapesOnIntegrationPoints(nodes, natural_coords,
+                                     shapes(itp_type, ghost_type), type,
+                                     ghost_type, elements);
+
+    computeShapeDerivativesOnIntegrationPoints(
+        nodes, natural_coords, shapes_derivatives(itp_type, ghost_type), type,
+        ghost_type, elements);
+  }
+#undef INIT_SHAPE_FUNCTIONS
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void ShapeLagrangeBase::onElementsRemoved(
+    const Array<Element> &, const ElementTypeMapArray<UInt> & new_numbering) {
+  this->shapes.onElementsRemoved(new_numbering);
+  this->shapes_derivatives.onElementsRemoved(new_numbering);
+}
+
+/* -------------------------------------------------------------------------- */
+void ShapeLagrangeBase::printself(std::ostream & stream, int indent) const {
+  std::string space;
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
+
+  stream << space << "Shapes Lagrange [" << std::endl;
+  ShapeFunctions::printself(stream, indent + 1);
+  shapes.printself(stream, indent + 1);
+  shapes_derivatives.printself(stream, indent + 1);
+  stream << space << "]" << std::endl;
+}
+
+} // namespace akantu

@@ -56,11 +56,10 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 ElementSynchronizer::ElementSynchronizer(Mesh & mesh,
-                                         const StaticCommunicator & comm,
                                          const ID & id, MemoryID memory_id,
                                          bool register_to_event_manager,
-                                         UInt event_priority)
-    : SynchronizerImpl<Element>(id, memory_id, comm), mesh(mesh),
+                                         EventHandlerPriority event_priority)
+    : SynchronizerImpl<Element>(id, memory_id, mesh.getCommunicator()), mesh(mesh),
       prank_to_element("prank_to_element", id, memory_id) {
 
   AKANTU_DEBUG_IN();
@@ -70,14 +69,6 @@ ElementSynchronizer::ElementSynchronizer(Mesh & mesh,
 
   AKANTU_DEBUG_OUT();
 }
-
-/* -------------------------------------------------------------------------- */
-ElementSynchronizer::ElementSynchronizer(Mesh & mesh,
-                                         const ID & id, MemoryID memory_id,
-                                         bool register_to_event_manager,
-                                         UInt event_priority)
-    : ElementSynchronizer(mesh, mesh.getCommunicator(), id, memory_id,
-                          register_to_event_manager, event_priority) {}
 
 /* -------------------------------------------------------------------------- */
 ElementSynchronizer::~ElementSynchronizer() = default;

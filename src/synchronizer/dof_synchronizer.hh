@@ -81,6 +81,8 @@ public:
   template <template <class> class Op, typename T>
   void reduceSynchronize(Array<T> & vector) const;
 
+  void onNodesAdded(const Array<UInt> & nodes);
+
 protected:
   /// check if dof changed set on at least one processor
   bool hasChanged();

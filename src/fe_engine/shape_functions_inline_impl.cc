@@ -33,9 +33,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-} // akantu
 #include "fe_engine.hh"
+#include "shape_functions.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_SHAPE_FUNCTIONS_INLINE_IMPL_CC__
+#define __AKANTU_SHAPE_FUNCTIONS_INLINE_IMPL_CC__
+
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
@@ -73,165 +77,8 @@ inline UInt ShapeFunctions::getShapeDerivativesSize(const ElementType & type) {
 template <ElementType type>
 void ShapeFunctions::setIntegrationPointsByType(const Matrix<Real> & points,
                                                 const GhostType & ghost_type) {
-  integration_points(type, ghost_type).shallowCopy(points);
-}
-
-/* -------------------------------------------------------------------------- */
-inline void
-ShapeFunctions::initElementalFieldInterpolationFromIntegrationPoints(
-    const ElementTypeMapArray<Real> & interpolation_points_coordinates,
-    ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
-    ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-    const ElementTypeMapArray<Real> & quadrature_points_coordinates,
-    const ElementTypeMapArray<UInt> * element_filter) const {
-
-  AKANTU_DEBUG_IN();
-
-  UInt spatial_dimension = this->mesh.getSpatialDimension();
-
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    GhostType ghost_type = *gt;
-
-    Mesh::type_iterator it, last;
-
-    if (element_filter) {
-      it = element_filter->firstType(spatial_dimension, ghost_type);
-      last = element_filter->lastType(spatial_dimension, ghost_type);
-    } else {
-      it = mesh.firstType(spatial_dimension, ghost_type);
-      last = mesh.lastType(spatial_dimension, ghost_type);
-    }
-    for (; it != last; ++it) {
-
-      ElementType type = *it;
-      UInt nb_element = mesh.getNbElement(type, ghost_type);
-      if (nb_element == 0)
-        continue;
-
-      const Array<UInt> * elem_filter;
-      if (element_filter)
-        elem_filter = &((*element_filter)(type, ghost_type));
-      else
-        elem_filter = &(empty_filter);
-
-#define AKANTU_INIT_ELEMENTAL_FIELD_INTERPOLATION_FROM_C_POINTS(type)          \
-  initElementalFieldInterpolationFromIntegrationPoints<type>(                  \
-      interpolation_points_coordinates(type, ghost_type),                      \
-      interpolation_points_coordinates_matrices,                               \
-      quad_points_coordinates_inv_matrices,                                    \
-      quadrature_points_coordinates(type, ghost_type), ghost_type,             \
-      *elem_filter)
-
-      AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(
-          AKANTU_INIT_ELEMENTAL_FIELD_INTERPOLATION_FROM_C_POINTS);
-#undef AKANTU_INIT_ELEMENTAL_FIELD_INTERPOLATION_FROM_C_POINTS
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <ElementType type>
-inline void
-ShapeFunctions::initElementalFieldInterpolationFromIntegrationPoints(
-    const Array<Real> & interpolation_points_coordinates,
-    ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
-    ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-    const Array<Real> & quadrature_points_coordinates, GhostType & ghost_type,
-    const Array<UInt> & element_filter) const {
-
-  AKANTU_DEBUG_IN();
-
-  UInt spatial_dimension = this->mesh.getSpatialDimension();
-  UInt nb_element = this->mesh.getNbElement(type, ghost_type);
-  UInt nb_element_filter;
-
-  if (element_filter == empty_filter)
-    nb_element_filter = nb_element;
-  else
-    nb_element_filter = element_filter.getSize();
-
-  UInt nb_quad_per_element =
-      GaussIntegrationElement<type>::getNbQuadraturePoints();
-  UInt nb_interpolation_points_per_elem =
-      interpolation_points_coordinates.getSize() / nb_element;
-
-  AKANTU_DEBUG_ASSERT(interpolation_points_coordinates.getSize() % nb_element ==
-                          0,
-                      "Number of interpolation points should be a multiple of "
-                      "total number of elements");
-
-  if (!quad_points_coordinates_inv_matrices.exists(type, ghost_type))
-    quad_points_coordinates_inv_matrices.alloc(
-        nb_element_filter, nb_quad_per_element * nb_quad_per_element, type,
-        ghost_type);
-  else
-    quad_points_coordinates_inv_matrices(type, ghost_type)
-        .resize(nb_element_filter);
-
-  if (!interpolation_points_coordinates_matrices.exists(type, ghost_type))
-    interpolation_points_coordinates_matrices.alloc(
-        nb_element_filter,
-        nb_interpolation_points_per_elem * nb_quad_per_element, type,
-        ghost_type);
-  else
-    interpolation_points_coordinates_matrices(type, ghost_type)
-        .resize(nb_element_filter);
-
-  Array<Real> & quad_inv_mat =
-      quad_points_coordinates_inv_matrices(type, ghost_type);
-  Array<Real> & interp_points_mat =
-      interpolation_points_coordinates_matrices(type, ghost_type);
-
-  Matrix<Real> quad_coord_matrix(nb_quad_per_element, nb_quad_per_element);
-
-  Array<Real>::const_matrix_iterator quad_coords_it =
-      quadrature_points_coordinates.begin_reinterpret(
-          spatial_dimension, nb_quad_per_element, nb_element_filter);
-
-  Array<Real>::const_matrix_iterator points_coords_begin =
-      interpolation_points_coordinates.begin_reinterpret(
-          spatial_dimension, nb_interpolation_points_per_elem, nb_element);
-
-  Array<Real>::matrix_iterator inv_quad_coord_it =
-      quad_inv_mat.begin(nb_quad_per_element, nb_quad_per_element);
-
-  Array<Real>::matrix_iterator int_points_mat_it = interp_points_mat.begin(
-      nb_interpolation_points_per_elem, nb_quad_per_element);
-
-  /// loop over the elements of the current material and element type
-  for (UInt el = 0; el < nb_element_filter;
-       ++el, ++inv_quad_coord_it, ++int_points_mat_it, ++quad_coords_it) {
-    /// matrix containing the quadrature points coordinates
-    const Matrix<Real> & quad_coords = *quad_coords_it;
-    /// matrix to store the matrix inversion result
-    Matrix<Real> & inv_quad_coord_matrix = *inv_quad_coord_it;
-
-    /// insert the quad coordinates in a matrix compatible with the
-    /// interpolation
-    buildElementalFieldInterpolationMatrix<type>(quad_coords,
-                                                 quad_coord_matrix);
-
-    /// invert the interpolation matrix
-    inv_quad_coord_matrix.inverse(quad_coord_matrix);
-
-    /// matrix containing the interpolation points coordinates
-    const Matrix<Real> & points_coords =
-        points_coords_begin[element_filter(el)];
-    /// matrix to store the interpolation points coordinates
-    /// compatible with these functions
-    Matrix<Real> & inv_points_coord_matrix = *int_points_mat_it;
-
-    /// insert the quad coordinates in a matrix compatible with the
-    /// interpolation
-    buildElementalFieldInterpolationMatrix<type>(points_coords,
-                                                 inv_points_coord_matrix);
-  }
-
-  AKANTU_DEBUG_OUT();
+  if (not this->integration_points.exists(type, ghost_type))
+    this->integration_points(type, ghost_type).shallowCopy(points);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -240,13 +87,11 @@ ShapeFunctions::buildInterpolationMatrix(const Matrix<Real> & coordinates,
                                          Matrix<Real> & coordMatrix,
                                          UInt integration_order) const {
   switch (integration_order) {
-
   case 1: {
     for (UInt i = 0; i < coordinates.cols(); ++i)
       coordMatrix(i, 0) = 1;
     break;
   }
-
   case 2: {
     UInt nb_quadrature_points = coordMatrix.cols();
 
@@ -257,9 +102,7 @@ ShapeFunctions::buildInterpolationMatrix(const Matrix<Real> & coordinates,
     }
     break;
   }
-
   default: {
-
     AKANTU_DEBUG_TO_IMPLEMENT();
     break;
   }
@@ -269,9 +112,7 @@ ShapeFunctions::buildInterpolationMatrix(const Matrix<Real> & coordinates,
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 inline void ShapeFunctions::buildElementalFieldInterpolationMatrix(
-    __attribute__((unused)) const Matrix<Real> & coordinates,
-    __attribute__((unused)) Matrix<Real> & coordMatrix,
-    __attribute__((unused)) UInt integration_order) const {
+    const Matrix<Real> &, Matrix<Real> &, UInt) const {
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
@@ -288,7 +129,6 @@ template <>
 inline void ShapeFunctions::buildElementalFieldInterpolationMatrix<_segment_3>(
     const Matrix<Real> & coordinates, Matrix<Real> & coordMatrix,
     UInt integration_order) const {
-
   buildInterpolationMatrix(coordinates, coordMatrix, integration_order);
 }
 
@@ -305,7 +145,6 @@ template <>
 inline void ShapeFunctions::buildElementalFieldInterpolationMatrix<_triangle_6>(
     const Matrix<Real> & coordinates, Matrix<Real> & coordMatrix,
     UInt integration_order) const {
-
   buildInterpolationMatrix(coordinates, coordMatrix, integration_order);
 }
 
@@ -324,7 +163,6 @@ inline void
 ShapeFunctions::buildElementalFieldInterpolationMatrix<_tetrahedron_10>(
     const Matrix<Real> & coordinates, Matrix<Real> & coordMatrix,
     UInt integration_order) const {
-
   buildInterpolationMatrix(coordinates, coordMatrix, integration_order);
 }
 
@@ -343,10 +181,8 @@ ShapeFunctions::buildElementalFieldInterpolationMatrix<_quadrangle_4>(
 
   if (integration_order !=
       ElementClassProperty<_quadrangle_4>::polynomial_degree) {
-
     AKANTU_DEBUG_TO_IMPLEMENT();
   } else {
-
     for (UInt i = 0; i < coordinates.cols(); ++i) {
       Real x = coordinates(0, i);
       Real y = coordinates(1, i);
@@ -368,12 +204,9 @@ ShapeFunctions::buildElementalFieldInterpolationMatrix<_quadrangle_8>(
 
   if (integration_order !=
       ElementClassProperty<_quadrangle_8>::polynomial_degree) {
-
     AKANTU_DEBUG_TO_IMPLEMENT();
   } else {
-
     for (UInt i = 0; i < coordinates.cols(); ++i) {
-
       UInt j = 0;
       Real x = coordinates(0, i);
       Real y = coordinates(1, i);
@@ -387,64 +220,13 @@ ShapeFunctions::buildElementalFieldInterpolationMatrix<_quadrangle_8>(
     }
   }
 }
-
-/* -------------------------------------------------------------------------- */
-void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
-    const ElementTypeMapArray<Real> & field,
-    const ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
-    const ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-    ElementTypeMapArray<Real> & result, const GhostType ghost_type,
-    const ElementTypeMapArray<UInt> * element_filter) const {
-
-  AKANTU_DEBUG_IN();
-
-  UInt spatial_dimension = this->mesh.getSpatialDimension();
-
-  Mesh::type_iterator it, last;
-
-  if (element_filter) {
-    it = element_filter->firstType(spatial_dimension, ghost_type);
-    last = element_filter->lastType(spatial_dimension, ghost_type);
-  } else {
-    it = mesh.firstType(spatial_dimension, ghost_type);
-    last = mesh.lastType(spatial_dimension, ghost_type);
-  }
-
-  for (; it != last; ++it) {
-
-    ElementType type = *it;
-    UInt nb_element = mesh.getNbElement(type, ghost_type);
-    if (nb_element == 0)
-      continue;
-
-    const Array<UInt> * elem_filter;
-    if (element_filter)
-      elem_filter = &((*element_filter)(type, ghost_type));
-    else
-      elem_filter = &(empty_filter);
-
-#define AKANTU_INTERPOLATE_ELEMENTAL_FIELD_FROM_C_POINTS(type)                 \
-  interpolateElementalFieldFromIntegrationPoints<type>(                        \
-      field(type, ghost_type),                                                 \
-      interpolation_points_coordinates_matrices(type, ghost_type),             \
-      quad_points_coordinates_inv_matrices(type, ghost_type), result,          \
-      ghost_type, *elem_filter)
-
-    AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(
-        AKANTU_INTERPOLATE_ELEMENTAL_FIELD_FROM_C_POINTS);
-#undef AKANTU_INTERPOLATE_ELEMENTAL_FIELD_FROM_C_POINTS
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 inline void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
     const Array<Real> & field,
     const Array<Real> & interpolation_points_coordinates_matrices,
     const Array<Real> & quad_points_coordinates_inv_matrices,
-    ElementTypeMapArray<Real> & result, const GhostType ghost_type,
+    ElementTypeMapArray<Real> & result, const GhostType & ghost_type,
     const Array<UInt> & element_filter) const {
   AKANTU_DEBUG_IN();
 
@@ -511,7 +293,7 @@ inline void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 inline void ShapeFunctions::interpolateElementalFieldOnIntegrationPoints(
-    const Array<Real> & u_el, Array<Real> & uq, GhostType ghost_type,
+    const Array<Real> & u_el, Array<Real> & uq, const GhostType & ghost_type,
     const Array<Real> & shapes, const Array<UInt> & filter_elements) const {
   UInt nb_element;
   UInt nb_nodes_per_element = ElementClass<type>::getShapeSize();
@@ -547,9 +329,8 @@ inline void ShapeFunctions::interpolateElementalFieldOnIntegrationPoints(
     const Matrix<Real> & u = *u_it;
     const Matrix<Real> & N = *N_it;
     Matrix<Real> & inter_u = *inter_u_it;
-    
+
     inter_u.mul<false, false>(u, N);
-    
   }
 
   delete filtered_N;
@@ -558,8 +339,8 @@ inline void ShapeFunctions::interpolateElementalFieldOnIntegrationPoints(
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 void ShapeFunctions::gradientElementalFieldOnIntegrationPoints(
-    const Array<Real> & u_el, Array<Real> & out_nablauq, GhostType ghost_type,
-    const Array<Real> & shapes_derivatives,
+    const Array<Real> & u_el, Array<Real> & out_nablauq,
+    const GhostType & ghost_type, const Array<Real> & shapes_derivatives,
     const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
@@ -607,3 +388,6 @@ void ShapeFunctions::gradientElementalFieldOnIntegrationPoints(
 }
 
 /* -------------------------------------------------------------------------- */
+} // namespace akantu
+
+#endif /* __AKANTU_SHAPE_FUNCTIONS_INLINE_IMPL_CC__ */

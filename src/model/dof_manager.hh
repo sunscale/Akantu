@@ -43,7 +43,7 @@ class TermsToAssemble;
 class NonLinearSolver;
 class TimeStepSolver;
 class SparseMatrix;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -53,7 +53,8 @@ class DOFManager : protected Memory, protected MeshEventHandler {
   /* ------------------------------------------------------------------------ */
 public:
   DOFManager(const ID & id = "dof_manager", const MemoryID & memory_id = 0);
-  DOFManager(Mesh & mesh, const ID & id = "dof_manager", const MemoryID & memory_id = 0);
+  DOFManager(Mesh & mesh, const ID & id = "dof_manager",
+             const MemoryID & memory_id = 0);
   virtual ~DOFManager();
 
   /* ------------------------------------------------------------------------ */
@@ -186,15 +187,18 @@ protected:
 protected:
   /* ------------------------------------------------------------------------ */
   /// register a matrix
-  SparseMatrix & registerSparseMatrix(const ID & matrix_id, std::unique_ptr<SparseMatrix> & matrix);
+  SparseMatrix & registerSparseMatrix(const ID & matrix_id,
+                                      std::unique_ptr<SparseMatrix> & matrix);
 
   /// register a non linear solver instantiated by a derived class
-  NonLinearSolver & registerNonLinearSolver(const ID & non_linear_solver_id,
-                               std::unique_ptr<NonLinearSolver> & non_linear_solver);
+  NonLinearSolver &
+  registerNonLinearSolver(const ID & non_linear_solver_id,
+                          std::unique_ptr<NonLinearSolver> & non_linear_solver);
 
   /// register a time step solver instantiated by a derived class
-  TimeStepSolver & registerTimeStepSolver(const ID & time_step_solver_id,
-                              std::unique_ptr<TimeStepSolver> & time_step_solver);
+  TimeStepSolver &
+  registerTimeStepSolver(const ID & time_step_solver_id,
+                         std::unique_ptr<TimeStepSolver> & time_step_solver);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -202,8 +206,7 @@ protected:
 public:
   /// Get the equation numbers corresponding to a dof_id. This might be used to
   /// access the matrix.
-  virtual void getEquationsNumbers(const ID & dof_id,
-                                   Array<UInt> & equation_numbers);
+  inline const Array<UInt> & getEquationsNumbers(const ID & dof_id) const;
 
   /// Global number of dofs
   AKANTU_GET_MACRO(SystemSize, this->system_size, UInt);
@@ -329,10 +332,10 @@ public:
   /* ------------------------------------------------------------------------ */
   /* MeshEventHandler interface                                               */
   /* ------------------------------------------------------------------------ */
-private:
-  /// fills the nodes_to_elements structure
-  void fillNodesToElements();
-
+protected:
+  /// helper function for the DOFManager::onNodesAdded method
+  virtual std::pair<UInt, UInt> updateNodalDOFs(const ID & dof_id,
+                                                const Array<UInt> & nodes_list);
 public:
   /// function to implement to react on  akantu::NewNodesEvent
   virtual void onNodesAdded(const Array<UInt> & nodes_list,
@@ -408,11 +411,6 @@ protected:
     std::vector<Array<Real> *> dof_derivatives;
   };
 
-  using NodesToElements = std::vector<std::unique_ptr<std::set<Element>>>;
-
-  /// This info is stored to simplify the dynamic changes
-  NodesToElements nodes_to_elements;
-
   /// type to store dofs information
   using DOFStorage = std::map<ID, std::unique_ptr<DOFData>>;
 
@@ -460,7 +458,7 @@ protected:
   const StaticCommunicator & communicator;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "dof_manager_inline_impl.cc"
 

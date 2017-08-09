@@ -117,7 +117,14 @@ Mesh::Mesh(UInt spatial_dimension, std::shared_ptr<Array<Real>> nodes,
     : Mesh(spatial_dimension, id, memory_id,
            StaticCommunicator::getStaticCommunicator()) {
   this->nodes = nodes;
+
   this->nb_global_nodes = this->nodes->getSize();
+
+  this->nodes_to_elements.resize(nodes->getSize());
+  for (auto & node_set : nodes_to_elements) {
+    node_set = std::make_unique<std::set<Element>>();
+  }
+
   this->computeBoundingBox();
 }
 
@@ -166,6 +173,11 @@ void Mesh::read(const std::string & filename, const MeshIOType & mesh_io_type) {
         << " No element of dimension " << spatial_dimension << " where read.");
 
   this->computeBoundingBox();
+
+  this->nodes_to_elements.resize(nodes->getSize());
+  for (auto & node_set : nodes_to_elements) {
+    node_set = std::make_unique<std::set<Element>>();
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -391,8 +403,8 @@ void Mesh::distribute(StaticCommunicator & communicator) {
 /* -------------------------------------------------------------------------- */
 void Mesh::getAssociatedElements(const Array<UInt> & node_list,
                                  Array<Element> & elements) {
-  for(const auto & node : node_list)
-    for(const auto & element : *nodes_to_elements[node])
+  for (const auto & node : node_list)
+    for (const auto & element : *nodes_to_elements[node])
       elements.push_back(element);
 }
 
@@ -414,7 +426,8 @@ void Mesh::fillNodesToElements() {
 
       UInt nb_element = this->getNbElement(type, ghost_type);
       Array<UInt>::const_iterator<Vector<UInt>> conn_it =
-          connectivities(type, ghost_type).begin(Mesh::getNbNodesPerElement(type));
+          connectivities(type, ghost_type)
+              .begin(Mesh::getNbNodesPerElement(type));
 
       for (UInt el = 0; el < nb_element; ++el, ++conn_it) {
         e.element = el;

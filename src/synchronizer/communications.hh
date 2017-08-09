@@ -44,25 +44,25 @@ namespace debug {
     CommunicationException()
         : Exception("An exception happen during a communication process.") {}
   };
-} // debug
+} // namespace debug
 
 /* -------------------------------------------------------------------------- */
 template <class Entity> class Communications {
 public:
-  typedef Array<Entity> Scheme;
+  using Scheme = Array<Entity>;
 
 protected:
-  typedef std::map<UInt, Communication> CommunicationPerProcs;
-  typedef std::map<SynchronizationTag, CommunicationPerProcs>
-      CommunicationsPerTags;
-  typedef std::map<UInt, Scheme> CommunicationSchemes;
-  typedef std::map<UInt, std::vector<CommunicationRequest>> Request;
+  using CommunicationPerProcs = std::map<UInt, Communication>;
+  using CommunicationsPerTags =
+      std::map<SynchronizationTag, CommunicationPerProcs>;
+  using CommunicationSchemes = std::map<UInt, Scheme>;
+  using Request = std::map<UInt, std::vector<CommunicationRequest>>;
 
   friend class CommunicationDescriptor<Entity>;
 
 public:
-  typedef typename CommunicationSchemes::iterator scheme_iterator;
-  typedef typename CommunicationSchemes::const_iterator const_scheme_iterator;
+  using scheme_iterator = typename CommunicationSchemes::iterator;
+  using const_scheme_iterator = typename CommunicationSchemes::const_iterator;
 
   /* ------------------------------------------------------------------------ */
   class iterator;
@@ -164,8 +164,8 @@ public:
   Scheme & createRecvScheme(UInt proc);
 
   /* ------------------------------------------------------------------------ */
-  const Scheme & getSendScheme(UInt proc) const;
-  const Scheme & getRecvScheme(UInt proc) const;
+  Scheme & getScheme(UInt proc, const CommunicationSendRecv & sr);
+  const Scheme & getScheme(UInt proc, const CommunicationSendRecv & sr) const;
 
   /* ------------------------------------------------------------------------ */
   void resetSchemes();
@@ -185,7 +185,7 @@ protected:
   const StaticCommunicator & communicator;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "communications_tmpl.hh"
 

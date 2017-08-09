@@ -32,6 +32,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "fe_engine.hh"
+#include "aka_memory.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -47,6 +48,8 @@ FEEngine::FEEngine(Mesh & mesh, UInt element_dimension, ID id,
                                 ? element_dimension
                                 : mesh.getSpatialDimension();
 
+  this->mesh.registerEventHandler(*this, _ehp_fe_engine);
+
   init();
 
   AKANTU_DEBUG_OUT();
@@ -60,6 +63,13 @@ FEEngine::~FEEngine() {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+typename FEEngine::ElementTypesIteratorHelper
+FEEngine::elementTypes(UInt dim, GhostType ghost_type, ElementKind kind) const {
+  return this->getIntegratorInterface().getJacobians().elementTypes(
+      dim, ghost_type, kind);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -82,4 +92,4 @@ void FEEngine::printself(std::ostream & stream, int indent) const {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

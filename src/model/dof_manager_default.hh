@@ -41,7 +41,7 @@ class SparseMatrixAIJ;
 class NonLinearSolverDefault;
 class TimeStepSolverDefault;
 class DOFSynchronizer;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -56,6 +56,14 @@ public:
                     const MemoryID & memory_id = 0);
   virtual ~DOFManagerDefault();
 
+protected:
+  struct DOFDataDefault : public DOFData {
+    explicit DOFDataDefault(const ID & dof_id);
+
+    /// associated node for _dst_nodal dofs only
+    Array<UInt> associated_nodes;
+  };
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -65,52 +73,50 @@ private:
 
 public:
   /// register an array of degree of freedom
-  virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
-                            const DOFSupportType & support_type);
+  void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+                    const DOFSupportType & support_type) override;
 
   /// the dof as an implied type of _dst_nodal and is defined only on a subset
   /// of nodes
-  virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
-                            const ID & group_support);
+  void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+                    const ID & group_support) override;
 
   /// Assemble an array to the global residual array
-  virtual void assembleToResidual(const ID & dof_id,
-                                  const Array<Real> & array_to_assemble,
-                                  Real scale_factor = 1.);
+  void assembleToResidual(const ID & dof_id,
+                          const Array<Real> & array_to_assemble,
+                          Real scale_factor = 1.) override;
 
   /// Assemble an array to the global lumped matrix array
-  virtual void assembleToLumpedMatrix(const ID & dof_id,
-                                      const Array<Real> & array_to_assemble,
-                                      const ID & lumped_mtx,
-                                      Real scale_factor = 1.);
+  void assembleToLumpedMatrix(const ID & dof_id,
+                              const Array<Real> & array_to_assemble,
+                              const ID & lumped_mtx,
+                              Real scale_factor = 1.) override;
   /**
    * Assemble elementary values to the global matrix. The dof number is
    * implicitly considered as conn(el, n) * nb_nodes_per_element + d.
    * With 0 < n < nb_nodes_per_element and 0 < d < nb_dof_per_node
    **/
-  virtual void assembleElementalMatricesToMatrix(
+  void assembleElementalMatricesToMatrix(
       const ID & matrix_id, const ID & dof_id,
       const Array<Real> & elementary_mat, const ElementType & type,
       const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
-      const Array<UInt> & filter_elements);
+      const Array<UInt> & filter_elements) override;
 
   /// multiply a vector by a matrix and assemble the result to the residual
-  virtual void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
-                                            const Array<Real> & x,
-                                            Real scale_factor = 1);
+  void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
+                                    const Array<Real> & x,
+                                    Real scale_factor = 1) override;
 
   /// multiply a vector by a lumped matrix and assemble the result to the
   /// residual
-  virtual void assembleLumpedMatMulVectToResidual(const ID & dof_id,
-                                                  const ID & A_id,
-                                                  const Array<Real> & x,
-                                                  Real scale_factor = 1);
+  void assembleLumpedMatMulVectToResidual(const ID & dof_id, const ID & A_id,
+                                          const Array<Real> & x,
+                                          Real scale_factor = 1) override;
 
   /// assemble coupling terms between to dofs
-  virtual void assemblePreassembledMatrix(const ID & dof_id_m,
-                                          const ID & dof_id_n,
-                                          const ID & matrix_id,
-                                          const TermsToAssemble & terms);
+  void assemblePreassembledMatrix(const ID & dof_id_m, const ID & dof_id_n,
+                                  const ID & matrix_id,
+                                  const TermsToAssemble & terms) override;
 
 protected:
   /// Assemble an array to the global residual array
@@ -121,11 +127,13 @@ protected:
 
 public:
   /// clear the residual
-  virtual void clearResidual();
+  void clearResidual() override;
+
   /// sets the matrix to 0
-  virtual void clearMatrix(const ID & mtx);
+  void clearMatrix(const ID & mtx) override;
+
   /// sets the lumped matrix to 0
-  virtual void clearLumpedMatrix(const ID & mtx);
+  void clearLumpedMatrix(const ID & mtx) override;
 
   /// update the global dofs vector
   virtual void updateGlobalBlockedDofs();
@@ -133,8 +141,8 @@ public:
   /// apply boundary conditions to jacobian matrix
   virtual void applyBoundary(const ID & matrix_id = "J");
 
-  virtual void getEquationsNumbers(const ID & dof_id,
-                                   Array<UInt> & equation_numbers);
+  // void getEquationsNumbers(const ID & dof_id,
+  //                          Array<UInt> & equation_numbers) override;
 
 protected:
   /// Get local part of an array corresponding to a given dofdata
@@ -143,8 +151,8 @@ protected:
                        Array<T> & local_array) const;
 
   /// Get the part of the solution corresponding to the dof_id
-  virtual void getSolutionPerDOFs(const ID & dof_id,
-                                  Array<Real> & solution_array);
+  void getSolutionPerDOFs(const ID & dof_id,
+                          Array<Real> & solution_array) override;
 
   /// fill a Vector with the equation numbers corresponding to the given
   /// connectivity
@@ -154,8 +162,8 @@ protected:
 
 public:
   /// extract a lumped matrix part corresponding to a given dof
-  virtual void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
-                                      Array<Real> & lumped);
+  void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
+                              Array<Real> & lumped) override;
 
 private:
   /// Add a symmetric matrices to a symmetric sparse matrix
@@ -177,18 +185,36 @@ private:
 
   void addToProfile(const ID & matrix_id, const ID & dof_id,
                     const ElementType & type, const GhostType & ghost_type);
+
+  /* ------------------------------------------------------------------------ */
+  /* MeshEventHandler interface                                               */
+  /* ------------------------------------------------------------------------ */
+protected:
+  std::pair<UInt, UInt>
+  updateNodalDOFs(const ID & dof_id, const Array<UInt> & nodes_list) override;
+
+private:
+  void updateDOFsData(DOFDataDefault & dof_data, UInt nb_new_local_dofs,
+                      UInt nb_new_pure_local,
+                      std::function<UInt(UInt)> getNode);
+
+public:
+  /// function to implement to react on  akantu::NewNodesEvent
+  void onNodesAdded(const Array<UInt> & nodes_list,
+                    const NewNodesEvent & event) override;
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   /// Get an instance of a new SparseMatrix
-  virtual SparseMatrix & getNewMatrix(const ID & matrix_id,
-                                      const MatrixType & matrix_type);
+  SparseMatrix & getNewMatrix(const ID & matrix_id,
+                              const MatrixType & matrix_type) override;
 
   /// Get an instance of a new SparseMatrix as a copy of the SparseMatrix
   /// matrix_to_copy_id
-  virtual SparseMatrix & getNewMatrix(const ID & matrix_id,
-                                      const ID & matrix_to_copy_id);
+  SparseMatrix & getNewMatrix(const ID & matrix_id,
+                              const ID & matrix_to_copy_id) override;
 
   /// Get the reference of an existing matrix
   SparseMatrixAIJ & getMatrix(const ID & matrix_id);
@@ -197,17 +223,17 @@ public:
   /* Non Linear Solver                                                        */
   /* ------------------------------------------------------------------------ */
   /// Get instance of a non linear solver
-  virtual NonLinearSolver &
-  getNewNonLinearSolver(const ID & nls_solver_id,
-                        const NonLinearSolverType & _non_linear_solver_type);
+  NonLinearSolver & getNewNonLinearSolver(
+      const ID & nls_solver_id,
+      const NonLinearSolverType & _non_linear_solver_type) override;
 
   /* ------------------------------------------------------------------------ */
   /* Time-Step Solver                                                         */
   /* ------------------------------------------------------------------------ */
   /// Get instance of a time step solver
-  TimeStepSolver & getNewTimeStepSolver(const ID & id,
-                                        const TimeStepSolverType & type,
-                                        NonLinearSolver & non_linear_solver);
+  TimeStepSolver &
+  getNewTimeStepSolver(const ID & id, const TimeStepSolverType & type,
+                       NonLinearSolver & non_linear_solver) override;
 
   /* ------------------------------------------------------------------------ */
   /// Get the solution array
@@ -257,26 +283,21 @@ public:
   bool hasSynchronizer() const { return synchronizer != nullptr; }
 
 protected:
-  virtual DOFData & getNewDOFData(const ID & dof_id);
+  DOFData & getNewDOFData(const ID & dof_id) override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  struct DOFDataDefault : public DOFData {
-    DOFDataDefault(const ID & dof_id);
+  // using AIJMatrixMap = std::map<ID, std::unique_ptr<SparseMatrixAIJ>>;
+  // using DefaultNonLinearSolversMap =
+  //     std::map<ID, std::unique_ptr<NonLinearSolverDefault>>;
+  // using DefaultTimeStepSolversMap =
+  //     std::map<ID, std::unique_ptr<TimeStepSolverDefault>>;
 
-    /// associated node for _dst_nodal dofs only
-    Array<UInt> associated_nodes;
-  };
-
-  typedef std::map<ID, SparseMatrixAIJ *> AIJMatrixMap;
-  typedef std::map<ID, NonLinearSolverDefault *> DefaultNonLinearSolversMap;
-  typedef std::map<ID, TimeStepSolverDefault *> DefaultTimeStepSolversMap;
-
-  typedef std::map<std::pair<ID, ID>,
-                   std::vector<std::pair<ElementType, GhostType>>>
-      DOFToMatrixProfile;
+  using DOFToMatrixProfile =
+      std::map<std::pair<ID, ID>,
+               std::vector<std::pair<ElementType, GhostType>>>;
 
   /// contains the the dofs that where added to the profile of a given matrix.
   DOFToMatrixProfile matrix_profiled_dofs;
@@ -287,7 +308,7 @@ protected:
 
   /// rhs used only on root proc in case of parallel computing, this is the full
   /// gathered rhs array
-  Array<Real> * global_residual;
+  std::unique_ptr<Array<Real>> global_residual;
 
   /// solution of the system of equation corresponding to the different dofs
   Array<Real> global_solution;
@@ -304,10 +325,10 @@ protected:
   Array<Int> dofs_type;
 
   /// Map of the different matrices stored in the dof manager
-  AIJMatrixMap aij_matrices;
+  //AIJMatrixMap aij_matrices;
 
   /// Map of the different time step solvers stored with there real type
-  DefaultTimeStepSolversMap default_time_step_solver_map;
+  //DefaultTimeStepSolversMap default_time_step_solver_map;
 
   /// Memory cache, this is an array to keep the temporary memory needed for
   /// some operations, it is meant to be resized or cleared when needed
@@ -328,10 +349,10 @@ protected:
   UInt first_global_dof_id;
 
   /// synchronizer to maintain coherency in dof fields
-  DOFSynchronizer * synchronizer;
+  std::unique_ptr<DOFSynchronizer> synchronizer;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "dof_manager_default_inline_impl.cc"
 

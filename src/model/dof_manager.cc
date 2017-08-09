@@ -1,4 +1,3 @@
-
 /**
  * @file   dof_manager.cc
  *
@@ -34,9 +33,9 @@
 #include "mesh.hh"
 #include "mesh_utils.hh"
 #include "node_group.hh"
+#include "non_linear_solver.hh"
 #include "sparse_matrix.hh"
 #include "static_communicator.hh"
-#include "non_linear_solver.hh"
 #include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <memory>
@@ -55,22 +54,16 @@ DOFManager::DOFManager(Mesh & mesh, const ID & id, const MemoryID & memory_id)
     : Memory(id, memory_id), mesh(&mesh), local_system_size(0),
       pure_local_system_size(0), system_size(0),
       communicator(mesh.getCommunicator()) {
-  this->mesh->registerEventHandler(*this, 20);
-
-  UInt nb_nodes = this->mesh->getNbNodes();
-  this->nodes_to_elements.resize(nb_nodes);
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    this->nodes_to_elements[n] = std::make_unique<std::set<Element>>();
-  }
+  this->mesh->registerEventHandler(*this, _ehp_dof_manager);
 }
 
 /* -------------------------------------------------------------------------- */
 DOFManager::~DOFManager() = default;
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::getEquationsNumbers(const ID &, Array<UInt> &) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
-}
+// void DOFManager::getEquationsNumbers(const ID &, Array<UInt> &) {
+//   AKANTU_DEBUG_TO_IMPLEMENT();
+// }
 
 /* -------------------------------------------------------------------------- */
 std::vector<ID> DOFManager::getDOFIDs() const {
@@ -192,7 +185,7 @@ void DOFManager::assembleElementalArrayToLumpedMatrix(
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFData::DOFData(const ID & dof_id)
-    : support_type(_dst_generic), group_support("mesh"), dof(NULL),
+    : support_type(_dst_generic), group_support("__mesh__"), dof(NULL),
       blocked_dofs(NULL), increment(NULL), previous(NULL),
       solution(0, 1, dof_id + ":solution"),
       local_equation_number(0, 1, dof_id + ":local_equation_number") {}
@@ -221,7 +214,7 @@ void DOFManager::registerDOFsInternal(const ID & dof_id,
   UInt nb_local_dofs = 0;
   UInt nb_pure_local = 0;
 
-  const DOFSupportType &support_type = dofs_storage.support_type;
+  const DOFSupportType & support_type = dofs_storage.support_type;
 
   switch (support_type) {
   case _dst_nodal: {
@@ -229,7 +222,7 @@ void DOFManager::registerDOFsInternal(const ID & dof_id,
     const ID & group = dofs_storage.group_support;
 
     NodeGroup * node_group = NULL;
-    if (group == "mesh") {
+    if (group == "__mesh__") {
       nb_nodes = this->mesh->getNbNodes();
     } else {
       node_group = &this->mesh->getElementGroup(group).getNodeGroup();
@@ -255,7 +248,7 @@ void DOFManager::registerDOFsInternal(const ID & dof_id,
   }
   case _dst_generic: {
     nb_local_dofs = nb_pure_local =
-      dofs_array.getSize() * dofs_array.getNbComponent();
+        dofs_array.getSize() * dofs_array.getNbComponent();
     break;
   }
   default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }
@@ -287,7 +280,6 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
   dofs_storage.group_support = support_group;
 
   this->registerDOFsInternal(dof_id, dofs_array);
-
 }
 
 /* -------------------------------------------------------------------------- */
@@ -360,8 +352,9 @@ void DOFManager::splitSolutionPerDOFs() {
 }
 
 /* -------------------------------------------------------------------------- */
-SparseMatrix & DOFManager::registerSparseMatrix(const ID & matrix_id,
-                                                std::unique_ptr<SparseMatrix> & matrix) {
+SparseMatrix &
+DOFManager::registerSparseMatrix(const ID & matrix_id,
+                                 std::unique_ptr<SparseMatrix> & matrix) {
   SparseMatricesMap::const_iterator it = this->matrices.find(matrix_id);
   if (it != this->matrices.end()) {
     AKANTU_EXCEPTION("The matrix " << matrix_id << " already exists in "
@@ -383,14 +376,16 @@ Array<Real> & DOFManager::getNewLumpedMatrix(const ID & id) {
                                           << this->id);
   }
 
-  auto mtx = std::make_unique<Array<Real>>(this->local_system_size, 1, matrix_id);
+  auto mtx =
+      std::make_unique<Array<Real>>(this->local_system_size, 1, matrix_id);
   this->lumped_matrices[matrix_id] = std::move(mtx);
-  return * this->lumped_matrices[matrix_id];
+  return *this->lumped_matrices[matrix_id];
 }
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolver & DOFManager::registerNonLinearSolver(const ID & non_linear_solver_id,
-                                         std::unique_ptr<NonLinearSolver> & non_linear_solver) {
+NonLinearSolver & DOFManager::registerNonLinearSolver(
+    const ID & non_linear_solver_id,
+    std::unique_ptr<NonLinearSolver> & non_linear_solver) {
   NonLinearSolversMap::const_iterator it =
       this->non_linear_solvers.find(non_linear_solver_id);
   if (it != this->non_linear_solvers.end()) {
@@ -406,8 +401,9 @@ NonLinearSolver & DOFManager::registerNonLinearSolver(const ID & non_linear_solv
 }
 
 /* -------------------------------------------------------------------------- */
-TimeStepSolver & DOFManager::registerTimeStepSolver(const ID & time_step_solver_id,
-                                        std::unique_ptr<TimeStepSolver> & time_step_solver) {
+TimeStepSolver & DOFManager::registerTimeStepSolver(
+    const ID & time_step_solver_id,
+    std::unique_ptr<TimeStepSolver> & time_step_solver) {
   TimeStepSolversMap::const_iterator it =
       this->time_step_solvers.find(time_step_solver_id);
   if (it != this->time_step_solvers.end()) {
@@ -516,42 +512,6 @@ bool DOFManager::hasTimeStepSolver(const ID & solver_id) const {
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::fillNodesToElements() {
-  UInt spatial_dimension = this->mesh->getSpatialDimension();
-  Element e;
-
-  UInt nb_nodes = this->mesh->getNbNodes();
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    this->nodes_to_elements[n]->clear();
-  }
-
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    Mesh::type_iterator first =
-        this->mesh->firstType(spatial_dimension, *gt, _ek_not_defined);
-    Mesh::type_iterator last =
-        this->mesh->lastType(spatial_dimension, *gt, _ek_not_defined);
-    e.ghost_type = *gt;
-    for (; first != last; ++first) {
-      ElementType type = *first;
-      e.type = type;
-      e.kind = Mesh::getKind(type);
-      UInt nb_element = this->mesh->getNbElement(type, *gt);
-      Array<UInt>::const_iterator<Vector<UInt>> conn_it =
-          this->mesh->getConnectivity(type, *gt).begin(
-              Mesh::getNbNodesPerElement(type));
-
-      for (UInt el = 0; el < nb_element; ++el, ++conn_it) {
-        e.element = el;
-        const Vector<UInt> & conn = *conn_it;
-        for (UInt n = 0; n < conn.size(); ++n)
-          nodes_to_elements[conn(n)]->insert(e);
-      }
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
 void DOFManager::savePreviousDOFs(const ID & dofs_id) {
   this->getPreviousDOFs(dofs_id).copy(this->getDOFs(dofs_id));
 }
@@ -559,82 +519,79 @@ void DOFManager::savePreviousDOFs(const ID & dofs_id) {
 /* -------------------------------------------------------------------------- */
 /* Mesh Events                                                                */
 /* -------------------------------------------------------------------------- */
+std::pair<UInt, UInt>
+DOFManager::updateNodalDOFs(const ID & dof_id, const Array<UInt> & nodes_list) {
+  auto & dof_data = this->getDOFData(dof_id);
+  UInt nb_new_local_dofs = 0;
+  UInt nb_new_pure_local = 0;
+
+  nb_new_local_dofs = nodes_list.getSize();
+  for (const auto & node : nodes_list) {
+    nb_new_pure_local += this->mesh->isLocalOrMasterNode(node) ? 1 : 0;
+  }
+
+  const auto & dof_array = *dof_data.dof;
+  nb_new_pure_local *= dof_array.getNbComponent();
+  nb_new_local_dofs *= dof_array.getNbComponent();
+
+  this->pure_local_system_size += nb_new_pure_local;
+  this->local_system_size += nb_new_local_dofs;
+
+  UInt nb_new_global = nb_new_pure_local;
+  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  comm.allReduce(nb_new_global, _so_sum);
+
+  this->system_size += nb_new_global;
+
+  return std::make_pair(nb_new_local_dofs, nb_new_pure_local);
+}
+
+/* -------------------------------------------------------------------------- */
 void DOFManager::onNodesAdded(const Array<UInt> & nodes_list,
-                              __attribute__((unused))
-                              const NewNodesEvent & event) {
-  Array<UInt>::const_scalar_iterator it = nodes_list.begin();
-  Array<UInt>::const_scalar_iterator end = nodes_list.end();
-
-  UInt nb_nodes = this->mesh->getNbNodes();
-  this->nodes_to_elements.resize(nb_nodes);
-
-  for (; it != end; ++it) {
-    this->nodes_to_elements[*it] = std::make_unique<std::set<Element>>();
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-void DOFManager::onNodesRemoved(const Array<UInt> &,
-                                const Array<UInt> & new_numbering,
-                                const RemovedNodesEvent &) {
-  std::vector<std::unique_ptr<std::set<Element>>> tmp(nodes_to_elements.size());
-
-  auto it = nodes_to_elements.begin();
-
-  UInt new_nb_nodes = 0;
-  for (auto new_i : new_numbering) {
-    if (new_i != UInt(-1)) {
-      tmp[new_i] = std::move(*it);
-      ++new_nb_nodes;
-    }
-    ++it;
-  }
-
-  tmp.resize(new_nb_nodes);
-  std::move(tmp.begin(), tmp.end(), nodes_to_elements.begin());
-}
-
-/* -------------------------------------------------------------------------- */
-void DOFManager::onElementsAdded(const Array<Element> & elements_list,
-                                 __attribute__((unused))
-                                 const NewElementsEvent & event) {
-  Array<Element>::const_scalar_iterator it = elements_list.begin();
-  Array<Element>::const_scalar_iterator end = elements_list.end();
-
-  for (; it != end; ++it) {
-    const Element & elem = *it;
-    if (this->mesh->getSpatialDimension(elem.type) !=
-        this->mesh->getSpatialDimension())
+                              const NewNodesEvent &) {
+  for (auto & pair : this->dofs) {
+    const auto & dof_id = pair.first;
+    auto & dof_data = this->getDOFData(dof_id);
+    if (dof_data.support_type != _dst_nodal)
       continue;
 
-    const Array<UInt> & conn =
-        this->mesh->getConnectivity(elem.type, elem.ghost_type);
+    const auto & group = dof_data.group_support;
 
-    UInt nb_nodes_per_elem = this->mesh->getNbNodesPerElement(elem.type);
+    if (group == "__mesh__") {
+      this->updateNodalDOFs(dof_id, nodes_list);
+    } else {
+      const auto & node_group =
+          this->mesh->getElementGroup(group).getNodeGroup();
+      Array<UInt> new_nodes_list;
+      for (const auto & node : nodes_list) {
+        if (node_group.find(node) != -1)
+          new_nodes_list.push_back(node);
+      }
 
-    for (UInt n = 0; n < nb_nodes_per_elem; ++n) {
-      nodes_to_elements[conn(elem.element, n)]->insert(elem);
+      this->updateNodalDOFs(dof_id, new_nodes_list);
     }
   }
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::onElementsRemoved(
-    __attribute__((unused)) const Array<Element> & elements_list,
-    __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-    __attribute__((unused)) const RemovedElementsEvent & event) {
-  this->fillNodesToElements();
-}
+void DOFManager::onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
+                                const RemovedNodesEvent &) {}
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::onElementsChanged(
-    __attribute__((unused)) const Array<Element> & old_elements_list,
-    __attribute__((unused)) const Array<Element> & new_elements_list,
-    __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-    __attribute__((unused)) const ChangedElementsEvent & event) {
-  this->fillNodesToElements();
-}
+void DOFManager::onElementsAdded(const Array<Element> &,
+                                 const NewElementsEvent &) {}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::onElementsRemoved(const Array<Element> &,
+                                   const ElementTypeMapArray<UInt> &,
+                                   const RemovedElementsEvent &) {}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::onElementsChanged(const Array<Element> &,
+                                   const Array<Element> &,
+                                   const ElementTypeMapArray<UInt> &,
+                                   const ChangedElementsEvent &) {}
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

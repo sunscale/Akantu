@@ -38,6 +38,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_memory.hh"
 #include "element_type_map.hh"
+#include "mesh_events.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -46,7 +47,7 @@ class Integrator;
 class ShapeFunctions;
 class DOFManager;
 class Element;
-}
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
@@ -57,7 +58,7 @@ namespace akantu {
  * containing  the
  * shape functions and the integration method
  */
-class FEEngine : protected Memory {
+class FEEngine : protected Memory, public MeshEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -251,30 +252,6 @@ public:
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
-  /// assemble a field as a lumped matrix (ex. rho in lumped mass)
-  virtual void assembleFieldLumped(__attribute__((unused))
-                                   const Array<Real> & field,
-                                   __attribute__((unused)) const ID & lumped,
-                                   __attribute__((unused)) const ID & dof_id,
-                                   __attribute__((unused))
-                                   DOFManager & dof_manager,
-                                   __attribute__((unused)) ElementType type,
-                                   __attribute__((unused))
-                                   const GhostType & ghost_type) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  };
-
-  /// assemble a field as a matrix (ex. rho to mass matrix)
-  virtual void
-  assembleFieldMatrix(__attribute__((unused)) const Array<Real> & field_1,
-                      __attribute__((unused)) UInt nb_degree_of_freedom,
-                      __attribute__((unused)) SparseMatrix & matrix,
-                      __attribute__((unused)) ElementType type,
-                      __attribute__((unused))
-                      const GhostType & ghost_type) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
 #ifdef AKANTU_STRUCTURAL_MECHANICS
 
   /// assemble a field as a matrix for structural elements (ex. rho to mass
@@ -314,9 +291,31 @@ private:
   void init();
 
   /* ------------------------------------------------------------------------ */
+  /* Mesh Event Handler interface                                             */
+  /* ------------------------------------------------------------------------ */
+public:
+  void onNodesAdded(const Array<UInt> &, const NewNodesEvent &) final {}
+  void onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
+                      const RemovedNodesEvent &) final {}
+  void onElementsAdded(const Array<Element> &,
+                       const NewElementsEvent &) override{};
+  void onElementsRemoved(const Array<Element> &,
+                         const ElementTypeMapArray<UInt> &,
+                         const RemovedElementsEvent &) override {}
+  void onElementsChanged(const Array<Element> &, const Array<Element> &,
+                         const ElementTypeMapArray<UInt> &,
+                         const ChangedElementsEvent &) override {}
+  /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  using ElementTypesIteratorHelper =
+      ElementTypeMapArray<Real, ElementType>::ElementTypesIteratorHelper;
+
+  ElementTypesIteratorHelper elementTypes(UInt dim = _all_dimensions,
+                                          GhostType ghost_type = _not_ghost,
+                                          ElementKind kind = _ek_regular) const;
+
   /// get the dimension of the element handeled by this fe_engine object
   AKANTU_GET_MACRO(ElementDimension, element_dimension, UInt);
 
@@ -377,7 +376,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #include "fe_engine_inline_impl.cc"
 #include "fe_engine_template.hh"

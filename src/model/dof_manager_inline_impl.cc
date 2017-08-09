@@ -63,6 +63,11 @@ const DOFManager::DOFData & DOFManager::getDOFData(const ID & dof_id) const {
 }
 
 /* -------------------------------------------------------------------------- */
+const Array<UInt> & DOFManager::getEquationsNumbers(const ID & dof_id) const {
+  return getDOFData(dof_id).local_equation_number;
+}
+
+/* -------------------------------------------------------------------------- */
 template <class _DOFData>
 inline _DOFData & DOFManager::getDOFDataTyped(const ID & dof_id) {
   return dynamic_cast<_DOFData &>(this->getDOFData(dof_id));
@@ -73,6 +78,7 @@ template <class _DOFData>
 inline const _DOFData & DOFManager::getDOFDataTyped(const ID & dof_id) const {
   return dynamic_cast<const _DOFData &>(this->getDOFData(dof_id));
 }
+
 /* -------------------------------------------------------------------------- */
 inline Array<Real> & DOFManager::getDOFs(const ID & dofs_id) {
   return *(this->getDOFData(dofs_id).dof);

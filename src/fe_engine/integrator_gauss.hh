@@ -38,7 +38,14 @@
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
+namespace integrator {
+  namespace details {
+    template <ElementKind> struct GaussIntegratorComputeJacobiansHelper;
+  } // namespace details
+} // namespace fe_engine
 
+
+/* -------------------------------------------------------------------------- */
 template <ElementKind kind, class IntegrationOrderFunctor>
 class IntegratorGauss : public Integrator {
   /* ------------------------------------------------------------------------ */
@@ -116,11 +123,19 @@ public:
   Vector<Real> getIntegrationWeights() const;
 
 protected:
+  friend struct integrator::details::GaussIntegratorComputeJacobiansHelper<kind>;
+
   template <ElementType type>
-  void computeJacobiansOnIntegrationPoints(const Array<Real> & nodes,
-                                           const Matrix<Real> & quad_points,
-                                           Array<Real> & jacobians,
-                                           const GhostType & ghost_type) const;
+  void computeJacobiansOnIntegrationPoints(
+      const Array<Real> & nodes, const Matrix<Real> & quad_points,
+      Array<Real> & jacobians, const GhostType & ghost_type,
+      const Array<UInt> & filter_elements = empty_filter) const;
+
+  void computeJacobiansOnIntegrationPoints(
+      const Array<Real> & nodes, const Matrix<Real> & quad_points,
+      Array<Real> & jacobians, const ElementType & type,
+      const GhostType & ghost_type,
+      const Array<UInt> & filter_elements = empty_filter) const;
 
   /// precompute jacobians on elements of type "type"
   template <ElementType type>
@@ -161,6 +176,9 @@ public:
                                        const Matrix<Real> & integration_points,
                                        Vector<Real> & jacobians) const;
 
+public:
+  void onElementsAdded(const Array<Element> & elements) override;
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -175,7 +193,7 @@ private:
   ElementTypeMap<Matrix<Real>> quadrature_points;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "integrator_gauss_inline_impl.cc"
 

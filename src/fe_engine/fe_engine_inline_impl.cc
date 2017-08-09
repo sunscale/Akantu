@@ -33,6 +33,7 @@
 #include "fe_engine.hh"
 #include "mesh.hh"
 #include "element_class.hh"
+#include "element_type_conversion.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_FE_ENGINE_INLINE_IMPL_CC__
@@ -59,17 +60,7 @@ inline Real FEEngine::getElementInradius(const Matrix<Real> & coord,
 /* -------------------------------------------------------------------------- */
 inline InterpolationType
 FEEngine::getInterpolationType(const ElementType & type) {
-  AKANTU_DEBUG_IN();
-
-  InterpolationType itp_type = _itp_not_defined;
-
-#define GET_ITP(type) itp_type = ElementClassProperty<type>::interpolation_type;
-
-  AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_ITP);
-#undef GET_ITP
-
-  AKANTU_DEBUG_OUT();
-  return itp_type;
+  return convertType<ElementType, InterpolationType>(type);
 }
 
 /* -------------------------------------------------------------------------- */

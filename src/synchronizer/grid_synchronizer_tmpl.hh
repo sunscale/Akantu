@@ -39,7 +39,7 @@ template <typename E>
 GridSynchronizer::GridSynchronizer(Mesh & mesh, const SpatialGrid<E> & grid,
                                    const ID & id, MemoryID memory_id,
                                    const bool register_to_event_manager,
-                                   UInt event_priority)
+                                   EventHandlerPriority event_priority)
     : ElementSynchronizer(mesh, id, memory_id, register_to_event_manager, event_priority) {
   AKANTU_DEBUG_IN();
 
@@ -54,7 +54,7 @@ GridSynchronizer::GridSynchronizer(
     SynchronizerRegistry & synchronizer_registry,
     const std::set<SynchronizationTag> & tags_to_register, const ID & id,
     MemoryID memory_id, const bool register_to_event_manager,
-    UInt event_priority)
+    EventHandlerPriority event_priority)
     : GridSynchronizer(mesh, grid, id, memory_id, register_to_event_manager,
                        event_priority) {
   AKANTU_DEBUG_IN();

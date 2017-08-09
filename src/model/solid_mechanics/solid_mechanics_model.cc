@@ -83,7 +83,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
   this->registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh,
                                                Model::spatial_dimension);
 
-  this->mesh.registerEventHandler(*this);
+  this->mesh.registerEventHandler(*this, _ehp_solid_mechanics_model);
 
 #if defined(AKANTU_USE_IOHELPER)
   this->mesh.registerDumper<DumperParaview>("paraview_all", id, true);
@@ -1026,9 +1026,6 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
                                           const NewElementsEvent & event) {
   AKANTU_DEBUG_IN();
 
-  this->getFEEngine().initShapeFunctions(_not_ghost);
-  this->getFEEngine().initShapeFunctions(_ghost);
-
   for (auto ghost_type : ghost_types) {
     for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type,
                                        _ek_not_defined)) {
@@ -1058,6 +1055,7 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
 
   for (auto & material : materials)
     material->onElementsAdded(element_list, event);
+
 
   AKANTU_DEBUG_OUT();
 }
@@ -1096,6 +1094,8 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
     internal_force->resize(nb_nodes, 0.);
   if (blocked_dofs)
     blocked_dofs->resize(nb_nodes, 0.);
+  if (current_position)
+    current_position->resize(nb_nodes, 0.);
 
   if (previous_displacement)
     previous_displacement->resize(nb_nodes, 0.);
@@ -1106,6 +1106,15 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
     material->onNodesAdded(nodes_list, event);
   }
 
+  if(this->getDOFManager().hasMatrix("M")) {
+    this->assembleMass(nodes_list);
+  }
+
+  if(this->getDOFManager().hasLumpedMatrix("M")) {
+    this->assembleMassLumped(nodes_list);
+  }
+
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -1115,8 +1124,10 @@ void SolidMechanicsModel::onNodesRemoved(__attribute__((unused))
                                          const Array<UInt> & new_numbering,
                                          __attribute__((unused))
                                          const RemovedNodesEvent & event) {
-  if (displacement)
+  if (displacement) {
     mesh.removeNodesFromArray(*displacement, new_numbering);
+    ++displacement_release;
+  }
   if (mass)
     mesh.removeNodesFromArray(*mass, new_numbering);
   if (velocity)

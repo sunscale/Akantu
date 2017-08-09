@@ -511,16 +511,16 @@ template <class Entity> void Communications<Entity>::resetSchemes() {
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-const typename Communications<Entity>::Scheme &
-Communications<Entity>::getSendScheme(UInt proc) const {
-  return this->schemes[_send].find(proc)->second;
+typename Communications<Entity>::Scheme &
+Communications<Entity>::getScheme(UInt proc, const CommunicationSendRecv & sr) {
+  return this->schemes[sr].find(proc)->second;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 const typename Communications<Entity>::Scheme &
-Communications<Entity>::getRecvScheme(UInt proc) const {
-  return this->schemes[_recv].find(proc)->second;
+Communications<Entity>::getScheme(UInt proc, const CommunicationSendRecv & sr) const {
+  return this->schemes[sr].find(proc)->second;
 }
 
 /* -------------------------------------------------------------------------- */

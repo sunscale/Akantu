@@ -40,31 +40,32 @@ namespace akantu {
 class NodeSynchronizer : public MeshEventHandler,
                          public SynchronizerImpl<UInt> {
 public:
-  NodeSynchronizer(
-      Mesh & mesh, const ID & id = "element_synchronizer",
-      MemoryID memory_id = 0, const bool register_to_event_manager = true,
-      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
+  NodeSynchronizer(Mesh & mesh, const ID & id = "element_synchronizer",
+                   MemoryID memory_id = 0,
+                   const bool register_to_event_manager = true,
+                   EventHandlerPriority event_priority = _ehp_synchronizer);
 
   virtual ~NodeSynchronizer();
 
   friend class NodeInfoPerProc;
 
   /// function to implement to react on  akantu::NewNodesEvent
-  virtual void onNodesAdded(const Array<UInt> &, const NewNodesEvent &) {}
+  void onNodesAdded(const Array<UInt> &, const NewNodesEvent &) override;
+
   /// function to implement to react on  akantu::RemovedNodesEvent
-  virtual void onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
-                              const RemovedNodesEvent &) {}
+  void onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
+                      const RemovedNodesEvent &) override {}
   /// function to implement to react on  akantu::NewElementsEvent
-  virtual void onElementsAdded(const Array<Element> &,
-                               const NewElementsEvent &) {}
+  void onElementsAdded(const Array<Element> &,
+                       const NewElementsEvent &) override {}
   /// function to implement to react on  akantu::RemovedElementsEvent
-  virtual void onElementsRemoved(const Array<Element> &,
-                                 const ElementTypeMapArray<UInt> &,
-                                 const RemovedElementsEvent &) {}
+  void onElementsRemoved(const Array<Element> &,
+                         const ElementTypeMapArray<UInt> &,
+                         const RemovedElementsEvent &) override {}
   /// function to implement to react on  akantu::ChangedElementsEvent
-  virtual void onElementsChanged(const Array<Element> &, const Array<Element> &,
-                                 const ElementTypeMapArray<UInt> &,
-                                 const ChangedElementsEvent &) {}
+  void onElementsChanged(const Array<Element> &, const Array<Element> &,
+                         const ElementTypeMapArray<UInt> &,
+                         const ChangedElementsEvent &) override {}
 
 public:
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
@@ -73,6 +74,6 @@ protected:
   Mesh & mesh;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_NODE_SYNCHRONIZER_HH__ */

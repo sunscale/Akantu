@@ -57,16 +57,10 @@ class ElementSynchronizer : public SynchronizerImpl<Element>,
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ElementSynchronizer(Mesh & mesh, const StaticCommunicator & comm,
-                      const ID & id = "element_synchronizer",
-                      MemoryID memory_id = 0,
-                      bool register_to_event_manager = true,
-                      UInt event_priority = 100);
-
   ElementSynchronizer(Mesh & mesh, const ID & id = "element_synchronizer",
                       MemoryID memory_id = 0,
                       bool register_to_event_manager = true,
-                      UInt event_priority = 100);
+                      EventHandlerPriority event_priority = _ehp_synchronizer);
 
 public:
   virtual ~ElementSynchronizer();
