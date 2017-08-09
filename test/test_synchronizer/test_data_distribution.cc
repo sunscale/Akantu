@@ -61,9 +61,9 @@ int main(int argc, char * argv[]) {
     for (Mesh::type_iterator tit = mesh_group_after.firstType(_all_dimensions);
          tit != mesh_group_after.lastType(_all_dimensions); ++tit) {
       Array<UInt> & gidb =
-          *(mesh_group_before.getDataPointer<UInt>("global_id", *tit));
+          mesh_group_before.getDataPointer<UInt>("global_id", *tit);
       Array<UInt> & gida =
-          *(mesh_group_after.getDataPointer<UInt>("global_id", *tit));
+          mesh_group_after.getDataPointer<UInt>("global_id", *tit);
 
       Array<UInt>::scalar_iterator ait = gida.begin();
       Array<UInt>::scalar_iterator bit = gidb.begin();
@@ -100,10 +100,10 @@ int main(int argc, char * argv[]) {
       for (Mesh::type_iterator tit =
                bgrp.firstType(_all_dimensions, ghost_type);
            tit != bgrp.lastType(_all_dimensions, ghost_type); ++tit) {
-        Array<UInt> & gidb = *(mesh_group_before.getDataPointer<UInt>(
-            "global_id", *tit, ghost_type));
-        Array<UInt> & gida = *(mesh_group_after.getDataPointer<UInt>(
-            "global_id", *tit, ghost_type));
+        Array<UInt> & gidb = mesh_group_before.getDataPointer<UInt>(
+            "global_id", *tit, ghost_type);
+        Array<UInt> & gida = mesh_group_after.getDataPointer<UInt>(
+            "global_id", *tit, ghost_type);
 
         Array<UInt> bgelem(bgrp.getElements(*tit, ghost_type));
         Array<UInt> agelem(agrp.getElements(*tit, ghost_type));

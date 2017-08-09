@@ -32,12 +32,11 @@
 
 /* -------------------------------------------------------------------------- */
 #include "mesh_partition.hh"
-#include "mesh_utils.hh"
 #include "aka_types.hh"
+#include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 #include <unordered_map>
 /* -------------------------------------------------------------------------- */
-
 
 namespace akantu {
 
@@ -73,55 +72,40 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
   AKANTU_DEBUG_IN();
 
   // tweak mesh;
-  const Mesh::ConnectivityTypeList & type_list = mesh.getConnectivityTypeList();
-  UInt nb_types = type_list.size();
   UInt nb_good_types = 0;
 
-  Vector<UInt> nb_nodes_per_element_p1(nb_types);
-
-  Vector<UInt> magic_number(nb_types);
-
-  //  UInt * conn_val[nb_types];
-  Vector<UInt> nb_element(nb_types);
-
-  Array<UInt> ** conn = new Array<UInt> *[nb_types];
-
-  Array<Element> lin_to_element;
+  std::vector<UInt> nb_nodes_per_element_p1;
+  std::vector<UInt> magic_number;
+  std::vector<UInt> nb_element;
+  std::vector<Array<UInt> *> conn;
 
   Element elem;
   elem.ghost_type = _not_ghost;
 
-  const_cast<Mesh &>(mesh).updateTypesOffsets(_not_ghost);
-  const_cast<Mesh &>(mesh).updateTypesOffsets(_ghost);
+  UInt spatial_dimension = mesh.getSpatialDimension();
 
-  Mesh::ConnectivityTypeList::const_iterator it;
-  for (it = type_list.begin(); it != type_list.end(); ++it) {
-    ElementType type = *it;
-    if (Mesh::getSpatialDimension(type) != mesh.getSpatialDimension())
-      continue;
+  for (auto & type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
     elem.type = type;
 
     ElementType type_p1 = Mesh::getP1ElementType(type);
 
-    nb_nodes_per_element_p1[nb_good_types] =
-        Mesh::getNbNodesPerElement(type_p1);
-    nb_element[nb_good_types] =
-        mesh.getConnectivity(type, _not_ghost).getSize();
-    magic_number[nb_good_types] =
-        Mesh::getNbNodesPerElement(Mesh::getFacetType(type_p1));
+    conn.push_back(
+        &const_cast<Array<UInt> &>(mesh.getConnectivity(type, _not_ghost)));
+    nb_nodes_per_element_p1.push_back(Mesh::getNbNodesPerElement(type_p1));
+    nb_element.push_back(conn.back()->getSize());
+    magic_number.push_back(
+        Mesh::getNbNodesPerElement(Mesh::getFacetType(type_p1)));
 
-    conn[nb_good_types] =
-        &const_cast<Array<UInt> &>(mesh.getConnectivity(type, _not_ghost));
-
-    for (UInt i = 0; i < nb_element[nb_good_types]; ++i) {
+    for (UInt i = 0; i < nb_element.back(); ++i) {
       elem.element = i;
       lin_to_element.push_back(elem);
     }
 
-    nb_good_types++;
+    ++nb_good_types;
   }
 
-  CSR<UInt> node_to_elem;
+  CSR<Element> node_to_elem;
 
   MeshUtils::buildNode2Elements(mesh, node_to_elem);
 
@@ -157,9 +141,11 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
       /// fill the weight map
       for (UInt n = 0; n < nb_nodes_per_element_p1[t]; ++n) {
         UInt node = (*conn[t])(el, n);
-        CSR<UInt>::iterator k;
+        CSR<Element>::iterator k;
         for (k = node_to_elem.rbegin(node); k != node_to_elem.rend(node); --k) {
-          UInt current_el = *k;
+          Element current_element = *k;
+          UInt current_el = lin_to_element.find(current_element);
+
           if (current_el <= linerized_el)
             break;
 
@@ -180,10 +166,8 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
 #if defined(AKANTU_COHESIVE_ELEMENT)
           /// Patch in order to prevent neighboring cohesive elements
           /// from detecting each other
-          ElementKind linearized_el_kind =
-              mesh.linearizedToElement(linerized_el).kind;
-          ElementKind adjacent_el_kind =
-              mesh.linearizedToElement(adjacent_el).kind;
+          ElementKind linearized_el_kind = lin_to_element(linerized_el).kind;
+          ElementKind adjacent_el_kind = lin_to_element(adjacent_el).kind;
 
           if (linearized_el_kind == adjacent_el_kind &&
               linearized_el_kind == _ek_cohesive)
@@ -228,8 +212,6 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
     }
   }
 
-  delete [] conn;
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -238,24 +220,17 @@ void MeshPartition::fillPartitionInformation(
     const Mesh & mesh, const Int * linearized_partitions) {
   AKANTU_DEBUG_IN();
 
-  CSR<UInt> node_to_elem;
+  CSR<Element> node_to_elem;
 
   MeshUtils::buildNode2Elements(mesh, node_to_elem);
 
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, _not_ghost, _ek_not_defined);
-  Mesh::type_iterator end =
-      mesh.lastType(spatial_dimension, _not_ghost, _ek_not_defined);
-
   UInt linearized_el = 0;
-  for (; it != end; ++it) {
-    ElementType type = *it;
-
+  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
     UInt nb_element = mesh.getNbElement(type);
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
     partitions.alloc(nb_element, 1, type, _not_ghost);
-    CSR<UInt> & ghost_part_csr = ghost_partitions_csr(type, _not_ghost);
+    auto & ghost_part_csr = ghost_partitions_csr(type, _not_ghost);
     ghost_part_csr.resizeRows(nb_element);
 
     ghost_partitions_offset.alloc(nb_element + 1, 1, type, _ghost);
@@ -270,10 +245,11 @@ void MeshPartition::fillPartitionInformation(
       std::list<UInt> list_adj_part;
       for (UInt n = 0; n < nb_nodes_per_element; ++n) {
         UInt node = connectivity.storage()[el * nb_nodes_per_element + n];
-        CSR<UInt>::iterator ne;
+        CSR<Element>::iterator ne;
         for (ne = node_to_elem.begin(node); ne != node_to_elem.end(node);
              ++ne) {
-          UInt adj_el = *ne;
+          const Element & adj_element = *ne;
+          UInt adj_el = lin_to_element.find(adj_element);
           UInt adj_part = linearized_partitions[adj_el];
           if (part != adj_part) {
             list_adj_part.push_back(adj_part);
@@ -284,12 +260,11 @@ void MeshPartition::fillPartitionInformation(
       list_adj_part.sort();
       list_adj_part.unique();
 
-      for (std::list<UInt>::iterator adj_it = list_adj_part.begin();
-           adj_it != list_adj_part.end(); ++adj_it) {
-        ghost_part_csr.getRows().push_back(*adj_it);
+      for (auto & adj_part : list_adj_part) {
+        ghost_part_csr.getRows().push_back(adj_part);
         ghost_part_csr.rowOffset(el)++;
 
-        ghost_partitions(type, _ghost).push_back(*adj_it);
+        ghost_partitions(type, _ghost).push_back(adj_part);
         ghost_partitions_offset(type, _ghost)(el)++;
       }
     }
@@ -308,23 +283,18 @@ void MeshPartition::fillPartitionInformation(
 
   // All Facets
   for (Int sp = spatial_dimension - 1; sp >= 0; --sp) {
-    Mesh::type_iterator fit = mesh.firstType(sp, _not_ghost, _ek_not_defined);
-    Mesh::type_iterator fend = mesh.lastType(sp, _not_ghost, _ek_not_defined);
-
-    for (; fit != fend; ++fit) {
-      ElementType type = *fit;
-
+    for (auto & type : mesh.elementTypes(sp, _not_ghost, _ek_not_defined)) {
       UInt nb_element = mesh.getNbElement(type);
 
       partitions.alloc(nb_element, 1, type, _not_ghost);
       AKANTU_DEBUG_INFO("Allocating partitions for " << type);
-      CSR<UInt> & ghost_part_csr = ghost_partitions_csr(type, _not_ghost);
+      auto & ghost_part_csr = ghost_partitions_csr(type, _not_ghost);
       ghost_part_csr.resizeRows(nb_element);
 
       ghost_partitions_offset.alloc(nb_element + 1, 1, type, _ghost);
       ghost_partitions.alloc(0, 1, type, _ghost);
       AKANTU_DEBUG_INFO("Allocating ghost_partitions for " << type);
-      const Array<std::vector<Element> > & elem_to_subelem =
+      const Array<std::vector<Element>> & elem_to_subelem =
           mesh.getElementToSubelement(type, _not_ghost);
       for (UInt i(0); i < mesh.getNbElement(type, _not_ghost);
            ++i) { // Facet loop
@@ -348,22 +318,21 @@ void MeshPartition::fillPartitionInformation(
           }
           partitions(type, _not_ghost)(i) = min_part;
 
-          CSR<UInt>::iterator git =
+          auto git =
               ghost_partitions_csr(min_elem.type, _not_ghost)
                   .begin(min_elem.element);
-          CSR<UInt>::iterator gend =
+          auto gend =
               ghost_partitions_csr(min_elem.type, _not_ghost)
                   .end(min_elem.element);
           for (; git != gend; ++git) {
-            adjacent_parts.insert(*git);
+
+            adjacent_parts.insert(min_part);
           }
           adjacent_parts.erase(min_part);
-          std::set<UInt>::const_iterator pit = adjacent_parts.begin();
-          std::set<UInt>::const_iterator pend = adjacent_parts.end();
-          for (; pit != pend; ++pit) {
-            ghost_part_csr.getRows().push_back(*pit);
+          for (auto & part : adjacent_parts) {
+            ghost_part_csr.getRows().push_back(part);
             ghost_part_csr.rowOffset(i)++;
-            ghost_partitions(type, _ghost).push_back(*pit);
+            ghost_partitions(type, _ghost).push_back(part);
           }
 
           ghost_partitions_offset(type, _ghost)(i + 1) =
@@ -438,4 +407,4 @@ void MeshPartition::restoreConnectivity() {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

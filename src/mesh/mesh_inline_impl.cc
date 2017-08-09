@@ -53,21 +53,68 @@ inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh,
 
 /* -------------------------------------------------------------------------- */
 template <>
+inline void Mesh::sendEvent<NewElementsEvent>(NewElementsEvent & event) {
+  this->nodes_to_elements.resize(nodes->getSize());
+  for (const auto & elem : event.getList()) {
+    const Array<UInt> & conn = connectivities(elem.type, elem.ghost_type);
+
+    UInt nb_nodes_per_elem = this->getNbNodesPerElement(elem.type);
+
+    for (UInt n = 0; n < nb_nodes_per_elem; ++n) {
+      UInt node = conn(elem.element, n);
+      if (not nodes_to_elements[node])
+        nodes_to_elements[node] = std::make_unique<std::set<Element>>();
+      nodes_to_elements[node]->insert(elem);
+    }
+  }
+
+  EventHandlerManager<MeshEventHandler>::sendEvent(event);
+}
+
+/* -------------------------------------------------------------------------- */
+template <> inline void Mesh::sendEvent<NewNodesEvent>(NewNodesEvent & event) {
+  this->computeBoundingBox();
+
+  EventHandlerManager<MeshEventHandler>::sendEvent(event);
+}
+
+/* -------------------------------------------------------------------------- */
+template <>
 inline void
 Mesh::sendEvent<RemovedElementsEvent>(RemovedElementsEvent & event) {
   this->connectivities.onElementsRemoved(event.getNewNumbering());
+  this->fillNodesToElements();
+  this->computeBoundingBox();
+
   EventHandlerManager<MeshEventHandler>::sendEvent(event);
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
 inline void Mesh::sendEvent<RemovedNodesEvent>(RemovedNodesEvent & event) {
-  if (created_nodes)
-    this->removeNodesFromArray(*nodes, event.getNewNumbering());
+  const auto & new_numbering = event.getNewNumbering();
+  this->removeNodesFromArray(*nodes, new_numbering);
   if (nodes_global_ids)
-    this->removeNodesFromArray(*nodes_global_ids, event.getNewNumbering());
+    this->removeNodesFromArray(*nodes_global_ids, new_numbering);
   if (nodes_type.getSize() != 0)
-    this->removeNodesFromArray(nodes_type, event.getNewNumbering());
+    this->removeNodesFromArray(nodes_type, new_numbering);
+
+  std::vector<std::unique_ptr<std::set<Element>>> tmp(nodes_to_elements.size());
+  auto it = nodes_to_elements.begin();
+
+  UInt new_nb_nodes = 0;
+  for (auto new_i : new_numbering) {
+    if (new_i != UInt(-1)) {
+      tmp[new_i] = std::move(*it);
+      ++new_nb_nodes;
+    }
+    ++it;
+  }
+
+  tmp.resize(new_nb_nodes);
+  std::move(tmp.begin(), tmp.end(), nodes_to_elements.begin());
+
+  computeBoundingBox();
 
   EventHandlerManager<MeshEventHandler>::sendEvent(event);
 }
@@ -94,90 +141,97 @@ inline void Mesh::removeNodesFromArray(Array<T> & vect,
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt Mesh::elementToLinearized(const Element & elem) const {
-  AKANTU_DEBUG_ASSERT(elem.type < _max_element_type &&
-                          elem.element < types_offsets.storage()[elem.type + 1],
-                      "The element " << elem << "does not exists in the mesh "
-                                     << getID());
+// inline UInt Mesh::elementToLinearized(const Element & elem) const {
+//   AKANTU_DEBUG_ASSERT(elem.type < _max_element_type &&
+//                           elem.element < types_offsets.storage()[elem.type +
+//                           1],
+//                       "The element " << elem << "does not exists in the mesh
+//                       "
+//                                      << getID());
 
-  return types_offsets.storage()[elem.type] + elem.element;
-}
+//   return types_offsets.storage()[elem.type] + elem.element;
+// }
+
+// /* --------------------------------------------------------------------------
+// */ inline Element Mesh::linearizedToElement(UInt linearized_element) const {
+
+//   UInt t;
+
+//   for (t = _not_defined;
+//        t != _max_element_type && linearized_element >= types_offsets(t); ++t)
+//     ;
+
+//   AKANTU_DEBUG_ASSERT(linearized_element < types_offsets(t),
+//                       "The linearized element "
+//                           << linearized_element
+//                           << "does not exists in the mesh " << getID());
+
+//   --t;
+//   ElementType type = ElementType(t);
+//   return Element(type, linearized_element - types_offsets.storage()[t],
+//                  _not_ghost, getKind(type));
+// }
+
+// /* --------------------------------------------------------------------------
+// */ inline void Mesh::updateTypesOffsets(const GhostType & ghost_type) {
+//   Array<UInt> * types_offsets_ptr = &this->types_offsets;
+//   if (ghost_type == _ghost)
+//     types_offsets_ptr = &this->ghost_types_offsets;
+//   Array<UInt> & types_offsets = *types_offsets_ptr;
+
+//   types_offsets.clear();
+//   for (auto type : elementTypes(_all_dimensions, ghost_type,
+//   _ek_not_defined))
+//     types_offsets(type) = connectivities(type, ghost_type).getSize();
+
+//   for (UInt t = _not_defined + 1; t < _max_element_type; ++t)
+//     types_offsets(t) += types_offsets(t - 1);
+//   for (UInt t = _max_element_type; t > _not_defined; --t)
+//     types_offsets(t) = types_offsets(t - 1);
+//   types_offsets(0) = 0;
+// }
+
+// /* --------------------------------------------------------------------------
+// */ inline const Mesh::ConnectivityTypeList &
+// Mesh::getConnectivityTypeList(const GhostType & ghost_type) const {
+//   if (ghost_type == _not_ghost)
+//     return type_set;
+//   else
+//     return ghost_type_set;
+// }
 
 /* -------------------------------------------------------------------------- */
-inline Element Mesh::linearizedToElement(UInt linearized_element) const {
-
-  UInt t;
-
-  for (t = _not_defined;
-       t != _max_element_type && linearized_element >= types_offsets(t); ++t)
-    ;
-
-  AKANTU_DEBUG_ASSERT(linearized_element < types_offsets(t),
-                      "The linearized element "
-                          << linearized_element
-                          << "does not exists in the mesh " << getID());
-
-  --t;
-  ElementType type = ElementType(t);
-  return Element(type, linearized_element - types_offsets.storage()[t],
-                 _not_ghost, getKind(type));
-}
-
-/* -------------------------------------------------------------------------- */
-inline void Mesh::updateTypesOffsets(const GhostType & ghost_type) {
-  Array<UInt> * types_offsets_ptr = &this->types_offsets;
-  if (ghost_type == _ghost)
-    types_offsets_ptr = &this->ghost_types_offsets;
-  Array<UInt> & types_offsets = *types_offsets_ptr;
-
-  types_offsets.clear();
-  for (auto type : elementTypes(_all_dimensions, ghost_type, _ek_not_defined))
-    types_offsets(type) = connectivities(type, ghost_type).getSize();
-
-  for (UInt t = _not_defined + 1; t < _max_element_type; ++t)
-    types_offsets(t) += types_offsets(t - 1);
-  for (UInt t = _max_element_type; t > _not_defined; --t)
-    types_offsets(t) = types_offsets(t - 1);
-  types_offsets(0) = 0;
-}
-
-/* -------------------------------------------------------------------------- */
-inline const Mesh::ConnectivityTypeList &
-Mesh::getConnectivityTypeList(const GhostType & ghost_type) const {
-  if (ghost_type == _not_ghost)
-    return type_set;
-  else
-    return ghost_type_set;
-}
-
-/* -------------------------------------------------------------------------- */
-inline Array<UInt> * Mesh::getNodesGlobalIdsPointer() {
+inline Array<UInt> & Mesh::getNodesGlobalIdsPointer() {
   AKANTU_DEBUG_IN();
-  if (nodes_global_ids == NULL) {
-    std::stringstream sstr;
-    sstr << getID() << ":nodes_global_ids";
-    nodes_global_ids = &(alloc<UInt>(sstr.str(), nodes->getSize(), 1));
-    for (UInt i = 0; i < nodes->getSize(); ++i) {
-      (*nodes_global_ids)(i) = i;
+  if (not nodes_global_ids) {
+    auto nb_nodes = nodes->getSize();
+    nodes_global_ids = std::make_unique<Array<UInt>>(
+        nb_nodes, 1, getID() + ":nodes_global_ids");
+
+    UInt i = 0;
+    for (auto & global_id : *nodes_global_ids) {
+      global_id = ++i;
     }
   }
+
   AKANTU_DEBUG_OUT();
-  return nodes_global_ids;
+  return *nodes_global_ids;
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<NodeType> * Mesh::getNodesTypePointer() {
+inline Array<NodeType> & Mesh::getNodesTypePointer() {
   AKANTU_DEBUG_IN();
   if (nodes_type.getSize() == 0) {
     nodes_type.resize(nodes->getSize());
     nodes_type.set(_nt_normal);
   }
+
   AKANTU_DEBUG_OUT();
-  return &nodes_type;
+  return nodes_type;
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<UInt> *
+inline Array<UInt> &
 Mesh::getConnectivityPointer(const ElementType & type,
                              const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
@@ -190,38 +244,35 @@ Mesh::getConnectivityPointer(const ElementType & type,
 
     AKANTU_DEBUG_INFO("The connectivity vector for the type " << type
                                                               << " created");
+    // if (ghost_type == _not_ghost)
+    //   type_set.insert(type);
+    // else
+    //   ghost_type_set.insert(type);
 
-    if (ghost_type == _not_ghost)
-      type_set.insert(type);
-    else
-      ghost_type_set.insert(type);
-
-    updateTypesOffsets(ghost_type);
+    // updateTypesOffsets(ghost_type);
   } else {
     tmp = &connectivities(type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
-  return tmp;
+  return *tmp;
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<std::vector<Element>> *
+inline Array<std::vector<Element>> &
 Mesh::getElementToSubelementPointer(const ElementType & type,
                                     const GhostType & ghost_type) {
-  Array<std::vector<Element>> * tmp = getDataPointer<std::vector<Element>>(
-      "element_to_subelement", type, ghost_type, 1, true);
-  return tmp;
+  return getDataPointer<std::vector<Element>>("element_to_subelement", type,
+                                              ghost_type, 1, true);
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<Element> *
+inline Array<Element> &
 Mesh::getSubelementToElementPointer(const ElementType & type,
                                     const GhostType & ghost_type) {
-  Array<Element> * tmp = getDataPointer<Element>(
-      "subelement_to_element", type, ghost_type, getNbFacetsPerElement(type),
-      true, is_mesh_facets);
-  return tmp;
+  return getDataPointer<Element>("subelement_to_element", type, ghost_type,
+                                 getNbFacetsPerElement(type), true,
+                                 is_mesh_facets);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -256,7 +307,7 @@ Mesh::getSubelementToElement(const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline Array<T> *
+inline Array<T> &
 Mesh::getDataPointer(const std::string & data_name, const ElementType & el_type,
                      const GhostType & ghost_type, UInt nb_component,
                      bool size_to_nb_element, bool resize_with_parent) {
@@ -272,7 +323,7 @@ Mesh::getDataPointer(const std::string & data_name, const ElementType & el_type,
     tmp.resize(0);
   }
 
-  return &tmp;
+  return tmp;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -625,6 +676,6 @@ inline const Mesh & Mesh::getMeshParent() const {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_INLINE_IMPL_CC__ */

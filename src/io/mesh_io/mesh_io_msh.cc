@@ -824,21 +824,21 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
             sstr_elem >> tag;
             std::stringstream sstr_tag_name;
             sstr_tag_name << "tag_" << j;
-            Array<UInt> * data = mesh.getDataPointer<UInt>(
+            Array<UInt> & data = mesh.getDataPointer<UInt>(
                 sstr_tag_name.str(), akantu_type, _not_ghost);
-            data->push_back(tag);
+            data.push_back(tag);
           }
         } else if (file_format == 1) {
           Int tag;
           sstr_elem >> tag; // reg-phys
           std::string tag_name = "tag_0";
           Array<UInt> * data =
-              mesh.getDataPointer<UInt>(tag_name, akantu_type, _not_ghost);
+              &mesh.getDataPointer<UInt>(tag_name, akantu_type, _not_ghost);
           data->push_back(tag);
 
           sstr_elem >> tag; // reg-elem
           tag_name = "tag_1";
-          data = mesh.getDataPointer<UInt>(tag_name, akantu_type, _not_ghost);
+          data = &mesh.getDataPointer<UInt>(tag_name, akantu_type, _not_ghost);
           data->push_back(tag);
 
           sstr_elem >> tag; // number-of-nodes
@@ -867,7 +867,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
     }
   }
 
-  mesh.updateTypesOffsets(_not_ghost);
+  //mesh.updateTypesOffsets(_not_ghost);
 
   infile.close();
 

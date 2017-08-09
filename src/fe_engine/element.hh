@@ -27,6 +27,9 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_ELEMENT_HH__
 #define __AKANTU_ELEMENT_HH__
@@ -40,11 +43,9 @@ class Element;
 extern const Element ElementNull;
 
 class Element {
-
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
   explicit Element(ElementType type = _not_defined, UInt element = 0,
           GhostType ghost_type = _not_ghost, ElementKind kind = _ek_regular) :
@@ -58,14 +59,12 @@ public:
     this->kind = element.kind;
   }
 
-  virtual ~Element() {};
+  virtual ~Element() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-
 public:
-
   inline bool operator==(const Element & elem) const {
     return ((element == elem.element)
             && (type == elem.type)
@@ -80,7 +79,7 @@ public:
             || (kind != elem.kind));
   }
 
-  bool operator<(const Element& rhs) const {
+  bool operator<(const Element & rhs) const {
     bool res = (rhs == ElementNull) || ((this->kind < rhs.kind) ||
                                         ((this->kind == rhs.kind) &&
                                          ((this->ghost_type < rhs.ghost_type) ||
@@ -97,9 +96,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-  
 public:
-
   const ElementType & getType(){return type;}
   const UInt & getIndex(){return element;};
   const GhostType & getGhostType(){return ghost_type;}
@@ -108,18 +105,11 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-
 public:
   ElementType type;
   UInt element;
   GhostType ghost_type;
   ElementKind kind;
-};
-
-struct CompElementLess {
-  bool operator() (const Element& lhs, const Element& rhs) const {
-    return lhs < rhs;
-  }
 };
 
 } // akantu

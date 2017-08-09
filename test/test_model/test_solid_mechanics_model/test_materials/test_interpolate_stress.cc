@@ -56,7 +56,7 @@ int main(int argc, char * argv[]) {
   mesh.read("interpolation.msh");
   const ElementType type_facet = mesh.getFacetType(type);
 
-  Mesh mesh_facets(mesh.initMeshFacets("mesh_facets"));
+  Mesh & mesh_facets = mesh.initMeshFacets("mesh_facets");
   MeshUtils::buildAllFacets(mesh, mesh_facets);
 
   SolidMechanicsModel model(mesh);

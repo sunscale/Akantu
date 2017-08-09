@@ -27,24 +27,33 @@
  *
  */
 /* -------------------------------------------------------------------------- */
-#include "mesh.hh"
 #include "fe_engine.hh"
+#include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 FEEngineElementTypeMapArrayInializer::FEEngineElementTypeMapArrayInializer(
-      const FEEngine & fe_engine, UInt spatial_dimension,
-      UInt nb_component, const GhostType & ghost_type,
-      const ElementKind & element_kind)
-      : MeshElementTypeMapArrayInializer(fe_engine.getMesh(), spatial_dimension,
-                                         nb_component, ghost_type, element_kind,
-                                         true, false),
-        fe_engine(fe_engine) {}
+    const FEEngine & fe_engine, UInt nb_component, UInt spatial_dimension,
+    const GhostType & ghost_type, const ElementKind & element_kind)
+    : MeshElementTypeMapArrayInializer(
+          fe_engine.getMesh(),
+          nb_component,
+          spatial_dimension == UInt(-2)
+              ? fe_engine.getMesh().getSpatialDimension()
+              : spatial_dimension,
+          ghost_type, element_kind, true, false),
+      fe_engine(fe_engine) {}
 
-UInt FEEngineElementTypeMapArrayInializer::size(const ElementType & type) const {
+UInt FEEngineElementTypeMapArrayInializer::size(
+    const ElementType & type) const {
   return MeshElementTypeMapArrayInializer::size(type) *
-    fe_engine.getNbIntegrationPoints(type, this->ghost_type);
+         fe_engine.getNbIntegrationPoints(type, this->ghost_type);
 }
 
-}  // akantu
+FEEngineElementTypeMapArrayInializer::ElementTypesIteratorHelper
+FEEngineElementTypeMapArrayInializer::elementTypes() const {
+  return this->fe_engine.elementTypes(spatial_dimension, ghost_type,
+                                      element_kind);
+}
+} // namespace akantu

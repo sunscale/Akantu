@@ -451,26 +451,18 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
 
   qi::phrase_parse(iter, end, g, ws);
 
-  std::vector<std::string>::const_iterator mnit = g.getMaterialNames().begin();
-  std::vector<std::string>::const_iterator mnend = g.getMaterialNames().end();
-
   MeshAccessor mesh_accessor(mesh);
 
-  for (; mnit != mnend; ++mnit) {
-    Mesh::element_group_iterator eg_it = mesh.element_group_find(*mnit);
-    ElementGroup & eg = *eg_it->second;
+  for (auto & mat_name : g.getMaterialNames()) {
+    auto eg_it = mesh.element_group_find(mat_name);
+    auto & eg = *eg_it->second;
     if (eg_it != mesh.element_group_end()) {
-      ElementGroup::type_iterator tit = eg.firstType();
-      ElementGroup::type_iterator tend = eg.lastType();
-
-      for (; tit != tend; ++tit) {
+      for (auto & type : eg.elementTypes()) {
         Array<std::string> & abaqus_material =
-            mesh_accessor.getData<std::string>("abaqus_material", *tit);
+            mesh_accessor.getData<std::string>("abaqus_material", type);
 
-        ElementGroup::const_element_iterator eit = eg.element_begin(*tit);
-        ElementGroup::const_element_iterator eend = eg.element_end(*tit);
-        for (; eit != eend; ++eit) {
-          abaqus_material(*eit) = *mnit;
+        for (auto elem : eg.getElements(type)) {
+          abaqus_material(elem) = mat_name;
         }
       }
     }

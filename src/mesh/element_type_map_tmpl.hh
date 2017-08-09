@@ -34,6 +34,8 @@
 #include "element_type_map.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
+#include "element_type_conversion.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__
 #define __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__
@@ -41,7 +43,7 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-/* ElementTypeMap */
+/* ElementTypeMap                                                             */
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 inline std::string
@@ -136,13 +138,10 @@ void ElementTypeMap<Stored, SupportType>::printself(std::ostream & stream,
 
   stream << space << "ElementTypeMap<" << debug::demangle(typeid(Stored).name())
          << "> [" << std::endl;
-  for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
-
+  for (auto gt : ghost_types) {
     const DataMap & data = getData(gt);
-    typename DataMap::const_iterator it;
-    for (it = data.begin(); it != data.end(); ++it) {
-      stream << space << space << ElementTypeMap::printType(it->first, gt)
+    for (auto & pair : data) {
+      stream << space << space << ElementTypeMap::printType(pair.first, gt)
              << std::endl;
     }
   }
@@ -218,13 +217,10 @@ template <typename T, typename SupportType>
 inline void ElementTypeMapArray<T, SupportType>::free() {
   AKANTU_DEBUG_IN();
 
-  for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
-
+  for (auto gt : ghost_types) {
     DataMap & data = this->getData(gt);
-    typename DataMap::const_iterator it;
-    for (it = data.begin(); it != data.end(); ++it) {
-      dealloc(it->second->getID());
+    for (auto & pair : data) {
+      dealloc(pair.second->getID());
     }
     data.clear();
   }
@@ -235,13 +231,10 @@ inline void ElementTypeMapArray<T, SupportType>::free() {
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
 inline void ElementTypeMapArray<T, SupportType>::clear() {
-  for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
-
+  for (auto gt : ghost_types) {
     DataMap & data = this->getData(gt);
-    typename DataMap::const_iterator it;
-    for (it = data.begin(); it != data.end(); ++it) {
-      it->second->clear();
+    for (auto & vect : data) {
+      vect.second->clear();
     }
   }
 }
@@ -303,22 +296,20 @@ ElementTypeMapArray<T, SupportType>::setArray(const SupportType & type,
 template <typename T, typename SupportType>
 inline void ElementTypeMapArray<T, SupportType>::onElementsRemoved(
     const ElementTypeMapArray<UInt> & new_numbering) {
-  for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
-    ElementTypeMapArray<UInt>::type_iterator it =
-        new_numbering.firstType(_all_dimensions, gt, _ek_not_defined);
-    ElementTypeMapArray<UInt>::type_iterator end =
-        new_numbering.lastType(_all_dimensions, gt, _ek_not_defined);
-    for (; it != end; ++it) {
-      SupportType type = *it;
-      if (this->exists(type, gt)) {
-        const Array<UInt> & renumbering = new_numbering(type, gt);
+  for (auto gt : ghost_types) {
+    for (auto & type :
+         new_numbering.elementTypes(_all_dimensions, gt, _ek_not_defined)) {
+      SupportType support_type = convertType<ElementType, SupportType>(type);
+      if (this->exists(support_type, gt)) {
+        const auto & renumbering = new_numbering(type, gt);
         if (renumbering.getSize() == 0)
           continue;
-        Array<T> & vect = this->operator()(type, gt);
-        UInt nb_component = vect.getNbComponent();
+
+        auto & vect = this->operator()(support_type, gt);
+        auto nb_component = vect.getNbComponent();
         Array<T> tmp(renumbering.getSize(), nb_component);
         UInt new_size = 0;
+
         for (UInt i = 0; i < vect.getSize(); ++i) {
           UInt new_i = renumbering(i);
           if (new_i != UInt(-1)) {
@@ -513,8 +504,9 @@ protected:
 class MeshElementTypeMapArrayInializer : public ElementTypeMapArrayInializer {
 public:
   MeshElementTypeMapArrayInializer(
-      const Mesh & mesh, UInt spatial_dimension = _all_dimensions,
-      UInt nb_component = 1, const GhostType & ghost_type = _not_ghost,
+      const Mesh & mesh, UInt nb_component = 1,
+      UInt spatial_dimension = _all_dimensions,
+      const GhostType & ghost_type = _not_ghost,
       const ElementKind & element_kind = _ek_regular,
       bool with_nb_element = false, bool with_nb_nodes_per_element = false)
       : ElementTypeMapArrayInializer(spatial_dimension, nb_component,
@@ -552,11 +544,17 @@ class FEEngineElementTypeMapArrayInializer
     : public MeshElementTypeMapArrayInializer {
 public:
   FEEngineElementTypeMapArrayInializer(
-      const FEEngine & fe_engine, UInt spatial_dimension = _all_dimensions,
-      UInt nb_component = 1, const GhostType & ghost_type = _not_ghost,
+      const FEEngine & fe_engine, UInt nb_component = 1,
+      UInt spatial_dimension = _all_dimensions,
+      const GhostType & ghost_type = _not_ghost,
       const ElementKind & element_kind = _ek_regular);
 
   UInt size(const ElementType & type) const override;
+
+  using ElementTypesIteratorHelper =
+      ElementTypeMapArray<Real, ElementType>::ElementTypesIteratorHelper;
+
+  ElementTypesIteratorHelper elementTypes() const;
 
 protected:
   const FEEngine & fe_engine;
@@ -610,9 +608,9 @@ void ElementTypeMapArray<T, SupportType>::initialize(const FEEngine & fe_engine,
       continue;
 
     this->initialize(FEEngineElementTypeMapArrayInializer(
-                         fe_engine,
-                         OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
-                         OPTIONAL_NAMED_ARG(nb_component, 1), ghost_type,
+                         fe_engine, OPTIONAL_NAMED_ARG(nb_component, 1),
+                         OPTIONAL_NAMED_ARG(spatial_dimension, UInt(-2)),
+                         ghost_type,
                          OPTIONAL_NAMED_ARG(element_kind, _ek_regular)),
                      OPTIONAL_NAMED_ARG(default_value, T()));
   }

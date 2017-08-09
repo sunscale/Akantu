@@ -28,6 +28,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_zip.hh"
 #include "element_group.hh"
 #include "element_info_per_processor.hh"
 #include "element_synchronizer.hh"
@@ -37,6 +38,7 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <tuple>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -413,43 +415,36 @@ void MasterElementInfoPerProc::synchronizeGroups() {
   DynamicCommunicationBuffer * buffers =
       new DynamicCommunicationBuffer[nb_proc];
 
-  typedef std::vector<std::vector<std::string>> ElementToGroup;
+  using ElementToGroup = std::vector<std::vector<std::string>>;
   ElementToGroup element_to_group;
   element_to_group.resize(nb_element);
 
-  GroupManager::const_element_group_iterator egi = mesh.element_group_begin();
-  GroupManager::const_element_group_iterator ege = mesh.element_group_end();
+  auto egi = mesh.element_group_begin();
+  auto ege = mesh.element_group_end();
   for (; egi != ege; ++egi) {
     ElementGroup & eg = *(egi->second);
 
     std::string name = egi->first;
 
-    ElementGroup::const_element_iterator eit =
-        eg.element_begin(type, _not_ghost);
-    ElementGroup::const_element_iterator eend =
-        eg.element_end(type, _not_ghost);
-    for (; eit != eend; ++eit) {
-      element_to_group[*eit].push_back(name);
+    for (const auto & element : eg.getElements(type, _not_ghost)) {
+      element_to_group[element].push_back(name);
     }
 
-    eit = eg.element_begin(type, _not_ghost);
-    if (eit != eend)
+    auto eit = eg.begin(type, _not_ghost);
+    if (eit != eg.end(type, _not_ghost))
       const_cast<Array<UInt> &>(eg.getElements(type)).empty();
   }
 
-  const Array<UInt> & partition_num =
+  const auto & partition_num =
       this->partition.getPartition(this->type, _not_ghost);
-  const CSR<UInt> & ghost_partition =
+  const auto & ghost_partition =
       this->partition.getGhostPartitionCSR()(this->type, _not_ghost);
-
-  /// preparing the buffers
-  const UInt * part = partition_num.storage();
 
   /// copying the data, element by element
   ElementToGroup::const_iterator data_it = element_to_group.begin();
   ElementToGroup::const_iterator data_end = element_to_group.end();
-  for (; data_it != data_end; ++part, ++data_it) {
-    buffers[*part] << *data_it;
+  for (auto pair : zip(partition_num, element_to_group)) {
+    buffers[std::get<0>(pair)] << std::get<1>(pair);
   }
 
   data_it = element_to_group.begin();
@@ -487,4 +482,4 @@ void MasterElementInfoPerProc::synchronizeGroups() {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

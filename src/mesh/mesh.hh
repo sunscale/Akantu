@@ -56,7 +56,7 @@ namespace akantu {
 class StaticCommunicator;
 class ElementSynchronizer;
 class NodeSynchronizer;
-} // akantu
+} // namespace akantu
 
 namespace akantu {
 
@@ -106,14 +106,14 @@ public:
 
   /// constructor that use an existing nodes coordinates array, by knowing its
   /// ID
-  Mesh(UInt spatial_dimension, const ID & nodes_id, const ID & id,
-       const MemoryID & memory_id = 0);
+  // Mesh(UInt spatial_dimension, const ID & nodes_id, const ID & id,
+  //      const MemoryID & memory_id = 0);
 
   /**
    * constructor that use an existing nodes coordinates
    * array, by getting the vector of coordinates
    */
-  Mesh(UInt spatial_dimension, Array<Real> & nodes, const ID & id = "mesh",
+  Mesh(UInt spatial_dimension, std::shared_ptr<Array<Real>> nodes, const ID & id = "mesh",
        const MemoryID & memory_id = 0);
 
   virtual ~Mesh();
@@ -132,6 +132,9 @@ private:
   /// initialize the connectivity to NULL and other stuff
   void init();
 
+  /// function that computes the bounding box (fills xmin, xmax)
+  void computeBoundingBox();
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -142,37 +145,6 @@ public:
 
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-
-  /// function that computes the bounding box (fills xmin, xmax)
-  void computeBoundingBox();
-
-  // /// init a by-element-type real vector with provided ids
-  // template <typename T>
-  // void
-  // initElementTypeMapArray(ElementTypeMapArray<T> & v, UInt nb_component,
-  //                         UInt spatial_dimension,
-  //                         const bool & flag_nb_node_per_elem_multiply = false,
-  //                         ElementKind element_kind = _ek_regular,
-  //                         bool size_to_nb_element = false)
-  //     const; /// @todo: think about nicer way to do it
-  // template <typename T>
-  // void
-  // initElementTypeMapArray(ElementTypeMapArray<T> & v, UInt nb_component,
-  //                         UInt spatial_dimension, GhostType ghost_type,
-  //                         const bool & flag_nb_node_per_elem_multiply = false,
-  //                         ElementKind element_kind = _ek_regular,
-  //                         bool size_to_nb_element = false)
-  //     const; /// @todo: think about nicer way to do it
-
-  // template <typename T>
-  // void
-  // initElementTypeMapArray(ElementTypeMapArray<T> & v, UInt nb_component,
-  //                         UInt spatial_dimension, GhostType ghost_type,
-  //                         const T & default_value,
-  //                         const bool & flag_nb_node_per_elem_multiply = false,
-  //                         ElementKind element_kind = _ek_regular,
-  //                         bool size_to_nb_element = false)
-  //     const; /// @todo: think about nicer way to do it
 
   /// extract coordinates of nodes from an element
   template <typename T>
@@ -193,7 +165,7 @@ public:
   inline Element linearizedToElement(UInt linearized_element) const;
 
   /// update the types offsets array for the conversions
-  inline void updateTypesOffsets(const GhostType & ghost_type);
+  //inline void updateTypesOffsets(const GhostType & ghost_type);
 
   /// add a Array of connectivity for the type <type>.
   inline void addConnectivityType(const ElementType & type,
@@ -222,6 +194,14 @@ public:
   /// get global connectivity array
   void getGlobalConnectivity(ElementTypeMapArray<UInt> & global_connectivity,
                              UInt dimension, GhostType ghost_type);
+
+public:
+  void getAssociatedElements(const Array<UInt> & node_list,
+                             Array<Element> & elements);
+
+private:
+  /// fills the nodes_to_elements structure
+  void fillNodesToElements();
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -299,9 +279,9 @@ public:
                            const GhostType & ghost_type = _not_ghost,
                            const ElementKind & kind = _ek_not_defined) const;
 
-  /// get the connectivity list either for the elements or the ghost elements
-  inline const ConnectivityTypeList &
-  getConnectivityTypeList(const GhostType & ghost_type = _not_ghost) const;
+  // /// get the connectivity list either for the elements or the ghost elements
+  // inline const ConnectivityTypeList &
+  // getConnectivityTypeList(const GhostType & ghost_type = _not_ghost) const;
 
   /// compute the barycenter of a given element
   inline void getBarycenter(UInt element, const ElementType & type,
@@ -364,7 +344,7 @@ public:
 
   /// templated getter returning the pointer to data in MeshData (modifiable)
   template <typename T>
-  inline Array<T> *
+  inline Array<T> &
   getDataPointer(const std::string & data_name, const ElementType & el_type,
                  const GhostType & ghost_type = _not_ghost,
                  UInt nb_component = 1, bool size_to_nb_element = true,
@@ -435,9 +415,9 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Element type Iterator                                                    */
   /* ------------------------------------------------------------------------ */
-  typedef ElementTypeMapArray<UInt, ElementType>::type_iterator type_iterator;
-  typedef ElementTypeMapArray<UInt, ElementType>::ElementTypesIteratorHelper
-      ElementTypesIteratorHelper;
+  using type_iterator = ElementTypeMapArray<UInt, ElementType>::type_iterator;
+  using ElementTypesIteratorHelper =
+      ElementTypeMapArray<UInt, ElementType>::ElementTypesIteratorHelper;
 
   inline ElementTypesIteratorHelper
   elementTypes(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
@@ -483,30 +463,30 @@ private:
   //  template <UInt dim> friend class MeshIgfemSphericalGrowingGel;
   //#endif
 
-  AKANTU_GET_MACRO(NodesPointer, nodes, Array<Real> *);
+  AKANTU_GET_MACRO(NodesPointer, *nodes, Array<Real> &);
 
   /// get a pointer to the nodes_global_ids Array<UInt> and create it if
   /// necessary
-  inline Array<UInt> * getNodesGlobalIdsPointer();
+  inline Array<UInt> & getNodesGlobalIdsPointer();
 
   /// get a pointer to the nodes_type Array<Int> and create it if necessary
-  inline Array<NodeType> * getNodesTypePointer();
+  inline Array<NodeType> & getNodesTypePointer();
 
   /// get a pointer to the connectivity Array for the given type and create it
   /// if necessary
-  inline Array<UInt> *
+  inline Array<UInt> &
   getConnectivityPointer(const ElementType & type,
                          const GhostType & ghost_type = _not_ghost);
 
   /// get a pointer to the element_to_subelement Array for the given type and
   /// create it if necessary
-  inline Array<std::vector<Element>> *
+  inline Array<std::vector<Element>> &
   getElementToSubelementPointer(const ElementType & type,
                                 const GhostType & ghost_type = _not_ghost);
 
   /// get a pointer to the subelement_to_element Array for the given type and
   /// create it if necessary
-  inline Array<Element> *
+  inline Array<Element> &
   getSubelementToElementPointer(const ElementType & type,
                                 const GhostType & ghost_type = _not_ghost);
 
@@ -517,20 +497,17 @@ private:
   /* ------------------------------------------------------------------------ */
 private:
   /// array of the nodes coordinates
-  Array<Real> * nodes;
+  std::shared_ptr<Array<Real>> nodes;
 
   /// global node ids
-  Array<UInt> * nodes_global_ids;
+  std::unique_ptr<Array<UInt>> nodes_global_ids;
 
   /// node type,  -3 pure ghost, -2  master for the  node, -1 normal node,  i in
   /// [0-N] slave node and master is proc i
   Array<NodeType> nodes_type;
 
   /// global number of nodes;
-  UInt nb_global_nodes;
-
-  /// boolean to know if the nodes have to be deleted with the mesh or not
-  bool created_nodes;
+  UInt nb_global_nodes{0};
 
   /// all class of elements present in this mesh (for heterogenous meshes)
   ElementTypeMapArray<UInt> connectivities;
@@ -539,18 +516,18 @@ private:
   ElementTypeMapArray<Real> normals;
 
   /// list of all existing types in the mesh
-  ConnectivityTypeList type_set;
+  // ConnectivityTypeList type_set;
 
   /// the spatial dimension of this mesh
-  UInt spatial_dimension;
+  UInt spatial_dimension{0};
 
   /// types offsets
-  Array<UInt> types_offsets;
+  // Array<UInt> types_offsets;
 
-  /// list of all existing types in the mesh
-  ConnectivityTypeList ghost_type_set;
-  /// ghost types offsets
-  Array<UInt> ghost_types_offsets;
+  // /// list of all existing types in the mesh
+  // ConnectivityTypeList ghost_type_set;
+  // /// ghost types offsets
+  // Array<UInt> ghost_types_offsets;
 
   /// min of coordinates
   Vector<Real> lower_bounds;
@@ -568,25 +545,30 @@ private:
   MeshData mesh_data;
 
   /// facets' mesh
-  Mesh * mesh_facets;
+  std::unique_ptr<Mesh> mesh_facets;
 
   /// parent mesh (this is set for mesh_facets meshes)
-  const Mesh * mesh_parent;
+  const Mesh * mesh_parent{nullptr};
 
   /// defines if current mesh is mesh_facets or not
-  bool is_mesh_facets;
+  bool is_mesh_facets{false};
 
   /// defines if the mesh is centralized or distributed
-  bool is_distributed;
+  bool is_distributed{false};
 
   /// Communicator on which mesh is distributed
-  StaticCommunicator * communicator;
+  const StaticCommunicator * communicator;
 
   /// Element synchronizer
-  ElementSynchronizer * element_synchronizer;
+  std::unique_ptr<ElementSynchronizer> element_synchronizer;
 
   /// Node synchronizer
-  NodeSynchronizer * node_synchronizer;
+  std::unique_ptr<NodeSynchronizer> node_synchronizer;
+
+  using NodesToElements = std::vector<std::unique_ptr<std::set<Element>>>;
+
+  /// This info is stored to simplify the dynamic changes
+  NodesToElements nodes_to_elements;
 };
 
 /// standard output stream operator
@@ -601,7 +583,7 @@ inline std::ostream & operator<<(std::ostream & stream, const Mesh & _this) {
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 /* Inline functions                                                           */

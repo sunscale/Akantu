@@ -53,7 +53,7 @@ int main(int argc, char * argv[]) {
   mesh.distribute();
 
   // compute the node types for each segment
-  Mesh mesh_facets(mesh.initMeshFacets());
+  Mesh & mesh_facets = mesh.initMeshFacets();
   MeshUtils::buildSegmentToNodeType(mesh, mesh_facets);
 
   // verify that the number of segments per node type makes sense

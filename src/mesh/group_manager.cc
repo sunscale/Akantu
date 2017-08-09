@@ -39,6 +39,7 @@
 #include "element_group.hh"
 #include "element_synchronizer.hh"
 #include "mesh.hh"
+#include "mesh_accessor.hh"
 #include "mesh_utils.hh"
 #include "node_group.hh"
 /* -------------------------------------------------------------------------- */
@@ -481,12 +482,39 @@ UInt GroupManager::createBoundaryGroupFromGeometry() {
 }
 
 /* -------------------------------------------------------------------------- */
+UInt GroupManager::createClusters(
+    UInt element_dimension, Mesh & mesh_facets, std::string cluster_name_prefix,
+    const GroupManager::ClusteringFilter & filter) {
+  return createClusters(element_dimension, cluster_name_prefix, filter, mesh_facets);
+}
+
+/* -------------------------------------------------------------------------- */
+UInt GroupManager::createClusters(
+    UInt element_dimension, std::string cluster_name_prefix,
+    const GroupManager::ClusteringFilter & filter) {
+  std::unique_ptr<Mesh> mesh_facets;
+  if (!mesh_facets && element_dimension > 0) {
+    MeshAccessor mesh_accessor(const_cast<Mesh &>(mesh));
+    mesh_facets = std::make_unique<Mesh>(mesh.getSpatialDimension(),
+                                         mesh_accessor.getNodesSharedPtr(),
+                                         "mesh_facets_for_clusters");
+
+    mesh_facets->defineMeshParent(mesh);
+
+    MeshUtils::buildAllFacets(mesh, *mesh_facets, element_dimension,
+                              element_dimension - 1);
+  }
+
+  return createClusters(element_dimension, cluster_name_prefix, filter, *mesh_facets);
+}
+
+/* -------------------------------------------------------------------------- */
 //// \todo if needed element list construction can be optimized by
 //// templating the filter class
 UInt GroupManager::createClusters(UInt element_dimension,
                                   std::string cluster_name_prefix,
                                   const GroupManager::ClusteringFilter & filter,
-                                  Mesh * mesh_facets) {
+                                  Mesh & mesh_facets) {
   AKANTU_DEBUG_IN();
 
   UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
@@ -498,32 +526,18 @@ UInt GroupManager::createClusters(UInt element_dimension,
     element_to_fragment =
         new ElementTypeMapArray<UInt>("element_to_fragment", id, memory_id);
 
-    element_to_fragment->initialize(mesh, _nb_component = 1,
-                                    _spatial_dimension = element_dimension,
-                                    _element_kind = _ek_not_defined,
-                                    _with_nb_element = true);
+    element_to_fragment->initialize(
+        mesh, _nb_component = 1, _spatial_dimension = element_dimension,
+        _element_kind = _ek_not_defined, _with_nb_element = true);
     // mesh.initElementTypeMapArray(*element_to_fragment, 1, element_dimension,
     //                              false, _ek_not_defined, true);
     tmp_cluster_name_prefix = "tmp_" + tmp_cluster_name_prefix;
   }
 
-  /// Get facets
-  bool mesh_facets_created = false;
-
-  if (!mesh_facets && element_dimension > 0) {
-    mesh_facets = new Mesh(mesh.getSpatialDimension(), mesh.getNodes().getID(),
-                           "mesh_facets_for_clusters");
-
-    mesh_facets->defineMeshParent(mesh);
-
-    MeshUtils::buildAllFacets(mesh, *mesh_facets, element_dimension,
-                              element_dimension - 1);
-  }
-
   ElementTypeMapArray<bool> seen_elements("seen_elements", id, memory_id);
   seen_elements.initialize(mesh, _spatial_dimension = element_dimension,
-                            _element_kind = _ek_not_defined,
-                            _with_nb_element = true);
+                           _element_kind = _ek_not_defined,
+                           _with_nb_element = true);
   // mesh.initElementTypeMapArray(seen_elements, 1, element_dimension, false,
   //                              _ek_not_defined, true);
 
@@ -631,7 +645,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
           cluster.add(el);
 
           const Array<Element> & element_to_facet =
-              mesh_facets->getSubelementToElement(el.type, el.ghost_type);
+              mesh_facets.getSubelementToElement(el.type, el.ghost_type);
 
           UInt nb_facet_per_element = element_to_facet.getNbComponent();
 
@@ -642,7 +656,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
               continue;
 
             const std::vector<Element> & connected_elements =
-                mesh_facets->getElementToSubelement(
+                mesh_facets.getElementToSubelement(
                     facet.type, facet.ghost_type)(facet.element);
 
             for (UInt elem = 0; elem < connected_elements.size(); ++elem) {
@@ -685,9 +699,6 @@ UInt GroupManager::createClusters(UInt element_dimension,
     nb_cluster = cluster_synchronizer.synchronize();
     delete element_to_fragment;
   }
-
-  if (mesh_facets_created)
-    delete mesh_facets;
 
   if (mesh.isDistributed())
     this->synchronizeGroupNames();

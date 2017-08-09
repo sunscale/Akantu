@@ -127,69 +127,69 @@ void MeshUtils::buildNode2Elements(const Mesh & mesh,
 /**
  * This function should disappear in the future (used in mesh partitioning)
  */
-void MeshUtils::buildNode2Elements(const Mesh & mesh, CSR<UInt> & node_to_elem,
-                                   UInt spatial_dimension) {
-  AKANTU_DEBUG_IN();
-  if (spatial_dimension == _all_dimensions)
-    spatial_dimension = mesh.getSpatialDimension();
-  UInt nb_nodes = mesh.getNbNodes();
+// void MeshUtils::buildNode2Elements(const Mesh & mesh, CSR<UInt> & node_to_elem,
+//                                    UInt spatial_dimension) {
+//   AKANTU_DEBUG_IN();
+//   if (spatial_dimension == _all_dimensions)
+//     spatial_dimension = mesh.getSpatialDimension();
+//   UInt nb_nodes = mesh.getNbNodes();
 
-  const Mesh::ConnectivityTypeList & type_list = mesh.getConnectivityTypeList();
-  Mesh::ConnectivityTypeList::const_iterator it;
+//   const Mesh::ConnectivityTypeList & type_list = mesh.getConnectivityTypeList();
+//   Mesh::ConnectivityTypeList::const_iterator it;
 
-  UInt nb_types = type_list.size();
-  UInt nb_good_types = 0;
+//   UInt nb_types = type_list.size();
+//   UInt nb_good_types = 0;
 
-  Vector<UInt> nb_nodes_per_element(nb_types);
-  UInt ** conn_val = new UInt *[nb_types];
-  Vector<UInt> nb_element(nb_types);
+//   Vector<UInt> nb_nodes_per_element(nb_types);
+//   UInt ** conn_val = new UInt *[nb_types];
+//   Vector<UInt> nb_element(nb_types);
 
-  for (it = type_list.begin(); it != type_list.end(); ++it) {
-    ElementType type = *it;
-    if (Mesh::getSpatialDimension(type) != spatial_dimension)
-      continue;
+//   for (it = type_list.begin(); it != type_list.end(); ++it) {
+//     ElementType type = *it;
+//     if (Mesh::getSpatialDimension(type) != spatial_dimension)
+//       continue;
 
-    nb_nodes_per_element[nb_good_types] = Mesh::getNbNodesPerElement(type);
-    conn_val[nb_good_types] = mesh.getConnectivity(type, _not_ghost).storage();
-    nb_element[nb_good_types] =
-        mesh.getConnectivity(type, _not_ghost).getSize();
-    nb_good_types++;
-  }
+//     nb_nodes_per_element[nb_good_types] = Mesh::getNbNodesPerElement(type);
+//     conn_val[nb_good_types] = mesh.getConnectivity(type, _not_ghost).storage();
+//     nb_element[nb_good_types] =
+//         mesh.getConnectivity(type, _not_ghost).getSize();
+//     nb_good_types++;
+//   }
 
-  AKANTU_DEBUG_ASSERT(
-      nb_good_types != 0,
-      "Some elements must be found in right dimension to compute facets!");
+//   AKANTU_DEBUG_ASSERT(
+//       nb_good_types != 0,
+//       "Some elements must be found in right dimension to compute facets!");
 
-  /// array for the node-element list
-  node_to_elem.resizeRows(nb_nodes);
-  node_to_elem.clearRows();
+//   /// array for the node-element list
+//   node_to_elem.resizeRows(nb_nodes);
+//   node_to_elem.clearRows();
 
-  /// count number of occurrence of each node
-  for (UInt t = 0; t < nb_good_types; ++t) {
-    for (UInt el = 0; el < nb_element[t]; ++el) {
-      UInt el_offset = el * nb_nodes_per_element[t];
-      for (UInt n = 0; n < nb_nodes_per_element[t]; ++n) {
-        ++node_to_elem.rowOffset(conn_val[t][el_offset + n]);
-      }
-    }
-  }
+//   /// count number of occurrence of each node
+//   for (UInt t = 0; t < nb_good_types; ++t) {
+//     for (UInt el = 0; el < nb_element[t]; ++el) {
+//       UInt el_offset = el * nb_nodes_per_element[t];
+//       for (UInt n = 0; n < nb_nodes_per_element[t]; ++n) {
+//         ++node_to_elem.rowOffset(conn_val[t][el_offset + n]);
+//       }
+//     }
+//   }
 
-  node_to_elem.countToCSR();
-  node_to_elem.resizeCols();
-  node_to_elem.beginInsertions();
+//   node_to_elem.countToCSR();
+//   node_to_elem.resizeCols();
+//   node_to_elem.beginInsertions();
 
-  /// rearrange element to get the node-element list
-  for (UInt t = 0, linearized_el = 0; t < nb_good_types; ++t)
-    for (UInt el = 0; el < nb_element[t]; ++el, ++linearized_el) {
-      UInt el_offset = el * nb_nodes_per_element[t];
-      for (UInt n = 0; n < nb_nodes_per_element[t]; ++n)
-        node_to_elem.insertInRow(conn_val[t][el_offset + n], linearized_el);
-    }
+//   /// rearrange element to get the node-element list
+//   for (UInt t = 0, linearized_el = 0; t < nb_good_types; ++t)
+//     for (UInt el = 0; el < nb_element[t]; ++el, ++linearized_el) {
+//       UInt el_offset = el * nb_nodes_per_element[t];
+//       for (UInt n = 0; n < nb_nodes_per_element[t]; ++n)
+//         node_to_elem.insertInRow(conn_val[t][el_offset + n], linearized_el);
+//     }
 
-  node_to_elem.endInsertions();
-  delete[] conn_val;
-  AKANTU_DEBUG_OUT();
-}
+//   node_to_elem.endInsertions();
+//   delete[] conn_val;
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 void MeshUtils::buildNode2ElementsElementTypeMap(const Mesh & mesh,
@@ -2068,101 +2068,101 @@ bool MeshUtils::findElementsAroundSubfacet(
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshUtils::buildSegmentToNodeType(const Mesh & mesh, Mesh & mesh_facets) {
-  buildAllFacets(mesh, mesh_facets, 1);
+// void MeshUtils::buildSegmentToNodeType(const Mesh & mesh, Mesh & mesh_facets) {
+//   buildAllFacets(mesh, mesh_facets, 1);
 
-  UInt spatial_dimension = mesh.getSpatialDimension();
+//   UInt spatial_dimension = mesh.getSpatialDimension();
 
-  const ElementTypeMapArray<UInt> & element_to_rank =
-      mesh.getElementSynchronizer().getPrankToElement();
-  Int local_rank = StaticCommunicator::getStaticCommunicator().whoAmI();
+//   const ElementTypeMapArray<UInt> & element_to_rank =
+//       mesh.getElementSynchronizer().getPrankToElement();
+//   Int local_rank = StaticCommunicator::getStaticCommunicator().whoAmI();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
-    Mesh::type_iterator it = mesh_facets.firstType(1, ghost_type);
-    Mesh::type_iterator end = mesh_facets.lastType(1, ghost_type);
-    for (; it != end; ++it) {
-      ElementType type = *it;
-      UInt nb_segments = mesh_facets.getNbElement(type, ghost_type);
+//   for (ghost_type_t::iterator gt = ghost_type_t::begin();
+//        gt != ghost_type_t::end(); ++gt) {
+//     GhostType ghost_type = *gt;
+//     Mesh::type_iterator it = mesh_facets.firstType(1, ghost_type);
+//     Mesh::type_iterator end = mesh_facets.lastType(1, ghost_type);
+//     for (; it != end; ++it) {
+//       ElementType type = *it;
+//       UInt nb_segments = mesh_facets.getNbElement(type, ghost_type);
 
-      // allocate the data
-      Array<Int> & segment_to_nodetype = *(mesh_facets.getDataPointer<Int>(
-          "segment_to_nodetype", type, ghost_type));
+//       // allocate the data
+//       Array<Int> & segment_to_nodetype = *(mesh_facets.getDataPointer<Int>(
+//           "segment_to_nodetype", type, ghost_type));
 
-      std::set<Element> connected_elements;
-      const Array<std::vector<Element>> & segment_to_2Delement =
-          mesh_facets.getElementToSubelement(type, ghost_type);
+//       std::set<Element> connected_elements;
+//       const Array<std::vector<Element>> & segment_to_2Delement =
+//           mesh_facets.getElementToSubelement(type, ghost_type);
 
-      // loop over segments
-      for (UInt s = 0; s < nb_segments; ++s) {
+//       // loop over segments
+//       for (UInt s = 0; s < nb_segments; ++s) {
 
-        // determine the elements connected to the segment
-        connected_elements.clear();
-        const std::vector<Element> & twoD_elements = segment_to_2Delement(s);
+//         // determine the elements connected to the segment
+//         connected_elements.clear();
+//         const std::vector<Element> & twoD_elements = segment_to_2Delement(s);
 
-        if (spatial_dimension == 2) {
-          // if 2D just take the elements connected to the segments
-          connected_elements.insert(twoD_elements.begin(), twoD_elements.end());
-        } else if (spatial_dimension == 3) {
-          // if 3D a second loop is needed to get to the 3D elements
-          std::vector<Element>::const_iterator facet = twoD_elements.begin();
+//         if (spatial_dimension == 2) {
+//           // if 2D just take the elements connected to the segments
+//           connected_elements.insert(twoD_elements.begin(), twoD_elements.end());
+//         } else if (spatial_dimension == 3) {
+//           // if 3D a second loop is needed to get to the 3D elements
+//           std::vector<Element>::const_iterator facet = twoD_elements.begin();
 
-          for (; facet != twoD_elements.end(); ++facet) {
-            const std::vector<Element> & threeD_elements =
-                mesh_facets.getElementToSubelement(
-                    facet->type, facet->ghost_type)(facet->element);
-            connected_elements.insert(threeD_elements.begin(),
-                                      threeD_elements.end());
-          }
-        }
+//           for (; facet != twoD_elements.end(); ++facet) {
+//             const std::vector<Element> & threeD_elements =
+//                 mesh_facets.getElementToSubelement(
+//                     facet->type, facet->ghost_type)(facet->element);
+//             connected_elements.insert(threeD_elements.begin(),
+//                                       threeD_elements.end());
+//           }
+//         }
 
-        // get the minimum processor rank associated to the connected
-        // elements and verify if ghost and not ghost elements are
-        // found
-        Int minimum_rank = std::numeric_limits<Int>::max();
+//         // get the minimum processor rank associated to the connected
+//         // elements and verify if ghost and not ghost elements are
+//         // found
+//         Int minimum_rank = std::numeric_limits<Int>::max();
 
-        // two booleans saying if not ghost and ghost elements are found in the
-        // loop
-        bool ghost_found[2];
-        ghost_found[0] = false;
-        ghost_found[1] = false;
+//         // two booleans saying if not ghost and ghost elements are found in the
+//         // loop
+//         bool ghost_found[2];
+//         ghost_found[0] = false;
+//         ghost_found[1] = false;
 
-        std::set<Element>::iterator connected_elements_it =
-            connected_elements.begin();
+//         std::set<Element>::iterator connected_elements_it =
+//             connected_elements.begin();
 
-        for (; connected_elements_it != connected_elements.end();
-             ++connected_elements_it) {
-          if (*connected_elements_it == ElementNull)
-            continue;
-          ghost_found[connected_elements_it->ghost_type] = true;
-          const Array<UInt> & el_to_rank_array = element_to_rank(
-              connected_elements_it->type, connected_elements_it->ghost_type);
-          minimum_rank =
-              std::min(minimum_rank,
-                       Int(el_to_rank_array(connected_elements_it->element)));
-        }
+//         for (; connected_elements_it != connected_elements.end();
+//              ++connected_elements_it) {
+//           if (*connected_elements_it == ElementNull)
+//             continue;
+//           ghost_found[connected_elements_it->ghost_type] = true;
+//           const Array<UInt> & el_to_rank_array = element_to_rank(
+//               connected_elements_it->type, connected_elements_it->ghost_type);
+//           minimum_rank =
+//               std::min(minimum_rank,
+//                        Int(el_to_rank_array(connected_elements_it->element)));
+//         }
 
-        // if no ghost elements are found the segment is local
-        if (!ghost_found[1])
-          segment_to_nodetype(s) = -1;
-        // if no not ghost elements are found the segment is pure ghost
-        else if (!ghost_found[0])
-          segment_to_nodetype(s) = -3;
-        // if the minimum rank is equal to the local rank, the segment is master
-        else if (local_rank == minimum_rank)
-          segment_to_nodetype(s) = -2;
-        // if the minimum rank is less than the local rank, the segment is slave
-        else if (local_rank > minimum_rank)
-          segment_to_nodetype(s) = minimum_rank;
-        else
-          AKANTU_DEBUG_ERROR("The local rank cannot be smaller than the "
-                             "minimum rank if both ghost and not ghost "
-                             "elements are found");
-      }
-    }
-  }
-}
+//         // if no ghost elements are found the segment is local
+//         if (!ghost_found[1])
+//           segment_to_nodetype(s) = -1;
+//         // if no not ghost elements are found the segment is pure ghost
+//         else if (!ghost_found[0])
+//           segment_to_nodetype(s) = -3;
+//         // if the minimum rank is equal to the local rank, the segment is master
+//         else if (local_rank == minimum_rank)
+//           segment_to_nodetype(s) = -2;
+//         // if the minimum rank is less than the local rank, the segment is slave
+//         else if (local_rank > minimum_rank)
+//           segment_to_nodetype(s) = minimum_rank;
+//         else
+//           AKANTU_DEBUG_ERROR("The local rank cannot be smaller than the "
+//                              "minimum rank if both ghost and not ghost "
+//                              "elements are found");
+//       }
+//     }
+//   }
+// }
 
 /* -------------------------------------------------------------------------- */
 UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh,

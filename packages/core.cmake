@@ -184,6 +184,7 @@ package_declare_sources(core
   mesh/node_group.cc
   mesh/node_group.hh
   mesh/node_group_inline_impl.cc
+  mesh/mesh_iterators.hh
 
   mesh_utils/mesh_partition.cc
   mesh_utils/mesh_partition.hh

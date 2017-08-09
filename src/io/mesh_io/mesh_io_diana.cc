@@ -39,9 +39,9 @@
 #include <iostream>
 
 /* -------------------------------------------------------------------------- */
+#include "element_group.hh"
 #include "mesh_io_diana.hh"
 #include "mesh_utils.hh"
-#include "element_group.hh"
 /* -------------------------------------------------------------------------- */
 #include <string.h>
 /* -------------------------------------------------------------------------- */
@@ -154,7 +154,9 @@ void MeshIODiana::read(const std::string & filename, Mesh & mesh) {
   UInt first_node_number = std::numeric_limits<UInt>::max();
   diana_element_number_to_elements.clear();
 
-  if (!infile.good()) { AKANTU_DEBUG_ERROR("Cannot open file " << filename); }
+  if (!infile.good()) {
+    AKANTU_DEBUG_ERROR("Cannot open file " << filename);
+  }
 
   while (infile.good()) {
     my_getline(infile, line);
@@ -170,7 +172,9 @@ void MeshIODiana::read(const std::string & filename, Mesh & mesh) {
     }
 
     /// read the material properties and write a .dat file
-    if (line == "'MATERIALS'") { line = readMaterial(infile, filename); }
+    if (line == "'MATERIALS'") {
+      line = readMaterial(infile, filename);
+    }
 
     /// read the material properties and write a .dat file
     if (line == "'GROUPS'") {
@@ -208,7 +212,8 @@ std::string MeshIODiana::readCoordinates(std::ifstream & infile, Mesh & mesh,
 
   do {
     my_getline(infile, line);
-    if ("'ELEMENTS'" == line) break;
+    if ("'ELEMENTS'" == line)
+      break;
 
     std::stringstream sstr_node(line);
     sstr_node >> index >> coord(0) >> coord(1) >> coord(2);
@@ -227,7 +232,9 @@ UInt MeshIODiana::readInterval(std::stringstream & line,
                                std::set<UInt> & interval) {
   UInt first;
   line >> first;
-  if (line.fail()) { return 0; }
+  if (line.fail()) {
+    return 0;
+  }
   interval.insert(first);
 
   UInt second;
@@ -283,7 +290,8 @@ std::string MeshIODiana::readGroups(std::ifstream & infile, Mesh & mesh,
         std::set<UInt> interval;
         s = readInterval(*str, interval);
         std::set<UInt>::iterator it = interval.begin();
-        if (s == 1) list_ids->push_back(*it);
+        if (s == 1)
+          list_ids->push_back(*it);
         if (s == 2) {
           UInt first = *it;
           ++it;
@@ -307,7 +315,7 @@ std::string MeshIODiana::readGroups(std::ifstream & infile, Mesh & mesh,
     if (reading_nodes_group) {
       NodeGroup & ng = mesh.createNodeGroup(name);
       for (UInt i = 0; i < list_ids->getSize(); ++i) {
-        UInt node = (*list_ids)(i) - first_node_number;
+        UInt node = (*list_ids)(i)-first_node_number;
         ng.add(node, false);
       }
       delete list_ids;
@@ -315,8 +323,9 @@ std::string MeshIODiana::readGroups(std::ifstream & infile, Mesh & mesh,
     } else {
       ElementGroup & eg = mesh.createElementGroup(name);
       for (UInt i = 0; i < list_ids->getSize(); ++i) {
-        Element & elem = diana_element_number_to_elements[ (*list_ids)(i)];
-        if (elem.type != _not_defined) eg.add(elem, false, false);
+        Element & elem = diana_element_number_to_elements[(*list_ids)(i)];
+        if (elem.type != _not_defined)
+          eg.add(elem, false, false);
       }
 
       eg.optimize();
@@ -343,7 +352,9 @@ std::string MeshIODiana::readElements(std::ifstream & infile, Mesh & mesh,
   }
 
   /// read the line corresponding to the materials
-  if ("MATERIALS" == line) { line = readMaterialElement(infile, mesh); }
+  if ("MATERIALS" == line) {
+    line = readMaterialElement(infile, mesh);
+  }
 
   AKANTU_DEBUG_OUT();
   return line;
@@ -369,7 +380,8 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
     my_getline(infile, lline);
     //    std::cerr << lline << std::endl;
     std::stringstream sstr_elem(lline);
-    if (lline == "MATERIALS") break;
+    if (lline == "MATERIALS")
+      break;
 
     /// traiter les coordonnees
     sstr_elem >> index;
@@ -377,7 +389,8 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
 
     akantu_type = _diana_to_akantu_element_types[diana_type];
 
-    if (akantu_type == _not_defined) continue;
+    if (akantu_type == _not_defined)
+      continue;
 
     if (akantu_type != akantu_type_old) {
       connectivity = &(mesh_accessor.getConnectivity(akantu_type));
@@ -453,7 +466,7 @@ std::string MeshIODiana::readMaterialElement(std::ifstream & infile,
   for (; it != end; ++it) {
     UInt nb_element = mesh.getNbElement(*it);
     mesh.getDataPointer<UInt>("material", *it, _not_ghost, 1)
-        ->resize(nb_element);
+        .resize(nb_element);
   }
 
   my_getline(infile, line);
@@ -473,7 +486,8 @@ std::string MeshIODiana::readMaterialElement(std::ifstream & infile,
       char temp;
       while (sstr_intervals_elements.good()) {
         sstr_intervals_elements >> id(0) >> temp >> id(1); // >> "/" >> mat;
-        if (!sstr_intervals_elements.fail()) temp_id.push_back(id);
+        if (!sstr_intervals_elements.fail())
+          temp_id.push_back(id);
       }
       if (sstr_intervals_elements.fail()) {
         sstr_intervals_elements.clear();
@@ -489,11 +503,12 @@ std::string MeshIODiana::readMaterialElement(std::ifstream & infile,
     for (UInt i = 0; i < temp_id.getSize(); ++i)
       for (UInt j = temp_id(i, 0); j <= temp_id(i, 1); ++j) {
         Element & element = diana_element_number_to_elements[j];
-        if (element.type == _not_defined) continue;
+        if (element.type == _not_defined)
+          continue;
         UInt elem = element.element;
         ElementType type = element.type;
         Array<UInt> & data =
-            *(mesh.getDataPointer<UInt>("material", type, _not_ghost));
+            mesh.getDataPointer<UInt>("material", type, _not_ghost);
         data(elem) = mat;
       }
 
@@ -559,7 +574,9 @@ std::string MeshIODiana::readMaterial(std::ifstream & infile,
           }
         }
         first_mat = false;
-      } else { sstr_material.clear(); }
+      } else {
+        sstr_material.clear();
+      }
 
       std::string prop_name;
       sstr_material >> prop_name;
@@ -584,4 +601,4 @@ std::string MeshIODiana::readMaterial(std::ifstream & infile,
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

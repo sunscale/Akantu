@@ -31,9 +31,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "mesh_io.hh"
-
+#include "aka_common.hh"
+#include "aka_zip.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -48,8 +48,8 @@ MeshIO::MeshIO() {
 MeshIO::~MeshIO() {}
 
 /* -------------------------------------------------------------------------- */
-MeshIO * MeshIO::getMeshIO(const std::string & filename,
-                           const MeshIOType & type) {
+std::unique_ptr<MeshIO> MeshIO::getMeshIO(const std::string & filename,
+                                          const MeshIOType & type) {
   MeshIOType t = type;
   if (type == _miot_auto) {
     std::string::size_type idx = filename.rfind('.');
@@ -72,58 +72,57 @@ MeshIO * MeshIO::getMeshIO(const std::string & filename,
 
   switch (t) {
   case _miot_gmsh:
-    return new MeshIOMSH();
+    return std::make_unique<MeshIOMSH>();
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
   case _miot_gmsh_struct:
-    return new MeshIOMSHStruct();
+    return std::make_unique<MeshIOMSHStruct>();
 #endif
   case _miot_diana:
-    return new MeshIODiana();
+    return std::make_unique<MeshIODiana>();
   case _miot_abaqus:
-    return new MeshIOAbaqus();
+    return std::make_unique<MeshIOAbaqus>();
   default:
-    return NULL;
+    return nullptr;
   }
 }
 
 /* -------------------------------------------------------------------------- */
 void MeshIO::read(const std::string & filename, Mesh & mesh,
                   const MeshIOType & type) {
-  MeshIO * mesh_io = getMeshIO(filename, type);
+  std::unique_ptr<MeshIO> mesh_io = getMeshIO(filename, type);
   mesh_io->read(filename, mesh);
-  delete mesh_io;
 }
 
 /* -------------------------------------------------------------------------- */
 void MeshIO::write(const std::string & filename, Mesh & mesh,
                    const MeshIOType & type) {
-  MeshIO * mesh_io = getMeshIO(filename, type);
+  std::unique_ptr<MeshIO> mesh_io = getMeshIO(filename, type);
   mesh_io->write(filename, mesh);
-  delete mesh_io;
 }
 
 /* -------------------------------------------------------------------------- */
 void MeshIO::constructPhysicalNames(const std::string & tag_name, Mesh & mesh) {
-
   if (!phys_name_map.empty()) {
     for (Mesh::type_iterator type_it = mesh.firstType();
          type_it != mesh.lastType(); ++type_it) {
 
-      Array<std::string> * name_vec =
+      auto & name_vec =
           mesh.getDataPointer<std::string>("physical_names", *type_it);
 
-      const Array<UInt> & tags_vec = mesh.getData<UInt>(tag_name, *type_it);
+      const auto & tags_vec = mesh.getData<UInt>(tag_name, *type_it);
 
-      for (UInt i(0); i < tags_vec.getSize(); i++) {
-        std::map<UInt, std::string>::const_iterator map_it =
-            phys_name_map.find(tags_vec(i));
+      for (auto pair : zip(tags_vec, name_vec)) {
+        auto tag = std::get<0>(pair);
+        auto & name = std::get<1>(pair);
+        auto map_it = phys_name_map.find(tag);
 
         if (map_it == phys_name_map.end()) {
           std::stringstream sstm;
-          sstm << tags_vec(i);
-          name_vec->operator()(i) = sstm.str();
+          sstm << tag;
+
+          name = sstm.str();
         } else {
-          name_vec->operator()(i) = map_it->second;
+          name = map_it->second;
         }
       }
     }
@@ -131,26 +130,19 @@ void MeshIO::constructPhysicalNames(const std::string & tag_name, Mesh & mesh) {
 }
 
 /* -------------------------------------------------------------------------- */
-
 void MeshIO::printself(std::ostream & stream, int indent) const {
-
   std::string space;
   for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
     ;
 
   if (phys_name_map.size()) {
-
     stream << space << "Physical map:" << std::endl;
-
-    std::map<UInt, std::string>::const_iterator it = phys_name_map.begin();
-    std::map<UInt, std::string>::const_iterator end = phys_name_map.end();
-
-    for (; it != end; ++it) {
-      stream << space << it->first << ": " << it->second << std::endl;
+    for (auto & pair : phys_name_map) {
+      stream << space << pair.first << ": " << pair.second << std::endl;
     }
   }
 }
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

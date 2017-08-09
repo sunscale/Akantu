@@ -412,19 +412,16 @@ void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
   }
 
   mesh.addConnectivityType(type);
-  Array<UInt> & connectivity = const_cast<Array<UInt> &>(mesh.getConnectivity(type));
-  Array<UInt> & uint_data = *mesh.getDataPointer<UInt>("tag_1", type);
-
-  typename cells_container::const_iterator it  = cells.begin();
-  typename cells_container::const_iterator end = cells.end();
+  auto & connectivity = const_cast<Array<UInt> &>(mesh.getConnectivity(type));
+  auto & uint_data = mesh.getDataPointer<UInt>("tag_1", type);
 
   Vector<Real> pos(dimension);
 
   UInt global_id = 0;
-  for (;it != end; ++it, ++global_id) {
+  for (auto & cell_pair : cells) {
     UInt cur_node = nodes.getSize();
     UInt cur_elem = connectivity.getSize();
-    const CellID & cell_id = it->first;
+    const CellID & cell_id = cell_pair.first;
 
     for (UInt i = 0; i < dimension; ++i)  pos(i) = center(i) + cell_id.getID(i) * spacing(i);
     nodes.push_back(pos);
@@ -463,28 +460,9 @@ void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
       break;
     }
     uint_data.push_back(global_id);
+
+    ++global_id;
   }
-
-// #if not defined(AKANTU_NDEBUG)
-//   mesh.addConnectivityType(_point_1);
-//   Array<UInt> & connectivity_pos = const_cast<Array<UInt> &>(mesh.getConnectivity(_point_1));
-//   Array<UInt> & uint_data_pos = *mesh.getDataPointer<UInt>( "tag_1", _point_1);
-//   Array<UInt> & uint_data_pos_ghost = *mesh.getDataPointer<UInt>("tag_0", _point_1);
-
-//   it  = cells.begin();
-//   global_id = 0;
-//   for (;it != end; ++it, ++global_id) {
-//     typename Cell::position_iterator cell_it  = it->second.begin_pos();
-//     typename Cell::const_iterator    cell_it_cont  = it->second.begin();
-//     typename Cell::position_iterator cell_end = it->second.end_pos();
-//     for (;cell_it != cell_end; ++cell_it, ++cell_it_cont) {
-//       nodes.push_back(*cell_it);
-//       connectivity_pos.push_back(nodes.getSize()-1);
-//       uint_data_pos.push_back(global_id);
-//       uint_data_pos_ghost.push_back(cell_it_cont->ghost_type==_ghost);
-//     }
-//   }
-// #endif
 }
 
 } // akantu

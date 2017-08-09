@@ -151,7 +151,6 @@ int main(int argc, char * argv[]) {
 
   FEM fem(mesh, dim, "my_fem");
 
-  mesh.computeBoundingBox();
   const Vector<Real> & lower = mesh.getLowerBounds();
   const Vector<Real> & upper = mesh.getUpperBounds();
 

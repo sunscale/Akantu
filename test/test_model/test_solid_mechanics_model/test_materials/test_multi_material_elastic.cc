@@ -10,7 +10,6 @@ int main(int argc, char *argv[]) {
   Mesh mesh(spatial_dimension);
 
   mesh.read("test_multi_material_elastic.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   SolidMechanicsModel model(mesh);
 
@@ -26,8 +25,8 @@ int main(int argc, char *argv[]) {
   trac(_y) = 1.;
   model.applyBC(BC::Neumann::FromTraction(trac), "air");
 
-  model.addDumpField("force");
-  model.addDumpField("residual");
+  model.addDumpField("external_force");
+  model.addDumpField("internal_force");
   model.addDumpField("blocked_dofs");
   model.addDumpField("displacement");
   model.addDumpField("stress");
@@ -39,6 +38,7 @@ int main(int argc, char *argv[]) {
   solver.set("threshold", 1e-8);
   solver.set("convergence_type", _scc_residual);
 
+  model.solveStep();
   //model.dump();
 
   std::map<std::string, Matrix<Real>> ref_strain;

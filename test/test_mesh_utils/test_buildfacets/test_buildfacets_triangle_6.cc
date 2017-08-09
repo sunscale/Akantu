@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
   Mesh mesh(spatial_dimension);
   mesh.read("triangle_6.msh");
-  Mesh mesh_facets(mesh.initMeshFacets("mesh_facets"));
+  Mesh & mesh_facets = mesh.initMeshFacets("mesh_facets");
 
   MeshUtils::buildAllFacets(mesh, mesh_facets);
 

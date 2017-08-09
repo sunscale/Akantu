@@ -159,10 +159,9 @@ int main(int argc, char * argv[]) {
   for (GroupManager::const_element_group_iterator it(
            my_mesh.element_group_begin());
        it != my_mesh.element_group_end(); ++it)
-    for (ElementGroup::const_node_iterator nodes_it(it->second->node_begin());
-         nodes_it != it->second->node_end(); ++nodes_it)
+    for (const auto & node : it->second->getNodeGroup())
       for (UInt i = 0; i < dim; ++i)
-        boundary(*nodes_it, i) = true;
+        boundary(node, i) = true;
 
   // set the position of all nodes to the static solution
   for (UInt n = 0; n < nb_nodes; ++n) {

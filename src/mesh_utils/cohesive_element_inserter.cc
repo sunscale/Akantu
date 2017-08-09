@@ -283,8 +283,8 @@ void CohesiveElementInserter::insertIntrinsicElements(std::string physname,
     Vector<Real> bary_physgroup(spatial_dimension);
     Real norm_bary;
     for (ElementGroup::const_element_iterator el_it(
-             group.element_begin(type_facet, ghost_type));
-         el_it != group.element_end(type_facet, ghost_type); ++el_it) {
+             group.begin(type_facet, ghost_type));
+         el_it != group.end(type_facet, ghost_type); ++el_it) {
 
       UInt e = *el_it;
       mesh.getBarycenter(e, type_facet, bary_physgroup.storage(), ghost_type);
@@ -335,15 +335,22 @@ void CohesiveElementInserter::insertIntrinsicElements(std::string physname,
 /* -------------------------------------------------------------------------- */
 UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
 
-  NewNodesEvent node_event;
-  node_event.getList().extendComponentsInterlaced(2, 1);
+  CohesiveNewNodesEvent node_event;
   NewElementsEvent element_event;
 
+  Array<UInt> new_pairs(0, 2);
+
   UInt nb_new_elements = MeshUtils::insertCohesiveElements(
-      mesh, mesh_facets, insertion_facets, node_event.getList(),
+      mesh, mesh_facets, insertion_facets, new_pairs,
       element_event.getList(), only_double_facets);
 
-  UInt nb_new_nodes = node_event.getList().getSize();
+  UInt nb_new_nodes = new_pairs.getSize();
+  node_event.getList().reserve(nb_new_nodes);
+  node_event.getOldNodesList().reserve(nb_new_nodes);
+  for(UInt n = 0; n < nb_new_nodes; ++n) {
+    node_event.getList().push_back(new_pairs(n, 1));
+    node_event.getOldNodesList().push_back(new_pairs(n, 0));
+  }
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (mesh.getNodesType().getSize()) {
@@ -366,7 +373,7 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
 
   if (nb_new_elements > 0) {
     updateInsertionFacets();
-    mesh.updateTypesOffsets(_not_ghost);
+    //mesh.updateTypesOffsets(_not_ghost);
     mesh.sendEvent(element_event);
     MeshUtils::resetFacetToDouble(mesh_facets);
   }

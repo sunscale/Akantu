@@ -251,7 +251,7 @@ private:
   void operator=(const ElementTypeMap<T, SupportType> &){};
 
 public:
-  typedef typename parent::type_iterator type_iterator;
+  using type_iterator = typename parent::type_iterator;
 
   /*! Constructor
    *  @param id optional: identifier (string)
@@ -334,14 +334,11 @@ public:
 
     ElementTypeMap<UInt> nb_components;
 
-    type_iterator tit = this->firstType(dim, ghost_type, kind);
-    type_iterator end = this->lastType(dim, ghost_type, kind);
-
-    while (tit != end) {
-      UInt nb_comp = (*this)(*tit, ghost_type).getNbComponent();
-      nb_components(*tit, ghost_type) = nb_comp;
-      ++tit;
+    for (auto & type : this->elementTypes(dim, ghost_type, kind)) {
+      UInt nb_comp = (*this)(type, ghost_type).getNbComponent();
+      nb_components(type, ghost_type) = nb_comp;
     }
+
     return nb_components;
   }
 

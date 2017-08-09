@@ -51,7 +51,6 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModel model(mesh);
   model.initFull(_analysis_method = _static);
 
-  mesh.computeBoundingBox();
   const Vector<Real> & min = mesh.getLowerBounds();
   const Vector<Real> & max = mesh.getUpperBounds();
 

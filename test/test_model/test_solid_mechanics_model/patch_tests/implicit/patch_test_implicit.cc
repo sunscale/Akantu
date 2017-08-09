@@ -136,10 +136,8 @@ int main(int argc, char * argv[]) {
   for (GroupManager::const_element_group_iterator it(
            mesh.element_group_begin());
        it != mesh.element_group_end(); ++it) {
-    for (ElementGroup::const_node_iterator nodes_it(it->second->node_begin());
-         nodes_it != it->second->node_end(); ++nodes_it) {
-      UInt n(*nodes_it);
-      std::cout << "Node " << *nodes_it << std::endl;
+    for (const auto & n : it->second->getNodeGroup()) {
+      std::cout << "Node " << n << std::endl;
       for (UInt i = 0; i < dim; ++i) {
         displacement(n, i) = alpha[i][0];
         for (UInt j = 0; j < dim; ++j) {

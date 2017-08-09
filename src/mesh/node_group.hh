@@ -76,6 +76,10 @@ public:
   /// remove a node
   inline void remove(UInt node);
 
+  inline decltype(auto) find(UInt node) const {
+    return node_group.find(node);
+  }
+  
   /// remove duplicated nodes
   void optimize();
 

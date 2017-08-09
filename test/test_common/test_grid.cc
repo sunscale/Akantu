@@ -46,7 +46,6 @@ int main(int argc, char *argv[]) {
   Mesh circle(spatial_dimension);
   circle.read("circle.msh");
 
-  circle.computeBoundingBox();
   const Vector<Real> & l = circle.getLocalLowerBounds();
   const Vector<Real> & u = circle.getLocalUpperBounds();
 

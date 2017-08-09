@@ -171,11 +171,21 @@ public:
   UInt createBoundaryGroupFromGeometry();
 
   /// create element clusters for a given dimension
+  UInt createClusters(UInt element_dimension, Mesh & mesh_facets,
+                      std::string cluster_name_prefix = "cluster",
+                      const ClusteringFilter & filter = ClusteringFilter());
+
+  /// create element clusters for a given dimension
   UInt createClusters(UInt element_dimension,
                       std::string cluster_name_prefix = "cluster",
-                      const ClusteringFilter & filter = ClusteringFilter(),
-                      Mesh * mesh_facets = nullptr);
+                      const ClusteringFilter & filter = ClusteringFilter());
 
+private:
+  /// create element clusters for a given dimension
+  UInt createClusters(UInt element_dimension, std::string cluster_name_prefix,
+                      const ClusteringFilter & filter, Mesh & mesh_facets);
+
+public:
   /// Create an ElementGroup based on a NodeGroup
   void createElementGroupFromNodeGroup(const std::string & name,
                                        const std::string & node_group,

@@ -32,8 +32,8 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "fe_engine.hh"
-#include "shape_lagrange.hh"
 #include "integrator_gauss.hh"
+#include "shape_lagrange.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstdlib>
 #include <iostream>
@@ -41,7 +41,7 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize(argc, argv);
 
   debug::setDebugLevel(dblTest);
@@ -50,54 +50,54 @@ int main(int argc, char *argv[]) {
 
   Mesh my_mesh(dim);
 
-  my_mesh.computeBoundingBox();
   const Vector<Real> & lower = my_mesh.getLowerBounds();
   const Vector<Real> & upper = my_mesh.getUpperBounds();
 
-  std::stringstream meshfilename; meshfilename << type << ".msh";
+  std::stringstream meshfilename;
+  meshfilename << type << ".msh";
   my_mesh.read(meshfilename.str());
 
   UInt nb_elements = my_mesh.getNbElement(type);
   ///
-  FEEngineTemplate<IntegratorGauss,ShapeLagrange> *fem =
-    new FEEngineTemplate<IntegratorGauss,ShapeLagrange>(my_mesh, dim, "my_fem");
+  FEEngineTemplate<IntegratorGauss, ShapeLagrange> * fem =
+      new FEEngineTemplate<IntegratorGauss, ShapeLagrange>(my_mesh, dim,
+                                                           "my_fem");
 
   fem->initShapeFunctions();
 
   UInt nb_quad_points = fem->getNbIntegrationPoints(type);
 
   /// get the quadrature points coordinates
-  Array<Real> coord_on_quad(nb_quad_points*nb_elements,
-			     my_mesh.getSpatialDimension(),
-			     "coord_on_quad");
+  Array<Real> coord_on_quad(nb_quad_points * nb_elements,
+                            my_mesh.getSpatialDimension(), "coord_on_quad");
 
-  fem->interpolateOnIntegrationPoints(my_mesh.getNodes(),
-				     coord_on_quad,
-				     my_mesh.getSpatialDimension(),
-				     type);
-
+  fem->interpolateOnIntegrationPoints(my_mesh.getNodes(), coord_on_quad,
+                                      my_mesh.getSpatialDimension(), type);
 
   /// loop over the quadrature points
-  Array<Real>::iterator< Vector<Real> > it = coord_on_quad.begin(dim);
+  Array<Real>::iterator<Vector<Real>> it = coord_on_quad.begin(dim);
   Vector<Real> natural_coords(dim);
 
   Matrix<Real> quad = GaussIntegrationElement<type>::getQuadraturePoints();
 
-  for(UInt el = 0 ; el < nb_elements ; ++el){
-    for(UInt q = 0 ; q < nb_quad_points ; ++q){
+  for (UInt el = 0; el < nb_elements; ++el) {
+    for (UInt q = 0; q < nb_quad_points; ++q) {
       fem->inverseMap(*it, el, type, natural_coords);
       for (UInt i = 0; i < dim; ++i) {
-	__attribute__ ((unused)) const Real eps = 1e-13;
-	AKANTU_DEBUG_ASSERT(std::abs((natural_coords(i) - quad(i,q))/(upper(i)-lower(i))) < eps,
-			    "real coordinates inversion test failed:"
-			    << natural_coords(i) << " - " << quad(i, q)
-			    << " = " << (natural_coords(i) - quad(i, q))/(upper(i)-lower(i)));
+        __attribute__((unused)) const Real eps = 1e-13;
+        AKANTU_DEBUG_ASSERT(
+            std::abs((natural_coords(i) - quad(i, q)) / (upper(i) - lower(i))) <
+                eps,
+            "real coordinates inversion test failed:"
+                << natural_coords(i) << " - " << quad(i, q) << " = "
+                << (natural_coords(i) - quad(i, q)) / (upper(i) - lower(i)));
       }
       ++it;
     }
   }
 
-  std::cout << "inverse completed over " << nb_elements << " elements" << std::endl;
+  std::cout << "inverse completed over " << nb_elements << " elements"
+            << std::endl;
 
   delete fem;
   finalize();

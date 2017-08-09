@@ -75,8 +75,8 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
   /// static contruction of a meshio object
-  static MeshIO * getMeshIO(const std::string & filename,
-                            const MeshIOType & type);
+  static std::unique_ptr<MeshIO> getMeshIO(const std::string & filename,
+                                           const MeshIOType & type);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -105,11 +105,11 @@ inline std::ostream & operator<<(std::ostream & stream, const MeshIO & _this) {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
-#include "mesh_io_msh.hh"
-#include "mesh_io_diana.hh"
 #include "mesh_io_abaqus.hh"
+#include "mesh_io_diana.hh"
+#include "mesh_io_msh.hh"
 
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 #include "mesh_io_msh_struct.hh"

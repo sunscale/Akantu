@@ -57,8 +57,9 @@ class MeshUtils {
 public:
   /// build a CSR<UInt> that contains for each node the linearized number of
   /// the connected elements of a given spatial dimension
-  static void buildNode2Elements(const Mesh & mesh, CSR<UInt> & node_to_elem,
-                                 UInt spatial_dimension = _all_dimensions);
+  // static void buildNode2Elements(const Mesh & mesh, CSR<UInt> & node_to_elem,
+  //                                UInt spatial_dimension = _all_dimensions);
+
   /// build a CSR<Element> that contains for each node the list of connected
   /// elements of a given spatial dimension
   static void buildNode2Elements(const Mesh & mesh, CSR<Element> & node_to_elem,
@@ -143,7 +144,7 @@ public:
   static void resetFacetToDouble(Mesh & mesh_facets);
 
   /// associate a node type to each segment in the mesh
-  static void buildSegmentToNodeType(const Mesh & mesh, Mesh & mesh_facets);
+  // static void buildSegmentToNodeType(const Mesh & mesh, Mesh & mesh_facets);
 
   /// update local and master global connectivity when new nodes are added
   static UInt updateLocalMasterGlobalConnectivity(Mesh & mesh,

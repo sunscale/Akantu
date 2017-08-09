@@ -46,7 +46,7 @@
 namespace akantu {
 class Mesh;
 class Element;
-}  // akantu
+} // namespace akantu
 
 namespace akantu {
 
@@ -66,20 +66,13 @@ public:
   /* Type definitions                                                         */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef ElementTypeMapArray<UInt> ElementList;
-  typedef Array<UInt> NodeList;
-
-  /* ------------------------------------------------------------------------ */
-  /* Node iterator                                                            */
-  /* ------------------------------------------------------------------------ */
-  typedef NodeGroup::const_node_iterator const_node_iterator;
-  inline const_node_iterator node_begin() const;
-  inline const_node_iterator node_end() const;
+  using ElementList = ElementTypeMapArray<UInt>;
+  using NodeList = Array<UInt>;
 
   /* ------------------------------------------------------------------------ */
   /* Element iterator                                                         */
   /* ------------------------------------------------------------------------ */
-  typedef ElementList::type_iterator type_iterator;
+  using type_iterator = ElementList::type_iterator;
   inline type_iterator firstType(UInt dim = _all_dimensions,
                                  const GhostType & ghost_type = _not_ghost,
                                  const ElementKind & kind = _ek_regular) const;
@@ -88,13 +81,19 @@ public:
                                 const GhostType & ghost_type = _not_ghost,
                                 const ElementKind & kind = _ek_regular) const;
 
-  typedef Array<UInt>::const_iterator<UInt> const_element_iterator;
+  inline auto elementTypes(UInt dim = _all_dimensions,
+                           const GhostType & ghost_type = _not_ghost,
+                           const ElementKind & kind = _ek_regular) const {
+    return elements.elementTypes(dim, ghost_type, kind);
+  }
+
+  using const_element_iterator = Array<UInt>::const_iterator<UInt>;
   inline const_element_iterator
-  element_begin(const ElementType & type,
-                const GhostType & ghost_type = _not_ghost) const;
+  begin(const ElementType & type,
+        const GhostType & ghost_type = _not_ghost) const;
   inline const_element_iterator
-  element_end(const ElementType & type,
-              const GhostType & ghost_type = _not_ghost) const;
+  end(const ElementType & type,
+      const GhostType & ghost_type = _not_ghost) const;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -180,7 +179,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #include "element.hh"
 #include "element_group_inline_impl.cc"

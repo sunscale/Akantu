@@ -37,7 +37,7 @@
 namespace akantu {
 class NodeSynchronizer;
 class ElementSynchronizer;
-}  // akantu
+} // namespace akantu
 
 namespace akantu {
 
@@ -46,8 +46,8 @@ class MeshAccessor {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  MeshAccessor(Mesh & mesh) : _mesh(mesh){};
-  virtual ~MeshAccessor(){};
+  explicit MeshAccessor(Mesh & mesh) : _mesh(mesh){};
+  virtual ~MeshAccessor() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -67,31 +67,34 @@ public:
   /// get a pointer to the nodes_global_ids Array<UInt> and create it if
   /// necessary
   inline Array<UInt> & getNodesGlobalIds() {
-    return *(this->_mesh.getNodesGlobalIdsPointer());
+    return this->_mesh.getNodesGlobalIdsPointer();
   }
 
   /// get a pointer to the nodes_type Array<Int> and create it if necessary
   inline Array<NodeType> & getNodesType() {
-    return *(this->_mesh.getNodesTypePointer());
+    return this->_mesh.getNodesTypePointer();
   }
 
   /// get a pointer to the coordinates Array
-  inline Array<Real> & getNodes() { return *(this->_mesh.getNodesPointer()); }
+  inline Array<Real> & getNodes() { return this->_mesh.getNodesPointer(); }
+
+  /// get a pointer to the coordinates Array
+  inline std::shared_ptr<Array<Real>> getNodesSharedPtr() { return this->_mesh.nodes; }
 
   /// get a pointer to the connectivity Array for the given type and create it
   /// if necessary
   inline Array<UInt> &
   getConnectivity(const ElementType & type,
                   const GhostType & ghost_type = _not_ghost) {
-    return *(this->_mesh.getConnectivityPointer(type, ghost_type));
+    return this->_mesh.getConnectivityPointer(type, ghost_type);
   }
 
   /// get a pointer to the element_to_subelement Array for the given type and
   /// create it if necessary
-  inline Array<std::vector<Element> > &
+  inline Array<std::vector<Element>> &
   getElementToSubelement(const ElementType & type,
                          const GhostType & ghost_type = _not_ghost) {
-    return *(this->_mesh.getElementToSubelementPointer(type, ghost_type));
+    return this->_mesh.getElementToSubelementPointer(type, ghost_type);
   }
 
   /// get a pointer to the subelement_to_element Array for the given type and
@@ -99,7 +102,7 @@ public:
   inline Array<Element> &
   getSubelementToElement(const ElementType & type,
                          const GhostType & ghost_type = _not_ghost) {
-    return *(this->_mesh.getSubelementToElementPointer(type, ghost_type));
+    return this->_mesh.getSubelementToElementPointer(type, ghost_type);
   }
 
   template <typename T>
@@ -107,9 +110,9 @@ public:
   getData(const std::string & data_name, const ElementType & el_type,
           const GhostType & ghost_type = _not_ghost, UInt nb_component = 1,
           bool size_to_nb_element = true, bool resize_with_parent = false) {
-    return *(this->_mesh.getDataPointer<T>(data_name, el_type, ghost_type,
-                                           nb_component, size_to_nb_element,
-                                           resize_with_parent));
+    return this->_mesh.getDataPointer<T>(data_name, el_type, ghost_type,
+                                         nb_component, size_to_nb_element,
+                                         resize_with_parent);
   }
 
   MeshData & getMeshData() { return this->_mesh.getMeshData(); }
@@ -124,6 +127,6 @@ private:
   Mesh & _mesh;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_ACCESSOR_HH__ */

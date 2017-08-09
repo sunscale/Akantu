@@ -206,6 +206,18 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
+class CohesiveNewNodesEvent : public NewNodesEvent{
+public:
+  CohesiveNewNodesEvent() = default;
+  virtual ~CohesiveNewNodesEvent() = default;
+
+  AKANTU_GET_MACRO_NOT_CONST(OldNodesList, old_nodes, Array<UInt> &);
+  AKANTU_GET_MACRO(OldNodesList, old_nodes, const Array<UInt> &);
+private:
+  Array<UInt> old_nodes;
+};
+
+
 } // akantu
 
 #endif /* __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__ */

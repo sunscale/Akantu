@@ -55,7 +55,6 @@ int main(int argc, char * argv[]) {
 
   model.assembleMassLumped();
 
-  mesh.computeBoundingBox();
   Real posx_max = mesh.getUpperBounds()(0);
   Real posx_min = mesh.getLowerBounds()(0);
 
