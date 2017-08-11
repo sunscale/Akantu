@@ -32,7 +32,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_synchronizer.hh"
-#include "aka_zip.hh"
+#include "aka_iterators.hh"
 #include "dof_manager_default.hh"
 #include "mesh.hh"
 #include "node_synchronizer.hh"

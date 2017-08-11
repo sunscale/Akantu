@@ -42,3 +42,4 @@ register_test(test_math test_math.cc PACKAGE core)
 register_test(test_types test_types.cc PACKAGE core)
 
 register_test(test_zip_iterator test_zip_iterator.cc PACKAGE core)
+register_test(test_arange_iterator test_arange_iterator.cc PACKAGE core)

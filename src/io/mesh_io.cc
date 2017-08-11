@@ -33,7 +33,7 @@
 /* -------------------------------------------------------------------------- */
 #include "mesh_io.hh"
 #include "aka_common.hh"
-#include "aka_zip.hh"
+#include "aka_iterators.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {

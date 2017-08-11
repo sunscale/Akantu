@@ -33,7 +33,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
-#include "aka_zip.hh"
+#include "aka_iterators.hh"
 #include "dumpable_inline_impl.hh"
 #include "material_cohesive.hh"
 #include "shape_cohesive.hh"
