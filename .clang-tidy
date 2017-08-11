@@ -1,4 +1,4 @@
-Checks:          'modernize-*'
+Checks:          'modernize-use-override'
 AnalyzeTemporaryDtors: false
 HeaderFilterRegex: '.*'
 FormatStyle:     file

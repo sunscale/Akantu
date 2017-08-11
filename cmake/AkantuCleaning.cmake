@@ -52,15 +52,26 @@ macro(register_target_to_tidy target)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL
       "Enable/Disable output of compile commands during generation" FORCE)
 
-    add_custom_target(
-      clang-tidy-${target}
-      COMMAND ${CLANG_TIDY}
-        -quiet
-        -p=${PROJECT_BINARY_DIR}
-        -export-fixes=${PROJECT_BINARY_DIR}/clang-tidy-${target}.yaml
-        ${_sources}
-      COMMENT "Tidying ${target}"
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      )
+    file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/clang-tidy)
+
+    set(_depends)
+
+    foreach(_src ${_sources})
+      get_filename_component(_src_dir ${_src} DIRECTORY)
+      file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/clang-tidy/${_src_dir})
+
+      add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/clang-tidy/${_src}.yaml
+        COMMAND ${CLANG_TIDY}
+         -p=${PROJECT_BINARY_DIR}
+         -export-fixes=${PROJECT_BINARY_DIR}/clang-tidy/${_src}.yaml
+        ${_src}
+        COMMENT "Tidying ${_src}"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+
+      list(APPEND _depends ${PROJECT_BINARY_DIR}/clang-tidy/${_src}.yaml)
+    endforeach()
+    add_custom_target(clang-tidy DEPENDS ${_depends})
   endif()
 endmacro()

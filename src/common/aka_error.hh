@@ -28,20 +28,17 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include <sstream>
+#include <typeinfo>
+#include <utility>
+/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_ERROR_HH__
 #define __AKANTU_ERROR_HH__
 
-/* -------------------------------------------------------------------------- */
-#include <cstdlib>
-#include <ostream>
-#include <sstream>
-#include <typeinfo>
-#include <utility>
-/* -------------------------------------------------------------------------- */
 namespace akantu {
-
 /* -------------------------------------------------------------------------- */
 enum DebugLevel {
   dbl0 = 0,
@@ -80,7 +77,6 @@ enum DebugLevel {
   "(" << __func__ << "(): " << __FILE__ << ":" << __LINE__ << ")"
 
 /* -------------------------------------------------------------------------- */
-
 namespace debug {
   void setDebugLevel(const DebugLevel & level);
   const DebugLevel & getDebugLevel();
@@ -107,24 +103,24 @@ namespace debug {
         : _info(std::move(info)), _file(std::move(file)), _line(line) {}
 
     //! destructor
-    ~Exception() throw() override = default;
+    ~Exception() noexcept override = default;
 
     /* ---------------------------------------------------------------------- */
     /*  Methods */
     /* ---------------------------------------------------------------------- */
   public:
-    const char * what() const throw() override { return _info.c_str(); }
+    const char * what() const noexcept override { return _info.c_str(); }
 
-    virtual const char * info() const throw() {
+    virtual const std::string info() const noexcept {
       std::stringstream stream;
       stream << debug::demangle(typeid(*this).name()) << " : " << _info << " ["
              << _file << ":" << _line << "]";
-      return stream.str().c_str();
+      return stream.str();
     }
 
   public:
-    void setInfo(std::string info) { _info = info; }
-    void setFile(std::string file) { _file = file; }
+    void setInfo(const std::string & info) { _info = info; }
+    void setFile(const std::string & file) { _file = file; }
     void setLine(unsigned int line) { _line = line; }
     /* ---------------------------------------------------------------------- */
     /* Class Members                                                          */
@@ -157,20 +153,18 @@ namespace debug {
     void exit(int status) __attribute__((noreturn));
 
     void throwException(const std::string & info, const std::string & file,
-                        unsigned int line, __attribute__((unused)) bool silent,
-                        __attribute__((unused))
-                        const std::string & location) const
-        throw(akantu::debug::Exception) __attribute__((noreturn));
+                        unsigned int line, bool, const std::string &) const
+        noexcept(false) __attribute__((noreturn));
 
     /*----------------------------------------------------------------------- */
     template <class Except>
     void throwCustomException(const Except & ex, const std::string & info,
                               const std::string & file, unsigned int line) const
-        throw(Except) __attribute__((noreturn));
+        noexcept(false) __attribute__((noreturn));
     /*----------------------------------------------------------------------- */
     template <class Except>
     void throwCustomException(const Except & ex, const std::string & file,
-                              unsigned int line) const throw(Except)
+                              unsigned int line) const noexcept(false)
         __attribute__((noreturn));
 
     void printMessage(const std::string & prefix, const DebugLevel & level,
@@ -200,12 +194,11 @@ namespace debug {
     std::ostream * cout;
     bool file_open;
     DebugLevel level;
-
     bool print_backtrace;
   };
 
   extern Debugger debugger;
-}
+} // namespace debug
 
 /* -------------------------------------------------------------------------- */
 #define AKANTU_STRINGSTREAM_IN(_str, _sstr)                                    \
@@ -292,8 +285,8 @@ namespace debug {
 #define AKANTU_DEBUG_ASSERT(test, info)                                        \
   do {                                                                         \
     if (!(test)) {                                                             \
-      AKANTU_DEBUG_("!!! ", ::akantu::dblAssert, "assert [" << #test << "] "   \
-                                                            << info);          \
+      AKANTU_DEBUG_("!!! ", ::akantu::dblAssert,                               \
+                    "assert [" << #test << "] " << info);                      \
       ::akantu::debug::debugger.exit(EXIT_FAILURE);                            \
     }                                                                          \
   } while (false)
@@ -311,30 +304,29 @@ namespace debug {
 /* -------------------------------------------------------------------------- */
 
 namespace debug {
-  /* ---------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
   template <class Except>
   void Debugger::throwCustomException(const Except & ex,
                                       const std::string & info,
                                       const std::string & file,
-                                      unsigned int line) const throw(Except) {
+                                      unsigned int line) const noexcept(false) {
     auto & nc_ex = const_cast<Except &>(ex);
     nc_ex.setInfo(info);
     nc_ex.setFile(file);
     nc_ex.setLine(line);
     throw ex;
   }
-  /* ----------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
   template <class Except>
   void Debugger::throwCustomException(const Except & ex,
                                       const std::string & file,
-                                      unsigned int line) const throw(Except) {
+                                      unsigned int line) const noexcept(false) {
     auto & nc_ex = const_cast<Except &>(ex);
     nc_ex.setFile(file);
     nc_ex.setLine(line);
-
     throw ex;
   }
-}
-}
+} // namespace debug
+} // namespace akantu
 
 #endif /* __AKANTU_ERROR_HH__ */

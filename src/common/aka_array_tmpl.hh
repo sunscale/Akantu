@@ -900,25 +900,14 @@ public:
   using iterator_category = std::random_access_iterator_tag;
 
 public:
-  iterator_internal(pointer data = NULL,
-                    __attribute__((unused)) UInt _offset = 1)
+  iterator_internal(pointer data = nullptr, UInt _offset = 1)
       : _offset(_offset), ret(data), initial(data){};
-  iterator_internal(const iterator_internal & it) {
-    if (this != &it) {
-      this->ret = it.ret;
-      this->initial = it.initial;
-    }
-  }
+  iterator_internal(const iterator_internal & it) = default;
+  iterator_internal(iterator_internal && it) = default;
 
   virtual ~iterator_internal() = default;
 
-  inline iterator_internal & operator=(const iterator_internal & it) {
-    if (this != &it) {
-      this->ret = it.ret;
-      this->initial = it.initial;
-    }
-    return *this;
-  }
+  inline iterator_internal & operator=(const iterator_internal & it) = default;
 
   UInt getCurrentIndex() {
     return (this->ret - this->initial) / this->_offset;

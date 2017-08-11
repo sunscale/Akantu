@@ -48,7 +48,6 @@ inline InterpolationType convertType<ElementType, InterpolationType>(const Eleme
   return itp_type;
 }
 
-
 } // namespace akantu
 
 #endif /* __AKANTU_ELEMENT_TYPE_CONVERSION_HH__ */
