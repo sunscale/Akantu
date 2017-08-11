@@ -73,8 +73,8 @@ int main(int argc, char * argv[]) {
   std::cout << mat_cohesive << std::endl;
   std::cout << model.getMaterial(2) << std::endl;
 
-  const Real sigma_c = mat_cohesive.getParam("sigma_c");
-  const Real beta = mat_cohesive.getParam("beta");
+  const Real sigma_c = mat_cohesive.get("sigma_c");
+  const Real beta = mat_cohesive.get("beta");
 
   Array<Real> & position = mesh.getNodes();
 

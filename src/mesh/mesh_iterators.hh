@@ -90,17 +90,17 @@ public:
 
   public:
     iterator(const iterator &) = default;
-    iterator(const elements_iterator first, const elements_iterator last)
+    iterator(const elements_iterator & first, const elements_iterator & last)
         : range(std::equal_range(first, last, *first, element_comparator())),
-          first(range.second), last(last) {}
+          first(first), last(last) {}
 
     decltype(auto) operator*() const {
       return MeshElementsRange(range.first, range.second);
     }
 
     iterator operator++() {
-      range = std::equal_range(first, last, *first, element_comparator());
       first = range.second;
+      range = std::equal_range(first, last, *first, element_comparator());
       return *this;
     }
 

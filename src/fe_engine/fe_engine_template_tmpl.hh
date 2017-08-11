@@ -1213,6 +1213,7 @@ template <template <ElementKind, class> class I, template <ElementKind> class S,
           ElementKind kind, class IntegrationOrderFunctor>
 void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::onElementsAdded(
     const Array<Element> & new_elements, const NewElementsEvent &) {
+  integrator.onElementsAdded(new_elements);
   shape_functions.onElementsAdded(new_elements);
 }
 

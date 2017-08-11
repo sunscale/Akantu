@@ -77,7 +77,7 @@ def register_pretty_printer(pretty_printer):
 @register_pretty_printer
 class AkaArrayPrinter(AkantuPrinter):
     """Pretty printer for akantu::Array<T>"""
-    regex = re.compile('^akantu::Array<(.*), (true|false)>$')
+    regex = re.compile('^akantu::Array<(.*?), (true|false)>$')
     name = 'akantu::Array'
 
     def __init__(self, value):
@@ -104,6 +104,25 @@ class AkaArrayPrinter(AkantuPrinter):
             yield ('[{0}]'.format(i),
                    ('{0}' if self.nb_component == 1 else '[{0}]').format(
                        ', '.join(_values)))
+
+@register_pretty_printer
+class AkaArrayIteratorPrinter(AkantuPrinter):
+    """Pretty printer for akantu::Array<T>"""
+    regex = re.compile('^akantu::Array<(.*?), (true|false)>::internal_iterator<(.*?), (.*?), (false|true)>$')
+    name = 'akantu::Array::iterator'
+
+    def __init__(self, value):
+        self.typename = self.get_basic_type(value)
+        self.value = value
+        self.ret = self.value['ret'].dereference()
+
+    def to_string(self):
+        m = self.regex.search(self.typename)
+        return 'Array<{0}>::iterator<{3}>'.format(
+            m.group(1), m.group(1))
+
+    def children(self):
+        yield ('[data]', self.ret)
 
 
 # @register_pretty_printer

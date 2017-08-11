@@ -196,7 +196,7 @@ void MaterialCohesive::assembleInternalForces(GhostType ghost_type) {
 
     /// assemble
     model->getDOFManager().assembleElementalArrayLocalArray(
-        *int_t_N, internal_force, type, ghost_type, 1, elem_filter);
+        *int_t_N, internal_force, type, ghost_type, -1, elem_filter);
 
     delete int_t_N;
   }
