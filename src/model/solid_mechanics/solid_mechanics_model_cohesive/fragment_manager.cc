@@ -30,7 +30,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "fragment_manager.hh"
+#include "aka_iterators.hh"
 #include "material_cohesive.hh"
+#include "mesh_iterators.hh"
 #include "solid_mechanics_model_cohesive.hh"
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
@@ -155,7 +157,7 @@ void FragmentManager::buildFragments(Real damage_limit) {
 
   /// generate fragments
   global_nb_fragment =
-    createClusters(spatial_dimension, mesh_facets, fragment_prefix,
+      createClusters(spatial_dimension, mesh_facets, fragment_prefix,
                      CohesiveElementFilter(model, damage_limit));
 
   nb_fragment = getNbElementGroups(spatial_dimension);
@@ -251,9 +253,9 @@ void FragmentManager::computeVelocity() {
 
   /// compute velocity per quadrature point
   ElementTypeMapArray<Real> velocity_field("velocity_field", id);
-  velocity_field.initialize(model.getFEEngine(), _nb_component = spatial_dimension,
-                            _spatial_dimension = spatial_dimension,
-                            _ghost_type = _not_ghost);
+  velocity_field.initialize(
+      model.getFEEngine(), _nb_component = spatial_dimension,
+      _spatial_dimension = spatial_dimension, _ghost_type = _not_ghost);
 
   // mesh.initElementTypeMapArray(velocity_field, spatial_dimension,
   //                              spatial_dimension, _not_ghost);
@@ -296,9 +298,11 @@ void FragmentManager::computeInertiaMoments() {
 
   /// compute local coordinates products with respect to the center of match
   ElementTypeMapArray<Real> moments_coords("moments_coords", id);
-  moments_coords.initialize(model.getFEEngine(), _nb_component = spatial_dimension * spatial_dimension,
-                        _spatial_dimension = spatial_dimension,
-                        _ghost_type = _not_ghost, _default_value = 1.);
+  moments_coords.initialize(model.getFEEngine(),
+                            _nb_component =
+                                spatial_dimension * spatial_dimension,
+                            _spatial_dimension = spatial_dimension,
+                            _ghost_type = _not_ghost, _default_value = 1.);
 
   // mesh.initElementTypeMapArray(moments_coords,
   //                              spatial_dimension * spatial_dimension,
@@ -314,7 +318,8 @@ void FragmentManager::computeInertiaMoments() {
   //   ElementType type = *it;
   //   Array<Real> & field_array = moments_coords(type);
   //   UInt nb_element = mesh.getNbElement(type);
-  //   UInt nb_quad_per_element = model.getFEEngine().getNbIntegrationPoints(type);
+  //   UInt nb_quad_per_element =
+  //   model.getFEEngine().getNbIntegrationPoints(type);
 
   //   field_array.resize(nb_element * nb_quad_per_element);
   // }
@@ -329,7 +334,8 @@ void FragmentManager::computeInertiaMoments() {
 
     const ElementTypeMapArray<UInt> & el_list = it->second->getElements();
     /// loop over elements of the fragment
-    for (auto type : el_list.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
+    for (auto type :
+         el_list.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
       UInt nb_quad_per_element =
           model.getFEEngine().getNbIntegrationPoints(type);
 
@@ -572,19 +578,16 @@ void FragmentManager::createDumpDataArray(Array<T> & data, std::string name,
   if (data.getSize() == 0)
     return;
 
-  Mesh & mesh_not_const = const_cast<Mesh &>(mesh);
+  auto & mesh_not_const = const_cast<Mesh &>(mesh);
 
-  UInt spatial_dimension = mesh.getSpatialDimension();
-  UInt nb_component = data.getNbComponent();
-  UInt * fragment_index_it = fragment_index.storage();
-
-  auto data_begin = data.begin(nb_component);
+  auto && spatial_dimension = mesh.getSpatialDimension();
+  auto && nb_component = data.getNbComponent();
+  auto && data_begin = data.begin(nb_component);
+  auto fragment_index_it = fragment_index.begin();
 
   /// loop over fragments
-  for (auto it = element_group_begin();
-       it != element_group_end(); ++it, ++fragment_index_it) {
-
-    const auto & fragment = *(it->second);
+  for (const auto & fragment : ElementGroupsIterable(*this)) {
+    const auto & fragment_idx = *fragment_index_it;
 
     /// loop over cluster types
     for (auto & type : fragment.elementTypes(spatial_dimension)) {
@@ -595,15 +598,12 @@ void FragmentManager::createDumpDataArray(Array<T> & data, std::string name,
       auto mesh_data_begin = mesh_data.begin(nb_component);
 
       /// fill mesh data
-      if (fragment_index_output) {
-        for (const auto & elem : fragment.getElements(type)) {
-          Vector<T> md_tmp(mesh_data_begin[elem]);
-          md_tmp(0) = *fragment_index_it;
-        }
-      } else {
-        for (const auto & elem : fragment.getElements(type)) {
-          Vector<T> md_tmp(mesh_data_begin[elem]);
-          md_tmp = data_begin[*fragment_index_it];
+      for (const auto & elem : fragment.getElements(type)) {
+        Vector<T> md_tmp = mesh_data_begin[elem];
+        if (fragment_index_output) {
+          md_tmp(0) = fragment_idx;
+        } else {
+          md_tmp = data_begin[fragment_idx];
         }
       }
     }

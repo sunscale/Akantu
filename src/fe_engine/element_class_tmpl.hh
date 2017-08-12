@@ -33,12 +33,14 @@
 
 /* -------------------------------------------------------------------------- */
 #include "gauss_integration_tmpl.hh"
+#include "element_class.hh"
 /* -------------------------------------------------------------------------- */
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
+#ifndef __AKANTU_ELEMENT_CLASS_TMPL_HH__
+#define __AKANTU_ELEMENT_CLASS_TMPL_HH__
 
 namespace akantu {
-
 /* -------------------------------------------------------------------------- */
 /* GeometricalElement                                                         */
 /* -------------------------------------------------------------------------- */
@@ -447,16 +449,22 @@ inline void ElementClass<type, kind>::inverseMap(
   /* init before iteration loop  */
   /* --------------------------- */
   // do interpolation
-  Vector<Real> physical_guess_v(physical_guess.storage(), dimension);
-  interpolation_element::interpolateOnNaturalCoordinates(
-      natural_coords, node_coords, physical_guess_v);
+  auto update_f = [&f, &physical_guess, &natural_coords, &node_coords, &mreal_coords,
+                   dimension]() {
+    Vector<Real> physical_guess_v(physical_guess.storage(), dimension);
+    interpolation_element::interpolateOnNaturalCoordinates(
+        natural_coords, node_coords, physical_guess_v);
 
-  // compute initial objective function value f = real_coords - physical_guess
-  f = mreal_coords;
-  f -= physical_guess;
+    // compute initial objective function value f = real_coords - physical_guess
+    f = mreal_coords;
+    f -= physical_guess;
 
-  // compute initial error
-  Real inverse_map_error = f.norm<L_2>();
+    // compute initial error
+    auto error = f.norm<L_2>();
+    return error;
+  };
+
+  auto inverse_map_error = update_f();
 
   /* --------------------------- */
   /* iteration loop              */
@@ -481,14 +489,7 @@ inline void ElementClass<type, kind>::inverseMap(
     // update our guess
     natural_coords += Vector<Real>(dxi(0));
 
-    // interpolate
-    interpolation_element::interpolateOnNaturalCoordinates(
-        natural_coords, node_coords, physical_guess_v);
-
-    // compute error
-    f = mreal_coords;
-    f -= physical_guess;
-    inverse_map_error = f.norm<L_2>();
+    inverse_map_error = update_f();
   }
   //  memcpy(natural_coords.storage(), natural_guess.storage(), sizeof(Real) *
   //  natural_coords.size());
@@ -507,4 +508,6 @@ inline void ElementClass<type, kind>::inverseMap(
   }
 }
 
-} // akantu
+} // namespace akantu
+
+#endif /* __AKANTU_ELEMENT_CLASS_TMPL_HH__ */

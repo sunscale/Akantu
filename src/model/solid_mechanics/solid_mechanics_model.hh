@@ -36,9 +36,10 @@
 #include "model.hh"
 #include "non_local_manager.hh"
 #include "solid_mechanics_model_event_handler.hh"
+#include "fe_engine.hh"
 /* -------------------------------------------------------------------------- */
-#include "integrator_gauss.hh"
-#include "shape_lagrange.hh"
+//#include "integrator_gauss.hh"
+//#include "shape_lagrange.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_HH__
@@ -49,6 +50,9 @@ class Material;
 class MaterialSelector;
 class DumperIOHelper;
 class NonLocalManager;
+template <ElementKind kind, class IntegrationOrderFunctor>
+class IntegratorGauss;
+template <ElementKind kind> class ShapeLagrange;
 } // namespace akantu
 
 /* -------------------------------------------------------------------------- */
@@ -62,7 +66,7 @@ struct SolidMechanicsModelOptions : public ModelOptions {
   SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack);
 
   AnalysisMethod analysis_method;
-  //bool no_init_materials;
+  // bool no_init_materials;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -643,7 +647,7 @@ public:
   // SparseMatrix &);
 
   /// get the FEEngine object to integrate or interpolate on the boundary
-  inline FEEngine & getFEEngineBoundary(const ID & name = "");
+  FEEngine & getFEEngineBoundary(const ID & name = "");
 
   // /// get integrator
   // AKANTU_GET_MACRO(Integrator, *integrator, const IntegrationScheme2ndOrder
@@ -671,6 +675,7 @@ public:
 
   /// Access the non_local_manager interface
   AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, NonLocalManager &);
+
 protected:
   friend class Material;
 

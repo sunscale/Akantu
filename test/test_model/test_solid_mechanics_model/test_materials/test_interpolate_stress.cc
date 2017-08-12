@@ -37,7 +37,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
-
+#include "integrator_gauss.hh"
+#include "shape_lagrange.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;

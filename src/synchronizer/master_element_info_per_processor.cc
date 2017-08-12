@@ -29,6 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_iterators.hh"
+#include "mesh_iterators.hh"
 #include "element_group.hh"
 #include "element_info_per_processor.hh"
 #include "element_synchronizer.hh"
@@ -419,12 +420,8 @@ void MasterElementInfoPerProc::synchronizeGroups() {
   ElementToGroup element_to_group;
   element_to_group.resize(nb_element);
 
-  auto egi = mesh.element_group_begin();
-  auto ege = mesh.element_group_end();
-  for (; egi != ege; ++egi) {
-    ElementGroup & eg = *(egi->second);
-
-    std::string name = egi->first;
+  for (auto & eg : ElementGroupsIterable(mesh)) {
+    const std::string & name = eg.getName();
 
     for (const auto & element : eg.getElements(type, _not_ghost)) {
       element_to_group[element].push_back(name);

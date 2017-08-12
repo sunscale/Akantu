@@ -42,12 +42,11 @@ int main(int argc, char *argv[]) {
   
   Mesh mesh(2);
 
-  MeshIOMSH mesh_io;
-  mesh_io.read("purify_mesh.msh", mesh);
+  mesh.read("purify_mesh.msh");
   
   MeshUtils::purifyMesh(mesh);
 
-  mesh_io.write("purify_mesh_after.msh", mesh);
+  mesh.write("purify_mesh_after.msh");
 
   if(mesh.getNbNodes() != 21)
     AKANTU_DEBUG_ERROR("The purified mesh does not contain the good number of nodes.");

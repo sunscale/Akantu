@@ -140,7 +140,8 @@ private:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Elements, elements, UInt);
+  const Array<UInt> & getElements(const ElementType & type,
+                                  const GhostType & ghost_type = _not_ghost) const;
   AKANTU_GET_MACRO(Elements, elements, const ElementTypeMapArray<UInt> &);
   AKANTU_GET_MACRO(Nodes, node_group.getNodes(), const Array<UInt> &);
   AKANTU_GET_MACRO(NodeGroup, node_group, const NodeGroup &);

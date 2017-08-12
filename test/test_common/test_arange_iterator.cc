@@ -38,11 +38,11 @@ int main() {
   for (auto i : arange(10))
     std::cout << i << std::endl;
 
-  for (auto i : arange(-1, 10, 10))
+  for (auto i : arange(1, 22, 2))
     std::cout << i << std::endl;
 
-  for (auto i : arange(-1, -10, -1))
-    std::cout << i << std::endl;
+  for (auto && i : zip(arange(-1, -10, -1), arange(1, 18, 2)))
+    std::cout << std::get<0>(i)  << " " << std::get<1>(i) << std::endl;
 
   return 0;
 }

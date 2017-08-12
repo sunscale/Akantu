@@ -272,6 +272,7 @@ public:
   NodeGroup & getNodeGroup(const std::string & name);
 
   UInt getNbElementGroups(UInt dimension = _all_dimensions) const;
+  UInt getNbNodeGroups() { return node_groups.size(); };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

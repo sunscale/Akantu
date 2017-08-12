@@ -118,11 +118,6 @@ SolidMechanicsModel::setMaterialSelector(MaterialSelector & selector) {
   is_default_material_selector = false;
 }
 
-/* -------------------------------------------------------------------------- */
-inline FEEngine & SolidMechanicsModel::getFEEngineBoundary(const ID & name) {
-  return dynamic_cast<FEEngine &>(
-      getFEEngineClassBoundary<MyFEEngineType>(name));
-}
 
 /* -------------------------------------------------------------------------- */
 inline void SolidMechanicsModel::splitElementByMaterial(

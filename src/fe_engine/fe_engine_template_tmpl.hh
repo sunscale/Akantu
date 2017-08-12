@@ -788,6 +788,11 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
                                       const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
+  if(type == _point_1) {
+    computeNormalsOnIntegrationPointsPoint1(field, normal, ghost_type);
+    return;
+  }
+
   UInt spatial_dimension = mesh.getSpatialDimension();
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   UInt nb_points = getNbIntegrationPoints(type, ghost_type);
@@ -1232,20 +1237,10 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::onElementsChanged(
     const ElementTypeMapArray<UInt> &, const ChangedElementsEvent &) {}
 
 /* -------------------------------------------------------------------------- */
-
-} // namespace akantu
-
-#include "integrator_gauss.hh"
-#include "shape_lagrange.hh"
-
-namespace akantu {
-
-/* -------------------------------------------------------------------------- */
-template <>
-template <>
-inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular,
-                             DefaultIntegrationOrderFunctor>::
-    computeNormalsOnIntegrationPoints<_point_1>(
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind, class IntegrationOrderFunctor>
+inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
+    computeNormalsOnIntegrationPointsPoint1(
         const Array<Real> &, Array<Real> & normal,
         const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();

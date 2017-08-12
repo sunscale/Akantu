@@ -31,9 +31,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
 #include "aka_array.hh"
-#include "shape_functions.hh"
+#include "shape_lagrange.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SHAPE_COHESIVE_HH__

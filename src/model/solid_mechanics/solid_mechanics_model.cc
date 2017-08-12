@@ -38,6 +38,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
+#include "integrator_gauss.hh"
+#include "shape_lagrange.hh"
 
 #include "element_synchronizer.hh"
 #include "sparse_matrix.hh"
@@ -1257,5 +1259,9 @@ void SolidMechanicsModel::updateNonLocalInternal(
 }
 
 /* -------------------------------------------------------------------------- */
+FEEngine & SolidMechanicsModel::getFEEngineBoundary(const ID & name) {
+  return dynamic_cast<FEEngine &>(
+      getFEEngineClassBoundary<MyFEEngineType>(name));
+}
 
 } // namespace akantu

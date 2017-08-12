@@ -27,6 +27,7 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "aka_iterators.hh"
 #include "element_group.hh"
 #include "mesh.hh"
 #include "mesh_iterators.hh"
@@ -42,13 +43,23 @@ int main(int argc, char * argv[]) {
   const Mesh & cmesh = mesh;
   mesh.read("iterators_mesh.msh");
 
-  for (auto && element_group : MeshElementGroups(mesh)) {
+  for (auto && element_group : ElementGroupsIterable(mesh)) {
     std::cout << element_group.getName() << std::endl;
   }
 
-  for (auto && node_group : MeshNodeGroups(cmesh)) {
+  for (auto && node_group : NodeGroupsIterable(cmesh)) {
     std::cout << node_group.getName() << std::endl;
   }
+
+  for (auto && element_group : counting(ElementGroupsIterable(mesh))) {
+    std::cout << std::get<0>(element_group) << " " << std::get<1>(element_group).getName() << std::endl;
+
+  }
+
+  // for (auto && node_group :
+  //        counting(NodeGroupsIterable(cmesh))) {
+  //   std::cout << std::get<0>(node_group) << " " << std::get<1>(node_group).getName() << std::endl;
+  // }
 
   finalize();
 

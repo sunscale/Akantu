@@ -33,6 +33,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "mesh.hh"
+/* -------------------------------------------------------------------------- */
 #if defined(AKANTU_COHESIVE_ELEMENT)
 #include "cohesive_element.hh"
 #endif
@@ -99,20 +101,22 @@ inline void Mesh::sendEvent<RemovedNodesEvent>(RemovedNodesEvent & event) {
   if (nodes_type.getSize() != 0)
     this->removeNodesFromArray(nodes_type, new_numbering);
 
-  std::vector<std::unique_ptr<std::set<Element>>> tmp(nodes_to_elements.size());
-  auto it = nodes_to_elements.begin();
+  if(not nodes_to_elements.empty()) {
+    std::vector<std::unique_ptr<std::set<Element>>> tmp(nodes_to_elements.size());
+    auto it = nodes_to_elements.begin();
 
-  UInt new_nb_nodes = 0;
-  for (auto new_i : new_numbering) {
-    if (new_i != UInt(-1)) {
-      tmp[new_i] = std::move(*it);
-      ++new_nb_nodes;
+    UInt new_nb_nodes = 0;
+    for (auto new_i : new_numbering) {
+      if (new_i != UInt(-1)) {
+        tmp[new_i] = std::move(*it);
+        ++new_nb_nodes;
+      }
+      ++it;
     }
-    ++it;
-  }
 
-  tmp.resize(new_nb_nodes);
-  std::move(tmp.begin(), tmp.end(), nodes_to_elements.begin());
+    tmp.resize(new_nb_nodes);
+    std::move(tmp.begin(), tmp.end(), nodes_to_elements.begin());
+  }
 
   computeBoundingBox();
 

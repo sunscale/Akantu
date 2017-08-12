@@ -29,6 +29,7 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_FE_ENGINE_TEMPLATE_HH__
 #define __AKANTU_FE_ENGINE_TEMPLATE_HH__
@@ -243,6 +244,14 @@ public:
                                          Array<Real> & normal,
                                          const GhostType & ghost_type) const;
 
+private:
+  // To avoid a weird full specialization of a method in a non specalized class
+  void
+  computeNormalsOnIntegrationPointsPoint1(const Array<Real> &,
+                                          Array<Real> & normal,
+                                          const GhostType & ghost_type) const;
+
+public:
   /// function to print the contain of the class
   void printself(std::ostream & stream, int indent = 0) const override;
 

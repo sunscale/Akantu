@@ -30,8 +30,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "integrator_gauss.hh"
 #include "material.hh"
 #include "model_solver.hh"
+#include "shape_lagrange.hh"
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 

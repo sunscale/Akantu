@@ -31,11 +31,11 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "aka_iterators.hh"
 #include "fe_engine.hh"
 #include "integrator_gauss.hh"
 #include "shape_lagrange.hh"
 /* -------------------------------------------------------------------------- */
-#include <cstdlib>
 #include <iostream>
 /* -------------------------------------------------------------------------- */
 
@@ -44,63 +44,67 @@ using namespace akantu;
 int main(int argc, char * argv[]) {
   akantu::initialize(argc, argv);
 
-  debug::setDebugLevel(dblTest);
-  const ElementType type = TYPE;
-  UInt dim = ElementClass<type>::getSpatialDimension();
+  const auto type = TYPE;
+  auto dim = ElementClass<type>::getSpatialDimension();
 
   Mesh my_mesh(dim);
-
-  const Vector<Real> & lower = my_mesh.getLowerBounds();
-  const Vector<Real> & upper = my_mesh.getUpperBounds();
-
   std::stringstream meshfilename;
   meshfilename << type << ".msh";
+
   my_mesh.read(meshfilename.str());
 
+  const auto & lower = my_mesh.getLowerBounds();
+  const auto & upper = my_mesh.getUpperBounds();
   UInt nb_elements = my_mesh.getNbElement(type);
-  ///
-  FEEngineTemplate<IntegratorGauss, ShapeLagrange> * fem =
-      new FEEngineTemplate<IntegratorGauss, ShapeLagrange>(my_mesh, dim,
-                                                           "my_fem");
+
+  auto fem = std::make_unique<FEEngineTemplate<IntegratorGauss, ShapeLagrange>>(
+      my_mesh, dim, "my_fem");
 
   fem->initShapeFunctions();
-
-  UInt nb_quad_points = fem->getNbIntegrationPoints(type);
+  Matrix<Real> quad = GaussIntegrationElement<type>::getQuadraturePoints();
 
   /// get the quadrature points coordinates
-  Array<Real> coord_on_quad(nb_quad_points * nb_elements,
+  Array<Real> coord_on_quad(quad.cols() * nb_elements,
                             my_mesh.getSpatialDimension(), "coord_on_quad");
 
   fem->interpolateOnIntegrationPoints(my_mesh.getNodes(), coord_on_quad,
                                       my_mesh.getSpatialDimension(), type);
 
-  /// loop over the quadrature points
-  Array<Real>::iterator<Vector<Real>> it = coord_on_quad.begin(dim);
   Vector<Real> natural_coords(dim);
 
-  Matrix<Real> quad = GaussIntegrationElement<type>::getQuadraturePoints();
+  /// loop over the quadrature points
+  auto it = coord_on_quad.begin_reinterpret(dim, quad.cols(), nb_elements);
+  auto end = coord_on_quad.end_reinterpret(dim, quad.cols(), nb_elements);
 
-  for (UInt el = 0; el < nb_elements; ++el) {
-    for (UInt q = 0; q < nb_quad_points; ++q) {
-      fem->inverseMap(*it, el, type, natural_coords);
-      for (UInt i = 0; i < dim; ++i) {
-        __attribute__((unused)) const Real eps = 1e-13;
-        AKANTU_DEBUG_ASSERT(
-            std::abs((natural_coords(i) - quad(i, q)) / (upper(i) - lower(i))) <
-                eps,
-            "real coordinates inversion test failed:"
-                << natural_coords(i) << " - " << quad(i, q) << " = "
-                << (natural_coords(i) - quad(i, q)) / (upper(i) - lower(i)));
+  auto length = (upper - lower).norm<L_inf>();
+
+  auto eps = 5e-12;
+  UInt el = 0;
+  for (; it != end; ++it, ++el) {
+    const auto & quads_coords = *it;
+    for (auto q : arange(quad.cols())) {
+      Vector<Real> quad_coord = quads_coords(q);
+      Vector<Real> ref_quad_coord = quad(q);
+      fem->inverseMap(quad_coord, el, type, natural_coords);
+
+      auto dis_normalized = ref_quad_coord.distance(natural_coords) / length;
+      if (not(dis_normalized < eps)) {
+        std::cout << "Real coordinates inversion test failed : "
+                  << std::scientific << natural_coords << " - "
+                  << ref_quad_coord << " / " << length << " = " << dis_normalized << std::endl;
+        return 1;
       }
-      ++it;
+
+      // std::cout << "Real coordinates inversion : " << std::scientific
+      //           << natural_coords << " = " << ref_quad_coord << " ("
+      //           << dis_normalized << ")" << std::endl;
     }
   }
 
   std::cout << "inverse completed over " << nb_elements << " elements"
             << std::endl;
 
-  delete fem;
   finalize();
 
-  return EXIT_SUCCESS;
+  return 0;
 }

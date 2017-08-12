@@ -337,13 +337,13 @@ public:
   static inline void inverseMap(const Vector<Real> & real_coords,
                                 const Matrix<Real> & node_coords,
                                 Vector<Real> & natural_coords,
-                                Real tolerance = 1e-8);
+                                Real tolerance = 1e-10);
 
   /// get natural coordinates from real coordinates
   static inline void inverseMap(const Matrix<Real> & real_coords,
                                 const Matrix<Real> & node_coords,
                                 Matrix<Real> & natural_coords,
-                                Real tolerance = 1e-8);
+                                Real tolerance = 1e-10);
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, element_kind, ElementKind);

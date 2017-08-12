@@ -664,7 +664,7 @@ void SolidMechanicsModelCohesive::onNodesAdded(const Array<UInt> & new_nodes,
       }
     };
 
-    for (auto pair : zip(new_nodes, old_nodes)) {
+    for (auto && pair : zip(new_nodes, old_nodes)) {
       std::tie(new_node, old_node) = pair;
 
       copy(*displacement);

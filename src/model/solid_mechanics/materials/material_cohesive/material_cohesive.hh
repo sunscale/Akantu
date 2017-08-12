@@ -32,14 +32,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-#include "aka_common.hh"
 #include "material.hh"
-#include "fe_engine_template.hh"
-#include "aka_common.hh"
-#include "cohesive_internal_field.hh"
+/* -------------------------------------------------------------------------- */
 #include "cohesive_element_inserter.hh"
-
+#include "cohesive_internal_field.hh"
+#include "fe_engine_template.hh"
+#include "integrator_gauss.hh"
+#include "shape_lagrange.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_COHESIVE_HH__
@@ -259,7 +258,7 @@ protected:
 
 #include "material_cohesive_inline_impl.cc"
 
-} // akantu
+} // namespace akantu
 
 #include "cohesive_internal_field_tmpl.hh"
 

@@ -31,8 +31,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "mesh.hh"
 #include "element_group.hh"
+#include "mesh.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -109,7 +109,7 @@ ElementGroup::lastType(UInt dim, const GhostType & ghost_type,
 /* -------------------------------------------------------------------------- */
 inline ElementGroup::const_element_iterator
 ElementGroup::begin(const ElementType & type,
-                            const GhostType & ghost_type) const {
+                    const GhostType & ghost_type) const {
   if (elements.exists(type, ghost_type)) {
     return elements(type, ghost_type).begin();
   } else {
@@ -120,11 +120,22 @@ ElementGroup::begin(const ElementType & type,
 /* -------------------------------------------------------------------------- */
 inline ElementGroup::const_element_iterator
 ElementGroup::end(const ElementType & type,
-                          const GhostType & ghost_type) const {
+                  const GhostType & ghost_type) const {
   if (elements.exists(type, ghost_type)) {
     return elements(type, ghost_type).end();
   } else {
     return empty_elements.end();
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+inline const Array<UInt> &
+ElementGroup::getElements(const ElementType & type,
+                          const GhostType & ghost_type) const {
+  if (elements.exists(type, ghost_type)) {
+    return elements(type, ghost_type);
+  } else {
+    return empty_elements;
   }
 }
 

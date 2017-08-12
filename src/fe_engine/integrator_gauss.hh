@@ -29,13 +29,12 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-#ifndef __AKANTU_INTEGRATOR_GAUSS_HH__
-#define __AKANTU_INTEGRATOR_GAUSS_HH__
-
 /* -------------------------------------------------------------------------- */
 #include "integrator.hh"
 /* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_INTEGRATOR_GAUSS_HH__
+#define __AKANTU_INTEGRATOR_GAUSS_HH__
 
 namespace akantu {
 namespace integrator {
