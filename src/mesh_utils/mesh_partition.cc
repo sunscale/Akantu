@@ -32,6 +32,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "mesh_partition.hh"
+#include "aka_iterators.hh"
 #include "aka_types.hh"
 #include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
@@ -49,6 +50,18 @@ MeshPartition::MeshPartition(const Mesh & mesh, UInt spatial_dimension,
       ghost_partitions_offset("ghost_partition_offset", id, memory_id),
       saved_connectivity("saved_connectivity", id, memory_id) {
   AKANTU_DEBUG_IN();
+
+  Element elem;
+  elem.ghost_type = _not_ghost;
+
+  for (auto && type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
+    elem.type = type;
+    for (auto && i : arange(mesh.getNbElement(elem.type))) {
+      elem.element = i;
+      lin_to_element.push_back(elem);
+    }
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -96,11 +109,6 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
     nb_element.push_back(conn.back()->getSize());
     magic_number.push_back(
         Mesh::getNbNodesPerElement(Mesh::getFacetType(type_p1)));
-
-    for (UInt i = 0; i < nb_element.back(); ++i) {
-      elem.element = i;
-      lin_to_element.push_back(elem);
-    }
 
     ++nb_good_types;
   }
@@ -225,7 +233,8 @@ void MeshPartition::fillPartitionInformation(
   MeshUtils::buildNode2Elements(mesh, node_to_elem);
 
   UInt linearized_el = 0;
-  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
+  for (auto & type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
     UInt nb_element = mesh.getNbElement(type);
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
@@ -318,12 +327,10 @@ void MeshPartition::fillPartitionInformation(
           }
           partitions(type, _not_ghost)(i) = min_part;
 
-          auto git =
-              ghost_partitions_csr(min_elem.type, _not_ghost)
-                  .begin(min_elem.element);
-          auto gend =
-              ghost_partitions_csr(min_elem.type, _not_ghost)
-                  .end(min_elem.element);
+          auto git = ghost_partitions_csr(min_elem.type, _not_ghost)
+                         .begin(min_elem.element);
+          auto gend = ghost_partitions_csr(min_elem.type, _not_ghost)
+                          .end(min_elem.element);
           for (; git != gend; ++git) {
 
             adjacent_parts.insert(min_part);

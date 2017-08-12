@@ -32,6 +32,7 @@
 #include <tuple>
 #include <utility>
 #include <cassert>
+#include <iostream>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_AKA_ITERATORS_HH__
@@ -133,8 +134,8 @@ namespace iterators {
   namespace details {
     struct dereference_iterator {
       template <class Iter>
-      typename Iter::reference operator()(Iter & it) const {
-        return *it;
+      decltype(auto) operator()(Iter & it) const {
+        return std::forward<decltype(*it)>(*it);
       }
     };
 
@@ -161,7 +162,6 @@ namespace iterators {
   template <class... Iterators> class ZipIterator {
   private:
     using tuple_t = std::tuple<Iterators...>;
-
   public:
     explicit ZipIterator(tuple_t iterators) : iterators(std::move(iterators)) {}
 
@@ -192,18 +192,18 @@ namespace iterators {
 /* -------------------------------------------------------------------------- */
 template <class... Iterators>
 decltype(auto) zip_iterator(std::tuple<Iterators...> && iterators_tuple) {
-  auto zip = iterators::ZipIterator<Iterators...>(std::move(iterators_tuple));
+  auto zip = iterators::ZipIterator<Iterators...>(std::forward<decltype(iterators_tuple)>(iterators_tuple));
   return zip;
 }
 
 /* -------------------------------------------------------------------------- */
 namespace containers {
   template <class... Containers> class ZipContainer {
-    using containers_t = std::tuple<Containers &&...>;
+    using containers_t = std::tuple<Containers...>;
 
   public:
     explicit ZipContainer(Containers &&... containers)
-        : containers(std::forward_as_tuple(containers...)) {}
+        : containers(std::forward<Containers>(containers)...) {}
 
     decltype(auto) begin() const {
       return zip_iterator(
@@ -236,7 +236,7 @@ namespace containers {
 
 /* -------------------------------------------------------------------------- */
 template <class... Containers> decltype(auto) zip(Containers &&... conts) {
-  return containers::ZipContainer<Containers...>(conts...);
+  return containers::ZipContainer<Containers...>(std::forward<Containers>(conts)...);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -245,6 +245,11 @@ template <class... Containers> decltype(auto) zip(Containers &&... conts) {
 namespace iterators {
   template <class T> class ArangeIterator {
   public:
+    using value_type = T;
+    using pointer = T*;
+    using reference = T&;
+    using iterator_category = std::input_iterator_tag;
+
     constexpr ArangeIterator(T value, T step) : value(value), step(step) {}
     constexpr ArangeIterator(const ArangeIterator &) = default;
 
@@ -253,19 +258,19 @@ namespace iterators {
       return *this;
     }
 
-    constexpr T operator*() { return value; }
+    constexpr const T & operator*() const { return value; }
 
-    constexpr bool operator==(const ArangeIterator & other) {
-      return value == other.value and step == other.step;
+    constexpr bool operator==(const ArangeIterator & other) const {
+      return (value == other.value) and (step == other.step);
     }
 
-    constexpr bool operator!=(const ArangeIterator & other) {
+    constexpr bool operator!=(const ArangeIterator & other) const {
       return not operator==(other);
     }
 
   private:
-    T value;
-    const T step;
+    T value{0};
+    const T step{1};
   };
 } // namespace iterators
 
@@ -300,8 +305,14 @@ inline decltype(auto) arange(T stop) {
 }
 
 template<class T>
-inline decltype(auto) arange(T start, T stop, T step = 1) {
+inline constexpr decltype(auto) arange(T start, T stop, T step = 1) {
   return containers::ArangeContainer<T>(start, stop, step);
+}
+
+template<class Container>
+inline constexpr decltype(auto) counting(Container && container) {
+  return zip(arange(std::forward<Container>(container).size()),
+             std::forward<Container>(container));
 }
 
 } // namespace akantu

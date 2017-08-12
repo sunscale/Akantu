@@ -29,12 +29,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
+#include "aka_iterators.hh"
+#include "aka_random_generator.hh"
 #include "element_group.hh"
 #include "element_synchronizer.hh"
+#include "mesh_iterators.hh"
 #include "mesh_partition_mesh_data.hh"
-#include "aka_random_generator.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <algorithm>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -58,19 +60,13 @@ int main(int argc, char * argv[]) {
     mesh_group_before.registerData<UInt>("global_id");
     mesh_group_after.registerData<UInt>("global_id");
 
-    for (Mesh::type_iterator tit = mesh_group_after.firstType(_all_dimensions);
-         tit != mesh_group_after.lastType(_all_dimensions); ++tit) {
-      Array<UInt> & gidb =
-          mesh_group_before.getDataPointer<UInt>("global_id", *tit);
-      Array<UInt> & gida =
-          mesh_group_after.getDataPointer<UInt>("global_id", *tit);
+    for (const auto & type : mesh_group_after.elementTypes(_all_dimensions)) {
+      auto & gidb = mesh_group_before.getDataPointer<UInt>("global_id", type);
+      auto & gida = mesh_group_after.getDataPointer<UInt>("global_id", type);
 
-      Array<UInt>::scalar_iterator ait = gida.begin();
-      Array<UInt>::scalar_iterator bit = gidb.begin();
-      Array<UInt>::scalar_iterator end = gida.end();
-      for (UInt i = 0; ait != end; ++ait, ++i, ++bit) {
-        *bit = i;
-        *ait = i;
+      for (auto && data : zip(arange(gida.getSize()), gida, gidb)) {
+        std::get<1>(data) = std::get<0>(data);
+        std::get<2>(data) = std::get<0>(data);
       }
     }
   }
@@ -84,44 +80,31 @@ int main(int argc, char * argv[]) {
   if (prank == 0)
     std::cout << mesh_group_after;
 
-  GroupManager::element_group_iterator grp_ait =
-      mesh_group_after.element_group_begin();
-  GroupManager::element_group_iterator grp_end =
-      mesh_group_after.element_group_end();
-  for (; grp_ait != grp_end; ++grp_ait) {
-    std::string grp = grp_ait->first;
-    const ElementGroup & bgrp = mesh_group_before.getElementGroup(grp);
-    const ElementGroup & agrp = *grp_ait->second;
+  for (const auto & agrp : ElementGroupsIterable(mesh_group_after)) {
+    const ElementGroup & bgrp =
+        mesh_group_before.getElementGroup(agrp.getName());
 
-    for (ghost_type_t::iterator git = ghost_type_t::begin();
-         git != ghost_type_t::end(); ++git) {
-      GhostType ghost_type = *git;
-
-      for (Mesh::type_iterator tit =
-               bgrp.firstType(_all_dimensions, ghost_type);
-           tit != bgrp.lastType(_all_dimensions, ghost_type); ++tit) {
+    for (auto && ghost_type : ghost_types) {
+      for (const auto & type : bgrp.elementTypes(_all_dimensions, ghost_type)) {
         Array<UInt> & gidb = mesh_group_before.getDataPointer<UInt>(
-            "global_id", *tit, ghost_type);
+            "global_id", type, ghost_type);
         Array<UInt> & gida = mesh_group_after.getDataPointer<UInt>(
-            "global_id", *tit, ghost_type);
+            "global_id", type, ghost_type);
 
-        Array<UInt> bgelem(bgrp.getElements(*tit, ghost_type));
-        Array<UInt> agelem(agrp.getElements(*tit, ghost_type));
+        Array<UInt> bgelem(bgrp.getElements(type, ghost_type));
+        Array<UInt> agelem(agrp.getElements(type, ghost_type));
 
-        Array<UInt>::scalar_iterator ait = agelem.begin();
-        Array<UInt>::scalar_iterator bit = bgelem.begin();
-        Array<UInt>::scalar_iterator end = agelem.end();
-        for (; ait != end; ++ait, ++bit) {
-          *bit = gidb(*bit);
-          *ait = gida(*ait);
-        }
+        std::transform(agelem.begin(), agelem.end(), agelem.begin(),
+                       [&gida](auto & i) { return gida(i); });
+        std::transform(bgelem.begin(), bgelem.end(), bgelem.begin(),
+                       [&gidb](auto & i) { return gidb(i); });
 
         std::sort(bgelem.begin(), bgelem.end());
         std::sort(agelem.begin(), agelem.end());
 
-        if (!std::equal(bgelem.begin(), bgelem.end(), agelem.begin())) {
-          std::cerr << "The filters array for the group " << grp
-                    << " and for the element type " << *tit << ", "
+        if (not std::equal(bgelem.begin(), bgelem.end(), agelem.begin())) {
+          std::cerr << "The filters array for the group " << agrp.getName()
+                    << " and for the element type " << type << ", "
                     << ghost_type << " do not match" << std::endl;
 
           debug::setDebugLevel(dblTest);
@@ -134,14 +117,8 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  GroupManager::node_group_iterator ngrp_ait =
-      mesh_group_after.node_group_begin();
-  GroupManager::node_group_iterator ngrp_end =
-      mesh_group_after.node_group_end();
-  for (; ngrp_ait != ngrp_end; ++ngrp_ait) {
-    std::string grp = ngrp_ait->first;
-    const NodeGroup & bgrp = mesh_group_before.getNodeGroup(grp);
-    const NodeGroup & agrp = *ngrp_ait->second;
+  for (const auto & agrp : NodeGroupsIterable(mesh_group_after)) {
+    const NodeGroup & bgrp = mesh_group_before.getNodeGroup(agrp.getName());
 
     const Array<UInt> & gidb = mesh_group_before.getGlobalNodesIds();
     const Array<UInt> & gida = mesh_group_after.getGlobalNodesIds();
@@ -149,16 +126,15 @@ int main(int argc, char * argv[]) {
     Array<UInt> bgnode(0, 1);
     Array<UInt> agnode(0, 1);
 
-    Array<UInt>::const_scalar_iterator ait = agrp.begin();
-    Array<UInt>::const_scalar_iterator bit = bgrp.begin();
-    Array<UInt>::const_scalar_iterator end = agrp.end();
-    for (; ait != end; ++ait, ++bit) {
+    for (auto && pair : zip(bgrp, agrp)) {
+      UInt a,b;
+      std::tie(b, a) = pair;
       if (psize > 1) {
-        if (mesh_group_before.isLocalOrMasterNode(*bit))
-          bgnode.push_back(gidb(*bit));
+        if (mesh_group_before.isLocalOrMasterNode(b))
+          bgnode.push_back(gidb(b));
 
-        if (mesh_group_after.isLocalOrMasterNode(*ait))
-          agnode.push_back(gida(*ait));
+        if (mesh_group_after.isLocalOrMasterNode(a))
+          agnode.push_back(gida(a));
       }
     }
 
@@ -166,7 +142,7 @@ int main(int argc, char * argv[]) {
     std::sort(agnode.begin(), agnode.end());
 
     if (!std::equal(bgnode.begin(), bgnode.end(), agnode.begin())) {
-      std::cerr << "The filters array for the group " << grp << " do not match"
+      std::cerr << "The filters array for the group " << agrp.getName() << " do not match"
                 << std::endl;
 
       debug::setDebugLevel(dblTest);

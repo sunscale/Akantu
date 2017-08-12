@@ -130,6 +130,11 @@ namespace mesh_iterators {
   namespace details {
     template <class internal_iterator> class delegated_iterator {
     public:
+      using value_type = std::remove_pointer_t<typename internal_iterator::value_type::second_type>;
+      using pointer = value_type*;
+      using reference = value_type&;
+      using iterator_category = std::input_iterator_tag;
+
       explicit delegated_iterator(internal_iterator it) : it(std::move(it)) {}
 
       decltype(auto) operator*() {
@@ -141,11 +146,11 @@ namespace mesh_iterators {
         return *this;
       }
 
-      bool operator==(const delegated_iterator & other) {
+      bool operator==(const delegated_iterator & other) const {
         return other.it == it;
       }
 
-      bool operator!=(const delegated_iterator & other) {
+      bool operator!=(const delegated_iterator & other) const {
         return other.it != it;
       }
 
@@ -153,70 +158,78 @@ namespace mesh_iterators {
       internal_iterator it;
     };
 
-    template <class M> class MeshElementGroups {
+    template <class GroupManager> class ElementGroupsIterable {
     public:
-      explicit MeshElementGroups(M && mesh) : mesh(std::forward<M>(mesh)) {}
+      explicit ElementGroupsIterable(GroupManager && group_manager)
+          : group_manager(std::forward<GroupManager>(group_manager)) {}
 
+      size_t size() { return group_manager.getNbElementGroups(); }
       decltype(auto) begin() {
-        return delegated_iterator<decltype(mesh.element_group_begin())>(
-            mesh.element_group_begin());
+        return delegated_iterator<decltype(
+            group_manager.element_group_begin())>(
+            group_manager.element_group_begin());
       }
 
       decltype(auto) begin() const {
-        return delegated_iterator<decltype(mesh.element_group_begin())>(
-            mesh.element_group_begin());
+        return delegated_iterator<decltype(
+            group_manager.element_group_begin())>(
+            group_manager.element_group_begin());
       }
 
       decltype(auto) end() {
-        return delegated_iterator<decltype(mesh.element_group_end())>(
-            mesh.element_group_end());
+        return delegated_iterator<decltype(group_manager.element_group_end())>(
+            group_manager.element_group_end());
       }
 
       decltype(auto) end() const {
-        return delegated_iterator<decltype(mesh.element_group_end())>(
-            mesh.element_group_end());
+        return delegated_iterator<decltype(group_manager.element_group_end())>(
+            group_manager.element_group_end());
       }
 
     private:
-      M && mesh;
+      GroupManager && group_manager;
     };
 
-    template <class M> class MeshNodeGroups {
+    template <class GroupManager> class NodeGroupsIterable {
     public:
-      explicit MeshNodeGroups(M && mesh) : mesh(std::forward<M>(mesh)) {}
+      explicit NodeGroupsIterable(GroupManager && group_manager)
+          : group_manager(std::forward<GroupManager>(group_manager)) {}
 
+      size_t size() { return group_manager.getNbNodeGroups(); }
       decltype(auto) begin() {
-        return delegated_iterator<decltype(mesh.node_group_begin())>(
-            mesh.node_group_begin());
+        return delegated_iterator<decltype(group_manager.node_group_begin())>(
+            group_manager.node_group_begin());
       }
 
       decltype(auto) begin() const {
-        return delegated_iterator<decltype(mesh.node_group_begin())>(
-            mesh.node_group_begin());
+        return delegated_iterator<decltype(group_manager.node_group_begin())>(
+            group_manager.node_group_begin());
       }
 
       decltype(auto) end() {
-        return delegated_iterator<decltype(mesh.node_group_end())>(
-            mesh.node_group_end());
+        return delegated_iterator<decltype(group_manager.node_group_end())>(
+            group_manager.node_group_end());
       }
 
       decltype(auto) end() const {
-        return delegated_iterator<decltype(mesh.node_group_end())>(
-            mesh.node_group_end());
+        return delegated_iterator<decltype(group_manager.node_group_end())>(
+            group_manager.node_group_end());
       }
 
     private:
-      M && mesh;
+      GroupManager && group_manager;
     };
   } // namespace details
 } // namespace mesh_iterators
 
-template <class Mesh> decltype(auto) MeshElementGroups(Mesh && mesh) {
-  return mesh_iterators::details::MeshElementGroups<Mesh>(mesh);
+template <class GroupManager>
+decltype(auto) ElementGroupsIterable(GroupManager && group_manager) {
+  return mesh_iterators::details::ElementGroupsIterable<GroupManager>(group_manager);
 }
 
-template <class Mesh> decltype(auto) MeshNodeGroups(Mesh && mesh) {
-  return mesh_iterators::details::MeshNodeGroups<Mesh>(mesh);
+template <class GroupManager>
+decltype(auto) NodeGroupsIterable(GroupManager && group_manager) {
+  return mesh_iterators::details::NodeGroupsIterable<GroupManager>(group_manager);
 }
 
 } // namespace akantu

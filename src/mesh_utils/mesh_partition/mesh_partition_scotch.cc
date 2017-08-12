@@ -29,17 +29,17 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "mesh_partition_scotch.hh"
+#include "aka_common.hh"
+#include "aka_random_generator.hh"
+#include "aka_static_if.hh"
+#include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstdio>
 #include <fstream>
-
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "mesh_partition_scotch.hh"
-#include "mesh_utils.hh"
 
-/* -------------------------------------------------------------------------- */
 #if !defined(AKANTU_USE_PTSCOTCH)
 #ifndef AKANTU_SCOTCH_NO_EXTERN
 extern "C" {
@@ -54,6 +54,10 @@ extern "C" {
 
 namespace akantu {
 
+namespace {
+  constexpr int scotch_version = int(SCOTCH_VERSION);
+}
+
 /* -------------------------------------------------------------------------- */
 MeshPartitionScotch::MeshPartitionScotch(const Mesh & mesh,
                                          UInt spatial_dimension, const ID & id,
@@ -61,15 +65,15 @@ MeshPartitionScotch::MeshPartitionScotch(const Mesh & mesh,
     : MeshPartition(mesh, spatial_dimension, id, memory_id) {
   AKANTU_DEBUG_IN();
 
-// check if the akantu types and Scotch one are consistent
-#if __cplusplus > 199711L
-  static_assert(sizeof(Int) == sizeof(SCOTCH_Num),
-                "The integer type of Akantu does not match the one from Scotch");
-#else
-  AKANTU_DEBUG_ASSERT(
+  // check if the akantu types and Scotch one are consistent
+  static_assert(
       sizeof(Int) == sizeof(SCOTCH_Num),
       "The integer type of Akantu does not match the one from Scotch");
-#endif
+
+  static_if(scotch_version >= 6)
+    .then([](auto && y) { SCOTCH_randomSeed(y); })
+    .else_([](auto && y) { srandom(y); })
+    (std::forward<UInt>(RandomGenerator<UInt>::seed()));
 
   AKANTU_DEBUG_OUT();
 }
@@ -205,8 +209,7 @@ static SCOTCH_Mesh * createMesh(const Mesh & mesh) {
     /// write geometry file
     std::ofstream fgeominit;
     fgeominit.open("ScotchMesh.xyz");
-    fgeominit << spatial_dimension << std::endl
-              << nb_nodes << std::endl;
+    fgeominit << spatial_dimension << std::endl << nb_nodes << std::endl;
 
     const Array<Real> & nodes = mesh.getNodes();
     Real * nodes_val = nodes.storage();
@@ -307,8 +310,7 @@ void MeshPartitionScotch::partitionate(UInt nb_part,
     /// write geometry file
     std::ofstream fgeominit;
     fgeominit.open("GeomIniFile.xyz");
-    fgeominit << spatial_dimension << std::endl
-              << vertnbr << std::endl;
+    fgeominit << spatial_dimension << std::endl << vertnbr << std::endl;
 
     const Array<Real> & nodes = mesh.getNodes();
 
@@ -475,4 +477,4 @@ void MeshPartitionScotch::reorder() {
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu
