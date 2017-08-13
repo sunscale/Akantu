@@ -411,7 +411,7 @@ MeshIOMSH::~MeshIOMSH() {}
 //         tmp_conn[i++] = nit->second;
 //       }
 
-//       ::akantu::Element el(element.type, connectivity.getSize());
+//       ::akantu::Element el(element.type, connectivity.size());
 //       elements_mapping[element.index] = el;
 
 //       connectivity.push_back(tmp_conn);
@@ -666,7 +666,7 @@ MeshIOMSH::~MeshIOMSH() {}
 
 //   qi::phrase_parse(iter, end, g, ws);
 
-//   this->setNbGlobalNodes(mesh, mesh.getNodes().getSize());
+//   this->setNbGlobalNodes(mesh, mesh.getNodes().size());
 //   MeshUtils::fillElementToSubElementsData(mesh);
 // }
 
@@ -893,10 +893,10 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
   outfile << std::setprecision(std::numeric_limits<Real>::digits10);
   outfile << "$Nodes" << std::endl;
 
-  outfile << nodes.getSize() << std::endl;
+  outfile << nodes.size() << std::endl;
 
   outfile << std::uppercase;
-  for (UInt i = 0; i < nodes.getSize(); ++i) {
+  for (UInt i = 0; i < nodes.size(); ++i) {
     Int offset = i * nodes.getNbComponent();
     outfile << i + 1;
     for (UInt j = 0; j < nodes.getNbComponent(); ++j) {
@@ -923,7 +923,7 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
   Int nb_elements = 0;
   for (; it != end; ++it) {
     const Array<UInt> & connectivity = mesh.getConnectivity(*it, _not_ghost);
-    nb_elements += connectivity.getSize();
+    nb_elements += connectivity.size();
   }
   outfile << nb_elements << std::endl;
 
@@ -950,7 +950,7 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
       tag[1] = NULL;
     }
 
-    for (UInt i = 0; i < connectivity.getSize(); ++i) {
+    for (UInt i = 0; i < connectivity.size(); ++i) {
       UInt offset = i * connectivity.getNbComponent();
       outfile << element_idx << " " << _akantu_to_msh_element_types[type]
               << " 2";

@@ -184,7 +184,7 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::checkJacobians(
 
   UInt nb_quadrature_points = this->quadrature_points(type, ghost_type).cols();
 
-  UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
+  UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
 
   Real * jacobians_val = jacobians(type, ghost_type).storage();
 
@@ -227,7 +227,7 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::
 
   auto x_it = x_el.begin(spatial_dimension, nb_nodes_per_element);
 
-  nb_element = x_el.getSize();
+  nb_element = x_el.size();
 
   //  Matrix<Real> local_coord(spatial_dimension, nb_nodes_per_element);
   for (UInt elem = 0; elem < nb_element; ++elem, ++x_it) {
@@ -279,7 +279,7 @@ void IntegratorGauss<_ek_cohesive, DefaultIntegrationOrderFunctor>::
   UInt nb_nodes_per_subelement = nb_nodes_per_element / 2;
   Matrix<Real> x(spatial_dimension, nb_nodes_per_subelement);
 
-  nb_element = x_el.getSize();
+  nb_element = x_el.size();
 
   for (UInt elem = 0; elem < nb_element; ++elem, ++x_it) {
 
@@ -330,7 +330,7 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::multiplyJacobiansByWeights(
 
   UInt nb_quadrature_points =
       GaussIntegrationElement<type, polynomial_degree>::getNbQuadraturePoints();
-  UInt nb_element = jacobians.getSize() / nb_quadrature_points;
+  UInt nb_element = jacobians.size() / nb_quadrature_points;
 
   Vector<Real> weights =
       GaussIntegrationElement<type, polynomial_degree>::getWeights();
@@ -359,7 +359,7 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
   if (nb_element == 0)
     return;
 
-  UInt nb_points = jacobians.getSize() / nb_element;
+  UInt nb_points = jacobians.size() / nb_element;
 
   Array<Real>::const_matrix_iterator J_it;
   Array<Real>::matrix_iterator inte_it;
@@ -394,7 +394,7 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
 
   const Array<Real> & jac_loc = jacobians(type, ghost_type);
   if (filter_elements != empty_filter) {
-    UInt nb_element = filter_elements.getSize();
+    UInt nb_element = filter_elements.size();
     Array<Real> * filtered_J = new Array<Real>(0, jac_loc.getNbComponent());
     FEEngine::filterElementalData(mesh, jac_loc, *filtered_J, type, ghost_type,
                                   filter_elements);
@@ -475,7 +475,7 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::
                                  UInt nb_element) const {
   AKANTU_DEBUG_IN();
 
-  UInt nb_points = jacobians.getSize() / nb_element;
+  UInt nb_points = jacobians.size() / nb_element;
 
   Array<Real>::const_scalar_iterator J_it;
   Array<Real>::vector_iterator inte_it;
@@ -517,7 +517,7 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::
 
   if (filter_elements != empty_filter) {
 
-    UInt nb_element = filter_elements.getSize();
+    UInt nb_element = filter_elements.size();
     Array<Real> * filtered_J = new Array<Real>(0, jac_loc.getNbComponent());
     FEEngine::filterElementalData(mesh, jac_loc, *filtered_J, type, ghost_type,
                                   filter_elements);

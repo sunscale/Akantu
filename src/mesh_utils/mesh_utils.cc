@@ -152,7 +152,7 @@ void MeshUtils::buildNode2Elements(const Mesh & mesh,
 //     nb_nodes_per_element[nb_good_types] = Mesh::getNbNodesPerElement(type);
 //     conn_val[nb_good_types] = mesh.getConnectivity(type, _not_ghost).storage();
 //     nb_element[nb_good_types] =
-//         mesh.getConnectivity(type, _not_ghost).getSize();
+//         mesh.getConnectivity(type, _not_ghost).size();
 //     nb_good_types++;
 //   }
 
@@ -200,7 +200,7 @@ void MeshUtils::buildNode2ElementsElementTypeMap(const Mesh & mesh,
   UInt nb_nodes = mesh.getNbNodes();
 
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-  UInt nb_elements = mesh.getConnectivity(type, ghost_type).getSize();
+  UInt nb_elements = mesh.getConnectivity(type, ghost_type).size();
 
   UInt * conn_val = mesh.getConnectivity(type, ghost_type).storage();
 
@@ -514,7 +514,7 @@ void MeshUtils::buildFacetsDimension(
                   connectivity_facets->push_back(facet);
 
                   /// current facet index
-                  UInt current_facet = connectivity_facets->getSize() - 1;
+                  UInt current_facet = connectivity_facets->size() - 1;
 
                   /// loop on every element connected to current facet and
                   /// insert current facet in the first free spot of the
@@ -584,7 +584,7 @@ void MeshUtils::renumberMeshNodes(Mesh & mesh,
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
   std::map<UInt, UInt> renumbering_map;
-  for (UInt i = 0; i < old_nodes_numbers.getSize(); ++i) {
+  for (UInt i = 0; i < old_nodes_numbers.size(); ++i) {
     renumbering_map[old_nodes_numbers(i)] = i;
   }
 
@@ -666,7 +666,7 @@ void MeshUtils::purifyMesh(Mesh & mesh) {
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
       Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
-      UInt nb_element(connectivity.getSize());
+      UInt nb_element(connectivity.size());
 
       renumberNodesInConnectivity(
           connectivity, nb_element * nb_nodes_per_element, renumbering_map);
@@ -682,7 +682,7 @@ void MeshUtils::purifyMesh(Mesh & mesh) {
     new_numbering(it->first) = it->second;
   }
 
-  for (UInt i = 0; i < new_numbering.getSize(); ++i) {
+  for (UInt i = 0; i < new_numbering.size(); ++i) {
     if (new_numbering(i) == UInt(-1))
       nodes_removed.push_back(i);
   }
@@ -736,10 +736,10 @@ void MeshUtils::doubleNodes(Mesh & mesh, const std::vector<UInt> & old_nodes,
   Array<Real> & position = mesh.getNodes();
   UInt spatial_dimension = mesh.getSpatialDimension();
 
-  UInt old_nb_nodes = position.getSize();
+  UInt old_nb_nodes = position.size();
   UInt new_nb_nodes = old_nb_nodes + old_nodes.size();
 
-  UInt old_nb_doubled_nodes = doubled_nodes.getSize();
+  UInt old_nb_doubled_nodes = doubled_nodes.size();
   UInt new_nb_doubled_nodes = old_nb_doubled_nodes + old_nodes.size();
 
   position.resize(new_nb_nodes);
@@ -783,7 +783,7 @@ void MeshUtils::doubleFacet(Mesh & mesh, Mesh & mesh_facets,
 
       Array<UInt> & f_to_double =
           mesh_facets.getData<UInt>("facet_to_double", type_facet, gt_facet);
-      UInt nb_facet_to_double = f_to_double.getSize();
+      UInt nb_facet_to_double = f_to_double.size();
 
       if (nb_facet_to_double == 0)
         continue;
@@ -801,7 +801,7 @@ void MeshUtils::doubleFacet(Mesh & mesh, Mesh & mesh_facets,
           mesh_facets.getConnectivity(type_facet, gt_facet);
       UInt nb_nodes_per_facet = conn_facet.getNbComponent();
 
-      UInt old_nb_facet = conn_facet.getSize();
+      UInt old_nb_facet = conn_facet.size();
       UInt new_nb_facet = old_nb_facet + nb_facet_to_double;
 
       conn_facet.resize(new_nb_facet);
@@ -901,7 +901,7 @@ UInt MeshUtils::updateFacetToDouble(
 
       Array<Element> * facet_to_element = NULL;
 
-      for (UInt f = 0; f < f_insertion.getSize(); ++f) {
+      for (UInt f = 0; f < f_insertion.size(); ++f) {
 
         if (f_insertion(f) == false)
           continue;
@@ -920,7 +920,7 @@ UInt MeshUtils::updateFacetToDouble(
         f_to_double.push_back(f);
 
         UInt new_facet = mesh_facets.getNbElement(type_facet, gt_facet) +
-                         f_to_double.getSize() - 1;
+                         f_to_double.size() - 1;
         old_facet_el.element = f;
 
         /// update facet_to_element vector
@@ -1019,7 +1019,7 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
 
       Array<UInt> & f_to_double =
           mesh_facets.getData<UInt>("facet_to_double", type_facet, gt_facet);
-      UInt nb_facet_to_double = f_to_double.getSize();
+      UInt nb_facet_to_double = f_to_double.size();
       if (nb_facet_to_double == 0)
         continue;
 
@@ -1054,7 +1054,7 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
 
       Array<Element> * subsubfacet_to_subfacet = NULL;
 
-      UInt old_nb_facet = subfacet_to_facet.getSize() - nb_facet_to_double;
+      UInt old_nb_facet = subfacet_to_facet.size() - nb_facet_to_double;
 
       Element current_facet(type_facet, 0, gt_facet);
       std::vector<Element> element_list;
@@ -1222,7 +1222,7 @@ void MeshUtils::updateCohesiveData(Mesh & mesh, Mesh & mesh_facets,
       Array<UInt> & f_to_double =
           mesh_facets.getData<UInt>("facet_to_double", type_facet, gt_facet);
 
-      UInt nb_facet_to_double = f_to_double.getSize();
+      UInt nb_facet_to_double = f_to_double.size();
       if (nb_facet_to_double == 0)
         continue;
 
@@ -1238,15 +1238,15 @@ void MeshUtils::updateCohesiveData(Mesh & mesh, Mesh & mesh_facets,
       Array<std::vector<Element>> & element_to_facet =
           mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
-      UInt old_nb_cohesive_elements = conn_cohesive.getSize();
+      UInt old_nb_cohesive_elements = conn_cohesive.size();
       UInt new_nb_cohesive_elements =
-          conn_cohesive.getSize() + nb_facet_to_double;
+          conn_cohesive.size() + nb_facet_to_double;
 
-      UInt old_nb_facet = element_to_facet.getSize() - nb_facet_to_double;
+      UInt old_nb_facet = element_to_facet.size() - nb_facet_to_double;
       facet_to_coh_element.resize(new_nb_cohesive_elements);
       conn_cohesive.resize(new_nb_cohesive_elements);
 
-      UInt new_elements_old_size = new_elements.getSize();
+      UInt new_elements_old_size = new_elements.size();
       new_elements.resize(new_elements_old_size + nb_facet_to_double);
 
       Element c_element(type_cohesive, 0, gt_facet, _ek_cohesive);
@@ -1323,18 +1323,18 @@ void MeshUtils::doublePointFacet(Mesh & mesh, Mesh & mesh_facets,
       const Array<UInt> & f_to_double =
           mesh_facets.getData<UInt>("facet_to_double", type_facet, gt_facet);
 
-      UInt nb_facet_to_double = f_to_double.getSize();
+      UInt nb_facet_to_double = f_to_double.size();
 
-      UInt old_nb_facet = element_to_facet.getSize() - nb_facet_to_double;
-      UInt new_nb_facet = element_to_facet.getSize();
+      UInt old_nb_facet = element_to_facet.size() - nb_facet_to_double;
+      UInt new_nb_facet = element_to_facet.size();
 
-      UInt old_nb_nodes = position.getSize();
+      UInt old_nb_nodes = position.size();
       UInt new_nb_nodes = old_nb_nodes + nb_facet_to_double;
 
       position.resize(new_nb_nodes);
       conn_facet.resize(new_nb_facet);
 
-      UInt old_nb_doubled_nodes = doubled_nodes.getSize();
+      UInt old_nb_doubled_nodes = doubled_nodes.size();
       doubled_nodes.resize(old_nb_doubled_nodes + nb_facet_to_double);
 
       for (UInt facet = 0; facet < nb_facet_to_double; ++facet) {
@@ -1384,7 +1384,7 @@ void MeshUtils::updateQuadraticSegments(Mesh & mesh, Mesh & mesh_facets,
 
   Array<UInt> & f_to_double =
       mesh_facets.getData<UInt>("facet_to_double", type_facet, gt_facet);
-  UInt nb_facet_to_double = f_to_double.getSize();
+  UInt nb_facet_to_double = f_to_double.size();
 
   UInt old_nb_facet =
       mesh_facets.getNbElement(type_facet, gt_facet) - nb_facet_to_double;
@@ -1415,7 +1415,7 @@ void MeshUtils::updateQuadraticSegments(Mesh & mesh, Mesh & mesh_facets,
       middle_nodes.push_back(node);
   }
 
-  UInt n = doubled_nodes.getSize();
+  UInt n = doubled_nodes.size();
 
   doubleNodes(mesh, middle_nodes, doubled_nodes);
 
@@ -1455,7 +1455,7 @@ void MeshUtils::updateSubfacetToFacet(Mesh & mesh_facets,
 
   Array<UInt> & sf_to_double =
       mesh_facets.getData<UInt>("facet_to_double", type_subfacet, gt_subfacet);
-  UInt nb_subfacet_to_double = sf_to_double.getSize();
+  UInt nb_subfacet_to_double = sf_to_double.size();
 
   /// update subfacet_to_facet vector
   ElementType type_facet = _not_defined;
@@ -1520,7 +1520,7 @@ void MeshUtils::updateFacetToSubfacet(Mesh & mesh_facets,
 
   Array<UInt> & sf_to_double =
       mesh_facets.getData<UInt>("facet_to_double", type_subfacet, gt_subfacet);
-  UInt nb_subfacet_to_double = sf_to_double.getSize();
+  UInt nb_subfacet_to_double = sf_to_double.size();
 
   Array<std::vector<Element>> & facet_to_subfacet =
       mesh_facets.getElementToSubelement(type_subfacet, gt_subfacet);
@@ -1535,7 +1535,7 @@ void MeshUtils::updateFacetToSubfacet(Mesh & mesh_facets,
         "subfacets_to_subsubfacet_double", type_subfacet, gt_subfacet);
   }
 
-  UInt old_nb_subfacet = facet_to_subfacet.getSize();
+  UInt old_nb_subfacet = facet_to_subfacet.size();
   facet_to_subfacet.resize(old_nb_subfacet + nb_subfacet_to_double);
 
   for (UInt sf = 0; sf < nb_subfacet_to_double; ++sf)
@@ -1567,7 +1567,7 @@ void MeshUtils::doubleSubfacet(Mesh & mesh, Mesh & mesh_facets,
 
       Array<UInt> & sf_to_double = mesh_facets.getData<UInt>(
           "facet_to_double", type_subfacet, gt_subfacet);
-      UInt nb_subfacet_to_double = sf_to_double.getSize();
+      UInt nb_subfacet_to_double = sf_to_double.size();
 
       if (nb_subfacet_to_double == 0)
         continue;
@@ -1579,13 +1579,13 @@ void MeshUtils::doubleSubfacet(Mesh & mesh, Mesh & mesh_facets,
       Array<UInt> & conn_subfacet =
           mesh_facets.getConnectivity(type_subfacet, gt_subfacet);
 
-      UInt old_nb_subfacet = conn_subfacet.getSize();
+      UInt old_nb_subfacet = conn_subfacet.size();
       UInt new_nb_subfacet = old_nb_subfacet + nb_subfacet_to_double;
 
       conn_subfacet.resize(new_nb_subfacet);
 
       std::vector<UInt> nodes_to_double;
-      UInt old_nb_doubled_nodes = doubled_nodes.getSize();
+      UInt old_nb_doubled_nodes = doubled_nodes.size();
 
       /// double nodes
       for (UInt sf = 0; sf < nb_subfacet_to_double; ++sf) {
@@ -1683,7 +1683,7 @@ void MeshUtils::flipFacets(
 
     UInt nb_subfacet_per_facet = subfacet_to_facet.getNbComponent();
     UInt nb_nodes_per_facet = connectivity.getNbComponent();
-    UInt nb_facet = connectivity.getSize();
+    UInt nb_facet = connectivity.size();
 
     UInt nb_nodes_per_P1_facet =
         Mesh::getNbNodesPerElement(Mesh::getP1ElementType(type_facet));

@@ -143,17 +143,17 @@ public:
   /* ------------------------------------------------------------------------ */
   const_vector_iterator begin_reinterpret(UInt n, UInt new_size) const {
     AKANTU_DEBUG_ASSERT(
-        n * new_size == this->getNbComponent() * this->getSize(),
+        n * new_size == this->getNbComponent() * this->size(),
         "The new values for size ("
             << new_size << ") and nb_component (" << n
             << ") are not compatible with the one of this array("
-            << this->getSize() << "," << this->getNbComponent() << ")");
+            << this->size() << "," << this->getNbComponent() << ")");
     UInt new_full_array_size =
-        this->array.getSize() * array.getNbComponent() / n;
+        this->array.size() * array.getNbComponent() / n;
     UInt new_nb_item_per_elem = this->nb_item_per_elem;
     if (new_size != 0 && n != 0)
       new_nb_item_per_elem = this->array.getNbComponent() *
-                             this->filter.getSize() * this->nb_item_per_elem /
+                             this->filter.size() * this->nb_item_per_elem /
                              (n * new_size);
 
     return const_vector_iterator(
@@ -163,17 +163,17 @@ public:
 
   const_vector_iterator end_reinterpret(UInt n, UInt new_size) const {
     AKANTU_DEBUG_ASSERT(
-        n * new_size == this->getNbComponent() * this->getSize(),
+        n * new_size == this->getNbComponent() * this->size(),
         "The new values for size ("
             << new_size << ") and nb_component (" << n
             << ") are not compatible with the one of this array("
-            << this->getSize() << "," << this->getNbComponent() << ")");
+            << this->size() << "," << this->getNbComponent() << ")");
     UInt new_full_array_size =
-        this->array.getSize() * this->array.getNbComponent() / n;
+        this->array.size() * this->array.getNbComponent() / n;
     UInt new_nb_item_per_elem = this->nb_item_per_elem;
     if (new_size != 0 && n != 0)
       new_nb_item_per_elem = this->array.getNbComponent() *
-                             this->filter.getSize() * this->nb_item_per_elem /
+                             this->filter.size() * this->nb_item_per_elem /
                              (n * new_size);
 
     return const_vector_iterator(
@@ -186,8 +186,8 @@ public:
   vector_iterator end_reinterpret(UInt, UInt) { throw; };
 
   /// return the size of the filtered array which is the filter size
-  UInt getSize() const {
-    return this->filter.getSize() * this->nb_item_per_elem;
+  UInt size() const {
+    return this->filter.size() * this->nb_item_per_elem;
   };
   /// the number of components of the filtered array
   UInt getNbComponent() const { return this->array.getNbComponent(); };

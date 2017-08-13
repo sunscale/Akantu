@@ -246,7 +246,7 @@ void SparseSolverMumps::initMumpsData() {
   // automatic choice for analysis
   icntl(28) = 0;
 
-  UInt size = this->matrix.getSize();
+  UInt size = this->matrix.size();
 
   if (prank == 0) {
     this->master_rhs_solution.resize(size);

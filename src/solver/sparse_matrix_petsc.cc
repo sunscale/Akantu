@@ -362,7 +362,7 @@ void SparseMatrixPETSc::applyBoundary(const Array<bool> & boundary,
   // /// every processor calls the MatSetZero() only for his local or master dofs.
   // /// This assures that not two processors or more try to zero the same row
   // UInt nb_component = boundary.getNbComponent();
-  // UInt size = boundary.getSize();
+  // UInt size = boundary.size();
   // Int nb_blocked_local_master_eq_nb = 0;
   // Array<Int> blocked_local_master_eq_nb(this->local_size);
   // Int * blocked_lm_eq_nb_ptr = blocked_local_master_eq_nb.storage();

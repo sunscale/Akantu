@@ -44,7 +44,7 @@ public:
 
   UInt getNbData(const Array<UInt> & nodes,
                  const SynchronizationTag &) const {
-    return nodes.getSize() * sizeof(int);
+    return nodes.size() * sizeof(int);
   }
 
   void packData(CommunicationBuffer & buffer, const Array<UInt> & nodes,

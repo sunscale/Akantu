@@ -127,7 +127,7 @@ void SolidMechanicsModel::assignMaterialToElements(
     const Array<UInt> * filter_array = NULL;
     if (filter != NULL) {
       filter_array = &((*filter)(type, _not_ghost));
-      nb_element = filter_array->getSize();
+      nb_element = filter_array->size();
     }
 
     element.type = type;
@@ -167,7 +167,7 @@ void SolidMechanicsModel::assignMaterialToElements(
       const Array<UInt> * filter_array = NULL;
       if (filter != NULL) {
         filter_array = &((*filter)(type, ghost_type));
-        nb_element = filter_array->getSize();
+        nb_element = filter_array->size();
       }
 
       Array<UInt> & mat_indexes = material_index(type, ghost_type);

@@ -99,7 +99,7 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  UInt getSize() const{ return this->size; };
+  UInt size() const{ return this->size_; };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

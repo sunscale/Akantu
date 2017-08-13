@@ -64,7 +64,7 @@ protected:
     for (auto type :
          this->element_filter.elementTypes(dim, ghost_type)) {
       auto & elem_filter = this->element_filter(type, ghost_type);
-      if (elem_filter.getSize() == 0)
+      if (elem_filter.size() == 0)
         continue;
 
       computeNonLocalStress(type, ghost_type);

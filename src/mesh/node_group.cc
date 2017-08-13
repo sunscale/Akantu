@@ -83,10 +83,10 @@ void NodeGroup::optimize() {
 void NodeGroup::append(const NodeGroup & other_group) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_nodes = node_group.getSize();
+  UInt nb_nodes = node_group.size();
 
   /// append new nodes to current list
-  node_group.resize(nb_nodes + other_group.node_group.getSize());
+  node_group.resize(nb_nodes + other_group.node_group.size());
   std::copy(other_group.node_group.begin(),
 	    other_group.node_group.end(),
 	    node_group.begin() + nb_nodes);

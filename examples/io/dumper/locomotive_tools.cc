@@ -79,7 +79,7 @@ void fillColour(const Mesh & mesh, ElementTypeMapArray<UInt> & colour) {
   const Array<std::string> & txt_colour = phys_data(_triangle_3);
   Array<UInt> & id_colour = colour(_triangle_3);
 
-  for (UInt i = 0; i < txt_colour.getSize(); ++i) {
+  for (UInt i = 0; i < txt_colour.size(); ++i) {
     std::string phy_name = txt_colour(i);
 
     if (phy_name == "red")

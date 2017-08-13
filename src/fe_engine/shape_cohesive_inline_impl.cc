@@ -71,7 +71,7 @@ void ShapeLagrange<_ek_cohesive>::computeShapeDerivativesOnIntegrationPoints(
       ElementClass<type>::getNbNodesPerInterpolationElement();
 
   UInt nb_points = integration_points.cols();
-  UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
+  UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
   UInt size_of_shapesd = ElementClass<type>::getShapeDerivativesSize();
 
   AKANTU_DEBUG_ASSERT(shape_derivatives.getNbComponent() == size_of_shapesd,
@@ -83,7 +83,7 @@ void ShapeLagrange<_ek_cohesive>::computeShapeDerivativesOnIntegrationPoints(
   Real * shapesd_val = shape_derivatives.storage();
 
   if (filter_elements == empty_filter)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
 
   for (UInt elem = 0; elem < nb_element; ++elem) {
     Tensor3<Real> B(shapesd_val, spatial_dimension, nb_nodes_per_element,
@@ -170,7 +170,7 @@ void ShapeLagrange<_ek_cohesive>::extractNodalToElementField(
   UInt * conn_val = this->mesh.getConnectivity(type, ghost_type).storage();
 
   if (filter_elements != empty_filter) {
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
   }
 
   elemental_f.resize(nb_element);
@@ -269,7 +269,7 @@ void ShapeLagrange<_ek_cohesive>::computeNormalsOnIntegrationPoints(
   UInt spatial_dimension = this->mesh.getSpatialDimension();
 
   if (filter_elements != empty_filter)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
 
   normals_u.resize(nb_points * nb_element);
 

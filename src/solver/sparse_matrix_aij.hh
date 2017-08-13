@@ -76,7 +76,7 @@ public:
   virtual inline void addToMatrix(UInt i, UInt j, Real value);
 
   /// set the size of the matrix
-  void resize(UInt size) { this->size = size; }
+  void resize(UInt size) { this->size_ = size; }
 
   /// modify the matrix to "remove" the blocked dof
   virtual void applyBoundary(Real block_val = 1.);
@@ -165,9 +165,7 @@ private:
   /// Value release
   UInt value_release;
 
-  /*
-   * map for (i, j) ->  k correspondence
-   */
+  /// map for (i, j) ->  k correspondence
   coordinate_list_map irn_jcn_k;
 };
 

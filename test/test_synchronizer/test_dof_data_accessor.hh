@@ -77,9 +77,9 @@ inline TestDOFAccessor::TestDOFAccessor(const Array<Int> & global_dof_equation_n
 
 inline UInt TestDOFAccessor::getNbDataForDOFs(const Array<UInt> & dofs,
 					       __attribute__ ((unused)) SynchronizationTag tag) const {
-  if(dofs.getSize())
-    // return Mesh::getSpatialDimension(elements(0).type) * sizeof(Real) * elements.getSize();
-    return sizeof(Int) * dofs.getSize();
+  if(dofs.size())
+    // return Mesh::getSpatialDimension(elements(0).type) * sizeof(Real) * elements.size();
+    return sizeof(Int) * dofs.size();
   else
     return 0;
 }

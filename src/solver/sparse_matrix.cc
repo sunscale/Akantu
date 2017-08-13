@@ -43,7 +43,7 @@ namespace akantu {
 SparseMatrix::SparseMatrix(DOFManager & dof_manager,
                            const MatrixType & matrix_type, const ID & id)
     : id(id), _dof_manager(dof_manager), matrix_type(matrix_type),
-      size(dof_manager.getSystemSize()), nb_non_zero(0) {
+      size_(dof_manager.getSystemSize()), nb_non_zero(0) {
   AKANTU_DEBUG_IN();
 
   const auto & comm = _dof_manager.getCommunicator();
@@ -63,7 +63,7 @@ SparseMatrix::~SparseMatrix() {}
 
 /* -------------------------------------------------------------------------- */
 Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat) {
-  Array<Real> tmp(vect.getSize(), vect.getNbComponent(), 0.);
+  Array<Real> tmp(vect.size(), vect.getNbComponent(), 0.);
   mat.matVecMul(vect, tmp);
 
   vect.copy(tmp);

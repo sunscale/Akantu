@@ -584,7 +584,7 @@ void StructuralMechanicsModel::implicitCorr() {
   Real * incr_val = increment->storage();
   bool * boun_val = blocked_dofs->storage();
 
-  UInt nb_nodes = displacement_rotation->getSize();
+  UInt nb_nodes = displacement_rotation->size();
 
   for (UInt j = 0; j < nb_nodes * nb_degree_of_freedom;
        ++j, ++incr_val, ++boun_val) {
@@ -628,7 +628,7 @@ void StructuralMechanicsModel::updateResidualInternal() {
     } else if (mass) {
 
       // else lumped mass
-      UInt nb_nodes = acceleration->getSize();
+      UInt nb_nodes = acceleration->size();
       UInt nb_degree_of_freedom = acceleration->getNbComponent();
 
       Real * mass_val = mass->storage();
@@ -683,7 +683,7 @@ void StructuralMechanicsModel::solve() {
 
   AKANTU_DEBUG_INFO("Solving an implicit step.");
 
-  UInt nb_nodes = displacement_rotation->getSize();
+  UInt nb_nodes = displacement_rotation->size();
 
   /// todo residual = force - Kxr * d_bloq
   jacobian_matrix->copyContent(*stiffness_matrix);
@@ -723,7 +723,7 @@ bool StructuralMechanicsModel::testConvergence<_scc_increment>(Real tolerance,
                                                                Real & error) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_nodes = displacement_rotation->getSize();
+  UInt nb_nodes = displacement_rotation->size();
   UInt nb_degree_of_freedom = displacement_rotation->getNbComponent();
 
   error = 0;
@@ -765,7 +765,7 @@ bool StructuralMechanicsModel::testConvergence<_scc_residual>(Real tolerance,
                                                               Real & norm) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_nodes = residual->getSize();
+  UInt nb_nodes = residual->size();
 
   norm = 0;
   Real * residual_val = residual->storage();
@@ -813,7 +813,7 @@ bool StructuralMechanicsModel::testConvergenceIncrement(Real tolerance,
                                                         Real & error) {
   AKANTU_DEBUG_IN();
   Mesh & mesh = getFEEngine().getMesh();
-  UInt nb_nodes = displacement_rotation->getSize();
+  UInt nb_nodes = displacement_rotation->size();
   UInt nb_degree_of_freedom = displacement_rotation->getNbComponent();
 
   Real norm = 0;

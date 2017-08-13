@@ -200,7 +200,7 @@ static void updateDisplacement(SolidMechanicsModelCohesive & model,
 			       Real increment) {
 
   Mesh & mesh = model.getFEEngine().getMesh();
-  UInt nb_element = elements.getSize();
+  UInt nb_element = elements.size();
   UInt nb_nodes = mesh.getNbNodes();
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 

@@ -88,13 +88,13 @@ void DOFManager::assembleElementalArrayLocalArray(
 
   UInt * filter_it = NULL;
   if (filter_elements != empty_filter) {
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
     filter_it = filter_elements.storage();
   } else {
     nb_element = this->mesh->getNbElement(type, ghost_type);
   }
 
-  AKANTU_DEBUG_ASSERT(elementary_vect.getSize() == nb_element,
+  AKANTU_DEBUG_ASSERT(elementary_vect.size() == nb_element,
                       "The vector elementary_vect("
                           << elementary_vect.getID()
                           << ") has not the good size.");
@@ -226,12 +226,12 @@ void DOFManager::registerDOFsInternal(const ID & dof_id,
       nb_nodes = this->mesh->getNbNodes();
     } else {
       node_group = &this->mesh->getElementGroup(group).getNodeGroup();
-      nb_nodes = node_group->getSize();
+      nb_nodes = node_group->size();
     }
 
     nb_local_dofs = nb_nodes;
     AKANTU_DEBUG_ASSERT(
-        dofs_array.getSize() == nb_local_dofs,
+        dofs_array.size() == nb_local_dofs,
         "The array of dof is too shot to be associated to nodes.");
 
     for (UInt n = 0; n < nb_nodes; ++n) {
@@ -248,7 +248,7 @@ void DOFManager::registerDOFsInternal(const ID & dof_id,
   }
   case _dst_generic: {
     nb_local_dofs = nb_pure_local =
-        dofs_array.getSize() * dofs_array.getNbComponent();
+        dofs_array.size() * dofs_array.getNbComponent();
     break;
   }
   default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }
@@ -345,7 +345,7 @@ void DOFManager::splitSolutionPerDOFs() {
 
   for (; it != end; ++it) {
     DOFData & dof_data = *it->second;
-    dof_data.solution.resize(dof_data.dof->getSize() *
+    dof_data.solution.resize(dof_data.dof->size() *
                              dof_data.dof->getNbComponent());
     this->getSolutionPerDOFs(it->first, dof_data.solution);
   }
@@ -525,7 +525,7 @@ DOFManager::updateNodalDOFs(const ID & dof_id, const Array<UInt> & nodes_list) {
   UInt nb_new_local_dofs = 0;
   UInt nb_new_pure_local = 0;
 
-  nb_new_local_dofs = nodes_list.getSize();
+  nb_new_local_dofs = nodes_list.size();
   for (const auto & node : nodes_list) {
     nb_new_pure_local += this->mesh->isLocalOrMasterNode(node) ? 1 : 0;
   }
@@ -564,7 +564,7 @@ void DOFManager::onNodesAdded(const Array<UInt> & nodes_list,
           this->mesh->getElementGroup(group).getNodeGroup();
       Array<UInt> new_nodes_list;
       for (const auto & node : nodes_list) {
-        if (node_group.find(node) != -1)
+        if (node_group.find(node) != UInt(-1))
           new_nodes_list.push_back(node);
       }
 

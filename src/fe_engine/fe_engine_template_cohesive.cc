@@ -52,11 +52,11 @@ Real FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
 #ifndef AKANTU_NDEBUG
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if (filter_elements != empty_filter)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
 
   UInt nb_quadrature_points = getNbIntegrationPoints(type);
 
-  AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
+  AKANTU_DEBUG_ASSERT(f.size() == nb_element * nb_quadrature_points,
                       "The vector f(" << f.getID()
                                       << ") has not the good size.");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == 1,
@@ -89,12 +89,12 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
 #ifndef AKANTU_NDEBUG
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if (filter_elements == filter_elements)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
 
   UInt nb_quadrature_points = getNbIntegrationPoints(type);
 
-  AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
-                      "The vector f(" << f.getID() << " size " << f.getSize()
+  AKANTU_DEBUG_ASSERT(f.size() == nb_element * nb_quadrature_points,
+                      "The vector f(" << f.getID() << " size " << f.size()
                                       << ") has not the good size ("
                                       << nb_element << ").");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom,
@@ -105,7 +105,7 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
                       "The vector intf("
                           << intf.getID()
                           << ") has not the good number of component.");
-  AKANTU_DEBUG_ASSERT(intf.getSize() == nb_element,
+  AKANTU_DEBUG_ASSERT(intf.size() == nb_element,
                       "The vector intf(" << intf.getID()
                                          << ") has not the good size.");
 #endif
@@ -144,7 +144,7 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
   const ElementType type = _cohesive_1d_2;
   const ElementType facet_type = Mesh::getFacetType(type);
 
-  UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
+  UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
   normal.resize(nb_element);
 
   Array<Element> & facets =

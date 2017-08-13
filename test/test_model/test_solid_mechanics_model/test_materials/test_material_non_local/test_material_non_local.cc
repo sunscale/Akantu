@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
   RandomGenerator<UInt> gen;
 
   for (UInt i = 0; i < 1; ++i) {
-    UInt g = (gen() / Real(RandomGenerator<UInt>::max() - RandomGenerator<UInt>::min()))  * damage.getSize();
+    UInt g = (gen() / Real(RandomGenerator<UInt>::max() - RandomGenerator<UInt>::min()))  * damage.size();
     std::cout << prank << " -> " << g << std::endl;
     damage(g) = 1.;
   }

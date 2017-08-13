@@ -87,7 +87,7 @@ void ElementSynchronizer::substituteElements(
 
         for (; it != end; ++it) {
           Array<Element> & list = it->second;
-          for (UInt el = 0; el < list.getSize(); ++el) {
+          for (UInt el = 0; el < list.size(); ++el) {
             found_element_it = old_to_new_elements.find(list(el));
             if (found_element_it != found_element_end)
               list(el) = found_element_it->second;
@@ -110,7 +110,7 @@ void ElementSynchronizer::onElementsChanged(
   // create a map to link old elements to new ones
   std::map<Element, Element> old_to_new_elements;
 
-  for (UInt el = 0; el < old_elements_list.getSize(); ++el) {
+  for (UInt el = 0; el < old_elements_list.size(); ++el) {
     AKANTU_DEBUG_ASSERT(old_to_new_elements.find(old_elements_list(el)) ==
                             old_to_new_elements.end(),
                         "The same element cannot appear twice in the list");
@@ -230,7 +230,7 @@ void ElementSynchronizer::removeElements(
 
   auto filter_list = [](const Array<UInt> & keep, Array<Element> & list) {
     Array<Element> new_list;
-    for (UInt e = 0; e < keep.getSize() - 1; ++e) {
+    for (UInt e = 0; e < keep.size() - 1; ++e) {
       Element & el = list(keep(e));
       new_list.push_back(el);
     }
@@ -266,16 +266,16 @@ void ElementSynchronizer::removeElements(
 
     Tag tag = Tag::genTag(proc, 0, Tag::_MODIFY_SCHEME, this->hash_id);
     AKANTU_DEBUG_INFO("Sending a message of size "
-                      << keep_list.getSize() << " to proc " << proc << " TAG("
+                      << keep_list.size() << " to proc " << proc << " TAG("
                       << tag << ")");
     send_requests.push_back(this->communicator.asyncSend(keep_list, proc, tag));
 
-    UInt old_size = recv.getSize();
+    UInt old_size = recv.size();
     filter_list(keep_list, recv);
 
     AKANTU_DEBUG_INFO("I had " << old_size << " elements to recv from proc "
-                               << proc << " and " << keep_list.getSize()
-                               << " elements to keep. I have " << recv.getSize()
+                               << proc << " and " << keep_list.size()
+                               << " elements to keep. I have " << recv.size()
                                << " elements left.");
   }
 
@@ -292,19 +292,19 @@ void ElementSynchronizer::removeElements(
     AKANTU_DEBUG_INFO("Getting number of elements of proc "
                       << proc << " to keep - TAG(" << tag << ")");
     this->communicator.probe<UInt>(proc, tag, status);
-    Array<UInt> keep_list(status.getSize());
+    Array<UInt> keep_list(status.size());
 
     AKANTU_DEBUG_INFO("Receiving list of elements ("
-                      << keep_list.getSize() << " elements) to keep for proc "
+                      << keep_list.size() << " elements) to keep for proc "
                       << proc << " TAG(" << tag << ")");
     this->communicator.receive(keep_list, proc, tag);
 
-    UInt old_size = send.getSize();
+    UInt old_size = send.size();
     filter_list(keep_list, send);
 
     AKANTU_DEBUG_INFO("I had " << old_size << " elements to send to proc "
-                               << proc << " and " << keep_list.getSize()
-                               << " elements to keep. I have " << send.getSize()
+                               << proc << " and " << keep_list.size()
+                               << " elements to keep. I have " << send.size()
                                << " elements left.");
   }
 
@@ -341,7 +341,7 @@ void ElementSynchronizer::renumberElements(
 /* -------------------------------------------------------------------------- */
 UInt ElementSynchronizer::sanityCheckDataSize(
     const Array<Element> & elements, const SynchronizationTag &) const {
-  return (elements.getSize() * mesh.getSpatialDimension() * sizeof(Real) +
+  return (elements.size() * mesh.getSpatialDimension() * sizeof(Real) +
           sizeof(SynchronizationTag));
 }
 

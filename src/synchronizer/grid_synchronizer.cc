@@ -275,10 +275,10 @@ void GridSynchronizer::createGridSynchronizer(
 
       Vector<UInt> info = info_proc((UInt)type);
       info[0] = (UInt)type;
-      info[1] = conn.getSize() * conn.getNbComponent();
+      info[1] = conn.size() * conn.getNbComponent();
 
       AKANTU_DEBUG_INFO(
-          "I have " << conn.getSize() << " elements of type " << type
+          "I have " << conn.size() << " elements of type " << type
                     << " to send to processor " << p << " (communication tag : "
                     << Tag::genTag(my_rank, count, DATA_TAG) << ")");
 
@@ -310,7 +310,7 @@ void GridSynchronizer::createGridSynchronizer(
   Vector<UInt> nb_nodes_to_recv(nb_proc);
 
   UInt nb_total_nodes_to_recv = 0;
-  UInt nb_current_nodes = global_nodes_ids.getSize();
+  UInt nb_current_nodes = global_nodes_ids.size();
 
   NewNodesEvent new_nodes;
   NewElementsEvent new_elements;
@@ -359,7 +359,7 @@ void GridSynchronizer::createGridSynchronizer(
         auto & ghost_connectivity =
             const_cast<Array<UInt> &>(mesh.getConnectivity(type, _ghost));
 
-        UInt nb_ghost_element = ghost_connectivity.getSize();
+        UInt nb_ghost_element = ghost_connectivity.size();
         Element element(type, 0, _ghost);
 
         Vector<UInt> conn(nb_nodes_per_element);
@@ -430,7 +430,7 @@ void GridSynchronizer::createGridSynchronizer(
    * Sends requested nodes to proc
    */
   auto & nodes = const_cast<Array<Real> &>(mesh.getNodes());
-  UInt nb_nodes = nodes.getSize();
+  UInt nb_nodes = nodes.size();
 
   std::vector<CommunicationRequest> isend_coordinates_requests;
   std::map<UInt, Array<Real>> nodes_to_send_per_proc;
@@ -445,7 +445,7 @@ void GridSynchronizer::createGridSynchronizer(
                       << Tag::genTag(p, 0, ASK_NODES_TAG) << ")");
 
     comm.probe<UInt>(p, Tag::genTag(p, 0, ASK_NODES_TAG), status);
-    UInt nb_nodes_to_send = status.getSize();
+    UInt nb_nodes_to_send = status.size();
     asked_nodes.resize(nb_nodes_to_send);
 
     AKANTU_DEBUG_INFO("I have " << nb_nodes_to_send - 1

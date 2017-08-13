@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
 
 
   std::cout << "ElementToSubelement3" << std::endl;
-  for (UInt i = 0; i < el_to_subel3.getSize(); ++i) {
+  for (UInt i = 0; i < el_to_subel3.size(); ++i) {
     std::cout << type_facet << " " << i << " connected to ";
     for (UInt j = 0; j < 2; ++j){
       std::cout << el_to_subel3(i)[j].type << " " << el_to_subel3(i)[j].element << ", ";
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
   }
 
   std::cout << "ElementToSubelement2" << std::endl;
-  for (UInt i = 0; i < el_to_subel2.getSize(); ++i) {
+  for (UInt i = 0; i < el_to_subel2.size(); ++i) {
     std::cout << type_subfacet << " " << i << " connected to ";
     for (UInt j = 0; j < el_to_subel2(i).size(); ++j){
       std::cout << el_to_subel2(i)[j].type << " " << el_to_subel2(i)[j].element << ", ";
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
   }
 
   std::cout << "ElementToSubelement1" << std::endl;
-  for (UInt i = 0; i < el_to_subel1.getSize(); ++i) {
+  for (UInt i = 0; i < el_to_subel1.size(); ++i) {
     std::cout << type_subsubfacet << " " << i << " connected to ";
     for (UInt j = 0; j < el_to_subel1(i).size(); ++j){
       std::cout << el_to_subel1(i)[j].type << " " << el_to_subel1(i)[j].element << ", ";
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
 
   std::cout << " " << std::endl;
   std::cout << "SubelementToElement3" << std::endl;
-  for (UInt i = 0; i < subel_to_el3.getSize(); ++i) {
+  for (UInt i = 0; i < subel_to_el3.size(); ++i) {
     std::cout << type << " " << i << " connected to ";
     for (UInt j = 0; j < 6; ++j){
       std::cout << subel_to_el3(i, j).type << " " << subel_to_el3(i, j).element << ", ";
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
   }
 
   std::cout << "SubelementToElement2" << std::endl;
-  for (UInt i = 0; i < subel_to_el2.getSize(); ++i) {
+  for (UInt i = 0; i < subel_to_el2.size(); ++i) {
     std::cout << type_facet << " " << i << " connected to ";
     for (UInt j = 0; j < 4; ++j){
       std::cout << subel_to_el2(i, j).type << " " << subel_to_el2(i, j).element << ", ";
@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
   }
 
   std::cout << "SubelementToElement1" << std::endl;
-  for (UInt i = 0; i < subel_to_el1.getSize(); ++i) {
+  for (UInt i = 0; i < subel_to_el1.size(); ++i) {
     std::cout << type_subfacet << " " << i << " connected to ";
     for (UInt j = 0; j < 2; ++j){
       std::cout << subel_to_el1(i, j).type << " " << subel_to_el1(i, j).element << ", ";

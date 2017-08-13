@@ -261,7 +261,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
 
   /// compute @f$ \int \rho dV = \rho V @f$ for each element
   Array<Real> * int_field =
-      new Array<Real>(field.getSize(), nb_degree_of_freedom, "inte_rho_x");
+      new Array<Real>(field.size(), nb_degree_of_freedom, "inte_rho_x");
   integrator.template integrate<type>(field, *int_field, nb_degree_of_freedom,
                                       ghost_type, empty_filter);
 
@@ -395,7 +395,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
   mshapes_it = modified_shapes.begin(nb_degree_of_freedom, lmat_size);
   auto lmat = local_mat.begin(lmat_size, lmat_size);
   auto field_it =
-      field.begin_reinterpret(nb_degree_of_freedom, field.getSize());
+      field.begin_reinterpret(nb_degree_of_freedom, field.size());
 
   for (UInt q = 0; q < vect_size; ++q, ++lmat, ++mshapes_it, ++field_it) {
     const auto & rho = *field_it;

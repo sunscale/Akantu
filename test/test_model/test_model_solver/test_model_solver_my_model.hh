@@ -27,6 +27,7 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "aka_iterators.hh"
 #include "data_accessor.hh"
 #include "dof_manager_default.hh"
 #include "element_synchronizer.hh"
@@ -49,9 +50,9 @@ namespace akantu {
 class MyModel : public ModelSolver, public DataAccessor<Element> {
 public:
   MyModel(Real F, Mesh & mesh, bool lumped)
-      : ModelSolver(mesh, "model_solver", 0),
-        nb_dofs(mesh.getNbNodes()), nb_elements(mesh.getNbElement()), E(1.),
-        A(1.), rho(1.), lumped(lumped), mesh(mesh), displacement(nb_dofs, 1, "disp"),
+      : ModelSolver(mesh, "model_solver", 0), nb_dofs(mesh.getNbNodes()),
+        nb_elements(mesh.getNbElement()), E(1.), A(1.), rho(1.), lumped(lumped),
+        mesh(mesh), displacement(nb_dofs, 1, "disp"),
         velocity(nb_dofs, 1, "velo"), acceleration(nb_dofs, 1, "accel"),
         blocked(nb_dofs, 1, "blocked"), forces(nb_dofs, 1, "force_ext"),
         internal_forces(nb_dofs, 1, "force_int"),
@@ -87,11 +88,12 @@ public:
     blocked.set(false);
 
     UInt global_nb_nodes = mesh.getNbGlobalNodes();
-    for (UInt n = 0; n < nb_dofs; ++n) {
-      if (mesh.getNodeGlobalId(n) == (global_nb_nodes - 1))
+    for (auto && n : arange(nb_dofs)) {
+      auto global_id = mesh.getNodeGlobalId(n);
+      if (global_id == (global_nb_nodes - 1))
         forces(n, _x) = F;
 
-      if (mesh.getGlobalNodesIds()(n) == 0)
+      if (global_id == 0)
         blocked(n, _x) = true;
     }
 
@@ -248,9 +250,11 @@ public:
     //   if (prank == p) {
     //     UInt local_dof = 0;
     //     for (auto res : residual) {
-    //       UInt global_dof = dof_manager_default.localToGlobalEquationNumber(local_dof);
+    //       UInt global_dof =
+    //       dof_manager_default.localToGlobalEquationNumber(local_dof);
     //       std::cout << local_dof << " [" << global_dof << " - "
-    //                 << dof_manager_default.getDOFType(local_dof) << "]: " << res
+    //                 << dof_manager_default.getDOFType(local_dof) << "]: " <<
+    //                 res
     //                 << std::endl;
     //       ++local_dof;
     //     }
@@ -386,7 +390,7 @@ public:
   /* ------------------------------------------------------------------------ */
   UInt getNbData(const Array<Element> & elements,
                  const SynchronizationTag &) const {
-    return elements.getSize() * sizeof(Real);
+    return elements.size() * sizeof(Real);
   }
 
   void packData(CommunicationBuffer & buffer, const Array<Element> & elements,

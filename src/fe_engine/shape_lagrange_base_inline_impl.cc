@@ -59,7 +59,7 @@ void ShapeLagrangeBase::computeShapesOnIntegrationPoints(
   AKANTU_DEBUG_IN();
 
   UInt nb_points = integration_points.cols();
-  UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
+  UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
 
   shapes.resize(nb_element * nb_points);
 
@@ -75,7 +75,7 @@ void ShapeLagrangeBase::computeShapesOnIntegrationPoints(
       nb_element);
   auto shapes_begin = shapes_it;
   if (filter_elements != empty_filter) {
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
   }
 
   for (UInt elem = 0; elem < nb_element; ++elem) {

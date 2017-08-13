@@ -156,9 +156,9 @@ public:
   /// return the size in bytes of the stored values
   inline UInt getPackedSize(){ return ptr_pack - buffer.storage(); };
   /// return the size in bytes of data left to be unpacked
-  inline UInt getLeftToUnpack(){ return buffer.getSize() - (ptr_unpack - buffer.storage()); };
+  inline UInt getLeftToUnpack(){ return buffer.size() - (ptr_unpack - buffer.storage()); };
   /// return the global size allocated
-  inline UInt getSize(){ return buffer.getSize(); };
+  inline UInt size(){ return buffer.size(); };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

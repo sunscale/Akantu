@@ -102,6 +102,7 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
   Array<UInt> & conn = mesh_accessor.getConnectivity(_segment_2);
 
   nodes.resize(nb_nodes);
+  mesh_accessor.setNbGlobalNodes(nb_nodes);
 
   for (UInt n = 0; n < nb_nodes; ++n) {
     nodes(n, _x) = n * (1. / (nb_nodes - 1));

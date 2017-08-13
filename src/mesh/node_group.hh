@@ -103,7 +103,7 @@ public:
   AKANTU_GET_MACRO(Name, name, const std::string &);
 
   /// give the number of nodes in the current group
-  inline UInt getSize() const;
+  inline UInt size() const;
 
   UInt * storage(){return node_group.storage();};
   

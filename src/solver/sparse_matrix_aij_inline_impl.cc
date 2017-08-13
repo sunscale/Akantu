@@ -40,8 +40,8 @@ inline UInt SparseMatrixAIJ::addToProfile(UInt i, UInt j) {
 
   if (!(it == this->irn_jcn_k.end())) return it->second;
 
-  if(i + 1 > this->size) this->size = i + 1;
-  if(j + 1 > this->size) this->size = j + 1;
+  if(i + 1 > this->size_) this->size_ = i + 1;
+  if(j + 1 > this->size_) this->size_ = j + 1;
 
   this->irn.push_back(i + 1);
   this->jcn.push_back(j + 1);
@@ -67,7 +67,7 @@ inline void SparseMatrixAIJ::clearProfile() {
   this->jcn.resize(0);
   this->a.resize(0);
 
-  this->size = 0;
+  this->size_ = 0;
 
   this->profile_release++;
   this->value_release++;

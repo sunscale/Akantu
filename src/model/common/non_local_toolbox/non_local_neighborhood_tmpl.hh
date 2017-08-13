@@ -209,7 +209,7 @@ void NonLocalNeighborhood<WeightFunction>::saveWeights(
 
     Array<Real> & weights = *(pair_weight[ghost_type]);
     Array<Real>::const_vector_iterator weights_it = weights.begin(2);
-    for (UInt i = 0; i < weights.getSize(); ++i, ++weights_it)
+    for (UInt i = 0; i < weights.size(); ++i, ++weights_it)
       pout << "w1: " << (*weights_it)(0) << " w2: " << (*weights_it)(1)
            << std::endl;
   }

@@ -117,7 +117,7 @@ void SolverPETSc::solve() {
 //   // ierr = VecGetArray(this->petsc_solver_wrapper->solution, PetscScalar
 //   // **array); CHKERRXX(ierr);
 //   UInt nb_component = solution.getNbComponent();
-//   UInt size = solution.getSize();
+//   UInt size = solution.size();
 
 //   for (UInt i = 0; i < size; ++i) {
 //     for (UInt j = 0; j < nb_component; ++j) {
@@ -1003,7 +1003,7 @@ void SolverPETSc::setOperators() {
 // //
 // //  /*
 // ------------------------------------------------------------------------ */
-// //  UInt size = matrix->getSize();
+// //  UInt size = matrix->size();
 // //
 // //  if(prank == 0) {
 // //    std::stringstream sstr_rhs; sstr_rhs << id << ":rhs";

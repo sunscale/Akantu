@@ -311,7 +311,7 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::checkDeltaMax(
   for (; it != last_type; ++it) {
     Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
 
-    UInt nb_element = elem_filter.getSize();
+    UInt nb_element = elem_filter.size();
     if (nb_element == 0)
       continue;
 

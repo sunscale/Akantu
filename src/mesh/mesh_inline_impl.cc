@@ -33,6 +33,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_iterators.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 #if defined(AKANTU_COHESIVE_ELEMENT)
@@ -56,7 +57,7 @@ inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh,
 /* -------------------------------------------------------------------------- */
 template <>
 inline void Mesh::sendEvent<NewElementsEvent>(NewElementsEvent & event) {
-  this->nodes_to_elements.resize(nodes->getSize());
+  this->nodes_to_elements.resize(nodes->size());
   for (const auto & elem : event.getList()) {
     const Array<UInt> & conn = connectivities(elem.type, elem.ghost_type);
 
@@ -98,11 +99,12 @@ inline void Mesh::sendEvent<RemovedNodesEvent>(RemovedNodesEvent & event) {
   this->removeNodesFromArray(*nodes, new_numbering);
   if (nodes_global_ids)
     this->removeNodesFromArray(*nodes_global_ids, new_numbering);
-  if (nodes_type.getSize() != 0)
+  if (nodes_type.size() != 0)
     this->removeNodesFromArray(nodes_type, new_numbering);
 
-  if(not nodes_to_elements.empty()) {
-    std::vector<std::unique_ptr<std::set<Element>>> tmp(nodes_to_elements.size());
+  if (not nodes_to_elements.empty()) {
+    std::vector<std::unique_ptr<std::set<Element>>> tmp(
+        nodes_to_elements.size());
     auto it = nodes_to_elements.begin();
 
     UInt new_nb_nodes = 0;
@@ -127,10 +129,10 @@ inline void Mesh::sendEvent<RemovedNodesEvent>(RemovedNodesEvent & event) {
 template <typename T>
 inline void Mesh::removeNodesFromArray(Array<T> & vect,
                                        const Array<UInt> & new_numbering) {
-  Array<T> tmp(vect.getSize(), vect.getNbComponent());
+  Array<T> tmp(vect.size(), vect.getNbComponent());
   UInt nb_component = vect.getNbComponent();
   UInt new_nb_nodes = 0;
-  for (UInt i = 0; i < new_numbering.getSize(); ++i) {
+  for (UInt i = 0; i < new_numbering.size(); ++i) {
     UInt new_i = new_numbering(i);
     if (new_i != UInt(-1)) {
       T * to_copy = vect.storage() + i * nb_component;
@@ -186,7 +188,7 @@ inline void Mesh::removeNodesFromArray(Array<T> & vect,
 //   types_offsets.clear();
 //   for (auto type : elementTypes(_all_dimensions, ghost_type,
 //   _ek_not_defined))
-//     types_offsets(type) = connectivities(type, ghost_type).getSize();
+//     types_offsets(type) = connectivities(type, ghost_type).size();
 
 //   for (UInt t = _not_defined + 1; t < _max_element_type; ++t)
 //     types_offsets(t) += types_offsets(t - 1);
@@ -208,13 +210,11 @@ inline void Mesh::removeNodesFromArray(Array<T> & vect,
 inline Array<UInt> & Mesh::getNodesGlobalIdsPointer() {
   AKANTU_DEBUG_IN();
   if (not nodes_global_ids) {
-    auto nb_nodes = nodes->getSize();
     nodes_global_ids = std::make_unique<Array<UInt>>(
-        nb_nodes, 1, getID() + ":nodes_global_ids");
+        nodes->size(), 1, getID() + ":nodes_global_ids");
 
-    UInt i = 0;
-    for (auto & global_id : *nodes_global_ids) {
-      global_id = ++i;
+    for (auto && global_ids : counting(*nodes_global_ids)) {
+      std::get<1>(global_ids) = std::get<0>(global_ids);
     }
   }
 
@@ -225,8 +225,8 @@ inline Array<UInt> & Mesh::getNodesGlobalIdsPointer() {
 /* -------------------------------------------------------------------------- */
 inline Array<NodeType> & Mesh::getNodesTypePointer() {
   AKANTU_DEBUG_IN();
-  if (nodes_type.getSize() == 0) {
-    nodes_type.resize(nodes->getSize());
+  if (nodes_type.size() == 0) {
+    nodes_type.resize(nodes->size());
     nodes_type.set(_nt_normal);
   }
 
@@ -373,7 +373,7 @@ inline UInt Mesh::getNbElement(const ElementType & type,
   try {
 
     const Array<UInt> & conn = connectivities(type, ghost_type);
-    return conn.getSize();
+    return conn.size();
   } catch (...) {
     return 0;
   }
@@ -583,34 +583,34 @@ inline void Mesh::addConnectivityType(const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isPureGhostNode(UInt n) const {
-  return nodes_type.getSize() ? (nodes_type(n) == _nt_pure_gost) : false;
+  return nodes_type.size() ? (nodes_type(n) == _nt_pure_gost) : false;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isLocalOrMasterNode(UInt n) const {
-  return nodes_type.getSize()
+  return nodes_type.size()
              ? (nodes_type(n) == _nt_master) || (nodes_type(n) == _nt_normal)
              : true;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isLocalNode(UInt n) const {
-  return nodes_type.getSize() ? nodes_type(n) == _nt_normal : true;
+  return nodes_type.size() ? nodes_type(n) == _nt_normal : true;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isMasterNode(UInt n) const {
-  return nodes_type.getSize() ? nodes_type(n) == _nt_master : false;
+  return nodes_type.size() ? nodes_type(n) == _nt_master : false;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isSlaveNode(UInt n) const {
-  return nodes_type.getSize() ? nodes_type(n) >= 0 : false;
+  return nodes_type.size() ? nodes_type(n) >= 0 : false;
 }
 
 /* -------------------------------------------------------------------------- */
 inline NodeType Mesh::getNodeType(UInt local_id) const {
-  return nodes_type.getSize() ? nodes_type(local_id) : _nt_normal;
+  return nodes_type.size() ? nodes_type(local_id) : _nt_normal;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -626,7 +626,7 @@ inline UInt Mesh::getNodeLocalId(UInt global_id) const {
 
 /* -------------------------------------------------------------------------- */
 inline UInt Mesh::getNbGlobalNodes() const {
-  return nodes_global_ids ? nb_global_nodes : nodes->getSize();
+  return nodes_global_ids ? nb_global_nodes : nodes->size();
 }
 
 /* -------------------------------------------------------------------------- */

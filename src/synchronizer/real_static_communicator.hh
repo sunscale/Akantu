@@ -101,20 +101,18 @@ private:
 /* -------------------------------------------------------------------------- */
 class CommunicationStatus {
 public:
-  CommunicationStatus() : source(0), size(0), tag(0){};
-
   AKANTU_GET_MACRO(Source, source, Int);
-  AKANTU_GET_MACRO(Size, size, UInt);
+  UInt size() const { return size_; }
   AKANTU_GET_MACRO(Tag, tag, Int);
 
   AKANTU_SET_MACRO(Source, source, Int);
-  AKANTU_SET_MACRO(Size, size, UInt);
+  AKANTU_SET_MACRO(Size, size_, UInt);
   AKANTU_SET_MACRO(Tag, tag, Int);
 
 private:
-  Int source;
-  UInt size;
-  Int tag;
+  Int source{0};
+  UInt size_{0};
+  Int tag{0};
 };
 
 /* -------------------------------------------------------------------------- */

@@ -523,7 +523,7 @@ void HeatTransferModel::updateResidualInternal() {
     } else if (capacity_lumped) {
 
       // else lumped mass
-      UInt nb_nodes = temperature_rate->getSize();
+      UInt nb_nodes = temperature_rate->size();
       UInt nb_degree_of_freedom = temperature_rate->getNbComponent();
 
       Real * capacity_val = capacity_lumped->storage();
@@ -557,7 +557,7 @@ void HeatTransferModel::solveStatic() {
                       "You should first initialize the implicit solver and "
                       "assemble the stiffness matrix");
 
-  UInt nb_nodes = temperature->getSize();
+  UInt nb_nodes = temperature->size();
   UInt nb_degree_of_freedom = temperature->getNbComponent() * nb_nodes;
 
   jacobian_matrix->copyContent(*conductivity_matrix);
@@ -727,7 +727,7 @@ void HeatTransferModel::solveExplicitLumped() {
 
   /// finally @f$ r -= C \dot T @f$
   // lumped C
-  UInt nb_nodes = temperature_rate->getSize();
+  UInt nb_nodes = temperature_rate->size();
   UInt nb_degree_of_freedom = temperature_rate->getNbComponent();
 
   Real * capacity_val = capacity_lumped->storage();
@@ -775,7 +775,7 @@ void HeatTransferModel::explicitPred() {
   integrator->integrationSchemePred(time_step, *temperature, *temperature_rate,
                                     *blocked_dofs);
 
-  UInt nb_nodes = temperature->getSize();
+  UInt nb_nodes = temperature->size();
   UInt nb_degree_of_freedom = temperature->getNbComponent();
 
   Real * temp = temperature->storage();
@@ -816,7 +816,7 @@ void HeatTransferModel::implicitCorr() {
     integrator->integrationSchemeCorrTemp(
         time_step, *temperature, *temperature_rate, *blocked_dofs, *increment);
   } else {
-    UInt nb_nodes = temperature->getSize();
+    UInt nb_nodes = temperature->size();
     UInt nb_degree_of_freedom = temperature->getNbComponent() * nb_nodes;
 
     Real * incr_val = increment->storage();
@@ -1009,7 +1009,7 @@ bool HeatTransferModel::testConvergence<_scc_increment>(Real tolerance,
                                                         Real & error) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_nodes = temperature->getSize();
+  UInt nb_nodes = temperature->size();
   UInt nb_degree_of_freedom = temperature->getNbComponent();
 
   error = 0;

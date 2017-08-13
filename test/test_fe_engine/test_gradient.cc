@@ -78,7 +78,7 @@ int main(int argc, char * argv[]) {
   UInt nb_quadrature_points = fem->getNbIntegrationPoints(type) * nb_element;
 
   Array<Real> grad_on_quad(nb_quadrature_points, 2 * dim, "grad_on_quad");
-  for (UInt i = 0; i < const_val.getSize(); ++i) {
+  for (UInt i = 0; i < const_val.size(); ++i) {
     const_val(i, 0) = 0;
     const_val(i, 1) = 0;
 

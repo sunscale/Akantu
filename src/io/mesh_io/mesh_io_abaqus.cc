@@ -94,7 +94,7 @@ void element_read(Mesh & mesh, const ElementType & type, UInt id, const std::vec
 			"There is an unknown node in the connectivity.");
     tmp_conn[i++] = nit->second;
   }
-  Element el(type, connectivity.getSize());
+  Element el(type, connectivity.size());
   elements_mapping[id] = el;
   connectivity.push_back(tmp_conn);
 }
@@ -468,7 +468,7 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
     }
   }
 
-  mesh_accessor.setNbGlobalNodes(mesh.getNodes().getSize());
+  mesh_accessor.setNbGlobalNodes(mesh.getNodes().size());
   MeshUtils::fillElementToSubElementsData(mesh);
 }
 

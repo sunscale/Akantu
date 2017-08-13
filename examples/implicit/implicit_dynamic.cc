@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
   const Array<UInt> & trac_nodes = mesh.getElementGroup("traction").getNodes();
 
   bool dump_node = false;
-  if(trac_nodes.getSize() > 0 && mesh.isLocalOrMasterNode(trac_nodes(0))) {
+  if(trac_nodes.size() > 0 && mesh.isLocalOrMasterNode(trac_nodes(0))) {
     force(trac_nodes(0), 1) = F;
     dump_node = true;
   }

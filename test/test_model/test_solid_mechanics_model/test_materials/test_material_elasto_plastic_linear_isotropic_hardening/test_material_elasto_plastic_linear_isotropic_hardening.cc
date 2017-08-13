@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     Array<Real> & residual = model.getInternalForce();
     Real reaction = 0;
 
-    for (UInt n = 0 ; n < edge_nodes.getSize() ; n++) {
+    for (UInt n = 0 ; n < edge_nodes.size() ; n++) {
       reaction -= residual(edge_nodes(n), 0);
     }
 

@@ -52,10 +52,10 @@ void DOFSynchronizer::gather(const Array<T> & to_gather, Array<T> & gathered) {
 
   AKANTU_DEBUG_ASSERT(this->rank == UInt(this->root),
                       "This function cannot be called on a slave processor");
-  AKANTU_DEBUG_ASSERT(to_gather.getSize() ==
+  AKANTU_DEBUG_ASSERT(to_gather.size() ==
                           this->dof_manager.getLocalSystemSize(),
                       "The array to gather does not have the correct size");
-  AKANTU_DEBUG_ASSERT(gathered.getSize() == this->dof_manager.getSystemSize(),
+  AKANTU_DEBUG_ASSERT(gathered.size() == this->dof_manager.getSystemSize(),
                       "The gathered array does not have the correct size");
 
   if (this->nb_proc == 1) {
@@ -76,17 +76,17 @@ void DOFSynchronizer::gather(const Array<T> & to_gather, Array<T> & gathered) {
                         "Could not find the receive list for dofs of proc "
                             << p);
     const Array<UInt> & receive_dofs = receive_it->second;
-    if (receive_dofs.getSize() == 0)
+    if (receive_dofs.size() == 0)
       continue;
 
     CommunicationBuffer & buffer = buffers[p];
 
-    buffer.resize(receive_dofs.getSize() * to_gather.getNbComponent() *
+    buffer.resize(receive_dofs.size() * to_gather.getNbComponent() *
                   sizeof(T));
 
     AKANTU_DEBUG_INFO(
         "Preparing to receive data for "
-        << receive_dofs.getSize() << " dofs from processor " << p << " "
+        << receive_dofs.size() << " dofs from processor " << p << " "
         << Tag::genTag(p, this->root, Tag::_GATHER, this->hash_id));
 
     requests.push_back(communicator.asyncReceive(
@@ -138,15 +138,15 @@ template <typename T> void DOFSynchronizer::gather(const Array<T> & to_gather) {
 
   AKANTU_DEBUG_ASSERT(this->rank != UInt(this->root),
                       "This function cannot be called on the root processor");
-  AKANTU_DEBUG_ASSERT(to_gather.getSize() ==
+  AKANTU_DEBUG_ASSERT(to_gather.size() ==
                           this->dof_manager.getLocalSystemSize(),
                       "The array to gather does not have the correct size");
 
-  if (this->root_dofs.getSize() == 0) {
+  if (this->root_dofs.size() == 0) {
     AKANTU_DEBUG_OUT();
     return;
   }
-  CommunicationBuffer buffer(this->root_dofs.getSize() *
+  CommunicationBuffer buffer(this->root_dofs.size() *
                              to_gather.getNbComponent() * sizeof(T));
 
   auto data_it = to_gather.begin(to_gather.getNbComponent());
@@ -156,7 +156,7 @@ template <typename T> void DOFSynchronizer::gather(const Array<T> & to_gather) {
   }
 
   AKANTU_DEBUG_INFO("Gathering data for "
-                    << to_gather.getSize() << " dofs on processor "
+                    << to_gather.size() << " dofs on processor "
                     << this->root << " "
                     << Tag::genTag(this->rank, 0, Tag::_GATHER, this->hash_id));
 
@@ -176,10 +176,10 @@ void DOFSynchronizer::scatter(Array<T> & scattered,
     initScatterGatherCommunicationScheme();
   AKANTU_DEBUG_ASSERT(this->rank == UInt(this->root),
                       "This function cannot be called on a slave processor");
-  AKANTU_DEBUG_ASSERT(scattered.getSize() ==
+  AKANTU_DEBUG_ASSERT(scattered.size() ==
                           this->dof_manager.getLocalSystemSize(),
                       "The scattered array does not have the correct size");
-  AKANTU_DEBUG_ASSERT(to_scatter.getSize() == this->dof_manager.getSystemSize(),
+  AKANTU_DEBUG_ASSERT(to_scatter.size() == this->dof_manager.getSystemSize(),
                       "The array to scatter does not have the correct size");
 
   if (this->nb_proc == 1) {
@@ -214,7 +214,7 @@ void DOFSynchronizer::scatter(Array<T> & scattered,
 
     // prepare the send buffer
     CommunicationBuffer & buffer = buffers[p];
-    buffer.resize(receive_dofs.getSize() * scattered.getNbComponent() *
+    buffer.resize(receive_dofs.size() * scattered.getNbComponent() *
                   sizeof(T));
 
     // pack the data
@@ -246,13 +246,13 @@ template <typename T> void DOFSynchronizer::scatter(Array<T> & scattered) {
     this->initScatterGatherCommunicationScheme();
   AKANTU_DEBUG_ASSERT(this->rank != UInt(this->root),
                       "This function cannot be called on the root processor");
-  AKANTU_DEBUG_ASSERT(scattered.getSize() ==
+  AKANTU_DEBUG_ASSERT(scattered.size() ==
                           this->dof_manager.getLocalSystemSize(),
                       "The scattered array does not have the correct size");
 
   // prepare the data
   auto data_scattered_it = scattered.begin(scattered.getNbComponent());
-  CommunicationBuffer buffer(this->root_dofs.getSize() *
+  CommunicationBuffer buffer(this->root_dofs.size() *
                              scattered.getNbComponent() * sizeof(T));
 
   // receive the data

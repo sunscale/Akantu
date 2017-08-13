@@ -419,7 +419,7 @@ ModelSolver::getDefaultSolverOptions(__attribute__((unused))
 //     solver->factorize();
 //   }
 
-//   // if (rhs.getSize() != 0)
+//   // if (rhs.size() != 0)
 //   //  solver->setRHS(rhs);
 //   // else
 
@@ -430,7 +430,7 @@ ModelSolver::getDefaultSolverOptions(__attribute__((unused))
 //   // solve @f[ J \delta w = r @f]
 //   solver->solve(increment);
 
-//   UInt nb_nodes = displacement-> getSize();
+//   UInt nb_nodes = displacement-> size();
 //   UInt nb_degree_of_freedom = displacement->getNbComponent() * nb_nodes;
 
 //   bool * blocked_dofs_val = blocked_dofs->storage();
@@ -593,7 +593,7 @@ ModelSolver::getDefaultSolverOptions(__attribute__((unused))
 //     } else if (mass) {
 
 //       // else lumped mass
-//       UInt nb_nodes = acceleration->getSize();
+//       UInt nb_nodes = acceleration->size();
 //       UInt nb_degree_of_freedom = acceleration->getNbComponent();
 
 //       Real * mass_val     = mass->storage();
@@ -639,7 +639,7 @@ ModelSolver::getDefaultSolverOptions(__attribute__((unused))
 //   Real * x_val = x.storage();
 //   bool * blocked_dofs_val = blocked_dofs.storage();
 
-//   UInt nb_degrees_of_freedom = x.getSize() * x.getNbComponent();
+//   UInt nb_degrees_of_freedom = x.size() * x.getNbComponent();
 
 //   for (UInt n = 0; n < nb_degrees_of_freedom; ++n) {
 //     if(!(*blocked_dofs_val)) {

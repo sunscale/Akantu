@@ -705,7 +705,7 @@ const Array<Real> & SolidMechanicsModel::getCurrentPosition() {
 //                                         *blocked_dofs,
 //                                         *increment);
 //   } else {
-//     UInt nb_nodes = displacement->getSize();
+//     UInt nb_nodes = displacement->size();
 //     UInt nb_degree_of_freedom = displacement->getNbComponent() * nb_nodes;
 
 //     Real * incr_val = increment->storage();

@@ -94,7 +94,7 @@ public:
   }
 
   inline iterator end  () {
-    return iterator(field.storage() + field.getNbComponent()*field.getSize(),
+    return iterator(field.storage() + field.getNbComponent()*field.size(),
 		    field.getNbComponent(), n, stride);
   }
 
@@ -108,7 +108,7 @@ public:
 
   void setPadding(UInt padding){this->padding = padding;}
 
-  UInt size() { return field.getSize(); }
+  UInt size() { return field.size(); }
 
   iohelper::DataType getDataType() { return iohelper::getDataType<T>(); }
 
@@ -197,7 +197,7 @@ public:
 
   inline iterator end() {
     return iterator(field.storage(), field.getNbComponent(), 
-		    n, stride, filter->storage()+filter->getSize());
+		    n, stride, filter->storage()+filter->size());
   }
 
   bool isHomogeneous() {
@@ -213,7 +213,7 @@ public:
   void setPadding(UInt padding){this->padding = padding;}
 
   UInt size() {
-    return filter->getSize();
+    return filter->size();
   }
 
   iohelper::DataType getDataType() {

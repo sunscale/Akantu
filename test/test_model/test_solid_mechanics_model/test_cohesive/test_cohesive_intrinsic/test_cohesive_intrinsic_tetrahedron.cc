@@ -228,7 +228,7 @@ void updateDisplacement(SolidMechanicsModelCohesive & model,
 
   UInt spatial_dimension = model.getSpatialDimension();
   Mesh & mesh = model.getFEEngine().getMesh();
-  UInt nb_element = elements.getSize();
+  UInt nb_element = elements.size();
   UInt nb_nodes = mesh.getNbNodes();
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 
@@ -345,13 +345,13 @@ void findNodesToCheck(const Mesh & mesh, const Array<UInt> & elements,
   const Array<UInt> & connectivity = mesh.getConnectivity(type);
   const Array<Real> & position = mesh.getNodes();
 
-  UInt nb_nodes = position.getSize();
+  UInt nb_nodes = position.size();
   UInt nb_nodes_per_elem = connectivity.getNbComponent();
 
   Array<bool> checked_nodes(nb_nodes);
   checked_nodes.clear();
 
-  for (UInt el = 0; el < elements.getSize(); ++el) {
+  for (UInt el = 0; el < elements.size(); ++el) {
 
     UInt element = elements(el);
     Vector<UInt> conn_el(connectivity.storage() + nb_nodes_per_elem * element,
@@ -406,7 +406,7 @@ bool checkResidual(const Array<Real> & residual, const Vector<Real> & traction,
   Vector<Real> total_force(spatial_dimension);
   total_force.clear();
 
-  for (UInt n = 0; n < nodes_to_check.getSize(); ++n) {
+  for (UInt n = 0; n < nodes_to_check.size(); ++n) {
     UInt node = nodes_to_check(n);
 
     Vector<Real> res(residual.storage() + node * spatial_dimension,

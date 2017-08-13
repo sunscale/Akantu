@@ -48,7 +48,7 @@ void Math::matrix_vector(UInt m, UInt n, const Array<Real> & A,
                          const Array<Real> & x, Array<Real> & y, Real alpha) {
   AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_ASSERT(A.getSize() == x.getSize(),
+  AKANTU_DEBUG_ASSERT(A.size() == x.size(),
                       "The vector A(" << A.getID() << ") and the vector x("
                                       << x.getID()
                                       << ") must have the same size");
@@ -65,7 +65,7 @@ void Math::matrix_vector(UInt m, UInt n, const Array<Real> & A,
       y.getNbComponent() == n,
       "The vector y(" << y.getID() << ") do not the good number of component.");
 
-  UInt nb_element = A.getSize();
+  UInt nb_element = A.size();
   UInt offset_A = A.getNbComponent();
   UInt offset_x = x.getNbComponent();
 
@@ -91,7 +91,7 @@ void Math::matrix_matrix(UInt m, UInt n, UInt k, const Array<Real> & A,
                          const Array<Real> & B, Array<Real> & C, Real alpha) {
   AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_ASSERT(A.getSize() == B.getSize(),
+  AKANTU_DEBUG_ASSERT(A.size() == B.size(),
                       "The vector A(" << A.getID() << ") and the vector B("
                                       << B.getID()
                                       << ") must have the same size");
@@ -108,7 +108,7 @@ void Math::matrix_matrix(UInt m, UInt n, UInt k, const Array<Real> & A,
       C.getNbComponent() == m * n,
       "The vector C(" << C.getID() << ") do not the good number of component.");
 
-  UInt nb_element = A.getSize();
+  UInt nb_element = A.size();
   UInt offset_A = A.getNbComponent();
   UInt offset_B = B.getNbComponent();
   UInt offset_C = C.getNbComponent();
@@ -135,7 +135,7 @@ void Math::matrix_matrixt(UInt m, UInt n, UInt k, const Array<Real> & A,
                           const Array<Real> & B, Array<Real> & C, Real alpha) {
   AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_ASSERT(A.getSize() == B.getSize(),
+  AKANTU_DEBUG_ASSERT(A.size() == B.size(),
                       "The vector A(" << A.getID() << ") and the vector B("
                                       << B.getID()
                                       << ") must have the same size");
@@ -152,7 +152,7 @@ void Math::matrix_matrixt(UInt m, UInt n, UInt k, const Array<Real> & A,
       C.getNbComponent() == m * n,
       "The vector C(" << C.getID() << ") do not the good number of component.");
 
-  UInt nb_element = A.getSize();
+  UInt nb_element = A.size();
   UInt offset_A = A.getNbComponent();
   UInt offset_B = B.getNbComponent();
   UInt offset_C = C.getNbComponent();
@@ -187,7 +187,7 @@ void Math::compute_tangents(const Array<Real> & normals,
       "Cannot compute the tangents, the storage array for tangents"
           << " does not have the good amount of components.");
 
-  UInt nb_normals = normals.getSize();
+  UInt nb_normals = normals.size();
   tangents.resize(nb_normals);
 
   Real * normal_it = normals.storage();
@@ -222,7 +222,7 @@ void Math::compute_tangents(const Array<Real> & normals,
 
 /* -------------------------------------------------------------------------- */
 Real Math::reduce(Array<Real> & array) {
-  UInt nb_values = array.getSize();
+  UInt nb_values = array.size();
   if (nb_values == 0)
     return 0.;
 

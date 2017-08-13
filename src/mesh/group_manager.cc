@@ -324,7 +324,7 @@ public:
     Array<bool> is_fragment_in_cluster(global_nb_fragment, 1, false);
     std::queue<UInt> fragment_check_list;
 
-    while (total_pairs.getSize() != 0) {
+    while (total_pairs.size() != 0) {
       /// create a new cluster
       ++total_nb_cluster;
       global_clusters.resize(total_nb_cluster);
@@ -341,7 +341,7 @@ public:
         UInt current_fragment = fragment_check_list.front();
 
         UInt * total_pairs_end =
-            total_pairs.storage() + total_pairs.getSize() * 2;
+            total_pairs.storage() + total_pairs.size() * 2;
 
         UInt * fragment_found =
             std::find(total_pairs.storage(), total_pairs_end, current_fragment);
@@ -413,7 +413,7 @@ private:
   inline UInt getNbData(const Array<Element> & elements,
                         const SynchronizationTag & tag) const {
     if (tag == _gst_gm_clusters)
-      return elements.getSize() * sizeof(UInt);
+      return elements.size() * sizeof(UInt);
 
     return 0;
   }
@@ -589,7 +589,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
       Array<bool> & seen_elements_vec =
           seen_elements(uns_el.type, uns_el.ghost_type);
 
-      for (UInt e = 0; e < seen_elements_vec.getSize(); ++e) {
+      for (UInt e = 0; e < seen_elements_vec.size(); ++e) {
         // skip elements that have been already seen
         if (seen_elements_vec(e) == true)
           continue;
@@ -723,11 +723,11 @@ void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
     for (; type_it != type_end; ++type_it) {
       const Array<T> & dataset = datas(*type_it, *gt);
       UInt nb_element = mesh.getNbElement(*type_it, *gt);
-      AKANTU_DEBUG_ASSERT(dataset.getSize() == nb_element,
+      AKANTU_DEBUG_ASSERT(dataset.size() == nb_element,
                           "Not the same number of elements ("
                               << *type_it << ":" << *gt
                               << ") in the map from MeshData ("
-                              << dataset.getSize() << ") " << dataset_name
+                              << dataset.size() << ") " << dataset_name
                               << " and in the mesh (" << nb_element << ")!");
       for (UInt e(0); e < nb_element; ++e) {
         std::stringstream sstr;
@@ -765,7 +765,7 @@ void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
 
       const Array<T> & dataset = datas(*type_it, *gt);
       UInt nb_element = mesh.getNbElement(*type_it, *gt);
-      AKANTU_DEBUG_ASSERT(dataset.getSize() == nb_element,
+      AKANTU_DEBUG_ASSERT(dataset.size() == nb_element,
                           "Not the same number of elements in the map from "
                           "MeshData and in the mesh!");
 
@@ -951,10 +951,10 @@ void GroupManager::synchronizeGroupNames() {
     for (Int p = 1; p < nb_proc; ++p) {
       CommunicationStatus status;
       comm.probe<char>(p, p, status);
-      AKANTU_DEBUG_INFO("Got " << printMemorySize<char>(status.getSize())
+      AKANTU_DEBUG_INFO("Got " << printMemorySize<char>(status.size())
                                << " from proc " << p);
 
-      CommunicationBuffer recv_buffer(status.getSize());
+      CommunicationBuffer recv_buffer(status.size());
       comm.receive(recv_buffer, p, p);
 
       this->checkAndAddGroups(recv_buffer);
@@ -963,19 +963,19 @@ void GroupManager::synchronizeGroupNames() {
     DynamicCommunicationBuffer comm_buffer;
     this->fillBufferWithGroupNames(comm_buffer);
 
-    UInt buffer_size = comm_buffer.getSize();
+    UInt buffer_size = comm_buffer.size();
 
     comm.broadcast(buffer_size, 0);
 
     AKANTU_DEBUG_INFO("Initiating broadcast with "
-                      << printMemorySize<char>(comm_buffer.getSize()));
+                      << printMemorySize<char>(comm_buffer.size()));
     comm.broadcast(comm_buffer, 0);
 
   } else {
     DynamicCommunicationBuffer comm_buffer;
     this->fillBufferWithGroupNames(comm_buffer);
 
-    AKANTU_DEBUG_INFO("Sending " << printMemorySize<char>(comm_buffer.getSize())
+    AKANTU_DEBUG_INFO("Sending " << printMemorySize<char>(comm_buffer.size())
                                  << " to proc " << 0);
     comm.send(comm_buffer, 0, my_rank);
 
@@ -983,7 +983,7 @@ void GroupManager::synchronizeGroupNames() {
     comm.broadcast(buffer_size, 0);
 
     AKANTU_DEBUG_INFO("Receiving broadcast with "
-                      << printMemorySize<char>(comm_buffer.getSize()));
+                      << printMemorySize<char>(comm_buffer.size()));
     CommunicationBuffer recv_buffer(buffer_size);
     comm.broadcast(recv_buffer, 0);
 

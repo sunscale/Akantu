@@ -212,7 +212,7 @@ void Material::assembleInternalForces(GhostType ghost_type) {
         element_filter.lastType(spatial_dimension, ghost_type);
     for (; it != last_type; ++it) {
       Array<UInt> & elem_filter = element_filter(*it, ghost_type);
-      UInt nb_element = elem_filter.getSize();
+      UInt nb_element = elem_filter.size();
       if (nb_element) {
         const Array<Real> & shapes_derivatives =
             fem.getShapesDerivatives(*it, ghost_type);
@@ -302,7 +302,7 @@ void Material::computeAllStresses(GhostType ghost_type) {
        element_filter.elementTypes(spatial_dimension, ghost_type)) {
     Array<UInt> & elem_filter = element_filter(type, ghost_type);
 
-    if (elem_filter.getSize() == 0)
+    if (elem_filter.size() == 0)
       continue;
     Array<Real> & gradu_vect = gradu(type, ghost_type);
 
@@ -460,14 +460,14 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
   AKANTU_DEBUG_IN();
 
   Array<UInt> & elem_filter = element_filter(type, ghost_type);
-  if (elem_filter.getSize()) {
+  if (elem_filter.size()) {
 
     const Array<Real> & shapes_derivatives =
         fem.getShapesDerivatives(type, ghost_type);
 
     Array<Real> & gradu_vect = gradu(type, ghost_type);
 
-    UInt nb_element = elem_filter.getSize();
+    UInt nb_element = elem_filter.size();
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
     UInt nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
 
@@ -557,7 +557,7 @@ void Material::assembleStiffnessMatrixNL(const ElementType & type,
   Array<UInt> & elem_filter = element_filter(type, ghost_type);
   // Array<Real> & gradu_vect = delta_gradu(type, ghost_type);
 
-  UInt nb_element = elem_filter.getSize();
+  UInt nb_element = elem_filter.size();
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   UInt nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
 
@@ -649,7 +649,7 @@ void Material::assembleStiffnessMatrixL2(const ElementType & type,
   Array<UInt> & elem_filter = element_filter(type, ghost_type);
   Array<Real> & gradu_vect = gradu(type, ghost_type);
 
-  UInt nb_element = elem_filter.getSize();
+  UInt nb_element = elem_filter.size();
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   UInt nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
 
@@ -758,10 +758,10 @@ void Material::assembleInternalForces(GhostType ghost_type) {
         fem.getShapesDerivatives(type, ghost_type);
 
     Array<UInt> & elem_filter = element_filter(type, ghost_type);
-    if (elem_filter.getSize() == 0)
+    if (elem_filter.size() == 0)
       continue;
     UInt size_of_shapes_derivatives = shapes_derivatives.getNbComponent();
-    UInt nb_element = elem_filter.getSize();
+    UInt nb_element = elem_filter.size();
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
     UInt nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
 
@@ -874,7 +874,7 @@ void Material::computeAllStressesFromTangentModuli(const ElementType & type,
   Array<UInt> & elem_filter = element_filter(type, ghost_type);
   Array<Real> & gradu_vect = gradu(type, ghost_type);
 
-  UInt nb_element = elem_filter.getSize();
+  UInt nb_element = elem_filter.size();
   if (nb_element) {
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
     UInt nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
@@ -1057,10 +1057,10 @@ void Material::interpolateStressOnFacets(
   for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     Array<UInt> & elem_fil = element_filter(type, ghost_type);
     Array<Real> & by_elem_res = by_elem_result(type, ghost_type);
-    UInt nb_element = elem_fil.getSize();
+    UInt nb_element = elem_fil.size();
     UInt nb_element_full = this->model.getMesh().getNbElement(type, ghost_type);
     UInt nb_interpolation_points_per_elem =
-        by_elem_res.getSize() / nb_element_full;
+        by_elem_res.size() / nb_element_full;
 
     const Array<Element> & facet_to_element =
         mesh_facets.getSubelementToElement(type, ghost_type);
@@ -1342,12 +1342,12 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
           this->model.getMaterialLocalNumbering(type, ghost_type);
 
       if (!material_local_new_numbering.exists(type, ghost_type))
-        material_local_new_numbering.alloc(elem_filter.getSize(), 1, type,
+        material_local_new_numbering.alloc(elem_filter.size(), 1, type,
                                            ghost_type);
       Array<UInt> & mat_renumbering =
           material_local_new_numbering(type, ghost_type);
 
-      UInt nb_element = elem_filter.getSize();
+      UInt nb_element = elem_filter.size();
       element.kind = (*el_begin).kind;
       Array<UInt> elem_filter_tmp;
 
@@ -1366,7 +1366,7 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
         }
       }
 
-      elem_filter.resize(elem_filter_tmp.getSize());
+      elem_filter.resize(elem_filter_tmp.size());
       elem_filter.copy(elem_filter_tmp);
     }
   }
@@ -1439,7 +1439,7 @@ void Material::onElementsRemoved(
     for (; it != end; ++it) {
       ElementType type = *it;
       if (element_filter.exists(type, gt) &&
-          element_filter(type, gt).getSize()) {
+          element_filter(type, gt).size()) {
         Array<UInt> & elem_filter = element_filter(type, gt);
 
         Array<UInt> & mat_indexes = this->model.getMaterialByElement(*it, gt);
@@ -1452,7 +1452,7 @@ void Material::onElementsRemoved(
         mat_loc_num.resize(nb_element);
 
         if (!material_local_new_numbering.exists(type, gt))
-          material_local_new_numbering.alloc(elem_filter.getSize(), 1, type,
+          material_local_new_numbering.alloc(elem_filter.size(), 1, type,
                                              gt);
 
         Array<UInt> & mat_renumbering = material_local_new_numbering(type, gt);
@@ -1463,7 +1463,7 @@ void Material::onElementsRemoved(
         el.type = type;
         el.ghost_type = gt;
         el.kind = Mesh::getKind(type);
-        for (UInt i = 0; i < elem_filter.getSize(); ++i) {
+        for (UInt i = 0; i < elem_filter.size(); ++i) {
           el.element = elem_filter(i);
           if (std::find(el_begin, el_end, el) == el_end) {
             UInt new_el = renumbering(el.element);
@@ -1481,7 +1481,7 @@ void Material::onElementsRemoved(
           }
         }
 
-        elem_filter.resize(elem_filter_tmp.getSize());
+        elem_filter.resize(elem_filter_tmp.size());
         elem_filter.copy(elem_filter_tmp);
       }
     }
@@ -1563,7 +1563,7 @@ void Material::extrapolateInternal(const ID & id, const Element & element,
                                    Matrix<Real> & extrapolated) {
   if (this->isInternal<Real>(id, element.kind)) {
     UInt nb_element =
-        this->element_filter(element.type, element.ghost_type).getSize();
+        this->element_filter(element.type, element.ghost_type).size();
     const ID name = this->getID() + ":" + id;
     UInt nb_quads =
         this->internal_vectors_real[name]->getFEEngine().getNbIntegrationPoints(
@@ -1612,7 +1612,7 @@ void Material::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u,
 
   for (; it != end; ++it) {
     ElementType type = *it;
-    if (!element_filter(type, ghost_type).getSize())
+    if (!element_filter(type, ghost_type).size())
       continue;
     Array<Real>::matrix_iterator eigen_it =
         this->eigengradu(type, ghost_type)

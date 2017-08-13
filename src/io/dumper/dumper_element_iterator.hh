@@ -91,7 +91,7 @@ public:
         const array_type & vect = field(*tit, ghost_type);
         UInt _nb_data_per_elem = getNbDataPerElem(*tit);
         UInt nb_component = vect.getNbComponent();
-        UInt size = (vect.getSize() * nb_component) / _nb_data_per_elem;
+        UInt size = (vect.size() * nb_component) / _nb_data_per_elem;
 
         array_it       = vect.begin_reinterpret(_nb_data_per_elem,size);
         array_it_end   = vect.end_reinterpret  (_nb_data_per_elem,size);

@@ -45,7 +45,7 @@ inline UInt Material::addElement(const ElementType & type, UInt element,
                                  const GhostType & ghost_type) {
   Array<UInt> & el_filter = this->element_filter(type, ghost_type);
   el_filter.push_back(element);
-  return el_filter.getSize() - 1;
+  return el_filter.size() - 1;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -422,7 +422,7 @@ void Material::flattenInternal(const std::string & field_id,
     // total number of elements in the corresponding mesh
     UInt nb_element_dst = mesh.getNbElement(type, ghost_type);
     // number of element in the internal field
-    UInt nb_element_src = filter.getSize();
+    UInt nb_element_src = filter.size();
     // number of quadrature points per elem
     UInt nb_quad_per_elem = fe_engine.getNbIntegrationPoints(type);
     // number of data per quadrature point

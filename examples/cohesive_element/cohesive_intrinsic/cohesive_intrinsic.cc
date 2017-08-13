@@ -135,7 +135,7 @@ static void updateDisplacement(SolidMechanicsModelCohesive & model,
                                Array<UInt> & elements, ElementType type,
                                Real increment) {
   Mesh & mesh = model.getMesh();
-  UInt nb_element = elements.getSize();
+  UInt nb_element = elements.size();
   UInt nb_nodes = mesh.getNbNodes();
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 

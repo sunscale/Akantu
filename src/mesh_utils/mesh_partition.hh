@@ -57,16 +57,14 @@ public:
 
   class EdgeLoadFunctor {
   public:
-    virtual Int operator()(__attribute__((unused)) const Element & el1,
-                           __attribute__((unused))
-                           const Element & el2) const = 0;
+    virtual Int operator()(const Element & el1, const Element & el2) const
+        noexcept = 0;
   };
 
   class ConstEdgeLoadFunctor : public EdgeLoadFunctor {
   public:
-    virtual inline Int operator()(__attribute__((unused)) const Element & el1,
-                                  __attribute__((unused))
-                                  const Element & el2) const {
+    virtual inline Int operator()(const Element &, const Element &) const
+        noexcept {
       return 1;
     }
   };

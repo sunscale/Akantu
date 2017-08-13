@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
       std::cout << "  " << "  " << "  " << "subelement_to_element:" << std::endl;
       subelement_to_element.printself(std::cout, 8);
 
-      for(UInt i(0); i < subelement_to_element.getSize(); ++i) {
+      for(UInt i(0); i < subelement_to_element.size(); ++i) {
         std::cout << "        ";
         for(UInt j(0); j < mesh.getNbFacetsPerElement(*tit); ++j) {
           if(subelement_to_element(i, j) != ElementNull) {
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
       std::cout << "  " << "  " << "  " << "element_to_subelement:" << std::endl;
       element_to_subelement.printself(std::cout, 8);
 
-      for(UInt i(0); i < element_to_subelement.getSize(); ++i) {
+      for(UInt i(0); i < element_to_subelement.size(); ++i) {
         const std::vector<Element> & vec = element_to_subelement(i);
       std::cout << "          " ;
         std::cout << "item " << i << ": [ ";

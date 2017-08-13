@@ -55,7 +55,7 @@ NeighborhoodMaxCriterion::NeighborhoodMaxCriterion(
   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
 
   for (; it != last_type; ++it) {
-    UInt new_size = this->quad_coordinates(*it, ghost_type).getSize();
+    UInt new_size = this->quad_coordinates(*it, ghost_type).size();
     this->is_highest.alloc(new_size, 1, *it, ghost_type, true);
     this->criterion.alloc(new_size, 1, *it, ghost_type, true);
   }
@@ -65,7 +65,7 @@ NeighborhoodMaxCriterion::NeighborhoodMaxCriterion(
   it = mesh.firstType(spatial_dimension, ghost_type);
   last_type = mesh.lastType(spatial_dimension, ghost_type);
   for (; it != last_type; ++it) {
-    UInt new_size = this->quad_coordinates(*it, ghost_type).getSize();
+    UInt new_size = this->quad_coordinates(*it, ghost_type).size();
     this->criterion.alloc(new_size, 1, *it, ghost_type, true);
   }
 

@@ -150,7 +150,7 @@ void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {
     const Array<std::vector<Element> > & facet_to_element =
         mesh_facets.getElementToSubelement(type_facet);
 
-    UInt nb_facet = facet_to_element.getSize();
+    UInt nb_facet = facet_to_element.size();
     UInt nb_quad_per_facet = fe_engine_facet.getNbIntegrationPoints(type_facet);
 
     // iterator to modify sigma_c for all the quadrature points of a facet
@@ -232,7 +232,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
                         "The cohesive element and the corresponding facet do "
                         "not have the same numbers of integration points");
 
-    UInt nb_facet = f_filter.getSize();
+    UInt nb_facet = f_filter.size();
     //  if (nb_facet == 0) continue;
 
     Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
@@ -385,7 +385,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
     }
 
     // update material data for the new elements
-    UInt old_nb_quad_points = sig_c_eff.getSize();
+    UInt old_nb_quad_points = sig_c_eff.size();
     UInt new_nb_quad_points = new_sigmas.size();
     sig_c_eff.resize(old_nb_quad_points + new_nb_quad_points);
     ins_stress.resize(old_nb_quad_points + new_nb_quad_points);
@@ -523,7 +523,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(
   for (; it != last_type; ++it) {
     Array<UInt> & elem_filter = element_filter(*it, ghost_type);
 
-    UInt nb_element = elem_filter.getSize();
+    UInt nb_element = elem_filter.size();
     if (nb_element == 0)
       continue;
 
@@ -593,7 +593,7 @@ void MaterialCohesiveLinear<spatial_dimension>::resetVariables(
   for (; it != last_type; ++it) {
     Array<UInt> & elem_filter = element_filter(*it, ghost_type);
 
-    UInt nb_element = elem_filter.getSize();
+    UInt nb_element = elem_filter.size();
     if (nb_element == 0)
       continue;
 

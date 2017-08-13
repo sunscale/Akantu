@@ -595,7 +595,7 @@ inline std::ostream & operator<<(std::ostream & stream,
           .end(this->spatial_dimension, this->spatial_dimension);              \
                                                                                \
   this->stress(el_type, ghost_type)                                            \
-      .resize(this->gradu(el_type, ghost_type).getSize());                     \
+      .resize(this->gradu(el_type, ghost_type).size());                     \
                                                                                \
   Array<Real>::iterator<Matrix<Real>> stress_it =                              \
       this->stress(el_type, ghost_type)                                        \
@@ -603,7 +603,7 @@ inline std::ostream & operator<<(std::ostream & stream,
                                                                                \
   if (this->isFiniteDeformation()) {                                           \
     this->piola_kirchhoff_2(el_type, ghost_type)                               \
-        .resize(this->gradu(el_type, ghost_type).getSize());                   \
+        .resize(this->gradu(el_type, ghost_type).size());                   \
     stress_it = this->piola_kirchhoff_2(el_type, ghost_type)                   \
                     .begin(this->spatial_dimension, this->spatial_dimension);  \
   }                                                                            \
@@ -629,7 +629,7 @@ inline std::ostream & operator<<(std::ostream & stream,
       this->stress(el_type, ghost_type)                                        \
           .begin(this->spatial_dimension, this->spatial_dimension);            \
                                                                                \
-  tangent_mat.resize(this->gradu(el_type, ghost_type).getSize());              \
+  tangent_mat.resize(this->gradu(el_type, ghost_type).size());              \
                                                                                \
   UInt tangent_size =                                                          \
       this->getTangentStiffnessVoigtSize(this->spatial_dimension);             \

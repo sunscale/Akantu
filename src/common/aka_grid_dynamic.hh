@@ -419,8 +419,8 @@ void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
 
   UInt global_id = 0;
   for (auto & cell_pair : cells) {
-    UInt cur_node = nodes.getSize();
-    UInt cur_elem = connectivity.getSize();
+    UInt cur_node = nodes.size();
+    UInt cur_elem = connectivity.size();
     const CellID & cell_id = cell_pair.first;
 
     for (UInt i = 0; i < dimension; ++i)  pos(i) = center(i) + cell_id.getID(i) * spacing(i);

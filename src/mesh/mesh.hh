@@ -173,7 +173,7 @@ public:
 
   /* ------------------------------------------------------------------------ */
   template <class Event> inline void sendEvent(Event & event) {
-    //    if(event.getList().getSize() != 0)
+    //    if(event.getList().size() != 0)
     EventHandlerManager<MeshEventHandler>::sendEvent<Event>(event);
   }
 
@@ -225,7 +225,7 @@ public:
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(Normals, normals, Real);
 
   /// get the number of nodes
-  AKANTU_GET_MACRO(NbNodes, nodes->getSize(), UInt);
+  AKANTU_GET_MACRO(NbNodes, nodes->size(), UInt);
 
   /// get the Array of global ids of the nodes (only used in parallel)
   AKANTU_GET_MACRO(GlobalNodesIds, *nodes_global_ids, const Array<UInt> &);

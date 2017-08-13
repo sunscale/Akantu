@@ -120,9 +120,7 @@ public:
   }
 
   AKANTU_GET_MACRO(NbNonZero, nb_non_zero, UInt);
-
-  AKANTU_GET_MACRO(Size, size, UInt);
-
+  UInt size() const { return size_;}
   AKANTU_GET_MACRO(MatrixType, matrix_type, const MatrixType &);
 
   virtual UInt getRelease() const = 0;
@@ -140,7 +138,7 @@ protected:
   MatrixType matrix_type;
 
   /// Size of the matrix
-  UInt size;
+  UInt size_;
 
   /// number of processors
   UInt nb_proc;

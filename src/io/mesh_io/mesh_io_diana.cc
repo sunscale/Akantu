@@ -314,7 +314,7 @@ std::string MeshIODiana::readGroups(std::ifstream & infile, Mesh & mesh,
 
     if (reading_nodes_group) {
       NodeGroup & ng = mesh.createNodeGroup(name);
-      for (UInt i = 0; i < list_ids->getSize(); ++i) {
+      for (UInt i = 0; i < list_ids->size(); ++i) {
         UInt node = (*list_ids)(i)-first_node_number;
         ng.add(node, false);
       }
@@ -322,7 +322,7 @@ std::string MeshIODiana::readGroups(std::ifstream & infile, Mesh & mesh,
 
     } else {
       ElementGroup & eg = mesh.createElementGroup(name);
-      for (UInt i = 0; i < list_ids->getSize(); ++i) {
+      for (UInt i = 0; i < list_ids->size(); ++i) {
         Element & elem = diana_element_number_to_elements[(*list_ids)(i)];
         if (elem.type != _not_defined)
           eg.add(elem, false, false);
@@ -442,7 +442,7 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
     connectivity->push_back(local_connect);
 
     elem.type = akantu_type;
-    elem.element = connectivity->getSize() - 1;
+    elem.element = connectivity->size() - 1;
 
     diana_element_number_to_elements[index] = elem;
     akantu_number_to_diana_number[elem] = index;
@@ -500,7 +500,7 @@ std::string MeshIODiana::readMaterialElement(std::ifstream & infile,
 
     // loop over elements
     //    UInt * temp_id_val = temp_id.storage();
-    for (UInt i = 0; i < temp_id.getSize(); ++i)
+    for (UInt i = 0; i < temp_id.size(); ++i)
       for (UInt j = temp_id(i, 0); j <= temp_id(i, 1); ++j) {
         Element & element = diana_element_number_to_elements[j];
         if (element.type == _not_defined)

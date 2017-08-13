@@ -58,7 +58,7 @@ void StressBasedWeightFunction::init() {
   //     UInt nb_quadrature_points =
   // 	this->material.getModel().getFEEngine().getNbQuadraturePoints(*it, gt);
   //     const Array<UInt> & element_filter = this->material.getElementFilter(*it, gt);
-  //     UInt nb_element = element_filter.getSize();
+  //     UInt nb_element = element_filter.size();
 
   //     Array<Real> ones(nb_element*nb_quadrature_points, 1, 1.);
   //     Array<Real> & lc = characteristic_size(*it, gt);

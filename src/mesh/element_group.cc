@@ -97,7 +97,7 @@ void ElementGroup::append(const ElementGroup & other_group) {
     for (; it != last; ++it) {
       ElementType type = *it;
       const Array<UInt> & other_elem_list = other_group.elements(type, ghost_type);
-      UInt nb_other_elem = other_elem_list.getSize();
+      UInt nb_other_elem = other_elem_list.size();
 
       Array<UInt> * elem_list;
       UInt nb_elem = 0;
@@ -105,7 +105,7 @@ void ElementGroup::append(const ElementGroup & other_group) {
       /// create current type if doesn't exists, otherwise get information
       if (elements.exists(type, ghost_type)) {
         elem_list = &elements(type, ghost_type);
-        nb_elem = elem_list->getSize();
+        nb_elem = elem_list->size();
       }
       else {
         elem_list = &(elements.alloc(0, 1, type, ghost_type));
@@ -183,7 +183,7 @@ void ElementGroup::fillFromNodeGroup() {
 
       UInt count = 0;
       for (UInt n = 0; n < conn.size(); ++n) {
-        count += (this->node_group.getNodes().find(conn(n)) != -1 ? 1 : 0);
+        count += (this->node_group.getNodes().find(conn(n)) != UInt(-1) ? 1 : 0);
       }
 
       if(count == nb_nodes_per_element) this->add(elem);

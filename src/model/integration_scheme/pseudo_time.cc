@@ -49,7 +49,7 @@ void PseudoTime::corrector(const SolutionType &, Real) {
   const Array<bool> & blocked_dofs =
       this->dof_manager.getBlockedDOFs(this->dof_id);
 
-  UInt nb_degree_of_freedom = deltas.getSize();
+  UInt nb_degree_of_freedom = deltas.size();
 
   auto u_it = us.begin_reinterpret(nb_degree_of_freedom);
   auto bld_it = blocked_dofs.begin_reinterpret(nb_degree_of_freedom);

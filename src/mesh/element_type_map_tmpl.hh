@@ -302,15 +302,15 @@ inline void ElementTypeMapArray<T, SupportType>::onElementsRemoved(
       SupportType support_type = convertType<ElementType, SupportType>(type);
       if (this->exists(support_type, gt)) {
         const auto & renumbering = new_numbering(type, gt);
-        if (renumbering.getSize() == 0)
+        if (renumbering.size() == 0)
           continue;
 
         auto & vect = this->operator()(support_type, gt);
         auto nb_component = vect.getNbComponent();
-        Array<T> tmp(renumbering.getSize(), nb_component);
+        Array<T> tmp(renumbering.size(), nb_component);
         UInt new_size = 0;
 
-        for (UInt i = 0; i < vect.getSize(); ++i) {
+        for (UInt i = 0; i < vect.size(); ++i) {
           UInt new_i = renumbering(i);
           if (new_i != UInt(-1)) {
             memcpy(tmp.storage() + new_i * nb_component,

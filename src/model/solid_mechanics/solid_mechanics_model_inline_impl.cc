@@ -164,7 +164,7 @@ SolidMechanicsModel::getNbData(const Array<Element> & elements,
 
   switch (tag) {
   case _gst_material_id: {
-    size += elements.getSize() * sizeof(UInt);
+    size += elements.size() * sizeof(UInt);
     break;
   }
   case _gst_smm_mass: {
@@ -339,7 +339,7 @@ SolidMechanicsModel::getNbData(const Array<UInt> & dofs,
   }
 
   AKANTU_DEBUG_OUT();
-  return size * dofs.getSize();
+  return size * dofs.size();
 }
 
 /* -------------------------------------------------------------------------- */

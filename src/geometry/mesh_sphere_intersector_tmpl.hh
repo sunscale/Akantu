@@ -89,7 +89,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
   AKANTU_DEBUG_IN();
 
   Array<Real> & nodes = this->mesh.getNodes();
-  UInt nb_node = nodes.getSize() + this->intersection_points->getSize();
+  UInt nb_node = nodes.size() + this->intersection_points->size();
 
   // Tolerance for proximity checks should be defined by user
   Real global_tolerance = Math::getTolerance();
@@ -127,7 +127,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
           // check if we already compute this intersection and add it as a node for a neighboor element of another type
 	  Array<Real>::vector_iterator existing_node = nodes.begin(dim);
 
-	  for (; n < nodes.getSize() ; ++n) {// loop on the nodes from nb_old_nodes
+	  for (; n < nodes.size() ; ++n) {// loop on the nodes from nb_old_nodes
 	    if (Math::are_vector_equal(dim, new_node.storage(), existing_node[n].storage())) {
 	      is_new = false;
 	      break;

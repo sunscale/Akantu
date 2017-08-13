@@ -36,6 +36,8 @@
 #include "aka_types.hh"
 #include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
+#include <algorithm>
+#include <numeric>
 #include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
@@ -48,12 +50,15 @@ MeshPartition::MeshPartition(const Mesh & mesh, UInt spatial_dimension,
       partitions("partition", id, memory_id),
       ghost_partitions("ghost_partition", id, memory_id),
       ghost_partitions_offset("ghost_partition_offset", id, memory_id),
-      saved_connectivity("saved_connectivity", id, memory_id) {
+      saved_connectivity("saved_connectivity", id, memory_id),
+      lin_to_element(mesh.getNbElement(spatial_dimension)){
   AKANTU_DEBUG_IN();
+
 
   Element elem;
   elem.ghost_type = _not_ghost;
 
+  lin_to_element.resize(0);
   for (auto && type :
        mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
     elem.type = type;
@@ -90,7 +95,7 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
   std::vector<UInt> nb_nodes_per_element_p1;
   std::vector<UInt> magic_number;
   std::vector<UInt> nb_element;
-  std::vector<Array<UInt> *> conn;
+  std::vector<Array<UInt> *> connectivities;
 
   Element elem;
   elem.ghost_type = _not_ghost;
@@ -103,10 +108,10 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
 
     ElementType type_p1 = Mesh::getP1ElementType(type);
 
-    conn.push_back(
+    connectivities.push_back(
         &const_cast<Array<UInt> &>(mesh.getConnectivity(type, _not_ghost)));
     nb_nodes_per_element_p1.push_back(Mesh::getNbNodesPerElement(type_p1));
-    nb_element.push_back(conn.back()->getSize());
+    nb_element.push_back(connectivities.back()->size());
     magic_number.push_back(
         Mesh::getNbNodesPerElement(Mesh::getFacetType(type_p1)));
 
@@ -117,19 +122,16 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
 
   MeshUtils::buildNode2Elements(mesh, node_to_elem);
 
-  UInt nb_total_element = 0;
-  UInt nb_total_node_element = 0;
-  for (UInt t = 0; t < nb_good_types; ++t) {
-    nb_total_element += nb_element[t];
-    nb_total_node_element += nb_element[t] * nb_nodes_per_element_p1[t];
-  }
+  UInt nb_total_element =
+      std::accumulate(nb_element.begin(), nb_element.end(), 0);
 
   dxadj.resize(nb_total_element + 1);
-
   /// initialize the dxadj array
-  for (UInt t = 0, linerized_el = 0; t < nb_good_types; ++t)
-    for (UInt el = 0; el < nb_element[t]; ++el, ++linerized_el)
-      dxadj(linerized_el) = nb_nodes_per_element_p1[t];
+  auto dxadj_it = dxadj.begin();
+  for (auto && t : arange(nb_good_types)) {
+    std::fill_n(dxadj_it, nb_element[t], nb_nodes_per_element_p1[t]);
+    dxadj_it += nb_element[t];
+  }
 
   /// convert the dxadj_val array in a csr one
   for (UInt i = 1; i < nb_total_element; ++i)
@@ -145,31 +147,33 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
   std::unordered_map<UInt, UInt> weight_map;
 
   for (UInt t = 0, linerized_el = 0; t < nb_good_types; ++t) {
-    for (UInt el = 0; el < nb_element[t]; ++el, ++linerized_el) {
+    auto conn_it = connectivities[t]->begin(connectivities[t]->getNbComponent());
+    auto conn_end = connectivities[t]->end(connectivities[t]->getNbComponent());
+    for (; conn_it != conn_end; ++conn_it, ++linerized_el) {
       /// fill the weight map
-      for (UInt n = 0; n < nb_nodes_per_element_p1[t]; ++n) {
-        UInt node = (*conn[t])(el, n);
-        CSR<Element>::iterator k;
-        for (k = node_to_elem.rbegin(node); k != node_to_elem.rend(node); --k) {
-          Element current_element = *k;
-          UInt current_el = lin_to_element.find(current_element);
+      const auto & conn = *conn_it;
+      for (UInt n : arange(nb_nodes_per_element_p1[t])) {
+        auto && node = conn(n);
+        for (auto k = node_to_elem.rbegin(node); k != node_to_elem.rend(node);
+             --k) {
+          auto && current_element = *k;
+          auto && current_el = lin_to_element.find(current_element);
 
           if (current_el <= linerized_el)
             break;
 
-          auto it_w = weight_map.find(current_el);
-
-          if (it_w == weight_map.end()) {
-            weight_map[current_el] = 1;
-          } else {
-            it_w->second++;
-          }
+          auto && weight_map_insert =
+              weight_map.insert(std::make_pair(current_el, 1));
+          if (not weight_map_insert.second)
+            (weight_map_insert.first->second)++;
         }
       }
+
       /// each element with a weight of the size of a facet are adjacent
-      for (auto it_w = weight_map.begin(); it_w != weight_map.end(); ++it_w) {
-        if (it_w->second == magic_number[t]) {
-          UInt adjacent_el = it_w->first;
+      for (auto && weight_pair : weight_map) {
+        UInt magic, adjacent_el;
+        std::tie(adjacent_el, magic) = weight_pair;
+        if (magic == magic_number[t]) {
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
           /// Patch in order to prevent neighboring cohesive elements
@@ -359,7 +363,7 @@ void MeshPartition::fillPartitionInformation(
 void MeshPartition::tweakConnectivity(const Array<UInt> & pairs) {
   AKANTU_DEBUG_IN();
 
-  if (pairs.getSize() == 0)
+  if (pairs.size() == 0)
     return;
 
   Mesh::type_iterator it =
@@ -373,13 +377,13 @@ void MeshPartition::tweakConnectivity(const Array<UInt> & pairs) {
     Array<UInt> & conn =
         const_cast<Array<UInt> &>(mesh.getConnectivity(type, _not_ghost));
     UInt nb_nodes_per_element = conn.getNbComponent();
-    UInt nb_element = conn.getSize();
+    UInt nb_element = conn.size();
 
     Array<UInt> & saved_conn = saved_connectivity.alloc(
         nb_element, nb_nodes_per_element, type, _not_ghost);
     saved_conn.copy(conn);
 
-    for (UInt i = 0; i < pairs.getSize(); ++i) {
+    for (UInt i = 0; i < pairs.size(); ++i) {
       for (UInt el = 0; el < nb_element; ++el) {
         for (UInt n = 0; n < nb_nodes_per_element; ++n) {
           if (pairs(i, 1) == conn(el, n))

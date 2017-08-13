@@ -107,7 +107,7 @@ void MeshUtils::computePBCMap(const Mesh & mesh, const UInt dir,
   }
 
   AKANTU_DEBUG_INFO(
-      "found " << selected_left.getSize() << " and " << selected_right.getSize()
+      "found " << selected_left.size() << " and " << selected_right.size()
                << " nodes at each boundary for direction " << dir);
 
   // match pairs

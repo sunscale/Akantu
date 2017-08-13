@@ -214,7 +214,7 @@ void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
       ElementClass<type>::getNbNodesPerInterpolationElement();
 
   UInt nb_points = integration_points.cols();
-  UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
+  UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
 
   UInt size_of_shapesd = ElementClass<type>::getShapeDerivativesSize();
   AKANTU_DEBUG_ASSERT(shape_derivatives.getNbComponent() == size_of_shapesd,
@@ -231,7 +231,7 @@ void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
       x_el.begin(spatial_dimension, nb_nodes_per_element);
 
   if (filter_elements != empty_filter)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
 
   for (UInt elem = 0; elem < nb_element; ++elem, ++x_it) {
     Matrix<Real> & X = *x_it;
@@ -385,7 +385,7 @@ void ShapeLagrange<kind>::fieldTimesShapes(const Array<Real> & field,
                                            GhostType ghost_type) const {
   AKANTU_DEBUG_IN();
 
-  field_times_shapes.resize(field.getSize());
+  field_times_shapes.resize(field.size());
 
   UInt size_of_shapes = ElementClass<type>::getShapeSize();
   InterpolationType itp_type = ElementClassProperty<type>::interpolation_type;

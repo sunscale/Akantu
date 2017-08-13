@@ -153,7 +153,7 @@ void MasterElementInfoPerProc::synchronizeConnectivities() {
     UInt size = this->nb_nodes_per_element *
                 (this->all_nb_local_element[p] + this->all_nb_ghost_element[p]);
     AKANTU_DEBUG_ASSERT(
-        buffers[p].getSize() == size,
+        buffers[p].size() == size,
         "The connectivity data packed in the buffer are not correct");
   }
 #endif
@@ -217,7 +217,7 @@ void MasterElementInfoPerProc::synchronizePartitions() {
 #ifndef AKANTU_NDEBUG
   for (UInt p = 0; p < this->nb_proc; ++p) {
     AKANTU_DEBUG_ASSERT(
-        buffers[p].getSize() ==
+        buffers[p].size() ==
             (this->all_nb_ghost_element[p] + this->all_nb_element_to_send[p]),
         "Data stored in the buffer are most probably wrong");
   }
@@ -279,7 +279,7 @@ void MasterElementInfoPerProc::synchronizeTags() {
     mesh_data_sizes_buffer << mesh_data.getNbComponent(*names_it, type);
   }
 
-  mesh_data_sizes_buffer_length = mesh_data_sizes_buffer.getSize();
+  mesh_data_sizes_buffer_length = mesh_data_sizes_buffer.size();
   AKANTU_DEBUG_INFO(
       "Broadcasting the size of the information about the mesh data tags: ("
       << mesh_data_sizes_buffer_length << ").");
@@ -308,7 +308,7 @@ void MasterElementInfoPerProc::synchronizeTags() {
     for (UInt p = 0; p < nb_proc; ++p) {
       if (p != root) {
         AKANTU_DEBUG_INFO("Sending "
-                          << buffers[p].getSize()
+                          << buffers[p].size()
                           << " bytes of mesh data to proc " << p << " TAG("
                           << Tag::genTag(this->rank, this->message_count,
                                          Tag::_MESH_DATA)
@@ -361,7 +361,7 @@ void MasterElementInfoPerProc::fillTagBufferTemplated(
   // data.end(data.getNbComponent());
 
   const T * data_it = data.storage();
-  const T * data_end = data.storage() + data.getSize() * data.getNbComponent();
+  const T * data_end = data.storage() + data.size() * data.getNbComponent();
   const UInt * part = partition_num.storage();
 
   /// copying the data, element by element

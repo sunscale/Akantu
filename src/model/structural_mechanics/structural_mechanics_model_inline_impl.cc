@@ -229,7 +229,7 @@ void StructuralMechanicsModel::computeForcesByLocalTractionArray(const Array<Rea
 		      Mesh::getSpatialDimension(type));
 
   // check size of the vector
-  AKANTU_DEBUG_ASSERT(tractions.getSize() == nb_quad*nb_element,
+  AKANTU_DEBUG_ASSERT(tractions.size() == nb_quad*nb_element,
 		      "the size of the vector should be the total number of quadrature points");
 
   // check number of components

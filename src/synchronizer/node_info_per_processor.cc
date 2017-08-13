@@ -155,8 +155,8 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
       this->synchronizer.getCommunications();
 
   { // send schemes
-    auto it = master_info.begin_reinterpret(2, master_info.getSize() / 2);
-    auto end = master_info.end_reinterpret(2, master_info.getSize() / 2);
+    auto it = master_info.begin_reinterpret(2, master_info.size() / 2);
+    auto end = master_info.end_reinterpret(2, master_info.size() / 2);
 
     std::map<UInt, Array<UInt>> send_array_per_proc;
 
@@ -243,7 +243,7 @@ void MasterNodeInfoPerProc::synchronizeNodes() {
       comm.receive(nodespp, p, Tag::genTag(p, 0, Tag::_NODES));
     } else {
       Array<UInt> & local_ids = this->getNodesGlobalIds();
-      this->nb_nodes_per_proc(p) = local_ids.getSize();
+      this->nb_nodes_per_proc(p) = local_ids.size();
       nodespp.copy(local_ids);
       nodes_to_send = &local_nodes;
     }
@@ -435,7 +435,7 @@ void SlaveNodeInfoPerProc::synchronizeNodes() {
   Array<UInt> & local_ids = this->getNodesGlobalIds();
   Array<Real> & nodes = this->getNodes();
 
-  UInt nb_nodes = local_ids.getSize();
+  UInt nb_nodes = local_ids.size();
   comm.send(nb_nodes, root, Tag::genTag(this->rank, 0, Tag::_NB_NODES));
   comm.send(local_ids, root, Tag::genTag(this->rank, 0, Tag::_NODES));
 
@@ -467,12 +467,12 @@ void SlaveNodeInfoPerProc::synchronizeTypes() {
   CommunicationStatus status;
   comm.probe<UInt>(root, Tag::genTag(root, 1, Tag::_NODES_TYPE), status);
 
-  Array<UInt> nodes_master_info(status.getSize());
+  Array<UInt> nodes_master_info(status.size());
 
   comm.receive(nodes_master_info, root,
                Tag::genTag(root, 1, Tag::_NODES_TYPE));
 
-  nodes_master_info.resize(nodes_master_info.getSize() - 1);
+  nodes_master_info.resize(nodes_master_info.size() - 1);
 
   this->fillCommunicationScheme(nodes_master_info);
 }
@@ -489,7 +489,7 @@ void SlaveNodeInfoPerProc::synchronizeGroups() {
   comm.probe<char>(root, Tag::genTag(root, this->rank, Tag::_NODE_GROUP),
                    status);
 
-  CommunicationBuffer buffer(status.getSize());
+  CommunicationBuffer buffer(status.size());
   comm.receive(buffer, root, Tag::genTag(root, this->rank, Tag::_NODE_GROUP));
 
   this->fillNodeGroupsFromBuffer(buffer);

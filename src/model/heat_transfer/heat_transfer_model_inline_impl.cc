@@ -139,7 +139,7 @@ inline UInt HeatTransferModel::getNbDataForElements(const Array<Element> & eleme
   }
 
 #ifndef AKANTU_NDEBUG
-  size += elements.getSize() * spatial_dimension * sizeof(Real); /// position of the barycenter of the element (only for check)
+  size += elements.size() * spatial_dimension * sizeof(Real); /// position of the barycenter of the element (only for check)
   //  size += spatial_dimension * nb_nodes_per_element * sizeof(Real); /// position of the nodes of the element
 #endif
 
@@ -279,7 +279,7 @@ inline void HeatTransferModel::unpackElementData(CommunicationBuffer & buffer,
     //     	       << temperatures_str.str() << std::endl
     //     	       << std::scientific << std::setprecision(20)
     //     	       << " distant temperatures " << temp_nodes
-    //     	       << "temperature gradient size " << temperature_gradient(element.type, ghost_type).getSize()
+    //     	       << "temperature gradient size " << temperature_gradient(element.type, ghost_type).size()
     //     	       << " number of ghost elements " << getFEEngine().getMesh().getNbElement(element.type,_ghost)
     //     	       << std::scientific << std::setprecision(20)
     //     	       << " shaped " << shaped
@@ -439,7 +439,7 @@ void HeatTransferModel::solve(Array<Real> &increment, Real block_val,
     solver->factorize();
   }
 
-  // if (rhs.getSize() != 0)
+  // if (rhs.size() != 0)
   //  solver->setRHS(rhs);
   // else
 
@@ -450,7 +450,7 @@ void HeatTransferModel::solve(Array<Real> &increment, Real block_val,
   // solve @f[ J \delta w = r @f]
   solver->solve(increment);
 
-  UInt nb_nodes = temperature->getSize();
+  UInt nb_nodes = temperature->size();
   UInt nb_degree_of_freedom = temperature->getNbComponent() * nb_nodes;
 
   bool * blocked_dofs_val = blocked_dofs->storage();

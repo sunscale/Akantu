@@ -52,14 +52,14 @@ ShapeFunctions::initElementalFieldInterpolationFromIntegrationPoints(
   if (element_filter == empty_filter)
     nb_element_filter = nb_element;
   else
-    nb_element_filter = element_filter.getSize();
+    nb_element_filter = element_filter.size();
 
   UInt nb_quad_per_element =
       GaussIntegrationElement<type>::getNbQuadraturePoints();
   UInt nb_interpolation_points_per_elem =
-      interpolation_points_coordinates.getSize() / nb_element;
+      interpolation_points_coordinates.size() / nb_element;
 
-  AKANTU_DEBUG_ASSERT(interpolation_points_coordinates.getSize() % nb_element ==
+  AKANTU_DEBUG_ASSERT(interpolation_points_coordinates.size() % nb_element ==
                           0,
                       "Number of interpolation points should be a multiple of "
                       "total number of elements");

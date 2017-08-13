@@ -69,8 +69,8 @@ int main(int argc, char *argv[]) {
   for(; it != end; ++it) {
     for (UInt i = 0; i < nb_surf; ++i) {
       
-      UInt expected_insertion = mesh.getElementGroup(surfaces_name[i]).getElements(mesh.getFacetType(*it)).getSize();
-      UInt inserted_elements = model.getMaterial(surfaces_name[i]).getElementFilter()(*it).getSize();
+      UInt expected_insertion = mesh.getElementGroup(surfaces_name[i]).getElements(mesh.getFacetType(*it)).size();
+      UInt inserted_elements = model.getMaterial(surfaces_name[i]).getElementFilter()(*it).size();
       AKANTU_DEBUG_ASSERT((expected_insertion == inserted_elements),
 			  std::endl << "!!! Mismatch in insertion of surface named " 
 			  << surfaces_name[i] 

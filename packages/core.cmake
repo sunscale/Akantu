@@ -78,6 +78,7 @@ package_declare_sources(core
   common/aka_warning.hh
   common/aka_warning_restore.hh
   common/aka_iterators.hh
+  common/aka_static_if.hh
 
   fe_engine/element_class.cc
   fe_engine/element_class.hh

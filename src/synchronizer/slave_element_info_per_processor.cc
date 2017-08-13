@@ -149,7 +149,7 @@ void SlaveElementInfoPerProc::synchronizeTags() {
     comm.probe<char>(root,
                      Tag::genTag(root, this->message_count, Tag::_MESH_DATA),
                      mesh_data_comm_status);
-    UInt mesh_data_buffer_size(mesh_data_comm_status.getSize());
+    UInt mesh_data_buffer_size(mesh_data_comm_status.size());
     AKANTU_DEBUG_INFO("Receiving "
                       << mesh_data_buffer_size << " bytes of mesh data TAG("
                       << Tag::genTag(root, this->message_count, Tag::_MESH_DATA)
@@ -184,7 +184,7 @@ void SlaveElementInfoPerProc::synchronizeGroups() {
   comm.probe<char>(root, Tag::genTag(root, my_rank, Tag::_ELEMENT_GROUP),
                    status);
 
-  CommunicationBuffer buffer(status.getSize());
+  CommunicationBuffer buffer(status.size());
   comm.receive(buffer, root, Tag::genTag(root, my_rank, Tag::_ELEMENT_GROUP));
 
   this->fillElementGroupsFromBuffer(buffer);

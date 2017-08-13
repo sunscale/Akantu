@@ -168,7 +168,7 @@ void DOFSynchronizer::initScatterGatherCommunicationScheme() {
 
   if (this->rank == UInt(this->root)) {
     Array<UInt> nb_dof_per_proc(this->nb_proc);
-    communicator.gather(dofs_to_send.getSize(), nb_dof_per_proc);
+    communicator.gather(dofs_to_send.size(), nb_dof_per_proc);
 
     std::vector<CommunicationRequest> requests;
     for (UInt p = 0; p < nb_proc; ++p) {
@@ -186,12 +186,12 @@ void DOFSynchronizer::initScatterGatherCommunicationScheme() {
     communicator.waitAll(requests);
     communicator.freeCommunicationRequest(requests);
   } else {
-    communicator.gather(dofs_to_send.getSize(), this->root);
+    communicator.gather(dofs_to_send.size(), this->root);
     AKANTU_DEBUG(dblDebug, "I have " << nb_dofs << " dofs ("
-                                     << dofs_to_send.getSize()
+                                     << dofs_to_send.size()
                                      << " to send to master proc");
 
-    if (dofs_to_send.getSize() != 0)
+    if (dofs_to_send.size() != 0)
       communicator.send(dofs_to_send, this->root,
                         Tag::genTag(this->rank, 0, Tag::_GATHER_INITIALIZATION,
                                     this->hash_id));
@@ -226,7 +226,7 @@ void DOFSynchronizer::onNodesAdded(const Array<UInt> & nodes_list) {
       auto proc = sit->first;
       const auto & scheme = sit->second;
       for (auto node : nodes_list) {
-        if (scheme.find(node) == -1)
+        if (scheme.find(node) == UInt(-1))
           continue;
         relevant_nodes.insert(node);
         nodes_per_proc[*sr_it][proc].push_back(node);

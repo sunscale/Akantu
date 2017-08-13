@@ -38,6 +38,7 @@
 #include "terms_to_assemble.hh"
 #include "time_step_solver_default.hh"
 /* -------------------------------------------------------------------------- */
+#include <algorithm>
 #include <memory>
 #include <numeric>
 #include <unordered_map>
@@ -143,9 +144,9 @@ void DOFManagerDefault::assembleToGlobalArray(
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
 
   UInt nb_degree_of_freedoms =
-      array_to_assemble.getSize() * array_to_assemble.getNbComponent();
+      array_to_assemble.size() * array_to_assemble.getNbComponent();
 
-  AKANTU_DEBUG_ASSERT(equation_number.getSize() == nb_degree_of_freedoms,
+  AKANTU_DEBUG_ASSERT(equation_number.size() == nb_degree_of_freedoms,
                       "The array to assemble does not have a correct size."
                           << " (" << array_to_assemble.getID() << ")");
 
@@ -186,7 +187,7 @@ public:
   virtual UInt getNbData(const Array<UInt> & nodes,
                          const SynchronizationTag & tag) const {
     if (tag == _gst_size) {
-      return nodes.getSize() * sizeof(size_type);
+      return nodes.size() * sizeof(size_type);
     }
 
     if (tag == _gst_update) {
@@ -422,7 +423,7 @@ void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
 
   const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
 
-  UInt nb_degree_of_freedoms = equation_number.getSize();
+  UInt nb_degree_of_freedoms = equation_number.size();
   local_array.resize(nb_degree_of_freedoms / local_array.getNbComponent());
 
   auto loc_it = local_array.begin_reinterpret(nb_degree_of_freedoms);
@@ -548,21 +549,21 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 
   UInt * filter_it = nullptr;
   if (filter_elements != empty_filter) {
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
     filter_it = filter_elements.storage();
   } else {
     if (dof_data.group_support != "__mesh__") {
       const Array<UInt> & group_elements =
           this->mesh->getElementGroup(dof_data.group_support)
               .getElements(type, ghost_type);
-      nb_element = group_elements.getSize();
+      nb_element = group_elements.size();
       filter_it = group_elements.storage();
     } else {
       nb_element = this->mesh->getNbElement(type, ghost_type);
     }
   }
 
-  AKANTU_DEBUG_ASSERT(elementary_mat.getSize() == nb_element,
+  AKANTU_DEBUG_ASSERT(elementary_mat.size() == nb_element,
                       "The vector elementary_mat("
                           << elementary_mat.getID()
                           << ") has not the good size.");
@@ -602,13 +603,13 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     if (A.getMatrixType() == _symmetric)
       if (elemental_matrix_type == _symmetric)
         this->addSymmetricElementalMatrixToSymmetric(
-            A, *el_mat_it, element_eq_nb, A.getSize());
+            A, *el_mat_it, element_eq_nb, A.size());
       else
         this->addUnsymmetricElementalMatrixToSymmetric(
-            A, *el_mat_it, element_eq_nb, A.getSize());
+            A, *el_mat_it, element_eq_nb, A.size());
     else
       this->addElementalMatrixToUnsymmetric(A, *el_mat_it, element_eq_nb,
-                                            A.getSize());
+                                            A.size());
   }
 
   AKANTU_DEBUG_OUT();
@@ -657,7 +658,7 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
 
   SparseMatrixAIJ & A = this->getMatrix(matrix_id);
 
-  UInt size = A.getSize();
+  UInt size = A.size();
 
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
@@ -665,14 +666,14 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
   auto cbegin = connectivity.begin(nb_nodes_per_element);
   auto cit = cbegin;
 
-  UInt nb_elements = connectivity.getSize();
+  UInt nb_elements = connectivity.size();
   UInt * ge_it = nullptr;
   if (dof_data.group_support != "__mesh__") {
     const Array<UInt> & group_elements =
         this->mesh->getElementGroup(dof_data.group_support)
             .getElements(type, ghost_type);
     ge_it = group_elements.storage();
-    nb_elements = group_elements.getSize();
+    nb_elements = group_elements.size();
   }
 
   UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom_per_node;
@@ -718,16 +719,11 @@ void DOFManagerDefault::applyBoundary(const ID & matrix_id) {
   SparseMatrixAIJ & J = this->getMatrix(matrix_id);
 
   if (this->jacobian_release == J.getValueRelease()) {
-    Array<bool>::const_scalar_iterator it = global_blocked_dofs.begin();
-    Array<bool>::const_scalar_iterator end = global_blocked_dofs.end();
+    auto are_equal =
+        std::equal(global_blocked_dofs.begin(), global_blocked_dofs.end(),
+                   previous_global_blocked_dofs.begin());
 
-    Array<bool>::const_scalar_iterator pit =
-        previous_global_blocked_dofs.begin();
-
-    for (; it != end && *it == *pit; ++it, ++pit)
-      ;
-
-    if (it != end)
+    if (are_equal)
       J.applyBoundary();
 
     previous_global_blocked_dofs.copy(global_blocked_dofs);
@@ -773,7 +769,7 @@ void DOFManagerDefault::setGlobalSolution(const Array<Real> & solution) {
       this->synchronizer->scatter(this->global_solution);
     }
   } else {
-    AKANTU_DEBUG_ASSERT(solution.getSize() == this->global_solution.getSize(),
+    AKANTU_DEBUG_ASSERT(solution.size() == this->global_solution.size(),
                         "Sequential call to this function needs the solution "
                         "to be the same size as the global_solution");
     this->global_solution.copy(solution);
@@ -829,7 +825,7 @@ void DOFManagerDefault::updateDOFsData(DOFDataDefault & dof_data,
     lumped_matrix.second->resize(this->local_system_size);
 
   dof_data.local_equation_number.reserve(
-      dof_data.local_equation_number.getSize() + nb_new_local_dofs);
+      dof_data.local_equation_number.size() + nb_new_local_dofs);
 
   // determine the first local/global dof id to use
   Array<UInt> nb_dofs_per_proc(psize);
@@ -841,7 +837,7 @@ void DOFManagerDefault::updateDOFsData(DOFDataDefault & dof_data,
   UInt first_dof_id = this->local_system_size - nb_new_local_dofs;
 
   if (support_type == _dst_nodal) {
-    dof_data.associated_nodes.reserve(dof_data.associated_nodes.getSize() +
+    dof_data.associated_nodes.reserve(dof_data.associated_nodes.size() +
                                       nb_new_local_dofs);
   }
 

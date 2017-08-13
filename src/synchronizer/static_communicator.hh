@@ -109,7 +109,7 @@ public:
   template <typename T>
   inline void receive(Array<T> & values, Int sender, Int tag) const {
     return this->receive(values.storage(),
-                         values.getSize() * values.getNbComponent(), sender,
+                         values.size() * values.getNbComponent(), sender,
                          tag);
   }
   template <typename T>
@@ -123,7 +123,7 @@ public:
   template <bool is_static>
   inline void receive(CommunicationBufferTemplated<is_static> & values,
                       Int sender, Int tag) const {
-    return this->receive(values.storage(), values.getSize(), sender, tag);
+    return this->receive(values.storage(), values.size(), sender, tag);
   }
   template <typename T>
   inline void receive(T & values, Int sender, Int tag) const {
@@ -133,7 +133,7 @@ public:
   template <typename T>
   inline void send(Array<T> & values, Int receiver, Int tag) const {
     return this->send(values.storage(),
-                      values.getSize() * values.getNbComponent(), receiver,
+                      values.size() * values.getNbComponent(), receiver,
                       tag);
   }
   template <typename T>
@@ -147,7 +147,7 @@ public:
   template <bool is_static>
   inline void send(CommunicationBufferTemplated<is_static> & values,
                    Int receiver, Int tag) const {
-    return this->send(values.storage(), values.getSize(), receiver, tag);
+    return this->send(values.storage(), values.size(), receiver, tag);
   }
   template <typename T>
   inline void send(T & values, Int receiver, Int tag) const {
@@ -159,7 +159,7 @@ public:
   inline CommunicationRequest asyncSend(Array<T> & values, Int receiver,
                                         Int tag) const {
     return this->asyncSend(values.storage(),
-                           values.getSize() * values.getNbComponent(), receiver,
+                           values.size() * values.getNbComponent(), receiver,
                            tag);
   }
   template <typename T>
@@ -182,7 +182,7 @@ public:
   inline CommunicationRequest
   asyncSend(CommunicationBufferTemplated<is_static> & values, Int receiver,
             Int tag) const {
-    return this->asyncSend(values.storage(), values.getSize(), receiver, tag);
+    return this->asyncSend(values.storage(), values.size(), receiver, tag);
   }
   template <typename T>
   inline CommunicationRequest asyncSend(T & values, Int receiver,
@@ -195,7 +195,7 @@ public:
   inline CommunicationRequest asyncReceive(Array<T> & values, Int sender,
                                            Int tag) const {
     return this->asyncReceive(values.storage(),
-                              values.getSize() * values.getNbComponent(),
+                              values.size() * values.getNbComponent(),
                               sender, tag);
   }
   template <typename T>
@@ -214,7 +214,7 @@ public:
   inline CommunicationRequest
   asyncReceive(CommunicationBufferTemplated<is_static> & values, Int sender,
                Int tag) const {
-    return this->asyncReceive(values.storage(), values.getSize(), sender, tag);
+    return this->asyncReceive(values.storage(), values.size(), sender, tag);
   }
 
   /* ------------------------------------------------------------------------ */
@@ -228,7 +228,7 @@ public:
   inline void allReduce(Array<T> & values,
                         const SynchronizerOperation & op) const {
     this->allReduce(values.storage(),
-                    values.getSize() * values.getNbComponent(), op);
+                    values.size() * values.getNbComponent(), op);
   }
   template <typename T>
   inline void allReduce(Vector<T> & values,
@@ -248,7 +248,7 @@ public:
   /* ------------------------------------------------------------------------ */
   template <typename T> inline void allGather(Array<T> & values) const {
     AKANTU_DEBUG_ASSERT(UInt(this->real_static_communicator->getNbProc()) ==
-                            values.getSize(),
+                            values.size(),
                         "The array size is not correct");
     this->allGather(values.storage(), values.getNbComponent());
   }
@@ -277,7 +277,7 @@ public:
   template <typename T>
   inline void reduce(Array<T> & values, const SynchronizerOperation & op,
                      int root = 0) const {
-    this->reduce(values.storage(), values.getSize() * values.getNbComponent(),
+    this->reduce(values.storage(), values.size() * values.getNbComponent(),
                  op, root);
   }
 
@@ -292,10 +292,10 @@ public:
   /* ------------------------------------------------------------------------ */
   template <typename T>
   inline void gather(Vector<T> & values, Array<T> & gathered) const {
-    AKANTU_DEBUG_ASSERT(values.getSize() == gathered.getNbComponent(),
+    AKANTU_DEBUG_ASSERT(values.size() == gathered.getNbComponent(),
                         "The array size is not correct");
     gathered.resize(this->real_static_communicator->getNbProc());
-    this->gather(values.data(), values.getSize(), gathered.storage(),
+    this->gather(values.data(), values.size(), gathered.storage(),
                  gathered.getNbComponent());
   }
 
@@ -314,12 +314,12 @@ public:
   template <typename T>
   inline void broadcast(Array<T> & values, int root = 0) const {
     this->broadcast(values.storage(),
-                    values.getSize() * values.getNbComponent(), root);
+                    values.size() * values.getNbComponent(), root);
   }
   template <bool is_static>
   inline void broadcast(CommunicationBufferTemplated<is_static> & values,
                         int root = 0) const {
-    this->broadcast(values.storage(), values.getSize(), root);
+    this->broadcast(values.storage(), values.size(), root);
   }
   template <typename T> inline void broadcast(T & values, int root = 0) const {
     this->broadcast(&values, 1, root);

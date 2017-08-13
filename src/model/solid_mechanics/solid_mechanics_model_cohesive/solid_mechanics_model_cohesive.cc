@@ -308,7 +308,7 @@ void SolidMechanicsModelCohesive::initModel() {
 
     for (; it != last; ++it) {
       const Array<UInt> & connectivity = mesh.getConnectivity(*it, type_ghost);
-      if (connectivity.getSize() != 0) {
+      if (connectivity.size() != 0) {
         type = *it;
         ElementType type_facet = Mesh::getFacetType(type);
         ElementType type_cohesive =

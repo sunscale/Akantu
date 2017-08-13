@@ -110,7 +110,7 @@ public:
 
     const Array<Real> & damage_array = mat.getDamage(el.type, el.ghost_type);
 
-    AKANTU_DEBUG_ASSERT(nb_quad_per_element * el_index < damage_array.getSize(),
+    AKANTU_DEBUG_ASSERT(nb_quad_per_element * el_index < damage_array.size(),
                         "This quadrature point is out of range");
 
     const Real * element_damage =
@@ -237,7 +237,7 @@ void FragmentManager::computeCenterOfMass() {
   Real * mass_storage = mass.storage();
   Real * mass_center_storage = mass_center.storage();
 
-  UInt total_components = mass_center.getSize() * mass_center.getNbComponent();
+  UInt total_components = mass_center.size() * mass_center.getNbComponent();
 
   for (UInt i = 0; i < total_components; ++i)
     mass_center_storage[i] /= mass_storage[i];
@@ -270,7 +270,7 @@ void FragmentManager::computeVelocity() {
   Real * mass_storage = mass.storage();
   Real * velocity_storage = velocity.storage();
 
-  UInt total_components = velocity.getSize() * velocity.getNbComponent();
+  UInt total_components = velocity.size() * velocity.getNbComponent();
 
   for (UInt i = 0; i < total_components; ++i)
     velocity_storage[i] /= mass_storage[i];
@@ -350,7 +350,7 @@ void FragmentManager::computeInertiaMoments() {
 
       Vector<Real> relative_coords(spatial_dimension);
 
-      for (UInt el = 0; el < el_list_array.getSize(); ++el) {
+      for (UInt el = 0; el < el_list_array.size(); ++el) {
         UInt global_el = el_list_array(el);
 
         /// loop over quadrature points
@@ -479,10 +479,10 @@ void FragmentManager::integrateFieldOnFragments(
       const Array<Real> & density_array = mass_density(type);
       Array<Real> & field_array = field(type);
       const Array<UInt> & elements = el_list(type);
-      UInt nb_element = elements.getSize();
+      UInt nb_element = elements.size();
 
       /// generate array to be integrated by filtering fragment's elements
-      Array<Real> integration_array(elements.getSize() * nb_quad_per_element,
+      Array<Real> integration_array(elements.size() * nb_quad_per_element,
                                     nb_component);
 
       Array<Real>::matrix_iterator int_array_it =
@@ -493,11 +493,11 @@ void FragmentManager::integrateFieldOnFragments(
                                             nb_element);
       Array<Real>::matrix_iterator field_array_begin =
           field_array.begin_reinterpret(nb_quad_per_element, nb_component,
-                                        field_array.getSize() /
+                                        field_array.size() /
                                             nb_quad_per_element);
       Array<Real>::const_vector_iterator density_array_begin =
           density_array.begin_reinterpret(nb_quad_per_element,
-                                          density_array.getSize() /
+                                          density_array.size() /
                                               nb_quad_per_element);
 
       for (UInt el = 0; int_array_it != int_array_end; ++int_array_it, ++el) {
@@ -515,7 +515,7 @@ void FragmentManager::integrateFieldOnFragments(
       }
 
       /// integrate the field over the fragment
-      Array<Real> integrated_array(elements.getSize(), nb_component);
+      Array<Real> integrated_array(elements.size(), nb_component);
       model.getFEEngine().integrate(integration_array, integrated_array,
                                     nb_component, type, _not_ghost, elements);
 
@@ -553,7 +553,7 @@ void FragmentManager::computeNbElementsPerFragment() {
     /// loop over elements of the fragment
     for (auto type :
          el_list.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
-      UInt nb_element = el_list(type).getSize();
+      UInt nb_element = el_list(type).size();
 
       nb_elements_per_fragment(*fragment_index_it) += nb_element;
     }
@@ -575,7 +575,7 @@ void FragmentManager::createDumpDataArray(Array<T> & data, std::string name,
                                           bool fragment_index_output) {
   AKANTU_DEBUG_IN();
 
-  if (data.getSize() == 0)
+  if (data.size() == 0)
     return;
 
   auto & mesh_not_const = const_cast<Mesh &>(mesh);

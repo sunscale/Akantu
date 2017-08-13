@@ -70,10 +70,14 @@ MeshPartitionScotch::MeshPartitionScotch(const Mesh & mesh,
       sizeof(Int) == sizeof(SCOTCH_Num),
       "The integer type of Akantu does not match the one from Scotch");
 
-  static_if(scotch_version >= 6)
-    .then([](auto && y) { SCOTCH_randomSeed(y); })
-    .else_([](auto && y) { srandom(y); })
-    (std::forward<UInt>(RandomGenerator<UInt>::seed()));
+  // static_if(scotch_version >= 6)
+  //   .then([](auto && y) {
+  //       SCOTCH_randomSeed(y);
+  //       })
+  //   .else_([](auto && y) {
+  srandom(RandomGenerator<UInt>::seed());//y);
+      // })
+    // (std::forward<UInt>(RandomGenerator<UInt>::seed()));
 
   AKANTU_DEBUG_OUT();
 }
@@ -274,7 +278,7 @@ void MeshPartitionScotch::partitionate(UInt nb_part,
   /// description number and arrays for struct mesh for scotch
   SCOTCH_Num baseval = 0; // base numbering for element and
   // nodes (0 -> C , 1 -> fortran)
-  SCOTCH_Num vertnbr = dxadj.getSize() - 1; // number of vertexes
+  SCOTCH_Num vertnbr = dxadj.size() - 1; // number of vertexes
   SCOTCH_Num * parttab;                     // array of partitions
   SCOTCH_Num edgenbr = dxadj(vertnbr);      // twice  the number  of "edges"
   //(an "edge" bounds two nodes)

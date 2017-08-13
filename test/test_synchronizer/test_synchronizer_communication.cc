@@ -119,13 +119,13 @@ int main(int argc, char * argv[]) {
     Array<UInt>::const_vector_iterator tags_it = tags.begin(1);
     Array<UInt>::const_vector_iterator tags_end = tags.end(1);
     AKANTU_DEBUG_ASSERT(
-        mesh.getNbElement(*it) == tags.getSize(),
+        mesh.getNbElement(*it) == tags.size(),
         "The number of tags does not match the number of elements on rank "
             << prank << ".");
     std::cout << std::dec << " I am rank " << prank
               << " and here's my MeshData dump for types " << *it
               << " (it should contain " << mesh.getNbElement(*it)
-              << " elements and it has " << tags.getSize()
+              << " elements and it has " << tags.size()
               << "!) :" << std::endl;
     std::cout << std::hex;
 

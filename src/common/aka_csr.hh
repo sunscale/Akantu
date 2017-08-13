@@ -124,7 +124,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// returns the number of rows
-  inline UInt getNbRows() const { return rows_offsets.getSize() - 1; };
+  inline UInt getNbRows() const { return rows_offsets.size() - 1; };
 
   /// returns the number of non-empty columns in a given row
   inline UInt getNbCols(UInt row) const {

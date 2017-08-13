@@ -133,7 +133,7 @@ public:
 
     /// skip all types without data
     ElementType type = *tit;
-    for (; tit != end && this->field(*tit, this->ghost_type).getSize() == 0;
+    for (; tit != end && this->field(*tit, this->ghost_type).size() == 0;
          ++tit) {
     }
 
@@ -146,7 +146,7 @@ public:
     const array_type & vect = this->field(type, this->ghost_type);
     UInt nb_data_per_elem = this->getNbDataPerElem(type);
     UInt nb_component = vect.getNbComponent();
-    UInt size = (vect.getSize() * nb_component) / nb_data_per_elem;
+    UInt size = (vect.size() * nb_component) / nb_data_per_elem;
 
     /// define element-wise iterator
     array_iterator it = vect.begin_reinterpret(nb_data_per_elem, size);
@@ -174,7 +174,7 @@ public:
     const array_type & vect = this->field(type, this->ghost_type);
     UInt nb_data = this->getNbDataPerElem(type);
     UInt nb_component = vect.getNbComponent();
-    UInt size = (vect.getSize() * nb_component) / nb_data;
+    UInt size = (vect.size() * nb_component) / nb_data;
     array_iterator it = vect.end_reinterpret(nb_data, size);
 
     iterator rit = iterator(this->field, end, end, it, it, this->ghost_type);

@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
   Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
   Array<Real> val_on_quad(nb_quadrature_points, 2 , "val_on_quad");
 
-  for (UInt i = 0; i < const_val.getSize(); ++i) {
+  for (UInt i = 0; i < const_val.size(); ++i) {
     const_val.storage()[i * 2 + 0] = 1.;
     const_val.storage()[i * 2 + 1] = 2.;
   }

@@ -158,7 +158,7 @@ PyObject * PythonFunctor::convertToPython(const Vector<T> & array) const {
 template <typename T>
 PyObject * PythonFunctor::convertToPython(const Array<T> & array) const {
   int data_typecode = getPythonDataTypeCode<T>();
-  npy_intp dims[2] = {array.getSize(), array.getNbComponent()};
+  npy_intp dims[2] = {array.size(), array.getNbComponent()};
   PyObject * obj =
       PyArray_SimpleNewFromData(2, dims, data_typecode, array.storage());
   PyArrayObject * res = (PyArrayObject *)obj;

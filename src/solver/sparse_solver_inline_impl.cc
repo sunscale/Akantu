@@ -34,7 +34,7 @@
 
 //   switch(tag) {
 //   case _gst_solver_solution: {
-//     size += dofs.getSize() * sizeof(Real);
+//     size += dofs.size() * sizeof(Real);
 //     break;
 //   }
 //   default: {  }

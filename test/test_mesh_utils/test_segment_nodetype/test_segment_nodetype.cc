@@ -71,7 +71,7 @@ int main(int argc, char * argv[]) {
       else
         ++nb_facets_per_nodetype[stn];
     }
-    nb_segments += segment_to_nodetype.getSize();
+    nb_segments += segment_to_nodetype.size();
   }
 
   // checking the solution

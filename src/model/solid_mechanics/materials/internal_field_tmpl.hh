@@ -127,7 +127,7 @@ template <typename T> void InternalField<T>::resize() {
     filter_type_iterator end = this->filterLastType(*gt);
 
     for (; it != end; ++it) {
-      UInt nb_element = this->element_filter(*it, *gt).getSize();
+      UInt nb_element = this->element_filter(*it, *gt).size();
 
       UInt nb_quadrature_points = this->fem->getNbIntegrationPoints(*it, *gt);
       UInt new_size = nb_element * nb_quadrature_points;
@@ -137,7 +137,7 @@ template <typename T> void InternalField<T>::resize() {
 
       if (this->exists(*it, *gt)) {
         vect = &(this->operator()(*it, *gt));
-        old_size = vect->getSize();
+        old_size = vect->size();
         vect->resize(new_size);
       } else {
         vect = &(this->alloc(nb_element * nb_quadrature_points, nb_component,
@@ -168,7 +168,7 @@ template <typename T> void InternalField<T>::reset() {
       vect.clear();
       this->setArrayValues(vect.storage(),
                            vect.storage() +
-                               vect.getSize() * vect.getNbComponent());
+                               vect.size() * vect.getNbComponent());
     }
   }
 }
@@ -185,7 +185,7 @@ void InternalField<T>::internalInitialize(UInt nb_component) {
       filter_type_iterator end = this->filterLastType(*gt);
 
       for (; it != end; ++it) {
-        UInt nb_element = this->element_filter(*it, *gt).getSize();
+        UInt nb_element = this->element_filter(*it, *gt).size();
         UInt nb_quadrature_points = this->fem->getNbIntegrationPoints(*it, *gt);
         if (this->exists(*it, *gt))
           this->operator()(*it, *gt).resize(nb_element * nb_quadrature_points);
@@ -245,28 +245,28 @@ void InternalField<T>::removeIntegrationPoints(
       ElementType type = *it;
       if (this->exists(type, *gt)) {
         Array<T> & vect = this->operator()(type, *gt);
-        if (!vect.getSize())
+        if (!vect.size())
           continue;
         const Array<UInt> & renumbering = new_numbering(type, *gt);
 
         UInt nb_quad_per_elem = fem->getNbIntegrationPoints(type, *gt);
         UInt nb_component = vect.getNbComponent();
 
-        Array<T> tmp(renumbering.getSize() * nb_quad_per_elem, nb_component);
+        Array<T> tmp(renumbering.size() * nb_quad_per_elem, nb_component);
 
         AKANTU_DEBUG_ASSERT(
-            tmp.getSize() == vect.getSize(),
+            tmp.size() == vect.size(),
             "Something strange append some mater was created from nowhere!!");
 
         AKANTU_DEBUG_ASSERT(
-            tmp.getSize() == vect.getSize(),
+            tmp.size() == vect.size(),
             "Something strange append some mater was created or disappeared in "
-                << vect.getID() << "(" << vect.getSize()
-                << "!=" << tmp.getSize() << ") "
+                << vect.getID() << "(" << vect.size()
+                << "!=" << tmp.size() << ") "
                                             "!!");
 
         UInt new_size = 0;
-        for (UInt i = 0; i < renumbering.getSize(); ++i) {
+        for (UInt i = 0; i < renumbering.size(); ++i) {
           UInt new_i = renumbering(i);
           if (new_i != UInt(-1)) {
             memcpy(tmp.storage() + new_i * nb_component * nb_quad_per_elem,

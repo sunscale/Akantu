@@ -162,7 +162,7 @@ int main(int argc, char * argv[]) {
   // std::ofstream edis("fatigue_edis.txt");
 
   // impose openings
-  for (UInt i = 0; i < openings.getSize(); ++i) {
+  for (UInt i = 0; i < openings.size(); ++i) {
 
     // compute numerical traction
     imposeOpening(model, openings(i));

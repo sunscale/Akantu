@@ -243,7 +243,7 @@ inline void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
                  field.getNbComponent(), type, ghost_type);
 
   if (element_filter != empty_filter)
-    nb_element = element_filter.getSize();
+    nb_element = element_filter.size();
 
   Matrix<Real> coefficients(nb_quad_per_element, field.getNbComponent());
 
@@ -258,7 +258,7 @@ inline void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
 
   Array<Real>::matrix_iterator result_begin = result_vec.begin_reinterpret(
       field.getNbComponent(), nb_interpolation_points_per_elem,
-      result_vec.getSize() / nb_interpolation_points_per_elem);
+      result_vec.size() / nb_interpolation_points_per_elem);
 
   Array<Real>::const_matrix_iterator inv_quad_coord_it =
       quad_points_coordinates_inv_matrices.begin(nb_quad_per_element,
@@ -298,7 +298,7 @@ inline void ShapeFunctions::interpolateElementalFieldOnIntegrationPoints(
   UInt nb_element;
   UInt nb_nodes_per_element = ElementClass<type>::getShapeSize();
 
-  UInt nb_points = shapes.getSize() / mesh.getNbElement(type, ghost_type);
+  UInt nb_points = shapes.size() / mesh.getNbElement(type, ghost_type);
   UInt nb_degree_of_freedom = u_el.getNbComponent() / nb_nodes_per_element;
 
   Array<Real>::const_matrix_iterator N_it;
@@ -307,7 +307,7 @@ inline void ShapeFunctions::interpolateElementalFieldOnIntegrationPoints(
 
   Array<Real> * filtered_N = NULL;
   if (filter_elements != empty_filter) {
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
     filtered_N = new Array<Real>(0, shapes.getNbComponent());
     FEEngine::filterElementalData(mesh, shapes, *filtered_N, type, ghost_type,
                                   filter_elements);
@@ -357,7 +357,7 @@ void ShapeFunctions::gradientElementalFieldOnIntegrationPoints(
   UInt nb_element;
   Array<Real> * filtered_B = NULL;
   if (filter_elements != empty_filter) {
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
     filtered_B = new Array<Real>(0, shapes_derivatives.getNbComponent());
     FEEngine::filterElementalData(mesh, shapes_derivatives, *filtered_B, type,
                                   ghost_type, filter_elements);

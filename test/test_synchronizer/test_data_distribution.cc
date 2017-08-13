@@ -64,7 +64,7 @@ int main(int argc, char * argv[]) {
       auto & gidb = mesh_group_before.getDataPointer<UInt>("global_id", type);
       auto & gida = mesh_group_after.getDataPointer<UInt>("global_id", type);
 
-      for (auto && data : zip(arange(gida.getSize()), gida, gidb)) {
+      for (auto && data : zip(arange(gida.size()), gida, gidb)) {
         std::get<1>(data) = std::get<0>(data);
         std::get<2>(data) = std::get<0>(data);
       }

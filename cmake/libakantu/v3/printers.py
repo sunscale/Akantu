@@ -8,6 +8,7 @@
 
 import gdb
 import re
+import sys
 # import libstdcxx.v6.printers as std
 
 __use_gdb_pp__ = True
@@ -22,6 +23,7 @@ class AkantuPrinter(object):
 
     @classmethod
     def supports(cls, typename):
+        print('{0} ~= {1}'.format(typename, cls.regex), file=sys.stderr)
         return cls.regex.search(typename)
 
     @classmethod
@@ -84,7 +86,7 @@ class AkaArrayPrinter(AkantuPrinter):
         self.typename = self.get_basic_type(value)
         self.value = value
         self.ptr = self.value['values']
-        self.size = int(self.value['size'])
+        self.size = int(self.value['size_'])
         self.nb_component = int(self.value['nb_component'])
 
     def display_hint(self):
@@ -105,24 +107,24 @@ class AkaArrayPrinter(AkantuPrinter):
                    ('{0}' if self.nb_component == 1 else '[{0}]').format(
                        ', '.join(_values)))
 
-@register_pretty_printer
-class AkaArrayIteratorPrinter(AkantuPrinter):
-    """Pretty printer for akantu::Array<T>"""
-    regex = re.compile('^akantu::Array<(.*?), (true|false)>::internal_iterator<(.*?), (.*?), (false|true)>$')
-    name = 'akantu::Array::iterator'
+# @register_pretty_printer
+# class AkaArrayIteratorPrinter(AkantuPrinter):
+#     """Pretty printer for akantu::Array<T>"""
+#     regex = re.compile('^akantu::Array<(.*?), (true|false)>::internal_iterator<(.*?), (.*?), (false|true)>$')
+#     name = 'akantu::Array::iterator'
 
-    def __init__(self, value):
-        self.typename = self.get_basic_type(value)
-        self.value = value
-        self.ret = self.value['ret'].dereference()
+#     def __init__(self, value):
+#         self.typename = self.get_basic_type(value)
+#         self.value = value
+#         self.ret = self.value['ret'].dereference()
 
-    def to_string(self):
-        m = self.regex.search(self.typename)
-        return 'Array<{0}>::iterator<{3}>'.format(
-            m.group(1), m.group(1))
+#     def to_string(self):
+#         m = self.regex.search(self.typename)
+#         return 'Array<{0}>::iterator<{3}>'.format(
+#             m.group(1), m.group(1))
 
-    def children(self):
-        yield ('[data]', self.ret)
+#     def children(self):
+#         yield ('[data]', self.ret)
 
 
 # @register_pretty_printer

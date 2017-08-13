@@ -115,7 +115,7 @@ void CohesiveElementInserter::initFacetsCheck() {
       const Array<std::vector<Element>> & element_to_facet =
           mesh_facets.getElementToSubelement(facet_type, facet_gt);
 
-      UInt nb_facet = element_to_facet.getSize();
+      UInt nb_facet = element_to_facet.size();
       f_check.resize(nb_facet);
 
       for (UInt f = 0; f < nb_facet; ++f) {
@@ -344,7 +344,7 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
       mesh, mesh_facets, insertion_facets, new_pairs,
       element_event.getList(), only_double_facets);
 
-  UInt nb_new_nodes = new_pairs.getSize();
+  UInt nb_new_nodes = new_pairs.size();
   node_event.getList().reserve(nb_new_nodes);
   node_event.getOldNodesList().reserve(nb_new_nodes);
   for(UInt n = 0; n < nb_new_nodes; ++n) {
@@ -353,7 +353,7 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
   }
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (mesh.getNodesType().getSize()) {
+  if (mesh.getNodesType().size()) {
 
     /// update nodes type
     updateNodesType(mesh, node_event);
@@ -379,7 +379,7 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
   }
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (mesh.getNodesType().getSize()) {
+  if (mesh.getNodesType().size()) {
     /// update global ids
     this->synchronizeGlobalIDs(node_event);
   }
@@ -412,9 +412,9 @@ void CohesiveElementInserter::updateInsertionFacets() {
       if (check_facets.exists(facet_type, facet_gt)) {
         Array<bool> & f_check = check_facets(facet_type, facet_gt);
 
-        UInt nb_facets = f_check.getSize();
+        UInt nb_facets = f_check.size();
 
-        for (UInt f = 0; f < ins_facets.getSize(); ++f) {
+        for (UInt f = 0; f < ins_facets.size(); ++f) {
           if (ins_facets(f)) {
             ++nb_facets;
             ins_facets(f) = false;

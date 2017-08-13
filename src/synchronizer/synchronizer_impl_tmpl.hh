@@ -237,7 +237,7 @@ void SynchronizerImpl<Entity>::computeBufferSizeImpl(
 #endif
     srecv += data_accessor.getNbData(scheme, tag);
     AKANTU_DEBUG_INFO("I have " << srecv << "(" << printMemorySize<char>(srecv)
-                                << " - " << scheme.getSize()
+                                << " - " << scheme.size()
                                 << " element(s)) data to receive from " << proc
                                 << " for tag " << tag);
     this->communications.setRecvCommunicationSize(tag, proc, srecv);
@@ -254,7 +254,7 @@ void SynchronizerImpl<Entity>::computeBufferSizeImpl(
 #endif
     ssend += data_accessor.getNbData(scheme, tag);
     AKANTU_DEBUG_INFO("I have " << ssend << "(" << printMemorySize<char>(ssend)
-                                << " - " << scheme.getSize()
+                                << " - " << scheme.size()
                                 << " element(s)) data to send to " << proc
                                 << " for tag " << tag);
     this->communications.setSendCommunicationSize(tag, proc, ssend);

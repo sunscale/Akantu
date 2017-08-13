@@ -138,7 +138,7 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<
 
       UInt nb_quad_points =
           fem_boundary.getNbIntegrationPoints(*type_it, ghost_type);
-      UInt nb_elements = element_ids.getSize();
+      UInt nb_elements = element_ids.size();
       UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*type_it);
 
       Array<Real> * dual_before_integ = new Array<Real>(

@@ -145,8 +145,8 @@ int main(int argc, char * argv[]) {
   }
   infile2.close();
 
-  for (UInt i = 0; i < K_verified.getSize(); ++i) {
-    for (UInt j = 0; j < K_test.getSize(); ++j) {
+  for (UInt i = 0; i < K_verified.size(); ++i) {
+    for (UInt j = 0; j < K_test.size(); ++j) {
       if ((K_test(j, 0) == K_verified(i, 0)) &&
           (K_test(j, 1) == K_verified(i, 1))) {
         if (std::abs(K_verified(i, 2)) < tol) {

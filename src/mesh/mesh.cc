@@ -107,7 +107,7 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id)
 //     : Mesh(spatial_dimension, id, memory_id,
 //            StaticCommunicator::getStaticCommunicator()) {
 //   this->nodes = &(this->getArray<Real>(nodes_id));
-//   this->nb_global_nodes = this->nodes->getSize();
+//   this->nb_global_nodes = this->nodes->size();
 //   this->computeBoundingBox();
 // }
 
@@ -118,9 +118,9 @@ Mesh::Mesh(UInt spatial_dimension, std::shared_ptr<Array<Real>> nodes,
            StaticCommunicator::getStaticCommunicator()) {
   this->nodes = nodes;
 
-  this->nb_global_nodes = this->nodes->getSize();
+  this->nb_global_nodes = this->nodes->size();
 
-  this->nodes_to_elements.resize(nodes->getSize());
+  this->nodes_to_elements.resize(nodes->size());
   for (auto & node_set : nodes_to_elements) {
     node_set = std::make_unique<std::set<Element>>();
   }
@@ -172,9 +172,11 @@ void Mesh::read(const std::string & filename, const MeshIOType & mesh_io_type) {
         << filename << " does not seem to be of the good dimension."
         << " No element of dimension " << spatial_dimension << " where read.");
 
+  this->nb_global_nodes = this->nodes->size();
+
   this->computeBoundingBox();
 
-  this->nodes_to_elements.resize(nodes->getSize());
+  this->nodes_to_elements.resize(nodes->size());
   for (auto & node_set : nodes_to_elements) {
     node_set = std::make_unique<std::set<Element>>();
   }
@@ -215,7 +217,7 @@ void Mesh::computeBoundingBox() {
     local_upper_bounds(k) = -std::numeric_limits<double>::max();
   }
 
-  for (UInt i = 0; i < nodes->getSize(); ++i) {
+  for (UInt i = 0; i < nodes->size(); ++i) {
     //    if(!isPureGhostNode(i))
     for (UInt k = 0; k < spatial_dimension; ++k) {
       local_lower_bounds(k) = std::min(local_lower_bounds[k], (*nodes)(i, k));
@@ -265,7 +267,7 @@ void Mesh::getGlobalConnectivity(
     auto & local_conn = connectivities(type, ghost_type);
     auto & g_connectivity = global_connectivity(type, ghost_type);
 
-    UInt nb_nodes = local_conn.getSize() * local_conn.getNbComponent();
+    UInt nb_nodes = local_conn.size() * local_conn.getNbComponent();
 
     if (!nodes_global_ids && is_mesh_facets) {
       std::transform(
@@ -307,7 +309,7 @@ ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & arrays,
     UInt nb_elements = this->getNbElement(type);
     auto & array = arrays(type);
 
-    nb_data_per_elem(type) = array.getNbComponent() * array.getSize();
+    nb_data_per_elem(type) = array.getNbComponent() * array.size();
     nb_data_per_elem(type) /= nb_elements;
   }
 
@@ -396,6 +398,7 @@ void Mesh::distribute(StaticCommunicator & communicator) {
 #endif
 
   this->is_distributed = true;
+
   this->element_synchronizer->buildPrankToElement();
   this->computeBoundingBox();
 }
@@ -412,7 +415,7 @@ void Mesh::getAssociatedElements(const Array<UInt> & node_list,
 void Mesh::fillNodesToElements() {
   Element e;
 
-  UInt nb_nodes = nodes->getSize();
+  UInt nb_nodes = nodes->size();
   for (UInt n = 0; n < nb_nodes; ++n) {
     this->nodes_to_elements[n]->clear();
   }

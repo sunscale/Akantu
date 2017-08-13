@@ -63,7 +63,7 @@ void NewmarkBeta::predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
                             const Array<bool> & blocked_dofs) const {
   AKANTU_DEBUG_IN();
 
-  UInt nb_nodes = u.getSize();
+  UInt nb_nodes = u.size();
   UInt nb_degree_of_freedom = u.getNbComponent() * nb_nodes;
 
   Real * u_val = u.storage();
@@ -181,7 +181,7 @@ void NewmarkBeta::allCorrector(Real delta_t, Array<Real> & u,
                                const Array<Real> & delta) const {
   AKANTU_DEBUG_IN();
 
-  UInt nb_nodes = u.getSize();
+  UInt nb_nodes = u.size();
   UInt nb_degree_of_freedom = u.getNbComponent() * nb_nodes;
 
   Real c = getAccelerationCoefficient(type, delta_t);

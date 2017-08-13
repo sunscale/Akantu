@@ -228,7 +228,7 @@ public:
       return 0;
 
     Vector<T> tmp(data.getNbComponent());
-    return elements.getSize() * CommunicationBuffer::sizeInBuffer(tmp);
+    return elements.size() * CommunicationBuffer::sizeInBuffer(tmp);
   }
 
   /* ------------------------------------------------------------------------ */

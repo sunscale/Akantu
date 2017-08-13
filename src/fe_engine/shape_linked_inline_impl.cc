@@ -211,7 +211,7 @@ void ShapeLinked<kind>::extractNodalToElementField(
   UInt * conn_val = mesh.getConnectivity(type, ghost_type).storage();
 
   if (filter_elements != empty_filter) {
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
   }
 
   elemental_f.resize(nb_element);
@@ -261,7 +261,7 @@ void ShapeLinked<kind>::interpolateOnIntegrationPoints(
   if (!accumulate)
     out_uq.clear();
 
-  UInt nb_points = integration_points(type, ghost_type).cols() * u_el.getSize();
+  UInt nb_points = integration_points(type, ghost_type).cols() * u_el.size();
   Array<Real> uq(nb_points, 1, 0.);
 
   this->template interpolateElementalFieldOnIntegrationPoints<type>(
@@ -295,7 +295,7 @@ void ShapeLinked<kind>::gradientOnIntegrationPoints(
                                    num_degre_of_freedom_to_interpolate,
                                    ghost_type, filter_elements);
 
-  UInt nb_points = integration_points(type, ghost_type).cols() * u_el.getSize();
+  UInt nb_points = integration_points(type, ghost_type).cols() * u_el.size();
   UInt element_dimension = ElementClass<type>::getSpatialDimension();
 
   Array<Real> nablauq(nb_points, element_dimension, 0.);

@@ -34,8 +34,8 @@
 #include <utility>
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
+#include "aka_common.hh"
 
 namespace akantu {
 
@@ -43,7 +43,7 @@ namespace akantu {
 /* Functions ArrayBase                                                       */
 /* -------------------------------------------------------------------------- */
 ArrayBase::ArrayBase(ID id)
-    : id(std::move(id)), allocated_size(0), size(0), nb_component(1),
+    : id(std::move(id)), allocated_size(0), size_(0), nb_component(1),
       size_of_type(0) {}
 
 /* -------------------------------------------------------------------------- */
@@ -55,7 +55,7 @@ void ArrayBase::printself(std::ostream & stream, int indent) const {
   for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
     ;
   stream << space << "ArrayBase [" << std::endl;
-  stream << space << " + size             : " << size << std::endl;
+  stream << space << " + size             : " << size_ << std::endl;
   stream << space << " + nb component     : " << nb_component << std::endl;
   stream << space << " + allocated size   : " << allocated_size << std::endl;
   Real mem_size = (allocated_size * nb_component * size_of_type) / 1024.;
@@ -66,15 +66,16 @@ void ArrayBase::printself(std::ostream & stream, int indent) const {
 }
 
 /* -------------------------------------------------------------------------- */
-template <> Int Array<Real>::find(const Real & elem) const {
+template <> UInt Array<Real>::find(const Real & elem) const {
   AKANTU_DEBUG_IN();
-  UInt i = 0;
+
   Real epsilon = std::numeric_limits<Real>::epsilon();
-  for (; (i < size) && (fabs(values[i] - elem) <= epsilon); ++i)
-    ;
+  auto it = std::find_if(begin(), end(), [&elem, &epsilon](auto && a) {
+    return std::abs(a - elem) <= epsilon;
+  });
 
   AKANTU_DEBUG_OUT();
-  return (i == size) ? -1 : (Int)i;
+  return (it != end()) ? end() - it : UInt(-1);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -120,4 +121,4 @@ Array<char> & Array<char>::operator+=(__attribute__((unused))
   return *this;
 }
 
-} // akantu
+} // namespace akantu

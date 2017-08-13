@@ -129,7 +129,7 @@ void MaterialCohesive::assembleInternalForces(GhostType ghost_type) {
   for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type,
                                                _ek_cohesive)) {
     auto & elem_filter = element_filter(type, ghost_type);
-    UInt nb_element = elem_filter.getSize();
+    UInt nb_element = elem_filter.size();
     if (nb_element == 0)
       continue;
 
@@ -218,7 +218,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
     const Array<Real> & shapes = fem_cohesive->getShapes(type, ghost_type);
     Array<UInt> & elem_filter = element_filter(type, ghost_type);
 
-    UInt nb_element = elem_filter.getSize();
+    UInt nb_element = elem_filter.size();
 
     if (!nb_element)
       continue;
@@ -377,7 +377,7 @@ void MaterialCohesive::computeTraction(GhostType ghost_type) {
                                                  _ek_cohesive)) {
     Array<UInt> & elem_filter = element_filter(type, ghost_type);
 
-    UInt nb_element = elem_filter.getSize();
+    UInt nb_element = elem_filter.size();
     if (nb_element == 0)
       continue;
 
@@ -534,7 +534,7 @@ Real MaterialCohesive::getContactEnergy() {
     auto & el_filter = element_filter(type, _not_ghost);
     UInt nb_quad_per_el =
         fem_cohesive->getNbIntegrationPoints(type, _not_ghost);
-    UInt nb_quad_points = el_filter.getSize() * nb_quad_per_el;
+    UInt nb_quad_points = el_filter.size() * nb_quad_per_el;
     Array<Real> contact_energy(nb_quad_points);
 
     auto contact_traction_it =

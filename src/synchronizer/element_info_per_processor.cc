@@ -80,7 +80,7 @@ void ElementInfoPerProc::fillCommunicationScheme(
   }
 
   for (auto & send_schemes : send_array_per_proc) {
-    if (send_schemes.second.getSize() == 0) continue;
+    if (send_schemes.second.size() == 0) continue;
     auto & scheme = communications.createSendScheme(send_schemes.first);
     scheme.append(send_schemes.second);
   }
@@ -97,7 +97,7 @@ void ElementInfoPerProc::fillCommunicationScheme(
   }
 
   for (auto & recv_schemes : recv_array_per_proc) {
-    if (recv_schemes.second.getSize() == 0) continue;
+    if (recv_schemes.second.size() == 0) continue;
     auto & scheme = communications.createRecvScheme(recv_schemes.first);
     scheme.append(recv_schemes.second);
   }

@@ -96,7 +96,7 @@ void FilteredSynchronizer::setupSynchronizer(
                                 // send
 
     Tag tag = Tag::genTag(this->rank, 0, RECEIVE_LIST_TAG);
-    AKANTU_DEBUG_INFO("I have " << keep_element.getSize() - 1
+    AKANTU_DEBUG_INFO("I have " << keep_element.size() - 1
                                 << " elements to still receive from processor "
                                 << proc << " (communication tag : " << tag
                                 << ")");
@@ -120,16 +120,16 @@ void FilteredSynchronizer::setupSynchronizer(
     CommunicationStatus status;
     communicator.probe<UInt>(proc, tag, status);
 
-    Array<UInt> keep_element(status.getSize());
+    Array<UInt> keep_element(status.size());
 
     AKANTU_DEBUG_INFO("I have "
-                      << keep_element.getSize() - 1
+                      << keep_element.size() - 1
                       << " elements to keep in my send list to processor "
                       << proc << " (communication tag : " << tag << ")");
 
     communicator.receive(keep_element, proc, tag);
 
-    for (UInt i = 0; i < keep_element.getSize() - 1; ++i) {
+    for (UInt i = 0; i < keep_element.size() - 1; ++i) {
       new_scheme.push_back(scheme(keep_element(i)));
     }
   }

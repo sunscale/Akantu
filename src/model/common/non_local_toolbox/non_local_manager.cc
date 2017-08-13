@@ -555,22 +555,22 @@ void NonLocalManager::removeIntegrationPointsFromMap(
 
         Array<Real> & vect = element_map(type, gt);
         UInt nb_quad_per_elem = fee.getNbIntegrationPoints(type, gt);
-        Array<Real> tmp(renumbering.getSize() * nb_quad_per_elem, nb_component);
+        Array<Real> tmp(renumbering.size() * nb_quad_per_elem, nb_component);
 
         AKANTU_DEBUG_ASSERT(
-            tmp.getSize() == vect.getSize(),
+            tmp.size() == vect.size(),
             "Something strange append some mater was created from nowhere!!");
 
         AKANTU_DEBUG_ASSERT(
-            tmp.getSize() == vect.getSize(),
+            tmp.size() == vect.size(),
             "Something strange append some mater was created or disappeared in "
-                << vect.getID() << "(" << vect.getSize()
-                << "!=" << tmp.getSize()
+                << vect.getID() << "(" << vect.size()
+                << "!=" << tmp.size()
                 << ") "
                    "!!");
 
         UInt new_size = 0;
-        for (UInt i = 0; i < renumbering.getSize(); ++i) {
+        for (UInt i = 0; i < renumbering.size(); ++i) {
           UInt new_i = renumbering(i);
           if (new_i != UInt(-1)) {
             memcpy(tmp.storage() + new_i * nb_component * nb_quad_per_elem,

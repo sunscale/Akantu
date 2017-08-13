@@ -183,7 +183,7 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name) {
 // */
 // inline bool Model::isPBCSlaveNode(const UInt node) const {
 //   // if no pbc is defined, is_pbc_slave_node is of size zero
-//   if (is_pbc_slave_node.getSize() == 0)
+//   if (is_pbc_slave_node.size() == 0)
 //     return false;
 //   else
 //     return is_pbc_slave_node(node);

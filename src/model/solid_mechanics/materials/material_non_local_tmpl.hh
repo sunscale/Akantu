@@ -70,7 +70,7 @@ void MaterialNonLocal<dim, LocalParent>::insertIntegrationPointsInNeighborhoods(
        this->element_filter.elementTypes(dim, ghost_type, _ek_regular)) {
     q.type = type;
     const auto & elem_filter = this->element_filter(type, ghost_type);
-    UInt nb_element = elem_filter.getSize();
+    UInt nb_element = elem_filter.size();
 
     if (nb_element) {
       UInt nb_quad =

@@ -32,6 +32,7 @@
 #include "dof_manager_default.hh"
 #include "dof_synchronizer.hh"
 #include "terms_to_assemble.hh"
+#include "aka_iterators.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */
@@ -61,18 +62,14 @@ void SparseMatrixAIJ::applyBoundary(Real block_val) {
   // clang-format off
   const auto & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
 
-  auto irn_it = irn.begin();
-  auto jcn_it = jcn.begin();
-  auto a_it   = a.begin();
-  auto a_end  = a.end();
-
-  for (;a_it != a_end; ++a_it, ++irn_it, ++jcn_it) {
-    UInt ni = this->dof_manager.globalToLocalEquationNumber(*irn_it - 1);
-    UInt nj = this->dof_manager.globalToLocalEquationNumber(*jcn_it - 1);
+  for (auto && ij_a : zip(irn, jcn, a)) {
+    UInt ni = this->dof_manager.globalToLocalEquationNumber(std::get<0>(ij_a) - 1);
+    UInt nj = this->dof_manager.globalToLocalEquationNumber(std::get<1>(ij_a) - 1);
     if (blocked_dofs(ni) || blocked_dofs(nj)) {
-      *a_it = *irn_it != *jcn_it                       ? 0.
-            : this->dof_manager.isLocalOrMasterDOF(ni) ? block_val
-            :                                            0.;
+      std::get<2>(ij_a) =
+          std::get<0>(ij_a) != std::get<1>(ij_a)   ? 0.
+        : this->dof_manager.isLocalOrMasterDOF(ni) ? block_val
+        :                                            0.;
     }
   }
 
@@ -89,7 +86,7 @@ void SparseMatrixAIJ::saveProfile(const std::string & filename) const {
   std::ofstream outfile;
   outfile.open(filename.c_str());
 
-  UInt m = this->size;
+  UInt m = this->size_;
   outfile << "%%MatrixMarket matrix coordinate pattern";
   if (this->matrix_type == _symmetric)
     outfile << " symmetric";
@@ -124,7 +121,7 @@ void SparseMatrixAIJ::saveMatrix(const std::string & filename) const {
   else
     outfile << " general";
   outfile << std::endl;
-  outfile << this->size << " " << this->size << " " << this->nb_non_zero
+  outfile << this->size_ << " " << this->size_ << " " << this->nb_non_zero
           << std::endl;
 
   // write content
@@ -150,8 +147,8 @@ void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
   auto j_it = this->jcn.begin();
   auto a_it = this->a.begin();
   auto a_end = this->a.end();
-  auto x_it = x.begin_reinterpret(x.getSize() * x.getNbComponent());
-  auto y_it = y.begin_reinterpret(x.getSize() * x.getNbComponent());
+  auto x_it = x.begin_reinterpret(x.size() * x.getNbComponent());
+  auto y_it = y.begin_reinterpret(x.size() * x.getNbComponent());
 
   for (; a_it != a_end; ++i_it, ++j_it, ++a_it) {
     Int i = this->dof_manager.globalToLocalEquationNumber(*i_it - 1);
@@ -222,4 +219,4 @@ void SparseMatrixAIJ::clear() {
   this->value_release++;
 }
 
-} // akantu
+} // namespace akantu

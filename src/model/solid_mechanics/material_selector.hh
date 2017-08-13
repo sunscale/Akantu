@@ -80,7 +80,7 @@ public:
           material_index(element.type, element.ghost_type);
       UInt mat = this->fallback_value;
 
-      if (element.element < mat_indexes.getSize())
+      if (element.element < mat_indexes.size())
         mat = mat_indexes(element.element);
 
       debug::setDebugLevel(dbl);

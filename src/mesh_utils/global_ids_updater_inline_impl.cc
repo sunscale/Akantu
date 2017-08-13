@@ -42,7 +42,7 @@ namespace akantu {
 inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
                                         const SynchronizationTag & tag) const {
   UInt size = 0;
-  if (elements.getSize() == 0)
+  if (elements.size() == 0)
     return size;
 
   if (tag == _gst_giu_global_conn)

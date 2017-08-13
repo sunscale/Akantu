@@ -87,9 +87,9 @@ void SolidMechanicsModel::assembleMassLumped() {
 #if !defined(AKANTU_NDEBUG)
   bool has_unconnected_nodes = false;
   auto mass_it =
-      mass->begin_reinterpret(mass->getSize() * mass->getNbComponent());
+      mass->begin_reinterpret(mass->size() * mass->getNbComponent());
   auto mass_end =
-      mass->end_reinterpret(mass->getSize() * mass->getNbComponent());
+      mass->end_reinterpret(mass->size() * mass->getNbComponent());
   for (; mass_it != mass_end; ++mass_it) {
     if (std::abs(*mass_it) < std::numeric_limits<Real>::epsilon() ||
         Math::isnan(*mass_it)) {

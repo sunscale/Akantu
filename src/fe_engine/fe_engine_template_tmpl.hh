@@ -108,7 +108,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if (filter_elements != empty_filter)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
   UInt nb_points =
       shape_functions.getIntegrationPoints(type, ghost_type).cols();
 
@@ -116,7 +116,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
 
   UInt element_dimension = mesh.getSpatialDimension(type);
 
-  AKANTU_DEBUG_ASSERT(u.getSize() == mesh.getNbNodes(),
+  AKANTU_DEBUG_ASSERT(u.size() == mesh.getNbNodes(),
                       "The vector u(" << u.getID()
                                       << ") has not the good size.");
   AKANTU_DEBUG_ASSERT(u.getNbComponent() == nb_degree_of_freedom,
@@ -129,7 +129,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
       "The vector nablauq(" << nablauq.getID()
                             << ") has not the good number of component.");
 
-// AKANTU_DEBUG_ASSERT(nablauq.getSize() == nb_element * nb_points,
+// AKANTU_DEBUG_ASSERT(nablauq.size() == nb_element * nb_points,
 //                  "The vector nablauq(" << nablauq.getID()
 //                  << ") has not the good size.");
 #endif
@@ -205,13 +205,13 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::integrate(
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if (filter_elements != empty_filter)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
 #ifndef AKANTU_NDEBUG
 
   UInt nb_quadrature_points = getNbIntegrationPoints(type);
 
-  AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
-                      "The vector f(" << f.getID() << " size " << f.getSize()
+  AKANTU_DEBUG_ASSERT(f.size() == nb_element * nb_quadrature_points,
+                      "The vector f(" << f.getID() << " size " << f.size()
                                       << ") has not the good size ("
                                       << nb_element << ").");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom,
@@ -276,14 +276,14 @@ Real FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::integrate(
   //                  ghost_type);
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if (filter_elements != empty_filter)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
 
   UInt nb_quadrature_points = getNbIntegrationPoints(type, ghost_type);
 
-  AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
+  AKANTU_DEBUG_ASSERT(f.size() == nb_element * nb_quadrature_points,
                       "The vector f("
                           << f.getID() << ") has not the good size. ("
-                          << f.getSize()
+                          << f.size()
                           << "!=" << nb_quadrature_points * nb_element << ")");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == 1,
                       "The vector f("
@@ -381,7 +381,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if (filter_elements != empty_filter)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
   UInt nb_quadrature_points = getNbIntegrationPoints(type);
 #ifndef AKANTU_NDEBUG
   //   std::stringstream sstr; sstr << ghost_type;
@@ -389,8 +389,8 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
   //                  "The vector " << nablauq.getID() << " is not taged " <<
   //                  ghost_type);
 
-  AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
-                      "The vector f(" << f.getID() << " size " << f.getSize()
+  AKANTU_DEBUG_ASSERT(f.size() == nb_element * nb_quadrature_points,
+                      "The vector f(" << f.getID() << " size " << f.size()
                                       << ") has not the good size ("
                                       << nb_element << ").");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom,
@@ -461,10 +461,10 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
       shape_functions.getIntegrationPoints(type, ghost_type).cols();
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if (filter_elements != empty_filter)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
 #ifndef AKANTU_NDEBUG
 
-  AKANTU_DEBUG_ASSERT(u.getSize() == mesh.getNbNodes(),
+  AKANTU_DEBUG_ASSERT(u.size() == mesh.getNbNodes(),
                       "The vector u(" << u.getID()
                                       << ") has not the good size.");
   AKANTU_DEBUG_ASSERT(u.getNbComponent() == nb_degree_of_freedom,
@@ -505,7 +505,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
 
       if (filter_elements) {
         filter = &((*filter_elements)(type, ghost_type));
-        nb_element = filter->getSize();
+        nb_element = filter->size();
       } else {
         filter = &empty_filter;
         nb_element = mesh.getNbElement(type, ghost_type);
@@ -797,7 +797,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   UInt nb_points = getNbIntegrationPoints(type, ghost_type);
 
-  UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
+  UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
   normal.resize(nb_element * nb_points);
   Array<Real>::matrix_iterator normals_on_quad =
       normal.begin_reinterpret(spatial_dimension, nb_points, nb_element);
@@ -1252,7 +1252,7 @@ inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
   // UInt nb_nodes_per_element  = Mesh::getNbNodesPerElement(type);
   UInt nb_points = getNbIntegrationPoints(type, ghost_type);
 
-  UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
+  UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
   normal.resize(nb_element * nb_points);
   Array<Real>::matrix_iterator normals_on_quad =
       normal.begin_reinterpret(spatial_dimension, nb_points, nb_element);

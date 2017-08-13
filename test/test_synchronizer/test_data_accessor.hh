@@ -78,10 +78,10 @@ inline TestAccessor::TestAccessor(const Mesh & mesh,
 
 inline UInt TestAccessor::getNbData(const Array<Element> & elements,
                                     const SynchronizationTag &) const {
-  if (elements.getSize())
+  if (elements.size())
     // return Mesh::getSpatialDimension(elements(0).type) * sizeof(Real) *
-    // elements.getSize();
-    return mesh.getSpatialDimension() * sizeof(Real) * elements.getSize();
+    // elements.size();
+    return mesh.getSpatialDimension() * sizeof(Real) * elements.size();
   else
     return 0;
 }

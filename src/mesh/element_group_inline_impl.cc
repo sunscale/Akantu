@@ -90,7 +90,7 @@ inline void ElementGroup::addElement(const ElementType & elem_type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt ElementGroup::getNbNodes() const { return node_group.getSize(); }
+inline UInt ElementGroup::getNbNodes() const { return node_group.size(); }
 
 /* -------------------------------------------------------------------------- */
 inline ElementGroup::type_iterator

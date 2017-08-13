@@ -76,7 +76,8 @@ public:
   /// Get the real size allocated in memory
   AKANTU_GET_MACRO(AllocatedSize, allocated_size, UInt);
   /// Get the Size of the Array
-  AKANTU_GET_MACRO(Size, size, UInt);
+  UInt getsize() const __attribute__((deprecated)) { return size_; }
+  UInt size() const { return size_; }
   /// Get the number of components
   AKANTU_GET_MACRO(NbComponent, nb_component, UInt);
   /// Get the name of th array
@@ -98,7 +99,7 @@ protected:
   UInt allocated_size{0};
 
   /// the size used
-  UInt size{0};
+  UInt size_{0};
 
   /// number of components
   UInt nb_component{1};
@@ -121,7 +122,8 @@ public:
   using const_reference = const value_type &;
 
   /// Allocation of a new vector
-  explicit inline Array(UInt size = 0, UInt nb_component = 1, const ID & id = "");
+  explicit inline Array(UInt size = 0, UInt nb_component = 1,
+                        const ID & id = "");
 
   /// Allocation of a new vector with a default value
   Array(UInt size, UInt nb_component, const value_type def_values[],
@@ -296,20 +298,20 @@ public:
 
   /// search elem in the vector, return  the position of the first occurrence or
   /// -1 if not found
-  Int find(const_reference elem) const;
+  UInt find(const_reference elem) const;
 
   /// @see Array::find(const_reference elem) const
-  Int find(T elem[]) const;
+  UInt find(T elem[]) const;
 
   /// @see Array::find(const_reference elem) const
-  template <template <typename> class C> inline Int find(const C<T> & elem);
+  template <template <typename> class C> inline UInt find(const C<T> & elem);
 
   /// set all entries of the array to 0
-  inline void clear() { std::fill_n(values, size * nb_component, T()); }
+  inline void clear() { std::fill_n(values, size_ * nb_component, T()); }
 
   /// set all entries of the array to the value t
   /// @param t value to fill the array with
-  inline void set(T t) { std::fill_n(values, size * nb_component, t); }
+  inline void set(T t) { std::fill_n(values, size_ * nb_component, t); }
 
   /// set all tuples of the array to a given vector or matrix
   /// @param vm Matrix or Vector to fill the array with
