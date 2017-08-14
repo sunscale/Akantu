@@ -65,7 +65,6 @@ int main(int argc, char *argv[])
   Array<Real>::const_vector_iterator mass_end = model.getMass().end(spatial_dimension);
 
   Vector<Real> sum(spatial_dimension, 0.);
-
   for(; mass_it != mass_end; ++mass_it) {
     sum += *mass_it;
   }

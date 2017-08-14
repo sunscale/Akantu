@@ -134,6 +134,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldLumped(
   case _pentahedron_15:
     this->template assembleLumpedDiagonalScaling<type>(field, matrix_id, dof_id,
                                                        dof_manager, ghost_type);
+    break;
   default:
     this->template assembleLumpedRowSum<type>(field, matrix_id, dof_id,
                                               dof_manager, ghost_type);
@@ -258,19 +259,18 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
   }
 
 #undef ASSIGN_WEIGHT_TO_NODES
-
   /// compute @f$ \int \rho dV = \rho V @f$ for each element
-  Array<Real> * int_field =
-      new Array<Real>(field.size(), nb_degree_of_freedom, "inte_rho_x");
+  auto int_field =
+    std::make_unique<Array<Real>>(field.size(), nb_degree_of_freedom, "inte_rho_x");
   integrator.template integrate<type>(field, *int_field, nb_degree_of_freedom,
                                       ghost_type, empty_filter);
 
   /// distribute the mass of the element to the nodes
-  Array<Real> * lumped_per_node = new Array<Real>(
+  auto lumped_per_node = std::make_unique<Array<Real>>(
       nb_element, nb_degree_of_freedom * nb_nodes_per_element, "mass_per_node");
-  Array<Real>::const_vector_iterator int_field_it =
+  auto int_field_it =
       int_field->begin(nb_degree_of_freedom);
-  Array<Real>::matrix_iterator lumped_per_node_it =
+  auto lumped_per_node_it =
       lumped_per_node->begin(nb_degree_of_freedom, nb_nodes_per_element);
 
   for (UInt e = 0; e < nb_element; ++e) {
@@ -282,11 +282,9 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
     ++int_field_it;
     ++lumped_per_node_it;
   }
-  delete int_field;
 
   dof_manager.assembleElementalArrayToLumpedMatrix(dof_id, *lumped_per_node,
                                                    matrix_id, type, ghost_type);
-  delete lumped_per_node;
 
   AKANTU_DEBUG_OUT();
 }
