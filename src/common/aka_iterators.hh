@@ -310,9 +310,10 @@ inline constexpr decltype(auto) arange(T start, T stop, T step = 1) {
 }
 
 template<class Container>
-inline constexpr decltype(auto) counting(Container && container) {
-  return zip(arange(std::forward<Container>(container).size()),
-             std::forward<Container>(container));
+inline constexpr decltype(auto) enumerate(Container && container, size_t start_ = 0) {
+  auto stop = std::forward<Container>(container).size();
+  decltype(stop) start = start_;
+  return zip(arange(start, stop), std::forward<Container>(container));
 }
 
 } // namespace akantu

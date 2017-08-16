@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
     std::cout << node_group.getName() << std::endl;
   }
 
-  for (auto && element_group : counting(ElementGroupsIterable(mesh))) {
+  for (auto && element_group : enumerate(ElementGroupsIterable(mesh))) {
     std::cout << std::get<0>(element_group) << " " << std::get<1>(element_group).getName() << std::endl;
 
   }

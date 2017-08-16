@@ -213,7 +213,7 @@ inline Array<UInt> & Mesh::getNodesGlobalIdsPointer() {
     nodes_global_ids = std::make_unique<Array<UInt>>(
         nodes->size(), 1, getID() + ":nodes_global_ids");
 
-    for (auto && global_ids : counting(*nodes_global_ids)) {
+    for (auto && global_ids : enumerate(*nodes_global_ids)) {
       std::get<1>(global_ids) = std::get<0>(global_ids);
     }
   }
