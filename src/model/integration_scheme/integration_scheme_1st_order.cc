@@ -74,10 +74,10 @@ void IntegrationScheme1stOrder::assembleResidual(bool is_lumped) {
   const Array<Real> & first_derivative =
       dof_manager.getDOFsDerivatives(this->dof_id, 1);
   if (!is_lumped) {
-    this->dof_manager.assembleMatMulVectToResidual(this->dof_id, "C",
+    this->dof_manager.assembleMatMulVectToResidual(this->dof_id, "M",
                                                    first_derivative, -1);
   } else {
-    this->dof_manager.assembleLumpedMatMulVectToResidual(this->dof_id, "C",
+    this->dof_manager.assembleLumpedMatMulVectToResidual(this->dof_id, "M",
                                                          first_derivative, -1);
   }
 
