@@ -1,4 +1,5 @@
 /**
+
  * @file   mesh_iterators.hh
  *
  * @author Nicolas Richart
@@ -230,6 +231,19 @@ decltype(auto) ElementGroupsIterable(GroupManager && group_manager) {
 template <class GroupManager>
 decltype(auto) NodeGroupsIterable(GroupManager && group_manager) {
   return mesh_iterators::details::NodeGroupsIterable<GroupManager>(group_manager);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Func>
+void for_each_elements(size_t nb_elements, const Array<UInt> & filter_elements, Func && function) {
+  if(filter_elements != empty_filter) {
+    std::for_each(filter_elements.begin(), filter_elements.end(),
+                  std::forward<Func>(function));
+  } else {
+    auto && range = arange(nb_elements);
+    std::for_each(range.begin(), range.end(),
+                  std::forward<Func>(function));
+  }
 }
 
 } // namespace akantu
