@@ -30,94 +30,94 @@
 #===============================================================================
 
 #[=======================================================================[.rst:
-#AkantuTestsMacros
-#-----------------
-#
-#This modules provides the functions to helper to declare tests and folders
-#containing tests in akantu
-#
-#.. command:: add_test_tree
-#
-#    add_test_tree(<test_direcotry>)
-#
-#  ``<test_directory>`` is the entry direcroty of the full structure of
-#  subfolders containing tests
-#
-#.. command:: add_akantu_test
-#
-#    add_akantu_test(<dir> <desc>)
-#
-#  This function add a subdirectory ``<dir>`` of tests that will be conditionnaly
-#  activable and will be visible only if the parent folder as been activated An
-#  option ``AKANTU_BUILD_TEST_<dir>`` will appear in ccmake with the description
-#  ``<desc>``. The compilation of all tests can be forced with the option
-#  ``AKANTU_BUILD_ALL_TESTS``
-#
-#.. command:: register_test
-#
-#    register_test(<test_name>
-#      SOURCES <sources>...
-#      PACKAGE <akantu_packages>...
-#      SCRIPT <scirpt>
-#      [FILES_TO_COPY <filenames>...]
-#      [DEPENDS <targets>...]
-#      [DIRECTORIES_TO_CREATE <directories>...]
-#      [COMPILE_OPTIONS <flags>...]
-#      [EXTRA_FILES <filnames>...]
-#      [UNSABLE]
-#      [PARALLEL]
-#      [PARALLEL_LEVEL <procs>...]
-#      )
-#
-#  This function defines a test ``<test_name>_run`` this test could be of
-#  different nature depending on the context. If Just sources are provided the
-#  test consist of running the executable generated. If a file ``<test_name>.sh``
-#  is present the test will execute the script. And if a ``<test_name>.verified``
-#  exists the output of the test will be compared to this reference file
-#
-#  The options are:
-#
-#  ``SOURCES <sources>...``
-#    The list of source files to compile to generate the executable of the test
-#
-#  ``PACKAGE <akantu_packages>...``
-#    The list of package to which this test belongs. The test will be activable
-#    only of all the packages listed are activated
-#
-#  ``SCRIPT <script>``
-#    The script to execute instead of the executable
-#
-#  ``FILES_TO_COPY <filenames>...``
-#    List of files to copy from the source directory to the build directory
-#
-#  ``DEPENDS <targets>...``
-#    List of targets the test depends on, for example if a mesh as to be generated
-#
-#  ``DIRECTORIES_TO_CREATE <directories>...``
-#    Obsolete. This specifies a list of directories that have to be created in
-#    the build folder
-#
-#  ``COMPILE_OPTIONS <flags>...``
-#    List of extra compilations options to pass to the compiler
-#
-#  ``EXTRA_FILES <filnames>...``
-#    Files to consider when generating a package_source
-#
-#  ``UNSABLE``
-#    If this option is specified the test can be unacitivated by the glocal option
-#    ``AKANTU_BUILD_UNSTABLE_TESTS``, this is mainly intendeed to remove test
-#    under developement from the continious integration
-#
-#  ``PARALLEL``
-#    This specifies that this test should be run in parallel. It will generate a
-#    series of test for different number of processors. This automaticaly adds a
-#    dependency to the package ``AKANTU_PARALLEL``
-#
-#  ``PARALLEL_LEVEL``
-#    This defines the different processor numbers to use, if not defined the
-#    macro tries to determine it in a "clever" way
-#
-#]=======================================================================]
+AkantuTestsMacros
+-----------------
+
+This modules provides the functions to helper to declare tests and folders
+containing tests in akantu
+
+.. command:: add_test_tree
+
+    add_test_tree(<test_direcotry>)
+
+  ``<test_directory>`` is the entry direcroty of the full structure of
+  subfolders containing tests
+
+.. command:: add_akantu_test
+
+    add_akantu_test(<dir> <desc>)
+
+  This function add a subdirectory ``<dir>`` of tests that will be conditionnaly
+  activable and will be visible only if the parent folder as been activated An
+  option ``AKANTU_BUILD_TEST_<dir>`` will appear in ccmake with the description
+  ``<desc>``. The compilation of all tests can be forced with the option
+  ``AKANTU_BUILD_ALL_TESTS``
+
+.. command:: register_test
+
+    register_test(<test_name>
+      SOURCES <sources>...
+      PACKAGE <akantu_packages>...
+      SCRIPT <scirpt>
+      [FILES_TO_COPY <filenames>...]
+      [DEPENDS <targets>...]
+      [DIRECTORIES_TO_CREATE <directories>...]
+      [COMPILE_OPTIONS <flags>...]
+      [EXTRA_FILES <filnames>...]
+      [UNSABLE]
+      [PARALLEL]
+      [PARALLEL_LEVEL <procs>...]
+      )
+
+  This function defines a test ``<test_name>_run`` this test could be of
+  different nature depending on the context. If Just sources are provided the
+  test consist of running the executable generated. If a file ``<test_name>.sh``
+  is present the test will execute the script. And if a ``<test_name>.verified``
+  exists the output of the test will be compared to this reference file
+
+  The options are:
+
+  ``SOURCES <sources>...``
+    The list of source files to compile to generate the executable of the test
+
+  ``PACKAGE <akantu_packages>...``
+    The list of package to which this test belongs. The test will be activable
+    only of all the packages listed are activated
+
+  ``SCRIPT <script>``
+    The script to execute instead of the executable
+
+  ``FILES_TO_COPY <filenames>...``
+    List of files to copy from the source directory to the build directory
+
+  ``DEPENDS <targets>...``
+    List of targets the test depends on, for example if a mesh as to be generated
+
+  ``DIRECTORIES_TO_CREATE <directories>...``
+    Obsolete. This specifies a list of directories that have to be created in
+    the build folder
+
+  ``COMPILE_OPTIONS <flags>...``
+    List of extra compilations options to pass to the compiler
+
+  ``EXTRA_FILES <filnames>...``
+    Files to consider when generating a package_source
+
+  ``UNSABLE``
+    If this option is specified the test can be unacitivated by the glocal option
+    ``AKANTU_BUILD_UNSTABLE_TESTS``, this is mainly intendeed to remove test
+    under developement from the continious integration
+
+  ``PARALLEL``
+    This specifies that this test should be run in parallel. It will generate a
+    series of test for different number of processors. This automaticaly adds a
+    dependency to the package ``AKANTU_PARALLEL``
+
+  ``PARALLEL_LEVEL``
+    This defines the different processor numbers to use, if not defined the
+    macro tries to determine it in a "clever" way
+
+]=======================================================================]
 
 set(AKANTU_DRIVER_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_test_driver.sh)
 
@@ -292,6 +292,10 @@ function(register_test test_name)
         if(_register_test_COMPILE_OPTIONS)
           set_target_properties(${test_name}
             PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
+        endif()
+
+        if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND  CMAKE_BUILD_TYPE STREQUAL "Debug")
+          set(AKANTU_EXTRA_CXX_FLAGS "${AKANTU_EXTRA_CXX_FLAGS} -no-pie")
         endif()
         if(AKANTU_EXTRA_CXX_FLAGS)
           set_target_properties(${test_name}
