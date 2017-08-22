@@ -84,12 +84,11 @@ void NonLinearSolverLumped::solveLumped(const Array<Real> & A, Array<Real> & x,
                                         const Array<Real> & b,
                                         const Array<bool> & blocked_dofs,
                                         Real alpha) {
-  Array<Real>::const_scalar_iterator A_it = A.begin();
-  Array<Real>::scalar_iterator x_it = x.begin();
-  Array<Real>::scalar_iterator x_end = x.end();
-  Array<Real>::const_scalar_iterator b_it = b.begin();
-
-  Array<bool>::const_scalar_iterator blocked_it = blocked_dofs.begin();
+  auto A_it = A.begin();
+  auto x_it = x.begin();
+  auto x_end = x.end();
+  auto b_it = b.begin();
+  auto blocked_it = blocked_dofs.begin();
 
   for (; x_it != x_end; ++x_it, ++b_it, ++A_it, ++blocked_it) {
     if (!(*blocked_it)) {
