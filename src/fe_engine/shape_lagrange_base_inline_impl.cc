@@ -79,14 +79,14 @@ void ShapeLagrangeBase::computeShapesOnIntegrationPoints(
   }
 
   for (UInt elem = 0; elem < nb_element; ++elem) {
+    if (filter_elements != empty_filter)
+      shapes_it = shapes_begin + filter_elements(elem);
+
     Matrix<Real> & N = *shapes_it;
     ElementClass<type>::computeShapes(integration_points, N);
 
-    if (filter_elements == empty_filter) {
+    if (filter_elements == empty_filter)
       ++shapes_it;
-    } else {
-      shapes_it = shapes_begin + filter_elements(elem);
-    }
   }
 
   AKANTU_DEBUG_OUT();

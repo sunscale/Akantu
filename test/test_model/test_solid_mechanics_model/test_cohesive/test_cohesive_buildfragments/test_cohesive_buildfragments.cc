@@ -62,7 +62,6 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
   mesh.read("mesh.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   SolidMechanicsModelCohesive model(mesh);
 

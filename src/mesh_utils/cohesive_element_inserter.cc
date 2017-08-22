@@ -196,24 +196,14 @@ UInt CohesiveElementInserter::insertIntrinsicElements() {
 
   Vector<Real> bary_facet(spatial_dimension);
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    GhostType ghost_type = *gt;
-
-    Mesh::type_iterator it =
-        mesh_facets.firstType(spatial_dimension - 1, ghost_type);
-    Mesh::type_iterator end =
-        mesh_facets.lastType(spatial_dimension - 1, ghost_type);
-
-    for (; it != end; ++it) {
-      const ElementType type_facet = *it;
-      Array<bool> & f_insertion = insertion_facets(type_facet, ghost_type);
-      Array<std::vector<Element>> & element_to_facet =
+  for (auto && ghost_type : ghost_types) {
+    for (const auto & type_facet :
+         mesh_facets.elementTypes(spatial_dimension - 1, ghost_type)) {
+      auto & f_insertion = insertion_facets(type_facet, ghost_type);
+      auto & element_to_facet =
           mesh_facets.getElementToSubelement(type_facet, ghost_type);
 
       UInt nb_facet = mesh_facets.getNbElement(type_facet, ghost_type);
-
       for (UInt f = 0; f < nb_facet; ++f) {
 
         if (element_to_facet(f)[1] == ElementNull)
@@ -341,13 +331,13 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
   Array<UInt> new_pairs(0, 2);
 
   UInt nb_new_elements = MeshUtils::insertCohesiveElements(
-      mesh, mesh_facets, insertion_facets, new_pairs,
-      element_event.getList(), only_double_facets);
+      mesh, mesh_facets, insertion_facets, new_pairs, element_event.getList(),
+      only_double_facets);
 
   UInt nb_new_nodes = new_pairs.size();
   node_event.getList().reserve(nb_new_nodes);
   node_event.getOldNodesList().reserve(nb_new_nodes);
-  for(UInt n = 0; n < nb_new_nodes; ++n) {
+  for (UInt n = 0; n < nb_new_nodes; ++n) {
     node_event.getList().push_back(new_pairs(n, 1));
     node_event.getOldNodesList().push_back(new_pairs(n, 0));
   }
@@ -373,7 +363,7 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
 
   if (nb_new_elements > 0) {
     updateInsertionFacets();
-    //mesh.updateTypesOffsets(_not_ghost);
+    // mesh.updateTypesOffsets(_not_ghost);
     mesh.sendEvent(element_event);
     MeshUtils::resetFacetToDouble(mesh_facets);
   }

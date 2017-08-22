@@ -281,26 +281,22 @@ void IntegratorGauss<_ek_cohesive, DefaultIntegrationOrderFunctor>::
 
   nb_element = x_el.size();
 
-  for (UInt elem = 0; elem < nb_element; ++elem, ++x_it) {
+  auto compute = [&](const auto & el) {
+    Vector<Real> J(jacobians_begin[el]);
 
     for (UInt s = 0; s < spatial_dimension; ++s)
       for (UInt n = 0; n < nb_nodes_per_subelement; ++n)
         x(s, n) =
             ((*x_it)(s, n) + (*x_it)(s, n + nb_nodes_per_subelement)) * .5;
 
-    Vector<Real> & J = *jacobians_it;
-
     if (type == _cohesive_1d_2)
       J(0) = 1;
     else
-      computeJacobianOnQuadPointsByElement<type>(x, quad_points, J);
+      this->computeJacobianOnQuadPointsByElement<type>(x, quad_points, J);
+  };
 
-    if (filter_elements == empty_filter) {
-      ++jacobians_it;
-    } else {
-      jacobians_it = jacobians_begin + filter_elements(elem);
-    }
-  }
+  for_each_elements(nb_element, filter_elements, compute);
+
 
   AKANTU_DEBUG_OUT();
 }
@@ -536,11 +532,11 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind, class IntegrationOrderFunctor>
 void IntegratorGauss<kind, IntegrationOrderFunctor>::onElementsAdded(
-    const Array<Element> & elements) {
+    const Array<Element> & new_elements) {
 
   const auto & nodes = mesh.getNodes();
 
-  for (auto elements_range : MeshElementsByTypes(elements)) {
+  for (auto elements_range : MeshElementsByTypes(new_elements)) {
     auto type = elements_range.getType();
     auto ghost_type = elements_range.getGhostType();
 

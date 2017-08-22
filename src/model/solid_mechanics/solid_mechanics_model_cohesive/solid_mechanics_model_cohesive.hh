@@ -43,6 +43,9 @@
 #include "facet_stress_synchronizer.hh"
 #include "facet_synchronizer.hh"
 #endif
+
+#include "random_internal_field.hh" // included to have the specialization of
+                                    // ParameterTyped::operator Real()
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -77,7 +80,7 @@ struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
 
   template <typename... pack>
   SolidMechanicsModelCohesiveOptions(use_named_args_t, pack &&... _pack)
-      : SolidMechanicsModelOptions(
+      : SolidMechanicsModelCohesiveOptions(
             OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
             OPTIONAL_NAMED_ARG(is_extrinsic, false)) {}
 

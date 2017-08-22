@@ -296,25 +296,16 @@ void SolidMechanicsModelCohesive::initModel() {
   /// add cohesive type connectivity
   ElementType type = _not_defined;
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
+  for (auto && type_ghost : ghost_types) {
+    for (const auto & tmp_type : mesh.elementTypes(spatial_dimension, type_ghost)) {
+      const Array<UInt> & connectivity = mesh.getConnectivity(tmp_type, type_ghost);
+      if (connectivity.size() == 0)
+        continue;
 
-    GhostType type_ghost = *gt;
-
-    Mesh::type_iterator it =
-        mesh.firstType(Model::spatial_dimension, type_ghost);
-    Mesh::type_iterator last =
-        mesh.lastType(Model::spatial_dimension, type_ghost);
-
-    for (; it != last; ++it) {
-      const Array<UInt> & connectivity = mesh.getConnectivity(*it, type_ghost);
-      if (connectivity.size() != 0) {
-        type = *it;
-        ElementType type_facet = Mesh::getFacetType(type);
-        ElementType type_cohesive =
-            FEEngine::getCohesiveElementType(type_facet);
-        mesh.addConnectivityType(type_cohesive, type_ghost);
-      }
+      type = tmp_type;
+      ElementType type_facet = Mesh::getFacetType(type);
+      ElementType type_cohesive = FEEngine::getCohesiveElementType(type_facet);
+      mesh.addConnectivityType(type_cohesive, type_ghost);
     }
   }
 
@@ -668,9 +659,13 @@ void SolidMechanicsModelCohesive::onNodesAdded(const Array<UInt> & new_nodes,
       std::tie(new_node, old_node) = pair;
 
       copy(*displacement);
-      copy(*velocity);
-      copy(*acceleration);
       copy(*blocked_dofs);
+
+      if (velocity)
+        copy(*velocity);
+
+      if (acceleration)
+        copy(*acceleration);
 
       if (current_position)
         copy(*current_position);
@@ -730,17 +725,9 @@ void SolidMechanicsModelCohesive::resizeFacetStress() {
 
   Mesh & mesh_facets = inserter->getMeshFacets();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
-
-    Mesh::type_iterator it =
-        mesh_facets.firstType(Model::spatial_dimension - 1, ghost_type);
-    Mesh::type_iterator end =
-        mesh_facets.lastType(Model::spatial_dimension - 1, ghost_type);
-    for (; it != end; ++it) {
-      ElementType type = *it;
-
+  for (auto && ghost_type : ghost_types) {
+    for (const auto & type :
+         mesh_facets.elementTypes(spatial_dimension - 1, ghost_type)) {
       UInt nb_facet = mesh_facets.getNbElement(type, ghost_type);
 
       UInt nb_quadrature_points = getFEEngine("FacetsFEEngine")

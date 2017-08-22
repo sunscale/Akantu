@@ -43,7 +43,6 @@ using namespace akantu;
 
 int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
-
   debug::setDebugLevel(dblWarning);
 
   const UInt spatial_dimension = 2;
@@ -66,8 +65,8 @@ int main(int argc, char * argv[]) {
   model.addDumpField("mass");
   model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("external_force");
-  model.addDumpField("internal_force");
+  model.addDumpFieldVector("external_force");
+  model.addDumpFieldVector("internal_force");
   model.addDumpField("grad_u");
   model.dump();
 

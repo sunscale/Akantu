@@ -66,37 +66,27 @@ void ShapeLagrange<_ek_cohesive>::computeShapeDerivativesOnIntegrationPoints(
     const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
-  UInt spatial_dimension = mesh.getSpatialDimension();
-  UInt nb_nodes_per_element =
-      ElementClass<type>::getNbNodesPerInterpolationElement();
+  UInt size_of_shapesd      = ElementClass<type>::getShapeDerivativesSize();
+  UInt spatial_dimension    = ElementClass<type>::getNaturalSpaceDimension();
+  UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
 
   UInt nb_points = integration_points.cols();
   UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
-  UInt size_of_shapesd = ElementClass<type>::getShapeDerivativesSize();
 
   AKANTU_DEBUG_ASSERT(shape_derivatives.getNbComponent() == size_of_shapesd,
                       "The shapes_derivatives array does not have the correct "
                           << "number of component");
 
   shape_derivatives.resize(nb_element * nb_points);
-
   Real * shapesd_val = shape_derivatives.storage();
 
-  if (filter_elements == empty_filter)
-    nb_element = filter_elements.size();
-
-  for (UInt elem = 0; elem < nb_element; ++elem) {
-    Tensor3<Real> B(shapesd_val, spatial_dimension, nb_nodes_per_element,
-                    nb_points);
+  auto compute = [&](auto & el) {
+    auto ptr = shapesd_val + el * nb_points * size_of_shapesd;
+    Tensor3<Real> B(ptr, spatial_dimension, nb_nodes_per_element, nb_points);
     ElementClass<type>::computeDNDS(integration_points, B);
+  };
 
-    if (filter_elements != empty_filter)
-      shapesd_val += size_of_shapesd * nb_points;
-    else {
-      shapesd_val = shape_derivatives.storage() +
-                    filter_elements(elem) * size_of_shapesd * nb_points;
-    }
-  }
+  for_each_elements(nb_element, filter_elements, compute);
 
   AKANTU_DEBUG_OUT();
 }
@@ -164,10 +154,11 @@ void ShapeLagrange<_ek_cohesive>::extractNodalToElementField(
 
   UInt nb_nodes_per_itp_element =
       ElementClass<type>::getNbNodesPerInterpolationElement();
-  UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerElement();
   UInt nb_degree_of_freedom = nodal_f.getNbComponent();
   UInt nb_element = this->mesh.getNbElement(type, ghost_type);
-  UInt * conn_val = this->mesh.getConnectivity(type, ghost_type).storage();
+
+  const auto & conn_array = this->mesh.getConnectivity(type, ghost_type);
+  auto conn = conn_array.begin(conn_array.getNbComponent() / 2, 2);
 
   if (filter_elements != empty_filter) {
     nb_element = filter_elements.size();
@@ -178,28 +169,28 @@ void ShapeLagrange<_ek_cohesive>::extractNodalToElementField(
   Array<Real>::matrix_iterator u_it =
       elemental_f.begin(nb_degree_of_freedom, nb_nodes_per_itp_element);
 
-  UInt * el_conn;
   ReduceFunction reduce_function;
 
-  for (UInt el = 0; el < nb_element; ++el, ++u_it) {
+  auto compute = [&](auto & el) {
     Matrix<Real> & u = *u_it;
-    if (filter_elements != empty_filter)
-      el_conn = conn_val + filter_elements(el) * nb_nodes_per_element;
-    else
-      el_conn = conn_val + el * nb_nodes_per_element;
+    Matrix<UInt> el_conn(conn[el]);
 
     // compute the average/difference of the nodal field loaded from cohesive
     // element
-    for (UInt n = 0; n < nb_nodes_per_itp_element; ++n) {
-      UInt node_plus = *(el_conn + n);
-      UInt node_minus = *(el_conn + n + nb_nodes_per_itp_element);
+    for (UInt n = 0; n < el_conn.rows(); ++n) {
+      UInt node_plus = el_conn(n, 0);
+      UInt node_minus = el_conn(n, 1);
       for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
         Real u_plus = nodal_f(node_plus, d);
         Real u_minus = nodal_f(node_minus, d);
         u(d, n) = reduce_function(u_plus, u_minus);
       }
     }
-  }
+
+    ++u_it;
+  };
+
+  for_each_elements(nb_element, filter_elements, compute);
 
   AKANTU_DEBUG_OUT();
 }

@@ -76,6 +76,8 @@ int main(int argc, char * argv[]) {
   const Real sigma_c = mat_cohesive.get("sigma_c");
   const Real beta = mat_cohesive.get("beta");
 
+  std::cout << sigma_c << " " << beta << std::endl;
+
   Array<Real> & position = mesh.getNodes();
 
   /* ------------------------------------------------------------------------ */

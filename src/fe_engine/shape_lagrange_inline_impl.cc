@@ -234,6 +234,10 @@ void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
     nb_element = filter_elements.size();
 
   for (UInt elem = 0; elem < nb_element; ++elem, ++x_it) {
+    if(filter_elements != empty_filter)
+      shapesd_val = shape_derivatives.storage() +
+                    filter_elements(elem) * size_of_shapesd * nb_points;
+
     Matrix<Real> & X = *x_it;
     Tensor3<Real> B(shapesd_val, spatial_dimension, nb_nodes_per_element,
                     nb_points);
@@ -241,10 +245,6 @@ void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
 
     if (filter_elements == empty_filter)
       shapesd_val += size_of_shapesd * nb_points;
-    else {
-      shapesd_val = shape_derivatives.storage() +
-                    filter_elements(elem) * size_of_shapesd * nb_points;
-    }
   }
 
   AKANTU_DEBUG_OUT();

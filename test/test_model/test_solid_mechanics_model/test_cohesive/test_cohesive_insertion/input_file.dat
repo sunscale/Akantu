@@ -61,7 +61,5 @@ material cohesive_exponential [
 ]
 
 mesh parameters [
-
      	cohesive_surfaces = coh1,coh2,coh3,coh4,coh5,interface
-
 ]
