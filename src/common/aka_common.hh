@@ -118,8 +118,7 @@ enum EventHandlerPriority {
   _ehp_fe_engine = 9,
   _ehp_synchronizer = 10,
   _ehp_dof_manager = 20,
-  _ehp_solid_mechanics_model_cohesive = 94,
-  _ehp_solid_mechanics_model = 95,
+  _ehp_model = 94,
   _ehp_non_local_manager = 100,
   _ehp_lowest = 100
 };

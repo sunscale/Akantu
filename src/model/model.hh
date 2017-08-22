@@ -57,7 +57,7 @@ struct ModelOptions {
 
 class DumperIOHelper;
 
-class Model : public Memory, public ModelSolver {
+class Model : public Memory, public ModelSolver, public MeshEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

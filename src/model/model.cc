@@ -51,6 +51,9 @@ Model::Model(Mesh& mesh, UInt dim, const ID & id,
   is_pbc_slave_node(0,1,"is_pbc_slave_node") ,
   parser(&getStaticParser()) {
   AKANTU_DEBUG_IN();
+
+  this->mesh.registerEventHandler(*this, _ehp_model);
+  
   AKANTU_DEBUG_OUT();
 }
 

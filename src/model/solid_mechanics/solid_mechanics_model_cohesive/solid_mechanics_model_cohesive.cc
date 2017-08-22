@@ -58,19 +58,17 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
       facet_stress("facet_stress", id), facet_material("facet_material", id) {
   AKANTU_DEBUG_IN();
 
-  inserter = NULL;
+  inserter = nullptr;
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  facet_synchronizer = NULL;
-  facet_stress_synchronizer = NULL;
-  cohesive_element_synchronizer = NULL;
-  global_connectivity = NULL;
+  facet_synchronizer = nullptr;
+  facet_stress_synchronizer = nullptr;
+  cohesive_element_synchronizer = nullptr;
+  global_connectivity = nullptr;
 #endif
 
   delete material_selector;
   material_selector = new DefaultMaterialCohesiveSelector(*this);
-
-  this->registerEventHandler(*this, _ehp_solid_mechanics_model_cohesive);
 
 #if defined(AKANTU_USE_IOHELPER)
   this->mesh.registerDumper<DumperParaview>("cohesive elements", id);
@@ -176,7 +174,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
     SolidMechanicsModel::initMaterials();
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-    if (facet_synchronizer != NULL)
+    if (facet_synchronizer != nullptr)
       inserter->initParallel(facet_synchronizer, cohesive_element_synchronizer);
 //      inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
@@ -207,7 +205,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
   AKANTU_DEBUG_IN();
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_synchronizer != NULL)
+  if (facet_synchronizer != nullptr)
     inserter->initParallel(facet_synchronizer, cohesive_element_synchronizer);
 //    inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
@@ -241,7 +239,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
 void SolidMechanicsModelCohesive::synchronizeInsertionData() {
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_synchronizer != NULL) {
+  if (facet_synchronizer != nullptr) {
     facet_synchronizer->asynchronousSynchronize(*inserter, _gst_ce_groups);
     facet_synchronizer->waitEndSynchronize(*inserter, _gst_ce_groups);
   }
@@ -269,7 +267,7 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
     }
   }
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_synchronizer != NULL)
+  if (facet_synchronizer != nullptr)
     inserter->initParallel(facet_synchronizer, cohesive_element_synchronizer);
 //    inserter->initParallel(facet_synchronizer, synch_parallel);
 #endif
@@ -360,7 +358,7 @@ void SolidMechanicsModelCohesive::initAutomaticInsertion() {
   AKANTU_DEBUG_IN();
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_stress_synchronizer != NULL) {
+  if (facet_stress_synchronizer != nullptr) {
     DataAccessor * data_accessor = this;
     const ElementTypeMapArray<UInt> & rank_to_element =
         synch_parallel->getPrankToElement();
@@ -394,7 +392,7 @@ void SolidMechanicsModelCohesive::updateAutomaticInsertion() {
   inserter->limitCheckFacets();
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_stress_synchronizer != NULL) {
+  if (facet_stress_synchronizer != nullptr) {
     DataAccessor * data_accessor = this;
     const ElementTypeMapArray<UInt> & rank_to_element =
         synch_parallel->getPrankToElement();
@@ -617,7 +615,7 @@ void SolidMechanicsModelCohesive::onElementsAdded(
   SolidMechanicsModel::onElementsAdded(element_list, event);
 
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (cohesive_element_synchronizer != NULL)
+  if (cohesive_element_synchronizer != nullptr)
     cohesive_element_synchronizer->computeAllBufferSizes(*this);
 #endif
 

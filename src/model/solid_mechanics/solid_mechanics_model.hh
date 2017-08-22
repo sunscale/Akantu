@@ -70,14 +70,12 @@ struct SolidMechanicsModelOptions : public ModelOptions {
 };
 
 /* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
 class SolidMechanicsModel
     : public Model,
       public DataAccessor<Element>,
       public DataAccessor<UInt>,
       public BoundaryCondition<SolidMechanicsModel>,
       public NonLocalManagerCallback,
-      public MeshEventHandler,
       public EventHandlerManager<SolidMechanicsModelEventHandler> {
 
   /* ------------------------------------------------------------------------ */
