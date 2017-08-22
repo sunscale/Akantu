@@ -139,6 +139,10 @@ template <typename T, class Distribution> class RandomDistributionTypeHelper {
       value = AKANTU_RANDOM_DISTRIBUTION_TYPES_PREFIX(                         \
           BOOST_PP_TUPLE_ELEM(2, 0, elem))                                     \
     };                                                                         \
+                                                                               \
+    static void printself(std::ostream & stream) {                             \
+      stream << BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, elem));           \
+    }                                                                          \
   };
 
 BOOST_PP_SEQ_FOR_EACH(AKANTU_RANDOM_DISTRIBUTION_TYPE_GET_TYPE, _,
@@ -170,8 +174,8 @@ public:
   }
 
   void printself(std::ostream & stream, int = 0) const override {
-    stream << RandomDistributionTypeHelper<T, Distribution>::value << " [ "
-           << distribution << " ]";
+    RandomDistributionTypeHelper<T, Distribution>::printself(stream);
+    stream << " [ " << distribution << " ]";
   }
 
 private:
@@ -226,7 +230,7 @@ public:
   virtual void printself(std::ostream & stream,
                          __attribute__((unused)) int indent = 0) const {
     stream << base_value;
-    stream << " " << *distribution_proxy;
+    stream << " + " << *distribution_proxy;
   }
 
 private:

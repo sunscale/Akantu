@@ -1182,6 +1182,13 @@ Vector<T> operator/(const Vector<T> & a, const T & scalar) {
 }
 
 template <typename T>
+Vector<T> operator*(const Vector<T> & a, const Vector<T> & b) {
+  Vector<T> r(a);
+  r *= b;
+  return r;
+}
+
+template <typename T>
 Vector<T> operator+(const Vector<T> & a, const Vector<T> & b) {
   Vector<T> r(a);
   r += b;
@@ -1192,6 +1199,13 @@ template <typename T>
 Vector<T> operator-(const Vector<T> & a, const Vector<T> & b) {
   Vector<T> r(a);
   r -= b;
+  return r;
+}
+
+template <typename T>
+Vector<T> operator*(const Matrix<T> & A, const Vector<T> & b) {
+  Vector<T> r(b.size());
+  r.template mul<false>(A, b);
   return r;
 }
 
