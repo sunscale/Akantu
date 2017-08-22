@@ -35,31 +35,43 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "heat_transfer_model.hh"
-#include "group_manager_inline_impl.cc"
 #include "dumpable_inline_impl.hh"
-#include "aka_math.hh"
-#include "aka_common.hh"
+#include "element_synchronizer.hh"
 #include "fe_engine_template.hh"
-#include "mesh.hh"
-#include "static_communicator.hh"
-#include "parser.hh"
 #include "generalized_trapezoidal.hh"
+#include "group_manager_inline_impl.cc"
+#include "mesh.hh"
+#include "parser.hh"
+#include "static_communicator.hh"
 
 #ifdef AKANTU_USE_MUMPS
 #include "solver_mumps.hh"
 #endif
 
 #ifdef AKANTU_USE_IOHELPER
-#include "dumper_paraview.hh"
-#include "dumper_elemental_field.hh"
 #include "dumper_element_partition.hh"
+#include "dumper_elemental_field.hh"
 #include "dumper_internal_material_field.hh"
+#include "dumper_paraview.hh"
 #endif
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
+
+class ComputeRhoFunctor {
+public:
+  ComputeRhoFunctor(const HeatTransferModel & model) : model(model){};
+
+  void operator()(Matrix<Real> & rho, const Element &) const {
+    rho.set(model.getCapacity());
+  }
+
+private:
+  const HeatTransferModel & model;
+};
+
+/* -------------------------------------------------------------------------- */
 
 const HeatTransferModelOptions
     default_heat_transfer_model_options(_explicit_lumped_capacity);
@@ -67,26 +79,32 @@ const HeatTransferModelOptions
 /* -------------------------------------------------------------------------- */
 HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
                                      const MemoryID & memory_id)
-    : Model(mesh, dim, id, memory_id), Parsable(_st_heat, id), integrator(NULL),
-      conductivity_matrix(NULL), capacity_matrix(NULL), jacobian_matrix(NULL),
+    : Model(mesh, dim, id, memory_id), integrator(nullptr),
       temperature_gradient("temperature_gradient", id),
       temperature_on_qpoints("temperature_on_qpoints", id),
       conductivity_on_qpoints("conductivity_on_qpoints", id),
       k_gradt_on_qpoints("k_gradt_on_qpoints", id),
-      int_bt_k_gT("int_bt_k_gT", id), bt_k_gT("bt_k_gT", id),
-      conductivity(spatial_dimension, spatial_dimension),
-      thermal_energy("thermal_energy", id), solver(NULL), pbc_synch(NULL) {
+      conductivity(spatial_dimension, spatial_dimension) {
   AKANTU_DEBUG_IN();
 
-  createSynchronizerRegistry(this);
+  this->initDOFManager();
+
+  this->registerDataAccessor(*this);
+
+  if (this->mesh.isDistributed()) {
+    auto & synchronizer = this->mesh.getElementSynchronizer();
+    this->registerSynchronizer(synchronizer, _gst_htm_capacity);
+    this->registerSynchronizer(synchronizer, _gst_htm_temperature);
+    this->registerSynchronizer(synchronizer, _gst_htm_gradient_temperature);
+  }
 
   std::stringstream sstr;
   sstr << id << ":fem";
   registerFEEngineObject<MyFEEngineType>(sstr.str(), mesh, spatial_dimension);
 
-  this->temperature = NULL;
-  this->residual = NULL;
-  this->blocked_dofs = NULL;
+  this->temperature = nullptr;
+  this->internal_heat_rate = nullptr;
+  this->blocked_dofs = nullptr;
 
 #ifdef AKANTU_USE_IOHELPER
   this->mesh.registerDumper<DumperParaview>("paraview_all", id, true);
@@ -98,7 +116,7 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
                       _pat_parsmod);
   this->registerParam("temperature_reference", T_ref, 0., _pat_parsmod);
   this->registerParam("capacity", capacity, _pat_parsmod);
-  this->registerParam("density", density, _pat_parsmod);
+  // this->registerParam("density", density, _pat_parsmod);
 
   AKANTU_DEBUG_OUT();
 }
@@ -110,247 +128,33 @@ void HeatTransferModel::initModel() {
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::initParallel(MeshPartition * partition,
-                                     DataAccessor * data_accessor) {
-  AKANTU_DEBUG_IN();
 
-  if (data_accessor == NULL)
-    data_accessor = this;
-  Synchronizer & synch_parallel = createParallelSynch(partition, data_accessor);
+template <typename T>
+void HeatTransferModel::allocNodalField(Array<T> *& array, const ID & name) {
+  if (array == nullptr) {
+    UInt nb_nodes = mesh.getNbNodes();
+    std::stringstream sstr_disp;
+    sstr_disp << id << ":" << name;
 
-  synch_registry->registerSynchronizer(synch_parallel, _gst_htm_capacity);
-  synch_registry->registerSynchronizer(synch_parallel, _gst_htm_temperature);
-  synch_registry->registerSynchronizer(synch_parallel,
-                                       _gst_htm_gradient_temperature);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::initPBC() {
-  AKANTU_DEBUG_IN();
-
-  Model::initPBC();
-  pbc_synch = new PBCSynchronizer(pbc_pair);
-
-  synch_registry->registerSynchronizer(*pbc_synch, _gst_htm_capacity);
-  synch_registry->registerSynchronizer(*pbc_synch, _gst_htm_temperature);
-  changeLocalEquationNumberForPBC(pbc_pair, 1);
-
-  // as long as there are ones on the diagonal of the matrix, we can put
-  // boudandary true for slaves
-  std::map<UInt, UInt>::iterator it = pbc_pair.begin();
-  std::map<UInt, UInt>::iterator end = pbc_pair.end();
-  while (it != end) {
-    (*blocked_dofs)((*it).first, 0) = true;
-    ++it;
+    array = &(alloc<T>(sstr_disp.str(), nb_nodes, 1, T()));
   }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::initArrays() {
-  AKANTU_DEBUG_IN();
-
-  UInt nb_nodes = getFEEngine().getMesh().getNbNodes();
-
-  std::stringstream sstr_temp;
-  sstr_temp << Model::id << ":temperature";
-  std::stringstream sstr_temp_rate;
-  sstr_temp_rate << Model::id << ":temperature_rate";
-  std::stringstream sstr_inc;
-  sstr_inc << Model::id << ":increment";
-  std::stringstream sstr_ext_flx;
-  sstr_ext_flx << Model::id << ":external_flux";
-  std::stringstream sstr_residual;
-  sstr_residual << Model::id << ":residual";
-  std::stringstream sstr_lump;
-  sstr_lump << Model::id << ":lumped";
-  std::stringstream sstr_boun;
-  sstr_boun << Model::id << ":blocked_dofs";
-
-  temperature = &(alloc<Real>(sstr_temp.str(), nb_nodes, 1, REAL_INIT_VALUE));
-  temperature_rate =
-      &(alloc<Real>(sstr_temp_rate.str(), nb_nodes, 1, REAL_INIT_VALUE));
-  increment = &(alloc<Real>(sstr_inc.str(), nb_nodes, 1, REAL_INIT_VALUE));
-  external_heat_rate =
-      &(alloc<Real>(sstr_ext_flx.str(), nb_nodes, 1, REAL_INIT_VALUE));
-  residual = &(alloc<Real>(sstr_residual.str(), nb_nodes, 1, REAL_INIT_VALUE));
-  capacity_lumped =
-      &(alloc<Real>(sstr_lump.str(), nb_nodes, 1, REAL_INIT_VALUE));
-  blocked_dofs = &(alloc<bool>(sstr_boun.str(), nb_nodes, 1, false));
-
-  Mesh::ConnectivityTypeList::const_iterator it;
-
-  /* --------------------------------------------------------------------------
-   */
-  // byelementtype vectors
-  getFEEngine().getMesh().initElementTypeMapArray(temperature_on_qpoints, 1,
-                                                  spatial_dimension);
-
-  getFEEngine().getMesh().initElementTypeMapArray(
-      temperature_gradient, spatial_dimension, spatial_dimension);
-
-  getFEEngine().getMesh().initElementTypeMapArray(
-      conductivity_on_qpoints, spatial_dimension * spatial_dimension,
-      spatial_dimension);
-
-  getFEEngine().getMesh().initElementTypeMapArray(
-      k_gradt_on_qpoints, spatial_dimension, spatial_dimension);
-
-  getFEEngine().getMesh().initElementTypeMapArray(bt_k_gT, 1, spatial_dimension,
-                                                  true);
-
-  getFEEngine().getMesh().initElementTypeMapArray(int_bt_k_gT, 1,
-                                                  spatial_dimension, true);
-
-  getFEEngine().getMesh().initElementTypeMapArray(thermal_energy, 1,
-                                                  spatial_dimension);
-
-  for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
-
-    const Mesh::ConnectivityTypeList & type_list =
-        getFEEngine().getMesh().getConnectivityTypeList(gt);
-
-    for (it = type_list.begin(); it != type_list.end(); ++it) {
-      if (Mesh::getSpatialDimension(*it) != spatial_dimension)
-        continue;
-      UInt nb_element = getFEEngine().getMesh().getNbElement(*it, gt);
-      UInt nb_quad_points =
-          this->getFEEngine().getNbIntegrationPoints(*it, gt) * nb_element;
-
-      temperature_on_qpoints(*it, gt).resize(nb_quad_points);
-      temperature_on_qpoints(*it, gt).clear();
-
-      temperature_gradient(*it, gt).resize(nb_quad_points);
-      temperature_gradient(*it, gt).clear();
-
-      conductivity_on_qpoints(*it, gt).resize(nb_quad_points);
-      conductivity_on_qpoints(*it, gt).clear();
-
-      k_gradt_on_qpoints(*it, gt).resize(nb_quad_points);
-      k_gradt_on_qpoints(*it, gt).clear();
-
-      bt_k_gT(*it, gt).resize(nb_quad_points);
-      bt_k_gT(*it, gt).clear();
-
-      int_bt_k_gT(*it, gt).resize(nb_element);
-      int_bt_k_gT(*it, gt).clear();
-
-      thermal_energy(*it, gt).resize(nb_element);
-      thermal_energy(*it, gt).clear();
-    }
-  }
-
-  /* --------------------------------------------------------------------------
-   */
-  dof_synchronizer = new DOFSynchronizer(getFEEngine().getMesh(), 1);
-  dof_synchronizer->initLocalDOFEquationNumbers();
-  dof_synchronizer->initGlobalDOFEquationNumbers();
-
-  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 
-void HeatTransferModel::initSolver(__attribute__((unused))
-                                   SolverOptions & options) {
-#if !defined(AKANTU_USE_MUMPS) // or other solver in the future \todo add
-                               // AKANTU_HAS_SOLVER in CMake
-  AKANTU_DEBUG_ERROR("You should at least activate one solver.");
-#else
-  UInt nb_global_nodes = mesh.getNbGlobalNodes();
-
-  delete jacobian_matrix;
-  std::stringstream sstr;
-  sstr << Memory::id << ":jacobian_matrix";
-  jacobian_matrix =
-      new SparseMatrix(nb_global_nodes, _symmetric, sstr.str(), memory_id);
-
-  jacobian_matrix->buildProfile(mesh, *dof_synchronizer, 1);
-
-  delete conductivity_matrix;
-  std::stringstream sstr_sti;
-  sstr_sti << Memory::id << ":conductivity_matrix";
-  conductivity_matrix =
-      new SparseMatrix(*jacobian_matrix, sstr_sti.str(), memory_id);
-
-#ifdef AKANTU_USE_MUMPS
-  std::stringstream sstr_solv;
-  sstr_solv << Memory::id << ":solver";
-  solver = new SolverMumps(*jacobian_matrix, sstr_solv.str());
-
-  dof_synchronizer->initScatterGatherCommunicationScheme();
-#else
-  AKANTU_DEBUG_ERROR("You should at least activate one solver.");
-#endif // AKANTU_USE_MUMPS
-
-  if (solver)
-    solver->initialize(options);
-#endif // AKANTU_HAS_SOLVER
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::initImplicit(bool dynamic,
-                                     SolverOptions & solver_options) {
-  AKANTU_DEBUG_IN();
-
-  method = dynamic ? _implicit_dynamic : _static;
-  initSolver(solver_options);
-
-  if (method == _implicit_dynamic) {
-    if (integrator)
-      delete integrator;
-    integrator = new TrapezoidalRule1();
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-
-HeatTransferModel::~HeatTransferModel() {
-  AKANTU_DEBUG_IN();
-  if (integrator)
-    delete integrator;
-  if (conductivity_matrix)
-    delete conductivity_matrix;
-  if (capacity_matrix)
-    delete capacity_matrix;
-  if (jacobian_matrix)
-    delete jacobian_matrix;
-  if (solver)
-    delete solver;
-
-  delete pbc_synch;
-
-  AKANTU_DEBUG_OUT();
-}
+HeatTransferModel::~HeatTransferModel() = default;
 
 /* -------------------------------------------------------------------------- */
 void HeatTransferModel::assembleCapacityLumped(const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
-  FEEngine & fem = getFEEngine();
+  auto & fem = getFEEngineClass<MyFEEngineType>();
+  ComputeRhoFunctor compute_rho(*this);
 
-  const Mesh::ConnectivityTypeList & type_list =
-      fem.getMesh().getConnectivityTypeList(ghost_type);
+  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
 
-  Mesh::ConnectivityTypeList::const_iterator it;
-  for (it = type_list.begin(); it != type_list.end(); ++it) {
-    if (Mesh::getSpatialDimension(*it) != spatial_dimension)
-      continue;
-
-    UInt nb_element = getFEEngine().getMesh().getNbElement(*it, ghost_type);
-    UInt nb_quadrature_points =
-        getFEEngine().getNbIntegrationPoints(*it, ghost_type);
-
-    Array<Real> rho_1(nb_element * nb_quadrature_points, 1, capacity * density);
-    fem.assembleFieldLumped(rho_1, 1, *capacity_lumped,
-                            dof_synchronizer->getLocalDOFEquationNumbers(), *it,
-                            ghost_type);
+    fem.assembleFieldLumped(compute_rho, "M", "temperature",
+                            this->getDOFManager(), type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -360,63 +164,94 @@ void HeatTransferModel::assembleCapacityLumped(const GhostType & ghost_type) {
 void HeatTransferModel::assembleCapacityLumped() {
   AKANTU_DEBUG_IN();
 
-  capacity_lumped->clear();
+  if (!this->getDOFManager().hasLumpedMatrix("M")) {
+    this->getDOFManager().getNewLumpedMatrix("M");
+  }
+
+  this->getDOFManager().clearLumpedMatrix("M");
 
   assembleCapacityLumped(_not_ghost);
   assembleCapacityLumped(_ghost);
 
-  getSynchronizerRegistry().synchronize(_gst_htm_capacity);
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+
+void HeatTransferModel::assembleResidual() {
+  AKANTU_DEBUG_IN();
+
+  this->assembleInternalHeatRate();
+
+  this->getDOFManager().assembleToResidual("temperature",
+                                           *this->external_heat_rate, 1);
+  this->getDOFManager().assembleToResidual("temperature",
+                                           *this->internal_heat_rate, 1);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::updateResidual(
-    __attribute__((unused)) bool compute_conductivity) {
-  AKANTU_DEBUG_IN();
-  /// @f$ r = q_{ext} - q_{int} - C \dot T @f$
+void HeatTransferModel::initSolver(TimeStepSolverType time_step_solver_type,
+                                   NonLinearSolverType) {
 
-  // start synchronization
-  synch_registry->asynchronousSynchronize(_gst_htm_temperature);
-  // finalize communications
-  synch_registry->waitEndSynchronize(_gst_htm_temperature);
+  DOFManager & dof_manager = this->getDOFManager();
 
-  // clear the array
-  /// first @f$ r = q_{ext} @f$
-  //  residual->clear();
-  residual->copy(*external_heat_rate);
+  this->allocNodalField(this->temperature, "temperature");
+  this->allocNodalField(this->external_heat_rate, "external_heat_rate");
+  this->allocNodalField(this->internal_heat_rate, "internal_heat_rate");
+  this->allocNodalField(this->blocked_dofs, "blocked_dofs");
 
-  /// then @f$ r -= q_{int} @f$
-  // update the not ghost ones
+  if (!dof_manager.hasDOFs("temperature")) {
+    dof_manager.registerDOFs("temperature", *this->temperature, _dst_nodal);
+    dof_manager.registerBlockedDOFs("temperature", *this->blocked_dofs);
+  }
 
-  updateResidual(_not_ghost);
-  // update for the received ghosts
-  updateResidual(_ghost);
+  if (time_step_solver_type == _tsst_dynamic ||
+      time_step_solver_type == _tsst_dynamic_lumped) {
 
-  /*  if (method == _explicit_lumped_capacity) {
-      this->solveExplicitLumped();
-    }*/
+    this->allocNodalField(this->temperature_rate, "temperature_rate");
 
-  AKANTU_DEBUG_OUT();
+    if (!dof_manager.hasDOFsDerivatives("temperature", 1)) {
+      dof_manager.registerDOFsDerivative("temperature", 1,
+                                         *this->temperature_rate);
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+   */
+  // byelementtype vectors
+  temperature_on_qpoints.initialize(this->getFEEngine(), _nb_component = 1);
+
+  temperature_gradient.initialize(this->getFEEngine(),
+                                  _nb_component = spatial_dimension);
+
+  conductivity_on_qpoints.initialize(this->getFEEngine(),
+                                     _nb_component =
+                                         spatial_dimension * spatial_dimension);
+
+  k_gradt_on_qpoints.initialize(this->getFEEngine(),
+                                _nb_component = spatial_dimension);
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::assembleConductivityMatrix(bool compute_conductivity) {
+void HeatTransferModel::assembleJacobian() {
   AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_INFO("Assemble the new stiffness matrix.");
-
-  conductivity_matrix->clear();
+  if (!this->getDOFManager().hasLumpedMatrix("K")) {
+    this->getDOFManager().getNewLumpedMatrix("K");
+  }
+  this->getDOFManager().clearLumpedMatrix("K");
 
   switch (mesh.getSpatialDimension()) {
   case 1:
-    this->assembleConductivityMatrix<1>(_not_ghost, compute_conductivity);
+    this->assembleConductivityMatrix<1>(_not_ghost);
     break;
   case 2:
-    this->assembleConductivityMatrix<2>(_not_ghost, compute_conductivity);
+    this->assembleConductivityMatrix<2>(_not_ghost);
     break;
   case 3:
-    this->assembleConductivityMatrix<3>(_not_ghost, compute_conductivity);
+    this->assembleConductivityMatrix<3>(_not_ghost);
     break;
   }
 
@@ -441,15 +276,12 @@ void HeatTransferModel::assembleConductivityMatrix(const GhostType & ghost_type,
 }
 
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
 template <UInt dim>
 void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
                                                    const GhostType & ghost_type,
                                                    bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
-  SparseMatrix & K = *conductivity_matrix;
   const Array<Real> & shapes_derivatives =
       this->getFEEngine().getShapesDerivatives(type, ghost_type);
 
@@ -466,18 +298,15 @@ void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
 
   Matrix<Real> Bt_D(nb_nodes_per_element, dim);
 
-  Array<Real>::const_iterator<Matrix<Real> > shapes_derivatives_it =
+  Array<Real>::const_iterator<Matrix<Real>> shapes_derivatives_it =
       shapes_derivatives.begin(dim, nb_nodes_per_element);
 
-  Array<Real>::iterator<Matrix<Real> > Bt_D_B_it =
-      bt_d_b->begin(bt_d_b_size, bt_d_b_size);
+  auto Bt_D_B_it = bt_d_b->begin(bt_d_b_size, bt_d_b_size);
 
   if (compute_conductivity)
     this->computeConductivityOnQuadPoints(ghost_type);
-  Array<Real>::iterator<Matrix<Real> > D_it =
-      conductivity_on_qpoints(type, ghost_type).begin(dim, dim);
-  Array<Real>::iterator<Matrix<Real> > D_end =
-      conductivity_on_qpoints(type, ghost_type).end(dim, dim);
+  auto D_it = conductivity_on_qpoints(type, ghost_type).begin(dim, dim);
+  auto D_end = conductivity_on_qpoints(type, ghost_type).end(dim, dim);
 
   for (; D_it != D_end; ++D_it, ++Bt_D_B_it, ++shapes_derivatives_it) {
     Matrix<Real> & D = *D_it;
@@ -497,7 +326,8 @@ void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
 
   delete bt_d_b;
 
-  this->getFEEngine().assembleMatrix(*K_e, K, 1, type, ghost_type);
+  this->getDOFManager().assembleElementalMatricesToMatrix(
+      "K", "temperature", *K_e, type, ghost_type, _symmetric);
   delete K_e;
 
   AKANTU_DEBUG_OUT();
@@ -505,112 +335,24 @@ void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 
-void HeatTransferModel::updateResidualInternal() {
-
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_INFO("Update the residual");
-  // f = q_ext - q_int - Mddot = q - Mddot;
-
-  if (method != _static) {
-    // f -= Mddot
-    if (capacity_matrix) {
-      // if full mass_matrix
-      Array<Real> * Mddot = new Array<Real>(*temperature_rate, true, "Mddot");
-      *Mddot *= *capacity_matrix;
-      *residual -= *Mddot;
-      delete Mddot;
-    } else if (capacity_lumped) {
-
-      // else lumped mass
-      UInt nb_nodes = temperature_rate->size();
-      UInt nb_degree_of_freedom = temperature_rate->getNbComponent();
-
-      Real * capacity_val = capacity_lumped->storage();
-      Real * temp_rate_val = temperature_rate->storage();
-      Real * res_val = residual->storage();
-      bool * blocked_dofs_val = blocked_dofs->storage();
-
-      for (UInt n = 0; n < nb_nodes * nb_degree_of_freedom; ++n) {
-        if (!(*blocked_dofs_val)) {
-          *res_val -= *temp_rate_val ** capacity_val;
-        }
-        blocked_dofs_val++;
-        res_val++;
-        capacity_val++;
-        temp_rate_val++;
-      }
-    } else {
-      AKANTU_DEBUG_ERROR("No function called to assemble the mass matrix.");
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::solveStatic() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_INFO("Solving Ku = f");
-  AKANTU_DEBUG_ASSERT(conductivity_matrix != NULL,
-                      "You should first initialize the implicit solver and "
-                      "assemble the stiffness matrix");
-
-  UInt nb_nodes = temperature->size();
-  UInt nb_degree_of_freedom = temperature->getNbComponent() * nb_nodes;
-
-  jacobian_matrix->copyContent(*conductivity_matrix);
-  jacobian_matrix->applyBoundary(*blocked_dofs);
-
-  increment->clear();
-
-  solver->setRHS(*residual);
-  solver->factorize();
-  solver->solve(*increment);
-
-  Real * increment_val = increment->storage();
-  Real * temperature_val = temperature->storage();
-  bool * blocked_dofs_val = blocked_dofs->storage();
-
-  for (UInt j = 0; j < nb_degree_of_freedom;
-       ++j, ++temperature_val, ++increment_val, ++blocked_dofs_val) {
-    if (!(*blocked_dofs_val)) {
-      *temperature_val += *increment_val;
-    } else {
-      *increment_val = 0.0;
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
 void HeatTransferModel::computeConductivityOnQuadPoints(
     const GhostType & ghost_type) {
-  const Mesh::ConnectivityTypeList & type_list =
-      this->getFEEngine().getMesh().getConnectivityTypeList(ghost_type);
-  Mesh::ConnectivityTypeList::const_iterator it;
 
-  for (it = type_list.begin(); it != type_list.end(); ++it) {
-    if (Mesh::getSpatialDimension(*it) != spatial_dimension)
-      continue;
+  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
 
     Array<Real> & temperature_interpolated =
-        temperature_on_qpoints(*it, ghost_type);
+        temperature_on_qpoints(type, ghost_type);
 
     // compute the temperature on quadrature points
     this->getFEEngine().interpolateOnIntegrationPoints(
-        *temperature, temperature_interpolated, 1, *it, ghost_type);
+        *temperature, temperature_interpolated, 1, type, ghost_type);
 
-    Array<Real>::matrix_iterator C_it =
-        conductivity_on_qpoints(*it, ghost_type)
-            .begin(spatial_dimension, spatial_dimension);
-    Array<Real>::matrix_iterator C_end =
-        conductivity_on_qpoints(*it, ghost_type)
-            .end(spatial_dimension, spatial_dimension);
+    auto C_it = conductivity_on_qpoints(type, ghost_type)
+                    .begin(spatial_dimension, spatial_dimension);
+    auto C_end = conductivity_on_qpoints(type, ghost_type)
+                     .end(spatial_dimension, spatial_dimension);
 
-    Array<Real>::iterator<Real> T_it = temperature_interpolated.begin();
+    auto T_it = temperature_interpolated.begin();
 
     for (; C_it != C_end; ++C_it, ++T_it) {
       Matrix<Real> & C = *C_it;
@@ -625,27 +367,19 @@ void HeatTransferModel::computeConductivityOnQuadPoints(
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::computeKgradT(const GhostType & ghost_type,
-                                      bool compute_conductivity) {
+void HeatTransferModel::computeKgradT(const GhostType & ghost_type) {
 
-  if (compute_conductivity)
+  if (this->compute_conductivity)
     computeConductivityOnQuadPoints(ghost_type);
 
-  const Mesh::ConnectivityTypeList & type_list =
-      this->getFEEngine().getMesh().getConnectivityTypeList(ghost_type);
-  Mesh::ConnectivityTypeList::const_iterator it;
+  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
 
-  for (it = type_list.begin(); it != type_list.end(); ++it) {
-    const ElementType & type = *it;
-    if (Mesh::getSpatialDimension(*it) != spatial_dimension)
-      continue;
-
-    Array<Real> & gradient = temperature_gradient(*it, ghost_type);
+    Array<Real> & gradient = temperature_gradient(type, ghost_type);
     this->getFEEngine().gradientOnIntegrationPoints(*temperature, gradient, 1,
-                                                    *it, ghost_type);
+                                                    type, ghost_type);
 
     Array<Real>::matrix_iterator C_it =
-        conductivity_on_qpoints(*it, ghost_type)
+        conductivity_on_qpoints(type, ghost_type)
             .begin(spatial_dimension, spatial_dimension);
 
     Array<Real>::vector_iterator BT_it = gradient.begin(spatial_dimension);
@@ -668,172 +402,55 @@ void HeatTransferModel::computeKgradT(const GhostType & ghost_type,
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::updateResidual(const GhostType & ghost_type,
-                                       bool compute_conductivity) {
+void HeatTransferModel::assembleInternalHeatRate() {
   AKANTU_DEBUG_IN();
 
-  const Mesh::ConnectivityTypeList & type_list =
-      this->getFEEngine().getMesh().getConnectivityTypeList(ghost_type);
-  Mesh::ConnectivityTypeList::const_iterator it;
+  this->synchronize(_gst_htm_temperature);
 
-  for (it = type_list.begin(); it != type_list.end(); ++it) {
-    if (Mesh::getSpatialDimension(*it) != spatial_dimension)
-      continue;
+  for (auto ghost_type : ghost_types) {
+    for (auto type : mesh.elementTypes(spatial_dimension, ghost_type)) {
 
-    Array<Real> & shapes_derivatives = const_cast<Array<Real> &>(
-        getFEEngine().getShapesDerivatives(*it, ghost_type));
+      Array<Real> & shapes_derivatives = const_cast<Array<Real> &>(
+          getFEEngine().getShapesDerivatives(type, ghost_type));
 
-    UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(*it);
+      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
-    // compute k \grad T
-    computeKgradT(ghost_type, compute_conductivity);
+      // compute k \grad T
+      computeKgradT(ghost_type);
+      auto & k_gradt_on_qpoints_vect = k_gradt_on_qpoints(type, ghost_type);
+      auto k_BT_it = k_gradt_on_qpoints_vect.begin(spatial_dimension);
+      auto B_it =
+          shapes_derivatives.begin(spatial_dimension, nb_nodes_per_element);
 
-    Array<Real>::vector_iterator k_BT_it =
-        k_gradt_on_qpoints(*it, ghost_type).begin(spatial_dimension);
+      UInt nb_quad_points = k_gradt_on_qpoints_vect.size();
+      Array<Real> bt_k_gT(nb_quad_points, nb_nodes_per_element);
 
-    Array<Real>::matrix_iterator B_it =
-        shapes_derivatives.begin(spatial_dimension, nb_nodes_per_element);
+      auto Bt_k_BT_it = bt_k_gT.begin(nb_nodes_per_element);
+      auto Bt_k_BT_end = bt_k_gT.end(nb_nodes_per_element);
 
-    Array<Real>::vector_iterator Bt_k_BT_it =
-        bt_k_gT(*it, ghost_type).begin(nb_nodes_per_element);
+      for (; Bt_k_BT_it != Bt_k_BT_end; ++Bt_k_BT_it, ++B_it, ++k_BT_it) {
+        Vector<Real> & k_BT = *k_BT_it;
+        Vector<Real> & Bt_k_BT = *Bt_k_BT_it;
+        Matrix<Real> & B = *B_it;
 
-    Array<Real>::vector_iterator Bt_k_BT_end =
-        bt_k_gT(*it, ghost_type).end(nb_nodes_per_element);
+        Bt_k_BT.mul<true>(B, k_BT);
+      }
 
-    for (; Bt_k_BT_it != Bt_k_BT_end; ++Bt_k_BT_it, ++B_it, ++k_BT_it) {
-      Vector<Real> & k_BT = *k_BT_it;
-      Vector<Real> & Bt_k_BT = *Bt_k_BT_it;
-      Matrix<Real> & B = *B_it;
+      UInt nb_elements = mesh.getNbElement(type, ghost_type);
+      Array<Real> int_bt_k_gT(nb_elements, nb_nodes_per_element);
 
-      Bt_k_BT.mul<true>(B, k_BT);
-    }
+      this->getFEEngine().integrate(bt_k_gT, int_bt_k_gT, nb_nodes_per_element,
+                                    type, ghost_type);
 
-    this->getFEEngine().integrate(bt_k_gT(*it, ghost_type),
-                                  int_bt_k_gT(*it, ghost_type),
-                                  nb_nodes_per_element, *it, ghost_type);
-
-    this->getFEEngine().assembleArray(
-        int_bt_k_gT(*it, ghost_type), *residual,
-        dof_synchronizer->getLocalDOFEquationNumbers(), 1, *it, ghost_type,
-        empty_filter, -1);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::solveExplicitLumped() {
-  AKANTU_DEBUG_IN();
-
-  /// finally @f$ r -= C \dot T @f$
-  // lumped C
-  UInt nb_nodes = temperature_rate->size();
-  UInt nb_degree_of_freedom = temperature_rate->getNbComponent();
-
-  Real * capacity_val = capacity_lumped->storage();
-  Real * temp_rate_val = temperature_rate->storage();
-  Real * res_val = residual->storage();
-  bool * blocked_dofs_val = blocked_dofs->storage();
-
-  for (UInt n = 0; n < nb_nodes * nb_degree_of_freedom; ++n) {
-    if (!(*blocked_dofs_val)) {
-      *res_val -= *capacity_val ** temp_rate_val;
-    }
-    blocked_dofs_val++;
-    res_val++;
-    capacity_val++;
-    temp_rate_val++;
-  }
-
-#ifndef AKANTU_NDEBUG
-  getSynchronizerRegistry().synchronize(akantu::_gst_htm_gradient_temperature);
-#endif
-
-  capacity_val = capacity_lumped->storage();
-  res_val = residual->storage();
-  blocked_dofs_val = blocked_dofs->storage();
-  Real * inc = increment->storage();
-
-  for (UInt n = 0; n < nb_nodes * nb_degree_of_freedom; ++n) {
-    if (!(*blocked_dofs_val)) {
-      *inc = (*res_val / *capacity_val);
-    }
-    res_val++;
-    blocked_dofs_val++;
-    inc++;
-    capacity_val++;
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::explicitPred() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_ASSERT(integrator, "integrator was not instanciated");
-  integrator->integrationSchemePred(time_step, *temperature, *temperature_rate,
-                                    *blocked_dofs);
-
-  UInt nb_nodes = temperature->size();
-  UInt nb_degree_of_freedom = temperature->getNbComponent();
-
-  Real * temp = temperature->storage();
-  for (UInt n = 0; n < nb_nodes * nb_degree_of_freedom; ++n, ++temp)
-    if (*temp < 0.)
-      *temp = 0.;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::explicitCorr() {
-  AKANTU_DEBUG_IN();
-
-  integrator->integrationSchemeCorrTempRate(
-      time_step, *temperature, *temperature_rate, *blocked_dofs, *increment);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::implicitPred() {
-  AKANTU_DEBUG_IN();
-
-  if (method == _implicit_dynamic)
-    integrator->integrationSchemePred(time_step, *temperature,
-                                      *temperature_rate, *blocked_dofs);
-
-  AKANTU_DEBUG_OUT();
-}
-/* -------------------------------------------------------------------------- */
-
-void HeatTransferModel::implicitCorr() {
-
-  AKANTU_DEBUG_IN();
-
-  if (method == _implicit_dynamic) {
-    integrator->integrationSchemeCorrTemp(
-        time_step, *temperature, *temperature_rate, *blocked_dofs, *increment);
-  } else {
-    UInt nb_nodes = temperature->size();
-    UInt nb_degree_of_freedom = temperature->getNbComponent() * nb_nodes;
-
-    Real * incr_val = increment->storage();
-    Real * temp_val = temperature->storage();
-    bool * boun_val = blocked_dofs->storage();
-
-    for (UInt j = 0; j < nb_degree_of_freedom;
-         ++j, ++temp_val, ++incr_val, ++boun_val) {
-      *incr_val *= (1. - *boun_val);
-      *temp_val += *incr_val;
+      this->getDOFManager().assembleElementalArrayLocalArray(
+          int_bt_k_gT, *this->internal_heat_rate, type, ghost_type, -1);
     }
   }
-
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
+
 Real HeatTransferModel::getStableTimeStep() {
   AKANTU_DEBUG_IN();
 
@@ -846,27 +463,21 @@ Real HeatTransferModel::getStableTimeStep() {
     for (UInt j = 0; j < spatial_dimension; j++)
       conductivitymax = std::max(conductivity(i, j), conductivitymax);
 
-  const Mesh::ConnectivityTypeList & type_list =
-      getFEEngine().getMesh().getConnectivityTypeList();
-  Mesh::ConnectivityTypeList::const_iterator it;
-  for (it = type_list.begin(); it != type_list.end(); ++it) {
-    if (getFEEngine().getMesh().getSpatialDimension(*it) != spatial_dimension)
-      continue;
+  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost)) {
 
     UInt nb_nodes_per_element =
-        getFEEngine().getMesh().getNbNodesPerElement(*it);
+        getFEEngine().getMesh().getNbNodesPerElement(type);
 
     Array<Real> coord(0, nb_nodes_per_element * spatial_dimension);
     FEEngine::extractNodalToElementField(getFEEngine().getMesh(),
                                          getFEEngine().getMesh().getNodes(),
-                                         coord, *it, _not_ghost);
+                                         coord, type, _not_ghost);
 
-    Array<Real>::matrix_iterator el_coord =
-        coord.begin(spatial_dimension, nb_nodes_per_element);
-    UInt nb_element = getFEEngine().getMesh().getNbElement(*it);
+    auto el_coord = coord.begin(spatial_dimension, nb_nodes_per_element);
+    UInt nb_element = getFEEngine().getMesh().getNbElement(type);
 
     for (UInt el = 0; el < nb_element; ++el, ++el_coord) {
-      el_size = getFEEngine().getElementInradius(*el_coord, *it);
+      el_size = getFEEngine().getElementInradius(*el_coord, type);
       min_el_size = std::min(min_el_size, el_size);
     }
 
@@ -878,14 +489,15 @@ Real HeatTransferModel::getStableTimeStep() {
   Real min_dt =
       2 * min_el_size * min_el_size * density * capacity / conductivitymax;
 
-  StaticCommunicator::getStaticCommunicator().allReduce(&min_dt, 1, _so_min);
+  StaticCommunicator::getStaticCommunicator().allReduce(min_dt,  _so_min);
 
   AKANTU_DEBUG_OUT();
 
   return min_dt;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 void HeatTransferModel::readMaterials() {
   std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
       sub_sect = this->parser->getSubSections(_st_heat);
@@ -896,7 +508,8 @@ void HeatTransferModel::readMaterials() {
   this->parseSection(section);
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 
 void HeatTransferModel::initFull(const ModelOptions & options) {
   Model::initFull(options);
@@ -907,36 +520,11 @@ void HeatTransferModel::initFull(const ModelOptions & options) {
       dynamic_cast<const HeatTransferModelOptions &>(options);
 
   method = my_options.analysis_method;
-
-  // initialize the vectors
-  initArrays();
-  temperature->clear();
-  temperature_rate->clear();
-  external_heat_rate->clear();
-
-  // initialize pbc
-  if (pbc_pair.size() != 0)
-    initPBC();
-
-  if (method == _explicit_lumped_capacity) {
-    integrator = new ForwardEuler();
-  }
-  if (method == _implicit_dynamic) {
-    initImplicit(true);
-  }
-  if (method == _static) {
-    initImplicit(false);
-  }
 }
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 void HeatTransferModel::assembleCapacity() {
   AKANTU_DEBUG_IN();
-
-  if (!capacity_matrix) {
-    std::stringstream sstr;
-    sstr << id << ":capacity_matrix";
-    capacity_matrix = new SparseMatrix(*jacobian_matrix, sstr.str(), memory_id);
-  }
 
   assembleCapacity(_not_ghost);
   //  assembleMass(_ghost);
@@ -944,28 +532,14 @@ void HeatTransferModel::assembleCapacity() {
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
-class ComputeRhoFunctor {
-public:
-  ComputeRhoFunctor(const HeatTransferModel & model) : model(model){};
-
-  void operator()(Matrix<Real> & rho, const Element &,
-                  const Matrix<Real> &) const {
-    rho.set(model.getCapacity());
-  }
-
-private:
-  const HeatTransferModel & model;
-};
-
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 void HeatTransferModel::assembleCapacity(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
 
   ComputeRhoFunctor rho_functor(*this);
-
 
   Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
@@ -978,7 +552,8 @@ void HeatTransferModel::assembleCapacity(GhostType ghost_type) {
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 
 void HeatTransferModel::computeRho(Array<Real> & rho, ElementType type,
                                    GhostType ghost_type) {
@@ -1002,62 +577,9 @@ void HeatTransferModel::computeRho(Array<Real> & rho, ElementType type,
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 
-template <>
-bool HeatTransferModel::testConvergence<_scc_increment>(Real tolerance,
-                                                        Real & error) {
-  AKANTU_DEBUG_IN();
-
-  UInt nb_nodes = temperature->size();
-  UInt nb_degree_of_freedom = temperature->getNbComponent();
-
-  error = 0;
-  Real norm[2] = {0., 0.};
-  Real * increment_val = increment->storage();
-  bool * blocked_dofs_val = blocked_dofs->storage();
-  Real * temperature_val = temperature->storage();
-
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    bool is_local_node = mesh.isLocalOrMasterNode(n);
-    for (UInt d = 0; d < nb_degree_of_freedom; ++d) {
-      if (!(*blocked_dofs_val) && is_local_node) {
-        norm[0] += *increment_val * *increment_val;
-        norm[1] += *temperature_val * *temperature_val;
-      }
-      blocked_dofs_val++;
-      increment_val++;
-      temperature_val++;
-    }
-  }
-
-  StaticCommunicator::getStaticCommunicator().allReduce(norm, 2, _so_sum);
-
-  norm[0] = sqrt(norm[0]);
-  norm[1] = sqrt(norm[1]);
-
-  AKANTU_DEBUG_ASSERT(!Math::isnan(norm[0]),
-                      "Something goes wrong in the solve phase");
-
-  if (norm[1] < Math::getTolerance()) {
-    error = norm[0];
-    AKANTU_DEBUG_OUT();
-    //    cout<<"Error 1: "<<error<<endl;
-    return error < tolerance;
-  }
-
-  AKANTU_DEBUG_OUT();
-  if (norm[1] > Math::getTolerance())
-    error = norm[0] / norm[1];
-  else
-    error = norm[0]; // In case the total displacement is zero!
-
-  //  cout<<"Error 2: "<<error<<endl;
-
-  return (error < tolerance);
-}
-
-/* -------------------------------------------------------------------------- */
 void HeatTransferModel::initFEEngineBoundary(bool create_surface) {
 
   if (create_surface)
@@ -1068,7 +590,8 @@ void HeatTransferModel::initFEEngineBoundary(bool create_surface) {
   fem_boundary.computeNormalsOnIntegrationPoints();
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 
 Real HeatTransferModel::computeThermalEnergyByNode() {
   AKANTU_DEBUG_IN();
@@ -1102,34 +625,37 @@ Real HeatTransferModel::computeThermalEnergyByNode() {
   return ethermal;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <class iterator>
 void HeatTransferModel::getThermalEnergy(
     iterator Eth, Array<Real>::const_iterator<Real> T_it,
     Array<Real>::const_iterator<Real> T_end) const {
   for (; T_it != T_end; ++T_it, ++Eth) {
-    *Eth = capacity * density ** T_it;
+    *Eth = capacity * density * *T_it;
   }
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 Real HeatTransferModel::getThermalEnergy(const ElementType & type, UInt index) {
   AKANTU_DEBUG_IN();
 
   UInt nb_quadrature_points = getFEEngine().getNbIntegrationPoints(type);
   Vector<Real> Eth_on_quarature_points(nb_quadrature_points);
 
-  Array<Real>::iterator<Real> T_it = this->temperature_on_qpoints(type).begin();
+  auto T_it = this->temperature_on_qpoints(type).begin();
   T_it += index * nb_quadrature_points;
 
-  Array<Real>::iterator<Real> T_end = T_it + nb_quadrature_points;
+  auto T_end = T_it + nb_quadrature_points;
 
   getThermalEnergy(Eth_on_quarature_points.storage(), T_it, T_end);
 
   return getFEEngine().integrate(Eth_on_quarature_points, type, index);
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 Real HeatTransferModel::getThermalEnergy() {
   Real Eth = 0;
 
@@ -1142,9 +668,8 @@ Real HeatTransferModel::getThermalEnergy() {
         getFEEngine().getNbIntegrationPoints(*it, _not_ghost);
     Array<Real> Eth_per_quad(nb_element * nb_quadrature_points, 1);
 
-    Array<Real>::iterator<Real> T_it =
-        this->temperature_on_qpoints(*it).begin();
-    Array<Real>::iterator<Real> T_end = this->temperature_on_qpoints(*it).end();
+    auto T_it = this->temperature_on_qpoints(*it).begin();
+    auto T_end = this->temperature_on_qpoints(*it).end();
     getThermalEnergy(Eth_per_quad.begin(), T_it, T_end);
 
     Eth += getFEEngine().integrate(Eth_per_quad, *it);
@@ -1153,7 +678,8 @@ Real HeatTransferModel::getThermalEnergy() {
   return Eth;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 Real HeatTransferModel::getEnergy(const std::string & id) {
   AKANTU_DEBUG_IN();
   Real energy = 0;
@@ -1168,7 +694,8 @@ Real HeatTransferModel::getEnergy(const std::string & id) {
   return energy;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 Real HeatTransferModel::getEnergy(const std::string & id,
                                   const ElementType & type, UInt index) {
   AKANTU_DEBUG_IN();
@@ -1194,11 +721,12 @@ dumper::Field * HeatTransferModel::createNodalFieldBool(
   std::map<std::string, Array<bool> *> uint_nodal_fields;
   uint_nodal_fields["blocked_dofs"] = blocked_dofs;
 
-  dumper::Field * field = NULL;
+  dumper::Field * field = nullptr;
   field = mesh.createNodalField(uint_nodal_fields[field_name], group_name);
   return field;
 }
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 
 dumper::Field * HeatTransferModel::createNodalFieldReal(
     const std::string & field_name, const std::string & group_name,
@@ -1218,7 +746,8 @@ dumper::Field * HeatTransferModel::createNodalFieldReal(
   return field;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 
 dumper::Field * HeatTransferModel::createElementalField(
     const std::string & field_name, const std::string & group_name,
@@ -1226,7 +755,7 @@ dumper::Field * HeatTransferModel::createElementalField(
     __attribute__((unused)) const UInt & spatial_dimension,
     const ElementKind & element_kind) {
 
-  dumper::Field * field = NULL;
+  dumper::Field * field = nullptr;
 
   if (field_name == "partitions")
     field = mesh.createElementalField<UInt, dumper::ElementPartitionField>(
@@ -1252,29 +781,32 @@ dumper::Field * HeatTransferModel::createElementalField(
 }
 /* -------------------------------------------------------------------------- */
 #else
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 dumper::Field * HeatTransferModel::createElementalField(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag,
     __attribute__((unused)) const ElementKind & element_kind) {
-  return NULL;
+  return nullptr;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 dumper::Field * HeatTransferModel::createNodalFieldBool(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
-  return NULL;
+  return nullptr;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 dumper::Field * HeatTransferModel::createNodalFieldReal(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
-  return NULL;
+  return nullptr;
 }
 
 #endif
