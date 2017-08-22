@@ -40,34 +40,35 @@
 namespace akantu {
 
 namespace debug {
-class ParameterException : public Exception {
-public:
-  ParameterException(const std::string & name, const std::string & message)
-      : Exception(message), name(name) {}
-  const std::string & name;
-};
+  class ParameterException : public Exception {
+  public:
+    ParameterException(const std::string & name, const std::string & message)
+        : Exception(message), name(name) {}
+    const std::string & name;
+  };
 
-class ParameterUnexistingException : public ParameterException {
-public:
-  ParameterUnexistingException(const std::string & name)
-      : ParameterException(name, "Parameter " + name +
-                                     " does not exists in this scope") {}
-};
+  class ParameterUnexistingException : public ParameterException {
+  public:
+    ParameterUnexistingException(const std::string & name)
+        : ParameterException(name, "Parameter " + name +
+                                       " does not exists in this scope") {}
+  };
 
-class ParameterAccessRightException : public ParameterException {
-public:
-  ParameterAccessRightException(const std::string & name,
-                                const std::string & perm)
-      : ParameterException(name, "Parameter " + name + " is not " + perm) {}
-};
+  class ParameterAccessRightException : public ParameterException {
+  public:
+    ParameterAccessRightException(const std::string & name,
+                                  const std::string & perm)
+        : ParameterException(name, "Parameter " + name + " is not " + perm) {}
+  };
 
-class ParameterWrongTypeException : public ParameterException {
-public:
-  ParameterWrongTypeException(const std::string name, const std::string & type)
-      : ParameterException(name,
-                           "Parameter " + name + " is not of type " + type) {}
-};
-}
+  class ParameterWrongTypeException : public ParameterException {
+  public:
+    ParameterWrongTypeException(const std::string name,
+                                const std::string & type)
+        : ParameterException(name,
+                             "Parameter " + name + " is not of type " + type) {}
+  };
+} // namespace debug
 /* -------------------------------------------------------------------------- */
 template <typename T>
 const ParameterTyped<T> & Parameter::getParameterTyped() const {
@@ -298,4 +299,26 @@ const Parameter & ParameterRegistry::get(const std::string & name) const {
   return param;
 }
 
-} // akantu
+/* -------------------------------------------------------------------------- */
+namespace {
+  namespace details {
+    template <class T, class R, class Enable = void> struct CastHelper {
+      static R convert(const T &) { throw std::bad_cast(); }
+    };
+
+    template <class T, class R>
+    struct CastHelper<T, R,
+                      std::enable_if_t<std::is_convertible<T, R>::value>> {
+      static R convert(const T & val) { return val; }
+    };
+  } // namespace details
+} // namespace
+
+template <typename T> inline ParameterTyped<T>::operator Real() const {
+  if (not isReadable())
+    AKANTU_CUSTOM_EXCEPTION(
+        debug::ParameterAccessRightException(name, "accessible"));
+  return details::CastHelper<T, Real>::convert(param);
+}
+
+} // namespace akantu

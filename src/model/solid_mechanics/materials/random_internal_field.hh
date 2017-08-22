@@ -59,8 +59,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-private:
-  RandomInternalField operator=(__attribute__((unused)) const RandomInternalField & other) {};
+  RandomInternalField operator=(const RandomInternalField &) = delete;
 
 public:
   AKANTU_GET_MACRO(RandomParameter, random_parameter, const RandomParameter<T>);

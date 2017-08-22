@@ -49,7 +49,7 @@ enum ParameterAccessType {
   _pat_internal = 0x0001,
   _pat_writable = 0x0010,
   _pat_readable = 0x0100,
-  _pat_modifiable = 0x0110, //_pat_readable | _pat_writable,
+  _pat_modifiable = 0x0110, //<_pat_readable | _pat_writable,
   _pat_parsable = 0x1000,
   _pat_parsmod = 0x1110 //< _pat_parsable | _pat_modifiable
 };
@@ -73,7 +73,7 @@ public:
   Parameter(std::string name, std::string description,
             ParameterAccessType param_type);
 
-  virtual ~Parameter(){};
+  virtual ~Parameter() = default;
   /* ------------------------------------------------------------------------ */
   bool isInternal() const;
   bool isWritable() const;
@@ -87,6 +87,8 @@ public:
   virtual void setAuto(const ParserParameter & param);
   template <typename T> T & get();
   template <typename T> const T & get() const;
+
+  virtual inline operator Real() const { throw std::bad_cast(); };
   template <typename T> inline operator T() const;
   /* ------------------------------------------------------------------------ */
   virtual void printself(std::ostream & stream) const;
@@ -98,9 +100,10 @@ protected:
   /// Returns instance of templated sub-class ParameterTyped
   template <typename T> ParameterTyped<T> & getParameterTyped();
 
-private:
+protected:
   /// Name of parameter
   std::string name;
+private:
   /// Description of parameter
   std::string description;
   /// Type of access
@@ -127,6 +130,7 @@ public:
 
   virtual void printself(std::ostream & stream) const;
 
+  inline operator Real() const;
 private:
   /// Value of parameter
   T & param;
